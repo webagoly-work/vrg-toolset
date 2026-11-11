@@ -67,6 +67,8 @@ A new kind of thing means a new term here **and** in `types`, not a new free-tex
 | **Launcher bar / quick bar** | A small global search box that starts things and routes text by prefix. | Spotlight, PowerToys Run | Gyorskereső (global hotkey) |
 | **Panel / tool window** | A docked region that hosts one tool's UI inside the shell. | the VS Code Terminal panel, JetBrains tool windows | Dashboard panes: Fájlok, Terminál, Böngésző, Posta, Git … |
 | **Pane** | One cell of a split layout. | tmux panes, Explorer's preview pane | `layout.js` splits |
+| **Workspace / Lap (Sheet)** | A layer over the Desktop area holding the windows of one piece of work; several can be open, one is in front. | macOS Spaces, Windows virtual desktops, i3 workspaces | **Lapok** (WP-46): a 4 × 4 grid of windows, tabs in the top strip or the dock; **Munkapad** = the older split tree. Not the WP-34 *Munkaterek* (saved split trees) |
+| **Tile / snap** | A window's place on a grid; dragging snaps it to whole cells. | Windows Snap layouts, tiling window managers | a Lap window's `c r w h`; full = all 16 cells; small = one cell |
 | **Tab** | One of several stacked contents of a pane, picked by a header. | browser tabs | the pane tab strip |
 | **View** | One presentation of data, or one top-level screen of an app. | Outlook's Calendar view, Revit views | Planner Views, Topology View, Stack pages, the two primary views |
 | **Window** | A movable / resizable container, OS-level or drawn inside the shell. | any OS window; in-app windows in Figma | in-shell windows (UI Kit `wm.js`) for apps opened inside the Asztal |

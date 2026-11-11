@@ -49,19 +49,20 @@
     panes.delete(id);
   }
 
-  function getBody(pane) {
+  // owner 'tree' = the split layout (pruned with it); 'sheet' = a window on a Lap (WP-46), which the Sheets layer mounts and drops itself
+  function getBody(pane, owner, mkApi) {
     let e = panes.get(pane.id);
     if (e && e.kind !== pane.kind) { drop(pane.id); e = null; }
     if (e) return e.body;
     const body = document.createElement('div');
     body.dataset.pane = pane.id; body.dataset.kind = pane.kind;
-    e = { kind: pane.kind, body, inst: null };
+    e = { kind: pane.kind, body, inst: null, owner: owner === 'sheet' ? 'sheet' : 'tree', api: typeof mkApi === 'function' ? mkApi : api };
     panes.set(pane.id, e);
     loadKind(pane.kind).then(ok => {
       if (panes.get(pane.id) !== e) return;
       if (!ok) { body.textContent = 'Ez a panel még nem érhető el.'; body.title = 'This pane is not available yet.'; return; }
       e.inst = Object.create(P[pane.kind]);
-      try { e.inst.mount(body, pane.state, api(pane.id)); } catch (err) { body.textContent = 'Hiba a panel indításakor.'; log('error', 'mount ' + pane.kind + ': ' + err.message); }
+      try { e.inst.mount(body, pane.state, e.api(pane.id)); } catch (err) { body.textContent = 'Hiba a panel indításakor.'; log('error', 'mount ' + pane.kind + ': ' + err.message); }
       if (pane.kind === 'term') decorateClaude(e.inst);
       scheduleBounds();
     });
@@ -86,7 +87,7 @@
     boundsRaf = 0;
     if (!vrg || !vrg.layout) return;
     const seen = new Set();
-    for (const el of root.querySelectorAll('[data-view]')) {
+    for (const el of document.querySelectorAll('#root [data-view], [data-role="sh-layer"] [data-view]')) {
       const id = el.dataset.view;
       const r = el.getBoundingClientRect();
       const shown = !el.closest('[hidden]') && r.width > 0 && r.height > 0;
@@ -111,14 +112,21 @@
     L = window.VRGLayout.create({
       root, getBody,
       onChange: (t, live) => { scheduleBounds(); if (!live) scheduleSave(); },
-      onPanes: ids => { for (const id of [...panes.keys()]) if (!ids.has(id)) drop(id); scheduleBounds(); },
+      onPanes: ids => { for (const id of [...panes.keys()]) if (!ids.has(id) && panes.get(id).owner !== 'sheet') drop(id); scheduleBounds(); },
     });
     L.set(tree);
     const paneOf = id => lib.panes(L.tree()).find(p => p.id === id) || null;
-    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()], open: openKind, close: id => L.commit(lib.close(L.tree(), id)), pane: id => (panes.get(id) || {}).inst || null,
-      // the VRG Asztal's dock (WP-42): what each pane is, and focusing one
-      kindOf: id => (paneOf(id) || {}).kind || '', stateOf: id => (paneOf(id) || {}).state || null, focused: () => L.focused(),
-      focus: id => { if (!paneOf(id)) return false; L.commit(lib.focus(L.tree(), id)); L.focusPane(id); return true; } };
+    const SH = () => window.VRGSheets || null;
+    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()], open: openKind, pane: id => (panes.get(id) || {}).inst || null,
+      close: id => { if (isSheetPane(id)) return SH().close(id); L.commit(lib.close(L.tree(), id)); },
+      // the VRG Asztal's dock (WP-42): what each pane is, and focusing one; a sheet window answers through the Sheets layer (WP-46)
+      kindOf: id => (paneOf(id) || {}).kind || (isSheetPane(id) ? panes.get(id).kind : ''),
+      stateOf: id => (paneOf(id) || {}).state || (isSheetPane(id) && SH() ? SH().stateOf(id) : null),
+      focused: () => (SH() && SH().on() ? SH().focused() : L.focused()),
+      focus: id => { if (isSheetPane(id)) return SH().focus(id); if (!paneOf(id)) return false; if (SH()) SH().showTree(); L.commit(lib.focus(L.tree(), id)); L.focusPane(id); return true; },
+      // the pane host the Sheets layer mounts its windows with (WP-46): the same pane modules, one instance per window
+      host: { body: (pane, mkApi) => getBody(pane, 'sheet', mkApi), drop, inst: id => (panes.get(id) || {}).inst || null, has: id => panes.has(id) },
+      bounds: scheduleBounds, openKindInTree };
     window.addEventListener('resize', scheduleBounds);
     window.addEventListener('scroll', scheduleBounds, true);
     new ResizeObserver(scheduleBounds).observe(root);
@@ -141,8 +149,8 @@
     // the Posta pane opens from the palette ("Posta", pane:mail) or with mail('posta'), which focuses an open one first
     window.VRGFrame.mail = (acc) => {
       if (acc === 'posta') {
-        const id = [...panes.keys()].find(k => panes.get(k).kind === 'mail');
-        if (id) { L.focusPane(id); return true; }
+        const id = findKind('mail');
+        if (id) { focusPane(id); return true; }
         return !!openKind('mail', {});
       }
       if (typeof acc === 'string' && /^web:[a-z0-9_-]{1,40}$/.test(acc)) return openWeb(acc);
@@ -199,6 +207,7 @@
   let sideWeb = '';
   async function openSide(target) {
     if (typeof target !== 'string' || !target) return false;
+    if (sheetsOn()) return openWeb(target);
     let id = sideWeb && panes.has(sideWeb) && panes.get(sideWeb).kind === 'web' ? sideWeb : '';
     if (!id) {
       const t0 = L.tree(), at = lib.find(t0, L.focused()) || lib.find(t0, lib.panes(t0)[0].id);
@@ -223,8 +232,8 @@
   }
 
   async function openWeb(target) {
-    let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
-    if (id) L.focusPane(id); else id = openKind('web', {});
+    let id = findKind('web');
+    if (id) focusPane(id); else id = openKind('web', {});
     if (!id) return false;
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
@@ -238,8 +247,8 @@
   // chip = { kind:'sel', text } | { kind:'pack', packId } | { kind:'file', handle, name }. Fired by the selection menu, by the stack pane's
   // "Csatolás a csevegéshez" (vrg-ctx-attach, detail { packId }) and by any pane through  vrg-chat-attach  (detail = a chip).
   async function openChat(chip) {
-    let id = [...panes.keys()].find(k => panes.get(k).kind === 'chat');
-    if (id) L.focusPane(id); else id = openKind('chat', {});
+    let id = findKind('chat');
+    if (id) focusPane(id); else id = openKind('chat', {});
     if (!id) return false;
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.attach && inst.input); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
@@ -265,8 +274,8 @@
   // "Csomaghoz adás": the stack pane (made if none is open) takes the node ids in the text, or the text as a "kézi jegyzet".
   // Also reachable as  VRGFrame.ctxAdd(text | { nodes: [{ id, title?, layer? }] })  and the  vrg-ctx-add  event (detail = the same), for search hits.
   async function ctxAdd(what) {
-    let id = [...panes.keys()].find(k => panes.get(k).kind === 'stack');
-    if (id) L.focusPane(id); else id = openKind('stack', {});
+    let id = findKind('stack');
+    if (id) focusPane(id); else id = openKind('stack', {});
     if (!id) return false;
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.addText); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
@@ -309,6 +318,7 @@
   let wsBox = null;
   async function applyWorkspace(r) {
     if (!r || r.ok === false || !r.tree || !lib.validate(r.tree).ok) return false;
+    if (window.VRGSheets) window.VRGSheets.showTree();
     L.commit(r.tree);
     for (const t of Array.isArray(r.terms) ? r.terms : []) if (t && typeof t.term === 'string') await adoptTerm({ term: t.term, prof: t.prof });
     for (const u of Array.isArray(r.tabs) ? r.tabs : []) if (typeof u === 'string') await openWeb(u);
@@ -376,7 +386,23 @@
   }
 
   // layout.open from main (a palette "pane:<kind>" command): a new tab in the focused group; the Kezdőlap is only focused
+  function isSheetPane(id) { const e = panes.get(id); return !!(e && e.owner === 'sheet' && window.VRGSheets); }
+  function sheetsOn() { return !!(window.VRGSheets && window.VRGSheets.on()); }
+  function findKind(kind) {
+    if (sheetsOn()) return window.VRGSheets.findKind(kind);
+    return [...panes.keys()].find(k => panes.get(k).owner !== 'sheet' && panes.get(k).kind === kind) || '';
+  }
+  function focusPane(id) { if (isSheetPane(id)) window.VRGSheets.focus(id); else L.focusPane(id); }
   function openKind(kind, state) {
+    if (!L || typeof kind !== 'string' || !lib.KINDS.includes(kind)) return '';
+    if (sheetsOn()) {
+      const id = window.VRGSheets.openKind(kind, state);
+      if (id) return id;
+      window.VRGSheets.showTree();                                        // the Lap is full: the Munkapad takes it, shown
+    }
+    return openKindInTree(kind, state);
+  }
+  function openKindInTree(kind, state) {
     if (!L || typeof kind !== 'string' || !lib.KINDS.includes(kind)) return '';
     const t = JSON.parse(JSON.stringify(L.tree()));
     const all = lib.panes(t);

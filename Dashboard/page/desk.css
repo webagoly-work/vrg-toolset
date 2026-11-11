@@ -38,6 +38,94 @@
 [data-role="ground"] .hint { font-size: 12px; color: var(--mv-faint); }
 [data-role="ground"] .hint .en { display: block; font-style: italic; text-align: center; }
 
+/* ---- Lapok (WP-46): the 4 × 4 sheet over the Desktop area. Cells are the grid's floor; windows sit on it by grid-area. ---- */
+[data-role="sh-layer"] { --sh-gap: 6px; position: relative; z-index: 1; flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr)); gap: var(--sh-gap); padding: var(--sh-gap) var(--sh-gap) 30px; }   /* 30px: the corner dials (88px) rise 28px above the dock */
+[data-role="sh-layer"][hidden] { display: none; }
+[data-role="sh-cell"] { position: relative; border: 1px dashed transparent; display: flex; align-items: center; justify-content: center; }
+[data-role="sh-cell"][hidden] { display: none; }
+[data-role="sh-cell"][data-free="1"] { border-color: color-mix(in srgb, var(--mv-line) 70%, transparent); }
+[data-role="sh-layer"][data-empty="1"] [data-role="sh-cell"] { border-color: var(--mv-line); }
+[data-role="sh-cell"] .plus { opacity: 0; width: 34px; height: 34px; border: 1px solid var(--mv-line-strong); background: var(--mv-panel-solid); color: var(--mv-accent);
+  font: 16px var(--mv-mono); cursor: pointer; transition: opacity .12s; }
+[data-role="sh-cell"][data-free="1"]:hover .plus, [data-role="sh-cell"] .plus:focus-visible { opacity: 1; }
+[data-role="sh-cell"]:not([data-free="1"]) .plus { display: none; }
+[data-role="sh-win"] { position: relative; z-index: 2; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--mv-panel-solid);
+  border: 1px solid var(--mv-line); outline: none; }
+[data-role="sh-win"][hidden] { display: none; }
+[data-role="sh-win"][data-focus="1"] { border-color: var(--mv-accent); }
+[data-role="sh-win"][data-max="1"] { z-index: 4; }
+[data-role="sh-head"] { flex: 0 0 24px; display: flex; align-items: stretch; border-bottom: 1px solid var(--mv-line); user-select: none; cursor: grab; touch-action: none; }
+body[data-sh-drag="move"] [data-role="sh-head"] { cursor: grabbing; }
+[data-role="sh-win"][data-max="1"] [data-role="sh-head"] { cursor: default; }
+[data-role="sh-head"] .tab { display: flex; align-items: center; gap: 7px; min-width: 0; max-width: 60%; padding: 0 12px 0 8px; background: var(--mv-raised);
+  border-right: 1px solid var(--mv-line); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 0 100%); }
+[data-role="sh-win"][data-focus="1"] [data-role="sh-head"] .tab { background: var(--mv-accent-soft); }
+[data-role="sh-head"] .tab b { font: 600 11px var(--mv-mono); letter-spacing: .08em; color: var(--mv-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-role="sh-head"] .ic { font: 600 9.5px var(--mv-mono); font-style: normal; color: var(--mv-accent); min-width: 14px; text-align: center; }
+[data-role="sh-head"] .sp { flex: 1; }
+[data-role="sh-head"] button { width: 26px; padding: 0; background: none; border: 0; border-left: 1px solid var(--mv-line); color: var(--mv-dim); font: 11px var(--mv-mono); cursor: pointer; }
+[data-role="sh-head"] button:hover { background: var(--mv-raised); color: var(--mv-text); }
+[data-role="sh-head"] button[data-act="close"]:hover { color: var(--mv-crit); }
+[data-role="sh-body"] { position: relative; flex: 1 1 0; min-height: 0; overflow: auto; }
+[data-role="sh-body"] > [data-pane] { height: 100%; box-sizing: border-box; }
+[data-role="sh-win"][data-size="1x1"] [data-role="sh-head"] .tab { max-width: 100%; }
+/* the eight grips: thin edges, square corners; a full window has none */
+[data-role="sh-win"] > [data-edge] { position: absolute; z-index: 3; touch-action: none; }
+[data-role="sh-win"][data-max="1"] > [data-edge] { display: none; }
+[data-edge="n"], [data-edge="s"] { left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+[data-edge="e"], [data-edge="w"] { top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+[data-edge="n"] { top: -4px; } [data-edge="s"] { bottom: -4px; } [data-edge="e"] { right: -4px; } [data-edge="w"] { left: -4px; }
+[data-edge="ne"], [data-edge="nw"], [data-edge="se"], [data-edge="sw"] { width: 12px; height: 12px; }
+[data-edge="ne"] { top: -5px; right: -5px; cursor: nesw-resize; } [data-edge="sw"] { bottom: -5px; left: -5px; cursor: nesw-resize; }
+[data-edge="nw"] { top: -5px; left: -5px; cursor: nwse-resize; } [data-edge="se"] { bottom: -5px; right: -5px; cursor: nwse-resize; }
+[data-role="sh-win"]:hover > [data-edge="se"] { border-right: 2px solid var(--mv-accent); border-bottom: 2px solid var(--mv-accent); }
+[data-role="sh-ghost"] { z-index: 6; pointer-events: none; border: 2px solid var(--mv-accent); background: var(--mv-accent-soft); }
+[data-role="sh-ghost"][hidden] { display: none; }
+[data-role="sh-ghost"][data-ok="0"] { border-color: var(--mv-crit); background: color-mix(in srgb, var(--mv-crit) 14%, transparent); }
+body[data-sh-drag] { cursor: grabbing; user-select: none; }
+/* the sheet tabs: in the top strip, or at the dock's left */
+[data-role="sh-bar"] { display: flex; align-items: stretch; gap: 0; padding: 0 !important; }
+[data-role="sh-bar"] button { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: none; border: 0; border-right: 1px solid var(--mv-line);
+  color: var(--mv-dim); font: 11px var(--mv-mono); letter-spacing: .06em; cursor: pointer; white-space: nowrap; }
+[data-role="sh-bar"] button:hover { background: var(--mv-raised); color: var(--mv-text); }
+[data-role="sh-bar"] button[aria-pressed="true"] { color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: inset 0 -2px 0 var(--mv-accent); }
+[data-role="sh-bar"] .n { font-size: 9.5px; color: var(--mv-faint); border: 1px solid var(--mv-line); padding: 0 4px; }
+[data-role="sh-bar"] [data-role="sh-new"] { color: var(--mv-accent); }
+[data-role="sh-bar"] input { width: 120px; background: var(--mv-bg); border: 1px solid var(--mv-accent); color: var(--mv-text); font: 11px var(--mv-mono); padding: 2px 6px; }
+[data-role="dock"] [data-role="sh-bar"] { height: 44px; border: 1px solid var(--mv-line); }
+[data-role="dock"] [data-role="sh-bar"] button { width: auto; height: auto; border: 0; border-right: 1px solid var(--mv-line); background: none; }
+[data-role="dock"] [data-role="sh-bar"] button[aria-pressed="true"] { background: var(--mv-accent-soft); }
+/* many sheets: the strip's other items keep their size and never wrap; the tab group gives way (scrolls sideways, a long name is cut) */
+[data-role="topstrip"] > * { white-space: nowrap; flex-shrink: 0; }
+[data-role="topstrip"] > .sp { flex-shrink: 1; min-width: 0; }
+[data-role="topstrip"] > [data-role="sh-bar"] { flex: 0 1 auto; min-width: 120px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+[data-role="topstrip"] > [data-role="sh-bar"]::-webkit-scrollbar { display: none; }
+[data-role="sh-bar"] button { flex-shrink: 0; max-width: 190px; overflow: hidden; }
+/* menus and the picker float over everything (the native views are hidden while they are open) */
+[data-role="sh-menu"], [data-role="sh-pick"] { position: fixed; z-index: 130; background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .55); outline: none; }
+[data-role="sh-menu"] { min-width: 210px; padding: 4px 0; display: flex; flex-direction: column; }
+[data-role="sh-menu"] button { display: flex; justify-content: space-between; gap: 18px; padding: 7px 14px; background: none; border: 0; color: var(--mv-text); font: 12.5px var(--mv-sans); text-align: left; cursor: pointer; }
+[data-role="sh-menu"] button:hover:not([disabled]) { background: var(--mv-raised); }
+[data-role="sh-menu"] button[disabled] { color: var(--mv-faint); cursor: default; }
+[data-role="sh-menu"] button.back { color: var(--mv-dim); font: 11px var(--mv-mono); }
+[data-role="sh-menu"] .k { color: var(--mv-faint); font: 11px var(--mv-mono); }
+[data-role="sh-menu"] hr { border: 0; border-top: 1px solid var(--mv-line); margin: 4px 0; }
+[data-role="sh-pick"] { width: min(460px, 92vw); max-height: min(560px, 80vh); display: flex; flex-direction: column; }
+[data-role="sh-pick-input"] { flex: 0 0 auto; margin: 0; padding: 12px 14px; background: var(--mv-bg); border: 0; border-bottom: 1px solid var(--mv-line); color: var(--mv-text);
+  font: 14px var(--mv-sans); outline: none; }
+[data-role="sh-pick-list"] { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 4px 0; }
+[data-role="sh-pick-list"] .grp { padding: 8px 14px 3px; font: 10.5px var(--mv-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mv-dim); }
+[data-role="sh-pick-list"] button { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 5px 14px; background: none; border: 0;
+  color: var(--mv-text); font: 13px var(--mv-sans); text-align: left; cursor: pointer; }
+[data-role="sh-pick-list"] button[data-sel="1"] { background: var(--mv-accent-soft); }
+[data-role="sh-pick-list"] button.ext .t { color: var(--mv-dim); }
+[data-role="sh-pick-list"] .ic { font: 600 10px var(--mv-mono); font-style: normal; color: var(--mv-accent); border: 1px solid var(--mv-line-strong); height: 22px; display: flex; align-items: center; justify-content: center; }
+[data-role="sh-pick-list"] .k { color: var(--mv-faint); font: 10.5px var(--mv-mono); }
+[data-role="sh-pick-list"] .none { padding: 14px; color: var(--mv-dim); }
+[data-role="sh-pick"] .hint { flex: 0 0 auto; display: flex; justify-content: space-between; padding: 6px 14px; border-top: 1px solid var(--mv-line); color: var(--mv-faint); font: 10.5px var(--mv-mono); }
+
 [data-role="dock"] { flex: 0 0 var(--dk-dock); height: var(--dk-dock); display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 0 104px; border-top: 1px solid var(--mv-line); background: var(--mv-panel-solid); }
 [data-role="dock"] .div { width: 1px; height: 32px; background: var(--mv-line-strong); margin: 0 6px; }
@@ -46,7 +134,9 @@
 [data-role="dock"] button:hover, [data-role="dock"] button:focus-visible { border-color: var(--mv-accent); outline: none; }
 [data-role="dock"] button[data-level="dev"] { border-style: dashed; color: var(--mv-dim); }
 [data-role="dock"] button[data-running="1"]::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 2px; margin-left: -7px; background: var(--mv-accent); }
-[data-role="dock"] button.win { width: auto; max-width: 150px; padding: 0 10px; font: 12px var(--mv-sans); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+[data-role="dock"] button.win { width: auto; max-width: 150px; min-width: 48px; flex: 0 1 auto; padding: 0 10px; font: 12px var(--mv-sans); overflow: hidden; white-space: nowrap; }
+/* a button box centres its content and ignores text-overflow, so a squeezed label lost both ends: the span carries the ellipsis */
+[data-role="dock"] button.win > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 [data-role="dock"] button.win[data-focus="1"] { border-color: var(--mv-accent); background: var(--mv-accent-soft); }
 
 /* the corner toggle (both views) and the level control */

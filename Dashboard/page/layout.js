@@ -140,6 +140,7 @@
     }
 
     document.addEventListener('keydown', e => {
+      if (document.body.dataset.sheet) return;                            // a Lap is in front (WP-46): its own keys, never the hidden tree's
       if (e.ctrlKey && e.altKey && /^Arrow(Left|Right|Up|Down)$/.test(e.key)) { e.preventDefault(); focusDir(e.key); }
       else if (e.ctrlKey && !e.altKey && !e.shiftKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); const id = focusedOrActive(); if (id) commit(lib.close(tree, id)); }
       else if (e.ctrlKey && !e.altKey && e.key === '\\') { e.preventDefault(); const id = focusedOrActive(); if (id) commit(lib.split(tree, id, e.shiftKey ? 'v' : 'h')); }

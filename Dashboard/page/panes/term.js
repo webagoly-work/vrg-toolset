@@ -67,6 +67,14 @@
   // ------------------------------------------------------------ the pane
   const el = (tag, role, text) => { const e = document.createElement(tag); if (role) e.dataset.role = role; if (text !== undefined) e.textContent = text; return e; };
   const libBase = () => new URL('../../../tools/js-libs/', document.baseURI).href;
+  // the Mélyvíz colours for xterm (the --mv-* tokens of shared/melyviz.css; xterm takes literal colours, not CSS variables)
+  const THEME = {
+    background: '#0a141c', foreground: '#e8f0f6', cursor: '#93d3e6', cursorAccent: '#0a141c',
+    selectionBackground: 'rgba(147, 211, 230, 0.32)', selectionInactiveBackground: 'rgba(147, 211, 230, 0.16)',
+    black: '#1b2a35', red: '#e4877d', green: '#8bcca1', yellow: '#e3be7b', blue: '#7fb2e6', magenta: '#c79be0', cyan: '#93d3e6', white: '#c9d3db',
+    brightBlack: '#646d74', brightRed: '#f0a49b', brightGreen: '#a9dcb9', brightYellow: '#f0d39b', brightBlue: '#a3c8ef', brightMagenta: '#d9b8ea',
+    brightCyan: '#b5e2ef', brightWhite: '#ffffff',
+  };
   const FALLBACK = () => ({ xterm: libBase() + 'xterm/lib/xterm.js', fit: libBase() + 'xterm-addon-fit/lib/addon-fit.js' });
 
   const loaded = {};
@@ -204,13 +212,17 @@
       this.id = r.term;
       this.root.dataset.term = r.term;
       this.fit(true);
-      this.term.focus();
+      // a terminal that comes up takes the keyboard, unless a Lap preset is holding it for another window (WP-46: Dev/Code opens three
+      // shells and wants the browser's search box; without this the last shell to start would win)
+      const held = W.VRGSheets && typeof W.VRGSheets.holding === 'function' ? W.VRGSheets.holding() : '';
+      if (!held || (this.root && this.root.closest('[data-win="' + held + '"]'))) this.term.focus();
     },
     build() {
       const term = this.term = new W.Terminal({
         scrollback: 10000, cursorBlink: true, allowProposedApi: false,
         fontFamily: 'Cascadia Mono, Consolas, monospace', fontSize: 13,
         windowsPty: { backend: 'conpty' },
+        theme: THEME,
       });
       this.fitAddon = new W.FitAddon.FitAddon();
       term.loadAddon(this.fitAddon);

@@ -39,6 +39,21 @@
   main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; padding: 18px 24px 40px; align-items: start; }
   @media (max-width: 1100px) { main { grid-template-columns: 1fr; } aside { order: -1; } }
   @media (max-width: 600px) { header, .bar, main { padding-left: 16px; padding-right: 16px; } .ro { margin-left: 0; } }
+  /* a small Lap tile (1 or 2 cells wide, WP-46): tighter, nothing wider than the tile */
+  @media (max-width: 520px) {
+    header, .bar, main { padding-left: 12px; padding-right: 12px; }
+    header { padding-top: 10px; padding-bottom: 10px; gap: 8px 14px; }
+    header h1 { font-size: 18px; } header h1 .en { font-size: 11.5px; }
+    .ro { gap: 6px 14px; } .ro div { min-width: 54px; } .ro b { font-size: 16px; }
+    .bar { padding-top: 8px; padding-bottom: 8px; gap: 6px; }
+    .bar input { min-width: 0; flex-basis: 100%; max-width: none; }
+    .bar .sep { display: none; }
+    main { padding-top: 12px; gap: 14px; }
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .lane > .hd .about { display: none; }
+    html.shell .wbar .wt, html.shell .wbar .rf i { display: none; }        /* the window's own header already says Kezdőlap */
+    html.shell .wbar .ports, html.shell .wbar .rf { white-space: nowrap; }
+  }
 
   h2 { margin: 0; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; }
   h2 .en { font-size: 12px; letter-spacing: .02em; }
@@ -98,7 +113,7 @@
 
   /* ---- D1: inside the Electron shell (html.shell) ---- */
   .wbar { display: none; }
-  html.shell .wbar { display: flex; align-items: stretch; height: 30px; -webkit-app-region: drag; user-select: none;
+  html.shell .wbar { display: flex; align-items: stretch; height: 30px; user-select: none;   /* no drag region: a drag in a tile must not move the Asztal */
     background: var(--mv-panel-solid); border-bottom: 1px solid var(--mv-line); position: sticky; top: 0; z-index: 7; }
   html.shell .bar { top: 30px; }
   html.shell aside { top: 96px; max-height: calc(100vh - 110px); }
@@ -190,9 +205,7 @@
   <span class="sp"></span>
   <span class="ports" id="ports" title="Futó helyi szerverek / local servers up"></span>
   <button class="rf" id="refresh" title="Adat újraolvasása / re-read the data">FRISSÍTÉS<i>refresh</i></button>
-  <button data-w="min" title="Kis méret / minimise">–</button>
-  <button data-w="max" title="Teljes méret / maximise">□</button>
-  <button data-w="close" class="x" title="Bezárás / close">✕</button>
+  <!-- no − □ ✕ here: the page lives in a view of the VRG Asztal (a tree pane or a Lap window), whose frame owns the window -->
 </div>
 <div id="toast"></div>
 <div id="tip"></div>
@@ -545,8 +558,6 @@ if (SHELL) {
   }, true);
   // a link without an act id goes nowhere in the shell (the main process denies new windows)
   document.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a && !a.dataset.act) e.preventDefault(); });
-  $('#wbar').addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (b) window.vrg.win(b.dataset.w); });
-  $('#wbar').addEventListener('dblclick', e => { if (!e.target.closest('button')) window.vrg.win('max'); });
   $('#refresh').addEventListener('click', () => { $('#refresh').classList.add('busy'); window.vrg.refresh(); });
   window.vrg.onPorts(showPorts);
   window.vrg.ports().then(showPorts);

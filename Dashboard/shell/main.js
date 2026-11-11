@@ -24,6 +24,7 @@ const settings = require('./lib/settings.js');
 const { createSecrets } = require('./lib/secrets.js');
 
 const layoutLib = require('./lib/layout.js');
+const sheetsLib = require('./lib/sheets.js');
 const { createViews } = require('./lib/views.js');
 const { createPalette, loadKeymap } = require('./lib/palette.js');
 const quickLib = require('./lib/quick.js');
@@ -41,7 +42,7 @@ const TMP = path.join(os.tmpdir(), 'VRG');
 if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');       // the selftest never touches the real home (CONTRACT §4.9)
 const secrets = createSecrets({ safeStorage });                                  // main-only: no IPC reaches it
 // a selftest always starts from the default layout: panes a previous test run saved (terminal panes re-open as new sessions) must not start anything
-if (SELFTEST) { try { settings.set('layout.tree', null); } catch (e) {} }
+if (SELFTEST) { try { settings.set('layout.tree', null); } catch (e) {} try { settings.set('desk.sheets', null); } catch (e) {} }   // … and no Lapok (WP-46)
 // --start windows: boot straight into the Desktop view with its windows shown (the workbench the Irányítópult opened before the
 // Desktop views, U5). The selftest probes written before them (WP-03 … WP-35) test that workbench, so they start there too.
 const argVal = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
@@ -108,6 +109,20 @@ function currentTree() {
   let t = null;
   try { t = settings.get('layout.tree'); } catch (e) {}
   return { tree: t && layoutLib.validate(t).ok ? t : layoutLib.defaultTree() };
+}
+// the Lapok (WP-46) live in desk.sheets (null = none yet). A view-backed pane may sit in the tree or on a Lap, so "is it still open"
+// is asked of both (livePanes): the Kezdőlap's view and the in-shell apps' views go only when neither holds their pane any more.
+function currentSheets() {
+  let d = null;
+  try { d = settings.get('desk.sheets'); } catch (e) {}
+  return d && sheetsLib.validate(d).ok ? d : sheetsLib.empty();
+}
+const livePanes = () => [...layoutLib.panes(currentTree().tree), ...sheetsLib.wins(currentSheets())];
+function pruneViews() {
+  const all = livePanes();
+  if (!all.some(p => p.kind === 'home') && views.has('home')) views.destroy('home');                        // the pane closed: its view goes
+  const apps = new Set(all.filter(p => p.kind === 'app' && p.state && typeof p.state.id === 'string').map(p => 'app:' + p.state.id));
+  for (const v of views.ids()) if (/^app:/.test(v) && !apps.has(v)) views.destroy(v);   // an app pane closed: its view goes (WP-43)
 }
 
 function setupShell() {
@@ -209,10 +224,24 @@ ipc.register('layout', 'set', { tree: types.json(65536) }, async ({ tree }) => {
   const v = layoutLib.validate(tree);
   if (!v.ok) return { ok: false, err: 'bad-request', hu: 'Érvénytelen elrendezés.' };
   settings.set('layout.tree', tree);
-  const homes = layoutLib.panes(tree).some(p => p.kind === 'home');
-  if (!homes && views.has('home')) views.destroy('home');                        // the pane closed: its view goes
-  const apps = new Set(layoutLib.panes(tree).filter(p => p.kind === 'app' && p.state && typeof p.state.id === 'string').map(p => 'app:' + p.state.id));
-  for (const v of views.ids()) if (/^app:/.test(v) && !apps.has(v)) views.destroy(v);   // an app pane closed: its view goes (WP-43)
+  pruneViews();
+  return {};
+});
+// the Lapok (WP-46): the whole doc in one call each way, checked by lib/sheets.js; the presets come from config/sheets.json
+const sheetPresets = () => {
+  try {
+    const j = JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', 'sheets.json'), 'utf8'));
+    const core = p => Object.assign({ id: p.id, name: p.name, wins: p.wins }, p.focus === undefined ? {} : { focus: p.focus });
+    return (Array.isArray(j.presets) ? j.presets : []).map(p => Object.assign(core({ id: p.id, name: p.hu, wins: p.wins, focus: p.focus }), { en: p.en || '', level: p.level || 'user' }))
+      .filter(p => ['user', 'dev', 'all'].includes(p.level) && !sheetsLib.validPreset(core(p)));
+  } catch (e) { log('sheets.json: ' + e.message); return []; }
+};
+ipc.register('sheets', 'get', {}, async () => ({ doc: currentSheets(), presets: sheetPresets() }));
+ipc.register('sheets', 'set', { doc: types.json(262144) }, async ({ doc }) => {
+  const v = sheetsLib.validate(doc);
+  if (!v.ok) return { ok: false, err: 'bad-request', hu: 'Érvénytelen lapok (' + v.err + ').' };
+  settings.set('desk.sheets', doc);
+  pruneViews();
   return {};
 });
 ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord, y: coord, w: size, h: size }) }, async ({ viewId, rect }) => {
@@ -231,7 +260,7 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
   }
   if (viewId !== 'home') return { ok: false, err: 'bad-request', hu: 'Ismeretlen nézet.' };
   if (!views.has(viewId)) {
-    if (!layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) return { ok: false, err: 'not-found', hu: 'Nincs ilyen panel.' };
+    if (!livePanes().some(p => p.kind === 'home')) return { ok: false, err: 'not-found', hu: 'Nincs ilyen panel.' };
     views.createLocal(viewId);
   }
   return { ok: views.setBounds(viewId, rect) };
@@ -664,7 +693,8 @@ app.on('will-quit', () => presetsLib.stop());
 // a primary view, a frame tool. Settings desk.* are per user; auth.enabled is read here, never set by the page.
 const catalog = createCatalog({ file: path.join(REPO_DIR, 'launcher', 'vrg-catalog.json'), collect: () => R.C, kinds: layoutLib.KINDS });
 const isFile = f => { try { return require('fs').statSync(f).isFile(); } catch (e) { return false; } };
-const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile, realpath: p => require('fs').realpathSync.native(p) });
+const APP_ROOTS = [path.join(path.resolve(FULL_DIR), 'notes')];          // work folders whose pages may open in-shell too (the Thread Board, WP-46)
+const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile, realpath: p => require('fs').realpathSync.native(p), roots: APP_ROOTS });
 const deskKeymap = () => { try { return JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', 'keymap.json'), 'utf8')); } catch (e) { return {}; } };
 const deskSetting = (k, def) => { try { return settings.get(k); } catch (e) { return def; } };
 ipc.register('desktop', 'catalog', { level: types.enum('user', 'dev', 'all') }, async ({ level }) => {
@@ -764,8 +794,8 @@ ipc.register('desktop', 'open', { id: types.id }, async ({ id }) => {
   if (r.do === 'act') {
     if (r.app) {
       const owner = catalog.appOwner(id);
-      const t = owner && catalog.appTarget(owner, { repo: path.resolve(REPO_DIR), expand: s => R.expand(s) });
-      if (t && isFile(path.join(path.resolve(REPO_DIR), ...t.page.split('/')))) return { do: 'app', id: owner, title: catalog.get(owner).title.hu };
+      const t = owner && catalog.appTarget(owner, { repo: path.resolve(REPO_DIR), expand: s => R.expand(s), roots: APP_ROOTS });
+      if (t && isFile(path.join(t.root || path.resolve(REPO_DIR), ...t.page.split('/')))) return { do: 'app', id: owner, title: catalog.get(owner).title.hu };
     }
     if (SELFTEST) return { do: 'done', result: { ok: true, hu: 'teszt: ' + r.act, plan: r.act } };   // the selftest never starts anything
     return { do: 'done', result: await runActWithWorkspace(r.act) };

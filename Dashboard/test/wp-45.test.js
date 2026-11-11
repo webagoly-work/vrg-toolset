@@ -52,7 +52,7 @@ test('every folder is inside Full\\programs; the known folders keep their names;
 });
 
 test('the catalog has the Programok section at User level, and the Dashboard view always draws it', () => {
-  const cat = createCatalog({ file: path.join(REPO, 'launcher', 'vrg-catalog.json'), collect: () => build.collect(), kinds: KINDS });
+  const cat = createCatalog({ file: path.join(REPO, 'launcher', 'vrg-catalog.json'), collect: (snap => () => snap)(build.collect()), kinds: KINDS });   // one registry read, as main caches it
   cat.load();
   assert.deepEqual(cat.sections().programok, { hu: 'Programok', en: 'Programs', level: 'user' });
   const secs = D.sections(cat.listFor('user'), 'user', cat.sections(), cat.groups()).map(s => s.id);

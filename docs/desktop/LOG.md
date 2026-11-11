@@ -134,6 +134,61 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   computed CSS, ticking, refusals); wp-41 section lists updated. Live run into a temp folder: Everything, SumatraPDF, 7-Zip (sfx via
   the 7za bootstrap), CrystalDiskInfo, Rufus all installed and found.
 
+## WP-46 — Workspace: Lapok (Sheets) on a 4 × 4 grid (2026-11-11)
+
+- `Dashboard/shell/lib/sheets.js` (shared, pure): doc / sheet / window / preset model, validate, open (= full, tile = the clicked cell),
+  minimize (one cell) / maximize / restore, resizeTarget (edges between where they were and the pull, nearest free wins), moveTarget
+  (free, or a same-size swap), moveToSheet, view (covered under a full one), presets (fromPreset / savePreset). DESKU-Q23.
+- `Dashboard/page/sheets.js`: the layer (16 cells + windows by grid-area + a drag ghost), headers (tab, ▢/⧉, ▁, ✕, double-click,
+  right-click menu, drag), 8 grips, the picker (search + groups, URL → browser, cat items through desktop.open), the sheet bar (tabs,
+  ＋ presets, rename, save as preset, order, bar top / bottom, close with confirm), keys (Ctrl+Alt+↑/↓/←/→/N, Ctrl+W), save now for
+  structure / 600 ms for pane state.
+- `frame.js`: one pane host for tree and sheets (`VRGFrame.host`, owner tree|sheet), open / find / focus routed to the Lap in front,
+  rects from both, the tree prunes only its own panes. `layout.js`: no tree keys while a Lap is in front. `desk.js`: showWindows /
+  bars / dock / boot go through VRGSheets; `VRGDesk.apply`. `catalog.js`: listFor `win` (opens as a window).
+- Main: `desk.sheets` setting, IPC `sheets.get` (doc + presets) / `sheets.set`, `pruneViews()` over tree + sheets, `config/sheets.json`
+  (7 presets: Üres, Áttekintés, Iroda, Posta és web, Készlet és árak; Dev: Fejlesztés, Claude munka). wp-35 pinned channels 99 → 101.
+- Tests: `wp-46.test.js` (12); probe `shell/selftest/wp-46.js` — real input events: + menu, right-click picker, typed search + Enter,
+  double-clicks, corner drag to 2×2, header move / refused move, tabs ⇄ Munkapad, dock, saved doc, refused overlap, Iroda preset with
+  two app views measured inside their windows, a tree save that keeps them, full hides them, closing prunes them.
+- **Dev/Code preset (first showcase sheet, Dev level):** Jegyzet 2×2 (the dev-note pane stands in for VRG Jegyzetek, which is not built
+  yet: docs/notes), Thread Board 2×1, Claude Code (A) / Parancssor / PowerShell 1×1, a browser 2×3 on Google with the keyboard in its
+  search box. New: preset `focus` (index of the window that gets the keyboard; Mentés sablonként keeps it; `presetFocus`), the web
+  pane's `focusInput`. The Thread Board (`Full\notes\devlog\BOARD.html`) got START R → L and catalog `threadboard` (app act); the
+  vrg-app scheme serves a page from a work folder outside the repo (main's `APP_ROOTS` = `Full\notes`) with its own folder as the
+  root, nothing above it (DESKU-Q23 addendum). A preset's focus holds for up to 12 s (focusin + a 120 ms check of activeElement): terminals
+  focus themselves when their shell starts and would take the keyboard; a click or a key elsewhere ends the hold. A starting terminal
+  now asks first (`VRGSheets.holding()`) and does not take the keyboard from a held window; the timer is only the fallback (in a
+  background window Chromium throttles it to ~1 s, which made the probe fail 1 run in 3 before this).
+- **`Dashboard/page/panes.css` (new):** the inside of the Böngésző and Jegyzet panes in the Mélyvíz look, scoped by
+  `[data-pane][data-kind=…]` (the Lap window carries data-kind too): tab strip with an accent top line, the address bar (mono omni,
+  icon buttons, bordered panel buttons that light up for the open panel, tighter under 520 px by container query), find / ask bars,
+  panel lists; the Jegyzet form as a label grid whose text field fills the window, an accent Mentés. The same rules draw the "Mentés
+  fejlesztői jegyzetként" dialog. Web bar labels shortened (Szerverek, ↗ for the external browser; the full text is the tooltip).
+  Then **Fájlok** (the two sides with an accent top line on the active one, root tabs, a mono path, a sticky sortable header with
+  ▲/▼, dirs in accent, the cursor row with an accent edge, marked rows warm, size/date in mono, date and state dropped under 460 px,
+  status line, the F7/F2 ask bar docked at the bottom, menus) and **Git** (labelled sections, change-kind chips coloured by kind, the
+  diff in its own column from 760 px, an accent Commit, a warm Push, "main" warning bar; the h2 hidden as the window says Git).
+  Then **Posta** (account pills, search, list rows with unread dot / sender / mono date / two-line snippet, the open mail with an accent
+  edge, headers, attachments; the read box shows only while a mail view sits there), **Rétegverem** (search, hits, the cluster with
+  layer chips, budget meter ok/over, send buttons in accent), **chat** (thread list, user bubbles right in accent, answers left with a
+  warm edge, code in mono, chips, A/B, Küldés), **Hírek**, the **empty pane** (a grid of kinds), the **search panel**, the **Nézőke**
+  (line numbers, markdown), the **terminal bar** and xterm itself (`term.js` THEME: the Mélyvíz colours instead of black), the app box.
+  Every pane is now in the look; all checked as computed styles in the probe.
+- **Dock window buttons:** with many windows open the labels lost both ends ("ontextuscsoma"): a button centres its content and
+  ignores `text-overflow`. The label is now a span that carries the ellipsis ("Kontextu…"); the full name is the tooltip.
+  The probe's screenshots (`VRG_SHOTS` runs only) switch off background throttling, else the hidden window showed the previous Lap.
+- **Kezdőlap (`vrg-dashboard.html`)** in a tile: its own − □ ✕, the drag region and the double-click maximise are gone (the page
+  only ever runs in a view of the Asztal now; the frame owns the window); a ≤ 520 px layout for 1-2 cell tiles (no sideways scroll:
+  498 → 385 px at 1×1). The selftest only checks that `.wbar` exists; it still does.
+- **`VRGSheets.closeSheet(sid)`** (the tab menu's close, exposed). Found on the way: removing sheets by writing main's doc
+  (`vrg.sheets.set`) leaves the page's panes mounted, so a real `cmd` / `powershell` pty stayed alive and Electron's `app.exit()`
+  never returned (status 124 after 400 s; 16 s without terminals). The probes now close through the page; WP-15 had the same rule.
+  A selftest also starts with no Lapok (`desk.sheets` reset next to `layout.tree`), so one run's sheets cannot leak into the next.
+- **Catalog speed:** `listFor` read the registry (`collect()`) up to three times per item (resolve, the new `win`, children). It now
+  takes one snapshot per call and resolves each item once. Tests that pass an uncached `build.collect()` went from 36 s / 99 s to 6 s
+  each; the full `--all` run had crossed run.js's 5-minute limit. Main always passed a cached collect, so the app was not slowed. Tests +3; the probe opens Dev/Code with fake-claude and a 127.0.0.1 page for Google.
+
 ## WP-47 — Archívum: the Artifact Archive (2026-11-11)
 
 - `Archive/`: one container for every one-shot interactive HTML page Claude made. `index.json` (the source: title, created /

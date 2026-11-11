@@ -21,11 +21,11 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
 | open · user | 117 | 32 |
-| open · dev | 280 | 55 |
+| open · dev | 281 | 56 |
 | open · all | 24 | 1 |
-| internal | 69 | 0 |
-| roadmap | 46 | 5 |
-| **total** | **536** | **93** |
+| internal | 71 | 0 |
+| roadmap | 47 | 5 |
+| **total** | **540** | **94** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -100,6 +100,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `stack.orb` | Holo · *Holo* | view · graph visualization | `stack` | fejlesztes | live |
 | `stack.layers` | Rétegek · *Layers* | view · graph visualization | `stack` | fejlesztes | live |
 | `layer.l` | L · Vonaltérkép · *L · DevLog lines* | view · stack layer | `stack` | fejlesztes | live |
+| `threadboard` | Thread Board · *Thread Board* | view · dev threads | `stack` | fejlesztes | live |
 | `layer.a` | A · Vezérlőterem · *A · Control room* | view · stack layer | `stack` | fejlesztes | live |
 | `layer.u` | U · Futásnapló · *U · Run log* | view · stack layer | `stack` | fejlesztes | live |
 | `layer.r` | R · Commit-pixel · *R · Commit pixels* | view · stack layer | `stack` | fejlesztes | live |
@@ -164,17 +165,17 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
-| `feature module` | Feature module · Funkciómodul | unit | 18 |
+| `feature module` | Feature module · Funkciómodul | unit | 19 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 47 |
+| `module` | Module · Modul | unit | 48 |
 | `library` | Library · Könyvtár | unit | 1 |
-| `command` | Command · Parancs | unit | 93 |
+| `command` | Command · Parancs | unit | 94 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
 | `cli tool` | CLI tool · Parancssori eszköz | unit | 11 |
 | `service` | Service · Szolgáltatás | unit | 18 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
-| `registry` | Registry · Nyilvántartás | unit | 8 |
+| `registry` | Registry · Nyilvántartás | unit | 9 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 10 |
 | `document set` | Document set · Dokumentumcsomag | unit | 18 |
 | `runbook` | Runbook · Forgatókönyv | unit | 10 |
@@ -276,6 +277,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:R/N` | Rétegverem · Döntésnapló | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/M` | Rétegverem · Vonaltérkép | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/F` | Rétegverem · Futásnapló | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
+| `menu:proj:R/L` | Rétegverem · Thread Board | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/A` | Rétegverem · Archívum | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
 | `menu:proj:R/T` | Rétegverem · Telefonra | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/B` | Rétegverem · Újraépítés | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
@@ -450,7 +452,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feat:e8` | Site Pager + S3 projects | idea | roadmap |  | `dev:hw` | tier 5 idea in lane e: planned or an idea, not available yet |
 | `feat:k1` | VRG MindMap | application | open | user |  | is the catalog item `mindmap` |
 | `feat:k2` | Claude Code entry points | ai coding assistant · embedded terminal | open | dev | `dev:ai` | is the catalog item `claude-code` |
-| `feat:k3` | DevLog board + Thread Board | view · stack layer | open | dev | `stack` | is the catalog item `layer.l` |
+| `feat:k3` | DevLog board + Thread Board | view · dev threads | open | dev | `stack` | is the catalog item `threadboard` |
 | `feat:k4` | Idea timeline map | view · stack layer | open | user | `stack` | is the catalog item `layer.i` |
 | `feat:k5` | DevRep map | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |
 | `feat:k6` | Features map | view · stack layer | open | user | `stack` | is the catalog item `layer.f` |
@@ -517,6 +519,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashcfg:profiles` | Registry profiles.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:roots` | Registry roots.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:search` | Registry search.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
+| `dashcfg:sheets` | Registry sheets.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:web` | Registry web.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashlib:acts` | lib/acts.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:appscheme` | lib/appscheme.js | module | internal |  | `desktop` | internal code unit |
@@ -558,6 +561,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:selftest` | lib/selftest.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:selmenu` | lib/selmenu.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:settings` | lib/settings.js | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
+| `dashlib:sheets` | lib/sheets.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:textify` | lib/textify.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:tray` | lib/tray.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:views` | lib/views.js | module | internal |  | `desktop` | internal code unit |
@@ -633,6 +637,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `mobile:M14` | Gömb | feature module · companion app | open | dev | `mobile` | repo, CI, servers or knowledge on the phone |
 | `mobile:M16` | Kit | feature module · companion app | open | dev | `mobile` | repo, CI, servers or knowledge on the phone |
 | `mobile:M17` | Rétegverem | feature module · companion app | open | dev | `mobile` | repo, CI, servers or knowledge on the phone |
+| `mobile:M18` | Archívum | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M15` | Logó kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry · generated tool list | internal |  | `mobile` | the phone's tool list, generated |
 | `stack:commits` | VRG Commit-pixel | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |

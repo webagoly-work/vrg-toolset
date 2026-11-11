@@ -662,6 +662,18 @@
    "reason": "a build / test / serve action of START R, drawn behind stack"
   },
   {
+   "id": "menu:proj:R/L",
+   "name": "Rétegverem · Thread Board",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "stack",
+   "unit": "",
+   "reason": "a build / test / serve action of START R, drawn behind stack"
+  },
+  {
    "id": "menu:proj:R/A",
    "name": "Rétegverem · Archívum",
    "source": "vrg-menu",
@@ -2754,12 +2766,12 @@
    "name": "DevLog board + Thread Board",
    "source": "features",
    "type": "view",
-   "qualifier": "stack layer",
+   "qualifier": "dev threads",
    "scope": "open",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.l",
-   "reason": "is the catalog item `layer.l`"
+   "unit": "threadboard",
+   "reason": "is the catalog item `threadboard`"
   },
   {
    "id": "feat:k4",
@@ -3554,6 +3566,18 @@
    "reason": "settings data behind the VRG Asztal; edited through Beállítások, not opened"
   },
   {
+   "id": "dashcfg:sheets",
+   "name": "Registry sheets.json",
+   "source": "dashboard",
+   "type": "registry",
+   "qualifier": "config file",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "settings data behind the VRG Asztal; edited through Beállítások, not opened"
+  },
+  {
    "id": "dashcfg:web",
    "name": "Registry web.json",
    "source": "dashboard",
@@ -4044,6 +4068,18 @@
    "parent": "desktop",
    "unit": "settings",
    "reason": "is the catalog item `settings`"
+  },
+  {
+   "id": "dashlib:sheets",
+   "name": "lib/sheets.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
   },
   {
    "id": "dashlib:textify",
@@ -4944,6 +4980,18 @@
    "parent": "mobile",
    "unit": "",
    "reason": "repo, CI, servers or knowledge on the phone"
+  },
+  {
+   "id": "mobile:M18",
+   "name": "Archívum",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
   },
   {
    "id": "mobile:M15",

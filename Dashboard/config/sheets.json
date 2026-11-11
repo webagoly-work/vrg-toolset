@@ -1,0 +1,42 @@
+{
+  "about": "Lapok (WP-46): ready-made sheets for the + menu. A window is { open, state, c, r, w, h } on the 4 x 4 grid (c, r from 0; w, h in cells; tiles must not overlap). open = 'pane:<kind>' (home files term web mail stack chat note git feed) or 'cat:<catalog id>' (an item of launcher/vrg-catalog.json that opens as a window: an in-shell app, a server page, a pane). level = the lowest Szint the preset shows at. focus (optional) = the index in wins of the window that gets the keyboard when the sheet opens (a browser: its address / search box).",
+  "presets": [
+    { "id": "ures", "hu": "Üres lap", "en": "Blank sheet", "level": "user", "wins": [] },
+    { "id": "attekintes", "hu": "Áttekintés", "en": "Overview", "level": "user", "wins": [
+      { "open": "pane:home", "state": {}, "c": 0, "r": 0, "w": 3, "h": 3 },
+      { "open": "pane:feed", "state": {}, "c": 3, "r": 0, "w": 1, "h": 3 },
+      { "open": "pane:files", "state": {}, "c": 0, "r": 3, "w": 4, "h": 1 }
+    ] },
+    { "id": "iroda", "hu": "Iroda", "en": "Office", "level": "user", "wins": [
+      { "open": "cat:planner", "state": {}, "c": 0, "r": 0, "w": 3, "h": 4 },
+      { "open": "cat:calc-panel", "state": {}, "c": 3, "r": 0, "w": 1, "h": 2 },
+      { "open": "pane:files", "state": {}, "c": 3, "r": 2, "w": 1, "h": 2 }
+    ] },
+    { "id": "posta", "hu": "Posta és web", "en": "Mail and web", "level": "user", "wins": [
+      { "open": "pane:mail", "state": {}, "c": 0, "r": 0, "w": 2, "h": 4 },
+      { "open": "pane:web", "state": {}, "c": 2, "r": 0, "w": 2, "h": 4 }
+    ] },
+    { "id": "keszlet", "hu": "Készlet és árak", "en": "Stock and prices", "level": "user", "wins": [
+      { "open": "cat:inventory", "state": {}, "c": 0, "r": 0, "w": 2, "h": 4 },
+      { "open": "pane:web", "state": {}, "c": 2, "r": 0, "w": 2, "h": 4 }
+    ] },
+    { "id": "devcode", "hu": "Dev/Code", "en": "Dev/Code", "level": "dev", "focus": 1, "wins": [
+      { "open": "pane:note", "state": {}, "c": 0, "r": 0, "w": 2, "h": 2 },
+      { "open": "pane:web", "state": { "tabs": ["https://www.google.com/"], "active": 0 }, "c": 2, "r": 0, "w": 2, "h": 3 },
+      { "open": "cat:threadboard", "state": {}, "c": 0, "r": 2, "w": 2, "h": 1 },
+      { "open": "pane:term", "state": { "prof": "claude-a" }, "c": 0, "r": 3, "w": 1, "h": 1 },
+      { "open": "pane:term", "state": { "prof": "cmd" }, "c": 1, "r": 3, "w": 1, "h": 1 },
+      { "open": "pane:term", "state": { "prof": "pwsh" }, "c": 2, "r": 3, "w": 1, "h": 1 }
+    ] },
+    { "id": "fejlesztes", "hu": "Fejlesztés", "en": "Development", "level": "dev", "wins": [
+      { "open": "pane:term", "state": { "prof": "pwsh" }, "c": 0, "r": 0, "w": 2, "h": 4 },
+      { "open": "pane:git", "state": {}, "c": 2, "r": 0, "w": 2, "h": 2 },
+      { "open": "pane:chat", "state": {}, "c": 2, "r": 2, "w": 2, "h": 2 }
+    ] },
+    { "id": "claude", "hu": "Claude munka", "en": "Claude work", "level": "dev", "wins": [
+      { "open": "pane:term", "state": { "prof": "claude-a" }, "c": 0, "r": 0, "w": 3, "h": 4 },
+      { "open": "pane:stack", "state": {}, "c": 3, "r": 0, "w": 1, "h": 2 },
+      { "open": "pane:files", "state": {}, "c": 3, "r": 2, "w": 1, "h": 2 }
+    ] }
+  ]
+}
