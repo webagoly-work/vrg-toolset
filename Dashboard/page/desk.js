@@ -74,7 +74,7 @@
   // ------------------------------------------------------------ opening: a catalog id → what main says to do
   function showWindows(on) {
     S.wsShown = !!on;
-    root.hidden = !on;
+    if (window.VRGSheets) window.VRGSheets.sync(!!on); else root.hidden = !on;   // a Lap in front (WP-46) or the split tree
     ground.hidden = !!on;
     relayout();
     drawDock();
@@ -338,6 +338,7 @@
   function drawTop() {
     top.textContent = '';
     for (const c of D.topStrip(S.items, S.top)) top.append(widget(c));
+    if (window.VRGSheets) window.VRGSheets.barInto(top, 'top');                // the Lap tabs (WP-46), when the bar sits on top
     top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Customise the top strip', onclick: openCustomize }, '⚙ Testreszabás'));
   }
   function running() {
@@ -360,8 +361,9 @@
     if (dk.running.length) {
       dockEl.append(h('span', { class: 'div' }));
       const foc = F && F.focused ? F.focused() : '';
-      for (const r of dk.running) dockEl.append(h('button', { type: 'button', class: 'win', 'data-pane': r.pane, 'data-focus': S.wsShown && r.pane === foc ? '1' : '', title: r.label, onclick: () => { setView('desktop'); showWindows(true); F.focus(r.pane); drawDock(); } }, r.label));
+      for (const r of dk.running) dockEl.append(h('button', { type: 'button', class: 'win', 'data-pane': r.pane, 'data-focus': S.wsShown && r.pane === foc ? '1' : '', title: r.label, onclick: () => { setView('desktop'); showWindows(true); F.focus(r.pane); drawDock(); } }, h('span', {}, r.label)));
     }
+    if (window.VRGSheets) { const before = dockEl.firstChild; window.VRGSheets.barInto(dockEl, 'bottom'); if (dockEl.firstChild !== before) dockEl.firstChild.after(h('span', { class: 'div' })); }
     dockEl.append(h('span', { class: 'div' }), h('button', { type: 'button', 'data-role': 'show-desktop', title: S.wsShown ? 'Asztal megjelenítése / Show desktop' : 'Ablakok / Show windows', onclick: () => showWindows(!S.wsShown) }, S.wsShown ? '▁' : '▣'));
   }
   async function pickSui(leaf) {
@@ -442,10 +444,12 @@
       const now = running(), was = S.panes || new Set();
       S.panes = new Set(now.map(r => r.pane));
       if (S.ready && now.some(r => !was.has(r.pane)) && (S.view !== 'desktop' || !S.wsShown)) { setView('desktop'); showWindows(true); return; }
-      if (S.wsShown && !now.length) showWindows(false);
+      if (S.wsShown && !now.length && !(window.VRGSheets && window.VRGSheets.on())) showWindows(false);   // an empty Lap stays: it is where things open
       drawDock();
     }, 120); })
       .observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-focus', 'data-active'] });
+    if (window.VRGSheets && window.VRGSheets.layer) new MutationObserver(() => { clearTimeout(S.mo2); S.mo2 = setTimeout(drawDock, 120); })
+      .observe(window.VRGSheets.layer, { childList: true, attributes: true, subtree: false, attributeFilter: ['data-focus'] });
     // double Tab in the frame page itself (main watches the other views): decided before Tab moves the focus, so a text field,
     // a terminal or a contenteditable at either tap keeps its Tab; the second tap is consumed when it toggles
     let tapAt = -Infinity, tapEd = false;
@@ -498,8 +502,9 @@
     }
     try { S.ports = (vrg && vrg.ports && await vrg.ports()) || {}; } catch (e) {}
     await loadCatalog();
+    if (window.VRGSheets) await window.VRGSheets.ready;                  // the Lapok are mounted before the first draw (WP-46)
     hookEvents();
-    showWindows(S.start === 'windows' || running().some(r => r.kind !== 'home'));
+    showWindows(S.start === 'windows' || running().some(r => r.kind !== 'home') || !!(window.VRGSheets && window.VRGSheets.on()));
     S.panes = new Set(running().map(r => r.pane));
     render();
     await advance('splash');
@@ -509,7 +514,7 @@
     view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows,
     get sui() { return S.sui; }, get stack() { return S.stack; },
     state: () => ({ view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
-    openSettings, openCustomize, advance,
+    openSettings, openCustomize, advance, apply: applyOpen, drawDock,
   };
   if (stage && dash && desk) boot();
 })();

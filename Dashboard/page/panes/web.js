@@ -68,10 +68,10 @@
       this.omni.spellcheck = false; this.omni.autocomplete = 'off';
       this.star = btn('web-bookmark', '☆', 'Könyvjelző');
       this.zoomLabel = el('span', 'web-zoom', '100%'); this.zoomLabel.title = 'Nagyítás';
-      this.mailBtn = btn('web-mail', 'Posta', 'Webmail (Gmail, Outlook)');
-      this.serversBtn = btn('web-servers', 'Helyi szerverek', 'Local servers');
-      this.historyBtn = btn('web-history', 'Előzmények', 'History and bookmarks');
-      this.extBtn = btn('web-external', 'Megnyitás külső böngészőben', 'Open in the external browser');
+      this.mailBtn = btn('web-mail', 'Posta', 'Posta — webmail (Gmail, Outlook)');
+      this.serversBtn = btn('web-servers', 'Szerverek', 'Helyi szerverek / Local servers');
+      this.historyBtn = btn('web-history', 'Előzmények', 'Előzmények és könyvjelzők / History and bookmarks');
+      this.extBtn = btn('web-external', '↗', 'Megnyitás külső böngészőben / Open in the external browser');
       bar.append(this.back, this.fwd, this.reload, this.omni, this.star, this.zoomLabel, this.mailBtn, this.serversBtn, this.historyBtn, this.extBtn);
 
       const find = this.findBar = el('div', 'web-find'); find.hidden = true;
@@ -196,6 +196,8 @@
       this.drawAll();
     },
     newTab() { this.openTarget('https://www.google.com/').then(v => { if (v) this.omni.focus(); }); },
+    // the Lapok focus a window through this (WP-46): the address / search box, so typing searches at once
+    focusInput() { if (this.omni) { this.omni.focus(); this.omni.select(); } },
     closeTab(view) {
       const i = this.tabs.findIndex(t => t.view === view);
       if (i < 0) return;

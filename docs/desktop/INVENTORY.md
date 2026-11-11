@@ -5,9 +5,9 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 154 |
+| START registry (launcher/vrg-menu.json) | 155 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 84 |
+| VRG Irányítópult (Dashboard/) | 86 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 19 |
 | VRG Stack | 23 |
@@ -18,9 +18,9 @@
 | Shared libraries | 4 |
 | Docs packs + GO phrases | 24 |
 | Top-level folders + launcher parts | 25 |
-| **Total** | **534** |
+| **Total** | **537** |
 
-## START registry (launcher/vrg-menu.json) (154)
+## START registry (launcher/vrg-menu.json) (155)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -79,6 +79,7 @@
 | `menu:proj:R/N` | Rétegverem · Döntésnapló | START R N · {stack}\decisions.html | start.action | projects/R | minden nyitott kérdés egy listában, A/B/C prompttal (Q réteg) |
 | `menu:proj:R/M` | Rétegverem · Vonaltérkép | START R M · {stack}\metro.html | start.action | projects/R | a DevLog vonalai metróként, csendes szakaszokkal (L réteg) |
 | `menu:proj:R/F` | Rétegverem · Futásnapló | START R F · {stack}\runs.html | start.action | projects/R | a futások naponta, párhuzamos sávokon (U réteg) |
+| `menu:proj:R/L` | Rétegverem · Thread Board | START R L · {full}\notes\devlog\BOARD.html | start.action | projects/R | minden szál: mi épült már meg és mi még nem (DevLog) |
 | `menu:proj:R/T` | Rétegverem · Telefonra | START R T · {node} Mobile/stack/publish-stack.js --push | start.action | projects/R | stack-pages: a VRG Mobile Rétegverem |
 | `menu:proj:R/B` | Rétegverem · Újraépítés | START R B · {node} stack.js build | start.action | projects/R | stack.js build |
 | `menu:proj:R/D` | Rétegverem · Doktor | START R D · {node} stack.js doctor | start.action | projects/R | stack.js doctor |
@@ -289,7 +290,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (84)
+## VRG Irányítópult (Dashboard/) (86)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -329,6 +330,7 @@
 | `dashcfg:profiles` | Registry profiles.json | Dashboard/config/profiles.json | config registry | config | 6 entries |
 | `dashcfg:roots` | Registry roots.json | Dashboard/config/roots.json | config registry | config | 7 entries |
 | `dashcfg:search` | Registry search.json | Dashboard/config/search.json | config registry | config | 4 entries |
+| `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 8 entries |
 | `dashcfg:web` | Registry web.json | Dashboard/config/web.json | config registry | config | 3 entries |
 | `dashlib:acts` | lib/acts.js | Dashboard/shell/lib/acts.js | module | shell/lib | acts.js — act ids → registry items (the allow-list) and what an act does. |
 | `dashlib:appscheme` | lib/appscheme.js | Dashboard/shell/lib/appscheme.js | module | shell/lib | appscheme.js — the vrg-app:// scheme of the VRG Asztal (WP-43, DESKU-Q08): an in-shell HTML app gets a real origin, so its |
@@ -370,6 +372,7 @@
 | `dashlib:selftest` | lib/selftest.js | Dashboard/shell/lib/selftest.js | module | shell/lib | selftest.js — `--selftest`: load the page, plan every act without running it, write the result, quit. |
 | `dashlib:selmenu` | lib/selmenu.js | Dashboard/shell/lib/selmenu.js | module | shell/lib | selmenu.js — the selection menu (WP-19): select text anywhere, right-click, get Másolás · Belső keresés · Google · AI keresés · Claude oldalchat · ... |
 | `dashlib:settings` | lib/settings.js | Dashboard/shell/lib/settings.js | module | shell/lib | settings.js — per-user settings in <userDir>/settings.json, whitelisted keys only, written atomically (.tmp, rename). |
+| `dashlib:sheets` | lib/sheets.js | Dashboard/shell/lib/sheets.js | module | shell/lib | sheets.js — the Lapok (Sheets) of the VRG Asztal's workspace (WP-46): pure functions, shared by main (CommonJS) and the frame page |
 | `dashlib:textify` | lib/textify.js | Dashboard/shell/lib/textify.js | module | shell/lib | textify.js — HTML → readable text (WP-29). No DOM: a small tokenizer. Drops script / style / nav / footer (and head, svg, templates), |
 | `dashlib:tray` | lib/tray.js | Dashboard/shell/lib/tray.js | module | shell/lib | tray.js — the tray icon (WP-04): menu Ablak · Munka · Overlay · Frissítés · Kilépés, double-click shows the window. |
 | `dashlib:views` | lib/views.js | Dashboard/shell/lib/views.js | module | shell/lib | views.js — the view host: WebContentsViews that main places at the rect the frame page reports (WP-07). |

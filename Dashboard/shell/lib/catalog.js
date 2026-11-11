@@ -106,10 +106,10 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   const within = (it, level) => RANK[effectiveLevel(it)] <= RANK[level];
 
   // what hangs behind an item: catalog children, its START submenu actions, its servers (resolved from vrg-menu.json)
-  function children(id, level = 'all') {
+  function children(id, level = 'all', snap) {
     const it = get(id);
     if (!it) return null;
-    const C = collect() || {};
+    const C = snap || collect() || {};
     const items = cat.items.filter(x => x.parent === id && within(x, level)).map(x => x.id);
     const acts = [];
     if (it.devMenu && RANK[level] >= RANK.dev) {
@@ -125,21 +125,25 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   }
 
   // the items of `level` and below, each with its title, type, surfaces and (for dev / all) what hangs behind it
+  // does it open as an inner window (a pane, a server page in the browser pane, an in-shell app)? The Lapok picker lists these (WP-46)
+  const isWin = r => !!r && (r.do === 'pane' || r.do === 'web' || (r.do === 'act' && r.app));
+  function winOf(id) { return isWin(resolve(id)); }
   function listFor(level) {
     if (!LEVELS.includes(level)) level = 'user';
-    return cat.items.filter(it => within(it, level)).map(it => ({
+    const C = collect() || {};                                         // one registry snapshot for the whole list
+    return cat.items.filter(it => within(it, level)).map(it => { const r = resolve(it.id, C); return {
       id: it.id, hu: it.title.hu, en: it.title.en, type: it.type, qualifier: it.qualifier || '', label: typeLabel(cat.types, it),
       level: effectiveLevel(it), declared: it.level, parent: it.parent || '', group: it.group, sub: it.sub || '',
-      status: it.status, icon: it.icon || '', surfaces: { ...(it.surfaces || {}) }, opens: !!resolve(it.id), children: children(it.id, level),
-    }));
+      status: it.status, icon: it.icon || '', surfaces: { ...(it.surfaces || {}) }, opens: !!r, win: isWin(r), children: children(it.id, level, C),
+    }; });
   }
 
   // id → what main does: { do:'act', act, app? } | { do:'web', server, url } | { do:'pane', kind } | { do:'view', view, section? }
   //                     | { do:'frame', frame } | { do:'start', key } | null (nothing to open, or unknown)
-  function resolve(id) {
+  function resolve(id, snap) {
     const it = get(id);
     if (!it) return null;
-    const L = it.launch || {}, C = collect() || {};
+    const L = it.launch || {}, C = snap || collect() || {};
     if (L.act && C.startActs && C.startActs[L.act]) return { do: 'act', act: L.act, app: !!L.app };
     if (L.server) { const s = serverOf(C, L.server); return s ? { do: 'web', server: s.id, url: 'http://127.0.0.1:' + s.port + (L.path || s.open || '/') } : null; }
     if (L.pane && kinds.includes(L.pane)) return { do: 'pane', kind: L.pane };
@@ -152,7 +156,9 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
 
   // in-shell HTML app (DESKU-Q08): the page a START tool item points at, as a repo-relative path, and the folders vrg-app:// may serve
   //   → { page: 'Calculator/x.html', allow: ['Calculator/', 'shared/'] } | null.  repo = the repo root; expand = R.expand
-  function appTarget(id, { repo, expand }) {
+  // roots: work folders outside the repo whose pages may also open in-shell (main passes {full}\notes, WP-46). Such a page is served
+  // with its own folder as the root: { root, page: its file name, allow: [''] = everything under that folder, no shared/ }.
+  function appTarget(id, { repo, expand, roots = [] }) {
     const r = resolve(id);
     if (!r || r.do !== 'act' || !r.app) return null;
     const C = collect() || {};
@@ -160,7 +166,11 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
     if (!t || typeof t.path !== 'string' || !/\.html?$/i.test(t.path)) return null;
     const abs = path.resolve(expand(t.path));
     const rel = path.relative(path.resolve(repo), abs);
-    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+    const inside = (root, p) => { const x = path.relative(path.resolve(root), p); return !!x && !x.startsWith('..') && !path.isAbsolute(x); };
+    if (!inside(repo, abs)) {
+      if (!roots.some(root => inside(root, abs))) return null;
+      return { root: path.dirname(abs), page: path.basename(abs), allow: [''] };
+    }
     const page = rel.split(path.sep).join('/');
     const dir = page.includes('/') ? page.slice(0, page.lastIndexOf('/') + 1) : '';
     return { page, allow: dir ? [dir, 'shared/'] : [page, 'shared/'] };     // a page at the repo root is served alone (+ shared/)

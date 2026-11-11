@@ -234,6 +234,7 @@
             { "key": "N", "name": "Döntésnapló", "hint": "minden nyitott kérdés egy listában, A/B/C prompttal (Q réteg)", "path": "{stack}\\decisions.html" },
             { "key": "M", "name": "Vonaltérkép", "hint": "a DevLog vonalai metróként, csendes szakaszokkal (L réteg)", "path": "{stack}\\metro.html" },
             { "key": "F", "name": "Futásnapló", "hint": "a futások naponta, párhuzamos sávokon (U réteg)", "path": "{stack}\\runs.html" },
+            { "key": "L", "name": "Thread Board", "hint": "minden szál: mi épült már meg és mi még nem (DevLog)", "path": "{full}\\notes\\devlog\\BOARD.html" },
             { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
             { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
             { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },

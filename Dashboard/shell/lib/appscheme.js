@@ -2,7 +2,8 @@
 // localStorage works (file:// has a null origin and saving fails silently).
 //   vrg-app://<catalog id>/<repo-relative path>   e.g.  vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html
 // decide(url) serves a file only when the host is a catalog item that opens as an app, and the path, after normalising, lies in
-// that item's own folder or in shared/ (a page at the repo root is served alone). Dot-files and known secret names never.
+// that item's own folder or in shared/ (a page at the repo root is served alone). Dot-files and known secret names never. A page in a
+// work folder outside the repo (roots, e.g. Full/notes: the Thread Board, WP-46) is served from its own folder, nothing above it.
 // Pure decision (no Electron); main turns { ok, file } into a Response with net.fetch(file:).
 'use strict';
 const path = require('path');
@@ -17,16 +18,16 @@ const TYPES = {
 const SECRET = /(^|\/)(\.[^/]*|anonymise\.map\.json|[^/]*credentials[^/]*\.json|secrets\.bin|oauth-clients\.json|[^/]*\.pem|[^/]*\.key)$/i;
 
 // realpath (optional; main passes fs.realpathSync.native): a junction or symlink inside a served folder must not lead out of it
-function createAppScheme({ catalog, repo, expand, isFile, realpath }) {
+function createAppScheme({ catalog, repo, expand, isFile, realpath, roots = [] }) {
   const REPO = path.resolve(repo);
-  let realRepo = null;
+  const reals = new Map();                                              // root → its realpath, once
   function decide(url) {
     let u;
     try { u = new URL(String(url)); } catch (e) { return { ok: false, status: 400, why: 'bad url' }; }
     if (u.protocol !== 'vrg-app:') return { ok: false, status: 400, why: 'scheme' };
     if (u.port || u.username || u.password) return { ok: false, status: 400, why: 'port or user info' };   // another origin, same host
     const id = u.hostname;
-    const t = catalog.appTarget(id, { repo: REPO, expand });
+    const t = catalog.appTarget(id, { repo: REPO, expand, roots });
     if (!t) return { ok: false, status: 404, why: 'not an app' };
     let rel;
     try { rel = decodeURIComponent(u.pathname).replace(/^\/+/, ''); } catch (e) { return { ok: false, status: 400, why: 'bad path' }; }
@@ -35,22 +36,23 @@ function createAppScheme({ catalog, repo, expand, isFile, realpath }) {
     // secrets.bin), so such a name would slip past the rules below
     if (rel.includes('\0') || rel.includes(':') || rel.startsWith('\\\\')) return { ok: false, status: 403, why: 'path' };
     if (rel.split(/[\\/]/).some(seg => seg !== '.' && seg !== '..' && /[. ]$/.test(seg))) return { ok: false, status: 403, why: 'path' };
-    const abs = path.resolve(REPO, rel);
-    const back = path.relative(REPO, abs).split(path.sep).join('/');
-    if (!back || back.startsWith('..') || path.isAbsolute(back)) return { ok: false, status: 403, why: 'outside the repo' };
-    if (!t.allow.some(a => (a.endsWith('/') ? back.startsWith(a) : back === a))) return { ok: false, status: 403, why: 'outside the app folder' };
+    const ROOT = t.root ? path.resolve(t.root) : REPO;                   // a page from a work folder outside the repo (WP-46) has its own root
+    const abs = path.resolve(ROOT, rel);
+    const back = path.relative(ROOT, abs).split(path.sep).join('/');
+    if (!back || back.startsWith('..') || path.isAbsolute(back)) return { ok: false, status: 403, why: t.root ? 'outside the app folder' : 'outside the repo' };
+    if (!t.allow.some(a => a === '' || (a.endsWith('/') ? back.startsWith(a) : back === a))) return { ok: false, status: 403, why: 'outside the app folder' };
     if (SECRET.test(back)) return { ok: false, status: 403, why: 'never served' };
     if (!isFile(abs)) return { ok: false, status: 404, why: 'no such file' };
     if (realpath) {
       let real;
-      try { if (realRepo === null) realRepo = realpath(REPO); real = realpath(abs); } catch (e) { return { ok: false, status: 404, why: 'no such file' }; }
-      if (path.relative(realRepo, real).split(path.sep).join('/').toLowerCase() !== back.toLowerCase()) return { ok: false, status: 403, why: 'a link leads elsewhere' };
+      try { if (!reals.has(ROOT)) reals.set(ROOT, realpath(ROOT)); real = realpath(abs); } catch (e) { return { ok: false, status: 404, why: 'no such file' }; }
+      if (path.relative(reals.get(ROOT), real).split(path.sep).join('/').toLowerCase() !== back.toLowerCase()) return { ok: false, status: 403, why: 'a link leads elsewhere' };
     }
     return { ok: true, file: abs, type: TYPES[path.extname(abs).toLowerCase()] || 'application/octet-stream', id, page: t.page };
   }
   // the URL a view loads for catalog item `id` (its owner id), or '' when it is not an app
   function urlFor(id) {
-    const t = catalog.appTarget(id, { repo: REPO, expand });
+    const t = catalog.appTarget(id, { repo: REPO, expand, roots });
     return t ? 'vrg-app://' + id + '/' + t.page.split('/').map(encodeURIComponent).join('/') : '';
   }
   // a view of app `id` may stay on its own origin; anything else is refused (http(s) goes to the browser pane)

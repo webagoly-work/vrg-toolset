@@ -162,3 +162,21 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   same window, into `Full\programs\<dir>` (the dev category into `Full\programs\dev\<id>`). Installer, ISO and manual sources are
   never run: they stay ghosts that open the official download page, and count as installed once found. The START A list is unchanged.
 - B: install into a folder of the Dashboard's own. C: run vendor installers too (admin rights, outside the VRG folders).
+
+## DESKU-Q23 — The Workspace: Lapok (Sheets) on a 4 × 4 grid (the Founder, 2026-11-11; drawings `Full\_share\vrg-desktop-workspace1/2.png`)
+
+- **A (taken):** the Desktop area carries **Lapok**: each a 4 × 4 grid of windows; any pane kind, any catalog item that opens as a
+  window (an in-shell app, a server page, a pane) can be one. Opened = all 16 cells; double-click a full window's header (its upper-left
+  tab) = one cell; double-click a small window's header = full; drag an edge or corner = resize snapped to cells, stopping at
+  neighbours; drag the header = move (onto a same-size window = swap). Right-click a free cell (or its ＋) = the picker: a Kommand search
+  bar over everything (typed URL → browser), grouped list, non-window items marked ↗ and started as before. New sheets from presets
+  (`Dashboard/config/sheets.json`, level-filtered) or blank; a sheet saves as a preset of one's own. Tabs: top strip (default) or dock.
+  The split tree stays as the **Munkapad** tab, so nothing earlier changes when no Lap is in front.
+- Tiles never overlap; one full window per sheet, the others keep their tiles under it (native views of covered windows get a zero rect).
+  Windows of other sheets stay mounted (a terminal keeps its session). Main saves the doc (`desk.sheets`, checked by lib/sheets.js)
+  and prunes the Kezdőlap / app views by the tree AND the sheets.
+- B: free-floating windows (overlaps break native web/app views). C: replace the split tree (breaks saved workspaces, WP-34).
+- Addendum (2026-11-11, Dev/Code preset): an in-shell app may also be a page in a work folder **outside the repo** when that folder lies
+  under one of main's `APP_ROOTS` (today only `Full\notes`, for the Thread Board). Such a page is served with its own folder as the
+  origin's root (everything under it, nothing above, the secret-name rule and the link check as before; no `shared/`). A preset may
+  name the window that gets the keyboard (`focus`).

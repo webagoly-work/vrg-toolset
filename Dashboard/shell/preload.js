@@ -146,6 +146,10 @@ contextBridge.exposeInMainWorld('vrg', {
     server: id => call('desktop', 'server', { id }),
     cover: on => call('desktop', 'cover', { on: on === true }),
   },
+  sheets: {                                                                      // WP-46 Lapok: the whole doc each way, checked in main
+    get: () => call('sheets', 'get', {}),
+    set: doc => call('sheets', 'set', { doc }),
+  },
   programs: {                                                                    // WP-45 Programok; progress: vrg.on('jobs', 'update', cb), kind 'program'
     list: level => call('programs', 'list', level ? { level } : {}),
     install: ids => call('programs', 'install', { ids: Array.isArray(ids) ? ids : [] }),
