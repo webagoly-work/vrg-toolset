@@ -73,7 +73,7 @@ object Catalogue {
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",
-        "⌘", Group.WORK, Stage.BETA, "M8", setOf(Need.RELAY),
+        "⌘", Group.WORK, Stage.LIVE, "M8", setOf(Need.RELAY),
     )
     val INBOX = FeatureInfo(
         "inbox", "Értesítések", "PR, CI, új verzió, jegyzet és relé események egy helyen, telefonos értesítéssel.",
