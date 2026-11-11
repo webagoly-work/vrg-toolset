@@ -1,4 +1,4 @@
-// WP-46 probe (real Electron): the Archívum section of the Dashboard view and the archive app in-shell. At User the section lists the
+// WP-47 probe (real Electron): the Archívum section of the Dashboard view and the archive app in-shell. At User the section lists the
 // VRG entries first with the ice edge (computed style), Egyéb switches to the warm ones; a card opens the archive app on the Desktop
 // view at that entry (vrg-app://archive/…#<id>); the shell refuses a path-looking id. The add dialog is never opened (selftest).
 // VRG_SHOTS=<folder>: also writes archive-section.png and archive-app.png.

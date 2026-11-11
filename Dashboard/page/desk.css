@@ -151,7 +151,7 @@
 .prog[data-state="busy"] .mono { animation: prog-pulse 1.2s ease-in-out infinite; }
 .prog .bar { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--mv-accent); transition: width .3s; }
 @keyframes prog-pulse { 50% { opacity: .35; } }
-/* Archívum (WP-46): the Artifact Archive; ice diamond = VRG, warm = other projects */
+/* Archívum (WP-47): the Artifact Archive; ice diamond = VRG, warm = other projects */
 .arch-seg { display: inline-flex; } .arch-seg button { margin-left: -1px; }
 .prog-head .arch-seg button[aria-pressed="true"] { color: var(--mv-accent); border-color: var(--mv-accent); background: var(--mv-accent-soft); position: relative; }
 .archs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }

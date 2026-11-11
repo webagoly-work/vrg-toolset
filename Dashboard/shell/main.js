@@ -703,7 +703,7 @@ ipc.register('programs', 'folder', { id: progId }, async ({ id }) => {
   return { ok: true };
 });
 
-// Archívum (WP-46): the Artifact Archive, Archive/index.json + Archive/files/<id>.html (Archive/archive.js owns the format).
+// Archívum (WP-47): the Artifact Archive, Archive/index.json + Archive/files/<id>.html (Archive/archive.js owns the format).
 // list = the light fields for the Dashboard section; show = open the archive app at one entry (#<id>, or #<id>/open to run it);
 // add = main asks for the page with its own file dialog (the page never names a path), copies it into Archive/files and indexes it.
 const archiveLib = require(path.join(REPO_DIR, 'Archive', 'archive.js'));

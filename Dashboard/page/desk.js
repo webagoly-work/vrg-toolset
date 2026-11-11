@@ -296,7 +296,7 @@
     return [PG.box];
   }
 
-  // ------------------------------------------------------------ Archívum (WP-46): the Artifact Archive, VRG first, newest first
+  // ------------------------------------------------------------ Archívum (WP-47): the Artifact Archive, VRG first, newest first
   // vrg.archive.list() reads Archive/index.json in main; a card opens the archive app at that entry (archive.show → #<id>), ▶ runs the
   // page itself; Hozzáadás asks main for a file dialog (the page never names a path) with the note typed here.
   const AR = { items: [], scope: 'vrg', q: '', form: false, box: null };

@@ -62,7 +62,7 @@ Mobile/
                         (the publishing side: Mobile/city/publish-city.js, .github/workflows/mobile-city.yml)
     feature-net/        Hálózat (WP M7): links and tethering state, settings links, Helyi WiFi, usage watch, HID status,
                         the phone relay in NetService (connectedDevice foreground service)
-    feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-46) read from main, changed files only, the PC's own
+    feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```

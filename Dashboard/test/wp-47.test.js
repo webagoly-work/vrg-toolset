@@ -1,4 +1,4 @@
-// WP-46 Archívum: the Artifact Archive (Archive/archive.js + Archive/index.json) and how the VRG Asztal reaches it: a catalog item
+// WP-47 Archívum: the Artifact Archive (Archive/archive.js + Archive/index.json) and how the VRG Asztal reaches it: a catalog item
 // that opens as an in-shell app on vrg-app://archive/, a Dashboard section shown at every level, the real index valid and VRG-first.
 // The add / build / stale round trip runs on a throwaway folder in %TEMP%, never on the real Archive.
 'use strict';

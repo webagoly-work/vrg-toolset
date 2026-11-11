@@ -153,7 +153,7 @@ contextBridge.exposeInMainWorld('vrg', {
     page: id => call('programs', 'page', { id }),
     folder: id => call('programs', 'folder', { id }),
   },
-  archive: {                                                                     // WP-46 Archívum: the Artifact Archive (Archive/index.json)
+  archive: {                                                                     // WP-47 Archívum: the Artifact Archive (Archive/index.json)
     list: () => call('archive', 'list', {}),
     show: (id, run) => call('archive', 'show', run ? { id, run: true } : { id }),
     add: meta => call('archive', 'add', { meta: meta && typeof meta === 'object' ? meta : {} }),

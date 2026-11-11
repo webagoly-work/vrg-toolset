@@ -27,7 +27,7 @@ const SOURCES = {
 const OTHERS = [
   { name: 'VRG Mobile', paths: ['Mobile/', 'docs/mobile/', 'GO-MOBILE.md', '.github/workflows/mobile-android.yml', '.github/workflows/mobile-release.yml'] },
   { name: 'VRG Kapu', paths: ['Hub/', 'docs/hub/', 'GO-HUB.md'] },
-  { name: 'Archívum', paths: ['Archive/'] },   // the Artifact Archive (Desktop WP-46, Mobile M18): START R -> A, no own key
+  { name: 'Archívum', paths: ['Archive/'] },   // the Artifact Archive (Desktop WP-47, Mobile M18): START R -> A, no own key
 
   { name: 'BRIDGE', paths: ['BRIDGE/'] },
   { name: 'Firmware', paths: ['Firmware/'] },

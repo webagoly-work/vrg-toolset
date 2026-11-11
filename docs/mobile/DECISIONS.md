@@ -200,7 +200,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Details: `WP/M7.md`.
 
 - **D-13 · Archívum on the phone (M18), 2026-11-11.** The Founder asked for the Artifact Archive in VRG Desktop and
-  VRG Mobile; the Desktop part is WP-46 (DESKU-Q23). Decided without a question (the brief said to follow the pattern
+  VRG Mobile; the Desktop part is WP-47 (DESKU-Q24). Decided without a question (the brief said to follow the pattern
   Mobile already uses and keep the Archive folder as the one source): **the phone reads `Archive/` from `main`
   through the contents API**, like Haladás reads `Mobile/catalogue/tools.json`. Unlike M5 / M17 there is nothing to
   build or bundle: the folder is already in the repo, its viewer already lays itself out for a phone, so no publish
