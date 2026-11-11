@@ -1,0 +1,984 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Felszín és gépház</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: control rail · device stage · engine room. The surface sits in the middle; the machinery is on the right. */
+:root{
+  --bg:#0a141c; --horizon:#11202b; --panel:#121c24; --raised:#17232c;
+  --line:rgba(232,240,246,.15); --line2:rgba(232,240,246,.34);
+  --text:#e8f0f6; --dim:#a6afb7; --faint:#6f7880;
+  --accent:#93d3e6; --accent-soft:rgba(147,211,230,.14); --on-accent:#0a141c;
+  --warm:#e8a873; --warm-soft:rgba(232,168,115,.16);
+  --ok:#8bcca1; --warn:#e3be7b; --crit:#e4877d; --bezel:#05090c;
+  /* Ismerős phone skin (follows the theme) */
+  --i-bg:#000; --i-cell:#1c1c1e; --i-text:#fff; --i-dim:#8d8d93; --i-sep:#38383a; --i-accent:#ffd60a; --i-fill:#2c2c2e; --i-dim2:rgba(255,214,10,.16);
+  /* Alap phone skin (Mélyvíz, a single dark look on purpose) */
+  --a-bg:#0a141c; --a-panel:#121c24; --a-raised:#17232c; --a-line:rgba(232,240,246,.15); --a-text:#e8f0f6; --a-dim:#a6afb7; --a-accent:#93d3e6; --a-warm:#e8a873; --a-on:#0a141c;
+  --voice:Bahnschrift,"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --mono:"Cascadia Mono","JetBrains Mono",Consolas,ui-monospace,monospace;
+  --sans:"Segoe UI",system-ui,sans-serif;
+  --ios:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  --cut:7px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eaeff2; --horizon:#dde5ea; --panel:#ffffff; --raised:#f3f6f8;
+    --line:rgba(10,20,28,.14); --line2:rgba(10,20,28,.32);
+    --text:#0f1a22; --dim:#4b5862; --faint:#7f8a93;
+    --accent:#1d7891; --accent-soft:rgba(29,120,145,.12); --on-accent:#ffffff;
+    --warm:#a75e22; --warm-soft:rgba(167,94,34,.12);
+    --ok:#2c8150; --warn:#8f6512; --crit:#b3443a; --bezel:#1d2328;
+    --i-bg:#f2f2f7; --i-cell:#ffffff; --i-text:#000; --i-dim:#8a8a8e; --i-sep:#c6c6c8; --i-accent:#b98a00; --i-fill:#e3e3e8; --i-dim2:rgba(185,138,0,.13);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#eaeff2; --horizon:#dde5ea; --panel:#ffffff; --raised:#f3f6f8;
+  --line:rgba(10,20,28,.14); --line2:rgba(10,20,28,.32);
+  --text:#0f1a22; --dim:#4b5862; --faint:#7f8a93;
+  --accent:#1d7891; --accent-soft:rgba(29,120,145,.12); --on-accent:#ffffff;
+  --warm:#a75e22; --warm-soft:rgba(167,94,34,.12);
+  --ok:#2c8150; --warn:#8f6512; --crit:#b3443a; --bezel:#1d2328;
+  --i-bg:#f2f2f7; --i-cell:#ffffff; --i-text:#000; --i-dim:#8a8a8e; --i-sep:#c6c6c8; --i-accent:#b98a00; --i-fill:#e3e3e8; --i-dim2:rgba(185,138,0,.13);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--sans);font-size:14px;line-height:1.45}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding-block:18px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:16px}
+.brand h1{font-family:var(--voice);font-stretch:75%;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:30px;line-height:1;margin:0;text-wrap:balance}
+.brand p{margin:6px 0 0;color:var(--dim);max-width:62ch}
+.lab{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--dim)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line2)}
+.seg button{padding:6px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:290px minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:1180px){.grid{grid-template-columns:280px minmax(0,1fr)}.engine{grid-column:1/-1}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);padding:14px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%);min-width:0}
+.panel h2{font-family:var(--voice);font-stretch:75%;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:17px;margin:0 0 4px}
+.panel .sub{color:var(--dim);font-size:12.5px;margin:0 0 12px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.hint{font-size:12px;color:var(--dim)}
+/* the big switch */
+.snap{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line2);background:var(--raised);width:100%;text-align:left}
+.snap .knob{flex:none;width:46px;height:26px;border:1px solid var(--line2);position:relative;background:var(--bg)}
+.snap .knob::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--faint);transition:transform .18s,background .18s}
+.snap[aria-pressed="true"] .knob{background:var(--accent-soft);border-color:var(--accent)}
+.snap[aria-pressed="true"] .knob::after{transform:translateX(20px);background:var(--accent)}
+.snap b{font-family:var(--voice);font-stretch:75%;font-size:18px;letter-spacing:.05em;text-transform:uppercase;display:block}
+.snap span.h{font-size:12px;color:var(--dim)}
+.feats{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.feat{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.feat .box{width:16px;height:16px;border:1px solid var(--line2);display:grid;place-items:center}
+.feat[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.feat[aria-pressed="true"] .box::after{content:"";width:8px;height:4px;border:2px solid var(--on-accent);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.feat .nm{font-weight:600;font-size:13px;min-width:0}
+.feat .ds{grid-column:2/4;font-size:11.5px;color:var(--dim)}
+.feat .ft{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line2);padding:1px 5px;white-space:nowrap}
+.feat:disabled{cursor:not-allowed}
+.feat:disabled .nm,.feat:disabled .ds{opacity:.45}
+.feat:disabled .ft{color:var(--faint)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line2);padding:7px 11px;font-size:12.5px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.budget{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;font-size:12.5px}
+.budget .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.budget .v.ok{color:var(--ok)} .budget .v.over{color:var(--crit)}
+.check{margin-top:10px;padding:8px 10px;border:1px solid var(--line);font-size:12.5px;display:flex;gap:8px;align-items:flex-start}
+.check i{font-style:normal;font-family:var(--mono);flex:none}
+.check.ok i{color:var(--ok)} .check.info i{color:var(--accent)} .check.bad i{color:var(--crit)}
+/* stage */
+.stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 12px;background:linear-gradient(180deg,var(--horizon),var(--bg));border:1px solid var(--line);min-width:0}
+.stage .note-l{font-size:12px;color:var(--dim);text-align:center;max-width:60ch}
+.phone{width:100%;max-width:372px;height:760px;border-radius:46px;background:var(--bezel);padding:11px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;display:flex;flex-direction:column}
+.sbar{height:40px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-size:13px;font-weight:600;position:relative}
+.sbar .island{position:absolute;left:50%;top:9px;transform:translateX(-50%);width:104px;height:28px;border-radius:16px;background:#000}
+.sbar .sig{display:flex;gap:5px;align-items:center}
+.sbar .bat{width:22px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative;opacity:.9}
+.sbar .bat::after{content:"";position:absolute;inset:1.5px 5px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.ico{width:22px;height:22px;display:block}
+.ico.s{width:17px;height:17px}
+.pcscroll{width:100%;overflow-x:auto}
+/* ---------- Ismerős skin ---------- */
+.ism{background:var(--i-bg);color:var(--i-text);font-family:var(--ios)}
+.ism .sbar{color:var(--i-text)}
+.i-nav{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:var(--i-accent)}
+.i-nav .back{display:flex;align-items:center;gap:2px;font-size:17px;color:var(--i-accent)}
+.i-nav .rt{display:flex;gap:16px;align-items:center}
+.i-nav button{color:var(--i-accent);font-size:17px}
+.i-scroll{flex:1;overflow-y:auto;padding:0 16px 16px}
+.i-large{font-size:32px;font-weight:700;letter-spacing:.01em;margin:2px 0 10px;line-height:1.1}
+.i-search{display:flex;align-items:center;gap:6px;background:var(--i-fill);border-radius:10px;height:36px;padding:0 8px;color:var(--i-dim);font-size:16px;width:100%;text-align:left;margin-bottom:6px}
+.i-search input{flex:1;min-width:0;background:none;border:0;font:inherit;color:var(--i-text);outline:none}
+.i-sec{font-size:20px;font-weight:700;margin:16px 4px 8px}
+.i-gh{font-size:13px;color:var(--i-dim);text-transform:uppercase;margin:16px 16px 6px;letter-spacing:.02em}
+.i-group{background:var(--i-cell);border-radius:11px;overflow:hidden}
+.i-row{display:flex;gap:10px;align-items:center;padding:10px 14px 10px 16px;position:relative;width:100%;text-align:left}
+.i-row+.i-row::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--i-sep)}
+.i-row .m{flex:1;min-width:0}
+.i-row .t{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.i-row .s{font-size:14px;color:var(--i-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.i-row .s b{color:var(--i-text);font-weight:400;opacity:.85;margin-right:6px}
+.i-row .thumb{width:44px;height:44px;border-radius:6px;flex:none}
+.i-frow{display:flex;align-items:center;gap:12px;padding:11px 14px 11px 16px;position:relative;width:100%;text-align:left;font-size:17px}
+.i-frow+.i-frow::before{content:"";position:absolute;top:0;left:52px;right:0;height:.5px;background:var(--i-sep)}
+.i-frow .fi{color:var(--i-accent)}
+.i-frow .n{flex:1;min-width:0}
+.i-frow .c{color:var(--i-dim)}
+.i-frow .chev{color:var(--i-sep)}
+.i-toolbar{height:50px;flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 16px 6px;color:var(--i-accent);border-top:.5px solid var(--i-sep);background:var(--i-bg)}
+.i-toolbar .r{justify-self:end;display:flex;gap:22px}
+.i-toolbar .l{display:flex;gap:22px}
+.i-toolbar .count{font-size:11px;color:var(--i-text)}
+.i-toolbar button{color:var(--i-accent)}
+.i-date{text-align:center;color:var(--i-dim);font-size:13px;margin:4px 0 10px}
+.i-title{font-size:23px;font-weight:700;margin:0 0 6px;line-height:1.2;display:flex;align-items:flex-start;gap:8px}
+.ism .nbody{font-size:17px;line-height:1.4}
+.ism .ck .bx{border-radius:50%;border-color:var(--i-dim)}
+.ism .ck.on .bx{background:var(--i-accent);border-color:var(--i-accent)}
+.ism .ck.on .bx::after{border-color:var(--i-cell)}
+.ism .ck.on .tx{color:var(--i-dim)}
+.ism .chip{background:var(--i-fill);color:var(--i-text);border-radius:999px}
+.ism .chip.sug{background:transparent;border:1.5px dashed var(--i-accent);color:var(--i-accent)}
+.ism .chip .q{color:var(--i-accent)}
+.ism .hintchip{background:var(--i-fill);border-radius:999px;color:var(--i-accent)}
+/* ---------- Alap skin (Mélyvíz) ---------- */
+.alap{background:var(--a-bg);color:var(--a-text);font-family:var(--sans)}
+.alap .sbar{color:var(--a-text)}
+.a-top{padding:6px 12px 8px;flex:none}
+.a-search{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;background:var(--a-raised);border:1px solid var(--a-line);color:var(--a-dim);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%);width:100%}
+.a-search input{flex:1;min-width:0;background:none;border:0;font:inherit;color:var(--a-text);outline:none}
+.a-search button{color:var(--a-text)}
+.a-scroll{flex:1;overflow-y:auto;padding:0 12px 90px}
+.a-h{display:flex;align-items:baseline;gap:8px;margin:6px 2px 4px;font-family:var(--voice);font-stretch:75%;font-weight:600;font-size:20px;letter-spacing:.05em;text-transform:uppercase}
+.a-h .n{font-family:var(--mono);font-size:11px;color:var(--a-dim);letter-spacing:.1em}
+.a-sec{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--a-dim);margin:14px 2px 6px}
+.a-card{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:10px 12px;background:var(--a-panel);border:1px solid var(--a-line);margin-bottom:6px}
+.a-card:hover{border-color:rgba(147,211,230,.5)}
+.a-card .m{flex:1;min-width:0}
+.a-card .t{font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-card .s{font-size:13px;color:var(--a-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-card .s b{font-family:var(--mono);font-weight:400;font-size:11.5px;color:var(--a-accent);margin-right:6px}
+.a-card .thumb{width:46px;height:46px;flex:none}
+.a-fab{position:absolute;right:18px;bottom:26px;width:58px;height:58px;background:var(--a-accent);color:var(--a-on);display:grid;place-items:center;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.a-bar{height:52px;flex:none;display:flex;align-items:center;gap:6px;padding:0 6px;color:var(--a-text)}
+.a-bar .sp{flex:1}
+.a-bar button{width:42px;height:42px;display:grid;place-items:center}
+.a-bar button.on{color:var(--a-accent)}
+.a-note .ttl{font-family:var(--sans);font-size:22px;font-weight:700;margin:2px 0 4px;line-height:1.25;display:flex;align-items:flex-start;gap:8px}
+.a-note .dt{font-family:var(--mono);font-size:11px;color:var(--a-dim);letter-spacing:.06em;margin-bottom:8px}
+.alap .nbody{font-size:15.5px;line-height:1.5}
+.alap .ck .bx{border-color:var(--a-dim)}
+.alap .ck.on .bx{background:var(--a-accent);border-color:var(--a-accent)}
+.alap .ck.on .bx::after{border-color:var(--a-on)}
+.alap .ck.on .tx{color:var(--a-dim);text-decoration:line-through}
+.alap .chip{border:1px solid rgba(232,240,246,.34);color:var(--a-text)}
+.alap .chip.sug{border-style:dashed;border-color:var(--a-accent);color:var(--a-accent)}
+.alap .chip .q{color:var(--a-accent)}
+.alap .hintchip{border:1px solid rgba(147,211,230,.5);color:var(--a-accent)}
+.a-insert{height:54px;flex:none;display:flex;align-items:center;gap:4px;padding:0 8px 6px;border-top:1px solid var(--a-line);background:var(--a-panel)}
+.a-insert button{width:44px;height:44px;display:grid;place-items:center;color:var(--a-text)}
+.a-insert .sp{flex:1}
+.a-insert .sv{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a-dim);padding-right:8px}
+.a-drawer{position:absolute;inset:0;z-index:30;display:flex}
+.a-drawer .pane{width:78%;background:var(--a-panel);border-right:1px solid var(--a-line);padding:54px 0 0;overflow-y:auto}
+.a-drawer .rest{flex:1;background:rgba(0,0,0,.5)}
+.a-drawer .dh{font-family:var(--voice);font-stretch:75%;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:18px;padding:0 18px 10px}
+.a-frow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 18px;color:var(--a-text)}
+.a-frow .n{flex:1}
+.a-frow .c{font-family:var(--mono);font-size:11px;color:var(--a-dim)}
+.a-frow.cur{background:rgba(147,211,230,.14);color:var(--a-accent)}
+.a-frow .fi{color:var(--a-dim)}
+/* shared phone pieces */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:3px 9px;line-height:1.3;white-space:nowrap}
+.chip.more{font-family:var(--mono);font-size:11px}
+.rchips{display:flex;gap:5px;margin-top:4px;flex-wrap:nowrap;overflow:hidden}
+.rchips .chip{font-size:11px;padding:1px 7px}
+.hints{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.hintchip{font-size:12.5px;padding:3px 10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--a-warm);flex:none;display:inline-block}
+.ism .dot{background:var(--i-accent)}
+.nbody p{margin:0 0 10px}
+.ck{display:flex;gap:10px;align-items:flex-start;margin:0 0 8px;width:100%;text-align:left}
+.ck .bx{width:20px;height:20px;border:1.5px solid;flex:none;margin-top:2px;display:grid;place-items:center}
+.ck.on .bx::after{content:"";width:9px;height:5px;border:2px solid;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.photo{height:150px;margin:2px 0 12px;position:relative;overflow:hidden;background:
+  linear-gradient(135deg,rgba(0,0,0,.25),rgba(0,0,0,0) 60%),
+  repeating-linear-gradient(90deg,#3d4a52 0 22px,#46545d 22px 24px),#3a464e}
+.ism .photo{border-radius:8px}
+.photo::before{content:"";position:absolute;left:16%;top:18%;width:68%;height:64%;background:repeating-linear-gradient(90deg,#d9dde0 0 9px,#9aa3a8 9px 11px);opacity:.75;box-shadow:0 0 0 6px #2a3237}
+.photo span{position:absolute;left:8px;bottom:6px;font-family:var(--mono);font-size:10.5px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px}
+.thumb{background:linear-gradient(135deg,rgba(0,0,0,.2),transparent),repeating-linear-gradient(90deg,#d9dde0 0 5px,#8f989d 5px 6px)}
+.empty{padding:40px 10px;text-align:center;color:var(--i-dim)}
+.alap .empty{color:var(--a-dim)}
+/* sheets inside the device */
+.sheetwrap{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.42)}
+.sheet{max-height:78%;overflow-y:auto;padding:8px 0 18px}
+.ism .sheet{background:var(--i-bg);border-radius:14px 14px 0 0}
+.alap .sheet{background:var(--a-panel);border-top:1px solid rgba(147,211,230,.5)}
+.sheet .grab{width:38px;height:5px;border-radius:3px;background:var(--i-sep);margin:4px auto 10px}
+.alap .sheet .grab{background:var(--a-line);border-radius:0}
+.sheet .sh{padding:0 18px 8px;font-weight:700;font-size:15px}
+.alap .sheet .sh{font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--a-dim)}
+.sheet .si{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 18px;font-size:16px}
+.ism .sheet .si{color:var(--i-text)}
+.ism .sheet .si .ic{color:var(--i-accent)}
+.alap .sheet .si .ic{color:var(--a-accent)}
+.sheet .si .tg{margin-left:auto;font-size:11px;font-family:var(--mono);opacity:.6}
+.sheet .si.feat-i .tg{opacity:1}
+.ism .sheet .si.feat-i .tg{color:var(--i-accent)}
+.alap .sheet .si.feat-i .tg{color:var(--a-accent)}
+.sheet .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 14px}
+.sheet .tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;font-size:12.5px;text-align:center}
+.ism .sheet .tile{background:var(--i-cell);border-radius:12px;color:var(--i-text)}
+.ism .sheet .tile .ic{color:var(--i-accent)}
+.alap .sheet .tile{background:var(--a-raised);border:1px solid var(--a-line)}
+.alap .sheet .tile .ic{color:var(--a-accent)}
+.sheet .tile.f{position:relative}
+.sheet .tile.f::after{content:"";position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.sheet .logi{padding:10px 18px;border-top:1px solid var(--i-sep);font-size:13.5px}
+.alap .sheet .logi{border-color:var(--a-line)}
+.sheet .logi .w{font-size:11px;opacity:.65;font-family:var(--mono)}
+.sheet .logi button{margin-top:4px;font-size:13px;text-decoration:underline}
+.visit{position:absolute;inset:0;z-index:45;display:flex;flex-direction:column}
+.ism .visit{background:var(--i-bg)} .alap .visit{background:var(--a-bg)}
+.visit .vh{display:flex;align-items:center;justify-content:space-between;padding:50px 16px 8px}
+.visit .vh b{font-size:18px}
+.visit .vs{padding:0 16px;font-size:13px;opacity:.7}
+.visit svg{flex:1;width:100%}
+.ism .visit .vh button{color:var(--i-accent);font-size:17px;font-weight:600}
+.alap .visit .vh button{color:var(--a-accent);font-family:var(--mono);text-transform:uppercase;font-size:12px;letter-spacing:.1em}
+.toast{position:absolute;left:14px;right:14px;bottom:76px;z-index:60;padding:10px 14px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.ism .toast{background:var(--i-cell);color:var(--i-text);border-radius:12px}
+.alap .toast{background:var(--a-raised);border:1px solid rgba(147,211,230,.5);color:var(--a-text)}
+/* PC window */
+.pc{width:100%;min-width:880px;height:600px;display:flex;flex-direction:column;background:var(--a-bg);color:var(--a-text);border:1px solid rgba(147,211,230,.35);position:relative;font-family:var(--sans);box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.pc-tb{height:40px;flex:none;display:flex;align-items:center;gap:14px;padding:0 0 0 14px;border-bottom:1px solid var(--a-line);background:var(--a-panel)}
+.pc-tb .nm{font-family:var(--voice);font-stretch:75%;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px}
+.pc-tb .srch{flex:1;max-width:340px;display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:1px solid var(--a-line);background:var(--a-raised);color:var(--a-dim);font-size:13px}
+.pc-tb .srch input{flex:1;min-width:0;background:none;border:0;font:inherit;color:var(--a-text);outline:none}
+.pc-tb .sp{flex:1}
+.pc-tb .st{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--a-dim);letter-spacing:.06em}
+.pc-tb .win{display:flex}
+.pc-tb .win span{width:44px;height:40px;display:grid;place-items:center;color:var(--a-dim);font-size:12px}
+.pc-body{flex:1;display:flex;min-height:0}
+.pc-side{width:200px;flex:none;border-right:1px solid var(--a-line);padding:10px 0;overflow-y:auto;background:var(--a-panel)}
+.pc-side .a-frow{padding:7px 14px;font-size:13.5px}
+.pc-list{width:300px;flex:none;border-right:1px solid var(--a-line);display:flex;flex-direction:column;min-height:0}
+.pc-lh{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--a-line)}
+.pc-lh .ttl{flex:1;font-family:var(--voice);font-stretch:75%;font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:15px}
+.pc-new{display:flex;border:1px solid rgba(147,211,230,.6)}
+.pc-new button{padding:5px 10px;color:var(--a-accent);font-size:12.5px;display:flex;align-items:center;gap:5px}
+.pc-new button+button{border-left:1px solid rgba(147,211,230,.6);padding:5px 6px}
+.pc-ls{flex:1;overflow-y:auto;padding:0 8px 10px}
+.pc-ls .a-card{padding:8px 10px}
+.pc-ls .a-card.cur{border-color:var(--a-accent);background:rgba(147,211,230,.08)}
+.pc-note{flex:1;display:flex;flex-direction:column;min-width:0}
+.pc-nb{height:40px;flex:none;display:flex;align-items:center;gap:2px;padding:0 8px;border-bottom:1px solid var(--a-line)}
+.pc-nb .sp{flex:1}
+.pc-nb button{width:34px;height:34px;display:grid;place-items:center;color:var(--a-text)}
+.pc-nb button.on{color:var(--a-accent)}
+.pc-nb .sv{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a-dim);padding:0 8px}
+.pc-nc{flex:1;overflow-y:auto;padding:18px 28px}
+.pc .sheetwrap{background:rgba(0,0,0,.35);justify-content:flex-start;align-items:flex-end;padding:44px 12px 0}
+.pc .sheet{width:300px;max-height:80%;border:1px solid rgba(147,211,230,.5)}
+/* engine room */
+.jobs{display:flex;flex-direction:column}
+.job{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.job .k{grid-column:1;font-size:11px;color:var(--faint);font-family:var(--mono);letter-spacing:.04em}
+.pill{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid}
+.pill.run{color:var(--ok)} .pill.pause{color:var(--warn)} .pill.off{color:var(--faint)}
+.log{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.le{border-left:2px solid var(--accent);padding:4px 0 4px 10px;font-size:12.5px}
+.le.u{border-color:var(--faint);opacity:.6}
+.le .w{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.le button{font-size:12px;color:var(--accent);text-decoration:underline;margin-top:2px}
+.le.u button{display:none}
+h3.mini{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:400;margin:16px 0 4px}
+/* rules view */
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.rule{background:var(--panel);border:1px solid var(--line);padding:12px 14px}
+.rule .id{font-family:var(--mono);color:var(--accent);font-size:11px;letter-spacing:.1em}
+.rule b{display:block;margin:2px 0 4px;font-size:14.5px}
+.rule p{margin:0;color:var(--dim);font-size:13px}
+.sect{margin-top:26px}
+.sect h2{font-family:var(--voice);font-stretch:75%;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:20px;margin:0 0 10px}
+.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:400}
+td code{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:4px}
+.foot code{border:1px solid var(--line);padding:0 4px}
+.twin{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.repo{margin-top:22px;color:var(--dim);font-size:13px}
+.repo code{font-family:var(--mono);color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="lab">VRG Jegyzetek · SIMPLE</div>
+      <h1 id="h-title">Felszín és gépház</h1>
+      <p id="h-sub"></p>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="View" id="viewseg"></div>
+      <div class="seg" role="group" aria-label="Language" id="langseg"></div>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+'use strict';
+const LS = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fold = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+
+/* ---------------- strings ---------------- */
+const T = {
+hu:{
+  title:'Felszín és gépház',
+  sub:'A VRG Jegyzetek egyszerű módja: egy sima jegyzetalkalmazás, amelynek a funkciói kijelölt helyeken jelennek meg vagy a háttérben dolgoznak. Egy kapcsoló mindig visszaviszi az alapra.',
+  vProto:'Prototípus', vRules:'Elvek',
+  simple:'Egyszerű mód', simpleOn:'Minden funkció rejtve, semmi sem törlődött. A védő feladatok futnak tovább.', simpleOff:'A funkciók csak a kijelölt helyeiken jelennek meg.',
+  look:'Megjelenés', alap:'Alap', ismeros:'Ismerős', lookAlap:'Android és Windows, Mélyvíz kinézet. Ez az alapértelmezés.', lookIsm:'iPhone-ról érkezőknek: ismerős elrendezés. Csak telefonon.',
+  beh:'Viselkedés', kezi:'Kézi', csendes:'Csendes', behKezi:'A gép azt teszi, amit kérsz; a csipeket te állítod be.', behCs:'A gép magától dolgozik: szaggatott csipként javasol, egy koppintás elfogadja, minden visszavonható.',
+  device:'Eszköz', phone:'Telefon', pc:'PC',
+  feats:'Funkciók', featsSub:'Mindegyik mellett ott van, hol jelenik meg.', allOn:'Mindent be', allOff:'Mindent vissza alapra', kept:'megőrizve',
+  budget:'Keret a jegyzetképernyőn', bChips:'Csipek a cím alatt', bDot:'Állapotpötty', bMenu:'Sorok a … menüben', bBars:'Új sáv, fül vagy képernyő',
+  snapOk:'A felület betűre azonos a funkciók nélküli alappal (most összevetve).', snapBad:'A felület eltér az alaptól.', snapUse:'Használatban lévő helyek: ',
+  engine:'Gépház', engineSub:'Ami a háttérben fut. Egyszerű módban a tartalmon dolgozó feladatok szünetelnek, a védők futnak.',
+  run:'fut', pause:'szünetel', off:'ki', kProtect:'véd', kPassive:'adatot gyűjt, a szöveghez nem nyúl', kActing:'a tartalmon dolgozik',
+  log:'Háttérnapló', logEmpty:'Még semmi sem történt automatikusan. Kapcsold be például a Munkákat Csendes viselkedéssel.', undo:'Visszavonás', undone:'visszavonva',
+  pcIsm:'Az Ismerős megjelenés csak telefonon van (SIMPLE-Q03); a PC az Alap megjelenést mutatja.',
+  stageNote:'Kattintható: mappák, jegyzetek, ellenőrzőlista, … menü, + gomb (lenyomva tartva: típusok), szaggatott csip (elfogadás).',
+  folders:'Mappák', search:'Keresés', searchNotes:'Keresés a jegyzetekben', edit:'Szerk.', nNotes:'{n} jegyzet', done:'Kész', saved:'Mentve', onDevice:'VRG tároló',
+  pinned:'Kitűzve', s_ma:'Ma', s_het:'Előző 7 nap', s_honap:'Előző 30 nap', s_okt:'Október',
+  f_all:'Összes jegyzet', f_munka:'Munka', f_iroda:'Iroda', f_otlet:'Ötletek', f_trash:'Nemrég törölt', f_ma:'Ma: terepnapló', f_todo:'Teendők',
+  m_share:'Megosztás', m_pin:'Kitűzés', m_unpin:'Kitűzés levétele', m_move:'Áthelyezés', m_del:'Törlés', m_report:'Jelentés (PDF)', m_links:'Hivatkozások', m_lock:'Zárolás', m_ai:'Diktálás tisztítása', m_log:'Háttérnapló', m_more:'Több…', m_title:'Jegyzet',
+  i_title:'Beszúrás', i_check:'Ellenőrzőlista', i_photo:'Fotó', i_file:'Fájl', i_voice:'Hangjegyzet', i_table:'Mérési táblázat', i_job:'Hivatkozás munkára', i_scan:'Szkennelés', i_more:'Több',
+  h_title:'Új jegyzet típusa', t_note:'Jegyzet', t_survey:'Felmérés', t_meas:'Mérés', t_phone:'Telefon',
+  newNote:'Új jegyzet', newBody:'', emptyTrash:'Nincs törölt jegyzet.', noRes:'Nincs találat.',
+  toastGeneric:'Prototípus: ez a művelet itt nem fut le.', toastReport:'Jelentés kész: csak az ügyfélnek látható részek, 1 oldal (prototípus).', toastLock:'Zárolva. A tartalom kikerült a keresőből.', toastInsert:'Beszúrva (prototípus).', toastAccepted:'Elfogadva.', toastPhoto:'Fotó hozzáadva (prototípus).',
+  visitT:'Hivatkozások', visitS:'Látogatás: teljes képernyőn nyílik, és ide zár vissza. Nem költözik be a felületre.', close:'Bezárás',
+  logFor:'Ami ezzel a jegyzettel automatikusan történt', logNone:'Ezzel a jegyzettel nem történt semmi automatikusan.',
+  ft:{chip:'csip', hold:'+ lenyomva', insert:'beszúrás', bg:'háttér', folder:'mappa', dot:'pötty', menu:'… menü', visit:'látogatás'},
+  rulesH:'A tíz szabály', slotsH:'A helyek, ahová funkció rajzolhat', lookH:'Két megjelenés, két viselkedés', footH:'A 96 modul helye', decH:'Nyitott döntések (A = javasolt)',
+  th_slot:'Hely', th_where:'Hol', th_limit:'Korlát', th_ex:'Példa', th_fp:'Hely', th_mod:'Modulok', th_n:'Db', th_q:'Kérdés', th_a:'A (javasolt)', th_b:'B / C',
+  repo:'A teljes leírás a repóban: ', sample:''
+},
+en:{
+  title:'Surface and engine room',
+  sub:'Simple mode of VRG Jegyzetek: a plain notes app whose features show up only in fixed slots or work in the background. One switch always snaps it back to the plain app.',
+  vProto:'Prototype', vRules:'Rules',
+  simple:'Simple mode', simpleOn:'Every feature hidden, nothing deleted. Protective jobs keep running.', simpleOff:'Features appear only in their fixed slots.',
+  look:'Look', alap:'Alap', ismeros:'Ismerős', lookAlap:'Android and Windows, the Mélyvíz look. This is the default.', lookIsm:'For people coming from an iPhone: a familiar layout. Phone only.',
+  beh:'Behaviour', kezi:'Kézi (manual)', csendes:'Csendes (quiet)', behKezi:'The engine does what you ask; you set the chips.', behCs:'The engine works by itself: it suggests dashed chips, one tap accepts, everything can be undone.',
+  device:'Device', phone:'Phone', pc:'PC',
+  feats:'Features', featsSub:'Each one says where it will appear.', allOn:'All on', allOff:'Everything back to plain', kept:'kept',
+  budget:'Budget on the note screen', bChips:'Chips under the title', bDot:'Status dot', bMenu:'Rows in the … menu', bBars:'New bar, tab or screen',
+  snapOk:'The surface is character-for-character the plain surface with no features (compared just now).', snapBad:'The surface differs from the plain one.', snapUse:'Slots in use: ',
+  engine:'Engine room', engineSub:'What runs in the background. In Simple mode the jobs that act on content pause; the protective ones keep running.',
+  run:'runs', pause:'paused', off:'off', kProtect:'protects', kPassive:'collects data, never touches the text', kActing:'acts on content',
+  log:'Engine log', logEmpty:'Nothing has happened automatically yet. Try switching on Jobs with the Csendes behaviour.', undo:'Undo', undone:'undone',
+  pcIsm:'The Ismerős look is phone only (SIMPLE-Q03); the PC shows the Alap look.',
+  stageNote:'Clickable: folders, notes, checklists, the … menu, the + button (hold it for note types), dashed chips (accept). Sample notes are in Hungarian.',
+  folders:'Folders', search:'Search', searchNotes:'Search notes', edit:'Edit', nNotes:'{n} notes', done:'Done', saved:'Saved', onDevice:'VRG vault',
+  pinned:'Pinned', s_ma:'Today', s_het:'Previous 7 days', s_honap:'Previous 30 days', s_okt:'October',
+  f_all:'All notes', f_munka:'Work', f_iroda:'Office', f_otlet:'Ideas', f_trash:'Recently deleted', f_ma:'Today: site diary', f_todo:'To do',
+  m_share:'Share', m_pin:'Pin', m_unpin:'Unpin', m_move:'Move', m_del:'Delete', m_report:'Report (PDF)', m_links:'Links', m_lock:'Lock', m_ai:'Clean up dictation', m_log:'Engine log', m_more:'More…', m_title:'Note',
+  i_title:'Insert', i_check:'Checklist', i_photo:'Photo', i_file:'File', i_voice:'Voice memo', i_table:'Measurement table', i_job:'Link to a job', i_scan:'Scan', i_more:'More',
+  h_title:'New note type', t_note:'Note', t_survey:'Survey', t_meas:'Measurement', t_phone:'Phone call',
+  newNote:'New note', newBody:'', emptyTrash:'No deleted notes.', noRes:'No results.',
+  toastGeneric:'Prototype: this action does not run here.', toastReport:'Report ready: client-visible parts only, 1 page (prototype).', toastLock:'Locked. The content left the search index.', toastInsert:'Inserted (prototype).', toastAccepted:'Accepted.', toastPhoto:'Photo added (prototype).',
+  visitT:'Links', visitS:'A visit: it opens full screen and closes back here. It never moves into the surface.', close:'Close',
+  logFor:'What happened to this note automatically', logNone:'Nothing has happened to this note automatically.',
+  ft:{chip:'chip', hold:'hold +', insert:'insert', bg:'background', folder:'folder', dot:'dot', menu:'… menu', visit:'visit'},
+  rulesH:'The ten rules', slotsH:'The slots a feature may draw into', lookH:'Two looks, two behaviours', footH:'Where the 96 modules live', decH:'Open decisions (A = recommended)',
+  th_slot:'Slot', th_where:'Where', th_limit:'Limit', th_ex:'Example', th_fp:'Footprint', th_mod:'Modules', th_n:'N', th_q:'Question', th_a:'A (recommended)', th_b:'B / C',
+  repo:'The full write-up in the repository: ', sample:''
+}};
+const L = () => T[S.lang];
+
+/* ---------------- features ---------------- */
+// kind: protect | passive | acting | none (no engine job)
+const FEATS = [
+  {id:'tag',   kind:'acting',  ft:'chip',   hu:['Címkék','#címkék a szövegben, csip a cím alatt'], en:['Tags','#tags in the text, a chip under the title'], job:{hu:'Címkejavaslat',en:'Tag suggestions'}},
+  {id:'job',   kind:'acting',  ft:'chip',   hu:['Munkák','a jegyzet egy munkához kötve'], en:['Jobs','the note bound to a job'], job:{hu:'Munkafelismerés',en:'Job detection'}},
+  {id:'task',  kind:'acting',  ft:'chip',   hu:['Feladatok, emlékeztetők','dátumos sorból emlékeztető, Teendők mappa'], en:['Tasks and reminders','a reminder from a dated line, a To do folder'], job:{hu:'Dátumfelismerés, emlékeztetők',en:'Date detection, reminders'}},
+  {id:'meas',  kind:'none',    ft:'hold',   hu:['Jegyzettípusok','felmérés, mérés, telefon: a + lenyomva tartásával'], en:['Note types','survey, measurement, phone: hold the + button']},
+  {id:'voice', kind:'none',    ft:'insert', hu:['Hangjegyzet','a beszúrás lapon, nem új gombként'], en:['Voice memo','in the insert sheet, not a new button']},
+  {id:'site',  kind:'passive', ft:'bg',     hu:['Helyszíni fotó','idő, munka, hely, kiolvasott szöveg: semmi sem látszik'], en:['Site photo','time, job, place, text read from it: nothing shows'], job:{hu:'Fotóadatok, szövegfelismerés',en:'Photo stamps, text recognition'}},
+  {id:'diary', kind:'acting',  ft:'folder', hu:['Terepnapló','a munkanap jegyzetei a Ma mappában'], en:['Site diary','the job day’s notes in the Today folder'], job:{hu:'Terepnapló-összesítés',en:'Site diary roll-up'}},
+  {id:'sync',  kind:'protect', ft:'dot',    hu:['Szinkron PC ↔ telefon','egy pötty, csak ha valami nincs rendben'], en:['Sync PC ↔ phone','one dot, only when something is wrong'], job:{hu:'Szinkron (LAN-relé)',en:'Sync (LAN relay)'}},
+  {id:'crypt', kind:'protect', ft:'menu',   hu:['Titkosítás és zárolás','minden titkosítva; Zárolás a … menüben'], en:['Encryption and lock','everything encrypted; Lock in the … menu'], job:{hu:'Titkosítás',en:'Encryption'}},
+  {id:'link',  kind:'none',    ft:'visit',  hu:['Hivatkozások és gráf','teljes képernyős látogatás a … menüből'], en:['Links and graph','a full-screen visit from the … menu']},
+  {id:'report',kind:'none',    ft:'menu',   hu:['Jelentés (PDF)','Varler-stílusú export a … menüben'], en:['Report (PDF)','a Varler-style export in the … menu']},
+  {id:'ai',    kind:'acting',  ft:'bg',     hu:['Diktálás tisztítása (MI)','rendbe teszi a diktált szöveget, az eredetit megtartja'], en:['Dictation clean-up (AI)','tidies dictated text, keeps the original'], job:{hu:'Szövegtisztítás',en:'Text clean-up'}},
+];
+const BASEJOBS = [
+  {id:'save',  hu:'Mentés és előzmények', en:'Saving and history'},
+  {id:'index', hu:'Kereső index', en:'Search index'},
+  {id:'backup',hu:'Biztonsági mentés (BACKUP)', en:'Backup (BACKUP)'},
+];
+
+/* ---------------- sample notes (Hungarian on purpose: they are the user's own world) ---------------- */
+let NOTES = [
+  {id:'n1', folder:'munka', title:'Kovács lakás — elosztó felmérés', when:'ma', time:'09:14', date:'2026. november 11. 9:14', pinned:true, photo:'elosztó.jpg',
+   job:'Kovács lakás', tags:['#elosztó'], due:'nov. 14.', type:'felmérés', ocr:'C16 3×16 A FI',
+   body:[['p','Elosztó: 3×16 A, régi kismegszakítók, nincs FI-relé.'],['c',true,'Fotó az elosztóról'],['c',false,'FI-relé csere (30 mA) — csütörtök'],['c',false,'Kábelnyomvonal a konyhába'],['img','elosztó.jpg'],['p','Ügyfél kérése: plusz dugalj az erkélyre.']]},
+  {id:'n2', folder:'munka', title:'Rendelendő anyag', when:'ma', time:'08:02', date:'2026. november 11. 8:02', job:'Kovács lakás', tags:['#vesz'], pending:true,
+   body:[['c',false,'2× FI-relé 30 mA'],['c',false,'50 m NYM-J 3×2,5'],['c',true,'10 db dugalj, fehér'],['p','Villanyszer Kft., átvétel pénteken.']]},
+  {id:'n3', folder:'iroda', title:'Telefon: Nagy Péter, árajánlat', when:'het', time:'tegnap', date:'2026. november 10. 16:40', job:'Lakatos u. 12', tags:['#ajánlat'],
+   raw:'nagy péter hívott hogy a lakatos utcai munkára kéne az ajánlat jövő hétig két szoba plusz konyha az elosztót is cserélné',
+   clean:'Nagy Péter hívott: a Lakatos utcai munkára jövő hétig kér ajánlatot. Két szoba és a konyha, az elosztót is cserélné.'},
+  {id:'n4', folder:'munka', title:'Lakatos u. 12 — mérési jegyzőkönyv', when:'het', time:'hétfő', date:'2026. november 9. 11:20', job:'Lakatos u. 12', type:'mérés', tags:['#mérés'],
+   body:[['p','Szigetelési ellenállás, 500 V:'],['p','K1 nappali — 210 MΩ — megfelelt'],['p','K2 konyha — 185 MΩ — megfelelt'],['p','K3 fürdő — 0,9 MΩ — újramérni']]},
+  {id:'n5', folder:'otlet', title:'Ötlet: QR-matrica az elosztóba', when:'honap', time:'okt. 28.', date:'2026. október 28. 20:05', tags:['#ötlet'],
+   body:[['p','Matrica az elosztó ajtajának belső oldalán; beolvasva megnyílik a berendezés jegyzete: kapcsolási rajz, mérések, utolsó javítás.']]},
+  {id:'n6', folder:'iroda', title:'Szerszámbolt nyitvatartás', when:'okt', time:'okt. 9.', date:'2026. október 9. 7:48',
+   body:[['p','H–P 7:00–17:00, Szo 8:00–12:00. A hátsó parkolóból is lehet rakodni.']]},
+];
+const bodyOf = n => n.raw ? [['p', S.done.ai ? n.clean : n.raw]] : (n.body || []);
+
+/* ---------------- engine events ---------------- */
+const EV = [
+  {id:'job1', f:'job', beh:'csendes', note:'n1', key:'n1:job', hu:'Munka felismerve a „Kovács lakás — elosztó felmérés” jegyzetben: a Munka mappából és a legutóbb nyitott munkából. Javaslat csipként.', en:'Job detected in "Kovács lakás — elosztó felmérés": from the Work folder and the job opened last. Offered as a chip.'},
+  {id:'job2', f:'job', beh:'csendes', note:'n2', key:'n2:job', hu:'Munka felismerve a „Rendelendő anyag” jegyzetben: ugyanaz a mappa, 72 percen belül írva. Javaslat csipként.', en:'Job detected in "Rendelendő anyag": same folder, written within 72 minutes. Offered as a chip.'},
+  {id:'tag1', f:'tag', beh:'csendes', note:'n1', key:'n1:#elosztó', hu:'Címke javasolva: #elosztó, az „Elosztó:” sorból.', en:'Tag suggested: #elosztó, from the "Elosztó:" line.'},
+  {id:'due1', f:'task', beh:'csendes', note:'n1', key:'n1:due', hu:'Emlékeztető létrehozva: FI-relé csere, nov. 14. 7:00, a „csütörtök” szóból. Értesítés a telefonon és a PC-n.', en:'Reminder created: FI-relé csere, Nov 14 7:00, from the word "csütörtök". Notifies on the phone and the PC.'},
+  {id:'site1', f:'site', note:'n1', undoable:false, hu:'Fotó rögzítve: 09:12, Kovács lakás; 14 szó kiolvasva a keresőnek (pl. „3×16 A”, „C16”). A jegyzet szövege nem változott.', en:'Photo stamped: 09:12, Kovács lakás; 14 words read for search (e.g. "3×16 A", "C16"). The note text did not change.'},
+  {id:'diary1', f:'diary', note:'n1', key:'diary', hu:'Terepnapló: a mai 2 jegyzet a „Ma” mappában, 1 fotó, 4 nyitott tétel.', en:'Site diary: today’s 2 notes in the "Today" folder, 1 photo, 4 open items.'},
+  {id:'sync1', f:'sync', undoable:false, hu:'Szinkron a párosított telefonnal (LAN): 5 jegyzet naprakész, 1 várakozik („Rendelendő anyag”).', en:'Sync with the paired phone (LAN): 5 notes up to date, 1 waiting ("Rendelendő anyag").'},
+  {id:'crypt1', f:'crypt', undoable:false, hu:'Tároló titkosítva (AES-256-GCM), a kulcs a fiókhoz kötve. Jelmondatot nem kér; a helyreállítási kulcs a beállításkor egyszer jelenik meg.', en:'Vault encrypted (AES-256-GCM), the key bound to the account. No passphrase prompts; the recovery key is shown once at setup.'},
+  {id:'ai1', f:'ai', beh:'csendes', note:'n3', key:'n3:ai', hu:'Diktált jegyzet rendbe téve: „Telefon: Nagy Péter, árajánlat”. Az eredeti szöveg változatként megmaradt.', en:'Dictated note tidied: "Telefon: Nagy Péter, árajánlat". The original text is kept as a version.'},
+];
+
+/* ---------------- state ---------------- */
+const S = {
+  lang: LS.get('fg.lang') === 'en' ? 'en' : 'hu',
+  view: 'proto', simple:false, look:'alap', beh:'kezi', device:'phone',
+  screen:'list', folder:'all', noteId:'n1', search:'', searching:false,
+  sheet:null, drawer:false, toast:null, side:true,
+  feats:{}, done:{}, accepted:{}, dismissed:{}, fired:{}, log:[], seq:0,
+};
+FEATS.forEach(f => S.feats[f.id] = false);
+
+const on = id => S.feats[id] && !S.simple;
+const fdef = id => FEATS.find(f => f.id === id);
+const note = id => NOTES.find(n => n.id === id);
+const clock = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+
+function runEngine(){
+  EV.forEach(e => {
+    if (S.fired[e.id] || !on(e.f)) return;
+    if (e.beh && e.beh !== S.beh) return;
+    S.fired[e.id] = true;
+    if (e.id === 'ai1') S.done.ai = true;
+    S.log.unshift({ ev:e, at:clock(), undone:false, n:++S.seq });
+  });
+}
+function undo(seq){
+  const le = S.log.find(x => x.n === seq); if (!le || le.undone) return;
+  le.undone = true;
+  if (le.ev.key === 'n3:ai') S.done.ai = false;
+  else if (le.ev.key) S.dismissed[le.ev.key] = true;
+}
+
+/* ---------------- icons ---------------- */
+const P = {
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  chev:'<path d="M9 5l7 7-7 7"/>',
+  more:'<circle cx="5.5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor"/>',
+  moreC:'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="12" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/><circle cx="16" cy="12" r="1.1" fill="currentColor"/>',
+  share:'<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v8h12v-8"/>',
+  pin:'<path d="M9 4h6l-1 6 3 3H7l3-3-1-6zM12 13v7"/>',
+  check:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m8 12 3 3 5-6"/>',
+  checkC:'<circle cx="12" cy="12" r="8.5"/><path d="m8.2 12.2 2.6 2.6 5-5.3"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  pen:'<path d="M15 4l5 5-11 11H4v-5z"/><path d="M13 6l5 5"/>',
+  compose:'<path d="M12 4H5v15h15v-7"/><path d="M18 3l3 3-9 9H9v-3z"/>',
+  folder:'<path d="M3 6h7l2 2h9v11H3z"/>',
+  folderPlus:'<path d="M3 6h7l2 2h9v11H3z"/><path d="M12 11v5M9.5 13.5h5"/>',
+  trash:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>',
+  clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+  brief:'<rect x="3.5" y="7" width="17" height="12" rx="1.5"/><path d="M9 7V5h6v2"/>',
+  doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
+  table:'<rect x="3.5" y="5" width="17" height="14"/><path d="M3.5 10h17M3.5 14.5h17M10 5v14"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  scan:'<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16"/>',
+  file:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>',
+  list:'<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',
+  move:'<path d="M3 6h7l2 2h9v11H3z"/><path d="M10 13.5h6M13.5 11l2.5 2.5-2.5 2.5"/>',
+  sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+  calendar:'<rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  log:'<path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  sun:'<circle cx="12" cy="12" r="4"/>',
+};
+const ic = (k, cls='ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[k]||''}</svg>`;
+
+/* ---------------- chips, menus, sheets ---------------- */
+function chipsFor(n){
+  const c = [];
+  if (on('job') && n.job && !S.dismissed[n.id+':job']) c.push({k:n.id+':job', icon:'brief', label:n.job, sug:S.beh==='csendes' && !S.accepted[n.id+':job']});
+  if (on('tag') && n.tags) n.tags.forEach(t => { const k = n.id+':'+t; if (!S.dismissed[k]) c.push({k, label:t, sug:S.beh==='csendes' && !S.accepted[k] && k === 'n1:#elosztó'}); });
+  if (on('task') && n.due && !S.dismissed[n.id+':due']) c.push({k:n.id+':due', icon:'clock', label:n.due});
+  if (on('meas') && n.type) c.push({k:n.id+':type', icon:'doc', label:n.type});
+  return c;
+}
+function chipHTML(c, small){
+  const icon = c.icon ? ic(c.icon, 'ico s') : '';
+  if (c.sug && !small) return `<button class="chip sug" data-act="accept" data-k="${esc(c.k)}">${icon}${esc(c.label)}<span class="q">?</span></button>`;
+  return `<span class="chip${c.sug ? ' sug' : ''}">${small ? '' : icon}${esc(c.label)}${c.sug ? '<span class="q">?</span>' : ''}</span>`;
+}
+function headerChips(n){
+  const c = chipsFor(n); if (!c.length) return '';
+  const shown = c.slice(0,3).map(x => chipHTML(x)).join('');
+  const extra = c.length > 3 ? `<button class="chip more" data-act="sheet" data-s="chips">+${c.length-3}</button>` : '';
+  return `<div class="chips">${shown}${extra}</div>`;
+}
+function rowChips(n){
+  const c = chipsFor(n).slice(0,2); if (!c.length) return '';
+  return `<div class="rchips">${c.map(x => chipHTML(x, true)).join('')}</div>`;
+}
+const dotFor = n => on('sync') && n.pending ? '<span class="dot" title="sync"></span>' : '';
+const anyEngineFeat = () => FEATS.some(f => f.kind !== 'none' && f.kind !== 'protect' && on(f.id));
+
+function menuItems(n){
+  const l = L(), it = [
+    {a:'toast', ic:'share', t:l.m_share},
+    {a:'pin', ic:'pin', t:n.pinned ? l.m_unpin : l.m_pin},
+    {a:'toast', ic:'move', t:l.m_move},
+    {a:'toast', ic:'trash', t:l.m_del},
+  ];
+  if (on('report')) it.push({a:'report', ic:'doc', t:l.m_report, f:'report'});
+  if (on('link'))   it.push({a:'visit', ic:'link', t:l.m_links, f:'link'});
+  if (on('crypt'))  it.push({a:'lock', ic:'lock', t:l.m_lock, f:'crypt'});
+  if (on('ai') && S.beh === 'kezi' && n.raw && !S.done.ai) it.push({a:'airun', ic:'sparkle', t:l.m_ai, f:'ai'});
+  if (anyEngineFeat()) it.push({a:'elog', ic:'log', t:l.m_log, f:'R7'});
+  return it;
+}
+function insertItems(){
+  const l = L(), it = [
+    {ic:'checkC', t:l.i_check}, {ic:'camera', t:l.i_photo}, {ic:'file', t:l.i_file},
+  ];
+  if (on('voice')) it.push({ic:'mic', t:l.i_voice, f:1});
+  if (on('meas'))  it.push({ic:'table', t:l.i_table, f:1});
+  if (on('job'))   it.push({ic:'brief', t:l.i_job, f:1});
+  if (on('site'))  it.push({ic:'scan', t:l.i_scan, f:1});
+  if (S.beh === 'csendes' && it.length > 6) { const keep = it.slice(0,5); keep.push({ic:'more', t:l.i_more}); return keep; }
+  return it;
+}
+
+function sheetHTML(){
+  const l = L(), n = note(S.noteId);
+  if (!S.sheet) return '';
+  if (S.sheet === 'visit') return visitHTML();
+  let inner = '';
+  if (S.sheet === 'menu' || S.sheet === 'menuall'){
+    let it = menuItems(n);
+    if (S.sheet === 'menu' && it.length > 6) it = it.slice(0,5).concat([{a:'menuall', ic:'more', t:l.m_more}]);
+    inner = `<div class="sh">${esc(n.title)}</div>` + it.map(x => `<button class="si${x.f ? ' feat-i' : ''}" data-act="${x.a}"><span class="ic">${ic(x.ic)}</span>${esc(x.t)}${x.f ? `<span class="tg">${esc(x.f === 'R7' ? 'R7' : (fdef(x.f) ? (S.lang==='hu' ? fdef(x.f).hu[0] : fdef(x.f).en[0]) : ''))}</span>` : ''}</button>`).join('');
+  } else if (S.sheet === 'insert'){
+    inner = `<div class="sh">${esc(l.i_title)}</div><div class="grid3">` + insertItems().map(x => `<button class="tile${x.f ? ' f' : ''}" data-act="inserted"><span class="ic">${ic(x.ic)}</span>${esc(x.t)}</button>`).join('') + '</div>';
+  } else if (S.sheet === 'hold'){
+    inner = `<div class="sh">${esc(l.h_title)}</div>` + [['t_note','compose'],['t_survey','doc'],['t_meas','table'],['t_phone','list']].map(([k,i]) => `<button class="si" data-act="newtype" data-t="${k}"><span class="ic">${ic(i)}</span>${esc(l[k])}</button>`).join('');
+  } else if (S.sheet === 'chips'){
+    inner = `<div class="sh">${esc(n.title)}</div><div class="chips" style="padding:0 18px">${chipsFor(n).map(x => chipHTML(x)).join('')}</div>`;
+  } else if (S.sheet === 'elog'){
+    const mine = S.log.filter(x => x.ev.note === n.id);
+    inner = `<div class="sh">${esc(l.logFor)}</div>` + (mine.length ? mine.map(x => `<div class="logi"><div class="w">${x.at}${x.undone ? ' · ' + esc(l.undone) : ''}</div>${esc(x.ev[S.lang])}${x.ev.undoable === false || x.undone ? '' : `<br><button data-act="undo" data-n="${x.n}">${esc(l.undo)}</button>`}</div>`).join('') : `<div class="logi">${esc(l.logNone)}</div>`);
+  }
+  return `<div class="sheetwrap" data-act="closesheet"><div class="sheet" data-stop="1"><div class="grab"></div>${inner}</div></div>`;
+}
+function visitHTML(){
+  const l = L();
+  const nodes = [['n1',150,150,'Kovács — elosztó'],['n2',70,270,'Rendelendő anyag'],['n4',250,300,'Lakatos — mérés'],['n3',260,420,'Telefon: Nagy P.'],['n5',90,420,'QR-matrica ötlet'],['j1',150,40,'Kovács lakás'],['j2',300,190,'Lakatos u. 12']];
+  const pos = Object.fromEntries(nodes.map(x => [x[0], x]));
+  const edges = [['n1','j1'],['n2','j1'],['n1','n2'],['n4','j2'],['n3','j2'],['n5','n1']];
+  const isI = S.look === 'ismeros' && S.device === 'phone';
+  const ac = isI ? 'var(--i-accent)' : 'var(--a-accent)', tx = isI ? 'var(--i-text)' : 'var(--a-text)', ln = isI ? 'var(--i-sep)' : 'rgba(232,240,246,.34)', bg = isI ? 'var(--i-cell)' : 'var(--a-panel)';
+  const svg = `<svg viewBox="0 0 350 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(l.visitT)}">` +
+    edges.map(([a,b]) => `<line x1="${pos[a][1]}" y1="${pos[a][2]}" x2="${pos[b][1]}" y2="${pos[b][2]}" stroke="${ln}" stroke-width="1.4"/>`).join('') +
+    nodes.map(([id,x,y,t]) => { const j = id[0] === 'j'; return `<g><rect x="${x-62}" y="${y-15}" width="124" height="30" rx="${isI ? 15 : 0}" fill="${j ? ac : bg}" stroke="${ac}" stroke-width="1"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="11.5" fill="${j ? (isI ? 'var(--i-cell)' : 'var(--a-on)') : tx}" font-family="inherit">${esc(t)}</text></g>`; }).join('') + '</svg>';
+  return `<div class="visit"><div class="vh"><b>${esc(l.visitT)}</b><button data-act="closesheet">${esc(isI ? l.done : l.close)}</button></div><div class="vs">${esc(l.visitS)}</div>${svg}</div>`;
+}
+
+/* ---------------- list data ---------------- */
+function folderList(){
+  const l = L(), f = [
+    {id:'all', t:l.f_all, n:NOTES.length},
+    {id:'munka', t:l.f_munka, n:NOTES.filter(x => x.folder === 'munka').length},
+    {id:'iroda', t:l.f_iroda, n:NOTES.filter(x => x.folder === 'iroda').length},
+    {id:'otlet', t:l.f_otlet, n:NOTES.filter(x => x.folder === 'otlet').length},
+  ];
+  if (on('diary') && !S.dismissed.diary) f.push({id:'ma', t:l.f_ma, n:NOTES.filter(x => x.when === 'ma').length, feat:1, ic:'calendar'});
+  if (on('task')) f.push({id:'todo', t:l.f_todo, n:NOTES.filter(hasOpen).length, feat:1, ic:'checkC'});
+  f.push({id:'trash', t:l.f_trash, n:0, ic:'trash'});
+  return f;
+}
+const hasOpen = n => bodyOf(n).some(b => b[0] === 'c' && !b[1]);
+function folderName(id){ const f = folderList().find(x => x.id === id); return f ? f.t : L().f_all; }
+function visibleNotes(){
+  let ns = NOTES.slice();
+  const fo = S.folder;
+  if (fo === 'trash') return [];
+  if (fo === 'ma') ns = ns.filter(n => n.when === 'ma');
+  else if (fo === 'todo') ns = ns.filter(hasOpen);
+  else if (fo !== 'all') ns = ns.filter(n => n.folder === fo);
+  const q = fold(S.search.trim());
+  if (q){
+    ns = ns.filter(n => {
+      if (q.startsWith('munka:')) return n.job && fold(n.job).includes(q.slice(6).trim());
+      if (q === 'teendo') return hasOpen(n);
+      if (q === 'van foto') return !!n.photo;
+      if (q.startsWith('#')) return (n.tags||[]).some(t => fold(t).startsWith(q));
+      const txt = fold(n.title + ' ' + bodyOf(n).map(b => b[b.length-1]).join(' ') + (S.fired.site1 ? ' ' + (n.ocr||'') : ''));
+      return q.split(/\s+/).every(w => txt.includes(w));
+    });
+  }
+  return ns;
+}
+function sections(ns){
+  const l = L(), out = [];
+  const pin = ns.filter(n => n.pinned); if (pin.length) out.push([l.pinned, pin]);
+  [['ma',l.s_ma],['het',l.s_het],['honap',l.s_honap],['okt',l.s_okt]].forEach(([k,t]) => { const g = ns.filter(n => !n.pinned && n.when === k); if (g.length) out.push([t,g]); });
+  return out;
+}
+function preview(n){ const b = bodyOf(n).find(x => x[0] !== 'img'); return b ? b[b.length-1] : ''; }
+function searchHints(){
+  if (!S.searching) return [];
+  const h = [];
+  if (on('job')) h.push('munka: Kovács');
+  if (on('task')) h.push('teendő');
+  if (on('site')) h.push('van fotó');
+  if (on('tag')) h.push('#elosztó');
+  return h;
+}
+
+/* ---------------- note body ---------------- */
+function bodyHTML(n){
+  return '<div class="nbody">' + bodyOf(n).map((b,i) => {
+    if (b[0] === 'p') return `<p>${esc(b[1])}</p>`;
+    if (b[0] === 'c') return `<button class="ck${b[1] ? ' on' : ''}" data-act="tick" data-i="${i}"><span class="bx"></span><span class="tx">${esc(b[2])}</span></button>`;
+    if (b[0] === 'img') return `<div class="photo" role="img" aria-label="${esc(b[1])}"><span>${esc(b[1])}</span></div>`;
+    return '';
+  }).join('') + '</div>';
+}
+
+/* ---------------- phone: Ismerős ---------------- */
+function sbar(){ return `<div class="sbar"><span>9:41</span><span class="island"></span><span class="sig">${ic('sun','ico s')}<span class="bat"></span></span></div>`; }
+function ismFolders(){
+  const l = L();
+  const rows = folderList().map(f => `<button class="i-frow" data-act="folder" data-f="${f.id}"><span class="fi">${ic(f.ic || 'folder')}</span><span class="n">${esc(f.t)}</span><span class="c">${f.n}</span><span class="chev">${ic('chev','ico s')}</span></button>`).join('');
+  return `<div class="i-nav"><span></span><button>${esc(l.edit)}</button></div>
+  <div class="i-scroll"><h1 class="i-large">${esc(l.folders)}</h1>
+  <button class="i-search" data-act="searchfocus">${ic('search','ico s')}${esc(l.search)}</button>
+  <div class="i-gh">${esc(l.onDevice)}</div><div class="i-group">${rows}</div></div>
+  <div class="i-toolbar"><div class="l"><button aria-label="folder">${ic('folderPlus')}</button></div><span></span><div class="r"><button data-act="new" data-hold="1" aria-label="${esc(l.newNote)}">${ic('compose')}</button></div></div>`;
+}
+function ismList(){
+  const l = L(), ns = visibleNotes(), secs = sections(ns), hints = searchHints();
+  const body = secs.length ? secs.map(([t,g]) => `<div class="i-sec">${esc(t)}</div><div class="i-group">` + g.map(n => `<button class="i-row" data-act="open" data-id="${n.id}"><div class="m"><div class="t">${esc(n.title)}${dotFor(n)}</div><div class="s"><b>${esc(n.time)}</b>${esc(preview(n))}</div>${rowChips(n)}</div>${n.photo ? '<span class="thumb"></span>' : ''}</button>`).join('') + '</div>').join('') : `<div class="empty">${esc(S.folder === 'trash' ? l.emptyTrash : l.noRes)}</div>`;
+  return `<div class="i-nav"><button class="back" data-act="tofolders">${ic('back')}${esc(l.folders)}</button><button aria-label="more" data-act="toast">${ic('moreC')}</button></div>
+  <div class="i-scroll"><h1 class="i-large">${esc(folderName(S.folder))}</h1>
+  <label class="i-search">${ic('search','ico s')}<input id="q-phone" value="${esc(S.search)}" placeholder="${esc(l.search)}" data-act="q" autocomplete="off"></label>
+  ${hints.length ? `<div class="hints">${hints.map(h => `<button class="hintchip" data-act="hint" data-h="${esc(h)}">${esc(h)}</button>`).join('')}</div>` : ''}
+  ${body}</div>
+  <div class="i-toolbar"><span></span><span class="count">${esc(l.nNotes.replace('{n}', ns.length))}</span><div class="r"><button data-act="new" data-hold="1" aria-label="${esc(l.newNote)}">${ic('compose')}</button></div></div>`;
+}
+function ismNote(){
+  const l = L(), n = note(S.noteId);
+  return `<div class="i-nav"><button class="back" data-act="tolist">${ic('back')}${esc(folderName(S.folder))}</button><span class="rt"><button aria-label="share" data-act="toast">${ic('share')}</button><button aria-label="more" data-act="sheet" data-s="menu">${ic('moreC')}</button><button data-act="toast" style="font-weight:600">${esc(l.done)}</button></span></div>
+  <div class="i-scroll i-note"><div class="i-date">${esc(n.date)}</div><h2 class="i-title">${esc(n.title)}${dotFor(n)}</h2>${headerChips(n)}${bodyHTML(n)}</div>
+  <div class="i-toolbar"><div class="l"><button aria-label="${esc(l.i_check)}" data-act="toast">${ic('checkC')}</button><button aria-label="${esc(l.i_photo)}" data-act="sheet" data-s="insert">${ic('camera')}</button><button aria-label="pen" data-act="toast">${ic('pen')}</button></div><span></span><div class="r"><button data-act="new" data-hold="1" aria-label="${esc(l.newNote)}">${ic('compose')}</button></div></div>`;
+}
+
+/* ---------------- phone: Alap ---------------- */
+function alapList(){
+  const l = L(), ns = visibleNotes(), secs = sections(ns), hints = searchHints();
+  const body = secs.length ? secs.map(([t,g]) => `<div class="a-sec">${esc(t)}</div>` + g.map(n => cardHTML(n)).join('')).join('') : `<div class="empty">${esc(S.folder === 'trash' ? l.emptyTrash : l.noRes)}</div>`;
+  const drawer = S.drawer ? `<div class="a-drawer"><div class="pane"><div class="dh">${esc(l.folders)}</div>${folderList().map(f => `<button class="a-frow${S.folder === f.id ? ' cur' : ''}" data-act="folder" data-f="${f.id}"><span class="fi">${ic(f.ic || 'folder','ico s')}</span><span class="n">${esc(f.t)}</span><span class="c">${f.n}</span></button>`).join('')}</div><button class="rest" data-act="drawer" aria-label="close"></button></div>` : '';
+  return `<div class="a-top"><div class="a-search"><button data-act="drawer" aria-label="${esc(l.folders)}">${ic('menu')}</button><input id="q-phone" value="${esc(S.search)}" placeholder="${esc(l.searchNotes)}" data-act="q" autocomplete="off">${ic('search','ico s')}</div>
+  ${hints.length ? `<div class="hints">${hints.map(h => `<button class="hintchip" data-act="hint" data-h="${esc(h)}">${esc(h)}</button>`).join('')}</div>` : ''}</div>
+  <div class="a-scroll"><div class="a-h">${esc(folderName(S.folder))}<span class="n">${ns.length}</span></div>${body}</div>
+  <button class="a-fab" data-act="new" data-hold="1" aria-label="${esc(l.newNote)}">${ic('plus')}</button>${drawer}`;
+}
+function cardHTML(n, cur){
+  return `<button class="a-card${cur ? ' cur' : ''}" data-act="open" data-id="${n.id}"><div class="m"><div class="t">${n.pinned ? '<span style="color:var(--a-accent)">' + ic('pin','ico s') + '</span>' : ''}${esc(n.title)}${dotFor(n)}</div><div class="s"><b>${esc(n.time)}</b>${esc(preview(n))}</div>${rowChips(n)}</div>${n.photo ? '<span class="thumb"></span>' : ''}</button>`;
+}
+function alapNote(){
+  const l = L(), n = note(S.noteId);
+  return `<div class="a-bar"><button data-act="tolist" aria-label="back">${ic('back')}</button><span class="sp"></span><button data-act="pin" class="${n.pinned ? 'on' : ''}" aria-label="${esc(l.m_pin)}">${ic('pin')}</button><button data-act="sheet" data-s="menu" aria-label="more">${ic('more')}</button></div>
+  <div class="a-scroll a-note"><h2 class="ttl">${esc(n.title)}${dotFor(n)}</h2><div class="dt">${esc(n.date)} · ${esc(folderName(n.folder))}</div>${headerChips(n)}${bodyHTML(n)}</div>
+  <div class="a-insert"><button data-act="toast" aria-label="${esc(l.i_check)}">${ic('check')}</button><button data-act="photo" aria-label="${esc(l.i_photo)}">${ic('camera')}</button><button data-act="sheet" data-s="insert" aria-label="${esc(l.i_title)}">${ic('plus')}</button><span class="sp"></span><span class="sv">${esc(l.saved)}</span></div>`;
+}
+
+function phoneInner(){
+  const isI = S.look === 'ismeros';
+  let scr;
+  if (isI) scr = S.screen === 'folders' ? ismFolders() : S.screen === 'note' ? ismNote() : ismList();
+  else scr = S.screen === 'note' ? alapNote() : alapList();
+  return sbar() + scr + sheetHTML() + (S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : '');
+}
+
+/* ---------------- PC ---------------- */
+function pcHTML(){
+  const l = L(), n = note(S.noteId), ns = visibleNotes(), hints = searchHints();
+  const side = S.side ? `<div class="pc-side">${folderList().map(f => `<button class="a-frow${S.folder === f.id ? ' cur' : ''}" data-act="folder" data-f="${f.id}"><span class="fi">${ic(f.ic || 'folder','ico s')}</span><span class="n">${esc(f.t)}</span><span class="c">${f.n}</span></button>`).join('')}</div>` : '';
+  const syncSt = on('sync') ? `<span class="st"><span class="dot"></span>1</span>` : '';
+  return `<div class="pc alap">
+    <div class="pc-tb"><button data-act="side" aria-label="${esc(l.folders)}">${ic('menu','ico s')}</button><span class="nm">VRG Jegyzetek</span>
+      <label class="srch">${ic('search','ico s')}<input id="q-pc" value="${esc(S.search)}" placeholder="${esc(l.searchNotes)}" data-act="q" autocomplete="off"></label>
+      <span class="sp"></span>${syncSt}<span class="win"><span>—</span><span>▢</span><span>✕</span></span></div>
+    <div class="pc-body">${side}
+      <div class="pc-list"><div class="pc-lh"><span class="ttl">${esc(folderName(S.folder))}</span><span class="pc-new"><button data-act="new">${ic('plus','ico s')}${esc(l.newNote)}</button>${on('meas') ? `<button data-act="sheet" data-s="hold" aria-label="${esc(l.h_title)}">${ic('chev','ico s')}</button>` : ''}</span></div>
+        ${hints.length ? `<div class="hints" style="padding:0 10px">${hints.map(h => `<button class="hintchip" data-act="hint" data-h="${esc(h)}">${esc(h)}</button>`).join('')}</div>` : ''}
+        <div class="pc-ls">${sections(ns).map(([t,g]) => `<div class="a-sec">${esc(t)}</div>` + g.map(x => cardHTML(x, x.id === S.noteId)).join('')).join('') || `<div class="empty">${esc(S.folder === 'trash' ? l.emptyTrash : l.noRes)}</div>`}</div></div>
+      <div class="pc-note"><div class="pc-nb"><button data-act="toast" aria-label="${esc(l.i_check)}">${ic('check','ico s')}</button><button data-act="photo" aria-label="${esc(l.i_photo)}">${ic('camera','ico s')}</button><button data-act="sheet" data-s="insert" aria-label="${esc(l.i_title)}">${ic('plus','ico s')}</button><span class="sp"></span><span class="sv">${esc(l.saved)}</span><button data-act="pin" class="${n.pinned ? 'on' : ''}" aria-label="${esc(l.m_pin)}">${ic('pin','ico s')}</button><button data-act="sheet" data-s="menu" aria-label="more">${ic('more','ico s')}</button></div>
+        <div class="pc-nc a-note"><h2 class="ttl">${esc(n.title)}${dotFor(n)}</h2><div class="dt">${esc(n.date)} · ${esc(folderName(n.folder))}</div>${headerChips(n)}${bodyHTML(n)}</div></div>
+    </div>${sheetHTML()}${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ''}</div>`;
+}
+
+/* ---------------- snap-back comparison ---------------- */
+function surfaceNow(){ return S.device === 'pc' ? pcHTML() : phoneInner(); }
+function surfacePlain(){
+  const keep = S.feats, keepSimple = S.simple;
+  S.feats = Object.fromEntries(FEATS.map(f => [f.id, false])); S.simple = false;
+  const h = surfaceNow();
+  S.feats = keep; S.simple = keepSimple;
+  return h;
+}
+function slotsInUse(){
+  const n = note(S.noteId), used = [];
+  if (chipsFor(n).length) used.push('S1/S2');
+  if (on('sync')) used.push('S3');
+  if (menuItems(n).length > 4) used.push('S4');
+  if (insertItems().length > 3) used.push('S5');
+  if (on('meas')) used.push('S6');
+  if (folderList().length > 5) used.push('S7');
+  if (on('job') || on('task') || on('site') || on('tag')) used.push('S8');
+  return used;
+}
+
+/* ---------------- render ---------------- */
+function renderHeader(){
+  const l = L();
+  document.documentElement.lang = S.lang;
+  document.getElementById('h-title').textContent = l.title;
+  document.getElementById('h-sub').textContent = l.sub;
+  document.getElementById('viewseg').innerHTML = [['proto',l.vProto],['rules',l.vRules]].map(([k,t]) => `<button aria-pressed="${S.view === k}" data-act="view" data-v="${k}">${esc(t)}</button>`).join('');
+  document.getElementById('langseg').innerHTML = [['hu','HU'],['en','EN']].map(([k,t]) => `<button aria-pressed="${S.lang === k}" data-act="lang" data-l="${k}">${t}</button>`).join('');
+}
+function controlsHTML(){
+  const l = L();
+  const seg = (name, val, opts, dis) => `<div class="seg" role="group">${opts.map(([k,t]) => `<button aria-pressed="${val === k}" data-act="${name}" data-v="${k}"${dis && dis(k) ? ' disabled' : ''}>${esc(t)}</button>`).join('')}</div>`;
+  const feats = FEATS.map(f => { const [nm, ds] = f[S.lang]; return `<button class="feat" aria-pressed="${S.feats[f.id]}" data-act="feat" data-f="${f.id}"${S.simple ? ' disabled' : ''}><span class="box"></span><span class="nm">${esc(nm)}</span><span class="ft">${esc(S.simple && S.feats[f.id] ? l.kept : l.ft[f.ft])}</span><span class="ds">${esc(ds)}</span></button>`; }).join('');
+  const n = note(S.noteId), c = chipsFor(n), mi = menuItems(n);
+  const chipsShown = Math.min(c.length, 3), menuRows = Math.min(mi.length, 6);
+  const dotUsed = on('sync') && n.pending ? 1 : 0;
+  let check;
+  if (S.simple){ const same = surfaceNow() === surfacePlain(); check = `<div class="check ${same ? 'ok' : 'bad'}"><i>${same ? '✓' : '✕'}</i><span>${esc(same ? l.snapOk : l.snapBad)}</span></div>`; }
+  else { const u = slotsInUse(); check = `<div class="check info"><i>◇</i><span>${esc(l.snapUse)}${u.length ? u.join(' · ') : '—'}</span></div>`; }
+  return `<aside class="panel stack">
+    <button class="snap" aria-pressed="${S.simple}" data-act="simple"><span class="knob"></span><span><b>${esc(l.simple)}</b><span class="h">${esc(S.simple ? l.simpleOn : l.simpleOff)}</span></span></button>
+    <div class="field"><span class="lab">${esc(l.look)}</span>${seg('look', S.look, [['alap',l.alap],['ismeros',l.ismeros]])}<span class="hint">${esc(S.look === 'alap' ? l.lookAlap : l.lookIsm)}</span></div>
+    <div class="field"><span class="lab">${esc(l.beh)}</span>${seg('beh', S.beh, [['kezi',l.kezi],['csendes',l.csendes]])}<span class="hint">${esc(S.beh === 'kezi' ? l.behKezi : l.behCs)}</span></div>
+    <div class="field"><span class="lab">${esc(l.device)}</span>${seg('device', S.device, [['phone',l.phone],['pc',l.pc]])}</div>
+    <div class="field"><span class="lab">${esc(l.feats)}</span><span class="hint">${esc(l.featsSub)}</span><div class="feats">${feats}</div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn" data-act="allon"${S.simple ? ' disabled' : ''}>${esc(l.allOn)}</button><button class="btn" data-act="alloff">${esc(l.allOff)}</button></div></div>
+    <div class="field"><span class="lab">${esc(l.budget)}</span>
+      <div class="budget"><span>${esc(l.bChips)}</span><span class="v ok">${chipsShown}${c.length > 3 ? '+' + (c.length - 3) : ''} / 3</span>
+      <span>${esc(l.bDot)}</span><span class="v ok">${dotUsed} / 1</span>
+      <span>${esc(l.bMenu)}</span><span class="v ${menuRows <= 6 ? 'ok' : 'over'}">${menuRows} / 6</span>
+      <span>${esc(l.bBars)}</span><span class="v ok">0 / 0</span></div>${check}</div>
+  </aside>`;
+}
+function engineHTML(){
+  const l = L();
+  const jobs = BASEJOBS.map(j => ({t:j[S.lang], k:l.kProtect, st:'run'}));
+  FEATS.filter(f => f.job).forEach(f => {
+    const st = !S.feats[f.id] ? 'off' : (S.simple && f.kind === 'acting') ? 'pause' : 'run';
+    jobs.push({t:f.job[S.lang], k: f.kind === 'protect' ? l.kProtect : f.kind === 'passive' ? l.kPassive : l.kActing, st});
+  });
+  const stt = {run:l.run, pause:l.pause, off:l.off};
+  const log = S.log.length ? S.log.map(x => `<div class="le${x.undone ? ' u' : ''}"><div class="w">${x.at}${x.undone ? ' · ' + esc(l.undone) : ''}</div>${esc(x.ev[S.lang])}${x.ev.undoable === false ? '' : `<br><button data-act="undo" data-n="${x.n}">${esc(l.undo)}</button>`}</div>`).join('') : `<div class="hint">${esc(l.logEmpty)}</div>`;
+  return `<aside class="panel engine"><h2>${esc(l.engine)}</h2><p class="sub">${esc(l.engineSub)}</p>
+    <div class="jobs">${jobs.map(j => `<div class="job"><span>${esc(j.t)}</span><span class="pill ${j.st}">${esc(stt[j.st])}</span><span class="k">${esc(j.k)}</span></div>`).join('')}</div>
+    <h3 class="mini">${esc(l.log)} · R7</h3><div class="log">${log}</div></aside>`;
+}
+function stageHTML(){
+  const l = L();
+  const isI = S.look === 'ismeros';
+  if (S.device === 'pc') return `<section class="stage">${isI ? `<div class="note-l">${esc(l.pcIsm)}</div>` : ''}<div class="pcscroll">${pcHTML()}</div><div class="note-l">${esc(l.stageNote)}</div></section>`;
+  return `<section class="stage"><div class="phone"><div class="screen ${isI ? 'ism' : 'alap'}" id="screen">${phoneInner()}</div></div><div class="note-l">${esc(l.stageNote)}</div></section>`;
+}
+
+/* ---------------- rules view ---------------- */
+const RULES = {
+hu:[
+ ['R1','Az egyszerű felület maga az alkalmazás','A funkciók nélküli képernyők készülnek el először, és ezek a specifikáció. Minden későbbi képernyő ez a képernyő plusz a helyek tartalma.'],
+ ['R2','Egy kapcsoló visszavisz','Az Egyszerű mód azonnal elrejt minden helyet. Semmi sem törlődik, alakul át vagy költözik; kikapcsolva pontosan az előző felület tér vissza.'],
+ ['R3','A funkció csak helyet tölthet ki','Nincs új fül, nincs állandó eszközsor, nincs magától nyíló képernyő, nincs új mező a sima jegyzet létrehozásakor, a gépelés nem változik.'],
+ ['R4','A nagy eszköz látogatás','Vászon, naptár, tábla, PDF-jelölés, tervnézet: teljes képernyős lapként nyílik a … menüből vagy egy mappából, és oda zár vissza, ahonnan jöttél.'],
+ ['R5','Keret van','Bárhány funkció fut, a jegyzetképernyőn legfeljebb 3 csip, 1 pötty és a … menü; egy sorban legfeljebb 2 csip. A többi egy +N csipbe kerül. Teszt őrzi.'],
+ ['R6','Eredmény, nem folyamat','A gép az eredményt mutatja („Kovács lakás?” csip), a munkáját nem: nincs szinkronfolyamat-sáv, indexelő képernyő, mindennapi jelmondatkérés.'],
+ ['R7','Minden automatikus lépés látszik és visszavonható','Minden jegyzet … menüjében ott a Háttérnapló: mit, mikor és miért tett a gép, mindegyik mellett Visszavonás. Ettől elfogadható a fekete doboz.'],
+ ['R8','A tartalom sima marad','Amit egy funkció hozzáad, a frontmatterbe vagy a jegyzet mellé kerül, a szövegbe soha, hacsak nem a felhasználó gépelte. Az átíró funkció új változatot ment.'],
+ ['R9','A védelem soha nem szünetel','Egyszerű módban a mentés, előzmények, biztonsági mentés, szinkron, titkosítás és titokészlelés fut tovább; a tartalmon dolgozó funkciók szünetelnek.'],
+ ['R10','A kinézet és a viselkedés két külön beállítás','Megjelenés: Alap vagy Ismerős. Viselkedés: Kézi vagy Csendes. Mindkét kinézetnek ugyanazok a képernyői és helyei, így a váltás nem csinál belőle másik alkalmazást.'],
+],
+en:[
+ ['R1','The simple surface is the app','The screens with no features on are designed first and are the spec. Every later screen is that screen plus slot contents.'],
+ ['R2','One switch snaps back','Simple mode hides every slot at once. Nothing is deleted, converted or moved; switching it off brings back exactly the previous surface.'],
+ ['R3','Features only fill slots','No new tab, no permanent toolbar row, no screen that opens by itself, no new field in plain note creation, no change to how typing works.'],
+ ['R4','Big tools are visits','Canvas, calendar, board, PDF markup, plan view: a full-screen sheet opened from the … menu or a folder that closes back to where the user was.'],
+ ['R5','There is a budget','However many features run, the note screen shows at most 3 chips, 1 dot and the … menu; a list row at most 2 chips. The rest folds into a +N chip. A test guards it.'],
+ ['R6','Results, not processes','The engine shows outcomes (a "Kovács lakás?" chip), not its workings: no sync progress bars, no indexing screens, no daily passphrase prompts.'],
+ ['R7','Every automatic act is visible and undoable','Each note’s … menu has the Engine log: what the engine did, when and why, each with Undo. This is what makes the black box acceptable.'],
+ ['R8','Content stays plain','What a feature adds goes to the frontmatter or beside the note, never into the text unless the user typed it. A feature that rewrites text saves a new version.'],
+ ['R9','Protection never pauses','In Simple mode saving, history, backup, sync, encryption and secret detection keep running; features that act on content pause.'],
+ ['R10','Look and behaviour are separate settings','Look: Alap or Ismerős. Behaviour: Kézi or Csendes. Both looks have the same screens and slots, so switching never makes it a different app.'],
+]};
+const SLOTS = {
+hu:[['S1','Sorcsipek','a jegyzet címe alatt a listában','2','munka, határidő'],['S2','Fejléccsipek','a cím alatt a jegyzetben','3, aztán +N','munka, címke, emlékeztető, típus, ütközés'],['S3','Állapotpötty','a cím mellett / a címsorban','1','szinkronra vár, ütközés, zárolt'],['S4','… menü','a jegyzet menüje','6, aztán Több…','export, jelentés, előzmények, zárolás, Háttérnapló, látogatások'],['S5','Beszúrás lap','Alap: a + az írósávon; Ismerős: a kamera gomb','rács, nem új gomb','hangjegyzet, szkennelés, mérési táblázat'],['S6','Új jegyzet, lenyomva','a + / ceruza lenyomva tartva; PC: a nyíl az Új mellett','rövid lista','felmérés, mérés, telefon'],['S7','Mappák','mappalista / oldalsáv','sima mappaként','Beérkezett, Ma, Teendők'],['S8','Keresési tippek','a keresőmező alatt gépelés közben','csipek','munka: Kovács, van fotó'],['S9','Beállítás sor','Beállítások → Funkciók','funkciónként 1','be / ki, háttérben / javasol'],['S10','Rögzítési pontok','az alkalmazáson kívül','—','widget, megosztás, gyorsbillentyű, QR']],
+en:[['S1','Row chips','under the title in the list','2','job, due date'],['S2','Header chips','under the title in the note','3, then +N','job, tag, reminder, type, conflict'],['S3','Status dot','beside the title / in the title bar','1','waiting to sync, conflict, locked'],['S4','… menu','the note menu','6, then More…','export, report, history, lock, Engine log, visits'],['S5','Insert sheet','Alap: + on the insert bar; Ismerős: the camera button','a grid, never a new button','voice memo, scan, measurement table'],['S6','New-note hold','hold + / compose; PC: the arrow beside New','a short list','survey, measurement, phone call'],['S7','Folders','folder list / sidebar','as ordinary folders','Inbox, Today, To do'],['S8','Search hints','under the search field while typing','chips','munka: Kovács, van fotó'],['S9','Settings row','Settings → Features','1 per feature','on / off, background / suggest'],['S10','Capture points','outside the app','—','widget, share, hotkey, QR']]};
+const FOOT = [
+  ['surface',{hu:'Felület (az egyszerű alkalmazás része)',en:'Surface (part of the simple app)'},'N-UI N-EDIT N-CHECK N-PIN N-FOLDER N-FIND N-ATT N-TRASH N-SHAREOUT N-QUICK N-PHONE N-SHARE N-A11Y N-I18N'],
+  ['engine',{hu:'Gépház (nincs felülete)',en:'Engine room (no surface)'},'N-VAULT N-STORE N-INDEX N-API N-CORE-TEST N-JOURNAL N-SYNC-LAN N-SYNC-FILE N-SYNC-GH N-CRYPT N-ENROL N-SAFE-HTML N-AUDIT N-RECOVER N-BACKUP N-FSCK N-FALLBACK N-PERF N-OCR N-STACK N-SEM N-SPELL N-DEV N-CLI N-LINKS N-KEYS N-SELECT N-AI-TRANS N-APPLOCK'],
+  ['chips',{hu:'Csipek (S1, S2)',en:'Chips (S1, S2)'},'N-JOB N-TAG N-VIS N-TYPE N-REMIND N-TASK N-SOURCE N-SITE N-SECRET N-MERGE N-AI-TAG'],
+  ['dot',{hu:'Állapotpötty (S3)',en:'Status dot (S3)'},'N-STATUS'],
+  ['menu',{hu:'Menü és beszúrás (S4–S6)',en:'Menu and insert (S4–S6)'},'N-SLASH N-TABLE N-CODE N-MATH N-DIAG N-VOICE N-SCAN N-ANNOT N-INK N-LINK N-XLINK N-EMBED N-LOCK N-MEAS N-BUY N-FOCUS N-HIST N-EXPORT N-REPORT N-ACTIONS N-COMMIT N-IMPORT N-AI-CLEAN N-AI-SUM'],
+  ['folders',{hu:'Mappák (S7)',en:'Folders (S7)'},'N-INBOX N-SMART N-DAILY N-DIARY'],
+  ['visits',{hu:'Látogatások (R4)',en:'Visits (R4)'},'N-CANVAS N-GRAPH N-CAL N-BOARD N-PDF N-PLANPIN N-AI-ASK'],
+  ['capture',{hu:'Rögzítési pontok (S10)',en:'Capture points (S10)'},'N-WIDGET N-TAG-QR N-CLIP N-MAILIN N-PALETTE N-SWITCH'],
+];
+const LOOKS = {
+hu:[['','Alap','Ismerős'],['Kinek','mindenkinek, aki mást nem választ','aki iPhone-ról jön, és ismerős elrendezést szeretne'],['Kinézet','Mélyvíz: sötét alap, hajszálvonalak, szögletes, levágott sarkú vezérlők','rendszerbetű, nagy félkövér címek, kerekített csoportos listák, borostyánsárga kiemelés, a telefon témáját követi'],['Navigáció','keresősáv felül, mögötte a mappafiók; szögletes + gomb jobbra lent','„‹ Mappák” vissza felül; alsó eszközsor: jegyzetszám középen, írás gomb jobbra'],['Jegyzet','felső sáv: vissza, kitűzés, …; írósáv a billentyűzet fölött','felül: vissza, megosztás, …, Kész; alul: ellenőrzőlista, kamera, toll, új'],['Viselkedés','Kézi: a gép azt teszi, amit kérsz','Csendes: a gép magától dolgozik, csipként javasol']],
+en:[['','Alap','Ismerős'],['Who','everyone who does not choose otherwise','people coming from an iPhone who want a familiar layout'],['Look','Mélyvíz: dark ground, hairlines, square controls with a cut corner','system font, large bold titles, rounded grouped lists, amber-yellow accent, follows the phone theme'],['Navigation','search bar on top with the folder drawer behind it; a square + bottom right','"‹ Folders" back label on top; bottom toolbar: note count in the middle, compose on the right'],['Note','top bar: back, pin, …; insert bar above the keyboard','top: back, share, …, Done; bottom: checklist, camera, pen, compose'],['Behaviour','Kézi: the engine does what you ask','Csendes: the engine works by itself and suggests chips']]};
+const DEC = {
+hu:[['SIMPLE-Q01','Első indítás','Egyszerű mód, semmi sincs bekapcsolva','az NT1 készlet bekapcsolva'],['SIMPLE-Q02','Az Egyszerű mód és a profil hatóköre','eszközönként','tárolónként (minden eszköz együtt)'],['SIMPLE-Q03','Ismerős a PC-n','csak telefonon','PC-s kinézet is'],['SIMPLE-Q04','Alapértelmezett viselkedés','a kinézetet követi (Ismerős → Csendes, Alap → Kézi)','mindig Kézi, amíg át nem állítják'],['SIMPLE-Q05','Téma','Alap a VRG-témát követi (sötét először), Ismerős a telefon világos / sötét beállítását','mindkettő a telefont'],['SIMPLE-Q06','Csipkeret','3 a fejlécben, 2 a sorban','4 és 2 · C 2 és 1'],['SIMPLE-Q07','Ismerős kiemelőszín','az ismerőshöz közeli borostyánsárga','a VRG meleg kiemelése'],['SIMPLE-Q08','Mit tehet a gép magától Csendes módban','csak a Háttérnaplóból visszavonható lépéseket','visszavonhatatlant is, megerősítéssel']],
+en:[['SIMPLE-Q01','First start','Simple mode, nothing on','the NT1 preset on'],['SIMPLE-Q02','Scope of Simple mode and the profile','per device','per vault (all devices together)'],['SIMPLE-Q03','Ismerős on the PC','phone only','a PC skin too'],['SIMPLE-Q04','Behaviour default','follows the look (Ismerős → Csendes, Alap → Kézi)','always Kézi until changed'],['SIMPLE-Q05','Theme','Alap follows the VRG theme (dark-first), Ismerős the phone light / dark setting','both follow the phone'],['SIMPLE-Q06','Chip budget','3 in the header, 2 in a row','4 and 2 · C 2 and 1'],['SIMPLE-Q07','Ismerős accent','amber-yellow close to the familiar one','the VRG warm accent'],['SIMPLE-Q08','What may act alone in Csendes','only acts undoable from the Engine log','also non-undoable acts, with a confirmation']]};
+function rulesHTML(){
+  const l = L(), lg = S.lang;
+  const lk = LOOKS[lg];
+  return `<section>
+    <div class="sect" style="margin-top:0"><h2>${esc(l.rulesH)}</h2><div class="rules">${RULES[lg].map(([id,t,d]) => `<div class="rule"><span class="id">${id}</span><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}</div></div>
+    <div class="sect"><h2>${esc(l.slotsH)}</h2><div class="tbl"><table><thead><tr><th>#</th><th>${esc(l.th_slot)}</th><th>${esc(l.th_where)}</th><th>${esc(l.th_limit)}</th><th>${esc(l.th_ex)}</th></tr></thead><tbody>${SLOTS[lg].map(r => `<tr><td><code>${r[0]}</code></td><td><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="sect"><h2>${esc(l.lookH)}</h2><div class="tbl"><table><thead><tr>${lk[0].map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${lk.slice(1).map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="sect"><h2>${esc(l.footH)}</h2><div class="tbl"><table><thead><tr><th>${esc(l.th_fp)}</th><th>${esc(l.th_mod)}</th><th>${esc(l.th_n)}</th></tr></thead><tbody>${FOOT.map(([k,t,m]) => { const ms = m.split(' '); return `<tr><td><b>${esc(t[lg])}</b></td><td><div class="foot">${ms.map(x => `<code>${x}</code>`).join('')}</div></td><td>${ms.length}</td></tr>`; }).join('')}<tr><td></td><td style="text-align:right"><b>Σ</b></td><td><b>${FOOT.reduce((a,f) => a + f[2].split(' ').length, 0)}</b></td></tr></tbody></table></div></div>
+    <div class="sect"><h2>${esc(l.decH)}</h2><div class="tbl"><table><thead><tr><th>#</th><th>${esc(l.th_q)}</th><th>${esc(l.th_a)}</th><th>${esc(l.th_b)}</th></tr></thead><tbody>${DEC[lg].map(r => `<tr><td><code>${r[0]}</code></td><td>${esc(r[1])}</td><td><b>${esc(r[2])}</b></td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div></div>
+    <p class="repo">${esc(l.repo)}<code>docs/notes/SIMPLE.md</code> · <code>docs/notes/SIMPLE.hu.md</code></p>
+  </section>`;
+}
+
+function render(){
+  renderHeader();
+  const app = document.getElementById('app');
+  const fid = document.activeElement && document.activeElement.id;
+  const caret = fid && document.activeElement.selectionStart;
+  if (S.view === 'rules') app.innerHTML = rulesHTML();
+  else app.innerHTML = `<div class="grid">${controlsHTML()}${stageHTML()}${engineHTML()}</div>`;
+  if (fid && (fid === 'q-phone' || fid === 'q-pc')){ const el = document.getElementById(fid); if (el){ el.focus(); try { el.setSelectionRange(caret, caret); } catch(e){} } }
+}
+
+/* ---------------- interaction ---------------- */
+let toastTimer = null;
+function toast(msg){ S.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { S.toast = null; render(); }, 2400); }
+function openNew(type){
+  const l = L(), id = 'x' + (++S.seq);
+  const tpl = {
+    t_note:[], t_survey:[['p','Helyszín:'],['c',false,'Elosztó'],['c',false,'Áramkörök'],['c',false,'Fotók']],
+    t_meas:[['p','Áramkör — érték — határ — eredmény']], t_phone:[['p','Ki hívott:'],['p','Mit kér:']],
+  }[type || 't_note'];
+  NOTES.unshift({id, folder: S.folder in {munka:1,iroda:1,otlet:1} ? S.folder : 'munka', title: type && type !== 't_note' ? l[type] : l.newNote, when:'ma', time:clock(), date:'2026. november 11. ' + clock(), type: type === 't_survey' ? 'felmérés' : type === 't_meas' ? 'mérés' : undefined, body:tpl});
+  S.noteId = id; S.screen = 'note'; S.sheet = null;
+}
+function act(el, ev){
+  const a = el.dataset.act, l = L();
+  switch (a){
+    case 'view': S.view = el.dataset.v; try { location.hash = S.view; } catch(e){} break;
+    case 'lang': S.lang = el.dataset.l; LS.set('fg.lang', S.lang); break;
+    case 'simple': S.simple = !S.simple; S.sheet = null; S.drawer = false; break;
+    case 'look': S.look = el.dataset.v; S.beh = S.look === 'ismeros' ? 'csendes' : 'kezi'; S.sheet = null; S.drawer = false; if (S.look === 'alap' && S.screen === 'folders') S.screen = 'list'; break;
+    case 'beh': S.beh = el.dataset.v; break;
+    case 'device': S.device = el.dataset.v; S.sheet = null; break;
+    case 'feat': S.feats[el.dataset.f] = !S.feats[el.dataset.f]; break;
+    case 'allon': FEATS.forEach(f => S.feats[f.id] = true); break;
+    case 'alloff': FEATS.forEach(f => S.feats[f.id] = false); S.simple = false; S.sheet = null; if (['ma','todo'].includes(S.folder)) S.folder = 'all'; break;
+    case 'folder': S.folder = el.dataset.f; S.drawer = false; S.screen = S.device === 'pc' ? S.screen : 'list'; S.search = ''; break;
+    case 'tofolders': S.screen = 'folders'; S.searching = false; break;
+    case 'tolist': S.screen = 'list'; S.sheet = null; break;
+    case 'open': S.noteId = el.dataset.id; if (S.device === 'phone') S.screen = 'note'; S.sheet = null; break;
+    case 'drawer': S.drawer = !S.drawer; break;
+    case 'side': S.side = !S.side; break;
+    case 'searchfocus': S.screen = 'list'; S.folder = 'all'; S.searching = true; break;
+    case 'hint': S.search = el.dataset.h; S.searching = true; break;
+    case 'tick': { const n = note(S.noteId), b = bodyOf(n)[+el.dataset.i]; if (b && b[0] === 'c') b[1] = !b[1]; break; }
+    case 'pin': { const n = note(S.noteId); n.pinned = !n.pinned; S.sheet = null; break; }
+    case 'sheet': S.sheet = el.dataset.s; break;
+    case 'menuall': S.sheet = 'menuall'; break;
+    case 'closesheet': if (ev.target.closest('[data-stop]') && el.classList.contains('sheetwrap')) return false; S.sheet = null; break;
+    case 'accept': S.accepted[el.dataset.k] = true; toast(l.toastAccepted); break;
+    case 'undo': undo(+el.dataset.n); break;
+    case 'report': S.sheet = null; toast(l.toastReport); break;
+    case 'visit': S.sheet = 'visit'; break;
+    case 'lock': S.sheet = null; toast(l.toastLock); break;
+    case 'airun': S.done.ai = true; S.fired.ai1 = true; S.log.unshift({ev:EV.find(e => e.id === 'ai1'), at:clock(), undone:false, n:++S.seq}); S.sheet = null; break;
+    case 'elog': S.sheet = 'elog'; break;
+    case 'inserted': S.sheet = null; toast(l.toastInsert); break;
+    case 'photo': toast(l.toastPhoto); break;
+    case 'newtype': openNew(el.dataset.t); break;
+    case 'new': openNew(); break;
+    case 'toast': S.sheet = null; toast(l.toastGeneric); break;
+    default: return false;
+  }
+  return true;
+}
+document.addEventListener('click', ev => {
+  if (holdFired){ holdFired = false; ev.preventDefault(); return; }
+  const el = ev.target.closest('[data-act]');
+  if (!el || el.tagName === 'INPUT' || el.disabled) return;
+  if (el.classList.contains('sheetwrap') && ev.target.closest('[data-stop]') && !ev.target.closest('[data-act]:not(.sheetwrap)')) return;
+  if (act(el, ev) !== false){ runEngine(); render(); }
+});
+document.addEventListener('input', ev => {
+  if (ev.target.dataset && ev.target.dataset.act === 'q'){ S.search = ev.target.value; S.searching = true; render(); }
+});
+document.addEventListener('focusin', ev => {
+  if (ev.target.dataset && ev.target.dataset.act === 'q' && !S.searching){ S.searching = true; render(); }
+});
+/* long press on New = note types (S6), only when Note types are on */
+let holdTimer = null, holdFired = false;
+document.addEventListener('pointerdown', ev => {
+  const el = ev.target.closest('[data-hold]'); if (!el) return;
+  holdTimer = setTimeout(() => { if (on('meas')){ holdFired = true; S.sheet = 'hold'; render(); } }, 480);
+});
+['pointerup','pointercancel','pointerleave'].forEach(t => document.addEventListener(t, () => clearTimeout(holdTimer), true));
+document.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-hold]')) ev.preventDefault(); });
+window.addEventListener('hashchange', () => { S.view = location.hash === '#rules' ? 'rules' : 'proto'; render(); });
+if (location.hash === '#rules') S.view = 'rules';
+render();
+</script>
+
+</body></html>

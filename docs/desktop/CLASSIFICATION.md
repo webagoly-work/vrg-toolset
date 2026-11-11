@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 115 | 31 |
+| open · user | 117 | 32 |
 | open · dev | 280 | 55 |
 | open · all | 24 | 1 |
 | internal | 69 | 0 |
 | roadmap | 46 | 5 |
-| **total** | **534** | **92** |
+| **total** | **536** | **93** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -56,6 +56,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `bridge` | BRIDGE dokumentáció · *BRIDGE document set* | document set · standards |  | munka / anyag | live |
 | `jobs` | Munkák · *Jobs* | folder · job records |  | fajlok | live |
 | `files` | Fájlok · *Files* | panel · file manager |  | fajlok | live |
+| `archive` | Archívum · *Artifact archive* | knowledge base · artifact archive |  | fajlok | beta |
 | `mindmap` | VRG MindMap · *VRG MindMap* | application |  | alkalmazasok / iroda | live |
 | `web` | Böngésző · *Browser* | panel · embedded browser |  | alkalmazasok / iroda | live |
 | `mail` | Posta · *Mail* | panel · mail client |  | alkalmazasok / iroda | beta |
@@ -174,7 +175,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `service` | Service · Szolgáltatás | unit | 18 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 8 |
-| `knowledge base` | Knowledge base · Tudásbázis | unit | 8 |
+| `knowledge base` | Knowledge base · Tudásbázis | unit | 10 |
 | `document set` | Document set · Dokumentumcsomag | unit | 18 |
 | `runbook` | Runbook · Forgatókönyv | unit | 10 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
@@ -275,6 +276,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:R/N` | Rétegverem · Döntésnapló | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/M` | Rétegverem · Vonaltérkép | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/F` | Rétegverem · Futásnapló | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
+| `menu:proj:R/A` | Rétegverem · Archívum | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
 | `menu:proj:R/T` | Rétegverem · Telefonra | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/B` | Rétegverem · Újraépítés | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/D` | Rétegverem · Doktor | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
@@ -729,6 +731,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `go:openwrt` | GO OPENWRT | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `go:planner` | GO PLANNER | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `go:route` | GO ROUTE | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
+| `dir:Archive` | Archive | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
 | `dir:BRIDGE` | BRIDGE | document set · standards | open | user |  | is the catalog item `bridge` |
 | `dir:Calculator` | Calculator | utility · calculator | open | user |  | is the catalog item `calc-led` |
 | `dir:CodeCity` | CodeCity | application · code visualization | open | dev | `dev:knowledge` | is the catalog item `codecity` |

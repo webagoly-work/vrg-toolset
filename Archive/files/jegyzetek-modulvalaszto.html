@@ -1,0 +1,1213 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>VRG Jegyzetek modulválasztó</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Mélyvíz instrument panel — a sticky readout column beside a long module rack; hairlines, square controls, two cut corners. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232,240,246,.14); --line-strong: rgba(232,240,246,.32);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #6c757c;
+  --accent: #93d3e6; --accent-soft: rgba(147,211,230,.13); --on-accent: #08141a;
+  --warm: #e8a873; --warm-soft: rgba(232,168,115,.14);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --p0: #93d3e6; --p1: #6fb4c9; --p2: #5294a8; --p3: #e8a873; --p4: #c98f5e; --p5: #6c757c;
+  --cut: 7px;
+  --voice: Bahnschrift, "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff;
+  --line: rgba(14,32,43,.13); --line-strong: rgba(14,32,43,.30);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.10); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.10);
+  --ok: #2f7d4c; --warn: #8a6516; --crit: #b0433a;
+  --p0: #1f6f87; --p1: #3a8aa1; --p2: #66a7ba; --p3: #b8693a; --p4: #d39a6e; --p5: #9aa6ae;
+  color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff;
+  --line: rgba(14,32,43,.13); --line-strong: rgba(14,32,43,.30);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.10); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.10);
+  --ok: #2f7d4c; --warn: #8a6516; --crit: #b0433a;
+  --p0: #1f6f87; --p1: #3a8aa1; --p2: #66a7ba; --p3: #b8693a; --p4: #d39a6e; --p5: #9aa6ae;
+  color-scheme: light; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: var(--accent); }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; margin: 0; }
+button, input, select, textarea { font: inherit; color: var(--text); border-radius: 0; }
+button { cursor: pointer; background: var(--panel); border: 1px solid var(--line-strong); padding: 6px 12px; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+input[type=search], input[type=text], select, textarea { background: var(--raised); border: 1px solid var(--line-strong); padding: 7px 10px; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); font-weight: 600; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* header */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 12px; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.brand h1 { font-size: 24px; }
+.brand .sub { color: var(--dim); font-size: 13px; }
+.lang { margin-left: auto; display: flex; border: 1px solid var(--line-strong); }
+.lang button { border: 0; padding: 4px 10px; font-family: var(--mono); font-size: 12px; background: transparent; color: var(--dim); }
+.lang button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; width: 100%; scrollbar-width: none; }
+nav.tabs a { text-decoration: none; color: var(--dim); padding: 6px 12px; border-bottom: 2px solid transparent; white-space: nowrap; font-family: var(--voice); font-size: 16px; letter-spacing: .03em; }
+nav.tabs a[aria-current=page] { color: var(--text); border-bottom-color: var(--accent); }
+nav.tabs a:hover { color: var(--text); }
+
+main { padding-block: 22px 60px; }
+.intro { max-width: 70ch; color: var(--dim); margin: 0 0 18px; }
+.intro strong { color: var(--text); font-weight: 600; }
+
+/* modules view */
+.mod-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+@media (max-width: 980px) { .mod-grid { grid-template-columns: minmax(0, 1fr); } .aside { order: -1; position: static !important; max-height: none !important; } }
+.aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 112px); max-height: calc(100vh - 130px); overflow-y: auto; display: grid; gap: 14px; }
+.panel { background: var(--panel); border: 1px solid var(--line-strong); padding: 14px 16px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+.panel h2 { font-size: 17px; margin-bottom: 8px; }
+.readout { display: flex; align-items: baseline; gap: 10px; }
+.readout .big { font-family: var(--mono); font-size: 34px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--accent); line-height: 1.1; }
+.readout .of { color: var(--dim); font-family: var(--mono); }
+.bar { display: flex; height: 10px; margin: 10px 0 6px; background: var(--horizon); }
+.bar span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--dim); }
+.legend i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; }
+.counts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin-top: 10px; }
+.counts div { border: 1px solid var(--line); padding: 6px 8px; }
+.counts b { display: block; font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; font-size: 16px; }
+.counts small { color: var(--dim); font-size: 11.5px; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { font-size: 13px; padding: 5px 9px; }
+.hint { font-size: 12.5px; color: var(--dim); margin: 6px 0 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ai textarea { min-height: 74px; resize: vertical; }
+.ai .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.chip { font-size: 12.5px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line-strong); color: var(--dim); }
+.chip:hover { color: var(--text); }
+.ai-out { margin-top: 10px; border-left: 2px solid var(--warm); padding: 4px 0 4px 10px; font-size: 13.5px; }
+.ai-out ul { margin: 6px 0; padding-left: 18px; }
+.status { font-size: 12.5px; color: var(--dim); }
+.status.ok { color: var(--ok); } .status.err { color: var(--crit); } .status.warn { color: var(--warn); }
+
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 10px; }
+.fchips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 16px; }
+.fchips .sep { width: 1px; height: 20px; background: var(--line-strong); margin: 0 4px; }
+.fchip { font-size: 12.5px; padding: 3px 9px; font-family: var(--mono); color: var(--dim); background: transparent; }
+.fchip[aria-pressed=true] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.fam { margin-bottom: 26px; }
+.fam-h { display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--line-strong); padding-bottom: 6px; margin-bottom: 4px; }
+.fam-h h2 { font-size: 20px; }
+.fam-h .n { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.fam-h button { margin-left: auto; font-size: 12px; padding: 2px 8px; }
+.mod { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 4px 10px; padding: 10px 6px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.mod:hover { background: var(--accent-soft); }
+.mod.on { background: linear-gradient(90deg, var(--accent-soft), transparent 70%); }
+.mod.core { cursor: default; }
+.mod input { margin: 4px 0 0; width: 16px; height: 16px; }
+.mod .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.mod .id { font-family: var(--mono); font-size: 12.5px; color: var(--accent); }
+.mod .name { font-weight: 600; }
+.mod .tags { display: inline-flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.pill { font-family: var(--mono); font-size: 11px; padding: 1px 6px; border: 1px solid var(--line-strong); color: var(--dim); white-space: nowrap; }
+.pill.t0 { color: var(--accent); border-color: var(--accent); }
+.pill.t1 { color: var(--ok); border-color: var(--ok); }
+.pill.t2 { color: var(--warn); border-color: var(--warn); }
+.pill.t3 { color: var(--faint); }
+.mod .desc { grid-column: 2; color: var(--dim); font-size: 14px; max-width: 78ch; }
+.mod .meta { grid-column: 2; font-size: 12.5px; color: var(--faint); display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.mod .meta b { color: var(--dim); font-weight: 500; }
+.mod .why { grid-column: 2; font-size: 13px; color: var(--warm); }
+.empty { color: var(--dim); padding: 20px 0; }
+
+/* text views */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.card { border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; min-width: 0; }
+.card h3 { font-size: 18px; margin-bottom: 6px; }
+.card ul { margin: 6px 0 0; padding-left: 18px; color: var(--dim); }
+.card li { margin: 3px 0; }
+.card li b { color: var(--text); font-weight: 600; }
+.section-h { margin: 28px 0 10px; font-size: 22px; }
+.section-h:first-child { margin-top: 0; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); background: var(--horizon); font-weight: 600; }
+td.prod { font-weight: 600; white-space: nowrap; }
+td.take { color: var(--warm); }
+.plbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
+.plbar input { flex: 1 1 220px; min-width: 0; padding: 6px 9px; background: var(--panel, transparent); color: var(--text); border: 1px solid var(--line-strong); font: inherit; }
+.verdict { font-family: var(--mono); font-size: 11px; padding: 1px 6px; border: 1px solid; white-space: nowrap; }
+.verdict.have { color: var(--ok); } .verdict.part { color: var(--warn); } .verdict.new { color: var(--accent); } .verdict.core { color: var(--dim); } .verdict.no { color: var(--faint); }
+.goto { font-family: var(--mono); font-size: 11.5px; padding: 1px 6px; margin: 0 4px 3px 0; border: 1px solid var(--line-strong); color: var(--accent); background: transparent; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.goto:hover { border-color: var(--accent); }
+.goto i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); display: inline-block; }
+.goto.on i { background: var(--ok); }
+td.plname { font-weight: 600; white-space: nowrap; }
+.plsum { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 14px; font-size: 13px; color: var(--dim); }
+.plsum b { color: var(--text); font-family: var(--mono); }
+td .mono { color: var(--accent); }
+pre.tree { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: var(--dim); margin: 0; }
+.dec { border: 1px solid var(--line); background: var(--panel); padding: 12px 14px; margin-bottom: 10px; }
+.dec .q { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.dec .q .mono { color: var(--accent); }
+.dec .q h3 { font-size: 17px; }
+.dec label { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; color: var(--dim); cursor: pointer; }
+.dec label.sel { color: var(--text); }
+.dec label input { margin-top: 4px; }
+.dec .rec { font-family: var(--mono); font-size: 11px; color: var(--ok); border: 1px solid var(--ok); padding: 0 5px; margin-left: 6px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--raised); border: 1px solid var(--accent); padding: 8px 14px; font-size: 13.5px; max-width: calc(100% - 32px); z-index: 20; }
+footer { color: var(--faint); font-size: 12.5px; border-top: 1px solid var(--line); padding-block: 14px 30px; }
+@media (prefers-reduced-motion: no-preference) { .mod { transition: background .15s; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1 id="h-title">VRG Jegyzetek</h1><span class="sub" id="h-sub"></span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-hu" aria-pressed="true">HU</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section data-view="modules">
+    <p class="intro" id="mod-intro"></p>
+    <div class="mod-grid">
+      <div>
+        <div class="filters">
+          <input type="search" id="q" autocomplete="off">
+          <label class="row" style="white-space:nowrap;font-size:13.5px;color:var(--dim)"><input type="checkbox" id="only-sel"> <span id="only-sel-l"></span></label>
+        </div>
+        <div class="fchips" id="fchips"></div>
+        <div id="list"></div>
+      </div>
+      <aside class="aside" id="aside">
+        <div class="panel">
+          <div class="label" id="sum-l"></div>
+          <div class="readout"><span class="big" id="sum-n">0</span><span class="of" id="sum-of"></span></div>
+          <div class="bar" id="sum-bar"></div>
+          <div class="legend" id="sum-legend"></div>
+          <div class="counts" id="sum-counts"></div>
+        </div>
+        <div class="panel">
+          <h2 id="pre-h"></h2>
+          <div class="presets" id="presets"></div>
+          <p class="hint" id="pre-hint"></p>
+        </div>
+        <div class="panel ai">
+          <h2 id="ai-h"></h2>
+          <textarea id="ai-goal"></textarea>
+          <div class="chips" id="ai-chips"></div>
+          <div class="row"><button type="button" class="primary" id="ai-go"></button><span class="status" id="ai-status"></span></div>
+          <div id="ai-out" hidden></div>
+        </div>
+        <div class="panel">
+          <h2 id="save-h"></h2>
+          <div class="row"><button type="button" class="primary" id="save"></button><span class="status" id="save-status"></span></div>
+          <p class="hint" id="save-hint"></p>
+          <div class="row" style="margin-top:10px"><button type="button" id="copy-md"></button><button type="button" id="copy-json"></button></div>
+          <textarea id="copy-fallback" readonly hidden style="margin-top:8px;min-height:120px;font-family:var(--mono);font-size:12px"></textarea>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section data-view="market" hidden><div id="market"></div></section>
+  <section data-view="plugins" hidden><div id="plugins"></div></section>
+  <section data-view="vrg" hidden><div id="vrg"></div></section>
+  <section data-view="backend" hidden><div id="backend"></div></section>
+  <section data-view="decisions" hidden><div id="decisions"></div></section>
+</main>
+<footer class="wrap" id="foot"></footer>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ---------------------------------------------------------------- UI strings */
+const T = {
+  hu: {
+    sub: 'Jegyzetkezelő a VRG Asztalba és a VRG Mobile-ba · elemzés és modulválasztó',
+    tabs: { modules: 'Modulok', market: 'Piac', plugins: 'Bővítmények', vrg: 'VRG-re szabva', backend: 'Háttér', decisions: 'Döntések' },
+    modIntro: '<strong>Válaszd ki, mi kerüljön a jegyzetkezelőbe.</strong> A mag (T0) mindig benne van. Ha bejelölsz egy modult, a függőségei is bekerülnek; ha kiveszel egyet, az is kikerül, ami ráépül. A kiindulás a javasolt első három fázis (NT0–NT2). Az <em>MI javaslat</em> egy cél alapján választ, a <em>Mentés</em> után a kijelölést egy Claude-munkamenet is ki tudja olvasni.',
+    search: 'Keresés modulban: név, azonosító, leírás…',
+    onlySel: 'Csak a kijelöltek',
+    sumL: 'Kijelölt modulok', of: n => '/ ' + n,
+    phase: ['NT0 mag', 'NT1 asztal', 'NT2 telefon', 'NT3 munka', 'NT4 kiterjesztés', 'Később'],
+    phaseShort: ['NT0', 'NT1', 'NT2', 'NT3', 'NT4', 'Később'],
+    tierL: 'Szint', whereL: 'Hol', phaseL: 'Fázis',
+    where: { D: 'Asztal', M: 'Mobil', DM: 'Mindkettő' },
+    countsWhere: 'Asztal / Mobil / Mindkettő',
+    preH: 'Kiindulópontok',
+    presets: { core: 'Csak a mag', nt1: 'NT0–NT1: PC-n használható', nt2: 'NT0–NT2: PC + telefon (javasolt)', nt3: 'NT0–NT3: terepi munka', nt4: 'NT0–NT4', all: 'Minden', t1: 'Minden T0–T1 szint' },
+    preHint: 'A fázisok a beépítési sorrendet jelentik (§8 az elemzésben). A gomb lecseréli a mostani kijelölést.',
+    aiH: 'MI javaslat',
+    aiPh: 'Írd le, mire kell a jegyzetkezelő először. Pl.: terepen, telefonon, offline, fotóval; az ügyféladat ne kerüljön ki.',
+    aiChips: ['Terepi jegyzetfüzet először, telefonról', 'Csak PC, fejlesztői jegyzetek', 'A legkisebb biztonságos PC + telefon csomag', 'Ügyfélnek kiadható jelentések méréssel'],
+    aiGo: 'Javaslatot kérek', aiBusy: 'Claude gondolkodik…', aiNone: 'Ebben a nézetben az MI javaslat nem érhető el.',
+    aiDone: n => n + ' modult javasolt.', aiApply: 'Alkalmazom', aiDismiss: 'Elvetem', aiErr: 'A javaslat nem sikerült: ',
+    aiNeedGoal: 'Előbb írd le a célt.', aiApplied: 'A javaslat alkalmazva.',
+    whyL: 'MI:',
+    saveH: 'Mentés és átadás',
+    save: 'Kijelölés mentése', saving: 'Mentés…', saved: t => 'Mentve ' + t, saveErr: 'Nem mentődött: ', noDb: 'A közös mentéshez be kell jelentkezni a claude.ai-ra; a másolás így is működik.',
+    dirty: 'Változott a mentés óta.', remote: 'Valaki újabb kijelölést mentett.', loadRemote: 'Betöltöm',
+    saveHint: 'A mentett kijelölés (modulok, döntések, cél, MI indoklás) az artifact közös adatbázisában van, a <code>picks/current</code> dokumentumban. Egy Claude Code munkamenetnek elég ezt mondani: „olvasd ki a VRG Jegyzetek modulválasztó picks/current kijelölését”.',
+    copyMd: 'Másolás Markdownként', copyJson: 'Másolás JSON-ként', copied: 'Vágólapra másolva.', copyFail: 'A vágólap nem érhető el; jelöld ki a szöveget lent.',
+    addedDeps: l => 'Függőségként bekerült: ' + l, removedDeps: l => 'Ráépülő modul is kikerült: ' + l,
+    coreLocked: 'A mag modulok mindig benne vannak.',
+    needs: 'Kell hozzá:', builds: 'Erre épít:', allFam: 'mind', selFam: 'család be', unselFam: 'család ki',
+    empty: 'Nincs a szűrésnek megfelelő modul.',
+    foot: 'Elemzés: 2026-11-10. A piaci áttekintés a termékek 2026 közepi állapotán alapul, nem friss webes felmérésen; egy konkrét funkció átvétele előtt érdemes újra megnézni. A teljes szöveg a repóban: docs/notes/ANALYSIS.md.',
+    mdTitle: 'VRG Jegyzetek — kiválasztott modulok', mdGoal: 'Cél', mdDec: 'Döntések', mdWhy: 'MI indoklás',
+    decIntro: '<strong>Tizennyolc nyitott kérdés:</strong> tíz a jegyzetkezelőről (NOTES) és nyolc az Egyszerű módról (SIMPLE, részletek: docs/notes/SIMPLE.hu.md). A MindMD döntései: EDITOR.hu.md. Az A mindig a javasolt alapérték. A választás a kijelöléssel együtt mentődik.',
+    recommended: 'javasolt',
+    marketIntro: '<strong>Hatvannál több termék hat csoportban.</strong> Mindegyiknél az, amiről ismert, és amit érdemes átvenni belőle.',
+    mkCols: ['Termék', 'Miről ismert', 'Amit átveszünk'],
+    vrgIntro: '<strong>A piac „második agyat” épít; a VRG jegyzeteinek három valódi dolga van:</strong> terepi jegyzetek villanyszerelési munkákhoz (telefonon, gyakran offline, fotóval, ügyféladattal), irodai jegyzetek (hívások, árazás, ajánlat), és fejlesztői jegyzetek (Stack, commitok, ágak).',
+    vrgCols: ['Ötlet', 'Hogyan működik', 'Erre épít'],
+    haveH: 'Ami már megvan', haveCols: ['Darab', 'Mit csinál ma', 'Mire jó a jegyzetekhez'],
+    gap: '<strong>A hiány:</strong> semmi nem tudja visszaolvasni, szerkeszteni, rendezni vagy keresni a jegyzeteket; a két írási út két különböző git ágba, két formátumban ír; semmi nem köti a jegyzetet munkához vagy tervelemhez; és ha egy telefonos jegyzet ügyfelet nevez meg, az ügyféladat sima szövegként kerül a GitHubra.',
+    beIntro: '<strong>Fájl az igazság, minden index újraépíthető.</strong> Ha az alkalmazás eltörik, a jegyzetek akkor is olvasható Markdown fájlok egy mappában: ez maga a tartalék.',
+    treeH: 'A tár szerkezete',
+    plIntro: '<strong>Több mint hetven népszerű Obsidian-bővítmény 65 sorban, a mi modullistánkra vetítve.</strong> Mindegyiknél: mit csinál, melyik modulunk felel meg neki, és az ítélet. A modulazonosítóra kattintva a Modulok fülön megjelenik a modul; a zöld pötty azt jelzi, hogy most ki van jelölve. A MindMD-szerkesztő modulfázisai: E1 = NT3, E2 = NT4, E3 = Később. A felmérés 2026 közepi általános ismereten alapul, nem friss keresésen.',
+    plSearch: 'Keresés: bővítmény, modul, leírás…',
+    plCols: ['Bővítmény', 'Mit csinál', 'Nálunk', 'Ítélet'],
+    verdict: { have: '✔ megvan', part: '◐ részben', new: '＋ új modul', core: '◇ alapfunkció', no: '✖ nem kell' },
+    plEmpty: 'Nincs a szűrésnek megfelelő bővítmény.',
+    cmpH: 'Obsidian-bővítmény vagy VRG kiegészítő', cmpCols: ['', 'Obsidian közösségi bővítmény', 'VRG kiegészítő'],
+    ptsH: 'Kiegészítési pontok (a bővítmény-API megfelelője)', ptsCols: ['Obsidian API', 'Nálunk', 'MindMD', 'Jegyzetek-hely'],
+    plFoot: 'A teljes szöveg: docs/notes/EDITOR.hu.md (angolul EDITOR.md).'
+  },
+  en: {
+    sub: 'A notes app for VRG Desktop and VRG Mobile · analysis and module picker',
+    tabs: { modules: 'Modules', market: 'Market', plugins: 'Plugins', vrg: 'Fit for VRG', backend: 'Backend', decisions: 'Decisions' },
+    modIntro: '<strong>Choose what goes into the notes app.</strong> The core (T0) is always included. Ticking a module adds its dependencies; unticking one also removes what builds on it. The starting point is the recommended first three phases (NT0–NT2). <em>AI suggestion</em> picks a set from a goal; after <em>Save</em>, a Claude session can read the selection back.',
+    search: 'Search modules: name, id, description…',
+    onlySel: 'Selected only',
+    sumL: 'Selected modules', of: n => '/ ' + n,
+    phase: ['NT0 core', 'NT1 desktop', 'NT2 phone', 'NT3 the work', 'NT4 reach', 'Later'],
+    phaseShort: ['NT0', 'NT1', 'NT2', 'NT3', 'NT4', 'Later'],
+    tierL: 'Tier', whereL: 'Where', phaseL: 'Phase',
+    where: { D: 'Desktop', M: 'Mobile', DM: 'Both' },
+    countsWhere: 'Desktop / Mobile / Both',
+    preH: 'Starting points',
+    presets: { core: 'Core only', nt1: 'NT0–NT1: usable on the PC', nt2: 'NT0–NT2: PC + phone (recommended)', nt3: 'NT0–NT3: field work', nt4: 'NT0–NT4', all: 'Everything', t1: 'Every T0–T1 module' },
+    preHint: 'Phases are the build order (§8 of the analysis). A preset replaces the current selection.',
+    aiH: 'AI suggestion',
+    aiPh: 'Describe what the notes app is needed for first. E.g.: on site, on the phone, offline, with photos; client data must not leave.',
+    aiChips: ['Field notebook first, from the phone', 'PC only, developer notes', 'The smallest safe PC + phone set', 'Client-ready reports with measurements'],
+    aiGo: 'Suggest a set', aiBusy: 'Claude is thinking…', aiNone: 'The AI suggestion is not available in this view.',
+    aiDone: n => 'Suggested ' + n + ' modules.', aiApply: 'Apply', aiDismiss: 'Dismiss', aiErr: 'The suggestion failed: ',
+    aiNeedGoal: 'Describe the goal first.', aiApplied: 'Suggestion applied.',
+    whyL: 'AI:',
+    saveH: 'Save and hand over',
+    save: 'Save selection', saving: 'Saving…', saved: t => 'Saved ' + t, saveErr: 'Not saved: ', noDb: 'Shared saving needs a claude.ai sign-in; copying still works.',
+    dirty: 'Changed since the last save.', remote: 'Someone saved a newer selection.', loadRemote: 'Load it',
+    saveHint: 'The saved selection (modules, decisions, goal, AI reasons) lives in the artifact\'s shared database, document <code>picks/current</code>. A Claude Code session only needs: "read picks/current from the VRG Jegyzetek module picker".',
+    copyMd: 'Copy as Markdown', copyJson: 'Copy as JSON', copied: 'Copied to the clipboard.', copyFail: 'The clipboard is not available; select the text below.',
+    addedDeps: l => 'Added as dependencies: ' + l, removedDeps: l => 'Also removed what builds on it: ' + l,
+    coreLocked: 'Core modules are always included.',
+    needs: 'Needs:', builds: 'Builds on:', allFam: 'all', selFam: 'family on', unselFam: 'family off',
+    empty: 'No module matches the filters.',
+    foot: 'Analysis: 2026-11-10. The market survey reflects the products as of mid-2026, not a fresh web sweep; re-check a named feature before copying it. The full text is in the repo: docs/notes/ANALYSIS.md.',
+    mdTitle: 'VRG Jegyzetek — selected modules', mdGoal: 'Goal', mdDec: 'Decisions', mdWhy: 'AI reasons',
+    decIntro: '<strong>Eighteen open questions:</strong> ten about the notes app (NOTES) and eight about Simple mode (SIMPLE, details in docs/notes/SIMPLE.md). MindMD decisions: EDITOR.md. A is always the recommended default. The choices are saved with the selection.',
+    recommended: 'recommended',
+    marketIntro: '<strong>More than sixty products in six groups.</strong> For each, what it is known for and what is worth taking from it.',
+    mkCols: ['Product', 'Known for', 'What we take'],
+    vrgIntro: '<strong>The market builds a "second brain"; VRG\'s notes have three real jobs:</strong> field notes for electrical jobs (on the phone, often offline, with photos and client data), office notes (calls, pricing, quotes), and dev notes (Stack, commits, branches).',
+    vrgCols: ['Idea', 'How it works', 'Builds on'],
+    haveH: 'What already exists', haveCols: ['Piece', 'What it does today', 'Use for Notes'],
+    gap: '<strong>The gap:</strong> nothing can read back, edit, organise or search notes; the two write paths go to two git branches in two formats; nothing ties a note to a job or a plan element; and a phone note naming a client puts client data on GitHub in plain text.',
+    beIntro: '<strong>Files are the truth, every index is rebuildable.</strong> If the app breaks, the notes are still readable Markdown files in a folder: that is the fallback.',
+    treeH: 'The vault layout',
+    plIntro: '<strong>More than seventy popular Obsidian plugins in 65 rows, mapped onto our module list.</strong> For each: what it does, which of our modules covers it, and the verdict. Click a module id to see it on the Modules tab; a green dot means it is selected now. MindMD editor phases: E1 = NT3, E2 = NT4, E3 = Later. The survey is from general knowledge as of mid-2026, not a fresh sweep.',
+    plSearch: 'Search: plugin, module, description…',
+    plCols: ['Plugin', 'What it does', 'Ours', 'Verdict'],
+    verdict: { have: '✔ have', part: '◐ partly', new: '＋ new module', core: '◇ editor core', no: '✖ not wanted' },
+    plEmpty: 'No plugin matches the filters.',
+    cmpH: 'An Obsidian plugin or a VRG extension', cmpCols: ['', 'Obsidian community plugin', 'VRG extension'],
+    ptsH: 'Extension points (our plugin API)', ptsCols: ['Obsidian API', 'Ours', 'MindMD', 'Jegyzetek slot'],
+    plFoot: 'The full text: docs/notes/EDITOR.md (Hungarian: EDITOR.hu.md).'
+  }
+};
+
+/* ---------------------------------------------------------------- module catalogue
+   [id, family, tier, where, phase, deps, builds, huName, huDesc, enName, enDesc] */
+const FAM = {
+  core:    ['Mag', 'Core'],
+  capture: ['Rögzítés', 'Capture'],
+  edit:    ['Írás és szerkesztés', 'Writing and editing'],
+  org:     ['Rendezés és hivatkozás', 'Organising and linking'],
+  find:    ['Keresés', 'Finding'],
+  task:    ['Feladatok és idő', 'Tasks and time'],
+  work:    ['VRG munka', 'VRG work'],
+  sync:    ['Szinkron és eszközök', 'Sync and devices'],
+  sec:     ['Biztonság és adatvédelem', 'Security and privacy'],
+  hist:    ['Előzmények és tartalék', 'History and resilience'],
+  io:      ['Csere, megosztás, automatizálás', 'Interop, sharing, automation'],
+  ux:      ['Élmény', 'Experience'],
+  ai:      ['MI (opcionális)', 'AI (optional)'],
+  mindmd:  ['MindMD-szerkesztő és kiegészítők', 'MindMD editor and extensions']
+};
+const M = [
+ ['N-VAULT','core',0,'DM',0,[],'','Tár és jegyzetmodell','Mappaszerkezet, jegyzetfájl (ULID-név, YAML fejléc, Markdown törzs), .vault.json formátumverzióval, zárfájl.','Vault and note model','Folder layout, the note file (ULID name, YAML frontmatter, Markdown body), .vault.json with a format version, a lock file.'],
+ ['N-STORE','core',0,'DM',0,[],'secrets.js','Biztonságos írás','Atomi mentés (tmp + fsync + átnevezés), automatikus mentés, piszkozatnapló és visszaállítás, méretkorlát, külső szerkesztés figyelése.','Safe writer','Atomic save (tmp + fsync + rename), autosave debounce, draft journal and restore, size limits, external-edit watcher.'],
+ ['N-ATT','core',0,'DM',0,[],'Átadás','Mellékletek tára','Tartalom szerint címzett att/sha256/…, bélyegképek, duplikátumszűrés, újrahash-ellenőrzés, méretkorlát.','Attachment store','Content-addressed att/sha256/…, thumbnails, dedupe, re-hash check, size cap.'],
+ ['N-INDEX','core',0,'DM',0,[],'','Index','SQLite FTS5 (PC) / Room FTS (telefon), bármikor újraépíthető, ékezetfüggetlen (á→a, ő→o), inkrementális.','Index','SQLite FTS5 (PC) / Room FTS (phone), rebuildable, accent folding (á→a, ő→o), incremental.'],
+ ['N-TRASH','core',0,'DM',0,[],'BACKUP','Kuka és törlési szabály','Törlés = áthelyezés a trash\\ mappába; 30 nap, és csak egy lefutott mentés után ürül; visszaállítható.','Trash and delete rules','Delete = move to trash\\; 30 days, emptied only after a covering backup; restorable.'],
+ ['N-API','core',0,'DM',0,[],'shell/lib/notes.js','Társzolgáltatás','PC-n a fő folyamat IPC-je (list / get / save / search), telefonon Kotlin repository; csak ez nyúl fájlhoz, az oldal sosem küld útvonalat.','Vault service','Main-process IPC on the PC (list / get / save / search), a Kotlin repository on the phone; the only code that touches files, the page never sends a path.'],
+ ['N-CORE-TEST','core',0,'DM',0,[],'node --test, kit-core','Közös tesztfájlok','Egy fixture-készlet, amit a JS és a Kotlin magnak azonosan kell olvasnia; kínzótesztek (mentés közbeni leállítás, két író, 10 000 jegyzet).','Shared golden fixtures','One fixture set the JS and Kotlin cores must parse identically; torture tests (kill mid-save, two writers, 10,000 notes).'],
+ ['N-VIS','sec',0,'DM',0,[],'','Láthatósági szintek','privát / belső / ügyfél / dev — minden kimenet (szinkron, export, Stack, ügynökök) betartja.','Visibility levels','private / internal / client / dev, enforced by every outlet (sync, export, Stack, agents).'],
+ ['N-SAFE-HTML','sec',0,'DM',0,[],'DOMPurify','Biztonságos megjelenítés','DOMPurify engedélylista, szigorú CSP, távoli képek alapból tiltva, linkek a héjon kívül nyílnak.','Safe rendering','DOMPurify allow-list, strict CSP, remote images off by default, links open outside the shell.'],
+ ['N-RECOVER','hist',0,'DM',0,[],'','Összeomlás utáni helyreállítás','Indításkor a piszkozatnapló visszaadja az el nem mentett szöveget („Visszaállítsam?”).','Crash recovery','On start, the draft journal offers back unsaved text.'],
+ ['N-PERF','ux',0,'DM',0,[],'','Sebességkeret','Megnyitás < 200 ms, keresés < 100 ms; a gépelést mentés és index sosem akasztja meg, 10 000 jegyzetnél sem.','Speed budget','Open < 200 ms, search < 100 ms; typing never blocked by save or index, even at 10,000 notes.'],
+
+ ['N-QUICK','capture',1,'D',1,['N-UI'],'quick.js, tray.js','Gyorsjegyzet ablak','Globális gyorsbillentyű, tálcaikon és paletta „Új jegyzet” → kis fókuszált ablak; Esc ment és bezár.','Quick note','Global hotkey, tray item and palette "New note" → a small focused window; Esc saves and closes.'],
+ ['N-INBOX','capture',1,'DM',2,[],'','Beérkezett','A besorolatlan jegyzetek ide kerülnek; egy gombbal munkához vagy címkéhez rendelhetők.','Capture inbox','Unfiled notes land here; file them to a job or tag with one key.'],
+ ['N-SOURCE','capture',1,'D',1,[],'note.js','Rögzítés forrással','„Mentés jegyzetként” bármely panelből; a forrás (url, fájl, csomópont, terminál, csevegés, levél) tulajdonság és visszalink lesz.','Capture with source','"Save as note" from any pane keeps the source (url, file, node, terminal, chat, mail) as a property and back-link.'],
+ ['N-PHONE','capture',1,'M',2,['N-SYNC-LAN'],'Gyorsjegyzet (M6)','Telefonos rögzítés','A mai Gyorsjegyzet képernyő a tár modelljébe ír szinkronnal, nem csak a napi naplóba; az offline kimenő sor marad.','Phone capture','Today\'s Gyorsjegyzet screen writes into the vault model via sync, not only the day log; the offline outbox stays.'],
+ ['N-SHARE','capture',1,'M',2,['N-PHONE'],'M6, FileStore','Megosztási cél','Szöveg, link, kép, fájl bármely Android-alkalmazásból új jegyzetbe (a szöveg ma is működik).','Share target','Text, links, images, files from any Android app into a new note (text works today).'],
+ ['N-WIDGET','capture',2,'M',4,['N-PHONE'],'','Widget és csempe','Kezdőképernyő-widget (új jegyzet, hang, fotó) és gyorsbeállítás-csempe.','Widget and tile','Home-screen widget (new note, voice, photo) and a Quick Settings tile.'],
+ ['N-VOICE','capture',2,'DM',3,[],'M6 diktálás','Hangjegyzet','Hangfelvétel a jegyzetbe, hu-HU diktálás, lejátszás; átirat később a PC-n.','Voice memo','Audio recorded into the note, hu-HU dictation, playback; transcript later on the PC.'],
+ ['N-SCAN','capture',2,'M',4,['N-PHONE'],'CameraX + ML Kit','Fotó és dokumentum szkennelés','Kamera → kiegyenesítés → jegyzet a képpel; az OCR-szöveg a kereséshez mellé kerül.','Photo and document scan','Camera → deskew → note with the image; OCR text stored beside it for search.'],
+ ['N-CLIP','capture',2,'D',4,[],'web.js, textify.js','Webes kivágó','A böngészőpanelből: oldal Markdownként, kijelölés, képernyőkép, URL címmel.','Web clipper','From the browser pane: page as Markdown, selection, screenshot, URL with title.'],
+ ['N-MAILIN','capture',2,'D',4,[],'mail.js','Levélből jegyzet','„Mentés jegyzetként” a levélpanelben: törzs és mellékletek, a feladó a forrás.','Mail to note','"Save as note" in the mail pane: body and attachments, the sender as source.'],
+ ['N-TAG-QR','capture',3,'M',5,['N-LINKS'],'Links, M2 olvasó','QR / NFC címkék','QR-kód vagy NFC-címke egy jegyzethez, például elosztószekrényben; beolvasva megnyílik.','QR / NFC tags','A QR code or NFC tag for a note, e.g. inside a distribution cabinet; scanning opens it.'],
+
+ ['N-EDIT','edit',1,'DM',1,[],'CodeMirror 6','Szerkesztőmag','CodeMirror 6 Markdownnal, élő előnézet (a jelölés eltűnik, ha kilépsz a sorból), visszavonás, keresés-csere, szószám.','Editor core','CodeMirror 6 with Markdown, live preview (markup fades off the current line), undo, find/replace, word count.'],
+ ['N-CHECK','edit',1,'DM',1,[],'','Ellenőrzőlisták','- [ ] sorok kattintásra vagy érintésre pipálhatók; haladás a jegyzet kártyáján.','Checklists','- [ ] lines toggled by click or tap; progress on the note card.'],
+ ['N-SLASH','edit',1,'DM',1,['N-EDIT'],'','/ parancsmenü','Címsor, lista, táblázat, kód, kiemelés, dátum, fotó, munkalink…','/ command menu','Heading, checklist, table, code, callout, date, photo, link to job…'],
+ ['N-CODE','edit',1,'D',1,['N-EDIT'],'','Kódblokkok','Szintaxiskiemelés, másolás gomb — fejlesztői jegyzetekhez és konfigrészletekhez.','Code blocks','Syntax highlighting, copy button — for dev notes and config snippets.'],
+ ['N-TABLE','edit',2,'D',4,['N-EDIT'],'','Táblázatok','Markdown-táblázat rácsként szerkesztve; beillesztés Excelből vagy CSV-ből.','Tables','Markdown tables edited as a grid; paste from Excel or CSV.'],
+ ['N-SPELL','edit',2,'DM',4,['N-EDIT'],'Electron','Helyesírás hu + en','Az Electron beépített ellenőrzője hu-HU szótárral; Androidon a rendszer ellenőrzője.','Spell-check hu + en','Electron\'s built-in checker with the hu-HU dictionary; the system checker on Android.'],
+ ['N-FOCUS','edit',2,'DM',4,['N-EDIT'],'VRG UI Kit','Fókusz- és olvasómód','Írógép- és fókuszmód, tiszta olvasónézet, betűméret.','Focus and reading modes','Typewriter and focus mode, a clean reading view, font size.'],
+ ['N-ANNOT','edit',2,'M',3,[],'','Fotójelölés','Nyíl, keret, szöveg, méretvonal a helyszíni fotón; az eredeti megmarad, a jelölés külön réteg.','Photo annotation','Arrows, boxes, text, a measurement line on a site photo; the original stays, the annotation is a layer.'],
+ ['N-MATH','edit',3,'D',5,['N-EDIT'],'KaTeX','Képletek és mértékegységek','KaTeX, és egy kis soron belüli számoló (= 3*16 A) terhelésösszegekhez.','Maths and units','KaTeX, and a tiny inline calculator (= 3*16 A) for load sums.'],
+ ['N-DIAG','edit',3,'D',5,['N-EDIT'],'Mermaid','Diagramok','Mermaid blokkok az olvasónézetben.','Diagrams','Mermaid blocks rendered in the reading view.'],
+ ['N-INK','edit',3,'M',5,[],'','Kézírás réteg','Rajz ujjal vagy tollal jegyzetre, fotóra vagy tervrajzra; SVG-ként a jegyzet mellett.','Ink layer','Draw with a finger or pen on a note, photo or plan image; stored as SVG beside the note.'],
+ ['N-PDF','edit',3,'D',5,[],'Vendor/pdfjs (legacy)','PDF jelölés','PDF-melléklet megnyitása, kiemelés, megjegyzés, jegyzet tűzése egy oldalra.','PDF annotate','Open a PDF attachment, highlight, comment, pin a note to a page.'],
+
+ ['N-TAG','org',1,'DM',1,[],'','Címkék','Szövegbe írt beágyazott címkék (#munka/2026/kovacs) és fejléc-címkék, címkefa, átnevezés mindenhol.','Tags','Inline nested tags (#job/2026/kovacs) plus frontmatter tags, a tag tree, rename everywhere.'],
+ ['N-PIN','org',1,'DM',1,[],'','Kitűzés, színek, kedvencek, archívum','A kis rendező műveletek.','Pins, colours, favourites, archive','The small organising verbs.'],
+ ['N-LINK','org',1,'DM',1,[],'','Wikilinkek és visszalinkek','[[cím]] kiegészítéssel, visszalink-panel, nem linkelt említések, álnevek; átnevezésbiztos, mert id szerint linkel.','Wikilinks and backlinks','[[title]] with autocomplete, backlink panel, unlinked mentions, aliases; rename-safe because links go by id.'],
+ ['N-DAILY','org',1,'DM',1,[],'M6 napi fájlok','Napi jegyzet','Naponta egy jegyzet a kezdőlap; a nap gyorsjegyzetei benne gyűlnek.','Daily note','One note per day as the landing page; the day\'s jots collect in it.'],
+ ['N-XLINK','org',1,'D',3,['N-LINK'],'katalógus, Stack id-k','Linkek a VRG világba','[[job:2026-031]], [[inv:…]], [[plan:kovacs#K3]], [[F:…]] / [[R:sha]], [[file:…]]; a katalóguson át nyílnak.','Links to the VRG world','[[job:2026-031]], [[inv:…]], [[plan:kovacs#K3]], [[F:…]] / [[R:sha]], [[file:…]]; they open through the catalog.'],
+ ['N-TYPE','org',2,'DM',3,[],'','Jegyzettípusok','Típus = sablon + típusos és kötelező mezők: jegyzet, felmérés, mérés, átadás, telefon, ötlet, dev.','Note types','A type = template + typed and required fields: note, survey, measurement, handover, call, idea, dev.'],
+ ['N-SMART','org',2,'DM',3,['N-FIND'],'','Mentett keresések','Oldalsávban tartott keresés, pl. job:2026-031 has:photo.','Saved searches','A search kept in the sidebar, e.g. job:2026-031 has:photo.'],
+ ['N-FOLDER','org',1,'DM',1,[],'','Mappák','Virtuális mappák tulajdonságként, nem könyvtárként; a fájlok laposak maradnak. Az egyszerű felszín része.','Folders','Virtual folders stored as a property, not as directories; files stay flat. Part of the simple surface.'],
+ ['N-EMBED','org',3,'D',5,['N-LINK'],'','Beágyazás','![[jegyzet#címsor]] egy másik jegyzet részét mutatja helyben.','Embeds','![[note#heading]] shows part of another note inline.'],
+ ['N-GRAPH','org',3,'D',5,['N-LINK'],'Stack, MindMap','Gráfnézet','A linkek gráfja, vagy a Stack meglévő nézőinek használata.','Graph view','The link graph, or reuse of the Stack\'s existing viewers.'],
+ ['N-CANVAS','org',3,'D',5,['N-LINK'],'MindMap / MindMD','Vászon','Jegyzetek kártyaként egy táblán, JSON Canvas formátumban; a MindMap a gazda.','Canvas','Notes as cards on a board, saved as JSON Canvas; MindMap is the host.'],
+
+ ['N-FIND','find',1,'DM',1,[],'','Keresés','Teljes szöveges, ékezetfüggetlen, kiemelt találatok, operátorok: tag:, job:, type:, has:photo, before:, is:task.','Search','Full-text, accent-folded, highlighted snippets, operators: tag:, job:, type:, has:photo, before:, is:task.'],
+ ['N-SWITCH','find',1,'D',1,['N-FIND'],'palette.js','Gyorsváltó','Bármely jegyzet megnyitása a címe begépelésével (Ctrl+O), a legutóbbiak elöl.','Quick switcher','Open any note by typing its title (Ctrl+O), recent first.'],
+ ['N-PALETTE','find',1,'D',1,['N-FIND'],'palette.js, search.js','Paletta és globális keresés','A jegyzetek megjelennek az Asztal palettájában és keresési találataiban.','Palette and global search','Notes appear in the Desktop\'s palette and search results.'],
+ ['N-STACK','find',2,'D',3,['N-XLINK'],'Stack','Jegyzetek mint Stack réteg','A Stack-építő a címeket, címkéket, linkeket olvassa (láthatóság szerint) → N réteg; a csomópont kártyáján látszanak a jegyzetei.','Notes as a Stack layer','The Stack builder reads titles, tags, links (by visibility) → layer N; a node\'s card lists its notes.'],
+ ['N-OCR','find',2,'DM',4,['N-FIND'],'ML Kit, pdfjs','Keresés képekben és PDF-ekben','Szkennek és fotók OCR-szövege, PDF-szöveg az indexbe.','Search in images and PDFs','OCR text of scans and photos, PDF text into the index.'],
+ ['N-SEM','find',3,'D',5,['N-FIND'],'','Szemantikus keresés','Helyi beágyazások „ehhez hasonló jegyzetek”-hez; csak ha a szöveges keresés kevés.','Semantic search','Local embeddings for "notes like this"; only if full-text proves not enough.'],
+
+ ['N-TASK','task',2,'DM',3,['N-CHECK'],'','Feladatok a jegyzetekben','Dátummal (📅) vagy prioritással ellátott pipasor = feladat; egy napirend az összes jegyzetből.','Tasks in notes','A checkbox line with a date (📅) or priority is a task; one agenda across all notes.'],
+ ['N-REMIND','task',2,'DM',3,['N-TASK'],'M10 VrgNotify, toasts.js','Emlékeztetők','Időpont egy jegyzeten vagy feladaton → értesítés a telefonon és a PC-n.','Reminders','A time on a note or task → a phone notification and a Desktop toast.'],
+ ['N-CAL','task',3,'D',5,['N-TASK'],'','Naptárnézet','Jegyzetek és feladatok napok szerint; munkánkénti terepnapló-napok.','Calendar view','Notes and tasks by day; site-diary days per job.'],
+ ['N-BOARD','task',3,'D',5,['N-TYPE'],'','Állapottábla','Kanban egy tulajdonság szerint (nyitott → rendelve → kész).','Status board','Kanban over a property (open → ordered → done).'],
+ ['N-BUY','task',3,'DM',5,['N-CHECK'],'Inventory','Beszerzési sorok','„- [ ] 2× FI-relé 30 mA #vesz” sorok vásárlási listába gyűlnek, később a Készletbe.','Shopping lines','"- [ ] 2× RCD 30 mA #buy" lines gather into a buy list, later handed to Inventory.'],
+
+ ['N-JOB','work',1,'DM',3,[],'munkanyilvántartás, jobs\\','Munkához kötés','job: tulajdonság; a munka jegyzetei a mappájában és a nyilvántartásban látszanak; új jegyzet a munkából.','Job binding','job: property; a job\'s notes show in its folder and in the register; new note from a job.'],
+ ['N-DEV','work',1,'DM',2,[],'Divergence, M6','Dev kimenet','A dev láthatóságú jegyzetek továbbra is a vrg-devnotes / mobile-log ágba mennek, mint ma.','Dev outlet','Dev-visibility notes still flow to vrg-devnotes / mobile-log as today.'],
+ ['N-SITE','work',2,'M',3,['N-ANNOT','N-JOB'],'Átadás (M12)','Helyszíni fotójegyzet','Fotó + idő + munka + opcionális GPS + jelölés; előtte/utána párok; munkánkénti galéria.','Site photo notes','Photo + time + job + optional GPS + annotation; before/after pairs; a per-job gallery.'],
+ ['N-MEAS','work',2,'DM',3,['N-TYPE'],'','Mérési űrlapok','Típusok, amelyek mezői táblázatot adnak (áramkör, érték, határérték, megfelelt); CSV export.','Measurement forms','Types whose fields form a table (circuit, value, limit, pass/fail); CSV export.'],
+ ['N-DIARY','work',2,'DM',3,['N-DAILY','N-JOB'],'','Terepnapló','Egy munkanap napi jegyzete: kik voltak, órák, munka, fotók, akadályok; óraösszesítés munkánként.','Site diary','The daily note of a job day: who was there, hours, work, photos, blockers; hour totals per job.'],
+ ['N-REPORT','work',2,'D',3,['N-EXPORT'],'shared/varler-doc','Jelentés export','Jegyzet(ek) vagy egy munka jegyzetei → Varler stílusú PDF; csak az ügyfélnek látható rész, kitakarás-előnézettel.','Report export','Note(s) or a job\'s notes → a Varler-style PDF; client-visible parts only, with a redaction preview.'],
+ ['N-PLANPIN','work',2,'D',4,['N-JOB','N-XLINK'],'Planner, Views','Tűk a tervrajzon','Jegyzet egy Planner-elemhez vagy lappozícióhoz rögzítve; tűréteg a Plannerben, mindkét oldalról nyitható.','Pins on the plan','A note anchored to a Planner element or sheet position; a pin layer in the Planner, opens from either side.'],
+ ['N-COMMIT','work',3,'D',5,['N-DEV'],'git.js','Jegyzetből commit-üzenet','Egy ág mai dev jegyzetei commit-törzs vázlatként a git panelben.','Notes → commit text','Today\'s dev notes for a branch offered as a commit body draft in the git pane.'],
+
+ ['N-JOURNAL','sync',1,'DM',2,[],'','Műveletnapló','Minden változás egy hozzáfűző journal\\*.jsonl-be kerül: ebből dolgozik a szinkron és a szinkron visszavonása.','Operation journal','Every change goes to an append-only journal\\*.jsonl: the input of sync and of undoing a sync.'],
+ ['N-MERGE','sync',1,'DM',2,[],'','Összefésülés és ütközések','rev + alap-hash, soronkénti diff3, mezőnkénti fejléc-összefésülés; ütközésmásolat egymás melletti választóval, semmi nem vész el.','Merge and conflicts','rev + base hash, line-by-line diff3, field-wise frontmatter merge; conflict copies with a side-by-side picker, nothing is dropped.'],
+ ['N-SYNC-LAN','sync',1,'DM',2,['N-JOURNAL','N-MERGE','N-ENROL'],'relé (M2, M7)','LAN szinkron','Telefon ↔ PC a párosított, aláírt relén, titkosított tartalommal, folytatható; mellékletek igény szerint.','LAN sync','Phone ↔ PC over the paired, signed relay, encrypted payloads, resumable; attachments on demand.'],
+ ['N-STATUS','sync',1,'DM',2,['N-JOURNAL'],'felső sáv','Szinkronállapot','Jegyzetenkénti pötty (helyi / szinkronizált / ütközés), az utolsó szinkron ideje a felső sávban.','Sync status','Per-note dot (local / synced / conflict), the last sync time in the top strip.'],
+ ['N-SYNC-GH','sync',2,'M',4,['N-JOURNAL','N-MERGE','N-CRYPT'],'GitHub kliens, kimenő sor','GitHub tartalék','Titkosított csomagok egy privát ágon, ha a PC nem érhető el; a nem dev jegyzetekre kiváltja a sima mobile-log utat.','GitHub fallback','Encrypted bundles on a private branch when the PC is unreachable; replaces the plain mobile-log path for non-dev notes.'],
+ ['N-SYNC-FILE','sync',3,'D',5,['N-JOURNAL','N-MERGE','N-CRYPT'],'roots.json (Shared)','Mappaszinkron','Titkosított csomagok a OneDrive / Shared mappán át egy második PC-hez.','Folder sync','Encrypted bundles through OneDrive / Shared for a second PC.'],
+ ['N-SELECT','sync',3,'M',5,['N-SYNC-LAN'],'','Válogatott szinkron','Mely füzetek és munkák menjenek a telefonra; a mellékletek csak bélyegképként, amíg meg nem nyitod.','Selective sync','Which notebooks and jobs go to the phone; attachments thumbnail-only until opened.'],
+
+ ['N-CRYPT','sec',1,'DM',2,[],'secrets.js, SecretStore','Tártitkosítás','Jegyzetenkénti AES-256-GCM kulcs a tárkulccsal csomagolva; scrypt / Argon2id, a kulcsot DPAPI / Keystore őrzi, így nincs napi jelszókérés; helyreállító kulcs.','Vault encryption','Per-note AES-256-GCM keys wrapped by the vault key; scrypt / Argon2id, the key kept by DPAPI / Keystore so there are no daily prompts; a recovery key.'],
+ ['N-ENROL','sec',1,'DM',2,['N-CRYPT'],'relé trust gate','Eszköz felvétele','Új eszköz csak a párosított relén kapja meg a tárkulcsot, mindkét képernyőn megerősítő kóddal.','Device enrolment','A new device gets the vault key only over the paired relay, with a confirmation code on both screens.'],
+ ['N-SECRET','sec',1,'DM',2,[],'vrg-git.ps1 minták','Titok- és személyesadat-figyelő','Figyelmeztet tokenre, kulcsra, jelszóra és ügyfél-adatra; letiltja a nyílt szövegű kimeneteket.','Secret and PII detector','Warns on tokens, keys, passwords and client personal data; blocks plain-text outlets.'],
+ ['N-LOCK','sec',2,'DM',4,['N-CRYPT'],'BiometricPrompt','Zárolt jegyzetek','Külön jelszó vagy biometria jegyzetenként; a tartalom kimarad az indexből.','Locked notes','An extra passphrase or biometric per note; the content stays out of the index.'],
+ ['N-APPLOCK','sec',2,'M',4,[],'','Alkalmazászár','Biometria / PIN tétlenség után; FLAG_SECURE a zárolt jegyzeteken (nincs képernyőkép).','App lock','Biometric / PIN after idle; FLAG_SECURE on locked notes (no screenshots).'],
+ ['N-AUDIT','sec',2,'D',4,[],'audit.js','Naplózás','Exportok, megosztások, feloldások és eszközfelvételek naplója.','Audit log','A log of exports, shares, decrypts and enrolments.'],
+
+ ['N-HIST','hist',1,'DM',1,[],'git.js','Verzióelőzmények','Összevont pillanatképek, diff-nézet, visszaállítás; vagy a tár saját helyi git repó.','Version history','Coalesced snapshots, diff view, restore; or the vault as its own local git repo.'],
+ ['N-BACKUP','hist',1,'D',1,[],'backup.ps1','Mentés bekötése','A tár a BACKUP munkalistájában (vagy saját bare repóként), az att\\ újrahash-elése az integritásban.','Backup wiring','The vault in BACKUP\'s work list (or as its own bare repo), att\\ re-hashed in the integrity step.'],
+ ['N-FSCK','hist',1,'D',1,[],'','Integritásellenőrzés','Indításkor és kérésre: minden jegyzet olvasható, minden melléklet hash-e egyezik, minden link feloldható; jelent, sosem töröl.','Integrity check','On start and on demand: every note parses, attachment hashes match, links resolve; reports, never deletes.'],
+ ['N-FALLBACK','hist',1,'D',1,[],'START','Tartalék hozzáférés','START tartalék: „Jegyzetek mappa”, és tools/notes-find.js egyszerű keresés.','Fallback access','START fallback item "Notes folder", and tools/notes-find.js plain search.'],
+
+ ['N-EXPORT','io',1,'D',1,[],'shared/varler-doc','Export','Markdown + mellékletek (zip), HTML, PDF Varler stílusban, JSON; egy egész munka vagy egy keresés eredménye.','Export','Markdown + attachments (zip), HTML, PDF in the Varler style, JSON; a whole job or a search result.'],
+ ['N-LINKS','io',1,'DM',1,[],'Links.kt, acts.js','Mélylinkek','vrg://notes/new, /open?id=, /search?q= mindkét oldalon.','Deep links','vrg://notes/new, /open?id=, /search?q= on both sides.'],
+ ['N-IMPORT','io',2,'D',4,[],'','Import','Markdown mappák / Obsidian, Google Keep, Evernote ENEX, Joplin, sima szöveg; a régi mobile-log és vrg-devnotes egyszer.','Import','Markdown folders / Obsidian, Google Keep, Evernote ENEX, Joplin, plain text; the old mobile-log and vrg-devnotes once.'],
+ ['N-SHAREOUT','io',2,'DM',4,['N-EXPORT'],'levélpanel, Átadás','Kifelé megosztás','Jegyzet levélbe, a telefonra (Átadás), vágólapra Markdownként vagy szövegként.','Share out','Send a note to mail, to the phone (Átadás), to the clipboard as Markdown or text.'],
+ ['N-CLI','io',2,'D',4,[],'','Parancssor / szkript API','node tools/notes.js add | find | export szkripteknek és ügynököknek, a láthatóságot betartva.','CLI / script API','node tools/notes.js add | find | export for scripts and agents, respecting visibility.'],
+ ['N-ACTIONS','io',3,'D',5,['N-LINKS'],'acts.js','Műveletek','Nevesített műveletek: munkamappába .md-ként, commit-üzenetbe, Plannerbe tűként, CSV-be.','Actions','Named actions: to a job folder as .md, to a commit message, to the Planner as a pin, to CSV.'],
+
+ ['N-UI','ux',1,'DM',1,[],'VRG UI Kit','Jegyzet-felület','PC-n három panel (oldalsáv · lista · jegyzet), telefonon kártyarács vagy lista; Mélyvíz megjelenés.','Notes app UI','Three panes on the PC (sidebar · list · note), a card grid or list on the phone; the Mélyvíz look.'],
+ ['N-KEYS','ux',1,'D',1,[],'keymap.json','Billentyűzet először','Minden műveletnek van gombja, a keymap.json-ban; a héj dupla Tab / Esc szabályai érvényesek.','Keyboard-first','Every action has a key, listed in keymap.json; the shell\'s double Tab / Esc rules respected.'],
+ ['N-A11Y','ux',1,'DM',1,[],'','Akadálymentesség','Betűméret, kontraszt, képernyőolvasó-címkék, nagy érintési célok (kesztyűben is).','Accessibility','Font scaling, contrast, screen-reader labels, large touch targets (with gloves too).'],
+ ['N-I18N','ux',1,'DM',1,[],'','Magyar először','A felület szövegei egy táblában (hu, később en); dátum és szám hu-HU szerint.','Hungarian first','UI strings in one table (hu, en later); dates and numbers in hu-HU.'],
+
+ ['N-AI-CLEAN','ai',3,'D',5,['N-HIST'],'','Diktált jegyzet tisztítása','Írásjelek, bekezdések, helyesírás; az eredeti verzióként megmarad.','Clean up a dictated note','Punctuation, paragraphs, spelling; the original kept as a version.'],
+ ['N-AI-SUM','ai',3,'D',5,[],'','Összefoglalás, feladatkinyerés','Egy munka jegyzetei → összefoglaló és nyitott feladatlista.','Summarise, extract tasks','A job\'s notes → a summary and an open-task list.'],
+ ['N-AI-ASK','ai',3,'D',5,['N-FIND'],'','Kérdezd a jegyzeteidet','Kérdés-válasz jegyzet-id hivatkozásokkal, egy munkára szűkítve.','Ask my notes','Q&A with citations to note ids, scoped to a job.'],
+ ['N-AI-TAG','ai',3,'D',5,[],'','Címke-, típus-, munkajavaslat','A szövegből és a forrásból.','Suggest tags, type, job','From the text and the source.'],
+ ['N-AI-TRANS','ai',3,'D',5,['N-VOICE'],'','Hang átirata','Hangjegyzet → szöveg a PC-n; helyi modell előnyben, kifelé csak hozzájárulással.','Transcribe audio','Voice memos → text on the PC; a local model preferred, sent out only with consent.']
+ ,
+ ['N-SIMPLE','core',0,'DM',0,[],'SIMPLE.md','Felszín és helyek','Eszközönkénti profil, helyregiszter, keret (3 csip, 1 pötty), az Egyszerű mód kapcsoló és a visszaviteli teszt.','Surface and slots','Per-device profile, slot registry, budget (3 chips, 1 dot), the Simple mode switch and the snap-back test.'],
+ ['N-ENGINELOG','hist',1,'DM',1,[],'SIMPLE.md R7','Háttérnapló','Jegyzetenként: minden automatikus lépés okkal és Visszavonással.','Engine log','Per note: every automatic act with its reason and Undo.'],
+ ['N-SKIN','ux',1,'M',2,['N-UI'],'SIMPLE.md §4','Ismerős megjelenés','iPhone-ról érkezőknek ismerős telefonos elrendezés ugyanazokon a képernyőkön és helyeken; alapból Csendes viselkedés.','Ismerős look','A layout familiar to people coming from an iPhone, on the same screens and slots; Csendes behaviour by default.'],
+ ['N-EXT','mindmd',0,'DM',0,[],'EDITOR.md §5','Kiegészítő-gazda','Manifest, képességek, kiegészítési pontok, láthatósági szűrő, kiegészítőnkénti beállítások, tesztkeret. Nincs Node, shell vagy eval.','Extension host','Manifest, capabilities, extension points, visibility filter, per-extension settings, test harness. No Node, shell or eval.'],
+ ['N-WORKSPACE','mindmd',1,'D',3,['N-UI','N-EDIT'],'varler_mindmd2.html','MindMD-munkatér','Fájlfa, lapok, osztott panelek, oldalpanelek, mentett elrendezések; bármely Markdown-mappa megnyitható tárolóként.','MindMD workspace','File tree, tabs, split panes, side panels, saved layouts; any Markdown folder opens as a vault.'],
+ ['N-PASTE','mindmd',1,'DM',3,['N-EDIT'],'Auto Link Title','Okos beillesztés','URL → [cím](url), Excel / CSV → táblázat, HTML → tiszta Markdown, kép → képkezelés.','Smart paste','URL → [title](url), Excel / CSV → table, HTML → clean Markdown, image → image handling.'],
+ ['N-IMG','mindmd',1,'DM',3,[],'Image Converter','Képkezelés','Átméretezés, tömörítés, átnevezés; EXIF / GPS megtartása vagy eltávolítása a láthatóság szerint.','Image handling','Resize, compress, rename; keep or strip EXIF / GPS by visibility.'],
+ ['N-NLDATE','mindmd',1,'DM',3,[],'Natural Language Dates','Magyar dátumok','„holnap”, „jövő kedd”, „nov. 14”, „2 hét múlva” → dátum feladatokhoz, emlékeztetőkhöz, sablonokhoz.','Hungarian dates','"holnap", "jövő kedd", "nov. 14", "2 hét múlva" → dates for tasks, reminders, templates.'],
+ ['N-TPL','mindmd',1,'DM',3,['N-NLDATE'],'Templater','Sablonok','Változók ({{dátum}}, {{munka}}, {{kérdés: Ügyfél?}}), dátumszámítás, kurzorhely; kód nélkül.','Templates','Variables ({{dátum}}, {{munka}}, {{kérdés: Ügyfél?}}), date maths, cursor position; no code.'],
+ ['N-QUERY','mindmd',2,'D',4,[],'Dataview, Bases','Lekérdezések és nézetek','Biztonságos lekérdezőblokk magyar és angol kulcsszavakkal (TÁBLA … HONNAN … HOL …), mentett táblázat-, lista-, tábla-, naptárnézetek.','Queries and views','A safe query block with Hungarian and English keywords (TABLE … FROM … WHERE …), saved table, list, board, calendar views.'],
+ ['N-FOLDERNOTE','mindmd',2,'DM',4,['N-FOLDER'],'Folder Notes','Mappajegyzetek','A mappa saját nyitójegyzete; a munkamappa a dossziéoldalával nyílik.','Folder notes','A folder has its own index note; a job folder opens on its dossier page.'],
+ ['N-HOVER','mindmd',2,'D',4,['N-LINK','N-WORKSPACE'],'Hover Editor','Lebegő előnézet','Hivatkozott jegyzet előnézete és szerkesztése lebegő ablakban.','Hover preview','Preview and edit a linked note in a floating window.'],
+ ['N-COMPLETE','mindmd',2,'DM',4,['N-EDIT'],'Various Complements','Kiegészítés','Szavak, hivatkozások, címkék, munkák, tulajdonságértékek kiegészítése a tárolóból, magyarul is.','Autocomplete','Words, links, tags, jobs and property values completed from the vault, Hungarian-aware.'],
+ ['N-OUTLINE','mindmd',2,'DM',4,['N-EDIT'],'Outliner','Vázlatkezelő','Listaelemek és ágak mozgatása billentyűvel, összecsukás, ágra nagyítás.','Outliner','Move list items and branches with keys, fold, zoom into a branch.'],
+ ['N-LINT','mindmd',2,'D',4,['N-EDIT','N-HIST'],'Linter','Formázó','Címsorok, listák, térközök, YAML-sorrend egységesítése; parancsként, vagy mentéskor megtartott változattal.','Formatter','Normalise headings, lists, spacing, YAML order; as a command, or on save keeping a version.'],
+ ['N-TYPO','mindmd',2,'DM',4,['N-EDIT'],'Smart Typography','Magyar tipográfia','„ ” és » « idézőjel, nagykötőjel, nem törő szóköz a 3 × 16 A-ban.','Hungarian typography','„ ” and » « quotes, en dash, non-breaking space in 3 × 16 A.'],
+ ['N-GIT','mindmd',2,'D',4,['N-HIST'],'Obsidian Git','Git-tároló','Helyi commitok tétlenségkor, előzmények és különbség; push csak az engedélyezett remote-ra, ügyféltárolónál soha az originra.','Git vault','Local commits on idle, history and diff; push only to the allowed remote, never to origin for a client vault.'],
+ ['N-THEME','mindmd',2,'DM',4,['N-UI'],'Style Settings','Kinézet-beállítások','Mélyvíz-változók, sűrűség, betűk, olvasási szélesség; szabad CSS nincs.','Look settings','Mélyvíz variables, density, fonts, reading width; no free CSS.'],
+ ['N-CHART','mindmd',3,'D',5,['N-QUERY'],'Charts','Diagramok','Diagram táblázatból vagy lekérdezésből: mérési sorozatok, órák munkánként.','Charts','Charts from a table or a query: measurement series, hours per job.'],
+ ['N-SKETCH','mindmd',3,'DM',5,[],'Excalidraw','Vektoros vázlat','Gyors szekrény- vagy bekötési vázlat a jegyzet mellett, beágyazhatóan.','Vector sketch','A quick cabinet or wiring sketch beside the note, embeddable.'],
+ ['N-RELATED','mindmd',3,'D',5,['N-WORKSPACE'],'Smart Connections','Kapcsolódó jegyzetek','Helyi hasonlóság (közös hivatkozások, címkék, szavak) egy panelen; a Jegyzetekben legfeljebb egy csip.','Related notes','Local similarity (shared links, tags, words) in a panel; at most one chip in Jegyzetek.'],
+ ['N-TRAIL','mindmd',3,'D',5,['N-WORKSPACE'],'Breadcrumbs','Hierarchia és sorrend','fel: / következő: tulajdonságok, morzsamenü, előző / következő.','Hierarchy and sequence','up: / next: properties, breadcrumbs, previous / next.'],
+ ['N-PERIODIC','mindmd',3,'DM',5,['N-DAILY','N-TPL'],'Periodic Notes','Időszakos jegyzetek','Heti, havi jegyzetek sablonból; egy munka hete.','Periodic notes','Weekly, monthly notes from templates; the week of a job.'],
+ ['N-LONGFORM','mindmd',3,'D',5,['N-EXPORT','N-WORKSPACE'],'Longform','Kéziratok','Jegyzetek sorba rendezve egy dokumentummá fűzve: kézikönyv, munkadosszié.','Manuscripts','Notes ordered and compiled into one document: a handbook, a job dossier.'],
+ ['N-MCP','mindmd',3,'D',5,['N-STACK'],'Local REST API, MCP Tools','Ügynöki hozzáférés','Csak olvasó MCP-eszközök Claude-munkameneteknek a vrg-stack szerveren át, láthatóság szerint, auditálva.','Agent access','Read-only MCP tools for Claude sessions through the vrg-stack server, by visibility, audited.']
+];
+const MOD = {}; M.forEach(r => { MOD[r[0]] = { id: r[0], fam: r[1], tier: r[2], where: r[3], phase: r[4], deps: r[5], builds: r[6], hu: [r[7], r[8]], en: [r[9], r[10]] }; });
+const IDS = M.map(r => r[0]);
+const CORE = IDS.filter(id => MOD[id].tier === 0);
+const DEPENDENTS = {}; IDS.forEach(id => MOD[id].deps.forEach(d => (DEPENDENTS[d] = DEPENDENTS[d] || []).push(id)));
+
+/* ---------------------------------------------------------------- market, VRG fit, backend, decisions */
+const MARKET = [
+ ['Beépítve egy OS-be vagy eszközbe', 'Built into an OS or device', [
+  ['Apple Notes','mappák + címkék + okosmappák, dokumentumszkennelés OCR-rel, ceruzás kézírás, zárolt jegyzetek, gyorsjegyzet a képernyő sarkából, hangfelvétel átirattal','folders + tags + smart folders, document scan with OCR, Pencil ink, locked notes, quick note from a screen corner, audio with transcript','gyorsjegyzet bárhonnan; zárolt jegyzet; okosmappák','quick note from anywhere; locked notes; smart folders'],
+  ['Google Keep','kártyarács, színek + címkék, kitűzés, emlékeztetők, rajz, hangjegyzet, szöveg kiolvasása képből, widgetek','card grid, colours + labels, pins, reminders, drawing, voice notes, text from images, widgets','kártyarács rövid jegyzetekhez; widget; OCR fotón','card grid for short notes; widget; OCR on photos'],
+  ['Microsoft OneNote','füzet → szakasz → oldal fa, szabad vászon, kézírás, a gépelt szöveghez szinkronizált hangfelvétel, OCR, címkeösszesítő','notebook → section → page tree, free canvas, ink, audio synced to typing, OCR, tag summary','hang a gépelés idővonalához kötve; címkeösszesítő oldal','audio tied to the typing timeline; a tag summary page'],
+  ['Samsung Notes','S Pen, PDF jelölés, kézíráshoz kötött hang, Galaxy AI összefoglalás','S Pen, PDF annotation, voice linked to handwriting, Galaxy AI summaries','PDF jelölés (ajánlatok, adatlapok, alaprajzok)','PDF annotation (quotes, datasheets, floor plans)'],
+  ['Windows Jegyzettömb / Ragadós jegyzetek','fülek, a mentetlen szöveg visszaállítása indításkor, könnyű Markdown','tabs, unsaved text restored at start, light Markdown','soha nem vész el piszkozat','a draft is never lost']
+ ]],
+ ['Munkaterek: blokkok és adatbázisok', 'All-in-one workspaces: blocks and databases', [
+  ['Notion','blokkok / parancsokkal, adatbázisok tábla / tábla / naptár / idővonal nézetben, sablonok, megosztás, Notion AI','blocks with / commands, databases with table / board / calendar / timeline views, templates, sharing, Notion AI','/ menü; adatbázisnézetek típusos jegyzeteken; sablonok','/ menu; database views over typed notes; templates'],
+  ['Evernote','webes kivágó, OCR keresés képekben és PDF-ekben, füzetek + címkék, levélből jegyzet; az ingyenes csomag erősen szűkült','web clipper, OCR search in images and PDFs, notebooks + tags, email-in; the free tier is heavily limited','kivágó; keresés képben és PDF-ben; levélből jegyzet','clipper; search inside images and PDFs; email-in'],
+  ['Coda · Microsoft Loop','Coda: a dokumentum alkalmazás, gombokkal és képletekkel; Loop: élő komponensek, amelyek beillesztve is szinkronban maradnak','Coda: the doc is an app, with buttons and formulas; Loop: live components that stay in sync wherever pasted','gomb a jegyzetben, ami futtat valamit; egy blokk több helyen','a button in a note that runs something; one block in several places'],
+  ['Anytype · AFFiNE · AppFlowy','helyi-első, nyílt vagy E2E, típusos objektumok, dokumentum ⇄ vászon, LAN szinkron (Anytype)','local-first, open or E2E, typed objects, doc ⇄ canvas, LAN sync (Anytype)','helyi-első LAN szinkronnal; típusos objektumok','local-first with LAN sync; typed objects'],
+  ['Craft · Capacities · Tana','Craft: kifinomult olvasónézet; Capacities: objektumtípusok mappák helyett; Tana: „supertag”, ami mezőket ad egy jegyzetnek','Craft: a polished reading view; Capacities: object types instead of folders; Tana: "supertags" that add fields to a note','típusos jegyzetek: munkajegyzet, ügyfél, eszköz; #mérés címke mezőkkel','typed notes: job note, client, device; a #measurement tag with fields']
+ ]],
+ ['Markdown és helyi-első tudáseszközök', 'Markdown and local-first knowledge tools', [
+  ['Obsidian','sima Markdown mappa, wikilinkek, visszalinkek, gráf, Canvas (nyílt JSON Canvas), Bases (adatbázisnézet a fejléc mezőiből), napi jegyzet, rengeteg bővítmény','a plain Markdown folder, wikilinks, backlinks, graph, Canvas (open JSON Canvas), Bases (database views over frontmatter), daily notes, many plugins','a fájl az igazság; fejléc-tulajdonságok; JSON Canvas','files are the truth; frontmatter properties; JSON Canvas'],
+  ['Logseq · Roam Research','vázlatoló, blokkhivatkozások, napló mint kezdőlap, lekérdezések','outliner, block references, the journal as the landing page, queries','napi napló mint kezdőlap','the daily journal as the landing page'],
+  ['Joplin','nyílt forrás, E2EE, szinkron Nextcloud / WebDAV / OneDrive / S3 felé, jegyzetelőzmények, kivágó','open source, E2EE, sync to Nextcloud / WebDAV / OneDrive / S3, note history, clipper','szinkron sima mappába E2EE-vel; verzióelőzmény','sync to a plain folder with E2EE; revision history'],
+  ['Standard Notes · Notesnook','titkosítás-először, auditált; Notesnook: zárolt jegyzettár, alkalmazászár, lejáró megosztás','encryption-first, audited; Notesnook: a locked vault, app lock, expiring shares','egyszerű E2E; jegyzetenkénti zár; alkalmazászár','simple E2E; per-note lock; app lock'],
+  ['Trilium Notes · SiYuan','mély hierarchia, egy jegyzet több helyen, szkriptelés, védett jegyzetek, blokkszintű hivatkozás','deep hierarchy, one note in several places, scripting, protected notes, block-level references','egy jegyzet több helyen; védett jegyzetek','one note in several places; protected notes'],
+  ['Typora · MarkText','élő előnézetes Markdown: a jelölés eltűnik, ha kilépsz a sorból','live-preview Markdown: the markup disappears as you leave the line','élő előnézet szerkesztés közben','live preview while editing'],
+  ['Bear','szövegbe írt beágyazott címkék (#munka/2026/kovacs), szép témák, OCR keresés','nested tags written inline (#job/2026/kovacs), beautiful themes, OCR search','beágyazott címkék a szövegben','nested inline tags'],
+  ['Drafts · iA Writer · Ulysses','Drafts: üres piszkozattal nyit, műveletekkel bárhová küld; iA / Ulysses: fókuszmód','Drafts: opens on a blank draft, actions send text anywhere; iA / Ulysses: focus mode','előbb rögzíts, aztán sorolj be; műveletek; fókuszmód','capture first, file later; actions; focus mode'],
+  ['Simplenote · UpNote · Zoho Notebook','gyors, egyszerű; verziócsúszka','fast, simple; a version slider','a verziócsúszka felülete','the version slider UI'],
+  ['Amplenote · NotePlan','feladatok a jegyzetekben, naptárra ütemezve','tasks inside notes, scheduled on a calendar','feladat a jegyzet sorában, napirend','tasks in note lines, an agenda'],
+  ['Memos · Blinko · SilverBullet','saját szerveres; rövid jegyzetek idővonala; élő lekérdezések a jegyzetben','self-hosted; a timeline of short jots; live queries inside a note','gyorsjegyzet-idővonal (a mai napi fájl már ilyen)','a jot timeline (today\'s day file already is one)'],
+  ['Foam · Dendron · Org-mode','jegyzetek a kódszerkesztőben; TODO kulcsszavak és napirend sima szövegből','notes inside the code editor; TODO keywords and an agenda from plain text','dev jegyzetek a kód mellett','dev notes next to the code']
+ ]],
+ ['Kézírás és PDF', 'Ink, handwriting and PDF', [
+  ['GoodNotes · Notability','kereshető kézírás, PDF jelölés, kézíráshoz szinkronizált hang (Notability)','searchable handwriting, PDF annotation, audio synced to ink (Notability)','kézírás egy PDF alaprajzon','ink over a PDF floor plan'],
+  ['Nebo (MyScript)','kézírás szöveggé alakítva, diagramok, képletek','handwriting converted to text, diagrams, maths','kézírás → szöveg','ink → text'],
+  ['Saber · Xournal++','nyílt forrású kézírás (Saber, E2E) és asztali PDF-jelölés','open-source handwriting (Saber, E2E) and desktop PDF annotation','nyílt minta egy kézírásréteghez','an open reference for an ink layer'],
+  ['reMarkable · Supernote · Boox','e-ink táblagépek, kézírás-OCR','e-ink tablets, handwriting OCR','—','—']
+ ]],
+ ['MI-alapú és megbeszélés-jegyzetek', 'AI-native and meeting notes', [
+  ['Mem · Reflect','MI-rendezte jegyzetek, kapcsolódó jegyzetek, beszélgetés a jegyzetekkel; Reflect: E2E + visszalinkek','AI-organised notes, related notes, chat with notes; Reflect: E2E + backlinks','„kapcsolódó jegyzetek” panel','a "related notes" panel'],
+  ['Granola · Otter · Fireflies','megbeszélés hangja → átirat → összefoglaló + teendők, a saját jegyzetsorokkal összefésülve','meeting audio → transcript → summary + action items, merged with your own lines','hívás közbeni jegyzet, utána tiszta jegyzet + teendők','jot during a call, get a clean note + tasks after'],
+  ['NotebookLM','forrásokra épített kérdés-válasz és összefoglalók hivatkozásokkal','grounded Q&A and summaries with citations','kérdés egy munka dokumentumaira, hivatkozással','Q&A over a job\'s documents, with citations'],
+  ['Notion AI · Copilot · Apple Intelligence · Galaxy AI','átírás, összefoglalás, teendők kinyerése, fordítás','rewrite, summarise, extract tasks, translate','ugyanezek a kis igék egy kijelölésen','the same small verbs on a selection']
+ ]],
+ ['Terepi, építőipari és szakipari eszközök', 'Field, construction and trades', [
+  ['CompanyCam','fotóközpontú munkajegyzet szakembereknek: idő, GPS, projekt minden fotón, jelölés, előtte/utána, jelentés','photo-first job notes for contractors: time, GPS, project on every photo, annotation, before/after, reports','a helyszíni fotó maga a jegyzet; jelentés jegyzetekből','the site photo is the note; reports from notes'],
+  ['SafetyCulture (iAuditor)','ellenőrzési sablonok kötelező mezőkkel, aláírás, fotó, pontozás, PDF jelentés','inspection templates with required fields, signatures, photos, scoring, PDF report','mérési / átadási sablon kötelező mezőkkel','measurement / handover templates with required fields'],
+  ['Fieldwire · Procore · Autodesk Construction Cloud','tűk a rajzon: feladat vagy jegyzet egy helyen a terven, hibalisták, lapverziók','pins on a drawing: a task or note at a place on the plan, punch lists, sheet versions','jegyzet egy pontra tűzve a Planner tervén','a note pinned to a spot on the Planner plan'],
+  ['Raken','napi helyszíni jelentés: időjárás, létszám, elvégzett munka, fotók, késések','daily site report: weather, crew, work done, photos, delays','a terepnapló sablon','the site diary template'],
+  ['Jobber · ServiceTitan · Fulcrum','munkajegyzetek a csapattal megosztva; ügyfélnek látható és belső jegyzet; offline űrlapok','job notes shared with the crew; client-visible vs internal; offline forms','ügyfélnek látható / belső jelölő','a client-visible / internal flag']
+ ]]
+];
+
+const HAVE = [
+ ['Gyorsjegyzet (Mobile M6, LIVE)','szöveg + 🎤 hu-HU diktálás + címkék → egy sor a mobile-log ág log/ÉÉÉÉ-HH-NN.md fájljába; offline kimenő sor, megosztási cél','text + 🎤 hu-HU dictation + tags → one line in log/YYYY-MM-DD.md on the mobile-log branch; offline outbox, share target','a telefon rögzítőfelülete; a kimenő sor és az újrapróbáló hozzáfűzés újrahasznosítható','the phone\'s capture surface; the outbox and append-with-retry are reusable'],
+ ['Fejlesztői jegyzet (Desktop WP-25)','„mentés dev jegyzetként” bármely panelből forrással → Divergence kimenő sor → vrg-devnotes ág','"save as dev note" from any pane, with a source → Divergence outbox → vrg-devnotes branch','az Asztal rögzítő párbeszéde és a forrás ötlete','the Desktop\'s capture dialog and the idea of a source'],
+ ['Telefon ↔ PC relé (M2, M7)','QR párosítás, P-256 eszközkulcsok, aláírt üzenetek, bizalmi kapu','QR pairing, P-256 device keys, signed messages, a trust gate','LAN szinkron felhő nélkül, már hitelesítve','LAN sync with no cloud, already authenticated'],
+ ['Átadás (M12)','fájltábla: fotók és fájlok telefonról PC-re, méret- és ellenőrzőösszeg-vizsgálat','file board: photos and files phone → PC, size and checksum checked','mellékletek, helyszíni fotók','attachments, site photos'],
+ ['Titoktárak','secrets.js (DPAPI, tmp + átnevezés), SecretStore (Keystore AES), PhoneKey (Keystore P-256)','secrets.js (DPAPI, tmp + rename), SecretStore (Keystore AES), PhoneKey (Keystore P-256)','a tárkulcs és a szinkronkulcsok','the vault key and the sync keys'],
+ ['vrg-app:// · paletta · Stack · MindMap · BACKUP · VRG UI Kit','héjon belüli alkalmazások, parancspaletta, a munka gráfja, jegyzetvászon-előd, mentés, közös megjelenés','in-shell apps, command palette, the work graph, the note-canvas ancestor, backup, one look','a felület, a keresés, a Stack réteg, a vászon, a mentés és a kinézet szinte készen','the UI host, search, the Stack layer, the canvas, backup and the look, nearly ready']
+];
+const VRGFIT = [
+ ['Jegyzet ↔ munka','Note ↔ job','Minden jegyzet megnevezhet egy munkát; a munkamappa mutatja a jegyzeteit; az ajánlat idézhet belőle.','Every note may name a job; the job folder shows its notes; the offer can quote one.','munkanyilvántartás, jobs\\'],
+ ['Tű a Planner tervén','Pin on the Planner plan','Jegyzet egy tervelemhez (helyiség, áramkör, eszköz, kábelút) vagy egy lappozícióhoz rögzítve, rétegként a Plannerben.','A note anchored to a plan element (room, circuit, device, cable run) or a sheet position, shown as a layer in the Planner.','Planner elem-id-k, Views'],
+ ['Jegyzet ↔ Készlet / BuildTree','Note ↔ Inventory / BuildTree','[[inv:…]] link egy készletelemre; a „vesz” sorok bevásárlólistába mennek.','[[inv:…]] links to an inventory item; "buy" lines become shopping-list rows.','Inventory'],
+ ['Helyszíni fotó környezettel','Site photo with context','Az Átadás már viszi a fotókat; a Jegyzetek idővel, munkával, opcionális GPS-szel, jelölőréteggel és előtte/utána párral látja el.','Átadás already moves photos; Notes stamps them with time, job, optional GPS, an annotation layer and before/after pairs.','Átadás, FileStore'],
+ ['Mérési sablonok','Measurement templates','Típusos jegyzetek kötelező mezőkkel (felmérés, átadás, mérési sorok) → táblázat, CSV, Varler stílusú PDF.','Typed notes with required fields (survey, handover, measurement rows) → a table, CSV, a Varler-style PDF.','shared/varler-doc'],
+ ['Terepnapló','Site diary','Egy munkanap napi jegyzete: kik voltak, órák, munka, fotók, akadályok; órák munkánként összesítve.','The daily note of a job day: who was there, hours, work, photos, blockers; hours summed per job.','napi jegyzet modul'],
+ ['Linkek a munka gráfjába','Links into the work graph','[[F:…]], [[L:…]], [[R:5ee8b1e]], [[C:Planner/src]] Stack-csomópontokra; a jegyzetek N rétegként kereshetők a stack_search-ben.','[[F:…]], [[L:…]], [[R:5ee8b1e]], [[C:Planner/src]] to Stack nodes; notes searchable as layer N in stack_search.','Stack, vrg-stack MCP'],
+ ['Telefonról PC-re azonnal, felhő nélkül','Phone → PC instantly, no cloud','Egy hálózaton a telefonos jegyzet egy másodpercen belül megjelenik az Asztalon a párosított, aláírt relén; a felhő csak tartalék.','On one network, a phone note appears on the Desktop within a second over the paired, signed relay; the cloud is only a fallback.','relé, bizalmi kapu'],
+ ['Rögzítés bárhonnan az Asztalon','Desktop capture from anywhere','A dev jegyzet párbeszéd általános rögzítővé nő: terminál, csevegés, levél, weboldal, fájl, Stack-csomópont; a forrás megmarad.','The dev-note dialog grows into the universal capture: terminal, chat, mail, web page, file, Stack node; the source is kept.','note.js forrásfajták'],
+ ['Hang a helyszínen, magyarul','Voice on site, in Hungarian','Diktálás (már hu-HU) és a jegyzet mellé mentett hangfelvétel, amit a PC később átír, ha a telefon nem tette.','Dictation (already hu-HU) plus recorded audio kept with the note, transcribed later on the PC if the phone did not.','Gyorsjegyzet 🎤'],
+ ['QR / NFC az elosztószekrényen','QR / NFC on a cabinet','Egy matrica a szekrényben megnyitja azt a telepítési jegyzetet a telefonon.','A sticker in the cabinet opens that installation\'s note on the phone.','Links, M2 olvasó'],
+ ['Ügyfélnek kiadható export','Client-visible export','Az „ügyfélnek” jelölt jegyzet tiszta Varler PDF-be exportálható; belső jegyzet sosem kerül bele.','A note marked "client" exports as a clean Varler PDF; internal notes never appear in it.','varler-doc'],
+ ['Az ügynökök csak olvasnak','Agents read only','A Claude munkamenetek a Stacket kérdezik, nem a tárat; a privát jegyzet sosem kerül a Stack indexbe vagy egy ügynök kontextusába.','Claude sessions ask the Stack, not the vault; a private note never enters the Stack index or an agent\'s context.','Stack-építő szabályai']
+];
+const NOTNEED = ['Valós idejű többfelhasználós közös szerkesztés, nyilvános webes közzététel, bővítménypiac, saját táblamotor (a MindMap megvan), kézírás-felismerés.', 'Real-time multi-user co-editing, public web publishing, a plugin marketplace, a whiteboard engine of its own (MindMap exists), handwriting recognition.'];
+
+const BACKEND = [
+ ['Hol élnek a jegyzetek','Where the notes live',[
+  ['<b>Sima fájl az igazság.</b> Egy jegyzet = egy Markdown fájl YAML fejléccel; Jegyzettömbben, VS Code-ban, Obsidianban, GitHubon is olvasható.','<b>Plain files are the truth.</b> One note = one Markdown file with YAML frontmatter; readable in Notepad, VS Code, Obsidian, on GitHub.'],
+  ['<b>ULID / UUIDv7 a fájlnév</b>, nem a cím: átnevezéskor nem változik útvonal, a linkek nem törnek, két eszköz nem választhatja ugyanazt.','<b>ULID / UUIDv7 as the file name</b>, not the title: renaming changes no path, links never break, two devices cannot pick the same name.'],
+  ['<b>Tartalom szerint címzett mellékletek:</b> a fájlnév a hash, így az integritás ellenőrizhető és a duplikátum eltűnik.','<b>Content-addressed attachments:</b> the file name is the hash, so integrity is checkable and duplicates disappear.'],
+  ['<b>Az index gyorsítótár.</b> Verzióeltérésnél vagy hibánál eldobjuk és újraépítjük; adat sosem él csak az indexben.','<b>The index is a cache.</b> On a version mismatch or a fault it is dropped and rebuilt; no data lives only in the index.'],
+  ['<b>A tár a repón kívül</b> (H:\\VRG\\Full\\jegyzetek): ügyféladat nem juthat az origin-re.','<b>The vault sits outside the repo</b> (H:\\VRG\\Full\\jegyzetek): client data cannot reach origin.'],
+  ['<b>Telefonon</b> Room / SQLite replika a gyors listákhoz, és ugyanazok a Markdown fájlok a privát tárban.','<b>On the phone</b> a Room / SQLite replica for fast lists, plus the same Markdown files in private storage.']
+ ]],
+ ['Biztonságos írás','Writing safely',[
+  ['Atomi mentés: tmp → fsync → átnevezés; régi vagy új fájl, sosem félig írt.','Atomic save: tmp → fsync → rename; the old or the new file, never half of one.'],
+  ['Automatikus mentés 400–800 ms-mal az utolsó leütés után, és fókuszvesztéskor, bezáráskor, alvás előtt.','Autosave 400–800 ms after the last keystroke, and on blur, close and suspend.'],
+  ['Piszkozatnapló: a leütések előbb oda kerülnek; induláskor a frissebb piszkozatot visszakínálja.','Draft journal: keystrokes go there first; on start a newer draft is offered back.'],
+  ['Egy író: a fő folyamat birtokolja a tárat, zárfájl PID-del; az oldal szavakat küld, útvonalat soha.','One writer: the main process owns the vault, a lock file with the PID; the page sends words, never paths.'],
+  ['Külső szerkesztés: fájlfigyelő; tiszta szerkesztőben újratölt, piszkos szerkesztőben ütközéssáv, csendes felülírás nincs.','External edits: a file watcher; a clean editor reloads, a dirty one shows a conflict banner, never a silent overwrite.'],
+  ['Formátumverzió és migráció másolaton; az eredeti a trash\\migrations mappába kerül.','Format version and migration on a copy; the original goes to trash\\migrations.']
+ ]],
+ ['Szinkron','Sync',[
+  ['<b>1. LAN relé</b> (telefon ↔ PC): azonnali; a párosított P-256 kulcsokból ECDH → AES-GCM, így a LAN-on sem olvasható.','<b>1. LAN relay</b> (phone ↔ PC): instant; ECDH from the paired P-256 keys → AES-GCM, unreadable even on the LAN.'],
+  ['<b>2. OneDrive / Shared mappa</b> egy második PC-hez: csak titkosított csomagok.','<b>2. OneDrive / Shared folder</b> for a second PC: encrypted bundles only.'],
+  ['<b>3. GitHub privát ág</b>, ha a PC távol van: csak E2E-titkosítva; nyílt szöveg csak a dev jegyzeteknek, ahogy ma.','<b>3. GitHub private branch</b> when the PC is far away: E2E-encrypted only; plain text only for dev notes, as today.'],
+  ['Ütközés: rev + alap-hash → gyors továbbítás, vagy soronkénti diff3, vagy ütközésmásolat egymás melletti választóval. Semmi nem vész el.','Conflicts: rev + base hash → fast-forward, or line diff3, or a conflict copy with a side-by-side picker. Nothing is dropped.'],
+  ['CRDT (Yjs / Automerge) csak akkor, ha ketten szerkesztenék ugyanazt egyszerre: bináris formátumba vinné az igazságot.','CRDT (Yjs / Automerge) only if two people must edit one note at the same time: it would move the truth into a binary format.']
+ ]],
+ ['Biztonság','Security',[
+  ['Valós fenyegetések: ügyféladat kiszivárgása, elveszett telefon, rosszindulatú tartalom beillesztett HTML-ben, jegyzetbe írt jelszó, privát jegyzet egy ügynök promptjában.','Real threats: client data leaking, a lost phone, malicious content in pasted HTML, a password typed into a note, a private note in an agent\'s prompt.'],
+  ['Láthatóság: privát · belső (alap) · ügyfél · dev; minden kimenet betartja.','Visibility: private · internal (default) · client · dev; every outlet enforces it.'],
+  ['Titkosítás: jegyzetenkénti AES-256-GCM, tárkulcs scrypt / Argon2id-vel, DPAPI / Keystore őrzi; egyszer kinyomtatott helyreállító kulcs.','Encryption: per-note AES-256-GCM, vault key via scrypt / Argon2id, kept by DPAPI / Keystore; a recovery key printed once.'],
+  ['Új eszköz csak a párosított relén, kóddal kapja meg a kulcsot; levélben vagy fájlban soha.','A new device gets the key only over the paired relay, with a code; never by mail or a file.'],
+  ['Megjelenítés: DOMPurify, szigorú CSP, távoli képek tiltva, linkek kívül; titok- és személyesadat-figyelő a vrg-git mintáival.','Rendering: DOMPurify, strict CSP, remote images blocked, links outside; a secret and PII detector with the vrg-git patterns.'],
+  ['Minden könyvtár a vendor-manifest.json-ban, pontos verzióval és sha512-vel.','Every library in vendor-manifest.json, with an exact version and sha512.']
+ ]],
+ ['Tartalék és helyreállítás','Fallback and recovery',[
+  ['Nem indul az alkalmazás → a tár Markdown mappa; START tartalék: „Jegyzetek mappa”, és egyszerű kereső szkript.','The app will not start → the vault is a Markdown folder; START fallback: "Notes folder", plus a plain search script.'],
+  ['Sérült index → induláskor újraépül; a keresés vár, a szerkesztés nem.','Corrupt index → rebuilt on start; search waits, editing does not.'],
+  ['Áramszünet mentés közben → régi vagy új fájl; a piszkozatnapló adja vissza az utolsó leütéseket.','Power cut mid-save → the old or the new file; the draft journal restores the last keystrokes.'],
+  ['Partner offline → kimenő sor (lineáris visszalépés és folytatáskori ürítés, ahogy a 2026-10-31-es hibából tanultunk).','Partner offline → outbox (linear backoff and flush on resume, as learnt from the 2026-10-31 bug).'],
+  ['Meghajtóvesztés → a BACKUP tükrözi a tárat, vagy saját bare repó a Backup\\code-ban, fsck-val.','Drive loss → BACKUP mirrors the vault, or its own bare repo in Backup\\code, with fsck.'],
+  ['Elveszett telefon → a PC-n teljes másolat; párosítás bontása és kulcscsere.','Lost phone → the PC holds the full copy; unpair it and rotate the key.']
+ ]],
+ ['A kód formája','Code shape',[
+  ['Tiszta mag, vékony héjak: shared/notes-core (JS) és kit-core/notes (Kotlin) ugyanazokkal a szabályokkal és ugyanazokkal a tesztfájlokkal.','Pure core, thin shells: shared/notes-core (JS) and kit-core/notes (Kotlin) with the same rules and the same test files.'],
+  ['Egy szerkesztő, két gazda: CodeMirror 6 az Asztal oldalán és egy zárt Android WebView-ban; a gyors rögzítés natív Compose marad.','One editor, two hosts: CodeMirror 6 in the Desktop page and in a confined Android WebView; fast capture stays native Compose.'],
+  ['Tesztek eldobható tárakon a %TEMP%\\VRG alatt, sosem a valódin.','Tests on throwaway vaults under %TEMP%\\VRG, never the real one.'],
+  ['Kínzótesztek: leállítás mentés közben, két író, 10 000 jegyzet, script-tartalmú kivágott HTML, 3-utas összefésülési korpusz.','Torture tests: kill mid-save, two writers, 10,000 notes, clipped HTML with script, a 3-way merge corpus.'],
+  ['Nyilvántartás ugyanabban a változásban: vrg-menu.json + vrg-catalog.json, check-start, check-catalog, build-hub, Mobile Catalogue, Stack réteg.','Registry in the same change: vrg-menu.json + vrg-catalog.json, check-start, check-catalog, build-hub, Mobile Catalogue, Stack layer.']
+ ]]
+];
+const TREE = `H:\\VRG\\Full\\jegyzetek\\        <- the vault, OUTSIDE the main repo
+  .vault.json                    format version, vault id, key check
+  notes\\01JC8Z…Q.md               one note = one file, named by its ULID
+  att\\sha256\\ab\\ab12…f9.jpg       attachments, named by their hash
+  journal\\2026-11-10.jsonl         append-only operation log (sync, recovery)
+  trash\\                          deleted notes, 30 days
+  .index\\                         SQLite FTS5, disposable
+  .history\\                       old versions, or the vault is its own git repo
+
+---
+id: 01JC8Z5M7Q3T8K2V9WXYZABCDE
+title: Kovács lakás — elosztó felmérés
+type: felmeres
+tags: [job/2026/kovacs, eloszto]
+job: 2026-031
+plan: { file: kovacs.vrgplan, el: "circuit:K3" }
+visibility: internal
+rev: 7
+base: 9f2c…
+---
+Elosztó: 3×16 A …
+- [ ] FI-relé csere (30 mA)  📅 2026-11-14
+![[att:ab12…f9.jpg]]`;
+
+const DEC = [
+ ['NOTES-Q01','Hol él a tár?','Where does the vault live?',[['A','H:\\VRG\\Full\\jegyzetek\\, a repón kívül, a BACKUP menti','H:\\VRG\\Full\\jegyzetek\\, outside the repo, backed up by BACKUP'],['B','a repóban, git-ignore-olva','inside the repo, git-ignored'],['C','a Shared (OneDrive) mappában','in Shared (OneDrive)']]],
+ ['NOTES-Q02','Mi az igazság forrása?','What is the source of truth?',[['A','Markdown fájlok + újraépíthető index','Markdown files + rebuildable index'],['B','SQLite, Markdown exporttal','SQLite, with Markdown export'],['C','CRDT dokumentumok','CRDT documents']]],
+ ['NOTES-Q03','Mi a termék neve?','What is the product name?',[['A','VRG Jegyzetek (katalógus-id: notes)','VRG Jegyzetek (catalog id: notes)'],['B','„Gyorsjegyzet” a telefonos rögzítésnek, „Jegyzetek” az alkalmazásnak','"Gyorsjegyzet" for phone capture, "Jegyzetek" for the app']]],
+ ['NOTES-Q04','Hogyan legyen verzióelőzmény?','How is version history kept?',[['A','a tár saját helyi git repó (origin nélkül, csak Backup\\code\\jegyzetek.git); a launcher-collect push kihagyja','the vault as its own local git repo (no origin, only Backup\\code\\jegyzetek.git); the launcher-collect push skips it'],['B','saját pillanatkép-fájlok a .history\\ mappában','own snapshot files in .history\\']]],
+ ['NOTES-Q05','Milyen szerkesztő legyen a telefonon?','Which editor on the phone?',[['A','natív Compose a rögzítéshez, a közös CodeMirror WebView-ban a teljes szerkesztéshez','native Compose for capture, the shared CodeMirror in a WebView for full editing'],['B','minden natív Compose','everything native Compose'],['C','minden WebView','everything WebView']]],
+ ['NOTES-Q06','Hogyan fésüljük össze az ütközéseket?','How are conflicts merged?',[['A','rev + alap-hash + diff3 + ütközésmásolat','rev + base + diff3 + conflict copies'],['B','CRDT (Yjs / Automerge) az elejétől','CRDT (Yjs / Automerge) from the start']]],
+ ['NOTES-Q07','Titkosítás','Encryption',[['A','az első naptól az egész tárra (DPAPI / Keystore őrzi a kulcsot, nincs jelszókérés); a LAN-on kívüli szinkronhoz kötelező','on for the whole vault from day one (key kept by DPAPI / Keystore, no prompts); required for any off-LAN sync'],['B','alapból ki, táranként bekapcsolható','off by default, opt-in per vault']]],
+ ['NOTES-Q08','Mi legyen a mobile-log és a vrg-devnotes ággal?','What happens to the mobile-log and vrg-devnotes branches?',[['A','csak dev kimenetként maradnak; az új nem dev jegyzetek a társzinkronnal mennek; a régi előzmény egyszer importálva','kept as the dev outlet only; new non-dev notes go through the vault sync; old history imported once'],['B','mindkettő megszűnik','both retired']]],
+ ['NOTES-Q09','Milyen jegyzettípusok legyenek az első verzióban?','Which note types in the first version?',[['A','jegyzet, felmérés, telefon, dev (négy)','note, survey, call, dev (four)'],['B','először csak sima jegyzet','plain notes only at first']]],
+ ['NOTES-Q10','MI funkciók','AI features',[['A','kikapcsolva és nem épül a T3 szintig; ha épül, előbb helyi, privát jegyzeten soha','off and not built until tier 3; when built, local first, never on private notes'],['B','a diktált jegyzet tisztítása (N-AI-CLEAN) korán','build N-AI-CLEAN early for dictation']]],
+ ['SIMPLE-Q01','Egyszerű mód: első indítás','Simple mode: first start',[['A','Egyszerű mód, semmi sincs bekapcsolva','Simple mode, nothing on'],['B','az NT1 készlet bekapcsolva','the NT1 preset on']]],
+ ['SIMPLE-Q02','Az Egyszerű mód és a profil hatóköre','Scope of Simple mode and the profile',[['A','eszközönként','per device'],['B','tárolónként (minden eszköz együtt)','per vault (all devices together)']]],
+ ['SIMPLE-Q03','Ismerős megjelenés a PC-n','Ismerős look on the PC',[['A','csak telefonon','phone only'],['B','PC-s megjelenés is','also a PC skin']]],
+ ['SIMPLE-Q04','Alapértelmezett viselkedés','Behaviour default',[['A','a megjelenést követi (Ismerős → Csendes, Alap → Kézi)','follows the look (Ismerős → Csendes, Alap → Kézi)'],['B','mindig Kézi, amíg át nem állítják','always Kézi until changed']]],
+ ['SIMPLE-Q05','Téma','Theme',[['A','Alap a VRG-témát követi (sötét először); Ismerős a telefon világos / sötét beállítását','Alap follows the VRG theme (dark-first); Ismerős follows the phone\'s light / dark setting'],['B','mindkettő a telefont','both follow the phone']]],
+ ['SIMPLE-Q06','Csipkeret','Chip budget',[['A','3 a jegyzetfejlécben, 2 a sorban','3 in the note header, 2 in a row'],['B','4 és 2','4 and 2'],['C','2 és 1','2 and 1']]],
+ ['SIMPLE-Q07','Ismerős kiemelőszín','Ismerős accent',[['A','az ismerőshöz közeli borostyánsárga','amber-yellow close to the familiar one'],['B','a VRG meleg kiemelése','the VRG warm accent']]],
+ ['SIMPLE-Q08','Mit tehet a gép magától Csendes módban','What may act alone in Csendes',[['A','csak a Háttérnaplóból visszavonható lépéseket','only acts undoable from the Engine log'],['B','visszavonhatatlant is, megerősítéssel','also non-undoable acts, with a confirmation']]]
+];
+
+
+/* ---------------------------------------------------------------- Obsidian plugin map: [name, verdict, ourIds, hu, en] */
+const PLUG = [
+ ['Adatok, lekérdezések, tulajdonságok', 'Data, queries, properties', [
+  ['Dataview / Datacore','new','N-QUERY','lekérdezések a tulajdonságok felett, táblázatként és listaként; JS-lekérdezés is','queries over properties as tables and lists; JS queries too'],
+  ['Bases (alap)','new','N-QUERY','adatbázisnézetek .base fájlban','database views saved as .base files'],
+  ['Metadata Menu','part','N-TYPE','típusos mezők jegyzetosztályonként, mezőszerkesztők','typed fields per note class, field editors'],
+  ['Projects','part','N-QUERY N-BOARD N-CAL','táblázat / tábla / naptár / galéria egy mappa felett','table / board / calendar / gallery over a folder'],
+  ['Database Folder','part','N-QUERY','egy mappa táblázatként','a folder as a table'],
+  ['Tag Wrangler','have','N-TAG','címkék átnevezése, összevonása mindenhol','rename and merge tags everywhere']]],
+ ['Sablonok és rögzítés', 'Templates and capture', [
+  ['Templater','new','N-TPL','sablonok változókkal, dátumokkal, kérdésekkel, JS-sel (nálunk kód nélkül)','templates with variables, dates, prompts, JS (ours without code)'],
+  ['QuickAdd','part','N-ACTIONS N-INBOX','rögzítő makrók: hozzáfűzés egy jegyzet címsora alá','capture macros: append under a heading of a note'],
+  ['Periodic Notes','new','N-PERIODIC','heti, havi, negyedéves jegyzetek sablonból','weekly, monthly, quarterly notes from templates'],
+  ['Natural Language Dates','new','N-NLDATE','„holnap”, „jövő péntek” → dátum','"tomorrow", "next Friday" → a date'],
+  ['Web Clipper (hivatalos)','have','N-CLIP','böngészőből jegyzet tulajdonságokkal','browser to a note with properties'],
+  ['Importer (hivatalos)','have','N-IMPORT','Evernote, Notion, Apple Notes, Keep, OneNote → Markdown','Evernote, Notion, Apple Notes, Keep, OneNote → Markdown']]],
+ ['Írás és szerkesztés', 'Writing and editing', [
+  ['Advanced Tables','part','N-TABLE','Tab a cellák közt, igazítás, képletek (nálunk oszlopösszeg mérésekhez)','Tab between cells, alignment, formulas (ours: column sums for measurements)'],
+  ['Outliner','new','N-OUTLINE','listaelemek mozgatása, összecsukás, ágra nagyítás','move list items, fold, zoom into a branch'],
+  ['Various Complements / Completr','new','N-COMPLETE','szavak, hivatkozások, címkék kiegészítése','complete words, links, tags'],
+  ['Linter','new','N-LINT','formázás mentéskor (nálunk változat megtartásával)','format on save (ours keeps a version)'],
+  ['Smart Typography','new','N-TYPO','okos idézőjelek, gondolatjelek (nálunk magyar szabályokkal)','smart quotes and dashes (ours with Hungarian rules)'],
+  ['Editing Toolbar','core','N-SLASH','formázó eszközsor; a Jegyzetekben a beszúrás lap marad','a formatting toolbar; Jegyzetek keeps the insert sheet'],
+  ['Highlightr','part','N-EDIT','színes kiemelések','coloured highlights'],
+  ['Better Word Count','core','N-EDIT','szószám kijelölésre, jegyzetre, mappára','word count per selection, note, folder'],
+  ['Longform','new','N-LONGFORM','sok jegyzetből összefűzött kézirat','a manuscript compiled from many notes'],
+  ['Auto Link Title / Paste URL','new','N-PASTE','a beillesztett URL címmel együtt hivatkozás lesz','a pasted URL becomes a link with its title'],
+  ['Image Converter','new','N-IMG','beillesztett képek tömörítése, átméretezése, átnevezése','compress, resize, rename pasted images'],
+  ['Code Styler','have','N-CODE','sorszámok, címek, másolás gomb kódblokkon','line numbers, titles, copy button on code blocks']]],
+ ['Navigáció és szerkezet', 'Navigation and structure', [
+  ['Hover Editor / Page Preview','new','N-HOVER','hivatkozott jegyzet lebegő ablakban','a linked note in a floating window'],
+  ['Folder Notes','new','N-FOLDERNOTE','a mappának saját nyitójegyzete van','a folder has its own index note'],
+  ['Breadcrumbs','new','N-TRAIL','hierarchia- és sorrendmezők navigációval','hierarchy and sequence fields with navigation'],
+  ['Homepage','core','N-DAILY','indításkor egy választott jegyzet nyílik','open a chosen note at start'],
+  ['Recent Files, Bookmarks','have','N-PIN N-SMART','legutóbbi és csillagozott jegyzetek','recent and starred notes'],
+  ['Iconize','part','N-PIN','ikonok mappákon és jegyzeteken (nálunk a VRG UI Kit készletéből)','icons on folders and notes (ours from the VRG UI Kit set)'],
+  ['Workspaces (alap)','core','N-WORKSPACE','mentett panelelrendezések','saved pane layouts'],
+  ['Omnisearch','have','N-FIND N-OCR','közelítő keresés PDF-ben és OCR-rel is','fuzzy search incl. PDFs and OCR'],
+  ['Waypoint','part','N-FOLDERNOTE N-QUERY','automatikus tartalomjegyzék egy mappához','an automatic table of contents for a folder']]],
+ ['Feladatok és idő', 'Tasks and time', [
+  ['Tasks','part','N-TASK N-QUERY','dátumos, ismétlődő feladatok és lekérdezésük (ugyanaz az emoji-formátum)','dated, recurring tasks and task queries (same emoji format)'],
+  ['Kanban','part','N-BOARD','Markdown-fájlban tárolt tábla','a board stored as Markdown'],
+  ['Calendar / Full Calendar / Day Planner','part','N-CAL','havi nézet, események, napi idővonal','month view, events, a day timeline'],
+  ['Reminder','have','N-REMIND','értesítés dátumos feladatokhoz','notifications for dated tasks']]],
+ ['Vizuális gondolkodás', 'Visual thinking', [
+  ['Canvas (alap)','have','N-CANVAS','kártyák végtelen táblán, JSON Canvas','cards on an infinite board, JSON Canvas'],
+  ['Excalidraw','new','N-SKETCH','kézrajz-stílusú vázlatok Markdownban','hand-drawn-style sketches stored in Markdown'],
+  ['Mind Map / Markmind','have','N-CANVAS','címsorfa gondolattérképként (a MindMap eszköz)','a heading tree as a mind map (the MindMap tool)'],
+  ['Charts','new','N-CHART','diagramok táblázatból','charts from tables'],
+  ['Mermaid (alap)','have','N-DIAG','ábrák szövegből','diagrams from text'],
+  ['Graph, ExcaliBrain, Juggl','have','N-GRAPH N-STACK','hivatkozási gráfok','link graphs']]],
+ ['Média és PDF', 'Media and PDF', [
+  ['PDF++ / Annotator','have','N-PDF','PDF-kiemelés, hivatkozás egy részletre','PDF highlights, links to a passage'],
+  ['Media Extended','part','N-VOICE','hang és videó időbélyeg-hivatkozással','audio and video with timestamp links'],
+  ['Text Extractor','have','N-OCR','OCR képeken és PDF-eken','OCR of images and PDFs'],
+  ['Audio Recorder (alap)','have','N-VOICE','hangfelvétel jegyzetbe','record into a note']]],
+ ['Szinkron, mentés, verziókezelés', 'Sync, backup, version control', [
+  ['Obsidian Git','new','N-GIT','a tároló git-repóként (nálunk push csak engedélyezett helyre)','the vault as a git repo (ours pushes only where allowed)'],
+  ['Remotely Save / LiveSync / Sync','have','N-SYNC-LAN N-SYNC-FILE N-SYNC-GH','szinkron felhőn vagy saját szerveren, E2E','sync through a cloud or own server, E2E'],
+  ['File Recovery (alap)','have','N-HIST','pillanatképek','snapshots']]],
+ ['Export és közzététel', 'Export and publishing', [
+  ['Pandoc / Enhancing Export','part','N-EXPORT','DOCX, ePub Pandoccal (nálunk választható külső program)','DOCX, ePub via Pandoc (ours: optional external program)'],
+  ['Better Export PDF','have','N-REPORT','PDF fejléccel, tartalomjegyzékkel (Varler-stílus)','PDF with headers, TOC (Varler style)'],
+  ['Digital Garden / Quartz / Publish','no','','nyilvános weboldal a jegyzetekből; nálunk nincs nyilvános közzététel','notes as a public website; we do no public publishing']]],
+ ['Automatizálás és integráció', 'Automation and integration', [
+  ['Advanced URI','have','N-LINKS','megnyitás, létrehozás, hozzáfűzés hivatkozással','open, create, append through links'],
+  ['Commander','core','N-WORKSPACE','parancsok eszközsorokba (csak MindMD; a Jegyzetekben soha)','commands on toolbars (MindMD only; never in Jegyzetek)'],
+  ['Shell Commands','no','','parancssor futtatása jegyzetből; tetszőleges futtatás, helyette START-művelet','run shell commands from notes; arbitrary execution, a START act instead'],
+  ['Execute Code','no','','kódblokkok futtatása; ugyanezért nem','run code blocks; not wanted for the same reason'],
+  ['Local REST API / MCP Tools','new','N-MCP','hozzáférés szkripteknek és MI-ügynököknek (nálunk csak olvasás)','access for scripts and AI agents (ours read-only)']]],
+ ['MI', 'AI', [
+  ['Smart Connections','new','N-RELATED','kapcsolódó jegyzetek, csevegés a tárolóval','related notes, chat over the vault'],
+  ['Copilot / Text Generator','have','N-AI-ASK N-AI-SUM','csevegés, átírás, generálás (nálunk 3. szint, kapcsoló mögött)','chat, rewrite, generate (ours tier 3, behind a switch)']]],
+ ['Kinézet', 'Look', [
+  ['Style Settings / témák','new','N-THEME','kinézet változókkal és CSS-sel (nálunk szabad CSS nélkül)','look through variables and CSS (ours without free CSS)'],
+  ['Banners / Pretty Properties','no','','fejlécképek, díszítés; a tulajdonságok nálunk csipek','header images, decoration; our properties are chips'],
+  ['Minimal Theme Settings','core','N-FOCUS','elrendezési finomítások','layout tweaks']]],
+ ['Tanulás', 'Learning', [
+  ['Spaced Repetition / Anki','no','','tanulókártyák; egyelőre nem jegyzetigény','flashcards; not a notes need for now'],
+  ['Zotero / Citations','no','','tudományos hivatkozások; az adatlapok fájlként kapcsolódnak','academic references; datasheets are linked as files']]]
+];
+const CMP = [
+ ['Hol fut','Where it runs','az alkalmazás folyamatában, asztalon Node-dal','the app process, with Node on desktop','csak az oldalon; nincs Node, shell, eval','the page only; no Node, shell, eval'],
+ ['Fájlok','Files','bármely útvonal','any path','a tárolószolgáltatás, jegyzetazonosító szerint, láthatósági szűrővel','the vault service, by note id, through the visibility filter'],
+ ['Hálózat','Network','bármi','anything','csak a manifestben felsorolt hosztok','only hosts listed in the manifest'],
+ ['Felület','UI','bárhol','anywhere','megadott pontokon; a Jegyzetekben csak a helyeken','declared points; in Jegyzetek only the slots'],
+ ['Privát jegyzet','Private notes','olvasható','readable','csak külön engedéllyel','only with an explicit grant'],
+ ['Tartalmi változtatás','Content changes','csendben','silent','naplózva, visszavonhatóan','logged, undoable'],
+ ['Terjesztés','Distribution','közösségi katalógus, a szerző frissít','community catalogue, author updates','a repóban, vagy vendorolva pontos verzióval + sha512','in the repo, or vendored at an exact version + sha512']
+];
+const PTS = [
+ ['addCommand','commands','paletta, billentyű','palette, keys','… menü (S4)','… menu (S4)'],
+ ['CodeBlockProcessor','codeblock','igen','yes','a törzsben','in the body'],
+ ['EditorExtension (CM6)','editor','igen','yes','csak csendes','quiet ones only'],
+ ['EditorSuggest','suggest','igen','yes','igen (gépelési segítség)','yes (typing help)'],
+ ['registerView','panel','igen','yes','látogatás (R4)','a visit (R4)'],
+ ['StatusBarItem','status','igen','yes','✖','✖'],
+ ['SettingTab','settings','oldal','a page','egy sor (S9)','one row (S9)'],
+ ['—','job','igen','yes','gépház + Háttérnapló','engine room + engine log'],
+ ['—','chip','tulajdonságpanel','properties panel','S1, S2','S1, S2'],
+ ['—','folder','fájlfa','file tree','S7','S7'],
+ ['—','field','tulajdonságpanel','properties panel','csipek, űrlapok','chips, forms']
+];
+
+/* ---------------------------------------------------------------- state */
+const PRESET = {
+  core: () => CORE.slice(),
+  nt1: () => IDS.filter(id => MOD[id].phase <= 1),
+  nt2: () => IDS.filter(id => MOD[id].phase <= 2),
+  nt3: () => IDS.filter(id => MOD[id].phase <= 3),
+  nt4: () => IDS.filter(id => MOD[id].phase <= 4),
+  all: () => IDS.slice(),
+  t1: () => IDS.filter(id => MOD[id].tier <= 1)
+};
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const state = {
+  lang: store.get('vrgj.lang') === 'en' ? 'en' : 'hu',
+  sel: new Set(closeDeps(PRESET.nt2())),
+  decisions: Object.fromEntries(DEC.map(d => [d[0], 'A'])),
+  goal: '', reasons: {}, aiSummary: '',
+  q: '', tiers: new Set(), wheres: new Set(), phases: new Set(), onlySel: false,
+  dirty: false, savedAt: null, db: null, remote: null, pendingAi: null,
+  plV: new Set(), plQ: ''
+};
+const tt = () => T[state.lang];
+const LI = () => (state.lang === 'hu' ? 0 : 1);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function closeDeps(ids) {
+  const out = new Set(CORE);
+  ids.forEach(id => { if (MOD[id]) { out.add(id); MOD[id].deps.forEach(function walk(d) { if (!out.has(d)) { out.add(d); MOD[d].deps.forEach(walk); } }); } });
+  return [...out];
+}
+function dependentsOf(id, sel) {
+  const out = new Set();
+  (function walk(x) { (DEPENDENTS[x] || []).forEach(y => { if (sel.has(y) && !out.has(y)) { out.add(y); walk(y); } }); })(id);
+  return [...out];
+}
+
+/* ---------------------------------------------------------------- toast */
+let toastTimer = null;
+function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 3600); }
+
+/* ---------------------------------------------------------------- selection changes */
+function setOn(id, on) {
+  const m = MOD[id];
+  if (!m) return;
+  if (m.tier === 0) { toast(tt().coreLocked); return; }
+  if (on) {
+    const before = new Set(state.sel);
+    closeDeps([id]).forEach(x => state.sel.add(x));
+    const added = [...state.sel].filter(x => !before.has(x) && x !== id && MOD[x].tier !== 0);
+    if (added.length) toast(tt().addedDeps(added.join(', ')));
+  } else {
+    const deps = dependentsOf(id, state.sel);
+    state.sel.delete(id); deps.forEach(x => state.sel.delete(x));
+    if (deps.length) toast(tt().removedDeps(deps.join(', ')));
+  }
+  markDirty(); renderList(); renderSummary();
+}
+function applyPreset(k) { state.sel = new Set(closeDeps(PRESET[k]())); state.reasons = {}; markDirty(); renderList(); renderSummary(); }
+function markDirty() { state.dirty = true; renderSaveStatus(); try { store.set('vrgj.draft', JSON.stringify(payload())); } catch (e) {} }
+
+/* ---------------------------------------------------------------- render: chrome */
+const VIEWS = ['modules', 'market', 'plugins', 'vrg', 'backend', 'decisions'];
+function currentView() { const h = (location.hash || '').slice(1); return VIEWS.includes(h) ? h : 'modules'; }
+function renderChrome() {
+  const L = tt();
+  document.documentElement.lang = state.lang;
+  $('h-sub').textContent = L.sub;
+  $('lang-hu').setAttribute('aria-pressed', String(state.lang === 'hu'));
+  $('lang-en').setAttribute('aria-pressed', String(state.lang === 'en'));
+  const cur = currentView();
+  $('tabs').innerHTML = VIEWS.map(v => `<a href="#${v}" ${v === cur ? 'aria-current="page"' : ''}>${esc(L.tabs[v])}</a>`).join('');
+  document.querySelectorAll('[data-view]').forEach(s => { s.hidden = s.dataset.view !== cur; });
+  $('foot').textContent = L.foot;
+}
+
+/* ---------------------------------------------------------------- render: modules */
+function renderModulesStatic() {
+  const L = tt();
+  $('mod-intro').innerHTML = L.modIntro;
+  $('q').placeholder = L.search;
+  $('only-sel-l').textContent = L.onlySel;
+  $('sum-l').textContent = L.sumL;
+  $('pre-h').textContent = L.preH;
+  $('presets').innerHTML = Object.keys(PRESET).map(k => `<button type="button" data-preset="${k}">${esc(L.presets[k])}</button>`).join('');
+  $('pre-hint').textContent = L.preHint;
+  $('ai-h').textContent = L.aiH;
+  $('ai-goal').placeholder = L.aiPh;
+  $('ai-chips').innerHTML = L.aiChips.map((c, i) => `<button type="button" class="chip" data-chip="${i}">${esc(c)}</button>`).join('');
+  $('ai-go').textContent = L.aiGo;
+  $('save-h').textContent = L.saveH;
+  $('save').textContent = L.save;
+  $('save-hint').innerHTML = L.saveHint;
+  $('copy-md').textContent = L.copyMd;
+  $('copy-json').textContent = L.copyJson;
+  const tierChips = [0, 1, 2, 3].map(t => `<button type="button" class="fchip" data-ftier="${t}" aria-pressed="${state.tiers.has(t)}">T${t}</button>`).join('');
+  const whereChips = ['D', 'M', 'DM'].map(w => `<button type="button" class="fchip" data-fwhere="${w}" aria-pressed="${state.wheres.has(w)}">${esc(L.where[w])}</button>`).join('');
+  const phaseChips = [0, 1, 2, 3, 4, 5].map(p => `<button type="button" class="fchip" data-fphase="${p}" aria-pressed="${state.phases.has(p)}">${esc(L.phaseShort[p])}</button>`).join('');
+  $('fchips').innerHTML = `<span class="label">${esc(L.tierL)}</span>${tierChips}<span class="sep"></span><span class="label">${esc(L.whereL)}</span>${whereChips}<span class="sep"></span><span class="label">${esc(L.phaseL)}</span>${phaseChips}`;
+}
+function matches(m) {
+  if (state.onlySel && !state.sel.has(m.id)) return false;
+  if (state.tiers.size && !state.tiers.has(m.tier)) return false;
+  if (state.wheres.size && !state.wheres.has(m.where)) return false;
+  if (state.phases.size && !state.phases.has(m.phase)) return false;
+  if (state.q) {
+    const fold = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const hay = fold([m.id, m.hu[0], m.hu[1], m.en[0], m.en[1], m.builds].join(' '));
+    if (!fold(state.q).split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+  }
+  return true;
+}
+function renderList() {
+  const L = tt(), li = state.lang;
+  let html = '';
+  Object.keys(FAM).forEach(f => {
+    const mods = IDS.map(id => MOD[id]).filter(m => m.fam === f && matches(m));
+    if (!mods.length) return;
+    const all = IDS.filter(id => MOD[id].fam === f);
+    const on = all.filter(id => state.sel.has(id)).length;
+    const anyOff = mods.some(m => !state.sel.has(m.id));
+    const famLocked = mods.every(m => m.tier === 0);
+    html += `<div class="fam"><div class="fam-h"><h2>${esc(FAM[f][LI()])}</h2><span class="n">${on} / ${all.length}</span>${famLocked ? '' : `<button type="button" data-fam="${f}" data-on="${anyOff}">${esc(anyOff ? L.selFam : L.unselFam)}</button>`}</div>`;
+    mods.forEach(m => {
+      const isOn = state.sel.has(m.id), core = m.tier === 0;
+      const deps = m.deps.length ? `<span><b>${esc(L.needs)}</b> <span class="mono">${m.deps.join(', ')}</span></span>` : '';
+      const builds = m.builds ? `<span><b>${esc(L.builds)}</b> ${esc(m.builds)}</span>` : '';
+      const why = state.reasons[m.id] ? `<div class="why">${esc(L.whyL)} ${esc(state.reasons[m.id])}</div>` : '';
+      html += `<label class="mod${isOn ? ' on' : ''}${core ? ' core' : ''}">
+        <input type="checkbox" id="m-${m.id}" data-id="${m.id}" ${isOn ? 'checked' : ''} ${core ? 'disabled' : ''}>
+        <div class="head"><span class="id">${m.id}</span><span class="name">${esc(m[li][0])}</span>
+          <span class="tags"><span class="pill t${m.tier}">T${m.tier}</span><span class="pill">${esc(L.where[m.where])}</span><span class="pill">${esc(L.phaseShort[m.phase])}</span></span></div>
+        <div class="desc">${esc(m[li][1])}</div>
+        ${deps || builds ? `<div class="meta">${deps}${builds}</div>` : ''}${why}
+      </label>`;
+    });
+    html += '</div>';
+  });
+  $('list').innerHTML = html || `<p class="empty">${esc(L.empty)}</p>`;
+}
+function renderSummary() {
+  if ($('plugins') && currentView() === 'plugins') renderPlugins();
+  const L = tt();
+  const sel = [...state.sel].map(id => MOD[id]);
+  $('sum-n').textContent = sel.length;
+  $('sum-of').textContent = L.of(IDS.length);
+  const byPhase = [0, 1, 2, 3, 4, 5].map(p => sel.filter(m => m.phase === p).length);
+  $('sum-bar').innerHTML = byPhase.map((n, p) => n ? `<span style="width:${(n / IDS.length * 100).toFixed(2)}%;background:var(--p${p})" title="${esc(L.phase[p])}: ${n}"></span>` : '').join('');
+  $('sum-legend').innerHTML = byPhase.map((n, p) => `<span><i style="background:var(--p${p})"></i>${esc(L.phase[p])} · <span class="mono">${n}</span></span>`).join('');
+  const byTier = [0, 1, 2, 3].map(t => sel.filter(m => m.tier === t).length);
+  const w = ['D', 'M', 'DM'].map(x => sel.filter(m => m.where === x).length);
+  $('sum-counts').innerHTML =
+    byTier.map((n, t) => `<div><b>${n}</b><small>T${t}</small></div>`).join('') +
+    `<div style="grid-column:span 2"><b>${w.join(' / ')}</b><small>${esc(L.countsWhere)}</small></div>`;
+}
+function renderSaveStatus() {
+  const L = tt(), el = $('save-status');
+  if (state.remote) { el.className = 'status warn'; el.innerHTML = `${esc(L.remote)} <button type="button" id="load-remote">${esc(L.loadRemote)}</button>`; return; }
+  if (!state.db) { el.className = 'status'; el.textContent = state.dbChecked ? L.noDb : ''; return; }
+  if (state.dirty) { el.className = 'status warn'; el.textContent = L.dirty; return; }
+  if (state.savedAt) { el.className = 'status ok'; el.textContent = L.saved(fmtTime(state.savedAt)); return; }
+  el.className = 'status'; el.textContent = '';
+}
+function fmtTime(iso) { try { return new Date(iso).toLocaleString(state.lang === 'hu' ? 'hu-HU' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return iso; } }
+
+/* ---------------------------------------------------------------- render: text views */
+function renderMarket() {
+  const L = tt(), i = LI();
+  $('market').innerHTML = `<p class="intro">${L.marketIntro}</p>` + MARKET.map(g => `
+    <h2 class="section-h">${esc(g[i])}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.mkCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${g[2].map(r => `<tr><td class="prod">${esc(r[0])}</td><td>${esc(r[1 + i])}</td><td class="take">${esc(r[3 + i])}</td></tr>`).join('')}
+    </tbody></table></div>`).join('');
+}
+function renderVrg() {
+  const L = tt(), i = LI();
+  $('vrg').innerHTML = `<p class="intro">${L.vrgIntro}</p>
+    <h2 class="section-h">${esc(L.haveH)}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.haveCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${HAVE.map(r => `<tr><td class="prod">${esc(r[0])}</td><td>${esc(r[1 + i])}</td><td class="take">${esc(r[3 + i])}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="intro" style="margin-top:12px">${L.gap}</p>
+    <h2 class="section-h">${esc(L.tabs.vrg)}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.vrgCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${VRGFIT.map(r => `<tr><td class="prod">${esc(r[i])}</td><td>${esc(r[2 + i])}</td><td><span class="mono">${esc(r[4])}</span></td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="intro" style="margin-top:12px"><strong>${i ? 'Not needed early:' : 'Korán nem kell:'}</strong> ${esc(NOTNEED[i])}</p>`;
+}
+function renderBackend() {
+  const L = tt(), i = LI();
+  $('backend').innerHTML = `<p class="intro">${L.beIntro}</p>
+    <div class="cards">${BACKEND.map(c => `<div class="card"><h3>${esc(c[i])}</h3><ul>${c[2].map(b => `<li>${b[i]}</li>`).join('')}</ul></div>`).join('')}</div>
+    <h2 class="section-h">${esc(L.treeH)}</h2><pre class="tree">${esc(TREE)}</pre>`;
+}
+function renderDecisions() {
+  const L = tt(), i = LI();
+  $('decisions').innerHTML = `<p class="intro">${L.decIntro}</p>` + DEC.map(d => `
+    <div class="dec"><div class="q"><span class="mono">${d[0]}</span><h3>${esc(d[1 + i])}</h3></div>
+    ${d[3].map(o => `<label class="${state.decisions[d[0]] === o[0] ? 'sel' : ''}"><input type="radio" name="${d[0]}" id="${d[0]}-${o[0]}" value="${o[0]}" ${state.decisions[d[0]] === o[0] ? 'checked' : ''}>
+      <span><b class="mono">${o[0]}</b> ${esc(o[1 + i])}${o[0] === 'A' ? `<span class="rec">${esc(L.recommended)}</span>` : ''}</span></label>`).join('')}
+    </div>`).join('');
+}
+
+function renderPlugins() {
+  const L = tt(), i = LI();
+  const fold = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const all = PLUG.flatMap(g => g[2]);
+  const counts = {}; all.forEach(r => counts[r[1]] = (counts[r[1]] || 0) + 1);
+  const q = fold(state.plQ).split(/\s+/).filter(Boolean);
+  const keep = r => (!state.plV.size || state.plV.has(r[1])) && (!q.length || q.every(w => fold(r.join(' ')).includes(w)));
+  const idChips = ids => ids ? ids.split(' ').map(id => `<button type="button" class="goto${state.sel.has(id) ? ' on' : ''}" data-goto="${id}" title="${MOD[id] ? esc(MOD[id][state.lang][0]) : ''}"><i></i>${id}</button>`).join('') : '—';
+  const groups = PLUG.map(g => { const rows = g[2].filter(keep); return rows.length ? `
+    <h2 class="section-h">${esc(g[i])}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.plCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(r => `<tr><td class="plname">${esc(r[0])}</td><td>${esc(r[3 + i])}</td><td>${idChips(r[2])}</td><td><span class="verdict ${r[1]}">${esc(L.verdict[r[1]])}</span></td></tr>`).join('')}
+    </tbody></table></div>` : ''; }).join('');
+  const vchips = Object.keys(L.verdict).map(v => `<button type="button" class="fchip" data-plv="${v}" aria-pressed="${state.plV.has(v)}">${esc(L.verdict[v])} · ${counts[v] || 0}</button>`).join('');
+  const newIds = [...new Set(all.filter(r => r[1] === 'new').flatMap(r => r[2].split(' ')))];
+  const selNew = newIds.filter(id => state.sel.has(id)).length;
+  $('plugins').innerHTML = `<p class="intro">${L.plIntro}</p>
+    <div class="plsum"><span><b>${all.length}</b> ${i ? 'rows' : 'sor'}</span><span><b>${newIds.length}</b> ${i ? 'new modules from them' : 'új modul belőlük'}</span><span><b>${selNew}</b> ${i ? 'of those selected now' : 'ebből most kijelölve'}</span></div>
+    <div class="plbar"><input type="search" id="pl-q" placeholder="${esc(L.plSearch)}" value="${esc(state.plQ)}" autocomplete="off">${vchips}</div>
+    ${groups || `<p class="empty">${esc(L.plEmpty)}</p>`}
+    <h2 class="section-h">${esc(L.cmpH)}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.cmpCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${CMP.map(r => `<tr><td class="plname">${esc(r[i])}</td><td>${esc(r[2 + i])}</td><td class="take">${esc(r[4 + i])}</td></tr>`).join('')}
+    </tbody></table></div>
+    <h2 class="section-h">${esc(L.ptsH)}</h2>
+    <div class="tablewrap"><table><thead><tr>${L.ptsCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${PTS.map(r => `<tr><td><span class="mono">${esc(r[0])}</span></td><td><span class="mono">${esc(r[1])}</span></td><td>${esc(r[2 + i])}</td><td>${esc(r[4 + i])}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="intro" style="margin-top:14px">${esc(L.plFoot)}</p>`;
+}
+function renderAll() { renderChrome(); renderModulesStatic(); renderList(); renderSummary(); renderSaveStatus(); renderMarket(); renderPlugins(); renderVrg(); renderBackend(); renderDecisions(); renderAiOut(); }
+
+/* ---------------------------------------------------------------- payload / export */
+function payload() {
+  const mods = IDS.filter(id => state.sel.has(id));
+  return { modules: mods, decisions: { ...state.decisions }, goal: state.goal, reasons: Object.fromEntries(mods.filter(id => state.reasons[id]).map(id => [id, state.reasons[id]])), aiSummary: state.aiSummary, lang: state.lang };
+}
+function toMarkdown() {
+  const L = tt(), li = state.lang, p = payload();
+  let md = `# ${L.mdTitle}\n\n`;
+  if (p.goal) md += `**${L.mdGoal}:** ${p.goal}\n\n`;
+  if (p.aiSummary) md += `**${L.mdWhy}:** ${p.aiSummary}\n\n`;
+  md += `${p.modules.length} / ${IDS.length}\n\n`;
+  [0, 1, 2, 3, 4, 5].forEach(ph => {
+    const rows = p.modules.filter(id => MOD[id].phase === ph);
+    if (!rows.length) return;
+    md += `## ${L.phase[ph]}\n\n`;
+    rows.forEach(id => { const m = MOD[id]; md += `- **${id}** ${m[li][0]} — T${m.tier}, ${L.where[m.where]}${m.deps.length ? `, ${L.needs} ${m.deps.join(', ')}` : ''}${p.reasons[id] ? ` · ${L.whyL} ${p.reasons[id]}` : ''}\n`; });
+    md += '\n';
+  });
+  md += `## ${L.mdDec}\n\n`;
+  DEC.forEach(d => { const o = d[3].find(x => x[0] === state.decisions[d[0]]) || d[3][0]; md += `- ${d[0]} ${d[li === 'hu' ? 1 : 2]} → **${o[0]}** ${o[li === 'hu' ? 1 : 2]}\n`; });
+  return md;
+}
+async function copy(text) {
+  const fb = $('copy-fallback');
+  try { await navigator.clipboard.writeText(text); fb.hidden = true; toast(tt().copied); }
+  catch (e) { fb.hidden = false; fb.value = text; fb.focus(); fb.select(); toast(tt().copyFail); }
+}
+
+/* ---------------------------------------------------------------- shared save (db) */
+function applyRemote(d) {
+  if (!d || !Array.isArray(d.modules)) return;
+  state.sel = new Set(closeDeps(d.modules.filter(id => MOD[id])));
+  if (d.decisions && typeof d.decisions === 'object') DEC.forEach(q => { const v = d.decisions[q[0]]; if (q[3].some(o => o[0] === v)) state.decisions[q[0]] = v; });
+  state.goal = typeof d.goal === 'string' ? d.goal.slice(0, 2000) : '';
+  state.reasons = {}; if (d.reasons && typeof d.reasons === 'object') Object.keys(d.reasons).forEach(k => { if (MOD[k]) state.reasons[k] = String(d.reasons[k]).slice(0, 300); });
+  state.aiSummary = typeof d.aiSummary === 'string' ? d.aiSummary.slice(0, 1200) : '';
+  state.savedAt = typeof d.updatedAt === 'string' ? d.updatedAt : null;
+  state.dirty = false; state.remote = null;
+  $('ai-goal').value = state.goal;
+  renderList(); renderSummary(); renderDecisions(); renderSaveStatus();
+}
+async function initDb() {
+  if (!window.claude || typeof window.claude.use !== 'function') { state.dbChecked = true; renderSaveStatus(); return; }
+  let db = null;
+  try { db = await window.claude.use('db'); } catch (e) { db = null; }
+  state.dbChecked = true;
+  if (!db) { renderSaveStatus(); return; }
+  state.db = db;
+  const ref = db.doc('picks/current');
+  ref.onSnapshot(snap => {
+    if (snap.metadata && snap.metadata.hasPendingWrites) return;
+    const d = snap.exists ? snap.data() : null;
+    if (d && d.updatedAt !== state.savedAt) {
+      if (!state.dirty) applyRemote(d);
+      else state.remote = d;
+    }
+    renderSaveStatus();
+  }, () => { renderSaveStatus(); });
+  renderSaveStatus();
+}
+async function save() {
+  const L = tt(), el = $('save-status');
+  if (!state.db) { el.className = 'status'; el.textContent = L.noDb; return; }
+  const btn = $('save'); btn.disabled = true; el.className = 'status'; el.textContent = L.saving;
+  const now = new Date().toISOString();
+  try { await state.db.doc('picks/current').set({ ...payload(), updatedAt: now, schema: 1 }); state.savedAt = now; state.dirty = false; state.remote = null; }
+  catch (e) { el.className = 'status err'; el.textContent = L.saveErr + ((e && (e.message || e.code)) || ''); btn.disabled = false; return; }
+  btn.disabled = false; renderSaveStatus();
+}
+
+/* ---------------------------------------------------------------- AI suggestion (sample) */
+let sampleFn = null, sampleChecked = false;
+async function initSample() {
+  if (!window.claude || typeof window.claude.use !== 'function') { sampleChecked = true; return; }
+  try { sampleFn = await window.claude.use('sample'); } catch (e) { sampleFn = null; }
+  sampleChecked = true;
+  if (!sampleFn) { $('ai-go').disabled = true; $('ai-status').textContent = tt().aiNone; }
+}
+function aiPrompt(goal) {
+  const lines = IDS.map(id => { const m = MOD[id]; return `${id} | T${m.tier} | ${m.where} | phase ${m.phase} | deps: ${m.deps.join(',') || '-'} | ${m.en[0]}: ${m.en[1]}`; }).join('\n');
+  const lang = state.lang === 'hu' ? 'Hungarian' : 'English';
+  return `You are helping plan "VRG Jegyzetek", a notes app built into VRG Desktop (an Electron workbench shell on Windows) and VRG Mobile (an Android companion app, Kotlin/Compose). The owner is an electrical contractor: field notes on job sites (phone, often offline, photos, client personal data), office notes (calls, pricing, quotes), and developer notes about the VRG toolset. Existing pieces: a phone quick-note feature that writes to a git branch, a desktop dev-note dialog, a signed phone<->PC relay, a file-transfer board, encrypted key stores on both sides, a backup system, a knowledge graph called the Stack.
+
+Choose a coherent set of modules from the catalogue below for this goal:
+"""${goal}"""
+
+Rules:
+- Every T0 (core) module is always included; you do not need to list them.
+- If you pick a module, its deps must be picked too (list them).
+- Prefer a focused set that serves the goal; skip modules that do not serve it. Tiers: T1 first useful version, T2 strong second wave, T3 later.
+- Write "summary" (2-4 sentences) and each "why" (one short sentence, under 20 words) in ${lang}.
+
+Catalogue (id | tier | where D=desktop M=mobile DM=both | build phase | deps | name: description):
+${lines}
+
+Answer with JSON only, in this shape:
+{"summary": "...", "modules": [{"id": "N-...", "why": "..."}]}`;
+}
+async function runAi() {
+  const L = tt(), goal = $('ai-goal').value.trim(), st = $('ai-status');
+  if (!goal) { st.className = 'status warn'; st.textContent = L.aiNeedGoal; return; }
+  if (!sampleFn) { st.className = 'status'; st.textContent = L.aiNone; return; }
+  state.goal = goal;
+  const btn = $('ai-go'); btn.disabled = true; st.className = 'status'; st.textContent = L.aiBusy;
+  try {
+    const res = await sampleFn.json(aiPrompt(goal), { modelTier: 'default', cache: false });
+    const list = (res && Array.isArray(res.modules) ? res.modules : []).filter(x => x && MOD[x.id]);
+    const reasons = {}; list.forEach(x => { if (typeof x.why === 'string') reasons[x.id] = x.why.slice(0, 300); });
+    state.pendingAi = { ids: list.map(x => x.id), reasons, summary: typeof res.summary === 'string' ? res.summary.slice(0, 1200) : '' };
+    st.className = 'status ok'; st.textContent = L.aiDone(list.length);
+  } catch (e) {
+    st.className = 'status err';
+    st.textContent = e && e.code === 'not_granted' ? L.aiNone : L.aiErr + ((e && (e.message || e.code)) || '');
+    if (e && e.code === 'not_granted') { sampleFn = null; }
+  }
+  btn.disabled = !sampleFn; renderAiOut();
+}
+function renderAiOut() {
+  const out = $('ai-out'), L = tt(), p = state.pendingAi;
+  if (!p) { out.hidden = true; out.innerHTML = ''; return; }
+  out.hidden = false;
+  out.innerHTML = `<div class="ai-out"><p style="margin:0">${esc(p.summary)}</p>
+    <ul>${p.ids.map(id => `<li><span class="mono">${id}</span> ${esc(MOD[id][state.lang][0])}${p.reasons[id] ? ` — ${esc(p.reasons[id])}` : ''}</li>`).join('')}</ul></div>
+    <div class="row" style="margin-top:8px"><button type="button" class="primary" id="ai-apply">${esc(L.aiApply)}</button><button type="button" id="ai-dismiss">${esc(L.aiDismiss)}</button></div>`;
+}
+function applyAi() {
+  const p = state.pendingAi; if (!p) return;
+  state.sel = new Set(closeDeps(p.ids)); state.reasons = { ...p.reasons }; state.aiSummary = p.summary;
+  state.pendingAi = null; markDirty(); renderAiOut(); renderList(); renderSummary(); toast(tt().aiApplied);
+  $('ai-status').textContent = '';
+}
+
+/* ---------------------------------------------------------------- events */
+$('lang-hu').addEventListener('click', () => { state.lang = 'hu'; store.set('vrgj.lang', 'hu'); renderAll(); });
+$('lang-en').addEventListener('click', () => { state.lang = 'en'; store.set('vrgj.lang', 'en'); renderAll(); });
+window.addEventListener('hashchange', () => { renderChrome(); if (currentView() === 'plugins') renderPlugins(); window.scrollTo(0, 0); });
+$('q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
+$('only-sel').addEventListener('change', e => { state.onlySel = e.target.checked; renderList(); });
+$('fchips').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const tog = (set, v) => { set.has(v) ? set.delete(v) : set.add(v); };
+  if (b.dataset.ftier != null) tog(state.tiers, +b.dataset.ftier);
+  if (b.dataset.fwhere != null) tog(state.wheres, b.dataset.fwhere);
+  if (b.dataset.fphase != null) tog(state.phases, +b.dataset.fphase);
+  renderModulesStatic(); renderList();
+});
+$('list').addEventListener('change', e => { const id = e.target.dataset && e.target.dataset.id; if (id) setOn(id, e.target.checked); });
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('button[data-fam]'); if (!b) return;
+  e.preventDefault();
+  const on = b.dataset.on === 'true', f = b.dataset.fam;
+  const ids = IDS.filter(id => MOD[id].fam === f && MOD[id].tier !== 0 && matches(MOD[id]));
+  if (on) closeDeps(ids).forEach(x => state.sel.add(x));
+  else ids.forEach(id => { state.sel.delete(id); dependentsOf(id, state.sel).forEach(x => state.sel.delete(x)); });
+  markDirty(); renderList(); renderSummary();
+});
+$('presets').addEventListener('click', e => { const b = e.target.closest('button[data-preset]'); if (b) applyPreset(b.dataset.preset); });
+$('ai-chips').addEventListener('click', e => { const b = e.target.closest('button[data-chip]'); if (b) { $('ai-goal').value = tt().aiChips[+b.dataset.chip]; $('ai-goal').focus(); } });
+$('ai-go').addEventListener('click', runAi);
+$('aside').addEventListener('click', e => {
+  if (e.target.id === 'ai-apply') applyAi();
+  if (e.target.id === 'ai-dismiss') { state.pendingAi = null; renderAiOut(); $('ai-status').textContent = ''; }
+  if (e.target.id === 'load-remote' && state.remote) applyRemote(state.remote);
+});
+$('ai-goal').addEventListener('input', e => { state.goal = e.target.value; });
+$('save').addEventListener('click', save);
+$('copy-md').addEventListener('click', () => copy(toMarkdown()));
+$('copy-json').addEventListener('click', () => copy(JSON.stringify(payload(), null, 2)));
+$('plugins').addEventListener('click', e => {
+  const g = e.target.closest('button[data-goto]');
+  if (g) { state.q = g.dataset.goto; state.onlySel = false; $('q').value = state.q; $('only-sel').checked = false; location.hash = 'modules'; renderList(); return; }
+  const v = e.target.closest('button[data-plv]');
+  if (v) { const x = v.dataset.plv; state.plV.has(x) ? state.plV.delete(x) : state.plV.add(x); renderPlugins(); }
+});
+$('plugins').addEventListener('input', e => {
+  if (e.target.id !== 'pl-q') return;
+  state.plQ = e.target.value; const pos = e.target.selectionStart; renderPlugins();
+  const el = $('pl-q'); el.focus(); try { el.setSelectionRange(pos, pos); } catch (err) {}
+});
+$('decisions').addEventListener('change', e => { if (e.target.type === 'radio') { state.decisions[e.target.name] = e.target.value; markDirty(); renderDecisions(); } });
+
+/* restore an unsent local draft (per-viewer convenience) before the shared copy answers */
+try { const dr = JSON.parse(store.get('vrgj.draft') || 'null'); if (dr && Array.isArray(dr.modules)) { applyRemote(dr); state.dirty = true; } } catch (e) {}
+renderAll();
+initDb();
+initSample();
+})();
+</script>
+
+</body></html>

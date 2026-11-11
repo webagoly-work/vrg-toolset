@@ -151,6 +151,25 @@
 .prog[data-state="busy"] .mono { animation: prog-pulse 1.2s ease-in-out infinite; }
 .prog .bar { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--mv-accent); transition: width .3s; }
 @keyframes prog-pulse { 50% { opacity: .35; } }
+/* Archívum (WP-46): the Artifact Archive; ice diamond = VRG, warm = other projects */
+.arch-seg { display: inline-flex; } .arch-seg button { margin-left: -1px; }
+.prog-head .arch-seg button[aria-pressed="true"] { color: var(--mv-accent); border-color: var(--mv-accent); background: var(--mv-accent-soft); position: relative; }
+.archs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.arch { position: relative; border: 1px solid var(--mv-line); border-left: 2px solid var(--mv-accent); background: var(--mv-panel-solid); }
+.arch.o { border-left-color: var(--mv-warm); }
+.arch .am { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 8px 30px 8px 10px; text-align: left; background: none; border: 0; color: var(--mv-text); font: inherit; cursor: pointer; }
+.arch .am:hover { background: var(--mv-raised); }
+.arch .t { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .arch .ty { font: 10.5px var(--mv-mono); color: var(--mv-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arch .pf { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 22px; height: 22px; padding: 0; background: none; border: 1px solid transparent; color: var(--mv-faint); font: 11px var(--mv-mono); cursor: pointer; }
+.arch .pf:hover { color: var(--mv-accent); border-color: var(--mv-line); }
+.arch-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 12px; margin: 4px 0 12px; padding: 10px 12px; border: 1px solid var(--mv-accent); background: var(--mv-accent-soft); }
+.arch-form label { display: flex; flex-direction: column; gap: 3px; font: 10.5px var(--mv-mono); letter-spacing: .06em; color: var(--mv-dim); text-transform: uppercase; }
+.arch-form label.chk { flex-direction: row; align-items: center; gap: 6px; align-self: end; padding-bottom: 6px; }
+.arch-form .wide { grid-column: 1 / -1; }
+.arch-form input:not([type=checkbox]), .arch-form select, .arch-form textarea { background: var(--mv-panel-solid); border: 1px solid var(--mv-line); color: var(--mv-text); font: 12.5px var(--mv-sans); padding: 4px 8px; text-transform: none; letter-spacing: 0; resize: vertical; }
+.arch-form .fa { display: flex; gap: 8px; }
+.arch-form .fa button { background: none; border: 1px solid var(--mv-line); color: var(--mv-dim); font: 11px var(--mv-mono); letter-spacing: .06em; padding: 5px 12px; cursor: pointer; }
+.arch-form .fa button.go { color: var(--mv-accent); border-color: var(--mv-accent); background: var(--mv-accent-soft); }
 .tile .st { font: 10px var(--mv-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mv-warn); margin-left: 6px; }
 .tile[data-level="dev"] { border-style: dashed; } .tile[data-level="all"] { border-style: dotted; }
 .tile .att { border-top: 1px dashed var(--mv-line); padding: 4px 0; display: flex; flex-direction: column; }

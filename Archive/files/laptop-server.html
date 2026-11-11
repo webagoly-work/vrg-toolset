@@ -1,0 +1,746 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>VRG Laptop Server</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a service manual in the Mélyvíz look: phase rail beside numbered procedure steps, each step tagged with the machine you type on. EN/HU toggle in the header. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c; --term: #071017;
+  --line: rgba(232,240,246,.13); --line-strong: rgba(232,240,246,.30);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #6c757c;
+  --accent: #93d3e6; --accent-soft: rgba(147,211,230,.12); --on-accent: #08141a;
+  --warm: #e8a873; --warm-soft: rgba(232,168,115,.13);
+  --ok: #8bcca1; --ok-soft: rgba(139,204,161,.12); --crit: #e4877d; --crit-soft: rgba(228,135,125,.12);
+  --w-pc: #93d3e6; --w-laptop: #e8a873; --w-router: #c3a6e6; --w-phone: #8bcca1; --w-any: #a6afb7;
+  --cut: 7px;
+  --voice: Bahnschrift, "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff; --term: #e6edf1;
+  --line: rgba(14,32,43,.12); --line-strong: rgba(14,32,43,.28);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.09); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.09);
+  --ok: #2f7d4c; --ok-soft: rgba(47,125,76,.09); --crit: #b0433a; --crit-soft: rgba(176,67,58,.09);
+  --w-pc: #1f6f87; --w-laptop: #a5582a; --w-router: #6a4a9a; --w-phone: #2f7d4c; --w-any: #5a6a74;
+  color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff; --term: #e6edf1;
+  --line: rgba(14,32,43,.12); --line-strong: rgba(14,32,43,.28);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.09); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.09);
+  --ok: #2f7d4c; --ok-soft: rgba(47,125,76,.09); --crit: #b0433a; --crit-soft: rgba(176,67,58,.09);
+  --w-pc: #1f6f87; --w-laptop: #a5582a; --w-router: #6a4a9a; --w-phone: #2f7d4c; --w-any: #5a6a74;
+  color-scheme: light; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; margin: 0; }
+code { font-family: var(--mono); font-size: .86em; background: var(--horizon); padding: 1px 4px; }
+button, input, select { font: inherit; color: var(--text); border-radius: 0; }
+button { cursor: pointer; background: var(--panel); border: 1px solid var(--line-strong); padding: 5px 11px; }
+button:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text] { background: var(--raised); border: 1px solid var(--line-strong); padding: 6px 9px; width: 100%; font-family: var(--mono); font-size: 13.5px; }
+input[type=text]:focus { outline: none; border-color: var(--accent); }
+input[type=checkbox] { accent-color: var(--ok); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); font-weight: 600; }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding-block: 10px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.brand h1 { font-size: 23px; }
+.brand .host { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.prog { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.prog .n { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; }
+.prog .bar { width: 140px; height: 8px; background: var(--horizon); }
+.prog .bar span { display: block; height: 100%; background: var(--ok); width: 0; }
+.status { font-size: 12px; color: var(--faint); }
+.status.ok { color: var(--ok); } .status.err { color: var(--crit); }
+.lang { display: flex; }
+.lang button { font-family: var(--mono); font-size: 12.5px; padding: 3px 10px; background: transparent; color: var(--dim); }
+.lang button + button { border-left: 0; }
+.lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+@media (max-width: 640px) {
+  .top .wrap { column-gap: 10px; }
+  .brand { flex: 1 1 0; column-gap: 8px; }
+  .brand h1 { font-size: 20px; }
+  .lang { order: 1; }
+  .prog { order: 2; margin-left: 0; width: 100%; }
+  .prog .status { margin-right: auto; }
+}
+
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 32px; padding-block: 22px 70px; align-items: start; }
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 70px); display: grid; gap: 1px; max-height: calc(100vh - 90px); overflow-y: auto; }
+nav.rail a { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; text-decoration: none; color: var(--dim); padding: 6px 8px; border-left: 2px solid transparent; font-size: 14px; }
+nav.rail a:hover { color: var(--text); background: var(--accent-soft); }
+nav.rail a.cur { color: var(--text); border-left-color: var(--accent); background: var(--accent-soft); }
+nav.rail a.done { color: var(--ok); }
+nav.rail .pn { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+nav.rail .pc { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--faint); }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  nav.rail { position: static; max-height: none; display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; scrollbar-width: thin; }
+  nav.rail a { grid-template-columns: auto auto; border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; padding: 5px 9px; }
+  nav.rail a .pt { display: none; }
+  nav.rail a.cur { border-bottom-color: var(--accent); }
+  .prog .bar { width: 80px; }
+}
+
+.lede { max-width: 72ch; color: var(--dim); margin: 0 0 18px; }
+.lede strong { color: var(--text); font-weight: 600; }
+.roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.role { border: 1px solid var(--line); background: var(--panel); padding: 11px 13px; min-width: 0; }
+.role b { display: block; font-family: var(--voice); font-size: 16px; font-weight: 600; letter-spacing: .02em; margin-bottom: 2px; }
+.role span { color: var(--dim); font-size: 13.5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--dim); margin-bottom: 26px; align-items: center; }
+
+.card { background: var(--panel); border: 1px solid var(--line-strong); padding: 14px 16px 16px; margin-bottom: 30px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+.card h2 { font-size: 19px; margin-bottom: 4px; }
+.card p { margin: 0 0 12px; color: var(--dim); font-size: 13.5px; max-width: 80ch; }
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px 14px; }
+.fields label { display: grid; gap: 3px; font-size: 12.5px; color: var(--dim); min-width: 0; }
+.fields label small { color: var(--faint); font-size: 11.5px; }
+
+.phase { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 72px); margin-bottom: 40px; }
+.ph-h { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 14px; align-items: baseline; border-bottom: 1px solid var(--line-strong); padding-bottom: 8px; margin-bottom: 4px; }
+.ph-h .num { font-family: var(--mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); padding: 0 6px; }
+.ph-h h2 { font-size: 24px; }
+.ph-h .goal { grid-column: 2; color: var(--dim); font-size: 14px; max-width: 78ch; }
+.step { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 12px; padding: 14px 4px 14px 0; border-bottom: 1px solid var(--line); scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 72px); }
+.step > input { margin: 5px 0 0 2px; width: 17px; height: 17px; cursor: pointer; }
+.step-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; cursor: pointer; }
+.step-h .sid { font-family: var(--mono); font-size: 12.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.step-h .st { font-size: 15.5px; font-weight: 600; }
+.step.done .step-h .st { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--faint); }
+.where { font-family: var(--mono); font-size: 11px; padding: 0 6px; border: 1px solid currentColor; margin-left: auto; white-space: nowrap; }
+.legend .where { margin-left: 0; }
+.w-PC { color: var(--w-pc); } .w-Laptop { color: var(--w-laptop); } .w-Router { color: var(--w-router); } .w-Phone { color: var(--w-phone); } .w-Anywhere { color: var(--w-any); }
+.body { grid-column: 2; min-width: 0; display: grid; gap: 9px; margin-top: 6px; font-size: 14.5px; }
+.body p { margin: 0; max-width: 80ch; }
+.body ul, .body ol { margin: 0; padding-left: 20px; max-width: 80ch; }
+.body li { margin: 2px 0; }
+.ph { color: var(--warm); background: var(--warm-soft); padding: 0 3px; }
+.ph.set { color: var(--accent); background: var(--accent-soft); }
+.cmd { position: relative; background: var(--term); border: 1px solid var(--line); min-width: 0; }
+.cmd .bar { display: flex; align-items: center; gap: 8px; padding: 3px 4px 3px 10px; border-bottom: 1px solid var(--line); }
+.cmd .bar .sh { font-family: var(--mono); font-size: 11px; color: var(--faint); text-transform: lowercase; }
+.cmd .bar button { margin-left: auto; font-size: 12px; padding: 2px 9px; background: transparent; }
+.cmd pre { margin: 0; padding: 9px 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.55; white-space: pre; }
+.note, .warn, .dec { padding: 8px 12px; font-size: 14px; max-width: 84ch; }
+.note { border-left: 2px solid var(--accent); background: var(--accent-soft); }
+.warn { border-left: 2px solid var(--crit); background: var(--crit-soft); }
+.dec { border-left: 2px solid var(--warm); background: var(--warm-soft); }
+.note b, .warn b, .dec b { font-weight: 600; }
+.tw { overflow-x: auto; border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 6px 9px; border-bottom: 1px solid var(--line); }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); background: var(--horizon); font-weight: 600; }
+details { border: 1px solid var(--line); padding: 6px 10px; max-width: 84ch; }
+details summary { cursor: pointer; color: var(--dim); font-size: 13.5px; }
+details[open] summary { margin-bottom: 6px; }
+.later { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-top: 10px; }
+.later div { border: 1px dashed var(--line-strong); padding: 10px 12px; font-size: 13.5px; color: var(--dim); min-width: 0; }
+.later b { color: var(--text); display: block; font-weight: 600; }
+footer { color: var(--faint); font-size: 12.5px; border-top: 1px solid var(--line); padding-block: 14px 30px; }
+footer a { color: var(--dim); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--raised); border: 1px solid var(--accent); padding: 7px 14px; font-size: 13.5px; z-index: 20; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: no-preference) { .prog .bar span { transition: width .3s; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1 data-ui="h1">VRG Laptop Server</h1><span class="host" id="h-host">vrg-srv</span></div>
+    <div class="prog">
+      <span class="status" id="save-st"></span>
+      <span class="n" id="prog-n">0 / 0</span>
+      <span class="bar"><span id="prog-bar"></span></span>
+    </div>
+    <div class="lang" role="group" aria-label="Language / Nyelv">
+      <button type="button" data-lang="en" aria-pressed="true" lang="en" title="English">EN</button><button type="button" data-lang="hu" aria-pressed="false" lang="hu" title="Magyar">HU</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <p class="lede" data-ui="lede"></p>
+    <div class="roles">
+      <div class="role"><b data-ui="r1t"></b><span data-ui="r1"></span></div>
+      <div class="role"><b data-ui="r2t"></b><span data-ui="r2"></span></div>
+      <div class="role"><b data-ui="r3t"></b><span data-ui="r3"></span></div>
+    </div>
+    <div class="legend" id="legend"></div>
+
+    <section class="card" id="card">
+      <h2 data-ui="cardT"></h2>
+      <p data-ui="cardP"></p>
+      <div class="fields" id="fields"></div>
+    </section>
+
+    <div id="phases"></div>
+
+    <section class="phase" id="later">
+      <div class="ph-h"><span class="num">+</span><h2 data-ui="laterT"></h2><span class="goal" data-ui="laterG"></span></div>
+      <div class="later" id="later-list"></div>
+    </section>
+  </main>
+</div>
+<footer class="wrap" data-ui="foot"></footer>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+'use strict';
+
+const T = (en, hu) => ({ en: en, hu: hu });
+const LANG_KEY = 'vrg-laptop-server-lang';
+let lang = 'en';
+try { const s = localStorage.getItem(LANG_KEY); if (s === 'en' || s === 'hu') lang = s; else if (/^hu\b/i.test(navigator.language || '')) lang = 'hu'; }
+catch (e) { if (/^hu\b/i.test(navigator.language || '')) lang = 'hu'; }
+const L = x => (x && typeof x === 'object' && 'en' in x) ? x[lang] : x;
+
+/* ------------------------------------------------------------ page text */
+const UI = {
+  h1: T('VRG Laptop Server', 'VRG laptopszerver'),
+  lede: T('<strong>An old laptop becomes a small, always-on Ubuntu Server in your house.</strong> You run it from your PC over SSH; the laptop screen is only needed during the install. Its battery is a built-in UPS, and it draws a few watts. It gets three VRG jobs. None of them depends on GitHub or any cloud service, and nothing on it is reachable from the internet.',
+          '<strong>Egy régi laptopból kicsi, mindig bekapcsolt Ubuntu Server lesz a házban.</strong> A PC-ről kezeled SSH-n; a laptop képernyője csak a telepítéshez kell. Az akkumulátora beépített szünetmentes, és néhány wattot fogyaszt. Három VRG-feladatot kap. Egyik sem függ a GitHubtól vagy bármilyen felhőszolgáltatástól, és semmi sem érhető el rajta az internet felől.'),
+  r1t: T('Second git copy', 'Második git-másolat'),
+  r1: T('Every repo pushed to bare mirrors off the H: drive, beside the existing <code>Backup\\code</code> ones.', 'Minden repó csupasz (bare) tükörbe kerül a H: meghajtón kívül, a meglévő <code>Backup\\code</code> tükrök mellé.'),
+  r2t: T('Encrypted file history', 'Titkosított fájltörténet'),
+  r2: T('The work folders BACKUP mirrors (jobs, notes, BRIDGE…) as encrypted, versioned restic snapshots.', 'A BACKUP által tükrözött munkamappák (jobs, notes, BRIDGE…) titkosított, verziózott restic-pillanatképekként.'),
+  r3t: T('Wake the PC from anywhere', 'A PC felébresztése bárhonnan'),
+  r3: T('The awake LAN node your 26 October research said Tailscale needs: phone → laptop → magic packet → PC.', 'Az ébren lévő LAN-eszköz, amely az október 26-i kutatásod szerint a Tailscale-nek kell: telefon → laptop → magic packet → PC.'),
+  whereL: T('Where you type', 'Hol gépelsz'),
+  whereP: T('Ticks and the server card save to the shared store, so the phone and the PC show the same progress.', 'A pipák és a szerverkártya a közös tárba mentődnek, így a telefon és a PC ugyanazt a haladást mutatja.'),
+  cardT: T('Server card', 'Szerverkártya'),
+  cardP: T('Fill these as you go. Every command below uses them: a value shown <span class="ph">like this</span> is still empty, <span class="ph set">like this</span> is filled in. Never type a password here.',
+           'Töltsd ki menet közben. Minden lenti parancs ezeket használja: az <span class="ph">így</span> jelölt érték még üres, az <span class="ph set">így</span> jelölt már ki van töltve. Jelszót soha ne írj ide.'),
+  laterT: T('Later, only when wanted', 'Később, csak ha kell'),
+  laterG: T('Not part of the build. Each is a separate piece of work; ask in a session when you want one.', 'Nem része az építésnek. Mindegyik külön munka; kérd egy munkamenetben, amikor szeretnéd.'),
+  laterRail: T('Later', 'Később'),
+  phases: T('Phases', 'Fázisok'),
+  foot: T('Written 2026-11-10 for Ubuntu Server 26.04 LTS (Resolute Raccoon, released 23 April 2026). Menus in vendor firmware and router pages differ by model; where a name here does not match, look for the closest one. Server minimums: 1.5 GB RAM to install, 3 GB suggested (<a href="https://documentation.ubuntu.com/release-notes/26.04/" target="_blank" rel="noopener">release notes</a>).',
+          'Készült 2026-11-10-én az Ubuntu Server 26.04 LTS-hez (Resolute Raccoon, megjelent 2026. április 23-án). A gyártói firmware-ek és a routeroldalak menüi típusonként eltérnek; ahol egy név itt nem egyezik, keresd a legközelebbit. A telepítőben és a routeren a menüneveket angolul hagytuk, ahogy a képernyőn látod. Szerver-minimum: 1,5 GB RAM a telepítéshez, 3 GB ajánlott (<a href="https://documentation.ubuntu.com/release-notes/26.04/" target="_blank" rel="noopener">kiadási jegyzék</a>).'),
+  copy: T('Copy', 'Másolás'),
+  copied: T('Copied', 'Másolva'),
+  clip: T('Clipboard blocked here: the command is selected, copy it by hand.', 'A vágólap itt tiltott: a parancs ki van jelölve, másold kézzel.'),
+  stepDone: T('Step {n} done', '{n}. lépés kész'),
+  /* save status */
+  s_loading: T('Loading progress…', 'Haladás betöltése…'),
+  s_unsaved: T('Unsaved…', 'Nincs mentve…'),
+  s_saving: T('Saving…', 'Mentés…'),
+  s_saved: T('Saved', 'Mentve'),
+  s_local: T('Saved on this device only', 'Csak ezen az eszközön mentve'),
+  s_localLive: T('Saving on this device only', 'Csak ezen az eszközön ment'),
+  s_blocked: T('Not saved: storage is blocked here', 'Nincs mentve: a tárhely itt tiltott'),
+  s_readonly: T('Read-only for you', 'Számodra csak olvasható'),
+  s_retry: T('Not saved, will retry on the next change', 'Nincs mentve, a következő változáskor újra próbálja'),
+  s_slow: T('Shared progress not reachable yet', 'A közös haladás még nem érhető el'),
+  s_synced: T('Synced', 'Szinkronban'),
+  s_empty: T('Nothing saved yet', 'Még nincs mentés'),
+  s_unavail: T('Shared progress unavailable', 'A közös haladás nem elérhető')
+};
+const WHERE = { PC: T('PC', 'PC'), Laptop: T('Laptop', 'Laptop'), Router: T('Router', 'Router'), Phone: T('Phone', 'Telefon'), Anywhere: T('Anywhere', 'Bárhol') };
+const LATER = [
+  [T('BACKUP pushes here by itself', 'A BACKUP magától ide is küld'), T('Add the laptop as a second target in <code>launcher/backup.ps1</code>, so START → BACKUP → 1 also pushes the git mirrors and runs restic.', 'Add hozzá a laptopot második célként a <code>launcher/backup.ps1</code>-ben, hogy a START → BACKUP → 1 a git-tükröket is feltöltse és a resticet is lefuttassa.')],
+  [T('VRG tool pages while the PC sleeps', 'VRG eszközoldalak, amíg a PC alszik'), T('Clone the repo and serve the static tools (MindMap, Kapu) with Node. Keep the Kódváros companion and anything with a terminal off it.', 'Klónozd a repót, és szolgáld ki a statikus eszközöket (MindMap, Kapu) Node-dal. A Kódváros segéd és bármi, ami terminált ad, maradjon le róla.')],
+  [T('Notes vault sync peer', 'Jegyzettár szinkronpartnere'), T('When VRG Jegyzetek reaches NT2, the laptop can be the always-on sync partner for the phone (ANALYSIS §5, N-SYNC-LAN).', 'Amikor a VRG Jegyzetek eléri az NT2-t, a laptop lehet a telefon mindig elérhető szinkronpartnere (ANALYSIS §5, N-SYNC-LAN).')],
+  [T('OpenWrt on the TP-Link', 'OpenWrt a TP-Linken'), T('After GO OPENWRT, redo the address reservation (6.1) in LuCI: Network → DHCP and DNS → Static Leases.', 'A GO OPENWRT után a címfoglalást (6.1) a LuCI-ban kell újra beállítani: Network → DHCP and DNS → Static Leases.')],
+  [T('Clean shutdown on a flat battery', 'Tiszta leállás lemerülő akkuval'), T('Have the laptop shut itself down at about 10 % battery during a long power cut.', 'Hosszú áramszünetben a laptop álljon le magától kb. 10 %-os töltöttségnél.')],
+  [T('Containers or VMs', 'Konténerek vagy virtuális gépek'), T('Docker or LXD for experiments, once 4 GB of RAM or more is free.', 'Docker vagy LXD kísérletezéshez, ha legalább 4 GB RAM szabad.')]
+];
+
+/* ------------------------------------------------------------ server card */
+const FIELDS = [
+  ['model', T('Laptop model', 'Laptop típusa'), T('from the sticker underneath', 'az alján lévő matricáról'), ''],
+  ['cpu', T('CPU', 'CPU'), T('e.g. Intel Core i5-4300U', 'pl. Intel Core i5-4300U'), ''],
+  ['ram', T('RAM', 'RAM'), T('e.g. 8 GB', 'pl. 8 GB'), ''],
+  ['disk', T('Disk', 'Lemez'), T('type and size, e.g. SSD 240 GB', 'típus és méret, pl. SSD 240 GB'), ''],
+  ['boot', T('Boot mode', 'Indítási mód'), T('UEFI or Legacy', 'UEFI vagy Legacy'), ''],
+  ['bootkey', T('Boot menu key', 'Bootmenü-billentyű'), T('e.g. F12', 'pl. F12'), ''],
+  ['HOST', T('Server name', 'Szervernév'), T('set in step 3.6', 'a 3.6. lépésben adod meg'), 'vrg-srv'],
+  ['USER', T('User name', 'Felhasználónév'), T('set in step 3.6', 'a 3.6. lépésben adod meg'), 'vrg'],
+  ['IP', T('LAN address', 'LAN-cím'), T('reserved in step 6.1', 'a 6.1. lépésben foglalod le'), ''],
+  ['MAC', T('Laptop wired MAC', 'Laptop vezetékes MAC'), T('from step 6.1', 'a 6.1. lépésből'), ''],
+  ['TSIP', T('Tailscale address', 'Tailscale-cím'), T('100.x.y.z, step 7.3', '100.x.y.z, 7.3. lépés'), ''],
+  ['PCMAC', T('PC wired MAC', 'PC vezetékes MAC'), T('for waking the PC, step 10.1', 'a PC ébresztéséhez, 10.1. lépés'), '']
+];
+const PH_KEYS = ['HOST', 'USER', 'IP', 'MAC', 'TSIP', 'PCMAC', 'LAN', 'BCAST'];
+const PH_LABEL = {
+  en: { HOST: 'server-name', USER: 'user', IP: 'laptop-ip', MAC: 'laptop-mac', TSIP: '100.x.y.z', PCMAC: 'pc-mac', LAN: '192.168.0.0/24', BCAST: '192.168.0.255' },
+  hu: { HOST: 'szervernév', USER: 'felhasználó', IP: 'laptop-ip', MAC: 'laptop-mac', TSIP: '100.x.y.z', PCMAC: 'pc-mac', LAN: '192.168.0.0/24', BCAST: '192.168.0.255' }
+};
+
+/* ------------------------------------------------------------ the manual
+   step: {id, t: title, w: where, b: [blocks]}; text is T(en, hu) or a plain string when it reads the same in both.
+   block: T paragraph | {c, sh} command | {n} note | {x} warning | {d} decision | {tb:[head,rows]} | {det:[summary, html]} | {ul:[...]} | {ol:[...]} */
+const P = [
+{ id: 'p0', n: '0', t: T('Before you start', 'Mielőtt elkezded'), g: T('Check that the laptop can do it, and save anything on it. About 15 minutes.', 'Ellenőrizd, hogy a laptop alkalmas-e, és mentsd le, ami rajta van. Kb. 15 perc.'), s: [
+  { id: '0.1', w: 'Anywhere', t: T('Gather what you need', 'Gyűjtsd össze, ami kell'), b: [
+    { ul: [T('the laptop and its charger', 'a laptop és a töltője'),
+           T('a USB stick of 8 GB or more (it will be wiped)', 'egy legalább 8 GB-os USB-kulcs (törlődni fog)'),
+           T('a network cable from the laptop to the TP-Link router: Wi-Fi on a server is the most common source of trouble, so use the cable whenever you can', 'egy hálózati kábel a laptoptól a TP-Link routerig: szerveren a Wi-Fi a leggyakoribb hibaforrás, ezért ahol csak lehet, kábelt használj'),
+           T('your PC, and about two hours', 'a PC-d és kb. két óra')] } ] },
+  { id: '0.2', w: 'Laptop', t: T('Copy off anything you want to keep', 'Másold le, amit meg akarsz tartani'), b: [
+    T('The install erases the whole disk: Windows, files, everything. Copy photos and documents off now.', 'A telepítés az egész lemezt törli: Windowst, fájlokat, mindent. A fényképeket és a dokumentumokat most másold le.'),
+    { x: T('<b>No way back.</b> After step 3.5 nothing on the old disk can be recovered.', '<b>Nincs visszaút.</b> A 3.5. lépés után a régi lemezről semmi sem állítható vissza.') } ] },
+  { id: '0.3', w: 'Laptop', t: T('Check the battery for swelling', 'Nézd meg, nem puffadt-e fel az akku'), b: [
+    T('Look for a bulging bottom cover, a raised trackpad, or a gap along the case seam. A swollen lithium battery is a fire risk in a machine that stays plugged in all day.', 'Keress kidomborodó alsó fedelet, megemelkedett touchpadet vagy rést a ház illesztése mentén. A felpuffadt lítiumos akku tűzveszélyes egy olyan gépben, amely egész nap töltőn van.'),
+    { d: T('<b>If it is swollen:</b> take it out (or have it taken out) and run the laptop from the charger only. The server then simply stops in a power cut, which is acceptable. Never keep charging a swollen battery.', '<b>Ha felpuffadt:</b> vedd ki (vagy vetesd ki), és a laptop csak a töltőről menjen. A szerver ekkor áramszünetben egyszerűen leáll, ami elfogadható. Felpuffadt akkut soha ne tölts tovább.') } ] },
+  { id: '0.4', w: 'Laptop', t: T('Identify the hardware and fill the server card', 'Azonosítsd a hardvert, és töltsd ki a szerverkártyát'), b: [
+    T('The model is on the sticker underneath. If Windows still starts, PowerShell gives the rest:', 'A típus az alján lévő matricán van. Ha a Windows még elindul, a többit a PowerShell megadja:'),
+    { c: 'Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer, Model, @{n="RAM_GB";e={[math]::Round($_.TotalPhysicalMemory/1GB,1)}}\nGet-CimInstance Win32_Processor | Select-Object Name\nGet-PhysicalDisk | Select-Object FriendlyName, MediaType, @{n="GB";e={[math]::Round($_.Size/1GB)}}', sh: 'PowerShell' },
+    T('Without Windows: the firmware setup screen (step 2.2) shows CPU, RAM and disk on its first page.', 'Windows nélkül: a firmware beállítóképernyője (2.2. lépés) az első oldalán mutatja a CPU-t, a RAM-ot és a lemezt.') ] },
+  { id: '0.5', w: 'Anywhere', t: T('Check it is good enough', 'Ellenőrizd, hogy elég-e'), b: [
+    { tb: [[T('Part', 'Alkatrész'), T('Needs', 'Kell'), T('Notes', 'Megjegyzés')], [
+      ['CPU', T('64-bit (x86-64)', '64 bites (x86-64)'), T('Core 2 Duo, any Core i3/i5/i7, AMD from about 2008 on: fine. Early Atom netbooks (N270, N280) and Pentium M are 32-bit only and cannot run Ubuntu.', 'Core 2 Duo, bármely Core i3/i5/i7, AMD kb. 2008-tól: jó. A korai Atom netbookok (N270, N280) és a Pentium M csak 32 bitesek, Ubuntut nem futtatnak.')],
+      ['RAM', T('1.5 GB to install, 3 GB suggested', '1,5 GB a telepítéshez, 3 GB ajánlott'), T('4 GB or more is comfortable for the three jobs here.', '4 GB vagy több kényelmes az itteni három feladathoz.')],
+      [T('Disk', 'Lemez'), T('25 GB in practice', 'a gyakorlatban 25 GB'), T('An SSD makes everything better. An old spinning disk works, but check its health in step 4.6; a cheap 2.5-inch SATA SSD (120–250 GB) is the single best upgrade.', 'Az SSD mindent jobbá tesz. Régi forgólemez is működik, de nézd meg az állapotát a 4.6. lépésben; egy olcsó 2,5 colos SATA SSD (120–250 GB) a legjobb egyetlen fejlesztés.')]]] },
+    { d: T('<b>Ubuntu Server, not Desktop.</b> Ubuntu Desktop 26.04 now asks for 6 GB of RAM and wants a screen. Server runs headless in 1.5–3 GB and you manage it from your PC, which is how a server should be run anyway.', '<b>Ubuntu Server, nem Desktop.</b> Az Ubuntu Desktop 26.04 már 6 GB RAM-ot kér, és képernyőt akar. A Server képernyő nélkül fut 1,5–3 GB-ban, és a PC-ről kezeled, ahogy egy szervert amúgy is kezelni kell.') } ] }
+]},
+{ id: 'p1', n: '1', t: T('Make the install stick', 'A telepítő USB-kulcs'), g: T('Download Ubuntu Server, check the file is intact, write it to the USB stick. On the PC.', 'Töltsd le az Ubuntu Servert, ellenőrizd, hogy a fájl ép, és írd ki az USB-kulcsra. A PC-n.'), s: [
+  { id: '1.1', w: 'PC', t: T('Download the ISO and its checksum file', 'Töltsd le az ISO-t és az ellenőrzőösszeg-fájlt'), b: [
+    T('From <a href="https://ubuntu.com/download/server" target="_blank" rel="noopener">ubuntu.com/download/server</a> take <b>Ubuntu Server 26.04 LTS</b> (file <code>ubuntu-26.04.x-live-server-amd64.iso</code>, about 3 GB). From <a href="https://releases.ubuntu.com/26.04/" target="_blank" rel="noopener">releases.ubuntu.com/26.04</a> take <code>SHA256SUMS</code>. Save both in one folder:',
+      'Az <a href="https://ubuntu.com/download/server" target="_blank" rel="noopener">ubuntu.com/download/server</a> oldalról töltsd le az <b>Ubuntu Server 26.04 LTS</b>-t (fájl: <code>ubuntu-26.04.x-live-server-amd64.iso</code>, kb. 3 GB), a <a href="https://releases.ubuntu.com/26.04/" target="_blank" rel="noopener">releases.ubuntu.com/26.04</a> oldalról pedig a <code>SHA256SUMS</code> fájlt. Mentsd mindkettőt egy mappába:'),
+    { c: 'New-Item -ItemType Directory -Force H:\\VRG\\Backup\\installers\\ubuntu', sh: 'PowerShell' },
+    { n: T('Keeping it in <code>Backup\\installers</code> means a reinstall later needs no download.', 'Ha a <code>Backup\\installers</code> mappában tartod, egy későbbi újratelepítéshez nem kell letöltés.') } ] },
+  { id: '1.2', w: 'PC', t: T('Verify the download', 'Ellenőrizd a letöltést'), b: [
+    { c: 'cd H:\\VRG\\Backup\\installers\\ubuntu\n(Get-FileHash (Get-ChildItem *live-server-amd64.iso).FullName -Algorithm SHA256).Hash.ToLower()\nSelect-String -Path SHA256SUMS -Pattern live-server', sh: 'PowerShell' },
+    T('The two long hex strings must be identical. If they differ, the download is damaged: download it again.', 'A két hosszú hexadecimális sztringnek egyeznie kell. Ha eltérnek, a letöltés sérült: töltsd le újra.') ] },
+  { id: '1.3', w: 'PC', t: T('Write the stick with Rufus', 'Írd ki a kulcsot a Rufusszal'), b: [
+    T('Get Rufus (portable version) from <a href="https://rufus.ie" target="_blank" rel="noopener">rufus.ie</a> and put it in <code>H:\\VRG\\Full\\programs\\rufus</code>. Then:', 'Töltsd le a Rufust (hordozható változat) a <a href="https://rufus.ie" target="_blank" rel="noopener">rufus.ie</a> oldalról, és tedd a <code>H:\\VRG\\Full\\programs\\rufus</code> mappába. Aztán:'),
+    { ol: [T('<b>Device:</b> the USB stick (check the size: the wrong drive gets erased)', '<b>Device:</b> az USB-kulcs (nézd meg a méretét: a rossz meghajtó törlődik)'),
+           T('<b>Boot selection:</b> SELECT → the ISO', '<b>Boot selection:</b> SELECT → az ISO'),
+           T('leave the other settings, press <b>START</b>', 'a többi beállítást hagyd, nyomd meg a <b>START</b> gombot'),
+           T('when asked how to write the image, choose <b>DD Image mode</b>: an exact copy, the most reliable way for Ubuntu ISOs, and it boots on both UEFI and old BIOS laptops', 'amikor megkérdezi, hogyan írja ki a képet, válaszd a <b>DD Image mode</b>-ot: pontos másolat, Ubuntu ISO-knál a legmegbízhatóbb, és UEFI-s és régi BIOS-os laptopon is elindul')] },
+    { n: T('balenaEtcher works too and has no choices to make.', 'A balenaEtcher is jó, és abban nincs mit választani.') } ] }
+]},
+{ id: 'p2', n: '2', t: T('Firmware settings and boot', 'Firmware-beállítások és indítás'), g: T('A few switches in the laptop firmware (BIOS/UEFI), then start from the stick.', 'Néhány kapcsoló a laptop firmware-ében (BIOS/UEFI), aztán indítás a kulcsról.'), s: [
+  { id: '2.1', w: 'Laptop', t: T('Plug everything in', 'Dugj be mindent'), b: [ T('Charger, network cable (to the TP-Link), USB stick. Power it off completely.', 'Töltő, hálózati kábel (a TP-Linkhez), USB-kulcs. Kapcsold ki teljesen.') ] },
+  { id: '2.2', w: 'Laptop', t: T('Open the firmware setup', 'Nyisd meg a firmware beállítását'), b: [
+    T('Power on and tap the key at once, several times:', 'Kapcsold be, és azonnal nyomogasd a billentyűt, többször:'),
+    { tb: [[T('Brand', 'Gyártó'), T('Setup', 'Beállítás'), T('One-time boot menu', 'Egyszeri bootmenü')], [
+      ['Lenovo ThinkPad', 'F1', 'F12'], ['Lenovo IdeaPad', T('F2, or the small Novo button', 'F2, vagy a kis Novo gomb'), T('F12, or Novo', 'F12, vagy Novo')],
+      ['Dell', 'F2', 'F12'], ['HP', T('Esc, then F10', 'Esc, majd F10'), T('Esc, then F9', 'Esc, majd F9')], ['Acer', 'F2', T('F12 (may need enabling in setup)', 'F12 (lehet, hogy a beállításban engedélyezni kell)')],
+      ['ASUS', T('F2 or Del', 'F2 vagy Del'), 'Esc'], ['Toshiba / Dynabook', 'F2', 'F12'], ['Fujitsu', 'F2', 'F12']]] },
+    T('Write the boot menu key in the server card.', 'Írd be a bootmenü billentyűjét a szerverkártyába.') ] },
+  { id: '2.3', w: 'Laptop', t: T('Check these settings', 'Nézd meg ezeket a beállításokat'), b: [
+    { tb: [[T('Setting', 'Beállítás'), T('Set to', 'Érték'), T('Why', 'Miért')], [
+      ['Boot mode', T('UEFI if offered', 'UEFI, ha van'), T('Legacy/CSM-only laptops are fine too. Note which one in the card.', 'A csak Legacy/CSM-es laptopok is jók. Írd fel a kártyára, melyik.')],
+      ['SATA mode', 'AHCI', T('Not RAID or Intel RST, or the installer may not see the disk.', 'Ne RAID vagy Intel RST legyen, különben a telepítő nem biztos, hogy látja a lemezt.')],
+      ['Secure Boot', T('leave as it is', 'hagyd, ahogy van'), T('Ubuntu boots with it on. Turn it off only if the stick will not start.', 'Az Ubuntu bekapcsolt Secure Boottal is elindul. Csak akkor kapcsold ki, ha a kulcs nem indul.')],
+      ['Virtualization (VT-x / AMD-V)', 'Enabled', T('Needed later for containers or VMs.', 'Később kell konténerekhez vagy virtuális gépekhez.')],
+      ['AC power recovery / Power on with AC', T('On, if present', 'On, ha van'), T('The server starts by itself after a power cut. Many laptops lack it; the battery covers short cuts anyway.', 'A szerver áramszünet után magától elindul. Sok laptopon nincs ilyen; rövid kimaradást az akku úgyis áthidal.')],
+      ['Wake on LAN', T('On, if present', 'On, ha van'), T('Lets you wake the laptop itself later.', 'Így később magát a laptopot is fel tudod ébreszteni.')]]] },
+    T('Save and exit (usually F10).', 'Mentés és kilépés (általában F10).') ] },
+  { id: '2.4', w: 'Laptop', t: T('Start from the stick', 'Indítás a kulcsról'), b: [
+    T('Use the one-time boot menu key and pick the USB stick (with UEFI it may say <code>UEFI: &lt;stick name&gt;</code>). On the black GRUB menu choose <b>Try or Install Ubuntu Server</b>.', 'Az egyszeri bootmenü billentyűjével válaszd az USB-kulcsot (UEFI-nél lehet, hogy <code>UEFI: &lt;kulcs neve&gt;</code> a felirat). A fekete GRUB-menüben válaszd a <b>Try or Install Ubuntu Server</b> pontot.'),
+    { det: [T('Black screen or it hangs after this', 'Fekete képernyő, vagy itt lefagy'), T('Restart, and on the GRUB menu press <code>e</code>. On the line starting with <code>linux</code>, add <code>nomodeset</code> before the <code>---</code>, then press Ctrl+X or F10. Old graphics chips often need this; once installed the server rarely does.', 'Indítsd újra, és a GRUB-menüben nyomj <code>e</code>-t. A <code>linux</code> kezdetű sorban a <code>---</code> elé írd be: <code>nomodeset</code>, majd nyomj Ctrl+X-et vagy F10-et. Régi grafikus chipeknek gyakran kell ez; a telepített szervernek ritkán.')] } ] }
+]},
+{ id: 'p3', n: '3', t: T('Install Ubuntu Server', 'Az Ubuntu Server telepítése'), g: T('The installer is keyboard-only: arrows and Tab to move, Space to tick, Enter to confirm. About 20 minutes.', 'A telepítő csak billentyűzettel kezelhető: nyilak és Tab a mozgáshoz, Szóköz a pipához, Enter a jóváhagyáshoz. Kb. 20 perc.'), s: [
+  { id: '3.1', w: 'Laptop', t: T('Language: English', 'Nyelv: English'), b: [ T('Error messages and logs in English are what you can search for. The keyboard is set separately in the next step.', 'Az angol hibaüzenetekre és naplókra tudsz a neten rákeresni. A billentyűzetet a következő lépés külön állítja.'), T('If it offers an installer update, take it.', 'Ha telepítőfrissítést ajánl, fogadd el.') ] },
+  { id: '3.2', w: 'Laptop', t: T('Keyboard: Hungarian', 'Billentyűzet: magyar'), b: [
+    T('Layout <b>Hungarian</b>, variant <b>Hungarian</b>. Until SSH works you type commands on this keyboard, so these are useful:', 'Kiosztás <b>Hungarian</b>, változat <b>Hungarian</b>. Amíg az SSH nem működik, ezen a billentyűzeten gépeled a parancsokat, ezért ezek jól jönnek:'),
+    { tb: [[T('Character', 'Karakter'), T('Hungarian layout', 'Magyar kiosztás')], [['/', 'Shift+6'], ['-', T('the key right of the full stop', 'a pont melletti billentyű, jobbra')], ['|', 'AltGr+W'], ['~', 'AltGr+1'], ['\\', 'AltGr+Q'], ['[ ]', 'AltGr+F, AltGr+G'], ['{ }', 'AltGr+B, AltGr+N'], ['#', 'AltGr+X'], ['@', 'AltGr+V'], [T('Y and Z', 'Y és Z'), T('swapped compared with English', 'az angol kiosztáshoz képest fel vannak cserélve')]]] } ] },
+  { id: '3.3', w: 'Laptop', t: T('Type of install: Ubuntu Server', 'Telepítés típusa: Ubuntu Server'), b: [ T('Choose <b>Ubuntu Server</b>, not the minimized one. If "Search for third-party drivers" is offered, tick it.', 'Az <b>Ubuntu Server</b>-t válaszd, ne a minimalizáltat. Ha felajánlja a „Search for third-party drivers” lehetőséget, pipáld be.') ] },
+  { id: '3.4', w: 'Laptop', t: T('Network: the wired port gets an address', 'Hálózat: a vezetékes port címet kap'), b: [
+    T('The cable port (<code>enp…</code> or <code>eno…</code>) should show an address from the router, e.g. <code>192.168.0.x</code>. That is temporary; it gets a fixed one in step 6.1.', 'A kábeles portnál (<code>enp…</code> vagy <code>eno…</code>) a routertől kapott címnek kell látszania, pl. <code>192.168.0.x</code>. Ez ideiglenes; fix címet a 6.1. lépésben kap.'),
+    { n: T('No cable possible? Pick the Wi-Fi adapter here and enter the network. If no Wi-Fi adapter is listed, its driver is missing: use a cable for the install and sort out Wi-Fi afterwards.', 'Nem lehet kábel? Itt válaszd a Wi-Fi-adaptert, és add meg a hálózatot. Ha nincs Wi-Fi-adapter a listában, hiányzik az illesztőprogramja: a telepítéshez használj kábelt, a Wi-Fit intézd el utána.') },
+    T('Proxy: leave empty. Mirror: leave the default and let it test.', 'Proxy: hagyd üresen. Mirror: hagyd az alapértelmezettet, és hagyd lefutni a tesztet.') ] },
+  { id: '3.5', w: 'Laptop', t: T('Storage: use the entire disk', 'Tárhely: az egész lemez'), b: [
+    T('<b>Use an entire disk</b> → the laptop disk; keep <b>Set up this disk as an LVM group</b> ticked.', '<b>Use an entire disk</b> → a laptop lemeze; a <b>Set up this disk as an LVM group</b> maradjon bepipálva.'),
+    { d: T('<b>Encryption (LUKS): leave it off.</b> A fallback server must come back by itself after a power cut, and LUKS asks for a passphrase at the laptop keyboard on every start. The client data gets its own encryption in phase 9 (restic). Turn LUKS on only if this laptop will travel outside the house.', '<b>Titkosítás (LUKS): maradjon ki.</b> Egy tartalék szervernek áramszünet után magától kell visszajönnie, a LUKS pedig minden indításkor jelmondatot kér a laptop billentyűzetén. Az ügyféladatok a 9. fázisban saját titkosítást kapnak (restic). LUKS-ot csak akkor kapcsolj be, ha a laptop a házon kívülre is utazik.') },
+    T('The summary shows free space left unused in the volume group. That is normal; step 4.4 hands it over. Then Done → <b>Continue</b>: this is the moment the disk is wiped.', 'Az összegzés kihasználatlan szabad helyet mutat a kötetcsoportban. Ez normális; a 4.4. lépés adja oda. Aztán Done → <b>Continue</b>: ebben a pillanatban törlődik a lemez.') ] },
+  { id: '3.6', w: 'Laptop', t: T('Profile', 'Profil'), b: [
+    { ul: [T('<b>Your name:</b> anything', '<b>Your name:</b> bármi'), '<b>Server\'s name:</b> {HOST}', '<b>Username:</b> {USER}',
+           T('<b>Password:</b> a strong one, saved in your password manager, never on this page. It is needed for <code>sudo</code> and for logging in at the laptop keyboard.', '<b>Password:</b> egy erős jelszó, a jelszókezelődben mentve, soha nem ezen az oldalon. A <code>sudo</code>-hoz és a laptop billentyűzetén való belépéshez kell.')] },
+    T('If you choose other names, change them in the server card so the commands follow.', 'Ha más neveket választasz, írd át őket a szerverkártyán, hogy a parancsok kövessék.') ] },
+  { id: '3.7', w: 'Laptop', t: T('Ubuntu Pro: skip', 'Ubuntu Pro: kihagyás'), b: [ T('Skip for now. It is free for personal use on up to 5 machines and can be added later with <code>sudo pro attach</code>.', 'Most hagyd ki. Személyes használatra legfeljebb 5 gépen ingyenes, és később a <code>sudo pro attach</code> paranccsal hozzáadható.') ] },
+  { id: '3.8', w: 'Laptop', t: T('SSH: install the OpenSSH server', 'SSH: az OpenSSH-szerver telepítése'), b: [
+    T('Tick <b>Install OpenSSH server</b>. Leave password login allowed for now: step 6.6 switches it to keys only. Skip key import.', 'Pipáld be az <b>Install OpenSSH server</b> pontot. A jelszavas belépést most még hagyd engedélyezve: a 6.6. lépés állítja át csak kulcsosra. A kulcsimportot hagyd ki.') ] },
+  { id: '3.9', w: 'Laptop', t: T('Featured snaps: none', 'Kiemelt snapek: egyik sem'), b: [ T('Select nothing and continue. Anything needed later comes through <code>apt</code>.', 'Ne jelölj ki semmit, menj tovább. Ami később kell, az <code>apt</code>-tal jön.') ] },
+  { id: '3.10', w: 'Laptop', t: T('Install, reboot, pull the stick', 'Telepítés, újraindítás, kulcs ki'), b: [ T('When <b>Reboot Now</b> appears, choose it. At "Please remove the installation medium", pull the stick and press Enter.', 'Amikor megjelenik a <b>Reboot Now</b>, válaszd. A „Please remove the installation medium” üzenetnél húzd ki a kulcsot, és nyomj Entert.') ] }
+]},
+{ id: 'p4', n: '4', t: T('First boot', 'Első indítás'), g: T('Log in at the laptop keyboard, update, hand the whole disk to the system, check the disk health.', 'Belépés a laptop billentyűzetén, frissítés, a teljes lemez átadása a rendszernek, a lemez állapotának ellenőrzése.'), s: [
+  { id: '4.1', w: 'Laptop', t: T('Log in and find the address', 'Lépj be, és keresd meg a címet'), b: [
+    T('Log in as {USER}. The welcome text lists the IPv4 address; this shows it too:', 'Lépj be {USER} néven. Az üdvözlő szöveg kiírja az IPv4-címet; ez is megmutatja:'),
+    { c: 'hostname -I', sh: 'bash' },
+    T('From here on you may switch to the PC: <code>ssh {USER}@&lt;that address&gt;</code> in PowerShell (step 6.2 explains the first connection).', 'Innentől átülhetsz a PC-hez: <code>ssh {USER}@&lt;az a cím&gt;</code> PowerShellben (az első kapcsolódást a 6.2. lépés magyarázza).') ] },
+  { id: '4.2', w: 'Laptop', t: T('Update everything', 'Frissíts mindent'), b: [
+    { c: 'sudo apt update && sudo apt full-upgrade -y\nsudo reboot', sh: 'bash' } ] },
+  { id: '4.3', w: 'Laptop', t: T('Time zone', 'Időzóna'), b: [
+    { c: 'sudo timedatectl set-timezone Europe/Budapest\ntimedatectl', sh: 'bash' } ] },
+  { id: '4.4', w: 'Laptop', t: T('Give the system the whole disk', 'Add oda a rendszernek a teljes lemezt'), b: [
+    T('The installer leaves part of the disk unused. Check, then grow the root volume into it:', 'A telepítő a lemez egy részét kihasználatlanul hagyja. Nézd meg, aztán növeld bele a gyökérkötetet:'),
+    { c: 'sudo vgs\nsudo lvextend -r -l +100%FREE /dev/ubuntu-vg/ubuntu-lv\ndf -h /', sh: 'bash' },
+    T('<code>VFree</code> in the first output is what gets added; <code>df</code> should then show nearly the whole disk.', 'Az első kimenet <code>VFree</code> értéke adódik hozzá; a <code>df</code>-nek utána majdnem a teljes lemezt kell mutatnia.') ] },
+  { id: '4.5', w: 'Laptop', t: T('Install the tools used below', 'A lentebb használt eszközök telepítése'), b: [
+    { c: 'sudo apt install -y htop smartmontools ethtool wakeonlan curl git tmux', sh: 'bash' } ] },
+  { id: '4.6', w: 'Laptop', t: T('Check the disk health', 'A lemez állapotának ellenőrzése'), b: [
+    { c: 'lsblk -d -o NAME,SIZE,ROTA,MODEL\nsudo smartctl -H /dev/sda\nsudo smartctl -A /dev/sda | grep -i -E "realloc|pending|uncorrect|power_on"', sh: 'bash' },
+    T('Use the name <code>lsblk</code> shows (<code>sda</code>, or <code>nvme0n1</code> for an NVMe SSD). <code>ROTA 1</code> means a spinning disk.', 'Azt a nevet használd, amit az <code>lsblk</code> mutat (<code>sda</code>, vagy NVMe SSD-nél <code>nvme0n1</code>). A <code>ROTA 1</code> forgólemezt jelent.'),
+    { x: T('<b>Not PASSED, or reallocated / pending sectors above 0:</b> the disk is wearing out. The server still works, but plan the SSD swap before it holds anything you rely on.', '<b>Nem PASSED, vagy az áthelyezett / függő szektorok száma 0 fölött van:</b> a lemez kopik. A szerver még működik, de tervezd be az SSD-cserét, mielőtt bármi olyat tárolna, amire támaszkodsz.') } ] }
+]},
+{ id: 'p5', n: '5', t: T('Make the laptop behave like a server', 'Viselkedjen szerverként a laptop'), g: T('Keep running with the lid shut, never sleep, switch the screen off, spare the battery.', 'Csukott fedéllel is fusson, soha ne aludjon, kapcsolja ki a képernyőt, és kímélje az akkut.'), s: [
+  { id: '5.1', w: 'Laptop', t: T('Keep running with the lid closed', 'Fusson csukott fedéllel is'), b: [
+    { c: "sudo mkdir -p /etc/systemd/logind.conf.d\nprintf '[Login]\\nHandleLidSwitch=ignore\\nHandleLidSwitchExternalPower=ignore\\nHandleLidSwitchDocked=ignore\\n' | sudo tee /etc/systemd/logind.conf.d/10-lid.conf\nsudo systemctl restart systemd-logind", sh: 'bash' },
+    T('The restart may log you out at the console; log back in. Test it: close the lid and ping the laptop from the PC.', 'Az újraindítás kiléptethet a konzolon; lépj vissza. Teszt: csukd le a fedelet, és pingeld a laptopot a PC-ről.') ] },
+  { id: '5.2', w: 'Laptop', t: T('Never sleep or hibernate', 'Soha ne aludjon és ne hibernáljon'), b: [
+    { c: 'sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target', sh: 'bash' } ] },
+  { id: '5.3', w: 'Laptop', t: T('Blank the screen after a minute', 'Egy perc után sötétüljön el a képernyő'), b: [
+    { c: "sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&consoleblank=60 /' /etc/default/grub\ngrep CMDLINE_LINUX_DEFAULT /etc/default/grub\nsudo update-grub", sh: 'bash' },
+    T('Takes effect after the next reboot. On some laptops the backlight stays lit while blank; a closed lid turns it off.', 'A következő újraindítás után lép életbe. Néhány laptopon a háttérvilágítás sötét képernyőnél is ég; a lecsukott fedél kikapcsolja.') ] },
+  { id: '5.4', w: 'Laptop', t: T('Stop charging at 80 %', 'Töltés leállítása 80 %-nál'), b: [
+    T('A battery held at 100 % all day ages fast. Many ThinkPads, ASUS and some Dell / Lenovo / Huawei laptops let Linux set a limit. Check:', 'Az egész nap 100 %-on tartott akku gyorsan öregszik. Sok ThinkPad, ASUS és néhány Dell / Lenovo / Huawei laptop engedi, hogy a Linux töltési korlátot állítson. Nézd meg:'),
+    { c: 'ls /sys/class/power_supply/\nls /sys/class/power_supply/BAT0/ | grep charge_control', sh: 'bash' },
+    T('If <code>charge_control_end_threshold</code> is listed, make the limit permanent:', 'Ha a <code>charge_control_end_threshold</code> szerepel a listában, tedd tartóssá a korlátot:'),
+    { c: "sudo tee /etc/systemd/system/battery-limit.service >/dev/null <<'EOF'\n[Unit]\nDescription=Stop charging the battery at 80 percent\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'\n\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl enable --now battery-limit.service\ncat /sys/class/power_supply/BAT0/charge_control_end_threshold", sh: 'bash' },
+    { n: T('Not listed? Look in the firmware setup instead: Dell "Primarily AC use", HP "Battery Health Manager", Lenovo "Conservation mode". If there is nothing, skip this step.', 'Nincs a listában? Nézd meg inkább a firmware beállításában: Dell „Primarily AC use”, HP „Battery Health Manager”, Lenovo „Conservation mode”. Ha nincs semmi, hagyd ki ezt a lépést.') } ] }
+]},
+{ id: 'p6', n: '6', t: T('Network and SSH', 'Hálózat és SSH'), g: T('A fixed address, key-only login from the PC, a firewall. Nothing is opened to the internet.', 'Fix cím, csak kulcsos belépés a PC-ről, tűzfal. Semmi sem nyílik meg az internet felé.'), s: [
+  { id: '6.1', w: 'Router', t: T('Reserve a fixed address on the TP-Link', 'Fix cím foglalása a TP-Linken'), b: [
+    T('On the laptop, read the wired MAC address (the <code>link/ether</code> line of the <code>enp…</code> port) and write it in the card:', 'A laptopon olvasd le a vezetékes MAC-címet (az <code>enp…</code> port <code>link/ether</code> sora), és írd a kártyára:'),
+    { c: 'ip -br link', sh: 'bash' },
+    T('Open the TP-Link page in a browser (the address you normally use, usually <code>192.168.0.1</code> or <code>192.168.1.1</code>). <b>DHCP → Address Reservation → Add New</b>: MAC {MAC}, a free address such as <code>192.168.0.50</code>, Enabled, Save. Write the address in the card, then on the laptop:', 'Nyisd meg a TP-Link oldalát böngészőben (a szokásos címen, általában <code>192.168.0.1</code> vagy <code>192.168.1.1</code>). <b>DHCP → Address Reservation → Add New</b>: MAC {MAC}, egy szabad cím, pl. <code>192.168.0.50</code>, Enabled, Save. Írd a címet a kártyára, aztán a laptopon:'),
+    { c: 'sudo reboot', sh: 'bash' },
+    { n: T('Reserve it on the router the laptop is plugged into (the TP-Link), not on the Huawei ISP box in front of it.', 'Azon a routeren foglald le, amelyikbe a laptop be van dugva (a TP-Link), ne az előtte lévő Huawei szolgáltatói dobozon.') } ] },
+  { id: '6.2', w: 'PC', t: T('First connection from the PC', 'Első kapcsolódás a PC-ről'), b: [
+    T('Windows 10 has an SSH client built in. In PowerShell:', 'A Windows 10-ben beépített SSH-kliens van. PowerShellben:'),
+    { c: 'ssh {USER}@{IP}', sh: 'PowerShell' },
+    T('Answer <code>yes</code> to the fingerprint question, then give the password. Type <code>exit</code> to leave.', 'Az ujjlenyomatra vonatkozó kérdésre válaszolj <code>yes</code>-szel, aztán add meg a jelszót. Kilépés: <code>exit</code>.') ] },
+  { id: '6.3', w: 'PC', t: T('Make an SSH key on the PC', 'SSH-kulcs készítése a PC-n'), b: [
+    T('There is no key on this PC yet. Press Enter for the default location and set a passphrase:', 'Ezen a PC-n még nincs kulcs. Az alapértelmezett helyhez nyomj Entert, és adj meg jelmondatot:'),
+    { c: 'ssh-keygen -t ed25519 -C "vrg-pc"', sh: 'PowerShell' } ] },
+  { id: '6.4', w: 'PC', t: T('Copy the key to the server', 'A kulcs átmásolása a szerverre'), b: [
+    T('Copy the file across, then append it. <code>scp</code> moves it byte for byte; a PowerShell 5.1 pipe into a program can add a BOM, the same trap BACKUP met with git.', 'Másold át a fájlt, aztán fűzd hozzá. Az <code>scp</code> bájtra pontosan viszi át; a PowerShell 5.1 egy programba vezetett pipe-nál BOM-ot tehet elé, ugyanaz a csapda, amibe a BACKUP a gittel belefutott.'),
+    { c: 'scp $env:USERPROFILE\\.ssh\\id_ed25519.pub {USER}@{IP}:pc.pub\nssh {USER}@{IP} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat ~/pc.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && rm ~/pc.pub"', sh: 'PowerShell' },
+    T('Test: <code>ssh {USER}@{IP}</code> should now ask for the <i>key passphrase</i>, not the server password.', 'Teszt: az <code>ssh {USER}@{IP}</code> most a <i>kulcs jelmondatát</i> kéri, nem a szerver jelszavát.') ] },
+  { id: '6.5', w: 'PC', t: T('A short name for the server', 'Rövid név a szervernek'), b: [
+    { c: '$cfg = "$env:USERPROFILE\\.ssh\\config"\nif (-not (Test-Path $cfg)) { New-Item -ItemType File $cfg | Out-Null }\nnotepad $cfg', sh: 'PowerShell' },
+    T('Creating the file first stops Notepad naming it <code>config.txt</code>. Paste this, save:', 'Ha előbb létrehozod a fájlt, a Jegyzettömb nem nevezi el <code>config.txt</code>-nek. Illeszd be ezt, és mentsd:'),
+    { c: 'Host {HOST}\n    HostName {IP}\n    User {USER}\n    IdentityFile ~/.ssh/id_ed25519', sh: 'ssh config' },
+    T('From now on <code>ssh {HOST}</code> is enough.', 'Innentől elég az <code>ssh {HOST}</code>.') ] },
+  { id: '6.6', w: 'PC', t: T('Turn password login off', 'A jelszavas belépés kikapcsolása'), b: [
+    T('Connected with <code>ssh {HOST}</code>:', 'Az <code>ssh {HOST}</code> paranccsal kapcsolódva:'),
+    { c: "sudo tee /etc/ssh/sshd_config.d/10-vrg.conf >/dev/null <<'EOF'\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no\nEOF\nsudo sshd -t && sudo systemctl reload-or-restart ssh\nsudo sshd -T | grep -E \"passwordauthentication|kbdinteractive|permitrootlogin\"", sh: 'bash' },
+    T('Why the <code>10-</code> name: sshd keeps the first value it reads, and a file the installer may have written (<code>50-cloud-init.conf</code>) can say the opposite. <code>10-</code> sorts first and wins.', 'Miért <code>10-</code> a név: az sshd az elsőként olvasott értéket tartja meg, és egy fájl, amelyet a telepítő írhatott (<code>50-cloud-init.conf</code>), épp az ellenkezőjét mondhatja. A <code>10-</code> kerül előbb sorra, így az nyer.'),
+    T('Keep this window open and test from a <b>second</b> PowerShell window. This one must be refused:', 'Ezt az ablakot hagyd nyitva, és egy <b>második</b> PowerShell-ablakból tesztelj. Ezt el kell utasítania:'),
+    { c: 'ssh -o PubkeyAuthentication=no {HOST}', sh: 'PowerShell' },
+    { n: T('<b>Locked out anyway?</b> The laptop keyboard still takes the password. Log in there and delete <code>/etc/ssh/sshd_config.d/10-vrg.conf</code>.', '<b>Mégis kizártad magad?</b> A laptop billentyűzetén a jelszó továbbra is működik. Lépj be ott, és töröld a <code>/etc/ssh/sshd_config.d/10-vrg.conf</code> fájlt.') } ] },
+  { id: '6.7', w: 'PC', t: T('Firewall', 'Tűzfal'), b: [
+    T('Only SSH, only from your home network:', 'Csak SSH, csak az otthoni hálózatról:'),
+    { c: 'sudo ufw default deny incoming\nsudo ufw default allow outgoing\nsudo ufw allow from {LAN} to any port 22 proto tcp\nsudo ufw enable\nsudo ufw status verbose', sh: 'bash' },
+    T('If <code>ufw enable</code> warns that it may disrupt SSH, answer <code>y</code>: the rule above keeps your session.', 'Ha az <code>ufw enable</code> figyelmeztet, hogy megszakíthatja az SSH-t, válaszolj <code>y</code>-nal: a fenti szabály megtartja a munkamenetedet.') ] },
+  { id: '6.8', w: 'Router', t: T('Open nothing on the routers', 'Ne nyiss semmit a routereken'), b: [
+    { x: T('<b>No port forwarding</b> on the TP-Link or on the Huawei box, for SSH or anything else. Behind two routers it would not even work cleanly. Phase 7 gives you access from outside without opening anything.', '<b>Nincs porttovábbítás</b> sem a TP-Linken, sem a Huawei dobozon, se SSH-ra, se másra. Két router mögött tisztán nem is működne. A 7. fázis úgy ad hozzáférést kívülről, hogy semmit sem nyitsz meg.') } ] }
+]},
+{ id: 'p7', n: '7', t: T('Reach it from anywhere: Tailscale', 'Elérés bárhonnan: Tailscale'), g: T('A private network between the laptop, the PC and the phone. It works through the double NAT and needs no open port.', 'Privát hálózat a laptop, a PC és a telefon között. Átmegy a dupla NAT-on, és nem kell hozzá nyitott port.'), s: [
+  { id: '7.1', w: 'PC', t: T('Install Tailscale on the server', 'A Tailscale telepítése a szerverre'), b: [
+    T('Read the install script first if you want to see what it does (it adds Tailscale\'s package source to apt), then run it:', 'Ha látni akarod, mit csinál a telepítőszkript, előbb olvasd el (a Tailscale csomagforrását adja hozzá az apt-hoz), aztán futtasd:'),
+    { c: 'curl -fsSL https://tailscale.com/install.sh | less\ncurl -fsSL https://tailscale.com/install.sh | sh\nsudo tailscale up', sh: 'bash' },
+    T('<code>tailscale up</code> prints a login link: open it on the PC or phone and sign in to your Tailscale account.', 'A <code>tailscale up</code> kiír egy belépési linket: nyisd meg a PC-n vagy a telefonon, és lépj be a Tailscale-fiókodba.') ] },
+  { id: '7.2', w: 'PC', t: T('Stop the server dropping off after 180 days', 'Ne essen le a szerver 180 nap után'), b: [
+    T('In the admin console (<a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">login.tailscale.com → Machines</a>): {HOST} → ⋯ → <b>Disable key expiry</b>.', 'Az adminkonzolban (<a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">login.tailscale.com → Machines</a>): {HOST} → ⋯ → <b>Disable key expiry</b>.') ] },
+  { id: '7.3', w: 'Phone', t: T('Tailscale on the PC and the phone', 'Tailscale a PC-n és a telefonon'), b: [
+    T('Windows installer from <a href="https://tailscale.com/download" target="_blank" rel="noopener">tailscale.com/download</a>, the Android app from the Play Store, same account. Then on the server:', 'A Windows-telepítő a <a href="https://tailscale.com/download" target="_blank" rel="noopener">tailscale.com/download</a> oldalról, az Android-app a Play Áruházból, ugyanazzal a fiókkal. Aztán a szerveren:'),
+    { c: 'tailscale ip -4\ntailscale status', sh: 'bash' },
+    T('Write the <code>100.x</code> address in the card. With MagicDNS on (the default), the name {HOST} works over Tailscale too.', 'Írd a <code>100.x</code> címet a kártyára. Bekapcsolt MagicDNS-sel (ez az alapértelmezés) a {HOST} név Tailscale-en keresztül is működik.') ] },
+  { id: '7.4', w: 'PC', t: T('Let tailnet devices through the firewall', 'A tailnet eszközeinek átengedése a tűzfalon'), b: [
+    { c: 'sudo ufw allow in on tailscale0\nsudo ufw status', sh: 'bash' },
+    T('Test with the phone on mobile data, Wi-Fi off: an SSH app (or Termux) reaching <code>{USER}@{TSIP}</code> proves outside access works.', 'Teszt a telefonnal mobilneten, kikapcsolt Wi-Fivel: ha egy SSH-app (vagy a Termux) eléri a <code>{USER}@{TSIP}</code> címet, a külső elérés működik.') ] }
+]},
+{ id: 'p8', n: '8', t: T('VRG job 1: a second git copy', '1. VRG-feladat: második git-másolat'), g: T('Today every git backup lives on H:. If that drive dies, the work copies and the BACKUP bare repos go together. This puts mirrors on a second machine.', 'Ma minden git-mentés a H:-n van. Ha az a meghajtó tönkremegy, a munkapéldányok és a BACKUP csupasz repói együtt vesznek oda. Ez egy második gépre tesz tükröket.'), s: [
+  { id: '8.1', w: 'PC', t: T('Make the VRG folders on the server', 'A VRG-mappák létrehozása a szerveren'), b: [
+    { c: 'sudo mkdir -p /srv/vrg && sudo chown {USER}:{USER} /srv/vrg\nmkdir -p /srv/vrg/git /srv/vrg/restic\ngit init --bare /srv/vrg/git/Planner_VRG_U100.git', sh: 'bash' } ] },
+  { id: '8.2', w: 'PC', t: T('Unlock the key once per login, not once per push', 'Kulcsfeloldás bejelentkezésenként egyszer, nem minden pushnál'), b: [
+    T('In an <b>administrator</b> PowerShell, start the Windows SSH agent and point git at the Windows SSH client so both use the same key:', '<b>Rendszergazdai</b> PowerShellben indítsd el a Windows SSH-ügynökét, és állítsd a gitet a Windows SSH-kliensére, hogy mindkettő ugyanazt a kulcsot használja:'),
+    { c: 'Get-Service ssh-agent | Set-Service -StartupType Automatic\nStart-Service ssh-agent', sh: T('PowerShell (admin)', 'PowerShell (rendszergazda)') },
+    T('Then in a normal PowerShell:', 'Aztán egy normál PowerShellben:'),
+    { c: 'ssh-add $env:USERPROFILE\\.ssh\\id_ed25519\ngit config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"', sh: 'PowerShell' } ] },
+  { id: '8.3', w: 'PC', t: T('Push the repo to the laptop', 'A repó feltöltése a laptopra'), b: [
+    T('The remote is called <code>laptop</code>, because <code>backup</code> is already the bare repo on H:.', 'A remote neve <code>laptop</code>, mert a <code>backup</code> név már a H:-n lévő csupasz repóé.'),
+    { c: 'cd H:\\VRG\\Full\\Planner_VRG_U100\ngit remote add laptop {HOST}:/srv/vrg/git/Planner_VRG_U100.git\ngit push laptop --all\ngit push laptop --tags', sh: 'PowerShell' },
+    T('Check on the server:', 'Ellenőrzés a szerveren:'),
+    { c: 'git -C /srv/vrg/git/Planner_VRG_U100.git log --oneline -3 --all', sh: 'bash' },
+    { n: T('Every other repo in <code>H:\\VRG\\Backup\\code</code> works the same way: one <code>git init --bare</code> on the server, one <code>remote add</code> and push on the PC. Run the two pushes again whenever you run BACKUP, until BACKUP does it by itself (see Later).', 'A <code>H:\\VRG\\Backup\\code</code> minden más repója ugyanígy megy: egy <code>git init --bare</code> a szerveren, egy <code>remote add</code> és push a PC-n. A két pusht futtasd le újra, valahányszor BACKUP-ot futtatsz, amíg a BACKUP magától meg nem teszi (lásd: Később).') } ] }
+]},
+{ id: 'p9', n: '9', t: T('VRG job 2: encrypted file history', '2. VRG-feladat: titkosított fájltörténet'), g: T('The work folders, client jobs included, as encrypted and versioned snapshots. restic never overwrites: each run adds a snapshot, the same "nothing is lost" rule BACKUP follows.', 'A munkamappák, az ügyfélmunkákkal együtt, titkosított és verziózott pillanatképekként. A restic sosem ír felül: minden futás új pillanatképet ad hozzá, ugyanaz a „semmi sem vész el” szabály, amelyet a BACKUP is követ.'), s: [
+  { id: '9.1', w: 'PC', t: T('Get restic', 'A restic beszerzése'), b: [
+    T('From <a href="https://github.com/restic/restic/releases" target="_blank" rel="noopener">github.com/restic/restic/releases</a> take <code>restic_…_windows_amd64.zip</code>. Keep the zip in <code>H:\\VRG\\Backup\\installers</code> and put <code>restic.exe</code> in <code>H:\\VRG\\Full\\tools\\restic\\</code>.', 'A <a href="https://github.com/restic/restic/releases" target="_blank" rel="noopener">github.com/restic/restic/releases</a> oldalról töltsd le a <code>restic_…_windows_amd64.zip</code> fájlt. A zipet tartsd a <code>H:\\VRG\\Backup\\installers</code> mappában, a <code>restic.exe</code>-t tedd a <code>H:\\VRG\\Full\\tools\\restic\\</code> mappába.') ] },
+  { id: '9.2', w: 'PC', t: T('Create the encrypted store on the laptop', 'A titkosított tár létrehozása a laptopon'), b: [
+    { c: '$env:RESTIC_REPOSITORY = "sftp:{HOST}:/srv/vrg/restic"\nH:\\VRG\\Full\\tools\\restic\\restic.exe init', sh: 'PowerShell' },
+    { x: T('<b>The restic password is the only key.</b> Save it in your password manager now. Lose it and the backups cannot be opened by anyone, you included.', '<b>A restic jelszava az egyetlen kulcs.</b> Most mentsd el a jelszókezelődbe. Ha elveszted, a mentéseket senki sem tudja megnyitni, te sem.') },
+    { n: T('restic reaches the laptop through the same SSH key; with the agent from 8.2 running it does not ask for the passphrase.', 'A restic ugyanazzal az SSH-kulccsal éri el a laptopot; ha a 8.2-es ügynök fut, nem kéri a jelmondatot.') } ] },
+  { id: '9.3', w: 'PC', t: T('First snapshot', 'Első pillanatkép'), b: [
+    T('The same folders the BACKUP menu mirrors:', 'Ugyanazok a mappák, amelyeket a BACKUP menü tükröz:'),
+    { c: '$env:RESTIC_REPOSITORY = "sftp:{HOST}:/srv/vrg/restic"\n$r = "H:\\VRG\\Full\\tools\\restic\\restic.exe"\n& $r backup H:\\VRG\\Full\\jobs H:\\VRG\\Full\\notes H:\\VRG\\Full\\BRIDGE H:\\VRG\\Full\\BRIDGEcomp H:\\VRG\\Full\\ESP_lab H:\\VRG\\Full\\Varler_Workflow_Kit H:\\VRG\\Full\\VRG_Visual_Base H:\\VRG\\Full\\_handoff', sh: 'PowerShell' },
+    T('The first run copies everything; later runs only send what changed.', 'Az első futás mindent átmásol; a későbbiek csak a változást küldik.') ] },
+  { id: '9.4', w: 'PC', t: T('Prove it restores', 'Bizonyítsd, hogy visszaállítható'), b: [
+    T('A backup that was never restored is a hope, not a backup:', 'Az a mentés, amelyből még sosem állítottál vissza, csak remény, nem mentés:'),
+    { c: '$env:RESTIC_REPOSITORY = "sftp:{HOST}:/srv/vrg/restic"\n$r = "H:\\VRG\\Full\\tools\\restic\\restic.exe"\n& $r snapshots\n& $r check\n& $r restore latest --target $env:TEMP\\restic-test --include /H/VRG/Full/notes\nexplorer $env:TEMP\\restic-test', sh: 'PowerShell' },
+    T('restic writes Windows paths as <code>/H/VRG/…</code>. Delete the test folder when you have looked.', 'A restic a Windows-útvonalakat <code>/H/VRG/…</code> alakban írja. Ha megnézted, töröld a tesztmappát.') ] },
+  { id: '9.5', w: 'PC', t: T('Thin out old snapshots, monthly', 'Régi pillanatképek ritkítása havonta'), b: [
+    { c: '$env:RESTIC_REPOSITORY = "sftp:{HOST}:/srv/vrg/restic"\n$r = "H:\\VRG\\Full\\tools\\restic\\restic.exe"\n& $r forget --keep-daily 7 --keep-weekly 8 --keep-monthly 24 --prune', sh: 'PowerShell' },
+    T('Keeps a week of dailies, two months of weeklies and two years of monthlies.', 'Megtart egy hétnyi napi, két hónapnyi heti és két évnyi havi pillanatképet.') ] }
+]},
+{ id: 'p10', n: '10', t: T('VRG job 3: wake the PC from anywhere', '3. VRG-feladat: a PC felébresztése bárhonnan'), g: T('Tailscale cannot wake a sleeping PC by itself; it needs a device awake on the home network. The laptop is that device.', 'A Tailscale magától nem tud felébreszteni egy alvó PC-t; ehhez egy ébren lévő eszköz kell az otthoni hálózaton. A laptop ez az eszköz.'), s: [
+  { id: '10.1', w: 'PC', t: T('Read the PC\'s wired MAC address', 'A PC vezetékes MAC-címének leolvasása'), b: [
+    { c: 'Get-NetAdapter -Physical | Where-Object Status -eq Up | Format-Table Name, InterfaceDescription, MacAddress', sh: 'PowerShell' },
+    T('Use the Ethernet adapter (wake-on-LAN works over the cable). Write it in the card as <code>AA:BB:CC:DD:EE:FF</code>, with colons.', 'Az Ethernet-adaptert használd (a wake-on-LAN kábelen működik). Írd a kártyára <code>AA:BB:CC:DD:EE:FF</code> alakban, kettőspontokkal.'),
+    { n: T('Your research note says the PC side is already armed. If waking fails, check ErP / deep sleep is off in the PC firmware.', 'A kutatási jegyzeted szerint a PC oldala már élesítve van. Ha az ébresztés nem megy, nézd meg, hogy az ErP / mély alvás ki van-e kapcsolva a PC firmware-ében.') } ] },
+  { id: '10.2', w: 'PC', t: T('Test from the laptop', 'Teszt a laptopról'), b: [
+    T('Put the PC to sleep (or shut it down), then from the phone or the laptop console:', 'Altasd el (vagy kapcsold ki) a PC-t, aztán a telefonról vagy a laptop konzoljáról:'),
+    { c: 'wakeonlan {PCMAC}\nwakeonlan -i {BCAST} {PCMAC}', sh: 'bash' },
+    T('The second form sends to your subnet\'s broadcast address; use it if the first does nothing.', 'A második forma az alhálózatod broadcast-címére küld; ezt használd, ha az első nem csinál semmit.') ] },
+  { id: '10.3', w: 'Phone', t: T('A one-word command for the phone', 'Egyszavas parancs a telefonnak'), b: [
+    { c: "printf '#!/bin/sh\\nwakeonlan -i %s %s\\n' '{BCAST}' '{PCMAC}' > ~/wake-pc && chmod +x ~/wake-pc", sh: 'bash' },
+    T('Away from home, with Tailscale on: <code>ssh {USER}@{HOST} ./wake-pc</code> from Termux or an SSH app. Then connect to the PC with Remote Desktop over its own Tailscale address.', 'Otthonról távol, bekapcsolt Tailscale-lel: <code>ssh {USER}@{HOST} ./wake-pc</code> a Termuxból vagy egy SSH-appból. Aztán kapcsolódj a PC-hez Távoli asztallal, a PC saját Tailscale-címén.') ] }
+]},
+{ id: 'p11', n: '11', t: T('Keep it healthy', 'Karbantartás'), g: T('Five minutes a week. Security updates already install themselves every day (unattended-upgrades).', 'Heti öt perc. A biztonsági frissítések már maguktól települnek naponta (unattended-upgrades).'), s: [
+  { id: '11.1', w: 'PC', t: T('The weekly look', 'A heti átnézés'), b: [
+    { c: 'sudo apt update && sudo apt full-upgrade -y\n[ -f /var/run/reboot-required ] && echo "REBOOT NEEDED"\ndf -h /\nsudo smartctl -H /dev/sda\ncat /sys/class/power_supply/BAT0/capacity 2>/dev/null\nsystemctl --failed', sh: 'bash' },
+    T('Then from the PC: the git pushes from 8.3 and the restic backup from 9.3. Once a month: <code>restic check</code> and the thinning from 9.5.', 'Aztán a PC-ről: a 8.3-as git-pushok és a 9.3-as restic-mentés. Havonta egyszer: <code>restic check</code> és a 9.5-ös ritkítás.') ] },
+  { id: '11.2', w: 'Anywhere', t: T('When something is wrong', 'Ha valami nem stimmel'), b: [
+    { tb: [[T('Symptom', 'Tünet'), T('Do this', 'Teendő')], [
+      [T('SSH does not answer', 'Az SSH nem válaszol'), T('Ping the address. At the laptop: <code>hostname -I</code>, <code>systemctl status ssh</code>, <code>sudo ufw status</code>.', 'Pingeld a címet. A laptopnál: <code>hostname -I</code>, <code>systemctl status ssh</code>, <code>sudo ufw status</code>.')],
+      [T('Locked out after 6.6', 'Kizártad magad a 6.6 után'), T('Log in at the laptop keyboard (password still works there), delete <code>/etc/ssh/sshd_config.d/10-vrg.conf</code>.', 'Lépj be a laptop billentyűzetén (ott a jelszó még működik), és töröld a <code>/etc/ssh/sshd_config.d/10-vrg.conf</code> fájlt.')],
+      [T('Tailscale shows it offline', 'A Tailscale offline-nak mutatja'), T('<code>sudo tailscale status</code>, then <code>sudo tailscale up</code>. Check that key expiry is off (7.2).', '<code>sudo tailscale status</code>, aztán <code>sudo tailscale up</code>. Nézd meg, hogy a kulcslejárat ki van-e kapcsolva (7.2).')],
+      [T('It sleeps when the lid closes', 'Lecsukott fedélnél elalszik'), T('<code>systemd-analyze cat-config systemd/logind.conf | grep -i lid</code> must show the three <code>ignore</code> lines from 5.1.', 'A <code>systemd-analyze cat-config systemd/logind.conf | grep -i lid</code> kimenetében ott kell lennie az 5.1 három <code>ignore</code> sorának.')],
+      [T('Start takes two minutes, "waiting for network"', 'Két percig tart az indulás, „waiting for network”'), T('Happens when the cable is unplugged. Plug it in; if it should run without a cable, add <code>optional: true</code> to the wired port in <code>/etc/netplan/*.yaml</code> and run <code>sudo netplan apply</code>.', 'Akkor fordul elő, ha a kábel ki van húzva. Dugd be; ha kábel nélkül is futnia kell, add hozzá az <code>optional: true</code> sort a vezetékes porthoz az <code>/etc/netplan/*.yaml</code> fájlban, és futtasd: <code>sudo netplan apply</code>.')],
+      [T('Disk full', 'Megtelt a lemez'), '<code>sudo du -xh / --max-depth=2 | sort -h | tail</code>, <code>sudo journalctl --vacuum-size=200M</code>.'],
+      [T('git push asks for the passphrase every time', 'A git push minden alkalommal kéri a jelmondatot'), T('The agent is not running or empty: <code>Start-Service ssh-agent</code>, <code>ssh-add</code> (8.2).', 'Az ügynök nem fut, vagy üres: <code>Start-Service ssh-agent</code>, <code>ssh-add</code> (8.2).')]]] } ] }
+]}
+];
+
+/* ------------------------------------------------------------ state */
+const state = { done: {}, card: {} };
+FIELDS.forEach(f => { state.card[f[0]] = f[3]; });
+let db = null, docRef = null, saveTimer = null, saving = false, pendingSave = false, loaded = false, dirty = false;
+let stKey = 's_loading', stCls = '';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ui = k => L(UI[k]);
+
+const STEPS = [];
+P.forEach(ph => ph.s.forEach(st => { st.ph = ph.id; STEPS.push(st); }));
+
+function vals() {
+  const v = Object.assign({}, state.card);
+  const m = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec((v.IP || '').trim());
+  v.LAN = m ? m[1] + '.' + m[2] + '.' + m[3] + '.0/24' : '';
+  v.BCAST = m ? m[1] + '.' + m[2] + '.' + m[3] + '.255' : '';
+  return v;
+}
+const PH_RE = new RegExp('\\{(' + PH_KEYS.join('|') + ')\\}', 'g');
+function label(k) { return PH_LABEL[lang][k] || k; }
+function fillHtml(html) {
+  const v = vals();
+  return String(html).replace(PH_RE, (all, k) => { const x = (v[k] || '').trim(); return '<span class="ph' + (x ? ' set' : '') + '" data-ph="' + k + '">' + esc(x || label(k)) + '</span>'; });
+}
+function fillText(txt) { const v = vals(); return txt.replace(PH_RE, (all, k) => (v[k] || '').trim() || label(k)); }
+
+/* ------------------------------------------------------------ render */
+function renderStatic() {
+  document.querySelectorAll('[data-ui]').forEach(el => { el.innerHTML = ui(el.dataset.ui); });
+  $('legend').innerHTML = '<span class="label">' + esc(ui('whereL')) + '</span>' +
+    Object.keys(WHERE).map(w => '<span class="where w-' + w + '">' + esc(L(WHERE[w])) + '</span>').join('') +
+    '<span>' + esc(ui('whereP')) + '</span>';
+  $('later-list').innerHTML = LATER.map(x => '<div><b>' + esc(L(x[0])) + '</b>' + L(x[1]) + '</div>').join('');
+  $('rail').setAttribute('aria-label', ui('phases'));
+  drawStatus();
+}
+
+function renderFields() {
+  $('fields').innerHTML = FIELDS.map(f => '<label for="f-' + f[0] + '">' + esc(L(f[1])) + '<input type="text" id="f-' + f[0] + '" data-k="' + f[0] + '" autocomplete="off" spellcheck="false"><small>' + esc(L(f[2])) + '</small></label>').join('');
+  FIELDS.forEach(f => { $('f-' + f[0]).value = state.card[f[0]] || ''; });
+}
+
+function isText(b) { return typeof b === 'string' || (b && typeof b === 'object' && 'en' in b); }
+function blockHtml(b, si, bi) {
+  if (isText(b)) return '<p>' + fillHtml(L(b)) + '</p>';
+  if (b.c != null) return '<div class="cmd"><div class="bar"><span class="sh">' + esc(L(b.sh) || '') + '</span><button type="button" data-copy="' + si + ':' + bi + '">' + esc(ui('copy')) + '</button></div><pre data-src="' + si + ':' + bi + '"></pre></div>';
+  if (b.n) return '<div class="note">' + fillHtml(L(b.n)) + '</div>';
+  if (b.x) return '<div class="warn">' + fillHtml(L(b.x)) + '</div>';
+  if (b.d) return '<div class="dec">' + fillHtml(L(b.d)) + '</div>';
+  if (b.ul) return '<ul>' + b.ul.map(x => '<li>' + fillHtml(L(x)) + '</li>').join('') + '</ul>';
+  if (b.ol) return '<ol>' + b.ol.map(x => '<li>' + fillHtml(L(x)) + '</li>').join('') + '</ol>';
+  if (b.tb) return '<div class="tw"><table><thead><tr>' + b.tb[0].map(h => '<th>' + esc(L(h)) + '</th>').join('') + '</tr></thead><tbody>' + b.tb[1].map(r => '<tr>' + r.map(c => '<td>' + fillHtml(L(c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+  if (b.det) return '<details><summary>' + esc(L(b.det[0])) + '</summary>' + fillHtml(L(b.det[1])) + '</details>';
+  return '';
+}
+
+function renderPhases() {
+  let html = '', si = 0;
+  P.forEach(ph => {
+    html += '<section class="phase" id="' + ph.id + '"><div class="ph-h"><span class="num">' + ph.n + '</span><h2>' + esc(L(ph.t)) + '</h2><span class="goal">' + fillHtml(L(ph.g)) + '</span></div>';
+    ph.s.forEach(st => {
+      const i = si++;
+      html += '<div class="step" id="s-' + st.id.replace('.', '-') + '" data-si="' + i + '"><input type="checkbox" id="c-' + i + '" aria-label="' + esc(ui('stepDone').replace('{n}', st.id)) + '">' +
+        '<label class="step-h" for="c-' + i + '"><span class="sid">' + st.id + '</span><span class="st">' + esc(L(st.t)) + '</span><span class="where w-' + st.w + '">' + esc(L(WHERE[st.w])) + '</span></label>' +
+        '<div class="body" data-body="' + i + '">' + st.b.map((b, bi) => blockHtml(b, i, bi)).join('') + '</div></div>';
+    });
+    html += '</section>';
+  });
+  $('phases').innerHTML = html;
+  fillCommands();
+}
+
+function fillCommands() {
+  document.querySelectorAll('pre[data-src]').forEach(pre => {
+    const [si, bi] = pre.dataset.src.split(':').map(Number);
+    pre.innerHTML = fillHtml(esc(STEPS[si].b[bi].c));
+  });
+}
+function refreshPlaceholders() {
+  STEPS.forEach((st, si) => {
+    const body = document.querySelector('[data-body="' + si + '"]');
+    if (body && st.b.some(b => JSON.stringify(b).match(PH_RE))) { body.innerHTML = st.b.map((b, bi) => blockHtml(b, si, bi)).join(''); }
+  });
+  fillCommands();
+  $('h-host').textContent = (state.card.HOST || 'vrg-srv').trim() || 'vrg-srv';
+}
+
+function renderRail() {
+  $('rail').innerHTML = P.map(ph => '<a href="#' + ph.id + '" data-ph="' + ph.id + '"><span class="pn">' + ph.n + '</span><span class="pt">' + esc(L(ph.t)) + '</span><span class="pc" data-pc="' + ph.id + '"></span></a>').join('') +
+    '<a href="#later" data-ph="later"><span class="pn">+</span><span class="pt">' + esc(ui('laterRail')) + '</span><span class="pc"></span></a>';
+}
+
+function dk(st) { return 's' + st.id.replace('.', '_'); }
+function syncChecks() {
+  let n = 0;
+  STEPS.forEach((st, si) => {
+    const on = !!state.done[dk(st)]; if (on) n++;
+    const cb = $('c-' + si); if (cb.checked !== on) cb.checked = on;
+    cb.closest('.step').classList.toggle('done', on);
+  });
+  P.forEach(ph => {
+    const tot = ph.s.length, d = ph.s.filter(s => state.done[dk(s)]).length;
+    const el = document.querySelector('[data-pc="' + ph.id + '"]'); el.textContent = d + '/' + tot;
+    el.parentElement.classList.toggle('done', d === tot);
+  });
+  $('prog-n').textContent = n + ' / ' + STEPS.length;
+  $('prog-bar').style.width = (100 * n / STEPS.length) + '%';
+}
+
+/* ------------------------------------------------------------ current phase in the rail */
+let io = null;
+function watchPhases() {
+  if (!('IntersectionObserver' in window)) return;
+  if (io) io.disconnect();
+  io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) {
+      document.querySelectorAll('nav.rail a').forEach(a => a.classList.toggle('cur', a.dataset.ph === en.target.id));
+    } });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.phase').forEach(s => io.observe(s));
+}
+
+/* ------------------------------------------------------------ language */
+function renderAll() {
+  renderStatic(); renderFields(); renderRail(); renderPhases(); syncChecks(); refreshPlaceholders(); watchPhases();
+}
+function setLang(l) {
+  if (l !== 'en' && l !== 'hu') return;
+  lang = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  try { localStorage.setItem(LANG_KEY, l); } catch (e) { /* storage blocked: the choice lasts this visit */ }
+}
+
+/* ------------------------------------------------------------ copy */
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, 1800); }
+function copy(text, btn) {
+  const done = () => { btn.textContent = ui('copied'); setTimeout(() => { btn.textContent = ui('copy'); }, 1400); };
+  const fallback = () => {
+    const pre = btn.closest('.cmd').querySelector('pre'); const r = document.createRange(); r.selectNodeContents(pre);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast(ui('clip'));
+  };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+}
+
+/* ------------------------------------------------------------ events, bound once */
+function bind() {
+  $('fields').addEventListener('input', e => {
+    const k = e.target.dataset.k; if (!k) return;
+    state.card[k] = e.target.value; refreshPlaceholders(); queueSave();
+  });
+  $('phases').addEventListener('change', e => {
+    if (!e.target.id || !e.target.id.startsWith('c-')) return;
+    const st = STEPS[+e.target.id.slice(2)];
+    if (e.target.checked) state.done[dk(st)] = true; else delete state.done[dk(st)];
+    syncChecks(); queueSave();
+  });
+  $('phases').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-copy]'); if (!btn) return;
+    const [si, bi] = btn.dataset.copy.split(':').map(Number);
+    copy(fillText(STEPS[si].b[bi].c), btn);
+  });
+  document.querySelector('.lang').addEventListener('click', e => {
+    const b = e.target.closest('button[data-lang]'); if (!b || b.dataset.lang === lang) return;
+    setLang(b.dataset.lang); renderAll();
+  });
+}
+
+/* ------------------------------------------------------------ persistence */
+const LS = 'vrg-laptop-server-v1';
+function drawStatus() { const s = $('save-st'); s.textContent = ui(stKey); s.className = 'status' + (stCls ? ' ' + stCls : ''); }
+function setStatus(k, cls) { stKey = k; stCls = cls || ''; drawStatus(); }
+function applyRemote(d) {
+  if (!d || dirty || saving) return;   /* local edits not yet saved win; the next save carries them */
+  if (d.done && typeof d.done === 'object') { state.done = {}; Object.keys(d.done).forEach(k => { if (d.done[k] === true) state.done[k] = true; }); }
+  if (d.card && typeof d.card === 'object') {
+    FIELDS.forEach(f => {
+      const v = d.card[f[0]];
+      if (typeof v === 'string') { state.card[f[0]] = v.slice(0, 120); const el = $('f-' + f[0]); if (el && document.activeElement !== el) el.value = state.card[f[0]]; }
+    });
+  }
+  syncChecks(); refreshPlaceholders();
+}
+function queueSave() { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(save, 700); setStatus('s_unsaved'); }
+async function save() {
+  dirty = false;
+  const body = { done: state.done, card: state.card, updated: new Date().toISOString() };
+  if (!docRef) { try { localStorage.setItem(LS, JSON.stringify(body)); setStatus('s_local'); } catch (e) { setStatus('s_blocked', 'err'); } return; }
+  if (saving) { pendingSave = true; return; }
+  saving = true; setStatus('s_saving');
+  try { await docRef.set(body); setStatus('s_saved', 'ok'); }
+  catch (e) { setStatus(e && e.code === 'invalid_argument' ? 's_readonly' : 's_retry', 'err'); }
+  saving = false;
+  if (pendingSave) { pendingSave = false; save(); }
+}
+function loadLocal() { try { const raw = localStorage.getItem(LS); if (raw) applyRemote(JSON.parse(raw)); } catch (e) { /* storage blocked */ } }
+
+async function connect() {
+  try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { loadLocal(); setStatus(loaded ? 's_local' : 's_localLive'); return; }
+  docRef = db.doc('build/progress');
+  const timer = setTimeout(() => setStatus('s_slow', 'err'), 10000);
+  docRef.onSnapshot(snap => {
+    if (!snap.metadata.fromCache) clearTimeout(timer);
+    if (snap.metadata.hasPendingWrites) return;
+    if (snap.exists) applyRemote(snap.data());
+    if (!snap.metadata.fromCache) setStatus(snap.exists ? 's_synced' : 's_empty', snap.exists ? 'ok' : '');
+  }, () => { clearTimeout(timer); setStatus('s_unavail', 'err'); });
+}
+
+/* ------------------------------------------------------------ boot */
+setLang(lang); bind(); renderAll();
+loaded = true;
+connect();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,1838 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Site Pager Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: three equal columns — B2 belt pager | Terraria-style signal field | A2 full-modular pager + Pager Source —
+   then the module shelf, the third-unit approaches and the event log. Net colours follow the Site Pager wiring sheets:
+   logic green, data indigo, 5 V red, cell amber, RF 433 pink, 2.4 GHz cyan. */
+:root{
+  --bg:#eef0f3; --surface:#ffffff; --surface-2:#e7eaee; --surface-3:#f5f6f8;
+  --ink:#151a20; --ink-2:#56606c; --ink-3:#86909a;
+  --line:#d4d9df; --line-2:#bcc3cb;
+  --accent:#1b6b8f; --accent-ink:#ffffff;
+  --encl:#e3e7eb; --halo:#e3e7eb; --blk:#fbfcfd;
+  --logic:#2e8540; --data:#4d50c6; --v5:#c8372d; --bat:#b7791f; --v33:#c96a14; --gnd:#7b848d;
+  --rf433:#c2367a; --rf24:#0b8ea3; --rf868:#7b4cc4; --ble:#2c6fd1; --heavy:#4f8a17; --light:#a07f00;
+  --g-ui:#2f6fd8; --g-radio:#c2367a; --g-mcu:#6d3fd1; --g-input:#0f8a5f; --g-power:#c4720c; --g-output:#0b7f99;
+  --g-conn:#c8372d; --g-cell:#b48a06; --g-guard:#d0294f;
+  --ok:#2e8540; --warn:#b26f00; --bad:#c0392b;
+  --b2:#d9661f; --a2:#1f78c8; --t1:#7c4dd6; --t2:#0f9488; --t3:#d0294f;
+  --sky-top:#8cc7f2; --sky-bot:#dcefff; --room:#d8d1c4; --cave:#4a3a2c; --field-ink:#10151b;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#171b21; --surface-2:#20262e; --surface-3:#1b2027;
+  --ink:#e6e9ee; --ink-2:#9aa3ad; --ink-3:#6c7580; --line:#2a3039; --line-2:#3a434f;
+  --accent:#53a8cc; --accent-ink:#0b1216; --encl:#1d232b; --halo:#1d232b; --blk:#151a20;
+  --logic:#4ade80; --data:#9094f7; --v5:#f87171; --bat:#fbbf24; --v33:#fb923c; --gnd:#9ca3af;
+  --rf433:#f472b6; --rf24:#22d3ee; --rf868:#b394f5; --ble:#60a5fa; --heavy:#a3e635; --light:#facc15;
+  --g-ui:#60a5fa; --g-radio:#f472b6; --g-mcu:#a78bfa; --g-input:#34d399; --g-power:#fbbf24; --g-output:#22d3ee;
+  --g-conn:#f87171; --g-cell:#facc15; --g-guard:#fb7185;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --b2:#f59a5b; --a2:#5aa9ec; --t1:#a78bfa; --t2:#2dd4bf; --t3:#fb7185;
+  --sky-top:#060c18; --sky-bot:#17253c; --room:#2b2721; --cave:#21180f; --field-ink:#e6e9ee;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#171b21; --surface-2:#20262e; --surface-3:#1b2027;
+  --ink:#e6e9ee; --ink-2:#9aa3ad; --ink-3:#6c7580; --line:#2a3039; --line-2:#3a434f;
+  --accent:#53a8cc; --accent-ink:#0b1216; --encl:#1d232b; --halo:#1d232b; --blk:#151a20;
+  --logic:#4ade80; --data:#9094f7; --v5:#f87171; --bat:#fbbf24; --v33:#fb923c; --gnd:#9ca3af;
+  --rf433:#f472b6; --rf24:#22d3ee; --rf868:#b394f5; --ble:#60a5fa; --heavy:#a3e635; --light:#facc15;
+  --g-ui:#60a5fa; --g-radio:#f472b6; --g-mcu:#a78bfa; --g-input:#34d399; --g-power:#fbbf24; --g-output:#22d3ee;
+  --g-conn:#f87171; --g-cell:#facc15; --g-guard:#fb7185;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --b2:#f59a5b; --a2:#5aa9ec; --t1:#a78bfa; --t2:#2dd4bf; --t3:#fb7185;
+  --sky-top:#060c18; --sky-bot:#17253c; --room:#2b2721; --cave:#21180f; --field-ink:#e6e9ee;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:400 14px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+.wrap{max-width:1680px;margin:0 auto;padding:0 16px;padding-block:14px 48px}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 18px;margin-bottom:8px}
+.eyebrow{font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-size:23px;font-weight:650;margin:3px 0 0;line-height:1.15;text-wrap:balance}
+h2{font-size:17px;font-weight:650;margin:28px 0 4px;text-wrap:balance}
+.lede{margin:4px 0 10px;color:var(--ink-2);font-size:13.5px;max-width:110ch}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font:500 12.5px var(--sans);cursor:pointer;min-height:32px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--line-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 9px;font:500 12px var(--sans);cursor:pointer;min-height:30px}
+.seg button.on{background:var(--surface-2);font-weight:650}
+.sel{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 7px;font:500 12px var(--sans);min-height:32px}
+label.lb{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:inline-flex;align-items:center;gap:5px}
+.keys{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:0 0 12px}
+kbd{font:600 10.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--surface);color:var(--ink)}
+
+/* stage */
+.stage{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1180px){.stage{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0;display:flex;flex-direction:column;gap:9px}
+.col.ctl{box-shadow:0 0 0 2px var(--accent)}
+.colhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.colhead h3{margin:0;font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tag{display:inline-block;font:600 9.5px var(--mono);letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-2);border-radius:4px;padding:1px 5px;white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:currentColor}.tag.bad{color:var(--bad);border-color:currentColor}.tag.warn{color:var(--warn);border-color:currentColor}
+.svgbox{overflow-x:auto}
+svg.pager{display:block;width:100%;max-width:600px;height:auto;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.hit{cursor:pointer}
+.btnsv{cursor:pointer}
+.btnsv:hover rect{filter:brightness(1.08)}
+.live{stroke-dasharray:5 5;animation:flow .5s linear infinite}
+.live.slow{animation-duration:1.2s}
+@keyframes flow{to{stroke-dashoffset:-10}}
+.flash{animation:fl .45s ease-out}
+@keyframes fl{0%{filter:drop-shadow(0 0 0 transparent)}30%{filter:drop-shadow(0 0 6px var(--accent))}100%{filter:none}}
+.run{animation:shake .12s linear infinite}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(.8px,0)}75%{transform:translate(-.8px,0)}}
+.blink{animation:bl .5s steps(2) infinite}@keyframes bl{50%{opacity:.25}}
+.slotHit{fill:transparent}
+.slotOk rect.slotFrame{stroke:var(--ok);stroke-width:2.2;stroke-dasharray:none}
+.slotNo rect.slotFrame{stroke:var(--bad);stroke-width:2.2}
+.armedSlot rect.slotFrame{stroke:var(--accent);stroke-width:2;animation:bl 1s steps(2) infinite}
+
+/* under-pager panels */
+.batt{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:center;font-size:12px}
+.bar{height:14px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ok);transition:width .3s}
+.bar i.mid{background:var(--warn)}.bar i.low{background:var(--bad)}
+.bar b{position:absolute;inset:0;display:flex;align-items:center;padding-left:6px;font:600 10px var(--mono);color:var(--ink)}
+.bt{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.bsub{grid-column:1/-1;font:500 11px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.disp{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.bezel{background:#0b0d10;border-radius:10px;padding:8px;border:1px solid var(--line-2);flex:0 0 auto;max-width:100%}
+.bezel canvas{display:block;width:256px;max-width:100%;height:auto;image-rendering:pixelated;cursor:pointer}
+.dispnote{font-size:11.5px;color:var(--ink-2);flex:1 1 140px;min-width:0}
+.dispnote b{color:var(--ink)}
+.navs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.navs button{border:1px solid var(--line);background:var(--surface-3);border-radius:6px;font:600 10.5px var(--mono);padding:3px 6px;cursor:pointer}
+table.leg{width:100%;border-collapse:collapse;font-size:12px}
+table.leg th{text-align:left;font:600 9.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);padding:4px 6px 4px 0}
+table.leg td{border-bottom:1px solid var(--line);padding:4px 6px 4px 0;vertical-align:top}
+table.leg td.k{font:500 11px var(--mono);white-space:nowrap;color:var(--ink-2)}
+table.leg tr.mod td{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+table.leg tr.mod td:first-child{box-shadow:inset 3px 0 0 var(--accent);padding-left:7px}
+.srcTag{display:inline-block;margin-left:5px;font:600 9px var(--mono);color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:0 3px;vertical-align:1px}
+.legwrap{overflow-x:auto}
+.warns{display:flex;flex-direction:column;gap:4px}
+.warns div{font-size:11.5px;border-left:3px solid var(--warn);background:var(--surface-3);padding:4px 7px;border-radius:0 6px 6px 0}
+details.mini summary{cursor:pointer;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:3px 0}
+
+/* field */
+.fieldwrap{position:relative;background:var(--surface-2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+#field{display:block;image-rendering:pixelated;touch-action:none;cursor:crosshair;margin:0 auto}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 10px;font:500 12px var(--sans);cursor:pointer;min-height:30px}
+.chip .sw{width:9px;height:9px;border-radius:2px;background:currentColor}
+.chip.on{background:var(--surface-2);border-color:currentColor;color:var(--ink);font-weight:600}
+.readout{font-size:12px}
+.readout .ln{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding:3px 0}
+.readout .ln span:first-child{color:var(--ink-2)}
+.readout .ln span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.verdict{font:600 12.5px var(--sans);padding:6px 8px;border-radius:6px;background:var(--surface-3);border-left:3px solid var(--ok)}
+.verdict.bad{border-left-color:var(--bad)}.verdict.warn{border-left-color:var(--warn)}
+table.cmp{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:4px}
+table.cmp td,table.cmp th{border-bottom:1px solid var(--line);padding:3px 4px;text-align:left}
+table.cmp th{font:600 9.5px var(--mono);letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
+table.cmp td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.ed{display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--line);padding-top:8px}
+.edrow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.mat{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px 3px 4px;font:500 11px var(--sans);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.mat i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+.mat.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.hover{font:500 11px var(--mono);color:var(--ink-2);min-height:16px}
+.console{border:1px solid var(--line);border-left:3px solid var(--t3);border-radius:8px;padding:7px 9px;background:var(--surface-3)}
+.console .edrow{margin-top:5px}
+input.txt{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 7px;font:500 12px var(--sans);min-width:0;width:170px}
+
+/* shelf */
+.shelfhead{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-end}
+.grid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;gap:4px}
+.card:hover{border-color:var(--line-2)}
+.card.armed{box-shadow:0 0 0 2px var(--accent)}
+.card .nm{font-weight:650;font-size:13px;line-height:1.25}
+.card .meta{display:flex;flex-wrap:wrap;gap:4px}
+.card .nd{font-size:11.5px;color:var(--ink-2)}
+.card .fx{font-size:11.5px;color:var(--ink)}
+.card svg{width:100%;height:auto;display:block}
+.kOWNED{color:var(--ok)!important;border-color:currentColor!important}
+.kBUY{color:var(--ble)!important;border-color:currentColor!important}
+.kDIY{color:var(--g-power)!important;border-color:currentColor!important}
+.ghost{position:fixed;z-index:50;pointer-events:none;background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:6px 9px;font:600 12px var(--sans);box-shadow:0 6px 20px rgba(0,0,0,.25);transform:translate(-50%,-120%)}
+.ghost small{display:block;font:500 10.5px var(--mono);color:var(--ink-2)}
+
+/* third units */
+.tcards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));margin-top:10px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tcard .tt{font:600 10.5px var(--mono);letter-spacing:.08em;color:var(--ink-3)}
+.tcard h3{margin:0;font-size:15px}
+.tcard p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.tcard ul{margin:0;padding-left:17px;font-size:12.5px}
+.tcard .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:12px}
+.tcard .kv b{font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.rec{font:600 10px var(--mono);color:var(--ok)}
+.tblwrap{overflow-x:auto;margin-top:10px}
+table.tcmp{width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px}
+table.tcmp th,table.tcmp td{border-bottom:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;vertical-align:top}
+table.tcmp th{font:600 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+
+/* log + detail */
+.log{background:var(--surface);border:1px solid var(--line);border-radius:10px;max-height:260px;overflow:auto;font:500 12px var(--mono);padding:6px 10px;margin-top:8px}
+.log div{padding:2px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px}
+.log div time{color:var(--ink-3);flex:0 0 auto}
+.log .ok{color:var(--ok)}.log .bad{color:var(--bad)}.log .warn{color:var(--warn)}
+.panel{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;width:min(400px,calc(100vw - 32px));max-height:60vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:11px 13px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.panel .pn{font-size:15px;font-weight:650;padding-right:24px}
+.panel .pc{font:500 11.5px var(--mono);color:var(--ink-2);margin-top:2px}
+.panel table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+.panel td{border-bottom:1px solid var(--line);padding:5px 6px 5px 0;vertical-align:top}
+.panel td:first-child{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.panel .x{position:absolute;top:8px;right:8px;border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--ink-2)}
+.panel .pnote{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:var(--surface);border-radius:12px;padding:14px;width:min(720px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.modal textarea{width:100%;min-height:240px;font:500 11.5px var(--mono);border:1px solid var(--line);border-radius:8px;background:var(--surface-3);color:var(--ink);padding:8px}
+.modal img{max-width:100%;border:1px solid var(--line);border-radius:8px}
+.foot{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);max-width:120ch}
+.legendnets{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--ink-2)}
+.legendnets span{display:inline-flex;align-items:center;gap:5px}
+.legendnets i{width:18px;height:3px;border-radius:2px;display:inline-block}
+@media (prefers-reduced-motion:reduce){.live,.run,.blink,.flash{animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Site Pager · Mark II bench · B2 default belt pager · A2 full modular</div>
+      <h1>Site Pager Builder</h1>
+    </div>
+    <div class="tools">
+      <label class="lb" for="keysSeg">Keys</label>
+      <div class="seg" id="keysSeg" role="group" aria-label="Keyboard mode">
+        <button data-k="split" class="on">Split</button><button data-k="tab">Tab switch</button>
+      </div>
+      <label class="lb" for="speedSel">Animation</label>
+      <select class="sel" id="speedSel"><option value="1.8">Slow</option><option value="1" selected>Normal</option><option value="0.45">Fast</option><option value="0">Off</option></select>
+      <label class="lb" for="warpSel">Battery time</label>
+      <select class="sel" id="warpSel"><option value="1">Real time</option><option value="60" selected>1 min / s</option><option value="600">10 min / s</option><option value="3600">1 h / s</option></select>
+      <button class="btn" id="bpExport">Export blueprint</button>
+      <button class="btn" id="bpImport">Import</button>
+      <button class="btn" id="pngExport">Export PNG</button>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn" id="themeBtn" aria-label="Toggle light or dark theme">◐ Theme</button>
+    </div>
+  </div>
+  <p class="lede">Press the buttons (or the keys below) and follow the signal: across the wires, out of the antenna, through the walls in the middle field, and into the other pager. Drag modules from the shelf onto the dashed fields next to each port and watch the button functions change. Hold SEEN for the menu. All currents, ranges and losses are estimates.</p>
+  <div class="keys" id="keysHelp"></div>
+
+  <main class="stage">
+    <section class="col" id="colB2" aria-label="B2 belt pager">
+      <div class="colhead"><h3><span class="dot" style="background:var(--b2)"></span>B2 · belt pager <span class="tag">DEFAULT</span></h3><span class="tag" id="modeB2">PAGER</span></div>
+      <div class="svgbox"><svg class="pager" id="svgB2" role="img" aria-label="B2 pager block diagram"></svg></div>
+      <div class="batt" id="battB2"></div>
+      <div class="disp" id="dispB2"></div>
+      <div class="warns" id="warnB2"></div>
+      <div class="legwrap" id="legB2"></div>
+    </section>
+
+    <section class="col" id="colField" aria-label="Signal field">
+      <div class="colhead"><h3><span class="dot" style="background:var(--rf433)"></span>Signal field</h3><span class="tag" id="mapName">map</span></div>
+      <div class="fieldwrap" id="fieldWrap"><canvas id="field" aria-label="Side-view map of the site with both pagers"></canvas></div>
+      <div class="hover" id="hoverInfo">Drag a worker to move a pager. Pick a tool below to paint walls, slabs or soil.</div>
+      <div class="chips" id="radioChips" aria-label="Preview radio"></div>
+      <div class="readout" id="readout"></div>
+      <div id="consoleBox"></div>
+      <div class="ed">
+        <div class="edrow">
+          <label class="lb" for="scnSel">Scenario</label>
+          <select class="sel" id="scnSel"></select>
+          <label class="lb"><input type="checkbox" id="covChk"> coverage</label>
+          <select class="sel" id="covFrom" aria-label="Coverage from"><option value="B2">from B2</option><option value="A2">from A2</option></select>
+          <label class="lb"><input type="checkbox" id="loraChk"> LoRa what-if</label>
+        </div>
+        <div class="edrow" id="toolRow"></div>
+        <div class="edrow" id="matRow"></div>
+        <div class="edrow">
+          <label class="lb" for="mapNameIn">Map</label><input class="txt" id="mapNameIn" maxlength="40">
+          <label class="lb" for="scaleSel">m / tile</label>
+          <select class="sel" id="scaleSel"><option>0.5</option><option selected>1</option><option>2</option><option>5</option><option>10</option><option>25</option></select>
+          <label class="lb" for="clutSel">clutter</label>
+          <select class="sel" id="clutSel"><option value="2.2">open 2.2</option><option value="2.7" selected>site 2.7</option><option value="3.2">dense 3.2</option></select>
+        </div>
+        <div class="edrow">
+          <label class="lb" for="sizeSel">size</label>
+          <select class="sel" id="sizeSel"><option value="48x32">48×32</option><option value="64x40" selected>64×40</option><option value="96x48">96×48</option></select>
+          <button class="btn" id="newMap">New blank map</button>
+          <button class="btn" id="mapExport">Export map</button>
+          <button class="btn" id="mapImport">Import map</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="col" id="colA2" aria-label="A2 modular pager">
+      <div class="colhead"><h3><span class="dot" style="background:var(--a2)"></span>A2 · full modular + Pager Source</h3><span class="tag" id="modeA2">PAGER</span></div>
+      <div class="svgbox"><svg class="pager" id="svgA2" role="img" aria-label="A2 pager block diagram"></svg></div>
+      <div class="batt" id="battA2"></div>
+      <div class="disp" id="dispA2"></div>
+      <div class="warns" id="warnA2"></div>
+      <div class="legwrap" id="legA2"></div>
+    </section>
+  </main>
+
+  <div class="legendnets" id="netLegend" style="margin-top:10px"></div>
+
+  <section class="shelf" id="shelf">
+    <div class="shelfhead">
+      <div>
+        <h2>Modules and peripherals</h2>
+        <p class="lede" style="margin:0">Drag a card onto a dashed field next to a pager port (or tap a card, then tap a field). Fields that accept it turn green. Drag a fitted module back here to remove it.</p>
+      </div>
+      <div class="chips" id="shelfChips"></div>
+    </div>
+    <div class="grid" id="shelfGrid"></div>
+  </section>
+
+  <section id="third">
+    <h2>Third unit — four approaches</h2>
+    <p class="lede" style="margin:0">Each one builds on the Mark II pager and needs payload v2 + Crew IDs (keystone K2). Place T1–T3 on the map to see how they change the link; T4 drops into a pager's wireless bay.</p>
+    <div class="tcards" id="thirdCards"></div>
+    <div class="tblwrap" id="thirdTable"></div>
+  </section>
+
+  <section>
+    <h2>Event log</h2>
+    <div class="log" id="log" aria-live="polite"></div>
+  </section>
+
+  <p class="foot">Model: log-distance path loss (free space at 1 m, exponent set by clutter) + a loss for every map tile the straight ray crosses + 3 dB per body-worn unit. Radio figures are datasheet typicals; material losses, module sizes and currents are estimates for comparing layouts, not a site survey. Spec source: CLAUDE.md §19–22 in the site-pager repo.</p>
+</div>
+
+<aside class="panel" id="panel" hidden></aside>
+<div class="modal" id="modal" hidden><div class="box" id="modalBox"></div></div>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+
+<script>
+(function(){
+'use strict';
+/* ============================== helpers ============================== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const NS='http://www.w3.org/2000/svg';
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const now=()=>performance.now();
+const wait=ms=>new Promise(r=>setTimeout(r,Math.max(0,ms)));
+function sv(tag,at,parent){const e=document.createElementNS(NS,tag);if(at)for(const k in at){const v=at[k];if(v!=null&&v!==false)e.setAttribute(k,v);}if(parent)parent.appendChild(e);return e;}
+function hx(tag,at,...kids){const e=document.createElement(tag);if(at)for(const k in at){const v=at[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k==='html')e.innerHTML=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const c of kids){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)));}return e;}
+function txt(parent,x,y,s,at){const t=sv('text',Object.assign({x,y,'font-family':'IBM Plex Sans, sans-serif','font-size':8.6,fill:'var(--ink)'},at||{}),parent);t.textContent=s;return t;}
+const fmt=(n,d=0)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+const sgn=(n,d=0)=>(n>=0?'+':'−')+fmt(Math.abs(n),d);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function pathD(pts){return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');}
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim();}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+/* ============================== data ============================== */
+const RADIOS={
+  nrf905:{n:'nRF905',band:'433.2 MHz',f:433.2,pt:10,sens:-100,col:'rf433',use:'pager ↔ pager · +10 dBm · ShockBurst ~2–3 ms'},
+  espnow:{n:'ESP-NOW',band:'2.4 GHz ch 1',f:2412,pt:18,sens:-96,col:'rf24',use:'pager ↔ modules · 1 Mb/s'},
+  fob:{n:'Fob 433.92',band:'433.92 MHz',f:433.92,pt:0,sens:-105,col:'rf433',use:'gate remote → RX480E (fixed code)'},
+  lora:{n:'LoRa SX1262',band:'868 MHz',f:868,pt:14,sens:-129,col:'rf868',use:'Mark III what-if · SF10 / 125 kHz'},
+  ble:{n:'BLE',band:'2.44 GHz',f:2440,pt:0,sens:-94,col:'ble',use:'pager ↔ Wear Pod (T4)'}
+};
+const BODY=3; // dB per body-worn unit (estimate)
+// map materials, dB @ 433 / 868 / 2400 MHz (estimates): building elements = loss per crossing (one more per 3 tiles of
+// thickness along the ray); bulk media (soil, rock, water, foliage) = loss per metre of path inside them
+const MATS=[
+  {k:'air',n:'Air / sky',c:null,l:[0,0,0],bg:'sky'},
+  {k:'soil',n:'Soil',c:'#7b5434',l:[8,12,20],bulk:true},
+  {k:'turf',n:'Turf',c:'#4d8a36',l:[8,12,20],bulk:true},
+  {k:'conc',n:'Concrete (RC)',c:'#8e9297',l:[10,12,16]},
+  {k:'brick',n:'Brick',c:'#a4553d',l:[5,6,8]},
+  {k:'dry',n:'Drywall',c:'#d9d3c3',l:[1,2,3]},
+  {k:'glass',n:'Glass',c:'#9fd6ea',l:[1,1.5,2]},
+  {k:'steel',n:'Steel',c:'#4b5563',l:[26,28,32]},
+  {k:'wood',n:'Timber / door',c:'#9a6b3f',l:[2,3,4]},
+  {k:'tree',n:'Foliage',c:'#2f7d3b',l:[.3,.6,1.5],bulk:true},
+  {k:'water',n:'Water',c:'#3a78bd',l:[15,25,45],bulk:true},
+  {k:'rock',n:'Rock',c:'#6b6560',l:[6,9,16],bulk:true},
+  {k:'scaf',n:'Scaffold',c:'#c9a227',l:[3,4,5]},
+  {k:'room',n:'Room (indoor air)',c:null,l:[0,0,0],bg:'room'},
+  {k:'cave',n:'Tunnel (underground air)',c:null,l:[0,0,0],bg:'cave'}
+];
+const MI={};MATS.forEach((m,i)=>MI[m.k]=i);
+const bandIdx=f=>f<600?0:f<1500?1:2;
+const SOLID=i=>MATS[i].c!=null;
+
+const MSGS=['','COME HERE','POWER OFF','DONE','URGENT: COME','POWER ON','NEED TOOL','BREAK','CHECK BOARD','DOOR OPEN','GATE','MOTION','ALL OUT','COME TO BASE','LOW BATTERY'];
+const TYPES={1:'HOLD',2:'GOTIT',3:'SEEN',4:'TEXTMSG',5:'PING',6:'RELAY',7:'RELAYSTATE',8:'HUBCMD',9:'HUBSTATE',10:'ALARM',11:'ARMSTATE',12:'HELLO',13:'ROLLCALL',14:'BATT'};
+const NETCOL={logic:'logic',data:'data',v5:'v5',bat:'bat',v33:'v33',rf:'rf433',rf24:'rf24',heavy:'heavy',light:'light',ble:'ble'};
+
+/* module catalogue — port = drop field; mA5 = draw on 5 V; mA3 = draw on 3V3; leg = button remaps [mode, ctl, kind, label, fx] */
+const MODULES=[
+ // LIGHT
+ {id:'helmet',n:'Helmet LED Clip',s:'Helmet LED',k:'DIY',port:'LIGHT',cost:'~300 Ft',needs:'CR2032 + 2 LEDs + TS plug',ports:'top:TS plug:light|right:CR2032:bat',lamp:'light',fx:'Flashes on CALL, blinks n× on messages — visible across a dark floor.',inc:{CALL:'helmet LEDs on',MSG:'LEDs blink n×'}},
+ {id:'piezo12',n:'Piezo Siren 12 V',s:'Piezo 12 V',k:'OWNED',port:'LIGHT',cost:'owned',needs:'A23 12 V + 85 dB piezo',ports:'top:TS plug:light|right:A23 12 V:bat',lamp:'light',fx:'Beeps on CALL and messages through the isolated light port.',inc:{CALL:'piezo sounds',MSG:'beeps n×'}},
+ {id:'chime',n:'Doorbell Chime Bridge',s:'Chime',k:'BUY',port:'LIGHT',cost:'~3–5k Ft (set)',needs:'wireless doorbell; PC817 across its transmitter button',ports:'top:TS plug:light|right:433 TX:rf',lamp:'light',fx:'Messages ring the chime in the site cabin.',inc:{MSG:'cabin chime rings',CALL:'chime rings'}},
+ {id:'shutter',n:'Far Shutter (BT selfie remote)',s:'Shutter',k:'BUY',port:'LIGHT',cost:'~1k Ft',needs:'PC817 across the remote button',ports:'top:TS plug:light|right:BT:ble',lamp:'light',fx:'HUB: K3 long = PHOTO — the phone at the far meter takes a picture.',leg:[['HUB','K3','long','PHOTO → LIGHT pulse 200 ms','photo']],inc:{}},
+ {id:'wristlead',n:'Wrist Buzz Lead',s:'Wrist buzz',k:'DIY',port:'LIGHT',cost:'~500 Ft',needs:'coin motor + 2N2222 + CR2032 (motor > 50 mA → transistor)',ports:'top:TS plug:light|right:CR2032:bat',lamp:'light',fx:'The wrist buzzes on CALL — felt even with the pager in the holster.',inc:{CALL:'wrist buzzes'}},
+ // HEAVY
+ {id:'strobe',n:'Amber Strobe 12 V',s:'Strobe',k:'BUY',port:'HEAVY',cost:'~2–4k Ft + 3S pack',needs:'12 V ~0.3 A, own pack',ports:'top:XT30♂:heavy|right:12 V 3S:bat',lamp:'heavy',amps:'0.3 A',fx:'Flashes on CALL, URGENT and ALARM; HUB fob A / K1 toggles it.',inc:{CALL:'strobe flashes',URGENT:'strobe 3×',ALARM:'strobe on'}},
+ {id:'horn',n:'12 V Horn',s:'Horn',k:'BUY',port:'HEAVY',cost:'~2–3k Ft',needs:'12 V 1–2 A, own pack',ports:'top:XT30♂:heavy|right:12 V 3S:bat',lamp:'heavy',amps:'1.5 A',fx:'The loud GUARD alarm; URGENT honks 3×.',inc:{URGENT:'honks 3×',ALARM:'horn on'}},
+ {id:'flood',n:'LED Floodlight 18 V',s:'Flood',k:'BUY',port:'HEAVY',cost:'~5–8k Ft',needs:'18 V drill pack, 1–2 A',ports:'top:XT30♂:heavy|right:18 V pack:bat',lamp:'heavy',amps:'1.2 A',fx:'HUB: light the stairwell from the fob (A) or K1.',inc:{CALL:'flood on'}},
+ {id:'shaker',n:'Conduit Shaker',s:'Shaker',k:'DIY',port:'HEAVY',cost:'~1.5k Ft',needs:'12 V eccentric motor + hose clamp',ports:'top:XT30♂:heavy|right:12 V:bat',lamp:'heavy',amps:'0.8 A',fx:'HUB: K3 PULSE n shakes the conduit n× — feel which pipe it is.',leg:[['HUB','K3','short','SHAKE conduit n× (HEAVY pulses)','shake']],inc:{}},
+ {id:'knocker',n:'Solenoid Knocker',s:'Knocker',k:'DIY',port:'HEAVY',cost:'~2k Ft',needs:'12 V push solenoid',ports:'top:XT30♂:heavy|right:12 V:bat',lamp:'heavy',amps:'1 A',fx:'HUB: PULSE n taps a rhythm for acoustic route tracing.',leg:[['HUB','K3','short','KNOCK n× (HEAVY pulses)','shake']],inc:{}},
+ {id:'interpose',n:'Interposing Relay 12 V (DIN)',s:'Interposer',k:'BUY',port:'HEAVY',cost:'~3k Ft',needs:'12 V coil · rated CONTROL unit only',ports:'top:XT30♂:heavy|right:NO/COM:heavy',lamp:'heavy',amps:'40 mA',fx:'HEAVY becomes a potential-free contact — only inside a rated enclosure.',inc:{CALL:'contact closes'}},
+ // 5V OUT
+ {id:'probe',n:'Contact Probe (ESP-01S + relay)',s:'Probe',k:'OWNED',port:['5VOUT','WIRELESS'],esp:true,cost:'owned',needs:'5 V · 70 mA idle / 160 mA relay on',mA5:[70,160],ports:'top:XT60♂ 5 V:v5|right:TEST OUT:heavy|left:ESP-NOW:rf24',lamp:'heavy',fx:'HUB: K1 ON / K2 OFF / K3 PULSE n; fob C ON/OFF. De-energised, locked-out conductors only.',inc:{}},
+ {id:'pulser',n:'Dry-Contact Pulser',s:'Pulser',k:'OWNED',port:['5VOUT','WIRELESS'],esp:true,cost:'owned parts',needs:'5 V · 70 / 160 mA',mA5:[70,160],ports:'top:XT60♂ 5 V:v5|right:NO/COM:heavy|left:ESP-NOW:rf24',lamp:'heavy',fx:'Same protocol; PULSE n × 300 ms for gate, intercom and alarm inputs.',inc:{}},
+ {id:'tone',n:'Tone Injector',s:'Tone',k:'DIY',port:'5VOUT',cost:'~1.5k Ft',needs:'C3 LEDC 1 kHz · 5 V 40 mA',mA5:[40,60],ports:'top:XT60♂ 5 V:v5|right:4 mm out:data',lamp:'data',fx:'HUB: K2 long = tone on/off for the wire-ID detector.',leg:[['HUB','K2','long','TONE 1 kHz on/off','tone']],inc:{}},
+ {id:'sign',n:'Board Sign (MAX7219)',s:'Sign',k:'DIY',port:'5VOUT',cost:'~3k Ft',needs:'ESP32 + 4-in-1 matrix · 5 V 150–300 mA',mA5:[150,300],ports:'top:XT60♂ 5 V:v5|right:matrix:data',lamp:'data',fx:'POWER OFF also shows "WORKING ON C4 — DO NOT SWITCH" at the board (a sign, not a lockout).',inc:{MSG:'sign shows the message'}},
+ {id:'usblamp',n:'USB Work Lamp',s:'USB lamp',k:'BUY',port:'5VOUT',cost:'~1.5k Ft + lead',needs:'XT60→USB-A lead · 5 V 200 mA',mA5:[200,200],ports:'top:XT60♂→USB:v5',lamp:'light',fx:'SW OUT switches it — no firmware involved.',inc:{}},
+ // 5V IN (A2 only)
+ {id:'source',n:'Pager Source (shell S)',s:'Source',k:'DIY',port:'5VIN',cost:'owned parts',needs:'18650 + TP4056 + boost',src:{cap:3000,label:'Pager Source 18650'},ports:'top:XT60♀ 5 V:v5|bottom:CHARGE:v5',lamp:'v5',fx:'Default A2 supply: one protected 18650.',inc:{}},
+ {id:'drill',n:'Drill-Pack Source ★',s:'Drill pack',k:'DIY',port:'5VIN',cost:'~3k Ft + adapter',needs:'18 V 4 Ah pack → LM2596 / CN3903 · UVLO required',src:{cap:16500,label:'18 V 4 Ah drill pack (≈16,500 mAh @ 3.7 V eq.)'},ports:'top:XT60♀ 5 V:v5|right:18 V pack:bat',lamp:'v5',fx:'Runtime goes from hours to days.',inc:{}},
+ {id:'bench',n:'Bench Source (MB102)',s:'Bench',k:'OWNED',port:'5VIN',cost:'owned',needs:'mains adapter → 5 V',src:{mains:true,label:'Bench Source (mains)'},ports:'top:XT60♀ 5 V:v5|right:DC jack:v5',lamp:'v5',fx:'Desk / bench hub, unlimited runtime.',inc:{}},
+ {id:'pdlead',n:'Powerbank Lead',s:'Powerbank',k:'BUY',port:'5VIN',cost:'~1.5k Ft',needs:'USB-C 5 V → XT60',src:{cap:10000,label:'10,000 mAh powerbank'},ports:'top:XT60♀ 5 V:v5|right:USB-C:v5',lamp:'v5',fx:'Quick swap from any powerbank.',inc:{}},
+ {id:'dock',n:'Site Base Dock (T1)',s:'Dock',k:'DIY',port:'5VIN',cost:'part of T1',needs:'5 V USB-C adapter (no mains inside)',src:{mains:true,label:'Site Base dock (5 V adapter)'},ports:'top:XT60♀ 5 V:v5|right:adapter:v5',lamp:'v5',fx:'A2 becomes the Site Base: charging, relay, gateway.',inc:{}},
+ // EXP
+ {id:'ads',n:'Source Gauge ADS1115 (K4)',s:'Gauge',k:'BUY',port:'EXP',i2c:'0x48',mA3:0.2,cost:'~1.5k Ft',needs:'I2C 0x48 · sense lead to the cell',ports:'left:GX12-5:data|right:VCELL:bat',lamp:'data',fx:'LINK short also shows the source voltage; BATT goes to the partner.',leg:[['ANY','LINK','short','Link test + source volts on OLED','gauge']],inc:{}},
+ {id:'mpu',n:'Man-Down / Motion MPU6050',s:'MPU6050',k:'BUY',port:'EXP',i2c:'0x68',mA3:3.9,cost:'~1k Ft',needs:'I2C 0x68 (0x69 with AD0 high)',ports:'left:GX12-5:data',lamp:'data',acts:[['motion','Motion'],['mandown','Man-down']],fx:'GUARD motion trigger; man-down pre-alarm sends URGENT unless SEEN is pressed.',leg:[['PAGER','SEEN','short','SEEN · also cancels a man-down pre-alarm','none']],inc:{}},
+ {id:'drv',n:'Haptic Driver DRV2605L',s:'Haptics',k:'BUY',port:'EXP',i2c:'0x5A',mA3:0.5,cost:'~2k Ft',needs:'I2C 0x5A, drives the vibration motor',ports:'left:GX12-5:data|right:motor:v5',lamp:'data',fx:'Each message gets its own vibration pattern.',inc:{MSG:'distinct haptic pattern'}},
+ {id:'keypad',n:'Big Button Box (PCF8574 #2)',s:'Keypad',k:'DIY',port:'EXP',i2c:'0x21',mA3:0.1,cost:'~1.5k Ft',needs:'second PCF8574 @0x21 + 8 keys',ports:'left:GX12-5:data|right:8 keys:logic',lamp:'data',acts:[['kp7','BREAK'],['kp8','CHECK']],fx:'8 direct message keys; K1–K3 become menu keys.',leg:[['PAGER','K1','short','Menu ▲ (messages on the keypad)','menuup'],['PAGER','K3','short','Menu ▼','menudown'],['PAGER','K2','short','Open menu / select','menuopen']],inc:{}},
+ {id:'sht',n:'Climate SHT31',s:'SHT31',k:'BUY',port:'EXP',i2c:'0x44',mA3:0.01,cost:'~1.5k Ft',needs:'I2C 0x44',ports:'left:GX12-5:data',lamp:'data',fx:'The idle screen shows °C and %RH.',inc:{}},
+ {id:'rtc',n:'RTC DS3231',s:'RTC',k:'BUY',port:'EXP',i2c:'0x68',mA3:0.1,cost:'~1k Ft',needs:'I2C 0x68 (fixed)',ports:'left:GX12-5:data',lamp:'data',fx:'Timestamps for the event log — clashes with an MPU6050 at 0x68.',inc:{}},
+ {id:'lux',n:'Lux BH1750',s:'BH1750',k:'BUY',port:'EXP',i2c:'0x23',mA3:0.12,cost:'~800 Ft',needs:'I2C 0x23',ports:'left:GX12-5:data',lamp:'data',fx:'Local Lamp Witness: is the luminaire above me on?',inc:{}},
+ // FOB 433.92
+ {id:'fob4',n:'4-button gate remote (EV1527)',s:'Fob',k:'BUY',port:'FOB',chans:4,cost:'~1.5–2.5k Ft',needs:'learned into RX480E A–D (LEARN ×1)',ports:'right:433.92 MHz:rf',lamp:'rf433',fx:'The standard store-bought fixed-code remote. Fills channels A–D.',inc:{}},
+ {id:'fob2',n:'2-button fob',s:'Fob 2',k:'BUY',port:'FOB',chans:2,cost:'~1.2k Ft',needs:'learned into A–B',ports:'right:433.92 MHz:rf',lamp:'rf433',fx:'A = CALL, B = SEEN.',inc:{}},
+ {id:'door433',n:'Wireless Door Contact (EV1527)',s:'Door',k:'BUY',port:'FOB',chans:1,cost:'~1–2k Ft',needs:'learned on one channel',ports:'right:433.92 MHz:rf',lamp:'rf433',fx:'GUARD: alarm "DOOR"; PAGER: pages the partner DOOR OPEN. Fixed code, no supervision.',inc:{}},
+ {id:'pir433',n:'Wireless PIR (EV1527)',s:'PIR',k:'BUY',port:'FOB',chans:1,cost:'~2–3k Ft',needs:'learned on one channel',ports:'right:433.92 MHz:rf',lamp:'rf433',fx:'GUARD: alarm "MOTION" — a tool-cage guard without building a module.',inc:{}},
+ {id:'btn433',n:'Wireless Wall Button (EV1527)',s:'Wall btn',k:'BUY',port:'FOB',chans:1,cost:'~1.5k Ft',needs:'learned on one channel',ports:'right:433.92 MHz:rf',lamp:'rf433',fx:'Gate Bell without a module: pages the partner GATE.',inc:{}},
+ // WIRELESS
+ {id:'gatebell',n:'Gate Bell (ESP-NOW event)',s:'Gate bell',k:'DIY',port:'WIRELESS',ev:true,cost:'owned parts',needs:'ESP-01S + big button + own Source',ports:'left:ESP-NOW:rf24|right:button:logic',lamp:'rf24',acts:[['ev','Press']],fx:'Pages the crew — only while the pager listens (HUB mode, Wi-Fi on). This is the K3 module-radio fork.',inc:{}},
+ {id:'voltwatch',n:'Volt Watch (DC 0–25 V)',s:'Volt watch',k:'DIY',port:'WIRELESS',ev:true,cost:'owned sensor',needs:'ESP-01S/C3 + DC 0–25 V sensor',ports:'left:ESP-NOW:rf24|right:0–25 V:bat',lamp:'rf24',acts:[['ev','Drop']],fx:'Pages when a supply drops or returns.',inc:{}},
+ {id:'contdet',n:'Continuity Detector',s:'Continuity',k:'DIY',port:'WIRELESS',ev:true,cost:'~1.5k Ft',needs:'ESP32-C3 + 4 mm sockets',ports:'left:ESP-NOW:rf24|right:4 mm:logic',lamp:'rf24',acts:[['ev','Pair']],fx:'"Pair closed" when the Contact Probe shorts the far end — the Continuity Pair ★.',inc:{}},
+ {id:'sonoff',n:'Smart Socket (Sonoff Basic R2, reflashed)',s:'Socket',k:'BUY',port:'WIRELESS',esp:true,cost:'~3k Ft',needs:'rated 230 V plug-load device; our relay firmware',ports:'left:ESP-NOW:rf24|right:230 V load:v5',lamp:'heavy',fx:'Rated plug-load switching; HUB control like the probe. Leave its mains wiring as built.',inc:{}},
+ {id:'wearpod',n:'Wear Pod (T4)',s:'Wear Pod',k:'DIY',port:'WIRELESS',ble:true,cost:'~3–5k Ft',needs:'ESP32-C3 + 300 mAh LiPo · BLE',mA3:3,ports:'left:BLE:ble|right:motor + LEDs:logic',lamp:'ble',acts:[['podseen','SEEN']],fx:'Mirrors CALL, messages and ALARM to the wrist or helmet; SEEN on the pod.',inc:{CALL:'wrist buzzes',MSG:'wrist buzzes n×',ALARM:'wrist alarm'}},
+ {id:'farcam',n:'Far Eye (ESP32-CAM)',s:'Far Eye',k:'BUY',port:'WIRELESS',cost:'~3k Ft',needs:'own 5 V, own AP',ports:'left:Wi-Fi AP:rf24',lamp:'rf24',fx:'Snapshot over its own access point (trigger only here).',inc:{}}
+];
+const MOD={};MODULES.forEach(m=>MOD[m.id]=m);
+const PORTSPEC={LIGHT:'3.5 TS · isolated · ≤50 mA ≤35 V DC',HEAVY:'XT30♀ · low-side · own 6–24 V · shares GND','5VOUT':'XT60♀ · 5 V · ~1 A (est.)','5VIN':'XT60♂ · 5 V in · A2 only',EXP:'GX12-5 · I2C 3V3 + INT',FOB:'RX480E channel · 433.92 MHz',WIRELESS:'ESP-NOW 2.4 GHz / BLE',NOIN:'—'};
+const PORTCOL={LIGHT:'light',HEAVY:'heavy','5VOUT':'v5','5VIN':'v5',EXP:'data',FOB:'rf433',WIRELESS:'rf24'};
+
+const THIRD=[
+ {id:'T1',n:'Site Base',tt:'T1 · BASE STATION',rec:true,role:'Stationary hub, phone gateway and dock — built from A2.',builds:'A2 core electronics, same pin map; ROLE_BASE firmware',radio:'nRF905 (λ/2 mast) + Wi-Fi',power:'5 V adapter / 12 V / drill pack, 18650 backup',cost:'8–12k Ft (est.)',tree:'POWER III Site Box Dock → LINK IV Site Mesh + Hub',pros:['Relays B2 ↔ B2 when the direct link fails','URGENT / ALARM to phones (ntfy, Telegram, MQTT → BRIDGE)','Docks and charges both B2s; event log'],cons:['Needs a socket or a van battery','Largest firmware job (gateway)'],act:'place'},
+ {id:'T2',n:'Stair Node',tt:'T2 · REPEATER',role:'Headless nRF905 repeater for stairwells and basements.',builds:'B2 internals without OLED, keys or ports',radio:'nRF905, store & forward (ttl, de-dup)',power:'18650, ~16–20 mA → 6–8 days (est.)',cost:'5–7k Ft (est.)',tree:'LINK III ⚔ Stair Node (vs LoRa Heart)',pros:['Cheapest fix for dead zones through slabs','No UI to learn; chain several'],cons:['State is invisible — watch its battery','+30–60 ms per hop (est.)'],act:'place'},
+ {id:'T3',n:'Crew Console',tt:'T3 · THIRD HANDHELD',role:'A third pager for a foreman that can address anyone.',builds:'B2 shell + 2.42" SSD1309 OLED (+ optional encoder)',radio:'nRF905 (+ ESP-NOW for modules)',power:'18650, 20–35 mA (est.)',cost:'7–10k Ft (est.)',tree:'CONTROL III ★ Fleet Remote',pros:['Crew list, batteries, roll call','Remote ARM / DISARM, scenes'],cons:['UI is the biggest part','Pays off only with three people'],act:'place'},
+ {id:'T4',n:'Wear Pod',tt:'T4 · BODY SATELLITE',role:'Wrist or helmet companion of one pager.',builds:'ESP32-C3 SuperMini + LiPo + motor / LED bar',radio:'BLE to its own pager',power:'300 mAh LiPo, 2–4 mA → 2–4 days (est.)',cost:'3–5k Ft (est.)',tree:'HUD III ⚔ Wrist vs Helmet',pros:['Fixes "didn\'t feel it" under a jacket','SEEN on the wrist'],cons:['One more battery per person','BLE + ESP-NOW share the S3 radio'],act:'attach'}
+];
+
+/* ============================== pager geometry ============================== */
+const COLW=520,COLH=712,EW=270,EH=420;
+const LAY={B2:{ex:170,ey:150,bayX:6,bayW:138},A2:{ex:80,ey:150,bayX:374,bayW:138}};
+function design(pid){
+  const B2=pid==='B2';
+  const blocks=[
+    {id:'nrf',x:12,y:12,w:70,h:46,t:'nRF905',s:'433.2 MHz +10 dBm',g:'radio'},
+    {id:'s3',x:96,y:12,w:78,h:46,t:'ESP32-S3-Zero',s:'MCU · Wi-Fi / BLE',g:'mcu'},
+    {id:'oled',x:100,y:96,w:72,h:38,t:'OLED',g:'ui',front:true},
+    {id:'vib',x:26,y:140,w:66,h:28,t:'VIB',s:'5 V coin motor',g:'output'},
+    {id:'sir',x:26,y:176,w:66,h:28,t:'SIREN',s:'AO3400 · piezo',g:'output'},
+    {id:'guard',x:106,y:140,w:62,h:66,t:'GUARD LOOP',g:'guard'},
+    {id:'rxen',x:110,y:216,w:54,h:20,t:'AO3401',s:'RX_EN',g:'power'},
+    {id:'pcf',x:184,y:140,w:74,h:62,t:'PCF8574',s:'I2C 0x20',g:'mcu'},
+    {id:'rx',x:184,y:212,w:74,h:40,t:'RX480E-4',s:'433.92 fob RX',g:'radio'},
+    {id:B2?'mos':'pc',x:184,y:262,w:74,h:26,t:B2?'MOSFET':'PC817',s:B2?'HEAVY low-side':'LIGHT isolated',g:B2?'power':'output'},
+    {id:B2?'pc':'mos',x:184,y:296,w:74,h:26,t:B2?'PC817':'MOSFET',s:B2?'LIGHT isolated':'HEAVY low-side',g:B2?'output':'power'},
+    {id:'swc',x:14,y:374,w:40,h:18,t:'SW CORE',g:'power',front:true},
+    {id:'ss',x:60,y:374,w:28,h:18,t:'SS14',g:'power'},
+    {id:'swo',x:124,y:374,w:40,h:18,t:'SW OUT',g:'power',front:true}
+  ];
+  if(B2){blocks.push({id:'tp',x:194,y:12,w:64,h:34,t:'TP4056',s:'charger',g:'power'},{id:'cell',x:14,y:338,w:140,h:26,t:'CELL 18650',s:'protected',g:'cell'},{id:'boost',x:170,y:338,w:56,h:58,t:'BOOST',s:'5 V for OUT',g:'power'});}
+  const up=B2?'heavyg':'lightg', lo=B2?'lightg':'heavyg';
+  const nets=[
+    ['spi','data','SPI 4 MHz · CSN 8 · SCK 9 · MOSI 10 · MISO 11',[[96,26],[82,26]]],
+    ['ctl','logic','TRX_CE 12 · TX_EN 13 · PWR_UP 43',[[96,35],[82,35]]],
+    ['dr','logic','DR → GPIO44 · packet ready',[[82,44],[96,44]]],
+    ['pig','rf','RG316 pigtail · ANT pad → SMA bulkhead',[[32,12],[32,-22]]],
+    ['usb','data','USB-C · flash / serial',[[125,12],[125,-6]]],
+    ['link','logic','LINK → GPIO0 (∥ BOOT) · LOW = pressed',[[158,-8],[158,12]]],
+    ['call','logic','CALL → GPIO1 · INPUT_PULLUP · LOW = pressed',[[-2,158],[3,158],[3,62],[100,62],[100,58]]],
+    ['seen','logic','SEEN → GPIO2 · INPUT_PULLUP · LOW = pressed',[[-2,204],[7,204],[7,65],[106,65],[106,58]]],
+    ['sirg','logic','pad15 → 1 kΩ → AO3400 gate · LEDC PWM ~4 kHz',[[112,58],[112,68],[15,68],[15,190],[26,190]]],
+    ['vibg','logic','GPIO3 → VIB IN · HIGH = run',[[118,58],[118,71],[20,71],[20,154],[26,154]]],
+    ['oledbus','data','I2C → OLED SH1106 0x3C',[[130,58],[130,96]]],
+    ['int','logic','INT (PCF8574 + EXP) → GPIO6 · LOW = event · wake source',[[184,148],[182,148],[182,62],[166,62],[166,58]]],
+    ['i2c','data','I2C 400 kHz · SDA GPIO7 · SCL pad14 → PCF8574 0x20',[[174,24],[186,24],[186,140]]],
+    ['exp','data','EXP GX12-5: 1 3V3 · 2 GND · 3 SDA · 4 SCL · 5 INT',[[186,-8],[186,24]]],
+    ['rxen','logic','pad16 → AO3401 gate · LOW = receiver on',[[148,58],[148,71],[173,71],[173,210],[137,210],[137,216]]],
+    ['rxpwr','v33','3V3 → RX480E +V (switched)',[[164,226],[184,226]]],
+    ['d0','logic','D0 → P3 (channel A)',[[198,212],[198,202]]],
+    ['d1','logic','D1 → P4 (channel B)',[[210,212],[210,202]]],
+    ['d2','logic','D2 → P5 (channel C)',[[222,212],[222,202]]],
+    ['d3','logic','D3 → P6 (channel D)',[[234,212],[234,202]]],
+    ['p7','logic','guard loop → P7 · LOW = secure',[[168,190],[184,190]]],
+    ['k1','logic','K1 → P0 · LOW = pressed',[[272,150],[258,150]]],
+    ['k2','logic','K2 → P1 · LOW = pressed',[[272,172],[258,172]]],
+    ['k3','logic','K3 → P2 · LOW = pressed',[[272,194],[258,194]]],
+    [up,'logic',up==='heavyg'?'GPIO5 → MOSFET TRIG · HIGH = on':'GPIO4 → 150 Ω → PC817 LED',[[160,58],[160,65],[179,65],[179,275],[184,275]]],
+    [lo,'logic',lo==='heavyg'?'GPIO5 → MOSFET TRIG · HIGH = on':'GPIO4 → 150 Ω → PC817 LED',[[154,58],[154,68],[176,68],[176,309],[184,309]]]
+  ];
+  if(B2){
+    nets.push(['heavyo','heavy','HEAVY: HSW = drain · H− = core GND · load on its own 6–24 V',[[258,275],[272,275]]],
+      ['lighto','light','LIGHT: PC817 C → tip (+) · E → sleeve (−) · ≤50 mA DC',[[258,309],[264,309],[264,412],[244,412],[244,421]]],
+      ['bat1','bat','B+ cell → SW CORE',[[35,364],[35,374]]],['bat2','bat','SW CORE → SS14',[[54,383],[60,383]]],
+      ['vsys','bat','SS14 → VSYS (S3 5V pad, VIB, piezo)',[[88,383],[100,383]]],['bat3','bat','B+ → SW OUT',[[144,364],[144,374]]],
+      ['bat4','bat','SW OUT → boost',[[164,383],[170,383]]],['v5o','v5','boost → 5V OUT · 5 V',[[198,396],[198,421]]],
+      ['chg','v5','CHARGE USB-C → TP4056 → cell',[[226,-8],[226,12]]],
+      ['c5VOUT','v5','XT60 lead · +5 V / GND',[[198,421],[198,426],[103,426],[103,446]]],
+      ['cLIGHT','light','TS lead · tip + / sleeve −',[[244,421],[244,430],[171,430],[171,446]]],
+      ['cHEAVY','heavy','XT30 lead · HSW / H−',[[272,275],[290,275],[290,436],[239,436],[239,446]]]);
+  }else{
+    nets.push(['lighto','light','LIGHT: PC817 C → tip (+) · E → sleeve (−) · ≤50 mA DC',[[258,275],[264,275],[264,412],[248,412],[248,421]]],
+      ['heavyo','heavy','HEAVY: HSW = drain · H− = core GND · load on its own 6–24 V',[[221,322],[221,421]]],
+      ['v5i','v5','5V IN → SW CORE',[[35,421],[35,392]]],['bat2','v5','SW CORE → SS14',[[54,383],[60,383]]],
+      ['vsys','v5','SS14 → VSYS (S3 5V pad)',[[88,383],[100,383]]],['v5b','v5','5V IN → SW OUT',[[35,404],[144,404],[144,392]]],
+      ['v5o','v5','SW OUT → 5V OUT (pass-through)',[[164,383],[170,383],[170,421]]],
+      ['c5VIN','v5','XT60 lead from the Pager Source',[[35,446],[35,421]]],
+      ['c5VOUT','v5','XT60 lead · +5 V / GND',[[170,421],[170,426],[103,426],[103,446]]],
+      ['cHEAVY','heavy','XT30 lead · HSW / H−',[[221,421],[221,430],[171,430],[171,446]]],
+      ['cLIGHT','light','TS lead · tip + / sleeve −',[[248,421],[248,434],[239,434],[239,446]]]);
+  }
+  nets.push(['cEXP','data','GX12-5 lead · I2C + INT',[[186,-8],[186,-32]]]);
+  const ports=B2?[['5VOUT','5V OUT',198,420,'b'],['LIGHT','LIGHT',244,420,'b'],['HEAVY','HEAVY',270,275,'r'],['CHARGE','CHARGE',226,0,'t']]
+                :[['5VIN','5V IN',35,420,'b'],['5VOUT','5V OUT',170,420,'b'],['HEAVY','HEAVY',221,420,'b'],['LIGHT','LIGHT',248,420,'b']];
+  ports.push(['USB','USB-C',125,0,'t'],['EXP','EXP',186,0,'t']);
+  const bottom=B2?['NOIN','5VOUT','LIGHT','HEAVY']:['5VIN','5VOUT','HEAVY','LIGHT'];
+  return {blocks,nets,ports,bottom};
+}
+const BTN={CALL:{x:-16,y:140,w:16,h:36,l:'CALL'},SEEN:{x:-16,y:186,w:16,h:36,l:'SEEN'},K1:{x:270,y:141,w:14,h:18,l:'K1'},K2:{x:270,y:163,w:14,h:18,l:'K2'},K3:{x:270,y:185,w:14,h:18,l:'K3'},LINK:{x:146,y:-10,w:24,h:10,l:'LINK'}};
+const INFO={
+  nrf:['nRF905 · 433 MHz transceiver',[['Bus','SPI 4 MHz mode 0 — CSN GPIO8, SCK 9, MOSI 10, MISO 11'],['Control','TRX_CE 12, TX_EN 13, PWR_UP 43, DR 44'],['Config','CH_NO 108 = 433.2 MHz, +10 dBm, CRC16, 4-byte address, CFG9 0xD8 (16 MHz) / 0xE0 (20 MHz)'],['Current','RX ~12.5 mA, TX ~30 mA at +10 dBm (datasheet typical)'],['Antenna','RG316 pigtail → SMA bulkhead in the turret → telescopic λ/4 17.3 cm']],'Pager ↔ pager link. Every packet is acknowledged (GOTIT); sendReliable retries 5× with a 25 ms ack window.'],
+  s3:['Waveshare ESP32-S3-Zero',[['Size','18 × 23.5 mm, no headers'],['Inputs','GPIO1 CALL · GPIO2 SEEN · GPIO0 LINK · GPIO6 INT'],['Outputs','GPIO3 VIB · GPIO4 LIGHT · GPIO5 HEAVY · pad15 SIREN · pad16 RX_EN'],['Buses','I2C GPIO7 / pad14 · SPI GPIO8–11 · RGB GPIO21'],['Power','light sleep: ~15–20 mA for the whole pager (est.); Wi-Fi ~100 mA only for module commands']],'Mark II moved K1–K3 onto the PCF8574 to free GPIO6, pad15 and pad16.'],
+  oled:['1.3" OLED · SH1106 128×64',[['Bus','I2C 0x3C, shared with the PCF8574 and EXP'],['Menu','hold SEEN 1.5 s · K1 ▲ · K3 ▼ · K2 OK · SEEN ◄'],['Current','~12 mA while lit (est.)'],['Holster','OLED FLIP (U8G2_R2) reads upright with the bottom tilted up']],'Click the big display under the pager to open the menu.'],
+  vib:['Vibration module',[['Drive','GPIO3 HIGH = run'],['Supply','VSYS'],['Current','~75 mA while running (est.)']],'Pulse count = message key, long pulses = long press.'],
+  sir:['Siren driver',[['Drive','pad15 → 1 kΩ → AO3400 gate, 100 k G–S, LEDC PWM ~4 kHz'],['Sounder','Ø12 low-profile piezo from VSYS, 1 kΩ across'],['Level','~80–85 dB at 10 cm (est.) — the loud alarm is the HEAVY port']],'Chirps during the exit delay, error beeps, and the GUARD alarm.'],
+  guard:['Guard loop → P7',[['Series','LID TAMPER → LIFT-OFF → TILT SW-520D → GND'],['Logic','LOW = secure, HIGH = open'],['Arm','only with the loop closed']],'Click a switch in the drawing to open or close it.'],
+  rxen:['RX_EN high-side switch',[['Part','AO3401 P-FET: S = 3V3, D = RX480E +V, G = pad16 (100 k to 3V3)'],['Logic','pad16 LOW = receiver on'],['Saves','~5 mA when the fob is not needed']],'The firmware ignores P3–P6 while the receiver is off (they float HIGH).'],
+  pcf:['PCF8574 I/O expander',[['Address','0x20 (A0–A2 to GND)'],['P0–P2','K1–K3, active LOW'],['P3–P6','fob channels A–D, active HIGH'],['P7','guard loop'],['INT','→ GPIO6, 10 k pull-up, light-sleep wake source']],'Every key press in Mark II travels PCF8574 → INT → S3 → I2C read.'],
+  rx:['QIACHIP RX480E-4 · 433.92 MHz',[['Codes','EV1527 / PT2262, learning'],['Mode','momentary (LEARN ×1): outputs HIGH while held'],['Current','≤ 5 mA'],['Antenna','17.3 cm wire as a Ø4 helix']],'Fixed code — a recorded press can be replayed. Use PARTNER-ONLY DISARM where guard mode matters.'],
+  mos:['MOSFET trigger module',[['Drive','GPIO5 → TRIG, HIGH = on'],['Port','HEAVY XT30♀: HSW = drain, H− = core GND (shared)'],['Load','own 6–24 V supply, a few A']],'Low-side switch: the load\'s battery minus must go to H−.'],
+  pc:['PC817 light port',[['Drive','GPIO4 → 150 Ω → LED'],['Port','LIGHT 3.5 TS: tip = collector (+), sleeve = emitter (−)'],['Limits','DC only, ≤ 50 mA, ≤ 35 V, isolated']],'Presses the button of any battery gadget or lights a small load.'],
+  cell:['Protected 18650 (B2)',[['Capacity','3,000 mAh (est.)'],['Charge','TP4056 via CHARGE USB-C — charge with SW CORE off'],['Sense','no free pin; add the ADS1115 on EXP for a gauge']],'B2 has no 5V IN — that is the A2 job.'],
+  tp:['TP4056 charger',[['Input','CHARGE USB-C at the top'],['Rate','1 A (≈ +900 mAh/h net here)']],'Click CHARGE on the top edge to plug a charger in.'],
+  boost:['Boost for 5V OUT',[['Feeds','5V OUT only, switched by SW OUT'],['Efficiency','~85 % (est.)']],'Check it does not auto-shut-off at low load.'],
+  swc:['SW CORE · SS-12D00 slide',[['Function','core power on / off']],'Click it to switch the pager off and on.'],
+  swo:['SW OUT · SS-12D00 slide',[['Function','5V OUT on / off']],'Modules on 5V OUT only get power with SW OUT on.'],
+  ss:['SS14 Schottky',[['Function','stops USB back-feed into the 5 V bus']],'']
+};
+
+/* ============================== state ============================== */
+const ST={speed:1,warp:60,keys:'split',active:'B2',radio:'nrf905',lora:false,armed:null,filter:'all',drag:null};
+const PG={};
+function newPager(id){
+  return {id,partner:id==='B2'?'A2':'B2',on:true,swOut:id==='A2',mode:'PAGER',pulseN:3,
+    guard:{st:'OFF',until:0,reason:'',sirenUntil:0,nextTx:0,acked:false,nextChirp:0},loop:{lid:true,lift:true,tilt:true},
+    set:{rx:true,fobToHub:false,fobDirect:false,partnerOnly:false,stealth:false,exitDelay:15,flip:false,sleep:true,sound:true,oled:'ALWAYS',heavyTone:false},
+    slots:{},fob:{A:null,B:null,C:null,D:null},latch:{heavy:false,light:false},seq:{},rxCall:null,stream:null,held:{},menu:null,
+    screen:null,awakeUntil:0,wifiUntil:0,rgb:null,last:'—',link:null,src:null,charging:false,modState:{},alarmView:null,md:null,
+    usedmAh:0,mA:0,o:{},vis:'',legSig:'',oledSig:''};
+}
+
+/* ============================== OLED font ============================== */
+const F5='000000000000005f00000007000700147f147f14242a7f2a12231308646236495522500005030000001c2241000041221c00082a1c2a0808083e080800503000000808080808006060000020100804023e5149453e00427f400042615149462141454b311814127f1027454545393c4a49493001710905033649494936064949291e003636000000563600000008142241141414141441221408000201510906324979413e7e1111117e7f494949363e414141227f4141221c7f494949417f090901013e414151327f0808087f00417f41002040413f017f081422417f404040407f0204027f7f0408107f3e4141413e7f090909063e4151215e7f09192946464949493101017f01013f4040403f1f2040201f7f2018207f631408146303047804036151494543';
+const GLYPH={};
+(function(){const chars=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ';for(let i=0;i<chars.length;i++){const h=F5.substr(i*10,10);const a=[];for(let j=0;j<5;j++)a.push(parseInt(h.substr(j*2,2),16)||0);GLYPH[chars[i]]=a;}
+  Object.assign(GLYPH,{'✓':[0x10,0x30,0x18,0x0c,0x06],'✗':[0x22,0x14,0x08,0x14,0x22],'▲':[0x20,0x30,0x38,0x30,0x20],'▼':[0x02,0x06,0x0e,0x06,0x02],'◄':[0x08,0x1c,0x3e,0x00,0x00],'►':[0x3e,0x1c,0x08,0x00,0x00],'•':[0x00,0x1c,0x1c,0x1c,0x00],'°':[0x00,0x06,0x09,0x06,0x00],'[':[0x00,0x7f,0x41,0x41,0x00],']':[0x00,0x41,0x41,0x7f,0x00],'_':[0x40,0x40,0x40,0x40,0x40],'|':[0x00,0x00,0x7f,0x00,0x00],'~':[0x08,0x04,0x08,0x10,0x08],'…':[0x40,0x00,0x40,0x00,0x40],'·':[0x00,0x00,0x08,0x00,0x00],'→':[0x08,0x08,0x2a,0x1c,0x08],'←':[0x08,0x1c,0x2a,0x08,0x08],'×':[0x22,0x14,0x08,0x14,0x22]});GLYPH['−']=GLYPH['—']=GLYPH['–']=GLYPH['-'];})();
+function oText(c,s,x,y,sc,inv){sc=sc||1;s=String(s).toUpperCase();for(const ch of s){const g=GLYPH[ch]||GLYPH['?'];for(let col=0;col<5;col++){const b=g[col];for(let r=0;r<7;r++){if((b>>r)&1)c.fillRect(x+col*sc,y+r*sc,sc,sc);}}x+=6*sc;}return x;}
+
+/* ============================== geometry helpers for SVG ============================== */
+const DOM={B2:{},A2:{}};
+function A(pid,x,y){const L=LAY[pid];return [L.ex+x,L.ey+y];}
+function absPts(pid,pts){return pts.map(p=>A(pid,p[0],p[1]));}
+
+function buildPager(pid){
+  const svg=$('#svg'+pid), L=LAY[pid], D=design(pid), dm=DOM[pid]={nets:{},live:{},badge:{},blocks:{},btn:{},slotsG:null,info:{}};
+  svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${COLW} ${COLH}`);
+  dm.design=D;
+  const gBg=sv('g',{},svg), gN=sv('g',{},svg), gB=sv('g',{},svg), gP=sv('g',{},svg);
+  dm.slotsG=sv('g',{},svg); dm.fx=sv('g',{'pointer-events':'none'},svg);
+  const [ex,ey]=[L.ex,L.ey];
+  // antenna + turret
+  const ax=ex+32;
+  sv('line',{x1:ax,y1:ey-24,x2:ax,y2:ey-70,stroke:'var(--ink-2)','stroke-width':3.2,'stroke-linecap':'round'},gBg);
+  sv('line',{x1:ax,y1:ey-70,x2:ax,y2:ey-100,stroke:'var(--ink-2)','stroke-width':2.3,'stroke-linecap':'round'},gBg);
+  sv('line',{x1:ax,y1:ey-100,x2:ax,y2:ey-124,stroke:'var(--ink-2)','stroke-width':1.6,'stroke-linecap':'round'},gBg);
+  dm.antTip=sv('circle',{cx:ax,cy:ey-126,r:3,fill:'var(--ink-2)'},gBg);
+  dm.antGlow=sv('circle',{cx:ax,cy:ey-126,r:9,fill:'none',stroke:'var(--rf433)','stroke-width':2,opacity:0},gBg);
+  txt(gBg,ax-7,ey-112,'ANT · λ/4 17.3 cm',{'text-anchor':'end','font-family':'IBM Plex Mono, monospace','font-size':7.6,fill:'var(--ink-2)'});
+  txt(gBg,ax-7,ey-102,'telescopic · SMA',{'text-anchor':'end','font-family':'IBM Plex Mono, monospace','font-size':7.6,fill:'var(--ink-3)'});
+  sv('rect',{x:ex+20,y:ey-22,width:24,height:24,rx:3,fill:'var(--encl)',stroke:'var(--ink-2)','stroke-width':1.3},gBg);
+  sv('rect',{x:ax-5,y:ey-28,width:10,height:6,rx:1,fill:'var(--g-conn)'},gBg);
+  // enclosure
+  const enc=sv('rect',{x:ex,y:ey,width:EW,height:EH,rx:14,fill:'var(--encl)',stroke:'var(--ink-2)','stroke-width':1.6},gBg);
+  txt(gBg,ex+42,ey+EH-6,pid==='B2'?'B2 · 53 × 113 × 28.1 mm + turret':'A2 · 49 × 104 × 22.6 mm + turret',{'font-family':'IBM Plex Mono, monospace','font-size':7.4,fill:'var(--ink-3)'});
+  if(pid==='A2')txt(gBg,ex+14,ey+350,'5 V from the Pager Source on 5V IN',{'font-size':7.6,fill:'var(--ink-3)'});
+  // nets (halo + wire + live overlay)
+  for(const [id,type,label,pts] of D.nets){
+    const d=pathD(absPts(pid,pts));
+    const g=sv('g',{class:'hit','data-net':id},gN);
+    sv('path',{d,fill:'none',stroke:'var(--halo)','stroke-width':4.2,'stroke-linejoin':'round'},g);
+    const p=sv('path',{d,fill:'none',stroke:`var(--${NETCOL[type]})`,'stroke-width':id[0]==='c'?2.6:1.5,'stroke-linejoin':'round',opacity:.78,id:`${pid}-n-${id}`},g);
+    const lv=sv('path',{d,fill:'none',stroke:`var(--${NETCOL[type]})`,'stroke-width':id[0]==='c'?4:3,'stroke-linejoin':'round',opacity:0},g);
+    sv('title',{},g).textContent=label;
+    dm.nets[id]={p,lv,type,label,pts};
+    g.addEventListener('click',()=>showDetail({title:label.split(' · ')[0],sub:`${pid} · net · ${type}`,color:`var(--${NETCOL[type]})`,rows:[['Carries',label],['Type',{logic:'3.3 V logic',data:'data bus',v5:'5 V supply',bat:'cell (3.0–4.2 V)',v33:'3V3 supply',rf:'RF 433 MHz',heavy:'switched load loop',light:'isolated contact'}[type]||type]]}));
+  }
+  // dots on branches
+  for(const [x,y] of (pid==='A2'?[[35,404]]:[]).concat([[186,24]])){const [X,Y]=A(pid,x,y);sv('circle',{cx:X,cy:Y,r:2.4,fill:'var(--ink-2)'},gN);}
+  // blocks
+  for(const b of D.blocks){
+    const [x,y]=A(pid,b.x,b.y);
+    const g=sv('g',{class:'hit','data-block':b.id},gB);
+    const r=sv('rect',{x,y,width:b.w,height:b.h,rx:4,fill:'var(--blk)',stroke:`var(--g-${b.g})`,'stroke-width':1.3,'stroke-dasharray':b.front?'3 2':null},g);
+    if(b.id!=='oled'){
+      txt(g,x+4,y+10.5,b.t,{'font-weight':650,'font-size':b.h<22?7.4:8.4});
+      var sub=b.s&&b.h>=26?txt(g,x+4,y+20,b.s,{'font-family':'IBM Plex Mono, monospace','font-size':6.9,fill:'var(--ink-2)'}):null;
+    }
+    dm.blocks[b.id]={g,r,b,sub:b.id!=='oled'?sub:null};
+    g.addEventListener('click',e=>{e.stopPropagation();blockClick(pid,b.id);});
+  }
+  // block decorations
+  { const [x,y]=A(pid,166,20); dm.rgb=sv('circle',{cx:x,cy:y,r:4.4,fill:'var(--surface-2)',stroke:'var(--ink-3)','stroke-width':.8},gB); }
+  { const b=dm.blocks.oled.b; const [x,y]=A(pid,b.x,b.y); sv('rect',{x:x+2,y:y+2,width:b.w-4,height:b.h-4,fill:'#05070a'},dm.blocks.oled.g); dm.oledImg=sv('image',{x:x+3,y:y+3,width:b.w-6,height:b.h-6,preserveAspectRatio:'none',style:'image-rendering:pixelated'},dm.blocks.oled.g); }
+  { const [x,y]=A(pid,240,220); sv('path',{d:`M${x} ${y} q3 -4 6 0 t6 0 t6 0`,fill:'none',stroke:'var(--g-radio)','stroke-width':1.2},dm.blocks.rx.g); }
+  { const [x,y]=A(pid,80,160); dm.vibIcon=sv('circle',{cx:x,cy:y-6,r:5,fill:'none',stroke:'var(--g-output)','stroke-width':1.4},dm.blocks.vib.g); }
+  { const [x,y]=A(pid,80,190); sv('circle',{cx:x,cy:y-4,r:5,fill:'var(--g-output)',opacity:.35},dm.blocks.sir.g); }
+  // guard switches
+  dm.guardSw={};
+  ['lid','lift','tilt'].forEach((k,i)=>{const [x,y]=A(pid,110,154+i*17);const g=sv('g',{class:'hit'},dm.blocks.guard.g);
+    const r=sv('rect',{x,y,width:54,height:13,rx:3,fill:'var(--surface-2)',stroke:'var(--g-guard)','stroke-width':.8},g);
+    const t=txt(g,x+3,y+9.3,'',{'font-family':'IBM Plex Mono, monospace','font-size':6.9});
+    g.addEventListener('click',e=>{e.stopPropagation();const p=PG[pid];p.loop[k]=!p.loop[k];log(`${pid} guard loop: ${k.toUpperCase()} ${p.loop[k]?'closed':'OPEN'}`);});
+    dm.guardSw[k]={r,t};});
+  // cell gauge
+  if(dm.blocks.cell){const [x,y]=A(pid,100,344);sv('rect',{x,y,width:48,height:14,rx:2,fill:'none',stroke:'var(--g-cell)','stroke-width':1},dm.blocks.cell.g);dm.cellFill=sv('rect',{x:x+1.5,y:y+1.5,width:45,height:11,fill:'var(--g-cell)',opacity:.75},dm.blocks.cell.g);}
+  // ports on the edges
+  for(const [id,lab,x,y,side] of D.ports){
+    const [X,Y]=A(pid,x,y); const g=sv('g',{class:'hit'},gP);
+    if(side==='b')sv('rect',{x:X-7,y:Y-4,width:14,height:8,rx:1.5,fill:'var(--g-conn)'},g);
+    else if(side==='r')sv('rect',{x:X-4,y:Y-7,width:8,height:14,rx:1.5,fill:'var(--g-conn)'},g);
+    else{sv('rect',{x:X-6,y:Y-4,width:12,height:8,rx:1.5,fill:id==='EXP'?'var(--data)':'var(--g-conn)'},g);txt(g,X,Y-8,lab,{'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':6.8,fill:'var(--ink-2)'});}
+    if(side==='r')txt(g,X+12,Y+18,lab,{'font-family':'IBM Plex Mono, monospace','font-size':6.8,fill:'var(--ink-2)'});
+    g.addEventListener('click',()=>portClick(pid,id));
+    if(id==='CHARGE'){dm.chg=sv('text',{x:X+14,y:Y-8,'font-family':'IBM Plex Mono, monospace','font-size':7.2,fill:'var(--ink-3)'},g);dm.chg.textContent='⚡ plug';}
+  }
+  // buttons
+  for(const k in BTN){const b=BTN[k];const [x,y]=A(pid,b.x,b.y);const g=sv('g',{class:'btnsv',role:'button','aria-label':k,'data-btn':k},gP);
+    const r=sv('rect',{x,y,width:b.w,height:b.h,rx:3,fill:k==='LINK'?'var(--g-ui)':k[0]==='K'?'var(--g-input)':'var(--g-input)',stroke:'var(--ink-2)','stroke-width':.8},g);
+    const ring=sv('rect',{x:x-2,y:y-2,width:b.w+4,height:b.h+4,rx:4,fill:'none',stroke:'var(--accent)','stroke-width':2,opacity:0,'stroke-dasharray':'0 999'},g);
+    const vert=b.h>b.w*1.5;const t=txt(g,x+b.w/2,y+b.h/2+2.6,b.l,{'text-anchor':'middle','font-size':vert?6.6:6.6,'font-weight':700,fill:'#fff',transform:vert?`rotate(-90 ${x+b.w/2} ${y+b.h/2})`:null});
+    dm.btn[k]={g,r,ring,len:2*(b.w+b.h+8)};
+    bindPress(g,pid,k);}
+  // slide switch states
+  for(const id of ['swc','swo']){const bl=dm.blocks[id];bl.g.addEventListener('click',e=>{e.stopPropagation();const p=PG[pid];if(id==='swc'){p.on=!p.on;log(`${pid} SW CORE ${p.on?'ON':'OFF'}`);if(!p.on){p.menu=null;p.stream=null;}}else{p.swOut=!p.swOut;log(`${pid} SW OUT ${p.swOut?'ON':'OFF'} — 5V OUT ${p.swOut?'live':'dead'}`);}refreshPager(pid);});
+    bl.state=sv('circle',{cx:+bl.r.getAttribute('x')+bl.b.w-5,cy:+bl.r.getAttribute('y')+bl.b.h-5,r:2.6,fill:'var(--ink-3)'},bl.g);}
+  // live badges
+  // OLED click opens menu
+  dm.blocks.oled.g.addEventListener('click',e=>{e.stopPropagation();if(PG[pid].menu)return;openMenu(PG[pid]);});
+  drawSlots(pid);
+}
+function bindPress(g,pid,k){
+  let id=null;
+  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();id=e.pointerId;try{g.setPointerCapture(id);}catch(_){}press(pid,k);});
+  const up=e=>{if(id==null)return;id=null;release(pid,k);};
+  g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up);g.addEventListener('lostpointercapture',up);
+}
+
+/* ============================== slots ============================== */
+function slotList(pid){
+  const L=LAY[pid],D=DOM[pid].design,out=[];
+  D.bottom.forEach((k,i)=>out.push({key:k,shape:'tall',x:L.ex+[4,72,140,208][i],y:L.ey+446,w:62,h:100,accept:k}));
+  out.push({key:'EXP1',shape:'wide',x:L.ex+110,y:L.ey-136,w:160,h:48,accept:'EXP'},{key:'EXP2',shape:'wide',x:L.ex+110,y:L.ey-80,w:160,h:48,accept:'EXP'});
+  'ABCD'.split('').forEach((c,i)=>out.push({key:'F'+c,shape:'fob',x:L.bayX,y:L.ey+22+i*46,w:L.bayW,h:40,accept:'FOB',ch:c}));
+  out.push({key:'W1',shape:'bay',x:L.bayX,y:L.ey+238,w:L.bayW,h:56,accept:'WIRELESS'},{key:'W2',shape:'bay',x:L.bayX,y:L.ey+302,w:L.bayW,h:56,accept:'WIRELESS'});
+  return out;
+}
+function modAt(p,slot){return slot[0]==='F'?(p.fob[slot[1]]&&p.fob[slot[1]].mod):p.slots[slot];}
+function drawSlots(pid){
+  const p=PG[pid],dm=DOM[pid],g=dm.slotsG;g.innerHTML='';dm.slotEls={};
+  const L=LAY[pid];
+  txt(g,L.bayX+2,L.ey+14,'433.92 MHz · RX480E · CH A–D',{'font-family':'IBM Plex Mono, monospace','font-size':7.4,'font-weight':600,fill:'var(--ink-3)'});
+  txt(g,L.bayX+2,L.ey+232,'WIRELESS · ESP-NOW / BLE',{'font-family':'IBM Plex Mono, monospace','font-size':7.4,'font-weight':600,fill:'var(--ink-3)'});
+  dm.bayStat=txt(g,L.bayX+2,L.ey+378,'',{'font-family':'IBM Plex Mono, monospace','font-size':7.4,fill:'var(--ink-2)'});
+  dm.bayStat2=txt(g,L.bayX+2,L.ey+390,'',{'font-family':'IBM Plex Mono, monospace','font-size':7.4,fill:'var(--ink-2)'});
+  txt(g,L.ex+110,L.ey-142,'EXP · GX12-5 · I2C chain',{'font-family':'IBM Plex Mono, monospace','font-size':7.2,'font-weight':600,fill:'var(--ink-3)'});
+  for(const s of slotList(pid)){
+    const sg=sv('g',{'data-slot':pid+'|'+s.key},g);
+    const id=modAt(p,s.key); const m=id&&MOD[id];
+    const fr=sv('rect',{class:'slotFrame',x:s.x,y:s.y,width:s.w,height:s.h,rx:6,fill:m?'var(--blk)':'var(--surface-3)',stroke:m?`var(--${PORTCOL[s.accept]})`:'var(--line-2)','stroke-width':m?1.4:1.1,'stroke-dasharray':m?null:'4 3'},sg);
+    dm.slotEls[s.key]={g:sg,fr,s};
+    if(s.key==='NOIN'){txt(sg,s.x+31,s.y+30,'NO 5V IN',{'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':7.4,'font-weight':600,fill:'var(--ink-3)'});
+      ['cell is','inside B2 —','use A2 for','swappable','sources'].forEach((l,i)=>txt(sg,s.x+31,s.y+44+i*10,l,{'text-anchor':'middle','font-size':7.4,fill:'var(--ink-3)'}));
+      sv('rect',{class:'slotHit',x:s.x,y:s.y,width:s.w,height:s.h,fill:'transparent','data-slot':pid+'|'+s.key},sg);continue;}
+    if(!m){ // empty
+      if(s.shape==='fob'){txt(sg,s.x+8,s.y+16,s.ch,{'font-weight':700,'font-size':10,fill:'var(--ink-3)'});txt(sg,s.x+22,s.y+16,'drop a 433 device',{'font-size':7.6,fill:'var(--ink-3)'});txt(sg,s.x+22,s.y+27,'(not learned)',{'font-family':'IBM Plex Mono, monospace','font-size':6.8,fill:'var(--ink-3)'});}
+      else{const cx=s.x+s.w/2;const lab=s.accept==='5VOUT'?'5V OUT':s.accept==='5VIN'?'5V IN':s.accept;
+        txt(sg,cx,s.y+(s.shape==='tall'?16:15),lab,{'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':7.6,'font-weight':650,fill:`var(--${PORTCOL[s.accept]})`});
+        const lines=s.shape==='tall'?wrap(PORTSPEC[s.accept],11):[PORTSPEC[s.accept]];
+        lines.forEach((l,i)=>txt(sg,cx,s.y+(s.shape==='tall'?30:27)+i*9,l,{'text-anchor':'middle','font-size':6.8,fill:'var(--ink-3)'}));
+        txt(sg,cx,s.y+s.h-7,'drop module',{'text-anchor':'middle','font-size':6.8,'font-style':'italic',fill:'var(--ink-3)'});}
+    }else drawModule(sg,pid,s,m);
+    sv('rect',{class:'slotHit',x:s.x,y:s.y,width:s.w,height:s.h,fill:'transparent','data-slot':pid+'|'+s.key},sg);
+    if(m){ // interactive bits must sit above the hit rect
+      const top=sv('g',{},sg); drawModuleControls(top,pid,s,m);
+    }
+    sg.addEventListener('pointerdown',e=>slotPointerDown(e,pid,s.key));
+  }
+  // cable visibility
+  for(const c of ['c5VOUT','cLIGHT','cHEAVY','c5VIN','cEXP']){const n=dm.nets[c];if(!n)continue;const key=c.slice(1);const has=key==='EXP'?(p.slots.EXP2||p.slots.EXP1):p.slots[key];n.p.parentNode.setAttribute('opacity',has?1:.25);}
+}
+function wrap(s,n){const w=String(s).split(' ');const out=[];let cur='';for(const x of w){if((cur+' '+x).trim().length>n&&cur){out.push(cur);cur=x;}else cur=(cur+' '+x).trim();}if(cur)out.push(cur);return out;}
+function drawModule(g,pid,s,m){
+  const c=`var(--${m.lamp||'accent'})`; const k={OWNED:'OWNED ✓',DIY:'DIY',BUY:'BUY'}[m.k];
+  if(s.shape==='tall'){
+    sv('rect',{x:s.x,y:s.y,width:s.w,height:12,rx:6,fill:`var(--${PORTCOL[s.accept]})`,opacity:.18},g);
+    txt(g,s.x+s.w/2,s.y+9,(s.accept==='5VOUT'?'5V OUT':s.accept==='5VIN'?'5V IN':s.accept),{'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':6.8,'font-weight':650,fill:'var(--ink-2)'});
+    wrap(m.s.length<=10?m.s:m.n,11).slice(0,3).forEach((l,i)=>txt(g,s.x+4,s.y+24+i*9.5,l,{'font-weight':650,'font-size':7.8}));
+    txt(g,s.x+4,s.y+56,k,{'font-family':'IBM Plex Mono, monospace','font-size':6.6,'font-weight':600,fill:m.k==='OWNED'?'var(--ok)':m.k==='BUY'?'var(--ble)':'var(--g-power)'});
+  }else if(s.shape==='fob'){
+    const f=PG[pid].fob[s.ch];
+    txt(g,s.x+8,s.y+16,s.ch,{'font-weight':700,'font-size':10,fill:'var(--rf433)'});
+    txt(g,s.x+22,s.y+15,(m.chans>1?m.s+' · btn '+f.btn:m.s),{'font-weight':650,'font-size':7.8});
+  }else{
+    sv('rect',{x:s.x,y:s.y,width:5,height:s.h,rx:2,fill:c},g);
+    txt(g,s.x+10,s.y+13,m.n.length>26?m.s:m.n,{'font-weight':650,'font-size':7.8});
+    txt(g,s.x+10,s.y+23,(m.i2c?m.i2c+' · ':'')+k,{'font-family':'IBM Plex Mono, monospace','font-size':6.6,fill:'var(--ink-2)'});
+  }
+}
+function drawModuleControls(g,pid,s,m){
+  const p=PG[pid],dm=DOM[pid];
+  const el={};
+  // lamp
+  const lx=s.shape==='tall'?s.x+s.w-10:s.x+s.w-12, ly=s.shape==='tall'?s.y+53:s.y+12;
+  el.lamp=sv('circle',{cx:lx,cy:ly,r:4.6,fill:'var(--surface-2)',stroke:`var(--${m.lamp||'accent'})`,'stroke-width':1.2},g);
+  el.stat=txt(g,s.shape==='tall'?s.x+4:s.x+(s.shape==='fob'?22:10),s.shape==='tall'?s.y+68:s.shape==='fob'?s.y+27:s.y+34,'',{'font-family':'IBM Plex Mono, monospace','font-size':6.6,fill:'var(--ink-2)'});
+  // remove
+  const rx=s.x+s.w-(s.shape==='tall'?8:6), ry=s.y+(s.shape==='tall'?6:s.h-8);
+  if(s.shape!=='tall'||true){const x=sv('g',{class:'hit','aria-label':'remove'},g);sv('circle',{cx:s.shape==='tall'?s.x+s.w-7:s.x+s.w-8,cy:s.shape==='tall'?s.y+6:s.y+s.h-8,r:5,fill:'var(--surface-2)'},x);txt(x,s.shape==='tall'?s.x+s.w-7:s.x+s.w-8,(s.shape==='tall'?s.y+6:s.y+s.h-8)+2.6,'×',{'text-anchor':'middle','font-size':8.5,fill:'var(--ink-2)'});
+    x.addEventListener('pointerdown',e=>e.stopPropagation());x.addEventListener('click',e=>{e.stopPropagation();detach(pid,s.key);});}
+  // actions
+  const acts=[];
+  if(s.shape==='fob')acts.push(['press','●']);
+  if(m.src)acts.push(['charge','charge']);
+  if(m.acts)acts.push(...m.acts);
+  acts.forEach((a,i)=>{
+    let bx,by,bw=s.shape==='tall'?54:(a[0]==='press'?18:38),bh=11;
+    if(s.shape==='tall'){bx=s.x+4;by=s.y+74+i*13;}
+    else if(s.shape==='fob'){bx=s.x+s.w-36;by=s.y+(s.h-18)/2;bw=18;bh=18;}
+    else {bx=s.x+s.w-22-(acts.length-i)*(bw+3);by=s.y+s.h-15;}
+    const b=sv('g',{class:'hit btnsv',role:'button','aria-label':a[1]},g);
+    if(a[0]==='press'){sv('circle',{cx:bx+9,cy:by+9,r:8,fill:'var(--rf433)',opacity:.85},b);txt(b,bx+9,by+12,s.ch,{'text-anchor':'middle','font-size':8,'font-weight':700,fill:'#fff'});
+      bindPress(b,pid,'F'+s.ch);}
+    else{sv('rect',{x:bx,y:by,width:bw,height:bh,rx:3,fill:'var(--surface-2)',stroke:'var(--line-2)'},b);txt(b,bx+bw/2,by+8,a[1],{'text-anchor':'middle','font-size':6.6,'font-weight':600});
+      b.addEventListener('pointerdown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();modAction(pid,s.key,m,a[0]);});}
+  });
+  dm.slotEls[s.key].ctl=el;
+}
+
+/* ============================== attach / detach ============================== */
+function accepts(slotKey,m,pid){
+  const sl=slotList(pid).find(s=>s.key===slotKey); if(!sl)return {ok:false,why:'Unknown field.'};
+  if(sl.key==='NOIN')return {ok:false,why:'B2 has no 5V IN — its 18650 is inside. Swappable sources belong to A2 (full modular).'};
+  const ports=[].concat(m.port);
+  if(!ports.includes(sl.accept)){
+    if(ports.includes('5VIN')&&pid==='B2')return {ok:false,why:`${m.n} needs 5V IN — only A2 has it.`};
+    return {ok:false,why:`${m.n} connects to ${ports.map(x=>x==='5VOUT'?'5V OUT':x==='5VIN'?'5V IN':x).join(' or ')} (${PORTSPEC[ports[0]]}).`};
+  }
+  return {ok:true};
+}
+function attach(pid,slotKey,id,quiet){
+  const p=PG[pid],m=MOD[id];const a=accepts(slotKey,m,pid);
+  if(!a.ok){if(!quiet)log(a.why,'bad');return false;}
+  if(slotKey[0]==='F'){
+    const ch=slotKey[1];
+    if(m.chans>1){const chs='ABCD'.slice(0,m.chans).split('');for(const c of chs)p.fob[c]={mod:id,btn:c};}
+    else p.fob[ch]={mod:id,btn:ch};
+  }else{
+    // a module lives in one place per pager
+    for(const k in p.slots)if(p.slots[k]===id&&k!==slotKey)delete p.slots[k];
+    p.slots[slotKey]=id;p.modState[slotKey]={on:false};
+    if(m.src&&pid==='A2'){p.src={cap:m.src.cap||0,mAh:m.src.mains?0:(m.src.cap||0)*0.97,mains:!!m.src.mains,label:m.src.label};}
+  }
+  if(!quiet)log(`${pid}: ${m.n} → ${slotLabel(slotKey)}`,'ok');
+  refreshPager(pid);return true;
+}
+function detach(pid,slotKey,quiet){
+  const p=PG[pid];let id;
+  if(slotKey[0]==='F'){const f=p.fob[slotKey[1]];if(!f)return;id=f.mod;const m=MOD[id];if(m.chans>1){for(const c of 'ABCD')if(p.fob[c]&&p.fob[c].mod===id)p.fob[c]=null;}else p.fob[slotKey[1]]=null;}
+  else{id=p.slots[slotKey];delete p.slots[slotKey];delete p.modState[slotKey];if(slotKey==='5VIN'){p.src=null;}}
+  if(!quiet&&id)log(`${pid}: ${MOD[id].n} removed from ${slotLabel(slotKey)}`);
+  refreshPager(pid);
+}
+function slotLabel(k){return k==='5VOUT'?'5V OUT':k==='5VIN'?'5V IN':k[0]==='F'?'fob channel '+k[1]:k==='W1'||k==='W2'?'wireless bay':k==='EXP1'||k==='EXP2'?'EXP':k;}
+function espMod(p){for(const k of ['5VOUT','W1','W2']){const id=p.slots[k];if(id&&(MOD[id].esp))return {slot:k,m:MOD[id]};}return null;}
+function modsOf(p){const out=[];for(const k in p.slots)out.push({slot:k,m:MOD[p.slots[k]]});return out;}
+
+/* drag & drop */
+function startDrag(e,id,from){
+  const m=MOD[id];const gh=hx('div',{class:'ghost'},m.n,hx('small',{},[].concat(m.port).map(x=>x==='5VOUT'?'5V OUT':x==='5VIN'?'5V IN':x).join(' / ')));
+  document.body.append(gh);ST.drag={id,from,gh,x:e.clientX,y:e.clientY,over:null};moveDrag(e);markSlots(id);
+}
+function moveDrag(e){const d=ST.drag;if(!d)return;d.gh.style.left=e.clientX+'px';d.gh.style.top=e.clientY+'px';
+  const t=document.elementFromPoint(e.clientX,e.clientY);const sl=t&&t.closest&&t.closest('[data-slot]');
+  $$('.slotOk,.slotNo').forEach(x=>x.classList.remove('slotOk','slotNo'));
+  if(sl){const [pid,key]=sl.getAttribute('data-slot').split('|');const ok=accepts(key,MOD[d.id],pid).ok;const g=DOM[pid].slotEls[key]&&DOM[pid].slotEls[key].g;if(g)g.classList.add(ok?'slotOk':'slotNo');d.over={pid,key,ok};}else d.over=null;}
+function endDrag(e){const d=ST.drag;if(!d)return;ST.drag=null;d.gh.remove();clearMarks();
+  const t=document.elementFromPoint(e.clientX,e.clientY);
+  if(d.over){const {pid,key}=d.over;if(d.from&&d.from.pid===pid&&d.from.key===key)return;
+    if(attach(pid,key,d.id)&&d.from&&!(d.from.pid===pid&&d.from.key===key))detach(d.from.pid,d.from.key,true);}
+  else if(d.from&&t&&t.closest&&t.closest('#shelf'))detach(d.from.pid,d.from.key);
+}
+function markSlots(id){for(const pid of ['B2','A2'])for(const k in DOM[pid].slotEls){const ok=accepts(k,MOD[id],pid).ok;if(ok)DOM[pid].slotEls[k].g.classList.add('armedSlot');}}
+function clearMarks(){$$('.armedSlot,.slotOk,.slotNo').forEach(x=>x.classList.remove('armedSlot','slotOk','slotNo'));}
+function slotPointerDown(e,pid,key){
+  if(ST.armed){const id=ST.armed;ST.armed=null;$$('.card.armed').forEach(c=>c.classList.remove('armed'));clearMarks();attach(pid,key,id);return;}
+  const p=PG[pid];const id=modAt(p,key);
+  if(!id){const sl=slotList(pid).find(s=>s.key===key);showDetail({title:slotLabel(key)+' field',sub:pid+' · '+(PORTSPEC[sl.accept]||''),color:`var(--${PORTCOL[sl.accept]||'accent'})`,rows:[['Accepts',MODULES.filter(m=>accepts(key,m,pid).ok).map(m=>m.n).join(', ')||'—']],note:'Drag a card from the shelf below onto this field.'});return;}
+  const sx=e.clientX,sy=e.clientY;let moved=false;
+  const mv=ev=>{if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){moved=true;startDrag(ev,id,{pid,key});}if(moved)moveDrag(ev);};
+  const up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);if(moved)endDrag(ev);else moduleDetail(pid,key,MOD[id]);};
+  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+}
+
+/* ============================== FX: pulses along nets ============================== */
+const FX=[];
+function D(ms){return ms*ST.speed;}
+function pulse(pid,net,o){
+  o=o||{};const dm=DOM[pid];const n=dm&&dm.nets[net];
+  if(!n||ST.speed===0)return Promise.resolve();
+  return new Promise(res=>{
+    const len=n.p.getTotalLength();const col=`var(--${NETCOL[o.type||n.type]})`;
+    const g=sv('g',{},dm.fx);
+    const glow=sv('path',{d:n.p.getAttribute('d'),fill:'none',stroke:col,'stroke-width':3.4,opacity:.55,'stroke-linejoin':'round'},g);
+    const dot=o.type==='data'||n.type==='data'?sv('rect',{width:6,height:6,x:-3,y:-3,rx:1,fill:col},g):sv('circle',{r:3.6,fill:col},g);
+    let lab=null;if(o.label){lab=sv('g',{},g);const t=txt(lab,0,0,o.label,{'font-family':'IBM Plex Mono, monospace','font-size':7.2,'font-weight':600,fill:'var(--ink)'});lab._t=t;}
+    FX.push({t0:now(),dur:D(o.dur||260),len,path:n.p,g,dot,lab,rev:!!o.rev,glow,res});
+  });
+}
+function tickFX(t){
+  for(let i=FX.length-1;i>=0;i--){const f=FX[i];let k=(t-f.t0)/f.dur;if(k>=1){f.g.remove();FX.splice(i,1);f.res();continue;}
+    const pt=f.path.getPointAtLength((f.rev?1-k:k)*f.len);f.dot.setAttribute('transform',`translate(${pt.x},${pt.y})`);
+    f.glow.setAttribute('opacity',(.55*(1-k)).toFixed(2));
+    if(f.lab){f.lab.setAttribute('transform',`translate(${pt.x+6},${pt.y-6})`);}}
+}
+function flash(pid,block){const b=DOM[pid].blocks[block];if(!b)return;b.g.classList.remove('flash');void b.g.getBBox();b.g.classList.add('flash');}
+function antGlow(pid,col){const a=DOM[pid].antGlow;a.setAttribute('stroke',`var(--${col||'rf433'})`);a.setAttribute('opacity',1);setTimeout(()=>a.setAttribute('opacity',0),Math.max(250,D(500)));}
+
+/* ============================== FIELD ============================== */
+const FIELD={cols:64,rows:40,scale:1,clutter:2.7,gy:30,name:'',grid:null,ents:[],T:8,dpr:1,cv:null,ctx:null,off:null,dirty:true,
+  cover:false,covFrom:'B2',cov:null,tool:'move',mat:MI.conc,place:'T2',beams:[],streams:{},bubbles:[],drag:null,rect:null,hover:null,preview:null,needs:true};
+const ENTCOL={B2:'b2',A2:'a2',T1:'t1',T2:'t2',T3:'t3'};
+function ent(id){return FIELD.ents.find(e=>e.id===id);}
+function antPos(e){
+  if(!e)return {x:0,y:0};
+  if(e.kind==='pager'||e.kind==='console')return {x:e.x+.5,y:e.y-.25};
+  if(e.kind==='fob')return {x:e.x+.5,y:e.y+.35};
+  if(e.kind==='base')return {x:e.x+1,y:e.y-1.6};
+  return {x:e.x+.5,y:e.y-.6};
+}
+function entRF(e,radio){
+  if(!e)return {g:0,body:0};
+  if(e.kind==='fob')return {g:-10,body:2};
+  if(e.kind==='base')return {g:2,body:0};
+  if(e.kind==='node')return {g:0,body:0};
+  if(radio==='fob')return {g:-6,body:BODY};
+  if(radio==='espnow'||radio==='ble')return {g:-2,body:BODY};
+  return {g:0,body:BODY};
+}
+function traverse(a,b){
+  const cells=[];let x=Math.floor(a.x),y=Math.floor(a.y);const ex=Math.floor(b.x),ey=Math.floor(b.y);
+  const dx=b.x-a.x,dy=b.y-a.y;const sx=dx>0?1:-1,sy=dy>0?1:-1;
+  const tdx=dx!==0?Math.abs(1/dx):Infinity,tdy=dy!==0?Math.abs(1/dy):Infinity;
+  let tmx=dx!==0?((sx>0?(x+1-a.x):(a.x-x))*tdx):Infinity,tmy=dy!==0?((sy>0?(y+1-a.y):(a.y-y))*tdy):Infinity;
+  let t=0,guard=0;
+  while(guard++<4000){cells.push({x,y,t});if(x===ex&&y===ey)break;if(tmx<tmy){t=tmx;tmx+=tdx;x+=sx;}else{t=tmy;tmy+=tdy;y+=sy;}if(t>1)break;}
+  return cells;
+}
+// how many tiles thick a building element is where the ray enters it (a slab is 1 thick however steeply it is crossed)
+function thickness(x,y,id){const run=(dx,dy)=>{let n=1;for(const s of [1,-1]){let k=1;while(k<8&&gridAt(x+dx*k*s,y+dy*k*s)===id){n++;k++;}}return n;};
+  const h=run(1,0),v=run(0,1);let n=h>=2&&v>=2?Math.min(h,v):h>=2?v:v>=2?h:1;return Math.min(4,n);}
+function gridAt(x,y){if(x<0||y<0||x>=FIELD.cols||y>=FIELD.rows)return 0;return FIELD.grid[y*FIELD.cols+x];}
+function linkPts(a,b,radio,ra,rb,ptOver){
+  const R=RADIOS[radio],bi=bandIdx(R.f);
+  const dt=Math.hypot(b.x-a.x,b.y-a.y), d=Math.max(1,dt*FIELD.scale);
+  const pl0=20*Math.log10(R.f)-27.55, n=FIELD.clutter;
+  const cells=traverse(a,b);let mat=0;const hits=[];const tally={};
+  for(let i=0;i<cells.length;){const id=gridAt(cells[i].x,cells[i].y);let j=i;while(j+1<cells.length&&gridAt(cells[j+1].x,cells[j+1].y)===id)j++;
+    const M=MATS[id],L=M.l[bi];
+    if(L>0){const t0=cells[i].t,t1=j+1<cells.length?cells[j+1].t:1;let loss;
+      if(M.bulk)loss=L*Math.max(.5,(t1-t0)*dt*FIELD.scale);else loss=L*thickness(cells[i].x,cells[i].y,id);
+      mat+=loss;hits.push({x:cells[i].x,y:cells[i].y,t:(t0+t1)/2,t0,L:loss,cum:mat,m:id});tally[M.n]=(tally[M.n]||0)+1;}
+    i=j+1;}
+  const pt=ptOver!=null?ptOver:R.pt;
+  const pl=pl0+10*n*Math.log10(d)+mat+ra.body+rb.body;
+  const rx=pt+ra.g+rb.g-pl, margin=rx-R.sens;
+  let death=null;
+  if(margin<0){ // find where it fades below sensitivity
+    const steps=120;let cum=0,hi=0;
+    for(let i=1;i<=steps;i++){const tt=i/steps;while(hi<hits.length&&hits[hi].t0<=tt){cum=hits[hi].cum;hi++;}
+      const dd=Math.max(1,dt*tt*FIELD.scale);const r=pt+ra.g+rb.g-(pl0+10*n*Math.log10(dd)+cum+ra.body);if(r<R.sens){death=tt;break;}}
+    if(death==null)death=.98;
+  }
+  return {d,dt,pl,pl0,dist:10*n*Math.log10(d),mat,body:ra.body+rb.body,rx,margin,hits,tally,death,radio,sens:R.sens,pt};
+}
+function link(aId,bId,radio,ptOver){const A=ent(aId),B=ent(bId);if(!A||!B)return null;return linkPts(antPos(A),antPos(B),radio,entRF(A,radio),entRF(B,radio),ptOver);}
+function verdict(m){return m>=10?'ok':m>=0?'warn':'bad';}
+function relays(){return FIELD.ents.filter(e=>e.kind==='node'||e.kind==='base');}
+function route(aId,bId,radio){
+  const direct=link(aId,bId,radio);if(!direct)return {ok:false,path:[aId,bId],links:[direct]};
+  if(direct.margin>=0||!(radio==='nrf905'||radio==='lora'))return {ok:direct.margin>=0,path:[aId,bId],links:[direct]};
+  const nodes=[aId,bId,...relays().map(e=>e.id)];if(nodes.length<=2)return {ok:false,path:[aId,bId],links:[direct]};
+  // widest path (maximise the weakest hop margin)
+  const best={},prev={};nodes.forEach(n=>best[n]=-Infinity);best[aId]=Infinity;const done=new Set();
+  while(true){let u=null;for(const n of nodes)if(!done.has(n)&&(u===null||best[n]>best[u]))u=n;if(u===null||best[u]===-Infinity)break;done.add(u);if(u===bId)break;
+    for(const v of nodes){if(done.has(v)||v===u)continue;if(u!==aId&&v===aId)continue;const isRelay=x=>x!==aId&&x!==bId;if(u!==aId&&!isRelay(u))continue;
+      const l=link(u,v,radio);const w=Math.min(best[u],l.margin);if(w>best[v]){best[v]=w;prev[v]=u;}}}
+  if(best[bId]<0||best[bId]===-Infinity)return {ok:false,path:[aId,bId],links:[direct]};
+  const path=[bId];while(path[0]!==aId)path.unshift(prev[path[0]]);
+  const links=[];for(let i=0;i<path.length-1;i++)links.push(link(path[i],path[i+1],radio));
+  return {ok:true,path,links,relayed:true};
+}
+function fieldSend(aId,bId,radio,o){
+  o=o||{};const r=route(aId,bId,radio);
+  const hopDur=D(o.fast?360:720);
+  return (async()=>{
+    if(ST.speed===0){return r;}
+    for(let i=0;i<r.path.length-1;i++){
+      const l=r.links[i];const A=ent(r.path[i]),B=ent(r.path[i+1]);
+      await new Promise(res=>FIELD.beams.push({a:antPos(A),b:antPos(B),l,radio,t0:now(),dur:hopDur,res,ack:!!o.ack,label:o.label||''}));
+      if(l.margin<0)return Object.assign({},r,{ok:false});
+      if(i<r.path.length-2){bubble(r.path[i+1],'relay ttl−1','t2');await wait(D(80));}
+    }
+    return r;
+  })();
+}
+function bubble(id,text,col,ms){FIELD.bubbles.push({id,text,col:col||'accent',t0:now(),dur:ms||1600});}
+
+/* scenarios */
+function blank(cols,rows){return new Uint8Array(cols*rows);}
+function mkMap(name,cols,rows,scale,clutter,gy){return {name,cols,rows,scale,clutter,gy,grid:blank(cols,rows),ents:[]};}
+function put(M,x,y,m){if(x>=0&&y>=0&&x<M.cols&&y<M.rows)M.grid[y*M.cols+x]=m;}
+function fill(M,x0,y0,x1,y1,m){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)put(M,x,y,m);}
+function ground(M){fill(M,0,M.gy,M.cols-1,M.gy,MI.turf);fill(M,0,M.gy+1,M.cols-1,M.rows-1,MI.soil);fill(M,0,M.rows-3,M.cols-1,M.rows-1,MI.rock);}
+function building(M,x0,x1,floors,base,stair){
+  const gy=M.gy,top=gy-4*floors;
+  fill(M,x0,top,x1,gy,MI.room);
+  for(let f=0;f<=floors;f++){const y=gy-4*f;fill(M,x0,y,x1,y,MI.conc);}
+  fill(M,x0,top-0,x1,top,MI.conc);
+  for(let y=top;y<=gy;y++){put(M,x0,y,MI.brick);put(M,x1,y,MI.brick);}
+  for(let f=0;f<floors;f++){const y=gy-4*f-2;put(M,x0,y,MI.glass);put(M,x1,y,MI.glass);
+    for(let x=x0+12;x<x1-3;x+=12){for(let yy=gy-4*f-3;yy<=gy-4*f-1;yy++)put(M,x,yy,MI.dry);put(M,x,gy-4*f-1,MI.wood);}}
+  if(base){for(let b=1;b<=base;b++){const y0=gy+1+4*(b-1);fill(M,x0,y0,x1,y0+2,MI.cave);fill(M,x0,y0+3,x1,y0+3,MI.conc);for(let y=y0;y<=y0+3;y++){put(M,x0,y,MI.conc);put(M,x1,y,MI.conc);}}}
+  if(stair){const [s0,s1]=stair;for(let f=1;f<=floors-1;f++)fill(M,s0,gy-4*f,s1,gy-4*f,MI.room);if(base)for(let b=1;b<base+1;b++)fill(M,s0,gy+4*(b-1),s1,gy+4*(b-1),MI.cave);}
+}
+function pagersAt(M,b2,a2,extra){M.ents=[{id:'B2',kind:'pager',x:b2[0],y:b2[1]},{id:'A2',kind:'pager',x:a2[0],y:a2[1]},{id:'fobB2',kind:'fob',owner:'B2',x:b2[0]+1,y:b2[1]},{id:'fobA2',kind:'fob',owner:'A2',x:a2[0]-1,y:a2[1]}].concat(extra||[]);return M;}
+const SCEN={
+  floors:{n:'Building · different floors',f(){const M=mkMap('Building · different floors',64,40,1,2.7,30);ground(M);building(M,8,56,5,0,[30,33]);return pagersAt(M,[14,29],[47,21]);}},
+  samefloor:{n:'Building · same floor',f(){const M=mkMap('Building · same floor',64,40,1,2.7,30);ground(M);building(M,6,58,4,0,[30,33]);return pagersAt(M,[10,25],[53,25]);}},
+  field:{n:'Open field · 5 m tiles',f(){const M=mkMap('Open field',64,40,5,2.6,30);ground(M);[[16,3],[24,2],[38,4],[46,2],[52,3]].forEach(([x,h])=>{fill(M,x-1,30-h-1,x+1,29-h+1,MI.tree);fill(M,x,30-h,x,29,MI.tree);});fill(M,30,31,34,32,MI.water);return pagersAt(M,[8,29],[56,29]);}},
+  wall:{n:'Behind walls · 1 m tiles',f(){const M=mkMap('Behind walls',64,40,1,2.7,30);ground(M);fill(M,26,20,26,29,MI.conc);fill(M,36,22,36,29,MI.brick);fill(M,44,25,56,29,MI.steel);fill(M,45,26,55,28,MI.room);put(M,44,28,MI.wood);fill(M,10,24,11,29,MI.scaf);return pagersAt(M,[16,29],[32,29]);}},
+  basement:{n:'Underground · basement −2',f(){const M=mkMap('Underground',64,40,1,2.7,24);ground(M);building(M,20,52,3,2,[24,26]);return pagersAt(M,[8,23],[42,31]);}},
+  steel:{n:'Steel hall + container',f(){const M=mkMap('Steel hall',64,40,1,2.7,30);ground(M);fill(M,10,16,54,16,MI.steel);for(let y=16;y<=29;y++){put(M,10,y,MI.steel);put(M,54,y,MI.steel);}fill(M,11,17,53,29,MI.room);fill(M,38,25,50,29,MI.steel);fill(M,39,26,49,28,MI.room);put(M,10,28,MI.wood);put(M,10,29,MI.wood);return pagersAt(M,[4,29],[44,28]);}},
+  relay:{n:'Stairwell relay (T2 placed)',f(){const M=mkMap('Stairwell relay',64,40,1,2.7,26);ground(M);building(M,8,56,6,2,[30,33]);return pagersAt(M,[16,33],[46,5],[{id:'T2a',kind:'node',x:31,y:17,label:'T2'}]);}}
+};
+function loadMap(M){
+  FIELD.cols=M.cols;FIELD.rows=M.rows;FIELD.scale=M.scale;FIELD.clutter=M.clutter;FIELD.gy=M.gy;FIELD.name=M.name;FIELD.grid=M.grid;FIELD.ents=M.ents.map(e=>Object.assign({},e));
+  FIELD.dirty=true;FIELD.cov=null;FIELD.beams=[];FIELD.streams={};
+  $('#mapNameIn').value=M.name;$('#mapName').textContent=M.name;$('#scaleSel').value=String(M.scale);
+  const cs=$('#clutSel');if(![...cs.options].some(o=>o.value===String(M.clutter)))cs.append(hx('option',{value:String(M.clutter)},'custom '+M.clutter));cs.value=String(M.clutter);
+  $('#sizeSel').value=M.cols+'x'+M.rows;
+  sizeField();renderConsole();updateReadout();
+}
+function rle(g){const out=[];let cur=g[0],n=1;for(let i=1;i<=g.length;i++){if(i<g.length&&g[i]===cur)n++;else{out.push(cur.toString(36)+(n>1?'*'+n.toString(36):''));cur=g[i];n=1;}}return out.join(',');}
+function unrle(s,len){const g=new Uint8Array(len);let i=0;for(const part of String(s).split(',')){if(!part)continue;const [m,c]=part.split('*');const v=parseInt(m,36)||0,n=c?parseInt(c,36):1;for(let k=0;k<n&&i<len;k++)g[i++]=v<MATS.length?v:0;}return g;}
+function mapJSON(){return {name:FIELD.name,cols:FIELD.cols,rows:FIELD.rows,scale:FIELD.scale,clutter:FIELD.clutter,gy:FIELD.gy,tiles:rle(FIELD.grid),entities:FIELD.ents.map(e=>({id:e.id,kind:e.kind,x:e.x,y:e.y,owner:e.owner,label:e.label}))};}
+function mapFromJSON(j){
+  const cols=clamp(j.cols|0,16,160),rows=clamp(j.rows|0,12,96);
+  const M=mkMap(String(j.name||'Imported map').slice(0,40),cols,rows,+j.scale||1,+j.clutter||2.7,clamp(j.gy|0,1,rows-1));
+  M.grid=unrle(j.tiles||'',cols*rows);
+  M.ents=(Array.isArray(j.entities)?j.entities:[]).filter(e=>e&&typeof e.id==='string').map(e=>({id:e.id.slice(0,8),kind:['pager','fob','node','base','console'].includes(e.kind)?e.kind:'node',x:clamp(e.x|0,0,cols-1),y:clamp(e.y|0,1,rows-1),owner:e.owner,label:e.label}));
+  for(const id of ['B2','A2'])if(!M.ents.find(e=>e.id===id))M.ents.push({id,kind:'pager',x:id==='B2'?2:cols-3,y:M.gy-1});
+  return M;
+}
+
+/* field rendering */
+function sizeField(){
+  const wrapEl=$('#fieldWrap');const cw=Math.max(240,wrapEl.clientWidth||480);const dpr=Math.min(2,window.devicePixelRatio||1);
+  const T=Math.max(3,Math.floor(cw*dpr/FIELD.cols));
+  FIELD.T=T;FIELD.dpr=dpr;const cv=FIELD.cv;cv.width=T*FIELD.cols;cv.height=T*FIELD.rows;cv.style.width=(cv.width/dpr)+'px';cv.style.height=(cv.height/dpr)+'px';
+  FIELD.off=document.createElement('canvas');FIELD.off.width=cv.width;FIELD.off.height=cv.height;FIELD.dirty=true;FIELD.needs=true;
+}
+function hash(x,y,i){let h=(x*374761393+y*668265263+i*2147483647)>>>0;h=(h^(h>>>13))*1274126177>>>0;return (h^(h>>>16))>>>0;}
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;r=clamp(Math.round(r*f),0,255);g=clamp(Math.round(g*f),0,255);b=clamp(Math.round(b*f),0,255);return `rgb(${r},${g},${b})`;}
+let TOK={};
+function readTokens(){for(const k of ['sky-top','sky-bot','room','cave','field-ink','rf433','rf24','rf868','ble','ok','warn','bad','b2','a2','t1','t2','t3','accent','surface','ink','ink-2','line'])TOK[k]=tok(k);}
+function renderTerrain(){
+  const c=FIELD.off.getContext('2d');const T=FIELD.T,cols=FIELD.cols,rows=FIELD.rows;const dark=document.documentElement.getAttribute('data-theme')==='dark'||(document.documentElement.getAttribute('data-theme')!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);
+  const sub=Math.max(1,Math.floor(T/4));
+  for(let y=0;y<rows;y++){
+    const k=y/Math.max(1,FIELD.gy);const sky=mix(TOK['sky-top'],TOK['sky-bot'],clamp(k,0,1));
+    for(let x=0;x<cols;x++){
+      const id=FIELD.grid[y*cols+x];const m=MATS[id];const X=x*T,Y=y*T;
+      if(m.bg==='sky'){c.fillStyle=sky;c.fillRect(X,Y,T,T);if(dark&&hash(x,y,7)%37===0){c.fillStyle='#cfe3ff';c.fillRect(X+sub,Y+sub,Math.max(1,sub/1.5),Math.max(1,sub/1.5));}continue;}
+      if(m.bg==='room'||m.bg==='cave'){const base=m.bg==='room'?TOK.room:TOK.cave;c.fillStyle=base;c.fillRect(X,Y,T,T);c.fillStyle=shade(toHex(base),.9);if(m.bg==='room'){if(y%2===0)c.fillRect(X,Y+T-1,T,1);c.fillRect(X+((y%2)?0:T/2),Y,1,T);}else if(hash(x,y,3)%5===0)c.fillRect(X+sub,Y+2*sub,sub,sub);continue;}
+      if(id===MI.scaf){c.fillStyle=sky;c.fillRect(X,Y,T,T);c.strokeStyle=m.c;c.lineWidth=Math.max(1,T/8);c.beginPath();c.moveTo(X,Y);c.lineTo(X+T,Y+T);c.moveTo(X+T,Y);c.lineTo(X,Y+T);c.stroke();c.fillStyle=m.c;c.fillRect(X,Y,Math.max(1,T/8),T);continue;}
+      c.fillStyle=m.c;c.fillRect(X,Y,T,T);
+      for(let i=0;i<16;i++){const h=hash(x,y,i)%9;if(h<2){c.fillStyle=shade(m.c,h===0?.82:1.14);c.fillRect(X+(i%4)*sub,Y+Math.floor(i/4)*sub,sub,sub);}}
+      const above=y>0?FIELD.grid[(y-1)*cols+x]:0;
+      if(!SOLID(above)&&(id===MI.soil||id===MI.turf||id===MI.conc)){c.fillStyle=shade(m.c,1.22);c.fillRect(X,Y,T,Math.max(1,sub/1.5));}
+      if(id===MI.glass){c.fillStyle='rgba(255,255,255,.55)';c.fillRect(X+sub,Y+sub,Math.max(1,sub/2),T-2*sub);}
+      if(id===MI.water&&hash(x,y,1)%2===0){c.fillStyle='rgba(255,255,255,.35)';c.fillRect(X+sub,Y+sub,2*sub,Math.max(1,sub/2));}
+    }
+  }
+}
+function toHex(c){if(c.startsWith('#'))return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;const m=c.match(/\d+/g);if(!m)return '#888888';return '#'+m.slice(0,3).map(v=>(+v).toString(16).padStart(2,'0')).join('');}
+function mix(a,b,k){a=toHex(a);b=toHex(b);const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);const r=Math.round((pa>>16)*(1-k)+(pb>>16)*k),g=Math.round(((pa>>8)&255)*(1-k)+((pb>>8)&255)*k),bl=Math.round((pa&255)*(1-k)+(pb&255)*k);return `rgb(${r},${g},${bl})`;}
+function computeCoverage(){
+  const from=ent(FIELD.covFrom);if(!from)return null;const radio=effRadio(ST.radio);const a=antPos(from),ra=entRF(from,radio);
+  const arr=new Float32Array(FIELD.cols*FIELD.rows);
+  for(let y=0;y<FIELD.rows;y++)for(let x=0;x<FIELD.cols;x++){const id=FIELD.grid[y*FIELD.cols+x];if(SOLID(id)){arr[y*FIELD.cols+x]=NaN;continue;}
+    const l=linkPts(a,{x:x+.5,y:y+.5},radio,ra,{g:ra.g,body:BODY});arr[y*FIELD.cols+x]=l.margin;}
+  return arr;
+}
+function effRadio(r){return r;}
+function renderField(t){
+  const c=FIELD.ctx,T=FIELD.T,dpr=FIELD.dpr;if(!c)return;
+  if(FIELD.dirty){renderTerrain();FIELD.dirty=false;FIELD.cov=null;FIELD.preview=null;updateReadout();}
+  c.drawImage(FIELD.off,0,0);
+  // coverage
+  if(FIELD.cover){if(!FIELD.cov)FIELD.cov=computeCoverage();const cv=FIELD.cov;if(cv){for(let y=0;y<FIELD.rows;y++)for(let x=0;x<FIELD.cols;x++){const m=cv[y*FIELD.cols+x];if(isNaN(m))continue;c.fillStyle=m>=10?'rgba(46,160,67,.30)':m>=0?'rgba(214,158,46,.34)':'rgba(200,55,45,.20)';c.fillRect(x*T,y*T,T,T);}}}
+  // ruler
+  drawRuler(c);
+  // preview link B2 ↔ A2
+  const lp=FIELD.preview||(FIELD.preview=link('B2','A2',pagerRadio()));
+  if(lp){const a=antPos(ent('B2')),b=antPos(ent('A2'));const col=TOK[verdict(lp.margin)];
+    c.save();c.setLineDash([4*dpr,4*dpr]);c.strokeStyle=col;c.globalAlpha=.75;c.lineWidth=1.4*dpr;c.beginPath();c.moveTo(a.x*T,a.y*T);c.lineTo(b.x*T,b.y*T);c.stroke();c.restore();
+    if(T>=6*dpr){c.font=`600 ${Math.round(8.5*dpr)}px IBM Plex Mono, monospace`;c.fillStyle=TOK['field-ink'];for(const h of lp.hits){const x=(a.x+(b.x-a.x)*h.t)*T,y=(a.y+(b.y-a.y)*h.t)*T;c.fillStyle='rgba(0,0,0,.55)';c.fillRect(x-1,y-1,3,3);}}
+    if(lp.death!=null){const x=(a.x+(b.x-a.x)*lp.death)*T,y=(a.y+(b.y-a.y)*lp.death)*T;drawX(c,x,y,5*dpr,TOK.bad);}
+    const mx=(a.x+b.x)/2*T,my=(a.y+b.y)/2*T;const s=`${fmt(lp.d,1)} m · ${sgn(lp.margin,0)} dB`;tagBox(c,mx,my-10*dpr,s,col);}
+  // streams
+  for(const k in FIELD.streams){const s=FIELD.streams[k];const A=ent(s.a),B=ent(s.b);if(!A||!B)continue;const a=antPos(A),b=antPos(B);const l=s.l;const col=TOK[RADIOS[s.radio].col]||TOK.rf433;
+    const end=l.margin>=0?1:l.death;c.save();c.strokeStyle=col;c.lineWidth=2.4*dpr;c.setLineDash([6*dpr,6*dpr]);c.lineDashOffset=-(t/30)%(12*dpr);c.globalAlpha=.9;c.beginPath();c.moveTo(a.x*T,a.y*T);c.lineTo((a.x+(b.x-a.x)*end)*T,(a.y+(b.y-a.y)*end)*T);c.stroke();c.restore();
+    const k2=(t/450)%1;ring(c,a.x*T,a.y*T,k2*Math.hypot(b.x-a.x,b.y-a.y)*T*end,col,1-k2);
+    if(l.margin<0)drawX(c,(a.x+(b.x-a.x)*end)*T,(a.y+(b.y-a.y)*end)*T,6*dpr,TOK.bad);}
+  // beams
+  for(let i=FIELD.beams.length-1;i>=0;i--){const bm=FIELD.beams[i];const k=(t-bm.t0)/bm.dur;const col=TOK[RADIOS[bm.radio].col]||TOK.rf433;
+    const end=bm.l.margin>=0?1:bm.l.death;const head=Math.min(k*1.15,end);const a=bm.a,b=bm.b;
+    if(k>=1.25){FIELD.beams.splice(i,1);bm.res&&bm.res();bm.res=null;continue;}
+    if(k>=1&&bm.res){bm.res();bm.res=null;}
+    for(let r=0;r<3;r++){const kk=k-r*.18;if(kk<=0||kk>1)continue;ring(c,a.x*T,a.y*T,kk*Math.hypot(b.x-a.x,b.y-a.y)*T,col,(1-kk)*.8);}
+    c.save();c.strokeStyle=col;c.lineWidth=(bm.ack?1.6:2.8)*dpr;c.shadowColor=col;c.shadowBlur=8*dpr;c.globalAlpha=k>1?Math.max(0,1-(k-1)*4):1;
+    c.beginPath();c.moveTo(a.x*T,a.y*T);c.lineTo((a.x+(b.x-a.x)*head)*T,(a.y+(b.y-a.y)*head)*T);c.stroke();c.restore();
+    const hx_=(a.x+(b.x-a.x)*head)*T,hy=(a.y+(b.y-a.y)*head)*T;c.fillStyle=col;c.beginPath();c.arc(hx_,hy,(bm.ack?2.4:3.6)*dpr,0,7);c.fill();
+    if(head>=end&&k>=end/1.15){if(bm.l.margin>=0){ring(c,b.x*T,b.y*T,(6+10*clamp((k-end/1.15)*4,0,1))*dpr,col,.9);if(!bm.ack)tagBox(c,b.x*T,b.y*T-18*dpr,'✓ '+fmt(bm.l.rx,0)+' dBm',TOK[verdict(bm.l.margin)]);}
+      else{drawX(c,hx_,hy,7*dpr,TOK.bad);tagBox(c,hx_,hy-14*dpr,'✗ faded '+fmt(bm.l.rx,0)+' dBm',TOK.bad);}}
+    if(bm.label&&k<.9)tagBox(c,(a.x+(b.x-a.x)*head*.5)*T,(a.y+(b.y-a.y)*head*.5)*T+14*dpr,bm.label,col);
+  }
+  // entities
+  for(const e of FIELD.ents)drawEnt(c,e,t);
+  // bubbles
+  for(let i=FIELD.bubbles.length-1;i>=0;i--){const b=FIELD.bubbles[i];const k=(t-b.t0)/b.dur;if(k>=1){FIELD.bubbles.splice(i,1);continue;}const e=ent(b.id);if(!e)continue;const p=antPos(e);tagBox(c,p.x*T,(p.y-1.6)*T-k*8*dpr,b.text,TOK[b.col]||TOK.accent);}
+  // rect tool preview
+  if(FIELD.rect){const r=FIELD.rect;const x0=Math.min(r.x0,r.x1),y0=Math.min(r.y0,r.y1),x1=Math.max(r.x0,r.x1),y1=Math.max(r.y0,r.y1);c.save();c.strokeStyle=TOK.accent;c.lineWidth=2*dpr;c.setLineDash([4*dpr,3*dpr]);c.strokeRect(x0*T,y0*T,(x1-x0+1)*T,(y1-y0+1)*T);c.restore();}
+  if(FIELD.hover&&FIELD.tool!=='move'){c.save();c.strokeStyle=TOK.accent;c.lineWidth=1.5*dpr;c.strokeRect(FIELD.hover.x*T,FIELD.hover.y*T,T,T);c.restore();}
+}
+function ring(c,x,y,r,col,a){if(r<=0||a<=0)return;c.save();c.globalAlpha=clamp(a,0,1);c.strokeStyle=col;c.lineWidth=1.6*FIELD.dpr;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke();c.restore();}
+function drawX(c,x,y,s,col){c.save();c.strokeStyle=col;c.lineWidth=2.4*FIELD.dpr;c.beginPath();c.moveTo(x-s,y-s);c.lineTo(x+s,y+s);c.moveTo(x+s,y-s);c.lineTo(x-s,y+s);c.stroke();c.restore();}
+function tagBox(c,x,y,s,col){const dpr=FIELD.dpr;c.save();c.font=`600 ${Math.round(9.5*dpr)}px IBM Plex Mono, monospace`;const w=c.measureText(s).width+8*dpr,h=14*dpr;let bx=clamp(x-w/2,1,c.canvas.width-w-1),by=clamp(y-h/2,1,c.canvas.height-h-1);
+  c.fillStyle='rgba(10,14,20,.82)';roundRect(c,bx,by,w,h,3*dpr);c.fill();c.fillStyle=col||'#fff';c.fillRect(bx,by,2*dpr,h);c.fillStyle='#f3f6fa';c.textBaseline='middle';c.fillText(s,bx+5*dpr,by+h/2+.5);c.restore();}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function drawRuler(c){
+  const T=FIELD.T,dpr=FIELD.dpr;const nice=[1,2,5,10,20,25,50,100,200,250,500,1000];let step=nice.find(v=>v/FIELD.scale*T>=46*dpr)||1000;const st=step/FIELD.scale;
+  c.save();c.fillStyle='rgba(10,14,20,.55)';c.fillRect(0,0,c.canvas.width,13*dpr);c.font=`500 ${Math.round(8.5*dpr)}px IBM Plex Mono, monospace`;c.fillStyle='#e9eef4';c.textBaseline='middle';
+  for(let i=0;i*st<=FIELD.cols;i++){const x=i*st*T;c.fillRect(x,8*dpr,1*dpr,5*dpr);if(i>0||true)c.fillText((i*step)+(i===1?' m':''),x+2*dpr,5.5*dpr);}
+  // elevation marks on the left
+  for(let y=FIELD.gy;y>=1;y-=Math.max(1,Math.round(st))){const yy=y*T;c.fillStyle='rgba(10,14,20,.55)';c.fillRect(0,yy-5*dpr,26*dpr,10*dpr);c.fillStyle='#e9eef4';c.fillText((FIELD.gy-y)*FIELD.scale===0?'0':'+'+((FIELD.gy-y)*FIELD.scale),2*dpr,yy);}
+  for(let y=FIELD.gy+Math.max(1,Math.round(st));y<FIELD.rows;y+=Math.max(1,Math.round(st))){const yy=y*T;c.fillStyle='rgba(10,14,20,.55)';c.fillRect(0,yy-5*dpr,26*dpr,10*dpr);c.fillStyle='#e9eef4';c.fillText('−'+((y-FIELD.gy)*FIELD.scale),2*dpr,yy);}
+  c.restore();
+}
+const SPR={pager:['.HH.','HHHH','.SS.','VVVV','VPVV','VVVV','.LL.','.L.L']};
+function drawEnt(c,e,t){
+  const T=FIELD.T,dpr=FIELD.dpr,px=T/4;const X=e.x*T,Y=e.y*T;
+  const col=TOK[ENTCOL[e.id]]||TOK[ENTCOL[(e.label||'').slice(0,2)]]||TOK.accent;
+  if(e.kind==='pager'||e.kind==='console'){
+    const pat=SPR.pager;const cmap={H:e.kind==='console'?TOK.t3:col,S:'#e8b48a',V:e.kind==='console'?'#3b82f6':'#f97316',P:'#1f2937',L:'#334155'};
+    for(let r=0;r<8;r++)for(let q=0;q<4;q++){const ch=pat[r][q];if(ch==='.')continue;c.fillStyle=cmap[ch];c.fillRect(X+q*px,Y-T+r*px/1,px,px);}
+    const a=antPos(e);c.strokeStyle=TOK[RADIOS.nrf905.col];c.lineWidth=Math.max(1,dpr);c.beginPath();c.moveTo(X+1.4*px,Y+.25*T);c.lineTo(a.x*T,(a.y-.55)*T);c.stroke();
+    tagBox(c,X+T/2,Y-T-8*dpr,e.kind==='console'?'T3':e.id,col);
+    if(e.kind==='pager'){const p=PG[e.id];if(p&&p.rgb){c.fillStyle=p.rgb;c.beginPath();c.arc(X+T/2,Y-T-17*dpr,2.5*dpr,0,7);c.fill();}}
+  }else if(e.kind==='fob'){
+    c.fillStyle='#374151';c.fillRect(X+px,Y+px*1.2,px*2,px*1.6);c.fillStyle=TOK.rf433;c.fillRect(X+px*1.4,Y+px*1.6,px*.6,px*.6);c.strokeStyle='#9ca3af';c.lineWidth=Math.max(1,dpr*.8);c.beginPath();c.arc(X+px*2,Y+px*.9,px*.5,0,7);c.stroke();
+  }else if(e.kind==='node'){
+    c.fillStyle='#1f2937';c.fillRect(X+px*.5,Y+px,px*3,px*2.6);c.fillStyle=(Math.floor(t/500)%2)?TOK.t2:'#0f766e';c.fillRect(X+px*1.6,Y+px*1.8,px*.8,px*.8);
+    c.strokeStyle=TOK.rf433;c.lineWidth=Math.max(1,dpr);c.beginPath();c.moveTo(X+px*2,Y+px);c.lineTo(X+px*2,Y-T*.6);c.stroke();tagBox(c,X+T/2,Y-T*.9,e.label||'T2',TOK.t2);
+  }else if(e.kind==='base'){
+    c.fillStyle='#312e81';c.fillRect(X,Y+px*.6,T*2,px*3.2);c.fillStyle='#a5b4fc';c.fillRect(X+px,Y+px*1.4,px*2.2,px*1.2);c.fillStyle=TOK.ok;c.fillRect(X+T*1.4,Y+px*1.6,px*.8,px*.8);
+    c.strokeStyle=TOK.rf433;c.lineWidth=Math.max(1.4,dpr*1.3);c.beginPath();c.moveTo(X+T,Y+px*.6);c.lineTo(X+T,Y-T*1.8);c.stroke();tagBox(c,X+T,Y-T*2.1,'T1 BASE',TOK.t1);
+  }
+}
+
+/* field input */
+function tileFromEvent(e){const r=FIELD.cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*FIELD.cols,y=(e.clientY-r.top)/r.height*FIELD.rows;return {x:Math.floor(x),y:Math.floor(y),fx:x,fy:y};}
+function entAt(tx,ty){for(let i=FIELD.ents.length-1;i>=0;i--){const e=FIELD.ents[i];const w=e.kind==='base'?2:1;const top=e.kind==='pager'||e.kind==='console'?e.y-1:e.y;if(tx>=e.x&&tx<e.x+w&&ty>=top-1&&ty<=e.y)return e;}return null;}
+function paint(tx,ty,m){if(tx<0||ty<0||tx>=FIELD.cols||ty>=FIELD.rows)return;FIELD.grid[ty*FIELD.cols+tx]=m;FIELD.dirty=true;}
+function fieldDown(e){
+  const t=tileFromEvent(e);FIELD.cv.setPointerCapture&&FIELD.cv.setPointerCapture(e.pointerId);
+  const hit=entAt(t.x,t.y);
+  if(FIELD.tool==='move'||(hit&&FIELD.tool!=='remove'&&FIELD.tool!=='place')){if(hit){FIELD.drag={e:hit,dx:t.x-hit.x,dy:t.y-hit.y};}return;}
+  if(FIELD.tool==='paint'||FIELD.tool==='erase'){FIELD.painting=true;paint(t.x,t.y,FIELD.tool==='erase'?MI.air:FIELD.mat);}
+  else if(FIELD.tool==='rect'){FIELD.rect={x0:t.x,y0:t.y,x1:t.x,y1:t.y};}
+  else if(FIELD.tool==='place'){placeThird(FIELD.place,t.x,t.y);}
+  else if(FIELD.tool==='remove'){if(hit&&!['B2','A2','fobB2','fobA2'].includes(hit.id)){FIELD.ents=FIELD.ents.filter(x=>x!==hit);log(`${hit.label||hit.id} removed from the map`);FIELD.preview=null;FIELD.cov=null;renderConsole();updateReadout();}}
+}
+function fieldMove(e){
+  const t=tileFromEvent(e);FIELD.hover={x:t.x,y:t.y};
+  if(FIELD.drag){const d=FIELD.drag;d.e.x=clamp(t.x-d.dx,0,FIELD.cols-1);d.e.y=clamp(t.y-d.dy,1,FIELD.rows-1);FIELD.preview=null;FIELD.cov=null;updateReadout();}
+  else if(FIELD.painting)paint(t.x,t.y,FIELD.tool==='erase'?MI.air:FIELD.mat);
+  else if(FIELD.rect){FIELD.rect.x1=t.x;FIELD.rect.y1=t.y;}
+  if(t.x>=0&&t.y>=0&&t.x<FIELD.cols&&t.y<FIELD.rows){const m=MATS[gridAt(t.x,t.y)];const h=entAt(t.x,t.y);
+    $('#hoverInfo').textContent=h?`${h.label||h.id} · tile ${t.x},${t.y} — drag to move`:`tile ${t.x},${t.y} · ${m.n} · ${m.l[0]?'−'+m.l[0]+(m.bulk?' dB/m':' dB')+' @433 · −'+m.l[1]+' @868 · −'+m.l[2]+' @2.4 GHz'+(m.bulk?'':' per crossing'):'no loss'} · ${fmt((FIELD.gy-t.y)*FIELD.scale,1)} m above ground`;}
+}
+function fieldUp(){
+  if(FIELD.rect){const r=FIELD.rect;const m=FIELD.tool==='erase'?MI.air:FIELD.mat;for(let y=Math.min(r.y0,r.y1);y<=Math.max(r.y0,r.y1);y++)for(let x=Math.min(r.x0,r.x1);x<=Math.max(r.x0,r.x1);x++)paint(x,y,m);FIELD.rect=null;}
+  if(FIELD.drag){const e=FIELD.drag.e;FIELD.drag=null;log(`${e.label||e.id} moved to tile ${e.x},${e.y}`);}
+  FIELD.painting=false;
+}
+function placeThird(type,x,y){
+  if(type==='T1'){let e=FIELD.ents.find(e=>e.kind==='base');if(!e){e={id:'T1',kind:'base',label:'T1'};FIELD.ents.push(e);}e.x=clamp(x,0,FIELD.cols-2);e.y=clamp(y,1,FIELD.rows-1);}
+  else if(type==='T3'){let e=FIELD.ents.find(e=>e.kind==='console');if(!e){e={id:'T3',kind:'console',label:'T3'};FIELD.ents.push(e);}e.x=x;e.y=clamp(y,1,FIELD.rows-1);}
+  else{const n=FIELD.ents.filter(e=>e.kind==='node').length;const id='T2'+'abcdefgh'[n%8];FIELD.ents.push({id,kind:'node',x,y:clamp(y,1,FIELD.rows-1),label:'T2'+(n?'·'+(n+1):'')});}
+  log(`${type} placed on the map at tile ${x},${y}`,'ok');FIELD.preview=null;FIELD.cov=null;renderConsole();updateReadout();
+}
+function autoPlace(type){
+  const b=ent('B2'),a=ent('A2');let x=Math.round((b.x+a.x)/2),y=Math.round((b.y+a.y)/2);
+  // find a free (non-solid) tile near the midpoint with a solid tile under it
+  let best=null;for(let r=0;r<20&&!best;r++)for(let dx=-r;dx<=r&&!best;dx++)for(let dy=-r;dy<=r;dy++){const X=x+dx,Y=y+dy;if(X<1||Y<2||X>=FIELD.cols-2||Y>=FIELD.rows-1)continue;if(!SOLID(gridAt(X,Y))&&!SOLID(gridAt(X,Y-1))&&SOLID(gridAt(X,Y+1))){best=[X,Y];break;}}
+  if(type==='T3'){const bx=b.x+3;placeThird('T3',clamp(bx,0,FIELD.cols-1),b.y);return;}
+  placeThird(type,(best||[x,y])[0],(best||[x,y])[1]);
+}
+
+/* readout */
+function pagerRadio(){return ST.lora?'lora':'nrf905';}
+function updateReadout(){
+  if(!FIELD.grid)return;FIELD.preview=null;FIELD.cov=null;
+  const r=ST.radio;const l=link('B2','A2',r);const box=$('#readout');if(!l){box.innerHTML='';return;}
+  const v=verdict(l.margin);const R=RADIOS[r];const rt=route('B2','A2',r);
+  const mats=l.hits.length?Object.entries(l.tally).map(([n,c])=>`${n} ×${c}`).join(', ')+` (${l.hits.map(h=>'−'+fmt(h.L,0)).join(' ')} dB)`:'none';
+  box.innerHTML='';
+  const ln=(a,b)=>box.append(hx('div',{class:'ln'},hx('span',{},a),hx('span',{},b)));
+  box.append(hx('div',{class:'verdict '+(v==='ok'?'':v)},`B2 → A2 over ${R.n} (${R.band}): `+(l.margin>=10?'solid link':l.margin>=0?'marginal — expect retries':'no direct link')+(rt.relayed?` · relayed via ${rt.path.slice(1,-1).map(id=>ent(id).label||id).join(' → ')}`:'')));
+  ln('Distance',`${fmt(l.d,1)} m`);
+  ln('Path loss',`${fmt(l.pl0,1)} @1 m + ${fmt(l.dist,1)} (n ${FIELD.clutter}) + ${fmt(l.mat,0)} materials + ${l.body} body = ${fmt(l.pl,1)} dB`);
+  ln('Crossed',mats);
+  ln('Received',`${fmt(l.rx,1)} dBm vs ${R.sens} dBm`);
+  ln('Margin',`${sgn(l.margin,1)} dB`);
+  const tb=hx('table',{class:'cmp'},hx('tr',{},hx('th',{},'Radio'),hx('th',{},'Use'),hx('th',{},'Margin'),hx('th',{},'')));
+  for(const k of ['nrf905','espnow','fob','lora','ble']){const L=link('B2','A2',k);const rr=route('B2','A2',k);tb.append(hx('tr',{},hx('td',{},RADIOS[k].n),hx('td',{},RADIOS[k].use),hx('td',{class:'n'},sgn(L.margin,0)+' dB'),hx('td',{},hx('span',{class:'tag '+verdict(rr.relayed?Math.min(...rr.links.map(x=>x.margin)):L.margin)},rr.relayed?'relayed':verdict(L.margin)==='ok'?'solid':verdict(L.margin)==='warn'?'marginal':'blocked'))));}
+  box.append(tb);
+  for(const pid of ['B2','A2']){const dm=DOM[pid];if(!dm.bayStat)continue;const L=link(pid,'fob'+pid,'fob');dm.bayStat.textContent=`fob link: ${L?sgn(L.margin,0)+' dB':'—'}`;const N=link(pid,PG[pid].partner,pagerRadio());dm.bayStat2.textContent=`${pagerRadio()==='lora'?'LoRa':'nRF905'} → ${PG[pid].partner}: ${N?sgn(N.margin,0)+' dB':'—'}`;}
+}
+function renderConsole(){
+  const box=$('#consoleBox');box.innerHTML='';const t3=FIELD.ents.find(e=>e.kind==='console');if(!t3)return;
+  box.append(hx('div',{class:'console'},hx('b',{},'T3 Crew Console'),hx('div',{style:'font-size:11.5px;color:var(--ink-2)'},'Sends over nRF905 with payload v2 (dst byte). Pagers ack with GOTIT.'),
+    hx('div',{class:'edrow'},
+      hx('button',{class:'btn',onclick:()=>consoleSend('B2',1)},'B2: COME HERE'),hx('button',{class:'btn',onclick:()=>consoleSend('A2',1)},'A2: COME HERE'),
+      hx('button',{class:'btn',onclick:()=>{consoleSend('B2',7);consoleSend('A2',7);}},'ALL: BREAK'),hx('button',{class:'btn',onclick:rollCall},'Roll call'))));
+}
+
+/* ============================== SIM ============================== */
+function powered(p){if(!p.on)return false;if(p.id==='B2')return p.src&&p.src.mAh>0;return !!(p.slots['5VIN']&&p.src&&(p.src.mains||p.src.mAh>0));}
+function setSeq(p,ch,pat){p.seq[ch]={pat,i:0,t0:now()};}
+function seqVal(p,ch,t){const s=p.seq[ch];if(!s)return false;let acc=0;for(let i=0;i<s.pat.length;i++){acc+=s.pat[i][1];if(t-s.t0<acc)return !!s.pat[i][0];}p.seq[ch]=null;return false;}
+function msgPattern(m,drv){if(m>=1&&m<=6){const n=((m-1)%3)+1,long=m>=4;const pat=[];for(let i=0;i<n;i++){pat.push([1,long?600:200],[0,200]);}return pat;}return [[1,150],[0,120],[1,150],[0,120]];}
+function computeOut(p,t){
+  const pw=powered(p);if(!pw)return {vib:false,light:false,heavy:false,siren:false,rgb:null};
+  const call=p.rxCall&&p.rxCall.until>t;const alarm=p.guard.st==='ALARM';
+  const tone=p.set.heavyTone;
+  return {vib:call||seqVal(p,'vib',t),light:p.latch.light||seqVal(p,'light',t)||call||(alarm&&Math.floor(t/400)%2===0),
+    heavy:p.latch.heavy||seqVal(p,'heavy',t)||call||alarm,siren:(alarm&&t<p.guard.sirenUntil&&p.set.sound)||seqVal(p,'siren',t),rgb:rgbNow(p,t),tone};
+}
+function rgbNow(p,t){
+  if(p.rgbUntil&&t<p.rgbUntil)return p.rgbCol;
+  const g=p.guard.st;if(g==='ALARM')return Math.floor(t/250)%2?'#ef4444':null;if(g==='ENTRY')return Math.floor(t/500)%2?'#f59e0b':null;if(g==='EXIT')return Math.floor(t/500)%2?'#f59e0b':null;
+  if(g==='ARMED'&&!p.set.stealth)return (t%5000)<180?'#ef4444':null;
+  if(p.mode==='HUB')return '#0e7490';
+  return null;
+}
+function setRGB(p,col,ms){p.rgbCol=col;p.rgbUntil=now()+ms;}
+function current(p,t){
+  if(!powered(p))return {sys:0,out5:0,cell:0};
+  const o=p.o;const awake=!p.set.sleep||t<p.awakeUntil||!!p.menu||p.mode==='HUB'||['EXIT','ENTRY','ALARM'].includes(p.guard.st);
+  let sys=(awake?38:2)+12.5+(p.stream?3:0);
+  if(p.set.oled==='ALWAYS'||t<p.awakeUntil||p.menu)sys+=12;
+  if(p.set.rx)sys+=5;if(o.vib)sys+=75;if(o.siren)sys+=30;if(o.light)sys+=10;if(o.rgb)sys+=6;
+  if(t<p.wifiUntil||(p.mode==='HUB'&&espMod(p)))sys+=95;
+  for(const {m} of modsOf(p))if(m.mA3&&m.port!=='WIRELESS')sys+=m.mA3;
+  if(p.slots.W1==='wearpod'||p.slots.W2==='wearpod')sys+=3;
+  let out5=0;const om=p.slots['5VOUT']&&MOD[p.slots['5VOUT']];if(om&&p.swOut&&om.mA5){const st=p.modState['5VOUT']||{};out5=st.on?om.mA5[1]:om.mA5[0];}
+  let cell;if(p.id==='B2')cell=sys+out5*5/(3.7*0.85);else cell=p.src&&p.src.mains?0:(sys+out5)*5/(3.7*0.85);
+  return {sys,out5,cell};
+}
+function show(p,kind,a,b,ms){p.screen={kind,a,b,until:now()+(ms||5000)};p.awakeUntil=now()+5000;}
+function log(s,cls){const box=$('#log');if(!box)return;const d=new Date();const tm=d.toTimeString().slice(0,8)+'.'+String(d.getMilliseconds()).padStart(3,'0');box.prepend(hx('div',{class:cls||''},hx('time',{},tm),hx('span',{},s)));while(box.children.length>120)box.lastChild.remove();}
+
+/* buttons */
+function press(pid,ctl){
+  const p=PG[pid];if(p.held[ctl])return;p.held[ctl]={t0:now(),fired:false};btnVis(pid,ctl,true);
+  if(!powered(p)){if(ctl[0]!=='F')log(`${pid} is off — ${p.id==='A2'&&!p.slots['5VIN']?'no source on 5V IN':!p.on?'SW CORE is off':'battery empty'}`,'warn');return;}
+  p.awakeUntil=now()+5000;
+  if(ctl[0]==='F'){fobPress(p,ctl[1]);return;}
+  inputVisual(p,ctl);
+  const g=p.guard.st;if(g==='ARMED'){guardTrigger(p,5);p.held[ctl].fired=true;return;}
+  if(g==='ENTRY'||g==='ALARM'||g==='EXIT'){if(ctl!=='SEEN'){p.held[ctl].fired=true;}}
+  const R=resolve(p)[ctl];if(R&&R.hold&&R.hold.start)R.hold.start();
+}
+function release(pid,ctl){
+  const p=PG[pid];const h=p.held[ctl];if(!h)return;delete p.held[ctl];btnVis(pid,ctl,false);
+  if(ctl==='CALL'||(ctl[0]==='F'&&p.fobHold===ctl[1])){stopCall(p);if(ctl[0]==='F')p.fobHold=null;}
+  if(ctl[0]==='F'){fobRelease(p,ctl[1],h);return;}
+  if(!powered(p)||h.fired)return;
+  const R=resolve(p)[ctl];if(!R)return;
+  if(R.short&&R.short.run)R.short.run();
+}
+function checkHolds(t){
+  for(const pid of ['B2','A2']){const p=PG[pid];for(const ctl in p.held){const h=p.held[ctl];if(h.fired||!powered(p))continue;
+    const R=ctl[0]==='F'?fobResolve(p,ctl[1]):resolve(p)[ctl];if(!R||!R.long)continue;const ms=R.long.ms||600;
+    const ring=DOM[pid].btn[ctl];if(ring){const k=clamp((t-h.t0)/ms,0,1);ring.ring.setAttribute('opacity',k>0.05?1:0);ring.ring.setAttribute('stroke-dasharray',`${k*ring.len} 999`);}
+    if(t-h.t0>=ms){h.fired=true;if(ctl[0]==='F'&&!p.fobOk)continue;if(R.long.run)R.long.run();if(ring)ring.ring.setAttribute('opacity',0);}}}
+}
+function btnVis(pid,ctl,on){const b=DOM[pid].btn[ctl];if(!b)return;b.r.setAttribute('fill',on?'var(--accent)':(ctl==='LINK'?'var(--g-ui)':'var(--g-input)'));if(!on){b.ring.setAttribute('opacity',0);}
+  const net={CALL:'call',SEEN:'seen',K1:'k1',K2:'k2',K3:'k3',LINK:'link'}[ctl];if(net)setLive(pid,net,on);}
+async function inputVisual(p,ctl){
+  const pid=p.id;
+  if(ctl==='CALL'){await pulse(pid,'call',{label:'0 V · held'});flash(pid,'s3');}
+  else if(ctl==='SEEN'){await pulse(pid,'seen',{label:'GPIO2 LOW'});flash(pid,'s3');}
+  else if(ctl==='LINK'){await pulse(pid,'link',{label:'GPIO0 LOW'});flash(pid,'s3');}
+  else {const n={K1:'k1',K2:'k2',K3:'k3'}[ctl];await pulse(pid,n,{label:ctl+' LOW'});flash(pid,'pcf');await pulse(pid,'int',{label:'INT ↓'});await pulse(pid,'i2c',{rev:true,label:'read 0x20'});flash(pid,'s3');}
+}
+function setLive(pid,net,on,cls){const n=DOM[pid].nets[net];if(!n)return;n.lv.setAttribute('opacity',on?.95:0);n.lv.classList.toggle('live',!!on);if(cls)n.lv.classList.toggle('slow',cls==='slow');}
+
+/* resolve: what every control does right now (drives both the legend and the behaviour) */
+function msgAct(p,m){return {label:MSGS[m],run:()=>sendText(p,m)};}
+function resolve(p){
+  const R={};const hub=p.mode==='HUB';const mod=espMod(p);
+  R.CALL={hold:{label:'Call partner while held — HOLD every 30 ms',start:()=>startCall(p),stop:()=>stopCall(p)}};
+  R.SEEN={short:{label:'SEEN — "I saw it"',run:()=>sendSeen(p)},long:{ms:1500,label:'Open the menu',run:()=>openMenu(p)}};
+  if(!hub){R.K1={short:msgAct(p,1),long:msgAct(p,4)};R.K2={short:msgAct(p,2),long:msgAct(p,5)};R.K3={short:msgAct(p,3),long:msgAct(p,6)};}
+  else if(mod){const s=mod.m.s;R.K1={short:{label:`${s} ON`,run:()=>espCmd(p,'ON'),tag:mod.m.s},long:{label:`${s} STATUS`,run:()=>espCmd(p,'STATUS'),tag:mod.m.s}};
+    R.K2={short:{label:`${s} OFF`,run:()=>espCmd(p,'OFF'),tag:mod.m.s},long:{label:'Leave HUB mode',run:()=>setMode(p,'PAGER')}};
+    R.K3={short:{label:`${s} PULSE ${p.pulseN}`,run:()=>espCmd(p,'PULSE'),tag:mod.m.s},long:{label:`n = ${p.pulseN} → ${p.pulseN%5+1}`,run:()=>{p.pulseN=p.pulseN%5+1;show(p,'big','PULSE N',String(p.pulseN),2000);}}};}
+  else{R.K1={short:{label:'HEAVY toggle (local)',run:()=>toggleLatch(p,'heavy'),tag:'HUB'},long:{label:'HUBSTATE → partner',run:()=>sendHubState(p),tag:'HUB'}};
+    R.K2={short:{label:'LIGHT toggle (local)',run:()=>toggleLatch(p,'light'),tag:'HUB'},long:{label:'Leave HUB mode',run:()=>setMode(p,'PAGER')}};
+    R.K3={short:{label:'Page partner: COME HERE',run:()=>sendText(p,1),tag:'HUB'},long:{label:'Page partner: URGENT',run:()=>sendText(p,4),tag:'HUB'}};}
+  R.LINK={short:{label:'Link test (PING)',run:()=>ping(p)},long:{ms:2000,label:hub?'Back to PAGER mode':'Enter HUB mode',run:()=>setMode(p,hub?'PAGER':'HUB')}};
+  for(const c of 'ABCD')R['F'+c]=fobResolve(p,c);
+  // module button remaps
+  for(const {m} of modsOf(p)){if(!m.leg)continue;for(const [mode,ctl,kind,label,fx] of m.leg){if(mode!=='ANY'&&mode!==p.mode)continue;R[ctl]=R[ctl]||{};const base=R[ctl][kind]||{};R[ctl][kind]={label,run:()=>modFx(p,m,fx,base),tag:m.s,ms:base.ms};}}
+  // guard
+  if(['ARMED','ENTRY','ALARM'].includes(p.guard.st)){for(const c of ['CALL','SEEN','K1','K2','K3','LINK'])R[c]={short:{label:p.guard.st==='ARMED'?'Starts the 5 s entry delay':'— (guard active)',tag:'GUARD'}};}
+  // menu
+  if(p.menu){R.K1={short:{label:'Menu ▲',run:()=>menuMove(p,-1),tag:'MENU'}};R.K3={short:{label:'Menu ▼',run:()=>menuMove(p,1),tag:'MENU'}};R.K2={short:{label:'Select / toggle',run:()=>menuSelect(p),tag:'MENU'}};
+    R.SEEN={short:{label:'Back',run:()=>menuBack(p),tag:'MENU'},long:{ms:1500,label:'Close the menu',run:()=>{p.menu=null;},tag:'MENU'}};}
+  return R;
+}
+function fobResolve(p,c){
+  const f=p.fob[c];if(!p.set.rx)return {short:{label:'— receiver off (RX_EN)',tag:'FOB'}};
+  if(!f)return {short:{label:'— not learned'}};
+  const m=MOD[f.mod];const hub=p.mode==='HUB';const armed=['EXIT','ARMED','ENTRY','ALARM'].includes(p.guard.st);
+  if(m.id==='door433')return {short:{label:armed?'ALARM trigger: DOOR':'Page partner: DOOR OPEN',run:()=>armed?guardTrigger(p,6):sendText(p,9),tag:m.s}};
+  if(m.id==='pir433')return {short:{label:armed?'ALARM trigger: MOTION':'Page partner: MOTION',run:()=>armed?guardTrigger(p,4):sendText(p,11),tag:m.s}};
+  if(m.id==='btn433')return {short:{label:'Page partner: GATE',run:()=>sendText(p,10),tag:m.s}};
+  const b=f.btn;const two=m.chans===2;
+  const armL={ms:2000,label:armed?(p.set.partnerOnly?'— partner-only disarm':'DISARM'):'ARM (loop must be closed)',run:()=>armed?(p.set.partnerOnly?log(`${p.id}: fob disarm refused — PARTNER-ONLY DISARM is on`,'warn'):disarm(p,'fob')):arm(p),tag:'GUARD'};
+  if(armed){if(b==='D'||(two&&b==='B'))return {short:{label:'—'},long:armL};return {short:{label:'— (guard active)'}};}
+  if(two){if(b==='A')return {hold:{label:'CALL partner while held',start:()=>startCall(p),stop:()=>stopCall(p)}};
+    return {short:{label:'SEEN',run:()=>sendSeen(p)},long:{ms:2000,label:'LIGHT toggle / A+B hold: ARM',run:()=>toggleLatch(p,'light')}};}
+  if(!hub){
+    if(b==='A')return {hold:{label:'CALL partner while held',start:()=>startCall(p),stop:()=>stopCall(p)}};
+    if(b==='B')return {short:{label:'SEEN',run:()=>sendSeen(p)}};
+    if(b==='C')return {short:p.set.fobToHub?{label:'→ partner HUB: LIGHT toggle',run:()=>hubCmd(p,2,2),tag:'FOB→HUB'}:{label:'LIGHT toggle (local)',run:()=>toggleLatch(p,'light')}};
+    return {short:p.set.fobToHub?{label:'→ partner HUB: HEAVY toggle',run:()=>hubCmd(p,1,2),tag:'FOB→HUB'}:{label:'HEAVY toggle (local)',run:()=>toggleLatch(p,'heavy')},long:armL};
+  }
+  const mod=espMod(p);
+  if(b==='A')return {short:{label:'HEAVY toggle',run:()=>toggleLatch(p,'heavy'),tag:'HUB'}};
+  if(b==='B')return {short:{label:'LIGHT toggle',run:()=>toggleLatch(p,'light'),tag:'HUB'}};
+  if(b==='C')return {short:mod?{label:`${mod.m.s} ON / OFF`,run:()=>espCmd(p,(p.modState[mod.slot]||{}).on?'OFF':'ON'),tag:mod.m.s}:{label:'— no ESP-NOW module',tag:'HUB'}};
+  return {short:{label:'Page partner: COME HERE',run:()=>sendText(p,1),tag:'HUB'},long:armL};
+}
+
+/* fob */
+async function fobPress(p,c){
+  const f=p.fob[c];p.fobOk=false;if(!p.set.rx){log(`${p.id}: fob ${c} ignored — receiver is off (RX_EN)`,'warn');return;}if(!f){log(`${p.id}: nothing learned on channel ${c}`);return;}
+  const res=await fieldSend('fob'+p.id,p.id,'fob',{fast:true,label:'433.92 '+c});
+  if(!res.ok){log(`${p.id}: fob ${c} not received (fob link ${sgn(res.links[0].margin,0)} dB)`,'bad');return;}
+  if(!p.held['F'+c]&&MOD[f.mod].chans>1&&f.btn==='A'){}
+  p.fobOk=true;flash(p.id,'rx');setLive(p.id,'d'+'ABCD'.indexOf(c),true);
+  await pulse(p.id,'d'+'ABCD'.indexOf(c),{label:'D'+'ABCD'.indexOf(c)+' HIGH'});flash(p.id,'pcf');await pulse(p.id,'int',{label:'INT ↓'});flash(p.id,'s3');
+  const g=p.guard.st;const R=fobResolve(p,c);
+  if(R.hold&&p.held['F'+c]){p.fobHold=c;R.hold.start();}
+  else if(R.hold&&!p.held['F'+c]){R.hold.start();setTimeout(()=>stopCall(p),D(500));}
+  if(!p.held['F'+c])setLive(p.id,'d'+'ABCD'.indexOf(c),false);
+}
+function fobRelease(p,c,h){
+  setLive(p.id,'d'+'ABCD'.indexOf(c),false);
+  if(!powered(p))return;
+  const run=()=>{if(h.fired)return;const R=fobResolve(p,c);if(R.short&&R.short.run)R.short.run();};
+  if(p.fobOk)run();else setTimeout(()=>{if(p.fobOk)run();},Math.max(200,D(1400)));
+}
+
+/* sending */
+function srcByte(id){return id==='B2'?0x42:id==='A2'?0x41:0x03;}
+function pkt(type,arg,src){return [type,arg,srcByte(src),0x5a].map(v=>v.toString(16).padStart(2,'0').toUpperCase()).join(' ');}
+async function txPacket(srcId,dstId,type,arg,o){
+  o=o||{};const sp=PG[srcId];
+  if(sp){if(!powered(sp))return {ok:false};sp.awakeUntil=now()+5000;flash(srcId,'s3');await pulse(srcId,'spi',{type:'data',label:`${TYPES[type]} [${pkt(type,arg,srcId)}]`});flash(srcId,'nrf');await pulse(srcId,'pig',{label:'433.2 MHz'});antGlow(srcId);}
+  const radio=pagerRadio();let res;let tries=0;
+  do{res=await fieldSend(srcId,dstId,radio,{label:tries?`retry ${tries}/4`:TYPES[type],fast:tries>0});tries++;}while(!res.ok&&tries<5&&!o.noRetry);
+  const dp=PG[dstId];
+  if(!res.ok||(dp&&!powered(dp))){
+    if(sp){setRGB(sp,'#ef4444',1500);log(`${srcId} → ${dstId} ${TYPES[type]}${type===4?' '+MSGS[arg]:''}: no reply after ${tries} tries`,'bad');}
+    return {ok:false,res};
+  }
+  if(dp){antGlow(dstId);await pulse(dstId,'pig',{rev:true,label:'RX'});flash(dstId,'nrf');await pulse(dstId,'dr',{label:'DR ↑'});flash(dstId,'s3');}
+  handlePacket(dstId,srcId,type,arg,res);
+  // GOTIT back
+  if(type!==2&&type!==13){
+    if(dp){await pulse(dstId,'spi',{type:'data',dur:180,label:'GOTIT'});}
+    const back=await fieldSend(dstId,srcId,radio,{ack:true,fast:true});
+    if(sp){await pulse(srcId,'pig',{rev:true,dur:160});await pulse(srcId,'dr',{dur:160});flash(srcId,'s3');if(type!==1){setRGB(sp,'#22c55e',900);setSeq(sp,'vib',[[1,60],[0,10]]);}sp.link={ok:true,t:now(),margin:Math.min(...res.links.map(l=>l.margin))};}
+  }
+  const via=res.relayed?` via ${res.path.slice(1,-1).map(id=>ent(id).label||id).join('→')}`:'';
+  if(type!==1)log(`${srcId} → ${dstId} ${TYPES[type]}${type===4?' '+MSGS[arg]:''} ✓ delivered${via} (margin ${sgn(Math.min(...res.links.map(l=>l.margin)),0)} dB)`,'ok');
+  if(ent('T1')&&(type===10||(type===4&&arg===4)))setTimeout(()=>{bubble('T1','→ phones (ntfy)','t1',2200);log(`T1 Site Base gateway: push "${type===10?'ALARM':MSGS[arg]}" from ${srcId} → phones / MQTT`,'ok');},D(300));
+  return {ok:true,res};
+}
+function handlePacket(dstId,srcId,type,arg){
+  const p=PG[dstId];if(!p)return;const t=now();
+  const pod=modsOf(p).find(x=>x.m.id==='wearpod');
+  if(type===4){const m=arg;const pat=msgPattern(m);setSeq(p,'vib',pat);setSeq(p,'light',pat);if(m===4){setSeq(p,'heavy',[[1,300],[0,200],[1,300],[0,200],[1,300]]);}
+    show(p,'msg',`FROM ${srcId}`,MSGS[m]);p.last=`${MSGS[m]} (${srcId})`;
+    const drv=modsOf(p).find(x=>x.m.id==='drv');if(drv)p.screen.c='HAPTIC: '+(['','TICK','DBL TICK','TRIPLE','RAMP','BUZZ','STRONG'][m]||'PULSE');
+    const sign=p.slots['5VOUT']==='sign';if(sign&&p.swOut&&(m===2||m===5))p.modState['5VOUT'].text=m===2?'WORKING ON C4 — DO NOT SWITCH':'POWER BACK ON';
+    if(pod)podBuzz(p);}
+  else if(type===1){p.rxCall={from:srcId,until:t+400};if(!p.screen||p.screen.kind!=='call')show(p,'call',`CALL FROM ${srcId}`,'CALL');p.last=`CALL (${srcId})`;if(pod)podBuzz(p);}
+  else if(type===3){setRGB(p,'#3b82f6',3000);setSeq(p,'vib',[[1,150],[0,150],[1,150]]);show(p,'msg',`${srcId} SAW IT`,'SEEN ✓');p.last=`SEEN (${srcId})`;if(p.alarmView)p.alarmView=null;}
+  else if(type===5){show(p,'msg',`PING FROM ${srcId}`,'LINK OK',2000);}
+  else if(type===8){hubExec(p,srcId,arg);}
+  else if(type===6){bridgeRelay(p,srcId,arg);}
+  else if(type===9){show(p,'msg',`${srcId} HUB STATE`,`H:${arg&1?'ON':'OFF'} L:${arg&2?'ON':'OFF'}`,3000);}
+  else if(type===7){show(p,'msg',`${srcId} MODULE`,arg===0x0f?'NO MODULE':['OFF','ON','PULSE'][arg&15]||'?',3000);}
+  else if(type===10){const why=['','LID','LIFT-OFF','TILT','MOTION','BUTTON','DOOR'][arg]||'?';p.alarmView={from:srcId,why,t};setSeq(p,'vib',[[1,900],[0,200],[1,900]]);setSeq(p,'siren',p.set.sound?[[1,150],[0,100],[1,150]]:[]);setRGB(p,'#ef4444',4000);show(p,'alarm',`ALARM ${srcId}`,why,10000);if(pod)podBuzz(p);}
+  else if(type===11){show(p,'msg',`${srcId} GUARD`,['DISARMED','ARMING','ARMED','ENTRY'][arg]||'?',3000);setSeq(p,'vib',[[1,120]]);}
+  else if(type===13){setTimeout(()=>txPacket(dstId,srcId,12,1,{noRetry:true}),D(200)+(dstId==='A2'?D(300):0));}
+  else if(type===12){show(p,'msg','HELLO',srcId,2000);}
+}
+function sendText(p,m){if(!powered(p))return;show(p,'msg','SENDING',MSGS[m],3000);txPacket(p.id,p.partner,4,m).then(r=>{if(r.ok)show(p,'msg','DELIVERED ✓',MSGS[m],3000);else show(p,'msg','NO REPLY ✗',MSGS[m],3000);});}
+function sendSeen(p){if(p.alarmView){p.alarmView=null;}show(p,'msg','SENDING','SEEN',2000);txPacket(p.id,p.partner,3,0);}
+function ping(p){show(p,'msg','LINK TEST','PING…',3000);txPacket(p.id,p.partner,5,0).then(r=>{const l=link(p.id,p.partner,pagerRadio());if(r.ok){setSeq(p,'vib',[[1,120],[0,120],[1,120]]);show(p,'msg','LINK OK ✓',`${sgn(l.margin,0)} DB (SIM)`,3000);}else{setSeq(p,'vib',[[1,700]]);show(p,'msg','NO LINK ✗',`${sgn(l.margin,0)} DB (SIM)`,3000);}
+  const ads=modsOf(p).find(x=>x.m.id==='ads');if(ads){const v=p.src?(p.src.mains?5.0:3.3+0.9*p.src.mAh/p.src.cap):0;setTimeout(()=>show(p,'msg','SOURCE (ADS1115)',`${fmt(v,2)} V`,3000),D(1500)+400);}});}
+function startCall(p){if(!powered(p)||p.stream)return;p.stream={dst:p.partner,t0:now(),next:0,first:true};show(p,'msg','CALLING '+p.partner,'HOLD…',600000);setLive(p.id,'spi',true);}
+function stopCall(p){if(!p.stream)return;p.stream=null;setLive(p.id,'spi',false);delete FIELD.streams[p.id];show(p,'msg','CALL ENDED','',1500);const d=PG[p.partner];if(d&&d.rxCall)d.rxCall.until=Math.min(d.rxCall.until,now()+150);}
+function tickStreams(t){
+  for(const pid of ['B2','A2']){const p=PG[pid];const s=p.stream;if(!s)continue;if(!powered(p)){stopCall(p);continue;}
+    const l=route(pid,s.dst,pagerRadio());const ok=l.ok;
+    FIELD.streams[pid]={a:pid,b:s.dst,radio:pagerRadio(),l:l.links[0]&&!l.relayed?l.links[0]:Object.assign({},l.links[0],{margin:ok?1:-1,death:l.links[0].death})};
+    const d=PG[s.dst];if(ok&&d&&powered(d)){if(!d.rxCall||d.rxCall.until<t)log(`${pid} → ${s.dst} CALL stream: receiver outputs on`,'ok');handlePacket(s.dst,pid,1,0);}
+    if(t>=s.next){s.next=t+Math.max(160,D(360));pulse(pid,'pig',{dur:Math.max(120,D(220))});if(ok&&d){pulse(s.dst,'pig',{rev:true,dur:Math.max(120,D(220))});}}
+    if(s.first){s.first=false;if(!ok)log(`${pid} → ${s.dst} CALL: no link (${sgn(l.links[0].margin,0)} dB) — nothing arrives`,'bad');}
+  }
+}
+function toggleLatch(p,ch){p.latch[ch]=!p.latch[ch];show(p,'msg',ch.toUpperCase(),p.latch[ch]?'ON':'OFF',2000);log(`${p.id} ${ch.toUpperCase()} port ${p.latch[ch]?'ON':'OFF'}`);if(p.mode==='HUB'||true)hubStateLater(p);}
+function hubStateLater(p){}
+function sendHubState(p){txPacket(p.id,p.partner,9,(p.latch.heavy?1:0)|(p.latch.light?2:0)|(['ARMED','ENTRY','ALARM'].includes(p.guard.st)?8:0));}
+function hubCmd(p,target,action){show(p,'msg','HUBCMD → '+p.partner,['','HEAVY','LIGHT','MODULE','GUARD'][target]+' '+['OFF','ON','TOGGLE','STATUS'][action],2500);txPacket(p.id,p.partner,8,(target<<4)|action).then(r=>{if(r.ok)setSeq(p,'vib',[[1,100]]);});}
+function hubExec(p,src,arg){
+  const target=arg>>4,action=arg&15;
+  if(target===4){if(action===0)disarm(p,'partner '+src);else arm(p);return;}
+  if(p.mode!=='HUB'){show(p,'msg','HUBCMD IGNORED','NOT IN HUB MODE',3000);log(`${p.id} ignored HUBCMD from ${src} — it is in PAGER mode (LINK hold 2 s for HUB)`,'warn');return;}
+  if(target===1){if(action===2)p.latch.heavy=!p.latch.heavy;else if(action<2)p.latch.heavy=!!action;}
+  if(target===2){if(action===2)p.latch.light=!p.latch.light;else if(action<2)p.latch.light=!!action;}
+  if(target===3){espCmd(p,action===1?'ON':action===0?'OFF':'PULSE');}
+  show(p,'msg','HUB ← '+src,`HEAVY ${p.latch.heavy?'ON':'OFF'} LIGHT ${p.latch.light?'ON':'OFF'}`,3000);
+  setTimeout(()=>sendHubState(p),D(400));
+}
+async function espCmd(p,cmd,o){
+  o=o||{};const mod=espMod(p);if(!mod){show(p,'msg','NO MODULE','ATTACH ONE',2500);log(`${p.id}: no ESP-NOW module attached (5V OUT or wireless bay)`,'warn');return false;}
+  p.wifiUntil=now()+60000;flash(p.id,'s3');
+  const powered5=mod.slot!=='5VOUT'||p.swOut;
+  await wireless(p,mod.slot,'rf24',`ESP-NOW ${cmd}`);
+  if(!powered5){show(p,'msg',mod.m.s+': NO REPLY','SW OUT IS OFF',3000);log(`${p.id}: ${mod.m.n} on 5V OUT has no power — switch SW OUT on`,'bad');return false;}
+  const st=p.modState[mod.slot]=p.modState[mod.slot]||{on:false};
+  if(cmd==='ON')st.on=true;else if(cmd==='OFF')st.on=false;else if(cmd==='PULSE'){st.pulseUntil=now()+p.pulseN*600;st.pulseN=p.pulseN;}
+  await wireless(p,mod.slot,'rf24','REPLY_STATE',true);
+  show(p,'msg',mod.m.s.toUpperCase(),cmd==='STATUS'?(st.on?'IS ON':'IS OFF'):cmd==='PULSE'?`PULSE ${p.pulseN}`:(st.on?'ON ✓':'OFF ✓'),3000);
+  log(`${p.id} → ${mod.m.n}: ${cmd}${cmd==='PULSE'?' '+p.pulseN:''} ✓ (ESP-NOW, ${o.bridged?'bridged for '+o.bridged:'local'})`,'ok');return true;
+}
+async function wireless(p,slot,col,label,rev){
+  const dm=DOM[p.id];const se=dm.slotEls[slot];if(!se||ST.speed===0)return;const s3=dm.blocks.s3.b;const [x1,y1]=A(p.id,s3.x+s3.w/2,s3.y+s3.h/2);const x2=se.s.x+se.s.w/2,y2=se.s.y+12;
+  const path=sv('path',{d:`M${rev?x2:x1} ${rev?y2:y1} L${rev?x1:x2} ${rev?y1:y2}`,fill:'none',stroke:`var(--${col})`,'stroke-width':1.6,'stroke-dasharray':'3 4',opacity:.9},dm.fx);
+  const id='w'+Math.random().toString(36).slice(2,7);dm.nets[id]={p:path,type:'rf24'};
+  await pulse(p.id,id,{type:'rf24',label});path.remove();delete dm.nets[id];
+}
+async function bridgeRelay(p,src,arg){const cmd=['','ON','OFF','PULSE','STATUS'][arg>>4]||'STATUS';const ok=await espCmd(p,cmd,{bridged:src});const st=p.modState[(espMod(p)||{}).slot]||{};txPacket(p.id,src,7,ok?(st.on?1:0):0x0f);}
+async function relayRemote(p,cmd){
+  const n={ON:1,OFF:2,PULSE:3,STATUS:4}[cmd];show(p,'msg','RELAY → '+p.partner,cmd,2500);
+  // v1.3 sends direct ESP-NOW too; show whether 2.4 GHz gets through
+  const direct=fieldSend(p.id,p.partner,'espnow',{label:'ESP-NOW direct'});
+  const r=txPacket(p.id,p.partner,6,(n<<4)|3);
+  const d=await direct;log(`${p.id}: direct ESP-NOW to ${p.partner}'s module ${d.ok?'arrived too (module de-dups within 500 ms)':'faded '+sgn(d.links[0].margin,0)+' dB — the nRF905 bridge carries it'}`,d.ok?'':'warn');await r;
+}
+function setMode(p,m){p.mode=m;p.menu=null;show(p,'big',m==='HUB'?'HUB MODE':'PAGER MODE','',2500);log(`${p.id} → ${m} mode${m==='HUB'&&espMod(p)?' (Wi-Fi on for ESP-NOW, ~+95 mA)':''}`);refreshPager(p.id);}
+
+/* guard */
+function loopClosed(p){return p.loop.lid&&p.loop.lift&&p.loop.tilt;}
+function openWhy(p){return !p.loop.lid?1:!p.loop.lift?2:!p.loop.tilt?3:0;}
+function arm(p){if(!powered(p))return;if(!loopClosed(p)){setSeq(p,'siren',[[1,90],[0,90],[1,90],[0,90],[1,90]]);show(p,'msg','CANNOT ARM','LOOP OPEN: '+['','LID','LIFT','TILT'][openWhy(p)],3000);log(`${p.id}: arm refused — guard loop open (${['','lid','lift-off','tilt'][openWhy(p)]})`,'bad');return;}
+  p.guard.st='EXIT';p.guard.until=now()+p.set.exitDelay*1000;p.guard.nextChirp=0;p.menu=null;log(`${p.id} GUARD: exit delay ${p.set.exitDelay} s`);txPacket(p.id,p.partner,11,1,{noRetry:true});refreshPager(p.id);}
+function disarm(p,by){const was=p.guard.st;p.guard.st='OFF';p.guard.sirenUntil=0;p.latch.heavy=false;log(`${p.id} GUARD disarmed by ${by}${was==='ALARM'?' (alarm cleared)':''}`,'ok');show(p,'big','DISARMED','',2500);txPacket(p.id,p.partner,11,0,{noRetry:true});refreshPager(p.id);}
+function guardTrigger(p,reason){if(p.guard.st!=='ARMED')return;p.guard.st='ENTRY';p.guard.until=now()+5000;p.guard.reason=reason;log(`${p.id} GUARD: trigger (${['','lid','lift-off','tilt','motion','button','door'][reason]}) → 5 s entry delay`,'warn');txPacket(p.id,p.partner,11,3,{noRetry:true});}
+function tickGuard(t){
+  for(const pid of ['B2','A2']){const p=PG[pid],g=p.guard;if(!powered(p))continue;
+    if(g.st==='EXIT'){if(t>=g.nextChirp){g.nextChirp=t+1000;setSeq(p,'siren',[[1,40]]);}if(t>=g.until){if(!loopClosed(p)){g.st='OFF';log(`${pid}: loop opened during exit delay — not armed`,'bad');continue;}g.st='ARMED';log(`${pid} GUARD: ARMED`,'ok');txPacket(pid,p.partner,11,2,{noRetry:true});refreshPager(pid);}}
+    else if(g.st==='ARMED'){if(!loopClosed(p))guardTrigger(p,openWhy(p));}
+    else if(g.st==='ENTRY'){if(t>=g.nextChirp){g.nextChirp=t+700;setSeq(p,'siren',[[1,30]]);}if(t>=g.until){g.st='ALARM';g.sirenUntil=t+180000;g.nextTx=0;g.acked=false;log(`${pid} GUARD: ALARM (${['','lid','lift-off','tilt','motion','button','door'][g.reason]}) — siren, HEAVY on, LIGHT pulsing`,'bad');refreshPager(pid);}}
+    else if(g.st==='ALARM'){if(t>=g.nextTx){g.nextTx=t+(g.acked?30000:Math.max(2000,D(2600)));txPacket(pid,p.partner,10,g.reason,{noRetry:true}).then(r=>{if(r.ok)g.acked=true;});}}
+  }
+}
+
+/* modules */
+function modFx(p,m,fx,base){
+  if(fx==='photo'){setSeq(p,'light',[[1,200]]);show(p,'msg','FAR SHUTTER','PHOTO',2000);log(`${p.id}: LIGHT pulse 200 ms → selfie remote → phone takes a photo`,'ok');}
+  else if(fx==='shake'){const n=p.pulseN;const pat=[];for(let i=0;i<n;i++)pat.push([1,400],[0,400]);setSeq(p,'heavy',pat);show(p,'msg',m.s.toUpperCase(),`${n}× PULSE`,2500);log(`${p.id}: HEAVY ${n}× → ${m.n}`,'ok');}
+  else if(fx==='tone'){p.set.heavyTone=false;const st=p.modState['5VOUT']||(p.modState['5VOUT']={});st.on=!st.on;show(p,'msg','TONE 1 KHZ',st.on?'ON':'OFF',2500);log(`${p.id}: Tone Injector ${st.on?'on':'off'}`);}
+  else if(fx==='gauge'){if(base&&base.run)base.run();}
+  else if(fx==='menuup'){if(p.menu)menuMove(p,-1);else openMenu(p);}
+  else if(fx==='menudown'){if(p.menu)menuMove(p,1);else openMenu(p);}
+  else if(fx==='menuopen'){if(p.menu)menuSelect(p);else openMenu(p);}
+  else if(base&&base.run)base.run();
+}
+function modAction(pid,slot,m,act){
+  const p=PG[pid];
+  if(act==='charge'){if(pid==='A2'&&p.src&&!p.src.mains){p.charging=!p.charging;log(`A2 Pager Source CHARGE ${p.charging?'plugged in':'unplugged'}`);}refreshPager(pid);return;}
+  if(!powered(p)){log(`${pid} is off`,'warn');return;}
+  if(act==='motion'){if(['ARMED'].includes(p.guard.st))guardTrigger(p,4);else log(`${pid}: MPU6050 motion (guard not armed — ignored)`);}
+  else if(act==='mandown'){if(p.md)return;p.md={until:now()+10000};show(p,'alarm','MAN-DOWN?','PRESS SEEN',10000);setSeq(p,'vib',[[1,300],[0,300],[1,300],[0,300],[1,300]]);log(`${pid}: still + tilted 60 s → man-down pre-alarm (10 s, SEEN cancels)`,'warn');}
+  else if(act==='podseen'){log(`${pid}: SEEN pressed on the Wear Pod (BLE)`);wireless(p,slot,'ble','BLE SEEN',true).then(()=>sendSeen(p));}
+  else if(act==='kp7'){sendText(p,7);}else if(act==='kp8'){sendText(p,8);}
+  else if(act==='ev'){
+    if(p.mode!=='HUB'&&!(now()<p.wifiUntil)){log(`${pid}: ${m.n} event lost — the pager is not listening (Wi-Fi off in PAGER mode). Decide the K3 module-radio fork.`,'bad');wireless(p,slot,'rf24','EVENT ✗',true);return;}
+    wireless(p,slot,'rf24','EVENT',true).then(()=>{const msg=m.id==='gatebell'?10:m.id==='voltwatch'?14:8;show(p,'msg',m.s.toUpperCase(),m.id==='contdet'?'PAIR CLOSED':'EVENT',3000);log(`${pid}: EVENT from ${m.n} → paging ${p.partner}`,'ok');sendText(p,msg);});
+  }
+}
+function podBuzz(p){const s=['W1','W2'].find(k=>p.slots[k]==='wearpod');if(!s)return;wireless(p,s,'ble','BLE → pod');const st=p.modState[s]=p.modState[s]||{};st.buzzUntil=now()+1500;}
+
+/* T3 console */
+async function consoleSend(dst,m){if(!ent('T3'))return;log(`T3 → ${dst}: ${MSGS[m]}`);const radio=pagerRadio();const res=await fieldSend('T3',dst,radio,{label:'TEXTMSG'});
+  const dp=PG[dst];if(!res.ok||!powered(dp)){log(`T3 → ${dst}: no reply`,'bad');return;}antGlow(dst);await pulse(dst,'pig',{rev:true});await pulse(dst,'dr');flash(dst,'s3');handlePacket(dst,'T3',4,m);
+  await fieldSend(dst,'T3',radio,{ack:true,fast:true});log(`T3 → ${dst} ${MSGS[m]} ✓${res.relayed?' (relayed)':''}`,'ok');}
+async function rollCall(){if(!ent('T3'))return;log('T3: ROLLCALL to ALL');const out=[];for(const id of ['B2','A2']){const r=await fieldSend('T3',id,pagerRadio(),{label:'ROLLCALL'});const p=PG[id];if(r.ok&&powered(p)){await fieldSend(id,'T3',pagerRadio(),{ack:true,fast:true,label:'HELLO'});out.push(`${id} ✓ ${p.src?(p.src.mains?'mains':fmt(100*p.src.mAh/p.src.cap)+'%'):'—'}`);}else out.push(`${id} ✗`);}log('Roll call: '+out.join(' · '),out.every(x=>x.includes('✓'))?'ok':'warn');}
+
+/* ============================== menu ============================== */
+function menuTree(p){
+  const tog=(label,key)=>({label,val:()=>p.set[key]?'ON':'OFF',act:()=>{p.set[key]=!p.set[key];log(`${p.id} setting ${label}: ${p.set[key]?'ON':'OFF'}`);refreshPager(p.id);}});
+  const armed=['EXIT','ARMED','ENTRY','ALARM'].includes(p.guard.st);
+  return {label:'MENU',items:[
+    {label:'SEND MESSAGE',items:[1,2,3,4,5,6,7,8].map(m=>({label:MSGS[m],act:()=>{p.menu=null;sendText(p,m);}}))},
+    {label:'MODE',items:[{label:'PAGER',val:()=>p.mode==='PAGER'?'•':'',act:()=>setMode(p,'PAGER')},{label:'HUB',val:()=>p.mode==='HUB'?'•':'',act:()=>setMode(p,'HUB')}]},
+    {label:'GUARD',items:[{label:armed?'DISARM':'ARM',act:()=>{p.menu=null;armed?(p.set.partnerOnly?log(`${p.id}: menu disarm refused — PARTNER-ONLY DISARM`,'warn'):disarm(p,'menu')):arm(p);}},tog('STEALTH','stealth'),tog('PARTNER-ONLY DIS','partnerOnly'),
+      {label:'EXIT DELAY',val:()=>p.set.exitDelay+'S',act:()=>{p.set.exitDelay={5:15,15:30,30:5}[p.set.exitDelay];}},{label:'DISARM PARTNER',act:()=>{p.menu=null;hubCmd(p,4,0);}},{label:'ARM PARTNER',act:()=>{p.menu=null;hubCmd(p,4,1);}}]},
+    {label:'PARTNER HUB',items:[{label:'HEAVY TOGGLE',act:()=>{p.menu=null;hubCmd(p,1,2);}},{label:'LIGHT TOGGLE',act:()=>{p.menu=null;hubCmd(p,2,2);}},{label:'MODULE ON',act:()=>{p.menu=null;relayRemote(p,'ON');}},{label:'MODULE OFF',act:()=>{p.menu=null;relayRemote(p,'OFF');}},{label:'MODULE PULSE 3',act:()=>{p.menu=null;relayRemote(p,'PULSE');}}]},
+    {label:'FOB',items:[tog('RECEIVER','rx'),tog('FOB TO HUB','fobToHub'),tog('FOB DIRECT','fobDirect'),{label:'CHANNELS',info:()=>'ABCD'.split('').map(c=>{const f=p.fob[c];return c+': '+(f?(MOD[f.mod].chans>1?'FOB BTN '+f.btn:MOD[f.mod].s):'-');})}]},
+    {label:'PORT TEST',items:[{label:'LIGHT PULSE',act:()=>setSeq(p,'light',[[1,500]])},{label:'HEAVY PULSE',act:()=>setSeq(p,'heavy',[[1,500]])},{label:'VIBRATION',act:()=>setSeq(p,'vib',[[1,400]])},{label:'SIREN CHIRP',act:()=>setSeq(p,'siren',[[1,200]])},tog('HEAVY TONE','heavyTone')]},
+    {label:'LINK',items:[{label:'PING PARTNER',act:()=>{p.menu=null;ping(p);}},{label:'RANGE MAP',act:()=>{p.menu=null;rangeMap(p);}}]},
+    {label:'MODULES',info:()=>['I2C 0x3C OLED','I2C 0x20 PCF8574'].concat(modsOf(p).filter(x=>x.m.i2c).map(x=>`I2C ${x.m.i2c} ${x.m.s}`)).concat(modsOf(p).filter(x=>x.m.esp||x.m.ev||x.m.ble).map(x=>`${x.m.ble?'BLE':'ESPNOW'} ${x.m.s}`)).concat(i2cClash(p)?['! ADDRESS CLASH '+i2cClash(p)]:[])},
+    {label:'SETTINGS',items:[tog('OLED FLIP','flip'),{label:'OLED',val:()=>p.set.oled,act:()=>{p.set.oled=p.set.oled==='ALWAYS'?'5S':'ALWAYS';}},tog('LIGHT SLEEP','sleep'),tog('SOUND','sound')]},
+    {label:'INFO',info:()=>{const c=current(p,now());return [`UNIT ${p.id}  FW 2.0 (SIM)`,`MODE ${p.mode}`,`SOURCE ${p.src?(p.src.mains?'MAINS':fmt(p.src.mAh)+' MAH'):'NONE'}`,`DRAW ${fmt(c.cell,1)} MA`,`GUARD ${p.guard.st}`];}}
+  ]};
+}
+function openMenu(p){if(!powered(p))return;p.menu={stack:[{node:menuTree(p),i:0,top:0}]};p.awakeUntil=now()+20000;log(`${p.id}: menu opened`);refreshPager(p.id);}
+function curMenu(p){return p.menu&&p.menu.stack[p.menu.stack.length-1];}
+function menuMove(p,d){const m=curMenu(p);if(!m)return;const n=m.node.info?m.node.info().length:m.node.items.length;m.i=clamp(m.i+d,0,Math.max(0,n-1));p.menu.idle=now();}
+function menuSelect(p){const m=curMenu(p);if(!m||m.node.info)return;const it=m.node.items[m.i];if(!it)return;
+  if(it.items||it.info){const node=it.items?it:{label:it.label,info:it.info};if(it.items&&typeof it.items==='function')node.items=it.items();p.menu.stack.push({node,i:0,top:0});}
+  else if(it.act){it.act();if(p.menu){const fresh=menuTree(p);const path=p.menu.stack.map(s=>s.node.label);let node=fresh;for(let k=1;k<path.length;k++){const nx=node.items.find(x=>x.label===path[k]);if(nx)node=nx;}p.menu.stack[p.menu.stack.length-1].node=node;}}
+  refreshPager(p.id);}
+function menuBack(p){if(!p.menu)return;if(p.menu.stack.length>1)p.menu.stack.pop();else p.menu=null;refreshPager(p.id);}
+function rangeMap(p){const steps=[-10,-2,6,10];show(p,'msg','RANGE MAP','PINGING…',4000);
+  (async()=>{const out=[];for(const pt of steps){const l=link(p.id,p.partner,'nrf905',pt);out.push(`${pt>0?'+':''}${pt}${l.margin>=0?'✓':'✗'}`);await new Promise(res=>FIELD.beams.push({a:antPos(ent(p.id)),b:antPos(ent(p.partner)),l,radio:'nrf905',t0:now(),dur:D(420),res,label:pt+' dBm'}));}
+    const ok=steps.filter(pt=>link(p.id,p.partner,'nrf905',pt).margin>=0).length;const zone=['OUT','FAR','MID','MID','NEAR'][ok];show(p,'msg','RANGE: '+zone,out.join(' '),6000);log(`${p.id} Range Map (power-step pings): ${out.join(' ')} → ${zone}`);})();}
+function i2cClash(p){const seen={};for(const {m} of modsOf(p)){if(!m.i2c)continue;if(seen[m.i2c])return m.i2c;seen[m.i2c]=1;}return null;}
+
+/* ============================== OLED render ============================== */
+function screenFor(p,t){
+  if(!powered(p))return {off:true};
+  if(p.set.oled==='5S'&&t>p.awakeUntil&&!p.menu&&p.guard.st==='OFF'&&!p.stream&&!(p.rxCall&&p.rxCall.until>t))return {off:true};
+  if(p.md){if(t>p.md.until){p.md=null;log(`${p.id}: man-down not cancelled → URGENT: COME`,'bad');sendText(p,4);}else return {big:'MAN-DOWN?',sub:`SEEN TO CANCEL ${Math.ceil((p.md.until-t)/1000)}`};}
+  const g=p.guard.st;
+  if(g==='EXIT')return {big:'ARMING',sub:`LEAVE ${Math.ceil((p.guard.until-t)/1000)} S`};
+  if(g==='ENTRY')return {big:'ENTRY '+Math.ceil((p.guard.until-t)/1000),sub:'DISARM: FOB D 2S'};
+  if(g==='ALARM')return {big:'ALARM!',sub:['','LID','LIFT-OFF','TILT','MOTION','BUTTON','DOOR'][p.guard.reason]+(p.guard.acked?' · SENT ✓':' · SENDING')};
+  if(g==='ARMED'&&p.set.stealth&&!p.menu)return {off:true};
+  if(p.menu)return {menu:true};
+  if(p.rxCall&&p.rxCall.until>t)return {big:'CALL!',top:'FROM '+p.rxCall.from,sub:'SEEN = I SAW IT'};
+  if(p.screen&&t<p.screen.until){const s=p.screen;return {big:s.kind==='msg'||s.kind==='alarm'||s.kind==='call'||s.kind==='big'?String(s.b||s.a):null,top:s.kind==='big'?'':s.a,sub:s.c||''};}
+  return {idle:true};
+}
+function drawOLED(p,t){
+  const sc=screenFor(p,t);const c=p.oc;const x=c.getContext('2d');
+  const sig=JSON.stringify(sc)+'|'+(sc.menu?JSON.stringify(p.menu.stack.map(s=>[s.node.label,s.i])):'')+'|'+(sc.idle?idleLines(p,t).join('/'):'')+'|'+p.set.flip;
+  if(sig===p.oledSig)return;p.oledSig=sig;
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#000';x.fillRect(0,0,128,64);
+  if(p.set.flip){x.translate(128,64);x.rotate(Math.PI);}
+  x.fillStyle='#d8f0ff';
+  if(sc.off){}
+  else if(sc.menu){const m=curMenu(p);const lines=m.node.info?m.node.info():m.node.items.map(it=>[typeof it.label==='function'?it.label():it.label,it.val?it.val():(it.items||it.info?'►':'')]);
+    x.fillRect(0,0,128,9);x.fillStyle='#000';oText(x,m.node.label,2,1);x.fillStyle='#d8f0ff';
+    const vis=5;if(m.i<m.top)m.top=m.i;if(m.i>=m.top+vis)m.top=m.i-vis+1;
+    for(let k=0;k<vis;k++){const idx=m.top+k;if(idx>=lines.length)break;const y=11+k*9;const L=lines[idx];
+      if(m.node.info){oText(x,String(L).slice(0,21),1,y);continue;}
+      if(idx===m.i){x.fillRect(0,y-1,128,9);x.fillStyle='#000';}
+      oText(x,(idx===m.i?'>':' ')+String(L[0]).slice(0,15),1,y);if(L[1]){const v=String(L[1]);oText(x,v,127-v.length*6,y);}x.fillStyle='#d8f0ff';}
+    oText(x,'K1▲ K3▼ K2OK SEEN◄',1,57);}
+  else if(sc.idle){const L=idleLines(p,t);x.fillRect(0,0,128,9);x.fillStyle='#000';oText(x,L[0],2,1);
+    const pc=p.src?(p.src.mains?100:100*p.src.mAh/p.src.cap):0;x.fillRect(104,2,18,6);x.fillStyle='#d8f0ff';x.fillRect(105,3,16,4);x.fillStyle='#000';x.fillRect(105+Math.round(16*pc/100),3,16-Math.round(16*pc/100),4);x.fillRect(122,3,1,4);
+    x.fillStyle='#d8f0ff';for(let i=1;i<L.length;i++)oText(x,L[i],1,2+i*10);}
+  else{if(sc.top)oText(x,String(sc.top).slice(0,21),1,2);const b=String(sc.big||'');if(b.length<=10)oText(x,b,Math.max(0,64-b.length*6),18,2);else{const w=wrap(b,10);w.slice(0,2).forEach((l,i)=>oText(x,l,Math.max(0,64-l.length*6),13+i*16,2));}
+    if(sc.sub)oText(x,String(sc.sub).slice(0,21),1,55);}
+  const url=c.toDataURL();DOM[p.id].oledImg.setAttribute('href',url);
+  const big=$('#oled'+p.id);if(big){const g=big.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,big.width,big.height);g.drawImage(c,0,0,big.width,big.height);}
+}
+function idleLines(p,t){
+  const pc=p.src?(p.src.mains?'AC':fmt(100*p.src.mAh/p.src.cap)+'%'):'--';
+  const l=FIELD.preview||link('B2','A2',pagerRadio());const ls=l?(l.margin>=0?'OK':'??'):'--';
+  const sht=modsOf(p).find(x=>x.m.id==='sht');
+  return [`${p.id} ${p.mode} ${pc}`,`LINK ${p.partner} ${ls}${p.link?' '+Math.round((t-p.link.t)/1000)+'S':''}`,`FOB:${p.set.rx?'ON':'OFF'} GRD:${p.guard.st==='OFF'?'OFF':p.guard.st}`,sht?'23.4°C 48%RH':`LAST: ${String(p.last).slice(0,15)}`,'HOLD SEEN: MENU'];
+}
+
+/* ============================== pager visuals per frame ============================== */
+function updateVisuals(pid,t){
+  const p=PG[pid],dm=DOM[pid],o=p.o;
+  const pw=powered(p);
+  const sig=[t<p.wifiUntil,Object.keys(p.held).join(''),pw,o.vib,o.light,o.heavy,o.siren,o.rgb,p.set.rx,p.swOut,p.on,p.mode,p.loop.lid,p.loop.lift,p.loop.tilt,p.charging,JSON.stringify(p.modState),Math.round(p.src?p.src.mAh/30:0)].join('|');
+  if(sig===p.vis)return;p.vis=sig;
+  dm.blocks.vib.g.classList.toggle('run',!!o.vib);setLive(pid,'vibg',!!o.vib);
+  dm.blocks.sir.g.classList.toggle('run',!!o.siren);setLive(pid,'sirg',!!o.siren);
+  setLive(pid,'lightg',!!o.light);setLive(pid,'lighto',!!o.light);setLive(pid,'cLIGHT',!!o.light&&!!p.slots.LIGHT);
+  setLive(pid,'heavyg',!!o.heavy);setLive(pid,'heavyo',!!o.heavy);setLive(pid,'cHEAVY',!!o.heavy&&!!p.slots.HEAVY);
+  setLive(pid,'rxen',pw&&p.set.rx,'slow');setLive(pid,'rxpwr',pw&&p.set.rx,'slow');dm.blocks.rx.g.setAttribute('opacity',p.set.rx?1:.45);
+  const out5=pw&&p.swOut;setLive(pid,'v5o',out5&&!!p.slots['5VOUT'],'slow');setLive(pid,'c5VOUT',out5&&!!p.slots['5VOUT'],'slow');
+  if(pid==='B2'){const b=pw;setLive(pid,'bat1',b,'slow');setLive(pid,'bat2',b,'slow');setLive(pid,'vsys',b,'slow');setLive(pid,'bat3',b&&p.swOut,'slow');setLive(pid,'bat4',b&&p.swOut,'slow');setLive(pid,'chg',p.charging,'slow');
+    if(dm.cellFill)dm.cellFill.setAttribute('width',(45*clamp(p.src.mAh/p.src.cap,0,1)).toFixed(1));if(dm.chg){dm.chg.textContent=p.charging?'⚡ charging':'⚡ plug';dm.chg.setAttribute('fill',p.charging?'var(--ok)':'var(--ink-3)');}}
+  else{const b=pw;setLive(pid,'v5i',!!p.slots['5VIN']&&p.on,'slow');setLive(pid,'c5VIN',!!p.slots['5VIN'],'slow');setLive(pid,'bat2',b,'slow');setLive(pid,'vsys',b,'slow');setLive(pid,'v5b',!!p.slots['5VIN']&&p.swOut,'slow');}
+  const wifi=t<p.wifiUntil||(p.mode==='HUB'&&!!espMod(p));
+  const subs={vib:o.vib&&'RUN · ~75 mA',sir:o.siren&&'PWM ~4 kHz · ~30 mA',pc:o.light&&'ON · contact ≤50 mA',mos:o.heavy&&(o.tone?'1 kHz PWM':'ON · load on own V'),rx:!p.set.rx&&'OFF · RX_EN high',s3:pw&&wifi&&'Wi-Fi ON · +95 mA'};
+  for(const id in subs){const bl=dm.blocks[id];if(!bl||!bl.sub)continue;bl.sub.textContent=subs[id]||bl.b.s;bl.sub.setAttribute('fill',subs[id]?'var(--accent)':'var(--ink-2)');}
+  dm.rgb.setAttribute('fill',o.rgb||'var(--surface-2)');
+  for(const id of ['swc','swo']){const st=id==='swc'?p.on:p.swOut;dm.blocks[id].state.setAttribute('fill',st?'var(--ok)':'var(--ink-3)');}
+  for(const k of ['lid','lift','tilt']){const s=dm.guardSw[k];const c=p.loop[k];s.r.setAttribute('fill',c?'var(--surface-2)':'var(--bad)');s.t.textContent=`${k.toUpperCase().padEnd(4,' ')} ${c?'closed':'OPEN'}`;s.t.setAttribute('fill',c?'var(--ink)':'#fff');}
+  // module lamps
+  for(const k in dm.slotEls){const se=dm.slotEls[k];if(!se.ctl)continue;const id=modAt(p,k);const m=MOD[id];if(!m)continue;
+    let on=false,stat='';
+    if(k==='LIGHT'){on=!!o.light;stat=on?'ON ≤50 mA':'off';}
+    else if(k==='HEAVY'){on=!!o.heavy;stat=on?(m.amps||'on'):'off';}
+    else if(k==='5VOUT'){const st=p.modState[k]||{};const pulsing=st.pulseUntil&&t<st.pulseUntil;on=pw&&p.swOut&&(st.on||(pulsing&&Math.floor(t/300)%2===0)||(!m.esp&&p.swOut));stat=!p.swOut?'no 5 V':st.text?'sign':m.esp?(st.on?'ON '+m.mA5[1]+' mA':pulsing?'PULSE':'ready '+m.mA5[0]+' mA'):m.mA5?m.mA5[1]+' mA':'powered';}
+    else if(k==='5VIN'){on=true;stat=p.src?(p.src.mains?'mains':fmt(p.src.mAh)+' mAh'):'';}
+    else if(k==='W1'||k==='W2'){const st=p.modState[k]||{};on=(st.on)||(st.buzzUntil&&t<st.buzzUntil)||(st.pulseUntil&&t<st.pulseUntil);stat=m.esp?(st.on?'ON':'off'):m.ble?'BLE linked':m.ev?'event':'';}
+    else if(k[0]==='F'){on=!!p.held[k];{const fr=fobResolve(p,k[1]);stat=String(((fr.hold||fr.short||{}).label)||'').slice(0,19);}}
+    else if(k.startsWith('EXP')){on=pw;stat=pw?'on bus':'';}
+    se.ctl.lamp.setAttribute('fill',on?`var(--${m.lamp||'accent'})`:'var(--surface-2)');se.ctl.stat.textContent=stat;
+    se.g.classList.toggle('run',on&&(k==='HEAVY'&&['shaker','knocker'].includes(m.id)||(k==='W1'||k==='W2')&&m.id==='wearpod'));}
+}
+function refreshPager(pid){const p=PG[pid];p.vis='';p.legSig='';p.oledSig='';drawSlots(pid);renderLegend(pid);renderWarnings(pid);$('#mode'+pid).textContent=p.mode+(p.guard.st!=='OFF'?' · '+p.guard.st:'');updateReadout();}
+
+/* legend + battery + warnings (HTML) */
+const KEYN={CALL:'1',SEEN:'2',K1:'3',K2:'4',K3:'5',LINK:'6',FA:'7',FB:'8',FC:'9',FD:'0'};
+function keyLabel(pid,ctl){const n=KEYN[ctl];if(ST.keys==='tab')return n+' / Num'+n;return pid==='B2'?n:'Num'+n;}
+function renderLegend(pid){
+  const p=PG[pid];const R=resolve(p);const rows=[];
+  const add=(ctl,name,kind)=>{const e=R[ctl]&&R[ctl][kind];if(!e)return;rows.push([name,keyLabel(pid,ctl)+(kind==='long'?` hold ${((e.ms||600)/1000)} s`:kind==='hold'?' hold':''),e.label,e.tag]);};
+  add('CALL','CALL (thumb)','hold');add('CALL','CALL (thumb)','short');add('SEEN','SEEN (thumb)','short');add('SEEN','SEEN (thumb)','long');
+  for(const k of ['K1','K2','K3']){add(k,k,'short');add(k,k,'long');}
+  add('LINK','LINK','short');add('LINK','LINK','long');
+  for(const c of 'ABCD'){const f=p.fob[c];const nm=`Fob ${c}`+(f?` · ${MOD[f.mod].chans>1?'btn '+f.btn:MOD[f.mod].s}`:'');add('F'+c,nm,'hold');add('F'+c,nm,'short');add('F'+c,nm,'long');}
+  const sig=JSON.stringify(rows)+ST.keys;if(sig===p.legSig)return;p.legSig=sig;
+  const tb=hx('table',{class:'leg'},hx('tr',{},hx('th',{},'Control'),hx('th',{},'Key'),hx('th',{},'Does now')));
+  for(const [n,k,l,tag] of rows)tb.append(hx('tr',{class:tag?'mod':''},hx('td',{},n),hx('td',{class:'k'},k),hx('td',{},l,tag?hx('span',{class:'srcTag'},tag):null)));
+  const inc=incomingTable(p);
+  const box=$('#leg'+pid);box.innerHTML='';box.append(hx('details',{class:'mini',open:''},hx('summary',{},'Buttons — what each one does right now'),tb));
+  box.append(hx('details',{class:'mini'},hx('summary',{},'Incoming — what the outputs do'),inc));
+}
+function incomingTable(p){
+  const rows=[['CALL (held by partner)','VIB on · LIGHT on · HEAVY on while packets arrive (150 ms timeout)','CALL'],['Message 1–6','VIB + LIGHT pulse n× (long = long press)','MSG'],['URGENT: COME','+ HEAVY 3×','URGENT'],['SEEN','RGB blue 3 s · 2 pulses','SEEN'],['ALARM from partner','VIB long · siren chirp · OLED reason','ALARM']];
+  const tb=hx('table',{class:'leg'},hx('tr',{},hx('th',{},'Event'),hx('th',{},'Pager'),hx('th',{},'Connected modules')));
+  for(const [e,d,key] of rows){const extra=modsOf(p).filter(x=>x.m.inc&&(x.m.inc[key]||(key==='URGENT'&&x.m.inc.MSG))).map(x=>`${x.m.s}: ${x.m.inc[key]||x.m.inc.MSG}`).join(' · ');tb.append(hx('tr',{class:extra?'mod':''},hx('td',{},e),hx('td',{},d),hx('td',{},extra||'—')));}
+  return tb;
+}
+function renderBattery(pid,t){
+  const p=PG[pid];const c=current(p,t);p.mA=c.cell;const box=$('#batt'+pid);
+  let pct=0,label='',sub='';
+  if(pid==='A2'&&!p.slots['5VIN']){label='No source on 5V IN';sub='A2 has no cell of its own — drop a source into the 5V IN field.';}
+  else if(p.src&&p.src.mains){pct=100;label=p.src.label;sub=`mains · pager ${fmt(c.sys,1)} mA @5 V${c.out5?` + 5V OUT ${fmt(c.out5)} mA`:''}`;}
+  else if(p.src){pct=100*p.src.mAh/p.src.cap;label=`${p.src.label||'18650'} · ${fmt(p.src.mAh)} / ${fmt(p.src.cap)} mAh`;const hrs=c.cell>0?p.src.mAh/c.cell:Infinity;
+    sub=`${powered(p)?'drawing '+fmt(c.cell,1)+' mA from the cell':'off'}${c.out5?` (5V OUT ${fmt(c.out5)} mA)`:''} · ${isFinite(hrs)?'~'+(hrs>48?fmt(hrs/24,1)+' days':fmt(hrs,1)+' h')+' left':'—'}${p.charging?' · charging +900 mA':''} · used ${fmt(p.usedmAh,1)} mAh`;}
+  const sig=Math.round(pct*10)+'|'+label+'|'+sub;if(box._sig===sig)return;box._sig=sig;
+  box.innerHTML='';box.append(hx('span',{class:'bt'},pid==='B2'?'Cell':'Source'),hx('div',{class:'bar',role:'meter','aria-valuenow':Math.round(pct),'aria-valuemin':0,'aria-valuemax':100},hx('i',{class:pct<20?'low':pct<45?'mid':'',style:`width:${clamp(pct,0,100).toFixed(1)}%`}),hx('b',{},label)),hx('div',{class:'bsub'},sub+' (estimates)'));
+}
+function renderWarnings(pid){
+  const p=PG[pid];const w=[];
+  const clash=i2cClash(p);if(clash)w.push(`I2C address clash at ${clash}: DS3231 and MPU6050 both answer 0x68 — set the MPU6050's AD0 high (0x69).`);
+  const om=p.slots['5VOUT']&&MOD[p.slots['5VOUT']];if(om&&om.mA5&&om.mA5[1]>250)w.push(`${om.n} peaks at ~${om.mA5[1]} mA on 5V OUT — fine for the boost, but it shortens B2's runtime a lot.`);
+  if(om&&!p.swOut)w.push(`${om.n} is on 5V OUT but SW OUT is off — it has no power.`);
+  if(p.slots.HEAVY)w.push(`HEAVY shares GND with the core: ${MOD[p.slots.HEAVY].s}'s battery minus goes to H−.`);
+  if(p.slots.HEAVY==='interpose')w.push('Interposing relay: 230 V contacts only inside a rated, enclosed CONTROL unit.');
+  if(p.slots.W1==='sonoff'||p.slots.W2==='sonoff')w.push('Smart Socket: keep its rated mains build; only the firmware changes.');
+  const fobs=new Set(Object.values(p.fob).filter(Boolean).map(f=>f.mod));if([...fobs].some(id=>['door433','pir433','btn433'].includes(id)))w.push('433 sensors are fixed-code with no supervision or low-battery report.');
+  if(espMod(p)&&p.mode==='HUB')w.push('HUB mode with an ESP-NOW module keeps Wi-Fi on (~+95 mA).');
+  const box=$('#warn'+pid);box.innerHTML='';for(const s of w)box.append(hx('div',{},s));
+}
+function buildDisplay(pid){
+  const box=$('#disp'+pid);box.innerHTML='';
+  const cv=hx('canvas',{id:'oled'+pid,width:384,height:192,'aria-label':pid+' OLED, click to open the menu'});cv.addEventListener('click',()=>{const p=PG[pid];if(!p.menu)openMenu(p);});
+  const navs=hx('div',{class:'navs'});[['K1','▲ K1'],['K3','▼ K3'],['K2','OK K2'],['SEEN','◄ SEEN']].forEach(([k,l])=>{const b=hx('button',{type:'button'},l);b.addEventListener('pointerdown',e=>{e.preventDefault();press(pid,k);});b.addEventListener('pointerup',()=>release(pid,k));b.addEventListener('pointerleave',()=>{if(PG[pid].held[k])release(pid,k);});navs.append(b);});
+  box.append(hx('div',{class:'bezel'},cv),hx('div',{class:'dispnote'},hx('b',{},'Display'),' — click it (or hold SEEN 1.5 s) for the menu. In the menu: K1 ▲ · K3 ▼ · K2 select · SEEN back. The menu follows the Mark II spec (§22.3).',navs));
+}
+
+/* ============================== detail panel ============================== */
+function showDetail(o){const pn=$('#panel');pn.hidden=false;pn.style.borderLeftColor=o.color||'var(--accent)';pn.innerHTML='';
+  pn.append(hx('button',{class:'x','aria-label':'Close',onclick:()=>{pn.hidden=true;}},'×'),hx('div',{class:'pn'},o.title),o.sub?hx('div',{class:'pc'},o.sub):null);
+  if(o.rows&&o.rows.length){const t=hx('table');for(const [k,v] of o.rows)t.append(hx('tr',{},hx('td',{},k),hx('td',{},v)));pn.append(t);}
+  if(o.note)pn.append(hx('p',{class:'pnote'},o.note));if(o.extra)pn.append(o.extra);}
+function blockClick(pid,id){const inf=INFO[id];const b=DOM[pid].blocks[id].b;if(!inf){showDetail({title:b.t,sub:pid});return;}showDetail({title:inf[0],sub:`${pid} · ${b.g}`,color:`var(--g-${b.g})`,rows:inf[1],note:inf[2]});}
+function portClick(pid,id){const p=PG[pid];
+  if(id==='CHARGE'){p.charging=!p.charging;log(`B2 CHARGE ${p.charging?'plugged in (TP4056 1 A)':'unplugged'}`);refreshPager(pid);return;}
+  const map={'5VOUT':'XT60♀ · +5 V / GND · from '+(pid==='B2'?'the boost (SW OUT)':'5V IN pass-through (SW OUT)'),'5VIN':'XT60♂ · 5 V in from a source · A2 only',LIGHT:'3.5 mm TS · tip = PC817 collector (+), sleeve = emitter (−) · DC ≤ 50 mA ≤ 35 V · isolated',HEAVY:'XT30♀ · HSW = MOSFET drain, H− = core GND · load on its own 6–24 V supply',EXP:'GX12-5 · 1 3V3 · 2 GND · 3 SDA · 4 SCL · 5 INT',USB:'S3-Zero USB-C · flash / serial (USB CDC) · SS14 stops back-feed'};
+  showDetail({title:id==='5VOUT'?'5V OUT':id==='5VIN'?'5V IN':id,sub:pid+' · outward-facing port',color:'var(--g-conn)',rows:[['Connector',map[id]||id]],note:'Modules for this port go in the dashed field next to it.'});}
+function moduleDetail(pid,slot,m){const rows=[['Kind',m.k==='OWNED'?'owned ✓':m.k],['Connects to',[].concat(m.port).map(x=>PORTSPEC[x]).join(' / ')],['Needs',m.needs],['Cost',m.cost]];if(m.i2c)rows.push(['I2C',m.i2c]);if(m.mA5)rows.push(['5 V draw',`${m.mA5[0]} / ${m.mA5[1]} mA (est.)`]);if(m.leg)rows.push(['Button change',m.leg.map(l=>`${l[0]} ${l[1]} ${l[2]}: ${l[3]}`).join('; ')]);
+  showDetail({title:m.n,sub:pid?`${pid} · ${slotLabel(slot)}`:'module',color:`var(--${m.lamp||'accent'})`,rows,note:m.fx});}
+
+/* ============================== shelf ============================== */
+const FILTERS=[['all','All'],['LIGHT','LIGHT'],['HEAVY','HEAVY'],['5VOUT','5V OUT'],['5VIN','5V IN'],['EXP','EXP I2C'],['FOB','Fob 433'],['WIRELESS','Wireless'],['OWNED','Owned'],['DIY','DIY'],['BUY','Buy']];
+function renderShelf(){
+  const chips=$('#shelfChips');chips.innerHTML='';for(const [k,l] of FILTERS){const c=hx('button',{class:'chip'+(ST.filter===k?' on':''),type:'button'},PORTCOL[k]?hx('span',{class:'sw',style:`color:var(--${PORTCOL[k]})`}):null,l);c.addEventListener('click',()=>{ST.filter=k;renderShelf();});chips.append(c);}
+  const grid=$('#shelfGrid');grid.innerHTML='';
+  for(const m of MODULES){const ports=[].concat(m.port);if(ST.filter!=='all'&&!ports.includes(ST.filter)&&m.k!==ST.filter)continue;
+    const card=hx('div',{class:'card','data-mod':m.id,tabindex:'0',role:'button','aria-label':'Module '+m.n});
+    card.append(miniSVG(m),hx('div',{class:'nm'},m.n),hx('div',{class:'meta'},hx('span',{class:'tag k'+m.k},m.k==='OWNED'?'OWNED ✓':m.k),...ports.map(x=>hx('span',{class:'tag',style:`color:var(--${PORTCOL[x]});border-color:currentColor`},x==='5VOUT'?'5V OUT':x==='5VIN'?'5V IN':x)),m.i2c?hx('span',{class:'tag'},m.i2c):null),
+      hx('div',{class:'nd'},m.needs+' · '+m.cost),hx('div',{class:'fx'},m.fx));
+    card.addEventListener('pointerdown',e=>shelfDown(e,m.id,card));
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();armCard(m.id,card);}});
+    grid.append(card);}
+}
+function miniSVG(m){
+  const s=sv('svg',{viewBox:'0 0 220 64',role:'img','aria-label':m.n+' connections'});
+  const col=`var(--${m.lamp||'accent'})`;sv('rect',{x:46,y:14,width:128,height:38,rx:6,fill:'var(--surface-3)',stroke:col,'stroke-width':1.4},s);
+  txt(s,110,37,m.s,{'text-anchor':'middle','font-weight':650,'font-size':11});
+  const sides={top:[],left:[],right:[],bottom:[]};for(const part of String(m.ports||'').split('|')){if(!part)continue;const [side,label,net]=part.split(':');(sides[side]||sides.right).push([label,net]);}
+  sides.top.forEach(([l,n],i)=>{const x=110+(i-(sides.top.length-1)/2)*50;sv('line',{x1:x,y1:2,x2:x,y2:14,stroke:`var(--${NETCOL[n]||n})`,'stroke-width':2.4},s);sv('rect',{x:x-5,y:10,width:10,height:6,rx:1,fill:`var(--${NETCOL[n]||n})`},s);txt(s,x+7,9,l,{'font-family':'IBM Plex Mono, monospace','font-size':8,fill:'var(--ink-2)'});});
+  sides.left.forEach(([l,n],i)=>{const y=26+i*14;sv('line',{x1:30,y1:y,x2:46,y2:y,stroke:`var(--${NETCOL[n]||n})`,'stroke-width':2.4},s);txt(s,28,y+3,l,{'text-anchor':'end','font-family':'IBM Plex Mono, monospace','font-size':8,fill:'var(--ink-2)'});});
+  sides.right.forEach(([l,n],i)=>{const y=26+i*14;sv('line',{x1:174,y1:y,x2:190,y2:y,stroke:`var(--${NETCOL[n]||n})`,'stroke-width':2.4},s);txt(s,192,y+3,l,{'font-family':'IBM Plex Mono, monospace','font-size':8,fill:'var(--ink-2)'});});
+  sides.bottom.forEach(([l,n],i)=>{const x=110+i*40;sv('line',{x1:x,y1:52,x2:x,y2:62,stroke:`var(--${NETCOL[n]||n})`,'stroke-width':2.4},s);txt(s,x+6,62,l,{'font-family':'IBM Plex Mono, monospace','font-size':8,fill:'var(--ink-2)'});});
+  return s;
+}
+function armCard(id,card){ST.armed=ST.armed===id?null:id;$$('.card.armed').forEach(c=>c.classList.remove('armed'));clearMarks();if(ST.armed){card.classList.add('armed');markSlots(id);log(`Picked ${MOD[id].n} — tap a green-ready field on a pager`);}}
+function shelfDown(e,id,card){if(e.button&&e.button!==0)return;const sx=e.clientX,sy=e.clientY;let moved=false;try{card.setPointerCapture(e.pointerId);}catch(_){}
+  const mv=ev=>{if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){moved=true;startDrag(ev,id,null);}if(moved)moveDrag(ev);};
+  const up=ev=>{card.removeEventListener('pointermove',mv);card.removeEventListener('pointerup',up);card.removeEventListener('pointercancel',up);if(moved)endDrag(ev);else armCard(id,card);};
+  card.addEventListener('pointermove',mv);card.addEventListener('pointerup',up);card.addEventListener('pointercancel',up);}
+
+/* third units section */
+function renderThird(){
+  const box=$('#thirdCards');box.innerHTML='';
+  for(const t of THIRD){const b=t.act==='place'?hx('button',{class:'btn pri',type:'button',onclick:()=>autoPlace(t.id)},`Place ${t.id} on the map`):hx('button',{class:'btn pri',type:'button',onclick:()=>{if(attach('B2','W1','wearpod'))log('Wear Pod added to B2 — calls to B2 now buzz the wrist','ok');}},'Attach to B2');
+    box.append(hx('div',{class:'tcard',style:`border-top:3px solid var(--${t.id.toLowerCase()==='t4'?'ble':t.id.toLowerCase()})`},hx('div',{class:'tt'},t.tt,t.rec?hx('span',{class:'rec'},'  ★ RECOMMENDED'):null),hx('h3',{},`${t.id} · ${t.n}`),hx('p',{},t.role),
+      hx('div',{class:'kv'},hx('b',{},'Builds on'),hx('span',{},t.builds),hx('b',{},'Radio'),hx('span',{},t.radio),hx('b',{},'Power'),hx('span',{},t.power),hx('b',{},'Cost'),hx('span',{},t.cost),hx('b',{},'Tree'),hx('span',{},t.tree)),
+      hx('ul',{},...t.pros.map(x=>hx('li',{},x)),...t.cons.map(x=>hx('li',{style:'color:var(--ink-2)'},'− '+x))),b));}
+  const rows=[['Role','hub + gateway + dock','headless repeater','third handheld','body satellite'],['Builds on','A2 full modular','B2 internals, no UI','B2 + 2.42" OLED','ESP32-C3 + LiPo'],['Radio','nRF905 + Wi-Fi','nRF905','nRF905 (+ ESP-NOW)','BLE'],['Firmware effort','high','medium','high','medium'],['Solves','range to the board, phones, charging','dead zones in slabs and basements','crews of three','"didn\'t feel it"']];
+  const tb=hx('table',{class:'tcmp'},hx('tr',{},hx('th',{},''),...THIRD.map(t=>hx('th',{},t.id+' '+t.n))));for(const r of rows)tb.append(hx('tr',{},...r.map((c,i)=>hx(i?'td':'th',{},c))));
+  $('#thirdTable').innerHTML='';$('#thirdTable').append(tb);
+}
+
+/* ============================== editor UI ============================== */
+function renderEditor(){
+  const tr=$('#toolRow');tr.innerHTML='';
+  const tools=[['move','Move'],['paint','Paint'],['rect','Rectangle'],['erase','Erase'],['place','Place'],['remove','Remove unit']];
+  for(const [k,l] of tools){const b=hx('button',{class:'chip'+(FIELD.tool===k?' on':''),type:'button'},l);b.addEventListener('click',()=>{FIELD.tool=k;renderEditor();});tr.append(b);}
+  const ps=hx('select',{class:'sel','aria-label':'Unit to place'});[['T2','T2 Stair Node'],['T1','T1 Site Base'],['T3','T3 Crew Console']].forEach(([v,l])=>ps.append(hx('option',{value:v},l)));ps.value=FIELD.place;ps.addEventListener('change',()=>{FIELD.place=ps.value;FIELD.tool='place';renderEditor();});tr.append(ps);
+  const mr=$('#matRow');mr.innerHTML='';
+  MATS.forEach((m,i)=>{if(i===0)return;const sw=m.c||(m.bg==='room'?TOK.room:TOK.cave);const b=hx('button',{class:'mat'+(FIELD.mat===i?' on':''),type:'button',title:`${m.n}: −${m.l[0]} dB @433, −${m.l[2]} dB @2.4 GHz ${m.bulk?'per metre':'per crossing'} (est.)`},hx('i',{style:`background:${sw}`}),m.n.split(' (')[0]);
+    b.addEventListener('click',()=>{FIELD.mat=i;if(FIELD.tool==='move'||FIELD.tool==='place'||FIELD.tool==='remove')FIELD.tool='paint';renderEditor();});mr.append(b);});
+  const rc=$('#radioChips');rc.innerHTML='';
+  for(const k in RADIOS){const R=RADIOS[k];const c=hx('button',{class:'chip'+(ST.radio===k?' on':''),type:'button',style:`color:var(--${R.col})`},hx('span',{class:'sw'}),hx('span',{style:'color:var(--ink)'},R.n));c.addEventListener('click',()=>{ST.radio=k;FIELD.cov=null;renderEditor();updateReadout();});rc.append(c);}
+}
+
+/* ============================== blueprint / export ============================== */
+function blueprint(){
+  const pagers={};for(const pid of ['B2','A2']){const p=PG[pid];pagers[pid]={slots:Object.assign({},p.slots),fob:Object.fromEntries(Object.entries(p.fob).map(([c,f])=>[c,f?{mod:f.mod,btn:f.btn}:null])),settings:Object.assign({},p.set),mode:p.mode,power:{core:p.on,out:p.swOut},loop:Object.assign({},p.loop),battery:p.src&&!p.src.mains?Math.round(p.src.mAh):null};}
+  return {format:'site-pager-blueprint',version:1,saved:new Date().toISOString(),name:FIELD.name,notes:'Site Pager Builder blueprint · B2 default belt pager, A2 full modular. Estimates only.',radio:ST.radio,loraWhatIf:ST.lora,pagers,map:mapJSON()};
+}
+function applyBlueprint(j){
+  if(!j||(j.format!=='site-pager-blueprint'&&j.format!=='site-pager-map'&&!j.tiles))throw new Error('This file is not a Site Pager blueprint or map.');
+  const mapj=j.format==='site-pager-blueprint'?j.map:j.format==='site-pager-map'?j.map||j:j;
+  if(mapj)loadMap(mapFromJSON(mapj));
+  if(j.format==='site-pager-blueprint'&&j.pagers){
+    for(const pid of ['B2','A2']){const src=j.pagers[pid];if(!src)continue;const p=PG[pid]=newPager(pid);p.oc=document.createElement('canvas');p.oc.width=128;p.oc.height=64;
+      if(pid==='B2')p.src={cap:3000,mAh:3000,label:'18650 inside'};
+      for(const k in (src.slots||{})){const id=src.slots[k];if(MOD[id])attach(pid,k,id,true);}
+      for(const c of 'ABCD'){const f=src.fob&&src.fob[c];if(f&&MOD[f.mod])p.fob[c]={mod:f.mod,btn:f.btn||c};}
+      Object.assign(p.set,src.settings||{});p.mode=src.mode==='HUB'?'HUB':'PAGER';if(src.power){p.on=src.power.core!==false;p.swOut=!!src.power.out;}Object.assign(p.loop,src.loop||{});
+      if(src.battery!=null&&p.src&&!p.src.mains)p.src.mAh=clamp(+src.battery,0,p.src.cap);
+      refreshPager(pid);}
+    if(RADIOS[j.radio])ST.radio=j.radio;ST.lora=!!j.loraWhatIf;$('#loraChk').checked=ST.lora;
+  }
+  renderEditor();updateReadout();
+}
+async function offerFile(filename,data,mime){
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;}catch(e){dl=null;}
+  if(dl){try{await dl.save({filename,data});log(`Saved ${filename}`,'ok');return;}catch(e){if(e&&e.code==='declined'){log('Save declined');return;}log(`Save not available (${e&&e.code||'error'}) — showing it instead`,'warn');}}
+  // fallback: show it
+  const box=$('#modalBox');box.innerHTML='';
+  if(typeof data==='string'){const ta=hx('textarea',{readonly:''});ta.value=data;box.append(hx('b',{},filename),hx('p',{style:'margin:0;font-size:12.5px;color:var(--ink-2)'},'Downloads are not available in this view. Copy the text and save it as a .json file.'),ta,
+    hx('div',{class:'edrow'},hx('button',{class:'btn pri',onclick:async()=>{try{await navigator.clipboard.writeText(data);log('Blueprint copied','ok');}catch(e){ta.select();}}},'Copy'),hx('button',{class:'btn',onclick:()=>{$('#modal').hidden=true;}},'Close')));}
+  else{const url=URL.createObjectURL(data);box.append(hx('b',{},filename),hx('p',{style:'margin:0;font-size:12.5px;color:var(--ink-2)'},'Downloads are not available in this view. Right-click or long-press the image to save it.'),hx('img',{src:url,alt:'Blueprint sheet'}),hx('div',{class:'edrow'},hx('button',{class:'btn',onclick:()=>{$('#modal').hidden=true;}},'Close')));}
+  $('#modal').hidden=false;
+}
+function openImport(kind){
+  const box=$('#modalBox');box.innerHTML='';const ta=hx('textarea',{placeholder:'Paste a blueprint or map JSON here…'});
+  box.append(hx('b',{},kind==='map'?'Import a map':'Import a blueprint'),hx('p',{style:'margin:0;font-size:12.5px;color:var(--ink-2)'},'Choose a .json file or paste its text. Maps keep the current pagers; blueprints replace both pagers and the map.'),
+    hx('div',{class:'edrow'},hx('button',{class:'btn',onclick:()=>$('#fileIn').click()},'Choose file…')),ta,
+    hx('div',{class:'edrow'},hx('button',{class:'btn pri',onclick:()=>{try{const j=JSON.parse(ta.value);importJSON(j,kind);$('#modal').hidden=true;}catch(e){log('Import failed: '+e.message,'bad');}}},'Import'),hx('button',{class:'btn',onclick:()=>{$('#modal').hidden=true;}},'Cancel')));
+  $('#modal').hidden=false;$('#fileIn').dataset.kind=kind;
+}
+function importJSON(j,kind){if(kind==='map'&&j.format!=='site-pager-blueprint'){loadMap(mapFromJSON(j.map||j));log(`Map "${FIELD.name}" imported`,'ok');}else{applyBlueprint(j);log(`Blueprint "${j.name||FIELD.name}" imported`,'ok');}}
+function resolveVars(str){const cs=getComputedStyle(document.documentElement);return str.replace(/var\(--([a-z0-9-]+)\)/g,(m,n)=>cs.getPropertyValue('--'+n).trim()||'#888');}
+function svgImage(svg,w,h){return new Promise((res,rej)=>{const c=svg.cloneNode(true);c.setAttribute('xmlns',NS);c.setAttribute('width',w);c.setAttribute('height',h);c.querySelectorAll('[class]').forEach(e=>e.removeAttribute('class'));
+  const s=resolveVars(new XMLSerializer().serializeToString(c));const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);});}
+async function exportPNG(){
+  const W=2400,H=1500;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+  c.fillStyle=tok('bg');c.fillRect(0,0,W,H);c.fillStyle=tok('ink');c.font='600 34px IBM Plex Sans, sans-serif';c.fillText('Site Pager Builder — blueprint sheet',40,58);
+  c.font='500 18px IBM Plex Mono, monospace';c.fillStyle=tok('ink-2');c.fillText(`${new Date().toISOString().slice(0,16).replace('T',' ')} · map "${FIELD.name}" · ${FIELD.scale} m/tile · preview radio ${RADIOS[ST.radio].n} · estimates`,40,90);
+  const colW=760,top=150,ph=Math.round(colW*COLH/COLW);
+  try{const a=await svgImage($('#svgB2'),colW,ph);c.drawImage(a,40,top);const b=await svgImage($('#svgA2'),colW,ph);c.drawImage(b,W-40-colW,top);}catch(e){log('PNG: pager drawing could not be rendered','warn');}
+  const fw=W-80-2*colW-40;const fh=Math.round(fw*FIELD.cv.height/FIELD.cv.width);c.drawImage(FIELD.cv,40+colW+20,top,fw,fh);
+  c.font='600 20px IBM Plex Sans, sans-serif';c.fillStyle=tok('ink');c.fillText('B2 · belt pager (default)',40,top-8);c.fillText('A2 · full modular + Pager Source',W-40-colW,top-8);c.fillText('Signal field',40+colW+20,top-8);
+  let y=top+fh+40;const l=link('B2','A2',ST.radio);c.font='500 17px IBM Plex Mono, monospace';c.fillStyle=tok('ink-2');
+  const lines=[`B2 → A2 ${RADIOS[ST.radio].n}: ${fmt(l.d,1)} m · loss ${fmt(l.pl,1)} dB · RX ${fmt(l.rx,1)} dBm · margin ${sgn(l.margin,1)} dB`];
+  for(const pid of ['B2','A2']){const p=PG[pid];lines.push(`${pid}: mode ${p.mode} · ${Object.entries(p.slots).map(([k,v])=>slotLabel(k)+' = '+MOD[v].s).join(' · ')||'no wired modules'}`);lines.push(`    fob ${'ABCD'.split('').map(ch=>ch+':'+(p.fob[ch]?MOD[p.fob[ch].mod].s+(MOD[p.fob[ch].mod].chans>1?' '+p.fob[ch].btn:''):'-')).join(' ')}`);}
+  const units=FIELD.ents.filter(e=>['node','base','console'].includes(e.kind)).map(e=>e.label||e.id);if(units.length)lines.push('Third units on the map: '+units.join(', '));
+  for(const s0 of lines)for(const s of wrap(s0,66)){c.fillText(s,40+colW+20,y);y+=26;}
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));offerFile('site-pager-blueprint.png',blob);
+}
+
+/* ============================== keyboard ============================== */
+const KEYMAP={1:'CALL',2:'SEEN',3:'K1',4:'K2',5:'K3',6:'LINK',7:'FA',8:'FB',9:'FC',0:'FD'};
+function keyHelp(){const h=$('#keysHelp');h.innerHTML='';
+  const k=(s)=>hx('kbd',{},s);
+  if(ST.keys==='split'){h.append(hx('span',{},hx('b',{},'B2: '),'number row ',k('1'),' CALL ',k('2'),' SEEN ',k('3'),k('4'),k('5'),' K1–K3 ',k('6'),' LINK ',k('7'),'–',k('0'),' fob A–D'),hx('span',{},hx('b',{},'A2: '),'the same on the numpad ',k('Num1'),'…',k('Num0')),hx('span',{},'Hold a key = hold the button.'));}
+  else h.append(hx('span',{},'Tab-switch mode: both number rows drive ',hx('b',{},ST.active),'. Press ',k('Tab'),' to switch pagers.'),hx('span',{},k('1'),' CALL ',k('2'),' SEEN ',k('3'),k('4'),k('5'),' K1–K3 ',k('6'),' LINK ',k('7'),'–',k('0'),' fob A–D'));
+  $('#colB2').classList.toggle('ctl',ST.keys==='tab'&&ST.active==='B2');$('#colA2').classList.toggle('ctl',ST.keys==='tab'&&ST.active==='A2');
+  for(const pid of ['B2','A2'])if(PG[pid])PG[pid].legSig='';}
+function typing(e){const t=e.target;if(!t)return false;if(t.tagName==='INPUT')return !['checkbox','radio','button','file','range','color'].includes((t.type||'').toLowerCase());return t.tagName==='TEXTAREA'||t.isContentEditable;}
+window.addEventListener('keydown',e=>{
+  if(typing(e))return;
+  if(e.code==='Escape'){if(ST.armed){ST.armed=null;$$('.card.armed').forEach(c=>c.classList.remove('armed'));clearMarks();}$('#panel').hidden=true;$('#modal').hidden=true;return;}
+  if(e.code==='Tab'&&ST.keys==='tab'){e.preventDefault();ST.active=ST.active==='B2'?'A2':'B2';keyHelp();return;}
+  const m=/^(Digit|Numpad)([0-9])$/.exec(e.code);if(!m)return;e.preventDefault();if(e.repeat)return;
+  const pid=ST.keys==='split'?(m[1]==='Digit'?'B2':'A2'):ST.active;press(pid,KEYMAP[m[2]]);
+});
+window.addEventListener('keyup',e=>{const m=/^(Digit|Numpad)([0-9])$/.exec(e.code);if(!m)return;const pid=ST.keys==='split'?(m[1]==='Digit'?'B2':'A2'):ST.active;const ctl=KEYMAP[m[2]];
+  // release on whichever pager holds it (mode may have changed while held)
+  for(const id of ['B2','A2'])if(PG[id].held[ctl]&&(id===pid||ST.keys==='tab'))release(id,ctl);});
+window.addEventListener('blur',()=>{for(const id of ['B2','A2'])for(const c in PG[id].held)release(id,c);});
+
+/* ============================== main loop ============================== */
+let last=now();
+function frame(t){
+  const dt=Math.min(250,t-last);last=t;
+  tickFX(t);checkHolds(t);tickStreams(t);tickGuard(t);
+  for(const pid of ['B2','A2']){const p=PG[pid];p.o=computeOut(p,t);
+    // battery
+    const c=current(p,t);const h=dt*ST.warp/3.6e6;
+    if(p.src&&!p.src.mains){const before=p.src.mAh;p.src.mAh=clamp(p.src.mAh-c.cell*h+(p.charging?900*h:0),0,p.src.cap);p.usedmAh+=Math.max(0,c.cell*h);if(before>0&&p.src.mAh<=0){log(`${pid}: battery empty — pager off`,'bad');}if(p.charging&&p.src.mAh>=p.src.cap){p.charging=false;log(`${pid}: charge complete`,'ok');}}
+    if(p.menu&&p.menu.idle&&t-p.menu.idle>30000)p.menu=null;
+    updateVisuals(pid,t);drawOLED(p,t);
+    if((t|0)%4===0)renderLegend(pid);if(!p.bt||t-p.bt>250){p.bt=t;renderBattery(pid,t);}
+    $('#mode'+pid).textContent=p.mode+(p.guard.st!=='OFF'?' · '+p.guard.st:'');
+  }
+  renderField(t);
+  requestAnimationFrame(frame);
+}
+
+/* ============================== init ============================== */
+function defaults(){
+  for(const pid of ['B2','A2']){PG[pid]=newPager(pid);const p=PG[pid];p.oc=document.createElement('canvas');p.oc.width=128;p.oc.height=64;}
+  PG.B2.src={cap:3000,mAh:2640,label:'18650 inside'};
+}
+function attachDefaults(){
+  attach('B2','FA','fob4',true);attach('B2','LIGHT','helmet',true);attach('B2','EXP2','mpu',true);
+  attach('A2','5VIN','source',true);PG.A2.src.mAh=2910;attach('A2','5VOUT','probe',true);attach('A2','HEAVY','strobe',true);attach('A2','LIGHT','chime',true);attach('A2','FA','fob4',true);attach('A2','W1','gatebell',true);
+}
+function netLegend(){const box=$('#netLegend');box.innerHTML='';[['logic','3.3 V logic (GPIO)'],['data','data bus (SPI / I2C bytes)'],['v5','5 V supply'],['bat','18650 cell'],['v33','3V3 switched'],['rf433','RF 433 MHz'],['rf24','RF 2.4 GHz (ESP-NOW)'],['ble','BLE'],['heavy','HEAVY load loop'],['light','LIGHT contact']].forEach(([k,l])=>box.append(hx('span',{},hx('i',{style:`background:var(--${k})`}),l)));
+  box.append(hx('span',{},'Moving dashes = current flowing now · dots = a pulse or packet travelling'));}
+function init(){
+  try{const th=lsGet('sp:theme');if(th)document.documentElement.setAttribute('data-theme',th);}catch(e){}
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ST.speed=0;$('#speedSel').value='0';}
+  readTokens();defaults();
+  FIELD.cv=$('#field');FIELD.ctx=FIELD.cv.getContext('2d');
+  const sel=$('#scnSel');for(const k in SCEN)sel.append(hx('option',{value:k},SCEN[k].n));sel.value='floors';
+  loadMap(SCEN.floors.f());
+  for(const pid of ['B2','A2']){buildPager(pid);buildDisplay(pid);}
+  attachDefaults();for(const pid of ['B2','A2'])refreshPager(pid);
+  renderEditor();renderShelf();renderThird();netLegend();keyHelp();updateReadout();
+  // events
+  $('#scnSel').addEventListener('change',e=>{loadMap(SCEN[e.target.value].f());log(`Scenario: ${SCEN[e.target.value].n}`);});
+  $('#covChk').addEventListener('change',e=>{FIELD.cover=e.target.checked;FIELD.cov=null;});
+  $('#covFrom').addEventListener('change',e=>{FIELD.covFrom=e.target.value;FIELD.cov=null;});
+  $('#loraChk').addEventListener('change',e=>{ST.lora=e.target.checked;ST.radio=ST.lora?'lora':'nrf905';FIELD.preview=null;FIELD.cov=null;renderEditor();log(ST.lora?'What-if: pagers use LoRa SX1262 868 MHz (LoRa Heart, Mark III)':'Pagers back on nRF905');updateReadout();});
+  $('#mapNameIn').addEventListener('input',e=>{FIELD.name=e.target.value||'Untitled map';$('#mapName').textContent=FIELD.name;});
+  $('#scaleSel').addEventListener('change',e=>{FIELD.scale=+e.target.value;FIELD.dirty=true;updateReadout();});
+  $('#clutSel').addEventListener('change',e=>{FIELD.clutter=+e.target.value;FIELD.dirty=true;updateReadout();});
+  $('#newMap').addEventListener('click',()=>{const [c,r]=$('#sizeSel').value.split('x').map(Number);const M=mkMap('New map',c,r,FIELD.scale,FIELD.clutter,Math.round(r*.75));ground(M);pagersAt(M,[4,M.gy-1],[c-5,M.gy-1]);loadMap(M);log('New blank map — paint walls, slabs and soil, then move the workers');});
+  $('#mapExport').addEventListener('click',()=>offerFile(((FIELD.name||'map').replace(/[^a-z0-9]+/gi,'-').toLowerCase()||'map')+'.json',JSON.stringify({format:'site-pager-map',version:1,map:mapJSON()},null,1)));
+  $('#mapImport').addEventListener('click',()=>openImport('map'));
+  $('#bpExport').addEventListener('click',()=>offerFile('site-pager-blueprint.json',JSON.stringify(blueprint(),null,1)));
+  $('#bpImport').addEventListener('click',()=>openImport('blueprint'));
+  $('#pngExport').addEventListener('click',()=>exportPNG().catch(e=>log('PNG export failed: '+e.message,'bad')));
+  $('#resetBtn').addEventListener('click',()=>{defaults();loadMap(SCEN.floors.f());$('#scnSel').value='floors';attachDefaults();for(const pid of ['B2','A2']){refreshPager(pid);}ST.radio='nrf905';ST.lora=false;$('#loraChk').checked=false;renderEditor();log('Reset to the default bench');});
+  $('#fileIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{importJSON(JSON.parse(r.result),e.target.dataset.kind||'blueprint');$('#modal').hidden=true;}catch(err){log('Import failed: '+err.message,'bad');}e.target.value='';};r.readAsText(f);});
+  $('#speedSel').addEventListener('change',e=>{ST.speed=+e.target.value;});
+  $('#warpSel').addEventListener('change',e=>{ST.warp=+e.target.value;});
+  $$('#keysSeg button').forEach(b=>b.addEventListener('click',()=>{ST.keys=b.dataset.k;$$('#keysSeg button').forEach(x=>x.classList.toggle('on',x===b));keyHelp();}));
+  $('#themeBtn').addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',n);lsSet('sp:theme',n);themeChanged();});
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',themeChanged);
+  FIELD.cv.addEventListener('pointerdown',fieldDown);FIELD.cv.addEventListener('pointermove',fieldMove);window.addEventListener('pointerup',fieldUp);FIELD.cv.addEventListener('pointerleave',()=>{FIELD.hover=null;});
+  window.addEventListener('pointermove',e=>{if(ST.drag)moveDrag(e);});
+  let rt=null;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{sizeField();},150);});
+  document.addEventListener('click',e=>{const pn=$('#panel');if(!pn.hidden&&!pn.contains(e.target)&&!e.target.closest('svg.pager')&&!e.target.closest('.card'))pn.hidden=true;});
+  log('Bench ready: B2 (belt, 18650 inside) on the ground floor, A2 (modular, Pager Source) on the 2nd floor. Press 1 on B2 or Num1 on A2.','ok');
+  requestAnimationFrame(t=>{last=t;frame(t);});
+}
+function themeChanged(){readTokens();FIELD.dirty=true;renderEditor();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+</body></html>

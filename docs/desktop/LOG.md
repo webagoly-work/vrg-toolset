@@ -133,3 +133,24 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `wp-45.test.js` (8, a throwaway folder, no network); probe `shell/selftest/wp-45.js` (User 12, Dev 74, ghost styles from
   computed CSS, ticking, refusals); wp-41 section lists updated. Live run into a temp folder: Everything, SumatraPDF, 7-Zip (sfx via
   the 7za bootstrap), CrystalDiskInfo, Rufus all installed and found.
+
+## WP-46 — Archívum: the Artifact Archive (2026-11-11)
+
+- `Archive/`: one container for every one-shot interactive HTML page Claude made. `index.json` (the source: title, created /
+  updated, VRG or not, group, kind, summary, purpose, what was going on at the time, tags, the claude.ai link), `index.js`
+  (generated, so the page also works from file://), `files/<id>.html` (the saved copies), `archive.js` (list / check / build / add),
+  `vrg-archive.html` (the viewer: VRG first, scope + group + search, a timeline, the detail card, the page run in a viewer).
+- First fill: 38 entries (19 VRG, 19 other), 28 saved copies. Docs / Design / Design System artifacts and the shared Mélyvíz stay
+  link-only (their content lives in the type's store); Finom lap (needs files beside it) and the Domoszló viewer (a real house)
+  stay where they are (`localPath`). The two empty Untitled canvases are left out. DESKU-Q23.
+- START: R (Rétegverem) → A Archívum (the main screen has no free letter). Catalog item `archive` (User, knowledge base ·
+  artifact archive, in-shell on vrg-app://archive/), section `archivum` (User).
+- Shell: IPC `archive.list / show / add`; preload `vrg.archive`; `show` opens the app at `#<id>` (or `#<id>/open`), also before
+  its view exists (appHash, read when layout.bounds creates the view); `add` opens main's own file dialog, never a page path.
+- `page/desk.js` secArchivum: VRG / Egyéb / Mind, filter, a card per page (ice edge = VRG, warm = other), ▶ runs the page,
+  Hozzáadás = a short form + the file dialog. desk.css.
+- The viewer's iframe keeps `allow-same-origin`: with an opaque origin the archived pages loaded but did not paint in the
+  browser pane, and their own saved state could not persist. They are our own pages; navigation away is still refused by the shell.
+- Tests: `wp-46.test.js` (4: the real index valid and VRG-first, add/build/stale on a temp folder, validate, catalog + scheme +
+  sections); probe `shell/selftest/wp-46.js` (section, computed edge colours, refusals, a card opens the app at the entry);
+  wp-41 section lists updated. `tools/melyviz-sync.js` carries the style into the viewer.

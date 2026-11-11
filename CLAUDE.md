@@ -194,6 +194,20 @@ The terms are in `docs/desktop/GLOSSARY.md`; re-run
 `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` to
 refresh `docs/desktop/INVENTORY.md` and `CLASSIFICATION.md`.
 
+## One-shot pages go into the Archive
+
+Every one-shot interactive HTML page made for the Founder (a published claude.ai artifact or a local one-off explainer, mockup,
+board, study) gets an entry in `Archive/` in the same session: read the published page with the Artifact tool (`path:
+"index.html"`) or take the local file, then
+
+```bash
+node Archive/archive.js add <page.html> --title "…" --url https://claude.ai/artifact/<id> --vrg --group "VRG core" --kind tool --summary "…" --purpose "…" --context "what was going on|…"
+```
+
+(`--vrg` only for VRG work), and `node Archive/archive.js check`. Docs / Design-type artifacts have no page to copy: add them to
+`index.json` with their `url` only, then `node Archive/archive.js build`. A page showing a real client or a private house keeps
+a `localPath` instead of a copy. The VRG Asztal's Archívum section and START R → A show the archive.
+
 ## Things that must not be committed
 
 `.gitignore` covers these; do not defeat it.

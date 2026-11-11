@@ -162,3 +162,11 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   same window, into `Full\programs\<dir>` (the dev category into `Full\programs\dev\<id>`). Installer, ISO and manual sources are
   never run: they stay ghosts that open the official download page, and count as installed once found. The START A list is unchanged.
 - B: install into a folder of the Dashboard's own. C: run vendor installers too (admin rights, outside the VRG folders).
+
+## DESKU-Q23 — The Artifact Archive (the Founder asked for it, 2026-11-11)
+
+- **A (taken):** `Archive/` in the repo holds the index and the saved copies (all small, the Founder's own pages, backed up with
+  git); the VRG Asztal shows an **Archívum** section at User level and opens `Archive/vrg-archive.html` in-shell. A page Claude
+  publishes from now on is added with `node Archive/archive.js add` in the same session (CLAUDE.md). A page that needs files
+  beside it, or shows a real client's or a private house, keeps a `localPath` instead of a copy. START key: R → A.
+- B: keep the copies outside the repo (`Full\artifacts`) and add that folder to BACKUP. C: links only, no copies.

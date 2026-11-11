@@ -1,0 +1,401 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Varler Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Barlow:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen app. Charcoal chrome (top bar + page dots) frames a horizontal track of full-height pages; Home is an empty charcoal canvas, dashboards are slate panels. Tokens mirror the Varler SUI design system; single HUD theme by choice. */
+:root{
+  --ground:#121B22;--panel:#18242D;--line:#2C4250;--dim:#4C6878;--fg:#D6E4EA;--muted:#8AA3AF;
+  --cyan:#7ED3DF;--cyan-soft:rgba(126,211,223,.16);--amber:#E8A04A;--alert:#F0C24B;--ok:#8FD49A;
+  --charcoal-950:#16181A;--charcoal-900:#1E2023;--charcoal-800:#26292C;--charcoal:#33363A;--charcoal-600:#43474C;--charcoal-sheen:#8D9297;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Barlow",system-ui,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--charcoal-900);color:var(--fg);font:15px/1.5 var(--f-body);overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column}
+/* matte-metal chrome */
+.bar{flex:none;background:var(--charcoal);border-bottom:1px solid var(--charcoal-950);box-shadow:inset 0 1px 0 var(--charcoal-sheen);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;align-items:center;gap:14px}
+.mark{font:600 18px/1 var(--f-display);letter-spacing:.14em;color:var(--charcoal-sheen);text-transform:uppercase;white-space:nowrap}
+.mark b{color:var(--fg);font-weight:600}
+.ptitle{flex:1;min-width:0;font:500 17px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptitle small{font:12px var(--f-mono);color:var(--muted);letter-spacing:0;margin-left:8px}
+.btn{font:500 13px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid var(--line);border-radius:2px;padding:9px 12px;min-height:36px;cursor:pointer}
+.btn:hover{border-color:var(--cyan)}.btn:focus-visible,.dot:focus-visible,input:focus-visible,textarea:focus-visible{outline:1px solid var(--cyan);outline-offset:2px}
+.bar .btn{border-color:var(--charcoal-600);background:var(--charcoal-800)}
+.foot{flex:none;background:var(--charcoal);border-top:1px solid var(--charcoal-950);display:flex;justify-content:center;align-items:center;gap:6px;
+  padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dot{width:44px;height:28px;display:grid;place-items:center;background:none;border:0;cursor:pointer;padding:0}
+.dot i{display:block;width:16px;height:3px;background:var(--charcoal-600);transition:background .2s,width .2s}
+.dot[aria-current=true] i{background:var(--cyan);width:28px}
+.dot.home i{width:7px;height:7px;border-radius:50%}.dot.home[aria-current=true] i{width:9px;height:9px}
+/* track */
+.view{flex:1;min-height:0;position:relative;overflow:hidden}
+.track{display:flex;height:100%;will-change:transform;touch-action:pan-y}
+.track.anim{transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+.page{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+.page.dash{background:var(--ground)}
+.page.home{background:var(--charcoal-900);display:flex;align-items:flex-end;justify-content:center}
+.home-hint{font:12px var(--f-mono);color:var(--charcoal-600);letter-spacing:.08em;padding-bottom:6px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-width:0;display:flex;flex-direction:column}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ph h2{margin:0;font:500 16px/1.1 var(--f-display);letter-spacing:.12em;text-transform:uppercase}
+.ph small,.ex{font:11px var(--f-mono);color:var(--muted)}
+.pb{padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.k{font:500 12px var(--f-display);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.v{font:500 22px/1 var(--f-display);color:var(--fg);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:2px;padding:3px 8px}
+.chip.alert{color:var(--alert);border-color:var(--alert)}.chip.ok{color:var(--ok);border-color:var(--ok)}.chip.cy{color:var(--cyan);border-color:var(--cyan)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font:12.5px var(--f-mono);font-variant-numeric:tabular-nums}
+th{font:500 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid rgba(44,66,80,.5);white-space:nowrap}
+td.num{text-align:right}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.act{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;min-height:72px;text-align:left}
+.act span{font:11px var(--f-mono);color:var(--muted);letter-spacing:0;text-transform:none}
+input[type=search],input[type=text],textarea{width:100%;background:var(--ground);color:var(--fg);border:1px solid var(--line);border-radius:2px;font:14px var(--f-mono);padding:10px 12px;min-height:44px}
+textarea{min-height:120px;resize:vertical;font:14px/1.5 var(--f-body)}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(44,66,80,.5)}
+.item b{font:500 15px var(--f-display);letter-spacing:.04em}
+.item small{font:11px var(--f-mono);color:var(--muted);grid-column:1}
+.item .btn{grid-row:1/3;grid-column:2;padding:8px 10px}
+.well{background:var(--ground);border:1px solid var(--line);font:12.5px/1.6 var(--f-mono);padding:12px 14px;white-space:pre-wrap;margin:0;max-height:340px;overflow:auto;min-width:0}
+.src{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(44,66,80,.5);font:500 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.src input{accent-color:var(--cyan);width:18px;height:18px;flex:none}
+.src em{font:11px var(--f-mono);font-style:normal;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:auto}
+.src.lock{color:var(--muted);cursor:not-allowed}
+.swatch{display:inline-block;width:14px;height:14px;border:1px solid var(--line);vertical-align:-2px;margin-right:8px}
+/* page picker sheet */
+.sheet{position:absolute;inset:0;background:rgba(22,24,26,.82);display:flex;justify-content:flex-end;z-index:5}
+.sheet-in{width:min(360px,100%);height:100%;background:var(--charcoal);box-shadow:inset 1px 0 0 var(--charcoal-sheen);padding:16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.sheet h3{margin:0 0 4px;font:500 16px var(--f-display);letter-spacing:.14em;text-transform:uppercase}
+.prow{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:8px 10px;background:var(--charcoal-800);border:1px solid var(--charcoal-600);border-radius:2px;font:500 15px var(--f-display);letter-spacing:.08em;text-transform:uppercase}
+.prow input{accent-color:var(--cyan);width:18px;height:18px}
+.prow .btn{padding:6px 9px;min-height:32px}
+.prow.fixed{opacity:.7}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--charcoal);border:1px solid var(--charcoal-600);color:var(--fg);font:500 14px var(--f-display);letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;z-index:6}
+@media (prefers-reduced-motion:reduce){.track.anim{transition:none}}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="mark"><b>VARLER</b> · CONSOLE</div>
+    <div class="ptitle" id="ptitle" aria-live="polite"></div>
+    <button class="btn" id="pagesBtn" type="button" aria-haspopup="dialog">Pages</button>
+  </header>
+  <main class="view" id="view">
+    <div class="track" id="track"></div>
+  </main>
+  <nav class="foot" id="dots" aria-label="Dashboard pages"></nav>
+</div>
+
+<template id="tpl-home">
+  <div class="home-hint">HOME · CUSTOM CANVAS · SWIPE ← →</div>
+</template>
+
+<template id="tpl-field">
+<div class="wrap">
+  <div class="grid">
+    <section class="panel">
+      <div class="ph"><h2>Today's job</h2><span class="chip alert">● 2 open items</span></div>
+      <div class="pb">
+        <div class="kv">
+          <div><div class="k">Job</div><div class="v">J-2611-03</div></div>
+          <div><div class="k">Site</div><div class="v">Flat 4/12</div></div>
+          <div><div class="k">Board</div><div class="v">DB-1 · 18 way</div></div>
+          <div><div class="k">Stage</div><div class="v">Testing</div></div>
+        </div>
+        <div class="ex">EXAMPLE JOB · client details stay off-screen until opened</div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>Quick capture</h2><small>one tap from any page</small></div>
+      <div class="pb actions">
+        <button class="btn act" type="button" data-go="log">Note<span>shared with the job</span></button>
+        <button class="btn act" type="button" data-go="log">Photo + OCR<span>nameplate, meter, label</span></button>
+        <button class="btn act" type="button" data-go="log">Measure<span>Zs · IR · RCD</span></button>
+        <button class="btn act" type="button" data-go="agent">Agent kit<span>brief from this job</span></button>
+      </div>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="ph"><h2>Test results · DB-1</h2><small>example values</small></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Circuit</th><th>Device</th><th>Zs (Ω)</th><th>IR (MΩ)</th><th>RCD (ms)</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>C1 Sockets kitchen</td><td>B16 / RCD 30 mA</td><td class="num">0.62</td><td class="num">&gt;500</td><td class="num">21</td><td><span class="chip ok">Pass</span></td></tr>
+        <tr><td>C2 Sockets living</td><td>B16 / RCD 30 mA</td><td class="num">0.71</td><td class="num">&gt;500</td><td class="num">24</td><td><span class="chip ok">Pass</span></td></tr>
+        <tr><td>C3 Lighting</td><td>B10</td><td class="num">1.12</td><td class="num">180</td><td class="num">—</td><td><span class="chip ok">Pass</span></td></tr>
+        <tr><td>C4 Cooker</td><td>B32</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="chip alert">To test</span></td></tr>
+        <tr><td>C5 Bathroom</td><td>B16 / RCD 30 mA</td><td class="num">0.84</td><td class="num">2.1</td><td class="num">26</td><td><span class="chip alert">Check IR</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+</template>
+
+<template id="tpl-agent">
+<div class="wrap">
+  <div class="grid">
+    <section class="panel">
+      <div class="ph"><h2>Context sources</h2><small>pick what the agent may see</small></div>
+      <div class="pb" id="srcs"></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>Session brief</h2><button class="btn" type="button" id="copyBrief">Copy brief</button></div>
+      <div class="pb">
+        <label class="k" for="goal">Goal for this session</label>
+        <input id="goal" type="text" value="Draft the handover report for DB-1 and list what is still untested">
+        <pre class="well" id="brief" tabindex="0"></pre>
+      </div>
+    </section>
+  </div>
+</div>
+</template>
+
+<template id="tpl-daniella">
+<div class="wrap">
+  <section class="panel">
+    <div class="ph"><h2>Daniella · items &amp; devices</h2><small>example items · no prices</small></div>
+    <div class="pb">
+      <input id="dq" type="search" placeholder="Search: RCD 30 mA, B16, 3x2.5, junction box…" aria-label="Search items">
+      <div class="list" id="dlist"></div>
+      <div class="ex">Connect an official Daniella export or your own order history to fill this. Contract prices stay on this device.</div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="ph"><h2>Job list · J-2611-03</h2><small id="jcount">0 lines</small></div>
+    <div class="pb"><div class="list" id="jlist"></div></div>
+  </section>
+</div>
+</template>
+
+<template id="tpl-log">
+<div class="wrap">
+  <div class="grid">
+    <section class="panel">
+      <div class="ph"><h2>Shared note</h2><small id="saved">saved on this device</small></div>
+      <div class="pb">
+        <label class="k" for="note">J-2611-03 · site note</label>
+        <textarea id="note" placeholder="Board location, access, what the client asked for…"></textarea>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>Photos &amp; documents</h2><small>OCR runs later on the device</small></div>
+      <div class="pb">
+        <label class="btn act" for="files" style="min-height:56px">Add photo or PDF<span>nameplates, meter readings, schematics</span></label>
+        <input id="files" type="file" accept="image/*,application/pdf" multiple hidden>
+        <div class="list" id="flist"></div>
+      </div>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="ph"><h2>Offline documents</h2><small>example library</small></div>
+    <div class="pb list">
+      <div class="item"><div><b>DB-1 panel schedule</b></div><small>PDF · pinned offline</small></div>
+      <div class="item"><div><b>Handover report template</b></div><small>DOCX · pinned offline</small></div>
+      <div class="item"><div><b>RCD datasheet · 2P 40 A 30 mA type A</b></div><small>PDF · manufacturer</small></div>
+    </div>
+  </section>
+</div>
+</template>
+
+<template id="tpl-cheat">
+<div class="wrap">
+  <div class="grid">
+    <section class="panel">
+      <div class="ph"><h2>Conductor colours</h2><small>EU harmonised</small></div>
+      <div class="tbl"><table><tbody>
+        <tr><td><span class="swatch" style="background:#7a4a24"></span>L1</td><td>Brown</td></tr>
+        <tr><td><span class="swatch" style="background:#111"></span>L2</td><td>Black</td></tr>
+        <tr><td><span class="swatch" style="background:#8a8d90"></span>L3</td><td>Grey</td></tr>
+        <tr><td><span class="swatch" style="background:#2f6fb4"></span>N</td><td>Blue</td></tr>
+        <tr><td><span class="swatch" style="background:linear-gradient(90deg,#3a9a3a 50%,#e5d23a 50%)"></span>PE</td><td>Green-yellow</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>MCB trip curves</h2><small>magnetic trip range</small></div>
+      <div class="tbl"><table><tbody>
+        <tr><td>B</td><td>3–5 × In</td><td>Resistive, long runs</td></tr>
+        <tr><td>C</td><td>5–10 × In</td><td>Motors, lighting banks</td></tr>
+        <tr><td>D</td><td>10–20 × In</td><td>High inrush loads</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>Power</h2><small>AC, with power factor</small></div>
+      <div class="tbl"><table><tbody>
+        <tr><td>1-phase</td><td>P = U · I · cos φ</td></tr>
+        <tr><td>3-phase</td><td>P = √3 · U · I · cos φ</td></tr>
+        <tr><td>Ohm</td><td>U = I · R</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>RCD types</h2></div>
+      <div class="tbl"><table><tbody>
+        <tr><td>AC</td><td>Sinusoidal AC residual current</td></tr>
+        <tr><td>A</td><td>AC + pulsating DC</td></tr>
+        <tr><td>F</td><td>Type A + mixed frequency (single-phase drives)</td></tr>
+        <tr><td>B</td><td>Type F + smooth DC (EV chargers, 3-phase drives, PV)</td></tr>
+      </tbody></table></div>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="ph"><h2>IP code · IEC 60529</h2><small>IP + solids digit + water digit</small></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Digit</th><th>1st · solids</th><th>2nd · water</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>No protection</td><td>No protection</td></tr>
+        <tr><td>1</td><td>Objects &gt; 50 mm</td><td>Vertically dripping water</td></tr>
+        <tr><td>2</td><td>Objects &gt; 12.5 mm (fingers)</td><td>Dripping, tilted up to 15°</td></tr>
+        <tr><td>3</td><td>Objects &gt; 2.5 mm (tools)</td><td>Spraying, up to 60° from vertical</td></tr>
+        <tr><td>4</td><td>Objects &gt; 1 mm (wires)</td><td>Splashing from any direction</td></tr>
+        <tr><td>5</td><td>Dust-protected</td><td>Water jets (6.3 mm nozzle)</td></tr>
+        <tr><td>6</td><td>Dust-tight</td><td>Powerful jets (12.5 mm nozzle)</td></tr>
+        <tr><td>7</td><td>—</td><td>Temporary immersion up to 1 m</td></tr>
+        <tr><td>8</td><td>—</td><td>Continuous immersion beyond 1 m</td></tr>
+        <tr><td>9K</td><td>—</td><td>High-pressure, high-temperature jets</td></tr>
+      </tbody>
+    </table></div>
+    <div class="pb ex">Quick reference only. Check design values against MSZ HD 60364 and the manufacturer's data.</div>
+  </section>
+</div>
+</template>
+
+<script>
+const PAGES=[
+  {id:"home",name:"Home",sub:"custom canvas",tpl:"tpl-home",fixed:true},
+  {id:"field",name:"Field job",sub:"J-2611-03",tpl:"tpl-field"},
+  {id:"agent",name:"Agent kit",sub:"session brief",tpl:"tpl-agent"},
+  {id:"daniella",name:"Daniella",sub:"items & devices",tpl:"tpl-daniella"},
+  {id:"log",name:"Field log",sub:"notes · photos · docs",tpl:"tpl-log"},
+  {id:"cheat",name:"Cheat sheets",sub:"quick reference",tpl:"tpl-cheat"},
+];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let layout=store.get("vc.layout",PAGES.map(p=>({id:p.id,on:true})));
+PAGES.forEach(p=>{if(!layout.find(l=>l.id===p.id))layout.push({id:p.id,on:true})});
+layout=layout.filter(l=>PAGES.find(p=>p.id===l.id));
+layout.sort((a,b)=>(a.id==="home"?-1:b.id==="home"?1:0));
+const byId=id=>PAGES.find(p=>p.id===id);
+const T=document.getElementById("track"),V=document.getElementById("view"),D=document.getElementById("dots"),TT=document.getElementById("ptitle");
+let order=[],idx=0;
+
+function build(){
+  const keep=order[idx];
+  order=layout.filter(l=>l.on||l.id==="home").map(l=>l.id);
+  T.innerHTML="";D.innerHTML="";
+  order.forEach((id,i)=>{
+    const p=byId(id),s=document.createElement("section");
+    s.className="page "+(id==="home"?"home":"dash");s.id="pg-"+id;s.setAttribute("aria-label",p.name);
+    s.appendChild(document.getElementById(p.tpl).content.cloneNode(true));T.appendChild(s);
+    const d=document.createElement("button");d.type="button";d.className="dot"+(id==="home"?" home":"");d.setAttribute("aria-label",p.name);
+    d.innerHTML="<i></i>";d.addEventListener("click",()=>go(i));D.appendChild(d);
+  });
+  idx=Math.max(0,order.indexOf(keep));wire();go(idx,false);
+}
+function go(i,anim=true){
+  const n=order.length;idx=((i%n)+n)%n;
+  T.classList.toggle("anim",anim);T.style.transform=`translateX(${-idx*100}%)`;
+  [...D.children].forEach((d,j)=>d.setAttribute("aria-current",j===idx));
+  [...T.children].forEach((pg,j)=>{pg.inert=j!==idx;pg.setAttribute("aria-hidden",j!==idx)});
+  const p=byId(order[idx]);TT.innerHTML=`${p.name}<small>${idx+1}/${n} · ${p.sub}</small>`;
+}
+/* swipe: horizontal drag with direction lock, wraps around */
+let drag=null;
+T.addEventListener("pointerdown",e=>{if(e.button!==0||e.target.closest("input,textarea,button,label,select,.tbl,.well"))return;drag={x:e.clientX,y:e.clientY,t:Date.now(),lock:null,id:e.pointerId}});
+window.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.lock){if(Math.abs(dx)>8||Math.abs(dy)>8){drag.lock=Math.abs(dx)>Math.abs(dy)?"x":"y";if(drag.lock==="x")try{T.setPointerCapture(drag.id)}catch(_){} }else return}
+  if(drag.lock!=="x")return;T.classList.remove("anim");T.style.transform=`translateX(calc(${-idx*100}% + ${dx}px))`});
+window.addEventListener("pointerup",e=>{if(!drag)return;const d=drag;drag=null;if(d.lock!=="x")return;
+  const dx=e.clientX-d.x,w=V.clientWidth,fast=Math.abs(dx)/(Date.now()-d.t)>.5;
+  if(Math.abs(dx)>w*.18||(fast&&Math.abs(dx)>30))go(idx+(dx<0?1:-1));else go(idx)});
+window.addEventListener("pointercancel",()=>{if(drag){drag=null;go(idx)}});
+window.addEventListener("keydown",e=>{if(e.target.closest("input,textarea"))return;if(e.key==="ArrowRight")go(idx+1);if(e.key==="ArrowLeft")go(idx-1)});
+
+/* page picker */
+const pagesBtn=document.getElementById("pagesBtn");
+pagesBtn.addEventListener("click",openSheet);
+function openSheet(){
+  const sh=document.createElement("div");sh.className="sheet";sh.setAttribute("role","dialog");sh.setAttribute("aria-label","Choose dashboard pages");
+  const inner=document.createElement("div");inner.className="sheet-in";sh.appendChild(inner);
+  const render=()=>{inner.innerHTML=`<h3>Dashboard pages</h3><div class="ex">Pick the pages to swipe through and set their order. Home always comes first.</div>`;
+    layout.forEach((l,i)=>{const p=byId(l.id),r=document.createElement("div");r.className="prow"+(p.fixed?" fixed":"");
+      r.innerHTML=`<input type="checkbox" id="pk-${l.id}" ${l.on||p.fixed?"checked":""} ${p.fixed?"disabled":""}><label for="pk-${l.id}">${p.name}</label>`+
+        (p.fixed?`<span class="ex">fixed</span><span></span>`:`<button class="btn" type="button" aria-label="Move ${p.name} up" ${i<=1?"disabled":""}>↑</button><button class="btn" type="button" aria-label="Move ${p.name} down" ${i===layout.length-1?"disabled":""}>↓</button>`);
+      if(!p.fixed){r.querySelector("input").addEventListener("change",e=>{l.on=e.target.checked;save()});
+        const [up,dn]=r.querySelectorAll("button");up.addEventListener("click",()=>{[layout[i-1],layout[i]]=[layout[i],layout[i-1]];save();render()});
+        dn.addEventListener("click",()=>{[layout[i+1],layout[i]]=[layout[i],layout[i+1]];save();render()})}
+      inner.appendChild(r)});
+    const done=document.createElement("button");done.className="btn";done.type="button";done.textContent="Done";done.style.marginTop="8px";done.addEventListener("click",close);inner.appendChild(done);done.focus()};
+  const save=()=>store.set("vc.layout",layout);
+  const close=()=>{sh.remove();build();pagesBtn.focus()};
+  sh.addEventListener("click",e=>{if(e.target===sh)close()});sh.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+  V.appendChild(sh);render();
+}
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;V.appendChild(el);setTimeout(()=>el.remove(),1600)}
+
+/* page behaviours (re-wired after every rebuild) */
+const SOURCES=[
+  {id:"job",name:"Job sheet",size:"2 KB",on:true,text:"Job J-2611-03 · Flat 4/12 · stage: testing · board DB-1, 18 way"},
+  {id:"tests",name:"Test results",size:"5 circuits",on:true,text:"C1 Zs 0.62 Ω IR >500 MΩ RCD 21 ms pass; C2 Zs 0.71 Ω pass; C3 Zs 1.12 Ω IR 180 MΩ pass; C4 cooker not tested; C5 bathroom IR 2.1 MΩ needs check"},
+  {id:"note",name:"Site note",size:"this device",on:true,text:null},
+  {id:"photos",name:"Photos (OCR text only)",size:"0 files",on:false,text:"No photos attached yet"},
+  {id:"stds",name:"Standards references",size:"titles only",on:true,text:"MSZ HD 60364 (refer by clause number; do not quote the standard)"},
+  {id:"client",name:"Client name & address",size:"personal data",on:false,text:"[client details withheld]"},
+  {id:"prices",name:"Daniella contract prices",size:"trade secret",lock:true},
+];
+function wire(){
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const i=order.indexOf(b.dataset.go);if(i>=0)go(i);else toast("Page hidden · enable it in Pages")});
+  // agent kit
+  const S=document.getElementById("srcs");
+  if(S){S.innerHTML="";SOURCES.forEach(s=>{const l=document.createElement("label");l.className="src"+(s.lock?" lock":"");l.htmlFor="src-"+s.id;
+      l.innerHTML=`<input type="checkbox" id="src-${s.id}" ${s.on?"checked":""} ${s.lock?"disabled":""}>${s.name}<em>${s.lock?"never shared":s.size}</em>`;
+      if(!s.lock)l.querySelector("input").addEventListener("change",e=>{s.on=e.target.checked;brief()});S.appendChild(l)});
+    const g=document.getElementById("goal");g.oninput=brief;brief();
+    document.getElementById("copyBrief").onclick=()=>{const txt=document.getElementById("brief").textContent;
+      const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById("brief"));const s=getSelection();s.removeAllRanges();s.addRange(r)};
+      try{navigator.clipboard.writeText(txt).then(()=>toast("Copied"),()=>{sel();toast("Selected · copy manually")})}catch(e){sel();toast("Selected · copy manually")}}}
+  // daniella
+  const Q=document.getElementById("dq");if(Q){Q.oninput=dsearch;dsearch();jrender()}
+  // field log
+  const N=document.getElementById("note");if(N){N.value=store.get("vc.note","");N.oninput=()=>{store.set("vc.note",N.value);document.getElementById("saved").textContent="saved on this device · "+new Date().toTimeString().slice(0,5)}}
+  const F=document.getElementById("files");if(F){F.onchange=()=>{files.push(...[...F.files].map(f=>({n:f.name,s:f.size,t:f.type})));frender();F.value=""};frender()}
+}
+function brief(){
+  const note=store.get("vc.note","").trim();
+  const lines=["# Session brief · J-2611-03","","## Goal",document.getElementById("goal").value||"(set a goal)","","## Context"];
+  SOURCES.filter(s=>s.on&&!s.lock).forEach(s=>lines.push(`- ${s.name}: ${s.id==="note"?(note||"(empty)"):s.text}`));
+  lines.push("","## Rules","- Work only from the context above; ask before assuming values.","- Client personal data and supplier prices are excluded unless listed.","- Flag anything that needs a re-test before sign-off.");
+  document.getElementById("brief").textContent=lines.join("\n");
+}
+const ITEMS=[
+  ["MCB 1P B16 6 kA","Protection · modular 1 module"],["MCB 1P B10 6 kA","Protection · modular 1 module"],["MCB 3P C32 6 kA","Protection · modular 3 modules"],
+  ["RCD 2P 40 A 30 mA type A","Protection · modular 2 modules"],["RCD 4P 40 A 30 mA type B","Protection · EV / PV circuits"],["RCBO 1P+N B16 30 mA type A","Protection · modular 2 modules"],
+  ["Surge protection device T2 3P+N","Protection · board"],["Cable NYM-J 3x2.5 mm²","Cable · per metre"],["Cable NYM-J 3x1.5 mm²","Cable · per metre"],["Cable NYM-J 5x6 mm²","Cable · per metre"],
+  ["Flush box 60 mm deep","Boxes · brick and plaster"],["Junction box IP55 100x100","Boxes · surface"],["Lever connector 3-way 0.2–4 mm²","Connectors"],
+  ["Distribution board 2x12 modules flush","Enclosures"],["DIN rail energy meter 3-phase Modbus","Metering"],["Socket outlet 2P+E frame-mounted","Wiring devices"],
+];
+let jl=store.get("vc.joblist",[]),files=[];
+function dsearch(){const q=document.getElementById("dq").value.trim().toLowerCase(),L=document.getElementById("dlist");
+  const words=q.split(/\s+/).filter(Boolean),hits=ITEMS.filter(([n,c])=>words.every(w=>(n+" "+c).toLowerCase().includes(w)));
+  L.innerHTML=hits.length?"":`<div class="ex">No example item matches "${q.replace(/[<&]/g,"")}"</div>`;
+  hits.slice(0,10).forEach(([n,c])=>{const r=document.createElement("div");r.className="item";r.innerHTML=`<div><b></b></div><small></small><button class="btn" type="button">Add</button>`;
+    r.querySelector("b").textContent=n;r.querySelector("small").textContent=c;r.querySelector("button").onclick=()=>{const x=jl.find(j=>j.n===n);x?x.q++:jl.push({n,q:1});store.set("vc.joblist",jl);jrender();toast("Added to job list")};L.appendChild(r)})}
+function jrender(){const L=document.getElementById("jlist");if(!L)return;L.innerHTML=jl.length?"":`<div class="ex">Nothing on the list yet. Search above and tap Add.</div>`;
+  jl.forEach((j,i)=>{const r=document.createElement("div");r.className="item";r.innerHTML=`<div><b></b></div><small>qty ${j.q}</small><button class="btn" type="button">Remove</button>`;
+    r.querySelector("b").textContent=j.n;r.querySelector("button").onclick=()=>{jl.splice(i,1);store.set("vc.joblist",jl);jrender()};L.appendChild(r)});
+  document.getElementById("jcount").textContent=jl.length+" lines"}
+function frender(){const L=document.getElementById("flist");if(!L)return;L.innerHTML=files.length?"":`<div class="ex">No files yet. They stay in this browser tab.</div>`;
+  files.forEach(f=>{const r=document.createElement("div");r.className="item";r.innerHTML=`<div><b></b></div><small></small><span class="chip">OCR queued</span>`;r.querySelector("b").textContent=f.n;r.querySelector("small").textContent=`${(f.s/1024).toFixed(0)} KB · ${f.t||"file"}`;L.appendChild(r)})}
+build();
+</script>
+
+</body></html>

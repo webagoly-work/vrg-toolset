@@ -111,4 +111,7 @@ What changes locally compared with the cloud:
   thread read on github.com, a new release, `relay-notify.js` ringing at once on the same WiFi, a board file from the PC)
   and **M7** (`docs/mobile/WP/M7.md` → "Telefonon ellenőrizni": the research matrix on the Redmi, and Pixel / Sony if
   at hand: the tethering settings link and states, Helyi WiFi, the usage figures and the once-a-day warning, the HID row,
-  and the phone relay with Kódváros / the Planner pairing by code, Légegér on it, and 10 minutes with the screen off).
+  and the phone relay with Kódváros / the Planner pairing by code, Légegér on it, and 10 minutes with the screen off)
+  and **M18** Archívum (`docs/mobile/WP/M18.md` → "Telefonon ellenőrizni": built 2026-11-11, D-13; needs `Archive/`
+  on `main` first; ⟳, list → entry → ▶, Back through all three, claude.ai ↗ in the browser, offline open;
+  `node Mobile/tests/archive-phone.js` is its headless 375 px check).

@@ -41,10 +41,10 @@ test('the editable probe names inputs, textareas, contenteditable and terminals'
   for (const s of ['textarea', 'input', 'isContentEditable', '.xterm', 'data-kind']) assert.ok(D.EDITABLE_PROBE.includes(s), s);
 });
 
-test('Dashboard sections: User = Ma · Alkalmazások · Programok · Munkák · Állapot; Dev adds five; All adds Katalógus', () => {
+test('Dashboard sections: User = Ma · Alkalmazások · Programok · Archívum · Munkák · Állapot; Dev adds five; All adds Katalógus', () => {
   const ids = lv => D.sections(cat.listFor(lv), lv, cat.sections(), cat.groups()).map(s => s.id);
-  assert.deepEqual(ids('user'), ['ma', 'apps', 'programok', 'munkak', 'allapot']);
-  assert.deepEqual(ids('dev'), ['ma', 'apps', 'programok', 'munkak', 'allapot', 'vonalak', 'stack', 'ugynokok', 'szerverek', 'meroszamok']);
+  assert.deepEqual(ids('user'), ['ma', 'apps', 'programok', 'archivum', 'munkak', 'allapot']);
+  assert.deepEqual(ids('dev'), ['ma', 'apps', 'programok', 'archivum', 'munkak', 'allapot', 'vonalak', 'stack', 'ugynokok', 'szerverek', 'meroszamok']);
   assert.deepEqual(ids('all'), [...ids('dev'), 'katalogus']);
 });
 

@@ -5,7 +5,7 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 154 |
+| START registry (launcher/vrg-menu.json) | 155 |
 | Features map (notes/features, outside git) | 105 |
 | VRG Irányítópult (Dashboard/) | 84 |
 | Varler Console pages | 51 |
@@ -17,10 +17,10 @@
 | Firmware | 4 |
 | Shared libraries | 4 |
 | Docs packs + GO phrases | 24 |
-| Top-level folders + launcher parts | 25 |
-| **Total** | **534** |
+| Top-level folders + launcher parts | 26 |
+| **Total** | **536** |
 
-## START registry (launcher/vrg-menu.json) (154)
+## START registry (launcher/vrg-menu.json) (155)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -79,6 +79,7 @@
 | `menu:proj:R/N` | Rétegverem · Döntésnapló | START R N · {stack}\decisions.html | start.action | projects/R | minden nyitott kérdés egy listában, A/B/C prompttal (Q réteg) |
 | `menu:proj:R/M` | Rétegverem · Vonaltérkép | START R M · {stack}\metro.html | start.action | projects/R | a DevLog vonalai metróként, csendes szakaszokkal (L réteg) |
 | `menu:proj:R/F` | Rétegverem · Futásnapló | START R F · {stack}\runs.html | start.action | projects/R | a futások naponta, párhuzamos sávokon (U réteg) |
+| `menu:proj:R/A` | Rétegverem · Archívum | START R A · {repo}\Archive\vrg-archive.html | start.action | projects/R | minden egyszeri interaktív oldal, amit Claude készített |
 | `menu:proj:R/T` | Rétegverem · Telefonra | START R T · {node} Mobile/stack/publish-stack.js --push | start.action | projects/R | stack-pages: a VRG Mobile Rétegverem |
 | `menu:proj:R/B` | Rétegverem · Újraépítés | START R B · {node} stack.js build | start.action | projects/R | stack.js build |
 | `menu:proj:R/D` | Rétegverem · Doktor | START R D · {node} stack.js doctor | start.action | projects/R | stack.js doctor |
@@ -589,10 +590,11 @@
 | `go:planner` | GO PLANNER | GO-PLANNER.md | codephrase brief | GO | GO PLANNER — the open Planner work (everything except wiring) |
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 
-## Top-level folders + launcher parts (25)
+## Top-level folders + launcher parts (26)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `dir:Archive` | Archive | Archive/ | top-level folder | repo |  |
 | `dir:BRIDGE` | BRIDGE | BRIDGE/ | top-level folder | repo | BRIDGE Smart Home System — forrásfájl-gyűjtő mappa |
 | `dir:Calculator` | Calculator | Calculator/ | top-level folder | repo |  |
 | `dir:CodeCity` | CodeCity | CodeCity/ | top-level folder | repo |  |

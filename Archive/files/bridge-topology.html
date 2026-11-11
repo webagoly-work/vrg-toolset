@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>BRIDGE Topology</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: three parallel vertical routes (MAINS left, CHANNEL centre, SECURITY right) as one
+   tall SVG, layer chips above, and the per-layer connection schedule plus endpoint arrays below.
+   Layer hues are the ARCH-002 conduit colour code, redefined per theme. */
+:root{
+  --bg:#f3f4f6; --surface:#fff; --surface-2:#e9ebee;
+  --ink:#15181c; --ink-2:#575e68; --ink-3:#8a9199;
+  --line:#d5d9df; --line-2:#bfc5cd;
+  --accent:#1b6b8f; --accent-ink:#fff;
+  --mains:#b5751c; --lv:#2f6690; --control:#9b3885; --data:#117a74; --media:#5e4a9e;
+  --usb:#3a8f93; --knx:#3f7a2e; --sensor:#8a7f19; --rf:#6b7280; --security:#a8321f;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#12151a; --surface:#1a1e24; --surface-2:#232830;
+  --ink:#e6e9ee; --ink-2:#98a0aa; --ink-3:#6c747d;
+  --line:#2b313a; --line-2:#394250;
+  --accent:#53a8cc; --accent-ink:#0b1216;
+  --mains:#e0a252; --lv:#6ea8d8; --control:#d884c4; --data:#46b3ab; --media:#9b86d6;
+  --usb:#5cc4c9; --knx:#77bd62; --sensor:#cfc152; --rf:#9aa2ab; --security:#e5806c;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#12151a; --surface:#1a1e24; --surface-2:#232830;
+  --ink:#e6e9ee; --ink-2:#98a0aa; --ink-3:#6c747d;
+  --line:#2b313a; --line-2:#394250;
+  --accent:#53a8cc; --accent-ink:#0b1216;
+  --mains:#e0a252; --lv:#6ea8d8; --control:#d884c4; --data:#46b3ab; --media:#9b86d6;
+  --usb:#5cc4c9; --knx:#77bd62; --sensor:#cfc152; --rf:#9aa2ab; --security:#e5806c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px;padding-block:18px 60px}
+.eyebrow{font:600 10px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-size:23px;font-weight:650;margin:5px 0 6px;line-height:1.2;text-wrap:balance}
+.lede{margin:0 0 18px;color:var(--ink-2);font-size:14.5px;max-width:62ch}
+h2{font-size:17px;font-weight:650;margin:30px 0 4px}
+h3{font-size:14px;font-weight:650;margin:0 0 3px}
+p{margin:0 0 10px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.chip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);border-radius:999px;padding:7px 12px;font:500 12.5px var(--sans);cursor:pointer;min-height:36px}
+.chip:hover{border-color:var(--line-2)}
+.chip.on{background:var(--surface-2);border-color:currentColor;font-weight:600}
+.chip .sw{width:9px;height:9px;border-radius:2px;background:currentColor;flex:0 0 auto}
+.chip.all{color:var(--ink)}
+.chip.on.all{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* figure */
+figure{margin:0 0 6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:12px 10px 4px;overflow-x:auto}
+svg.topo{display:block;width:100%;max-width:520px;height:auto;margin:0 auto;color:var(--ink)}
+figcaption{font-size:13px;color:var(--ink-2);padding:8px 6px 6px;max-width:62ch}
+.nodeBox{fill:var(--surface);stroke:currentColor;stroke-width:1.2}
+.nodeBox.dash{stroke-dasharray:5 4;fill:none;opacity:.75}
+.nodeBox.frame{fill:none;stroke-dasharray:4 4;opacity:.5}
+.nL{font:600 11.5px var(--sans);fill:currentColor}
+.nS{font:400 9.8px var(--sans);fill:var(--ink-2)}
+.nT{font:600 8.6px var(--mono);fill:var(--ink-3);letter-spacing:.08em}
+.eL{font:500 9px var(--mono);fill:var(--ink-2)}
+.edge{fill:none;stroke-width:2.1;stroke-linecap:round}
+.edge.thin{stroke-width:1.5}
+.edge.dash{stroke-dasharray:5 4}
+.dim{opacity:.1}
+.dimT{opacity:.22}
+.hi{stroke-width:3}
+
+/* panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:10px;padding:13px 14px;margin:14px 0 0}
+.panel .pt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.panel .pn{font-size:16px;font-weight:650}
+.panel .pc{font:500 12px var(--mono);color:var(--ink-2)}
+.panel .pnote{font-size:13.5px;color:var(--ink-2);margin:0}
+.kv{display:flex;gap:8px;font-size:13px;margin:7px 0 0}
+.kv b{flex:0 0 auto;font-weight:600;color:var(--ink-3);font-size:11px;font-family:var(--mono);
+  letter-spacing:.06em;text-transform:uppercase;padding-top:2px;min-width:72px}
+.tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+.tbl th{text-align:left;font:600 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--line);padding:5px 8px 5px 0}
+.tbl td{border-bottom:1px solid var(--line);padding:7px 8px 7px 0;vertical-align:top}
+.tbl td.r{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.tblwrap{overflow-x:auto}
+.none{font-size:13.5px;color:var(--ink-2);background:var(--surface-2);border-radius:8px;padding:10px 12px;margin-top:10px}
+
+/* cards */
+.cards{display:grid;gap:12px;margin-top:10px}
+@media (min-width:720px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 14px;min-width:0}
+.card .ct{font:600 11px var(--mono);letter-spacing:.07em;color:var(--ink-3)}
+.card h3{margin:3px 0 2px;font-size:15px}
+.card .cs{font-size:12.5px;color:var(--ink-2);margin:0 0 9px}
+.grp{margin-top:9px}
+.grp .gh{font:600 10px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.grp .gh .sw{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.grp ul{margin:0;padding-left:17px}
+.grp li{font-size:13px;margin-bottom:2px;line-height:1.45}
+.tag{display:inline-block;font:600 9px var(--mono);letter-spacing:.07em;border:1px solid var(--line-2);
+  color:var(--ink-3);border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:1px}
+.rule{font-size:13.5px;color:var(--ink-2);border-left:2px solid var(--line-2);padding-left:11px;margin:9px 0}
+.foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-2)}
+.tb{position:absolute;top:14px;right:16px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);border-radius:8px;padding:6px 9px;font:500 13px var(--sans);cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<button class="tb" id="tb" aria-label="Toggle theme">◐</button>
+<div class="wrap">
+  <div class="eyebrow">BRIDGE · P33 reference layout</div>
+  <h1>Three RoomBoxes, ten layers</h1>
+  <p class="lede">Meter to endpoint for a three-box dwelling. Tap a layer to see only its route, the
+  conduit it needs and what runs inside. Four of the ten layers travel the CHANNEL; the rest are made
+  at the RoomBox or run a route of their own.</p>
+
+  <div class="chips" id="chips"></div>
+
+  <figure>
+    <svg class="topo" viewBox="0 0 480 812" role="img" aria-label="Topology from the electricity meter through the consumer unit and the BASE layers, along a CHANNEL string to three RoomBoxes, with a parallel mains route on the left and a parallel security route on the right.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="context-stroke"/>
+        </marker>
+      </defs>
+
+      <!-- ============ EDGES (drawn first, under the nodes) ============ -->
+      <g id="edges">
+        <!-- meter to cabinet -->
+        <g data-layer="mains">
+          <path class="edge" d="M155,52 L155,86" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <text class="eL" x="162" y="72">1F or 3F supply</text>
+        </g>
+
+        <!-- cabinet to big loads -->
+        <g data-layer="mains">
+          <path class="edge" d="M240,100 L290,100" stroke="var(--mains)" marker-end="url(#ar)"/>
+        </g>
+
+        <!-- cabinet to BASE: two dedicated circuits -->
+        <g data-layer="mains">
+          <path class="edge" d="M140,130 L140,170" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <path class="edge thin" d="M170,130 L170,170" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <text class="eL" x="178" y="152">2 circuits</text>
+        </g>
+
+        <!-- PANEL LINK: COMP to cabinet metering space -->
+        <g data-layer="control">
+          <path class="edge dash" d="M236,118 L250,118 L250,249 L236,249" stroke="var(--control)" marker-end="url(#ar)"/>
+          <text class="eL" x="254" y="188">PANEL</text>
+          <text class="eL" x="254" y="198">LINK</text>
+        </g>
+
+        <!-- internet entry to NET -->
+        <g data-layer="data">
+          <path class="edge" d="M290,197 L240,197" stroke="var(--data)" marker-end="url(#ar)"/>
+        </g>
+
+        <!-- BASE internal: NET-COMP, NET-MEDIA, COMP-MEDIA -->
+        <g data-layer="data">
+          <path class="edge thin" d="M96,218 L96,228" stroke="var(--data)"/>
+          <path class="edge thin" d="M118,218 L118,228" stroke="var(--data)"/>
+          <path class="edge thin" d="M206,218 L206,282" stroke="var(--data)"/>
+          <text class="eL" x="100" y="226">2x Cat6A</text>
+        </g>
+        <g data-layer="control">
+          <path class="edge thin" d="M150,274 L150,282" stroke="var(--control)"/>
+        </g>
+
+        <!-- MAINS riser, left, cabinet down to each RoomBox -->
+        <g data-layer="mains">
+          <path class="edge" d="M70,108 L42,108 L42,688" stroke="var(--mains)"/>
+          <path class="edge" d="M42,416 L70,416" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <path class="edge" d="M42,546 L70,546" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <path class="edge" d="M42,676 L70,676" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <text class="eL" x="8" y="300">MAINS</text>
+          <text class="eL" x="8" y="311">own</text>
+          <text class="eL" x="8" y="322">route</text>
+          <text class="eL" x="8" y="333">M25</text>
+        </g>
+        <!-- SSC two dedicated circuits, far right -->
+        <g data-layer="mains security">
+          <path class="edge thin dash" d="M240,88 L466,88 L466,492 L440,492" stroke="var(--mains)" marker-end="url(#ar)"/>
+          <text class="eL" x="444" y="300">2 ded.</text>
+          <text class="eL" x="444" y="311">circuits</text>
+        </g>
+
+        <!-- CHANNEL: BASE to RB1 -->
+        <g data-layer="data media control knx">
+          <path class="edge" d="M140,322 L140,400" stroke="var(--data)" marker-end="url(#ar)"/>
+          <path class="edge" d="M152,322 L152,400" stroke="var(--media)" marker-end="url(#ar)"/>
+          <path class="edge" d="M164,322 L164,400" stroke="var(--control)" marker-end="url(#ar)"/>
+          <path class="edge thin dash" d="M176,322 L176,400" stroke="var(--knx)"/>
+          <text class="eL" x="186" y="348">CHANNEL</text>
+          <text class="eL" x="186" y="359">C1 M25 data</text>
+          <text class="eL" x="186" y="370">C2 M40 media</text>
+          <text class="eL" x="186" y="381">C3 M20 control</text>
+          <text class="eL" x="186" y="392">C4 M32 spare</text>
+        </g>
+
+        <!-- CHANNEL: RB1 to RB2 -->
+        <g data-layer="data media control knx">
+          <path class="edge" d="M140,452 L140,530" stroke="var(--data)" marker-end="url(#ar)"/>
+          <path class="edge" d="M152,452 L152,530" stroke="var(--media)" marker-end="url(#ar)"/>
+          <path class="edge" d="M164,452 L164,530" stroke="var(--control)" marker-end="url(#ar)"/>
+          <path class="edge thin dash" d="M176,452 L176,530" stroke="var(--knx)"/>
+          <text class="eL" x="186" y="486">physical chain</text>
+          <text class="eL" x="186" y="497">logical star</text>
+          <text class="eL" x="186" y="508">through RB1 ZT</text>
+        </g>
+
+        <!-- reduced spur: RB2 to RB3 -->
+        <g data-layer="data control">
+          <path class="edge" d="M140,582 L140,660" stroke="var(--data)" marker-end="url(#ar)"/>
+          <path class="edge" d="M164,582 L164,660" stroke="var(--control)" marker-end="url(#ar)"/>
+          <text class="eL" x="186" y="612">reduced spur</text>
+          <text class="eL" x="186" y="623">C1 + C3 + C4</text>
+          <text class="eL" x="186" y="634">no C2 media</text>
+          <text class="eL" x="186" y="645">terminal, no ZT</text>
+        </g>
+
+        <!-- future RoomBox stub off RB2 -->
+        <g data-layer="data media control knx mains">
+          <path class="edge thin dash" d="M240,566 L290,566" stroke="var(--ink-3)" marker-end="url(#ar)"/>
+        </g>
+
+        <!-- SECURITY riser, right -->
+        <g data-layer="security">
+          <path class="edge" d="M290,492 L262,492 L262,424" stroke="var(--security)"/>
+          <path class="edge" d="M262,492 L262,688" stroke="var(--security)"/>
+          <path class="edge" d="M262,424 L240,424" stroke="var(--security)" marker-end="url(#ar)"/>
+          <path class="edge" d="M262,554 L240,554" stroke="var(--security)" marker-end="url(#ar)"/>
+          <path class="edge" d="M262,684 L240,684" stroke="var(--security)" marker-end="url(#ar)"/>
+          <text class="eL" x="268" y="700">parallel route</text>
+          <text class="eL" x="268" y="711">own conduits</text>
+        </g>
+      </g>
+
+      <!-- ============ NODES ============ -->
+      <g id="nodes">
+        <!-- Villanyóra -->
+        <g>
+          <rect class="nodeBox" x="70" y="16" width="170" height="36" rx="5"/>
+          <text class="nL" x="155" y="33" text-anchor="middle">VILLANYÓRA</text>
+          <text class="nS" x="155" y="45" text-anchor="middle">service meter</text>
+        </g>
+        <!-- Elosztószekrény -->
+        <g>
+          <rect class="nodeBox" x="70" y="86" width="170" height="44" rx="5"/>
+          <text class="nL" x="155" y="104" text-anchor="middle">ELOSZTÓSZEKRÉNY</text>
+          <text class="nS" x="155" y="116" text-anchor="middle">48 modules · SPD · RCD</text>
+          <text class="nT" x="155" y="126" text-anchor="middle">BRIDGE-DN</text>
+        </g>
+        <!-- big loads -->
+        <g>
+          <rect class="nodeBox dash" x="290" y="82" width="150" height="40" rx="5"/>
+          <text class="nL" x="365" y="98" text-anchor="middle">BIG LOADS</text>
+          <text class="nS" x="365" y="110" text-anchor="middle">oven · hob · boiler</text>
+          <text class="nS" x="365" y="119" text-anchor="middle">fed direct, never via RB</text>
+        </g>
+        <!-- internet -->
+        <g>
+          <rect class="nodeBox dash" x="290" y="180" width="150" height="34" rx="5"/>
+          <text class="nL" x="365" y="196" text-anchor="middle">INTERNET ENTRY</text>
+          <text class="nS" x="365" y="207" text-anchor="middle">M25 · fibre / coax</text>
+        </g>
+        <!-- BASE frame -->
+        <g>
+          <rect class="nodeBox frame" x="64" y="170" width="182" height="152" rx="7"/>
+          <text class="nT" x="68" y="182">BASE</text>
+          <!-- NET -->
+          <rect class="nodeBox" x="74" y="186" width="162" height="32" rx="4"/>
+          <text class="nL" x="155" y="199" text-anchor="middle">BRIDGENET</text>
+          <text class="nS" x="155" y="211" text-anchor="middle">16-port PoE · protocol masters</text>
+          <!-- COMP -->
+          <rect class="nodeBox" x="74" y="228" width="162" height="46" rx="4"/>
+          <text class="nL" x="155" y="243" text-anchor="middle">BRIDGE COMPUTER</text>
+          <text class="nS" x="155" y="255" text-anchor="middle">lightweight coordinator</text>
+          <text class="nS" x="155" y="267" text-anchor="middle">+ control panel, screen at 1.55 m</text>
+          <!-- MEDIA -->
+          <rect class="nodeBox" x="74" y="282" width="162" height="34" rx="4"/>
+          <text class="nL" x="155" y="296" text-anchor="middle">BRIDGE MEDIA</text>
+          <text class="nS" x="155" y="308" text-anchor="middle">store · Snapcast · NVR</text>
+        </g>
+        <!-- RB1 -->
+        <g>
+          <rect class="nodeBox" x="70" y="400" width="170" height="52" rx="5"/>
+          <text class="nT" x="78" y="414">RB-H · chain node</text>
+          <text class="nL" x="155" y="428" text-anchor="middle">ROOMBOX 1</text>
+          <text class="nS" x="155" y="440" text-anchor="middle">entrance · kitchen · dining</text>
+          <text class="nS" x="155" y="449" text-anchor="middle">+ WC and spájz on ARMs</text>
+        </g>
+        <!-- SSC -->
+        <g>
+          <rect class="nodeBox dash" x="290" y="470" width="150" height="44" rx="5"/>
+          <text class="nL" x="365" y="487" text-anchor="middle">SSC</text>
+          <text class="nS" x="365" y="498" text-anchor="middle">third-party security</text>
+          <text class="nS" x="365" y="508" text-anchor="middle">reserved · lockable</text>
+        </g>
+        <!-- RB2 -->
+        <g>
+          <rect class="nodeBox" x="70" y="530" width="170" height="52" rx="5"/>
+          <text class="nT" x="78" y="544">RB-L</text>
+          <text class="nL" x="155" y="558" text-anchor="middle">ROOMBOX 2</text>
+          <text class="nS" x="155" y="570" text-anchor="middle">living · bedroom</text>
+          <text class="nS" x="155" y="579" text-anchor="middle">carries spare for RB4</text>
+        </g>
+        <!-- future RB4 -->
+        <g>
+          <rect class="nodeBox dash" x="290" y="548" width="150" height="38" rx="5"/>
+          <text class="nL" x="365" y="564" text-anchor="middle">ROOMBOX 4</text>
+          <text class="nS" x="365" y="575" text-anchor="middle">later · capped stubs</text>
+        </g>
+        <!-- RB3 -->
+        <g>
+          <rect class="nodeBox" x="70" y="660" width="170" height="52" rx="5"/>
+          <text class="nT" x="78" y="674">RB-E/W · terminal · IP44</text>
+          <text class="nL" x="155" y="688" text-anchor="middle">ROOMBOX 3</text>
+          <text class="nS" x="155" y="700" text-anchor="middle">bathroom · shower</text>
+          <text class="nS" x="155" y="709" text-anchor="middle">SELV only beyond the box</text>
+        </g>
+        <!-- endpoint fan-outs -->
+        <g>
+          <path class="edge thin" d="M155,452 L155,470 L120,470" stroke="currentColor" opacity=".45" marker-end="url(#ar)"/>
+          <text class="nS" x="116" y="473" text-anchor="end">ARMs to endpoints</text>
+          <path class="edge thin" d="M155,582 L155,600 L120,600" stroke="currentColor" opacity=".45" marker-end="url(#ar)"/>
+          <text class="nS" x="116" y="603" text-anchor="end">ARMs to endpoints</text>
+          <path class="edge thin" d="M155,712 L155,730 L120,730" stroke="currentColor" opacity=".45" marker-end="url(#ar)"/>
+          <text class="nS" x="116" y="733" text-anchor="end">ARMs to endpoints</text>
+        </g>
+        <!-- "originates here" badges for the four layers with no CHANNEL run -->
+        <g id="originBadges" hidden>
+          <text class="nT" id="ob1" x="246" y="408"></text>
+          <text class="nT" id="ob2" x="246" y="538"></text>
+          <text class="nT" id="ob3" x="246" y="668"></text>
+        </g>
+      </g>
+    </svg>
+    <figcaption id="cap">All ten layers. MAINS runs its own route down the left; the CHANNEL bundle
+    runs the centre; SECURITY runs a third parallel route on the right. The three never share a conduit.</figcaption>
+  </figure>
+
+  <div id="panel"></div>
+
+  <h2>What hangs off each RoomBox</h2>
+  <p class="lede">An example array, not a schedule — the real one needs the room list. Every lamp gets
+  its own dedicated ARM so it can be switched and reassigned individually; sockets, ambient LV and the
+  sensor bus ride bus ARMs that terminate only in the box.</p>
+  <div class="cards" id="cards"></div>
+
+  <div class="foot">
+    <p><strong>Three rules the drawing encodes.</strong> Power comes from the Elosztószekrény, signal
+    from the BASE, and low voltage is made locally in every RoomBox. Beyond a RoomBox, every endpoint
+    is reached only from that RoomBox. Mains, SELV, data, media and security never share a conduit —
+    they meet only inside a partitioned box.</p>
+    <p>Reference: BRIDGE-ARCH-002 r1 · BRIDGE-STD-001 §2–4 · STD-004 §2 · STD-005 §2 · STD-007 §5.</p>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+try{const t=localStorage.getItem("bt:theme"); if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}
+$("#tb").onclick=()=>{const c=document.documentElement.getAttribute("data-theme");
+  const n=c==="dark"?"light":c==="light"?"dark":(matchMedia("(prefers-color-scheme:dark)").matches?"light":"dark");
+  document.documentElement.setAttribute("data-theme",n); try{localStorage.setItem("bt:theme",n);}catch(e){}};
+
+const L={
+ mains:{n:"MAINS",c:"230 VAC circuits",o:"Elosztószekrény",ch:false,
+  note:"Runs its own route, never inside the CHANNEL bundle; in a corridor it takes the opposite side and crosses at right angles. Big loads are fed direct from the cabinet so high current never enters a RoomBox.",
+  rows:[["Villanyóra → Elosztószekrény","service head","1F or 3F supply, HLAK terminals"],
+        ["Elosztószekrény → BridgeNet + Computer","M25","dedicated circuit, own MCB, 30 mA RCD, T2 SPD in the cabinet and T3 at the BASE"],
+        ["Elosztószekrény → Bridge Media","M25","second dedicated circuit"],
+        ["Elosztószekrény → RoomBox 1 / 2 / 3","M25 per circuit group","lighting and control, plus sockets"],
+        ["Elosztószekrény → RoomBox 3","M25","RCD-protected; beyond the box the bathroom is SELV only"],
+        ["Elosztószekrény → SSC","2 × M20","two dedicated circuits, labelled SECURITY"],
+        ["Elosztószekrény → big loads","direct","oven, hob, dishwasher, washer, water heater. Never through a RoomBox"]]},
+ lv:{n:"LV (SELV)",c:"24 / 12 / 5 VDC",o:"Made inside each RoomBox",ch:false,
+  note:"Never travels the CHANNEL, which is why the spine is empty on this layer. 230→24 V in Z1, then 24→12 V adjustable and 24→5 V in Z2. 12 V and 24 V stay electrically separate — separate supply, separate fuse branch — even in a shared box.",
+  rows:[["RoomBox Z1 → Z2","internal","230 VAC to a safety-isolated 24 V rail, 60 W for RB-S/M, 100–150 W for RB-L/H"],
+        ["RoomBox → LV ambient runs","bus ARM","2 × 0.75–1.5 mm², sized to ≤ 3 % drop. At 24 V, 1.5 mm² reaches about 66 m at 0.5 A"],
+        ["RoomBox → relay coils","internal","SELV coils driving the mains bistables in Z1"],
+        ["RoomBox → sensor and panel branches","dedicated ARM","each branch individually fused and current-monitored"],
+        ["Central assured pack → RoomBoxes","24 V assured bus","egress and secondary control ride this; survives one room's circuit failing"]]},
+ control:{n:"CONTROL",c:"BRIDGE_LINK · RS-485, Modbus RTU",o:"Bridge Computer",ch:"C3 · M20 · 1 × Cat6A S/FTP",
+  note:"Multidrop, 38400 baud, address equals room number, ≤ 8 nodes per channel for a 400 ms cycle. Shield earthed at the BASE end only. The manual path never traverses this layer, which is why a polled bus is fast enough.",
+  rows:[["Bridge Computer → RoomBox 1 / 2 / 3","C3 · M20","1 × Cat6A S/FTP. Pair 1 RS-485 A/B, pair 2 CAN reserved, pair 3 heartbeat and fault line, pair 4 reference ground"],
+        ["Bridge Computer → Elosztószekrény","M25 · PANEL LINK","Cat6A S/FTP + spare, data only. Galvanically isolated metering, never shares a conduit with the cabinet's mains"],
+        ["Bridge Computer → Bridge Media","internal","RS-485 for legacy player, IR and CEC control"],
+        ["RoomBox → sub-controller","internal","ESP32 class. Holds last state and keeps local rules running if the link drops"]]},
+ data:{n:"DATA",c:"Ethernet / PoE",o:"BridgeNet",ch:"C1 · M25 · 2 × Cat6A U/FTP",
+  note:"PoE uplink to each room switch. The room switch runs from the local 24 V rail and injects PoE downstream — RB-L has to feed about 63 W of APs, panel and camera, which cannot arrive through one PoE input.",
+  rows:[["Internet entry → BridgeNet","M25, M32 with coax and fibre","service fibre, coax or copper reaches NET first of all BRIDGE elements"],
+        ["BridgeNet → Bridge Computer","internal patch","2 × Cat6A, LAN and WAN, plus one spare"],
+        ["BridgeNet → Bridge Media","internal patch","1–2 × Cat6A, 2.5 Gb or SFP+ for the full pack"],
+        ["BridgeNet → RoomBox 1 / 2 / 3","C1 · M25","2 × Cat6A U/FTP, one PoE uplink and one spare. Trunk carrying VLAN 20 and 30 tagged"],
+        ["RoomBox → ceiling AP, panel, camera","dedicated ARM","Cat6A, PoE injected by the room switch"]]},
+ media:{n:"MEDIA & AUDIO",c:"HDMI-class video, line and speaker audio",o:"Bridge Media",ch:"C2 · M40 · HDMI 2.1 AOC + Cat6A",
+  note:"Direct line only — HDMI cannot be cleanly chained, so it passes through a RoomBox in ZT untouched. C2 is M40 because an AOC connector is wider than its cable and must never be pulled by the connector. RoomBox 3 has no C2: no screen in the bathroom.",
+  rows:[["Bridge Media → RoomBox 1 / 2","C2 · M40","1 × HDMI 2.1 AOC + 1 × Cat6A for HDBaseT or HDMI-over-IP"],
+        ["RoomBox 2 → media wall","dedicated ARM","MEDIA + DATA + MAINS to the TV position"],
+        ["RoomBox → speaker positions","dedicated ARM","2 × 1.5 mm² to 17 m, 2.5 mm² to 27 m at 8 Ω, loop resistance ≤ 0.4 Ω"],
+        ["TV → RoomBox","TOSLINK","return path for the follow-me pair; optically isolated, no ground loop"],
+        ["TV → AV position","eARC","lossless multichannel, living room only. The 5.1 bay does not fit a RoomBox"]]},
+ usb:{n:"USB",c:"USB extension points",o:"RoomBox Z3",ch:false,
+  note:"Never on the CHANNEL. Passive USB 2.0 reaches about 5 m and USB 3.x about 2–3 m, so distance is covered by extenders from Z3. Most endpoints only want charging, which is a PD module on the 24 V rail with no data path at all.",
+  rows:[["RoomBox Z3 → USB data point","dedicated ARM","USB-over-Cat6A extender pair, USB 2.0 class, good to about 100 m"],
+        ["RoomBox LV rail → Type-C charging point","dedicated ARM","PD module at the endpoint. No data path"],
+        ["RoomBox Z4 → HID gateway","internal","2.4 GHz receiver presented as USB, or a vendor dongle over USB-over-IP"]]},
+ knx:{n:"KNX",c:"KNX TP bus",o:"KNX supply in the cabinet or BASE",ch:"C5 · M20 · KNX TP",
+  note:"Optional, and still an open decision. Line, tree or star — never a ring. If KNX is not taken the C5 position stays reserved and empty so the bundle order never shifts and a later run has a defined slot.",
+  rows:[["KNX supply → RoomBox 1 / 2 / 3","C5 · M20","KNX TP. ≤ 1000 m line, ≤ 700 m supply to any device, ≤ 64 devices per segment"],
+        ["RoomBox → KNX devices","bus ARM","branch terminals in the box; compact actuators may sit here instead of the cabinet"]]},
+ sensor:{n:"SENSOR",c:"sensor bus and power",o:"RoomBox",ch:false,
+  note:"Never on the CHANNEL. All room sensor data gathers in the box and leaves on CONTROL. Life-safety detection stays certified standalone devices — these sensors are supplementary and never the only line of defence.",
+  rows:[["RoomBox Z5 → in-box sensors","internal","temperature, humidity, CO₂, VOC, lux, mmWave. Thermally separated from the PSU"],
+        ["RoomBox → ceiling presence","dedicated ARM","mmWave plus PIR, centre of the room"],
+        ["RoomBox → door and window frame points","dedicated ARM","SELV pair plus signal pair at the top of every frame"],
+        ["RoomBox → portals","dedicated ARM","dual ToF above the opening for direction, count and adult/child/pet"],
+        ["RoomBox → leak, smoke, CO, gas points","dedicated ARM","leak at floor level under sinks and appliances"],
+        ["RoomBox → sensor bus","bus ARM","strung junction points, terminating only in the box"]]},
+ rf:{n:"RF",c:"not a conduit — a coverage plan",o:"RoomBox Z4 nodes",ch:false,
+  note:"The only layer with no pathway of its own: it is served by DATA for the PoE ceiling AP and by LV for the in-box radios. WiFi 2.4 is confined to channel 1 house-wide, which frees 2425–2483 MHz for Thread on channel 20 and Zigbee on 25. LoRa is a BASE-only protocol and never appears in a RoomBox.",
+  rows:[["BridgeNet → protocol masters","network, not USB","Zigbee, Thread, Z-Wave, BLE, EnOcean, LoRa coordinators all attach by Ethernet"],
+        ["RoomBox Z4 → in-box radios","internal","ESP32-C6, S3+H2 Thread pair, Zigbee router, sub-GHz, 2.4 GHz HID, IR head at the window"],
+        ["RoomBox → ceiling AP","dedicated ARM, PoE","the RoomBox powers the AP, it does not host it"],
+        ["RoomBox → corner radio nodes","dedicated ARM","BLE and optional UWB anchors in the three L-pattern corners"]]},
+ security:{n:"SECURITY",c:"third-party alarm wiring",o:"SSC",ch:false,
+  note:"A complete parallel route in its own conduits, following the CHANNEL and reaching each room the same way. The system stays the provider's property; BRIDGE never touches this wiring and integrates only through isolated interfaces — volt-free contacts, or the panel's IP module on its own VLAN.",
+  rows:[["Elosztószekrény → SSC","2 × M20","two dedicated circuits, panel and PSU, sounder and communicator"],
+        ["SSC → security point beside each RoomBox","own conduits","parallel to the CHANNEL, never sharing it. A locked 200 × 200 × 80 mm box, provider-owned"],
+        ["Security point → endpoints","star ARMs","motion, glass-break, openings, keypads, sounders, cameras. Same L-pattern routes, separate conduits"],
+        ["Door and window frames","two pathways","one from the RoomBox for automation, one from the security point for the alarm"]]}
+};
+const ORDER=["mains","lv","control","data","media","usb","knx","sensor","rf","security"];
+const CAP_ALL="All ten layers. MAINS runs its own route down the left; the CHANNEL bundle runs the centre; SECURITY runs a third parallel route on the right. The three never share a conduit.";
+let SEL=null;
+
+/* chips */
+const chips=$("#chips");
+function chip(key,label,colour,cls){
+  const b=document.createElement("button");
+  b.className="chip"+(cls||""); if(colour) b.style.color="var(--"+colour+")";
+  if(colour){const s=document.createElement("span"); s.className="sw"; b.appendChild(s);}
+  const t=document.createElement("span"); t.textContent=label; b.appendChild(t);
+  b.onclick=()=>{ SEL = (SEL===key)?null:key; paint(); };
+  b.dataset.key=key||"all"; chips.appendChild(b);
+}
+chip(null,"All layers",null," all");
+ORDER.forEach(k=>chip(k,L[k].n.replace(" (SELV)","").replace(" & AUDIO",""),k));
+
+function paint(){
+  /* chips */
+  [...chips.children].forEach(b=>{
+    const k=b.dataset.key;
+    b.classList.toggle("on", SEL===null ? k==="all" : k===SEL);
+  });
+  /* svg edges */
+  document.querySelectorAll("#edges > g").forEach(g=>{
+    const set=(g.dataset.layer||"").split(/\s+/);
+    const on = SEL===null || set.includes(SEL);
+    g.classList.toggle("dim",!on);
+    g.querySelectorAll("path").forEach(p=>p.classList.toggle("hi", SEL!==null && on && !p.classList.contains("thin")));
+  });
+  /* For the four layers with no CHANNEL run, mark where the layer actually starts.
+     An empty spine is the correct picture; an unexplained empty spine looks broken. */
+  const BADGE={lv:"230→24/12/5 V made here",sensor:"sensor bus starts here",
+               usb:"USB extenders in Z3",rf:"Z4 radios + ceiling AP"};
+  const bg=$("#originBadges"), txt=BADGE[SEL];
+  bg.hidden=!txt;
+  if(txt){ ["#ob1","#ob2","#ob3"].forEach(s=>{ const e=$(s); e.textContent=txt; e.setAttribute("fill","var(--"+SEL+")"); }); }
+  $("#cap").textContent = SEL===null ? CAP_ALL
+    : (L[SEL].ch ? L[SEL].n+" travels the CHANNEL as "+L[SEL].ch+"."
+                 : L[SEL].n+" has no run on the CHANNEL. It originates at "+L[SEL].o+".");
+  /* panel */
+  const p=$("#panel");
+  if(SEL===null){ p.innerHTML=""; return; }
+  const d=L[SEL];
+  const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  p.innerHTML=
+    '<div class="panel" style="border-left-color:var(--'+SEL+')">'+
+      '<div class="pt"><span class="pn">'+esc(d.n)+'</span><span class="pc">'+esc(d.c)+'</span></div>'+
+      '<p class="pnote">'+esc(d.note)+'</p>'+
+      '<div class="kv"><b>Origin</b><span>'+esc(d.o)+'</span></div>'+
+      '<div class="kv"><b>On CHANNEL</b><span>'+(d.ch? esc(d.ch) : "no — see above")+'</span></div>'+
+      (d.ch? "" : '<div class="none">This layer has no conduit in the CHANNEL bundle. Toggling it empties the spine, and that is the correct picture rather than a missing drawing.</div>')+
+      '<div class="tblwrap"><table class="tbl"><thead><tr><th>Between</th><th>Conduit</th><th>What runs in it</th></tr></thead><tbody>'+
+      d.rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td class="r">'+esc(r[1])+'</td><td>'+esc(r[2])+'</td></tr>').join("")+
+      '</tbody></table></div></div>';
+}
+
+/* endpoint cards */
+const RB=[
+ {t:"RB-H · chain node",n:"RoomBox 1",s:"Entrance, kitchen, dining. Also serves the WC and the spájz on ARMs — both too small for a box of their own.",
+  g:[["mains","MAINS",["Entrance ceiling lamp, dedicated ARM","Kitchen ceiling lamps ×2, each dedicated","Dining pendant over the table","Extractor hood feed","Socket bus at +0.30 m, and above the worktop at +1.10 m","Switch plates at +1.05 m, bistable relays in Z1"]],
+     ["lv","LV",["Under-cabinet task strip, 3000–3500 K, CRI ≥ 95 for food","Dining cove ambient, 2700 K","Plinth and toe-kick night marker, 2200 K","Relay coils and sensor branches"]],
+     ["data","DATA",["Ceiling AP, PoE","Door-side touch panel, PoE","Entrance camera, PoE","Dining Ethernet point"]],
+     ["sensor","SENSOR",["Ceiling presence, kitchen and dining","Leak detectors under the sink and behind appliances","Door and window frame points","Entry portal, P-3: ToF pair, mmWave, thermal","Hall-to-living portal, P-2"]],
+     ["media","MEDIA",["Follow-me ceiling pair, kitchen and dining","Pass-through in ZT for RoomBox 2"]],
+     ["security","SECURITY",["Security point beside the box, provider-owned","Star ARMs to entry motion, door contacts, keypad"]],
+     ["rf","RF",["Z4: BLE proxy, Thread pair, Zigbee router, sub-GHz, IR head at the window"]]],
+  extra:"Multi-point beside the entrance switch: keypad, fingerprint or NFC reader, doorbell indicator, and a flush wireless module position. Three universal endpoint positions in reserve."},
+ {t:"RB-L",n:"RoomBox 2",s:"Living and bedroom. Carries the spare CHANNEL capacity and capped stubs for a fourth RoomBox.",
+  g:[["mains","MAINS",["Living ceiling lamps ×2–4, each dedicated","Bedroom ceiling lamp, bedside pendants ×2","Shutter motors, up and down interlocked in hardware","Socket bus ×2 in the living room, one in the bedroom"]],
+     ["lv","LV",["Living cove uplight — the primary ambient source","Shelf and plinth accent","Bedroom under-bed and headboard reading","Relay coils, sensor branches"]],
+     ["data","DATA",["Ceiling AP, PoE","Touch panels, living and bedroom","Media wall Ethernet, desk point"]],
+     ["sensor","SENSOR",["Ceiling presence in both rooms","Corner motion, living","Window and door frame points","Bed load cell — turns the hardest presence case into the easiest","Bedroom and living portals, P-2"]],
+     ["media","MEDIA",["Media wall: HDMI AOC, DATA and MAINS together","AV position for 5.1 — separate from the box, its own supply and ventilation","Follow-me ceiling pair in both rooms","TOSLINK return from the TV"]],
+     ["security","SECURITY",["Security point beside the box","Star ARMs to motion, glass-break, window contacts"]],
+     ["rf","RF",["Z4 radio set","Corner BLE nodes ×2 and UWB anchors in the three L-pattern corners"]]],
+  extra:"The future-RoomBox provision lives here: C4 spare with a draw cord plus capped stubs, so a fourth box needs no chasing. Three universal endpoint positions in reserve."},
+ {t:"RB-E/W · terminal · IP44",n:"RoomBox 3",s:"Bathroom and shower. Terminal on the run, so no pass-through zone — and that freed depth pays for the box being one class larger than its size suggests.",
+  g:[["mains","MAINS",["Arrives RCD-protected into Z1 only","Ceiling lamp and extractor switched by bistable relays in the box","No mains endpoint anywhere in the room"]],
+     ["lv","LV",["Everything beyond the box is SELV only","Mirror and vanity task, bilateral vertical at the face, 3500–4000 K, CRI ≥ 95 and R9 ≥ 90","Shower niche accent, IP65","Skirting egress marker on the assured bus, 2200 K, dimming to ≤ 2 %"]],
+     ["data","DATA",["Small panel or none; PoE spare pulled and capped"]],
+     ["sensor","SENSOR",["Steam-tolerant mmWave presence, with a hard humidity interlock so it never releases mid-shower","Thermal array — count and fall detection where a camera is unacceptable","Leak detector at the floor, the lowest point","Door frame point and a P-2 portal","Underfloor heating actuator"]],
+     ["media","MEDIA",["None. No C2 in the spur"]],
+     ["security","SECURITY",["Security point beside the box, if the provider wants one here"]],
+     ["rf","RF",["Reduced Z4: BLE proxy and Zigbee router only"]]],
+  extra:"The box sits outside zones 0–2, IP44 or better, and vents to the room's dry side. The water-ingress detector in ZI is mandatory here, not optional."}
+];
+const cards=$("#cards");
+RB.forEach(r=>{
+  const c=document.createElement("div"); c.className="card";
+  let h='<div class="ct">'+r.t+'</div><h3>'+r.n+'</h3><p class="cs">'+r.s+'</p>';
+  r.g.forEach(([k,lab,items])=>{
+    h+='<div class="grp"><div class="gh"><span class="sw" style="background:var(--'+k+')"></span>'+lab+'</div><ul>'+
+       items.map(i=>'<li>'+i+'</li>').join("")+'</ul></div>';
+  });
+  h+='<p class="rule">'+r.extra+'</p>';
+  c.innerHTML=h; cards.appendChild(c);
+});
+
+paint();
+</script>
+
+</body></html>

@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OmniComm Hub — Protocol Spectrum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0c0f;--surface:#13151a;--surface2:#1c1f28;--surface3:#22263200;
+  --border:#2a2e3d;--border2:#383d50;--text:#e8eaf0;--muted:#6b7089;
+  --accent:#c8fb57;--accent2:#57fbca;--warn:#fbdc57;--danger:#fb5757;--info:#57b4fb;
+  --tier-core:#c8fb57;--tier-dongle:#a78bfa;--tier-proxy:#57fbca;--tier-net:#fb8157;
+}
+html{background:var(--bg)}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-width:1600px;padding:40px 36px 80px;position:relative}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 900px 500px at 30% -10%,rgba(200,251,87,.04) 0%,transparent 70%),radial-gradient(ellipse 700px 400px at 80% 110%,rgba(87,185,251,.05) 0%,transparent 70%);pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;max-width:1600px;margin:0 auto}
+
+/* HEADER */
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+h1{font-family:'Instrument Serif',serif;font-size:48px;font-weight:400;line-height:1.05;letter-spacing:-.02em}
+h1 em{font-style:italic;color:var(--accent)}
+.subtitle{margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+.legend{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* SECTION LABEL */
+.sec-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── CORE SELECTOR ── */
+.core-selector-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px 14px 0 0;padding:22px 28px 18px;border-bottom:none}
+.core-cards{display:flex;gap:14px}
+.core-card{flex:1;border:1.5px solid var(--border2);border-radius:10px;padding:16px 18px;cursor:pointer;transition:all .18s;background:var(--surface2);position:relative;overflow:hidden}
+.core-card:hover{transform:translateY(-1px)}
+.core-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 4px 28px -4px rgba(200,251,87,.3)}
+.core-card.selected .cc-name{color:var(--accent)}
+.core-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .18s;border-radius:10px 0 0 10px}
+.core-card.selected::before{opacity:1}
+.cc-badge{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.cc-name{font-size:15px;font-weight:700;margin-bottom:4px;transition:color .18s}
+.cc-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.cc-specs{display:flex;flex-wrap:wrap;gap:5px}
+.cc-spec{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}
+.cc-spec.hi{color:var(--accent2);border-color:rgba(87,251,202,.3)}
+
+/* ── I/O LAYER ── */
+.io-wrap{background:var(--surface);border:1px solid var(--border);border-top:none;border-bottom:none;padding:16px 28px}
+.io-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;min-height:44px}
+.io-btn{border-radius:8px;padding:6px 11px;font-family:'DM Mono',monospace;font-size:10px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:default;display:flex;flex-direction:column;gap:2px;transition:all .15s;position:relative;white-space:nowrap}
+.io-btn.used{border-color:var(--accent);color:var(--text);background:rgba(200,251,87,.07)}
+.io-btn.used .io-usedby{display:block}
+.io-usedby{display:none;font-size:8px;color:var(--accent);letter-spacing:.04em;line-height:1.1}
+.io-type{font-size:9px;color:var(--muted);letter-spacing:.06em}
+.io-name{font-size:11px;font-weight:500;color:var(--text)}
+
+/* expansion HAT row */
+.hat-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;min-height:40px;padding-top:10px}
+.hat-btn{border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:10px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.hat-btn:hover{border-color:var(--info);color:var(--info)}
+.hat-btn.selected{border-color:var(--info);color:var(--text);background:rgba(87,180,251,.08);box-shadow:0 0 0 1px var(--info)}
+.hat-btn .hat-ports{font-size:8px;color:var(--info);display:block;margin-top:2px}
+
+/* ── CONTROLS ── */
+.controls-wrap{padding:14px 28px;background:var(--surface);border:1px solid var(--border);border-top:none;border-bottom:none}
+.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.ctrl-btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .14s}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ctrl-core{border-color:var(--tier-core);color:var(--tier-core)}
+.ctrl-dongle{border-color:var(--tier-dongle);color:var(--tier-dongle)}
+.ctrl-proxy{border-color:var(--tier-proxy);color:var(--tier-proxy)}
+.ctrl-net{border-color:var(--tier-net);color:var(--tier-net)}
+.ctrl-btn:hover{background:rgba(255,255,255,.04)}
+
+/* power summary */
+.pwr-summary{margin-left:auto;display:flex;gap:16px;align-items:center}
+.pwr-block{font-family:'DM Mono',monospace;font-size:10px;text-align:right}
+.pwr-label{color:var(--muted);font-size:9px;letter-spacing:.08em}
+.pwr-val{color:var(--accent);font-size:13px;font-weight:500}
+.pwr-max{color:var(--warn);font-size:11px}
+.pwr-v{font-size:8px;padding:1px 5px;border-radius:3px;margin-left:3px;border:1px solid}
+
+/* ── SPECTRUM STAGE ── */
+.spectrum-stage{background:var(--surface);border:1px solid var(--border);border-top:none;border-bottom:none;padding:24px 28px 0}
+.proto-rows{display:flex;flex-direction:column;gap:11px;margin-bottom:18px}
+.proto-row-wrap{display:flex;align-items:stretch;gap:10px}
+.row-label{width:130px;flex-shrink:0;display:flex;align-items:center;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;line-height:1.3;padding-right:8px}
+.btn-group{display:flex;gap:9px;flex-wrap:wrap;flex:1;align-items:stretch}
+
+/* PROTO BUTTON */
+.proto-btn{position:relative;border-radius:10px;padding:9px 12px;cursor:pointer;transition:transform .15s,opacity .18s;display:flex;flex-direction:column;justify-content:flex-start;gap:3px;background:var(--surface2);flex-shrink:0;border-width:1.5px;border-style:solid;border-color:transparent;min-height:62px}
+.proto-btn:hover{transform:translateY(-2px)}
+.proto-btn.inactive{opacity:.28}
+.btn-color-bar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:10px 0 0 10px}
+.btn-icon{font-size:16px;line-height:1;margin-bottom:1px}
+.btn-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;line-height:1.2;white-space:nowrap}
+.btn-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);line-height:1.2;white-space:nowrap}
+.btn-pwr{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:auto;padding-top:3px;border-top:1px solid rgba(255,255,255,.05)}
+
+/* ── AXIS ── */
+.axis-wrap{position:relative;height:70px;background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.axis-line{position:absolute;top:22px;height:1px;background:linear-gradient(to right,var(--border2),var(--border))}
+.axis-arrow{position:absolute;top:16px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:9px solid var(--border2)}
+.tick-group{position:absolute;top:0;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)}
+.tick-bar{width:1px;height:10px;background:var(--border2);margin-top:17px}
+.tick-freq{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.axis-dot{position:absolute;top:16px;width:10px;height:10px;border-radius:50%;transform:translateX(-50%);border-width:2px;border-style:solid;transition:background .2s,border-color .2s,box-shadow .2s,opacity .2s;z-index:2}
+.axis-dot.off{background:var(--bg)!important;border-color:#383d50!important;box-shadow:none!important;opacity:.25}
+
+/* ── SHEET ── */
+.sheet-wrap{border:1px solid var(--border);border-top:none;border-radius:0 0 14px 14px;overflow:hidden}
+.sheet-header-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.sheet-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sheet-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface2)}
+thead th{padding:10px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);background:var(--surface);transition:background .12s,opacity .2s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody tr.row-inactive{opacity:.22}
+tbody td{padding:10px 14px;color:var(--text);vertical-align:top;line-height:1.4}
+.td-icon{font-size:18px;text-align:center;white-space:nowrap}
+.td-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.tier-pip{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block}
+.td-type{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;white-space:nowrap;display:inline-block}
+.td-function{font-size:13px;line-height:1.6;color:var(--text);min-width:220px;max-width:300px}
+.td-connects{font-size:12px;line-height:1.5;color:var(--muted);min-width:160px;max-width:240px}
+.td-brands{font-size:11px;line-height:1.6;color:var(--accent2);min-width:140px;max-width:220px}
+.td-hz{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);white-space:nowrap}
+.td-hw{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+.td-cost{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);white-space:nowrap}
+.td-pwr{font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap}
+.pwr-nom{color:var(--accent2)}
+.pwr-mx{color:var(--warn)}
+.badge{display:inline-flex;align-items:center;gap:3px;font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;white-space:nowrap;border-width:1px;border-style:solid}
+.badge-yes{background:rgba(200,251,87,.1);color:#c8fb57;border-color:rgba(200,251,87,.25)}
+.badge-partial{background:rgba(251,220,87,.1);color:#fbdc57;border-color:rgba(251,220,87,.25)}
+.badge-no{background:rgba(251,87,87,.08);color:#fb5757;border-color:rgba(251,87,87,.2)}
+.conn-warn{font-family:'DM Mono',monospace;font-size:8px;color:var(--warn);margin-top:3px;padding:2px 6px;border-radius:3px;background:rgba(251,220,87,.08);border:1px solid rgba(251,220,87,.2);display:inline-block}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<header class="header">
+  <div>
+    <p class="eyebrow">Wireless Intelligence Hub · Communication Layer</p>
+    <h1>OmniComm <em>Spectrum</em></h1>
+    <p class="subtitle">Select core → toggle protocols → I/O ports update automatically</p>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#c8fb57"></div>Core — built-in</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>USB Dongle</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#57fbca"></div>ESP32 Proxy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb8157"></div>Network / Gateway</div>
+  </div>
+</header>
+
+<!-- CORE SELECTOR -->
+<div class="core-selector-wrap">
+  <div class="sec-label">Core device — select platform</div>
+  <div class="core-cards" id="core-cards"></div>
+</div>
+
+<!-- I/O LAYER -->
+<div class="io-wrap">
+  <div class="sec-label" style="margin-bottom:8px">I/O ports — built-in</div>
+  <div class="io-row" id="io-builtin"></div>
+  <div class="sec-label" style="margin-top:14px;margin-bottom:8px">Expansion boards — adds ports to core</div>
+  <div class="hat-row" id="io-hats"></div>
+  <div class="sec-label" style="margin-top:12px;margin-bottom:6px">I/O ports — via expansion</div>
+  <div class="io-row" id="io-expanded"></div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-wrap">
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-all">Select all</button>
+    <button class="ctrl-btn" id="btn-none">Clear all</button>
+    <button class="ctrl-btn ctrl-core"   id="tier-core">Core only</button>
+    <button class="ctrl-btn ctrl-dongle" id="tier-dongle">+ USB Dongles</button>
+    <button class="ctrl-btn ctrl-proxy"  id="tier-proxy">+ ESP32 Proxy</button>
+    <button class="ctrl-btn ctrl-net"    id="tier-net">+ Network / Gateway</button>
+    <div class="pwr-summary" id="pwr-summary"></div>
+  </div>
+</div>
+
+<!-- SPECTRUM -->
+<div class="spectrum-stage">
+  <p class="sec-label">Protocol spectrum — logarithmic frequency scale</p>
+  <div class="proto-rows" id="proto-rows"></div>
+</div>
+<div class="axis-wrap" id="axis-wrap"></div>
+
+<!-- SHEET -->
+<div class="sheet-wrap">
+  <div class="sheet-header-bar">
+    <span class="sheet-title">Protocol reference — basic → premium</span>
+    <span class="sheet-count" id="sheet-count"></span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Icon</th><th>Name</th><th>Type</th>
+      <th>Function added</th><th>Connects to</th><th>EU/HU Brands</th>
+      <th>Frequency</th><th>Connection</th><th>Nom / Max Power</th>
+      <th>Cost</th><th>N305</th><th>Pi 5</th>
+    </tr></thead>
+    <tbody id="sheet-body"></tbody>
+  </table>
+</div>
+
+</div><!-- /page -->
+<script>
+// ─── CORE DEVICES ─────────────────────────────────────────────────────────────
+const CORES = [
+  {
+    id:'n305',
+    badge:'PREMIUM — MINI PC',
+    name:'Intel N305 Mini PC',
+    sub:'Beelink EQ13 or equiv. · x86-64 · Proxmox ready',
+    specs:['8-core N305','32 GB DDR5','1 TB NVMe','2.5 GbE ×2','USB 3.2 ×4','USB 2.0 ×2','BT 5.2','Wi-Fi 6','~10W idle','~25W peak'],
+    ports:[
+      {id:'n305_usb3_1',type:'USB 3.2',label:'USB 3.2 #1',voltage:'5V'},
+      {id:'n305_usb3_2',type:'USB 3.2',label:'USB 3.2 #2',voltage:'5V'},
+      {id:'n305_usb3_3',type:'USB 3.2',label:'USB 3.2 #3',voltage:'5V'},
+      {id:'n305_usb3_4',type:'USB 3.2',label:'USB 3.2 #4',voltage:'5V'},
+      {id:'n305_usb2_1',type:'USB 2.0',label:'USB 2.0 #1',voltage:'5V'},
+      {id:'n305_usb2_2',type:'USB 2.0',label:'USB 2.0 #2',voltage:'5V'},
+      {id:'n305_eth1',type:'Ethernet',label:'2.5 GbE #1',voltage:'—'},
+      {id:'n305_eth2',type:'Ethernet',label:'2.5 GbE #2',voltage:'—'},
+      {id:'n305_wifi',type:'Wi-Fi 6',label:'Wi-Fi 6 (built-in)',voltage:'—'},
+      {id:'n305_bt',type:'Bluetooth',label:'BT 5.2 (built-in)',voltage:'—'},
+      {id:'n305_m2',type:'M.2',label:'M.2 NVMe (SSD)',voltage:'3.3V'},
+    ],
+    hats:[],
+    pwrNom:10, pwrMax:28, pwrVolt:'19V DC',
+  },
+  {
+    id:'rpi5',
+    badge:'BASIC — SBC',
+    name:'Raspberry Pi 5 (4GB)',
+    sub:'RPI5-4GB-SINGLE · ARM Cortex-A76 · PCIe 2.0',
+    specs:['4× A76 2.4GHz','4 GB LPDDR4X','PCIe 2.0 ×1','GbE','USB 3.0 ×2','USB 2.0 ×2','40-pin GPIO','BT 5.0','Wi-Fi 6','~5W idle','~12W peak'],
+    ports:[
+      {id:'rpi5_usb3_1',type:'USB 3.0',label:'USB 3.0 #1',voltage:'5V'},
+      {id:'rpi5_usb3_2',type:'USB 3.0',label:'USB 3.0 #2',voltage:'5V'},
+      {id:'rpi5_usb2_1',type:'USB 2.0',label:'USB 2.0 #1',voltage:'5V'},
+      {id:'rpi5_usb2_2',type:'USB 2.0',label:'USB 2.0 #2',voltage:'5V'},
+      {id:'rpi5_eth',type:'Ethernet',label:'GbE (built-in)',voltage:'—'},
+      {id:'rpi5_wifi',type:'Wi-Fi 6',label:'Wi-Fi 6 (built-in)',voltage:'—'},
+      {id:'rpi5_bt',type:'Bluetooth',label:'BT 5.0 (built-in)',voltage:'—'},
+      {id:'rpi5_gpio1',type:'GPIO 40-pin',label:'GPIO #1–20',voltage:'3.3V/5V'},
+      {id:'rpi5_gpio2',type:'GPIO 40-pin',label:'GPIO #21–40',voltage:'3.3V/5V'},
+      {id:'rpi5_pcie',type:'PCIe 2.0',label:'PCIe x1 (M.2 HAT)',voltage:'3.3V'},
+    ],
+    hats:[
+      {id:'hat_m2',name:'SC1676 M.2 HAT+',sub:'512 GB NVMe SSD',ports:[],usesPort:'rpi5_pcie',vendor:'hestore.hu/prod_10051067.html'},
+      {id:'hat_poe',name:'PoE+ HAT',sub:'802.3at PoE input',ports:[{id:'hat_poe_eth',type:'PoE Eth',label:'PoE GbE',voltage:'48V PoE'}],usesPort:'rpi5_gpio1',vendor:'raspberrypi.com'},
+    ],
+    pwrNom:5, pwrMax:15, pwrVolt:'5.1V DC',
+  },
+  {
+    id:'cm5',
+    badge:'ADVANCED — COMPUTE MODULE',
+    name:'Raspberry Pi CM5 (4GB)',
+    sub:'RPI-CM5-4GB-32GB · requires IO board',
+    specs:['4× A76 2.4GHz','4 GB LPDDR4X','32 GB eMMC','PCIe 2.0 ×2','2× GbE','2× USB 3.0','2× USB 2.0','BT 5.0','Wi-Fi 6','~5W idle','~15W peak'],
+    ports:[
+      {id:'cm5_usb3_1',type:'USB 3.0',label:'USB 3.0 #1',voltage:'5V'},
+      {id:'cm5_usb3_2',type:'USB 3.0',label:'USB 3.0 #2',voltage:'5V'},
+      {id:'cm5_usb2_1',type:'USB 2.0',label:'USB 2.0 #1',voltage:'5V'},
+      {id:'cm5_usb2_2',type:'USB 2.0',label:'USB 2.0 #2',voltage:'5V'},
+      {id:'cm5_eth1',type:'Ethernet',label:'GbE #1',voltage:'—'},
+      {id:'cm5_eth2',type:'Ethernet',label:'GbE #2',voltage:'—'},
+      {id:'cm5_wifi',type:'Wi-Fi 6',label:'Wi-Fi 6 (built-in)',voltage:'—'},
+      {id:'cm5_bt',type:'Bluetooth',label:'BT 5.0 (built-in)',voltage:'—'},
+      {id:'cm5_gpio1',type:'GPIO 40-pin',label:'GPIO A (IO board)',voltage:'3.3V/5V'},
+      {id:'cm5_gpio2',type:'GPIO 40-pin',label:'GPIO B (IO board)',voltage:'3.3V/5V'},
+      {id:'cm5_pcie1',type:'PCIe 2.0',label:'PCIe x1 #1 (M.2)',voltage:'3.3V'},
+      {id:'cm5_pcie2',type:'PCIe 2.0',label:'PCIe x1 #2',voltage:'3.3V'},
+      {id:'cm5_emmc',type:'eMMC',label:'eMMC 32GB (onboard)',voltage:'—'},
+    ],
+    hats:[
+      {id:'hat_cm5io',name:'RPI-CM5-IOBOARD-V2',sub:'CM5 IO Board V2',ports:[
+        {id:'cm5io_usbA',type:'USB-A',label:'USB-A (host)',voltage:'5V'},
+        {id:'cm5io_hdmi',type:'HDMI',label:'HDMI ×2',voltage:'—'},
+        {id:'cm5io_csi',type:'CSI/DSI',label:'CSI/DSI ×2',voltage:'—'},
+      ],usesPort:'cm5_gpio1',vendor:'raspberrypi.com'},
+    ],
+    pwrNom:5, pwrMax:15, pwrVolt:'5V DC (via IO board)',
+  },
+];
+
+// ─── TIER / TYPE CONFIG ───────────────────────────────────────────────────────
+const TIER_ORDER=['core','dongle','proxy','net'];
+const TIER_CFG={
+  core:  {hex:'#c8fb57',glow:'rgba(200,251,87,.45)'},
+  dongle:{hex:'#a78bfa',glow:'rgba(167,139,250,.45)'},
+  proxy: {hex:'#57fbca',glow:'rgba(87,251,202,.45)'},
+  net:   {hex:'#fb8157',glow:'rgba(251,129,87,.45)'},
+};
+const TYPE_CFG={
+  'Comms':       {bg:'rgba(87,180,251,.13)',c:'#57b4fb'},
+  'Comms / UI':  {bg:'rgba(87,180,251,.13)',c:'#57b4fb'},
+  'Presence':    {bg:'rgba(167,139,250,.13)',c:'#a78bfa'},
+  'Control':     {bg:'rgba(87,251,202,.13)',c:'#57fbca'},
+  'Energy':      {bg:'rgba(200,251,87,.13)',c:'#c8fb57'},
+  'Building':    {bg:'rgba(251,191,87,.13)',c:'#fbbf57'},
+  'Intelligence':{bg:'rgba(251,129,87,.13)',c:'#fb8157'},
+  'AI / Camera': {bg:'rgba(251,87,87,.13)',c:'#fb5757'},
+};
+
+// log10 scale for frequency axis: returns 0-1 for range [10kHz..100GHz]
+function logScale(hz_mhz){
+  const lo=Math.log10(0.01), hi=Math.log10(100000);
+  return (Math.log10(hz_mhz)-lo)/(hi-lo);
+}
+
+// ─── PROTOCOL DATA ────────────────────────────────────────────────────────────
+// conn: port type used on the core device ('USB 2.0','USB 3.0','GPIO 40-pin','Wi-Fi 6','Bluetooth','PCIe 2.0','Ethernet','none')
+// connNote: shown in I/O layer when claimed
+// pwrNom/pwrMax in mW at 5V (USB) or noted voltage
+// axisHz: MHz value for log axis
+const PROTOCOLS=[
+  // CORE
+  {id:'eth',    row:0,tier:'core',  w:155,icon:'🔌',
+   name:'Ethernet / IP',sub:'2.5 GbE · wired backbone',type:'Comms',
+   func:'Wired backbone for hub, PoE cameras, Shelly Pro, KNX gateways and any networked device via local API or MQTT.',
+   connects:'Routers · NAS · PoE cameras · Smart switches · IP-based automation gateways',
+   brands:'Shelly · Sonoff · Ubiquiti · TP-Link · Mikrotik · Axis · Dahua',
+   hz:'Wired',axisHz:0.001,conn:'Ethernet',connNote:'',
+   pwrNom:0,pwrMax:0,pwrVolt:'—',cost:'€0',n305:'yes',pi5:'yes'},
+
+  {id:'zwav',   row:0,tier:'core',  w:165,icon:'🔐',
+   name:'Z-Wave 800',sub:'868 MHz · sub-GHz secure mesh',type:'Comms',
+   func:'Encrypted mesh for locks, security sensors and dimmers. Sub-GHz penetrates walls; near-zero Wi-Fi interference.',
+   connects:'Door locks · Alarm panels · PIR sensors · Smoke detectors · Thermostats · Sirens',
+   brands:'Fibaro · Devolo · Aeotec · Danfoss · Popp · Shelly (Z-Wave) · Qubino',
+   hz:'868 MHz',axisHz:868,conn:'USB 2.0',connNote:'Aeotec Z-Stick 7',
+   pwrNom:500,pwrMax:1000,pwrVolt:'5V USB',cost:'~€45',n305:'yes',pi5:'yes'},
+
+  {id:'zigb',   row:0,tier:'core',  w:160,icon:'⚡',
+   name:'Zigbee 3.0',sub:'2.4 GHz · IEEE 802.15.4 mesh',type:'Comms',
+   func:'Self-healing mesh supporting 3,000+ devices: bulbs, plugs, sensors, valves, remotes and motion detectors.',
+   connects:'Smart bulbs · Wall switches · Door sensors · Smart plugs · Climate sensors · Roller blind motors',
+   brands:'Philips Hue · IKEA Trådfri · Aqara · Sonoff · Lidl Silvercrest · Paulmann · Osram',
+   hz:'2400 MHz',axisHz:2400,conn:'USB 2.0',connNote:'ZBT-2 / ZBDONGLE-E',
+   pwrNom:500,pwrMax:1000,pwrVolt:'5V USB',cost:'~€30',n305:'yes',pi5:'yes'},
+
+  {id:'thrd',   row:0,tier:'core',  w:165,icon:'🌐',
+   name:'Thread / Matter',sub:'2.4 GHz · IPv6 borderless mesh',type:'Comms',
+   func:'Next-gen IP mesh for Matter-certified devices. Borderless interop across Apple, Google and Amazon ecosystems.',
+   connects:'Matter-certified bulbs · sensors · locks · thermostats · EV chargers · any future Matter device',
+   brands:'Eve Systems · Nanoleaf · Philips · IKEA · Somfy · Bosch (Matter) · Schneider Electric',
+   hz:'2400 MHz',axisHz:2402,conn:'USB 2.0',connNote:'Shared ZBT-2 dongle',
+   pwrNom:0,pwrMax:0,pwrVolt:'(shared)',cost:'shared',n305:'yes',pi5:'yes'},
+
+  {id:'wifi',   row:0,tier:'core',  w:150,icon:'📶',
+   name:'Wi-Fi 6 / 6E',sub:'2.4 + 5 GHz · 802.11ax',type:'Comms',
+   func:'Direct IP control of Shelly, Sonoff, Tasmota and ESPHome devices. Local API, no cloud required.',
+   connects:'Smart plugs · Shelly relays · IP cameras · Smart TVs · NAS · Heat pumps with Wi-Fi',
+   brands:'Shelly · Sonoff · TP-Link Tapo · Tuya-local · Meross · Eve (Wi-Fi) · Bosch Smart Home',
+   hz:'2400 MHz',axisHz:2450,conn:'Wi-Fi 6',connNote:'Built-in',
+   pwrNom:0,pwrMax:0,pwrVolt:'—',cost:'€0',n305:'yes',pi5:'yes'},
+
+  // DONGLES
+  {id:'rtlsdr', row:1,tier:'dongle',w:215,icon:'📡',
+   name:'433 / 868 RF — RTL-SDR',sub:'315·433·868·915 MHz · SDR receive',type:'Comms',
+   func:'Passive RF reception: weather stations, tire pressure sensors, old garage remotes, energy meters and any 433 MHz device.',
+   connects:'Oregon Scientific · Auriol weather stations · TPMS sensors · Older doorbell systems · Gas/water pulse meters',
+   brands:'Oregon Scientific · Technoline · Bresser · Auriol (Lidl) · Kerui · old LaCrosse',
+   hz:'433 MHz',axisHz:433,conn:'USB 2.0',connNote:'RTL-SDR Blog V4',
+   pwrNom:200,pwrMax:500,pwrVolt:'5V USB',cost:'~€30',n305:'yes',pi5:'yes'},
+
+  {id:'enocean',row:1,tier:'dongle',w:185,icon:'🍃',
+   name:'EnOcean',sub:'868 MHz · energy harvesting',type:'Comms',
+   func:'Battery-free wireless switches and sensors. Harvest energy from button press or light/heat — zero maintenance ever.',
+   connects:'Battery-free wall switches · Wireless window/door contacts · Self-powered occupancy sensors',
+   brands:'EnOcean Alliance · Eltako · Peha (Honeywell) · Thermokon · Osram · Gira · Jung',
+   hz:'868 MHz',axisHz:868.3,conn:'USB 2.0',connNote:'EnOcean USB 300',
+   pwrNom:100,pwrMax:200,pwrVolt:'5V USB',cost:'~€30',n305:'yes',pi5:'yes'},
+
+  {id:'ble',    row:1,tier:'dongle',w:195,icon:'🔵',
+   name:'Bluetooth LE',sub:'2.4 GHz · BLE 5.x',type:'Comms',
+   func:'Xiaomi, Govee, BTHome sensors, body scales, BLE tags and proximity detection via host BT plus ESP32 proxies.',
+   connects:'Xiaomi temperature/humidity · Govee lights · BTHome sensors · Body scales · BLE door locks',
+   brands:'Xiaomi · Xiaogui · Govee · SwitchBot · BTicino · Inkbird · Oras · Aranet',
+   hz:'2400 MHz',axisHz:2404,conn:'Bluetooth',connNote:'Built-in + ESP32 proxies',
+   pwrNom:0,pwrMax:0,pwrVolt:'—',cost:'€0+€4/proxy',n305:'yes',pi5:'yes'},
+
+  // ESP32 PROXY
+  {id:'ir',     row:2,tier:'proxy', w:170,icon:'🔴',
+   name:'Infrared (IR)',sub:'850–950 nm · ESPHome blaster',type:'Comms',
+   func:'Bidirectional control of TVs, AV receivers, projectors and AC units. Learns and replays any IR remote code.',
+   connects:'Smart TVs · AV receivers · Projectors · Split AC units · Set-top boxes · Robot vacuums',
+   brands:'Samsung · LG · Sony · Philips (TV) · Daikin · Mitsubishi · Panasonic · Pioneer',
+   hz:'IR',axisHz:0.001,conn:'USB 2.0',connNote:'ESP32 IR blaster (USB power)',
+   pwrNom:300,pwrMax:600,pwrVolt:'5V USB',cost:'~€5/room',n305:'yes',pi5:'yes'},
+
+  {id:'nfc',    row:2,tier:'proxy', w:160,icon:'🏷️',
+   name:'NFC Tags',sub:'13.56 MHz · ISO 14443A',type:'Comms / UI',
+   func:'Phone tap-to-trigger scene automation. Entry tag arms alarm; desk tag sets work mode; bedside tag activates sleep.',
+   connects:'HA Companion App automations · Scene triggers · Access logging · Presence confirmation',
+   brands:'NTAG215 standard · compatible with iPhone NFC · Android NFC',
+   hz:'13.56 MHz',axisHz:13.56,conn:'none',connNote:'App-based, no hub hardware',
+   pwrNom:0,pwrMax:0,pwrVolt:'—',cost:'~€0.30/tag',n305:'yes',pi5:'yes'},
+
+  {id:'cc1101', row:2,tier:'proxy', w:215,icon:'📻',
+   name:'RF Bidirectional — CC1101',sub:'315·433·868 MHz · TX+RX',type:'Comms',
+   func:'Send AND receive on sub-GHz. Control roller shutters, RF switches and doorbells with no smart alternative.',
+   connects:'RF roller shutters · RF gate controllers · Older alarm keypads · RF power sockets · Doorbells',
+   brands:'Somfy (RTS) · Dooya · Nice · Beninca · Elero · Cherubini · Faac · BFT',
+   hz:'433 MHz',axisHz:433.9,conn:'USB 2.0',connNote:'ESP32+CC1101 via ESPHome',
+   pwrNom:300,pwrMax:700,pwrVolt:'5V USB',cost:'~€6',n305:'yes',pi5:'yes'},
+
+  {id:'voice',  row:2,tier:'proxy', w:190,icon:'🎙️',
+   name:'Local Voice (Assist)',sub:'2.4 GHz · Wyoming satellite',type:'Control',
+   func:'Fully local, cloud-free voice control via HA Assist. ESP32-S3 Box satellites per room; no subscription needed.',
+   connects:'All HA-controlled devices · Room-level command processing · Privacy-preserving voice interface',
+   brands:'ESP32-S3 Box · HA Voice PE · ATOM Echo · M5Stack · Seeed XIAO',
+   hz:'2400 MHz',axisHz:2412,conn:'Wi-Fi 6',connNote:'Via Wi-Fi (no USB)',
+   pwrNom:500,pwrMax:1500,pwrVolt:'5V USB (satellite)',cost:'~€20/room',n305:'yes',pi5:'partial'},
+
+  {id:'mmwave', row:2,tier:'proxy', w:190,icon:'👁️',
+   name:'mmWave Presence',sub:'24 / 60 GHz · stationary radar',type:'Presence',
+   func:'Detects stationary occupancy (reading, sleeping) that PIR misses. Keeps lights on in occupied rooms.',
+   connects:'HA presence automations · Climate per-room control · Lighting scenes · Sleep detection',
+   brands:'Aqara · Sonoff · Hi-Link · Tuya · Seeed · Linptech · Flair',
+   hz:'24000 MHz',axisHz:24000,conn:'USB 2.0',connNote:'Via Zigbee dongle (most models)',
+   pwrNom:200,pwrMax:500,pwrVolt:'5V USB',cost:'~€35',n305:'yes',pi5:'yes'},
+
+  {id:'uwb',    row:2,tier:'proxy', w:200,icon:'📍',
+   name:'UWB Precision Presence',sub:'6–9 GHz · cm-level location',type:'Presence',
+   func:'Centimetre-level room-person detection. HA knows exactly which room each person is in at all times.',
+   connects:'Per-room presence · Adaptive lighting · Room-aware HVAC · Security zone management',
+   brands:'Pozyx · Sewio · Ubisense · Qorvo (via iPhone/Pixel UWB)',
+   hz:'7000 MHz',axisHz:7000,conn:'none',connNote:'App + optional anchor hardware',
+   pwrNom:0,pwrMax:0,pwrVolt:'—',cost:'€0–€200',n305:'yes',pi5:'yes'},
+
+  // NETWORK / GATEWAY
+  {id:'p1',     row:3,tier:'net',   w:180,icon:'⚡',
+   name:'P1 / DSMR Meter Port',sub:'Serial · utility meter data',type:'Energy',
+   func:'Real-time whole-home electricity and gas from utility meter. Enables tariff-aware automations and energy dashboard.',
+   connects:'Electricity meter · Gas meter · HA Energy Dashboard · Grafana · Cost tracking',
+   brands:'HomeWizard · SlimmeLezer · P1-dongle (Homematic) · Fluvius · DSMR',
+   hz:'Wired',axisHz:0.001,conn:'Ethernet',connNote:'Ethernet or Wi-Fi to HA',
+   pwrNom:100,pwrMax:200,pwrVolt:'5V USB',cost:'~€35',n305:'yes',pi5:'yes'},
+
+  {id:'modbus', row:3,tier:'net',   w:185,icon:'🏭',
+   name:'Modbus RTU / TCP',sub:'RS-485 / TCP · industrial protocol',type:'Building',
+   func:'Reads and controls solar inverters, heat pumps, HVAC and EV chargers. Bridge to building infrastructure.',
+   connects:'Solar inverters · Heat pumps · HVAC controllers · EV chargers · Industrial sensors',
+   brands:'Fronius · SMA · Sungrow · Daikin · Nibe · Victron · Wallbox · ABB',
+   hz:'Wired',axisHz:0.001,conn:'USB 2.0',connNote:'USB RS-485 adapter',
+   pwrNom:100,pwrMax:200,pwrVolt:'5V USB',cost:'~€15',n305:'yes',pi5:'yes'},
+
+  {id:'knx',    row:3,tier:'net',   w:155,icon:'🏛️',
+   name:'KNX / EIB',sub:'KNX IP · professional bus',type:'Building',
+   func:'Master control over DALI lighting, motorised facades, shading and building management via IP gateway.',
+   connects:'DALI lighting · Motorised blinds · Façade automation · Professional AV systems · HVAC BMS',
+   brands:'Gira · Jung · ABB i-bus · Schneider · Siemens · Berker · Busch-Jaeger · Hager',
+   hz:'Wired',axisHz:0.001,conn:'Ethernet',connNote:'KNX IP Router (~€150)',
+   pwrNom:100,pwrMax:300,pwrVolt:'5V USB (gateway)',cost:'~€150',n305:'yes',pi5:'yes'},
+
+  {id:'lora',   row:3,tier:'net',   w:175,icon:'📶',
+   name:'LoRa / LoRaWAN',sub:'868 MHz · km-range sensors',type:'Comms',
+   func:'Kilometre-range sensors for garden, pool, outbuildings and remote gate automation.',
+   connects:'Garden sensors · Pool monitors · Outdoor cameras (trigger) · Remote gate/barrier control',
+   brands:'Dragino · RAK Wireless · Elsys · Milesight · Peplink · Kerlink',
+   hz:'868 MHz',axisHz:868.5,conn:'Ethernet',connNote:'LoRaWAN gateway → Ethernet',
+   pwrNom:200,pwrMax:500,pwrVolt:'5V (gateway)',cost:'~€60',n305:'yes',pi5:'yes'},
+
+  {id:'mesh',   row:3,tier:'net',   w:185,icon:'🕸️',
+   name:'Meshtastic',sub:'868 MHz · off-grid LoRa mesh',type:'Comms',
+   func:'Off-grid encrypted mesh over LoRa. No internet needed — property perimeter and emergency relay.',
+   connects:'Remote sensors · Perimeter alerts · Off-grid messaging · Emergency communication relay',
+   brands:'LILYGO · Heltec · Wisblock · Seeed · Meshtastic community hardware',
+   hz:'868 MHz',axisHz:869,conn:'USB 2.0',connNote:'T-Beam / Heltec V3 via USB',
+   pwrNom:200,pwrMax:600,pwrVolt:'5V USB',cost:'~€30',n305:'yes',pi5:'yes'},
+
+  {id:'coral',  row:3,tier:'net',   w:200,icon:'🧠',
+   name:'Google Coral TPU',sub:'USB Edge AI accelerator',type:'AI / Camera',
+   func:'Hardware AI inference for Frigate NVR. Detects person/vehicle/animal at 30+ FPS without CPU load.',
+   connects:'Frigate NVR · IP cameras · HA object detection · Doorbell AI · Security alerts',
+   brands:'Works with all ONVIF cameras: Dahua · Hikvision · Reolink · Axis · Hanwha · Uniview',
+   hz:'USB',axisHz:0.001,conn:'USB 3.0',connNote:'Requires USB 3.0 for full speed',
+   pwrNom:500,pwrMax:2000,pwrVolt:'5V USB 3.0',cost:'~€60',n305:'yes',pi5:'partial'},
+
+  {id:'ai',     row:3,tier:'net',   w:205,icon:'🤖',
+   name:'Local AI (Ollama / LLM)',sub:'CPU inference · on-device LLM',type:'Intelligence',
+   func:'On-device language model (Mistral, Llama 3) for natural-language automations and anomaly narration.',
+   connects:'HA conversation agent · Automation descriptions · Device grouping · Anomaly alerts',
+   brands:'N/A — software only (runs on host CPU)',
+   hz:'N/A',axisHz:0.001,conn:'none',connNote:'Software only — no extra port',
+   pwrNom:5000,pwrMax:20000,pwrVolt:'19V DC (CPU)',cost:'€0',n305:'partial',pi5:'no'},
+];
+
+// ─── AXIS TICKS (MHz values) ──────────────────────────────────────────────────
+const TICKS=[
+  {label:'0.01 MHz',hz:0.01},{label:'0.1 MHz',hz:0.1},{label:'1 MHz',hz:1},
+  {label:'13.56',hz:13.56},{label:'100 MHz',hz:100},
+  {label:'433',hz:433},{label:'868',hz:868},{label:'1 GHz',hz:1000},
+  {label:'2.4 GHz',hz:2400},{label:'5 GHz',hz:5000},
+  {label:'7 GHz',hz:7000},{label:'24 GHz',hz:24000},{label:'60 GHz',hz:60000},
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const active={};
+PROTOCOLS.forEach(p=>{active[p.id]=true});
+let currentCore='rpi5';
+const selectedHats={};
+
+// ─── PORT CLAIMING MAP ────────────────────────────────────────────────────────
+// Returns {portType, protocolId} claims from active protocols on current core
+function getPortClaims(){
+  const claims={}; // portId -> [{proto, label}]
+  const core=CORES.find(c=>c.id===currentCore);
+  if(!core) return claims;
+
+  // Build pool of available ports by type
+  const pools={};
+  core.ports.forEach(p=>{
+    if(!pools[p.type]) pools[p.type]=[];
+    pools[p.type].push(p.id);
+  });
+  // Also add expanded ports from selected hats
+  (core.hats||[]).forEach(h=>{
+    if(selectedHats[h.id]){
+      (h.ports||[]).forEach(p=>{
+        if(!pools[p.type]) pools[p.type]=[];
+        pools[p.type].push(p.id);
+      });
+    }
+  });
+
+  // Claim hat port that HAT itself uses on core
+  (core.hats||[]).forEach(h=>{
+    if(selectedHats[h.id] && h.usesPort){
+      const pid=h.usesPort;
+      if(!claims[pid]) claims[pid]=[];
+      claims[pid].push({proto:'HAT',label:h.name});
+    }
+  });
+
+  // Claim ports for active protocols
+  const used={}; // type -> count used
+  PROTOCOLS.forEach(p=>{
+    if(!active[p.id] || p.conn==='none' || p.conn==='Wi-Fi 6' || p.conn==='Bluetooth' || p.conn==='Ethernet') return;
+    // USB or GPIO types
+    const pool=pools[p.conn]||[];
+    let claimed=false;
+    pool.forEach(portId=>{
+      if(!claimed && (!Object.values(claims).some(arr=>arr.some(c=>c.portId===portId && c.portId!==undefined)) || true)){
+        // Simple sequential assignment
+        const usedIds=Object.keys(claims).filter(k=>Object.values(claims[k]||[]).length>0 && k.includes(p.conn.replace(/\s/g,'_').toLowerCase()));
+        if(!(claims[portId] && claims[portId].length)){
+          if(!claimed){
+            if(!claims[portId]) claims[portId]=[];
+            claims[portId].push({proto:p.id,label:p.name,connNote:p.connNote});
+            claimed=true;
+          }
+        }
+      }
+    });
+  });
+  return claims;
+}
+
+// Simple sequential port claimer
+function buildPortClaims(){
+  const core=CORES.find(c=>c.id===currentCore);
+  if(!core) return {};
+  const claims={}; // portId -> {proto, label, connNote}
+  const usedPortIds=new Set();
+
+  // HAT claims first
+  (core.hats||[]).forEach(h=>{
+    if(selectedHats[h.id] && h.usesPort){
+      claims[h.usesPort]={proto:'HAT',label:h.name,connNote:'Expansion board'};
+      usedPortIds.add(h.usesPort);
+    }
+  });
+
+  // Build port pools by type from core + selected hats
+  const allPorts=[...core.ports];
+  (core.hats||[]).forEach(h=>{
+    if(selectedHats[h.id]) (h.ports||[]).forEach(p=>allPorts.push(p));
+  });
+
+  const poolByType={};
+  allPorts.forEach(p=>{
+    if(!poolByType[p.type]) poolByType[p.type]=[];
+    poolByType[p.type].push(p);
+  });
+
+  // Assign protocols to ports
+  PROTOCOLS.forEach(p=>{
+    if(!active[p.id]) return;
+    if(!p.conn || p.conn==='none' || p.conn==='Wi-Fi 6' || p.conn==='Bluetooth' || p.conn==='Ethernet') return;
+    const pool=poolByType[p.conn]||[];
+    for(const port of pool){
+      if(!usedPortIds.has(port.id)){
+        claims[port.id]={proto:p.id,label:p.name,connNote:p.connNote};
+        usedPortIds.add(port.id);
+        break;
+      }
+    }
+  });
+  return claims;
+}
+
+// ─── BUILD CORE CARDS ─────────────────────────────────────────────────────────
+function buildCoreCards(){
+  const el=document.getElementById('core-cards');
+  el.innerHTML='';
+  CORES.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='core-card'+(currentCore===c.id?' selected':'');
+    d.dataset.id=c.id;
+    d.innerHTML=`<div class="cc-badge">${c.badge}</div>
+      <div class="cc-name">${c.name}</div>
+      <div class="cc-sub">${c.sub}</div>
+      <div class="cc-specs">${c.specs.map(s=>`<span class="cc-spec${s.includes('GbE')||s.includes('PCIe')||s.includes('NVMe')||s.includes('USB 3')?'  hi':''}">${s}</span>`).join('')}</div>`;
+    d.addEventListener('click',()=>{
+      currentCore=c.id;
+      // Clear hat selections
+      Object.keys(selectedHats).forEach(k=>delete selectedHats[k]);
+      buildCoreCards();
+      buildIO();
+      updateAllProtos();
+    });
+    el.appendChild(d);
+  });
+}
+
+// ─── BUILD I/O LAYER ──────────────────────────────────────────────────────────
+function buildIO(){
+  const core=CORES.find(c=>c.id===currentCore);
+  const claims=buildPortClaims();
+
+  // Built-in ports
+  const biEl=document.getElementById('io-builtin');
+  biEl.innerHTML='';
+  core.ports.forEach(p=>{
+    const claim=claims[p.id];
+    const btn=document.createElement('div');
+    btn.className='io-btn'+(claim?' used':'');
+    btn.innerHTML=`<div class="io-type">${p.type} · ${p.voltage}</div>
+      <div class="io-name">${p.label}</div>
+      ${claim?`<div class="io-usedby">▶ ${claim.connNote||claim.label}</div>`:''}`;
+    biEl.appendChild(btn);
+  });
+
+  // HATs
+  const hatEl=document.getElementById('io-hats');
+  hatEl.innerHTML='';
+  if(!core.hats||!core.hats.length){
+    hatEl.innerHTML='<span style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted)">No expansion boards defined for this core.</span>';
+  } else {
+    core.hats.forEach(h=>{
+      const btn=document.createElement('div');
+      btn.className='hat-btn'+(selectedHats[h.id]?' selected':'');
+      btn.innerHTML=`${h.name}<br><span class="hat-ports">${h.sub} · uses: ${h.usesPort}</span>`;
+      btn.addEventListener('click',()=>{
+        selectedHats[h.id]=!selectedHats[h.id];
+        buildIO();
+      });
+      hatEl.appendChild(btn);
+    });
+  }
+
+  // Expanded ports
+  const expEl=document.getElementById('io-expanded');
+  expEl.innerHTML='';
+  let anyExp=false;
+  (core.hats||[]).forEach(h=>{
+    if(selectedHats[h.id]){
+      (h.ports||[]).forEach(p=>{
+        anyExp=true;
+        const claim=claims[p.id];
+        const btn=document.createElement('div');
+        btn.className='io-btn'+(claim?' used':'');
+        btn.innerHTML=`<div class="io-type">${p.type} · ${p.voltage} · via ${h.name}</div>
+          <div class="io-name">${p.label}</div>
+          ${claim?`<div class="io-usedby">▶ ${claim.connNote||claim.label}</div>`:''}`;
+        expEl.appendChild(btn);
+      });
+    }
+  });
+  if(!anyExp) expEl.innerHTML='<span style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted)">No expansion board selected.</span>';
+}
+
+// ─── BUILD PROTOCOL ROWS ──────────────────────────────────────────────────────
+function buildRows(){
+  const container=document.getElementById('proto-rows');
+  container.innerHTML='';
+  const byRow={};
+  PROTOCOLS.forEach(p=>{(byRow[p.row]=byRow[p.row]||[]).push(p)});
+  const rowLabels=['CORE — BUILT-IN','USB DONGLES','ESP32 PROXY / ADD-ON','NETWORK / GATEWAY'];
+
+  Object.keys(byRow).sort((a,b)=>a-b).forEach(r=>{
+    const wrap=document.createElement('div');
+    wrap.className='proto-row-wrap';
+    const label=document.createElement('div');
+    label.className='row-label';
+    label.textContent=rowLabels[r]||'';
+    wrap.appendChild(label);
+    const grp=document.createElement('div');
+    grp.className='btn-group';
+
+    byRow[r].forEach(p=>{
+      const col=TIER_CFG[p.tier];
+      const btn=document.createElement('div');
+      btn.className='proto-btn'+(active[p.id]?'':' inactive');
+      btn.dataset.id=p.id;
+      btn.style.width=p.w+'px';
+      btn.style.borderColor=active[p.id]?col.hex:'transparent';
+      btn.style.boxShadow=active[p.id]?`0 0 0 1px ${col.hex},0 4px 22px -4px ${col.glow}`:'none';
+      const nomW=p.pwrNom>=1000?(p.pwrNom/1000).toFixed(1)+'W':p.pwrNom+'mW';
+      const maxW=p.pwrMax>=1000?(p.pwrMax/1000).toFixed(1)+'W':p.pwrMax+'mW';
+      btn.innerHTML=`<div class="btn-color-bar" style="background:${col.hex}"></div>
+        <div class="btn-icon">${p.icon}</div>
+        <div class="btn-name" style="color:${active[p.id]?col.hex:'var(--text)'}">${p.name}</div>
+        <div class="btn-sub">${p.sub}</div>
+        ${p.pwrNom>0?`<div class="btn-pwr">⚡${nomW} / ${maxW} peak</div>`:''}`;
+      btn.addEventListener('click',()=>toggle(p.id));
+      grp.appendChild(btn);
+    });
+
+    wrap.appendChild(grp);
+    container.appendChild(wrap);
+  });
+}
+
+// ─── BUILD AXIS ───────────────────────────────────────────────────────────────
+function buildAxis(){
+  const wrap=document.getElementById('axis-wrap');
+  wrap.innerHTML='';
+  const W=wrap.offsetWidth||1520;
+  const PAD_L=130,PAD_R=40;
+  const axW=W-PAD_L-PAD_R;
+
+  function px(mhz){return PAD_L+logScale(mhz)*axW}
+
+  const line=document.createElement('div');
+  line.className='axis-line';
+  line.style.left=PAD_L+'px';
+  line.style.right=PAD_R+'px';
+  wrap.appendChild(line);
+
+  const arr=document.createElement('div');
+  arr.className='axis-arrow';
+  arr.style.right=(PAD_R-9)+'px';
+  wrap.appendChild(arr);
+
+  const lbl=document.createElement('div');
+  lbl.style.cssText=`position:absolute;right:${PAD_R+4}px;top:28px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.12em`;
+  lbl.textContent='FREQ (log) →';
+  wrap.appendChild(lbl);
+
+  TICKS.forEach(t=>{
+    const g=document.createElement('div');
+    g.className='tick-group';
+    g.style.left=px(t.hz)+'px';
+    g.innerHTML=`<div class="tick-bar"></div><div class="tick-freq">${t.label}</div>`;
+    wrap.appendChild(g);
+  });
+
+  PROTOCOLS.forEach(p=>{
+    if(p.axisHz<=0) return;
+    const col=TIER_CFG[p.tier];
+    const dot=document.createElement('div');
+    dot.className='axis-dot'+(active[p.id]?'':' off');
+    dot.id='dot-'+p.id;
+    dot.title=p.name;
+    dot.style.left=px(p.axisHz)+'px';
+    dot.style.background=col.hex;
+    dot.style.borderColor=col.hex;
+    dot.style.boxShadow=`0 0 10px ${col.glow}`;
+    wrap.appendChild(dot);
+  });
+}
+
+// ─── BUILD SHEET ──────────────────────────────────────────────────────────────
+function buildSheet(){
+  const tbody=document.getElementById('sheet-body');
+  const sorted=[...PROTOCOLS].sort((a,b)=>TIER_ORDER.indexOf(a.tier)-TIER_ORDER.indexOf(b.tier));
+  sorted.forEach(p=>{
+    const col=TIER_CFG[p.tier];
+    const typ=TYPE_CFG[p.type]||{bg:'rgba(255,255,255,.05)',c:'var(--muted)'};
+    const tr=document.createElement('tr');
+    tr.dataset.id=p.id;
+    tr.className=active[p.id]?'':'row-inactive';
+    const nomW=p.pwrNom>=1000?(p.pwrNom/1000).toFixed(1)+'W':p.pwrNom+'mW';
+    const maxW=p.pwrMax>=1000?(p.pwrMax/1000).toFixed(1)+'W':p.pwrMax+'mW';
+    tr.innerHTML=`
+      <td class="td-icon">${p.icon}</td>
+      <td class="td-name"><span class="tier-pip" style="background:${col.hex}"></span>${p.name}</td>
+      <td><span class="td-type" style="background:${typ.bg};color:${typ.c}">${p.type}</span></td>
+      <td class="td-function">${p.func}</td>
+      <td class="td-connects">${p.connects}</td>
+      <td class="td-brands">${p.brands}</td>
+      <td class="td-hz">${p.hz}</td>
+      <td class="td-hw">${p.conn!=='none'?p.conn:'—'}<br><span style="color:var(--muted);font-size:9px">${p.connNote}</span>${p.conn!=='none'&&p.conn!=='Wi-Fi 6'&&p.conn!=='Bluetooth'&&p.conn!=='Ethernet'?`<br><span class="conn-warn">⚠ needs port on core</span>`:''}</td>
+      <td class="td-pwr"><span class="pwr-nom">${nomW}</span> / <span class="pwr-mx">${maxW}</span><br><span style="font-size:8px;color:var(--muted)">${p.pwrVolt}</span></td>
+      <td class="td-cost">${p.cost}</td>
+      <td>${mkBadge(p.n305)}</td>
+      <td>${mkBadge(p.pi5)}</td>`;
+    tbody.appendChild(tr);
+  });
+  updateCount();
+}
+
+function mkBadge(v){
+  const cls=v==='yes'?'badge-yes':v==='partial'?'badge-partial':'badge-no';
+  const ic=v==='yes'?'✓':v==='partial'?'~':'✗';
+  const tx=v==='yes'?'Yes':v==='partial'?'Limited':'No';
+  return`<span class="badge ${cls}">${ic} ${tx}</span>`;
+}
+
+// ─── POWER SUMMARY ────────────────────────────────────────────────────────────
+function updatePower(){
+  const core=CORES.find(c=>c.id===currentCore);
+  let nom5=0,max5=0,nom19=0,max19=0;
+  PROTOCOLS.forEach(p=>{
+    if(!active[p.id]) return;
+    if(p.pwrVolt&&p.pwrVolt.includes('19V')){nom19+=p.pwrNom;max19+=p.pwrMax}
+    else{nom5+=p.pwrNom;max5+=p.pwrMax}
+  });
+  // Add core
+  const coreNom=(core.pwrNom||0)*1000;
+  const coreMax=(core.pwrMax||0)*1000;
+  const totalNom=nom5+nom19+coreNom;
+  const totalMax=max5+max19+coreMax;
+  const fmt=mw=>mw>=1000?(mw/1000).toFixed(1)+'W':mw+'mW';
+  document.getElementById('pwr-summary').innerHTML=`
+    <div class="pwr-block">
+      <div class="pwr-label">TOTAL NOM</div>
+      <div class="pwr-val">${fmt(totalNom)} <span class="pwr-v" style="color:var(--accent);border-color:rgba(200,251,87,.3)">5V+</span></div>
+    </div>
+    <div class="pwr-block">
+      <div class="pwr-label">TOTAL MAX</div>
+      <div class="pwr-max">${fmt(totalMax)}</div>
+    </div>
+    <div class="pwr-block" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:right;line-height:1.8">
+      5V USB: ${fmt(nom5+coreNom)} nom / ${fmt(max5+coreMax)} max<br>
+      ${nom19>0?`19V DC: ${fmt(nom19)} nom / ${fmt(max19)} max`:''}
+    </div>`;
+}
+
+// ─── TOGGLE & REFRESH ─────────────────────────────────────────────────────────
+function toggle(id){
+  active[id]=!active[id];
+  refreshProto(id);
+  buildIO();
+  updatePower();
+}
+
+function refreshProto(id){
+  const p=PROTOCOLS.find(x=>x.id===id);
+  const col=TIER_CFG[p.tier];
+  const on=active[id];
+  const btn=document.querySelector(`.proto-btn[data-id="${id}"]`);
+  if(btn){
+    btn.classList.toggle('inactive',!on);
+    btn.style.borderColor=on?col.hex:'transparent';
+    btn.style.boxShadow=on?`0 0 0 1px ${col.hex},0 4px 22px -4px ${col.glow}`:'none';
+    btn.querySelector('.btn-name').style.color=on?col.hex:'var(--text)';
+    btn.querySelector('.btn-color-bar').style.opacity=on?'1':'0.3';
+  }
+  const dot=document.getElementById('dot-'+id);
+  if(dot){
+    if(on){dot.classList.remove('off');dot.style.background=col.hex;dot.style.borderColor=col.hex;dot.style.boxShadow=`0 0 10px ${col.glow}`}
+    else{dot.classList.add('off')}
+  }
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  if(tr) tr.classList.toggle('row-inactive',!on);
+  updateCount();
+}
+
+function updateAllProtos(){
+  PROTOCOLS.forEach(p=>refreshProto(p.id));
+  updatePower();
+}
+
+function setAll(v){PROTOCOLS.forEach(p=>{active[p.id]=v});updateAllProtos();buildIO()}
+function setTier(tier){
+  const idx=TIER_ORDER.indexOf(tier);
+  PROTOCOLS.forEach(p=>{active[p.id]=TIER_ORDER.indexOf(p.tier)<=idx});
+  updateAllProtos();buildIO();
+}
+function updateCount(){
+  const on=PROTOCOLS.filter(p=>active[p.id]).length;
+  document.getElementById('sheet-count').textContent=`${on} / ${PROTOCOLS.length} active`;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  buildCoreCards();
+  buildRows();
+  buildAxis();
+  buildSheet();
+  buildIO();
+  updatePower();
+
+  document.getElementById('btn-all').addEventListener('click',()=>setAll(true));
+  document.getElementById('btn-none').addEventListener('click',()=>setAll(false));
+  document.getElementById('tier-core').addEventListener('click',()=>setTier('core'));
+  document.getElementById('tier-dongle').addEventListener('click',()=>setTier('dongle'));
+  document.getElementById('tier-proxy').addEventListener('click',()=>setTier('proxy'));
+  document.getElementById('tier-net').addEventListener('click',()=>setTier('net'));
+});
+</script>
+</body>
+</html>

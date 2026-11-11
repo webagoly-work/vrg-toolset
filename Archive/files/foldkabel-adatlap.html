@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Földkábel nyomvonal — helyszíni felmérési adatlap</title>
+<style>
+  :root{
+    --ink:#000;
+    --rule:#000;
+    --soft:#6b6b6b;
+    --field:#f2f2f2;
+    --hazard:#f2b100;
+    --page:#fff;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:#d8d6d2;
+    color:var(--ink);
+    font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:10.5pt;
+    line-height:1.35;
+  }
+  .sheet{
+    background:var(--page);
+    width:210mm;
+    min-height:297mm;
+    margin:8mm auto;
+    padding:12mm 12mm 14mm;
+    box-shadow:0 2px 12px rgba(0,0,0,.28);
+  }
+
+  /* ---- fejléc ---- */
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:2.5pt solid var(--rule);
+    padding-bottom:3mm;
+  }
+  .masthead h1{
+    font-size:16pt;
+    font-weight:700;
+    letter-spacing:-.2pt;
+    margin:0;
+    line-height:1.1;
+  }
+  .masthead p{margin:1mm 0 0;font-size:9pt;color:var(--soft);max-width:105mm}
+  .docmeta{text-align:right;font-size:8.5pt;color:var(--soft);line-height:1.5}
+  .docmeta b{color:var(--ink);font-size:10pt}
+
+  /* ---- szekciók ---- */
+  section{margin-top:6mm;break-inside:avoid}
+  h2{
+    font-size:11pt;
+    font-weight:700;
+    margin:0 0 2mm;
+    padding-bottom:1mm;
+    border-bottom:1pt solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  h2 span{font-size:8.5pt;font-weight:400;color:var(--soft)}
+  h3{font-size:9.5pt;font-weight:700;margin:3.5mm 0 1.5mm}
+
+  /* ---- kitöltendő mezők ---- */
+  .grid{display:grid;gap:2.5mm 4mm}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .g4{grid-template-columns:1fr 1fr 1fr 1fr}
+  .f{display:flex;flex-direction:column;gap:.8mm}
+  .f label{font-size:8pt;color:var(--soft)}
+  .f .line{border-bottom:.6pt solid var(--rule);height:6mm}
+  .f .box{border:.6pt solid var(--rule);background:var(--field);height:14mm}
+  .f .box.tall{height:24mm}
+
+  /* ---- táblázatok ---- */
+  table{width:100%;border-collapse:collapse;font-size:8.5pt}
+  th,td{border:.6pt solid var(--rule);padding:1.4mm 1.6mm;text-align:left;vertical-align:top}
+  th{font-weight:700;background:var(--field);font-size:8pt}
+  td.blank{height:8mm}
+  col.narrow{width:9%}
+  col.mid{width:14%}
+
+  /* ---- checklista ---- */
+  ul.check{list-style:none;margin:0;padding:0;column-gap:6mm}
+  ul.check li{
+    padding-left:6mm;
+    position:relative;
+    margin:0 0 1.6mm;
+    break-inside:avoid;
+    font-size:9pt;
+  }
+  ul.check li::before{
+    content:"";
+    position:absolute;left:0;top:.6mm;
+    width:3.4mm;height:3.4mm;
+    border:.7pt solid var(--rule);
+  }
+  ul.check.two{column-count:2}
+  ul.check.three{column-count:3}
+  ul.check li em{font-style:normal;color:var(--soft)}
+
+  /* ---- veszélysáv ---- */
+  .hazard{
+    margin-top:3mm;
+    border:1pt solid var(--rule);
+    display:grid;
+    grid-template-columns:7mm 1fr;
+  }
+  .hazard .bar{
+    background:repeating-linear-gradient(-45deg,var(--hazard) 0 3mm,#000 3mm 6mm);
+  }
+  .hazard .body{padding:2.5mm 3mm}
+  .hazard h3{margin:0 0 1.2mm}
+  .hazard p{margin:0 0 1.2mm;font-size:9pt}
+  .hazard p:last-child{margin-bottom:0}
+
+  /* ---- metszet ---- */
+  .section-fig{display:grid;grid-template-columns:52mm 1fr;gap:5mm;align-items:start}
+  .section-fig svg{width:100%;height:auto;border:.6pt solid var(--rule)}
+  .keynote{font-size:8.5pt;margin:0;padding-left:4mm}
+  .keynote li{margin-bottom:1mm}
+
+  .note{font-size:8pt;color:var(--soft);margin:1.5mm 0 0}
+
+  /* ---- aláírás ---- */
+  .sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6mm;margin-top:10mm}
+  .sign div{border-top:.8pt solid var(--rule);padding-top:1.5mm;font-size:8.5pt;color:var(--soft)}
+
+  @media print{
+    body{background:#fff}
+    .sheet{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}
+    @page{size:A4;margin:12mm}
+    section{break-inside:avoid}
+  }
+  @media (max-width:230mm){
+    .sheet{width:auto;max-width:100%;margin:0;padding:6mm}
+    .g3,.g4{grid-template-columns:1fr 1fr}
+    .section-fig{grid-template-columns:1fr}
+    ul.check.two,ul.check.three{column-count:1}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="masthead">
+    <div>
+      <h1>Földkábel nyomvonal — helyszíni felmérés</h1>
+      <p>Kitöltendő a megrendelővel közösen, a helyszínen. A gépi földmunka csak a beérkezett közműnyilatkozatok és a kitűzött tilalmi sávok birtokában indítható.</p>
+    </div>
+    <div class="docmeta">
+      <b>Varler Group</b><br>
+      Adatlap sz.: ____________<br>
+      Kiadás: v1
+    </div>
+  </div>
+
+  <section>
+    <h2>1. Alapadatok</h2>
+    <div class="grid g4">
+      <div class="f"><label>Megrendelő</label><div class="line"></div></div>
+      <div class="f"><label>Kapcsolattartó / telefon</label><div class="line"></div></div>
+      <div class="f"><label>Felmérés dátuma</label><div class="line"></div></div>
+      <div class="f"><label>Felmérést végezte</label><div class="line"></div></div>
+      <div class="f"><label>Ingatlan címe</label><div class="line"></div></div>
+      <div class="f"><label>Helyrajzi szám</label><div class="line"></div></div>
+      <div class="f"><label>Időjárás / talajállapot</label><div class="line"></div></div>
+      <div class="f"><label>Jelen volt még</label><div class="line"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Előzetes engedélyek és adatszolgáltatás <span>a felmérés előtt indítandó</span></h2>
+    <ul class="check two">
+      <li>e-közmű közműegyeztetés megindítva — ügyszám: ______________________</li>
+      <li>Beérkezett nyilatkozatok: gáz □ víz/csatorna □ áram □ táv-/hírközlés □ távhő □ közvilágítás □</li>
+      <li>Gázüzemeltetői szakfelügyelet megrendelve — időpont: ____________</li>
+      <li>Egyéb szakfelügyelet (távközlés / vízmű): ____________</li>
+      <li>Közterület érintett? Ha igen, közútkezelői + burkolatbontási hozzájárulás</li>
+      <li>Idegen ingatlan érintett? Szolgalmi jog / tulajdonosi hozzájárulás</li>
+      <li>Elosztói engedélyes bevonása szükséges (mérőhely előtti szakasz)</li>
+      <li>Fás szárú növény kivágása szükséges → önkormányzati engedély</li>
+    </ul>
+    <div class="hazard">
+      <div class="bar"></div>
+      <div class="body">
+        <h3>Gépi földmunka tilalmi sáv</h3>
+        <p>Üzemelő gázelosztó vezeték tengelyétől 1–1 m sávban a vezetéket kézi feltárással azonosítani kell, az azonosított vezetéktől 0,3 m-en belül kizárólag kézi földmunka végezhető, és az árokban folyamatos gázszivárgás-ellenőrzés kell. Csákány nem használható.</p>
+        <p>A tilalmi sáv határait a markológép érkezése <b>előtt</b> ki kell tűzni és festékkel a terepen meg kell jelölni.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Meglévő közművek és földben lévő szerkezetek a telken</h2>
+    <table>
+      <colgroup><col style="width:24%"><col style="width:20%"><col class="mid"><col class="narrow"><col style="width:33%"></colgroup>
+      <thead>
+        <tr><th>Mit</th><th>Hol / nyomvonal</th><th>Azonosítás módja</th><th>Mélység</th><th>Megjegyzés, anyag, állapot</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Gáz bekötővezeték</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Ivóvíz bekötés / vízóraakna</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Szennyvíz / tisztítóidom</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Csapadékelvezetés, drén, szikkasztó</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Meglévő erősáramú kábel</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Hírközlés / optika / kábeltévé</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Öntözőrendszer, kerti víz</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Kerti világítás, kapumotor, riasztó, kamera</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Kút, szivattyú, medence gépészet</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Földelő szalag, villámvédelem</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Talajkollektor / hőszivattyú</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Egyéb</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Azonosítás módja: nyilatkozat / nyomkövető műszer / kézi kutatóárok / tulajdonosi közlés / látható tereptárgy. A tulajdonosi közlés önmagában nem elegendő a gépi ásás felszabadításához.</p>
+  </section>
+
+  <section>
+    <h2>4. Tervezett nyomvonal szakaszokra bontva</h2>
+    <table>
+      <colgroup><col class="narrow"><col style="width:17%"><col style="width:17%"><col class="narrow"><col class="mid"><col class="mid"><col style="width:20%"></colgroup>
+      <thead>
+        <tr><th>Sz.</th><th>Kezdőpont</th><th>Végpont</th><th>Hossz (m)</th><th>Felszín / burkolat</th><th>Fektetési mélység</th><th>Védelem, cső, megjegyzés</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>2</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>3</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>4</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>5</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>6</td><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Teljes árokhossz: ____________ m · Kitermelt föld becsült térfogata: ____________ m³ · Depónia helye: ______________________</p>
+  </section>
+
+  <section>
+    <h2>5. Keresztezések és megközelítések</h2>
+    <table>
+      <colgroup><col class="narrow"><col style="width:18%"><col class="mid"><col class="mid"><col class="mid"><col style="width:24%"></colgroup>
+      <thead>
+        <tr><th>Pont</th><th>Érintett közmű</th><th>Keresztezés / párhuzamos</th><th>Kézi feltárás kell?</th><th>Szakfelügyelet</th><th>Alkalmazott védelem</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>K1</td><td class="blank"></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>K2</td><td class="blank"></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>K3</td><td class="blank"></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>K4</td><td class="blank"></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="note">A tartandó távolságokat és a keresztezési szöget a közműnyilatkozatokban előírtak, valamint az MSZ 7487:2021 és MSZ 13207 szerint kell felvenni. Eltérés csak az üzemeltető írásos hozzájárulásával.</p>
+  </section>
+
+  <section>
+    <h2>6. Villamos adatok</h2>
+    <div class="grid g4">
+      <div class="f"><label>Betáplálás helye</label><div class="line"></div></div>
+      <div class="f"><label>Mérőhely / csatlakozó elosztó</label><div class="line"></div></div>
+      <div class="f"><label>Meglévő főbiztosító</label><div class="line"></div></div>
+      <div class="f"><label>Rendszer (TN-C-S / TT)</label><div class="line"></div></div>
+      <div class="f"><label>Fogyasztó a végponton</label><div class="line"></div></div>
+      <div class="f"><label>Számított terhelés (A / kW)</label><div class="line"></div></div>
+      <div class="f"><label>Kábeltípus és keresztmetszet</label><div class="line"></div></div>
+      <div class="f"><label>Számított feszültségesés</label><div class="line"></div></div>
+      <div class="f"><label>Védőcső (KPE ⌀ / hossz)</label><div class="line"></div></div>
+      <div class="f"><label>Tartalék béléscső fektetése</label><div class="line"></div></div>
+      <div class="f"><label>Szalagföldelő az árokba</label><div class="line"></div></div>
+      <div class="f"><label>Gyengeáram külön csőben</label><div class="line"></div></div>
+    </div>
+    <p class="note">A keresztmetszetet a hossz miatti feszültségesés és a fektetési mód szerint korrigált terhelhetőség együtt dönti el, nem csak a névleges áram. Csőben fektetve a terhelhetőség csökken.</p>
+  </section>
+
+  <section>
+    <h2>7. Árok kialakítása <span>a kitöltött értékek a megrendelővel egyeztetett vállalás</span></h2>
+    <div class="section-fig">
+      <svg viewBox="0 0 200 240" role="img" aria-label="Kábelárok metszet">
+        <rect x="0" y="0" width="200" height="240" fill="#fff"/>
+        <line x1="10" y1="26" x2="190" y2="26" stroke="#000" stroke-width="1.6"/>
+        <text x="14" y="21" font-size="9" font-family="Arial">terepszint</text>
+        <rect x="55" y="26" width="90" height="150" fill="#f2f2f2" stroke="#000" stroke-width=".8"/>
+        <line x1="55" y1="96" x2="145" y2="96" stroke="#000" stroke-width="1.6" stroke-dasharray="5 3"/>
+        <text x="150" y="99" font-size="8" font-family="Arial">③</text>
+        <rect x="55" y="140" width="90" height="6" fill="#000"/>
+        <text x="150" y="146" font-size="8" font-family="Arial">④</text>
+        <rect x="55" y="146" width="90" height="12" fill="#ddd" stroke="#000" stroke-width=".5"/>
+        <circle cx="88" cy="163" r="7" fill="#fff" stroke="#000" stroke-width="1.4"/>
+        <circle cx="112" cy="163" r="5" fill="#fff" stroke="#000" stroke-width="1" stroke-dasharray="2 2"/>
+        <text x="150" y="167" font-size="8" font-family="Arial">⑤</text>
+        <rect x="55" y="168" width="90" height="10" fill="#ddd" stroke="#000" stroke-width=".5"/>
+        <text x="150" y="177" font-size="8" font-family="Arial">⑥</text>
+        <line x1="30" y1="26" x2="30" y2="176" stroke="#000" stroke-width=".8"/>
+        <line x1="26" y1="26" x2="34" y2="26" stroke="#000" stroke-width=".8"/>
+        <line x1="26" y1="176" x2="34" y2="176" stroke="#000" stroke-width=".8"/>
+        <text x="14" y="105" font-size="9" font-family="Arial" transform="rotate(-90 14 105)">①</text>
+        <line x1="55" y1="196" x2="145" y2="196" stroke="#000" stroke-width=".8"/>
+        <line x1="55" y1="192" x2="55" y2="200" stroke="#000" stroke-width=".8"/>
+        <line x1="145" y1="192" x2="145" y2="200" stroke="#000" stroke-width=".8"/>
+        <text x="96" y="210" font-size="9" font-family="Arial">②</text>
+      </svg>
+      <ol class="keynote">
+        <li>Fektetési mélység: ____________ mm <em>(járható terepen jellemzően 700 mm, behajtó alatt mélyebben és védőcsőben)</em></li>
+        <li>Árok szélessége: ____________ mm</li>
+        <li>Kábeljelző szalag mélysége: ____________ mm <em>(a fektetési mélység felében, de a kábel felső alkotóját legfeljebb 300 mm-re közelítve)</em></li>
+        <li>Mechanikai védelem: kábelfedő lap / védőtégla / nincs</li>
+        <li>Kábel és tartalék cső</li>
+        <li>Homokágy alul és felül: ____________ mm <em>(jellemzően 100–100 mm, semleges kémhatású, kőmentes)</em></li>
+      </ol>
+    </div>
+    <p class="note">Visszatöltés réteges tömörítéssel. 1,25 m-nél mélyebb, függőleges falú árok dúcolást vagy rézsűzést igényel.</p>
+  </section>
+
+  <section>
+    <h2>8. Gépi földmunka feltételei</h2>
+    <div class="grid g3">
+      <div class="f"><label>Kapubejáró szabad szélessége</label><div class="line"></div></div>
+      <div class="f"><label>Gép típusa / tömege</label><div class="line"></div></div>
+      <div class="f"><label>Gépkezelő</label><div class="line"></div></div>
+      <div class="f"><label>Talajtípus</label><div class="line"></div></div>
+      <div class="f"><label>Talajvízszint jele</label><div class="line"></div></div>
+      <div class="f"><label>Meglévő burkolat bontása</label><div class="line"></div></div>
+    </div>
+    <h3>Amit a gép érkezéséig el kell végezni</h3>
+    <ul class="check two">
+      <li>Nyomvonal kitűzve karóval és festékkel</li>
+      <li>Tilalmi sávok terepen megjelölve</li>
+      <li>Kutatóárkok kézzel kiásva a keresztezéseknél</li>
+      <li>Megrendelő értéktárgyai (növény, térkő, öntöző) leszedve vagy jelölve</li>
+      <li>Depónia helye kijelölve, szomszéd kerítéstől távol</li>
+      <li>Nyitott árok elkerítése és jelölése megoldva</li>
+      <li>Fotó a bontatlan állapotról minden szakaszon</li>
+      <li>Épületalap alábányászásának kizárása ellenőrizve</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>9. Kockázatok, akadályok, megrendelői döntést igénylő pontok</h2>
+    <div class="f"><div class="box tall"></div></div>
+  </section>
+
+  <section>
+    <h2>10. Bemérés és dokumentálás <span>a visszatemetés előtt</span></h2>
+    <ul class="check two">
+      <li>Nyomvonal bemérve két fix ponthoz kötött méretekkel</li>
+      <li>Fotósorozat mérőszalaggal, szakaszonként</li>
+      <li>Töréspontok koordinátái rögzítve</li>
+      <li>Szigetelési ellenállás mérve fektetés előtt és a visszatöltés után</li>
+      <li>Megvalósulási vázlat átadva a megrendelőnek</li>
+      <li>Keresztezések külön fotózva a védelemmel együtt</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>11. Következő lépések</h2>
+    <table>
+      <colgroup><col style="width:52%"><col style="width:24%"><col style="width:24%"></colgroup>
+      <thead><tr><th>Feladat</th><th>Felelős</th><th>Határidő</th></tr></thead>
+      <tbody>
+        <tr><td class="blank"></td><td></td><td></td></tr>
+        <tr><td class="blank"></td><td></td><td></td></tr>
+        <tr><td class="blank"></td><td></td><td></td></tr>
+        <tr><td class="blank"></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="sign">
+    <div>Felmérést végezte</div>
+    <div>Megrendelő</div>
+    <div>Dátum</div>
+  </div>
+
+</div>
+</body>
+</html>

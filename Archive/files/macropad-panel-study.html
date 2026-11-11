@@ -1,0 +1,653 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Macropad Panel Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d;
+  --accent:#e6a532; --accent-dim:#8a6a2a; --line:#3a2f22; --line2:#4a3c2c;
+  --good:#9ed46f; --warn:#c8912d; --bad:#e88b73;
+  --draw-bg:#0e0b07; --draw-line:#5c4b34; --dim:#a8977d;
+  --btn-g:#5b8c3e; --btn-r:#c8492d; --btn-b:#4fb0d0; --btn-y:#d9a520; --btn-w:#e8e0d0; --btn-k:#6b5a44;
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f4efe6; --panel:#fffdf9; --panel2:#f7f2e8; --ink:#221c14; --muted:#6d6252;
+  --accent:#a9781a; --accent-dim:#c09a4a; --line:#ddd2bd; --line2:#c9bca2;
+  --good:#3c6a22; --warn:#9a6a10; --bad:#8f3016;
+  --draw-bg:#fffdf9; --draw-line:#b5a68c; --dim:#6d6252;
+  --btn-g:#4f7d34; --btn-r:#b33f22; --btn-b:#3691b0; --btn-y:#bf8f10; --btn-w:#9c9182; --btn-k:#4a4034;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    color-scheme: light;
+    --bg:#f4efe6; --panel:#fffdf9; --panel2:#f7f2e8; --ink:#221c14; --muted:#6d6252;
+    --accent:#a9781a; --accent-dim:#c09a4a; --line:#ddd2bd; --line2:#c9bca2;
+    --good:#3c6a22; --warn:#9a6a10; --bad:#8f3016;
+    --draw-bg:#fffdf9; --draw-line:#b5a68c; --dim:#6d6252;
+    --btn-g:#4f7d34; --btn-r:#b33f22; --btn-b:#3691b0; --btn-y:#bf8f10; --btn-w:#9c9182; --btn-k:#4a4034;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif; font-size:15px; line-height:1.55}
+.wrap{max-width:1040px; margin:0 auto; padding-inline:20px; padding-block:40px 80px}
+h1{font-family:"Barlow Condensed",Impact,sans-serif; font-weight:700; font-size:clamp(34px,7vw,56px);
+  line-height:.95; margin:0 0 6px; text-wrap:balance; text-transform:uppercase}
+h1 em{font-style:normal; color:var(--accent)}
+.sub{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted); letter-spacing:.06em; margin-bottom:30px}
+h2{font-family:"Barlow Condensed",Impact,sans-serif; font-weight:600; text-transform:uppercase; font-size:26px;
+  letter-spacing:.05em; margin:48px 0 4px; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px}
+h3{font-family:"Barlow Condensed",Impact,sans-serif;font-weight:600;font-size:19px;letter-spacing:.04em;
+  text-transform:uppercase;margin:24px 0 6px}
+p{margin:0 0 14px; max-width:68ch}
+.lead{color:var(--muted)}
+code,.mono{font-family:"IBM Plex Mono",monospace; font-size:.88em}
+.tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em;
+  text-transform:uppercase; padding:2px 8px; border-radius:3px; border:1px solid var(--line2); color:var(--muted); vertical-align:middle}
+.tag.t1{border-color:var(--good); color:var(--good)}
+.tag.t2{border-color:var(--accent); color:var(--accent)}
+.tag.nw{border-color:var(--bad); color:var(--bad)}
+.finds{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; margin:18px 0 8px}
+.find{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:5px; padding:12px 14px}
+.find b{display:block; font-family:"Barlow Condensed",sans-serif; font-size:17px; letter-spacing:.03em;
+  text-transform:uppercase; margin-bottom:3px}
+.find.alarm{border-left-color:var(--bad)} .find.ok{border-left-color:var(--good)}
+.find span{font-size:13.5px; color:var(--muted)}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:8px; margin:22px 0; overflow:hidden}
+.card>header{padding:14px 18px 10px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:baseline; gap:10px}
+.card>header h3{margin:0; color:var(--ink); font-size:22px}
+.card>header .size{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--accent); margin-left:auto}
+.draw{padding:14px 10px 4px; background:var(--draw-bg)}
+.draw svg{display:block; width:100%; height:auto; max-width:100%}
+.draw+.draw{border-top:1px solid var(--line)}
+.dlab{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--accent); padding:0 4px 6px}
+.meta{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); border-top:1px solid var(--line)}
+.meta div{padding:11px 16px; border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0}
+.meta dt{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:3px}
+.meta dd{margin:0; font-size:13.5px}
+.verdict{padding:12px 18px; border-top:1px solid var(--line); font-size:14px; background:var(--panel2)}
+.verdict b{color:var(--accent)}
+.legend{display:flex; flex-wrap:wrap; gap:14px; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); padding:10px 4px 0}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:5px; vertical-align:-1px}
+.tbl{width:100%; overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px}
+th,td{text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500}
+td.num{font-family:"IBM Plex Mono",monospace; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+tr.total td{border-top:2px solid var(--accent-dim); border-bottom:0; font-weight:600; padding-top:10px}
+.yes{color:var(--good)} .no{color:var(--bad)} .maybe{color:var(--warn)}
+ul{margin:0 0 14px; padding-left:20px; max-width:68ch} li{margin-bottom:5px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (max-width:560px){ .meta div{border-right:0; border-bottom:1px solid var(--line)} }
+</style>
+
+<div class="wrap">
+
+<h1>Macropad <em>Panel Study</em></h1>
+<div class="sub">VRG · v2 · hét elrendezés · 1 : 1 mm · 2026-09-27</div>
+
+<p class="lead">Panel layouts for the USB-HID core device. Right hand on the pad, 30 × 10 cm foldout keyboard below. All drawings to scale in millimetres. V1–V4 are unchanged from v1 of this study; V5–V7 are new and each comes in a no-numpad (a) and numpad (b) form.</p>
+
+<h2>Three reversals since v1</h2>
+
+<div class="finds">
+  <div class="find ok">
+    <b>Displays are back in</b>
+    <span>A screen never threatened USB HID — <b>WiFi</b> does. An I²C OLED costs zero extra pins on a bus you already run. And an OLED bonded to an encoder is a <i>self-labelling knob</i>, which is the one display a layered device genuinely needs.</span>
+  </div>
+  <div class="find ok">
+    <b>Buttons are no longer scarce</b>
+    <span>The 25-piece tactile kit (700 Ft) plus topping up the illuminated set removes the two-per-colour ceiling for about 2 700 Ft. Layouts below assume four per colour.</span>
+  </div>
+  <div class="find alarm">
+    <b>Three encoders is the wall, not two</b>
+    <span>Two SH1106/SSD1306 displays can share the two I²C peripherals at 0x3C. A <b>third</b> display-topped knob needs the TCA9548A after all.</span>
+  </div>
+</div>
+
+<h2>Freeing the colour constraint</h2>
+
+<p>Two different parts, two different jobs. Don't substitute one for the other.</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th>Part</th><th>Job</th><th>Why this one</th><th class="num">Ft/db</th><th class="num">Order</th></tr></thead>
+<tbody>
+<tr><td><b>12 × 12 mm illuminated</b><br><span class="mono">10-7-126…130</span></td><td>Main key field</td><td>The LED is the layer feedback. Same key changes meaning per layer, so it must change colour too. Going from 2 to <b>4 per colour</b> allows real four-key groups.</td><td class="num">200</td><td class="num">+10</td></tr>
+<tr><td><b>25 db tactile kit</b><br><span class="mono">10-7-131</span></td><td>Perimeter clusters</td><td>12 × 12 × 7.3 mm with caps in red, green, blue, black, white. Not illuminated — fine, because perimeter keys are identified by <i>position</i>, not colour. One kit covers every edge cluster in every layout here.</td><td class="num">700</td><td class="num">1</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><b>Recommended split:</b> 2 green, 2 red, 2 blue, 2 yellow, 2 white illuminated (10 db, 2 000 Ft) brings the main field to four of each colour — twenty keys, five families of four. The tactile kit at 700 Ft covers up to 25 perimeter positions. Total <b>2 700 Ft</b> and no layout below is constrained again. Only one tactile kit is in stock, so it goes in this order or not at all.</p>
+
+<h2>The hand governs the layout</h2>
+
+<p>A right hand anchored on the pad puts the thumb left of the fingers. Knobs sit where thumb and index fall; the remaining three fingers fan right and must reach the keys without lifting the palm mid-twist. Every variant keeps that gradient.</p>
+
+<div class="card">
+  <div class="draw">
+    <svg viewBox="0 0 300 96" role="img" aria-label="Zone diagram: indicate, adjust, actuate from left to right">
+      <rect x="2" y="2" width="296" height="74" rx="3" fill="none" stroke="var(--draw-line)" stroke-width="1"/>
+      <rect x="6" y="6" width="14" height="66" rx="2" fill="var(--accent)" opacity="0.5"/>
+      <rect x="24" y="6" width="62" height="66" fill="var(--accent)" opacity="0.10"/>
+      <rect x="90" y="6" width="110" height="66" fill="var(--btn-b)" opacity="0.13"/>
+      <rect x="204" y="6" width="90" height="66" fill="var(--btn-g)" opacity="0.13"/>
+      <text x="13" y="42" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 13 42)">RGB</text>
+      <text x="55" y="36" font-family="Barlow Condensed, sans-serif" font-size="11" fill="var(--accent)" text-anchor="middle">INDICATE</text>
+      <text x="55" y="47" font-family="IBM Plex Mono, monospace" font-size="5.5" fill="var(--dim)" text-anchor="middle">layer LEDs · status</text>
+      <text x="145" y="36" font-family="Barlow Condensed, sans-serif" font-size="11" fill="var(--btn-b)" text-anchor="middle">ADJUST</text>
+      <text x="145" y="47" font-family="IBM Plex Mono, monospace" font-size="5.5" fill="var(--dim)" text-anchor="middle">thumb + index on knobs</text>
+      <text x="249" y="36" font-family="Barlow Condensed, sans-serif" font-size="11" fill="var(--btn-g)" text-anchor="middle">ACTUATE</text>
+      <text x="249" y="47" font-family="IBM Plex Mono, monospace" font-size="5.5" fill="var(--dim)" text-anchor="middle">middle · ring · pinky</text>
+      <path d="M 24 86 L 294 86" stroke="var(--draw-line)" stroke-width="0.5"/>
+      <path d="M 288 83 L 294 86 L 288 89" fill="none" stroke="var(--draw-line)" stroke-width="0.5"/>
+      <text x="159" y="93" font-family="IBM Plex Mono, monospace" font-size="5.5" fill="var(--dim)" text-anchor="middle">eye → thumb → fingers</text>
+    </svg>
+  </div>
+</div>
+
+<h2>V1–V4 — unchanged from v1</h2>
+
+<div class="card">
+  <header><h3>V1 · Pád Mini</h3><span class="tag t1">Tier 1</span><span class="size">160 × 95 mm</span></header>
+  <div class="draw">
+    <svg viewBox="0 0 176 112" role="img" aria-label="V1 layout, 160 by 95 mm, two encoders and six keys">
+      <rect x="4" y="4" width="160" height="95" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="83" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <text x="14" y="53" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 14 53)">WS2812B</text>
+      <circle cx="30" cy="22" r="2.6" fill="var(--btn-g)"/><circle cx="30" cy="34" r="2.6" fill="var(--btn-b)"/>
+      <circle cx="30" cy="46" r="2.6" fill="var(--btn-y)"/><circle cx="30" cy="58" r="2.6" fill="var(--draw-line)"/>
+      <text x="30" y="70" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">LAYER</text>
+      <circle cx="62" cy="52" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="62" cy="52" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="100" cy="52" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="100" cy="52" r="2.6" fill="var(--draw-line)"/>
+      <text x="81" y="70" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">ENC 1–2</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="120" y="24" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="138" y="24" width="12" height="12" rx="2" fill="var(--btn-g)"/>
+        <rect x="120" y="46" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="138" y="46" width="12" height="12" rx="2" fill="var(--btn-r)"/>
+        <rect x="120" y="68" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="138" y="68" width="12" height="12" rx="2" fill="var(--btn-b)"/>
+      </g>
+      <path d="M 4 106 L 164 106" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 103 L 4 109 M 164 103 L 164 109" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="84" y="104" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">160</text>
+      <path d="M 170 4 L 170 99" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="173" y="54" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle" transform="rotate(90 173 54)">95</text>
+    </svg>
+  </div>
+  <div class="meta">
+    <div><dt>Parts</dt><dd>2 × solo EC11 · 6 illuminated · 4 layer LEDs</dd></div>
+    <div><dt>Pins</dt><dd class="mono">6 + 6 + 1 + 2 = <b class="yes">15</b> of 26</dd></div>
+    <div><dt>Buys</dt><dd>Nothing — all from stock</dd></div>
+  </div>
+  <div class="verdict"><b>The honest first build.</b> Two knobs, six keys, three colour pairs. Eleven pins spare and nothing to order.</div>
+</div>
+
+<div class="card">
+  <header><h3>V2 · Pád Triád</h3><span class="tag t1">Tier 1</span><span class="size">210 × 105 mm</span></header>
+  <div class="draw">
+    <svg viewBox="0 0 226 122" role="img" aria-label="V2 layout, 210 by 105 mm, three encoders, nav joystick and six keys">
+      <rect x="4" y="4" width="210" height="105" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="93" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <rect x="27" y="10" width="58" height="26" rx="2" fill="none" stroke="var(--draw-line)" stroke-width="0.7" stroke-dasharray="3 2"/>
+      <text x="56" y="26" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--dim)" text-anchor="middle">STATUS — OPTIONAL</text>
+      <g><circle cx="33" cy="45" r="2.6" fill="var(--btn-g)"/><circle cx="45" cy="45" r="2.6" fill="var(--btn-b)"/><circle cx="57" cy="45" r="2.6" fill="var(--btn-y)"/><circle cx="69" cy="45" r="2.6" fill="var(--draw-line)"/><circle cx="81" cy="45" r="2.6" fill="var(--draw-line)"/></g>
+      <text x="57" y="54" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">LAYER 1–5</text>
+      <rect x="30" y="70" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="43" cy="83" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="43" cy="83" r="2" fill="var(--draw-line)"/>
+      <rect x="54" y="75" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="54" y="85" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <text x="47" y="102" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">5+2 NAV</text>
+      <circle cx="98" cy="70" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="98" cy="70" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="134" cy="60" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="134" cy="60" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="170" cy="70" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="170" cy="70" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 98 70 Q 134 52 170 70" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <text x="134" y="88" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">ENC 1–3 · 36 mm pitch</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="180" y="16" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="196" y="16" width="12" height="12" rx="2" fill="var(--btn-g)"/>
+        <rect x="180" y="34" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="196" y="34" width="12" height="12" rx="2" fill="var(--btn-r)"/>
+        <rect x="180" y="90" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="196" y="90" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+      </g>
+      <path d="M 4 116 L 214 116" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 113 L 4 119 M 214 113 L 214 119" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="109" y="114" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">210</text>
+      <path d="M 220 4 L 220 109" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="223" y="59" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle" transform="rotate(90 223 59)">105</text>
+    </svg>
+  </div>
+  <div class="verdict"><b>The arc is the point.</b> Three knobs on a shallow curve put the middle one under the index without moving the wrist. The nav joystick becomes the layer selector, giving each layer a physical place rather than a counter you cycle.</div>
+</div>
+
+<div class="card">
+  <header><h3>V3 · Dashboard</h3><span class="tag t2">Tier 2 · no numpad</span><span class="size">300 × 110 mm</span></header>
+  <div class="draw">
+    <svg viewBox="0 0 316 128" role="img" aria-label="V3 dashboard, ten keys in five colour pairs plus perimeter strips">
+      <rect x="4" y="4" width="300" height="110" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="98" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <text x="14" y="59" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 14 59)">WS2812B / ALU</text>
+      <rect x="27" y="10" width="62" height="28" rx="2" fill="none" stroke="var(--draw-line)" stroke-width="0.7" stroke-dasharray="3 2"/>
+      <text x="58" y="27" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--dim)" text-anchor="middle">STATUS</text>
+      <g><circle cx="34" cy="48" r="2.8" fill="var(--btn-g)"/><circle cx="46" cy="48" r="2.8" fill="var(--btn-b)"/><circle cx="58" cy="48" r="2.8" fill="var(--btn-y)"/><circle cx="70" cy="48" r="2.8" fill="var(--draw-line)"/><circle cx="82" cy="48" r="2.8" fill="var(--draw-line)"/></g>
+      <rect x="32" y="72" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="45" cy="85" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="45" cy="85" r="2" fill="var(--draw-line)"/>
+      <rect x="56" y="77" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="56" y="87" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <text x="49" y="104" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">5+2 NAV · LAYER</text>
+      <rect x="100" y="10" width="56" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="104" y="13" width="6" height="6" rx="1"/><rect x="118" y="13" width="6" height="6" rx="1"/><rect x="132" y="13" width="6" height="6" rx="1"/><rect x="146" y="13" width="6" height="6" rx="1"/></g>
+      <text x="128" y="29" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">PLAYBACK · 4-ES</text>
+      <rect x="166" y="10" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="170" y="13" width="6" height="6" rx="1"/><rect x="184" y="13" width="6" height="6" rx="1"/><rect x="198" y="13" width="6" height="6" rx="1"/><rect x="212" y="13" width="6" height="6" rx="1"/><rect x="226" y="13" width="6" height="6" rx="1"/><rect x="240" y="13" width="6" height="6" rx="1"/></g>
+      <text x="208" y="29" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">APP LAUNCH · 6-OS</text>
+      <circle cx="112" cy="68" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="112" cy="68" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="150" cy="58" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="150" cy="58" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="188" cy="68" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="188" cy="68" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 112 68 Q 150 50 188 68" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <text x="150" y="86" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">HEIGHT · CAMERA · ZOOM</text>
+      <rect x="100" y="96" width="28" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="104" y="99" width="6" height="6" rx="1"/><rect x="118" y="99" width="6" height="6" rx="1"/></g>
+      <rect x="138" y="96" width="28" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="142" y="99" width="6" height="6" rx="1"/><rect x="156" y="99" width="6" height="6" rx="1"/></g>
+      <text x="133" y="94" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">BRIGHT · MUTE</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="212" y="44" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="212" y="62" width="12" height="12" rx="2" fill="var(--btn-g)"/>
+        <rect x="230" y="44" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="230" y="62" width="12" height="12" rx="2" fill="var(--btn-r)"/>
+        <rect x="248" y="44" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="248" y="62" width="12" height="12" rx="2" fill="var(--btn-b)"/>
+        <rect x="266" y="44" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="62" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="284" y="44" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="284" y="62" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+      </g>
+      <text x="254" y="85" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">5 COLOUR PAIRS · 18 mm PITCH</text>
+      <path d="M 4 122 L 304 122" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 119 L 4 125 M 304 119 L 304 125" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="154" y="120" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">300 — matches the keyboard</text>
+    </svg>
+  </div>
+  <div class="verdict"><b>The diode kit unlocks this.</b> Thirty-one keys direct-wired would need two expanders; as a 5 × 5 matrix with the diodes from SZ12833 it costs ten pins and still fits the Pico 2.</div>
+</div>
+
+<div class="card">
+  <header><h3>V4 · Dashboard + Numpad</h3><span class="tag t2">Tier 2 · numpad</span><span class="size">300 × 110 mm</span></header>
+  <div class="draw">
+    <svg viewBox="0 0 316 128" role="img" aria-label="V4 layout with mechanical matrix keypad on the right">
+      <rect x="4" y="4" width="300" height="110" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="98" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <rect x="27" y="10" width="62" height="28" rx="2" fill="none" stroke="var(--draw-line)" stroke-width="0.7" stroke-dasharray="3 2"/>
+      <text x="58" y="27" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--dim)" text-anchor="middle">STATUS</text>
+      <g><circle cx="34" cy="48" r="2.8" fill="var(--btn-g)"/><circle cx="46" cy="48" r="2.8" fill="var(--btn-b)"/><circle cx="58" cy="48" r="2.8" fill="var(--btn-y)"/><circle cx="70" cy="48" r="2.8" fill="var(--draw-line)"/><circle cx="82" cy="48" r="2.8" fill="var(--draw-line)"/></g>
+      <rect x="32" y="72" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="45" cy="85" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="45" cy="85" r="2" fill="var(--draw-line)"/>
+      <rect x="56" y="77" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="56" y="87" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="100" y="10" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="118" y="10" width="12" height="12" rx="2" fill="var(--btn-g)"/>
+        <rect x="136" y="10" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="154" y="10" width="12" height="12" rx="2" fill="var(--btn-r)"/>
+        <rect x="172" y="10" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="190" y="10" width="12" height="12" rx="2" fill="var(--btn-b)"/>
+      </g>
+      <text x="151" y="29" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">TOP RAIL · 6</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="100" y="96" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="118" y="96" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="136" y="96" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="154" y="96" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+      </g>
+      <text x="133" y="94" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">BOTTOM RAIL · 4</text>
+      <circle cx="112" cy="60" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="112" cy="60" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="148" cy="52" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="148" cy="52" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="184" cy="60" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="184" cy="60" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 112 60 Q 148 44 184 60" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <rect x="216" y="30" width="76" height="66" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="1"/>
+      <g fill="none" stroke="var(--draw-line)" stroke-width="0.7">
+        <rect x="222" y="36" width="16" height="12" rx="1.5"/><rect x="243" y="36" width="16" height="12" rx="1.5"/><rect x="264" y="36" width="16" height="12" rx="1.5"/>
+        <rect x="222" y="52" width="16" height="12" rx="1.5"/><rect x="243" y="52" width="16" height="12" rx="1.5"/><rect x="264" y="52" width="16" height="12" rx="1.5"/>
+        <rect x="222" y="68" width="16" height="12" rx="1.5"/><rect x="243" y="68" width="16" height="12" rx="1.5"/><rect x="264" y="68" width="16" height="12" rx="1.5"/>
+        <rect x="222" y="84" width="16" height="8" rx="1.5"/><rect x="243" y="84" width="16" height="8" rx="1.5"/><rect x="264" y="84" width="16" height="8" rx="1.5"/>
+      </g>
+      <text x="254" y="104" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">3×4 MECHANIKUS — THE MISSING NUMPAD</text>
+      <path d="M 4 122 L 304 122" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="154" y="120" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">300</text>
+    </svg>
+  </div>
+  <div class="verdict"><b>Your foldout keyboard has no numpad — this puts one back</b>, where the hand lands when you slide right.</div>
+</div>
+
+<h2>V5 · Segment <span class="tag nw">New</span></h2>
+
+<p>Layer and status readout without any OLED. A 4-digit 0.56″ seven-segment display is legible from across the desk at a glance, costs three pins through a shift driver, and never needs a font or a framebuffer. Two 5 mm common-cathode RGB LEDs flank it for CAPS / NUM state. This is the cheapest honest way to make a layered pad self-explaining.</p>
+
+<div class="card">
+  <header><h3>V5a · Segment, no numpad</h3><span class="tag t2">Tier 2</span><span class="size">250 × 105 mm</span></header>
+  <div class="draw">
+    <div class="dlab">A — no numpad</div>
+    <svg viewBox="0 0 266 122" role="img" aria-label="V5a, 250 by 105 mm, seven-segment readout, three knobs, sixteen keys">
+      <rect x="4" y="4" width="250" height="105" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="93" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <text x="14" y="57" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 14 57)">WS2812B ×8</text>
+      <rect x="27" y="10" width="52" height="20" rx="2" fill="#1a0505" stroke="var(--btn-r)" stroke-width="0.9"/>
+      <g fill="var(--btn-r)" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600">
+        <text x="53" y="25" text-anchor="middle">L2·Pl</text>
+      </g>
+      <text x="53" y="37" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">4-DIGIT 0.56" · 7-SEG</text>
+      <circle cx="87" cy="16" r="3.4" fill="var(--btn-g)"/><circle cx="87" cy="26" r="3.4" fill="var(--btn-y)"/>
+      <text x="87" y="37" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">RGB</text>
+      <rect x="30" y="66" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="43" cy="79" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="43" cy="79" r="2" fill="var(--draw-line)"/>
+      <rect x="54" y="71" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="54" y="81" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <text x="47" y="98" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">5+2 NAV · LAYER</text>
+      <rect x="90" y="8" width="56" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="94" y="11" width="6" height="6" rx="1"/><rect x="108" y="11" width="6" height="6" rx="1"/><rect x="122" y="11" width="6" height="6" rx="1"/><rect x="136" y="11" width="6" height="6" rx="1"/></g>
+      <text x="118" y="27" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">PLAYBACK</text>
+      <rect x="156" y="8" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="160" y="11" width="6" height="6" rx="1"/><rect x="174" y="11" width="6" height="6" rx="1"/><rect x="188" y="11" width="6" height="6" rx="1"/><rect x="202" y="11" width="6" height="6" rx="1"/><rect x="216" y="11" width="6" height="6" rx="1"/><rect x="230" y="11" width="6" height="6" rx="1"/></g>
+      <text x="198" y="27" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">APP LAUNCH · TACTILE KIT</text>
+      <circle cx="102" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="102" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="136" cy="54" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="136" cy="54" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="170" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="170" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 102 62 Q 136 46 170 62" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <text x="136" y="80" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">ENC 1–3</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="190" y="38" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="38" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="38" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="38" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="54" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="54" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="54" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="54" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="70" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="70" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="70" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="70" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="86" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="206" y="86" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="222" y="86" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="238" y="86" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <text x="220" y="104" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">4×4 FIELD · 16 mm PITCH</text>
+      <path d="M 4 116 L 254 116" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 113 L 4 119 M 254 113 L 254 119" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="129" y="114" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">250</text>
+    </svg>
+  </div>
+  <div class="draw">
+    <div class="dlab">B — with numpad</div>
+    <svg viewBox="0 0 346 122" role="img" aria-label="V5b, 330 by 105 mm, same as V5a plus a docked numpad block">
+      <rect x="4" y="4" width="250" height="105" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="93" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <rect x="27" y="10" width="52" height="20" rx="2" fill="#1a0505" stroke="var(--btn-r)" stroke-width="0.9"/>
+      <text x="53" y="25" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--btn-r)" text-anchor="middle">L2·Pl</text>
+      <circle cx="87" cy="16" r="3.4" fill="var(--btn-g)"/><circle cx="87" cy="26" r="3.4" fill="var(--btn-y)"/>
+      <rect x="30" y="66" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="43" cy="79" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="43" cy="79" r="2" fill="var(--draw-line)"/>
+      <rect x="54" y="71" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="54" y="81" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <rect x="90" y="8" width="56" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="94" y="11" width="6" height="6" rx="1"/><rect x="108" y="11" width="6" height="6" rx="1"/><rect x="122" y="11" width="6" height="6" rx="1"/><rect x="136" y="11" width="6" height="6" rx="1"/></g>
+      <rect x="156" y="8" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="160" y="11" width="6" height="6" rx="1"/><rect x="174" y="11" width="6" height="6" rx="1"/><rect x="188" y="11" width="6" height="6" rx="1"/><rect x="202" y="11" width="6" height="6" rx="1"/><rect x="216" y="11" width="6" height="6" rx="1"/><rect x="230" y="11" width="6" height="6" rx="1"/></g>
+      <circle cx="102" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="102" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="136" cy="54" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="136" cy="54" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="170" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="170" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 102 62 Q 136 46 170 62" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="190" y="38" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="38" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="38" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="38" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="54" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="54" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="54" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="54" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="70" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="206" y="70" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="70" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="238" y="70" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="190" y="86" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="206" y="86" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="222" y="86" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="238" y="86" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <rect x="258" y="4" width="76" height="105" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+      <g fill="none" stroke="var(--draw-line)" stroke-width="0.7">
+        <rect x="264" y="14" width="16" height="16" rx="1.5"/><rect x="285" y="14" width="16" height="16" rx="1.5"/><rect x="306" y="14" width="16" height="16" rx="1.5"/>
+        <rect x="264" y="35" width="16" height="16" rx="1.5"/><rect x="285" y="35" width="16" height="16" rx="1.5"/><rect x="306" y="35" width="16" height="16" rx="1.5"/>
+        <rect x="264" y="56" width="16" height="16" rx="1.5"/><rect x="285" y="56" width="16" height="16" rx="1.5"/><rect x="306" y="56" width="16" height="16" rx="1.5"/>
+        <rect x="264" y="77" width="16" height="16" rx="1.5"/><rect x="285" y="77" width="16" height="16" rx="1.5"/><rect x="306" y="77" width="16" height="16" rx="1.5"/>
+      </g>
+      <text x="296" y="103" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">3×4 DOCK · JST 3P</text>
+      <path d="M 4 116 L 334 116" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 113 L 4 119 M 334 113 L 334 119" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="169" y="114" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">330 total · 250 + 80 dock</text>
+    </svg>
+    <div class="legend">
+      <span><i style="background:var(--btn-g)"></i>go</span><span><i style="background:var(--btn-r)"></i>stop</span>
+      <span><i style="background:var(--btn-b)"></i>navigate</span><span><i style="background:var(--btn-y)"></i>modify</span>
+      <span><i style="background:var(--btn-w)"></i>utility</span><span><i style="background:var(--btn-k)"></i>tactile / black cap</span>
+    </div>
+  </div>
+  <div class="meta">
+    <div><dt>Parts</dt><dd>4-digit 7-seg · 2 × RGB 5 mm · 3 × EC11 · 16-key field · 10 perimeter tactile · 5+2 nav</dd></div>
+    <div><dt>Pins</dt><dd class="mono">5×6 matrix (11) + 9 enc + 3 seg + 2 RGB + 1 WS = <b class="yes">26</b> exactly</dd></div>
+    <div><dt>Numpad</dt><dd>Docked, not integral — JST 3P, own matrix rows</dd></div>
+  </div>
+  <div class="verdict"><b>Readable across the room, and it never needs a font.</b> The seven-segment shows the layer as text (<span class="mono">L2·Pl</span>), which is the one thing a colour LED can't do. The numpad docks rather than being built in, so the same core panel serves both forms — which also means one PVC plate, not two.</div>
+</div>
+
+<h2>V6 · Knob Deck <span class="tag nw">New</span></h2>
+
+<p>The reversal made concrete. Two encoders wear 1.3″ OLEDs that name what they currently do; the third stays bare. On layer 1 the knobs read <span class="mono">VOLUME</span> / <span class="mono">SCROLL</span>; on the Planner layer they read <span class="mono">MAGASSÁG</span> / <span class="mono">KAMERA</span>. Nothing else on a layered device removes as much guesswork per forint.</p>
+
+<div class="card">
+  <header><h3>V6a · Knob Deck, no numpad</h3><span class="tag t2">Tier 2</span><span class="size">270 × 110 mm</span></header>
+  <div class="draw">
+    <div class="dlab">A — no numpad</div>
+    <svg viewBox="0 0 286 128" role="img" aria-label="V6a, 270 by 110 mm, two display-topped knobs and one bare knob">
+      <rect x="4" y="4" width="270" height="110" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="98" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <text x="14" y="59" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 14 59)">WS2812B ×8</text>
+      <g><circle cx="32" cy="16" r="3" fill="var(--btn-g)"/><circle cx="44" cy="16" r="3" fill="var(--btn-b)"/><circle cx="56" cy="16" r="3" fill="var(--btn-y)"/><circle cx="68" cy="16" r="3" fill="var(--draw-line)"/><circle cx="80" cy="16" r="3" fill="var(--draw-line)"/></g>
+      <text x="56" y="26" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">LAYER 1–5</text>
+      <rect x="30" y="38" width="56" height="30" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.9"/>
+      <text x="58" y="50" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">PLANNER</text>
+      <text x="58" y="60" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--btn-b)" text-anchor="middle">2 hiba · 1.2 m</text>
+      <text x="58" y="75" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">STATUS OLED 0x3D</text>
+      <rect x="30" y="82" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="43" cy="95" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="43" cy="95" r="2" fill="var(--draw-line)"/>
+      <rect x="54" y="87" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="54" y="97" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <rect x="96" y="8" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="100" y="11" width="6" height="6" rx="1"/><rect x="114" y="11" width="6" height="6" rx="1"/><rect x="128" y="11" width="6" height="6" rx="1"/><rect x="142" y="11" width="6" height="6" rx="1"/><rect x="156" y="11" width="6" height="6" rx="1"/><rect x="170" y="11" width="6" height="6" rx="1"/></g>
+      <text x="138" y="26" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">PERIMETER · TACTILE KIT</text>
+      <rect x="96" y="34" width="46" height="18" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.8"/>
+      <text x="119" y="46" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">MAGASSÁG</text>
+      <circle cx="119" cy="76" r="11" fill="var(--panel2)" stroke="var(--accent)" stroke-width="1"/><circle cx="119" cy="76" r="2.8" fill="var(--draw-line)"/>
+      <rect x="152" y="34" width="46" height="18" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.8"/>
+      <text x="175" y="46" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">KAMERA</text>
+      <circle cx="175" cy="76" r="11" fill="var(--panel2)" stroke="var(--accent)" stroke-width="1"/><circle cx="175" cy="76" r="2.8" fill="var(--draw-line)"/>
+      <circle cx="222" cy="30" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="222" cy="30" r="2.6" fill="var(--draw-line)"/>
+      <text x="222" y="46" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">ENC 3 · BARE</text>
+      <text x="147" y="97" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">SELF-LABELLING KNOBS · 56 mm PITCH</text>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="206" y="56" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="222" y="56" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="238" y="56" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="254" y="56" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="206" y="72" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="222" y="72" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="238" y="72" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="254" y="72" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="206" y="88" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="222" y="88" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="238" y="88" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="254" y="88" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <path d="M 4 122 L 274 122" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 119 L 4 125 M 274 119 L 274 125" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="139" y="120" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">270</text>
+    </svg>
+  </div>
+  <div class="draw">
+    <div class="dlab">B — with numpad</div>
+    <svg viewBox="0 0 366 128" role="img" aria-label="V6b, 350 by 110 mm, knob deck plus docked numpad">
+      <rect x="4" y="4" width="270" height="110" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="98" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <g><circle cx="32" cy="16" r="3" fill="var(--btn-g)"/><circle cx="44" cy="16" r="3" fill="var(--btn-b)"/><circle cx="56" cy="16" r="3" fill="var(--btn-y)"/><circle cx="68" cy="16" r="3" fill="var(--draw-line)"/><circle cx="80" cy="16" r="3" fill="var(--draw-line)"/></g>
+      <rect x="30" y="38" width="56" height="30" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.9"/>
+      <text x="58" y="50" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">PLANNER</text>
+      <text x="58" y="60" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--btn-b)" text-anchor="middle">2 hiba · 1.2 m</text>
+      <rect x="30" y="82" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="43" cy="95" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="43" cy="95" r="2" fill="var(--draw-line)"/>
+      <rect x="54" y="87" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="54" y="97" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <rect x="96" y="8" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="100" y="11" width="6" height="6" rx="1"/><rect x="114" y="11" width="6" height="6" rx="1"/><rect x="128" y="11" width="6" height="6" rx="1"/><rect x="142" y="11" width="6" height="6" rx="1"/><rect x="156" y="11" width="6" height="6" rx="1"/><rect x="170" y="11" width="6" height="6" rx="1"/></g>
+      <rect x="96" y="34" width="46" height="18" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.8"/>
+      <text x="119" y="46" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">MAGASSÁG</text>
+      <circle cx="119" cy="76" r="11" fill="var(--panel2)" stroke="var(--accent)" stroke-width="1"/><circle cx="119" cy="76" r="2.8" fill="var(--draw-line)"/>
+      <rect x="152" y="34" width="46" height="18" rx="2" fill="#050a0e" stroke="var(--btn-b)" stroke-width="0.8"/>
+      <text x="175" y="46" font-family="IBM Plex Mono, monospace" font-size="6" fill="var(--btn-b)" text-anchor="middle">KAMERA</text>
+      <circle cx="175" cy="76" r="11" fill="var(--panel2)" stroke="var(--accent)" stroke-width="1"/><circle cx="175" cy="76" r="2.8" fill="var(--draw-line)"/>
+      <circle cx="222" cy="30" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="222" cy="30" r="2.6" fill="var(--draw-line)"/>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="206" y="56" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="222" y="56" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="238" y="56" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="254" y="56" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="206" y="72" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="222" y="72" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="238" y="72" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="254" y="72" width="12" height="12" rx="2" fill="var(--btn-y)"/>
+        <rect x="206" y="88" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="222" y="88" width="12" height="12" rx="2" fill="var(--btn-w)"/><rect x="238" y="88" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="254" y="88" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <rect x="278" y="4" width="76" height="110" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+      <g fill="none" stroke="var(--draw-line)" stroke-width="0.7">
+        <rect x="284" y="16" width="16" height="16" rx="1.5"/><rect x="305" y="16" width="16" height="16" rx="1.5"/><rect x="326" y="16" width="16" height="16" rx="1.5"/>
+        <rect x="284" y="38" width="16" height="16" rx="1.5"/><rect x="305" y="38" width="16" height="16" rx="1.5"/><rect x="326" y="38" width="16" height="16" rx="1.5"/>
+        <rect x="284" y="60" width="16" height="16" rx="1.5"/><rect x="305" y="60" width="16" height="16" rx="1.5"/><rect x="326" y="60" width="16" height="16" rx="1.5"/>
+        <rect x="284" y="82" width="16" height="16" rx="1.5"/><rect x="305" y="82" width="16" height="16" rx="1.5"/><rect x="326" y="82" width="16" height="16" rx="1.5"/>
+      </g>
+      <text x="316" y="108" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">3×4 DOCK</text>
+      <path d="M 4 122 L 354 122" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 119 L 4 125 M 354 119 L 354 125" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="179" y="120" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">350 total · 270 + 80 dock</text>
+    </svg>
+  </div>
+  <div class="meta">
+    <div><dt>Displays</dt><dd>2 × 1.3″ knob OLED (0x3C on I2C0 / I2C1) + 1 × 0.91″ status (0x3D)</dd></div>
+    <div><dt>Pins</dt><dd class="mono">4×6 matrix (10) + 9 enc + 4 I²C + 1 WS = <b class="yes">24</b> of 26</dd></div>
+    <div><dt>To order</dt><dd>1 × 1.3″ OLED+EC11 · 1 × 0.91″ OLED · 1 × EC-11</dd></div>
+  </div>
+  <div class="verdict"><b>Three displays is the ceiling without a mux.</b> Two 1.3″ knob OLEDs sit at 0x3C on the two separate I²C peripherals; the 0.91″ status panel joins one of them at 0x3D. A fourth needs the TCA9548A. Note the knob pitch widens to 56 mm here — the OLED body is wider than a bare encoder, and crowding them would make both unreadable and untwistable.</div>
+</div>
+
+<h2>V7 · Full Face <span class="tag nw">New</span></h2>
+
+<p>What the 25-switch kit actually buys: a 5 × 4 key field of twenty positions with no colour rationing, plus an 8 × 8 MAX7219 matrix as a graphic layer badge. The matrix draws an icon per layer rather than a number, is driven over three SPI pins, and is the only indicator here readable from two metres away.</p>
+
+<div class="card">
+  <header><h3>V7a · Full Face, no numpad</h3><span class="tag t2">Tier 2 · max keys</span><span class="size">290 × 115 mm</span></header>
+  <div class="draw">
+    <div class="dlab">A — no numpad</div>
+    <svg viewBox="0 0 306 133" role="img" aria-label="V7a, 290 by 115 mm, twenty key field and 8 by 8 LED matrix badge">
+      <rect x="4" y="4" width="290" height="115" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="103" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <text x="14" y="61" font-family="IBM Plex Mono, monospace" font-size="4.5" fill="var(--ink)" text-anchor="middle" transform="rotate(-90 14 61)">WS2812B ×8</text>
+      <rect x="28" y="12" width="40" height="40" rx="2" fill="#1a0505" stroke="var(--btn-r)" stroke-width="0.9"/>
+      <g fill="var(--btn-r)">
+        <rect x="32" y="16" width="3.5" height="3.5"/><rect x="41" y="16" width="3.5" height="3.5"/><rect x="50" y="16" width="3.5" height="3.5"/><rect x="59" y="16" width="3.5" height="3.5"/>
+        <rect x="32" y="25" width="3.5" height="3.5"/><rect x="50" y="25" width="3.5" height="3.5"/>
+        <rect x="41" y="34" width="3.5" height="3.5"/><rect x="59" y="34" width="3.5" height="3.5"/>
+        <rect x="32" y="43" width="3.5" height="3.5"/><rect x="41" y="43" width="3.5" height="3.5"/><rect x="59" y="43" width="3.5" height="3.5"/>
+      </g>
+      <text x="48" y="59" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">8×8 MAX7219 · LAYER ICON</text>
+      <rect x="28" y="68" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="41" cy="81" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="41" cy="81" r="2" fill="var(--draw-line)"/>
+      <rect x="52" y="73" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="52" y="83" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <text x="45" y="100" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">5+2 NAV</text>
+      <rect x="76" y="10" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="80" y="13" width="6" height="6" rx="1"/><rect x="94" y="13" width="6" height="6" rx="1"/><rect x="108" y="13" width="6" height="6" rx="1"/><rect x="122" y="13" width="6" height="6" rx="1"/><rect x="136" y="13" width="6" height="6" rx="1"/><rect x="150" y="13" width="6" height="6" rx="1"/></g>
+      <text x="118" y="28" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--dim)" text-anchor="middle">PERIMETER · 6</text>
+      <circle cx="94" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="94" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="130" cy="54" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="130" cy="54" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="166" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="166" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 94 62 Q 130 46 166 62" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <text x="130" y="80" font-family="IBM Plex Mono, monospace" font-size="4" fill="var(--dim)" text-anchor="middle">ENC 1–3</text>
+      <rect x="76" y="94" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="80" y="97" width="6" height="6" rx="1"/><rect x="94" y="97" width="6" height="6" rx="1"/><rect x="108" y="97" width="6" height="6" rx="1"/><rect x="122" y="97" width="6" height="6" rx="1"/><rect x="136" y="97" width="6" height="6" rx="1"/><rect x="150" y="97" width="6" height="6" rx="1"/></g>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="178" y="14" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="14" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="14" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="14" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="14" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="36" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="36" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="36" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="36" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="36" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="58" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="58" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="58" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="58" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="58" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="200" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="222" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="244" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="266" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <text x="228" y="103" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">5×4 FIELD · 20 KEYS · 22 mm PITCH</text>
+      <path d="M 4 127 L 294 127" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 124 L 4 130 M 294 124 L 294 130" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="149" y="125" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">290</text>
+    </svg>
+  </div>
+  <div class="draw">
+    <div class="dlab">B — with numpad</div>
+    <svg viewBox="0 0 386 133" role="img" aria-label="V7b, 370 by 115 mm, full face plus docked numpad">
+      <rect x="4" y="4" width="290" height="115" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <rect x="8" y="10" width="12" height="103" rx="2" fill="var(--accent)" opacity="0.45"/>
+      <rect x="28" y="12" width="40" height="40" rx="2" fill="#1a0505" stroke="var(--btn-r)" stroke-width="0.9"/>
+      <g fill="var(--btn-r)">
+        <rect x="32" y="16" width="3.5" height="3.5"/><rect x="41" y="16" width="3.5" height="3.5"/><rect x="50" y="16" width="3.5" height="3.5"/><rect x="59" y="16" width="3.5" height="3.5"/>
+        <rect x="32" y="25" width="3.5" height="3.5"/><rect x="50" y="25" width="3.5" height="3.5"/>
+        <rect x="41" y="34" width="3.5" height="3.5"/><rect x="59" y="34" width="3.5" height="3.5"/>
+        <rect x="32" y="43" width="3.5" height="3.5"/><rect x="41" y="43" width="3.5" height="3.5"/><rect x="59" y="43" width="3.5" height="3.5"/>
+      </g>
+      <rect x="28" y="68" width="34" height="26" rx="3" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/>
+      <circle cx="41" cy="81" r="7" fill="none" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="41" cy="81" r="2" fill="var(--draw-line)"/>
+      <rect x="52" y="73" width="6" height="6" rx="1" fill="var(--draw-line)"/><rect x="52" y="83" width="6" height="6" rx="1" fill="var(--draw-line)"/>
+      <rect x="76" y="10" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="80" y="13" width="6" height="6" rx="1"/><rect x="94" y="13" width="6" height="6" rx="1"/><rect x="108" y="13" width="6" height="6" rx="1"/><rect x="122" y="13" width="6" height="6" rx="1"/><rect x="136" y="13" width="6" height="6" rx="1"/><rect x="150" y="13" width="6" height="6" rx="1"/></g>
+      <circle cx="94" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="94" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="130" cy="54" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="130" cy="54" r="2.6" fill="var(--draw-line)"/>
+      <circle cx="166" cy="62" r="10" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.8"/><circle cx="166" cy="62" r="2.6" fill="var(--draw-line)"/>
+      <path d="M 94 62 Q 130 46 166 62" fill="none" stroke="var(--accent)" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.7"/>
+      <rect x="76" y="94" width="84" height="12" rx="2" fill="var(--panel2)" stroke="var(--draw-line)" stroke-width="0.7"/>
+      <g fill="var(--draw-line)"><rect x="80" y="97" width="6" height="6" rx="1"/><rect x="94" y="97" width="6" height="6" rx="1"/><rect x="108" y="97" width="6" height="6" rx="1"/><rect x="122" y="97" width="6" height="6" rx="1"/><rect x="136" y="97" width="6" height="6" rx="1"/><rect x="150" y="97" width="6" height="6" rx="1"/></g>
+      <g stroke="var(--draw-bg)" stroke-width="0.6">
+        <rect x="178" y="14" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="14" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="14" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="14" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="14" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="36" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="36" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="36" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="36" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="36" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="58" width="12" height="12" rx="2" fill="var(--btn-g)"/><rect x="200" y="58" width="12" height="12" rx="2" fill="var(--btn-r)"/><rect x="222" y="58" width="12" height="12" rx="2" fill="var(--btn-b)"/><rect x="244" y="58" width="12" height="12" rx="2" fill="var(--btn-y)"/><rect x="266" y="58" width="12" height="12" rx="2" fill="var(--btn-w)"/>
+        <rect x="178" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="200" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="222" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="244" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/><rect x="266" y="80" width="12" height="12" rx="2" fill="var(--btn-k)"/>
+      </g>
+      <rect x="298" y="4" width="76" height="115" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+      <g fill="none" stroke="var(--draw-line)" stroke-width="0.7">
+        <rect x="304" y="18" width="16" height="16" rx="1.5"/><rect x="325" y="18" width="16" height="16" rx="1.5"/><rect x="346" y="18" width="16" height="16" rx="1.5"/>
+        <rect x="304" y="40" width="16" height="16" rx="1.5"/><rect x="325" y="40" width="16" height="16" rx="1.5"/><rect x="346" y="40" width="16" height="16" rx="1.5"/>
+        <rect x="304" y="62" width="16" height="16" rx="1.5"/><rect x="325" y="62" width="16" height="16" rx="1.5"/><rect x="346" y="62" width="16" height="16" rx="1.5"/>
+        <rect x="304" y="84" width="16" height="16" rx="1.5"/><rect x="325" y="84" width="16" height="16" rx="1.5"/><rect x="346" y="84" width="16" height="16" rx="1.5"/>
+      </g>
+      <text x="336" y="112" font-family="IBM Plex Mono, monospace" font-size="4.2" fill="var(--accent)" text-anchor="middle">3×4 DOCK</text>
+      <path d="M 4 127 L 374 127" stroke="var(--dim)" stroke-width="0.4"/>
+      <path d="M 4 124 L 4 130 M 374 124 L 374 130" stroke="var(--dim)" stroke-width="0.4"/>
+      <text x="189" y="125" font-family="IBM Plex Mono, monospace" font-size="5" fill="var(--dim)" text-anchor="middle">370 total · 290 + 80 dock</text>
+    </svg>
+  </div>
+  <div class="meta">
+    <div><dt>Keys</dt><dd>20 main (5 × 4) + 12 perimeter + 7 nav = <b>39</b>, plus 12 docked</dd></div>
+    <div><dt>Pins</dt><dd class="mono">6×7 matrix (13) + 9 enc + 3 SPI + 1 WS = <b class="yes">26</b> exactly</dd></div>
+    <div><dt>To order</dt><dd>25-switch kit · +10 illuminated · 8×8 MAX7219</dd></div>
+  </div>
+  <div class="verdict"><b>The most keys that still fit one MCU.</b> Every pin on the Pico 2 is spoken for, so this is the ceiling of the single-controller design — past here you are buying an expander or a second MCU. At 370 mm with the dock it also overhangs the 30 cm keyboard, which may be the honest argument against it.</div>
+</div>
+
+<h2>Parts evaluated — Later Order Wishlist</h2>
+
+<p>Everything you linked, what it is, and whether it belongs here or somewhere else in the estate. Nothing in this table needs to be in today's order except where marked.</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th>Part</th><th>What it is / how it works</th><th>Fit</th></tr></thead>
+<tbody>
+<tr><td><b>25 db tactile kit</b><br><span class="mono">10-7-131 · 700 Ft · 1 db!</span></td><td>25 momentary 4-pin tactile switches, 12 × 12 × 7.3 mm, with caps in red, green, blue, black, white. Not illuminated. Solder into a perfboard or PCB; the cap colour is the only labelling.</td><td class="yes"><b>Buy today.</b> This is the constraint-breaker for every perimeter cluster. Last one.</td></tr>
+<tr><td><b>4-digit 0.56″ 7-seg</b><br>common anode</td><td>Four red digits. Common anode means all segment anodes tie to +V and you sink each cathode. Drive via a TM1637/MAX7219 board (3 pins) or multiplex it yourself (12 pins — don't).</td><td class="yes"><b>V5's readout.</b> Shows the layer as text and stays legible across the desk. Confirm it ships with a driver chip, not bare.</td></tr>
+<tr><td><b>8×8 LED matrix MAX7219</b></td><td>64 red LEDs plus a MAX7219 driver. Three SPI-ish pins (DIN/CS/CLK), chainable. Handles its own multiplexing and brightness.</td><td class="yes"><b>V7's layer badge.</b> Draws an icon per layer, readable at two metres, three pins. The best indicator-per-pin ratio here.</td></tr>
+<tr><td><b>0.91″ OLED 128×32 I²C</b></td><td>SSD1306, two wires, address 0x3C (often jumper-selectable to 0x3D). Small strip format.</td><td class="yes"><b>V6's status line.</b> The 128×32 shape suits one line of text, which is exactly what a status readout is.</td></tr>
+<tr><td><b>RGB LED 5 mm common cathode</b><br>(two listings)</td><td>One package, three dies, shared cathode: drive R/G/B anodes through separate resistors, PWM for colour mixing. Three pins per LED.</td><td class="maybe"><b>Use sparingly.</b> Three pins each makes them expensive next to the WS2812 stick, which does 8 LEDs on one pin. Good for one or two dedicated indicators (CAPS/NUM) where you don't want a strip.</td></tr>
+<tr><td><b>WS2812 8-LED stick</b><br><span class="mono">10-3-21 · 300 Ft · 3 db</span></td><td>Eight 5050 addressable LEDs on a rigid PCB, one data pin, 5 V. Each LED has its own driver; you shift out 24 bits per LED at 800 kHz.</td><td class="yes"><b>Buy — better than a strip.</b> Rigid, roughly the right length for the alu profile, no cutting or soldering a cut end. One per panel, and a spare.</td></tr>
+<tr><td><b>ESP-01S WS2812 adapter</b><br><span class="mono">3-2-6 · 750 Ft</span></td><td>A carrier that plugs an ESP-01S into a WS2812 strip on GPIO2, via a 3-pin PH2.0 connector.</td><td class="no"><b>No — see the note below.</b> Adapter only, no ESP included, and the product page's own review flags no regulator and no level shifter.</td></tr>
+<tr><td><b>6-pole latching switch</b><br><span class="mono">YXS1717 · 50 Ft · 124 db</span></td><td>5.8 × 5.8 mm (the URL says 58, the part is 5.8) self-locking DPDT micro switch. Stays down until pressed again.</td><td class="maybe"><b>Not a key — a hardware latch.</b> Far too small for a macropad key. Perfect as a power or mode switch inside the enclosure, or on any VAULT/BRIDGE board that needs a physical on/off.</td></tr>
+<tr><td><b>5 A DC electronic switch</b></td><td>MOSFET-based load switch with a logic-level input — a solid-state relay for DC. Low on-resistance, no coil, no click.</td><td class="maybe"><b>Not this project.</b> Useful on the VAULT for switching a 12 V rail or a fan from a GPIO. You already have FQPF10N60C MOSFETs for the crude version.</td></tr>
+<tr><td><b>6-digit HT1621 LCD</b></td><td>Segment LCD with an HT1621 driver, 3-wire serial. Microamps, not milliamps, and holds its display without refresh.</td><td class="maybe"><b>Battery projects, not this one.</b> The macropad runs on USB power so low current buys nothing, and segment LCDs are unreadable in a dim room. Right answer for a field meter.</td></tr>
+<tr><td><b>I²C adapter for LCD</b></td><td>PCF8574 backpack that converts a 16-pin HD44780 character LCD to two wires.</td><td class="no"><b>Only if you own an HD44780.</b> It is an adapter for a display you have not got; on its own it does nothing.</td></tr>
+<tr><td><b>ACS758-100B 100 A</b></td><td>Hall-effect current sensor, the conductor passes through the package, isolated from the logic side. ±100 A bidirectional, analogue output to an ADC.</td><td class="maybe"><b>BRIDGE / energy branch.</b> 100 A suits a main feed or a battery bank, not a desk device. Note it is bidirectional, so it reads charge and discharge.</td></tr>
+<tr><td><b>AC 5 A current sensor</b></td><td>Small transformer or Hall module giving an analogue signal proportional to AC current.</td><td class="maybe"><b>Shadow-layer prototype.</b> 5 A is one circuit's worth — fine for bench work, too small for a distribution board.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Today's order</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th>Item</th><th>Why</th><th class="num">Ft</th><th class="num">Qty</th><th class="num">Sum</th></tr></thead>
+<tbody>
+<tr><td>25 db tactile kit</td><td>Every perimeter cluster, all layouts. Last one in stock.</td><td class="num">700</td><td class="num">1</td><td class="num">700</td></tr>
+<tr><td>12 × 12 illuminated, 2 of each colour</td><td>Takes the main field to four per colour</td><td class="num">200</td><td class="num">10</td><td class="num">2 000</td></tr>
+<tr><td>Raspberry Pi Pico 2</td><td>Second RP2350 so the macropad doesn't consume the VAULT candidate</td><td class="num">3 500</td><td class="num">1</td><td class="num">3 500</td></tr>
+<tr><td>1.3″ OLED + EC11</td><td><b>Keep it.</b> Third display-ready knob — see the reversal above</td><td class="num">2 200</td><td class="num">1</td><td class="num">2 200</td></tr>
+<tr><td>WS2812 8-LED stick</td><td>The alu-profile indicator. Rigid, right length</td><td class="num">300</td><td class="num">2</td><td class="num">600</td></tr>
+<tr><td>Alumínium tekerőgomb</td><td>The encoders ship bare. Verify 6 mm shaft first</td><td class="num">120</td><td class="num">3</td><td class="num">360</td></tr>
+<tr><td>0.91″ OLED 128×32</td><td>Status line for V6</td><td class="num">—</td><td class="num">1</td><td class="num">—</td></tr>
+<tr><td>8×8 MAX7219 matrix</td><td>Layer badge for V7 — order only if V7 wins</td><td class="num">—</td><td class="num">1</td><td class="num">—</td></tr>
+<tr class="total"><td>Core additions</td><td>plus your existing list</td><td class="num"></td><td class="num"></td><td class="num">≈ 9 360</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Still not ordering</h3>
+<ul>
+<li><b>No I/O expander.</b> Every layout above fits one Pico 2 using the diodes you already own.</li>
+<li><b>TCA9548A only if a fourth display appears.</b> Three fit without it.</li>
+<li><b>No ESP-01S adapter.</b> Your MCU drives WS2812 on one pin; adding an ESP adds WiFi, which is the thing that would actually break the USB-HID premise.</li>
+<li><b>Keep the PS2 module on the list</b> — it's for the other project, not this one.</li>
+</ul>
+
+<h2>Next</h2>
+<p>Pick a version and I'll produce the PVC baseplate dimensions and the Z-axis stack. The tallest component decides panel depth, and the candidates differ a lot: a 12 mm illuminated button is short, an EC11 is 30 mm tall including the shaft, and a 1.3″ OLED knob module stacks a PCB behind the display. Which version, and numpad or not?</p>
+
+</div>
+
+</body></html>

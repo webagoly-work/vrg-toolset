@@ -84,10 +84,24 @@
       ]
     },
     {
+      "id": "vrg-ui-kit-galeria",
+      "name": "VRG UI Kit galéria",
+      "paths": [
+        "shared/vrg-ui-kit/gallery.html"
+      ]
+    },
+    {
       "id": "vrg-kodvaros",
       "name": "VRG Kódváros",
       "paths": [
         "CodeCity/"
+      ]
+    },
+    {
+      "id": "vrg-terkep",
+      "name": "VRG Térkép",
+      "paths": [
+        "Map/vrg-terkep.html"
       ]
     },
     {
@@ -108,6 +122,13 @@
         "Hub/",
         "docs/hub/",
         "GO-HUB.md"
+      ]
+    },
+    {
+      "id": "archivum",
+      "name": "Archívum",
+      "paths": [
+        "Archive/"
       ]
     },
     {

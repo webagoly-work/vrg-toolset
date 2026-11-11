@@ -71,6 +71,7 @@
     "ma":        { "hu": "Ma",                   "en": "Today",            "level": "user" },
     "apps":      { "hu": "Alkalmazások",         "en": "Applications",     "level": "user" },
     "programok": { "hu": "Programok",            "en": "Programs",         "level": "user" },
+    "archivum":  { "hu": "Archívum",             "en": "Artifact archive", "level": "user" },
     "munkak":    { "hu": "Munkák",               "en": "Jobs",             "level": "user" },
     "allapot":   { "hu": "Állapot",              "en": "Status",           "level": "user" },
     "vonalak":   { "hu": "Fejlesztési vonalak",  "en": "Development lines", "level": "dev" },
@@ -102,6 +103,7 @@
     { "id": "bridge", "title": { "hu": "BRIDGE dokumentáció", "en": "BRIDGE document set" }, "type": "document set", "qualifier": "standards", "level": "user", "group": "munka", "sub": "anyag", "status": "live", "launch": { "feature": "b1" }, "surfaces": { "dashboard": "apps" }, "icon": "BR", "from": ["feat:b1", "dir:BRIDGE"] },
     { "id": "jobs", "title": { "hu": "Munkák", "en": "Jobs" }, "type": "folder", "qualifier": "job records", "level": "user", "group": "fajlok", "status": "live", "launch": { "feature": "m3" }, "surfaces": { "dashboard": "munkak", "sui": true }, "icon": "MU", "from": ["feat:m3"] },
     { "id": "files", "title": { "hu": "Fájlok", "en": "Files" }, "type": "panel", "qualifier": "file manager", "level": "user", "group": "fajlok", "status": "live", "launch": { "pane": "files" }, "surfaces": { "dashboard": "apps", "dock": true, "sui": true }, "icon": "FÁ", "from": ["pane:files", "pane:viewer"] },
+    { "id": "archive", "title": { "hu": "Archívum", "en": "Artifact archive" }, "type": "knowledge base", "qualifier": "artifact archive", "level": "user", "group": "fajlok", "status": "beta", "launch": { "act": "s:R/A", "app": true }, "surfaces": { "dashboard": "archivum", "sui": true }, "icon": "AR", "from": ["menu:proj:R/A", "dir:Archive"] },
 
     { "id": "mindmap", "title": { "hu": "VRG MindMap", "en": "VRG MindMap" }, "type": "application", "level": "user", "group": "alkalmazasok", "sub": "iroda", "status": "live", "launch": { "act": "s:4", "app": true }, "servers": ["mindmap"], "surfaces": { "dashboard": "apps" }, "icon": "MM", "from": ["menu:tool:4", "feat:k1", "dir:MindMap"] },
     { "id": "web", "title": { "hu": "Böngésző", "en": "Browser" }, "type": "panel", "qualifier": "embedded browser", "level": "user", "group": "alkalmazasok", "sub": "iroda", "status": "live", "launch": { "pane": "web" }, "surfaces": { "dashboard": "apps", "dock": true }, "icon": "WE", "from": ["pane:web"] },

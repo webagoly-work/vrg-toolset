@@ -199,6 +199,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - *Dropped, per the research:* switching any tethering (system-only permission), per-client usage (no API).
   Details: `WP/M7.md`.
 
+- **D-13 · Archívum on the phone (M18), 2026-11-11.** The Founder asked for the Artifact Archive in VRG Desktop and
+  VRG Mobile; the Desktop part is WP-46 (DESKU-Q23). Decided without a question (the brief said to follow the pattern
+  Mobile already uses and keep the Archive folder as the one source): **the phone reads `Archive/` from `main`
+  through the contents API**, like Haladás reads `Mobile/catalogue/tools.json`. Unlike M5 / M17 there is nothing to
+  build or bundle: the folder is already in the repo, its viewer already lays itself out for a phone, so no publish
+  step, no orphan branch and no APK release is needed for a new entry. Not bundled into the APK assets: a new page
+  would then wait for a release. Gaps settled in the same WP:
+  - *Only the viewer, `index.js` and `files/<name>.html` are kept and served*; `archive.js`, `index.json` stay on GitHub.
+  - *Changed files only*, by git blob sha + size from the two listings; a file gone from main is deleted on the phone.
+  - *The artifact CDNs may load* (GET over https to fonts.googleapis.com, fonts.gstatic.com, cdnjs.cloudflare.com,
+    cdn.jsdelivr.net, unpkg.com): the saved pages are published artifacts and use them. Every other request is
+    refused, outside links open in the phone's browser. The first WebView here that lets anything off the phone.
+  - *The one phone fix went into the viewer itself* (44 px touch targets under 760 px or on a coarse pointer), not a
+    phone copy, so the PC's page and the phone's are the same file.
+  - *Back asks the page* (`ArchiveWeb.BACK_JS` over `window.VRGArchive`): the viewer uses replaceState, so WebView
+    history has nothing to step back through.
+  Details: `WP/M18.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

@@ -1,0 +1,519 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>BRIDGE Elosztószekrény</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Saira+Condensed:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#15181c; --panel:#1a1e24; --surf:#21262e; --line:#2a2f38; --line2:#3a414d;
+  --muted:#7a8394; --text:#d8dde6; --amber:#ffb300; --amber2:#ffd050;
+  --red:#f87171; --blue:#38bdf8; --magenta:#e879f9; --steel:#9aa4b2; --green:#4ade80; --copper:#c98a4b;
+  --display:"Saira Condensed","Roboto Condensed","Arial Narrow",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--display);font-size:17px;line-height:1.45;
+  padding-inline:20px;padding-block:28px 56px;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:36px 36px;background-position:-1px -1px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(21,24,28,.55),rgba(21,24,28,.93) 60%);pointer-events:none;z-index:-1}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+header{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+h1{font-size:clamp(34px,6vw,56px);line-height:1;margin:0;font-weight:700;letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--amber)}
+.lede{max-width:70ch;color:var(--steel);margin:0}
+.specs{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
+.specs b{color:var(--text);font-weight:600}
+h2{font-size:24px;margin:0;font-weight:600;letter-spacing:.02em;text-wrap:balance}
+h2 small{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400;letter-spacing:.08em;margin-left:10px;text-transform:uppercase}
+section{display:flex;flex-direction:column;gap:14px}
+
+.cabinets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:22px}
+.cab{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column}
+.cab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.cab-head h3{margin:0;font-size:21px;font-weight:600}
+.stage-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--line2);color:var(--steel)}
+.cab.s2 .stage-tag{border-color:var(--amber);color:var(--amber)}
+.cab-sub{font-size:15px;color:var(--muted);padding:0 16px;margin:8px 0 0}
+.scroll{overflow-x:auto;padding:6px 8px 10px}
+.scroll svg{display:block;width:100%;min-width:500px;height:auto}
+
+.dev{cursor:pointer;outline:none}
+.dev:hover .body,.dev:focus-visible .body{stroke-width:2.4}
+.dev.sel .body{stroke:#fff;stroke-width:2.4}
+.dev:focus-visible .body{stroke-dasharray:4 2}
+
+.inspector{background:var(--panel);min-height:118px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:6px;padding:12px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 18px}
+.inspector .k{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding-top:3px}
+.inspector .ttl{grid-column:1/-1;font-size:20px;font-weight:600;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.inspector .pill{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.08em;padding:2px 7px;border-radius:3px;border:1px solid currentColor}
+.inspector .v{font-size:16px;color:var(--text)}
+@media (max-width:560px){.inspector{grid-template-columns:1fr}.inspector .k{padding-top:6px}}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;font-family:var(--mono);font-size:12px;color:var(--steel)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:2px;border:1.5px solid;vertical-align:-3px;margin-right:7px}
+
+.path{display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px;font-family:var(--mono);font-size:12px}
+.path .n{padding:4px 8px;border:1px solid var(--red);border-radius:3px;background:#2a1d1f;color:var(--text);white-space:nowrap}
+.path .n.new{border-color:var(--amber);background:#2a2415}
+.path .a{color:var(--muted)}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:16px}
+th,td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surf)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.rail{font-family:var(--mono);font-size:13px;white-space:nowrap;color:var(--red)}
+td.rail.s{color:var(--amber2)}
+tr.sub td{background:var(--surf);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;margin-left:6px;padding:1px 5px;border-radius:2px;white-space:nowrap}
+.tag.new{color:var(--amber);border:1px solid #6b5215}
+.tag.pot{color:var(--red);border:1px solid #6a3134}
+.tag.mv{color:var(--blue);border:1px solid #1f4f66}
+.muted{color:var(--muted)}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:22px;align-items:start}
+.notes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.notes li{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.notes li b{display:block;font-weight:600;font-size:17px;margin-bottom:2px}
+.notes li p{margin:0;color:var(--steel);font-size:16px;max-width:66ch}
+.notes li.chg{border-color:#1f4f66}
+.notes li.chg b{color:var(--blue)}
+.wall{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px}
+.wall svg{display:block;width:100%;height:auto;max-width:460px;margin:0 auto}
+.recon{font-family:var(--mono);font-size:12px;color:var(--muted);border-top:1px dashed var(--line2);padding-top:14px;max-width:92ch;margin:0}
+@media (prefers-reduced-motion:no-preference){.dev .body{transition:stroke-width .12s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">BRIDGE · BRIDGE-DN · ELO r2 · ABB Mistral41W 4/48</div>
+    <h1>Elosztó<span>szekrény</span></h1>
+    <p class="lede">Final layout for the 48-module cabinet, merging the ELO r1 plan (real box, ordered parts, K1–K14 circuits) with the BRIDGE-DN build diagrams (5 V core, trunk to the chest-level terminal). V1 is the base installation from the ordered parts, with row 4 left empty. V2 fills the missing protection devices, adds the Shelly metering and switching, and puts the BRIDGE-DN core on row 4. Nothing installed in V1 moves in V2.</p>
+    <div class="specs">
+      <span><b>48</b> modules · <b>4 × 12</b></span><span>1 module = <b>18 mm</b></span><span>box <b>320 × 636 mm</b></span><span><b>IP41</b> · clear plastic door</span><span>V1 <b>25/48</b> · V2 <b>48/48</b></span><span>MSZ HD 60364</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="cabinets">
+      <div class="cab s1">
+        <div class="cab-head"><h3>V1 · Alap kiépítés</h3><span class="stage-tag">Base</span></div>
+        <p class="cab-sub">Ordered parts only. 14 active circuits and 1 wired spare. Red dashed slots are still to be supplied; row 4 is kept empty for BRIDGE-DN.</p>
+        <div class="scroll"><svg id="cab1" viewBox="0 0 640 800" role="img" aria-label="V1 cabinet front view"></svg></div>
+      </div>
+      <div class="cab s2">
+        <div class="cab-head"><h3>V2 · BRIDGE-DN bővítés</h3><span class="stage-tag">Final</span></div>
+        <p class="cab-sub">Full target state. An amber corner marks modules added in V2. Dotted lines show the 3EM current clamps and the K5 feed to the core.</p>
+        <div class="scroll"><svg id="cab2" viewBox="0 0 640 800" role="img" aria-label="V2 cabinet front view"></svg></div>
+      </div>
+    </div>
+
+    <div class="inspector" id="insp" aria-live="polite"></div>
+
+    <div class="legend">
+      <span><i style="border-color:var(--red);background:#2a1d1f"></i>230 V protection &amp; circuits</span>
+      <span><i style="border-color:var(--magenta);background:#281a2c"></i>230 V smart / control</span>
+      <span><i style="border-color:var(--amber);background:#2a2415"></i>BRIDGE-DN core (5 V)</span>
+      <span><i style="border-color:var(--blue);background:#15232d"></i>Data / USB</span>
+      <span><i style="border-color:var(--green);background:#142a1e"></i>Networked radio</span>
+      <span><i style="border-color:var(--red);border-style:dashed"></i>Pótolandó (to supply)</span>
+      <span><i style="border-color:var(--line2);border-style:dashed"></i>Reserved for V2</span>
+      <span><i style="border-color:var(--copper);background:var(--copper)"></i>Fésűs sín</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Betáp útvonal<small>V2 feed path</small></h2>
+    <div class="path">
+      <span class="n">HLAK 35 · L / N</span><span class="a">→</span>
+      <span class="n new">Q1 főkapcsoló 2P</span><span class="a">→</span>
+      <span class="n new">F0 → SPD T2 · leágazás PE-re</span><span class="a">→</span>
+      <span class="n">FI 25/2 · 30 mA · A</span><span class="a">→</span>
+      <span class="n">fésűs sínek R2 · R3</span><span class="a">→</span>
+      <span class="n">K1–K14 · T</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sínkiosztás<small>rail allocation</small></h2>
+    <div class="tbl-wrap"><table id="railtbl"></table></div>
+  </section>
+
+  <div class="two">
+    <section>
+      <h2>Áramkörök<small>panel directory</small></h2>
+      <div class="tbl-wrap"><table id="dirtbl" style="min-width:440px"></table></div>
+    </section>
+    <section>
+      <h2>Falon<small>wall placement</small></h2>
+      <div class="wall"><svg id="wall" viewBox="0 0 460 520" role="img" aria-label="Wall elevation to scale"></svg></div>
+    </section>
+  </div>
+
+  <div class="two">
+    <section>
+      <h2>What changed in the merge</h2>
+      <ul class="notes">
+        <li class="chg"><b>Keystones moved from row 1 to row 4</b><p>ELO r1 put the two RJ45 keystones on row 1. Here they sit beside the Pi and the SLZB-MR3U, so no data cable crosses the three 230 V rows. That frees row 1 for the Shelly Pro 3EM, directly above the K1, K4 and K5 breakers it clamps.</p></li>
+        <li class="chg"><b>BRIDGE core is one row, not two</b><p>The build diagrams gave the core rows 3–4. With the real K1–K14 circuit list the mains needs three rows, so the core is row 4 only. Mains-on-top, core-on-bottom still holds.</p></li>
+        <li class="chg"><b>No DIN Ethernet switch, no USB 3.0 hub</b><p>Both came from the early build diagrams. ELO r1 replaced the switch with keystones to the home network. The USB 3.0 hub was already dropped: RTL-SDR, LoRa and RS-485 are USB 2.0, and storage is NVMe.</p></li>
+        <li class="chg"><b>Radio inside the box is fine here</b><p>The Mistral41W is plastic with a clear door, so the SLZB-MR3U's antenna works from row 4. The metal-box warning from the build diagrams does not apply to this cabinet.</p></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Rules kept from both plans</h2>
+      <ul class="notes">
+        <li><b>V2 adds, V1 stays</b><p>Every V2 device goes into a slot left for it in V1. The only rewiring is inserting Q1 and the SPD between the HLAK terminals and the FI.</p></li>
+        <li><b>K5 is wired in V1</b><p>K5 (C10 2P) is installed and connected from day one, with its outgoing end insulated on row 4. In V2 it feeds the HDR-60-5, which powers the Pi 5 at 5 V DC.</p></li>
+        <li><b>230 V rows 1–3, SELV row 4</b><p>The dashed divider is a real separation: nothing on row 4 carries mains except the HDR-60-5 input.</p></li>
+        <li><b>2P breakers on a 1P comb bar</b><p>Each 2P circuit takes its N pole straight from the N bar. On the 1P fork comb bar, the teeth at the N-pole positions are cut off.</p></li>
+        <li><b>Trunk to the terminal</b><p>USB 2.0 from the DIN hub, HDMI and a service RJ45 run down the wall to the chest-level terminal, so setup doesn't need a ladder. Solo Zigbee and BLE dongles hang off the DIN USB 2.0 hub.</p></li>
+      </ul>
+    </section>
+  </div>
+
+  <section>
+    <h2>Anyaglista<small>ordered + V2 additions</small></h2>
+    <div class="tbl-wrap"><table id="bomtbl"></table></div>
+  </section>
+
+  <p class="recon">Sources: BRIDGE_DN_Elosztoszekreny.md (ELO r1, 2026-07-11) and BRIDGE_DN_Build_Diagrams.html (rev 1.0). The r1 V1/V2 SVGs were not available, so module order within each row, the SPD backup fuse's width and the BRIDGE module widths are reconstructed. Circuit names follow r1 and are still assumptions from the breaker characteristics.</p>
+</div>
+
+<script>
+(function(){
+const C={red:"#f87171",amber:"#ffb300",amber2:"#ffd050",blue:"#38bdf8",magenta:"#e879f9",steel:"#9aa4b2",muted:"#7a8394",text:"#d8dde6",line:"#2a2f38",line2:"#3a414d",green:"#4ade80",bg:"#15181c",copper:"#c98a4b",pe:"#a3c93a"};
+const FAM={mains:{s:C.red,f:"#2a1d1f"},smart:{s:C.magenta,f:"#281a2c"},core:{s:C.amber,f:"#2a2415"},data:{s:C.blue,f:"#15232d"},radio:{s:C.green,f:"#142a1e"}};
+const FNAME={mains:["230 V",C.red],smart:["230 V smart",C.magenta],core:["BRIDGE-DN",C.amber],data:["Data / USB",C.blue],radio:["Radio",C.green]};
+
+/* ---------- catalogue (from ELO r1) ---------- */
+const D={
+  hN:{t:"hlak",w:1,fam:"mains",col:C.blue,lab:"N",name:"HLAK 35 · N",spec:"Fővezeték sorkapocs 35-1/6 M2 · kék · 2080184",role:"Incoming neutral from the H07V-K 10 mm² feed."},
+  hL:{t:"hlak",w:1,fam:"mains",col:C.steel,lab:"L",name:"HLAK 35 · L",spec:"Fővezeték sorkapocs 35-1/6 M2 · szürke · 2080183",role:"Incoming phase from the H07V-K 10 mm² feed."},
+  q1:{t:"main",w:2,fam:"mains",id:"Q1",name:"Főkapcsoló 2P",spec:"Main switch · 2P",role:"Isolates the whole cabinet. Missing from the V1 order; fitted between the HLAK terminals and the FI.",v2:1,pot:1},
+  f0:{t:"mcb",w:1,fam:"mains",id:"F0",r:"SPD",name:"SPD előtétvédelem",spec:"Backup protection for the SPD · 1P+N compact",role:"Backup fuse for the surge arrester, as the SPD's datasheet requires. Width assumed as 1 module.",v2:1,pot:1},
+  spd:{t:"spd",w:2,fam:"mains",id:"SPD",name:"Túlfeszültség-védelem T2",spec:"SPD · Type 2 · 1P+N · branch to PE",role:"Sits after Q1 and before the FI, so surge current to PE does not trip the RCD.",v2:1,pot:1},
+  fi:{t:"rcd",w:2,fam:"mains",id:"FI1",name:"FI-relé 25/2 · 30 mA · A",spec:"Easy9 PRO · EZ9R49225",role:"Single RCD for every final circuit. Feeds the comb bars on rows 2 and 3."},
+  em3:{t:"shelly",w:3,fam:"smart",name:"Shelly Pro 3EM",spec:"3-channel energy meter · DIN · LAN + Wi-Fi",role:"Current clamps on K1 (sütő), K4 (bojler) and K5 (BRIDGE). Sits on row 1 right above them. Clamp assignment can be changed.",v2:1,top:"PRO 3EM",bot:"CT · K1 K4 K5"},
+  K1:{t:"mcb2",w:2,fam:"mains",id:"K1",r:"C16",name:"Sütő",spec:"2C 16 A 6 kA · EZ9F57216",role:"Oven. Metered by the Pro 3EM in V2."},
+  K2:{t:"mcb2",w:2,fam:"mains",id:"K2",r:"C13",name:"Mosógép",spec:"2C 13 A 6 kA · EZ9F57213",role:"Washing machine."},
+  K3:{t:"mcb2",w:2,fam:"mains",id:"K3",r:"C13",name:"Mosogatógép",spec:"2C 13 A 6 kA · EZ9F57213",role:"Dishwasher."},
+  K4:{t:"mcb2",w:2,fam:"mains",id:"K4",r:"C13",name:"Bojler",spec:"2C 13 A 6 kA · EZ9F57213",role:"Water heater. Metered by the Pro 3EM in V2."},
+  K5:{t:"mcb2",w:2,fam:"core",id:"K5",r:"C10",name:"BRIDGE-DN / RPi táp",spec:"2C 10 A 6 kA · EZ9F57210",role:"Wired in V1 with the outgoing end insulated on row 4. In V2 it feeds the HDR-60-5. Metered by the Pro 3EM."},
+  pro2:{t:"shelly",w:2,fam:"smart",name:"Shelly Pro 2",spec:"2-channel relay · DIN · LAN + Wi-Fi",role:"Switches the lighting circuits (K6–K9 outputs) under BRIDGE control.",v2:1,top:"PRO 2",bot:"világítás"},
+  K6:{t:"mcb",w:1,fam:"mains",id:"K6",r:"B10",name:"Világítás 1",spec:"1B 10 A 6 kA · EZ9F27110",role:"Lighting circuit."},
+  K7:{t:"mcb",w:1,fam:"mains",id:"K7",r:"B10",name:"Világítás 2",spec:"1B 10 A 6 kA · EZ9F27110",role:"Lighting circuit."},
+  K8:{t:"mcb",w:1,fam:"mains",id:"K8",r:"B10",name:"Világítás 3",spec:"1B 10 A 6 kA · EZ9F27110",role:"Lighting circuit."},
+  K9:{t:"mcb",w:1,fam:"mains",id:"K9",r:"B10",name:"Világítás 4",spec:"1B 10 A 6 kA · EZ9F27110",role:"Lighting circuit."},
+  K10:{t:"mcb",w:1,fam:"mains",id:"K10",r:"C16",name:"Dugalj – konyha",spec:"1C 16 A 6 kA · EZ9F57116",role:"Kitchen sockets."},
+  K11:{t:"mcb",w:1,fam:"mains",id:"K11",r:"C16",name:"Dugalj – nappali",spec:"1C 16 A 6 kA · EZ9F57116",role:"Living-room sockets."},
+  K12:{t:"mcb",w:1,fam:"mains",id:"K12",r:"C13",name:"Dugalj – hálók",spec:"1C 13 A 6 kA · EZ9F57113",role:"Bedroom sockets."},
+  K13:{t:"mcb",w:1,fam:"mains",id:"K13",r:"C13",name:"Dugalj – egyéb",spec:"1C 13 A 6 kA · EZ9F57113",role:"Other sockets."},
+  T:{t:"mcb",w:1,fam:"mains",id:"T",r:"C13",name:"Tartalék (bekötve)",spec:"1C 13 A 6 kA · EZ9F57113",role:"Wired spare circuit."},
+  K14:{t:"mcb",w:1,fam:"mains",id:"K14",r:"B6",name:"Csengő + vezérlés",spec:"1B 6 A 6 kA · EZ9F27106",role:"Feeds the modular bell and, in V2, the push-button control circuit with the RC-tag."},
+  bell:{t:"bell",w:1,fam:"mains",name:"Moduláris csengő 230 VAC",spec:"Easy9 PRO · EZ9A34223",role:"Doorbell, fed from K14."},
+  rc:{t:"rc",w:1,fam:"smart",name:"RC-tag",spec:"100 kΩ + 10 µF MKP · in a 1-module DIN housing",role:"Turns the sustained toggle-switch contact into a short pulse for the bistable control circuit. One shared tag per control circuit, fed from K14.",v2:1},
+  psu:{t:"psu",w:3,fam:"core",name:"MeanWell HDR-60-5",spec:"DIN PSU · 5 V DC · 60 W · 3 modules",role:"The only 230 V input on row 4, fed from K5. Powers the Pi 5 and the rail-powered USB hub.",v2:1},
+  pi:{t:"pi",w:4,fam:"core",name:"Raspberry Pi 5 · 8 GB",spec:"On DIN bracket · NVMe · Home Assistant · ~4 modules",role:"BRIDGE-DN core. Ethernet to keystone 1. Its ports go down the trunk to the chest-level terminal.",v2:1},
+  usb:{t:"usb",w:2,fam:"data",name:"DIN USB 2.0 hub",spec:"Industrial · rail-powered from HDR-60-5 · ~2 modules",role:"Solo Zigbee and BLE dongles, plus the USB 2.0 line in the trunk.",v2:1},
+  mr3u:{t:"mr3u",w:2,fam:"radio",name:"SMLIGHT SLZB-MR3U",spec:"Multi-radio coordinator · Ethernet · ~2 modules on bracket",role:"Zigbee + Thread on separate chips, reached over Ethernet (keystone 2). Works inside this box because the door is clear plastic.",v2:1},
+  ks:{t:"ks",w:1,fam:"data",name:"Keystone ×2 · RJ45",spec:"DIN keystone holder · 2 ports",role:"RPi 5 and SLZB-MR3U to the home network. Moved here from row 1 so data stays on the SELV row.",v2:1,moved:1}
+};
+const ghost=(d,kind)=>({ghost:kind,of:d,w:d.w});
+const resRow={t:"blank",w:12,reserved:1,name:"Row 4 · reserved for BRIDGE-DN",spec:"12 modules · blanking covers",role:"Kept empty in V1. K5's outgoing end is pre-wired and insulated here."};
+
+const V1=[
+  {lab:"R1 · BETÁP + VÉDELEM",items:[D.hN,D.hL,ghost(D.q1,"pot"),ghost(D.spd,"pot"),ghost(D.f0,"pot"),D.fi,ghost(D.em3,"res")]},
+  {lab:"R2 · 2P KÖRÖK",comb:[0,10],items:[D.K1,D.K2,D.K3,D.K4,D.K5,ghost(D.pro2,"res")]},
+  {lab:"R3 · 1P KÖRÖK",comb:[0,10],items:[D.K6,D.K7,D.K8,D.K9,D.K10,D.K11,D.K12,D.K13,D.T,D.K14,D.bell,ghost(D.rc,"res")]},
+  {lab:"R4 · FENNTARTVA · BRIDGE-DN",selv:1,items:[resRow]}
+];
+const V2=[
+  {lab:"R1 · BETÁP + VÉDELEM + MÉRÉS",items:[D.hN,D.hL,D.q1,D.spd,D.f0,D.fi,D.em3]},
+  {lab:"R2 · 2P KÖRÖK",comb:[0,10],items:[D.K1,D.K2,D.K3,D.K4,D.K5,D.pro2]},
+  {lab:"R3 · 1P KÖRÖK + VEZÉRLÉS",comb:[0,10],items:[D.K6,D.K7,D.K8,D.K9,D.K10,D.K11,D.K12,D.K13,D.T,D.K14,D.bell,D.rc]},
+  {lab:"R4 · BRIDGE-DN MAG · SELV",selv:1,items:[D.psu,D.pi,D.usb,D.mr3u,D.ks]}
+];
+
+/* ---------- geometry ---------- */
+const M=40,RX=80,TOP=100,PITCH=150,DH=106;
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const T=(x,y,s,o={})=>`<text x="${x}" y="${y}" fill="${o.c||C.text}" font-family="${o.f==='d'?"Saira Condensed,Arial Narrow,sans-serif":"JetBrains Mono,monospace"}" font-size="${o.s||10}" font-weight="${o.w||400}" text-anchor="${o.a||'middle'}"${o.ls?` letter-spacing="${o.ls}"`:''}>${esc(s)}</text>`;
+const lever=(cx,y,col)=>`<rect x="${cx-8}" y="${y}" width="16" height="30" rx="3" fill="${C.bg}" stroke="${C.line2}"/><rect x="${cx-6}" y="${y+2}" width="12" height="13" rx="2" fill="${col}" opacity=".85"/>`;
+const rowTop=i=>TOP+i*PITCH, devY=i=>rowTop(i)+24;
+
+function draw(d,x,y,stage){
+  const w=d.w*M,h=DH,cx=x+w/2;
+  let g="";
+  if(d.ghost){
+    const o=d.of,pot=d.ghost==="pot";
+    g+=`<rect class="body" x="${x+1.5}" y="${y}" width="${w-3}" height="${h}" rx="3" fill="${pot?'#1f1a1c':'#17191d'}" stroke="${pot?'#8a3b3e':C.line2}" stroke-dasharray="5 4" stroke-width="1.3"/>`;
+    const short=o.id||(o.top||o.name.split(" ")[0]);
+    g+=T(cx,y+h/2-4,short,{c:pot?C.red:C.muted,s:w>=80?10:9,w:600});
+    g+=T(cx,y+h/2+12,pot?"PÓT.":"V2",{c:pot?"#b85a5d":C.muted,s:8,ls:".06em"});
+    return g;
+  }
+  if(d.t==="blank"){
+    g+=`<rect class="body" x="${x+1.5}" y="${y}" width="${w-3}" height="${h}" rx="3" fill="#1a1915" stroke="#5a4a22" stroke-dasharray="5 4"/>`;
+    g+=T(cx,y+h/2-2,"FENNTARTVA · BRIDGE-DN MAG",{c:"#a88a3c",s:12,ls:".08em"});
+    g+=T(cx,y+h/2+16,"blanking covers · 12 modules",{c:C.muted,s:9});
+    return g;
+  }
+  const f=FAM[d.fam];
+  g+=`<rect class="body" x="${x+1.5}" y="${y}" width="${w-3}" height="${h}" rx="3" fill="${f.f}" stroke="${f.s}" stroke-width="1.4"/>`;
+  switch(d.t){
+    case "hlak":
+      g+=`<rect x="${x+8}" y="${y+14}" width="${w-16}" height="${h-28}" rx="2" fill="${d.col}" opacity=".25"/>`;
+      for(let i=0;i<4;i++) g+=`<circle cx="${cx}" cy="${y+26+i*18}" r="4.5" fill="${C.bg}" stroke="${d.col}"/>`;
+      g+=T(cx,y+h-4,d.lab,{c:d.col,s:10,w:600});break;
+    case "mcb":
+      g+=T(cx,y+17,d.r,{c:f.s,s:10.5,w:600});g+=lever(cx,y+32,f.s);g+=T(cx,y+h-13,d.id,{c:C.text,s:d.id.length>2?9:10});break;
+    case "mcb2":
+      g+=T(cx,y+17,d.r+" 2P",{c:f.s,s:10.5,w:600});
+      g+=lever(x+M/2,y+32,f.s)+lever(x+M*1.5,y+32,f.s)+`<rect x="${x+M/2}" y="${y+40}" width="${M}" height="3" fill="${C.line2}"/>`;
+      g+=T(cx,y+h-13,d.id,{c:C.text,s:10});break;
+    case "main":
+      g+=T(cx,y+17,"FŐKAPCS",{c:f.s,s:10,w:600});
+      g+=`<rect x="${cx-16}" y="${y+28}" width="32" height="40" rx="4" fill="${C.bg}" stroke="${C.line2}"/><rect x="${cx-13}" y="${y+31}" width="26" height="18" rx="3" fill="${f.s}"/>`;
+      g+=T(cx,y+h-13,"Q1 · 2P",{c:C.text,s:10});break;
+    case "rcd":
+      g+=T(cx,y+17,"FI 25/2",{c:f.s,s:10,w:600});g+=lever(cx-8,y+32,f.s);
+      g+=`<circle cx="${cx+14}" cy="${y+47}" r="7" fill="${C.bg}" stroke="${C.steel}"/>`+T(cx+14,y+50.5,"T",{c:C.steel,s:9,w:600});
+      g+=T(cx,y+h-13,"30mA · A",{c:C.text,s:9});break;
+    case "spd":
+      g+=T(cx,y+17,"SPD T2",{c:f.s,s:10,w:600});
+      for(let i=0;i<2;i++){const bx=x+8+i*(w-16)/2;g+=`<rect x="${bx}" y="${y+30}" width="${(w-16)/2-4}" height="34" rx="2" fill="${C.bg}" stroke="${C.line2}"/><rect x="${bx+5}" y="${y+37}" width="${(w-16)/2-14}" height="8" fill="${C.green}" opacity=".8"/>`;}
+      g+=T(cx,y+h-13,"1P+N → PE",{c:C.text,s:9});break;
+    case "shelly":
+      g+=T(cx,y+17,d.top,{c:f.s,s:10,w:600});
+      g+=`<rect x="${x+10}" y="${y+28}" width="${w-20}" height="24" rx="2" fill="${C.bg}" stroke="${C.line2}"/>`;
+      g+=`<circle cx="${x+18}" cy="${y+40}" r="3" fill="${C.green}"/><circle cx="${x+28}" cy="${y+40}" r="3" fill="${C.blue}"/>`;
+      g+=`<rect x="${x+w-30}" y="${y+58}" width="18" height="12" rx="1" fill="${C.bg}" stroke="${C.steel}"/>`;
+      g+=T(cx,y+h-13,d.bot,{c:C.text,s:d.w>2?9:8});break;
+    case "bell":
+      g+=T(cx,y+17,"CSENG",{c:f.s,s:8.5,w:600});
+      g+=`<path d="M${cx-9} ${y+60} Q${cx-9} ${y+36} ${cx} ${y+36} Q${cx+9} ${y+36} ${cx+9} ${y+60} Z" fill="none" stroke="${f.s}" stroke-width="1.3"/><circle cx="${cx}" cy="${y+64}" r="2.5" fill="${f.s}"/>`;
+      g+=T(cx,y+h-13,"230V",{c:C.text,s:8.5});break;
+    case "rc":
+      g+=T(cx,y+17,"RC",{c:f.s,s:10,w:600});
+      g+=`<line x1="${cx}" y1="${y+28}" x2="${cx}" y2="${y+38}" stroke="${f.s}"/><line x1="${cx-8}" y1="${y+38}" x2="${cx+8}" y2="${y+38}" stroke="${f.s}" stroke-width="1.6"/><line x1="${cx-8}" y1="${y+43}" x2="${cx+8}" y2="${y+43}" stroke="${f.s}" stroke-width="1.6"/><line x1="${cx}" y1="${y+43}" x2="${cx}" y2="${y+50}" stroke="${f.s}"/><rect x="${cx-4}" y="${y+50}" width="8" height="16" fill="none" stroke="${f.s}"/><line x1="${cx}" y1="${y+66}" x2="${cx}" y2="${y+74}" stroke="${f.s}"/>`;
+      g+=T(cx,y+h-13,"tag",{c:C.text,s:9});break;
+    case "psu":
+      for(let i=0;i<Math.floor((w-24)/7);i++) g+=`<rect x="${x+12+i*7}" y="${y+8}" width="3" height="12" fill="${C.line2}"/>`;
+      g+=T(cx,y+40,"HDR-60-5",{c:f.s,s:11,w:600});g+=T(cx,y+62,"5V DC",{c:C.text,s:16,f:'d',w:600});
+      g+=`<circle cx="${x+w-14}" cy="${y+h-15}" r="3.5" fill="${C.green}"/>`+T(x+12,y+h-11,"MEAN WELL",{c:C.muted,s:8,a:"start"});break;
+    case "pi":
+      g+=`<rect x="${x+14}" y="${y+26}" width="${w-28}" height="46" rx="3" fill="#1d3322" stroke="#3f7a4d"/>`;
+      g+=`<rect x="${cx-18}" y="${y+37}" width="22" height="22" fill="${C.bg}" stroke="${C.steel}" stroke-width=".8"/><rect x="${cx+10}" y="${y+39}" width="14" height="10" fill="${C.bg}" stroke="${C.steel}" stroke-width=".8"/>`;
+      g+=`<rect x="${x+20}" y="${y+63}" width="${w-60}" height="5" fill="${C.amber}" opacity=".55"/>`;
+      g+=T(cx,y+17,"RASPBERRY PI 5",{c:f.s,s:10,w:600});g+=T(cx,y+h-12,"8GB · NVMe · HAOS",{c:C.text,s:9});break;
+    case "usb":
+      g+=T(cx,y+17,"USB 2.0",{c:f.s,s:10,w:600});
+      for(let i=0;i<4;i++){const px=x+10+(i%2)*32,py=y+30+Math.floor(i/2)*16;g+=`<rect x="${px}" y="${py}" width="26" height="9" rx="1" fill="${C.bg}" stroke="${C.steel}"/><rect x="${px+3}" y="${py+2}" width="20" height="3" fill="${C.steel}"/>`;}
+      g+=`<rect x="${x+10}" y="${y+66}" width="18" height="10" fill="${C.bg}" stroke="${C.amber}" stroke-width=".8"/>`+T(x+34,y+74,"5V",{c:C.muted,s:8,a:"start"});
+      g+=T(cx,y+h-12,"DIN hub",{c:C.text,s:9});break;
+    case "mr3u":
+      g+=`<line x1="${x+w-16}" y1="${y}" x2="${x+w-16}" y2="${y-16}" stroke="${f.s}" stroke-width="2.5" stroke-linecap="round"/>`;
+      g+=T(cx,y+17,"SLZB",{c:f.s,s:10,w:600});
+      g+=`<rect x="${x+10}" y="${y+28}" width="${w-20}" height="40" rx="3" fill="${C.bg}" stroke="${C.line2}"/>`;
+      g+=T(cx,y+44,"ZB",{c:C.green,s:9})+T(cx,y+60,"THR",{c:C.green,s:9});
+      g+=T(cx,y+h-12,"MR3U",{c:C.text,s:9});break;
+    case "ks":
+      g+=T(cx,y+17,"RJ45",{c:f.s,s:9,w:600});
+      for(let i=0;i<2;i++){g+=`<rect x="${cx-10}" y="${y+30+i*26}" width="20" height="18" rx="1.5" fill="${C.bg}" stroke="${C.steel}"/><rect x="${cx-5}" y="${y+42+i*26}" width="10" height="5" fill="${C.steel}"/>`;}
+      g+=T(cx,y+h-12,"×2",{c:C.text,s:9});break;
+  }
+  if(stage===2&&d.v2) g+=`<polygon points="${x+w-15},${y} ${x+w-1.5},${y} ${x+w-1.5},${y+13.5}" fill="${C.amber}"/>`;
+  return g;
+}
+
+const REG={};
+function build(svgId,stage,S){
+  const svg=document.getElementById(svgId);
+  let o=`<defs><pattern id="pe_${svgId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="10" fill="#e8c93a" opacity=".75"/></pattern></defs>`;
+  for(let i=0;i<12;i++){o+=T(RX+i*M+M/2,30,i+1,{c:C.muted,s:9});o+=`<line x1="${RX+i*M}" y1="34" x2="${RX+i*M}" y2="40" stroke="${C.line2}"/>`;}
+  o+=`<line x1="${RX+480}" y1="34" x2="${RX+480}" y2="40" stroke="${C.line2}"/>`;
+  const EB=rowTop(3)+24+DH+50;
+  o+=`<rect x="44" y="44" width="552" height="${EB-44}" rx="10" fill="#17191d" stroke="${C.steel}" stroke-width="1.6"/>`;
+  o+=`<rect x="50" y="50" width="540" height="${EB-56}" rx="6" fill="none" stroke="${C.line}"/>`;
+  o+=T(586,62,"Mistral41W · 320×636",{c:C.muted,s:8.5,a:"end"});
+  // feed
+  o+=`<path d="M64 0 V${devY(0)-8} H${RX+M*1.5} V${devY(0)}" fill="none" stroke="${C.red}" stroke-width="3"/>`+T(72,12,"betáp · H07V-K 3×10 mm²",{c:C.red,s:9,a:"start"});
+  // N / PE bars
+  o+=`<rect x="300" y="64" width="110" height="9" rx="2" fill="${C.blue}" opacity=".75"/>`+T(294,72,"N",{c:C.blue,s:10,a:"end",w:600});
+  o+=`<rect x="440" y="64" width="110" height="9" rx="2" fill="${C.pe}" opacity=".85"/><rect x="440" y="64" width="110" height="9" rx="2" fill="url(#pe_${svgId})"/>`+T(434,72,"PE",{c:C.pe,s:10,a:"end",w:600});
+  S.forEach((row,ri)=>{
+    const rt=rowTop(ri),dy=devY(ri);
+    const used=row.items.filter(d=>!d.ghost&&d.t!=="blank").reduce((a,d)=>a+d.w,0);
+    o+=T(RX,rt+11,row.lab,{c:row.selv?(stage===2?C.amber2:"#a88a3c"):C.red,s:9.5,a:"start",ls:".05em",w:600});
+    o+=T(RX+480,rt+11,used+"/12",{c:C.muted,s:9.5,a:"end"});
+    o+=`<rect x="58" y="${dy+DH/2-8}" width="524" height="16" fill="#2b3038" stroke="#3d444f"/>`;
+    for(let k=0;k<26;k++) o+=`<rect x="${64+k*20}" y="${dy+DH/2-3}" width="10" height="6" rx="3" fill="#17191d"/>`;
+    let x=RX;
+    row.items.forEach((d,di)=>{
+      const key=svgId+"-"+ri+"-"+di;
+      REG[key]={d,stage,rail:ri+1,start:(x-RX)/M+1};
+      const nm=d.ghost?d.of.name:d.name;
+      o+=`<g class="dev" data-k="${key}" tabindex="0" role="button" aria-label="${esc(nm)}">`+draw(d,x,dy,stage)+`</g>`;
+      x+=d.w*M;
+    });
+    if(row.comb){
+      const [a,b]=row.comb;
+      o+=`<rect x="${RX+a*M+4}" y="${dy-9}" width="${(b-a)*M-8}" height="4" rx="1" fill="${C.copper}"/>`;
+      let mx=RX+a*M;
+      row.items.forEach(d=>{
+        if(d.ghost||!/^mcb/.test(d.t)) {mx+=d.w*M;return;}
+        o+=`<rect x="${mx+M/2-3}" y="${dy-6}" width="6" height="7" fill="${C.copper}"/>`;
+        if(d.t==="mcb2") o+=`<line x1="${mx+M*1.5-4}" y1="${dy-2}" x2="${mx+M*1.5+4}" y2="${dy-8}" stroke="${C.muted}" stroke-width="1"/>`;
+        mx+=d.w*M;
+      });
+    }
+    if(ri===2){
+      const ly=rt+PITCH-7;
+      o+=`<line x1="50" y1="${ly}" x2="590" y2="${ly}" stroke="${C.amber}" stroke-dasharray="6 5" opacity=".6"/>`;
+      o+=`<rect x="226" y="${ly-9}" width="188" height="18" rx="3" fill="#17191d"/>`+T(320,ly+4,"▲ 230 V AC   ·   SELV DC ▼",{c:C.amber,s:9});
+    }
+  });
+  // K5 feed route: K5 (R2 mod 9-10) -> right margin -> row 4 start
+  const k5x=RX+9*M, gy2=devY(1)+DH+9, gy3=devY(2)+DH+14, hx=RX+1.5*M;
+  const route=`M${k5x} ${devY(1)+DH} V${gy2} H574 V${gy3} H${hx} V${devY(3)-(stage===2?0:4)}`;
+  o+=`<path d="${route}" fill="none" stroke="${C.amber}" stroke-width="1.6" stroke-dasharray="${stage===2?'0':'4 3'}" opacity="${stage===2?.9:.6}"/>`;
+  if(stage===1){o+=`<circle cx="${hx}" cy="${devY(3)-4}" r="4" fill="${C.bg}" stroke="${C.amber}"/>`+T(hx+10,devY(3)+16,"K5 kimenet · szigetelve",{c:"#a88a3c",s:9,a:"start"});}
+  else o+=T(582,gy2+30,"K5",{c:C.amber,s:9,a:"end"});
+  // CT clamps (V2)
+  if(stage===2){
+    const ey=devY(0)+DH+10, em=RX+10.5*M;
+    o+=`<path d="M${em} ${devY(0)+DH} V${ey} H${RX+M}" fill="none" stroke="${C.magenta}" stroke-width="1.2" stroke-dasharray="2 3"/>`;
+    [RX+M,RX+7*M,RX+9*M].forEach(cx=>{o+=`<circle cx="${cx}" cy="${ey}" r="4.5" fill="#17191d" stroke="${C.magenta}" stroke-width="1.3"/>`;});
+    o+=T(RX+4*M,ey-3,"CT",{c:C.magenta,s:8});
+  }
+  // trunk
+  const tb=devY(3)+DH;
+  if(stage===2){
+    const tx=RX+5*M;
+    o+=`<line x1="${tx}" y1="${tb}" x2="${tx}" y2="800" stroke="${C.amber}" stroke-width="7" stroke-linecap="round" opacity=".9"/>`;
+    o+=`<line x1="${tx+12}" y1="${tb}" x2="${tx+12}" y2="800" stroke="${C.blue}" stroke-width="3"/>`;
+    o+=T(tx+26,EB+20,"TRUNK ↓  USB 2.0 · HDMI · RJ45 szerviz",{c:C.amber,s:10,a:"start"});
+    o+=T(tx+26,EB+36,"to chest-level terminal · ~1.3 m",{c:C.muted,s:9,a:"start"});
+  } else {
+    const tx=RX+5*M;
+    o+=`<rect x="${tx-8}" y="${EB-2}" width="28" height="44" fill="none" stroke="${C.line2}" stroke-dasharray="4 4"/>`;
+    o+=T(tx+30,EB+20,"trunk exit · védőcső előkészítve",{c:C.muted,s:10,a:"start"});
+  }
+  svg.innerHTML=o;
+}
+build("cab1",1,V1);build("cab2",2,V2);
+
+/* ---------- inspector ---------- */
+const insp=document.getElementById("insp");let selEl=null;
+function show(el){
+  const r=REG[el.dataset.k];if(!r)return;
+  const g=r.d.ghost, d=g?r.d.of:r.d;
+  const span=d.w>1?`${r.start}–${r.start+d.w-1}`:`${r.start}`;
+  const fn=FNAME[d.fam]||["Reserved",C.muted];
+  let pills=`<span class="pill" style="color:${fn[1]}">${fn[0]}</span>`;
+  if(g==="pot") pills+=`<span class="pill" style="color:${C.red}">PÓTOLANDÓ · NOT IN ORDER</span>`;
+  else if(g==="res") pills+=`<span class="pill" style="color:${C.muted}">SLOT RESERVED IN V1</span>`;
+  else if(r.stage===2&&d.v2) pills+=`<span class="pill" style="color:${C.amber}">ADDED IN V2</span>`;
+  if(d.moved&&!g) pills+=`<span class="pill" style="color:${C.blue}">MOVED FROM ROW 1</span>`;
+  insp.innerHTML=`<div class="ttl">${esc(d.name)}${d.id?` <span class="pill" style="color:${C.text}">${esc(d.id)}</span>`:""}${pills}</div>
+  <div class="k">Spec</div><div class="v">${esc(d.spec)}</div>
+  <div class="k">Position</div><div class="v">${r.stage===1?"V1":"V2"} · row ${r.rail} · module ${span} of 12</div>
+  <div class="k">Role</div><div class="v">${esc(d.role)}</div>`;
+  if(selEl)selEl.classList.remove("sel");selEl=el;el.classList.add("sel");
+}
+document.querySelectorAll(".dev").forEach(el=>{
+  ["mouseenter","focus","click"].forEach(ev=>el.addEventListener(ev,()=>show(el)));
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();show(el);}});
+});
+const first=[...document.querySelectorAll("#cab2 .dev")].find(el=>REG[el.dataset.k].d===D.pi);if(first)show(first);
+
+/* ---------- tables ---------- */
+const lbl=d=>d.id?(d.r&&d.t!=="main"&&d.id!=="SPD"&&d.id!=="F0"?`${d.id} ${d.r}`:d.id):d.name.replace("MeanWell ","").replace("SMLIGHT ","");
+const list=(row,stage)=>row.items.map(d=>{
+  if(d.t==="blank") return `<span class="muted">reserved ×12</span>`;
+  if(d.ghost) return `<span class="muted">${esc(lbl(d.of))}</span>${d.ghost==="pot"?'<span class="tag pot">PÓT.</span>':'<span class="tag" style="color:var(--muted);border:1px solid var(--line2)">V2</span>'}`;
+  return esc(lbl(d))+(stage===2&&d.v2?'<span class="tag new">NEW</span>':"")+(stage===2&&d.moved?'<span class="tag mv">MOVED</span>':"");
+}).join(" · ");
+const used=row=>row.items.filter(d=>!d.ghost&&d.t!=="blank").reduce((a,d)=>a+d.w,0);
+let rt=`<thead><tr><th>Row</th><th>V1 · alap</th><th>Used</th><th>V2 · BRIDGE-DN</th><th>Used</th></tr></thead><tbody>`;
+for(let i=0;i<4;i++) rt+=`<tr><td class="rail ${i===3?'s':''}">R${i+1} · ${i<3?"230 V":"SELV"}</td><td>${list(V1[i],1)}</td><td class="num">${used(V1[i])}/12</td><td>${list(V2[i],2)}</td><td class="num">${used(V2[i])}/12</td></tr>`;
+const tot=S=>S.reduce((a,r)=>a+used(r),0);
+rt+=`<tr><td class="rail" style="color:var(--muted)">Total</td><td></td><td class="num">${tot(V1)}/48</td><td></td><td class="num">${tot(V2)}/48</td></tr></tbody>`;
+document.getElementById("railtbl").innerHTML=rt;
+
+const circ=["K1","K2","K3","K4","K5","K6","K7","K8","K9","K10","K11","K12","K13","K14","T"].map(k=>D[k]);
+let dt=`<thead><tr><th>Kör</th><th>Funkció</th><th>Megszakító</th><th>Row</th></tr></thead><tbody>`;
+circ.forEach(d=>{const p=d.t==="mcb2"?"2P":"1P";const row=d.t==="mcb2"?"R2":"R3";
+  dt+=`<tr><td class="num">${d.id}</td><td>${esc(d.name)}${d.id==="K5"?'<span class="tag new">→ HDR-60-5</span>':""}</td><td class="num">${d.r} ${p}</td><td class="num">${row}</td></tr>`;});
+dt+=`</tbody>`;
+document.getElementById("dirtbl").innerHTML=dt;
+
+const bom=[
+  ["sub","Ordered · V1"],
+  ["EZ9R49225","FI relé 25/2 30 mA, A osztály, Easy9 PRO","1 db","R1"],
+  ["EZ9F57216","2C 16A 6kA kismegszakító","1 db","R2 · K1"],
+  ["EZ9F57213","2C 13A 6kA kismegszakító","3 db","R2 · K2–K4"],
+  ["EZ9F57210","2C 10A 6kA kismegszakító","1 db","R2 · K5"],
+  ["EZ9F27110","1B 10A 6kA kismegszakító","4 db","R3 · K6–K9"],
+  ["EZ9F57116","1C 16A 6kA kismegszakító","2 db","R3 · K10–K11"],
+  ["EZ9F57113","1C 13A 6kA kismegszakító","3 db","R3 · K12, K13, T"],
+  ["EZ9F27106","1B 6A 6kA kismegszakító","1 db","R3 · K14"],
+  ["EZ9A34223","Easy9 PRO moduláris csengő 230 VAC","1 db","R3"],
+  ["R9XFH112","Fésűs sín 1P villás, 12 modul, 63 A","4 db","R2, R3"],
+  ["2080184","HLAK 35-1/6 M2 fővezeték sorkapocs, kék","1 db","R1"],
+  ["2080183","HLAK 35-1/6 M2 fővezeték sorkapocs, szürke","1 db","R1"],
+  ["—","H07V-K 1×10 fekete / kék / z-s","3-3 fm","betáp"],
+  ["1SPE007717F0721","ABB Mistral41W 4/48 kiselosztó, IP41, átlátszó ajtó","1 db","—"],
+  ["sub","Pótolandó · missing from the V1 order"],
+  ["—","Főkapcsoló 2P","1 db","R1"],
+  ["—","SPD T2 1P+N + előtétvédelem","1 + 1","R1"],
+  ["—","Keystone adapter RJ45 + DIN tartó","2 db","R4"],
+  ["sub","V2 additions"],
+  ["—","Shelly Pro 3EM + 3 CT","1 db","R1"],
+  ["—","Shelly Pro 2","1 db","R2"],
+  ["—","RC-tag · 100 kΩ + 10 µF MKP, DIN ház","1 db","R3"],
+  ["—","MeanWell HDR-60-5","1 db","R4"],
+  ["—","Raspberry Pi 5 8 GB + NVMe + DIN tartó","1 db","R4"],
+  ["—","DIN USB 2.0 hub (rail-powered)","1 db","R4"],
+  ["—","SMLIGHT SLZB-MR3U + DIN tartó","1 db","R4"]
+];
+let bt=`<thead><tr><th>Cikkszám</th><th>Megnevezés</th><th>Menny.</th><th>Hely</th></tr></thead><tbody>`;
+bom.forEach(r=>{ if(r[0]==="sub"){bt+=`<tr class="sub"><td colspan="4">${esc(r[1])}</td></tr>`;return;}
+  bt+=`<tr><td class="num">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="num">${esc(r[2])}</td><td class="num">${esc(r[3])}</td></tr>`;});
+document.getElementById("bomtbl").innerHTML=bt+`</tbody>`;
+
+/* ---------- wall elevation, to scale ---------- */
+(function(){
+  const W=document.getElementById("wall");
+  const Y=m=>480-m*150;  // 0 m at y=480, 150 px per metre
+  let o="";
+  for(let m=0;m<=3;m+=0.5){o+=`<line x1="54" y1="${Y(m)}" x2="${m%1===0?66:62}" y2="${Y(m)}" stroke="${C.line2}"/>`;if(m%1===0)o+=T(48,Y(m)+4,m.toFixed(1)+" m",{c:C.muted,s:10,a:"end"});}
+  o+=`<line x1="60" y1="${Y(0)}" x2="60" y2="${Y(3.1)}" stroke="${C.line2}"/>`;
+  o+=`<line x1="70" y1="${Y(3.05)}" x2="440" y2="${Y(3.05)}" stroke="${C.steel}" stroke-width="2"/>`+T(440,Y(3.05)-6,"mennyezet · >3.0 m",{c:C.muted,s:10,a:"end"});
+  o+=`<line x1="70" y1="${Y(0)}" x2="440" y2="${Y(0)}" stroke="${C.steel}" stroke-width="2"/>`+T(440,Y(0)+16,"padló",{c:C.muted,s:10,a:"end"});
+  const bw=0.32*150,bh=0.636*150,bx=150,btop=Y(2.55);
+  o+=`<rect x="${bx}" y="${btop}" width="${bw}" height="${bh}" rx="3" fill="#17191d" stroke="${C.steel}" stroke-width="1.5"/>`;
+  for(let i=0;i<4;i++){const ry=btop+10+i*(bh-16)/4;o+=`<rect x="${bx+5}" y="${ry}" width="${bw-10}" height="${(bh-16)/4-5}" fill="${i<3?'#2a1d1f':'#2a2415'}" stroke="${i<3?C.red:C.amber}" stroke-width=".8"/>`;}
+  o+=`<line x1="${bx+bw/2}" y1="${Y(3.05)}" x2="${bx+bw/2}" y2="${btop}" stroke="${C.red}" stroke-width="2"/>`;
+  o+=T(bx+bw+12,btop+14,"Mistral41W 320×636",{c:C.text,s:11,a:"start"});
+  o+=T(bx+bw+12,btop+30,"top ≈ 2.55 m · R1–R3 230 V",{c:C.muted,s:10,a:"start"});
+  o+=T(bx+bw+12,btop+46,"R4 BRIDGE-DN ≈ 2.0 m",{c:C.amber2,s:10,a:"start"});
+  const tx=bx+bw/2+8, ttop=Y(1.45);
+  o+=`<line x1="${tx}" y1="${btop+bh}" x2="${tx}" y2="${ttop}" stroke="${C.amber}" stroke-width="5" stroke-linecap="round"/>`;
+  o+=T(tx+12,(btop+bh+ttop)/2,"trunk · USB 2.0 · HDMI · RJ45",{c:C.amber,s:10,a:"start"});
+  o+=`<rect x="${tx-34}" y="${ttop}" width="68" height="${0.3*150}" rx="4" fill="#15232d" stroke="${C.blue}" stroke-width="1.5"/>`;
+  o+=`<rect x="${tx-24}" y="${ttop+8}" width="48" height="24" rx="2" fill="${C.bg}" stroke="${C.line2}"/>`;
+  o+=T(tx+44,ttop+18,"terminál · 1.2–1.4 m",{c:C.blue,s:11,a:"start"});
+  o+=T(tx+44,ttop+34,"screen · USB · HDMI · RJ45",{c:C.muted,s:10,a:"start"});
+  o+=`<line x1="${tx-34}" y1="${Y(1.3)}" x2="70" y2="${Y(1.3)}" stroke="${C.line2}" stroke-dasharray="3 3"/>`;
+  W.innerHTML=o;
+})();
+})();
+</script>
+
+</body></html>

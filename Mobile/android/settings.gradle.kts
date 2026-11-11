@@ -25,3 +25,4 @@ rootProject.name = "VRG-Mobile"
 include(":kit-core", ":airdeck-core", ":relay-core")
 if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":feature-notes", ":feature-update", ":feature-pulse", ":feature-sphere", ":feature-ports", ":feature-launch", ":feature-drop", ":feature-screen", ":feature-city", ":feature-inbox", ":feature-net", ":app")
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
+if (!jvmOnly) include(":feature-archive") // WP M18 Archívum

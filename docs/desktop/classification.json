@@ -662,6 +662,18 @@
    "reason": "a build / test / serve action of START R, drawn behind stack"
   },
   {
+   "id": "menu:proj:R/A",
+   "name": "Rétegverem · Archívum",
+   "source": "vrg-menu",
+   "type": "knowledge base",
+   "qualifier": "artifact archive",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "archive",
+   "reason": "is the catalog item `archive`"
+  },
+  {
    "id": "menu:proj:R/T",
    "name": "Rétegverem · Telefonra",
    "source": "vrg-menu",
@@ -6108,6 +6120,18 @@
    "parent": "go",
    "unit": "",
    "reason": "a GO codephrase file a session reads"
+  },
+  {
+   "id": "dir:Archive",
+   "name": "Archive",
+   "source": "folders",
+   "type": "knowledge base",
+   "qualifier": "artifact archive",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "archive",
+   "reason": "is the catalog item `archive`"
   },
   {
    "id": "dir:BRIDGE",

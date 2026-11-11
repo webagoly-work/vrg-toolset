@@ -1,0 +1,1769 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<title>BRIDGE FX-CORE 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: egyoszlopos műszaki adatlap, VRG BuildTree borostyán tokenekkel; rajzok mm-léptékben */
+:root{
+  --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d; --faint:#6f624f;
+  --accent:#e6a532; --accent-dim:#8a6a2a; --line:#3a2f22;
+  --hv:#d9583a; --hv-fill:rgba(217,88,58,.10); --selv:#6fb58a; --selv-fill:rgba(111,181,138,.09);
+  --rf:#5fb4d6; --v12:#e6a532; --v5:#7aa2e8; --own:#7fc58f; --ord:#e6a532; --later:#8f7cd0;
+  --pe:#a7c24a; --nbl:#5d8fd8; --lbr:#a5683a;
+  --f-disp:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow","Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4efe6; --panel:#fffdf8; --panel2:#f3ece0; --ink:#221c14; --muted:#6d6252; --faint:#a3967f;
+    --accent:#a26f12; --accent-dim:#b98d3a; --line:#ddd1bb;
+    --hv:#b8401f; --hv-fill:rgba(184,64,31,.08); --selv:#3c7a4f; --selv-fill:rgba(60,122,79,.08);
+    --rf:#20799e; --v12:#a26f12; --v5:#3863b5; --own:#3c7a4f; --ord:#a26f12; --later:#6a4fa0;
+    --pe:#6f8a14; --nbl:#2f62b0; --lbr:#8a5126;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+    --bg:#f4efe6; --panel:#fffdf8; --panel2:#f3ece0; --ink:#221c14; --muted:#6d6252; --faint:#a3967f;
+    --accent:#a26f12; --accent-dim:#b98d3a; --line:#ddd1bb;
+    --hv:#b8401f; --hv-fill:rgba(184,64,31,.08); --selv:#3c7a4f; --selv-fill:rgba(60,122,79,.08);
+    --rf:#20799e; --v12:#a26f12; --v5:#3863b5; --own:#3c7a4f; --ord:#a26f12; --later:#6a4fa0;
+    --pe:#6f8a14; --nbl:#2f62b0; --lbr:#8a5126;
+    color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:28px 80px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,6vw,54px);font-weight:700;letter-spacing:.01em;line-height:1}
+h2{font-size:26px;font-weight:700;letter-spacing:.02em;display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+h2 .sec{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.05em}
+h3{font-size:18px;font-weight:600;letter-spacing:.03em;margin:18px 0 6px}
+p{margin:6px 0 10px;max-width:72ch}
+.lede{color:var(--muted);max-width:68ch;font-size:16px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+header.top{border-bottom:3px solid var(--accent);padding-bottom:18px;margin-bottom:8px;display:grid;gap:10px}
+.plate{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.plate span{font-family:var(--f-mono);font-size:12.5px;border:1px solid var(--line);background:var(--panel);padding:4px 9px;border-radius:4px;font-variant-numeric:tabular-nums}
+.plate b{color:var(--accent);font-weight:600}
+nav.toc{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin:14px 0 6px}
+nav.toc a{text-decoration:none;color:var(--muted)} nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent)}
+section{padding-top:30px;border-top:1px solid var(--line);margin-top:30px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;margin:12px 0}
+.fig svg{display:block;width:100%;min-width:720px;height:auto}
+.fig.narrow svg{min-width:520px}
+.cap{font-size:12.5px;color:var(--muted);margin-top:6px;font-family:var(--f-mono)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;border:1.5px solid}
+.tbl{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-disp);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--panel2);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--f-mono);font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:3px;white-space:nowrap}
+td.num{text-align:right;white-space:nowrap}
+tr.sum td{font-weight:600;background:var(--panel2)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid;white-space:nowrap;letter-spacing:.02em}
+.c-own{color:var(--own);border-color:var(--own)} .c-ord{color:var(--ord);border-color:var(--ord)} .c-later{color:var(--later);border-color:var(--later)}
+.c-hv{color:var(--hv);border-color:var(--hv)} .c-selv{color:var(--selv);border-color:var(--selv)}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.mod{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.mod .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.mod .nm{font-family:var(--f-disp);font-size:20px;font-weight:700;letter-spacing:.03em}
+.mod .role{font-size:13px;color:var(--muted)}
+.mod ul{margin:2px 0 0;padding-left:18px;font-size:13.5px}
+.mod li{margin:2px 0}
+.mod .chips{display:flex;gap:5px;flex-wrap:wrap}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.cols2{grid-template-columns:1fr}}
+.cols2>*{min-width:0}
+.note{border-left:3px solid var(--accent);background:var(--panel);padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:14px}
+.note.hv{border-left-color:var(--hv)}
+.note b{color:var(--ink)}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:10px 0;display:grid;gap:6px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 54px 1fr;gap:8px;align-items:baseline;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:7px 10px;font-size:14px}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--f-mono);color:var(--accent);font-weight:600}
+ol.steps .k{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.road{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.road>div{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent-dim);border-radius:5px;padding:10px 12px;font-size:13.5px}
+.road>div.now{border-top-color:var(--accent)}
+.road h4{font-family:var(--f-disp);font-size:17px;margin:0 0 4px;letter-spacing:.03em}
+.code{position:relative;margin-top:10px}
+.code pre{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:14px;max-height:620px;overflow:auto;font-family:var(--f-mono);font-size:12px;line-height:1.5;margin:0;tab-size:2}
+.code .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.code .fn{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+button.copy{font-family:var(--f-disp);font-size:14px;font-weight:600;letter-spacing:.04em;background:var(--accent);color:var(--bg);border:none;border-radius:4px;padding:6px 14px;cursor:pointer}
+button.copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.yc{color:var(--faint)} .yk{color:var(--accent)} .ys{color:var(--selv)}
+footer{margin-top:40px;font-size:12.5px;color:var(--muted);font-family:var(--f-mono);border-top:1px solid var(--line);padding-top:12px}
+/* SVG */
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .t{font-size:4.1px} svg .ts{font-size:3.2px;fill:var(--muted)} svg .tb{font-size:5px;font-weight:600;font-family:var(--f-disp)} svg .tm{font-family:var(--f-mono);font-size:3.2px}
+svg .box{fill:var(--panel2);stroke:var(--ink);stroke-width:1.2}
+svg .wallin{fill:none;stroke:var(--faint);stroke-width:.4}
+svg .plate{fill:none;stroke:var(--faint);stroke-width:.4;stroke-dasharray:2 1.5}
+svg .zhv{fill:var(--hv-fill)} svg .zselv{fill:var(--selv-fill)}
+svg .barrier{fill:none;stroke:var(--hv);stroke-width:1.6;stroke-linecap:round}
+svg .rail{fill:var(--faint);opacity:.55}
+svg .dv{fill:var(--panel);stroke-width:.7}
+svg .own{stroke:var(--own)} svg .ord{stroke:var(--ord)} svg .later{stroke:var(--later);stroke-dasharray:2 1.2}
+svg .mute{fill:var(--panel2);stroke:var(--faint);stroke-width:.5}
+svg .tL{fill:var(--lbr)} svg .tN{fill:var(--nbl)} svg .tPE{fill:var(--pe)}
+svg .conn{fill:var(--panel);stroke:var(--ink);stroke-width:.6}
+svg .connhv{fill:var(--panel);stroke:var(--hv);stroke-width:.8}
+svg .conndc{fill:var(--panel);stroke:var(--v12);stroke-width:.8}
+svg .connsg{fill:var(--panel);stroke:var(--rf);stroke-width:.8}
+svg .grom{fill:var(--bg);stroke:var(--hv);stroke-width:.6}
+svg .dim{stroke:var(--muted);stroke-width:.35;fill:none}
+svg .vent{fill:none;stroke:var(--muted);stroke-width:.5}
+svg .ant{fill:none;stroke:var(--rf);stroke-width:.8;stroke-dasharray:3 1.5}
+svg .hvtx{fill:var(--hv)} svg .selvtx{fill:var(--selv)} svg .acctx{fill:var(--accent)} svg .rftx{fill:var(--rf)}
+/* block diagram (px units) */
+svg.bd text{font-size:13px} svg.bd .bt{font-family:var(--f-disp);font-size:16px;font-weight:700} svg.bd .bs{font-size:11.5px;fill:var(--muted)}
+svg.bd .nb{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+svg.bd .core{fill:var(--panel2);stroke:var(--accent);stroke-width:2}
+svg.bd .bridge{fill:var(--panel2);stroke:var(--later);stroke-width:1.5}
+svg.bd .sub{fill:var(--bg);stroke:var(--line)}
+svg.bd .w{fill:none;stroke-width:2}
+svg.bd .wrf{stroke:var(--rf)} svg.bd .wse{stroke:var(--selv)} svg.bd .whv{stroke:var(--hv)} svg.bd .wdc{stroke:var(--v12)} svg.bd .wda{stroke:var(--muted);stroke-dasharray:6 4} svg.bd .wlt{stroke:var(--later);stroke-dasharray:6 4}
+svg.bd .ah{fill:var(--muted)}
+@media (prefers-reduced-motion:no-preference){ .copy{transition:filter .15s} .copy:hover{filter:brightness(1.1)} }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Varler Group · BRIDGE FX termékcsalád · r1 · 2026-10-02</div>
+  <h1>BRIDGE · FX-CORE 01</h1>
+  <p class="lede">Moduláris effektvilágítás-központ 300 × 200 × 100 mm-es dobozban. Egy ESP32-S3 vezérel nyolc kapcsolt csatornát (4 × 230 V~ SSR, 4 × univerzális relé), négy PWM-es DC csatornát és két címezhető pixel kimenetet. Kinetikus fali kapcsolóval, 433 MHz-es távirányítóval, két kapacitív gombbal és telefonról is kezelhető; ESPHome-on fut, és önállóan is teljes értékű.</p>
+  <div class="plate">
+    <span>Doboz <b>300×200×100</b> mm</span>
+    <span>Kapcsolt <b>8</b> csat. (K1–K8)</span>
+    <span>PWM <b>4</b> (D1–D4)</span>
+    <span>Pixel <b>2</b> (P1–P2)</span>
+    <span>Logika <b>5 V=</b> · kimenet <b>5/12 V=</b> · kapcsol <b>230 V~</b></span>
+    <span>ESPHome <b>2026.9</b> validált</span>
+  </div>
+  <nav class="toc" aria-label="Tartalom">
+    <a href="#req">Követelmények</a><a href="#block">Blokkvázlat</a><a href="#layout">Doboz-elrendezés</a><a href="#mods">Modulok</a><a href="#ch">Csatornák</a><a href="#pwr">Táp és DIN</a><a href="#io">Lábkiosztás</a><a href="#ctl">Vezérlés</a><a href="#brands">Gyártók</a><a href="#bridge">BRIDGE</a><a href="#bom">Beszerzés</a><a href="#yaml">ESPHome</a><a href="#bring">Élesztés</a><a href="#safety">Biztonság</a>
+  </nav>
+</header>
+
+<!-- ============ KÖVETELMÉNYEK ============ -->
+<section id="req">
+  <h2><span class="sec">§1</span>Követelmény → megoldás</h2>
+  <p>A kérés minden pontja egy konkrét modulra vagy funkcióra képződik le. A jobb oldali oszlop azt mutatja, hol találod a tervben.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Követelmény</th><th>Megoldás</th><th>Hol</th></tr></thead>
+    <tbody>
+      <tr><td>Ambient és alap VFX jelenetek, témák</td><td>8 jelenet (Ki, Ambient, Mozi, Party, Gyertya, Vihar, Éjszakai út, Egyedi), ESPHome fényeffektek + saját „Vihar” villám-lambda</td><td>§9, §12</td></tr>
+      <tr><td>Szabadon programozható KI/BE, telefonról előre</td><td>2 időprogram (A/B): BE-idő, KI-idő, jelenet, engedélyezés. Telefonról állítható HA nélkül is (helyi web_server), flash-ben marad</td><td>§9, §12</td></tr>
+      <tr><td>Legalább 8 csatorna</td><td>K1–K8 kapcsolt + D1–D4 PWM + P1–P2 pixel = 14 kimenet; PCF8575-ön további 6 szabad láb bővítésre</td><td>§5</td></tr>
+      <tr><td>5 V-os vezérlés, 12 V kiadása</td><td>PSU2 5 V/6,5 A a logikának és P1-nek, PSU1 12 V/4,5 A a D-csatornáknak és P2-nek; csatornánként 5/12 V választó</td><td>§6</td></tr>
+      <tr><td>5 V, 12 V DC és 230 V AC kapcsolása</td><td>K1–K4 SSR (csak AC), K5–K8 száraz érintkezős relé (AC vagy DC), D1–D4 MOSFET (DC, dimmelhető)</td><td>§5</td></tr>
+      <tr><td>SSR és ESP-kompatibilis 5 V-os relé</td><td>FX-AC4: 4 × G3MB-202P SSR; FX-RL4: 4 × 5 V-os optós relé, mindkettő aktív-alacsony bemenettel a PCF8575-ről</td><td>§4</td></tr>
+      <tr><td>Távirányító, távkapcsoló, fali kinetikus kapcsoló</td><td>433 MHz superhet vevő (EV1527): önjáró kinetikus fali kapcsoló + 4-gombos kézi távirányító. Tanítás telefonról, 6 kódhely</td><td>§9</td></tr>
+      <tr><td>Két kapacitív kapcsoló, részleges vezérlés</td><td>CAP1 (BE/KI, jelenetváltás) és CAP2 (fényerő, éjszakai fény, később zene) — koppintás, dupla, tartás</td><td>§9</td></tr>
+      <tr><td>230 V-os effektvilágítás</td><td>K1–K4 IEC C13 aljzatokon, csatornánként T2A biztosítóval</td><td>§3, §5</td></tr>
+      <tr><td>Mozgás- és fényérzékelő, éjszakai átkapcsolás</td><td>PIR (HC-SR501 / RCWL-0516) + BH1750: sötétben mozgásra „Éjszakai út”, beállítható küszöb és időtartam</td><td>§9</td></tr>
+      <tr><td>Később zene: saját fájlok, Spotify, hangeffektek</td><td>v0: LX06LA + LM386 hangminta. v2: FX-SND modul (ESPHome media_player) + Music Assistant a BRIDGE-en</td><td>§4, §11</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ BLOKKVÁZLAT ============ -->
+<section id="block">
+  <h2><span class="sec">§2</span>Rendszer-blokkvázlat</h2>
+  <div class="fig">
+  <svg class="bd" viewBox="0 0 1000 560" role="img" aria-label="FX-CORE blokkvázlat: bemenetek, vezérlő, kimenetek, táp">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+    <!-- BRIDGE -->
+    <rect class="bridge" x="360" y="14" width="280" height="58" rx="6"/>
+    <text class="bt" x="500" y="38" text-anchor="middle">BRIDGE-DN</text>
+    <text class="bs" x="500" y="58" text-anchor="middle">Home Assistant · MQTT · Music Assistant</text>
+    <path class="w wda" d="M500,72 L500,148" marker-end="url(#ar)"/>
+    <text class="bs" x="510" y="114">WiFi · natív API (titkosított)</text>
+    <!-- inputs -->
+    <g>
+      <rect class="nb" x="20" y="70" width="230" height="46" rx="5"/><text x="32" y="90">433 MHz kinetikus fali kapcsoló</text><text class="bs" x="32" y="106">önjáró, elem nélkül · KIN-1/2</text>
+      <rect class="nb" x="20" y="126" width="230" height="46" rx="5"/><text x="32" y="146">433 MHz kézi távirányító</text><text class="bs" x="32" y="162">4 gomb · TAV-A…D</text>
+      <rect class="nb" x="20" y="182" width="230" height="46" rx="5"/><text x="32" y="202">IR távirányító (opció)</text><text class="bs" x="32" y="218">NEC · bármely kódhelyre tanítható</text>
+      <rect class="nb" x="20" y="238" width="230" height="46" rx="5"/><text x="32" y="258">CAP1 · CAP2 kapacitív</text><text class="bs" x="32" y="274">TTP223 · koppint / dupla / tart</text>
+      <rect class="nb" x="20" y="294" width="230" height="46" rx="5"/><text x="32" y="314">PIR mozgás · BH1750 fény</text><text class="bs" x="32" y="330">éjszakai automata</text>
+      <rect class="nb" x="20" y="350" width="230" height="46" rx="5"/><text x="32" y="370">Telefon</text><text class="bs" x="32" y="386">helyi web_server · HA app</text>
+    </g>
+    <path class="w wrf" d="M250,93 C310,93 310,190 360,190" marker-end="url(#ar)"/>
+    <path class="w wrf" d="M250,149 C305,149 305,205 360,205" marker-end="url(#ar)"/>
+    <path class="w wrf" d="M250,205 C300,205 300,220 360,220" marker-end="url(#ar)"/>
+    <path class="w wse" d="M250,261 C300,261 300,262 360,262" marker-end="url(#ar)"/>
+    <path class="w wse" d="M250,317 C300,317 300,300 360,300" marker-end="url(#ar)"/>
+    <path class="w wda" d="M250,373 C305,373 305,345 360,345" marker-end="url(#ar)"/>
+    <!-- core -->
+    <rect class="core" x="360" y="150" width="280" height="226" rx="8"/>
+    <text class="bt" x="500" y="176" text-anchor="middle">FX-CORE</text>
+    <text class="bs" x="500" y="193" text-anchor="middle">ESP32-S3 N16R8 · ESPHome</text>
+    <rect class="sub" x="378" y="206" width="118" height="30" rx="4"/><text x="437" y="226" text-anchor="middle">Jelenetmotor</text>
+    <rect class="sub" x="504" y="206" width="118" height="30" rx="4"/><text x="563" y="226" text-anchor="middle">Időprogram A/B</text>
+    <rect class="sub" x="378" y="244" width="118" height="30" rx="4"/><text x="437" y="264" text-anchor="middle">RF/IR tanítás</text>
+    <rect class="sub" x="504" y="244" width="118" height="30" rx="4"/><text x="563" y="264" text-anchor="middle">Éjszakai automata</text>
+    <rect class="sub" x="378" y="282" width="118" height="30" rx="4"/><text x="437" y="302" text-anchor="middle">Effektek (LEDC/RMT)</text>
+    <rect class="sub" x="504" y="282" width="118" height="30" rx="4"/><text x="563" y="302" text-anchor="middle">OLED · buzzer</text>
+    <rect class="sub" x="378" y="320" width="244" height="40" rx="4"/><text x="500" y="337" text-anchor="middle">Flash: tanult kódok, programok,</text><text x="500" y="353" text-anchor="middle">jelenet, fényerő</text>
+    <!-- IOX -->
+    <rect class="nb" x="400" y="404" width="200" height="44" rx="5" style="stroke:var(--accent-dim)"/>
+    <text x="500" y="424" text-anchor="middle">FX-IOX · PCF8575 0x20</text><text class="bs" x="500" y="440" text-anchor="middle">I²C → BSS138 → 5 V oldal</text>
+    <path class="w wda" d="M500,376 L500,402" marker-end="url(#ar)"/>
+    <!-- outputs -->
+    <g>
+      <rect class="nb" x="750" y="70" width="230" height="46" rx="5" style="stroke:var(--hv)"/><text x="762" y="90">K1–K4 · SSR 230 V~</text><text class="bs" x="762" y="106">IEC C13 · T2A/csatorna</text>
+      <rect class="nb" x="750" y="126" width="230" height="46" rx="5" style="stroke:var(--hv)"/><text x="762" y="146">K5–K8 · relé, száraz érintkező</text><text class="bs" x="762" y="162">AC vagy DC · M20 tömszelence</text>
+      <rect class="nb" x="750" y="182" width="230" height="46" rx="5" style="stroke:var(--v12)"/><text x="762" y="202">D1–D4 · PWM 5/12 V</text><text class="bs" x="762" y="218">MOSFET · GX12-2</text>
+      <rect class="nb" x="750" y="238" width="230" height="46" rx="5" style="stroke:var(--v12)"/><text x="762" y="258">P1 5 V · P2 12 V pixel</text><text class="bs" x="762" y="274">WS2812B / WS2815 · GX16-3</text>
+      <rect class="nb" x="750" y="294" width="230" height="46" rx="5"/><text x="762" y="314">SFX v0 · LX06LA → LM386</text><text class="bs" x="762" y="330">10 s hangminta a Vihar jelenethez</text>
+      <rect class="nb" x="750" y="350" width="230" height="46" rx="5" style="stroke:var(--later);stroke-dasharray:6 4"/><text x="762" y="370">FX-SND (v2)</text><text class="bs" x="762" y="386">I²S hang · Spotify · saját fájlok</text>
+    </g>
+    <path class="w whv" d="M600,420 C700,420 690,93 748,93" marker-end="url(#ar)"/>
+    <path class="w whv" d="M600,430 C712,430 700,149 748,149" marker-end="url(#ar)"/>
+    <path class="w wdc" d="M640,215 C700,215 700,205 748,205" marker-end="url(#ar)"/>
+    <path class="w wdc" d="M640,262 L748,262" marker-end="url(#ar)"/>
+    <path class="w wse" d="M640,300 C700,300 700,317 748,317" marker-end="url(#ar)"/>
+    <path class="w wlt" d="M640,43 L990,43 L990,373 L984,373" marker-end="url(#ar)"/>
+    <text class="bs" x="700" y="36">Music Assistant → media_player</text>
+    <!-- power -->
+    <g>
+      <rect class="nb" x="20" y="470" width="960" height="80" rx="6" style="stroke:var(--accent-dim)"/>
+      <text class="bt" x="36" y="494">Táplánc</text>
+      <text x="36" y="516">230 V~ → Q1 1P+N B10 → F0 → PSU1 12 V 4,5 A · PSU2 5 V 6,5 A → 0 V csillagpont (SELV, nem földelt)</text>
+      <text class="bs" x="36" y="538">Opció „SH”: 24 V= a BRIDGE shadow rétegről; ilyenkor a 230 V csak a K1–K8 terhelésekhez kell.</text>
+    </g>
+  </svg>
+  </div>
+  <div class="legend">
+    <span><i style="border-color:var(--rf)"></i>rádió / IR</span>
+    <span><i style="border-color:var(--selv)"></i>érintés, érzékelő, hang</span>
+    <span><i style="border-color:var(--hv)"></i>230 V~ kapcsolás</span>
+    <span><i style="border-color:var(--v12)"></i>DC teljesítmény</span>
+    <span><i style="border-color:var(--muted);border-style:dashed"></i>hálózat / adat</span>
+    <span><i style="border-color:var(--later);border-style:dashed"></i>későbbi bővítés</span>
+  </div>
+</section>
+
+<!-- ============ ELRENDEZÉS ============ -->
+<section id="layout">
+  <h2><span class="sec">§3</span>Doboz-elrendezés 300 × 200 × 100</h2>
+  <p>Felülnézet, levett fedéllel, mm-léptékben. A 230 V-os zóna L alakú: felül a DIN-sín, bal alul a kapcsolómodulok. A SELV elektronika a jobb alsó, válaszfallal leválasztott rekeszben ül. A falakon a csatlakozó családja jelzi a feszültséget, így nem lehet összecserélni: 230 V = IEC C13, DC = GX12, pixel = GX16-3, érzékelő = GX16-5.</p>
+  <div class="fig">
+  <svg viewBox="-34 -46 372 300" role="img" aria-label="FX-CORE doboz felülnézeti elrendezése mm-léptékben">
+    <!-- outer box and zones -->
+    <rect class="box" x="0" y="0" width="300" height="200" rx="7"/>
+    <polygon class="zhv" points="3,3 297,3 297,106 152,106 152,197 3,197"/>
+    <rect class="zselv" x="152" y="106" width="145" height="91"/>
+    <rect class="wallin" x="3" y="3" width="294" height="194" rx="5"/>
+    <rect class="plate" x="10" y="10" width="280" height="180"/>
+    <text class="tm hvtx" x="276" y="20" text-anchor="end">230 V~ ZÓNA</text>
+    <text class="tm selvtx" transform="translate(217.5,150) rotate(-90)" text-anchor="middle">SELV ZÓNA</text>
+
+    <!-- DIN rail -->
+    <rect class="rail" x="22" y="53" width="250" height="8"/>
+    <rect class="mute" x="22" y="37" width="9.5" height="40"/>
+    <rect class="mute" x="245.3" y="37" width="9.5" height="40"/>
+    <!-- Q1 -->
+    <rect class="dv ord" x="31.5" y="14.5" width="18" height="85"/>
+    <text class="tb" transform="translate(42.5,57) rotate(-90)" text-anchor="middle">Q1 · 1P+N B10</text>
+    <!-- PSU1/2 -->
+    <rect class="dv ord" x="49.5" y="12" width="52.5" height="90"/>
+    <text class="tb" x="75.75" y="30" text-anchor="middle">PSU1</text>
+    <text class="t" x="75.75" y="38" text-anchor="middle">HDR-60-12</text>
+    <text class="ts" x="75.75" y="44" text-anchor="middle">12 V · 4,5 A</text>
+    <text class="tm acctx" x="75.75" y="94" text-anchor="middle">+12 V →</text>
+    <rect class="dv ord" x="102" y="12" width="52.5" height="90"/>
+    <text class="tb" x="128.25" y="30" text-anchor="middle">PSU2</text>
+    <text class="t" x="128.25" y="38" text-anchor="middle">HDR-60-5</text>
+    <text class="ts" x="128.25" y="44" text-anchor="middle">5 V · 6,5 A</text>
+    <text class="tm" x="128.25" y="94" text-anchor="middle" style="fill:var(--v5)">+5 V →</text>
+    <!-- fuses F0-F5 -->
+    <g>
+      <rect class="dv ord" x="154.5" y="27" width="8.2" height="60"/><rect class="dv ord" x="162.7" y="27" width="8.2" height="60"/>
+      <rect class="dv ord" x="170.9" y="27" width="8.2" height="60"/><rect class="dv ord" x="179.1" y="27" width="8.2" height="60"/>
+      <rect class="dv ord" x="187.3" y="27" width="8.2" height="60"/><rect class="dv ord" x="195.5" y="27" width="8.2" height="60"/>
+      <text class="tm" x="158.6" y="34" text-anchor="middle">F0</text><text class="tm" x="166.8" y="34" text-anchor="middle">F1</text>
+      <text class="tm" x="175" y="34" text-anchor="middle">F2</text><text class="tm" x="183.2" y="34" text-anchor="middle">F3</text>
+      <text class="tm" x="191.4" y="34" text-anchor="middle">F4</text><text class="tm" x="199.6" y="34" text-anchor="middle">F5</text>
+      <text class="ts" x="179.1" y="22" text-anchor="middle">biztosítós sorkapocs 5×20</text>
+      <text class="ts" x="179.1" y="95" text-anchor="middle">F0 táp · F1–F4 SSR · F5 relé</text>
+    </g>
+    <!-- X1 distribution -->
+    <g>
+      <rect class="tL" x="203.7" y="33" width="5.2" height="48"/><rect class="tL" x="208.9" y="33" width="5.2" height="48"/>
+      <rect class="tN" x="214.1" y="33" width="5.2" height="48"/><rect class="tN" x="219.3" y="33" width="5.2" height="48"/><rect class="tN" x="224.5" y="33" width="5.2" height="48"/>
+      <rect class="tPE" x="229.7" y="33" width="5.2" height="48"/><rect class="tPE" x="234.9" y="33" width="5.2" height="48"/><rect class="tPE" x="240.1" y="33" width="5.2" height="48"/>
+      <text class="ts" x="224.5" y="28" text-anchor="middle">X1 · L L N N N PE PE PE</text>
+    </g>
+    <rect x="254.8" y="37" width="17.2" height="40" fill="none" stroke="var(--faint)" stroke-width=".4" stroke-dasharray="1.5 1.2"/>
+    <text class="ts" transform="translate(264.5,57) rotate(-90)" text-anchor="middle">tartalék 17 mm</text>
+
+    <!-- zone B: AC4 / RL4 -->
+    <rect class="dv ord" x="14" y="122" width="55" height="55"/>
+    <rect class="mute" x="14" y="122" width="55" height="7"/>
+    <text class="tm" x="41.5" y="127.5" text-anchor="middle">~ AC sorkapocs ~</text>
+    <text class="tb" x="41.5" y="143" text-anchor="middle">FX-AC4</text>
+    <text class="t" x="41.5" y="151" text-anchor="middle">4 × SSR G3MB-202P</text>
+    <text class="ts" x="41.5" y="158" text-anchor="middle">K1–K4 · csak AC</text>
+    <text class="tm" x="41.5" y="174" text-anchor="middle">IN1–4 (aktív L)</text>
+    <rect class="dv ord" x="73" y="122" width="75" height="55"/>
+    <rect class="mute" x="73" y="122" width="75" height="7"/>
+    <text class="tm" x="110.5" y="127.5" text-anchor="middle">NO · C · NC × 4</text>
+    <text class="tb" x="110.5" y="143" text-anchor="middle">FX-RL4</text>
+    <text class="t" x="110.5" y="151" text-anchor="middle">4 × relé 5 V, optó, JD-VCC</text>
+    <text class="ts" x="110.5" y="158" text-anchor="middle">K5–K8 · AC vagy DC</text>
+    <text class="tm" x="110.5" y="174" text-anchor="middle">IN1–4 (aktív L)</text>
+    <path d="M69,185 L150,185" stroke="var(--rf)" stroke-width=".9" fill="none" stroke-dasharray="2 1"/>
+    <text class="ts" x="74" y="182.6">jel-szalagkábel PCF → IN1–4 · átvezető G2</text>
+
+    <!-- zone C: SELV -->
+    <rect class="dv ord" x="160" y="112" width="50" height="40"/>
+    <text class="tb" x="185" y="126" text-anchor="middle">FX-DC4</text>
+    <text class="t" x="185" y="134" text-anchor="middle">4 × MOSFET</text>
+    <text class="ts" x="185" y="141" text-anchor="middle">D1–D4 · PWM</text>
+    <rect class="dv own" x="222" y="110" width="66" height="58"/>
+    <text class="tb" x="255" y="128" text-anchor="middle">FX-CORE</text>
+    <text class="t" x="255" y="137" text-anchor="middle">ESP32-S3 N16R8</text>
+    <text class="ts" x="255" y="144" text-anchor="middle">44-pin S3 I/O shield</text>
+    <text class="ts" x="255" y="150" text-anchor="middle">anya-fejlécben, cserélhető</text>
+    <rect class="dv own" x="160" y="156" width="32" height="22"/>
+    <text class="tb" x="176" y="166" text-anchor="middle">FX-IOX</text>
+    <text class="ts" x="176" y="173" text-anchor="middle">PCF8575</text>
+    <rect class="dv own" x="196" y="158" width="16" height="13"/>
+    <text class="tm" x="204" y="166" text-anchor="middle">LS</text>
+    <rect class="dv ord" x="222" y="172" width="40" height="17"/>
+    <text class="tb" x="242" y="180" text-anchor="middle">FX-PIX2</text>
+    <text class="ts" x="242" y="186" text-anchor="middle">74AHCT125</text>
+    <rect class="dv ord" x="265" y="172" width="23" height="10"/>
+    <text class="tm" x="276.5" y="178.6" text-anchor="middle">J1 fedél</text>
+    <rect class="dv ord" x="160" y="181" width="55" height="9"/>
+    <text class="tm" x="187.5" y="187" text-anchor="middle">X3 DC bizt. + 5/12 V</text>
+
+    <!-- barrier + grommets -->
+    <polyline class="barrier" points="297,106 152,106 152,197"/>
+    <circle class="grom" cx="162" cy="106" r="2.6"/><text class="tm hvtx" x="166" y="103.5">G1 DC táp</text>
+    <circle class="grom" cx="152" cy="185" r="2.6"/>
+
+    <!-- top wall: AC -->
+    <rect class="connhv" x="20" y="-5" width="48" height="8" rx="1.5"/><text class="t hvtx" x="44" y="-9" text-anchor="middle">X0 C14 + kapcs. + bizt.</text>
+    <rect class="connhv" x="74.5" y="-5" width="27" height="8" rx="1.5"/><text class="tb hvtx" x="88" y="-9" text-anchor="middle">K1</text>
+    <rect class="connhv" x="106.5" y="-5" width="27" height="8" rx="1.5"/><text class="tb hvtx" x="120" y="-9" text-anchor="middle">K2</text>
+    <rect class="connhv" x="138.5" y="-5" width="27" height="8" rx="1.5"/><text class="tb hvtx" x="152" y="-9" text-anchor="middle">K3</text>
+    <rect class="connhv" x="170.5" y="-5" width="27" height="8" rx="1.5"/><text class="tb hvtx" x="184" y="-9" text-anchor="middle">K4</text>
+    <text class="ts" x="136" y="-19" text-anchor="middle">IEC C13 aljzatok</text>
+    <circle class="connhv" cx="224" cy="0" r="7"/><text class="t hvtx" x="224" y="-11" text-anchor="middle">M20 · K5–K8</text>
+    <circle class="connhv" cx="260" cy="0" r="7"/><text class="t hvtx" x="262" y="-11" text-anchor="middle">M20 · fix betáp</text>
+
+    <!-- bottom wall: DC/pixel -->
+    <circle class="conndc" cx="168" cy="200" r="5.5"/><text class="tb acctx" x="168" y="214" text-anchor="middle">D1</text>
+    <circle class="conndc" cx="190" cy="200" r="5.5"/><text class="tb acctx" x="190" y="214" text-anchor="middle">D2</text>
+    <circle class="conndc" cx="212" cy="200" r="5.5"/><text class="tb acctx" x="212" y="214" text-anchor="middle">D3</text>
+    <circle class="conndc" cx="234" cy="200" r="5.5"/><text class="tb acctx" x="234" y="214" text-anchor="middle">D4</text>
+    <text class="ts" x="201" y="221" text-anchor="middle">GX12-2</text>
+    <circle class="conndc" cx="258" cy="200" r="8"/><text class="tb acctx" x="258" y="217" text-anchor="middle">P1</text>
+    <circle class="conndc" cx="282" cy="200" r="8"/><text class="tb acctx" x="282" y="217" text-anchor="middle">P2</text>
+    <text class="ts" x="270" y="224" text-anchor="middle">GX16-3</text>
+
+    <!-- right wall: signals -->
+    <circle class="connsg" cx="300" cy="122" r="8"/><text class="t rftx" x="311" y="120">SENS</text><text class="ts" x="311" y="125">GX16-5</text>
+    <circle class="connsg" cx="300" cy="146" r="8"/><text class="t rftx" x="311" y="144">UI-EXT</text><text class="ts" x="311" y="149">GX16-5</text>
+    <rect class="connsg" x="297" y="162" width="6" height="12" rx="1.5"/><text class="t rftx" x="311" y="170">USB-C</text>
+    <circle class="connsg" cx="300" cy="186" r="3.5"/><text class="t rftx" x="311" y="188">SMA</text>
+    <g><path class="vent" d="M296,32 h8 M296,38 h8 M296,44 h8 M296,50 h8 M296,56 h8 M296,62 h8 M296,68 h8 M296,74 h8"/><text class="ts" x="309" y="54">szellőző</text></g>
+    <!-- left wall: fan -->
+    <rect class="conn" x="-7" y="130" width="7" height="40" rx="1"/>
+    <text class="t" transform="translate(-11,150) rotate(-90)" text-anchor="middle">V1 · 40 mm 12 V</text>
+
+    <!-- dims -->
+    <path class="dim" d="M0,-34 L300,-34 M0,-37 L0,-31 M300,-37 L300,-31"/>
+    <text class="tm" x="150" y="-36" text-anchor="middle" style="fill:var(--muted)">300 mm</text>
+    <path class="dim" d="M-24,0 L-24,200 M-27,0 L-21,0 M-27,200 L-21,200"/>
+    <text class="tm" transform="translate(-26,60) rotate(-90)" text-anchor="middle" style="fill:var(--muted)">200 mm</text>
+    <path class="dim" d="M22,108 L272,108"/><path class="dim" d="M22,105 L22,111 M272,105 L272,111"/>
+    <text class="tm" x="110" y="113" text-anchor="middle" style="fill:var(--muted)">DIN-sín 250 mm · foglalt 232,8</text>
+  </svg>
+  </div>
+  <div class="legend">
+    <span><i style="border-color:var(--own)"></i>készletből</span>
+    <span><i style="border-color:var(--ord)"></i>rendelni</span>
+    <span><i style="border-color:var(--hv)"></i>230 V-os válaszfal / csatlakozó</span>
+    <span><i style="background:var(--lbr);border-color:var(--lbr)"></i>L</span>
+    <span><i style="background:var(--nbl);border-color:var(--nbl)"></i>N</span>
+    <span><i style="background:var(--pe);border-color:var(--pe)"></i>PE</span>
+  </div>
+  <p class="cap">A modulméretek ≈ értékek (hobbi-modulok tűrése ±5 mm) · a ház belső méreteit a beszerzett típus adatlapjáról kell visszaellenőrizni.</p>
+
+  <div class="cols2">
+    <div>
+      <h3>Fedél (kezelőoldal)</h3>
+      <div class="fig narrow">
+      <svg viewBox="-8 -8 316 216" role="img" aria-label="Fedél kezelőfelülete">
+        <rect class="box" x="0" y="0" width="300" height="200" rx="7"/>
+        <text class="ts" x="14" y="16" style="letter-spacing:.12em">VARLER GROUP</text>
+        <text class="tb" x="14" y="26" style="font-size:7.5px">BRIDGE · FX-CORE 01</text>
+        <text class="ts" x="14" y="190">230 V~ 50 Hz · max. 10 A · IP54 (szellőzővel IP43)</text>
+        <rect class="dv own" x="20" y="52" width="34" height="20"/><text class="t" x="37" y="64" text-anchor="middle">OLED</text><text class="ts" x="37" y="80" text-anchor="middle">0,96″ állapot</text>
+        <rect class="dv own" x="70" y="48" width="48" height="29"/><text class="t" x="94" y="61" text-anchor="middle">12 V V·A</text><text class="ts" x="94" y="68" text-anchor="middle">0–100 V / 10 A</text>
+        <rect class="dv own" x="70" y="98" width="48" height="24"/><text class="t" x="94" y="109" text-anchor="middle">W3230</text><text class="ts" x="94" y="116" text-anchor="middle">doboz °C → V1</text>
+        <circle class="dv ord" cx="37" cy="112" r="9"/><text class="ts" x="37" y="113" text-anchor="middle">ablak</text><text class="ts" x="37" y="130" text-anchor="middle">BH1750 + IR</text>
+        <circle class="dv ord" cx="205" cy="96" r="18"/><text class="tb" x="205" y="98" text-anchor="middle">FX</text><text class="ts" x="205" y="122" text-anchor="middle">CAP1</text>
+        <circle class="dv ord" cx="255" cy="96" r="18"/><text class="tb" x="255" y="98" text-anchor="middle">☀ / ♪</text><text class="ts" x="255" y="122" text-anchor="middle">CAP2</text>
+        <circle class="dv own" cx="268" cy="160" r="7"/><text class="ts" x="268" y="176" text-anchor="middle">SZERVIZ</text>
+        <rect x="178" y="70" width="104" height="60" fill="none" stroke="var(--faint)" stroke-width=".5" stroke-dasharray="2 1.5"/>
+        <text class="ts" x="180" y="66">FX-UI fedélpanel (belül) · J1 2×8 IDC</text>
+        <path class="ant" d="M150,196 L294,196 L294,150"/>
+        <text class="ts rftx" x="160" y="192">433 MHz λ/4 antenna 173 mm</text>
+      </svg>
+      </div>
+    </div>
+    <div>
+      <h3>A–A metszet (magasság)</h3>
+      <div class="fig narrow">
+      <svg viewBox="-24 -10 340 128" role="img" aria-label="Metszet: DIN eszközök magassága a 100 mm-es dobozban">
+        <rect class="box" x="0" y="0" width="300" height="100" rx="4"/>
+        <path class="dim" d="M0,8 L300,8"/><text class="ts" x="296" y="6" text-anchor="end">fedél belső síkja ≈ 92 mm</text>
+        <rect class="mute" x="4" y="94" width="292" height="3"/>
+        <rect class="rail" x="20" y="86.5" width="130" height="7.5"/>
+        <rect class="dv ord" x="30" y="16.5" width="18" height="70"/><text class="ts" transform="translate(40,52) rotate(-90)" text-anchor="middle">Q1 · 70 mm</text>
+        <rect class="dv ord" x="52" y="32" width="52" height="54.5"/><text class="ts" x="78" y="60" text-anchor="middle">HDR · 54,5 mm</text>
+        <rect class="dv ord" x="108" y="40" width="30" height="46.5"/><text class="ts" x="123" y="64" text-anchor="middle">sorkapocs</text>
+        <rect class="dv own" x="170" y="70" width="70" height="24"/><text class="ts" x="205" y="84" text-anchor="middle">CORE + shield ≈ 24</text>
+        <rect class="dv ord" x="246" y="78" width="44" height="16"/><text class="ts" x="268" y="88" text-anchor="middle">DC4 / PIX2</text>
+        <rect class="dv ord" x="175" y="10" width="110" height="10"/><text class="ts" x="230" y="17" text-anchor="middle">FX-UI fedélpanel ≈ 10</text>
+        <path class="dim" d="M-12,8 L-12,97 M-15,8 L-9,8 M-15,97 L-9,97"/><text class="ts" transform="translate(-15,54) rotate(-90)" text-anchor="middle">≈ 89 mm hasznos</text>
+        <text class="ts hvtx" x="30" y="12">Q1 teteje 80,5 mm → 11 mm tartalék</text>
+        <path d="M160,4 L160,97" stroke="var(--hv)" stroke-width="1.2"/>
+        <text class="ts" x="12" y="112">szerelőlap 3 + DIN-sín 7,5 + Q1 70 = 80,5 mm</text>
+      </svg>
+      </div>
+      <p class="cap">A fedélpanel csak a SELV rekesz fölé kerül, ahol az alkatrészek ≤ 25 mm magasak.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODULOK ============ -->
+<section id="mods">
+  <h2><span class="sec">§4</span>FX modulkészlet</h2>
+  <p>Minden modul külön cserélhető egység, saját névvel a BRIDGE családban. A státusz a VRG BuildTree készletéhez viszonyít.</p>
+  <div class="mods">
+    <div class="mod"><div class="hd"><span class="nm">FX-PWR</span><span class="chips"><span class="chip c-ord">rendelni</span><span class="chip c-hv">230 V</span></span></div>
+      <div class="role">Betáp, védelem, tápegységek a DIN-sínen</div>
+      <ul><li>Q1 1P+N B10, 1 modul (18 mm)</li><li>PSU1 Mean Well HDR-60-12 (12 V 4,5 A)</li><li>PSU2 Mean Well HDR-60-5 (5 V 6,5 A)</li><li>F0–F5 biztosítós sorkapocs 5×20; X1 L/N/PE elosztó</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-CORE</span><span class="chips"><span class="chip c-own">készlet</span><span class="chip c-selv">SELV</span></span></div>
+      <div class="role">Az agy: ESPHome, WiFi, jelenetmotor</div>
+      <ul><li>ESP32-S3 N16R8 Dual USB-C (<code>s3</code>)</li><li>ESP32-S3 I/O shield 44-pin (<code>s3shield44</code>)</li><li>19-pin anya fejléc (<code>fhdr19</code>) → az S3 kihúzható, csere szerszám nélkül</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-IOX</span><span class="chips"><span class="chip c-own">készlet</span><span class="chip c-selv">SELV</span></span></div>
+      <div class="role">16 csatornás I/O bővítő a relékhez</div>
+      <ul><li>PCF8575 0x20, 5 V-ról (<code>pcf8575</code>)</li><li>BSS138 4-ch szintillesztő (<code>shifter</code>): 2 ér I²C, 1 ér SFX, 1 tartalék</li><li>Bekapcsoláskor minden kimenet MAGAS → minden relé KI</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-AC4</span><span class="chips"><span class="chip c-ord">rendelni</span><span class="chip c-hv">230 V</span></span></div>
+      <div class="role">K1–K4 · 230 V~ zajtalan kapcsolás</div>
+      <ul><li>4-ch SSR modul, Omron G3MB-202P, nullátmenetes</li><li>2 A/csatorna, dobozban ≤ 1 A tartósan (≈ 230 W)</li><li>Csak AC! DC-t nem kapcsol ki</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-RL4</span><span class="chips"><span class="chip c-ord">rendelni</span><span class="chip c-own">v0: 2 × 1-ch készlet</span></span></div>
+      <div class="role">K5–K8 · univerzális száraz érintkező</div>
+      <ul><li>4-ch 5 V relémodul, optó + JD-VCC (Songle SRD-05VDC)</li><li>NO/C/NC kivezetve; AC ≤ 5 A, DC ≤ 3 A dobozban</li><li>v0 próbapadon a meglévő 2 db 1-ch relé (<code>relay1</code>)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-DC4</span><span class="chips"><span class="chip c-ord">rendelni</span><span class="chip c-selv">SELV</span></span></div>
+      <div class="role">D1–D4 · dimmelhető DC (LED szalag, spot)</div>
+      <ul><li>4-ch logic-level MOSFET modul (AOD4184, vagy PC817 + LR7843 optós)</li><li>Csatornánként 5 V vagy 12 V az X3 átkötéssel; külső tápra V+EXT kapocs</li><li>PWM 1 kHz (optós modulnál ez a felső határ)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-PIX2</span><span class="chips"><span class="chip c-ord">74AHCT125</span><span class="chip c-own">próbapanel</span></span></div>
+      <div class="role">P1–P2 · címezhető pixel effektek</div>
+      <ul><li>74AHCT125 3,3 → 5 V adatvonal, 330 Ω soros ellenállás</li><li>1000 µF a kimeneti betápon; Nano próbapanelen (<code>nanoproto</code>)</li><li>P1 WS2812B 5 V · P2 WS2815 12 V (hosszabb futáshoz)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-RF</span><span class="chips"><span class="chip c-ord">rendelni</span></span></div>
+      <div class="role">433 MHz és IR vevő a fedélpanelen</div>
+      <ul><li>RXB6 vagy SRX882 superhet, 3,3 V-ról → közvetlenül GPIO</li><li>λ/4 huzalantenna 173 mm, opció SMA a falon</li><li>TSOP38238 IR (opció). A meglévő nRF905 itt nem jó: GFSK, a kapcsolók OOK-t adnak</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-UI</span><span class="chips"><span class="chip c-own">nagyrészt készlet</span></span></div>
+      <div class="role">Fedélpanel: érintés, kijelző, fénymérő</div>
+      <ul><li>2 × TTP223 (rendelni) a ≤ 3 mm-es fedél mögött</li><li>0,96″ OLED (<code>oled096</code>), szerviz gomb (<code>btn12</code>), buzzer (<code>pbuzz</code>)</li><li>BH1750 (rendelni), DC V-A mérő (<code>dcva100</code>), W3230 (<code>w3230</code>)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-SENS</span><span class="chips"><span class="chip c-own">készlet</span></span></div>
+      <div class="role">Külső érzékelő a GX16-5 SENS porton</div>
+      <ul><li>HC-SR501 PIR (<code>pir</code>) vagy RCWL-0516 radar (<code>rcwl0516</code>)</li><li>Mennyezetre, ajtó fölé; 5 V táp, 3,3 V-os kimenet</li><li>A BH1750 I²C-n ≤ 1 m-re szintén kivihető ide</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-SFX v0</span><span class="chips"><span class="chip c-own">készlet</span></span></div>
+      <div class="role">Első hangeffekt, zene előtt</div>
+      <ul><li>LX06LA hangrögzítő (<code>lx06la</code>) + LM386 erősítő (<code>lm386</code>)</li><li>10 s mennydörgés a Vihar jelenethez; indítás GPIO21-ről</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-THERM</span><span class="chips"><span class="chip c-own">W3230 készlet</span><span class="chip c-ord">ventilátor</span></span></div>
+      <div class="role">MCU-független hűtés</div>
+      <ul><li>W3230 12 V termosztát, szonda az SSR-ek mellett</li><li>45 °C felett indítja a 40 mm-es 12 V ventilátort (V1)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-SND</span><span class="chips"><span class="chip c-later">v2 · később</span></span></div>
+      <div class="role">Zene és hangeffekt modul</div>
+      <ul><li>Az úton lévő 2 S3 N16R8 egyike + PCM5102A + TPA3116D2 (12 V), vagy 2 × MAX98357A</li><li>ESPHome speaker media_player, beágyazott SFX fájlokkal</li><li>Spotify (Premium) és saját fájlok Music Assistanton át</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">FX-PAD</span><span class="chips"><span class="chip c-later">v3 · később</span></span></div>
+      <div class="role">Fali kapacitív panel, műholdként</div>
+      <ul><li>ESP32-C3 Zero (<code>c3zero</code>, 6 db készlet) + 2 × TTP223</li><li>HA-n át vagy ESP-NOW-val (<code>espnow</code> komponens)</li></ul></div>
+    <div class="mod"><div class="hd"><span class="nm">Opciók</span><span class="chips"><span class="chip c-later">igény szerint</span></span></div>
+      <div class="role">Ha a helyszín kéri</div>
+      <ul><li>FX-NET: W5500 → BRIDGE_NET vezetékes (ESPHome ethernet, WiFi helyett)</li><li>DS3231 RTC: időprogram internet nélkül is</li><li>AC dimmer modul (nullátmenet + TRIAC, ESPHome <code>ac_dimmer</code>) izzós effekthez. A meglévő 2000 W-os potméteres dimmer MCU-ról nem vezérelhető</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ CSATORNÁK ============ -->
+<section id="ch">
+  <h2><span class="sec">§5</span>Csatornatábla</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Csatorna</th><th>Típus</th><th>Feszültség</th><th>Terhelés (dobozban)</th><th>Vezérlés</th><th>Csatlakozó</th><th>Védelem</th><th>Hiba / boot</th><th>HA entitás</th></tr></thead>
+    <tbody>
+      <tr><td><b>K1–K4</b></td><td>SSR, nullátmenetes</td><td>230 V~</td><td>≤ 1 A (230 W) / csat.</td><td>PCF P0–P3, aktív L</td><td>IEC C13</td><td>F1–F4 T2A</td><td>KI</td><td><code>switch.fx01_k1</code>…</td></tr>
+      <tr><td><b>K5–K8</b></td><td>relé, száraz NO/C/NC</td><td>230 V~ vagy 5/12 V=</td><td>≤ 5 A~ · ≤ 3 A=</td><td>PCF P4–P7, aktív L</td><td>M20 → sorkapocs</td><td>F5 T6,3A (csoport)</td><td>KI</td><td><code>switch.fx01_k5</code>…</td></tr>
+      <tr><td><b>D1–D4</b></td><td>PWM, low-side MOSFET</td><td>5 V vagy 12 V</td><td>≤ 3 A / csat.; belső 12 V-ról össz. ≤ 2 A</td><td>GPIO4–7, LEDC 1 kHz</td><td>GX12-2</td><td>X3 késes 3 A</td><td>KI</td><td><code>light.fx01_d1</code>…</td></tr>
+      <tr><td><b>P1</b></td><td>pixel WS2812B</td><td>5 V</td><td>60 LED, korlát 60 % ≈ 2,2 A</td><td>GPIO15, RMT</td><td>GX16-3</td><td>X3 3 A</td><td>KI</td><td><code>light.fx01_p1</code></td></tr>
+      <tr><td><b>P2</b></td><td>pixel WS2815</td><td>12 V</td><td>120 LED, korlát 70 % ≈ 1,3 A</td><td>GPIO16, RMT</td><td>GX16-3</td><td>X3 3 A</td><td>KI</td><td><code>light.fx01_p2</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Miért KI a hibaállapot?</b> Az effektvilágítás nem fővilágítás, ezért áramszünet vagy ESP-hiba után mindig sötét marad. A visszaállítás opt-in: a „Jelenet visszaállítása áramszünet után” kapcsolóval kérhető. A BRIDGE Smart Switch doktrínában ez a Gate-családdal rokon: a vezeték nélküli rész kiesése definiált, biztonságos állapotot ad.</div>
+</section>
+
+<!-- ============ TÁP ============ -->
+<section id="pwr">
+  <h2><span class="sec">§6</span>Táp- és DIN-sín költségvetés</h2>
+  <div class="cols2">
+    <div>
+      <h3>5 V sín · PSU2 HDR-60-5 (6,5 A)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Fogyasztó</th><th class="num">A (csúcs)</th></tr></thead>
+        <tbody>
+          <tr><td>FX-CORE (S3 + WiFi)</td><td class="num">0,50</td></tr>
+          <tr><td>FX-RL4 tekercsek, 4 × 72 mA</td><td class="num">0,29</td></tr>
+          <tr><td>FX-AC4 bemenetek, 4 × 12 mA</td><td class="num">0,05</td></tr>
+          <tr><td>FX-IOX, FX-UI, FX-RF, OLED, buzzer</td><td class="num">0,15</td></tr>
+          <tr><td>PIR / radar</td><td class="num">0,05</td></tr>
+          <tr><td>SFX v0 (LX06LA + LM386)</td><td class="num">0,20</td></tr>
+          <tr><td>P1 pixel (60 LED, 60 %)</td><td class="num">2,20</td></tr>
+          <tr class="sum"><td>Összesen · kihasználtság</td><td class="num">3,44 A · 53 %</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <h3>12 V sín · PSU1 HDR-60-12 (4,5 A)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Fogyasztó</th><th class="num">A (csúcs)</th></tr></thead>
+        <tbody>
+          <tr><td>D1–D4 a belső tápról (keret)</td><td class="num">2,00</td></tr>
+          <tr><td>P2 pixel (120 LED, 70 %)</td><td class="num">1,30</td></tr>
+          <tr><td>V1 ventilátor + W3230</td><td class="num">0,15</td></tr>
+          <tr><td>DC V-A mérő</td><td class="num">0,02</td></tr>
+          <tr class="sum"><td>Összesen · kihasználtság</td><td class="num">3,47 A · 77 %</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px">Nagyobb LED-szalaghoz a D-csatornák a <b>V+EXT</b> kapocsra köthető külső 12/24 V-os tápot kapnak, közös 0 V-tal. A doboz így nem lesz a terhelés szűk keresztmetszete.</p>
+    </div>
+  </div>
+  <h3>DIN-sín · 250 mm hasznos hossz</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Tétel</th><th>Szélesség</th><th class="num">mm</th></tr></thead>
+    <tbody>
+      <tr><td>Végbak × 2</td><td>2 × 9,5</td><td class="num">19,0</td></tr>
+      <tr><td>Q1 1P+N kismegszakító</td><td>1 modul</td><td class="num">18,0</td></tr>
+      <tr><td>PSU1 HDR-60-12</td><td>3 modul</td><td class="num">52,5</td></tr>
+      <tr><td>PSU2 HDR-60-5</td><td>3 modul</td><td class="num">52,5</td></tr>
+      <tr><td>F0–F5 biztosítós sorkapocs</td><td>6 × 8,2</td><td class="num">49,2</td></tr>
+      <tr><td>X1 L/N/PE sorkapocs</td><td>8 × 5,2</td><td class="num">41,6</td></tr>
+      <tr class="sum"><td>Foglalt · szabad</td><td></td><td class="num">232,8 · 17,2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ LÁBKIOSZTÁS ============ -->
+<section id="io">
+  <h2><span class="sec">§7</span>Lábkiosztás</h2>
+  <div class="cols2">
+    <div>
+      <h3>ESP32-S3 N16R8</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>GPIO</th><th>Funkció</th><th>Megjegyzés</th></tr></thead>
+        <tbody>
+          <tr><td><code>G1</code> <code>G2</code></td><td>CAP1 · CAP2</td><td>TTP223 digitális kimenet</td></tr>
+          <tr><td><code>G4–G7</code></td><td>D1–D4 PWM</td><td>LEDC 1 kHz</td></tr>
+          <tr><td><code>G8</code> <code>G9</code></td><td>I²C SDA · SCL</td><td>OLED 0x3C, BH1750 0x23, PCF8575 0x20 (LS mögött)</td></tr>
+          <tr><td><code>G10</code></td><td>PIR</td><td>SENS port</td></tr>
+          <tr><td><code>G12</code></td><td>szerviz gomb</td><td>belső felhúzás, aktív L</td></tr>
+          <tr><td><code>G14</code></td><td>passzív buzzer</td><td>RTTTL visszajelzés</td></tr>
+          <tr><td><code>G15</code> <code>G16</code></td><td>P1 · P2 pixel</td><td>RMT, 74AHCT125-ön át</td></tr>
+          <tr><td><code>G17</code></td><td>433 MHz vevő</td><td>rc_switch dekódolás</td></tr>
+          <tr><td><code>G18</code></td><td>IR vevő</td><td>NEC</td></tr>
+          <tr><td><code>G21</code></td><td>SFX indítás</td><td>LS 3. ér → LX06LA PLAY</td></tr>
+          <tr><td><code>G11 G13 G38–G42 G47</code></td><td>tartalék</td><td>G13: 433 adó, G38–40: EC11 menü</td></tr>
+          <tr><td><code>G0 G3 G19 G20 G26–G37 G45 G46</code></td><td class="hvtx" style="color:var(--hv)">tilos</td><td>strapping, USB, flash/PSRAM (octal)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <h3>PCF8575 (5 V oldal)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Láb</th><th>Funkció</th></tr></thead>
+        <tbody>
+          <tr><td><code>P0–P3</code></td><td>FX-AC4 IN1–IN4 → K1–K4</td></tr>
+          <tr><td><code>P4–P7</code></td><td>FX-RL4 IN1–IN4 → K5–K8</td></tr>
+          <tr><td><code>P8</code></td><td>tartalék</td></tr>
+          <tr><td><code>P9</code></td><td>szerviz gomb LED (tanítás jelzés)</td></tr>
+          <tr><td><code>P10–P15</code></td><td>bővítés: második relé-modul → K9–K14</td></tr>
+        </tbody>
+      </table></div>
+      <h3>J1 · fedélpanel szalagkábel (2×8 IDC)</h3>
+      <div class="tbl"><table>
+        <tbody>
+          <tr><td><code>1</code> 5 V</td><td><code>2</code> 3V3</td><td><code>3</code> GND</td><td><code>4</code> GND</td></tr>
+          <tr><td><code>5</code> SDA</td><td><code>6</code> SCL</td><td><code>7</code> RF433</td><td><code>8</code> IR</td></tr>
+          <tr><td><code>9</code> CAP1</td><td><code>10</code> CAP2</td><td><code>11</code> BTN</td><td><code>12</code> BTN-LED</td></tr>
+          <tr><td><code>13</code> BUZZ</td><td><code>14</code> GND</td><td><code>15</code> –</td><td><code>16</code> –</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VEZÉRLÉS ============ -->
+<section id="ctl">
+  <h2><span class="sec">§8–9</span>Vezérlési logika és jelenetek</h2>
+  <div class="cols2">
+    <div>
+      <h3>Bemenet → művelet</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Bemenet</th><th>Művelet</th></tr></thead>
+        <tbody>
+          <tr><td>KIN-1 fali kinetikus</td><td>BE/KI (utolsó jelenet ↔ Ki)</td></tr>
+          <tr><td>KIN-2 fali kinetikus</td><td>következő jelenet</td></tr>
+          <tr><td>TAV-A · TAV-B</td><td>BE/KI · következő jelenet</td></tr>
+          <tr><td>TAV-C · TAV-D</td><td>Vihar · minden KI</td></tr>
+          <tr><td>IR gomb</td><td>bármelyik kódhelyre tanítható</td></tr>
+          <tr><td>CAP1 koppint / dupla / tart</td><td>BE/KI · következő · minden KI</td></tr>
+          <tr><td>CAP2 koppint / dupla / tart</td><td>fényerő 100→60→30 % · Éjszakai út · zene ⏯ (FX-SND)</td></tr>
+          <tr><td>Szerviz gomb nyom / tart 3 s</td><td>minden KI · KIN-1 tanítása</td></tr>
+          <tr><td>PIR + sötét + minden KI</td><td>Éjszakai út N mp-ig (állítható)</td></tr>
+          <tr><td>Program A/B</td><td>BE-időben jelenet, KI-időben Ki</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><b>Tanítás telefonról:</b> „Távkapcsoló tanítás” → kódhely kiválasztása. A szerviz LED világít, az OLED „TANÍTÁS” feliratot mutat. Nyomd meg a kinetikus kapcsolót vagy a távirányító gombját: sípolás, a kód flash-be kerül. Az „Utolsó RF-IR kód” entitás mindig mutatja a legutóbb vett kódot.</div>
+    </div>
+    <div>
+      <h3>Jelenetek</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Jelenet</th><th>K (230 V / relé)</th><th>D1–D4</th><th>P1 · P2</th></tr></thead>
+        <tbody>
+          <tr><td>Ki</td><td>mind KI</td><td>KI</td><td>KI</td></tr>
+          <tr><td>Ambient</td><td>K1</td><td>D1 lassú hullám, D2 30 %</td><td>meleg fehér · lélegzés</td></tr>
+          <tr><td>Mozi</td><td>–</td><td>D1 8 %</td><td>kék lélegzés 12 % · KI</td></tr>
+          <tr><td>Party</td><td>K1 K2 K5</td><td>lélegzés + stroboszkóp</td><td>tűzijáték · szivárvány</td></tr>
+          <tr><td>Gyertya</td><td>–</td><td>gyertya-vibrálás</td><td>tűz-vibrálás</td></tr>
+          <tr><td>Vihar</td><td>–</td><td>D1 villám</td><td>villám-lambda · + SFX</td></tr>
+          <tr><td>Éjszakai út</td><td>–</td><td>KI</td><td>P1 8 % meleg · KI</td></tr>
+          <tr><td>Egyedi</td><td colspan="3">nem nyúl semmihez: kézi beállítás telefonról</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px">A Mester fényerő (10–100 %) minden jelenetet arányosan skáláz. A K-csatornák neve és a jelenetek kiosztása a YAML-ben egy helyen, az <code>apply_scene</code> szkriptben szerkeszthető.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GYÁRTÓK ============ -->
+<section id="brands">
+  <h2><span class="sec">§10</span>Termékcsaládok és gyártók</h2>
+  <p>Két szint ugyanarra a dobozra. Az ECO a készletből és a Modulshop/Hestore kínálatából épül; a PRO a tartós, ügyfélnél beépített változat, villamos nagykerből.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Funkció</th><th>ECO · próbapad, saját használat</th><th>PRO · ügyfélnek beépítve</th></tr></thead>
+    <tbody>
+      <tr><td>Ház</td><td>ABS/PC IP65 300×200×100, átlátszó PC fedél, szerelőlap</td><td>Fibox, Spelsberg vagy Bopla PC ház, a katalógus legközelebbi méretében</td></tr>
+      <tr><td>Betáp és védelem</td><td>IEC C14 aljzat kapcsolóval és biztosítóval</td><td>M20 tömszelence + Q1 1P+N (Schneider Acti9 iDPN N, ABB SN201); előtte 30 mA RCD</td></tr>
+      <tr><td>Tápegység</td><td colspan="2">Mean Well HDR-60-12 + HDR-60-5 mindkét szinten (DIN, SELV kimenet)</td></tr>
+      <tr><td>230 V kapcsolás</td><td>Omron G3MB-202P 4-ch SSR modul</td><td>Finder 77 sorozatú DIN SSR</td></tr>
+      <tr><td>Univerzális relé</td><td>Songle SRD-05VDC 4-ch modul</td><td>Finder 38 sorozatú interfészrelé, 12 V tekercs a 12 V sínről, ULN2803 meghajtóval</td></tr>
+      <tr><td>Sorkapocs, biztosíték</td><td>WAGO 221, 5×20 biztosítótartó</td><td>WAGO TOPJOB S 2002 / Phoenix Contact PT és UT 4-HESI</td></tr>
+      <tr><td>Kinetikus fali kapcsoló</td><td>433 MHz EV1527 önjáró (elem nélküli) kapcsoló</td><td>EnOcean PTM 210/215 (Eltako, Jung, Gira keretben) → OmniComm USB 300 → HA → FX-CORE</td></tr>
+      <tr><td>DC csatlakozók</td><td>GX12 / GX16 menetes</td><td>M8 / M12 ipari (Binder, Lumberg), IP67</td></tr>
+      <tr><td>Hang (v2)</td><td>MAX98357A, PCM5102A + TPA3116D2</td><td>ugyanez + passzív hangfal a BRIDGE LIBRARY hangzónában</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">Gyártói családnevek; a pontos cikkszámot (tekercsfeszültség, modulszélesség) rendeléskor a nagyker katalógusából kell kiválasztani.</p>
+</section>
+
+<!-- ============ BRIDGE ============ -->
+<section id="bridge">
+  <h2><span class="sec">§11</span>BRIDGE integráció</h2>
+  <div class="cols2">
+    <div>
+      <h3>Elnevezés és szerep</h3>
+      <ul>
+        <li>Eszköz: <code>bridge-fx-core-NN</code>; entitás-előtag <code>FX01</code> → <code>light.fx01_d1</code>, <code>switch.fx01_k1</code>, <code>select.fx01_jelenet</code>.</li>
+        <li>Termékcsalád: FX-CORE (központ), FX-SND (hang), FX-PAD (fali panel), FX-SENS (érzékelő). Mind ESPHome, mind a BRIDGE-DN Home Assistantjába jelentkezik.</li>
+        <li><b>Önálló működés:</b> helyi web_server (internet és HA nélkül is tölt), SNTP idő, flash-ben a tanult kódok és programok. A VRG-szabály hardveres megfelelője: a doboz <i>használhatja</i> a BRIDGE-et, de nem <i>igényli</i>.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Kapcsolódási pontok</h3>
+      <ul>
+        <li><b>Shadow réteg:</b> „SH” változatban 24 V= SELV betáp a shadow hálózatról (24→12 és 24→5 V DC/DC); a 230 V ilyenkor csak a K-csatornák terheléseihez kell.</li>
+        <li><b>P33:</b> ROOM BOX-bővítményként beépíthető; FX-NET (W5500 / PoE) a BRIDGE_NET kábelre.</li>
+        <li><b>OmniComm:</b> EnOcean (USB 300) és Zigbee (ZBDONGLE-E) kapcsolók HA-automatizmussal a <code>select.fx01_jelenet</code>-et hívják.</li>
+        <li><b>Zene:</b> Music Assistant a BRIDGE-DN-en → FX-SND media_player. Spotify Premium fiókkal és a LIBRARY saját fájljaival; a CAP2 tartása play/pause.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOM ============ -->
+<section id="bom">
+  <h2><span class="sec">§12</span>Beszerzés · készlet vs. rendelés</h2>
+  <div class="cols2">
+    <div>
+      <h3>Készletből (VRG BuildTree)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Tétel</th><th>ID</th><th class="num">db</th></tr></thead>
+        <tbody>
+          <tr><td>ESP32-S3 N16R8 Dual USB-C</td><td><code>s3</code></td><td class="num">1</td></tr>
+          <tr><td>ESP32-S3 I/O shield 44-pin</td><td><code>s3shield44</code></td><td class="num">1</td></tr>
+          <tr><td>Anya fejléc 19-pin</td><td><code>fhdr19</code></td><td class="num">2</td></tr>
+          <tr><td>PCF8575 16-ch I/O bővítő</td><td><code>pcf8575</code></td><td class="num">1</td></tr>
+          <tr><td>4-ch szintillesztő (BSS138)</td><td><code>shifter</code></td><td class="num">1</td></tr>
+          <tr><td>Relé modul 1-ch (v0)</td><td><code>relay1</code></td><td class="num">2</td></tr>
+          <tr><td>0,96″ OLED</td><td><code>oled096</code></td><td class="num">1</td></tr>
+          <tr><td>12 mm LED-es nyomógomb</td><td><code>btn12</code></td><td class="num">1</td></tr>
+          <tr><td>Passzív buzzer</td><td><code>pbuzz</code></td><td class="num">1</td></tr>
+          <tr><td>HC-SR501 PIR / RCWL-0516</td><td><code>pir</code> / <code>rcwl0516</code></td><td class="num">1</td></tr>
+          <tr><td>LX06LA + LM386</td><td><code>lx06la</code> <code>lm386</code></td><td class="num">1+1</td></tr>
+          <tr><td>W3230 termosztát 12 V</td><td><code>w3230</code></td><td class="num">1</td></tr>
+          <tr><td>DC V-A mérő 100 V/10 A</td><td><code>dcva100</code></td><td class="num">1</td></tr>
+          <tr><td>Nano próbapanel</td><td><code>nanoproto</code></td><td class="num">1</td></tr>
+          <tr><td>Szilikon vezeték, zsugorcső, Dupont</td><td><code>wire_sil</code> …</td><td class="num">–</td></tr>
+          <tr><td>Teszt: KWS-065C, PWM generátor, 5 V 3 A táp</td><td><code>kws065c</code> <code>pwmgen3</code> <code>psu5v3a</code></td><td class="num">–</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <h3>Rendelni</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Tétel</th><th>Forrás</th><th class="num">db</th></tr></thead>
+        <tbody>
+          <tr><td>Ház 300×200×100, PC fedél + szerelőlap</td><td>Hestore / nagyker</td><td class="num">1</td></tr>
+          <tr><td>DIN-sín 250 mm + 2 végbak (<code>o_din</code>)</td><td>nagyker</td><td class="num">1</td></tr>
+          <tr><td>Q1 1P+N B10 (1 modul)</td><td>nagyker</td><td class="num">1</td></tr>
+          <tr><td>Mean Well HDR-60-12 · HDR-60-5</td><td>nagyker / Hestore</td><td class="num">1+1</td></tr>
+          <tr><td>Biztosítós sorkapocs 5×20 + T2A ×5, T6,3A ×1</td><td>nagyker</td><td class="num">6</td></tr>
+          <tr><td>Sorkapocs L/N/PE (WAGO 2002)</td><td>nagyker</td><td class="num">8</td></tr>
+          <tr><td>4-ch SSR G3MB-202P modul (<code>o_ssr</code>)</td><td>Modulshop</td><td class="num">1</td></tr>
+          <tr><td>4-ch 5 V relémodul optó + JD-VCC</td><td>Modulshop</td><td class="num">1</td></tr>
+          <tr><td>4-ch MOSFET modul (<code>o_mosfet</code>)</td><td>Modulshop</td><td class="num">1</td></tr>
+          <tr><td>74AHCT125 + 330 Ω + 1000 µF/25 V</td><td>Hestore</td><td class="num">1+2+2</td></tr>
+          <tr><td>RXB6 / SRX882 433 MHz vevő</td><td>Modulshop</td><td class="num">1</td></tr>
+          <tr><td>433 MHz kinetikus fali kapcsoló (EV1527)</td><td>web</td><td class="num">1–2</td></tr>
+          <tr><td>TTP223 érintőmodul</td><td>Modulshop</td><td class="num">4</td></tr>
+          <tr><td>BH1750 (GY-302) · TSOP38238</td><td>Modulshop</td><td class="num">1+1</td></tr>
+          <tr><td>IEC C14 aljzat kapcs.+bizt. · C13 snap-in</td><td>Hestore</td><td class="num">1+4</td></tr>
+          <tr><td>M20 tömszelence</td><td>nagyker</td><td class="num">2</td></tr>
+          <tr><td>GX12-2 ×4 · GX16-3 ×2 · GX16-5 ×2 pár</td><td>Hestore</td><td class="num">8</td></tr>
+          <tr><td>USB-C panel-hosszabbító (szerviz)</td><td>Hestore</td><td class="num">1</td></tr>
+          <tr><td>40 mm 12 V ventilátor + rácsok</td><td>Hestore</td><td class="num">1</td></tr>
+          <tr><td>IDC 2×8 szalag + fej (<code>o_idc</code>)</td><td>Hestore</td><td class="num">1</td></tr>
+          <tr><td>Késes biztosítótartó + 3 A betét</td><td>Hestore</td><td class="num">6</td></tr>
+          <tr><td>Érvéghüvely, M3 távtartó, válaszfal-lap (<code>o_ferrule</code> <code>o_inserts</code> <code>o_filament</code>)</td><td>–</td><td class="num">–</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ YAML ============ -->
+<section id="yaml">
+  <h2><span class="sec">§13</span>ESPHome konfiguráció</h2>
+  <p>A teljes konfiguráció. Az <code>esphome config</code> a 2026.9.1-es verzióval hiba és figyelmeztetés nélkül fut le. Teljes fordítást a gépeden futtass, mert ez a környezet nem éri el a PlatformIO tárolót. Mellé kell egy <code>secrets.yaml</code> (<code>wifi_ssid</code>, <code>wifi_password</code>, <code>ap_password</code>, <code>api_key</code>).</p>
+  <div class="code">
+    <div class="bar"><span class="fn">bridge-fx-core-01.yaml · 929 sor</span><button class="copy" id="copyYaml" type="button">YAML másolása</button></div>
+    <pre id="yamlsrc"><span class="yc"># ══════════════════════════════════════════════════════════════════════</span>
+<span class="yc">#  BRIDGE · FX-CORE 01 — Moduláris effektvilágítás központ</span>
+<span class="yc">#  Varler Group · ESPHome konfiguráció · r1 · 2026-10-02</span>
+<span class="yc">#</span>
+<span class="yc">#  Agy:  ESP32-S3 N16R8 (44-pin S3 I/O shielden)</span>
+<span class="yc">#  Validálva: ESPHome 2026.9.1 (esphome config) · secrets.yaml kell mellé</span>
+<span class="yc">#  Kimenetek:</span>
+<span class="yc">#    K1–K4  230VAC SSR (G3MB-202P, zero-cross, 2A)   → PCF8575 P0–P3</span>
+<span class="yc">#    K5–K8  5V relé, száraz érintkező (AC vagy DC)    → PCF8575 P4–P7</span>
+<span class="yc">#    D1–D4  DC PWM 5/12V (logic-level MOSFET)          → GPIO4–7 (LEDC)</span>
+<span class="yc">#    P1–P2  címezhető pixel (WS2812B 5V / WS2815 12V)  → GPIO15/16 (RMT)</span>
+<span class="yc">#  Bemenetek: 433 MHz (kinetikus fali + kézi távirányító), IR,</span>
+<span class="yc">#             2× kapacitív (TTP223), PIR, BH1750 fénymérő, szerviz gomb</span>
+<span class="yc">#</span>
+<span class="yc">#  ELV: önállóan is teljes értékű (web_server, időprogramok, RF-tanítás</span>
+<span class="yc">#       telefonról) — a BRIDGE/Home Assistant HASZNÁLHATÓ, de nem FELTÉTEL.</span>
+<span class="yc"># ══════════════════════════════════════════════════════════════════════</span>
+
+<span class="yk">substitutions</span>:
+  <span class="yk">dev</span>: bridge-fx-core-01
+  <span class="yk">friendly</span>: "FX-CORE 01"
+  <span class="yk">pre</span>: "FX01"
+
+<span class="yk">esphome</span>:
+  <span class="yk">name</span>: ${dev}
+  <span class="yk">friendly_name</span>: ${friendly}
+  <span class="yk">comment</span>: "BRIDGE FX-CORE · effektvilágítás központ · Varler Group"
+  <span class="yk">area</span>: "Nappali"
+  <span class="yk">on_boot</span>:
+    <span class="yk">priority</span>: -100
+    <span class="yk">then</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>:
+            switch.is_on: restore_after_power
+          <span class="yk">then</span>:
+            - script.execute:
+                <span class="yk">id</span>: scene_set
+                <span class="yk">idx</span>: !lambda "return id(last_scene);"
+
+<span class="yk">esp32</span>:
+  <span class="yk">board</span>: esp32-s3-devkitc-1
+  <span class="yk">variant</span>: esp32s3
+  <span class="yk">flash_size</span>: 16MB
+  <span class="yk">framework</span>:
+    <span class="yk">type</span>: esp-idf
+
+<span class="yk">psram</span>:
+  <span class="yk">mode</span>: octal
+  <span class="yk">speed</span>: 80MHz
+
+<span class="yk">logger</span>:
+  <span class="yk">level</span>: DEBUG
+
+<span class="yc"># ── Hálózat ──────────────────────────────────────────────────────────</span>
+<span class="yk">wifi</span>:
+  <span class="yk">ssid</span>: !secret wifi_ssid
+  <span class="yk">password</span>: !secret wifi_password
+  <span class="yk">ap</span>:
+    <span class="yk">ssid</span>: "FX-CORE Setup"
+    <span class="yk">password</span>: !secret ap_password
+
+<span class="yk">captive_portal</span>:
+
+<span class="yk">api</span>:
+  <span class="yk">encryption</span>:
+    <span class="yk">key</span>: !secret api_key
+
+<span class="yk">ota</span>:
+  - <span class="yk">platform</span>: esphome
+    <span class="yk">encryption</span>: {}     # az api kulcsát örökli — titkosított, hitelesített OTA
+
+<span class="yc"># Telefonról, HA nélkül is: http://bridge-fx-core-01.local</span>
+<span class="yk">web_server</span>:
+  <span class="yk">port</span>: 80
+  <span class="yk">version</span>: 3
+  <span class="yk">local</span>: true
+  <span class="yk">ota</span>: false         # firmware-feltöltés csak titkosított OTA-n
+
+<span class="yk">time</span>:
+  - <span class="yk">platform</span>: sntp
+    <span class="yk">id</span>: clk
+    <span class="yk">timezone</span>: Europe/Budapest
+
+<span class="yc"># ── Buszok ───────────────────────────────────────────────────────────</span>
+<span class="yc"># 3,3V oldal: OLED 0x3C, BH1750 0x23</span>
+<span class="yc"># 5V oldal (BSS138 szintillesztőn át): PCF8575 0x20</span>
+<span class="yk">i2c</span>:
+  <span class="yk">id</span>: bus_a
+  <span class="yk">sda</span>: GPIO8
+  <span class="yk">scl</span>: GPIO9
+  <span class="yk">frequency</span>: 400kHz
+  <span class="yk">scan</span>: true
+
+<span class="yk">pcf8574</span>:
+  - <span class="yk">id</span>: iox
+    <span class="yk">address</span>: 0x20
+    <span class="yk">pcf8575</span>: true
+
+<span class="yc"># ── Állapot / tanult kódok ───────────────────────────────────────────</span>
+<span class="yk">globals</span>:
+  - <span class="yk">id</span>: scene_idx
+    <span class="yk">type</span>: int
+    <span class="yk">restore_value</span>: false
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: last_scene
+    <span class="yk">type</span>: int
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "1"
+  - <span class="yk">id</span>: night_active
+    <span class="yk">type</span>: bool
+    <span class="yk">restore_value</span>: false
+    <span class="yk">initial_value</span>: "false"
+  - <span class="yk">id</span>: c_kin1
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: c_kin2
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: c_tav_a
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: c_tav_b
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: c_tav_c
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+  - <span class="yk">id</span>: c_tav_d
+    <span class="yk">type</span>: uint32_t
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "0"
+
+<span class="yc"># ── K1–K8 kapcsolt csatornák (PCF8575, aktív-alacsony modulok) ────────</span>
+<span class="yc"># Bekapcsoláskor a PCF8575 kimenetei MAGAS-ak → minden relé/SSR KI (fail-safe)</span>
+<span class="yk">switch</span>:
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k1
+    <span class="yk">name</span>: "${pre} K1 · 230V SSR"
+    <span class="yk">icon</span>: mdi:power-socket-eu
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 0, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k2
+    <span class="yk">name</span>: "${pre} K2 · 230V SSR"
+    <span class="yk">icon</span>: mdi:power-socket-eu
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 1, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k3
+    <span class="yk">name</span>: "${pre} K3 · 230V SSR"
+    <span class="yk">icon</span>: mdi:power-socket-eu
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 2, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k4
+    <span class="yk">name</span>: "${pre} K4 · 230V SSR"
+    <span class="yk">icon</span>: mdi:power-socket-eu
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 3, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k5
+    <span class="yk">name</span>: "${pre} K5 · relé · AC-DC"
+    <span class="yk">icon</span>: mdi:electric-switch
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 4, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k6
+    <span class="yk">name</span>: "${pre} K6 · relé · AC-DC"
+    <span class="yk">icon</span>: mdi:electric-switch
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 5, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k7
+    <span class="yk">name</span>: "${pre} K7 · relé · AC-DC"
+    <span class="yk">icon</span>: mdi:electric-switch
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 6, mode: { output: true }, inverted: true }
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: k8
+    <span class="yk">name</span>: "${pre} K8 · relé · AC-DC"
+    <span class="yk">icon</span>: mdi:electric-switch
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 7, mode: { output: true }, inverted: true }
+
+<span class="yc">  # SFX v0: LX06LA hangmodul PLAY bemenete — GPIO21 → BSS138 szintillesztő 3. csatorna → 5V</span>
+<span class="yc">  # (ISD1820-típusnál a PLAY-E aktív-magas impulzus; a polaritást padon ellenőrizni!)</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: sfx_trig
+    <span class="yk">internal</span>: true
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: GPIO21
+
+<span class="yc">  # Szerviz-gomb LED-je (12 mm LED-es nyomógomb)</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: svc_led
+    <span class="yk">internal</span>: true
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">pin</span>: { pcf8574: iox, number: 9, mode: { output: true }, inverted: true }
+
+<span class="yc">  # Beállítások</span>
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: night_auto
+    <span class="yk">name</span>: "${pre} Éjszakai automata"
+    <span class="yk">icon</span>: mdi:weather-night
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_mode</span>: RESTORE_DEFAULT_ON
+    <span class="yk">entity_category</span>: config
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: restore_after_power
+    <span class="yk">name</span>: "${pre} Jelenet visszaállítása áramszünet után"
+    <span class="yk">icon</span>: mdi:restore
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_mode</span>: RESTORE_DEFAULT_OFF
+    <span class="yk">entity_category</span>: config
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_a_en
+    <span class="yk">name</span>: "${pre} Program A engedélyezve"
+    <span class="yk">icon</span>: mdi:calendar-clock
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_mode</span>: RESTORE_DEFAULT_OFF
+    <span class="yk">entity_category</span>: config
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_b_en
+    <span class="yk">name</span>: "${pre} Program B engedélyezve"
+    <span class="yk">icon</span>: mdi:calendar-clock
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_mode</span>: RESTORE_DEFAULT_OFF
+    <span class="yk">entity_category</span>: config
+
+<span class="yc"># ── D1–D4 PWM kimenetek + buzzer ─────────────────────────────────────</span>
+<span class="yc"># Optós (PC817) MOSFET modulnál ≤ 1 kHz; direkt logic-level FET-nél mehet 2–4 kHz</span>
+<span class="yk">output</span>:
+  - { platform: ledc, id: out_d1, pin: GPIO4, frequency: 1000Hz }
+  - { platform: ledc, id: out_d2, pin: GPIO5, frequency: 1000Hz }
+  - { platform: ledc, id: out_d3, pin: GPIO6, frequency: 1000Hz }
+  - { platform: ledc, id: out_d4, pin: GPIO7, frequency: 1000Hz }
+  - { platform: ledc, id: out_buzz, pin: GPIO14 }
+
+<span class="yk">rtttl</span>:
+  <span class="yk">output</span>: out_buzz
+  <span class="yk">id</span>: beeper
+
+<span class="yk">light</span>:
+  - <span class="yk">platform</span>: monochromatic
+    <span class="yk">id</span>: d1
+    <span class="yk">name</span>: "${pre} D1 · DC PWM"
+    <span class="yk">output</span>: out_d1
+    <span class="yk">gamma_correct</span>: 2.8
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: &amp;mono_fx
+      - <span class="yk">pulse</span>:
+          <span class="yk">name</span>: "Lélegzés"
+          <span class="yk">transition_length</span>: 1.5s
+          <span class="yk">update_interval</span>: 1.5s
+          <span class="yk">min_brightness</span>: 15%
+          <span class="yk">max_brightness</span>: 100%
+      - <span class="yk">pulse</span>:
+          <span class="yk">name</span>: "Lassú hullám"
+          <span class="yk">transition_length</span>: 4s
+          <span class="yk">update_interval</span>: 4s
+          <span class="yk">min_brightness</span>: 30%
+          <span class="yk">max_brightness</span>: 100%
+      - <span class="yk">flicker</span>:
+          <span class="yk">name</span>: "Gyertya"
+          <span class="yk">alpha</span>: 92%
+          <span class="yk">intensity</span>: 12%
+      - <span class="yk">strobe</span>:
+          <span class="yk">name</span>: "Stroboszkóp"
+          <span class="yk">colors</span>:
+            - { state: true, brightness: 100%, duration: 40ms }
+            - { state: false, duration: 110ms }
+      - <span class="yk">strobe</span>:
+          <span class="yk">name</span>: "Villám"
+          <span class="yk">colors</span>:
+            - { state: true, brightness: 100%, duration: 50ms }
+            - { state: false, duration: 90ms }
+            - { state: true, brightness: 70%, duration: 40ms }
+            - { state: false, duration: 3500ms }
+            - { state: true, brightness: 100%, duration: 80ms }
+            - { state: false, duration: 120ms }
+            - { state: true, brightness: 60%, duration: 30ms }
+            - { state: false, duration: 60ms }
+            - { state: true, brightness: 90%, duration: 50ms }
+            - { state: false, duration: 6000ms }
+  - <span class="yk">platform</span>: monochromatic
+    <span class="yk">id</span>: d2
+    <span class="yk">name</span>: "${pre} D2 · DC PWM"
+    <span class="yk">output</span>: out_d2
+    <span class="yk">gamma_correct</span>: 2.8
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: *mono_fx
+  - <span class="yk">platform</span>: monochromatic
+    <span class="yk">id</span>: d3
+    <span class="yk">name</span>: "${pre} D3 · DC PWM"
+    <span class="yk">output</span>: out_d3
+    <span class="yk">gamma_correct</span>: 2.8
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: *mono_fx
+  - <span class="yk">platform</span>: monochromatic
+    <span class="yk">id</span>: d4
+    <span class="yk">name</span>: "${pre} D4 · DC PWM"
+    <span class="yk">output</span>: out_d4
+    <span class="yk">gamma_correct</span>: 2.8
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: *mono_fx
+
+<span class="yc">  # ── P1/P2 címezhető pixel (74AHCT125 szintillesztőn át) ─────────────</span>
+  - <span class="yk">platform</span>: esp32_rmt_led_strip
+    <span class="yk">id</span>: p1
+    <span class="yk">name</span>: "${pre} P1 · pixel 5V"
+    <span class="yk">pin</span>: GPIO15
+    <span class="yk">num_leds</span>: 60
+    <span class="yk">chipset</span>: WS2812
+    <span class="yk">channel_colors</span>: GRB
+<span class="yc">    # áramkorlát: 60 LED × ~60 mA × 60 % ≈ 2,2 A max a 5V-os ágon</span>
+    <span class="yk">color_correct</span>: [60%, 60%, 60%]
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: &amp;pix_fx
+      - <span class="yk">addressable_rainbow</span>:
+          <span class="yk">name</span>: "Szivárvány"
+          <span class="yk">speed</span>: 10
+          <span class="yk">width</span>: 50
+      - <span class="yk">addressable_color_wipe</span>:
+          <span class="yk">name</span>: "Színsöprés"
+      - <span class="yk">addressable_scan</span>:
+          <span class="yk">name</span>: "Szkenner"
+          <span class="yk">move_interval</span>: 40ms
+          <span class="yk">scan_width</span>: 3
+      - <span class="yk">addressable_twinkle</span>:
+          <span class="yk">name</span>: "Csillogás"
+          <span class="yk">twinkle_probability</span>: 5%
+          <span class="yk">progress_interval</span>: 4ms
+      - <span class="yk">addressable_random_twinkle</span>:
+          <span class="yk">name</span>: "Színes csillogás"
+          <span class="yk">twinkle_probability</span>: 5%
+          <span class="yk">progress_interval</span>: 32ms
+      - <span class="yk">addressable_fireworks</span>:
+          <span class="yk">name</span>: "Tűzijáték"
+          <span class="yk">update_interval</span>: 32ms
+          <span class="yk">spark_probability</span>: 10%
+          <span class="yk">use_random_color</span>: true
+          <span class="yk">fade_out_rate</span>: 120
+      - <span class="yk">addressable_flicker</span>:
+          <span class="yk">name</span>: "Tűz-vibrálás"
+          <span class="yk">update_interval</span>: 16ms
+          <span class="yk">intensity</span>: 8%
+      - <span class="yk">pulse</span>:
+          <span class="yk">name</span>: "Lélegzés"
+          <span class="yk">transition_length</span>: 1.5s
+          <span class="yk">update_interval</span>: 1.5s
+          <span class="yk">min_brightness</span>: 15%
+          <span class="yk">max_brightness</span>: 100%
+      - <span class="yk">addressable_lambda</span>:
+          <span class="yk">name</span>: "Vihar"
+          <span class="yk">update_interval</span>: 30ms
+          <span class="yk">lambda</span>: |-
+            // sötétkék „felhő" alap + véletlenszerű villám-sorozatok szakaszonként
+            static uint32_t t_next = 0, t_off = 0;
+            static int burst = 0;
+            static bool in_burst = false;
+            const uint32_t now = millis();
+            if (initial_run) { t_next = now + 800; t_off = 0; burst = 0; in_burst = false; }
+            it.all() = Color(3, 5, 16);
+            if (t_off != 0) {
+              if (now &lt; t_off) {
+                const int n = it.size();
+                const int seg = n / 3 + 1;
+                const int st = random_uint32() % (n - seg + 1);
+                it.range(st, st + seg) = Color(255, 255, 255);
+              } else {
+                t_off = 0;
+                if (burst &gt; 0) { burst--; t_next = now + 50 + random_uint32() % 150; }
+                else { in_burst = false; t_next = now + 2500 + random_uint32() % 7000; }
+              }
+            } else if (now &gt;= t_next) {
+              if (!in_burst) { burst = random_uint32() % 3; in_burst = true; }
+              t_off = now + 40 + random_uint32() % 90;
+            }
+  - <span class="yk">platform</span>: esp32_rmt_led_strip
+    <span class="yk">id</span>: p2
+    <span class="yk">name</span>: "${pre} P2 · pixel 12V"
+    <span class="yk">pin</span>: GPIO16
+    <span class="yk">num_leds</span>: 120
+    <span class="yk">chipset</span>: WS2812   # WS2815 ugyanazzal az időzítéssel megy
+    <span class="yk">channel_colors</span>: GRB
+    <span class="yk">color_correct</span>: [70%, 70%, 70%]
+    <span class="yk">default_transition_length</span>: 400ms
+    <span class="yk">restore_mode</span>: ALWAYS_OFF
+    <span class="yk">effects</span>: *pix_fx
+
+<span class="yc"># ── Beállítható számok (telefonról / web_serverről) ──────────────────</span>
+<span class="yk">number</span>:
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: master_dim
+    <span class="yk">name</span>: "${pre} Mester fényerő"
+    <span class="yk">icon</span>: mdi:brightness-6
+    <span class="yk">unit_of_measurement</span>: "%"
+    <span class="yk">min_value</span>: 10
+    <span class="yk">max_value</span>: 100
+    <span class="yk">step</span>: 5
+    <span class="yk">initial_value</span>: 100
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">on_value</span>:
+      - script.execute:
+          <span class="yk">id</span>: apply_scene
+          <span class="yk">idx</span>: !lambda "return id(scene_idx);"
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: night_lux
+    <span class="yk">name</span>: "${pre} Éjszakai küszöb"
+    <span class="yk">icon</span>: mdi:brightness-4
+    <span class="yk">unit_of_measurement</span>: lx
+    <span class="yk">min_value</span>: 0
+    <span class="yk">max_value</span>: 200
+    <span class="yk">step</span>: 1
+    <span class="yk">initial_value</span>: 10
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">entity_category</span>: config
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: night_s
+    <span class="yk">name</span>: "${pre} Éjszakai fény időtartam"
+    <span class="yk">icon</span>: mdi:timer-outline
+    <span class="yk">unit_of_measurement</span>: s
+    <span class="yk">min_value</span>: 10
+    <span class="yk">max_value</span>: 900
+    <span class="yk">step</span>: 10
+    <span class="yk">initial_value</span>: 120
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">entity_category</span>: config
+
+<span class="yc"># ── Jelenetek + RF/IR tanítás + időprogram-jelenetek ─────────────────</span>
+<span class="yk">select</span>:
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: scene_sel
+    <span class="yk">name</span>: "${pre} Jelenet"
+    <span class="yk">icon</span>: mdi:palette
+    <span class="yk">optimistic</span>: true
+    <span class="yk">options</span>:
+      - "Ki"
+      - "Ambient"
+      - "Mozi"
+      - "Party"
+      - "Gyertya"
+      - "Vihar"
+      - "Éjszakai út"
+      - "Egyedi"
+    <span class="yk">initial_option</span>: "Ki"
+    <span class="yk">on_value</span>:
+      - script.execute:
+          <span class="yk">id</span>: apply_scene
+          <span class="yk">idx</span>: !lambda "return (int) i;"
+
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: rf_learn
+    <span class="yk">name</span>: "${pre} Távkapcsoló tanítás"
+    <span class="yk">icon</span>: mdi:remote
+    <span class="yk">optimistic</span>: true
+    <span class="yk">entity_category</span>: config
+    <span class="yk">options</span>:
+      - "Ki"
+      - "KIN-1 · fali kinetikus (BE/KI)"
+      - "KIN-2 · fali kinetikus (következő jelenet)"
+      - "TAV-A · BE/KI"
+      - "TAV-B · következő jelenet"
+      - "TAV-C · Vihar"
+      - "TAV-D · minden KI"
+    <span class="yk">initial_option</span>: "Ki"
+    <span class="yk">on_value</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>:
+            <span class="yk">lambda</span>: "return i &gt; 0;"
+          <span class="yk">then</span>:
+            - switch.turn_on: svc_led
+          <span class="yk">else</span>:
+            - switch.turn_off: svc_led
+
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_a_scene
+    <span class="yk">name</span>: "${pre} Program A jelenet"
+    <span class="yk">icon</span>: mdi:palette-outline
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">entity_category</span>: config
+    <span class="yk">options</span>: &amp;prog_opts ["Ambient", "Mozi", "Party", "Gyertya", "Vihar", "Éjszakai út", "Egyedi"]
+    <span class="yk">initial_option</span>: "Ambient"
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_b_scene
+    <span class="yk">name</span>: "${pre} Program B jelenet"
+    <span class="yk">icon</span>: mdi:palette-outline
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">entity_category</span>: config
+    <span class="yk">options</span>: *prog_opts
+    <span class="yk">initial_option</span>: "Éjszakai út"
+
+<span class="yc"># ── Időprogramok (szabadon állítható BE/KI idő, telefonról) ──────────</span>
+<span class="yk">datetime</span>:
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_a_on
+    <span class="yk">name</span>: "${pre} Program A — BE"
+    <span class="yk">type</span>: time
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "18:00:00"
+    <span class="yk">time_id</span>: clk
+    <span class="yk">on_time</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>: { switch.is_on: prog_a_en }
+          <span class="yk">then</span>:
+            - script.execute:
+                <span class="yk">id</span>: scene_set
+                <span class="yk">idx</span>: !lambda "auto i = id(prog_a_scene).active_index(); return i.has_value() ? (int) *i + 1 : 1;"
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_a_off
+    <span class="yk">name</span>: "${pre} Program A — KI"
+    <span class="yk">type</span>: time
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "23:30:00"
+    <span class="yk">time_id</span>: clk
+    <span class="yk">on_time</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>: { switch.is_on: prog_a_en }
+          <span class="yk">then</span>:
+            - script.execute: { id: scene_set, idx: 0 }
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_b_on
+    <span class="yk">name</span>: "${pre} Program B — BE"
+    <span class="yk">type</span>: time
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "06:00:00"
+    <span class="yk">time_id</span>: clk
+    <span class="yk">on_time</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>: { switch.is_on: prog_b_en }
+          <span class="yk">then</span>:
+            - script.execute:
+                <span class="yk">id</span>: scene_set
+                <span class="yk">idx</span>: !lambda "auto i = id(prog_b_scene).active_index(); return i.has_value() ? (int) *i + 1 : 6;"
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: prog_b_off
+    <span class="yk">name</span>: "${pre} Program B — KI"
+    <span class="yk">type</span>: time
+    <span class="yk">optimistic</span>: true
+    <span class="yk">restore_value</span>: true
+    <span class="yk">initial_value</span>: "07:00:00"
+    <span class="yk">time_id</span>: clk
+    <span class="yk">on_time</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>: { switch.is_on: prog_b_en }
+          <span class="yk">then</span>:
+            - script.execute: { id: scene_set, idx: 0 }
+
+<span class="yk">button</span>:
+  - <span class="yk">platform</span>: template
+    <span class="yk">name</span>: "${pre} Hangeffekt (SFX)"
+    <span class="yk">icon</span>: mdi:volume-high
+    <span class="yk">on_press</span>:
+      - script.execute: sfx_pulse
+  - <span class="yk">platform</span>: template
+    <span class="yk">name</span>: "${pre} Tanult kódok törlése"
+    <span class="yk">icon</span>: mdi:delete-sweep
+    <span class="yk">entity_category</span>: config
+    <span class="yk">on_press</span>:
+      - <span class="yk">lambda</span>: |-
+          id(c_kin1) = 0; id(c_kin2) = 0;
+          id(c_tav_a) = 0; id(c_tav_b) = 0; id(c_tav_c) = 0; id(c_tav_d) = 0;
+  - <span class="yk">platform</span>: restart
+    <span class="yk">name</span>: "${pre} Újraindítás"
+
+<span class="yc"># ── Szkriptek ────────────────────────────────────────────────────────</span>
+<span class="yk">script</span>:
+<span class="yc">  # Jelenet kiválasztása (a select-en át → a felület is frissül)</span>
+  - <span class="yk">id</span>: scene_set
+    <span class="yk">mode</span>: queued
+    <span class="yk">parameters</span>:
+      <span class="yk">idx</span>: int
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          if (idx &lt; 0 || idx &gt; 7) return;
+          auto call = id(scene_sel).make_call();
+          call.set_index(idx);
+          call.perform();
+
+<span class="yc">  # A jelenet tényleges alkalmazása a kimenetekre</span>
+  - <span class="yk">id</span>: apply_scene
+    <span class="yk">mode</span>: restart
+    <span class="yk">parameters</span>:
+      <span class="yk">idx</span>: int
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          if (idx &lt; 0 || idx &gt; 7) return;
+          id(scene_idx) = idx;
+          if (idx &gt; 0) id(last_scene) = idx;
+          if (idx != 6) id(night_active) = false;
+          if (idx == 7) return;  // Egyedi: kézi beállítás marad
+
+          float m = id(master_dim).state / 100.0f;
+          if (std::isnan(m) || m &lt;= 0.0f) m = 1.0f;
+
+          auto mono = [m](light::LightState *l, float br, const char *fx) {
+            if (br &lt;= 0.0f) { auto c = l-&gt;turn_off(); c.perform(); return; }
+            auto c = l-&gt;turn_on();
+            c.set_brightness(br * m);
+            c.set_effect(fx);
+            c.perform();
+          };
+          auto pix = [m](light::LightState *l, float br, float r, float g, float b, const char *fx) {
+            if (br &lt;= 0.0f) { auto c = l-&gt;turn_off(); c.perform(); return; }
+            auto c = l-&gt;turn_on();
+            c.set_brightness(br * m);
+            c.set_rgb(r, g, b);
+            c.set_effect(fx);
+            c.perform();
+          };
+          auto sw = [](switch_::Switch *s, bool on) { if (on) s-&gt;turn_on(); else s-&gt;turn_off(); };
+          auto acs = [&amp;](bool a, bool b, bool c, bool d) { sw(id(k1), a); sw(id(k2), b); sw(id(k3), c); sw(id(k4), d); };
+          auto rls = [&amp;](bool a, bool b, bool c, bool d) { sw(id(k5), a); sw(id(k6), b); sw(id(k7), c); sw(id(k8), d); };
+
+          switch (idx) {
+            case 0:  // Ki
+              acs(false, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0, "None"); mono(id(d2), 0, "None"); mono(id(d3), 0, "None"); mono(id(d4), 0, "None");
+              pix(id(p1), 0, 0, 0, 0, "None"); pix(id(p2), 0, 0, 0, 0, "None");
+              break;
+            case 1:  // Ambient
+              acs(true, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0.45f, "Lassú hullám"); mono(id(d2), 0.30f, "None");
+              mono(id(d3), 0, "None"); mono(id(d4), 0, "None");
+              pix(id(p1), 0.35f, 1.0f, 0.60f, 0.25f, "None");
+              pix(id(p2), 0.25f, 1.0f, 0.55f, 0.20f, "Lélegzés");
+              break;
+            case 2:  // Mozi
+              acs(false, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0.08f, "None"); mono(id(d2), 0, "None"); mono(id(d3), 0, "None"); mono(id(d4), 0, "None");
+              pix(id(p1), 0.12f, 0.10f, 0.20f, 1.0f, "Lélegzés");
+              pix(id(p2), 0, 0, 0, 0, "None");
+              break;
+            case 3:  // Party
+              acs(true, true, false, false); rls(true, false, false, false);
+              mono(id(d1), 0.9f, "Lélegzés"); mono(id(d2), 0.9f, "Stroboszkóp");
+              mono(id(d3), 0.8f, "Lélegzés"); mono(id(d4), 0.8f, "Stroboszkóp");
+              pix(id(p1), 1.0f, 1.0f, 0.0f, 0.6f, "Tűzijáték");
+              pix(id(p2), 0.8f, 1.0f, 1.0f, 1.0f, "Szivárvány");
+              break;
+            case 4:  // Gyertya
+              acs(false, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0.5f, "Gyertya"); mono(id(d2), 0.5f, "Gyertya");
+              mono(id(d3), 0.4f, "Gyertya"); mono(id(d4), 0.4f, "Gyertya");
+              pix(id(p1), 0.5f, 1.0f, 0.45f, 0.08f, "Tűz-vibrálás");
+              pix(id(p2), 0.4f, 1.0f, 0.40f, 0.05f, "Tűz-vibrálás");
+              break;
+            case 5:  // Vihar
+              acs(false, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0.9f, "Villám"); mono(id(d2), 0, "None"); mono(id(d3), 0, "None"); mono(id(d4), 0, "None");
+              pix(id(p1), 0.7f, 1.0f, 1.0f, 1.0f, "Vihar");
+              pix(id(p2), 0.6f, 1.0f, 1.0f, 1.0f, "Vihar");
+              id(sfx_pulse).execute();
+              break;
+            case 6:  // Éjszakai út
+              acs(false, false, false, false); rls(false, false, false, false);
+              mono(id(d1), 0, "None"); mono(id(d2), 0, "None"); mono(id(d3), 0, "None"); mono(id(d4), 0, "None");
+              pix(id(p1), 0.08f, 1.0f, 0.55f, 0.20f, "None");
+              pix(id(p2), 0, 0, 0, 0, "None");
+              break;
+          }
+
+  - <span class="yk">id</span>: fx_toggle
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          id(scene_set)-&gt;execute(id(scene_idx) == 0 ? id(last_scene) : 0);
+
+  - <span class="yk">id</span>: scene_next
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          id(scene_set)-&gt;execute(id(scene_idx) % 7 + 1);  // 1..7 körbe
+
+  - <span class="yk">id</span>: dim_cycle
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          const float v = id(master_dim).state;
+          const float n = v &gt; 80 ? 60 : (v &gt; 45 ? 30 : 100);
+          auto c = id(master_dim).make_call();
+          c.set_value(n);
+          c.perform();
+
+  - <span class="yk">id</span>: sfx_pulse
+    <span class="yk">mode</span>: single
+    <span class="yk">then</span>:
+      - switch.turn_on: sfx_trig
+      - <span class="yk">delay</span>: 150ms
+      - switch.turn_off: sfx_trig
+
+  - <span class="yk">id</span>: beep_ok
+    <span class="yk">then</span>:
+      - rtttl.play: "ok:d=16,o=6,b=180:c,e,g"
+
+  - <span class="yk">id</span>: beep_tap
+    <span class="yk">then</span>:
+      - rtttl.play: "t:d=32,o=7,b=200:c"
+
+<span class="yc">  # Közös kódkezelő: 433 MHz (rc_switch) és IR (NEC) is ide fut be</span>
+  - <span class="yk">id</span>: handle_code
+    <span class="yk">mode</span>: queued
+    <span class="yk">parameters</span>:
+      <span class="yk">code</span>: int
+    <span class="yk">then</span>:
+      - <span class="yk">lambda</span>: |-
+          static uint32_t last_c = 0, last_t = 0;
+          const uint32_t c = (uint32_t) code;
+          const uint32_t now = millis();
+          if (c == 0) return;
+          if (c == last_c &amp;&amp; (now - last_t) &lt; 600) { last_t = now; return; }  // ismétlő keretek
+          last_c = c; last_t = now;
+
+          char buf[12];
+          snprintf(buf, sizeof(buf), "%08X", (unsigned) c);
+          id(rf_last).publish_state(buf);
+
+          auto li = id(rf_learn).active_index();
+          if (li.has_value() &amp;&amp; *li &gt; 0) {
+            switch (*li) {
+              case 1: id(c_kin1) = c; break;
+              case 2: id(c_kin2) = c; break;
+              case 3: id(c_tav_a) = c; break;
+              case 4: id(c_tav_b) = c; break;
+              case 5: id(c_tav_c) = c; break;
+              case 6: id(c_tav_d) = c; break;
+            }
+            auto call = id(rf_learn).make_call();
+            call.set_index(0);
+            call.perform();
+            id(beep_ok).execute();
+            return;
+          }
+          if (c == id(c_kin1) || c == id(c_tav_a))      id(fx_toggle).execute();
+          else if (c == id(c_kin2) || c == id(c_tav_b)) id(scene_next).execute();
+          else if (c == id(c_tav_c))                    id(scene_set)-&gt;execute(5);
+          else if (c == id(c_tav_d))                    id(scene_set)-&gt;execute(0);
+
+<span class="yc">  # Éjszakai fény lekapcsolása az időzítő lejártakor</span>
+  - <span class="yk">id</span>: night_timer
+    <span class="yk">mode</span>: restart
+    <span class="yk">then</span>:
+      - <span class="yk">delay</span>: !lambda "return (uint32_t) (id(night_s).state * 1000);"
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>:
+            <span class="yk">lambda</span>: "return id(night_active) &amp;&amp; id(scene_idx) == 6;"
+          <span class="yk">then</span>:
+            - script.execute: { id: scene_set, idx: 0 }
+            - <span class="yk">lambda</span>: "id(night_active) = false;"
+
+<span class="yc"># ── Rádiós / IR vevők ────────────────────────────────────────────────</span>
+<span class="yk">remote_receiver</span>:
+  - <span class="yk">id</span>: rf_rx
+    <span class="yk">pin</span>: GPIO17          # RXB6 / SRX882 superhet 433,92 MHz (fedél-panelen)
+    <span class="yk">dump</span>: rc_switch
+    <span class="yk">tolerance</span>: 50%
+    <span class="yk">filter</span>: 250us
+    <span class="yk">idle</span>: 4ms
+    <span class="yk">on_rc_switch</span>:
+      - script.execute:
+          <span class="yk">id</span>: handle_code
+          <span class="yk">code</span>: !lambda "return (int) (uint32_t) x.code;"
+  - <span class="yk">id</span>: ir_rx
+    <span class="yk">pin</span>:
+      <span class="yk">number</span>: GPIO18     # TSOP38238 (opcionális)
+      <span class="yk">inverted</span>: true
+      <span class="yk">mode</span>:
+        <span class="yk">input</span>: true
+        <span class="yk">pullup</span>: true
+    <span class="yk">dump</span>: nec
+    <span class="yk">on_nec</span>:
+      - script.execute:
+          <span class="yk">id</span>: handle_code
+          <span class="yk">code</span>: !lambda "return (int) ((((uint32_t) x.address) &lt;&lt; 16) | x.command);"
+
+<span class="yk">text_sensor</span>:
+  - <span class="yk">platform</span>: template
+    <span class="yk">id</span>: rf_last
+    <span class="yk">name</span>: "${pre} Utolsó RF-IR kód"
+    <span class="yk">icon</span>: mdi:barcode
+    <span class="yk">entity_category</span>: diagnostic
+  - <span class="yk">platform</span>: wifi_info
+    <span class="yk">ip_address</span>:
+      <span class="yk">id</span>: ip_addr
+      <span class="yk">name</span>: "${pre} IP"
+      <span class="yk">entity_category</span>: diagnostic
+
+<span class="yc"># ── Érzékelők és kezelőszervek ───────────────────────────────────────</span>
+<span class="yk">sensor</span>:
+  - <span class="yk">platform</span>: bh1750
+    <span class="yk">id</span>: lux
+    <span class="yk">name</span>: "${pre} Megvilágítás"
+    <span class="yk">address</span>: 0x23
+    <span class="yk">update_interval</span>: 10s
+  - <span class="yk">platform</span>: wifi_signal
+    <span class="yk">name</span>: "${pre} WiFi jel"
+    <span class="yk">update_interval</span>: 60s
+    <span class="yk">entity_category</span>: diagnostic
+
+<span class="yk">binary_sensor</span>:
+<span class="yc">  # CAP1 (TTP223): koppintás = BE/KI · dupla = következő jelenet · tartás = minden KI</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: cap1
+    <span class="yk">name</span>: "${pre} CAP1 · FX"
+    <span class="yk">pin</span>: GPIO1
+    <span class="yk">filters</span>: [ delayed_on: 20ms ]
+    <span class="yk">on_multi_click</span>:
+      - <span class="yk">timing</span>: [ "ON for at most 0.6s", "OFF for at most 0.3s", "ON for at most 0.6s", "OFF for at least 0.2s" ]
+        <span class="yk">then</span>: [ script.execute: beep_tap, script.execute: scene_next ]
+      - <span class="yk">timing</span>: [ "ON for at least 1.2s" ]
+        <span class="yk">then</span>:
+          - script.execute: beep_tap
+          - script.execute: { id: scene_set, idx: 0 }
+      - <span class="yk">timing</span>: [ "ON for at most 0.6s", "OFF for at least 0.35s" ]
+        <span class="yk">then</span>: [ script.execute: beep_tap, script.execute: fx_toggle ]
+
+<span class="yc">  # CAP2 (TTP223): koppintás = fényerő 100→60→30 · dupla = Éjszakai út · tartás = zene (FX-SND, később)</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: cap2
+    <span class="yk">name</span>: "${pre} CAP2 · fény-zene"
+    <span class="yk">pin</span>: GPIO2
+    <span class="yk">filters</span>: [ delayed_on: 20ms ]
+    <span class="yk">on_multi_click</span>:
+      - <span class="yk">timing</span>: [ "ON for at most 0.6s", "OFF for at most 0.3s", "ON for at most 0.6s", "OFF for at least 0.2s" ]
+        <span class="yk">then</span>:
+          - script.execute: beep_tap
+          - script.execute: { id: scene_set, idx: 6 }
+      - <span class="yk">timing</span>: [ "ON for at least 1.2s" ]
+        <span class="yk">then</span>:
+          - script.execute: beep_tap
+<span class="yc">          # FX-SND modul után: lejátszás/szünet a BRIDGE Music Assistanton át</span>
+          - homeassistant.action:
+              <span class="yk">action</span>: media_player.media_play_pause
+              <span class="yk">data</span>:
+                <span class="yk">entity_id</span>: media_player.fx_snd_01
+      - <span class="yk">timing</span>: [ "ON for at most 0.6s", "OFF for at least 0.35s" ]
+        <span class="yk">then</span>: [ script.execute: beep_tap, script.execute: dim_cycle ]
+
+<span class="yc">  # PIR (HC-SR501 / RCWL-0516) → éjszakai útvilágítás, ha sötét van és minden KI</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: pir
+    <span class="yk">name</span>: "${pre} Mozgás"
+    <span class="yk">device_class</span>: motion
+    <span class="yk">pin</span>: GPIO10
+    <span class="yk">on_press</span>:
+      - <span class="yk">if</span>:
+          <span class="yk">condition</span>:
+            <span class="yk">lambda</span>: |-
+              if (!id(night_auto).state) return false;
+              const float lx = id(lux).state;
+              const bool dark = std::isnan(lx) || lx &lt; id(night_lux).state;
+              return dark &amp;&amp; (id(scene_idx) == 0 || id(night_active));
+          <span class="yk">then</span>:
+            - <span class="yk">lambda</span>: "id(night_active) = true;"
+            - <span class="yk">if</span>:
+                <span class="yk">condition</span>:
+                  <span class="yk">lambda</span>: "return id(scene_idx) != 6;"
+                <span class="yk">then</span>:
+                  - script.execute: { id: scene_set, idx: 6 }
+            - script.execute: night_timer
+
+<span class="yc">  # Szerviz gomb a dobozon (12 mm LED-es): nyomás = minden KI · 3 s = RF tanítás KIN-1</span>
+  - <span class="yk">platform</span>: gpio
+    <span class="yk">id</span>: svc_btn
+    <span class="yk">name</span>: "${pre} Szerviz gomb"
+    <span class="yk">pin</span>:
+      <span class="yk">number</span>: GPIO12
+      <span class="yk">inverted</span>: true
+      <span class="yk">mode</span>: { input: true, pullup: true }
+    <span class="yk">filters</span>: [ delayed_on: 30ms ]
+    <span class="yk">on_multi_click</span>:
+      - <span class="yk">timing</span>: [ "ON for at least 3s" ]
+        <span class="yk">then</span>:
+          - <span class="yk">lambda</span>: |-
+              auto call = id(rf_learn).make_call();
+              call.set_index(1);
+              call.perform();
+      - <span class="yk">timing</span>: [ "ON for at most 1s", "OFF for at least 0.3s" ]
+        <span class="yk">then</span>:
+          - script.execute: { id: scene_set, idx: 0 }
+
+  - <span class="yk">platform</span>: status
+    <span class="yk">name</span>: "${pre} Állapot"
+
+<span class="yc"># ── Fedél-kijelző (0,96" SSD1306) ────────────────────────────────────</span>
+<span class="yk">font</span>:
+  - <span class="yk">file</span>: "gfonts://Roboto Condensed"
+    <span class="yk">id</span>: f_big
+    <span class="yk">size</span>: 16
+    <span class="yk">glyphs</span>: " !%()+-./0123456789:;&lt;=&gt;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÖŐÚÜŰáéíóöőúüű·°"
+  - <span class="yk">file</span>: "gfonts://Roboto Condensed"
+    <span class="yk">id</span>: f_small
+    <span class="yk">size</span>: 10
+    <span class="yk">glyphs</span>: " !%()+-./0123456789:;&lt;=&gt;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÖŐÚÜŰáéíóöőúüű·°"
+
+<span class="yk">display</span>:
+  - <span class="yk">platform</span>: ssd1306_i2c
+    <span class="yk">model</span>: "SSD1306 128x64"
+    <span class="yk">address</span>: 0x3C
+    <span class="yk">update_interval</span>: 1s
+    <span class="yk">lambda</span>: |-
+      static const char *const NAMES[] = {"Ki", "Ambient", "Mozi", "Party", "Gyertya", "Vihar", "Éjszakai út", "Egyedi"};
+      const int s = id(scene_idx);
+      it.printf(0, 0, id(f_big), "%s", NAMES[(s &gt;= 0 &amp;&amp; s &lt;= 7) ? s : 0]);
+      auto t = id(clk).now();
+      if (t.is_valid()) it.strftime(127, 2, id(f_small), TextAlign::TOP_RIGHT, "%H:%M", t);
+      it.printf(0, 22, id(f_small), "Fényerő %.0f%%   Lux %.0f", id(master_dim).state, id(lux).state);
+      auto on = [](switch_::Switch *x) { return x-&gt;state ? '1' : '0'; };
+      it.printf(0, 36, id(f_small), "K %c%c%c%c %c%c%c%c", on(id(k1)), on(id(k2)), on(id(k3)), on(id(k4)),
+                on(id(k5)), on(id(k6)), on(id(k7)), on(id(k8)));
+      auto lo = [](light::LightState *l) { return l-&gt;current_values.is_on() ? '1' : '0'; };
+      it.printf(64, 36, id(f_small), "D %c%c%c%c P %c%c", lo(id(d1)), lo(id(d2)), lo(id(d3)), lo(id(d4)), lo(id(p1)), lo(id(p2)));
+      if (id(rf_learn).active_index().value_or(0) &gt; 0) it.print(0, 50, id(f_small), "TANÍTÁS: nyomd meg a gombot...");
+      else it.printf(0, 50, id(f_small), "%s", id(ip_addr).state.c_str());
+</pre>
+  </div>
+</section>
+
+<!-- ============ ÉLESZTÉS ============ -->
+<section id="bring">
+  <h2><span class="sec">§14</span>Élesztési sorrend</h2>
+  <p>Hardver és szoftver felváltva. Ha egy lépés piros, ott kell megállni: minden hiba annál a lépésnél a legolcsóbb, amelyik behozta.</p>
+  <ol class="steps">
+    <li><span class="k">HW</span><span>Tápegységek próbapadon: terhelés nélkül, majd terhelve (KWS-065C). 5,0 V és 12,0 V a kimeneten.</span></li>
+    <li><span class="k">SW</span><span>S3 flashelése USB-n (UART C-port): ESPHome alap, WiFi, helyi web_server elérhető telefonról.</span></li>
+    <li><span class="k">HW/SW</span><span>I²C: OLED (0x3C) + BH1750 (0x23) 3,3 V-on; PCF8575 5 V-on a szintillesztő mögött → a scan 0x20-at is mutat.</span></li>
+    <li><span class="k">HW/SW</span><span>Relé- és SSR-modulok terhelés nélkül: LED-ek követik a K1–K8 kapcsolókat; ESP reset alatt is KI maradnak.</span></li>
+    <li><span class="k">HW/SW</span><span>FX-DC4: előbb a PWM generátorral MCU nélkül bemérni, utána D1–D4 effektekkel 12 V-os LED-szalagon.</span></li>
+    <li><span class="k">HW/SW</span><span>FX-PIX2: rövid WS2812B szakasz P1-en, effektek; P2 WS2815-tel.</span></li>
+    <li><span class="k">SW</span><span>433 MHz: tanítás telefonról (KIN-1/2, TAV-A…D), majd IR. Ellenőrzés az „Utolsó RF-IR kód” entitással.</span></li>
+    <li><span class="k">SW</span><span>CAP1/CAP2 multi-click, PIR + lux éjszakai automata, A/B időprogram egy perccel előre állítva.</span></li>
+    <li><span class="k">HW</span><span>230 V oldal feszültségmentesen: szigetelésmérés, PE-folytonosság, csak utána K1–K4 izzóterheléssel, F1–F5 biztosítókkal.</span></li>
+    <li><span class="k">HW</span><span>Dobozolás: válaszfal, G1/G2 átvezetők, J1 fedélpanel. Hőpróba 1 órán át teljes terheléssel (W3230 + V1).</span></li>
+  </ol>
+  <h3>Ütemterv</h3>
+  <div class="road">
+    <div class="now"><h4>v0 · próbapad</h4>Csak készletből: S3 + shield, PCF8575, szintillesztő, 2 × 1-ch relé, OLED, PIR, buzzer, LX06LA + LM386, 5 V 3 A dugasztáp. A jelenetmotor, a tanítás és az időprogram már tesztelhető.</div>
+    <div><h4>v1 · doboz</h4>Rendelés után: DIN tápok, FX-AC4, FX-RL4, FX-DC4, FX-PIX2, FX-RF, fedélpanel, falcsatlakozók. A teljes 14 kimenet.</div>
+    <div><h4>v2 · FX-SND</h4>I²S hangmodul az egyik úton lévő S3-mal; Music Assistant, Spotify, beágyazott hangeffektek a Vihar és más jelenetekhez.</div>
+    <div><h4>v3 · műholdak</h4>FX-PAD fali panelek C3 Zero-val, FX-SENS mennyezeti érzékelők, opcionálisan FX-NET vezetékes BRIDGE_NET.</div>
+  </div>
+</section>
+
+<!-- ============ BIZTONSÁG ============ -->
+<section id="safety">
+  <h2><span class="sec">§15</span>Biztonsági jegyzetek</h2>
+  <div class="note hv"><b>Előtét áramkör:</b> 30 mA-es RCD és B10/B16 kismegszakító a lakás elosztójában (MSZ HD 60364-4-41). A dobozban lévő Q1 a belső huzalozást és a tápegységeket védi.</div>
+  <div class="cols2">
+    <ul>
+      <li><b>Zónák:</b> a 230 V és a SELV között válaszfal. Csak G1 (DC táp) és G2 (jel-szalagkábel) megy át, mindkettő 230 V-os szigetelésű vezetékkel.</li>
+      <li><b>SELV marad SELV:</b> a két tápegység 0 V-ja egy csillagpontban közös, de nem kerül PE-re (különben PELV lenne).</li>
+      <li><b>PE:</b> DIN-sín, fém alkatrészek és a C13 aljzatok PE ága az X1 PE sorkapcsokra.</li>
+      <li><b>SSR:</b> csak AC-t kapcsol, és jellemzően zárlatosra hibásodik, ezért van csatornánként T2A biztosító. Kikapcsolt állapotban kis szivárgó áram folyik, amitől egy LED-fényforrás halványan derenghet; ilyenkor K5–K8 mechanikus relé vagy söntkondenzátor a megoldás.</li>
+    </ul>
+    <ul>
+      <li><b>Olcsó relémodul:</b> a tekercs és az érintkező közti távolság nem garantál megerősített szigetelést. Ügyfélnél tartós beépítéshez a PRO szint interfészreléje kell.</li>
+      <li><b>Hő:</b> 4 SSR 1 A-en ≈ 6 W, a tápok vesztesége ≈ 10 W. Zárt dobozban a W3230 45 °C felett indítja a ventilátort.</li>
+      <li><b>5/12 V választás:</b> rossz feszültség tönkreteszi az 5 V-os szalagot. Az átkötés az X3-on van, a külső aljzatot színgyűrű jelöli (piros = 12 V, kék = 5 V).</li>
+      <li><b>Pixel:</b> 330 Ω soros ellenállás az első LED előtt, 1000 µF a betápon. A GX csatlakozót csak feszültségmentesen szabad dugni.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>BRIDGE · FX-CORE 01 · r1 · Varler Group · készlet-alap: VRG BuildTree (2026-09-26) · ESPHome 2026.9.1 config-validált</footer>
+</div>
+
+<script>
+(function(){
+  var btn=document.getElementById('copyYaml'), pre=document.getElementById('yamlsrc');
+  if(!btn||!pre) return;
+  btn.addEventListener('click',function(){
+    var txt=pre.textContent;
+    var done=function(){ btn.textContent='Kimásolva'; setTimeout(function(){btn.textContent='YAML másolása';},1800); };
+    var fallback=function(){ var r=document.createRange(); r.selectNodeContents(pre); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent='Kijelölve — Ctrl+C'; };
+    try{ navigator.clipboard.writeText(txt).then(done,fallback); }catch(e){ fallback(); }
+  });
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,967 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>CYD Dashboard Ideas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a menu card grid grouped by theme, a CYD-shaped header illustration, and a sticky "your picks" tray at the bottom. */
+  :root {
+    --bg: #F2F4F7;
+    --surface: #FFFFFF;
+    --ink: #172131;
+    --muted: #5B6779;
+    --line: #D8DEE6;
+    --pcb: #E3AE12;          /* the Cheap Yellow Display's board colour */
+    --hl: #FFF0B3;           /* highlighter for picked cards */
+    --hl-line: #E3AE12;
+    --hl-ink: #4A3A00;
+    --screen: #0B1220;
+    --screen-ink: #EAF0F8;
+    --screen-dim: #8C98AB;
+    --screen-line: #222C3C;
+    --rl-blue: #1873FF;
+    --rl-orange: #FF8A15;
+    --ok: #3CD26E;
+    --bad: #E64646;
+    --c-gaming: #3D6EEB; --c-pc: #0F9A86; --c-prod: #7A5BDD; --c-media: #D9507A;
+    --c-home: #DD8418; --c-info: #2C86BC; --c-fun: #B44CC0; --c-platform: #6B778A;
+    --f-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E141E; --surface: #161F2D; --ink: #E6EBF2; --muted: #9AA6B7; --line: #283345;
+      --hl: #3A3112; --hl-line: #E8B62A; --hl-ink: #FFE7A0; --screen: #05080F;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E141E; --surface: #161F2D; --ink: #E6EBF2; --muted: #9AA6B7; --line: #283345;
+    --hl: #3A3112; --hl-line: #E8B62A; --hl-ink: #FFE7A0; --screen: #05080F;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 140px;
+  }
+
+  /* Header */
+  header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center; }
+  .eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; margin: 6px 0 12px; text-wrap: balance; }
+  .lede { max-width: 60ch; color: var(--muted); margin: 0; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .cyd { width: 236px; padding: 12px 12px 22px; background: var(--pcb); border-radius: 8px; position: relative; box-shadow: 0 10px 30px -18px rgba(0,0,0,.6); }
+  .cyd::after { content: ""; position: absolute; left: 50%; bottom: 7px; width: 26px; height: 8px; margin-left: -13px; border-radius: 2px; background: rgba(0,0,0,.28); }
+  .cyd-screen { aspect-ratio: 4 / 3; max-width: 100%; background: var(--screen); border-radius: 3px; padding: 8px; display: grid; grid-template-rows: auto 1fr auto; gap: 6px; font-family: var(--f-display); color: var(--screen-ink); }
+  .cyd-top { display: flex; justify-content: space-between; font-size: 9px; color: #8C98AB; font-family: var(--f-mono); }
+  .cyd-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; }
+  .cyd-team { border-radius: 4px; text-align: center; font-size: 26px; font-weight: 700; line-height: 1.5; color: #fff; }
+  .cyd-team.b { background: #1873FF; } .cyd-team.o { background: #FF8A15; }
+  .cyd-clock { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .cyd-bar { height: 7px; border-radius: 4px; background: #222C3C; overflow: hidden; }
+  .cyd-bar span { display: block; width: 64%; height: 100%; background: #FF8A15; }
+
+  /* Filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 30px 0 8px; }
+  .chip {
+    font: 500 13px/1 var(--f-body); color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 2px; }
+  .chip .n { font-family: var(--f-mono); font-size: 11px; opacity: .7; }
+  .chip:focus-visible, .card:focus-visible, .btn:focus-visible, textarea:focus-visible { outline: 2px solid var(--pcb); outline-offset: 2px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted); margin: 0 0 6px; }
+  .legend b { font-family: var(--f-mono); font-weight: 500; color: var(--ink); }
+
+  /* Groups and cards */
+  section.group { margin-top: 34px; }
+  .group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 14px; }
+  .group-head h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 0; display: flex; align-items: center; gap: 10px; }
+  .group-head h2 .dot { width: 12px; height: 12px; border-radius: 3px; }
+  .group-head p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+  .card {
+    text-align: left; font: inherit; color: inherit; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 14px 12px; display: grid; grid-template-rows: auto 1fr auto; gap: 8px;
+    min-width: 0; transition: border-color .15s, background-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--muted); }
+  .card[aria-pressed="true"] { background: var(--hl); border-color: var(--hl-line); color: var(--hl-ink); }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card h3 { font-family: var(--f-display); font-weight: 600; font-size: 17px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  .tick {
+    flex: none; width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--line);
+    display: grid; place-items: center; font-size: 13px; color: transparent;
+  }
+  .card[aria-pressed="true"] .tick { background: var(--pcb); border-color: var(--pcb); color: #2A2000; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); }
+  .card[aria-pressed="true"] p { color: var(--hl-ink); }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--f-mono); font-size: 11.5px; }
+  .tag { border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
+  .card[aria-pressed="true"] .tag { border-color: color-mix(in srgb, var(--hl-line) 55%, transparent); }
+  .tag.built { background: var(--c-pc); border-color: var(--c-pc); color: #fff; }
+  .effort { letter-spacing: 1px; }
+  .src { color: var(--muted); overflow-wrap: anywhere; }
+  .card[aria-pressed="true"] .src { color: var(--hl-ink); }
+
+  /* Notes */
+  .notes { margin-top: 40px; display: grid; gap: 8px; max-width: 720px; }
+  .notes label { font-family: var(--f-display); font-weight: 600; font-size: 18px; }
+  .notes span { color: var(--muted); font-size: 13.5px; }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; font: inherit; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px;
+  }
+
+  /* Picks tray */
+  .tray {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--surface); border-top: 1px solid var(--line);
+    box-shadow: 0 -10px 30px -22px rgba(0,0,0,.5);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tray-in {
+    max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 14px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 12px;
+  }
+  .count { font-family: var(--f-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; min-width: 2ch; text-align: right; }
+  .tray-text { min-width: 0; flex: 1; }
+  .tray-text b { display: block; font-size: 14px; }
+  .tray-text small { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .btn {
+    font: 600 14px/1 var(--f-body); border-radius: 8px; padding: 11px 14px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink); white-space: nowrap;
+  }
+  .btn.primary { background: var(--pcb); border-color: var(--pcb); color: #2A2000; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  /* Export panel (opens above the tray bar) */
+  .export {
+    max-width: 1120px; margin: 0 auto; max-height: min(70vh, 560px); overflow-y: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 16px 4px; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px 24px;
+  }
+  .export h2 { grid-column: 1 / -1; margin: 0; font-family: var(--f-display); font-size: 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .opts { display: grid; gap: 14px; align-content: start; min-width: 0; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+  legend { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0; margin-bottom: 8px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg label { position: relative; }
+  .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .seg span { display: inline-block; border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; font-size: 13.5px; background: var(--surface); }
+  .seg small { display: block; font-size: 11.5px; color: var(--muted); }
+  .seg input:checked + span { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .seg input:checked + span small { color: var(--bg); opacity: .75; }
+  .seg input:focus-visible + span { outline: 2px solid var(--pcb); outline-offset: 2px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  .check input { width: 16px; height: 16px; accent-color: var(--pcb); }
+  .preview { display: grid; gap: 8px; min-width: 0; align-content: start; }
+  .preview textarea { min-height: 190px; font-family: var(--f-mono); font-size: 12px; line-height: 1.45; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .status { font-size: 13px; color: var(--muted); }
+  .group-head .all { margin-left: auto; font: 500 12.5px/1 var(--f-body); color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; cursor: pointer; white-space: nowrap; }
+  .group-head .all:hover { color: var(--ink); border-color: var(--muted); }
+  .group-head .all:focus-visible { outline: 2px solid var(--pcb); outline-offset: 2px; }
+  @media (max-width: 760px) { .export { grid-template-columns: 1fr; } .preview textarea { min-height: 140px; } }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-top: 28px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab {
+    font: 600 15px/1 var(--f-display); color: var(--muted); background: none; border: 0; cursor: pointer;
+    padding: 12px 14px 11px; border-bottom: 3px solid transparent; white-space: nowrap;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--pcb); }
+  .tab:focus-visible { outline: 2px solid var(--pcb); outline-offset: -2px; }
+  .tab small { font-family: var(--f-mono); font-weight: 400; font-size: 11px; margin-left: 6px; opacity: .8; }
+
+  /* v2 plan */
+  .plan { display: grid; gap: 44px; margin-top: 28px; }
+  .plan h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 3.4vw, 32px); line-height: 1.1; margin: 4px 0 10px; text-wrap: balance; }
+  .plan h3 { font-family: var(--f-display); font-weight: 600; font-size: 19px; margin: 0; }
+  .plan p { margin: 0; }
+  .plan .intro p { max-width: 64ch; color: var(--muted); }
+  .picks-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .pill { font-size: 12.5px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 10px; display: inline-flex; gap: 6px; align-items: center; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 2px; }
+
+  .pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .page-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .page-card ul, .detail ul, .layer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+  .page-card li::marker, .detail li::marker, .layer li::marker { color: var(--pcb); }
+  .from { display: flex; flex-wrap: wrap; gap: 5px; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); align-items: center; }
+  .from .tag { color: var(--ink); }
+
+  .mock {
+    aspect-ratio: 4 / 3; max-width: 100%; background: var(--screen); color: var(--screen-ink);
+    border: 4px solid var(--pcb); border-radius: 8px; padding: 9px 10px; display: grid; gap: 6px;
+    grid-template-rows: auto 1fr; font-family: var(--f-display); overflow: hidden;
+  }
+  .ribbon { display: flex; justify-content: space-between; gap: 8px; font-family: var(--f-mono); font-size: 10px; color: var(--screen-dim); border-bottom: 1px solid var(--screen-line); padding-bottom: 4px; }
+  .ribbon .on { color: var(--ok); } .ribbon .off { color: var(--bad); }
+  .m-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .m-team { border-radius: 5px; text-align: center; font-size: 34px; font-weight: 700; line-height: 1.6; color: #fff; }
+  .m-team.b { background: var(--rl-blue); } .m-team.o { background: var(--rl-orange); }
+  .m-clock { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: center; }
+  .m-clock small { display: block; font-size: 10px; color: var(--ok); font-family: var(--f-mono); }
+  .m-boost { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: 11px; color: var(--screen-dim); font-family: var(--f-mono); }
+  .m-bar { height: 8px; background: var(--screen-line); border-radius: 4px; overflow: hidden; }
+  .m-bar span { display: block; height: 100%; background: var(--rl-orange); }
+  .m-stack { display: grid; gap: 6px; align-content: center; }
+  .m-big { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .m-big em { font-style: normal; color: var(--screen-dim); font-size: 14px; font-weight: 500; margin-left: 4px; }
+  .m-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-family: var(--f-mono); color: var(--screen-dim); }
+  .m-row b { color: var(--screen-ink); font-weight: 500; }
+  .m-row .up { color: var(--ok); }
+  .streak { display: flex; gap: 4px; }
+  .streak i { width: 16px; height: 16px; border-radius: 3px; font: 600 10px/16px var(--f-mono); text-align: center; font-style: normal; }
+  .streak .w { background: var(--ok); color: #05210F; } .streak .l { background: var(--bad); color: #2A0606; }
+  .m-people { display: grid; gap: 5px; align-content: center; font-size: 13px; }
+  .m-person { display: flex; align-items: center; gap: 8px; }
+  .m-person .av { width: 20px; height: 20px; border-radius: 50%; background: var(--screen-line); display: grid; place-items: center; font: 600 9px/1 var(--f-mono); }
+  .m-person.talk .av { box-shadow: 0 0 0 2px var(--ok); }
+  .m-person .st { margin-left: auto; font: 500 10px/1 var(--f-mono); color: var(--screen-dim); }
+  .m-person .st.off { color: var(--bad); }
+  .m-meter { display: flex; gap: 2px; align-items: end; height: 14px; }
+  .m-meter i { width: 5px; background: var(--ok); border-radius: 1px; }
+  .m-meter i.dim { background: var(--screen-line); }
+  .spark { width: 100%; height: 34px; display: block; }
+  .m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .m-btn { border-radius: 6px; background: var(--screen-line); display: grid; place-items: center; text-align: center; font: 600 11px/1.15 var(--f-display); padding: 6px 4px; min-height: 40px; }
+  .m-btn.hot { background: var(--bad); color: #fff; } .m-btn.acc { background: var(--rl-orange); color: #241200; }
+
+  .layer { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .layer .mock { aspect-ratio: auto; grid-template-rows: auto; padding: 8px 12px; }
+  .layer-list { display: grid; gap: 14px; }
+  .layer-item { display: grid; gap: 4px; }
+  .layer-item p { color: var(--muted); font-size: 14px; }
+  .prio { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; margin-top: 4px; }
+  .prio span { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 3px 8px; }
+  .prio b { color: var(--muted); font-weight: 400; }
+
+  .details { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .detail { border-top: 2px solid var(--line); padding-top: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .detail h3 { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+  .detail h3 .dot { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .note-box { font-size: 13px; color: var(--muted); border-left: 3px solid var(--pcb); padding: 2px 0 2px 10px; }
+
+  .new-ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .new-idea { background: var(--surface); border: 1px dashed var(--muted); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+  .new-idea h3 { font-size: 16px; }
+  .new-idea p { color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 760px) { .layer { grid-template-columns: 1fr; } }
+
+  @media (max-width: 640px) {
+    header { grid-template-columns: 1fr; }
+    .cyd { width: 200px; }
+    .count { font-size: 22px; }
+    .btn.secondary { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">CYD dashboard · v2 idea menu</div>
+      <h1>What should the little screen show?</h1>
+      <p class="lede">The Rocket League scoreboard works. Next it becomes a <strong>desk dashboard</strong> on a 2.4-inch, 320&nbsp;×&nbsp;240 touch screen, with pages you can switch between. The <strong>v2 plan</strong> is built from the ideas that were picked; the full menu is still under <strong>All ideas</strong>.</p>
+    </div>
+    <div class="cyd" aria-hidden="true">
+      <div class="cyd-screen">
+        <div class="cyd-top"><span>DFH Stadium</span><span>● RL</span></div>
+        <div class="cyd-score"><div class="cyd-team b">2</div><div class="cyd-clock">3:41</div><div class="cyd-team o">1</div></div>
+        <div class="cyd-bar"><span></span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" id="tab-plan" aria-controls="view-plan" aria-selected="true" type="button">v2 plan</button>
+    <button class="tab" role="tab" id="tab-ideas" aria-controls="view-ideas" aria-selected="false" type="button">All ideas <small>45</small></button>
+  </div>
+
+  <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan">
+    <div class="plan">
+
+      <section class="intro">
+        <div class="eyebrow">Built from the picks</div>
+        <h2>A gaming command centre</h2>
+        <p>Ten ideas were picked, and together they point at one theme. Everything on the screen serves the session at the desk: playing, talking, keeping the PC healthy, and one-tap control. The plan below turns those picks into five pages, a layer that stays visible on every page, and the extra features that fit.</p>
+        <div class="picks-row">
+          <span class="pill"><span class="dot" style="background:var(--c-gaming)"></span>RL session tracker</span>
+          <span class="pill"><span class="dot" style="background:var(--c-gaming)"></span>Now playing (game)</span>
+          <span class="pill"><span class="dot" style="background:var(--c-gaming)"></span>Discord voice panel</span>
+          <span class="pill"><span class="dot" style="background:var(--c-gaming)"></span>FPS &amp; frame time</span>
+          <span class="pill"><span class="dot" style="background:var(--c-pc)"></span>Network</span>
+          <span class="pill"><span class="dot" style="background:var(--c-pc)"></span>Disk space &amp; health</span>
+          <span class="pill"><span class="dot" style="background:var(--c-media)"></span>Macro pad</span>
+          <span class="pill"><span class="dot" style="background:var(--c-media)"></span>Mic-mute light</span>
+          <span class="pill"><span class="dot" style="background:var(--c-platform)"></span>Automatic page switching</span>
+          <span class="pill"><span class="dot" style="background:var(--c-platform)"></span>Wireless later</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="pages-h">
+        <div class="eyebrow">The pages</div>
+        <h2 id="pages-h">Five pages, one tap apart</h2>
+        <div class="pages">
+
+          <article class="page-card">
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon"><span class="on">● MIC</span><span>28 ms</span><span>144 FPS</span><span>21:42</span></div>
+              <div class="m-stack">
+                <div class="m-score"><div class="m-team b">2</div><div class="m-clock">3:41<small>LIVE</small></div><div class="m-team o">1</div></div>
+                <div class="m-boost"><span>BOOST</span><div class="m-bar"><span style="width:64%"></span></div><span>64</span></div>
+              </div>
+            </div>
+            <h3>Match</h3>
+            <ul>
+              <li>Live score, clock, boost gauge and roster (working today)</li>
+              <li>Goal, save and demo banners with the LED flash</li>
+              <li>Opens by itself when a match starts</li>
+            </ul>
+            <div class="from">From <span class="tag">Rocket League v1</span></div>
+          </article>
+
+          <article class="page-card">
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon"><span class="on">● MIC</span><span>28 ms</span><span>144 FPS</span><span>21:42</span></div>
+              <div class="m-stack">
+                <div class="m-big">7–4 <em>tonight</em></div>
+                <div class="streak"><i class="w">W</i><i class="w">W</i><i class="l">L</i><i class="w">W</i><i class="w">W</i><i class="w">W</i></div>
+                <div class="m-row"><span>MMR</span><b class="up">+38</b></div>
+                <div class="m-row"><span>Best goal</span><b>112 km/h</b></div>
+                <div class="m-row"><span>Played</span><b>2 h 14 m</b></div>
+              </div>
+            </div>
+            <h3>Session</h3>
+            <ul>
+              <li>Tonight's record, streaks and MMR change</li>
+              <li>Personal records kept across sessions</li>
+              <li>Cover art and playtime for any game that's running</li>
+              <li>A summary card when the session ends</li>
+            </ul>
+            <div class="from">From <span class="tag">RL session tracker</span><span class="tag">Now playing</span></div>
+          </article>
+
+          <article class="page-card">
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon"><span class="off">● MUTED</span><span>28 ms</span><span>144 FPS</span><span>21:42</span></div>
+              <div class="m-people">
+                <div class="m-person talk"><span class="av">KA</span>Kaiser<span class="st">talking</span></div>
+                <div class="m-person"><span class="av">ZE</span>Zen_ish<span class="st">idle</span></div>
+                <div class="m-person"><span class="av">YO</span>You<span class="st off">muted</span></div>
+                <div class="m-row"><span>Mic level</span><span class="m-meter"><i style="height:30%"></i><i style="height:55%"></i><i style="height:80%"></i><i style="height:45%"></i><i class="dim" style="height:20%"></i><i class="dim" style="height:20%"></i></span></div>
+              </div>
+            </div>
+            <h3>Comms</h3>
+            <ul>
+              <li>Who's in the voice channel and who's talking</li>
+              <li>Volume per person, and mute / deafen by touch</li>
+              <li>Mic level meter and a "talking while muted" warning</li>
+              <li>Comes forward when someone starts talking</li>
+            </ul>
+            <div class="from">From <span class="tag">Discord voice panel</span><span class="tag">Mic-mute light</span></div>
+          </article>
+
+          <article class="page-card">
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon"><span class="on">● MIC</span><span>28 ms</span><span>144 FPS</span><span>21:42</span></div>
+              <div class="m-stack">
+                <div class="m-big">144 <em>FPS · 1% low 97</em></div>
+                <svg class="spark" viewBox="0 0 200 34" preserveAspectRatio="none">
+                  <polyline fill="none" stroke="var(--ok)" stroke-width="2" points="0,24 15,22 30,23 45,21 60,22 75,24 90,8 100,22 115,23 130,21 145,22 160,23 175,21 200,22"/>
+                  <circle cx="90" cy="8" r="3" fill="var(--bad)"/>
+                </svg>
+                <div class="m-row"><span>Ping</span><b>28 ms</b><span>Down</span><b>4.1 MB/s</b></div>
+                <div class="m-row"><span>Games drive</span><b>182 GB free</b></div>
+              </div>
+            </div>
+            <h3>Rig</h3>
+            <ul>
+              <li>FPS and frame-time graph with stutters marked</li>
+              <li>Upload, download, ping and a log of lag spikes</li>
+              <li>Free space on the games drive and disk health</li>
+              <li>Alerts when FPS drops or something downloads mid-match</li>
+            </ul>
+            <div class="from">From <span class="tag">FPS &amp; frame time</span><span class="tag">Network</span><span class="tag">Disk</span></div>
+          </article>
+
+          <article class="page-card">
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon"><span class="on">● MIC</span><span>28 ms</span><span>144 FPS</span><span>21:42</span></div>
+              <div class="m-grid">
+                <div class="m-btn acc">Save clip</div>
+                <div class="m-btn hot">Mute</div>
+                <div class="m-btn">Deafen</div>
+                <div class="m-btn">Headset ↔ speakers</div>
+                <div class="m-btn acc">Game night</div>
+                <div class="m-btn">Mark moment</div>
+              </div>
+            </div>
+            <h3>Deck</h3>
+            <ul>
+              <li>A grid of buttons for shortcuts, apps and scripts</li>
+              <li>Button sets change with what you're doing</li>
+              <li>Multi-step macros and a second action on long-press</li>
+              <li>Buttons are set up from the PC</li>
+            </ul>
+            <div class="from">From <span class="tag">Macro pad</span></div>
+          </article>
+
+        </div>
+      </section>
+
+      <section aria-labelledby="layer-h">
+        <div class="eyebrow">Always on</div>
+        <h2 id="layer-h">Visible on every page</h2>
+        <div class="layer">
+          <div>
+            <div class="mock" aria-hidden="true">
+              <div class="ribbon" style="border:0;padding:0;font-size:12px"><span class="on">● MIC ON</span><span>PING 28 ms</span><span>144 FPS</span><span>21:42</span></div>
+            </div>
+            <p class="note-box" style="margin-top:10px">The status ribbon sits across the top of every page, so the four things you check most never need a page switch.</p>
+          </div>
+          <div class="layer-list">
+            <div class="layer-item">
+              <h3>Alert banners and LED</h3>
+              <p>Any page can flash a banner over whatever is showing: FPS drop, lag spike, a download starting mid-match, a disk running out of room. The LED backs it up in colour.</p>
+            </div>
+            <div class="layer-item">
+              <h3>Mute light everywhere</h3>
+              <p>The RGB LED glows red while you're muted, on every page, in sync with Discord.</p>
+            </div>
+            <div class="layer-item">
+              <h3>Automatic page switching</h3>
+              <p>The screen follows what you're doing. Long-press to pin a page and stop switching. Rules are edited on the PC.</p>
+              <div class="prio"><span>Alerts</span><b>→</b><span>Comms when someone talks</span><b>→</b><span>Match while playing</span><b>→</b><span>Session after a match</span><b>→</b><span>Dim when idle</span></div>
+            </div>
+            <div class="layer-item">
+              <h3>Wireless later</h3>
+              <p>USB today. Later: WiFi set up from your phone, the CYD finds the PC on its own, and firmware updates arrive over WiFi with no more cable flashing.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="details-h">
+        <div class="eyebrow">Feature details</div>
+        <h2 id="details-h">How each pick grows</h2>
+        <div class="details">
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-gaming)"></span>RL session tracker</h3>
+            <ul>
+              <li>Starts with the game, ends after a long break, then shows a summary card</li>
+              <li>Hot-streak badge, and a gentle "3 losses in a row, take five?"</li>
+              <li>Personal records: fastest goal, most saves, longest win streak</li>
+              <li>Teammate log: "played with Kaiser 5 times, 4 wins"</li>
+            </ul>
+            <p class="note-box">The game's Stats API doesn't report MMR, so that number comes from a tracker site.</p>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-gaming)"></span>Now playing (game)</h3>
+            <ul>
+              <li>Detects any game by its running program, not just Rocket League</li>
+              <li>Session timer per game and weekly playtime bars</li>
+              <li>Achievement pop-ups with rarity ("unlocked by 3.2% of players")</li>
+              <li>Cover art cached on the CYD so it appears instantly</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-gaming)"></span>Discord voice panel</h3>
+            <ul>
+              <li>Speaking ring around each person, plus join and leave notices</li>
+              <li>Volume slider per person</li>
+              <li>Mute and deafen by touch</li>
+            </ul>
+            <p class="note-box">Discord limits its voice API to approved apps. Step one is mute and deafen through Discord's own hotkeys from the Deck; the full "who's talking" view follows.</p>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-gaming)"></span>FPS &amp; frame time</h3>
+            <ul>
+              <li>Frame-time graph with stutter spikes marked in red</li>
+              <li>Alert when FPS falls below a target you set, such as your monitor's refresh rate</li>
+              <li>Per-session summary: average FPS, 1% lows, stutter count</li>
+              <li>GPU temperature and load on the same page</li>
+            </ul>
+            <p class="note-box">PresentMon runs on the PC and may need admin rights.</p>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-pc)"></span>Network</h3>
+            <ul>
+              <li>Lag spikes logged during matches and linked to results</li>
+              <li>"Steam update is using 80% of your bandwidth" warning mid-match</li>
+              <li>Ping to your game region and a clear "internet down" state</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-pc)"></span>Disk space &amp; health</h3>
+            <ul>
+              <li>Watches the games drive and warns before an update won't fit</li>
+              <li>Weekly health check that stays quiet unless something is wrong</li>
+              <li>Recording-drive space if you use instant replay or OBS</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-media)"></span>Macro pad</h3>
+            <ul>
+              <li>Button sets for Rocket League, Discord and the desktop, switched automatically</li>
+              <li>Clip button: save the last 30 seconds (NVIDIA instant replay or OBS)</li>
+              <li>"Game night" macro: opens the game and Discord, switches to the headset</li>
+              <li>Long-press for a second action</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-media)"></span>Mic-mute light</h3>
+            <ul>
+              <li>One mute state shared with Discord</li>
+              <li>Live mic level so you know you're heard</li>
+              <li>"You're talking while muted" warning</li>
+              <li>Red LED on every page while muted</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-platform)"></span>Automatic page switching</h3>
+            <ul>
+              <li>Clear priority order, from alerts down to the idle screen</li>
+              <li>Long-press any page to pin it for a while</li>
+              <li>Rule editor on the PC: "when Rocket League runs, show Match"</li>
+            </ul>
+          </div>
+          <div class="detail">
+            <h3><span class="dot" style="background:var(--c-platform)"></span>Wireless later</h3>
+            <ul>
+              <li>First-time WiFi setup from a phone</li>
+              <li>Finds the PC on the network by itself, and can switch between two PCs</li>
+              <li>Firmware updates pushed over WiFi from the PC</li>
+              <li>USB keeps working as a fallback</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="new-h">
+        <div class="eyebrow">Fits the set</div>
+        <h2 id="new-h">New ideas that grew out of the picks</h2>
+        <div class="new-ideas">
+          <div class="new-idea"><h3>Status ribbon</h3><p>Mic, ping, FPS and clock on every page.</p></div>
+          <div class="new-idea"><h3>"Game night" button</h3><p>One tap opens the game and Discord, starts the tracker and turns on Do Not Disturb.</p></div>
+          <div class="new-idea"><h3>Highlight marker</h3><p>Tap after a great play to timestamp it or save the clip, for editing later.</p></div>
+          <div class="new-idea"><h3>Friends in-game</h3><p>Which Steam or Discord friends are playing right now, and what.</p></div>
+          <div class="new-idea"><h3>Audio device switch</h3><p>Headset or speakers in one tap, from the Deck.</p></div>
+          <div class="new-idea"><h3>End-of-night report</h3><p>Record, FPS, lag spikes and playtime for the evening, on one page on the PC.</p></div>
+          <div class="new-idea"><h3>Do Not Disturb sync</h3><p>Windows notifications go quiet automatically while a match is live.</p></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div id="view-ideas" role="tabpanel" aria-labelledby="tab-ideas" hidden>
+  <p class="lede" style="margin-top:22px"><strong>Tap every idea you'd want.</strong> Picks collect in the bar at the bottom; <strong>Export…</strong> turns them into text, a checklist, a spreadsheet or JSON.</p>
+  <div class="filters" id="filters" role="group" aria-label="Filter by theme"></div>
+  <div class="legend">
+    <span><b>●●○</b> rough build effort (small / medium / large)</span>
+    <span><b>touch</b> you control it on the screen</span>
+    <span><b>mono text</b> where the data comes from</span>
+  </div>
+
+  <main id="groups"></main>
+
+  <div class="notes">
+    <label for="note">Anything missing?</label>
+    <span>A page you'd want that isn't here, or how you'd use it. This goes into the copied list too.</span>
+    <textarea id="note" placeholder="e.g. a big clock when the PC is idle, or a page for my favourite game"></textarea>
+  </div>
+  </div>
+</div>
+
+<div class="tray" id="tray" role="region" aria-label="Your picks" hidden>
+  <div class="export" id="exportPanel" hidden>
+    <h2>Export <button class="btn" id="closeExport" type="button">Close</button></h2>
+    <div class="opts">
+      <fieldset>
+        <legend>What to export</legend>
+        <div class="seg">
+          <label><input type="radio" name="scope" id="scope-picked" value="picked" checked><span>My picks <small id="scopeCount">0 ideas</small></span></label>
+          <label><input type="radio" name="scope" id="scope-all" value="all"><span>Whole list <small id="scopeAll">0 ideas</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Format</legend>
+        <div class="seg">
+          <label><input type="radio" name="fmt" id="fmt-txt" value="txt" checked><span>Text <small>for a message</small></span></label>
+          <label><input type="radio" name="fmt" id="fmt-md" value="md"><span>Markdown <small>checklist</small></span></label>
+          <label><input type="radio" name="fmt" id="fmt-csv" value="csv"><span>CSV <small>spreadsheet</small></span></label>
+          <label><input type="radio" name="fmt" id="fmt-json" value="json"><span>JSON <small>for building v2</small></span></label>
+        </div>
+      </fieldset>
+      <label class="check"><input type="checkbox" id="withDetails" checked> Include descriptions, effort and data source</label>
+    </div>
+    <div class="preview">
+      <textarea id="exportText" aria-label="Export preview" readonly></textarea>
+      <div class="actions">
+        <button class="btn primary" id="copyBtn" type="button">Copy</button>
+        <button class="btn" id="downloadBtn" type="button" hidden>Download file</button>
+        <span class="status" id="exportStatus" role="status"></span>
+      </div>
+    </div>
+  </div>
+  <div class="tray-in">
+    <div class="count" id="count">0</div>
+    <div class="tray-text">
+      <b id="trayTitle">Nothing picked yet</b>
+      <small id="trayList">Tap the ideas you like</small>
+    </div>
+    <button class="btn secondary" id="clearBtn" type="button">Clear</button>
+    <button class="btn primary" id="exportBtn" type="button" aria-expanded="false" aria-controls="exportPanel">Export…</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = [
+  { id: "gaming", name: "Gaming", color: "var(--c-gaming)", blurb: "Live game data next to the monitor." },
+  { id: "pc", name: "PC monitoring", color: "var(--c-pc)", blurb: "What the computer is doing, without an overlay." },
+  { id: "prod", name: "Productivity", color: "var(--c-prod)", blurb: "Time, tasks and focus." },
+  { id: "media", name: "Media & control", color: "var(--c-media)", blurb: "The screen as a remote and a button deck." },
+  { id: "home", name: "Smart home", color: "var(--c-home)", blurb: "Room and house status at a glance." },
+  { id: "info", name: "Information", color: "var(--c-info)", blurb: "Glanceable facts from the internet." },
+  { id: "fun", name: "Fun & ambient", color: "var(--c-fun)", blurb: "For when nothing else needs showing." },
+  { id: "platform", name: "How it behaves", color: "var(--c-platform)", blurb: "Features that make all the pages work together." },
+];
+
+// effort: 1 small, 2 medium, 3 large
+const IDEAS = [
+  ["gaming", "Rocket League live", "Scoreboard, boost gauge and roster during a match. Already working.", 1, false, "RL Stats API", true],
+  ["gaming", "RL session tracker", "Tonight's wins and losses, goal streaks, MMR change and fastest goal.", 1, false, "RL Stats API"],
+  ["gaming", "Now playing (game)", "Cover art and playtime for whatever game is running, plus achievement pop-ups.", 2, false, "Steam / Epic"],
+  ["gaming", "Discord voice panel", "Who's in the channel and who's talking, with tap to mute or deafen.", 3, true, "Discord RPC"],
+  ["gaming", "FPS & frame time", "Live FPS and 1% lows on the side screen instead of an in-game overlay.", 2, false, "PresentMon"],
+  ["gaming", "More games", "Live pages for other games with an official feed, such as CS2 or League of Legends.", 2, false, "game APIs"],
+  ["gaming", "Break reminder", "\"You've played 2 hours\", or a nudge to stand up every 5 matches.", 1, false, "timer"],
+
+  ["pc", "System vitals", "CPU and GPU load and temperature, RAM and VRAM, with small trend graphs.", 1, false, "LibreHardwareMonitor"],
+  ["pc", "Fans & power", "Fan speeds, power draw and what tonight's session cost in electricity.", 1, false, "LibreHardwareMonitor"],
+  ["pc", "Network", "Upload and download speed, ping, and a warning when packets drop.", 1, false, "Windows"],
+  ["pc", "Disk space & health", "Free space per drive and a warning if a disk reports problems.", 1, false, "SMART"],
+  ["pc", "Top 5 processes", "The programs using the most CPU and memory, with tap to close one (asks first).", 2, true, "Windows"],
+  ["pc", "Progress tracker", "A progress ring with time left for a download, a render or a build.", 2, false, "Steam, Blender, …"],
+
+  ["prod", "Clock & calendar", "Countdown to the next meeting, today's agenda, and a red \"in a meeting\" state.", 2, false, "Google / Outlook"],
+  ["prod", "Pomodoro timer", "Big focus ring with a session count. The LED shows focus or break.", 1, true, "on device"],
+  ["prod", "To-do list", "Today's tasks with tap to tick them off.", 2, true, "file or app sync"],
+  ["prod", "Notification feed", "Unread counts and the last sender for mail and chat, without the message text.", 3, false, "Windows notifications"],
+  ["prod", "Clipboard history", "The last 5 things you copied, with tap to copy one again.", 1, true, "Windows"],
+  ["prod", "World clocks", "Two or three time zones for friends or colleagues abroad.", 1, false, "on device"],
+  ["prod", "Stopwatch & countdown", "A general timer with a flashing LED alarm.", 1, true, "on device"],
+
+  ["media", "Now playing (music)", "Album art, song title and progress, with play, pause and skip.", 2, true, "Spotify / Windows media"],
+  ["media", "Volume mixer", "Separate sliders for the game, Discord and music.", 2, true, "Windows audio"],
+  ["media", "Macro pad", "A grid of buttons that press shortcuts, open apps or run scripts.", 1, true, "bridge"],
+  ["media", "Streaming deck", "Switch OBS scenes, start and stop recording, mute the mic, see viewer count.", 2, true, "OBS WebSocket"],
+  ["media", "Mic-mute light", "A full-screen red or green sign you can read from across the room.", 2, true, "Windows audio"],
+
+  ["home", "Room panel", "Lights, temperature and humidity, with tap to switch things on or off.", 2, true, "Home Assistant / MQTT"],
+  ["home", "Energy use", "What the house is drawing right now and today's total kWh.", 2, false, "smart meter / plugs"],
+  ["home", "Door & presence", "Who's home, a doorbell snapshot and presence status.", 3, false, "smart home hub"],
+  ["home", "3D printer", "Print progress, temperatures and time left.", 2, false, "OctoPrint / Klipper"],
+
+  ["info", "Weather", "Now and the next 12 hours, with a \"rain in 30 minutes\" alert.", 1, false, "Open-Meteo"],
+  ["info", "Departures", "Next buses or trams from your stop, with live delays.", 2, false, "local transit API"],
+  ["info", "Price ticker", "Prices you follow (stocks or crypto), shown up or down in colour.", 1, false, "market data"],
+  ["info", "Headlines", "A scrolling list of news or RSS headlines. Tap one to open it on the PC.", 1, true, "RSS"],
+  ["info", "Server status", "Up or down lights for home servers and websites, with a ping graph.", 1, false, "ping / HTTP"],
+  ["info", "GitHub status", "Build passing or failing, open pull requests, review requests.", 1, false, "GitHub"],
+
+  ["fun", "Photo frame", "Pictures from a folder on the PC while it's idle.", 2, false, "PC folder"],
+  ["fun", "Ambient screen", "A lava lamp, a starfield or a slowly driving RL car.", 1, false, "on device"],
+  ["fun", "Mini games", "Pong, Snake or a reaction-time test on the touch screen.", 2, true, "on device"],
+  ["fun", "Desk buddy", "A pixel pet that reacts to PC load, goals and the time of day.", 2, false, "bridge"],
+  ["fun", "Door sign", "Tap to show BUSY, GAMING or COME IN to people walking past.", 1, true, "on device"],
+
+  ["platform", "Automatic page switching", "The game page when a game starts, the calendar before a call, photos when idle.", 2, false, "bridge"],
+  ["platform", "Page picker on the PC", "A small tray app to choose, order and configure the pages.", 2, false, "PC app"],
+  ["platform", "Alerts on top", "Any page can flash a banner and LED colour over whatever is showing.", 1, false, "firmware"],
+  ["platform", "Night mode", "Dims automatically in a dark room using the board's light sensor.", 1, false, "light sensor"],
+  ["platform", "Wireless later", "USB today, WiFi later, with the same pages.", 2, false, "firmware"],
+].map(([group, title, desc, effort, touch, source, built], i) => ({ id: "i" + i, group, title, desc, effort, touch, source, built: !!built }));
+
+const STORE_KEY = "cyd-v2-picks";
+let picked = new Set();
+let filter = "all";
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+  (saved.picked || []).forEach(id => picked.add(id));
+  if (saved.note) document.getElementById("note").value = saved.note;
+} catch (e) {}
+
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ picked: [...picked], note: document.getElementById("note").value })); } catch (e) {}
+}
+
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+const dots = n => "●".repeat(n) + "○".repeat(3 - n);
+const EFFORT = ["", "small", "medium", "large"];
+
+function renderFilters() {
+  const el = document.getElementById("filters");
+  const chips = [{ id: "all", name: "All ideas", n: IDEAS.length }]
+    .concat(GROUPS.map(g => ({ ...g, n: IDEAS.filter(i => i.group === g.id).length })))
+    .concat([{ id: "picked", name: "My picks", n: picked.size }]);
+  el.innerHTML = chips.map(c => `
+    <button class="chip" type="button" id="f-${c.id}" data-f="${c.id}" aria-pressed="${filter === c.id}">
+      ${c.color ? `<span class="dot" style="background:${c.color}"></span>` : ""}${esc(c.name)} <span class="n">${c.n}</span>
+    </button>`).join("");
+}
+
+function renderGroups() {
+  const el = document.getElementById("groups");
+  el.innerHTML = GROUPS.map(g => {
+    const items = IDEAS.filter(i => i.group === g.id && (filter === "all" || filter === g.id || (filter === "picked" && picked.has(i.id))));
+    if (!items.length) return "";
+    return `
+      <section class="group" aria-labelledby="h-${g.id}">
+        <div class="group-head">
+          <h2 id="h-${g.id}"><span class="dot" style="background:${g.color}"></span>${esc(g.name)}</h2>
+          <p>${esc(g.blurb)}</p>
+          ${filter === "picked" ? "" : (() => {
+            const all = IDEAS.filter(i => i.group === g.id).every(i => picked.has(i.id));
+            return `<button class="all" type="button" id="all-${g.id}" data-all="${g.id}">${all ? "Unpick all" : "Pick all"}</button>`;
+          })()}
+        </div>
+        <div class="grid">
+          ${items.map(i => `
+            <button class="card" type="button" id="${i.id}" data-id="${i.id}" aria-pressed="${picked.has(i.id)}">
+              <div class="card-top"><h3>${esc(i.title)}</h3><span class="tick" aria-hidden="true">✓</span></div>
+              <p>${esc(i.desc)}</p>
+              <div class="meta">
+                ${i.built ? `<span class="tag built">built</span>` : `<span class="tag effort" title="Build effort: ${EFFORT[i.effort]}">${dots(i.effort)}</span>`}
+                ${i.touch ? `<span class="tag">touch</span>` : ""}
+                <span class="src">${esc(i.source)}</span>
+              </div>
+            </button>`).join("")}
+        </div>
+      </section>`;
+  }).join("") || `<p style="margin-top:32px;color:var(--muted)">Nothing picked yet. Choose "All ideas" and tap the ones you like.</p>`;
+}
+
+// ---------------------------------------------------------------- export
+
+const $ = id => document.getElementById(id);
+const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
+const groupName = id => GROUPS.find(g => g.id === id).name;
+
+function exportItems() {
+  return radio("scope") === "all" ? IDEAS : IDEAS.filter(i => picked.has(i.id));
+}
+
+function buildExport() {
+  const fmt = radio("fmt");
+  const details = $("withDetails").checked;
+  const scopeAll = radio("scope") === "all";
+  const items = exportItems();
+  const note = $("note").value.trim();
+  const title = scopeAll ? "CYD dashboard: all v2 ideas" : "CYD dashboard: my picks";
+  const meta = i => `${i.built ? "built" : "effort " + EFFORT[i.effort]}${i.touch ? ", touch" : ""}, data: ${i.source}`;
+
+  if (fmt === "json") {
+    return JSON.stringify({
+      title,
+      exported: new Date().toISOString().slice(0, 10),
+      items: items.map(i => ({
+        group: groupName(i.group), title: i.title, picked: picked.has(i.id),
+        ...(details ? { description: i.desc, effort: i.built ? "built" : EFFORT[i.effort], touch: i.touch, source: i.source } : {}),
+      })),
+      ...(note ? { note } : {}),
+    }, null, 2);
+  }
+
+  if (fmt === "csv") {
+    const q = v => `"${String(v).replace(/"/g, '""')}"`;
+    const head = ["Group", "Idea", "Picked"].concat(details ? ["Description", "Effort", "Touch", "Data source"] : []);
+    const rows = items.map(i => [groupName(i.group), i.title, picked.has(i.id) ? "yes" : ""]
+      .concat(details ? [i.desc, i.built ? "built" : EFFORT[i.effort], i.touch ? "yes" : "", i.source] : []));
+    const out = [head].concat(rows).map(r => r.map(q).join(","));
+    if (note) out.push("", q("Note") + "," + q(note));
+    return out.join("\r\n");
+  }
+
+  const md = fmt === "md";
+  const lines = [md ? "# " + title : title, ""];
+  GROUPS.forEach(g => {
+    const mine = items.filter(i => i.group === g.id);
+    if (!mine.length) return;
+    lines.push(md ? "## " + g.name : g.name + ":");
+    mine.forEach(i => {
+      const box = md ? (scopeAll ? (picked.has(i.id) ? "- [x] " : "- [ ] ") : "- [ ] ") : "  - ";
+      lines.push(box + (md ? "**" + i.title + "**" : i.title) + (details ? (md ? ": " : " - ") + i.desc + ` (${meta(i)})` : ""));
+    });
+    lines.push("");
+  });
+  if (!items.length) lines.push("(nothing selected)", "");
+  if (note) lines.push((md ? "**Also:** " : "Also: ") + note);
+  return lines.join("\n").trim() + "\n";
+}
+
+function fileName() {
+  const ext = radio("fmt");
+  return (radio("scope") === "all" ? "cyd-v2-ideas" : "cyd-v2-my-picks") + "." + ext;
+}
+
+function refreshExport() {
+  if ($("exportPanel").hidden) return;
+  $("scopeCount").textContent = picked.size === 1 ? "1 idea" : picked.size + " ideas";
+  $("scopeAll").textContent = IDEAS.length + " ideas";
+  $("exportText").value = buildExport();
+  $("exportStatus").textContent = "";
+}
+
+function setExportOpen(open) {
+  $("exportPanel").hidden = !open;
+  $("exportBtn").setAttribute("aria-expanded", open);
+  if (open) {
+    if (!picked.size) $("scope-all").checked = true;
+    refreshExport();
+  }
+}
+
+function renderTray() {
+  const n = picked.size;
+  $("count").textContent = n;
+  $("trayTitle").textContent = n ? (n === 1 ? "1 idea picked" : n + " ideas picked") : "Nothing picked yet";
+  $("trayList").textContent = n
+    ? IDEAS.filter(i => picked.has(i.id)).map(i => i.title).join(" · ")
+    : "Tap the ideas you like";
+  const fp = $("f-picked");
+  if (fp) fp.querySelector(".n").textContent = n;
+  refreshExport();
+}
+
+$("filters").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]");
+  if (!b) return;
+  filter = b.dataset.f;
+  renderFilters(); renderGroups();
+});
+
+$("groups").addEventListener("click", e => {
+  const all = e.target.closest("[data-all]");
+  if (all) {
+    const items = IDEAS.filter(i => i.group === all.dataset.all);
+    const every = items.every(i => picked.has(i.id));
+    items.forEach(i => every ? picked.delete(i.id) : picked.add(i.id));
+    save(); renderGroups(); renderTray();
+    const again = $("all-" + all.dataset.all);
+    if (again) again.focus();
+    return;
+  }
+  const card = e.target.closest("[data-id]");
+  if (!card) return;
+  const id = card.dataset.id;
+  picked.has(id) ? picked.delete(id) : picked.add(id);
+  card.setAttribute("aria-pressed", picked.has(id));
+  if (filter === "picked" && !picked.has(id)) renderGroups();
+  else {
+    const g = IDEAS.find(i => i.id === id).group;
+    const btn = $("all-" + g);
+    if (btn) btn.textContent = IDEAS.filter(i => i.group === g).every(i => picked.has(i.id)) ? "Unpick all" : "Pick all";
+  }
+  save(); renderTray();
+});
+
+$("note").addEventListener("input", () => { save(); refreshExport(); });
+
+$("clearBtn").addEventListener("click", () => {
+  picked.clear(); save(); renderFilters(); renderGroups(); renderTray();
+});
+
+$("exportBtn").addEventListener("click", () => setExportOpen($("exportPanel").hidden));
+$("closeExport").addEventListener("click", () => { setExportOpen(false); $("exportBtn").focus(); });
+document.querySelectorAll('#exportPanel input').forEach(el => el.addEventListener("change", refreshExport));
+
+$("copyBtn").addEventListener("click", async () => {
+  const ta = $("exportText");
+  try {
+    await navigator.clipboard.writeText(ta.value);
+    $("exportStatus").textContent = "Copied to the clipboard.";
+  } catch (e) {
+    ta.focus(); ta.select();
+    $("exportStatus").textContent = "Text selected. Press Ctrl+C (or Cmd+C) to copy.";
+  }
+});
+
+// File download goes through the viewer's confirm prompt; the button only appears where saving works.
+let downloads = null;
+if (window.claude && window.claude.use) {
+  window.claude.use("downloads").then(d => {
+    downloads = d;
+    $("downloadBtn").hidden = !d;
+  }).catch(() => {});
+}
+
+$("downloadBtn").addEventListener("click", async () => {
+  if (!downloads) return;
+  const name = fileName();
+  try {
+    await downloads.save({ filename: name, data: $("exportText").value });
+    $("exportStatus").textContent = "Saved " + name + ".";
+  } catch (e) {
+    const code = e && e.code;
+    if (code === "declined") $("exportStatus").textContent = "Download cancelled.";
+    else if (code === "rate_limited") $("exportStatus").textContent = "A save prompt is already open. Finish it first.";
+    else { $("exportStatus").textContent = "Downloading isn't available here. Use Copy instead."; $("downloadBtn").hidden = true; }
+  }
+});
+
+// ---------------------------------------------------------------- tabs
+
+function showView(view) {
+  const plan = view !== "ideas";
+  $("view-plan").hidden = !plan;
+  $("view-ideas").hidden = plan;
+  $("tray").hidden = plan;
+  $("tab-plan").setAttribute("aria-selected", plan);
+  $("tab-ideas").setAttribute("aria-selected", !plan);
+  if (plan) setExportOpen(false);
+  try { history.replaceState(null, "", "#" + (plan ? "plan" : "ideas")); } catch (e) {}
+}
+
+$("tab-plan").addEventListener("click", () => showView("plan"));
+$("tab-ideas").addEventListener("click", () => showView("ideas"));
+document.querySelector(".tabs").addEventListener("keydown", e => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = $("tab-plan").getAttribute("aria-selected") === "true" ? "ideas" : "plan";
+  showView(next);
+  $("tab-" + next).focus();
+});
+
+renderFilters(); renderGroups(); renderTray();
+showView(location.hash === "#ideas" ? "ideas" : "plan");
+</script>
+</body></html>

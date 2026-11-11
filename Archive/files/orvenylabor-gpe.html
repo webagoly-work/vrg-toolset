@@ -1,0 +1,578 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Örvénylabor GPE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: optical-bench instrument — square field view left, control rack right; stacks on phones. Dark-first. */
+:root {
+  --bg: #0c121c; --surface: #131b29; --line: #263248; --fg: #dde5f1; --muted: #8b99b1;
+  --accent: #ffb04a; --accent-ink: #1a1206; --pos: #ff7059; --neg: #58c2ff; --bad: #ff8a7a;
+  --map0: #0a1019; --map1: #15395a; --map2: #2f8db2; --map3: #c4f0f7;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #f2f4f8; --surface: #ffffff; --line: #d3dae6; --fg: #152033; --muted: #56647d;
+  --accent: #b86200; --accent-ink: #ffffff; --pos: #cc3a28; --neg: #1d78b8; --bad: #b3261e;
+  --map0: #eef2f7; --map1: #9ec4de; --map2: #2c6c9b; --map3: #0c2240; color-scheme: light } }
+:root[data-theme="light"] {
+  --bg: #f2f4f8; --surface: #ffffff; --line: #d3dae6; --fg: #152033; --muted: #56647d;
+  --accent: #b86200; --accent-ink: #ffffff; --pos: #cc3a28; --neg: #1d78b8; --bad: #b3261e;
+  --map0: #eef2f7; --map1: #9ec4de; --map2: #2c6c9b; --map3: #0c2240; color-scheme: light }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: 1.9rem; letter-spacing: .01em; margin: 0; line-height: 1.1; text-wrap: balance; }
+h1 small { display: block; font-family: var(--f-body); font-weight: 400; font-size: .9rem; color: var(--muted); margin-top: 4px; }
+.en { font-style: italic; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; font-family: var(--f-mono); font-size: .75rem; }
+.chip { border: 1px solid var(--line); padding: 2px 8px; border-radius: 3px; color: var(--muted); }
+.chip b { color: var(--fg); font-weight: 500; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.stage { display: grid; gap: 10px; min-width: 0; }
+.field-box { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1; background: var(--map0); border: 1px solid var(--line); }
+.field-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#field { image-rendering: auto; }
+.busy { position: absolute; inset: auto 12px 12px 12px; font-family: var(--f-mono); font-size: .8rem; color: var(--fg); background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line); padding: 6px 10px; }
+.axis-note { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; justify-content: space-between; max-width: 640px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .82rem; color: var(--muted); max-width: 640px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; display: inline-block; flex: none; }
+.sw.pos { border: 2px solid var(--pos); border-radius: 50%; }
+.sw.neg { border: 2px solid var(--neg); transform: rotate(45deg) scale(.85); }
+.sw.laser { background: var(--accent); border-radius: 50%; }
+.sw.path { border-top: 2px dashed var(--muted); height: 0; width: 16px; }
+
+.panel { display: grid; gap: 16px; min-width: 0; }
+.block { background: var(--surface); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.block h2 { font-family: var(--f-display); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .09em; margin: 0; color: var(--muted); }
+.block h2 .en { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-size: .78rem; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: 500 .85rem var(--f-body); color: var(--fg); background: transparent; border: 1px solid var(--line); padding: 7px 12px; cursor: pointer; border-radius: 3px; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); min-width: 110px; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .5; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+.seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--fg); }
+label.sl { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: .84rem; }
+label.sl input { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+label.sl output { font-family: var(--f-mono); font-size: .8rem; color: var(--fg); }
+label.sl .en { font-size: .76rem; }
+
+.readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 12px; }
+.readout div { display: grid; gap: 0; }
+.readout dt { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.readout dd { margin: 0; font-family: var(--f-mono); font-size: .95rem; font-variant-numeric: tabular-nums; }
+dd.pos { color: var(--pos); } dd.neg { color: var(--neg); }
+#spark { width: 100%; height: 78px; display: block; }
+
+textarea { width: 100%; box-sizing: border-box; font: .78rem/1.45 var(--f-mono); color: var(--fg); background: var(--bg); border: 1px solid var(--line); padding: 8px; resize: vertical; border-radius: 3px; }
+#code { height: 74px; word-break: break-all; }
+#json { height: 190px; }
+.msg { font-size: .82rem; min-height: 1.2em; margin: 0; }
+.msg.err { color: var(--bad); }
+.note { font-size: .8rem; color: var(--muted); margin: 0; }
+.note code { font-family: var(--f-mono); font-size: .76rem; color: var(--fg); }
+details summary { cursor: pointer; font-family: var(--f-display); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+details[open] summary { margin-bottom: 10px; }
+.sliders { display: grid; gap: 12px; }
+footer { font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Örvénylabor
+      <small>Gross–Pitaevskii 2D · kettős gödör · mozgó lézerfolt <span class="en">· 2D condensate with a stirring laser</span></small>
+    </h1>
+    <div class="chips" id="chips" aria-label="Preset adatai"></div>
+  </header>
+
+  <main class="grid">
+    <section class="stage" aria-label="Szimuláció">
+      <div class="field-box" id="fieldBox">
+        <canvas id="field" aria-label="A kondenzátum sűrűsége vagy fázisa"></canvas>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+        <div class="busy" id="busy" hidden></div>
+      </div>
+      <div class="axis-note"><span id="axL">x = −1,2</span><span>tartomány / <span class="en">domain</span> <span id="axSpan"></span></span><span id="axR">x = +1,2</span></div>
+      <div class="legend">
+        <span><i class="sw pos"></i>+ örvény <span class="en">vortex</span></span>
+        <span><i class="sw neg"></i>− antiörvény <span class="en">antivortex</span></span>
+        <span><i class="sw laser"></i>lézerfolt <span class="en">laser spot</span></span>
+        <span><i class="sw path"></i>pálya <span class="en">path</span></span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="block">
+        <h2>Vezérlés <span class="en">Controls</span></h2>
+        <div class="row">
+          <button class="primary" id="play" type="button">Indítás</button>
+          <button id="reset" type="button">Újraindítás</button>
+          <div class="seg" role="group" aria-label="Nézet">
+            <button id="vDen" type="button" aria-pressed="true">Sűrűség</button>
+            <button id="vPha" type="button" aria-pressed="false">Fázis</button>
+          </div>
+        </div>
+        <label class="sl">Lépés / képkocka <span class="en">steps per frame</span>
+          <output id="spfOut">10</output>
+          <input id="spf" type="range" min="1" max="40" step="1" value="10">
+        </label>
+      </div>
+
+      <div class="block">
+        <h2>Mérés <span class="en">Readout</span></h2>
+        <dl class="readout">
+          <div><dt>Lépés</dt><dd id="rStep">0</dd></div>
+          <div><dt>Idő t</dt><dd id="rT">0,000</dd></div>
+          <div><dt>Lézer kör</dt><dd id="rLap">0,0</dd></div>
+          <div><dt>+ örvény</dt><dd class="pos" id="rPos">0</dd></div>
+          <div><dt>− antiörvény</dt><dd class="neg" id="rNeg">0</dd></div>
+          <div><dt>Norma</dt><dd id="rNorm">–</dd></div>
+          <div><dt>Bal gödör</dt><dd id="rLeft">–</dd></div>
+          <div><dt>Jobb gödör</dt><dd id="rRight">–</dd></div>
+          <div><dt title="A bal gödörbe átjutott hányad a teljes normához képest">Átjutott ⟵</dt><dd id="rMove">–</dd></div>
+        </dl>
+        <canvas id="spark" aria-label="Örvényszám az idő függvényében"></canvas>
+      </div>
+
+      <div class="block">
+        <h2>Preset <span class="en">Encoded setup</span></h2>
+        <label for="code" class="note">Kódolt preset (base64url + zlib) <span class="en">· paste a code and load it</span></label>
+        <textarea id="code" spellcheck="false"></textarea>
+        <div class="row">
+          <button id="load" type="button">Betöltés</button>
+          <button id="copy" type="button">Kód másolása</button>
+        </div>
+        <label for="json" class="note">Dekódolt JSON, szerkeszthető <span class="en">· decoded, editable</span></label>
+        <textarea id="json" spellcheck="false"></textarea>
+        <div class="row"><button id="apply" type="button">JSON alkalmazása</button></div>
+        <p class="msg" id="msg" role="status"></p>
+      </div>
+
+      <div class="block">
+        <details id="assume">
+          <summary>Feltevések <span class="en">Model assumptions</span></summary>
+          <div class="sliders">
+            <p class="note">A preset ezeket nem rögzíti, ezért saját feltevések. Bármelyik módosítása újraszámolja az alapállapotot.<br><span class="en">The preset does not fix these values; changing one recomputes the ground state.</span></p>
+            <label class="sl">Tartomány L <span class="en">domain size</span><output id="o_L"></output><input id="a_L" type="range" min="1.6" max="4" step="0.1"></label>
+            <label class="sl">ε (ħ skála) <span class="en">dispersion, sets core size</span><output id="o_eps"></output><input id="a_eps" type="range" min="0.03" max="0.2" step="0.005"></label>
+            <label class="sl">μ kémiai potenciál <span class="en">chemical potential</span><output id="o_mu"></output><input id="a_mu" type="range" min="1" max="12" step="0.5"></label>
+            <label class="sl">Δt időlépés <span class="en">time step</span><output id="o_dt"></output><input id="a_dt" type="range" min="0.0002" max="0.003" step="0.0001"></label>
+            <label class="sl">Lézer magasság U₀ <span class="en">laser height</span><output id="o_U0"></output><input id="a_U0" type="range" min="0" max="20" step="0.5"></label>
+            <label class="sl">Lézer szélesség σ <span class="en">laser width</span><output id="o_sigma"></output><input id="a_sigma" type="range" min="0.02" max="0.15" step="0.005"></label>
+            <label class="sl">Pálya sugara r <span class="en">orbit radius</span><output id="o_r"></output><input id="a_r" type="range" min="0.05" max="0.4" step="0.01"></label>
+            <label class="sl">Csillapítás γ <span class="en">damping</span><output id="o_gamma"></output><input id="a_gamma" type="range" min="0" max="0.1" step="0.005"></label>
+            <button id="aReset" type="button">Alapértékek</button>
+          </div>
+        </details>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Modell: <code>iε ∂ψ/∂t = [−(ε²/2)∇² + V + U<sub>lézer</sub> + g|ψ|²] ψ</code>, osztott lépéses Fourier-módszer (split-step). Kettős gödör:
+    <code>V = mély · [((x² − R²)/R²)² + (y/R)²]</code>, a gát magassága x = 0-nál pont „mély”. Az alapállapot képzetes idejű relaxációból jön, utána bekerülnek a preset örvényei, és a seed kis fáziszajt ad. A lézer a kezdő örvények középpontja körül kering. Ezekben az egységekben a hangsebesség c = √(gμ) = 2, így a preset 2-es lézersebessége éppen hangsebességű keverés: örvényeket kelt, és atomokat dob át a gáton a bal gödörbe (lásd: Átjutott).
+    <br><span class="en">In these units the sound speed is 2, so the preset's laser speed is sonic stirring: it sheds vortices and throws atoms over the barrier into the left well.</span><br><span class="en">Split-step Fourier on a periodic grid; ground state by imaginary-time relaxation at fixed μ, then the preset's vortices are imprinted and the seed adds 1% phase noise. The laser orbits the centre of the initial vortices.</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const ORIGINAL = "eJxVkM1qwzAQhN9lzptgGVLafYxeSzFqtBWqNpaQbBPb6N2LS0vJbeAbmJ8dC7gn2HG1Hgzxq7gAwhTyXMG4JSeqoD_B8CXVOuQwWVlqDGHoHQjFXivY9M8EDzaEnCYZr8EqeIdVG8Fwc1Yb5wmEV3B3fiLcRFfwpRGibC4d5iWVSe7gtx33X9cKPnVnQxBNX6Jg0-iBPsCTae-NUEUc-IWgkqWCL13XEcLopRwx_ws3nwaVTcpn0qNblQ-pVfzPM9nqasGIqaC1b1pbXqc";
+const DEF_A = { L: 2.4, eps: 0.08, mu: 4, dt: 0.001, U0: 4, sigma: 0.05, r: 0.2, gamma: 0 };
+const FMT = { L: 1, eps: 3, mu: 1, dt: 4, U0: 1, sigma: 3, r: 2, gamma: 3 };
+const $ = id => document.getElementById(id);
+const TAU = Math.PI * 2;
+const hu = (v, d) => v.toLocaleString("hu-HU", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+let A = { ...DEF_A };
+let cfg = null, sim = null, running = false, view = "density", spf = 10, prepToken = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- preset codec ---------- */
+function b64urlToBytes(s) {
+  s = s.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s), u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return u;
+}
+function bytesToB64url(u) {
+  let bin = ""; for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function pipe(bytes, stream) {
+  const s = new Blob([bytes]).stream().pipeThrough(stream);
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+async function decodePreset(code) {
+  let raw;
+  try { raw = b64urlToBytes(code); } catch { throw new Error("A kód nem érvényes base64url szöveg."); }
+  let out;
+  try { out = await pipe(raw, new DecompressionStream("deflate")); } catch { throw new Error("A kód nem zlib-tömörített adat."); }
+  try { return JSON.parse(new TextDecoder().decode(out)); } catch { throw new Error("A kicsomagolt adat nem JSON."); }
+}
+async function encodePreset(obj) {
+  return bytesToB64url(await pipe(new TextEncoder().encode(JSON.stringify(obj)), new CompressionStream("deflate")));
+}
+
+/* ---------- config ---------- */
+function normalize(c) {
+  if (!c || typeof c !== "object" || Array.isArray(c)) throw new Error("A preset nem JSON objektum.");
+  if (c.modell && c.modell !== "gross_pitaevskii_2d") throw new Error(`Ismeretlen modell: „${c.modell}”. Ez a labor csak a gross_pitaevskii_2d modellt futtatja.`);
+  const N = c.racs ?? 128;
+  if (![32, 64, 128, 256].includes(N)) throw new Error("A rács (racs) értéke 32, 64, 128 vagy 256 lehet.");
+  const p = c.potencial || {};
+  if (p.alak && p.alak !== "duplakut") throw new Error(`Ismeretlen potenciál: „${p.alak}”. Csak a duplakut alak ismert.`);
+  const num = (v, d, name) => { const x = v ?? d; if (typeof x !== "number" || !isFinite(x)) throw new Error(`A(z) ${name} mezőnek számnak kell lennie.`); return x; };
+  const vort = ((c.kezdo || {}).vortex || []).map((v, k) => ({
+    x: num(v.x, 0, `vortex[${k}].x`), y: num(v.y, 0, `vortex[${k}].y`), s: Math.sign(num(v.elojel, 1, `vortex[${k}].elojel`)) || 1 }));
+  const ing = c.inger || null;
+  if (ing && ing.tipus && ing.tipus !== "mozgo_lezerfolt") throw new Error(`Ismeretlen inger: „${ing.tipus}”. Csak a mozgo_lezerfolt ismert.`);
+  if (ing && ing.palya && ing.palya !== "kor") throw new Error(`Ismeretlen pálya: „${ing.palya}”. Csak a kor pálya ismert.`);
+  const lepes = Math.round(num(c.lepes, 5000, "lepes"));
+  if (lepes < 1 || lepes > 200000) throw new Error("A lépésszám (lepes) 1 és 200 000 között legyen.");
+  const R = num(p.R, 0.6, "potencial.R");
+  if (R <= 0) throw new Error("A potencial.R legyen pozitív.");
+  return { raw: c, N, g: num(c.g, 1, "g"), R, mely: num(p.mely, 5, "potencial.mely"), vort,
+    seed: Math.round(num(c.seed, 1, "seed")), lepes,
+    laser: ing ? { v: num(ing.sebesseg, 2, "inger.sebesseg") } : null };
+}
+
+/* ---------- FFT ---------- */
+function makeFFT(n) {
+  const bits = Math.log2(n), rev = new Uint32Array(n), cs = new Float64Array(n / 2), sn = new Float64Array(n / 2);
+  for (let i = 0; i < n; i++) { let r = 0; for (let b = 0; b < bits; b++) r |= ((i >> b) & 1) << (bits - 1 - b); rev[i] = r; }
+  for (let i = 0; i < n / 2; i++) { cs[i] = Math.cos(TAU * i / n); sn[i] = Math.sin(TAU * i / n); }
+  return function (re, im, inv) {
+    for (let i = 0; i < n; i++) { const j = rev[i]; if (j > i) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
+    for (let size = 2; size <= n; size <<= 1) {
+      const half = size >> 1, step = n / size;
+      for (let i = 0; i < n; i += size) for (let j = 0; j < half; j++) {
+        const k = j * step, wr = cs[k], wi = inv ? sn[k] : -sn[k], a = i + j, b = a + half;
+        const xr = re[b] * wr - im[b] * wi, xi = re[b] * wi + im[b] * wr;
+        re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+      }
+    }
+  };
+}
+function fft2(s, inv) {
+  const { N, re, im, tr, ti, fft } = s;
+  for (let j = 0; j < N; j++) fft(re.subarray(j * N, j * N + N), im.subarray(j * N, j * N + N), inv);
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) { tr[j] = re[j * N + i]; ti[j] = im[j * N + i]; }
+    fft(tr, ti, inv);
+    for (let j = 0; j < N; j++) { re[j * N + i] = tr[j]; im[j * N + i] = ti[j]; }
+  }
+}
+
+/* ---------- simulation ---------- */
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function buildSim(c) {
+  const N = c.N, L = A.L, dx = L / N, NN = N * N;
+  const xs = new Float64Array(N); for (let i = 0; i < N; i++) xs[i] = -L / 2 + (i + 0.5) * dx;
+  const V0 = new Float64Array(NN), K2 = new Float64Array(NN), R2 = c.R * c.R, dk = TAU / L;
+  for (let j = 0; j < N; j++) {
+    const y = xs[j], ky = (j < N / 2 ? j : j - N) * dk;
+    for (let i = 0; i < N; i++) {
+      const x = xs[i], q = (x * x - R2) / R2, kx = (i < N / 2 ? i : i - N) * dk;
+      V0[j * N + i] = c.mely * (q * q + (y * y) / R2);
+      K2[j * N + i] = kx * kx + ky * ky;
+    }
+  }
+  let cx = c.R, cy = 0;
+  if (c.vort.length) { cx = c.vort.reduce((a, v) => a + v.x, 0) / c.vort.length; cy = c.vort.reduce((a, v) => a + v.y, 0) / c.vort.length; }
+  return { N, L, dx, NN, xs, V0, K2, Vt: new Float64Array(NN), kr: new Float64Array(NN), ki: new Float64Array(NN), kinKey: "",
+    re: new Float64Array(NN), im: new Float64Array(NN), tr: new Float64Array(N), ti: new Float64Array(N), fft: makeFFT(N),
+    ph: new Float32Array(NN), step: 0, t: 0, hist: [], vlist: [], norm: 0, cx, cy, lx: cx + A.r, ly: cy, g0re: null, g0im: null };
+}
+function setKin(s, a, b, dt) {
+  const key = a + "|" + b + "|" + dt + "|" + A.eps;
+  if (s.kinKey === key) return;
+  const f = A.eps / 2 * dt, inv = 1 / s.NN;
+  for (let c = 0; c < s.NN; c++) { const e = s.K2[c] * f, m = Math.exp(-a * e) * inv; s.kr[c] = m * Math.cos(-b * e); s.ki[c] = m * Math.sin(-b * e); }
+  s.kinKey = key;
+}
+function laserAt(s, t) {
+  s.Vt.set(s.V0);
+  if (!cfg.laser || A.U0 === 0) return;
+  const r = A.r, th = r > 0 ? cfg.laser.v * t / r : 0;
+  s.lx = s.cx + r * Math.cos(th); s.ly = s.cy + r * Math.sin(th);
+  const { N, L, dx, xs, Vt } = s, w = 4 * A.sigma, k2 = 1 / (2 * A.sigma * A.sigma);
+  const i0 = Math.max(0, Math.floor((s.lx - w + L / 2) / dx)), i1 = Math.min(N - 1, Math.ceil((s.lx + w + L / 2) / dx));
+  const j0 = Math.max(0, Math.floor((s.ly - w + L / 2) / dx)), j1 = Math.min(N - 1, Math.ceil((s.ly + w + L / 2) / dx));
+  for (let j = j0; j <= j1; j++) { const dy = xs[j] - s.ly; for (let i = i0; i <= i1; i++) { const ddx = xs[i] - s.lx; Vt[j * N + i] += A.U0 * Math.exp(-(ddx * ddx + dy * dy) * k2); } }
+}
+function halfPot(s, a, b, dt) {
+  const { re, im, Vt, NN } = s, g = cfg.g, mu = A.mu, f = dt / (2 * A.eps);
+  for (let c = 0; c < NN; c++) {
+    const r = re[c], i = im[c], E = (Vt[c] + g * (r * r + i * i) - mu) * f;
+    const m = Math.exp(-a * E), cr = m * Math.cos(-b * E), ci = m * Math.sin(-b * E);
+    re[c] = r * cr - i * ci; im[c] = r * ci + i * cr;
+  }
+}
+function stepOnce(s, a, b, dt) {
+  setKin(s, a, b, dt);
+  halfPot(s, a, b, dt);
+  fft2(s, false);
+  const { re, im, kr, ki, NN } = s;
+  for (let c = 0; c < NN; c++) { const r = re[c], i = im[c]; re[c] = r * kr[c] - i * ki[c]; im[c] = r * ki[c] + i * kr[c]; }
+  fft2(s, true);
+  halfPot(s, a, b, dt);
+}
+function imprint(s) {
+  const { N, xs, re, im } = s, xi = A.eps / Math.sqrt(2 * Math.max(A.mu, 0.1)), c2 = 2 * xi * xi;
+  // Each vortex imprints its phase only on its own well. Across the barrier (x ≈ 0, where there is almost no density)
+  // the phase factor blends smoothly into the constant value it has at the mirror point, so the other cloud is not kicked.
+  for (const v of cfg.vort) {
+    const side = v.x >= 0 ? 1 : -1, mx = -v.x, rm = Math.hypot(mx - v.x, 0) || 1;
+    const refr = (mx - v.x) / rm, refi = 0; // unit phase at the mirror point (dy = 0 there)
+    for (let j = 0; j < N; j++) {
+      const dy = xs[j] - v.y;
+      for (let i = 0; i < N; i++) {
+        const dx = xs[i] - v.x, r2 = dx * dx + dy * dy, k = j * N + i;
+        if (r2 < 1e-14) { re[k] = 0; im[k] = 0; continue; }
+        const rr = Math.sqrt(r2), W = 0.5 * (1 + Math.tanh(side * xs[i] / 0.06));
+        let pr = W * dx / rr + (1 - W) * refr, pi = W * v.s * dy / rr + (1 - W) * refi;
+        const pm = Math.hypot(pr, pi) || 1, amp = W * rr / Math.sqrt(r2 + c2) + (1 - W);
+        pr *= amp / pm; pi *= amp / pm;
+        const r = re[k], m = im[k];
+        re[k] = r * pr - m * pi; im[k] = r * pi + m * pr;
+      }
+    }
+  }
+  const rng = mulberry32(cfg.seed);
+  for (let k = 0; k < s.NN; k++) { const a = 0.006 * (rng() - 0.5), cr = Math.cos(a), ci = Math.sin(a), r = re[k], m = im[k]; re[k] = r * cr - m * ci; im[k] = r * ci + m * cr; }
+}
+function startFromGround(s) {
+  s.re.set(s.g0re); s.im.set(s.g0im); s.step = 0; s.t = 0; s.hist = [];
+  imprint(s); laserAt(s, 0); analyse(s); s.left0 = s.left; s.hist.push({ s: 0, p: s.np, n: s.nn });
+}
+function analyse(s) {
+  // count only plaquettes well inside the cloud (static trap + laser below 0.85 μ), so the empty halo and the laser hole add no ghosts
+  const { N, re, im, ph, NN } = s, vcut = 0.85 * A.mu;
+  let norm = 0, left = 0;
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const c = j * N + i, n = re[c] * re[c] + im[c] * im[c];
+    ph[c] = Math.atan2(im[c], re[c]); norm += n; if (i < N / 2) left += n;
+  }
+  s.norm = norm * s.dx * s.dx; s.left = left * s.dx * s.dx; s.right = s.norm - s.left;
+  const w = d => d - TAU * Math.round(d / TAU), list = [];
+  let np = 0, nn = 0;
+  for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) {
+    const a = j * N + i, b = a + 1, c = a + N + 1, d = a + N;
+    if (Math.max(s.Vt[a], s.Vt[b], s.Vt[c], s.Vt[d]) > vcut) continue;
+    const q = Math.round((w(ph[b] - ph[a]) + w(ph[c] - ph[b]) + w(ph[d] - ph[c]) + w(ph[a] - ph[d])) / TAU);
+    if (q) { list.push({ i: i + 1, j: j + 1, q }); if (q > 0) np += q; else nn -= q; }
+  }
+  s.vlist = list; s.np = np; s.nn = nn;
+}
+
+/* ---------- drawing ---------- */
+let tok = {}, hueLUT = null;
+function hex(v) { v = v.trim(); if (v[0] !== "#") return [0, 0, 0]; if (v.length === 4) v = "#" + v[1] + v[1] + v[2] + v[2] + v[3] + v[3]; return [1, 3, 5].map(k => parseInt(v.slice(k, k + 2), 16)); }
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ["map0", "map1", "map2", "map3", "pos", "neg", "accent", "muted", "fg", "line"]) tok[k] = cs.getPropertyValue("--" + k).trim();
+  tok.stops = ["map0", "map1", "map2", "map3"].map(k => hex(tok[k]));
+  hueLUT = new Uint8ClampedArray(256 * 3);
+  for (let h = 0; h < 256; h++) {
+    const H = h / 256 * 6, C = 0.78, X = C * (1 - Math.abs(H % 2 - 1)), m = 0.58 - C / 2;
+    const [r, g, b] = H < 1 ? [C, X, 0] : H < 2 ? [X, C, 0] : H < 3 ? [0, C, X] : H < 4 ? [0, X, C] : H < 5 ? [X, 0, C] : [C, 0, X];
+    hueLUT[h * 3] = (r + m) * 255; hueLUT[h * 3 + 1] = (g + m) * 255; hueLUT[h * 3 + 2] = (b + m) * 255;
+  }
+  render();
+}
+const off = document.createElement("canvas"), offCtx = off.getContext("2d");
+let img = null;
+function render() {
+  if (!sim || !tok.stops) return;
+  const { N, re, im, ph } = sim;
+  if (off.width !== N) { off.width = off.height = N; img = offCtx.createImageData(N, N); }
+  const d = img.data, nRef = 1.05 * A.mu / Math.max(cfg.g, 1e-9), st = tok.stops, bg = st[0];
+  for (let j = 0; j < N; j++) {
+    const row = (N - 1 - j) * N;
+    for (let i = 0; i < N; i++) {
+      const k = j * N + i, p = (row + i) * 4;
+      let t = Math.sqrt((re[k] * re[k] + im[k] * im[k]) / nRef); if (t > 1) t = 1;
+      if (view === "density") {
+        const u = t * 3, s = Math.min(2, u | 0), f = u - s, A0 = st[s], B0 = st[s + 1];
+        d[p] = A0[0] + (B0[0] - A0[0]) * f; d[p + 1] = A0[1] + (B0[1] - A0[1]) * f; d[p + 2] = A0[2] + (B0[2] - A0[2]) * f;
+      } else {
+        const h = (((ph[k] + Math.PI) / TAU * 256) | 0) & 255, q = Math.min(1, t * 1.6);
+        d[p] = bg[0] + (hueLUT[h * 3] - bg[0]) * q; d[p + 1] = bg[1] + (hueLUT[h * 3 + 1] - bg[1]) * q; d[p + 2] = bg[2] + (hueLUT[h * 3 + 2] - bg[2]) * q;
+      }
+      d[p + 3] = 255;
+    }
+  }
+  offCtx.putImageData(img, 0, 0);
+  const fc = $("field"), oc = $("overlay"), box = $("fieldBox"), dpr = Math.min(2, devicePixelRatio || 1);
+  const W = Math.max(1, Math.round(box.clientWidth * dpr));
+  if (fc.width !== W) { fc.width = fc.height = W; oc.width = oc.height = W; }
+  const ctx = fc.getContext("2d"); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(off, 0, 0, W, W);
+  const o = oc.getContext("2d"); o.clearRect(0, 0, W, W);
+  const L = sim.L, X = x => (x + L / 2) / L * W, Y = y => (L / 2 - y) / L * W, px = W / L;
+  if (cfg.laser && A.U0 > 0) {
+    o.setLineDash([4 * dpr, 5 * dpr]); o.lineWidth = 1 * dpr; o.strokeStyle = tok.muted;
+    o.beginPath(); o.arc(X(sim.cx), Y(sim.cy), A.r * px, 0, TAU); o.stroke(); o.setLineDash([]);
+    o.globalAlpha = 0.35; o.fillStyle = tok.accent; o.beginPath(); o.arc(X(sim.lx), Y(sim.ly), 2 * A.sigma * px, 0, TAU); o.fill();
+    o.globalAlpha = 1; o.beginPath(); o.arc(X(sim.lx), Y(sim.ly), Math.max(2.5 * dpr, 0.6 * A.sigma * px), 0, TAU); o.fill();
+  }
+  const rr = Math.max(4 * dpr, W / sim.N * 1.6);
+  o.lineWidth = 1.8 * dpr;
+  for (const v of sim.vlist) {
+    const x = X(-L / 2 + v.i * sim.dx), y = Y(-L / 2 + v.j * sim.dx);
+    o.strokeStyle = v.q > 0 ? tok.pos : tok.neg; o.beginPath();
+    if (v.q > 0) o.arc(x, y, rr, 0, TAU); else { o.moveTo(x, y - rr * 1.2); o.lineTo(x + rr * 1.2, y); o.lineTo(x, y + rr * 1.2); o.lineTo(x - rr * 1.2, y); o.closePath(); }
+    o.stroke();
+  }
+  drawSpark(); readout();
+}
+function drawSpark() {
+  const c = $("spark"), dpr = Math.min(2, devicePixelRatio || 1), W = Math.round(c.clientWidth * dpr), H = Math.round(c.clientHeight * dpr);
+  if (!W || !H) return;
+  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+  const x = c.getContext("2d"); x.clearRect(0, 0, W, H);
+  const h = sim.hist, total = cfg.lepes, maxV = Math.max(4, ...h.map(e => Math.max(e.p, e.n)));
+  const padL = 22 * dpr, padB = 14 * dpr, padT = 6 * dpr, pw = W - padL - 4 * dpr, ph = H - padB - padT;
+  const X = s => padL + s / total * pw, Y = v => padT + ph - v / maxV * ph;
+  x.font = `${10 * dpr}px ${getComputedStyle(document.body).getPropertyValue("--f-mono")}`;
+  x.fillStyle = tok.muted; x.textBaseline = "middle"; x.textAlign = "right";
+  x.fillText(String(maxV), padL - 5 * dpr, Y(maxV)); x.fillText("0", padL - 5 * dpr, Y(0));
+  x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillText("0", padL, H - 2 * dpr);
+  x.textAlign = "right"; x.fillText(total.toLocaleString("hu-HU") + " lépés", W - 4 * dpr, H - 2 * dpr);
+  x.strokeStyle = tok.line; x.lineWidth = 1 * dpr; x.beginPath(); x.moveTo(padL, Y(0)); x.lineTo(W - 4 * dpr, Y(0)); x.moveTo(padL, Y(maxV)); x.lineTo(W - 4 * dpr, Y(maxV)); x.stroke();
+  for (const [key, col] of [["p", tok.pos], ["n", tok.neg]]) {
+    if (!h.length) continue;
+    x.strokeStyle = col; x.lineWidth = 1.5 * dpr; x.beginPath();
+    h.forEach((e, k) => { const px = X(e.s), py = Y(e[key]); k ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+    const e = h[h.length - 1]; x.fillStyle = col; x.beginPath(); x.arc(X(e.s), Y(e[key]), 2.5 * dpr, 0, TAU); x.fill();
+  }
+}
+function readout() {
+  $("rStep").textContent = sim.step.toLocaleString("hu-HU") + " / " + cfg.lepes.toLocaleString("hu-HU");
+  $("rT").textContent = hu(sim.t, 3);
+  $("rNorm").textContent = hu(sim.norm, 3);
+  $("rPos").textContent = sim.np; $("rNeg").textContent = sim.nn;
+  $("rLap").textContent = cfg.laser && A.r > 0 ? hu(cfg.laser.v * sim.t / (TAU * A.r), 1) : "–";
+  $("rLeft").textContent = hu(sim.left, 3); $("rRight").textContent = hu(sim.right, 3);
+  const dl = (sim.left - sim.left0) / sim.norm * 100;
+  $("rMove").textContent = (dl >= 0 ? "+" : "−") + hu(Math.abs(dl), 1) + " %";
+}
+
+/* ---------- run control ---------- */
+function setMsg(t, err) { const m = $("msg"); m.textContent = t; m.className = "msg" + (err ? " err" : ""); }
+function setRunning(v) {
+  running = v && sim && sim.step < cfg.lepes;
+  $("play").textContent = running ? "Szünet" : (sim && sim.step >= cfg.lepes ? "Kész" : (sim && sim.step > 0 ? "Folytatás" : "Indítás"));
+  $("play").disabled = !!(sim && sim.step >= cfg.lepes);
+}
+function chips() {
+  const r = cfg.raw;
+  $("chips").innerHTML = [["v", r.v ?? "–"], ["anyag", r.anyag ?? "–"], ["típus", r.tipus ?? "–"], ["rács", cfg.N + "²"], ["g", cfg.g], ["seed", cfg.seed]]
+    .map(([k, v]) => `<span class="chip">${k} <b>${String(v).replace(/[<&]/g, "")}</b></span>`).join("");
+  $("axL").textContent = "x = −" + hu(A.L / 2, 1); $("axR").textContent = "x = +" + hu(A.L / 2, 1);
+  $("axSpan").textContent = "[" + hu(-A.L / 2, 1) + "; " + hu(A.L / 2, 1) + "]²";
+}
+async function prepare() {
+  const token = ++prepToken; setRunning(false);
+  sim = buildSim(cfg); chips();
+  const s = sim, g = Math.max(cfg.g, 1e-9);
+  for (let k = 0; k < s.NN; k++) { s.re[k] = Math.sqrt(Math.max(A.mu - s.V0[k], 0) / g); s.im[k] = 0; }
+  laserAt(s, 0);
+  const iters = 600, chunk = Math.max(10, Math.round(60 * (128 * 128) / s.NN)), busy = $("busy");
+  busy.hidden = false;
+  for (let it = 0; it < iters; it += chunk) {
+    for (let k = 0; k < chunk && it + k < iters; k++) stepOnce(s, 1, 0, 0.002);
+    busy.textContent = `Alapállapot számítása (képzetes idő) · ${Math.min(100, Math.round((it + chunk) / iters * 100))}%`;
+    await new Promise(r => setTimeout(r, 0));
+    if (token !== prepToken) return;
+  }
+  busy.hidden = true;
+  s.g0re = s.re.slice(); s.g0im = s.im.slice();
+  startFromGround(s); render();
+  setRunning(!reduced);
+}
+function frame() {
+  if (sim && running && sim.g0re) {
+    const k = Math.min(spf, cfg.lepes - sim.step), a = A.gamma;
+    for (let n = 0; n < k; n++) { laserAt(sim, sim.t + A.dt / 2); stepOnce(sim, a, 1, A.dt); sim.t += A.dt; sim.step++; }
+    analyse(sim);
+    sim.hist.push({ s: sim.step, p: sim.np, n: sim.nn });
+    if (!isFinite(sim.norm)) { setMsg("A számítás instabillá vált. Csökkentsd a Δt időlépést a Feltevések között.", true); running = false; }
+    render();
+    if (sim.step >= cfg.lepes) setRunning(false);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- UI wiring ---------- */
+async function loadCode(code, quiet) {
+  try {
+    const obj = await decodePreset(code);
+    $("json").value = JSON.stringify(obj, null, 2);
+    cfg = normalize(obj);
+    if (!quiet) setMsg("Preset betöltve.");
+    await prepare();
+  } catch (e) { setMsg(e.message, true); }
+}
+$("load").onclick = () => loadCode($("code").value);
+$("apply").onclick = async () => {
+  try {
+    const obj = JSON.parse($("json").value);
+    cfg = normalize(obj);
+    $("code").value = await encodePreset(obj);
+    setMsg("JSON alkalmazva, a kód frissült.");
+    await prepare();
+  } catch (e) { setMsg(e instanceof SyntaxError ? "A JSON hibás: " + e.message : e.message, true); }
+};
+$("copy").onclick = async () => {
+  const ta = $("code");
+  try { await navigator.clipboard.writeText(ta.value); setMsg("Kód a vágólapon."); }
+  catch { ta.focus(); ta.select(); setMsg("A másolás nem engedélyezett itt. A kód ki van jelölve, másold Ctrl+C-vel."); }
+};
+$("play").onclick = () => setRunning(!running);
+$("reset").onclick = () => { if (!sim || !sim.g0re) return; startFromGround(sim); render(); setMsg(""); setRunning(true); };
+const setView = v => { view = v; $("vDen").setAttribute("aria-pressed", v === "density"); $("vPha").setAttribute("aria-pressed", v === "phase"); render(); };
+$("vDen").onclick = () => setView("density"); $("vPha").onclick = () => setView("phase");
+$("spf").oninput = e => { spf = +e.target.value; $("spfOut").textContent = spf; };
+
+let aTimer = 0;
+function syncAssume() { for (const k in DEF_A) { $("a_" + k).value = A[k]; $("o_" + k).textContent = hu(A[k], FMT[k]); } }
+for (const k in DEF_A) {
+  $("a_" + k).addEventListener("input", e => {
+    A[k] = +e.target.value; $("o_" + k).textContent = hu(A[k], FMT[k]);
+    clearTimeout(aTimer); aTimer = setTimeout(() => cfg && prepare(), 250);
+  });
+}
+$("aReset").onclick = () => { A = { ...DEF_A }; syncAssume(); if (cfg) prepare(); };
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readTokens);
+new MutationObserver(readTokens).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+new ResizeObserver(() => render()).observe($("fieldBox"));
+
+syncAssume();
+$("code").value = ORIGINAL;
+readTokens();
+requestAnimationFrame(frame);
+if (typeof DecompressionStream === "undefined") setMsg("Ez a böngésző nem tud zlib-et kicsomagolni (DecompressionStream hiányzik).", true);
+else loadCode(ORIGINAL, true);
+</script>
+
+</body></html>

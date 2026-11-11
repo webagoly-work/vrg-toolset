@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Archívum</title>
+<!-- VRG Artifact Archive (Artifaktum-archívum): every one-shot interactive page Claude made, with when, why and what was going on.
+     Data: index.js (generated from index.json by archive.js). Copies: files/<id>.html. #<id> selects an entry, #<id>/open opens it. -->
+<style>
+/* melyviz:begin */
+/* Mélyvíz — the VRG dev-side style (CITY-D26, 2026-10-27), shared by every dev-side app. Spec: docs/city/melyviz.md.
+   This file is the source. Apps carry a copy between the markers  melyviz:begin / melyviz:end  that
+   tools/melyviz-sync.js writes; `node tools/melyviz-sync.js --check` fails when a copy has drifted.
+   Do not edit a copy inside an app — edit this file and sync.
+
+   Tokens are --mv-* so they never collide with an app's own names; an app maps its variables onto them.
+   The base layer applies only under html.mv, so adding the block changes nothing until the app opts in.
+   M1 ice = the instrument and you (selection, focus, "you are here"); warm = activity (running, heat, recent work).
+   M5 smoked glass, 1 px hairlines, square controls, two cut corners, no rounded corners, no drop shadows.
+   M6 numbers and readouts mono; titles in the condensed voice; small labels uppercase and tracked. */
+:root {
+  --mv-bg: #0a141c; --mv-horizon: #11202b;
+  --mv-panel: rgba(20, 30, 38, .74); --mv-panel-solid: #121c24; --mv-raised: #17232c;
+  --mv-line: rgba(232, 240, 246, .15); --mv-line-strong: rgba(232, 240, 246, .34);
+  --mv-text: #e8f0f6; --mv-dim: #a6afb7; --mv-faint: #646d74;
+  --mv-accent: #93d3e6; --mv-accent-soft: rgba(147, 211, 230, .14); --mv-accent-glow: rgba(147, 211, 230, .5);
+  --mv-warm: #e8a873; --mv-warm-soft: rgba(232, 168, 115, .14);
+  --mv-ok: #8bcca1; --mv-warn: #e3be7b; --mv-crit: #e4877d;
+  --mv-cut: 6px; --mv-blur: 12px; --mv-glow: 3px;
+  --mv-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --mv-voice: Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --mv-sans: "Segoe UI", system-ui, sans-serif;
+}
+html.mv.low-glow { --mv-glow: 0px; }
+
+/* ---- base layer (opt-in: html.mv; zero specificity, so any app rule wins) ---- */
+:where(html.mv) { color-scheme: dark; }
+:where(html.mv) :where(body) { background: var(--mv-bg); color: var(--mv-text); font-family: var(--mv-sans); }
+:where(html.mv) :where(:is(h1, h2, h3)) { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; }
+:where(html.mv) :where(:is(code, kbd, pre, samp, .mv-num)) { font-family: var(--mv-mono); }
+:where(html.mv) :where(:focus-visible) { outline: 2px solid var(--mv-accent); outline-offset: 2px; }
+:where(html.mv) ::selection { background: var(--mv-accent-soft); color: var(--mv-text); }
+:where(html.mv) :where(:is(button, input, select, textarea)) { font: inherit; color: var(--mv-text); border-radius: 0; }
+:where(html.mv) :where(:is(button, select, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea)) {
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: none; }
+:where(html.mv) :where(button) { cursor: pointer; }
+:where(html.mv) :where(button:hover:not(:disabled)) { border-color: var(--mv-accent); }
+:where(html.mv) :where(:is(input, select, textarea):focus) { border-color: var(--mv-accent); outline: none; box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+:where(html.mv) :where(:is(input[type=checkbox], input[type=radio], input[type=range])) { accent-color: var(--mv-accent); }
+:where(html.mv) :where(input, textarea)::placeholder { color: var(--mv-faint); }
+:where(html.mv) :where(:disabled) { opacity: .45; cursor: default; }
+:where(html.mv) :where(table) { border-collapse: collapse; }
+:where(html.mv) :where(:is(th, td)) { border-color: var(--mv-line); }
+:where(html.mv) :where(th) { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; }
+:where(html.mv) :where(a) { color: var(--mv-accent); }
+:where(html.mv) :where(hr) { border: 0; border-top: 1px solid var(--mv-line); }
+:where(html.mv) { scrollbar-color: var(--mv-line-strong) transparent; scrollbar-width: thin; }
+
+/* ---- components (usable anywhere) ---- */
+.mv-glass {
+  border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: blur(var(--mv-blur)) saturate(1.2); backdrop-filter: blur(var(--mv-blur)) saturate(1.2);
+  background: var(--mv-panel); }
+.mv-solid { border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none; background: var(--mv-panel-solid); }
+/* two cut corners (top left, bottom right) drawn as diagonals; layer on .mv-glass or .mv-solid */
+.mv-cut {
+  clip-path: polygon(var(--mv-cut) 0, 100% 0, 100% calc(100% - var(--mv-cut)), calc(100% - var(--mv-cut)) 100%, 0 100%, 0 var(--mv-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--mv-cut) var(--mv-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.mv-title { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mv-label { font-family: var(--mv-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; color: var(--mv-dim); }
+.mv-btn { background: none; border: 1px solid var(--mv-line-strong); border-radius: 0; color: inherit; font: inherit; padding: 3px 10px; cursor: pointer; }
+.mv-btn:hover { border-color: var(--mv-accent); }
+.mv-on, .mv-btn.on { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+.mv-live { color: var(--mv-warm); }
+.mv-badge { font: 11px var(--mv-mono); padding: 1px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; }
+.mv-badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.mv-badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.mv-badge.crit { color: var(--mv-crit); border-color: var(--mv-crit); }
+
+/* print stays paper: Mélyvíz is a screen style */
+@media print {
+  :where(html.mv) { color-scheme: light; }
+  :where(html.mv) body { background: #fff; color: #000; }
+  .mv-glass, .mv-solid { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* melyviz:end */
+:root { --line: var(--mv-line); --vrg: var(--mv-accent); --oth: var(--mv-warm); }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; overflow: hidden; font-size: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px 10px; border-bottom: 1px solid var(--line); }
+header h1 { margin: 0; font-size: 20px; } header h1 small { font: 11px var(--mv-mono); color: var(--mv-dim); letter-spacing: .12em; text-transform: uppercase; margin-left: 8px; }
+header .sp { flex: 1; }
+header input[type=search] { width: 220px; padding: 5px 8px; font-size: 13px; }
+.seg { display: inline-flex; } .seg button { padding: 4px 10px; font: 11px var(--mv-mono); letter-spacing: .06em; color: var(--mv-dim); margin-left: -1px; }
+.seg button[aria-pressed="true"] { color: var(--mv-accent); border-color: var(--mv-accent); background: var(--mv-accent-soft); position: relative; }
+select { padding: 4px 6px; font-size: 12px; }
+/* timeline */
+.tl { position: relative; height: 74px; margin: 0 16px; border-bottom: 1px solid var(--line); }
+.tl .axis { position: absolute; left: 0; right: 0; top: 52px; height: 1px; background: var(--mv-line-strong); }
+.tl .m { position: absolute; top: 58px; font: 10px var(--mv-mono); color: var(--mv-faint); transform: translateX(-50%); white-space: nowrap; }
+.tl .m::before { content: ""; position: absolute; left: 50%; top: -9px; height: 5px; border-left: 1px solid var(--mv-line-strong); }
+.tl button { position: absolute; width: 11px; height: 11px; padding: 0; border: 1px solid var(--vrg); background: var(--mv-bg); transform: translate(-50%, -50%) rotate(45deg); }
+.tl button.o { border-color: var(--oth); }
+.tl button:hover, .tl button.sel { background: var(--vrg); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); } .tl button.o:hover, .tl button.o.sel { background: var(--oth); }
+.tl button.dim { opacity: .2; }
+/* body */
+main { flex: 1; display: grid; grid-template-columns: minmax(280px, 400px) 1fr; min-height: 0; }
+.list { overflow-y: auto; border-right: 1px solid var(--line); padding: 6px 0 20px; }
+.list h2 { margin: 14px 16px 6px; font: 11px var(--mv-mono); letter-spacing: .14em; color: var(--mv-dim); text-transform: uppercase; display: flex; gap: 8px; }
+.list h2 b { color: var(--mv-faint); font-weight: 400; }
+.card { display: grid; grid-template-columns: 6px 1fr auto; gap: 2px 10px; width: 100%; padding: 8px 16px 8px 12px; text-align: left; background: none; border: 0; border-left: 2px solid transparent; color: var(--mv-text); }
+.card:hover { background: var(--mv-raised); } .card.sel { background: var(--mv-accent-soft); border-left-color: var(--mv-accent); }
+.card .dot { grid-row: 1 / 3; align-self: center; width: 6px; height: 6px; background: var(--vrg); transform: rotate(45deg); } .card.o .dot { background: var(--oth); }
+.card .t { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card .d { font: 11px var(--mv-mono); color: var(--mv-faint); } .card .g { grid-column: 2 / 4; font-size: 11.5px; color: var(--mv-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty { padding: 20px 16px; color: var(--mv-faint); }
+.detail { overflow-y: auto; padding: 22px 28px 40px; }
+.detail .kick { font: 11px var(--mv-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mv-dim); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.detail .kick .vrg { color: var(--vrg); } .detail .kick .oth { color: var(--oth); }
+.detail h2 { font-size: 30px; margin: 6px 0 4px; line-height: 1.1; }
+.detail .lead { font-size: 15.5px; line-height: 1.5; max-width: 72ch; color: var(--mv-text); margin: 12px 0 18px; }
+.detail .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.detail .acts button, .detail .acts a { display: inline-block; padding: 7px 14px; font: 12px var(--mv-mono); letter-spacing: .06em; text-decoration: none; border: 1px solid var(--mv-line-strong); color: var(--mv-text); background: var(--mv-panel-solid); }
+.detail .acts .go { color: var(--mv-accent); border-color: var(--mv-accent); background: var(--mv-accent-soft); }
+.detail .acts a:hover, .detail .acts button:hover { border-color: var(--mv-accent); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; max-width: 980px; }
+.fact { padding: 12px 14px; }
+.fact h3 { margin: 0 0 8px; font-size: 13px; color: var(--mv-dim); text-transform: uppercase; letter-spacing: .1em; }
+.fact p { margin: 0; line-height: 1.5; } .fact ul { margin: 0; padding-left: 16px; line-height: 1.55; } .fact li::marker { color: var(--mv-warm); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; } .tags span { font: 11px var(--mv-mono); color: var(--mv-dim); border: 1px solid var(--line); padding: 2px 7px; }
+.note { margin-top: 18px; font-size: 12px; color: var(--mv-faint); max-width: 72ch; }
+/* viewer */
+.viewer { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--mv-bg); z-index: 10; }
+.viewer[hidden] { display: none; }
+.viewer .bar { display: flex; align-items: center; gap: 12px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.viewer .bar button, .viewer .bar a { padding: 4px 10px; font: 12px var(--mv-mono); color: var(--mv-text); text-decoration: none; border: 1px solid var(--mv-line-strong); background: var(--mv-panel-solid); }
+.viewer .bar .t { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mv-voice); font-size: 16px; }
+.viewer iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.back { display: none; }
+@media (max-width: 760px) {
+  header input[type=search] { width: 100%; order: 9; }
+  .tl { display: none; }
+  main { grid-template-columns: 1fr; }
+  .list { border-right: 0; }
+  .detail { display: none; padding: 14px 16px 30px; }
+  body.reading .list { display: none; } body.reading .detail { display: block; }
+  .back { display: inline-block; margin-bottom: 10px; padding: 4px 10px; font: 12px var(--mv-mono); }
+  .detail h2 { font-size: 24px; }
+}
+/* touch (a phone, VRG Mobile's Archívum, WP M18): every control at least 44 px tall */
+@media (max-width: 760px), (pointer: coarse) {
+  .seg button { min-height: 44px; min-width: 56px; }
+  header select, header input[type=search] { min-height: 44px; }
+  .card { min-height: 52px; padding-top: 10px; padding-bottom: 10px; }
+  .detail .acts button, .detail .acts a, .viewer .bar button, .viewer .bar a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }
+  .back { min-height: 44px; padding: 0 16px; line-height: 42px; }
+  .viewer .bar a[hidden] { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Archívum<small>Artifaktumok · artifact archive</small></h1>
+  <span class="sp"></span>
+  <span class="seg" data-role="scope">
+    <button type="button" data-scope="all" aria-pressed="true">MIND</button><button type="button" data-scope="vrg" aria-pressed="false">VRG</button><button type="button" data-scope="other" aria-pressed="false">EGYÉB</button>
+  </span>
+  <select data-role="group" title="Csoport / Group"><option value="">minden csoport</option></select>
+  <input type="search" data-role="q" placeholder="Keresés… / Search">
+</header>
+<div class="tl" data-role="timeline" aria-label="Idővonal / Timeline"></div>
+<main>
+  <nav class="list" data-role="list"></nav>
+  <section class="detail" data-role="detail"></section>
+</main>
+<div class="viewer" data-role="viewer" hidden>
+  <div class="bar"><button type="button" data-role="close">← Vissza</button><span class="t" data-role="vt"></span><a data-role="vonline" target="_blank" rel="noopener">claude.ai ↗</a></div>
+  <iframe data-role="frame" title="Archivált oldal" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads"></iframe>
+</div>
+<script src="index.js"></script>
+<script>
+(function () {
+  'use strict';
+  const A = window.VRG_ARCHIVE || { items: [] };
+  const ITEMS = A.items || [];
+  const $ = s => document.querySelector(s);
+  const h = (tag, attrs, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === undefined || v === null || v === false) continue;
+      if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? '' : String(v));
+    }
+    for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c)));
+    return e;
+  };
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+  const fmt = d => { const [y, m, dd] = String(d || '').split('-'); return y ? y + '. ' + MON[+m - 1] + ' ' + (+dd) + '.' : '—'; };
+  const KIND = { tool: 'eszköz', explainer: 'magyarázó', mockup: 'látványterv', board: 'tábla', game: 'játék', manual: 'kézikönyv', study: 'tanulmány', dashboard: 'irányítópult', design: 'dizájn' };
+  const LANG = { hu: 'magyar', en: 'angol' };
+  const S = { scope: 'all', group: '', q: '', sel: null };
+  try { const k = JSON.parse(localStorage.getItem('vrg-archive') || '{}'); if (k.scope) S.scope = k.scope; } catch (e) {}
+  const save = () => { try { localStorage.setItem('vrg-archive', JSON.stringify({ scope: S.scope })); } catch (e) {} };
+
+  const visible = () => {
+    const q = S.q.trim().toLowerCase();
+    return ITEMS.filter(i => (S.scope === 'all' || (S.scope === 'vrg') === !!i.vrg) && (!S.group || i.group === S.group) &&
+      (!q || [i.title, i.summary, i.purpose, i.group, (i.tags || []).join(' '), (i.context || []).join(' ')].join(' ').toLowerCase().includes(q)));
+  };
+  const byId = id => ITEMS.find(i => i.id === id) || null;
+
+  // groups for the select, in list order
+  const groups = [...new Set(ITEMS.map(i => i.group).filter(Boolean))];
+  for (const g of groups) $('[data-role="group"]').append(h('option', { value: g }, g));
+
+  function drawTimeline(vis) {
+    const box = $('[data-role="timeline"]');
+    box.textContent = '';
+    const ds = ITEMS.map(i => Date.parse(i.created)).filter(n => !isNaN(n));
+    if (!ds.length) return;
+    const pad = 3 * 864e5, lo = Math.min(...ds) - pad, hi = Math.max(...ds) + pad;
+    const x = t => ((t - lo) / (hi - lo)) * 100;
+    box.append(h('div', { class: 'axis' }));
+    const d0 = new Date(lo); d0.setDate(1); d0.setMonth(d0.getMonth() + 1);
+    for (let d = new Date(d0); d.getTime() < hi; d.setMonth(d.getMonth() + 1)) box.append(h('span', { class: 'm', style: 'left:' + x(d.getTime()) + '%' }, d.getFullYear() + '. ' + MON[d.getMonth()]));
+    const show = new Set(vis.map(i => i.id));
+    const placed = [];
+    for (const i of [...ITEMS].sort((a, b) => a.created.localeCompare(b.created))) {
+      const px = x(Date.parse(i.created));
+      let n = 0; while (n < 5 && placed.some(p => p.n === n && Math.abs(p.px - px) < 1.1)) n++;
+      placed.push({ px, n });
+      box.append(h('button', { type: 'button', class: (i.vrg ? '' : 'o') + (S.sel === i.id ? ' sel' : '') + (show.has(i.id) ? '' : ' dim'),
+        style: 'left:' + px + '%;top:' + (52 - n * 10) + 'px', title: fmt(i.created) + ' · ' + i.title, onclick: () => select(i.id) }));
+    }
+  }
+
+  function drawList(vis) {
+    const box = $('[data-role="list"]');
+    box.textContent = '';
+    if (!vis.length) { box.append(h('div', { class: 'empty' }, 'Nincs találat. · Nothing here.')); return; }
+    const halves = [['VRG', vis.filter(i => i.vrg)], ['Egyéb projektek', vis.filter(i => !i.vrg)]];
+    for (const [name, list] of halves) {
+      if (!list.length) continue;
+      box.append(h('h2', {}, name, h('b', {}, String(list.length))));
+      for (const i of list) box.append(h('button', { type: 'button', class: 'card' + (i.vrg ? '' : ' o') + (S.sel === i.id ? ' sel' : ''), 'data-id': i.id, onclick: () => select(i.id) },
+        h('i', { class: 'dot' }), h('span', { class: 't' }, i.title), h('span', { class: 'd' }, i.created), h('span', { class: 'g' }, [i.group, KIND[i.kind] || i.kind].filter(Boolean).join(' · '))));
+    }
+  }
+
+  function drawDetail() {
+    const box = $('[data-role="detail"]');
+    box.textContent = '';
+    const i = byId(S.sel);
+    if (!i) {
+      const v = ITEMS.filter(x => x.vrg).length;
+      box.append(h('div', { class: 'kick' }, ITEMS.length + ' oldal · ' + v + ' VRG · ' + (ITEMS.length - v) + ' egyéb'),
+        h('h2', {}, 'Artifaktum-archívum'),
+        h('p', { class: 'lead' }, 'Minden egyszeri, interaktív HTML-oldal, amit Claude készített: mikor, miért, és mi zajlott akkor a munkában. Válassz a listából vagy az idővonalról.'),
+        h('p', { class: 'note' }, 'Új oldal: node Archive/archive.js add <oldal.html> --title "…" — vagy a VRG Asztal Irányítópult nézetében az Archívum szakasz „Hozzáadás” gombja.'));
+      return;
+    }
+    const kick = h('div', { class: 'kick' },
+      h('span', { class: i.vrg ? 'vrg' : 'oth' }, i.vrg ? 'VRG' : 'Egyéb'), i.group ? h('span', {}, i.group) : null, h('span', {}, KIND[i.kind] || i.kind || ''),
+      h('span', {}, 'készült ' + fmt(i.created) + (i.dateApprox ? ' (kb.)' : '')), i.updated && i.updated !== i.created ? h('span', {}, 'frissítve ' + fmt(i.updated)) : null,
+      i.lang ? h('span', {}, LANG[i.lang] || i.lang) : null, i.shared ? h('span', {}, 'megosztott velem') : null);
+    const acts = h('div', { class: 'acts' },
+      i.file ? h('button', { type: 'button', class: 'go', onclick: () => openViewer(i) }, '▶ Megnyitás') : null,
+      i.url ? h('a', { href: i.url, target: '_blank', rel: 'noopener' }, 'claude.ai ↗') : null,
+      i.file ? h('a', { href: i.file, target: '_blank', rel: 'noopener', title: 'A mentett másolat' }, 'Archivált fájl') : null);
+    const facts = h('div', { class: 'facts' },
+      i.purpose ? h('div', { class: 'fact mv-solid' }, h('h3', {}, 'Miért készült'), h('p', {}, i.purpose)) : null,
+      (i.context || []).length ? h('div', { class: 'fact mv-solid' }, h('h3', {}, 'Mi zajlott akkor'), h('ul', {}, i.context.map(c => h('li', {}, c)))) : null,
+      i.asked ? h('div', { class: 'fact mv-solid' }, h('h3', {}, 'A kérés'), h('p', {}, i.asked)) : null);
+    box.append(...[h('button', { type: 'button', class: 'back', onclick: () => select(null) }, '← Lista'), kick, h('h2', {}, i.title),
+      i.summary ? h('p', { class: 'lead' }, i.summary) : null, acts, facts,
+      (i.tags || []).length ? h('div', { class: 'tags' }, i.tags.map(t => h('span', {}, t))) : null,
+      !i.file && i.localPath ? h('p', { class: 'note' }, 'Helyben marad (mellette lévő fájlokat használ, vagy magánjellegű): ' + i.localPath) : null,
+      !i.file && !i.localPath ? h('p', { class: 'note' }, 'Ebből nincs helyi másolat (Docs / Design típusú vagy megosztott oldal); csak a claude.ai-on nyitható meg.') : null,
+      i.sessionTitle ? h('p', { class: 'note' }, 'Claude munkamenet: ' + i.sessionTitle) : null,
+      i.note ? h('p', { class: 'note' }, i.note) : null].filter(Boolean));
+  }
+
+  function openViewer(i) {
+    $('[data-role="vt"]').textContent = i.title;
+    const on = $('[data-role="vonline"]'); on.hidden = !i.url; if (i.url) on.href = i.url;
+    $('[data-role="frame"]').src = i.file;
+    $('[data-role="viewer"]').hidden = false;
+    if (location.hash !== '#' + i.id + '/open') history.replaceState(null, '', '#' + i.id + '/open');
+  }
+  function closeViewer() {
+    $('[data-role="viewer"]').hidden = true;
+    $('[data-role="frame"]').src = 'about:blank';
+    if (S.sel) history.replaceState(null, '', '#' + S.sel);
+  }
+  $('[data-role="close"]').addEventListener('click', closeViewer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('[data-role="viewer"]').hidden) closeViewer(); });
+
+  function draw() {
+    const vis = visible();
+    drawTimeline(vis); drawList(vis); drawDetail();
+    document.body.classList.toggle('reading', !!S.sel);
+    for (const b of document.querySelectorAll('[data-scope]')) b.setAttribute('aria-pressed', String(b.dataset.scope === S.scope));
+  }
+  function select(id) {
+    S.sel = id && byId(id) ? id : null;
+    history.replaceState(null, '', S.sel ? '#' + S.sel : location.pathname + location.search);
+    draw();
+    const c = S.sel && document.querySelector('.card[data-id="' + S.sel + '"]'); if (c) c.scrollIntoView({ block: 'nearest' });
+    $('[data-role="detail"]').scrollTop = 0;
+  }
+  function fromHash() {
+    const [id, mode] = decodeURIComponent(location.hash.slice(1)).split('/');
+    S.sel = byId(id) ? id : null;
+    draw();
+    const c = S.sel && document.querySelector('.card[data-id="' + S.sel + '"]'); if (c) c.scrollIntoView({ block: 'nearest' });
+    if (S.sel && mode === 'open' && byId(id).file) openViewer(byId(id)); else if (!$('[data-role="viewer"]').hidden) closeViewer();
+  }
+  for (const b of document.querySelectorAll('[data-scope]')) b.addEventListener('click', () => { S.scope = b.dataset.scope; save(); draw(); });
+  $('[data-role="group"]').addEventListener('change', e => { S.group = e.target.value; draw(); });
+  $('[data-role="q"]').addEventListener('input', e => { S.q = e.target.value; draw(); });
+  window.addEventListener('hashchange', fromHash);
+  window.VRGArchive = { items: () => ITEMS.slice(), select, state: () => ({ ...S, open: !$('[data-role="viewer"]').hidden }) };
+  fromHash();
+})();
+</script>
+</body>
+</html>

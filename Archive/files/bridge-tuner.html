@@ -1,0 +1,1114 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>BRIDGE Tuner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: single-column question flow under a sticky progress header; section chips scroll
+   horizontally on phones, become a left rail on wide screens. Section accents reuse the
+   ARCH-002 conduit-layer colour code, as thin marks on a cool neutral ground. */
+:root{
+  --bg:#f2f3f5; --surface:#ffffff; --surface-2:#e9ebee;
+  --ink:#16191d; --ink-2:#5a616b; --ink-3:#8b929c;
+  --line:#d6dae0; --line-2:#c2c8d0;
+  --accent:#1b6b8f; --accent-ink:#ffffff;
+  --ok:#1f7a4d; --ok-bg:#e7f3ec;
+  --flag:#8a5a12; --flag-bg:#fbf2e0;
+  --warn:#9c3b25;
+  --l-a:#5a616b; --l-b:#b2792c; --l-c:#a8871f; --l-d:#8a8c25;
+  --l-e:#8e3f7a; --l-f:#17726f; --l-g:#9c3b25; --l-h:#5f4a9c;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#13161a; --surface:#1b1f24; --surface-2:#23282f;
+  --ink:#e6e9ed; --ink-2:#9aa2ac; --ink-3:#6e767f;
+  --line:#2c323a; --line-2:#3a424c;
+  --accent:#4fa5c9; --accent-ink:#0c1418;
+  --ok:#5fc18c; --ok-bg:#17251d;
+  --flag:#d9b263; --flag-bg:#2a2314;
+  --warn:#e08d74;
+  --l-a:#9aa2ac; --l-b:#d3a059; --l-c:#cdb34b; --l-d:#b4b84a;
+  --l-e:#c278ad; --l-f:#3fa39f; --l-g:#e08d74; --l-h:#9b86d6;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#13161a; --surface:#1b1f24; --surface-2:#23282f;
+  --ink:#e6e9ed; --ink-2:#9aa2ac; --ink-3:#6e767f;
+  --line:#2c323a; --line-2:#3a424c;
+  --accent:#4fa5c9; --accent-ink:#0c1418;
+  --ok:#5fc18c; --ok-bg:#17251d;
+  --flag:#d9b263; --flag-bg:#2a2314;
+  --warn:#e08d74;
+  --l-a:#9aa2ac; --l-b:#d3a059; --l-c:#cdb34b; --l-d:#b4b84a;
+  --l-e:#c278ad; --l-f:#3fa39f; --l-g:#e08d74; --l-h:#9b86d6;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--sans);
+  -webkit-text-size-adjust:100%}
+code,.mono{font-family:var(--mono)}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
+  border-bottom:1px solid var(--line)}
+.hwrap{padding:9px 16px 0}
+.htop{display:flex;align-items:baseline;gap:9px}
+h1{margin:0;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pk{font:500 11px var(--mono);color:var(--ink-3)}
+.grow{flex:1 1 auto;min-width:0}
+.count{font:600 12px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.bar{height:3px;background:var(--surface-2);margin-top:8px;border-radius:2px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.tools{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;scrollbar-width:none}
+.tools::-webkit-scrollbar{display:none}
+nav{display:flex;gap:6px;overflow-x:auto;padding:0 16px 9px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:7px;border:1px solid var(--line);
+  background:none;color:var(--ink-2);border-radius:999px;padding:7px 12px;font:500 13px var(--sans);
+  cursor:pointer;min-height:36px}
+.chip:hover{border-color:var(--line-2)}
+.chip.on{background:var(--surface-2);border-color:var(--line-2);color:var(--ink);font-weight:600}
+.chip .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.chip .n{font:500 11px var(--mono);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.chip.full .n{color:var(--ok)}
+button{font-family:var(--sans)}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;
+  padding:8px 12px;font:500 13px var(--sans);cursor:pointer;min-height:38px;flex:0 0 auto}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+
+/* body */
+main{padding:0 16px 120px;max-width:760px;margin:0 auto}
+.shead{padding:20px 0 14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.eyebrow{font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.stitle{font-size:21px;font-weight:650;margin:5px 0 0;line-height:1.25;text-wrap:balance}
+.snote{margin:7px 0 0;font-size:13.5px;color:var(--ink-2)}
+
+.q{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line);
+  border-radius:var(--r);padding:14px;margin-bottom:12px}
+.q.done{border-left-color:var(--ok)}
+.q.unsure{border-left-color:var(--flag)}
+.qhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.qid{font:600 11px var(--mono);color:var(--ink-3);letter-spacing:.06em}
+.pill{font:600 9.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  border-radius:4px;padding:2px 6px;border:1px solid}
+.pill.key{color:var(--warn);border-color:var(--warn);background:transparent}
+.pill.multi{color:var(--ink-3);border-color:var(--line-2)}
+.qt{font-size:15.5px;font-weight:600;margin:0 0 3px;line-height:1.4;text-wrap:balance}
+.why{margin:0 0 11px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;
+  padding:11px 12px;cursor:pointer;min-height:44px}
+.opt:hover{border-color:var(--line-2)}
+.opt.sel{background:var(--ok-bg);border-color:var(--ok)}
+.opt.sel.flagv{background:var(--flag-bg);border-color:var(--flag)}
+.opt .k{font:600 11px var(--mono);color:var(--ink-3);min-width:15px;padding-top:2px;flex:0 0 auto}
+.opt.sel .k{color:var(--ok)}
+.opt.sel.flagv .k{color:var(--flag)}
+.opt .lab{display:block;font-size:14.5px;font-weight:550;line-height:1.35}
+.opt .des{display:block;font-size:13px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+.rec{display:inline-block;font:600 9.5px var(--mono);letter-spacing:.09em;color:var(--flag);
+  background:var(--flag-bg);border-radius:4px;padding:2px 5px;margin-left:6px;vertical-align:1.5px}
+.notebtn{margin-top:8px;border:1px dashed var(--line-2);background:none;color:var(--ink-3);
+  border-radius:8px;padding:7px 11px;font:500 12.5px var(--sans);cursor:pointer;min-height:36px}
+.notebtn:hover{color:var(--ink-2);border-color:var(--ink-3)}
+textarea.note{width:100%;margin-top:8px;font:400 14px/1.5 var(--sans);padding:10px;
+  border:1px solid var(--line-2);border-radius:8px;background:var(--bg);color:var(--ink);
+  resize:vertical;min-height:60px}
+.navfoot{display:flex;gap:8px;margin-top:20px}
+.empty{padding:44px 4px;text-align:center;color:var(--ink-2);font-size:14px}
+
+/* bottom bar */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);
+  border-top:1px solid var(--line);
+  padding:9px 16px calc(9px + env(safe-area-inset-bottom,0px));
+  display:flex;gap:8px;align-items:center}
+.dock .lbl{font:500 12px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* sheet */
+dialog{border:none;padding:0;background:transparent;max-width:100%;width:100%;margin:0 auto auto;
+  position:fixed;inset:0;display:none}
+dialog[open]{display:flex;align-items:flex-end;justify-content:center}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:14px 14px 0 0;
+  width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.sh{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.sh b{font-size:15px}
+.sc{padding:13px 16px;overflow:auto;min-height:0}
+.sc p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
+textarea.io{width:100%;min-height:220px;font:400 12px/1.6 var(--mono);padding:11px;
+  border:1px solid var(--line-2);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.sf{padding:11px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(74px + env(safe-area-inset-bottom,0px));
+  z-index:40;background:var(--ink);color:var(--bg);padding:9px 15px;border-radius:999px;
+  font:500 13px var(--sans);box-shadow:0 4px 18px rgba(0,0,0,.25)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (min-width:860px){
+  main{max-width:none;display:grid;grid-template-columns:210px minmax(0,1fr);gap:28px;
+    padding:0 24px 120px}
+  nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);flex-direction:column;
+    overflow:visible;padding:20px 0 0;align-self:start}
+  .chip{width:100%;border-radius:8px;justify-content:flex-start}
+  .chip .n{margin-left:auto}
+  nav{grid-column:1;grid-row:1}
+  #body{grid-column:2;grid-row:1}
+}
+</style>
+
+<header>
+  <div class="hwrap">
+    <div class="htop">
+      <h1>BRIDGE Tuner</h1>
+      <span class="pk" id="pk"></span>
+      <span class="grow"></span>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="tools">
+    <select class="btn" id="packSel" aria-label="Question pack"></select>
+    <button class="btn" id="bKey">Key only</button>
+    <button class="btn" id="bOpen">Unanswered</button>
+    <button class="btn" id="bPaste">Load pack</button>
+    <button class="btn" id="bResume">Resume</button>
+    <button class="btn" id="bTheme" aria-label="Toggle theme">◐</button>
+  </div>
+  <nav id="nav"></nav>
+</header>
+
+<main>
+  <nav id="navWide" hidden></nav>
+  <section id="body"></section>
+</main>
+
+<div class="dock">
+  <span class="lbl" id="dockLbl"></span>
+  <span class="grow"></span>
+  <button class="btn pri" id="bExport">Export answers</button>
+</div>
+
+<dialog id="dlg">
+  <div class="sheet">
+    <div class="sh"><b id="shT"></b><span class="grow"></span><button class="btn" id="shX">Close</button></div>
+    <div class="sc"><p id="shP"></p><textarea class="io" id="shTA" spellcheck="false"></textarea></div>
+    <div class="sf" id="shF"></div>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ============================ QUESTION PACKS ============================ */
+const PACK_DESIGN = {
+pack:"BRIDGE-Q-002", title:"BRIDGE Design Fine-Tuning", rev:"r2", date:"2026-10-03",
+sections:[
+{id:"A",title:"General",note:"How the document set behaves, and who builds it.",questions:[
+ {id:"A01",q:"Numbering for the new chapters?",why:"Seven standards exist as BRIDGE-STD-00N. Worth settling before there are fifteen.",rec:"A",opts:[
+  {k:"A",t:"Keep BRIDGE-STD-00N",d:"Standards as their own series beside ARCH-00N."},
+  {k:"B",t:"BRIDGE-REF-<chapter>",d:"Number them as Reference chapters, 1-15 per the reading order."},
+  {k:"C",t:"Appendices to ARCH-002",d:"One document, everything folded in."}]},
+ {id:"A02",q:"How should the Reference be assembled?",rec:"B",opts:[
+  {k:"A",t:"One large file",d:"Everything in a single document."},
+  {k:"B",t:"One file per chapter plus an index",d:"What exists now. Revise a chapter without touching the rest."},
+  {k:"C",t:"Chapters plus a generated combined file",d:"Author per chapter, build one document for reading or printing."}]},
+ {id:"A03",q:"Hungarian language policy?",why:"ARCH-002 is Hungarian; the seven standards are English.",rec:"B",opts:[
+  {k:"A",t:"Full parallel translation",d:"Every chapter in both. Doubles maintenance forever."},
+  {k:"B",t:"English plus a Hungarian glossary",d:"One glossary of every BRIDGE term, so you can talk to trades."},
+  {k:"C",t:"English only"}]},
+ {id:"A04",q:"Revision scheme?",rec:"A",opts:[
+  {k:"A",t:"r1, r2, r3",d:"What the corpus already uses."},
+  {k:"B",t:"Semantic, 1.0.0",d:"Says whether a change breaks anything."},
+  {k:"C",t:"Date-stamped"}]},
+ {id:"A05",q:"The ten-layer drawing colour code?",why:"ARCH-002 fixes ten colours. Amber and yellow, and the two teals, sit close together.",rec:"C",opts:[
+  {k:"A",t:"Keep exactly as drawn"},
+  {k:"B",t:"Re-derive for colour-blind safety",d:"Maximally separable, but breaks existing drawings."},
+  {k:"C",t:"Keep, and add hatch patterns",d:"Colour stays; every layer also gets a line style, so a mono print still reads."}]},
+ {id:"A06",q:"Label hardware for conduits and boxes?",why:"The SELV standard requires durable machine-printed labels and does not say which.",rec:"A",opts:[
+  {k:"A",t:"Thermal transfer (Rhino / Brady class)",d:"Survives plaster dust and years."},
+  {k:"B",t:"Laser print in a clear sleeve",d:"Cheap and legible, weaker at cut ends."},
+  {k:"C",t:"Engraved tags",d:"Permanent, slow, expensive. Right for the cabinet only."}]},
+ {id:"A07",q:"Where do as-builts live?",why:"STD-001 requires photographing every run before it closes. Those photos need a home keyed to the room.",rec:"B",opts:[
+  {k:"A",t:"Photos plus a spreadsheet",d:"Works today, no build effort."},
+  {k:"B",t:"Into the Planner app",d:"Rooms and devices are already modelled there."},
+  {k:"C",t:"A PDF drawing set",d:"Good for handover, poor for ongoing edits."}]},
+ {id:"A08",q:"Who installs what?",why:"A document for an electrician reads differently from one for you.",p:1,rec:"B",opts:[
+  {k:"A",t:"You throughout, including mains"},
+  {k:"B",t:"Electrician for MAINS, you for SELV and data",d:"The split the SELV standard implicitly assumes."},
+  {k:"C",t:"Electrician throughout, your design",d:"You specify, they build. Highest documentation burden."}]}
+]},
+{id:"B",title:"STD-001 Physical",note:"Dimensions, zones, conduit, sequence. Confirm or correct the numbers I chose.",questions:[
+ {id:"B01",q:"RB-S at 90 mm internal depth cannot take full-depth DIN gear.",p:1,rec:"B",opts:[
+  {k:"A",t:"Accept the restriction",d:"RB-S stays shallow: terminals, compact PSU, sub-controller, four compact relays."},
+  {k:"B",t:"Raise every class to 110 mm minimum",d:"One depth rule, any gear fits anywhere. Slightly deeper chase."},
+  {k:"C",t:"Drop RB-S entirely",d:"RB-M is the smallest box in the house. Simplest schedule, more volume in small rooms."}]},
+ {id:"B02",q:"Vertical row pitch of 125 mm?",rec:"A",opts:[
+  {k:"A",t:"125 mm",d:"Consumer-unit standard: 45 mm device plus 80 mm wiring."},
+  {k:"B",t:"150 mm",d:"Easier wiring and bend radius, fewer rows."},
+  {k:"C",t:"100 mm",d:"More rows, tight for anything but terminals."}]},
+ {id:"B03",q:"Horizontal module, 18 mm or true DIN 17.5 mm?",rec:"A",opts:[
+  {k:"A",t:"18 mm",d:"Matches how BRIDGE-DN is already drawn."},
+  {k:"B",t:"17.5 mm",d:"True DIN; matches device datasheets exactly."}]},
+ {id:"B04",q:"Zone order, sensors low and mains high?",why:"Air flows bottom to top, so heat sources belong high. Mains entry from below is the conventional habit.",rec:"A",opts:[
+  {k:"A",t:"Sensors low, mains high",d:"Thermally and electromagnetically correct."},
+  {k:"B",t:"Mains at the bottom",d:"Familiar to any electrician. PSU heat then rises through every zone."}]},
+ {id:"B05",q:"Where does the Z4 RF column go?",rec:"A",opts:[
+  {k:"A",t:"Side column, hinge-opposite",d:"Full height behind an RF window, isolated from Z1."},
+  {k:"B",t:"Top strip",d:"Highest for antennas, worst for EMI next to mains."},
+  {k:"C",t:"A separate satellite box",d:"Best RF, one more enclosure per room."}]},
+ {id:"B06",q:"IR emitter position?",why:"IR is the only thing in the box with a hard line-of-sight need, and it sets where the window goes.",rec:"C",opts:[
+  {k:"A",t:"In the RF window",d:"No extra endpoint, limited to whatever the box faces."},
+  {k:"B",t:"Separate ceiling emitter on an ARM",d:"Proper coverage, one more conduit."},
+  {k:"C",t:"Both",d:"Window as standard, ceiling where a TV or split unit needs it."}]},
+ {id:"B07",q:"Day-one zone fill cap?",rec:"A",opts:[
+  {k:"A",t:"60 percent"},{k:"B",t:"50 percent",d:"More growth, pushes classes up a size."},{k:"C",t:"No cap"}]},
+ {id:"B08",q:"C4 spare conduit size?",rec:"B",opts:[
+  {k:"A",t:"M25",d:"Takes coax, fibre, audio."},
+  {k:"B",t:"M32",d:"Takes a future multi-core bundle. Small cost now, large option later."},
+  {k:"C",t:"Two spares, M25 and M20",d:"Two independent futures instead of one big one."}]},
+ {id:"B09",q:"A dedicated fibre conduit to each RoomBox now?",rec:"B",opts:[
+  {k:"A",t:"Yes, add M20",d:"A sixth conduit in the bundle."},
+  {k:"B",t:"No, C4 covers it",d:"Fibre pulls into the spare when wanted."},
+  {k:"C",t:"To RB-L and RB-H only",d:"Where 10 GbE might land."}]},
+ {id:"B10",q:"If KNX is not taken, what happens to the C5 position?",rec:"A",opts:[
+  {k:"A",t:"Reserve the position, install nothing",d:"Bundle order never shifts; a later KNX run has a slot."},
+  {k:"B",t:"Install the conduit empty",d:"Cheapest time is now."},
+  {k:"C",t:"Omit entirely",d:"Four conduits, KNX off the table for good."}]},
+ {id:"B11",q:"Corridor side convention, MAINS against the CHANNEL bundle?",rec:"A",opts:[
+  {k:"A",t:"Fixed, always the same hand",d:"Decide once, document it, never think again."},
+  {k:"B",t:"Per corridor on site"},
+  {k:"C",t:"MAINS away from wet walls",d:"Rule follows the plumbing."}]},
+ {id:"B12",q:"RoomBox mounting height?",p:1,rec:"A",opts:[
+  {k:"A",t:"Bottom edge at or above 1.90 m",d:"Out of sight, above furniture, above most hazards."},
+  {k:"B",t:"About 1.60 m",d:"Far easier to work in. Visible, and within a child's reach."},
+  {k:"C",t:"About 2.10 m",d:"Invisible; needs a step for every service visit."}]},
+ {id:"B13",q:"RoomBox door construction?",rec:"B",opts:[
+  {k:"A",t:"Hinged steel",d:"Robust, shields EMI, needs an RF window cut."},
+  {k:"B",t:"Hinged paintable polymer",d:"RF-transparent, vanishes into the wall, vents easily."},
+  {k:"C",t:"Removable screw-fixed cover",d:"Most discreet, slowest to open."}]},
+ {id:"B14",q:"Cover finish and visibility?",rec:"A",opts:[
+  {k:"A",t:"Flush paintable, invisible",d:"Reads as wall. Needs documentation to ever find again."},
+  {k:"B",t:"Visible service panel",d:"Honest, findable, reads as technical."},
+  {k:"C",t:"Behind joinery",d:"Best looking, worst access."}]},
+ {id:"B15",q:"Cable entry method?",rec:"A",opts:[
+  {k:"A",t:"Knockouts and glands",d:"Standard, sealed, defined positions."},
+  {k:"B",t:"Brush strip",d:"Fast and flexible, no sealing."},
+  {k:"C",t:"Pre-fitted glands",d:"Count and size fixed at manufacture."}]},
+ {id:"B16",q:"ZT service loop length?",rec:"A",opts:[
+  {k:"A",t:"300 mm",d:"Enough to re-terminate once."},
+  {k:"B",t:"500 mm",d:"Enough to re-terminate repeatedly or move a rail."},
+  {k:"C",t:"Cut to length",d:"Tidiest, no second chances."}]},
+ {id:"B17",q:"Fans in a RoomBox?",rec:"A",opts:[
+  {k:"A",t:"Never, natural convection only",d:"No noise, no moving part to fail inside a wall."},
+  {k:"B",t:"RB-H only",d:"The one box that may carry a real heat load."},
+  {k:"C",t:"Temperature-triggered anywhere",d:"Runs rarely, still a bearing in a cavity."}]},
+ {id:"B18",q:"Outdoor RB-O ingress strategy?",rec:"C",opts:[
+  {k:"A",t:"IP65 fully sealed",d:"Loses 20 percent of the thermal budget."},
+  {k:"B",t:"IP55 vented",d:"Better thermals, more ingress risk."},
+  {k:"C",t:"IP65 plus a breather membrane",d:"Sealed to water, vents vapour. Stops condensation without losing the rating."}]},
+ {id:"B19",q:"Edge RoomBox naming?",rec:"A",opts:[
+  {k:"A",t:"RB-E with /W /G /T suffixes",d:"One class, three documented variants."},
+  {k:"B",t:"Separate classes RB-W, RB-G, RB-T",d:"Flatter; five classes become seven."},
+  {k:"C",t:"Just RB-E",d:"Variant recorded in the room schedule."}]},
+ {id:"B20",q:"Where does PANEL LINK live, given BRIDGE-DN V2 fills all 48 modules?",why:"This is contradiction C3. Three real answers.",p:1,rec:"A",opts:[
+  {k:"A",t:"RB-E/T beside the cabinet",d:"A technical Edge RoomBox hosts the metering gallery."},
+  {k:"B",t:"A second small cabinet",d:"Dedicated enclosure, DIN rail, conventional."},
+  {k:"C",t:"A measuring gallery above the existing unit",d:"ARCH-002 variant B, built as drawn."}]},
+ {id:"B21",q:"ARM identifier scheme?",why:"I recommended layer-in-name last round and that was wrong: a door-frame ARM carries SENSOR and LV, a switch ARM carries MAINS and CONTROL. Multi-layer ARMs have no single layer to name. STD-004 is written flat.",p:1,rec:"A",opts:[
+  {k:"A",t:"R03.A2, flat",d:"Layers recorded as an attribute. Correct for multi-layer ARMs."},
+  {k:"B",t:"R03.LV.2, layer in the name",d:"Self-documenting, and breaks on any ARM carrying two layers."},
+  {k:"C",t:"R03.N2, position-coded",d:"Finds things physically, unstable if anything moves."}]},
+ {id:"B22",q:"Endpoint identifier scheme?",p:1,rec:"B",opts:[
+  {k:"A",t:"Sequential, E07",d:"Shortest, says nothing."},
+  {k:"B",t:"Typed, two letters: LU2, SO4, SW1",d:"Readable at a glance. Single letters collide (S is socket, sensor, speaker, switch, shutter)."},
+  {k:"C",t:"Position-coded",d:"Most informative, least stable."}]},
+ {id:"B23",q:"The thirteen-step per-room buildup order?",rec:"A",opts:[
+  {k:"A",t:"Confirm as drafted",d:"Dependency-ordered; no step needs a later one."},
+  {k:"B",t:"Move Security earlier",d:"Third-party conduit in with first fix so nothing is forgotten."},
+  {k:"C",t:"Move RF before Sensor"}]},
+ {id:"B24",q:"How many universal endpoint positions per room?",why:"The cheapest future-proofing in the design, and the easiest to under-provide.",rec:"B",opts:[
+  {k:"A",t:"As drafted, one to three by class"},
+  {k:"B",t:"Two minimum everywhere, four in RB-L",d:"The cost is a flush box and a conduit."},
+  {k:"C",t:"Only where genuinely undecided",d:"Leanest; relies on the schedule being right first time."}]},
+ {id:"B25",q:"Pull box interval?",rec:"A",opts:[
+  {k:"A",t:"15 m"},{k:"B",t:"10 m",d:"Easier pulls, more boxes to hide and document."},{k:"C",t:"Judgement per run"}]},
+ {id:"B26",q:"Conduit cover in screed?",rec:"A",opts:[
+  {k:"A",t:"25 mm"},{k:"B",t:"30 mm",d:"Safer against screws and drills, needs the floor buildup to allow it."},{k:"C",t:"Per floor buildup"}]},
+ {id:"B27",q:"Minimum bend radius?",rec:"A",opts:[
+  {k:"A",t:"8x cable OD",d:"Cat6A is about 65-75 mm. The cable standard's own figure."},
+  {k:"B",t:"10x OD",d:"Headroom for stiffer future cable, larger sweeps."}]},
+ {id:"B28",q:"Where does the conduit and cable schedule live?",rec:"B",opts:[
+  {k:"A",t:"Spreadsheet"},{k:"B",t:"The Planner app",d:"Rooms, devices and paths already modelled."},
+  {k:"C",t:"In the Reference itself",d:"Goes stale fastest."}]}
+]},
+{id:"C",title:"STD-002 Light",note:"Photometry, the 24 V rail, scenes, and which integrated lighting is actually in scope.",questions:[
+ {id:"C01",q:"Dimming curve?",rec:"A",opts:[
+  {k:"A",t:"s cubed, CIE L* perceptual",d:"Perceptually linear slider; needs a per-fixture correction against DALI."},
+  {k:"B",t:"Gamma 2.2",d:"Close enough, familiar from displays."},
+  {k:"C",t:"DALI log everywhere",d:"One curve across all gear; non-DALI channels emulate it."}]},
+ {id:"C02",q:"Minimum level for egress and night light?",rec:"A",opts:[
+  {k:"A",t:"2 percent or below",d:"Drives driver selection."},
+  {k:"B",t:"1 percent or below",d:"Genuinely dark-adapted. Narrows driver choice sharply."},
+  {k:"C",t:"5 percent is fine",d:"Widest choice; will feel bright at 3 a.m."}]},
+ {id:"C03",q:"PWM frequency?",rec:"A",opts:[
+  {k:"A",t:"3 kHz floor, 10-20 kHz target",d:"Clear of IEEE 1789 entirely."},
+  {k:"B",t:"20 kHz everywhere",d:"Camera-safe by default, more EMI care on long runs."},
+  {k:"C",t:"1 kHz is fine",d:"Only if nothing is ever filmed."}]},
+ {id:"C04",q:"PWM or CCR as the default dimming method?",p:1,rec:"A",opts:[
+  {k:"A",t:"PWM default, CCR in filmed rooms",d:"Cost-effective and colour-stable, with CCR where it matters."},
+  {k:"B",t:"CCR everywhere",d:"Flicker-free by construction. Dearer, slight warm shift at low level."},
+  {k:"C",t:"PWM everywhere",d:"Cheapest. Accept banding on camera."}]},
+ {id:"C05",q:"Which rooms count as filmed spaces?",multi:true,opts:[
+  {k:"A",t:"Studio or workshop"},{k:"B",t:"Media room"},{k:"C",t:"Living"},{k:"D",t:"Kitchen"},
+  {k:"E",t:"None, I do not film indoors"}]},
+ {id:"C06",q:"Colour fidelity target in primary living space?",rec:"A",opts:[
+  {k:"A",t:"Ra 90 or better, R9 50 or better",d:"Task areas stricter at 95 and 90."},
+  {k:"B",t:"Ra 95, R9 90 everywhere",d:"Uniformly excellent. Costs more, no bad fixtures."},
+  {k:"C",t:"Ra 80 acceptable",d:"Widest product range, visibly duller reds."}]},
+ {id:"C07",q:"Duv tolerance window?",why:"The eye forgives a white slightly below the locus and never forgives green.",rec:"A",opts:[
+  {k:"A",t:"Minus 0.004 to plus 0.002, asymmetric",d:"Pink forgiven, green rejected. Tighter than the standard."},
+  {k:"B",t:"Symmetric, plus or minus 0.003",d:"Simpler to state, lets some green through."},
+  {k:"C",t:"ANSI C78.377, plus or minus 0.006",d:"Accept anything compliant. Some product will look green."}]},
+ {id:"C08",q:"Default tunable-white channel pair?",why:"A 2700+6500 pair lands about Duv -0.009 at mid-mix, outside C78.377, and reads visibly pink. This is the commonest tunable-white error.",p:1,rec:"A",opts:[
+  {k:"A",t:"2700 K plus 4000 K",d:"Mid-mix about -0.003, inside tolerance, covers the useful range."},
+  {k:"B",t:"2700 K plus 3000 K",d:"Near-perfect locus tracking, very little range."},
+  {k:"C",t:"2700 K plus 6500 K",d:"Full range, visibly pink at mid-mix."}]},
+ {id:"C09",q:"Which rooms are tunable white at all?",why:"Fixed-CCT fixtures are cheaper and simpler. Tunable earns its place where people spend hours.",p:1,multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Bedroom"},{k:"C",t:"Study"},{k:"D",t:"Kitchen"},{k:"E",t:"Bathroom"},
+  {k:"F",t:"All habitable rooms"},{k:"G",t:"None, fixed CCT throughout"}]},
+ {id:"C10",q:"Where is a three-channel locus-tracking fixture justified?",multi:true,opts:[
+  {k:"A",t:"Studio or workshop"},{k:"B",t:"Living"},{k:"C",t:"Bedroom"},{k:"D",t:"Nowhere, two channels everywhere"}]},
+ {id:"C11",q:"Binning tolerance on continuous runs?",rec:"A",opts:[
+  {k:"A",t:"2 SDCM or better",d:"A step is invisible."},
+  {k:"B",t:"3 SDCM",d:"Much wider supply; a faint step may show on a white ceiling."},
+  {k:"C",t:"1 SDCM on critical runs",d:"Cove and under-cabinet held to the tightest bin available."}]},
+ {id:"C12",q:"RGB policy?",rec:"A",opts:[
+  {k:"A",t:"RGBWW, accent only",d:"White always from white LEDs; colour is an accent layer."},
+  {k:"B",t:"No colour at all",d:"Tunable white only. Calmer, cheaper, less to go wrong."},
+  {k:"C",t:"Full RGB wherever wanted",d:"Maximum flexibility, risk of a games-room look."}]},
+ {id:"C13",q:"Which rooms get a colour-capable accent layer?",multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Media room"},{k:"C",t:"Bedroom"},{k:"D",t:"Hall or stair"},
+  {k:"E",t:"Outdoor"},{k:"F",t:"None"}]},
+ {id:"C14",q:"Manual hold-off after someone overrides a scene by hand?",why:"The single biggest source of irritation in an automated house.",rec:"A",opts:[
+  {k:"A",t:"90 minutes"},{k:"B",t:"30 minutes",d:"Automation returns sooner, may feel pushy."},
+  {k:"C",t:"Until the next manual action",d:"Maximum respect, risk of a room stuck in a stale state."},
+  {k:"D",t:"4 hours",d:"Effectively the rest of the evening."}]},
+ {id:"C15",q:"Should the hold-off end early when the room empties?",rec:"A",opts:[
+  {k:"A",t:"Yes, after 10 minutes vacant",d:"A fresh arrival gets automation back."},
+  {k:"B",t:"No, always the full duration",d:"The override survives you leaving."},
+  {k:"C",t:"After 20 minutes vacant"}]},
+ {id:"C16",q:"Assured bus autonomy target?",rec:"A",opts:[
+  {k:"A",t:"2 hours at 15 W",d:"About 30 Wh usable; covers a normal outage."},
+  {k:"B",t:"3 hours",d:"Covers a long outage; larger pack."},
+  {k:"C",t:"1 hour",d:"Enough to find a torch and get down the stairs."}]},
+ {id:"C17",q:"Where does the assured-bus battery live?",why:"The failure matrix in STD-006 found an argument here: with the battery in the RoomBox, one room's circuit failure kills that room's PSU and its egress light at once, in exactly the room where a fault just happened.",p:1,rec:"B",opts:[
+  {k:"A",t:"A pack in each RoomBox",d:"Fully distributed, many packs to maintain, and vulnerable per the note above."},
+  {k:"B",t:"One central pack feeding an assured 24 V bus",d:"One battery to maintain and test; survives a single room's circuit loss."},
+  {k:"C",t:"Both, central pack plus a small local buffer",d:"Most robust, most hardware."}]},
+ {id:"C18",q:"Egress fallback level when the hardwired relay fires?",rec:"A",opts:[
+  {k:"A",t:"5 percent",d:"Clearly visible, dark-adapted eyes cope, long battery life."},
+  {k:"B",t:"10 percent",d:"Confident light for a visitor; halves autonomy."},
+  {k:"C",t:"2 percent",d:"Just enough to navigate, longest runtime."}]},
+ {id:"C19",q:"Egress self-test cadence?",rec:"A",opts:[
+  {k:"A",t:"Monthly, automatic, logged",d:"Capacity trend visible, alerts before failure."},
+  {k:"B",t:"Quarterly"},{k:"C",t:"Manual only"}]},
+ {id:"C20",q:"DALI-2 DT8, where and whether?",p:1,rec:"A",opts:[
+  {k:"A",t:"Above about 20 controlled fixtures",d:"Mains and architectural on DALI, all tape direct from Z2."},
+  {k:"B",t:"From the start, everywhere applicable",d:"One addressable system, failure reporting throughout, higher cost per point."},
+  {k:"C",t:"Never",d:"Relay, PWM and 0-10 V only. Simplest, no addressability."}]},
+ {id:"C21",q:"Circadian ramp by default?",rec:"B",opts:[
+  {k:"A",t:"On everywhere"},{k:"B",t:"Opt-in per room",d:"On in bedroom and living, off in utility spaces."},
+  {k:"C",t:"Off",d:"Scenes only, no background drift."}]},
+ {id:"C22",q:"Bedroom night level?",rec:"A",opts:[
+  {k:"A",t:"1 lux or below at the floor",d:"Navigable without waking anyone."},
+  {k:"B",t:"2 lux"},{k:"C",t:"No night light in bedrooms",d:"Egress on the landing only."}]},
+ {id:"C23",q:"Which linear and architectural lighting types are in the first build?",why:"This narrows the fixture schedule and the conduit count immediately. Continued in C23B.",p:1,multi:true,opts:[
+  {k:"A",t:"Cove uplight"},{k:"B",t:"Perimeter slot or shadow gap"},{k:"C",t:"Under-cabinet"},
+  {k:"D",t:"Plinth or toe-kick"},{k:"E",t:"Skirting or step marker"},{k:"F",t:"Stair tread"},{k:"G",t:"Handrail"}]},
+ {id:"C23B",q:"Which feature and outdoor lighting types are in the first build?",multi:true,opts:[
+  {k:"A",t:"Wardrobe or drawer"},{k:"B",t:"Mirror or vanity"},{k:"C",t:"Shelf or niche"},{k:"D",t:"Art framing"},
+  {k:"E",t:"Headboard reading"},{k:"F",t:"Bathroom niche"},{k:"G",t:"Outdoor facade graze"},{k:"H",t:"Outdoor path or step"}]},
+ {id:"C24",q:"Primary ambient strategy?",rec:"A",opts:[
+  {k:"A",t:"Cove uplight",d:"Indirect, even, flattering. Needs ceiling detail designed in."},
+  {k:"B",t:"Downlights",d:"Conventional and cheap. Hard shadows, drilled ceiling."},
+  {k:"C",t:"Pendants and lamps only",d:"No architectural light. Most flexible, least controllable."}]},
+ {id:"C25",q:"Evening CCT?",rec:"A",opts:[
+  {k:"A",t:"2700 K"},{k:"B",t:"2400 K",d:"Warmer, more candle-like."},{k:"C",t:"2200 K",d:"Very warm; can look dingy on cool walls."}]},
+ {id:"C26",q:"Morning CCT?",rec:"A",opts:[
+  {k:"A",t:"4000 K",d:"Alerting without feeling clinical."},
+  {k:"B",t:"5000 K",d:"Strongest circadian signal, harshest look."},{k:"C",t:"3500 K",d:"Gentler, weaker cue."}]},
+ {id:"C27",q:"Task illuminance table?",rec:"A",opts:[
+  {k:"A",t:"Confirm as drafted",d:"500 lux worktop and desk, 300 lux vertical at the vanity."},
+  {k:"B",t:"Raise kitchen to 750 lux"},{k:"C",t:"Lower throughout",d:"Softer house, more reliance on task lamps."}]},
+ {id:"C28",q:"Scene set per room?",rec:"A",opts:[
+  {k:"A",t:"The ten as drafted",d:"Off, Egress, Night, Morning, Day, Evening, Task, Film, Guest, Clean."},
+  {k:"B",t:"Five core only",d:"Off, Night, Day, Evening, Task."},
+  {k:"C",t:"Per-room custom",d:"Best fit, most work."}]},
+ {id:"C29",q:"Certified emergency luminaires on the stairs, alongside BRIDGE egress?",why:"BRIDGE egress is supplementary by design. Stairs are where the real risk is.",rec:"C",opts:[
+  {k:"A",t:"Yes, certified units on stairs",d:"EN 1838 and EN 60598-2-22 on their own supply."},
+  {k:"B",t:"No, BRIDGE egress is enough"},
+  {k:"C",t:"Check with the electrician first",d:"Settle what OTSZ actually requires here."}]},
+ {id:"C30",q:"What switches mains lamps?",p:1,rec:"A",opts:[
+  {k:"A",t:"Bistable relay per lamp in Z1",d:"The zeta/eta families. Manual-first guaranteed in hardware."},
+  {k:"B",t:"Shelly-class smart relays",d:"What BRIDGE-DN already uses. Fast to build, firmware-dependent fail-safe."},
+  {k:"C",t:"DALI drivers only",d:"Everything addressable and dimmable. Loses the hardware bistable."}]}
+]},
+{id:"D",title:"STD-003 Presence",note:"Portals, fusion, Trinity, audio that follows. The weights are drafts. Correct them.",questions:[
+ {id:"D01",q:"Default portal instrumentation tier?",p:1,rec:"A",opts:[
+  {k:"A",t:"P-2 at every significant doorway",d:"Direction, count and pet discrimination. Two ToF per door."},
+  {k:"B",t:"P-1 default, P-2 selectively",d:"Direction everywhere, counting where it matters. Loses the count constraint."},
+  {k:"C",t:"P-0 plus room sensors",d:"Door contacts only. The graph becomes weak and the veto unreliable."}]},
+ {id:"D02",q:"Which openings get P-3, portal plus mmWave plus thermal?",multi:true,opts:[
+  {k:"A",t:"Entry door"},{k:"B",t:"Hall to living"},{k:"C",t:"Stair head"},{k:"D",t:"None"}]},
+ {id:"D03",q:"ToF module choice?",rec:"C",opts:[
+  {k:"A",t:"VL53L1X single-zone",d:"Cheap, I2C, one range per sensor. Enough for direction and height."},
+  {k:"B",t:"VL53L5CX 8x8",d:"Profile and shape, distinguishes abreast crossings. Dearer."},
+  {k:"C",t:"Mixed: L5CX at entry, L1X elsewhere",d:"Spend resolution where crossings are complex."}]},
+ {id:"D04",q:"ToF pair spacing above the opening?",rec:"A",opts:[
+  {k:"A",t:"200 mm",d:"Good direction resolution at walking pace."},
+  {k:"B",t:"300 mm",d:"Cleaner separation, needs a deeper lintel reveal."},
+  {k:"C",t:"One sensor plus door contact",d:"Cheapest, least reliable."}]},
+ {id:"D05",q:"Is pet discrimination needed?",why:"It drives the ToF choice and a good deal of the fusion tuning.",p:1,opts:[
+  {k:"A",t:"Yes, animals in the house"},{k:"B",t:"No animals"},{k:"C",t:"Possibly later, design for it"}]},
+ {id:"D06",q:"The graph veto: a zone with zero counted occupants overrides a lone sensor?",why:"This is the structural cure for mmWave ghosting that no amount of tuning achieves.",rec:"A",opts:[
+  {k:"A",t:"Confirm the veto"},{k:"B",t:"Sensor always wins",d:"Simpler, ghosting returns."},
+  {k:"C",t:"Graph always wins",d:"A missed crossing then blinds a room until reconciliation."}]},
+ {id:"D07",q:"Sensor-graph disagreement window before the sensor is trusted?",rec:"A",opts:[
+  {k:"A",t:"60 seconds"},{k:"B",t:"30 seconds",d:"Faster correction, more churn."},{k:"C",t:"120 seconds"}]},
+ {id:"D08",q:"Full reconciliation timeout, everything resets to zero?",rec:"A",opts:[
+  {k:"A",t:"15 minutes"},{k:"B",t:"30 minutes"},{k:"C",t:"5 minutes",d:"Risk of zeroing a still occupant."}]},
+ {id:"D09",q:"A portal held open: when do its two zones merge?",rec:"A",opts:[
+  {k:"A",t:"After 5 minutes open"},{k:"B",t:"Never merge",d:"Counts drift when doors live open."},{k:"C",t:"After 2 minutes"}]},
+ {id:"D10",q:"Vacancy grace periods?",rec:"A",opts:[
+  {k:"A",t:"Confirm as drafted",d:"2 minutes hall to 30 minutes bedroom."},
+  {k:"B",t:"All shorter",d:"More responsive, more wrong turn-offs."},
+  {k:"C",t:"All longer",d:"Never caught out, more waste."}]},
+ {id:"D11",q:"mmWave hardware?",p:1,rec:"B",opts:[
+  {k:"A",t:"LD2410 or LD2450 on ESP32",d:"Cheapest, fully open, raw data, most tuning work."},
+  {k:"B",t:"Apollo R PRO-1",d:"PoE, dual radar, native ESPHome, local. Fits the architecture exactly."},
+  {k:"C",t:"Aqara FP2 or FP400",d:"Best zoning and polish; configuration needs the vendor app and cloud."},
+  {k:"D",t:"Everything Presence One",d:"PIR plus mmWave, fully tunable in HA."}]},
+ {id:"D12",q:"Which rooms get mmWave?",multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Bedroom"},{k:"C",t:"Study"},{k:"D",t:"Kitchen"},{k:"E",t:"Bathroom"},
+  {k:"F",t:"Hall or stair"},{k:"G",t:"Every room"}]},
+ {id:"D13",q:"Bed load cell?",why:"It converts the hardest presence case in the house into the easiest.",rec:"A",opts:[
+  {k:"A",t:"Yes"},{k:"B",t:"No"},{k:"C",t:"Later, reserve the conduit"}]},
+ {id:"D14",q:"Thermal array, privacy-safe count and position?",rec:"C",opts:[
+  {k:"A",t:"Yes, living and kitchen"},{k:"B",t:"No"},
+  {k:"C",t:"Bathroom only",d:"Where a camera is unacceptable but fall detection matters."}]},
+ {id:"D15",q:"Camera placement?",rec:"A",opts:[
+  {k:"A",t:"Entry, garage, workshop only",d:"Highest fusion weight, narrowest deployment."},
+  {k:"B",t:"Entry only"},{k:"C",t:"None indoors"},{k:"D",t:"More, specify in the note"}]},
+ {id:"D16",q:"Which rooms get CO2?",why:"The best long-window occupancy evidence in the house.",multi:true,opts:[
+  {k:"A",t:"Bedroom"},{k:"B",t:"Living"},{k:"C",t:"Study"},{k:"D",t:"Kitchen"},{k:"E",t:"Every habitable room"}]},
+ {id:"D17",q:"Acoustic sensing?",rec:"A",opts:[
+  {k:"A",t:"Yes, local classification only",d:"On-device events, no audio ever transmitted."},
+  {k:"B",t:"Level only",d:"Volume threshold, no classification."},
+  {k:"C",t:"No microphones",d:"Rules out voice control and acoustic corroboration."}]},
+ {id:"D18",q:"WiFi CSI?",rec:"B",opts:[
+  {k:"A",t:"Pursue now as an experimental signal",d:"Low fusion weight until validated in situ."},
+  {k:"B",t:"Later",d:"Reserve the idea, build the proven layers first."},{k:"C",t:"Never"}]},
+ {id:"D19",q:"Which rooms get UWB anchors?",why:"Three anchors per room, in the L-pattern corners already specified.",multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Entry hall"},{k:"C",t:"Study"},{k:"D",t:"Bedroom"},{k:"E",t:"None for now"}]},
+ {id:"D20",q:"The fusion weight table?",rec:"A",opts:[
+  {k:"A",t:"Accept as drafted",d:"Tune against real behaviour after commissioning."},
+  {k:"B",t:"I want specific changes",d:"Say which in the note."},
+  {k:"C",t:"Start simpler",d:"Three or four sensors, add weight classes later."}]},
+ {id:"D21",q:"State thresholds, plus 6 / plus 2 / minus 2?",rec:"A",opts:[
+  {k:"A",t:"Confirm"},{k:"B",t:"Tighten",d:"Fewer false positives, more false vacancies."},
+  {k:"C",t:"Loosen",d:"Quicker to respond, more ghosting."}]},
+ {id:"D22",q:"The Trinity objects?",p:1,rec:"A",opts:[
+  {k:"A",t:"Phone, keychain, wallet"},{k:"B",t:"A different three",d:"Name them in the note. Watch, bag, badge?"},
+  {k:"C",t:"Two is enough",d:"Phone and keychain. Weaker claim, less to carry."}]},
+ {id:"D23",q:"Trinity tag technology?",p:1,rec:"A",opts:[
+  {k:"A",t:"BLE beacon tags",d:"Cheap, years of battery, works with ESP32 proxies you already have."},
+  {k:"B",t:"UWB tags",d:"Precise position as well as presence. Dearer, shorter battery life."},
+  {k:"C",t:"NFC, tap only",d:"No passive presence at all. Defeats the point of carrying them."},
+  {k:"D",t:"Mixed",d:"BLE on all three, UWB added to the keychain."}]},
+ {id:"D24",q:"T3 threshold of 18 points, with at least one active factor?",why:"Three of three tags gives 14, deliberately short of 18, so carried tags alone can never unlock a door. A stolen bag contains all three.",rec:"A",opts:[
+  {k:"A",t:"Confirm 18 plus one active factor"},
+  {k:"B",t:"Raise it",d:"Two active factors. More secure, more friction."},
+  {k:"C",t:"Lower it",d:"Convenient, and tags start to approach door-opening authority."}]},
+ {id:"D25",q:"PIN length on the 4x3 matrix?",rec:"B",opts:[
+  {k:"A",t:"4 digits"},{k:"B",t:"6 digits",d:"Meaningfully harder to guess, still quick."},
+  {k:"C",t:"4 digits plus lockout escalation",d:"Short PIN, rising delay after failures."}]},
+ {id:"D26",q:"Behavioural profile retention?",rec:"A",opts:[
+  {k:"A",t:"90 days raw, aggregates kept"},{k:"B",t:"30 days raw",d:"Less to lose, weaker learning."},
+  {k:"C",t:"Do not profile at all",d:"Drop the behavioural factor entirely."}]},
+ {id:"D27",q:"Remote recovery path?",why:"As drafted this makes your own server the root of recovery, and therefore a lockout risk if it is unmonitored.",p:1,rec:"C",opts:[
+  {k:"A",t:"Use an existing server",d:"Name it in the note."},
+  {k:"B",t:"Set one up for this",d:"A new dependency, deliberately provisioned and monitored."},
+  {k:"C",t:"No remote recovery, console only",d:"Recovery needs physical access to COMP. Simplest and safest; you must be at home."}]},
+ {id:"D28",q:"Audio that follows, default behaviour?",rec:"A",opts:[
+  {k:"A",t:"On, excluding bath and quiet-hours bedroom"},{k:"B",t:"Opt-in per room"},
+  {k:"C",t:"Off",d:"Per-room audio only, no handoff."}]},
+ {id:"D29",q:"Quiet hours begin at?",rec:"B",opts:[
+  {k:"A",t:"22:00"},{k:"B",t:"23:00"},{k:"C",t:"Configurable per person",d:"Needs identity at T1 or better."}]},
+ {id:"D30",q:"Speaker layout?",rec:"A",opts:[
+  {k:"A",t:"Confirm the table",d:"Ceiling for follow-me, wall or floor for the living-room front stage."},
+  {k:"B",t:"Ceiling everywhere",d:"Invisible, no real stereo image anywhere."},
+  {k:"C",t:"Wall or floor everywhere",d:"Better imaging, visible speakers in every room."}]}
+]},
+{id:"E",title:"STD-004 Naming and Control",note:"The reference scheme, addressing, and BRIDGE_LINK. New this round.",questions:[
+ {id:"E01",q:"Room number width?",rec:"A",opts:[
+  {k:"A",t:"Two digits, R03",d:"Up to 99 rooms. Short labels."},
+  {k:"B",t:"Three digits, R003",d:"Room-number space never runs out, longer labels everywhere."},
+  {k:"C",t:"Variable, R3",d:"Shortest, sorts badly in any list."}]},
+ {id:"E02",q:"Should the Planner hard-guard against renumbering a room once BRIDGE labels exist in the fabric?",why:"Renumbering invalidates every printed label, photograph and as-built in the house. I think this needs to be impossible, not merely discouraged.",p:1,rec:"A",opts:[
+  {k:"A",t:"Yes, block it in the Planner",d:"A real guard with a deliberate override."},
+  {k:"B",t:"Warn only",d:"Trusts the operator."},
+  {k:"C",t:"No guard",d:"Convention only."}]},
+ {id:"E03",q:"BRIDGE_LINK baud rate?",rec:"A",opts:[
+  {k:"A",t:"38400",d:"About 50 ms per node, 400 ms for eight nodes."},
+  {k:"B",t:"19200",d:"More margin on long or noisy runs, doubles the cycle."},
+  {k:"C",t:"57600",d:"Faster cycle, less tolerance of a marginal run."}]},
+ {id:"E04",q:"Nodes per BRIDGE_LINK channel?",rec:"A",opts:[
+  {k:"A",t:"Eight maximum",d:"400 ms cycle. The design limit."},
+  {k:"B",t:"Four",d:"200 ms, more channels at COMP."},
+  {k:"C",t:"Sixteen",d:"800 ms. Event reporting latency becomes noticeable."}]},
+ {id:"E05",q:"Default autonomy policy when the link drops?",rec:"A",opts:[
+  {k:"A",t:"Hold last commanded state",d:"Least surprising. Nothing changes because a wire broke."},
+  {k:"B",t:"Go to a safe scene",d:"Predictable known state, visibly changes things on a fault."},
+  {k:"C",t:"All off",d:"Unambiguous and unwelcome."}]},
+ {id:"E06",q:"Heartbeat loss before autonomy engages?",rec:"A",opts:[
+  {k:"A",t:"3 seconds"},{k:"B",t:"5 seconds"},{k:"C",t:"10 seconds",d:"Fewer spurious entries, slower to protect."}]},
+ {id:"E07",q:"Event ring depth per node?",why:"The ring is what stops a polled bus losing a 300 ms doorway crossing.",rec:"A",opts:[
+  {k:"A",t:"Eight slots",d:"Five registers each, 40 registers."},
+  {k:"B",t:"Sixteen slots",d:"More headroom at a busy portal, more registers to poll."},
+  {k:"C",t:"Four slots",d:"Leanest, overruns sooner."}]},
+ {id:"E08",q:"Dimmer setpoint resolution on the wire?",rec:"A",opts:[
+  {k:"A",t:"0 to 1000",d:"Perceptual s times 1000. Finer than the eye at the bottom of the range."},
+  {k:"B",t:"0 to 255",d:"One byte, visible steps at very low level."},
+  {k:"C",t:"0 to 65535",d:"Absurd precision, two registers per channel."}]},
+ {id:"E09",q:"Node address allocation?",rec:"A",opts:[
+  {k:"A",t:"Address equals room number",d:"No lookup table exists to fall out of date."},
+  {k:"B",t:"An explicit allocation table",d:"Flexible, and one more document to maintain."}]},
+ {id:"E10",q:"CAN on BRIDGE_LINK pair 2?",rec:"A",opts:[
+  {k:"A",t:"Reserve the pair, install nothing",d:"The upgrade path stays open at no cost."},
+  {k:"B",t:"Wire and terminate it now",d:"Ready to use, more to commission and verify."},
+  {k:"C",t:"Drop it",d:"Use pair 2 for a second RS-485 instead."}]},
+ {id:"E11",q:"Two-letter type codes in references?",why:"Single letters collide: S would have to serve socket, sensor, speaker, switch and shutter.",rec:"A",opts:[
+  {k:"A",t:"Two letters, LU / SO / SW",d:"Unambiguous, slightly longer labels."},
+  {k:"B",t:"Single letters",d:"Shortest, and ambiguous from the first week."},
+  {k:"C",t:"Spelled out",d:"R03.LAMP2. Unmistakable, unwieldy on a label."}]}
+]},
+{id:"F",title:"STD-005 Network and RF",note:"Switch sizing and the spectrum plan. New this round.",questions:[
+ {id:"F01",q:"WiFi 2.4 GHz channel strategy?",why:"Every AP is wired-backhauled and 5 GHz carries real traffic, so confining 2.4 to one channel surrenders capacity nobody needs and frees 2425-2483 MHz entirely for Thread and Zigbee.",p:1,rec:"A",opts:[
+  {k:"A",t:"Channel 1 only, house-wide, 20 MHz",d:"Frees most of the band for 802.15.4."},
+  {k:"B",t:"Spread across 1, 6, 11",d:"Conventional. Leaves 802.15.4 fighting for gaps."},
+  {k:"C",t:"Disable 2.4 GHz entirely",d:"Cleanest spectrum; strands any legacy IoT that cannot do 5 GHz."}]},
+ {id:"F02",q:"Thread on channel 20, Zigbee on channel 25?",why:"Both clear of WiFi channel 1 and of all three BLE advertising channels. Never Zigbee 26, whose centre is 2480 MHz, exactly BLE advertising channel 39.",rec:"A",opts:[
+  {k:"A",t:"Confirm 20 and 25"},{k:"B",t:"A different pair",d:"Say which in the note."}]},
+ {id:"F03",q:"5 GHz channel width?",rec:"A",opts:[
+  {k:"A",t:"40 MHz",d:"The sweet spot with several APs."},
+  {k:"B",t:"80 MHz",d:"Higher peak rate, more co-channel overlap past three APs."},
+  {k:"C",t:"20 MHz",d:"Maximum cell count, lowest per-client rate."}]},
+ {id:"F04",q:"How is the RoomBox switch powered?",why:"RB-L must inject about 63 W downstream for two APs, a panel and a camera. That cannot arrive through one PoE input without 802.3bt at both ends, to power a switch sitting 300 mm from a 150 W supply.",p:1,rec:"A",opts:[
+  {k:"A",t:"Wide-DC-input switch on the 24 V rail",d:"Runs off the rail directly, injects PoE downstream."},
+  {k:"B",t:"A 24 to 48 V boost in Z2",d:"Works with any 48 V switch, one more converter and its heat."},
+  {k:"C",t:"Keep it PoE-powered and cut the downstream load",d:"Fewer APs and no camera per room."}]},
+ {id:"F05",q:"How many Thread border routers?",why:"More border routers add redundancy and also add mDNS and SRP chatter.",rec:"B",opts:[
+  {k:"A",t:"Two at BASE only",d:"Minimal chatter, both in one place."},
+  {k:"B",t:"BASE plus selected rooms",d:"Redundancy spread across the house without flooding it."},
+  {k:"C",t:"Every RoomBox pair as a border router",d:"Maximum redundancy, maximum chatter."}]},
+ {id:"F06",q:"Zigbee coordinator location?",rec:"C",opts:[
+  {k:"A",t:"At NET",d:"Per ARCH-002, with the other protocol masters."},
+  {k:"B",t:"In the consumer unit",d:"Per BRIDGE-DN as built, behind the RF-transparent door."},
+  {k:"C",t:"Whichever the C2 variant dictates",d:"Centralised houses in the cabinet, distributed houses at NET."}]},
+ {id:"F07",q:"The VLAN set?",rec:"A",opts:[
+  {k:"A",t:"All six",d:"Trusted, IoT and Audio, Cameras, Guest, Security, Management."},
+  {k:"B",t:"Drop Guest",d:"One fewer segment if visitors use the main network."},
+  {k:"C",t:"Drop Management",d:"Simpler, and switch management then shares a segment with traffic."}]},
+ {id:"F08",q:"IP addressing scheme?",rec:"A",opts:[
+  {k:"A",t:"10.33.vlan.0/24",d:"Project code in the second octet, so two BRIDGE houses never collide on a VPN."},
+  {k:"B",t:"192.168.vlan.0/24",d:"Familiar, collides with everything."},
+  {k:"C",t:"Keep an existing scheme",d:"Describe it in the note."}]},
+ {id:"F09",q:"Which sub-GHz bands are actually used?",why:"868 MHz carries a 1 percent duty cycle: 36 seconds per hour per device. Nothing time-critical can live there.",rec:"A",opts:[
+  {k:"A",t:"Both 433 and 868"},{k:"B",t:"868 only",d:"LoRa and Meshtastic at BASE."},
+  {k:"C",t:"433 only",d:"Legacy remotes and shutters."},{k:"D",t:"Neither"}]},
+ {id:"F10",q:"NET switch PoE budget?",rec:"A",opts:[
+  {k:"A",t:"90 W or more",d:"Enough once room switches run on local DC."},
+  {k:"B",t:"180 W or more",d:"Headroom for a change of mind about the power path."},
+  {k:"C",t:"Minimal",d:"PoE only for the sub-controller backup path."}]}
+]},
+{id:"G",title:"STD-006 Behaviour and Security",note:"Precedence, failure, and the third-party alarm boundary. New this round.",questions:[
+ {id:"G01",q:"The eight-tier precedence ladder?",rec:"A",opts:[
+  {k:"A",t:"Confirm as drafted",d:"Hardware interlock, safety, manual, remote, scene, presence, schedule, optimisation."},
+  {k:"B",t:"Simplify to five tiers",d:"Easier to reason about, less expressive."},
+  {k:"C",t:"Reorder",d:"Say how in the note."}]},
+ {id:"G02",q:"Climate hold-off after a manual adjustment?",why:"Thermal response is slow, and having a schedule undo a deliberate change within the hour is the most irritating behaviour an automated house has.",rec:"A",opts:[
+  {k:"A",t:"4 hours"},{k:"B",t:"2 hours"},{k:"C",t:"Until the next manual action"}]},
+ {id:"G03",q:"Shutter hold-off?",rec:"A",opts:[
+  {k:"A",t:"Until the next sunrise or sunset event",d:"No passing cloud closes a blind you opened."},
+  {k:"B",t:"8 hours fixed"},{k:"C",t:"None",d:"Automation resumes immediately."}]},
+ {id:"G04",q:"Two people, one room, irreconcilable preferences?",why:"A house that silently picks a winner between two occupants will be resented by one of them.",rec:"A",opts:[
+  {k:"A",t:"Hold current state and surface the conflict",d:"The system does not choose."},
+  {k:"B",t:"Last action wins",d:"Simple, and becomes a thermostat war."},
+  {k:"C",t:"Owner priority",d:"One person outranks the other by configuration."}]},
+ {id:"G05",q:"Provenance retention, the record of why something changed?",rec:"A",opts:[
+  {k:"A",t:"30 days"},{k:"B",t:"7 days",d:"Enough for yesterday, not for a pattern."},
+  {k:"C",t:"90 days",d:"Matches the behavioural store, different purpose."}]},
+ {id:"G06",q:"Where does the arbiter live?",why:"A tier model this specific is awkward to express in Home Assistant automations alone. Worth settling before much automation is written.",p:1,rec:"B",opts:[
+  {k:"A",t:"Inside Home Assistant",d:"No new component. Precedence expressed in automation conditions, which gets fragile fast."},
+  {k:"B",t:"Its own small service, HA as a client",d:"Precedence in one place, testable. One more thing to run."},
+  {k:"C",t:"Decide after a trial",d:"Build a few rooms in HA and see where it breaks."}]},
+ {id:"G07",q:"EN 50131 grade target?",rec:"C",opts:[
+  {k:"A",t:"Grade 2",d:"Typical domestic."},{k:"B",t:"Grade 3",d:"Higher risk or an insurer requirement."},
+  {k:"C",t:"Ask the insurer first",d:"The answer changes the conduit and the SSC envelope."}]},
+ {id:"G08",q:"Arm and disarm from a BRIDGE panel?",rec:"C",opts:[
+  {k:"A",t:"Yes, at T3 identity",d:"Convenient. BRIDGE requests, the panel decides."},
+  {k:"B",t:"No, provider keypad only",d:"Cleanest boundary."},
+  {k:"C",t:"Whatever the provider allows",d:"Settle it with them."}]},
+ {id:"G09",q:"Can your provider supply an alarm type, intrusion against life-safety?",why:"The door policy inverts between them. Intrusion must keep exterior doors locked; fire must not keep people in. Without the type, BRIDGE takes the intrusion behaviour and never unlocks.",p:1,opts:[
+  {k:"A",t:"Yes"},{k:"B",t:"No"},{k:"C",t:"Do not know yet"},{k:"D",t:"No provider planned"}]},
+ {id:"G10",q:"How does a safety override announce itself?",why:"Someone fighting a light that will not turn off is someone not evacuating.",rec:"A",opts:[
+  {k:"A",t:"Nearest panel plus the log"},{k:"B",t:"Panel, log and an audible chime"},
+  {k:"C",t:"Log only",d:"Silent. The user cannot tell why the house is behaving oddly."}]},
+ {id:"G11",q:"Walk the whole failure matrix at commissioning, or sample it?",why:"Every row of that matrix is reasoned, not tested. It becomes a real claim only once walked on hardware.",rec:"A",opts:[
+  {k:"A",t:"Walk all of it"},{k:"B",t:"Sample the high-risk rows"},{k:"C",t:"Trust the design"}]}
+]},
+{id:"H",title:"STD-007 Media and Audio",note:"Two audio paths, amplification, video transport. New this round.",questions:[
+ {id:"H01",q:"MEDIA pack, basic or full?",p:1,rec:"B",opts:[
+  {k:"A",t:"Basic",d:"0.5 to 1 TB SSD, shares and backup, direct play only, no transcoding."},
+  {k:"B",t:"Full",d:"Low-power x86 with a hardware video engine, library bays, separate NVR storage, Snapcast server, 4K transcode."}]},
+ {id:"H02",q:"Two audio paths, distributed and local?",why:"Snapcast buffers 800 ms. That is invisible for music and about twenty times the lip-sync threshold for a picture, and shrinking it below 200 ms destroys the sync robustness that justified Snapcast at all.",rec:"A",opts:[
+  {k:"A",t:"Confirm the split",d:"Music on Snapcast, anything with a picture direct to the local amp."},
+  {k:"B",t:"One path, accept the lag",d:"Simpler, and television becomes unwatchable."},
+  {k:"C",t:"No distributed audio",d:"Per-room sources only. Drops follow-me entirely."}]},
+ {id:"H03",q:"Speaker impedance?",why:"4 ohms doubles current for the same voltage, halving thermal headroom in a sealed cavity and doubling cable sensitivity.",rec:"A",opts:[
+  {k:"A",t:"8 ohms throughout"},{k:"B",t:"4 ohms",d:"More output nobody needs, harder everywhere else."}]},
+ {id:"H04",q:"Which rooms get the follow-me stereo pair?",multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Kitchen"},{k:"C",t:"Bedroom"},{k:"D",t:"Study"},{k:"E",t:"Bathroom"},
+  {k:"F",t:"Hall"},{k:"G",t:"Every room"}]},
+ {id:"H05",q:"Multichannel audio?",rec:"A",opts:[
+  {k:"A",t:"5.1 in the living room",d:"Separate AV position, not the RoomBox."},
+  {k:"B",t:"5.1.2 with height channels"},{k:"C",t:"Stereo only",d:"No multichannel anywhere."},{k:"D",t:"None"}]},
+ {id:"H06",q:"Where does the AV position physically live?",why:"A 5.1 amplifier bay dissipates about 30 W at peak and does not fit a RoomBox thermal budget. It needs its own ventilation, a 230 V circuit and an HDMI path.",rec:"A",opts:[
+  {k:"A",t:"Joinery void at the media wall",d:"Close to the screen, needs ventilation designed in."},
+  {k:"B",t:"A dedicated enclosure",d:"Properly ventilated, visible or needs a cupboard."},
+  {k:"C",t:"An equipment rack elsewhere",d:"Best thermally, longest HDMI run."}]},
+ {id:"H07",q:"TV audio return?",rec:"A",opts:[
+  {k:"A",t:"Run both, terminate per room",d:"TOSLINK for the distributed pair, eARC at the AV position. Costs almost nothing now."},
+  {k:"B",t:"TOSLINK only",d:"Optically isolated, stereo or compressed 5.1."},
+  {k:"C",t:"eARC only",d:"Lossless multichannel, fails with the HDMI link."}]},
+ {id:"H08",q:"Is there gaming in the house?",why:"Any IP encode and decode adds latency that matters, so this decides the video transport.",p:1,opts:[
+  {k:"A",t:"Yes"},{k:"B",t:"No"},{k:"C",t:"Occasionally, not competitively"}]},
+ {id:"H09",q:"Primary video transport?",rec:"A",opts:[
+  {k:"A",t:"HDMI 2.1 AOC direct",d:"Lowest latency, full bandwidth, one HDCP handshake."},
+  {k:"B",t:"HDMI over IP",d:"Matrix switching, 50 to 200 ms on compressed."},
+  {k:"C",t:"HDBaseT",d:"Carries IR and RS-232 to 100 m."}]},
+ {id:"H10",q:"Where does the Snapcast server run?",why:"On MEDIA it shares fate with transcoding, so the follow-me layer dies when a 4K transcode saturates the box.",rec:"C",opts:[
+  {k:"A",t:"On MEDIA",d:"No extra hardware."},
+  {k:"B",t:"A dedicated node",d:"Isolated from transcoding load."},
+  {k:"C",t:"Test under load first",d:"Measure before committing."}]},
+ {id:"H11",q:"Which rooms need USB data endpoints, not just charging?",why:"Most endpoints only want power, which is a PD module on the 24 V rail with no data path at all.",multi:true,opts:[
+  {k:"A",t:"Study or desk"},{k:"B",t:"Living, media wall"},{k:"C",t:"Workshop"},{k:"D",t:"Bedroom"},
+  {k:"E",t:"None, charging only"}]},
+ {id:"H12",q:"Voice assistant satellites?",rec:"C",opts:[
+  {k:"A",t:"Yes, in main rooms"},{k:"B",t:"No microphones anywhere"},{k:"C",t:"Later",d:"Reserve the ceiling position and the conduit."}]}
+]}
+]};
+
+const PACK_ROOMS = {
+pack:"P33-D1", title:"P33 Room Schedule", rev:"r1", date:"2026-10-05",
+sections:[
+{id:"G",title:"The dwelling",note:"Global facts that collapse a lot of detail downstream.",questions:[
+ {id:"G01",q:"How many floors does the dwelling occupy?",p:1,opts:[
+  {k:"A",t:"One"},{k:"B",t:"Two"},{k:"C",t:"Three or more"},{k:"D",t:"Split level"}]},
+ {id:"G02",q:"Is there occupied space directly above the rooms where RoomBoxes go?",why:"This decides whether a floor-void thermal riser is possible at all — the only pipe that adds real stack height.",p:1,opts:[
+  {k:"A",t:"Yes, throughout"},{k:"B",t:"Yes, over some rooms",d:"Say which in the note."},
+  {k:"C",t:"No, top floor or single storey",d:"Then the cover slots do all the work and no riser is available."}]},
+ {id:"G03",q:"Where is the Elosztószekrény?",p:1,opts:[
+  {k:"A",t:"Near the entrance",d:"The usual case, and what ARCH-002 assumes."},
+  {k:"B",t:"Utility or boiler room"},{k:"C",t:"Garage"},{k:"D",t:"Elsewhere",d:"Note it."}]},
+ {id:"G04",q:"Where does the BASE go?",why:"If the layers separate, the LAYER TIE must reproduce every internal link one-for-one — and that is where the fibre question actually lives.",p:1,opts:[
+  {k:"A",t:"Adjacent to the cabinet, as one unit",d:"Simplest. NET top, COMP at eye level, MEDIA below."},
+  {k:"B",t:"Same room, separate position"},
+  {k:"C",t:"Split across locations",d:"Then answer G05."},
+  {k:"D",t:"Not decided yet"}]},
+ {id:"G05",q:"If the BASE is split, which layers separate?",multi:true,opts:[
+  {k:"A",t:"NET"},{k:"B",t:"COMP"},{k:"C",t:"MEDIA"},{k:"D",t:"Not split"}]},
+ {id:"G06",q:"Interior wall construction where RoomBoxes go?",why:"A masonry chase allows the cross-vent and conducts heat into the wall; a stud partition does neither, and the 110 mm envelope needs checking against the stud depth.",p:1,opts:[
+  {k:"A",t:"Masonry, 25 cm or more"},{k:"B",t:"Masonry, under 25 cm"},
+  {k:"C",t:"Stud partition",d:"Check 110 mm against the stud, and the cross-vent is pointless."},
+  {k:"D",t:"Mixed",d:"Note which rooms."}]},
+ {id:"G07",q:"Are there rooms beyond the eight already listed?",p:1,opts:[
+  {k:"A",t:"No, that is the whole dwelling"},
+  {k:"B",t:"One or two more",d:"Name them in the note."},
+  {k:"C",t:"Three or four more",d:"Name them in the note."},
+  {k:"D",t:"Five or more",d:"Name them in the note."}]},
+ {id:"G08",q:"Is this the INST-001 family house, or a different property?",why:"Open since ARCH-001 and never settled. It decides whether these documents describe one building or a template.",opts:[
+  {k:"A",t:"The INST-001 family house"},{k:"B",t:"A different property",d:"Note it."},
+  {k:"C",t:"A generalised template, not a specific house"}]}
+]},
+{id:"L",title:"Layout and zones",note:"These answers are the zone graph. Several delete portals rather than configure them.",questions:[
+ {id:"L01",q:"How do the entrance, kitchen and dining relate?",why:"This one answer settles three portal rows and may merge three zones into one. An opening with no door should not be a portal at all.",p:1,opts:[
+  {k:"A",t:"All one open space",d:"Then R01+R02+R03 is a single zone and three portals disappear."},
+  {k:"B",t:"Kitchen and dining open to each other, hall separate",d:"Two zones, one portal between them."},
+  {k:"C",t:"Three separate rooms off the hall",d:"Three zones, three portals."},
+  {k:"D",t:"Other",d:"Describe it in the note."}]},
+ {id:"L02",q:"The living room opening onto the hall?",p:1,opts:[
+  {k:"A",t:"Door, usually closed",d:"A real portal."},
+  {k:"B",t:"Door, usually left open",d:"Flagged habitually-open; probably one zone."},
+  {k:"C",t:"Cased opening, no door",d:"One zone. No portal."},
+  {k:"D",t:"Fully open-plan with the hall",d:"One zone."}]},
+ {id:"L03",q:"Bedroom door, in normal use?",p:1,opts:[
+  {k:"A",t:"Usually closed",d:"A real portal, and P-2 is worth it here."},
+  {k:"B",t:"Usually open"},{k:"C",t:"Varies"}]},
+ {id:"L04",q:"Bathroom door?",opts:[{k:"A",t:"Usually closed"},{k:"B",t:"Varies"}]},
+ {id:"L05",q:"WC door?",opts:[{k:"A",t:"Usually closed"},{k:"B",t:"Varies"}]},
+ {id:"L06",q:"What closes the spájz?",opts:[
+  {k:"A",t:"A door"},{k:"B",t:"A curtain, or nothing"},
+  {k:"C",t:"It is an open recess",d:"Then it is part of the adjoining zone, not its own."}]},
+ {id:"L07",q:"Is there a corridor or landing between the RoomBox positions?",opts:[
+  {k:"A",t:"Yes"},{k:"B",t:"No, rooms open directly onto each other"}]},
+ {id:"L08",q:"Which space sits between RBX01 and RBX02, where the SSC goes?",why:"ARCH-002 puts the security centre deliberately away from the entrance, near the first or second RoomBox.",opts:[
+  {k:"A",t:"The hall"},{k:"B",t:"A corridor"},{k:"C",t:"The living room"},{k:"D",t:"Elsewhere",d:"Note it."}]},
+ {id:"L09",q:"Internal stairs?",why:"Stairs are the one place the egress layer genuinely matters, and C29's question about certified luminaires applies to them.",opts:[
+  {k:"A",t:"Yes, internal"},{k:"B",t:"No"},{k:"C",t:"External only"}]},
+ {id:"L10",q:"Is there a separate study or workshop?",opts:[
+  {k:"A",t:"Yes, its own room",d:"Add it as R09 in the note."},
+  {k:"B",t:"Part of the living room or bedroom"},{k:"C",t:"No"},{k:"D",t:"Planned later"}]}
+]},
+{id:"A",title:"Areas",note:"Bands are enough. Put an exact figure in the note if you have one. Area drives AP density, port count and vent sizing.",questions:[
+ {id:"A01",q:"Entrance hall area?",opts:[
+  {k:"A",t:"Under 5 m²"},{k:"B",t:"5–10 m²"},{k:"C",t:"10–15 m²"},{k:"D",t:"Over 15 m²"}]},
+ {id:"A02",q:"Kitchen area?",p:1,opts:[
+  {k:"A",t:"Under 8 m²"},{k:"B",t:"8–12 m²"},{k:"C",t:"12–18 m²"},{k:"D",t:"Over 18 m²"}]},
+ {id:"A03",q:"Dining area?",opts:[
+  {k:"A",t:"Under 8 m²"},{k:"B",t:"8–12 m²"},{k:"C",t:"12–18 m²"},{k:"D",t:"Merged with the kitchen"}]},
+ {id:"A04",q:"WC area?",opts:[{k:"A",t:"Under 2 m²"},{k:"B",t:"2–4 m²"},{k:"C",t:"Over 4 m²"}]},
+ {id:"A05",q:"Spájz area?",opts:[
+  {k:"A",t:"Under 2 m²"},{k:"B",t:"2–4 m²"},{k:"C",t:"Over 4 m²"},{k:"D",t:"There is none"}]},
+ {id:"A06",q:"Living room area?",why:"The largest room drives AP count, speaker layout and whether RB-L is the right class.",p:1,opts:[
+  {k:"A",t:"Under 15 m²"},{k:"B",t:"15–25 m²"},{k:"C",t:"25–35 m²"},
+  {k:"D",t:"Over 35 m²",d:"Two APs, and check RB-L against RB-H."}]},
+ {id:"A07",q:"Bedroom area?",opts:[
+  {k:"A",t:"Under 10 m²"},{k:"B",t:"10–15 m²"},{k:"C",t:"15–20 m²"},{k:"D",t:"Over 20 m²"}]},
+ {id:"A08",q:"Bathroom area?",opts:[
+  {k:"A",t:"Under 4 m²"},{k:"B",t:"4–7 m²"},{k:"C",t:"7–10 m²"},{k:"D",t:"Over 10 m²"}]},
+ {id:"A09",q:"Are all eight rooms on one floor?",p:1,opts:[
+  {k:"A",t:"Yes, all on one floor"},
+  {k:"B",t:"No",d:"Say which are where in the note — it changes the CHANNEL routing and the riser options."}]}
+]},
+{id:"N",title:"Lamp counts",note:"Every lamp gets its own dedicated ARM, so this count IS the ARM count — the biggest number in the conduit schedule. Approximate beats blank.",questions:[
+ {id:"N01",q:"Entrance hall — separately controlled lamps?",opts:[
+  {k:"A",t:"1"},{k:"B",t:"2"},{k:"C",t:"3"},{k:"D",t:"4 or more"}]},
+ {id:"N02",q:"Kitchen — separately controlled lamps?",why:"Ceiling fittings only. Under-cabinet task light is an LV run, counted separately once C23 is settled.",p:1,opts:[
+  {k:"A",t:"1"},{k:"B",t:"2"},{k:"C",t:"3"},{k:"D",t:"4"},{k:"E",t:"5 or more"}]},
+ {id:"N03",q:"Dining — separately controlled lamps?",opts:[
+  {k:"A",t:"1, a pendant"},{k:"B",t:"2"},{k:"C",t:"3 or more"},{k:"D",t:"Merged with the kitchen"}]},
+ {id:"N04",q:"WC — lamps?",opts:[{k:"A",t:"1"},{k:"B",t:"2"}]},
+ {id:"N05",q:"Spájz — lamps?",opts:[{k:"A",t:"1"},{k:"B",t:"2"},{k:"C",t:"None"}]},
+ {id:"N06",q:"Living room — separately controlled lamps?",why:"The biggest single driver of the ARM count in the house.",p:1,opts:[
+  {k:"A",t:"1–2"},{k:"B",t:"3"},{k:"C",t:"4"},{k:"D",t:"5"},{k:"E",t:"6 or more"}]},
+ {id:"N07",q:"Bedroom — separately controlled lamps?",why:"Count the ceiling fitting plus each bedside position, since each wants its own ARM.",opts:[
+  {k:"A",t:"1"},{k:"B",t:"2"},{k:"C",t:"3, ceiling plus two bedside"},{k:"D",t:"4 or more"}]},
+ {id:"N08",q:"Bathroom — separately controlled lamps?",opts:[
+  {k:"A",t:"1"},{k:"B",t:"2, ceiling plus vanity"},{k:"C",t:"3 or more"}]}
+]},
+{id:"S",title:"Shutters, sockets, big loads",note:"Socket groups ride bus ARMs; shutters each need an interlocked pair. Big loads bypass the RoomBox entirely.",questions:[
+ {id:"S01",q:"Which rooms have shutters or blinds to motorise?",multi:true,opts:[
+  {k:"A",t:"Entrance hall"},{k:"B",t:"Kitchen"},{k:"C",t:"Dining"},{k:"D",t:"Living"},
+  {k:"E",t:"Bedroom"},{k:"F",t:"Bathroom"},{k:"G",t:"None"}]},
+ {id:"S02",q:"How many motorised shutters in the living room?",opts:[
+  {k:"A",t:"0"},{k:"B",t:"1"},{k:"C",t:"2"},{k:"D",t:"3"},{k:"E",t:"4 or more"}]},
+ {id:"S03",q:"How many motorised shutters in the bedroom?",opts:[
+  {k:"A",t:"0"},{k:"B",t:"1"},{k:"C",t:"2"},{k:"D",t:"3 or more"}]},
+ {id:"S04",q:"How many socket groups does the living room need?",why:"Each group is one bus ARM from the RoomBox. A group is a run of outlets on one circuit, not an individual socket.",opts:[
+  {k:"A",t:"1"},{k:"B",t:"2"},{k:"C",t:"3"},{k:"D",t:"4 or more"}]},
+ {id:"S05",q:"How many socket groups does the kitchen need?",opts:[
+  {k:"A",t:"1, worktop only"},{k:"B",t:"2, worktop plus low level"},{k:"C",t:"3"},{k:"D",t:"4 or more"}]},
+ {id:"S06",q:"Which big loads are in the kitchen?",why:"A reminder as much as a question: these are fed direct from the cabinet and never through a RoomBox, so high current stays out of the room node.",multi:true,opts:[
+  {k:"A",t:"Oven"},{k:"B",t:"Hob"},{k:"C",t:"Dishwasher"},{k:"D",t:"Washing machine"},
+  {k:"E",t:"Water heater"},{k:"F",t:"None of these are in the kitchen"}]}
+]},
+{id:"P",title:"Provision corrections",note:"Table C already carries defaults from round 2. These are the three I flagged, plus anything you want to change.",questions:[
+ {id:"P01",q:"Add CO₂ to the living room?",why:"Round 2 left it out. It is the room where people sit still longest, which is exactly where the slow-but-certain occupancy signal is worth most — and the first place to look if false vacancies appear.",p:1,rec:"A",opts:[
+  {k:"A",t:"Yes, add it",d:"One sensor, and it closes the weakest spot in the fusion model."},
+  {k:"B",t:"No, as answered"},
+  {k:"C",t:"Later, reserve the point",d:"Conduit and position provisioned, sensor deferred."}]},
+ {id:"P02",q:"Add a follow-me audio pair to the bedroom?",why:"Round 2 included the bathroom and omitted the bedroom, which inverts the usual pattern. A stream currently stops at the bedroom door.",opts:[
+  {k:"A",t:"Yes, add it"},{k:"B",t:"No, as answered",d:"Deliberate — the bedroom stays quiet."},
+  {k:"C",t:"Reserve the ARM only",d:"Cable pulled and capped; speakers later."}]},
+ {id:"P03",q:"Bathroom presence — add mmWave alongside the thermal array?",why:"Round 2 left the bathroom without mmWave although RB-3 exists chiefly to serve it. The thermal array was promoted to primary, which largely repairs it and adds fall detection.",p:1,rec:"A",opts:[
+  {k:"A",t:"Thermal array only, as answered",d:"Steam-tolerant, privacy-safe, gives fall detection."},
+  {k:"B",t:"Add mmWave as well",d:"Belt and braces; steam degrades it intermittently."},
+  {k:"C",t:"Thermal array plus door contact only",d:"Leanest, and the humidity interlock carries more weight."}]},
+ {id:"P04",q:"Which rooms get a screen?",multi:true,opts:[
+  {k:"A",t:"Living"},{k:"B",t:"Bedroom"},{k:"C",t:"Kitchen"},{k:"D",t:"Dining"},
+  {k:"E",t:"Study or workshop"},{k:"F",t:"None besides the living room"}]},
+ {id:"P05",q:"Accept the scene-set allocation?",why:"Ten scenes for habitable rooms, five-core for circulation and utility.",rec:"A",opts:[
+  {k:"A",t:"Yes, as allocated"},{k:"B",t:"I want changes",d:"Say which in the note."}]},
+ {id:"P06",q:"Accept the rest of the provision matrix?",why:"Tunable white in living, bedroom, kitchen, study. Colour in living and media only. mmWave in living, bedroom, kitchen, hall.",rec:"A",opts:[
+  {k:"A",t:"Yes, as answered in round 2"},{k:"B",t:"Changes in the note"}]}
+]}
+]};
+
+const PACKS = [PACK_DESIGN, PACK_ROOMS];
+
+/* ============================ STATE ============================ */
+const $=s=>document.querySelector(s), ce=(t,c)=>{const e=document.createElement(t); if(c)e.className=c; return e;};
+const LC={A:"--l-a",B:"--l-b",C:"--l-c",D:"--l-d",E:"--l-e",F:"--l-f",G:"--l-g",H:"--l-h"};
+let PACK=null, ANS={}, NOTE={}, OPEN={}, CUR=0, FKEY=false, FOPEN=false;
+
+const skey=()=>"bt:"+(PACK?PACK.pack+":"+(PACK.rev||""):"");
+function save(){ try{ localStorage.setItem(skey(),JSON.stringify({ANS,NOTE})); }catch(e){} }
+function restore(){ try{ const r=localStorage.getItem(skey()); if(r){const o=JSON.parse(r)||{}; ANS=o.ANS||{}; NOTE=o.NOTE||{};} }catch(e){} }
+
+const allQ=()=> PACK? PACK.sections.flatMap(s=>s.questions):[];
+const isAns=q=>{const v=ANS[q.id]; return v!==undefined && v!==null && !(Array.isArray(v)&&!v.length);};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function toast(msg){
+  const t=ce("div","toast"); t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+
+/* theme */
+try{const t=localStorage.getItem("bt:theme"); if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}
+$("#bTheme").onclick=()=>{
+  const c=document.documentElement.getAttribute("data-theme");
+  const n = c==="dark" ? "light" : c==="light" ? "dark"
+    : (matchMedia("(prefers-color-scheme:dark)").matches?"light":"dark");
+  document.documentElement.setAttribute("data-theme",n);
+  try{localStorage.setItem("bt:theme",n);}catch(e){}
+};
+
+/* ============================ PACK ============================ */
+function loadPack(obj,quiet){
+  let p=obj;
+  if(typeof obj==="string"){ try{ p=JSON.parse(obj); }catch(e){ toast("Not valid JSON"); return false; } }
+  if(!p||!Array.isArray(p.sections)){ toast("Pack has no sections"); return false; }
+  p.sections.forEach(s=>{ s.questions=s.questions||[]; });
+  PACK=p; ANS={}; NOTE={}; OPEN={}; CUR=0; restore();
+  document.title="BRIDGE Tuner";
+  if(!quiet) toast("Loaded "+allQ().length+" questions");
+  render(); return true;
+}
+
+function loadAnswers(txt){
+  if(!PACK){ toast("No pack loaded"); return; }
+  let n=0;
+  txt.split(/\r?\n/).forEach(line=>{
+    line=line.trim(); if(!line||line[0]==="#") return;
+    const m=line.match(/^([A-Za-z]\w*)\s*=\s*([^~]*)(?:~\s*(.*))?$/); if(!m) return;
+    const id=m[1].toUpperCase(), val=(m[2]||"").trim(), note=(m[3]||"").trim();
+    const q=allQ().find(x=>x.id.toUpperCase()===id); if(!q) return;
+    if(note){ NOTE[q.id]=note; OPEN[q.id]=true; }
+    if(val==="?"||val===""){ ANS[q.id]="?"; }
+    else if(q.multi){ ANS[q.id]=val.split("|").map(s=>s.trim().toUpperCase()).filter(Boolean); }
+    else { ANS[q.id]=val.toUpperCase(); }
+    n++;
+  });
+  save(); render(); toast("Imported "+n+" answers");
+}
+
+function exportText(){
+  const qs=allQ(), done=qs.filter(isAns).length;
+  const L=["#BRIDGE-ANSWERS v1",
+           "#pack="+(PACK.pack||"?")+" "+(PACK.rev||""),
+           "#date="+new Date().toISOString().slice(0,10),
+           "#answered="+done+"/"+qs.length];
+  PACK.sections.forEach(s=>{
+    const rows=s.questions.filter(q=>isAns(q)||NOTE[q.id]);
+    if(!rows.length) return;
+    L.push(""); L.push("# "+s.id+" "+s.title);
+    rows.forEach(q=>{
+      let v=ANS[q.id];
+      v = (v===undefined||v==="?") ? "?" : (Array.isArray(v)? v.join("|") : v);
+      L.push(q.id+"="+v+(NOTE[q.id]? " ~ "+NOTE[q.id].replace(/\s+/g," ") : ""));
+    });
+  });
+  return L.join("\n")+"\n";
+}
+
+/* ============================ RENDER ============================ */
+function visible(s){
+  return s.questions.filter(q=>{
+    if(FKEY && q.p!==1) return false;
+    if(FOPEN && isAns(q)) return false;
+    return true;
+  });
+}
+
+function render(){
+  if(!PACK) return;
+  const qs=allQ(), done=qs.filter(isAns).length, keyN=qs.filter(q=>q.p===1).length;
+  const keyDone=qs.filter(q=>q.p===1&&isAns(q)).length;
+
+  $("#pk").textContent=(PACK.pack||"")+" "+(PACK.rev||"");
+  $("#count").textContent=done+" / "+qs.length;
+  $("#prog").style.width=(qs.length? done/qs.length*100:0)+"%";
+  $("#dockLbl").textContent="Key "+keyDone+"/"+keyN;
+
+  [$("#nav"),$("#navWide")].forEach((nav,wide)=>{
+    nav.innerHTML="";
+    PACK.sections.forEach((s,i)=>{
+      const d=s.questions.filter(isAns).length, tot=s.questions.length;
+      const b=ce("button","chip"+(i===CUR?" on":"")+(d===tot?" full":""));
+      const dot=ce("span","dot"); dot.style.background="var("+(LC[s.id]||"--l-a")+")";
+      b.appendChild(dot);
+      const lab=ce("span"); lab.textContent=wide? s.id+" "+s.title : s.id;
+      b.appendChild(lab);
+      const n=ce("span","n"); n.textContent=d+"/"+tot; b.appendChild(n);
+      b.onclick=()=>{ CUR=i; render(); scrollTo({top:0,behavior:"smooth"}); };
+      nav.appendChild(b);
+    });
+  });
+
+  const sec=PACK.sections[CUR], body=$("#body");
+  body.innerHTML="";
+  const h=ce("div","shead");
+  h.style.borderBottomColor="var("+(LC[sec.id]||"--l-a")+")";
+  h.innerHTML='<div class="eyebrow">Section '+esc(sec.id)+'</div><h2 class="stitle">'+esc(sec.title)+"</h2>"+
+              (sec.note?'<p class="snote">'+esc(sec.note)+"</p>":"");
+  body.appendChild(h);
+
+  const vis=visible(sec);
+  if(!vis.length){
+    const e=ce("div","empty");
+    e.textContent = FKEY? "No key questions in this section." : FOPEN? "Nothing unanswered here." : "No questions.";
+    body.appendChild(e);
+  } else vis.forEach(q=>body.appendChild(card(q,sec)));
+
+  const f=ce("div","navfoot");
+  if(CUR>0){ const b=ce("button","btn"); b.textContent="◀ "+PACK.sections[CUR-1].id;
+    b.onclick=()=>{CUR--;render();scrollTo({top:0,behavior:"smooth"});}; f.appendChild(b); }
+  f.appendChild(ce("span","grow"));
+  if(CUR<PACK.sections.length-1){ const b=ce("button","btn"); b.textContent=PACK.sections[CUR+1].id+" ▶";
+    b.onclick=()=>{CUR++;render();scrollTo({top:0,behavior:"smooth"});}; f.appendChild(b); }
+  body.appendChild(f);
+
+  $("#bKey").classList.toggle("on",FKEY);
+  $("#bOpen").classList.toggle("on",FOPEN);
+  $("#navWide").hidden = !matchMedia("(min-width:860px)").matches;
+  $("#nav").hidden = matchMedia("(min-width:860px)").matches;
+}
+
+function card(q,sec){
+  const unsure = ANS[q.id]==="?";
+  const c=ce("div","q"+(isAns(q)&&!unsure?" done":"")+(unsure?" unsure":""));
+  const head=ce("div","qhead");
+  const id=ce("span","qid"); id.textContent=q.id; head.appendChild(id);
+  if(q.p===1){ const p=ce("span","pill key"); p.textContent="Key"; head.appendChild(p); }
+  if(q.multi){ const p=ce("span","pill multi"); p.textContent="Multi"; head.appendChild(p); }
+  c.appendChild(head);
+
+  const t=ce("h3","qt"); t.textContent=q.q; c.appendChild(t);
+  if(q.why){ const w=ce("p","why"); w.textContent=q.why; c.appendChild(w); }
+
+  const box=ce("div","opts");
+  const numbered=(q.opts||[]).length<=9;
+  (q.opts||[]).forEach((o,i)=>{
+    const sel = q.multi ? (Array.isArray(ANS[q.id])&&ANS[q.id].includes(o.k)) : ANS[q.id]===o.k;
+    const b=ce("button","opt"+(sel?" sel":""));
+    b.innerHTML='<span class="k">'+(numbered?(i+1):esc(o.k))+'</span><span><span class="lab">'+esc(o.t)+
+      (q.rec===o.k?'<span class="rec">RECOMMENDED</span>':"")+"</span>"+
+      (o.d?'<span class="des">'+esc(o.d)+"</span>":"")+"</span>";
+    b.onclick=()=>pick(q,o.k); box.appendChild(b);
+  });
+  const u=ce("button","opt flagv"+(unsure?" sel":""));
+  u.innerHTML='<span class="k">0</span><span><span class="lab">Unsure, discuss this one</span>'+
+              '<span class="des">Flags it for me rather than guessing.</span></span>';
+  u.onclick=()=>pick(q,"?"); box.appendChild(u);
+  c.appendChild(box);
+
+  if(OPEN[q.id]||NOTE[q.id]){
+    const n=ce("textarea","note");
+    n.placeholder="Constraints, a different answer, or why";
+    n.value=NOTE[q.id]||"";
+    n.oninput=()=>{ const v=n.value.trim(); if(v) NOTE[q.id]=v; else delete NOTE[q.id]; save(); };
+    c.appendChild(n);
+  } else {
+    const b=ce("button","notebtn"); b.textContent="+ note";
+    b.onclick=()=>{ OPEN[q.id]=true; const y=scrollY; render(); scrollTo({top:y}); };
+    c.appendChild(b);
+  }
+  return c;
+}
+
+function pick(q,k){
+  if(k==="?"){ if(ANS[q.id]==="?") delete ANS[q.id]; else ANS[q.id]="?"; }
+  else if(q.multi){
+    const a=Array.isArray(ANS[q.id])?ANS[q.id].slice():[];
+    const i=a.indexOf(k); if(i<0)a.push(k); else a.splice(i,1);
+    if(a.length) ANS[q.id]=a; else delete ANS[q.id];
+  } else { if(ANS[q.id]===k) delete ANS[q.id]; else ANS[q.id]=k; }
+  save();
+  const y=scrollY; render(); scrollTo({top:y});
+}
+
+/* ============================ SHEET ============================ */
+function sheet(title,hint,value,buttons,ro){
+  $("#shT").textContent=title; $("#shP").textContent=hint;
+  const ta=$("#shTA"); ta.value=value||""; ta.readOnly=!!ro;
+  const f=$("#shF"); f.innerHTML="";
+  buttons.forEach(b=>{ const x=ce("button","btn"+(b.pri?" pri":"")); x.textContent=b.t;
+    x.onclick=()=>b.fn(ta.value,x); f.appendChild(x); });
+  $("#dlg").showModal();
+  if(ro) setTimeout(()=>{ try{ta.setSelectionRange(0,ta.value.length);}catch(e){} },60);
+}
+$("#shX").onclick=()=>$("#dlg").close();
+$("#dlg").addEventListener("click",e=>{ if(e.target===$("#dlg")) $("#dlg").close(); });
+
+$("#bPaste").onclick=()=>sheet("Load a question pack",
+  "Paste pack JSON for a later round, then Load. Your current answers for that pack are kept.","",
+  [{t:"Load",pri:true,fn:v=>{ if(loadPack(v)) $("#dlg").close(); }}]);
+
+$("#bResume").onclick=()=>sheet("Resume from answers",
+  "Paste an exported answer block to restore it on this device.","",
+  [{t:"Import",pri:true,fn:v=>{ loadAnswers(v); $("#dlg").close(); }}]);
+
+$("#bExport").onclick=()=>{
+  const txt=exportText();
+  sheet("Export answers","Copy this and send it back. Downloads do not work inside a published page, so copy is the way out.",
+    txt,
+    [{t:"Copy",pri:true,fn:(v,btn)=>{
+        const done=()=>{ btn.textContent="Copied"; setTimeout(()=>btn.textContent="Copy",1400); };
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+          navigator.clipboard.writeText(v).then(done,()=>{ $("#shTA").focus();
+            try{$("#shTA").setSelectionRange(0,v.length);}catch(e){}
+            toast("Copy blocked, text selected"); });
+        } else { $("#shTA").focus(); try{$("#shTA").setSelectionRange(0,v.length);}catch(e){}
+          toast("Copy blocked, text selected"); }
+      }}],
+    true);
+};
+
+$("#bKey").onclick=()=>{ FKEY=!FKEY; if(FKEY)FOPEN=false; render(); };
+$("#bOpen").onclick=()=>{ FOPEN=!FOPEN; if(FOPEN)FKEY=false; render(); };
+/* Only re-render when the layout breakpoint actually crosses. A bare resize handler would
+   rebuild the DOM when a phone keyboard opens, destroying a note being typed. */
+let wasWide=matchMedia("(min-width:860px)").matches;
+addEventListener("resize",()=>{
+  const w=matchMedia("(min-width:860px)").matches;
+  if(w!==wasWide){ wasWide=w; render(); }
+});
+
+/* keyboard, desktop convenience */
+addEventListener("keydown",e=>{
+  if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)||e.metaKey||e.ctrlKey||e.altKey) return;
+  const el=document.activeElement, cardEl=el&&el.closest? el.closest(".q"):null;
+  if(!cardEl||!/^[0-9]$/.test(e.key)) return;
+  const qid=[...document.querySelectorAll(".q")].indexOf(cardEl);
+  const vis=visible(PACK.sections[CUR]); const q=vis[qid]; if(!q) return;
+  e.preventDefault();
+  if(e.key==="0") pick(q,"?");
+  else if((q.opts||[]).length<=9){ const o=q.opts[+e.key-1]; if(o) pick(q,o.k); }
+});
+
+/* pack selector — each pack keeps its own saved answers, keyed by pack id and rev */
+const sel=$("#packSel");
+PACKS.forEach((p,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=p.title||p.pack; sel.appendChild(o); });
+let lastIdx=0;
+try{ const s=localStorage.getItem("bt:pack"); if(s!==null&&PACKS[+s]) lastIdx=+s; }catch(e){}
+sel.value=lastIdx;
+sel.onchange=()=>{ const i=+sel.value; try{localStorage.setItem("bt:pack",String(i));}catch(e){}
+  FKEY=false; FOPEN=false; $("#bKey").textContent="Key only"; loadPack(PACKS[i]); scrollTo({top:0}); };
+loadPack(PACKS[lastIdx],true);
+</script>
+
+</body></html>

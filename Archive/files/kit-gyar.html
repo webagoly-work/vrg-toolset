@@ -1,0 +1,1166 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Varler Kit Gyár</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: Mélyvíz dev-side look — dark-first, cut-corner panels; one horizontal "factory line" spine, everything else hangs under it in single-column sections */
+:root{
+  --bg:#0a141c; --horizon:#11202b; --panel:#121c24; --raised:#17232c;
+  --line:rgba(232,240,246,.15); --line-strong:rgba(232,240,246,.34);
+  --fg:#e8f0f6; --dim:#a6afb7; --faint:#6f7880;
+  --accent:#93d3e6; --accent-soft:rgba(147,211,230,.14);
+  --warm:#e8a873; --warm-soft:rgba(232,168,115,.15);
+  --ok:#8bcca1; --ok-soft:rgba(139,204,161,.14); --warn:#e3be7b; --warn-soft:rgba(227,190,123,.14); --crit:#e4877d; --crit-soft:rgba(228,135,125,.14);
+  --cut:7px;
+  --voice:Bahnschrift,"Barlow Semi Condensed","DIN Alternate","Arial Narrow",sans-serif;
+  --sans:"Segoe UI",Barlow,system-ui,sans-serif;
+  --mono:"Cascadia Mono","Cascadia Code",Consolas,ui-monospace,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --bg:#eef2f4; --horizon:#e2e9ed; --panel:#ffffff; --raised:#e6edf1;
+  --line:rgba(16,32,43,.14); --line-strong:rgba(16,32,43,.32);
+  --fg:#10202b; --dim:#4b5963; --faint:#7b8790;
+  --accent:#1c7590; --accent-soft:rgba(28,117,144,.10);
+  --warm:#ad5f22; --warm-soft:rgba(173,95,34,.10);
+  --ok:#2c7a4c; --ok-soft:rgba(44,122,76,.10); --warn:#8d6512; --warn-soft:rgba(141,101,18,.12); --crit:#ad3a2e; --crit-soft:rgba(173,58,46,.10);
+  color-scheme:light; } }
+:root[data-theme="light"]{
+  --bg:#eef2f4; --horizon:#e2e9ed; --panel:#ffffff; --raised:#e6edf1;
+  --line:rgba(16,32,43,.14); --line-strong:rgba(16,32,43,.32);
+  --fg:#10202b; --dim:#4b5963; --faint:#7b8790;
+  --accent:#1c7590; --accent-soft:rgba(28,117,144,.10);
+  --warm:#ad5f22; --warm-soft:rgba(173,95,34,.10);
+  --ok:#2c7a4c; --ok-soft:rgba(44,122,76,.10); --warn:#8d6512; --warn-soft:rgba(141,101,18,.12); --crit:#ad3a2e; --crit-soft:rgba(173,58,46,.10);
+  color-scheme:light; }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans);}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+h1,h2,h3,h4{font-family:var(--voice);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.02}
+h2{font-size:28px;line-height:1.15}
+h3{font-size:19px}
+h4{font-size:15px;letter-spacing:.04em}
+p{margin:0;max-width:68ch}
+.en{display:block;font-style:italic;color:var(--faint);font-size:.86em;font-family:var(--sans);font-weight:400;letter-spacing:0}
+.eyebrow{font-family:var(--voice);text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--accent)}
+.lede{font-size:17px;color:var(--dim);max-width:72ch}
+.sec{display:flex;flex-direction:column;gap:20px}
+.sec-head{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line-strong);padding-top:18px}
+.cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+.panel{background:var(--panel);border:1px solid var(--line);padding:18px}
+.mono{font-family:var(--mono);font-size:.9em}
+.dim{color:var(--dim)} .faint{color:var(--faint)}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--voice);font-size:14px}
+nav.toc a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line)}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent);border-color:var(--accent)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end}
+.hero .thesis{display:flex;flex-direction:column;gap:14px}
+.rules{display:grid;gap:10px;background:var(--horizon);border:1px solid var(--line);padding:16px}
+.rules div{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:baseline}
+.rules b{font-family:var(--voice);color:var(--warm);font-size:18px}
+@media (max-width:820px){.hero{grid-template-columns:1fr}}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--dim)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.mk{display:inline-block;width:14px;height:14px}
+.mk.stop{background:var(--warm);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
+.mk.auto{border:2px solid var(--accent);border-radius:50%}
+.mk.side{border:2px dashed var(--ok);border-radius:3px}
+.mk.end{background:var(--fg);clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+
+/* lane selector */
+.seg{display:inline-flex;border:1px solid var(--line-strong);flex-wrap:wrap}
+.seg button{all:unset;cursor:pointer;padding:8px 14px;font-family:var(--voice);font-size:14px;color:var(--dim);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.seg button:focus-visible{outline:2px solid var(--accent)}
+.lane-note{font-size:14px;color:var(--dim);max-width:80ch}
+
+/* spine */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.spine{display:grid;grid-template-columns:repeat(8,minmax(118px,1fr));min-width:980px;position:relative;padding:8px 0 4px}
+.spine::before{content:"";position:absolute;left:5%;right:5%;top:38px;height:2px;background:var(--line-strong)}
+.node{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 6px;position:relative;transition:opacity .2s}
+.node .shape{width:46px;height:46px;display:grid;place-items:center;font-family:var(--voice);font-weight:700;font-size:15px;background:var(--bg);position:relative;z-index:1}
+.node.stop .shape{background:var(--warm);color:var(--bg);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
+.node.auto .shape{border:2px solid var(--accent);border-radius:50%;color:var(--accent)}
+.node.end .shape{background:var(--fg);color:var(--bg)}
+.node .nm{font-family:var(--voice);font-weight:600;font-size:15px;line-height:1.15}
+.node .nm .en{font-size:12px}
+.node .st{font-size:12px;padding:2px 8px;border:1px solid var(--line);color:var(--dim);min-height:22px}
+.node .st.on{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+.node .st.au{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.node .st.sk{border-style:dashed;color:var(--faint)}
+.node.off{opacity:.28}
+
+/* matrix */
+table{border-collapse:collapse;width:100%}
+.matrix{min-width:1080px;font-size:13px}
+.matrix th,.matrix td{border:1px solid var(--line);padding:8px 9px;vertical-align:top;text-align:left}
+.matrix thead th{font-family:var(--voice);font-size:14px;background:var(--horizon);position:sticky;top:0}
+.matrix thead th.s{color:var(--warm)} .matrix thead th.a{color:var(--accent)}
+.matrix tbody th{font-family:var(--voice);font-weight:600;font-size:13px;background:var(--horizon);width:118px;position:sticky;left:0;z-index:1}
+.matrix tbody th .en{font-size:11px}
+.matrix td ul{margin:0;padding-left:15px;display:flex;flex-direction:column;gap:3px}
+.matrix td.na{color:var(--faint)}
+.matrix tr.side td{background:var(--ok-soft)}
+.matrix tr.gap td{background:var(--warn-soft)}
+.matrix col.off,.matrix td.off,.matrix th.off{opacity:.3}
+
+/* dashboard mock */
+.dash{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.dash{grid-template-columns:1fr}}
+.dash .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.box{background:var(--panel);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.box h4{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.box h4 small{font-family:var(--sans);font-weight:400;font-size:12px;color:var(--faint);letter-spacing:0}
+textarea{width:100%;min-height:128px;resize:vertical;background:var(--bg);color:var(--fg);border:1px solid var(--line-strong);padding:10px;font:14px/1.5 var(--sans)}
+input[type=text]{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line-strong);padding:7px 9px;font:14px var(--sans)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{all:unset;cursor:pointer;font-size:13px;padding:5px 10px;border:1px solid var(--line-strong);color:var(--dim);line-height:1.2}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--fg);background:var(--accent-soft)}
+.chip.src[aria-pressed="true"]{border-color:var(--ok);background:var(--ok-soft)}
+.chip:focus-visible{outline:2px solid var(--accent)}
+.grp{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:start}
+.grp>label,.grp>span.l{font-family:var(--voice);font-size:13px;color:var(--dim);padding-top:5px}
+@media (max-width:480px){.grp{grid-template-columns:1fr}}
+.samples{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--faint)}
+.samples button{all:unset;cursor:pointer;font-size:13px;color:var(--accent);border-bottom:1px dashed var(--accent)}
+.depth{display:flex;flex-direction:column;gap:6px}
+input[type=range]{width:100%;accent-color:var(--warm)}
+.ticks{display:grid;grid-template-columns:repeat(4,1fr);font-size:11.5px;color:var(--faint);text-align:center}
+.ticks span.on{color:var(--warm)}
+.vote{display:grid;grid-template-columns:150px minmax(0,1fr) 42px;gap:8px;align-items:center;font-size:13px}
+@media (max-width:480px){.vote{grid-template-columns:110px minmax(0,1fr) 38px}}
+.bar{height:10px;background:var(--raised);position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .25s}
+.vote.top .bar i{background:var(--warm)}
+.vote .pc{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.vote .cal{display:block;font-size:11px;color:var(--faint)}
+.sig{font-size:12px;padding:2px 7px;border:1px solid var(--line);color:var(--dim)}
+.sig.nov{border-color:var(--crit);color:var(--crit)}
+.k5{display:grid;gap:4px;font-size:13px}
+.k5 div{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}
+.k5 .y{color:var(--ok)} .k5 .n{color:var(--warn)} .k5 .x{color:var(--faint)}
+.route{display:flex;flex-wrap:wrap;gap:6px}
+.route span{font-size:12.5px;padding:4px 9px;border:1px solid var(--line)}
+.route button{all:unset;cursor:pointer;font-size:12.5px;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
+.route button.on{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+.route button.au{border-color:var(--accent);color:var(--accent)}
+.route button.sk{border-style:dashed;color:var(--faint);text-decoration:line-through}
+.route button.done::before{content:"✓ ";color:var(--ok)}
+.route button.cur{box-shadow:inset 0 -3px 0 var(--warm);color:var(--fg)}
+.route button.pick{outline:2px solid var(--accent);outline-offset:1px}
+.route button:focus-visible{outline:2px solid var(--accent)}
+/* view toggle + factory: the factory is one fixed pixel world (same in both themes) */
+:root{--fab-bg:#0e161d;--fab-ink:#0b1218;--fab-fg:#e8f0f6;--fab-line:#3a4652;--fab-warm:#f2a75a;--fab-cyan:#86d6ea;--fab-ok:#7ee08a}
+.vrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--faint)}
+.vseg{display:inline-flex;border:1px solid var(--line-strong)}
+.vseg button{all:unset;cursor:pointer;padding:5px 12px;font-family:var(--voice);font-size:13px;color:var(--dim);border-right:1px solid var(--line)}
+.vseg button:last-child{border-right:0}
+.vseg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.vseg button:focus-visible{outline:2px solid var(--accent)}
+.view-fab{position:relative;width:100%;aspect-ratio:256/160;background:var(--fab-bg);border:1px solid var(--fab-line);overflow:hidden}
+.view-fab canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.fab-b{all:unset;position:absolute;transform:translate(-50%,-100%);cursor:pointer;font:600 11px/1 var(--voice);padding:3px 5px;background:var(--fab-ink);color:var(--fab-fg);border:1px solid var(--fab-line);white-space:nowrap}
+.fab-b.on{border-color:var(--fab-warm)} .fab-b.au{border-color:var(--fab-cyan)}
+.fab-b.sk,.fab-b.off{opacity:.45}
+.fab-b.done{color:var(--fab-ok)}
+.fab-b.cur{background:var(--fab-warm);color:var(--fab-ink);border-color:var(--fab-warm)}
+.fab-b.pick{outline:2px solid var(--fab-cyan);outline-offset:1px}
+.fab-b:focus-visible{outline:2px solid var(--fab-cyan)}
+.fab-cap{position:absolute;left:0;right:0;bottom:0;padding:5px 8px;background:rgba(5,10,15,.8);color:var(--fab-fg);font:12px/1.3 var(--voice);display:flex;justify-content:space-between;gap:8px}
+.fab-cap span:last-child{color:var(--fab-warm)}
+.steps{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sbtn{all:unset;cursor:pointer;padding:5px 10px;border:1px solid var(--line-strong);font-size:13px;font-family:var(--voice)}
+.sbtn:focus-visible{outline:2px solid var(--accent)}
+.sbtn.pri{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+.steps .prog{font-size:12.5px;color:var(--dim);margin-left:4px}
+.stdet h4{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;justify-content:flex-start}
+.stdet .code{font-family:var(--voice);color:var(--warm);border:1px solid var(--warm);padding:0 7px}
+.stdet .stchip{font-family:var(--sans);font-weight:400;font-size:12px;border:1px solid var(--line);padding:1px 8px;color:var(--dim);letter-spacing:0}
+.stgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.stgrid{grid-template-columns:1fr}}
+.stcell{border:1px solid var(--line);padding:8px 10px;font-size:13px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stcell b{font-family:var(--voice);font-size:12.5px;color:var(--dim)}
+.stcell ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px}
+.stcell.side{background:var(--ok-soft)} .stcell.gap{background:var(--warn-soft)}
+.stdyn{font-size:13.5px;border-left:3px solid var(--accent);padding:4px 10px;background:var(--accent-soft)}
+.route .on{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+.route .au{border-color:var(--accent);color:var(--accent)}
+.route .sk{border-style:dashed;color:var(--faint);text-decoration:line-through}
+.lanebadge{font-family:var(--voice);font-size:20px;color:var(--warm)}
+.stat{display:flex;gap:18px;flex-wrap:wrap}
+.stat div{display:flex;flex-direction:column}
+.stat b{font-family:var(--voice);font-size:24px;font-variant-numeric:tabular-nums}
+.stat small{font-size:12px;color:var(--faint)}
+ul.tight{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13.5px}
+.warnline{border-left:3px solid var(--warn);padding:4px 10px;background:var(--warn-soft);font-size:13px}
+.critline{border-left:3px solid var(--crit);padding:4px 10px;background:var(--crit-soft);font-size:13px}
+
+/* stop anatomy */
+.stopcard{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0;border:1px solid var(--line-strong);background:var(--panel)}
+@media (max-width:860px){.stopcard{grid-template-columns:1fr}}
+.stopcard .main{padding:18px;display:flex;flex-direction:column;gap:14px;border-right:1px solid var(--line)}
+.stopcard .herd{padding:18px;display:flex;flex-direction:column;gap:12px;background:var(--horizon)}
+.qhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.qn{font-family:var(--voice);color:var(--warm);font-size:14px;border:1px solid var(--warm);padding:1px 7px}
+.why{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,230px);gap:14px;align-items:center}
+@media (max-width:560px){.why{grid-template-columns:1fr}}
+.opt{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 10px;border:1px solid var(--line);font-size:14px}
+.opt.rec{border-color:var(--accent);background:var(--accent-soft)}
+.opt .imp{font-family:var(--mono);font-size:12px;color:var(--dim);white-space:nowrap}
+.opts{display:flex;flex-direction:column;gap:6px}
+.hbtn{all:unset;cursor:default;display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line-strong);font-size:13.5px}
+.hbtn small{color:var(--faint);font-size:12px}
+.run{border:1px dashed var(--ok);padding:8px 10px;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.run .bar i{background:var(--ok);width:62%}
+.gapbox{border-top:1px solid var(--line);padding:14px 18px;grid-column:1/-1;display:flex;flex-direction:column;gap:8px;background:var(--warn-soft)}
+.gaprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;font-size:13.5px;align-items:baseline}
+.gaprow .imp{font-family:var(--mono);font-size:12px;color:var(--warn);white-space:nowrap}
+
+/* catalogue */
+.cat{min-width:900px;font-size:13.5px}
+.cat th,.cat td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left;vertical-align:top}
+.cat thead th{font-family:var(--voice);font-size:13px;color:var(--dim);border-bottom:1px solid var(--line-strong)}
+.cat td.dots{white-space:nowrap;font-family:var(--mono);letter-spacing:2px;color:var(--faint)}
+.cat td.dots b{color:var(--ok);font-weight:700}
+.pill{display:inline-block;font-size:11.5px;padding:1px 8px;border:1px solid;white-space:nowrap}
+.pill.have{color:var(--ok);border-color:var(--ok)}
+.pill.part{color:var(--warn);border-color:var(--warn)}
+.pill.new{color:var(--crit);border-color:var(--crit)}
+
+/* assets */
+.assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.assets{grid-template-columns:1fr}}
+.asset{background:var(--panel);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.asset .no{font-family:var(--voice);font-size:30px;color:var(--accent);line-height:1}
+.asset .hdr{display:flex;gap:12px;align-items:baseline}
+.sample{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid var(--line);padding:8px 10px;overflow-x:auto;white-space:pre;line-height:1.5}
+.vislist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.vis{border:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.vis svg{width:100%;height:auto;display:block}
+
+/* explorer */
+.exp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.exp{grid-template-columns:1fr}}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chain span{font-size:12.5px;padding:5px 9px;border:1px solid var(--line-strong)}
+.chain span.re{border-color:var(--accent);color:var(--accent)}
+.chain span.nw{border-color:var(--crit);color:var(--crit);border-style:dashed}
+.chain i{color:var(--faint);font-style:normal}
+svg text{font-family:var(--sans)}
+
+/* minmax */
+.mm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:980px){.mm{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.mm{grid-template-columns:1fr}}
+.mm .c{border-top:3px solid var(--line-strong);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.mm .c.k{border-color:var(--ok)} .mm .c.m{border-color:var(--accent)} .mm .c.l{border-color:var(--warn)} .mm .c.g{border-color:var(--crit)}
+.mm ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.budget{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.budget{grid-template-columns:1fr}}
+.budget div{background:var(--horizon);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:4px}
+.budget b{font-family:var(--voice);font-size:26px;color:var(--warm)}
+
+/* modules */
+.mods{min-width:760px;font-size:13.5px}
+.mods th,.mods td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+.mods thead th{font-family:var(--voice);font-size:13px;color:var(--dim);border-bottom:1px solid var(--line-strong)}
+.esetlap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+@media (max-width:860px){.esetlap{grid-template-columns:1fr}}
+
+/* phases + questions */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.phases{grid-template-columns:1fr}}
+.ph{border:1px solid var(--line);background:var(--panel);padding:12px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.ph b{font-family:var(--voice);font-size:20px;color:var(--accent)}
+.qs{display:flex;flex-direction:column;gap:12px}
+.q{border:1px solid var(--line);background:var(--panel);padding:14px;display:flex;flex-direction:column;gap:8px}
+.q .id{font-family:var(--mono);font-size:12px;color:var(--warm)}
+.q ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.q ol li b{font-family:var(--voice);color:var(--accent);margin-right:6px}
+footer{font-size:12.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="thesis">
+    <span class="eyebrow">Varler Workflow Kit · koncepció · 2026-11-06</span>
+    <h1>Kit Gyár</h1>
+    <p class="lede">A Workflow Kit mint gyártósor: egy indítópult, ahol a munka leírása és néhány kattintás elég. A sor csak ott áll meg, ahol tényleg kérdése van. Minden megállóban ugyanaz a három dolog vár, és a kis automatizmusok a megállóból indulnak, úgy, hogy nem kell elhagyni.
+    <span class="en">The Workflow Kit as a production line: one starter screen, a few clicks, and the line stops only where it really has a question. Every stop looks the same, and small automations run from the stop without leaving it.</span></p>
+    <nav class="toc" aria-label="Tartalom">
+      <a href="#folyamat">Folyamat</a><a href="#inditopult">Indítópult</a><a href="#megallo">Egy megálló</a><a href="#mellek">Mellékfolyamatok</a><a href="#eszkozok">Kimenetek</a><a href="#felfedezo">Szokatlan munka</a><a href="#minmax">Minmax</a><a href="#hatter">Háttér</a><a href="#dontesek">Döntések</a>
+    </nav>
+  </div>
+  <div class="rules cut" aria-label="Alapelvek">
+    <div><b>1</b><span>Egyszerű munka = egyszerű út. Egy lámpacsere 3 képernyő, nem 7.<span class="en">A simple job is a simple route: a lamp swap is 3 screens, not 7.</span></span></div>
+    <div><b>2</b><span>Minden megálló: <em>Kérdés</em> · <em>Terelés</em> · <em>Kimaradt</em>.<span class="en">Every stop has the same three parts: question, herd, left out.</span></span></div>
+    <div><b>3</b><span>Semmi sem kötelező. Ami hiányzik, általános értékkel megy tovább, és ez látszik.<span class="en">Nothing blocks. Missing facts become visible general values.</span></span></div>
+    <div><b>4</b><span>Elöl egyszerű, hátul moduláris: a megállók szűrők egy közös Esetlapon.<span class="en">Simple in front, modular behind: stops are filters over one shared job file.</span></span></div>
+  </div>
+</header>
+
+<!-- ============ FLOW ============ -->
+<section class="sec" id="folyamat">
+  <div class="sec-head">
+    <span class="eyebrow">1 · A folyamat</span>
+    <h2>A gyártósor egy képen<span class="en">The production line at a glance</span></h2>
+    <p class="dim">Nyolc állomás, ebből négy olyan, ahol a felhasználó dönt. A sáv (Expressz, Standard, Felfedező) a munka leírásából adódik, de felülírható. Válassz sávot, hogy lásd, mely állomások maradnak ki.</p>
+  </div>
+  <div class="legend">
+    <span><i class="mk stop"></i>Megálló: itt vár rád</span>
+    <span><i class="mk auto"></i>Automatikus: fut, nézheted</span>
+    <span><i class="mk side"></i>Mellékfolyamat: te indítod, háttérben fut</span>
+    <span><i class="mk end"></i>Kezdés / kiadás</span>
+  </div>
+  <div class="seg" role="group" aria-label="Sáv">
+    <button type="button" data-lane="e" aria-pressed="false">Expressz</button>
+    <button type="button" data-lane="s" aria-pressed="true">Standard</button>
+    <button type="button" data-lane="f" aria-pressed="false">Felfedező</button>
+  </div>
+  <p class="lane-note" id="laneNote"></p>
+
+  <div class="scroll" role="region" aria-label="Folyamatábra" tabindex="0">
+    <div class="spine" id="spine">
+      <div class="node end" data-e="Kezdés" data-s="Kezdés" data-f="Kezdés"><div class="shape">0</div><div class="nm">Forrás<span class="en">Source</span></div><div class="st"></div></div>
+      <div class="node auto" data-e="auto" data-s="auto" data-f="auto · nem illik a mintába"><div class="shape">A</div><div class="nm">Megértés<span class="en">Understanding</span></div><div class="st"></div></div>
+      <div class="node stop" data-e="—" data-s="—" data-f="megáll"><div class="shape">R</div><div class="nm">Új recept<span class="en">New recipe</span></div><div class="st"></div></div>
+      <div class="node stop" data-e="csak ha hiányzik adat" data-s="megáll" data-f="megáll, több kérdés"><div class="shape">1</div><div class="nm">Megálló 1<span class="en">Questions & context</span></div><div class="st"></div></div>
+      <div class="node auto" data-e="auto" data-s="auto" data-f="auto, új modulokkal"><div class="shape">B</div><div class="nm">Gyártás<span class="en">Build</span></div><div class="st"></div></div>
+      <div class="node stop" data-e="checkoutba olvasztva" data-s="megáll" data-f="megáll"><div class="shape">2</div><div class="nm">Megálló 2<span class="en">Quality & look</span></div><div class="st"></div></div>
+      <div class="node stop" data-e="megáll" data-s="megáll" data-f="megáll"><div class="shape">C</div><div class="nm">Checkout<span class="en">Final checks</span></div><div class="st"></div></div>
+      <div class="node end" data-e="Kiadás" data-s="Kiadás" data-f="Kiadás + recept mentése"><div class="shape">✓</div><div class="nm">Kiadás<span class="en">Delivery</span></div><div class="st"></div></div>
+    </div>
+  </div>
+
+  <h3>Minden opció állomásonként<span class="en">Every option, per station. Rows are the kinds of user input; green = side-runs, amber = left-out signal.</span></h3>
+  <div class="scroll" role="region" aria-label="Opció mátrix" tabindex="0">
+  <table class="matrix" id="matrix">
+    <thead><tr>
+      <th></th>
+      <th>0 Forrás</th><th class="a">A Megértés</th><th class="s">R Új recept</th><th class="s">1 Kérdések &amp; kontextus</th><th class="a">B Gyártás</th><th class="s">2 Minőség &amp; megjelenés</th><th class="s">C Checkout</th><th>✓ Kiadás</th>
+    </tr></thead>
+    <tbody>
+      <tr><th>Te adod<span class="en">You give</span></th>
+        <td><ul><li>Szöveg (rövid vagy részletes)</li><li>Planner terv (.vplan)</li><li>Korábbi dokumentum: Tervezet, PDF, Excel</li><li>Fotó (elosztó, helyszín)</li><li>Térkép-pont</li><li>E-mail szál</li><li>Projekt mappa</li></ul></td>
+        <td class="na">csak nézed</td>
+        <td class="na">—</td>
+        <td><ul><li>Válasz ☐ opcióval</li><li>„Nem tudom” → általános érték</li><li>Fotó vagy fájl mint válasz</li></ul></td>
+        <td class="na">—</td>
+        <td><ul><li>Javítás sorszámmal: „mind jó” vagy „7: 3 db”</li></ul></td>
+        <td><ul><li>Utolsó perces tétel (szöveg vagy katalógus)</li><li>Anyaglista kézi sorai</li></ul></td>
+        <td><ul><li>Ügyféladatok: név, cím, határidő (itt először)</li></ul></td></tr>
+      <tr><th>Te döntesz<span class="en">You choose</span></th>
+        <td><ul><li>Kimenet</li><li>Terjedelem</li><li>Típus</li><li>Fókusz + egyéni szó</li><li>Kérdés-mélység 0–3</li><li>Sáv (automatikus, felülírható)</li></ul></td>
+        <td><ul><li>Recept elfogadása 1 kattintással</li><li>„Ez nem az” → másik recept / Felfedező</li><li>Gyenge egyezésnél 1 irányító kérdés</li></ul></td>
+        <td><ul><li>Javasolt modullánc elfogadása</li><li>Modul cseréje</li><li>Mégis a legközelebbi recept</li></ul></td>
+        <td><ul><li>Mélység állítása menet közben</li><li>Kérdés halasztása a checkoutig</li></ul></td>
+        <td><ul><li>„Itt mindig álljon meg” (gombostű)</li></ul></td>
+        <td><ul><li>Változat A / B / C</li><li>P-szint (P40–P60)</li><li>Dokumentum-stílus</li><li>Mely vizuálok kerülnek be</li><li>12.x mellékletek mélysége</li></ul></td>
+        <td><ul><li>Pontos tétellista: Daniella-ár mutatása be/ki</li><li>Tartalék cikk, ha nincs készleten</li><li>Belső tétel: nem megy ki ügyfélnek</li></ul></td>
+        <td><ul><li>Dokumentumtípusok</li><li>Mentés · letöltés · új e-mail · válasz szálra</li></ul></td></tr>
+      <tr><th>Terelés<span class="en">Herd (quick)</span></th>
+        <td><ul><li>Hasonló munka betöltése</li><li>Előző verzió folytatása</li><li>Recept kézi választása</li></ul></td>
+        <td><ul><li>Mező javítása helyben</li><li>Rögzítés: ezt semmi ne írja felül</li></ul></td>
+        <td><ul><li>Modul hozzáadása a könyvtárból</li></ul></td>
+        <td><ul><li>Kérdezz többet erről</li><li>Mutasd rajzon</li><li>Válasz fotóból</li></ul></td>
+        <td><ul><li>Futásnapló</li></ul></td>
+        <td><ul><li>Mi-lenne-ha csúszka</li><li>Összevetés előző verzióval</li><li>Vizuál újra</li></ul></td>
+        <td><ul><li>Újraszámolás</li><li>Kerekítés-ellenőrzés (5 000-es lépés)</li></ul></td>
+        <td><ul><li>Daniella e-mail vázlat</li><li>Másolat a projekt mappába</li></ul></td></tr>
+      <tr class="side"><th>Mellék&shy;folyamat<span class="en">Side-run</span></th>
+        <td><ul><li>Élő vizuálok indítása</li><li>Árfigyelés indítása</li></ul></td>
+        <td><ul><li>Terv + szöveg összefésülése</li><li>Dokumentum beolvasása</li></ul></td>
+        <td><ul><li>Szakmai utánanézés (norma, bérleti ár) forrásnaplóval</li></ul></td>
+        <td><ul><li>Ügyfél-kérdéslap</li><li>Felmérési lista</li></ul></td>
+        <td><ul><li>Mennyiség · árazás · vázlat · vizuálok</li></ul></td>
+        <td><ul><li>Golden + nyomkövetés</li><li>Normaellenőrzés</li><li>Ütemezés</li></ul></td>
+        <td><ul><li>Élő ár + készlet</li><li>Független piaci mérés (belső)</li></ul></td>
+        <td><ul><li>PDF + golden ellenőrzés</li></ul></td></tr>
+      <tr class="gap"><th>Kimaradt<span class="en">Left-out signal</span></th>
+        <td class="na">—</td>
+        <td><ul><li>Kötelező 5 állapota: ✓ / ?</li></ul></td>
+        <td><ul><li>Nem kalibrált: széles ársáv jelölve</li></ul></td>
+        <td><ul><li>Ami kimaradt + hatása (± Ft, ± nap) + milyen általános érték megy helyette</li></ul></td>
+        <td><ul><li>Becsült (nem mért) mennyiségek</li></ul></td>
+        <td><ul><li>Mi az, ami még általános, és mennyit mozdítana</li></ul></td>
+        <td><ul><li>Végső lista: ezek nélkül az általános változat megy ki</li></ul></td>
+        <td><ul><li>Nyitott pontok a projekt jegyzetbe</li></ul></td></tr>
+      <tr><th>Kimenet<span class="en">Output</span></th>
+        <td>Esetlap v0, minden mező forrással</td>
+        <td>Recept + bizonyosság, „Amit megértettem” kártya</td>
+        <td>Ideiglenes recept</td>
+        <td>Válaszok + feltevések (H / M / L)</td>
+        <td>offer.json + vázlat</td>
+        <td>Jóváhagyott tartalom</td>
+        <td>Végleges számok, Anyaglista (rövid + pontos)</td>
+        <td>PDF-ek, CSV, e-mail vázlat, archív Esetlap</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="sec" id="inditopult">
+  <div class="sec-head">
+    <span class="eyebrow">2 · Pitch</span>
+    <h2>Az indítópult<span class="en">The starter dashboard. Working mock: type or load a sample and the right side reacts.</span></h2>
+    <p class="dim">Bal oldalon a munka leírása és a források. Jobb oldalon az, amit a Kit ebből megértett: melyik recepthez hasonlít, mi hiányzik a Kötelező 5-ből, és melyik úton megy végig. A felismerés itt egy egyszerű kulcsszó-szavazás, csak a működés bemutatására.</p>
+  </div>
+  <div class="samples">Minta: <button type="button" data-sample="dm1">DM1 alelosztók</button> · <button type="button" data-sample="lamp">lámpacsere</button> · <button type="button" data-sample="ground">földelés</button> · <button type="button" data-sample="event">szokatlan munka</button></div>
+
+  <div class="dash">
+    <div class="col">
+      <div class="box cut">
+        <h4><span>Munka leírása<span class="en">Job description</span></span><small>rövid vagy részletes</small></h4>
+        <label class="faint" for="prompt" style="font-size:12px">Írd le saját szavaiddal. A Kit kiolvassa belőle, amit tud.</label>
+        <textarea id="prompt"></textarea>
+        <div class="grp"><span class="l">Források</span>
+          <div class="chips" data-group="src" data-multi="1">
+            <button type="button" class="chip src" data-val="szoveg" aria-pressed="true">Szöveg</button>
+            <button type="button" class="chip src" data-val="vplan">Planner terv</button>
+            <button type="button" class="chip src" data-val="doc">Korábbi dokumentum</button>
+            <button type="button" class="chip src" data-val="foto">Fotó</button>
+            <button type="button" class="chip src" data-val="terkep">Térkép-pont</button>
+            <button type="button" class="chip src" data-val="email">E-mail szál</button>
+          </div>
+        </div>
+      </div>
+      <div class="box cut">
+        <h4><span>Indító funkciók<span class="en">Starter functions</span></span><small>minden alapértelmezett</small></h4>
+        <div class="grp"><span class="l">Kimenet</span>
+          <div class="chips" data-group="out" data-multi="1">
+            <button type="button" class="chip" data-val="tervezet" aria-pressed="true">Tervezet</button>
+            <button type="button" class="chip" data-val="arajanlat">Árajánlat</button>
+            <button type="button" class="chip" data-val="anyag" aria-pressed="true">Anyaglista</button>
+            <button type="button" class="chip" data-val="vizual">Vizuál-csomag</button>
+          </div></div>
+        <div class="grp"><span class="l">Terjedelem</span>
+          <div class="chips" data-group="scope">
+            <button type="button" class="chip" data-val="teljes" aria-pressed="true">Teljes munka</button>
+            <button type="button" class="chip" data-val="reszleges">Részleges</button>
+          </div></div>
+        <div class="grp"><span class="l">Típus</span>
+          <div class="chips" data-group="type">
+            <button type="button" class="chip" data-val="lakas" aria-pressed="true">Lakás</button>
+            <button type="button" class="chip" data-val="haz">Családi ház</button>
+            <button type="button" class="chip" data-val="iroda">Iroda / üzlet</button>
+            <button type="button" class="chip" data-val="ipari">Ipari szerelés</button>
+          </div></div>
+        <div class="grp"><span class="l">Fókusz</span>
+          <div class="chips" data-group="focus" data-multi="1">
+            <button type="button" class="chip" data-val="foldeles">Földelés</button>
+            <button type="button" class="chip" data-val="eloszto">Elosztószerelés</button>
+            <button type="button" class="chip" data-val="lampa">Lámpafelszerelés</button>
+            <button type="button" class="chip" data-val="ideiglenes">Ideiglenes betáp</button>
+            <button type="button" class="chip" data-val="dugalj">Dugalj / kapcsoló bővítés</button>
+            <button type="button" class="chip" data-val="nagy">Nagyfogyasztó betáp</button>
+            <button type="button" class="chip" data-val="gyenge">Gyengeáram / adat</button>
+          </div></div>
+        <div class="grp"><label for="custom">Egyéni</label><input type="text" id="custom" placeholder="pl. napelem AC oldal, régi alumínium vezeték"></div>
+        <div class="grp"><label for="depth">Kérdések</label>
+          <div class="depth">
+            <input type="range" id="depth" min="0" max="3" step="1" value="2" aria-describedby="depthTicks">
+            <div class="ticks" id="depthTicks"><span>0 · csak a végén</span><span>1 · gyors</span><span>2 · normál</span><span>3 · alapos</span></div>
+          </div></div>
+        <div class="grp"><span class="l">Mellék&shy;folyamat</span>
+          <div class="chips" data-group="side" data-multi="1">
+            <button type="button" class="chip" data-val="vizual" aria-pressed="true">Élő vizuálok</button>
+            <button type="button" class="chip" data-val="ar">Árfigyelés</button>
+            <button type="button" class="chip" data-val="piac">Piaci mérés a végén</button>
+          </div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="box cut">
+        <h4><span>Amit megértettem<span class="en">What the Kit understood</span></span><small>jelzés-szavazás</small></h4>
+        <div id="votes" style="display:flex;flex-direction:column;gap:7px"></div>
+        <div class="chips" id="signals" aria-label="Talált jelek"></div>
+        <div id="verdict"></div>
+      </div>
+      <div class="box cut">
+        <h4><span>Kötelező 5<span class="en">The five facts no source carried on jobs 2–3</span></span><small>szürke = ennél a receptnél nem kell</small></h4>
+        <div class="k5" id="k5"></div>
+      </div>
+      <div class="box cut">
+        <h4><span>Az út<span class="en">Predicted route</span></span><span class="lanebadge" id="laneName"></span></h4>
+        <div class="vrow"><span>Nézet<span class="en">View</span></span>
+          <span class="vseg" role="group" aria-label="Nézet">
+            <button type="button" data-view="list" aria-pressed="true">Lista</button>
+            <button type="button" data-view="fab" aria-pressed="false">Gyár</button>
+          </span></div>
+        <div id="viewList"><div class="route" id="route"></div></div>
+        <div id="viewFab" class="view-fab" hidden>
+          <canvas id="fabCanvas" width="256" height="160" role="img" aria-label="Izometrikus gyár: a munka ládája szalagon halad az állomások között"></canvas>
+          <div id="fabBadges"></div>
+          <div class="fab-cap" id="fabCap"><span></span><span></span></div>
+        </div>
+        <div class="steps" aria-label="Lépések">
+          <button type="button" class="sbtn" id="stReset" title="Újra az elejéről">⏮ Újra</button>
+          <button type="button" class="sbtn pri" id="stPlay">▶ Indítás</button>
+          <button type="button" class="sbtn" id="stNext" title="Következő állomás">⏭ Következő</button>
+          <span class="prog" id="stProg"></span>
+        </div>
+        <div class="stat" id="stats"></div>
+        <div id="gaps"></div>
+        <div><span class="faint" style="font-size:12px">Kimenetek</span><ul class="tight" id="assets"></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="box cut stdet" id="stDetail" aria-live="polite"></div>
+</section>
+
+<!-- ============ STOP ANATOMY ============ -->
+<section class="sec" id="megallo">
+  <div class="sec-head">
+    <span class="eyebrow">3 · Egy megálló belülről</span>
+    <h2>Kérdés, terelés, kimaradt<span class="en">Inside a stop: question, herd, left out</span></h2>
+    <p class="dim">Minden kérdés megmondja, miért kérdezi, mit mozdít a válasz, és van rajta egy kis rajz. Mindig van ajánlott opció és „nem tudom”. Jobb oldalon a terelő gombok: ezek a megállóból futnak, a sor nem megy tovább, amíg vissza nem jöttél. Alul az, amit ennél a pontnál kihagytunk.</p>
+  </div>
+
+  <div class="stopcard">
+    <div class="main">
+      <div class="qhead"><span class="qn">Megálló 1 · 2 / 3</span><h3>Hány szabad modulhely van a meglévő elosztóban?<span class="en">How many free module slots are in the existing board?</span></h3></div>
+      <div class="why">
+        <p class="dim" style="font-size:14px">Az új alelosztók védelmei (2 db 3 pólusú kismegszakító) és egy túlfeszültség-levezető a meglévő elosztóba kerülnek, ez kb. 10 modul. Ha nincs ennyi hely, egy kis kiegészítő doboz kell mellé, ami anyagban és munkában is plusz.
+          <span class="en">The new feeders and a surge arrester go into the existing board, about 10 modules. Without room, a small add-on box is needed next to it.</span></p>
+        <svg viewBox="0 0 230 112" role="img" aria-label="DIN sín 18 modulhellyel, 11 foglalt, 7 kérdéses">
+          <rect x="6" y="40" width="218" height="10" fill="var(--line-strong)"/>
+          <g fill="var(--raised)" stroke="var(--line-strong)">
+            <rect x="8" y="26" width="11" height="38"/><rect x="20" y="26" width="11" height="38"/><rect x="32" y="26" width="11" height="38"/><rect x="44" y="26" width="11" height="38"/>
+            <rect x="56" y="26" width="11" height="38"/><rect x="68" y="26" width="11" height="38"/><rect x="80" y="26" width="11" height="38"/><rect x="92" y="26" width="11" height="38"/>
+            <rect x="104" y="26" width="11" height="38"/><rect x="116" y="26" width="11" height="38"/><rect x="128" y="26" width="11" height="38"/>
+          </g>
+          <g fill="none" stroke="var(--warm)" stroke-dasharray="3 2">
+            <rect x="140" y="26" width="11" height="38"/><rect x="152" y="26" width="11" height="38"/><rect x="164" y="26" width="11" height="38"/><rect x="176" y="26" width="11" height="38"/>
+            <rect x="188" y="26" width="11" height="38"/><rect x="200" y="26" width="11" height="38"/><rect x="212" y="26" width="11" height="38"/>
+          </g>
+          <path d="M140 18 v-6 h83 v6" fill="none" stroke="var(--warm)"/>
+          <text x="181" y="9" text-anchor="middle" font-size="10" fill="var(--warm)">szabad: ?</text>
+          <path d="M8 72 v6 h131 v-6" fill="none" stroke="var(--faint)"/>
+          <text x="73" y="92" text-anchor="middle" font-size="10" fill="var(--dim)">foglalt (fotóról)</text>
+          <text x="181" y="92" text-anchor="middle" font-size="10" fill="var(--dim)">kell ≈ 10</text>
+        </svg>
+      </div>
+      <div class="opts" role="radiogroup" aria-label="Válasz">
+        <div class="opt rec"><span>☐</span><span><b>10 vagy több</b> · minden a meglévő elosztóba megy <span class="faint">(ajánlott, ha a fotó ezt mutatja)</span></span><span class="imp">±0</span></div>
+        <div class="opt"><span>☐</span><span><b>Kevesebb</b> · kiegészítő doboz a meglévő mellé</span><span class="imp">+ doboz + 1–2 óra</span></div>
+        <div class="opt"><span>☐</span><span><b>Nem tudom</b> · „felméréssel pontosítandó”, a Tervezet általános sort kap</span><span class="imp">sáv ±</span></div>
+      </div>
+    </div>
+    <div class="herd">
+      <h4>Terelés ebből a megállóból<span class="en">Herd from this stop</span></h4>
+      <div class="hbtn">Válasz fotóból <small>elosztó fotó → szabad helyek</small></div>
+      <div class="hbtn">Kérdezz többet erről <small>+ T2 védelem, főkapcsoló</small></div>
+      <div class="hbtn">Mutasd rajzon <small>elosztó-kiosztás vázlat</small></div>
+      <div class="hbtn">Halaszd a checkoutig <small>általános értékkel megy</small></div>
+      <div class="hbtn">Tedd az ügyfél-kérdéslapra <small>közérthető megfogalmazás</small></div>
+      <div class="run">
+        <span>Fut a háttérben: <b>egyvonalas séma, V-02</b></span>
+        <div class="bar"><i></i></div>
+        <span class="faint" style="font-size:12px">indítva a Forrásnál · a megálló közben is használható</span>
+      </div>
+    </div>
+    <div class="gapbox">
+      <h4>Kimaradt ennél a pontnál<span class="en">Left out at this stop. None of it blocks; each one has a general value.</span></h4>
+      <div class="gaprow"><span>A kábelút pontos hossza a pincébe (nincs terv, arányszámmal becsülve)</span><span class="imp">kábel ±25 %</span></div>
+      <div class="gaprow"><span>Födém anyaga az áttörésnél</span><span class="imp">munka ±2 óra</span></div>
+      <div class="gaprow"><span>Lakott-e a ház a munka alatt (porvédelem, takarítás)</span><span class="imp">munka ±8 %</span></div>
+      <p class="faint" style="font-size:12.5px">Mélység 2 („normál”): a fenti három ár- vagy időhatása 3 % alatt van, ezért nem kérdeztük. A checkoutnál újra látszanak.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIDE RUNS ============ -->
+<section class="sec" id="mellek">
+  <div class="sec-head">
+    <span class="eyebrow">4 · Kis automatizmusok</span>
+    <h2>Mellékfolyamatok katalógusa<span class="en">Side-run catalogue: small automations, each started from a stop, none of them moves the line forward</span></h2>
+    <p class="dim">A pontok az állomásokat jelölik ebben a sorrendben: 0 · A · R · 1 · B · 2 · C · ✓. Zöld pont = ott elérhető. Az állapot azt mutatja, mennyi van már meg a mai Kitben vagy a munkák kódjában.</p>
+  </div>
+  <div class="scroll" role="region" aria-label="Mellékfolyamatok" tabindex="0">
+  <table class="cat">
+    <thead><tr><th>Mellékfolyamat</th><th>Mit csinál</th><th>Hol</th><th>Futás</th><th>Ma</th></tr></thead>
+    <tbody id="catBody"></tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ ASSETS ============ -->
+<section class="sec" id="eszkozok">
+  <div class="sec-head">
+    <span class="eyebrow">5 · Checkout és kiadás</span>
+    <h2>A négy kimenet<span class="en">The four output assets</span></h2>
+    <p class="dim">Az 1 és a 2 ugyanaz a lista két nézetben, nem két külön termék. Ugyanaz a sor, egyszer köznyelven Daniellának, egyszer cikkszámmal nekünk.</p>
+  </div>
+  <div class="assets">
+    <div class="asset cut">
+      <div class="hdr"><span class="no">1</span><h3>Anyaglista, rövid<span class="en">Short material list for the supplier contact</span></h3></div>
+      <p class="dim" style="font-size:14px">Rövid megnevezések, darabszám. Ezt kapja a Daniella-kapcsolattartó, ő állítja össze a pontos rendelést. A checkoutnál kézzel bővíthető.</p>
+      <div class="sample">Fővezetéki sorkapocs, 3P ............ 2 db
+Szakaszoló kapcsoló, 3P 40 A ......... 2 db
+Áramvédő kapcsoló, 4P 40 A 30 mA ..... 2 db
+Kismegszakító C16, 1P ................ 6 db
+Kábel NYY-J 5×10 RM .................. ? m  ← felméréssel
++ kézi sor: kábelkötegelő, 300 mm .... 1 cs</div>
+    </div>
+    <div class="asset cut">
+      <div class="hdr"><span class="no">2</span><h3>Pontos tétellista<span class="en">Exact list: maker part no., specs, optional live supplier price</span></h3></div>
+      <p class="dim" style="font-size:14px">Gyártói cikkszám, műszaki adat, VRG-ID, link. A Daniella-ár csak bekapcsolva látszik, és ügyféldokumentumba soha nem kerül. Ha egy cikk nincs készleten, a tartalék sor mellé kerül.</p>
+      <div class="sample">EZ9S16340  Szakaszoló 3P 40 A   készlet: 0  → tartalék EZ9S16440 (4P)
+EZ9EUC212  Easy9 EU 2×12 doboz  készlet: ✓
+[Daniella-ár: ki]  ·  forrás: webshop, ellenőrizve 11-06</div>
+    </div>
+    <div class="asset cut">
+      <div class="hdr"><span class="no">3</span><h3>Vizuálok<span class="en">Visuals: run as side-runs, picked for the documents at stop 2</span></h3></div>
+      <div class="vislist">
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="6" y="22" width="22" height="16"/><rect x="50" y="8" width="20" height="14"/><rect x="50" y="38" width="20" height="14"/><rect x="92" y="22" width="22" height="16"/><path d="M28 30 H40 V15 H50 M40 30 V45 H50 M70 15 H82 V30 H92 M70 45 H82 V30"/></g></svg>Topológia</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M10 8 V52 M10 16 H40 M10 30 H40 M10 44 H40"/><rect x="40" y="10" width="14" height="12"/><rect x="40" y="24" width="14" height="12"/><rect x="40" y="38" width="14" height="12"/><path d="M54 16 H110 M54 30 H96 M54 44 H82"/><circle cx="110" cy="16" r="4"/><circle cx="96" cy="30" r="4"/><circle cx="82" cy="44" r="4"/></g></svg>Bekötési rajz</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="6" y="6" width="108" height="48"/><rect x="18" y="18" width="10" height="10"/><rect x="60" y="34" width="10" height="10"/><rect x="92" y="34" width="10" height="10"/><path d="M23 18 V6 M65 34 V20 H97 V34" stroke-dasharray="3 2"/></g></svg>Falnézet</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M6 6 H114 V54 H6 Z M60 6 V30 H114 M6 34 H40 V54"/><circle cx="30" cy="20" r="3"/><circle cx="88" cy="18" r="3"/><circle cx="84" cy="44" r="3"/><path d="M30 20 L88 18 M60 30 L84 44" stroke-dasharray="3 2"/></g></svg>Felülnézet</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M60 6 L104 22 L60 38 L16 22 Z"/><path d="M16 22 V38 L60 54 L104 38 V22 M60 38 V54"/><circle cx="60" cy="22" r="3"/><path d="M60 22 L34 30 M60 22 L86 30" stroke-dasharray="3 2"/></g></svg>Izometrikus adat-topológia</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M10 30 H30 M30 22 L42 30 M42 30 H58 M58 14 V46 M58 14 H80 M58 30 H80 M58 46 H80"/><rect x="80" y="10" width="10" height="8"/><rect x="80" y="26" width="10" height="8"/><rect x="80" y="42" width="10" height="8"/><path d="M90 14 H110 M90 30 H110 M90 46 H110"/></g></svg>Egyvonalas séma</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="6" y="6" width="108" height="48"/><path d="M12 22 H108 M12 42 H108"/></g><g fill="var(--accent-soft)" stroke="var(--accent)"><rect x="14" y="14" width="8" height="16"/><rect x="24" y="14" width="8" height="16"/><rect x="34" y="14" width="16" height="16"/><rect x="14" y="34" width="8" height="16"/><rect x="24" y="34" width="8" height="16"/></g></svg>Elosztó-kiosztás</div>
+        <div class="vis"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M6 50 H114 M6 30 H114 M6 10 H114" stroke="var(--line-strong)"/><path d="M20 50 V30 H70 V10 H100" stroke-width="2.2"/><circle cx="20" cy="50" r="3"/><circle cx="100" cy="10" r="3"/></g></svg>Nyomvonal, elvi</div>
+      </div>
+    </div>
+    <div class="asset cut">
+      <div class="hdr"><span class="no">4</span><h3>Dokumentumok és kiadás<span class="en">Documents, client data, delivery</span></h3></div>
+      <ul class="tight">
+        <li><b>Költségvetési Tervezet</b> (soha nem „ajánlat”) · <b>Árajánlat</b> (kötelező erejű, ugyanazokkal a számokkal)</li>
+        <li>12.1 munkadíj tételes · 12.2 anyag tételes · 12.3 műszaki leírás · 12 egyben · A3 lapok</li>
+        <li>Ügyféladatok csak itt kerülnek be, közvetlenül a végleges letöltés előtt</li>
+        <li>Mentés a projekt mappába · letöltés · új e-mail vázlat · válasz egy kiválasztott e-mail szálra</li>
+        <li>Belső kimenetek: piaci összevetés, nyitott pontok, lecke-javaslatok a Kithez</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPLORER ============ -->
+<section class="sec" id="felfedezo">
+  <div class="sec-head">
+    <span class="eyebrow">6 · Ha a munka nem illik a mintába</span>
+    <h2>Felfedező sáv<span class="en">The explorer lane: new tools for a new kind of job</span></h2>
+    <p class="dim">A Megértés lépés minden ismert receptre szavaztat: a szöveg szavai, a terv tényei, a kiválasztott gombok és a térkép mind jelet adnak, súllyal. Ha a legerősebb recept is gyenge, vagy sok olyan jel van, amit egyik recept sem ismer, a Kit nem erőlteti rá a munkát a legközelebbi mintára. Új modulláncot javasol, a megállók ugyanúgy megmaradnak.</p>
+  </div>
+  <div class="exp">
+    <div class="box cut">
+      <h4>Jelzés-szavazás<span class="en">Signal vote</span></h4>
+      <div class="scroll">
+      <svg viewBox="0 0 560 270" role="img" aria-label="Jelek receptekre szavaznak, a döntés három kimenettel" style="min-width:480px;width:100%">
+        <g font-size="12" fill="var(--fg)">
+          <g stroke="var(--line-strong)" fill="var(--raised)">
+            <rect x="4" y="20" width="118" height="34"/><rect x="4" y="82" width="118" height="34"/><rect x="4" y="144" width="118" height="34"/><rect x="4" y="206" width="118" height="34"/>
+          </g>
+          <text x="14" y="41">szöveg szavai</text><text x="14" y="103">terv tényei</text><text x="14" y="165">gombok (fókusz)</text><text x="14" y="227">térkép, dokumentum</text>
+          <g stroke="var(--accent)" stroke-opacity=".35" fill="none">
+            <path d="M122 37 L214 30 M122 37 L214 84 M122 37 L214 138 M122 37 L214 192 M122 99 L214 30 M122 99 L214 84 M122 161 L214 84 M122 161 L214 138 M122 161 L214 192 M122 223 L214 30 M122 223 L214 246 M122 99 L214 246"/>
+          </g>
+          <g stroke="var(--accent)" fill="var(--accent-soft)">
+            <rect x="214" y="16" width="130" height="28"/><rect x="214" y="70" width="130" height="28"/><rect x="214" y="124" width="130" height="28"/><rect x="214" y="178" width="130" height="28"/>
+          </g>
+          <rect x="214" y="232" width="130" height="28" stroke="var(--crit)" stroke-dasharray="4 3" fill="var(--crit-soft)"/>
+          <text x="224" y="34">lakásfelújítás</text><text x="224" y="88">elosztó / alelosztó</text><text x="224" y="142">ideiglenes betáp</text><text x="224" y="196">részleges · földelés · ipari</text><text x="224" y="250" fill="var(--crit)">ismeretlen jelek</text>
+          <g stroke="var(--line-strong)" fill="none"><path d="M344 30 L410 136 M344 84 L410 136 M344 138 L410 136 M344 192 L410 136 M344 246 L410 136"/></g>
+          <rect x="410" y="118" width="40" height="36" fill="var(--warm)"/>
+          <text x="430" y="141" text-anchor="middle" fill="var(--bg)" font-weight="700">?</text>
+          <g stroke="var(--line-strong)" fill="none"><path d="M450 128 L470 60 M450 136 L470 136 M450 144 L470 212"/></g>
+          <text x="474" y="52">≥ 45 %</text><text x="474" y="66" fill="var(--dim)">recept</text>
+          <text x="474" y="132">30–45 %</text><text x="474" y="146" fill="var(--dim)">1 kérdés</text>
+          <text x="474" y="208" fill="var(--crit)">&lt; 30 % vagy</text><text x="474" y="222" fill="var(--crit)">≥ 3 új jel</text><text x="474" y="236" fill="var(--dim)">Felfedező</text>
+        </g>
+      </svg>
+      </div>
+      <p class="faint" style="font-size:12.5px">Az élesben futó változatban a súlyokat a lezárt munkák állítják: minden lezárt munka egy példa arra, mely jelek melyik recepthez tartoztak.</p>
+    </div>
+    <div class="box cut">
+      <h4>Példa: szabadtéri rendezvény, 3 nap<span class="en">Example: outdoor event power for 3 days</span></h4>
+      <p class="dim" style="font-size:14px">„2 aggregátor, 6 stand-elosztó, sátorvilágítás, kábelvédő hidak, telepítés és bontás, bérelt eszközökkel.” Nincs vésés, nincs anyagvásárlás, az idő napokban mérődik. A legközelebbi recept az ideiglenes betáp, de az árazása itt hamis lenne.</p>
+      <h4 style="margin-top:6px">Javasolt modullánc</h4>
+      <div class="chain">
+        <span class="re">Forrás</span><i>→</i><span class="re">Megértés</span><i>→</i><span class="nw">Terhelés-összesítő</span><i>→</i><span class="re">Megálló 1: helyszín, napok, fogyasztók</span><i>→</i><span class="nw">Bérlés-alapú árazás: nap × eszköz</span><i>→</i><span class="nw">Telepítés + bontás óradíjjal</span><i>→</i><span class="nw">Érintésvédelmi mérés napló</span><i>→</i><span class="re">Megálló 2</span><i>→</i><span class="re">Checkout</span><i>→</i><span class="re">Kiadás: Tervezet bérleti változat + felülnézet</span>
+      </div>
+      <div class="legend"><span><i class="mk auto"></i>meglévő modul</span><span><i class="mk side" style="border-color:var(--crit)"></i>új modul, széles ársávval</span></div>
+      <ul class="tight">
+        <li>Az óradíj, a P-szint, a dokumentum-sablon és a megállók a meglévő Kitből jönnek.</li>
+        <li>Az új modulok a forrásnaplóba írják, honnan vették az árat vagy a normát.</li>
+        <li>Kiadás után: <b>Recept mentése</b>. A következő hasonló munka már Standard sávon megy.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MINMAX ============ -->
+<section class="sec" id="minmax">
+  <div class="sec-head">
+    <span class="eyebrow">7 · Elemzés</span>
+    <h2>Minmax: mi marad, mi olvad össze, mi vár<span class="en">What stays, what merges, what waits, what is locked</span></h2>
+  </div>
+  <div class="mm">
+    <div class="c k"><h4>Marad, ez a lényeg</h4><ul>
+      <li>Egy indítópult: szöveg + források + chipek. A dokumentum típusát a Kit ismeri fel, nem kell választani.</li>
+      <li>Recept-szavazás a Megértésnél. Ez dönti el a sávot, nem a felhasználó előre.</li>
+      <li>Megállók, amik maguktól kimaradnak, ha nincs kérdés. Gombostűvel mindig megállíthatók.</li>
+      <li>A Kimaradt-jelzés hatással (± Ft, ± nap). Ez az, ami bizalmat ad a kevés kérdéshez.</li>
+      <li>Checkout újraszámolás utolsó perces tétellel.</li>
+    </ul></div>
+    <div class="c m"><h4>Összeolvad</h4><ul>
+      <li>Prompt, Planner-adat és korábbi dokumentum: egy Forrás mező, több bemenettel.</li>
+      <li>Megálló 2 „minőség” és a mai 3. kör (feltevéslista): egy számozott lista, csak az új vagy ⚠ sorokkal.</li>
+      <li>Anyaglista és pontos tétellista: egy lista, két nézet. A Daniella-ár egy kapcsoló.</li>
+      <li>Vizuálok: nem állomás, hanem mellékfolyamat. A Megálló 2 csak kiválasztja őket.</li>
+      <li>Kérdés-mélység: egy csúszka az elején, a megállóban témánként „kérdezz többet”.</li>
+    </ul></div>
+    <div class="c l"><h4>Később (G4–G5)</h4><ul>
+      <li>Válasz meglévő e-mail szálra: postafiók-kapcsolat kell. Addig e-mail vázlat + másolható szöveg.</li>
+      <li>Fotóból tény (szabad modulhely): addig a fotó csak csatolmány a kérdés mellé.</li>
+      <li>Térkép-pont → épület kora, emelet, lift, utazási idő.</li>
+      <li>Felfedező sáv új modulokkal. Előbb kell 3–4 recept a meglévő munkákból.</li>
+    </ul></div>
+    <div class="c g"><h4>Lakat, nem opció</h4><ul>
+      <li>A Tervezet soha nem „ajánlat”, és nem utal a későbbi Árajánlatra.</li>
+      <li>A piaci mérés belső. Ügyfélszámot csak checkoutnál, kézzel elfogadva mozdíthat.</li>
+      <li>Partner (Daniella) árak soha nem kerülnek ügyféldokumentumba.</li>
+      <li>Ügyféladat a gépen marad. Belső tétel (pl. későbbi betáp-átvezetés) nem megy ki.</li>
+    </ul></div>
+  </div>
+  <h3>Komplexitás-költségvetés<span class="en">Complexity budget: the rules that keep the front simple</span></h3>
+  <div class="budget">
+    <div><b>≤ 3</b><span>fő gomb egy megállóban, a többi a „Több” alatt</span></div>
+    <div><b>≤ 7</b><span>kérdés egyszerre a képernyőn. Mélység 3 lapoz.</span></div>
+    <div><b>1</b><span>kattintás „Tovább általános változattal” minden megállóban</span></div>
+  </div>
+</section>
+
+<!-- ============ BACKGROUND ============ -->
+<section class="sec" id="hatter">
+  <div class="sec-head">
+    <span class="eyebrow">8 · Háttér</span>
+    <h2>Elöl egyszerű, hátul moduláris<span class="en">Simple in front, modular behind</span></h2>
+  </div>
+  <div class="esetlap">
+    <div class="box cut">
+      <h4>Az Esetlap a gép közepe<span class="en">The job file is the centre</span></h4>
+      <p style="font-size:14px">Minden modul ugyanabba a munkafájlba ír: mezők forrással, bizonyossággal (H / M / L), hatással és „rögzítve” jelzővel. Ebből három dolog következik:</p>
+      <ul class="tight">
+        <li><b>A megálló egy szűrő, nem kód.</b> „Mutasd az L-bizonyosságú mezőket, amelyek hatása a mélység küszöbe fölött van.” A Kimaradt lista ugyanennek a szűrőnek a maradéka.</li>
+        <li><b>A mellékfolyamat egy modul</b>, ami mezőket ír, és a függő mezők újraszámolódnak. Ezért fut a megállóból, a sor léptetése nélkül.</li>
+        <li><b>Új munkatípus = új modullánc</b> ugyanazon az Esetlapon. A Felfedező sáv nem külön program.</li>
+      </ul>
+      <div class="sample">{ "mezo": "eloszto.szabad_modul",
+  "ertek": null, "alap": "felméréssel",
+  "bizonyossag": "L", "hatas": "+doboz, 1–2 óra",
+  "forras": "—", "rogzitve": false }</div>
+    </div>
+    <div class="scroll" role="region" aria-label="Modulok" tabindex="0">
+    <table class="mods">
+      <thead><tr><th>Modul</th><th>Ma a Kitben</th><th>Állapot</th></tr></thead>
+      <tbody>
+        <tr><td>Bemenet: szöveg → scope</td><td>DM1-ben kézzel; L-20 javaslat</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Bemenet: Planner terv → take-off</td><td>NV4 pipeline, DM1 blueprint; L-21</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Bemenet: dokumentum, fotó, térkép, e-mail</td><td>—</td><td><span class="pill new">új</span></td></tr>
+        <tr><td>Recept-szavazó</td><td>—</td><td><span class="pill new">új</span></td></tr>
+        <tr><td>Kérdés-tölcsér → megálló-szűrő</td><td><span class="mono">funnel.js</span> v1.2, NV4 28/28</td><td><span class="pill have">megvan</span></td></tr>
+        <tr><td>Kötelező 5</td><td>one-pass javaslat §2</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Mennyiség: mért vagy arány-sáv</td><td>P33 + DM1 arányszámok</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Közös árazó motor</td><td>ma munkánként <span class="mono">pXX_price.js</span>; L-23</td><td><span class="pill new">új</span></td></tr>
+        <tr><td>Dokumentum-sablon slotokkal</td><td>ma sortartomány-másolás; L-24</td><td><span class="pill new">új</span></td></tr>
+        <tr><td>Normák + anyagok katalógusa</td><td>L-22</td><td><span class="pill new">új</span></td></tr>
+        <tr><td>Vizuál-gyártók</td><td>DM1 lapok, Planner Finom, baseline motor</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Golden + nyomkövetés ellenőrzés</td><td><span class="mono">check_golden.js</span>; L-26</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Piaci mérés</td><td><span class="mono">market.js</span> + vrg-piacmero</td><td><span class="pill have">megvan</span></td></tr>
+        <tr><td>Beszállító: ár, készlet, rendelés</td><td>Inventory pricecheck, DM1 lookup + order CSV</td><td><span class="pill part">részben</span></td></tr>
+        <tr><td>Kiadás: PDF, e-mail vázlat</td><td><span class="mono">pdf.ps1</span> (Edge)</td><td><span class="pill part">részben</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PHASES + DECISIONS ============ -->
+<section class="sec" id="dontesek">
+  <div class="sec-head">
+    <span class="eyebrow">9 · Sorrend és döntések</span>
+    <h2>Építési sorrend<span class="en">Build order, each phase usable on its own</span></h2>
+  </div>
+  <div class="phases">
+    <div class="ph"><b>G1</b><span>Esetlap + megálló-szűrő a mai tölcsér fölött. Indítópult a Desktop Dashboard paneljeként, szöveggel és Planner tervvel. Receptek a meglévő munkákból: lakás, alelosztó, ideiglenes betáp.</span></div>
+    <div class="ph"><b>G2</b><span>Közös árazó motor + dokumentum-slotok + norma-katalógus (L-22…L-24). Ettől nincs többé munkánkénti kód, és a checkout újraszámolás azonnali.</span></div>
+    <div class="ph"><b>G3</b><span>Mellékfolyamatok első köre: újraszámolás, mi-lenne-ha, élő ár, vizuál, ellenőrzés. Kimaradt-lista hatással.</span></div>
+    <div class="ph"><b>G4</b><span>Kiadás: Anyaglista két nézet, Daniella CSV + e-mail vázlat, ügyféladat a végén. Fotó és térkép bemenet.</span></div>
+    <div class="ph"><b>G5</b><span>Felfedező sáv: modulkönyvtár, új recept jóváhagyása, recept mentése.</span></div>
+  </div>
+
+  <h3>Döntések<span class="en">Decisions, answered 2026-11-06: Q1 A · Q2 A · Q3 A · Q4 A · Q5 B · Q6 A</span></h3>
+  <div class="qs">
+    <div class="q"><span class="id">KG-Q1 · döntve: A</span><b>Mikor álljon meg először a sor?</b><ol>
+      <li><b>A</b>Recepttől függ: kalibrált receptnél előbb gyárt, utána egy lista (DM1-út); új receptnél előbb kérdez.</li>
+      <li><b>B</b>Mindig előbb kérdez, utána gyárt (a mai 3 kör).</li>
+      <li><b>C</b>Mindig előbb gyárt, utána egy lista.</li></ol></div>
+    <div class="q"><span class="id">KG-Q2 · döntve: A</span><b>Alapértelmezett kérdés-mélység</b><ol>
+      <li><b>A</b>2 · normál: Kötelező 5 + ami 3 %-nál többet mozdít.</li>
+      <li><b>B</b>1 · gyors: csak a Kötelező 5.</li>
+      <li><b>C</b>Receptenként megjegyzi az utoljára használtat.</li></ol></div>
+    <div class="q"><span class="id">KG-Q3 · döntve: A</span><b>Mit tegyen, ha a munka nem illik a mintába?</b><ol>
+      <li><b>A</b>Javasol egy új modulláncot, és vár a jóváhagyásra.</li>
+      <li><b>B</b>A legközelebbi recepttel megy, és minden érintett sort ⚠-val jelöl.</li>
+      <li><b>C</b>Mindig megkérdezi, melyiket választod.</li></ol></div>
+    <div class="q"><span class="id">KG-Q4 · döntve: A</span><b>Mivel kezdjük?</b><ol>
+      <li><b>A</b>G1: indítópult + megálló-szűrő a mai tölcsér fölött (gyorsan használható).</li>
+      <li><b>B</b>G2 előbb: árazó motor + slotok, mert enélkül minden munka új kódot ír.</li></ol></div>
+    <div class="q"><span class="id">KG-Q5 · döntve: B</span><b>Hol éljen az indítópult?</b><ol>
+      <li><b>A</b>Helyi oldal a Kit mappában, node szerverrel (offline, ügyféladat a gépen marad).</li>
+      <li><b>B</b>A Desktop Dashboard egyik panelje.</li>
+      <li><b>C</b>Varler Console (terepen, telefonról is).</li></ol></div>
+    <div class="q"><span class="id">KG-Q6 · döntve: A</span><b>E-mail kiadás első változata</b><ol>
+      <li><b>A</b>E-mail vázlat + másolható szöveg és csatolmány-lista.</li>
+      <li><b>B</b>Postafiók-kapcsolat (Gmail), válasz meglévő szálra.</li></ol></div>
+  </div>
+  <footer>Forrás: Varler Workflow Kit README, FUNNEL_BRIEF (v1.2), PROPOSAL_one-pass-intake_2026-10-25 (L-19…L-26), DM1-IDE README. A mock-up felismerése kulcsszó-alapú bemutató, nem a végleges logika. Ügyféladat nincs az oldalon.</footer>
+</section>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- lane selector on the spine ---------- */
+  const laneNotes={
+    e:"Expressz: egyszerű, ismert munka (pl. lámpacsere). A Megálló 1 csak akkor jön, ha a Kötelező 5-ből hiányzik valami, a Megálló 2 belekerül a checkoutba. 3–4 képernyő.",
+    s:"Standard: ismert recept, például lakásfelújítás vagy alelosztó. Minden megálló megvan, de ami üres, az kimarad.",
+    f:"Felfedező: a munka nem illik egyik receptre sem. Egy új megálló jön be, ahol a javasolt modulláncot hagyod jóvá. A többi megálló ugyanaz."
+  };
+  const nodes=[...document.querySelectorAll('#spine .node')];
+  const matrixRows=[...document.querySelectorAll('#matrix tr')];
+  const laneOff={e:[2],s:[2],f:[]};
+  function setLane(l){
+    document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lane===l?'true':'false'));
+    document.getElementById('laneNote').textContent=laneNotes[l];
+    nodes.forEach((n,i)=>{
+      const t=n.dataset[l]; const st=n.querySelector('.st'); st.textContent=t;
+      st.className='st '+(t==='—'?'sk':(/megáll/.test(t)&&!/csak|olvaszt/.test(t)?'on':(/auto/.test(t)?'au':(/csak|olvaszt/.test(t)?'sk':''))));
+      n.classList.toggle('off',laneOff[l].includes(i)||t==='—');
+    });
+    matrixRows.forEach(r=>{const cells=r.children;for(let i=1;i<cells.length;i++){cells[i].classList.toggle('off',laneOff[l].includes(i-1));}});
+  }
+  document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>setLane(b.dataset.lane)));
+  setLane('s');
+
+  /* ---------- side-run catalogue ---------- */
+  // stations: 0 A R 1 B 2 C ✓
+  const cat=[
+    ["Újraszámolás","tétel hozzáadása vagy elvétele, minden függő szám frissül",[3,5,6],"azonnal","part","pipeline újrafuttatás"],
+    ["Mi-lenne-ha","P-szint, lakott / üres, A / B / C változat egymás mellett",[5,6],"azonnal","part","whatif_occupancy.js"],
+    ["Élő ár + készlet","beszállítói ár és készlet, tartalék cikk ajánlása",[4,5,6],"háttér, ~1 perc","part","Inventory pricecheck, DM1 lookup"],
+    ["Független piaci mérés","a munka árazása közzétett árlistákkal, belső jelentés",[6],"háttér","have","market.js + vrg-piacmero"],
+    ["Vizuál","a kiválasztott rajztípus az Esetlapból",[1,3,4,5],"háttér","part","DM1 lapok, Planner Finom"],
+    ["Hasonló munka","korábbi munka számai és döntései mint kiindulás",[0,1,3],"azonnal","new","PROJECT.json index (L-19)"],
+    ["Dokumentum beolvasása","régi Tervezet, PDF, Excel → mezők forrással",[0,1],"háttér","new","—"],
+    ["Terv + szöveg összefésülése","eltérések listája, ütközések jelölve",[1],"azonnal","part","DM1 DELTA tábla"],
+    ["Válasz fotóból","elosztó fotó → szabad modulhely, meglévő védelmek",[3],"háttér","new","—"],
+    ["Térkép-kontextus","épület kora és típusa, emelet, lift, utazási idő",[0,3],"háttér","new","—"],
+    ["Szakmai utánanézés","norma vagy ár keresése forrásnaplóval",[2,3],"háttér","part","forrás-létra (5. lépés)"],
+    ["Normaellenőrzés","keresztmetszet, szelektivitás, ÁVK lefedés",[5,6],"azonnal","new","norms.json (L-22)"],
+    ["Változat-összevetés","v03 → v04: mi új, mi változott, mi esett ki",[5,6],"azonnal","part","delta lap (L-25)"],
+    ["Golden + nyomkövetés","védett szöveg, minden mondat egy tételhez",[5,6,7],"azonnal","part","check_golden.js (L-26)"],
+    ["Ütemezés","napok száma, segédmunkás, lakott lakás szabály",[5,6],"azonnal","part","időtartam-szabály"],
+    ["Ügyfél-kérdéslap","a nyitott kérdések közérthetően, küldhető formában",[3,6],"azonnal","new","—"],
+    ["Felmérési lista","a Kimaradt sorokból helyszíni ellenőrzőlista",[3,6],"azonnal","new","—"],
+    ["Daniella e-mail vázlat","rövid Anyaglista e-mail törzsbe + CSV",[6,7],"azonnal","part","ide_order.js"]
+  ];
+  const st={have:["have","megvan"],part:["part","részben"],new:["new","új"]};
+  document.getElementById('catBody').innerHTML=cat.map(r=>{
+    const dots=[0,1,2,3,4,5,6,7].map(i=>r[2].includes(i)?'<b>●</b>':'·').join('');
+    return `<tr><td><b>${r[0]}</b></td><td class="dim">${r[1]}</td><td class="dots" title="0 · A · R · 1 · B · 2 · C · ✓">${dots}</td><td>${r[3]}</td><td><span class="pill ${st[r[4]][0]}">${st[r[4]][1]}</span> <span class="faint" style="font-size:12px">${r[5]}</span></td></tr>`;
+  }).join('');
+
+  /* ---------- starter dashboard mock ---------- */
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const recipes=[
+    {id:'lakas',name:'Lakásfelújítás',cal:'kalibrált · NV4, P33',k:['lakas','felujit','panel','szoba','konyha','furdo','dugalj','kapcsolo','veses','nappali','m2'],need:[0,1,2,3,4],extra:2},
+    {id:'eloszto',name:'Elosztó / alelosztó',cal:'1 munka · DM1 v04',k:['eloszto','betap','vedelem','szakaszolo','aramvedo','avk','kismegszakito','modul','nyy','tulfesz','sin'],need:[0,2,4],extra:3},
+    {id:'ideiglenes',name:'Ideiglenes betáp',cal:'1 munka · DM1 v03',k:['ideiglenes','epitkezes','felvonulas','betap','meroora','merohely','aramellatas'],need:[0,4],extra:3},
+    {id:'reszleges',name:'Részleges, pár pont',cal:'még nincs munka',k:['lampa','vilagitas','led','csere','nehany','klima','tolto','fozolap','mennyezeti'],need:[1,2],extra:2},
+    {id:'foldeles',name:'Földelés / EPH',cal:'még nincs munka',k:['foldel','szonda','eph','potencial','villamved','erintesved','meres','felulvizsgal'],need:[1,4],extra:4},
+    {id:'ipari',name:'Ipari szerelés',cal:'még nincs munka',k:['ipari','csarnok','gep','motor','400 v','haromfazis','kabeltalca','uzem','raktar'],need:[0,1,4],extra:5}
+  ];
+  const novel=['rendezveny','aggregator','berel','bontas','sator','szabadteri','kabelvedo','napelem','inverter','akkumulator','stand'];
+  const k5=[
+    {t:'Meglévő elosztó: szabad modulhelyek, T2 védelem',k:['szabad modul','modulhely','szabad hely','t2','tulfesz']},
+    {t:'Építőanyag és födém',k:['tegla','panel','beton','gipszkarton','ytong','fodem']},
+    {t:'Lakottság a munka alatt',k:['lakott','ures','lakatlan','koltoz']},
+    {t:'A bontandó régi rendszer mérete',k:['regi','bontas','meglevo rendszer','csere']},
+    {t:'Terven kívüli helyek (pince, emelet, kert)',k:['pince','emelet','garazs','kert','kulso','padlas','szint']}
+  ];
+  const samples={
+    dm1:{p:"Családi ház. Az emelet és a pince kapjon végleges alelosztót (Schneider Easy9 2×12), mindkettő külön NYY-J 5×10 betáppal a garázsban lévő elosztóból. Földszinten ipari dugalj-kombináció. Az új védelmek a meglévő elosztóba kerülnek.",
+      chips:{src:['szoveg'],out:['tervezet','anyag'],scope:['reszleges'],type:['haz'],focus:['eloszto'],side:['vizual','ar']},depth:2},
+    lamp:{p:"Panellakás, lakott. 6 db mennyezeti lámpa cseréje LED lámpára a meglévő kötésekre, a nappaliban és a hálóban.",
+      chips:{src:['szoveg'],out:['tervezet','anyag'],scope:['reszleges'],type:['lakas'],focus:['lampa'],side:[]},depth:1},
+    ground:{p:"Régi családi ház, nincs rendes földelés. Földelőszonda verése a kertben, EPH sín a pincében, a fürdő potenciálkiegyenlítése, végén érintésvédelmi mérés.",
+      chips:{src:['szoveg','terkep'],out:['tervezet','anyag'],scope:['reszleges'],type:['haz'],focus:['foldeles'],side:['vizual']},depth:2},
+    event:{p:"Szabadtéri rendezvény 3 napra: 2 aggregátor, 6 stand-elosztó, világítás a sátrakban, kábelvédő hidak, telepítés és bontás, bérelt eszközökkel.",
+      chips:{src:['szoveg','terkep'],out:['tervezet'],scope:['teljes'],type:['iroda'],focus:['ideiglenes'],side:['vizual']},depth:2}
+  };
+  const boosts={focus:{foldeles:{foldeles:3},eloszto:{eloszto:3},lampa:{reszleges:3},ideiglenes:{ideiglenes:3},dugalj:{reszleges:2,lakas:1},nagy:{reszleges:1.5,eloszto:1.5}},
+    type:{ipari:{ipari:2},lakas:{lakas:1}},scope:{teljes:{lakas:1},reszleges:{reszleges:1}},src:{vplan:{lakas:.5}}};
+  const $=id=>document.getElementById(id);
+  const sel=g=>[...document.querySelectorAll(`.chips[data-group="${g}"] .chip[aria-pressed="true"]`)].map(b=>b.dataset.val);
+
+  document.querySelectorAll('.chips[data-group]').forEach(grp=>{
+    grp.addEventListener('click',e=>{
+      const b=e.target.closest('.chip'); if(!b) return;
+      if(grp.dataset.multi){ b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true'); }
+      else { grp.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b?'true':'false')); }
+      update();
+    });
+  });
+  ['prompt','custom','depth'].forEach(id=>$(id).addEventListener('input',update));
+  document.querySelectorAll('[data-sample]').forEach(b=>b.addEventListener('click',()=>loadSample(b.dataset.sample)));
+
+  function loadSample(key){
+    const s=samples[key]; $('prompt').value=s.p; $('custom').value=''; $('depth').value=s.depth;
+    Object.entries(s.chips).forEach(([g,vals])=>{
+      document.querySelectorAll(`.chips[data-group="${g}"] .chip`).forEach(c=>c.setAttribute('aria-pressed',vals.includes(c.dataset.val)?'true':'false'));
+    });
+    update();
+  }
+
+  function update(){
+    const text=norm($('prompt').value+' '+$('custom').value);
+    const depth=+$('depth').value;
+    document.querySelectorAll('#depthTicks span').forEach((s,i)=>s.classList.toggle('on',i===depth));
+    const raw={}; const hits=[];
+    recipes.forEach(r=>{raw[r.id]=0; r.k.forEach(k=>{if(text.includes(k)){raw[r.id]++;hits.push([k,r.id]);}});});
+    Object.entries(boosts).forEach(([g,map])=>sel(g).forEach(v=>{const b=map[v]; if(b) Object.entries(b).forEach(([id,w])=>raw[id]+=w);}));
+    const nov=novel.filter(k=>text.includes(k));
+    const sc=recipes.map(r=>({r,s:.4+raw[r.id]}));
+    const sum=sc.reduce((a,b)=>a+b.s,0)+nov.length*.8;
+    sc.forEach(x=>x.p=x.s/sum); sc.sort((a,b)=>b.p-a.p);
+    const top=sc[0];
+    $('votes').innerHTML=sc.map((x,i)=>`<div class="vote${i===0?' top':''}"><span>${x.r.name}<span class="cal">${x.r.cal}</span></span><div class="bar"><i style="width:${Math.round(x.p*100)}%"></i></div><span class="pc">${Math.round(x.p*100)}%</span></div>`).join('')
+      +(nov.length?`<div class="vote"><span style="color:var(--crit)">Ismeretlen jelek<span class="cal">egyik recept sem ismeri</span></span><div class="bar"><i style="width:${Math.round(nov.length*.8/sum*100)}%;background:var(--crit)"></i></div><span class="pc">${Math.round(nov.length*.8/sum*100)}%</span></div>`:'');
+    $('signals').innerHTML=hits.slice(0,14).map(h=>`<span class="sig">${h[0]}</span>`).join('')+nov.map(k=>`<span class="sig nov">${k}</span>`).join('');
+
+    let lane, verdict;
+    if(nov.length>=3||top.p<.30){lane='Felfedező';verdict=`<div class="critline">Nem illik egyik receptre sem${nov.length?` (${nov.length} ismeretlen jel)`:''}. Új modulláncot javaslok; a megállók maradnak.<span class="en">Doesn't fit a known recipe. I'll propose a new module chain; the stops stay.</span></div>`;}
+    else if(top.p<.45){lane='Standard';verdict=`<div class="warnline">Leginkább <b>${top.r.name}</b>, de ${sc[1].r.name} is közel van: 1 irányító kérdés jön.<span class="en">Close call: one routing question first.</span></div>`;}
+    else{
+      const small=top.r.id==='reszleges'&&depth<=1;
+      lane=small?'Expressz':'Standard';
+      verdict=`<div class="dim" style="font-size:13.5px">Recept: <b style="color:var(--fg)">${top.r.name}</b> · ${top.r.cal}. Egy kattintással elfogadható vagy cserélhető.</div>`;
+    }
+    $('verdict').innerHTML=verdict;
+
+    const need=lane==='Felfedező'?[0,1,2,3,4]:top.r.need;
+    const vplan=sel('src').includes('vplan');
+    const have=k5.map((f,i)=>f.k.some(k=>text.includes(k))||(i===4&&vplan));
+    $('k5').innerHTML=k5.map((f,i)=>{const rel=need.includes(i);const cls=!rel?'x':(have[i]?'y':'n');const mk=!rel?'–':(have[i]?'✓':'?');return `<div><span class="${cls}">${mk}</span><span class="${rel?'':'faint'}">${f.t}</span></div>`;}).join('');
+    const missing=need.filter(i=>!have[i]);
+
+    const uncal=/még nincs/.test(top.r.cal)||lane==='Felfedező';
+    const extra=uncal?top.r.extra+2:top.r.extra;
+    const q=[0,missing.length,missing.length+extra,missing.length+extra+(uncal?9:6)][depth];
+    ROUTE=[
+      {code:'0',name:'Forrás',cls:'on'},
+      {code:'A',name:'Megértés',cls:'au'},
+      {code:'R',name:'Új recept',cls:lane==='Felfedező'?'on':'off'},
+      {code:'1',name:'Megálló 1',label:q>0?`Megálló 1 · ${q} kérdés`:'Megálló 1',cls:q>0?'on':'sk'},
+      {code:'B',name:'Gyártás',cls:'au'},
+      {code:'2',name:'Megálló 2',cls:lane==='Expressz'?'sk':'on'},
+      {code:'C',name:'Checkout',cls:'on'},
+      {code:'✓',name:'Kiadás',cls:'on'}];
+    $('laneName').textContent=lane;
+    const screens=ROUTE.filter(s=>s.cls==='on').length;
+    $('stats').innerHTML=`<div><b>${q}</b><small>kérdés összesen</small></div><div><b>${screens}</b><small>képernyő, ahol vársz</small></div><div><b>${uncal?'±40 %':'±15 %'}</b><small>ársáv a kezdéskor</small></div>`;
+    const gapItems=[];
+    if(depth===0) missing.forEach(i=>gapItems.push(k5[i].t));
+    if(depth<=1) gapItems.push(`${extra} ár- vagy időpontosító kérdés, általános értékkel`);
+    $('gaps').innerHTML=gapItems.length?`<div class="warnline"><b>Kimarad, általános értékkel:</b> ${gapItems.join(' · ')}<span class="en">Left out, general values used; shown again at checkout.</span></div>`:'';
+    const out=sel('out'); const a=[];
+    if(out.includes('tervezet')) a.push('Költségvetési Tervezet + 12.1 / 12.2 / 12.3');
+    if(out.includes('arajanlat')) a.push('Árajánlat (kötelező erejű, ugyanazok a számok)');
+    if(out.includes('anyag')) a.push('Anyaglista rövid (Daniellának) + pontos tétellista');
+    const visTypes={eloszto:'egyvonalas séma, elosztó-kiosztás, nyomvonal',lakas:'felülnézet, falnézet, topológia',ideiglenes:'nyomvonal, egyvonalas séma',reszleges:'felülnézet a pontokkal',foldeles:'felülnézet, egyvonalas séma',ipari:'topológia, egyvonalas séma, felülnézet'};
+    if(out.includes('vizual')||sel('side').includes('vizual')) a.push('Vizuálok: '+(lane==='Felfedező'?'felülnézet, helyszínrajz':visTypes[top.r.id]));
+    if(sel('side').includes('piac')) a.push('Belső: piaci összevetés');
+    if(!a.length) a.push('Válassz legalább egy kimenetet');
+    $('assets').innerHTML=a.map(x=>`<li>${x}</li>`).join('');
+    RUN={q,lane,gaps:gapItems,assets:a,recipe:lane==='Felfedező'?null:top.r.name};
+    renderRun();
+  }
+
+  /* ---------- one run, two views: Lista and Gyár read the same ROUTE / cur / pick ---------- */
+  let ROUTE=[],RUN={},cur=0,pick=0,playing=false,view='list',crateT=0,wait=0,lastTs=0,raf=0;
+  const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const DESC={
+    '0':'A munka beérkezik: szöveg, terv, dokumentum. Itt választod a kimenetet és a kérdés-mélységet.',
+    'A':'A Kit kiolvassa a tényeket, és receptre szavaztat. Ha bizonytalan, egy irányító kérdést tesz fel.',
+    'R':'Nincs illő recept: a Kit új modulláncot javasol, te hagyod jóvá.',
+    '1':'Csak az ismeretlen, sokat mozdító tényekre kérdez rá. A többi általános értékkel megy tovább.',
+    'B':'Mennyiség, árazás, dokumentum-vázlat, vizuálok. Automatikus; a futásnapló nézhető.',
+    '2':'A számozott feltevéslista: „mind jó”, vagy javítás sorszámmal. Változat, P-szint, stílus.',
+    'C':'Utolsó ellenőrzés: tétel hozzáadása, újraszámolás, élő ár, piaci mérés, kerekítés.',
+    '✓':'Ügyféladatok, dokumentumtípusok, mentés vagy e-mail vázlat.'};
+  const STATE_HU={on:'Megáll: rád vár',au:'Automatikus: fut, nézheted',sk:'Átugorva: nincs mit kérdezni',off:'Nem része ennek az útnak'};
+  const MX=(()=>{const rows=[...document.querySelectorAll('#matrix tbody tr')];
+    return i=>rows.map(r=>({h:r.querySelector('th').firstChild.textContent.trim(),cls:r.classList.contains('side')?'side':(r.classList.contains('gap')?'gap':''),html:r.children[i+1].innerHTML,na:r.children[i+1].classList.contains('na')}));})();
+  const live=i=>ROUTE[i]&&(ROUTE[i].cls==='on'||ROUTE[i].cls==='au');
+  const nextIdx=()=>{for(let j=cur+1;j<ROUTE.length;j++) if(live(j)) return j; return -1;};
+  const activeList=()=>ROUTE.map((s,i)=>i).filter(live);
+
+  let tArr=0,tWait=0,mv=null;
+  const clearT=()=>{clearTimeout(tArr);clearTimeout(tWait);};
+  const crateNow=()=>{if(!mv) return crateT; const f=Math.min(1,(performance.now()-mv.t0)/mv.ms); return mv.a+(mv.b-mv.a)*f;};
+  /* the run is driven by timers; animation frames only draw the factory, so both views advance the same way */
+  function step(){clearT(); const j=nextIdx(); if(j<0){playing=false;renderRun();return;}
+    const from=crateNow(); cur=j; pick=j; const to=ST[j];
+    const ms=(reduce||view!=='fab')?0:Math.abs(to-from)/7*1000;
+    mv=ms?{a:from,b:to,t0:performance.now(),ms}:null; crateT=to;
+    renderRun(); kick(); tArr=setTimeout(arrived,ms);}
+  function arrived(){mv=null; if(playing){ if(ROUTE[cur].cls==='au'&&nextIdx()>=0) tWait=setTimeout(step,reduce?200:900); else playing=false; } renderRun();}
+  function reset(){clearT();mv=null;playing=false;cur=0;pick=0;crateT=0;renderRun();kick();}
+
+  function renderRun(){
+    if(!ROUTE.length) return;
+    const sig=ROUTE.map(s=>s.cls).join();
+    if(sig!==renderRun.sig){ if(renderRun.sig!==undefined){clearT();mv=null;playing=false;cur=0;pick=0;crateT=0;} renderRun.sig=sig; }
+    if(!live(cur)){cur=0;crateT=0;playing=false;}
+    if(!ROUTE[pick]||ROUTE[pick].cls==='off') pick=cur;
+    const done=i=>live(i)&&i<cur;
+    $('route').innerHTML=ROUTE.map((s,i)=>s.cls==='off'?'':`<button type="button" data-i="${i}" class="${s.cls}${done(i)?' done':''}${i===cur?' cur':''}${i===pick?' pick':''}" aria-current="${i===cur?'step':'false'}">${s.label||s.name}</button>`).join('');
+    renderBadges(done);
+    const act=activeList(), pos=act.indexOf(cur)+1, last=nextIdx()<0;
+    $('stProg').textContent=`${pos} / ${act.length} · ${ROUTE[cur].name}${last?' · kész':''}`;
+    $('stPlay').textContent=playing?'⏸ Szünet':(ROUTE[cur].cls==='on'&&cur>0?'▶ Tovább':'▶ Indítás');
+    $('stNext').disabled=last; $('stNext').style.opacity=last?.4:1;
+    const capL=$('fabCap').children[0], capR=$('fabCap').children[1];
+    capL.textContent=`▶ ${ROUTE[cur].label||ROUTE[cur].name}`; capR.textContent=last?'Kész':STATE_HU[ROUTE[cur].cls];
+    renderDetail(pick);
+    if(view==='fab') kick();
+  }
+
+  function renderDetail(i){
+    const s=ROUTE[i]; if(!s) return;
+    let dyn='';
+    if(s.code==='A') dyn=RUN.recipe?`Recept: <b>${RUN.recipe}</b> · sáv: ${RUN.lane}`:`Nincs illő recept · sáv: ${RUN.lane}`;
+    if(s.code==='1') dyn=(RUN.q>0?`Ebben a futásban <b>${RUN.q}</b> kérdés.`:'Most nincs mit kérdezni, a sor átugorja.')+(RUN.gaps&&RUN.gaps.length?` Kimarad: ${RUN.gaps.join(' · ')}`:'');
+    if(s.code==='2'&&s.cls==='sk') dyn='Expressz sáv: a feltevéslista a checkoutba olvad.';
+    if(s.code==='C'||s.code==='✓') dyn='Kimenetek: '+(RUN.assets||[]).join(' · ');
+    const cells=MX(i).filter(c=>!c.na).map(c=>`<div class="stcell ${c.cls}"><b>${c.h}</b>${c.html}</div>`).join('');
+    const atCur=i===cur&&s.cls==='on'&&nextIdx()>=0;
+    const acts=atCur?`<div class="steps"><button type="button" class="sbtn pri" data-act="next">Tovább</button>${s.code==='1'&&RUN.q>0?'<button type="button" class="sbtn" data-act="next">Tovább általános változattal</button>':''}</div>`:'';
+    $('stDetail').innerHTML=`<h4><span class="code">${s.code}</span><span>${s.name}</span><span class="stchip">${i===cur?'itt tart a munka · ':''}${STATE_HU[s.cls]}</span></h4><p class="dim" style="font-size:14px">${DESC[s.code]}</p>${dyn?`<div class="stdyn">${dyn}</div>`:''}<div class="stgrid">${cells}</div>${acts}`;
+  }
+
+  $('route').addEventListener('click',e=>{const b=e.target.closest('button[data-i]'); if(!b) return; pick=+b.dataset.i; renderRun();});
+  $('stDetail').addEventListener('click',e=>{if(e.target.closest('[data-act="next"]')){playing=false;step();}});
+  $('stReset').addEventListener('click',reset);
+  $('stNext').addEventListener('click',()=>{playing=false;step();});
+  $('stPlay').addEventListener('click',()=>{ if(playing){playing=false;clearTimeout(tWait);renderRun();return;} if(nextIdx()<0){reset();} playing=true; step(); });
+
+  /* ---------- the factory: 16-bit isometric, drawn at 256×160 and scaled up pixelated ---------- */
+  const OX=93,OY=34,TW=10,TH=5;
+  const P=(gx,gy)=>[Math.round(OX+(gx-gy)*TW),Math.round(OY+(gx+gy)*TH)];
+  const PATH=[[0,1],[12,1],[12,5],[0,5]];
+  const SPOS=[[1,1],[4,1],[7,1],[10,1],[10,5],[7,5],[4,5],[1,5]];
+  const SH=[14,16,14,16,20,16,14,14];
+  const SEG=[];let acc=0;
+  for(let k=0;k<PATH.length-1;k++){const a=PATH[k],b=PATH[k+1],L=Math.abs(b[0]-a[0])+Math.abs(b[1]-a[1]);SEG.push({a,b,L,s:acc});acc+=L;}
+  const at=t=>{for(const s of SEG){if(t<=s.s+s.L+1e-9){const f=(t-s.s)/s.L;return [s.a[0]+(s.b[0]-s.a[0])*f,s.a[1]+(s.b[1]-s.a[1])*f];}}return PATH[PATH.length-1];};
+  const tOf=([gx,gy])=>{for(const s of SEG){const h=s.a[1]===s.b[1];
+    if((h&&gy===s.a[1]&&gx>=Math.min(s.a[0],s.b[0])&&gx<=Math.max(s.a[0],s.b[0]))||(!h&&gx===s.a[0]&&gy>=Math.min(s.a[1],s.b[1])&&gy<=Math.max(s.a[1],s.b[1]))) return s.s+Math.abs(gx-s.a[0])+Math.abs(gy-s.a[1]);}return 0;};
+  const ST=SPOS.map(tOf);
+  const BELT=[];{const seen=new Set();for(let k=0;k<=acc;k++){const g=at(k).map(Math.round),key=g.join(',');if(!seen.has(key)){seen.add(key);BELT.push({g,k});}}}
+  const cv=$('fabCanvas'),g2=cv.getContext('2d');
+  const PAL={on:['#f2a75a','#c06c2c','#8a4a1e'],au:['#86d6ea','#3f93ac','#2a6a80'],end:['#dfe5ec','#9eaab6','#6c7986'],off:['#59626d','#3f4650','#30363e']};
+  function poly(pts,fill){g2.fillStyle=fill;g2.beginPath();g2.moveTo(pts[0][0],pts[0][1]);for(let k=1;k<pts.length;k++)g2.lineTo(pts[k][0],pts[k][1]);g2.closePath();g2.fill();}
+  function tile(gx,gy,fill){poly([P(gx-.5,gy-.5),P(gx+.5,gy-.5),P(gx+.5,gy+.5),P(gx-.5,gy+.5)],fill);}
+  function box(gx,gy,a,h,c,z){z=z||0;const N=P(gx-a,gy-a),E=P(gx+a,gy-a),S=P(gx+a,gy+a),W=P(gx-a,gy+a),up=p=>[p[0],p[1]-h-z],dn=p=>[p[0],p[1]-z];
+    poly([dn(W),dn(S),up(S),up(W)],c[1]);poly([dn(S),dn(E),up(E),up(S)],c[2]);poly([up(N),up(E),up(S),up(W)],c[0]);
+    g2.fillStyle='rgba(255,255,255,.35)';const t1=up(N),t2=up(E);g2.fillRect(Math.min(t1[0],t2[0]),Math.min(t1[1],t2[1]),1,1);
+    return {top:[Math.round((N[0]+S[0])/2),Math.round((N[1]+S[1])/2)-h-z],face:[Math.round((S[0]+E[0])/2),Math.round((S[1]+E[1])/2)-z-Math.round(h/2)]};}
+  const px=(x,y,w,h,c)=>{g2.fillStyle=c;g2.fillRect(Math.round(x),Math.round(y),w,h);};
+  const GL={'?':['01110','10001','00010','00100','00000','00100'],'v':['00000','00001','00010','10100','01000','00000']};
+  function glyph(ch,x,y,c){GL[ch].forEach((row,j)=>[...row].forEach((b,i)=>{if(b==='1')px(x+i,y+j,1,1,c);}));}
+  function sign(t,ch){px(t[0],t[1]-6,1,6,'#9eaab6');px(t[0]-4,t[1]-15,9,9,'#e8f0f6');glyph(ch,t[0]-2,t[1]-13,'#0b1218');}
+
+  function station(i,time){
+    const s=ROUTE[i],[gx,gy]=SPOS[i],h=SH[i];
+    const dead=s.cls==='off'||s.cls==='sk';
+    const pal=dead?PAL.off:((s.code==='0'||s.code==='✓')?PAL.end:PAL[s.cls]);
+    const b=box(gx,gy,.75,h,pal);
+    const blink=Math.floor(time/300)%2===0;
+    const light=dead?'#1d2228':(i===cur?(blink||reduce?'#ffe066':'#7a6a20'):(live(i)&&i<cur?'#7ee08a':'#4aa3ff'));
+    px(b.face[0]-1,b.face[1]-1,3,3,'#0b1218');px(b.face[0],b.face[1],1,1,light);
+    const t=b.top;
+    if(s.code==='0') box(gx,gy,.42,5,dead?PAL.off:['#b8c2cc','#7f8b96','#5e6974'],h);
+    if(s.code==='A'){px(t[0],t[1]-9,1,9,'#9eaab6');px(t[0]-1,t[1]-11,3,3,!dead&&(blink||i!==cur)?'#86d6ea':'#2a6a80');}
+    if(s.code==='R'){px(t[0]-3,t[1]-1,7,1,'#e8f0f6');px(t[0],t[1]-4,1,7,'#e8f0f6');}
+    if(s.code==='1') sign(t,'?');
+    if(s.code==='C') sign(t,'v');
+    if(s.code==='2'){g2.strokeStyle='#e8f0f6';g2.lineWidth=1;g2.beginPath();g2.arc(t[0]+.5,t[1]-8.5,3,0,7);g2.stroke();px(t[0]+3,t[1]-5,2,2,'#e8f0f6');}
+    if(s.code==='B'){const c=box(gx-.45,gy-.45,.18,9,dead?PAL.off:['#9eaab6','#6c7986','#4a5560'],h);
+      if(!dead&&!reduce) for(let k=0;k<3;k++){const ph=((time/900)+k/3)%1;px(c.top[0]-1+Math.round(Math.sin((ph+k)*6)*1.5),c.top[1]-2-Math.round(ph*14),3-Math.round(ph*2),3-Math.round(ph*2),`rgba(200,210,220,${.6-ph*.5})`);}}
+    if(s.code==='✓'){box(gx-1.5,gy+.15,.35,7,['#e8f0f6','#aab4bf','#7c8793']);box(gx-1.5,gy+.75,.25,5,['#86d6ea','#3f93ac','#2a6a80']);}
+    if(i===cur){const bob=reduce?0:Math.round(Math.sin(time/220)*1.5);const y=t[1]-(s.code==='1'||s.code==='C'?19:s.code==='A'?15:s.code==='2'?15:8)+bob;
+      px(t[0]-2,y-3,5,1,'#ffe066');px(t[0]-1,y-2,3,1,'#ffe066');px(t[0],y-1,1,1,'#ffe066');}
+  }
+
+  function draw(time,moving,cp){
+    g2.imageSmoothingEnabled=false;
+    g2.fillStyle='#0e161d';g2.fillRect(0,0,256,160);
+    for(let gx=-1;gx<=13;gx++) for(let gy=-1;gy<=7;gy++) tile(gx,gy,(gx+gy)%2?'#18252f':'#1b2a36');
+    for(let gx=-1;gx<=13;gx++){const a=P(gx-.5,-1.5),b=P(gx+.5,-1.5);poly([a,b,[b[0],b[1]-10],[a[0],a[1]-10]],gx%2?'#22313d':'#263746');}
+    const phase=reduce?0:Math.floor(time/180);
+    for(const t of BELT){tile(t.g[0],t.g[1],((t.k+100000-phase)%2)?'#56606c':'#3b434c');}
+    const ents=[];
+    ROUTE.forEach((s,i)=>ents.push({d:SPOS[i][0]+SPOS[i][1],f:()=>station(i,time)}));
+    ents.push({d:-1+7,f:()=>{box(-1,7,.3,6,['#c08a4a','#8a5a2a','#6e4520']);box(-1,7,.25,5,['#c08a4a','#8a5a2a','#6e4520'],6);}});
+    ents.push({d:13+0,f:()=>{box(13,0,.3,8,['#4f7a5a','#36573f','#27402e']);}});
+    const g=at(cp), parked=!moving&&Math.abs(cp-ST[cur])<1e-3;
+    const inside=!parked&&ST.some(t=>Math.abs(t-cp)<.85);
+    if(!inside) ents.push({d:g[0]+g[1]+(parked?.5:.1),f:()=>{const z=parked?SH[cur]:0;const c=box(g[0],g[1],.3,5,['#d39a55','#9a6430','#734a22'],z);px(c.top[0],c.top[1]-1,1,3,'#f3e3c0');}});
+    ents.sort((a,b)=>a.d-b.d).forEach(e=>e.f());
+  }
+
+  function renderBadges(done){
+    const host=$('fabBadges');
+    if(!host.children.length) host.innerHTML=SPOS.map((p,i)=>`<button type="button" class="fab-b" data-i="${i}"></button>`).join('');
+    [...host.children].forEach((b,i)=>{const s=ROUTE[i],[x,y]=P(SPOS[i][0],SPOS[i][1]),top=y-SH[i]-(s.code==='1'||s.code==='C'?22:s.code==='A'?18:s.code==='2'?17:10);
+      b.style.left=(x/256*100)+'%';b.style.top=(top/160*100)+'%';b.textContent=s.code;
+      b.title=`${s.name} · ${STATE_HU[s.cls]}`;b.setAttribute('aria-label',b.title);
+      b.className=`fab-b ${s.cls}${done(i)?' done':''}${i===cur?' cur':''}${i===pick?' pick':''}`;});
+  }
+  $('fabBadges').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(!b) return; pick=+b.dataset.i; renderRun();});
+
+  function tick(ts){ if(view!=='fab'){raf=0;return;} const c=crateNow(); draw(ts,!!mv&&Math.abs(c-ST[cur])>1e-3,c); raf=requestAnimationFrame(tick); }
+  function kick(){ if(view==='fab'&&!raf) raf=requestAnimationFrame(tick); }
+
+  function setView(v){view=v;
+    document.querySelectorAll('.vseg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===v?'true':'false'));
+    $('viewList').hidden=v!=='list';$('viewFab').hidden=v!=='fab';
+    try{localStorage.setItem('kitgyar.view',v);}catch(e){}
+    renderRun();kick();}
+  document.querySelectorAll('.vseg button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+  let saved='list';try{saved=localStorage.getItem('kitgyar.view')||'list';}catch(e){}
+
+  loadSample('dm1');
+  setView(saved==='fab'?'fab':'list');
+})();
+</script>
+
+</body></html>

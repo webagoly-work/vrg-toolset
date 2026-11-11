@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kódváros 2.0 terv</title>
+<!-- Concept sketch for docs/city/v2/README.md: the grown city on its island, districts, landmarks, outward links.
+     Schematic only: the real layout is generated (K2-01); this shows the intended structure and social geography. -->
+<style>
+  :root{--sea:#0f2a3d;--sea2:#14374f;--land:#2c3a2f;--beach:#6b6346;--hill:#3a4a3b;--road:#c8b98f;--road2:#8f8466;
+    --ink:#e9e2cf;--faint:#a9a08a;--castle:#b9a37a;--campus:#d08a3a;--down:#7fb2d6;--villa:#e9edf2;--estate:#c97f6a;
+    --work:#8d8678;--ind:#9a6b4f;--port:#5fa3a3;--panel:#152230}
+  @media (prefers-color-scheme:light){:root{--sea:#cfe3ee;--sea2:#b9d6e6;--land:#e9e4d4;--beach:#efe2b9;--hill:#d6d2bd;
+    --road:#8b7a55;--road2:#b3a37c;--ink:#2a2620;--faint:#6d6656;--work:#8a8172;--villa:#ffffff;--panel:#f7f4ec}}
+  body{margin:0;background:var(--sea);color:var(--ink);font:14px/1.4 "Segoe UI",system-ui,sans-serif}
+  main{max-width:1200px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:4px 0 2px} p.sub{margin:0 0 12px;color:var(--faint)}
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+  svg{width:100%;height:auto;display:block;border-radius:10px}
+  .legend{background:var(--panel);border-radius:10px;padding:12px 14px}
+  .legend h2{font-size:14px;margin:10px 0 6px} .legend h2:first-child{margin-top:0}
+  .row{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:13px}
+  .sw{width:14px;height:14px;border-radius:3px;flex:none;margin-top:2px}
+  ol{margin:0;padding-left:18px;font-size:13px} li{margin:2px 0}
+  text{font-family:"Segoe UI",system-ui,sans-serif}
+  .lbl{fill:var(--ink);font-size:13px;font-weight:600} .small{fill:var(--faint);font-size:11px}
+</style>
+</head>
+<body>
+<main>
+<h1>Kódváros 2.0 — a város, amely nőtt</h1>
+<p class="sub">Vázlat: a valódi elrendezést a növekedés-szimuláció adja (K2-01). Ez a szerkezetet és a társadalmi földrajzot mutatja.</p>
+<div class="wrap">
+<svg viewBox="0 0 900 640" role="img" aria-label="A sziget terve kerületekkel, utakkal, kikötővel és repülőtérrel">
+  <defs>
+    <pattern id="waves" width="24" height="12" patternUnits="userSpaceOnUse">
+      <path d="M0 6 q6 -4 12 0 t12 0" fill="none" stroke="var(--sea2)" stroke-width="1.2"/></pattern>
+    <radialGradient id="hillg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--hill)"/><stop offset="1" stop-color="var(--land)"/></radialGradient>
+  </defs>
+  <rect width="900" height="640" fill="var(--sea)"/><rect width="900" height="640" fill="url(#waves)" opacity=".6"/>
+
+  <!-- island: about twice the built area -->
+  <path d="M120 300 C110 190 210 95 340 80 C470 62 600 70 700 120 C800 170 830 260 800 350 C775 430 790 500 700 560
+           C610 615 460 600 350 585 C230 570 150 520 125 430 C115 390 125 340 120 300 Z" fill="var(--beach)"/>
+  <path d="M138 300 C130 200 220 108 342 94 C470 78 596 86 690 132 C786 180 812 262 784 348 C760 426 772 492 690 546
+           C604 598 460 586 352 572 C238 557 166 510 142 428 C132 390 142 340 138 300 Z" fill="var(--land)"/>
+  <ellipse cx="300" cy="190" rx="130" ry="85" fill="url(#hillg)"/>   <!-- castle hill -->
+  <ellipse cx="640" cy="200" rx="120" ry="70" fill="url(#hillg)"/>   <!-- villa hill -->
+
+  <!-- roads: grown, not planned. The first track castle -> workshop is the thickest. -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M285 185 C300 230 330 250 360 280" stroke="var(--road)" stroke-width="7"/>
+    <path d="M360 280 C420 300 470 300 520 320 C570 340 600 380 640 420" stroke="var(--road)" stroke-width="6"/>
+    <path d="M360 280 C340 330 300 360 250 400 C220 425 190 440 170 450" stroke="var(--road)" stroke-width="5"/>
+    <path d="M520 320 C560 280 600 240 640 205" stroke="var(--road)" stroke-width="4"/>
+    <path d="M640 420 C690 450 720 480 735 520" stroke="var(--road)" stroke-width="5"/>
+    <path d="M470 300 C480 360 470 420 440 470 C420 500 400 530 380 560" stroke="var(--road)" stroke-width="4"/>
+    <path d="M250 400 C280 450 320 480 380 500" stroke="var(--road2)" stroke-width="3"/>
+    <path d="M600 380 C650 350 700 330 760 320" stroke="var(--road2)" stroke-width="3"/>
+    <path d="M330 250 C380 230 420 200 460 180" stroke="var(--road2)" stroke-width="3"/>
+    <path d="M440 470 C500 480 560 470 610 450" stroke="var(--road2)" stroke-width="3"/>
+  </g>
+
+  <!-- districts -->
+  <g>
+    <!-- Vár -->
+    <rect x="262" y="160" width="46" height="36" rx="3" fill="var(--castle)"/><rect x="255" y="152" width="14" height="14" fill="var(--castle)"/>
+    <rect x="301" y="152" width="14" height="14" fill="var(--castle)"/>
+    <text x="285" y="140" text-anchor="middle" class="lbl">Vár · Domoszló</text>
+    <!-- Akadémia: core hall + faculties around a quad -->
+    <rect x="345" y="262" width="34" height="22" fill="var(--campus)"/>
+    <g fill="var(--campus)" opacity=".8"><rect x="330" y="236" width="14" height="12"/><rect x="352" y="232" width="16" height="12"/>
+      <rect x="376" y="238" width="14" height="12"/><rect x="392" y="262" width="12" height="16"/><rect x="392" y="286" width="14" height="12"/>
+      <rect x="320" y="290" width="14" height="14"/><rect x="340" y="296" width="16" height="12"/><rect x="364" y="296" width="14" height="12"/></g>
+    <text x="368" y="326" text-anchor="middle" class="lbl">Akadémia · Planner</text>
+    <!-- Belváros: the one gridded part -->
+    <g fill="var(--down)"><rect x="500" y="330" width="16" height="16"/><rect x="520" y="330" width="16" height="16"/><rect x="540" y="330" width="16" height="16"/>
+      <rect x="500" y="350" width="16" height="16"/><rect x="520" y="350" width="16" height="16"/><rect x="540" y="350" width="16" height="16"/>
+      <rect x="500" y="370" width="16" height="16"/><rect x="520" y="370" width="16" height="16"/><rect x="560" y="350" width="16" height="16"/></g>
+    <text x="538" y="404" text-anchor="middle" class="lbl">Belváros · tornyok</text>
+    <!-- Villanegyed: BRIDGE -->
+    <g fill="var(--villa)" stroke="var(--faint)" stroke-width=".6"><rect x="600" y="185" width="16" height="12" rx="2"/><rect x="628" y="172" width="18" height="12" rx="2"/>
+      <rect x="660" y="182" width="16" height="12" rx="2"/><rect x="690" y="196" width="18" height="12" rx="2"/><rect x="640" y="210" width="16" height="12" rx="2"/></g>
+    <g fill="#5fb3d9"><rect x="619" y="188" width="6" height="4"/><rect x="679" y="186" width="6" height="4"/></g>
+    <text x="650" y="160" text-anchor="middle" class="lbl">Villanegyed · BRIDGE</text>
+    <!-- OmniComm Lakópark: terraced rows in phases -->
+    <g fill="var(--estate)"><rect x="700" y="300" width="44" height="8"/><rect x="700" y="314" width="44" height="8"/><rect x="700" y="328" width="44" height="8" opacity=".55"/>
+      <rect x="700" y="342" width="30" height="8" opacity=".3"/></g>
+    <text x="722" y="290" text-anchor="middle" class="lbl">OmniComm Lakópark</text>
+    <text x="722" y="364" text-anchor="middle" class="small">sorházak, ütemenként</text>
+    <!-- Munkásnegyed: default boxes from the edge inward -->
+    <g fill="var(--work)">
+      <rect x="180" y="430" width="9" height="9"/><rect x="194" y="436" width="8" height="8"/><rect x="206" y="426" width="9" height="9"/><rect x="222" y="420" width="8" height="8"/>
+      <rect x="236" y="430" width="9" height="9"/><rect x="200" y="452" width="8" height="8"/><rect x="214" y="446" width="9" height="9"/><rect x="230" y="446" width="8" height="8"/>
+      <rect x="262" y="440" width="9" height="9"/><rect x="276" y="452" width="8" height="8"/><rect x="290" y="462" width="9" height="9"/><rect x="306" y="470" width="8" height="8"/>
+      <rect x="320" y="478" width="9" height="9"/><rect x="250" y="464" width="8" height="8"/><rect x="266" y="476" width="9" height="9"/></g>
+    <text x="236" y="510" text-anchor="middle" class="lbl">Munkásnegyed</text>
+    <!-- Ipari part -->
+    <g fill="var(--ind)"><rect x="150" y="320" width="26" height="16"/><rect x="180" y="330" width="18" height="12"/><rect x="160" y="344" width="22" height="10"/></g>
+    <text x="172" y="310" text-anchor="middle" class="lbl">Ipari part</text>
+    <text x="172" y="370" text-anchor="middle" class="small">Firmware, BuildTree</text>
+    <!-- Market + gate + station -->
+    <circle cx="470" cy="300" r="13" fill="none" stroke="var(--castle)" stroke-width="3"/>
+    <text x="470" y="282" text-anchor="middle" class="small">piactér · Inventory</text>
+    <rect x="628" y="410" width="22" height="16" fill="var(--castle)"/><text x="640" y="444" text-anchor="middle" class="small">START állomás</text>
+    <rect x="164" y="444" width="10" height="14" fill="var(--castle)"/><text x="150" y="476" text-anchor="middle" class="small">Kapu</text>
+  </g>
+
+  <!-- outward links -->
+  <g>
+    <path d="M735 520 L770 560 L820 570" stroke="var(--port)" stroke-width="4" fill="none"/>
+    <rect x="740" y="530" width="44" height="10" fill="var(--port)"/><rect x="760" y="545" width="38" height="8" fill="var(--port)"/>
+    <text x="790" y="595" text-anchor="middle" class="lbl">Kikötő · origin</text>
+    <path d="M832 600 l14 -6 l14 6 l-14 6 z" fill="var(--ink)"/>
+    <rect x="470" y="545" width="120" height="10" rx="5" fill="var(--road2)" transform="rotate(-12 530 550)"/>
+    <text x="520" y="590" text-anchor="middle" class="lbl">Repülőtér · Mobile</text>
+    <circle cx="160" cy="250" r="5" fill="var(--ink)"/><path d="M160 250 L160 220" stroke="var(--ink)" stroke-width="2"/>
+    <text x="160" y="212" text-anchor="middle" class="small">rádiótorony</text>
+    <path d="M110 130 L120 150" stroke="#e8c26a" stroke-width="5"/><text x="100" y="122" text-anchor="middle" class="small">világítótorony · backup</text>
+    <path d="M820 300 L860 300" stroke="var(--road2)" stroke-width="3" stroke-dasharray="6 4"/>
+    <ellipse cx="878" cy="300" rx="18" ry="30" fill="var(--land)"/><text x="858" y="350" text-anchor="middle" class="small">worktree-sziget</text>
+    <circle cx="210" cy="560" r="4" fill="var(--ink)"/><path d="M200 560 L222 560" stroke="var(--ink)" stroke-width="2"/>
+    <text x="210" y="580" text-anchor="middle" class="small">halászmóló · BT, CYD</text>
+  </g>
+</svg>
+
+<aside class="legend">
+  <h2>Kerületek</h2>
+  <div class="row"><span class="sw" style="background:var(--castle)"></span><span><b>Vár</b> — Domoszló, az első munka; a többi munka udvarház</span></div>
+  <div class="row"><span class="sw" style="background:var(--campus)"></span><span><b>Akadémia</b> — Planner: főépület + karonként külön épület</span></div>
+  <div class="row"><span class="sw" style="background:var(--down)"></span><span><b>Belváros</b> — docs, nagy adat, pénzügyi és ügyféladat, irodatornyok</span></div>
+  <div class="row"><span class="sw" style="background:var(--villa);border:1px solid var(--faint)"></span><span><b>Villanegyed</b> — BRIDGE, fehér villák, medencék</span></div>
+  <div class="row"><span class="sw" style="background:var(--estate)"></span><span><b>OmniComm Lakópark</b> — 4–8 lakásos sorházak, ütemenként</span></div>
+  <div class="row"><span class="sw" style="background:var(--work)"></span><span><b>Munkásnegyed</b> — az alap doboz, a parttól befelé</span></div>
+  <div class="row"><span class="sw" style="background:var(--ind)"></span><span><b>Ipari part</b> — Firmware, BuildTree</span></div>
+  <div class="row"><span class="sw" style="background:var(--port)"></span><span><b>Kikötő, reptér</b> — origin, APK-építés, relé</span></div>
+  <h2>Korszakok</h2>
+  <ol>
+    <li><b>Falu</b> — vár + műhely, egy földút</li>
+    <li><b>Mezőváros</b> — piactér, főutca</li>
+    <li><b>Céhes város</b> — céhnegyedek, villadomb, öntöde</li>
+    <li><b>Város</b> — Kapu, START, kikötő, első tornyok</li>
+    <li><b>Kikötőváros</b> — reptér, rádiótorony, teljes belváros (most)</li>
+  </ol>
+</aside>
+</div>
+</main>
+</body>
+</html>

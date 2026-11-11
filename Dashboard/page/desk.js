@@ -296,7 +296,83 @@
     return [PG.box];
   }
 
-  const SEC = { ma: secMa, apps: secApps, programok: secProgramok, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
+  // ------------------------------------------------------------ Archívum (WP-46): the Artifact Archive, VRG first, newest first
+  // vrg.archive.list() reads Archive/index.json in main; a card opens the archive app at that entry (archive.show → #<id>), ▶ runs the
+  // page itself; Hozzáadás asks main for a file dialog (the page never names a path) with the note typed here.
+  const AR = { items: [], scope: 'vrg', q: '', form: false, box: null };
+  const KIND_HU = { tool: 'eszköz', explainer: 'magyarázó', mockup: 'látványterv', board: 'tábla', game: 'játék', manual: 'kézikönyv', study: 'tanulmány', dashboard: 'irányítópult', design: 'dizájn' };
+  const acall = (fn, p) => (vrg && vrg.call ? vrg.call('archive', fn, p || {}) : Promise.resolve({ ok: false }));
+  async function loadArchive() {
+    const r = await acall('list');
+    AR.items = r && r.ok !== false ? r.items || [] : [];
+    AR.err = r && r.ok === false ? r.hu : '';
+    drawArchive();
+  }
+  async function showArchived(id, run) {
+    const r = await acall('show', run ? { id, run: true } : { id });
+    if (!r || r.ok === false) { toast(false, (r && r.hu) || 'Nem nyitható meg.', 'Cannot open.'); return; }
+    openItem('archive');
+  }
+  function archiveForm() {
+    const f = h('form', { class: 'arch-form', 'data-role': 'arch-form', onsubmit: async e => {
+      e.preventDefault();
+      const v = n => (f.elements[n].value || '').trim();
+      const meta = { title: v('title'), group: v('group'), kind: v('kind'), vrg: f.elements.vrg.checked, url: v('url'), purpose: v('purpose'), summary: v('summary'),
+        context: v('context').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6), tags: v('tags').split(',').map(s => s.trim()).filter(Boolean).slice(0, 12) };
+      for (const k of Object.keys(meta)) if (meta[k] === '' || (Array.isArray(meta[k]) && !meta[k].length)) delete meta[k];
+      const r = await acall('add', { meta });
+      if (!r || r.ok === false) { if (!r || r.err !== 'cancelled') toast(false, (r && r.hu) || 'Nem sikerült.', 'Not added.'); return; }
+      toast(true, r.hu, 'Archived.');
+      AR.form = false;
+      await loadArchive();
+      showArchived(r.id);
+    } },
+      h('label', {}, 'Cím', h('input', { name: 'title', maxlength: 200, placeholder: 'üresen: a lap <title>-je' })),
+      h('label', {}, 'Csoport', h('input', { name: 'group', maxlength: 60, placeholder: 'pl. VRG core, BRIDGE' })),
+      h('label', {}, 'Fajta', h('select', { name: 'kind' }, Object.keys(KIND_HU).map(k => h('option', { value: k }, KIND_HU[k])))),
+      h('label', { class: 'chk' }, h('input', { type: 'checkbox', name: 'vrg', checked: true }), 'VRG-hez tartozik'),
+      h('label', { class: 'wide' }, 'claude.ai link', h('input', { name: 'url', maxlength: 120, placeholder: 'https://claude.ai/artifact/…' })),
+      h('label', { class: 'wide' }, 'Mi ez (1–2 mondat)', h('textarea', { name: 'summary', maxlength: 1000, rows: 2 })),
+      h('label', { class: 'wide' }, 'Miért készült', h('textarea', { name: 'purpose', maxlength: 600, rows: 2 })),
+      h('label', { class: 'wide' }, 'Mi zajlott akkor (soronként egy)', h('textarea', { name: 'context', rows: 3 })),
+      h('label', { class: 'wide' }, 'Címkék (vesszővel)', h('input', { name: 'tags' })),
+      h('div', { class: 'wide fa' }, h('button', { type: 'submit', class: 'go' }, 'Fájl kiválasztása és mentés…'), h('button', { type: 'button', onclick: () => { AR.form = false; drawArchive(); } }, 'Mégse')));
+    return f;
+  }
+  function drawArchive() {
+    const box = AR.box; if (!box || !box.isConnected) return;
+    const q = AR.q.trim().toLowerCase();
+    const all = AR.items;
+    const items = all.filter(i => (AR.scope === 'all' || (AR.scope === 'vrg') === !!i.vrg) && (!q || (i.title + ' ' + i.group + ' ' + i.summary).toLowerCase().includes(q)));
+    const nv = all.filter(i => i.vrg).length;
+    const seg = (k, t) => h('button', { type: 'button', 'data-scope': k, 'aria-pressed': String(AR.scope === k), onclick: () => { AR.scope = k; drawArchive(); } }, t);
+    const head = h('div', { class: 'prog-head', 'data-role': 'arch-head' },
+      h('span', { class: 'sub' }, all.length + ' oldal · ' + nv + ' VRG · ' + (all.length - nv) + ' egyéb'),
+      h('span', { class: 'arch-seg' }, seg('vrg', 'VRG'), seg('other', 'Egyéb'), seg('all', 'Mind')),
+      h('input', { type: 'search', 'data-role': 'arch-filter', placeholder: 'Szűrés… / Filter', value: AR.q, oninput: e => { AR.q = e.target.value; drawArchive(); const f = AR.box.querySelector('[data-role="arch-filter"]'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } } }),
+      h('span', { class: 'sp' }),
+      h('button', { type: 'button', 'data-role': 'arch-open', onclick: () => openItem('archive') }, 'Archívum megnyitása'),
+      h('button', { type: 'button', class: 'go', 'data-role': 'arch-add', onclick: () => { AR.form = !AR.form; drawArchive(); } }, '＋ Hozzáadás'));
+    const card = i => h('div', { class: 'arch' + (i.vrg ? '' : ' o'), 'data-arch': i.id },
+      h('button', { type: 'button', class: 'am', title: i.summary || i.title, onclick: () => showArchived(i.id) },
+        h('span', { class: 't' }, i.title), h('span', { class: 'ty' }, i.created + ' · ' + [i.group, KIND_HU[i.kind] || i.kind].filter(Boolean).join(' · '))),
+      i.saved ? h('button', { type: 'button', class: 'pf', title: 'Megnyitás / Run', onclick: e => { e.stopPropagation(); showArchived(i.id, true); } }, '▶') : null);
+    box.textContent = '';
+    box.append(head);
+    if (AR.form) box.append(archiveForm());
+    if (AR.err) { box.append(empty(AR.err, 'The archive could not be read.')); return; }
+    const halves = [['VRG', items.filter(i => i.vrg)], ['Egyéb projektek', items.filter(i => !i.vrg)]].filter(x => x[1].length);
+    box.append(...(halves.length ? halves.map(([n, l]) => [h('div', { class: 'dash-grp' }, n + ' · ' + l.length), h('div', { class: 'archs' }, l.map(card))]).flat()
+      : [empty(all.length ? 'Nincs találat.' : 'Az archívum üres.', 'Nothing here.')]));
+  }
+  function secArchivum() {
+    AR.box = h('div', { 'data-role': 'archive' });
+    drawArchive();
+    loadArchive();
+    return [AR.box];
+  }
+
+  const SEC = { ma: secMa, apps: secApps, programok: secProgramok, archivum: secArchivum, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
 
   function renderDashboard() {
     const secs = D.sections(S.items, S.level, S.sections, S.groups);

@@ -21,6 +21,7 @@ Mobile/
   tests/relay-board.js  Átadás (WP M12): names and paths, tickets, Host / Origin, size and checksum, _removed, the clipboard
   tests/relay-screen.js Képernyő (WP M13): tickets, the /screen upgrade, frames in order, one viewer, limits, unpairing, a slow phone
   tests/relay-phone-link.js  the phone relay's PC side (WP M7): the pairing block in Kódváros + Planner, WebCrypto keys and signatures
+  tests/archive-phone.js  Archívum (WP M18): Archive/vrg-archive.html at 375 px with touch, served as the WebView serves it; Back, all saved pages
   catalogue/ports.json  port -> tool for Localhost, generated from START's servers by catalogue/ports-gen.js
   catalogue/launch.json Indítópult's allow-list: which START servers and extras a paired phone may start
   android/
@@ -61,6 +62,8 @@ Mobile/
                         (the publishing side: Mobile/city/publish-city.js, .github/workflows/mobile-city.yml)
     feature-net/        Hálózat (WP M7): links and tethering state, settings links, Helyi WiFi, usage watch, HID status,
                         the phone relay in NetService (connectedDevice foreground service)
+    feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-46) read from main, changed files only, the PC's own
+                        viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

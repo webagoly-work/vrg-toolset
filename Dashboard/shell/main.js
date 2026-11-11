@@ -221,8 +221,10 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
     if (!views.has(viewId)) {
       const id = viewId.slice(4);
       if (catalog.appOwner(id) !== id) return { ok: false, err: 'not-found', hu: 'Nincs ilyen alkalmazás.' };
-      const url = appScheme.urlFor(id);
-      if (!url) return { ok: false, err: 'not-found', hu: 'Nincs ilyen alkalmazás.' };
+      const base = appScheme.urlFor(id);
+      if (!base) return { ok: false, err: 'not-found', hu: 'Nincs ilyen alkalmazás.' };
+      const url = base + (appHash.has(id) ? '#' + appHash.get(id) : '');           // a deep link asked before the view existed (archive.show)
+      appHash.delete(id);
       views.createApp(viewId, url, { sameApp: u => appScheme.sameApp(id, u), onLink: u => ipc.emit(win, 'desktop', 'link', { url: u }) });
     }
     return { ok: views.setBounds(viewId, rect) };
@@ -700,6 +702,43 @@ ipc.register('programs', 'folder', { id: progId }, async ({ id }) => {
   run.openPath(f);
   return { ok: true };
 });
+
+// Archívum (WP-46): the Artifact Archive, Archive/index.json + Archive/files/<id>.html (Archive/archive.js owns the format).
+// list = the light fields for the Dashboard section; show = open the archive app at one entry (#<id>, or #<id>/open to run it);
+// add = main asks for the page with its own file dialog (the page never names a path), copies it into Archive/files and indexes it.
+const archiveLib = require(path.join(REPO_DIR, 'Archive', 'archive.js'));
+const appHash = new Map();                                                       // app id → the #fragment its view opens at
+const archId = v => typeof v === 'string' && /^[a-z0-9][a-z0-9-]{0,47}$/.test(v);
+const archDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+ipc.register('archive', 'list', {}, async () => {
+  try { return { ok: true, ...archiveLib.list() }; } catch (e) { return { ok: false, err: 'read', hu: 'Az archívum nem olvasható: ' + e.message }; }
+});
+ipc.register('archive', 'show', { id: archId, run: types.bool }, async ({ id, run: go }) => {
+  let ids;
+  try { ids = archiveLib.read().items.map(i => i.id); } catch (e) { ids = []; }
+  if (!ids.includes(id)) return { ok: false, err: 'not-found', hu: 'Nincs ilyen elem az archívumban.' };
+  const frag = encodeURIComponent(id) + (go ? '/open' : '');
+  const v = views.get('app:archive');
+  if (v && !v.webContents.isDestroyed()) v.webContents.loadURL(appScheme.urlFor('archive') + '#' + frag).catch(() => {});
+  else appHash.set('archive', frag);
+  return { ok: true };
+}, { optional: ['run'] });
+ipc.register('archive', 'add', {
+  meta: types.obj({ title: types.text(200), group: types.text(60), kind: types.enum(...archiveLib.KINDS), vrg: types.bool, url: types.text(120), created: archDate,
+    summary: types.text(1000), purpose: types.text(600), context: types.arr(types.text(200), 6), tags: types.arr(types.text(40), 12) },
+  { optional: ['title', 'group', 'kind', 'vrg', 'url', 'created', 'summary', 'purpose', 'context', 'tags'] }),
+}, async ({ meta }) => {
+  if (SELFTEST) return { ok: false, err: 'selftest', hu: 'Tesztben nincs fájlválasztó.' };
+  const { dialog } = require('electron');
+  const r = await dialog.showOpenDialog(win, { title: 'Oldal hozzáadása az archívumhoz', properties: ['openFile'], filters: [{ name: 'HTML', extensions: ['html', 'htm'] }] });
+  if (r.canceled || !r.filePaths[0]) return { ok: false, err: 'cancelled', hu: 'Megszakítva.' };
+  const clean = Object.fromEntries(Object.entries(meta).filter(([, v]) => v !== '' && !(Array.isArray(v) && !v.length)));
+  try {
+    const it = archiveLib.add(r.filePaths[0], clean);
+    log('archive add', it.id);
+    return { ok: true, id: it.id, hu: 'Archiválva: ' + it.title };
+  } catch (e) { return { ok: false, err: 'add', hu: String(e.message || e).replace(/^archive: /, '') }; }
+}, { optional: [] });
 
 // a registry server, started when it is down (never in a selftest), as the URL the browser pane opens
 async function deskServer(id, urlPath) {
