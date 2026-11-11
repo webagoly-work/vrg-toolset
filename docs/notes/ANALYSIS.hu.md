@@ -8,6 +8,10 @@ ezért egy megnevezett funkciót átvétel előtt érdemes újra ellenőrizni.*
 *Ez az angol [ANALYSIS.md](ANALYSIS.md) magyar változata. Eltérés esetén a kettőt együtt kell javítani. A modulválasztó oldal
 (kétnyelvű, interaktív): https://claude.ai/artifact/V68RVT9rfxZPQgZj1ChdBb*
 
+*Előbb a [SIMPLE.hu.md](SIMPLE.hu.md) olvasandó: az egyszerű felszín, a helyek és a gépház, amelybe minden alábbi modulnak bele
+kell férnie. Az N-FOLDER az 1. szintre kerül, és bekerül az N-SIMPLE, az N-ENGINELOG és az N-SKIN (§6.13), így a lista 99 modulos.
+Az [EDITOR.hu.md](EDITOR.hu.md) az Obsidian-bővítményeket erre a listára vetíti, és további 22-t ad a MindMD-szerkesztőhöz (összesen 121).*
+
 Tartalom: §1 ami a VRG-ben már megvan · §2 a piac · §3 mi lehet egy jegyzet a szövegdobozon túl · §4 ami a VRG-hez illik · §5 a
 háttér (tárolás, szinkron, biztonság, tartalék) · §6 a moduláris funkciólista · §7 nyitott döntések · §8 építési sorrend.
 
@@ -441,7 +445,7 @@ használható változat · `2` = erős második hullám · `3` = később / csak
 |---|---|---|---|---|---|
 | N-TAG | Címkék | szövegbe írt beágyazott címkék (`#job/2026/kovacs`) + frontmatter-címkék, címkefa az oldalsávban, címke átnevezése mindenhol | 1 | D+M | — |
 | N-PIN | Kitűzés, színek, kedvencek, archívum | a kis rendező igék | 1 | D+M | — |
-| N-FOLDER | Jegyzetfüzetek (opcionális) | tulajdonságként, nem könyvtárként tárolt virtuális mappák (a fájlok laposak maradnak) | 2 | D+M | — |
+| N-FOLDER | Mappák | tulajdonságként, nem könyvtárként tárolt virtuális mappák (a fájlok laposak maradnak); az egyszerű felszín része (SIMPLE.hu.md) | 1 | D+M | — |
 | N-LINK | Wikilinkek és visszahivatkozások | `[[cím]]` automatikus kiegészítéssel, visszahivatkozás-panel, nem hivatkozott említések, álnevek, átnevezésbiztos (a háttérben azonosító szerint hivatkozik) | 1 | D (+M nézet) | — |
 | N-XLINK | Hivatkozás a VRG világára | `[[job:2026-031]]`, `[[inv:…]]`, `[[plan:kovacs#K3]]`, `[[F:…]]` / `[[R:sha]]` (Stack-azonosítók), `[[file:…]]`; mindegyik a katalóguson / a `desktop.open`-en át nyílik | 1 | D | katalógus, Stack-azonosítók |
 | N-EMBED | Beágyazás / transzklúzió | `![[jegyzet#címsor]]` egy másik jegyzet részét mutatja a szövegben (Loop / Obsidian ötlet) | 3 | D | — |
@@ -550,6 +554,9 @@ használható változat · `2` = erős második hullám · `3` = később / csak
 | N-A11Y | Akadálymentesség | betűméretezés, kontraszt, képernyőolvasó-címkék, nagy érintési célok (kesztyű) | 1 | D+M |
 | N-PERF | Sebességkeret | megnyitás < 200 ms, keresés < 100 ms, a gépelést soha nem blokkolja a mentés vagy az index, 10 000 jegyzetnél | 0 | D+M |
 | N-I18N | Elsőként magyarul | a felület szövegei egy táblában (hu, később en); dátumok és számok hu-HU szerint | 1 | D+M |
+| N-SIMPLE | Felszín és helyek | az eszközönkénti profil, a helyregiszter, a keret, az *Egyszerű mód* kapcsoló, a visszaviteli teszt ([SIMPLE.hu.md](SIMPLE.hu.md)) | 0 | D+M |
+| N-ENGINELOG | Háttérnapló | jegyzetenként és tárolónként: minden automatikus lépés okkal és *Visszavonással* | 1 | D+M |
+| N-SKIN | Ismerős megjelenés | az iOS-stílusú telefonos megjelenés ugyanazokon a képernyőkön és helyeken; alapértelmezett viselkedése a Csendes | 1 | M |
 
 ---
 
@@ -573,11 +580,11 @@ használható változat · `2` = erős második hullám · `3` = később / csak
 ## 8. Építési sorrend
 
 1. **NT0 — mag, felület nélkül:** N-VAULT, N-STORE, N-ATT, N-INDEX, N-TRASH, N-API, N-VIS, N-SAFE-HTML, N-RECOVER, N-PERF keret,
-   N-CORE-TEST. Tiszta magok JS-ben és Kotlinban, a közös fixtúrákkal. Semmi sem látható; minden tesztelve.
+   N-CORE-TEST, N-SIMPLE. Tiszta magok JS-ben és Kotlinban, a közös fixtúrákkal. Semmi sem látható; minden tesztelve.
 2. **NT1 — a Desktop-alkalmazás:** N-UI, N-EDIT, N-CHECK, N-SLASH, N-CODE, N-TAG, N-PIN, N-LINK, N-FIND, N-SWITCH, N-PALETTE,
-   N-QUICK, N-SOURCE (a fejlesztőijegyzet-ablakból univerzális rögzítő lesz), N-DAILY, N-HIST, N-BACKUP, N-FSCK, N-FALLBACK,
+   N-QUICK, N-SOURCE (a fejlesztőijegyzet-ablakból univerzális rögzítő lesz), N-FOLDER, N-ENGINELOG, N-DAILY, N-HIST, N-BACKUP, N-FSCK, N-FALLBACK,
    N-EXPORT, N-LINKS, N-KEYS. Bejegyezve a `vrg-menu.json` + `vrg-catalog.json` fájlba. *Használható a PC-n.*
-3. **NT2 — csatlakozik a telefon:** N-CRYPT, N-ENROL, N-JOURNAL, N-SYNC-LAN, N-MERGE, N-STATUS, N-PHONE, N-SHARE, N-INBOX, N-DEV
+3. **NT2 — csatlakozik a telefon:** N-CRYPT, N-ENROL, N-JOURNAL, N-SYNC-LAN, N-MERGE, N-STATUS, N-PHONE, N-SHARE, N-INBOX, N-DEV, N-SKIN
    (a Gyorsjegyzet mostantól tárolójegyzeteket ír; a fejlesztői jegyzetek továbbra is úgy folynak, mint ma). *PC és telefon
    összhangban, felhő nélkül.*
 4. **NT3 — a munka:** N-JOB, N-XLINK, N-TYPE (négy típus), N-SITE, N-ANNOT, N-VOICE, N-MEAS, N-DIARY, N-REPORT, N-TASK,

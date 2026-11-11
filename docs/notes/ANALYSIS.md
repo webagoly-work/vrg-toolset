@@ -7,6 +7,10 @@ products as of mid-2026, not a fresh web sweep; product details change often, so
 *Hungarian version: [ANALYSIS.hu.md](ANALYSIS.hu.md); fix both together. The interactive module picker (bilingual):
 https://claude.ai/artifact/V68RVT9rfxZPQgZj1ChdBb*
 
+*Read [SIMPLE.md](SIMPLE.md) first: the simple surface, the slots and the engine room that every module below must fit.
+It moves N-FOLDER to tier 1 and adds N-SIMPLE, N-ENGINELOG and N-SKIN (§6.13), so the list now has 99 modules.
+[EDITOR.md](EDITOR.md) maps the Obsidian plugins onto this list and adds 22 more for the MindMD editor (121 in all).*
+
 Contents: §1 what VRG already has · §2 the market · §3 what a note can be beyond a text box · §4 what fits VRG · §5 the backend
 (storage, sync, security, fallback) · §6 the modular feature list · §7 open decisions · §8 a build order.
 
@@ -427,7 +431,7 @@ existing VRG pieces it reuses.
 |---|---|---|---|---|---|
 | N-TAG | Tags | inline nested tags (`#job/2026/kovacs`) + frontmatter tags, tag tree in the sidebar, rename a tag everywhere | 1 | D+M | — |
 | N-PIN | Pins, colours, favourites, archive | the small organising verbs | 1 | D+M | — |
-| N-FOLDER | Notebooks (optional) | virtual folders stored as a property, not as directories (files stay flat) | 2 | D+M | — |
+| N-FOLDER | Folders | virtual folders stored as a property, not as directories (files stay flat); part of the simple surface (SIMPLE.md) | 1 | D+M | — |
 | N-LINK | Wikilinks and backlinks | `[[cím]]` with autocomplete, backlink panel, unlinked mentions, aliases, rename-safe (links by id under the hood) | 1 | D (+M view) | — |
 | N-XLINK | Links to the VRG world | `[[job:2026-031]]`, `[[inv:…]]`, `[[plan:kovacs#K3]]`, `[[F:…]]` / `[[R:sha]]` (Stack ids), `[[file:…]]`; each opens through the catalog / `desktop.open` | 1 | D | catalog, Stack ids |
 | N-EMBED | Embeds / transclusion | `![[note#heading]]` shows part of another note inline (Loop / Obsidian idea) | 3 | D | — |
@@ -536,6 +540,9 @@ existing VRG pieces it reuses.
 | N-A11Y | Accessibility | font scaling, contrast, screen-reader labels, large touch targets (gloves) | 1 | D+M |
 | N-PERF | Speed budget | open < 200 ms, search < 100 ms, typing never blocked by save or index, at 10 000 notes | 0 | D+M |
 | N-I18N | Hungarian first | UI strings in one table (hu, en later); dates and numbers in hu-HU | 1 | D+M |
+| N-SIMPLE | Surface and slots | the per-device profile, the slot registry, the budget, the *Egyszerű mód* switch, the snap-back test ([SIMPLE.md](SIMPLE.md)) | 0 | D+M |
+| N-ENGINELOG | Engine log | *Háttérnapló* per note and per vault: every automatic act with its reason and *Visszavonás* | 1 | D+M |
+| N-SKIN | Ismerős look | the iOS-style phone skin on the same screens and slots; Csendes as its default behaviour | 1 | M |
 
 ---
 
@@ -559,11 +566,11 @@ existing VRG pieces it reuses.
 ## 8. A build order
 
 1. **NT0 — core, no UI:** N-VAULT, N-STORE, N-ATT, N-INDEX, N-TRASH, N-API, N-VIS, N-SAFE-HTML, N-RECOVER, N-PERF budget,
-   N-CORE-TEST. Pure cores in JS and Kotlin with the shared fixtures. Nothing visible; all tested.
+   N-CORE-TEST, N-SIMPLE. Pure cores in JS and Kotlin with the shared fixtures. Nothing visible; all tested.
 2. **NT1 — the Desktop app:** N-UI, N-EDIT, N-CHECK, N-SLASH, N-CODE, N-TAG, N-PIN, N-LINK, N-FIND, N-SWITCH, N-PALETTE, N-QUICK,
-   N-SOURCE (the dev-note dialog becomes the universal capture), N-DAILY, N-HIST, N-BACKUP, N-FSCK, N-FALLBACK, N-EXPORT, N-LINKS,
+   N-SOURCE (the dev-note dialog becomes the universal capture), N-FOLDER, N-ENGINELOG, N-DAILY, N-HIST, N-BACKUP, N-FSCK, N-FALLBACK, N-EXPORT, N-LINKS,
    N-KEYS. Registered in `vrg-menu.json` + `vrg-catalog.json`. *Usable on the PC.*
-3. **NT2 — the phone joins:** N-CRYPT, N-ENROL, N-JOURNAL, N-SYNC-LAN, N-MERGE, N-STATUS, N-PHONE, N-SHARE, N-INBOX, N-DEV
+3. **NT2 — the phone joins:** N-CRYPT, N-ENROL, N-JOURNAL, N-SYNC-LAN, N-MERGE, N-STATUS, N-PHONE, N-SHARE, N-INBOX, N-DEV, N-SKIN
    (Gyorsjegyzet now writes vault notes; dev notes still flow as today). *PC and phone in step, no cloud.*
 4. **NT3 — the work:** N-JOB, N-XLINK, N-TYPE (four types), N-SITE, N-ANNOT, N-VOICE, N-MEAS, N-DIARY, N-REPORT, N-TASK,
    N-REMIND, N-SMART, N-STACK. *The notes app becomes the field notebook of the jobs.*
