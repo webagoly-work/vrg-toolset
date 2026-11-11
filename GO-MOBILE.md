@@ -50,13 +50,13 @@ What changes locally compared with the cloud:
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Every WP
   without an open decision is now built. The last three were answered on 2026-11-06 (D-7 = A, D-9 = A, D-11 = C) and
   were built as one batch: **M5** (Kódváros online), **M10** (Értesítések) and **M7** (Hálózat) are all done.
-  M1, M2, M3, M4, M6, M9, M14, M11 (Indítópult, checked on the phone 2026-11-11) and M8 (Localhost, checked
-  2026-11-12) are live; **M16** (the VRG UI Kit's look on the phone, built 2026-11-06), **M12** (Átadás, built 2026-11-06),
-  **M13** (Képernyő, built 2026-11-06), **M5** (Kódváros online, built 2026-11-06; its city appears after the
+  M1, M2, M3, M4, M6, M9, M14, M11 (Indítópult, checked on the phone 2026-11-11), M8 (Localhost, checked
+  2026-11-12) and M12 (Átadás, checked 2026-11-12) are live; **M16** (the VRG UI Kit's look on the phone, built
+  2026-11-06), **M13** (Képernyő, built 2026-11-06), **M5** (Kódváros online, built 2026-11-06; its city appears after the
   first push, when `.github/workflows/mobile-city.yml` has run), **M10** (Értesítések, built 2026-11-06; the push
   service, D-11 B, is a later WP) and **M7** (Hálózat, built 2026-11-07; the phone's own relay in `relay-core`,
   research in `docs/mobile/research/M7-network.md`) are BETA until the user works through their phone lists in
-  `docs/mobile/WP/M16.md`, `docs/mobile/WP/M12.md`,
+  `docs/mobile/WP/M16.md`,
   `docs/mobile/WP/M13.md`, `docs/mobile/WP/M5.md`, `docs/mobile/WP/M10.md` and `docs/mobile/WP/M7.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
@@ -94,10 +94,7 @@ What changes locally compared with the cloud:
   see the end of `docs/mobile/WP/M3.md`. Only the user decides when they change.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
   phone checklist. Open right now: **M16** (`docs/mobile/WP/M16.md` →
-  "Telefonon ellenőrizni": the ten palettes, the kit faces, the MINI rings, TalkBack, "Animációk eltávolítása") and **M12**
-  (`docs/mobile/WP/M12.md` → "Telefonon ellenőrizni": a file both ways through `localhost:47291/board`, a gallery
-  share to "PC-re", the camera photo for the Planner, removal on either side, WiFi off mid-upload, the clipboard both ways)
-  and **M13** (`docs/mobile/WP/M13.md` → "Telefonon ellenőrizni": the PC's screen moving with the cursor, the notice
+  "Telefonon ellenőrizni": the ten palettes, the kit faces, the MINI rings, TalkBack, "Animációk eltávolítása") and **M13** (`docs/mobile/WP/M13.md` → "Telefonon ellenőrizni": the PC's screen moving with the cursor, the notice
   window and its Leállítás, steering with the Légegér strip, monitor / window switch, Home, removing the pairing,
   a UAC prompt, the frame rate on WiFi and on the hotspot; the relay with `--shots`: `Mobile\mobile.cmd` → 1)
   and **M5** (`docs/mobile/WP/M5.md` → "Telefonon ellenőrizni": first push, so that the **VRG Mobile (Kódváros

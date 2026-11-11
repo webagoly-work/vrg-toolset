@@ -85,7 +85,7 @@ object Catalogue {
     )
     val DROP = FeatureInfo(
         "drop", "Átadás", "Fotó, fájl, vágólap és helyszíni kép a telefonról a PC-re (Planner, Inventory) és vissza.",
-        "⇅", Group.CONTROL, Stage.BETA, "M12", setOf(Need.RELAY, Need.CAMERA),
+        "⇅", Group.CONTROL, Stage.LIVE, "M12", setOf(Need.RELAY, Need.CAMERA),
     )
     val SCREEN = FeatureInfo(
         "screen", "Képernyő", "A PC képernyője élőben a telefonon, Légegér vezérléssel. A PC-n jelzi, hogy nézik.",
