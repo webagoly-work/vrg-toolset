@@ -81,7 +81,7 @@ object Catalogue {
     )
     val LAUNCH = FeatureInfo(
         "launch", "Indítópult", "A START eszközei a telefonról: indítás a PC-n, futó eszközök, napló.",
-        "▶", Group.CONTROL, Stage.BETA, "M11", setOf(Need.RELAY),
+        "▶", Group.CONTROL, Stage.LIVE, "M11", setOf(Need.RELAY),
     )
     val DROP = FeatureInfo(
         "drop", "Átadás", "Fotó, fájl, vágólap és helyszíni kép a telefonról a PC-re (Planner, Inventory) és vissza.",
