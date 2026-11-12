@@ -115,7 +115,7 @@ object Catalogue {
     // The night run of 2026-11-12 (docs/mobile/PARITY.md): VRG Mobile as a simplified VRG Desktop.
     val DESK = FeatureInfo(
         "desk", "Asztal", "A VRG Asztal a telefonon: lapfülek, Kommand kereső, dokk, menü és Rétegverem tárcsa, álló / fekvő váltó.",
-        "◧", Group.APP, Stage.PLANNED, "M19",
+        "◧", Group.APP, Stage.BETA, "M19",
     )
     val SHEETS = FeatureInfo(
         "sheets", "Lapok", "Az Asztal lapjai a telefonon: ablakok rácsban, dupla koppintás = teljes ⇄ egy cella, húzással méretezés és mozgatás.",

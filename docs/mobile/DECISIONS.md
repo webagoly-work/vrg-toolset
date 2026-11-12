@@ -217,6 +217,23 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     history has nothing to step back through.
   Details: `WP/M18.md`.
 
+- **D-14 · Tájolás: what the orientation toggle starts on and covers (M19), 2026-11-12.** Night default (2026-11-12), the user revisits it.
+  Chosen: **A** — the stored value starts on **Álló** (the portrait lock every build before M19 had, so nothing turns
+  on its own after the update), the toggle cycles Automatikus → Álló → Fekvő and applies to the whole app, and the
+  manifest handles rotation itself (`configChanges`) so WebViews and the relay link survive a turn.
+  Rejected: **B** start on Automatikus (the phone would start turning for every feature at once, Légegér's gyro
+  included, before anyone checked it); **C** a per-feature orientation (more settings than the user asked for; kept
+  as a Later item if Légegér needs to stay upright).
+- **D-15 · Kezdőlap and the Kommand proof (M19), 2026-11-12.** Night default (2026-11-12), the user revisits it.
+  Chosen: **A** — the Asztal is the default home after the update (the user asked for the Desktop on the phone), the
+  tile home stays one setting away as Kompakt; the Asztal is a part of the shell, not a `feature-desk` module (it is
+  the home, every feature opens from it); the Desktop's catalog reaches the phone as generated Kotlin
+  (`Mobile/catalogue/desk-gen.js` → `DeskCatalog.kt`, `--check` in `mobile.cmd test`), and "the same results
+  on the same inputs" is proved by a fixture the palette's own `search()` writes and a JVM test replays.
+  Rejected: **B** Kompakt stays the default and the Asztal is opt-in (the user would not see what they asked for);
+  **C** the JVM test runs Node itself (the core tests would need Node on every machine and in Actions; the fixture
+  plus `--check` gives the same proof without it).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

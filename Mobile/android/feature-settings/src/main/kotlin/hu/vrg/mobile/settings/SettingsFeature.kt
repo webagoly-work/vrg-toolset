@@ -30,6 +30,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.HomeMode
+import hu.vrg.mobile.core.Orientation
 import hu.vrg.mobile.core.InboxChannel
 import hu.vrg.mobile.core.Look
 import hu.vrg.mobile.kit.VrgNotify
@@ -113,6 +115,15 @@ object SettingsFeature : VrgFeature {
 
             // ---- start -----------------------------------------------------------------------------
             VrgSectionTitle("Indulás")
+            // WP M19: the Asztal or the tile home, and the manual orientation (also the Asztal's top-strip button)
+            Text("Kezdőlap", style = Melyviz.label)
+            Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                HomeMode.entries.forEach { m -> VrgChip(m.label, selected = s.home == m) { ShellSettings.update { it.copy(home = m) } } }
+            }
+            Text("Tájolás", style = Melyviz.label)
+            Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Orientation.entries.forEach { o -> VrgChip(o.glyph + " " + o.label, selected = s.orientation == o) { ShellSettings.update { it.copy(orientation = o) } } }
+            }
             VrgToggle("Az utoljára nyitott funkcióval induljon", s.startInLast) { v ->
                 ShellSettings.update { it.copy(startInLast = v) }
             }

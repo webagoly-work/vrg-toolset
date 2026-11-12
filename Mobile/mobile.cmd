@@ -136,6 +136,9 @@ popd
 :: WP M16: kit\...\theme\KitTokens.kt must still match the VRG UI Kit tokens
 if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\shared\vrg-ui-kit\tools\kotlin-tokens.js" --check
 if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
+:: WP M19: kit-core DeskCatalog.kt + the Kommand fixture must still match launcher\vrg-catalog.json
+if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\desk-gen.js" --check
+if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 echo.
 if "%RC%"=="0" echo   Core tesztek: rendben.
 if not "%RC%"=="0" echo   HIBA: core tesztek ^(kod %RC%^) - reszletek: android\kit-core es android\airdeck-core \build\reports\tests

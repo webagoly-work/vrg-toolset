@@ -44,6 +44,12 @@ data class ShellPrefs(
     val relayUrl: String = "",
     /** Légegér's old relay address has been taken over once (see [adoptRelay]). */
     val relayAdopted: Boolean = false,
+    /** Kezdőlap (WP M19): the Asztal frame or the tile home (Kompakt). */
+    val home: HomeMode = HomeMode.DESK,
+    /** Tájolás (WP M19): the user's manual toggle, applied with setRequestedOrientation. */
+    val orientation: Orientation = Orientation.PORTRAIT,
+    /** Kommand's recent ids, newest first (the palette's `palette.recent`). */
+    val kommandRecent: List<String> = emptyList(),
 ) {
     /**
      * The one-off migration: before M1 the look was a Légegér setting. The first start of an M1 build
@@ -79,6 +85,9 @@ data class ShellPrefs(
         const val K_ADOPTED = "lookAdopted"
         const val K_RELAY = "relayUrl"
         const val K_RELAY_ADOPTED = "relayAdopted"
+        const val K_HOME = "home"
+        const val K_ORIENTATION = "orientation"
+        const val K_KOMMAND_RECENT = "kommandRecent"
 
         /** From whatever SharedPreferences.getAll() returned; anything unreadable becomes the default. */
         fun fromMap(m: Map<String, *>): ShellPrefs {
@@ -91,6 +100,9 @@ data class ShellPrefs(
                 lookAdopted = m[K_ADOPTED] as? Boolean ?: d.lookAdopted,
                 relayUrl = RelayAddress.normalize(m[K_RELAY] as? String ?: ""),
                 relayAdopted = m[K_RELAY_ADOPTED] as? Boolean ?: d.relayAdopted,
+                home = HomeMode.of(m[K_HOME] as? String),
+                orientation = Orientation.of(m[K_ORIENTATION] as? String),
+                kommandRecent = (m[K_KOMMAND_RECENT] as? String).orEmpty().split('\n').filter { it.isNotEmpty() && it.length <= 80 }.take(Kommand.MAX_RECENT),
             )
         }
 
@@ -102,6 +114,9 @@ data class ShellPrefs(
             K_ADOPTED to p.lookAdopted,
             K_RELAY to p.relayUrl,
             K_RELAY_ADOPTED to p.relayAdopted,
+            K_HOME to p.home.id,
+            K_ORIENTATION to p.orientation.id,
+            K_KOMMAND_RECENT to p.kommandRecent.joinToString("\n"),
         )
     }
 }
