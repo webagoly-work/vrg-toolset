@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Claude's part of the app manifest: Android 11+ hides other apps unless they are named here, so the phone can see whether the
+     official Claude app is installed and hand it a session link. No permission: the relay link is the shell's. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <queries>
+        <package android:name="com.anthropic.claude" />
+    </queries>
+</manifest>

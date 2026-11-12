@@ -69,4 +69,5 @@ dependencies {
     implementation(project(":feature-net"))
     implementation(project(":feature-archive"))
     implementation(project(":feature-apps"))
+    implementation(project(":feature-claude"))
 }

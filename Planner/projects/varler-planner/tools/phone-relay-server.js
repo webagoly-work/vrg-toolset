@@ -113,6 +113,12 @@
 //   * Each notice goes to the trusted phones as {type:'notify', payload:{id, title, text, level, link, from, at}};
 //     the relay keeps the last 30 for a day, and notify.list {after} -> notify.listed {ok, entries} from a
 //     trusted phone brings the ones it missed. `node tools/relay-notify.js "Cím" "szöveg"` posts one.
+//
+// CHANGED 12 Nov — Claude, Remote Control sessions on this PC from the phone (VRG Mobile, WP M22; rules in relay-claude.js).
+//   * claude.list -> claude {ok, on, folders:[{key,name,hint}], accounts, sessions:[{id,name,folder,account,started,url,alive}]};
+//     claude.start {folder, account?} -> claude.started {ok, session, waiting} | {ok:false, reason}; claude.stop {id} ->
+//     claude.stopped. Trusted phones only, and OFF unless --claude (RELAY_CLAUDE=1). Folders are START → C's items named in
+//     Mobile/catalogue/claude.json; the name is made by the relay; the phone opens the session link in the Claude app.
 // ==========================================================================
 
 const http = require('http');
@@ -128,6 +134,7 @@ const launch = require('./relay-launch');
 const board = require('./relay-board');
 const screen = require('./relay-screen');
 const notify = require('./relay-notify');
+const claude = require('./relay-claude');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -136,6 +143,8 @@ const ARGS = process.argv.slice(2);
 const wanted = Number(ARGS.find(a => /^\d+$/.test(a))) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
 const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
 const PORTS = ARGS.includes('--ports') || process.env.RELAY_PORTS === '1';
+// --claude: a paired phone may list, start and stop Claude Remote Control sessions on this PC (WP M22, relay-claude.js)
+const CLAUDE = ARGS.includes('--claude') || process.env.RELAY_CLAUDE === '1';
 // --pair: on start, pop the pairing QR (/pair) up in its own app window (portable Chrome --app=,
 // else the system browser), so the phone can scan it without typing an address (2026-11-06).
 const PAIR_WINDOW = ARGS.includes('--pair') || process.env.RELAY_PAIR === '1';
@@ -723,6 +732,12 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    if (m && to === 'relay' && CLAUDE_TYPES.has(m.type)) {
+      if (roleOf(ws) !== PHONE) return;
+      onClaudeMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
+      return;
+    }
+
     if (m && to === 'relay' && (m.type === 'notify' || m.type === 'notify.list')) {
       onNotifyMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
       return;
@@ -861,6 +876,40 @@ function onLaunchMessage(ws, ip, type, p) {
   }
   LAUNCHER.run(list, p.id).then(r => {
     console.log(`  [start] inditas (${ip}): ${String(p.id).slice(0, 40)}  ${r.ok ? (r.how || 'ok') : r.reason}`);
+    answer(r);
+  }, fail);
+}
+
+/* ---- Claude: Remote Control sessions on this PC (relay-claude.js has the rules) ---------- */
+
+const CLAUDE_TYPES = new Set(['claude.list', 'claude.start', 'claude.stop']);
+const CLAUDE_ANSWER = { 'claude.list': 'claude', 'claude.start': 'claude.started', 'claude.stop': 'claude.stopped' };
+const CLAUDE_RC = claude.createClaude();
+
+function onClaudeMessage(ws, ip, type, p) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay(CLAUDE_ANSWER[type], payload)); };
+  if (!isTrusted(ws)) {
+    answer({ ok: false, trusted: false,
+      reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+    return;
+  }
+  if (!CLAUDE) { answer({ ok: false, on: false, reason: 'A Claude munkamenetek ki vannak kapcsolva: a relét --claude kapcsolóval kell indítani (Mobile\\mobile.cmd relay).' }); return; }
+  let folders;
+  try { folders = claude.buildFolders(); } catch (e) { answer({ ok: false, on: true, reason: 'A mappák nem olvashatók: ' + e.message }); return; }
+  const fail = err => answer({ ok: false, on: true, reason: 'Hiba: ' + err.message });
+  if (type === 'claude.list') {
+    const sessions = CLAUDE_RC.sessions();
+    console.log(`  [claude] lista -> ${ip}: ${folders.size} mappa, ${sessions.filter(s => s.alive).length} futó munkamenet`);
+    answer({ ok: true, on: true, folders: [...folders.values()].map(f => ({ key: f.key, name: f.name, hint: f.hint })),
+      accounts: [...claude.loadAllow().accounts], sessions });
+    return;
+  }
+  if (type === 'claude.stop') {
+    CLAUDE_RC.stop(p.id).then(r => { console.log(`  [claude] leallitas (${ip}): ${String(p.id).slice(0, 12)}  ${r.ok ? 'ok' : r.reason}`); answer(r); }, fail);
+    return;
+  }
+  CLAUDE_RC.start(folders, p).then(r => {
+    console.log(`  [claude] inditas (${ip}): ${String(p.folder).slice(0, 4)}  ${r.ok ? (r.session.url ? 'link kesz' : 'link meg nincs') : r.reason}`);
     answer(r);
   }, fail);
 }
@@ -1016,6 +1065,7 @@ server.on('listening', () => {
   console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
   console.log(SCREEN.available ? '   Képernyő élőben a telefonon: BEKAPCSOLVA (--shots, párosított telefonnak, a PC-n értesítő ablakkal)' : '   Képernyő élőben: ki' + (SHOTS ? ' (csak Windowson)' : ' (indítás --shots kapcsolóval)'));
   console.log(PORTS ? '   Localhost a telefonon (/p/<port>/): BEKAPCSOLVA (--ports, párosított telefonnak)' : '   Localhost a telefonon: ki (indítás --ports kapcsolóval)');
+  console.log(CLAUDE ? '   Claude Remote Control a telefonról: BEKAPCSOLVA (--claude, párosított telefonnak)' : '   Claude Remote Control a telefonról: ki (indítás --claude kapcsolóval)');
   console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
   console.log(`   Átadás, fájltábla (ezen a PC-n): http://localhost:${port}/board`);
   console.log('   Mobiladat nem jó.');

@@ -531,8 +531,8 @@ object SheetsCodec {
 
 /** The phone's side of Lapok: what a Desktop window becomes here, and the Desktop presets fitted to the 2 × 4 grid. */
 object PhoneSheets {
-    /** Desktop panes the phone has its own feature for. The rest (files, term, mail, web, chat, git, feed) wait for M22–M23. */
-    private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id)
+    /** Desktop panes the phone has its own feature for. The rest (files, term, mail, web, git, feed) wait for M23. */
+    private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id, "chat" to Catalogue.CLAUDE.id)
 
     /** Shell parts, not windows: the Asztal and Lapok themselves. */
     private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id)

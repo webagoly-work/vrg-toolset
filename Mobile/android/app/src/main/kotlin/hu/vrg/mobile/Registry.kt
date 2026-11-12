@@ -4,6 +4,7 @@ import hu.vrg.legeger.AirDeckFeature
 import hu.vrg.mobile.account.AccountFeature
 import hu.vrg.mobile.apps.AppsFeature
 import hu.vrg.mobile.archive.ArchiveFeature
+import hu.vrg.mobile.claude.ClaudeFeature
 import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
@@ -45,6 +46,7 @@ object Registry {
         StackFeature,
         ArchiveFeature,
         AppsFeature,
+        ClaudeFeature,
         InboxFeature,
         NetFeature,
     )

@@ -1,0 +1,17 @@
+{
+ "about": "A claude.list answer as phone-relay-server.js sends it (WP M22). ClaudeTest parses it; Mobile/tests/relay-claude.js checks the live answer has these same fields.",
+ "v": 1, "from": "relay", "seq": 7, "t": 1794470400000, "type": "claude",
+ "payload": {
+  "ok": true,
+  "on": true,
+  "folders": [
+   { "key": "1", "name": "A repo gyökere", "hint": "ajánlott, látja az egészet" },
+   { "key": "2", "name": "Planner projekt", "hint": "" }
+  ],
+  "accounts": ["A", "B"],
+  "sessions": [
+   { "id": "c2", "name": "VRG Planner projekt 10:05", "folder": "2", "account": "A", "started": 1794470100000, "url": null, "alive": true },
+   { "id": "c1", "name": "VRG A repo gyokere 09:40", "folder": "1", "account": "B", "started": 1794468000000, "url": "https://claude.ai/code/session_01ABC?name=VRG", "alive": false }
+  ]
+ }
+}

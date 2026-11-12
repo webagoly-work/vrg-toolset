@@ -92,8 +92,9 @@ if not exist "%RELAY_JS%" goto NO_RELAY
 ::   and a paired phone may watch it live (Kepernyo, WP M13; a notice window shows it here).
 :: --ports: a paired phone may open this PC's local servers through /p/<port>/ (WP M8).
 :: --pair: the pairing QR pops up in its own window on start.
+:: --claude: a paired phone may start Claude Remote Control sessions here (WP M22; folders in Mobile\catalogue\claude.json).
 :: START.cmd G starts the same relay without any of them.
-start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots --ports --pair
+start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots --ports --pair --claude
 echo.
 echo   A relay kulon ablakban fut ^(VRG 47291^). A telefonon: Beallitasok -^> Kereses a halozaton.
 ping -n 3 127.0.0.1 >nul 2>&1

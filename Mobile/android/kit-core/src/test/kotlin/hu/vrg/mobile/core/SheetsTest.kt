@@ -236,7 +236,7 @@ class SheetsTest {
         assertNull(PhoneSheets.resolve("cat:desktop"), "the frame is not a window")
         assertNull(PhoneSheets.resolve("cat:workspaces"), "Lapok itself is not a window")
         assertNull(PhoneSheets.resolve("pane:mail"))
-        assertNull(PhoneSheets.resolve("feat:claude"), "a planned feature is not a window")
+        assertNull(PhoneSheets.resolve("feat:pcwin"), "a planned feature is not a window")
         assertNull(PhoneSheets.resolve("feat:nope"))
         assertEquals("feat:airdeck", PhoneSheets.resolve("feat:airdeck")!!.open)
     }

@@ -27,3 +27,4 @@ if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
 if (!jvmOnly) include(":feature-archive") // WP M18 Archívum
 if (!jvmOnly) include(":feature-apps")    // WP M21 Alkalmazások
+if (!jvmOnly) include(":feature-claude")  // WP M22 Claude

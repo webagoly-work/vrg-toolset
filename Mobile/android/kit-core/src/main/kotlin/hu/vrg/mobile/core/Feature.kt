@@ -127,7 +127,7 @@ object Catalogue {
     )
     val CLAUDE = FeatureInfo(
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
-        "✶", Group.LINK, Stage.PLANNED, "M22",
+        "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
     val PCWIN = FeatureInfo(
         "pcwin", "PC ablakok", "A PC munkamappái csak olvasva, másolat az Átadáson át; posta és hírfolyam, ha elérhető.",

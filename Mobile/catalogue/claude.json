@@ -1,0 +1,13 @@
+{
+  "about": "Claude (VRG Mobile, WP M22): where a paired phone may start a Claude Remote Control session on the PC. Read by Planner/projects/varler-planner/tools/relay-claude.js, only when the relay runs with --claude. The folders are START's own Claude Code menu (launcher/vrg-menu.json, start.dev C); this file names which of its keys the phone may use. The phone never sends a path, a name or a command: a key and an account letter.",
+
+  "folders": {
+    "about": "START -> C item keys. Not here: B (Bernard, an agent with its own arguments).",
+    "allow": ["1", "2", "3"]
+  },
+
+  "accounts": {
+    "about": "The Desktop's Claude profiles (Dashboard/config/profiles.json): A = claude-a, B = claude-b (its own CLAUDE_CONFIG_DIR).",
+    "allow": ["A", "B"]
+  }
+}
