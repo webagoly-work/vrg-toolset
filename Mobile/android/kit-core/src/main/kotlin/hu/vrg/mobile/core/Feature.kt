@@ -112,10 +112,33 @@ object Catalogue {
         "⚙", Group.APP, Stage.LIVE, "M1",
     )
 
+    // The night run of 2026-11-12 (docs/mobile/PARITY.md): VRG Mobile as a simplified VRG Desktop.
+    val DESK = FeatureInfo(
+        "desk", "Asztal", "A VRG Asztal a telefonon: lapfülek, Kommand kereső, dokk, menü és Rétegverem tárcsa, álló / fekvő váltó.",
+        "◧", Group.APP, Stage.PLANNED, "M19",
+    )
+    val SHEETS = FeatureInfo(
+        "sheets", "Lapok", "Az Asztal lapjai a telefonon: ablakok rácsban, dupla koppintás = teljes ⇄ egy cella, húzással méretezés és mozgatás.",
+        "▦", Group.APP, Stage.PLANNED, "M20",
+    )
+    val APPS = FeatureInfo(
+        "apps", "Alkalmazások", "Az Asztal HTML alkalmazásai (Planner, kalkulátorok, Készlet, MindMap, BuildTree, Valena) a telefonon, offline is.",
+        "▤", Group.WORK, Stage.PLANNED, "M21", setOf(Need.INTERNET),
+    )
+    val CLAUDE = FeatureInfo(
+        "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
+        "✶", Group.LINK, Stage.PLANNED, "M22",
+    )
+    val PCWIN = FeatureInfo(
+        "pcwin", "PC ablakok", "A PC munkamappái csak olvasva, másolat az Átadáson át; posta és hírfolyam, ha elérhető.",
+        "🗁", Group.CONTROL, Stage.PLANNED, "M23", setOf(Need.RELAY),
+    )
+
     val ALL: List<FeatureInfo> = listOf(
-        AIRDECK, LAUNCH, DROP, SCREEN,
-        PAIR, ACCOUNT, NET,
-        PULSE, SPHERE, CITY, STACK, ARCHIVE, NOTES, PORTS, INBOX,
+        DESK, SHEETS,
+        AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
+        PAIR, ACCOUNT, NET, CLAUDE,
+        PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
     )
 
