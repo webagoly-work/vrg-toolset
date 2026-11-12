@@ -69,6 +69,7 @@ What changes locally compared with the cloud:
 - **Night run 2026-11-12** (`docs/mobile/NIGHT-DESKTOP.md`): N1 parity map and **M19** Asztal (BETA, D-14, D-15)
   built; N3–N6 (M20–M23) not started. Report: `docs/mobile/NIGHT-REPORT-2026-11-12.md`.
 - **M20** Lapok built 2026-11-12 (D-16), **BETA**: `docs/mobile/WP/M20.md` → "Telefonon ellenőrizni". Next in order: M21.
+- **M21** Alkalmazások built 2026-11-12, **BETA**: `docs/mobile/WP/M21.md` → "Telefonon ellenőrizni" (8 apps, one origin each; `node Mobile/tests/apps-phone.js`). Next in order: M22.
 
 ## 3. What the user asked for, mapped to WPs
 

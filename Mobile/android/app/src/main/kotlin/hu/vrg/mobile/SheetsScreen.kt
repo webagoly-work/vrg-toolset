@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.vrg.mobile.apps.AppsFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Cell
 import hu.vrg.mobile.core.Kommand
@@ -113,6 +114,7 @@ object SheetsStore {
 private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
     "home" -> "⌂" to "Kezdőlap"
     "feat" -> Catalogue.byId(w.open.removePrefix("feat:"))?.let { it.glyph to it.title } ?: ("·" to w.open)
+    "app" -> Catalogue.APPS.glyph to (AppsFeature.app(w.open.removePrefix("cat:"))?.hu ?: w.open)
     else -> "·" to w.open
 }
 
@@ -262,7 +264,11 @@ private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: 
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Mini(glyph, title, status, size = if (small) MiniSize.SM else MiniSize.MD, tint = Melyviz.glow, quietIdle = true)
             if (!small) {
-                val blurb = if (w.kind == "home") "A telefon funkciói ikonokként." else Catalogue.byId(w.open.removePrefix("feat:"))?.blurb.orEmpty()
+                val blurb = when (w.kind) {
+                    "home" -> "A telefon funkciói ikonokként."
+                    "app" -> "Az Asztal alkalmazása, a telefonon tárolt példányból."
+                    else -> Catalogue.byId(w.open.removePrefix("feat:"))?.blurb.orEmpty()
+                }
                 Text(blurb, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.muted), textAlign = TextAlign.Center,
                     maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp))
             }
@@ -299,6 +305,7 @@ private fun FullWindow(modifier: Modifier, w: SheetWin, sh: SheetsHost) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when {
                 w.kind == "home" -> HomeWindow(Modifier.fillMaxSize(), sh.host::open)
+                w.kind == "app" -> AppsFeature.AppView(w.open.removePrefix("cat:"), sh.host, Modifier.fillMaxSize()) { SheetsStore.update { P.restore(it, w.id) } }
                 f != null -> f.Screen(sh.host)
                 else -> Text("$title: ez az ablak ezen a telefonon nem nyílik meg.", style = Melyviz.small, modifier = Modifier.padding(16.dp))
             }
@@ -316,7 +323,7 @@ private fun pickable(): List<Pair<KommandItem, Resolved>> {
             it.id.startsWith("feat:") -> PhoneSheets.resolve(it.id)
             it.id.startsWith("cat:") -> PhoneSheets.resolve(it.id)
             else -> null
-        }?.takeIf { r -> r.kind == "home" || Registry.feature(r.open!!.removePrefix("feat:")) != null } ?: continue
+        }?.takeIf { r -> r.kind == "home" || r.kind == "app" || Registry.feature(r.open!!.removePrefix("feat:")) != null } ?: continue
         if (out.none { o -> o.second.open == r.open }) out += it to r
     }
     return out
@@ -343,7 +350,7 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
         Spacer(Modifier.height(6.dp))
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
             items(hits, key = { it.first.id }) { (item, r) ->
-                val glyph = if (r.kind == "home") "⌂" else Catalogue.byId(r.open!!.removePrefix("feat:"))?.glyph ?: "·"
+                val glyph = when (r.kind) { "home" -> "⌂"; "app" -> Catalogue.APPS.glyph; else -> Catalogue.byId(r.open!!.removePrefix("feat:"))?.glyph ?: "·" }
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { pick(r) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
                     Text(item.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -68,4 +68,5 @@ dependencies {
     implementation(project(":feature-inbox"))
     implementation(project(":feature-net"))
     implementation(project(":feature-archive"))
+    implementation(project(":feature-apps"))
 }

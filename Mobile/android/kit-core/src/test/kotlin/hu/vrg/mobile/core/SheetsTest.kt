@@ -230,11 +230,13 @@ class SheetsTest {
         assertEquals("feat:stack", PhoneSheets.resolve("pane:stack")!!.open)
         assertEquals("feat:archive", PhoneSheets.resolve("cat:archive")!!.open, "a native catalog unit opens its feature")
         assertEquals("feat:inbox", PhoneSheets.resolve("cat:notifications")!!.open)
-        assertNull(PhoneSheets.resolve("cat:planner"), "a web app waits for M21")
+        assertEquals(Resolved("app", "cat:planner", "{}"), PhoneSheets.resolve("cat:planner"), "a web app is an app window (M21)")
+        assertEquals("cat:planner", PhoneSheets.resolve("cat:client-preview")!!.open, "Ügyfélnézet opens the Planner's origin")
+        assertNull(PhoneSheets.resolve("cat:workflow-kit"), "a PC unit waits for M23")
         assertNull(PhoneSheets.resolve("cat:desktop"), "the frame is not a window")
         assertNull(PhoneSheets.resolve("cat:workspaces"), "Lapok itself is not a window")
         assertNull(PhoneSheets.resolve("pane:mail"))
-        assertNull(PhoneSheets.resolve("feat:apps"), "a planned feature is not a window")
+        assertNull(PhoneSheets.resolve("feat:claude"), "a planned feature is not a window")
         assertNull(PhoneSheets.resolve("feat:nope"))
         assertEquals("feat:airdeck", PhoneSheets.resolve("feat:airdeck")!!.open)
     }
@@ -246,6 +248,10 @@ class SheetsTest {
         val over = ps.first { it.id == "attekintes" }
         assertEquals(listOf("pane:home"), over.wins.map { it.open }, "feed and files have no phone window yet")
         assertEquals(T(0, 0, 2, 3), over.wins[0].tile, "3 of 4 columns → both phone columns, rows kept")
+        val iroda = ps.first { it.id == "iroda" }
+        assertEquals(listOf("cat:planner"), iroda.wins.map { it.open }, "the Planner takes both columns; the calculator would overlap it")
+        assertEquals(T(0, 0, 2, 4), iroda.wins[0].tile)
+        assertEquals(listOf("cat:inventory"), ps.first { it.id == "keszlet" }.wins.map { it.open })
         // the fitting rule on its own, with everything kept
         val fit = P.fitPreset(DeskSheets.PRESETS.first { it.id == "attekintes" }, SheetRules.DESKTOP)
         assertEquals(listOf("pane:home", "pane:files"), fit.wins.map { it.open }, "feed would overlap home on two columns: dropped")

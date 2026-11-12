@@ -531,7 +531,7 @@ object SheetsCodec {
 
 /** The phone's side of Lapok: what a Desktop window becomes here, and the Desktop presets fitted to the 2 × 4 grid. */
 object PhoneSheets {
-    /** Desktop panes the phone has its own feature for. The rest (files, term, mail, web, chat, git, feed) wait for M21–M23. */
+    /** Desktop panes the phone has its own feature for. The rest (files, term, mail, web, chat, git, feed) wait for M22–M23. */
     private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id)
 
     /** Shell parts, not windows: the Asztal and Lapok themselves. */
@@ -550,8 +550,14 @@ object PhoneSheets {
         open == "pane:home" -> Resolved("home", open, state)
         open.startsWith("pane:") -> PANES[open.removePrefix("pane:")]?.let(::feat)
         open.startsWith("feat:") -> feat(open.removePrefix("feat:"))?.copy(state = state)
-        open.startsWith("cat:") -> DeskCatalog.UNITS.firstOrNull { it.id == open.removePrefix("cat:") }
-            ?.takeIf { it.reach == Reach.NATIVE }?.let { feat(it.target) }
+        open.startsWith("cat:") -> DeskCatalog.UNITS.firstOrNull { it.id == open.removePrefix("cat:") }?.let { u ->
+            when (u.reach) {
+                Reach.NATIVE -> feat(u.target)
+                // a web app (M21): the Desktop's own window kind, opened by its owner id (Ügyfélnézet → the Planner's origin)
+                Reach.WEBAPP -> if (isWindow(Catalogue.APPS.id) && DeskApps.ALL.any { it.id == u.target }) Resolved("app", "cat:${u.target}", "{}") else null
+                else -> null
+            }
+        }
         else -> null
     }
 

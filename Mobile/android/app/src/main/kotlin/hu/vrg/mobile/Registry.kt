@@ -2,6 +2,7 @@ package hu.vrg.mobile
 
 import hu.vrg.legeger.AirDeckFeature
 import hu.vrg.mobile.account.AccountFeature
+import hu.vrg.mobile.apps.AppsFeature
 import hu.vrg.mobile.archive.ArchiveFeature
 import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
@@ -43,6 +44,7 @@ object Registry {
         CityFeature,
         StackFeature,
         ArchiveFeature,
+        AppsFeature,
         InboxFeature,
         NetFeature,
     )

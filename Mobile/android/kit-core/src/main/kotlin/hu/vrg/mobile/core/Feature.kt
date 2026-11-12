@@ -123,7 +123,7 @@ object Catalogue {
     )
     val APPS = FeatureInfo(
         "apps", "Alkalmazások", "Az Asztal HTML alkalmazásai (Planner, kalkulátorok, Készlet, MindMap, BuildTree, Valena) a telefonon, offline is.",
-        "▤", Group.WORK, Stage.PLANNED, "M21", setOf(Need.INTERNET),
+        "▤", Group.WORK, Stage.BETA, "M21", setOf(Need.INTERNET, Need.GITHUB),
     )
     val CLAUDE = FeatureInfo(
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
