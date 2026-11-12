@@ -119,7 +119,7 @@ object Catalogue {
     )
     val SHEETS = FeatureInfo(
         "sheets", "Lapok", "Az Asztal lapjai a telefonon: ablakok rácsban, dupla koppintás = teljes ⇄ egy cella, húzással méretezés és mozgatás.",
-        "▦", Group.APP, Stage.PLANNED, "M20",
+        "▦", Group.APP, Stage.BETA, "M20",
     )
     val APPS = FeatureInfo(
         "apps", "Alkalmazások", "Az Asztal HTML alkalmazásai (Planner, kalkulátorok, Készlet, MindMap, BuildTree, Valena) a telefonon, offline is.",

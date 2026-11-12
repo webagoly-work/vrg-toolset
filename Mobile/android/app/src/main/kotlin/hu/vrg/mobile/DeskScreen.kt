@@ -140,7 +140,7 @@ private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
 
 /** The home window: the phone's features as desktop icons, grouped. */
 @Composable
-private fun HomeWindow(modifier: Modifier, open: (String) -> Unit) {
+internal fun HomeWindow(modifier: Modifier, open: (String) -> Unit) {
     BoxWithConstraints(modifier.padding(horizontal = 10.dp)) {
         val cols = if (maxWidth > maxHeight) 8 else 4
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {

@@ -50,7 +50,7 @@ object Registry {
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }
 
     /** Catalogue entries that are the shell itself, not a feature module: the Asztal is the home (WP M19). */
-    val shellParts = setOf(Catalogue.DESK.id)
+    val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id)
 
     fun isBuilt(info: FeatureInfo): Boolean = feature(info.id) != null || info.id in shellParts
 

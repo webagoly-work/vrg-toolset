@@ -233,6 +233,13 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** Kompakt stays the default and the Asztal is opt-in (the user would not see what they asked for);
   **C** the JVM test runs Node itself (the core tests would need Node on every machine and in Actions; the fixture
   plus `--check` gives the same proof without it).
+- **D-16 · Lapok: the phone's grid (M20), 2026-11-12.** Asked and answered by the user, 2026-11-12.
+  Chosen: **A** — the grid is a parameter of the ported model (`SheetRules`): the Desktop 4 × 4, the phone 2 columns ×
+  4 rows stored upright, and lying down the same sheet is drawn transposed (4 × 2), so a rotation never changes the
+  doc and needs no remapping. Same JSON shape, same ops, the Desktop's tests mirrored on 4 × 4; a Desktop sheet is
+  not opened 1:1 on the phone (its presets are fitted with `fitPreset`).
+  Rejected: **B** keep 4 × 4 and map it to the screen (narrow cells upright, or a lossy column merge); **C** a separate
+  phone grid with its own JSON and a layout per orientation (least sharing).
 
 ## Open (to ask when the WP that needs them starts)
 

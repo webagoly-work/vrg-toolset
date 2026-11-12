@@ -25,6 +25,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -38,6 +39,9 @@ import androidx.core.content.IntentCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.Cell
+import hu.vrg.mobile.core.Sheets
+import hu.vrg.mobile.core.SheetsDoc
 import hu.vrg.mobile.core.DeskUnit
 import hu.vrg.mobile.core.HomeMode
 import hu.vrg.mobile.core.Kommand
@@ -70,6 +74,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     private var windows by mutableStateOf<List<String>>(emptyList())
     /** "Irányítópult nézet" from the Asztal's menu shows the Kompakt home once, until Back. */
     private var compactPeek by mutableStateOf(false)
+    /** The feature a Lapok window shows full (WP M20); keys and the foreground go to it while no feature has the screen. */
+    private var sheetFull by mutableStateOf<String?>(null)
 
     private val prefs by lazy { getSharedPreferences("shell", Context.MODE_PRIVATE) }
 
@@ -82,6 +88,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             ?: prefs.getString(KEY_LAST, null)?.takeIf { ShellSettings.value.startInLast && Registry.feature(it) != null }
         Melyviz.palette = Palettes.byId(ShellSettings.value.palette)
         applyOrientation(ShellSettings.value.orientation)
+        SheetsStore.init(this)
         windows = savedInstanceState?.getStringArrayList(KEY_WINDOWS).orEmpty()
 
         setContent {
@@ -124,14 +131,39 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         val scope = rememberCoroutineScope()
         val toHome: () -> Unit = { scope.launch { pages.animateScrollToPage(0) } }
         BackHandler(pages.currentPage != 0, toHome)
-        HorizontalPager(pages, Modifier.fillMaxSize()) { page ->
+        val sheets by SheetsStore.flow.collectAsStateWithLifecycle()
+        // a sheet's windows have drags of their own (move, resize, a full feature's touchpad): no page swipe while a sheet is up
+        val onSheet = mode == HomeMode.DESK && !compactPeek && sheets.active.isNotEmpty()
+        HorizontalPager(pages, Modifier.fillMaxSize(), userScrollEnabled = !onSheet) { page ->
             if (page != 0) Box(Modifier.fillMaxSize().systemBarsPadding()) { SphereFeature.Page(back = toHome, signIn = { open(Catalogue.ACCOUNT.id) }) }
             else if (mode == HomeMode.COMPACT || compactPeek) {
                 BackHandler(compactPeek) { compactPeek = false }
                 HomeScreen(onOpen = ::open)
-            } else DeskScreen(windows, desk)
+            } else Desk(sheets)
         }
     }
+
+    /** The Asztal with its Lapok (WP M20): the tabs in the top strip, the active sheet in the sheet area, the panels over it. */
+    @Composable
+    private fun Desk(sheets: SheetsDoc) {
+        var pickAt by remember { mutableStateOf<Cell?>(null) }
+        var picking by remember { mutableStateOf(false) }
+        var adding by remember { mutableStateOf(false) }
+        var menuFor by remember { mutableStateOf<String?>(null) }
+        Box(Modifier.fillMaxSize()) {
+            DeskScreen(
+                windows, desk,
+                sheetArea = if (Sheets.phone.sheetOf(sheets, sheets.active) == null) null
+                else { m -> SheetArea(m, sheets, sheetsHost) { c -> pickAt = c; picking = true } },
+                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }) },
+            )
+            if (picking) SheetPicker(pickAt) { picking = false }
+            if (adding) NewSheetPanel(sheets) { adding = false }
+            menuFor?.let { SheetMenu(sheets, it) { menuFor = null } }
+        }
+    }
+
+    private val sheetsHost by lazy { SheetsHost(this, current = { current }, onFull = { sheetFull = it }) }
 
     @Composable
     private fun Note(text: String?, modifier: Modifier) {
@@ -229,6 +261,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             if (ShellSettings.value.home != HomeMode.DESK) { ShellSettings.update { it.copy(home = HomeMode.DESK) }; note("Kezdőlap: Asztal (Beállításokban visszaváltható)") }
             return
         }
+        if (featureId == Catalogue.SHEETS.id) {   // Lapok lives in the Asztal: show a sheet (the first one, or a new blank one)
+            open(Catalogue.DESK.id)
+            SheetsStore.update { d ->
+                if (d.sheets.isEmpty()) Sheets.phone.addSheet(d, "Lap")
+                else if (d.active.isEmpty()) Sheets.phone.activate(d, d.sheets.first().id) else d
+            }
+            return
+        }
         if (featureId == current) return
         Registry.feature(current)?.onForeground(false)
         current = featureId
@@ -277,16 +317,16 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean =
-        Registry.feature(current)?.onKey(event) == true || super.dispatchKeyEvent(event)
+        Registry.feature(current ?: sheetFull)?.onKey(event) == true || super.dispatchKeyEvent(event)
 
     override fun onResume() {
         super.onResume()
-        Registry.feature(current)?.onForeground(true)
+        Registry.feature(current ?: sheetFull)?.onForeground(true)
         Registry.built.forEach { it.onAppVisible() }
     }
 
     override fun onPause() {
-        Registry.feature(current)?.onForeground(false)
+        Registry.feature(current ?: sheetFull)?.onForeground(false)
         super.onPause()
     }
 
