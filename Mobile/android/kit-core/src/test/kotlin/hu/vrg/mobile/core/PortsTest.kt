@@ -112,7 +112,7 @@ class PortsTest {
     }
 
     @Test fun theCatalogueEntry() {
-        assertEquals(Stage.BETA, Catalogue.PORTS.stage)
+        assertEquals(Stage.LIVE, Catalogue.PORTS.stage)
         assertEquals("M8", Catalogue.PORTS.wp)
         assertTrue(Need.RELAY in Catalogue.PORTS.needs)
     }
