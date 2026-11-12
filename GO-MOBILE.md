@@ -66,6 +66,8 @@ What changes locally compared with the cloud:
   - a short "what I could not verify here" note.
   Stop and report at the end of every WP. Continue only on the user's "tovább".
 - **Phone UI text is Hungarian.** Code, comments and docs are English, as in the rest of the repo.
+- **Night run 2026-11-12** (`docs/mobile/NIGHT-DESKTOP.md`): N1 parity map and **M19** Asztal (BETA, D-14, D-15)
+  built; N3–N6 (M20–M23) not started. Report: `docs/mobile/NIGHT-REPORT-2026-11-12.md`.
 
 ## 3. What the user asked for, mapped to WPs
 
