@@ -240,6 +240,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   not opened 1:1 on the phone (its presets are fitted with `fitPreset`).
   Rejected: **B** keep 4 × 4 and map it to the screen (narrow cells upright, or a lossy column merge); **C** a separate
   phone grid with its own JSON and a layout per orientation (least sharing).
+- **D-17 · PC ablakok: which of the PC's folders the phone sees (M23), 2026-11-12.** Asked and answered by the user, 2026-11-12.
+  Chosen: **A** — the work roots only, from the Desktop's own `Dashboard/config/roots.json`: Repó, VRG Full and Közös
+  (Shared), narrowed by `Mobile/catalogue/files.json`, read-only. Dot-files and secret names (the Desktop's appscheme
+  rule) are never listed, nor a few folders that hold programs or sign-ins (`Full\home`, `Full\tools`, `Full\programs`,
+  `Vendor`). The relay is off for this unless started with `--files`.
+  Rejected: **B** every Desktop root, Asztal, Dokumentumok, Letöltések and the private OneDrive root included (private
+  papers on a phone that can be lost); **C** only the jobs folder (too narrow for the files window the Desktop has).
+- **D-18 · PC ablakok: the feed on the phone (M23), 2026-11-12.** Asked and answered by the user, 2026-11-12.
+  Chosen: **A** — not on the phone. The feed's presets (drift, git, ports, waiting, inbox, RSS) run inside the Desktop
+  on the PC with its cache, so the feed unit is marked `no` like Posta (mail), and Áttekintés on the phone keeps Home and
+  the files strip. Belső keresés (search) is `no` for now too: a relay search over the PC's index is a Later item.
+  Rejected: **B** the relay re-runs the presets (a second copy of the Desktop's feed engine); **C** the relay asks the
+  running Desktop for its cached feed (needs the Desktop open, and a new channel between them).
 
 ## Open (to ask when the WP that needs them starts)
 

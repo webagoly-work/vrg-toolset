@@ -38,13 +38,13 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 17 | `buildtree` | VRG BuildTree | `Modder/vrg-buildtree.html` | — | webapp | **M21** |
 | 18 | `bridge` | BRIDGE dokumentáció | `BRIDGE/` (repo docs) + `H:\VRG\Full\BRIDGE` | — | pc: read-only files window; later a webapp reader of the repo's `BRIDGE/` | M23 |
 | 19 | `jobs` | Munkák | `H:\VRG\Full\jobs` (client folders) | — | pc: read-only, copy via M12 Átadás; never through GitHub (client names, addresses) | **M23** |
-| 20 | `files` | Fájlok | `Dashboard/page/panes/files.js`, `shell/lib/fsview.js` | M12 board only | pc: read-only browse of the work roots | **M23** |
+| 20 | `files` | Fájlok | `Dashboard/page/panes/files.js`, `shell/lib/fsview.js` | M12 board only | pc: read-only browse of the work roots (Repó, VRG Full, Közös; D-17), relay `--files`; BETA | **M23** |
 | 21 | `archive` | Archívum | `Archive/vrg-archive.html` | M18 Archívum | native (exists) | M18 |
 | 22 | `mindmap` | VRG MindMap | `MindMap/vrg_mindmap.html` | — | webapp | **M21** |
 | 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: the phone's browser (Custom Tab); Kommand opens URLs | M19 |
 | 24 | `mail` | Posta | `Dashboard/page/panes/mail.js`, `shell/lib/gmail.js` | — | no (decided in M23): the PC's mail rides its own Gmail OAuth on the PC; the phone has its own mail app, opened by intent | M23 |
-| 25 | `search` | Belső keresés | `Dashboard/page/panes/search.js`, `shell/lib/innersearch.js` | — | pc: a relay search over the PC's index | M23 (Later) |
-| 26 | `feed` | Hírfolyam | `Dashboard/page/panes/feed.js` | — | decided in M23 by its data source | M23 |
+| 25 | `search` | Belső keresés | `Dashboard/page/panes/search.js`, `shell/lib/innersearch.js` | — | no for now (a relay search over the PC's index is a Later item of M23) | Later |
+| 26 | `feed` | Hírfolyam | `Dashboard/page/panes/feed.js` | — | no (D-18): its presets run inside the Desktop on the PC, with its cache; mail is no for the same kind of reason | M23 |
 | 27 | `map` | VRG Térkép | `Map/serve.js` (port 8802, offline tiles on H:) | M8 Localhost opens it | pc: through M8's `/p/8802/` proxy; Asztal menu links it | M8 / M19 |
 | 28 | `console` | Varler Console | `Console/serve.js` (port 8133) | M8 Localhost opens it | pc: through M8; Asztal menu links it | M8 / M19 |
 | 29 | `mobile` | VRG Mobile | `Mobile/` | itself | — (the phone is this unit) | — |
@@ -60,7 +60,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 |---|---|---|---|
 | `home` | `panes/` home (the Irányítópult) | native: the Asztal's home window (the Kompakt tiles as a window face) | M19 / M20 |
 | `empty` | `panes/empty.js` (the picker) | native: long-press a free cell → the Kommand list | M20 |
-| `files` | `panes/files.js` + `viewer.js` | pc, read-only | M23 |
+| `files` | `panes/files.js` + `viewer.js` | pc, read-only: `feat:pcwin` (text, image, copy to the board) | M23 |
 | `term` | `panes/term.js` | **no**: a terminal is dev level | — |
 | `web` | `panes/web.js` | native: a confined WebView or the phone's browser | M20 |
 | `mail` | `panes/mail.js` | no (see unit 24) | M23 |
@@ -68,7 +68,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | `chat` | `panes/chat.js` (Claude chat on the PC) | rc: the Claude app, opened on the PC's Remote Control session | M22 |
 | `note` | `panes/note.js` | native: M6 Gyorsjegyzet | M6 |
 | `git` | `panes/git.js` | **no**: git is dev level; M4 Haladás shows the state read-only | — |
-| `feed` | `panes/feed.js` | see unit 26 | M23 |
+| `feed` | `panes/feed.js` | no (D-18) | M23 |
 | `app` | `panes/app.js` (an in-shell HTML app) | webapp | M21 |
 
 ## 3. Frame parts
@@ -94,5 +94,5 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | M20 | Lapok (`sheets`) | the Desktop's sheets model in `kit-core`, a phone grid, the gestures, User presets |
 | M21 | Alkalmazások (`apps`) | the User-level HTML apps in a confined WebView, one https origin each, offline after the first fetch |
 | M22 | Claude (`claude`) | opens the Claude app; with a paired PC, the PC's Remote Control sessions (list, start) |
-| M23 | PC ablakok (`pcwin`) | the PC's files read-only (copy via M12), per-pane decision for mail / feed |
+| M23 | PC ablakok (`pcwin`) | the PC's work folders read-only (copy via M12); mail and feed stay on the PC (D-18) |
 

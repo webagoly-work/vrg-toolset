@@ -39,7 +39,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M20** | Lapok (`sheets`) | **BETA** (built 2026-11-12, D-16, waiting for the phone check): the Desktop's sheets model ported to `kit-core` (same JSON, same validate, same operations), the phone's 2 × 4 grid drawn 4 × 2 lying down, double-tap / long-press gestures, the User presets fitted | — | high (model) |
 | **M21** | Alkalmazások (`apps`) | **BETA** (built 2026-11-12, waiting for the phone check; 375 px notes in the WP): the Desktop's User-level HTML apps (Planner, calculators, Készlet, MindMap, BuildTree, Valena) in a confined WebView, one https origin each, from GitHub `main`, offline after the first fetch | GitHub | high |
 | **M22** | Claude (`claude`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--claude`): opens the official Claude app (no sign-in in VRG Mobile); with a paired PC, the PC's Remote Control sessions: list, start one in a folder (relay `--claude`) | relay | high (relay) |
-| **M23** | PC ablakok (`pcwin`) | **PLANNED**: the PC's work folders read-only with a copy through M12; mail / feed decided per pane | relay | medium |
+| **M23** | PC ablakok (`pcwin`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--files`): the PC's work folders (Repó, VRG Full, Közös) read-only, a look at text and images, a copy onto the Átadás board; mail and feed stay on the PC (D-18) | relay | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

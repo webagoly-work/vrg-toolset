@@ -5,6 +5,7 @@ import hu.vrg.mobile.account.AccountFeature
 import hu.vrg.mobile.apps.AppsFeature
 import hu.vrg.mobile.archive.ArchiveFeature
 import hu.vrg.mobile.claude.ClaudeFeature
+import hu.vrg.mobile.pcwin.PcWinFeature
 import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
@@ -47,6 +48,7 @@ object Registry {
         ArchiveFeature,
         AppsFeature,
         ClaudeFeature,
+        PcWinFeature,
         InboxFeature,
         NetFeature,
     )

@@ -201,7 +201,12 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 else -> open(u.target)
             }
             Reach.WEBAPP -> openRoute(Route(Catalogue.APPS.id, u.target))
-            Reach.PC -> if (u.target.startsWith("port:")) open(Catalogue.PORTS.id) else open(u.target)
+            Reach.PC -> when {
+                u.target.startsWith("port:") -> open(Catalogue.PORTS.id)
+                // a PC folder unit (M23): PC ablakok at the unit's own folder (Munkák → Full\jobs, …), else at the roots
+                u.target == Catalogue.PCWIN.id && u.id in hu.vrg.mobile.core.PcFiles.PLACES -> openRoute(Route(u.target, u.id))
+                else -> open(u.target)
+            }
             Reach.NONE -> if (u.id == "mail") mailApp() else note("${u.hu}: ${u.target}")
         }
     }

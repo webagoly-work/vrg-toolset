@@ -71,6 +71,7 @@ What changes locally compared with the cloud:
 - **M20** Lapok built 2026-11-12 (D-16), **BETA**: `docs/mobile/WP/M20.md` → "Telefonon ellenőrizni". Next in order: M21.
 - **M21** Alkalmazások built 2026-11-12, **BETA**: `docs/mobile/WP/M21.md` → "Telefonon ellenőrizni" (8 apps, one origin each; `node Mobile/tests/apps-phone.js`). Next in order: M22.
 - **M22** Claude built 2026-11-12, **BETA**: `docs/mobile/WP/M22.md` → "Telefonon ellenőrizni" (step 0 first: run `claude remote-control` once by hand on the PC). The relay needs `--claude`. Next in order: M23.
+- **M23** PC ablakok built 2026-11-12, **BETA**: `docs/mobile/WP/M23.md` → "Telefonon ellenőrizni". The PC's work folders (D-17) read-only, copy via Átadás; the feed and search stay on the PC (D-18). The relay needs `--files` (`Mobile\mobile.cmd relay` passes it). M23 is the last WP in the table: what comes next is the user's call.
 
 ## 3. What the user asked for, mapped to WPs
 

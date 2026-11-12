@@ -130,8 +130,8 @@ object Catalogue {
         "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
     val PCWIN = FeatureInfo(
-        "pcwin", "PC ablakok", "A PC munkamappái csak olvasva, másolat az Átadáson át; posta és hírfolyam, ha elérhető.",
-        "🗁", Group.CONTROL, Stage.PLANNED, "M23", setOf(Need.RELAY),
+        "pcwin", "PC ablakok", "A PC munkamappái (Repó, VRG Full, Közös) csak olvasva: böngészés, szöveg és kép előnézete, másolat az Átadáson át.",
+        "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
     )
 
     val ALL: List<FeatureInfo> = listOf(

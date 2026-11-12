@@ -119,6 +119,12 @@
 //     claude.start {folder, account?} -> claude.started {ok, session, waiting} | {ok:false, reason}; claude.stop {id} ->
 //     claude.stopped. Trusted phones only, and OFF unless --claude (RELAY_CLAUDE=1). Folders are START → C's items named in
 //     Mobile/catalogue/claude.json; the name is made by the relay; the phone opens the session link in the Claude app.
+//
+// CHANGED 12 Nov — PC ablakok, the PC's work folders read-only on the phone (VRG Mobile, WP M23; rules in relay-files.js).
+//   * files.list {h? | place?} -> files {ok, on, h, root, crumbs:[{h,name}], entries:[{h,name,dir,bytes,mtime}], truncated};
+//     files.read {h} -> files.read {ok, kind:'text'|'image'|'binary', name, size, text?, data?, truncated}; files.copy {h} ->
+//     files.copied {ok, entry} (the file onto the Átadás board as a PC entry). Trusted phones only, OFF unless --files
+//     (RELAY_FILES=1). Roots: the Desktop's roots.json narrowed by Mobile/catalogue/files.json (D-17). Only handles travel.
 // ==========================================================================
 
 const http = require('http');
@@ -135,6 +141,7 @@ const board = require('./relay-board');
 const screen = require('./relay-screen');
 const notify = require('./relay-notify');
 const claude = require('./relay-claude');
+const files = require('./relay-files');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -145,6 +152,8 @@ const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
 const PORTS = ARGS.includes('--ports') || process.env.RELAY_PORTS === '1';
 // --claude: a paired phone may list, start and stop Claude Remote Control sessions on this PC (WP M22, relay-claude.js)
 const CLAUDE = ARGS.includes('--claude') || process.env.RELAY_CLAUDE === '1';
+// --files: a paired phone may browse the PC's work folders read-only and copy a file onto the board (WP M23, relay-files.js)
+const FILES = ARGS.includes('--files') || process.env.RELAY_FILES === '1';
 // --pair: on start, pop the pairing QR (/pair) up in its own app window (portable Chrome --app=,
 // else the system browser), so the phone can scan it without typing an address (2026-11-06).
 const PAIR_WINDOW = ARGS.includes('--pair') || process.env.RELAY_PAIR === '1';
@@ -292,6 +301,7 @@ const server = http.createServer((req, res) => {
       board: true,
       screen: SCREEN.available,
       notify: true,
+      files: FILES,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -732,6 +742,12 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    if (m && to === 'relay' && FILES_TYPES.has(m.type)) {
+      if (roleOf(ws) !== PHONE) return;
+      onFilesMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
+      return;
+    }
+
     if (m && to === 'relay' && CLAUDE_TYPES.has(m.type)) {
       if (roleOf(ws) !== PHONE) return;
       onClaudeMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
@@ -914,6 +930,34 @@ function onClaudeMessage(ws, ip, type, p) {
   }, fail);
 }
 
+/* ---- PC ablakok: the work folders, read-only (relay-files.js has the rules) ---------------- */
+
+const FILES_TYPES = new Set(['files.list', 'files.read', 'files.copy']);
+const FILES_ANSWER = { 'files.list': 'files', 'files.read': 'files.read', 'files.copy': 'files.copied' };
+let FILES_FS = null;                       // made on first use, so a relay without --files never reads the roots
+
+function onFilesMessage(ws, ip, type, p) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay(FILES_ANSWER[type], Object.assign({ on: true }, payload))); };
+  if (!isTrusted(ws)) {
+    answer({ ok: false, trusted: false,
+      reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+    return;
+  }
+  if (!FILES) { answer({ ok: false, on: false, reason: 'A PC mappái ki vannak kapcsolva: a relét --files kapcsolóval kell indítani (Mobile\\mobile.cmd relay).' }); return; }
+  try { if (!FILES_FS) FILES_FS = files.createFiles({ board: BOARD }); } catch (e) { answer({ ok: false, reason: 'A gyökerek nem olvashatók: ' + e.message }); return; }
+  if (type === 'files.list') {
+    const r = FILES_FS.list(p);
+    console.log(`  [files] lista -> ${ip}: ${r.ok ? (r.crumbs.map(c => c.name).join('/') || 'gyokerek') + ', ' + r.entries.length + ' sor' : r.reason}`);
+    answer(r);
+    return;
+  }
+  if (type === 'files.read') { answer(FILES_FS.read(p)); return; }
+  FILES_FS.copy(p).then(r => {
+    console.log(`  [files] atadasra (${ip}): ${r.ok ? r.entry.name : r.reason}`);
+    answer(r);
+  }, err => answer({ ok: false, reason: 'Hiba: ' + err.message }));
+}
+
 /* ---- screenshots -------------------------------------------------------- */
 
 const SHOT_DIR = path.join(os.tmpdir(), 'vrg-relay-shots');
@@ -1065,6 +1109,7 @@ server.on('listening', () => {
   console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
   console.log(SCREEN.available ? '   Képernyő élőben a telefonon: BEKAPCSOLVA (--shots, párosított telefonnak, a PC-n értesítő ablakkal)' : '   Képernyő élőben: ki' + (SHOTS ? ' (csak Windowson)' : ' (indítás --shots kapcsolóval)'));
   console.log(PORTS ? '   Localhost a telefonon (/p/<port>/): BEKAPCSOLVA (--ports, párosított telefonnak)' : '   Localhost a telefonon: ki (indítás --ports kapcsolóval)');
+  console.log(FILES ? '   A PC munkamappái a telefonon: BEKAPCSOLVA (--files, csak olvasva, párosított telefonnak)' : '   A PC munkamappái a telefonon: ki (indítás --files kapcsolóval)');
   console.log(CLAUDE ? '   Claude Remote Control a telefonról: BEKAPCSOLVA (--claude, párosított telefonnak)' : '   Claude Remote Control a telefonról: ki (indítás --claude kapcsolóval)');
   console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
   console.log(`   Átadás, fájltábla (ezen a PC-n): http://localhost:${port}/board`);

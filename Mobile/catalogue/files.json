@@ -1,0 +1,10 @@
+{
+  "_": "WP M23 PC ablakok: what a paired phone may browse read-only on this PC (relay-files.js). D-17: the work roots only, from Dashboard/config/roots.json. places = the Desktop units that open the browser at their folder (root:path). deny = folders never listed (root:path); dot-files and secret names are never listed anyway.",
+  "roots": { "allow": ["repo", "full", "shared"] },
+  "places": {
+    "jobs": "full:jobs",
+    "bridge": "full:BRIDGE",
+    "workflow-kit": "full:Varler_Workflow_Kit"
+  },
+  "deny": ["full:home", "full:tools", "full:programs", "repo:Planner/apps", "repo:Planner/home", "repo:Planner/data", "repo:Vendor"]
+}

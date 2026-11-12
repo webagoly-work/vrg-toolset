@@ -232,11 +232,13 @@ class SheetsTest {
         assertEquals("feat:inbox", PhoneSheets.resolve("cat:notifications")!!.open)
         assertEquals(Resolved("app", "cat:planner", "{}"), PhoneSheets.resolve("cat:planner"), "a web app is an app window (M21)")
         assertEquals("cat:planner", PhoneSheets.resolve("cat:client-preview")!!.open, "Ügyfélnézet opens the Planner's origin")
-        assertNull(PhoneSheets.resolve("cat:workflow-kit"), "a PC unit waits for M23")
+        assertEquals("feat:pcwin", PhoneSheets.resolve("cat:workflow-kit")!!.open, "a PC folder unit is the PC ablakok window (M23)")
+        assertEquals("feat:pcwin", PhoneSheets.resolve("pane:files")!!.open)
+        assertNull(PhoneSheets.resolve("cat:feed"), "the feed stays on the PC (D-18)")
         assertNull(PhoneSheets.resolve("cat:desktop"), "the frame is not a window")
         assertNull(PhoneSheets.resolve("cat:workspaces"), "Lapok itself is not a window")
         assertNull(PhoneSheets.resolve("pane:mail"))
-        assertNull(PhoneSheets.resolve("feat:pcwin"), "a planned feature is not a window")
+        assertNull(PhoneSheets.resolve("pane:feed"))
         assertNull(PhoneSheets.resolve("feat:nope"))
         assertEquals("feat:airdeck", PhoneSheets.resolve("feat:airdeck")!!.open)
     }
@@ -246,8 +248,9 @@ class SheetsTest {
         assertEquals(DeskSheets.PRESETS.map { it.id }, ps.map { it.id })
         for (p in ps) assertEquals("", P.validPreset(p), p.id)
         val over = ps.first { it.id == "attekintes" }
-        assertEquals(listOf("pane:home"), over.wins.map { it.open }, "feed and files have no phone window yet")
+        assertEquals(listOf("pane:home", "pane:files"), over.wins.map { it.open }, "the feed stays on the PC (D-18); files = PC ablakok (M23)")
         assertEquals(T(0, 0, 2, 3), over.wins[0].tile, "3 of 4 columns → both phone columns, rows kept")
+        assertEquals(T(0, 3, 2, 1), over.wins[1].tile, "the files strip along the bottom")
         val iroda = ps.first { it.id == "iroda" }
         assertEquals(listOf("cat:planner"), iroda.wins.map { it.open }, "the Planner takes both columns; the calculator would overlap it")
         assertEquals(T(0, 0, 2, 4), iroda.wins[0].tile)
@@ -262,7 +265,8 @@ class SheetsTest {
         var d = P.empty()
         d = P.addSheet(d, over.name, PhoneSheets.windows(d, over))
         assertTrue(P.validate(d).ok)
-        assertEquals("home", d.sheets[0].wins.single().kind)
+        assertEquals(listOf("home", "feat"), d.sheets[0].wins.map { it.kind })
+        assertEquals("feat:pcwin", d.sheets[0].wins[1].open)
     }
 
     @Test fun codecRoundTrip() {

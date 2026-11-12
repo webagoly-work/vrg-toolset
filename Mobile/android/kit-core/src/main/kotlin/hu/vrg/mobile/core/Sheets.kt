@@ -531,8 +531,8 @@ object SheetsCodec {
 
 /** The phone's side of Lapok: what a Desktop window becomes here, and the Desktop presets fitted to the 2 × 4 grid. */
 object PhoneSheets {
-    /** Desktop panes the phone has its own feature for. The rest (files, term, mail, web, git, feed) wait for M23. */
-    private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id, "chat" to Catalogue.CLAUDE.id)
+    /** Desktop panes the phone has its own feature for (files = PC ablakok, M23). term and git are dev level; mail and feed stay on the PC (D-18). */
+    private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id, "chat" to Catalogue.CLAUDE.id, "files" to Catalogue.PCWIN.id)
 
     /** Shell parts, not windows: the Asztal and Lapok themselves. */
     private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id)
@@ -555,6 +555,8 @@ object PhoneSheets {
                 Reach.NATIVE -> feat(u.target)
                 // a web app (M21): the Desktop's own window kind, opened by its owner id (Ügyfélnézet → the Planner's origin)
                 Reach.WEBAPP -> if (isWindow(Catalogue.APPS.id) && DeskApps.ALL.any { it.id == u.target }) Resolved("app", "cat:${u.target}", "{}") else null
+                // a PC folder unit (M23): the PC ablakok window (Munkák, BRIDGE, Workflow Kit open at their folder from the ◣ menu)
+                Reach.PC -> if (u.target == Catalogue.PCWIN.id) feat(u.target) else null
                 else -> null
             }
         }
