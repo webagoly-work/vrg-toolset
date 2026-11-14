@@ -5,5 +5,7 @@
   { "id": "node", "hu": "Node konzol", "exe": "{node}", "args": [] },
   { "id": "claude-a", "hu": "Claude Code (A)", "exe": "{claude}", "args": [], "account": "A" },
   { "id": "claude-b", "hu": "Claude Code (B)", "exe": "{claude}", "args": [], "account": "B",
-    "env": { "CLAUDE_CONFIG_DIR": "{full}\\home\\claude-account-b" } }
+    "env": { "CLAUDE_CONFIG_DIR": "{full}\\home\\claude-account-b" } },
+  { "id": "srv-node", "hu": "Szerver (node)", "exe": "{node}", "args": [], "hidden": true },
+  { "id": "srv-cmd", "hu": "Szerver (cmd)", "exe": "{systemroot}\\System32\\cmd.exe", "args": [], "hidden": true }
 ]

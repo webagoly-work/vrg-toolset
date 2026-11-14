@@ -22,10 +22,19 @@ function createRunner({ R, shell, dry = null, tmp }) {
     run.runBat(name, cwd, [`start "" ${R.Q(exe)} ${args.join(' ')}`.replace(/%/g, '%%')], 'hidden');
   };
   run.openPath = p => { if (run.dry) { run.dry.push({ openPath: p }); return; } shell.openPath(p); };
-  run.openUrl = u => { if (!/^https?:\/\//.test(u)) return; if (run.dry) { run.dry.push({ url: u }); return; } shell.openExternal(u); };
-  // HTML opens in the registry's first browser (START's chooser default), anything else with its Windows program
+  // run.inner (WP-48, set by main): { url(u) → true when an inner browser window took it, doc(path) → true when a catalog app took it }
+  run.inner = null;
+  run.openUrl = u => {
+    if (!/^https?:\/\//.test(u)) return;
+    if (run.dry) { run.dry.push({ url: u }); return; }
+    if (run.inner && run.inner.url(u)) return;
+    shell.openExternal(u);
+  };
+  // HTML opens as its in-shell app when it is one (WP-48), else in the registry's first browser (START's chooser default);
+  // anything else with its Windows program
   run.openDoc = (p, name) => {
     if (/\.html?$/i.test(p)) {
+      if (!run.dry && run.inner && run.inner.doc(p)) return;
       const b = (R.C.menu.browsers || []).find(x => x.exe && R.exists(R.expand(x.exe)));
       if (b) { run.startExe(name, R.expand(b.exe), [...R.argList(b.args), R.Q(p)], path.dirname(p)); return; }
     }

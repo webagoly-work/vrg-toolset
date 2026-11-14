@@ -53,6 +53,13 @@ function createActs({ R, run, ports, log = () => {}, claudeterm = null, settings
       if (it.ensure && !exists(P(it.ensure.path))) return say(false, 'Először a START-ból indítsd: ' + (it.ensure.note || ''), 'Run it from START once first (it downloads what it needs).');
       if (it.server) { const s = R.server(it.server); if (s && !(await ports.up(s.port))) { const err = ports.startServer(s, it.serverArgs || []); if (err) return say(false, err, 'not found'); } }
       const exe = P(it.exe);
+      // WP-48: "rundll32 url.dll,FileProtocolHandler <url>" is START's way to open a page in the default browser: the runner decides
+      // (an inner browser window in the shell, the outside browser otherwise)
+      const a = argList(it.args).map(x => String(x).replace(/^"|"$/g, ''));
+      if (/(^|\\)rundll32\.exe$/i.test(exe) && /^url\.dll,FileProtocolHandler$/i.test(a[0] || '') && /^https?:\/\//i.test(a[1] || '')) {
+        run.openUrl(a[1]);
+        return say(true, T(ui('opened'), { name: it.name }), 'opened');
+      }
       run.startExe(it.name, exe, argList(it.args), it.cwd ? P(it.cwd) : /\\/.test(exe) ? path.dirname(exe) : C.paths.REPO);
       return say(true, T(ui('started'), { name: it.name }), 'started');
     }

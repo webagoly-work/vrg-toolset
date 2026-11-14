@@ -162,13 +162,26 @@
       for (const o of this.offs) { try { o(); } catch (e) {} }
       this.offs = [];
       if (this.ro) { try { this.ro.disconnect(); } catch (e) {} }
-      if (this.id) { try { W.vrg.term.kill(this.id); } catch (e) {} }
+      if (this.id && !this.keep) { try { W.vrg.term.kill(this.id); } catch (e) {} }   // a server console (WP-48) leaves its server running
       if (this.term) { try { this.term.dispose(); } catch (e) {} }
       this.term = null; this.id = null;
       if (this.root) this.root.innerHTML = '';
       this.root = null;
     },
-    state() { return this.prof ? { prof: this.prof } : {}; },
+    state() { return this.prof && !this.server ? { prof: this.prof } : {}; },
+
+    // WP-48: this pane shows a registry server that main runs (lib/srvhost.js): a name, a stop button, no restart, no kill on close
+    serverMode(info) {
+      this.keep = true; this.server = info.id; this.prof = '';
+      this.newTab.hidden = true; this.menu.hidden = true;
+      const lbl = el('span', 'term-server', 'Szerver: ' + (info.title || info.id)); lbl.title = 'Server console';
+      const stop = this.stopBtn = el('button', 'term-server-stop', 'Leállítás'); stop.type = 'button'; stop.title = 'Stop the server';
+      stop.addEventListener('click', async () => {
+        stop.disabled = true;
+        try { const r = await W.vrg.call('desktop', 'serverStop', { id: this.server }); if (r && r.ok === false) stop.disabled = false; } catch (e) { stop.disabled = false; }
+      });
+      this.bar.append(lbl, stop);
+    },
 
     // ---------------------------------------------------------- profiles menu
     async drawProfiles() {
@@ -247,10 +260,11 @@
     },
     onExit(code) {
       this.exited = true; this.id = null;
+      if (this.server) { if (this.stopBtn) this.stopBtn.disabled = true; this.term.write('\r\n[a szerver leállt: ' + code + ']'); return; }
       this.term.write('\r\n[kilépett: ' + code + '] — Enter: újraindítás');
     },
     input(d) {
-      if (this.exited) { if (/^[\r\n]/.test(d)) this.start(); return; }
+      if (this.exited) { if (!this.server && /^[\r\n]/.test(d)) this.start(); return; }
       if (!this.id) return;
       for (const c of chunks(d)) W.vrg.term.write(this.id, c);
     },

@@ -61,7 +61,12 @@ const toPages = (ch, ...a) => {                                                /
   if (win && !win.isDestroyed()) win.webContents.send(ch, ...a);
   const h = homeWc(); if (h) h.send(ch, ...a);
 };
-const ports = createPorts({ R, run, onChange: p => toPages('vrg:ports', p) });
+// WP-48: registry servers run hidden inside the shell (lib/srvhost.js; setting srv.inside, default on): no console window, the output is
+// kept and shown in a server console pane on request. termMgr is defined further down; the arrow is resolved at call time.
+const { createServerHost } = require('./lib/srvhost.js');
+const onSetting = (k, def) => { try { return settings.get(k); } catch (e) { return def; } };
+const srvHost = createServerHost({ pty: () => termMgr(), emit: (ns, type, d) => ipc.emit(win, ns, type, d), log });
+const ports = createPorts({ R, run, onChange: p => toPages('vrg:ports', p), host: srvHost, inside: () => onSetting('srv.inside', true) === true });
 // claudeterm (WP-16, DESK-Q41 B): s:C/*, cont: and go: open Claude in an embedded terminal pane (setting term.embedClaude, default on).
 // The arrow is resolved at call time: claudeTermGet and the pty manager are defined further down.
 const acts = createActs({ R, run, ports, log, claudeterm: { open: o => claudeTermGet().open(o) } });
@@ -177,6 +182,10 @@ const jsLib = (...rel) => {
 const libUrls = () => ({
   dompurify: jsLib('dompurify', 'DOMPurify-main', 'dist', 'purify.min.js'),
   markdownIt: jsLib('markdown-it', 'dist', 'markdown-it.min.js'),           // 14.1.0 UMD bundle from npm (DESK-Q36, see its VENDOR.json)
+  // WP-48: xterm for the terminal panes. Without these the frame's adoptTerm fell back to <repo>/tools/js-libs, which no checkout has, so a
+  // Claude terminal or a server console opened before any plain terminal showed "nem érhető el"
+  xterm: jsLib('xterm', 'lib', 'xterm.js'),                                  // @xterm/xterm 6.0.0 (VENDOR.json)
+  fit: jsLib('xterm-addon-fit', 'lib', 'addon-fit.js'),                      // @xterm/addon-fit 0.11.0 (VENDOR.json)
 });
 ipc.register('app', 'info', {}, async () => ({
   version: app.getVersion(), user: 'founder', mode: winmodes ? winmodes.state().mode : 'ablak', features: ipc.namespaces(), libs: libUrls(),
@@ -353,6 +362,7 @@ const termMgr = () => {
     profiles: require('./lib/claudeterm.js').withBinOverride(ptyLib.readProfiles(path.join(__dirname, '..', 'config', 'profiles.json')), process.env, s => R.expand(s)),
     expand: s => R.expand(s), env: process.env,
     spawn: ptyLib.nodePtySpawn(ptyLib.loadNodePty(path.join(FULL_DIR, 'tools', 'js-libs', 'node-pty'))),
+    max: 40,                                                          // WP-48: the servers run here too (18 in the registry), next to the shells
   });
   ptyMgr.on('data', m => ipc.emit(win, 'term', 'data', m));
   ptyMgr.on('exit', m => { termSessions.delete(m.term); ipc.emit(win, 'term', 'exit', m); });
@@ -363,6 +373,7 @@ const termAt = v => types.handle(v) || v === 'repo' || (typeof v === 'string' &&
 const termId = v => typeof v === 'string' && /^t[0-9]{1,6}$/.test(v);
 ipc.register('term', 'profiles', {}, async () => ({ profiles: termMgr().profiles() }));
 ipc.register('term', 'open', { prof: types.id, at: termAt }, async ({ prof, at }) => {
+  if (/^srv-/.test(prof)) return { ok: false, err: 'not-found', hu: 'Ismeretlen profil.' };   // WP-48: the server profiles are main's own
   const cwd = ptyLib.resolveAt(at, { handles: fsHandles, repo: path.resolve(REPO_DIR), lines: R.C ? R.C.data.lines : [] });
   if (!cwd) return { ok: false, err: 'not-found', hu: 'Nincs ilyen mappa.' };
   const r = termMgr().open(prof, cwd);
@@ -804,6 +815,30 @@ ipc.register('desktop', 'open', { id: types.id }, async ({ id }) => {
   return r;
 });
 ipc.register('desktop', 'server', { id: types.id }, async ({ id }) => deskServer(id));
+// WP-48: the console of a server the shell runs (a term pane that keeps the server alive when closed), stop, and the list
+ipc.register('desktop', 'serverConsole', { id: types.id }, async ({ id }) => srvHost.console(id));
+ipc.register('desktop', 'serverStop', { id: types.id }, async ({ id }) => { const r = srvHost.stop(id); setTimeout(() => ports.pollPorts(), 800); return r; });
+ipc.register('desktop', 'serverList', {}, async () => ({ servers: srvHost.list() }));
+
+// WP-48: what used to open in the outside browser opens in an inner window (setting web.inner, default on). A URL becomes a browser
+// pane (desktop.link); an HTML page that is a catalog app opens as that app (desktop.item). Anything else keeps the old way.
+const innerOn = () => onSetting('web.inner', true) === true && !SELFTEST && win && !win.isDestroyed();
+function appForFile(p) {
+  if (!catalog.raw().items.length) catalog.load();
+  const want = path.resolve(p).toLowerCase();
+  for (const it of catalog.raw().items) {
+    const owner = catalog.appOwner(it.id);
+    const t = owner && catalog.appTarget(owner, { repo: path.resolve(REPO_DIR), expand: s => R.expand(s), roots: APP_ROOTS });
+    if (!t) continue;
+    const abs = t.root ? path.join(t.root, t.page) : path.join(path.resolve(REPO_DIR), ...t.page.split('/'));
+    if (path.resolve(abs).toLowerCase() === want) return owner;
+  }
+  return null;
+}
+run.inner = {
+  url: u => { if (!innerOn()) return false; ipc.emit(win, 'desktop', 'link', { url: u }); return true; },
+  doc: p => { if (!innerOn()) return false; const id = appForFile(p); if (!id) return false; ipc.emit(win, 'desktop', 'item', { id }); return true; },
+};
 ipc.register('desktop', 'cover', { on: types.bool }, async ({ on }) => { if (on) views.hideAll('cover'); else views.showAll('cover'); return {}; });
 
 // double Tab (configurable in config/keymap.json: desktopToggleKey, desktopToggleMs). The frame page watches its own keys (it knows the

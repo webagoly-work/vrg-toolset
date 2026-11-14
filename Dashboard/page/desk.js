@@ -185,8 +185,17 @@
   }
   function secSzerverek(sec) {
     const sv = data().servers || [];
-    return [h('div', { class: 'rows', 'data-role': 'servers' }, sv.map(s => h('button', { type: 'button', 'data-server': s.id, onclick: () => openServer(s.id) },
-      h('span', { class: 'c' }, ':' + s.port), h('span', {}, s.name), h('span', { class: 'd', 'data-up': S.ports[s.port] ? '1' : '0' }, S.ports[s.port] ? 'fut' : 'áll')))), sec.items.length ? tiles(sec.items) : null];
+    // WP-48: a server the shell runs has a console (its output, in a term pane); the row itself still opens the server's page
+    return [h('div', { class: 'rows', 'data-role': 'servers' }, sv.map(s => h('div', { class: 'srvrow' },
+      h('button', { type: 'button', 'data-server': s.id, onclick: () => openServer(s.id) },
+        h('span', { class: 'c' }, ':' + s.port), h('span', {}, s.name), h('span', { class: 'd', 'data-up': S.ports[s.port] ? '1' : '0' }, S.ports[s.port] ? 'fut' : 'áll')),
+      h('button', { type: 'button', class: 'srvcon', 'data-console': s.id, title: 'A szerver kimenete / Server console', onclick: () => serverConsole(s.id) }, 'Konzol')))),
+      sec.items.length ? tiles(sec.items) : null];
+  }
+  async function serverConsole(id) {
+    setView('desktop'); showWindows(true);                    // first: the term pane main asks for mounts only where windows are shown
+    const r = await call('serverConsole', { id }).catch(() => null);
+    if (!r || r.ok === false) { toast(false, (r && r.hu) || 'A konzol nem nyílt meg.', 'No console.'); return; }
   }
   function secMeroszamok(sec) {
     const st = data().stats || {};
@@ -503,6 +512,8 @@
     if (vrg && vrg.on) {
       vrg.on('desktop', 'toggle', () => { if (S.ready) toggle(); });
       vrg.on('desktop', 'link', m => { if (m && typeof m.url === 'string' && window.VRGFrame) { setView('desktop'); showWindows(true); window.VRGFrame.openUrl(m.url); } });
+      // WP-48: an HTML page that START would open in the outside browser is a catalog app: it opens as that app, in an inner window
+      vrg.on('desktop', 'item', m => { if (m && typeof m.id === 'string' && /^[\w.:-]{1,80}$/.test(m.id)) openItem(m.id); });
       vrg.on('desktop', 'cmd', m => {
         const c = m && m.cmd;
         if (c === 'toggle') toggle(); else if (c === 'view:dashboard') setView('dashboard'); else if (c === 'view:desktop') setView('desktop');

@@ -12,9 +12,18 @@ function up(port) {
   });
 }
 
-function createPorts({ R, run, onChange = () => {} }) {
+// host (WP-48, lib/srvhost.js, optional): when inside() is true the server runs as a hidden pty session in the shell, no console window
+function createPorts({ R, run, onChange = () => {}, host = null, inside = () => false }) {
   const P = { up, ports: {} };
   P.startServer = (s, extra = []) => {
+    if (host && inside() && !run.dry) {
+      const how = host.plan(s, extra, { expand: x => R.expand(x), exists: f => R.exists(f), repo: R.C.paths.REPO });
+      if (how.err) return R.T(R.ui('missing'), { path: how.path });
+      const node = R.expand('{node}');
+      if (how.prof === 'srv-node' && !R.exists(node)) return R.T(R.ui('missing'), { path: node });
+      const r = host.start(s, how);
+      return r.ok ? '' : r.hu;
+    }
     const cwd = s.cwd ? R.expand(s.cwd) : R.C.paths.REPO;
     if (s.bat) { const f = R.expand(s.bat); if (!R.exists(f)) return R.T(R.ui('missing'), { path: f });
       run.runBat(String(s.port), path.dirname(f), [`call "${f}"`], 'min'); return ''; }

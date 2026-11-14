@@ -56,8 +56,8 @@ function createPty({ profiles, expand = s => s, spawn, env = process.env, exists
     return { exe, args, env: e };
   }
 
-  function listProfiles() {
-    return (profiles || []).map(p => {
+  function listProfiles() {                                   // hidden profiles (WP-48: srv-node, srv-cmd) run servers; no menu shows them
+    return (profiles || []).filter(p => p && !p.hidden).map(p => {
       const r = resolve(p);
       const o = { id: p.id, hu: p.hu, available: !r.reason };
       if (p.account) o.account = p.account;

@@ -18,7 +18,8 @@ const mk = (extra = {}) => {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 test('profiles.json lists the six profiles, each exe expands to an absolute path', () => {
-  assert.deepStrictEqual(PROFILES.map(p => p.id), ['pwsh', 'cmd', 'bash', 'node', 'claude-a', 'claude-b']);
+  assert.deepStrictEqual(PROFILES.filter(p => !p.hidden).map(p => p.id), ['pwsh', 'cmd', 'bash', 'node', 'claude-a', 'claude-b']);
+  assert.deepStrictEqual(PROFILES.filter(p => p.hidden).map(p => p.id), ['srv-node', 'srv-cmd']);   // WP-48: main runs the servers with these
   const { pty } = mk();
   const list = pty.profiles();
   assert.strictEqual(list.length, 6);

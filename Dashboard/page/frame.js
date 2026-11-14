@@ -441,17 +441,21 @@
     return !!window.Terminal;
   }
   async function adoptTerm(m) {
+    // WP-48: a server console only shows a session main keeps running; a pane that cannot be set up must never stop the server
+    const drop = () => { if (typeof m.server !== 'string') { try { vrg.term.kill(m.term); } catch (e) {} } };
     const id = openKind('term', {});                           // no prof: the pane stays idle (its profile menu is hidden below)
-    if (!id) { try { vrg.term.kill(m.term); } catch (e) {} return ''; }
+    if (!id) { drop(); return ''; }
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.root && inst.host); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
-    if (!inst || !inst.root) { try { vrg.term.kill(m.term); } catch (e) {} return id; }
+    if (!inst || !inst.root) { drop(); return id; }
     inst.prof = typeof m.prof === 'string' ? m.prof : 'claude-a';
     inst.menu.hidden = true;
-    if (!(await ensureXterm()) || !inst.root) { try { vrg.term.kill(m.term); } catch (e) {} if (inst.note) { inst.note.hidden = false; inst.note.textContent = 'A terminál ebben a buildben nem érhető el.'; } return id; }
+    if (typeof m.server === 'string' && inst.serverMode) inst.serverMode({ id: m.server, title: typeof m.title === 'string' ? m.title : m.server });   // WP-48
+    if (!(await ensureXterm()) || !inst.root) { drop(); if (inst.note) { inst.note.hidden = false; inst.note.textContent = 'A terminál ebben a buildben nem érhető el.'; } return id; }
     if (inst.note) inst.note.hidden = true;
     if (!inst.term) inst.build();
     inst.exited = false; inst.id = m.term; inst.root.dataset.term = m.term;
+    if (typeof m.replay === 'string' && m.replay) inst.term.write(m.replay);   // a server console: what the server printed before the pane opened
     inst.fit(true); inst.term.focus();
     decorateClaude(inst);
     return id;
