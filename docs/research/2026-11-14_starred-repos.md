@@ -37,6 +37,9 @@ host line is next opened.
 `trace-hook.js`; see Console/README.md "Session state and pings". It lives in the trace view rather than
 Stack/control.html (the Vezérlőterem shows the Council's structure, not live sessions).
 
+**#3 built 2026-11-14:** `docs/council/04_DEBATE-PROTOCOL.md` (five rounds, the four tags, the prompts) + `tools/council-debate.js`
+(`new` / `check`), Bernard's job 5, COUNCIL-Q9 open on what a debate costs to start. No real debate run yet.
+
 ---
 
 ## 1. Worth taking (details)

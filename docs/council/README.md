@@ -9,6 +9,7 @@
 | 3 | [DECISIONS.md](DECISIONS.md) | Your answers, and the questions still open |
 | 4 | [01_HAND-BRIEF.md](01_HAND-BRIEF.md) | Review, candidates, tools, agent technology, the Lego set, roadmap |
 | 5 | [02_DNA-V2.md](02_DNA-V2.md) | The capsule rewritten as a virtual reference. Waits for the GO TNT merge; not needed for daily work |
+| 6 | [04_DEBATE-PROTOCOL.md](04_DEBATE-PROTOCOL.md) | Seat debate: five rounds, FACT / INFERENCE / ASSUMPTION / UNKNOWN on every claim, checked by a script |
 
 ## Rule: the Council is malleable
 
@@ -34,12 +35,14 @@ rename it, ignore it or use it. A persona alone never justifies a separate agent
 | `tools/standin.js` | Working. Output in `H:\VRG\Full\_admin\dna\standin` |
 | `tools/brief-state.js` | Working. Keeps the briefs' current state and checks them for stale facts |
 | `tools/council-gate.js` | Tested on simulated input. **Off by decision (Q5 C)**, so the real hook input is unconfirmed |
+| `tools/council-debate.js` | Working. `new` writes a debate record skeleton, `check` holds the protocol's rules. Tests: `node --test tools/test/council-debate.test.js`. No real debate has been run yet |
 
 ```bash
 node tools/vrg-ctx.js index
 node tools/vrg-ctx.js q "vendor rule" --path Inventory
 node tools/brief-state.js --check
 node tools/standin.js --check
+node tools/council-debate.js check
 ```
 
 ## Installing

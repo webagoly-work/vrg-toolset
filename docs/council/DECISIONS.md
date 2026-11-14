@@ -1,6 +1,15 @@
 # Council decisions
 
-*Questions for the Founder. A is recommended in each open row.*
+*Questions for the Founder. A is recommended in each open row. A row may carry "rests on" (its unchecked premises, tagged as in
+`04_DEBATE-PROTOCOL.md` §2), "reverse if" and, after a seat debate, its record.*
+
+## Open
+
+| # | Question | Options |
+|---|---|---|
+| COUNCIL-Q9 | Seat debates (`04_DEBATE-PROTOCOL.md`): what does one cost to start? | **A.** G2: Bernard may run a 2–3 seat debate; 4+ seats or a second cross-examination stays G3, and charter §7 gets a "Seats weighing one decision → seat debate" row. **B.** G3 every time: you approve each debate. **C.** Shelve the protocol until the gate is on (COUNCIL-Q5) |
+
+Until Q9 is answered, every debate is G3.
 
 ## Answered, 2026-10-31
 
@@ -25,7 +34,5 @@ Also decided, same day:
 | COUNCIL-Q5 | Budget gate | **C, for now.** No gate. **The Founder asked to be reminded to change this**: Bernard raises it in every opening report and at the ten-package review |
 | COUNCIL-Q7 | Reduce session overhead | **A, done.** Disabled in user settings: design, engineering, incident-io, tinyfish, browser-use, brightdata-plugin, 8b-ai-website-builder. Undo one with `claude plugin enable <name>@synced` |
 | COUNCIL-Q8 | First pilot after the briefs | **A.** Stand-in authored halves |
-
-No question is open.
 
 Already recorded elsewhere and not reopened: client data stays out of the capsule (DNA session, 2026-10-30), one checkout on `main` (`CLAUDE.md`), the tier of each agent can change through the ledger.
