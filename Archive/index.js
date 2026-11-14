@@ -4,6 +4,31 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "konnektom-labor",
+   "title": "Konnektóm-labor",
+   "created": "2026-11-14",
+   "updated": "2026-11-14",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "Öt nézet egy fájlban: a muslica-agy (FlyWire v783, mind a 139 248 neuron, működő sejttípus-modell), a VRG Stack konnektómja, a négy Holo-alak az Őrséggel, a Rétegverem, és egy üres, emberi agy alakú memóriaháló (32 768 × 16 bájt), amelybe szöveget lehet betáplálni.",
+   "purpose": "Egy önálló HTML, amit a Founder továbbadhat: a muslica-konnektómra épülő reprezentációk együtt, plusz egy üres háló, ami a betáplált szövegből saját 3D mintát növeszt.",
+   "context": [
+    "Az ajándékba szánt fájl ihletője egy időkapszula-formátumú ferrocella / Meissner / Yang–Mills mező-app volt",
+    "A Stack adata itt csak a repóból jön (fájlok, commitok, pillérek, döntések); a U réteg üres"
+   ],
+   "tags": [
+    "konnektom",
+    "flywire",
+    "stack",
+    "holo",
+    "memoria"
+   ],
+   "file": "files/konnektom-labor.html",
+   "url": "https://claude.ai/artifact/VQ5Wd4wHYJVTtwrtxjR5rz"
+  },
+  {
    "id": "felszin-gephaz",
    "title": "Felszín és gépház",
    "created": "2026-11-11",

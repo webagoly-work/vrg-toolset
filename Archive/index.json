@@ -3,6 +3,31 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "konnektom-labor",
+      "title": "Konnektóm-labor",
+      "created": "2026-11-14",
+      "updated": "2026-11-14",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "Öt nézet egy fájlban: a muslica-agy (FlyWire v783, mind a 139 248 neuron, működő sejttípus-modell), a VRG Stack konnektómja, a négy Holo-alak az Őrséggel, a Rétegverem, és egy üres, emberi agy alakú memóriaháló (32 768 × 16 bájt), amelybe szöveget lehet betáplálni.",
+      "purpose": "Egy önálló HTML, amit a Founder továbbadhat: a muslica-konnektómra épülő reprezentációk együtt, plusz egy üres háló, ami a betáplált szövegből saját 3D mintát növeszt.",
+      "context": [
+        "Az ajándékba szánt fájl ihletője egy időkapszula-formátumú ferrocella / Meissner / Yang–Mills mező-app volt",
+        "A Stack adata itt csak a repóból jön (fájlok, commitok, pillérek, döntések); a U réteg üres"
+      ],
+      "tags": [
+        "konnektom",
+        "flywire",
+        "stack",
+        "holo",
+        "memoria"
+      ],
+      "file": "files/konnektom-labor.html",
+      "url": "https://claude.ai/artifact/VQ5Wd4wHYJVTtwrtxjR5rz"
+    },
+    {
       "id": "felszin-gephaz",
       "title": "Felszín és gépház",
       "created": "2026-11-11",
@@ -28,6 +53,35 @@
       "sessionTitle": "VRG Jegyzetek dev",
       "url": "https://claude.ai/artifact/HXMSS2jg9TgBQxtfX1Q8ES",
       "file": "files/felszin-gephaz.html"
+    },
+    {
+      "id": "jegyzetek-modulvalaszto",
+      "title": "VRG Jegyzetek modulválasztó",
+      "created": "2026-11-10",
+      "updated": "2026-11-11",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG Jegyzetek",
+      "kind": "tool",
+      "summary": "A module picker for the VRG Jegyzetek notes app. It lists modules such as tag suggestions, job and date detection, photo text recognition, site diary, LAN sync, encryption and backup, with filters, a comparison view and a saved selection that a Claude session can read back. Hungarian and English.",
+      "purpose": "To decide which feature modules go into the notes app before building it.",
+      "context": [
+        "Jegyzetek market analysis and modular feature list",
+        "VRG Stack layer pages and session hooks",
+        "VRG Desktop Sheets work"
+      ],
+      "tags": [
+        "notes",
+        "jegyzetek",
+        "modules",
+        "picker",
+        "bilingual",
+        "db",
+        "interactive"
+      ],
+      "sessionTitle": "VRG Jegyzetek dev",
+      "url": "https://claude.ai/artifact/V68RVT9rfxZPQgZj1ChdBb",
+      "file": "files/jegyzetek-modulvalaszto.html"
     },
     {
       "id": "laptop-server",
@@ -58,35 +112,6 @@
       "sessionTitle": "VRG Laptop Server",
       "url": "https://claude.ai/artifact/N2JbyRKE3732kwD6P8jRXE",
       "file": "files/laptop-server.html"
-    },
-    {
-      "id": "jegyzetek-modulvalaszto",
-      "title": "VRG Jegyzetek modulválasztó",
-      "created": "2026-11-10",
-      "updated": "2026-11-11",
-      "lang": "hu",
-      "vrg": true,
-      "group": "VRG Jegyzetek",
-      "kind": "tool",
-      "summary": "A module picker for the VRG Jegyzetek notes app. It lists modules such as tag suggestions, job and date detection, photo text recognition, site diary, LAN sync, encryption and backup, with filters, a comparison view and a saved selection that a Claude session can read back. Hungarian and English.",
-      "purpose": "To decide which feature modules go into the notes app before building it.",
-      "context": [
-        "Jegyzetek market analysis and modular feature list",
-        "VRG Stack layer pages and session hooks",
-        "VRG Desktop Sheets work"
-      ],
-      "tags": [
-        "notes",
-        "jegyzetek",
-        "modules",
-        "picker",
-        "bilingual",
-        "db",
-        "interactive"
-      ],
-      "sessionTitle": "VRG Jegyzetek dev",
-      "url": "https://claude.ai/artifact/V68RVT9rfxZPQgZj1ChdBb",
-      "file": "files/jegyzetek-modulvalaszto.html"
     },
     {
       "id": "thread-board",
@@ -143,31 +168,30 @@
       "file": "files/thread-board-v1.html"
     },
     {
-      "id": "kit-gyar",
-      "title": "Varler Kit Gyár",
+      "id": "finom-lap",
+      "title": "Finom lap — minta",
       "created": "2026-11-06",
-      "updated": "2026-11-07",
+      "updated": "2026-11-06",
       "lang": "hu",
       "vrg": true,
-      "group": "Workflow Kit",
-      "kind": "explainer",
-      "summary": "A Hungarian and English concept page that presents the Varler Workflow Kit as a production line. It shows a working starter-dashboard mock, every option at every station, and how each stop asks a question, herds the user on or leaves a signal out.",
-      "purpose": "To settle the shape of the Workflow Kit: one starter dashboard where a job description and a few clicks are enough.",
+      "group": "Planner",
+      "kind": "mockup",
+      "summary": "A small static sample sheet in a refined document style: a P33 ground-floor electrical layout header with its symbol key.",
+      "purpose": "To try a cleaner document style for Planner print output.",
       "context": [
-        "Dashboard WP-35a night fix-up",
-        "VRG Mobile M5 and M10 (Kódváros online, notifications)",
-        "VRG Stack built and moved into the repo"
+        "Planner Views and print sheets",
+        "VRG Mobile M10 and M5",
+        "Dashboard WP-35a"
       ],
       "tags": [
-        "workflow-kit",
-        "concept",
-        "production-line",
-        "bilingual",
-        "interactive"
+        "doc-style",
+        "print",
+        "planner",
+        "local",
+        "static"
       ],
-      "sessionTitle": "VRG Dashboard: Workflow Kit",
-      "url": "https://claude.ai/artifact/DitVNZKYtoRC6y1Rwt1wVr",
-      "file": "files/kit-gyar.html"
+      "dateApprox": true,
+      "localPath": "{repo}/docs/research/doc-style/finom-lap.html"
     },
     {
       "id": "kodvaros-2-plan",
@@ -195,30 +219,31 @@
       "file": "files/kodvaros-2-plan.html"
     },
     {
-      "id": "finom-lap",
-      "title": "Finom lap — minta",
+      "id": "kit-gyar",
+      "title": "Varler Kit Gyár",
       "created": "2026-11-06",
-      "updated": "2026-11-06",
+      "updated": "2026-11-07",
       "lang": "hu",
       "vrg": true,
-      "group": "Planner",
-      "kind": "mockup",
-      "summary": "A small static sample sheet in a refined document style: a P33 ground-floor electrical layout header with its symbol key.",
-      "purpose": "To try a cleaner document style for Planner print output.",
+      "group": "Workflow Kit",
+      "kind": "explainer",
+      "summary": "A Hungarian and English concept page that presents the Varler Workflow Kit as a production line. It shows a working starter-dashboard mock, every option at every station, and how each stop asks a question, herds the user on or leaves a signal out.",
+      "purpose": "To settle the shape of the Workflow Kit: one starter dashboard where a job description and a few clicks are enough.",
       "context": [
-        "Planner Views and print sheets",
-        "VRG Mobile M10 and M5",
-        "Dashboard WP-35a"
+        "Dashboard WP-35a night fix-up",
+        "VRG Mobile M5 and M10 (Kódváros online, notifications)",
+        "VRG Stack built and moved into the repo"
       ],
       "tags": [
-        "doc-style",
-        "print",
-        "planner",
-        "local",
-        "static"
+        "workflow-kit",
+        "concept",
+        "production-line",
+        "bilingual",
+        "interactive"
       ],
-      "dateApprox": true,
-      "localPath": "{repo}/docs/research/doc-style/finom-lap.html"
+      "sessionTitle": "VRG Dashboard: Workflow Kit",
+      "url": "https://claude.ai/artifact/DitVNZKYtoRC6y1Rwt1wVr",
+      "file": "files/kit-gyar.html"
     },
     {
       "id": "divergence-logo",
@@ -244,32 +269,6 @@
       ],
       "sessionTitle": "Varler logo+ text",
       "url": "https://claude.ai/artifact/6jugeKG8uuf5PLFREtiqQ6"
-    },
-    {
-      "id": "varler-sui",
-      "title": "Varler SUI",
-      "created": "2026-10-31",
-      "updated": "2026-11-02",
-      "lang": "en",
-      "vrg": true,
-      "group": "Varler SUI",
-      "kind": "study",
-      "summary": "The Varler SUI design system: an instrument-panel look (dark HUD and light glass themes, architect charcoal chrome, cyan as the only accent) with tokens, primitives such as tick rings, sectors, callouts and branch trees, and a Story Board component. It is the account's default design system.",
-      "purpose": "One screen language for all of Varler's own tools: Planner, BRIDGE-DN, Wire-ID, ESPBLOK and the field companion.",
-      "context": [
-        "Varler Console app frame and live agent trace",
-        "Kódváros Gépország S1–S3",
-        "VRG Mobile M4 Haladás"
-      ],
-      "tags": [
-        "design-system",
-        "sui",
-        "tokens",
-        "hud",
-        "brand"
-      ],
-      "dateApprox": true,
-      "url": "https://claude.ai/artifact/RGdCRWQTXqtFEjiUSVzLWy"
     },
     {
       "id": "geporszag-concept",
@@ -326,31 +325,30 @@
       "file": "files/varler-console.html"
     },
     {
-      "id": "sui-rings",
-      "title": "Varler SUI Rings",
+      "id": "varler-sui",
+      "title": "Varler SUI",
       "created": "2026-10-31",
-      "updated": "2026-10-31",
+      "updated": "2026-11-02",
       "lang": "en",
       "vrg": true,
       "group": "Varler SUI",
       "kind": "study",
-      "summary": "Live demos of the seven SUI ring primitives: a radial navigator, a city target lock with a fixed crosshair, a worktree branch tree, an attribute matrix and a workflow overlay, each with its API.",
-      "purpose": "To build and try the reusable ring primitives behind the SUI look.",
+      "summary": "The Varler SUI design system: an instrument-panel look (dark HUD and light glass themes, architect charcoal chrome, cyan as the only accent) with tokens, primitives such as tick rings, sectors, callouts and branch trees, and a Story Board component. It is the account's default design system.",
+      "purpose": "One screen language for all of Varler's own tools: Planner, BRIDGE-DN, Wire-ID, ESPBLOK and the field companion.",
       "context": [
-        "Kódváros Gépország S1",
-        "VRG Mobile M4",
-        "Varler Console design"
+        "Varler Console app frame and live agent trace",
+        "Kódváros Gépország S1–S3",
+        "VRG Mobile M4 Haladás"
       ],
       "tags": [
+        "design-system",
         "sui",
-        "primitives",
-        "radial-menu",
+        "tokens",
         "hud",
-        "interactive"
+        "brand"
       ],
       "dateApprox": true,
-      "url": "https://claude.ai/artifact/55xJ8Giipabr8Qy2FvRbWG",
-      "file": "files/sui-rings.html"
+      "url": "https://claude.ai/artifact/RGdCRWQTXqtFEjiUSVzLWy"
     },
     {
       "id": "sui-feature-priorities",
@@ -376,6 +374,33 @@
       ],
       "dateApprox": true,
       "url": "https://claude.ai/artifact/V2xw5ba2GxF8h1Ac5enANg"
+    },
+    {
+      "id": "sui-rings",
+      "title": "Varler SUI Rings",
+      "created": "2026-10-31",
+      "updated": "2026-10-31",
+      "lang": "en",
+      "vrg": true,
+      "group": "Varler SUI",
+      "kind": "study",
+      "summary": "Live demos of the seven SUI ring primitives: a radial navigator, a city target lock with a fixed crosshair, a worktree branch tree, an attribute matrix and a workflow overlay, each with its API.",
+      "purpose": "To build and try the reusable ring primitives behind the SUI look.",
+      "context": [
+        "Kódváros Gépország S1",
+        "VRG Mobile M4",
+        "Varler Console design"
+      ],
+      "tags": [
+        "sui",
+        "primitives",
+        "radial-menu",
+        "hud",
+        "interactive"
+      ],
+      "dateApprox": true,
+      "url": "https://claude.ai/artifact/55xJ8Giipabr8Qy2FvRbWG",
+      "file": "files/sui-rings.html"
     },
     {
       "id": "melyviz",
@@ -432,32 +457,6 @@
       "file": "files/melyviz-copy.html"
     },
     {
-      "id": "chase-spike",
-      "title": "Véset 3D Spike",
-      "created": "2026-10-23",
-      "updated": "2026-10-23",
-      "lang": "hu",
-      "vrg": true,
-      "group": "Planner",
-      "kind": "study",
-      "summary": "An interactive 3D spike: a wall chase drawn as a swept cut with a translucent preview and a box pocket, using Planner rules for chase width and depth.",
-      "purpose": "To test whether wall chases could be previewed in 3D inside the Planner.",
-      "context": [
-        "Kódváros WP-C10 MCP server",
-        "GO MAIN consolidation runbook",
-        "Vendor additions (CADCraft, SolidCraft, Open MCT)"
-      ],
-      "tags": [
-        "spike",
-        "3d",
-        "planner",
-        "local",
-        "interactive"
-      ],
-      "dateApprox": true,
-      "file": "files/chase-spike.html"
-    },
-    {
       "id": "flip-spike",
       "title": "FLIP Spike",
       "created": "2026-10-23",
@@ -482,6 +481,32 @@
       ],
       "dateApprox": true,
       "file": "files/flip-spike.html"
+    },
+    {
+      "id": "chase-spike",
+      "title": "Véset 3D Spike",
+      "created": "2026-10-23",
+      "updated": "2026-10-23",
+      "lang": "hu",
+      "vrg": true,
+      "group": "Planner",
+      "kind": "study",
+      "summary": "An interactive 3D spike: a wall chase drawn as a swept cut with a translucent preview and a box pocket, using Planner rules for chase width and depth.",
+      "purpose": "To test whether wall chases could be previewed in 3D inside the Planner.",
+      "context": [
+        "Kódváros WP-C10 MCP server",
+        "GO MAIN consolidation runbook",
+        "Vendor additions (CADCraft, SolidCraft, Open MCT)"
+      ],
+      "tags": [
+        "spike",
+        "3d",
+        "planner",
+        "local",
+        "interactive"
+      ],
+      "dateApprox": true,
+      "file": "files/chase-spike.html"
     },
     {
       "id": "client-look-directions",
@@ -802,31 +827,6 @@
       "file": "files/bridge-elosztoszekreny.html"
     },
     {
-      "id": "macropad-panel-study",
-      "title": "Macropad Panel Study",
-      "created": "2026-09-27",
-      "updated": "2026-09-27",
-      "lang": "en",
-      "vrg": false,
-      "group": "Hardware",
-      "kind": "study",
-      "summary": "Seven panel layouts for a USB-HID macropad core device, drawn 1:1 in millimetres, with and without a numpad. It notes three reversals since v1 and how the hand governs the layout.",
-      "purpose": "To choose a physical layout for the macropad used next to a foldout keyboard.",
-      "context": [
-        "Planner Xbox controller control (09-26)",
-        "Hot Plate and Site Pager hardware studies"
-      ],
-      "tags": [
-        "macropad",
-        "hid",
-        "layout",
-        "hardware",
-        "static"
-      ],
-      "url": "https://claude.ai/artifact/QGPdwmTBPuvHJrQUjGwNBo",
-      "file": "files/macropad-panel-study.html"
-    },
-    {
       "id": "hot-plate-board",
       "title": "Hot Plate Board — Thermal & Safety Design",
       "created": "2026-09-27",
@@ -850,6 +850,31 @@
       ],
       "dateApprox": true,
       "url": "https://claude.ai/artifact/BLLzg63xsm8oxmSjV8mkj8"
+    },
+    {
+      "id": "macropad-panel-study",
+      "title": "Macropad Panel Study",
+      "created": "2026-09-27",
+      "updated": "2026-09-27",
+      "lang": "en",
+      "vrg": false,
+      "group": "Hardware",
+      "kind": "study",
+      "summary": "Seven panel layouts for a USB-HID macropad core device, drawn 1:1 in millimetres, with and without a numpad. It notes three reversals since v1 and how the hand governs the layout.",
+      "purpose": "To choose a physical layout for the macropad used next to a foldout keyboard.",
+      "context": [
+        "Planner Xbox controller control (09-26)",
+        "Hot Plate and Site Pager hardware studies"
+      ],
+      "tags": [
+        "macropad",
+        "hid",
+        "layout",
+        "hardware",
+        "static"
+      ],
+      "url": "https://claude.ai/artifact/QGPdwmTBPuvHJrQUjGwNBo",
+      "file": "files/macropad-panel-study.html"
     },
     {
       "id": "site-pager-mark-plan",

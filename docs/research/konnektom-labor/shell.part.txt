@@ -1,0 +1,154 @@
+<title>Konnektóm-labor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A muslica-agy, a VRG Stack konnektómja, a Holo-alakok, a Rétegverem és egy üres, emberi agy alakú memóriaháló egy fájlban.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: one full-bleed WebGL field; a glass rail of tabs on top, a control column on the right (a bottom sheet on phones).
+   Mélyvíz (VRG dev-side style): deep-water ground, ice = the instrument and the selection, warm = activity. Square controls, hairlines, two cut corners. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: rgba(16, 27, 36, .82); --solid: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .15); --line2: rgba(232, 240, 246, .34);
+  --text: #e8f0f6; --dim: #c2cbd2; --faint: #93a0a9; --acc: #93d3e6; --acc-soft: rgba(147, 211, 230, .14); --warm: #e8a873; --ok: #8bcca1; --crit: #e4877d;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace; --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --voice: "Saira Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --cut: 7px; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans); overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+#gl, #ov { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#gl { background: radial-gradient(120% 90% at 50% 40%, var(--horizon), var(--bg)); touch-action: none; }
+#ov { pointer-events: none; }
+button, input, textarea, select { font: inherit; color: var(--text); border-radius: 0; }
+button { background: var(--solid); border: 1px solid var(--line2); padding: 6px 10px; cursor: pointer; font: 12.5px var(--mono); color: var(--dim); }
+button:hover { border-color: var(--acc); color: var(--text); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+button.pri { background: var(--acc-soft); border-color: var(--acc); color: var(--text); }
+button.warn { border-color: rgba(228, 135, 125, .6); color: var(--crit); }
+input[type=search], textarea { width: 100%; background: var(--solid); border: 1px solid var(--line2); padding: 7px 9px; font: 13px var(--sans); }
+textarea { resize: vertical; min-height: 64px; }
+textarea.mono { font: 11px/1.35 var(--mono); }
+input[type=range] { width: 100%; accent-color: var(--acc); margin: 2px 0 0; }
+input[type=checkbox] { accent-color: var(--acc); }
+a { color: var(--acc); }
+kbd { font: 10.5px var(--mono); border: 1px solid var(--line2); padding: 0 4px; color: var(--faint); }
+.mono { font-family: var(--mono); }
+/* top rail */
+header { position: fixed; top: env(safe-area-inset-top, 0px); left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; z-index: 3; pointer-events: none; }
+header > * { pointer-events: auto; }
+.brand { font: 600 22px/1 var(--voice); letter-spacing: .04em; text-transform: uppercase; color: var(--text); margin-right: 4px; white-space: nowrap; }
+.brand span { color: var(--acc); }
+#tabs { display: flex; flex-wrap: wrap; gap: 0; background: var(--panel); border: 1px solid var(--line2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+#tabs button { border: 0; border-right: 1px solid var(--line); background: transparent; padding: 8px 12px; font: 600 15px/1 var(--voice); letter-spacing: .05em; text-transform: uppercase; color: var(--faint); }
+#tabs button:last-child { border-right: 0; }
+#tabs button i { font: 10.5px var(--mono); font-style: normal; color: var(--faint); margin-right: 6px; opacity: .8; }
+#tabs button.on { color: var(--bg); background: var(--acc); }
+#tabs button.on i { color: var(--bg); }
+.tools { display: flex; gap: 6px; margin-left: auto; }
+.tools button { background: var(--panel); backdrop-filter: blur(10px); }
+.tools button[aria-pressed=true] { border-color: var(--acc); color: var(--text); }
+/* control column */
+#side { position: fixed; z-index: 2; top: calc(env(safe-area-inset-top, 0px) + 64px); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); width: min(370px, 40vw); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+#side > * { pointer-events: auto; }
+#fold { align-self: flex-end; display: none; }
+#panel { flex: 1 1 auto; min-height: 0; overflow: auto; background: var(--panel); border: 1px solid var(--line2); backdrop-filter: blur(12px) saturate(1.2); -webkit-backdrop-filter: blur(12px) saturate(1.2); padding: 14px 16px 18px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
+#panel h2 { font: 700 24px/1.05 var(--voice); letter-spacing: .03em; text-transform: uppercase; margin: 0 0 6px; text-wrap: balance; }
+#panel h2 small { display: block; font: 500 12px var(--mono); letter-spacing: 0; text-transform: none; color: var(--acc); margin-top: 4px; }
+.lead { color: var(--dim); margin: 0 0 12px; font-size: 13.5px; }
+.grp { border-top: 1px solid var(--line); padding: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+.grp h3 { margin: 0; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chips button.on { background: var(--acc-soft); border-color: var(--acc); color: var(--text); }
+.sl { display: grid; grid-template-columns: 1fr auto; font-size: 12.5px; color: var(--dim); gap: 0 8px; }
+.sl b { font: 500 12px var(--mono); color: var(--acc); font-variant-numeric: tabular-nums; }
+.sl input { grid-column: 1 / -1; }
+.tgs { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.tg { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--dim); cursor: pointer; }
+.hint { color: var(--faint); font-size: 12px; margin: 0; }
+.src { color: var(--faint); font-size: 11.5px; border-top: 1px solid var(--line); padding-top: 10px; margin: 10px 0 0; }
+.k1 { color: var(--warm); } .k2 { color: var(--acc); } .k3 { color: var(--acc); }
+canvas.spark { width: 100%; height: 64px; display: block; background: rgba(6, 12, 18, .5); border: 1px solid var(--line); }
+.lg { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--dim); }
+.lg span, .lg button { display: flex; gap: 7px; align-items: center; }
+.lg i, .lines i, .planes i, .regs i, .mh i { width: 9px; height: 9px; flex: none; display: inline-block; }
+.lg em, .lines em, .planes em, .regs em { font: 11px var(--mono); font-style: normal; color: var(--faint); margin-left: auto; font-variant-numeric: tabular-nums; }
+.lgx button { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 4px 0; text-align: left; font: 12.5px var(--sans); color: var(--dim); }
+.lgx button b { font: 600 11px var(--mono); color: var(--text); min-width: 12px; }
+.lgx button.off { opacity: .4; text-decoration: line-through; }
+ol.top { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+ol.top li { position: relative; padding: 3px 6px; font-size: 12.5px; cursor: pointer; overflow: hidden; border: 1px solid var(--line); }
+ol.top li b { font: 500 12px var(--mono); position: relative; z-index: 1; }
+ol.top li span { color: var(--faint); font-size: 11.5px; position: relative; z-index: 1; }
+ol.top li i { position: absolute; inset: 0 auto 0 0; background: rgba(232, 168, 115, .22); }
+ul.parts, ul.mini, ul.lines, ul.planes, ul.regs, ul.mems { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; }
+ul.parts li { color: var(--faint); } ul.parts b { color: var(--dim); font-weight: 500; }
+ul.mini li { color: var(--dim); overflow-wrap: anywhere; } ul.mini .v { font: 11px var(--mono); color: var(--acc); }
+ul.lines li, ul.planes li { display: flex; gap: 7px; align-items: center; padding: 3px 4px; cursor: pointer; border-bottom: 1px solid var(--line); min-width: 0; }
+ul.lines li b, ul.planes li b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ul.lines li.act b::after { content: " ●"; color: var(--warm); font-size: 10px; }
+ul.lines li.on, ul.planes li.on { background: var(--acc-soft); }
+ul.planes li.off { opacity: .45; }
+ul.planes li button { padding: 2px 6px; font-size: 11px; }
+ul.planes li b { font: 600 11px var(--mono); }
+ul.regs li { display: grid; grid-template-columns: 9px 1fr auto; gap: 0 7px; align-items: center; padding: 2px 0; }
+ul.regs li small { grid-column: 2 / -1; color: var(--faint); font-size: 11px; }
+ul.regs li b { font-weight: 500; color: var(--dim); }
+ul.mems li { border: 1px solid var(--line); padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+ul.mems li.on { border-color: var(--acc); background: var(--acc-soft); }
+.mh { display: flex; gap: 8px; align-items: flex-start; min-width: 0; } .mh i { margin-top: 5px; }
+.mt { font-size: 12.5px; color: var(--text); overflow-wrap: anywhere; }
+.strip { display: flex; flex-wrap: wrap; gap: 1px; } .strip b { width: 6px; height: 6px; background: var(--ok); opacity: .8; } .strip b.bad { background: var(--crit); opacity: 1; }
+.mf { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; justify-content: space-between; font-size: 11px; color: var(--faint); }
+.acts { display: flex; gap: 4px; } .acts button { padding: 2px 7px; font-size: 11px; }
+.commit { font-size: 12.5px; color: var(--dim); min-height: 52px; border-left: 2px solid var(--warm); padding-left: 8px; overflow-wrap: anywhere; }
+.commit em { color: var(--faint); font-style: normal; font-size: 11.5px; }
+.loupe { border: 1px solid var(--line); background: rgba(6, 12, 18, .5); padding: 7px 8px; display: flex; flex-direction: column; gap: 3px; font-size: 12px; min-height: 58px; }
+.loupe .hx { font-size: 11.5px; color: var(--acc); letter-spacing: .02em; overflow-wrap: anywhere; }
+.bad { color: var(--crit); }
+/* selection card, tooltip, toast, loader */
+#info { position: fixed; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); width: min(380px, calc(100% - 32px)); max-height: 46%; overflow: auto; background: var(--panel); border: 1px solid var(--line2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 14px; border-left: 2px solid var(--acc); }
+#info h3 { margin: 0 24px 6px 0; font: 600 18px/1.15 var(--voice); letter-spacing: .02em; overflow-wrap: anywhere; }
+#info dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0 0 6px; font-size: 12.5px; }
+#info dt { color: var(--faint); font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; padding-top: 2px; }
+#info dd { margin: 0; color: var(--dim); overflow-wrap: anywhere; }
+#info p { margin: 4px 0; font-size: 12.5px; color: var(--dim); }
+#info .x { position: absolute; top: 6px; right: 6px; padding: 0 8px; font-size: 16px; }
+#info sup { color: var(--crit); }
+.recall { white-space: pre-wrap; color: var(--text) !important; font-size: 13.5px !important; }
+#tip { position: fixed; z-index: 4; pointer-events: none; background: var(--solid); border: 1px solid var(--line2); padding: 5px 8px; font-size: 12px; max-width: 320px; color: var(--dim); overflow-wrap: anywhere; }
+#tip b { color: var(--text); font-weight: 600; }
+#toast { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 70px); background: var(--solid); border: 1px solid var(--acc); padding: 7px 12px; font: 12.5px var(--mono); max-width: calc(100% - 32px); }
+#load { position: fixed; z-index: 6; inset: 0; display: grid; place-items: center; background: rgba(10, 20, 28, .55); pointer-events: none; }
+#load div { font: 600 20px var(--voice); letter-spacing: .08em; text-transform: uppercase; color: var(--acc); padding: 14px 20px; border: 1px solid var(--line2); background: var(--panel); max-width: calc(100% - 32px); text-align: center; }
+@media (max-width: 760px) {
+  .brand { font-size: 18px; }
+  .tools { margin-left: 0; }
+  #tabs button { padding: 7px 8px; font-size: 13px; } #tabs button i { display: none; }
+  #side { top: auto; left: max(16px, env(safe-area-inset-left, 0px)); width: auto; height: 46%; }
+  #fold { display: inline-block; }
+  body.folded #panel { display: none; } body.folded #side { height: auto; }
+  #info { bottom: calc(46% + env(safe-area-inset-bottom, 0px) + 24px); max-height: 30%; }
+  body.folded #info { bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<canvas id="gl" aria-label="3D nézet: húzd a forgatáshoz, görgess a nagyításhoz, koppints egy pontra"></canvas>
+<canvas id="ov" aria-hidden="true"></canvas>
+<header>
+  <div class="brand">Konnektóm<span>-labor</span></div>
+  <nav id="tabs" role="tablist" aria-label="Nézetek">
+    <button type="button" role="tab" data-k="fly"><i>1</i>Muslica</button><button type="button" role="tab" data-k="mine"><i>2</i>Saját konnektóm</button><button type="button" role="tab" data-k="holo"><i>3</i>Holo</button><button type="button" role="tab" data-k="layers"><i>4</i>Rétegverem</button><button type="button" role="tab" data-k="empty"><i>5</i>Üres háló</button>
+  </nav>
+  <div class="tools"><button type="button" id="lab" aria-pressed="true" title="Feliratok (T)">Feliratok</button><button type="button" id="rot" aria-pressed="true" title="Forgás (R)">Forgás</button></div>
+</header>
+<aside id="side"><button type="button" id="fold" aria-expanded="true" aria-controls="panel">Elrejt</button><section id="panel"></section></aside>
+<section id="info" hidden></section>
+<div id="tip" hidden></div>
+<div id="toast" role="status" hidden></div>
+<div id="load"><div id="load-t">Konnektóm-labor töltődik…</div></div>
