@@ -8,9 +8,12 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { fromHook, transcriptOf, usageFromTail } from '../www/js/trace/events.js';
 import { scrubEvent } from '../www/js/trace/privacy.js';
+import { ASK_TOOLS, emptyState, noticeFor, step } from '../www/js/trace/state.js';
+import { readState, settings, where } from './agent-notify.js';
 import { keepDays, prune } from './trace-retention.js';
 
 const TRACES = process.env.VC_TRACE_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'traces');
@@ -54,12 +57,31 @@ function relay(route, body, timeout, method = 'POST') {
   });
 }
 
+/* The events that can make a session blocked or done; only these pay for reading its trace. */
+const watched = (ev) => ev.kind === 'stop' || ev.kind === 'notice' || (ev.kind === 'call' && ASK_TOOLS.has(ev.tool));
+const NOTIFY = path.join(path.dirname(fileURLToPath(import.meta.url)), 'agent-notify.js');
+
+/* A change worth a ping starts agent-notify.js on its own; it waits and checks again before it speaks. */
+function maybeNotify(hook, ev, before) {
+  const s = settings(TRACES);
+  if (!s.sound && !s.phone) return;
+  const n = noticeFor(before, step(before, ev), ev, { doneAfterMs: s.doneAfterSec * 1000 });
+  if (!n) return;
+  const text = n.kind === 'done' ? ev.output
+    : ev.kind === 'notice' ? (/ to use (.+)$/.exec(ev.text)?.[1] ?? ev.text)
+      : (/"question":"((?:[^"\\]|\\.)*)"/.exec(ev.text)?.[1] ?? '');
+  const args = [NOTIFY, '--sid', ev.sid, '--kind', n.kind, '--at', String(ev.t), '--where', where(hook.cwd),
+    '--why', n.why ?? '', '--ms', String(n.ms ?? 0), '--text', String(text ?? '').slice(0, 200)];
+  spawn(process.execPath, args, { detached: true, stdio: 'ignore', windowsHide: true, env: process.env }).unref();
+}
+
 async function main(raw) {
   const hook = JSON.parse(raw);
   const event = fromHook(hook);
   if (!event || !event.sid) return;
   if (['result', 'stop', 'agent-stop'].includes(event.kind) && transcriptOf(hook)) event.usage = usageFromTail(tail(transcriptOf(hook))) ?? undefined;
   const clean = scrubEvent(event, lines('names.txt'));
+  const before = watched(clean) ? readState(clean.sid, TRACES) ?? emptyState() : null;
   fs.mkdirSync(TRACES, { recursive: true });
   fs.appendFileSync(path.join(TRACES, clean.sid.replace(/[^\w-]/g, '') + '.jsonl'), JSON.stringify(clean) + '\n');
   if (clean.kind === 'prompt') prune(TRACES, keepDays(TRACES));
@@ -70,10 +92,12 @@ async function main(raw) {
       process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: a.decision, permissionDecisionReason: a.note || 'Varler Console' } }));
     }
   }
+  let resumed = false;
   if (clean.kind === 'stop') {
     const next = await relay('/next?sid=' + encodeURIComponent(clean.sid), null, 400, 'GET');
-    if (next?.text) process.stdout.write(JSON.stringify({ decision: 'block', reason: next.text }));
+    if (next?.text) { resumed = true; process.stdout.write(JSON.stringify({ decision: 'block', reason: next.text })); }
   }
+  if (before && !resumed) { try { maybeNotify(hook, clean, before); } catch { /* a ping is never worth a failed hook */ } }
 }
 
 let raw = '';

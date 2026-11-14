@@ -95,6 +95,30 @@ The rules take names, emails, phones, streets, secrets and folders under `jobs/`
 `traces/` is gitignored; retention is set on the page (the hook, the relay and the browser store all obey it).
 Token counts are input plus output per message, read from the transcripts; cached tokens are not included.
 
+### Session state and pings ("Claude kész" / "Claude vár rád")
+
+`www/js/trace/state.js` folds a session's events into one state: **dolgozik** (working), **rád vár** (blocked:
+a permission prompt, AskUserQuestion, a plan to approve, a relay gate), **háttérben fut** (the turn ended but
+background subagents run) and **kész, te jössz** (idle). The page shows it under the session picker, in each
+session's name too.
+
+The hook watches the same fold. When a session starts waiting for you, or a turn of at least `doneAfterSec`
+ends, it starts `tools/agent-notify.js` on its own and returns at once. That waits, re-reads the trace and
+speaks only if the same episode is still on, so an approval you give in two seconds stays silent:
+
+- after `soundDelaySec` (5) an 8-bit chime on this PC, made by the script (`traces/sounds/done.wav` and
+  `blocked.wav`; put your own WAV there to replace it);
+- after `phoneDelaySec` (30) a notice to the paired phones through the phone relay's `POST /notify`
+  (VRG Mobile Értesítések, WP M10), when the relay runs on this PC. Title `Claude kész · <folder>` or
+  `Claude vár rád · <folder>`; the text is the tool, the question or the start of the closing message,
+  already scrubbed.
+
+Settings in `traces/notify.json`, all optional: `{ "sound": true, "phone": true, "doneAfterSec": 60,
+"soundDelaySec": 5, "phoneDelaySec": 30, "port": 47291 }`. `VC_NOTIFY=0` turns both off. Over the 46 traces
+on the dev PC (2026-11-14) these defaults would have rung the phone 136 times for a finished turn and 395 times
+for a wait that really lasted 30 s or more, and kept about 850 quick approvals quiet. Tests:
+`tests/agent-state.test.js`.
+
 ## Layout
 
 | Path | What |
@@ -104,8 +128,8 @@ Token counts are input plus output per message, read from the transcripts; cache
 | `tools/build-tokens.js` | generates `www/css/tokens.css` (`npm run tokens`) |
 | `www/js/core/` | i18n, locale formatting, the local-first store (`store.js` settings, `db.js` IndexedDB records), limit checks, calculators, redaction, the PC bridge client |
 | `www/js/pages/*.js` | one module per page: `{ manifest, strings, mount(root, ctx) }`; small widgets share `widgets-simple.js` and `widgets-device.js` |
-| `www/js/trace/` | events, model, privacy, sources, view, panel; `standalone.js` is the single-file entry |
-| `tools/` | `trace-hook.js`, `trace-relay.js`, `trace-retention.js`, `build-trace.js`, `hooks.example.json`, `build-precache.js`, `build-icons.js`, `android-setup.js` |
+| `www/js/trace/` | events, model, state, privacy, sources, view, panel; `standalone.js` is the single-file entry |
+| `tools/` | `trace-hook.js`, `agent-notify.js`, `trace-relay.js`, `trace-retention.js`, `build-trace.js`, `hooks.example.json`, `build-precache.js`, `build-icons.js`, `android-setup.js` |
 | `www/sw.js`, `www/precache.js`, `www/manifest.webmanifest`, `www/icons/` | offline cache and install metadata |
 | `capacitor.config.json`, `android-res/` | the APK scaffold |
 | `www/data/` | `commands.js`, `sugo.js`, `playbooks.js`, copied unchanged from ServiceKitPhone |

@@ -457,7 +457,7 @@ html, body { overflow: auto; height: auto; }
 <div id="toasts"></div>
 <script>
 const __m = {};
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\i18n\\hu.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\i18n\\hu.js"] = (() => {
 /* Hungarian UI strings. Same keys as en.js: tests/i18n.test.js fails on any gap. */
 const hu = {
   'app.brandA': 'VARLER',
@@ -599,6 +599,10 @@ const hu = {
   'confirm.preset.ok': 'Törlés',
   'confirm.hold': 'Tartsd nyomva: {label}',
 
+  'pwa.ready': 'Telepítve, net nélkül is fut',
+  'pwa.update': 'Új verzió érhető el',
+  'pwa.reload': 'Frissítés',
+
   'toast.saved': 'Mentve',
   'toast.exported': 'Exportálva: {file}',
   'toast.erased': 'Minden adat törölve',
@@ -613,7 +617,7 @@ const hu = {
 return { hu };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\i18n\\en.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\i18n\\en.js"] = (() => {
 /* English UI strings. Same keys as hu.js: tests/i18n.test.js fails on any gap. */
 const en = {
   'app.brandA': 'VARLER',
@@ -755,6 +759,10 @@ const en = {
   'confirm.preset.ok': 'Delete',
   'confirm.hold': 'Press and hold: {label}',
 
+  'pwa.ready': 'Installed, runs with no network',
+  'pwa.update': 'A new version is available',
+  'pwa.reload': 'Update',
+
   'toast.saved': 'Saved',
   'toast.exported': 'Exported: {file}',
   'toast.erased': 'All data erased',
@@ -769,10 +777,10 @@ const en = {
 return { en };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\i18n.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\i18n.js"] = (() => {
 /* Every user-facing string goes through t(). Page manifests add their names with addStrings(). */
-const {  hu  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\i18n\\hu.js"];
-const {  en  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\i18n\\en.js"];
+const {  hu  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\i18n\\hu.js"];
+const {  en  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\i18n\\en.js"];
 const LANGS = ['hu', 'en'];
 const DEFAULT_LANG = 'hu';
 const LOCALES = { hu: 'hu-HU', en: 'en-GB' };
@@ -813,7 +821,7 @@ function applyDom(root) {
 return { LANGS, DEFAULT_LANG, LOCALES, getLang, getLocale, dictionaries, setLang, addStrings, t, applyDom };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\ui\\dom.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\ui\\dom.js"] = (() => {
 /* Small DOM helpers. h('div.a.b', { attrs }, children...) */
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -880,9 +888,9 @@ function switchRow(label, hint, checked, onChange) {
 return { h, icon, iconButton, segmented, switchRow };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\format.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\format.js"] = (() => {
 /* Numbers and dates follow the language (decimal comma in Hungarian). Units never change. */
-const {  getLocale  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\i18n.js"];
+const {  getLocale  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\i18n.js"];
 function formatNumber(value, digits) {
   const opts = digits == null ? {} : { minimumFractionDigits: digits, maximumFractionDigits: digits };
   return new Intl.NumberFormat(getLocale(), opts).format(value);
@@ -909,7 +917,7 @@ const formatDateTime = (date) => formatDate(date) + ' ' + formatTime(date);
 return { formatNumber, formatUnit, parseNumber, formatDate, formatTime, formatDateTime };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\events.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\events.js"] = (() => {
 /* The one trace event format. Every source (hooks, managed sessions, a saved file) turns its input
    into these, so the model and the view never know where an event came from.
    { v, t, sid, kind, agent, agentType, tool, target, file, callId, ms, error, usage, text, output } */
@@ -990,7 +998,7 @@ function parseJsonl(text) {
 return { TRACE_V, classify, filePath, fromHook, transcriptOf, usageFromTail, parseJsonl };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\model.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\model.js"] = (() => {
 /* Folds events into a graph. Pure: time comes from the events, so replay and live give one answer. */
 const METRICS = ['calls', 'tokens', 'time', 'errors'];
 const HALF_LIFE = 120000;
@@ -1181,7 +1189,7 @@ function visible(trace, { agent = '', type = '', windowMs = 0 } = {}, now = trac
 return { METRICS, HALF_LIFE, createTrace, heatOf, apply, fold, visible };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\redact.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\redact.js"] = (() => {
 /* Redaction before anything leaves the device (L1, L2, L7): the client becomes "Client-A", the
    address drops to its district, phones and emails go. Pure, so Phase 3 traces can use it too. */
 const PHONE = /(?:\+|\b00)\s?\d[\d\s/().-]{6,}\d|\b06[\s/-]?\d{1,2}[\s/-]?\d{3}[\s/-]?\d{3,4}\b/g;
@@ -1235,10 +1243,10 @@ function redactText(text, { names = [], address, clientLabel = 'Client-A', dropp
 return { coarseAddress, scrubText, redactText };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\privacy.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\privacy.js"] = (() => {
 /* Every event passes here before it is stored or drawn, in the hook and again in the page, which
    also knows the client names from the jobs. */
-const {  scrubText  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\redact.js"];
+const {  scrubText  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\redact.js"];
 const FIELDS = ['text', 'output', 'error', 'file'];
 
 const emptyCounts = () => ({ names: 0, contact: 0, address: 0, secret: 0, path: 0 });
@@ -1261,7 +1269,7 @@ function scrubEvent(ev, names = [], tally = emptyCounts()) {
 return { emptyCounts, scrubEvent };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\sample.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\sample.js"] = (() => {
 /* A made-up session for the empty state and the tests. It holds no real data; the example address,
    phone and key are there so redaction has something to show. */
 const ASK = 'Nézd át a mérési napló határérték-ellenőrzését. Példa Bt., 1134 Budapest, Minta utca 12., +36 30 123 4567';
@@ -1306,7 +1314,7 @@ const SAMPLE_EVENTS = [
 return { SAMPLE_EVENTS };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\sources.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\sources.js"] = (() => {
 /* The one source interface: { id, can: { live, answer, prompt }, start(emit, status), stop() }.
    status() takes off | connecting | on | auth | unavailable. The page never knows more than this. */
 
@@ -1367,7 +1375,89 @@ const replaySource = (events) => ({
 return { hookSource, managedSource, replaySource };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\ring.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\state.js"] = (() => {
+/* What a session is doing right now, folded from its trace events (pure, no I/O):
+     working  the main agent is calling tools or thinking
+     blocked  it waits for you: a permission prompt, a question (AskUserQuestion), a plan to approve, a relay gate
+     waiting  its turn ended but background subagents still run, so it will go on by itself
+     idle     its turn ended and nothing runs: your move
+   Only root events clear `blocked`; a background subagent's calls do not mean you answered.
+   noticeFor() says when a change of state is worth a ping (agent-notify.js decides how and whether it still holds). */
+
+const ASK_TOOLS = new Set(['AskUserQuestion', 'ExitPlanMode']);
+const BLOCKING_NOTICES = new Set(['permission_prompt', 'elicitation_dialog']);
+
+const emptyState = () => ({ state: 'idle', since: 0, turnAt: 0, last: 0, why: '', open: [] });
+
+function step(prev, ev) {
+  const s = { ...prev, open: prev.open.slice(), last: Math.max(prev.last, ev.t || 0) };
+  const root = !ev.agent || ev.agent === 'root';
+  const set = (state, why = '') => {
+    if (s.state !== state) s.since = ev.t || s.since;
+    s.state = state;
+    s.why = why;
+  };
+  switch (ev.kind) {
+    case 'prompt':
+      s.turnAt = ev.t || s.turnAt;
+      set('working');
+      break;
+    case 'call':
+      if (root && ASK_TOOLS.has(ev.tool)) set('blocked', ev.tool === 'ExitPlanMode' ? 'plan' : 'question');
+      else if (root || s.state !== 'blocked') set('working');
+      break;
+    case 'pending':
+      set('blocked', 'approval');
+      break;
+    case 'result':
+    case 'resolved':
+      if (root || s.state !== 'blocked') set('working');
+      break;
+    case 'agent-start':
+      if (ev.agent && !s.open.includes(ev.agent)) s.open.push(ev.agent);
+      if (s.state === 'idle') set('working');
+      break;
+    case 'agent-stop':
+      s.open = s.open.filter((a) => a !== ev.agent);
+      break;
+    case 'notice':
+      if (BLOCKING_NOTICES.has(ev.notice)) set('blocked', ev.notice === 'permission_prompt' ? 'permission' : 'question');
+      break;
+    case 'stop':
+      if (root) set(s.open.length ? 'waiting' : 'idle');
+      break;
+    default:
+      break;
+  }
+  return s;
+}
+
+function sessionState(events, from = emptyState()) {
+  let s = from;
+  for (const ev of events) s = step(s, ev);
+  return s;
+}
+
+/* -> null | { kind: 'blocked', why } | { kind: 'done', ms }   (doneAfterMs: a quick answer does not ring) */
+function noticeFor(before, after, ev, { doneAfterMs = 60000 } = {}) {
+  if (after.state === 'blocked' && before.state !== 'blocked') return { kind: 'blocked', why: after.why };
+  if (ev.kind === 'stop' && after.state === 'idle' && before.state !== 'idle') {
+    const ms = after.turnAt ? (ev.t || 0) - after.turnAt : 0;
+    if (ms >= doneAfterMs) return { kind: 'done', ms };
+  }
+  return null;
+}
+
+/* Is the ping still true when the delay is over? The same episode must still be on: in that state,
+   entered no later than `at` (you answered and it blocked again → that new episode pings by itself). */
+function stillHolds(s, kind, at) {
+  return s.state === (kind === 'done' ? 'idle' : 'blocked') && s.since <= at;
+}
+
+return { ASK_TOOLS, emptyState, step, sessionState, noticeFor, stillHolds };
+})();
+
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\ring.js"] = (() => {
 /* Varler SUI primitives: ticks, sector, callout, reticle, branchTree, radar, vitals.
    Plain data in, SVG or DOM out. Colours are CSS tokens, so both themes work. There is no demo
    data and no fixed label here: the caller passes every string, already translated.
@@ -1620,12 +1710,12 @@ function vitals(container, metrics, { points = 24, format = (v) => String(v) } =
 return { MIN_TARGET, el, pol, ring, ticks, sector, drawLine, callout, reticle, branchTree, radar, vitals };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\view.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\view.js"] = (() => {
 /* Draws the trace graph into one SVG. Nodes keep their place from first use; an edge draws itself
    once, then only its width and brightness change. The page's node list is the equal of tapping here. */
-const {  t  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\i18n.js"];
-const {  callout, drawLine, el, pol, reticle, ring  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\ring.js"];
-const {  heatOf  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\model.js"];
+const {  t  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\i18n.js"];
+const {  callout, drawLine, el, pol, reticle, ring  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\ring.js"];
+const {  heatOf  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\model.js"];
 const SIZE = 800;
 const MID = SIZE / 2;
 const RINGS = { root: 0, agent: 120, skill: 225, mcp: 225, tool: 225, file: 330 };
@@ -1759,18 +1849,19 @@ function createTraceView(host, { onPick }) {
 return { labelOf, createTraceView };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\panel.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\panel.js"] = (() => {
 /* The whole trace screen; the Console page and the standalone build both mount this.
    host: { get(key), set(key, value), names(), storage?, code? } */
-const {  t  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\i18n.js"];
-const {  formatDateTime, formatNumber, formatUnit  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\format.js"];
-const {  h  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\ui\\dom.js"];
-const {  parseJsonl  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\events.js"];
-const {  apply, createTrace, fold, METRICS, visible  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\model.js"];
-const {  emptyCounts, scrubEvent  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\privacy.js"];
-const {  SAMPLE_EVENTS  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\sample.js"];
-const {  hookSource, managedSource  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\sources.js"];
-const {  createTraceView, labelOf  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\view.js"];
+const {  t  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\i18n.js"];
+const {  formatDateTime, formatNumber, formatUnit  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\format.js"];
+const {  h  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\ui\\dom.js"];
+const {  parseJsonl  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\events.js"];
+const {  apply, createTrace, fold, METRICS, visible  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\model.js"];
+const {  emptyCounts, scrubEvent  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\privacy.js"];
+const {  SAMPLE_EVENTS  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\sample.js"];
+const {  hookSource, managedSource  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\sources.js"];
+const {  sessionState  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\state.js"];
+const {  createTraceView, labelOf  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\view.js"];
 const MAX_EVENTS = 20000;
 const DRAW_MS = 250;
 const TICK_MS = 2000;
@@ -1780,6 +1871,9 @@ const WINDOWS = [0, 5, 15, 60];
 const TYPES = ['agent', 'skill', 'mcp', 'tool', 'file'];
 const KEEP = [1, 7, 14, 30];
 const LIST_MAX = 14;
+/* the chip tone of each session state (state.js) */
+const STATE_CHIP = { working: '.on', blocked: '.st-warn', waiting: '', idle: '.st-ok' };
+const stateOf = (s) => sessionState(s.events.slice(0, s.upto)).state;
 
 const field = (label, control) => h('label.field', {}, h('span.k', { text: label }), control);
 const select = (label, options, value, onchange) => field(label, h('select.input', { onchange: (e) => onchange(e.target.value) },
@@ -1919,6 +2013,7 @@ function mountTrace(root, host) {
   const playButton = button(t('trace.play'), () => setPlaying(!S.playing));
   const pauseButton = button(t('trace.pause'), () => setPaused(!S.paused));
   const sessionBox = h('div');
+  const stateLine = h('p', { role: 'status' });
   const agentBox = h('div');
   const listBox = h('div');
   const detailBox = h('div');
@@ -2031,10 +2126,16 @@ function mountTrace(root, host) {
       agentBox.dataset.key = key;
       agentBox.replaceChildren(select(t('trace.filter.agent'), [{ value: '', label: t('trace.all') }, ...agents.map((a) => ({ value: a, label: s.trace.nodes.get(a).label }))], S.agent, (v) => { S.agent = v; drawSoon(); }));
     }
-    const sids = [...S.sessions.keys()];
-    if (sessionBox.dataset.key !== sids.join()) {
-      sessionBox.dataset.key = sids.join();
-      sessionBox.replaceChildren(sids.length > 1 ? select(t('trace.session'), sids.map((v) => ({ value: v, label: v })), S.sid, (v) => { S.sid = v; S.selected = null; drawSoon(); }) : '');
+    const sessions = [...S.sessions.values()].map((x) => ({ value: x.sid, label: `${x.sid} · ${t('trace.state.' + stateOf(x))}` }));
+    const sessionKey = sessions.map((o) => o.label).join();
+    if (sessionBox.dataset.key !== sessionKey) {
+      sessionBox.dataset.key = sessionKey;
+      sessionBox.replaceChildren(sessions.length > 1 ? select(t('trace.session'), sessions, S.sid, (v) => { S.sid = v; S.selected = null; drawSoon(); }) : '');
+    }
+    const st = s ? stateOf(s) : '';
+    if (stateLine.dataset.key !== st) {
+      stateLine.dataset.key = st;
+      stateLine.replaceChildren(...(st ? [h('span.k', { text: t('trace.state') + ' ' }), h('span.chip' + STATE_CHIP[st], { text: t('trace.state.' + st) })] : []));
     }
   }
 
@@ -2070,7 +2171,7 @@ function mountTrace(root, host) {
     }, '.primary'))));
 
   root.append(h('div.wrap', {},
-    h('section.panel', {}, h('div.ph', {}, h('h2', { text: t('trace.title') }), status), h('div.pb', {}, sourceBox, replayBox, fileInput, sessionBox,
+    h('section.panel', {}, h('div.ph', {}, h('h2', { text: t('trace.title') }), status), h('div.pb', {}, sourceBox, replayBox, fileInput, sessionBox, stateLine,
       h('p', {}, h('span.chip.on', { text: t('trace.redaction') })), redacted, h('p.hint', { text: t('trace.redactionHint') }))),
     notice, pendingBox,
     h('section.panel', {}, h('div.pb', {}, graph,
@@ -2107,7 +2208,7 @@ function mountTrace(root, host) {
 return { mountTrace };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\strings.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\strings.js"] = (() => {
 const strings = {
   hu: {
     'trace.title': 'Ügynöknyom', 'trace.root': 'Vezérlő', 'trace.graph': 'A hívások gráfja', 'trace.waits': 'Válaszra vár',
@@ -2126,6 +2227,7 @@ const strings = {
     'trace.pending': 'Jóváhagyásra vár', 'trace.approve': 'Jóváhagyás', 'trace.deny': 'Elutasítás', 'trace.answer': 'Válasz (nem kötelező)', 'trace.answerHint': 'A beállításaid tiltó szabályai így is érvényesek. Ha nem válaszolsz, a munkamenet a saját engedélykérésére vált.',
     'trace.prompt': 'Üzenet a munkamenetnek', 'trace.send': 'Küldés', 'trace.sent': 'Sorba állítva. A munkamenet a következő megállásakor kapja meg.', 'trace.sendFailed': 'Nem sikerült elküldeni.',
     'trace.notice': 'A munkamenet a terminálban vár rád: {text}',
+    'trace.state': 'Állapot', 'trace.state.working': 'dolgozik', 'trace.state.blocked': 'rád vár', 'trace.state.waiting': 'háttérben fut', 'trace.state.idle': 'kész, te jössz',
     'trace.redaction': 'Kitakarás bekapcsolva', 'trace.redacted': 'Kitakarva: {names} név, {contact} elérhetőség, {address} cím, {secret} titok, {path} mappa', 'trace.redactionHint': 'A nyom már kitakartan kerül mentésre és kirajzolásra, az eredeti szöveg sehol sem marad meg a programban.',
     'trace.retention': 'Megőrzés', 'trace.days': '{n} nap', 'trace.language': 'Nyelv', 'trace.lang.hu': 'Magyar', 'trace.lang.en': 'English',
   },
@@ -2146,6 +2248,7 @@ const strings = {
     'trace.pending': 'Waiting for approval', 'trace.approve': 'Approve', 'trace.deny': 'Deny', 'trace.answer': 'Answer (optional)', 'trace.answerHint': 'Your settings\' deny rules still apply. With no answer the session falls back to its own permission prompt.',
     'trace.prompt': 'Message to the session', 'trace.send': 'Send', 'trace.sent': 'Queued. The session gets it the next time it stops.', 'trace.sendFailed': 'Could not send.',
     'trace.notice': 'The session is waiting for you in the terminal: {text}',
+    'trace.state': 'State', 'trace.state.working': 'working', 'trace.state.blocked': 'needs you', 'trace.state.waiting': 'running in the background', 'trace.state.idle': 'done, your move',
     'trace.redaction': 'Redaction on', 'trace.redacted': 'Redacted: {names} names, {contact} contacts, {address} addresses, {secret} secrets, {path} folders', 'trace.redactionHint': 'Traces are redacted before they are stored or drawn; the original text stays nowhere in the app.',
     'trace.retention': 'Keep for', 'trace.days': '{n} days', 'trace.language': 'Language', 'trace.lang.hu': 'Magyar', 'trace.lang.en': 'English',
   },
@@ -2154,13 +2257,13 @@ const strings = {
 return { strings };
 })();
 
-__m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\standalone.js"] = (() => {
+__m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\standalone.js"] = (() => {
 /* Entry of the single-file trace page (dist/vrg-trace.html). It has no database: live sessions stay in
    the relay's traces folder. Served by the relay, it is paired already. */
-const {  addStrings, setLang, t, getLang, LANGS  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\core\\i18n.js"];
-const {  h  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\ui\\dom.js"];
-const {  mountTrace  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\panel.js"];
-const {  strings  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\strings.js"];
+const {  addStrings, setLang, t, getLang, LANGS  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\core\\i18n.js"];
+const {  h  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\ui\\dom.js"];
+const {  mountTrace  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\panel.js"];
+const {  strings  } = __m["H:\\VRG\\Full\\Planner_VRG_U100\\.claude\\worktrees\\starred-repos-vrg-integration-95735d\\Console\\www\\js\\trace\\strings.js"];
 addStrings(strings);
 const KEY = 'vc.trace.';
 const read = (key) => {
