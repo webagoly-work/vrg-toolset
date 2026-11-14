@@ -90,6 +90,10 @@ const Fly = {
     $('fl-heal').onclick = () => { st.lesion.clear(); this.recolor(); UI.toast('Minden lézió törölve.'); };
     this.legend(); this.select(st.sel);
   },
+  peek() {
+    const st = this.st, on = STIM.filter(s => st.stim.has(s[0])).map(s => s[1]).join(', ') || 'nincs inger', n = Math.round(st.hist[st.hist.length - 1] || 0);
+    return { text: `<b>${esc(on)}</b><br>${fmt(n)} aktív neuron`, acts: [[st.stim.has('olf') ? 'Szag ki' : 'Szag', () => { const b = document.querySelector('#fl-stim [data-k=olf]'); if (b) b.click(); }], [st.run ? 'Szünet' : 'Indítás', () => clk('fl-run'), true]] };
+  },
   legend() {
     const F = FLYD, m = this.st.col; let html = '';
     if (m === 'sc') { const cnt = {}; F.sc.forEach((s, g) => cnt[s] = (cnt[s] || 0) + F.size[g]); html = legend(F.SC.map((s, i) => [SC_COL[i], SC_HU[s] || s, fmt(cnt[i] || 0)])); }

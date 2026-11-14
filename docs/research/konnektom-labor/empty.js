@@ -240,6 +240,10 @@ const Empty = {
     $('em-wipe').onclick = () => { const b = $('em-wipe'); if (Date.now() - st.confirm > 3000) { st.confirm = Date.now(); b.textContent = 'Biztos? Koppints még egyszer'; setTimeout(() => b.textContent = 'Minden emlék törlése', 3000); return; } for (const m of [...this.mems]) this.forget(m); this.save(); this.recolor(); this.drawPaths(); this.list(); b.textContent = 'Minden emlék törlése'; UI.toast('A háló újra üres.'); };
     this.legend(); this.list();
   },
+  peek() {
+    const used = this.own.reduce((s, v) => s + (v ? 1 : 0), 0);
+    return { text: `<b>${this.mems.length} emlék</b> · ${fmt(used)} / ${fmt(NSLOT)} rés foglalt`, acts: [['Új emlék', () => { Sheet.snap('half'); setTimeout(() => { const t = $('em-in'); if (t) t.focus(); }, 260); }, true]] };
+  },
   legend() {
     const m = this.st.col, el = $('em-lg'); if (!el) return;
     if (m === 'reg' || m === 'mem') { const cnt = HKEYS.map(() => [0, 0]); for (let i = 0; i < NSLOT; i++) { cnt[this.sreg[i]][0]++; if (this.own[i]) cnt[this.sreg[i]][1]++; } el.innerHTML = `<ul class="regs">${HKEYS.map((k, i) => `<li title="${esc(HREG[k].fly)}"><i style="background:${HREG[k].col}"></i><b>${esc(HREG[k].hu)}</b><em>${cnt[i][1]} / ${fmt(cnt[i][0])}</em><small>← ${esc(HREG[k].fly)}</small></li>`).join('')}</ul>`; }

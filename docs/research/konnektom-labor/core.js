@@ -91,10 +91,11 @@ const R = (() => {
   const cam = { yaw: 0, pitch: 0.1, dist: 3, tgt: [0, 0, 0], fov: 0.8, auto: 0, M: null, W: 1, H: 1, eye: [0, 0, 3] };
   const camTo = { on: false };
   function resize() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+    const dpr = Math.min(document.body.classList.contains('phone') ? 1.5 : 2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); ov.width = cv.width; ov.height = cv.height; cam.W = w; cam.H = h; cam.dpr = dpr;
-    const side = document.getElementById('side'), narrow = w <= 760, folded = document.body.classList.contains('folded');
-    cam.offX = side && !narrow ? side.offsetWidth + 16 : 0; cam.offY = side && narrow && !folded ? side.offsetHeight + 16 : 0;
+    const side = document.getElementById('side'), phone = document.body.classList.contains('phone');
+    if (phone) { const sh = side ? side.offsetHeight : 0, tab = document.getElementById('tabs').offsetHeight; cam.offX = 0; cam.offY = sh + tab - 52; }
+    else { cam.offX = side ? side.offsetWidth + 16 : 0; cam.offY = 0; }
   }
   function matrix() {
     const { yaw, pitch, dist, tgt } = cam, cp = Math.cos(pitch);
@@ -131,7 +132,7 @@ const R = (() => {
         gl.drawArrays(gl.LINES, 0, s.n);
         gl.disableVertexAttribArray(L.loc.c);
       } else {
-        gl.useProgram(P); gl.uniformMatrix4fv(P.u.M, false, cam.M); gl.uniform1f(P.u.PX, cam.dpr * cam.H / 520 * (view.px || 1)); gl.uniform3fv(P.u.H, s.hot); gl.uniform1f(P.u.B, s.base); gl.uniform1f(P.u.K, s.k); gl.uniform1f(P.u.T, t); gl.uniform1f(P.u.W, s.wob);
+        gl.useProgram(P); gl.uniformMatrix4fv(P.u.M, false, cam.M); gl.uniform1f(P.u.PX, cam.dpr * Math.min(cam.H, cam.W * 1.25) / 520 * (view.px || 1) * (cam.pxMul || 1)); gl.uniform3fv(P.u.H, s.hot); gl.uniform1f(P.u.B, s.base); gl.uniform1f(P.u.K, s.k); gl.uniform1f(P.u.T, t); gl.uniform1f(P.u.W, s.wob);
         const at = (b, l, n) => { gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, n, gl.FLOAT, false, 0, 0); };
         at(s.b.p, P.loc.p, 3); at(s.b.c, P.loc.c, 3); at(s.b.s, P.loc.s, 1); at(s.b.a, P.loc.a, 1);
         gl.drawArrays(gl.POINTS, 0, s.count);
@@ -219,3 +220,5 @@ function label(c, text, p, col) {
   c.beginPath(); c.arc(x, y, 1.6, 0, 7); c.fill(); c.strokeText(text, x + 6, y - 5); c.fillText(text, x + 6, y - 5); c.restore();
 }
 const MONO = '"IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace';
+
+const clk = id => { const b = $(id); if (b) b.click(); };

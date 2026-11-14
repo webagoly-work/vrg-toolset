@@ -110,6 +110,10 @@ const Holo = {
     $('ho-ls').addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (!li) return; const i = +li.dataset.i; this.isolate(st.iso === i ? -1 : i); });
     this.hint();
   },
+  peek() {
+    const f = FORMS.find(x => x[0] === this.st.form);
+    return { text: `<b>${esc(f[1])}</b> · ${this.lines.length} vonal${this.st.lockTo ? ' · Őrség zárva' : ''}`, acts: [['Alak ›', () => this.onKey('g'), true], [this.st.lockTo ? 'Nyit' : 'Zár', () => this.onKey('l')]] };
+  },
   hint() {
     const h = { polip: 'Fordított polip: az origó a talp közepe, minden vonal egy kar, a legújabb commit a csúcson. A döntések a tapadókorongok.', orb: 'Holo-gömb: minden vonal egy gyűrű a saját síkjában, körülötte passzív porhalo.', earth: 'Hologram-Föld: minden vonal egy ország a fővárosa körül, a fájljai a szárazföldjén. A kötegek ívek a fővárosok között.', core: 'Mag: lélegző részecskehéj, benne az agy (brain.js), a commitok egy belső héjon, az aktív vonalak útja a felszíni belépési pontjukig.' };
     const el = $('ho-h'); if (el) el.textContent = h[this.st.form];

@@ -87,6 +87,10 @@ const Layers = {
     $('la-iso').onclick = () => Object.assign(R.cam, { yaw: Math.PI / 4, pitch: 0.5, dist: 6.4, tgt: [0, 0, 0] });
     $('la-top').onclick = () => Object.assign(R.cam, { yaw: 0, pitch: 1.5, dist: 3.4, tgt: [0, 0, 0] });
   },
+  peek() {
+    const i = this.st.sel, n = i >= 0 ? STKB.nodes[i] : null;
+    return { text: n ? `<b>${esc(n.L)}</b> ${esc(n.title)}` : 'Koppints egy pontra: a kötői és a pillére látszik.', acts: [['Izo', () => clk('la-iso')], ['Felül', () => clk('la-top')]] };
+  },
   enterRefresh() { document.querySelectorAll('#la-pl li').forEach(li => { const L = li.dataset.l; li.classList.toggle('off', this.st.hide.has(L)); li.classList.toggle('on', this.st.solo === L); li.querySelector('[data-a=hide]').textContent = this.st.hide.has(L) ? 'mutat' : 'rejt'; }); },
   frame() { },
   hover(x, y) { const i = R.pickPoints(this.pts, x, y, 9, i => this.pts.size[i] > 0); if (i < 0) return UI.showTip(0, 0, ''); const n = STKB.nodes[i]; UI.showTip(x, y, `<b>${esc(n.title)}</b><br>${n.L} · ${esc(LAYER[n.L].hu)}`); },

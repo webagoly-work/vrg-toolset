@@ -88,6 +88,10 @@ const Mine = {
     UI.bind('mi-sp', v => st.speed = v);
     this.fire(st.ci); if (st.q) this.search(st.q);
   },
+  peek() {
+    const c = STKB.commits[this.st.ci];
+    return { text: `<b>${esc(c[0])}</b> ${esc(c[2])}`, acts: [['‹', () => clk('mi-prev')], ['›', () => clk('mi-next')], [this.st.play ? 'Szünet' : 'Lejátszás', () => clk('mi-play'), true]] };
+  },
   search(q) {
     this.st.q = q; this.mark.fill(0); q = q.trim().toLowerCase(); if (q.length < 2) return;
     const K = STKB; let hits = 0, c = [0, 0, 0];

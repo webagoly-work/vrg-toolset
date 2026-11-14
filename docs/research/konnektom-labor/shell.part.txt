@@ -12,6 +12,7 @@
   --text: #e8f0f6; --dim: #c2cbd2; --faint: #93a0a9; --acc: #93d3e6; --acc-soft: rgba(147, 211, 230, .14); --warm: #e8a873; --ok: #8bcca1; --crit: #e4877d;
   --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace; --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --voice: "Saira Condensed", Bahnschrift, "Arial Narrow", sans-serif;
   --cut: 7px; color-scheme: dark;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -60,8 +61,10 @@ header > * { pointer-events: auto; }
 #panel h2 { font: 700 24px/1.05 var(--voice); letter-spacing: .03em; text-transform: uppercase; margin: 0 0 6px; text-wrap: balance; }
 #panel h2 small { display: block; font: 500 12px var(--mono); letter-spacing: 0; text-transform: none; color: var(--acc); margin-top: 4px; }
 .lead { color: var(--dim); margin: 0 0 12px; font-size: 13.5px; }
-.grp { border-top: 1px solid var(--line); padding: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
-.grp h3 { margin: 0; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.grp { border-top: 1px solid var(--line); padding: var(--s3) 0 var(--s2); display: flex; flex-direction: column; gap: var(--s2); }
+.grp + .grp { margin-top: var(--s1); }
+.grp h3 { margin: 0; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--acc); display: flex; gap: var(--s2); align-items: center; }
+.grp h3::before { content: ""; width: 6px; height: 6px; background: var(--acc); flex: none; clip-path: polygon(0 0, 100% 0, 100% 100%); }
 .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chips button.on { background: var(--acc-soft); border-color: var(--acc); color: var(--text); }
@@ -125,30 +128,77 @@ ul.mems li.on { border-color: var(--acc); background: var(--acc-soft); }
 #tip b { color: var(--text); font-weight: 600; }
 #toast { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 70px); background: var(--solid); border: 1px solid var(--acc); padding: 7px 12px; font: 12.5px var(--mono); max-width: calc(100% - 32px); }
 #load { position: fixed; z-index: 6; inset: 0; display: grid; place-items: center; background: rgba(10, 20, 28, .55); pointer-events: none; }
-#load div { font: 600 20px var(--voice); letter-spacing: .08em; text-transform: uppercase; color: var(--acc); padding: 14px 20px; border: 1px solid var(--line2); background: var(--panel); max-width: calc(100% - 32px); text-align: center; }
-@media (max-width: 760px) {
-  .brand { font-size: 18px; }
-  .tools { margin-left: 0; }
-  #tabs button { padding: 7px 8px; font-size: 13px; } #tabs button i { display: none; }
-  #side { top: auto; left: max(16px, env(safe-area-inset-left, 0px)); width: auto; height: 46%; }
-  #fold { display: inline-block; }
-  body.folded #panel { display: none; } body.folded #side { height: auto; }
-  #info { bottom: calc(46% + env(safe-area-inset-bottom, 0px) + 24px); max-height: 30%; }
-  body.folded #info { bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); }
-}
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+#load > div { font: 600 20px var(--voice); letter-spacing: .08em; text-transform: uppercase; color: var(--acc); padding: 14px 20px; border: 1px solid var(--line2); background: var(--panel); max-width: calc(100% - 32px); text-align: center; }
+/* ---- shared polish: spacing scale, view title, peek row, handle, loader bar */
+#vt { display: none; }
+#grab, #peek { display: none; }
+.peek { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.peek .pt { flex: 1 1 auto; min-width: 0; font: 12.5px/1.35 var(--mono); color: var(--dim); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.peek .pt b { color: var(--text); font-weight: 500; }
+.peek .pa { display: flex; gap: 4px; flex: none; }
+#load .bar { width: 160px; height: 2px; margin: 12px auto 0; background: var(--line); position: relative; overflow: hidden; }
+#load .bar::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; background: var(--acc); animation: slide 1.1s ease-in-out infinite; }
+@keyframes slide { 0% { left: -40%; } 100% { left: 100%; } }
+.ic { width: 20px; height: 20px; display: block; flex: none; }
+#tabs .ic, .tools .ic { display: none; }
+#tabs .ls { display: none; }
+/* ---- phone: compact bar on top, tab bar at the bottom, the panel as a bottom sheet */
+body.phone { --tabh: 58px; --toph: 50px; }
+body.phone header { margin-top: 6px; gap: var(--s2); flex-wrap: nowrap; }
+body.phone .brand { font-size: 17px; }
+body.phone .brand span { display: none; }
+body.phone #vt { display: block; flex: 1 1 auto; min-width: 0; font: 600 17px/1 var(--voice); letter-spacing: .04em; text-transform: uppercase; color: var(--acc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.phone .tools { margin-left: 0; }
+body.phone .tools button { min-width: 44px; min-height: 40px; padding: 0 10px; display: grid; place-items: center; }
+body.phone .tools button .tl { display: none; }
+body.phone .tools .ic { display: block; }
+body.phone #tabs { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); clip-path: none; border: 0; border-top: 1px solid var(--line2); background: var(--solid);
+  padding: 0 max(8px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(8px, env(safe-area-inset-left, 0px)); }
+body.phone #tabs button { min-height: var(--tabh); border: 0; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: 600 11.5px/1 var(--voice); letter-spacing: .03em; color: var(--faint); background: transparent; position: relative; }
+body.phone #tabs button i { display: none; }
+body.phone #tabs .ic { display: block; }
+body.phone #tabs button .lf { display: none; } body.phone #tabs button .ls { display: inline; }
+body.phone #tabs button.on { color: var(--acc); background: transparent; }
+body.phone #tabs button.on::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--acc); }
+body.phone #side { top: auto; left: 0; right: 0; width: auto; bottom: calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); height: var(--sheet, 92px); gap: 0;
+  background: var(--panel); border-top: 1px solid var(--line2); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); transition: height .22s ease; }
+body.phone #side.drag { transition: none; }
+body.phone #fold { display: none; }
+body.phone #grab { display: block; width: 100%; height: 22px; border: 0; background: transparent; padding: 0; cursor: grab; touch-action: none; position: relative; flex: none; }
+body.phone #grab::after { content: ""; position: absolute; left: 50%; top: 8px; width: 44px; height: 4px; margin-left: -22px; background: var(--line2); }
+body.phone #peek { display: flex; flex: none; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); min-height: 62px; border-bottom: 1px solid var(--line); }
+body.phone #peek button { min-height: 44px; min-width: 44px; }
+body.phone #panel { background: transparent; border: 0; clip-path: none; backdrop-filter: none; -webkit-backdrop-filter: none; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+body.phone #panel h2 { font-size: 21px; }
+body.phone button { min-height: 40px; }
+body.phone .chips button, body.phone .row button, body.phone .acts button { min-height: 44px; padding: 0 12px; }
+body.phone ul.planes li button { min-height: 36px; }
+body.phone input[type=range] { height: 32px; }
+body.phone input[type=range]::-webkit-slider-thumb { width: 24px; height: 24px; }
+body.phone input[type=range]::-moz-range-thumb { width: 24px; height: 24px; }
+body.phone .tg { min-height: 40px; }
+body.phone .tg input { width: 20px; height: 20px; }
+body.phone input[type=search], body.phone textarea { font-size: 16px; }
+body.phone ul.lines li, body.phone .lgx button { min-height: 40px; }
+body.phone #info { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: auto; max-height: 34vh;
+  bottom: calc(var(--sheet, 92px) + var(--tabh) + env(safe-area-inset-bottom, 0px) + 8px); }
+body.phone #info .x { min-width: 44px; min-height: 44px; top: 0; right: 0; }
+body.phone #toast { top: calc(env(safe-area-inset-top, 0px) + 58px); }
+body.phone #tip { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } #load .bar::after { animation: none; left: 30%; } }
 </style>
 <canvas id="gl" aria-label="3D nézet: húzd a forgatáshoz, görgess a nagyításhoz, koppints egy pontra"></canvas>
 <canvas id="ov" aria-hidden="true"></canvas>
 <header>
   <div class="brand">Konnektóm<span>-labor</span></div>
+  <div id="vt" aria-live="polite"></div>
   <nav id="tabs" role="tablist" aria-label="Nézetek">
-    <button type="button" role="tab" data-k="fly"><i>1</i>Muslica</button><button type="button" role="tab" data-k="mine"><i>2</i>Saját konnektóm</button><button type="button" role="tab" data-k="holo"><i>3</i>Holo</button><button type="button" role="tab" data-k="layers"><i>4</i>Rétegverem</button><button type="button" role="tab" data-k="empty"><i>5</i>Üres háló</button>
+    <button type="button" role="tab" data-k="fly"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="13.5" rx="3.2" ry="6"/><path d="M12 7.5V5M9.2 10 3.5 7.2c-.6 2.8.8 5 5.7 5.4M14.8 10l5.7-2.8c.6 2.8-.8 5-5.7 5.4M9 16l-3.5 3M15 16l3.5 3"/></svg><i>1</i><span class="lf">Muslica</span><span class="ls">Muslica</span></button><button type="button" role="tab" data-k="mine"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5c-1.8-1.6-5.5-1-6.3 1.8C3.3 7.6 3 11 5 12.5 4 15 6 18 9 17.5c.8 1.6 2.2 1.8 3 1.2V5Z"/><path d="M12 5c1.8-1.6 5.5-1 6.3 1.8 2.4.8 2.7 4.2.7 5.7 1 2.5-1 5.5-4 5 -.8 1.6-2.2 1.8-3 1.2"/><path d="M12 9h-2.5M12 13h3"/></svg><i>2</i><span class="lf">Saját konnektóm</span><span class="ls">Saját</span></button><button type="button" role="tab" data-k="holo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="5.5"/><ellipse cx="12" cy="12" rx="10" ry="3.6" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><i>3</i><span class="lf">Holo</span><span class="ls">Holo</span></button><button type="button" role="tab" data-k="layers"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m12 4 9 4.5-9 4.5-9-4.5Z"/><path d="m3 12.5 9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></svg><i>4</i><span class="lf">Rétegverem</span><span class="ls">Rétegek</span></button><button type="button" role="tab" data-k="empty"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="5" cy="7" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="19" cy="17" r="2"/><path d="m6.8 8 3.6 3.6M16.3 6.2l-3.2 5.1M10.6 14.5 7.4 17.6M13.8 13.8l3.5 2.4"/></svg><i>5</i><span class="lf">Üres háló</span><span class="ls">Háló</span></button>
   </nav>
-  <div class="tools"><button type="button" id="lab" aria-pressed="true" title="Feliratok (T)">Feliratok</button><button type="button" id="rot" aria-pressed="true" title="Forgás (R)">Forgás</button></div>
+  <div class="tools"><button type="button" id="lab" aria-pressed="true" title="Feliratok (T)" aria-label="Feliratok"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span class="tl">Feliratok</span></button><button type="button" id="rot" aria-pressed="true" title="Forgás (R)" aria-label="Forgás"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><span class="tl">Forgás</span></button></div>
 </header>
-<aside id="side"><button type="button" id="fold" aria-expanded="true" aria-controls="panel">Elrejt</button><section id="panel"></section></aside>
+<aside id="side"><button type="button" id="fold" aria-expanded="true" aria-controls="panel">Elrejt</button><button type="button" id="grab" aria-label="Vezérlőpanel: húzd vagy koppints a méretezéshez"></button><div id="peek" class="peek"></div><section id="panel"></section></aside>
 <section id="info" hidden></section>
 <div id="tip" hidden></div>
 <div id="toast" role="status" hidden></div>
-<div id="load"><div id="load-t">Konnektóm-labor töltődik…</div></div>
+<div id="load"><div><span id="load-t">Konnektóm-labor töltődik…</span><div class="bar"></div></div></div>
