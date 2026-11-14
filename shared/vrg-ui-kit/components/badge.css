@@ -6,6 +6,9 @@
    data-state  lifecycle: inuse (telt négyzet) · built (telt kör) · dev (félig telt kör) · planned (szaggatott gyűrű)
                           · idea (pontozott gyűrű)
                run state: active (pont + gyűrű, lüktet) · waiting (homokóra) · parked (két sáv) · ended (áthúzott gyűrű)
+               v1.1 stage:  beta (átlósan félig telt négyzet) · retire (áthúzott négyzet keret); live = inuse
+               v1.1 line:   recurring (nyílfejes gyűrű) · overruled (gyűrű X-szel) · absorbed (nyíl a gyűrűbe)
+                            · personal (kis üres pont)
    data-variant  outline (default) · solid · dot (glyph + text, no frame)
    data-size     sm · md (default) · lg
    The glyph is CSS (::before), so the markup is just text. Under reduced motion the "aktív" pulse is a still halo.
@@ -38,6 +41,14 @@
 .vk-badge[data-state="parked"]  { --_c: var(--vk-st-parked); }
 .vk-badge[data-state="ended"]   { --_c: var(--vk-st-ended); }
 .vk-badge[data-state="ended"]:not([data-variant="solid"]) { color: var(--vk-text-muted); }
+/* v1.1: catalog stages (live → inuse) and the extra line states */
+.vk-badge[data-state="beta"]      { --_c: var(--vk-st-beta); }
+.vk-badge[data-state="retire"]    { --_c: var(--vk-st-retire); }
+.vk-badge[data-state="recurring"] { --_c: var(--vk-st-recurring); }
+.vk-badge[data-state="overruled"] { --_c: var(--vk-st-overruled); }
+.vk-badge[data-state="absorbed"]  { --_c: var(--vk-st-absorbed); }
+.vk-badge[data-state="personal"]  { --_c: var(--vk-st-personal); }
+.vk-badge:is([data-state="retire"], [data-state="overruled"], [data-state="absorbed"]):not([data-variant="solid"]) { color: var(--vk-text-muted); }
 
 /* glyphs (12×12 masks, own drawing) */
 .vk-badge { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.4'/%3E%3C/svg%3E"); }
@@ -50,6 +61,14 @@
 .vk-badge[data-state="waiting"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.4 1.5h7.2v.9L6.9 6l2.7 3.6v.9H2.4v-.9L5.1 6 2.4 2.4z'/%3E%3C/svg%3E"); }
 .vk-badge[data-state="parked"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.4' y='2' width='2.6' height='8' rx='.5'/%3E%3Crect x='7' y='2' width='2.6' height='8' rx='.5'/%3E%3C/svg%3E"); }
 .vk-badge[data-state="ended"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4' fill='none' stroke='black' stroke-width='1.4'/%3E%3Cpath d='M1.8 10.2 10.2 1.8' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+/* v1.1 glyphs — beta: square split on the diagonal (half way to inuse) · retire: square frame, struck through ·
+   recurring: open ring with an arrow head · overruled: ring with an X · absorbed: arrow into a ring · personal: small hollow dot */
+.vk-badge[data-state="beta"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.6' y='2.6' width='6.8' height='6.8' rx='.6' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M2 10V2h8z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="retire"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.6' y='2.6' width='6.8' height='6.8' rx='.6' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M1.6 10.4 10.4 1.6' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="recurring"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M9.6 4.2A4 4 0 1 0 10 7' fill='none' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M10.8 1.6v3.8H7z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="overruled"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M4 4l4 4M8 4 4 8' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="absorbed"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='7.6' cy='6' r='3.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M.8 6h5.6' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M5 3.6 7.6 6 5 8.4z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="personal"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.6' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
 
 /* "aktív": a ring breathes out of the dot (the system is working). Still halo under reduced motion. */
 .vk-badge[data-state="active"]::after { content: ""; position: absolute; top: 50%; left: .45em; width: var(--_g); height: var(--_g);

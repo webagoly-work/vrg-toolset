@@ -1,12 +1,17 @@
-# VRG UI Kit v1 — "Mérőpult"
+# VRG UI Kit v1.1 — "Mérőpult"
 
-A modular, offline, token-driven front-end kit for the VRG toolset: 55 components across ten surface
+v1.1 (2026-11-14) adds family 11 *Jelölések* (marks): the stage, line-state, lamp, level, step, monogram,
+quiet and count indicators the apps had drawn on their own, plus a "one glyph, one meaning" table that maps
+each old glyph to its kit mark.
+
+A modular, offline, token-driven front-end kit for the VRG toolset: 56 components across eleven surface
 families, four themes, three densities, one action registry, one icon sprite, and vendored fonts. It is plain
 CSS plus vanilla JS. There is no framework, no CDN and no build step for consumers, and it works from `file://`.
 An app inlines only what it needs into its single HTML file.
 
 - **Gallery:** `gallery.html` — every component, every state, with theme and density switches and Hungarian
-  labels. Open it straight from disk. Published copy (private to the owner): <https://claude.ai/artifact/JQ1MF3TBCaobEZXzyS27LP>.
+  labels. Open it straight from disk. Published copy (private to the owner): <https://claude.ai/artifact/3gEDamMQg9CXyE4C5KWYhh>
+  (v1.1; the v1 copy was <https://claude.ai/artifact/JQ1MF3TBCaobEZXzyS27LP>).
 - **Contract for builders:** `CONVENTIONS.md`.
 - **Checks:** `node test/lint.js` (no literal colours, known tokens only) and
   `NODE_PATH=$(npm root -g) node test/verify.js` (contrast, offline, keyboard, 320×240, bundle).
@@ -373,6 +378,7 @@ Families: 1 Shell / workspace · 2 Command layer · 3 Graph and topology · 4 Ti
 | `emblem` | 10 | emblem.css emblem.js | base, core | Program large logo: kicker, condensed name, sprite glyph, date and readout above a seeded isometric diorama on a plinth (planner/mindmap/inventory/calculator/city/hub); day phase on light grounds, night with warm lit windows on dark; hero/tile/mini sizes. | VK.emblem.render(el, {kind, name, kicker, glyph, date, readout, seed, size:"hero"/"tile"/"mini", activity, level}) → {update(patch), destroy()}; VK.emblem.kinds |
 | `citymap` | 10 | citymap.css citymap.js | base, core, focus, actions, mini | Generative city map on canvas from a seed or data rows [{name,size,heat,group}]: figure-ground, transit (octilinear pipelines, ring hubs, moving jobs) and iso styles; organic commit-by-commit buildup with a play/pause MINI; keyboard pan/zoom/play/reseed; registry actions citymap.*. | VK.citymap.mount(el, {style:"figure"/"transit"/"iso", seed, data, grow, commits, label}) → {setStyle, reseed, play, pause, toggle, step, zoom, pan, fit, setData, state, destroy} |
 | `micro` | 10 | micro.css micro.js | base, core | Micrographics: corner-bracket frame, tick ruler, crosshair, dot matrix, segmented meter (role=meter), coded chips, hex badge, callout card with leader line, beacon light columns. | CSS .vk-micro-frame/-ruler/-cross/-dots/-meter/-chip/-hex/-callout/-beacon; VK.micro.ruler(el,o), dots(el,o), meter(el,v,o), chip(parts,o), callout(host,{target,title,rows,side}) → {update,setTarget,destroy}, beacon(host,{x,y,h}) |
+| `mark` | 11 | mark.css mark.js | base, core | v1.1 marks, the small indicators apps used to draw themselves: health lamp (ok circle, warn triangle, crit square, off ring, run pulsing dot), level edge (`data-vk-level` dev = dashed, all = dotted) and level chip, job step pips, two-letter monogram (warm running bar, ghost), quiet age (7/21-day tones), count. Badge gained the catalog stages (teszt, kivezetve; éles = használatban) and the dev-line states (visszatérő, felülbírálva, beolvadt, személyes). | CSS .vk-lamp[data-tone], [data-vk-level], .vk-lvl, .vk-pips > i[data-s], .vk-mono[data-running/data-ghost], .vk-quiet, .vk-count; VK.mark.lamp(tone, text, o), steps(n, cur, names, o), mono(text, o), quiet(days, o), count(n, o); VK.badge.stage(status, o) |
 | `textures` | 10 | textures.css | base | Texture pack from token colours (gradients only, background-color untouched): hatch, crosshatch, dots, grid, blueprint, windows (warm lit), water, road-glow, sand. | CSS .vk-tex-hatch/crosshatch/dots/grid/blueprint/windows/water/road-glow/sand; knobs --vk-tex-ink, --vk-tex-gap, --vk-tex-warm |
 <!-- index:end -->
 

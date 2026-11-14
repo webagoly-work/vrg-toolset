@@ -102,6 +102,19 @@
   --vk-st-waiting: var(--vk-warn);
   --vk-st-parked: var(--vk-text-muted);
   --vk-st-ended: var(--vk-text-muted);
+  /* v1.1 — catalog stages (live = inuse, beta, retire) and the extra dev-line states */
+  --vk-st-beta: var(--vk-warn);
+  --vk-st-retire: var(--vk-text-muted);
+  --vk-st-recurring: var(--vk-info);
+  --vk-st-overruled: var(--vk-text-muted);
+  --vk-st-absorbed: var(--vk-text-muted);
+  --vk-st-personal: var(--vk-idea);
+  /* v1.1 — lamps (health, one shape per tone) and marks */
+  --vk-lamp-ok: var(--vk-ok);
+  --vk-lamp-warn: var(--vk-warn);
+  --vk-lamp-crit: var(--vk-crit);
+  --vk-lamp-off: var(--vk-text-muted);
+  --vk-lamp-run: var(--vk-activity);
   /* signals: ellentmondás / hiány / fagyott */
   --vk-sig-contradiction: var(--vk-crit);
   --vk-sig-gap: var(--vk-warn);

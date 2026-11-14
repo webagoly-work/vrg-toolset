@@ -4,6 +4,44 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "vrg-overhaul-plan",
+   "title": "VRG Overhaul Plan",
+   "created": "2026-11-14",
+   "updated": "2026-11-14",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "study",
+   "summary": "UX analysis of the VRG Desktop and toolset: 11 findings with file:line evidence, screenshots, the symbol clashes, a target model, a part-by-part fate table, roadmap P0-P6, a professional checklist and seven decisions.",
+   "purpose": "Plan the UI/UX overhaul that turns the toolset into one professional program.",
+   "context": [
+    "the exe build failed because a running instance locked it and START ran from the stale wt-desktop-unify checkout",
+    "asked for a deep UX analysis and an outline to bring every part to a professional level"
+   ],
+   "tags": [],
+   "file": "files/vrg-overhaul-plan.html",
+   "url": "https://claude.ai/artifact/WjYW7CdCXVxNFtAczp1cpo"
+  },
+  {
+   "id": "vrg-ui-kit-v1-1",
+   "title": "VRG UI Kit v1.1",
+   "created": "2026-11-14",
+   "updated": "2026-11-14",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "design",
+   "summary": "The VRG UI Kit gallery, every component and state in four themes, with the new family 11 Jelolesek: stages, line states, lamps, levels, step pips, monograms, quiet ages, counts and a one-glyph-one-meaning table.",
+   "purpose": "Show the kit with the symbols and indicators the apps had drawn on their own.",
+   "context": [
+    "apps had added their own symbols since kit v1 (2026-11-04)",
+    "the same meaning was drawn several ways and the same glyph meant different things"
+   ],
+   "tags": [],
+   "file": "files/vrg-ui-kit-v1-1.html",
+   "url": "https://claude.ai/artifact/3gEDamMQg9CXyE4C5KWYhh"
+  },
+  {
    "id": "felszin-gephaz",
    "title": "Felszín és gépház",
    "created": "2026-11-11",

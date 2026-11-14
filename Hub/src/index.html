@@ -11,7 +11,7 @@
      The begin marker records the components; Hub/test/spec-15-kit.js fails when this region drifts from the kit. -->
 <!-- vk:begin base button mini badge toast field kbd palette emblem --icons +home,command,lock,external,folder,folder-open,play,unlock,eye -->
 <style data-vk-kit>
-/* vrg-ui-kit 1.0.0 — base, button, core, mini, badge, toast, field, focus, actions, kbd, palette, emblem */
+/* vrg-ui-kit 1.1.0 — base, button, core, mini, badge, toast, field, focus, actions, kbd, palette, emblem */
 /* VRG UI Kit — vendored OFL fonts (licences beside the files). Subset to Latin + Latin Extended-A,
    so Hungarian ő ű Ő Ű are covered. Families are registered under "VK …" names so they never
    clash with an installed copy. inline.js --fonts turns these urls into data: URIs. */
@@ -144,6 +144,19 @@
   --vk-st-waiting: var(--vk-warn);
   --vk-st-parked: var(--vk-text-muted);
   --vk-st-ended: var(--vk-text-muted);
+  /* v1.1 — catalog stages (live = inuse, beta, retire) and the extra dev-line states */
+  --vk-st-beta: var(--vk-warn);
+  --vk-st-retire: var(--vk-text-muted);
+  --vk-st-recurring: var(--vk-info);
+  --vk-st-overruled: var(--vk-text-muted);
+  --vk-st-absorbed: var(--vk-text-muted);
+  --vk-st-personal: var(--vk-idea);
+  /* v1.1 — lamps (health, one shape per tone) and marks */
+  --vk-lamp-ok: var(--vk-ok);
+  --vk-lamp-warn: var(--vk-warn);
+  --vk-lamp-crit: var(--vk-crit);
+  --vk-lamp-off: var(--vk-text-muted);
+  --vk-lamp-run: var(--vk-activity);
   /* signals: ellentmondás / hiány / fagyott */
   --vk-sig-contradiction: var(--vk-crit);
   --vk-sig-gap: var(--vk-warn);
@@ -677,6 +690,9 @@
    data-state  lifecycle: inuse (telt négyzet) · built (telt kör) · dev (félig telt kör) · planned (szaggatott gyűrű)
                           · idea (pontozott gyűrű)
                run state: active (pont + gyűrű, lüktet) · waiting (homokóra) · parked (két sáv) · ended (áthúzott gyűrű)
+               v1.1 stage:  beta (átlósan félig telt négyzet) · retire (áthúzott négyzet keret); live = inuse
+               v1.1 line:   recurring (nyílfejes gyűrű) · overruled (gyűrű X-szel) · absorbed (nyíl a gyűrűbe)
+                            · personal (kis üres pont)
    data-variant  outline (default) · solid · dot (glyph + text, no frame)
    data-size     sm · md (default) · lg
    The glyph is CSS (::before), so the markup is just text. Under reduced motion the "aktív" pulse is a still halo.
@@ -709,6 +725,14 @@
 .vk-badge[data-state="parked"]  { --_c: var(--vk-st-parked); }
 .vk-badge[data-state="ended"]   { --_c: var(--vk-st-ended); }
 .vk-badge[data-state="ended"]:not([data-variant="solid"]) { color: var(--vk-text-muted); }
+/* v1.1: catalog stages (live → inuse) and the extra line states */
+.vk-badge[data-state="beta"]      { --_c: var(--vk-st-beta); }
+.vk-badge[data-state="retire"]    { --_c: var(--vk-st-retire); }
+.vk-badge[data-state="recurring"] { --_c: var(--vk-st-recurring); }
+.vk-badge[data-state="overruled"] { --_c: var(--vk-st-overruled); }
+.vk-badge[data-state="absorbed"]  { --_c: var(--vk-st-absorbed); }
+.vk-badge[data-state="personal"]  { --_c: var(--vk-st-personal); }
+.vk-badge:is([data-state="retire"], [data-state="overruled"], [data-state="absorbed"]):not([data-variant="solid"]) { color: var(--vk-text-muted); }
 
 /* glyphs (12×12 masks, own drawing) */
 .vk-badge { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.4'/%3E%3C/svg%3E"); }
@@ -721,6 +745,14 @@
 .vk-badge[data-state="waiting"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.4 1.5h7.2v.9L6.9 6l2.7 3.6v.9H2.4v-.9L5.1 6 2.4 2.4z'/%3E%3C/svg%3E"); }
 .vk-badge[data-state="parked"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.4' y='2' width='2.6' height='8' rx='.5'/%3E%3Crect x='7' y='2' width='2.6' height='8' rx='.5'/%3E%3C/svg%3E"); }
 .vk-badge[data-state="ended"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4' fill='none' stroke='black' stroke-width='1.4'/%3E%3Cpath d='M1.8 10.2 10.2 1.8' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+/* v1.1 glyphs — beta: square split on the diagonal (half way to inuse) · retire: square frame, struck through ·
+   recurring: open ring with an arrow head · overruled: ring with an X · absorbed: arrow into a ring · personal: small hollow dot */
+.vk-badge[data-state="beta"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.6' y='2.6' width='6.8' height='6.8' rx='.6' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M2 10V2h8z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="retire"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.6' y='2.6' width='6.8' height='6.8' rx='.6' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M1.6 10.4 10.4 1.6' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="recurring"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M9.6 4.2A4 4 0 1 0 10 7' fill='none' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M10.8 1.6v3.8H7z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="overruled"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M4 4l4 4M8 4 4 8' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="absorbed"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='7.6' cy='6' r='3.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M.8 6h5.6' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M5 3.6 7.6 6 5 8.4z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="personal"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.6' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
 
 /* "aktív": a ring breathes out of the dot (the system is working). Still halo under reduced motion. */
 .vk-badge[data-state="active"]::after { content: ""; position: absolute; top: 50%; left: .45em; width: var(--_g); height: var(--_g);
@@ -1453,7 +1485,8 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
 /* VRG UI Kit — components/badge.js — build and update state badges (badge.css draws them).
      VK.badge.create('dev', {variant:'solid', size:'sm', label:'fejl.'})  → <span class="vk-badge" data-state="dev">…
      VK.badge.set(el, 'ended')                                          → state + default Hungarian label
-     VK.badge.STATES  {inuse:'használatban', …}   VK.badge.LIFECYCLE / VK.badge.RUN  (ordered keys)
+     VK.badge.STATES  {inuse:'használatban', …}   VK.badge.LIFECYCLE / VK.badge.RUN / VK.badge.LINE  (ordered keys)
+     VK.badge.stage('beta')                                             → a catalog stage (live beta dev planned idea retire)
    Depends on: core.js. */
 (function (root) {
   'use strict';
@@ -1464,6 +1497,18 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
     active: 'aktív', waiting: 'várakozik', parked: 'parkolva', ended: 'lezárva' };
   var LIFECYCLE = ['inuse', 'built', 'dev', 'planned', 'idea'];
   var RUN = ['active', 'waiting', 'parked', 'ended'];
+  // v1.1: the dev-line states (Fejlesztési vonalak) and the catalog stage (vrg-catalog.json "status")
+  STATES.beta = 'teszt'; STATES.retire = 'kivezetve';
+  STATES.recurring = 'visszatérő'; STATES.overruled = 'felülbírálva'; STATES.absorbed = 'beolvadt'; STATES.personal = 'személyes';
+  var LINE = ['active', 'waiting', 'recurring', 'parked', 'ended', 'overruled', 'absorbed', 'personal'];
+  var STAGE = { live: 'inuse', beta: 'beta', dev: 'dev', planned: 'planned', idea: 'idea', retire: 'retire' };
+  var STAGE_LABEL = { live: 'éles', beta: 'teszt', dev: 'fejlesztés', planned: 'tervezett', idea: 'ötlet', retire: 'kivezetve' };
+  /** a catalog stage as a badge: VK.badge.stage('beta', {size:'sm'}) → "teszt" with the beta shape */
+  function stage(status, o) {
+    o = o || {};
+    var s = STAGE[status] || 'idea';
+    return create(s, { variant: o.variant, size: o.size, glyphOnly: o.glyphOnly, label: o.label !== undefined ? o.label : (STAGE_LABEL[status] || status) });
+  }
 
   /** o: {variant:'outline'|'solid'|'dot', size:'sm'|'md'|'lg', label: text (default: the Hungarian state name), glyphOnly} */
   function create(state, o) {
@@ -1483,7 +1528,7 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
     return b;
   }
 
-  VK.badge = { STATES: STATES, LIFECYCLE: LIFECYCLE, RUN: RUN, create: create, set: set };
+  VK.badge = { STATES: STATES, LIFECYCLE: LIFECYCLE, RUN: RUN, LINE: LINE, STAGE: STAGE, STAGE_LABEL: STAGE_LABEL, create: create, set: set, stage: stage };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 ;

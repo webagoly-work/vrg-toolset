@@ -1,0 +1,78 @@
+/* VRG UI Kit — components/mark.css — v1.1 marks: the small indicators the apps used to draw on their own.
+   One meaning, one shape, everywhere. Colour is never the only signal.
+
+   Lamp (health)    <span class="vk-lamp" data-tone="ok" role="img" aria-label="rendben"></span>
+                    tone: ok (telt kör) · warn (háromszög) · crit (négyzet) · off (üres kör) · run (pont + gyűrű, lüktet)
+                    data-size sm · md (default) · lg. With text: <span class="vk-lamp" data-tone="warn">git: 3 fájl</span>
+   Level edge       data-vk-level="dev" (szaggatott keret) · "all" (pontozott keret) on any framed element; user = folytonos
+                    <span class="vk-lvl" data-vk-level="dev">fejlesztő</span> the level as a chip
+   Steps (job)      <span class="vk-pips" role="img" aria-label="3. lépés a 6-ból"><i data-s="done"></i><i data-s="cur"></i><i></i></span>
+                    done: telt négyzet (ok) · cur: meleg gyűrű (folyamatban) · üres: vonalas négyzet
+   Monogram         <span class="vk-mono" data-running>PL</span>  two characters for an item; data-running = meleg alsó sáv
+                    data-size sm · md · lg; data-vk-level for the level edge
+   Quiet            <span class="vk-quiet" data-tone="warn">14 nap csend</span> — hold (csendes) glyph; tone by age (VK.mark.quiet)
+   Count            <span class="vk-count">3</span> — unread / waiting count; data-tone="activity" for "running"
+   Depends on: tokens, base. Optional: mark.js (VK.mark.*). */
+
+/* ------------------------------------------------------------------ lamp */
+.vk-lamp { --_c: var(--vk-lamp-off); --_s: 9px;
+  display: inline-flex; align-items: center; gap: .5em; vertical-align: middle; flex: none; position: relative;
+  font: var(--vk-fs-xs)/1.2 var(--vk-font-mono); color: var(--vk-text); }
+.vk-lamp::before { content: ""; flex: none; width: var(--_s); height: var(--_s); background: var(--_c);
+  -webkit-mask: var(--_m) center / 100% 100% no-repeat; mask: var(--_m) center / 100% 100% no-repeat; }
+.vk-lamp[data-size="sm"] { --_s: 7px; } .vk-lamp[data-size="lg"] { --_s: 12px; font-size: var(--vk-fs-sm); }
+.vk-lamp[data-tone="ok"]   { --_c: var(--vk-lamp-ok);   --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5'/%3E%3C/svg%3E"); }
+.vk-lamp[data-tone="warn"] { --_c: var(--vk-lamp-warn); --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 .8 11.4 11H.6z'/%3E%3C/svg%3E"); }
+.vk-lamp[data-tone="crit"] { --_c: var(--vk-lamp-crit); --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='1' y='1' width='10' height='10' rx='1'/%3E%3C/svg%3E"); }
+.vk-lamp, .vk-lamp[data-tone="off"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.3' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+.vk-lamp[data-tone="off"]  { --_c: var(--vk-lamp-off); color: var(--vk-text-muted); }
+.vk-lamp[data-tone="run"]  { --_c: var(--vk-lamp-run);  --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.7'/%3E%3Ccircle cx='6' cy='6' r='5.2' fill='none' stroke='black' stroke-width='1'/%3E%3C/svg%3E"); }
+.vk-lamp[data-tone="run"]::after { content: ""; position: absolute; left: 0; top: 50%; width: var(--_s); height: var(--_s); margin-top: calc(var(--_s) / -2);
+  border-radius: 50%; border: 1px solid var(--_c); pointer-events: none; animation: vk-lamp-pulse 1.8s var(--vk-ease) infinite; }
+@keyframes vk-lamp-pulse { 0% { transform: scale(.6); opacity: .9; } 70%, 100% { transform: scale(2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .vk-lamp[data-tone="run"]::after { animation: none; display: none; } }
+.vk-lamp:empty { gap: 0; }
+
+/* ------------------------------------------------------------------ level edge + level chip */
+[data-vk-level="dev"] { border-style: dashed !important; }
+[data-vk-level="all"] { border-style: dotted !important; }
+.vk-lvl { display: inline-flex; align-items: center; min-height: 20px; padding: 0 .55em; vertical-align: middle;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; white-space: nowrap;
+  color: var(--vk-text-muted); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); }
+.vk-lvl[data-vk-level="dev"], .vk-lvl[data-vk-level="all"] { color: var(--vk-text); }
+
+/* ------------------------------------------------------------------ steps (job pips) */
+.vk-pips { display: inline-flex; gap: 4px; align-items: center; vertical-align: middle; }
+.vk-pips > i { width: 10px; height: 10px; border-radius: 2px; border: 1.5px solid var(--vk-line-strong); background: transparent; flex: none; }
+.vk-pips > i[data-s="done"] { background: var(--vk-ok); border-color: var(--vk-ok); }
+.vk-pips > i[data-s="cur"] { border-color: var(--vk-activity); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--vk-bg), inset 0 0 0 6px var(--vk-activity); }
+.vk-pips > i[data-s="skip"] { border-style: dashed; }
+.vk-pips[data-size="lg"] > i { width: 14px; height: 14px; }
+
+/* ------------------------------------------------------------------ monogram */
+.vk-mono { --_w: 34px; position: relative; display: inline-grid; place-items: center; flex: none; vertical-align: middle;
+  width: var(--_w); height: var(--_w); font: var(--vk-fw-strong) calc(var(--_w) * .36)/1 var(--vk-font-mono); letter-spacing: .02em;
+  color: var(--vk-accent); background: var(--vk-surface-2); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); }
+.vk-mono[data-size="sm"] { --_w: 24px; } .vk-mono[data-size="lg"] { --_w: 44px; }
+.vk-mono[data-running]::after { content: ""; position: absolute; left: 25%; right: 25%; bottom: -5px; height: 2px; border-radius: 1px; background: var(--vk-activity); }
+.vk-mono[data-ghost] { color: var(--vk-text-muted); border-style: dashed; background: transparent; }
+.vk-mono[aria-disabled="true"] { color: var(--vk-text-faint); }
+
+/* ------------------------------------------------------------------ quiet age + count */
+.vk-quiet { --_c: var(--vk-text-muted); display: inline-flex; align-items: center; gap: .45em; vertical-align: middle;
+  font: var(--vk-fs-xs)/1.2 var(--vk-font-mono); color: var(--_c); white-space: nowrap; }
+.vk-quiet::before { content: ""; width: 1em; height: 1em; flex: none; background: var(--_c);
+  -webkit-mask: var(--_m) center / 100% 100% no-repeat; mask: var(--_m) center / 100% 100% no-repeat;
+  --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M7.4 1.2A4.9 4.9 0 1 0 10.9 8 4.1 4.1 0 0 1 7.4 1.2z'/%3E%3C/svg%3E"); }
+.vk-quiet[data-tone="warn"] { --_c: var(--vk-warn); }
+.vk-quiet[data-tone="crit"] { --_c: var(--vk-crit); }
+.vk-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; vertical-align: middle;
+  font: var(--vk-fw-strong) var(--vk-fs-2xs)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums;
+  color: var(--vk-text-on-solid); background: var(--vk-accent); }
+.vk-count[data-tone="activity"] { background: var(--vk-activity); }
+.vk-count[data-tone="crit"] { background: var(--vk-crit); }
+
+@media (forced-colors: active) {
+  .vk-lamp::before, .vk-quiet::before { background: CanvasText; forced-color-adjust: none; }
+  .vk-pips > i[data-s="done"], .vk-count { background: CanvasText; forced-color-adjust: none; }
+}

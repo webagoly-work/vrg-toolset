@@ -1,6 +1,6 @@
 {
   "name": "vrg-ui-kit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "families": {
     "1": "Shell / workspace",
     "2": "Command layer",
@@ -11,7 +11,8 @@
     "7": "Decisions and input",
     "8": "Agent / AI surfaces",
     "9": "Small screens",
-    "10": "Program identity (emblem, city map, micrographics, textures)"
+    "10": "Program identity (emblem, city map, micrographics, textures)",
+    "11": "Marks (stage, line state, lamps, levels, steps, monograms, quiet, counts)"
   },
   "tokens": [
     "tokens/base.css",
@@ -1670,13 +1671,64 @@
         "--vk-st-parked",
         "--vk-st-planned",
         "--vk-st-waiting",
+        "--vk-st-beta",
+        "--vk-st-retire",
+        "--vk-st-recurring",
+        "--vk-st-overruled",
+        "--vk-st-absorbed",
+        "--vk-st-personal",
         "--vk-text",
         "--vk-text-muted",
         "--vk-text-on-solid",
         "--vk-tracking-label"
       ],
-      "summary": "State badges: lifecycle (használatban/kész/fejlesztés alatt/tervezett/ötlet) and run state (aktív/várakozik/parkolva/lezárva), each with its own glyph shape; outline/solid/dot variants, sm/md/lg; aktív pulses (still halo under reduced motion).",
-      "api": "<span class=\"vk-badge\" data-state=\"inuse|built|dev|planned|idea|active|waiting|parked|ended\" data-variant=\"solid|dot\" data-size=\"sm|lg\">; VK.badge.create(state, {variant, size, label, glyphOnly}), VK.badge.set(el, state), VK.badge.STATES/LIFECYCLE/RUN"
+      "summary": "State badges: lifecycle (használatban/kész/fejlesztés alatt/tervezett/ötlet), run state (aktív/várakozik/parkolva/lezárva), v1.1 catalog stages (teszt/kivezetve; éles = használatban) and dev-line states (visszatérő/felülbírálva/beolvadt/személyes), each with its own glyph shape; outline/solid/dot variants, sm/md/lg; aktív pulses (still halo under reduced motion).",
+      "api": "<span class=\"vk-badge\" data-state=\"inuse|built|dev|planned|idea|active|waiting|parked|ended|beta|retire|recurring|overruled|absorbed|personal\" data-variant=\"solid|dot\" data-size=\"sm|lg\">; VK.badge.create(state, {variant, size, label, glyphOnly}), VK.badge.set(el, state), VK.badge.stage(catalogStatus, o), VK.badge.STATES/LIFECYCLE/RUN/LINE/STAGE"
+    },
+    {
+      "name": "mark",
+      "files": [
+        "components/mark.css",
+        "components/mark.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        11
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-lamp-crit",
+        "--vk-lamp-off",
+        "--vk-lamp-ok",
+        "--vk-lamp-run",
+        "--vk-lamp-warn",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius-sm",
+        "--vk-surface-2",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-solid",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "v1.1 marks, the small indicators apps used to draw themselves: health lamp (ok circle, warn triangle, crit square, off ring, run pulsing dot), level edge (data-vk-level dev = dashed, all = dotted) and level chip, job step pips, two-letter monogram (warm running bar, ghost), quiet age (7/21-day tones) and count.",
+      "api": "<span class=\"vk-lamp\" data-tone=\"ok|warn|crit|off|run\">, [data-vk-level=\"dev|all\"], <span class=\"vk-lvl\">, <span class=\"vk-pips\"><i data-s=\"done|cur|skip\">, <span class=\"vk-mono\" data-running data-ghost>, <span class=\"vk-quiet\" data-tone>, <span class=\"vk-count\" data-tone>; VK.mark.lamp(tone, text, o), VK.mark.steps(n, cur, names, o), VK.mark.mono(text, o), VK.mark.quiet(days, o), VK.mark.count(n, o)"
     },
     {
       "name": "signal",

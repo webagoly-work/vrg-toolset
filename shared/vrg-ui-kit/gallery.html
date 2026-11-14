@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VRG UI Kit v1</title>
-<meta name="description" content="VRG UI Kit v1 — minden komponens, minden állapot; téma- és sűrűségváltó, magyar feliratok.">
+<title>VRG UI Kit v1.1</title>
+<meta name="description" content="VRG UI Kit v1.1 — minden komponens, minden állapot; téma- és sűrűségváltó, magyar feliratok.">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="tokens/base.css">
 <link rel="stylesheet" href="tokens/theme-dark.css">
@@ -40,6 +40,7 @@
 <link rel="stylesheet" href="components/inspector.css">
 <link rel="stylesheet" href="components/diff.css">
 <link rel="stylesheet" href="components/badge.css">
+<link rel="stylesheet" href="components/mark.css">
 <link rel="stylesheet" href="components/signal.css">
 <link rel="stylesheet" href="components/progress.css">
 <link rel="stylesheet" href="components/loader.css">
@@ -71,7 +72,7 @@
 <header class="g-top" data-vk-hop>
   <div class="g-top__brand">
     <svg class="g-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h22v26H3V7z"/><path d="M9 11l7 11 7-11"/><circle cx="16" cy="22" r="1.6"/></svg>
-    <span class="vk-title">VRG UI Kit</span><span class="vk-label">v1 · Mérőpult</span>
+    <span class="vk-title">VRG UI Kit</span><span class="vk-label">v1.1 · Mérőpult</span>
   </div>
   <div class="g-top__ctrl">
     <span class="vk-label" id="g-theme-l">Téma</span>
@@ -94,7 +95,7 @@
 </header>
 <div class="g-body">
   <nav class="g-nav" aria-label="Családok" data-vk-hop>
-    <ol id="g-toc"><li><a href="#f01"><span class="vk-num">01</span> Munkafelület és keret</a></li><li><a href="#f02"><span class="vk-num">02</span> Parancsréteg</a></li><li><a href="#f03"><span class="vk-num">03</span> Gráf és topológia</a></li><li><a href="#f04"><span class="vk-num">04</span> Idő nézetek</a></li><li><a href="#f05"><span class="vk-num">05</span> Adatnézetek</a></li><li><a href="#f06"><span class="vk-num">06</span> Állapot és jelzések</a></li><li><a href="#f07"><span class="vk-num">07</span> Döntések és bevitel</a></li><li><a href="#f08"><span class="vk-num">08</span> Ügynök és MI felületek</a></li><li><a href="#f09"><span class="vk-num">09</span> Kis képernyők</a></li><li><a href="#f10"><span class="vk-num">10</span> Programarculat és városkép</a></li></ol>
+    <ol id="g-toc"><li><a href="#f01"><span class="vk-num">01</span> Munkafelület és keret</a></li><li><a href="#f02"><span class="vk-num">02</span> Parancsréteg</a></li><li><a href="#f03"><span class="vk-num">03</span> Gráf és topológia</a></li><li><a href="#f04"><span class="vk-num">04</span> Idő nézetek</a></li><li><a href="#f05"><span class="vk-num">05</span> Adatnézetek</a></li><li><a href="#f06"><span class="vk-num">06</span> Állapot és jelzések</a></li><li><a href="#f07"><span class="vk-num">07</span> Döntések és bevitel</a></li><li><a href="#f08"><span class="vk-num">08</span> Ügynök és MI felületek</a></li><li><a href="#f09"><span class="vk-num">09</span> Kis képernyők</a></li><li><a href="#f10"><span class="vk-num">10</span> Programarculat és városkép</a></li><li><a href="#f11"><span class="vk-num">11</span> Jelölések</a></li></ol>
     <p class="g-nav__hint vk-label">Shift + nyilak: ugrás a régiók között</p>
   </nav>
   <main id="g-main" class="g-main" tabindex="-1">
@@ -1408,6 +1409,141 @@
 </section>
 
 
+<!-- ===== 11-marks.html ===== -->
+<section class="g-sec" id="f11" data-vk-hop aria-labelledby="f11-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">11</span>
+    <h2 id="f11-h" class="vk-title">Jelölések</h2>
+    <p class="g-sec__lead">v1.1: a kis jelek, amelyeket az alkalmazások eddig maguk rajzoltak (Asztal, Irányítópult, Rétegverem, Kódváros, Console, Mobile, Archívum). Szakasz, vonalállapot, lámpa, szint, lépés, monogram, csend, számláló. Egy jelentés, egy forma, mindenhol; a szín soha nem az egyetlen jel.</p>
+  </header>
+
+  <style>
+    .f11-grid { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+    .f11-table { border-collapse: collapse; width: 100%; font-size: var(--vk-fs-sm); }
+    .f11-table th, .f11-table td { padding: var(--vk-space-2) var(--vk-space-3); text-align: left; border-bottom: var(--vk-border-w) solid var(--vk-line); vertical-align: middle; }
+    .f11-table th { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); font-weight: var(--vk-fw-regular); white-space: nowrap; }
+    .f11-table td.f11-old { font-family: var(--vk-font-mono); color: var(--vk-text-muted); white-space: nowrap; }
+    .f11-table td small { color: var(--vk-text-muted); }
+    .f11-scroll { overflow-x: auto; max-width: 100%; }
+    .f11-strip { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); align-items: center; padding: var(--vk-space-3) var(--vk-space-4);
+      background: var(--vk-surface-2); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); }
+    .f11-dock { display: flex; flex-wrap: wrap; gap: var(--vk-space-3); align-items: center; padding: var(--vk-space-3) var(--vk-space-4) var(--vk-space-4);
+      background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); }
+    .f11-dock .f11-div { width: 1px; align-self: stretch; background: var(--vk-line-strong); margin: 0 var(--vk-space-1); }
+    .f11-tiles { display: grid; gap: var(--vk-space-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+    .f11-tile { display: grid; grid-template-columns: auto 1fr; gap: var(--vk-space-1) var(--vk-space-3); align-items: center; padding: var(--vk-space-3);
+      background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); min-width: 0; }
+    .f11-tile b { font-weight: var(--vk-fw-strong); }
+    .f11-tile small { grid-column: 2; color: var(--vk-text-muted); font-size: var(--vk-fs-xs); }
+    .f11-jobs { display: grid; gap: var(--vk-space-2); }
+    .f11-job { display: grid; grid-template-columns: 70px auto 1fr; gap: var(--vk-space-3); align-items: center; font-size: var(--vk-fs-sm); }
+    .f11-job code { color: var(--vk-text); }
+    .f11-job span:last-child { color: var(--vk-text-muted); min-width: 0; }
+  </style>
+
+  <article class="g-demo" id="f11-stage" data-vk-hop>
+    <h3 class="g-demo__title">Szakasz (katalógus <code>status</code>) <code>badge</code></h3>
+    <p class="g-demo__note">A katalógus hat szakasza a jelvény formáival: éles = használatban (telt négyzet), teszt (átlósan félig telt négyzet), fejlesztés (félig telt kör), tervezett (szaggatott gyűrű), ötlet (pontozott gyűrű), kivezetve (áthúzott négyzet). Felhasználói szinten csak az éles és a teszt látszik. <code>VK.badge.stage('beta')</code></p>
+    <p class="g-row" id="f11-stage-row"></p>
+    <p class="g-row" id="f11-stage-solid"></p>
+    <p class="g-row" id="f11-stage-dot"></p>
+  </article>
+
+  <article class="g-demo" id="f11-line" data-vk-hop>
+    <h3 class="g-demo__title">Vonalállapot (fejlesztési vonalak) <code>badge</code></h3>
+    <p class="g-demo__note">A futási állapotok kiegészítve: visszatérő (nyílfejes gyűrű), felülbírálva (gyűrű X-szel), beolvadt (nyíl a gyűrűbe), személyes (kis üres pont). A beolvadt és a felülbírálva eddig ugyanaz a ⤳ volt; most két forma. <code>VK.badge.LINE</code></p>
+    <p class="g-row" id="f11-line-row"></p>
+    <p class="g-row" id="f11-line-dot"></p>
+  </article>
+
+  <div class="f11-grid">
+    <article class="g-demo" id="f11-lamp" data-vk-hop>
+      <h3 class="g-demo__title">Lámpa (egészség) <code>mark</code></h3>
+      <p class="g-demo__note">Öt hang, öt forma: rendben (telt kör), figyelmeztetés (háromszög), hiba (négyzet), nem fut (üres kör), fut (pont + gyűrű, lüktet, meleg). A „fut” mindig meleg, mint a MINI-n; a jég a kijelölésé.</p>
+      <div class="f11-strip" aria-label="Felső sáv, példa">
+        <span class="vk-lamp" data-tone="run">2/18 szerver</span>
+        <span class="vk-lamp" data-tone="warn">git: 3 fájl</span>
+        <span class="vk-lamp" data-tone="crit">mentés: 14 napja</span>
+        <span class="vk-lamp" data-tone="ok">Divergence</span>
+        <span class="vk-lamp" data-tone="off">Console</span>
+      </div>
+      <p class="g-row">
+        <span class="vk-lamp" data-tone="ok" data-size="sm" role="img" aria-label="rendben"></span>
+        <span class="vk-lamp" data-tone="warn" data-size="sm" role="img" aria-label="figyelmeztetés"></span>
+        <span class="vk-lamp" data-tone="crit" data-size="sm" role="img" aria-label="hiba"></span>
+        <span class="vk-lamp" data-tone="off" data-size="sm" role="img" aria-label="nem fut"></span>
+        <span class="vk-lamp" data-tone="run" data-size="sm" role="img" aria-label="fut"></span>
+        <span class="vk-lamp" data-tone="ok" data-size="lg">lg · rendben</span>
+        <span class="vk-lamp" data-tone="crit" data-size="lg">lg · hiba</span>
+      </p>
+    </article>
+
+    <article class="g-demo" id="f11-quiet" data-vk-hop>
+      <h3 class="g-demo__title">Csend és számláló <code>mark</code></h3>
+      <p class="g-demo__note">Mióta hallgat egy nyitott vonal: 7 naptól figyelmeztetés, 21 naptól hiba színe (<code>VK.mark.QUIET</code>). A számláló olvasatlan vagy várakozó elemeket jelez; a meleg változat a futó munkáét.</p>
+      <p class="g-row" id="f11-quiet-row"></p>
+      <p class="g-row">
+        <span>Posta <span class="vk-count">3</span></span>
+        <span>Böngésző <span class="vk-count">12</span></span>
+        <span>Feladatok <span class="vk-count" data-tone="activity">2</span></span>
+        <span>CI <span class="vk-count" data-tone="crit">1</span></span>
+      </p>
+    </article>
+  </div>
+
+  <article class="g-demo" id="f11-level" data-vk-hop>
+    <h3 class="g-demo__title">Szint és monogram <code>mark</code></h3>
+    <p class="g-demo__note">A szint a keret vonala: felhasználó folytonos, fejlesztő szaggatott, minden pontozott (<code>data-vk-level</code>, bármilyen keretes elemen). A monogram két karakter, a katalógus <code>icon</code> mezője; a futó alkalmazást meleg alsó sáv jelzi, a nem telepített program szellem keretet kap. A dokkban a név is ott van, nem csak a kód.</p>
+    <div class="f11-dock" aria-label="Dokk, példa">
+      <span class="vk-mono" data-running role="img" aria-label="Planner, fut">PL</span>
+      <span class="vk-mono" role="img" aria-label="Készlet">KÉ</span>
+      <span class="vk-mono" role="img" aria-label="Kalkulátorok">K1</span>
+      <span class="vk-mono" data-running role="img" aria-label="Posta, fut">@</span>
+      <span class="f11-div"></span>
+      <span class="vk-mono" data-vk-level="dev" role="img" aria-label="Terminál, fejlesztő">&gt;_</span>
+      <span class="vk-mono" data-vk-level="dev" data-running role="img" aria-label="Kódváros, fejlesztő, fut">KV</span>
+      <span class="vk-mono" data-vk-level="all" role="img" aria-label="Katalógus, minden">KK</span>
+      <span class="vk-mono" data-ghost role="img" aria-label="VLC, nincs telepítve">VL</span>
+    </div>
+    <div class="f11-tiles">
+      <div class="f11-tile"><span class="vk-mono" data-size="lg">PL</span><b>Varler Planner</b><small>Alkalmazás · éles</small></div>
+      <div class="f11-tile" data-vk-level="dev"><span class="vk-mono" data-size="lg" data-vk-level="dev">RV</span><b>Rétegverem</b><small><span class="vk-lvl" data-vk-level="dev">fejlesztő</span></small></div>
+      <div class="f11-tile" data-vk-level="all"><span class="vk-mono" data-size="lg" data-vk-level="all">KK</span><b>Katalógus</b><small><span class="vk-lvl" data-vk-level="all">minden</span></small></div>
+    </div>
+    <p class="g-row"><span class="vk-lvl">felhasználó</span><span class="vk-lvl" data-vk-level="dev">fejlesztő</span><span class="vk-lvl" data-vk-level="all">minden</span>
+      <span class="vk-mono" data-size="sm">sm</span><span class="vk-mono">md</span><span class="vk-mono" data-size="lg">lg</span><span class="vk-mono" aria-disabled="true">—</span></p>
+  </article>
+
+  <article class="g-demo" id="f11-steps" data-vk-hop>
+    <h3 class="g-demo__title">Lépések (munkák) <code>mark</code></h3>
+    <p class="g-demo__note">A munka hat lépése (Bemenet, Kérdések, Terv, Árazás, Tervezet, Átadás): kész = telt négyzet, folyamatban = meleg gyűrű, hátra = vonalas négyzet, kihagyva = szaggatott. <code>VK.mark.steps(6, 4, names)</code></p>
+    <div class="f11-jobs" id="f11-jobs"></div>
+  </article>
+
+  <article class="g-demo" id="f11-rules" data-vk-hop>
+    <h3 class="g-demo__title">Egy jel, egy jelentés</h3>
+    <p class="g-demo__note">Az eddigi saját jelek és a helyük a kitben. A bal oldali jelek nem használhatók tovább állapotjelzésre; a ● ○ ◌ ◆ ▣ ★ jelek az alkalmazásokban több jelentést is hordoztak.</p>
+    <div class="f11-scroll"><table class="f11-table">
+      <thead><tr><th scope="col">Eddig</th><th scope="col">Jelentés</th><th scope="col">Ahol</th><th scope="col">A kitben</th></tr></thead>
+      <tbody>
+        <tr><td class="f11-old">BETA · DEV · RETIRE (angol szó) · Kész/Teszt/Terv</td><td>katalógus szakasz</td><td><small>Asztal csempe · Mobile StageBadge</small></td><td><span class="vk-badge" data-state="beta" data-size="sm">teszt</span> <span class="vk-badge" data-state="retire" data-size="sm">kivezetve</span></td></tr>
+        <tr><td class="f11-old">① ② ③ ④ ⑤ + négyzet pont</td><td>funkció szint (tier)</td><td><small>Kezdőlap</small></td><td><span class="vk-badge" data-state="inuse" data-size="sm">használatban</span> <span class="vk-badge" data-state="built" data-size="sm">kész</span> …</td></tr>
+        <tr><td class="f11-old">● ◐ ○ ↻ ✓ ⤳ ⤳ ·</td><td>vonalállapot</td><td><small>Kezdőlap · metró · gömb</small></td><td><span class="vk-badge" data-variant="dot" data-state="active" data-size="sm">aktív</span> <span class="vk-badge" data-variant="dot" data-state="recurring" data-size="sm">visszatérő</span> <span class="vk-badge" data-variant="dot" data-state="absorbed" data-size="sm">beolvadt</span></td></tr>
+        <tr><td class="f11-old">⚠ N napja csendes · ⚠ N n csend</td><td>csendes nyitott vonal</td><td><small>Kezdőlap · metró</small></td><td><span class="vk-quiet" data-tone="warn">14 nap csend</span></td></tr>
+        <tr><td class="f11-old">7 px kör · 6 px négyzet · 8 dp kör · 9 px kör · nyers hex lámpák</td><td>egészség, szerver fut</td><td><small>felső sáv · szerver chip · Mobile · Kódváros</small></td><td><span class="vk-lamp" data-tone="ok">rendben</span> <span class="vk-lamp" data-tone="run">fut</span></td></tr>
+        <tr><td class="f11-old">jég sáv · glow pont · „fut” jégben</td><td>fut / nyitva</td><td><small>dokk · Mobile Indító · Kódváros</small></td><td><span class="vk-mono" data-size="sm" data-running>PL</span> meleg sáv · <span class="vk-lamp" data-tone="run" data-size="sm">fut</span></td></tr>
+        <tr><td class="f11-old">✕ / ✗ · ⚠ / ▲</td><td>hiba · figyelmeztetés</td><td><small>Console · Mobile Pulse · Rétegverem</small></td><td><span class="vk-lamp" data-tone="crit">hiba</span> <span class="vk-lamp" data-tone="warn">figyelm.</span></td></tr>
+        <tr><td class="f11-old">●/○ négyzetben</td><td>munka lépései</td><td><small>Kezdőlap Projektmunkák</small></td><td><span class="vk-pips" role="img" aria-label="3. lépés a 6-ból"><i data-s="done"></i><i data-s="done"></i><i data-s="cur"></i><i></i><i></i><i></i></span></td></tr>
+        <tr><td class="f11-old">folytonos / szaggatott / pontozott keret</td><td>szint</td><td><small>Asztal (csak ott)</small></td><td><span class="vk-lvl" data-vk-level="dev">fejlesztő</span></td></tr>
+        <tr><td class="f11-old">🔒 🔓 ⛔ 🔔 ⚙ 🖱 📶 (emoji)</td><td>zár, csengő, beállítás…</td><td><small>Kódváros · Mobile</small></td><td>a sprite ikonjai: <code>lock</code> <code>unlock</code> <code>bell</code> <code>settings</code></td></tr>
+        <tr><td class="f11-old">mv-badge ok/warn/crit</td><td>második jelvényrendszer</td><td><small>Archívum · Kapu · melyviz.css</small></td><td><span class="vk-lamp" data-tone="ok">lámpa + szöveg</span> vagy <code>vk-badge</code></td></tr>
+        <tr><td class="f11-old">ellentmondás / sötét zóna / dermedt</td><td>Solomon jelzések</td><td><small>Mobile Gömb</small></td><td>a kit kulcsa: ellentmondás / hiány / fagyott (<code>signal</code>)</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+</section>
+
+
   </main>
 </div>
 <script src="icons/sprite.js"></script>
@@ -1440,6 +1576,7 @@
 <script src="components/inspector.js"></script>
 <script src="components/diff.js"></script>
 <script src="components/badge.js"></script>
+<script src="components/mark.js"></script>
 <script src="components/signal.js"></script>
 <script src="components/progress.js"></script>
 <script src="components/loader.js"></script>
@@ -3678,6 +3815,35 @@
   });
 
 }catch(e){console.error("[gallery 10-identity.html]",e);}})();
+</script>
+<script>
+/* 11-marks.html */
+(function(){try{
+
+  (function () {
+    var row = document.getElementById('f11-stage-row'), solid = document.getElementById('f11-stage-solid'), dot = document.getElementById('f11-stage-dot');
+    Object.keys(VK.badge.STAGE).forEach(function (s) {
+      row.appendChild(VK.badge.stage(s)); row.appendChild(document.createTextNode(' '));
+      solid.appendChild(VK.badge.stage(s, { variant: 'solid', size: 'sm' })); solid.appendChild(document.createTextNode(' '));
+      dot.appendChild(VK.badge.stage(s, { variant: 'dot' })); dot.appendChild(document.createTextNode(' '));
+    });
+    var lr = document.getElementById('f11-line-row'), ld = document.getElementById('f11-line-dot');
+    VK.badge.LINE.forEach(function (s) {
+      lr.appendChild(VK.badge.create(s)); lr.appendChild(document.createTextNode(' '));
+      ld.appendChild(VK.badge.create(s, { variant: 'dot', glyphOnly: true })); ld.appendChild(document.createTextNode(' '));
+    });
+    var q = document.getElementById('f11-quiet-row');
+    [2, 9, 14, 30].forEach(function (d) { q.appendChild(VK.mark.quiet(d)); q.appendChild(document.createTextNode(' ')); });
+    var names = ['Bemenet', 'Kérdések', 'Terv', 'Árazás', 'Tervezet', 'Átadás'];
+    var jobs = document.getElementById('f11-jobs');
+    [['BK2', 1, 'Bemenet · 2026-10-27'], ['DM1', 6, 'Tervezet → következő: Átadás'], ['P33', 7, 'Átadva · 2026-10-12'], ['NV4', 4, 'Árazás folyamatban']].forEach(function (j) {
+      var r = VK.el('div.f11-job'); var c = VK.el('code'); c.textContent = j[0];
+      var t = VK.el('span'); t.textContent = j[2];
+      r.appendChild(c); r.appendChild(VK.mark.steps(6, j[1], names, { size: 'lg' })); r.appendChild(t); jobs.appendChild(r);
+    });
+  })();
+
+}catch(e){console.error("[gallery 11-marks.html]",e);}})();
 </script>
 
 </body>
