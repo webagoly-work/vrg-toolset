@@ -1,0 +1,854 @@
+<title>VRG Szerver Kalauz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the control desk for the VRG ServerKit in the Mélyvíz look of the manual. Top: what to do now,
+   then the six pieces of hardware with their live state, then the four phases as ticked steps.
+   Each step names the device it happens on; buttons start things when the page runs from the stick. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c; --term: #071017;
+  --line: rgba(232,240,246,.13); --line-strong: rgba(232,240,246,.30);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #6c757c;
+  --accent: #93d3e6; --accent-soft: rgba(147,211,230,.12); --on-accent: #08141a;
+  --warm: #e8a873; --warm-soft: rgba(232,168,115,.13);
+  --ok: #8bcca1; --ok-soft: rgba(139,204,161,.12); --crit: #e4877d; --crit-soft: rgba(228,135,125,.12);
+  --d-bl: #93d3e6; --d-srv: #e8a873; --d-hs: #d8c27a; --d-is: #c3a6e6; --d-ph: #8bcca1; --d-tab: #9fb5e8; --d-rt: #c7a0b8;
+  --qr-bg: #ffffff;
+  --cut: 7px;
+  --voice: Bahnschrift, "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff; --term: #e6edf1;
+  --line: rgba(14,32,43,.12); --line-strong: rgba(14,32,43,.28);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.09); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.09);
+  --ok: #2f7d4c; --ok-soft: rgba(47,125,76,.09); --crit: #b0433a; --crit-soft: rgba(176,67,58,.09);
+  --d-bl: #1f6f87; --d-srv: #a5582a; --d-hs: #86701c; --d-is: #6a4a9a; --d-ph: #2f7d4c; --d-tab: #3f58a0; --d-rt: #8a4a6e;
+  color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #eef3f6; --horizon: #e2eaef; --panel: #f8fbfc; --raised: #ffffff; --term: #e6edf1;
+  --line: rgba(14,32,43,.12); --line-strong: rgba(14,32,43,.28);
+  --text: #0e1a22; --dim: #475660; --faint: #7d8a93;
+  --accent: #1f6f87; --accent-soft: rgba(31,111,135,.09); --on-accent: #ffffff;
+  --warm: #a5582a; --warm-soft: rgba(165,88,42,.09);
+  --ok: #2f7d4c; --ok-soft: rgba(47,125,76,.09); --crit: #b0433a; --crit-soft: rgba(176,67,58,.09);
+  --d-bl: #1f6f87; --d-srv: #a5582a; --d-hs: #86701c; --d-is: #6a4a9a; --d-ph: #2f7d4c; --d-tab: #3f58a0; --d-rt: #8a4a6e;
+  color-scheme: light; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; margin: 0; }
+code { font-family: var(--mono); font-size: .86em; background: var(--horizon); padding: 1px 4px; }
+button, input { font: inherit; color: var(--text); border-radius: 0; }
+button { cursor: pointer; background: var(--panel); border: 1px solid var(--line-strong); padding: 5px 11px; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { cursor: not-allowed; color: var(--faint); border-style: dashed; }
+button.go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+button.go:disabled { background: transparent; color: var(--faint); border-color: var(--line-strong); font-weight: 500; }
+button.risk { border-color: var(--crit); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text] { background: var(--raised); border: 1px solid var(--line-strong); padding: 6px 9px; width: 100%; font-family: var(--mono); font-size: 13.5px; }
+input[type=text]:focus { outline: none; border-color: var(--accent); }
+input[type=checkbox] { accent-color: var(--ok); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { .pulse { animation: pulse 1.6s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: .35; } }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding-block: 10px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.brand h1 { font-size: 23px; }
+.mode { font-family: var(--mono); font-size: 11.5px; padding: 1px 8px; border: 1px solid currentColor; white-space: nowrap; }
+.mode.m-local { color: var(--ok); } .mode.m-mirror { color: var(--d-tab); } .mode.m-shared, .mode.m-plain { color: var(--dim); } .mode.m-lost { color: var(--crit); }
+.prog { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.prog .n { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; }
+.prog .bar { width: 140px; height: 8px; background: var(--horizon); }
+.prog .bar span { display: block; height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+.lang { display: flex; }
+.lang button { font-family: var(--mono); font-size: 12.5px; padding: 3px 10px; background: transparent; color: var(--dim); }
+.lang button + button { border-left: 0; }
+.lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+@media (max-width: 640px) {
+  .brand { flex: 1 1 0; } .brand h1 { font-size: 20px; }
+  .lang { order: 1; } .prog { order: 2; margin-left: 0; width: 100%; }
+}
+
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 32px; padding-block: 20px 70px; align-items: start; }
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 70px); display: grid; gap: 1px; }
+nav.rail a { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; text-decoration: none; color: var(--dim); padding: 6px 8px; border-left: 2px solid transparent; font-size: 14px; }
+nav.rail a:hover { color: var(--text); background: var(--accent-soft); }
+nav.rail a.cur { color: var(--text); border-left-color: var(--accent); background: var(--accent-soft); }
+nav.rail a.done { color: var(--ok); }
+nav.rail .pn, nav.rail .pc { font-family: var(--mono); font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  nav.rail { position: static; display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
+  nav.rail a { grid-template-columns: auto auto; border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; padding: 5px 9px; }
+  nav.rail a .pt { display: none; } nav.rail a.cur { border-bottom-color: var(--accent); }
+  .prog .bar { width: 80px; }
+}
+
+.banner { border-left: 2px solid var(--accent); background: var(--accent-soft); padding: 9px 13px; font-size: 14px; margin-bottom: 18px; max-width: 92ch; }
+.banner.lost { border-left-color: var(--crit); background: var(--crit-soft); }
+.banner b { font-weight: 600; }
+
+/* what to do now */
+.now { background: var(--panel); border: 1px solid var(--accent); padding: 14px 18px 16px; margin-bottom: 26px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+.now .label { color: var(--accent); }
+.now h2 { font-size: 26px; margin: 2px 0 6px; }
+.now .txt { max-width: 78ch; color: var(--text); }
+.now .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.now .live { margin-top: 8px; }
+.now.fin { border-color: var(--ok); } .now.fin .label { color: var(--ok); }
+
+/* the six devices */
+.devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-bottom: 30px; }
+.dev { border: 1px solid var(--line); border-top: 3px solid var(--dc, var(--line-strong)); background: var(--panel); padding: 10px 12px 12px; min-width: 0; display: grid; gap: 6px; align-content: start; }
+.dev h3 { font-size: 17px; display: flex; align-items: baseline; gap: 8px; }
+.dev h3 small { font-family: var(--sans); font-size: 12px; color: var(--dim); font-weight: 400; letter-spacing: 0; }
+.dev ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13.5px; }
+.dev li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 7px; align-items: baseline; }
+.dev li span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.dev .role { font-size: 13px; color: var(--dim); }
+.dev .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.dev .row button { font-size: 12.5px; padding: 3px 9px; }
+.dot { display: inline-block; width: 8px; height: 8px; background: var(--faint); transform: translateY(-1px); }
+.dot.ok { background: var(--ok); } .dot.bad { background: var(--crit); } .dot.wait { background: var(--warm); } .dot.na { background: transparent; border: 1px solid var(--faint); }
+.d-bl { --dc: var(--d-bl); } .d-srv { --dc: var(--d-srv); } .d-hs { --dc: var(--d-hs); } .d-is { --dc: var(--d-is); } .d-ph { --dc: var(--d-ph); } .d-tab { --dc: var(--d-tab); } .d-rt { --dc: var(--d-rt); }
+
+/* server card */
+.card { background: var(--panel); border: 1px solid var(--line-strong); padding: 14px 16px 16px; margin-bottom: 30px; }
+.card h2 { font-size: 19px; margin-bottom: 4px; }
+.card p { margin: 0 0 12px; color: var(--dim); font-size: 13.5px; max-width: 84ch; }
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; }
+.fields label { display: grid; gap: 3px; font-size: 12.5px; color: var(--dim); min-width: 0; }
+.fields small { color: var(--faint); font-size: 11.5px; }
+
+/* phases and steps */
+.phase { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 72px); margin-bottom: 40px; }
+.ph-h { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 14px; align-items: baseline; border-bottom: 1px solid var(--line-strong); padding-bottom: 8px; margin-bottom: 4px; }
+.ph-h .num { font-family: var(--mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); padding: 0 6px; }
+.ph-h h2 { font-size: 24px; }
+.ph-h .goal { grid-column: 2; color: var(--dim); font-size: 14px; max-width: 80ch; }
+.step { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 12px; padding: 13px 4px 13px 0; border-bottom: 1px solid var(--line); scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 80px); }
+.step.next { background: linear-gradient(90deg, var(--accent-soft), transparent 70%); }
+.step > input { margin: 5px 0 0 2px; width: 17px; height: 17px; cursor: pointer; }
+.step-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; cursor: pointer; }
+.sid { font-family: var(--mono); font-size: 12.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.st { font-size: 15.5px; font-weight: 600; }
+.step.done .st { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--faint); }
+.tags { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 0 6px; border: 1px solid var(--dc); color: var(--dc); white-space: nowrap; }
+.body { grid-column: 2; min-width: 0; display: grid; gap: 8px; margin-top: 5px; font-size: 14.5px; }
+.body p { margin: 0; max-width: 80ch; }
+.live { font-size: 13px; display: flex; gap: 8px; align-items: baseline; color: var(--dim); }
+.who { font-size: 12px; color: var(--faint); }
+.who b { font-weight: 500; color: var(--ok); }
+.acts { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.acts .hint { font-size: 12.5px; color: var(--faint); }
+.warn, .note { padding: 7px 12px; font-size: 14px; max-width: 84ch; }
+.warn { border-left: 2px solid var(--crit); background: var(--crit-soft); }
+.note { border-left: 2px solid var(--accent); background: var(--accent-soft); }
+.cmd { background: var(--term); border: 1px solid var(--line); min-width: 0; max-width: 84ch; display: flex; align-items: flex-start; }
+.cmd pre { margin: 0; padding: 7px 11px; overflow-x: auto; font-family: var(--mono); font-size: 13px; flex: 1 1 auto; min-width: 0; }
+.cmd button { font-size: 12px; padding: 2px 9px; margin: 4px; background: transparent; flex: none; }
+.mref { font-size: 12.5px; color: var(--faint); }
+.mref a { color: var(--dim); }
+
+/* toolbox */
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.tools > div { border: 1px solid var(--line); padding: 11px 13px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tools h3 { font-size: 16px; }
+.tools p { margin: 0; font-size: 13px; color: var(--dim); }
+footer { color: var(--faint); font-size: 12.5px; border-top: 1px solid var(--line); padding-block: 14px 30px; }
+footer p { max-width: 100ch; margin: 0 0 6px; }
+
+.modal { position: fixed; inset: 0; z-index: 30; background: rgba(4,10,14,.72); display: grid; place-items: center; padding: 16px; }
+.modal > div { background: var(--panel); border: 1px solid var(--accent); padding: 16px 18px; max-width: 460px; width: 100%; display: grid; gap: 10px; max-height: 100%; overflow-y: auto; }
+.modal h2 { font-size: 21px; }
+.modal p { margin: 0; font-size: 14px; color: var(--dim); }
+.qr { background: var(--qr-bg); padding: 12px; justify-self: center; width: min(260px, 100%); }
+.qr svg { display: block; width: 100%; height: auto; }
+.url { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; background: var(--term); padding: 6px 9px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--raised); border: 1px solid var(--accent); padding: 7px 14px; font-size: 13.5px; z-index: 40; max-width: calc(100% - 32px); }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1 data-ui="h1">VRG Szerver Kalauz</h1><span class="mode" id="mode"></span></div>
+    <div class="prog"><span class="n" id="prog-n">0 / 0</span><span class="bar"><span id="prog-bar"></span></span></div>
+    <div class="lang" role="group" aria-label="Language / Nyelv">
+      <button type="button" data-lang="hu" aria-pressed="true" lang="hu" title="Magyar">HU</button><button type="button" data-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="banner" id="banner"></div>
+    <section class="now" id="now" aria-live="polite"></section>
+    <section class="devices" id="devices" aria-label="Devices"></section>
+    <section class="card" id="card">
+      <h2 data-ui="cardT"></h2>
+      <p data-ui="cardP"></p>
+      <div class="fields" id="fields"></div>
+    </section>
+    <div id="phases"></div>
+    <section class="phase" id="tools-sec">
+      <div class="ph-h"><span class="num">+</span><h2 data-ui="toolsT"></h2><span class="goal" data-ui="toolsG"></span></div>
+      <div class="tools" id="tools"></div>
+    </section>
+  </main>
+</div>
+<footer class="wrap" id="foot"></footer>
+<div class="modal" id="modal" hidden><div id="modal-in"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+'use strict';
+const T = (en, hu) => ({ en: en, hu: hu });
+const LANG_KEY = 'vrg-kalauz-lang';
+let lang = 'hu';
+try { const s = localStorage.getItem(LANG_KEY); if (s === 'en' || s === 'hu') lang = s; } catch (e) { /* storage blocked */ }
+const L = x => (x && typeof x === 'object' && 'en' in x) ? x[lang] : x;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MANUAL_URL = 'https://claude.ai/artifact/N2JbyRKE3732kwD6P8jRXE';
+
+/* ------------------------------------------------------------ words */
+const UI = {
+  h1: T('VRG Server Kalauz', 'VRG Szerver Kalauz'),
+  m_local: T('live · from the stick', 'élő · a stickről'), m_mirror: T('tablet view', 'tablet nézet'),
+  m_shared: T('shared ticks', 'közös pipák'), m_plain: T('this device only', 'csak ez az eszköz'), m_lost: T('connection lost', 'megszakadt'),
+  b_local: T('<b>Live.</b> This page runs from the helper stick: the buttons start things on this laptop and the dots show what the laptop sees right now. Keep the small black <b>VRG Kalauz</b> window open.',
+             '<b>Élő kapcsolat.</b> Ez az oldal a segítő stickről fut: a gombok ezen a laptopon indítanak el dolgokat, a pöttyök azt mutatják, amit a laptop most lát. A kis fekete <b>VRG Kalauz</b> ablakot hagyd nyitva.'),
+  b_mirror: T('<b>Tablet view.</b> You see the state your laptop sees, refreshed every few seconds, and you can tick steps. Buttons that start programs work only on the laptop.',
+              '<b>Tablet nézet.</b> Azt látod, amit a laptopod lát, pár másodpercenként frissítve, és pipálhatsz. A programokat indító gombok csak a laptopon működnek.'),
+  b_shared: T('<b>Shared ticks.</b> Ticks are saved for everyone who opens this page. For the buttons and the automatic checks, open the Kalauz from the helper stick: double-click <code>KALAUZ.cmd</code> on your laptop.',
+              '<b>Közös pipák.</b> A pipák mindenkinek mentődnek, aki megnyitja ezt az oldalt. A gombokhoz és az automatikus ellenőrzéshez nyisd meg a Kalauzt a segítő stickről: a laptopodon dupla kattintás a <code>KALAUZ.cmd</code>-re.'),
+  b_plain: T('<b>Ticks are kept in this browser only.</b> For the buttons and the automatic checks, double-click <code>KALAUZ.cmd</code> in the root of the helper stick.',
+             '<b>A pipák csak ebben a böngészőben maradnak meg.</b> A gombokhoz és az automatikus ellenőrzéshez kattints duplán a <code>KALAUZ.cmd</code>-re a segítő stick gyökerében.'),
+  b_lost: T('<b>The Kalauz window on the laptop does not answer.</b> Was it closed? Double-click <code>KALAUZ.cmd</code> on the helper stick again; this page reconnects by itself only if the window is still open.',
+            '<b>A laptopon futó Kalauz ablak nem válaszol.</b> Bezárult? Kattints duplán újra a <code>KALAUZ.cmd</code>-re a segítő sticken; ez az oldal csak akkor kapcsolódik vissza magától, ha az ablak még nyitva van.'),
+  nowL: T('Now', 'Most'), nowWhere: T('where', 'hol'), doneBtn: T('Done, next step', 'Kész, jöhet a következő'),
+  finL: T('Finished', 'Kész'), finT: T('The server is built and handed over', 'A szerver kész és át van adva'),
+  finP: T('Every step is ticked. The handover for A is on the stick (helper/ATADAS-A-NAK.md). Ask the helper about the server any time in plain words.',
+          'Minden lépés kipipálva. Az átadás A-nak a sticken van (helper/ATADAS-A-NAK.md). A szerverről bármikor kérdezheted a segítőt, egyszerű szavakkal.'),
+  cardT: T('Server card', 'Szerverkártya'),
+  cardP: T('The helper fills this in on the server (address, name, user). You can type the address here yourself after the install: the welcome text after login shows it. Never a password.',
+           'Ezt a segítő tölti ki a szerveren (cím, név, felhasználó). A telepítés után a címet magad is beírhatod: a bejelentkezés utáni üdvözlő szöveg mutatja. Jelszót soha.'),
+  f_ip: T('Address on the home network', 'Cím az otthoni hálózaton'), f_ip_h: T('e.g. 192.168.1.50', 'pl. 192.168.1.50'),
+  f_host: T('Server name', 'Szerver neve'), f_host_h: T('set during the install', 'telepítéskor adod meg'),
+  f_user: T('User name on the server', 'Felhasználónév a szerveren'), f_user_h: T('set during the install', 'telepítéskor adod meg'),
+  f_alias: T('Short name for ssh', 'Rövid név az ssh-hoz'), f_alias_h: T('phase 3 creates it', 'a 3. fázis hozza létre'),
+  f_ts: T('Tailscale address', 'Tailscale-cím'), f_ts_h: T('if A added the server', 'ha A felvette a szervert'),
+  f_by: T('filled by', 'kitöltötte'), f_bad: T('Letters, digits and . _ : @ - only.', 'Csak betű, szám és . _ : @ -'),
+  toolsT: T('Toolbox', 'Eszköztár'), toolsG: T('Everything the Kalauz can open or check, in one place.', 'Minden, amit a Kalauz meg tud nyitni vagy ellenőrizni, egy helyen.'),
+  copy: T('Copy', 'Másolás'), copied: T('Copied', 'Másolva'), clip: T('Selected: press Ctrl+C', 'Kijelölve: nyomj Ctrl+C-t'),
+  manual: T('Details in the manual', 'Részletek a kézikönyvben'),
+  by_auto: T('detected', 'észlelve'), by_segito: T('ticked by the helper', 'a segítő jelölte'), by_go: T('ticked by the launcher', 'az indító jelölte'), by_B: T('ticked by hand', 'kézzel jelölve'),
+  willHelper: T('The helper ticks this when it is done.', 'Ezt a segítő jelöli, amikor kész.'),
+  willAuto: T('Ticks itself when the laptop sees it.', 'Magától pipálódik, amikor a laptop látja.'),
+  onlyLaptop: T('starts on the laptop: ', 'a laptopon indul: '),
+  started: T('Started', 'Elindítva'), failed: T('Did not start', 'Nem indult el'),
+  e_nokit: T('The helper stick is not in this laptop.', 'A segítő stick nincs ebben a laptopban.'),
+  e_missing: T('That file is not on the stick (yet).', 'Ez a fájl (még) nincs a sticken.'),
+  e_noserver: T('No server address yet: fill in the server card.', 'Még nincs szervercím: töltsd ki a szerverkártyát.'),
+  e_nolan: T('This laptop is not on a home network right now.', 'Ez a laptop most nincs otthoni hálózaton.'),
+  e_other: T('Something went wrong; the black Kalauz window may say more.', 'Valami hiba történt; a fekete Kalauz ablak többet mondhat.'),
+  qrT: T('Tablet view', 'Tablet nézet'),
+  qrP: T('Scan the code with the tablet (or the phone) camera, or type the address. The tablet must be on the same home Wi-Fi as this laptop. It can see the state and tick steps, nothing else. It switches off when you close the Kalauz, or after 6 hours.',
+         'Olvasd be a kódot a tablet (vagy a telefon) kamerájával, vagy gépeld be a címet. A tabletnek ugyanazon az otthoni Wi-Fin kell lennie, mint ennek a laptopnak. Látja az állapotot és pipálhat, mást nem. Kikapcsol, ha bezárod a Kalauzt, vagy 6 óra után.'),
+  qrFw: T('If Windows asks whether PowerShell may use the network, allow it on private networks; otherwise the tablet cannot connect.',
+          'Ha a Windows megkérdezi, használhatja-e a PowerShell a hálózatot, engedd a magánhálózatokon; különben a tablet nem tud csatlakozni.'),
+  qrOff: T('Switch the tablet view off', 'Tablet nézet kikapcsolása'), close: T('Close', 'Bezárás'),
+  qrSeen: T('A tablet connected', 'Egy tablet csatlakozott'),
+  foot1: T('How it works: KALAUZ.cmd starts a small helper on this laptop (helper/scripts/kalauz.ps1). It serves this page to this laptop only, runs the checks, and starts only the programs named on the buttons. Nothing is installed; closing its black window stops it. Ticks are saved on the stick (logs/kalauz-progress.json), so the helper Claude and this page share them, on the server too.',
+           'Hogyan működik: a KALAUZ.cmd egy kis segédet indít ezen a laptopon (helper/scripts/kalauz.ps1). Csak ennek a laptopnak szolgálja ki ezt az oldalt, futtatja az ellenőrzéseket, és csak a gombokon megnevezett programokat indítja. Semmit nem telepít; a fekete ablak bezárása leállítja. A pipák a stickre mentődnek (logs/kalauz-progress.json), így a segítő Claude és ez az oldal közösen használja őket, a szerveren is.'),
+  foot2: T('Written 2026-11-12 for the VRG ServerKit (Ubuntu Server 26.04.1 LTS). The full step-by-step manual: ', 'Készült 2026-11-12-én a VRG ServerKithez (Ubuntu Server 26.04.1 LTS). A teljes, lépésenkénti kézikönyv: '),
+  foot3: T('VRG laptop server manual', 'VRG laptopszerver kézikönyv')
+};
+const ui = k => L(UI[k]);
+
+/* ------------------------------------------------------------ devices */
+const DEV = {
+  bl:  { t: T('Your laptop', 'Saját laptop'), s: T('Windows', 'Windows') },
+  srv: { t: T('Server laptop', 'Szerver-laptop'), s: T('Ubuntu', 'Ubuntu') },
+  hs:  { t: T('Helper stick', 'Segítő stick'), s: T('CIDATA', 'CIDATA') },
+  is:  { t: T('Install stick', 'Telepítő stick'), s: T('Ubuntu', 'Ubuntu') },
+  ph:  { t: T('Phone', 'Telefon'), s: T('camera, passwords', 'kamera, jelszavak') },
+  tab: { t: T('Tablet', 'Tablet'), s: T('second screen', 'második képernyő') },
+  rt:  { t: T('Router', 'Router'), s: T('home network', 'otthoni hálózat') }
+};
+
+/* ------------------------------------------------------------ actions (fixed list, mirrored in kalauz.ps1) */
+const ACT = {
+  helper1: { l: T('Start the helper · phase 1', 'Segítő indítása · 1. fázis'), f: '1-TELEPITO-STICK.cmd', go: true },
+  helper3: { l: T('Start the helper · phase 3', 'Segítő indítása · 3. fázis'), f: '3-SAJAT-LAPTOP.cmd', go: true },
+  'verify-iso': { l: T('Check the Ubuntu file', 'Ubuntu-fájl ellenőrzése'), f: T('the helper does it too', 'a segítő is elvégzi') },
+  'verify-kit': { l: T('Full stick check', 'Teljes stick-ellenőrzés'), f: T('needs the Kalauz', 'a Kalauz kell hozzá') },
+  rufus: { l: T('Open Rufus', 'Rufus megnyitása'), f: 'files\\rufus-4.15p.exe' },
+  'make-install': { l: T('Write the install stick without Rufus', 'Telepítő stick írása Rufus nélkül'), f: 'extras\\MAKE-INSTALL-STICK.cmd', risk: true },
+  'make-helper': { l: T('Copy this stick onto another one', 'Stick másolása egy másikra'), f: 'extras\\MAKE-HELPER-STICK.cmd', risk: true },
+  'open-state': { l: T('Open STATE.md', 'STATE.md megnyitása'), f: 'helper\\STATE.md' },
+  'open-naplo': { l: T('Open your learning log', 'Tanulási napló megnyitása'), f: 'helper\\NAPLO.md' },
+  'open-atadas': { l: T('Open the handover for A', 'Átadás A-nak megnyitása'), f: 'helper\\ATADAS-A-NAK.md' },
+  'open-work1': { l: T('Open the phase-1 work folder', '1. fázis munkamappa'), f: 'helper\\phase1\\work' },
+  'open-kit': { l: T('Open the stick in Explorer', 'Stick megnyitása Intézőben'), f: T('the stick root', 'a stick gyökere') },
+  'open-logs': { l: T('Open the command logs', 'Parancsnaplók megnyitása'), f: 'logs\\' },
+  'tailscale-msi': { l: T('Install Tailscale on this laptop', 'Tailscale telepítése erre a laptopra'), f: 'files\\tailscale-setup-1.104.6-amd64.msi' },
+  'ps-window': { l: T('Open your own PowerShell window', 'Saját PowerShell ablak nyitása'), f: T('Start menu → PowerShell', 'Start menü → PowerShell') },
+  'ssh-window': { l: T('Open an ssh window to the server', 'ssh ablak a szerverre'), f: T('PowerShell: ssh <short name>', 'PowerShell: ssh <rövid név>') },
+  refresh: { l: T('Check again now', 'Ellenőrzés most') },
+  lan: { l: T('Tablet view', 'Tablet nézet'), f: T('needs the Kalauz on the laptop', 'a laptopon futó Kalauz kell hozzá'), go: true }
+};
+
+/* ------------------------------------------------------------ phases and steps */
+const PH = [
+  { n: '0', id: 'f0', t: T('Getting ready', 'Előkészítés'),
+    g: T('Everything on one table: two laptops, two sticks, the phone and the tablet. Ten minutes.', 'Minden egy asztalon: két laptop, két stick, a telefon és a tablet. Tíz perc.') },
+  { n: '1', id: 'f1', t: T('The install stick', 'A telepítő stick'),
+    g: T('On your laptop, with the helper: the empty stick becomes the Ubuntu installer. You learn what an agent does and what you decide.', 'A saját laptopodon, a segítővel: az üres stickből Ubuntu-telepítő lesz. Megtanulod, mit csinál egy ügynök, és miről döntesz te.') },
+  { n: '2', id: 'f2', t: T('On the server', 'A szerveren'),
+    g: T('At the server laptop. Its screen is plain text, so keep this page open on the tablet beside it. The helper runs on the server itself.', 'A szerver-laptopnál. A képernyője csak szöveg, ezért ezt az oldalt tartsd nyitva mellette a tableten. A segítő magán a szerveren fut.') },
+  { n: '3', id: 'f3', t: T('From your laptop', 'A saját laptopodról'),
+    g: T('Back at your laptop: from now on you reach the server over the network. Then the handover for A and a short look back.', 'Vissza a saját laptopodnál: innentől a hálózaton át éred el a szervert. Utána átadás A-nak és egy rövid visszatekintés.') }
+];
+
+const S = (o) => o;
+const STEPS = [
+  /* 0 */
+  S({ id: 'K0.1', ph: 0, w: ['bl', 'srv', 'hs', 'is', 'ph', 'tab'], t: T('Lay out the hardware', 'Rakd ki az eszközöket'),
+     d: T('Mark the sticks with tape: <b>SEGÍTŐ</b> on the one with the files, <b>TELEPÍTŐ</b> on the empty one. Charge the phone and the tablet. Connect both laptops to power.',
+          'Jelöld meg a stickeket ragasztószalaggal: <b>SEGÍTŐ</b> a fájlokat tartalmazóra, <b>TELEPÍTŐ</b> az üresre. Töltsd fel a telefont és a tabletet. Mindkét laptopot dugd áramra.') }),
+  S({ id: 'K0.2', ph: 0, w: ['bl', 'hs'], auto: 'local', t: T('Open the Kalauz from the helper stick', 'Nyisd meg a Kalauzt a segítő stickről'),
+     d: T('Plug the SEGÍTŐ stick into your laptop, open it in Explorer and double-click <code>KALAUZ.cmd</code>. A small black window opens (leave it open) and this page loads with live checks.',
+          'Dugd a SEGÍTŐ sticket a laptopodba, nyisd meg az Intézőben, és kattints duplán a <code>KALAUZ.cmd</code>-re. Megnyílik egy kis fekete ablak (hagyd nyitva), és ez az oldal élő ellenőrzésekkel töltődik be.') }),
+  S({ id: 'K0.3', ph: 0, w: ['bl', 'hs'], auto: 'kitOk', acts: ['verify-kit'], t: T('Check the stick', 'Ellenőrizd a sticket'),
+     d: T('The quick check runs by itself: Claude, git and the login are on the stick. The full check re-reads all 3.7 GB against the list of checksums (a few minutes, in its own window).',
+          'A gyors ellenőrzés magától lefut: a Claude, a git és a bejelentkezés a sticken van. A teljes ellenőrzés mind a 3,7 GB-ot újraolvassa az ellenőrzőösszegek listája alapján (pár perc, saját ablakban).') }),
+  S({ id: 'K0.4', ph: 0, w: ['srv', 'rt'], m: ['0.2', '0.3'], t: T('Prepare the server laptop', 'Készítsd elő a szerver-laptopot'),
+     d: T('Copy off anything you still need from it: the install erases its whole disk. Charger in. A network cable from the laptop to the router. Look at the battery: if it bulges, stop and ask A.',
+          'Ments le róla mindent, ami még kell: a telepítés a teljes lemezét törli. Töltő bedugva. Hálózati kábel a laptoptól a routerig. Nézd meg az akkut: ha púpos, állj meg és kérdezd A-t.') }),
+  S({ id: 'K0.5', ph: 0, w: ['tab', 'bl'], auto: 'tabletSeen', acts: ['lan'], t: T('Put the Kalauz on the tablet', 'Tedd fel a Kalauzt a tabletre'),
+     d: T('The server laptop will only show a black text screen. The tablet becomes your second screen: switch on the tablet view, scan the code with the tablet, and you see these steps and the live state next to the server.',
+          'A szerver-laptop csak fekete szöveges képernyőt mutat majd. A tablet lesz a második képernyőd: kapcsold be a tablet nézetet, olvasd be a kódot a tablettel, és a szerver mellett is látod ezeket a lépéseket és az élő állapotot.') }),
+  S({ id: 'K0.6', ph: 0, w: ['ph'], t: T('Phone: camera and password safe', 'Telefon: kamera és jelszószéf'),
+     d: T('You will use the phone to keep the server password in a password manager (or a locked notes app), to scan one QR code for A, and to photograph the screen if something looks wrong.',
+          'A telefonon tartod majd a szerver jelszavát egy jelszókezelőben (vagy zárolt jegyzetben), azzal olvasol be egy QR-kódot A-nak, és lefotózod a képernyőt, ha valami furcsa.') }),
+  /* 1 */
+  S({ id: 'K1.1', ph: 1, w: ['bl'], auto: 'helperRunning', acts: ['helper1'], t: T('Start the helper', 'Indítsd el a segítőt'),
+     d: T('A new window opens with Claude from the stick. First it asks for permissions: read them and answer. Then it greets you, asks your name and shows its plan. From here on, it leads; this page shows where you are.',
+          'Új ablak nyílik a stickről futó Claude-dal. Először engedélyeket kér: olvasd el és válaszolj. Utána köszön, megkérdezi a neved, és megmutatja a tervét. Innentől ő vezet; ez az oldal mutatja, hol tartasz.') }),
+  S({ id: 'K1.2', ph: 1, w: ['bl', 'hs'], auto: 'isoOk', acts: ['verify-iso'], t: T('The Ubuntu file is intact', 'Az Ubuntu-fájl hibátlan'),
+     d: T('The 2.9 GB installer file is compared with its official checksum, so you know not one byte changed on the way. The helper repeats it to show you how it works.',
+          'A 2,9 GB-os telepítőfájlt összeveti a hivatalos ellenőrzőösszeggel, így tudod, hogy útközben egy bájt sem változott. A segítő megismétli, hogy megmutassa, hogyan működik.') }),
+  S({ id: 'K1.3', ph: 1, w: ['bl', 'is'], auto: 'secondStick', t: T('Plug in the TELEPÍTŐ stick', 'Dugd be a TELEPÍTŐ sticket'),
+     d: T('Everything on it will be erased. At least 4 GB. Both sticks are now in your laptop.', 'Minden törlődik róla. Legalább 4 GB. Most mindkét stick a laptopodban van.') }),
+  S({ id: 'K1.4', ph: 1, w: ['bl', 'is'], auto: 'installerStick', acts: ['rufus', 'make-install'], m: ['1.3'], t: T('Write the install stick', 'Írd meg a telepítő sticket'),
+     d: T('The helper opens Rufus and talks you through it: choose the stick by its size, START, and pick <b>DD Image mode</b> when asked. The second button does the same without Rufus, and checks the result.',
+          'A segítő megnyitja a Rufust, és végigvezet: a sticket a mérete alapján válaszd, START, és amikor kérdezi, válaszd a <b>DD Image mode</b>-ot. A második gomb ugyanezt Rufus nélkül végzi el, és ellenőrzi az eredményt.'),
+     warn: T('Never pick the stick called <b>CIDATA</b>: that is the helper stick.', 'Soha ne a <b>CIDATA</b> nevű sticket válaszd: az a segítő stick.') }),
+  S({ id: 'K1.5', ph: 1, w: ['bl', 'srv'], who: 'segito', acts: ['open-state'], m: ['0.5'], t: T('Tell the helper about the server laptop', 'Mesélj a segítőnek a szerver-laptopról'),
+     d: T('Its make and model, how much memory and disk it has (the sticker underneath helps). The helper notes it in STATE.md and looks up the boot-menu key, often F12, F9 or Esc.',
+          'Gyártó és típus, mennyi memória és lemez van benne (az alján lévő matrica segít). A segítő beírja a STATE.md-be, és kikeresi a boot-menü billentyűt, gyakran F12, F9 vagy Esc.') }),
+  S({ id: 'K1.6', ph: 1, w: ['bl'], who: 'segito', acts: ['open-work1'], t: T('Your turn: ask for a phase-2 checklist', 'Te jössz: kérj egy 2. fázis-listát'),
+     d: T('You write the prompt this time: ask the helper for a one-page checklist of phase 2 that you can keep beside the server laptop. This is how working with an agent feels when you lead.',
+          'Most te írod a promptot: kérj a segítőtől egyoldalas ellenőrzőlistát a 2. fázishoz, amit a szerver-laptop mellé tehetsz. Ilyen érzés, amikor te vezeted az ügynököt.') }),
+  S({ id: 'K1.7', ph: 1, w: ['bl', 'hs', 'is'], t: T('Eject both sticks', 'Vedd ki mindkét sticket'),
+     d: T('Type <code>/exit</code> in the helper, then use Windows "Safely remove" for both sticks. Leave this page and the black Kalauz window open: they keep watching for the server while you work on it.',
+          'Írd be a segítőbe: <code>/exit</code>, aztán mindkét sticket vedd ki a Windows „Biztonságos eltávolítás” funkciójával. Ezt az oldalt és a fekete Kalauz ablakot hagyd nyitva: figyelik a szervert, amíg azon dolgozol.') }),
+  /* 2 */
+  S({ id: 'K2.1', ph: 2, w: ['srv', 'is', 'hs'], m: ['3.1'], t: T('Boot from the install stick', 'Indítás a telepítő stickről'),
+     d: T('Both sticks into the server laptop. Power on and tap the boot-menu key (STATE.md has it). Choose the USB stick: the TELEPÍTŐ one.',
+          'Mindkét sticket dugd a szerver-laptopba. Kapcsold be, és nyomogasd a boot-menü billentyűt (a STATE.md-ben van). Válaszd az USB-sticket: a TELEPÍTŐ-t.') }),
+  S({ id: 'K2.2', ph: 2, w: ['srv'], t: T('"Continue with autoinstall?" → yes', '„Continue with autoinstall?” → yes'),
+     d: T('The installer found the preset on the helper stick: language, Hungarian keyboard, Budapest time, SSH. Type <code>yes</code> and press Enter.',
+          'A telepítő megtalálta a beállításokat a segítő sticken: nyelv, magyar billentyűzet, budapesti idő, SSH. Írd be: <code>yes</code>, és nyomj Entert.') }),
+  S({ id: 'K2.3', ph: 2, w: ['srv', 'hs'], t: T('Pull the helper stick out now', 'Most húzd ki a segítő sticket'),
+     d: T('As soon as the first installer screen (<b>Network</b>) appears.', 'Amint megjelenik az első telepítő-képernyő (<b>Network</b>).'),
+     warn: T('Then it can never be chosen as the disk to install onto. It goes back in after the first login.', 'Így soha nem választható ki telepítési lemeznek. Az első bejelentkezés után kerül vissza.') }),
+  S({ id: 'K2.4', ph: 2, w: ['srv', 'ph'], m: ['3.4', '3.5', '3.6'], t: T('Network, profile, disk', 'Hálózat, profil, lemez'),
+     d: T('<b>Network:</b> the cable shows an address, Done. <b>Profile:</b> your name, a server name (e.g. <code>vrg-szerver</code>), a user name, and a strong password: save it on the phone now. <b>Storage:</b> Use an entire disk, LVM on, no encryption. Then Install.',
+          '<b>Network:</b> a kábel címet kap, Done. <b>Profile:</b> a neved, egy szervernév (pl. <code>vrg-szerver</code>), felhasználónév és erős jelszó: most mentsd el a telefonon. <b>Storage:</b> Use an entire disk, LVM bekapcsolva, titkosítás nélkül. Aztán Install.') }),
+  S({ id: 'K2.5', ph: 2, w: ['srv', 'is'], m: ['3.9'], t: T('Reboot, log in, note the address', 'Újraindítás, belépés, a cím felírása'),
+     d: T('Choose "Reboot now" and pull the TELEPÍTŐ stick when the screen goes dark. Log in with your user name and password (the password stays invisible while you type). The welcome text shows the <b>IPv4 address</b>: type it into the server card.',
+          'Válaszd a „Reboot now”-t, és amikor elsötétül a képernyő, húzd ki a TELEPÍTŐ sticket. Lépj be a felhasználóneveddel és jelszavaddal (a jelszó gépelés közben láthatatlan). Az üdvözlő szöveg mutatja az <b>IPv4 címet</b>: írd be a szerverkártyába.') }),
+  S({ id: 'K2.6', ph: 2, w: ['bl', 'srv', 'rt'], auto: 'srvSeen', t: T('Your laptop sees the server', 'A laptopod látja a szervert'),
+     d: T('This page asks the server from your laptop over the home network. Green means the way between them works, and SSH (the remote door) is open.',
+          'Ez az oldal a laptopodról szól a szervernek az otthoni hálózaton. A zöld azt jelenti, hogy működik köztük az út, és nyitva az SSH (a távoli ajtó).') }),
+  S({ id: 'K2.7', ph: 2, w: ['srv', 'hs'], who: 'go', t: T('Start the helper on the server', 'Indítsd el a segítőt a szerveren'),
+     d: T('Plug the SEGÍTŐ stick back into the server. It asks <code>Start the helper? [I/n]</code>: press Enter. No question? Type <code>helper</code> and Enter.',
+          'Dugd vissza a SEGÍTŐ sticket a szerverbe. Megkérdezi: <code>Elinditod a segitot? [I/n]</code>: nyomj Entert. Nincs kérdés? Írd be: <code>helper</code>, és Enter.'),
+     cmd: [T('# if "helper" is unknown, these two lines do the same:', '# ha a "helper" ismeretlen, ez a két sor ugyanazt teszi:'), 'sudo mkdir -p /media/vrg-helper && sudo mount -L CIDATA /media/vrg-helper -o uid=1000,gid=1000', 'bash /media/vrg-helper/szerver/go.sh'] }),
+  S({ id: 'K2.8', ph: 2, w: ['srv'], who: 'go', t: T('Permissions on the server', 'Engedélyek a szerveren'),
+     d: T('Two questions: temporary admin rights (sudo, at most 48 hours) and working on its own. Then your server password, once. The helper never sees it.',
+          'Két kérdés: ideiglenes rendszergazda-jog (sudo, legfeljebb 48 óra) és önálló munka. Aztán egyszer a szerver jelszava. A segítő sosem látja.') }),
+  S({ id: 'K2.9', ph: 2, w: ['srv'], who: 'segito', m: ['4.2', '4.4', '4.6'], t: T('Updates, whole disk, tools, disk health', 'Frissítések, teljes lemez, eszközök, lemezállapot'),
+     d: T('The helper does these and explains each in a sentence. Your part: watch, ask, say yes.', 'Ezeket a segítő végzi, és egy-egy mondatban elmagyarázza. A te részed: figyelni, kérdezni, igent mondani.') }),
+  S({ id: 'K2.10', ph: 2, w: ['srv'], who: 'segito', m: ['5.1', '5.2'], t: T('It behaves like a server', 'Úgy viselkedik, mint egy szerver'),
+     d: T('Closing the lid does nothing, it never sleeps, the screen goes dark by itself. You test the lid together: close it, open it, still running.',
+          'A fedél lecsukása nem csinál semmit, sosem alszik el, a képernyő magától elsötétül. A fedelet együtt próbáljátok ki: lecsuk, felnyit, még mindig fut.') }),
+  S({ id: 'K2.11', ph: 2, w: ['rt', 'ph', 'tab'], who: 'segito', m: ['6.1'], t: T('A fixed address on the router', 'Állandó cím a routeren'),
+     d: T('On the phone or tablet, open the router\'s admin page and reserve the server\'s address (look for DHCP, Address Reservation or Static lease). The helper gives you the server\'s MAC address. Cannot get in? Note it: today\'s address works for now.',
+          'A telefonon vagy a tableten nyisd meg a router admin oldalát, és foglald le a szerver címét (keresd: DHCP, Address Reservation vagy Static lease). A szerver MAC-címét a segítő adja meg. Nem tudsz belépni? Jegyezd fel: a mai cím egyelőre működik.') }),
+  S({ id: 'K2.12', ph: 2, w: ['srv'], who: 'segito', auto: 'ufwOn', m: ['6.7'], t: T('Firewall: SSH from home only', 'Tűzfal: SSH csak otthonról'),
+     d: T('The helper switches the firewall on with one opening: SSH from your home network.', 'A segítő bekapcsolja a tűzfalat egyetlen nyílással: SSH az otthoni hálózatodról.') }),
+  S({ id: 'K2.13', ph: 2, w: ['srv', 'ph'], who: 'segito', auto: 'tsSrv', m: ['7.1', '7.2'], t: T('Tailscale with A (only if A agreed)', 'Tailscale A-val (csak ha A beleegyezett)'),
+     d: T('The helper shows a QR code on the server screen. Scan it with the phone and send the link to A. A adds the server to A\'s private network. No reply from A yet? Skip; it can be done later.',
+          'A segítő QR-kódot mutat a szerver képernyőjén. Olvasd be a telefonnal, és küldd el a linket A-nak. A felveszi a szervert a saját privát hálózatába. A még nem válaszolt? Hagyd ki; később is megoldható.') }),
+  S({ id: 'K2.14', ph: 2, w: ['srv'], who: 'segito', t: T('Your turn: a status screen', 'Te jössz: egy állapotképernyő'),
+     d: T('Tell the helper in plain words what a one-screen status should show (disk, temperature, battery, updates…). It builds the <code>vrg-status</code> command from your words.',
+          'Mondd el a segítőnek egyszerű szavakkal, mit mutasson egy egyképernyős állapot (lemez, hőmérséklet, akku, frissítések…). A szavaidból megépíti a <code>vrg-status</code> parancsot.') }),
+  S({ id: 'K2.15', ph: 2, w: ['srv'], who: 'segito', t: T('Reboot test', 'Újraindítási próba'),
+     d: T('The helper asks first. After the reboot you log in and type <code>helper</code>; it checks that everything came back the same.', 'A segítő előbb megkérdez. Újraindítás után belépsz és beírod: <code>helper</code>; ellenőrzi, hogy minden ugyanúgy visszajött.') }),
+  S({ id: 'K2.16', ph: 2, w: ['srv', 'hs'], who: 'go', auto: 'p2', t: T('Phase 2 done: the stick goes back to your laptop', 'A 2. fázis kész: a stick vissza a laptopodhoz'),
+     d: T('Type <code>/exit</code>, answer <code>i</code> to "Phase 2 done", and pull the stick when the screen says so. The server stays on.',
+          'Írd be: <code>/exit</code>, a „Kesz a 2. fazis” kérdésre válaszolj <code>i</code>-vel, és húzd ki a sticket, amikor a képernyő mondja. A szerver bekapcsolva marad.') }),
+  /* 3 */
+  S({ id: 'K3.1', ph: 3, w: ['bl', 'hs'], auto: 'kitBack', t: T('The helper stick is back in your laptop', 'A segítő stick újra a laptopodban'),
+     d: T('If you closed the Kalauz, double-click <code>KALAUZ.cmd</code> again. The server card fills in from the stick: the helper wrote it there.',
+          'Ha bezártad a Kalauzt, kattints duplán újra a <code>KALAUZ.cmd</code>-re. A szerverkártya kitöltődik a stickről: a segítő oda írta.') }),
+  S({ id: 'K3.2', ph: 3, w: ['bl'], auto: 'helperRunning', acts: ['helper3'], t: T('Start the helper for phase 3', 'Indítsd el a segítőt a 3. fázishoz'),
+     d: T('It reads what happened on the server and continues from there.', 'Elolvassa, mi történt a szerveren, és onnan folytatja.') }),
+  S({ id: 'K3.3', ph: 3, w: ['bl', 'srv'], auto: 'srvSsh', m: ['6.2'], t: T('The server answers over the network', 'A szerver válaszol a hálózaton'),
+     d: T('SSH is open on the server\'s address. If it is red: is the server on, and are both on the same network?', 'Az SSH nyitva van a szerver címén. Ha piros: be van kapcsolva a szerver, és ugyanazon a hálózaton vannak?') }),
+  S({ id: 'K3.4', ph: 3, w: ['bl'], auto: 'key', acts: ['ps-window'], m: ['6.3'], t: T('Your SSH key', 'Az SSH-kulcsod'),
+     d: T('In your own PowerShell window you make a key pair and choose a passphrase (keep it in the password manager). The helper gives you the lines; the secret parts only you type.',
+          'A saját PowerShell ablakodban kulcspárt készítesz, és jelmondatot választasz (tedd a jelszókezelőbe). A sorokat a segítő adja; a titkos részeket csak te gépeled.') }),
+  S({ id: 'K3.5', ph: 3, w: ['bl', 'srv'], auto: 'keyLogin', acts: ['ssh-window'], m: ['6.4', '6.5'], t: T('Key on the server, short name works', 'Kulcs a szerveren, működik a rövid név'),
+     d: T('You copy the key over and type the server password one last time. Then the short name (e.g. <code>ssh vrg-srv</code>) gets you in with the key.',
+          'Átmásolod a kulcsot, és utoljára begépeled a szerver jelszavát. Utána a rövid név (pl. <code>ssh vrg-srv</code>) a kulccsal enged be.') }),
+  S({ id: 'K3.6', ph: 3, w: ['srv'], auto: 'pwOff', m: ['6.6'], t: T('Password login switched off', 'Jelszavas belépés kikapcsolva'),
+     d: T('Now only your key opens the door, so guessing passwords gets nobody in. The helper proves it: a password-only attempt is refused.',
+          'Mostantól csak a kulcsod nyitja az ajtót, így jelszó-találgatással senki nem jut be. A segítő bebizonyítja: a csak jelszavas próbálkozást elutasítja.') }),
+  S({ id: 'K3.7', ph: 3, w: ['bl'], auto: 'tsPc', acts: ['tailscale-msi'], m: ['7.3'], t: T('Tailscale on your laptop (if A invited you)', 'Tailscale a laptopodon (ha A meghívott)'),
+     d: T('With it you reach the server from anywhere, not only from home. Windows asks you to confirm the install.', 'Ezzel bárhonnan eléred a szervert, nem csak otthonról. A Windows megerősítést kér a telepítéshez.') }),
+  S({ id: 'K3.8', ph: 3, w: ['srv'], auto: 'sudoGone', t: T('The helper gives back its admin rights', 'A segítő visszaadja a rendszergazda-jogát'),
+     d: T('It asks first, removes its temporary sudo rule, and shows you that it no longer works. The helper\'s admin role ends here.', 'Előbb megkérdez, törli az ideiglenes sudo-szabályt, és megmutatja, hogy már nem működik. Itt ér véget a segítő rendszergazda-szerepe.') }),
+  S({ id: 'K3.9', ph: 3, w: ['bl', 'hs'], auto: 'atadas', acts: ['open-atadas'], t: T('Handover for A', 'Átadás A-nak'),
+     d: T('The helper writes what was done and what is left for A: the three VRG jobs, A\'s own key, anything odd it saw.', 'A segítő leírja, mi készült el, és mi maradt A-nak: a három VRG-feladat, A saját kulcsa, bármi furcsa, amit látott.') }),
+  S({ id: 'K3.10', ph: 3, w: ['bl'], who: 'segito', acts: ['open-naplo'], t: T('Look back together', 'Visszatekintés közösen'),
+     d: T('Five lines on what you just did with an agent, three things to try next on the server by talking to Claude, and how it felt. It goes into your learning log.',
+          'Öt sor arról, mit csináltál most egy ügynökkel, három dolog, amit legközelebb kipróbálhatsz a szerveren Claude-dal beszélgetve, és hogy milyen volt. Bekerül a tanulási naplódba.') }),
+  S({ id: 'K3.11', ph: 3, w: ['hs'], t: T('The stick goes back to A', 'A stick vissza A-hoz'),
+     d: T('It holds a Claude login. Eject it safely and give it back to A, or keep it locked away as you agreed.', 'Egy Claude-bejelentkezés van rajta. Vedd ki biztonságosan, és add vissza A-nak, vagy tartsd elzárva, ahogy megbeszéltétek.') })
+];
+
+/* ------------------------------------------------------------ state */
+let MODE = 'plain';            // local | mirror | shared | plain
+let KEY = '';
+let ST = null;                 // last /api/state answer
+let LOST = false;
+let PROG = { steps: {}, facts: {} };
+let db = null, docRef = null;
+const AUTO_SENT = {};
+
+const sGet = k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } };
+const sSet = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } };
+const done = id => !!(PROG.steps[id] && PROG.steps[id].done);
+const fact = k => (PROG.facts[k] && PROG.facts[k].v) || '';
+
+/* ------------------------------------------------------------ automatic checks: null = cannot tell here */
+const ok = (o, en, hu) => ({ ok: !!o, txt: T(en, hu) });
+const AUTO = {
+  local: s => ok(true, 'The Kalauz runs on ' + (s.pc && s.pc.name || 'this laptop'), 'A Kalauz fut: ' + (s.pc && s.pc.name || 'ezen a laptopon')),
+  kitOk: s => {
+    if (!s.kit.present) return ok(false, 'The helper stick is not in this laptop', 'A segítő stick nincs ebben a laptopban');
+    const f = s.files, miss = [];
+    if (!f.claude) miss.push('Claude'); if (!f.git) miss.push('git'); if (!f.login) miss.push('login');
+    return miss.length ? ok(false, 'Missing: ' + miss.join(', '), 'Hiányzik: ' + miss.join(', ')) : ok(true, 'Claude, git and the login are on the stick', 'A Claude, a git és a bejelentkezés a sticken van');
+  },
+  tabletSeen: s => recent(ST.lan && ST.lan.seen, 600) ? ok(true, 'A tablet connected', 'Egy tablet csatlakozott') : (ST.lan && ST.lan.on ? ok(false, 'Tablet view on, waiting for the tablet', 'Tablet nézet bekapcsolva, várja a tabletet') : ok(false, 'Tablet view is off', 'A tablet nézet ki van kapcsolva')),
+  isoOk: s => {
+    const i = ST.iso || {};
+    if (i.state === 'ok') return ok(true, 'Checksum matches', 'Az ellenőrzőösszeg egyezik');
+    if (i.state === 'running') return ok(false, 'Checking … ' + i.pct + '%', 'Ellenőrzés … ' + i.pct + '%');
+    if (i.state === 'bad') return ok(false, 'DAMAGED: do not use it, tell A', 'SÉRÜLT: ne használd, szólj A-nak');
+    return ok(false, 'Not checked on this laptop yet', 'Ezen a laptopon még nincs ellenőrizve');
+  },
+  secondStick: s => { const o = s.usb.filter(u => u.role !== 'helper'); return o.length ? ok(true, 'Second stick: ' + o[0].gb + ' GB', 'Második stick: ' + o[0].gb + ' GB') : ok(false, 'Only the helper stick is in', 'Csak a segítő stick van bedugva'); },
+  installerStick: s => {
+    const i = s.usb.find(u => u.role === 'installer'), q = s.usb.find(u => u.role === 'installer?');
+    if (i) return ok(true, 'An Ubuntu install stick is in (' + i.gb + ' GB)', 'Ubuntu telepítő stick bedugva (' + i.gb + ' GB)');
+    if (q) return ok(true, 'Probably the install stick: Windows cannot read it, which is normal', 'Valószínűleg a telepítő stick: a Windows nem tudja olvasni, ez normális');
+    return ok(false, 'No install stick seen yet', 'Még nem látok telepítő sticket');
+  },
+  helperRunning: s => s.helper.running ? ok(true, 'The helper is running', 'A segítő fut') : ok(false, 'The helper is not running', 'A segítő nem fut'),
+  srvSeen: s => !s.srv.target ? ok(false, 'Type the server address into the server card', 'Írd be a szerver címét a szerverkártyába')
+    : (s.srv.ssh ? ok(true, s.srv.target + ' answers, SSH open', s.srv.target + ' válaszol, SSH nyitva') : (s.srv.ping ? ok(true, s.srv.target + ' answers (SSH not yet)', s.srv.target + ' válaszol (SSH még nem)') : ok(false, s.srv.target + ' does not answer', s.srv.target + ' nem válaszol'))),
+  srvSsh: s => !s.srv.target ? ok(false, 'No server address yet', 'Még nincs szervercím') : (s.srv.ssh ? ok(true, 'SSH open on ' + s.srv.target, 'SSH nyitva: ' + s.srv.target) : ok(false, 'SSH does not answer on ' + s.srv.target, 'Az SSH nem válaszol: ' + s.srv.target)),
+  key: s => s.pc.key ? ok(true, 'Key found: .ssh\\id_ed25519', 'Kulcs megvan: .ssh\\id_ed25519') : ok(false, 'No key on this laptop yet', 'Még nincs kulcs ezen a laptopon'),
+  keyLogin: s => s.srv.key === true ? ok(true, 'ssh ' + s.pc.alias + ' gets in with the key', 'ssh ' + s.pc.alias + ' kulccsal belép') : (s.pc.cfg ? ok(false, 'Short name set, key login not working yet (is the key loaded? ssh-add)', 'A rövid név megvan, a kulcsos belépés még nem megy (betöltötted? ssh-add)') : ok(false, 'No short name "' + s.pc.alias + '" in .ssh\\config yet', 'Még nincs "' + s.pc.alias + '" rövid név a .ssh\\config-ban')),
+  pwOff: s => probe(s, p => p.pw === 'no' ? ok(true, 'Password login: off', 'Jelszavas belépés: kikapcsolva') : ok(false, 'Password login: still on', 'Jelszavas belépés: még be van kapcsolva')),
+  ufwOn: s => probe(s, p => p.ufw === 'on' ? ok(true, 'Firewall on', 'A tűzfal be van kapcsolva') : ok(false, 'Firewall off', 'A tűzfal ki van kapcsolva')),
+  tsSrv: s => probe(s, p => p.ts ? ok(true, 'Server on Tailscale: ' + p.ts, 'A szerver a Tailscale-en: ' + p.ts) : ok(false, 'Server not on Tailscale', 'A szerver nincs a Tailscale-en')),
+  p2: s => probe(s, p => p.p2 === '1' ? ok(true, 'Phase 2 closed on the server', 'A 2. fázis lezárva a szerveren') : ok(false, 'Phase 2 not closed yet', 'A 2. fázis még nincs lezárva')),
+  sudoGone: s => probe(s, p => p.sudo === '0' ? ok(true, 'Temporary sudo rule removed', 'Az ideiglenes sudo-szabály törölve') : ok(false, 'Temporary sudo rule still there', 'Az ideiglenes sudo-szabály még megvan')),
+  tsPc: s => s.pc.ts && s.pc.ts.ip ? ok(true, 'This laptop on Tailscale: ' + s.pc.ts.ip, 'Ez a laptop a Tailscale-en: ' + s.pc.ts.ip) : (s.pc.ts && s.pc.ts.inst ? ok(false, 'Installed, not signed in', 'Telepítve, nincs bejelentkezve') : ok(false, 'Not installed', 'Nincs telepítve')),
+  atadas: s => s.files.atadas ? ok(true, 'ATADAS-A-NAK.md is on the stick', 'Az ATADAS-A-NAK.md a sticken van') : ok(false, 'Not written yet', 'Még nincs megírva'),
+  kitBack: s => (s.kit.present && done('K2.16')) ? ok(true, 'The helper stick is in this laptop', 'A segítő stick ebben a laptopban van') : ok(false, s.kit.present ? 'Stick here; phase 2 not closed yet' : 'The helper stick is not in this laptop', s.kit.present ? 'A stick itt van; a 2. fázis még nincs lezárva' : 'A segítő stick nincs ebben a laptopban')
+};
+function probe(s, f) { return s.srv.probe ? f(s.srv.probe) : null; }
+function recent(iso, sec) { if (!iso) return false; const t = Date.parse(iso); return !isNaN(t) && (Date.now() - t) / 1000 < sec; }
+function autoOf(st) { if (!st.auto || !ST || !ST.state || !ST.state.kit) return null; try { return AUTO[st.auto](ST.state); } catch (e) { return null; } }
+
+/* ------------------------------------------------------------ rendering */
+const live = () => MODE === 'local' || MODE === 'mirror';
+function tags(ws) { return '<span class="tags">' + ws.map(w => '<span class="tag d-' + w + '">' + esc(L(DEV[w].t)) + '</span>').join('') + '</span>'; }
+function mlink(m) {
+  const a = 's-' + m.replace('.', '-');
+  if (MODE === 'local') return '/manual#' + a;
+  if (MODE === 'mirror') return '/manual?r=' + encodeURIComponent(KEY) + '#' + a;
+  if (MODE === 'shared') return MANUAL_URL + '#' + a;
+  return 'vrg-laptop-server.html#' + a;
+}
+function actBtn(a) {
+  const d = ACT[a]; if (!d) return '';
+  const can = MODE === 'local';
+  const cls = (d.go ? 'go' : '') + (d.risk ? ' risk' : '');
+  return '<button type="button" class="' + cls + '" data-act="' + a + '"' + (can ? '' : ' disabled') + '>' + esc(L(d.l)) + '</button>';
+}
+function actHints(acts) {
+  if (MODE === 'local' || !acts || !acts.length) return '';
+  const fs = acts.map(a => ACT[a] && ACT[a].f).filter(Boolean).map(f => esc(L(f)));
+  return fs.length ? '<span class="hint">' + esc(ui('onlyLaptop')) + fs.join(' · ') + '</span>' : '';
+}
+function liveLine(st) {
+  const a = autoOf(st); if (!a) return '';
+  const cls = a.ok ? 'ok' : (st.auto === 'isoOk' && ST.iso && ST.iso.state === 'bad' ? 'bad' : 'wait');
+  return '<div class="live"><span class="dot ' + cls + (ST.iso && ST.iso.state === 'running' && st.auto === 'isoOk' ? ' pulse' : '') + '"></span><span>' + esc(L(a.txt)) + '</span></div>';
+}
+function whoLine(st) {
+  const e = PROG.steps[st.id];
+  if (e && e.done) {
+    const when = e.at ? new Date(e.at).toLocaleString(lang === 'hu' ? 'hu-HU' : 'en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    return '<div class="who"><b>' + esc(ui('by_' + (UI['by_' + e.by] ? e.by : 'B'))) + '</b>' + (when ? ' · ' + esc(when) : '') + (e.note ? ' · ' + esc(e.note) : '') + '</div>';
+  }
+  if (st.who === 'segito' || st.who === 'go') return '<div class="who">' + esc(ui('willHelper')) + '</div>';
+  if (st.auto && live()) return '<div class="who">' + esc(ui('willAuto')) + '</div>';
+  return '';
+}
+function cmdHtml(st) {
+  if (!st.cmd) return '';
+  const text = st.cmd.map(L).join('\n');
+  return '<div class="cmd"><pre>' + esc(text) + '</pre><button type="button" data-copy="' + st.id + '">' + esc(ui('copy')) + '</button></div>';
+}
+function stepBody(st) {
+  return '<p>' + L(st.d) + '</p>' + (st.warn ? '<div class="warn">' + L(st.warn) + '</div>' : '') + cmdHtml(st) + liveLine(st) +
+    ((st.acts && st.acts.length) ? '<div class="acts">' + st.acts.map(actBtn).join('') + actHints(st.acts) + '</div>' : '') +
+    whoLine(st) +
+    (st.m ? '<div class="mref">' + esc(ui('manual')) + ': ' + st.m.map(m => '<a href="' + mlink(m) + '" target="_blank" rel="noopener">§' + m + '</a>').join(' · ') + '</div>' : '');
+}
+function renderPhases() {
+  let h = '';
+  PH.forEach((ph, pi) => {
+    h += '<section class="phase" id="' + ph.id + '"><div class="ph-h"><span class="num">' + ph.n + '</span><h2>' + esc(L(ph.t)) + '</h2><span class="goal">' + esc(L(ph.g)) + '</span></div>';
+    STEPS.filter(s => s.ph === pi).forEach(st => {
+      const sid = st.id.replace('.', '-');
+      h += '<div class="step" id="' + sid + '" data-id="' + st.id + '"><input type="checkbox" id="c-' + sid + '" data-tick="' + st.id + '" aria-label="' + esc(st.id) + '">' +
+        '<label class="step-h" for="c-' + sid + '"><span class="sid">' + st.id + '</span><span class="st">' + esc(L(st.t)) + '</span>' + tags(st.w) + '</label>' +
+        '<div class="body" data-body="' + st.id + '"></div></div>';
+    });
+    h += '</section>';
+  });
+  $('phases').innerHTML = h;
+}
+function refreshSteps() {
+  const nx = nextStep();
+  STEPS.forEach(st => {
+    const sid = st.id.replace('.', '-'), row = $(sid); if (!row) return;
+    const cb = $('c-' + sid), on = done(st.id);
+    if (cb.checked !== on) cb.checked = on;
+    row.classList.toggle('done', on); row.classList.toggle('next', nx === st);
+    const b = row.querySelector('[data-body]'), html = stepBody(st);
+    if (b.dataset.h !== html) { b.innerHTML = html; b.dataset.h = html; }
+  });
+}
+function nextStep() { return STEPS.find(s => !done(s.id)) || null; }
+function renderNow() {
+  const el = $('now'), st = nextStep();
+  let h;
+  if (!st) { el.classList.add('fin'); h = '<div class="label">' + esc(ui('finL')) + '</div><h2>' + esc(ui('finT')) + '</h2><p class="txt">' + esc(ui('finP')) + '</p>'; }
+  else {
+    el.classList.remove('fin');
+    h = '<div class="label">' + esc(ui('nowL')) + ' · ' + st.id + ' · ' + esc(L(PH[st.ph].t)) + '</div><h2>' + esc(L(st.t)) + '</h2>' +
+      '<div class="txt">' + L(st.d) + '</div>' + (st.warn ? '<div class="warn" style="margin-top:8px">' + L(st.warn) + '</div>' : '') + liveLine(st) +
+      '<div class="row">' + (st.acts || []).map(actBtn).join('') + '<button type="button" data-now="' + st.id + '">' + esc(ui('doneBtn')) + '</button>' + tags(st.w) + actHints(st.acts) + '</div>';
+  }
+  if (el.dataset.h !== h) { el.innerHTML = h; el.dataset.h = h; }
+}
+function li(cls, en, hu) { return '<li><span class="dot ' + cls + '"></span><span>' + esc(L(T(en, hu))) + '</span></li>'; }
+function devCard(w, body, row) {
+  return '<div class="dev d-' + w + '"><h3>' + esc(L(DEV[w].t)) + ' <small>' + esc(L(DEV[w].s)) + '</small></h3>' + body + (row ? '<div class="row">' + row + '</div>' : '') + '</div>';
+}
+function renderDevices() {
+  const s = ST && ST.state && ST.state.kit ? ST.state : null;
+  const role = (en, hu) => '<div class="role">' + esc(L(T(en, hu))) + '</div>';
+  let h = '';
+  if (!s) {
+    const no = role('Live state appears when the Kalauz runs from the helper stick.', 'Az élő állapot akkor jelenik meg, ha a Kalauz a segítő stickről fut.');
+    h += devCard('bl', role('Phases 1 and 3. Runs the Kalauz and the helper.', 'Az 1. és a 3. fázis. Itt fut a Kalauz és a segítő.') + no);
+    h += devCard('srv', role('Becomes the server in phase 2. Plain text screen.', 'A 2. fázisban lesz belőle szerver. Szöveges képernyő.') + (fact('ip') ? '<ul>' + li('na', 'Address: ' + fact('ip'), 'Cím: ' + fact('ip')) + '</ul>' : ''));
+    h += devCard('hs', role('Holds the helper, the files and the ticks. Moves: your laptop → server → your laptop.', 'Ezen van a segítő, a fájlok és a pipák. Útja: laptopod → szerver → laptopod.'));
+    h += devCard('is', role('Becomes the Ubuntu installer in phase 1; used once in phase 2.', 'Az 1. fázisban Ubuntu-telepítő lesz belőle; a 2. fázisban egyszer kell.'));
+    h += devCard('ph', role('Password safe (K2.4), QR code for A (K2.13), router page (K2.11), photos of the screen.', 'Jelszószéf (K2.4), QR-kód A-nak (K2.13), router oldal (K2.11), fotók a képernyőről.'));
+    h += devCard('tab', role('Second screen beside the server: the Kalauz in tablet view (K0.5).', 'Második képernyő a szerver mellett: a Kalauz tablet nézetben (K0.5).'));
+    $('devices').innerHTML = h; return;
+  }
+  const yes = b => b ? 'ok' : 'bad';
+  // your laptop
+  h += devCard('bl', '<ul>' +
+    li('ok', 'Kalauz running on ' + s.pc.name, 'Kalauz fut: ' + s.pc.name) +
+    li(yes(s.net.online), s.net.online ? 'Internet: yes' : 'Internet: no', s.net.online ? 'Internet: van' : 'Internet: nincs') +
+    li(s.helper.running ? 'ok' : 'na', s.helper.running ? 'Helper running' : 'Helper not running', s.helper.running ? 'A segítő fut' : 'A segítő nem fut') +
+    li(s.pc.key ? 'ok' : 'na', s.pc.key ? 'SSH key: yes' : 'SSH key: not yet', s.pc.key ? 'SSH-kulcs: van' : 'SSH-kulcs: még nincs') +
+    li(s.pc.ts && s.pc.ts.ip ? 'ok' : 'na', 'Tailscale: ' + (s.pc.ts && s.pc.ts.ip ? s.pc.ts.ip : (s.pc.ts && s.pc.ts.inst ? 'installed' : 'no')), 'Tailscale: ' + (s.pc.ts && s.pc.ts.ip ? s.pc.ts.ip : (s.pc.ts && s.pc.ts.inst ? 'telepítve' : 'nincs'))) +
+    '</ul>', MODE === 'local' ? actBtn('refresh') : '');
+  // server
+  let sv = '';
+  if (!s.srv.target) sv += li('na', 'Address unknown yet (server card)', 'Cím még ismeretlen (szerverkártya)');
+  else {
+    sv += li(yes(s.srv.ping || s.srv.ssh), s.srv.target + (s.srv.ping || s.srv.ssh ? ' answers' : ' does not answer'), s.srv.target + (s.srv.ping || s.srv.ssh ? ' válaszol' : ' nem válaszol'));
+    sv += li(s.srv.ssh ? 'ok' : 'wait', s.srv.ssh ? 'SSH open' : 'SSH closed', s.srv.ssh ? 'SSH nyitva' : 'SSH zárva');
+    sv += li(s.srv.key === true ? 'ok' : 'na', s.srv.key === true ? 'Key login works' : 'Key login: not yet', s.srv.key === true ? 'Kulcsos belépés működik' : 'Kulcsos belépés: még nem');
+    const p = s.srv.probe;
+    if (p) {
+      sv += li(p.pw === 'no' ? 'ok' : 'wait', 'Password login: ' + (p.pw === 'no' ? 'off' : 'on'), 'Jelszavas belépés: ' + (p.pw === 'no' ? 'ki' : 'be'));
+      sv += li(p.ufw === 'on' ? 'ok' : 'wait', 'Firewall: ' + p.ufw, 'Tűzfal: ' + (p.ufw === 'on' ? 'be' : 'ki'));
+      sv += li(p.sudo === '0' ? 'ok' : 'wait', p.sudo === '0' ? 'Helper sudo: removed' : 'Helper sudo: active', p.sudo === '0' ? 'Segítő sudo: törölve' : 'Segítő sudo: aktív');
+      sv += li('ok', 'Up ' + Math.round(+p.up / 3600) + ' h · disk ' + p.disk, 'Fut ' + Math.round(+p.up / 3600) + ' órája · lemez ' + p.disk);
+    }
+  }
+  h += devCard('srv', '<ul>' + sv + '</ul>', MODE === 'local' && s.srv.target ? actBtn('ssh-window') : '');
+  // helper stick
+  const k = s.kit;
+  h += devCard('hs', '<ul>' + (k.present
+    ? li('ok', 'In this laptop: ' + k.path + (k.fs ? ' · ' + k.fs : '') + (k.label ? ' · ' + k.label : ''), 'Ebben a laptopban: ' + k.path + (k.fs ? ' · ' + k.fs : '') + (k.label ? ' · ' + k.label : ''))
+    : li('na', 'Not in this laptop (on the server?)', 'Nincs ebben a laptopban (a szerveren?)')) +
+    (k.present && !k.removable ? li('wait', 'Running from a folder, not a stick (test)', 'Mappából fut, nem stickről (teszt)') : '') + '</ul>', MODE === 'local' && k.present ? actBtn('open-kit') : '');
+  // install stick
+  const others = s.usb.filter(u => u.role !== 'helper');
+  const rname = r => ({ installer: T('Ubuntu install stick', 'Ubuntu telepítő stick'), 'installer?': T('probably the install stick', 'valószínűleg a telepítő'), empty: T('empty', 'üres'), other: T('has files: will be erased', 'fájlok vannak rajta: törlődnek'), unreadable: T('unreadable', 'olvashatatlan') })[r] || T(r, r);
+  h += devCard('is', '<ul>' + (others.length
+    ? others.map(u => li(u.role.startsWith('installer') ? 'ok' : 'wait', u.gb + ' GB · ' + rname(u.role).en, u.gb + ' GB · ' + rname(u.role).hu)).join('')
+    : li('na', done('K1.4') ? 'Not in this laptop (done, or in the server)' : 'Not plugged in', done('K1.4') ? 'Nincs ebben a laptopban (kész, vagy a szerverben)' : 'Nincs bedugva')) + '</ul>');
+  // phone
+  h += devCard('ph', role('Password safe (K2.4), QR code for A (K2.13), router page (K2.11), photos of the screen.', 'Jelszószéf (K2.4), QR-kód A-nak (K2.13), router oldal (K2.11), fotók a képernyőről.'));
+  // tablet
+  const lan = ST.lan || {};
+  let tb = '<ul>';
+  if (MODE === 'mirror') tb += li('ok', 'You are looking at it', 'Most ezt nézed');
+  else tb += li(lan.on ? (recent(lan.seen, 600) ? 'ok' : 'wait') : 'na', lan.on ? (recent(lan.seen, 600) ? 'Tablet view on, tablet connected' : 'Tablet view on, no tablet yet') : 'Tablet view off', lan.on ? (recent(lan.seen, 600) ? 'Tablet nézet be, tablet csatlakozva' : 'Tablet nézet be, még nincs tablet') : 'Tablet nézet ki');
+  tb += '</ul>';
+  h += devCard('tab', tb, MODE === 'local' ? actBtn('lan') : '');
+  $('devices').innerHTML = h;
+}
+const FILLED = { go: T('the server itself', 'maga a szerver'), segito: T('the helper', 'a segítő'), auto: T('the Kalauz', 'a Kalauz'), B: T('you', 'te') };
+const FIELDS = [['ip', 'f_ip', 'f_ip_h'], ['host', 'f_host', 'f_host_h'], ['user', 'f_user', 'f_user_h'], ['alias', 'f_alias', 'f_alias_h'], ['ts', 'f_ts', 'f_ts_h']];
+function renderFields() {
+  $('fields').innerHTML = FIELDS.map(f => '<label for="f-' + f[0] + '">' + esc(ui(f[1])) + '<input type="text" id="f-' + f[0] + '" data-f="' + f[0] + '" autocomplete="off" spellcheck="false" placeholder="' + esc(ui(f[2])) + '"><small id="fb-' + f[0] + '"></small></label>').join('');
+  syncFields();
+}
+function syncFields() {
+  FIELDS.forEach(f => {
+    const el = $('f-' + f[0]), e = PROG.facts[f[0]];
+    if (el && document.activeElement !== el && el.value !== fact(f[0])) el.value = fact(f[0]);
+    const sm = $('fb-' + f[0]);
+    if (sm) sm.textContent = e && e.v ? ui('f_by') + ': ' + L(FILLED[e.by] || FILLED.B) : '';
+  });
+}
+function renderRail() {
+  $('rail').innerHTML = PH.map((ph, pi) => {
+    const ss = STEPS.filter(s => s.ph === pi), d = ss.filter(s => done(s.id)).length;
+    return '<a href="#' + ph.id + '" data-ph="' + ph.id + '" class="' + (d === ss.length ? 'done' : '') + '"><span class="pn">' + ph.n + '</span><span class="pt">' + esc(L(ph.t)) + '</span><span class="pc">' + d + '/' + ss.length + '</span></a>';
+  }).join('') + '<a href="#tools-sec" data-ph="tools-sec"><span class="pn">+</span><span class="pt">' + esc(ui('toolsT')) + '</span><span class="pc"></span></a>';
+  const n = STEPS.filter(s => done(s.id)).length;
+  $('prog-n').textContent = n + ' / ' + STEPS.length;
+  $('prog-bar').style.width = (100 * n / STEPS.length) + '%';
+}
+function renderTools() {
+  const box = (t, p, acts) => '<div><h3>' + esc(L(t)) + '</h3><p>' + esc(L(p)) + '</p><div class="acts">' + acts.map(actBtn).join('') + actHints(acts) + '</div></div>';
+  $('tools').innerHTML =
+    box(T('The helper', 'A segítő'), T('Claude from the stick, in the room of each phase. It continues the previous conversation if you ask it to.', 'Claude a stickről, minden fázis saját szobájában. Ha kéred, folytatja az előző beszélgetést.'), ['helper1', 'helper3']) +
+    box(T('Notes on the stick', 'Jegyzetek a sticken'), T('What the helper knows (STATE.md), what you learned (NAPLO.md), the handover for A, and every command it ran.', 'Amit a segítő tud (STATE.md), amit te tanultál (NAPLO.md), az átadás A-nak, és minden parancs, amit futtatott.'), ['open-state', 'open-naplo', 'open-atadas', 'open-logs']) +
+    box(T('Checks', 'Ellenőrzések'), T('Re-check the Ubuntu file or every file on the stick. Both only read.', 'Az Ubuntu-fájl vagy a stick összes fájljának újraellenőrzése. Mindkettő csak olvas.'), ['verify-iso', 'verify-kit', 'refresh']) +
+    box(T('Windows on this laptop', 'Ablakok ezen a laptopon'), T('Your own PowerShell window for passwords and passphrases; an ssh window to the server once it has an address.', 'Saját PowerShell ablak a jelszavakhoz és jelmondatokhoz; ssh ablak a szerverre, ha már van címe.'), ['ps-window', 'ssh-window', 'open-kit']) +
+    box(T('Programs on the stick', 'Programok a sticken'), T('Rufus writes the install stick; Tailscale connects this laptop to A\'s private network (only if A invited you).', 'A Rufus írja a telepítő sticket; a Tailscale A privát hálózatához köti ezt a laptopot (csak ha A meghívott).'), ['rufus', 'tailscale-msi', 'lan']) +
+    box(T('Fallback: only if A asked', 'Tartalék: csak ha A kérte'), T('These erase a stick. Each asks you to pick the stick and to type its number again before anything happens.', 'Ezek egy sticket törölnek. Mindegyik kéri, hogy válaszd ki a sticket, és írd be újra a számát, mielőtt bármi történik.'), ['make-install', 'make-helper']);
+}
+function renderStatic() {
+  document.querySelectorAll('[data-ui]').forEach(el => { el.innerHTML = ui(el.dataset.ui); });
+  const m = $('mode'); const mk = LOST ? 'lost' : MODE;
+  m.textContent = ui('m_' + mk); m.className = 'mode m-' + mk;
+  const b = $('banner'); b.innerHTML = ui('b_' + mk); b.classList.toggle('lost', LOST);
+  $('foot').innerHTML = '<p>' + esc(ui('foot1')) + '</p><p>' + esc(ui('foot2')) + '<a href="' + (MODE === 'shared' ? MANUAL_URL : mlink('0.1').replace(/#.*/, '')) + '" target="_blank" rel="noopener">' + esc(ui('foot3')) + '</a>.</p>';
+}
+function renderAll() { renderStatic(); renderRail(); renderPhases(); renderFields(); renderTools(); refresh(); }
+function refresh() { renderRail(); renderNow(); renderDevices(); refreshSteps(); syncFields(); }
+
+/* ------------------------------------------------------------ talking to the Kalauz helper */
+async function api(path, body) {
+  const r = await fetch(path, { method: body ? 'POST' : 'GET', headers: Object.assign({ 'X-Kalauz': KEY }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
+  let j = null; try { j = await r.json(); } catch (e) { /* not json */ }
+  if (!r.ok) { const err = new Error((j && j.error) || 'http'); err.code = (j && j.error) || 'http'; throw err; }
+  return j;
+}
+function take(j) {
+  if (!j) return;
+  if (j.mode && j.mode !== MODE) { MODE = j.mode; sSet('kalauz-mode', MODE); ST = j; renderAll(); }
+  ST = j;
+  if (j.progress) PROG = { steps: j.progress.steps || {}, facts: j.progress.facts || {} };
+  const wasLost = LOST; LOST = false; if (wasLost) renderStatic();
+  refresh(); autoTick();
+}
+let pollT = null;
+async function poll() {
+  clearTimeout(pollT);
+  try { take(await api('/api/state')); pollT = setTimeout(poll, 3000); }
+  catch (e) { if (!LOST) { LOST = true; renderStatic(); } pollT = setTimeout(poll, 5000); }
+}
+function autoTick() {
+  if (MODE !== 'local') return;
+  for (const st of STEPS) {
+    if (!st.auto || done(st.id) || AUTO_SENT[st.id]) continue;
+    const e = PROG.steps[st.id]; if (e && e.by === 'B' && !e.done) continue;   // B unticked it on purpose
+    const a = autoOf(st);
+    if (a && a.ok) { AUTO_SENT[st.id] = true; api('/api/tick', { id: st.id, done: true, by: 'auto' }).then(take).catch(() => { delete AUTO_SENT[st.id]; }); return; }
+  }
+}
+
+/* ------------------------------------------------------------ ticks and facts in the other modes */
+const LS = 'vrg-kalauz-v1';
+let saveT = null;
+function saveOther() {
+  clearTimeout(saveT);
+  saveT = setTimeout(async () => {
+    const body = { steps: PROG.steps, facts: PROG.facts, updated: new Date().toISOString() };
+    if (MODE === 'shared' && docRef) { try { await docRef.set(body); } catch (e) { toast(ui('e_other')); } return; }
+    try { localStorage.setItem(LS, JSON.stringify(body)); } catch (e) { /* storage blocked: ticks last this visit */ }
+  }, 500);
+}
+async function setTick(id, on) {
+  if (live()) { try { take(await api('/api/tick', { id: id, done: on })); } catch (e) { toast(ui('e_other')); refresh(); } return; }
+  PROG.steps[id] = { done: on, by: 'B', at: new Date().toISOString() }; refresh(); saveOther();
+}
+const VAL_RE = /^[A-Za-z0-9._:@-]{0,64}$/;
+async function setFact(k, v) {
+  v = v.trim();
+  if (!VAL_RE.test(v)) { $('fb-' + k).textContent = ui('f_bad'); return; }
+  if (v === fact(k)) return;
+  if (live()) { try { take(await api('/api/fact', { key: k, v: v })); } catch (e) { toast(ui('e_other')); } return; }
+  PROG.facts[k] = { v: v, by: 'B', at: new Date().toISOString() }; refresh(); saveOther();
+}
+
+/* ------------------------------------------------------------ actions */
+async function runAct(a, btn) {
+  if (a === 'lan') { openLan(); return; }
+  if (btn) btn.disabled = true;
+  try { await api('/api/run', { a: a }); toast(ui('started') + ': ' + L(ACT[a].l)); if (a === 'verify-iso' || a === 'refresh') setTimeout(poll, 400); }
+  catch (e) { const c = e.code; toast(ui('failed') + ': ' + ui(c === 'nokit' ? 'e_nokit' : c === 'missing' ? 'e_missing' : c === 'noserver' ? 'e_noserver' : 'e_other')); }
+  setTimeout(() => { if (btn) btn.disabled = false; }, 1500);
+}
+let qrLoaded = null;
+function loadQr() {
+  if (!qrLoaded) qrLoaded = new Promise((res, rej) => { const s = document.createElement('script'); s.src = '/lib/qrcode.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+  return qrLoaded;
+}
+async function openLan() {
+  let j;
+  try { j = await api('/api/lan', { on: true }); take(j); }
+  catch (e) { toast(ui('failed') + ': ' + ui(e.code === 'nolan' ? 'e_nolan' : 'e_other')); return; }
+  const url = j.lan && j.lan.url; if (!url) return;
+  let svg = '';
+  try { await loadQr(); const q = window.qrcode(0, 'M'); q.addData(url); q.make(); svg = q.createSvgTag(4, 0); } catch (e) { svg = ''; }
+  $('modal-in').innerHTML = '<h2>' + esc(ui('qrT')) + '</h2><p>' + esc(ui('qrP')) + '</p>' + (svg ? '<div class="qr">' + svg + '</div>' : '') +
+    '<div class="url">' + esc(url) + '</div><p class="note">' + esc(ui('qrFw')) + '</p><div class="acts"><button type="button" class="go" data-modal="close">' + esc(ui('close')) + '</button><button type="button" data-modal="off">' + esc(ui('qrOff')) + '</button></div>';
+  $('modal').hidden = false;
+  const c = $('modal-in').querySelector('[data-modal="close"]'); if (c) c.focus();
+}
+
+/* ------------------------------------------------------------ small things */
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, 2600); }
+function copy(text, btn) {
+  const doneC = () => { btn.textContent = ui('copied'); setTimeout(() => { btn.textContent = ui('copy'); }, 1400); };
+  const fallback = () => { const pre = btn.parentElement.querySelector('pre'); const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast(ui('clip')); };
+  try { navigator.clipboard.writeText(text).then(doneC, fallback); } catch (e) { fallback(); }
+}
+function setLang(l) {
+  if (l !== 'en' && l !== 'hu') return;
+  lang = l; document.documentElement.lang = l;
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  try { localStorage.setItem(LANG_KEY, l); } catch (e) { /* the choice lasts this visit */ }
+}
+let io = null;
+function watchPhases() {
+  if (!('IntersectionObserver' in window)) return;
+  if (io) io.disconnect();
+  io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) document.querySelectorAll('nav.rail a').forEach(a => a.classList.toggle('cur', a.dataset.ph === en.target.id)); }), { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.phase').forEach(s => io.observe(s));
+}
+
+function bind() {
+  document.addEventListener('change', e => {
+    const id = e.target.dataset && e.target.dataset.tick; if (id) setTick(id, e.target.checked);
+  });
+  document.addEventListener('focusout', e => { const k = e.target.dataset && e.target.dataset.f; if (k) setFact(k, e.target.value); });
+  document.addEventListener('keydown', e => {
+    const k = e.target.dataset && e.target.dataset.f; if (k && e.key === 'Enter') { e.preventDefault(); setFact(k, e.target.value); }
+    if (e.key === 'Escape' && !$('modal').hidden) $('modal').hidden = true;
+  });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('button[data-act]'); if (a) { runAct(a.dataset.act, a); return; }
+    const n = e.target.closest('button[data-now]'); if (n) { setTick(n.dataset.now, true); return; }
+    const c = e.target.closest('button[data-copy]'); if (c) { const st = STEPS.find(s => s.id === c.dataset.copy); copy(st.cmd.map(L).join('\n'), c); return; }
+    const m = e.target.closest('[data-modal]');
+    if (m) { if (m.dataset.modal === 'off') api('/api/lan', { on: false }).then(take).catch(() => {}); $('modal').hidden = true; return; }
+    if (e.target === $('modal')) $('modal').hidden = true;
+    const l = e.target.closest('.lang button[data-lang]'); if (l && l.dataset.lang !== lang) { setLang(l.dataset.lang); renderAll(); watchPhases(); }
+  });
+}
+
+/* ------------------------------------------------------------ start */
+async function start() {
+  const qs = new URLSearchParams(location.search);
+  const k = qs.get('k'), r = qs.get('r');
+  if (k || r) { KEY = k || r; sSet('kalauz-key', KEY); sSet('kalauz-mode', k ? 'local' : 'mirror'); try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* ignore */ } }
+  else { KEY = sGet('kalauz-key'); }
+  if (/^https?:$/.test(location.protocol) && KEY && /^(127\.0\.0\.1|localhost|\d+\.\d+\.\d+\.\d+)$/.test(location.hostname)) {
+    MODE = sGet('kalauz-mode') === 'mirror' ? 'mirror' : 'local';
+    renderAll(); watchPhases(); poll(); return;
+  }
+  // claude.ai artifact: shared ticks through the page's database
+  try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (db) {
+    MODE = 'shared'; docRef = db.doc('kalauz/progress');
+    renderAll(); watchPhases();
+    docRef.onSnapshot(snap => {
+      if (snap.metadata && snap.metadata.hasPendingWrites) return;
+      if (snap.exists) { const d = snap.data() || {}; PROG = { steps: d.steps || {}, facts: d.facts || {} }; refresh(); }
+    }, () => { toast(ui('e_other')); });
+    return;
+  }
+  MODE = 'plain';
+  try { const raw = localStorage.getItem(LS); if (raw) { const d = JSON.parse(raw); PROG = { steps: d.steps || {}, facts: d.facts || {} }; } } catch (e) { /* storage blocked */ }
+  renderAll(); watchPhases();
+}
+setLang(lang); bind();
+renderAll();
+start();
+})();
+</script>

@@ -41,6 +41,25 @@
       "url": "https://claude.ai/artifact/3gEDamMQg9CXyE4C5KWYhh"
     },
     {
+      "id": "vrg-szerver-kalauz",
+      "title": "VRG Szerver Kalauz",
+      "created": "2026-11-12",
+      "updated": "2026-11-12",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "Interactive HU/EN guide for the ServerKit: 40 steps over 4 phases, device tiles, buttons and live checks when served from the stick by KALAUZ.cmd, tablet view, shared ticks in the artifact.",
+      "purpose": "Lets user B start every ServerKit step from buttons and see the live state of both laptops, both sticks, phone and tablet.",
+      "context": [
+        "ServerKit for user B (H:\\VRG\\OTG\\ServerKit)",
+        "remake of the VRG laptop server manual as a control desk"
+      ],
+      "tags": [],
+      "file": "files/vrg-szerver-kalauz.html",
+      "url": "https://claude.ai/artifact/TkHyK3tvFtiwb5uS3ZxMjm"
+    },
+    {
       "id": "felszin-gephaz",
       "title": "Felszín és gépház",
       "created": "2026-11-11",
