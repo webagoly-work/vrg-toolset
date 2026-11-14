@@ -8,6 +8,7 @@ import { apply, createTrace, fold, METRICS, visible } from './model.js';
 import { emptyCounts, scrubEvent } from './privacy.js';
 import { SAMPLE_EVENTS } from './sample.js';
 import { hookSource, managedSource } from './sources.js';
+import { sessionState } from './state.js';
 import { createTraceView, labelOf } from './view.js';
 
 const MAX_EVENTS = 20000;
@@ -19,6 +20,9 @@ const WINDOWS = [0, 5, 15, 60];
 const TYPES = ['agent', 'skill', 'mcp', 'tool', 'file'];
 const KEEP = [1, 7, 14, 30];
 const LIST_MAX = 14;
+/* the chip tone of each session state (state.js) */
+const STATE_CHIP = { working: '.on', blocked: '.st-warn', waiting: '', idle: '.st-ok' };
+const stateOf = (s) => sessionState(s.events.slice(0, s.upto)).state;
 
 const field = (label, control) => h('label.field', {}, h('span.k', { text: label }), control);
 const select = (label, options, value, onchange) => field(label, h('select.input', { onchange: (e) => onchange(e.target.value) },
@@ -158,6 +162,7 @@ export function mountTrace(root, host) {
   const playButton = button(t('trace.play'), () => setPlaying(!S.playing));
   const pauseButton = button(t('trace.pause'), () => setPaused(!S.paused));
   const sessionBox = h('div');
+  const stateLine = h('p', { role: 'status' });
   const agentBox = h('div');
   const listBox = h('div');
   const detailBox = h('div');
@@ -270,10 +275,16 @@ export function mountTrace(root, host) {
       agentBox.dataset.key = key;
       agentBox.replaceChildren(select(t('trace.filter.agent'), [{ value: '', label: t('trace.all') }, ...agents.map((a) => ({ value: a, label: s.trace.nodes.get(a).label }))], S.agent, (v) => { S.agent = v; drawSoon(); }));
     }
-    const sids = [...S.sessions.keys()];
-    if (sessionBox.dataset.key !== sids.join()) {
-      sessionBox.dataset.key = sids.join();
-      sessionBox.replaceChildren(sids.length > 1 ? select(t('trace.session'), sids.map((v) => ({ value: v, label: v })), S.sid, (v) => { S.sid = v; S.selected = null; drawSoon(); }) : '');
+    const sessions = [...S.sessions.values()].map((x) => ({ value: x.sid, label: `${x.sid} · ${t('trace.state.' + stateOf(x))}` }));
+    const sessionKey = sessions.map((o) => o.label).join();
+    if (sessionBox.dataset.key !== sessionKey) {
+      sessionBox.dataset.key = sessionKey;
+      sessionBox.replaceChildren(sessions.length > 1 ? select(t('trace.session'), sessions, S.sid, (v) => { S.sid = v; S.selected = null; drawSoon(); }) : '');
+    }
+    const st = s ? stateOf(s) : '';
+    if (stateLine.dataset.key !== st) {
+      stateLine.dataset.key = st;
+      stateLine.replaceChildren(...(st ? [h('span.k', { text: t('trace.state') + ' ' }), h('span.chip' + STATE_CHIP[st], { text: t('trace.state.' + st) })] : []));
     }
   }
 
@@ -309,7 +320,7 @@ export function mountTrace(root, host) {
     }, '.primary'))));
 
   root.append(h('div.wrap', {},
-    h('section.panel', {}, h('div.ph', {}, h('h2', { text: t('trace.title') }), status), h('div.pb', {}, sourceBox, replayBox, fileInput, sessionBox,
+    h('section.panel', {}, h('div.ph', {}, h('h2', { text: t('trace.title') }), status), h('div.pb', {}, sourceBox, replayBox, fileInput, sessionBox, stateLine,
       h('p', {}, h('span.chip.on', { text: t('trace.redaction') })), redacted, h('p.hint', { text: t('trace.redactionHint') }))),
     notice, pendingBox,
     h('section.panel', {}, h('div.pb', {}, graph,

@@ -88,6 +88,19 @@
       ],
       "port": 8811,
       "url": "http://127.0.0.1:8811"
+    },
+    {
+      "name": "console",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Console/serve.js"
+      ],
+      "port": 8139,
+      "url": "http://127.0.0.1:8139",
+      "autoPort": false,
+      "env": {
+        "PORT": "8139"
+      }
     }
   ]
 }
