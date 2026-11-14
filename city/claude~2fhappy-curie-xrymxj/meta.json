@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/happy-curie-xrymxj",
+ "key": "claude~2fhappy-curie-xrymxj",
+ "sha": "013889785e6b462f142aef4f379d79f05ee4e17b",
+ "head": "0138897",
+ "scannedAt": "2026-11-14T15:27:44.977Z",
+ "commits": 435,
+ "files": 2206,
+ "htmlBytes": 1649585,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/43610273485"
+}

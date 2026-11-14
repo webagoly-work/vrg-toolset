@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "main",
+ "key": "main",
+ "sha": "428d3a7f91797b77e63f9d0d2016cba5ddae760c",
+ "head": "428d3a7",
+ "scannedAt": "2026-11-14T15:27:52.450Z",
+ "commits": 435,
+ "files": 2206,
+ "htmlBytes": 1649564,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/43610297257"
+}
