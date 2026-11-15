@@ -321,7 +321,9 @@ function findApk(opts) {
 
 /** The phone's download page: what it is, one button, the three steps after it. */
 function appPage(o) {
-  const mb = (o.bytes / 1048576).toFixed(1), when = new Date(o.mtime).toISOString().slice(0, 16).replace('T', ' ');
+  // the build time in this PC's local time (toISOString would print UTC: an hour early in winter, found on the phone 2026-11-15)
+  const d = new Date(o.mtime), p2 = n => String(n).padStart(2, '0');
+  const mb = (o.bytes / 1048576).toFixed(1), when = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VRG Mobile letöltése</title>
