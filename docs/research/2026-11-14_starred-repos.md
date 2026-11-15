@@ -38,7 +38,8 @@ host line is next opened.
 Stack/control.html (the Vezérlőterem shows the Council's structure, not live sessions).
 
 **#3 built 2026-11-14:** `docs/council/04_DEBATE-PROTOCOL.md` (five rounds, the four tags, the prompts) + `tools/council-debate.js`
-(`new` / `check`), Bernard's job 5, COUNCIL-Q9 open on what a debate costs to start. No real debate run yet.
+(`new` / `check`), Bernard's job 5. COUNCIL-Q9 answered B: the Founder approves each debate from a short request (why, if
+overlooked, how to settle it without one). No real debate run yet.
 
 ---
 

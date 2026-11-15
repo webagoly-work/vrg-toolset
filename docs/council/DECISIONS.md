@@ -3,13 +3,13 @@
 *Questions for the Founder. A is recommended in each open row. A row may carry "rests on" (its unchecked premises, tagged as in
 `04_DEBATE-PROTOCOL.md` §2), "reverse if" and, after a seat debate, its record.*
 
-## Open
+## Answered, 2026-11-14
 
-| # | Question | Options |
+| # | Question | Answer |
 |---|---|---|
-| COUNCIL-Q9 | Seat debates (`04_DEBATE-PROTOCOL.md`): what does one cost to start? | **A.** G2: Bernard may run a 2–3 seat debate; 4+ seats or a second cross-examination stays G3, and charter §7 gets a "Seats weighing one decision → seat debate" row. **B.** G3 every time: you approve each debate. **C.** Shelve the protocol until the gate is on (COUNCIL-Q5) |
+| COUNCIL-Q9 | Seat debates (`04_DEBATE-PROTOCOL.md`): what does one cost to start? | **B, with a request.** G3 every time: the Founder approves each debate. Bernard asks with a short request (protocol §1): why this decision matters, what goes wrong if it is never argued, and the safest options that would settle it without a debate. The charter is unchanged |
 
-Until Q9 is answered, every debate is G3.
+No question is open.
 
 ## Answered, 2026-10-31
 

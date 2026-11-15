@@ -10,17 +10,53 @@ wants argued before choosing. It produces a recommendation and an A/B/C row in `
 **Don't debate** a question that has a test, a measurement, a price list or a standard behind it: look it up (Akecheta, Teddy) or
 measure it. Don't debate a question that only one seat's domain touches: that Head decides and reports.
 
-## 1. Cost and approval
+## 1. Cost and approval: the request (R0)
 
-| Debate | Calls | Class |
-|---|---|---|
-| 2 seats | 6 seat calls (Opus, high) | **G3 until COUNCIL-Q9 is answered**, then as decided |
-| 3 seats | 9 seat calls | same |
-| + counter-case | 1 Theresa call (Sonnet) | included |
-| 4+ seats, or a second cross-examination | | always G3 |
+**Every debate is G3: the Founder approves each one** (COUNCIL-Q9 B, 2026-11-14). Bernard asks first with a short request. It
+is the debate's R0 too, so the record shows what was approved and why:
 
-Bernard checks `get_usage` first. Each seat answers in at most 15 lines, so most of the cost is the seats' own reading. Point them
-at line ranges, `vrg-ctx` and the Stack.
+```text
+DEBATE REQUEST: <the question, one line>
+Seats:                    elsie, charlotte
+Why it matters:           <a few words: what this decision moves or protects>
+If overlooked:
+- <a pitfall: what goes wrong if this is never argued, and when it would show>
+Settle without a debate:
+- <the safest option that puts the question to rest: what it costs, why it is safe>
+Cost:                     2 seats, 6 seat calls; usage now <5-hour %, weekly %>
+Recommend:                debate | settle with <option> | wait until <trigger>
+```
+
+Few words: "Why it matters" under 30, each bullet under 25. The Founder reads it in a minute and answers one of three ways:
+
+- **Debate.** Bernard writes `Approved: Founder, <date>` under R0 and starts R1.
+- **Settle.** Bernard writes the DECISIONS row with the option chosen, "settled without a debate", and its "reverse if" line.
+  No record file.
+- **Wait.** The question goes into DECISIONS as open, with the trigger that reopens it.
+
+Safe ways to settle a question, the kind the request offers:
+
+| Settles it | Safe when |
+|---|---|
+| **The reversible option** | One option is easy to undo and the others are not: take it and write when to look again |
+| **A test or measurement** | The disagreement is about a fact: Akecheta looks it up, Armistice runs it, the owner measures |
+| **The owning Head decides** | It mostly touches one domain: that Head decides and reports; the others may object in a line |
+| **Keep the current state** | Nothing is broken today: no change, with a trigger that reopens it |
+| **A small trial** | It can be tried on one job, one page or one week before it becomes the rule |
+
+Typical pitfalls worth naming when a question goes unargued: a cost that only one seat sees (Charlotte's numbers, Elsie's
+runtime); a choice that is cheap now and expensive to reverse; a rule adopted because nobody objected; a premise every seat
+assumed and nobody checked.
+
+| Debate | Calls |
+|---|---|
+| 2 seats | 6 seat calls (Opus, high) |
+| 3 seats | 9 seat calls |
+| + counter-case | 1 Theresa call (Sonnet) |
+
+More than three seats or a second cross-examination needs its own line in the request. Bernard checks `get_usage` before he asks.
+Each seat answers in at most 15 lines, so most of the cost is the seats' own reading: point them at line ranges, `vrg-ctx` and
+the Stack.
 
 ## 2. Evidence tags — bizonyíték-címkék
 
@@ -37,7 +73,7 @@ A FACT from memory is an ASSUMPTION. A FACT whose source is a repo path must poi
 the checker opens it. Words like *clearly*, *always*, *nyilvánvaló*, *biztosan* on anything but a FACT get a warning: certainty
 has to come from evidence, not from tone.
 
-## 3. The five rounds
+## 3. The request and the five rounds
 
 Record: `docs/council/debates/<date>_<slug>.md`. Start it with:
 
@@ -47,6 +83,7 @@ node tools/council-debate.js new pairing-code --seats elsie,charlotte --question
 
 | Round | Who | What |
 |---|---|---|
+| **R0 Request** | Bernard, then the Founder | The request from §1 and `Approved: Founder, <date>`. Nothing below starts without it |
 | **R1 Restate** | Bernard | `Question:`, `Options:` (A/B/C), `Out of scope:`, `Done when:`. If the request came in loosely, show R1 to the Founder before spending anything |
 | **R2 Positions** | each seat, **in parallel, as fresh subagents** | `Stance:` plus 2–6 tagged claims. No seat sees another's position |
 | **R3 Cross-examination** | each seat, **resumed with `SendMessage`** | At least one `- Challenge → <other seat>: [TAG] …` against the weakest claim of another seat. New evidence only |
@@ -107,7 +144,9 @@ Then only new tagged claims, if any. Changing your stance is a result, not a los
 
 `tools/council-debate.js check` fails a record when:
 
-- the rounds are not R1–R5 in order, there are fewer than two seats, or `class:` (who approved the cost) is missing;
+- the rounds are not R0–R5 in order, or there are fewer than two seats;
+- R0 lacks "Why it matters", a pitfall under "If overlooked", an option under "Settle without a debate", the cost, or
+  `Approved:` naming the Founder and a date;
 - a claim is untagged, or a FACT has no source, an INFERENCE no basis, an UNKNOWN no way to find out;
 - a FACT path does not exist, or its line is past the end of the file;
 - a seat in R3 challenges nobody, itself, or someone outside the debate;
@@ -117,7 +156,7 @@ Then only new tagged claims, if any. Changing your stance is a result, not a los
   ASSUMPTION / UNKNOWN claims and the verdict lists none of them;
 - `decides: COUNCIL-Qn` names a question that `DECISIONS.md` does not mention.
 
-It warns (`--strict` fails on these too) about a stance with no FACT behind it, a claim repeated word for word from R2, sure-sounding
+It warns (`--strict` fails on these too) about a request that runs long, a stance with no FACT behind it, a claim repeated word for word from R2, sure-sounding
 words on a non-FACT, "Dissent: none" with no reason, and a section over 15 lines. The tests are in
 `tools/test/council-debate.test.js`.
 

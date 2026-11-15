@@ -9,8 +9,16 @@ const GOOD = `# Debate: Should the Mobile relay keep its own pairing code?
 
 - date: 2026-11-14
 - seats: elsie, charlotte
-- class: G3, asked the Founder 2026-11-14
 - decides: COUNCIL-Q99
+
+## R0 Request
+Why it matters: a leaked code opens every PC folder the relay shares
+If overlooked:
+- one code quietly ends up guarding two services
+Settle without a debate:
+- keep the codes separate for now; merging later is easy, splitting is not
+Cost: 2 seats, 6 seat calls
+Approved: Founder, 2026-11-14
 
 ## R1 Restate
 Question: keep a separate pairing code for the phone relay, or share the Console's?
@@ -67,12 +75,28 @@ test('a well-formed record passes and tallies its tags', () => {
   assert.strictEqual(r.unanimous, false);
 });
 
-test('the skeleton parses into five rounds and the seats asked for', () => {
+test('the skeleton parses into the request and five rounds, with the seats asked for', () => {
   const doc = parse(skeleton({ question: 'Q?', seats: ['arnold', 'elsie'], date: '2026-11-14' }));
-  assert.deepStrictEqual(doc.order, ['R1', 'R2', 'R3', 'R4', 'R5']);
+  assert.deepStrictEqual(doc.order, ['R0', 'R1', 'R2', 'R3', 'R4', 'R5']);
   assert.deepStrictEqual(doc.seats, ['arnold', 'elsie']);
-  // its placeholder FACT points nowhere, so an unedited skeleton never passes
-  assert.match(msgs(check(skeleton({ seats: ['arnold', 'elsie'], date: '2026-11-14' }), { decisions: '' })), /does not exist/);
+  // its placeholder FACT points nowhere and nobody has approved it, so an unedited skeleton never passes
+  const m = msgs(check(skeleton({ seats: ['arnold', 'elsie'], date: '2026-11-14' }), { decisions: '' }));
+  assert.match(m, /does not exist/);
+  assert.match(m, /must say the Founder and the date/);
+});
+
+test('the request says why, what goes wrong if overlooked, how to settle it, the cost, and who approved', () => {
+  assert.match(msgs(run(GOOD.replace(/Why it matters: .*\n/, ''))), /"Why it matters:" missing/);
+  assert.match(msgs(run(GOOD.replace('If overlooked:\n- one code quietly ends up guarding two services\n', 'If overlooked:\n'))), /"If overlooked:" needs at least one bullet/);
+  assert.match(msgs(run(GOOD.replace(/Settle without a debate:\n- .*\n/, ''))), /"Settle without a debate:" needs at least one bullet/);
+  assert.match(msgs(run(GOOD.replace('Cost: 2 seats, 6 seat calls\n', ''))), /"Cost:" missing/);
+  assert.match(msgs(run(GOOD.replace('Approved: Founder, 2026-11-14\n', ''))), /"Approved:" missing/);
+  assert.match(msgs(run(GOOD.replace('Approved: Founder, 2026-11-14', 'Approved: Bernard, 2026-11-14'))), /must say the Founder/);
+  assert.match(msgs(run(GOOD.replace('Approved: Founder, 2026-11-14', 'Approved: Founder'))), /and the date/);
+  // a few words: a long request is a warning, not an error
+  const long = GOOD.replace(/Why it matters: .*/, 'Why it matters: ' + 'word '.repeat(40));
+  assert.deepStrictEqual(run(long).errors, []);
+  assert.match(run(long).warnings.map((x) => x.msg).join('\n'), /keep it under 30/);
 });
 
 test('claims need a tag, and FACT / INFERENCE / UNKNOWN need their body', () => {
@@ -119,10 +143,10 @@ test('the verdict names dissenters and carries assumptions, unknowns and kill cr
   assert.match(msgs(run(GOOD.replace('Unknowns:\n- how often a code is typed\n', ''))), /"Unknowns:" missing/);
 });
 
-test('structure: five rounds in order, two seats, a class, a known decision id', () => {
-  assert.match(msgs(run(GOOD.replace('## R3 Cross-examination', '## R9 Extra'))), /rounds must be R1 R2 R3 R4 R5/);
+test('structure: the rounds in order, two seats, a known decision id', () => {
+  assert.match(msgs(run(GOOD.replace('## R3 Cross-examination', '## R9 Extra'))), /rounds must be R0 R1 R2 R3 R4 R5/);
+  assert.match(msgs(run(GOOD.replace('## R0 Request', '## Request'))), /rounds must be R0/);
   assert.match(msgs(run(GOOD.replace('- seats: elsie, charlotte', '- seats: elsie'))), /at least two seats/);
-  assert.match(msgs(run(GOOD.replace('- class: G3, asked the Founder 2026-11-14\n', ''))), /class:" missing/);
   assert.match(msgs(run(GOOD, 'nothing here')), /decides COUNCIL-Q99, which DECISIONS.md does not mention/);
 });
 

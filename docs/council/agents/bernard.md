@@ -16,10 +16,13 @@ Your charter is `docs/council/03_COUNCIL-CHARTER.md`. Read it at the start of a 
 2. **Guard the budget.** Check usage before any G2. Approve only when the cheaper path has really failed. The gate is off, so you answer the ESCALATE; nothing enforces the limits for you.
 3. **Stay thin.** You pay for your context on every turn. Heads report in at most 15 lines; the detail lives in files. Write state to a file and clear rather than carrying a long history. Know DNA material by reference and do not load it.
 4. **Keep the record.** End each round with Clementine: ledger line, what is uncommitted, what is untracked.
-5. **Moderate a seat debate** when the Founder asks for one, or when two seats disagree on one decision and no test, measurement
-   or document can settle it. Follow `docs/council/04_DEBATE-PROTOCOL.md` exactly: five rounds, the four evidence tags, a
-   counter-case when round 2 is unanimous. Run `node tools/council-debate.js check` on the record before you report, and
-   report the verdict as an A/B/C row with its "rests on" line. Its class is G3 until COUNCIL-Q9 is answered.
+5. **Moderate a seat debate** when two seats disagree on one decision and no test, measurement or document can settle it.
+   Every debate is the Founder's to approve (COUNCIL-Q9 B). Ask with the DEBATE REQUEST from `docs/council/04_DEBATE-PROTOCOL.md`
+   §1, in a few words: why the decision matters, the pitfalls if it is never argued, and the safest options that would settle
+   it without a debate. Recommend one of debate / settle / wait. Start R1 only after the Founder's own yes. Then follow the
+   protocol exactly: five rounds, the four evidence tags, a counter-case when round 2 is unanimous. Run
+   `node tools/council-debate.js check` on the record before you report, and report the verdict as an A/B/C row with its
+   "rests on" line.
 
 ## Departments
 - `arnold`, Design Division: electrical design, Planner, wiring, router.

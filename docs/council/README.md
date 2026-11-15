@@ -9,7 +9,7 @@
 | 3 | [DECISIONS.md](DECISIONS.md) | Your answers, and the questions still open |
 | 4 | [01_HAND-BRIEF.md](01_HAND-BRIEF.md) | Review, candidates, tools, agent technology, the Lego set, roadmap |
 | 5 | [02_DNA-V2.md](02_DNA-V2.md) | The capsule rewritten as a virtual reference. Waits for the GO TNT merge; not needed for daily work |
-| 6 | [04_DEBATE-PROTOCOL.md](04_DEBATE-PROTOCOL.md) | Seat debate: five rounds, FACT / INFERENCE / ASSUMPTION / UNKNOWN on every claim, checked by a script |
+| 6 | [04_DEBATE-PROTOCOL.md](04_DEBATE-PROTOCOL.md) | Seat debate: a short request you approve (why, if overlooked, how to settle it without one), five rounds, FACT / INFERENCE / ASSUMPTION / UNKNOWN on every claim, checked by a script |
 
 ## Rule: the Council is malleable
 

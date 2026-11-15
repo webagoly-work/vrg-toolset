@@ -13,6 +13,8 @@
 //                                       docs/council/debates); exit 1 on an error,
 //                                       or on a warning with --strict
 //
+// R0 is the request the Founder approves (COUNCIL-Q9 B): why it matters, if overlooked,
+// how to settle it without a debate, the cost, and "Approved: Founder, <date>".
 // Evidence tags: [FACT: source]  [INFERENCE: from what]  [ASSUMPTION]  [UNKNOWN: how to find out]
 // A FACT whose source looks like a repo path (file or file:line) must point at a
 // file that exists, and at a line inside it.
@@ -27,8 +29,11 @@ const REPO = path.resolve(__dirname, '..');
 const DEBATES = path.join(REPO, 'docs', 'council', 'debates');
 const DECISIONS = path.join(REPO, 'docs', 'council', 'DECISIONS.md');
 
-const ROUNDS = ['R1', 'R2', 'R3', 'R4', 'R5'];
-const ROUND_TITLE = { R1: 'Restate', R2: 'Positions', R3: 'Cross-examination', R4: 'Final stances', R5: 'Verdict' };
+const ROUNDS = ['R0', 'R1', 'R2', 'R3', 'R4', 'R5'];
+const ROUND_TITLE = { R0: 'Request', R1: 'Restate', R2: 'Positions', R3: 'Cross-examination', R4: 'Final stances', R5: 'Verdict' };
+// the request is read by the Founder before approving: a few words, not an essay
+const WHY_WORDS = 30, ITEM_WORDS = 25;
+const words = (s) => s.split(/\s+/).filter(Boolean).length;
 const TAGS = ['FACT', 'INFERENCE', 'ASSUMPTION', 'UNKNOWN'];
 const NEEDS_BODY = { FACT: 'a source', INFERENCE: 'what it follows from', UNKNOWN: 'how to find out' };
 const TAG_RE = /\[(FACT|INFERENCE|ASSUMPTION|UNKNOWN)(?:\s*:\s*([^\]]*))?\]/g;
@@ -101,12 +106,30 @@ function check(text, { repo = REPO, decisions = null, file = 'record' } = {}) {
 
   if (!doc.title) err(1, 'no "# Debate: <question>" title');
   if (doc.seats.length < 2) err(1, 'header "- seats:" needs at least two seats');
-  if (doc.seats.length > 3) warn(1, `${doc.seats.length} seats: the protocol keeps a debate to three (more is G3)`);
-  if (!doc.meta.class) err(1, 'header "- class:" missing (who approved the cost)');
+  if (doc.seats.length > 3) warn(1, `${doc.seats.length} seats: the protocol keeps a debate to three`);
 
   const want = ROUNDS.join(' '), got = doc.order.join(' ');
   if (got !== want) err(doc.rounds[0]?.line ?? 1, `rounds must be ${want} in that order, found "${got || 'none'}"`);
   const R = Object.fromEntries(doc.rounds.map((r) => [r.id, r]));
+
+  // R0: the request the Founder approved (COUNCIL-Q9 B): why it matters, what goes wrong if it is
+  // never argued, and the safe ways to settle it without a debate
+  if (R.R0) {
+    const b = R.R0.body;
+    const why = field(b, 'Why it matters');
+    if (!why?.value) err(R.R0.line, 'R0: "Why it matters:" missing');
+    else if (words(why.value) > WHY_WORDS) warn(why.n, `R0: "Why it matters" is ${words(why.value)} words; keep it under ${WHY_WORDS}`);
+    for (const name of ['If overlooked', 'Settle without a debate']) {
+      const list = listAfter(b, name);
+      if (!list?.items.length) { err(list?.n ?? R.R0.line, `R0: "${name}:" needs at least one bullet`); continue; }
+      for (const l of list.items) if (words(l.text) > ITEM_WORDS + 1) warn(l.n, `R0 ${name}: ${words(l.text) - 1} words; a few words each`);
+    }
+    if (!field(b, 'Cost')?.value) err(R.R0.line, 'R0: "Cost:" missing (seats and calls)');
+    const ok = field(b, 'Approved');
+    if (!ok?.value) err(R.R0.line, 'R0: "Approved:" missing; every debate is approved by the Founder (COUNCIL-Q9)');
+    else if (!/founder|alapító/i.test(ok.value) || !/\d{4}-\d{2}-\d{2}/.test(ok.value))
+      err(ok.n, 'R0: "Approved:" must say the Founder and the date (an agent\'s word is not the Founder\'s approval)');
+  }
 
   // every bullet in R2-R4 is a claim and carries a tag with its required body
   const checkClaim = (l, who) => {
@@ -238,8 +261,16 @@ function skeleton({ question = '<the question>', seats, date }) {
 
 - date: ${date}
 - seats: ${seats.join(', ')}
-- class: <G2 permit, or G3 asked the Founder on ${date}>
 - decides: none
+
+## R0 ${ROUND_TITLE.R0}
+Why it matters: …
+If overlooked:
+- …
+Settle without a debate:
+- …
+Cost: ${seats.length} seats, ${seats.length * 3} seat calls
+Approved: <Founder, date — only once the Founder has said yes>
 
 ## R1 ${ROUND_TITLE.R1}
 Question: ${question}
