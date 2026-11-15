@@ -236,6 +236,8 @@
             { "key": "F", "name": "Futásnapló", "hint": "a futások naponta, párhuzamos sávokon (U réteg)", "path": "{stack}\\runs.html" },
             { "key": "L", "name": "Thread Board", "hint": "minden szál: mi épült már meg és mi még nem (DevLog)", "path": "{full}\\notes\\devlog\\BOARD.html" },
             { "key": "A", "name": "Archívum", "hint": "minden egyszeri interaktív oldal, amit Claude készített", "path": "{repo}\\Archive\\vrg-archive.html" },
+            { "key": "K", "name": "Konnektóm-labor", "hint": "muslica-agy, Stack-agy, Holo, rétegek, üres memóriaháló", "path": "{repo}\\Archive\\files\\konnektom-labor.html" },
+            { "key": "E", "name": "Konnektóm-labor .cmd", "hint": "egyfájlos, önkicsomagoló küldhető változat a _handoff mappába", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["tools/bootleg.js", "Archive/files/konnektom-labor.html"] } ] },
             { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
             { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
             { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },
