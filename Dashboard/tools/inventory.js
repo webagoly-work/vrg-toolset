@@ -74,6 +74,7 @@ function collect() {
     add({ id: 'dash:selmenu', name: 'Kijelölés menü', where: 'Dashboard/shell/lib/selmenu.js', source: 'dashboard', kind: 'context menu', group: 'frame' });
     add({ id: 'dash:tray', name: 'Tálca ikon + ablakmódok', where: 'Dashboard/shell/lib/tray.js, winmodes.js (Ablak · Munka · Overlay)', source: 'dashboard', kind: 'tray', group: 'frame' });
     add({ id: 'dash:toasts', name: 'Értesítések + feladatsor', where: 'Dashboard/page/toasts.js', source: 'dashboard', kind: 'toasts + jobs', group: 'frame' });
+    add({ id: 'dash:phone', name: 'Telefon kapcsolat', where: 'Dashboard/page/phone.js, shell/lib/phonelink.js (WP-49)', source: 'dashboard', kind: 'radios + servers + QR', group: 'frame' });
     const ACTS = { 's:': 'START item', 'srv:': 'local server', 'f:': 'features node', 'cont:': 'continue a DevLog line', 'go:': 'GO phrase', 'godoc:': 'GO doc', 'job:': 'job folder', 'jobdoc:': 'job doc', 'line:': 'DevLog line', 'linedoc:': 'DevLog line doc' };
     for (const [p, what] of Object.entries(ACTS)) add({ id: 'act:' + p.replace(':', ''), name: 'Act family ' + p + '*', where: 'Dashboard/shell/lib/acts.js', source: 'dashboard', kind: 'act family', group: 'acts', note: what });
     for (const f of ls(path.join(REPO, 'Dashboard', 'config'), /\.json$/)) {

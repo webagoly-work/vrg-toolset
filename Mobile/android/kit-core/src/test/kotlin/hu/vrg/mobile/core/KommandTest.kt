@@ -40,7 +40,7 @@ class KommandTest {
     @Test fun theFixtureIsTheGeneratedCatalog() {
         val ids = fx.getJSONArray("items").let { a -> (0 until a.length()).map { a.getJSONObject(it).getString("id") } }
         assertEquals(DeskCatalog.UNITS.map { "cat:" + it.id }, ids)
-        assertEquals(34, DeskCatalog.UNITS.size, "the Desktop had 34 User-level units on 2026-11-12; a new one needs a PARITY.md row")
+        assertEquals(35, DeskCatalog.UNITS.size, "the Desktop had 35 User-level units on 2026-11-14 (+ phone, WP-49); a new one needs a PARITY.md row")
     }
 
     @Test fun theIndexLeavesOutWhatThePhoneCannotOpen() {

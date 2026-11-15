@@ -7,9 +7,9 @@
 |---|---:|
 | START registry (launcher/vrg-menu.json) | 156 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 86 |
+| VRG Irányítópult (Dashboard/) | 90 |
 | Varler Console pages | 51 |
-| VRG Mobile features | 20 |
+| VRG Mobile features | 25 |
 | VRG Stack | 23 |
 | CLI tools | 16 |
 | Prompt library | 8 |
@@ -18,7 +18,7 @@
 | Shared libraries | 4 |
 | Docs packs + GO phrases | 24 |
 | Top-level folders + launcher parts | 26 |
-| **Total** | **540** |
+| **Total** | **549** |
 
 ## START registry (launcher/vrg-menu.json) (156)
 
@@ -291,7 +291,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (86)
+## VRG Irányítópult (Dashboard/) (90)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -315,6 +315,7 @@
 | `dash:selmenu` | Kijelölés menü | Dashboard/shell/lib/selmenu.js | context menu | frame |  |
 | `dash:tray` | Tálca ikon + ablakmódok | Dashboard/shell/lib/tray.js, winmodes.js (Ablak · Munka · Overlay) | tray | frame |  |
 | `dash:toasts` | Értesítések + feladatsor | Dashboard/page/toasts.js | toasts + jobs | frame |  |
+| `dash:phone` | Telefon kapcsolat | Dashboard/page/phone.js, shell/lib/phonelink.js (WP-49) | radios + servers + QR | frame |  |
 | `act:s` | Act family s:* | Dashboard/shell/lib/acts.js | act family | acts | START item |
 | `act:srv` | Act family srv:* | Dashboard/shell/lib/acts.js | act family | acts | local server |
 | `act:f` | Act family f:* | Dashboard/shell/lib/acts.js | act family | acts | features node |
@@ -327,8 +328,9 @@
 | `act:linedoc` | Act family linedoc:* | Dashboard/shell/lib/acts.js | act family | acts | DevLog line doc |
 | `dashcfg:keymap` | Registry keymap.json | Dashboard/config/keymap.json | config registry | config | palette, quick, closeTab, split, splitStacked, focusLeft |
 | `dashcfg:oauth-providers` | Registry oauth-providers.json | Dashboard/config/oauth-providers.json | config registry | config | google |
+| `dashcfg:phone` | Registry phone.json | Dashboard/config/phone.json | config registry | config | _, relay, relayArgs, exclude |
 | `dashcfg:presets` | Registry presets.json | Dashboard/config/presets.json | config registry | config | 6 entries |
-| `dashcfg:profiles` | Registry profiles.json | Dashboard/config/profiles.json | config registry | config | 6 entries |
+| `dashcfg:profiles` | Registry profiles.json | Dashboard/config/profiles.json | config registry | config | 8 entries |
 | `dashcfg:roots` | Registry roots.json | Dashboard/config/roots.json | config registry | config | 7 entries |
 | `dashcfg:search` | Registry search.json | Dashboard/config/search.json | config registry | config | 4 entries |
 | `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 8 entries |
@@ -360,6 +362,7 @@
 | `dashlib:oauth` | lib/oauth.js | Dashboard/shell/lib/oauth.js | module | shell/lib | oauth.js — OAuth 2.0 for installed apps (RFC 8252): PKCE S256 (RFC 7636), a one-shot loopback redirect, the system browser (WP-27). |
 | `dashlib:palette` | lib/palette.js | Dashboard/shell/lib/palette.js | module | shell/lib | palette.js — the command palette (API.md vrg.layout.palette / run): the index of everything the Desktop can open, the matcher |
 | `dashlib:paths` | lib/paths.js | Dashboard/shell/lib/paths.js | module | shell/lib | paths.js — the only module that knows where personal state lives (CONTRACT §5). |
+| `dashlib:phonelink` | lib/phonelink.js | Dashboard/shell/lib/phonelink.js | module | shell/lib | phonelink.js — the VRG Asztal's Telefon panel (WP-49, 2026-11-14): one click finds this PC's radios (Wi-Fi, a Mobile hotspot, |
 | `dashlib:ports` | lib/ports.js | Dashboard/shell/lib/ports.js | module | shell/lib | ports.js — server ports probed on 127.0.0.1, starting and opening registry servers. |
 | `dashlib:presets` | lib/presets.js | Dashboard/shell/lib/presets.js | module | shell/lib | presets.js — presets and feeds (WP-29): a registry of named lookups (config/presets.json + <userDir>/presets.json) that run as jobs, |
 | `dashlib:programs` | lib/programs.js | Dashboard/shell/lib/programs.js | module | shell/lib | programs.js — third-party programs the VRG Asztal installs into Full\programs (WP-45). |
@@ -374,6 +377,7 @@
 | `dashlib:selmenu` | lib/selmenu.js | Dashboard/shell/lib/selmenu.js | module | shell/lib | selmenu.js — the selection menu (WP-19): select text anywhere, right-click, get Másolás · Belső keresés · Google · AI keresés · Claude oldalchat · ... |
 | `dashlib:settings` | lib/settings.js | Dashboard/shell/lib/settings.js | module | shell/lib | settings.js — per-user settings in <userDir>/settings.json, whitelisted keys only, written atomically (.tmp, rename). |
 | `dashlib:sheets` | lib/sheets.js | Dashboard/shell/lib/sheets.js | module | shell/lib | sheets.js — the Lapok (Sheets) of the VRG Asztal's workspace (WP-46): pure functions, shared by main (CommonJS) and the frame page |
+| `dashlib:srvhost` | lib/srvhost.js | Dashboard/shell/lib/srvhost.js | module | shell/lib | srvhost.js — registry servers run inside the VRG Asztal (WP-48): no console window. Each server is a hidden pty session owned by |
 | `dashlib:textify` | lib/textify.js | Dashboard/shell/lib/textify.js | module | shell/lib | textify.js — HTML → readable text (WP-29). No DOM: a small tokenizer. Drops script / style / nav / footer (and head, svg, templates), |
 | `dashlib:tray` | lib/tray.js | Dashboard/shell/lib/tray.js | module | shell/lib | tray.js — the tray icon (WP-04): menu Ablak · Munka · Overlay · Frissítés · Kilépés, double-click shows the window. |
 | `dashlib:views` | lib/views.js | Dashboard/shell/lib/views.js | module | shell/lib | views.js — the view host: WebContentsViews that main places at the rect the frame page reports (WP-07). |
@@ -438,7 +442,7 @@
 | `console:trace` | Ügynöknyom (agent trace) | Console/www/js/trace + relay :8134 | feature | dev |  |
 | `console:ring` | Varler SUI gyűrű (HUD) | Console/www/js/ring.js + Console/design/tokens.json | design component | look |  |
 
-## VRG Mobile features (20)
+## VRG Mobile features (25)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -460,6 +464,11 @@
 | `mobile:M16` | Kit | docs/mobile/WP/M16.md · feature-kit | phone feature | VRG Mobile | the VRG UI Kit's look on the phone |
 | `mobile:M17` | Rétegverem | docs/mobile/WP/M17.md · feature-stack | phone feature | VRG Mobile | the VRG Stack's 3D pages on the phone |
 | `mobile:M18` | Archívum | docs/mobile/WP/M18.md · feature-archive | phone feature | VRG Mobile | the Artifact Archive on the phone |
+| `mobile:M19` | Asztal | docs/mobile/WP/M19.md · feature-desk | phone feature | VRG Mobile | the VRG Desktop's frame on the phone, plus the orientation toggle |
+| `mobile:M20` | Lapok | docs/mobile/WP/M20.md · feature-sheets | phone feature | VRG Mobile | the Desktop's sheets on the phone |
+| `mobile:M21` | Alkalmazások | docs/mobile/WP/M21.md · feature-apps | phone feature | VRG Mobile | the Desktop's HTML apps on the phone |
+| `mobile:M22` | Claude | docs/mobile/WP/M22.md · feature-claude | phone feature | VRG Mobile | the Claude app and the PC's Remote Control sessions |
+| `mobile:M23` | PC ablakok | docs/mobile/WP/M23.md · feature-pcwin | phone feature | VRG Mobile | the PC's work folders, read-only, through the relay |
 | `mobile:M15` | Logó kezdőlap | GO-LOGO.md (planned) | phone feature · planned | VRG Mobile | the two-state Varler logo home page |
 | `mobile:catalogue` | Mobile eszközkatalógus | Mobile/catalogue/tools.json | registry | VRG Mobile | 24 tools listed for the phone |
 
@@ -563,7 +572,7 @@
 | `lib:melyviz` | melyviz.css | shared/melyviz.css | stylesheet | shared |  |
 | `lib:varler-doc` | varler-doc | shared/varler-doc | library | shared |  |
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
-| `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1 — "Mérőpult" |
+| `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1.1 — "Mérőpult" |
 
 ## Docs packs + GO phrases (24)
 

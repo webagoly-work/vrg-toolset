@@ -820,6 +820,44 @@ ipc.register('desktop', 'serverConsole', { id: types.id }, async ({ id }) => srv
 ipc.register('desktop', 'serverStop', { id: types.id }, async ({ id }) => { const r = srvHost.stop(id); setTimeout(() => ports.pollPorts(), 800); return r; });
 ipc.register('desktop', 'serverList', {}, async () => ({ servers: srvHost.list() }));
 
+// WP-49: Telefon — this PC's radios, every local server started for the phone, a QR per server through the relay's /p/<port>/ proxy
+// (lib/phonelink.js). The page names a server id and an address the scan itself returned; main builds every URL. Setting phone.auto:
+// when on, opening the panel (and the shell's start) with a wireless link up starts the servers without the click.
+const phoneLink = require('./lib/phonelink.js').createPhoneLink({
+  R, ports, srvHost, log, dry: SELFTEST, ifaces: () => os.networkInterfaces(),
+  exec: (file, args) => new Promise((res, rej) => require('child_process').execFile(file, args, { windowsHide: true, timeout: 20000, maxBuffer: 4 << 20, encoding: 'utf8' }, (e, out) => (e ? rej(e) : res(out)))),
+  httpGet: (port, p, method) => new Promise((res, rej) => {
+    const rq = require('http').request({ host: '127.0.0.1', port, path: p, method: method || 'GET', timeout: 4000 }, r => { let b = ''; r.setEncoding('utf8'); r.on('data', d => { b += d; }); r.on('end', () => res(b)); });
+    rq.on('timeout', () => rq.destroy(new Error('timeout'))); rq.on('error', rej); rq.end();
+  }),
+});
+const ipv4 = types.text(15);
+ipc.register('desktop', 'phoneScan', { fresh: types.bool }, async ({ fresh }) => {
+  const radios = await phoneLink.radios({ fresh: fresh === true });
+  return { ...radios, relay: await phoneLink.relay(), servers: phoneLink.servers(), auto: onSetting('phone.auto', false) === true };
+}, { optional: ['fresh'] });
+ipc.register('desktop', 'phoneStart', {}, async () => phoneLink.startAll());
+ipc.register('desktop', 'phoneQr', { id: types.id, ip: ipv4 }, async ({ id, ip }) => phoneLink.qr(id, ip), { optional: ['ip'] });
+ipc.register('desktop', 'phonePair', { ip: ipv4 }, async ({ ip }) => phoneLink.pair(ip), { optional: ['ip'] });
+ipc.register('desktop', 'phoneApp', { ip: ipv4 }, async ({ ip }) => phoneLink.app(ip), { optional: ['ip'] });   // WP-49b
+ipc.register('desktop', 'phoneClear', {}, async () => phoneLink.clear());
+// WP-49b: the title bar's corner metrics (lib/netmeter.js; which ones show: settings net.show / net.metrics). The page asks every ~2 s
+// while the row is shown. A selftest never reaches the internet: it gets a fixed sample.
+const netMeter = require('./lib/netmeter.js');
+const nm = netMeter.createNetMeter({
+  exec: (file, args) => new Promise((res, rej) => require('child_process').execFile(file, args, { windowsHide: true, timeout: 5000, encoding: 'utf8' }, (e, out) => (e ? rej(e) : res(out)))),
+  connect: netMeter.tcpConnect(require('net')),
+  resolve: name => require('dns').promises.resolve4(name),
+  cpus: () => os.cpus(), mem: () => ({ free: os.freemem(), total: os.totalmem() }),
+});
+const NET_FAKE = { wifi: 72, ping: 24, jitter: 3, loss: 0, dns: 31, link: 144, down: 1.4e6, up: 2.1e5, cpu: 18, ram: 64 };
+ipc.register('desktop', 'netSample', {}, async () => (SELFTEST ? { at: Date.now(), values: NET_FAKE, ssid: 'Teszt', target: 'teszt' } : nm.sample()));
+async function phoneAutoStart() {
+  if (SELFTEST || onSetting('phone.auto', false) !== true) return;
+  const r = await phoneLink.radios({ fresh: true }).catch(() => null);
+  if (r && r.wireless) { const s = await phoneLink.startAll(); log('phone auto', s.started.length, 'started'); }
+}
+
 // WP-48: what used to open in the outside browser opens in an inner window (setting web.inner, default on). A URL becomes a browser
 // pane (desktop.link); an HTML page that is a catalog app opens as that app (desktop.item). Anything else keeps the old way.
 const innerOn = () => onSetting('web.inner', true) === true && !SELFTEST && win && !win.isDestroyed();
@@ -903,5 +941,6 @@ app.whenReady().then(async () => {
   setupShell();
   await ports.pollPorts();
   pollTimer = setInterval(ports.pollPorts, 4000);
+  setTimeout(() => phoneAutoStart().catch(e => log('phone auto', e.message)), 3000);   // WP-49: after the window, never in a selftest
   if (SELFTEST) selftest();
 });

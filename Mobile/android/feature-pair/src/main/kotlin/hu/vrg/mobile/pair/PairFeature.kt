@@ -2,7 +2,11 @@ package hu.vrg.mobile.pair
 
 import android.Manifest
 import android.app.Application
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -52,6 +56,7 @@ import com.google.mlkit.vision.common.InputImage
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.PairOffer
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.core.ScanCode
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
@@ -74,6 +79,9 @@ import java.util.concurrent.Executors
 // own camera app, which opens the vrg://pair link and the shell routes it to open(). Either way the
 // offer goes to the shared link (Relay.pair), which connects, sends the code and the Keystore key,
 // and stores the PC in Beállítások → Párosított PC-k.
+// 2026-11-14: the home screen's "QR beolvasása" button opens this scanner too, and it reads more than the pairing QR
+// (core/ScanCode.kt): a server QR from the VRG Asztal's 📱 Telefon panel opens that PC server at once in a Custom Tab,
+// a vrg:// link goes back through the shell, any other LAN page is offered, anything else is only shown.
 
 object PairFeature : VrgFeature {
     override val info = Catalogue.PAIR
@@ -104,6 +112,20 @@ object PairFeature : VrgFeature {
         Relay.pair(offer)
     }
 
+    /** The home screen's "QR beolvasása" button: always opens on a live scanner, whatever the last result was. */
+    fun scan() { phase.value = Phase.Scanning }
+
+    /** A server QR from the VRG Asztal's 📱 Telefon panel: that one PC server in a Custom Tab (the relay's /p/<port>/). */
+    private fun openServer(ctx: Context, c: ScanCode.Server, host: FeatureHost) {
+        try { CustomTabsIntent.Builder().build().launchUrl(ctx, Uri.parse(c.url)); host.note("PC :${c.port} megnyitva") }
+        catch (e: Exception) { host.note("Nincs böngésző a megnyitáshoz") }
+    }
+
+    /** A link the app itself answers (vrg://…, the Planner's phone-sender QR): back through the shell's link routing. */
+    private fun openLink(ctx: Context, raw: String) {
+        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(raw)).setPackage(ctx.packageName).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)) }
+    }
+
     @Composable
     override fun Screen(host: FeatureHost) {
         val ctx = LocalContext.current
@@ -116,22 +138,41 @@ object PairFeature : VrgFeature {
         }
         val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
         var foreign by remember { mutableStateOf<String?>(null) }
+        var lan by remember { mutableStateOf<ScanCode.Lan?>(null) }
+        var last by remember { mutableStateOf<String?>(null) }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
                 modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Text("QR PÁROSÍTÁS", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("A PC-n: START.cmd → G (relé), majd böngészőben http://localhost:47291/pair", style = Melyviz.small)
+            Text("QR OLVASÓ", style = Melyviz.title.copy(fontSize = 18.sp))
+            Text("A PC-n: VRG Asztal → Telefon (rádiók, minden szerver, QR szerverenként), vagy http://localhost:47291/pair", style = Melyviz.small)
             Spacer(Modifier.height(12.dp))
 
             when (val ph = p) {
                 Phase.Scanning -> {
                     if (granted) {
+                        // one scanner for everything the PC shows: the pairing QR, a server QR (opens at once), a VRG link
                         Scanner(Modifier.fillMaxWidth().aspectRatio(1f)) { raw ->
-                            val offer = PairOffer.parse(raw)
-                            if (offer != null) start(offer) else foreign = raw.take(80)
+                            foreign = null; lan = null
+                            when (val c = ScanCode.classify(raw)) {
+                                is ScanCode.PairLink -> start(c.offer)
+                                is ScanCode.Server -> { last = "PC szerver :${c.port}  ·  ${c.host}"; openServer(ctx, c, host) }
+                                is ScanCode.Open -> openLink(ctx, raw)
+                                is ScanCode.Lan -> lan = c
+                                is ScanCode.Other -> foreign = c.text.take(80)
+                            }
                         }
-                        foreign?.let { Text("Ez nem VRG párosító kód: $it", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
+                        last?.let { Text("✓ Megnyitva: $it", style = Melyviz.small.copy(color = Melyviz.kelp), modifier = Modifier.padding(top = 6.dp)) }
+                        lan?.let { l ->
+                            Text("Helyi hálózati oldal: ${l.url.take(80)}", style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
+                            Row(Modifier.padding(top = 4.dp)) {
+                                VrgChip("Megnyitás böngészőben", true) {
+                                    runCatching { CustomTabsIntent.Builder().build().launchUrl(ctx, Uri.parse(l.url)) }
+                                    lan = null
+                                }
+                            }
+                        }
+                        foreign?.let { Text("Ez nem VRG kód: $it", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
                     } else {
                         Text("A QR beolvasásához kamera engedély kell. A kép a telefonon marad, semmi nem kerül mentésre.", style = Melyviz.small)
                         Row(Modifier.padding(top = 8.dp)) { VrgChip("Kamera engedélyezése", true) { ask.launch(Manifest.permission.CAMERA) } }

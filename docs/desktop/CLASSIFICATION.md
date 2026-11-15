@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 117 | 32 |
+| open · user | 118 | 33 |
 | open · dev | 281 | 56 |
 | open · all | 24 | 1 |
-| internal | 71 | 0 |
-| roadmap | 47 | 5 |
-| **total** | **540** | **94** |
+| internal | 74 | 0 |
+| roadmap | 52 | 5 |
+| **total** | **549** | **95** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -45,6 +45,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `workspaces` | Munkaterek · *Workspaces* | feature · saved workspaces | `desktop` | rendszer | live |
 | `notifications` | Értesítések · *Notifications* | panel · notifications + job queue | `desktop` | rendszer | live |
 | `settings` | Beállítások · *Settings* | dialog · settings | `desktop` | rendszer | beta |
+| `phone` | Telefon kapcsolat · *Phone link* | dialog · radios, servers, QR | `desktop` | rendszer | beta |
 | `planner` | Varler Planner · *Varler Planner* | application |  | munka / tervezes | live |
 | `workflow-kit` | Varler Workflow Kit · *Varler Workflow Kit* | document set · workflow kit |  | munka / arazas | live |
 | `calc-panel` | Panel anyagár kalkulátor · *Panel material price calculator* | utility · calculator |  | munka / arazas | live |
@@ -165,17 +166,17 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
-| `feature module` | Feature module · Funkciómodul | unit | 19 |
+| `feature module` | Feature module · Funkciómodul | unit | 24 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 48 |
+| `module` | Module · Modul | unit | 50 |
 | `library` | Library · Könyvtár | unit | 1 |
 | `command` | Command · Parancs | unit | 94 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
 | `cli tool` | CLI tool · Parancssori eszköz | unit | 11 |
 | `service` | Service · Szolgáltatás | unit | 18 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
-| `registry` | Registry · Nyilvántartás | unit | 9 |
+| `registry` | Registry · Nyilvántartás | unit | 10 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 10 |
 | `document set` | Document set · Dokumentumcsomag | unit | 18 |
 | `runbook` | Runbook · Forgatókönyv | unit | 10 |
@@ -210,7 +211,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `panel` | Panel · Panel | container | 15 |
 | `view` | View · Nézet | container | 28 |
 | `window` | Window · Ablak | container |  |
-| `dialog` | Dialog · Párbeszédablak | container | 4 |
+| `dialog` | Dialog · Párbeszédablak | container | 5 |
 | `toast` | Notification · Értesítés | container |  |
 | `card` | Card · Csempe | container |  |
 | `dock` | Dock · Dokk | container |  |
@@ -503,6 +504,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dash:selmenu` | Kijelölés menü | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
 | `dash:tray` | Tálca ikon + ablakmódok | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
 | `dash:toasts` | Értesítések + feladatsor | panel · notifications + job queue | open | user | `desktop` | is the catalog item `notifications` |
+| `dash:phone` | Telefon kapcsolat | dialog · radios, servers, QR | open | user | `desktop` | is the catalog item `phone` |
 | `act:s` | Act family s:* | command family · action id scheme | internal |  | `palette` | an id scheme the palette and the main process resolve; never opened itself |
 | `act:srv` | Act family srv:* | command family · action id scheme | internal |  | `palette` | an id scheme the palette and the main process resolve; never opened itself |
 | `act:f` | Act family f:* | command family · action id scheme | internal |  | `palette` | an id scheme the palette and the main process resolve; never opened itself |
@@ -515,6 +517,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `act:linedoc` | Act family linedoc:* | command family · action id scheme | internal |  | `palette` | an id scheme the palette and the main process resolve; never opened itself |
 | `dashcfg:keymap` | Registry keymap.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:oauth-providers` | Registry oauth-providers.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
+| `dashcfg:phone` | Registry phone.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:presets` | Registry presets.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:profiles` | Registry profiles.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:roots` | Registry roots.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
@@ -548,6 +551,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:oauth` | lib/oauth.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:palette` | lib/palette.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:paths` | lib/paths.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:phonelink` | lib/phonelink.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:ports` | lib/ports.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:presets` | lib/presets.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:programs` | lib/programs.js | module | internal |  | `desktop` | internal code unit |
@@ -562,6 +566,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:selmenu` | lib/selmenu.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:settings` | lib/settings.js | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
 | `dashlib:sheets` | lib/sheets.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:srvhost` | lib/srvhost.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:textify` | lib/textify.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:tray` | lib/tray.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:views` | lib/views.js | module | internal |  | `desktop` | internal code unit |
@@ -638,6 +643,11 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `mobile:M16` | Kit | feature module · companion app | open | dev | `mobile` | repo, CI, servers or knowledge on the phone |
 | `mobile:M17` | Rétegverem | feature module · companion app | open | dev | `mobile` | repo, CI, servers or knowledge on the phone |
 | `mobile:M18` | Archívum | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M19` | Asztal | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M20` | Lapok | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M21` | Alkalmazások | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M22` | Claude | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M23` | PC ablakok | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M15` | Logó kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry · generated tool list | internal |  | `mobile` | the phone's tool list, generated |
 | `stack:commits` | VRG Commit-pixel | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |

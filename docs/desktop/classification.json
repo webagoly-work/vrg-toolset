@@ -3374,6 +3374,18 @@
    "reason": "is the catalog item `notifications`"
   },
   {
+   "id": "dash:phone",
+   "name": "Telefon kapcsolat",
+   "source": "dashboard",
+   "type": "dialog",
+   "qualifier": "radios, servers, QR",
+   "scope": "open",
+   "level": "user",
+   "parent": "desktop",
+   "unit": "phone",
+   "reason": "is the catalog item `phone`"
+  },
+  {
    "id": "act:s",
    "name": "Act family s:*",
    "source": "dashboard",
@@ -3508,6 +3520,18 @@
   {
    "id": "dashcfg:oauth-providers",
    "name": "Registry oauth-providers.json",
+   "source": "dashboard",
+   "type": "registry",
+   "qualifier": "config file",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "settings data behind the VRG Asztal; edited through Beállítások, not opened"
+  },
+  {
+   "id": "dashcfg:phone",
+   "name": "Registry phone.json",
    "source": "dashboard",
    "type": "registry",
    "qualifier": "config file",
@@ -3914,6 +3938,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:phonelink",
+   "name": "lib/phonelink.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:ports",
    "name": "lib/ports.js",
    "source": "dashboard",
@@ -4072,6 +4108,18 @@
   {
    "id": "dashlib:sheets",
    "name": "lib/sheets.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:srvhost",
+   "name": "lib/srvhost.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -4984,6 +5032,66 @@
   {
    "id": "mobile:M18",
    "name": "Archívum",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M19",
+   "name": "Asztal",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M20",
+   "name": "Lapok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M21",
+   "name": "Alkalmazások",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M22",
+   "name": "Claude",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M23",
+   "name": "PC ablakok",
    "source": "mobile",
    "type": "feature module",
    "qualifier": "companion app",

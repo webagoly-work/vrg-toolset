@@ -125,6 +125,14 @@
 //     files.read {h} -> files.read {ok, kind:'text'|'image'|'binary', name, size, text?, data?, truncated}; files.copy {h} ->
 //     files.copied {ok, entry} (the file onto the Átadás board as a PC entry). Trusted phones only, OFF unless --files
 //     (RELAY_FILES=1). Roots: the Desktop's roots.json narrowed by Mobile/catalogue/files.json (D-17). Only handles travel.
+//
+// CHANGED 14 Nov — Telefon, a QR per local server on the VRG Asztal (Dashboard/shell/lib/phonelink.js; rules in relay-ports.js).
+//   * GET /share/<port>.json?ip=&path= (this PC only, the /pair rule) -> {ok, url, svg, ttl, address, addresses}: a link
+//     http://<ip>:<relay>/p/<port>/<path>?vrg_s=<ticket> and its QR. Any phone that scans it (its camera, VRG Mobile's QR
+//     button) opens THAT one server through /p/<port>/ without pairing; the ticket lives 5 minutes and becomes the cookie
+//     vrg_s<port> (12 hours, that port only). POST /share/clear revokes every ticket and cookie. Needs --ports, like /p/.
+//   * GET /share/app.json?ip= (this PC only) -> a QR to /vrg-mobile?vrg_s=<ticket>: for a phone WITHOUT VRG Mobile, a download page and
+//     /vrg-mobile.apk, the APK built on this PC (relay-ports.js findApk). 10 minutes; needs no --ports.
 // ==========================================================================
 
 const http = require('http');
@@ -159,6 +167,8 @@ const FILES = ARGS.includes('--files') || process.env.RELAY_FILES === '1';
 const PAIR_WINDOW = ARGS.includes('--pair') || process.env.RELAY_PAIR === '1';
 const PAIRS = pairing.createPairing();
 const GATE = ports.createGate();
+const SHARES = ports.createShares();
+const APP_SHARES = ports.createShares({ ttl: 10 * 60 * 1000 });   // the VRG Mobile download page: 10 minutes, see /share/app.json
 const isPaired = id => PAIRS.list().some(p => p.id === id);
 const SENDER_PAGE = path.join(__dirname, '..', 'mobile', 'phone-sender.html');
 const SENDER_FALLBACK = path.join(__dirname, 'phone-sender.html');
@@ -298,6 +308,7 @@ const server = http.createServer((req, res) => {
       focus: lastFocus,
       shots: SHOTS,
       ports: PORTS,
+      share: PORTS,
       board: true,
       screen: SCREEN.available,
       notify: true,
@@ -338,11 +349,17 @@ const server = http.createServer((req, res) => {
   // ---- /p/<port>/… — the phone's view of a local server (see the 5 Nov note) --------------------
   if (url === '/p' || url.startsWith('/p/')) { serveProxy(req, res); return; }
 
+  // ---- /share — a QR per local server for the PC's own screen (see the 14 Nov note) -------------
+  if (url.startsWith('/share/')) { serveShare(req, res, url); return; }
+
+  // ---- /vrg-mobile — VRG Mobile for a phone that has no app yet: the page and the APK, for a ticket from /share/app.json
+  if ((url === '/vrg-mobile' || url === '/vrg-mobile.apk') && req.method === 'GET') { serveApp(req, res, url); return; }
+
   // A proxied page asking for a root-relative path ("/app.js") lands here: send it back under the
   // /p/<port>/ it came from, but only for a phone that already holds a valid proxy cookie.
   if (PORTS && req.method === 'GET') {
     const ref = /^https?:\/\/[^/]+\/p\/(\d{1,5})\//.exec(req.headers.referer || '');
-    if (ref && GATE.check(ports.cookieValue(req.headers.cookie, ports.PROXY_COOKIE), isPaired)) {
+    if (ref && mayProxy(req, Number(ref[1]))) {
       res.writeHead(307, { Location: `/p/${Number(ref[1])}${req.url}`, 'Cache-Control': 'no-store' });
       res.end();
       return;
@@ -353,6 +370,81 @@ const server = http.createServer((req, res) => {
   res.end('Not found');
 });
 
+// a paired phone's token opens every port; a shared QR's cookie (vrg_s<port>) only its own
+function mayProxy(req, port) {
+  return GATE.check(ports.cookieValue(req.headers.cookie, ports.PROXY_COOKIE), isPaired) ||
+    SHARES.check(ports.cookieValue(req.headers.cookie, ports.shareCookie(port)), port);
+}
+
+// ---- /share — a QR per local server, for this PC's own screen only (the /pair rule; see the 14 Nov note)
+//   GET  /share/<port>.json?ip=<lan address>&path=/<path>  -> {ok, url, svg, ttl, address, addresses} | {ok:false, reason, ports?}
+//   POST /share/clear                                       -> {ok, cleared}: every shared ticket and cookie revoked
+function serveShare(req, res, url) {
+  const own = lanAddresses().map(a => a.address);
+  const json = (code, o) => {
+    res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify(o));
+  };
+  if (!pairing.isLocal(clientIp(req), own) || !pairing.isLocalHost(req.headers.host, own)) {
+    console.log(`  ! megosztas elutasitva: ${clientIp(req)} (csak a PC sajat kepernyojen)`);
+    json(403, { ok: false, reason: 'Csak ezen a PC-n kérhető.' });
+    return;
+  }
+  if (url === '/share/clear' && req.method === 'POST') {
+    const n = SHARES.clear() + APP_SHARES.clear();
+    console.log(`  [qr] megosztasok visszavonva (${n})`);
+    json(200, { ok: true, cleared: n });
+    return;
+  }
+  if (url === '/share/app.json' && req.method === 'GET') {
+    // the VRG Mobile download page for a phone without the app: needs no --ports, only an APK built on this PC
+    const apk = ports.findApk();
+    if (!apk) { json(200, { ok: false, reason: 'Nincs VRG Mobile APK ezen a PC-n: Mobile\\mobile.cmd build (vagy RELAY_APK).' }); return; }
+    const addrs = lanAddresses();
+    const want = new URL(req.url, 'http://x').searchParams.get('ip');
+    const pick = addrs.find(a => a.address === want) || addrs[0];
+    if (!pick) { json(200, { ok: false, reason: 'Nincs WiFi / LAN cím: csatlakozz hálózatra.' }); return; }
+    const t = APP_SHARES.ticket('app');
+    const link = `http://${pick.address}:${server.address().port}/vrg-mobile?vrg_s=${t.ticket}`;
+    json(200, { ok: true, url: link, svg: pairing.qrSvg(link), ttl: t.ttl, address: pick.address,
+      apk: { kind: apk.kind, bytes: apk.bytes, mtime: apk.mtime } });
+    return;
+  }
+  const m = /^\/share\/(\d{1,5})\.json$/.exec(url);
+  if (!m || req.method !== 'GET') { json(404, { ok: false, reason: 'Not found' }); return; }
+  if (!PORTS) { json(200, { ok: false, ports: false, reason: 'A relé --ports nélkül fut: a telefonos megnyitás ki van kapcsolva.' }); return; }
+  const port = Number(m[1]), relayPort = server.address().port;
+  if (!ports.validPort(port) || port === relayPort) { json(400, { ok: false, reason: 'Hibás port.' }); return; }
+  const q = new URL(req.url, 'http://x').searchParams;
+  const u = ports.portUrl(port, q.get('path') || '/');
+  if (!u.ok) { json(400, { ok: false, reason: u.reason }); return; }
+  const rel = new URL(u.url);
+  const addrs = lanAddresses();
+  const pick = addrs.find(a => a.address === q.get('ip')) || addrs[0];
+  if (!pick) { json(200, { ok: false, reason: 'Nincs WiFi / LAN cím: csatlakozz hálózatra.' }); return; }
+  const t = SHARES.ticket(port);
+  const link = `http://${pick.address}:${relayPort}/p/${port}${rel.pathname}${rel.search ? rel.search + '&' : '?'}vrg_s=${t.ticket}`;
+  json(200, { ok: true, port, url: link, svg: pairing.qrSvg(link), ttl: t.ttl, address: pick.address,
+    addresses: addrs.map(a => ({ address: a.address, name: a.name })) });
+}
+
+function serveApp(req, res, url) {
+  const t = new URL(req.url, 'http://x').searchParams.get('vrg_s');
+  const page = (code, html) => { res.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(html); };
+  if (!APP_SHARES.valid(t, 'app')) {
+    console.log(`  ! app letoltes elutasitva: ${clientIp(req)}`);
+    page(403, '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:16px system-ui;padding:24px;background:#071A26;color:#DCEFF4">A QR lejárt: kérj újat a PC-n (VRG Asztal → Telefon → VRG Mobile letöltése).</body>');
+    return;
+  }
+  const apk = ports.findApk();
+  if (!apk) { page(404, '<!doctype html><meta charset="utf-8"><body>Nincs APK ezen a PC-n.</body>'); return; }
+  if (url === '/vrg-mobile') { page(200, ports.appPage({ ...apk, href: '/vrg-mobile.apk?vrg_s=' + t })); return; }
+  console.log(`  [app] VRG Mobile APK -> ${clientIp(req)} (${apk.kind}, ${apk.bytes} bajt)`);
+  res.writeHead(200, { 'Content-Type': 'application/vnd.android.package-archive', 'Content-Length': apk.bytes,
+    'Content-Disposition': 'attachment; filename="vrg-mobile.apk"', 'Cache-Control': 'no-store' });
+  fs.createReadStream(apk.file).on('error', () => res.destroy()).pipe(res);
+}
+
 function serveProxy(req, res) {
   const text = (code, msg) => { res.writeHead(code, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(msg); };
   if (!PORTS) { text(404, 'A telefonos megnyitás ki van kapcsolva: a relét --ports kapcsolóval kell indítani (Mobile\\mobile.cmd relay).'); return; }
@@ -361,7 +453,21 @@ function serveProxy(req, res) {
   const m = ports.parseProxyPath(req.url);
   if (!m || m.rest == null) { text(404, 'Not found'); return; }
   if (m.port === server.address().port) { text(403, 'A relé önmagát nem közvetíti.'); return; }
-  const { path: rest, token } = ports.stripToken(m.rest);
+  const { path: rest0, token } = ports.stripToken(m.rest);
+  const { path: rest, value: share } = ports.stripParam(rest0, 'vrg_s');
+  if (share) {
+    // a QR from the PC's screen (VRG Asztal → Telefon): this one port only, no pairing (see the 14 Nov note)
+    const t = SHARES.claim(share, m.port);
+    if (!t) { console.log(`  ! megosztott QR elutasitva: ${clientIp(req)} -> :${m.port}`); text(403, 'A QR lejárt: kérj újat a PC-n (VRG Asztal → 📱 Telefon).'); return; }
+    console.log(`  [qr] megosztott szerver: ${clientIp(req)} -> :${m.port}`);
+    res.writeHead(302, {
+      Location: `/p/${m.port}${rest}`,
+      'Set-Cookie': `${ports.shareCookie(m.port)}=${t}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.round(ports.TOKEN_TTL / 1000)}`,
+      'Cache-Control': 'no-store',
+    });
+    res.end();
+    return;
+  }
   if (token) {
     // the first visit from the phone: the token becomes a cookie, and the URL loses it
     if (!GATE.check(token, isPaired)) { console.log(`  ! proxy token elutasitva: ${clientIp(req)} -> :${m.port}`); text(403, 'Lejárt vagy hibás belépő: nyisd meg újra a VRG Mobile Localhost listájából.'); return; }
@@ -373,8 +479,8 @@ function serveProxy(req, res) {
     res.end();
     return;
   }
-  if (!GATE.check(ports.cookieValue(req.headers.cookie, ports.PROXY_COOKIE), isPaired)) {
-    text(403, 'Csak párosított telefonról: nyisd meg a VRG Mobile Localhost listájából ("Itt").');
+  if (!mayProxy(req, m.port)) {
+    text(403, 'Csak párosított telefonról vagy a PC-n mutatott QR-ral: nyisd meg a VRG Mobile Localhost listájából ("Itt").');
     return;
   }
   ports.proxy(req, res, m.port, rest, 'localhost');
