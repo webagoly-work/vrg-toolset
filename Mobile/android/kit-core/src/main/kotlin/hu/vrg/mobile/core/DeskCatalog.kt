@@ -22,6 +22,7 @@ object DeskCatalog {
         DeskUnit("workspaces", "Munkaterek", "Workspaces", "rendszer", "MT", Reach.NATIVE, "sheets"),
         DeskUnit("notifications", "Értesítések", "Notifications", "rendszer", "ÉR", Reach.NATIVE, "inbox"),
         DeskUnit("settings", "Beállítások", "Settings", "rendszer", "BE", Reach.NATIVE, "settings"),
+        DeskUnit("phone", "Telefon kapcsolat", "Phone link", "rendszer", "TL", Reach.NATIVE, "pair"),
         DeskUnit("planner", "Varler Planner", "Varler Planner", "munka", "PL", Reach.WEBAPP, "planner"),
         DeskUnit("client-preview", "Ügyfélnézet", "Client preview", "munka", "ÜN", Reach.WEBAPP, "planner"),
         DeskUnit("workflow-kit", "Varler Workflow Kit", "Varler Workflow Kit", "munka", "WK", Reach.PC, "pcwin"),

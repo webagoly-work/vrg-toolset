@@ -26,4 +26,5 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$camerax")
     implementation("androidx.camera:camera-view:$camerax")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")   // bundled model: no Play services download
+    implementation("androidx.browser:browser:1.8.0")   // a PC server QR (VRG Asztal → Telefon) opens in a Custom Tab
 }

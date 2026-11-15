@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
+import hu.vrg.mobile.pair.PairFeature
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -64,7 +67,9 @@ fun HomeScreen(onOpen: (String) -> Unit) {
                 modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
+        ScanButton { PairFeature.scan(); onOpen(Catalogue.PAIR.id) }
+        Spacer(Modifier.height(2.dp))
         Registry.catalogue.forEach { (group, items) ->
             Text(group.label.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.6.sp), modifier = Modifier.padding(top = 14.dp, bottom = 6.dp))
             items.chunked(2).forEach { row ->
@@ -76,6 +81,29 @@ fun HomeScreen(onOpen: (String) -> Unit) {
         }
         Spacer(Modifier.height(24.dp))
         Text("v${BuildConfig.VERSION_NAME}", style = Melyviz.readout)
+    }
+}
+
+/** The QR scanner as its own button at the top of the home screen (2026-11-14): the pairing QR, or a PC server's QR from the
+ *  VRG Asztal's Telefon panel, which opens that server at once. */
+@Composable
+private fun ScanButton(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(Melyviz.radius)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+            .background(Melyviz.raised, shape)
+            .border(BorderStroke(1.dp, Melyviz.glow), shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("▦", style = Melyviz.glyph.copy(fontSize = 26.sp, color = Melyviz.glow))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text("QR BEOLVASÁSA", style = Melyviz.label.copy(color = Melyviz.ink, letterSpacing = 1.4.sp))
+            Text("Párosítás, vagy a PC egy szervere: VRG Asztal → Telefon", style = Melyviz.small.copy(fontSize = 10.sp))
+        }
+        Text("›", style = Melyviz.title.copy(color = Melyviz.glow))
     }
 }
 

@@ -30,11 +30,13 @@ const ok = (c, m) => { count++; console.log((c ? '  ok   ' : '  FAIL ') + m); if
 
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-ports-'));
 const FILE = path.join(TMP, 'relay-paired.json');
+const APK = path.join(TMP, 'fake.apk');              // the VRG Mobile download (/share/app.json, /vrg-mobile): a stand-in file
+fs.writeFileSync(APK, Buffer.from('PK fake apk ' + 'x'.repeat(200)));
 
 function startRelay(port, flags) {
   const r = spawn(process.execPath, [path.join(TOOLS, 'phone-relay-server.js'), String(port)].concat(flags), {
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: Object.assign({}, process.env, { RELAY_PAIRED_FILE: FILE, RELAY_OPEN_DRY: '1', RELAY_PORTS: '' }),
+    env: Object.assign({}, process.env, { RELAY_PAIRED_FILE: FILE, RELAY_OPEN_DRY: '1', RELAY_PORTS: '', RELAY_APK: APK }),
   });
   r.log = ''; r.stdout.on('data', d => r.log += d); r.stderr.on('data', d => r.log += d);
   return r;
@@ -223,6 +225,77 @@ function fakeServer() {
   ok((await get(PORT, '/app.js', { headers: { referer: `http://192.168.1.24:${PORT}/p/${SITE}/page` } })).status === 404, '… but not without the cookie');
   ok((await get(PORT, `/p/${PORT}/`, { headers: { cookie } })).status === 403, 'the relay does not proxy itself');
   ok((await get(PORT, '/p/1/', { headers: { cookie } })).status === 502, 'a port nobody listens on answers 502, not a hang');
+
+  // shared QR links (VRG Asztal → Telefon, 2026-11-14): one port, no pairing, from the PC's own screen only
+  console.log('shared QR links (/share)');
+  let clock = 1000;
+  const SH = R.createShares({ now: () => clock, ttl: 100, keep: 1000 });
+  const tk = SH.ticket(8124);
+  ok(tk && /^[0-9a-f]{32}$/.test(tk.ticket) && SH.ticket(0) === null && SH.ticket(70000) === null, 'a ticket is made for a real port only');
+  const stok = SH.claim(tk.ticket, 8124);
+  ok(/^[0-9a-f]{32}$/.test(stok) && SH.claim(tk.ticket, 8124) === stok, 'a claimed ticket gives one cookie token, the same on a second scan');
+  ok(SH.claim(tk.ticket, 8123) === null && SH.claim('x'.repeat(32), 8124) === null, 'a ticket opens its own port only; a made-up one nothing');
+  ok(SH.check(stok, 8124) && !SH.check(stok, 8123), 'the cookie token is good for that port and no other');
+  clock += 150;
+  ok(SH.claim(tk.ticket, 8124) === null && SH.check(stok, 8124), 'after the ticket TTL it can no longer be claimed; the token it gave lives on');
+  clock += 1000;
+  ok(!SH.check(stok, 8124), 'the token expires after its own TTL');
+  const t2 = SH.ticket(8124); SH.claim(t2.ticket, 8124);
+  ok(SH.clear() === 2 && SH.claim(t2.ticket, 8124) === null, 'clear() revokes every ticket and token');
+  ok(R.stripParam('/a?x=1&vrg_s=ab', 'vrg_s').path === '/a?x=1' && R.stripParam('/a?vrg_s=ab', 'vrg_s').value === 'ab' && R.stripParam('/a', 'vrg_s').value === null, 'stripParam takes the ticket out of the path');
+  ok(R.cookiesForServer('vrg_ports=a; vrg_s8124=b; theirs=1') === 'theirs=1' && R.cookiesForServer('vrg_s1=b') === undefined, 'none of our cookies reach a proxied server');
+
+  const sj = await get(PORT, `/share/${SITE}.json?path=/page`);
+  const share = JSON.parse(sj.body);
+  if (share.ok) {
+    ok(share.svg && share.svg.startsWith('<svg') && share.ttl === R.SHARE_TTL, '/share/<port>.json gives a QR and its TTL');
+    const su = new URL(share.url);
+    ok(su.pathname === `/p/${SITE}/page` && Number(su.port) === PORT && /^[0-9a-f]{32}$/.test(su.searchParams.get('vrg_s')), 'the link is the relay\'s /p/<port>/<path> with a ticket');
+    const sFirst = await get(PORT, su.pathname + su.search);
+    const sCookie = String((sFirst.headers['set-cookie'] || [''])[0]).split(';')[0];
+    ok(sFirst.status === 302 && sFirst.headers.location === `/p/${SITE}/page` && sCookie.startsWith(`vrg_s${SITE}=`), 'a scan turns the ticket into the vrg_s<port> cookie and drops it from the URL');
+    ok((await get(PORT, `/p/${SITE}/page`, { headers: { cookie: sCookie } })).status === 200, 'the shared cookie opens that server');
+    ok((await get(PORT, `/p/${PORT_OFF}/`, { headers: { cookie: sCookie.replace(`vrg_s${SITE}`, `vrg_s${PORT_OFF}`) } })).status === 403, '… and its token is no good for another port');
+    const sEcho = JSON.parse((await get(PORT, `/p/${SITE}/echo`, { headers: { cookie: sCookie + '; theirs=1' } })).body);
+    ok(sEcho.cookie === 'theirs=1', 'the shared cookie never reaches the server');
+    ok(JSON.parse((await get(PORT, '/share/clear', { method: 'POST' })).body).ok && (await get(PORT, `/p/${SITE}/page`, { headers: { cookie: sCookie } })).status === 403, 'POST /share/clear revokes it at once');
+  } else ok(/WiFi|LAN/.test(share.reason || ''), '/share without a LAN address says so (' + (share.reason || '?') + ')');
+  ok((await get(PORT, `/share/${PORT}.json`)).status === 400, 'the relay never shares itself');
+  ok((await get(PORT, `/share/${SITE}.json?path=//evil.example`)).status === 400, 'a bad path is refused');
+  ok((await get(PORT, `/share/${SITE}.json`, { headers: { host: 'evil.example' } })).status === 403, 'a foreign Host (DNS rebinding) is refused');
+  ok(JSON.parse((await get(PORT_OFF, `/share/${SITE}.json`)).body).ports === false, 'without --ports /share says the proxy is off');
+
+  // the VRG Mobile download for a phone without the app (2026-11-14): /share/app.json (this PC only) -> /vrg-mobile + the APK
+  console.log('VRG Mobile download (/share/app.json, /vrg-mobile)');
+  const aj = JSON.parse((await get(PORT, '/share/app.json')).body);
+  if (aj.ok) {
+    const au = new URL(aj.url);
+    ok(au.pathname === '/vrg-mobile' && /^[0-9a-f]{32}$/.test(au.searchParams.get('vrg_s')) && aj.svg.startsWith('<svg') && aj.ttl === 10 * 60 * 1000, 'the download QR: /vrg-mobile with a 10-minute ticket');
+    ok(aj.apk && aj.apk.kind === 'custom' && aj.apk.bytes === fs.statSync(APK).size, 'it names the APK it serves (RELAY_APK here)');
+    const pg = await get(PORT, au.pathname + au.search);
+    ok(pg.status === 200 && pg.body.includes('href="/vrg-mobile.apk?vrg_s=' + au.searchParams.get('vrg_s') + '"') && /Telepítés/.test(pg.body), 'the page offers the download and says what to do after it');
+    const dl = await get(PORT, '/vrg-mobile.apk' + au.search);
+    ok(dl.status === 200 && dl.headers['content-type'] === 'application/vnd.android.package-archive' && dl.body === fs.readFileSync(APK, 'utf8'), 'the APK itself, as an Android package');
+    ok((await get(PORT, '/vrg-mobile.apk' + au.search)).status === 200, 'a second download within the ticket time works too');
+    ok((await get(PORT, '/vrg-mobile.apk?vrg_s=' + 'f'.repeat(32))).status === 403 && (await get(PORT, '/vrg-mobile')).status === 403, 'no ticket or a made-up one: refused');
+    const tk = au.searchParams.get('vrg_s');
+    ok((await get(PORT, `/p/${SITE}/?vrg_s=${tk}`)).status === 403, 'the download ticket opens no server');
+    ok(JSON.parse((await get(PORT_OFF, '/share/app.json')).body).ok === true, 'the download needs no --ports');
+    await get(PORT, '/share/clear', { method: 'POST' });
+    ok((await get(PORT, '/vrg-mobile.apk' + au.search)).status === 403, 'POST /share/clear revokes it as well');
+  } else ok(/WiFi|LAN/.test(aj.reason || ''), '/share/app.json without a LAN address says so (' + (aj.reason || '?') + ')');
+  ok((await get(PORT, '/share/app.json', { headers: { host: 'evil.example' } })).status === 403, 'the download QR is for this PC\'s own screen only');
+  {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-apk-'));
+    for (const k of ['release', 'debug']) fs.mkdirSync(path.join(d, k));
+    ok(R.findApk({ dir: d, env: '' }) === null, 'findApk: no build, no APK');
+    fs.writeFileSync(path.join(d, 'debug', 'app-debug.apk'), 'd'); fs.utimesSync(path.join(d, 'debug', 'app-debug.apk'), new Date(), new Date(Date.now() - 60000));
+    fs.writeFileSync(path.join(d, 'release', 'app-release.apk'), 'rr');
+    ok(R.findApk({ dir: d, env: '' }).kind === 'release', 'findApk: the newest build wins (release here)');
+    fs.utimesSync(path.join(d, 'debug', 'app-debug.apk'), new Date(), new Date(Date.now() + 60000));
+    ok(R.findApk({ dir: d, env: '' }).kind === 'debug', '… and debug when it is newer');
+    fs.rmSync(d, { recursive: true, force: true });
+  }
 
   // the relay without --ports
   const b = await phone(PORT_OFF).ready;

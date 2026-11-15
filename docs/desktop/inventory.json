@@ -3,9 +3,9 @@
  "counts": {
   "vrg-menu": 156,
   "features": 105,
-  "dashboard": 86,
+  "dashboard": 90,
   "console": 51,
-  "mobile": 20,
+  "mobile": 25,
   "stack": 23,
   "tools": 16,
   "prompts": 8,
@@ -15,7 +15,7 @@
   "docs": 24,
   "folders": 26
  },
- "total": 540,
+ "total": 549,
  "errors": [],
  "rows": [
   {
@@ -2548,6 +2548,15 @@
    "note": ""
   },
   {
+   "id": "dash:phone",
+   "name": "Telefon kapcsolat",
+   "where": "Dashboard/page/phone.js, shell/lib/phonelink.js (WP-49)",
+   "source": "dashboard",
+   "kind": "radios + servers + QR",
+   "group": "frame",
+   "note": ""
+  },
+  {
    "id": "act:s",
    "name": "Act family s:*",
    "where": "Dashboard/shell/lib/acts.js",
@@ -2656,6 +2665,15 @@
    "note": "google"
   },
   {
+   "id": "dashcfg:phone",
+   "name": "Registry phone.json",
+   "where": "Dashboard/config/phone.json",
+   "source": "dashboard",
+   "kind": "config registry",
+   "group": "config",
+   "note": "_, relay, relayArgs, exclude"
+  },
+  {
    "id": "dashcfg:presets",
    "name": "Registry presets.json",
    "where": "Dashboard/config/presets.json",
@@ -2671,7 +2689,7 @@
    "source": "dashboard",
    "kind": "config registry",
    "group": "config",
-   "note": "6 entries"
+   "note": "8 entries"
   },
   {
    "id": "dashcfg:roots",
@@ -2953,6 +2971,15 @@
    "note": "paths.js — the only module that knows where personal state lives (CONTRACT §5)."
   },
   {
+   "id": "dashlib:phonelink",
+   "name": "lib/phonelink.js",
+   "where": "Dashboard/shell/lib/phonelink.js",
+   "source": "dashboard",
+   "kind": "module",
+   "group": "shell/lib",
+   "note": "phonelink.js — the VRG Asztal's Telefon panel (WP-49, 2026-11-14): one click finds this PC's radios (Wi-Fi, a Mobile hotspot,"
+  },
+  {
    "id": "dashlib:ports",
    "name": "lib/ports.js",
    "where": "Dashboard/shell/lib/ports.js",
@@ -3077,6 +3104,15 @@
    "kind": "module",
    "group": "shell/lib",
    "note": "sheets.js — the Lapok (Sheets) of the VRG Asztal's workspace (WP-46): pure functions, shared by main (CommonJS) and the frame page"
+  },
+  {
+   "id": "dashlib:srvhost",
+   "name": "lib/srvhost.js",
+   "where": "Dashboard/shell/lib/srvhost.js",
+   "source": "dashboard",
+   "kind": "module",
+   "group": "shell/lib",
+   "note": "srvhost.js — registry servers run inside the VRG Asztal (WP-48): no console window. Each server is a hidden pty session owned by"
   },
   {
    "id": "dashlib:textify",
@@ -3763,6 +3799,51 @@
    "note": "the Artifact Archive on the phone"
   },
   {
+   "id": "mobile:M19",
+   "name": "Asztal",
+   "where": "docs/mobile/WP/M19.md · feature-desk",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the VRG Desktop's frame on the phone, plus the orientation toggle"
+  },
+  {
+   "id": "mobile:M20",
+   "name": "Lapok",
+   "where": "docs/mobile/WP/M20.md · feature-sheets",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the Desktop's sheets on the phone"
+  },
+  {
+   "id": "mobile:M21",
+   "name": "Alkalmazások",
+   "where": "docs/mobile/WP/M21.md · feature-apps",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the Desktop's HTML apps on the phone"
+  },
+  {
+   "id": "mobile:M22",
+   "name": "Claude",
+   "where": "docs/mobile/WP/M22.md · feature-claude",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the Claude app and the PC's Remote Control sessions"
+  },
+  {
+   "id": "mobile:M23",
+   "name": "PC ablakok",
+   "where": "docs/mobile/WP/M23.md · feature-pcwin",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the PC's work folders, read-only, through the relay"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "where": "GO-LOGO.md (planned)",
@@ -4426,7 +4507,7 @@
    "source": "shared",
    "kind": "library",
    "group": "shared",
-   "note": "VRG UI Kit v1 — \"Mérőpult\""
+   "note": "VRG UI Kit v1.1 — \"Mérőpult\""
   },
   {
    "id": "doc:city",

@@ -12,10 +12,10 @@ Control session running on the PC, further still.*
 - `rc`: only with a Claude Remote Control session the PC started (M22);
 - `no`: dev-only or meaningless on a phone (reason given).
 
-Source of the list: `launcher/vrg-catalog.json`, every item with `level: "user"` (34 on 2026-11-12), then the Desktop's
+Source of the list: `launcher/vrg-catalog.json`, every item with `level: "user"` (34 on 2026-11-12, 35 with `phone` on 2026-11-14), then the Desktop's
 window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 
-## 1. The 34 User-level units
+## 1. The 35 User-level units
 
 | # | Unit (id) | Hungarian name | Desktop source | Mobile today | Reaches the phone | WP |
 |---|---|---|---|---|---|---|
@@ -53,6 +53,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 32 | `layer.i` | I · Ötletfolyam | `Stack/lineage.html` (server `stack`) | — | native via M17: add the page to `stack-pages` (Later in M17); pc via M8 meanwhile | M17 |
 | 33 | `layer.f` | F · Kiemelt | the Irányítópult (`view: dashboard`) | — | native: the Asztal's home window | M19 |
 | 34 | `layer.q` | Q · Döntésnapló | `Stack/decisions.html` (server `stack`) | — | native via M17 (Later); pc via M8 meanwhile | M17 |
+| 35 | `phone` | Telefon kapcsolat | `Dashboard/page/phone.js`, `shell/lib/phonelink.js` (WP-49) | M2 QR párosítás | native: the home screen's QR beolvasása button opens the scanner, which pairs or opens a server QR from this panel in a Custom Tab (`core/ScanCode.kt`) | M2 / WP-49 |
 
 ## 2. Window kinds (`KINDS`, `Dashboard/shell/lib/sheets.js`)
 

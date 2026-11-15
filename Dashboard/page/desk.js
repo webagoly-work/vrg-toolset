@@ -96,6 +96,7 @@
         else if (r.frame === 'workspaces' && F) { setView('desktop'); showWindows(true); F.workspaces(); }
         else if (r.frame === 'note' && F) F.note({});
         else if (r.frame === 'settings') openSettings();
+        else if (r.frame === 'phone' && window.VRGPhone) window.VRGPhone.open();
         return true;
       case 'start': toast(false, 'Ez a START-ban fut (' + r.key + ').', 'This one runs in START (' + r.key + ').'); return false;
       case 'done': toast(r.result && r.result.ok !== false, (r.result && r.result.hu) || 'Elindítva.', (r.result && r.result.en) || 'Started.'); return true;
@@ -387,7 +388,7 @@
     const secs = D.sections(S.items, S.level, S.sections, S.groups);
     const inner = h('div', { class: 'dash-in' },
       h('div', { 'data-role': 'dash-head' }, h('h1', {}, 'Irányítópult'), h('span', { class: 'sub' }, 'VRG Asztal · ' + (data().generated || '')), h('span', { class: 'sp' }),
-        levelControl(), h('span', { class: 'sub', title: 'Double Tab: Desktop view' }, 'dupla Tab → Asztal')),
+        window.VRGPhone ? window.VRGPhone.button('phone-head') : null, levelControl(), h('span', { class: 'sub', title: 'Double Tab: Desktop view' }, 'dupla Tab → Asztal')),
       h('nav', { 'data-role': 'dash-nav' }, secs.map(s => h('a', { href: '#sec-' + s.id, 'data-level': s.level, onclick: e => { e.preventDefault(); document.getElementById('sec-' + s.id).scrollIntoView(); } }, s.hu))),
       secs.map(s => h('section', { class: 'dash-sec', id: 'sec-' + s.id, 'data-section': s.id, 'data-level': s.level },
         h('h2', {}, s.hu, h('span', { class: 'en' }, s.en), s.level !== 'user' ? h('span', { class: 'lv' }, LV_HU[s.level]) : null),
@@ -422,6 +423,7 @@
   }
   function drawTop() {
     top.textContent = '';
+    if (window.VRGPhone) top.append(window.VRGPhone.button());                    // WP-49: first, always there (a saved strip cannot lack it, an overflow cannot hide it)
     for (const c of D.topStrip(S.items, S.top)) top.append(widget(c));
     if (window.VRGSheets) window.VRGSheets.barInto(top, 'top');                // the Lap tabs (WP-46), when the bar sits on top
     top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Customise the top strip', onclick: openCustomize }, '⚙ Testreszabás'));

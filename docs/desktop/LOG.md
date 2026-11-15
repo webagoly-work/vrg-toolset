@@ -209,3 +209,50 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `wp-47.test.js` (4: the real index valid and VRG-first, add/build/stale on a temp folder, validate, catalog + scheme +
   sections); probe `shell/selftest/wp-47.js` (section, computed edge colours, refusals, a card opens the app at the entry);
   wp-41 section lists updated. `tools/melyviz-sync.js` carries the style into the viewer.
+
+## WP-49 — Telefon: radios, every server, a QR per server (2026-11-14)
+
+- Asked for: one easy click that finds the PC's wireless radios (Wi-Fi, Bluetooth), starts every localhost server (by itself or on
+  a toggle) and shows a QR per server for the phone (on hover, or a show/hide button), matching VRG Mobile's new QR button.
+- Button: **Telefon** first in the top strip (fixed, not a widget a saved strip could lack or an overflow could hide) and in the
+  Irányítópult head; catalog item `phone` (User, launch frame `phone`) for the palette and the Sarokvezérlő.
+- `shell/lib/phonelink.js`: one PowerShell `-Command` (Get-NetAdapter + Get-PnpDevice Bluetooth + netsh SSID, ~4.5 s) →
+  Wi-Fi / Mobile hotspot / Bluetooth radio + PAN / wired; addresses wireless first, Hyper-V & co. never offered. Bluetooth is shown,
+  but the QR rides Wi-Fi, the hotspot, or the LAN (a BT PAN address is offered when one exists). `startAll` = the Gyro relay with
+  `--ports` first (restarted only when the shell owns it), then every registry server that is down minus `config/phone.json`'s
+  exclude list (the `self` servers that open their own window + the Kapu admin). Setting `phone.auto`: on with a wireless link up,
+  the panel's opening and the shell's start do it without the click.
+- Why the relay: most servers listen on 127.0.0.1 only. The relay (one port, one firewall rule) got `GET /share/<port>.json`
+  (this PC only, the `/pair` rule): `http://<ip>:47291/p/<port>/<path>?vrg_s=<ticket>` + its SVG QR. The ticket lives 5 min and
+  opens that one port without pairing; it becomes the cookie `vrg_s<port>` (12 h, that port only); `POST /share/clear` revokes all.
+  Reusable within its 5 minutes so a scanner app that previews the link cannot burn it for the phone.
+- Page `page/phone.js` (+ desk.css): Rádiók, the address picker, the relay row with the pairing QR, Mind indítása + the auto
+  switch + Megosztások visszavonása, the servers with ▦ (QR on hover) and QR ▾ (inline, renewed before the ticket runs out).
+  QR = an `<img>` of the relay's SVG (data:), never injected markup. IPC `desktop.phoneScan / phoneStart / phoneQr / phonePair /
+  phoneClear`; the page sends a server id and an address the scan returned.
+- Mobile: `core/ScanCode.kt` (pair / server / VRG link / LAN page / other) + the home screen's **QR BEOLVASÁSA** button →
+  the scanner (feature-pair): a server QR opens at once in a Custom Tab. desk-gen REACH `phone → native pair`, PARITY row 35.
+- Tests: `wp-49.test.js` 11; probe `shell/selftest/wp-49.js` (both buttons, real scan, server list, dry start, refusals, a
+  real QR with a throwaway relay up); wp-35 channel pin 107 → 112; `Mobile/tests/relay-ports.js` 89 (22 new); kit-core
+  `ScanCodeTest` 6, KommandTest pin 34 → 35, 216 green; `assembleDebug` OK. Not run on the phone yet.
+
+## WP-49b — corner metrics and the VRG Mobile download QR (2026-11-14)
+
+- Asked for: in the upper right corner, a show/hide toggle for the internet connection's strength, ping and the other metrics,
+  each switchable one by one, side by side as colour-coded numbers and percentages; and a QR for a phone that has no VRG Mobile yet.
+- Title bar (both views), just left of the window buttons: `page/netbar.js` + `shell/lib/netgrade.js` (shared, pure: 10 metrics,
+  thresholds, formats). ◉ hides / shows the row (setting `net.show`, default on); ▾ lists all ten with a switch and the live value
+  each (`net.metrics`, the order they were switched on; Mind / Alap). Green = good, sand = weak, coral = bad, ice = traffic (no
+  judgement), grey dash = no value (e.g. Wi-Fi while the dongle is not connected). Default: Wi-Fi, ping, loss, ↓, ↑.
+- `shell/lib/netmeter.js` (main, IPC `desktop.netSample`, every 2 s only while shown and the window is visible): ping = a timed TCP
+  connect to 1.1.1.1:443 (else 8.8.8.8:443), jitter and loss over the last 20; Wi-Fi signal and link rate from `netsh wlan show
+  interfaces` by value (the "NN%" line, the "(Mbps)" lines), every 5 s; ↓ / ↑ from `netstat -e` byte counters; DNS = a timed system
+  lookup every 10 s; CPU between two samples; RAM. No admin rights, no translated text read. A selftest gets a fixed sample.
+- VRG Mobile download: the releases are on a private GitHub repo a phone without the app cannot read, so the relay serves the APK
+  built on this PC (`findApk`: RELAY_APK, else the newest of `Mobile/android/app/build/outputs/apk/{release,debug}`).
+  `GET /share/app.json` (this PC only) → a QR to `/vrg-mobile?vrg_s=<ticket>` (10 min, no --ports needed): a phone page with the
+  download button and the three steps (Telepítés → allow the browser to install → QR BEOLVASÁSA → the pairing QR), and
+  `/vrg-mobile.apk` itself. `POST /share/clear` revokes it too. Panel row "VRG Mobile · Alkalmazás letöltése"; IPC `desktop.phoneApp`.
+- Tests: `wp-49.test.js` 15 (+4: grades / formats, the netstat / netsh parsers in English and Hungarian, the sampler on fakes, the
+  download QR); probe: the corner row's values, grades and computed colours, the menu (10), switching metrics on and saving them,
+  Esc, ◉; the download QR with a throwaway relay; wp-35 channel pin 112 → 114; `relay-ports.js` 102 (+13).

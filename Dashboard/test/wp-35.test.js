@@ -132,7 +132,7 @@ let measuredIdFindings = null;
 
 test('main.js loads without Electron and registers the channels', () => {
   const { specs: s, wrappers: w } = loadMain();
-  assert.equal(s.size, 107, 'channels: ' + [...s.keys()].join(' '));   // WP-48: desktop.serverConsole, serverStop, serverList
+  assert.equal(s.size, 114, 'channels: ' + [...s.keys()].join(' '));   // WP-48: desktop.serverConsole, serverStop, serverList; WP-49: desktop.phoneScan, phoneStart, phoneQr, phonePair, phoneClear; WP-49b: netSample, phoneApp
   for (const name of s.keys()) assert.ok(w.has('vrg2:' + name), name);
   for (const ns of ['app', 'layout', 'jobs', 'fs', 'term', 'web', 'sel', 'search', 'ctx', 'chat', 'note', 'git', 'mail', 'feed', 'desktop', 'programs', 'sheets', 'archive']) {   // desktop: WP-41 … WP-43 (5 channels); programs: WP-45 (5); sheets: WP-46 (2); archive: WP-47 (3)
     assert.ok([...s.keys()].some(n => n.startsWith(ns + '.')), 'namespace ' + ns);

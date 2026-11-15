@@ -7,6 +7,7 @@ const paths = require('./paths.js');
 const layout = require('./layout.js');
 const desk = require('./desk.js');
 const sheets = require('./sheets.js');
+const netgrade = require('./netgrade.js');
 
 const rect = v => !!v && typeof v === 'object' && ['x', 'y', 'width', 'height'].every(k => Number.isFinite(v[k])) && v.width > 0 && v.height > 0;
 
@@ -30,6 +31,9 @@ const KEYS = {
   'ws.openWithLine':   { type: v => typeof v === 'boolean', def: true },            // WP-34, DESK-Q91 A (WP-35a): a DevLog line opens its saved workspace
   'srv.inside':        { type: v => typeof v === 'boolean', def: true },            // WP-48: registry servers run hidden inside the shell (console pane)
   'web.inner':         { type: v => typeof v === 'boolean', def: true },            // WP-48: URLs and app pages open in an inner window, not the outside browser
+  'phone.auto':        { type: v => typeof v === 'boolean', def: false },           // WP-49: a wireless link up → the Telefon panel starts every server by itself
+  'net.show':          { type: v => typeof v === 'boolean', def: true },            // WP-49b: the title bar's corner metrics shown
+  'net.metrics':       { type: netgrade.validList, def: netgrade.DEFAULT },          // WP-49b: which metrics, in the user's order
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
   'web.perms':         { type: permsOk, def: {} },                                        // WP-17: { origin: { 'media': bool, 'clipboard-sanitized-write': bool } }
   'ui.lang':          { type: v => v === 'hu' || v === 'en', def: 'hu' },

@@ -36,6 +36,7 @@ const REACH = {
   'workspaces': ['native', 'sheets'],
   'notifications': ['native', 'inbox'],
   'settings': ['native', 'settings'],
+  'phone': ['native', 'pair'],                 // WP-49: the Desktop's Telefon panel <-> the phone's QR scanner (home button)
   'planner': ['webapp', 'planner'],
   'client-preview': ['webapp', 'planner'],
   'workflow-kit': ['pc', 'pcwin'],

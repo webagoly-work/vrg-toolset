@@ -10,7 +10,7 @@ const fs = require('fs'), path = require('path');
 const LEVELS = ['user', 'dev', 'all'];
 const RANK = { user: 0, dev: 1, all: 2 };
 const STATUS = ['live', 'beta', 'dev', 'planned', 'idea', 'retire'];
-const FRAMES = ['palette', 'quick', 'search', 'workspaces', 'note', 'settings'];
+const FRAMES = ['palette', 'quick', 'search', 'workspaces', 'note', 'settings', 'phone'];
 const VIEWS = ['dashboard', 'desktop'];
 const ID_RE = /^[a-z0-9][a-z0-9.:-]{0,59}$/;
 const STACK = ['F', 'I', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'Z', 'page', '*', ''];

@@ -226,6 +226,125 @@ function createGate(opts) {
   };
 }
 
+/* ---- shared links: one local server for any phone that scans the PC's screen (2026-11-14) ---------
+   The VRG Asztal's Telefon panel shows a QR per local server. It carries
+   http://<lan-ip>:<relay>/p/<port>/<path>?vrg_s=<ticket>, so the phone's own camera, any scanner or
+   VRG Mobile's QR button opens it in a browser without pairing first. The ticket is made only for the
+   PC's own screen (GET /share/<port>.json, the /pair rule), lives SHARE_TTL and opens that ONE port:
+   on the first visit it becomes the HttpOnly cookie vrg_s<port>, good for TOKEN_TTL on that port only.
+   A ticket may be used more than once within its TTL (a scanner app that previews the link first must
+   not burn it for the phone); POST /share/clear revokes every ticket and cookie at once. */
+
+const SHARE_TTL = 5 * 60 * 1000;
+const SHARE_RE = /^vrg_s(\d{1,5})$/;
+const shareCookie = port => 'vrg_s' + port;
+
+function createShares(opts) {
+  opts = opts || {};
+  const now = opts.now || Date.now;
+  const ttl = opts.ttl || SHARE_TTL;
+  const keep = opts.keep || TOKEN_TTL;
+  const tickets = new Map();                  // ticket -> {port, expires}
+  const tokens = new Map();                   // token  -> {port, expires}
+  const sweep = () => { const t = now(); for (const m of [tickets, tokens]) for (const [k, v] of m) if (v.expires <= t) m.delete(k); };
+  const hex = s => typeof s === 'string' && /^[0-9a-f]{32}$/.test(s);
+  return {
+    /** A fresh ticket for one port, or for 'app' (the VRG Mobile download page, 2026-11-14). */
+    ticket(port) {
+      if (!validPort(port) && port !== 'app') return null;
+      sweep();
+      const t = crypto.randomBytes(16).toString('hex');
+      tickets.set(t, { port, expires: now() + ttl });
+      return { ticket: t, ttl };
+    },
+    /** The ticket, still valid and for this port -> the cookie token for that port (one per ticket). */
+    claim(ticket, port) {
+      if (!hex(ticket)) return null;
+      const v = tickets.get(ticket);
+      if (!v || v.port !== port || v.expires <= now()) return null;
+      if (!v.token || !tokens.has(v.token)) { v.token = crypto.randomBytes(16).toString('hex'); tokens.set(v.token, { port, expires: now() + keep }); }
+      return v.token;
+    },
+    /** The ticket is still good for this key; nothing is handed out (the app download needs no cookie). */
+    valid(ticket, port) {
+      if (!hex(ticket)) return false;
+      const v = tickets.get(ticket);
+      return !!v && v.port === port && v.expires > now();
+    },
+    check(token, port) {
+      if (!hex(token)) return false;
+      const v = tokens.get(token);
+      if (!v) return false;
+      if (v.expires <= now()) { tokens.delete(token); return false; }
+      return v.port === port;
+    },
+    clear() { const n = tickets.size + tokens.size; tickets.clear(); tokens.clear(); return n; },
+    size() { sweep(); return { tickets: tickets.size, tokens: tokens.size }; },
+  };
+}
+
+/** One query parameter taken out of a path ("?a=1&vrg_s=x" -> {path:"?a=1", value:"x"}). */
+function stripParam(rest, name) {
+  const q = rest.indexOf('?');
+  if (q < 0) return { path: rest, value: null };
+  const params = new URLSearchParams(rest.slice(q + 1));
+  const value = params.get(name);
+  params.delete(name);
+  const s = params.toString();
+  return { path: rest.slice(0, q) + (s ? '?' + s : ''), value };
+}
+
+/** Our cookies (the pairing token and every vrg_s<port>) never reach a proxied server. */
+function cookiesForServer(header) {
+  if (!header) return undefined;
+  const keep = String(header).split(';').map(s => s.trim()).filter(s => s && !s.startsWith(PROXY_COOKIE + '=') && !SHARE_RE.test(s.split('=')[0]));
+  return keep.length ? keep.join('; ') : undefined;
+}
+
+/* ---- the VRG Mobile APK for a phone that has no app yet (2026-11-14) -----------------------------
+   The releases live on a private GitHub repo, which a phone without the app cannot read, so the relay serves the APK built on
+   this PC: RELAY_APK when set, else the newest of Mobile/android/app/build/outputs/apk/{release,debug}/*.apk. */
+const APK_DIR = path.join(__dirname, '..', '..', '..', '..', 'Mobile', 'android', 'app', 'build', 'outputs', 'apk');
+function findApk(opts) {
+  opts = opts || {};
+  const env = opts.env !== undefined ? opts.env : process.env.RELAY_APK;
+  const cands = env ? [{ file: env, kind: 'custom' }] : [
+    { file: path.join(opts.dir || APK_DIR, 'release', 'app-release.apk'), kind: 'release' },
+    { file: path.join(opts.dir || APK_DIR, 'debug', 'app-debug.apk'), kind: 'debug' },
+  ];
+  let best = null;
+  for (const c of cands) {
+    try { const s = fs.statSync(c.file); if (s.isFile() && s.size > 0 && (!best || s.mtimeMs > best.mtime)) best = { file: c.file, kind: c.kind, bytes: s.size, mtime: s.mtimeMs }; } catch (e) {}
+  }
+  return best;
+}
+
+/** The phone's download page: what it is, one button, the three steps after it. */
+function appPage(o) {
+  // the build time in this PC's local time (toISOString would print UTC: an hour early in winter, found on the phone 2026-11-15)
+  const d = new Date(o.mtime), p2 = n => String(n).padStart(2, '0');
+  const mb = (o.bytes / 1048576).toFixed(1), when = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VRG Mobile letöltése</title>
+<style>
+:root{--abyss:#041019;--deep:#071A26;--surface:#0B2533;--line:#1D4C63;--ink:#DCEFF4;--muted:#86A9B8;--glow:#3FE0D0;--sand:#F2B33D}
+body{margin:0;min-height:100vh;background:linear-gradient(#0A2A3A,var(--deep),var(--abyss));color:var(--ink);font:16px system-ui,sans-serif;display:flex;justify-content:center}
+main{max-width:440px;padding:28px 20px}h1{font-size:22px;letter-spacing:.06em;margin:0 0 4px}.m{color:var(--muted);font-size:14px}
+a.b{display:block;margin:22px 0;padding:16px;text-align:center;background:var(--surface);border:2px solid var(--glow);border-radius:12px;color:var(--glow);font-weight:700;font-size:18px;text-decoration:none}
+ol{padding-left:22px;line-height:1.5}li{margin:8px 0}b{color:var(--sand)}
+</style></head><body><main>
+<h1>VRG MOBILE</h1><div class="m">A VRG munka társalkalmazása · ${esc(o.kind)} · ${mb} MB · ${esc(when)}</div>
+<a class="b" href="${esc(o.href)}" download="vrg-mobile.apk">⬇ Letöltés (APK)</a>
+<ol>
+<li>A letöltés végén nyisd meg a fájlt, és nyomd meg a <b>Telepítés</b> gombot.</li>
+<li>Ha a telefon kéri: engedélyezd a böngészőnek az <b>ismeretlen alkalmazások telepítését</b>, majd vissza.</li>
+<li>Nyisd meg a VRG Mobile-t → <b>QR BEOLVASÁSA</b>, és olvasd be a PC Telefon paneljén a <b>párosító</b> QR-t.</li>
+</ol>
+<div class="m">Ez a link 10 percig él; utána kérj új QR-t a PC-n (VRG Asztal → Telefon).</div>
+</main></body></html>`;
+}
+
 /* ---- the catalogue: port -> tool ------------------------------------------ */
 
 function loadCatalogue(file) {
@@ -342,7 +461,7 @@ function proxy(req, res, port, rest, host) {
   const headers = {};
   for (const [k, v] of Object.entries(req.headers)) if (!HOP.has(k)) headers[k] = v;
   headers.host = `localhost:${port}`;
-  const ck = cookiesWithout(req.headers.cookie, PROXY_COOKIE);
+  const ck = cookiesForServer(req.headers.cookie);
   if (ck) headers.cookie = ck; else delete headers.cookie;
   if (headers.referer) headers.referer = String(headers.referer).replace(/^https?:\/\/[^/]+\/p\/\d+/, `http://localhost:${port}`);
   if (headers.origin) headers.origin = `http://localhost:${port}`;
@@ -366,4 +485,5 @@ module.exports = {
   parseNetstat, parseTasklist, parseSs, pickTitle, portUrl, parseProxyPath, rewriteLocation, stripToken,
   cookieValue, cookiesWithout, createGate, loadCatalogue, listPorts, readListening, probe, openCommand, openDesktop,
   portableChrome, proxy, validPort, PROXY_COOKIE, TOKEN_TTL, CATALOGUE,
+  createShares, stripParam, cookiesForServer, shareCookie, SHARE_TTL, findApk, appPage, APK_DIR,
 };

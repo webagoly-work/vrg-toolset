@@ -314,6 +314,69 @@ table.cat td.lv { font: 11px var(--mv-mono); color: var(--mv-dim); }
 [data-role="boot"] .msg { color: var(--mv-dim); font-size: 12.5px; text-align: center; } [data-role="boot"] .msg .en { display: block; font-style: italic; color: var(--mv-faint); }
 [data-role="boot"] button { background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-accent); padding: 6px 16px; cursor: pointer; font: 12px var(--mv-mono); letter-spacing: .14em; }
 
+/* ---------------------------------------------------------------- 📱 Telefon (WP-49): the button and the panel */
+[data-role="topstrip"] [data-role="phone-open"] { color: var(--mv-accent); }
+[data-role="phone-open"] .phico, [data-role="phone"] h3 .phico { width: 9px; height: 14px; flex: 0 0 auto; margin-right: 6px; vertical-align: -2px; }
+[data-role="dash-head"] .phone-head { display: inline-flex; align-items: center; }
+[data-role="dash-head"] .phone-head { align-self: center; background: var(--mv-accent-soft); color: var(--mv-accent); border: 1px solid var(--mv-accent); padding: 5px 14px;
+  font: 600 12px var(--mv-mono); letter-spacing: .08em; cursor: pointer; }
+[data-role="dash-head"] .phone-head:hover { box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+[data-role="phone"] { position: fixed; z-index: 125; top: 52px; left: 50%; transform: translateX(-50%); width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 80px); overflow: auto;
+  background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, .5); outline: none; }
+[data-role="phone"] h3 { margin: 0; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font: 600 12px var(--mv-mono); letter-spacing: .2em; text-transform: uppercase;
+  border-bottom: 1px solid var(--mv-line); position: sticky; top: 0; background: var(--mv-bg); z-index: 1; }
+[data-role="phone"] h3 .en { font: italic 11px var(--mv-sans); letter-spacing: 0; text-transform: none; color: var(--mv-faint); }
+[data-role="phone"] .sp { flex: 1; }
+[data-role="phone"] .body { padding: 8px 14px 14px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+[data-role="phone"] .grp { margin-top: 10px; font: 600 11px var(--mv-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--mv-dim); border-bottom: 1px solid var(--mv-line); padding-bottom: 3px; }
+[data-role="phone"] .grp .en { margin-left: 8px; font: 11px var(--mv-sans); letter-spacing: 0; text-transform: none; color: var(--mv-faint); }
+[data-role="phone"] .note { color: var(--mv-faint); font-size: 12px; } [data-role="phone"] .note.warn { color: var(--mv-warn); }
+[data-role="phone"] button { background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-line); padding: 3px 10px; cursor: pointer; font: inherit; }
+[data-role="phone"] button:hover:not(:disabled) { border-color: var(--mv-accent); } [data-role="phone"] button:disabled { opacity: .45; cursor: default; }
+[data-role="phone"] button.go { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); font-weight: 600; }
+[data-role="phone"] button[aria-pressed="true"] { border-color: var(--mv-accent); color: var(--mv-accent); }
+[data-role="phone"] .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mv-faint); display: inline-block; flex: 0 0 auto; }
+[data-role="phone"] .dot.ok { background: var(--mv-ok); } [data-role="phone"] .dot.warn { background: var(--mv-warn); }
+[data-role="phone"] .rad, [data-role="phone"] .srv { display: flex; align-items: center; gap: 10px; padding: 3px 0; font-size: 12.5px; flex-wrap: wrap; }
+[data-role="phone"] .rad b { font: 600 12px var(--mv-mono); min-width: 96px; }
+[data-role="phone"] .srv .c { font: 12px var(--mv-mono); color: var(--mv-dim); min-width: 52px; } [data-role="phone"] .srv .n { flex: 1; min-width: 120px; }
+[data-role="phone"] .srv[data-up="0"] .n { color: var(--mv-dim); }
+[data-role="phone"] .qri { padding: 0 6px; font-size: 15px; line-height: 20px; }
+[data-role="phone"] .addr { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mv-dim); margin-top: 4px; }
+[data-role="phone"] .addr select { flex: 1; min-width: 0; background: var(--mv-panel-solid); color: var(--mv-text); border: 1px solid var(--mv-line-strong); padding: 3px 6px; font: 12px var(--mv-mono); }
+[data-role="phone"] .ctl { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+[data-role="phone"] .ctl label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+[data-role="phone"] .qrbox, [data-role="phone"] .qrpop { display: flex; gap: 14px; align-items: flex-start; padding: 8px 0 10px 34px; }
+[data-role="phone"] .qrpop { position: absolute; z-index: 3; padding: 10px; background: var(--mv-panel-solid); border: 1px solid var(--mv-accent); box-shadow: 0 8px 28px rgba(0, 0, 0, .55); pointer-events: none; }
+[data-role="phone"] img.qr { width: 184px; height: 184px; image-rendering: pixelated; background: #fff; flex: 0 0 auto; }
+[data-role="phone"] .qrmeta { display: flex; flex-direction: column; gap: 6px; min-width: 0; max-width: 360px; }
+[data-role="phone"] .qrmeta code { font: 11px var(--mv-mono); color: var(--mv-dim); word-break: break-all; }
+[data-role="phone"] .qrpop .qrmeta { max-width: 220px; }
+
+/* ---------------------------------------------------------------- the title bar's corner metrics (WP-49b) */
+[data-role="netbar"] { display: flex; align-items: stretch; font: 11px var(--mv-mono); }
+[data-role="netbar"] .nm { display: flex; align-items: center; gap: 5px; padding: 0 9px; border-left: 1px solid var(--mv-line); white-space: nowrap; }
+[data-role="netbar"] .nm .k { color: var(--mv-faint); letter-spacing: .06em; }
+[data-role="netbar"] .nm .v { font-weight: 600; font-variant-numeric: tabular-nums; }
+[data-role="netbar"] [data-grade="ok"] .v, [data-role="net-menu-box"] .v[data-grade="ok"] { color: var(--mv-ok); }
+[data-role="netbar"] [data-grade="warn"] .v, [data-role="net-menu-box"] .v[data-grade="warn"] { color: var(--mv-warn); }
+[data-role="netbar"] [data-grade="crit"] .v, [data-role="net-menu-box"] .v[data-grade="crit"] { color: var(--mv-crit); }
+[data-role="netbar"] [data-grade="info"] .v, [data-role="net-menu-box"] .v[data-grade="info"] { color: var(--mv-accent); }
+[data-role="netbar"] [data-grade="none"] .v, [data-role="net-menu-box"] .v[data-grade="none"] { color: var(--mv-faint); }
+[data-role="wbar"] [data-role="netbar"] button.nb { width: 26px; font-size: 12px; }
+[data-role="wbar"] [data-role="netbar"] button[data-role="net-toggle"][aria-pressed="true"] { color: var(--mv-accent); }
+[data-role="net-menu-box"] { position: fixed; z-index: 130; top: 31px; right: 126px; width: 290px; background: var(--mv-bg); color: var(--mv-text);
+  border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, .5); padding: 6px 0; font-size: 12.5px; }
+[data-role="net-menu-box"] .hd { padding: 4px 12px 8px; font: 600 11px var(--mv-mono); letter-spacing: .18em; text-transform: uppercase; border-bottom: 1px solid var(--mv-line); }
+[data-role="net-menu-box"] .en { margin-left: 6px; font: italic 11px var(--mv-sans); letter-spacing: 0; text-transform: none; color: var(--mv-faint); }
+[data-role="net-menu-box"] label { display: flex; align-items: center; gap: 8px; padding: 4px 12px; cursor: pointer; }
+[data-role="net-menu-box"] label:hover { background: var(--mv-raised); }
+[data-role="net-menu-box"] label .t { flex: 1; }
+[data-role="net-menu-box"] label .v { font: 600 11px var(--mv-mono); }
+[data-role="net-menu-box"] .ft { display: flex; align-items: center; gap: 6px; padding: 8px 12px 2px; border-top: 1px solid var(--mv-line); margin-top: 4px; }
+[data-role="net-menu-box"] .ft button { background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-line); padding: 2px 10px; cursor: pointer; font: inherit; }
+[data-role="net-menu-box"] .note { color: var(--mv-faint); font-size: 11px; margin-left: auto; }
+
 /* dark scrollbars on the Mélyvíz ground */
 [data-role="dashboard"]::-webkit-scrollbar, [data-role="sheet"]::-webkit-scrollbar { width: 10px; height: 10px; }
 [data-role="dashboard"]::-webkit-scrollbar-track, [data-role="sheet"]::-webkit-scrollbar-track { background: var(--mv-bg); }

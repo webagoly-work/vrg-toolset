@@ -42,6 +42,11 @@
    "en": "Settings"
   },
   {
+   "id": "cat:phone",
+   "hu": "Telefon kapcsolat",
+   "en": "Phone link"
+  },
+  {
    "id": "cat:planner",
    "hu": "Varler Planner",
    "en": "Varler Planner"
@@ -190,6 +195,7 @@
     "cat:workspaces",
     "cat:notifications",
     "cat:settings",
+    "cat:phone",
     "cat:planner",
     "cat:client-preview",
     "cat:workflow-kit",

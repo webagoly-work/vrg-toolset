@@ -1,0 +1,6 @@
+{
+  "_": "The VRG Asztal's Telefon panel (WP-49, shell/lib/phonelink.js). relay: the registry server that carries the phone (the Gyro relay); it is started with relayArgs. exclude: registry servers that 'Mind indítása' leaves alone: the ones that open their own window or need a board on USB (self), and the Kapu admin, which is not for a phone.",
+  "relay": "gyro",
+  "relayArgs": ["--ports"],
+  "exclude": ["cyd-settings", "board", "city", "hub-admin"]
+}
