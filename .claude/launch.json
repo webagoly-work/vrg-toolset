@@ -80,6 +80,33 @@
       }
     },
     {
+      "name": "terkep-fixture",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Map/serve.js",
+        "--no-open"
+      ],
+      "port": 8803,
+      "url": "http://localhost:8803",
+      "env": {
+        "VRG_MAP_PORT": "8803",
+        "VRG_JOBS_DIR": "Map/test/fixtures/jobs"
+      }
+    },
+    {
+      "name": "terkep-jobs",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Map/serve.js",
+        "--no-open"
+      ],
+      "port": 8804,
+      "url": "http://localhost:8804",
+      "env": {
+        "VRG_MAP_PORT": "8804"
+      }
+    },
+    {
       "name": "kodvaros-static",
       "runtimeExecutable": "node",
       "runtimeArgs": [

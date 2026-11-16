@@ -12,7 +12,8 @@
   URL:  #zoom/lat/lon/bearing/pitch   the camera (shareable)
         ?q=Budapest Váci út 12         search on load and fly there
         ?embed=1                        slim UI for embedding in Kapu / Planner
-  Keys: /  search   3  3D buildings   T  terrain   G  Google 3D view   N  north   Esc  close
+        ?job=BK2                        the job layer on, fly to that job (internal; docs/map/JOBS-MAP.md)
+  Keys: /  search   3  3D buildings   T  terrain   J  jobs   G  Google 3D view   N  north   Esc  close
 
   Libraries (Vendor/, see vendor-manifest.json):
     MapLibre GL JS — Copyright (c) 2023, MapLibre contributors; (c) 2020 Mapbox. BSD-3-Clause.
@@ -77,6 +78,31 @@
   body.embed .panel{width:min(300px,calc(100vw - 24px))}
   body.embed .brand,body.embed .status{display:none}
   @media (max-width:700px){ #gpanel{width:100vw;top:40%} }
+  /* J: the job layer (client data) */
+  #jobs-badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:6;background:#8b1f1f;color:#fff;
+    font:700 11px/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.12em;padding:6px 12px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap}
+  #jobs-badge[hidden],#jobs-legend[hidden]{display:none}
+  #jobs-legend{position:absolute;left:12px;bottom:34px;z-index:5;display:flex;flex-wrap:wrap;gap:6px 12px;max-width:min(520px,calc(100vw - 24px));
+    background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #jobs-legend span{display:inline-flex;align-items:center;gap:5px}
+  #jobs-legend i{width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+  #jobs-legend i.draft{background:var(--paper);border-color:#f2c94c}
+  #jobs-legend i.ring{background:transparent;border:1.5px solid var(--faint);box-shadow:none}
+  #jobs-legend .m{color:var(--faint)}
+  body.jobs-on .maplibregl-ctrl-bottom-left{bottom:40px}
+  #toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:30;background:var(--ink);color:#fff;padding:9px 14px;border-radius:8px;
+    box-shadow:var(--shadow);font-size:13px;max-width:calc(100vw - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
+  #toast.show{opacity:1}
+  .jpop .maplibregl-popup-content{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 13px 9px;box-shadow:var(--shadow)}
+  .jcard .jh{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+  .jcard .jh b{font-size:16px;letter-spacing:.04em}
+  .jcard .chip{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--c);color:#fff}
+  .jcard .chip.draft{background:#f2c94c;color:#3b2f00}
+  .jcard .jt{color:var(--ink-2);margin-bottom:6px}
+  .jcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0;font-size:12px}
+  .jcard dt{color:var(--faint)} .jcard dd{margin:0}
+  .jcard .m{color:var(--faint)} .jcard .warn{color:var(--warn)}
+  .jcard .jl{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;font:600 11px inherit;cursor:pointer;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -96,6 +122,7 @@
   <button class="btn" id="b-3d" aria-pressed="true" title="3D épületek">3D<kbd>3</kbd></button>
   <button class="btn" id="b-terrain" aria-pressed="true" title="Domborzat">Domb<kbd>T</kbd></button>
   <button class="btn" id="b-north" title="Északra, felülnézet">É<kbd>N</kbd></button>
+  <button class="btn" id="b-jobs" aria-pressed="false" title="Munkák a térképen (ügyféladat, csak belső)">Munkák<kbd>J</kbd></button>
   <button class="btn" id="b-google" aria-pressed="false" title="Google 3D nézet ugyanerre a helyre (online)">Google 3D<kbd>G</kbd></button>
 </div>
 
@@ -109,6 +136,9 @@
   <div id="gfoot"></div>
 </aside>
 
+<div id="jobs-badge" hidden title="A munkák rétege ügyféladatot mutat: ne oszd meg, ne mutasd ügyfélnek">● ÜGYFÉLADAT · MUNKÁK</div>
+<div id="jobs-legend" hidden aria-label="Munkák jelmagyarázata"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <div id="notice"><div id="notice-body"></div></div>
 
 <script>
@@ -124,6 +154,7 @@ if (location.protocol === 'file:') {
 <script src="/lib/geocode.js"></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
+import { initJobs } from '/lib/jobs-layer.js';
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -403,9 +434,17 @@ addEventListener('keydown', e => {
   else if (k === 't') $('#b-terrain').click();
   else if (k === 'n') $('#b-north').click();
   else if (k === 'g') $('#b-google').click();
+  else if (k === 'j' && !$('#b-jobs')?.disabled) $('#b-jobs')?.click();
   else if (k === 'escape') gclose();
 });
-window.vrgMap = { map, searchOffline, camera };   // for tests and the console
+// ---------------------------------------------------------------- toast
+let toastT = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 4200); }
+
+// ---------------------------------------------------------------- J: the jobs (lib/jobs-layer.js; client data, internal only)
+const jobs = initJobs({ map, maplibregl, params, store, toast });
+
+window.vrgMap = { map, searchOffline, camera, jobs };   // for tests and the console
 </script>
 </body>
 </html>
