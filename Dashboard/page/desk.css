@@ -276,6 +276,12 @@ body[data-sh-drag] { cursor: grabbing; user-select: none; }
 .rows .empty { color: var(--mv-faint); font-style: italic; grid-template-columns: 1fr; }
 /* WP-48: a server row = the row button (opens the page) + its Konzol button */
 .rows > .srvrow { grid-template-columns: 1fr auto; padding: 0; gap: 0; }
+.rows > .jobrow { display: grid; grid-template-columns: 1fr auto; padding: 0; gap: 0; }
+.rows > .jobrow > button:first-child { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: center; padding: 6px 10px; border: 0; background: none; color: var(--mv-text); text-align: left; font: inherit; cursor: pointer; min-width: 0; }
+.rows > .jobrow > button:hover { background: var(--mv-raised); }
+.rows > .jobrow > .jobmap { padding: 6px 12px; border: 0; border-left: 1px solid var(--mv-line); background: none; cursor: pointer; font-size: 14px; filter: grayscale(.4); }
+.rows > .jobrow > .jobmap:hover { filter: none; }
+.rows > .jobrow > button:focus-visible { outline: 2px solid var(--mv-accent); outline-offset: -2px; }
 .rows > .srvrow > button { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: center; padding: 6px 10px; border: 0; background: none; color: var(--mv-text); text-align: left; font: inherit; cursor: pointer; min-width: 0; }
 .rows > .srvrow > button:hover { background: var(--mv-raised); }
 .rows > .srvrow > .srvcon { display: block; padding: 6px 12px; border-left: 1px solid var(--mv-line); font: 12px var(--mv-mono); color: var(--mv-dim); }

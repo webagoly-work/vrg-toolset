@@ -35,6 +35,14 @@ module.exports = async function probe({ win }) {
   for (const id of ['codecity', 'stack', 'term', 'git']) if (userTiles.includes(id)) errors.push('dev tile at user level: ' + id);
   if (await fjs(`!!document.querySelector('.tile[data-id="planner"] [data-act="s:P/B"]')`)) errors.push('Planner build shown at user level');
   info.userTiles = userTiles.length;
+  // Munkák: every job row has its map pin (VRG Térkép ?job=CODE); the channel refuses anything but a job code
+  const jm = await fjs(`[...document.querySelectorAll('[data-role="job-list"] .jobrow')].map(r => ({ code: r.querySelector('.c').textContent, map: (r.querySelector('.jobmap') || {}).dataset?.map }))`);
+  if (jm.some(r => r.map !== r.code)) errors.push('a job row without its map pin: ' + JSON.stringify(jm));
+  const mj = await fjs(`window.vrg.desktop.mapJob('ZZ9')`);
+  if (!mj || mj.do !== 'web' || !/^http:\/\/127\.0\.0\.1:8802\/\?job=ZZ9$/.test(mj.url)) errors.push('mapJob ZZ9: ' + JSON.stringify(mj));
+  const bad = await fjs(`window.vrg.desktop.mapJob('../x')`);
+  if (!bad || bad.ok !== false) errors.push('mapJob accepted a non-code: ' + JSON.stringify(bad));
+  info.jobMapPins = jm.length;
   const look = await fjs(`(() => { const c = s => getComputedStyle(document.querySelector(s)); return { bg: c('[data-role="dashboard"]').backgroundColor, h2: c('#sec-apps > h2').color, tile: c('.tile').borderTopStyle }; })()`);
   if (look.bg !== 'rgb(10, 20, 28)') errors.push('dashboard background is not --mv-bg: ' + look.bg);
   if (look.h2 !== 'rgb(147, 211, 230)') errors.push('section heading is not --mv-accent: ' + look.h2);

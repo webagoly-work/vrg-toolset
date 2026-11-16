@@ -144,6 +144,7 @@ contextBridge.exposeInMainWorld('vrg', {
     state: () => call('desktop', 'state', {}),
     open: id => call('desktop', 'open', { id }),
     server: id => call('desktop', 'server', { id }),
+    mapJob: code => call('desktop', 'mapJob', { code: String(code) }),
     cover: on => call('desktop', 'cover', { on: on === true }),
   },
   sheets: {                                                                      // WP-46 Lapok: the whole doc each way, checked in main
