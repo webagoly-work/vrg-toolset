@@ -77,7 +77,7 @@ function fakeServer() {
     const s = http.createServer((req, rs) => {
       if (req.url === '/go') { rs.writeHead(302, { Location: `http://localhost:${s.address().port}/there?a=1` }); rs.end(); return; }
       if (req.url === '/rel') { rs.writeHead(302, { Location: '/abs' }); rs.end(); return; }
-      if (req.url === '/echo') { rs.writeHead(200, { 'Content-Type': 'application/json' }); rs.end(JSON.stringify({ host: req.headers.host, cookie: req.headers.cookie || null, url: req.url })); return; }
+      if (req.url === '/echo') { rs.writeHead(200, { 'Content-Type': 'application/json' }); rs.end(JSON.stringify({ host: req.headers.host, cookie: req.headers.cookie || null, url: req.url, via: req.headers['x-vrg-via'] || null })); return; }
       rs.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       rs.end(`<!doctype html><html><head><title>Próba &amp; teszt</title></head><body>path=${req.url}</body></html>`);
     });
@@ -217,6 +217,8 @@ function fakeServer() {
   ok(page.status === 200 && page.body.includes('path=/page?x=1'), 'with the cookie the page comes through the proxy');
   const echo = JSON.parse((await get(PORT, `/p/${SITE}/echo`, { headers: { cookie: cookie + '; theirs=1' } })).body);
   ok(echo.host === `localhost:${SITE}` && echo.cookie === 'theirs=1', 'the server sees Host localhost:<port>, its own cookies and never the token');
+  const echo2 = JSON.parse((await get(PORT, `/p/${SITE}/echo`, { headers: { cookie, 'x-vrg-via': 'phone-made-up' } })).body);
+  ok(echo.via === 'relay' && echo2.via === 'relay', 'the server sees x-vrg-via: relay, set by the relay, never a value the phone sent');
   ok((await get(PORT, `/p/${SITE}/go`, { headers: { cookie } })).headers.location === `/p/${SITE}/there?a=1`, 'a redirect to its own absolute URL is rewritten into /p/<port>/');
   ok((await get(PORT, `/p/${SITE}/rel`, { headers: { cookie } })).headers.location === `/p/${SITE}/abs`, 'a root-relative redirect is rewritten too');
   ok((await get(PORT, `/p/${SITE}`, { headers: { cookie } })).headers.location === `/p/${SITE}/`, '/p/<port> gets its slash');
