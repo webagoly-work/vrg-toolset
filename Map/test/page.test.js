@@ -76,7 +76,7 @@ module.exports = async function (t) {
       assert.ok(await C.go(base + '?job=T04', `!!document.querySelector('.jpop .jcard')`, 45000), 'no card after ?job=T04');
       const s = await E(`(() => { const m = vrgMap.map, c = m.getCenter(), j = vrgJobs.find('T04');
         return { code: document.querySelector('.jcard b').textContent, d: Math.hypot(c.lng - j.lon, c.lat - j.lat), badge: document.querySelector('#jobs-badge').hidden,
-          pressed: document.querySelector('#b-jobs').getAttribute('aria-pressed'), layers: ['jobs-pin','jobs-ring','jobs-cluster','jobs-label'].every(id => !!m.getLayer(id)),
+          pressed: document.querySelector('#b-jobs').getAttribute('aria-pressed'), layers: ['jobs-pin','jobs-ring','jobs-cluster','jobs-hit','jobs-heat'].every(id => !!m.getLayer(id)),
           legend: document.querySelector('#jobs-legend').textContent }; })()`);
       assert.equal(s.code, 'T04'); assert.ok(s.d < 0.001, 'centre ' + s.d); assert.equal(s.badge, false); assert.equal(s.pressed, 'true'); assert.ok(s.layers);
       assert.ok(/1 munkának nincs helye/.test(s.legend), s.legend);
@@ -91,8 +91,8 @@ module.exports = async function (t) {
       const txt = await E(`document.querySelector('.jcard').textContent`);
       for (const w of ['meghiúsult', 'Idősáv', 'Ft', 'csak az utca']) assert.ok(txt.includes(w), w + ' in ' + txt);
     });
-    await t('pin colour by status, read from the layer (computed paint)', async () => {
-      const c = await E(`JSON.stringify(vrgMap.map.getPaintProperty('jobs-pin', 'circle-color'))`);
+    await t('ring and pin colour by status, read from the layer paint and the pin images', async () => {
+      const c = await E(`JSON.stringify(vrgMap.map.getPaintProperty('jobs-ring', 'circle-color'))`);
       assert.ok(/meghiúsult/.test(c) && /befejezett/.test(c), c);
     });
     await t('J toggles the layer off and on', async () => {
@@ -124,6 +124,77 @@ module.exports = async function (t) {
       const s = await E(`({ src: !!vrgMap.map.getSource('vrg-jobs'), title: document.querySelector('#b-jobs').title })`);
       assert.equal(s.src, false); assert.ok(/TERKEP-KI/.test(s.title), s.title);
       fs.unlinkSync(path.join(hist, 'TERKEP-KI'));
+    });
+    // ---- the refinement pass (docs/map/REFINE.md)
+    await t('R2/R3: status, year and area filters narrow the pins', async () => {
+      assert.ok(await C.go(base + '#10.4/47.5/19.08/0/0', `!!(window.vrgJobs && vrgJobs.toggle && vrgMap.map.loaded())`, 45000));
+      const o = await E(`(async () => { await vrgJobs.toggle(true); const f = () => vrgJobs.features().features.length, o = { all: f() };
+        const st = document.querySelector('[data-status="meghiúsult"]'); st.click(); o.noFailed = f(); o.pressed = st.getAttribute('aria-pressed'); st.click();
+        const y = document.querySelector('[data-year="2026"]'); y.click(); o.y = f(); y.click();
+        const a = document.querySelector('[data-role="area"]'); a.value = 'Mintaváros'; a.dispatchEvent(new Event('change')); o.area = f(); a.value = ''; a.dispatchEvent(new Event('change'));
+        o.expect = { failed: vrgJobs.list.filter(j => j.lon != null && j.status === 'meghiúsult').length, y: vrgJobs.list.filter(j => j.lon != null && j.year === '2026').length,
+          area: vrgJobs.list.filter(j => j.lon != null && j.area === 'Mintaváros').length };
+        return o; })()`);
+      assert.equal(o.all, 30); assert.equal(o.noFailed, 30 - o.expect.failed); assert.equal(o.pressed, 'false');
+      assert.equal(o.y, o.expect.y); assert.equal(o.area, o.expect.area); assert.ok(o.expect.area > 0);
+    });
+    await t('R4: the timeline shows only what had started, and fades what had ended', async () => {
+      const o = await E(`(() => { const t = Math.floor(Date.parse('2025-06-01') / 864e5); vrgJobs.setTime(t);
+        const fs = vrgJobs.features().features, started = vrgJobs.list.filter(j => j.lon != null && j.fromN <= t).length;
+        const r = { n: fs.length, started, faded: fs.filter(f => f.properties.faded).length, row: !document.querySelector('.lg-time').hidden, date: document.querySelector('[data-role="date"]').textContent };
+        vrgJobs.setTime(null); r.after = vrgJobs.features().features.length; return r; })()`);
+      assert.equal(o.n, o.started); assert.ok(o.faded > 0 && o.faded <= o.n); assert.equal(o.row, true); assert.equal(o.date, '2025.06.01.'); assert.equal(o.after, 30);
+    });
+    await t('R8: the density layer follows D', async () => {
+      const o = await E(`(() => { const k = key => dispatchEvent(new KeyboardEvent('keydown', { key })); k('d'); const a = vrgMap.map.getLayoutProperty('jobs-heat', 'visibility'); k('d');
+        return [a, vrgMap.map.getLayoutProperty('jobs-heat', 'visibility')]; })()`);
+      assert.deepEqual(o, ['visible', 'none']);
+    });
+    await t('R5: a job code in the search box lists the job first; choosing it flies there', async () => {
+      const o = await E(`(async () => { const q = document.querySelector('#q'); q.focus(); q.value = 't1'; q.dispatchEvent(new Event('input'));
+        await new Promise(r => setTimeout(r, 400)); const li = [...document.querySelectorAll('#results li')];
+        const first = li[0] && li[0].textContent; li[0].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        for (let i = 0; i < 100 && !document.querySelector('.jpop .jcard'); i++) await new Promise(r => setTimeout(r, 100));
+        return { first, kind: li[0].querySelector('.k').className, card: document.querySelector('.jpop .jcard b')?.textContent }; })()`);
+      assert.ok(/^munkaT1/.test(o.first), o.first); assert.ok(/munka/.test(o.kind)); assert.equal(o.card, 'T10');
+    });
+    await t('R9: , and . step through the jobs by date; Esc closes the card', async () => {
+      const o = await E(`(async () => { const k = key => dispatchEvent(new KeyboardEvent('keydown', { key })); document.querySelector('#q').blur();
+        const card = async () => { for (let i = 0; i < 100 && !document.querySelector('.jpop .jcard'); i++) await new Promise(r => setTimeout(r, 100)); return document.querySelector('.jpop .jcard b')?.textContent; };
+        vrgMap.map.stop(); k('.'); await new Promise(r => setTimeout(r, 200)); const a = await card(); vrgMap.map.stop(); k('.'); await new Promise(r => setTimeout(r, 200)); const b = await card();
+        k('Escape'); return { a, b, closed: !document.querySelector('.jpop') }; })()`);
+      assert.ok(o.a && o.b && o.a !== o.b, JSON.stringify(o)); assert.equal(o.closed, true);
+    });
+    await t('R6/R1: the card has the period bar, actions, and co-located jobs share one pin', async () => {
+      const o = await E(`(() => { const j = vrgJobs.find('T02'); const f = vrgJobs.features().features.find(x => x.properties.codes.includes('T02'));
+        return { bar: true, codes: f.properties.codes, imgs: ['folyamatban', 'befejezett', 'meghiúsult'].every(s => vrgMap.map.hasImage('jpin-' + s) && vrgMap.map.hasImage('jpin-' + s + '-d')) }; })()`);
+      assert.equal(o.codes, 'T02'); assert.ok(o.imgs);
+      await E(`vrgJobs.fly('T02')`);
+      const c = await E(`(async () => { for (let i = 0; i < 100 && !document.querySelector('.jpop .jbar'); i++) await new Promise(r => setTimeout(r, 100));
+        return { bar: !!document.querySelector('.jpop .jbar i'), near: !!document.querySelector('.jpop [data-near]'), link: !!document.querySelector('.jpop [data-link]'), rel: document.querySelector('.jpop [data-job]')?.dataset.job }; })()`);
+      assert.deepEqual(c, { bar: true, near: true, link: true, rel: 'T03' });
+    });
+    await t('R11: the UI follows the colour scheme (computed colours), the pins do not', async () => {
+      const light = await E(`getComputedStyle(document.querySelector('#jobs-legend')).backgroundColor`);
+      await C.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
+      const dark = await E(`({ bg: getComputedStyle(document.querySelector('#jobs-legend')).backgroundColor, card: getComputedStyle(document.querySelector('.jpop .maplibregl-popup-content')).backgroundColor,
+        pin: JSON.stringify(vrgMap.map.getPaintProperty('jobs-ring', 'circle-color')) })`);
+      await C.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
+      assert.equal(light, 'rgb(251, 249, 244)'); assert.equal(dark.bg, 'rgb(35, 33, 29)'); assert.equal(dark.card, 'rgb(35, 33, 29)');
+      assert.ok(/#d4570f/.test(dark.pin), dark.pin);
+    });
+    await t('R10: on a phone the card is a bottom sheet, the badge a strip, no sideways scroll', async () => {
+      await C.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 1, mobile: true });
+      assert.ok(await C.go(base + '?job=T08', `!!(window.vrgJobs && vrgJobs.ready && !document.querySelector('#jobs-sheet').hidden)`, 45000));
+      const o = await E(`({ popup: !!document.querySelector('.jpop'), code: document.querySelector('#jobs-sheet .jcard b').textContent, badge: Math.round(document.querySelector('#jobs-badge').getBoundingClientRect().width),
+        sw: document.documentElement.scrollWidth, collapsed: document.querySelector('#jobs-legend').classList.contains('collapsed') })`);
+      await C.send('Emulation.clearDeviceMetricsOverride');
+      assert.deepEqual(o, { popup: false, code: 'T08', badge: 390, sw: 390, collapsed: true });
+    });
+    await t('R10: every request the page makes is root-relative (the relay keeps it under /p/8802/)', async () => {
+      const urls = await E(`performance.getEntriesByType('resource').map(e => e.name)`);
+      const foreign = urls.filter(u => !u.startsWith(base.replace(/\/$/, '')));
+      assert.deepEqual(foreign, []);
     });
     await t('the page threw nothing', async () => assert.deepEqual(C.errors, []));
   } finally {

@@ -14,7 +14,8 @@
    "lat": 47.56732,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest VI. ker."
   },
   {
    "code": "T02",
@@ -28,6 +29,7 @@
    "prec": "cím",
    "source": "helyszinek",
    "vazlat": false,
+   "area": "Budapest XI. ker.",
    "related": [
     "T03"
    ]
@@ -44,6 +46,7 @@
    "prec": "legközelebbi",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XIII. ker.",
    "related": [
     "T02"
    ]
@@ -60,6 +63,7 @@
    "prec": "utca",
    "source": "helyszinek",
    "vazlat": false,
+   "area": "Budapest XIV. ker.",
    "total": 1946000,
    "totalDate": "2026-11-19"
   },
@@ -74,7 +78,8 @@
    "lat": 47.523,
    "prec": "település",
    "source": "kit:decisions",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest V. ker."
   },
   {
    "code": "T06",
@@ -87,7 +92,8 @@
    "lat": 47.55395,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": true
+   "vazlat": true,
+   "area": "Budapest VI. ker."
   },
   {
    "code": "T07",
@@ -100,7 +106,8 @@
    "lat": 47.84354,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Mintaváros"
   },
   {
    "code": "T08",
@@ -114,6 +121,7 @@
    "prec": "cím",
    "source": "helyszinek",
    "vazlat": false,
+   "area": "Budapest XIII. ker.",
    "total": 210000,
    "totalDate": "2025-08-26"
   },
@@ -129,6 +137,7 @@
    "prec": "legközelebbi",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XIV. ker.",
    "bizonytalan": true
   },
   {
@@ -142,7 +151,8 @@
    "lat": 47.46538,
    "prec": "utca",
    "source": "kit:decisions",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest V. ker."
   },
   {
    "code": "T11",
@@ -155,7 +165,8 @@
    "lat": 47.45732,
    "prec": "település",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest VI. ker."
   },
   {
    "code": "T12",
@@ -169,6 +180,7 @@
    "prec": "cím",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XI. ker.",
    "total": 1516000,
    "totalDate": "2025-10-31"
   },
@@ -183,7 +195,8 @@
    "lat": 47.5139,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XIII. ker."
   },
   {
    "code": "T14",
@@ -196,7 +209,8 @@
    "lat": 47.09997,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Próbahegy"
   },
   {
    "code": "T15",
@@ -209,7 +223,8 @@
    "lat": 47.57939,
    "prec": "legközelebbi",
    "source": "kit:decisions",
-   "vazlat": true
+   "vazlat": true,
+   "area": "Budapest V. ker."
   },
   {
    "code": "T16",
@@ -223,6 +238,7 @@
    "prec": "utca",
    "source": "helyszinek",
    "vazlat": false,
+   "area": "Budapest VI. ker.",
    "total": 1916000,
    "totalDate": "2027-02-12"
   },
@@ -237,7 +253,8 @@
    "lat": 47.46407,
    "prec": "település",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XI. ker."
   },
   {
    "code": "T18",
@@ -251,6 +268,7 @@
    "prec": "cím",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XIII. ker.",
    "bizonytalan": true
   },
   {
@@ -264,7 +282,8 @@
    "lat": 47.45763,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XIV. ker."
   },
   {
    "code": "T20",
@@ -278,6 +297,7 @@
    "prec": "cím",
    "source": "kit:decisions",
    "vazlat": false,
+   "area": "Budapest V. ker.",
    "total": 476000,
    "totalDate": "2026-02-20"
   },
@@ -292,7 +312,8 @@
    "lat": 47.50875,
    "prec": "legközelebbi",
    "source": "helyszinek",
-   "vazlat": true
+   "vazlat": true,
+   "area": "Képzeletfalva"
   },
   {
    "code": "T22",
@@ -305,7 +326,8 @@
    "lat": 47.42838,
    "prec": "utca",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XI. ker."
   },
   {
    "code": "T23",
@@ -318,7 +340,8 @@
    "lat": 47.43765,
    "prec": "település",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XIII. ker."
   },
   {
    "code": "T24",
@@ -332,6 +355,7 @@
    "prec": "cím",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XIV. ker.",
    "total": 939000,
    "totalDate": "2027-03-04"
   },
@@ -346,7 +370,8 @@
    "lat": 47.53643,
    "prec": "cím",
    "source": "kit:decisions",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest V. ker."
   },
   {
    "code": "T26",
@@ -359,7 +384,8 @@
    "lat": 47.5094,
    "prec": "cím",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest VI. ker."
   },
   {
    "code": "T27",
@@ -373,6 +399,7 @@
    "prec": "legközelebbi",
    "source": "helyszinek",
    "vazlat": true,
+   "area": "Budapest XI. ker.",
    "bizonytalan": true
   },
   {
@@ -387,6 +414,7 @@
    "prec": "utca",
    "source": "helyszinek",
    "vazlat": false,
+   "area": "Mintaváros",
    "total": 1095000,
    "totalDate": "2026-03-30"
   },
@@ -401,7 +429,8 @@
    "lat": 47.54342,
    "prec": "település",
    "source": "helyszinek",
-   "vazlat": false
+   "vazlat": false,
+   "area": "Budapest XIV. ker."
   },
   {
    "code": "T30",
@@ -414,7 +443,8 @@
    "lat": 47.52602,
    "prec": "cím",
    "source": "kit:decisions",
-   "vazlat": true
+   "vazlat": true,
+   "area": "Budapest V. ker."
   },
   {
    "code": "T31",

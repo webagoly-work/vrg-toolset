@@ -131,6 +131,16 @@ function readKitJobs(jobs) {
 }
 
 // ---------------------------------------------------------------- build
+/** the coarse area for the map's filter: a Budapest district or a settlement, never more */
+function areaOf(g, address) {
+  const q = G.jobQuery(address || '');
+  if (q.pc && q.pc[0] === '1' && /budapest|^bp/i.test(q.city || 'Budapest')) return 'Budapest ' + G.toRoman(Number(q.pc.slice(1, 3))) + '. ker.';
+  const m = /Budapest ([IVX]+)\. ker\./.exec(g && g.sub || '');
+  if (m) return 'Budapest ' + m[1] + '. ker.';
+  if (g && g.prec === 'település') return g.title;
+  if (g && g.sub) return g.sub.replace(/^\d{4}\s*/, '');
+  return q.city || null;
+}
 function build(opts) {
   const jobs = opts.jobs, hist = path.join(jobs, '_elozmenyek');
   const reg = readRegister(path.join(hist, 'REGISZTER.md'));
@@ -162,6 +172,8 @@ function build(opts) {
 
     if (typeof o.lat === 'number' && typeof o.lon === 'number') {
       Object.assign(row, { lon: o.lon, lat: o.lat, prec: o.pontossag || 'cím', source: 'kézi', vazlat: o.vazlat !== false });
+      const a = o.terulet || (o.address ? areaOf(G.geocodeJob(idx, o.address), o.address) : null);
+      if (a) row.area = a;
     } else {
       const address = o.address || k.address || null;
       const source = o.address ? 'helyszinek' : k.address ? k.source : null;
@@ -169,6 +181,8 @@ function build(opts) {
         const g = G.geocodeJob(idx, address);
         if (g) {
           Object.assign(row, { lon: +g.lon.toFixed(5), lat: +g.lat.toFixed(5), prec: g.prec, source });
+          const a = o.terulet || areaOf(g, address);
+          if (a) row.area = a;
           if (g.otherCity) { row.otherCity = g.otherCity; warn.push(code + ': the street was found in another settlement of the index (' + ascii(g.otherCity) + ')'); }
         } else { row.source = source; warn.push(code + ': address not found in the offline index'); }
         row.vazlat = o.address ? o.vazlat !== false : false;

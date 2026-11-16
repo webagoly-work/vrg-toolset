@@ -24,11 +24,24 @@
 <link rel="stylesheet" href="/vendor/maplibre-gl/maplibre-gl.css">
 <style>
   :root{
-    --ink:#1f1d1a; --ink-2:#4d4943; --faint:#8a8378; --paper:#fbf9f4; --line:#d8d0c2;
-    --accent:#c26a12; --accent-soft:#f6e3c9; --ok:#2f7d4a; --warn:#b5491f;
-    --shadow:0 2px 10px rgba(40,30,15,.18);
+    --ink:#1f1d1a; --ink-2:#4d4943; --faint:#8a8378; --paper:#fbf9f4; --line:#d8d0c2; --field:#ffffff;
+    --accent:#c26a12; --accent-soft:#f6e3c9; --ok:#2f7d4a; --warn:#b5491f; --press:#1f1d1a; --on-press:#ffffff;
+    --shadow:0 2px 10px rgba(40,30,15,.18); --bg:#e9e5dc;
   }
-  html,body{margin:0;height:100%;background:#e9e5dc;color:var(--ink);
+  /* The UI follows the colour scheme; the VRG Terep basemap and the job pins stay light (REFINE R11). */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#efe9dc; --ink-2:#cfc6b6; --faint:#9b927f; --paper:#23211d; --line:#3d3830; --field:#1a1916;
+      --accent:#f0a04b; --accent-soft:#4a3418; --ok:#6cc890; --warn:#f08a62; --press:#efe9dc; --on-press:#1f1d1a;
+      --shadow:0 2px 12px rgba(0,0,0,.45); --bg:#1a1916;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#efe9dc; --ink-2:#cfc6b6; --faint:#9b927f; --paper:#23211d; --line:#3d3830; --field:#1a1916;
+    --accent:#f0a04b; --accent-soft:#4a3418; --ok:#6cc890; --warn:#f08a62; --press:#efe9dc; --on-press:#1f1d1a;
+    --shadow:0 2px 12px rgba(0,0,0,.45); --bg:#1a1916;
+  }
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
     font:14px/1.35 "Segoe UI",system-ui,-apple-system,sans-serif}
   #map{position:absolute;inset:0}
   .panel{position:absolute;top:12px;left:12px;width:min(380px,calc(100vw - 24px));z-index:5;
@@ -37,7 +50,7 @@
   .brand{font-weight:700;letter-spacing:.02em;white-space:nowrap}
   .brand b{color:var(--accent)}
   #q{flex:1;min-width:0;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font:inherit;
-    background:#fff;color:var(--ink);outline:none}
+    background:var(--field);color:var(--ink);outline:none}
   #q:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   #results{list-style:none;margin:0;padding:0 0 6px;max-height:50vh;overflow:auto;border-top:1px solid var(--line)}
   #results:empty{display:none}
@@ -52,14 +65,15 @@
   .tools{position:absolute;top:12px;right:12px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
   .btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;
     padding:7px 11px;font:600 13px/1 inherit;cursor:pointer;box-shadow:var(--shadow);min-width:44px}
-  .btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn[aria-pressed=true]{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
   .btn kbd{font:11px ui-monospace,Consolas,monospace;color:var(--faint);margin-left:6px}
-  .btn[aria-pressed=true] kbd{color:#d9d2c5}
+  .btn[aria-pressed=true] kbd{color:var(--faint)}
   .maplibregl-ctrl-top-right{top:auto;bottom:34px}
   #notice{position:absolute;inset:0;z-index:20;display:none;place-items:center;background:rgba(233,229,220,.92)}
   #notice.show{display:grid}
   #notice div{max-width:560px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px 26px;box-shadow:var(--shadow)}
-  #notice code{display:block;margin:10px 0;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;user-select:all}
+  #notice code{display:block;margin:10px 0;padding:8px 10px;background:var(--field);border:1px solid var(--line);border-radius:6px;user-select:all}
   .pin{width:26px;height:26px;border-radius:50% 50% 50% 0;background:var(--accent);transform:rotate(-45deg);
     border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
   /* Google 3D view: an embedded panel, opened on command, aimed where our map looks */
@@ -78,31 +92,77 @@
   body.embed .panel{width:min(300px,calc(100vw - 24px))}
   body.embed .brand,body.embed .status{display:none}
   @media (max-width:700px){ #gpanel{width:100vw;top:40%} }
-  /* J: the job layer (client data) */
+  /* J: the job layer (client data) — docs/map/JOBS-MAP.md, docs/map/REFINE.md */
   #jobs-badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:6;background:#8b1f1f;color:#fff;
     font:700 11px/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.12em;padding:6px 12px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap}
-  #jobs-badge[hidden],#jobs-legend[hidden]{display:none}
-  #jobs-legend{position:absolute;left:12px;bottom:34px;z-index:5;display:flex;flex-wrap:wrap;gap:6px 12px;max-width:min(520px,calc(100vw - 24px));
-    background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
-  #jobs-legend span{display:inline-flex;align-items:center;gap:5px}
-  #jobs-legend i{width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
-  #jobs-legend i.draft{background:var(--paper);border-color:#f2c94c}
-  #jobs-legend i.ring{background:transparent;border:1.5px solid var(--faint);box-shadow:none}
-  #jobs-legend .m{color:var(--faint)}
-  body.jobs-on .maplibregl-ctrl-bottom-left{bottom:40px}
-  #toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:30;background:var(--ink);color:#fff;padding:9px 14px;border-radius:8px;
+  #jobs-badge[hidden],#jobs-legend[hidden],#jobs-sheet[hidden],.lg-time[hidden]{display:none}
+  #jobs-legend{position:absolute;left:12px;bottom:30px;z-index:5;width:min(470px,calc(100vw - 24px));box-sizing:border-box;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  .lg-h{display:flex;align-items:center;gap:8px}
+  .lg-h b{color:var(--ink);font-size:13px;letter-spacing:.02em}
+  .lg-x{margin-left:auto;border:0;background:none;color:var(--ink-2);font-size:14px;cursor:pointer;min-width:32px;min-height:28px}
+  #jobs-legend.collapsed .lg-b{display:none}
+  .lg-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px}
+  .lg-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;
+    padding:4px 9px;font:600 12px/1.1 inherit;cursor:pointer;min-height:28px}
+  .lg-chip[aria-pressed=false]{opacity:.5;text-decoration:line-through}
+  .lg-chip.yr[aria-pressed=false],.lg-chip.tool[aria-pressed=false]{opacity:1;text-decoration:none;color:var(--ink-2)}
+  .lg-chip.yr[aria-pressed=true],.lg-chip.tool[aria-pressed=true]{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  .lg-chip kbd{font:10px ui-monospace,Consolas,monospace;color:var(--faint)}
+  .lg-chip .dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1.5px #1f1d1a inset,0 0 0 1px #fffaf0}
+  .lg-chip span{color:var(--faint);font-weight:400}
+  #jobs-legend select{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:4px 8px;font:12px inherit;min-height:28px}
+  .lg-key{display:inline-flex;align-items:center;gap:5px;color:var(--faint)}
+  .lg-key i{width:10px;height:10px;border-radius:50%}
+  .lg-key i.pin-d{border:2px dashed #f2c94c}
+  .lg-key i.ring{border:1.5px solid var(--faint)}
+  .lg-time{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .lg-time input{flex:1;accent-color:var(--accent);min-height:28px}
+  .lg-time output{font:600 12px ui-monospace,Consolas,monospace;color:var(--ink);min-width:84px;text-align:right}
+  .m{color:var(--faint)}
+  body.jobs-on .maplibregl-ctrl-bottom-left{display:none}
+  #toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:30;background:var(--press);color:var(--on-press);padding:9px 14px;border-radius:8px;
     box-shadow:var(--shadow);font-size:13px;max-width:calc(100vw - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
   #toast.show{opacity:1}
-  .jpop .maplibregl-popup-content{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 13px 9px;box-shadow:var(--shadow)}
-  .jcard .jh{display:flex;align-items:center;gap:7px;margin-bottom:3px}
-  .jcard .jh b{font-size:16px;letter-spacing:.04em}
+  .jpop .maplibregl-popup-content{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 13px 9px;box-shadow:var(--shadow);
+    max-height:min(60vh,520px);overflow:auto}
+  .jpop.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:var(--paper)}
+  .jpop.maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:var(--paper)}
+  .jpop .maplibregl-popup-close-button{color:var(--ink-2);font-size:18px;width:28px;height:28px}
+  .jcard + .jcard{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .jcard .jh{display:flex;align-items:center;gap:7px;margin-bottom:3px;padding-right:18px}
+  .jcard .jh b{font-size:16px;letter-spacing:.05em}
   .jcard .chip{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--c);color:#fff}
   .jcard .chip.draft{background:#f2c94c;color:#3b2f00}
+  .jcard .chip.kit{background:var(--field);color:var(--ink-2);border:1px solid var(--line)}
   .jcard .jt{color:var(--ink-2);margin-bottom:6px}
+  .jcard .jbar{position:relative;height:5px;border-radius:3px;background:var(--line);margin:0 0 7px}
+  .jcard .jbar i{position:absolute;top:0;bottom:0;border-radius:3px}
   .jcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0;font-size:12px}
   .jcard dt{color:var(--faint)} .jcard dd{margin:0}
-  .jcard .m{color:var(--faint)} .jcard .warn{color:var(--warn)}
-  .jcard .jl{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;font:600 11px inherit;cursor:pointer;color:var(--ink)}
+  .jcard .warn{color:var(--warn)}
+  .jcard .jl,.jcard .jb{border:1px solid var(--line);background:var(--field);border-radius:6px;padding:2px 7px;font:600 11px inherit;cursor:pointer;color:var(--ink);min-height:24px}
+  .jcard .jact{display:flex;gap:6px;margin-top:8px}
+  .jcard .jb{padding:4px 10px;font-size:12px}
+  #jobs-sheet{position:absolute;left:0;right:0;bottom:0;z-index:12;max-height:55vh;overflow:auto;background:var(--paper);color:var(--ink);
+    border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -4px 18px rgba(0,0,0,.25);padding:14px 16px 18px}
+  #jobs-sheet .jclose{position:absolute;right:8px;top:6px;border:0;background:none;color:var(--ink-2);font-size:18px;min-width:40px;min-height:40px;cursor:pointer}
+  #results .k.munka{color:var(--accent);font-weight:700}
+  /* R10: the phone (also through the VRG Mobile relay) */
+  @media (max-width:640px){
+    .panel{top:8px;left:8px;width:calc(100vw - 16px)}
+    .status{display:none}
+    .tools{top:62px;right:8px;left:8px;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+    .btn{padding:7px 9px;font-size:12px;min-height:36px}
+    .btn kbd{display:none}
+    #jobs-badge{top:0;left:0;right:0;transform:none;border-radius:0;text-align:center;padding:4px 0;font-size:10px}
+    body.jobs-on .panel{top:24px}
+    body.jobs-on .tools{top:78px}
+    #jobs-legend{left:0;right:0;bottom:0;width:auto;border-radius:14px 14px 0 0;padding:8px 12px 12px}
+    .lg-chip{min-height:34px;padding:5px 11px}
+    .maplibregl-ctrl-top-right{bottom:auto;top:126px}
+    body.jobs-on .maplibregl-ctrl-top-right{top:140px}
+  }
 </style>
 </head>
 <body>
@@ -139,6 +199,7 @@
 <div id="jobs-badge" hidden title="A munkák rétege ügyféladatot mutat: ne oszd meg, ne mutasd ügyfélnek">● ÜGYFÉLADAT · MUNKÁK</div>
 <div id="jobs-legend" hidden aria-label="Munkák jelmagyarázata"></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<aside id="jobs-sheet" hidden aria-label="Munka adatai"></aside>
 <div id="notice"><div id="notice-body"></div></div>
 
 <script>
@@ -279,7 +340,7 @@ function render() {
   results.forEach((r, i) => {
     const li = document.createElement('li');
     li.setAttribute('role', 'option'); li.setAttribute('aria-selected', i === sel ? 'true' : 'false');
-    li.innerHTML = `<span class="k">${r.kind}</span><span class="t">${esc(r.title)}<br><span class="s">${esc(r.sub || '')}</span></span>`;
+    li.innerHTML = `<span class="k${r.job ? ' munka' : ''}">${r.kind}</span><span class="t">${esc(r.title)}<br><span class="s">${esc(r.sub || '')}</span></span>`;
     li.onmousedown = e => { e.preventDefault(); choose(i); };
     ul.appendChild(li);
   });
@@ -297,7 +358,7 @@ function render() {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 q.addEventListener('input', () => {
   clearTimeout(timer);
-  timer = setTimeout(() => { results = searchOffline(q.value); sel = results.length ? 0 : -1; render(); }, 120);
+  timer = setTimeout(() => { results = searchAll(q.value); sel = results.length ? 0 : -1; render(); }, 120);
 });
 q.addEventListener('keydown', e => {
   if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, results.length - 1); render(); e.preventDefault(); }
@@ -306,12 +367,19 @@ q.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { ul.innerHTML = ''; q.blur(); }
 });
 q.addEventListener('blur', () => setTimeout(() => { ul.innerHTML = ''; }, 150));
-q.addEventListener('focus', () => { if (q.value.trim()) { results = searchOffline(q.value); render(); } });
+q.addEventListener('focus', () => { if (q.value.trim()) { results = searchAll(q.value); render(); } });
+// R5: a job code (BK2, p3…) lists the jobs first, when the J layer is allowed and loaded
+function searchAll(text) {
+  const J = window.vrgJobs;
+  const jobsHit = J && J.searchCodes ? J.searchCodes(text) : [];
+  return jobsHit.concat(searchOffline(text)).slice(0, 8);
+}
 
 const marker = new maplibregl.Marker({ element: Object.assign(document.createElement('div'), { className: 'pin' }), anchor: 'bottom-left' });
 function choose(i) {
   const r = results[i]; if (!r) return;
   ul.innerHTML = ''; q.value = r.title + (r.sub ? ', ' + r.sub : '');
+  if (r.job) { q.value = r.job; marker.remove(); window.vrgJobs.fly(r.job); return; }
   flyToPlace(r);
 }
 function flyToPlace(r) {
@@ -435,7 +503,7 @@ addEventListener('keydown', e => {
   else if (k === 'n') $('#b-north').click();
   else if (k === 'g') $('#b-google').click();
   else if (k === 'j' && !$('#b-jobs')?.disabled) $('#b-jobs')?.click();
-  else if (k === 'escape') gclose();
+  else if (k === 'escape' && $('#gpanel').classList.contains('show')) gclose();
 });
 // ---------------------------------------------------------------- toast
 let toastT = 0;

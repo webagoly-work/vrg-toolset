@@ -27,6 +27,10 @@ module.exports = async function (t) {
       assert.equal(by.TB2.kind, 'kit'); assert.equal(by.TB2.source, 'kit:decisions'); assert.equal(by.TB2.prec, 'cím'); assert.equal(by.TB2.vazlat, false);
       assert.equal(by.TB2.status, 'folyamatban'); assert.ok(by.TB2.from);
     });
+    t('area: the Budapest district or the settlement, nothing finer', () => {
+      assert.equal(by.TA1.area, 'Budapest V. ker.'); assert.equal(by.TB2.area, 'Budapest VIII. ker.'); assert.equal(by.TC1.area, 'Mintaváros');
+      assert.equal(by.TD1.area, undefined);
+    });
     t('related codes from "X előzménye", both ways', () => { assert.deepEqual(by.TA1.related, ['TB2']); assert.deepEqual(by.TB2.related, ['TA1']); });
     t('total: the latest file, duplicate rows counted once', () => { assert.equal(by.TA1.total, 150000); assert.equal(by.TA1.totalDate, '2026-02-03'); });
     t('confirmed row: vazlat false; street precision', () => { assert.equal(by.TC1.vazlat, false); assert.equal(by.TC1.prec, 'utca'); });

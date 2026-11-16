@@ -17,6 +17,7 @@ for (let i = 1; i <= 30; i++) {
   const code = 'T' + String(i).padStart(2, '0');
   const j = { code, kind: i % 5 === 0 ? 'kit' : 'elozmeny', status: ST[i % ST.length], from, to, label: NAMES[i % NAMES.length] + ' ' + i,
     lon: +lon.toFixed(5), lat: +lat.toFixed(5), prec: PR[i % PR.length], source: i % 5 === 0 ? 'kit:decisions' : 'helyszinek', vazlat: i % 3 === 0 };
+  j.area = far ? ['Képzeletfalva', 'Mintaváros', 'Próbahegy'][i % 3] : 'Budapest ' + ['V', 'VI', 'XI', 'XIII', 'XIV'][i % 5] + '. ker.';
   if (i % 4 === 0) j.total = 100000 + Math.round(rnd() * 2e6 / 1000) * 1000, j.totalDate = to;
   if (i % 9 === 0) j.bizonytalan = true;
   if (i === 2) j.related = ['T03'];
