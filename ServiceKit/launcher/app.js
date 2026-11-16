@@ -21,7 +21,7 @@
     installed: window.KIT_INSTALLED || {}, apps: {}, running: [],
     toolCat: 'all', toolStatus: 'all',
     helpSel: null, helpQ: '', helpCat: 'all',
-    wsbNet: false, launches: lsGet('launches', {}),
+    wsbNet: !!lsGet('wsbNet', false), launches: lsGet('launches', {}),
     sigTools: '', sigRun: '', sigProg: '',
     pbSel: '', pbInc: {}, pbInputs: {}, pbAuto: false, pbResume: false, pbFocus: -1, pbOpen: {}, pbStarting: -1, pbSig: '',
     jobs: null, jobDetail: null, jobSig: '', form: { clientId: '', smart: true, keys: false }, noteDraft: '', docs: null, lastJobId: '', clientFilter: ''
@@ -72,7 +72,7 @@
       l2t: 'Sandboxie-Plus – programok dobozban', l2d: 'A dobozban futó program fájl- és registry-módosításai elkülönítve maradnak, és egy kattintással törölhetők. Windows 7–11, egyszeri telepítés rendszergazdaként.',
       l2missing: 'Nincs telepítve. Töltsd le, majd futtasd a telepítőjét.', l2wipe: 'Doboz kiürítése', l2open: 'Sandboxie kezelő',
       l3t: 'Windows Sandbox – eldobható Windows', l3d: 'Teljes, elszigetelt Windows, ami bezáráskor mindenestül törlődik. A kit tools mappája csak olvasható, az exchange mappa írható csatornaként jelenik meg benne.',
-      l3start: 'Sandbox indítása', l3net: 'Hálózat a sandboxban', l3enable: 'Funkció bekapcsolása', l3exchange: 'Exchange mappa',
+      l3start: 'Sandbox indítása', l3net: 'Hálózat a sandboxban', netOn: 'hálózat: be', netOff: 'hálózat: ki', l3enable: 'Funkció bekapcsolása', l3exchange: 'Exchange mappa',
       l3no: 'Ezen a gépen nem elérhető: Windows 10/11 Pro, Enterprise vagy Education kell, és bekapcsolt virtualizáció.',
       l3off: 'Elérhető, de nincs bekapcsolva. Bekapcsolás után újraindítás kell.',
       l3virt: 'A virtualizáció a BIOS-ban ki van kapcsolva.',
@@ -143,7 +143,7 @@
       l2t: 'Sandboxie-Plus – programs in a box', l2d: 'A boxed program\'s file and registry changes stay separate and can be wiped with one click. Windows 7–11, one-time admin install.',
       l2missing: 'Not installed. Download it, then run its installer.', l2wipe: 'Empty the box', l2open: 'Sandboxie manager',
       l3t: 'Windows Sandbox – disposable Windows', l3d: 'A full, isolated Windows that is deleted completely when closed. The kit tools folder appears read-only inside it, and the exchange folder is a writable channel.',
-      l3start: 'Start Sandbox', l3net: 'Network in sandbox', l3enable: 'Enable feature', l3exchange: 'Exchange folder',
+      l3start: 'Start Sandbox', l3net: 'Network in sandbox', netOn: 'network: on', netOff: 'network: off', l3enable: 'Enable feature', l3exchange: 'Exchange folder',
       l3no: 'Not available on this PC: needs Windows 10/11 Pro, Enterprise or Education with virtualization on.',
       l3off: 'Available but not enabled. A restart is needed after enabling.',
       l3virt: 'Virtualization is disabled in the BIOS.',
@@ -381,7 +381,7 @@
     if (!adminFirst) h += '<button type="button" class="btn" data-act="launch" data-app="' + appId + '" data-mode="admin" title="Run as administrator">' + esc(t('admin')) + '</button>';
     var sf = safe();
     if (sf.sbie && !a.app.installed) h += '<button type="button" class="btn" data-act="launch" data-app="' + appId + '" data-mode="sbie">' + icon('box') + esc(t('inBox')) + '</button>';
-    if (sf.wsb && !a.app.installed) h += '<button type="button" class="btn" data-act="wsb" data-app="' + appId + '">' + icon('lock') + esc(t('inWsb')) + '</button>';
+    if (sf.wsb && !a.app.installed) h += '<button type="button" class="btn" data-act="wsb" data-app="' + appId + '" title="Windows Sandbox, ' + esc(t(S.wsbNet ? 'netOn' : 'netOff')) + '">' + icon('lock') + esc(t('inWsb')) + '</button>';
     return h;
   }
 
@@ -654,7 +654,7 @@
     } else h += '<p>' + esc(t('l3no')) + '</p>';
     h += '</div></div></div>';
     byId('view-safe').innerHTML = h;
-    var cb = byId('wsbNet'); if (cb) cb.onclick = function () { S.wsbNet = this.checked; };
+    var cb = byId('wsbNet'); if (cb) cb.onclick = function () { S.wsbNet = this.checked; lsSet('wsbNet', S.wsbNet); };
   }
 
   // ------------------------------------------------------------------ setup
@@ -1145,7 +1145,7 @@
       case 'venv-new': var nm = (byId('venvName') || {}).value || ''; act('/api/venv', { name: nm }, t('started') + ': venv ' + nm, function (err) { if (!err) setTimeout(renderSafe, 1500); }); break;
       case 'venv-open': act('/api/venv', { name: d('name') }, t('started') + ': venv ' + d('name')); break;
       case 'venv-del': if (window.confirm(fmt(t('confirmDel'), d('name')))) act('/api/venv-delete', { name: d('name') }, null, function () { setTimeout(renderSafe, 300); }); break;
-      case 'wsb': act('/api/wsb', { app: d('app') || '', net: d('app') ? true : S.wsbNet }, t('started') + ': Windows Sandbox'); break;
+      case 'wsb': act('/api/wsb', { app: d('app') || '', net: S.wsbNet }, t('started') + ': Windows Sandbox'); break;
       case 'wsb-enable': act('/api/wsb-enable', {}); break;
       case 'sbie-wipe': if (window.confirm(t('confirmWipe'))) act('/api/sbie-wipe', {}); break;
       case 'copy': copyText(unesc(d('text'))); break;
