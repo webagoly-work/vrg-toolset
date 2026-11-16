@@ -1,6 +1,6 @@
 {
- "generated": "2026-11-09",
- "commit": "0e46f7a",
+ "generated": "2026-11-16",
+ "commit": "686e19e",
  "sections": [
   {
    "id": "bridge-std",
@@ -20,8 +20,8 @@
    "id": "bridge-cat",
    "n": "BRIDGE katalógus",
    "docs": 15,
-   "reviewed": null,
-   "summary": null
+   "reviewed": "2026-11-16",
+   "summary": "Judged 1 candidate (entry-point height 1400 vs 1450, scope unclear: flagged unsure). Read the three most-cited docs (MW-001, RESEARCH-001, catalogue README): no direct clash found between them; the HMI-to-CONTROL role rename in 70-control.js vs sys:HMI in the Planner was noticed but not reported as a document clash."
   },
   {
    "id": "planner",
@@ -47,7 +47,7 @@
   {
    "id": "council",
    "n": "Tanács",
-   "docs": 33,
+   "docs": 34,
    "reviewed": null,
    "summary": null
   },
@@ -61,21 +61,21 @@
   {
    "id": "city",
    "n": "Kódváros",
-   "docs": 33,
+   "docs": 34,
    "reviewed": null,
    "summary": null
   },
   {
    "id": "mobile",
    "n": "Mobil",
-   "docs": 23,
+   "docs": 33,
    "reviewed": null,
    "summary": null
   },
   {
    "id": "docs",
    "n": "Kutatás, egyéb",
-   "docs": 19,
+   "docs": 34,
    "reviewed": null,
    "summary": null
   }
@@ -113,7 +113,7 @@
    "p": ".claude/agents/bernard.md",
    "s": "council",
    "t": "bernard.md",
-   "d": "2026-10-31",
+   "d": "2026-11-15",
    "i": 0
   },
   {
@@ -218,7 +218,7 @@
    "p": "BRIDGE/01_architecture/CLA_BRIDGE_Inline_Architecture.md",
    "s": "bridge-arch",
    "t": "CLA — BRIDGE Inline Network Architecture",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
@@ -359,7 +359,7 @@
    "s": "bridge-std",
    "t": "BRIDGE-STD-009 — Shading and Passive Climate",
    "d": "2026-10-14",
-   "i": 9
+   "i": 10
   },
   {
    "p": "BRIDGE/05_standards/BRIDGE-STD-010_Ambiance-Effect-Box.md",
@@ -478,7 +478,7 @@
    "s": "bridge-cat",
    "t": "BRIDGE-MW-001 — Media Wall",
    "d": "2026-10-22",
-   "i": 2
+   "i": 3
   },
   {
    "p": "BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md",
@@ -505,7 +505,7 @@
    "p": "CLAUDE.md",
    "s": "hub",
    "t": "VRG toolset — working rules",
-   "d": "2026-11-07",
+   "d": "2026-11-11",
    "i": 0
   },
   {
@@ -568,14 +568,14 @@
    "p": "GO-CITY.md",
    "s": "hub",
    "t": "GO CITY — VRG Kódváros (the codebase as a city, the live workspace)",
-   "d": "2026-10-30",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "GO-CLA.md",
    "s": "hub",
    "t": "GO CLA — the CLA job thread (base layer, data layer, v1 + v2 budget plans)",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
@@ -603,7 +603,7 @@
    "p": "GO-MOBILE.md",
    "s": "hub",
    "t": "GO MOBILE — build VRG Mobile, the companion app, one work package at a time",
-   "d": "2026-11-06",
+   "d": "2026-11-12",
    "i": 1
   },
   {
@@ -617,7 +617,7 @@
    "p": "GO-PLANNER.md",
    "s": "hub",
    "t": "GO PLANNER — the open Planner work (everything except wiring)",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
@@ -659,7 +659,7 @@
    "p": "Mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile: the companion app",
-   "d": "2026-11-06",
+   "d": "2026-11-11",
    "i": 0
   },
   {
@@ -862,14 +862,14 @@
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001-SF_smartframe-brief.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001 · SF: the SmartFrame (BSF), a second BRIDGE box type at every portal",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 1
   },
   {
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001_cla-extras.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001: CLA extras to add to the layer stack (after round 2026-10-10)",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 8
   },
   {
@@ -1909,6 +1909,13 @@
    "i": 0
   },
   {
+   "p": "docs/city/v2/README.md",
+   "s": "city",
+   "t": "Kódváros 2.0 — the city that grew",
+   "d": "2026-11-09",
+   "i": 0
+  },
+  {
    "p": "docs/city/wp/p00-decisions.md",
    "s": "city",
    "t": "P0 · Decisions and plan",
@@ -2049,17 +2056,24 @@
    "i": 1
   },
   {
+   "p": "docs/council/04_DEBATE-PROTOCOL.md",
+   "s": "council",
+   "t": "Seat debate — Vita a székek között",
+   "d": "2026-11-15",
+   "i": 1
+  },
+  {
    "p": "docs/council/DECISIONS.md",
    "s": "council",
    "t": "Council decisions",
-   "d": "2026-10-31",
+   "d": "2026-11-15",
    "i": 1
   },
   {
    "p": "docs/council/README.md",
    "s": "council",
    "t": "The Council pack",
-   "d": "2026-10-31",
+   "d": "2026-11-15",
    "i": 0
   },
   {
@@ -2101,7 +2115,7 @@
    "p": "docs/council/agents/bernard.md",
    "s": "council",
    "t": "bernard.md",
-   "d": "2026-10-31",
+   "d": "2026-11-15",
    "i": 0
   },
   {
@@ -2158,6 +2172,55 @@
    "s": "council",
    "t": "theresa.md",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/ARCHITECTURE.md",
+   "s": "docs",
+   "t": "VRG Asztal (VRG Desktop) — the architecture",
+   "d": "2026-11-10",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/CLASSIFICATION.md",
+   "s": "docs",
+   "t": "VRG classification",
+   "d": "2026-11-15",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/DECISIONS.md",
+   "s": "docs",
+   "t": "VRG Desktop unify — decisions (DESKU-Qnn)",
+   "d": "2026-11-11",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/GLOSSARY.md",
+   "s": "docs",
+   "t": "VRG glossary — what things are called in the industry",
+   "d": "2026-11-11",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/INVENTORY.md",
+   "s": "docs",
+   "t": "VRG inventory",
+   "d": "2026-11-15",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/LOG.md",
+   "s": "docs",
+   "t": "VRG Desktop unify — work log",
+   "d": "2026-11-15",
+   "i": 0
+  },
+  {
+   "p": "docs/desktop/MORNING.md",
+   "s": "docs",
+   "t": "VRG Desktop (VRG Asztal) — report, 2026-11-10",
+   "d": "2026-11-10",
    "i": 0
   },
   {
@@ -2598,14 +2661,42 @@
    "p": "docs/mobile/DECISIONS.md",
    "s": "mobile",
    "t": "VRG Mobile: decisions",
-   "d": "2026-11-07",
+   "d": "2026-11-12",
+   "i": 2
+  },
+  {
+   "p": "docs/mobile/NIGHT-DESKTOP.md",
+   "s": "mobile",
+   "t": "NIGHT-DESKTOP — VRG Mobile becomes the Desktop on the phone (unattended night run)",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/NIGHT-LOG.md",
+   "s": "mobile",
+   "t": "Night log — 2026-11-12 (NIGHT-DESKTOP.md)",
+   "d": "2026-11-12",
    "i": 1
+  },
+  {
+   "p": "docs/mobile/NIGHT-REPORT-2026-11-12.md",
+   "s": "mobile",
+   "t": "Night report — 2026-11-12 (NIGHT-DESKTOP.md)",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/PARITY.md",
+   "s": "mobile",
+   "t": "PARITY — the VRG Desktop, unit by unit, on VRG Mobile",
+   "d": "2026-11-15",
+   "i": 2
   },
   {
    "p": "docs/mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile build pack",
-   "d": "2026-11-07",
+   "d": "2026-11-12",
    "i": 1
   },
   {
@@ -2633,21 +2724,21 @@
    "p": "docs/mobile/WP/M11.md",
    "s": "mobile",
    "t": "M11 · Indítópult (`launch`): START.cmd from the phone",
-   "d": "2026-11-06",
+   "d": "2026-11-11",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M12.md",
    "s": "mobile",
    "t": "M12 · Átadás (`drop`): the file board between the phone and the PC",
-   "d": "2026-11-06",
+   "d": "2026-11-12",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M13.md",
    "s": "mobile",
    "t": "M13 · Képernyő (`screen`): the PC's screen, live on the phone",
-   "d": "2026-11-06",
+   "d": "2026-11-12",
    "i": 0
   },
   {
@@ -2661,7 +2752,7 @@
    "p": "docs/mobile/WP/M16.md",
    "s": "mobile",
    "t": "M16 · Kit (`kit`): the VRG UI Kit's look on the phone",
-   "d": "2026-11-06",
+   "d": "2026-11-12",
    "i": 0
   },
   {
@@ -2672,10 +2763,52 @@
    "i": 0
   },
   {
+   "p": "docs/mobile/WP/M18.md",
+   "s": "mobile",
+   "t": "M18 · Archívum (`archive`): the Artifact Archive on the phone",
+   "d": "2026-11-11",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M19.md",
+   "s": "mobile",
+   "t": "M19 · Asztal (`desk`): the VRG Desktop's frame on the phone, plus the orientation toggle",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
    "p": "docs/mobile/WP/M2.md",
    "s": "mobile",
    "t": "M2 · QR párosítás (`pair`): scan the PC's QR, become a trusted phone",
    "d": "2026-10-30",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M20.md",
+   "s": "mobile",
+   "t": "M20 · Lapok (`sheets`): the Desktop's sheets on the phone",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M21.md",
+   "s": "mobile",
+   "t": "M21 · Alkalmazások (`apps`): the Desktop's HTML apps on the phone",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M22.md",
+   "s": "mobile",
+   "t": "M22 · Claude (`claude`): the Claude app and the PC's Remote Control sessions",
+   "d": "2026-11-12",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M23.md",
+   "s": "mobile",
+   "t": "M23 · PC ablakok (`pcwin`): the PC's work folders, read-only, through the relay",
+   "d": "2026-11-12",
    "i": 0
   },
   {
@@ -2710,14 +2843,14 @@
    "p": "docs/mobile/WP/M7.md",
    "s": "mobile",
    "t": "M7 · Hálózat (`net`): Bluetooth, WiFi relay, hotspot, tethering",
-   "d": "2026-10-29",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M8.md",
    "s": "mobile",
    "t": "M8 · Localhost (`ports`): the PC's local servers on the phone and on the desktop",
-   "d": "2026-11-05",
+   "d": "2026-11-12",
    "i": 0
   },
   {
@@ -2733,6 +2866,48 @@
    "t": "M7 research: what an ordinary app can do with the phone's links (Android 9–15)",
    "d": "2026-11-09",
    "i": 0
+  },
+  {
+   "p": "docs/notes/ANALYSIS.hu.md",
+   "s": "docs",
+   "t": "VRG Jegyzetek — piacelemzés és moduláris funkciólista",
+   "d": "2026-11-11",
+   "i": 3
+  },
+  {
+   "p": "docs/notes/ANALYSIS.md",
+   "s": "docs",
+   "t": "VRG Jegyzetek (VRG Notes) — market analysis and modular feature list",
+   "d": "2026-11-11",
+   "i": 3
+  },
+  {
+   "p": "docs/notes/EDITOR.hu.md",
+   "s": "docs",
+   "t": "VRG MindMD — saját Markdown-szerkesztő a Jegyzetek mellett, és a bővítménytérkép",
+   "d": "2026-11-11",
+   "i": 2
+  },
+  {
+   "p": "docs/notes/EDITOR.md",
+   "s": "docs",
+   "t": "VRG MindMD — our own Markdown editor beside Jegyzetek, and the plugin map",
+   "d": "2026-11-11",
+   "i": 2
+  },
+  {
+   "p": "docs/notes/SIMPLE.hu.md",
+   "s": "docs",
+   "t": "VRG Jegyzetek — Felszín és gépház",
+   "d": "2026-11-11",
+   "i": 3
+  },
+  {
+   "p": "docs/notes/SIMPLE.md",
+   "s": "docs",
+   "t": "VRG Jegyzetek — Felszín és gépház (Surface and engine room)",
+   "d": "2026-11-11",
+   "i": 3
   },
   {
    "p": "docs/research/2026-10-19_cad-sources-and-mcp.md",
@@ -2791,9 +2966,23 @@
    "i": 0
   },
   {
+   "p": "docs/research/2026-11-14_starred-repos.md",
+   "s": "docs",
+   "t": "Starred repos of 2026-11-13: what to engineer back into VRG, research note, 2026-11-14",
+   "d": "2026-11-15",
+   "i": 0
+  },
+  {
    "p": "docs/research/reports/Kódváros live workspace and GitWorld.md",
    "s": "docs",
    "t": "Wire Kódváros into a living GitWorld",
+   "d": "2026-11-16",
+   "i": 0
+  },
+  {
+   "p": "docs/research/reports/VRG Map - detailed maps, 3D city and field layers.md",
+   "s": "docs",
+   "t": "VRG Map — detailed maps, a 3D city and field layers (research)",
    "d": "2026-11-09",
    "i": 0
   },
@@ -2801,42 +2990,42 @@
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/01_our_assets.md",
    "s": "docs",
    "t": "Our assets on this computer for a live Kódváros workspace / GitWorld",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/02_workspace_architecture.md",
    "s": "docs",
    "t": "Kódváros as a live local workspace: architectures and building blocks",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/03_windows_live_telemetry.md",
    "s": "docs",
    "t": "03 · Windows live telemetry for the Land (Kódváros live workspace)",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/04_overlay_os_layer.md",
    "s": "docs",
    "t": "04 — The overlay \"OS\" layer on Windows 10 Pro",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/05_gitworld_map_and_repos.md",
    "s": "docs",
    "t": "05 — GitWorld map, implementation methods for §7.1/§7.2, and the repo map",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/06_media_rea_candidates.md",
    "s": "docs",
    "t": "06 — Media REA candidates for the Kódváros live workspace / overlay OS",
-   "d": "2026-11-09",
+   "d": "2026-11-16",
    "i": 0
   },
   {
@@ -2923,6 +3112,7 @@
     "line": 82,
     "text": "{code:'PAN',role:'sys:HMI',n:'Kezelőpanel',cat:'device',mount:'wall',h:1450,topo:'star',from:'rbx',vars:[ /*r h*/"
    },
+   "note": "Same entry-point label, two heights: BRIDGE catalogue C_entry h:1400 (eloszoba) vs Planner endpoints PAN default h:1450 with entry variant. May be a device default vs a room-specific mounting height; scope unclear.",
    "ai": 52
   },
   {
@@ -2955,6 +3145,48 @@
    "ai": 249
   },
   {
+   "id": "df4ea238",
+   "type": "dark",
+   "kind": "kérdés",
+   "stage": "candidate",
+   "sec": "docs",
+   "title": "Nyitott kérdés: DESKU-Q21",
+   "a": {
+    "p": "docs/desktop/ARCHITECTURE.md",
+    "line": 68,
+    "text": "finished things only: a User item that is still `dev` or `planned` appears from Dev on (DESKU-Q21). Only things you can open have a"
+   },
+   "ai": 299
+  },
+  {
+   "id": "1b07c391",
+   "type": "dark",
+   "kind": "kérdés",
+   "stage": "candidate",
+   "sec": "docs",
+   "title": "Nyitott kérdés: DESKU-Q08",
+   "a": {
+    "p": "docs/desktop/DECISIONS.md",
+    "line": 62,
+    "text": "## DESKU-Q08 — How HTML apps open inside the shell"
+   },
+   "ai": 301
+  },
+  {
+   "id": "61b74b07",
+   "type": "dark",
+   "kind": "kérdés",
+   "stage": "candidate",
+   "sec": "docs",
+   "title": "Nyitott kérdés: DESKU-Q20",
+   "a": {
+    "p": "docs/desktop/DECISIONS.md",
+    "line": 143,
+    "text": "## DESKU-Q20 — Only things you can open have a level"
+   },
+   "ai": 301
+  },
+  {
    "id": "df586a1f",
    "type": "dark",
    "kind": "kérdés",
@@ -2966,7 +3198,7 @@
     "line": 225,
     "text": "## 9. Open MCT — inside or beside? (HUB-Q12)"
    },
-   "ai": 300
+   "ai": 309
   },
   {
    "id": "e7e24076",
@@ -2980,7 +3212,7 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 344
+   "ai": 353
   },
   {
    "id": "0ceab8cf",
@@ -2994,7 +3226,7 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 344
+   "ai": 353
   },
   {
    "id": "09c7a64b",
@@ -3008,7 +3240,7 @@
     "line": 347,
     "text": "- **OMCT-Q5 · Dictionary delivery.** A: Planner exports `vrg-bridge-dict.json` **and** an Open MCT"
    },
-   "ai": 380
+   "ai": 405
   },
   {
    "id": "bff38ee9",
@@ -3187,7 +3419,7 @@
    "a": {
     "p": "tools/brief-state.js",
     "line": 1,
-    "text": "8 problem(s). Run node tools/brief-state.js for stale state."
+    "text": "12 problem(s). Run node tools/brief-state.js for stale state."
    }
   },
   {
@@ -3195,13 +3427,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "50 napja érintetlen: VRG Inventory — core item database",
+   "title": "57 napja érintetlen: VRG Inventory — core item database",
    "a": {
     "p": "Inventory/README.md",
     "line": 1,
     "text": "VRG Inventory — core item database"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
    "ai": 78
   },
@@ -3210,13 +3442,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "50 napja érintetlen: AI-CONTEXT — vrg-inventory",
+   "title": "57 napja érintetlen: AI-CONTEXT — vrg-inventory",
    "a": {
     "p": "Inventory/docs/AI-CONTEXT.md",
     "line": 1,
     "text": "AI-CONTEXT — vrg-inventory"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
    "ai": 79
   },
@@ -3225,13 +3457,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "50 napja érintetlen: VRG Inventory — development plan",
+   "title": "57 napja érintetlen: VRG Inventory — development plan",
    "a": {
     "p": "Inventory/docs/DEV-PLAN.md",
     "line": 1,
     "text": "VRG Inventory — development plan"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
    "ai": 80
   },
@@ -3240,13 +3472,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "50 napja érintetlen: Sources and extraction rules",
+   "title": "57 napja érintetlen: Sources and extraction rules",
    "a": {
     "p": "Inventory/docs/SOURCES.md",
     "line": 1,
     "text": "Sources and extraction rules"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
    "ai": 81
   },
@@ -3255,13 +3487,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: VARLER — hordozható munkakörnyezet",
+   "title": "60 napja érintetlen: VARLER — hordozható munkakörnyezet",
    "a": {
     "p": "Planner/README.md",
     "line": 1,
     "text": "VARLER — hordozható munkakörnyezet"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 84
   },
@@ -3270,13 +3502,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: VARLER — setup from zero",
+   "title": "60 napja érintetlen: VARLER — setup from zero",
    "a": {
     "p": "Planner/SETUP.md",
     "line": 1,
     "text": "VARLER — setup from zero"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 85
   },
@@ -3285,13 +3517,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: Varler Planner — State of the Project",
+   "title": "60 napja érintetlen: Varler Planner — State of the Project",
    "a": {
     "p": "Planner/STATE.md",
     "line": 1,
     "text": "Varler Planner — State of the Project"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 86
   },
@@ -3300,28 +3532,43 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: Varler Planner",
+   "title": "60 napja érintetlen: Varler Planner",
    "a": {
     "p": "Planner/projects/varler-planner/README.md",
     "line": 1,
     "text": "Varler Planner"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 90
+  },
+  {
+   "id": "8dfd1eb5",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "planner",
+   "title": "51 napja érintetlen: 1.1 backlog — triaged",
+   "a": {
+    "p": "Planner/projects/varler-planner/docs/1.1_backlog.md",
+    "line": 1,
+    "text": "1.1 backlog — triaged"
+   },
+   "age": 51,
+   "keystone": false,
+   "ai": 91
   },
   {
    "id": "397b83c4",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol",
+   "title": "60 napja érintetlen: Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol",
    "a": {
     "p": "Planner/projects/varler-planner/docs/2_0_architecture.md",
     "line": 1,
     "text": "Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 92
   },
@@ -3330,28 +3577,43 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: Varler pendrive — állapot",
+   "title": "60 napja érintetlen: Varler pendrive — állapot",
    "a": {
     "p": "Planner/projects/varler-planner/docs/MANIFEST.md",
     "line": 1,
     "text": "Varler pendrive — állapot"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 95
+  },
+  {
+   "id": "a99f2ef1",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "planner",
+   "title": "51 napja érintetlen: Browser verification checklist — everything jsdom could not confirm",
+   "a": {
+    "p": "Planner/projects/varler-planner/docs/browser_verification_checklist.md",
+    "line": 1,
+    "text": "Browser verification checklist — everything jsdom could not confirm"
+   },
+   "age": 51,
+   "keystone": false,
+   "ai": 97
   },
   {
    "id": "92744015",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "50 napja érintetlen: Library scouting — candidates, triaged",
+   "title": "57 napja érintetlen: Library scouting — candidates, triaged",
    "a": {
     "p": "Planner/projects/varler-planner/docs/library-scouting.md",
     "line": 1,
     "text": "Library scouting — candidates, triaged"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
    "ai": 98
   },
@@ -3360,13 +3622,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
+   "title": "60 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
    "a": {
     "p": "Planner/projects/varler-planner/docs/planner_1.0_review.md",
     "line": 1,
     "text": "Domoszló Planner — architecture, UI and workflow review"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 107
   },
@@ -3375,13 +3637,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "53 napja érintetlen: QR subsystem — design, integration, verification",
+   "title": "60 napja érintetlen: QR subsystem — design, integration, verification",
    "a": {
     "p": "Planner/projects/varler-planner/docs/qr-subsystem.md",
     "line": 1,
     "text": "QR subsystem — design, integration, verification"
    },
-   "age": 53,
+   "age": 60,
    "keystone": false,
    "ai": 108
   },
@@ -3390,13 +3652,13 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "46 napja érintetlen: Wiring pipeline — design",
+   "title": "53 napja érintetlen: Wiring pipeline — design",
    "a": {
     "p": "Planner/projects/varler-planner/docs/wiring_pipeline.md",
     "line": 1,
     "text": "Wiring pipeline — design"
    },
-   "age": 46,
+   "age": 53,
    "keystone": false,
    "ai": 213
   },
@@ -3405,30 +3667,30 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "docs",
-   "title": "50 napja érintetlen: Components — single-file / offline, and local tooling",
+   "title": "57 napja érintetlen: Components — single-file / offline, and local tooling",
    "a": {
     "p": "docs/components-offline.md",
     "line": 1,
     "text": "Components — single-file / offline, and local tooling"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
-   "ai": 277
+   "ai": 278
   },
   {
    "id": "6e2b6d09",
    "type": "frozen",
    "kind": "alvó",
    "sec": "docs",
-   "title": "50 napja érintetlen: Services — server builds, and what running them actually costs",
+   "title": "57 napja érintetlen: Services — server builds, and what running them actually costs",
    "a": {
     "p": "docs/services-server.md",
     "line": 1,
     "text": "Services — server builds, and what running them actually costs"
    },
-   "age": 50,
+   "age": 57,
    "keystone": false,
-   "ai": 394
+   "ai": 421
   },
   {
    "id": "963f0125",
