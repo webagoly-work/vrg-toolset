@@ -41,6 +41,7 @@ Map\data\addresses.json (offline index)   ─┘                            Map/
   | `település` | the settlement centre (outside Budapest + Pest county the index has settlements only) | 1.5 km |
   | `nincs` | no place yet: listed in the legend, no pin | — |
 
+- `area` is the coarse filter value: a Budapest district (from the postcode) or the settlement, never finer.
 - Totals come from `osszegek.csv`: the latest-dated file of the job, duplicate rows once.
 - Related codes come from the register ("BK2 előzménye") or `kapcsolodik` in `helyszinek.json`.
 - A folder name that points at a person can be replaced by `cimke` in `helyszinek.json` (JK1 does).
@@ -63,7 +64,9 @@ To see who opened it: `type H:\VRG\Full\jobs\_elozmenyek\helyek-log.jsonl` (one 
 
 ## Ways in
 
-- **VRG Térkép**: START **M** (server **H**, `:8802`), then **J** or the *Munkák* button.
+- **VRG Térkép**: START **M** (server **H**, `:8802`), then **J** or the *Munkák* button. The legend
+  filters by status, year and area; **D** density, **I** timeline, **,** / **.** step through the jobs
+  (the look and the controls: `docs/map/REFINE.md`).
 - **`?job=CODE`**: `http://localhost:8802/?job=BK2` turns the layer on and flies to the job, tilted.
   Job codes are also found by the search box.
 - **VRG Asztal → Munkák**: the 📍 at the end of each job row (`desktop.mapJob`, job codes only).
@@ -90,7 +93,7 @@ On the map a draft pin has a yellow rim and its card says *vázlat*.
 no-store, OTG) on invented addresses and jobs only. `node Map/test/make-fixture-jobs.js` writes 31
 invented jobs to `Map/test/fixtures/jobs` for browser checks: the launch config `terkep-fixture`
 serves them on `:8803` (`VRG_JOBS_DIR`). `Mobile/tests/relay-ports.js` checks the relay header;
-`Dashboard/test/run.js WP-41` the Asztal pins (with `VRG_DESK_HOME` pointing at a throwaway folder).
+`Dashboard/test/run.js WP-41` the Asztal pins (with `VRG_DESK_HOME` pointing at a throwaway folder). `node Map/test/shot.js <url> <png> [--dark] [--mobile]` takes a headless screenshot for visual checks.
 
 ## Open
 

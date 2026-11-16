@@ -47,6 +47,7 @@ to `H:\VRG\Full\tools\pmtiles`.
   "Keresés az interneten" row asks OSM Nominatim (online, one request a second).
 - Picking a result flies there tilted and turned, so terrain and building heights read at once.
 - Keys: `/` search · `3` 3D buildings · `T` terrain · `J` jobs · `N` north · `G` Google view · `Esc` close.
+  With the jobs on: `D` density · `I` timeline · `,` / `.` previous / next job · job codes in the search box.
 - URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?q=…` searches on load; `?embed=1` is the slim
   UI for embedding in Kapu or the Planner; `?job=BK2` opens the job layer at that job.
 
