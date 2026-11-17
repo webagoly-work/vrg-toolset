@@ -13295,6 +13295,82 @@ const PLANNER_LINK = (function () {
   const commands = Object.create(null); // cmd id  -> fn(payload)
   const listeners = [];                 // status observers
 
+  /* ---- the phone relay (VRG Mobile WP M7, D-9 = A) ----------------------
+     The phone can run the relay itself (Hálózat → Telefon relé). It lets only paired
+     PCs in: the first time this tab sends the code shown on the phone with a WebCrypto
+     P-256 key, later it signs the relay's challenge. Open the Planner with
+     ?relay=<phone address>[&pair=<code>], or call PLANNER_LINK.connectPhone(addr, code).
+     The same block as Kódváros' 36-link.js (Mobile/tests/relay-phone-link.js checks
+     both copies); the PC relay never sends relay:'phone', so nothing changes there. */
+
+  /* phone-relay auth: begin */
+  function vrgPhoneRelayAuth(send, app, firstCode) {
+    const S = (typeof crypto !== 'undefined' && crypto.subtle) || null;
+    const KEY = 'vrg.phoneRelay.';
+    const mem = {};
+    let code = firstCode || null, pending = null;
+    const b64 = buf => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+    const load = pc => { try { const s = localStorage.getItem(KEY + pc); if (s) return JSON.parse(s); } catch (e) { } return mem[pc] || null; };
+    const save = (pc, v) => { mem[pc] = v; try { if (v) localStorage.setItem(KEY + pc, JSON.stringify(v)); else localStorage.removeItem(KEY + pc); } catch (e) { } };
+    const ALG = { name: 'ECDSA', namedCurve: 'P-256' };
+    async function onWelcome(p) {
+      const pc = p.pc && p.pc.id;
+      if (!S || !pc || !p.challenge) return 'no-crypto';
+      const known = load(pc);
+      if (known) {
+        const k = await S.importKey('jwk', known.jwk, ALG, false, ['sign']);
+        const sig = await S.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, new TextEncoder().encode('vrg-relay-auth:1:' + p.challenge + ':' + known.id));
+        send('auth', { id: known.id, sig: b64(sig) });
+        return 'auth';
+      }
+      if (!code && typeof prompt === 'function') code = prompt('A telefon reléje párosítást kér.\nÍrd be a kódot (telefonon: Hálózat → Telefon relé → Új párosító kód):') || null;
+      if (!code) return 'no-code';
+      const kp = await S.generateKey(ALG, true, ['sign', 'verify']);
+      pending = { pc, jwk: await S.exportKey('jwk', kp.privateKey) };
+      send('pair', { code, device: app + ' · ' + ((typeof navigator !== 'undefined' && navigator.platform) || 'PC'), pub: b64(await S.exportKey('spki', kp.publicKey)) });
+      code = null;
+      return 'pair';
+    }
+    return {
+      /** A message from the relay. Returns a promise for 'welcome', true when it was a pairing message, else false. */
+      onRelay(m) {
+        const p = (m && m.payload) || {};
+        if (m.type === 'welcome' && p.relay === 'phone') return onWelcome(p).catch(e => 'error: ' + e.message);
+        if (m.type === 'paired') {
+          if (p.ok && pending && p.id) save(pending.pc, { id: p.id, jwk: pending.jwk });
+          else if (!p.ok && typeof console !== 'undefined') console.warn('Telefon relé párosítás:', p.reason);
+          pending = null;
+          return true;
+        }
+        if (m.type === 'trust') {
+          const pc = p.pc && p.pc.id, known = pc && load(pc);
+          if (!p.ok && known && p.id === known.id) save(pc, null);    // the phone forgot this PC
+          return true;
+        }
+        return false;
+      },
+      setCode(c) { code = c || null; },
+    };
+  }
+  /* phone-relay auth: end */
+
+  const phoneAuth = vrgPhoneRelayAuth(function (type, payload) { return sendTo(type, payload, 'relay'); }, 'Planner',
+    (typeof location !== 'undefined' && location.search) ? new URLSearchParams(location.search).get('pair') : null);
+
+  function sendTo(type, payload, to) {
+    if (!ws || ws.readyState !== 1) return false;
+    const m = envelope(type, payload); m.to = to;
+    try { ws.send(JSON.stringify(m)); stats.out++; return true; } catch (e) { return false; }
+  }
+
+  /** "192.168.43.1" or "192.168.43.1:47292" (the phone shows it) -> connected, the code kept for the welcome. */
+  function connectPhone(addr, code) {
+    const a = String(addr || '').trim().replace(/^wss?:\/\//, '').replace(/\/.*$/, '');
+    if (!a) return false;
+    if (code) phoneAuth.setCode(code);
+    return connect('ws://' + (/:\d+$/.test(a) ? a : a + ':47291'));
+  }
+
   /* ---- envelope -------------------------------------------------------- */
 
   function envelope(type, payload) {
@@ -13388,6 +13464,7 @@ const PLANNER_LINK = (function () {
     // legacy one-way clients send bare messages with no envelope
     if (m.from == null && m.type) m = { v: 0, from: 'phone', type: m.type, payload: m, legacy: true };
     if (m.from === ROLE) return;                        // our own echo
+    if (m.from === 'relay' && phoneAuth.onRelay(m)) return;   // the phone relay's pairing (WP M7)
 
     if (m.type === 'hello') {
       peer = {
@@ -13538,6 +13615,7 @@ const PLANNER_LINK = (function () {
 
   const api = {
     connect: connect,
+    connectPhone: connectPhone,
     disconnect: disconnect,
     send: send,
     on: on,
@@ -13556,6 +13634,11 @@ const PLANNER_LINK = (function () {
 
   defineDefaults();
   if (typeof window !== 'undefined') window.PLANNER_LINK = api;
+  // ?relay=<address> opens the link at once (the phone relay, or any relay by address)
+  try {
+    const r = (typeof location !== 'undefined' && location.search) ? new URLSearchParams(location.search).get('relay') : null;
+    if (r) setTimeout(function () { connectPhone(r); }, 0);
+  } catch (e) { }
   return api;
 })();
 // 07b-phone-camera.js — Varler Planner
@@ -15842,6 +15925,87 @@ STK_OVERLAY.push(()=>{if(!wfpOn())return '';const z=dz(state.active,0),B=(x,y)=>
   return s;});
 
 registerActions([_mode('room','Helyiség-toll','⬚',null,'Helyiségek pontról pontra (45°, 100 mm) vagy téglalappal; közös fal húzása, kettévágás.')]);
+
+// On site the phone sketches the flat roughly (rectangles or a lineout), takes some of the sizes, places the
+// installation points, circuits, the Elosztó and the nyomvonal. Its solver (Mobile/android/sketch-core, Solver.kt)
+// turns that into millimetres and writes a PACKAGE: {kind:'vrg-sketch', v:1, name, level, sketch:<raw>,
+// plan:{center, report, data:{floors, devices, circuits, paths, notes, seq}}} — the Planner's own records with ids.
+// "Terv betöltése fájlból" recognises it here and opens it as a new project; nothing else in the Planner changes.
+//
+//   rooms come as Helyiség-toll records (stage 'outline', clear: inner sizes), so Falak / Padlók létrehozása
+//   (WP-F3 / F4) build them as for a pen-drawn room. Every record carries sk {src:'vazlat', id, …}.
+//
+// THE MARK. A size the sketch did not measure and could not derive from other sizes took the sketch's proportions:
+// fl.sk.est lists those edges. They are drawn here as an orange dashed line with "≈ <length>" and the room gets a
+// faint orange fill and "≈ becsült méret", on screen and in print, until "Vázlat: méretek ellenőrizve" clears them.
+// A floor without sk.est draws nothing new, so every golden render stays byte-identical. Prefix: ski.
+
+const SKI_COL='#d0701e';
+function skiIs(o){return !!(o&&o.kind==='vrg-sketch'&&o.plan&&o.plan.data&&typeof o.plan.data==='object');}
+
+// the package → a sessionObj-shaped payload (what applyProjectData loads)
+function skiPayload(o){
+  const b=blankBuilding();b.name=o.name||'Vázlat';
+  const c=o.plan.center;if(Array.isArray(c)&&c.length>=2&&isFinite(c[0])&&isFinite(c[1]))b.center=[+c[0],+c[1]];
+  const d=JSON.parse(JSON.stringify(o.plan.data));
+  UKEYS.forEach(k=>{if(!Array.isArray(d[k]))d[k]=[];});
+  // a route needs one section per segment (computeBOM reads pa.sections[si]); the Planner's own default build
+  d.paths.forEach(pa=>{if(!pa||!Array.isArray(pa.nodes))return;if(!Array.isArray(pa.sections))pa.sections=[];
+    for(let i=pa.sections.length;i<pa.nodes.length-1;i++)pa.sections.push({build:'sull_gege',circuit:null});});
+  const lvl=ORD.indexOf(o.level)>=0?o.level:'ground';
+  // an Elosztó from the phone has no footprint yet: the Planner's own board defaults (09-menus)
+  d.devices.forEach(dv=>{if(dv&&dv.type==='board'){const z=boardZ();if(dv.h==null||dv.sk)dv.h=z;dv.z=z;
+    if(dv.rw==null)dv.rw=BOARD_RW;if(dv.rd==null)dv.rd=BOARD_RD;}});
+  return {v:1,state:{active:lvl},data:d,building:b};}
+
+// counts for the HUD line
+function skiSummary(o){const d=o.plan.data,r=o.plan.report||{};
+  const n=k=>Array.isArray(d[k])?d[k].length:0;
+  const est=(d.floors||[]).reduce((t,f)=>t+((f&&f.sk&&Array.isArray(f.sk.est))?f.sk.est.length:0),0);
+  let s=`Vázlat betöltve: ${n('floors')} helyiség, ${n('devices')} pont, ${n('circuits')} áramkör, ${n('paths')} nyomvonal, ${n('notes')} jegyzet`;
+  if(est)s+=` · ${est} becsült fal (narancs ≈)`;
+  if(Array.isArray(r.conflicts)&&r.conflicts.length)s+=` · ${r.conflicts.length} ellentmondó méret`;
+  return s;}
+
+function skiImport(o){const payload=skiPayload(o);
+  const id=saveProject((o.name||'Vázlat')+' (vázlat)');const ix=loadProjIndex();ix[id].data=payload;saveProjIndex(ix);
+  loadProject(id);$('hud').textContent=skiSummary(o);return id;}
+
+// ---- the mark ---------------------------------------------------------------------------------------------------------
+function skiEst(fl){return fl&&fl.sk&&Array.isArray(fl.sk.est)&&fl.sk.est.length&&fl.poly&&fl.poly.length>=3?fl.sk.est:null;}
+function skiFmt(mm){return String(Math.round(mm)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+function skiMarkSvg(){let s='';
+  for(const l of ORD){if(!state.levels[l])continue;const z=dz(l,0);
+    data.floors.forEach((fl,i)=>{const est=skiEst(fl);if(!est||fl.level!==l||!layerShows(fl,'build'))return;
+      if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;
+      const P=fl.poly,n=P.length;
+      s+=`<polygon class="ski-room" points="${p2b(P.map(p=>[p[0],p[1],z]))}" fill="${SKI_COL}" fill-opacity="0.07" stroke="none"/>`;
+      est.forEach(k=>{if(!(k>=0&&k<n))return;const a=P[k],b=P[(k+1)%n];
+        s+=`<line class="ski-edge" x1="${planToBase(a[0],a[1],z)[0].toFixed(1)}" y1="${planToBase(a[0],a[1],z)[1].toFixed(1)}" x2="${planToBase(b[0],b[1],z)[0].toFixed(1)}" y2="${planToBase(b[0],b[1],z)[1].toFixed(1)}" stroke="${SKI_COL}" stroke-width="${vsP(2.6)}" stroke-dasharray="${vsDash('3 4')}"/>`;
+        if(l!==state.active)return;
+        const m=planToBase((a[0]+b[0])/2,(a[1]+b[1])/2,z);
+        s+=`<text class="ski-len" x="${m[0].toFixed(1)}" y="${(m[1]+vsP(14)).toFixed(1)}" font-size="${vsP(10)}" text-anchor="middle" fill="${SKI_COL}" font-weight="700" stroke="#fff" stroke-width="${vsP(3)}" paint-order="stroke">≈ ${skiFmt(Math.hypot(b[0]-a[0],b[1]-a[1]))}</text>`;});
+      if(l!==state.active)return;
+      const c=wfpCentroid(P),cb=planToBase(c[0],c[1],z);
+      s+=`<text class="ski-tag" x="${cb[0].toFixed(1)}" y="${(cb[1]+vsP(25)).toFixed(1)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="${SKI_COL}" font-weight="700" stroke="#fff" stroke-width="${vsP(3)}" paint-order="stroke">≈ becsült méret</text>`;});}
+  return s;}
+// like the Helyiség-toll's outline: the scene normally, the overlay in the clean styles (they skip STK_SCENE)
+STK_SCENE.push(()=>wfpCleanStyle()?'':skiMarkSvg());
+STK_OVERLAY.push(()=>wfpCleanStyle()?skiMarkSvg():'');
+
+// the user checked the sizes on the drawing: the marks go (one undo step)
+function skiConfirm(level){let n=0;
+  const fls=data.floors.filter(fl=>skiEst(fl)&&(!level||fl.level===level));if(!fls.length)return 0;
+  pushUndo(UNDO_SCOPE.floor);
+  fls.forEach(fl=>{n+=fl.sk.est.length;fl.sk.der=(fl.sk.der||[]).concat(fl.sk.est);fl.sk.est=[];fl.sk.checked=true;});
+  draw();scheduleSave&&scheduleSave();return n;}
+function skiHasMarks(){return data.floors.some(fl=>skiEst(fl));}
+
+registerActions([{id:'sketch.confirm',label:'Vázlat: méretek ellenőrizve',icon:'≈',group:'Helyiség',
+  alias:'vazlat sketch becsult meret ellenorizve inferred estimate mobile',
+  hint:'A telefonos vázlat becsült (≈) falméretei ezen a szinten ellenőrizve: a narancs jelölés eltűnik.',
+  need:'Nincs becsült méret ezen a szinten.',when:()=>data.floors.some(fl=>skiEst(fl)&&fl.level===state.active),
+  run:()=>{const n=skiConfirm(state.active);$('hud').textContent=n?`${n} becsült fal ellenőrzöttnek jelölve.`:'Nincs becsült méret.';}}]);
 
 // The pen (08c) stores each room's CLEAR outline — the inner sizes the user measured (Q-F01 = A, answered 2026-10-14).
 // Create Walls keeps every one of those sizes:
@@ -23540,6 +23704,7 @@ function downloadProject(id){const ix=loadProjIndex();const p=id?ix[id]:projSnap
   const payload={format:'varler-planner',version:1,name:p.name,saved:new Date(p.ts||Date.now()).toISOString(),project:p.data};
   download((p.name||'terv').replace(/[^\w\-]+/g,'_')+'.vplan.json',JSON.stringify(payload,null,2));}
 function importProjectFile(file){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
+  if(typeof skiIs==='function'&&skiIs(o)){skiImport(o);return;}   // a VRG Mobile Vázlat package (08ca)
   const payload=o.project?o.project:(o.data?o:{building:o.building||o,data:o.data||{}});
   const name=o.name||(payload.building&&payload.building.name)||'Importált terv';
   const id=saveProject(name);const ix=loadProjIndex();ix[id].data=payload;saveProjIndex(ix);
