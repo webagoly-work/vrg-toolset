@@ -3,7 +3,7 @@
 # summary and the uncommitted file count. NO prompt text and NO file contents. Stop is throttled (default 30 min);
 # SessionEnd always posts. It never interrupts the person at the PC and never fails the session (always exit 0).
 # Standalone on purpose (no kit library). PowerShell 5.1, ASCII only.
-param([string]$Event = 'Stop')
+param([Alias('Event')][string]$HookEvent = 'Stop')
 
 # Pure: is a brief due now? The session start counts as the last brief, so the first Stop waits the full interval.
 function Test-TermBriefDue([string]$EventName, [string]$LastIso, [datetime]$Now, [int]$Minutes) {
@@ -79,12 +79,12 @@ function Invoke-TermBriefHook {
         $last = [string]$s.started
         if (Test-Path -LiteralPath $bf) { $last = ([System.IO.File]::ReadAllText($bf)).Trim() }
         $now = (Get-Date).ToUniversalTime()
-        if (-not (Test-TermBriefDue $Event $last $now ([int]$s.briefMinutes))) { exit 0 }
+        if (-not (Test-TermBriefDue $HookEvent $last $now ([int]$s.briefMinutes))) { exit 0 }
         $cwd = ''
         if ($raw) { try { $cwd = [string](ConvertFrom-Json -InputObject $raw).cwd } catch { } }
         if (-not $cwd) { $cwd = [string]$s.folder }
         $info = Get-TermBriefInfo $cwd ([string]$s.startHead) ([string]$s.started)
-        $text = Get-TermBriefText $Event $info ($now.ToString('yyyy-MM-dd HH:mm') + 'Z')
+        $text = Get-TermBriefText $HookEvent $info ($now.ToString('yyyy-MM-dd HH:mm') + 'Z')
         $tmp = Join-Path (Split-Path -Parent $sf) ('terminal-brief-' + [Guid]::NewGuid().ToString('N') + '.json')
         $json = ConvertTo-Json -InputObject @{ body = $text } -Compress
         [System.IO.File]::WriteAllText($tmp, $json, (New-Object System.Text.UTF8Encoding($false)))
