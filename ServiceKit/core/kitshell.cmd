@@ -7,6 +7,8 @@ set "KIT=%~dp0.."
 for %%I in ("%KIT%") do set "KIT=%%~fI"
 set "T=%KIT%\tools"
 set "KITDATA=%KIT%\data"
+rem Inside Windows Sandbox the kit is mapped read-only; the Terminal passes a writable data folder.
+if defined SK_DATA set "KITDATA=%SK_DATA%"
 
 if not exist "%KITDATA%\home" mkdir "%KITDATA%\home" >nul 2>&1
 if not exist "%KITDATA%\npm-global" mkdir "%KITDATA%\npm-global" >nul 2>&1
@@ -29,6 +31,12 @@ for %%D in (
   "%T%\python\tools"
   "%T%\python\tools\Scripts"
   "%T%\pwsh"
+  "%T%\gh\bin"
+  "%T%\ripgrep"
+  "%T%\fd"
+  "%T%\jq"
+  "%T%\uv"
+  "%T%\claude-code"
   "%T%\vscode\bin"
   "%T%\notepadpp"
   "%T%\sevenzip"

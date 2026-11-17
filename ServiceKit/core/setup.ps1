@@ -262,6 +262,11 @@ function Install-File([string]$Id, [string]$File, [string]$Format, $Src, [string
     $stage = Join-Path $ToolsDir ('_staging\' + $Id)
     if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
     Expand-KitArchive $File $stage
+    if ($Format -eq 'tgz') {
+        # 7-Zip unpacks .tgz to a .tar first; unpack that too (npm packages keep their files under package\).
+        $tars = @(Get-ChildItem -LiteralPath $stage -Force | Where-Object { -not $_.PSIsContainer -and $_.Name -match '\.tar$' })
+        if ($tars.Count -eq 1) { Expand-KitArchive $tars[0].FullName $stage; Remove-Item -LiteralPath $tars[0].FullName -Force }
+    }
     $root = $stage
     if ((Get-Key $Src 'strip' $true) -ne $false) { $root = Get-FlatRoot $stage }
     Merge-Dir $root $dest
@@ -384,7 +389,13 @@ foreach ($id in $sel) {
                 Invoke-KitDownload $res['url'] $file $cb $ua
                 Write-Progress -Activity $name -Completed
                 $versions += $res['file']
-                try { $hashes += (Get-KitHash $file) } catch { }
+                $hx = ''; try { $hx = Get-KitHash $file; $hashes += $hx } catch { }
+                # Pinned sources carry the publisher's SHA-256; a mismatch stops the install.
+                $want = ([string](Get-Key $src 'sha256' '')).ToLower()
+                if ($want -and $hx -ne $want) {
+                    Remove-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+                    throw ('SHA-256 mismatch: expected ' + $want + ', got ' + $hx)
+                }
             }
             $Prog['current']['phase'] = 'extract'; Save-Progress -Now
             Say ("    " + (T 'extracting') + '...') 'DarkGray'

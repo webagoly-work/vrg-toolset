@@ -1392,6 +1392,9 @@
       "en": "Unix-like terminal on Windows."
      }
     }
+   ],
+   "groups": [
+    "agent-workshop"
    ]
   },
   {
@@ -1424,7 +1427,10 @@
     "hu": "JavaScript futtatókörnyezet és npm, a Kit Shellből elérhető.",
     "en": "JavaScript runtime and npm, available in Kit Shell."
    },
-   "apps": []
+   "apps": [],
+   "groups": [
+    "agent-workshop"
+   ]
   },
   {
    "id": "python",
@@ -1456,7 +1462,10 @@
     "hu": "Python, pip, venv. Virtuális környezetek a Biztonságos tér panelen.",
     "en": "Python, pip, venv. Virtual environments in the Safe space panel."
    },
-   "apps": []
+   "apps": [],
+   "groups": [
+    "agent-workshop"
+   ]
   },
   {
    "id": "vscode",
@@ -1558,6 +1567,234 @@
       "en": "Opens in a new window."
      }
     }
+   ],
+   "groups": [
+    "agent-workshop"
+   ]
+  },
+  {
+   "id": "gh",
+   "cat": "dev",
+   "tier": 2,
+   "name": "GitHub CLI (gh)",
+   "version": "2.63.2",
+   "sizeMB": 13,
+   "page": "https://cli.github.com/",
+   "source": {
+    "type": "url",
+    "url": "https://github.com/cli/cli/releases/download/v2.63.2/gh_2.63.2_windows_amd64.zip",
+    "sha256": "da7eaeb29cd9251cc477402681efc72ac2283ced94e63a69c1e3bc9aca99eb9b"
+   },
+   "format": "zip",
+   "win7": "no",
+   "groups": [
+    "agent-workshop"
+   ],
+   "desc": {
+    "hu": "GitHub parancssorból. A ServiceKit Terminál ezzel kéri a telefonos jóváhagyást és ezzel naplóz.",
+    "en": "GitHub from the command line. The ServiceKit Terminal uses it for the phone approval and the access log."
+   },
+   "apps": [
+    {
+     "id": "gh",
+     "name": "gh (konzol)",
+     "exe": "gh.exe",
+     "console": true,
+     "args": "--help",
+     "desc": {
+      "hu": "A Kit Shellből: gh auth status, gh repo view.",
+      "en": "From Kit Shell: gh auth status, gh repo view."
+     }
+    }
+   ]
+  },
+  {
+   "id": "ripgrep",
+   "cat": "dev",
+   "tier": 2,
+   "name": "ripgrep (rg)",
+   "version": "14.1.1",
+   "sizeMB": 2,
+   "page": "https://github.com/BurntSushi/ripgrep",
+   "source": {
+    "type": "url",
+    "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-msvc.zip",
+    "sha256": "d0f534024c42afd6cb4d38907c25cd2b249b79bbe6cc1dbee8e3e37c2b6e25a1"
+   },
+   "format": "zip",
+   "win7": "partial",
+   "groups": [
+    "agent-workshop"
+   ],
+   "desc": {
+    "hu": "Villámgyors keresés fájlok tartalmában. A Claude Code is ezt használja.",
+    "en": "Very fast search in file contents. Claude Code uses it too."
+   },
+   "apps": [
+    {
+     "id": "rg",
+     "name": "rg (konzol)",
+     "exe": "rg.exe",
+     "console": true,
+     "args": "--help",
+     "desc": {
+      "hu": "Példa: rg -n \"TODO\" .",
+      "en": "Example: rg -n \"TODO\" ."
+     }
+    }
+   ]
+  },
+  {
+   "id": "fd",
+   "cat": "dev",
+   "tier": 2,
+   "name": "fd",
+   "version": "10.2.0",
+   "sizeMB": 2,
+   "page": "https://github.com/sharkdp/fd",
+   "source": {
+    "type": "url",
+    "url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-pc-windows-msvc.zip",
+    "sha256": "92ac9e6b0a0c6ecdab638ffe210dc786403fff4c66373604cf70df27be45e4fe"
+   },
+   "format": "zip",
+   "win7": "partial",
+   "groups": [
+    "agent-workshop"
+   ],
+   "desc": {
+    "hu": "Gyors fájlkeresés név szerint.",
+    "en": "Fast file search by name."
+   },
+   "apps": [
+    {
+     "id": "fd",
+     "name": "fd (konzol)",
+     "exe": "fd.exe",
+     "console": true,
+     "args": "--help",
+     "desc": {
+      "hu": "Példa: fd \\.json$",
+      "en": "Example: fd \\.json$"
+     }
+    }
+   ]
+  },
+  {
+   "id": "jq",
+   "cat": "dev",
+   "tier": 2,
+   "name": "jq",
+   "version": "1.7.1",
+   "sizeMB": 1,
+   "page": "https://jqlang.github.io/jq/",
+   "source": {
+    "type": "url",
+    "url": "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe",
+    "file": "jq.exe",
+    "sha256": "7451fbbf37feffb9bf262bd97c54f0da558c63f0748e64152dd87b0a07b6d6ab"
+   },
+   "format": "exe",
+   "win7": "ok",
+   "groups": [
+    "agent-workshop"
+   ],
+   "desc": {
+    "hu": "JSON szűrése és átalakítása a parancssorban.",
+    "en": "Filter and reshape JSON on the command line."
+   },
+   "apps": [
+    {
+     "id": "jq",
+     "name": "jq (konzol)",
+     "exe": "jq.exe",
+     "console": true,
+     "args": "--help",
+     "desc": {
+      "hu": "Példa: jq .version package.json",
+      "en": "Example: jq .version package.json"
+     }
+    }
+   ]
+  },
+  {
+   "id": "uv",
+   "cat": "dev",
+   "tier": 2,
+   "name": "uv (Python csomagkezelő)",
+   "version": "0.5.11",
+   "sizeMB": 16,
+   "page": "https://docs.astral.sh/uv/",
+   "source": {
+    "type": "url",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.5.11/uv-x86_64-pc-windows-msvc.zip",
+    "sha256": "3e8203e6434b45427f20824419f8d8d53f970a76d94ccdcad07f8498fa01a9d0"
+   },
+   "format": "zip",
+   "win7": "no",
+   "groups": [
+    "agent-workshop"
+   ],
+   "note": {
+    "hu": "TLS-ellenőrző vírusirtó mellett: UV_SYSTEM_CERTS=1.",
+    "en": "Behind a TLS-inspecting antivirus: UV_SYSTEM_CERTS=1."
+   },
+   "desc": {
+    "hu": "Gyors Python csomag- és környezetkezelő (pip és venv helyett).",
+    "en": "Fast Python package and environment manager (instead of pip and venv)."
+   },
+   "apps": [
+    {
+     "id": "uv",
+     "name": "uv (konzol)",
+     "exe": "uv.exe",
+     "console": true,
+     "args": "--help",
+     "desc": {
+      "hu": "Példa: uv venv, uv pip install requests",
+      "en": "Example: uv venv, uv pip install requests"
+     }
+    }
+   ]
+  },
+  {
+   "id": "claude-code",
+   "cat": "dev",
+   "tier": 2,
+   "name": "Claude Code (natív, Windows x64)",
+   "version": "2.1.326",
+   "sizeMB": 167,
+   "page": "https://docs.claude.com/en/docs/claude-code",
+   "source": {
+    "type": "url",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-win32-x64/-/claude-code-win32-x64-2.1.326.tgz",
+    "sha256": "e45a6e4d73ae6fa729d5787456d7e8d30c76a663a97ff98264fd673dd474e77e"
+   },
+   "format": "tgz",
+   "win7": "no",
+   "groups": [
+    "agent-workshop"
+   ],
+   "note": {
+    "hu": "A hivatalos npm csomag Windows binárisa (a registry sha512-je egyezik). Bejelentkezés: a ServiceKit Terminálból, telefonos jóváhagyással.",
+    "en": "The Windows binary of the official npm package (matches the registry sha512). Sign in from the ServiceKit Terminal, approved on the phone."
+   },
+   "desc": {
+    "hu": "Claude Code a kitből, a gépre telepítés nélkül. A beállításai a kiten belül maradnak.",
+    "en": "Claude Code from the kit, nothing installed on the PC. Its settings stay inside the kit."
+   },
+   "apps": [
+    {
+     "id": "claude",
+     "name": "Claude Code (konzol)",
+     "exe": "claude.exe",
+     "console": true,
+     "args": "--version",
+     "desc": {
+      "hu": "Bejelentkezéssel együtt a TERMINAL.cmd indítja.",
+      "en": "TERMINAL.cmd starts it, with the sign-in."
+     }
+    }
    ]
   },
   {
@@ -1596,6 +1833,9 @@
       "en": "File manager view; drag an archive onto it."
      }
     }
+   ],
+   "groups": [
+    "agent-workshop"
    ]
   },
   {

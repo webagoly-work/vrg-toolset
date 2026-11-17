@@ -11,7 +11,7 @@ function Get-TermClaudeCandidates {
     }
     if ($env:APPDATA) { $c += ,@{ source = 'npm'; path = (Join-Path $env:APPDATA 'npm\claude.cmd'); cli = $true } }
     if ($env:USERPROFILE) { $c += ,@{ source = 'native'; path = (Join-Path $env:USERPROFILE '.local\bin\claude.exe'); cli = $true } }
-    $c += ,@{ source = 'kit'; path = (Join-Path $ToolsDir 'claude\claude.exe'); cli = $true }
+    $c += ,@{ source = 'kit'; path = (Join-Path $ToolsDir 'claude-code\claude.exe'); cli = $true }
     $c += ,@{ source = 'kit'; path = (Join-Path $DataDir 'npm-global\claude.cmd'); cli = $true }
     if ($env:LOCALAPPDATA) {
         $c += ,@{ source = 'desktop'; path = (Join-Path $env:LOCALAPPDATA 'AnthropicClaude\claude.exe'); cli = $false }
