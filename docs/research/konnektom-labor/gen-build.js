@@ -1,0 +1,11 @@
+const fs = require('fs'), path = require('path'), D = process.argv[2], OUT = process.argv[3];
+const rd = f => fs.readFileSync(path.join(D, f), 'utf8');
+const safe = s => s.replace(/<\/script/gi, '<\\/script').replace(/<!--/g, '<\\!--');
+const shell = rd('src/shell.html'), cut = shell.indexOf('<canvas id="gl"');
+const head = shell.slice(0, cut), body = shell.slice(cut);
+const data = ['fly-data.js', 'stack-data.js', '/home/user/vrg-toolset/Stack/earth-land.js', '/home/user/vrg-toolset/Stack/brain.js'].map(f => safe(fs.readFileSync(f.startsWith('/') ? f : path.join(D, f), 'utf8')));
+const app = ['core', 'fly', 'mine', 'holo', 'layers', 'empty', 'main'].map(f => rd('src/' + f + '.js')).join('\n');
+const scripts = `<script>\n${data.join('\n')}\n</script>\n<script>\n${safe(app)}\n</script>\n`;
+fs.writeFileSync(path.join(OUT, 'konnektom-labor.artifact.html'), head + body + scripts);
+fs.writeFileSync(path.join(OUT, 'konnektom-labor.html'), `<!doctype html>\n<html lang="hu">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n${head}</head>\n<body>\n${body}${scripts}</body>\n</html>\n`);
+console.log('ok', fs.statSync(path.join(OUT, 'konnektom-labor.html')).size);

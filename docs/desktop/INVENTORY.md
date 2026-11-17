@@ -5,22 +5,22 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 156 |
+| START registry (launcher/vrg-menu.json) | 159 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 90 |
+| VRG Irányítópult (Dashboard/) | 92 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 25 |
 | VRG Stack | 23 |
-| CLI tools | 16 |
+| CLI tools | 17 |
 | Prompt library | 8 |
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
-| Shared libraries | 4 |
+| Shared libraries | 5 |
 | Docs packs + GO phrases | 24 |
 | Top-level folders + launcher parts | 26 |
-| **Total** | **549** |
+| **Total** | **556** |
 
-## START registry (launcher/vrg-menu.json) (156)
+## START registry (launcher/vrg-menu.json) (159)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -46,6 +46,9 @@
 | `menu:proj:P/G` | Planner · Gyro relay szerver | START P G · server gyro | start.action | projects/P | :47291 |
 | `menu:proj:P/V` | Planner · VS Code | START P V · {code} | start.action | projects/P | a Planner projekt |
 | `menu:proj:P/M` | Planner · Manifest írása | START P M · {repo}\Planner\scripts\manifest.cmd | start.action | projects/P | docs\MANIFEST.md |
+| `menu:proj:P/J` | Planner · Rajztár Stúdió | START P J · {repo}\shared\rajztar\studio.html | start.action | projects/P | tervcsomag, rajzlap, rajzjel-szerkesztő |
+| `menu:proj:P/K` | Planner · Rajztár katalógus | START P K · {repo}\shared\rajztar\catalog.html | start.action | projects/P | rajzjelek, dokumentumtípusok, formátum, források |
+| `menu:proj:P/R` | Planner · Rajztár build + teszt | START P R · {node} shared\rajztar\build.js ; {node} shared\rajztar\test\studio-e2e.js | start.action | projects/P | adatellenőrzés, studio.html, e2e |
 | `menu:proj:P/O` | Planner · Mappa megnyitása | START P O · | start.action | projects/P |  |
 | `menu:proj:I` | Készlet | START I (submenu) | start.project | projects | build · szerver · ár |
 | `menu:proj:I/B` | Készlet · Build | START I B · {npm} run build | start.action | projects/I | dist\vrg-inventory.html |
@@ -291,7 +294,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (90)
+## VRG Irányítópult (Dashboard/) (92)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -358,6 +361,8 @@
 | `dashlib:mailclean` | lib/mailclean.js | Dashboard/shell/lib/mailclean.js | module | shell/lib | mailclean.js — DESK-Q73 B (WP-35a): the mail HTML is cleaned in the page, with DOMPurify, before it is handed to the read view. |
 | `dashlib:mime` | lib/mime.js | Dashboard/shell/lib/mime.js | module | shell/lib | mime.js — a small RFC 5322 / 2045 parser for the mail client (WP-27). Pure: bytes in, plain object out. |
 | `dashlib:names` | lib/names.js | Dashboard/shell/lib/names.js | module | shell/lib | names.js — isSafeName: a basename the page may send for rename / new folder (CONTRACT §3). Same rule as ipc.js `name`. |
+| `dashlib:netgrade` | lib/netgrade.js | Dashboard/shell/lib/netgrade.js | module | shell/lib | netgrade.js — the network / machine metrics of the title bar's corner row (WP-49b), as pure functions shared by main (CommonJS) and |
+| `dashlib:netmeter` | lib/netmeter.js | Dashboard/shell/lib/netmeter.js | module | shell/lib | netmeter.js — the samples behind the title bar's corner metrics (WP-49b). main asks sample() every ~2 s while the row is shown; |
 | `dashlib:notes` | lib/notes.js | Dashboard/shell/lib/notes.js | module | shell/lib | notes.js — dev notes (WP-25): the one store is the Divergence outbox; tools/divergence.js `jot` writes it, Divergence's Push carries it. |
 | `dashlib:oauth` | lib/oauth.js | Dashboard/shell/lib/oauth.js | module | shell/lib | oauth.js — OAuth 2.0 for installed apps (RFC 8252): PKCE S256 (RFC 7636), a one-shot loopback redirect, the system browser (WP-27). |
 | `dashlib:palette` | lib/palette.js | Dashboard/shell/lib/palette.js | module | shell/lib | palette.js — the command palette (API.md vrg.layout.palette / run): the index of everything the Desktop can open, the matcher |
@@ -500,7 +505,7 @@
 | `layer:G` | Réteg G · Data Globe | Gömb (Solomon/dist/vrg-solomon.html, START T) | stack layer | layers | its page, per Stack/LAYERS.md |
 | `layer:Z` | Réteg Z · Codec | — | stack layer | layers | its page, per Stack/LAYERS.md |
 
-## CLI tools (16)
+## CLI tools (17)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -511,6 +516,7 @@
 | `tool:check-catalog` | tools/check-catalog.js | tools/check-catalog.js | cli script | tools | check-catalog.js — checks launcher/vrg-catalog.json (WHAT exists) against vrg-menu.json (HOW to run) and the features map. |
 | `tool:check-hub` | tools/check-hub.js | tools/check-hub.js | cli script | tools | check-hub.js — gate for VRG Kapu, run after build-hub.js. |
 | `tool:check-start` | tools/check-start.js | tools/check-start.js | cli script | tools | check-start.js — keep the START launcher honest. |
+| `tool:council-debate` | tools/council-debate.js | tools/council-debate.js | cli script | tools | council-debate.js — checks a seat debate record (docs/council/04_DEBATE-PROTOCOL.md). |
 | `tool:council-gate` | tools/council-gate.js | tools/council-gate.js | cli script | tools | council-gate.js — the Hand's budget gate, a PreToolUse hook. The Council can |
 | `tool:divergence` | tools/divergence.js | tools/divergence.js | cli script | tools | The Divergence board: signals on the divergence ring, each one a way into a piece of work. |
 | `tool:fetch-vendor` | tools/fetch-vendor.js | tools/fetch-vendor.js | cli script | tools | fetch-vendor.js — pull the third-party components listed in |
@@ -565,11 +571,12 @@
 | `fw:planner-cyd` | planner-cyd | Firmware/planner-cyd | firmware | firmware | Planner CYD: desk dashboard and remote for the Varler Planner |
 | `fw:servicekit-cyd` | ServiceKit CYD | ServiceKitCYD/ | firmware | firmware | ServiceKit CYD |
 
-## Shared libraries (4)
+## Shared libraries (5)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
 | `lib:melyviz` | melyviz.css | shared/melyviz.css | stylesheet | shared |  |
+| `lib:rajztar` | rajztar | shared/rajztar | library | shared | Rajztár: the drawing and document data store |
 | `lib:varler-doc` | varler-doc | shared/varler-doc | library | shared |  |
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
 | `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1.1 — "Mérőpult" |
