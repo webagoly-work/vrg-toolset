@@ -187,6 +187,9 @@
             { "key": "G", "name": "Gyro relay szerver", "hint": ":47291", "server": "gyro" },
             { "key": "V", "name": "VS Code", "hint": "a Planner projekt", "exe": "{code}", "args": ["{planner}"] },
             { "key": "M", "name": "Manifest írása", "hint": "docs\\MANIFEST.md", "cwd": "{planner}", "steps": [{ "exe": "{repo}\\Planner\\scripts\\manifest.cmd" }] },
+            { "key": "J", "name": "Rajztár Stúdió", "hint": "tervcsomag, rajzlap, rajzjel-szerkesztő", "path": "{repo}\\shared\\rajztar\\studio.html" },
+            { "key": "K", "name": "Rajztár katalógus", "hint": "rajzjelek, dokumentumtípusok, formátum, források", "path": "{repo}\\shared\\rajztar\\catalog.html" },
+            { "key": "R", "name": "Rajztár build + teszt", "hint": "adatellenőrzés, studio.html, e2e", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["shared\\rajztar\\build.js"] }, { "exe": "{node}", "args": ["shared\\rajztar\\test\\studio-e2e.js"] } ] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{planner}" }
           ] } },
       { "key": "I", "name": "Készlet", "hint": "build · szerver · ár", "was": "I N S P", "menu": {

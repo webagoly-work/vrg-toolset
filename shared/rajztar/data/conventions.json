@@ -1,0 +1,186 @@
+{
+  "$schema": "rajztar/conventions/1",
+  "about": "Technical writing conventions on the drawings: how a device, a circuit, a cable and a board are named and annotated, so every generated document speaks the same language. 'verify' = check against the current edition before citing.",
+  "updated": "2026-11-17",
+
+  "referenceDesignation": {
+    "basis": "std.81346",
+    "prefixes": [
+      {"sign":"=","meaning":"funkció / rendszer","example":"=E1 (világítás), =P2 (erőátvitel)"},
+      {"sign":"+","meaning":"hely","example":"+B2.EL3 (B épület 2. szint, 3. elosztó)"},
+      {"sign":"-","meaning":"termék (készülék)","example":"-Q1, -F12, -W12"},
+      {"sign":":","meaning":"kapocs","example":"-X1:5"}
+    ],
+    "fullExample": "=P2+B2.EL3-F12:2",
+    "practice": "Lakás és családi ház terveken elég a '-' termékjel + elosztó név (EL1-F12). Társasháznál és iparnál a '+' helyjel kötelező gyakorlat, mert ugyanaz a -F12 több elosztóban is előfordul.",
+    "letterCodes": {
+      "about": "Az első betű a hazai elosztótervek gyakorlata szerint (IEC 60750 / DIN 40719 hagyomány, a 81346-2 első betűivel nagyrészt egyező). A 81346-2:2019 kétbetűs alosztályai (QA, FC, KF …) ipari projekten használhatók – verify a táblázattal.",
+      "verify": true,
+      "items": [
+        {"l":"A","hu":"szerelvénycsoport, alegység, PLC modul"},
+        {"l":"B","hu":"érzékelő, jeladó (mozgásérzékelő, hőmérő, áramváltó mint jeladó)"},
+        {"l":"C","hu":"kondenzátor, energiatároló (kompenzáció)"},
+        {"l":"E","hu":"lámpatest, fűtőtest, sugárzó"},
+        {"l":"F","hu":"védelem: olvadóbiztosító, FI, túlfeszültség-levezető, hőkioldó"},
+        {"l":"G","hu":"forrás: generátor, akkumulátor, PV, UPS"},
+        {"l":"H","hu":"jelzés: jelzőlámpa, kürt (81346-2: P)"},
+        {"l":"K","hu":"relé, mágneskapcsoló vezérlőkör, időrelé, impulzusrelé"},
+        {"l":"M","hu":"motor"},
+        {"l":"P","hu":"mérő, kijelző (fogyasztásmérő, ampermérő)"},
+        {"l":"Q","hu":"teljesítménykapcsoló: megszakító, kismegszakító, szakaszoló, főkapcsoló, kontaktor főérintkező"},
+        {"l":"R","hu":"ellenállás, fojtó"},
+        {"l":"S","hu":"kézi működtetésű kapcsoló, nyomógomb, vészleállító"},
+        {"l":"T","hu":"transzformátor, tápegység, inverter, áramváltó (mérő)"},
+        {"l":"W","hu":"kábel, vezeték, gyűjtősín"},
+        {"l":"X","hu":"kapocs, sorkapocs, dugaszolóaljzat, csatlakozó"}
+      ]
+    },
+    "hu-practice-note": "A hazai lakás-elosztókon a kismegszakító gyakran 'F'-et kap (F1, F2 …). A Rajztár alapja: kismegszakító -F (lakás, családi ház), -Q (ipar, ha a 81346-2 szerint jelölünk). A projektszintű beállítás dönt; egy dokumentumon belül csak az egyik."
+  },
+
+  "boardNames": {
+    "basis": "practice.vrg",
+    "items": [
+      {"code":"CSF","hu":"csatlakozó főelosztó (MSZ 447)"},
+      {"code":"MH","hu":"fogyasztásmérőhely / mérőszekrény"},
+      {"code":"FE","hu":"főelosztó"},
+      {"code":"EL","hu":"alelosztó (EL1, EL2 …) – lakáselosztó"},
+      {"code":"SZE","hu":"szintelosztó (társasház)"},
+      {"code":"GE","hu":"gépészeti elosztó"},
+      {"code":"BVE","hu":"biztonsági világítás elosztó / központ"},
+      {"code":"KE","hu":"kompenzáló egység"},
+      {"code":"VSZ","hu":"vezérlőszekrény (PLC)"},
+      {"code":"TVK","hu":"tűzvédelmi főkapcsoló"}
+    ],
+    "treeRule": "Elosztási fa: CSF → MH → FE → EL/SZE/GE → végáramkör. A fővezeték-terven minden ág viszi: kábeltípus, keresztmetszet, hossz, védelem (In, kioldási jelleg), beépített/egyidejű teljesítmény (MMK TSZ 12.3.2 f–g)."
+  },
+
+  "circuitLabel": {
+    "basis": "practice.vrg",
+    "onPlan": "{elosztó}/{áramkör} pl. EL1/12 – a nyomvonal mentén vagy a készülék mellett, 2,5 mm",
+    "onBoard": "-F12 · C16 · 3×2,5 NYM-J · Konyha dugaljak · L2",
+    "phaseTag": "L1 / L2 / L3 (fáziskiosztás a táblázatban; indokolt esetben kötelező – MMK 12.3.2 h)",
+    "controlLetters": "Kapcsolási csoport betű szintenként A, B, C … (Z után AA): lámpán egy betű, kapcsolón az összes általa kapcsolt betű (CE-1, CE-Q2 = B)",
+    "heightTag": "H=110 cm-ben, csak az alapmagasságtól eltérő ponton (CE-2)"
+  },
+
+  "deviceDescriptor": {
+    "about": "Hogyan írjuk ki egy készülék adatát a sémán (egy sorban, rögzített sorrendben).",
+    "basis": "practice.vrg",
+    "patterns": [
+      {"kind":"mcb","pattern":"{tag} {char}{In} {poles}P {Icn}kA","example":"-F12 C16 1P 6kA"},
+      {"kind":"rcd","pattern":"{tag} {In}A {IdN}mA {type} {poles}P","example":"-F2 40A 30mA A 4P"},
+      {"kind":"rcbo","pattern":"{tag} {char}{In} {IdN}mA {type}","example":"-F21 B16 30mA A"},
+      {"kind":"fuse","pattern":"{tag} {In}A {gG|aM} {size}","example":"-F1 63A gG NH00"},
+      {"kind":"switchDisconnector","pattern":"{tag} {In}A {poles}P","example":"-Q1 63A 4P"},
+      {"kind":"spd","pattern":"{tag} T{1|1+2|2|3} {Uc}V {Iimp|In}kA","example":"-F3 T1+2 275V 12,5kA"},
+      {"kind":"meter","pattern":"{tag} {phases}F {Imax}A {tariff}","example":"-P1 3F 3×32A A1 (mindennapszaki)"},
+      {"kind":"cable","pattern":"{tag} {type} {cores}×{csa} {length}m","example":"-W12 NYM-J 3×2,5 18m"}
+    ]
+  },
+
+  "conductorColors": {
+    "basis": "std.60445",
+    "ac": [
+      {"c":"L1","color":"barna","hex":"#7a4a2a"},
+      {"c":"L2","color":"fekete","hex":"#1a1a1a"},
+      {"c":"L3","color":"szürke","hex":"#8a8a8a"},
+      {"c":"N","color":"kék (világoskék)","hex":"#2f6fc0"},
+      {"c":"PE","color":"zöld-sárga","hex":"#5aa02c","pattern":"csíkos"},
+      {"c":"PEN","color":"zöld-sárga, végeken kék jelöléssel (vagy kék, végeken zöld-sárga)","hex":"#5aa02c"}
+    ],
+    "dc": {"note":"DC: L+ és L− jelölés; szín a 60445 aktuális kiadása szerint – verify. PV-n gyártói piros/fekete gyakorlat.","verify":true},
+    "legacy": {"note":"Régi (MSZ 2364 előtti) hálózatoknál piros/fehér/fekete fázis, szürke nulla előfordul – meglévő állapot felmérésnél jelölni."}
+  },
+
+  "cableTypes": {
+    "about": "A hazai terveken leggyakoribb jelölések. A tervben a típusjelet a gyártói/HD 308 jelöléssel együtt adjuk meg, ha félreérthető.",
+    "basis": "practice.vrg",
+    "items": [
+      {"code":"NYM-J","hu":"PVC köpenyű installációs kábel, zöld-sárga erű (falon belül, vakolat alatt)","use":"lakás, családi ház végáramkörök"},
+      {"code":"MBCu","hu":"merev rézvezeték, egyerű (H07V-U)","use":"védőcsőben, elosztón belül"},
+      {"code":"MKH","hu":"hajlékony rézvezeték, egyerű (H07V-K)","use":"elosztó huzalozás"},
+      {"code":"MT","hu":"PVC köpenyű hajlékony vezeték (H05VV-F)","use":"készülékbekötés"},
+      {"code":"CYKY / NYY-J","hu":"PVC szigetelésű és köpenyű erőkábel","use":"fővezeték, földkábel, alelosztó betáp"},
+      {"code":"NAYY / AYKY","hu":"alumínium erőkábel","use":"nagy keresztmetszetű betáp (csatlakozó, felszálló)"},
+      {"code":"N2XH / NHXH","hu":"halogénmentes kábel (B2ca/Cca)","use":"menekülési út, közösségi tér, CPR előírás szerint"},
+      {"code":"NHXH FE180 E30/E90","hu":"funkciómegtartó tűzálló kábel","use":"biztonsági világítás, tűzjelző tápellátás, hő- és füstelvezetés (OTSZ)"},
+      {"code":"JE-H(St)H FE180","hu":"tűzálló jelzőkábel","use":"tűzjelző hurok"},
+      {"code":"J-Y(St)Y","hu":"árnyékolt jelzőkábel","use":"kaputelefon, riasztó"},
+      {"code":"U/UTP Cat6, F/UTP Cat6A","hu":"strukturált adatkábel","use":"informatika (MSZ EN 50173)"},
+      {"code":"RG6 / koax 75 Ω","hu":"koaxiális kábel","use":"antenna, SAT"},
+      {"code":"H1Z2Z2-K","hu":"PV szolár kábel","use":"DC string (MSZ HD 60364-7-712)"},
+      {"code":"NYCWY","hu":"koncentrikus (árnyékolt) erőkábel","use":"frekvenciaváltós hajtás, ipar"}
+    ],
+    "cpr": {"basis":"std.50575","note":"Épületen belül fix telepítésű kábelnél a CPR tűzviselkedési osztályt (pl. Eca, Dca-s2,d2,a2, Cca-s1,d1,a1, B2ca-s1a,d1,a1) a jelmagyarázatban vagy a kábellistában meg kell adni, ha az OTSZ/TvMI előír osztályt."}
+  },
+
+  "installationMethods": {
+    "basis": "std.60364",
+    "about": "MSZ HD 60364-5-52 B.52 referencia szerelési módok – a terhelhetőség innen jön; a kábellistában és a fővezeték-terven ezt a betűt írjuk.",
+    "items": [
+      {"m":"A1","hu":"szigetelt erek védőcsőben, hőszigetelt falban"},
+      {"m":"A2","hu":"többerű kábel védőcsőben, hőszigetelt falban"},
+      {"m":"B1","hu":"szigetelt erek védőcsőben / csatornában falon vagy falban"},
+      {"m":"B2","hu":"többerű kábel védőcsőben / csatornában falon"},
+      {"m":"C","hu":"egy- vagy többerű kábel közvetlenül falon / vakolat alatt"},
+      {"m":"D1","hu":"többerű kábel védőcsőben a földben"},
+      {"m":"D2","hu":"kábel közvetlenül a földben"},
+      {"m":"E","hu":"többerű kábel szabad levegőn (perforált tálca, létra)"},
+      {"m":"F","hu":"egyerű kábelek érintkezve, szabad levegőn"},
+      {"m":"G","hu":"egyerű kábelek egymástól távolságra, szabad levegőn"}
+    ]
+  },
+
+  "protectionNotation": {
+    "basis": "std.60364",
+    "earthingSystems": [
+      {"code":"TN-C-S","hu":"a hazai közcélú hálózatról ellátott épület tipikus rendszere: PEN a csatlakozásig/főelosztóig, onnan külön PE és N"},
+      {"code":"TN-S","hu":"külön N és PE a betáptól (saját trafós ipari telep)"},
+      {"code":"TT","hu":"saját földelő, kötelező FI (pl. egyes külterületi ellátás)"},
+      {"code":"IT","hu":"szigetelt rendszer (orvosi, ipari folyamat) – szigetelésfigyelővel"}
+    ],
+    "statement": "A fővezeték-terven és a műszaki leírásban fel kell tüntetni az áramütés elleni védelem módját (MMK TSZ 12.3.2 f), pl. 'Érintésvédelem: TN-C-S rendszer, a PEN szétválasztása a CSF-ben; kiegészítő védelem 30 mA FI'.",
+    "rcdTypes": ["AC","A","F","B","EV (6 mA DC érzékeléssel)"],
+    "mcbCharacteristics": ["B","C","D","K","Z"]
+  },
+
+  "zones": {
+    "bathroom": {"basis":"std.60364","part":"7-701","items":[{"z":"0","hu":"kád / zuhanytálca belseje"},{"z":"1","hu":"a kád/zuhany felett 2,25 m-ig, zuhanytálca nélkül 1,2 m sugárban"},{"z":"2","hu":"az 1. zóna körül 0,6 m sávban (2,25 m-ig)"}],"plan":"A zónahatárokat a fürdő alaprajzán 04.1 vonallal kell megrajzolni, ha a zóna szerelvényt érint."},
+    "lightning": {"basis":"std.62305","items":["LPZ 0A","LPZ 0B","LPZ 1","LPZ 2","LPZ 3"],"plan":"LPZ határ 04.1 vonallal a villámvédelmi terven; minden zónaátlépésnél túlfeszültség-levezető jel."},
+    "ex": {"basis":"std.60079","items":["Zóna 0","Zóna 1","Zóna 2","Zóna 20","Zóna 21","Zóna 22"],"plan":"Ex zónatérkép a megrendelő robbanásvédelmi dokumentációjából – a villamos tervező átveszi (MMK 12.3.3 b)."}
+  },
+
+  "ipCodes": {"basis":"std.60529","rule":"Jelmagyarázatban IPxx (és ahol kell IKxx) minden szerelvénynél, ami nem IP20: fürdő, kültér, garázs, gépészet.","common":["IP20","IP44","IP54","IP55","IP65","IP66","IP67","IK08","IK10"]},
+
+  "standardHeights": {
+    "about": "Az alapmagasságok egyetlen forrása a Planner STD_H táblája. A Rajztár nem másolja, hivatkozik rá: a jelmagyarázat alatti magasságtáblát a generátor onnan építi.",
+    "ref": "Planner/projects/varler-planner/src/08j-wf-standards.js (STD_H)",
+    "basis": "practice.vrg"
+  },
+
+  "switchCodes": {
+    "basis": "practice.hu-switch-codes",
+    "items": [
+      {"code":"101","hu":"egysarkú (egypólusú) kapcsoló","symbol":"inst.sw-1p"},
+      {"code":"102","hu":"kétsarkú kapcsoló","symbol":"inst.sw-2p","verify":true},
+      {"code":"103","hu":"háromsarkú kapcsoló","symbol":"inst.sw-3p","verify":true},
+      {"code":"105","hu":"csillárkapcsoló (két áramkör)","symbol":"inst.sw-series"},
+      {"code":"106","hu":"váltókapcsoló (alternatív)","symbol":"inst.sw-2way"},
+      {"code":"107","hu":"keresztkapcsoló","symbol":"inst.sw-intermediate"},
+      {"code":"108","hu":"dupla váltókapcsoló (VRG Planner kód)","symbol":"inst.sw-2way-double","verify":true}
+    ]
+  },
+
+  "statesOfWork": {
+    "about": "Felújításnál minden pont állapota – alakkal, nem csak színnel (CE-5).",
+    "basis": "practice.vrg",
+    "items": [
+      {"state":"new","hu":"új / változó","mark":"piros jel"},
+      {"state":"keep","hu":"megmarad","mark":"fekete jel"},
+      {"state":"remove","hu":"bontandó","mark":"tinta színű áthúzás (X a jelen)"},
+      {"state":"replace","hu":"cserélendő","mark":"négyzet a jel körül"},
+      {"state":"relocate","hu":"áthelyezendő","mark":"szaggatott régi jel + nyíl az új helyre"}
+    ]
+  }
+}
