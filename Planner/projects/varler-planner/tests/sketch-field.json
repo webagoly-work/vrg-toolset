@@ -1,0 +1,488 @@
+{
+ "exported": 7,
+ "level": "ground",
+ "kind": "vrg-sketch",
+ "v": 1,
+ "name": "Kossuth u. 12",
+ "sketch": {
+  "rooms": [
+   {
+    "poly": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ],
+    "name": "",
+    "kinds": ["nappali"],
+    "id": "R1"
+   },
+   {
+    "poly": [
+     [
+      100,
+      0
+     ],
+     [
+      150,
+      0
+     ],
+     [
+      150,
+      80
+     ],
+     [
+      100,
+      80
+     ]
+    ],
+    "name": "",
+    "kinds": [],
+    "id": "R2"
+   }
+  ],
+  "level": "ground",
+  "kind": "vrg-vazlat",
+  "created": 1,
+  "plugins": [
+   "jegyzet",
+   "alaprajz",
+   "villany"
+  ],
+  "tagUses": [
+   {
+    "id": "U12",
+    "tag": "T-ip44",
+    "target": "P5"
+   },
+   {
+    "id": "U13",
+    "tag": "T-furdo",
+    "target": "R2"
+   },
+   {
+    "at": [
+     120,
+     60
+    ],
+    "id": "U14",
+    "tag": "T-nedves"
+   }
+  ],
+  "photos": [{
+   "at": [
+    50,
+    40
+   ],
+   "id": "F99",
+   "shots": [{
+    "file": "R1-e.jpg",
+    "deg": 90,
+    "taken": 5
+   }],
+   "room": "R1"
+  }],
+  "points": [
+   {
+    "st": "meglevo",
+    "edge": 0,
+    "at": [
+     50,
+     0
+    ],
+    "t": 0.5,
+    "id": "P5",
+    "type": "socket",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "edge": 1,
+    "at": [
+     100,
+     40
+    ],
+    "t": 0.5,
+    "id": "P6",
+    "type": "switch",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "at": [
+     50,
+     40
+    ],
+    "id": "P7",
+    "type": "light",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "edge": 1,
+    "at": [
+     150,
+     40
+    ],
+    "t": 0.5,
+    "id": "P8",
+    "type": "board",
+    "room": "R2"
+   }
+  ],
+  "tags": [
+   {
+    "col": 4280978651,
+    "name": "Fürdő",
+    "id": "T-furdo",
+    "preset": "kind:furdo"
+   },
+   {
+    "col": 4292915232,
+    "name": "Konyha",
+    "id": "T-konyha",
+    "preset": "kind:konyha"
+   },
+   {
+    "col": 4280330400,
+    "name": "Nedves",
+    "id": "T-nedves",
+    "preset": "wet"
+   },
+   {
+    "col": 4282232410,
+    "name": "IP44",
+    "id": "T-ip44",
+    "preset": "ip44"
+   },
+   {
+    "col": 4292232517,
+    "name": "Dedikált",
+    "id": "T-ded",
+    "preset": "dedicated"
+   },
+   {
+    "col": 4287257814,
+    "name": "Bontás",
+    "id": "T-bontas",
+    "preset": "remove"
+   }
+  ],
+  "routes": [{
+   "a": "P6",
+   "b": "P7",
+   "circuit": "K9",
+   "id": "N10",
+   "pts": [
+    [
+     100,
+     40
+    ],
+    [
+     50,
+     40
+    ]
+   ]
+  }],
+  "measures": [
+   {
+    "mm": 4000,
+    "edge": -1,
+    "kind": "szel",
+    "id": "M3",
+    "room": "R1"
+   },
+   {
+    "mm": 3200,
+    "edge": -1,
+    "kind": "mely",
+    "id": "M4",
+    "room": "R1"
+   }
+  ],
+  "v": 1,
+  "memos": [{
+   "at": [
+    55,
+    5
+   ],
+   "id": "J11",
+   "text": "régi, bontandó",
+   "target": "P5"
+  }],
+  "name": "Kossuth u. 12",
+  "id": "V1",
+  "lines": [],
+  "updated": 2,
+  "seq": 14,
+  "circuits": [{
+   "col": 4293420060,
+   "ded": false,
+   "members": [
+    "P5",
+    "P6",
+    "P7"
+   ],
+   "name": "K1",
+   "id": "K9",
+   "board": "P8"
+  }]
+ },
+ "plan": {
+  "data": {
+   "floors": [
+    {
+     "stage": "outline",
+     "level": "ground",
+     "nameAuto": true,
+     "kind": "nappali",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       4000,
+       0
+      ],
+      [
+       4000,
+       3200
+      ],
+      [
+       0,
+       3200
+      ]
+     ],
+     "clear": true,
+     "name": "Nappali",
+     "sk": {
+      "der": [],
+      "src": "vazlat",
+      "est": [],
+      "mea": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "id": "R1"
+     },
+     "kinds": ["nappali"],
+     "id": "F1",
+     "fill": "#e9e5da"
+    },
+    {
+     "stage": "outline",
+     "level": "ground",
+     "nameAuto": true,
+     "kind": "furdo",
+     "poly": [
+      [
+       4000,
+       0
+      ],
+      [
+       6000,
+       0
+      ],
+      [
+       6000,
+       3200
+      ],
+      [
+       4000,
+       3200
+      ]
+     ],
+     "clear": true,
+     "name": "Fürdő",
+     "sk": {
+      "der": [
+       1,
+       3
+      ],
+      "src": "vazlat",
+      "est": [
+       0,
+       2
+      ],
+      "mea": [],
+      "id": "R2",
+      "tags": ["Fürdő"]
+     },
+     "kinds": ["furdo"],
+     "id": "F2",
+     "fill": "#e9e5da"
+    }
+   ],
+   "notes": [
+    {
+     "level": "ground",
+     "x": 2200,
+     "sk": {
+      "src": "vazlat",
+      "id": "J11",
+      "target": "D3"
+     },
+     "y": 200,
+     "id": "N11",
+     "text": "régi, bontandó"
+    },
+    {
+     "level": "ground",
+     "x": 4800,
+     "sk": {
+      "src": "vazlat",
+      "id": "U14",
+      "tag": "Nedves"
+     },
+     "y": 2400,
+     "id": "N12",
+     "text": "#Nedves"
+    }
+   ],
+   "devices": [
+    {
+     "level": "ground",
+     "x": 2000,
+     "h": 300,
+     "sk": {
+      "st": "meglevo",
+      "t": "socket",
+      "src": "vazlat",
+      "ip44": true,
+      "id": "P5",
+      "tags": ["IP44"]
+     },
+     "y": 40,
+     "id": "D3",
+     "type": "socket"
+    },
+    {
+     "level": "ground",
+     "x": 3960,
+     "h": 1100,
+     "sk": {
+      "st": "tervezett",
+      "t": "switch",
+      "src": "vazlat",
+      "id": "P6"
+     },
+     "y": 1600,
+     "links": [{
+      "p": "P8",
+      "n": "n9"
+     }],
+     "id": "D4",
+     "type": "switch"
+    },
+    {
+     "level": "ground",
+     "x": 2000,
+     "h": 2700,
+     "sk": {
+      "st": "tervezett",
+      "t": "light",
+      "src": "vazlat",
+      "id": "P7"
+     },
+     "y": 1600,
+     "links": [{
+      "p": "P8",
+      "n": "n10"
+     }],
+     "id": "D5",
+     "type": "light"
+    },
+    {
+     "level": "ground",
+     "x": 5960,
+     "h": 1600,
+     "sk": {
+      "st": "tervezett",
+      "t": "board",
+      "src": "vazlat",
+      "id": "P8"
+     },
+     "y": 1600,
+     "id": "D6",
+     "type": "board"
+    }
+   ],
+   "v": 2,
+   "paths": [{
+    "nodes": [
+     {
+      "level": "ground",
+      "x": 4000,
+      "h": 2700,
+      "y": 1600,
+      "id": "n9"
+     },
+     {
+      "level": "ground",
+      "x": 2000,
+      "h": 2700,
+      "y": 1600,
+      "id": "n10"
+     }
+    ],
+    "level": "ground",
+    "sk": {
+     "circuit": "A7",
+     "src": "vazlat",
+     "id": "N10"
+    },
+    "id": "P8",
+    "sections": [{
+     "circuit": null,
+     "build": "sull_gege"
+    }]
+   }],
+   "seq": 12,
+   "circuits": [{
+    "col": "#e8641c",
+    "dedicated": false,
+    "ref": "K1",
+    "members": [
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "name": "K1",
+    "sk": {
+     "src": "vazlat",
+     "id": "K9"
+    },
+    "id": "A7",
+    "board": "D6"
+   }]
+  },
+  "center": [
+   3000,
+   1600
+  ],
+  "report": {
+   "scaleX": 40,
+   "measured": 4,
+   "scaleY": 40,
+   "warnings": [],
+   "inferred": 2,
+   "conflicts": [],
+   "derived": 2
+  }
+ }
+}

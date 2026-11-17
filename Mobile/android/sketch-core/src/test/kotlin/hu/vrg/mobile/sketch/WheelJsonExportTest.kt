@@ -109,5 +109,12 @@ class WheelJsonExportTest {
             File(dir).mkdirs(); File(dir, "field.vsketch-pkg.json").writeText(o.toString(1))
         }
         assertEquals(o.toString(), JSONObject(o.toString()).toString())
+        // the contract with the Planner: its spec-111 imports Planner/.../tests/sketch-field.json, which must be this
+        System.getProperty("vrg.repo")?.let { repo ->
+            val f = File(repo, "Planner/projects/varler-planner/tests/sketch-field.json")
+            if (System.getProperty("vrg.sketch.fixture") == "update") f.writeText(o.toString(1) + "\n")
+            assertTrue(f.exists() && JSONObject(f.readText()).similar(o),
+                "Planner tests/sketch-field.json is not what the export writes now: VRG_SKETCH_FIXTURE=update gradlew :sketch-core:test")
+        }
     }
 }

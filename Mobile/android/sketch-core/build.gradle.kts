@@ -22,4 +22,9 @@ tasks.test {
     useJUnitPlatform()
     // SketchExportTest writes the package it builds here, for the Planner's import test (spec-112).
     systemProperty("vrg.sketch.out", layout.buildDirectory.dir("sketch-fixture").get().asFile.path)
+    // ...and checks it still equals the copy the Planner's test reads (VRG_SKETCH_FIXTURE=update rewrites that copy)
+    val repo = rootProject.projectDir.resolve("../..").canonicalFile
+    systemProperty("vrg.repo", repo.path)
+    System.getenv("VRG_SKETCH_FIXTURE")?.let { systemProperty("vrg.sketch.fixture", it) }
+    inputs.file(repo.resolve("Planner/projects/varler-planner/tests/sketch-field.json")).optional()
 }

@@ -275,6 +275,7 @@ function downloadProject(id){const ix=loadProjIndex();const p=id?ix[id]:projSnap
   const payload={format:'varler-planner',version:1,name:p.name,saved:new Date(p.ts||Date.now()).toISOString(),project:p.data};
   download((p.name||'terv').replace(/[^\w\-]+/g,'_')+'.vplan.json',JSON.stringify(payload,null,2));}
 function importProjectFile(file){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
+  if(typeof skiIs==='function'&&skiIs(o)){skiImport(o);return;}   // a VRG Mobile Vázlat package (08ca)
   const payload=o.project?o.project:(o.data?o:{building:o.building||o,data:o.data||{}});
   const name=o.name||(payload.building&&payload.building.name)||'Importált terv';
   const id=saveProject(name);const ix=loadProjIndex();ix[id].data=payload;saveProjIndex(ix);

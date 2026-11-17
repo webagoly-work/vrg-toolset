@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 //   points  → data.devices (Planner type, a standard height, on a wall 40 mm in front of it)
 //   Elosztó → a 'board' device (the Planner fills in its height and footprint)
 //   circuits→ data.circuits {name, col, dedicated, members, board}
-//   routes  → data.paths at the ceiling, their tied ends as links of the devices (a link without glue: the route
+//   routes  → data.paths at the ceiling (the Planner's default section build), their tied ends as links of the devices (a link without glue: the route
 //             reaches the box from above, as the Planner's auto-link makes it)
 //   memos   → data.notes; a loose tag → a note "#name"
 // Everything carries `sk` {src:'vazlat', id, …}: where it came from, and for a room which edges were measured,
@@ -106,7 +106,9 @@ object PlannerExport {
         norm.routes.filter { it.pts.size >= 2 }.forEach { r ->
             val pid = id("P")
             val nodes = r.pts.map { p -> JSONObject().put("id", id("n")).put("x", i(p.x)).put("y", i(p.y)).put("h", s.level.heightMm).put("level", lvl) }
-            val o = JSONObject().put("id", pid).put("level", lvl).put("nodes", JSONArray(nodes))
+            // one section per segment, as the Planner's own path tools make them (its default build, no circuit)
+            val sections = (1 until nodes.size).map { JSONObject().put("build", "sull_gege").put("circuit", JSONObject.NULL) }
+            val o = JSONObject().put("id", pid).put("level", lvl).put("nodes", JSONArray(nodes)).put("sections", JSONArray(sections))
             val sk = JSONObject().put("src", "vazlat").put("id", r.id)
             r.circuit?.let { c -> ckId[c]?.let { sk.put("circuit", it) } }
             o.put("sk", sk)
