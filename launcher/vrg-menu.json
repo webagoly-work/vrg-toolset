@@ -285,7 +285,8 @@
             { "key": "1", "name": "A repo gyökere", "hint": "ajánlott, látja az egészet", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{repo}", "needs": "{claude}" },
             { "key": "2", "name": "Planner projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{planner}", "needs": "{claude}" },
             { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" },
-            { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" }
+            { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" },
+            { "key": "T", "name": "ServiceKit Terminál", "hint": "hordozható indító, telefonos jóváhagyás", "exe": "{repo}\\ServiceKit\\TERMINAL.cmd", "cwd": "{repo}\\ServiceKit" }
           ] } },
       { "key": "D", "name": "Irányítópult", "hint": "a teljes képernyős munkafelület", "exe": "{repo}\\Dashboard\\VRG Irányítópult.cmd" },
       { "key": "F", "name": "VRG Desktop .exe építése", "hint": "{full}\\build\\vrg-desktop", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Dashboard\\tools\\package.js"] }] },

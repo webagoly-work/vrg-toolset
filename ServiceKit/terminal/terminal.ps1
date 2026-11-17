@@ -33,6 +33,13 @@ function Test-TermHas([string]$Fn) { return [bool](Get-Command $Fn -CommandType 
 
 function Wait-TermKey { [void](Read-TermLine (TT 'pressEnter')) }
 
+# Version checks start each claude binary, so the menu keeps the list until something may have changed it.
+$script:TermInstalls = $null
+function Get-TermInstallsCached([switch]$Refresh) {
+    if ($Refresh -or $null -eq $script:TermInstalls) { $script:TermInstalls = @(Find-TermClaudeInstalls) }
+    return ,$script:TermInstalls
+}
+
 # ---------------------------------------------------------------- header
 function Show-TermHeader($Installs) {
     $os = Get-KitOS
@@ -136,7 +143,7 @@ function Select-TermWorktree([string]$Folder) {
 
 # ---------------------------------------------------------------- 1: Claude
 function Start-TermClaudeFlow {
-    $installs = @(Find-TermClaudeInstalls)
+    $installs = Get-TermInstallsCached
     $claude = Select-TermClaude $installs
     if (-not $claude) {
         Write-TermBoth 'claudeNoneOffer' 'Yellow'
@@ -325,14 +332,14 @@ function Invoke-TermMain {
         'sandbox' { Start-TermSandboxUi; return }
     }
     while ($true) {
-        Show-TermHeader @(Find-TermClaudeInstalls)
+        Show-TermHeader (Get-TermInstallsCached)
         foreach ($k in @('m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'mT', 'mL', 'mQ')) { Write-Term ('   ' + (TT $k)) 'Gray' }
         $a = ([string](Read-TermLine (TT 'choice'))).Trim().ToUpper()
         switch ($a) {
             '1' { Start-TermClaudeFlow }
             '2' { Start-TermChecks '' }
             '3' { Show-TermInstalls }
-            '4' { Show-TermWorkshop }
+            '4' { Show-TermWorkshop; [void](Get-TermInstallsCached -Refresh) }
             '5' { Start-TermSandboxUi }
             '6' { Start-TermKitShell }
             'T' {

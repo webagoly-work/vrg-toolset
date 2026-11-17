@@ -43,6 +43,7 @@ dashboard. `bootstrap.cmd` does the same on double-click.)*
 | `START.cmd` | Irányítópult élő állapottal: futó programok CPU/RAM, telepítési folyamat, indítás |
 | `SETUP.cmd` | Telepítő: kiválasztás, letöltés, frissítés. Bármikor újrafuttatható. |
 | `KITSHELL.cmd` | Hordozható parancssor (Git, Node, Python, PowerShell 7, Sysinternals a PATH-on) |
+| `TERMINAL.cmd` | ServiceKit Terminál: hordozható Claude Code indító telefonos jóváhagyással, ellenőrzések, telepítési napló (`terminal\README.md`) |
 | `PARANCSOK.html` | Offline parancsgyűjtemény, kattintásra másolás (telefonra is másolható) |
 | `OFFLINE-SUGO.cmd` | Az útmutató és a Súgó szerver nélkül, ha a PowerShell tiltva van |
 
@@ -62,6 +63,19 @@ dashboard. `bootstrap.cmd` does the same on double-click.)*
 1. **Kit Shell** – tiszta, hordozható munkakörnyezet. Nem biztonsági határ.
 2. **Sandboxie-Plus** – programok dobozban; a változásaik egy kattintással törölhetők (Win7–11, egyszeri telepítés).
 3. **Windows Sandbox** – eldobható teljes Windows (Win10/11 Pro, Enterprise, Education). A `tools` mappa csak olvasható benne.
+
+## ServiceKit Terminál
+
+A **TERMINAL.cmd** egy hordozható Claude Code indító. Megkeresi a gépen a Claude Code-ot és a korábbi munkamenetek
+mappáit, külön munkafát (worktree) ad a feladatnak, és csak akkor enged bejelentkezni, ha a tulajdonos a **telefonján
+jóváhagyja** (GitHub device flow). Minden hozzáférés egy privát GitHub repóba kerül naplóként, ahonnan `/deny`
+megjegyzéssel le is tiltható. Kilépéskor a belépési adatok törlődnek. Mellette: csak olvasó ellenőrzések (T0–T4)
+javaslatokkal, a kit által telepített dolgok naplója eltávolítással, Agent Workshop (gh, rg, fd, jq, uv, Claude Code),
+Windows Sandbox. Részletek: `terminal\README.md`.
+
+*TERMINAL.cmd is a portable Claude Code launcher: sign-in only after the owner approves on their phone, every access
+logged to a private GitHub repo and deniable from there, credentials wiped on exit. Plus read-only checks, an installs
+ledger with uninstall, the Agent Workshop and Windows Sandbox. See `terminal\README.md`.*
 
 ## Munkák és ügyfél jelentés
 
@@ -208,6 +222,12 @@ The local Dashboard server listens on 127.0.0.1 only, needs no admin rights, and
 | Fejlesztés | VS Code (portable) | alap | auto | régebbi verzió | Kódszerkesztő, beállítások és bővítmények a kiten belül (data mappa). |
 | Fejlesztés | Notepad++ | alap | auto | részben | Gyors szövegszerkesztő naplókhoz, konfigokhoz. |
 | Fejlesztés | PowerShell 7 | alap | auto | ✗ | Modern PowerShell, a Kit Shellből elérhető. |
+| Fejlesztés | GitHub CLI (gh) | kiegészítő | auto | ✗ | GitHub parancssorból. A ServiceKit Terminál ezzel kéri a telefonos jóváhagyást és ezzel naplóz. |
+| Fejlesztés | ripgrep (rg) | kiegészítő | auto | részben | Villámgyors keresés fájlok tartalmában. A Claude Code is ezt használja. |
+| Fejlesztés | fd | kiegészítő | auto | részben | Gyors fájlkeresés név szerint. |
+| Fejlesztés | jq | kiegészítő | auto | ✓ | JSON szűrése és átalakítása a parancssorban. |
+| Fejlesztés | uv (Python csomagkezelő) | kiegészítő | auto | ✗ | Gyors Python csomag- és környezetkezelő (pip és venv helyett). |
+| Fejlesztés | Claude Code (natív, Windows x64) | kiegészítő | auto | ✗ | Claude Code a kitből, a gépre telepítés nélkül. A beállításai a kiten belül maradnak. |
 | Segédeszközök | 7-Zip | alap | auto | ✓ | Tömörítés és kicsomagolás, telepítés nélkül. |
 | Segédeszközök | ShareX | kiegészítő | auto | ✗ | Képernyőkép és felvétel a javítás dokumentálásához. |
 | Segédeszközök | SumatraPDF | kiegészítő | auto | ✓ | Könnyű PDF-olvasó (kapcsolási rajzok, kézikönyvek). |
