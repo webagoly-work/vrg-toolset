@@ -71,7 +71,7 @@ To see who opened it: `type H:\VRG\Full\jobs\_elozmenyek\helyek-log.jsonl` (one 
   Job codes are also found by the search box.
 - **VRG Asztal → Munkák**: the 📍 at the end of each job row (`desktop.mapJob`, job codes only).
 - **Workflow Kit address step** (`02_question_funnel/tools/funnel.js`): prints
-  `Megnézem a térképen: http://localhost:8802/?job=<code>` after the decisions — see "Open" below.
+  `Megnézem a térképen: http://localhost:8802/?job=<code>` after the decisions, on the console only (the Kit is outside Git; added 2026-11-17).
 - **Phone**: VRG Mobile → Localhost → 8802 (the relay with `--ports`), logged as `relay`.
 
 ## Confirming the drafted addresses (MAP-D3 A)
@@ -97,6 +97,4 @@ serves them on `:8803` (`VRG_JOBS_DIR`). `Mobile/tests/relay-ports.js` checks th
 
 ## Open
 
-- The Workflow Kit line in `funnel.js` was not applied from the worktree session (the Kit is outside
-  its allowed folders); the one-line patch is in the session's hand-over note.
 - Kapu guest mode (WP-G1) does not exist yet; when it does, it opens the map with `?vendeg=1`.
