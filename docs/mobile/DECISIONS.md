@@ -254,6 +254,41 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** the relay re-runs the presets (a second copy of the Desktop's feed engine); **C** the relay asks the
   running Desktop for its cached feed (needs the Desktop open, and a new channel between them).
 
+- **D-19 · Vázlat: where a rough sketch becomes millimetres (M24), 2026-11-17.** Default taken while building (the user
+  asked for the feature and was not asked in between); the user revisits it.
+  Chosen: **A** — on the phone, in `sketch-core` (`Solver.kt`, pure Kotlin, JVM-tested): the field sees the same
+  measured / derived / ≈ guessed sizes live that the Planner later gets, and the Planner only loads its own records
+  and marks the guesses (`08ca-sketch-import.js`). Rejected: **B** the solver in the Planner (JS) and the phone sends
+  only the raw sketch (no feedback on site, where a missing size can still be measured); **C** both (two copies of
+  the same maths to keep equal).
+- **D-20 · Vázlat: how the sketch reaches the Planner (M24), 2026-11-17.** Default; the user revisits it.
+  Chosen: **A** — one file, `<name>.vsketch.json` (kind `vrg-sketch`: the raw sketch + the plan as Planner records),
+  through Android's share sheet (Átadás *PC-re* puts it on the PC board) or saved to Letöltések, opened with the
+  Planner's existing *Terv betöltése fájlból*. Rejected: **B** a relay message that drops it into a running Planner
+  (needs the PC paired and the Planner open; a Later item on top of A); **C** a push to a GitHub branch (client
+  sketches carry names and addresses: they stay off the repo, like `*.pdf`).
+- **D-21 · Vázlat: native canvas, not a web page (M24), 2026-11-17.** Default; the user revisits it.
+  Chosen: **A** — a Compose canvas with the logic in `sketch-core`: hold timing, the directional wheel and two-finger
+  pinch need the touch stream, it works offline from the first start, and every edit is a tested function.
+  Rejected: **B** the Planner's own page in M21's WebView (a desktop editor on a phone; its quick build is mouse and
+  keyboard); **C** a new HTML sketcher shared with the Desktop (a second front end to keep in step).
+- **D-22 · Vázlat: what each sketch record becomes in the Planner (M24), 2026-11-17.** Default; the user revisits it.
+  Rooms → Helyiség-toll outline records (inner sizes), so Falak / Padlók létrehozása build them; points → devices at
+  standard heights (dugalj 300, kapcsoló 1100, lámpa: mennyezet, on a wall 2000, kötődoboz 2200, Elosztó: the
+  Planner's board), 40 mm in front of their wall; *meglévő / tervezett* kept as `sk.st` on the device (not yet moved
+  onto the Planner's Meglévő layer: a Later step); nyomvonal → paths at the ceiling with the Planner's default section
+  (`sull_gege`), tied ends as device links without glue; memos and loose tags → notes; the preset tags Fürdő / Konyha
+  → room kinds, IP44 / Bontás → device flags, Dedikált → the circuit. A guessed edge stays marked (`sk.est`, orange ≈)
+  until *Vázlat: méretek ellenőrizve*.
+- **D-23 · Vázlat: the photo point is its own WP (M25), 2026-11-17.** The user called it "the second version"; M24
+  keeps its data slot (`photos` in the sketch file, the plugin and tool as plans), so M25 adds a tool and a camera
+  and changes no file format.
+
 ## Open (to ask when the WP that needs them starts)
 
-None.
+- **D-24 · Fotópont: the direction of a photo (M25).** A four sides of the room (recommended) · B eight · C the exact angle.
+- **D-25 · Fotópont: how the photos reach the PC (M25).** A each on the Átadás board, named by the package (recommended)
+  · B one zip · C base64 inside the JSON.
+- **D-26 · Fotópont: the compass (M25).** A none, the swipe is the direction (recommended) · B the heading recorded too
+  · C the compass instead of the swipe.
+  The options are explained in `WP/M25.md`.

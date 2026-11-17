@@ -134,10 +134,21 @@ object Catalogue {
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
     )
 
+    // The field sketch (2026-11-17): a purpose-made note taker with plugins, the Planner's quick build for the site.
+    val SKETCH = FeatureInfo(
+        "sketch", "Vázlat", "Helyszíni alaprajz-vázlat: szobák téglalappal vagy vonallal, méretek, szerelési pontok, áramkörök, Elosztó, nyomvonal, memó és címke; a Planner kész tervet csinál belőle.",
+        "📐", Group.WORK, Stage.BETA, "M24",
+    )
+    val PHOTO = FeatureInfo(
+        "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
+        "📷", Group.WORK, Stage.PLANNED, "M25", setOf(Need.CAMERA),
+    )
+
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, CLAUDE,
+        SKETCH, PHOTO,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
     )

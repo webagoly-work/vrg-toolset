@@ -41,7 +41,7 @@ jobs:
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
       - name: Tests (pure Kotlin)
-        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test
       - name: Debug APK
         run: ./gradlew --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4

@@ -20,6 +20,7 @@ import hu.vrg.mobile.ports.PortsFeature
 import hu.vrg.mobile.pulse.PulseFeature
 import hu.vrg.mobile.screen.ScreenFeature
 import hu.vrg.mobile.settings.SettingsFeature
+import hu.vrg.mobile.sketch.ui.SketchFeature
 import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.stack.StackFeature
 import hu.vrg.mobile.update.UpdateFeature
@@ -49,6 +50,7 @@ object Registry {
         AppsFeature,
         ClaudeFeature,
         PcWinFeature,
+        SketchFeature,
         InboxFeature,
         NetFeature,
     )

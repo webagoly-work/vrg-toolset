@@ -65,6 +65,11 @@ Mobile/
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
+    sketch-core/        Vázlat's pure Kotlin (WP M24): the sketch model + file, tool plugins, edits and hit tests, the
+                        hold wheels, the measurement solver (wall lines, least squares, measured / derived / guessed),
+                        the package the Planner imports (its fixture: Planner/.../tests/sketch-field.json) + tests
+    feature-sketch/     Vázlat (WP M24): the sketch list, the canvas (tap / drag / hold wheel / pinch), the tool rail and
+                        option rows, tag tray, dialogs, Rendezés (the plan in mm) and the export (share / Letöltések)
 ```
 
 ## How the pieces fit

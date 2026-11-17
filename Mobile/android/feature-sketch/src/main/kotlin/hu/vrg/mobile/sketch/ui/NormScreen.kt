@@ -1,0 +1,191 @@
+package hu.vrg.mobile.sketch.ui
+
+import android.content.Context
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import hu.vrg.mobile.kit.FeatureHost
+import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.files.FileStore
+import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.sketch.Geo
+import hu.vrg.mobile.sketch.Norm
+import hu.vrg.mobile.sketch.PlannerExport
+import hu.vrg.mobile.sketch.PointState
+import hu.vrg.mobile.sketch.PointType
+import hu.vrg.mobile.sketch.Pt
+import hu.vrg.mobile.sketch.SizeStatus
+import hu.vrg.mobile.sketch.Sketch
+import hu.vrg.mobile.sketch.SketchJson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import kotlin.math.min
+import kotlin.math.roundToInt
+
+// Rendezés: the sketch as the Planner will get it. The solver's plan in millimetres, every wall coloured by how its
+// size is known (mért = measured on site, számolt = follows from other sizes, ≈ becsült = took the sketch's
+// proportions), the solver's report (contradicting sizes, slanted walls), and the export: one .vsketch.json package
+// that the Planner opens with "Terv betöltése fájlból" (Planner src/08ca-sketch-import.js).
+
+private const val MIME = "application/json"
+
+private suspend fun writePackage(ctx: Context, s: Sketch, n: Norm): File = withContext(Dispatchers.IO) {
+    val f = File(FileStore.cacheDir(ctx, "sketch"), SketchJson.fileStem(s) + ".vsketch.json")
+    f.writeText(PlannerExport.build(s, n).toString(1))
+    f
+}
+
+@Composable
+internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) {
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val n = st.norm
+    val rep = n.report
+    var done by remember { mutableStateOf<String?>(null) }
+    val tm = rememberTextMeasurer()
+    val c = pal()
+
+    Column(Modifier.fillMaxSize().background(Melyviz.abyss)) {
+        Column(Modifier.fillMaxWidth().background(Melyviz.deep).padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("‹ Vázlat", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(end = 12.dp))
+                Text("RENDEZÉS", style = Melyviz.title.copy(fontSize = 18.sp))
+            }
+            Text("${rep.measured} mért · ${rep.derived} számolt · ${rep.inferred} becsült fal · lépték ${rep.scaleX.roundToInt()} mm / egység",
+                style = Melyviz.small, modifier = Modifier.padding(top = 4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 2.dp)) {
+                Text("━ mért", style = Melyviz.small.copy(color = Melyviz.ink))
+                Text("━ számolt", style = Melyviz.small.copy(color = Melyviz.glow))
+                Text("┅ ≈ becsült", style = Melyviz.small.copy(color = Melyviz.coral))
+            }
+        }
+        if (rep.conflicts.isNotEmpty() || rep.warnings.isNotEmpty()) {
+            Column(Modifier.fillMaxWidth().heightIn(max = 110.dp).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)) {
+                rep.conflicts.forEach { k ->
+                    val m = st.sketch.measure(k.measure)
+                    val where = m?.let { st.sketch.room(it.room) }?.let { roomTitle(it.name, it.kinds) + " · " + m.kind.label.lowercase() } ?: k.measure
+                    Text("Ellentmondás: $where ${k.mm} mm, a többi méret szerint ${k.solved} mm.", style = Melyviz.small.copy(color = Melyviz.coral))
+                }
+                rep.warnings.forEach { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
+            }
+        }
+        Box(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
+            if (n.rooms.isEmpty()) Text("Még nincs szoba a vázlaton.", style = Melyviz.small, modifier = Modifier.align(Alignment.Center))
+            else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
+        }
+        Column(Modifier.fillMaxWidth().background(Melyviz.surface).padding(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                VrgChip("⇪ Küldés a Plannerbe", selected = true) {
+                    scope.launch {
+                        try {
+                            val f = writePackage(ctx, st.sketch, n)
+                            ctx.startActivity(FileStore.shareIntent(ctx, f, MIME, "Vázlat küldése"))
+                            done = "Megosztva: ${f.name}"
+                        } catch (e: Exception) {
+                            VrgLog.w("sketch", "Megosztás sikertelen: ${e.message}"); host.note("A megosztás nem sikerült.")
+                        }
+                    }
+                }
+                VrgChip("⤓ Mentés a telefonra") {
+                    scope.launch {
+                        val f = writePackage(ctx, st.sketch, n)
+                        val at = FileStore.saveShared(ctx, f, f.name, MIME, "VRG Vázlat")
+                        done = at?.let { "Mentve: $it" } ?: "A mentés nem sikerült."
+                    }
+                }
+            }
+            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json. Átadással: Küldés → PC-re, és a fájl a PC táblájára kerül.",
+                style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
+            done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
+        }
+    }
+}
+
+private fun DrawScope.text(tm: TextMeasurer, s: String, at: Offset, color: Color, size: TextUnit, bold: Boolean = false, bg: Color? = null) {
+    val lay = tm.measure(s, TextStyle(color = color, fontSize = size, fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal))
+    val tl = Offset(at.x - lay.size.width / 2f, at.y - lay.size.height / 2f)
+    if (bg != null) drawRect(bg, Offset(tl.x - 3, tl.y - 1), androidx.compose.ui.geometry.Size(lay.size.width + 6f, lay.size.height + 2f))
+    drawText(lay, topLeft = tl)
+}
+
+private fun thousands(v: Double) = v.roundToInt().toString().reversed().chunked(3).joinToString(" ").reversed()
+
+/** The solved plan fitted into the canvas, y down as on the sketch and in the Planner. */
+private fun DrawScope.drawPlan(n: Norm, s: Sketch, tm: TextMeasurer, c: Pal) {
+    val pts = n.rooms.flatMap { it.poly }.ifEmpty { return }
+    val (lo, hi) = Geo.bbox(pts)
+    val pad = 36.dp.toPx()
+    val w = (hi.x - lo.x).coerceAtLeast(1.0); val h = (hi.y - lo.y).coerceAtLeast(1.0)
+    val k = min((size.width - 2 * pad) / w, (size.height - 2 * pad) / h)
+    val ox = (size.width - w * k) / 2 - lo.x * k; val oy = (size.height - h * k) / 2 - lo.y * k
+    fun P(p: Pt) = Offset((p.x * k + ox).toFloat(), (p.y * k + oy).toFloat())
+    val dash = PathEffect.dashPathEffect(floatArrayOf(8.dp.toPx(), 5.dp.toPx()))
+
+    n.rooms.filter { it.poly.size >= 3 }.forEach { r ->
+        val path = Path().apply { r.poly.forEachIndexed { i, p -> val o = P(p); if (i == 0) moveTo(o.x, o.y) else lineTo(o.x, o.y) }; close() }
+        drawPath(path, (if (r.inferred) c.coral else c.surface).copy(alpha = if (r.inferred) 0.10f else 0.7f))
+        r.poly.indices.forEach { i ->
+            val a = r.poly[i]; val b = r.poly[(i + 1) % r.poly.size]
+            val st = r.edges.getOrNull(i) ?: SizeStatus.INFERRED
+            val col = when (st) { SizeStatus.MEASURED -> c.ink; SizeStatus.DERIVED -> c.glow; SizeStatus.INFERRED -> c.coral }
+            drawLine(col, P(a), P(b), (if (st == SizeStatus.INFERRED) 2.5 else 2.0).dp.toPx(), pathEffect = if (st == SizeStatus.INFERRED) dash else null)
+            val inw = Geo.inward(r.poly, i)
+            val mid = P(Geo.lerp(a, b, 0.5)) + Offset(inw.x.toFloat(), inw.y.toFloat()) * 11.dp.toPx()
+            text(tm, (if (st == SizeStatus.INFERRED) "≈ " else "") + thousands(a.dist(b)), mid, col, 9.sp, bg = c.abyss.copy(alpha = 0.6f))
+        }
+        val ctr = P(Geo.centroid(r.poly))
+        text(tm, roomTitle(r.name, r.kinds), ctr - Offset(0f, 8.dp.toPx()), c.ink, 11.sp, bold = true)
+        text(tm, (if (r.inferred) "≈ " else "") + "%.2f m²".format(r.area / 1e6).replace('.', ','), ctr + Offset(0f, 8.dp.toPx()),
+            if (r.inferred) c.coral else c.muted, 10.sp)
+    }
+    n.routes.forEach { r ->
+        val col = s.circuit(r.circuit)?.let { Color(it.color) } ?: c.current
+        for (i in 0 until r.pts.size - 1) drawLine(col, P(r.pts[i]), P(r.pts[i + 1]), 2.dp.toPx(),
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10.dp.toPx(), 3.dp.toPx(), 2.dp.toPx(), 3.dp.toPx())))
+    }
+    n.points.forEach { p ->
+        val o = P(p.at)
+        s.circuitOf(p.id)?.let { drawCircle(Color(it.color), 7.dp.toPx(), o, style = Stroke(2.dp.toPx())) }
+        val fill = if (p.state == PointState.EXISTING) c.sand else c.glow
+        if (p.type == PointType.BOARD) drawRect(c.coral, Offset(o.x - 6.dp.toPx(), o.y - 6.dp.toPx()), androidx.compose.ui.geometry.Size(12.dp.toPx(), 12.dp.toPx()))
+        else drawCircle(fill, 5.dp.toPx(), o)
+    }
+    n.memos.forEach { m -> text(tm, "✎", P(m.at), c.sand, 10.sp) }
+}

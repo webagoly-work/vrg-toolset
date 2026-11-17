@@ -72,6 +72,11 @@ What changes locally compared with the cloud:
 - **M21** Alkalmazások built 2026-11-12, **BETA**: `docs/mobile/WP/M21.md` → "Telefonon ellenőrizni" (8 apps, one origin each; `node Mobile/tests/apps-phone.js`). Next in order: M22.
 - **M22** Claude built 2026-11-12, **BETA**: `docs/mobile/WP/M22.md` → "Telefonon ellenőrizni" (step 0 first: run `claude remote-control` once by hand on the PC). The relay needs `--claude`. Next in order: M23.
 - **M23** PC ablakok built 2026-11-12, **BETA**: `docs/mobile/WP/M23.md` → "Telefonon ellenőrizni". The PC's work folders (D-17) read-only, copy via Átadás; the feed and search stay on the PC (D-18). The relay needs `--files` (`Mobile\mobile.cmd relay` passes it). M23 is the last WP in the table: what comes next is the user's call.
+- **M24** Vázlat built 2026-11-17 **in a cloud session** (branch `ccr-8eb857ea-k8amlp`, not yet on `main`: merge it
+  locally first), **BETA**: `docs/mobile/WP/M24.md` → "Telefonon ellenőrizni" (16 steps, the last two on the PC with
+  the Planner). D-19 … D-23 were taken as defaults while building: revisit them in `docs/mobile/DECISIONS.md`. Its
+  logic is `sketch-core` (`gradlew :sketch-core:test`, now in `mobile.cmd test` and CI); the Planner side is
+  `src/08ca-sketch-import.js` + `tests/spec-111-sketch-import.js`. **M25** Fotópont is next, with D-24 … D-26 to ask.
 
 ## 3. What the user asked for, mapped to WPs
 
