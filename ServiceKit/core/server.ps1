@@ -15,6 +15,10 @@ $EnvsDir = Join-Path $KitRoot 'envs'
 $ExchangeDir = Join-Path $KitRoot 'exchange'
 foreach ($d in @($EnvsDir, $ExchangeDir)) { if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null } }
 
+# ServiceKit Terminal: ledger (PowerShell 2.0-safe) for the Terminal view.
+$TermPs = Join-Path $KitRoot 'terminal'
+if (Test-Path (Join-Path $TermPs 'ledger.ps1')) { . (Join-Path $TermPs 'ledger.ps1') }
+
 $OS = Get-KitOS
 $IsWin = [bool]$OS['windows']
 $Token = ([guid]::NewGuid().ToString('N'))
@@ -743,8 +747,76 @@ function Invoke-Action([string]$Path, $Body) {
         '/api/elevate' { Restart-Elevated; $script:QuitAt = (Get-Date).AddSeconds(1); return @{ ok = $true } }
         '/api/rescan' { $script:InstStamp = $null; $script:SafeCache = $null; Update-ExeMap; return @{ ok = $true } }
         '/api/quit' { $script:Quit = $true; return @{ ok = $true } }
+        '/api/term' { return (Get-TermDashState) }
+        '/api/term-start' {
+            $what = [string](Get-Key $Body 'action' '')
+            $tiers = [string](Get-Key $Body 'checks' '')
+            $cmdf = Join-Path $KitRoot 'TERMINAL.cmd'
+            if (-not (Test-Path $cmdf)) { throw 'no-terminal' }
+            $argl = '/c ' + (Get-QuotedArg $cmdf)
+            if ($tiers) {
+                if ($tiers -notmatch '^(T[0-4],?)+$') { throw 'bad-name' }
+                $argl += ' -Checks ' + $tiers + ' -NoMenu'
+            } elseif ($what) {
+                if ($what -notmatch '^(claude|checks|installs|workshop|sandbox)$') { throw 'bad-name' }
+                $argl += ' -Action ' + $what
+            }
+            Start-Process -FilePath 'cmd.exe' -ArgumentList $argl -WorkingDirectory $KitRoot | Out-Null
+            return @{ ok = $true }
+        }
+        '/api/term-open' {
+            $row = Get-TermDashRow ([string](Get-Key $Body 'id' ''))
+            $what = 'folder'; if ((Get-Key $Body 'what' '') -eq 'file') { $what = 'file' }
+            Open-TermLedgerItem $row $what
+            return @{ ok = $true }
+        }
+        '/api/term-uninstall' {
+            $row = Get-TermDashRow ([string](Get-Key $Body 'id' ''))
+            $step = @(Get-TermUninstallPlan @($row) $KitRoot)[0]
+            if (-not $step['ok']) { return @{ ok = $false; error = 'term-refused'; reason = $step['reason'] } }
+            return @{ ok = $true; result = (Invoke-TermPlanStep $step $KitRoot) }
+        }
+        '/api/term-report' {
+            $name = [string](Get-Key $Body 'name' '')
+            if ($name -notmatch '^\d{8}-\d{6}$') { throw 'bad-name' }
+            $f = Join-Path (Join-Path (Join-Path $KitRoot 'reports') $name) 'report.html'
+            if (Test-Path $f) { Start-Process $f }
+            return @{ ok = $true }
+        }
     }
     throw 'unknown-route'
+}
+
+# Terminal view: ledger rows, the running session (it holds no secrets) and the latest check reports.
+function Get-TermDashState {
+    $rows = @(); $plan = @{}
+    if (Get-Command Read-TermLedger -ErrorAction SilentlyContinue) {
+        $rows = @(Read-TermLedger (Get-TermLedgerPath))
+        foreach ($st in @(Get-TermUninstallPlan $rows $KitRoot)) { $plan[$st['id']] = @{ ok = $st['ok']; action = $st['action']; reason = $st['reason'] } }
+    }
+    $sess = Read-KitJson (Join-Path $StateDir 'terminal-session.json') $null
+    $live = $null
+    if ($sess) {
+        $alive = $false
+        try { $alive = [bool](Get-Process -Id ([int](Get-Key $sess 'pid' 0)) -ErrorAction SilentlyContinue) } catch { }
+        $live = @{ folder = (Get-Key $sess 'folder' ''); repo = (Get-Key $sess 'repo' ''); issue = (Get-Key $sess 'issue' 0); started = (Get-Key $sess 'started' ''); trusted = (Get-Key $sess 'trusted' $false); alive = $alive }
+    }
+    $reps = @()
+    $rd = Join-Path $KitRoot 'reports'
+    if (Test-Path $rd) {
+        foreach ($d in @(Get-ChildItem -LiteralPath $rd -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer -and $_.Name -match '^\d{8}-\d{6}$' } | Sort-Object Name -Descending | Select-Object -First 6)) {
+            $tiers = @(); foreach ($j in @(Get-ChildItem -LiteralPath $d.FullName -Filter 'T?.json' -ErrorAction SilentlyContinue)) { $tiers += $j.BaseName }
+            $reps += ,@{ name = $d.Name; tiers = $tiers }
+        }
+    }
+    $prof = Read-KitJson (Join-Path $KitRoot 'terminal\profile.json') $null
+    return @{ ok = $true; present = (Test-Path (Join-Path $KitRoot 'TERMINAL.cmd')); ledger = $rows; plan = $plan; session = $live; reports = $reps;
+              profile = [bool]($prof -and (Get-Key $prof 'githubUser' '')); owner = [string](Get-Key $prof 'githubUser' '') }
+}
+
+function Get-TermDashRow([string]$Id) {
+    foreach ($r in @(Read-TermLedger (Get-TermLedgerPath))) { if ([string](Get-Key $r 'id' '') -eq $Id) { return $r } }
+    throw 'unknown-row'
 }
 
 function Get-State {

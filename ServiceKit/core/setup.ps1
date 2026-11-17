@@ -23,6 +23,10 @@ $CoreDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $CoreDir 'kit.ps1')
 $ErrorActionPreference = 'Continue'
 
+# ServiceKit Terminal ledger: every package Setup puts into tools\ is recorded (state\ledger.json).
+$LedgerPs = Join-Path $KitRoot 'terminal\ledger.ps1'
+if (Test-Path $LedgerPs) { . $LedgerPs }
+
 $Cat = Get-Catalog
 $OS = Get-KitOS
 $Settings = Read-KitJson (Join-Path $StateDir 'settings.json') @{}
@@ -403,6 +407,11 @@ foreach ($id in $sel) {
         $Installed[$id] = @{ date = (Get-Date).ToString('s'); files = ($versions -join ', '); legacy = [bool]$useLegacy; sha256 = [string]($hashes -join ',') }
         try { Update-KitHashes $id } catch { }
         Write-KitJson (Join-Path $StateDir 'installed.json') $Installed
+        if (Get-Command Add-TermLedgerEntry -ErrorAction SilentlyContinue) {
+            $srcUrls = @(); foreach ($sx in $srcList) { $u = Get-Key $sx 'url' (Get-Key $sx 'repo' (Get-Key $sx 'type' '')); if ($u) { $srcUrls += [string]$u } }
+            try { [void](Add-TermLedgerEntry (Get-TermLedgerPath) @{ pkg = $id; kind = 'portable'; paths = @('tools\' + $id); source = ($srcUrls -join ' ');
+                                                                   sha256 = [string]($hashes -join ','); sizeMB = (Get-TermFolderMB $pkgDir) }) } catch { }
+        }
         Say ("    " + (T 'done')) 'Green'
         Set-PkgState $id 'ok'; $okN++
     }

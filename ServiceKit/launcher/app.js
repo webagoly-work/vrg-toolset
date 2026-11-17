@@ -84,6 +84,7 @@
       openInbox: 'Inbox mappa', openLogs: 'Naplók', kitFolder: 'Kit mappa', started: 'Elindítva', failed: 'Nem sikerült', setupStarted: 'A Telepítő elindult egy új ablakban.',
       e_not_installed: 'Ez a program még nincs letöltve.', e_sbie_missing: 'A Sandboxie-Plus nincs telepítve.', e_wsb_missing: 'A Windows Sandbox nincs bekapcsolva.',
       e_wsb_running: 'Már fut egy Windows Sandbox (egyszerre csak egy lehet).', e_python_missing: 'A Python nincs letöltve.', e_bad_name: 'Csak betű, szám, - és _ lehet a névben.',
+      navTerm: 'Terminál', termTitle: 'ServiceKit Terminál', termLede: 'Hordozható Claude Code indító telefonos jóváhagyással. A bejelentkezés a TERMINAL.cmd ablakában történik; itt az állapot, az ellenőrzések és a kit által telepített dolgok látszanak.', termOpen: 'Terminál megnyitása', termClaude: 'Claude indítása', termChecks: 'Ellenőrzések', termRun: 'Futtatás', termReports: 'Jelentések', termInstalls: 'Telepítések (napló)', termNone: 'A napló üres.', termFolder: 'Mappa', termFile: 'Fájl', termUninstall: 'Eltávolítás', termFull: 'Teljes eltávolítás (a Terminálban, beírt megerősítéssel)', termSession: 'Futó munkamenet', termNoSession: 'Most nem fut munkamenet.', termNoProfile: 'Nincs profil: terminal\\profile.json (minta: profile.example.json).', termOwner: 'Tulajdonos', termMissing: 'A Terminál (TERMINAL.cmd) nincs a kitben.', termConfirmUn: 'Eltávolítod: {0}?', termRefused: 'kihagyva', e_term_refused: 'A kit ezt nem törli (a kiten kívül van, vagy nincs eltávolító parancs).', e_no_terminal: 'A TERMINAL.cmd hiányzik.', e_unknown_row: 'Ez a sor már nincs a naplóban.',
       confirmStop: 'Biztosan leállítod: {0}?', confirmDel: 'Törlöd a(z) {0} környezetet?', confirmWipe: 'Kiüríted a Sandboxie dobozt? A benne lévő változások elvesznek.',
       navPb: 'Forgatókönyvek', navCmd: 'Parancsok', cmdTitle: 'Parancsok', cmdLede: 'CMD és PowerShell parancsok offline, kattintásra másolva. A változókat (IP, gépnév…) egyszer állítsd be. Önállóan is megvan: PARANCSOK.html a kit gyökerében.', pbTitle: 'Forgatókönyvek', pbLede: 'Lépésenkénti rutinok, amelyek el is végzik a munkát. Az ellenőrzések maguktól futnak, a változtatás előtt rákérdeznek, a kézi lépéseknél te jelzed, ha kész. Minden eredmény bekerül az aktív munka naplójába és a jelentésbe.',
       risk_safe: 'csak olvas', risk_changes: 'módosít', risk_repair: 'javít', kind_check: 'ellenőrzés', kind_action: 'művelet', kind_manual: 'kézi', longStep: 'hosszú',
@@ -155,6 +156,7 @@
       openInbox: 'Inbox folder', openLogs: 'Logs', kitFolder: 'Kit folder', started: 'Started', failed: 'Failed', setupStarted: 'Setup started in a new window.',
       e_not_installed: 'This program is not downloaded yet.', e_sbie_missing: 'Sandboxie-Plus is not installed.', e_wsb_missing: 'Windows Sandbox is not enabled.',
       e_wsb_running: 'A Windows Sandbox is already running (only one at a time).', e_python_missing: 'Python is not downloaded.', e_bad_name: 'Use only letters, digits, - and _.',
+      navTerm: 'Terminal', termTitle: 'ServiceKit Terminal', termLede: 'Portable Claude Code launcher with a phone approval. Sign-in happens in the TERMINAL.cmd window; here you see the status, the checks and what the kit installed.', termOpen: 'Open the Terminal', termClaude: 'Start Claude', termChecks: 'Checks', termRun: 'Run', termReports: 'Reports', termInstalls: 'Installs (ledger)', termNone: 'The ledger is empty.', termFolder: 'Folder', termFile: 'File', termUninstall: 'Uninstall', termFull: 'Full uninstall (in the Terminal, with a typed confirmation)', termSession: 'Running session', termNoSession: 'No session is running.', termNoProfile: 'No profile: terminal\\profile.json (template: profile.example.json).', termOwner: 'Owner', termMissing: 'The Terminal (TERMINAL.cmd) is not in this kit.', termConfirmUn: 'Uninstall {0}?', termRefused: 'skipped', e_term_refused: 'The kit does not delete this (outside the kit, or no uninstall command recorded).', e_no_terminal: 'TERMINAL.cmd is missing.', e_unknown_row: 'This row is no longer in the ledger.',
       confirmStop: 'Stop {0}?', confirmDel: 'Delete the {0} environment?', confirmWipe: 'Empty the Sandboxie box? Changes inside it are lost.',
       navPb: 'Playbooks', navCmd: 'Commands', cmdTitle: 'Commands', cmdLede: 'CMD and PowerShell commands offline, copied with a click. Set the variables (IP, host…) once. Also available standalone: PARANCSOK.html in the kit root.', pbTitle: 'Playbooks', pbLede: 'Step-by-step routines that do the work. Checks run on their own, changes ask first, and manual steps wait for you. Every result goes into the active job log and the report.',
       risk_safe: 'read-only', risk_changes: 'changes', risk_repair: 'repairs', kind_check: 'check', kind_action: 'action', kind_manual: 'manual', longStep: 'long',
@@ -314,7 +316,7 @@
   // ------------------------------------------------------------------ chrome
   var NAV = [
     { id: 'dash', icon: 'dash', key: 'navDash' }, { id: 'jobs', icon: 'briefcase', key: 'navJobs' }, { id: 'pb', icon: 'list', key: 'navPb' }, { id: 'tools', icon: 'tools', key: 'navTools' },
-    { id: 'help', icon: 'help', key: 'navHelp' }, { id: 'cmd', icon: 'terminal', key: 'navCmd' }, { id: 'safe', icon: 'lock', key: 'navSafe' }, { id: 'setup', icon: 'setup', key: 'navSetup' }
+    { id: 'help', icon: 'help', key: 'navHelp' }, { id: 'cmd', icon: 'terminal', key: 'navCmd' }, { id: 'safe', icon: 'lock', key: 'navSafe' }, { id: 'term', icon: 'terminal', key: 'navTerm' }, { id: 'setup', icon: 'setup', key: 'navSetup' }
   ];
   function renderNav() {
     var h = '', i, n, cnt;
@@ -332,7 +334,7 @@
     h += '<div class="nav-sep"></div><button type="button" class="nav-btn" data-act="shell">' + icon('terminal') + '<span class="lbl">Kit Shell</span></button>';
     h += '<div class="nav-foot mono">' + esc(S.data ? S.data.kit : 'ServiceKit ' + (CAT.version || '')) + '</div>';
     byId('nav').innerHTML = h;
-    var views = ['dash', 'jobs', 'pb', 'tools', 'help', 'cmd', 'safe', 'setup'];
+    var views = ['dash', 'jobs', 'pb', 'tools', 'help', 'cmd', 'safe', 'term', 'setup'];
     for (i = 0; i < views.length; i++) setClass(byId('view-' + views[i]), 'active', S.view === views[i]);
   }
   function countInstalled() { var n = 0; for (var k in S.installed) if (S.installed.hasOwnProperty(k) && PKG[k]) n++; return n; }
@@ -655,6 +657,51 @@
     h += '</div></div></div>';
     byId('view-safe').innerHTML = h;
     var cb = byId('wsbNet'); if (cb) cb.onclick = function () { S.wsbNet = this.checked; };
+  }
+
+  // ------------------------------------------------------------------ terminal (ServiceKit Terminal)
+  function loadTerm() {
+    renderTerm();
+    call('/api/term', {}, function (err, d) { S.term = err ? null : d; if (S.view === 'term') renderTerm(); });
+  }
+  function renderTerm() {
+    var h = '<h1>' + esc(t('termTitle')) + '</h1><p class="lede">' + esc(t('termLede')) + '</p>', T = S.term, i;
+    if (!S.live) { byId('view-term').innerHTML = h + '<div class="offline-note">' + esc(t('needServer')) + '</div>'; return; }
+    if (!T) { byId('view-term').innerHTML = h; return; }
+    if (!T.present) { byId('view-term').innerHTML = h + '<p>' + esc(t('termMissing')) + '</p>'; return; }
+    h += '<div class="level-actions"><button type="button" class="btn primary" data-act="term-start" data-what="claude">' + icon('terminal') + esc(t('termClaude')) + '</button>' +
+      '<button type="button" class="btn" data-act="term-start" data-what="">' + esc(t('termOpen')) + '</button></div>';
+    h += '<p>' + (T.profile ? esc(t('termOwner')) + ': <span class="mono">' + esc(T.owner) + '</span>' : esc(t('termNoProfile'))) + '</p>';
+    h += '<h2>' + esc(t('termSession')) + '</h2>';
+    var s = T.session;
+    if (s && s.alive) h += '<p class="mono">' + esc(s.folder) + ' &middot; ' + esc(s.repo) + ' #' + esc(String(s.issue)) + ' &middot; ' + esc(fmtTime(s.started, true)) + (s.trusted ? ' &middot; trusted' : '') + '</p>';
+    else h += '<p>' + esc(t('termNoSession')) + '</p>';
+    h += '<h2>' + esc(t('termChecks')) + '</h2><div class="level-actions">';
+    var tiers = ['T0', 'T1', 'T2', 'T3', 'T4'];
+    for (i = 0; i < tiers.length; i++) h += '<label class="toggle"><input type="checkbox" class="term-tier" value="' + tiers[i] + '"' + (i < 3 ? ' checked' : '') + '>' + tiers[i] + '</label>';
+    h += '<button type="button" class="btn" data-act="term-checks">' + esc(t('termRun')) + '</button></div>';
+    if (T.reports && T.reports.length) {
+      h += '<h3>' + esc(t('termReports')) + '</h3><div class="level-actions">';
+      for (i = 0; i < T.reports.length; i++) h += '<button type="button" class="btn" data-act="term-report" data-name="' + esc(T.reports[i].name) + '">' + esc(T.reports[i].name + ' ' + (T.reports[i].tiers || []).join(',')) + '</button>';
+      h += '</div>';
+    }
+    h += '<h2>' + esc(t('termInstalls')) + '</h2>';
+    var rows = T.ledger || [];
+    if (!rows.length) h += '<p>' + esc(t('termNone')) + '</p>';
+    else {
+      h += '<div class="panel" style="padding:4px 12px"><table class="jobs-table"><tbody>';
+      for (i = 0; i < rows.length; i++) {
+        var r = rows[i], pl = (T.plan || {})[r.id] || {};
+        h += '<tr><td class="mono">' + esc(r.kind) + '</td><td>' + esc(r.pkg) + '</td><td class="mono">' + esc((r.paths || []).join(', ')) + '</td><td>' + esc(r.sizeMB == null ? '' : r.sizeMB + ' MB') + '</td><td class="mono">' + esc(r.time || '') + '</td><td>' +
+          '<button type="button" class="btn" data-act="term-open" data-id="' + esc(r.id) + '" data-what="folder">' + esc(t('termFolder')) + '</button>' +
+          '<button type="button" class="btn" data-act="term-open" data-id="' + esc(r.id) + '" data-what="file">' + esc(t('termFile')) + '</button>' +
+          (pl.ok ? '<button type="button" class="btn danger" data-act="term-un" data-id="' + esc(r.id) + '" data-pkg="' + esc(r.pkg) + '">' + esc(t('termUninstall')) + '</button>' : '<span class="badge manual" title="' + esc(pl.reason || '') + '">' + esc(t('termRefused')) + '</span>') +
+          '</td></tr>';
+      }
+      h += '</tbody></table></div>';
+    }
+    h += '<p><button type="button" class="btn danger" data-act="term-start" data-what="installs">' + esc(t('termFull')) + '</button></p>';
+    byId('view-term').innerHTML = h;
   }
 
   // ------------------------------------------------------------------ setup
@@ -1073,6 +1120,7 @@
     S.view = view; renderNav();
     if (view === 'tools') renderTools();
     if (view === 'safe') renderSafe();
+    if (view === 'term') loadTerm();
     if (view === 'setup') renderSetup();
     if (view === 'jobs') { renderJobs(true); loadJobs(); }
     if (view === 'pb') renderPb(true);
@@ -1147,6 +1195,11 @@
       case 'venv-del': if (window.confirm(fmt(t('confirmDel'), d('name')))) act('/api/venv-delete', { name: d('name') }, null, function () { setTimeout(renderSafe, 300); }); break;
       case 'wsb': act('/api/wsb', { app: d('app') || '', net: d('app') ? true : S.wsbNet }, t('started') + ': Windows Sandbox'); break;
       case 'wsb-enable': act('/api/wsb-enable', {}); break;
+      case 'term-start': act('/api/term-start', { action: d('what') || '' }, t('started') + ': Terminal'); break;
+      case 'term-checks': (function () { var c = document.querySelectorAll ? document.querySelectorAll('.term-tier') : [], ts = []; for (var i = 0; i < c.length; i++) if (c[i].checked) ts.push(c[i].value); if (ts.length) act('/api/term-start', { checks: ts.join(',') }, t('started') + ': ' + ts.join(',')); })(); break;
+      case 'term-report': act('/api/term-report', { name: d('name') }); break;
+      case 'term-open': act('/api/term-open', { id: d('id'), what: d('what') }); break;
+      case 'term-un': if (window.confirm(fmt(t('termConfirmUn'), d('pkg')))) act('/api/term-uninstall', { id: d('id') }, t('termUninstall') + ': ' + d('pkg'), function () { setTimeout(loadTerm, 500); }); break;
       case 'sbie-wipe': if (window.confirm(t('confirmWipe'))) act('/api/sbie-wipe', {}); break;
       case 'copy': copyText(unesc(d('text'))); break;
       case 'open-file': act('/api/open-file', { path: d('path') }); break;
