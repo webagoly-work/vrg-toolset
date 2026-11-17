@@ -1,0 +1,13 @@
+{
+  "_comment": "Trust profile. Copy to profile.json and fill in. NO password, token or cookie ever goes here.",
+  "githubUser": "your-github-name",
+  "accessRepo": "your-github-name/vrg-access-log",
+  "displayName": "Owner",
+  "lang": "hu",
+  "publicIp": false,
+  "publicIpService": "https://api.ipify.org",
+  "briefMinutes": 30,
+  "requireAllow": false,
+  "pollSeconds": 60,
+  "extraCaCerts": ""
+}

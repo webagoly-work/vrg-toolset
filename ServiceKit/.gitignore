@@ -1,0 +1,11 @@
+# ServiceKit Terminal: personal settings, credentials and runtime output never go into git.
+/terminal/profile.json
+/workspace/
+/reports/
+/data/claude/
+/data/gh/
+/data/home/
+/data/npm-global/
+/data/npm-cache/
+/state/terminal-*
+/state/ledger.json
