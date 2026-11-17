@@ -46,8 +46,13 @@ gh-t, megjegyzést ír („logged out at …”) és lezárja a bejegyzést.
 
 - **GitHub:** github.com → Settings → Applications → *Authorized OAuth Apps* → **GitHub CLI** → *Revoke*.
   (Ez minden gépen visszavonja a gh belépést.)
+- **Fontos:** a kilépéskori `gh auth logout` a gépről törli a tokent, de a GitHubon **nem vonja vissza**. Letiltás
+  után (és időnként) vond vissza a fenti *GitHub CLI* engedélyt. A Claude ugyanazzal a Windows felhasználóval fut,
+  ezért egy rosszindulatú munkamenet elérheti a tokent a lemezen.
 - **Claude:** a claude.ai fiókban jelentkeztesd ki a munkameneteket (Settings → a fiók biztonsági / munkamenet
   beállításai), vagy változtasd meg a jelszót.
+
+*Note: `gh auth logout` removes the token from the PC but does not revoke it on GitHub; revoke the GitHub CLI app after a deny. Claude runs as the same Windows user, so a hostile session could read the token on disk.*
 
 *Deny: label the issue `deny` or comment `/deny` (owner only). The launcher stops Claude, wipes, logs out, comments and
 closes the issue. This is a cooperative kill switch: a hostile PC can ignore it. To revoke for real, revoke the

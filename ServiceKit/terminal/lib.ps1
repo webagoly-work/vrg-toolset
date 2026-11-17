@@ -11,6 +11,7 @@ $TermSessionFile = Join-Path $StateDir 'terminal-session.json'
 $TermTrustFile   = Join-Path $StateDir 'terminal-trust.json'
 $TermLaunchFile  = Join-Path $StateDir 'terminal-launch.cmd'
 $TermBriefFile   = Join-Path $StateDir 'terminal-brief.txt'
+$TermBriefQueue  = Join-Path $StateDir 'terminal-briefs'
 $WorkspaceDir    = Join-Path $KitRoot 'workspace'
 $TermReportsDir  = Join-Path $KitRoot 'reports'
 $TermIsWin       = ([Environment]::OSVersion.Platform -eq 'Win32NT')
@@ -150,6 +151,20 @@ function Get-TermConfigDirs([bool]$Trusted) {
 function Read-TermSession { return (Read-KitJson $TermSessionFile $null) }
 function Write-TermSession($S) { Write-KitJson $TermSessionFile $S }
 function Clear-TermSession { if (Test-Path -LiteralPath $TermSessionFile) { Remove-Item -LiteralPath $TermSessionFile -Force -ErrorAction SilentlyContinue } }
+
+# Deletes a file or a folder tree without following junctions or symlinks (PowerShell 5.1's Remove-Item -Recurse
+# can walk into a junction and delete its target): folders go through cmd's rmdir, which removes the link only.
+function Remove-TermTree([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return }
+    if (Test-Path -LiteralPath $Path -PathType Container) {
+        if ($TermIsWin) {
+            [void](Invoke-TermExe (Join-Path $env:SystemRoot 'System32\cmd.exe') @('/d', '/c', 'rmdir', '/s', '/q', $Path) 120)
+            if (Test-Path -LiteralPath $Path) { throw ('could not delete ' + $Path) }
+            return
+        }
+    }
+    Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+}
 
 # ---------------------------------------------------------------- tools
 function Get-TermGit {

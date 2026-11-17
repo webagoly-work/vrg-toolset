@@ -37,7 +37,7 @@ function Wait-TermKey { [void](Read-TermLine (TT 'pressEnter')) }
 $script:TermInstalls = $null
 function Get-TermInstallsCached([switch]$Refresh) {
     if ($Refresh -or $null -eq $script:TermInstalls) { $script:TermInstalls = @(Find-TermClaudeInstalls) }
-    return ,$script:TermInstalls
+    return $script:TermInstalls
 }
 
 # ---------------------------------------------------------------- header
@@ -106,7 +106,7 @@ function Select-TermFolder {
 
 function Select-TermGitRepo {
     Write-Term ('  ' + (TT 'scanning')) 'DarkGray'
-    $repos = @(Find-TermGitRepos (Get-TermRepoRoots) 5 20)
+    $repos = @(Find-TermGitRepos @(Get-TermRepoRoots) 5 20)
     if ($repos.Count -eq 0) { Write-Term ('  ' + (TT 'noRepos')) 'Yellow'; return $null }
     for ($i = 0; $i -lt $repos.Count; $i++) { Write-Term ('   ' + ($i + 1) + '  ' + $repos[$i]) 'Gray' }
     $a = ([string](Read-TermLine (TT 'choice'))).Trim()
@@ -143,7 +143,7 @@ function Select-TermWorktree([string]$Folder) {
 
 # ---------------------------------------------------------------- 1: Claude
 function Start-TermClaudeFlow {
-    $installs = Get-TermInstallsCached
+    $installs = @(Get-TermInstallsCached)
     $claude = Select-TermClaude $installs
     if (-not $claude) {
         Write-TermBoth 'claudeNoneOffer' 'Yellow'
@@ -241,7 +241,7 @@ function Get-TermFoundOnPc {
         if ($g -and -not ([string]$g.Source).ToLower().StartsWith($KitRoot.ToLower())) { $r += ($n + ': ' + $g.Source) }
     }
     if ($r.Count -eq 0) { $r += (TT 'foundNone') }
-    return ,$r
+    return $r
 }
 
 function Invoke-TermUninstallUi($Sel) {
@@ -332,7 +332,7 @@ function Invoke-TermMain {
         'sandbox' { Start-TermSandboxUi; return }
     }
     while ($true) {
-        Show-TermHeader (Get-TermInstallsCached)
+        Show-TermHeader @(Get-TermInstallsCached)
         foreach ($k in @('m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'mT', 'mL', 'mQ')) { Write-Term ('   ' + (TT $k)) 'Gray' }
         $a = ([string](Read-TermLine (TT 'choice'))).Trim().ToUpper()
         switch ($a) {

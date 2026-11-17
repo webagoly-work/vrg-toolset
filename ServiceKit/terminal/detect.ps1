@@ -20,7 +20,7 @@ function Get-TermClaudeCandidates {
             $c += ,@{ source = 'desktop-store'; path = $d.FullName; cli = $false }
         }
     }
-    return ,$c
+    return $c
 }
 
 # Existing installs, de-duplicated, each with its version (CLI only; the desktop app is reported, not run).
@@ -37,7 +37,7 @@ function Find-TermClaudeInstalls([switch]$NoVersion) {
         $isKit = $k.StartsWith($KitRoot.ToLower())
         $r += ,@{ source = $c['source']; path = $p; version = $v; cli = [bool]$c['cli']; kit = $isKit }
     }
-    return ,$r
+    return $r
 }
 
 # The CLI to launch: the kit copy first (it is ours), then the PC's own.
@@ -99,7 +99,7 @@ function Get-TermProjectRoots {
     if ($env:USERPROFILE) { $r += (Join-Path $env:USERPROFILE '.claude\projects') }
     if ($env:HOME -and $env:HOME -ne $env:USERPROFILE) { $r += (Join-Path $env:HOME '.claude/projects') }
     if ($env:CLAUDE_CONFIG_DIR) { $r += (Join-Path $env:CLAUDE_CONFIG_DIR 'projects') }
-    return ,$r
+    return $r
 }
 
 # Recent session folders, newest first: @{ path; sessions; last; exists }.
@@ -126,7 +126,7 @@ function Get-TermSessionFolders([string[]]$ProjectRoots, [int]$Max = 30) {
     }
     $list = @($by.Values | Sort-Object { $_['last'] } -Descending)
     if ($list.Count -gt $Max) { $list = $list[0..($Max - 1)] }
-    return ,$list
+    return $list
 }
 
 # ---------------------------------------------------------------- git repos in common places
@@ -146,7 +146,7 @@ function Get-TermRepoRoots {
             if ($d.DriveType -eq [System.IO.DriveType]::Fixed -and $d.IsReady) { $r += ,@{ path = $d.RootDirectory.FullName; depth = 2 } }
         }
     } catch { }
-    return ,$r
+    return $r
 }
 
 # Breadth-first, time-boxed; skips system, hidden and dot folders; never descends into a repo.
@@ -170,7 +170,7 @@ function Find-TermGitRepos($Roots, [int]$Seconds = 5, [int]$Max = 40) {
             $queue.Enqueue(@($c.FullName, ($lvl + 1), $maxLvl))
         }
     }
-    return ,$found
+    return $found
 }
 
 # ---------------------------------------------------------------- worktree question

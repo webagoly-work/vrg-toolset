@@ -31,3 +31,19 @@ Each open question from the brief (GO PTK §6) with the default in force. Change
   the Dashboard shows them.
 - **D14 Reports folder.** Tier checks write to `<kit>\reports\<yyyyMMdd-HHmmss>\` as the brief says, apart from the job
   reports in `data\reports`.
+- **D15 The GitHub token stays with the launcher.** Claude's window gets no `GH_CONFIG_DIR` and empty `GH_TOKEN` /
+  `GITHUB_TOKEN`. The brief hooks only queue their text in `state\terminal-briefs\`, and the launcher posts it. This
+  is not a hard boundary: Claude runs as the same Windows user and could still read `data\gh\hosts.yml` from disk,
+  then forge an `/allow` or delete a `/deny`. Treat the deny as cooperative (see README). **`gh auth logout` does not
+  revoke the token on GitHub**, so after a deny, or regularly, revoke the *GitHub CLI* authorization in GitHub settings.
+- **D16 One session per PC.** A second start is refused while the previous Claude window is alive. In ephemeral mode the
+  gh dir and the Claude credentials are deleted before sign-in, so every session needs a fresh phone approval.
+- **D17 Kill on close.** The Claude window goes into a Windows job object with KILL_ON_JOB_CLOSE, so closing the
+  launcher window ends Claude too. PowerShell runs no `finally` block in that case. If the job cannot be set up, the
+  launcher says so.
+- **D18 Git credentials in ephemeral mode.** `credential.helper` is blanked for Claude's window, so nothing lands in
+  the PC's Windows Credential Manager. Pushing over https then asks for credentials. Trusted PCs keep the default.
+  The wipe also removes `data\claude\.claude.json`. Transcripts (`data\claude\projects`) stay on the stick: they are
+  work history, not credentials.
+- **D19 Deletes do not follow junctions.** Folders are removed with cmd's `rmdir /s /q`, never with
+  `Remove-Item -Recurse`, which can walk into a junction in Windows PowerShell.

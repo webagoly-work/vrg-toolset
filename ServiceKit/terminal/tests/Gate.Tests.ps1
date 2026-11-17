@@ -52,8 +52,23 @@ Describe 'Get-TermWipeTargets' {
     It 'covers the Claude credentials, the whole gh dir and the generated files' {
         $t = Get-TermWipeTargets @{ claude = 'K\data\claude'; gh = 'K\data\gh' }
         ($t -join '|') | Should -Match 'credentials\.json'
+        ($t -join '|') | Should -Match '\.claude\.json'
+        $t | Should -Contain $TermBriefQueue
         $t | Should -Contain 'K\data\gh'
         $t | Should -Contain $TermLaunchFile
+    }
+}
+
+Describe 'New-TermLaunchFile' {
+    It 'gives Claude no GitHub token or gh config, and ephemeral git keeps no credentials' {
+        $f = New-TermLaunchFile @{ claude = 'K\data\claude'; gh = 'K\data\gh-SECRETDIR'; trusted = $false } 'C:\work' 'C:\kit\claude.exe' @{ extraCaCerts = '' }
+        $t = [IO.File]::ReadAllText($f)
+        $t | Should -Not -Match 'gh-SECRETDIR'
+        $t | Should -Match 'set "GH_TOKEN="'
+        $t | Should -Match 'GIT_CONFIG_KEY_0=credential.helper'
+        $t | Should -Match 'call "C:\\kit\\claude.exe"'
+        $t | Should -Match "`r`n"
+        Remove-Item -LiteralPath $f -Force
     }
 }
 

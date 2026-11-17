@@ -73,7 +73,7 @@
   "waitAllow": "A tulajdonos jóváhagyására várok (/allow megjegyzés a bejegyzésen)...",
   "allowTimeout": "Nem jött jóváhagyás 10 percen belül.",
   "claudeLogin": "Ha a Claude bejelentkezést kér: a megjelenő címet a TELEFONODON nyisd meg, jelentkezz be, és a kódot írd vissza itt.",
-  "running": "A Claude fut a másik ablakban. Ez az ablak figyeli a letiltást ({0} mp-enként). Ctrl+C: azonnali leállítás és törlés.",
+  "running": "A Claude fut a másik ablakban. Ez az ablak figyeli a letiltást ({0} mp-enként). Ctrl+C: azonnali leállítás és törlés. Ha ezt az ablakot bezárod, a Claude is leáll.",
   "denied": "A TULAJDONOS LETILTOTTA A HOZZÁFÉRÉST. A Claude leállt, a belépési adatok törölve.",
   "ended": "A munkamenet véget ért.",
   "wiped": "Törölve",
@@ -145,7 +145,9 @@
   "chk_wslfeat": "WSL funkció",
   "chk_freeram": "Szabad memória",
   "chk_freedisk": "Szabad hely (C:)",
-  "chk_error": "Hiba"
+  "chk_error": "Hiba",
+  "sessionAlive": "Már fut egy Terminál munkamenet ezen a gépen (a Claude ablaka még nyitva van). Zárd be azt előbb.",
+  "noKillOnClose": "Figyelem: ha ezt az ablakot bezárod, a Claude tovább futhat letiltás-figyelés nélkül. Lépj ki a Claude-ból vagy Ctrl+C-vel."
  },
  "en": {
   "pressEnter": "Enter: continue",
@@ -221,7 +223,7 @@
   "waitAllow": "Waiting for the owner's approval (an /allow comment on the entry)...",
   "allowTimeout": "No approval within 10 minutes.",
   "claudeLogin": "If Claude asks you to sign in: open the URL it shows on your PHONE, sign in, and type the code back here.",
-  "running": "Claude runs in the other window. This window watches for a deny (every {0} s). Ctrl+C: stop and wipe now.",
+  "running": "Claude runs in the other window. This window watches for a deny (every {0} s). Ctrl+C: stop and wipe now. Closing this window also stops Claude.",
   "denied": "THE OWNER DENIED ACCESS. Claude was stopped and the sign-in data wiped.",
   "ended": "The session ended.",
   "wiped": "Wiped",
@@ -293,6 +295,8 @@
   "chk_wslfeat": "WSL feature",
   "chk_freeram": "Free RAM",
   "chk_freedisk": "Free disk (C:)",
-  "chk_error": "Error"
+  "chk_error": "Error",
+  "sessionAlive": "A Terminal session is already running on this PC (its Claude window is still open). Close it first.",
+  "noKillOnClose": "Note: if you close this window, Claude may keep running without the deny watch. Exit Claude, or use Ctrl+C."
  }
 }

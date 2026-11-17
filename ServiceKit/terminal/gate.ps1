@@ -12,7 +12,7 @@ function Get-TermLocalIPv4 {
     } catch {
         try { foreach ($ip in [System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName())) { if ($ip.AddressFamily -eq 'InterNetwork') { $r += $ip.ToString() } } } catch { }
     }
-    return ,@($r | Select-Object -Unique)
+    return @($r | Select-Object -Unique)
 }
 
 function Get-TermAccessFacts($Prof, [string]$Folder, [bool]$Trusted) {
@@ -91,6 +91,8 @@ function Get-TermGh {
 function Set-TermGhEnv([string]$GhDir) {
     if (-not (Test-Path -LiteralPath $GhDir)) { New-Item -ItemType Directory -Path $GhDir -Force | Out-Null }
     $env:GH_CONFIG_DIR = $GhDir
+    # A token in the PC's environment would override the kit's config and skip the phone approval.
+    $env:GH_TOKEN = ''; $env:GITHUB_TOKEN = ''; $env:GH_ENTERPRISE_TOKEN = ''
     $env:GH_PROMPT_DISABLED = ''
     $env:GH_NO_UPDATE_NOTIFIER = '1'
     # No browser opens on this PC: the owner enters the code on the phone. The URL is appended to a no-op.
@@ -156,9 +158,11 @@ function New-TermAccessRepo([string]$Gh, [string]$Repo) {
 function Get-TermWipeTargets($Dirs) {
     return @(
         (Join-Path $Dirs['claude'] '.credentials.json'),
+        (Join-Path $Dirs['claude'] '.claude.json'),
         $Dirs['gh'],
         $TermLaunchFile,
-        $TermBriefFile
+        $TermBriefFile,
+        $TermBriefQueue
     )
 }
 
@@ -166,11 +170,11 @@ function Invoke-TermWipe($Dirs) {
     $done = @()
     foreach ($t in (Get-TermWipeTargets $Dirs)) {
         if (Test-Path -LiteralPath $t) {
-            try { Remove-Item -LiteralPath $t -Recurse -Force -ErrorAction Stop; $done += $t } catch { Write-KitLog ('wipe failed: ' + $t) 'WARN' | Out-Null }
+            try { Remove-TermTree $t; $done += $t } catch { Write-KitLog ('wipe failed: ' + $t) 'WARN' | Out-Null }
         }
     }
     Remove-Item Env:\GH_CONFIG_DIR -ErrorAction SilentlyContinue
-    return ,$done
+    return $done
 }
 
 # At start: a session left behind by a closed window or a crash is wiped now, unless this PC is trusted.
@@ -199,15 +203,21 @@ function New-TermLaunchFile($Dirs, [string]$Folder, [string]$ClaudeExe, $Prof) {
         'rem ServiceKit Terminal session launcher (generated, deleted at the end of the session)',
         ('call "' + (Join-Path $CoreDir 'kitshell.cmd') + '"'),
         ('set "CLAUDE_CONFIG_DIR=' + $Dirs['claude'] + '"'),
-        ('set "GH_CONFIG_DIR=' + $Dirs['gh'] + '"'),
-        ('set "SKT_SESSION=' + $TermSessionFile + '"'),
-        'set "GH_NO_UPDATE_NOTIFIER=1"'
+        'rem The owner''s GitHub token stays with the launcher: Claude gets no gh config and no token variables.',
+        'set "GH_CONFIG_DIR="',
+        'set "GH_TOKEN="',
+        'set "GITHUB_TOKEN="',
+        ('set "SKT_SESSION=' + $TermSessionFile + '"')
     )
+    if (-not $Dirs['trusted']) {
+        # Ephemeral: git must not store a password in the PC's Credential Manager, which the wipe cannot reach.
+        $lines += @('set "GIT_CONFIG_COUNT=1"', 'set "GIT_CONFIG_KEY_0=credential.helper"', 'set "GIT_CONFIG_VALUE_0="')
+    }
     if ($Prof['extraCaCerts']) { $lines += ('set "NODE_EXTRA_CA_CERTS=' + $Prof['extraCaCerts'] + '"') }
     $lines += @(
         ('cd /d "' + $Folder + '"'),
         'title ServiceKit Terminal - Claude',
-        ('"' + $ClaudeExe + '"'),
+        ('call "' + $ClaudeExe + '"'),
         'if errorlevel 1 pause'
     )
     Write-TermCrlf $TermLaunchFile $lines
@@ -250,6 +260,15 @@ function Invoke-TermSession($Prof, $Claude, [string]$Folder, [bool]$Trusted) {
     if (-not (Show-TermBanner $Prof)) { Write-Term ('  ' + (TT 'cancelled')) 'Yellow'; return }
     $gh = Get-TermGh
     if (-not $gh) { Write-TermBoth 'ghMissing' 'Red'; return }
+    $old = Read-TermSession
+    if ($old) {
+        $op = [int](Get-Key $old 'pid' 0)
+        if ($op -gt 0 -and (Get-Process -Id $op -ErrorAction SilentlyContinue)) { Write-TermBoth 'sessionAlive' 'Red'; return }
+    }
+    if (-not $Trusted) {
+        # Ephemeral: never reuse a token, so every session needs the owner's approval on the phone.
+        foreach ($t in @($dirs['gh'], (Join-Path $dirs['claude'] '.credentials.json'))) { if (Test-Path -LiteralPath $t) { Remove-TermTree $t } }
+    }
     Set-TermGhEnv $dirs['gh']
 
     $issueNo = 0; $repo = $Prof['accessRepo']; $proc = $null; $ended = 'session ended'
@@ -301,10 +320,13 @@ function Invoke-TermSession($Prof, $Claude, [string]$Folder, [bool]$Trusted) {
         $head = Get-TermGitHead $Folder
         $launch = New-TermLaunchFile $dirs $Folder $Claude['path'] $Prof
         Write-TermBoth 'claudeLogin' 'Cyan'
-        $proc = Start-Process -FilePath 'cmd.exe' -ArgumentList ('/c "' + $launch + '"') -WorkingDirectory $Folder -PassThru
+        $proc = Start-Process -FilePath 'cmd.exe' -ArgumentList ('/c ""' + $launch + '""') -WorkingDirectory $Folder -PassThru
+        # If this launcher window is closed (no finally runs then), Windows ends Claude with it.
+        $job = Add-TermKillOnClose $proc
+        if (-not $job) { Write-TermBoth 'noKillOnClose' 'Yellow' }
         Write-TermSession @{
             pid = $proc.Id; machine = (Get-TermMachineId); repo = $repo; issue = $issueNo; owner = $Prof['githubUser']
-            folder = $Folder; startHead = $head; trusted = $Trusted; ghDir = $dirs['gh']; gh = $gh; briefMinutes = $Prof['briefMinutes']
+            folder = $Folder; startHead = $head; trusted = $Trusted; briefMinutes = $Prof['briefMinutes']; launcher = $PID
             started = (Get-Date).ToUniversalTime().ToString('s') + 'Z'
         }
 
@@ -313,6 +335,7 @@ function Invoke-TermSession($Prof, $Claude, [string]$Folder, [bool]$Trusted) {
         $next = Get-Date
         while ($true) {
             if ($proc.HasExited) { break }
+            Send-TermBriefQueue $gh $repo $issueNo
             if ((Get-Date) -ge $next) {
                 $next = (Get-Date).AddSeconds([Math]::Max(15, [int]$Prof['pollSeconds']))
                 $sig = Get-TermIssueSignal $gh $repo $issueNo $since $Prof['githubUser']
@@ -331,6 +354,8 @@ function Invoke-TermSession($Prof, $Claude, [string]$Folder, [bool]$Trusted) {
         # Runs on a normal end, on deny and on Ctrl+C. A closed window is caught by the next start (Invoke-TermStaleWipe).
         if ($proc -and -not $proc.HasExited) { Stop-TermProcessTree $proc.Id; if ($ended -eq 'session ended') { $ended = 'stopped from the launcher (Ctrl+C)' } }
         if ($issueNo -gt 0) {
+            Start-Sleep -Seconds 2
+            Send-TermBriefQueue $gh $repo $issueNo
             $wipeNote = 'credentials wiped'; if ($Trusted) { $wipeNote = 'trusted PC: credentials kept' }
             [void](Invoke-TermGhApi $gh 'POST' ('repos/' + $repo + '/issues/' + $issueNo + '/comments') @{ body = ($ended + '; ' + $wipeNote + '.') })
             if ($ended -match '^DENIED') { [void](Invoke-TermGhApi $gh 'PATCH' ('repos/' + $repo + '/issues/' + $issueNo) @{ state = 'closed' }) }
@@ -344,8 +369,54 @@ function Invoke-TermSession($Prof, $Claude, [string]$Folder, [bool]$Trusted) {
             Write-Term ('  ' + (TT 'wiped') + ': ' + $done.Count) 'Green'
         }
         Clear-TermSession
+        Remove-Item Env:\GH_CONFIG_DIR -ErrorAction SilentlyContinue
         Write-Term ('  ' + (TT 'ended')) 'Cyan'
     }
+}
+
+# Briefs written by the Claude hooks (which hold no GitHub token) wait in a queue; the launcher posts them.
+function Send-TermBriefQueue([string]$Gh, [string]$Repo, [int]$No) {
+    if ($No -le 0 -or -not (Test-Path -LiteralPath $TermBriefQueue)) { return }
+    foreach ($f in @(Get-ChildItem -LiteralPath $TermBriefQueue -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)) {
+        $b = Read-KitJson $f.FullName $null
+        $body = [string](Get-Key $b 'body' '')
+        if ($body) { [void](Invoke-TermGhApi $Gh 'POST' ('repos/' + $Repo + '/issues/' + $No + '/comments') @{ body = $body }) }
+        Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# A Windows job object with KILL_ON_JOB_CLOSE: the Claude window dies with this launcher even when its console is
+# closed with the X (PowerShell runs no finally block then). Returns $null when it cannot be set up.
+function Add-TermKillOnClose($Proc) {
+    if (-not $TermIsWin) { return $null }
+    try {
+        if (-not ('SkTermJob' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class SkTermJob {
+    [StructLayout(LayoutKind.Sequential)] struct BASIC { public long a; public long b; public uint LimitFlags; public UIntPtr c; public UIntPtr d; public uint e; public UIntPtr f; public uint g; public uint h; }
+    [StructLayout(LayoutKind.Sequential)] struct IOC { public ulong a, b, c, d, e, f; }
+    [StructLayout(LayoutKind.Sequential)] struct EXT { public BASIC Basic; public IOC Io; public UIntPtr p1, p2, p3, p4; }
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr a, string n);
+    [DllImport("kernel32.dll")] static extern bool SetInformationJobObject(IntPtr j, int c, ref EXT i, uint l);
+    [DllImport("kernel32.dll")] static extern bool AssignProcessToJobObject(IntPtr j, IntPtr p);
+    public static IntPtr Bind(IntPtr process) {
+        IntPtr j = CreateJobObject(IntPtr.Zero, null);
+        if (j == IntPtr.Zero) return IntPtr.Zero;
+        EXT x = new EXT(); x.Basic.LimitFlags = 0x2000;
+        if (!SetInformationJobObject(j, 9, ref x, (uint)Marshal.SizeOf(typeof(EXT)))) return IntPtr.Zero;
+        if (!AssignProcessToJobObject(j, process)) return IntPtr.Zero;
+        return j;
+    }
+}
+'@
+        }
+        $h = [SkTermJob]::Bind($Proc.Handle)
+        if ($h -eq [IntPtr]::Zero) { return $null }
+        $script:TermJobHandle = $h
+        return $h
+    } catch { Write-KitLog ('kill-on-close: ' + $_.Exception.Message) 'WARN' | Out-Null; return $null }
 }
 
 # Issue + owner comments since the session started -> the deny / allow signal. A failed poll is not a deny.

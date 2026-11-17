@@ -86,7 +86,7 @@ function Get-TermRecommendations($Results, $Catalog, $Installed, $Ledger, [strin
         foreach ($p in $ps) { if (Test-Path -LiteralPath (Resolve-TermKitPath $KitRoot ([string]$p))) { $gone = $false } }
         if ($gone) { $out += ,(New-TermRec 'uninstall' ([string]$row['pkg']) 'ledger row whose files are gone (forget it)' $null 'ledger') }
     }
-    return ,$out
+    return $out
 }
 
 function Compare-TermVersionSafe([string]$A, [string]$B) {

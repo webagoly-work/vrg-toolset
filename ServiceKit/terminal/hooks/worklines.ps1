@@ -42,20 +42,20 @@ function ConvertTo-TermAsciiJson($Obj) {
 
 function Invoke-TermGitLines([string]$Cwd, [string[]]$ArgList) {
     $out = & git -C $Cwd @ArgList 2>$null
-    if ($LASTEXITCODE -ne 0) { return $null }
-    return @($out)
+    if ($LASTEXITCODE -ne 0) { return }
+    foreach ($o in @($out)) { [string]$o }
 }
 
 function Get-TermWorklinesFindings([string]$Cwd, [string]$SessionId, [string[]]$ProjectRoots, [datetime]$Now) {
     $res = @{ applies = $false; recent = @(); others = @() }
-    $gd = Invoke-TermGitLines $Cwd @('rev-parse', '--absolute-git-dir')
-    $cd = Invoke-TermGitLines $Cwd @('rev-parse', '--path-format=absolute', '--git-common-dir')
-    if (-not $gd -or -not $cd) { return $res }
+    $gd = @(Invoke-TermGitLines $Cwd @('rev-parse', '--absolute-git-dir'))
+    $cd = @(Invoke-TermGitLines $Cwd @('rev-parse', '--path-format=absolute', '--git-common-dir'))
+    if ($gd.Count -eq 0 -or $cd.Count -eq 0) { return $res }
     $norm = { param($p) ([IO.Path]::GetFullPath(([string]$p).Trim())).TrimEnd('\', '/').ToLower() }
     if ((& $norm $gd[0]) -ne (& $norm $cd[0])) { return $res }   # linked worktree: silent
     $res['applies'] = $true
-    $top = Invoke-TermGitLines $Cwd @('rev-parse', '--show-toplevel')
-    if ($top) {
+    $top = @(Invoke-TermGitLines $Cwd @('rev-parse', '--show-toplevel'))
+    if ($top.Count -gt 0) {
         $root = ([string]$top[0]).Trim()
         foreach ($l in @(Invoke-TermGitLines $Cwd @('status', '--porcelain', '-uall'))) {
             if (-not $l -or $l.Length -lt 4) { continue }

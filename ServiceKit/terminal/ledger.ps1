@@ -8,10 +8,10 @@ function Get-TermLedgerPath { return (Join-Path $StateDir 'ledger.json') }
 
 function Read-TermLedger([string]$Path) {
     $d = Read-KitJson $Path $null
-    if ($null -eq $d) { return ,@() }
+    if ($null -eq $d) { return @() }
     $rows = Get-Key $d 'rows' $null
-    if ($null -eq $rows) { return ,@() }
-    return ,@($rows)
+    if ($null -eq $rows) { return @() }
+    return @($rows)
 }
 
 function Write-TermLedger([string]$Path, $Rows) {
@@ -51,6 +51,18 @@ function Get-TermFolderMB([string]$Path) {
     $sum = 0
     foreach ($f in @(Get-ChildItem -LiteralPath $Path -Recurse -Force -ErrorAction SilentlyContinue)) { if (-not $f.PSIsContainer) { $sum += $f.Length } }
     return [Math]::Round($sum / 1MB, 1)
+}
+
+# Deletes without following junctions: Remove-Item -Recurse in Windows PowerShell can walk into a junction and delete
+# its target, so folders go through cmd's rmdir, which removes only the link. PowerShell 2.0-safe.
+function Remove-TermLedgerTree([string]$P) {
+    if (-not (Test-Path -LiteralPath $P)) { return }
+    if ((Test-Path -LiteralPath $P -PathType Container) -and $env:SystemRoot) {
+        & (Join-Path $env:SystemRoot 'System32\cmd.exe') /d /c rmdir /s /q "$P" 2>$null | Out-Null
+        if (Test-Path -LiteralPath $P) { throw ('could not delete ' + $P) }
+        return
+    }
+    Remove-Item -LiteralPath $P -Recurse -Force -ErrorAction Stop
 }
 
 # ---------------------------------------------------------------- path rules (pure)
@@ -100,7 +112,7 @@ function Get-TermUninstallPlan($Rows, [string]$KitRoot) {
         } else { $s['ok'] = $false; $s['reason'] = 'unknown kind: ' + $kind }
         $plan += ,$s
     }
-    return ,$plan
+    return $plan
 }
 
 function Format-TermPlanStep($S) {
@@ -121,7 +133,7 @@ function Invoke-TermPlanStep($S, [string]$KitRoot) {
             $fail = @()
             foreach ($p in @($S['paths'])) {
                 if (-not (Test-TermDeletable $KitRoot $p)) { $fail += $p; continue }
-                if (Test-Path -LiteralPath $p) { try { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction Stop } catch { $fail += $p } }
+                if (Test-Path -LiteralPath $p) { try { Remove-TermLedgerTree $p } catch { $fail += $p } }
             }
             if ($fail.Count -gt 0) { return ('not deleted (in use?): ' + ($fail -join ', ')) }
             if ($S['id']) { Remove-TermLedgerRow $lp $S['id'] }
@@ -129,7 +141,7 @@ function Invoke-TermPlanStep($S, [string]$KitRoot) {
         }
         'command' {
             # Shown in its own window so the person sees and answers the uninstaller.
-            $p = Start-Process -FilePath 'cmd.exe' -ArgumentList ('/c ' + $S['command'] + ' & pause') -Wait -PassThru
+            $p = Start-Process -FilePath 'cmd.exe' -ArgumentList ('/c "' + $S['command'] + ' & pause"') -Wait -PassThru
             if ($p.ExitCode -eq 0 -and $S['id']) { Remove-TermLedgerRow $lp $S['id'] }
             return ('exit code ' + $p.ExitCode)
         }
@@ -171,7 +183,7 @@ function Invoke-TermFullDelete($Plan) {
     $ok = 0; $fail = @()
     foreach ($p in @($Plan['delete'])) {
         if (-not (Test-Path -LiteralPath $p)) { continue }
-        try { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction Stop; $ok++ } catch { $fail += $p }
+        try { Remove-TermLedgerTree $p; $ok++ } catch { $fail += $p }
     }
     $r = '' + $ok
     if ($fail.Count -gt 0) { $r += '; not deleted (in use?): ' + ($fail -join ', ') }

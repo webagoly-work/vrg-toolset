@@ -1,5 +1,5 @@
 # ServiceKit Terminal - briefs, a Claude Code Stop / SessionEnd hook (registered in the kit's Claude settings).
-# Comments on the session's access-log issue: repo, branch, worktree, commits since the session started, a diff
+# Queues a comment for the session's access-log issue (the launcher posts it): repo, branch, worktree, commits since the session started, a diff
 # summary and the uncommitted file count. NO prompt text and NO file contents. Stop is throttled (default 30 min);
 # SessionEnd always posts. It never interrupts the person at the PC and never fails the session (always exit 0).
 # Standalone on purpose (no kit library). PowerShell 5.1, ASCII only.
@@ -41,29 +41,32 @@ function Get-TermBriefText([string]$EventName, $Info, [string]$NowIso) {
 
 function Invoke-TermGitOut([string]$Cwd, [string[]]$ArgList) {
     $out = & git -C $Cwd @ArgList 2>$null
-    if ($LASTEXITCODE -ne 0) { return $null }
-    return @($out)
+    if ($LASTEXITCODE -ne 0) { return }
+    foreach ($o in @($out)) { [string]$o }
 }
 
 function Get-TermBriefInfo([string]$Cwd, [string]$StartHead, [string]$StartedIso) {
     $i = @{ repo = ''; branch = ''; worktree = ''; commits = @(); diffstat = ''; uncommitted = 0 }
-    $top = Invoke-TermGitOut $Cwd @('rev-parse', '--show-toplevel')
-    if (-not $top) { $i['repo'] = $Cwd + ' (not a git repo)'; return $i }
+    $top = @(Invoke-TermGitOut $Cwd @('rev-parse', '--show-toplevel'))
+    if ($top.Count -eq 0) { $i['repo'] = $Cwd + ' (not a git repo)'; return $i }
     $i['repo'] = ([string]$top[0]).Trim()
-    $b = Invoke-TermGitOut $Cwd @('rev-parse', '--abbrev-ref', 'HEAD'); if ($b) { $i['branch'] = ([string]$b[0]).Trim() }
-    $gd = Invoke-TermGitOut $Cwd @('rev-parse', '--absolute-git-dir')
-    $cd = Invoke-TermGitOut $Cwd @('rev-parse', '--path-format=absolute', '--git-common-dir')
-    if ($gd -and $cd -and ([string]$gd[0]).Trim().ToLower() -ne ([string]$cd[0]).Trim().ToLower()) { $i['worktree'] = $i['repo'] }
+    $b = @(Invoke-TermGitOut $Cwd @('rev-parse', '--abbrev-ref', 'HEAD')); if ($b.Count -gt 0) { $i['branch'] = ([string]$b[0]).Trim() }
+    $gd = @(Invoke-TermGitOut $Cwd @('rev-parse', '--absolute-git-dir'))
+    $cd = @(Invoke-TermGitOut $Cwd @('rev-parse', '--path-format=absolute', '--git-common-dir'))
+    if ($gd.Count -gt 0 -and $cd.Count -gt 0 -and ([string]$gd[0]).Trim().ToLower() -ne ([string]$cd[0]).Trim().ToLower()) { $i['worktree'] = $i['repo'] }
     $base = $null
-    if ($StartHead -and (Invoke-TermGitOut $Cwd @('cat-file', '-e', ($StartHead + '^{commit}'))) -ne $null) { $base = $StartHead }
+    if ($StartHead) {
+        & git -C $Cwd cat-file -e ($StartHead + '^{commit}') 2>$null
+        if ($LASTEXITCODE -eq 0) { $base = $StartHead }
+    }
     if ($base) {
         $i['commits'] = @(Invoke-TermGitOut $Cwd @('log', '--oneline', '-n', '200', ($base + '..HEAD')))
-        $s = Invoke-TermGitOut $Cwd @('diff', '--shortstat', $base)
+        $s = @(Invoke-TermGitOut $Cwd @('diff', '--shortstat', $base))
     } else {
         $i['commits'] = @(Invoke-TermGitOut $Cwd @('log', '--oneline', '-n', '200', ('--since=' + $StartedIso)))
-        $s = Invoke-TermGitOut $Cwd @('diff', '--shortstat', 'HEAD')
+        $s = @(Invoke-TermGitOut $Cwd @('diff', '--shortstat', 'HEAD'))
     }
-    if ($s) { $i['diffstat'] = (@($s) -join ' ') }
+    if ($s.Count -gt 0) { $i['diffstat'] = ($s -join ' ') }
     $i['uncommitted'] = @(Invoke-TermGitOut $Cwd @('status', '--porcelain') | Where-Object { $_ }).Count
     return $i
 }
@@ -85,12 +88,11 @@ function Invoke-TermBriefHook {
         if (-not $cwd) { $cwd = [string]$s.folder }
         $info = Get-TermBriefInfo $cwd ([string]$s.startHead) ([string]$s.started)
         $text = Get-TermBriefText $HookEvent $info ($now.ToString('yyyy-MM-dd HH:mm') + 'Z')
-        $tmp = Join-Path (Split-Path -Parent $sf) ('terminal-brief-' + [Guid]::NewGuid().ToString('N') + '.json')
+        # The hook holds no GitHub token: it queues the brief, and the launcher posts it to the issue.
+        $q = Join-Path (Split-Path -Parent $sf) 'terminal-briefs'
+        if (-not (Test-Path -LiteralPath $q)) { [void](New-Item -ItemType Directory -Path $q -Force) }
         $json = ConvertTo-Json -InputObject @{ body = $text } -Compress
-        [System.IO.File]::WriteAllText($tmp, $json, (New-Object System.Text.UTF8Encoding($false)))
-        try {
-            & ([string]$s.gh) api -X POST ('repos/' + [string]$s.repo + '/issues/' + [string]$s.issue + '/comments') --input $tmp 2>$null | Out-Null
-        } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+        [System.IO.File]::WriteAllText((Join-Path $q ($now.ToString('yyyyMMddHHmmss') + '-' + $HookEvent + '.json')), $json, (New-Object System.Text.UTF8Encoding($false)))
         [System.IO.File]::WriteAllText($bf, $now.ToString('s') + 'Z')
     } catch { }
     exit 0

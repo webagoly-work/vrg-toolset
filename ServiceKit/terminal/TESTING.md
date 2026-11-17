@@ -13,6 +13,12 @@ PowerShell code in this folder has been executed, and none of it is known to wor
 - The six pinned downloads were fetched and hashed (`sha256sum`), and each hash was compared with the publisher's own
   checksum file (gh `checksums.txt`, ripgrep / uv `.sha256`; Claude Code against the npm registry `sha512` integrity).
 
+An independent read-only review of the PowerShell (by a second agent) found and led to fixes for: arrays nested by
+`return ,$x` + `@()` (would have stopped Claude from starting and corrupted the ledger), first-character indexing of
+one-line git output in the hooks, the brief's start-commit test, a second session reusing a token, the GitHub token
+reaching Claude's window, `GH_TOKEN` overriding the kit's config, cmd quote stripping, junction-following deletes,
+and Claude surviving a closed launcher window.
+
 ## Automated tests to run on a PC
 
 ```powershell
@@ -53,14 +59,17 @@ Use a throwaway GitHub repo name in the profile for the first run (for example `
 8. **Issue.** Expect "Access <PC> <UTC>" in the repo with the table, and a GitHub Mobile notification.
 9. **Claude.** A second window opens in the chosen folder with the Kit Shell PATH. `echo %CLAUDE_CONFIG_DIR%` shows
    `<kit>\data\claude`. Claude asks to sign in: open the URL on the phone, type the code back. Check that
-   `%USERPROFILE%\.claude\.credentials.json` was not read or changed (its timestamp).
+   `%USERPROFILE%\.claude\.credentials.json` was not read or changed (its timestamp). In Claude's window
+   `echo %GH_CONFIG_DIR%%GH_TOKEN%` prints nothing, and `git config --get-all credential.helper` prints an empty line.
 10. **Hooks.** In the main checkout with a fresh uncommitted file, expect the worklines message at session start.
-    Work 30+ minutes or end the session: expect a brief comment on the issue with commits and counts, no file contents.
+    Work 30+ minutes or end the session: a file appears in `state\terminal-briefs\`, and within seconds the launcher
+    posts it as a comment on the issue (commits and counts, no file contents) and deletes the file.
 11. **Deny.** Comment `/deny` from another account: nothing happens. Comment `/deny` as the owner (or add the
     `deny` label): within about a minute Claude's window closes, the launcher shows the deny message, the issue gets
     "DENIED … logged out at …" and is closed, `data\gh` and `data\claude\.credentials.json` are gone.
 12. **Normal end / Ctrl+C / closed window.** Exit Claude: "session ended" comment, wipe. Ctrl+C in the launcher:
-    Claude stops, wipe. Close the launcher window with the X: the next `TERMINAL.cmd` start reports the stale wipe.
+    Claude stops, wipe. Close the launcher window with the X: the Claude window closes too (kill-on-close job), and the
+    next `TERMINAL.cmd` start reports the stale wipe. Start a second session while one runs: refused.
 13. **Trusted.** Press T on your own PC, start a session: the issue says TRUSTED; after exit the credentials remain in
     `%LOCALAPPDATA%\ServiceKitTerminal`, and nothing credential-like is in `<kit>\data`.
 14. **Checks (2).** Run A (all). Expect `reports\<time>\T0..T4.json`, `recommendations.json` and `report.html` opening
