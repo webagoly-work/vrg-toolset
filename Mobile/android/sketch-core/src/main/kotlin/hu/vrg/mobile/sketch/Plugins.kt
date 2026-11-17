@@ -4,8 +4,8 @@ package hu.vrg.mobile.sketch
 // comes from PLUGINS, packs of tools for one kind of field work. The tool rail shows the tools of the plugins
 // switched on, in order, so a job that only needs a floor sketch keeps four buttons and switching stays one tap.
 //
-// The packs today: Alaprajz (rooms and sizes), Villany (points, circuits, Elosztó, nyomvonal) and Fotópont (WP M25,
-// planned). A new pack is one entry here plus its handling in the screen; the sketch file keeps which packs it used.
+// The packs today: Alaprajz (rooms and sizes), Villany (points, circuits, Elosztó, nyomvonal) and Fotópont (WP M25:
+// a point per room, four photos). Fotópont starts switched off; a sketch that needs it turns it on under ⚙. A new pack is one entry here plus its handling in the screen; the sketch file keeps which packs it used.
 
 data class Tool(
     val id: String,
@@ -30,7 +30,7 @@ object Tools {
     val CIRCUIT = Tool("circuit", "◌", "Áramkör", "Koppints pontokra az aktív körbe, vagy húzz keretet köréjük.")
     val BOARD = Tool("board", "▣", "Elosztó", "Koppints a falra: Elosztó. Bekötés: minden kör a legközelebbi Elosztóra.")
     val ROUTE = Tool("route", "〰", "Nyomvonal", "Húzd végig, merre megy a kábel; a vége pontra vagy Elosztóra ugrik.")
-    val PHOTO = Tool("photo", "◉", "Fotópont", "M25: pont a szoba közepén, fotó irány szerint (4 kép szobánként).", built = false)
+    val PHOTO = Tool("photo", "◉", "Fotópont", "Koppints a szoba közepére: Fotópont. Koppints rá: kamera, utána húzz arra, amerre a kép néz.")
 
     val ALL = listOf(SELECT, MEMO, TAG, ROOM, LINE, MEASURE, POINT, CIRCUIT, BOARD, ROUTE, PHOTO)
     fun of(id: String?) = ALL.firstOrNull { it.id == id }
@@ -41,7 +41,7 @@ object Plugins {
     val NOTE = Plugin("jegyzet", "Jegyzet", "Mozgatás, memó, címkék: a vázlat jegyzetfüzet része.", listOf(Tools.SELECT, Tools.MEMO, Tools.TAG), "M24")
     val PLAN = Plugin("alaprajz", "Alaprajz", "Szobák téglalappal vagy vonallal, méretek a falakon.", listOf(Tools.ROOM, Tools.LINE, Tools.MEASURE), "M24")
     val ELECTRIC = Plugin("villany", "Villany", "Szerelési pontok, áramkörök, Elosztó és nyomvonal.", listOf(Tools.POINT, Tools.CIRCUIT, Tools.BOARD, Tools.ROUTE), "M24")
-    val PHOTO = Plugin("fotopont", "Fotópont", "Szobánként egy pont, négy irányba fotó (WP M25, tervben).", listOf(Tools.PHOTO), "M25", built = false)
+    val PHOTO = Plugin("fotopont", "Fotópont", "Szobánként egy pont, a szoba négy oldala felé egy-egy fotó.", listOf(Tools.PHOTO), "M25")
 
     val ALL = listOf(NOTE, PLAN, ELECTRIC, PHOTO)
     val DEFAULT_ON = listOf(NOTE.id, PLAN.id, ELECTRIC.id)

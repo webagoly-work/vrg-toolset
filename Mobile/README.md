@@ -69,7 +69,8 @@ Mobile/
                         hold wheels, the measurement solver (wall lines, least squares, measured / derived / guessed),
                         the package the Planner imports (its fixture: Planner/.../tests/sketch-field.json) + tests
     feature-sketch/     Vázlat (WP M24): the sketch list, the canvas (tap / drag / hold wheel / pinch), the tool rail and
-                        option rows, tag tray, dialogs, Rendezés (the plan in mm) and the export (share / Letöltések)
+                        option rows, tag tray, dialogs, Rendezés (the plan in mm) and the export (share / Letöltések);
+                        Fotópont (WP M25): the photo points, the camera app, the direction swipe, the viewer, PhotoFeature
 ```
 
 ## How the pieces fit

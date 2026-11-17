@@ -284,11 +284,21 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   keeps its data slot (`photos` in the sketch file, the plugin and tool as plans), so M25 adds a tool and a camera
   and changes no file format.
 
+- **D-24 · Fotópont: the direction of a photo (M25), 2026-11-17.** Asked and answered by the user, 2026-11-17.
+  Chosen: **A** — the four sides of the room as drawn (É, K, D, Ny of the sketch; 0 / 90 / 180 / 270, a swipe takes the
+  90° around a side): four photos map a room, and the Planner's view cones stay tidy. Rejected: **B** eight directions;
+  **C** the exact swipe angle.
+- **D-25 · Fotópont: how the photos reach the PC (M25), 2026-11-17.** Asked and answered by the user, 2026-11-17.
+  Chosen: **A** — each photo is its own file, shared together with the package (Átadás *PC-re* puts every one on the
+  board), named `<sketch>_<point>_<side>.jpg`, the names the package lists; the Planner matches attached files by
+  name and keeps a ≤ 360 px thumbnail. Rejected: **B** one zip; **C** base64 inside the JSON (15–40 MB a flat).
+- **D-26 · Fotópont: the compass (M25), 2026-11-17.** Asked and answered by the user, 2026-11-17.
+  Chosen: **A** — no compass: the swipe after the shot is the direction, relative to the sketch. Rejected: **B** the
+  heading recorded as well; **C** the compass instead of the swipe.
+- **M25 · How Fotópont is built** (2026-11-17, no question asked; the request said the point "opens as a camera
+  application"): the phone's own camera app through TakePicture, as Átadás does, writing straight into the sketch's
+  photo folder; the plugin starts switched off; a photo point is a hidden note in the Planner (no schema change).
+
 ## Open (to ask when the WP that needs them starts)
 
-- **D-24 · Fotópont: the direction of a photo (M25).** A four sides of the room (recommended) · B eight · C the exact angle.
-- **D-25 · Fotópont: how the photos reach the PC (M25).** A each on the Átadás board, named by the package (recommended)
-  · B one zip · C base64 inside the JSON.
-- **D-26 · Fotópont: the compass (M25).** A none, the swipe is the direction (recommended) · B the heading recorded too
-  · C the compass instead of the swipe.
-  The options are explained in `WP/M25.md`.
+None.

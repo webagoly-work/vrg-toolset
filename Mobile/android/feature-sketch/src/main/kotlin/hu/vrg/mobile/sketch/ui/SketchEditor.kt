@@ -1,6 +1,11 @@
 package hu.vrg.mobile.sketch.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +53,7 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -59,11 +65,13 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.FeatureHost
+import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Level
 import hu.vrg.mobile.sketch.MeasureKind
+import hu.vrg.mobile.sketch.Photos
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
 import hu.vrg.mobile.sketch.Pt
@@ -74,6 +82,7 @@ import hu.vrg.mobile.sketch.Wheels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.io.File
 
 /** The palette the canvas draws with, read once per composition (DrawScope is not composable). */
 internal data class Pal(
@@ -94,18 +103,57 @@ private val WHEEL_HUB = 34.dp
 @Composable
 fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     val store = SketchFeature.store
+    val ctx = LocalContext.current
     val st = remember(initial.id) { EditorState(initial) {} }
     var showNorm by remember { mutableStateOf(false) }
 
+    // Fotópont (M25): the photos live with the sketch (files/sketch/photos/<id>/), the camera app takes them
+    val dir = remember(initial.id) { store.photoDir(initial.id) }
+    st.photoDir = dir
+    st.dropFile = { name -> File(dir, name).delete() }
+    var shooting by remember { mutableStateOf<Pair<CameraReq, String>?>(null) }
+    val shoot = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val (req, name) = shooting ?: return@rememberLauncherForActivityResult
+        shooting = null
+        val f = File(dir, name)
+        if (ok && f.length() > 0) st.photoTaken(req, name) else { f.delete(); st.note = "Nem készült fotó." }
+    }
+    fun startCamera(req: CameraReq) {
+        dir.mkdirs()
+        val name = "${req.photo}-${System.currentTimeMillis().toString(36)}.jpg"
+        shooting = req to name
+        try { shoot.launch(FileStore.uri(ctx, File(dir, name))) } catch (e: Exception) { shooting = null; host.note("Nincs kamera alkalmazás.") }
+    }
+    var waiting by remember { mutableStateOf<CameraReq?>(null) }
+    val askCamera = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        val r = waiting; waiting = null
+        if (ok && r != null) startCamera(r) else if (!ok) host.note("A fotóhoz kamera engedély kell.")
+    }
+    LaunchedEffect(st.camera) {
+        val r = st.camera ?: return@LaunchedEffect
+        st.camera = null
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) startCamera(r)
+        else { waiting = r; askCamera.launch(Manifest.permission.CAMERA) }
+    }
+
     // saved half a second after the last edit, and once more on the way out
     LaunchedEffect(st.sketch) { delay(500); withContext(Dispatchers.IO) { store.save(st.sketch) } }
-    DisposableEffect(initial.id) { onDispose { store.save(st.sketch) } }
+    DisposableEffect(initial.id) {
+        onDispose {
+            store.save(st.sketch)
+            // photos no longer in the sketch (retaken, deleted, a shot never given a direction) go when leaving it:
+            // undo can still bring a shot back while the sketch is open
+            val keep = Photos.files(st.sketch)
+            dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second) it.delete() }
+        }
+    }
     LaunchedEffect(st.note) { if (st.note != null) { delay(4500); st.note = null } }
 
     BackHandler {
         when {
             showNorm -> showNorm = false
             st.wheel != null -> st.closeWheel()
+            st.pendingShot != null -> st.cancelShot()
             st.lineDraft.isNotEmpty() -> st.lineDrop()
             else -> onClose()
         }
@@ -342,6 +390,23 @@ private fun DrawScope.drawSketch(st: EditorState, tm: TextMeasurer, c: Pal) {
         }
     }
 
+    // photo points (M25): a wedge per side, filled where a photo faces it; all four lit while a shot waits
+    s.photos.forEach { f ->
+        val o = P(f.at)
+        val waiting = st.pendingShot?.first == f.id
+        val rr = 27.dp.toPx(); val sw = 15.dp.toPx()
+        Photos.DIRS.forEach { d ->
+            val has = Photos.shot(f, d) != null
+            val col = when { waiting -> c.sand.copy(alpha = 0.75f); has -> c.glow.copy(alpha = 0.8f); else -> c.line.copy(alpha = 0.55f) }
+            drawArc(col, d - 90f - 38f, 76f, false, Offset(o.x - rr, o.y - rr), Size(2 * rr, 2 * rr), style = Stroke(sw))
+            val (dx, dy) = Wheels.dirOf(d / 45)
+            label(tm, Photos.label(d), o + Offset(dx.toFloat(), dy.toFloat()) * rr, if (has && !waiting) c.abyss else c.ink, 8.sp, bold = true)
+        }
+        drawCircle(c.coral, 10.dp.toPx(), o)
+        label(tm, "◉", o, c.abyss, 11.sp, bold = true)
+        if (waiting) label(tm, "Húzz arra, amerre a kép néz", o + Offset(0f, 48.dp.toPx()), c.sand, 11.sp, bg = c.abyss.copy(alpha = 0.85f), bold = true)
+    }
+
     // what is being drawn right now
     st.dragRect?.let { (a, b) ->
         val r = Geo.rect(a, b); val p = path(r, true)
@@ -449,7 +514,15 @@ private fun ToolOptions(st: EditorState) {
             VrgChip("Elvet") { st.lineDrop() }
         }
         Tools.TAG.id -> TagTray(st)
+        Tools.PHOTO.id -> OptionRow {
+            val ps = st.sketch.photos
+            Text("${ps.size} fotópont · ${ps.sumOf { it.shots.size }} fotó · ${ps.count { Photos.missing(it).isEmpty() }} kész szoba", style = Melyviz.small)
+        }
         else -> {}
+    }
+    if (st.pendingShot != null) OptionRow {
+        Text("A fotó iránya: húzz a pontból É / K / D / Ny felé.", style = Melyviz.small.copy(color = Melyviz.sand))
+        VrgChip("Elvet") { st.cancelShot() }
     }
 }
 

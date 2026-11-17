@@ -1,5 +1,10 @@
 package hu.vrg.mobile.sketch.ui
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,6 +23,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -26,6 +35,8 @@ import hu.vrg.mobile.kit.ui.VrgToggle
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.MeasureKind
 import hu.vrg.mobile.sketch.Ops
+import hu.vrg.mobile.sketch.Photos
+import java.io.File
 import hu.vrg.mobile.sketch.Plugins
 import kotlin.math.roundToInt
 
@@ -63,6 +74,22 @@ internal fun TextDialog(
         },
     )
 }
+
+/** A photo scaled to about [max] px on its long side and turned upright from its EXIF orientation. */
+internal fun loadPhoto(f: File, max: Int = 1400): Bitmap? = try {
+    val b = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(f.path, b)
+    var k = 1
+    while (b.outWidth / (k * 2) >= max || b.outHeight / (k * 2) >= max) k *= 2
+    val bmp = BitmapFactory.decodeFile(f.path, BitmapFactory.Options().apply { inSampleSize = k })
+    val deg = when (ExifInterface(f.path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+        else -> 0f
+    }
+    if (bmp == null || deg == 0f) bmp else Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postRotate(deg) }, true)
+} catch (e: Exception) { null }
 
 private fun fmt(mm: Double) = mm.roundToInt().toString().reversed().chunked(3).joinToString(" ").reversed()
 
@@ -184,6 +211,35 @@ internal fun SketchDialogs(st: EditorState) {
                 confirmButton = { TextButton({ st.edit(Ops.renameCircuit(st.sketch, a.id, name)); close() }) { Text("Rendben", color = Melyviz.glow) } },
                 dismissButton = {
                     TextButton({ st.edit(Ops.delete(st.sketch, a.id)); close() }) { Text("Kör törlése", color = Melyviz.coral) }
+                },
+            )
+        }
+        is Ask.PhotoView -> {
+            val pp = s.photos.firstOrNull { it.id == a.id } ?: return close()
+            val shot = Photos.shot(pp, a.deg) ?: return close()
+            val dir = st.photoDir
+            val bmp = remember(shot.file) { dir?.let { loadPhoto(File(it, shot.file)) } }
+            val room = s.room(pp.room)?.let { roomTitle(it.name, it.kinds) } ?: "Fotópont"
+            AlertDialog(
+                onDismissRequest = close, containerColor = Melyviz.raised,
+                title = { Text("$room · ${Photos.label(a.deg)} felé (${pp.shots.size}/4)", style = Melyviz.label) },
+                text = {
+                    Column {
+                        if (bmp != null) Image(bmp.asImageBitmap(), contentDescription = "$room, ${Photos.label(a.deg)} felé",
+                            contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp))
+                        else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
+                        Text("Más irányba nézett?", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Photos.DIRS.forEach { d ->
+                                VrgChip(Photos.label(d), selected = d == a.deg) { if (d != a.deg) { st.turnShot(a.id, a.deg, d); st.ask = Ask.PhotoView(a.id, d) } }
+                            }
+                        }
+                    }
+                },
+                confirmButton = { TextButton({ close(); st.camera = CameraReq(a.id, a.deg) }) { Text("Újra", color = Melyviz.glow) } },
+                dismissButton = {
+                    TextButton({ st.removeShot(a.id, a.deg); close() }) { Text("Törlés", color = Melyviz.coral) }
+                    TextButton(close) { Text("Bezár", color = Melyviz.muted) }
                 },
             )
         }

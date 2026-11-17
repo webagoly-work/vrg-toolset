@@ -11,6 +11,8 @@ import hu.vrg.mobile.sketch.Level
 import hu.vrg.mobile.sketch.MeasureKind
 import hu.vrg.mobile.sketch.Norm
 import hu.vrg.mobile.sketch.Ops
+import hu.vrg.mobile.sketch.PhotoOps
+import hu.vrg.mobile.sketch.Photos
 import hu.vrg.mobile.sketch.Plugins
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -28,6 +30,9 @@ import kotlin.math.min
 /** The wheel on screen: which wheel, where (canvas px), which ring, the sector under the finger, what it is for. */
 data class WheelUi(val wheel: Wheel, val center: Offset, val ring: Int, val sel: Int?, val at: Pt, val hit: Hit?, val sticky: Boolean)
 
+/** The camera asked for a photo point; [deg] null = the side comes from the swipe after the shot. */
+data class CameraReq(val photo: String, val deg: Int?)
+
 /** What a dialog is asked for. */
 sealed class Ask {
     data class MemoNew(val at: Pt, val target: String?) : Ask()
@@ -37,6 +42,7 @@ sealed class Ask {
     data class RoomName(val room: String) : Ask()
     data class TagPick(val target: String?, val at: Pt?) : Ask()
     data class CircuitEdit(val id: String) : Ask()
+    data class PhotoView(val id: String, val deg: Int) : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
 }
@@ -82,11 +88,18 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     var note by mutableStateOf<String?>(null)
     /** A tag being dragged in from the tray: its id and where the finger is, in canvas px. */
     var tagDrag by mutableStateOf<Pair<String, Offset>?>(null)
+    // Fotópont (M25): the camera to open, the shot waiting for its direction swipe (photo point id, file), the folder
+    // the sketch's photos live in, and how a file that is no longer needed is deleted (set by the screen)
+    var camera by mutableStateOf<CameraReq?>(null)
+    var pendingShot by mutableStateOf<Pair<String, String>?>(null); private set
+    var photoDir: java.io.File? = null
+    var dropFile: (String) -> Unit = {}
+
     /** Where the canvas is on screen and its size (px), for tags dragged in from the tray. */
     var canvasOrigin = Offset.Zero
     var canvasSize = Size.Zero
 
-    private enum class Move { NONE, PAN, POINT, MEMO, TAG, ROOM, VERTEX, RECT, STROKE, FRAME }
+    private enum class Move { NONE, PAN, POINT, MEMO, TAG, ROOM, VERTEX, RECT, STROKE, FRAME, PHOTO, SHOT }
     private var move = Move.NONE
     private var moveId: String? = null
     private var moveVertex = -1
@@ -158,6 +171,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- the gestures --------------------------------------------------------------------------------------------
     fun onTap(o: Offset) {
         wheel?.let { w -> if (w.sticky) { tapWheel(w, o); return } }
+        if (pendingShot != null) { shotToward(o); return }
+        if (photoTap(o)) return
         val p = toSketch(o)
         val h = hitAt(o)
         when (tool.id) {
@@ -189,12 +204,15 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Tools.BOARD.id -> if (h?.kind == Hit.Kind.POINT) note = "Itt már van pont."
                 else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, tol))?.let { note = "Elosztó lerakva. Bekötés: lent." }
             Tools.ROUTE.id -> note = "Húzd végig az ujjad, merre megy a kábel."
+            Tools.PHOTO.id -> if (h?.kind == Hit.Kind.PHOTO) camera = CameraReq(h!!.id, null)
+                else commit(PhotoOps.add(sketch, p, tol))?.let { note = "Fotópont. Koppints rá: kamera; utána húzz arra, amerre a kép néz." }
         }
     }
 
     fun onDragStart(o: Offset) {
         wheel = null
         val p = toSketch(o); dragFrom = p; lastSketchPt = p
+        if (pendingShot != null) { move = Move.SHOT; shotFrom = o; return }
         val h = hitAt(o)
         move = when (tool.id) {
             Tools.ROOM.id -> Move.RECT
@@ -206,12 +224,13 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 Hit.Kind.TAG -> Move.TAG
                 Hit.Kind.ROOM -> Move.ROOM
                 Hit.Kind.ROOM_EDGE -> if (h!!.vertex >= 0) Move.VERTEX else Move.ROOM
+                Hit.Kind.PHOTO -> Move.PHOTO
                 else -> Move.PAN
             }
             else -> Move.PAN
         }
         moveId = h?.id; moveVertex = h?.vertex ?: -1
-        if (move in setOf(Move.POINT, Move.MEMO, Move.TAG, Move.ROOM, Move.VERTEX)) checkpoint()
+        if (move in setOf(Move.POINT, Move.MEMO, Move.TAG, Move.ROOM, Move.VERTEX, Move.PHOTO)) checkpoint()
         if (move == Move.STROKE) stroke = listOf(p)
     }
 
@@ -227,7 +246,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Move.TAG -> if (id != null) edit(Ops.moveTagUse(sketch, id, null, p), record = false)
             Move.ROOM -> if (id != null) edit(Ops.moveRoom(sketch, id, p - lastSketchPt), record = false)
             Move.VERTEX -> if (id != null) edit(Ops.moveVertex(sketch, id, moveVertex, p, tol / 2), record = false)
-            Move.NONE -> {}
+            Move.PHOTO -> if (id != null) edit(PhotoOps.move(sketch, id, p), record = false)
+            Move.SHOT, Move.NONE -> {}
         }
         lastSketchPt = p
     }
@@ -240,6 +260,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 else note = "Szoba kész. Tartsd lenyomva: név, típus, méret."
             }
             Move.STROKE -> if (commit(Ops.addRoute(sketch, stroke + p, tol)) == null) note = "Túl rövid nyomvonal."
+            Move.SHOT -> {
+                val d = Photos.snap((o.x - shotFrom.x).toDouble(), (o.y - shotFrom.y).toDouble(), 24.0 * density)
+                if (d == null) note = "Húzz hosszabban: arra, amerre a kép néz." else pendingShot?.let { (f, file) -> saveShot(f, d, file) }
+            }
             Move.FRAME -> {
                 val ids = Ops.pointsIn(sketch, dragFrom, p).filter { sketch.point(it)?.type != PointType.BOARD }
                 if (ids.isNotEmpty()) {
@@ -290,7 +314,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Hit.Kind.TAG -> Wheels.forOther("Címke", h!!.id)
             Hit.Kind.ROUTE -> Wheels.forOther("Nyomvonal", h!!.id)
             Hit.Kind.LINE -> Wheels.forOther("Vonal", h!!.id)
-            Hit.Kind.PHOTO -> Wheels.forOther("Fotópont", h!!.id)
+            Hit.Kind.PHOTO -> sketch.photos.firstOrNull { it.id == h!!.id }?.let { Wheels.forPhoto(it) }
             null -> Wheels.forPaper()
         } ?: Wheels.forPaper()
         val c = Offset(o.x.coerceIn(radius, max(radius, canvasW - radius)), o.y.coerceIn(radius, max(radius, canvasH - radius)))
@@ -327,6 +351,11 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         val h = w.hit
         val id = h?.id
         when {
+            item.id.startsWith("shot:") -> id?.let { f ->
+                val d = item.id.removePrefix("shot:").toInt()
+                val pp = sketch.photos.firstOrNull { it.id == f }
+                if (pp != null && Photos.shot(pp, d) != null) ask = Ask.PhotoView(f, d) else camera = CameraReq(f, d)
+            }
             item.id.startsWith("type:") -> id?.let { edit(Ops.setType(sketch, it, PointType.of(item.id.removePrefix("type:")))) }
             item.id.startsWith("kind:") -> id?.let {
                 edit(Ops.toggleKind(sketch, it, item.id.removePrefix("kind:")))
@@ -351,6 +380,53 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             }
         }
     }
+
+    // ---- Fotópont (M25) --------------------------------------------------------------------------------------------
+    private var shotFrom = Offset.Zero
+
+    /** The camera came back with a photo. A side asked for in advance saves it; otherwise it waits for the swipe. */
+    fun photoTaken(req: CameraReq, file: String) {
+        if (req.deg != null) saveShot(req.photo, req.deg, file)
+        else { pendingShot = req.photo to file; note = "Húzz arra, amerre a kép néz (É, K, D, Ny)." }
+    }
+
+    fun cancelShot() { pendingShot?.let { dropFile(it.second) }; pendingShot = null; note = "A fotó elvetve." }
+
+    private fun saveShot(photo: String, deg: Int, file: String) {
+        val (s, old) = PhotoOps.addShot(sketch, photo, deg, file, System.currentTimeMillis())
+        edit(s); old?.let(dropFile)
+        pendingShot = null
+        val pp = sketch.photos.firstOrNull { it.id == photo }
+        val next = pp?.let { Photos.next(it) }
+        note = Photos.label(deg) + " fotó mentve (${pp?.shots?.size ?: 0}/4)." + (next?.let { " Következő: " + Photos.label(it) } ?: " A szoba kész.")
+    }
+
+    /** While a shot waits: a tap away from its point gives the direction too. */
+    private fun shotToward(o: Offset) {
+        val (f, file) = pendingShot ?: return
+        val at = sketch.photos.firstOrNull { it.id == f }?.at ?: return cancelShot()
+        val c = toScreen(at)
+        val d = Photos.snap((o.x - c.x).toDouble(), (o.y - c.y).toDouble(), 24.0 * density)
+        if (d == null) note = "Húzz vagy koppints a pontól arra, amerre a kép néz." else saveShot(f, d, file)
+    }
+
+    /** A tap on a photo point's wedge: the photo of that side, or (with the Fotópont tool) the camera for it. */
+    private fun photoTap(o: Offset): Boolean {
+        for (pp in sketch.photos) {
+            val c = toScreen(pp.at)
+            val d = Photos.wedgeAt((o.x - c.x).toDouble(), (o.y - c.y).toDouble(), 13.0 * density, 42.0 * density) ?: continue
+            if (Photos.shot(pp, d) != null) { ask = Ask.PhotoView(pp.id, d); return true }
+            if (tool.id == Tools.PHOTO.id) { camera = CameraReq(pp.id, d); return true }
+        }
+        return false
+    }
+
+    fun removeShot(photo: String, deg: Int) {
+        val (s, old) = PhotoOps.removeShot(sketch, photo, deg)
+        edit(s); old?.let(dropFile)
+    }
+
+    fun turnShot(photo: String, from: Int, to: Int) = edit(PhotoOps.turnShot(sketch, photo, from, to))
 
     // ---- helpers ---------------------------------------------------------------------------------------------------
     /** The record a hit stands for (a wall edge is its room). */
@@ -380,7 +456,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         Hit.Kind.TAG -> sketch.tagUse(h.id)?.let { "#" + (sketch.tag(it.tag)?.name ?: "") } ?: "Címke"
         Hit.Kind.ROUTE -> "Nyomvonal"
         Hit.Kind.LINE -> "Vonal"
-        Hit.Kind.PHOTO -> "Fotópont"
+        Hit.Kind.PHOTO -> sketch.photos.firstOrNull { it.id == h.id }?.let { "Fotópont ${it.shots.size}/4" } ?: "Fotópont"
     }
 
     private fun lineTap(raw: Pt) {

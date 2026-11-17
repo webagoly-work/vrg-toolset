@@ -74,6 +74,31 @@ object SketchFeature : VrgFeature {
     }
 }
 
+/**
+ * Fotópont (WP M25) is a plugin of the Vázlat, not a screen of its own: its home tile says how to reach it and opens
+ * the Vázlat. The plugin is switched on per sketch under ⚙.
+ */
+object PhotoFeature : VrgFeature {
+    override val info = Catalogue.PHOTO
+
+    @Composable
+    override fun Screen(host: FeatureHost) {
+        Column(Modifier.fillMaxSize().background(Melyviz.water).padding(Melyviz.gutter)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
+                Text("FOTÓPONT", style = Melyviz.title.copy(fontSize = 18.sp))
+            }
+            Text(
+                "A Vázlat bővítménye. Egy vázlatban: ⚙ → Fotópont be. A ◉ eszközzel koppints a szoba közepére, majd a " +
+                    "pontra: megnyílik a kamera. A fotó után húzz a pontból arra, amerre a kép néz (É, K, D, Ny a vázlaton). " +
+                    "Szobánként négy fotó; a pont négy cikke mutatja, mi van meg. A kész fotó a cikkére koppintva nézhető meg.",
+                style = Melyviz.small, modifier = Modifier.padding(top = 8.dp),
+            )
+            Row(Modifier.padding(top = 14.dp)) { VrgChip("Vázlat megnyitása ›", selected = true) { host.open(Catalogue.SKETCH.id) } }
+        }
+    }
+}
+
 /** The sketches on the phone: one JSON file each, written through a temp file so a crash never leaves half a file. */
 class SketchStore(private val dir: File) {
     data class Entry(val id: String, val name: String, val updated: Long, val rooms: Int, val points: Int, val measures: Int)
@@ -100,7 +125,10 @@ class SketchStore(private val dir: File) {
         }
     }
 
-    fun delete(id: String) { file(id).delete() }
+    /** Where a sketch's photos are kept (WP M25); the FileProvider shares this folder with the camera app. */
+    fun photoDir(id: String) = File(dir, "photos/$id")
+
+    fun delete(id: String) { file(id).delete(); photoDir(id).deleteRecursively() }
 
     fun create(name: String): Sketch {
         val now = System.currentTimeMillis()

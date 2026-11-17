@@ -15939,6 +15939,13 @@ registerActions([_mode('room','Helyiség-toll','⬚',null,'Helyiségek pontról 
 // fl.sk.est lists those edges. They are drawn here as an orange dashed line with "≈ <length>" and the room gets a
 // faint orange fill and "≈ becsült méret", on screen and in print, until "Vázlat: méretek ellenőrizve" clears them.
 // A floor without sk.est draws nothing new, so every golden render stays byte-identical. Prefix: ski.
+//
+// FOTÓPONT (Mobile WP M25). A photo point is a hidden note {sk:{photo:true, room, shots:[{deg, side, file}]}}: deg 0 =
+// up on the plan, clockwise (D-24 = A: the four sides of the room as drawn). Each photo reached the PC as its own file
+// on the Átadás board (D-25 = A, inbox\board\<date>\), under `file`. The point and a view cone per side are drawn on
+// the overlay (an editing aid, not printed): filled = a photo exists, darker once it is attached here. "Vázlat: fotók"
+// lists them; attaching the board files there keeps a small thumbnail (≤ 360 px) in the project for each, matched by
+// file name, so the room can be looked at from the Planner. The full photos stay files on the PC.
 
 const SKI_COL='#d0701e';
 function skiIs(o){return !!(o&&o.kind==='vrg-sketch'&&o.plan&&o.plan.data&&typeof o.plan.data==='object');}
@@ -15959,10 +15966,13 @@ function skiPayload(o){
   return {v:1,state:{active:lvl},data:d,building:b};}
 
 // counts for the HUD line
+function skiIsPhoto(n){return !!(n&&n.sk&&n.sk.photo&&Array.isArray(n.sk.shots));}
 function skiSummary(o){const d=o.plan.data,r=o.plan.report||{};
-  const n=k=>Array.isArray(d[k])?d[k].length:0;
+  const ph=(d.notes||[]).filter(skiIsPhoto),shots=ph.reduce((t,n)=>t+n.sk.shots.length,0);
+  const n=k=>Array.isArray(d[k])?(k==='notes'?d[k].length-ph.length:d[k].length):0;
   const est=(d.floors||[]).reduce((t,f)=>t+((f&&f.sk&&Array.isArray(f.sk.est))?f.sk.est.length:0),0);
   let s=`Vázlat betöltve: ${n('floors')} helyiség, ${n('devices')} pont, ${n('circuits')} áramkör, ${n('paths')} nyomvonal, ${n('notes')} jegyzet`;
+  if(ph.length)s+=`, ${ph.length} fotópont (${shots} fotó)`;
   if(est)s+=` · ${est} becsült fal (narancs ≈)`;
   if(Array.isArray(r.conflicts)&&r.conflicts.length)s+=` · ${r.conflicts.length} ellentmondó méret`;
   return s;}
@@ -16006,6 +16016,66 @@ registerActions([{id:'sketch.confirm',label:'Vázlat: méretek ellenőrizve',ico
   hint:'A telefonos vázlat becsült (≈) falméretei ezen a szinten ellenőrizve: a narancs jelölés eltűnik.',
   need:'Nincs becsült méret ezen a szinten.',when:()=>data.floors.some(fl=>skiEst(fl)&&fl.level===state.active),
   run:()=>{const n=skiConfirm(state.active);$('hud').textContent=n?`${n} becsült fal ellenőrzöttnek jelölve.`:'Nincs becsült méret.';}}]);
+
+// ---- Fotópont (M25) -------------------------------------------------------------------------------------------------
+const SKI_PH={cone:900,half:Math.PI/6,col:'#2a8cdb'};
+function skiPhotos(level){return data.notes.filter(n=>skiIsPhoto(n)&&(!level||n.level===level));}
+// a side's direction on the plan (y down): 0 = up, 90 = right …
+function skiDir(deg){const a=(deg%360)*Math.PI/180;return [Math.sin(a),-Math.cos(a)];}
+function skiPhotoSvg(){let s='';
+  for(const l of ORD){if(!state.levels[l])continue;const z=dz(l,0);
+    skiPhotos(l).forEach(n=>{if(!layerShows(n,'note'))return;const shots=n.sk.shots;
+      [0,90,180,270].forEach(deg=>{const sh=shots.find(x=>((x.deg%360)+360)%360===deg),[dx,dy]=skiDir(deg);
+        const rot=(t)=>[dx*Math.cos(t)-dy*Math.sin(t),dx*Math.sin(t)+dy*Math.cos(t)];
+        const a=rot(-SKI_PH.half),b=rot(SKI_PH.half),L=SKI_PH.cone;
+        const pts=[[n.x,n.y,z],[n.x+a[0]*L,n.y+a[1]*L,z],[n.x+b[0]*L,n.y+b[1]*L,z]];
+        s+=sh?`<polygon class="ski-cone" points="${p2b(pts)}" fill="${SKI_PH.col}" fill-opacity="${sh.thumb?0.5:0.25}" stroke="${SKI_PH.col}" stroke-width="${vsP(1)}"/>`
+             :`<polygon class="ski-cone-empty" points="${p2b(pts)}" fill="none" stroke="#8a857b" stroke-width="${vsP(0.8)}" stroke-dasharray="${vsDash('3 3')}"/>`;});
+      const c=planToBase(n.x,n.y,z);
+      s+=`<circle class="ski-photo" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(6)}" fill="#fff" stroke="${SKI_PH.col}" stroke-width="${vsP(2)}"/>`;
+      if(l===state.active)s+=`<text x="${c[0].toFixed(1)}" y="${(c[1]-vsP(10)).toFixed(1)}" font-size="${vsP(9)}" text-anchor="middle" fill="${SKI_PH.col}" font-weight="700" stroke="#fff" stroke-width="${vsP(3)}" paint-order="stroke">📷 ${shots.length}/4</text>`;});}
+  return s;}
+STK_OVERLAY.push(()=>skiPhotoSvg());
+
+// a small JPEG thumbnail of an image file, or null where there is no canvas (jsdom) or the file is no image
+function skiThumb(file,max){max=max||360;return new Promise(res=>{try{
+  const cv=document.createElement('canvas'),g=cv.getContext&&cv.getContext('2d');if(!g||typeof Image==='undefined'){res(null);return;}
+  const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));
+      cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);g.drawImage(im,0,0,cv.width,cv.height);
+      try{res(cv.toDataURL('image/jpeg',0.72));}catch(_){res(null);}};im.onerror=()=>res(null);im.src=fr.result;};
+  fr.onerror=()=>res(null);fr.readAsDataURL(file);}catch(_){res(null);}});}
+
+// board files → the shots that name them; a file no shot names is reported, not kept. One undo step.
+async function skiAttach(files,thumbFn){thumbFn=thumbFn||skiThumb;const byName={};
+  skiPhotos().forEach(n=>n.sk.shots.forEach(sh=>{byName[sh.file]=sh;}));
+  const hits=[],unknown=[];for(const f of Array.from(files||[])){(byName[f.name]?hits:unknown).push(f);}
+  if(hits.length)pushUndo(['notes']);
+  for(const f of hits){const th=await thumbFn(f);const sh=byName[f.name];sh.seen=true;if(th)sh.thumb=th;}
+  if(hits.length){draw();scheduleSave&&scheduleSave();}
+  return {matched:hits.length,unknown:unknown.map(f=>f.name)};}
+
+function skiPhotoListHtml(){const ph=skiPhotos();
+  if(!ph.length)return '<div class="mrow">Nincs fotópont.</div>';
+  const SIDES=[[0,'É'],[90,'K'],[180,'D'],[270,'Ny']];
+  return ph.map(n=>`<div class="mrow" style="flex-direction:column;align-items:stretch;gap:4px"><b>${esc(n.sk.room||'Fotópont')}</b>`
+    +`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">`+SIDES.map(([d,lab])=>{const sh=n.sk.shots.find(x=>x.deg===d);
+      if(!sh)return `<div style="font-size:11px;color:var(--pc-faint,#aaa)">${lab}: nincs fotó</div>`;
+      return `<div style="font-size:11px">${lab}${sh.thumb?`<br><img class="skiTh" src="${sh.thumb}" alt="${esc(sh.file)}" style="width:100%;cursor:zoom-in;border-radius:4px">`
+        :`<br><span style="color:var(--pc-mute,#888);word-break:break-all">${esc(sh.file)}</span>${sh.seen?'':' <i>(nincs csatolva)</i>'}`}</div>`;}).join('')
+    +`</div></div>`).join('');}
+function skiOpenPhotos(){
+  const body=`<div id="skiList">${skiPhotoListHtml()}</div>`
+    +`<div class="mrow"><label>Fotók csatolása (a PC tábláról): <input type="file" id="skiPick" accept="image/*" multiple></label></div>`
+    +`<div class="mrow" id="skiMsg" style="font-size:11px;color:var(--pc-mute,#888)">A telefon a fotókat az Átadás táblára küldi (inbox\\board\\&lt;dátum&gt;\\). Jelöld ki őket egyszerre: a fájlnév alapján a helyükre kerülnek.</div>`;
+  openModal('Vázlat: fotók',body,()=>true,'Kész');
+  const wire=()=>{document.querySelectorAll('#skiList .skiTh').forEach(im=>{im.onclick=()=>{im.style.width=im.style.width==='100%'?'240%':'100%';};});};wire();
+  $('skiPick').onchange=async e=>{const r=await skiAttach(e.target.files);
+    $('skiList').innerHTML=skiPhotoListHtml();wire();
+    $('skiMsg').textContent=`${r.matched} fotó a helyére került.`+(r.unknown.length?` Nem ehhez a vázlathoz: ${r.unknown.join(', ')}.`:'');e.target.value='';};}
+registerActions([{id:'sketch.photos',label:'Vázlat: fotók',icon:'📷',group:'Helyiség',
+  alias:'vazlat fotopont photo foto kamera mobile sketch',
+  hint:'A telefonos vázlat fotópontjai: szobánként négy irány, a fotók csatolása a PC táblájáról.',
+  need:'Nincs fotópont a tervben.',when:()=>skiPhotos().length>0,run:()=>skiOpenPhotos()}]);
 
 // The pen (08c) stores each room's CLEAR outline — the inner sizes the user measured (Q-F01 = A, answered 2026-10-14).
 // Create Walls keeps every one of those sizes:

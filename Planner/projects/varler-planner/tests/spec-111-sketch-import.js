@@ -33,7 +33,7 @@ setTimeout(async()=>{
   // ---------- 3. import ----------
   const id=w.skiImport(o);
   ok('a new project, named after the sketch',w.__proj.list()[id]&&w.__proj.list()[id].name==='Kossuth u. 12 (vázlat)');
-  ok('the HUD counts what came in',/Vázlat betöltve: 2 helyiség, 4 pont, 1 áramkör, 1 nyomvonal, 2 jegyzet · 2 becsült fal/.test($('hud').textContent),$('hud').textContent);
+  ok('the HUD counts what came in',/Vázlat betöltve: 2 helyiség, 4 pont, 1 áramkör, 1 nyomvonal, 2 jegyzet, 1 fotópont \(1 fotó\) · 2 becsült fal/.test($('hud').textContent),$('hud').textContent);
   ok('two outline rooms with inner sizes',D.floors.length===2&&D.floors.every(f=>f.stage==='outline'&&f.clear===true));
   ok('the earlier workspace is gone',!D.floors.some(f=>f.name==='Sima'));
   ok('room kinds came along (Fürdő from its tag)',D.floors[0].kind==='nappali'&&D.floors[1].kind==='furdo');
@@ -47,7 +47,7 @@ setTimeout(async()=>{
   const sw=D.devices[1];
   ok('the route reaches the switch (a link that resolves)',w.linkTargets(sw).length===1&&w.linkTargets(sw)[0].path.id===D.paths[0].id);
   ok('route nodes at the ceiling',D.paths[0].nodes.every(n=>n.h===2700));
-  ok('memo + loose tag as notes',D.notes.length===2&&D.notes[1].text==='#Nedves');
+  ok('memo + loose tag + the photo point as notes',D.notes.length===3&&D.notes[1].text==='#Nedves'&&D.notes[2].hidden===true);
   ok('existing / planned is kept on the device',D.devices[0].sk.st==='meglevo'&&D.devices[1].sk.st==='tervezett');
   ok('ids stay unique after the Planner\'s own pass',(()=>{w.ensureIds(D);const ids=[];w.eval('UKEYS').forEach(k=>(D[k]||[]).forEach(r=>ids.push(r.id)));return ids.length===new Set(ids).size;})());
 
@@ -66,7 +66,28 @@ setTimeout(async()=>{
   w.doUndo();
   ok('undo brings the mark back',(scene().match(/class="ski-edge"/g)||[]).length===2);
 
-  // ---------- 6. through "Terv betöltése fájlból" ----------
+  // ---------- 6. Fotópont (Mobile WP M25) ----------
+  const ph=D.notes[2];
+  ok('the photo point sits in the middle of Nappali',ph.sk.photo&&ph.x===2000&&ph.y===1600&&ph.sk.room==='Nappali');
+  ok('its one shot faces K with the board file name',ph.sk.shots.length===1&&ph.sk.shots[0].deg===90&&ph.sk.shots[0].file==='kossuth-u-12_F99_kelet.jpg');
+  scene();sc=$('vp').innerHTML;   // the photo point is on the overlay (an editing aid, not printed)
+  ok('the point and one filled cone + three empty ones are drawn',(sc.match(/class="ski-photo"/g)||[]).length===1
+    &&(sc.match(/class="ski-cone"/g)||[]).length===1&&(sc.match(/class="ski-cone-empty"/g)||[]).length===3);
+  ok('the hidden note draws no pin of its own',!sc.includes('Fotópont · Nappali'));
+  ok('the photos action is offered',w.actionById('sketch.photos').when({})===true);
+  const F=(n)=>new w.File(['x'],n,{type:'image/jpeg'});
+  const r1=await w.skiAttach([F('kossuth-u-12_F99_kelet.jpg'),F('masik_F1_del.jpg')],async()=>'data:image/jpeg;base64,AAAA');
+  ok('a board file matches its shot by name, a stranger is reported',r1.matched===1&&r1.unknown.join()==='masik_F1_del.jpg');
+  ok('the thumbnail is kept on the shot',ph.sk.shots[0].thumb==='data:image/jpeg;base64,AAAA'&&ph.sk.shots[0].seen===true);
+  w.doUndo();
+  ok('attaching is one undo step',!D.notes[2].sk.shots[0].thumb);
+  const r2=await w.skiAttach([F('kossuth-u-12_F99_kelet.jpg')],async()=>null);
+  ok('no thumbnail (no canvas): the file is still matched',r2.matched===1&&D.notes[2].sk.shots[0].seen===true&&!D.notes[2].sk.shots[0].thumb);
+  w.skiOpenPhotos();
+  ok('the panel lists the four sides',/Nappali/.test($('skiList').innerHTML)&&(($('skiList').innerHTML.match(/nincs fotó/g))||[]).length===3);
+  w.closeModal();
+
+  // ---------- 7. through "Terv betöltése fájlból" ----------
   w.hardResetWorkspace();
   w.importProjectFile(new w.File([PKG],'kossuth.vsketch.json',{type:'application/json'}));
   await new Promise(r=>setTimeout(r,400));

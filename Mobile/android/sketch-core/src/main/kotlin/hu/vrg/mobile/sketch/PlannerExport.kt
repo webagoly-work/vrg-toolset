@@ -16,6 +16,9 @@ import kotlin.math.roundToInt
 //   routes  → data.paths at the ceiling (the Planner's default section build), their tied ends as links of the devices (a link without glue: the route
 //             reaches the box from above, as the Planner's auto-link makes it)
 //   memos   → data.notes; a loose tag → a note "#name"
+//   photo points (WP M25) → a hidden note each {sk:{photo:true, shots:[{deg, side, file}]}}, file = the name the photo
+//             has on the Átadás board (D-25 = A: each photo goes there as its own file); the Planner draws the point
+//             and its view cones from it (08ca) and lists the files in plan.photos
 // Everything carries `sk` {src:'vazlat', id, …}: where it came from, and for a room which edges were measured,
 // derived or inferred (est), so the Planner can mark the guessed sizes until someone checks them.
 object PlannerExport {
@@ -34,6 +37,12 @@ object PlannerExport {
         PointType.SENSOR -> 2200
         PointType.BOARD -> 1600
     }
+
+    private fun roomTitleOf(r: Room) = r.name.ifBlank { RoomKinds.autoName(r.kinds) }.ifBlank { r.id }
+
+    /** Every photo file the package names, the phone's file → the board name: what the export sends with it. */
+    fun photoFiles(s: Sketch): List<Pair<String, String>> =
+        s.photos.flatMap { p -> p.shots.sortedBy { it.deg }.map { it.file to Photos.exportName(s, p, it.deg) } }
 
     private fun hex(c: Long) = "#%06x".format(c and 0xFFFFFF)
     private fun i(v: Double) = v.roundToInt()
@@ -134,6 +143,20 @@ object PlannerExport {
                 .put("text", "#" + tag.name).put("sk", JSONObject().put("src", "vazlat").put("id", t.id).put("tag", tag.name)))
         }
 
+        // ---- photo points: one hidden note each, the board file names in sk.shots and plan.photos ----
+        val photos = JSONArray()
+        norm.photos.forEach { f ->
+            val pp = s.photos.firstOrNull { it.id == f.id } ?: return@forEach
+            val shots = JSONArray(f.shots.sortedBy { it.deg }.map { sh ->
+                JSONObject().put("deg", sh.deg).put("side", Photos.label(sh.deg)).put("file", Photos.exportName(s, pp, sh.deg)).put("taken", sh.taken)
+            })
+            val room = s.room(f.room)?.let { roomTitleOf(it) } ?: ""
+            notes.put(JSONObject().put("id", id("N")).put("level", lvl).put("x", i(f.at.x)).put("y", i(f.at.y))
+                .put("text", "Fotópont" + (if (room.isNotEmpty()) " · $room" else "") + " (${f.shots.size}/4)").put("hidden", true)
+                .put("sk", JSONObject().put("src", "vazlat").put("id", f.id).put("photo", true).put("room", room).put("shots", shots)))
+            photos.put(JSONObject().put("id", f.id).put("room", room).put("x", i(f.at.x)).put("y", i(f.at.y)).put("shots", shots))
+        }
+
         val box = norm.all.takeIf { it.isNotEmpty() }?.let { Geo.bbox(it) }
         val center = box?.let { (lo, hi) -> JSONArray().put(i((lo.x + hi.x) / 2)).put(i((lo.y + hi.y) / 2)) } ?: JSONArray().put(6000).put(4000)
         val rep = norm.report
@@ -151,6 +174,7 @@ object PlannerExport {
             .put("sketch", SketchJson.write(s))
             .put("plan", JSONObject()
                 .put("center", center)
+                .put("photos", photos)
                 .put("report", report)
                 .put("data", JSONObject()
                     .put("v", 2).put("seq", seq)

@@ -118,7 +118,9 @@ class OpsTest {
         val noElectric = Plugins.toggle(Plugins.DEFAULT_ON, Plugins.ELECTRIC.id)
         assertEquals(listOf("select", "memo", "tag", "room", "line", "measure"), Plugins.rail(noElectric).map { it.id })
         assertEquals(noElectric, Plugins.toggle(noElectric, Plugins.NOTE.id), "the note taker stays")
-        assertEquals(noElectric, Plugins.toggle(noElectric, Plugins.PHOTO.id), "a planned plugin cannot be switched on yet")
+        assertTrue(Plugins.PHOTO.id !in Plugins.DEFAULT_ON, "Fotópont starts off")
+        assertEquals(listOf("select", "memo", "tag", "room", "line", "measure", "photo"),
+            Plugins.rail(Plugins.toggle(noElectric, Plugins.PHOTO.id)).map { it.id }, "switched on, its tool joins the rail")
         assertEquals(Plugins.DEFAULT_ON, Plugins.toggle(noElectric, Plugins.ELECTRIC.id), "back in catalogue order")
     }
 }

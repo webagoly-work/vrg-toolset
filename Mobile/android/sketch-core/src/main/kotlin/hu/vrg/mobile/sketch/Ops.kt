@@ -81,6 +81,7 @@ object Ops {
             rooms = s.rooms.map { if (it.id == id) it.copy(poly = r.poly.map { p -> p + d }) else it },
             points = s.points.map { if (it.room == id) it.copy(at = it.at + d) else it },
             memos = s.memos.map { if (it.target == id) it.copy(at = it.at + d) else it },
+            photos = s.photos.map { if (it.room == id) it.copy(at = it.at + d) else it },
         )
     }
 

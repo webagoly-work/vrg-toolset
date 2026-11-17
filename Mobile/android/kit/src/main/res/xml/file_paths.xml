@@ -3,4 +3,5 @@
     <cache-path name="shots" path="shots/" />
     <cache-path name="drop" path="drop/" />
     <cache-path name="sketch" path="sketch/" />
+    <files-path name="sketch-photos" path="sketch/photos/" />
 </paths>

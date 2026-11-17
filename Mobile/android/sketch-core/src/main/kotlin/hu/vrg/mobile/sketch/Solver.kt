@@ -49,6 +49,8 @@ data class NPoint(val id: String, val at: Pt, val type: PointType, val state: Po
 data class NRoute(val id: String, val pts: List<Pt>, val a: String?, val b: String?, val circuit: String?)
 data class NMemo(val id: String, val at: Pt, val text: String, val target: String?)
 data class NTag(val id: String, val tag: String, val at: Pt)
+/** A photo point (WP M25) in mm, with its shots as the sketch has them. */
+data class NPhoto(val id: String, val at: Pt, val room: String?, val shots: List<Shot>)
 
 data class Conflict(val measure: String, val mm: Int, val solved: Int)
 
@@ -64,6 +66,7 @@ data class Report(
 data class Norm(
     val rooms: List<NRoom>, val points: List<NPoint>, val routes: List<NRoute>,
     val memos: List<NMemo>, val tags: List<NTag>, val report: Report,
+    val photos: List<NPhoto> = emptyList(),
 ) {
     fun room(id: String?) = rooms.firstOrNull { it.id == id }
     fun point(id: String?) = points.firstOrNull { it.id == id }
@@ -265,7 +268,13 @@ class Solver(
         val memos = s.memos.map { NMemo(it.id, map(it.at), it.text, it.target) }
         val tags = s.tagUses.filter { it.at != null }.map { NTag(it.id, it.tag, map(it.at!!)) }
 
-        return Norm(rooms, points, routes, memos, tags, Report(mea, der, inf, conflicts, warnings, ax.scale, ay.scale))
+        // a photo point stays at the room's middle: the centroid of the solved room when it was placed on the sketch's
+        val photos = s.photos.map { f ->
+            val r = s.room(f.room); val nr = rooms.firstOrNull { it.id == f.room }
+            val onMiddle = r != null && nr != null && nr.poly.size >= 3 && Geo.centroid(r.poly).dist(f.at) < 1e-6
+            NPhoto(f.id, if (onMiddle) Geo.centroid(nr!!.poly) else map(f.at), f.room, f.shots)
+        }
+        return Norm(rooms, points, routes, memos, tags, Report(mea, der, inf, conflicts, warnings, ax.scale, ay.scale), photos)
     }
 
     private fun roomName(r: Room) = r.name.ifEmpty { RoomKinds.autoName(r.kinds).ifEmpty { r.id } }

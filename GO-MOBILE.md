@@ -76,7 +76,9 @@ What changes locally compared with the cloud:
   locally first), **BETA**: `docs/mobile/WP/M24.md` → "Telefonon ellenőrizni" (16 steps, the last two on the PC with
   the Planner). D-19 … D-23 were taken as defaults while building: revisit them in `docs/mobile/DECISIONS.md`. Its
   logic is `sketch-core` (`gradlew :sketch-core:test`, now in `mobile.cmd test` and CI); the Planner side is
-  `src/08ca-sketch-import.js` + `tests/spec-111-sketch-import.js`. **M25** Fotópont is next, with D-24 … D-26 to ask.
+  `src/08ca-sketch-import.js` + `tests/spec-111-sketch-import.js`.
+- **M25** Fotópont built 2026-11-17 in the same cloud session (D-24 = D-25 = D-26 = A, answered by the user), **BETA**:
+  `docs/mobile/WP/M25.md` → "Telefonon ellenőrizni" (10 steps, the last on the PC). A Vázlat plugin, off by default.
 
 ## 3. What the user asked for, mapped to WPs
 

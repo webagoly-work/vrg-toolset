@@ -41,7 +41,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M22** | Claude (`claude`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--claude`): opens the official Claude app (no sign-in in VRG Mobile); with a paired PC, the PC's Remote Control sessions: list, start one in a folder (relay `--claude`) | relay | high (relay) |
 | **M23** | PC ablakok (`pcwin`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--files`): the PC's work folders (Repó, VRG Full, Közös) read-only, a look at text and images, a copy onto the Átadás board; mail and feed stay on the PC (D-18) | relay | medium |
 | **M24** | Vázlat (`sketch`) | **BETA** (built 2026-11-17, D-19 … D-23, waiting for the first Actions build and the phone check): the field sketch, a note taker with plugins (Jegyzet, Alaprajz, Villany): rooms as rectangles or a lineout, sizes on the walls, points current / planned, the hold wheel for types and memos, circuits, the Elosztó and Bekötés, nyomvonal, tags by drag and drop; the solver in `sketch-core` derives what the measures imply and guesses the rest from the sketch, marked; the Planner opens the package (`08ca-sketch-import.js`) with the guesses marked ≈ | — | high (core) |
-| **M25** | Fotópont (`photo`) | **PLANNED** (D-24 … D-26 open): the Vázlat's second version, a point in each room, the camera from there, a swipe for each photo's direction, four photos a room; the data slot is in M24 | camera | low (camera) |
+| **M25** | Fotópont (`photo`) | **BETA** (built 2026-11-17, D-24 = D-25 = D-26 = A, waiting for the first Actions build and the phone check): the Vázlat's plugin for a point in each room: tap it and the camera app opens, swipe toward the side the photo faces (É, K, D, Ny of the sketch), four wedges per point; each photo shared as its own board file named by the package; the Planner draws the points and view cones and attaches the photos by name (⌘K → Vázlat: fotók) | camera | low (camera) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
@@ -53,7 +53,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 ### Later, not yet WPs (extrapolated)
 
 - **Quick Settings tile + home widget**: Légegér on/off from the shade, a widget for a quick note.
-- **Planner site mode**: the measurements and the layout are M24 (Vázlat), the room photos M25 (Fotópont); still
+- **Planner site mode**: the measurements and the layout are M24 (Vázlat), the room photos M25 (Fotópont), both BETA; still
   later: the sketch sent straight into a running Planner over the relay (D-20 B), existing points onto the Planner's
   Meglévő layer (D-22).
 - **Inventory scan**: barcodes and labels into VRG Inventory (M2's scanner + M12's transfer).

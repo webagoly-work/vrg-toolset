@@ -352,6 +352,26 @@
      "y": 2400,
      "id": "N12",
      "text": "#Nedves"
+    },
+    {
+     "hidden": true,
+     "level": "ground",
+     "x": 2000,
+     "sk": {
+      "src": "vazlat",
+      "photo": true,
+      "id": "F99",
+      "shots": [{
+       "side": "K",
+       "file": "kossuth-u-12_F99_kelet.jpg",
+       "deg": 90,
+       "taken": 5
+      }],
+      "room": "Nappali"
+     },
+     "y": 1600,
+     "id": "N13",
+     "text": "Fotópont · Nappali (1/4)"
     }
    ],
    "devices": [
@@ -452,7 +472,7 @@
      "build": "sull_gege"
     }]
    }],
-   "seq": 12,
+   "seq": 13,
    "circuits": [{
     "col": "#e8641c",
     "dedicated": false,
@@ -483,6 +503,18 @@
    "inferred": 2,
    "conflicts": [],
    "derived": 2
-  }
+  },
+  "photos": [{
+   "x": 2000,
+   "y": 1600,
+   "id": "F99",
+   "shots": [{
+    "side": "K",
+    "file": "kossuth-u-12_F99_kelet.jpg",
+    "deg": 90,
+    "taken": 5
+   }],
+   "room": "Nappali"
+  }]
  }
 }

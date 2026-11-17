@@ -108,6 +108,16 @@ object Wheels {
         )),
     )
 
+    /**
+     * A photo point (WP M25): its four sides at the wheel's four sides (É up, K right, D down, Ny left): picking a side
+     * with a photo shows it, one without opens the camera for that side. One ring, so South is a side here, not a ring.
+     */
+    fun forPhoto(p: PhotoPoint): Wheel {
+        fun side(d: Int) = WheelItem("shot:$d", Photos.label(d) + if (Photos.shot(p, d) != null) " ✓" else " +",
+            if (Photos.shot(p, d) != null) "▣" else "◉")
+        return Wheel("Fotópont ${p.shots.size}/4", p.id, listOf(listOf(side(0), MEMO, side(90), TAG, side(180), DEL, side(270), null)))
+    }
+
     /** Memos, routes, lines, loose tags, circuits: memo, tag, delete (and edit for a memo). */
     fun forOther(title: String, target: String, editable: Boolean = false): Wheel = Wheel(
         title, target,

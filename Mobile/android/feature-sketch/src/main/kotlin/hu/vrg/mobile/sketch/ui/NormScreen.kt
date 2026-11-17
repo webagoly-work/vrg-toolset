@@ -1,6 +1,9 @@
 package hu.vrg.mobile.sketch.ui
 
+import android.content.ClipData
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +48,7 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Norm
+import hu.vrg.mobile.sketch.Photos
 import hu.vrg.mobile.sketch.PlannerExport
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -66,10 +70,30 @@ import kotlin.math.roundToInt
 
 private const val MIME = "application/json"
 
-private suspend fun writePackage(ctx: Context, s: Sketch, n: Norm): File = withContext(Dispatchers.IO) {
-    val f = File(FileStore.cacheDir(ctx, "sketch"), SketchJson.fileStem(s) + ".vsketch.json")
-    f.writeText(PlannerExport.build(s, n).toString(1))
-    f
+/**
+ * The package, and (WP M25, D-25 = A) every photo as its own file under the name the package gives it, ready to
+ * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
+ */
+private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+    val out = FileStore.cacheDir(ctx, "sketch")
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg")) it.delete() }        // the last export's copies
+    val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
+    pkg.writeText(PlannerExport.build(s, n).toString(1))
+    val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
+        val src = File(SketchFeature.store.photoDir(s.id), local)
+        if (!src.exists()) null else File(out, name).also { src.copyTo(it, overwrite = true) }
+    }
+    listOf(pkg to MIME) + photos.map { it to "image/jpeg" }
+}
+
+private fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
+    if (files.size == 1) { ctx.startActivity(FileStore.shareIntent(ctx, files[0].first, files[0].second, "Vázlat küldése")); return }
+    val uris = ArrayList<Uri>(files.map { FileStore.uri(ctx, it.first) })
+    val send = Intent(Intent.ACTION_SEND_MULTIPLE).setType("*/*")
+        .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    send.clipData = ClipData.newRawUri(null, uris[0]).apply { uris.drop(1).forEach { addItem(ClipData.Item(it)) } }
+    ctx.startActivity(Intent.createChooser(send, "Vázlat küldése").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
 @Composable
@@ -115,9 +139,9 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 VrgChip("⇪ Küldés a Plannerbe", selected = true) {
                     scope.launch {
                         try {
-                            val f = writePackage(ctx, st.sketch, n)
-                            ctx.startActivity(FileStore.shareIntent(ctx, f, MIME, "Vázlat küldése"))
-                            done = "Megosztva: ${f.name}"
+                            val files = writeExport(ctx, st.sketch, n)
+                            shareAll(ctx, files)
+                            done = "Megosztva: ${files[0].first.name}" + if (files.size > 1) " és ${files.size - 1} fotó" else ""
                         } catch (e: Exception) {
                             VrgLog.w("sketch", "Megosztás sikertelen: ${e.message}"); host.note("A megosztás nem sikerült.")
                         }
@@ -125,13 +149,15 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 }
                 VrgChip("⤓ Mentés a telefonra") {
                     scope.launch {
-                        val f = writePackage(ctx, st.sketch, n)
-                        val at = FileStore.saveShared(ctx, f, f.name, MIME, "VRG Vázlat")
-                        done = at?.let { "Mentve: $it" } ?: "A mentés nem sikerült."
+                        val files = writeExport(ctx, st.sketch, n)
+                        val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
+                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + if (files.size > 1) " · ${files.size - 1} fotó: Képek / VRG Vázlat" else ""
                     }
                 }
             }
-            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json. Átadással: Küldés → PC-re, és a fájl a PC táblájára kerül.",
+            val shots = st.sketch.photos.sumOf { it.shots.size }
+            if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
+            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json; a fotók: ⌘K → Vázlat: fotók. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
                 style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
             done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
         }
@@ -188,4 +214,13 @@ private fun DrawScope.drawPlan(n: Norm, s: Sketch, tm: TextMeasurer, c: Pal) {
         else drawCircle(fill, 5.dp.toPx(), o)
     }
     n.memos.forEach { m -> text(tm, "✎", P(m.at), c.sand, 10.sp) }
+    n.photos.forEach { f ->
+        val o = P(f.at)
+        Photos.DIRS.forEach { d ->
+            val has = f.shots.any { Photos.norm(it.deg) == d }
+            drawArc(if (has) c.glow else c.line, d - 90f - 30f, 60f, true, Offset(o.x - 16.dp.toPx(), o.y - 16.dp.toPx()),
+                androidx.compose.ui.geometry.Size(32.dp.toPx(), 32.dp.toPx()), alpha = if (has) 0.6f else 0.35f)
+        }
+        drawCircle(c.coral, 5.dp.toPx(), o)
+    }
 }

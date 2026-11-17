@@ -141,7 +141,7 @@ object Catalogue {
     )
     val PHOTO = FeatureInfo(
         "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
-        "📷", Group.WORK, Stage.PLANNED, "M25", setOf(Need.CAMERA),
+        "📷", Group.WORK, Stage.BETA, "M25", setOf(Need.CAMERA),
     )
 
     val ALL: List<FeatureInfo> = listOf(
