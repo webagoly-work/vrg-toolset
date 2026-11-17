@@ -103,6 +103,10 @@ object Catalogue {
         "archive", "Archívum", "Minden egyszeri interaktív oldal, amit Claude készített: mikor, miért, mi zajlott akkor. A mentett példányok offline is megnyílnak.",
         "🗂", Group.WORK, Stage.BETA, "M18", setOf(Need.INTERNET, Need.GITHUB),
     )
+    val VAULT = FeatureInfo(
+        "vault", "Széf", "Titkosított tár a telefonon: ügyféladatok, igazolványok, dokumentumok, mappák és fájlok PIN-kóddal vagy ujjlenyomattal zárva.",
+        "🔐", Group.WORK, Stage.BETA, "M24",
+    )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",
         "⟳", Group.APP, Stage.LIVE, "M9", setOf(Need.INTERNET, Need.GITHUB),
@@ -138,7 +142,7 @@ object Catalogue {
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, CLAUDE,
-        PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
+        PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, VAULT, PORTS, INBOX,
         UPDATE, SETTINGS,
     )
 

@@ -2,4 +2,6 @@
 <paths>
     <cache-path name="shots" path="shots/" />
     <cache-path name="drop" path="drop/" />
+    <!-- Széf (WP M24): a decrypted copy handed to another app, or a camera photo before it is sealed; every lock empties it. -->
+    <cache-path name="vault" path="vault-out/" />
 </paths>

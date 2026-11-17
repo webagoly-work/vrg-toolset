@@ -29,3 +29,4 @@ if (!jvmOnly) include(":feature-archive") // WP M18 Archívum
 if (!jvmOnly) include(":feature-apps")    // WP M21 Alkalmazások
 if (!jvmOnly) include(":feature-claude")  // WP M22 Claude
 if (!jvmOnly) include(":feature-pcwin")   // WP M23 PC ablakok
+if (!jvmOnly) include(":feature-vault")   // WP M24 Széf

@@ -23,6 +23,7 @@ import hu.vrg.mobile.settings.SettingsFeature
 import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.stack.StackFeature
 import hu.vrg.mobile.update.UpdateFeature
+import hu.vrg.mobile.vault.VaultFeature
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
 // VrgFeature, its FeatureInfo in Catalogue (stage LIVE or BETA), a line here, and the module in
@@ -49,6 +50,7 @@ object Registry {
         AppsFeature,
         ClaudeFeature,
         PcWinFeature,
+        VaultFeature,
         InboxFeature,
         NetFeature,
     )

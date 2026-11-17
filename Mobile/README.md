@@ -34,7 +34,8 @@ Mobile/
                         Indítópult: START's entries, the id rule, the messages (Launch.kt),
                         Átadás: board entries, the name rule, addresses, the messages (Drop.kt),
                         Képernyő: the frame header, the viewer's states, the meter, the messages (Screen.kt),
-                        Hálózat: link kinds, tether state, relay addresses, settings links (Net.kt), usage (Usage.kt) + tests
+                        Hálózat: link kinds, tether state, relay addresses, settings links (Net.kt), usage (Usage.kt),
+                        Széf: crypto, PIN rules, lockout, items and folders, the store, the .vrgvault backup (Vault.kt) + tests
     relay-core/         pure JVM, the phone's own relay (WP M7): WsServer (RFC 6455), PhoneRelay (the PC relay's
                         envelope and routing, paired clients only), Trust (codes, keys, P1363/DER signatures) + tests
     kit/                Android: Mélyvíz theme (theme/Melyviz.kt; theme/KitTokens.kt = the VRG UI Kit's four
@@ -64,6 +65,8 @@ Mobile/
                         the phone relay in NetService (connectedDevice foreground service)
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
+    feature-vault/      Széf (WP M24): the encrypted vault (client data, ID papers, documents, folders, files); PIN / passphrase
+                        or fingerprint (VaultKeys: two Keystore keys + BiometricPrompt), auto-lock, FLAG_SECURE, backup / restore
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

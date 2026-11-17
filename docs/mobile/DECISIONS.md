@@ -254,6 +254,20 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** the relay re-runs the presets (a second copy of the Desktop's feed engine); **C** the relay asks the
   running Desktop for its cached feed (needs the Desktop open, and a new channel between them).
 
+- **D-19 · Széf: how the vault is locked and what it can do (M24), 2026-11-17.** Defaults taken in the session from the
+  user's request ("code or biometric locked files, folders or documents and ID info … like client data"); the user
+  revisits them after the phone check.
+  Chosen: **A** — one vault per phone with its own PIN (6+ digits) or passphrase, independent of the phone's screen
+  lock, with the fingerprint / face as an optional second way in (never the only one); the PIN box sealed again by a
+  device-bound Keystore key; auto-lock on screen off and after 1 minute in the background (Azonnal / 30 mp / 5 perc
+  selectable); escalating waits after 5 wrong tries, the wipe at 10 off unless turned on; per-item / per-folder
+  re-authentication instead of separate codes per folder; no cloud sync, the way out is an encrypted `.vrgvault` backup
+  with its own password. Decrypted copies only in memory, or in `cache/vault-out` until the next lock.
+  Rejected: **B** the phone's own screen lock (device credential) as the code — one secret fewer to remember, but
+  anyone who knows the phone PIN opens the client data too; **C** separate codes per folder — more secrets, and the
+  same protection is reached by "újra azonosítás"; **D** syncing the vault through GitHub or the relay — client data
+  would leave the phone by default.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

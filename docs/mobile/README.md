@@ -40,6 +40,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M21** | Alkalmazások (`apps`) | **BETA** (built 2026-11-12, waiting for the phone check; 375 px notes in the WP): the Desktop's User-level HTML apps (Planner, calculators, Készlet, MindMap, BuildTree, Valena) in a confined WebView, one https origin each, from GitHub `main`, offline after the first fetch | GitHub | high |
 | **M22** | Claude (`claude`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--claude`): opens the official Claude app (no sign-in in VRG Mobile); with a paired PC, the PC's Remote Control sessions: list, start one in a folder (relay `--claude`) | relay | high (relay) |
 | **M23** | PC ablakok (`pcwin`) | **BETA** (built 2026-11-12, waiting for the phone check; relay `--files`): the PC's work folders (Repó, VRG Full, Közös) read-only, a look at text and images, a copy onto the Átadás board; mail and feed stay on the PC (D-18) | relay | medium |
+| **M24** | Széf (`vault`) | **BETA** (built 2026-11-17, D-19, waiting for the first APK build and the phone check): an encrypted vault on the phone for client data, ID papers, documents, folders and files; PIN / passphrase or fingerprint; AES-256-GCM under a Keystore-bound key, auto-lock, FLAG_SECURE, an encrypted `.vrgvault` backup | — | high (core) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
