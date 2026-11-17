@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 118 | 33 |
-| open · dev | 281 | 56 |
+| open · user | 117 | 34 |
+| open · dev | 286 | 57 |
 | open · all | 24 | 1 |
-| internal | 74 | 0 |
+| internal | 77 | 0 |
 | roadmap | 52 | 5 |
-| **total** | **549** | **95** |
+| **total** | **556** | **97** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -47,6 +47,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `settings` | Beállítások · *Settings* | dialog · settings | `desktop` | rendszer | beta |
 | `phone` | Telefon kapcsolat · *Phone link* | dialog · radios, servers, QR | `desktop` | rendszer | beta |
 | `planner` | Varler Planner · *Varler Planner* | application |  | munka / tervezes | live |
+| `rajztar` | Rajztár Stúdió · *Drawing store studio* | application · electrical document package, sheet and symbol editor |  | munka / tervezes | beta |
 | `workflow-kit` | Varler Workflow Kit · *Varler Workflow Kit* | document set · workflow kit |  | munka / arazas | live |
 | `calc-panel` | Panel anyagár kalkulátor · *Panel material price calculator* | utility · calculator |  | munka / arazas | live |
 | `calc-general` | Általános kalkulátor · *General electrician calculator* | utility · calculator |  | munka / arazas | live |
@@ -75,6 +76,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 
 | id | title (HU · *EN*) | type · qualifier | parent | group | status |
 |---|---|---|---|---|---|
+| `rajztar.catalog` | Rajztár katalógus · *Drawing store catalog* | knowledge base · symbols, document types, formats, sources | `rajztar` | munka / tervezes | live |
 | `client-preview` | Ügyfélnézet · *Client preview* (user) | feature | `planner` | munka / tervezes | dev |
 | `servicekit` | ServiceKit · *ServiceKit* (user) | device · portable field kit |  | alkalmazasok / terep | dev |
 | `dev:repo` | Repó & Git · *Repository & Git* | category · dev root |  | fejlesztes | live |
@@ -162,22 +164,22 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 
 | type | EN · HU | kind | rows |
 |---|---|---|---:|
-| `application` | Application · Alkalmazás | unit | 28 |
+| `application` | Application · Alkalmazás | unit | 27 |
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
 | `feature module` | Feature module · Funkciómodul | unit | 24 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 50 |
-| `library` | Library · Könyvtár | unit | 1 |
-| `command` | Command · Parancs | unit | 94 |
+| `module` | Module · Modul | unit | 52 |
+| `library` | Library · Könyvtár | unit | 2 |
+| `command` | Command · Parancs | unit | 97 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
-| `cli tool` | CLI tool · Parancssori eszköz | unit | 11 |
+| `cli tool` | CLI tool · Parancssori eszköz | unit | 12 |
 | `service` | Service · Szolgáltatás | unit | 18 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 10 |
-| `knowledge base` | Knowledge base · Tudásbázis | unit | 10 |
+| `knowledge base` | Knowledge base · Tudásbázis | unit | 11 |
 | `document set` | Document set · Dokumentumcsomag | unit | 18 |
 | `runbook` | Runbook · Forgatókönyv | unit | 10 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
@@ -237,7 +239,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:tool:B` | VRG UI Kit galéria | ui component library · with a gallery | open | dev | `dev:look` | is the catalog item `uikit` |
 | `menu:tool:K` | VRG Kódváros | application · code visualization | open | dev | `dev:knowledge` | is the catalog item `codecity` |
 | `menu:tool:M` | VRG Térkép | application | open | user |  | is the catalog item `map` |
-| `menu:proj:P` | Planner | application | open | user |  | is the catalog item `planner` |
+| `menu:proj:P` | Planner | knowledge base · symbols, document types, formats, sources | open | dev | `rajztar` | is the catalog item `rajztar.catalog` |
 | `menu:proj:P/B` | Planner · Build | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/W` | Planner · Build + megnyitás | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/E` | Planner · CLA előtöltve | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
@@ -245,6 +247,9 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:P/G` | Planner · Gyro relay szerver | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/V` | Planner · VS Code | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/M` | Planner · Manifest írása | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/J` | Planner · Rajztár Stúdió | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/K` | Planner · Rajztár katalógus | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/R` | Planner · Rajztár build + teszt | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/O` | Planner · Mappa megnyitása | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:I` | Készlet | application | open | user |  | is the catalog item `inventory` |
 | `menu:proj:I/B` | Készlet · Build | command | open | dev | `inventory` | a build / test / serve action of START I, drawn behind inventory |
@@ -547,6 +552,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:mailclean` | lib/mailclean.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:mime` | lib/mime.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:names` | lib/names.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:netgrade` | lib/netgrade.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:netmeter` | lib/netmeter.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:notes` | lib/notes.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:oauth` | lib/oauth.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:palette` | lib/palette.js | module | internal |  | `desktop` | internal code unit |
@@ -680,6 +687,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `tool:check-catalog` | tools/check-catalog.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:check-hub` | tools/check-hub.js | cli tool | open | dev | `kapu` | command-line script, run by START, a build, an agent or a developer |
 | `tool:check-start` | tools/check-start.js | command · registry check | open | dev | `dev:infra` | is the catalog item `check` |
+| `tool:council-debate` | tools/council-debate.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:council-gate` | tools/council-gate.js | cli tool | open | dev | `council` | command-line script, run by START, a build, an agent or a developer |
 | `tool:divergence` | tools/divergence.js | application · signal board | open | dev | `dev:knowledge` | is the catalog item `divergence` |
 | `tool:fetch-vendor` | tools/fetch-vendor.js | utility · vendored-component browser | open | dev | `dev:infra` | is the catalog item `vendor` |
@@ -719,6 +727,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `fw:planner-cyd` | planner-cyd | firmware · companion device | open | dev | `planner` | is the catalog item `planner-cyd` |
 | `fw:servicekit-cyd` | ServiceKit CYD | firmware | roadmap |  | `dev:hw` | is the catalog item `servicekit-cyd` (planned) |
 | `lib:melyviz` | melyviz.css | design system · tokens stylesheet | open | dev | `dev:look` | is the catalog item `melyviz` |
+| `lib:rajztar` | rajztar | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:varler-doc` | varler-doc | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:varler-logo` | varler-logo | asset · brand | open | dev | `dev:look` | is the catalog item `logo` |
 | `lib:vrg-ui-kit` | vrg-ui-kit | ui component library · with a gallery | open | dev | `dev:look` | is the catalog item `uikit` |

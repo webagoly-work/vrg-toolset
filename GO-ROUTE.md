@@ -40,6 +40,40 @@ Works from a cloud session or from Claude Code on the user's PC. What each can r
    - **Its engine-side needs are G1–G8** (`docs/topology/02_ENGINE_GAPS.md`). They are the first concrete candidates for
      the "more wiring features" of point 1. Offer them in §2; do not assume them.
 
+5. **Three passes, the pass Viewer and the Rajztár line (added 2026-11-17).** The user asked for this in the Rajztár
+   session (`shared/rajztar/`) when approving its first three items. Their words, translated: *"Point 3 will use one
+   of the unfinished GO WIRING sessions, which I think was working on the new three-pass system (pathway, wiring,
+   conduits and containers in the Planner). That will need a new Viewer, so that the content exported from the
+   program can be followed in high resolution, in the details of the workflows involved (slider to set): for
+   example, the three passes can be looked back on per circuit, or by the function of a pass. So this extract in the
+   View does not only show a slideshow of how the circuits were formed. It is a continuous, interactively operated
+   animation of digital shadows, which uses the flat plans to build the wiring's geometrical / topological output.
+   There was also a session that started integrating the concept and the software base of PCB wiring tracer
+   engine implementations. This is the perfect opportunity to integrate that idea as well."*
+   - **The three passes:** (1) pathway: the routes through the walls, ceiling and floor; (2) wiring: the circuits
+     laid onto the pathways; (3) conduits and containers: tubes, trays and boxes sized for what runs in them. In PCB
+     terms these are the placement and channel step, the routing step, and the physical build-out.
+   - **The pass Viewer:** a separate viewer page that reads a Planner export of the three passes and plays it as a
+     continuous timeline, not a slideshow:
+     - a slider scrubs through the build;
+     - the user can filter by circuit, or by pass and its function;
+     - the routes form as "digital shadows" over the flat plans, in high resolution;
+     - this is the same idea as §5's Topology View playback and an autorouter's pass-by-pass display.
+   - **The PCB tracer integration:** fold in the session that began porting PCB-router concepts and code. That
+     probably means §0.3 ambition B, a separate router module with the Planner as one client.
+   - **Where the sessions are:** **unknown.** On 2026-11-17, neither the three-pass session nor the PCB-tracer session
+     could be found in git (any branch), in the main checkout's uncommitted files, or in the Stack. Ask the user where
+     they ran (cloud session, another PC, an unsaved local session) before planning.
+   - **The Rajztár hand-off (its point 3):** generate the fővezeték-terv (D11) and the elosztó egyvonalas rajz
+     (D12) from the Planner's circuits, using:
+     - the Rajztár symbol library (`shared/rajztar/data/symbols.json`, ports on the 2.5 mm grid);
+     - its device-descriptor order (`conventions.json` → `deviceDescriptor`);
+     - its sheet engine (`shared/rajztar/src/studio.js` `sheetSvg`: ISO frame, MMK title block, legend from the
+       symbols used).
+
+     The wiring pass's output is that generator's input. Agree the export format once, so that the pass Viewer and
+     the D11/D12 generator read the same file.
+
 ## 1. Read first, in this order
 
 1. `Planner/projects/varler-planner/docs/workflow/MONEY-PATH-AUDIT_2026-10.md` — the audit this thread follows.

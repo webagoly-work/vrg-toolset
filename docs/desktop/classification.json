@@ -173,13 +173,13 @@
    "id": "menu:proj:P",
    "name": "Planner",
    "source": "vrg-menu",
-   "type": "application",
-   "qualifier": "",
+   "type": "knowledge base",
+   "qualifier": "symbols, document types, formats, sources",
    "scope": "open",
-   "level": "user",
-   "parent": "",
-   "unit": "planner",
-   "reason": "is the catalog item `planner`"
+   "level": "dev",
+   "parent": "rajztar",
+   "unit": "rajztar.catalog",
+   "reason": "is the catalog item `rajztar.catalog`"
   },
   {
    "id": "menu:proj:P/B",
@@ -256,6 +256,42 @@
   {
    "id": "menu:proj:P/M",
    "name": "Planner · Manifest írása",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
+   "id": "menu:proj:P/J",
+   "name": "Planner · Rajztár Stúdió",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
+   "id": "menu:proj:P/K",
+   "name": "Planner · Rajztár katalógus",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
+   "id": "menu:proj:P/R",
+   "name": "Planner · Rajztár build + teszt",
    "source": "vrg-menu",
    "type": "command",
    "qualifier": "",
@@ -3890,6 +3926,30 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:netgrade",
+   "name": "lib/netgrade.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:netmeter",
+   "name": "lib/netmeter.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:notes",
    "name": "lib/notes.js",
    "source": "dashboard",
@@ -5486,6 +5546,18 @@
    "reason": "is the catalog item `check`"
   },
   {
+   "id": "tool:council-debate",
+   "name": "tools/council-debate.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
    "id": "tool:council-gate",
    "name": "tools/council-gate.js",
    "source": "tools",
@@ -5952,6 +6024,18 @@
    "parent": "dev:look",
    "unit": "melyviz",
    "reason": "is the catalog item `melyviz`"
+  },
+  {
+   "id": "lib:rajztar",
+   "name": "rajztar",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
   },
   {
    "id": "lib:varler-doc",

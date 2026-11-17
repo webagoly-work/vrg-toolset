@@ -1,0 +1,247 @@
+{
+  "$schema": "rajztar/formats/1",
+  "about": "Form rules for every sheet the engine prints: paper, frame, title block, revision table, lines, lettering, scales, layers, numbering, file output. All lengths in mm on paper. 'basis' says where a rule comes from: a src id (binding or standard) or 'practice.vrg' (our house rule where the standard leaves a choice).",
+  "updated": "2026-11-17",
+
+  "output": {
+    "file": {"format":"PDF/A","basis":"chamber.mmk-2017","rule":"A tervlapokat PDF/A formátumban kell dokumentálni (MMK TSZ 3. fejezet). Ajánlott: PDF/A-2b, beágyazott betűk, vektoros grafika, egy fájl = egy tervlap vagy egy teljes munkarész könyvjelzőkkel."},
+    "fileName": {"pattern":"{munkaszam}_{szakag}_{rajzszam}_{rev}_{cim-slug}.pdf","example":"2026-041_V_V-104_R02_foldszint-vilagitas.pdf","basis":"practice.vrg"},
+    "printedScaleNote": {"rule":"A tervezett méretarányhoz tartozó lapméretet fel kell tüntetni, mert a digitális rajz tetszőleges méretben nyomtatható (MMK TSZ 3.).","text":"M 1:50 @ A3","basis":"chamber.mmk-2017"},
+    "legendOnEverySheet": {"rule":"Minden tervlapon jelmagyarázat, vagy hivatkozás arra a rajzszámra, ahol a jelmagyarázat található (MMK TSZ 3., 12.3.2 d).","basis":"chamber.mmk-2017"}
+  },
+
+  "sheets": {
+    "basis": "std.5457",
+    "series": [
+      {"id":"A0","w":841,"h":1189},
+      {"id":"A1","w":594,"h":841},
+      {"id":"A2","w":420,"h":594},
+      {"id":"A3","w":297,"h":420},
+      {"id":"A4","w":210,"h":297}
+    ],
+    "elongated": [
+      {"id":"A3x3","w":420,"h":891},
+      {"id":"A3x4","w":420,"h":1189},
+      {"id":"A4x3","w":297,"h":630},
+      {"id":"A4x4","w":297,"h":841},
+      {"id":"A4x5","w":297,"h":1051}
+    ],
+    "orientation": "A3–A0 fekvő; A4 álló. Nyújtott lap a hosszú oldalán fekvő (pl. fővezeték-séma egy 10 emeletes házhoz: A3x4).",
+    "frame": {
+      "marginFiling": 20, "marginOther": 10, "a4MarginFiling": 20,
+      "frameLine": 0.7,
+      "trimMarks": true,
+      "centringMarks": {"width":0.7,"beyondFrame":5,"note":"Mind a négy oldal közepén, a vágott széltől a kereten 5 mm-rel túl."},
+      "gridReference": {"fieldLength":50,"a4FieldLength":25,"letters":"A, B, C … felülről lefelé (I és O kihagyva)","numbers":"1, 2, 3 … balról jobbra","textHeight":3.5,"note":"A mezőhálózat (zónajelölés) sémáknál kötelező gyakorlat: az áramút-rajz kereszthivatkozásai (pl. /3.C4) erre épülnek."},
+      "orientationMark": {"note":"Rajzlapállás-jel (háromszög) opcionális; mi csak A0–A1-en tesszük ki."}
+    },
+    "folding": {"rule":"Hajtogatás A4 méretre, a rajzpecsét a hajtott köteg elején legyen látható, a lyukasztási margó (20 mm) szabadon. Gyakorlatban DIN 824 szerinti hajtogatási minta.","basis":"practice.vrg"}
+  },
+
+  "titleBlock": {
+    "basis": ["chamber.mmk-2017","std.7200"],
+    "placement": "jobb alsó sarok, a kerethez illesztve; A4 álló lapon alul a teljes keretszélességben",
+    "width": 180,
+    "mandatoryFields": [
+      {"key":"site","mmk":"A","label":"Létesítés helye","content":"cím + helyrajzi szám","example":"1121 Budapest, Mintafa u. 3. · hrsz. 10234/5"},
+      {"key":"client","mmk":"B","label":"Építtető","content":"név, cím","example":"Minta Kft. · 1036 Budapest, …"},
+      {"key":"office","mmk":"C","label":"Tervező","content":"intézmény neve, címe, telefon, web/e-mail","example":"Varler Villamos · …"},
+      {"key":"generalDesigner","mmk":"C","label":"Generáltervező","content":"csak ha eltér a tervlap készítőjétől – külön mezőben","optional":true},
+      {"key":"phase","mmk":"D","label":"Tervfajta","content":"tanulmány · engedélyezési · kivitelezési · gyártmány · megvalósulási · csatlakozási dokumentáció","ref":"documents.json#phases"},
+      {"key":"part","mmk":"E","label":"Munkarész","content":"pl. Épületvillamosság – erősáram"},
+      {"key":"title","mmk":"E","label":"Tervlap címe","content":"pl. Földszint – világítás"},
+      {"key":"sheetNo","mmk":"E","label":"Rajzszám / lapszám","content":"pl. V-104 · 4/12"},
+      {"key":"date","mmk":"E","label":"Dátum","content":"ÉÉÉÉ.HH.NN","example":"2026.11.17"},
+      {"key":"scale","mmk":"F","label":"Méretarány","content":"M 1:50 @ A3 · séma: –"},
+      {"key":"people","mmk":"G","label":"Készítők","content":"felelős tervező · tervező munkatárs · szerkesztette · ellenőrizte – név + kamarai jogosultsági szám + aláírás helye","note":"A felelős tervezőt külön meg kell jelölni."},
+      {"key":"jobNo","mmk":"H","label":"Munkaszám","content":"pl. 2026-041","optional":true},
+      {"key":"revision","mmk":"rev","label":"Módosítás","content":"indexjel + leírás + dátum, a rajzpecsét feletti táblázatban","ref":"#revisionTable"},
+      {"key":"coDesigners","mmk":"12.3.2 b","label":"Szakági tervezők","content":"kiviteli tervnél az együttműködő összes szakági tervező neve szakáganként","phases":["kiviteli"]},
+      {"key":"owner","iso":"7200","label":"Jogtulajdonos","content":"ki birtokolja a dokumentumot (©)","note":"ISO 7200 kötelező mező; MMK-nál a tervező iroda."},
+      {"key":"docType","iso":"7200","label":"Dokumentumfajta","content":"pl. Alaprajz · Egyvonalas kapcsolási rajz","ref":"documents.json#docTypes"},
+      {"key":"language","iso":"7200","label":"Nyelv","content":"hu","optional":true}
+    ],
+    "layouts": {
+      "mmk-180x62": {
+        "about":"VRG alap rajzpecsét A3–A0 lapra. Cellák mm-ben a pecsét bal felső sarkától. lh = címke magassága (2.0), vh = érték magassága.",
+        "w":180, "h":62,
+        "cells":[
+          {"field":"client","x":0,"y":0,"w":90,"h":9,"vh":2.5},
+          {"field":"site","x":90,"y":0,"w":90,"h":9,"vh":2.5},
+          {"field":"office","x":0,"y":9,"w":125,"h":11,"vh":2.5},
+          {"field":"logo","x":125,"y":9,"w":55,"h":11},
+          {"field":"people","x":0,"y":20,"w":180,"h":15,"split":4,"vh":2.5,"note":"4 oszlop: felelős tervező · munkatárs · szerkesztette · ellenőrizte (név, jogosultság, aláírás vonal)"},
+          {"field":"phase","x":0,"y":35,"w":55,"h":8,"vh":3.5},
+          {"field":"part","x":55,"y":35,"w":80,"h":8,"vh":2.5},
+          {"field":"jobNo","x":135,"y":35,"w":45,"h":8,"vh":3.5},
+          {"field":"title","x":0,"y":43,"w":105,"h":19,"vh":5.0},
+          {"field":"scale","x":105,"y":43,"w":30,"h":9.5,"vh":3.5},
+          {"field":"date","x":135,"y":43,"w":45,"h":9.5,"vh":3.5},
+          {"field":"docType","x":105,"y":52.5,"w":30,"h":9.5,"vh":2.5},
+          {"field":"sheetNo","x":135,"y":52.5,"w":45,"h":9.5,"vh":5.0}
+        ],
+        "lines":{"outer":0.7,"inner":0.25,"major":0.5}
+      },
+      "a4-strip-180x32": {
+        "about":"Rövid pecsét A4 szöveges munkarészekhez és jegyzőkönyvekhez (fejléc-lábléc helyett a lap alján).",
+        "w":180, "h":32,
+        "cells":[
+          {"field":"office","x":0,"y":0,"w":90,"h":10,"vh":2.5},
+          {"field":"client","x":90,"y":0,"w":90,"h":10,"vh":2.5},
+          {"field":"title","x":0,"y":10,"w":110,"h":12,"vh":3.5},
+          {"field":"phase","x":110,"y":10,"w":40,"h":12,"vh":2.5},
+          {"field":"sheetNo","x":150,"y":10,"w":30,"h":12,"vh":3.5},
+          {"field":"people","x":0,"y":22,"w":135,"h":10,"split":2,"vh":2.5},
+          {"field":"date","x":135,"y":22,"w":45,"h":10,"vh":2.5}
+        ],
+        "lines":{"outer":0.5,"inner":0.18}
+      },
+      "finom-strip": {
+        "about":"Varler Papír (Finom) változat: keret nélküli, címke/érték párok egy hajszálvonal felett, a 'beérkező vezeték' jellel. Ugyanazok a kötelező mezők, más megjelenés – ügyfélnek szánt lapokon.",
+        "ref":"docs/research/2026-11-06_varler-document-style.md D4, D10, D12",
+        "basis":"practice.vrg"
+      }
+    }
+  },
+
+  "revisionTable": {
+    "basis":"chamber.mmk-2017",
+    "placement":"közvetlenül a rajzpecsét felett, alulról felfelé bővül (legújabb felül)",
+    "rowHeight":5,
+    "columns":[
+      {"key":"idx","label":"Index","w":14},
+      {"key":"desc","label":"Módosítás leírása","w":96},
+      {"key":"date","label":"Dátum","w":24},
+      {"key":"by","label":"Készítette","w":23},
+      {"key":"chk","label":"Ellenőrizte","w":23}
+    ],
+    "indexScheme":{"draft":"a, b, c … (belső tervezet)","issued":"R01, R02 … (kiadott)","asBuilt":"M (megvalósulási) + dátum","basis":"practice.vrg"},
+    "cloud":{"rule":"A módosított terület felhővonallal (revíziós felhő) és a felhő mellett háromszögben az indexjel. Csak az utolsó index felhője marad a lapon.","line":"01.1, 0.35","basis":"practice.vrg"}
+  },
+
+  "lines": {
+    "basis":"std.128",
+    "widthSeries":[0.13,0.18,0.25,0.35,0.5,0.7,1.0,1.4,2.0],
+    "groupRule":"Egy rajzon egy vonalcsoport: vékony : vastag : extra vastag = 1 : 2 : 4.",
+    "groups":{
+      "plan":{"narrow":0.18,"wide":0.35,"extra":0.7,"note":"alaprajz 1:50 / 1:100"},
+      "schematic":{"narrow":0.25,"wide":0.5,"extra":1.0,"note":"egyvonalas, áramút, összefüggési rajz"},
+      "site":{"narrow":0.13,"wide":0.25,"extra":0.5,"note":"helyszínrajz 1:200 – 1:1000"}
+    },
+    "types":[
+      {"id":"01.1","name":"folytonos vékony","dash":null,"use":"méretvonal, segédvonal, kitöltés, építészeti háttér"},
+      {"id":"01.2","name":"folytonos vastag","dash":null,"use":"villamos vezeték, rajzjel körvonal, keret"},
+      {"id":"02.1","name":"szaggatott vékony","dash":[12,3],"unit":"d","use":"takart, rejtett vagy padlóban/mennyezetben futó nyomvonal; tervezett jövőbeli bővítés"},
+      {"id":"02.2","name":"szaggatott vastag","dash":[12,3],"unit":"d","use":"földkábel nyomvonal a helyszínrajzon"},
+      {"id":"04.1","name":"pontvonal (hosszú vonás–pont) vékony","dash":[24,3,0.5,3],"unit":"d","use":"tengely, szimmetria, LPZ zónahatár"},
+      {"id":"04.2","name":"pontvonal vastag","dash":[24,3,0.5,3],"unit":"d","use":"készülékcsoport / szerelvénylap határa sémán (összetartozó egység)"},
+      {"id":"05.1","name":"kétpontos vonal vékony","dash":[24,3,0.5,3,0.5,3],"unit":"d","use":"telekhatár, tűzszakaszhatár, elosztó burkolat sémán"},
+      {"id":"07.1","name":"pontozott vékony","dash":[0.5,3],"unit":"d","use":"mechanikus kapcsolat (pl. FI kioldó – érintkezők, nyomógomb működtetés)"}
+    ],
+    "systemStyles":{
+      "about":"Alaprajzi nyomvonalak: a rendszert a VONALTÍPUS + RÖVID BETŰKÓD hordozza, a szín csak megerősítés (fekete-fehér nyomtatásban is olvasható legyen).",
+      "basis":"practice.vrg",
+      "items":[
+        {"system":"erosaram-vilagitas","code":"V","line":"01.2","color":"#b5452f"},
+        {"system":"erosaram-dugalj","code":"D","line":"01.2","color":"#b5452f"},
+        {"system":"erosaram-ero","code":"E","line":"01.2","width":"extra","color":"#8a2f1f"},
+        {"system":"biztonsagi-vilagitas","code":"BV","line":"01.2","marks":"két rövid keresztvonás 20 mm-enként","color":"#2f7a4a"},
+        {"system":"tuzjelzo","code":"TJ","line":"02.2","color":"#c2721a"},
+        {"system":"informatika","code":"IT","line":"02.1","color":"#2f5fa0"},
+        {"system":"antenna-tv","code":"TV","line":"02.1","color":"#5a4aa0"},
+        {"system":"kaputelefon-vagyonvedelem","code":"VV","line":"04.1","color":"#6b645b"},
+        {"system":"foldeles-eph","code":"PE","line":"05.1","color":"#3f8a3f"},
+        {"system":"villamvedelem","code":"VV-L","line":"02.2","color":"#3f8a3f"}
+      ]
+    }
+  },
+
+  "lettering": {
+    "basis":"std.3098",
+    "type":"B, álló",
+    "heights":[1.8,2.5,3.5,5,7,10,14,20],
+    "strokeRule":"vonalvastagság = h/10",
+    "minHeight":2.5,
+    "use":{"label":2.5,"deviceTag":2.5,"roomName":3.5,"dimension":2.5,"sheetTitle":5.0,"sheetNo":5.0,"zoneRef":3.5,"note":2.5},
+    "font":{
+      "primary":"Bahnschrift","why":"DIN 1451 alapú, Windowson beépített – az offline egyfájlos appokba nem kell betűt ágyazni (Varler Papír D5).",
+      "pdfEmbed":"osifont (GPL, ISO 3098 hű) vagy Bahnschrift – PDF/A-hoz kötelező beágyazni",
+      "titleSerif":"Sitka – csak ügyfélnek szánt Finom lapokon a címhez; kódok, számok mindig Bahnschrift (D6)",
+      "basis":"practice.vrg"
+    },
+    "decimal":"tizedesvessző (2,5 mm²), ezres tagolás szóközzel",
+    "units":"SI, szóköz a szám és a mértékegység között (16 A, 2,5 mm², 0,4 kV); kivétel a tervjel-kódokban (C16, 3×2,5)"
+  },
+
+  "scales": {
+    "basis":"std.5455",
+    "allowed":["50:1","20:1","10:1","5:1","2:1","1:1","1:2","1:5","1:10","1:20","1:50","1:100","1:200","1:500","1:1000","1:2000","1:5000","1:10000"],
+    "byDocType":{
+      "site":["1:200","1:500","1:1000"],
+      "floorPlan":["1:50","1:100"],
+      "floorPlanIndustrial":["1:100","1:200"],
+      "detail":["1:5","1:10","1:20"],
+      "boardView":["1:5","1:10"],
+      "schematic":["–"],
+      "lightningPlan":["1:100","1:200"]
+    },
+    "rules":[
+      {"rule":"A méretarányt a nyomtatott lap olvashatósága szabja meg; feliratok és rajzjelek tisztán látszódjanak, szükség esetén eltérő léptékű részletrajz (MMK TSZ 12.3.2 e).","basis":"chamber.mmk-2017"},
+      {"rule":"Gyengeáramú eszközelhelyezési alaprajz legalább M 1:100 (MMK TSZ 12.5.2 c).","basis":"chamber.mmk-2017"},
+      {"rule":"Az összefüggési rajz nem léptékhelyes, de az épületek, szintek megjelennek rajta (MMK TSZ 12.5.2 b).","basis":"chamber.mmk-2017"},
+      {"rule":"Séma (egyvonalas, áramút) léptéktelen: a pecsétben 'M: –'.","basis":"std.61082"}
+    ],
+    "scaleBar":{"rule":"Alaprajzon és helyszínrajzon grafikus léptékvonal (0–1–5 m) is kerüljön a lapra, mert a PDF tetszőleges méretben nyomtatható.","basis":"practice.vrg"}
+  },
+
+  "symbolGrid": {
+    "basis":"std.61082",
+    "module":2.5,
+    "rule":"A sémajelek csatlakozási pontjai a 2,5 mm-es modulhálón vannak; az áramköri vonalak közti osztás 5 mm többszöröse. Alaprajzi jeleknél a jel névleges mérete 1:50 és 1:100 léptéken is azonos papírméret (jel ≠ valós méret).",
+    "symbolPaperSize":{"installation":5.0,"luminaire":6.0,"board":"valós méret, min. 6 × 3","schematicDevice":"10 × 15 (2 × 3 modul ×2)"}
+  },
+
+  "numbering": {
+    "basis":["practice.vrg","std.61355"],
+    "drawingNo":{"pattern":"{szakag}-{csoport}{sorszam:2}","szakag":{"V":"épületvillamosság – erősáram","VG":"gyengeáram","VT":"tűzjelző","VB":"biztonsági világítás","VL":"villámvédelem, földelés","VK":"KÖF / trafó","VA":"automatika, PLC"},"csoport":{"0":"szöveges munkarészek","1":"alaprajzok","2":"sémák (egyvonalas, fővezeték)","3":"elosztó tervek, nézetek","4":"részletek","5":"listák","6":"külső terv, helyszínrajz","9":"megvalósulási / felülvizsgálat"},"example":"V-104 = erősáram, alaprajz, 4. lap"},
+    "levels":{"rule":"Szintjel MSZ EN ISO 4157 szellemében: -1 pince, 0 földszint, 1…n emelet, T tető. Helyiségszám: {szint}.{sorszám:2} (pl. 3.07).","basis":"std.4157"},
+    "zoneRef":{"rule":"Áramút-rajz kereszthivatkozás: /{lapszám}.{zóna} pl. /12.C4","basis":"std.61082"}
+  },
+
+  "layers": {
+    "about":"CAD/SVG rétegkészlet. Név: ISO 13567 szellemű 'E-{elem}-{megjelenés}'. Az SVG export <g id> ugyanezt használja, így a PDF rétegei (OCG) is megmaradnak.",
+    "basis":"practice.vrg",
+    "items":[
+      {"id":"A-BACK","name":"Építészeti háttér","line":"01.1","width":"narrow","color":"#9b9389","print":"szürke 50%"},
+      {"id":"A-FURN","name":"Bútorozás (opcionális)","line":"01.1","width":"narrow","color":"#d9d3ca"},
+      {"id":"E-LITE-SYM","name":"Világítás – rajzjelek","line":"01.2"},
+      {"id":"E-LITE-WIRE","name":"Világítás – nyomvonal","line":"01.2"},
+      {"id":"E-POWR-SYM","name":"Dugalj, erőátvitel – rajzjelek","line":"01.2"},
+      {"id":"E-POWR-WIRE","name":"Dugalj, erőátvitel – nyomvonal","line":"01.2"},
+      {"id":"E-EMRG","name":"Biztonsági világítás","line":"01.2"},
+      {"id":"E-LOWV","name":"Gyengeáram","line":"02.1"},
+      {"id":"E-FIRE","name":"Tűzjelző","line":"02.2"},
+      {"id":"E-EART","name":"Földelés, EPH, villámvédelem","line":"05.1"},
+      {"id":"E-TRAY","name":"Kábeltálca, kábelcsatorna","line":"01.1","width":"wide"},
+      {"id":"E-ANNO","name":"Feliratok, áramköri jelek, magasságok","line":"01.1"},
+      {"id":"E-DIMS","name":"Méretek","line":"01.1"},
+      {"id":"E-EXIS","name":"Meglévő / bontandó","line":"01.1","note":"CE-5: meglévő fekete, bontandó áthúzva, új piros"},
+      {"id":"G-SHET","name":"Lap, keret, pecsét, jelmagyarázat","line":"01.2"}
+    ]
+  },
+
+  "colors": {
+    "about":"Szín csak redundáns jelzés. Minden információnak fekete-fehér nyomaton is olvashatónak kell lennie (alak + vonaltípus + betűkód).",
+    "basis":"practice.vrg",
+    "ink":{"hivatalos":"#111111","finom":"#2f2c28"},
+    "states":{"new":"#b5452f","existing":"#111111","remove":"áthúzás tinta színben","replace":"négyzet jelölés","relocate":"nyíl a régi és új hely között"},
+    "conductorColorsRef":"conventions.json#conductorColors"
+  },
+
+  "legend": {
+    "basis":["chamber.mmk-2017"],
+    "rule":"Jelmagyarázat: minden használt rajzjel szöveges magyarázata, az alkalmazott készülékek és anyagok elvárt jellemző adataival (pl. 'Dugaszolóaljzat 2P+F, 16 A, IP20, H=30 cm'). Csak a lapon ténylegesen használt jelek; vagy külön dokumentum, amelyre minden lap hivatkozik.",
+    "columns":[{"key":"symbol","w":12},{"key":"code","label":"Kód","w":12},{"key":"text","label":"Megnevezés, jellemzők","w":110},{"key":"height","label":"H","w":14}],
+    "standardHeightsTable":{"rule":"A szabványos (alap) magasságok táblázata a jelmagyarázat alatt; a lapon H= csak az attól eltérő pontokon (CE-2).","ref":"Planner STD_H (08j-wf-standards.js)"}
+  }
+}
