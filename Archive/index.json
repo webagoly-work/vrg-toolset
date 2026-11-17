@@ -3,6 +3,25 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "feature-dioramas",
+      "title": "Feature Dioramas",
+      "created": "2026-11-15",
+      "updated": "2026-11-15",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "Every VRG feature as its own isometric diorama in the Kapu emblem's language: equal 10x10 tiles, or plinths sized by code mass at one shared grid resolution; maturity drawn as how far each is built.",
+      "purpose": "Extract the Kapu's isometric airport emblem into a standalone page and give every feature in the registry its own design.",
+      "context": [
+        "Kapu emblem (shared/vrg-ui-kit/components/emblem.js, kind hub) extracted",
+        "108 features: 105 from notes/features (2026-11-09) + 3 added from git log",
+        "7 reuse the kit recipes, 101 new designs"
+      ],
+      "tags": [],
+      "file": "files/feature-dioramas.html"
+    },
+    {
       "id": "vrg-overhaul-plan",
       "title": "VRG Overhaul Plan",
       "created": "2026-11-14",

@@ -1,0 +1,1621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feature Dioramas</title>
+<!-- VRG Feature Dioramas. Every feature in the VRG Features registry as its own isometric diorama on a
+     plinth, in the language of the UI Kit's emblem (shared/vrg-ui-kit/components/emblem.js, the Kapu's
+     "airport"). Self-contained: no kit files, no fonts, no network. Two variants:
+       Equal tiles    every plinth 10 x 10 grid units, the scene squeezed to fit.
+       Sized by mass  the grid unit is the same everywhere; the plinth side N grows with the feature's mass
+                      (code lines, kind, parts, links), so a big feature is a larger district at the same
+                      resolution, a small one a single lot.
+     Maturity is drawn as how far the diorama is built: in use = lit, built = solid, in dev = part-built with
+     a crane, plan = ghost outlines and survey stakes, idea = a dotted blueprint.
+     Data: the block between FEATURES-BEGIN / FEATURES-END is written by build.js from
+     notes/features/features.json; re-run `node shared/vrg-ui-kit/dioramas/build.js` after the registry changes. -->
+<style>
+:root {
+  --vk-bg: #f2f3f1; --vk-bg-sunken: #e8eae7; --vk-surface-1: #fbfbfa; --vk-surface-2: #ffffff;
+  --vk-line: rgba(18,26,32,.12); --vk-line-strong: rgba(18,26,32,.26);
+  --vk-text: #11181d; --vk-text-muted: #4b5761; --vk-activity: #9c5216; --vk-cool: #2f6f9a;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --vk-bg: #0b0d0f; --vk-bg-sunken: #070809; --vk-surface-1: #111417; --vk-surface-2: #171b1f;
+    --vk-line: rgba(235,240,245,.11); --vk-line-strong: rgba(235,240,245,.24);
+    --vk-text: #eef2f5; --vk-text-muted: #a5aeb6; --vk-activity: #eaa46f; --vk-cool: #7fb8de; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --vk-bg: #0b0d0f; --vk-bg-sunken: #070809; --vk-surface-1: #111417; --vk-surface-2: #171b1f;
+  --vk-line: rgba(235,240,245,.11); --vk-line-strong: rgba(235,240,245,.24);
+  --vk-text: #eef2f5; --vk-text-muted: #a5aeb6; --vk-activity: #eaa46f; --vk-cool: #7fb8de; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--vk-bg); color: var(--vk-text); font: 14px/1.45 var(--font-sans); }
+button { font: inherit; color: inherit; }
+
+/* ---------- page ---------- */
+.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--vk-bg) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 1px solid var(--vk-line); }
+.top__in { max-width: 1480px; margin: 0 auto; padding: 14px 16px 12px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: end; }
+.brand { min-width: 0; flex: 1 1 320px; }
+.kicker { margin: 0; font: 600 10.5px/1.2 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--vk-text-muted); }
+h1 { margin: 3px 0 0; font-size: 22px; line-height: 1.15; font-weight: 650; letter-spacing: -.01em; }
+.sub { margin: 4px 0 0; color: var(--vk-text-muted); font-size: 12.5px; max-width: 70ch; }
+.ctrls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--vk-line-strong); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 6px 11px; cursor: pointer; font-size: 12.5px; }
+.seg button + button { border-left: 1px solid var(--vk-line-strong); }
+.seg button[aria-pressed="true"] { background: var(--vk-text); color: var(--vk-bg); }
+.search { border: 1px solid var(--vk-line-strong); background: var(--vk-surface-1); border-radius: 8px; padding: 6px 10px; width: 170px; color: var(--vk-text); font: inherit; font-size: 12.5px; }
+.chips { max-width: 1480px; margin: 0 auto; padding: 0 16px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--vk-line-strong); background: transparent; border-radius: 99px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--vk-text-muted); }
+.chip[aria-pressed="true"] { color: var(--vk-text); background: var(--vk-surface-2); border-color: var(--vk-text-muted); }
+.chip .n { font-family: var(--font-mono); font-size: 10.5px; opacity: .7; margin-left: 4px; }
+.legend { max-width: 1480px; margin: 0 auto; padding: 12px 16px 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--vk-text-muted); }
+.legend b { color: var(--vk-text); font-weight: 600; }
+main { max-width: 1480px; margin: 0 auto; padding: 4px 16px 60px; }
+.lane { margin-top: 26px; }
+.lane__h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 1px solid var(--vk-line); padding-bottom: 6px; margin-bottom: 12px; }
+.lane__h h2 { margin: 0; font-size: 16px; font-weight: 650; }
+.lane__h p { margin: 0; color: var(--vk-text-muted); font-size: 12.5px; }
+.lane__h .code { font: 600 11px var(--font-mono); color: var(--vk-text-muted); letter-spacing: .12em; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 10px; }
+.mass { display: flex; flex-wrap: wrap; gap: 14px 10px; align-items: flex-end; }
+.tile { position: relative; display: flex; flex-direction: column; border: 1px solid transparent; border-radius: 10px;
+  background: transparent; padding: 6px 6px 8px; cursor: pointer; text-align: left; min-width: 0; }
+.tile:hover, .tile:focus-visible { border-color: var(--vk-line-strong); background: var(--vk-surface-1); outline: none; }
+.grid .art { aspect-ratio: 1 / 0.92; display: flex; align-items: flex-end; justify-content: center; }
+.grid .art svg { width: 100%; height: 100%; }
+.mass .tile { min-width: 112px; align-items: center; }
+.mass .cap { max-width: 100%; align-self: stretch; }
+.cap { margin-top: 2px; min-width: 0; }
+.cap__t { font-size: 12.5px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.cap__m { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 3px; font: 10.5px/1.2 var(--font-mono); color: var(--vk-text-muted); }
+.tier { display: inline-flex; align-items: center; gap: 4px; }
+.tier i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1.5px solid var(--vk-text-muted); }
+.tier[data-t="1"] i { background: var(--vk-activity); border-color: var(--vk-activity); }
+.tier[data-t="2"] i { background: var(--vk-text); border-color: var(--vk-text); }
+.tier[data-t="3"] i { background: linear-gradient(90deg, var(--vk-cool) 50%, transparent 50%); border-color: var(--vk-cool); }
+.tier[data-t="4"] i { border-style: dashed; }
+.tier[data-t="5"] i { border-style: dotted; }
+.src { padding: 0 5px; border-radius: 4px; border: 1px solid var(--vk-line-strong); }
+.src[data-s="kit"] { color: var(--vk-activity); border-color: currentColor; }
+.empty { color: var(--vk-text-muted); padding: 30px 0; }
+
+dialog { border: 1px solid var(--vk-line-strong); border-radius: 14px; background: var(--vk-surface-1); color: var(--vk-text);
+  padding: 0; width: min(980px, calc(100vw - 24px)); max-height: calc(100vh - 24px); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.dlg { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0; }
+.dlg__art { background: var(--vk-bg); display: flex; align-items: center; justify-content: center; padding: 18px; min-height: 300px; }
+.dlg__art svg { max-width: 100%; height: auto; max-height: 62vh; }
+.dlg__txt { padding: 18px 20px 20px; overflow: auto; }
+.dlg__txt h3 { margin: 4px 0 6px; font-size: 20px; }
+.dlg__txt p { margin: 0 0 10px; }
+.dlg__txt dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 12px 0 0; font-size: 12.5px; }
+.dlg__txt dt { color: var(--vk-text-muted); }
+.dlg__txt dd { margin: 0; overflow-wrap: anywhere; }
+.dlg__txt .design { border-left: 2px solid var(--vk-activity); padding-left: 10px; color: var(--vk-text); }
+.dlg__close { position: absolute; top: 8px; right: 8px; border: 1px solid var(--vk-line-strong); background: var(--vk-surface-2); border-radius: 8px; padding: 3px 9px; cursor: pointer; }
+.mono { font-family: var(--font-mono); font-size: 12px; }
+@media (max-width: 720px) {
+  .dlg { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .search { width: 100%; }
+}
+
+/* ---------- the diorama (ported from components/emblem.css) ---------- */
+.dio { --_pt: color-mix(in srgb, var(--vk-text) 7%, var(--vk-surface-2));
+  --_pl: color-mix(in srgb, var(--vk-text) 13%, var(--vk-surface-1)); --_pr: var(--vk-bg-sunken);
+  --_t: color-mix(in srgb, var(--vk-text) 22%, var(--vk-surface-2)); --_l: color-mix(in srgb, var(--vk-text) 11%, var(--vk-surface-1));
+  --_r: color-mix(in srgb, var(--vk-text) 4%, var(--vk-bg-sunken)); --_edge: var(--vk-line-strong);
+  --_win: color-mix(in srgb, var(--vk-bg-sunken) 75%, transparent); --_lit: var(--vk-activity); --_cable: var(--vk-activity);
+  --_glow: color-mix(in srgb, var(--vk-activity) 30%, transparent); --_street: color-mix(in srgb, var(--vk-activity) 55%, transparent);
+  --_shadow: transparent; --_halo: color-mix(in srgb, var(--vk-activity) 9%, transparent);
+  --_ghost: color-mix(in srgb, var(--vk-text) 55%, transparent); --_ghostfill: color-mix(in srgb, var(--vk-text) 4%, transparent);
+  --_water: color-mix(in srgb, var(--vk-cool) 40%, var(--vk-bg-sunken)); --_glass: color-mix(in srgb, var(--vk-cool) 22%, transparent);
+  --_pcb: color-mix(in srgb, var(--vk-cool) 22%, var(--vk-surface-1)); --_tree: color-mix(in srgb, var(--vk-text) 16%, var(--vk-surface-1));
+  display: block; overflow: visible; }
+[data-phase="day"] .dio { --_pt: color-mix(in srgb, var(--vk-text) 4%, var(--vk-bg));
+  --_pl: color-mix(in srgb, var(--vk-text) 13%, var(--vk-surface-2)); --_pr: color-mix(in srgb, var(--vk-text) 22%, var(--vk-surface-2));
+  --_t: var(--vk-surface-2); --_l: color-mix(in srgb, var(--vk-text) 6%, var(--vk-surface-2)); --_r: color-mix(in srgb, var(--vk-text) 15%, var(--vk-surface-2));
+  --_edge: color-mix(in srgb, var(--vk-text) 30%, transparent); --_win: color-mix(in srgb, var(--vk-text) 20%, var(--vk-surface-2));
+  --_lit: color-mix(in srgb, var(--vk-activity) 40%, var(--vk-surface-2)); --_cable: color-mix(in srgb, var(--vk-text) 70%, var(--vk-surface-2));
+  --_glow: transparent; --_street: color-mix(in srgb, var(--vk-text) 9%, transparent);
+  --_shadow: color-mix(in srgb, var(--vk-text) 9%, transparent); --_halo: color-mix(in srgb, var(--vk-text) 5%, transparent);
+  --_water: color-mix(in srgb, var(--vk-cool) 30%, var(--vk-surface-2)); --_tree: color-mix(in srgb, var(--vk-text) 9%, var(--vk-surface-2)); }
+.dio polygon, .dio path, .dio line, .dio polyline { stroke-linejoin: round; stroke-linecap: round; }
+.dio .halo { fill: var(--_halo); }
+.dio .p-t { fill: var(--_pt); stroke: var(--_edge); stroke-width: .7; }
+.dio .p-l { fill: var(--_pl); stroke: var(--_edge); stroke-width: .7; }
+.dio .p-r { fill: var(--_pr); stroke: var(--_edge); stroke-width: .7; }
+.dio .p-lip { fill: none; stroke: var(--vk-line); stroke-width: .5; stroke-dasharray: 1.5 2.5; }
+.dio .tick { stroke: var(--_edge); stroke-width: .5; }
+.dio .engrave { font: 5px var(--font-mono); letter-spacing: .14em; fill: var(--vk-text-muted); }
+.dio .shadow { fill: var(--_shadow); }
+.dio .street { fill: none; stroke: var(--_street); stroke-width: 1.4; }
+.dio .cable { fill: none; stroke: var(--_cable); stroke-width: 1.3; }
+.dio .cable-glow { fill: none; stroke: var(--_glow); stroke-width: 4; }
+.dio .cable.c-silver { stroke: var(--vk-text-muted); }
+.dio .cable.c-bronze { stroke: color-mix(in srgb, var(--_cable) 55%, var(--vk-text-muted)); stroke-dasharray: 3 1.5; }
+.dio .cable.c-cool { stroke: var(--vk-cool); }
+.dio .cable.c-thin { stroke-width: .8; }
+.dio .cable.c-plan { stroke: var(--_ghost); stroke-dasharray: 2.5 2; stroke-width: 1; }
+.dio .node { fill: var(--vk-text); }
+.dio .junction { fill: var(--_pt); stroke: var(--vk-text); stroke-width: .8; }
+.dio .term { fill: var(--_cable); }
+.dio .ring { fill: none; stroke: var(--_cable); stroke-width: .9; stroke-dasharray: 3 2; }
+.dio .f-t { fill: var(--_t); stroke: var(--_edge); stroke-width: .5; }
+.dio .f-l { fill: var(--_l); stroke: var(--_edge); stroke-width: .5; }
+.dio .f-r { fill: var(--_r); stroke: var(--_edge); stroke-width: .5; }
+.dio .hot { fill: var(--vk-activity); }
+.dio [data-type="slab"] .f-t { fill: color-mix(in srgb, var(--_t) 60%, var(--_pt)); }
+.dio [data-type="socket"] .f-t { fill: var(--_cable); }
+.dio [data-type="pcb"] .f-t { fill: var(--_pcb); }
+.dio [data-type="chip"] :is(.f-t, .f-l, .f-r) { fill: color-mix(in srgb, var(--vk-bg-sunken) 80%, var(--vk-text)); }
+.dio [data-type="glass"] :is(.f-t, .f-l, .f-r) { fill: var(--_glass); stroke: color-mix(in srgb, var(--vk-cool) 60%, transparent); }
+.dio [data-type="water"] .f-t, .dio .water { fill: var(--_water); stroke: var(--_edge); stroke-width: .4; }
+.dio .pad { fill: color-mix(in srgb, var(--vk-text) 8%, var(--_pt)); stroke: var(--_edge); stroke-width: .4; }
+.dio .padhot { fill: color-mix(in srgb, var(--vk-activity) 45%, transparent); stroke: none; }
+.dio .mark { fill: none; stroke: var(--_edge); stroke-width: .6; }
+.dio .mark-hot { fill: none; stroke: var(--vk-activity); stroke-width: .9; }
+.dio .win { fill: var(--_win); stroke: none; }
+.dio .win.lit { fill: var(--_lit); }
+.dio .win.screen.lit { fill: color-mix(in srgb, var(--_lit) 70%, transparent); }
+.dio .seam { fill: none; stroke: var(--_edge); stroke-width: .45; }
+.dio .mast { stroke: var(--vk-text-muted); stroke-width: .8; fill: none; }
+.dio .beacon { fill: var(--vk-activity); }
+.dio .sph { fill: var(--_t); stroke: var(--_edge); stroke-width: .6; }
+.dio .sph-hl { fill: color-mix(in srgb, var(--vk-surface-2) 70%, transparent); }
+.dio .vr { fill: none; stroke: var(--vk-activity); stroke-width: 1.8; }
+.dio .vr.vr-thin { stroke-width: .8; stroke: var(--vk-text-muted); }
+.dio .tree { fill: var(--_tree); stroke: var(--_edge); stroke-width: .5; }
+.dio .trunk { stroke: var(--_edge); stroke-width: .9; }
+.dio .crane { stroke: var(--vk-cool); stroke-width: .8; fill: none; }
+.dio .crane-hook { stroke: var(--vk-cool); stroke-width: .5; fill: none; }
+.dio .gh :is(.f-t, .f-l, .f-r, .sph) { fill: var(--_ghostfill); stroke: var(--_ghost); stroke-dasharray: 2 1.6; stroke-width: .6; }
+.dio .gh.idea :is(.f-t, .f-l, .f-r, .sph) { stroke-dasharray: .6 1.6; stroke-width: .8; fill: transparent; }
+.dio .gh .vr { stroke: var(--_ghost); stroke-dasharray: 2 2; stroke-width: 1; }
+.dio .stake { stroke: var(--vk-cool); stroke-width: .9; }
+[data-phase="night"] .dio :is(.win.lit, .beacon, .hot) { filter: drop-shadow(0 0 1.5px var(--vk-activity)); }
+[data-phase="night"] .dio .beacon { animation: dio-blink 2.4s steps(2, jump-none) infinite; }
+@keyframes dio-blink { 50% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .dio .beacon { animation: none !important; } }
+.dio.small :is(.engrave, .p-lip) { display: none; }
+@media (forced-colors: active) { .dio { forced-color-adjust: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top__in">
+    <div class="brand">
+      <p class="kicker">VRG Eszköztár · from the Kapu emblem</p>
+      <h1>Feature Dioramas</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="ctrls">
+      <div class="seg" role="group" aria-label="Variant">
+        <button type="button" data-mode="equal" aria-pressed="true">Equal tiles</button>
+        <button type="button" data-mode="mass" aria-pressed="false">Sized by mass</button>
+      </div>
+      <div class="seg" role="group" aria-label="Phase">
+        <button type="button" data-ph="day">Day</button>
+        <button type="button" data-ph="night">Night</button>
+      </div>
+      <input class="search" id="q" type="search" placeholder="Search features" aria-label="Search features">
+    </div>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Lanes"></div>
+</header>
+<div class="legend" id="legend"></div>
+<main id="main"></main>
+<dialog id="dlg" aria-labelledby="dlgTitle"><button class="dlg__close" type="button" id="dlgClose" aria-label="Close">×</button><div class="dlg" id="dlgBody"></div></dialog>
+
+<script>
+/*FEATURES-BEGIN*/const REGISTRY = {"generated":"2026-11-09","lanes":[{"id":"f","name":"Front doors","about":"Where everything starts: the launcher, the access page, backup, and the doors still to come."},{"id":"p","name":"Planner","about":"The drawing tool and the features built into it, from rooms to routing and views."},{"id":"m","name":"Pricing + quotes","about":"Calculators, the quote workflow kit and the delivered job documents."},{"id":"d","name":"Materials + data","about":"What gets bought and listed: stock databases, product pickers, reference data."},{"id":"b","name":"BRIDGE + client side","about":"The smart-home system documents and what a client gets to see."},{"id":"h","name":"Phone + field","about":"Apps that go on site in your pocket."},{"id":"e","name":"Devices + firmware","about":"ESP32 / CYD hardware that acts as a remote, dashboard or dev bench."},{"id":"k","name":"Dev + knowledge tools","about":"Tools that show and steer the work itself: maps, the code city, agents, notes."},{"id":"l","name":"Look + assets","about":"Styles, design systems, logos and the visual library the apps share."},{"id":"x","name":"Third-party programs","about":"Outside programs bundled on H: or used by the toolset. Nothing here is ours."}],"features":[{"id":"f1","lane":"f","tier":1,"kind":"app","title":"START.cmd launcher","brief":"The front door: tools, projects, dev menu, local servers, prompts, Zen sessions and commit + push, all from one menu registry (launcher/vrg-menu.json).","open":"H:\\VRG\\START.cmd","partOf":[],"links":17},{"id":"f2","lane":"f","tier":1,"kind":"feature","title":"Local servers menu","brief":"17 helper servers with fixed ports (Planner 8131, Inventory 8123, MindMap 8124 …); a key starts one if it is down, then opens it.","open":"START → O","partOf":["f1"],"links":0},{"id":"f3","lane":"f","tier":1,"kind":"feature","title":"Commit + upload guard","brief":"Commits the current branch and pushes it, never touches main on GitHub, never forces; secrets and files over 5 MB stop it. Q asks before leaving unpushed work.","open":"START → S","partOf":["f1"],"links":0},{"id":"f4","lane":"f","tier":1,"kind":"app","title":"BACKUP menu","brief":"Sync to H:\\VRG\\Backup with a SHA-256 manifest, git fsck, restore of one file or folder, installer check.","open":"H:\\VRG\\BACKUP.cmd","partOf":[],"links":2},{"id":"f5","lane":"f","tier":2,"kind":"feature","title":"Zen work sessions","brief":"Opens tab groups in Zen: online workplace, main tools, tools in development, or all three.","open":"START → Z","partOf":["f1"],"links":0},{"id":"f6","lane":"f","tier":2,"kind":"feature","title":"Prompt library","brief":"Ready prompts (new feature, debugging, phase a big task, review …); the chosen one is shown and copied.","open":"START → J","partOf":["f1"],"links":0},{"id":"f7","lane":"f","tier":2,"kind":"dev","title":"Launcher check","brief":"tools/check-start.js checks every menu path and port whenever tools move.","open":"START → X","partOf":["f1"],"links":0},{"id":"f8","lane":"f","tier":3,"kind":"app","title":"VRG Kapu","brief":"The shared access page: GitHub sign-in, a signed allowed list, then it hands over to START. Lists START's tools with Megnyitás and Mappa.","open":"START → H · Hub/dist/vrg-kapu.html","partOf":[],"links":2},{"id":"f9","lane":"f","tier":3,"kind":"dev","title":"Kapu admin","brief":"Edits and signs the allowed list.","open":"START → O → M · :8798","partOf":["f8"],"links":0},{"id":"f10","lane":"f","tier":4,"kind":"plan","title":"OTG menu","brief":"Build a dist, pick a drive, copy + verify, safe eject: the toolset on a stick.","open":"H:\\VRG\\OTG.cmd (shown, phase 3.6)","partOf":[],"links":0},{"id":"f11","lane":"f","tier":4,"kind":"plan","title":"run.exe","brief":"The launcher as a real program instead of a .cmd, reading the same registry.","open":"","partOf":[],"links":1},{"id":"f12","lane":"f","tier":5,"kind":"idea","title":"VRG Desktop Dashboard","brief":"The all-in-one windowless HTML: every feature, stats, dev and project workflows to start or continue, links to programs, folders and documents. Reads this map's features.json.","open":"notes/features/DASHBOARD-IDEA.md","partOf":[],"links":0},{"id":"f13","lane":"f","tier":5,"kind":"idea","title":"Own remote access","brief":"Reach the toolset from anywhere through your own laptop and domain.","open":"","partOf":[],"links":0},{"id":"p1","lane":"p","tier":1,"kind":"app","title":"Varler Planner","brief":"The drawing tool: plans, rooms, devices, circuits and routes for an installation, in one offline HTML.","open":"START → 1 · dev server :8131","partOf":[],"links":15},{"id":"p2","lane":"p","tier":1,"kind":"feature","title":"Rooms + numbering","brief":"Rooms named and numbered, devices and paths renamed by room; duplicate ids repaired on load.","open":"in the Planner","partOf":["p1"],"links":1},{"id":"p3","lane":"p","tier":1,"kind":"feature","title":"Planner build + test","brief":"npm run build, npm test (25 s), the CLA test plan preloaded, manifest writing.","open":"START → P","partOf":["p1"],"links":0},{"id":"p4","lane":"p","tier":2,"kind":"feature","title":"Wiring pipeline","brief":"Ghost routes, Védőcső / Csatorna, staged Behúzás, cable sizing, P33-style circuit codes.","open":"in the Planner","partOf":["p1"],"links":2},{"id":"p5","lane":"p","tier":2,"kind":"feature","title":"Wireway rebuild","brief":"GO WIRE T0–T6: the rebuilt wireway engine, pushed 10-19.","open":"in the Planner","partOf":[],"links":0},{"id":"p6","lane":"p","tier":2,"kind":"feature","title":"BRIDGE Stack routing","brief":"Golden / silver / bronze routes and placement rules for the BRIDGE stack.","open":"in the Planner","partOf":["p1"],"links":3},{"id":"p7","lane":"p","tier":2,"kind":"feature","title":"SmartFrame / Portals","brief":"Portal box type, rails, clusters, ideal spots and Extrák.","open":"in the Planner","partOf":[],"links":0},{"id":"p8","lane":"p","tier":2,"kind":"feature","title":"Gyro + Xbox control","brief":"Drive the Planner from the phone's gyro (relay :47291) or an Xbox controller.","open":"START → P → G","partOf":["p1"],"links":0},{"id":"p9","lane":"p","tier":3,"kind":"feature","title":"Views: flat / 2.5D / exploded","brief":"V1–V9c built; the object line-art batches come back from the second account.","open":"in the Planner","partOf":["p1"],"links":0},{"id":"p10","lane":"p","tier":3,"kind":"feature","title":"Workflow round (F/O/R/E)","brief":"The P33-way of drawing as menus: F1–F4, O1–O2, R1–R4, E0–E6 Alosztó.","open":"in the Planner","partOf":["p1"],"links":0},{"id":"p11","lane":"p","tier":3,"kind":"feature","title":"Födém / Igénylista / Mozi","brief":"Slab layer, requirement list and home cinema C1–C7.","open":"in the Planner","partOf":["p1"],"links":0},{"id":"p12","lane":"p","tier":3,"kind":"feature","title":"Round 2026-10-10","brief":"U1–U7, G1, S1, S5, M1, M2 committed.","open":"docs/round-2026-10-10","partOf":["p1"],"links":0},{"id":"p13","lane":"p","tier":3,"kind":"feature","title":"Simplified UI (SUI)","brief":"A calmer Planner surface; S0–S4 + S6 on branch planner-sui.","open":"branch planner-sui","partOf":[],"links":0},{"id":"p14","lane":"p","tier":3,"kind":"feature","title":"Erősáram baseline + Adat/PoE","brief":"Trunk and distribution baseline, data / PoE and LED layers.","open":"in the Planner","partOf":[],"links":0},{"id":"p15","lane":"p","tier":3,"kind":"feature","title":"Véset (chase) quantities","brief":"O0 + O1: chase quantities per project.","open":"in the Planner","partOf":["p1"],"links":1},{"id":"p16","lane":"p","tier":4,"kind":"plan","title":"Endpoints + room auto-snap","brief":"Mark endpoints, auto clip, auto link to rooms.","open":"docs (NV4 findings)","partOf":[],"links":0},{"id":"p17","lane":"p","tier":4,"kind":"plan","title":"Villany Stack round","brief":"The 2026-10-22 build pack, nothing built.","open":"docs/round-2026-10-22-villany","partOf":[],"links":0},{"id":"p18","lane":"p","tier":4,"kind":"plan","title":"Planner MCP + DXF","brief":"Let agents drive the Planner; DXF in and out from the vendored CAD sources.","open":"docs/research (cad-sources)","partOf":[],"links":0},{"id":"p19","lane":"p","tier":5,"kind":"idea","title":"Chase sweep-cut 3D","brief":"Fusion cut frames turned into Planner chases (O2–O7).","open":"docs/research","partOf":[],"links":0},{"id":"m1","lane":"m","tier":1,"kind":"app","title":"Panel anyagár kalkulátor","brief":"Material cost of a panel / distribution board at VarlerÁron prices.","open":"START → 2","partOf":[],"links":2},{"id":"m2","lane":"m","tier":1,"kind":"app","title":"Általános kalkulátor","brief":"The general electrician's calculator.","open":"START → 3","partOf":[],"links":0},{"id":"m3","lane":"m","tier":1,"kind":"asset","title":"Költségvetési Tervezet jobs","brief":"Delivered estimate documents per job (P33, NV4, DM1, BK2). Never called \"ajánlat\"; clean 5 000-step prices.","open":"H:\\VRG\\Full\\jobs","partOf":[],"links":1},{"id":"m4","lane":"m","tier":2,"kind":"app","title":"LED árkalkulátor","brief":"LED strip and driver pricing.","open":"START → 8","partOf":[],"links":0},{"id":"m5","lane":"m","tier":2,"kind":"app","title":"Varler Workflow Kit","brief":"Portable quote workflow: question funnel v1.2, rules v1.1, market preset; proven on NV4 (28/28) and P33.","open":"H:\\VRG\\Full\\Varler_Workflow_Kit","partOf":[],"links":3},{"id":"m6","lane":"m","tier":2,"kind":"asset","title":"Price lists","brief":"VarlerÁron and VillanyÁron labour price lists the calculators and the kit read.","open":"Calculator/*.md","partOf":[],"links":2},{"id":"m7","lane":"m","tier":3,"kind":"plan","title":"Kit Session 2: agents","brief":"Audit against the single-agent loop kit and the Managed Agents decision.","open":"Varler_Workflow_Kit_lab","partOf":[],"links":0},{"id":"m8","lane":"m","tier":3,"kind":"feature","title":"TNT job data","brief":"Job data from the shared OneDrive, mirrored locally.","open":"jobs/_tnt-tukor","partOf":[],"links":0},{"id":"m9","lane":"m","tier":4,"kind":"plan","title":"One-pass intake","brief":"Take a whole job in one pass instead of the step-by-step funnel.","open":"Varler_Workflow_Kit/PROPOSAL_one-pass-intake","partOf":[],"links":0},{"id":"d1","lane":"d","tier":1,"kind":"app","title":"VRG Inventory","brief":"Installation material database: 221 items, vendor-neutral schema, price check over the network.","open":"START → 6 · :8123","partOf":[],"links":4},{"id":"d2","lane":"d","tier":1,"kind":"app","title":"VRG BuildTree","brief":"The Modulshop list: hobby electronics bought, entered from the SZ invoices.","open":"START → 9","partOf":[],"links":0},{"id":"d3","lane":"d","tier":2,"kind":"app","title":"Valena választó","brief":"Legrand Valena Life product family picker.","open":"START → 5","partOf":[],"links":0},{"id":"d4","lane":"d","tier":2,"kind":"dev","title":"VRG Vendor","brief":"The third-party code components: list, download, sync the page.","open":"START → 0 / V","partOf":[],"links":1},{"id":"d5","lane":"d","tier":3,"kind":"app","title":"Toolbox","brief":"A bench page for small tools that are not apps yet.","open":"START → 7 (in development)","partOf":[],"links":0},{"id":"d6","lane":"d","tier":3,"kind":"asset","title":"Smart-home catalogue","brief":"BRIDGE/09_catalogue JSON: control, sensing and string-circuit products.","open":"BRIDGE/09_catalogue","partOf":[],"links":2},{"id":"d7","lane":"d","tier":3,"kind":"asset","title":"CoreRef","brief":"Offline ESPHome / Home Assistant reference: phase 0 harvested, four layers planned.","open":"CoreRef/","partOf":[],"links":0},{"id":"d8","lane":"d","tier":5,"kind":"idea","title":"Elosztó DIN-rail builder","brief":"Drag-drop board builder fed by the Inventory.","open":"","partOf":[],"links":0},{"id":"b1","lane":"b","tier":2,"kind":"asset","title":"BRIDGE document set","brief":"Architecture, DN cabinet, OmniComm hub, related hardware, SELV standard.","open":"H:\\VRG\\Full\\BRIDGE · repo BRIDGE/","partOf":[],"links":4},{"id":"b2","lane":"b","tier":2,"kind":"asset","title":"P33 BRIDGE plan","brief":"The first house drawn with BRIDGE: inline architecture and test plans.","open":"BRIDGE/07_P33","partOf":["b1"],"links":2},{"id":"b3","lane":"b","tier":3,"kind":"asset","title":"BRIDGE standards","brief":"STD set; STD-009 Shading written, not committed.","open":"BRIDGE/05_standards","partOf":["b1"],"links":0},{"id":"b4","lane":"b","tier":3,"kind":"feature","title":"Client preview (WebGL)","brief":"A 3D walk-through for the client; phases 1–2 built.","open":"Planner preview","partOf":["p1"],"links":1},{"id":"b5","lane":"b","tier":3,"kind":"asset","title":"BRIDGE brochure","brief":"Client brochure in the VRG Title Card look, own illustrations.","open":"docs/client-look","partOf":[],"links":0},{"id":"b6","lane":"b","tier":4,"kind":"plan","title":"Media Wall","brief":"MW-001: three tiers on one carcass, plus the Ambiance box.","open":"BRIDGE/10_media-wall","partOf":[],"links":0},{"id":"b7","lane":"b","tier":4,"kind":"plan","title":"Feature round K34–K43","brief":"Ten proposed BRIDGE features.","open":"BRIDGE","partOf":[],"links":0},{"id":"b8","lane":"b","tier":4,"kind":"plan","title":"Open MCT installer console","brief":"A mission-control style console for BRIDGE installers; P33 spike works.","open":"START → O → 9 · :8150","partOf":[],"links":0},{"id":"b9","lane":"b","tier":5,"kind":"idea","title":"P33 open questions","brief":"BASE flush mounting, health / accident sensing, home server minimum.","open":"","partOf":[],"links":0},{"id":"h1","lane":"h","tier":2,"kind":"app","title":"VRG Mobile","brief":"The Android companion app; each feature is a tile on its home screen.","open":"START → L · Mobile/","partOf":[],"links":3},{"id":"h2","lane":"h","tier":2,"kind":"feature","title":"Légegér","brief":"Gyro air mouse, keyboard, touchscreen, Planner and Kódváros controller.","open":"VRG Mobile tile","partOf":["h1"],"links":1},{"id":"h3","lane":"h","tier":3,"kind":"app","title":"Varler Console","brief":"Offline field console and pocket dashboard: 32 of 49 pages built; the APK has never been compiled (no JDK).","open":"START → W · :8133","partOf":[],"links":0},{"id":"h4","lane":"h","tier":3,"kind":"feature","title":"Solomon on the phone","brief":"M14 BETA tile in VRG Mobile.","open":"VRG Mobile tile","partOf":["h1"],"links":0},{"id":"h5","lane":"h","tier":3,"kind":"app","title":"ServiceKit","brief":"Portable Windows service kit: tools from official sources, dashboard, offline Súgó.","open":"ServiceKit/","partOf":[],"links":2},{"id":"h6","lane":"h","tier":4,"kind":"plan","title":"ServiceKit Phone","brief":"The phone as the technician's console for the kit, over USB.","open":"ServiceKitPhone/","partOf":[],"links":0},{"id":"e1","lane":"e","tier":2,"kind":"app","title":"Planner CYD","brief":"USB display next to the Planner: KEZDŐLAP, macro sets, clock; v0.7 flashed.","open":"START → Y","partOf":[],"links":1},{"id":"e2","lane":"e","tier":2,"kind":"feature","title":"CYD macropad","brief":"Macro pages on the CYD and their settings page.","open":"START → Y → 4 / 5 · :8788","partOf":["e1"],"links":0},{"id":"e3","lane":"e","tier":2,"kind":"asset","title":"ESP lab + CYD collection","brief":"Triage of CYD / ESP programs, the term + UART bridge sketches, the 2432S024R board on COM19.","open":"H:\\VRG\\Full\\ESP_lab","partOf":[],"links":5},{"id":"e4","lane":"e","tier":3,"kind":"app","title":"Board Console","brief":"Universal S3 dev board control page with an agent and live link; phases 1, 2, 3a.","open":"START → U · :8790","partOf":[],"links":0},{"id":"e5","lane":"e","tier":3,"kind":"app","title":"VRG Knob Pad","brief":"S3-Zero three-encoder HID with a web config; compiles, never flashed.","open":"Firmware/knobpad · mock :8177","partOf":[],"links":0},{"id":"e6","lane":"e","tier":3,"kind":"app","title":"RL-CYD + RL Field","brief":"Gaming dashboard side project.","open":"","partOf":[],"links":0},{"id":"e7","lane":"e","tier":4,"kind":"plan","title":"ServiceKit CYD","brief":"The CYD as an active companion for the ServiceKit stick.","open":"ServiceKitCYD/","partOf":[],"links":0},{"id":"e8","lane":"e","tier":5,"kind":"idea","title":"Site Pager + S3 projects","brief":"ESP32-S3 / nRF905 pager and relay module, the S3 shortlist.","open":"","partOf":[],"links":0},{"id":"k1","lane":"k","tier":1,"kind":"app","title":"VRG MindMap","brief":"The map editor these maps open in: layers, frames, Board view.","open":"START → 4 · :8124","partOf":[],"links":3},{"id":"k2","lane":"k","tier":1,"kind":"dev","title":"Claude Code entry points","brief":"Claude Code at the repo root, Planner, Inventory, or as Bernard.","open":"START → C","partOf":[],"links":3},{"id":"k3","lane":"k","tier":1,"kind":"dev","title":"DevLog board + Thread Board","brief":"One row per dev line with state, next step and a session folder to start from; the Thread Board (BOARD.html, START F) shows every thread with what is built and not yet, and copies a fresh-session prompt per open item.","open":"notes/devlog/BOARD.html","partOf":[],"links":3},{"id":"k4","lane":"k","tier":2,"kind":"asset","title":"Idea timeline map","brief":"Every work idea on a time axis, with forks and merges.","open":"notes/VRG_idea_timeline.mindmap.json","partOf":["k1"],"links":1},{"id":"k5","lane":"k","tier":2,"kind":"asset","title":"DevRep map","brief":"The repo's git history as a topology: sessions, merges, pushes.","open":"notes/VRG_devrep.mindmap.json","partOf":["k1"],"links":2},{"id":"k6","lane":"k","tier":2,"kind":"asset","title":"Features map","brief":"This map: what exists, from in-use to idea.","open":"notes/VRG_features.mindmap.json","partOf":["k1"],"links":2},{"id":"k14","lane":"k","tier":2,"kind":"dev","title":"VRG Stack (Rétegverem)","brief":"The multilayer database: Featured, Ideas, Decisions, DevLog, Agentic, DevRepo, Code and Data Globe joined by shared keys and entity pillars; search page, stack.js for agents, drift report, codec packs.","open":"notes/stack/stack-search.html","partOf":[],"links":1},{"id":"k7","lane":"k","tier":2,"kind":"app","title":"Kódváros","brief":"The repo as a 3D city, live mode, Gépország, desktop overlay.","open":"START → K · :8797","partOf":[],"links":0},{"id":"k8","lane":"k","tier":2,"kind":"dev","title":"GO codephrases","brief":"A session starts from a GO-*.md brief: MAIN, PLANNER, ROUTE, CLA, HUB, CITY, MOBILE, OPENWRT, LOGO.","open":"Planner_VRG_U100/GO-*.md","partOf":["k2"],"links":0},{"id":"k9","lane":"k","tier":3,"kind":"app","title":"Solomon Gömb","brief":"Our own three-signal check on the agents, drawn as a sphere; weekly run.","open":"START → T · :8799","partOf":[],"links":1},{"id":"k10","lane":"k","tier":3,"kind":"dev","title":"VRG Council","brief":"Persona agents (Bernard the Hand) holding briefs and state.","open":"START → C → B · docs/council","partOf":[],"links":2},{"id":"k11","lane":"k","tier":3,"kind":"app","title":"Divergence board","brief":"The logo ring as a notification board: enter, dev note, ignore.","open":"START → J · :8801","partOf":[],"links":0},{"id":"k12","lane":"k","tier":4,"kind":"plan","title":"Research spikes","brief":"FLIP fluid, chase sweep, REA, router wake, smartwatch BLE: studied, not adopted.","open":"docs/research","partOf":[],"links":0},{"id":"k13","lane":"k","tier":4,"kind":"plan","title":"GO TNT · DNA capsule","brief":"The council's portable capsule.","open":"docs/council/dna","partOf":[],"links":0},{"id":"l1","lane":"l","tier":1,"kind":"asset","title":"Mélyvíz style","brief":"Shared dark style (shared/melyviz.css + sync) used by the dev tools.","open":"shared/melyviz.css","partOf":[],"links":4},{"id":"l2","lane":"l","tier":2,"kind":"asset","title":"VRG Visual Base","brief":"252 visuals, the S3 + IO board SVG, Topology Starter.","open":"H:\\VRG\\Full\\VRG_Visual_Base","partOf":[],"links":1},{"id":"l3","lane":"l","tier":2,"kind":"asset","title":"VRG Title Card","brief":"Client-facing design system v3, Westworld-inspired.","open":"design system","partOf":[],"links":1},{"id":"l4","lane":"l","tier":2,"kind":"asset","title":"Varler SUI design system","brief":"HUD + glass system, with the Story Board.","open":"design system","partOf":[],"links":1},{"id":"l5","lane":"l","tier":2,"kind":"asset","title":"Varler logo + ring","brief":"Animated mark F, the divergence ring, text lockups.","open":"shared/varler-logo","partOf":[],"links":2},{"id":"l6","lane":"l","tier":3,"kind":"feature","title":"Mélyvíz rollout","brief":"P0–P6a committed; P6b Planner colours built, not committed.","open":"docs/city/melyviz-rollout.md","partOf":[],"links":1},{"id":"l7","lane":"l","tier":3,"kind":"asset","title":"Object line-art kit","brief":"V8b–h batches drawn by the second account.","open":"_handoff/objart-V8","partOf":[],"links":1},{"id":"l8","lane":"l","tier":5,"kind":"idea","title":"Text on the animated logo","brief":"The next logo step.","open":"","partOf":[],"links":0},{"id":"x1","lane":"x","tier":1,"kind":"program","title":"Browsers","brief":"Chrome (portable), Opera GX, Zen: the browser chooser behind every MEGNYITÁS.","open":"H:\\VRG\\Full\\tools\\chrome · programs/","partOf":[],"links":1},{"id":"x2","lane":"x","tier":1,"kind":"program","title":"Node + Claude Code CLI","brief":"Portable Node and npm; runs every build, server and the claude CLI.","open":"H:\\VRG\\Full\\tools\\node","partOf":[],"links":2},{"id":"x3","lane":"x","tier":1,"kind":"program","title":"VS Code + Git","brief":"Editor, git and Git Bash, all portable.","open":"START → E / G","partOf":[],"links":1},{"id":"x4","lane":"x","tier":1,"kind":"program","title":"GitHub + cloud sessions","brief":"The private vrg-toolset repo and claude.ai/code cloud sessions.","open":"START → G","partOf":[],"links":1},{"id":"x5","lane":"x","tier":2,"kind":"program","title":"PC utilities","brief":"7-Zip, VLC, HWiNFO, WizTree, CrystalDiskInfo, KeyTweak.","open":"START → A","partOf":[],"links":1},{"id":"x6","lane":"x","tier":2,"kind":"program","title":"Electron","brief":"Runs the Kódváros desktop overlay.","open":"tools/electron","partOf":[],"links":1},{"id":"x7","lane":"x","tier":2,"kind":"program","title":"arduino-cli","brief":"ESP32 toolchain for the CYD and S3 firmware.","open":"tools/arduino-cli · H:/_libs","partOf":[],"links":1},{"id":"x8","lane":"x","tier":2,"kind":"program","title":"ChromeDriver + headless","brief":"Browser automation for tests and price checks.","open":"tools/chromedriver","partOf":[],"links":1},{"id":"x9","lane":"x","tier":2,"kind":"program","title":"wifi-heatmapper","brief":"Wi-Fi coverage mapping, its own repo.","open":"H:\\VRG\\Full\\wifi-heatmapper","partOf":[],"links":0},{"id":"x10","lane":"x","tier":2,"kind":"program","title":"FlyBrainLab","brief":"Neuro research tool, repaired without reinstall; use hemibrain.","open":"","partOf":[],"links":0},{"id":"x11","lane":"x","tier":3,"kind":"program","title":"Android toolchain","brief":"Gradle and adb for VRG Mobile; no JDK yet for the Console APK.","open":"Mobile/mobile.cmd","partOf":[],"links":2}]};/*FEATURES-END*/
+</script>
+<script>
+'use strict';
+// ============================================================ registry + updates since it was generated
+// The registry (notes/features/features.json) was generated 2026-11-09. These rows add what landed after it
+// (git log 2026-11-09 … 2026-11-14) so the page is current; fold them into notes/features/data.js to retire them.
+const UPDATES = {
+  f12: { tier: 2, kind: 'app', title: 'VRG Asztal (Desktop)', brief: 'The idea became the VRG Asztal: Dashboard + Desktop views, a catalog of every unit, Lapok on a 4x4 grid, servers inside the shell, VRG Desktop.exe (Desktop U0–U9, WP-46…48).', open: 'START → D · Dashboard/' },
+};
+const ADDED = [
+  { id: 'n1', lane: 'k', tier: 2, kind: 'app', title: 'Artifact Archive', brief: 'Every one-shot page made for the Founder, kept with its context; shown in the VRG Asztal and START R → A.', open: 'Archive/vrg-archive.html', partOf: [], links: 2 },
+  { id: 'n2', lane: 'l', tier: 2, kind: 'asset', title: 'VRG UI Kit', brief: 'The shared component kit: tokens, 11 component families (v1.1 adds Jelölések), the gallery and the isometric emblem this page grew from.', open: 'shared/vrg-ui-kit/gallery.html', partOf: [], links: 3 },
+  { id: 'n3', lane: 'k', tier: 5, kind: 'idea', title: 'VRG Jegyzetek', brief: 'A notes app with a plain Simple mode on top and an engine room of rules and module slots underneath; concept, market study and mockup only.', open: 'docs/notes', partOf: [], links: 0 },
+];
+// code lines (js/html/css/… only, `git ls-files | wc -l`, 2026-11-14) of the features that own a folder
+const LOC = { p1: 87900, d1: 21800, k7: 27400, h1: 26300, n2: 25300, f12: 23900, h3: 12400, k14: 12500, h5: 8700, k1: 9000,
+  f8: 8200, e1: 6300, h6: 3700, k9: 920, e4: 2600, f1: 2400, d4: 2000, e7: 1850, l5: 1700, k10: 1870, d7: 1540, d5: 1590,
+  m2: 930, m1: 580, k11: 790, e5: 520, n1: 2600, b1: 11700, f9: 420, f7: 190, l1: 80 };
+const KIND_BASE = { app: 6, program: 5, asset: 5, dev: 4.5, feature: 4.5, plan: 4, idea: 4 };
+const TIER_ADJ = { 1: 0.5, 2: 0, 3: 0, 4: -0.5, 5: -1 };
+
+// ============================================================ designs: one per feature
+// [core, one line on what it shows]; 'kit:*' = the UI Kit's own emblem recipe, ported as is.
+const DESIGNS = {
+  f1: ['terminal', 'A terminal hall with a lit departure board, ten numbered gate pads (the menu keys 1–9, 0) and a control mast.'],
+  f2: ['rackrow', 'Seventeen server cabinets in rows on one bus, their tops lit where the helper server is up.'],
+  f3: ['checkpoint', 'A guard booth and barrier on the upload road; crates queue, one flagged crate is pulled aside, the uplink tower waits past the gate.'],
+  f4: ['vault', 'A low bunker vault with archive tanks and a manifest shelf, wired together.'],
+  f5: ['pavilions', 'Three open pavilions, one per Zen tab group, in a raked garden.'],
+  f6: ['library', 'A library hall with shelf rows of prompts and a reading board that shows the chosen one.'],
+  f7: ['inspector', 'An inspection gantry scanning a scale model of the terminal; a row of check lamps.'],
+  f8: ['kit:hub', 'The Kapu emblem from the UI Kit: the control tower over a hub, four gate buildings wired to it.'],
+  f9: ['seal', 'A signing desk with a large seal, the allowed list and a key.'],
+  f10: ['usbstick', 'The toolset on a stick: a USB-drive building with its connector and a status lamp.'],
+  f11: ['monolith', 'One monolith program on a launch pad, reading the same registry.'],
+  f12: ['desk', 'A desk platform carrying the 4x4 grid of Lapok panes, a taskbar strip and the shell tower.'],
+  f13: ['longlink', 'Two masts at opposite corners with a long overhead link: the laptop at one end, the own domain at the other.'],
+  p1: ['kit:planner', 'The Planner emblem from the UI Kit: a floor plan with partitions, cabinets, a cable run and a socket.'],
+  p2: ['rooms', 'A floor slab divided into rooms, each with its number tag.'],
+  p3: ['factory', 'A sawtooth build hall with a chimney and a test bench of cabinets.'],
+  p4: ['spools', 'Cable spools, conduit pipes and ghost routes being sized between two boards.'],
+  p5: ['trays', 'Raised cable trays on posts forming a network, cables laid in them.'],
+  p6: ['routes3', 'Two BRIDGE cabinets joined by three routes: golden, silver and bronze.'],
+  p7: ['portals', 'Portal frames along two rails, with clustered boxes at the ideal spots.'],
+  p8: ['controller', 'A gamepad-shaped deck with lit buttons, a standing phone and gyro rings.'],
+  p9: ['views3', 'The same small house three times: flat, 2.5D and exploded into floating plates.'],
+  p10: ['stations4', 'Four stations F, O, R, E on one conveyor.'],
+  p11: ['cinema', 'A slab layer, the requirement-list board and a dark home cinema with seat rows.'],
+  p12: ['pallet', 'A delivered batch: pallets of crates, one per committed item.'],
+  p13: ['glass', 'A calm glass pavilion over a simple core, trees around.'],
+  p14: ['substation', 'Transformers, pylons with a trunk line, a PoE cabinet and an LED string.'],
+  p15: ['chasewall', 'A long wall with chases cut into it, rubble and the cutter.'],
+  p16: ['pins', 'Rooms with endpoint pins that snap to them.'],
+  p17: ['buildpack', 'A build pack: stacked plates in a crate, nothing unpacked yet.'],
+  p18: ['robotdesk', 'A drawing table with a robot arm over the plan and DXF sheets beside it.'],
+  p19: ['sweep', 'A cutting frame sweeping along a wall, its earlier positions left as ghosts.'],
+  m1: ['kit:calculator', 'The Calculator emblem from the UI Kit: display, keypad with one hot key, a cabinet and a mast.'],
+  m2: ['kit:calculator', 'The Calculator emblem from the UI Kit, its own seed.'],
+  m3: ['docstacks', 'Four paper towers, one per delivered estimate (P33, NV4, DM1, BK2).'],
+  m4: ['ledcalc', 'A keypad, a driver box and glowing LED strips in waves.'],
+  m5: ['funnel', 'A stepped question funnel feeding the rules block; a row of 28 green checks.'],
+  m6: ['boards', 'Two tall price boards over a small market of stalls.'],
+  m7: ['agents', 'Agent towers around a round table.'],
+  m8: ['mirror', 'Two warehouses mirrored by a link under a cloud.'],
+  m9: ['hopper', 'One straight conveyor into one hopper.'],
+  d1: ['kit:inventory', 'The Inventory emblem from the UI Kit: shelf rows with crates, a store block and a mast.'],
+  d2: ['boxtree', 'A tree whose branches carry the crates of bought parts.'],
+  d3: ['switches', 'A display stand of Valena wall plates, one rocker lit.'],
+  d4: ['dock', 'A container dock under a gantry crane, at the water.'],
+  d5: ['bench', 'A workbench with small tools and a toolbox chest.'],
+  d6: ['catalogue', 'Catalogue shelves of sensors and controllers beside a kiosk.'],
+  d7: ['archives4', 'Four index towers, one per planned layer; the first one filled.'],
+  d8: ['dinrail', 'A DIN rail with modular breakers, fed from the inventory.'],
+  b1: ['bridge', 'A suspension bridge: pylons, deck and cables, a cabinet at each landing.'],
+  b2: ['house', 'The first BRIDGE house: walls, a smart cabinet and its runs.'],
+  b3: ['steles', 'A row of standard tablets; the newest one only outlined.'],
+  b4: ['preview', 'A house inside a camera orbit, the camera on its tripod.'],
+  b5: ['brochure', 'Accordion panels of a brochure standing open.'],
+  b6: ['mediawall', 'A wall with three media tiers and the ambiance box.'],
+  b7: ['plots10', 'Ten plots, one per proposed feature, each with its marker.'],
+  b8: ['missioncontrol', 'An arc of consoles in front of a dish.'],
+  b9: ['questions', 'A house with three open questions floating over it.'],
+  h1: ['phonecity', 'A phone laid flat, its home screen a town of tiles.'],
+  h2: ['gyro', 'A standing phone inside three gyro rings.'],
+  h3: ['console49', 'A field pod with 49 page tiles, 32 of them lit.'],
+  h4: ['phoneglobe', 'A phone with the Solomon sphere floating over it.'],
+  h5: ['kitcase', 'An open service case: lid up, tools inside, a dashboard screen.'],
+  h6: ['phonekit', 'A phone wired by USB to the service case.'],
+  e1: ['cyd', 'A CYD board standing beside a small Planner block, wired by USB.'],
+  e2: ['macropad', 'A CYD laid flat with its macro keys lit.'],
+  e3: ['lab', 'Lab benches covered in ESP boards, serial leads between them.'],
+  e4: ['devboard', 'A large S3 dev board with chips and headers, linked to its agent tower.'],
+  e5: ['knobs', 'Three encoder knobs on a pad, a USB lead.'],
+  e6: ['arena', 'A small arena: ring, pads and a score display.'],
+  e7: ['cydkit', 'A CYD standing on the service case.'],
+  e8: ['pager', 'A radio mast, a pager and a relay module.'],
+  k1: ['kit:mindmap', 'The MindMap emblem from the UI Kit: a central node with satellites on metro wires.'],
+  k2: ['gates4', 'Four gates around a plaza: repo root, Planner, Inventory and Bernard.'],
+  k3: ['rowsboard', 'A board of dev lines as bars of different lengths, the active ones lit.'],
+  k4: ['timeline', 'A time rail with forks and merges, ideas as stations.'],
+  k5: ['gitgraph', 'Three metro lines that branch and merge, stations at the commits, a push tower.'],
+  k6: ['terraces', 'Five terraces from in-use down to idea, each with its buildings.'],
+  k14: ['layerstack', 'The exploded stack: ten layer plates floating one above the other, joined by pillars.'],
+  k7: ['kit:city', 'The Kódváros emblem from the UI Kit: the code city with its streets and the tallest tower.'],
+  k8: ['signposts', 'Nine signposts around a brief stack, one per GO phrase.'],
+  k9: ['globe', 'The Solomon sphere on its stand inside three signal rings.'],
+  k10: ['council', 'Seats around a round table; the Hand\'s seat tallest.'],
+  k11: ['ringboard', 'The logo ring standing beside a notice board.'],
+  k12: ['spikes', 'Thin research spikes of different heights; studied, not adopted.'],
+  k13: ['capsule', 'A capsule tower with a DNA helix wound around it.'],
+  n1: ['gallery', 'A gallery hall with framed pages in rows.'],
+  n2: ['kitblocks', 'Component blocks of every family on a tray, and the gallery tower.'],
+  n3: ['notebook', 'A notebook on stilts, the engine room under it.'],
+  l1: ['pool', 'A deep pool among 8-bit blocks, a diving tower.'],
+  l2: ['tiles', 'A field of small tiles, one per visual.'],
+  l3: ['titlecard', 'A monumental title card on stands, lit by two spots.'],
+  l4: ['hud', 'Glass HUD panels floating at different heights over a story board.'],
+  l5: ['logo', 'The ring with the bulb inside, and the text lockups.'],
+  l6: ['rollout', 'A district being repainted: half its roofs already in the new colour.'],
+  l7: ['wireframe', 'Objects drawn only as line-art, one lamp finished.'],
+  l8: ['logotext', 'The ring with its letters set around it.'],
+  x1: ['domes3', 'Three browser domes on bases.'],
+  x2: ['powerplant', 'A power plant: engine hall, cooling towers, power lines.'],
+  x3: ['workshop', 'A workshop beside branching rails.'],
+  x4: ['cloud', 'A cloud platform over an uplink mast and the repo building.'],
+  x5: ['sheds6', 'Six small tool sheds.'],
+  x6: ['atom', 'A nucleus inside tilted orbit rings.'],
+  x7: ['chipfab', 'A big chip on a conveyor from the firmware tower.'],
+  x8: ['track', 'A headless car on a test loop, the control booth blind.'],
+  x9: ['heatmap', 'A heat grid of tiles around a router.'],
+  x10: ['neurons', 'Neurons wired into a network around a brain dome.'],
+  x11: ['scaffoldphone', 'A phone inside scaffolding, the JDK crane still missing.'],
+};
+
+// ============================================================ geometry
+const A = 10, T = 12, NS = 'http://www.w3.org/2000/svg', SQ2 = Math.SQRT2;
+function P(i, j, z) { return [(i - j) * A, (i + j) * A / 2 - (z || 0)]; }
+function pts(arr) { return arr.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '); }
+function S(tag, attrs, parent) {
+  const n = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) if (attrs[k] != null) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function poly(parent, points, cls) { return S('polygon', { points: pts(points), class: cls }, parent); }
+function hull(p) {
+  p = p.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  lo.pop(); up.pop(); return lo.concat(up);
+}
+function rng(seed) {
+  let h = 2166136261 >>> 0;
+  for (let k = 0; k < seed.length; k++) { h ^= seed.charCodeAt(k); h = Math.imul(h, 16777619); }
+  let a = h;
+  return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ============================================================ scene + frames
+// A Frame maps a local design space (0…S) into the plinth: offset x0,y0 and scale k on i/j; heights shrink a
+// little with k so a squeezed scene keeps its proportions.
+class Frame {
+  constructor(sc, x0, y0, k, S) { this.sc = sc; this.x0 = x0; this.y0 = y0; this.k = k; this.S = S; this.r = sc.r; }
+  X(i) { return this.x0 + i * this.k; } Y(j) { return this.y0 + j * this.k; } H(h) { return h * (0.55 + 0.45 * Math.min(1, this.k)); }
+  box(i, j, w, d, h, type, ex) {
+    ex = ex || {};
+    const b = Object.assign({ t: 'box', type: type || 'block', layer: 1 }, ex,
+      { i: this.X(i), j: this.Y(j), w: w * this.k, d: d * this.k, h: this.H(h), z0: this.H(ex.z0 || 0) });
+    if (ex.antenna) b.antenna = this.H(ex.antenna);
+    this.sc.items.push(b); return b;
+  }
+  tower(i, j, h, ex) { return this.box(i, j, 0.6, 0.6, h, 'tower', ex); }
+  cab(i, j, h, ex) { return this.box(i, j, 0.9, 0.9, h, 'cabinet', ex); }
+  cyl(ci, cj, rad, h, ex) {
+    ex = ex || {};
+    const c = Object.assign({ t: 'cyl', type: 'tank', layer: 1 }, ex, { ci: this.X(ci), cj: this.Y(cj), rad: rad * this.k, h: this.H(h), z0: this.H(ex.z0 || 0) });
+    this.sc.items.push(c); return c;
+  }
+  sph(ci, cj, rad, z0, ex) { const s = Object.assign({ t: 'sph', layer: 1 }, ex || {}, { ci: this.X(ci), cj: this.Y(cj), rad: rad * this.k, z0: this.H(z0 || 0) }); this.sc.items.push(s); return s; }
+  vring(ci, cj, zc, rad, u, v, ex) { const o = Object.assign({ t: 'vring', layer: 1 }, ex || {}, { ci: this.X(ci), cj: this.Y(cj), zc: this.H(zc), rad: rad * this.k, u: u, v: v }); this.sc.items.push(o); return o; }
+  tree(ci, cj, h) { const o = { t: 'tree', layer: 1, ci: this.X(ci), cj: this.Y(cj), h: this.H(h || 10) }; this.sc.items.push(o); return o; }
+  dish(ci, cj, rad, z0) { const o = { t: 'dish', layer: 1, ci: this.X(ci), cj: this.Y(cj), rad: rad * this.k, z0: this.H(z0) }; this.sc.items.push(o); return o; }
+  _p(p) { return [this.X(p[0]), this.Y(p[1]), p[2] == null ? null : this.H(p[2])]; }
+  cable(p, cls, ex) { this.sc.cables.push(Object.assign({ p: p.map(q => this._p(q)), cls: cls || '' }, ex || {})); }
+  street(p) { this.sc.streets.push(p.map(q => this._p(q))); }
+  ring(ci, cj, r) { this.sc.rings.push([this.X(ci), this.Y(cj), r * this.k]); }
+  quad(p, cls, z) { this.sc.flats.push({ p: p.map(q => this._p(q)), cls: cls, z: z == null ? 0.15 : z }); }
+  rect(i, j, w, d, cls, z) { this.quad([[i, j], [i + w, j], [i + w, j + d], [i, j + d]], cls, z); }
+  line(p, cls, z) { this.sc.flats.push({ p: p.map(q => this._p(q)), cls: cls || 'mark', z: z == null ? 0.2 : z, open: true }); }
+  sub(i, j, k, S) { return new Frame(this.sc, this.X(i), this.Y(j), this.k * k, S); }
+}
+
+// ---------- shared pieces ----------
+function walls(c, x, y, w, d, h, ex) {   // a room outline: four thin walls
+  const t = 0.14;
+  c.box(x, y, w, t, h, 'wall', ex); c.box(x, y, t, d, h, 'wall', ex);
+  c.box(x, y + d - t, w, t, h * 0.55, 'wall', ex); c.box(x + w - t, y, t, d, h * 0.55, 'wall', ex);
+}
+function portal(c, i, j, span, h, along, ex) {   // two posts and a lintel; along = 'i' or 'j'
+  const p = 0.25;
+  if (along === 'i') { c.box(i, j, p, p, h, 'block', ex); c.box(i + span - p, j, p, p, h, 'block', ex); c.box(i, j, span, p, 1.4, 'block', Object.assign({ z0: h }, ex)); }
+  else { c.box(i, j, p, p, h, 'block', ex); c.box(i, j + span - p, p, p, h, 'block', ex); c.box(i, j, p, span, 1.4, 'block', Object.assign({ z0: h }, ex)); }
+}
+function phone(c, i, j, w, d, ex) { return c.box(i, j, w, d, 1.6, 'phone', ex); }
+function cyd(c, i, j, h) {   // a CYD board standing on its edge, screen on the i face
+  c.box(i, j, 0.35, 2.6, h || 10, 'pcb', { z0: 0.6 });
+  c.box(i - 0.4, j + 0.3, 1.1, 2, 0.6, 'slab');
+}
+function crates(c, i, j, nx, ny, r, maxH) { for (let a = 0; a < nx; a++) for (let b = 0; b < ny; b++) if (r() < 0.85) c.box(i + a * 0.9, j + b * 0.9, 0.75, 0.75, 1.5 + r() * (maxH || 4), 'crate', { hot: r() < 0.08 }); }
+function plates(c, i, j, w, d, n, gap, ex) { for (let k = 0; k < n; k++) c.box(i, j, w, d, 0.6, 'slab', Object.assign({ z0: k * gap }, ex || {})); }
+function pcbBoard(c, i, j, w, d, r) {
+  c.box(i, j, w, d, 0.6, 'pcb');
+  const nc = 1 + Math.floor(r() * 3);
+  for (let k = 0; k < nc; k++) c.box(i + 0.2 + r() * (w - 0.9), j + 0.2 + r() * (d - 0.9), 0.6, 0.6, 0.6, 'chip', { z0: 0.6 });
+}
+
+// ============================================================ cores
+// Each core draws in its own local space 0…C (C defaults to 8). grow: the core fills more area when the plinth
+// is bigger (it reads c.S). Kit cores (C = 10) are the UI Kit's emblem recipes, unchanged.
+const CORES = {};
+function core(name, C, fn, grow) { CORES[name] = { C: C, fn: fn, grow: !!grow }; }
+
+// ---- the six kit recipes (components/emblem.js) ----
+core('kit:city', 10, (c, r) => {
+  const N = c.S, m = N / 2; let best = null;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    if (i % 4 === 3 || j % 4 === 3) continue;
+    const d = Math.hypot(i + 0.5 - m, j + 0.5 - m);
+    if (r() < d / (N * 0.9) - 0.05) continue;
+    const h = 5 + 50 * Math.exp(-Math.pow(d / (N * 0.31), 2)) * (0.45 + 0.55 * r()) + r() * 4;
+    const b = c.box(i + 0.12, j + 0.12, 0.76, 0.76, h, 'block');
+    if (!best || h > best.h) best = b;
+  }
+  if (best) { best.type = 'tower-block'; best.h = Math.max(best.h, c.H(52)); best.antenna = 14; }
+  for (let k = 3.5; k < N; k += 4) { c.street([[k, 0.2], [k, N - 0.2]]); c.street([[0.2, k], [N - 0.2, k]]); }
+}, true);
+core('kit:planner', 10, (c, r) => {
+  const sw = 5 + Math.floor(r() * 2), sd = 4 + Math.floor(r() * 2);
+  c.box(0.8, 0.8, sw, sd, 2, 'slab', { layer: 0 });
+  const split = 0.8 + 1.8 + r() * (sw - 3.2);
+  c.box(split, 0.8, 0.14, sd * (0.45 + r() * 0.3), 7, 'wall', { z0: 2 });
+  const splitJ = 0.8 + 1.5 + r() * (sd - 2.6);
+  c.box(0.8, splitJ, split - 0.8, 0.14, 7, 'wall', { z0: 2 });
+  c.box(0.8, 0.8, 0.14, sd, 9, 'wall', { z0: 2 });
+  c.box(0.8, 0.8, sw, 0.14, 9, 'wall', { z0: 2 });
+  const nc = 3 + Math.floor(r() * 2);
+  for (let k = 0; k < nc; k++) c.box(7.5, 0.9 + k * 1.05, 0.9, 0.9, 15 + r() * 6, 'cabinet');
+  const cy = 0.9 + nc * 1.05 + 0.5;
+  c.cable([[7.95, cy - 0.5], [7.95, 7.6], [2.6, 7.6], [2.6, sd + 1.2]]);
+  c.box(2.3, sd + 0.9, 0.6, 0.35, 2.2, 'socket');
+  c.tower(0.5, 8.6, 46 + r() * 10);
+  c.box(4.6, 8.4, 1.4, 0.9, 5, 'block');
+});
+core('kit:mindmap', 10, (c, r) => {
+  c.box(4, 4, 2, 2, 26 + r() * 8, 'block', { antenna: 8 });
+  const n = 5 + Math.floor(r() * 3), a0 = r() * Math.PI * 2;
+  for (let k = 0; k < n; k++) {
+    const a = a0 + k / n * Math.PI * 2 + (r() - 0.5) * 0.4, rad = 3.1 + r() * 0.9;
+    const ci = clamp(5 + Math.cos(a) * rad - 0.5, 0.4, 8.6), cj = clamp(5 + Math.sin(a) * rad - 0.5, 0.4, 8.6);
+    c.box(ci, cj, 1, 1, 7 + r() * 10, 'block');
+    c.cable([[5, 5], [ci + 0.5, 5], [ci + 0.5, cj + 0.5]]);
+  }
+  c.ring(5, 5, 1.56);
+});
+core('kit:inventory', 10, (c, r) => {
+  [1.2, 3.4, 5.6].forEach(j => {
+    c.box(0.9, j, 5.6, 0.8, 4, 'shelf');
+    for (let x = 1.0; x < 6.3; x += 0.9) if (r() < 0.75) c.box(x, j + 0.05, 0.75, 0.7, 1.5 + r() * 3.5, 'crate', { z0: 4, hot: r() < 0.18 });
+  });
+  c.box(7.5, 0.8, 1.4, 6, 20 + r() * 6, 'block');
+  c.tower(0.5, 8.7, 40 + r() * 10);
+  c.cable([[7.0, 7.4], [8.2, 7.4], [8.2, 8.9]]);
+  c.box(3.0, 7.6, 1.1, 0.8, 2.6, 'block');
+});
+core('kit:calculator', 10, (c, r) => {
+  c.box(1.2, 1.0, 5.1, 1.2, 13, 'display');
+  const hot = Math.floor(r() * 16);
+  for (let row = 0; row < 4; row++) for (let k = 0; k < 4; k++) c.box(1.35 + k * 1.27, 3.0 + row * 1.27, 0.95, 0.95, 2 + (row * 4 + k === hot ? 1.2 : 0), 'key', { hot: row * 4 + k === hot });
+  c.cable([[6.4, 1.6], [7.9, 1.6], [7.9, 8.9]]);
+  c.tower(8.8, 0.4, 44 + r() * 8);
+  c.box(7.2, 4.0, 1.3, 1.3, 9, 'cabinet');
+});
+core('kit:hub', 10, (c, r) => {
+  c.box(4, 4, 2, 2, 8, 'block');
+  c.box(4.7, 4.7, 0.6, 0.6, 30 + r() * 8, 'tower', { z0: 8 });
+  [[1, 1], [8, 1], [1, 8], [8, 8]].forEach((p, k) => {
+    c.box(p[0], p[1], 1, 1, 9 + r() * 9, k === 3 ? 'block' : 'cabinet');
+    c.cable([[5, 5], [p[0] + 0.5, 5], [p[0] + 0.5, p[1] + 0.5]]);
+  });
+  c.ring(5, 5, 1.56);
+});
+
+// ---- Front doors ----
+core('terminal', 10, (c, r) => {
+  c.box(0.8, 0.8, 7, 2.4, 13, 'block');
+  c.box(1.4, 3.35, 4.6, 0.35, 9, 'display', { z0: 1 });
+  for (let k = 0; k < 10; k++) c.box(0.9 + (k % 5) * 1.45, 4.6 + Math.floor(k / 5) * 1.5, 1, 1, 1.6, 'key', { hot: k === Math.floor(r() * 10) });
+  c.tower(8.7, 0.8, 44 + r() * 6);
+  c.cable([[7.8, 2.0], [9.0, 2.0], [9.0, 1.4]]);
+  c.street([[0.3, 8.1], [9.7, 8.1]]); c.street([[0.3, 8.8], [9.7, 8.8]]);
+  c.box(6.8, 7.8, 2.4, 0.7, 3, 'block');
+});
+core('rackrow', 8, (c, r) => {
+  const per = Math.max(4, Math.floor((c.S - 1.2) / 1.05)), n = 17;
+  let k = 0, row = 0;
+  while (k < n) {
+    const j = 0.6 + row * 2.2;
+    for (let a = 0; a < per && k < n; a++, k++) c.cab(0.6 + a * 1.05, j, 11 + r() * 6, { hot: r() < 0.55 });
+    c.cable([[0.6, j + 1.35], [0.6 + per * 1.05, j + 1.35]], 'c-thin');
+    row++;
+  }
+  const rj = 0.6 + row * 2.2;
+  c.box(0.6, rj, 2.2, 1.2, 5, 'block');
+  c.cable([[1.7, rj], [1.7, 0.6 + 1.35]]);
+}, true);
+core('checkpoint', 10, (c, r) => {
+  c.street([[0.2, 5.2], [9.8, 5.2]]);
+  for (let k = 0; k < 4; k++) c.box(0.5 + k * 0.95, 4.8, 0.75, 0.75, 1.5 + r() * 2.5, 'crate');
+  c.box(2.2, 6.7, 0.8, 0.8, 3, 'crate', { hot: true });
+  c.box(4.4, 3.0, 1.3, 1.3, 9, 'block');
+  c.box(4.6, 4.5, 0.2, 2.2, 0.5, 'block', { z0: 5, hot: true });
+  c.box(4.5, 4.4, 0.35, 0.35, 6, 'block');
+  c.tower(8.4, 4.9, 42 + r() * 8);
+  c.box(7.2, 6.3, 1.6, 1.2, 4, 'block');
+  c.cable([[5.0, 5.6], [8.7, 5.6], [8.7, 5.2]]);
+});
+core('vault', 9, (c, r) => {
+  c.box(0.8, 0.8, 4.6, 4.6, 9, 'blank');
+  c.box(2.4, 5.35, 1.4, 0.2, 5, 'block', { hot: true });
+  [[7, 1.3, 13], [7, 3.4, 10], [7, 5.5, 8]].forEach(t => c.cyl(t[0], t[1], 0.8, t[2] + r() * 3));
+  c.box(0.8, 6.8, 4.6, 0.8, 4, 'shelf');
+  for (let x = 0.9; x < 5.2; x += 0.9) if (r() < 0.8) c.box(x, 6.85, 0.75, 0.7, 1.4 + r() * 2.5, 'crate', { z0: 4 });
+  c.cable([[5.4, 3.1], [6.2, 3.1], [6.2, 5.5]]); c.cable([[6.2, 1.3], [6.2, 3.1]]);
+});
+core('pavilions', 9, (c, r) => {
+  [[0.8, 0.8], [5.3, 0.8], [3.0, 5.0]].forEach(p => {
+    c.box(p[0], p[1], 2.6, 2.6, 1, 'slab', { layer: 0 });
+    [[0.2, 0.2], [2.2, 0.2], [0.2, 2.2], [2.2, 2.2]].forEach(q => c.box(p[0] + q[0], p[1] + q[1], 0.2, 0.2, 7, 'block', { z0: 1 }));
+    c.box(p[0] - 0.2, p[1] - 0.2, 3, 3, 1.4, 'block', { z0: 8 });
+  });
+  c.ring(7.4, 6.6, 0.9); c.ring(7.4, 6.6, 0.5);
+  c.sph(7.4, 6.6, 0.25, 0); c.tree(1.2, 7.6, 12); c.tree(8.3, 4.4, 10);
+});
+core('library', 9, (c, r) => {
+  c.box(0.8, 0.8, 5.6, 2.6, 18, 'block');
+  for (let k = 0; k < 3; k++) { const j = 4.2 + k * 1.4; c.box(0.8, j, 4.8, 0.6, 5, 'shelf'); for (let x = 0.9; x < 5.4; x += 0.6) if (r() < 0.8) c.box(x, j + 0.05, 0.45, 0.5, 0.8 + r() * 1.6, 'crate', { z0: 5, hot: r() < 0.05 }); }
+  c.box(7.0, 0.8, 1.0, 4.6, 14, 'display-i');
+  c.cable([[6.4, 2.0], [7.0, 2.0]]);
+});
+core('inspector', 8, (c, r) => {
+  c.box(1.6, 2.4, 3.6, 1.4, 6, 'block'); c.box(2.0, 3.85, 2, 0.2, 3, 'display', { z0: 0.5 });
+  c.tower(0.6, 0.6, 30); c.tower(6.2, 0.6, 30);
+  c.box(0.6, 0.6, 6.2, 0.4, 1, 'block', { z0: 24 });
+  c.box(3.2, 0.7, 0.5, 0.5, 5, 'block', { z0: 19, hot: true });
+  c.ring(3.4, 3.1, 2.2);
+  for (let k = 0; k < 5; k++) c.box(1.2 + k * 1.15, 6.4, 0.7, 0.7, 1.4, 'key', { hot: k < 4 });
+});
+core('seal', 7, (c, r) => {
+  c.box(0.8, 0.8, 3.6, 2.2, 6, 'block');
+  c.cyl(2.0, 1.9, 0.75, 3, { z0: 6, type: 'seal', hot: true });
+  plates(c, 4.9, 1.0, 1.6, 2.0, 6, 0.6);
+  c.box(1.5, 4.0, 1.8, 0.5, 1, 'key', { hot: true }); c.box(3.2, 4.1, 0.5, 0.3, 1, 'key');
+  c.tower(5.6, 4.4, 26);
+});
+core('usbstick', 8, (c, r) => {
+  c.box(0.8, 2.6, 4.8, 2.0, 4, 'block');
+  c.box(5.6, 3.0, 1.6, 1.2, 1.8, 'chip', { z0: 1.1 });
+  c.box(1.4, 4.65, 0.5, 0.15, 0.8, 'block', { z0: 1.6, hot: true });
+  for (let k = 0; k < 3; k++) c.box(0.8 + k * 1.7, 0.6, 1.3, 1.2, 3, 'crate');
+  c.box(2.4, 6.0, 2.2, 1.2, 2.2, 'block'); c.cable([[3.5, 6.0], [3.5, 4.6]]);
+});
+core('monolith', 7, (c, r) => {
+  c.rect(1.2, 1.2, 4.6, 4.6, 'pad'); c.ring(3.5, 3.5, 2.2);
+  c.box(3.0, 3.0, 1.0, 0.5, 36, 'display');
+  plates(c, 5.4, 5.4, 1.2, 1.2, 4, 0.7);
+});
+core('desk', 10, (c, r) => {
+  c.box(0.6, 0.8, 8.4, 6.6, 3, 'slab', { layer: 0 });
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) c.box(1.0 + x * 1.75, 1.2 + y * 1.45, 1.45, 1.15, 1.4 + r() * 3, 'key', { z0: 3, hot: r() < 0.25 });
+  c.box(0.8, 7.6, 8.2, 0.6, 2, 'block', { hot: false });
+  c.tower(9.0, 0.6, 38); c.cable([[9.3, 1.2], [9.3, 7.9], [9.0, 7.9]]);
+});
+core('longlink', 10, (c, r) => {
+  c.tower(0.8, 0.8, 38); c.tower(8.6, 8.6, 30);
+  c.cable([[1.1, 1.1, 38], [5, 5, 22], [8.9, 8.9, 30]], 'c-cool');
+  phone(c, 1.6, 2.2, 1.8, 1.2); c.box(1.6, 2.2, 1.8, 0.15, 3, 'display', { z0: 1.6 });
+  c.box(7.0, 7.0, 1.2, 0.8, 2, 'block', { hot: true });
+  c.box(4.2, 7.6, 1.6, 1.4, 5, 'block');
+});
+
+// ---- Planner ----
+core('rooms', 9, (c, r) => {
+  c.box(0.6, 0.6, 7.8, 6.6, 1.5, 'slab', { layer: 0 });
+  const xs = [0.6, 3.4, 6.0, 8.4], ys = [0.6, 3.8, 7.2];
+  for (let a = 0; a < 3; a++) for (let b = 0; b < 2; b++) {
+    walls(c, xs[a], ys[b], xs[a + 1] - xs[a], ys[b + 1] - ys[b], 6, { z0: 1.5 });
+    c.box(xs[a] + 0.7, ys[b] + 0.9, 0.6, 0.6, 1.2, 'key', { z0: 1.5, hot: a === 1 && b === 0 });
+  }
+  c.box(6.2, 7.7, 2.1, 0.8, 3, 'block');
+});
+core('factory', 9, (c, r) => {
+  for (let k = 0; k < 3; k++) { c.box(0.8 + k * 1.9, 0.8, 1.8, 4.6, 9, 'block'); c.box(0.8 + k * 1.9, 0.8, 1.8, 0.8, 3, 'glass', { z0: 9 }); }
+  c.cyl(6.9, 1.4, 0.45, 34);
+  c.street([[0.6, 6.0], [8.4, 6.0]]);
+  for (let k = 0; k < 4; k++) c.cab(1.0 + k * 1.2, 6.8, 7 + r() * 3, { hot: k < 3 });
+  c.cable([[6.6, 5.4], [6.6, 7.2], [5.6, 7.2]]);
+  c.box(6.6, 3.0, 1.4, 1.4, 6, 'block');
+});
+core('spools', 9, (c, r) => {
+  c.cab(0.6, 0.6, 16); c.cab(7.4, 6.8, 13);
+  [[2.6, 1.4], [4.2, 1.4], [5.8, 1.4]].forEach(p => c.cyl(p[0], p[1], 0.7, 2.4, { type: 'spool' }));
+  c.box(0.8, 3.0, 6.6, 0.35, 0.8, 'block'); c.box(0.8, 3.6, 6.6, 0.35, 0.8, 'block');
+  c.cable([[1.05, 1.5], [1.05, 5.2], [7.85, 5.2], [7.85, 6.8]]);
+  c.cable([[1.4, 1.0], [6.8, 1.0], [6.8, 6.4], [7.4, 6.4]], 'c-plan');
+  c.cable([[1.0, 1.9], [1.0, 7.4], [7.4, 7.4]], 'c-plan');
+});
+core('trays', 9, (c, r) => {
+  const posts = [[0.8, 0.8], [4.4, 0.8], [8.0, 0.8], [0.8, 4.4], [0.8, 8.0], [4.4, 4.4]];
+  posts.forEach(p => c.box(p[0], p[1], 0.25, 0.25, 10, 'block'));
+  c.box(0.8, 0.75, 7.5, 0.4, 0.6, 'slab', { z0: 10 }); c.box(0.75, 0.8, 0.4, 7.5, 0.6, 'slab', { z0: 10 }); c.box(0.8, 4.35, 3.9, 0.4, 0.6, 'slab', { z0: 10 });
+  c.cable([[8.2, 0.95, 10.7], [0.95, 0.95, 10.7], [0.95, 8.2, 10.7]]); c.cable([[0.95, 4.55, 10.7], [4.6, 4.55, 10.7]], 'c-cool');
+  c.cab(6.6, 6.6, 12);
+});
+core('routes3', 9, (c, r) => {
+  c.cab(0.6, 0.6, 18, { hot: true }); c.cab(1.6, 0.6, 12);
+  c.cab(7.4, 7.4, 16); c.cab(6.4, 7.4, 10);
+  c.cable([[1.05, 1.5], [1.05, 4.0], [7.85, 4.0], [7.85, 7.4]]);
+  c.cable([[2.05, 1.5], [2.05, 2.6], [5.0, 2.6], [5.0, 7.85], [6.4, 7.85]], 'c-silver');
+  c.cable([[0.6, 1.05], [0.3, 1.05], [0.3, 8.8], [7.85, 8.8], [7.85, 8.3]], 'c-bronze');
+  c.box(3.2, 5.4, 1.4, 1.0, 4, 'block');
+});
+core('portals', 9, (c, r) => {
+  c.street([[0.4, 3.4], [8.6, 3.4]]); c.street([[0.4, 5.2], [8.6, 5.2]]);
+  for (let k = 0; k < 4; k++) portal(c, 1.0 + k * 2.0, 3.1, 2.4, 9 + r() * 3, 'j');
+  crates(c, 1.4, 0.6, 3, 2, r, 3); crates(c, 5.6, 6.4, 3, 2, r, 3);
+  c.rect(4.2, 0.8, 1.2, 1.2, 'padhot');
+});
+core('controller', 9, (c, r) => {
+  c.box(1.6, 2.4, 5.4, 2.8, 3, 'block');
+  c.box(1.0, 4.6, 1.8, 2.0, 3, 'block'); c.box(5.8, 4.6, 1.8, 2.0, 3, 'block');
+  [[5.4, 3.0], [6.1, 3.6], [5.4, 4.2], [4.7, 3.6]].forEach((p, k) => c.box(p[0], p[1], 0.5, 0.5, 1, 'key', { z0: 3, hot: k === 1 }));
+  c.cyl(2.8, 3.6, 0.4, 1, { z0: 3 });
+  c.box(7.6, 0.8, 0.3, 1.5, 9, 'display-i');
+  c.vring(3.6, 3.6, 18, 2.2, [1, 0, 0], [0, 0, 1], { cls: 'vr-thin' });
+  c.vring(3.6, 3.6, 18, 2.2, [0, 1, 0], [0, 0, 1]);
+});
+core('views3', 10, (c, r) => {
+  const house = (x, y, wallH, lift) => {
+    c.box(x, y, 2.6, 2.6, 0.8, 'slab', { z0: 0 });
+    walls(c, x, y, 2.6, 2.6, wallH, { z0: 0.8 + lift });
+    if (lift) c.box(x, y, 2.6, 2.6, 0.6, 'slab', { z0: 0.8 + lift * 2 + wallH });
+  };
+  house(0.6, 0.6, 1.2, 0); house(3.7, 3.7, 6, 0); house(6.8, 6.8, 6, 5);
+});
+core('stations4', 9, (c, r) => {
+  c.street([[0.4, 6.0], [8.6, 6.0]]);
+  for (let k = 0; k < 4; k++) { c.box(0.6 + k * 2.1, 3.6, 1.6, 1.6, 7 + k * 3 + r() * 3, 'block'); c.box(0.9 + k * 2.1, 6.6, 0.8, 0.8, 1, 'key', { hot: k === 2 }); }
+  c.cable([[1.4, 5.2], [1.4, 5.8], [7.7, 5.8], [7.7, 5.2]]);
+  c.box(1.0, 0.6, 6.4, 1.4, 4, 'block');
+});
+core('cinema', 9, (c, r) => {
+  c.box(0.6, 0.6, 4.2, 4.2, 1.2, 'slab', { layer: 0 });
+  c.box(0.8, 0.8, 3.8, 3.8, 0.4, 'slab', { z0: 1.2 });
+  c.box(5.4, 0.6, 3.0, 3.6, 11, 'blank'); c.box(5.6, 4.15, 2.6, 0.15, 6, 'display', { z0: 3 });
+  for (let k = 0; k < 3; k++) for (let a = 0; a < 3; a++) c.box(5.6 + a * 0.9, 5.2 + k * 0.9, 0.7, 0.6, 1.2, 'key');
+  c.box(0.8, 6.2, 3.4, 0.5, 8, 'display');
+});
+core('pallet', 8, (c, r) => {
+  for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) {
+    const i = 0.6 + a * 2.4, j = 0.6 + b * 2.4;
+    c.box(i, j, 2, 2, 0.6, 'slab');
+    crates(c.sub(i + 0.1, j + 0.1, 1, 2), 0, 0, 2, 2, r, 3);
+  }
+});
+core('glass', 9, (c, r) => {
+  c.box(0.8, 0.8, 6.4, 4.8, 1, 'slab', { layer: 0 });
+  c.box(2.4, 2.0, 2.6, 2.0, 6, 'block', { z0: 1 });
+  c.box(1.0, 1.0, 6.0, 4.4, 9, 'glass', { z0: 1 });
+  [[0.8, 7.0], [3.0, 7.4], [5.4, 7.0], [7.8, 6.2], [8.0, 1.6]].forEach(p => c.tree(p[0], p[1], 9 + r() * 5));
+});
+core('substation', 9, (c, r) => {
+  c.cyl(1.6, 1.6, 0.9, 9); c.cyl(3.8, 1.6, 0.9, 9);
+  c.box(0.6, 3.2, 4.6, 0.3, 0.3, 'slab');
+  [[6.0, 0.8], [6.0, 4.0], [6.0, 7.2]].forEach(p => { c.tower(p[0], p[1], 26); c.box(p[0] - 0.8, p[1] + 0.15, 2.2, 0.3, 0.5, 'block', { z0: 24 }); });
+  c.cable([[5.4, 0.95, 24.5], [5.4, 4.15, 24.5], [5.4, 7.35, 24.5]], 'c-silver'); c.cable([[7.2, 0.95, 24.5], [7.2, 4.15, 24.5], [7.2, 7.35, 24.5]], 'c-silver');
+  c.cab(1.0, 5.4, 9, { hot: true }); c.cable([[1.9, 5.85], [4.6, 5.85], [4.6, 8.2]], 'c-cool');
+  for (let k = 0; k < 6; k++) c.box(0.8 + k * 0.6, 8.0, 0.3, 0.3, 0.6, 'key', { hot: true });
+});
+core('chasewall', 9, (c, r) => {
+  c.box(0.8, 2.0, 7.4, 0.7, 15, 'chased');
+  crates(c, 1.0, 3.6, 4, 1, r, 1.2);
+  c.box(5.6, 4.0, 1.6, 1.0, 3.5, 'block', { hot: false }); c.box(5.4, 4.0, 0.3, 0.3, 6, 'block', { z0: 2 });
+  c.box(1.0, 0.4, 2.0, 1.0, 1, 'slab');
+});
+core('pins', 8, (c, r) => {
+  c.box(0.6, 0.6, 6.8, 6.8, 1, 'slab', { layer: 0 });
+  walls(c, 0.6, 0.6, 3.4, 3.4, 5, { z0: 1 }); walls(c, 4.0, 0.6, 3.4, 3.4, 5, { z0: 1 }); walls(c, 0.6, 4.0, 6.8, 3.4, 5, { z0: 1 });
+  [[2.2, 2.2], [5.6, 2.0], [3.4, 5.6], [6.0, 6.0]].forEach(p => { c.box(p[0], p[1], 0.12, 0.12, 6, 'block', { z0: 1 }); c.sph(p[0] + 0.06, p[1] + 0.06, 0.3, 7, { hot: true }); });
+});
+core('buildpack', 7, (c, r) => {
+  c.box(1.0, 1.0, 4.4, 4.4, 1, 'slab');
+  for (let k = 0; k < 6; k++) c.box(1.3 + k * 0.12, 1.3 + k * 0.12, 3.6, 3.6, 0.7, 'slab', { z0: 1 + k * 1.6 });
+  c.box(5.6, 1.2, 1.0, 3.8, 8, 'block');
+});
+core('robotdesk', 9, (c, r) => {
+  c.box(0.8, 2.0, 5.2, 3.6, 5, 'slab');
+  c.line([[1.2, 2.4, 5.2], [5.6, 2.4, 5.2], [5.6, 5.2, 5.2], [1.2, 5.2, 5.2], [1.2, 2.4, 5.2]], 'mark-hot', 0);
+  c.line([[3.2, 2.4, 5.2], [3.2, 5.2, 5.2]], 'mark', 0);
+  c.cyl(7.2, 2.6, 0.7, 3);
+  c.box(7.0, 2.4, 0.4, 0.4, 14, 'block', { z0: 3 });
+  c.box(4.4, 2.5, 3.0, 0.35, 0.8, 'block', { z0: 16 });
+  c.box(4.4, 2.5, 0.35, 0.35, 6, 'block', { z0: 10.5, hot: true });
+  plates(c, 7.0, 5.6, 1.6, 1.8, 5, 0.6);
+});
+core('sweep', 8, (c, r) => {
+  c.box(0.8, 1.2, 6.4, 0.6, 12, 'chased');
+  for (let k = 0; k < 3; k++) portal(c, 1.4 + k * 2.0, 0.6, 2.0, 15, 'j', k < 2 ? { ghost: true } : {});
+  c.box(5.6, 3.4, 1.4, 1.0, 3, 'block');
+});
+
+// ---- Pricing + quotes ----
+core('docstacks', 9, (c, r) => {
+  [[0.8, 0.8, 28], [3.0, 0.8, 18], [5.2, 0.8, 22], [7.2, 0.8, 12]].forEach((p, k) => {
+    c.box(p[0], p[1], 1.6, 2.0, p[2], 'paper');
+    c.box(p[0] + 0.3, p[1] + 2.4, 1.0, 0.6, 1, 'key', { hot: k === 0 });
+  });
+  c.box(0.8, 5.2, 7.6, 2.4, 3, 'block');
+});
+core('ledcalc', 8, (c, r) => {
+  for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) c.box(0.8 + a * 1.2, 0.8 + b * 1.2, 0.9, 0.9, 2, 'key', { hot: a === 2 && b === 0 });
+  c.box(0.8, 4.6, 3.4, 0.3, 7, 'display');
+  c.cab(5.4, 0.8, 8);
+  for (let k = 0; k < 3; k++) c.cable([[4.8, 5.4 + k * 0.7], [5.6, 5.0 + k * 0.7], [6.4, 5.8 + k * 0.7], [7.4, 5.2 + k * 0.7]], 'c-lit');
+  c.cable([[5.85, 1.7], [5.85, 4.8]]);
+});
+core('funnel', 9, (c, r) => {
+  for (let k = 0; k < 6; k++) { const s = 0.8 + k * 0.45; c.box(2.6 - s / 2, 2.6 - s / 2, s, s, 2.4, 'block', { z0: k * 2.6 }); }
+  c.box(5.0, 1.2, 2.6, 2.6, 12, 'block'); c.cable([[2.6, 2.6], [5.0, 2.6]]);
+  for (let k = 0; k < 14; k++) c.box(0.8 + (k % 7) * 1.05, 6.2 + Math.floor(k / 7) * 1.0, 0.7, 0.7, 0.8, 'key', { hot: true });
+  c.dish(7.8, 4.8, 0.7, 10);
+});
+core('boards', 9, (c, r) => {
+  [[0.8, 0.8], [5.0, 0.8]].forEach(p => { c.box(p[0] + 0.3, p[1] + 0.8, 0.25, 0.25, 12, 'block'); c.box(p[0] + 2.4, p[1] + 0.8, 0.25, 0.25, 12, 'block'); c.box(p[0], p[1] + 0.8, 3, 0.3, 9, 'display', { z0: 12 }); });
+  for (let k = 0; k < 6; k++) c.box(0.8 + (k % 3) * 2.6, 4.2 + Math.floor(k / 3) * 2.2, 1.6, 1.4, 3 + r() * 2, 'block', { hot: r() < 0.2 });
+});
+core('agents', 8, (c, r) => {
+  c.cyl(4, 4, 1.4, 3);
+  for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; c.box(4 + Math.cos(a) * 2.8 - 0.3, 4 + Math.sin(a) * 2.8 - 0.3, 0.6, 0.6, 12 + r() * 10, 'tower'); }
+});
+core('mirror', 9, (c, r) => {
+  c.box(0.8, 3.4, 2.6, 3.6, 9, 'block'); c.box(5.6, 3.4, 2.6, 3.6, 9, 'block');
+  c.cable([[3.4, 5.2], [5.6, 5.2]], 'c-cool'); c.cable([[2.1, 3.4, 9], [4.5, 2.2, 30], [6.9, 3.4, 9]], 'c-plan');
+  [[3.6, 1.4], [4.6, 1.0], [5.4, 1.6], [4.4, 1.9]].forEach((p, k) => c.sph(p[0], p[1], 0.7 + (k === 1 ? 0.2 : 0), 26, { cloud: true }));
+});
+core('hopper', 7, (c, r) => {
+  c.street([[0.4, 3.4], [6.0, 3.4]]);
+  for (let k = 0; k < 4; k++) c.box(4.4 - k * 0.3, 2.6 - k * 0.3, 1.6 + k * 0.6, 1.6 + k * 0.6, 1.6, 'block', { z0: 4 + k * 1.7 });
+  c.box(4.8, 3.0, 0.8, 0.8, 4, 'block');
+  for (let k = 0; k < 3; k++) c.box(0.8 + k * 1.1, 3.1, 0.7, 0.7, 1.2, 'crate');
+});
+
+// ---- Materials + data ----
+core('boxtree', 8, (c, r) => {
+  c.box(3.6, 3.6, 0.8, 0.8, 32, 'blank');
+  [[1.4, 3.7, 10, 'i'], [4.4, 3.7, 16, 'i+'], [3.7, 1.3, 22, 'j'], [3.7, 4.4, 27, 'j+']].forEach((b, k) => {
+    if (b[3] === 'i') c.box(1.2, 3.85, 2.4, 0.3, 0.4, 'block', { z0: b[2] });
+    if (b[3] === 'i+') c.box(4.4, 3.85, 2.4, 0.3, 0.4, 'block', { z0: b[2] });
+    if (b[3] === 'j') c.box(3.85, 1.2, 0.3, 2.4, 0.4, 'block', { z0: b[2] });
+    if (b[3] === 'j+') c.box(3.85, 4.4, 0.3, 2.4, 0.4, 'block', { z0: b[2] });
+    const ci = b[3] === 'i' ? 1.4 : b[3] === 'i+' ? 6.0 : 3.6, cj = b[3] === 'j' ? 1.3 : b[3] === 'j+' ? 6.0 : 3.6;
+    c.box(ci, cj, 0.8, 0.8, 1.6, 'crate', { z0: b[2] + 0.4, hot: k === 2 });
+  });
+  c.cable([[4, 4.4], [4, 6.8], [2, 6.8]]); c.cable([[4.4, 4], [6.8, 4], [6.8, 2]]);
+});
+core('switches', 8, (c, r) => {
+  c.box(0.8, 1.0, 6.4, 1.0, 3, 'block');
+  for (let k = 0; k < 5; k++) { c.box(1.0 + k * 1.25, 1.95, 1.0, 0.15, 7, 'block', { z0: 3 }); c.box(1.35 + k * 1.25, 2.1, 0.3, 0.12, 1.6, 'key', { z0: 5.5, hot: k === 2 }); }
+  c.box(0.8, 4.0, 3.0, 2.6, 4, 'block'); c.box(4.4, 4.4, 2.6, 2.0, 2, 'slab');
+});
+core('dock', 10, (c, r) => {
+  c.rect(0.2, 7.6, 9.6, 2.2, 'water', 0.1);
+  for (let a = 0; a < 3; a++) for (let b = 0; b < 2; b++) for (let z = 0; z < 1 + Math.floor(r() * 3); z++) c.box(0.8 + a * 2.2, 1.0 + b * 1.6, 2, 1.3, 4.5, 'crate', { z0: z * 4.5, hot: r() < 0.06 });
+  portal(c, 0.6, 5.0, 7.6, 22, 'i'); c.box(3.4, 5.0, 0.8, 0.4, 4, 'block', { z0: 17 });
+  c.box(7.6, 0.8, 1.6, 2.6, 8, 'block');
+});
+core('bench', 7, (c, r) => {
+  c.box(0.8, 1.4, 4.4, 2, 1, 'slab', { z0: 5 });
+  [[0.9, 1.5], [4.9, 1.5], [0.9, 3.1], [4.9, 3.1]].forEach(p => c.box(p[0], p[1], 0.2, 0.2, 5, 'block'));
+  for (let k = 0; k < 4; k++) c.box(1.2 + k * 0.95, 1.8 + r() * 0.8, 0.5 + r() * 0.3, 0.4, 0.6 + r() * 1.5, 'crate', { z0: 6, hot: k === 1 });
+  c.box(1.0, 4.4, 2.6, 1.4, 4, 'block'); c.box(1.0, 4.4, 2.6, 0.3, 3, 'block', { z0: 4 });
+});
+core('catalogue', 8, (c, r) => {
+  for (let k = 0; k < 3; k++) { const j = 0.8 + k * 2.0; c.box(0.8, j, 5.0, 0.8, 4, 'shelf'); for (let x = 1.1; x < 5.6; x += 0.8) if (r() < 0.8) c.cyl(x, j + 0.4, 0.25, 1 + r() * 2, { z0: 4, hot: r() < 0.1 }); }
+  c.box(6.4, 1.0, 1.0, 1.0, 10, 'display-i'); c.cable([[6.9, 2.0], [6.9, 6.4], [5.6, 6.4]]);
+});
+core('archives4', 8, (c, r) => {
+  [10, 18, 26, 34].forEach((h, k) => c.box(0.8 + k * 1.7, 0.8 + k * 1.2, 1.3, 1.3, h, k === 0 ? 'paper' : 'block', { ghost: k > 0 }));
+  c.box(0.8, 5.6, 4.0, 1.4, 3, 'block'); c.cable([[1.45, 2.1], [1.45, 5.6]]);
+});
+core('dinrail', 8, (c, r) => {
+  c.box(0.6, 2.6, 6.8, 0.4, 0.8, 'slab', { z0: 4 }); c.box(0.6, 2.6, 0.3, 0.4, 4, 'block'); c.box(7.1, 2.6, 0.3, 0.4, 4, 'block');
+  for (let k = 0; k < 12; k++) c.box(0.8 + k * 0.54, 2.2, 0.45, 1.2, 4 + (k % 4 === 0 ? 1.5 : 0), 'cabinet', { z0: 4.8, hot: r() < 0.15 });
+  c.box(1.0, 5.4, 3.0, 1.6, 4, 'shelf'); c.cable([[2.5, 5.4], [2.5, 3.4]]);
+});
+
+// ---- BRIDGE + client side ----
+core('bridge', 10, (c, r) => {
+  c.rect(3.2, 0.2, 3.6, 9.6, 'water', 0.1);
+  c.box(2.4, 4.2, 5.2, 1.4, 1, 'slab', { z0: 7 });
+  c.box(3.0, 4.2, 0.5, 1.4, 30, 'block'); c.box(6.5, 4.2, 0.5, 1.4, 30, 'block');
+  [4.3, 5.5].forEach(j => { c.cable([[0.8, j, 0.5], [3.25, j, 30], [5.0, j, 9], [6.75, j, 30], [9.2, j, 0.5]], 'c-silver'); });
+  c.cab(0.8, 1.2, 14); c.box(0.8, 6.8, 1.8, 1.8, 6, 'block'); c.cab(8.2, 1.2, 12, { hot: true }); c.box(7.6, 6.8, 1.8, 1.8, 8, 'block');
+});
+core('house', 9, (c, r) => {
+  c.box(0.8, 0.8, 5.4, 4.4, 1, 'slab', { layer: 0 });
+  walls(c, 0.8, 0.8, 5.4, 4.4, 10, { z0: 1 }); c.box(3.4, 0.8, 0.14, 2.6, 7, 'wall', { z0: 1 });
+  c.cab(4.6, 1.2, 12, { hot: true, z0: 1 });
+  c.cable([[5.05, 2.1], [5.05, 3.8], [1.6, 3.8]]); c.box(1.4, 3.6, 0.4, 0.3, 1.4, 'socket', { z0: 1 });
+  [[7.4, 1.2], [7.8, 3.6], [1.4, 7.0], [4.6, 7.4]].forEach(p => c.tree(p[0], p[1], 9 + r() * 4));
+});
+core('steles', 8, (c, r) => {
+  for (let k = 0; k < 6; k++) c.box(0.8 + k * 1.15, 2.4 + (k % 2) * 0.4, 0.5, 1.4, 12 + r() * 6, 'stone', { ghost: k === 5 });
+  c.box(0.8, 5.4, 6.4, 1.2, 1, 'slab');
+});
+core('preview', 9, (c, r) => {
+  c.box(2.4, 2.4, 3.6, 3.0, 1, 'slab', { layer: 0 }); walls(c, 2.4, 2.4, 3.6, 3.0, 8, { z0: 1 });
+  c.vring(4.2, 3.9, 9, 3.4, [1, 0, 0], [0, 1, 0], { cls: 'vr-thin' });
+  c.box(7.4, 7.0, 0.15, 0.15, 7, 'block'); c.box(7.1, 6.8, 0.9, 0.6, 1.4, 'chip', { z0: 7 });
+  c.quad([[7.2, 7.0, 7.6], [5.6, 4.4, 4], [4.2, 5.8, 4]], 'padhot', 0);
+});
+core('brochure', 8, (c, r) => {
+  for (let k = 0; k < 4; k++) c.box(1.0 + k * 1.4, 2.0 + (k % 2) * 0.9, 1.4, 0.25, 14, k % 2 ? 'blank' : 'display');
+  c.box(1.0, 5.6, 5.6, 1.2, 1, 'slab');
+});
+core('mediawall', 9, (c, r) => {
+  c.box(0.8, 1.6, 6.8, 0.8, 20, 'blank');
+  c.box(1.2, 2.4, 6.0, 0.15, 4, 'display', { z0: 13 }); c.box(1.6, 2.4, 5.2, 0.15, 5, 'display', { z0: 6 }); c.box(1.2, 2.4, 6.0, 0.3, 1.6, 'block', { z0: 1.5 });
+  c.box(6.4, 5.0, 1.6, 1.6, 1.6, 'block', { hot: true });
+  c.box(1.6, 5.0, 3.0, 1.6, 2, 'slab');
+});
+core('plots10', 9, (c, r) => {
+  for (let k = 0; k < 10; k++) {
+    const i = 0.6 + (k % 4) * 2.1, j = 0.6 + Math.floor(k / 4) * 2.9;
+    c.rect(i, j, 1.8, 2.4, 'pad'); c.box(i + 0.3, j + 0.4, 1.2, 1.3, 4 + r() * 10, 'block', { ghost: true }); c.box(i + 1.4, j + 1.9, 0.2, 0.2, 3, 'block', { hot: true });
+  }
+});
+core('missioncontrol', 9, (c, r) => {
+  for (let k = 0; k < 6; k++) { const a = Math.PI * (0.05 + k / 5 * 0.4), R = 4.6; c.box(0.6 + Math.cos(a) * R, 0.6 + Math.sin(a) * R, 0.9, 0.9, 5, 'display', { hot: k === 2 }); }
+  c.box(1.4, 1.4, 2.0, 1.2, 3, 'block');
+  c.dish(7.4, 7.4, 1.3, 9); c.box(7.0, 7.0, 0.8, 0.8, 4, 'block');
+});
+core('questions', 8, (c, r) => {
+  c.box(1.0, 1.4, 4.2, 3.6, 1, 'slab', { layer: 0 }); walls(c, 1.0, 1.4, 4.2, 3.6, 9, { z0: 1 });
+  [[1.4, 1.8, 22], [3.6, 2.6, 28], [2.2, 3.4, 34]].forEach(q => c.box(q[0], q[1], 0.9, 0.9, 3, 'block', { z0: q[2], ghost: true }));
+});
+
+// ---- Phone + field ----
+core('phonecity', 9, (c, r) => {
+  phone(c, 1.4, 0.8, 5.2, 7.6);
+  for (let a = 0; a < 3; a++) for (let b = 0; b < 5; b++) c.box(1.9 + a * 1.6, 1.4 + b * 1.4, 1.1, 1.0, 2 + r() * 9, r() < 0.3 ? 'block' : 'key', { z0: 1.6, hot: r() < 0.15 });
+  c.cable([[6.6, 4.6], [8.2, 4.6], [8.2, 7.8]]); c.tower(7.9, 8.0, 24);
+}, false);
+core('gyro', 8, (c, r) => {
+  c.box(3.6, 2.6, 0.5, 2.6, 22, 'display-i');
+  c.vring(3.85, 3.9, 13, 2.8, [1, 0, 0], [0, 0, 1]);
+  c.vring(3.85, 3.9, 13, 2.8, [0, 1, 0], [0, 0, 1], { cls: 'vr-thin' });
+  c.vring(3.85, 3.9, 13, 2.8, [1, 0, 0], [0, 1, 0], { cls: 'vr-thin' });
+  c.box(5.6, 5.8, 1.6, 1.0, 5, 'display');
+});
+core('console49', 9, (c, r) => {
+  c.box(0.6, 0.6, 7.8, 7.8, 2, 'slab', { layer: 0 });
+  const lit = new Set(); while (lit.size < 32) lit.add(Math.floor(r() * 49));
+  for (let k = 0; k < 49; k++) c.box(0.9 + (k % 7) * 1.06, 0.9 + Math.floor(k / 7) * 1.06, 0.8, 0.8, lit.has(k) ? 2 + r() * 3 : 0.6, 'key', { z0: 2, hot: lit.has(k) && r() < 0.35, ghost: !lit.has(k) });
+});
+core('phoneglobe', 7, (c, r) => {
+  phone(c, 1.4, 1.0, 3.6, 5.2);
+  c.box(1.8, 1.4, 2.8, 4.4, 0.4, 'key', { z0: 1.6 });
+  c.sph(3.2, 3.6, 1.4, 10); c.vring(3.2, 3.6, 24, 2.0, [1, 0, 0], [0, 1, 0], { cls: 'vr-thin' });
+});
+core('kitcase', 9, (c, r) => {
+  c.box(0.8, 2.0, 6.0, 3.6, 4, 'block'); c.box(0.8, 1.6, 6.0, 0.4, 12, 'blank', { z0: 0 });
+  for (let k = 0; k < 6; k++) c.box(1.1 + k * 0.95, 2.6 + r() * 1.6, 0.7, 0.8, 1 + r() * 1.5, 'crate', { z0: 4, hot: k === 3 });
+  c.box(7.2, 1.0, 1.2, 1.6, 10, 'display-i'); c.cable([[7.2, 2.6], [6.8, 2.6]]);
+  plates(c, 1.2, 6.6, 2.6, 1.6, 5, 0.5);
+});
+core('phonekit', 8, (c, r) => {
+  c.box(0.8, 0.8, 4.4, 3.0, 4, 'block'); c.box(0.8, 0.5, 4.4, 0.3, 9, 'blank');
+  phone(c, 5.0, 5.0, 1.8, 2.6); c.cable([[3.0, 3.8], [3.0, 6.3], [5.0, 6.3]], 'c-cool');
+});
+
+// ---- Devices + firmware ----
+core('cyd', 8, (c, r) => {
+  cyd(c, 1.4, 1.4, 11);
+  c.box(4.4, 1.0, 2.6, 2.6, 13, 'block'); c.cable([[1.6, 4.3], [1.6, 5.6], [5.6, 5.6], [5.6, 3.6]], 'c-cool');
+  c.box(4.4, 5.8, 2.2, 1.0, 2, 'slab');
+});
+core('macropad', 7, (c, r) => {
+  c.box(1.0, 1.0, 4.6, 3.4, 1, 'pcb');
+  for (let a = 0; a < 4; a++) for (let b = 0; b < 3; b++) c.box(1.3 + a * 1.05, 1.3 + b * 1.0, 0.8, 0.75, 0.8, 'key', { z0: 1, hot: r() < 0.3 });
+  c.cable([[3.3, 4.4], [3.3, 6.0], [5.6, 6.0]], 'c-cool');
+});
+core('lab', 10, (c, r) => {
+  [[0.6, 0.8], [0.6, 4.2], [5.2, 0.8]].forEach(b => {
+    c.box(b[0], b[1], 4.2, 2.2, 0.6, 'slab', { z0: 5 });
+    [[0.1, 0.1], [3.9, 0.1], [0.1, 1.9], [3.9, 1.9]].forEach(q => c.box(b[0] + q[0], b[1] + q[1], 0.2, 0.2, 5, 'block'));
+    for (let k = 0; k < 3; k++) { const f = c.sub(b[0] + 0.2 + k * 1.35, b[1] + 0.3, 1, 1.2); f.box(0, 0, 1.1, 1.5, 0.5, 'pcb', { z0: 5.6 }); f.box(0.3, 0.4, 0.5, 0.5, 0.5, 'chip', { z0: 6.1, hot: r() < 0.3 }); }
+  });
+  cyd(c, 6.0, 5.0, 9);
+  c.cable([[2.7, 3.0], [2.7, 4.2]], 'c-cool'); c.cable([[4.8, 1.9], [5.2, 1.9]], 'c-cool'); c.cable([[7.3, 3.0], [7.3, 5.4], [6.4, 5.4]], 'c-cool');
+});
+core('devboard', 9, (c, r) => {
+  c.box(0.8, 1.4, 6.6, 3.6, 0.8, 'pcb');
+  c.box(1.4, 2.2, 1.8, 1.8, 1.2, 'chip', { z0: 0.8 }); c.box(4.0, 2.0, 1.0, 1.0, 0.8, 'chip', { z0: 0.8 }); c.box(5.4, 2.6, 1.4, 1.6, 1.4, 'block', { z0: 0.8 });
+  for (let k = 0; k < 12; k++) { c.box(1.0 + k * 0.52, 1.5, 0.25, 0.25, 1.4, 'chip', { z0: 0.8 }); c.box(1.0 + k * 0.52, 4.65, 0.25, 0.25, 1.4, 'chip', { z0: 0.8 }); }
+  c.box(4.4, 3.4, 0.4, 0.3, 0.5, 'key', { z0: 0.8, hot: true });
+  c.tower(7.8, 6.4, 26); c.cable([[7.4, 3.2], [8.1, 3.2], [8.1, 6.4]], 'c-cool');
+});
+core('knobs', 7, (c, r) => {
+  c.box(1.0, 1.4, 5.0, 2.4, 2, 'block');
+  for (let k = 0; k < 3; k++) c.cyl(1.9 + k * 1.6, 2.6, 0.55, 3, { z0: 2, hot: k === 1 });
+  c.cable([[3.5, 3.8], [3.5, 5.6], [1.6, 5.6]], 'c-cool');
+});
+core('arena', 8, (c, r) => {
+  c.ring(4, 4, 3.0); c.ring(4, 4, 2.2);
+  c.rect(2.6, 2.6, 2.8, 2.8, 'pad');
+  [[1.0, 1.0], [6.0, 1.0], [1.0, 6.0], [6.0, 6.0]].forEach((p, k) => c.box(p[0], p[1], 1, 1, 3 + k * 2, 'block', { hot: k === 2 }));
+  c.box(3.4, 0.4, 1.4, 0.4, 10, 'display');
+  cyd(c, 3.2, 3.0, 6);
+});
+core('cydkit', 7, (c, r) => {
+  c.box(0.8, 1.6, 4.6, 3.2, 4, 'block');
+  c.box(2.4, 2.2, 0.35, 2.0, 8, 'pcb', { z0: 4 });
+  c.cable([[2.6, 4.8], [2.6, 6.0], [5.6, 6.0]], 'c-cool'); c.tower(5.8, 1.4, 18);
+});
+core('pager', 8, (c, r) => {
+  c.tower(1.0, 1.0, 44);
+  phone(c, 3.6, 3.6, 1.6, 1.2); c.box(3.6, 4.8, 1.6, 0.12, 0.6, 'key', { z0: 1.6, hot: true });
+  pcbBoard(c, 5.6, 1.6, 1.6, 2.0, r);
+  c.ring(1.3, 1.3, 1.6);
+});
+
+// ---- Dev + knowledge ----
+core('gates4', 10, (c, r) => {
+  c.rect(3.4, 3.4, 3.2, 3.2, 'pad'); c.ring(5, 5, 1.4);
+  portal(c, 3.8, 0.6, 2.4, 10, 'i'); portal(c, 0.6, 3.8, 2.4, 10, 'j');
+  portal(c, 3.8, 8.6, 2.4, 10, 'i'); portal(c, 8.6, 3.8, 2.4, 16, 'j', { hot: false });
+  c.box(8.6, 4.85, 0.25, 0.3, 1, 'block', { z0: 17.4, hot: true });
+  c.cable([[5, 5], [5, 1.0]]); c.cable([[5, 5], [1.0, 5]]); c.cable([[5, 5], [5, 8.6]]); c.cable([[5, 5], [8.6, 5]]);
+});
+core('rowsboard', 8, (c, r) => {
+  for (let k = 0; k < 9; k++) c.box(0.8, 0.6 + k * 0.78, 1.5 + r() * 5, 0.5, 1 + r() * 2, 'block', { hot: r() < 0.3 });
+  c.tower(7.2, 0.6, 18);
+}, true);
+core('timeline', 10, (c, r) => {
+  c.cable([[0.6, 5], [9.4, 5]]);
+  c.cable([[2.0, 5], [3.0, 3.4], [6.0, 3.4], [7.0, 5]], 'c-silver'); c.cable([[4.0, 5], [5.0, 7.0], [8.6, 7.0]], 'c-silver');
+  [0.6, 2.0, 3.0, 4.0, 5.4, 7.0, 8.4].forEach((x, k) => c.cyl(x, 5, 0.3, 3 + r() * 6, { hot: k === 6 }));
+  [3.6, 5.2].forEach(x => c.cyl(x, 3.4, 0.25, 4)); c.cyl(6.6, 7.0, 0.25, 5);
+});
+core('gitgraph', 10, (c, r) => {
+  const L = [2.4, 5.0, 7.6];
+  L.forEach((j, k) => c.cable([[0.6, j], [9.4, j]], k === 1 ? '' : 'c-silver'));
+  c.cable([[3.0, 2.4], [3.8, 5.0]], 'c-thin'); c.cable([[5.4, 7.6], [6.2, 5.0]], 'c-thin'); c.cable([[7.2, 5.0], [8.0, 2.4]], 'c-thin');
+  for (let x = 1.0; x < 9.4; x += 1.2) L.forEach(j => { if (r() < 0.6) c.box(x - 0.25, j - 0.25, 0.5, 0.5, 1.2 + r() * 3, 'key'); });
+  c.tower(9.0, 4.6, 30);
+});
+core('terraces', 10, (c, r) => {
+  for (let k = 0; k < 5; k++) {
+    const z = (4 - k) * 3; c.box(0.6, 0.6 + k * 1.8, 8.8, 1.8, z + 1, 'slab', { layer: 0 });
+    for (let x = 0.9; x < 9; x += 1.4) if (r() < 0.75 - k * 0.1) c.box(x, 0.9 + k * 1.8, 0.9, 1.0, 3 + r() * (12 - k * 2), 'block', { z0: z + 1, ghost: k >= 3, hot: k === 0 && r() < 0.2 });
+  }
+});
+core('layerstack', 8, (c, r) => {
+  const n = 10, gap = 5.2;
+  for (let k = 0; k < n; k++) {
+    c.box(0.9, 0.9, 6.2, 6.2, 0.5, 'slab', { z0: k * gap, layer: 1 });
+    for (let q = 0; q < 2; q++) c.box(1.4 + r() * 4.6, 1.4 + r() * 4.6, 0.6, 0.6, 0.8 + r() * 1.6, 'key', { z0: k * gap + 0.5, hot: r() < 0.25 });
+  }
+  [[1.1, 1.1], [6.6, 6.6]].forEach(p => c.box(p[0], p[1], 0.18, 0.18, (n - 1) * gap, 'block', { layer: 1 }));
+});
+core('signposts', 9, (c, r) => {
+  plates(c, 3.6, 3.6, 1.8, 1.8, 7, 0.7);
+  for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2, x = 4.5 + Math.cos(a) * 3.6, y = 4.5 + Math.sin(a) * 3.6; c.box(x, y, 0.15, 0.15, 10, 'block'); c.box(x - 0.5, y, 1.2, 0.15, 2, 'display', { z0: 8, hot: k === 0 }); }
+});
+core('globe', 8, (c, r) => {
+  c.cyl(4, 4, 0.9, 3); c.box(3.85, 3.85, 0.3, 0.3, 6, 'block', { z0: 3 });
+  c.sph(4, 4, 2.2, 8);
+  c.vring(4, 4, 28, 3.2, [1, 0, 0], [0, 1, 0]);
+  c.vring(4, 4, 28, 3.0, [1, 0, 0], [0, 0, 1], { cls: 'vr-thin' });
+  c.vring(4, 4, 28, 3.0, [0, 1, 0], [0, 0, 1], { cls: 'vr-thin' });
+});
+core('council', 9, (c, r) => {
+  c.cyl(4.5, 4.5, 1.8, 4);
+  for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2 + 0.3, x = 4.5 + Math.cos(a) * 3.4 - 0.35, y = 4.5 + Math.sin(a) * 3.4 - 0.35; c.box(x, y, 0.7, 0.7, k === 0 ? 30 : 9 + r() * 8, k === 0 ? 'tower' : 'block'); }
+});
+core('ringboard', 8, (c, r) => {
+  c.box(1.6, 3.6, 2.4, 1.2, 1.4, 'slab');
+  c.vring(2.8, 4.2, 15, 2.4, [1, 0, 0], [0, 0, 1]); c.sph(2.8, 4.2, 0.5, 12.4, { hot: true });
+  c.box(5.4, 1.0, 0.4, 4.6, 14, 'display-i');
+  for (let k = 0; k < 3; k++) c.box(5.9, 1.4 + k * 1.5, 1.0, 1.0, 1, 'key', { hot: k === 0 });
+});
+core('spikes', 8, (c, r) => {
+  c.rect(0.8, 0.8, 6.4, 6.4, 'pad');
+  for (let k = 0; k < 7; k++) c.box(1.2 + r() * 5.2, 1.2 + r() * 5.2, 0.25, 0.25, 10 + r() * 36, 'block', { hot: k === 0 });
+}, true);
+core('capsule', 7, (c, r) => {
+  c.cyl(3.5, 3.5, 1.2, 30);
+  const h1 = [], h2 = [];
+  for (let k = 0; k <= 24; k++) { const a = k / 24 * Math.PI * 6, z = k * 1.3; h1.push([3.5 + Math.cos(a) * 1.8, 3.5 + Math.sin(a) * 1.8, z]); h2.push([3.5 - Math.cos(a) * 1.8, 3.5 - Math.sin(a) * 1.8, z]); }
+  c.cable(h1, 'c-lit', { smooth: true }); c.cable(h2, 'c-cool', { smooth: true });
+});
+core('gallery', 10, (c, r) => {
+  c.box(0.8, 0.8, 8.4, 2.4, 12, 'blank');
+  for (let k = 0; k < 6; k++) c.box(1.1 + k * 1.35, 3.2, 1.0, 0.12, 3.4, 'display', { z0: 4, hot: false });
+  for (let a = 0; a < 2; a++) for (let k = 0; k < 5; k++) c.box(1.0 + k * 1.7, 4.8 + a * 2.2, 1.2, 0.2, 4, 'display', { z0: 1 });
+  [4.6, 7.0].forEach(j => c.box(0.8, j + 0.2, 8.4, 0.3, 1, 'slab'));
+});
+core('kitblocks', 9, (c, r) => {
+  c.box(0.6, 0.6, 7.8, 6.0, 0.8, 'slab', { layer: 0 });
+  const kinds = ['key', 'block', 'display', 'cabinet', 'crate', 'key', 'block', 'pcb', 'key', 'block', 'glass'];
+  kinds.forEach((t, k) => { const a = k % 4, b = Math.floor(k / 4); c.box(1.0 + a * 1.85, 1.0 + b * 1.9, 1.3 + (k % 3) * 0.1, 1.2, 1.2 + r() * 5, t, { z0: 0.8, hot: k === 10 }); });
+  c.tower(7.8, 7.6, 30); c.box(1.0, 7.2, 4.0, 1.2, 4, 'block');
+});
+core('notebook', 8, (c, r) => {
+  [[1.0, 1.0], [6.0, 1.0], [1.0, 5.6], [6.0, 5.6]].forEach(p => c.box(p[0], p[1], 0.25, 0.25, 9, 'block'));
+  plates(c, 0.9, 0.9, 5.6, 5.0, 4, 0.5, { z0: 9 });
+  for (let k = 0; k < 3; k++) c.cab(1.6 + k * 1.4, 2.4, 6, { hot: k === 1 });
+  c.cable([[2.05, 3.3], [2.05, 4.2], [5.0, 4.2]]);
+});
+
+// ---- Look + assets ----
+core('pool', 9, (c, r) => {
+  c.rect(1.4, 1.4, 5.4, 4.2, 'water', 0.15);
+  [[0.6, 0.6, 6.8, 0.6], [0.6, 6.0, 6.8, 0.6], [0.6, 0.6, 0.6, 6.0], [7.0, 0.6, 0.6, 6.0]].forEach(w => c.box(w[0], w[1], w[2], w[3], 1.2, 'slab'));
+  for (let k = 0; k < 10; k++) c.box(0.8 + r() * 7.4, 7.0 + r() * 1.4, 0.6, 0.6, 2 + Math.floor(r() * 4) * 2, 'key', { hot: r() < 0.25 });
+  c.tower(7.8, 1.0, 18); c.box(6.4, 1.1, 1.6, 0.4, 0.4, 'block', { z0: 15 });
+});
+core('tiles', 8, (c, r) => {
+  const n = Math.floor((c.S - 0.8) / 0.62);
+  for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) if (r() < 0.86) c.box(0.5 + a * 0.62, 0.5 + b * 0.62, 0.5, 0.5, 0.4 + r() * (r() < 0.1 ? 8 : 2.5), 'key', { hot: r() < 0.04 });
+}, true);
+core('titlecard', 9, (c, r) => {
+  c.box(1.4, 3.2, 6.0, 0.5, 24, 'display', { z0: 3 });
+  c.box(1.8, 3.0, 0.4, 0.9, 3, 'block'); c.box(6.6, 3.0, 0.4, 0.9, 3, 'block');
+  c.cyl(2.0, 6.8, 0.35, 3, { hot: true }); c.cyl(6.8, 6.8, 0.35, 3, { hot: true });
+  c.quad([[2.0, 6.8, 3], [1.6, 3.7, 20], [4.2, 3.7, 20]], 'padhot', 0); c.quad([[6.8, 6.8, 3], [4.6, 3.7, 20], [7.2, 3.7, 20]], 'padhot', 0);
+});
+core('hud', 8, (c, r) => {
+  c.box(0.8, 5.0, 6.4, 2.0, 1, 'slab');
+  for (let k = 0; k < 4; k++) c.box(0.8 + k * 1.6, 5.2, 1.3, 0.12, 3, 'display', { z0: 1 });
+  [[1.0, 1.0, 10], [3.4, 1.8, 18], [5.4, 0.8, 26]].forEach(g => c.box(g[0], g[1], 2.0, 2.0, 0.4, 'glass', { z0: g[2] }));
+  c.box(1.8, 1.8, 0.12, 0.12, 10, 'block'); c.box(4.2, 2.6, 0.12, 0.12, 18, 'block'); c.box(6.2, 1.6, 0.12, 0.12, 26, 'block');
+});
+core('logo', 8, (c, r) => {
+  c.box(2.6, 2.6, 2.8, 2.8, 2, 'slab');
+  c.vring(4, 4, 16, 2.8, [1, -1, 0].map(v => v / SQ2), [0, 0, 1]);
+  c.sph(4, 4, 0.9, 10, { hot: true }); c.box(3.85, 3.85, 0.3, 0.3, 8, 'block', { z0: 2 });
+  plates(c, 0.8, 6.2, 2.4, 0.8, 3, 0.6); plates(c, 4.8, 6.2, 2.4, 0.8, 2, 0.6);
+});
+core('rollout', 9, (c, r) => {
+  c.rect(0.8, 0.8, 3.0, 3.0, 'water');
+  for (let a = 0; a < 5; a++) for (let b = 0; b < 5; b++) { if (a < 2 && b < 2) continue; c.box(0.9 + a * 1.6, 0.9 + b * 1.6, 1.1, 1.1, 3 + r() * 10, 'block', { hot: a + b < 5 }); }
+});
+core('wireframe', 8, (c, r) => {
+  c.box(0.8, 0.8, 2.4, 2.4, 10, 'block', { ghost: true }); c.cyl(5.4, 2.0, 1.0, 8, { ghost: true }); c.sph(2.0, 5.6, 1.0, 0, { ghost: true });
+  c.box(4.4, 4.6, 2.6, 1.2, 5, 'block', { ghost: true });
+  c.box(6.8, 6.8, 0.2, 0.2, 10, 'block'); c.sph(6.9, 6.9, 0.35, 10, { hot: true });
+});
+core('logotext', 8, (c, r) => {
+  c.vring(4, 4, 14, 2.6, [1, -1, 0].map(v => v / SQ2), [0, 0, 1]);
+  for (let k = 0; k < 6; k++) c.box(0.8 + k * 1.1, 6.4 + (k % 2) * 0.3, 0.8, 0.2, 3 + (k % 3), 'block');
+});
+
+// ---- Third-party programs ----
+core('domes3', 9, (c, r) => {
+  [[1.8, 1.8, 1.4], [6.4, 2.2, 1.1], [3.6, 6.2, 1.2]].forEach((d, k) => { c.cyl(d[0], d[1], d[2] + 0.2, 2); c.sph(d[0], d[1], d[2], 2, { hot: k === 0 }); });
+  c.cable([[1.8, 1.8], [6.4, 1.8], [6.4, 2.2]]); c.cable([[1.8, 1.8], [1.8, 6.2], [3.6, 6.2]]);
+});
+core('powerplant', 10, (c, r) => {
+  c.box(0.8, 0.8, 4.4, 3.0, 10, 'block');
+  c.cyl(7.0, 1.8, 1.2, 16); c.cyl(7.0, 4.6, 1.2, 13);
+  c.cyl(4.6, 4.6, 0.3, 30);
+  [[2.0, 7.0], [5.0, 7.6], [8.0, 8.2]].forEach(p => c.tower(p[0], p[1], 22));
+  c.cable([[2.3, 7.3, 22], [5.3, 7.9, 22], [8.3, 8.5, 22]], 'c-silver');
+});
+core('workshop', 9, (c, r) => {
+  c.box(0.8, 0.8, 4.0, 3.2, 10, 'block'); c.box(0.8, 0.8, 4.0, 3.2, 2, 'glass', { z0: 10 });
+  c.street([[0.4, 5.6], [8.6, 5.6]]); c.cable([[2.0, 5.6], [3.2, 7.4], [8.6, 7.4]], 'c-silver'); c.cable([[4.6, 5.6], [5.8, 3.8], [8.6, 3.8]], 'c-silver');
+  c.box(6.4, 0.8, 1.6, 1.6, 6, 'block');
+});
+core('cloud', 8, (c, r) => {
+  c.box(0.8, 3.6, 3.0, 3.0, 12, 'block'); c.tower(5.0, 5.0, 24);
+  [[3.6, 1.4], [4.8, 1.2], [5.8, 1.8], [4.6, 2.2], [3.0, 2.4]].forEach(p => c.sph(p[0], p[1], 0.9, 30, { cloud: true }));
+  c.cable([[5.3, 5.3, 24], [4.6, 1.8, 34]], 'c-plan');
+});
+core('sheds6', 9, (c, r) => {
+  for (let k = 0; k < 6; k++) { const i = 0.8 + (k % 3) * 2.6, j = 1.0 + Math.floor(k / 3) * 3.4; c.box(i, j, 1.8, 2.2, 4 + r() * 2, 'block'); c.box(i - 0.1, j - 0.1, 2.0, 2.4, 0.6, 'slab', { z0: 5 + r() }); }
+});
+core('atom', 7, (c, r) => {
+  c.sph(3.5, 3.5, 0.9, 10, { hot: true });
+  c.vring(3.5, 3.5, 16, 2.6, [1, 0, 0], [0, 0.6, 0.8]);
+  c.vring(3.5, 3.5, 16, 2.6, [0, 1, 0], [0.6, 0, 0.8], { cls: 'vr-thin' });
+  c.vring(3.5, 3.5, 16, 2.6, [0.7, 0.7, 0], [0, 0, 1], { cls: 'vr-thin' });
+  c.box(3.35, 3.35, 0.3, 0.3, 10, 'block');
+});
+core('chipfab', 9, (c, r) => {
+  c.box(1.8, 1.8, 4.0, 4.0, 1.6, 'chip');
+  for (let k = 0; k < 8; k++) { c.box(2.0 + k * 0.48, 5.8, 0.2, 0.5, 0.6, 'key'); c.box(5.8, 2.0 + k * 0.48, 0.5, 0.2, 0.6, 'key'); }
+  c.tower(7.8, 0.8, 34); c.street([[8.1, 1.6], [8.1, 7.6], [3.8, 7.6]]);
+});
+core('track', 8, (c, r) => {
+  c.street([[0.8, 0.8], [7.2, 0.8], [7.2, 7.2], [0.8, 7.2], [0.8, 0.8]]); c.street([[1.4, 1.4], [6.6, 1.4], [6.6, 6.6], [1.4, 6.6], [1.4, 1.4]]);
+  c.box(6.6, 3.4, 0.9, 0.6, 1.2, 'block', { hot: true });
+  c.box(2.8, 2.8, 2.4, 2.4, 7, 'blank');
+});
+core('heatmap', 8, (c, r) => {
+  for (let a = 0; a < 7; a++) for (let b = 0; b < 7; b++) { const d = Math.hypot(a - 2, b - 2); c.rect(0.6 + a * 0.98, 0.6 + b * 0.98, 0.9, 0.9, d < 2.2 ? 'padhot' : 'pad', 0.12); }
+  c.cyl(2.5, 2.5, 0.4, 2); c.box(2.3, 2.3, 0.1, 0.1, 6, 'block', { z0: 2 }); c.box(2.7, 2.7, 0.1, 0.1, 6, 'block', { z0: 2 });
+});
+core('neurons', 9, (c, r) => {
+  c.sph(4.5, 4.5, 1.6, 0);
+  const n = []; for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2 + r() * 0.3, R = 2.8 + r() * 1.2; n.push([4.5 + Math.cos(a) * R, 4.5 + Math.sin(a) * R]); }
+  n.forEach((p, k) => { c.sph(p[0], p[1], 0.35, 0, { hot: k % 3 === 0 }); c.cable([[4.5, 4.5], p], 'c-thin'); const q = n[(k + 2) % n.length]; c.cable([p, q], 'c-thin c-silver'); });
+});
+core('scaffoldphone', 8, (c, r) => {
+  c.box(2.6, 2.6, 0.5, 2.8, 20, 'display-i');
+  c.box(1.8, 1.8, 2.2, 4.4, 24, 'block', { ghost: true });
+  c.crane = true;
+});
+
+// ============================================================ fill motifs (the district around a core)
+const MOTIFS = {
+  bldg: (c, r) => c.box(0.4, 0.4, 2.1, 2.1, 6 + r() * 18, 'block'),
+  pair: (c, r) => { c.box(0.3, 0.4, 1.1, 2.2, 5 + r() * 12, 'block'); c.box(1.6, 0.8, 1.1, 1.5, 4 + r() * 8, 'block'); },
+  kiosk: (c, r) => { c.box(0.6, 0.6, 1.6, 1.2, 4, 'block'); c.box(0.6, 1.8, 1.6, 0.2, 3, 'display', { z0: 1 }); },
+  house: (c, r) => { c.box(0.3, 0.3, 2.4, 2.4, 0.6, 'slab', { layer: 0 }); walls(c, 0.3, 0.3, 2.4, 2.4, 4, { z0: 0.6 }); },
+  rack: (c, r) => { for (let k = 0; k < 3; k++) c.cab(0.3 + k * 0.95, 0.8, 8 + r() * 6, { hot: r() < 0.3 }); },
+  shelf: (c, r) => { c.box(0.3, 0.8, 2.4, 0.7, 3, 'shelf'); for (let x = 0.35; x < 2.5; x += 0.8) if (r() < 0.8) c.box(x, 0.85, 0.65, 0.6, 1 + r() * 2.5, 'crate', { z0: 3 }); },
+  tank: (c, r) => { c.cyl(1.0, 1.0, 0.7, 6 + r() * 6); c.cyl(2.1, 2.0, 0.5, 4 + r() * 4); },
+  trees: (c, r) => { c.tree(0.8, 0.9, 8 + r() * 4); c.tree(2.1, 1.6, 7 + r() * 5); c.tree(1.0, 2.3, 6 + r() * 4); },
+  pcb: (c, r) => pcbBoard(c, 0.3, 0.4, 2.4, 2.0, r),
+  docs: (c, r) => { c.box(0.4, 0.5, 1.0, 1.4, 4 + r() * 8, 'paper'); c.box(1.7, 0.9, 1.0, 1.4, 3 + r() * 6, 'paper'); },
+  crates: (c, r) => crates(c, 0.3, 0.4, 3, 2, r, 3),
+  mast: (c, r) => { c.tower(1.2, 1.2, 18 + r() * 14); c.box(0.3, 2.0, 1.2, 0.8, 2, 'block'); },
+  pool: (c, r) => { c.rect(0.4, 0.4, 2.2, 2.2, 'water'); c.tree(2.6, 2.6, 6); },
+  tiles: (c, r) => { for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) if (r() < 0.8) c.box(0.3 + a * 0.62, 0.3 + b * 0.62, 0.5, 0.5, 0.4 + r() * 2, 'key', { hot: r() < 0.05 }); },
+  keys: (c, r) => { for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) c.box(0.4 + a * 1.2, 0.4 + b * 1.2, 0.9, 0.9, 1.5, 'key', { hot: r() < 0.15 }); },
+  lot: (c, r) => { c.rect(0.3, 0.3, 2.4, 2.4, 'pad'); c.box(0.6, 0.7, 0.9, 0.5, 1.2, 'block'); },
+  dome: (c, r) => { c.cyl(1.5, 1.5, 1.0, 1.5); c.sph(1.5, 1.5, 0.85, 1.5); },
+  container: (c, r) => { c.box(0.3, 0.5, 2.4, 1.0, 3.5, 'crate'); if (r() < 0.6) c.box(0.3, 1.6, 2.4, 1.0, 3.5, 'crate', { z0: 0 }); if (r() < 0.4) c.box(0.3, 0.5, 2.4, 1.0, 3.5, 'crate', { z0: 3.5 }); },
+};
+const LANE_FILL = {
+  f: ['kiosk', 'bldg', 'lot', 'trees', 'mast'], p: ['house', 'house', 'rack', 'trees', 'bldg'], m: ['docs', 'keys', 'kiosk', 'bldg', 'trees'],
+  d: ['shelf', 'crates', 'container', 'bldg', 'lot'], b: ['house', 'trees', 'bldg', 'docs', 'pool'], h: ['mast', 'kiosk', 'bldg', 'trees', 'lot'],
+  e: ['pcb', 'pcb', 'rack', 'lot', 'mast'], k: ['bldg', 'pair', 'bldg', 'trees', 'rack'], l: ['tiles', 'pool', 'trees', 'pair', 'bldg'],
+  x: ['container', 'tank', 'dome', 'lot', 'bldg'],
+};
+
+// ============================================================ compose a scene for a feature at plinth size N
+function massOf(f) {
+  const loc = LOC[f.id] || 0;
+  const parts = f._children || 0;
+  const v = (KIND_BASE[f.kind] || 4.5) + 1.7 * Math.log2(1 + loc / 1000) + 0.6 * parts + 0.15 * (f.links || 0) + (TIER_ADJ[f.tier] || 0);
+  return { loc: loc, parts: parts, value: v, N: clamp(Math.round(v), 4, 22) };
+}
+function compose(f, N, variant) {
+  const r = rng(f.id + '|' + variant);
+  const sc = { N: N, r: r, items: [], cables: [], streets: [], rings: [], flats: [], crane: false };
+  const root = new Frame(sc, 0, 0, 1, N);
+  const design = DESIGNS[f.id] || ['kit:hub'];
+  const C = CORES[design[0]] || CORES['kit:hub'];
+  let Sz = C.C;
+  if (C.grow) Sz = clamp(N * 0.72, C.C, N);
+  const k = Math.min(1, N / Sz), span = Sz * k, free = N - span;
+  const o = variant === 'mass' ? free * 0.28 : free / 2;
+  const cf = root.sub(o, o, k, Sz);
+  C.fn(cf, r);
+  if (cf.crane) sc.crane = true;
+  const coreBox = [o, o, o + span, o + span];
+
+  // fill: 3-unit cells around the core, picked from the lane's motifs
+  const fill = LANE_FILL[f.lane] || LANE_FILL.k, cs = 3, cells = [];
+  if (free >= 2.6) {
+    const n = Math.floor((N - 0.2) / cs);
+    for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) {
+      const x = 0.1 + a * cs + (N - 0.2 - n * cs) / 2, y = 0.1 + b * cs + (N - 0.2 - n * cs) / 2;
+      if (x + cs > coreBox[0] - 0.1 && x < coreBox[2] + 0.1 && y + cs > coreBox[1] - 0.1 && y < coreBox[3] + 0.1) continue;
+      cells.push([x, y]);
+    }
+    cells.forEach(([x, y]) => {
+      if (r() < 0.16) return;
+      const m = MOTIFS[fill[Math.floor(r() * fill.length)]];
+      m(root.sub(x, y, 1, cs), r);
+      if (r() < 0.35) {
+        const cx = x + cs / 2, cy = y + cs / 2, mx = clamp(cx, coreBox[0] + 0.4, coreBox[2] - 0.4), my = clamp(cy, coreBox[1] + 0.4, coreBox[3] - 0.4);
+        root.cable([[cx, cy + 1.2], [mx, cy + 1.2], [mx, my]], 'c-thin');
+      }
+    });
+  } else if (free > 0.8) {
+    // a thin margin: a few trees or posts on the front strips
+    const n = Math.round(free * 2);
+    for (let q = 0; q < n; q++) {
+      const front = r() < 0.5, t = 0.4 + r() * (N - 0.8), m = o + span + 0.2 + r() * Math.max(0.1, free - o - 0.6);
+      const ci = front ? m : t, cj = front ? t : m;
+      if (ci > N - 0.3 || cj > N - 0.3) continue;
+      if (f.lane === 'e' || f.lane === 'x') root.box(ci - 0.2, cj - 0.2, 0.4, 0.4, 1.2 + r() * 2, 'crate'); else root.tree(ci, cj, 5 + r() * 5);
+    }
+  }
+  applyTier(sc, f.tier, r, coreBox);
+  return sc;
+}
+function applyTier(sc, tier, r, cb) {
+  const solid = it => it.type === 'slab' && it.t === 'box';
+  if (tier >= 4) {
+    sc.items.forEach(it => { if (it.t === 'tree') return; it.ghost = true; if (tier === 5) it.idea = true; });
+    sc.cables.forEach(c => { c.cls = 'c-plan'; });
+    if (tier === 4) [[cb[0], cb[1]], [cb[2], cb[1]], [cb[0], cb[3]], [cb[2], cb[3]]].forEach(p => sc.items.push({ t: 'stake', i: p[0], j: p[1], h: 5 }));
+    return;
+  }
+  if (tier === 3) {
+    const add = [];
+    sc.items.forEach(it => {
+      if (it.t !== 'box' || it.ghost || solid(it)) return;
+      if (it.h > 7 && it.type !== 'tower' && r() < 0.45) {
+        const cut = it.h * (0.45 + r() * 0.2);
+        add.push(Object.assign({}, it, { z0: it.z0 + cut, h: it.h - cut, ghost: true, antenna: 0, hot: false }));
+        it.h = cut; it.antenna = 0;
+      } else if (r() < 0.12) it.ghost = true;
+    });
+    sc.items.push(...add);
+    sc.crane = true;
+  }
+}
+
+// ============================================================ drawing
+function cablePath(c, z) {
+  const d = [], R = 0.35, p = c.map(q => [q[0], q[1], q[2] == null ? z : q[2]]);
+  for (let k = 0; k < p.length; k++) {
+    const q = p[k];
+    if (k === 0) { const s = P(q[0], q[1], q[2]); d.push('M' + s[0].toFixed(1) + ' ' + s[1].toFixed(1)); continue; }
+    if (k < p.length - 1 && q[2] === z && p[k - 1][2] === z && p[k + 1][2] === z) {
+      const a = p[k - 1], b = p[k + 1];
+      const la = Math.hypot(q[0] - a[0], q[1] - a[1]) || 1, lb = Math.hypot(b[0] - q[0], b[1] - q[1]) || 1;
+      const ra = Math.min(R, la / 2), rb = Math.min(R, lb / 2);
+      const e1 = P(q[0] - (q[0] - a[0]) / la * ra, q[1] - (q[1] - a[1]) / la * ra, z), cc = P(q[0], q[1], z), e2 = P(q[0] + (b[0] - q[0]) / lb * rb, q[1] + (b[1] - q[1]) / lb * rb, z);
+      d.push('L' + e1[0].toFixed(1) + ' ' + e1[1].toFixed(1) + 'Q' + cc[0].toFixed(1) + ' ' + cc[1].toFixed(1) + ' ' + e2[0].toFixed(1) + ' ' + e2[1].toFixed(1));
+    } else { const e = P(q[0], q[1], q[2]); d.push('L' + e[0].toFixed(1) + ' ' + e[1].toFixed(1)); }
+  }
+  return d.join('');
+}
+function smoothPath(c) {   // catmull-rom through elevated points (the helix)
+  const p = c.map(q => P(q[0], q[1], q[2] || 0));
+  let d = 'M' + p[0][0].toFixed(1) + ' ' + p[0][1].toFixed(1);
+  for (let k = 0; k < p.length - 1; k++) {
+    const p0 = p[k - 1] || p[k], p1 = p[k], p2 = p[k + 1], p3 = p[k + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += 'C' + c1[0].toFixed(1) + ' ' + c1[1].toFixed(1) + ' ' + c2[0].toFixed(1) + ' ' + c2[1].toFixed(1) + ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+  }
+  return d;
+}
+function win(g, p, lit, kind) { return poly(g, p, 'win' + (kind ? ' ' + kind : '') + (lit ? ' lit' : '')); }
+
+function drawBox(g, b, ctx) {
+  const i = b.i, j = b.j, w = b.w, d = b.d, z0 = b.z0, z1 = b.z0 + b.h, I = i + w, J = j + d, r = ctx.r, act = ctx.act;
+  const grp = S('g', { class: 'bx' + (b.ghost ? ' gh' : '') + (b.idea ? ' idea' : ''), 'data-type': b.type }, g);
+  poly(grp, [P(I, j, z0), P(I, J, z0), P(I, J, z1), P(I, j, z1)], 'f-r');
+  poly(grp, [P(i, J, z0), P(I, J, z0), P(I, J, z1), P(i, J, z1)], 'f-l');
+  poly(grp, [P(i, j, z1), P(I, j, z1), P(I, J, z1), P(i, J, z1)], 'f-t' + (b.hot && !b.ghost ? ' hot' : ''));
+  const t = b.type;
+  if (!b.ghost && ctx.detail) {
+    if ((t === 'block' || t === 'tower-block') && w > 0.3 && d > 0.3) {
+      for (let z = z0 + 3; z + 2.2 < z1 - 1; z += 4.5) {
+        for (let u = i + 0.14; u + 0.22 < I; u += 0.4) win(grp, [P(u, J, z), P(u + 0.22, J, z), P(u + 0.22, J, z + 2.2), P(u, J, z + 2.2)], r() < act);
+        for (let v = j + 0.14; v + 0.22 < J; v += 0.4) win(grp, [P(I, v, z), P(I, v + 0.22, z), P(I, v + 0.22, z + 2.2), P(I, v, z + 2.2)], r() < act);
+      }
+    } else if (t === 'cabinet') {
+      const mid = i + w / 2;
+      S('polyline', { points: pts([P(mid, J, z0 + 1), P(mid, J, z1 - 1)]), class: 'seam' }, grp);
+      for (let k = 0; k < 3; k++) { const zz = z1 - 3 - k * 2.2; if (zz < z0 + 1) break; win(grp, [P(i + 0.12, J, zz), P(i + 0.3, J, zz), P(i + 0.3, J, zz + 1.1), P(i + 0.12, J, zz + 1.1)], r() < act + 0.2, 'led'); }
+      for (let q = 0; q < 3; q++) { const zq = z0 + 2 + q * 2; if (zq > z1 - 1) break; S('polyline', { points: pts([P(I, j + 0.15, zq), P(I, J - 0.15, zq)]), class: 'seam' }, grp); }
+    } else if (t === 'display' && b.h > 2) {
+      const m = Math.min(0.3, w * 0.12), zb = z0 + Math.min(2, b.h * 0.15), zt = z1 - Math.min(2, b.h * 0.15);
+      win(grp, [P(i + m, J, zb), P(I - m, J, zb), P(I - m, J, zt), P(i + m, J, zt)], act > 0, 'screen');
+    } else if (t === 'display-i' && b.h > 2) {
+      const m = Math.min(0.3, d * 0.12), zb = z0 + Math.min(2, b.h * 0.12), zt = z1 - Math.min(2, b.h * 0.12);
+      win(grp, [P(I, j + m, zb), P(I, J - m, zb), P(I, J - m, zt), P(I, j + m, zt)], act > 0, 'screen');
+    } else if (t === 'pcb' && d > w * 2 && b.h > 3) {
+      win(grp, [P(I, j + 0.3, z0 + b.h * 0.25), P(I, J - 0.3, z0 + b.h * 0.25), P(I, J - 0.3, z1 - 1), P(I, j + 0.3, z1 - 1)], act > 0, 'screen');
+    } else if (t === 'phone') {
+      const m = Math.min(w, d) * 0.08;
+      win(grp, [P(i + m, j + m * 2, z1), P(I - m, j + m * 2, z1), P(I - m, J - m * 2, z1), P(i + m, J - m * 2, z1)], act > 0, 'screen');
+    } else if (t === 'shelf') {
+      for (let s = i + 0.6; s < I; s += 1.4) S('polyline', { points: pts([P(s, J, z0), P(s, J, z1)]), class: 'seam' }, grp);
+    } else if (t === 'paper') {
+      for (let z = z0 + 1.2; z < z1; z += 1.2) S('polyline', { points: pts([P(i, J, z), P(I, J, z), P(I, j, z)]), class: 'seam' }, grp);
+    } else if (t === 'stone') {
+      for (let z = z1 - 3; z > z0 + 3; z -= 1.6) S('polyline', { points: pts([P(i + 0.1, J, z), P(I - 0.1, J, z)]), class: 'seam' }, grp);
+      S('polyline', { points: pts([P(I, j + 0.2, z1 - 2), P(I, J - 0.2, z1 - 2)]), class: 'seam' }, grp);
+    } else if (t === 'chased') {
+      for (let u = i + 0.8; u < I - 0.3; u += 1.3) S('polyline', { points: pts([P(u, J, z0 + 1), P(u, J, z1 - 2)]), class: r() < 0.5 ? 'mark-hot' : 'seam' }, grp);
+      S('polyline', { points: pts([P(i + 0.3, J, z0 + b.h * 0.6), P(I - 0.3, J, z0 + b.h * 0.6)]), class: 'mark-hot' }, grp);
+    } else if (t === 'chip' && b.h > 0.9 && w > 1) {
+      for (let u = i + 0.25; u < I - 0.1; u += 0.4) S('line', { x1: P(u, J, z0)[0], y1: P(u, J, z0)[1], x2: P(u, J, z0 + 1)[0], y2: P(u, J, z0 + 1)[1], class: 'seam' }, grp);
+    }
+  }
+  if (t === 'tower' || b.antenna) {
+    const cx = i + w / 2, cy = j + d / 2, top = P(cx, cy, z1), tip = P(cx, cy, z1 + (b.antenna || 12));
+    S('line', { x1: top[0], y1: top[1], x2: tip[0], y2: tip[1], class: 'mast' }, grp);
+    if (!b.ghost) S('circle', { cx: tip[0], cy: tip[1], r: 2, class: 'beacon' }, grp);
+  }
+}
+function drawCyl(g, c, ctx) {
+  const b = P(c.ci, c.cj, c.z0), tp = P(c.ci, c.cj, c.z0 + c.h), rx = c.rad * A * SQ2, ry = rx / 2, cx = b[0], yb = b[1], yt = tp[1];
+  const grp = S('g', { class: 'cy' + (c.ghost ? ' gh' : '') + (c.idea ? ' idea' : ''), 'data-type': c.type }, g);
+  S('path', { d: `M${cx - rx} ${yt}L${cx - rx} ${yb}A${rx} ${ry} 0 0 0 ${cx} ${yb + ry}L${cx} ${yt}Z`, class: 'f-l' }, grp);
+  S('path', { d: `M${cx} ${yt}L${cx} ${yb + ry}A${rx} ${ry} 0 0 0 ${cx + rx} ${yb}L${cx + rx} ${yt}Z`, class: 'f-r' }, grp);
+  S('ellipse', { cx: cx, cy: yt, rx: rx, ry: ry, class: 'f-t' + (c.hot && !c.ghost ? ' hot' : '') }, grp);
+  if (!c.ghost && ctx.detail && c.h > 6 && c.type === 'tank') for (let z = c.z0 + 3; z < c.z0 + c.h - 1; z += 3.5) { const y = P(c.ci, c.cj, z)[1]; S('path', { d: `M${cx - rx} ${y}A${rx} ${ry} 0 0 0 ${cx + rx} ${y}`, class: 'seam' }, grp); }
+  if (c.type === 'spool' && !c.ghost) S('ellipse', { cx: cx, cy: yt, rx: rx * 0.35, ry: ry * 0.35, class: 'seam' }, grp);
+}
+function drawSph(g, s, ctx) {
+  const R = s.rad * A * 1.15, c = P(s.ci, s.cj, s.z0 + R);
+  const grp = S('g', { class: 'sp' + (s.ghost ? ' gh' : '') + (s.idea ? ' idea' : '') }, g);
+  S('circle', { cx: c[0], cy: c[1], r: R, class: 'sph' + (s.hot && !s.ghost ? ' hot' : '') }, grp);
+  if (s.ghost) return;
+  if (!s.cloud && ctx.detail && R > 6) {
+    S('ellipse', { cx: c[0], cy: c[1], rx: R, ry: R * 0.42, class: 'seam' }, grp);
+    S('ellipse', { cx: c[0], cy: c[1], rx: R * 0.42, ry: R, class: 'seam' }, grp);
+  }
+  S('circle', { cx: c[0] - R * 0.35, cy: c[1] - R * 0.35, r: R * 0.22, class: 'sph-hl' }, grp);
+}
+function drawVring(g, v) {
+  const p = [];
+  for (let k = 0; k <= 48; k++) {
+    const a = k / 48 * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
+    p.push(P(v.ci + v.rad * (v.u[0] * ca + v.v[0] * sa), v.cj + v.rad * (v.u[1] * ca + v.v[1] * sa), v.zc + v.rad * A * (v.u[2] * ca + v.v[2] * sa)));
+  }
+  const grp = S('g', { class: v.ghost ? 'gh' + (v.idea ? ' idea' : '') : '' }, g);
+  S('path', { d: 'M' + p.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L') + 'Z', class: 'vr' + (v.cls ? ' ' + v.cls : '') }, grp);
+}
+function drawTree(g, t) {
+  const b = P(t.ci, t.cj, 0), m = P(t.ci, t.cj, t.h * 0.45), c = P(t.ci, t.cj, t.h * 0.72);
+  S('line', { x1: b[0], y1: b[1], x2: m[0], y2: m[1], class: 'trunk' }, g);
+  S('circle', { cx: c[0], cy: c[1], r: 2.2 + t.h * 0.2, class: 'tree' }, g);
+}
+function drawDish(g, d) {
+  const b = P(d.ci, d.cj, 0), t = P(d.ci, d.cj, d.z0), rx = d.rad * A * 1.3, ry = d.rad * A * 0.55;
+  const grp = S('g', { class: d.ghost ? 'gh' : '' }, g);
+  S('line', { x1: b[0], y1: b[1], x2: t[0], y2: t[1], class: 'mast' }, grp);
+  S('ellipse', { cx: t[0], cy: t[1] - ry * 0.6, rx: rx, ry: ry, transform: `rotate(-24 ${t[0]} ${t[1] - ry * 0.6})`, class: 'sph' }, grp);
+  S('line', { x1: t[0], y1: t[1] - ry * 0.6, x2: t[0] - rx * 0.5, y2: t[1] - ry * 2.6, class: 'mast' }, grp);
+}
+function drawCrane(g, N) {
+  const i = 0.5, j = 0.5, h = 36 + Math.min(N, 14), len = Math.min(N * 0.45, 6);
+  const b = P(i, j, 0), top = P(i, j, h), tip = P(i + len, j, h - 2), back = P(i - 1.2, j, h - 1), hookTop = P(i + len * 0.75, j, h - 2), hook = P(i + len * 0.75, j, h - 20);
+  const grp = S('g', {}, g);
+  S('line', { x1: b[0] - 1.2, y1: b[1], x2: top[0] - 1.2, y2: top[1], class: 'crane' }, grp);
+  S('line', { x1: b[0] + 1.2, y1: b[1], x2: top[0] + 1.2, y2: top[1], class: 'crane' }, grp);
+  for (let z = 4; z < h; z += 5) { const p1 = P(i, j, z), p2 = P(i, j, z + 5); S('line', { x1: p1[0] - 1.2, y1: p1[1], x2: p2[0] + 1.2, y2: p2[1], class: 'crane-hook' }, grp); }
+  S('line', { x1: back[0], y1: back[1], x2: tip[0], y2: tip[1], class: 'crane' }, grp);
+  S('line', { x1: hookTop[0], y1: hookTop[1], x2: hook[0], y2: hook[1], class: 'crane-hook' }, grp);
+  S('rect', { x: hook[0] - 1.2, y: hook[1], width: 2.4, height: 1.6, class: 'beacon' }, grp);
+}
+
+function itemKey(it) {
+  if (it.t === 'box') return it.i + it.w / 2 + it.j + it.d / 2;
+  if (it.t === 'stake') return it.i + it.j;
+  return it.ci + it.cj;
+}
+function itemTop(it) {
+  if (it.t === 'box') return P(it.i, it.j, it.z0 + it.h + (it.type === 'tower' || it.antenna ? (it.antenna || 12) + 3 : 0))[1];
+  if (it.t === 'cyl') return P(it.ci, it.cj, it.z0 + it.h)[1] - it.rad * A * 0.71;
+  if (it.t === 'sph') return P(it.ci, it.cj, it.z0 + it.rad * A * 2.3)[1];
+  if (it.t === 'vring') return P(it.ci, it.cj, it.zc + it.rad * A)[1];
+  if (it.t === 'tree') return P(it.ci, it.cj, it.h * 0.72)[1] - 2.2 - it.h * 0.2;
+  if (it.t === 'dish') return P(it.ci, it.cj, it.z0)[1] - it.rad * A * 2;
+  if (it.t === 'stake') return P(it.i, it.j, it.h)[1];
+  return 0;
+}
+
+// build the SVG for one feature. variant 'equal' | 'mass'; scale = px per svg unit (mass), or null (fit box)
+function buildSvg(f, variant, opts) {
+  opts = opts || {};
+  const m = massOf(f), N = variant === 'mass' ? m.N : 10;
+  const sc = compose(f, N, variant);
+  const ctx = { r: rng(f.id + '#w'), act: { 1: 0.72, 2: 0.45, 3: 0.3 }[f.tier] || 0, detail: true };
+  const svg = S('svg', { class: 'dio' + (opts.small ? ' small' : ''), 'aria-hidden': 'true', focusable: 'false' });
+  const uid = 'c' + f.id + variant + (opts.tag || '');
+  const defs = S('defs', null, svg), cp = S('clipPath', { id: uid }, defs);
+  poly(cp, [P(0, 0), P(N, 0), P(N, N), P(0, N)], '');
+
+  S('ellipse', { cx: 0, cy: N * A / 2 + T, rx: N * A * 1.1, ry: N * A * 0.36, class: 'halo' }, svg);
+  const pl = S('g', {}, svg);
+  poly(pl, [P(N, 0, 0), P(N, N, 0), P(N, N, -T), P(N, 0, -T)], 'p-r');
+  poly(pl, [P(0, N, 0), P(N, N, 0), P(N, N, -T), P(0, N, -T)], 'p-l');
+  poly(pl, [P(0, 0), P(N, 0), P(N, N), P(0, N)], 'p-t');
+  poly(pl, [P(0.3, 0.3), P(N - 0.3, 0.3), P(N - 0.3, N - 0.3), P(0.3, N - 0.3)], 'p-lip');
+  for (let k = 1; k < N; k++) {
+    const a = P(k, N, -1), b = P(k, N, k % 5 === 0 ? -5 : -3), c = P(N, k, -1), e = P(N, k, k % 5 === 0 ? -5 : -3);
+    S('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], class: 'tick' }, pl);
+    S('line', { x1: c[0], y1: c[1], x2: e[0], y2: e[1], class: 'tick' }, pl);
+  }
+  const maxCh = Math.floor(N * A * 1.12 / 4.1);
+  const lp = P(0.6, N, -T + 3.5), rp = P(N, N - 0.6, -T + 3.5);
+  const tl = S('text', { class: 'engrave', transform: `matrix(1 .5 0 1 ${lp[0].toFixed(1)} ${lp[1].toFixed(1)})` }, pl);
+  tl.textContent = ('[' + f.id.toUpperCase() + '] ' + f.title.toUpperCase()).slice(0, maxCh);
+  const tr = S('text', { class: 'engrave', transform: `matrix(1 -.5 0 1 ${rp[0].toFixed(1)} ${rp[1].toFixed(1)})` }, pl);
+  tr.textContent = (TIERS[f.tier] + ' · ' + N + '×' + N).toUpperCase().slice(0, maxCh);
+
+  const ground = S('g', { 'clip-path': `url(#${uid})` }, svg);
+  sc.flats.forEach(q => S(q.open ? 'polyline' : 'polygon', { points: pts(q.p.map(p => P(p[0], p[1], p[2] == null ? q.z : p[2]))), class: q.cls }, ground));
+  const sh = S('g', {}, ground);
+  sc.items.forEach(b => {
+    if (b.ghost) return;
+    let foot, top;
+    if (b.t === 'box') { if (b.type === 'slab' || b.h < 1.5) return; foot = [[b.i, b.j], [b.i + b.w, b.j], [b.i + b.w, b.j + b.d], [b.i, b.j + b.d]]; top = b.z0 + b.h; }
+    else if (b.t === 'cyl') { foot = [[b.ci - b.rad, b.cj - b.rad], [b.ci + b.rad, b.cj - b.rad], [b.ci + b.rad, b.cj + b.rad], [b.ci - b.rad, b.cj + b.rad]]; top = b.z0 + b.h; }
+    else return;
+    const L = top / A * 0.55, di = L * 0.55, dj = -L * 0.9;
+    poly(sh, hull(foot.concat(foot.map(q => [q[0] + di, q[1] + dj]))).map(q => P(q[0], q[1], 0)), 'shadow');
+  });
+  sc.streets.forEach(s => S('path', { d: cablePath(s, 0.1), class: 'street' }, ground));
+  // cables: on the ground they go under the scene; elevated ones are drawn after it
+  const airborne = sc.cables.filter(c => c.p.some(q => q[2] != null && q[2] > 1));
+  sc.cables.filter(c => airborne.indexOf(c) < 0).forEach(c => drawCable(ground, c, ctx));
+  sc.rings.forEach(p => { const q = P(p[0], p[1], 0.3); S('ellipse', { cx: q[0], cy: q[1], rx: p[2] * A * SQ2, ry: p[2] * A * SQ2 / 2, class: 'ring' }, ground); });
+
+  const g = S('g', {}, svg);
+  sc.items.slice().sort((x, y) => ((x.layer || 1) - (y.layer || 1)) || (itemKey(x) - itemKey(y)) || ((x.z0 || 0) - (y.z0 || 0))).forEach(it => {
+    if (it.t === 'box') drawBox(g, it, ctx);
+    else if (it.t === 'cyl') drawCyl(g, it, ctx);
+    else if (it.t === 'sph') drawSph(g, it, ctx);
+    else if (it.t === 'vring') drawVring(g, it);
+    else if (it.t === 'tree') drawTree(g, it);
+    else if (it.t === 'dish') drawDish(g, it);
+    else if (it.t === 'stake') { const a = P(it.i, it.j, 0), b = P(it.i, it.j, it.h); S('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], class: 'stake' }, g); S('path', { d: `M${b[0]} ${b[1]}l3 1.2-3 1.2z`, class: 'beacon' }, g); }
+  });
+  airborne.forEach(c => drawCable(g, c, ctx));
+  if (sc.crane) drawCrane(g, N);
+
+  // view box: the plinth plus whatever rises above it
+  let top = P(0, 0, 0)[1] - 8;
+  sc.items.forEach(it => { top = Math.min(top, itemTop(it) - 4); });
+  sc.cables.forEach(c => c.p.forEach(q => { if (q[2] != null) top = Math.min(top, P(q[0], q[1], q[2])[1] - 4); }));
+  if (sc.crane) top = Math.min(top, P(0.5, 0.5, 36 + Math.min(N, 14) + 4)[1]);
+  const x0 = P(0, N)[0] - 6, x1 = P(N, 0)[0] + 6, bottom = P(N, N, -T)[1] + 6;
+  if (variant === 'equal' && opts.fixedTop != null) top = Math.min(top, opts.fixedTop);
+  const W = x1 - x0, Hh = bottom - top;
+  svg.setAttribute('viewBox', `${x0.toFixed(1)} ${top.toFixed(1)} ${W.toFixed(1)} ${Hh.toFixed(1)}`);
+  if (opts.scale) { svg.setAttribute('width', (W * opts.scale).toFixed(0)); svg.setAttribute('height', (Hh * opts.scale).toFixed(0)); }
+  else svg.setAttribute('preserveAspectRatio', 'xMidYMax meet');
+  return { svg: svg, N: N, mass: m };
+}
+function drawCable(parent, c, ctx) {
+  const d = c.smooth ? smoothPath(c.p) : cablePath(c.p, 0.25);
+  const lit = c.cls.indexOf('c-lit') >= 0, plan = c.cls.indexOf('c-plan') >= 0;
+  if (!plan && c.cls.indexOf('c-thin') < 0) S('path', { d: d, class: 'cable-glow' }, parent);
+  S('path', { d: d, class: 'cable ' + c.cls.replace('c-lit', '') }, parent);
+  if (plan || c.smooth || c.cls.indexOf('c-thin') >= 0) return;
+  c.p.forEach((q, idx) => {
+    const p = P(q[0], q[1], q[2] == null ? 0.25 : q[2]);
+    if (idx === c.p.length - 1) S('rect', { x: p[0] - 1.6, y: p[1] - 1.6, width: 3.2, height: 3.2, class: 'term' }, parent);
+    else if (idx > 0) S('path', { d: `M${p[0]} ${p[1] - 2}l2 2-2 2-2-2z`, class: 'junction' }, parent);
+    else S('circle', { cx: p[0], cy: p[1], r: 1.7, class: 'node' }, parent);
+  });
+}
+
+// ============================================================ page
+const TIERS = { 1: 'In use', 2: 'Built', 3: 'In dev', 4: 'Planned', 5: 'Idea' };
+const reg = REGISTRY || { lanes: [], features: [], generated: '—' };
+const FEATURES = reg.features.map(f => Object.assign({}, f, UPDATES[f.id] || {}, { _updated: !!UPDATES[f.id] })).concat(ADDED.map(f => Object.assign({ _added: true }, f)));
+FEATURES.forEach(f => { f._children = FEATURES.filter(x => (x.partOf || []).indexOf(f.id) >= 0).length; });
+const LANES = reg.lanes;
+const state = { mode: 'equal', lanes: new Set(LANES.map(l => l.id)), q: '' };
+try { const s = JSON.parse(localStorage.getItem('vrg-dioramas') || '{}'); if (s.mode) state.mode = s.mode; } catch (e) { /* storage unavailable */ }
+function save() { try { localStorage.setItem('vrg-dioramas', JSON.stringify({ mode: state.mode, phase: document.documentElement.dataset.phase })); } catch (e) { /* ignore */ } }
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  if (attrs) for (const k in attrs) { if (attrs[k] == null) continue; if (k === 'class') n.className = attrs[k]; else if (k.startsWith('on')) n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); }
+  kids.flat().forEach(c => { if (c == null) return; n.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  return n;
+}
+const isKit = f => String((DESIGNS[f.id] || [''])[0]).startsWith('kit:');
+function caption(f, N) {
+  return el('div', { class: 'cap' },
+    el('div', { class: 'cap__t' }, f.title),
+    el('div', { class: 'cap__m' },
+      el('span', { class: 'tier', 'data-t': f.tier }, el('i'), TIERS[f.tier]),
+      el('span', {}, f.id.toUpperCase()),
+      state.mode === 'mass' ? el('span', {}, N + '×' + N) : null,
+      el('span', { class: 'src', 'data-s': isKit(f) ? 'kit' : 'new', title: isKit(f) ? 'The UI Kit\'s own emblem recipe' : 'New design for this page' }, isKit(f) ? 'kit' : 'new')));
+}
+function matches(f) {
+  if (!state.lanes.has(f.lane)) return false;
+  if (!state.q) return true;
+  const q = state.q.toLowerCase();
+  return (f.title + ' ' + f.brief + ' ' + f.id + ' ' + f.kind + ' ' + (DESIGNS[f.id] || ['', ''])[1]).toLowerCase().indexOf(q) >= 0;
+}
+function render() {
+  const main = document.getElementById('main');
+  main.textContent = '';
+  let shown = 0;
+  LANES.forEach(l => {
+    let list = FEATURES.filter(f => f.lane === l.id && matches(f));
+    if (!list.length) return;
+    shown += list.length;
+    if (state.mode === 'mass') list = list.slice().sort((a, b) => massOf(b).value - massOf(a).value);
+    const wrap = el('div', { class: state.mode === 'mass' ? 'mass' : 'grid' });
+    list.forEach(f => {
+      const built = state.mode === 'mass' ? buildSvg(f, 'mass', { scale: 0.86, small: massOf(f).N < 9 }) : buildSvg(f, 'equal', { fixedTop: -64 });
+      const t = el('button', { type: 'button', class: 'tile', 'aria-label': f.title + ', ' + TIERS[f.tier] + ': open details', onclick: () => openDetail(f) },
+        el('div', { class: 'art' }, built.svg), caption(f, built.N));
+      wrap.append(t);
+    });
+    main.append(el('section', { class: 'lane', 'aria-label': l.name },
+      el('div', { class: 'lane__h' }, el('span', { class: 'code' }, l.id.toUpperCase()), el('h2', {}, l.name), el('p', {}, l.about)), wrap));
+  });
+  if (!shown) main.append(el('p', { class: 'empty' }, 'No feature matches.'));
+  document.querySelectorAll('.seg [data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+}
+function openDetail(f) {
+  const m = massOf(f), d = DESIGNS[f.id] || ['', ''];
+  const big = buildSvg(f, 'mass', { scale: 1.5, tag: 'dlg' });
+  const parents = (f.partOf || []).map(id => (FEATURES.find(x => x.id === id) || {}).title).filter(Boolean);
+  const kids = FEATURES.filter(x => (x.partOf || []).indexOf(f.id) >= 0).map(x => x.title);
+  const lane = LANES.find(l => l.id === f.lane) || {};
+  document.getElementById('dlgBody').replaceChildren(
+    el('div', { class: 'dlg__art' }, big.svg),
+    el('div', { class: 'dlg__txt' },
+      el('p', { class: 'kicker' }, (lane.name || '') + ' · ' + f.id.toUpperCase() + ' · ' + f.kind),
+      el('h3', { id: 'dlgTitle' }, f.title),
+      el('p', {}, f.brief),
+      el('p', { class: 'design' }, (isKit(f) ? 'Kit emblem. ' : 'New design. ') + d[1]),
+      el('dl', {},
+        el('dt', {}, 'Maturity'), el('dd', {}, el('span', { class: 'tier', 'data-t': f.tier }, el('i'), TIERS[f.tier])),
+        el('dt', {}, 'Open'), el('dd', { class: 'mono' }, f.open || '—'),
+        parents.length ? [el('dt', {}, 'Part of'), el('dd', {}, parents.join(', '))] : null,
+        kids.length ? [el('dt', {}, 'Parts'), el('dd', {}, kids.join(', '))] : null,
+        el('dt', {}, 'Plinth'), el('dd', {}, m.N + ' × ' + m.N + ' grid units'),
+        el('dt', {}, 'Mass'), el('dd', { class: 'mono' },
+          (KIND_BASE[f.kind] || 4.5) + ' ' + f.kind + (m.loc ? ' + 1.7·log2(1+' + (m.loc / 1000).toFixed(1) + 'k lines)' : '') +
+          (m.parts ? ' + 0.6·' + m.parts + ' parts' : '') + (f.links ? ' + 0.15·' + f.links + ' links' : '') +
+          (TIER_ADJ[f.tier] ? ' ' + (TIER_ADJ[f.tier] > 0 ? '+ ' : '− ') + Math.abs(TIER_ADJ[f.tier]) + ' tier' : '') + ' = ' + m.value.toFixed(1)),
+        f._updated ? [el('dt', {}, 'Note'), el('dd', {}, 'Updated after the registry (git log since 2026-11-09).')] : null,
+        f._added ? [el('dt', {}, 'Note'), el('dd', {}, 'Not in the registry yet; added from git log since 2026-11-09.')] : null)));
+  const dlg = document.getElementById('dlg');
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+}
+
+function setPhase(ph) {
+  document.documentElement.dataset.phase = ph;
+  document.documentElement.dataset.theme = ph === 'night' ? 'dark' : 'light';
+  document.querySelectorAll('.seg [data-ph]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ph === ph)));
+  save();
+}
+function init() {
+  let ph = matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+  try { const s = JSON.parse(localStorage.getItem('vrg-dioramas') || '{}'); if (s.phase) ph = s.phase; } catch (e) { /* ignore */ }
+  const qs = new URLSearchParams(location.search);   // ?mode=equal|mass&phase=day|night for direct links
+  if (qs.get('mode') === 'mass' || qs.get('mode') === 'equal') state.mode = qs.get('mode');
+  if (qs.get('phase') === 'day' || qs.get('phase') === 'night') ph = qs.get('phase');
+  setPhase(ph);
+  const kit = FEATURES.filter(isKit).length;
+  document.getElementById('sub').textContent = FEATURES.length + ' features from the VRG Features registry (' + reg.generated + ', plus ' + ADDED.length + ' added since): ' +
+    kit + ' use the UI Kit\'s own emblem recipes, ' + (FEATURES.length - kit) + ' are new designs. Click one for its story.';
+  document.getElementById('legend').replaceChildren(
+    el('span', {}, el('b', {}, 'Maturity is how far it is built: ')),
+    ...[1, 2, 3, 4, 5].map(t => el('span', { class: 'tier', 'data-t': t }, el('i'), TIERS[t] + [' — lit at night', ' — solid', ' — part-built, crane', ' — ghost outlines, stakes', ' — dotted blueprint'][t - 1])),
+    el('span', {}, el('b', {}, 'Sized by mass: '), 'same grid unit everywhere; plinth side 4–22 from code lines, kind, parts and links.'));
+  const chips = document.getElementById('chips');
+  LANES.forEach(l => {
+    const n = FEATURES.filter(f => f.lane === l.id).length;
+    chips.append(el('button', { type: 'button', class: 'chip', 'aria-pressed': 'true', onclick: e => {
+      const b = e.currentTarget;
+      if (state.lanes.size === LANES.length) { state.lanes = new Set([l.id]); }
+      else if (state.lanes.has(l.id)) { state.lanes.delete(l.id); if (!state.lanes.size) state.lanes = new Set(LANES.map(x => x.id)); }
+      else state.lanes.add(l.id);
+      chips.querySelectorAll('.chip').forEach((c, k) => c.setAttribute('aria-pressed', String(state.lanes.has(LANES[k].id))));
+      render();
+    } }, l.name, el('span', { class: 'n' }, n)));
+  });
+  document.querySelectorAll('.seg [data-mode]').forEach(b => b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); render(); }));
+  document.querySelectorAll('.seg [data-ph]').forEach(b => b.addEventListener('click', () => setPhase(b.dataset.ph)));
+  let qt = 0;
+  document.getElementById('q').addEventListener('input', e => { clearTimeout(qt); qt = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 120); });
+  const dlg = document.getElementById('dlg');
+  document.getElementById('dlgClose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  render();
+}
+init();
+</script>
+</body>
+</html>
