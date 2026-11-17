@@ -461,6 +461,7 @@ function proxy(req, res, port, rest, host) {
   const headers = {};
   for (const [k, v] of Object.entries(req.headers)) if (!HOP.has(k)) headers[k] = v;
   headers.host = `localhost:${port}`;
+  headers['x-vrg-via'] = 'relay';           // set here, never taken from the phone: a server can tell a phone's request (Map/serve.js logs it)
   const ck = cookiesForServer(req.headers.cookie);
   if (ck) headers.cookie = ck; else delete headers.cookie;
   if (headers.referer) headers.referer = String(headers.referer).replace(/^https?:\/\/[^/]+\/p\/\d+/, `http://localhost:${port}`);

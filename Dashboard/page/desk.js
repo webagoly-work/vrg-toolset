@@ -164,10 +164,17 @@
   function secMunkak(sec) {
     const jobs = data().jobs || [];
     const STEP = ['intake', 'funnel', 'plan', 'price', 'doc', 'delivered'];
-    const rows = jobs.map(j => h('button', { type: 'button', title: 'Munka megnyitása / Open job', onclick: () => j.act && runAct(j.act) },
-      h('span', { class: 'c' }, j.code), h('span', { class: 'steps', title: STEP.join(' · ') }, STEP.map(s => h('i', { class: j.has && j.has[s] ? 'on' : '' }))),
-      h('span', { class: 'd' }, j.lastChange || '')));
+    const rows = jobs.map(j => h('div', { class: 'jobrow' },
+      h('button', { type: 'button', title: 'Munka megnyitása / Open job', onclick: () => j.act && runAct(j.act) },
+        h('span', { class: 'c' }, j.code), h('span', { class: 'steps', title: STEP.join(' · ') }, STEP.map(s => h('i', { class: j.has && j.has[s] ? 'on' : '' }))),
+        h('span', { class: 'd' }, j.lastChange || '')),
+      h('button', { type: 'button', class: 'jobmap', 'data-map': j.code, title: 'Megnézem a térképen (VRG Térkép, belső) / Show on the map', 'aria-label': j.code + ' a térképen', onclick: () => mapJob(j.code) }, '📍')));
     return [h('div', { class: 'rows', 'data-role': 'job-list' }, rows.length ? rows : [empty('Nincs nyitott munka.', 'No open jobs.')]), sec.items.length ? tiles(sec.items) : null];
+  }
+  async function mapJob(code) {                                         // VRG Térkép at this job (Map/lib/jobs-layer.js, ?job=CODE)
+    const r = await call('mapJob', { code });
+    if (!r || r.ok === false) { toast(false, (r && r.hu) || 'A térkép nem nyílt meg.', 'The map did not open.'); return false; }
+    return applyOpen(r);
   }
   function secAllapot(sec) {
     const d = data(), st = d.stats || {}, b = st.backup || {}, g = st.git || {};

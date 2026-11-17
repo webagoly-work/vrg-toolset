@@ -815,6 +815,9 @@ ipc.register('desktop', 'open', { id: types.id }, async ({ id }) => {
   return r;
 });
 ipc.register('desktop', 'server', { id: types.id }, async ({ id }) => deskServer(id));
+// the Munkák row's map pin: VRG Térkép at that job (?job=CODE; the map's own switches decide whether the job layer shows)
+ipc.register('desktop', 'mapJob', { code: types.text(8) }, async ({ code }) => (/^[A-Z]{1,3}\d{1,3}$/.test(code)
+  ? deskServer('terkep', '/?job=' + code) : { ok: false, err: 'bad-arg', hu: 'Érvénytelen munkakód.' }));
 // WP-48: the console of a server the shell runs (a term pane that keeps the server alive when closed), stop, and the list
 ipc.register('desktop', 'serverConsole', { id: types.id }, async ({ id }) => srvHost.console(id));
 ipc.register('desktop', 'serverStop', { id: types.id }, async ({ id }) => { const r = srvHost.stop(id); setTimeout(() => ports.pollPorts(), 800); return r; });

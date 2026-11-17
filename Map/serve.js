@@ -2,24 +2,60 @@
 // VRG Térkép on http://localhost:8802 — bound to this PC only.
 //
 //   /                       the map page (vrg-terkep.html)
+//   /lib/*                  Map/lib (the shared offline geocoder)
 //   /style/*                Map/style
 //   /data/*                 Map/data, with HTTP Range (the .pmtiles files are read in pieces)
 //   /vendor/maplibre-gl/*   Vendor/maplibre-gl/dist
 //   /vendor/pmtiles/*       Vendor/pmtiles/dist
+//   /jobs/status            is the job layer on? { on, reason } — no client data, not logged
+//   /jobs/helyek.json       the job layer (client data, outside Git: jobs\_elozmenyek\helyek.json),
+//                           no-store, every request logged to jobs\_elozmenyek\helyek-log.jsonl
 //
 // Offline by design: nothing here reaches the internet. Run node Map/tools/fetch-data.js once.
 // --no-open  start without opening the browser (START opens it itself).
+//
+// The job layer's controls (docs/map/JOBS-MAP.md): it is off when
+//   - launcher/vrg-menu.json's M tool entry says "jobsLayer": false            (the registry switch)
+//   - the flag file jobs\_elozmenyek\TERKEP-KI exists                         (the quick switch)
+//   - this is an OTG build (env VRG_OTG=1, a file .otg in the repo root, or a path under \OTG\)
+//   - there is no jobs folder or no helyek.json
+// Through the VRG Mobile relay (/p/8802/) the relay adds `x-vrg-via: relay`; the log records it.
+//
+// Env overrides (tests, worktrees): VRG_MAP_DATA (Map/data), VRG_VENDOR (Vendor), VRG_JOBS_DIR (jobs),
+// VRG_MENU (launcher/vrg-menu.json). In a .claude\worktrees checkout without its own Map/data and
+// Vendor, the main checkout's are used.
 'use strict';
 const http = require('http'), fs = require('fs'), path = require('path'), zlib = require('zlib');
 const { spawn } = require('child_process');
 
 const MAP = __dirname, REPO = path.resolve(MAP, '..');
 const PORT = Number(process.env.VRG_MAP_PORT) || 8802;
+const isDir = p => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
+const isFile = p => { try { return fs.statSync(p).isFile(); } catch { return false; } };
+// <main>\.claude\worktrees\<name> -> <main>
+const MAIN = /[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.test(REPO) ? path.resolve(REPO, '..', '..', '..') : null;
+const pick = (env, own, fromMain) => process.env[env] ? path.resolve(process.env[env]) : (isDir(own) || !MAIN ? own : fromMain);
+const DATA = pick('VRG_MAP_DATA', path.join(MAP, 'data'), MAIN && path.join(MAIN, 'Map', 'data'));
+const VENDOR = pick('VRG_VENDOR', path.join(REPO, 'Vendor'), MAIN && path.join(MAIN, 'Vendor'));
+const MENU = process.env.VRG_MENU ? path.resolve(process.env.VRG_MENU) : path.join(REPO, 'launcher', 'vrg-menu.json');
+function jobsDir() {
+  if (process.env.VRG_JOBS_DIR) return path.resolve(process.env.VRG_JOBS_DIR);
+  // the work root's jobs folder: H:\VRG\Full\jobs next to the repo (or next to the main checkout)
+  for (let d = REPO; path.dirname(d) !== d; d = path.dirname(d)) {
+    const j = path.join(path.dirname(d), 'jobs');
+    if (isDir(path.join(j, '_elozmenyek'))) return j;
+  }
+  return null;
+}
+const JOBS = jobsDir();
+const HIST = JOBS && path.join(JOBS, '_elozmenyek');
+
 const ROUTES = [
+  ['/lib/', path.join(MAP, 'lib')],
   ['/style/', path.join(MAP, 'style')],
-  ['/data/', path.join(MAP, 'data')],
-  ['/vendor/maplibre-gl/', path.join(REPO, 'Vendor', 'maplibre-gl', 'dist')],
-  ['/vendor/pmtiles/', path.join(REPO, 'Vendor', 'pmtiles', 'dist')],
+  ['/data/', DATA],
+  ['/vendor/maplibre-gl/', path.join(VENDOR, 'maplibre-gl', 'dist')],
+  ['/vendor/pmtiles/', path.join(VENDOR, 'pmtiles', 'dist')],
 ];
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -37,6 +73,47 @@ function resolve(url) {
     return f.startsWith(dir + path.sep) ? f : null;
   }
   return null;
+}
+
+// ---------------------------------------------------------------- the job layer (client data)
+function isOtg() {
+  return process.env.VRG_OTG === '1' || isFile(path.join(REPO, '.otg')) || /[\\/]OTG[\\/]/i.test(REPO + path.sep);
+}
+function registrySwitch() {
+  try {
+    const m = JSON.parse(fs.readFileSync(MENU, 'utf8'));
+    const t = ((m.start && m.start.tools) || []).find(x => x.server === 'terkep' || x.key === 'M');
+    return !(t && t.jobsLayer === false);
+  } catch { return true; }   // an unreadable registry does not hide the layer by itself; the flag file still can
+}
+/** -> { on, reason } (reason in Hungarian, shown by the page when off) */
+function jobsState() {
+  if (isOtg()) return { on: false, reason: 'OTG változat: a munkák rétege itt nem létezik.' };
+  if (!JOBS) return { on: false, reason: 'Nincs munkamappa ezen a gépen.' };
+  if (isFile(path.join(HIST, 'TERKEP-KI'))) return { on: false, reason: 'Kikapcsolva (jobs\\_elozmenyek\\TERKEP-KI).' };
+  if (!registrySwitch()) return { on: false, reason: 'Kikapcsolva a START registryben (jobsLayer: false).' };
+  if (!isFile(path.join(HIST, 'helyek.json'))) return { on: false, reason: 'Még nincs helyek.json: node Map/tools/build-jobs.js' };
+  return { on: true, reason: '' };
+}
+function logAccess(req, entry) {
+  if (!HIST) return;
+  const via = String(req.headers['x-vrg-via'] || '') === 'relay' ? 'relay' : 'local';
+  const line = JSON.stringify(Object.assign({ t: new Date().toISOString(), via, ua: String(req.headers['user-agent'] || '').slice(0, 200) }, entry));
+  try { fs.appendFileSync(path.join(HIST, 'helyek-log.jsonl'), line + '\n'); } catch { /* the log must never break the map */ }
+}
+const NOSTORE = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
+function serveJobs(req, res) {
+  const p = req.url.split('?')[0];
+  const st = jobsState();
+  if (p === '/jobs/status') { res.writeHead(200, NOSTORE).end(JSON.stringify(st)); return; }
+  if (p !== '/jobs/helyek.json') { res.writeHead(404, NOSTORE).end('{}'); return; }
+  if (!st.on) { logAccess(req, { ok: false, reason: 'off' }); res.writeHead(403, NOSTORE).end(JSON.stringify(st)); return; }
+  let body;
+  try { body = fs.readFileSync(path.join(HIST, 'helyek.json')); } catch (e) { res.writeHead(500, NOSTORE).end('{}'); return; }
+  let n = null; try { n = (JSON.parse(body).jobs || []).length; } catch { /* counted only for the log */ }
+  logAccess(req, { ok: true, n });
+  res.writeHead(200, Object.assign({ 'Content-Length': body.length }, NOSTORE));
+  res.end(req.method === 'HEAD' ? undefined : body);
 }
 
 // --allow-remote (testing without the download): /remote/<host>/<path> forwards GET + Range to the
@@ -57,9 +134,10 @@ async function proxy(req, res) {
   } catch (e) { res.writeHead(502).end(String(e.message)); }
 }
 
-http.createServer((req, res) => {
+function handle(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
   if (req.url.startsWith('/remote/')) { proxy(req, res); return; }
+  if (req.url.startsWith('/jobs/')) { serveJobs(req, res); return; }
   const file = resolve(req.url);
   let st = null;
   try { st = file && fs.statSync(file); } catch { /* missing */ }
@@ -97,10 +175,16 @@ http.createServer((req, res) => {
   res.writeHead(200, Object.assign(head, { 'Content-Length': st.size }));
   if (req.method === 'HEAD') { res.end(); return; }
   fs.createReadStream(file).pipe(res);
-}).listen(PORT, '127.0.0.1', () => {
-  const url = 'http://localhost:' + PORT + '/';
-  console.log('VRG Terkep on ' + url);
-  if (!process.argv.includes('--no-open') && process.platform === 'win32') {
-    spawn('rundll32', ['url.dll,FileProtocolHandler', url], { detached: true, stdio: 'ignore' }).unref();
-  }
-});
+}
+
+module.exports = { handle, jobsState, resolve, DATA, VENDOR, JOBS };
+
+if (require.main === module) {
+  http.createServer(handle).listen(PORT, '127.0.0.1', () => {
+    const url = 'http://localhost:' + PORT + '/';
+    console.log('VRG Terkep on ' + url + (JOBS ? '  (job layer: ' + (jobsState().on ? 'on' : 'off') + ')' : ''));
+    if (!process.argv.includes('--no-open') && process.platform === 'win32') {
+      spawn('rundll32', ['url.dll,FileProtocolHandler', url], { detached: true, stdio: 'ignore' }).unref();
+    }
+  });
+}

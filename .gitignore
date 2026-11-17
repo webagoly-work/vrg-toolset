@@ -78,3 +78,6 @@ Divergence/data/handoff/
 
 # --- VRG Térkép: offline map data, ~2 GB, rebuildable with node Map/tools/fetch-data.js ---
 Map/data/
+
+# VRG Térkép: the access log of the invented fixture jobs
+Map/test/fixtures/jobs/_elozmenyek/helyek-log.jsonl
