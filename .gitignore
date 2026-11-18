@@ -81,3 +81,8 @@ Map/data/
 
 # VRG Térkép: the access log of the invented fixture jobs
 Map/test/fixtures/jobs/_elozmenyek/helyek-log.jsonl
+
+# --- VRG Időjárás: the database, raw answers, briefs, outbox and per-PC settings ---
+# The database holds job-site coordinates (client data); settings.local.json may hold an API key.
+Weather/data/
+Weather/config/settings.local.json
