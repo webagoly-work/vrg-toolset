@@ -54,6 +54,9 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 33 | `layer.f` | F · Kiemelt | the Irányítópult (`view: dashboard`) | — | native: the Asztal's home window | M19 |
 | 34 | `layer.q` | Q · Döntésnapló | `Stack/decisions.html` (server `stack`) | — | native via M17 (Later); pc via M8 meanwhile | M17 |
 | 35 | `phone` | Telefon kapcsolat | `Dashboard/page/phone.js`, `shell/lib/phonelink.js` (WP-49) | M2 QR párosítás | native: the home screen's QR beolvasása button opens the scanner, which pairs or opens a server QR from this panel in a Custom Tab (`core/ScanCode.kt`) | M2 / WP-49 |
+| 36 | `sketcher` | VRG Sketcher | `Sketcher/dist/vrg-sketcher.html` (START P → S) | M24 Vázlat … M31 | native: the phone captures the survey (`feat:sketch`); the Desktop page reviews and completes it | M24–M31 |
+| 37 | `rajztar` | Rajztár Stúdió | `shared/rajztar/studio.html` (START P → J) | — | none for now: a PC editor for document packages; a later WP | — |
+| 38 | `konnektom-labor` | Konnektóm-labor | a Rétegverem page (START R → K) | M17 Rétegverem | native via M17, as the other Stack pages (Later: add it to `stack-pages`); pc via M8 meanwhile | M17 |
 
 ## 2. Window kinds (`KINDS`, `Dashboard/shell/lib/sheets.js`)
 

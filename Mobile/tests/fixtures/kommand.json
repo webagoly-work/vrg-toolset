@@ -52,6 +52,16 @@
    "en": "Varler Planner"
   },
   {
+   "id": "cat:rajztar",
+   "hu": "Rajztár Stúdió",
+   "en": "Drawing store studio"
+  },
+  {
+   "id": "cat:sketcher",
+   "hu": "VRG Sketcher",
+   "en": "VRG Sketcher"
+  },
+  {
    "id": "cat:client-preview",
    "hu": "Ügyfélnézet",
    "en": "Client preview"
@@ -110,6 +120,11 @@
    "id": "cat:archive",
    "hu": "Archívum",
    "en": "Artifact archive"
+  },
+  {
+   "id": "cat:konnektom-labor",
+   "hu": "Konnektóm-labor",
+   "en": "Connectome lab"
   },
   {
    "id": "cat:mindmap",
@@ -197,6 +212,8 @@
     "cat:settings",
     "cat:phone",
     "cat:planner",
+    "cat:rajztar",
+    "cat:sketcher",
     "cat:client-preview",
     "cat:workflow-kit",
     "cat:calc-panel",
@@ -207,6 +224,7 @@
     "cat:jobs",
     "cat:files",
     "cat:archive",
+    "cat:konnektom-labor",
     "cat:mindmap",
     "cat:web",
     "cat:mail",
@@ -317,6 +335,7 @@
    "q": "vrg",
    "ids": [
     "cat:desktop",
+    "cat:sketcher",
     "cat:buildtree",
     "cat:mindmap",
     "cat:map",

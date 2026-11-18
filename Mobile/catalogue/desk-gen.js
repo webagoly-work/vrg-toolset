@@ -50,6 +50,7 @@ const REACH = {
   'jobs': ['pc', 'pcwin'],
   'files': ['pc', 'pcwin'],
   'archive': ['native', 'archive'],
+  'sketcher': ['native', 'sketch'],               // VRG Sketcher: the phone is where it captures (WP M24-M31)
   'mindmap': ['webapp', 'mindmap'],
   'web': ['native', 'browser'],
   'mail': ['none', 'a PC levelezése a PC saját Gmail-belépésén fut; a telefonon a saját levelezője nyílik'],
@@ -59,10 +60,12 @@ const REACH = {
   'console': ['pc', 'port:8133'],
   'mobile': ['none', 'ez maga a telefon'],
   'servicekit': ['none', 'eszköz a padon, egy későbbi munkacsomag'],
+  'rajztar': ['none', 'a Rajztár Stúdió a PC-n fut (tervcsomag, rajzlap, rajzjel); a telefonon egy későbbi munkacsomag'],
   'stack.search': ['native', 'stack'],
   'layer.i': ['native', 'stack'],
   'layer.f': ['native', 'kompakt'],
   'layer.q': ['native', 'stack'],
+  'konnektom-labor': ['native', 'stack'],
 };
 
 // queries for the fixture: prefixes, accents, two words, misses, English
