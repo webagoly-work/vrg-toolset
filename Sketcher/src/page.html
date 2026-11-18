@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Sketcher — Asztal</title>
+<!--BUILD:css-->
+</head>
+<body>
+<div id="root">
+  <header id="hdr">
+    <div class="brand" title="VRG Sketcher"><span>◫</span> Sketcher</div>
+    <div id="hinfo" class="hinfo"></div>
+    <div class="grow"></div>
+    <label class="btn" title="Felmérés megnyitása (vagy húzd ide a fájlt)">Megnyitás<input type="file" id="fopen" accept=".json,application/json" hidden></label>
+    <button class="btn primary" id="bsave" data-act="save" title="Mentés: a frissített .vsketch.json letöltése">Mentés</button>
+  </header>
+  <div id="body">
+    <nav id="rail" aria-label="Frontok"></nav>
+    <main id="main"></main>
+  </div>
+  <div id="drop" hidden>Engedd el a felmérést (.vsketch.json) vagy a fotókat</div>
+</div>
+<!--BUILD:js-->
+</body>
+</html>

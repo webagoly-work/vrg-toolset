@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Sketcher — Asztal</title>
+<style>
+/* VRG Sketcher Desktop — dark, calm; tokens after shared/vrg-ui-kit theme-melyviz (inlined, no external URLs). */
+:root {
+  --bg: #0a141c; --sunk: #071017; --s1: #121c24; --s2: #17232c; --s3: #1d2a34;
+  --line: rgba(232, 240, 246, .15); --line2: rgba(232, 240, 246, .34);
+  --text: #e8f0f6; --muted: #a6afb7; --faint: #646d74;
+  --accent: #93d3e6; --activity: #e8a873; --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans); }
+#root { display: flex; flex-direction: column; height: 100%; }
+#hdr { display: flex; align-items: center; gap: 12px; padding: 6px 12px; background: var(--s1); border-bottom: 1px solid var(--line); flex: none; flex-wrap: wrap; }
+.brand { font: 600 15px var(--sans); letter-spacing: .04em; color: var(--accent); white-space: nowrap; }
+.brand span { font-size: 18px; }
+.hinfo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.hinfo .nm { font-weight: 600; }
+.hinfo .ad { color: var(--muted); font-size: 12.5px; }
+.grow { flex: 1; }
+.btn { font: 13px var(--sans); color: var(--text); background: var(--s2); border: 1px solid var(--border, #6c7880); padding: 5px 12px; cursor: pointer; display: inline-block; }
+.btn:hover { background: var(--s3); border-color: var(--accent); }
+.btn.primary { color: #071318; background: var(--accent); border-color: var(--accent); }
+.btn.primary:hover { background: #b9e3f0; }
+.btn.sm { padding: 2px 8px; font-size: 12px; }
+.btn.on { border-color: var(--c, var(--accent)); color: var(--c, var(--accent)); }
+.btn.dim { color: var(--muted); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#body { flex: 1; display: flex; min-height: 0; }
+#rail { flex: none; width: 66px; background: var(--sunk); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 4px 0; overflow-y: auto; }
+.rb { position: relative; background: none; border: 0; border-left: 3px solid transparent; color: var(--c, var(--muted)); padding: 6px 2px 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-family: var(--sans); }
+.rb:hover { background: var(--s2); }
+.rb.act { background: var(--s2); border-left-color: var(--c, var(--accent)); }
+.rb .sym { font-size: 24px; line-height: 1.1; }
+.rb .cap { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.rb.act .cap { color: var(--text); }
+.badge { position: absolute; top: 2px; right: 6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--s3); border: 1px solid var(--line2); color: var(--text); font: 600 11px/16px var(--mono); text-align: center; }
+.badge.new { background: var(--c, #e8641c); border-color: var(--c, #e8641c); color: #071318; }
+.sep { height: 1px; background: var(--line); margin: 4px 8px; }
+#main { flex: 1; overflow: auto; padding: 14px 18px 40px; min-width: 0; }
+h2 { font: 600 17px var(--sans); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+h2 .sym { font-size: 22px; color: var(--c); }
+h3 { font: 600 12px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 18px 0 8px; }
+.card { background: var(--s1); border: 1px solid var(--line); padding: 10px 12px; margin-bottom: 10px; }
+.card.fresh { border-left: 3px solid #e8641c; }
+.card.later { opacity: .8; border-left: 3px dashed var(--faint); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.muted { color: var(--muted); } .faint { color: var(--faint); } .small { font-size: 12px; } .mono { font-family: var(--mono); }
+.empty { color: var(--muted); padding: 30px 10px; text-align: center; border: 1px dashed var(--line2); }
+.pill { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--c, var(--line2)); color: var(--c, var(--text)); background: color-mix(in srgb, var(--c, #888) 13%, transparent); padding: 2px 9px; margin: 0 5px 5px 0; font: 13px var(--sans); cursor: default; }
+.pill i { font-style: normal; font-size: 15px; }
+button.pill { cursor: pointer; }
+button.pill:hover { background: color-mix(in srgb, var(--c, #888) 28%, transparent); }
+button.pill.sel { background: var(--c, var(--accent)); color: #071318; }
+.pill.off { color: var(--muted); border-color: var(--line); background: none; }
+.pill.ghost { border-style: dashed; }
+.pill .x { background: none; border: 0; color: inherit; cursor: pointer; padding: 0 0 0 4px; font-size: 14px; }
+.kv { display: grid; grid-template-columns: 130px 1fr; gap: 3px 10px; font-size: 13px; }
+.kv b { color: var(--muted); font-weight: 400; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--c, var(--line2)); margin: 0 5px 5px 0; background: color-mix(in srgb, var(--c, #888) 13%, transparent); }
+.stepper .nm { padding: 2px 8px; color: var(--c); } .stepper .nm i { font-style: normal; font-size: 15px; margin-right: 4px; }
+.stepper button { background: var(--s3); color: var(--text); border: 0; width: 26px; height: 26px; cursor: pointer; font-size: 15px; }
+.stepper button:hover { background: var(--s2); }
+.stepper .q { min-width: 28px; text-align: center; font: 600 13px var(--mono); }
+textarea, input[type=text], input[type=number], select { background: var(--sunk); color: var(--text); border: 1px solid var(--line2); padding: 5px 8px; font: 13.5px var(--sans); width: 100%; }
+textarea { resize: vertical; min-height: 56px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.qcard .qt { font-weight: 600; margin-bottom: 6px; }
+.qcard .acts { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font: 11px var(--mono); padding: 1px 6px; border: 1px solid var(--line2); color: var(--muted); margin-left: 6px; }
+.tag.new { color: #e8641c; border-color: #e8641c; }
+.tl { border-left: 2px solid var(--line2); margin-left: 6px; padding-left: 12px; }
+.ent { position: relative; margin-bottom: 10px; }
+.ent::before { content: ""; position: absolute; left: -17px; top: 6px; width: 8px; height: 8px; background: var(--c, var(--accent)); }
+.ent .meta { font: 12px var(--mono); color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ent.open .txt { border-left: 3px solid #d64545; padding-left: 6px; }
+.flag { background: none; border: 0; cursor: pointer; color: var(--faint); font-size: 15px; }
+.flag.on { color: #d64545; }
+.shotrow { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.shotrow .ck { width: 20px; text-align: center; font-weight: 700; }
+.shotrow.done .ck { color: var(--ok); }
+.thumb { width: 96px; height: 72px; object-fit: cover; border: 1px solid var(--line2); background: var(--sunk); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 11px; flex: none; }
+.cap-card { display: flex; gap: 10px; }
+.svgwrap { background: var(--sunk); border: 1px solid var(--line); }
+.svgwrap svg { display: block; width: 100%; height: min(62vh, 560px); }
+svg .fl { fill: #e9e5da; fill-opacity: .08; }
+svg .edge { stroke: #cfd8de; stroke-width: 1; vector-effect: non-scaling-stroke; stroke-width: 2; }
+svg .est { stroke: #e8641c; stroke-width: 2.5; stroke-dasharray: 7 5; vector-effect: non-scaling-stroke; }
+svg .lbl { fill: #cfd8de; font-family: var(--sans); text-anchor: middle; }
+svg .lbl.e { fill: #e8641c; font-family: var(--mono); }
+svg .dev.meglevo { fill: #d9a441; } svg .dev.tervezett { fill: #27c2b0; } svg .dev { stroke: #071017; stroke-width: 1; vector-effect: non-scaling-stroke; }
+svg .wedge { stroke: #2a8cdb; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+svg .wedge.shot { fill: #2a8cdb; fill-opacity: .55; } svg .wedge.noshot { fill: none; stroke-dasharray: 3 3; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 5px; margin-right: 4px; vertical-align: -1px; }
+.le { display: flex; gap: 8px; padding: 5px 8px; cursor: pointer; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; color: var(--text); width: 100%; text-align: left; font: 13px var(--sans); }
+.le:hover { background: var(--s2); }
+.le .k { color: var(--c); width: 18px; text-align: center; }
+iframe.map { width: 100%; height: 420px; border: 1px solid var(--line2); background: var(--sunk); }
+a { color: var(--accent); }
+code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; border: 1px solid var(--line); }
+#drop { position: fixed; inset: 0; background: rgba(4, 9, 13, .8); display: flex; align-items: center; justify-content: center; font-size: 22px; border: 3px dashed var(--accent); color: var(--accent); z-index: 9; }
+#drop[hidden] { display: none; }
+.msg { padding: 6px 10px; margin-bottom: 10px; border: 1px solid var(--warn); color: var(--warn); font-size: 13px; }
+.msg.err { border-color: var(--crit); color: var(--crit); }
+.msg.ok { border-color: var(--ok); color: var(--ok); }
+@media (max-width: 960px) { #main { padding: 10px 10px 40px; } .kv { grid-template-columns: 100px 1fr; } .grid { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+<div id="root">
+  <header id="hdr">
+    <div class="brand" title="VRG Sketcher"><span>◫</span> Sketcher</div>
+    <div id="hinfo" class="hinfo"></div>
+    <div class="grow"></div>
+    <label class="btn" title="Felmérés megnyitása (vagy húzd ide a fájlt)">Megnyitás<input type="file" id="fopen" accept=".json,application/json" hidden></label>
+    <button class="btn primary" id="bsave" data-act="save" title="Mentés: a frissített .vsketch.json letöltése">Mentés</button>
+  </header>
+  <div id="body">
+    <nav id="rail" aria-label="Frontok"></nav>
+    <main id="main"></main>
+  </div>
+  <div id="drop" hidden>Engedd el a felmérést (.vsketch.json) vagy a fotókat</div>
+</div>
+<script>window.VRG_FIELDKIT = {"kind":"vrg-fieldkit","v":1,"about":"VRG Sketcher field kit: the catalog both the phone (VRG Mobile, feature-sketch assets) and the Desktop page read. Data only. Conditions and effects: docs/sketcher/README.md section 4. Validate: node Sketcher/tools/variant-check.js --kit","fronts":[{"id":"vazlat","label":"Vázlat","sym":"◫","color":"#27c2b0"},{"id":"jegyzet","label":"Jegyzet","sym":"✎","color":"#e0b020"},{"id":"munkakor","label":"Munkakör","sym":"☰","color":"#3dae5a"},{"id":"kerdes","label":"Kérdések","sym":"?","color":"#e8641c"},{"id":"kamera","label":"Kamera","sym":"◉","color":"#2a8cdb"},{"id":"helyszin","label":"Helyszín","sym":"⌖","color":"#8a5cd6"},{"id":"nyitott","label":"Nyitott","sym":"⚑","color":"#d64545"}],"purposes":[{"id":"epulet","label":"Épület kívülről","sym":"⌂","color":"#8a5cd6"},{"id":"kornyek","label":"Környék, utca","sym":"⛬","color":"#6e8b3d"},{"id":"bejarat","label":"Hozzáférés","sym":"⇥","color":"#5470b0"},{"id":"merohely","label":"Mérőhely","sym":"⌁","color":"#e0b020"},{"id":"eloszto","label":"Elosztó","sym":"▣","color":"#e8641c"},{"id":"meglevo","label":"Meglévő szerelvény","sym":"○","color":"#9aa3ad"},{"id":"hely","label":"Tervezett hely","sym":"✚","color":"#3dae5a"},{"id":"hiba","label":"Hiba, veszély","sym":"⚠","color":"#d64545"},{"id":"tabla","label":"Típustábla, címke","sym":"▤","color":"#c03fa8"},{"id":"nyomvonal","label":"Nyomvonal, fal","sym":"〰","color":"#20a8a0"},{"id":"szoba","label":"Szoba (Fotópont)","sym":"◎","color":"#2a8cdb"},{"id":"dokumentum","label":"Dokumentum","sym":"▧","color":"#b07a2a"},{"id":"egyeb","label":"Egyéb","sym":"•","color":"#7d8590"}],"chips":[{"id":"kivansag","label":"Kívánság","sym":"★","color":"#3dae5a","group":"ugyfel"},{"id":"problema","label":"Probléma","sym":"⚠","color":"#d64545","group":"ugyfel"},{"id":"fontos","label":"Fontos","sym":"!","color":"#e8641c","group":"ugyfel"},{"id":"hatarido","label":"Határidő","sym":"⏱","color":"#5470b0","group":"ugyfel"},{"id":"keret","label":"Keret","sym":"Ft","color":"#b07a2a","group":"ugyfel"},{"id":"visszakerdez","label":"Visszakérdezni","sym":"?","color":"#e8641c","group":"ugyfel","open":true},{"id":"tisztazando","label":"Tisztázandó","sym":"⚑","color":"#d64545","group":"ugyfel","open":true},{"id":"lakott","label":"Lakott","sym":"⌂","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"lakott","opt":"igen"}}},{"id":"tulaj","label":"Tulaj jelen","sym":"☺","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"tulaj"}}},{"id":"berlo","label":"Bérlő","sym":"☻","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"berlo"}}},{"id":"kulcs","label":"Kulcs külön","sym":"⚿","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"kulcs"}}},{"id":"haziallat","label":"Háziállat","sym":"🐾","color":"#8a5cd6","group":"helyzet"},{"id":"parkolas","label":"Parkolás nehéz","sym":"P","color":"#8a5cd6","group":"helyzet"},{"id":"hetvege","label":"Csak hétvégén","sym":"7","color":"#8a5cd6","group":"helyzet"},{"id":"por","label":"Pormentesen","sym":"≋","color":"#8a5cd6","group":"helyzet"}],"scope":[{"id":"uj","label":"Új kiépítés","sym":"✚","group":"jelleg"},{"id":"felujitas","label":"Felújítás, csere","sym":"↻","group":"jelleg"},{"id":"bovites","label":"Bővítés","sym":"⊕","group":"jelleg"},{"id":"hiba","label":"Hibaelhárítás","sym":"⚠","group":"jelleg"},{"id":"felulvizsgalat","label":"Felülvizsgálat","sym":"✓","group":"jelleg"},{"id":"merohely","label":"Mérőhely, teljesítmény","sym":"⌁","group":"jelleg"},{"id":"eloszto","label":"Elosztó csere","sym":"▣","group":"jelleg"},{"id":"felmeres","label":"Csak felmérés, ajánlat","sym":"◫","group":"jelleg"},{"id":"egesz","label":"Egész lakás / ház","sym":"⌂","group":"terulet"},{"id":"konyha","label":"Konyha","sym":"🍳","group":"terulet"},{"id":"furdo","label":"Fürdő","sym":"🛁","group":"terulet"},{"id":"szoba","label":"Szoba(k)","sym":"▭","group":"terulet"},{"id":"kulter","label":"Kert, kültér","sym":"🌿","group":"terulet"},{"id":"garazs","label":"Garázs, műhely","sym":"⚙","group":"terulet"},{"id":"kozos","label":"Közös rész, lépcsőház","sym":"⇅","group":"terulet"},{"id":"ev","label":"E-autó töltő","sym":"⚡","group":"rendszer"},{"id":"napelem","label":"Napelem / HMKE","sym":"☀","group":"rendszer"},{"id":"okos","label":"Okosotthon","sym":"◈","group":"rendszer"},{"id":"gyenge","label":"Gyengeáram (LAN, TV)","sym":"⋈","group":"rendszer"},{"id":"riaszto","label":"Riasztó, kamera","sym":"◉","group":"rendszer"},{"id":"kaputelefon","label":"Kaputelefon","sym":"☎","group":"rendszer"},{"id":"klima","label":"Klíma","sym":"❄","group":"rendszer"},{"id":"hoszivattyu","label":"Hőszivattyú","sym":"♨","group":"rendszer"},{"id":"padlofutes","label":"Padlófűtés","sym":"▦","group":"rendszer"},{"id":"vilagitas","label":"Világítás, LED","sym":"✱","group":"rendszer"},{"id":"dugalj","label":"Dugalj","sym":"⊙","group":"igeny","qty":true},{"id":"kapcsolo","label":"Kapcsoló","sym":"⊘","group":"igeny","qty":true},{"id":"lampa","label":"Lámpa","sym":"✱","group":"igeny","qty":true},{"id":"ledszalag","label":"LED-szalag","sym":"═","group":"igeny","qty":true},{"id":"fozolap","label":"Főzőlap","sym":"⊞","group":"igeny","qty":true},{"id":"suto","label":"Sütő","sym":"▢","group":"igeny","qty":true},{"id":"mosogep","label":"Mosógép","sym":"◍","group":"igeny","qty":true},{"id":"mosogatogep","label":"Mosogatógép","sym":"◌","group":"igeny","qty":true},{"id":"szarito","label":"Szárítógép","sym":"◎","group":"igeny","qty":true},{"id":"bojler","label":"Bojler","sym":"♒","group":"igeny","qty":true},{"id":"torolkozo","label":"Törölközőszárító","sym":"♨","group":"igeny","qty":true},{"id":"szellozo","label":"Szellőző","sym":"✣","group":"igeny","qty":true},{"id":"tvpont","label":"TV-pont","sym":"▭","group":"igeny","qty":true},{"id":"lanpont","label":"LAN-pont","sym":"⋈","group":"igeny","qty":true},{"id":"kulteri","label":"Kültéri aljzat","sym":"⊙","group":"igeny","qty":true},{"id":"ipkamera","label":"IP kamera","sym":"◉","group":"igeny","qty":true}],"keywords":[{"id":"bojler","re":"bojler|vizmelegit","suggest":{"scope":["bojler"]}},{"id":"fozolap","re":"indukc|fozolap|fozo lap","suggest":{"scope":["fozolap"]}},{"id":"suto","re":"\\bsuto","suggest":{"scope":["suto"]}},{"id":"mosogatogep","re":"mosogatogep","suggest":{"scope":["mosogatogep"]}},{"id":"mosogep","re":"\\bmosogep","suggest":{"scope":["mosogep"]}},{"id":"szarito","re":"szaritogep","suggest":{"scope":["szarito"]}},{"id":"ev","re":"e-?auto|villanyauto|elektromos auto|\\btolto|wallbox|tesla","suggest":{"scope":["ev"]}},{"id":"napelem","re":"napelem|inverter|hmke","suggest":{"scope":["napelem"]}},{"id":"okos","re":"okos|smart|zigbee|knx|shelly|google home|alexa","suggest":{"scope":["okos"]}},{"id":"gyenge","re":"\\blan\\b|internet|wifi|ethernet|\\butp\\b|antenna","suggest":{"scope":["gyenge"]}},{"id":"riaszto","re":"riaszto|biztonsagi kamera|kamerarendszer","suggest":{"scope":["riaszto"]}},{"id":"klima","re":"klima|legkondi","suggest":{"scope":["klima"]}},{"id":"hoszivattyu","re":"hoszivattyu","suggest":{"scope":["hoszivattyu"]}},{"id":"padlofutes","re":"padlofutes","suggest":{"scope":["padlofutes"]}},{"id":"konyha","re":"konyha","suggest":{"scope":["konyha"]}},{"id":"furdo","re":"furdo|zuhany|kad\\b","suggest":{"scope":["furdo"]}},{"id":"ledszalag","re":"led ?-?szalag|szalagvilagit","suggest":{"scope":["ledszalag"]}},{"id":"alu","re":"aluminium|\\balu\\b","suggest":{"answer":{"q":"anyag","opt":"alu"}}},{"id":"fi","re":"fi-?rele|fi rele|eletvedelmi"},{"id":"leold","re":"leold|lecsap|kiver|lever a","suggest":{"scope":["hiba"]}},{"id":"egett","re":"eget|ego szag|egett szag|szikraz|meleged|felforrosod","suggest":{"scope":["hiba"]}},{"id":"penz","re":"(\\d[\\d .]*\\d|\\d)\\s*(millio|ezer|e|m)?\\s*(ft|forint)\\b","suggest":{"answer":{"q":"keret","opt":"max","text":"$0"}}},{"id":"fazis3","re":"(\\b3|harom)\\s*-?\\s*fazis","suggest":{"answer":{"q":"fazis","opt":"3f"}}},{"id":"fazis1","re":"(\\b1|egy)\\s*-?\\s*fazis","suggest":{"answer":{"q":"fazis","opt":"1f"}}},{"id":"surgos","re":"surgos|azonnal|holnap|jovo het","suggest":{"answer":{"q":"hatarido","opt":"surgos"}}},{"id":"tarsashaz","re":"tarsashaz|kozos kepvisel|lepcsohaz|panel","suggest":{"answer":{"q":"ingatlan","opt":"tarsashaz"}}},{"id":"berlo","re":"berlo|alberlet|kiado","suggest":{"answer":{"q":"hozzaferes","opt":"berlo"}}}],"questions":[{"id":"lenyeg","q":"Mi a kérés lényege?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"uj","label":"Új kiépítés","sets":{"scope":["uj"]}},{"id":"csere","label":"Csere, felújítás","sets":{"scope":["felujitas"]}},{"id":"bovites","label":"Bővítés","sets":{"scope":["bovites"]}},{"id":"javitas","label":"Javítás, hibakeresés","sets":{"scope":["hiba"]}},{"id":"felulvizsgalat","label":"Felülvizsgálat","sets":{"scope":["felulvizsgalat"]}}],"multi":true},{"id":"ingatlan","q":"Milyen ingatlan?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"csaladi","label":"Családi ház"},{"id":"tarsashaz","label":"Társasházi lakás"},{"id":"iroda","label":"Iroda"},{"id":"uzlet","label":"Üzlet, vendéglátó"},{"id":"egyeb","label":"Egyéb"}]},{"id":"hozzaferes","q":"Ki fér hozzá az ingatlanhoz?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"tulaj","label":"Tulajdonos"},{"id":"berlo","label":"Bérlő"},{"id":"kozos","label":"Közös képviselő"},{"id":"kulcs","label":"Kulcs külön egyeztetve"}]},{"id":"hatarido","q":"Mikorra kell elkészülni?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"surgos","label":"Sürgős (napokon belül)"},{"id":"honap","label":"Egy hónapon belül"},{"id":"rugalmas","label":"Rugalmas"},{"id":"datum","label":"Konkrét dátum"}]},{"id":"keret","q":"Van költségkeret?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"nincs","label":"Nincs"},{"id":"max","label":"Van, legfeljebb …"},{"id":"ajanlat","label":"Árajánlat után döntünk"}],"num":{"unit":"Ft"}},{"id":"lakott","q":"Lakott lesz közben az ingatlan?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"nem","label":"Nem"},{"id":"reszben","label":"Részben"}]},{"id":"foto","q":"Fényképezhetünk?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"villamos","label":"Csak a villamos részt"},{"id":"nem","label":"Nem"}]},{"id":"doksi","q":"Van régi dokumentáció (terv, jegyzőkönyv)?","group":"alap","prio":2,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"nincs","label":"Nincs"},{"id":"keresik","label":"Megkeresik"}]},{"id":"dontes","q":"Ki dönt a megrendelésről?","group":"alap","prio":2,"who":"ugyfel","when":true,"options":[{"id":"o","label":"Ő maga"},{"id":"tobben","label":"Többen együtt"},{"id":"mas","label":"Valaki más"}]},{"id":"kor","q":"Mikor készült a hálózat?","group":"meglevo","prio":1,"who":"ugyfel","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"70elott","label":"1970 előtt"},{"id":"70-90","label":"1970–1990"},{"id":"90-10","label":"1990–2010"},{"id":"10utan","label":"2010 után"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"anyag","q":"Vezeték anyaga?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},{"kw":"alu"}]},"options":[{"id":"alu","label":"Alumínium"},{"id":"rez","label":"Réz"},{"id":"vegyes","label":"Vegyes"},{"id":"nemtudni","label":"Nem tudni"}]},{"id":"fi","q":"Van FI-relé (életvédelmi)?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},{"kw":"fi"}]},"options":[{"id":"van","label":"Van"},{"id":"nincs","label":"Nincs"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"biztositek","q":"Biztosítékok típusa?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"olvado","label":"Olvadóbetétes"},{"id":"kismegszakito","label":"Kismegszakító"},{"id":"vegyes","label":"Vegyes"}]},{"id":"gond","q":"Milyen gond volt már?","group":"meglevo","prio":1,"who":"ugyfel","when":{"any":[{"scope":"hiba"},{"kw":["leold","egett"]}]},"options":[{"id":"leold","label":"Leold a FI / biztosíték"},{"id":"eg","label":"Szikrázik, égett szag"},{"id":"meleg","label":"Melegedő aljzat"},{"id":"nincs","label":"Nincs"}],"multi":true},{"id":"vizsgalat","q":"Mikor volt utoljára érintésvédelmi felülvizsgálat?","group":"meglevo","prio":2,"who":"ugyfel","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"ev","label":"Éven belül"},{"id":"1-5","label":"1–5 éve"},{"id":"5+","label":"5+ éve"},{"id":"soha","label":"Soha / nem tudja"}]},{"id":"fazis","q":"Hány fázis a bekötés most?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"1f","label":"1 fázis"},{"id":"3f","label":"3 fázis"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"fobizt","q":"Főbiztosíték?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"1x25","label":"1×25 A"},{"id":"1x32","label":"1×32 A"},{"id":"3x16","label":"3×16 A"},{"id":"3x25","label":"3×25 A"},{"id":"mas","label":"Más (A)"}]},{"id":"mero_hely","q":"Hol van a mérő?","group":"merohely","prio":1,"who":"ugyfel","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"bent","label":"Épületen belül"},{"id":"kerites","label":"Kerítésnél"},{"id":"oszlop","label":"Tartóoszlopon"},{"id":"lepcsohaz","label":"Lépcsőházban"}]},{"id":"bekotes","q":"Hogyan jön be a hálózat?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"leg","label":"Légvezeték"},{"id":"fold","label":"Földkábel"},{"id":"nemlatszik","label":"Nem látszik"}]},{"id":"uj_fogyaszto","q":"Lesz új nagy fogyasztó?","group":"merohely","prio":2,"who":"ugyfel","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]},"options":[{"id":"ev","label":"Töltő","sets":{"scope":["ev"]}},{"id":"hsz","label":"Hőszivattyú","sets":{"scope":["hoszivattyu"]}},{"id":"pv","label":"Napelem","sets":{"scope":["napelem"]}},{"id":"indukcio","label":"Indukciós főzőlap","sets":{"scope":["fozolap"]}},{"id":"klima","label":"Klíma","sets":{"scope":["klima"]}},{"id":"nincs","label":"Nincs"}],"multi":true},{"id":"mero_allapot","q":"Mérőszekrény állapota?","group":"merohely","prio":2,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"rendben","label":"Rendben"},{"id":"torott","label":"Törött, rozsdás"},{"id":"nincshely","label":"Nincs hely"},{"id":"plomba","label":"Plombált, nem hozzáférhető"}]},{"id":"szabad_hely","q":"Van szabad hely az elosztóban?","group":"eloszto","prio":1,"who":"szemle","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"van","label":"Van"},{"id":"tele","label":"Tele van"},{"id":"nemtudja","label":"Nem tudni"}]},{"id":"felirat","q":"Van áramköri felirat / lista?","group":"eloszto","prio":2,"who":"szemle","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"naprakesz","label":"Van, naprakész"},{"id":"hianyos","label":"Van, hiányos"},{"id":"nincs","label":"Nincs"}]},{"id":"foldeles","q":"Földelés?","group":"eloszto","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"scope":"ev"}]},"options":[{"id":"tncs","label":"TN-C-S"},{"id":"tt","label":"TT"},{"id":"nemtudja","label":"Nem tudni"}]},{"id":"uj_eloszto","q":"Kell új elosztó?","group":"eloszto","prio":2,"who":"ugyfel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"igen","label":"Igen","sets":{"scope":["eloszto"]}},{"id":"bovites","label":"Csak bővítés"},{"id":"javasolj","label":"Szerelő javasoljon"}]},{"id":"furdo_mit","q":"Mit szeretne a fürdőben?","group":"furdo","prio":1,"who":"ugyfel","when":{"any":[{"scope":"furdo"},{"room":"furdo"}]},"options":[{"id":"lampa","label":"Új lámpák","sets":{"scope":["lampa"]}},{"id":"aljzat","label":"Új aljzatok","sets":{"scope":["dugalj"]}},{"id":"torolkozo","label":"Törölközőszárító","sets":{"scope":["torolkozo"]}},{"id":"padlofutes","label":"Padlófűtés","sets":{"scope":["padlofutes"]}},{"id":"szellozo","label":"Szellőző","sets":{"scope":["szellozo"]}}],"multi":true},{"id":"gepek","q":"Milyen gépek lesznek a konyhában?","group":"konyha","prio":1,"who":"ugyfel","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"options":[{"id":"mosogatogep","label":"Mosogatógép","sets":{"scope":["mosogatogep"]}},{"id":"suto","label":"Sütő","sets":{"scope":["suto"]}},{"id":"fozolap","label":"Főzőlap","sets":{"scope":["fozolap"]}},{"id":"mosogep","label":"Mosógép","sets":{"scope":["mosogep"]}},{"id":"bojler","label":"Bojler","sets":{"scope":["bojler"]}}],"multi":true},{"id":"fozolap_tipus","q":"Milyen főzőlap?","group":"konyha","prio":1,"who":"ugyfel","when":{"any":[{"scope":"fozolap"},{"answer":"gepek","is":"fozolap"}]},"options":[{"id":"gaz","label":"Gáz"},{"id":"villany","label":"Villany"},{"id":"indukcio","label":"Indukció"},{"id":"nemdont","label":"Még nincs döntés"}]},{"id":"csempe","q":"Kész a csempézés?","group":"konyha","prio":2,"who":"ugyfel","when":{"any":[{"scope":["furdo","konyha"]},{"room":["furdo","konyha"]}]},"options":[{"id":"kesz","label":"Kész"},{"id":"meg","label":"Még nem"},{"id":"nemlesz","label":"Nem lesz"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"bekotes_hely","q":"Ki jelöli ki a gépek bekötési helyét?","group":"konyha","prio":2,"who":"ugyfel","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"options":[{"id":"megvan","label":"Már megvan"},{"id":"szerelo","label":"A szerelő"},{"id":"tervezo","label":"A konyhatervező"}]},{"id":"auto_kw","q":"Az autó töltési teljesítménye (AC)?","group":"ev","prio":1,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"3.7","label":"3,7 kW"},{"id":"7.4","label":"7,4 kW (1 fázis)"},{"id":"11","label":"11 kW (3 fázis)"},{"id":"22","label":"22 kW"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"parkolo","q":"Hol parkol az autó?","group":"ev","prio":1,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"garazs","label":"Garázs"},{"id":"beallo","label":"Kocsibeálló"},{"id":"utca","label":"Utcafront"},{"id":"melygarazs","label":"Társasházi mélygarázs"}]},{"id":"tavolsag","q":"Milyen messze van az elosztótól?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"5","label":"\u003c 5 m"},{"id":"15","label":"5–15 m"},{"id":"30","label":"15–30 m"},{"id":"30+","label":"30 m felett"}]},{"id":"okos_tolto","q":"Okos funkció a töltőn?","group":"ev","prio":2,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"alap","label":"Alap"},{"id":"pv","label":"Napelemes vezérlés"},{"id":"terheles","label":"Terheléskezelés"},{"id":"nem","label":"Nem érdekli"}]},{"id":"hozzajarulas","q":"Megvan a tulajdonosi / közös képviselői hozzájárulás?","group":"ev","prio":1,"who":"ugyfel","when":{"any":[{"all":[{"scope":"ev"},{"answer":"ingatlan","is":"tarsashaz"}]},{"all":[{"scope":"napelem"},{"answer":"ingatlan","is":"tarsashaz"}]}]},"options":[{"id":"igen","label":"Igen"},{"id":"kell","label":"Kell kérni"},{"id":"nemkell","label":"Nem szükséges"}]},{"id":"wifi_park","q":"Van WiFi a töltő helyén?","group":"ev","prio":2,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"jo","label":"Jó"},{"id":"gyenge","label":"Gyenge"},{"id":"nincs","label":"Nincs"}]},{"id":"fogyasztas","q":"Éves fogyasztás?","group":"napelem","prio":1,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"2500","label":"\u003c 2 500 kWh"},{"id":"5000","label":"2 500–5 000"},{"id":"8000","label":"5 000–8 000"},{"id":"8000+","label":"8 000 felett"}]},{"id":"teto","q":"Milyen a tető?","group":"napelem","prio":1,"who":"szemle","when":{"scope":"napelem"},"options":[{"id":"cserep","label":"Cserép"},{"id":"lemez","label":"Lemez"},{"id":"lapos","label":"Lapostető"},{"id":"egyeb","label":"Egyéb"}]},{"id":"tajolas","q":"Tájolás?","group":"napelem","prio":1,"who":"szemle","when":{"scope":"napelem"},"options":[{"id":"del","label":"Dél"},{"id":"kny","label":"Kelet–nyugat"},{"id":"egyeb","label":"Egyéb"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"akku","q":"Akkumulátor?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"igen","label":"Igen"},{"id":"kesobb","label":"Később"},{"id":"nem","label":"Nem"}]},{"id":"meglevo_pv","q":"Van már napelem?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"nincs","label":"Nincs"},{"id":"bovit","label":"Van, bővítené"},{"id":"hibas","label":"Van, hibás"}]},{"id":"ugyintezes","q":"Kell hálózati ügyintézés?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"igen","label":"Igen, kérem"},{"id":"folyamatban","label":"Már elindult"},{"id":"maga","label":"Maga intézi"}]},{"id":"okos_rendszer","q":"Milyen okosotthon rendszer?","group":"okos","prio":1,"who":"ugyfel","when":{"scope":"okos"},"options":[{"id":"knx","label":"KNX (vezetékes)"},{"id":"zigbee","label":"Zigbee / Thread"},{"id":"wifi","label":"WiFi (pl. Shelly)"},{"id":"nemdont","label":"Még nincs döntés"}]},{"id":"okos_mit","q":"Mit vezéreljen?","group":"okos","prio":1,"who":"ugyfel","when":{"scope":"okos"},"options":[{"id":"vilagitas","label":"Világítás"},{"id":"redony","label":"Redőny"},{"id":"futes","label":"Fűtés"},{"id":"kapu","label":"Kapu"},{"id":"meres","label":"Fogyasztásmérés"}],"multi":true},{"id":"gyenge_mit","q":"Milyen gyengeáram kell?","group":"gyenge","prio":1,"who":"ugyfel","when":{"scope":"gyenge"},"options":[{"id":"lan","label":"LAN","sets":{"scope":["lanpont"]}},{"id":"tv","label":"TV","sets":{"scope":["tvpont"]}},{"id":"wifi","label":"WiFi lefedettség"},{"id":"kamera","label":"Kamera","sets":{"scope":["ipkamera"]}},{"id":"kaputelefon","label":"Kaputelefon","sets":{"scope":["kaputelefon"]}}],"multi":true},{"id":"router_hely","q":"Hol lesz a router / rack?","group":"gyenge","prio":2,"who":"ugyfel","when":{"scope":"gyenge"},"options":[{"id":"eloszto","label":"Elosztó mellett"},{"id":"nappali","label":"Nappaliban"},{"id":"mas","label":"Máshol"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"klima_db","q":"Hány beltéri egység lesz?","group":"klima","prio":1,"who":"ugyfel","when":{"scope":"klima"},"options":[{"id":"1","label":"1"},{"id":"2","label":"2"},{"id":"3","label":"3"},{"id":"4+","label":"4 vagy több"}]},{"id":"kulteri_egyseg","q":"Hol lesz a kültéri egység?","group":"klima","prio":1,"who":"szemle","when":{"any":[{"scope":["klima","hoszivattyu"]}]},"options":[{"id":"homlokzat","label":"Homlokzaton"},{"id":"erkely","label":"Erkélyen"},{"id":"kert","label":"Kertben"},{"id":"teto","label":"Tetőn"}]}],"shotlist":[{"id":"epulet_eleje","purpose":"epulet","label":"Épület / bejárat eleje","hint":"A ház és a bejárat; vigyázz a házszámra és az arcokra.","when":true},{"id":"hozzaferes","purpose":"bejarat","label":"Hozzáférés: padlás, pince, felszálló","hint":"Ahol a kábel menne, és ami akadály.","when":true,"prio":2},{"id":"merohely_zart","purpose":"merohely","label":"Mérőszekrény zárva, környezettel","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]}},{"id":"merohely_nyitott","purpose":"merohely","label":"Mérőszekrény nyitva: mérő, főbiztosíték","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]}},{"id":"mero_tabla","purpose":"tabla","label":"Mérő címkéje: gyári szám, típus","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]}},{"id":"fobizt_tabla","purpose":"tabla","label":"Főbiztosíték értéke","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]}},{"id":"eloszto_zart","purpose":"eloszto","label":"Elosztó zárva, a helyiséggel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]}},{"id":"eloszto_nyitott","purpose":"eloszto","label":"Elosztó nyitva, olvasható címkékkel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]}},{"id":"eloszto_felirat","purpose":"tabla","label":"Áramköri lista / felirat","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"prio":2},{"id":"fi_tabla","purpose":"tabla","label":"FI-relé címkéje (30 mA?)","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"kw":"fi"}]}},{"id":"foldeles","purpose":"eloszto","label":"Földelés, EPH kötések","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"scope":"ev"}]},"prio":2},{"id":"szabad_hely","purpose":"eloszto","label":"Szabad DIN-hely","when":{"any":[{"scope":["ev","napelem","bovites"]}]}},{"id":"hiba_nyom","purpose":"hiba","label":"A hiba nyoma (égés, melegedés)","when":{"any":[{"scope":"hiba"},{"kw":"egett"}]}},{"id":"furdo_szoba","purpose":"szoba","room":"furdo","label":"Fürdő: Fotópont, 4 irány","when":{"any":[{"scope":"furdo"},{"room":"furdo"}]},"need":4},{"id":"konyha_szoba","purpose":"szoba","room":"konyha","label":"Konyha: Fotópont, 4 irány","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"need":4},{"id":"konyha_bekotes","purpose":"meglevo","label":"Meglévő konyhai aljzatok, gépbekötések","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]}},{"id":"ev_hely","purpose":"hely","label":"A töltő tervezett helye","when":{"scope":"ev"}},{"id":"ev_parkolo","purpose":"kornyek","label":"A parkolóhely, a töltőcsatlakozó oldala","when":{"scope":"ev"}},{"id":"ev_utvonal","purpose":"nyomvonal","label":"Kábelút az elosztótól a töltőig","when":{"scope":"ev"},"need":2},{"id":"pv_teto","purpose":"epulet","label":"Tető minden oldala","when":{"scope":"napelem"},"need":2},{"id":"pv_arnyek","purpose":"kornyek","label":"Árnyékolók: fák, kémény, szomszéd","when":{"scope":"napelem"}},{"id":"pv_inverter","purpose":"hely","label":"Inverter / akku helye","when":{"scope":"napelem"}},{"id":"pv_szamla","purpose":"dokumentum","label":"Villanyszámla (csak az éves kWh; név takarva)","when":{"scope":"napelem"},"prio":2},{"id":"meglevo_szerelveny","purpose":"meglevo","label":"Jellemző aljzat / kapcsoló szobánként","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}},{"id":"meglevo_vezetek","purpose":"meglevo","label":"Látható vezeték, kötődoboz","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"prio":2},{"id":"doksi","purpose":"dokumentum","label":"A régi dokumentáció","when":{"answer":"doksi","is":"igen"}},{"id":"kulteri_hely","purpose":"hely","label":"Kültéri egység helye","when":{"scope":["klima","hoszivattyu"]}}],"templates":[{"id":"l","label":"L alak","sym":"⌐","poly":[[0,0],[1,0],[1,0.55],[0.55,0.55],[0.55,1],[0,1]]},{"id":"u","label":"U alak","sym":"⊔","poly":[[0,0],[0.3,0],[0.3,0.65],[0.7,0.65],[0.7,0],[1,0],[1,1],[0,1]]},{"id":"t","label":"T alak","sym":"⊤","poly":[[0,0],[1,0],[1,0.4],[0.68,0.4],[0.68,1],[0.32,1],[0.32,0.4],[0,0.4]]},{"id":"ferde","label":"Ferde sarok","sym":"◸","poly":[[0.3,0],[1,0],[1,1],[0,1],[0,0.3]]},{"id":"fulke","label":"Fülkés","sym":"⊓","poly":[[0,0],[1,0],[1,1],[0.62,1],[0.62,0.8],[0.38,0.8],[0.38,1],[0,1]]}]};
+window.VRG_VARIANTS = [{"kind":"vrg-sketcher-variant","v":1,"id":"ev-tolto","name":"E-autó töltő telepítés","sym":"⚡","color":"#e0b020","premise":"Egy otthoni AC töltő (wallbox) felszerelése: a mérőhely és a főbiztosíték, az elosztó szabad helye és földelése, a töltő helye a parkolónál, a kábelút hossza és útja. Az alaprajz itt másodlagos, a nyomvonal és a fotók a lényeg.","topics":["e-auto","wallbox","tolto","kabelut","merohely"],"author":"Claude (GO VARIANT protocol, reference example)","created":"2026-11-18","plugins":{"on":["fotopont"],"off":[]},"rail":["route","board","point","measure","photo","memo","tag","room","select","line","circuit","template"],"pointRing":["fixed","socket","junction","board","data","switch","light","pont"],"pointPresets":[{"label":"Töltő (wallbox)","glyph":"⚡","type":"fixed","tags":["T-ded"]},{"label":"Kültéri aljzat","glyph":"⊙","type":"socket","tags":["T-ip44"]},{"label":"Kötődoboz","glyph":"◇","type":"junction","tags":[]},{"label":"Fali átvezetés","glyph":"⊘","type":"pont","tags":[]}],"roomRing":["gepeszet","kulter","eloszoba","kozlekedo","egyeb","nappali","konyha"],"templates":[{"id":"garazs-beallo","label":"Garázs + beálló","sym":"⊏","poly":[[0,0],[0.55,0],[0.55,0.6],[1,0.6],[1,1],[0,1]]}],"tags":[{"id":"T-falat","name":"Falátvezetés","color":"#b07a2a"},{"id":"T-arok","name":"Árok","color":"#6e8b3d"}],"scopePreset":{"ev":1,"merohely":1},"questions":[{"id":"ev_kabelut","q":"Merre menjen a kábel?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"falon","label":"Falon kívül, csatornában"},{"id":"falban","label":"Falban, vésve"},{"id":"foldben","label":"Földben, árokban"},{"id":"padlas","label":"Padláson át"}]},{"id":"ev_kabel_hossz","q":"Becsült kábelhossz?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"10","label":"\u003c 10 m"},{"id":"25","label":"10–25 m"},{"id":"50","label":"25–50 m"},{"id":"50+","label":"50 m felett"}],"num":{"unit":"m"}}],"shotlist":[{"id":"ev_falatvezetes","purpose":"nyomvonal","label":"Fal- és födémátvezetések","when":{"scope":"ev"}}],"hints":{"route":"Rajzold a kábelutat az elosztótól a töltőig; a hossza a Rendezésben látszik.","photo":"A töltő helye, a parkoló és a kábelút: a Képlista végigvezet."}},{"kind":"vrg-sketcher-variant","v":1,"id":"furdo-felujitas","name":"Fürdőszoba felújítás","sym":"🛁","color":"#2a8cdb","premise":"Egy fürdőszoba (és gyakran a mellette lévő WC) villamos felújítása: új lámpák, aljzatok a zónákon kívül, törölközőszárító, szellőző, padlófűtés, a kör FI-védelme. Kicsi, zsúfolt alaprajz fülkékkel és ferde sarkokkal.","topics":["furdo","felujitas","vizes helyiseg","zona","fi-rele"],"author":"Claude (GO VARIANT protocol, reference example)","created":"2026-11-18","plugins":{"on":["fotopont"]},"rail":["room","template","measure","point","photo","memo","tag","route","circuit","select","line","board"],"pointRing":["light","socket","fixed","switch","junction","sensor","data","pont"],"pointPresets":[{"label":"Tükörvilágítás","glyph":"✱","type":"light","tags":[]},{"label":"Aljzat IP44","glyph":"⊙","type":"socket","tags":["T-ip44"]},{"label":"Törölközőszárító","glyph":"♨","type":"fixed","tags":["T-ded"]},{"label":"Szellőző","glyph":"✣","type":"fixed","tags":[]},{"label":"Padlófűtés termosztát","glyph":"▦","type":"sensor","tags":[]},{"label":"Mosógép","glyph":"◍","type":"socket","tags":["T-ded","T-ip44"]}],"roomRing":["furdo","wc","mosokonyha","kozlekedo","halo","konyha","egyeb"],"templates":[{"id":"furdo-kadfulke","label":"Kádfülkés fürdő","sym":"⊓","poly":[[0,0],[1,0],[1,0.38],[0.72,0.38],[0.72,1],[0,1]]},{"id":"furdo-wc","label":"Fürdő + WC","sym":"⊞","poly":[[0,0],[0.68,0],[0.68,0.45],[1,0.45],[1,1],[0,1]]}],"tags":[{"id":"T-zona1","name":"Zóna 1","color":"#20a8a0"},{"id":"T-zona2","name":"Zóna 2","color":"#5470b0"}],"scopePreset":{"felujitas":1,"furdo":1},"chips":[{"id":"csempe_kesz","label":"Csempe kész","sym":"▦","color":"#20a8a0","group":"helyzet"}],"questions":[{"id":"furdo_zona","q":"Hol lesz a kád / zuhany (a zónák miatt)?","group":"furdo","prio":1,"who":"szemle","when":{"scope":"furdo"},"options":[{"id":"marad","label":"Marad a helyén"},{"id":"atkerul","label":"Átkerül"},{"id":"zuhany","label":"Kád helyett zuhany"},{"id":"nemtudja","label":"Még nem tudja"}]},{"id":"furdo_fi","q":"Külön FI-relé védje a fürdő körét?","group":"furdo","prio":1,"who":"ugyfel","when":{"scope":"furdo"},"options":[{"id":"igen","label":"Igen"},{"id":"meglevo","label":"A meglévő elég"},{"id":"javasolj","label":"Szerelő javasoljon"}]},{"id":"furdo_tukor","q":"Tükörvilágítás és tükör melletti aljzat kell?","group":"furdo","prio":2,"who":"ugyfel","when":{"scope":"furdo"},"options":[{"id":"mindketto","label":"Mindkettő"},{"id":"vilagitas","label":"Csak világítás"},{"id":"aljzat","label":"Csak aljzat"},{"id":"egyik","label":"Egyik sem"}]}],"shotlist":[{"id":"furdo_vizes","purpose":"nyomvonal","label":"Vizes falak, csőnyomvonalak","when":{"scope":"furdo"}},{"id":"furdo_eph","purpose":"meglevo","label":"EPH (egyenpotenciál) kötés a csöveken","when":{"scope":"furdo"},"prio":2}],"hints":{"room":"Húzd a fürdő téglalapját, a fülkét a Sablon eszköz adja.","point":"A tükör melletti aljzat IP44, a zóna 2-n kívül.","photo":"A Fotópont a fürdő közepén: négy irány, a vizes fal is."}}];</script>
+<script>
+// Sketcher/lib/fieldkit.js — the VRG Sketcher field-kit engine for the Desktop page and the Node tools.
+//
+// The same language and the same answers as the phone's Kotlin engine (Mobile/android/sketch-core FieldKit.kt):
+// conditions, facts, the shadow questionnaire, keyword suggestions, the shot list, loose ends. Proof: the fixture
+// Sketcher/test/fixtures/shadow.json is written by this file (tools/make-fixture.js) and replayed by FieldKitTest on
+// the JVM. Change the rules here and there together, then re-run make-fixture.js.
+//
+// Works in Node (module.exports) and in the browser (window.VRGFieldKit). No dependencies.
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.VRGFieldKit = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  const KIND = 'vrg-fieldkit', VARIANT_KIND = 'vrg-sketcher-variant', SKETCH_KIND = 'vrg-vazlat';
+  const COND_KINDS = ['scope', 'answer', 'room', 'point', 'tag', 'kw', 'chip', 'photo', 'site', 'variant'];
+  const FRESH_MS = 10 * 60 * 1000;
+
+  const fold = s => String(s || '').normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase();
+  const ids = v => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x) : typeof v === 'string' ? [v] : v === true ? ['true'] : [];
+
+  // ---- conditions ----------------------------------------------------------------------------------------------
+  function parseCond(v) {
+    if (v === undefined || v === null || v === true) return { t: true };
+    if (v === false) return { t: false };
+    if (Array.isArray(v)) return { any: v.map(parseCond) };
+    if (typeof v !== 'object') throw new Error('unknown condition: ' + JSON.stringify(v));
+    if ('all' in v) return { all: (v.all || []).map(parseCond) };
+    if ('any' in v) return { any: (v.any || []).map(parseCond) };
+    if ('not' in v) return { not: parseCond(v.not) };
+    const k = Object.keys(v).find(x => COND_KINDS.includes(x));
+    if (!k) throw new Error('unknown condition: ' + JSON.stringify(v));
+    return { of: k, ids: ids(v[k]), opts: k === 'answer' && 'is' in v ? ids(v.is) : null };
+  }
+  function evalCond(c, f) {
+    if ('t' in c) return c.t;
+    if (c.all) return c.all.every(x => evalCond(x, f));
+    if (c.any) return c.any.some(x => evalCond(x, f));
+    if (c.not) return !evalCond(c.not, f);
+    const has = set => c.ids.some(x => set.has(x));
+    switch (c.of) {
+      case 'scope': return has(f.scope);
+      case 'answer': return c.ids.some(q => f.answers.has(q) && (c.opts === null || c.opts.some(o => f.answers.get(q).has(o))));
+      case 'room': return has(f.rooms);
+      case 'point': return has(f.points);
+      case 'tag': return has(f.tags);
+      case 'kw': return has(f.kw);
+      case 'chip': return has(f.chips);
+      case 'photo': return has(f.photos);
+      case 'site': return f.site === c.ids.includes('true');
+      case 'variant': return f.variant != null && c.ids.includes(f.variant);
+    }
+    return false;
+  }
+
+  // ---- the catalog ---------------------------------------------------------------------------------------------
+  const effect = o => {
+    if (!o) return null;
+    const a = o.answer || null, e = { scope: Array.isArray(o.scope) ? o.scope.slice() : [], q: a && a.q || null, opt: a && a.opt || null, text: a && a.text || null };
+    return !e.scope.length && !e.q ? null : e;
+  };
+  function lists(o) {
+    return {
+      fronts: (o.fronts || []).slice(), purposes: (o.purposes || []).slice(),
+      chips: (o.chips || []).map(c => Object.assign({}, c, { sets: effect(c.sets), open: !!c.open })),
+      scope: (o.scope || []).slice(),
+      keywords: (o.keywords || []).map(k => Object.assign({}, k, { rx: new RegExp(k.re), suggest: effect(k.suggest) })),
+      questions: (o.questions || []).map(q => Object.assign({}, q, { prio: q.prio || 1, who: q.who || 'ugyfel', cond: parseCond(q.when),
+        options: (q.options || []).map(p => Object.assign({}, p, { sets: effect(p.sets) })) })),
+      shotlist: (o.shotlist || []).map(h => Object.assign({}, h, { need: h.need || 1, prio: h.prio || 1, room: h.room || null, cond: parseCond(h.when) })),
+      templates: (o.templates || []).slice(),
+    };
+  }
+  function parseKit(o) { if (!o || o.kind !== KIND) throw new Error('not a field kit'); return lists(o); }
+  function withVariant(kit, v) {
+    if (!v) return kit;
+    const add = lists(v), out = {};
+    for (const k of Object.keys(kit)) {
+      const a = add[k] || [], ids = new Set(a.map(x => x.id));
+      out[k] = kit[k].map(b => ids.has(b.id) ? a.find(x => x.id === b.id) : b).concat(a.filter(x => !kit[k].some(b => b.id === x.id)));
+    }
+    return out;
+  }
+
+  // ---- facts ---------------------------------------------------------------------------------------------------
+  const tagsOf = (s, target) => (s.tagUses || []).filter(u => u.target === target).map(u => (s.tags || []).find(t => t.id === u.tag)).filter(Boolean);
+  const texts = s => (s.entries || []).map(e => [e.id, e.text || '']).concat((s.memos || []).map(m => [m.id, m.text || '']), (s.captures || []).map(c => [c.id, c.note || '']));
+  function hits(kit, s) {
+    const out = new Map(), ts = texts(s).filter(t => t[1].trim()).map(t => [t[0], fold(t[1])]);
+    for (const k of kit.keywords) for (const [id, t] of ts) { const m = k.rx.exec(t); if (m) { out.set(k.id, [id, m[0].trim()]); break; } }
+    return out;
+  }
+  function facts(kit, s) {
+    const rooms = new Set();
+    (s.rooms || []).forEach(r => { (r.kinds || []).forEach(k => rooms.add(k));
+      tagsOf(s, r.id).forEach(t => { if (t.preset && t.preset.startsWith('kind:')) rooms.add(t.preset.slice(5)); }); });
+    const photos = new Set((s.captures || []).map(c => c.purpose || 'egyeb'));
+    if ((s.photos || []).some(p => (p.shots || []).length)) photos.add('szoba');
+    const answers = new Map();
+    Object.entries(s.answers || {}).forEach(([q, a]) => { if ((a.state || 'answered') === 'answered') answers.set(q, new Set(a.options || [])); });
+    const site = s.site || null;
+    return {
+      scope: new Set(Object.entries(s.scope || {}).filter(([, v]) => v > 0).map(([k]) => k)), answers, rooms,
+      points: new Set((s.points || []).map(p => p.type || 'pont')), tags: new Set((s.tagUses || []).map(u => u.tag)),
+      kw: new Set(hits(kit, s).keys()), chips: new Set((s.entries || []).flatMap(e => e.chips || [])), photos,
+      site: !!(site && ((site.address || '').trim() || site.lat != null)), variant: s.variantOn ? (s.variant || null) : null,
+    };
+  }
+
+  // ---- the shadow ----------------------------------------------------------------------------------------------
+  function questions(kit, s, f, now) {
+    f = f || facts(kit, s); now = now == null ? Date.now() : now;
+    const A = s.answers || {}, seen = s.seen || {}, idx = new Map(kit.questions.map((q, i) => [q.id, i]));
+    const rank = a => !a ? 0 : (a.state || 'answered') === 'answered' ? 2 : a.state === 'later' ? 1 : 0;
+    return kit.questions.filter(q => evalCond(q.cond, f) && !(A[q.id] && A[q.id].state === 'skip'))
+      .map(q => ({ q, answer: A[q.id] || null, fresh: !A[q.id] && (seen[q.id] == null || now - seen[q.id] < FRESH_MS),
+        done: !!A[q.id] && (A[q.id].state || 'answered') === 'answered', later: !!A[q.id] && A[q.id].state === 'later' }))
+      .sort((a, b) => rank(a.answer) - rank(b.answer) || a.q.prio - b.q.prio
+        || (seen[a.q.id] == null ? Infinity : seen[a.q.id]) - (seen[b.q.id] == null ? Infinity : seen[b.q.id]) || idx.get(a.q.id) - idx.get(b.q.id));
+  }
+  // NaN guard: Infinity - Infinity is NaN, which sort treats as 0 (equal) — the same as Kotlin's equal Long.MAX_VALUE.
+  const unseen = (kit, s, f) => { f = f || facts(kit, s); const seen = s.seen || {}; return kit.questions.filter(q => evalCond(q.cond, f) && !(q.id in seen)).map(q => q.id); };
+
+  function answered(e, s) { const a = (s.answers || {})[e.q]; return !!a && ((a.state || 'answered') === 'answered' || a.state === 'skip'); }
+  function applied(e, s) {
+    const sc = s.scope || {};
+    if (e.scope.length && e.scope.every(x => (sc[x] || 0) > 0)) return !e.q || answered(e, s);
+    if (!e.scope.length && e.q) return answered(e, s);
+    return false;
+  }
+  function suggestions(kit, s) {
+    const out = [], dis = new Set(s.dismissed || []);
+    for (const [k, hit] of hits(kit, s)) {
+      const kw = kit.keywords.find(x => x.id === k); if (!kw || !kw.suggest) continue;
+      const e = Object.assign({}, kw.suggest, { text: kw.suggest.text ? kw.suggest.text.replace('$0', hit[1]) : null });
+      const id = 'kw:' + k;
+      if (!dis.has(id) && !applied(e, s)) out.push({ id, keyword: k, effect: e, match: hit[1], source: hit[0] });
+    }
+    return out;
+  }
+  function apply(kit, e, s, now) {
+    if (!e) return s;
+    const o = Object.assign({}, s, { scope: Object.assign({}, s.scope || {}), answers: Object.assign({}, s.answers || {}) });
+    e.scope.forEach(x => { o.scope[x] = Math.max(1, o.scope[x] || 0); });
+    if (e.q) {
+      const q = kit.questions.find(x => x.id === e.q), old = o.answers[e.q];
+      const opts = e.opt == null ? (old ? old.options : []) : q && q.multi ? Array.from(new Set((old ? old.options : []).concat([e.opt]))) : [e.opt];
+      o.answers[e.q] = { options: opts, text: e.text != null ? e.text : old ? old.text : '', at: now, state: 'answered' };
+    }
+    return o;
+  }
+
+  function shots(kit, s, f) {
+    f = f || facts(kit, s);
+    const items = kit.shotlist.filter(h => evalCond(h.cond, f)), have = new Map(items.map(h => [h.id, 0]));
+    const caps = s.captures || [];
+    caps.filter(c => c.shot != null).forEach(c => { if (have.has(c.shot)) have.set(c.shot, have.get(c.shot) + 1); });
+    caps.filter(c => c.shot == null || !have.has(c.shot)).forEach(c => {
+      const it = items.find(h => h.purpose === (c.purpose || 'egyeb') && h.room == null && have.get(h.id) < h.need);
+      if (it) have.set(it.id, have.get(it.id) + 1);
+    });
+    items.filter(h => h.room != null).forEach(h => {
+      const rooms = new Set((s.rooms || []).filter(r => (r.kinds || []).includes(h.room) || tagsOf(s, r.id).some(t => t.preset === 'kind:' + h.room)).map(r => r.id));
+      const n = (s.photos || []).filter(p => rooms.has(p.room)).map(p => (p.shots || []).length);
+      have.set(h.id, n.length ? Math.max(...n) : 0);
+    });
+    return items.map(h => ({ item: h, have: have.get(h.id), done: have.get(h.id) >= h.need }))
+      .sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || a.item.prio - b.item.prio);
+  }
+
+  const SIDES = { 0: 'É', 90: 'K', 180: 'D', 270: 'Ny' };
+  // loose ends; norm = {rooms:[{id, name, kinds, inferred}]} or null (the Desktop gets it from the package's plan)
+  function open(kit, s, norm, f) {
+    f = f || facts(kit, s);
+    const out = [], chipLabel = c => (kit.chips.find(x => x.id === c) || {}).label;
+    if ((s.draft || '').trim()) out.push({ front: 'jegyzet', kind: 'draft', ref: 'draft', label: 'Félbehagyott jegyzet: ' + s.draft.slice(0, 40) });
+    (s.entries || []).filter(e => e.open).forEach(e => out.push({ front: 'jegyzet', kind: 'entry', ref: e.id,
+      label: ('Tisztázandó: ' + ((e.text || '') || (e.chips || []).map(chipLabel).filter(Boolean).join(', '))).slice(0, 'Tisztázandó: '.length + 60) }));
+    suggestions(kit, s).forEach(g => out.push({ front: 'jegyzet', kind: 'suggestion', ref: g.id, label: 'Javaslat a jegyzetből: „' + g.match + '”' }));
+    questions(kit, s, f).filter(x => !x.done && x.q.prio === 1).forEach(x => out.push({ front: 'kerdes', kind: 'question', ref: x.q.id, label: x.q.q }));
+    shots(kit, s, f).filter(x => !x.done && x.item.prio === 1).forEach(x => out.push({ front: 'kamera', kind: 'shot', ref: x.item.id,
+      label: 'Fotó: ' + x.item.label + (x.item.need > 1 ? ' (' + x.have + '/' + x.item.need + ')' : '') }));
+    (s.photos || []).filter(p => (p.shots || []).length >= 1 && p.shots.length <= 3).forEach(p => out.push({ front: 'vazlat', kind: 'photo', ref: p.id,
+      label: 'Fotópont: hiányzik ' + [0, 90, 180, 270].filter(d => !p.shots.some(x => ((x.deg % 360) + 360) % 360 === d)).map(d => SIDES[d]).join(', ') }));
+    if (norm) (norm.rooms || []).filter(r => r.inferred).forEach(r => out.push({ front: 'vazlat', kind: 'room', ref: r.id, label: 'Becsült méret: ' + (r.name || r.id) }));
+    (s.points || []).filter(p => (p.type || 'pont') === 'pont').forEach(p => out.push({ front: 'vazlat', kind: 'point', ref: p.id, label: 'Típus nélküli pont' }));
+    if ((s.points || []).some(p => p.type === 'board')) (s.circuits || []).filter(c => !c.board && (c.members || []).length).forEach(c => out.push({ front: 'vazlat', kind: 'circuit', ref: c.id, label: 'Nincs bekötve: ' + c.name }));
+    (s.captures || []).filter(c => (c.purpose || 'egyeb') === 'egyeb' && !(c.note || '').trim()).forEach(c => out.push({ front: 'kamera', kind: 'capture', ref: c.id, label: 'Fotó cél nélkül' }));
+    if (!s.site || (!(s.site.address || '').trim() && s.site.lat == null)) out.push({ front: 'helyszin', kind: 'site', ref: 'site', label: 'Nincs cím' });
+    return out;
+  }
+
+  // ---- validation (the variant protocol's gate) -----------------------------------------------------------------
+  function checkLists(o, where, errs, known) {
+    const seen = {};
+    for (const k of ['fronts', 'purposes', 'chips', 'scope', 'keywords', 'questions', 'shotlist', 'templates']) {
+      if (o[k] !== undefined && !Array.isArray(o[k])) { errs.push(where + ': ' + k + ' must be a list'); continue; }
+      (o[k] || []).forEach((x, i) => {
+        const at = where + ' ' + k + '[' + i + ']';
+        if (!x || typeof x.id !== 'string' || !/^[a-z0-9][a-z0-9_.:-]*$/.test(x.id)) errs.push(at + ': id must be lower-case ascii');
+        else { if (seen[k + x.id]) errs.push(at + ': duplicate id ' + x.id); seen[k + x.id] = 1; }
+        if (k === 'keywords') { try { new RegExp(x.re); } catch (e) { errs.push(at + ': bad regex ' + e.message); } if (/[A-ZÁÉÍÓÖŐÚÜŰáéíóöőúüű]/.test(x.re || '')) errs.push(at + ': regex must be folded (lower case, no accents)'); }
+        try { if ('when' in x) parseCond(x.when); } catch (e) { errs.push(at + ': ' + e.message); }
+        if (k === 'questions') {
+          if (!x.q) errs.push(at + ': q text missing');
+          if (!Array.isArray(x.options) || x.options.length < 2 || x.options.length > 6) errs.push(at + ': 2-6 options');
+          (x.options || []).forEach((p, j) => { if (!p.id || !p.label) errs.push(at + ' option ' + j + ': id and label'); });
+        }
+        if (k === 'shotlist' && known && !known.purposes.has(x.purpose)) errs.push(at + ': unknown purpose ' + x.purpose);
+        if (k === 'templates') {
+          const p = x.poly;
+          if (!Array.isArray(p) || p.length < 3 || p.some(q => !Array.isArray(q) || q.length !== 2 || q.some(v => typeof v !== 'number' || v < 0 || v > 1)))
+            errs.push(at + ': poly = 3+ points within the unit square');
+        }
+      });
+    }
+  }
+  function validateKit(o) {
+    const errs = [];
+    if (!o || o.kind !== KIND) return ['kind must be ' + KIND];
+    checkLists(o, 'kit', errs, { purposes: new Set((o.purposes || []).map(p => p.id)) });
+    return errs;
+  }
+  const RAIL_TOOLS = ['select', 'memo', 'tag', 'room', 'line', 'measure', 'point', 'circuit', 'board', 'route', 'photo', 'template'];
+  const POINT_TYPES = ['pont', 'socket', 'switch', 'light', 'junction', 'data', 'fixed', 'sensor', 'board'];
+  const ROOM_KINDS = ['nappali', 'konyha', 'halo', 'furdo', 'wc', 'eloszoba', 'kozlekedo', 'etkezo', 'dolgozo', 'kamra', 'gepeszet', 'gyerek', 'gardrob', 'mosokonyha', 'kulter', 'egyeb'];
+  const PLUGINS = ['alaprajz', 'villany', 'fotopont'];
+  function validateVariant(v, kit) {
+    const errs = [];
+    if (!v || v.kind !== VARIANT_KIND) return ['kind must be ' + VARIANT_KIND];
+    if (!/^[a-z0-9][a-z0-9-]{1,40}$/.test(v.id || '')) errs.push('id: 2-41 chars, a-z 0-9 -');
+    if (!v.name) errs.push('name missing');
+    if (!v.premise || v.premise.length < 20) errs.push('premise: one to three sentences');
+    if (v.topics !== undefined && (!Array.isArray(v.topics) || v.topics.some(t => typeof t !== 'string'))) errs.push('topics: a list of words');
+    const known = { purposes: new Set((kit && kit.purposes || []).map(p => p.id).concat((v.purposes || []).map(p => p.id))) };
+    checkLists(v, 'variant', errs, known);
+    (v.rail || []).forEach(t => { if (!RAIL_TOOLS.includes(t)) errs.push('rail: unknown tool ' + t); });
+    (v.pointRing || []).forEach(t => { if (!POINT_TYPES.includes(t)) errs.push('pointRing: unknown type ' + t); });
+    (v.pointPresets || []).forEach((p, i) => { if (!p.label || !POINT_TYPES.includes(p.type)) errs.push('pointPresets[' + i + ']: label and a known type'); });
+    (v.roomRing || []).forEach(k => { if (!ROOM_KINDS.includes(k)) errs.push('roomRing: unknown room kind ' + k); });
+    if ((v.roomRing || []).length > 7) errs.push('roomRing: at most 7 (the wheel has 7 kinds a ring)');
+    const pl = v.plugins || {};
+    (pl.on || []).concat(pl.off || []).forEach(p => { if (!PLUGINS.includes(p)) errs.push('plugins: unknown ' + p); });
+    const sc = v.scopePreset || {};
+    if (typeof sc !== 'object' || Array.isArray(sc)) errs.push('scopePreset: {scope id: qty}');
+    const scopeIds = new Set((kit && kit.scope || []).map(x => x.id).concat((v.scope || []).map(x => x.id)));
+    Object.keys(sc).forEach(k => { if (kit && !scopeIds.has(k)) errs.push('scopePreset: unknown scope ' + k); });
+    (v.tags || []).forEach((t, i) => { if (!t.id || !t.name) errs.push('tags[' + i + ']: id and name'); });
+    return errs;
+  }
+
+  return { KIND, VARIANT_KIND, SKETCH_KIND, FRESH_MS, fold, parseCond, evalCond, parseKit, withVariant, facts, hits, questions, unseen,
+    suggestions, applied, apply, shots, open, tagsOf, validateKit, validateVariant, RAIL_TOOLS, POINT_TYPES, ROOM_KINDS };
+});
+
+</script>
+<script>
+// Sketcher/src/app.js — VRG Sketcher Desktop page: review and complete a field survey at the PC.
+// The engine (window.VRGFieldKit), the catalog (window.VRG_FIELDKIT) and the variants (window.VRG_VARIANTS) are inlined by tools/build.js.
+(function () {
+  'use strict';
+  const FK = window.VRGFieldKit;
+  const BASE = FK.parseKit(window.VRG_FIELDKIT);
+  const VARIANTS = window.VRG_VARIANTS || [];
+  const GROUPS = [['jelleg', 'Jelleg'], ['terulet', 'Terület'], ['rendszer', 'Rendszer'], ['igeny', 'Igény']];
+  const TYPES = { socket: 'Dugalj', switch: 'Kapcsoló', light: 'Lámpa', junction: 'Kötődoboz', data: 'Adat', fixed: 'Fix bekötés', sensor: 'Érzékelő', board: 'Elosztó', pont: 'Típustalan' };
+  const EXTRA = { attekintes: { id: 'attekintes', label: 'Áttekintés', sym: '▤', color: '#93d3e6' }, variansok: { id: 'variansok', label: 'Variánsok', sym: '◐', color: '#b08ad8' } };
+  const LAST_KEY = 'vrg-sketcher-last';
+
+  let S = null, pkg = null, cur = 'attekintes', msg = null, fileName = '';
+  let files = new Map();                       // photo file name -> object URL (memory only, never saved)
+  let note = { text: '', chips: new Set(), open: false, room: '' };
+  let starter = '';
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const base = n => String(n || '').split(/[\\/]/).pop();
+  const stem = () => (FK.fold(S && S.name).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'vazlat').slice(0, 40);
+
+  // ---- state helpers ---------------------------------------------------------------------------------------------
+  const variantJson = () => S && S.variantOn && S.variant ? VARIANTS.find(v => v.id === S.variant) || null : null;
+  const kit = () => FK.withVariant(BASE, variantJson());
+  const floors = () => pkg && pkg.plan && pkg.plan.data && pkg.plan.data.floors || [];
+  const norm = () => floors().length
+    ? { rooms: floors().map(f => ({ id: f.sk && f.sk.id || f.id, name: f.name, inferred: !!(f.sk && f.sk.est && f.sk.est.length) })) }
+    : { rooms: (S.rooms || []).map(r => ({ id: r.id, name: r.name, inferred: false })) };
+  const roomName = id => {
+    if (!id) return '';
+    const n = norm().rooms.find(r => r.id === id);
+    return n && n.name || (S.rooms || []).find(r => r.id === id)?.name || id;
+  };
+  const nextId = prefix => { S.seq = (S.seq || 0) + 1; return prefix + S.seq; };   // = prefix + (seq+1), then seq += 1
+  const stamp = () => Date.now();
+
+  function persist() {
+    try { localStorage.setItem(LAST_KEY, JSON.stringify(pkg ? Object.assign({}, pkg, { sketch: S }) : S)); } catch (e) { /* file:// has no storage */ }
+  }
+  function commit(fn, rerender) {
+    const r = fn(S); if (r) S = r;
+    persist();
+    if (rerender === false) { renderRail(); renderHeader(); } else render();
+  }
+  function flash(text, cls) { msg = text ? { text, cls: cls || '' } : null; }
+
+  // ---- loading and saving ----------------------------------------------------------------------------------------
+  function load(obj, name) {
+    if (typeof obj === 'string') obj = JSON.parse(obj);
+    if (!obj || typeof obj !== 'object') throw new Error('Nem felmérés fájl.');
+    obj = clone(obj);
+    if (obj.kind === 'vrg-sketch' && obj.sketch && obj.sketch.kind === 'vrg-vazlat') { pkg = obj; S = obj.sketch; delete pkg.sketch; }
+    else if (obj.kind === 'vrg-vazlat') { pkg = null; S = obj; }
+    else throw new Error('Ismeretlen fájl (kind: ' + obj.kind + ') — vrg-sketch vagy vrg-vazlat kell.');
+    files.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
+    files = new Map(); fileName = name || ''; note = { text: '', chips: new Set(), open: false, room: '' };
+    flash(null); persist(); render();
+    return S;
+  }
+  function output() { return pkg ? Object.assign({}, pkg, { sketch: S }) : S; }
+  function save() {
+    if (!S) return null;
+    const text = JSON.stringify(output(), null, 1);
+    try {
+      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = stem() + '.vsketch.json';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+    return text;
+  }
+  function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
+  async function openFiles(list) {
+    const arr = Array.from(list || []), js = arr.filter(f => /\.json$/i.test(f.name) || f.type === 'application/json'), ph = arr.filter(f => !js.includes(f));
+    try {
+      if (js.length) load(await readFile(js[0]), js[0].name);
+      if (ph.length) attach(ph);
+    } catch (e) { flash(String(e.message || e), 'err'); render(); }
+  }
+
+  // ---- photos in memory ------------------------------------------------------------------------------------------
+  function captureNames(c) {
+    const n = [base(c.file), stem() + '_' + c.id + '_' + (c.purpose || 'egyeb') + '.jpg'];
+    return n.filter(Boolean);
+  }
+  function attach(list) {
+    const want = new Set();
+    (S.captures || []).forEach(c => captureNames(c).forEach(n => want.add(n)));
+    (S.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
+(pkg && pkg.plan && pkg.plan.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
+    let n = 0;
+    Array.from(list).forEach(f => { if (want.has(f.name)) { if (files.has(f.name)) URL.revokeObjectURL(files.get(f.name)); files.set(f.name, URL.createObjectURL(f)); n++; } });
+    flash(n + ' / ' + list.length + ' fotó párosítva (csak a memóriában, a mentett fájlba nem kerül).', n ? 'ok' : '');
+    render();
+  }
+  const thumbFor = c => { const n = captureNames(c).find(x => files.has(x)); return n ? files.get(n) : null; };
+
+  // ---- pieces ----------------------------------------------------------------------------------------------------
+  const pill = (o, extra) => '<span class="pill ' + (extra || '') + '" style="--c:' + esc(o.color || '#a6afb7') + '"><i>' + esc(o.sym || '•') + '</i>' + esc(o.label) + '</span>';
+  const chipPill = id => { const c = BASE.chips.find(x => x.id === id) || kit().chips.find(x => x.id === id) || { label: id }; return pill(c); };
+  const fmtTime = at => typeof at === 'number' && at > 1e11 ? new Date(at).toLocaleString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+  function polyArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return Math.abs(a) / 2; }
+  const f1 = x => (Math.round(x * 10) / 10).toString().replace('.', ',');
+  const frontOf = id => BASE.fronts.find(f => f.id === id) || EXTRA[id];
+
+  function model() {
+    const fl = floors();
+    if (fl.length) {
+      const dev = pkg.plan.data.devices || [];
+      return { unit: 'mm', polys: fl.map(f => ({ poly: f.poly, name: f.name, est: new Set(f.sk && f.sk.est || []) })),
+        devs: dev.map(d => ({ x: d.x, y: d.y, st: d.sk && d.sk.st || 'tervezett', type: d.type })),
+        photos: (pkg.plan.photos || []).map(p => ({ x: p.x, y: p.y, shots: p.shots || [] })) };
+    }
+    return { unit: 'u', polys: (S.rooms || []).map(r => ({ poly: r.poly, name: r.name || (r.kinds || [])[0] || r.id, est: new Set() })),
+      devs: (S.points || []).map(p => ({ x: p.at[0], y: p.at[1], st: p.st || 'tervezett', type: p.type })),
+      photos: (S.photos || []).map(p => ({ x: p.at[0], y: p.at[1], shots: p.shots || [] })) };
+  }
+  const bbox = pts => pts.reduce((b, p) => [Math.min(b[0], p[0]), Math.min(b[1], p[1]), Math.max(b[2], p[0]), Math.max(b[3], p[1])], [Infinity, Infinity, -Infinity, -Infinity]);
+
+  function svgPlan() {
+    const m = model(), pts = [];
+    m.polys.forEach(r => (r.poly || []).forEach(p => pts.push(p)));
+    m.devs.forEach(d => pts.push([d.x, d.y])); m.photos.forEach(p => pts.push([p.x, p.y]));
+    if (!pts.length) return '<div class="empty">Még nincs rajz a felmérésben.</div>';
+    let b = bbox(pts); const ext = Math.max(b[2] - b[0], b[3] - b[1], 1), pad = ext * 0.08, wr = ext / 12;
+    b = [b[0] - pad - wr, b[1] - pad - wr, b[2] + pad + wr, b[3] + pad + wr];
+    const fs = ext * 0.03, dr = ext * 0.012;
+    let out = '<svg id="plansvg" viewBox="' + b[0] + ' ' + b[1] + ' ' + (b[2] - b[0]) + ' ' + (b[3] - b[1]) + '" xmlns="http://www.w3.org/2000/svg">';
+    m.polys.forEach(r => {
+      const p = r.poly || []; if (p.length < 3) return;
+      out += '<polygon class="fl" points="' + p.map(q => q.join(',')).join(' ') + '"/>';
+      p.forEach((q, i) => {
+        const n = p[(i + 1) % p.length], est = r.est.has(i), len = Math.hypot(n[0] - q[0], n[1] - q[1]);
+        out += '<line class="' + (est ? 'est' : 'edge') + '" x1="' + q[0] + '" y1="' + q[1] + '" x2="' + n[0] + '" y2="' + n[1] + '"/>';
+        if (est && m.unit === 'mm') out += '<text class="lbl e" font-size="' + fs * 0.85 + '" x="' + (q[0] + n[0]) / 2 + '" y="' + ((q[1] + n[1]) / 2 - fs * 0.4) + '">≈ ' + f1(len / 1000) + ' m</text>';
+      });
+      const bb = bbox(p);
+      if (r.name) out += '<text class="lbl" font-size="' + fs + '" x="' + (bb[0] + bb[2]) / 2 + '" y="' + (bb[1] + bb[3]) / 2 + '">' + esc(r.name) + '</text>';
+    });
+    m.photos.forEach(p => {
+      [0, 90, 180, 270].forEach(deg => {
+        const has = (p.shots || []).some(s => ((s.deg % 360) + 360) % 360 === deg), pt = a => [p.x + wr * Math.sin(a * Math.PI / 180), p.y - wr * Math.cos(a * Math.PI / 180)];
+        const A = pt(deg - 40), B = pt(deg + 40);
+        out += '<path class="wedge ' + (has ? 'shot' : 'noshot') + '" d="M' + p.x + ' ' + p.y + ' L' + A.join(' ') + ' A' + wr + ' ' + wr + ' 0 0 1 ' + B.join(' ') + ' Z"/>';
+      });
+    });
+    m.devs.forEach(d => { out += '<circle class="dev ' + (d.st === 'meglevo' ? 'meglevo' : 'tervezett') + '" cx="' + d.x + '" cy="' + d.y + '" r="' + dr + '"><title>' + esc(TYPES[d.type] || d.type || '') + ' (' + (d.st === 'meglevo' ? 'meglévő' : 'tervezett') + ')</title></circle>'; });
+    return out + '</svg>';
+  }
+
+  // ---- fronts ----------------------------------------------------------------------------------------------------
+  function derived() {
+    const k = kit(), f = FK.facts(k, S), now = stamp();
+    return { k, f, qs: FK.questions(k, S, f, now), shots: FK.shots(k, S, f), open: FK.open(k, S, norm(), f), sug: FK.suggestions(k, S) };
+  }
+
+  function vAttekintes(d) {
+    const sc = S.scope || {}, fl = floors();
+    let h = '<div class="grid"><div class="card"><h3 style="margin-top:0">Munkakör</h3>';
+    let any = false;
+    GROUPS.forEach(([g, label]) => {
+      const sel = d.k.scope.filter(x => x.group === g && sc[x.id] > 0);
+      if (!sel.length) return; any = true;
+      h += '<div class="small muted">' + label + '</div><div>' + sel.map(x => pill({ sym: x.sym, label: x.label + (x.qty ? ' ×' + sc[x.id] : ''), color: '#3dae5a' })).join('') + '</div>';
+    });
+    h += (any ? '' : '<div class="muted">Még nincs kiválasztva semmi.</div>') + '</div>';
+    const area = fl.reduce((a, f) => a + polyArea(f.poly || []), 0) / 1e6, pts = S.points || [];
+    const byType = {}; pts.forEach(p => { const t = p.type || 'pont', k = t + '|' + (p.st === 'meglevo' ? 'meglevo' : 'tervezett'); byType[k] = (byType[k] || 0) + 1; });
+    const nPlan = pts.filter(p => p.st !== 'meglevo').length, nOld = pts.length - nPlan, shotsN = (S.photos || []).reduce((a, p) => a + (p.shots || []).length, 0);
+    const answered = d.qs.filter(x => x.done).length;
+    h += '<div class="card"><h3 style="margin-top:0">Felmérés</h3><div class="kv">' +
+      '<b>Helyiségek</b><span>' + (fl.length ? fl.length : (S.rooms || []).length) + (fl.length ? ' · ' + f1(area) + ' m²' : '') + '</span>' +
+      '<b>Pontok</b><span>' + nPlan + ' tervezett · ' + nOld + ' meglévő</span>' +
+      '<b></b><span class="small muted">' + (Object.keys(byType).map(k => { const [t, st] = k.split('|'); return (TYPES[t] || t) + ' ' + byType[k] + (st === 'meglevo' ? ' (m)' : ''); }).join(', ') || '—') + '</span>' +
+      '<b>Áramkörök</b><span>' + (S.circuits || []).length + '</span>' +
+      '<b>Fotók</b><span>' + (S.captures || []).length + ' célfotó · ' + shotsN + ' fotópont-kép</span>' +
+      '<b>Jegyzetek</b><span>' + (S.entries || []).length + '</span>' +
+      '<b>Kérdések</b><span>' + answered + ' megválaszolva · ' + (d.qs.length - answered) + ' nyitott</span></div></div></div>';
+    h += '<h3>Nyitott szálak (első 8)</h3>' + (d.open.length ? d.open.slice(0, 8).map(leHtml).join('') : '<div class="empty">Nincs nyitott szál.</div>');
+    return h;
+  }
+  const leHtml = o => { const f = frontOf(o.front) || {}; return '<button class="le" data-act="jump" data-front="' + esc(o.front) + '" style="--c:' + esc(f.color) + '"><span class="k">' + esc(f.sym) + '</span><span>' + esc(o.label) + '</span></button>'; };
+
+  function vVazlat() {
+    return '<div class="svgwrap">' + svgPlan() + '</div><div class="legend"><span><i style="background:#d9a441"></i>meglévő</span><span><i style="background:#27c2b0"></i>tervezett</span>' +
+      '<span><i style="background:#e8641c"></i>≈ becsült él</span><span><i style="background:#2a8cdb"></i>fotópont (kitöltött = van kép)</span>' +
+      '<span>' + (floors().length ? 'Terv: mm-ben (Planner adat)' : 'Csak vázlat: rajzegységben') + '</span></div>';
+  }
+
+  function vJegyzet(d) {
+    const k = d.k, rooms = norm().rooms;
+    let h = '<div class="card"><textarea id="ntext" placeholder="Jegyzet: amit az ügyfél mondott…">' + esc(note.text) + '</textarea><div style="margin-top:6px">' +
+      k.chips.map(c => '<button class="pill ' + (note.chips.has(c.id) ? 'sel' : '') + '" data-act="nchip" data-id="' + esc(c.id) + '" style="--c:' + esc(c.color) + '"><i>' + esc(c.sym) + '</i>' + esc(c.label) + '</button>').join('') +
+      '</div><div class="row"><select id="nroom" style="width:auto"><option value="">(helyiség nélkül)</option>' + rooms.map(r => '<option value="' + esc(r.id) + '"' + (note.room === r.id ? ' selected' : '') + '>' + esc(r.name || r.id) + '</option>').join('') + '</select>' +
+      '<label class="small"><input type="checkbox" id="nopen"' + (note.open ? ' checked' : '') + '> ⚑ Tisztázandó</label><span class="grow"></span><button class="btn primary" id="nadd" data-act="nadd">Hozzáad</button></div></div>';
+    if (d.sug.length) {
+      h += '<h3>Javaslatok a jegyzetekből</h3><div>' + d.sug.map(g => {
+        const e = g.effect, parts = e.scope.map(s => (k.scope.find(x => x.id === s) || { label: s }).label);
+        if (e.q) { const q = k.questions.find(x => x.id === e.q); parts.push((q ? q.q : e.q) + (e.opt ? ' → ' + ((q && q.options.find(o => o.id === e.opt) || {}).label || e.opt) : '')); }
+        return '<span class="pill ghost" style="--c:#e0b020" data-sug="' + esc(g.id) + '"><i>✎</i>„' + esc(g.match) + '” → ' + esc(parts.join(', ')) +
+          ' <button class="x" title="Elfogad" data-act="sugok" data-id="' + esc(g.id) + '">✓</button><button class="x" title="Elvet" data-act="sugno" data-id="' + esc(g.id) + '">✕</button></span>';
+      }).join('') + '</div>';
+    }
+    const ents = (S.entries || []).slice().reverse();
+    h += '<h3>Napló</h3>' + (ents.length ? '<div class="tl">' + ents.map(e => '<div class="ent' + (e.open ? ' open' : '') + '" data-ent="' + esc(e.id) + '"><div class="meta"><span>' + esc(fmtTime(e.at)) + '</span>' +
+      (e.room ? '<span>⌂ ' + esc(roomName(e.room)) + '</span>' : '') + (e.voice ? '<span>🎙</span>' : '') +
+      '<button class="flag ' + (e.open ? 'on' : '') + '" data-act="eopen" data-id="' + esc(e.id) + '" title="Tisztázandó">⚑</button></div>' +
+      (e.text ? '<div class="txt">' + esc(e.text) + '</div>' : '') + '<div>' + (e.chips || []).map(chipPill).join('') + '</div></div>').join('') + '</div>' : '<div class="empty">Még nincs jegyzet.</div>');
+    return h;
+  }
+
+  function vMunkakor(d) {
+    const sc = S.scope || {}, col = frontOf('munkakor').color;
+    return GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
+      const n = sc[x.id] || 0;
+      if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
+        '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
+      return '<button class="pill ' + (n ? 'sel' : 'off') + '" data-act="stoggle" data-id="' + esc(x.id) + '" data-scope="' + esc(x.id) + '" style="--c:' + col + '"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</button>';
+    }).join('') + '</div>').join('');
+  }
+
+  function qCard(x) {
+    const q = x.q, a = x.answer, chosen = new Set(a && a.options || []), c = frontOf('kerdes').color;
+    return '<div class="card qcard' + (x.fresh ? ' fresh' : '') + (x.later ? ' later' : '') + '" data-q="' + esc(q.id) + '" style="--c:' + c + '"><div class="qt">' + esc(q.q) +
+      (x.fresh ? '<span class="tag new">új</span>' : '') + (x.later ? '<span class="tag">később</span>' : '') + (q.multi ? '<span class="tag">több is</span>' : '') + '</div><div>' +
+      q.options.map(o => '<button class="pill ' + (chosen.has(o.id) ? 'sel' : '') + '" data-act="qopt" data-q="' + esc(q.id) + '" data-o="' + esc(o.id) + '">' + esc(o.label) + '</button>').join('') + '</div>' +
+      (q.num ? '<div class="row"><input type="text" data-qtext="' + esc(q.id) + '" value="' + esc(a && a.text) + '" placeholder="Érték"><span class="muted">' + esc(q.num.unit) + '</span></div>'
+        : '<textarea data-qtext="' + esc(q.id) + '" placeholder="Megjegyzés (szabad szöveg)">' + esc(a && a.text) + '</textarea>') +
+      '<div class="acts"><button class="btn sm" data-act="qlater" data-q="' + esc(q.id) + '">Később</button><button class="btn sm" data-act="qskip" data-q="' + esc(q.id) + '">Nem releváns</button>' +
+      (a ? '<button class="btn sm dim" data-act="qclear" data-q="' + esc(q.id) + '">Törlés</button>' : '') + '</div></div>';
+  }
+  function vKerdes(d) {
+    const op = d.qs.filter(x => !x.done), dn = d.qs.filter(x => x.done);
+    const skipped = Object.keys(S.answers || {}).filter(k => S.answers[k].state === 'skip');
+    return (op.length ? op.map(qCard).join('') : '<div class="empty">Nincs nyitott kérdés.</div>') +
+      (dn.length ? '<details id="qdone"><summary class="muted">Megválaszolva (' + dn.length + ')</summary>' + dn.map(qCard).join('') + '</details>' : '') +
+      (skipped.length ? '<p class="small muted">Nem releváns: ' + skipped.length + ' <button class="btn sm" data-act="qunskip">visszaállít</button></p>' : '');
+  }
+
+  function vKamera(d) {
+    const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
+    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
+    h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
+      (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
+    h += '<h3>Célfotók</h3>';
+    const used = new Set();
+    purposes.forEach(p => {
+      const list = caps.filter(c => (c.purpose || 'egyeb') === p.id); if (!list.length) return; used.add(p.id);
+      h += '<div class="small" style="color:' + esc(p.color) + '">' + esc(p.sym) + ' ' + esc(p.label) + ' (' + list.length + ')</div>' + list.map(capCard).join('');
+    });
+    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb')); if (rest.length) h += rest.map(capCard).join('');
+    if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
+    const pp = (S.photos || []);
+    if (pp.length) h += '<h3>Fotópontok</h3>' + pp.map(p => '<div class="card"><b>' + esc(p.id) + '</b> ' + esc(roomName(p.room)) + ' ' + (p.shots || []).map(x => {
+      const u = files.get(base(x.file)); return u ? '<img class="thumb" src="' + esc(u) + '" alt="' + esc(x.file) + '">' : '<span class="tag">' + esc(base(x.file)) + '</span>';
+    }).join('') + '</div>').join('');
+    return h;
+  }
+  function capCard(c) {
+    const u = thumbFor(c);
+    return '<div class="card cap-card" data-cap="' + esc(c.id) + '">' + (u ? '<img class="thumb" src="' + esc(u) + '" alt="">' : '<div class="thumb">nincs kép</div>') +
+      '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + '</div>' +
+      (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+  }
+
+  function vHelyszin() {
+    const si = S.site || {}, fl = floors();
+    let h = '<div class="card"><div class="kv"><b>Cím</b><input type="text" data-site="address" value="' + esc(si.address) + '">' +
+      '<b>Szélesség</b><input type="text" data-site="lat" value="' + esc(si.lat) + '"><b>Hosszúság</b><input type="text" data-site="lon" value="' + esc(si.lon) + '">' +
+      '<b>Forrás</b><span>' + esc(si.source || '—') + '</span></div></div>';
+    const fp = si.footprint;
+    let size = '';
+    if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
+    if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
+    const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
+    return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
+  }
+
+  function vNyitott(d) {
+    if (!d.open.length) return '<div class="empty">Nincs nyitott szál — minden rendben.</div>';
+    return BASE.fronts.map(f => { const l = d.open.filter(o => o.front === f.id); if (!l.length) return '';
+      return '<h3 style="color:' + esc(f.color) + '">' + esc(f.sym) + ' ' + esc(f.label) + ' (' + l.length + ')</h3>' + l.map(leHtml).join(''); }).join('');
+  }
+
+  function vVariansok() {
+    return '<div class="grid">' + VARIANTS.map(v => '<div class="card" style="border-left:3px solid ' + esc(v.color) + '"><div style="font-size:18px;color:' + esc(v.color) + '">' + esc(v.sym) + ' <b>' + esc(v.name) + '</b>' +
+      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' +
+      '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="vpick" data-id="' + esc(v.id) + '">Használat ebben a felmérésben</button></div></div>').join('') + '</div>' +
+      '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
+      '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>';
+  }
+
+  // ---- rendering -------------------------------------------------------------------------------------------------
+  function renderHeader() {
+    const h = $('hinfo'); if (!h) return;
+    if (!S) { h.innerHTML = '<span class="muted">Nincs megnyitott felmérés</span>'; return; }
+    const v = VARIANTS.find(x => x.id === S.variant);
+    h.innerHTML = '<span class="nm">' + esc(S.name || fileName || 'Névtelen felmérés') + '</span><span class="ad">' + esc(S.site && S.site.address || '') + '</span>' +
+      (S.variant ? '<button class="btn sm ' + (S.variantOn ? 'on' : 'dim') + '" id="vtoggle" data-act="vtoggle" style="--c:' + esc(v ? v.color : '#93d3e6') + '" title="Variáns: ' + esc(v ? v.name : S.variant) + '">◐ ' + esc(v ? v.name : S.variant) + '</button>' : '');
+  }
+  function railItem(f, badge, isNew) {
+    return '<button class="rb' + (cur === f.id ? ' act' : '') + '" data-act="front" data-front="' + f.id + '" title="' + esc(f.label) + '" style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span><span class="cap">' + esc(f.label) + '</span>' +
+      (badge ? '<span class="badge' + (isNew ? ' new' : '') + '" data-badge="' + f.id + '">' + badge + '</span>' : '') + '</button>';
+  }
+  function badges(d) {
+    if (!d) return {};
+    const oq = d.qs.filter(x => !x.done);
+    return { kerdes: [oq.length, oq.some(x => x.fresh)], nyitott: [d.open.length, false], kamera: [d.shots.filter(x => !x.done).length, false] };
+  }
+  function renderRail() {
+    const r = $('rail'); if (!r) return;
+    const b = S ? badges(derived()) : {}, one = f => railItem(f, b[f.id] && b[f.id][0], b[f.id] && b[f.id][1]);
+    r.innerHTML = one(EXTRA.attekintes) + '<div class="sep"></div>' + BASE.fronts.map(one).join('') + '<div class="sep"></div>' + one(EXTRA.variansok);
+  }
+  const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok };
+
+  function render() {
+    renderHeader(); renderRail();
+    const m = $('main'); if (!m) return;
+    if (!S) { m.innerHTML = '<div class="empty">Nyiss meg egy felmérést (Megnyitás vagy húzd ide a .vsketch.json fájlt).</div>'; return; }
+    const f = frontOf(cur) || EXTRA.attekintes;
+    let body;
+    try {
+      const d = derived();
+      if (cur === 'kerdes') {                        // first appearance of each shadow question
+        const un = FK.unseen(d.k, S, d.f);
+        if (un.length) { const t = stamp(); S.seen = Object.assign({}, S.seen || {}); un.forEach(id => { S.seen[id] = t; }); persist(); }
+      }
+      body = VIEWS[cur](d);
+    } catch (e) { body = '<div class="msg err">Hiba a nézet építésekor: ' + esc(e.message) + '</div>'; }
+    m.innerHTML = '<h2 style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span>' + esc(f.label) + '</h2>' +
+      (msg ? '<div class="msg ' + msg.cls + '">' + esc(msg.text) + '</div>' : '') + '<div id="view" data-front="' + cur + '">' + body + '</div>';
+  }
+  function front(id) { if (!VIEWS[id]) return false; cur = id; render(); return true; }
+
+  // ---- actions ---------------------------------------------------------------------------------------------------
+  const setAnswer = (q, a) => { S.answers = Object.assign({}, S.answers || {}); if (a) S.answers[q] = a; else delete S.answers[q]; };
+  const answerOf = q => (S.answers || {})[q];
+  function chooseOption(qid, oid) {
+    const k = kit(), q = k.questions.find(x => x.id === qid); if (!q) return;
+    const old = answerOf(qid), cur0 = old && old.state === 'answered' ? old.options.slice() : [];
+    const on = cur0.includes(oid), opts = q.multi ? (on ? cur0.filter(x => x !== oid) : cur0.concat([oid])) : (on ? [] : [oid]);
+    const now = stamp(), text = old ? old.text || '' : '';
+    if (!opts.length && !text) setAnswer(qid, null); else setAnswer(qid, { options: opts, text, at: now, state: 'answered' });
+    if (!on) { const o = q.options.find(x => x.id === oid); if (o && o.sets) S = FK.apply(k, o.sets, S, now); }
+  }
+  function onClick(ev) {
+    const t = ev.target.closest('[data-act]'); if (!t || !S && t.dataset.act !== 'save') return;
+    const a = t.dataset.act, id = t.dataset.id, q = t.dataset.q, k = () => kit();
+    switch (a) {
+      case 'front': front(t.dataset.front); break;
+      case 'jump': front(t.dataset.front); break;
+      case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
+      case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
+      case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
+      case 'vcopy': copy('GO VARIANT — ' + starter); break;
+      case 'nchip': syncNote(); note.chips.has(id) ? note.chips.delete(id) : note.chips.add(id); render(); break;
+      case 'nadd': addNote(); break;
+      case 'eopen': commit(() => { S.entries = S.entries.map(e => e.id === id ? Object.assign({}, e, { open: !e.open }) : e); }); break;
+      case 'sugok': { const g = FK.suggestions(k(), S).find(x => x.id === id); if (g) commit(() => { S = FK.apply(k(), g.effect, S, stamp()); }); break; }
+      case 'sugno': commit(() => { S.dismissed = (S.dismissed || []).concat([id]); }); break;
+      case 'stoggle': commit(() => { S.scope = Object.assign({}, S.scope); if (S.scope[id] > 0) delete S.scope[id]; else S.scope[id] = 1; }); break;
+      case 'sinc': commit(() => { S.scope = Object.assign({}, S.scope); S.scope[id] = (S.scope[id] || 0) + 1; }); break;
+      case 'sdec': commit(() => { S.scope = Object.assign({}, S.scope); if ((S.scope[id] || 0) <= 1) delete S.scope[id]; else S.scope[id] -= 1; }); break;
+      case 'qopt': commit(() => chooseOption(q, t.dataset.o)); break;
+      case 'qlater': case 'qskip': commit(() => { const old = answerOf(q); setAnswer(q, { options: old ? old.options : [], text: old ? old.text || '' : '', at: stamp(), state: a === 'qlater' ? 'later' : 'skip' }); }); break;
+      case 'qclear': commit(() => setAnswer(q, null)); break;
+      case 'qunskip': commit(() => { S.answers = Object.assign({}, S.answers); Object.keys(S.answers).forEach(x => { if (S.answers[x].state === 'skip') delete S.answers[x]; }); }); break;
+    }
+  }
+  function syncNote() { const t = $('ntext'); if (t) note.text = t.value; const o = $('nopen'); if (o) note.open = o.checked; const r = $('nroom'); if (r) note.room = r.value; }
+  function addNote() {
+    syncNote();
+    const text = note.text.trim(), chips = Array.from(note.chips); if (!text && !chips.length) return;
+    const k = kit();
+    commit(() => {
+      const e = { id: nextId('E'), at: stamp(), text, chips };
+      if (note.room) e.room = note.room;
+      if (note.open || chips.some(c => (k.chips.find(x => x.id === c) || {}).open)) e.open = true;
+      S.entries = (S.entries || []).concat([e]);
+      chips.forEach(c => { const ch = k.chips.find(x => x.id === c); if (ch && ch.sets) S = FK.apply(k, ch.sets, S, e.at); });
+    });
+    note = { text: '', chips: new Set(), open: false, room: note.room }; render();
+  }
+  function onChange(ev) {
+    const t = ev.target;
+    if (t.id === 'fopen') { openFiles(t.files); t.value = ''; return; }
+    if (t.id === 'fphotos') { if (S) attach(t.files); t.value = ''; return; }
+    if (!S) return;
+    if (t.dataset.qtext) {                           // store silently, so a following click is not eaten by a re-render
+      const q = t.dataset.qtext, old = answerOf(q), text = t.value;
+      commit(() => { if (old && old.state === 'answered') setAnswer(q, Object.assign({}, old, { text, at: stamp() })); else if (text.trim()) setAnswer(q, { options: old ? old.options : [], text, at: stamp(), state: 'answered' }); }, false);
+    } else if (t.dataset.site) {
+      commit(() => {
+        const si = Object.assign({ address: '', source: 'kezi' }, S.site), key = t.dataset.site;
+        if (key === 'address') si.address = t.value;
+        else if (t.value.trim() === '') delete si[key]; else if (!isNaN(parseFloat(t.value.replace(',', '.')))) si[key] = parseFloat(t.value.replace(',', '.'));
+        S.site = si;
+      }, false);
+      if (cur === 'helyszin') render();
+    } else if (t.id === 'ntext' || t.id === 'nopen' || t.id === 'nroom') syncNote();
+  }
+  function onInput(ev) {
+    if (ev.target.id === 'ntext') note.text = ev.target.value;
+    if (ev.target.id === 'vprem') { starter = ev.target.value; const p = $('vprev'); if (p) p.textContent = 'GO VARIANT — ' + (starter || '…'); }
+  }
+  function copy(text) {
+    const done = () => { flash('Kimásolva: ' + text, 'ok'); render(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done)); else fallbackCopy(text, done);
+  }
+  function fallbackCopy(text, done) {
+    const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); } catch (e) { /* nothing more to try */ } t.remove(); done();
+  }
+
+  // ---- start -----------------------------------------------------------------------------------------------------
+  function start() {
+    document.addEventListener('click', onClick);
+    document.addEventListener('change', onChange);
+    document.addEventListener('input', onInput);
+    let depth = 0; const drop = $('drop');
+    window.addEventListener('dragenter', e => { e.preventDefault(); depth++; drop.hidden = false; });
+    window.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (!depth) drop.hidden = true; });
+    window.addEventListener('dragover', e => e.preventDefault());
+    window.addEventListener('drop', e => { e.preventDefault(); depth = 0; drop.hidden = true; if (e.dataTransfer) openFiles(e.dataTransfer.files); });
+    let last = null;
+    try { last = localStorage.getItem(LAST_KEY); } catch (e) { /* no storage */ }
+    if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
+    render();
+  }
+  window.__sketcher = { load, state: () => S, save, front, output, render };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+
+</script>
+</body>
+</html>
