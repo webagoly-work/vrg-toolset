@@ -26,9 +26,9 @@
  },
  "rail": [
   "point",
+  "board",
   "route",
   "circuit",
-  "board",
   "measure",
   "photo",
   "memo",
@@ -1048,11 +1048,12 @@
   }
  ],
  "hints": {
-  "point": "Lámpánként egy pont. A meglévő szürke, a tervezett színes; a csere a Fényforrás-csere címke.",
+  "point": "Lámpánként egy pont, a magasság a kérdésbe kerül. A meglévő lámpa szürke, a tervezett színes.",
   "route": "Húzd végig az elosztótól, a tálca vagy a cső útján; a hossz a Rendezésben látszik.",
   "circuit": "Jelöld ki a lámpákat vagy aljzatokat, és fűzd egy körre; a gép dedikált kört kap.",
-  "board": "Az alelosztó helye: innen indul az új kör.",
+  "board": "Az alelosztó helye: az új kör innen indul. Ha új alelosztó kell, a betáp útját is húzd meg.",
   "measure": "Csarnokban a szerelési magasság számít: írd a kérdésbe vagy egy memóba.",
-  "photo": "A Képlista végigvezet: csarnok, lámpatest, adattábla, elosztó, tálca."
+  "photo": "A Képlista végigvezet: csarnok, lámpatest, adattábla, elosztó, tálca.",
+  "tag": "Csere: a Fényforrás-csere címke a meglévő (szürke) lámpára kerül, nem új pontra."
  }
 }
