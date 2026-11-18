@@ -36,10 +36,10 @@ class BleRadio(private val ctx: Context, private val onAdvert: (raw: ByteArray, 
 
     private val advCallback = object : AdvertisingSetCallback() {
         override fun onAdvertisingSetStarted(s: AdvertisingSet?, txPower: Int, status: Int) {
-            if (status != ADVERTISE_SUCCESS || s == null) {
+            if (status != AdvertisingSetCallback.ADVERTISE_SUCCESS || s == null) {
                 VrgLog.w("pager", "advertising failed: $status")
                 Pager.radioDetail = "hirdetés hiba $status"
-                Pager.setRadio(if (status == ADVERTISE_FAILED_FEATURE_UNSUPPORTED) Pager.Radio.UNSUPPORTED else Pager.Radio.FAILED)
+                Pager.setRadio(if (status == AdvertisingSetCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED) Pager.Radio.UNSUPPORTED else Pager.Radio.FAILED)
                 return
             }
             set = s

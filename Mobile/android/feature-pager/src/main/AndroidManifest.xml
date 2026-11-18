@@ -8,9 +8,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Android 9-11 scans only with location granted. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
+    <!-- Android 9-11 scans only with location granted (32, not 30: the same declaration as feature-net, or the merge fails). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="32" />
     <!-- Adóvevő (walkie-talkie): only while the talk button is held. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- The pager keeps listening with the screen off. -->
