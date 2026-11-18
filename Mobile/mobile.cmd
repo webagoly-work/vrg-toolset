@@ -141,6 +141,9 @@ if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 :: WP M19: kit-core DeskCatalog.kt + the Kommand fixture must still match launcher\vrg-catalog.json
 if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\desk-gen.js" --check
 if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
+:: Launcher icon per palette: the generated icons and manifest aliases must match the logo and the palettes
+if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\icon-gen.js" --check
+if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 echo.
 if "%RC%"=="0" echo   Core tesztek: rendben.
 if not "%RC%"=="0" echo   HIBA: core tesztek ^(kod %RC%^) - reszletek: android\kit-core, android\airdeck-core es android\pager-core \build\reports\tests

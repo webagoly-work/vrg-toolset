@@ -54,6 +54,7 @@ import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.VarlerWatermark
 import hu.vrg.mobile.kit.theme.MelyvizTheme
 import hu.vrg.mobile.kit.theme.Palettes
 import hu.vrg.mobile.sphere.SphereFeature
@@ -136,10 +137,13 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         val onSheet = mode == HomeMode.DESK && !compactPeek && sheets.active.isNotEmpty()
         HorizontalPager(pages, Modifier.fillMaxSize(), userScrollEnabled = !onSheet) { page ->
             if (page != 0) Box(Modifier.fillMaxSize().systemBarsPadding()) { SphereFeature.Page(back = toHome, signIn = { open(Catalogue.ACCOUNT.id) }) }
-            else if (mode == HomeMode.COMPACT || compactPeek) {
-                BackHandler(compactPeek) { compactPeek = false }
-                HomeScreen(onOpen = ::open)
-            } else Desk(sheets)
+            else Box(Modifier.fillMaxSize()) {
+                VarlerWatermark()        // the Varler mark, faint, in the palette's glow, behind both homes
+                if (mode == HomeMode.COMPACT || compactPeek) {
+                    BackHandler(compactPeek) { compactPeek = false }
+                    HomeScreen(onOpen = ::open)
+                } else Desk(sheets)
+            }
         }
     }
 
@@ -333,6 +337,12 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     override fun onPause() {
         Registry.feature(current ?: sheetFull)?.onForeground(false)
         super.onPause()
+    }
+
+    /** Leaving the screen: the home-screen icon takes the palette's colours (switched here, not while choosing). */
+    override fun onStop() {
+        LauncherIcon.apply(this, ShellSettings.value.palette)
+        super.onStop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

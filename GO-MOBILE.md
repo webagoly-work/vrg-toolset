@@ -86,6 +86,7 @@ What changes locally compared with the cloud:
 - **M32** Kezdőlap built 2026-11-18 (cloud session, D-35 answered by the user), **BETA**: the home redesign, Sketcher
   as the hero on both homes and in the Asztal dock. `docs/mobile/WP/M32.md` → "Telefonon ellenőrizni".
 - **M33** Csipogó built 2026-11-18 (cloud session, merged to `main` the same day; D-36–D-38), **BETA**: `docs/mobile/WP/M33.md` → "Telefonon ellenőrizni" (two phones, Android 10+; a third for the relay). The Site Pager on phones over BLE: pager panel, proximity / finder, chat, push-to-talk, guard, man-down. `pager-core` tests in `mobile.cmd test` and Actions.
+- **M34** Ikon built 2026-11-18 (cloud session), **BETA**: `docs/mobile/WP/M34.md` → "Telefonon ellenőrizni". The Varler mark (no wordmark) as the launcher icon in the user's palette, and faint behind the homes. The old home-screen icon may need re-adding once.
 
 ## 3. What the user asked for, mapped to WPs
 

@@ -17,6 +17,12 @@ object Look {
     fun palette(id: String?): String = id?.takeIf { it in PALETTES } ?: DEFAULT_PALETTE
 
     fun scale(v: Float?): Float = if (v == null || v.isNaN()) 1f else v.coerceIn(SCALE.start, SCALE.endInclusive)
+
+    /**
+     * The home-screen icon follows the palette: one activity-alias per palette in the app's manifest, written by
+     * Mobile/catalogue/icon-gen.js, the Mélyvíz one enabled by default. This is the alias's class name.
+     */
+    fun launcherAlias(palette: String?): String = "hu.vrg.mobile.Launcher_" + palette(palette).replace('-', '_')
 }
 
 /** A PC the phone has paired with (filled in by M2's QR pairing). */

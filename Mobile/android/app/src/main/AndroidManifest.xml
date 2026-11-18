@@ -23,10 +23,8 @@
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- The launcher entry is not here: it is one activity-alias per palette below (the icon follows the
+                 palette, app/LauncherIcon.kt). -->
             <!-- vrg://<feature>[/path][?query], e.g. vrg://airdeck, vrg://pair?ws=... -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -55,6 +53,142 @@
                 <data android:scheme="http" android:host="*" android:port="47291" android:path="/phone-sender.html" />
             </intent-filter>
         </activity>
+
+        <!-- The home-screen icon, one per palette: exactly one is enabled at a time. Generated. -->
+        <!-- launcher-aliases:begin (Mobile/catalogue/icon-gen.js) -->
+        <activity-alias
+            android:name=".Launcher_melyviz"
+            android:targetActivity=".ShellActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_melyviz"
+            android:roundIcon="@mipmap/ic_launcher_melyviz">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_arok"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_arok"
+            android:roundIcon="@mipmap/ic_launcher_arok">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_korall"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_korall"
+            android:roundIcon="@mipmap/ic_launcher_korall">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_laguna"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_laguna"
+            android:roundIcon="@mipmap/ic_launcher_laguna">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_moszat"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_moszat"
+            android:roundIcon="@mipmap/ic_launcher_moszat">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_sekely"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_sekely"
+            android:roundIcon="@mipmap/ic_launcher_sekely">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_sui"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_sui"
+            android:roundIcon="@mipmap/ic_launcher_sui">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_ej"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_ej"
+            android:roundIcon="@mipmap/ic_launcher_kit_ej">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_papir"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_papir"
+            android:roundIcon="@mipmap/ic_launcher_kit_papir">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_kontraszt"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_kontraszt"
+            android:roundIcon="@mipmap/ic_launcher_kit_kontraszt">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_melyviz"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_melyviz"
+            android:roundIcon="@mipmap/ic_launcher_kit_melyviz">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <!-- launcher-aliases:end -->
 
         <!-- "Megosztás → PC-re" from any app (Átadás, WP M12): files and pictures go onto the PC's board,
              text onto the PC's clipboard. An alias of the shell, so it shows under its own label. -->

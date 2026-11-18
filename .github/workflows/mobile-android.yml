@@ -39,6 +39,7 @@ jobs:
         run: |
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
+          node Mobile/catalogue/icon-gen.js --check
       - name: VRG Sketcher (field kit, fixture, variants, Desktop page)
         working-directory: .
         run: node Sketcher/test/run.js
