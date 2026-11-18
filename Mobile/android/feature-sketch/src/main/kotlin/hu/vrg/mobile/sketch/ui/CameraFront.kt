@@ -313,7 +313,8 @@ internal fun burnMarks(src: File, marks: List<Mark>, out: File): File? {
     val cv = ACanvas(bmp)
     val w = max(4f, min(bmp.width, bmp.height) / 160f)
     val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = w; strokeCap = Paint.Cap.ROUND }
-    fun x(p: Pt) = (p.x * bmp.width).toFloat(); fun y(p: Pt) = (p.y * bmp.height).toFloat()
+    fun x(p: Pt) = (p.x * bmp.width).toFloat()
+    fun y(p: Pt) = (p.y * bmp.height).toFloat()
     for (m in marks) {
         paint.color = m.color.toInt(); paint.style = Paint.Style.STROKE
         when (m.kind) {
