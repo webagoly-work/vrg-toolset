@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,6 +51,7 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.DeskCatalog
 import hu.vrg.mobile.core.DeskUnit
 import hu.vrg.mobile.core.FeatureInfo
+import hu.vrg.mobile.core.HomeLayout
 import hu.vrg.mobile.core.Kommand
 import hu.vrg.mobile.core.KommandItem
 import hu.vrg.mobile.core.Reach
@@ -112,6 +112,9 @@ fun DeskScreen(
             Row(Modifier.fillMaxWidth().background(Melyviz.abyss.copy(alpha = 0.7f)).padding(horizontal = 6.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Dial("◣", "Menü") { menu = !menu; kommand = false }
+                // VRG Sketcher, one tap from every sheet too (D-35); the Desktop's dock has its `sketcher` unit (D-34)
+                Spacer(Modifier.width(6.dp))
+                Dial(HomeLayout.HERO.glyph, HomeLayout.HERO.title) { act.open(HomeLayout.HERO.id) }
                 Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (windows.isEmpty()) Text("nincs nyitott ablak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(8.dp))
@@ -138,22 +141,12 @@ private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
     ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
 }
 
-/** The home window: the phone's features as desktop icons, grouped. */
+/** The home window (WP M32, D-35): the Sketcher hero, the quick row, then the phone's other features as desktop icons in
+ *  foldable groups; 4 columns upright, lying down the hero on the left and 5 columns on the right (HomeParts.kt). */
 @Composable
 internal fun HomeWindow(modifier: Modifier, open: (String) -> Unit) {
-    BoxWithConstraints(modifier.padding(horizontal = 10.dp)) {
-        val cols = if (maxWidth > maxHeight) 8 else 4
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-            Registry.catalogue.forEach { (group, items) ->
-                Text(group.label.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.6.sp, color = Melyviz.glowDim), modifier = Modifier.padding(top = 10.dp, bottom = 4.dp))
-                items.chunked(cols).forEach { row ->
-                    Row(Modifier.fillMaxWidth()) {
-                        row.forEach { Icon(it, Modifier.weight(1f)) { open(it.id) } }
-                        repeat(cols - row.size) { Spacer(Modifier.weight(1f)) }
-                    }
-                }
-            }
-        }
+    HomeBody(modifier.padding(horizontal = 10.dp), open, cols = { landscape -> HomeLayout.columns(landscape) }) { f, m ->
+        Icon(f, m) { open(f.id) }
     }
 }
 

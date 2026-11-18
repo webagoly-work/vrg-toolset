@@ -63,7 +63,4 @@ object Registry {
     val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id)
 
     fun isBuilt(info: FeatureInfo): Boolean = feature(info.id) != null || info.id in shellParts
-
-    /** The catalogue as the home screen shows it. */
-    val catalogue get() = Catalogue.grouped()
 }

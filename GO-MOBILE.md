@@ -83,6 +83,8 @@ What changes locally compared with the cloud:
   defaults): the Vázlat is now the field instrument with fronts (Jegyzet M27, Munkakör + Kérdések M28, Kamera M29,
   Helyszín M30, Variánsok M31). Design `docs/sketcher/README.md`; phone lists in `docs/mobile/WP/M26.md` … `M31.md`;
   the Desktop page is START P → S; new variants through **GO VARIANT**. `node Sketcher/test/run.js` is its Node suite.
+- **M32** Kezdőlap built 2026-11-18 (cloud session, D-35 answered by the user), **BETA**: the home redesign, Sketcher
+  as the hero on both homes and in the Asztal dock. `docs/mobile/WP/M32.md` → "Telefonon ellenőrizni".
 
 ## 3. What the user asked for, mapped to WPs
 

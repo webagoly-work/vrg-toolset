@@ -4,22 +4,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.Alignment
-import hu.vrg.mobile.pair.PairFeature
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,15 +23,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
-import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.update.UpdateFeature
 
-// The home screen: every feature of the catalogue as a tile, grouped. Built ones open; planned ones
-// open their PlannedScreen, which says what they will do and which WP builds them.
+// The Kompakt home: the Sketcher hero, the quick row, then every other feature of the catalogue as a tile, grouped
+// (WP M32). Built ones open; planned ones open their PlannedScreen, which says what they will do and which WP builds them.
 
 /** "⟳ új" in the header while an update waits; opens Frissítés. */
 @Composable
@@ -52,59 +44,31 @@ private fun UpdateMark(onOpen: () -> Unit) {
 
 @Composable
 fun HomeScreen(onOpen: (String) -> Unit) {
-    Column(
-        Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-    ) {
-        Row {
-            Column(Modifier.weight(1f)) {
-                Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
-                Text("A VRG munka társalkalmazása", style = Melyviz.small)
-            }
-            UpdateMark { onOpen(Catalogue.UPDATE.id) }
-            Text(
-                Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted),
-                modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
-            )
-        }
-        Spacer(Modifier.height(10.dp))
-        ScanButton { PairFeature.scan(); onOpen(Catalogue.PAIR.id) }
-        Spacer(Modifier.height(2.dp))
-        Registry.catalogue.forEach { (group, items) ->
-            Text(group.label.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.6.sp), modifier = Modifier.padding(top = 14.dp, bottom = 6.dp))
-            items.chunked(2).forEach { row ->
-                Row(Modifier.fillMaxWidth().padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    row.forEach { Tile(it, Modifier.weight(1f)) { onOpen(it.id) } }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
+    // WP M32 (D-35): the same layout as the Asztal's home window (HomeParts.kt), drawn with tiles: 2 columns upright,
+    // 3 in the right-hand pane lying down. The QR scan button of 2026-11-14 is the quick row's first slot now.
+    HomeBody(
+        Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 16.dp, vertical = 4.dp),
+        open = onOpen,
+        cols = { landscape -> if (landscape) 3 else 2 },
+        gap = 10,
+        header = {
+            Row(Modifier.padding(bottom = 10.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
+                    Text("A VRG munka társalkalmazása", style = Melyviz.small)
                 }
+                UpdateMark { onOpen(Catalogue.UPDATE.id) }
+                Text(
+                    Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted),
+                    modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
+                )
             }
-        }
-        Spacer(Modifier.height(24.dp))
-        Text("v${BuildConfig.VERSION_NAME}", style = Melyviz.readout)
-    }
-}
-
-/** The QR scanner as its own button at the top of the home screen (2026-11-14): the pairing QR, or a PC server's QR from the
- *  VRG Asztal's Telefon panel, which opens that server at once. */
-@Composable
-private fun ScanButton(onClick: () -> Unit) {
-    val shape = RoundedCornerShape(Melyviz.radius)
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp)
-            .background(Melyviz.raised, shape)
-            .border(BorderStroke(1.dp, Melyviz.glow), shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text("▦", style = Melyviz.glyph.copy(fontSize = 26.sp, color = Melyviz.glow))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text("QR BEOLVASÁSA", style = Melyviz.label.copy(color = Melyviz.ink, letterSpacing = 1.4.sp))
-            Text("Párosítás, vagy a PC egy szervere: VRG Asztal → Telefon", style = Melyviz.small.copy(fontSize = 10.sp))
-        }
-        Text("›", style = Melyviz.title.copy(color = Melyviz.glow))
-    }
+        },
+        footer = {
+            Spacer(Modifier.height(24.dp))
+            Text("v${BuildConfig.VERSION_NAME}", style = Melyviz.readout)
+        },
+    ) { f, m -> Tile(f, m) { onOpen(f.id) } }
 }
 
 @Composable
@@ -112,8 +76,7 @@ private fun Tile(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
     val built = Registry.isBuilt(f)
     // WP M16: a feature that is working shows its MINI ring around the glyph (notes outbox, update download, pulse
     // refresh); at rest nothing is drawn, so the tile looks as it always did.
-    val ring = Registry.feature(f.id)?.activity
-    val status = ring?.collectAsStateWithLifecycle()?.value ?: MiniStatus.IDLE
+    val status = ringOf(f)
     val shape = RoundedCornerShape(Melyviz.radius)
     Column(
         modifier.heightIn(min = 112.dp)

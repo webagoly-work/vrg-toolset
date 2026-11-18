@@ -328,6 +328,20 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     the Asztal's catalog unit `sketcher` on the dock; the Desktop page completes a survey and saves it back in the same
     shape. Rejected: taking over a used key.
 
+- **D-35 · Kezdőlap: the home's layout (M32), 2026-11-18.** Asked and answered by the user, 2026-11-18 (four questions,
+  all four on the recommended option).
+  Chosen: **A, Hero + Gyors** — VRG Sketcher (`sketch`) is a full-width hero card at the top of the home, its plugin
+  Fotópont (`photo`) a chip on it; below it one quick row of four (QR beolvasás, which starts the scanner at once,
+  Légegér, Átadás, Gyorsjegyzet); then the catalogue's groups without those, each foldable (Alkalmazás folded on a
+  fresh install, the choice kept in `ShellPrefs.homeFolded`). **Both homes** get it in the same order (the Asztal's
+  home window as 4-column icons, Kompakt as 2-column tiles); **lying down** the hero and the quick row take the left
+  40 % and the groups scroll on the right (5 icon / 3 tile columns), from 600 dp wide, so a Lapok cell holding the
+  home stays one column. Sketcher also has a dial in the Asztal dock beside ◣, one tap from every sheet. The layout is
+  `kit-core/HomeLayout.kt`, tested (every catalogue entry on the home exactly once); ids and routes are unchanged.
+  Rejected: **B** Sketcher only as a dock pin with the grid reordered (least change, but not prominent on Kompakt);
+  **C** a Terep / Iroda split with big field tiles and an office list (biggest change; kept as a later idea if the
+  field use grows past the Sketcher).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
