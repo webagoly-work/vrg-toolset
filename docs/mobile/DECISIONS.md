@@ -381,6 +381,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   the first read, updates stay allowed (never lock the owner out). On a public repo it filters the in-app offer only.
   Details: `WP/M35.md`.
 
+- **D-42 · iPhone: a web app with the online subset (M36), 2026-11-18.** Asked and answered by the Founder (three options).
+  Chosen: **B** — the part of VRG Mobile that works in a browser, as a web app on GitHub Pages: Eszköz (the M35 device
+  approval, same crypto), Haladás, Frissítés, Megjelenés; Csipogó, Légegér and the relay features stay on Android
+  (Safari has no Bluetooth; an https page cannot open the PC relay's `ws://`). Rejected: **A** a native iOS app (the
+  Apple Developer Program, 99 USD a year, TestFlight, and an iPhone Bluetooth mode for Csipogó, since iOS cannot put
+  data into a BLE advertisement); **C** Android only.
+- **D-43 · iPhone: where the web app lives and how it updates (M36), 2026-11-18.** Chosen in the session. **GitHub Pages
+  from Actions** (`mobile-web.yml`, on pushes to `main`), so no server; a cache-first service worker so the app opens
+  offline and changes only on *Frissítés most*, which follows the M35 release lock. The home-screen icon takes the
+  palette chosen before *Add to Home Screen* (iOS reads it once). Rejected: jsDelivr or raw GitHub hosting (no
+  same-origin service worker, HTML served as text); a PC-hosted page (not reachable on the road).
+  Details: `WP/M36.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

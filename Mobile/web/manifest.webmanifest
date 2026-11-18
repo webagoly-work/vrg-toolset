@@ -1,0 +1,15 @@
+{
+  "name": "VRG Mobile",
+  "short_name": "VRG Mobile",
+  "description": "VRG Mobile a böngészőben (iPhone): eszköz-jóváhagyás QR-kóddal, Haladás, frissítés.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#041019",
+  "theme_color": "#041019",
+  "lang": "hu",
+  "icons": [
+    { "src": "icons/touch-melyviz.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

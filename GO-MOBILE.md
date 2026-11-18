@@ -88,6 +88,7 @@ What changes locally compared with the cloud:
 - **M33** Csipogó built 2026-11-18 (cloud session, merged to `main` the same day; D-36–D-38), **BETA**: `docs/mobile/WP/M33.md` → "Telefonon ellenőrizni" (two phones, Android 10+; a third for the relay). The Site Pager on phones over BLE: pager panel, proximity / finder, chat, push-to-talk, guard, man-down. `pager-core` tests in `mobile.cmd test` and Actions.
 - **M34** Ikon built 2026-11-18 (cloud session), **BETA**: `docs/mobile/WP/M34.md` → "Telefonon ellenőrizni". The Varler mark (no wordmark) as the launcher icon in the user's palette, and faint behind the homes. The old home-screen icon may need re-adding once.
 - **M35** Eszközök built 2026-11-18 (cloud session, D-39–D-41), **BETA**: `docs/mobile/WP/M35.md` → "Telefonon ellenőrizni". New phones are approved by QR from the owner's phone; `Mobile/trust/devices.json` (release lock on) replaces adding codes to `access.json` by hand.
+- **M36** iPhone web app built 2026-11-18 (cloud session, D-42, D-43), **BETA**: `docs/mobile/WP/M36.md`. `Mobile/web/` on GitHub Pages (`mobile-web.yml`); **one-time: Settings → Pages → Source: GitHub Actions**. `node Mobile/tests/web-app.js` is its browser test.
 
 ## 3. What the user asked for, mapped to WPs
 

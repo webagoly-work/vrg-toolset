@@ -1,0 +1,61 @@
+# VRG Mobile for the iPhone (WP M36): the web app in Mobile/web, tested in a browser and published on GitHub Pages at
+# https://webagoly-work.github.io/vrg-toolset/mobile/ . One-time setup by the owner: Settings → Pages → Source:
+# "GitHub Actions". Until then the deploy job fails with "Pages not enabled" and the test job still runs.
+name: VRG Mobile web (iPhone)
+
+on:
+  push:
+    branches: [main]
+    paths: ['Mobile/web/**', 'Mobile/tests/web-app.js', 'Mobile/catalogue/icon-gen.js', '.github/workflows/mobile-web.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: mobile-web-pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generated files are current (palettes, mark, icons' manifest aliases)
+        run: node Mobile/catalogue/icon-gen.js --check
+      - name: Browser test (iPhone 15 emulation)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node Mobile/tests/web-app.js
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}mobile/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build the site
+        run: |
+          mkdir -p _site/mobile
+          cp -r Mobile/web/. _site/mobile/
+          rm -rf _site/mobile/tools
+          n=$(git rev-list --count HEAD)
+          printf '{"v":"m36-%s","at":"%s","sha":"%s"}\n' "$n" "$(date -u +%Y-%m-%d)" "${GITHUB_SHA::7}" > _site/mobile/version.json
+          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=mobile/"><a href="mobile/">VRG Mobile</a>\n' > _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
