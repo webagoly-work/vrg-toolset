@@ -1,0 +1,131 @@
+{
+  "_about": "VRG Időjárás automations: the rules the alerts and the work windows come from. Every threshold carries its basis (legal | standard | datasheet | practice | public-health | official), where it comes from and when it was last reviewed, so a legal limit is never shown like a rule of thumb. These are SAFE DEFAULTS from research 03 (docs/research/research_notes/weather/03_architecture-and-field-thresholds.md), to be confirmed by the person responsible for work safety; the machine's data plate and the cable datasheet always win. Conditions: var (see lib/vars.js), op (>= > <= < thunder in), value, stat = value (the consensus) | upper (consensus + spread, the cautious side) | lower | any (any single source) | all. persist = consecutive hours needed. workday = only inside settings.workday hours.",
+  "reviewed_on": "2026-11-18",
+  "activities": [
+    { "id": "kulteri",  "hu": "Kültéri szerelés",           "en": "Outdoor installation" },
+    { "id": "magasban", "hu": "Létra, állvány, emelőkosár", "en": "Work at height" },
+    { "id": "kabel",    "hu": "Kábelfektetés, földmunka",   "en": "Cable laying, trenching" },
+    { "id": "tetoPV",   "hu": "Tetőmunka, napelem",         "en": "Roof work, PV" }
+  ],
+  "rules": [
+    {
+      "id": "official-warning", "kind": "warning", "activities": ["*"],
+      "hu": "Hivatalos figyelmeztetés: {event} ({levelHu})",
+      "levels": { "2": "amber", "3": "red", "4": "red" },
+      "basis": "official", "source": "HungaroMet via MeteoAlarm (CAP awareness level)"
+    },
+    {
+      "id": "lightning-near", "kind": "strike", "activities": ["*"], "level": "red",
+      "radiusKm": 16, "minutes": 30,
+      "hu": "Villám {km} km-en belül ({ago} perce) — fedezékbe, a munka 30 perccel az utolsó után folytatható",
+      "basis": "practice", "source": "30/30 rule (NOAA/NWS); 16 km is the cautious radius of research 03 B2"
+    },
+    {
+      "id": "thunder-agreed", "kind": "hourly", "activities": ["*"], "level": "red",
+      "all": [{ "var": "wmo", "op": "thunder" }],
+      "hu": "Zivatar várható (a források egyetértenek) — kültéri és magasban végzett munka szünetel",
+      "basis": "practice", "source": "30/30 rule; consensus weather code 95-99"
+    },
+    {
+      "id": "thunder-possible", "kind": "hourly", "activities": ["*"], "level": "amber",
+      "any": [
+        { "var": "wmo", "op": "thunder", "stat": "any" },
+        { "var": "cape", "op": ">=", "value": 800, "stat": "upper", "and": { "var": "pop", "op": ">=", "value": 40 } }
+      ],
+      "hu": "Zivatar lehetséges (legalább egy forrás szerint) — figyeld a villámokat és a radart",
+      "basis": "practice", "source": "one member's thunder code, or CAPE >= 800 J/kg with precipitation chance >= 40 %"
+    },
+    {
+      "id": "gust-mewp", "kind": "hourly", "activities": ["magasban"], "level": "red",
+      "all": [{ "var": "gust", "op": ">=", "value": 12.5 }],
+      "hu": "Széllökés {gust} m/s — emelőkosár tilos (EN 280 tervezési határ; az adattábla dönt)",
+      "basis": "standard", "source": "EN 280 outdoor MEWP design limit 12.5 m/s; wind at platform height is higher than at 10 m"
+    },
+    {
+      "id": "gust-ladder", "kind": "hourly", "activities": ["magasban", "tetoPV"], "level": "amber", "workday": true,
+      "all": [{ "var": "gust", "op": ">=", "value": 7.6, "stat": "upper" }],
+      "hu": "Széllökés akár {gust_upper} m/s — létra, mobil állvány, tetőfólia: óvatosan vagy halaszd",
+      "basis": "practice", "source": "mobile towers / roof membranes stop around Beaufort 4-5 (~7.6 m/s), research 03 B5"
+    },
+    {
+      "id": "gust-roof", "kind": "hourly", "activities": ["tetoPV"], "level": "red", "workday": true,
+      "all": [{ "var": "gust", "op": ">=", "value": 10 }],
+      "hu": "Széllökés {gust} m/s — tetőmunka és panelmozgatás tilos",
+      "basis": "practice", "source": "general roof work advisory ~10-11 m/s, research 03 B5"
+    },
+    {
+      "id": "cold-cable", "kind": "hourly", "activities": ["kabel"], "level": "amber", "workday": true,
+      "all": [{ "var": "t2m", "op": "<=", "value": 5, "stat": "lower" }],
+      "hu": "{t2m} °C — PVC szigetelésű kábel fektetése +5 °C alatt csak adatlap szerint, előmelegített dobbal",
+      "basis": "datasheet", "source": "PVC laying minimum differs by datasheet (0 ... +5 °C); +5 °C is the cautious default, research 03 B6"
+    },
+    {
+      "id": "frost-cable", "kind": "hourly", "activities": ["kabel"], "level": "red", "workday": true, "persist": 2,
+      "all": [{ "var": "t2m", "op": "<=", "value": 0 }],
+      "hu": "Fagy ({t2m} °C) — PVC kábel nem fektethető, hacsak az adatlap meg nem engedi; habarcs, ragasztó sem",
+      "basis": "datasheet", "source": "PVC laying minimum 0 °C (Nexans), research 03 B6/B16"
+    },
+    {
+      "id": "freezing-rain", "kind": "hourly", "activities": ["*"], "level": "red",
+      "all": [{ "var": "wmo", "op": "in", "value": [56, 57, 66, 67], "stat": "any" }],
+      "hu": "Ónos csapadék — jegesedés: létra, tető, emelőkosár tilos; közlekedés lassan",
+      "basis": "practice", "source": "WMO codes 56/57/66/67 from any source"
+    },
+    {
+      "id": "rain-live", "kind": "hourly", "activities": ["kulteri"], "level": "amber", "workday": true,
+      "all": [{ "var": "precip", "op": ">=", "value": 0.2 }, { "var": "pop", "op": ">=", "value": 50 }],
+      "hu": "Eső ({precip} mm/h, {pop} %) — nyitott elosztó, feszültség alatti munka kültéren nem",
+      "basis": "practice", "source": "no live work in rain; enclosure IP rating decides what may be open (research 03 B14)"
+    },
+    {
+      "id": "rain-heavy", "kind": "hourly", "activities": ["kulteri", "kabel"], "level": "red",
+      "all": [{ "var": "precip", "op": ">=", "value": 4 }],
+      "hu": "Felhőszakadás ({precip} mm/h) — árok elárasztás, földmunka és kültéri szerelés szünetel",
+      "basis": "practice", "source": "heavy rain > 4 mm/h"
+    },
+    {
+      "id": "snow-roof", "kind": "hourly", "activities": ["magasban", "tetoPV"], "level": "amber",
+      "all": [{ "var": "snow", "op": ">=", "value": 0.5 }],
+      "hu": "Havazás ({snow} cm/h) — tető és létra csúszós",
+      "basis": "practice", "source": "snow on access routes"
+    },
+    {
+      "id": "heat-hour", "kind": "hourly", "activities": ["*"], "level": "amber", "workday": true,
+      "all": [{ "var": "tapp", "op": ">=", "value": 32 }],
+      "hu": "Hőérzet {tapp} °C — ivóvíz, árnyék, szünetek; tetőn a déli órákat kerüld",
+      "basis": "legal", "source": "employer duties in heat (Mvt. 1993. évi XCIII.; drinking water, shade, breaks) — numeric trigger is ours"
+    },
+    {
+      "id": "heat-hour-red", "kind": "hourly", "activities": ["tetoPV", "magasban"], "level": "red", "workday": true,
+      "all": [{ "var": "tapp", "op": ">=", "value": 35 }],
+      "hu": "Hőérzet {tapp} °C — tetőmunka a déli órákban ne legyen",
+      "basis": "practice", "source": "our own trigger, research 03 B-conclusions"
+    },
+    {
+      "id": "heatwave", "kind": "heatwave", "activities": ["*"],
+      "steps": [
+        { "days": 3, "mean": 27, "level": "red",   "hu": "Hőségriasztás 3. fokának megfelelő időszak várható ({from}–{to}, napi átlag ≥ 27 °C)" },
+        { "days": 1, "mean": 25, "level": "amber", "hu": "Hőség: napi átlag ≥ 25 °C várható ({from})" }
+      ],
+      "basis": "public-health", "source": "NNGYK heat alert: level 3 = daily mean >= 27 °C on >= 3 days (confirmed); 25 °C levels not confirmed (research 03 B11). The official alert itself comes as a CAP warning."
+    },
+    {
+      "id": "fog-drive", "kind": "hourly", "activities": ["kulteri"], "level": "amber",
+      "all": [{ "var": "vis", "op": "<", "value": 200 }],
+      "hu": "Sűrű köd (látótávolság {vis} m) — utazás a helyszínre lassan",
+      "basis": "practice", "source": "visibility < 200 m"
+    },
+    {
+      "id": "air-poor", "kind": "hourly", "activities": ["kulteri", "kabel"], "level": "amber", "workday": true,
+      "any": [{ "var": "eaqi", "op": ">=", "value": 80 }, { "var": "ragweed", "op": ">=", "value": 30 }],
+      "hu": "Rossz levegő vagy sok parlagfű pollen (EAQI {eaqi}, parlagfű {ragweed} db/m³) — érzékeny kollégák figyeljenek",
+      "basis": "public-health", "source": "European AQI 80 = very poor; ragweed 30 grains/m³ is the common 'high' mark"
+    },
+    {
+      "id": "pv-window", "kind": "hourly", "activities": ["tetoPV"], "level": "info", "workday": true, "persist": 2,
+      "all": [{ "var": "swrad", "op": ">=", "value": 600 }, { "var": "precip", "op": "<", "value": 0.1 }],
+      "hu": "PV átadási ablak: besugárzás ≥ 600 W/m² — I-U görbe, hőkamera (IEC 62446-1)",
+      "basis": "standard", "source": "IEC 62446-1 commissioning tests want high, stable irradiance (600-700 W/m² common); unverified, research 03 B17"
+    }
+  ]
+}

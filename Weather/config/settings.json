@@ -1,0 +1,23 @@
+{
+  "_about": "VRG Időjárás settings. Local, secret or per-PC values go into Weather/config/settings.local.json (gitignored), which is merged over this file: contact (for the MET Norway User-Agent), keys.openMeteo, use, outbox.webhook.",
+  "use": "commercial",
+  "_use": "commercial = VRG company work: a source with commercial 'key' runs only with its key, 'no' never. evaluation = private testing: every enabled source runs, and the page and brief say EVALUATION.",
+  "timezone": "Europe/Budapest",
+  "horizonHours": 72,
+  "workday": { "from": 7, "to": 17, "days": [1, 2, 3, 4, 5, 6] },
+  "port": 8808,
+  "userAgent": "VRG-Idojaras/1.0",
+  "contact": "",
+  "keys": { "openMeteo": "" },
+  "http": { "timeoutMs": 20000, "retries": 1 },
+  "fusion": {
+    "minPairsForSkill": 30,
+    "_minPairsForSkill": "until a member has this many verified pairs for a var and lead bucket, the consensus is the weighted median by prior weight; after it, inverse-MAE weights (research 03, A6)",
+    "leadBuckets": [6, 12, 24, 48, 72],
+    "tolerance": { "t2m": 1.5, "tapp": 2, "dew2m": 1.5, "rh2m": 10, "precip": 0.6, "pop": 20, "wind": 1.5, "gust": 2.5, "cloud": 25, "pmsl": 1.5, "cape": 300, "swrad": 80 }
+  },
+  "verify": { "maxStationKm": 15, "days": 30 },
+  "retention": { "forecastDays": 45, "observationDays": 400, "rawDays": 14, "fetchLogDays": 60 },
+  "jobs": { "import": true, "statuses": ["folyamatban"], "defaultActivities": ["kulteri", "magasban", "kabel"] },
+  "outbox": { "channels": ["file"], "webhook": "" }
+}
