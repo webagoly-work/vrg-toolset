@@ -31,7 +31,7 @@ import hu.vrg.mobile.kit.ui.VrgChip
 // GitHub fiók stay open, so once a release lists the phone it can install that release from here.
 
 /** The features a locked phone may still open: to sign in and to fetch the release that lets it in. */
-val LOCK_OPEN = setOf(Catalogue.UPDATE.id, Catalogue.ACCOUNT.id)
+val LOCK_OPEN = setOf(Catalogue.UPDATE.id, Catalogue.ACCOUNT.id, Catalogue.DEVICES.id)   // Eszközök: ask for access by QR (WP M35)
 
 @Composable
 fun LockScreen(onOpen: (String) -> Unit) {
@@ -48,11 +48,12 @@ fun LockScreen(onOpen: (String) -> Unit) {
             Text("Eszközkód", style = Melyviz.small)
             Text(Access.code, style = Melyviz.title.copy(fontSize = 30.sp, fontWeight = FontWeight.Bold,
                 letterSpacing = 3.sp, color = Melyviz.glow, fontFamily = Melyviz.mono))
-            Text("Küldd el ezt a kódot. Ha felkerült a listára, a következő kiadás már megnyílik ezen a telefonon.",
+            Text("Kérj hozzáférést: az Eszközök QR-kódját a tulajdonos telefonja olvassa be és hagyja jóvá. Utána ez a telefon új kiadás nélkül megnyílik.",
                 style = Melyviz.small)
         }
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            VrgChip("Kód másolása", true) { clipboard.setText(AnnotatedString(Access.code)) }
+            VrgChip("Hozzáférés kérése ›", true) { onOpen(Catalogue.DEVICES.id) }
+            VrgChip("Kód másolása") { clipboard.setText(AnnotatedString(Access.code)) }
             VrgChip("Frissítés ›") { onOpen(Catalogue.UPDATE.id) }
             VrgChip("GitHub fiók ›") { onOpen(Catalogue.ACCOUNT.id) }
         }

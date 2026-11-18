@@ -1,0 +1,14 @@
+{
+  "about": "Written by Mobile/tests/device-trust-fixture.js (WebCrypto). Test keys only.",
+  "webRequestLink": "vrg://devices?req=eyJ0IjoidnJnLXJlcSIsInYiOjEsImlkIjoiaXBob25ldGVzdDAxIiwibmFtZSI6IlRlc3p0IGlQaG9uZSIsIm1vZGVsIjoiaVBob25lIDE1Iiwib3MiOiJpT1MgMTgiLCJhcHAiOiJ3ZWIgMSIsInB1YiI6eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6InlDUGx0aGRuQVpvdmFkdERvQTdfS3VwSHBDSnZ4QmFISlBkSkJGRjlRWVEiLCJ5IjoiRjMtVHZnaUVRTDVONUpjckUxOTM3b0JwQS1URzVIcVZQR0ZydU1UR0tYayJ9LCJjb2RlIjoiMUFDNDk2IiwiYXQiOiIyMDI2LTExLTE4VDE5OjAwOjAwLjAwMFoiLCJiYWNrIjoiaHR0cHM6Ly9leGFtcGxlLmludmFsaWQvdnJnLW1vYmlsZS8ifQ",
+  "webPrivatePkcs8": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYvhR9Hx9dricUsM38Nzr5hLkWvkgJndjn1xEevO8blKhRANCAATII-W2F2cBmi9p20OgDv8q6kekIm_EFock90kEUX1BhBd_k74IhEC-TeSXKxNfd-6AaQPkxuR6lTxha7jExil5",
+  "webCode": "1AC496",
+  "appId": "APPTEST00001",
+  "appPrivatePkcs8": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg4RsCA-CIybF4-zLG-r210jn9nh6K2Jyh88GMD3iyzJOhRANCAASh8Yo8ASmi7mluYW4ek0X3s3rn-mIf3CZZpZSDAyqoZis8t_qJmd4nQy00ZJO9i5gcZs7iWGEwUzROfbyDzqhs",
+  "grantLink": "vrg://devices?grant=eyJ0IjoidnJnLWdyYW50IiwidiI6MSwidG8iOiJBUFBURVNUMDAwMDEiLCJlcHViIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiRHpQcHMyOWZXdlkyUUJlaURYNy1xQ2lKS0Jwd3g0ejFIbkRyV2taRmJwSSIsInkiOiJjSloxNVNKTjVtUnBsYXZrMmsxaEhmQTcwbGROakhNX0FoTV9NclJEMTdnIn0sIml2IjoiOGNLY05hME5BV3BGTDMzYiIsImN0IjoiNk1YdlpUQTZuMkFOOWRFS19Od3Qtc2twcmFBaVBabUQzdzJSS0NSOTQxWkxlZEVZeF9iSjh5MVhHRmplV0FYb0xCUlIzUjZ4OXVsTm03VGZFZG55OFBRdnRpT1MwdGxReERuMFpjUGw4cS1CREpLRm1YeTU4V1FtcE50VEFLZzB2ZnRpRUMtT1ZFSU9SQXciLCJieSI6IlRlc3p0IGLDtm5nw6lzesWRIn0",
+  "grantPayload": {
+    "by": "Teszt böngésző",
+    "at": "2026-11-18T19:01:00.000Z",
+    "token": "teszt-token-nem-valodi"
+  }
+}

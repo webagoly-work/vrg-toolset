@@ -40,4 +40,5 @@ dependencies {
     api("androidx.core:core-ktx:1.15.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")   // ShellSettings, VrgLog
     api("com.squareup.okhttp3:okhttp:4.12.0")                      // Relay, Discovery (WP M2)
+    api("com.google.zxing:core:3.5.3")                             // QR codes drawn by the app (WP M35 Eszközök)
 }

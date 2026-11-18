@@ -365,6 +365,22 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (would lose the pager's muscle memory and the path back to hardware).
   Details: `WP/M33.md`.
 
+- **D-39 · Eszközök: how a phone gets in (M35), 2026-11-18.** Asked: the Founder chose "like Proton Vault".
+  Chosen: **A** — Proton Vault's flow under VRG names: a phone's request (`vrg-req`, id + P-256 key + a 6-character code)
+  as a QR; the owner's phone reads it with the app's scanner (the shell routes `vrg://devices?…`), checks the code by
+  eye, writes the phone onto `Mobile/trust/devices.json` on `main` and shows a grant (`vrg-grant`, ECDH + AES-GCM) only
+  that phone opens. The list also unlocks `Access`, so a new phone needs no new build. Rejected: **B** keep adding codes
+  to `access.json` by hand (a release per phone); **C** a PC-side approval page (the owner is in the field).
+- **D-40 · Eszközök: the owner's token is not handed over by default (M35), 2026-11-18.** Chosen in the session.
+  Chosen: **A** — the approval card has *A GitHub tokenem is*, off by default with a red warning: VRG's token has the
+  `repo notifications` scope, so it writes to every repository of the account, not only this one. Without it the phone
+  is approved (unlocked, updates) and reads. Rejected: **B** always hand it over as Proton Vault does (its token reaches
+  the same scope; one tap too easy to give away on a phone that is not the owner's).
+- **D-41 · Eszközök: the release lock starts on (M35), 2026-11-18.** Chosen in the session: the Founder said "I allow the
+  updates with QR codes". `Mobile/trust/devices.json` starts with `gated: true` and the owner's phone. Offline or before
+  the first read, updates stay allowed (never lock the owner out). On a public repo it filters the in-app offer only.
+  Details: `WP/M35.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

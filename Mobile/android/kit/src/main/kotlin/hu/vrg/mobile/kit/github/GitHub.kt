@@ -185,6 +185,23 @@ object GitHub {
         @Suppress("UNREACHABLE_CODE") Gh.Failed(0, "")
     }
 
+    /**
+     * A token handed over by the owner's phone in a device grant (WP M35, Eszközök): kept like a signed-in one, so this
+     * phone writes (Gyorsjegyzet) as the owner's account. The grant was opened with this phone's private key.
+     */
+    fun adoptToken(t: String) {
+        store.put(TOKEN, t)
+        token = t
+        leaveGuest()
+        synchronized(cache) { cache.clear() }
+        _account.value = Account.SignedIn(null, null)
+        scope.launch { refresh() }
+        VrgLog.i(TAG, "Token átvéve egy eszköz-engedélyből")
+    }
+
+    /** The token this phone holds, for a grant to another phone; null without a sign-in. */
+    fun tokenForGrant(): String? = token
+
     fun signOut() {
         store.remove(TOKEN)
         token = null

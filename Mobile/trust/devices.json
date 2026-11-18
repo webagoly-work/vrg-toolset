@@ -1,0 +1,16 @@
+{
+  "about": "VRG Mobile trusted devices (WP M35). Written by the owner's phone (Eszközök); the owner approves each one by QR.",
+  "gated": true,
+  "devices": [
+    {
+      "id": "6CDB-FB09-6833",
+      "name": "Redmi Note 13 Pro 5G",
+      "model": "Redmi Note 13 Pro 5G",
+      "os": "Android",
+      "code": "",
+      "approved": "2026-11-05",
+      "by": "Mobile/access.json (owner, added by hand)",
+      "owner": true
+    }
+  ]
+}

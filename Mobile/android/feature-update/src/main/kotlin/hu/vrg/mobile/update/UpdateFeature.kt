@@ -30,6 +30,7 @@ import hu.vrg.mobile.core.ReleaseAssets
 import hu.vrg.mobile.core.UpdateInfo
 import hu.vrg.mobile.core.Updates
 import hu.vrg.mobile.kit.FeatureHost
+import hu.vrg.mobile.kit.Trust
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.github.Account
@@ -62,6 +63,8 @@ sealed interface UpdateState {
     data object Checking : UpdateState
     data object UpToDate : UpdateState
     data class Available(val info: UpdateInfo) : UpdateState
+    /** A newer release exists, but the release lock is on and this phone is not on the trusted list (WP M35). */
+    data class Gated(val info: UpdateInfo) : UpdateState
     data class Downloading(val info: UpdateInfo, val percent: Int) : UpdateState
     data class Installing(val info: UpdateInfo) : UpdateState
 
@@ -117,11 +120,16 @@ object UpdateFeature : VrgFeature {
                 if (before is UpdateState.Downloading || before is UpdateState.Installing) return@withLock
                 _state.value = UpdateState.Checking
                 problem.value = null
+                Trust.refresh()                                // the release lock reads the current list
                 when (val r = find()) {
                     is Gh.Ok -> {
                         prefs().edit().putLong("checked", System.currentTimeMillis()).apply()
                         val found = r.value?.takeIf { Updates.isNewer(it, installed) }
-                        _state.value = if (found != null) UpdateState.Available(found) else UpdateState.UpToDate
+                        _state.value = when {
+                            found == null -> UpdateState.UpToDate
+                            !Trust.updatesAllowed() -> UpdateState.Gated(found)
+                            else -> UpdateState.Available(found)
+                        }
                     }
                     is Gh.Failed -> {
                         if (r.code == 404) {                  // no release yet
@@ -233,6 +241,10 @@ object UpdateFeature : VrgFeature {
                 UpdateState.Checking -> Text("Keresés a GitHubon…", style = Melyviz.small)
                 UpdateState.UpToDate -> Text("Ez a legfrissebb verzió.", style = Melyviz.small)
                 is UpdateState.Available -> Offer(s.info, host, blocked)
+                is UpdateState.Gated -> {
+                    Text("Új kiadás: ${s.info.name}. A frissítéshez jóváhagyott eszköz kell (a kiadások zárolva).", style = Melyviz.small.copy(color = Melyviz.sand))
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Eszközök: hozzáférés kérése ›", true) { host.open(Catalogue.DEVICES.id) } }
+                }
                 is UpdateState.Downloading -> {
                     Text("Letöltés: ${s.info.name} · ${s.percent} %", style = Melyviz.readout)
                     Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }

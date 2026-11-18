@@ -149,13 +149,19 @@ object Catalogue {
         "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
     )
 
+    // WP M35: Proton Vault's device approval for VRG Mobile: one account, the phones differ, approved by QR.
+    val DEVICES = FeatureInfo(
+        "devices", "Eszközök", "Ez a telefon és a megbízható eszközök: hozzáférés kérése QR-kóddal, jóváhagyás a tulajdonos telefonján, a frissítések zárolása a listára.",
+        "🔐", Group.APP, Stage.BETA, "M35", setOf(Need.INTERNET),
+    )
+
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, PAGER, CLAUDE,
         SKETCH, PHOTO,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
-        UPDATE, SETTINGS,
+        UPDATE, DEVICES, SETTINGS,
     )
 
     fun byId(id: String?): FeatureInfo? = ALL.firstOrNull { it.id == id }

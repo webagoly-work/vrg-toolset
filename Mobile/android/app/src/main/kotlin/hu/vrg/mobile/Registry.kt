@@ -8,6 +8,7 @@ import hu.vrg.mobile.claude.ClaudeFeature
 import hu.vrg.mobile.pcwin.PcWinFeature
 import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.devices.DevicesFeature
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.inbox.InboxFeature
@@ -57,6 +58,7 @@ object Registry {
         InboxFeature,
         NetFeature,
         PagerFeature,
+        DevicesFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

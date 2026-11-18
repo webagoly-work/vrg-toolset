@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.provider.Settings
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import hu.vrg.mobile.core.DeviceGate
 
 // The temporary access switches from Mobile/access.json (baked in as resources by kit's build), applied
@@ -19,9 +22,14 @@ object Access {
     /** GitHub fiók offers "Belépés a repó nevével". */
     var repoName = false
         private set
-    /** This build may not open on this phone: the gate is on and the code is not listed. */
-    var locked = false
+    /**
+     * This build may not open on this phone: the gate is on, the code is not in access.json, and the phone is not on
+     * the trusted list either (Mobile/trust/devices.json, WP M35: approved by QR, no new build needed). Compose state,
+     * so the shell drops the lock screen the moment a grant or a refresh lists the phone.
+     */
+    var locked by mutableStateOf(false)
         private set
+    private var bakedLocked = false
 
     @SuppressLint("HardwareIds")   // ANDROID_ID is per app signing key, exactly what the list should pin
     fun init(ctx: Context) {
@@ -30,7 +38,15 @@ object Access {
         repoName = ctx.resources.getBoolean(R.bool.access_repo_name)
         val on = ctx.resources.getBoolean(R.bool.access_devices_on)
         val debug = ctx.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-        locked = !debug && !DeviceGate.allowed(on, code, DeviceGate.parse(ctx.getString(R.string.access_devices)))
+        bakedLocked = !debug && !DeviceGate.allowed(on, code, DeviceGate.parse(ctx.getString(R.string.access_devices)))
+        locked = bakedLocked
         VrgLog.i(TAG, "Eszközkód: $code" + if (locked) " (nincs a listán, zárva)" else "")
+    }
+
+    /** The trusted list changed (Trust): a phone on it opens even when access.json does not list it. */
+    fun recheck() {
+        val was = locked
+        locked = bakedLocked && !Trust.listed
+        if (was && !locked) VrgLog.i(TAG, "Feloldva: a megbízható eszközök listáján van")
     }
 }

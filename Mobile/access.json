@@ -5,7 +5,8 @@
     "repoName: true = GitHub fiók also offers 'Belépés a repó nevével': typing webagoly-work/vrg-toolset reads GitHub without a token.",
     "  Works only while the repo is public; making it private ends it at once, without a release. Reads only.",
     "trustedDevices.on: true = only the phones listed below can open a release build (debug builds are never locked).",
-    "  A phone's code is shown in GitHub fiók and on the lock screen, like ABCD-EF01-2345."
+    "  A phone's code is shown in GitHub fiók and on the lock screen, like ABCD-EF01-2345.",
+    "Since WP M35 a phone on Mobile/trust/devices.json (approved by QR in Eszközök, no new build) opens too."
   ],
   "repoName": true,
   "trustedDevices": {
