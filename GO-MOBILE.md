@@ -79,6 +79,10 @@ What changes locally compared with the cloud:
   `src/08ca-sketch-import.js` + `tests/spec-111-sketch-import.js`.
 - **M25** Fotópont built 2026-11-17 in the same cloud session (D-24 = D-25 = D-26 = A, answered by the user), **BETA**:
   `docs/mobile/WP/M25.md` → "Telefonon ellenőrizni" (10 steps, the last on the PC). A Vázlat plugin, off by default.
+- **M26–M31** VRG Sketcher built 2026-11-18 (cloud session, merged to `main` the same day; D-27 … D-34 taken as
+  defaults): the Vázlat is now the field instrument with fronts (Jegyzet M27, Munkakör + Kérdések M28, Kamera M29,
+  Helyszín M30, Variánsok M31). Design `docs/sketcher/README.md`; phone lists in `docs/mobile/WP/M26.md` … `M31.md`;
+  the Desktop page is START P → S; new variants through **GO VARIANT**. `node Sketcher/test/run.js` is its Node suite.
 
 ## 3. What the user asked for, mapped to WPs
 

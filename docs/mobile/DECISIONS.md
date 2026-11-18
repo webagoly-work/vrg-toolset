@@ -299,6 +299,35 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   application"): the phone's own camera app through TakePicture, as Átadás does, writing straight into the sketch's
   photo folder; the plugin starts switched off; a photo point is a hidden note in the Planner (no schema change).
 
+- **D-27 … D-34 · VRG Sketcher (M26–M31), 2026-11-18.** Defaults taken while building the user's brief of that day
+  (the brief named the goals; these are the means); the user revisits any of them.
+  - **D-27 · One app, fronts inside it.** The Vázlat feature (`sketch`) becomes VRG Sketcher with seven fronts in one
+    screen and the ✎ / ◉ buttons over all of them. Rejected: a feature module per front (the home screen would split
+    what the user wants as one instrument, and switching would leave the survey).
+  - **D-28 · One catalog, two engines, one fixture.** `Sketcher/catalog/fieldkit.json` (data only) is bundled into the
+    APK from `Sketcher/` at build time and inlined into the Desktop page; the condition language has a Kotlin engine
+    (phone) and a JS one (Desktop), kept equal by `Sketcher/test/fixtures/shadow.json` (written by JS, replayed on the
+    JVM). Rejected: the JS engine in a WebView on the phone (the fronts are native); Kotlin only (the Desktop page is
+    HTML).
+  - **D-29 · Chaos-proof records.** Every capture is a self-standing record; links are optional and late; completeness
+    (*Nyitott*) is derived, never stored; drafts are in the file. Rejected: a guided step order (the brief: "the system
+    can't expect organized information").
+  - **D-30 · Keywords suggest, taps apply.** A note's keyword only suggests (accept / swipe away, remembered); a chip or
+    an option the user taps applies at once. Rejected: applying keyword hits silently ("nincs FI relé" would read as
+    "FI relé").
+  - **D-31 · Online only on a button.** The phone's GPS sends nothing; OSM Nominatim gets the address and only on
+    🔎; Overpass gets the coordinates only; VRG Térkép runs on the PC. A generic client name (`VRG-Mobile-Sketcher`).
+    Rejected: automatic lookups on typing (a client's address would leave the phone unasked); Google services.
+  - **D-32 · The phone's own camera app.** As Átadás and Fotópont: no viewfinder of ours, so no live burst or overlay;
+    instead *Sorozat* (the camera comes back), markup as vectors after the shot, burned in only on export. Rejected:
+    CameraX now (a large module for what the research ranks "later").
+  - **D-33 · Variants are data, made by an agent.** JSON overlays (`Sketcher/variants/`), validated, bundled and
+    fetched from main; made through GO VARIANT; the request carries no client data. Rejected: variants that change
+    code; a variant made on the phone itself (no agent there).
+  - **D-34 · The Desktop button.** The main START screen has no free key, so START P → S (beside the Rajztár Stúdió) and
+    the Asztal's catalog unit `sketcher` on the dock; the Desktop page completes a survey and saves it back in the same
+    shape. Rejected: taking over a used key.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
