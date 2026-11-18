@@ -265,6 +265,8 @@ file at the repo root and does what it says.
   builds and installs the APK); Actions still builds an APK on every push.
 - **`GO LOGO`** — `GO-LOGO.md`: the two-state Varler logo (ring ⇄ bulb, click to toggle) from `shared/varler-logo`,
   then the VRG Mobile logo home page (WP M15). Starts by asking Q1–Q4.
+- **`GO VARIANT`** — `GO-VARIANT.md`: a Variant Sketcher for one kind of job, by `Sketcher/variants/PROTOCOL.md`
+  (the phone's ⚙ → Variánsok → Új variáns kérése hands over a request; the result is one JSON in `Sketcher/variants/`).
 - **`GO OPENWRT`** — `GO-OPENWRT.md`: OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches
   the router). Phases P0–P5, the first is the sticker's hardware version.
 
