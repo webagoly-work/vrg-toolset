@@ -8,7 +8,8 @@ import org.json.JSONObject
 // opens in an older app as far as it can (and M25's photos survive a round trip through a phone without M25).
 object SketchJson {
     const val KIND = "vrg-vazlat"
-    const val V = 1
+    /** v2 (2026-11-18) adds the intake (VRG Sketcher); a v1 file reads with an empty one. */
+    const val V = 2
 
     private fun r1(v: Double) = Math.round(v * 10) / 10.0
     private fun pt(p: Pt) = JSONArray().put(r1(p.x)).put(r1(p.y))
@@ -70,12 +71,92 @@ object SketchJson {
             o.put("shots", JSONArray().also { sa -> f.shots.forEach { sh -> sa.put(JSONObject().put("deg", sh.deg).put("file", sh.file).put("taken", sh.taken)) } })
             a.put(o)
         } })
+        .also { o -> writeIntake(s, o) }
+
+    private fun r6(v: Double) = Math.round(v * 1e6) / 1e6
+
+    private fun writeIntake(s: Sketch, o: JSONObject) {
+        s.site?.let { t ->
+            val j = JSONObject().put("address", t.address).put("source", t.source)
+            t.lat?.let { j.put("lat", r6(it)) }; t.lon?.let { j.put("lon", r6(it)) }
+            t.footprint?.let { f ->
+                j.put("footprint", JSONObject().put("w", Math.round(f.w * 100) / 100.0).put("d", Math.round(f.d * 100) / 100.0)
+                    .put("area", Math.round(f.area * 10) / 10.0).put("angle", Math.round(f.angle * 10) / 10.0).put("src", f.src).put("at", f.at))
+            }
+            o.put("site", j)
+        }
+        o.put("entries", JSONArray().also { a -> s.entries.forEach { e ->
+            val j = JSONObject().put("id", e.id).put("at", e.at).put("text", e.text).put("chips", strs(e.chips))
+            e.room?.let { j.put("room", it) }; e.target?.let { j.put("target", it) }
+            if (e.open) j.put("open", true); if (e.voice) j.put("voice", true)
+            a.put(j)
+        } })
+        o.put("scope", JSONObject().also { j -> s.scope.toSortedMap().forEach { (k, v) -> j.put(k, v) } })
+        o.put("answers", JSONObject().also { j -> s.answers.toSortedMap().forEach { (k, v) ->
+            j.put(k, JSONObject().put("options", strs(v.options)).put("text", v.text).put("at", v.at).put("state", v.state.id))
+        } })
+        o.put("captures", JSONArray().also { a -> s.captures.forEach { c ->
+            val j = JSONObject().put("id", c.id).put("file", c.file).put("purpose", c.purpose).put("at", c.at).put("note", c.note)
+            c.room?.let { j.put("room", it) }; c.target?.let { j.put("target", it) }; c.shot?.let { j.put("shot", it) }
+            c.lat?.let { j.put("lat", r6(it)) }; c.lon?.let { j.put("lon", r6(it)) }
+            if (c.marks.isNotEmpty()) j.put("marks", JSONArray().also { ma -> c.marks.forEach { m ->
+                ma.put(JSONObject().put("kind", m.kind.id).put("pts", JSONArray().also { pa -> m.pts.forEach { p ->
+                    pa.put(JSONArray().put(Math.round(p.x * 10000) / 10000.0).put(Math.round(p.y * 10000) / 10000.0)) } })
+                    .put("text", m.text).put("col", m.color))
+            } })
+            a.put(j)
+        } })
+        o.put("dismissed", strs(s.dismissed.sorted()))
+        o.put("seen", JSONObject().also { j -> s.seen.toSortedMap().forEach { (k, v) -> j.put(k, v) } })
+        s.variant?.let { o.put("variant", it) }
+        if (s.variantOn) o.put("variantOn", true)
+        if (s.draft.isNotEmpty()) o.put("draft", s.draft)
+    }
+
+    private fun readPtRaw(a: JSONArray?) = if (a == null || a.length() < 2) null else Pt(a.optDouble(0), a.optDouble(1))
+    private fun dbl(o: JSONObject, k: String): Double? = if (o.has(k) && !o.isNull(k)) o.optDouble(k).takeIf { !it.isNaN() } else null
+    private fun intMap(o: JSONObject?): Map<String, Int> = if (o == null) emptyMap() else o.keys().asSequence().associateWith { o.optInt(it) }.filterValues { it > 0 }
+    private fun longMap(o: JSONObject?): Map<String, Long> = if (o == null) emptyMap() else o.keys().asSequence().associateWith { o.optLong(it) }
+
+    private fun readIntake(o: JSONObject, s: Sketch): Sketch {
+        val site = o.optJSONObject("site")?.let { t ->
+            Site(t.optString("address"), dbl(t, "lat"), dbl(t, "lon"), t.optString("source", "kezi"),
+                t.optJSONObject("footprint")?.let { f -> Footprint(f.optDouble("w"), f.optDouble("d"), f.optDouble("area"), f.optDouble("angle"), f.optString("src"), f.optLong("at")) })
+        }
+        val answers = o.optJSONObject("answers")?.let { j -> j.keys().asSequence().mapNotNull { k ->
+            val a = j.optJSONObject(k) ?: return@mapNotNull null
+            k to Answer(k, readStrs(a.optJSONArray("options")), a.optString("text"), a.optLong("at"), AnswerState.of(a.str("state")))
+        }.toMap() } ?: emptyMap()
+        return s.copy(
+            site = site,
+            entries = list(o.optJSONArray("entries")) { e ->
+                Entry(e.str("id") ?: return@list null, e.optLong("at"), e.optString("text"), readStrs(e.optJSONArray("chips")),
+                    e.str("room"), e.str("target"), e.optBoolean("open"), e.optBoolean("voice"))
+            },
+            scope = intMap(o.optJSONObject("scope")),
+            answers = answers,
+            captures = list(o.optJSONArray("captures")) { c ->
+                Capture(c.str("id") ?: return@list null, c.str("file") ?: return@list null, c.optString("purpose", "egyeb"), c.optLong("at"),
+                    c.str("room"), c.str("target"), c.str("shot"), c.optString("note"), dbl(c, "lat"), dbl(c, "lon"),
+                    list(c.optJSONArray("marks")) { m ->
+                        val pa = m.optJSONArray("pts")
+                        Mark(MarkKind.of(m.str("kind")), if (pa == null) emptyList() else (0 until pa.length()).mapNotNull { readPtRaw(pa.optJSONArray(it)) },
+                            m.optString("text"), m.optLong("col", 0xFFE8641C))
+                    })
+            },
+            dismissed = readStrs(o.optJSONArray("dismissed")).toSet(),
+            seen = longMap(o.optJSONObject("seen")),
+            variant = o.str("variant"),
+            variantOn = o.optBoolean("variantOn"),
+            draft = o.optString("draft"),
+        )
+    }
 
     /** Null when [o] is not a sketch file. */
     fun read(o: JSONObject): Sketch? {
         if (o.optString("kind") != KIND) return null
         val id = o.str("id") ?: return null
-        return Sketch(
+        return readIntake(o, Sketch(
             id = id,
             name = o.optString("name"),
             level = Level.of(o.str("level")),
@@ -116,7 +197,7 @@ object SketchJson {
                 PhotoPoint(f.str("id") ?: return@list null, readPt(f.optJSONArray("at")) ?: return@list null, f.str("room"),
                     list(f.optJSONArray("shots")) { sh -> Shot(sh.optInt("deg"), sh.optString("file"), sh.optLong("taken")) })
             },
-        )
+        ))
     }
 
     fun read(text: String): Sketch? = try { read(JSONObject(text)) } catch (e: Exception) { null }

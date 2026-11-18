@@ -1,0 +1,211 @@
+{
+ "kind": "vrg-sketcher-variant",
+ "v": 1,
+ "id": "ev-tolto",
+ "name": "E-autó töltő telepítés",
+ "sym": "⚡",
+ "color": "#e0b020",
+ "premise": "Egy otthoni AC töltő (wallbox) felszerelése: a mérőhely és a főbiztosíték, az elosztó szabad helye és földelése, a töltő helye a parkolónál, a kábelút hossza és útja. Az alaprajz itt másodlagos, a nyomvonal és a fotók a lényeg.",
+ "topics": [
+  "e-auto",
+  "wallbox",
+  "tolto",
+  "kabelut",
+  "merohely"
+ ],
+ "author": "Claude (GO VARIANT protocol, reference example)",
+ "created": "2026-11-18",
+ "plugins": {
+  "on": [
+   "fotopont"
+  ],
+  "off": []
+ },
+ "rail": [
+  "route",
+  "board",
+  "point",
+  "measure",
+  "photo",
+  "memo",
+  "tag",
+  "room",
+  "select",
+  "line",
+  "circuit",
+  "template"
+ ],
+ "pointRing": [
+  "fixed",
+  "socket",
+  "junction",
+  "board",
+  "data",
+  "switch",
+  "light",
+  "pont"
+ ],
+ "pointPresets": [
+  {
+   "label": "Töltő (wallbox)",
+   "glyph": "⚡",
+   "type": "fixed",
+   "tags": [
+    "T-ded"
+   ]
+  },
+  {
+   "label": "Kültéri aljzat",
+   "glyph": "⊙",
+   "type": "socket",
+   "tags": [
+    "T-ip44"
+   ]
+  },
+  {
+   "label": "Kötődoboz",
+   "glyph": "◇",
+   "type": "junction",
+   "tags": []
+  },
+  {
+   "label": "Fali átvezetés",
+   "glyph": "⊘",
+   "type": "pont",
+   "tags": []
+  }
+ ],
+ "roomRing": [
+  "gepeszet",
+  "kulter",
+  "eloszoba",
+  "kozlekedo",
+  "egyeb",
+  "nappali",
+  "konyha"
+ ],
+ "templates": [
+  {
+   "id": "garazs-beallo",
+   "label": "Garázs + beálló",
+   "sym": "⊏",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     0.55,
+     0
+    ],
+    [
+     0.55,
+     0.6
+    ],
+    [
+     1,
+     0.6
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  }
+ ],
+ "tags": [
+  {
+   "id": "T-falat",
+   "name": "Falátvezetés",
+   "color": "#b07a2a"
+  },
+  {
+   "id": "T-arok",
+   "name": "Árok",
+   "color": "#6e8b3d"
+  }
+ ],
+ "scopePreset": {
+  "ev": 1,
+  "merohely": 1
+ },
+ "questions": [
+  {
+   "id": "ev_kabelut",
+   "q": "Merre menjen a kábel?",
+   "group": "ev",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "falon",
+     "label": "Falon kívül, csatornában"
+    },
+    {
+     "id": "falban",
+     "label": "Falban, vésve"
+    },
+    {
+     "id": "foldben",
+     "label": "Földben, árokban"
+    },
+    {
+     "id": "padlas",
+     "label": "Padláson át"
+    }
+   ]
+  },
+  {
+   "id": "ev_kabel_hossz",
+   "q": "Becsült kábelhossz?",
+   "group": "ev",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "10",
+     "label": "< 10 m"
+    },
+    {
+     "id": "25",
+     "label": "10–25 m"
+    },
+    {
+     "id": "50",
+     "label": "25–50 m"
+    },
+    {
+     "id": "50+",
+     "label": "50 m felett"
+    }
+   ],
+   "num": {
+    "unit": "m"
+   }
+  }
+ ],
+ "shotlist": [
+  {
+   "id": "ev_falatvezetes",
+   "purpose": "nyomvonal",
+   "label": "Fal- és födémátvezetések",
+   "when": {
+    "scope": "ev"
+   }
+  }
+ ],
+ "hints": {
+  "route": "Rajzold a kábelutat az elosztótól a töltőig; a hossza a Rendezésben látszik.",
+  "photo": "A töltő helye, a parkoló és a kábelút: a Képlista végigvezet."
+ }
+}

@@ -27,4 +27,8 @@ tasks.test {
     systemProperty("vrg.repo", repo.path)
     System.getenv("VRG_SKETCH_FIXTURE")?.let { systemProperty("vrg.sketch.fixture", it) }
     inputs.file(repo.resolve("Planner/projects/varler-planner/tests/sketch-field.json")).optional()
+    // FieldKitTest replays the JS engine's fixture against the Kotlin engine, on the shared catalog and variants
+    inputs.dir(repo.resolve("Sketcher/catalog"))
+    inputs.dir(repo.resolve("Sketcher/variants"))
+    inputs.dir(repo.resolve("Sketcher/test/fixtures"))
 }

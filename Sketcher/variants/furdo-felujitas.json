@@ -1,0 +1,296 @@
+{
+ "kind": "vrg-sketcher-variant",
+ "v": 1,
+ "id": "furdo-felujitas",
+ "name": "Fürdőszoba felújítás",
+ "sym": "🛁",
+ "color": "#2a8cdb",
+ "premise": "Egy fürdőszoba (és gyakran a mellette lévő WC) villamos felújítása: új lámpák, aljzatok a zónákon kívül, törölközőszárító, szellőző, padlófűtés, a kör FI-védelme. Kicsi, zsúfolt alaprajz fülkékkel és ferde sarkokkal.",
+ "topics": [
+  "furdo",
+  "felujitas",
+  "vizes helyiseg",
+  "zona",
+  "fi-rele"
+ ],
+ "author": "Claude (GO VARIANT protocol, reference example)",
+ "created": "2026-11-18",
+ "plugins": {
+  "on": [
+   "fotopont"
+  ]
+ },
+ "rail": [
+  "room",
+  "template",
+  "measure",
+  "point",
+  "photo",
+  "memo",
+  "tag",
+  "route",
+  "circuit",
+  "select",
+  "line",
+  "board"
+ ],
+ "pointRing": [
+  "light",
+  "socket",
+  "fixed",
+  "switch",
+  "junction",
+  "sensor",
+  "data",
+  "pont"
+ ],
+ "pointPresets": [
+  {
+   "label": "Tükörvilágítás",
+   "glyph": "✱",
+   "type": "light",
+   "tags": []
+  },
+  {
+   "label": "Aljzat IP44",
+   "glyph": "⊙",
+   "type": "socket",
+   "tags": [
+    "T-ip44"
+   ]
+  },
+  {
+   "label": "Törölközőszárító",
+   "glyph": "♨",
+   "type": "fixed",
+   "tags": [
+    "T-ded"
+   ]
+  },
+  {
+   "label": "Szellőző",
+   "glyph": "✣",
+   "type": "fixed",
+   "tags": []
+  },
+  {
+   "label": "Padlófűtés termosztát",
+   "glyph": "▦",
+   "type": "sensor",
+   "tags": []
+  },
+  {
+   "label": "Mosógép",
+   "glyph": "◍",
+   "type": "socket",
+   "tags": [
+    "T-ded",
+    "T-ip44"
+   ]
+  }
+ ],
+ "roomRing": [
+  "furdo",
+  "wc",
+  "mosokonyha",
+  "kozlekedo",
+  "halo",
+  "konyha",
+  "egyeb"
+ ],
+ "templates": [
+  {
+   "id": "furdo-kadfulke",
+   "label": "Kádfülkés fürdő",
+   "sym": "⊓",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     0.38
+    ],
+    [
+     0.72,
+     0.38
+    ],
+    [
+     0.72,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "furdo-wc",
+   "label": "Fürdő + WC",
+   "sym": "⊞",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     0.68,
+     0
+    ],
+    [
+     0.68,
+     0.45
+    ],
+    [
+     1,
+     0.45
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  }
+ ],
+ "tags": [
+  {
+   "id": "T-zona1",
+   "name": "Zóna 1",
+   "color": "#20a8a0"
+  },
+  {
+   "id": "T-zona2",
+   "name": "Zóna 2",
+   "color": "#5470b0"
+  }
+ ],
+ "scopePreset": {
+  "felujitas": 1,
+  "furdo": 1
+ },
+ "chips": [
+  {
+   "id": "csempe_kesz",
+   "label": "Csempe kész",
+   "sym": "▦",
+   "color": "#20a8a0",
+   "group": "helyzet"
+  }
+ ],
+ "questions": [
+  {
+   "id": "furdo_zona",
+   "q": "Hol lesz a kád / zuhany (a zónák miatt)?",
+   "group": "furdo",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "furdo"
+   },
+   "options": [
+    {
+     "id": "marad",
+     "label": "Marad a helyén"
+    },
+    {
+     "id": "atkerul",
+     "label": "Átkerül"
+    },
+    {
+     "id": "zuhany",
+     "label": "Kád helyett zuhany"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Még nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "furdo_fi",
+   "q": "Külön FI-relé védje a fürdő körét?",
+   "group": "furdo",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "furdo"
+   },
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "meglevo",
+     "label": "A meglévő elég"
+    },
+    {
+     "id": "javasolj",
+     "label": "Szerelő javasoljon"
+    }
+   ]
+  },
+  {
+   "id": "furdo_tukor",
+   "q": "Tükörvilágítás és tükör melletti aljzat kell?",
+   "group": "furdo",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "furdo"
+   },
+   "options": [
+    {
+     "id": "mindketto",
+     "label": "Mindkettő"
+    },
+    {
+     "id": "vilagitas",
+     "label": "Csak világítás"
+    },
+    {
+     "id": "aljzat",
+     "label": "Csak aljzat"
+    },
+    {
+     "id": "egyik",
+     "label": "Egyik sem"
+    }
+   ]
+  }
+ ],
+ "shotlist": [
+  {
+   "id": "furdo_vizes",
+   "purpose": "nyomvonal",
+   "label": "Vizes falak, csőnyomvonalak",
+   "when": {
+    "scope": "furdo"
+   }
+  },
+  {
+   "id": "furdo_eph",
+   "purpose": "meglevo",
+   "label": "EPH (egyenpotenciál) kötés a csöveken",
+   "when": {
+    "scope": "furdo"
+   },
+   "prio": 2
+  }
+ ],
+ "hints": {
+  "room": "Húzd a fürdő téglalapját, a fülkét a Sablon eszköz adja.",
+  "point": "A tükör melletti aljzat IP44, a zóna 2-n kívül.",
+  "photo": "A Fotópont a fürdő közepén: négy irány, a vizes fal is."
+ }
+}

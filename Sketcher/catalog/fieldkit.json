@@ -1,0 +1,3321 @@
+{
+ "kind": "vrg-fieldkit",
+ "v": 1,
+ "about": "VRG Sketcher field kit: the catalog both the phone (VRG Mobile, feature-sketch assets) and the Desktop page read. Data only. Conditions and effects: docs/sketcher/README.md section 4. Validate: node Sketcher/tools/variant-check.js --kit",
+ "fronts": [
+  {
+   "id": "vazlat",
+   "label": "Vázlat",
+   "sym": "◫",
+   "color": "#27c2b0"
+  },
+  {
+   "id": "jegyzet",
+   "label": "Jegyzet",
+   "sym": "✎",
+   "color": "#e0b020"
+  },
+  {
+   "id": "munkakor",
+   "label": "Munkakör",
+   "sym": "☰",
+   "color": "#3dae5a"
+  },
+  {
+   "id": "kerdes",
+   "label": "Kérdések",
+   "sym": "?",
+   "color": "#e8641c"
+  },
+  {
+   "id": "kamera",
+   "label": "Kamera",
+   "sym": "◉",
+   "color": "#2a8cdb"
+  },
+  {
+   "id": "helyszin",
+   "label": "Helyszín",
+   "sym": "⌖",
+   "color": "#8a5cd6"
+  },
+  {
+   "id": "nyitott",
+   "label": "Nyitott",
+   "sym": "⚑",
+   "color": "#d64545"
+  }
+ ],
+ "purposes": [
+  {
+   "id": "epulet",
+   "label": "Épület kívülről",
+   "sym": "⌂",
+   "color": "#8a5cd6"
+  },
+  {
+   "id": "kornyek",
+   "label": "Környék, utca",
+   "sym": "⛬",
+   "color": "#6e8b3d"
+  },
+  {
+   "id": "bejarat",
+   "label": "Hozzáférés",
+   "sym": "⇥",
+   "color": "#5470b0"
+  },
+  {
+   "id": "merohely",
+   "label": "Mérőhely",
+   "sym": "⌁",
+   "color": "#e0b020"
+  },
+  {
+   "id": "eloszto",
+   "label": "Elosztó",
+   "sym": "▣",
+   "color": "#e8641c"
+  },
+  {
+   "id": "meglevo",
+   "label": "Meglévő szerelvény",
+   "sym": "○",
+   "color": "#9aa3ad"
+  },
+  {
+   "id": "hely",
+   "label": "Tervezett hely",
+   "sym": "✚",
+   "color": "#3dae5a"
+  },
+  {
+   "id": "hiba",
+   "label": "Hiba, veszély",
+   "sym": "⚠",
+   "color": "#d64545"
+  },
+  {
+   "id": "tabla",
+   "label": "Típustábla, címke",
+   "sym": "▤",
+   "color": "#c03fa8"
+  },
+  {
+   "id": "nyomvonal",
+   "label": "Nyomvonal, fal",
+   "sym": "〰",
+   "color": "#20a8a0"
+  },
+  {
+   "id": "szoba",
+   "label": "Szoba (Fotópont)",
+   "sym": "◎",
+   "color": "#2a8cdb"
+  },
+  {
+   "id": "dokumentum",
+   "label": "Dokumentum",
+   "sym": "▧",
+   "color": "#b07a2a"
+  },
+  {
+   "id": "egyeb",
+   "label": "Egyéb",
+   "sym": "•",
+   "color": "#7d8590"
+  }
+ ],
+ "chips": [
+  {
+   "id": "kivansag",
+   "label": "Kívánság",
+   "sym": "★",
+   "color": "#3dae5a",
+   "group": "ugyfel"
+  },
+  {
+   "id": "problema",
+   "label": "Probléma",
+   "sym": "⚠",
+   "color": "#d64545",
+   "group": "ugyfel"
+  },
+  {
+   "id": "fontos",
+   "label": "Fontos",
+   "sym": "!",
+   "color": "#e8641c",
+   "group": "ugyfel"
+  },
+  {
+   "id": "hatarido",
+   "label": "Határidő",
+   "sym": "⏱",
+   "color": "#5470b0",
+   "group": "ugyfel"
+  },
+  {
+   "id": "keret",
+   "label": "Keret",
+   "sym": "Ft",
+   "color": "#b07a2a",
+   "group": "ugyfel"
+  },
+  {
+   "id": "visszakerdez",
+   "label": "Visszakérdezni",
+   "sym": "?",
+   "color": "#e8641c",
+   "group": "ugyfel",
+   "open": true
+  },
+  {
+   "id": "tisztazando",
+   "label": "Tisztázandó",
+   "sym": "⚑",
+   "color": "#d64545",
+   "group": "ugyfel",
+   "open": true
+  },
+  {
+   "id": "lakott",
+   "label": "Lakott",
+   "sym": "⌂",
+   "color": "#8a5cd6",
+   "group": "helyzet",
+   "sets": {
+    "answer": {
+     "q": "lakott",
+     "opt": "igen"
+    }
+   }
+  },
+  {
+   "id": "tulaj",
+   "label": "Tulaj jelen",
+   "sym": "☺",
+   "color": "#8a5cd6",
+   "group": "helyzet",
+   "sets": {
+    "answer": {
+     "q": "hozzaferes",
+     "opt": "tulaj"
+    }
+   }
+  },
+  {
+   "id": "berlo",
+   "label": "Bérlő",
+   "sym": "☻",
+   "color": "#8a5cd6",
+   "group": "helyzet",
+   "sets": {
+    "answer": {
+     "q": "hozzaferes",
+     "opt": "berlo"
+    }
+   }
+  },
+  {
+   "id": "kulcs",
+   "label": "Kulcs külön",
+   "sym": "⚿",
+   "color": "#8a5cd6",
+   "group": "helyzet",
+   "sets": {
+    "answer": {
+     "q": "hozzaferes",
+     "opt": "kulcs"
+    }
+   }
+  },
+  {
+   "id": "haziallat",
+   "label": "Háziállat",
+   "sym": "🐾",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "parkolas",
+   "label": "Parkolás nehéz",
+   "sym": "P",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "hetvege",
+   "label": "Csak hétvégén",
+   "sym": "7",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "por",
+   "label": "Pormentesen",
+   "sym": "≋",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  }
+ ],
+ "scope": [
+  {
+   "id": "uj",
+   "label": "Új kiépítés",
+   "sym": "✚",
+   "group": "jelleg"
+  },
+  {
+   "id": "felujitas",
+   "label": "Felújítás, csere",
+   "sym": "↻",
+   "group": "jelleg"
+  },
+  {
+   "id": "bovites",
+   "label": "Bővítés",
+   "sym": "⊕",
+   "group": "jelleg"
+  },
+  {
+   "id": "hiba",
+   "label": "Hibaelhárítás",
+   "sym": "⚠",
+   "group": "jelleg"
+  },
+  {
+   "id": "felulvizsgalat",
+   "label": "Felülvizsgálat",
+   "sym": "✓",
+   "group": "jelleg"
+  },
+  {
+   "id": "merohely",
+   "label": "Mérőhely, teljesítmény",
+   "sym": "⌁",
+   "group": "jelleg"
+  },
+  {
+   "id": "eloszto",
+   "label": "Elosztó csere",
+   "sym": "▣",
+   "group": "jelleg"
+  },
+  {
+   "id": "felmeres",
+   "label": "Csak felmérés, ajánlat",
+   "sym": "◫",
+   "group": "jelleg"
+  },
+  {
+   "id": "egesz",
+   "label": "Egész lakás / ház",
+   "sym": "⌂",
+   "group": "terulet"
+  },
+  {
+   "id": "konyha",
+   "label": "Konyha",
+   "sym": "🍳",
+   "group": "terulet"
+  },
+  {
+   "id": "furdo",
+   "label": "Fürdő",
+   "sym": "🛁",
+   "group": "terulet"
+  },
+  {
+   "id": "szoba",
+   "label": "Szoba(k)",
+   "sym": "▭",
+   "group": "terulet"
+  },
+  {
+   "id": "kulter",
+   "label": "Kert, kültér",
+   "sym": "🌿",
+   "group": "terulet"
+  },
+  {
+   "id": "garazs",
+   "label": "Garázs, műhely",
+   "sym": "⚙",
+   "group": "terulet"
+  },
+  {
+   "id": "kozos",
+   "label": "Közös rész, lépcsőház",
+   "sym": "⇅",
+   "group": "terulet"
+  },
+  {
+   "id": "ev",
+   "label": "E-autó töltő",
+   "sym": "⚡",
+   "group": "rendszer"
+  },
+  {
+   "id": "napelem",
+   "label": "Napelem / HMKE",
+   "sym": "☀",
+   "group": "rendszer"
+  },
+  {
+   "id": "okos",
+   "label": "Okosotthon",
+   "sym": "◈",
+   "group": "rendszer"
+  },
+  {
+   "id": "gyenge",
+   "label": "Gyengeáram (LAN, TV)",
+   "sym": "⋈",
+   "group": "rendszer"
+  },
+  {
+   "id": "riaszto",
+   "label": "Riasztó, kamera",
+   "sym": "◉",
+   "group": "rendszer"
+  },
+  {
+   "id": "kaputelefon",
+   "label": "Kaputelefon",
+   "sym": "☎",
+   "group": "rendszer"
+  },
+  {
+   "id": "klima",
+   "label": "Klíma",
+   "sym": "❄",
+   "group": "rendszer"
+  },
+  {
+   "id": "hoszivattyu",
+   "label": "Hőszivattyú",
+   "sym": "♨",
+   "group": "rendszer"
+  },
+  {
+   "id": "padlofutes",
+   "label": "Padlófűtés",
+   "sym": "▦",
+   "group": "rendszer"
+  },
+  {
+   "id": "vilagitas",
+   "label": "Világítás, LED",
+   "sym": "✱",
+   "group": "rendszer"
+  },
+  {
+   "id": "dugalj",
+   "label": "Dugalj",
+   "sym": "⊙",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "kapcsolo",
+   "label": "Kapcsoló",
+   "sym": "⊘",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "lampa",
+   "label": "Lámpa",
+   "sym": "✱",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "ledszalag",
+   "label": "LED-szalag",
+   "sym": "═",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "fozolap",
+   "label": "Főzőlap",
+   "sym": "⊞",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "suto",
+   "label": "Sütő",
+   "sym": "▢",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "mosogep",
+   "label": "Mosógép",
+   "sym": "◍",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "mosogatogep",
+   "label": "Mosogatógép",
+   "sym": "◌",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "szarito",
+   "label": "Szárítógép",
+   "sym": "◎",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "bojler",
+   "label": "Bojler",
+   "sym": "♒",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "torolkozo",
+   "label": "Törölközőszárító",
+   "sym": "♨",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "szellozo",
+   "label": "Szellőző",
+   "sym": "✣",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "tvpont",
+   "label": "TV-pont",
+   "sym": "▭",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "lanpont",
+   "label": "LAN-pont",
+   "sym": "⋈",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "kulteri",
+   "label": "Kültéri aljzat",
+   "sym": "⊙",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "ipkamera",
+   "label": "IP kamera",
+   "sym": "◉",
+   "group": "igeny",
+   "qty": true
+  }
+ ],
+ "keywords": [
+  {
+   "id": "bojler",
+   "re": "bojler|vizmelegit",
+   "suggest": {
+    "scope": [
+     "bojler"
+    ]
+   }
+  },
+  {
+   "id": "fozolap",
+   "re": "indukc|fozolap|fozo lap",
+   "suggest": {
+    "scope": [
+     "fozolap"
+    ]
+   }
+  },
+  {
+   "id": "suto",
+   "re": "\\bsuto",
+   "suggest": {
+    "scope": [
+     "suto"
+    ]
+   }
+  },
+  {
+   "id": "mosogatogep",
+   "re": "mosogatogep",
+   "suggest": {
+    "scope": [
+     "mosogatogep"
+    ]
+   }
+  },
+  {
+   "id": "mosogep",
+   "re": "\\bmosogep",
+   "suggest": {
+    "scope": [
+     "mosogep"
+    ]
+   }
+  },
+  {
+   "id": "szarito",
+   "re": "szaritogep",
+   "suggest": {
+    "scope": [
+     "szarito"
+    ]
+   }
+  },
+  {
+   "id": "ev",
+   "re": "e-?auto|villanyauto|elektromos auto|\\btolto|wallbox|tesla",
+   "suggest": {
+    "scope": [
+     "ev"
+    ]
+   }
+  },
+  {
+   "id": "napelem",
+   "re": "napelem|inverter|hmke",
+   "suggest": {
+    "scope": [
+     "napelem"
+    ]
+   }
+  },
+  {
+   "id": "okos",
+   "re": "okos|smart|zigbee|knx|shelly|google home|alexa",
+   "suggest": {
+    "scope": [
+     "okos"
+    ]
+   }
+  },
+  {
+   "id": "gyenge",
+   "re": "\\blan\\b|internet|wifi|ethernet|\\butp\\b|antenna",
+   "suggest": {
+    "scope": [
+     "gyenge"
+    ]
+   }
+  },
+  {
+   "id": "riaszto",
+   "re": "riaszto|biztonsagi kamera|kamerarendszer",
+   "suggest": {
+    "scope": [
+     "riaszto"
+    ]
+   }
+  },
+  {
+   "id": "klima",
+   "re": "klima|legkondi",
+   "suggest": {
+    "scope": [
+     "klima"
+    ]
+   }
+  },
+  {
+   "id": "hoszivattyu",
+   "re": "hoszivattyu",
+   "suggest": {
+    "scope": [
+     "hoszivattyu"
+    ]
+   }
+  },
+  {
+   "id": "padlofutes",
+   "re": "padlofutes",
+   "suggest": {
+    "scope": [
+     "padlofutes"
+    ]
+   }
+  },
+  {
+   "id": "konyha",
+   "re": "konyha",
+   "suggest": {
+    "scope": [
+     "konyha"
+    ]
+   }
+  },
+  {
+   "id": "furdo",
+   "re": "furdo|zuhany|kad\\b",
+   "suggest": {
+    "scope": [
+     "furdo"
+    ]
+   }
+  },
+  {
+   "id": "ledszalag",
+   "re": "led ?-?szalag|szalagvilagit",
+   "suggest": {
+    "scope": [
+     "ledszalag"
+    ]
+   }
+  },
+  {
+   "id": "alu",
+   "re": "aluminium|\\balu\\b",
+   "suggest": {
+    "answer": {
+     "q": "anyag",
+     "opt": "alu"
+    }
+   }
+  },
+  {
+   "id": "fi",
+   "re": "fi-?rele|fi rele|eletvedelmi"
+  },
+  {
+   "id": "leold",
+   "re": "leold|lecsap|kiver|lever a",
+   "suggest": {
+    "scope": [
+     "hiba"
+    ]
+   }
+  },
+  {
+   "id": "egett",
+   "re": "eget|ego szag|egett szag|szikraz|meleged|felforrosod",
+   "suggest": {
+    "scope": [
+     "hiba"
+    ]
+   }
+  },
+  {
+   "id": "penz",
+   "re": "(\\d[\\d .]*\\d|\\d)\\s*(millio|ezer|e|m)?\\s*(ft|forint)\\b",
+   "suggest": {
+    "answer": {
+     "q": "keret",
+     "opt": "max",
+     "text": "$0"
+    }
+   }
+  },
+  {
+   "id": "fazis3",
+   "re": "(\\b3|harom)\\s*-?\\s*fazis",
+   "suggest": {
+    "answer": {
+     "q": "fazis",
+     "opt": "3f"
+    }
+   }
+  },
+  {
+   "id": "fazis1",
+   "re": "(\\b1|egy)\\s*-?\\s*fazis",
+   "suggest": {
+    "answer": {
+     "q": "fazis",
+     "opt": "1f"
+    }
+   }
+  },
+  {
+   "id": "surgos",
+   "re": "surgos|azonnal|holnap|jovo het",
+   "suggest": {
+    "answer": {
+     "q": "hatarido",
+     "opt": "surgos"
+    }
+   }
+  },
+  {
+   "id": "tarsashaz",
+   "re": "tarsashaz|kozos kepvisel|lepcsohaz|panel",
+   "suggest": {
+    "answer": {
+     "q": "ingatlan",
+     "opt": "tarsashaz"
+    }
+   }
+  },
+  {
+   "id": "berlo",
+   "re": "berlo|alberlet|kiado",
+   "suggest": {
+    "answer": {
+     "q": "hozzaferes",
+     "opt": "berlo"
+    }
+   }
+  }
+ ],
+ "questions": [
+  {
+   "id": "lenyeg",
+   "q": "Mi a kérés lényege?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "uj",
+     "label": "Új kiépítés",
+     "sets": {
+      "scope": [
+       "uj"
+      ]
+     }
+    },
+    {
+     "id": "csere",
+     "label": "Csere, felújítás",
+     "sets": {
+      "scope": [
+       "felujitas"
+      ]
+     }
+    },
+    {
+     "id": "bovites",
+     "label": "Bővítés",
+     "sets": {
+      "scope": [
+       "bovites"
+      ]
+     }
+    },
+    {
+     "id": "javitas",
+     "label": "Javítás, hibakeresés",
+     "sets": {
+      "scope": [
+       "hiba"
+      ]
+     }
+    },
+    {
+     "id": "felulvizsgalat",
+     "label": "Felülvizsgálat",
+     "sets": {
+      "scope": [
+       "felulvizsgalat"
+      ]
+     }
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "ingatlan",
+   "q": "Milyen ingatlan?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "csaladi",
+     "label": "Családi ház"
+    },
+    {
+     "id": "tarsashaz",
+     "label": "Társasházi lakás"
+    },
+    {
+     "id": "iroda",
+     "label": "Iroda"
+    },
+    {
+     "id": "uzlet",
+     "label": "Üzlet, vendéglátó"
+    },
+    {
+     "id": "egyeb",
+     "label": "Egyéb"
+    }
+   ]
+  },
+  {
+   "id": "hozzaferes",
+   "q": "Ki fér hozzá az ingatlanhoz?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "tulaj",
+     "label": "Tulajdonos"
+    },
+    {
+     "id": "berlo",
+     "label": "Bérlő"
+    },
+    {
+     "id": "kozos",
+     "label": "Közös képviselő"
+    },
+    {
+     "id": "kulcs",
+     "label": "Kulcs külön egyeztetve"
+    }
+   ]
+  },
+  {
+   "id": "hatarido",
+   "q": "Mikorra kell elkészülni?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "surgos",
+     "label": "Sürgős (napokon belül)"
+    },
+    {
+     "id": "honap",
+     "label": "Egy hónapon belül"
+    },
+    {
+     "id": "rugalmas",
+     "label": "Rugalmas"
+    },
+    {
+     "id": "datum",
+     "label": "Konkrét dátum"
+    }
+   ]
+  },
+  {
+   "id": "keret",
+   "q": "Van költségkeret?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    },
+    {
+     "id": "max",
+     "label": "Van, legfeljebb …"
+    },
+    {
+     "id": "ajanlat",
+     "label": "Árajánlat után döntünk"
+    }
+   ],
+   "num": {
+    "unit": "Ft"
+   }
+  },
+  {
+   "id": "lakott",
+   "q": "Lakott lesz közben az ingatlan?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "nem",
+     "label": "Nem"
+    },
+    {
+     "id": "reszben",
+     "label": "Részben"
+    }
+   ]
+  },
+  {
+   "id": "foto",
+   "q": "Fényképezhetünk?",
+   "group": "alap",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "villamos",
+     "label": "Csak a villamos részt"
+    },
+    {
+     "id": "nem",
+     "label": "Nem"
+    }
+   ]
+  },
+  {
+   "id": "doksi",
+   "q": "Van régi dokumentáció (terv, jegyzőkönyv)?",
+   "group": "alap",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    },
+    {
+     "id": "keresik",
+     "label": "Megkeresik"
+    }
+   ]
+  },
+  {
+   "id": "dontes",
+   "q": "Ki dönt a megrendelésről?",
+   "group": "alap",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": true,
+   "options": [
+    {
+     "id": "o",
+     "label": "Ő maga"
+    },
+    {
+     "id": "tobben",
+     "label": "Többen együtt"
+    },
+    {
+     "id": "mas",
+     "label": "Valaki más"
+    }
+   ]
+  },
+  {
+   "id": "kor",
+   "q": "Mikor készült a hálózat?",
+   "group": "meglevo",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "felujitas",
+       "bovites",
+       "hiba",
+       "felulvizsgalat",
+       "eloszto"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "csere",
+       "bovites",
+       "javitas",
+       "felulvizsgalat"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "70elott",
+     "label": "1970 előtt"
+    },
+    {
+     "id": "70-90",
+     "label": "1970–1990"
+    },
+    {
+     "id": "90-10",
+     "label": "1990–2010"
+    },
+    {
+     "id": "10utan",
+     "label": "2010 után"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "anyag",
+   "q": "Vezeték anyaga?",
+   "group": "meglevo",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "felujitas",
+         "bovites",
+         "hiba",
+         "felulvizsgalat",
+         "eloszto"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "csere",
+         "bovites",
+         "javitas",
+         "felulvizsgalat"
+        ]
+       }
+      ]
+     },
+     {
+      "kw": "alu"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "alu",
+     "label": "Alumínium"
+    },
+    {
+     "id": "rez",
+     "label": "Réz"
+    },
+    {
+     "id": "vegyes",
+     "label": "Vegyes"
+    },
+    {
+     "id": "nemtudni",
+     "label": "Nem tudni"
+    }
+   ]
+  },
+  {
+   "id": "fi",
+   "q": "Van FI-relé (életvédelmi)?",
+   "group": "meglevo",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "felujitas",
+         "bovites",
+         "hiba",
+         "felulvizsgalat",
+         "eloszto"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "csere",
+         "bovites",
+         "javitas",
+         "felulvizsgalat"
+        ]
+       }
+      ]
+     },
+     {
+      "kw": "fi"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "van",
+     "label": "Van"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "biztositek",
+   "q": "Biztosítékok típusa?",
+   "group": "meglevo",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "felujitas",
+       "bovites",
+       "hiba",
+       "felulvizsgalat",
+       "eloszto"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "csere",
+       "bovites",
+       "javitas",
+       "felulvizsgalat"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "olvado",
+     "label": "Olvadóbetétes"
+    },
+    {
+     "id": "kismegszakito",
+     "label": "Kismegszakító"
+    },
+    {
+     "id": "vegyes",
+     "label": "Vegyes"
+    }
+   ]
+  },
+  {
+   "id": "gond",
+   "q": "Milyen gond volt már?",
+   "group": "meglevo",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": "hiba"
+     },
+     {
+      "kw": [
+       "leold",
+       "egett"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "leold",
+     "label": "Leold a FI / biztosíték"
+    },
+    {
+     "id": "eg",
+     "label": "Szikrázik, égett szag"
+    },
+    {
+     "id": "meleg",
+     "label": "Melegedő aljzat"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "vizsgalat",
+   "q": "Mikor volt utoljára érintésvédelmi felülvizsgálat?",
+   "group": "meglevo",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "felujitas",
+       "bovites",
+       "hiba",
+       "felulvizsgalat",
+       "eloszto"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "csere",
+       "bovites",
+       "javitas",
+       "felulvizsgalat"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "ev",
+     "label": "Éven belül"
+    },
+    {
+     "id": "1-5",
+     "label": "1–5 éve"
+    },
+    {
+     "id": "5+",
+     "label": "5+ éve"
+    },
+    {
+     "id": "soha",
+     "label": "Soha / nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "fazis",
+   "q": "Hány fázis a bekötés most?",
+   "group": "merohely",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "1f",
+     "label": "1 fázis"
+    },
+    {
+     "id": "3f",
+     "label": "3 fázis"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "fobizt",
+   "q": "Főbiztosíték?",
+   "group": "merohely",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "1x25",
+     "label": "1×25 A"
+    },
+    {
+     "id": "1x32",
+     "label": "1×32 A"
+    },
+    {
+     "id": "3x16",
+     "label": "3×16 A"
+    },
+    {
+     "id": "3x25",
+     "label": "3×25 A"
+    },
+    {
+     "id": "mas",
+     "label": "Más (A)"
+    }
+   ]
+  },
+  {
+   "id": "mero_hely",
+   "q": "Hol van a mérő?",
+   "group": "merohely",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "bent",
+     "label": "Épületen belül"
+    },
+    {
+     "id": "kerites",
+     "label": "Kerítésnél"
+    },
+    {
+     "id": "oszlop",
+     "label": "Tartóoszlopon"
+    },
+    {
+     "id": "lepcsohaz",
+     "label": "Lépcsőházban"
+    }
+   ]
+  },
+  {
+   "id": "bekotes",
+   "q": "Hogyan jön be a hálózat?",
+   "group": "merohely",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "leg",
+     "label": "Légvezeték"
+    },
+    {
+     "id": "fold",
+     "label": "Földkábel"
+    },
+    {
+     "id": "nemlatszik",
+     "label": "Nem látszik"
+    }
+   ]
+  },
+  {
+   "id": "uj_fogyaszto",
+   "q": "Lesz új nagy fogyasztó?",
+   "group": "merohely",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "merohely",
+         "ev",
+         "napelem",
+         "hoszivattyu",
+         "fozolap",
+         "klima"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "bovites"
+        ]
+       },
+       {
+        "answer": "uj_fogyaszto"
+       }
+      ]
+     },
+     {
+      "any": [
+       {
+        "scope": [
+         "felujitas",
+         "bovites",
+         "hiba",
+         "felulvizsgalat",
+         "eloszto"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "csere",
+         "bovites",
+         "javitas",
+         "felulvizsgalat"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "ev",
+     "label": "Töltő",
+     "sets": {
+      "scope": [
+       "ev"
+      ]
+     }
+    },
+    {
+     "id": "hsz",
+     "label": "Hőszivattyú",
+     "sets": {
+      "scope": [
+       "hoszivattyu"
+      ]
+     }
+    },
+    {
+     "id": "pv",
+     "label": "Napelem",
+     "sets": {
+      "scope": [
+       "napelem"
+      ]
+     }
+    },
+    {
+     "id": "indukcio",
+     "label": "Indukciós főzőlap",
+     "sets": {
+      "scope": [
+       "fozolap"
+      ]
+     }
+    },
+    {
+     "id": "klima",
+     "label": "Klíma",
+     "sets": {
+      "scope": [
+       "klima"
+      ]
+     }
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "mero_allapot",
+   "q": "Mérőszekrény állapota?",
+   "group": "merohely",
+   "prio": 2,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "rendben",
+     "label": "Rendben"
+    },
+    {
+     "id": "torott",
+     "label": "Törött, rozsdás"
+    },
+    {
+     "id": "nincshely",
+     "label": "Nincs hely"
+    },
+    {
+     "id": "plomba",
+     "label": "Plombált, nem hozzáférhető"
+    }
+   ]
+  },
+  {
+   "id": "szabad_hely",
+   "q": "Van szabad hely az elosztóban?",
+   "group": "eloszto",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "van",
+     "label": "Van"
+    },
+    {
+     "id": "tele",
+     "label": "Tele van"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudni"
+    }
+   ]
+  },
+  {
+   "id": "felirat",
+   "q": "Van áramköri felirat / lista?",
+   "group": "eloszto",
+   "prio": 2,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "naprakesz",
+     "label": "Van, naprakész"
+    },
+    {
+     "id": "hianyos",
+     "label": "Van, hiányos"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    }
+   ]
+  },
+  {
+   "id": "foldeles",
+   "q": "Földelés?",
+   "group": "eloszto",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "eloszto",
+         "felujitas",
+         "bovites",
+         "ev",
+         "napelem",
+         "felulvizsgalat",
+         "hiba",
+         "uj"
+        ]
+       },
+       {
+        "point": "board"
+       }
+      ]
+     },
+     {
+      "scope": "ev"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "tncs",
+     "label": "TN-C-S"
+    },
+    {
+     "id": "tt",
+     "label": "TT"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudni"
+    }
+   ]
+  },
+  {
+   "id": "uj_eloszto",
+   "q": "Kell új elosztó?",
+   "group": "eloszto",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen",
+     "sets": {
+      "scope": [
+       "eloszto"
+      ]
+     }
+    },
+    {
+     "id": "bovites",
+     "label": "Csak bővítés"
+    },
+    {
+     "id": "javasolj",
+     "label": "Szerelő javasoljon"
+    }
+   ]
+  },
+  {
+   "id": "furdo_mit",
+   "q": "Mit szeretne a fürdőben?",
+   "group": "furdo",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": "furdo"
+     },
+     {
+      "room": "furdo"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "lampa",
+     "label": "Új lámpák",
+     "sets": {
+      "scope": [
+       "lampa"
+      ]
+     }
+    },
+    {
+     "id": "aljzat",
+     "label": "Új aljzatok",
+     "sets": {
+      "scope": [
+       "dugalj"
+      ]
+     }
+    },
+    {
+     "id": "torolkozo",
+     "label": "Törölközőszárító",
+     "sets": {
+      "scope": [
+       "torolkozo"
+      ]
+     }
+    },
+    {
+     "id": "padlofutes",
+     "label": "Padlófűtés",
+     "sets": {
+      "scope": [
+       "padlofutes"
+      ]
+     }
+    },
+    {
+     "id": "szellozo",
+     "label": "Szellőző",
+     "sets": {
+      "scope": [
+       "szellozo"
+      ]
+     }
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "gepek",
+   "q": "Milyen gépek lesznek a konyhában?",
+   "group": "konyha",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": "konyha"
+     },
+     {
+      "room": "konyha"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "mosogatogep",
+     "label": "Mosogatógép",
+     "sets": {
+      "scope": [
+       "mosogatogep"
+      ]
+     }
+    },
+    {
+     "id": "suto",
+     "label": "Sütő",
+     "sets": {
+      "scope": [
+       "suto"
+      ]
+     }
+    },
+    {
+     "id": "fozolap",
+     "label": "Főzőlap",
+     "sets": {
+      "scope": [
+       "fozolap"
+      ]
+     }
+    },
+    {
+     "id": "mosogep",
+     "label": "Mosógép",
+     "sets": {
+      "scope": [
+       "mosogep"
+      ]
+     }
+    },
+    {
+     "id": "bojler",
+     "label": "Bojler",
+     "sets": {
+      "scope": [
+       "bojler"
+      ]
+     }
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "fozolap_tipus",
+   "q": "Milyen főzőlap?",
+   "group": "konyha",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": "fozolap"
+     },
+     {
+      "answer": "gepek",
+      "is": "fozolap"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "gaz",
+     "label": "Gáz"
+    },
+    {
+     "id": "villany",
+     "label": "Villany"
+    },
+    {
+     "id": "indukcio",
+     "label": "Indukció"
+    },
+    {
+     "id": "nemdont",
+     "label": "Még nincs döntés"
+    }
+   ]
+  },
+  {
+   "id": "csempe",
+   "q": "Kész a csempézés?",
+   "group": "konyha",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "furdo",
+       "konyha"
+      ]
+     },
+     {
+      "room": [
+       "furdo",
+       "konyha"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "kesz",
+     "label": "Kész"
+    },
+    {
+     "id": "meg",
+     "label": "Még nem"
+    },
+    {
+     "id": "nemlesz",
+     "label": "Nem lesz"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "bekotes_hely",
+   "q": "Ki jelöli ki a gépek bekötési helyét?",
+   "group": "konyha",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "scope": "konyha"
+     },
+     {
+      "room": "konyha"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "megvan",
+     "label": "Már megvan"
+    },
+    {
+     "id": "szerelo",
+     "label": "A szerelő"
+    },
+    {
+     "id": "tervezo",
+     "label": "A konyhatervező"
+    }
+   ]
+  },
+  {
+   "id": "auto_kw",
+   "q": "Az autó töltési teljesítménye (AC)?",
+   "group": "ev",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "3.7",
+     "label": "3,7 kW"
+    },
+    {
+     "id": "7.4",
+     "label": "7,4 kW (1 fázis)"
+    },
+    {
+     "id": "11",
+     "label": "11 kW (3 fázis)"
+    },
+    {
+     "id": "22",
+     "label": "22 kW"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "parkolo",
+   "q": "Hol parkol az autó?",
+   "group": "ev",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "garazs",
+     "label": "Garázs"
+    },
+    {
+     "id": "beallo",
+     "label": "Kocsibeálló"
+    },
+    {
+     "id": "utca",
+     "label": "Utcafront"
+    },
+    {
+     "id": "melygarazs",
+     "label": "Társasházi mélygarázs"
+    }
+   ]
+  },
+  {
+   "id": "tavolsag",
+   "q": "Milyen messze van az elosztótól?",
+   "group": "ev",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "5",
+     "label": "< 5 m"
+    },
+    {
+     "id": "15",
+     "label": "5–15 m"
+    },
+    {
+     "id": "30",
+     "label": "15–30 m"
+    },
+    {
+     "id": "30+",
+     "label": "30 m felett"
+    }
+   ]
+  },
+  {
+   "id": "okos_tolto",
+   "q": "Okos funkció a töltőn?",
+   "group": "ev",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "alap",
+     "label": "Alap"
+    },
+    {
+     "id": "pv",
+     "label": "Napelemes vezérlés"
+    },
+    {
+     "id": "terheles",
+     "label": "Terheléskezelés"
+    },
+    {
+     "id": "nem",
+     "label": "Nem érdekli"
+    }
+   ]
+  },
+  {
+   "id": "hozzajarulas",
+   "q": "Megvan a tulajdonosi / közös képviselői hozzájárulás?",
+   "group": "ev",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "all": [
+       {
+        "scope": "ev"
+       },
+       {
+        "answer": "ingatlan",
+        "is": "tarsashaz"
+       }
+      ]
+     },
+     {
+      "all": [
+       {
+        "scope": "napelem"
+       },
+       {
+        "answer": "ingatlan",
+        "is": "tarsashaz"
+       }
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "kell",
+     "label": "Kell kérni"
+    },
+    {
+     "id": "nemkell",
+     "label": "Nem szükséges"
+    }
+   ]
+  },
+  {
+   "id": "wifi_park",
+   "q": "Van WiFi a töltő helyén?",
+   "group": "ev",
+   "prio": 2,
+   "who": "szemle",
+   "when": {
+    "scope": "ev"
+   },
+   "options": [
+    {
+     "id": "jo",
+     "label": "Jó"
+    },
+    {
+     "id": "gyenge",
+     "label": "Gyenge"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    }
+   ]
+  },
+  {
+   "id": "fogyasztas",
+   "q": "Éves fogyasztás?",
+   "group": "napelem",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "2500",
+     "label": "< 2 500 kWh"
+    },
+    {
+     "id": "5000",
+     "label": "2 500–5 000"
+    },
+    {
+     "id": "8000",
+     "label": "5 000–8 000"
+    },
+    {
+     "id": "8000+",
+     "label": "8 000 felett"
+    }
+   ]
+  },
+  {
+   "id": "teto",
+   "q": "Milyen a tető?",
+   "group": "napelem",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "cserep",
+     "label": "Cserép"
+    },
+    {
+     "id": "lemez",
+     "label": "Lemez"
+    },
+    {
+     "id": "lapos",
+     "label": "Lapostető"
+    },
+    {
+     "id": "egyeb",
+     "label": "Egyéb"
+    }
+   ]
+  },
+  {
+   "id": "tajolas",
+   "q": "Tájolás?",
+   "group": "napelem",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "del",
+     "label": "Dél"
+    },
+    {
+     "id": "kny",
+     "label": "Kelet–nyugat"
+    },
+    {
+     "id": "egyeb",
+     "label": "Egyéb"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "akku",
+   "q": "Akkumulátor?",
+   "group": "napelem",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen"
+    },
+    {
+     "id": "kesobb",
+     "label": "Később"
+    },
+    {
+     "id": "nem",
+     "label": "Nem"
+    }
+   ]
+  },
+  {
+   "id": "meglevo_pv",
+   "q": "Van már napelem?",
+   "group": "napelem",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    },
+    {
+     "id": "bovit",
+     "label": "Van, bővítené"
+    },
+    {
+     "id": "hibas",
+     "label": "Van, hibás"
+    }
+   ]
+  },
+  {
+   "id": "ugyintezes",
+   "q": "Kell hálózati ügyintézés?",
+   "group": "napelem",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "napelem"
+   },
+   "options": [
+    {
+     "id": "igen",
+     "label": "Igen, kérem"
+    },
+    {
+     "id": "folyamatban",
+     "label": "Már elindult"
+    },
+    {
+     "id": "maga",
+     "label": "Maga intézi"
+    }
+   ]
+  },
+  {
+   "id": "okos_rendszer",
+   "q": "Milyen okosotthon rendszer?",
+   "group": "okos",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "okos"
+   },
+   "options": [
+    {
+     "id": "knx",
+     "label": "KNX (vezetékes)"
+    },
+    {
+     "id": "zigbee",
+     "label": "Zigbee / Thread"
+    },
+    {
+     "id": "wifi",
+     "label": "WiFi (pl. Shelly)"
+    },
+    {
+     "id": "nemdont",
+     "label": "Még nincs döntés"
+    }
+   ]
+  },
+  {
+   "id": "okos_mit",
+   "q": "Mit vezéreljen?",
+   "group": "okos",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "okos"
+   },
+   "options": [
+    {
+     "id": "vilagitas",
+     "label": "Világítás"
+    },
+    {
+     "id": "redony",
+     "label": "Redőny"
+    },
+    {
+     "id": "futes",
+     "label": "Fűtés"
+    },
+    {
+     "id": "kapu",
+     "label": "Kapu"
+    },
+    {
+     "id": "meres",
+     "label": "Fogyasztásmérés"
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "gyenge_mit",
+   "q": "Milyen gyengeáram kell?",
+   "group": "gyenge",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "gyenge"
+   },
+   "options": [
+    {
+     "id": "lan",
+     "label": "LAN",
+     "sets": {
+      "scope": [
+       "lanpont"
+      ]
+     }
+    },
+    {
+     "id": "tv",
+     "label": "TV",
+     "sets": {
+      "scope": [
+       "tvpont"
+      ]
+     }
+    },
+    {
+     "id": "wifi",
+     "label": "WiFi lefedettség"
+    },
+    {
+     "id": "kamera",
+     "label": "Kamera",
+     "sets": {
+      "scope": [
+       "ipkamera"
+      ]
+     }
+    },
+    {
+     "id": "kaputelefon",
+     "label": "Kaputelefon",
+     "sets": {
+      "scope": [
+       "kaputelefon"
+      ]
+     }
+    }
+   ],
+   "multi": true
+  },
+  {
+   "id": "router_hely",
+   "q": "Hol lesz a router / rack?",
+   "group": "gyenge",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "scope": "gyenge"
+   },
+   "options": [
+    {
+     "id": "eloszto",
+     "label": "Elosztó mellett"
+    },
+    {
+     "id": "nappali",
+     "label": "Nappaliban"
+    },
+    {
+     "id": "mas",
+     "label": "Máshol"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "klima_db",
+   "q": "Hány beltéri egység lesz?",
+   "group": "klima",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": "klima"
+   },
+   "options": [
+    {
+     "id": "1",
+     "label": "1"
+    },
+    {
+     "id": "2",
+     "label": "2"
+    },
+    {
+     "id": "3",
+     "label": "3"
+    },
+    {
+     "id": "4+",
+     "label": "4 vagy több"
+    }
+   ]
+  },
+  {
+   "id": "kulteri_egyseg",
+   "q": "Hol lesz a kültéri egység?",
+   "group": "klima",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "klima",
+       "hoszivattyu"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "homlokzat",
+     "label": "Homlokzaton"
+    },
+    {
+     "id": "erkely",
+     "label": "Erkélyen"
+    },
+    {
+     "id": "kert",
+     "label": "Kertben"
+    },
+    {
+     "id": "teto",
+     "label": "Tetőn"
+    }
+   ]
+  }
+ ],
+ "shotlist": [
+  {
+   "id": "epulet_eleje",
+   "purpose": "epulet",
+   "label": "Épület / bejárat eleje",
+   "hint": "A ház és a bejárat; vigyázz a házszámra és az arcokra.",
+   "when": true
+  },
+  {
+   "id": "hozzaferes",
+   "purpose": "bejarat",
+   "label": "Hozzáférés: padlás, pince, felszálló",
+   "hint": "Ahol a kábel menne, és ami akadály.",
+   "when": true,
+   "prio": 2
+  },
+  {
+   "id": "merohely_zart",
+   "purpose": "merohely",
+   "label": "Mérőszekrény zárva, környezettel",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "merohely",
+         "ev",
+         "napelem",
+         "hoszivattyu",
+         "fozolap",
+         "klima"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "bovites"
+        ]
+       },
+       {
+        "answer": "uj_fogyaszto"
+       }
+      ]
+     },
+     {
+      "any": [
+       {
+        "scope": [
+         "felujitas",
+         "bovites",
+         "hiba",
+         "felulvizsgalat",
+         "eloszto"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "csere",
+         "bovites",
+         "javitas",
+         "felulvizsgalat"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "merohely_nyitott",
+   "purpose": "merohely",
+   "label": "Mérőszekrény nyitva: mérő, főbiztosíték",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "merohely",
+         "ev",
+         "napelem",
+         "hoszivattyu",
+         "fozolap",
+         "klima"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "bovites"
+        ]
+       },
+       {
+        "answer": "uj_fogyaszto"
+       }
+      ]
+     },
+     {
+      "any": [
+       {
+        "scope": [
+         "felujitas",
+         "bovites",
+         "hiba",
+         "felulvizsgalat",
+         "eloszto"
+        ]
+       },
+       {
+        "answer": "lenyeg",
+        "is": [
+         "csere",
+         "bovites",
+         "javitas",
+         "felulvizsgalat"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "mero_tabla",
+   "purpose": "tabla",
+   "label": "Mérő címkéje: gyári szám, típus",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   }
+  },
+  {
+   "id": "fobizt_tabla",
+   "purpose": "tabla",
+   "label": "Főbiztosíték értéke",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "merohely",
+       "ev",
+       "napelem",
+       "hoszivattyu",
+       "fozolap",
+       "klima"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "bovites"
+      ]
+     },
+     {
+      "answer": "uj_fogyaszto"
+     }
+    ]
+   }
+  },
+  {
+   "id": "eloszto_zart",
+   "purpose": "eloszto",
+   "label": "Elosztó zárva, a helyiséggel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   }
+  },
+  {
+   "id": "eloszto_nyitott",
+   "purpose": "eloszto",
+   "label": "Elosztó nyitva, olvasható címkékkel",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   }
+  },
+  {
+   "id": "eloszto_felirat",
+   "purpose": "tabla",
+   "label": "Áramköri lista / felirat",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "eloszto",
+       "felujitas",
+       "bovites",
+       "ev",
+       "napelem",
+       "felulvizsgalat",
+       "hiba",
+       "uj"
+      ]
+     },
+     {
+      "point": "board"
+     }
+    ]
+   },
+   "prio": 2
+  },
+  {
+   "id": "fi_tabla",
+   "purpose": "tabla",
+   "label": "FI-relé címkéje (30 mA?)",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "eloszto",
+         "felujitas",
+         "bovites",
+         "ev",
+         "napelem",
+         "felulvizsgalat",
+         "hiba",
+         "uj"
+        ]
+       },
+       {
+        "point": "board"
+       }
+      ]
+     },
+     {
+      "kw": "fi"
+     }
+    ]
+   }
+  },
+  {
+   "id": "foldeles",
+   "purpose": "eloszto",
+   "label": "Földelés, EPH kötések",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "scope": [
+         "eloszto",
+         "felujitas",
+         "bovites",
+         "ev",
+         "napelem",
+         "felulvizsgalat",
+         "hiba",
+         "uj"
+        ]
+       },
+       {
+        "point": "board"
+       }
+      ]
+     },
+     {
+      "scope": "ev"
+     }
+    ]
+   },
+   "prio": 2
+  },
+  {
+   "id": "szabad_hely",
+   "purpose": "eloszto",
+   "label": "Szabad DIN-hely",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "ev",
+       "napelem",
+       "bovites"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "hiba_nyom",
+   "purpose": "hiba",
+   "label": "A hiba nyoma (égés, melegedés)",
+   "when": {
+    "any": [
+     {
+      "scope": "hiba"
+     },
+     {
+      "kw": "egett"
+     }
+    ]
+   }
+  },
+  {
+   "id": "furdo_szoba",
+   "purpose": "szoba",
+   "room": "furdo",
+   "label": "Fürdő: Fotópont, 4 irány",
+   "when": {
+    "any": [
+     {
+      "scope": "furdo"
+     },
+     {
+      "room": "furdo"
+     }
+    ]
+   },
+   "need": 4
+  },
+  {
+   "id": "konyha_szoba",
+   "purpose": "szoba",
+   "room": "konyha",
+   "label": "Konyha: Fotópont, 4 irány",
+   "when": {
+    "any": [
+     {
+      "scope": "konyha"
+     },
+     {
+      "room": "konyha"
+     }
+    ]
+   },
+   "need": 4
+  },
+  {
+   "id": "konyha_bekotes",
+   "purpose": "meglevo",
+   "label": "Meglévő konyhai aljzatok, gépbekötések",
+   "when": {
+    "any": [
+     {
+      "scope": "konyha"
+     },
+     {
+      "room": "konyha"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ev_hely",
+   "purpose": "hely",
+   "label": "A töltő tervezett helye",
+   "when": {
+    "scope": "ev"
+   }
+  },
+  {
+   "id": "ev_parkolo",
+   "purpose": "kornyek",
+   "label": "A parkolóhely, a töltőcsatlakozó oldala",
+   "when": {
+    "scope": "ev"
+   }
+  },
+  {
+   "id": "ev_utvonal",
+   "purpose": "nyomvonal",
+   "label": "Kábelút az elosztótól a töltőig",
+   "when": {
+    "scope": "ev"
+   },
+   "need": 2
+  },
+  {
+   "id": "pv_teto",
+   "purpose": "epulet",
+   "label": "Tető minden oldala",
+   "when": {
+    "scope": "napelem"
+   },
+   "need": 2
+  },
+  {
+   "id": "pv_arnyek",
+   "purpose": "kornyek",
+   "label": "Árnyékolók: fák, kémény, szomszéd",
+   "when": {
+    "scope": "napelem"
+   }
+  },
+  {
+   "id": "pv_inverter",
+   "purpose": "hely",
+   "label": "Inverter / akku helye",
+   "when": {
+    "scope": "napelem"
+   }
+  },
+  {
+   "id": "pv_szamla",
+   "purpose": "dokumentum",
+   "label": "Villanyszámla (csak az éves kWh; név takarva)",
+   "when": {
+    "scope": "napelem"
+   },
+   "prio": 2
+  },
+  {
+   "id": "meglevo_szerelveny",
+   "purpose": "meglevo",
+   "label": "Jellemző aljzat / kapcsoló szobánként",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "felujitas",
+       "bovites",
+       "hiba",
+       "felulvizsgalat",
+       "eloszto"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "csere",
+       "bovites",
+       "javitas",
+       "felulvizsgalat"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "meglevo_vezetek",
+   "purpose": "meglevo",
+   "label": "Látható vezeték, kötődoboz",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "felujitas",
+       "bovites",
+       "hiba",
+       "felulvizsgalat",
+       "eloszto"
+      ]
+     },
+     {
+      "answer": "lenyeg",
+      "is": [
+       "csere",
+       "bovites",
+       "javitas",
+       "felulvizsgalat"
+      ]
+     }
+    ]
+   },
+   "prio": 2
+  },
+  {
+   "id": "doksi",
+   "purpose": "dokumentum",
+   "label": "A régi dokumentáció",
+   "when": {
+    "answer": "doksi",
+    "is": "igen"
+   }
+  },
+  {
+   "id": "kulteri_hely",
+   "purpose": "hely",
+   "label": "Kültéri egység helye",
+   "when": {
+    "scope": [
+     "klima",
+     "hoszivattyu"
+    ]
+   }
+  }
+ ],
+ "templates": [
+  {
+   "id": "l",
+   "label": "L alak",
+   "sym": "⌐",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     0.55
+    ],
+    [
+     0.55,
+     0.55
+    ],
+    [
+     0.55,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "u",
+   "label": "U alak",
+   "sym": "⊔",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     0.3,
+     0
+    ],
+    [
+     0.3,
+     0.65
+    ],
+    [
+     0.7,
+     0.65
+    ],
+    [
+     0.7,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "t",
+   "label": "T alak",
+   "sym": "⊤",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     0.4
+    ],
+    [
+     0.68,
+     0.4
+    ],
+    [
+     0.68,
+     1
+    ],
+    [
+     0.32,
+     1
+    ],
+    [
+     0.32,
+     0.4
+    ],
+    [
+     0,
+     0.4
+    ]
+   ]
+  },
+  {
+   "id": "ferde",
+   "label": "Ferde sarok",
+   "sym": "◸",
+   "poly": [
+    [
+     0.3,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     0.3
+    ]
+   ]
+  },
+  {
+   "id": "fulke",
+   "label": "Fülkés",
+   "sym": "⊓",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0.62,
+     1
+    ],
+    [
+     0.62,
+     0.8
+    ],
+    [
+     0.38,
+     0.8
+    ],
+    [
+     0.38,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  }
+ ]
+}
