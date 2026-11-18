@@ -49,6 +49,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M30** | Helyszín (in `sketch`) | **BETA**: address, GPS, VRG Térkép through the relay with Átvétel, OSM on request, the building's footprint against the solved sketch | relay (map) | medium |
 | **M31** | Variánsok (in `sketch`) | **BETA**: agent-made variants (GO VARIANT, `Sketcher/variants/PROTOCOL.md`) under ⚙ with the corner toggle; Sablon tool, point presets; requests without client data | — | high (data) |
 | **M32** | Kezdőlap (both homes) | **BETA** (built 2026-11-18, D-35, waiting for the phone check): the home redesigned: VRG Sketcher as the hero with Fotópont on it, a quick row of four (QR, Légegér, Átadás, Gyorsjegyzet), foldable groups, a side-by-side split lying down, Sketcher in the Asztal dock; the same layout on the Asztal and on Kompakt (`kit-core/HomeLayout.kt`) | — | low |
+| **M33** | Csipogó (`pager`) | **BETA** (built 2026-11-18, D-36–D-38, waiting for the phone check): the Site Pager (Archive: Site Pager Builder, Mark Plan) on the crew's phones over Bluetooth LE, no internet: HÍVÁS held, LÁTTAM, K1–K3 and the 14 messages with GOTIT / SEEN receipts, link test and roll call, proximity and a finder, chat with store and forward, push-to-talk, Őrzés (guard) and Mozdulatlanság (man-down), a stairwell repeater mode | Bluetooth | high (`pager-core`) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
