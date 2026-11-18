@@ -55,7 +55,7 @@ object SketchFeature : VrgFeature {
     private lateinit var app: Application
     internal val store by lazy { SketchStore(File(app.filesDir, "sketch")) }
 
-    override fun init(app: Application) { this.app = app }
+    override fun init(app: Application) { this.app = app; SketcherKit.init(app) }
 
     @Composable
     override fun Screen(host: FeatureHost) {
@@ -152,15 +152,16 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
     Column(Modifier.fillMaxSize().background(Melyviz.water).verticalScroll(rememberScrollState()).padding(Melyviz.gutter)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
-            Text("VÁZLAT", style = Melyviz.title.copy(fontSize = 18.sp))
+            Text("VRG SKETCHER", style = Melyviz.title.copy(fontSize = 18.sp))
         }
         Text(
-            "Helyszíni alaprajz: járd körbe a lakást, rajzold fel a szobákat, írd rá a méreteket, tedd le a szerelési " +
-                "pontokat. A Rendezés a hiányzó méreteket kiszámolja vagy megbecsüli, és a Planner kész tervet nyit belőle.",
+            "A helyszíni szemle eszköze: vázlat, jegyzet, munkakör, kérdések, kamera és helyszín egy felmérésben. " +
+                "Bármit bármikor rögzíthetsz, bármilyen sorrendben; a Nyitott (⚑) összegyűjti, mi hiányzik még. " +
+                "A Rendezés a méreteket kiszámolja, a Planner és az Asztal folytatja.",
             style = Melyviz.small, modifier = Modifier.padding(top = 6.dp),
         )
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            VrgChip("＋ Új vázlat", selected = true) { naming = true }
+            VrgChip("＋ Új felmérés", selected = true) { naming = true }
         }
         VrgSectionTitle("A telefonon (${entries.size})")
         if (entries.isEmpty()) Text("Még nincs vázlat.", style = Melyviz.small)
@@ -183,8 +184,8 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
 
     if (naming) {
         TextDialog(
-            title = "Új vázlat", label = "Cím vagy ügyfél (később is átírható)",
-            initial = "Vázlat " + stamp(System.currentTimeMillis()),
+            title = "Új felmérés", label = "Cím vagy ügyfél (később is átírható)",
+            initial = "Felmérés " + stamp(System.currentTimeMillis()),
             onDismiss = { naming = false },
         ) { name ->
             naming = false

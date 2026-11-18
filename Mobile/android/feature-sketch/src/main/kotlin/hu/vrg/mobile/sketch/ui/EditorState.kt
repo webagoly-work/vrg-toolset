@@ -5,7 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import hu.vrg.mobile.sketch.AnswerState
+import hu.vrg.mobile.sketch.Effect
+import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.Geo
+import hu.vrg.mobile.sketch.Intake
+import hu.vrg.mobile.sketch.KTemplate
+import hu.vrg.mobile.sketch.Kit
+import hu.vrg.mobile.sketch.PointPreset
+import hu.vrg.mobile.sketch.Site
+import hu.vrg.mobile.sketch.Variant
+import hu.vrg.mobile.sketch.VariantOps
 import hu.vrg.mobile.sketch.Hit
 import hu.vrg.mobile.sketch.Level
 import hu.vrg.mobile.sketch.MeasureKind
@@ -30,8 +40,14 @@ import kotlin.math.min
 /** The wheel on screen: which wheel, where (canvas px), which ring, the sector under the finger, what it is for. */
 data class WheelUi(val wheel: Wheel, val center: Offset, val ring: Int, val sel: Int?, val at: Pt, val hit: Hit?, val sticky: Boolean)
 
-/** The camera asked for a photo point; [deg] null = the side comes from the swipe after the shot. */
-data class CameraReq(val photo: String, val deg: Int?)
+/**
+ * The camera asked for. A photo point's shot ([photo], [deg] null = the side comes from the swipe after it), or a
+ * capture (WP M29): [purpose], the shot-list item it fulfils, the record and room it belongs to.
+ */
+data class CameraReq(
+    val photo: String?, val deg: Int?, val purpose: String? = null, val shot: String? = null,
+    val target: String? = null, val room: String? = null,
+)
 
 /** What a dialog is asked for. */
 sealed class Ask {
@@ -43,6 +59,10 @@ sealed class Ask {
     data class TagPick(val target: String?, val at: Pt?) : Ask()
     data class CircuitEdit(val id: String) : Ask()
     data class PhotoView(val id: String, val deg: Int) : Ask()
+    data class CaptureView(val id: String) : Ask()
+    data class EntryEdit(val id: String) : Ask()
+    object Purposes : Ask()
+    object VariantRequest : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
 }
@@ -58,6 +78,18 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     var sketch by mutableStateOf(initial); private set
     var norm: Norm by mutableStateOf(solver.solve(initial)); private set
+    /** The field kit in force: the base, with the variant's additions while it is switched on (WP M31). */
+    var kit: Kit by mutableStateOf(SketcherKit.forSketch(initial)); private set
+    val variant: Variant? get() = if (sketch.variantOn) SketcherKit.variant(sketch.variant) else null
+
+    // VRG Sketcher (WP M26): which front is open, and the room last touched on the sketch: a note or a photo taken
+    // "here" belongs to it, whatever front it was taken from
+    var front by mutableStateOf("vazlat")
+    var focusRoom by mutableStateOf<String?>(null)
+    var noteOpen by mutableStateOf(false)
+    /** Kamera (WP M29): the purpose the ◉ button shoots with, and Sorozat (the camera comes back after each shot). */
+    var purpose by mutableStateOf("egyeb")
+    var series by mutableStateOf(false)
     private val undo = ArrayDeque<Sketch>()
     private val redo = ArrayDeque<Sketch>()
     var canUndo by mutableStateOf(false); private set
@@ -74,6 +106,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     // brushes
     var pointType by mutableStateOf(PointType.SOCKET)
+    /** A variant's labelled point brush (type + tags), over [pointType] while set. */
+    var preset by mutableStateOf<PointPreset?>(null)
+    /** The Sablon tool's shape. */
+    var template by mutableStateOf<KTemplate?>(null)
     var pointState by mutableStateOf(PointState.PLANNED)
     var activeCircuit by mutableStateOf(initial.circuits.lastOrNull()?.id)
     var activeTag by mutableStateOf<String?>(null)
@@ -119,6 +155,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         if (record) checkpoint()
         sketch = next.copy(updated = System.currentTimeMillis())
         norm = solver.solve(sketch)
+        kit = SketcherKit.forSketch(sketch)
         if (activeCircuit != null && sketch.circuit(activeCircuit) == null) activeCircuit = sketch.circuits.lastOrNull()?.id
         if (activeTag != null && sketch.tag(activeTag) == null) activeTag = null
         onChange(sketch)
@@ -140,7 +177,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     private fun restore(s: Sketch) {
-        sketch = s; norm = solver.solve(s)
+        sketch = s; norm = solver.solve(s); kit = SketcherKit.forSketch(s)
         canUndo = undo.isNotEmpty(); canRedo = redo.isNotEmpty()
         onChange(s)
     }
@@ -149,7 +186,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     private fun <T> commit(r: Pair<Sketch, T>?): T? { if (r == null) return null; edit(r.first); return r.second }
 
     // ---- tools ---------------------------------------------------------------------------------------------------
-    val rail get() = Plugins.rail(sketch.plugins)
+    val rail get() = Plugins.rail(VariantOps.plugins(sketch, variant), variant?.rail)
+
+    /** The tool's line on the canvas: the variant's own hint while it is on. */
+    fun hint(t: Tool) = variant?.hints?.get(t.id) ?: t.hint
 
     /** One tap on a tool; a tap on the active tool goes back to the one before (quick swap in the field). */
     fun pick(t: Tool) {
@@ -175,6 +215,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         if (photoTap(o)) return
         val p = toSketch(o)
         val h = hitAt(o)
+        focusOn(h, p)
         when (tool.id) {
             Tools.SELECT.id -> when (h?.kind) {
                 Hit.Kind.MEMO -> ask = Ask.MemoEdit(h!!.id)
@@ -192,6 +233,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 dropTag(t, o)
             }
             Tools.ROOM.id -> note = "Húzz egy téglalapot: az lesz a szoba."
+            Tools.TEMPLATE.id -> note = "Húzd a sablont a szoba méretére" + (template?.let { ": " + it.label } ?: "; az alakot lent választod.")
             Tools.LINE.id -> lineTap(p)
             Tools.MEASURE.id -> when {
                 h?.kind == Hit.Kind.ROOM_EDGE && h!!.edge >= 0 -> ask = Ask.MeasureEdge(h!!.id, h!!.edge)
@@ -199,7 +241,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 else -> note = "Koppints egy falra vagy egy szoba belsejébe."
             }
             Tools.POINT.id -> if (h?.kind == Hit.Kind.POINT) note = "Tartsd lenyomva a pontot: kerék a típushoz."
-                else commit(Ops.addPoint(sketch, p, pointType, pointState, tol))
+                else placePoint(p)
             Tools.CIRCUIT.id -> if (h?.kind == Hit.Kind.POINT) circuitTap(h!!.id) else note = "Koppints pontokra, vagy húzz keretet."
             Tools.BOARD.id -> if (h?.kind == Hit.Kind.POINT) note = "Itt már van pont."
                 else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, tol))?.let { note = "Elosztó lerakva. Bekötés: lent." }
@@ -215,7 +257,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         if (pendingShot != null) { move = Move.SHOT; shotFrom = o; return }
         val h = hitAt(o)
         move = when (tool.id) {
-            Tools.ROOM.id -> Move.RECT
+            Tools.ROOM.id, Tools.TEMPLATE.id -> Move.RECT
             Tools.ROUTE.id -> Move.STROKE
             Tools.CIRCUIT.id -> Move.FRAME
             Tools.SELECT.id -> when (h?.kind) {
@@ -256,8 +298,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         val p = toSketch(o)
         when (move) {
             Move.RECT -> {
-                if (commit(Ops.addRectRoom(sketch, dragFrom, p, tol / 2)) == null) note = "Túl kicsi: húzz nagyobb téglalapot."
-                else note = "Szoba kész. Tartsd lenyomva: név, típus, méret."
+                val shape = if (tool.id == Tools.TEMPLATE.id) (template ?: kit.templates.firstOrNull()) else null
+                val made = if (shape != null) commit(Ops.addTemplateRoom(sketch, shape.poly, dragFrom, p, tol / 2)) else commit(Ops.addRectRoom(sketch, dragFrom, p, tol / 2))
+                if (made == null) note = "Túl kicsi: húzz nagyobbat."
+                else { focusRoom = made; note = (shape?.label?.let { "$it kész." } ?: "Szoba kész.") + " Tartsd lenyomva: név, típus, méret." }
             }
             Move.STROKE -> if (commit(Ops.addRoute(sketch, stroke + p, tol)) == null) note = "Túl rövid nyomvonal."
             Move.SHOT -> {
@@ -306,10 +350,12 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun onHold(o: Offset, canvasW: Float, canvasH: Float, radius: Float) {
         cancelDraft()
         val h = hitAt(o)
+        focusOn(h, toSketch(o))
+        val v = variant
         val w = when (h?.kind) {
-            Hit.Kind.POINT -> sketch.point(h!!.id)?.let { Wheels.forPoint(it) }
-            Hit.Kind.ROOM_EDGE -> sketch.room(h!!.id)?.let { if (h!!.edge >= 0) Wheels.forEdge(it, h!!.edge) else Wheels.forRoom(it) }
-            Hit.Kind.ROOM -> sketch.room(h!!.id)?.let { Wheels.forRoom(it) }
+            Hit.Kind.POINT -> sketch.point(h!!.id)?.let { Wheels.forPoint(it, v?.pointRing) }
+            Hit.Kind.ROOM_EDGE -> sketch.room(h!!.id)?.let { if (h!!.edge >= 0) Wheels.forEdge(it, h!!.edge) else Wheels.forRoom(it, v?.roomRing) }
+            Hit.Kind.ROOM -> sketch.room(h!!.id)?.let { Wheels.forRoom(it, v?.roomRing) }
             Hit.Kind.MEMO -> Wheels.forOther("Memó", h!!.id, editable = true)
             Hit.Kind.TAG -> Wheels.forOther("Címke", h!!.id)
             Hit.Kind.ROUTE -> Wheels.forOther("Nyomvonal", h!!.id)
@@ -359,7 +405,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id.startsWith("type:") -> id?.let { edit(Ops.setType(sketch, it, PointType.of(item.id.removePrefix("type:")))) }
             item.id.startsWith("kind:") -> id?.let {
                 edit(Ops.toggleKind(sketch, it, item.id.removePrefix("kind:")))
-                wheel = w.copy(wheel = Wheels.forRoom(sketch.room(it)!!), sel = null, sticky = true)   // several kinds in a row
+                wheel = w.copy(wheel = Wheels.forRoom(sketch.room(it)!!, variant?.roomRing), sel = null, sticky = true)   // several kinds in a row
             }
             item.id == "state" -> id?.let { pid -> sketch.point(pid)?.let { edit(Ops.setState(sketch, pid, it.state.other())) } }
             item.id == "memo" -> ask = if (h == null) Ask.MemoNew(w.at, null) else Ask.MemoNew(beside(h), targetOf(h))
@@ -370,9 +416,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id == "name" -> id?.let { ask = Ask.RoomName(it) }
             item.id == "measure" -> id?.let { ask = Ask.MeasureRoom(it) }
             item.id == "measure-edge" -> if (h != null && h.edge >= 0) ask = Ask.MeasureEdge(h.id, h.edge)
-            item.id == "point-here" -> commit(Ops.addPoint(sketch, w.at, pointType, pointState, tol))
+            item.id == "point-here" -> placePoint(w.at)
             item.id == "board-here" -> commit(Ops.addPoint(sketch, w.at, PointType.BOARD, pointState, tol))
-            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = Wheels.forRoom(it), ring = 0, sel = null, sticky = true) } }
+            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = Wheels.forRoom(it, variant?.roomRing), ring = 0, sel = null, sticky = true) } }
             item.id == "points" -> id?.let { rid ->
                 val ids = sketch.points.filter { it.room == rid && it.type != PointType.BOARD }.map { it.id }
                 if (ids.isEmpty()) note = "A szobában még nincs pont."
@@ -381,13 +427,94 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         }
     }
 
+    // ---- VRG Sketcher: focus, points, variants (WP M26, M31) --------------------------------------------------------
+    /** The room a touch is about becomes the focus: notes and photos taken now belong to it. */
+    private fun focusOn(h: Hit?, p: Pt) {
+        val r = when (h?.kind) {
+            Hit.Kind.ROOM, Hit.Kind.ROOM_EDGE -> h!!.id
+            Hit.Kind.POINT -> sketch.point(h!!.id)?.room
+            Hit.Kind.PHOTO -> sketch.photos.firstOrNull { it.id == h!!.id }?.room
+            else -> Ops.roomAt(sketch, p)?.id
+        }
+        if (r != null) focusRoom = r
+    }
+
+    /** A point with the brush: the variant preset's type and tags, else the plain type. */
+    private fun placePoint(p: Pt) {
+        val pr = preset
+        val (s1, id) = Ops.addPoint(sketch, p, pr?.type ?: pointType, pointState, tol)
+        var s = s1
+        pr?.tags?.forEach { t -> if (s.tag(t) != null) Ops.placeTag(s, t, id, null)?.let { s = it.first } }
+        edit(s)
+        if (pr != null) note = pr.label
+    }
+
+    fun chooseVariant(v: Variant?) {
+        if (v == null) { edit(sketch.copy(variantOn = false)); note = "Eredeti Sketcher."; return }
+        edit(VariantOps.activate(sketch, v)); preset = null; template = null
+        if (tool !in rail) tool = rail.first()
+        note = "${v.sym} ${v.name}: a sarokban a kapcsoló vált vissza."
+    }
+
+    fun toggleVariant() {
+        if (sketch.variant == null) return
+        edit(sketch.copy(variantOn = !sketch.variantOn)); preset = null; template = null
+        if (tool !in rail) tool = Tools.SELECT
+    }
+
+    // ---- the intake (WP M27-M30) --------------------------------------------------------------------------------
+    private val now get() = System.currentTimeMillis()
+
+    /** A note from the quick-note sheet or the Jegyzet front; chips with an effect apply it (the user tapped them). */
+    fun addNote(text: String, chips: List<String>, open: Boolean, voice: Boolean, room: String? = focusRoom, target: String? = null): Boolean {
+        val k = kit
+        val r = Intake.addEntry(sketch, text, chips, room, target, open || chips.any { k.chip(it)?.open == true }, voice, now) ?: return false
+        var s = r.first.copy(draft = "")
+        chips.forEach { c -> s = FieldKit.apply(k, k.chip(c)?.sets, s, now) }
+        edit(s)
+        note = "✎ Jegyzet mentve" + (room?.let { sketch.room(it) }?.let { " · " + roomTitle(it.name, it.kinds) } ?: "")
+        return true
+    }
+
+    fun setDraft(text: String) { if (text != sketch.draft) edit(sketch.copy(draft = text), record = false) }
+    fun editEntry(id: String, text: String, chips: List<String>) = edit(Intake.editEntry(sketch, id, text, chips))
+    fun setOpen(id: String, open: Boolean) = edit(Intake.setOpen(sketch, id, open))
+    fun linkEntry(id: String, room: String?) = edit(Intake.linkEntry(sketch, id, room, sketch.entry(id)?.target))
+    fun deleteEntry(id: String) = edit(Intake.deleteEntry(sketch, id))
+    fun setScope(id: String, qty: Int) = edit(Intake.setScope(sketch, id, qty))
+    fun answer(q: String, options: List<String>, text: String, state: AnswerState) = edit(Intake.answer(kit, sketch, q, options, text, state, now))
+    fun clearAnswer(q: String) = edit(Intake.clearAnswer(sketch, q))
+    fun accept(e: Effect) = edit(FieldKit.apply(kit, e, sketch, now))
+    fun dismiss(id: String) = edit(Intake.dismiss(sketch, id))
+    /** Shadow questions seen for the first time get their arrival time (bookkeeping, no undo step). */
+    fun markSeen(ids: List<String>) { if (ids.isNotEmpty()) edit(Intake.markSeen(sketch, ids, now), record = false) }
+    fun setSite(f: (Site) -> Site) = edit(Intake.setSite(sketch, f))
+
+    /** A purpose photo is back from the camera. */
+    fun captureTaken(req: CameraReq, file: String, lat: Double?, lon: Double?) {
+        val purpose = req.purpose ?: this.purpose
+        val (s, _) = Intake.addCapture(sketch, file, purpose, req.room ?: focusRoom, req.target, req.shot, now, lat, lon)
+        edit(s)
+        note = "◉ " + (kit.purpose(purpose)?.label ?: purpose) + " mentve" + (if (series) " · sorozat: a kamera visszajön" else "")
+    }
+
+    fun editCapture(id: String, f: (hu.vrg.mobile.sketch.Capture) -> hu.vrg.mobile.sketch.Capture) = edit(Intake.editCapture(sketch, id, f))
+    fun deleteCapture(id: String) { val (s, file) = Intake.deleteCapture(sketch, id); edit(s); file?.let(dropFile) }
+
+    /** The camera for a purpose (and a shot-list item), from the ◉ button, the Kamera front or a record's wheel. */
+    fun shoot(purpose: String, shot: String? = null, target: String? = null) {
+        this.purpose = purpose
+        camera = CameraReq(null, null, purpose, shot, target, focusRoom)
+    }
+
     // ---- Fotópont (M25) --------------------------------------------------------------------------------------------
     private var shotFrom = Offset.Zero
 
     /** The camera came back with a photo. A side asked for in advance saves it; otherwise it waits for the swipe. */
     fun photoTaken(req: CameraReq, file: String) {
-        if (req.deg != null) saveShot(req.photo, req.deg, file)
-        else { pendingShot = req.photo to file; note = "Húzz arra, amerre a kép néz (É, K, D, Ny)." }
+        val f = req.photo ?: return
+        if (req.deg != null) saveShot(f, req.deg, file)
+        else { pendingShot = f to file; note = "Húzz arra, amerre a kép néz (É, K, D, Ny)." }
     }
 
     fun cancelShot() { pendingShot?.let { dropFile(it.second) }; pendingShot = null; note = "A fotó elvetve." }

@@ -47,6 +47,7 @@ import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
+import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
 import hu.vrg.mobile.sketch.Photos
 import hu.vrg.mobile.sketch.PlannerExport
@@ -83,10 +84,18 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
         val src = File(SketchFeature.store.photoDir(s.id), local)
         if (!src.exists()) null else File(out, name).also { src.copyTo(it, overwrite = true) }
     }
-    listOf(pkg to MIME) + photos.map { it to "image/jpeg" }
+    // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
+    val caps = s.captures.flatMap { c ->
+        val src = File(SketchFeature.store.photoDir(s.id), c.file)
+        if (!src.exists()) return@flatMap emptyList<File>()
+        val name = Intake.exportName(s, c)
+        val f = File(out, name).also { src.copyTo(it, overwrite = true) }
+        listOfNotNull(f, if (c.marks.isEmpty()) null else burnMarks(src, c.marks, File(out, name.removeSuffix(".jpg") + "_jel.jpg")))
+    }
+    listOf(pkg to MIME) + (photos + caps).map { it to "image/jpeg" }
 }
 
-private fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
+internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
     if (files.size == 1) { ctx.startActivity(FileStore.shareIntent(ctx, files[0].first, files[0].second, "Vázlat küldése")); return }
     val uris = ArrayList<Uri>(files.map { FileStore.uri(ctx, it.first) })
     val send = Intent(Intent.ACTION_SEND_MULTIPLE).setType("*/*")
@@ -155,7 +164,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                     }
                 }
             }
-            val shots = st.sketch.photos.sumOf { it.shots.size }
+            val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
             if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
             Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json; a fotók: ⌘K → Vázlat: fotók. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
                 style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- VRG Sketcher (WP M24-M31). The camera goes through the phone's own camera app (CAMERA is declared by QR párosítás /
+     Átadás, and Android then requires it granted for that too). Helyszín's "Itt vagyok" asks for the location once.
+     Hálózat (feature-net) declares the location permissions only up to Android 12 for its WiFi scan; the Sketcher needs
+     them on every version, so the cap is removed from the merged manifest. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

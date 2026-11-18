@@ -54,6 +54,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -71,6 +73,7 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Level
 import hu.vrg.mobile.sketch.MeasureKind
+import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Photos
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -107,7 +110,7 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     val st = remember(initial.id) { EditorState(initial) {} }
     var showNorm by remember { mutableStateOf(false) }
 
-    // Fotópont (M25): the photos live with the sketch (files/sketch/photos/<id>/), the camera app takes them
+    // the photos (Fotópont M25, captures M29) live with the survey (files/sketch/photos/<id>/); the camera app takes them
     val dir = remember(initial.id) { store.photoDir(initial.id) }
     st.photoDir = dir
     st.dropFile = { name -> File(dir, name).delete() }
@@ -116,11 +119,18 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
         val (req, name) = shooting ?: return@rememberLauncherForActivityResult
         shooting = null
         val f = File(dir, name)
-        if (ok && f.length() > 0) st.photoTaken(req, name) else { f.delete(); st.note = "Nem készült fotó." }
+        if (ok && f.length() > 0) {
+            if (req.photo != null) st.photoTaken(req, name)
+            else {
+                val ll = exifLatLon(f)
+                st.captureTaken(req, name, ll?.first, ll?.second)
+                if (st.series) st.camera = req            // Sorozat: straight back to the camera, same purpose
+            }
+        } else { f.delete(); st.note = if (st.series && req.photo == null) "Sorozat vége." else "Nem készült fotó." }
     }
     fun startCamera(req: CameraReq) {
         dir.mkdirs()
-        val name = "${req.photo}-${System.currentTimeMillis().toString(36)}.jpg"
+        val name = (req.photo ?: "C") + "-" + System.currentTimeMillis().toString(36) + ".jpg"
         shooting = req to name
         try { shoot.launch(FileStore.uri(ctx, File(dir, name))) } catch (e: Exception) { shooting = null; host.note("Nincs kamera alkalmazás.") }
     }
@@ -141,9 +151,9 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     DisposableEffect(initial.id) {
         onDispose {
             store.save(st.sketch)
-            // photos no longer in the sketch (retaken, deleted, a shot never given a direction) go when leaving it:
-            // undo can still bring a shot back while the sketch is open
-            val keep = Photos.files(st.sketch)
+            // files no longer in the survey (retaken, deleted, a shot never given a direction) go when leaving it:
+            // undo can still bring one back while the survey is open
+            val keep = Intake.files(st.sketch)
             dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second) it.delete() }
         }
     }
@@ -152,29 +162,51 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     BackHandler {
         when {
             showNorm -> showNorm = false
+            st.noteOpen -> st.noteOpen = false
             st.wheel != null -> st.closeWheel()
             st.pendingShot != null -> st.cancelShot()
             st.lineDraft.isNotEmpty() -> st.lineDrop()
+            st.front != "vazlat" -> st.front = "vazlat"
             else -> onClose()
         }
     }
 
     if (showNorm) { NormScreen(st, host) { showNorm = false }; SketchDialogs(st); return }
 
+    val sh = remember(st.sketch, st.kit, st.norm) { Shadow(st) }
     Column(Modifier.fillMaxSize().background(Melyviz.abyss)) {
         TopBar(st, onClose) { showNorm = true }
+        FrontBar(st, sh)
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            SketchCanvas(st)
-            Column(Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
-                Text(st.tool.hint, style = Melyviz.small.copy(color = Melyviz.faint, fontSize = 10.sp), maxLines = 2)
-                st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 2.dp)) }
+            when (st.front) {
+                "jegyzet" -> NotesFront(st, sh)
+                "munkakor" -> ScopeFront(st)
+                "kerdes" -> QuestionsFront(st, sh)
+                "kamera" -> CameraFront(st, sh)
+                "helyszin" -> SiteFront(st)
+                "nyitott" -> OpenFront(st, sh)
+                else -> {
+                    SketchCanvas(st)
+                    Column(Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                        Text(st.hint(st.tool), style = Melyviz.small.copy(color = Melyviz.faint, fontSize = 10.sp), maxLines = 2)
+                        st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 2.dp)) }
+                    }
+                }
             }
+            CaptureButtons(st, Modifier.align(Alignment.BottomEnd))
         }
-        ToolOptions(st)
-        ToolRail(st)
+        if (st.front == "vazlat") { ToolOptions(st); ToolRail(st) }
     }
+    if (st.noteOpen) QuickNote(st)
     SketchDialogs(st)
 }
+
+/** The photo's own position (camera apps write it when location tagging is on); null when it has none. */
+@Suppress("DEPRECATION")
+private fun exifLatLon(f: File): Pair<Double, Double>? = try {
+    val out = FloatArray(2)
+    if (android.media.ExifInterface(f.path).getLatLong(out)) out[0].toDouble() to out[1].toDouble() else null
+} catch (e: Exception) { null }
 
 @Composable
 private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
@@ -184,9 +216,17 @@ private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
     ) {
         Text("‹", style = Melyviz.title.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onClose).padding(horizontal = 6.dp))
         Text(
-            st.sketch.name.ifBlank { "Névtelen vázlat" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            st.sketch.name.ifBlank { "Névtelen felmérés" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).clickable { st.ask = Ask.SketchName },
         )
+        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original
+        SketcherKit.variant(st.sketch.variant)?.let { v ->
+            val on = st.sketch.variantOn
+            Text(if (on) v.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(v.color) else Melyviz.faint),
+                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(v.color) else Melyviz.line, RoundedCornerShape(50))
+                    .clickable { st.toggleVariant() }.padding(horizontal = 8.dp, vertical = 2.dp)
+                    .semantics { contentDescription = (if (on) v.name else "Eredeti") + ": váltás" })
+        }
         VrgChip(st.sketch.level.label) { st.setLevel(Level.entries[(st.sketch.level.ordinal + 1) % Level.entries.size]) }
         Text("↶", style = Melyviz.title.copy(color = if (st.canUndo) Melyviz.ink else Melyviz.faint),
             modifier = Modifier.clickable(enabled = st.canUndo) { st.undo() }.padding(horizontal = 4.dp))
@@ -484,8 +524,17 @@ private fun ToolOptions(st: EditorState) {
         Tools.POINT.id -> OptionRow {
             PointState.entries.forEach { s -> VrgChip(s.label, selected = st.pointState == s) { st.pointState = s } }
             Text("·", style = Melyviz.small)
-            listOf(PointType.SOCKET, PointType.SWITCH, PointType.LIGHT, PointType.JUNCTION, PointType.DATA, PointType.FIXED, PointType.SENSOR, PointType.POINT)
-                .forEach { t -> VrgChip(t.glyph + " " + t.label, selected = st.pointType == t) { st.pointType = t } }
+            // a variant's own devices first (type + tags under its label), then the plain types
+            st.variant?.pointPresets?.forEach { pr -> VrgChip(pr.glyph + " " + pr.label, selected = st.preset == pr) { st.preset = if (st.preset == pr) null else pr } }
+            val order = st.variant?.pointRing?.map { PointType.of(it) } ?: emptyList()
+            (order + listOf(PointType.SOCKET, PointType.SWITCH, PointType.LIGHT, PointType.JUNCTION, PointType.DATA, PointType.FIXED, PointType.SENSOR, PointType.POINT))
+                .distinct().filter { it != PointType.BOARD }
+                .forEach { t -> VrgChip(t.glyph + " " + t.label, selected = st.preset == null && st.pointType == t) { st.preset = null; st.pointType = t } }
+        }
+        Tools.TEMPLATE.id -> OptionRow {
+            val shapes = st.kit.templates
+            if (shapes.isEmpty()) Text("Nincs sablon.", style = Melyviz.small)
+            shapes.forEach { t -> VrgChip(t.sym + " " + t.label, selected = (st.template ?: shapes.first()) == t) { st.template = t } }
         }
         Tools.BOARD.id -> OptionRow {
             PointState.entries.forEach { s -> VrgChip(s.label, selected = st.pointState == s) { st.pointState = s } }

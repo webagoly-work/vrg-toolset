@@ -136,7 +136,7 @@ object Catalogue {
 
     // The field sketch (2026-11-17): a purpose-made note taker with plugins, the Planner's quick build for the site.
     val SKETCH = FeatureInfo(
-        "sketch", "Vázlat", "Helyszíni alaprajz-vázlat: szobák téglalappal vagy vonallal, méretek, szerelési pontok, áramkörök, Elosztó, nyomvonal, memó és címke; a Planner kész tervet csinál belőle.",
+        "sketch", "VRG Sketcher", "Helyszíni szemle, méretvétel, munkafelmérés, adatgyűjtés egy helyen: vázlat, jegyzet, munkakör, kérdések, kamera, helyszín; a Planner és az Asztal folytatja.",
         "📐", Group.WORK, Stage.BETA, "M24",
     )
     val PHOTO = FeatureInfo(

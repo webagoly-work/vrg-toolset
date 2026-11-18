@@ -415,6 +415,35 @@ object VariantOps {
     fun plugins(s: Sketch, v: Variant?) = if (v != null && s.variantOn) s.plugins - v.pluginsOff.toSet() else s.plugins
 }
 
+/**
+ * A request for a new variant (WP M31, Sketcher/variants/PROTOCOL.md §1). It carries the job's SHAPE, never the client:
+ * no survey name, no address, no notes text: the premise the user writes, the toggles, and counts of what is drawn.
+ */
+object VariantRequests {
+    const val KIND = "vrg-sketcher-variant-request"
+
+    fun build(s: Sketch, kit: Kit, premise: String, topics: List<String>, photos: List<String>, now: Long): JSONObject {
+        val from = JSONObject()
+            .put("rooms", s.rooms.size)
+            .put("kinds", JSONArray(s.rooms.flatMap { it.kinds }.distinct().sorted()))
+            .put("points", JSONObject().also { o -> s.points.groupingBy { it.type.id }.eachCount().toSortedMap().forEach { (k, v) -> o.put(k, v) } })
+            .put("routes", s.routes.size).put("entries", s.entries.size).put("captures", s.captures.size)
+            .put("purposes", JSONArray(s.captures.map { it.purpose }.distinct().sorted()))
+        s.variant?.let { from.put("variant", it) }
+        return JSONObject().put("kind", KIND).put("v", 1).put("created", now)
+            .put("premise", premise.trim())
+            .put("topics", JSONArray(topics.distinct()))
+            .put("topicLabels", JSONArray(topics.distinct().map { kit.scopeItem(it)?.label ?: it }))
+            .put("scope", JSONObject().also { o -> s.scope.toSortedMap().forEach { (k, v) -> o.put(k, v) } })
+            .put("from", from)
+            .put("photos", JSONArray(photos))
+            .put("protocol", "Sketcher/variants/PROTOCOL.md")
+    }
+
+    /** What the user pastes into the agent session. */
+    fun prompt(premise: String, file: String) = "GO VARIANT — $file\n${premise.trim()}"
+}
+
 /** The intake edits (WP M27-M30); the sketch's own edits are in Ops and PhotoOps. */
 object Intake {
     fun addEntry(s: Sketch, text: String, chips: List<String>, room: String?, target: String?, open: Boolean, voice: Boolean, now: Long): Pair<Sketch, String>? {

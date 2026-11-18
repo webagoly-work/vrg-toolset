@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -243,17 +246,51 @@ internal fun SketchDialogs(st: EditorState) {
                 },
             )
         }
+        is Ask.Purposes -> PurposePicker(st, close)
+        is Ask.CaptureView -> CaptureViewer(st, a.id, close)
+        is Ask.VariantRequest -> VariantRequestDialog(st, close)
+        is Ask.EntryEdit -> {
+            val e = s.entry(a.id) ?: return close()
+            var text by remember(a) { mutableStateOf(e.text) }
+            var chips by remember(a) { mutableStateOf(e.chips) }
+            var room by remember(a) { mutableStateOf(e.room) }
+            var open by remember(a) { mutableStateOf(e.open) }
+            AlertDialog(
+                onDismissRequest = close, containerColor = Melyviz.raised,
+                title = { Text("✎ Jegyzet · " + stamp(e.at), style = Melyviz.label) },
+                text = {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Field(text, { text = it }, "Szöveg", lines = 3)
+                        Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Melyviz.coral else Melyviz.muted),
+                            modifier = Modifier.clickable { open = !open }.padding(vertical = 6.dp))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            st.kit.chips.forEach { c -> ChipPill(c, c.id in chips) { chips = if (c.id in chips) chips - c.id else chips + c.id } }
+                        }
+                        Text("Szoba", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Pill("—", Melyviz.faint, room == null) { room = null }
+                            s.rooms.forEach { r -> Pill(roomTitle(r.name, r.kinds), st.frontColor("vazlat"), room == r.id) { room = r.id } }
+                        }
+                    }
+                },
+                confirmButton = { TextButton({
+                    st.editEntry(a.id, text, chips); if (room != e.room) st.linkEntry(a.id, room); if (open != e.open) st.setOpen(a.id, open); close()
+                }) { Text("Rendben", color = Melyviz.glow) } },
+                dismissButton = { TextButton({ st.deleteEntry(a.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
+            )
+        }
         is Ask.PluginSheet -> AlertDialog(
             onDismissRequest = close, containerColor = Melyviz.raised,
             title = { Text("Bővítmények", style = Melyviz.label) },
             text = {
-                Column {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text("A Vázlat jegyzetfüzet; a bővítmények adják az eszközeit. Ami ki van kapcsolva, nem foglal helyet a sávban.", style = Melyviz.small)
                     Plugins.ALL.forEach { p ->
                         val label = p.label + if (!p.built) " (${p.wp}, tervben)" else ""
                         if (p.id == Plugins.NOTE.id || !p.built) Text("· $label: ${p.blurb}", style = Melyviz.small.copy(color = if (p.built) Melyviz.ink else Melyviz.faint), modifier = Modifier.padding(vertical = 6.dp))
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
+                    VariantSection(st)
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

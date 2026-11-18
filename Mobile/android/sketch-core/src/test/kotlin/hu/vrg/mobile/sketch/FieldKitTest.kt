@@ -98,4 +98,19 @@ class FieldKitTest {
         listOf("entries", "scope", "answers", "captures", "seen", "dismissed").forEach { v1.remove(it) }
         assertEquals(Sketch("old"), SketchJson.read(v1), "a v1 file opens with an empty intake")
     }
+
+    @Test fun aVariantRequestCarriesTheShapeNotTheClient() {
+        var s = Sketch("S", "Kovács Béla, Petőfi u. 3")
+        s = Ops.addRectRoom(s, Pt(0.0, 0.0), Pt(100.0, 80.0), 4.0)!!.first
+        s = Ops.toggleKind(s, s.rooms[0].id, "furdo")
+        s = Intake.addEntry(s, "a tulaj Kovács Béla, telefonszáma …", emptyList(), null, null, false, false, 1)!!.first
+        s = Intake.setSite(s) { it.copy(address = "Petőfi u. 3") }
+        val o = VariantRequests.build(s, kit, " Fürdők felújítása panelházban. ", listOf("furdo", "felujitas"), listOf("x_C1_hely.jpg"), 5)
+        val text = o.toString()
+        assertTrue("Kovács" !in text && "Petőfi" !in text && "telefon" !in text, text)
+        assertEquals("Fürdők felújítása panelházban.", o.getString("premise"))
+        assertEquals(listOf("Fürdő", "Felújítás, csere"), (0 until 2).map { o.getJSONArray("topicLabels").getString(it) })
+        assertEquals(1, o.getJSONObject("from").getInt("rooms")); assertEquals("furdo", o.getJSONObject("from").getJSONArray("kinds").getString(0))
+        assertTrue(VariantRequests.prompt("Fürdők.", "variant-request-1.json").startsWith("GO VARIANT — variant-request-1.json"))
+    }
 }
