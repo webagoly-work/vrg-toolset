@@ -113,13 +113,15 @@ class OpsTest {
     }
 
     @Test fun pluginsBuildTheRail() {
-        assertEquals(listOf("select", "memo", "tag", "room", "line", "measure", "point", "circuit", "board", "route"),
+        assertEquals(listOf("select", "memo", "tag", "room", "template", "line", "measure", "point", "circuit", "board", "route"),
             Plugins.rail(Plugins.DEFAULT_ON).map { it.id })
+        assertEquals(listOf("route", "board", "point", "select", "memo", "tag", "room", "template", "line", "measure", "circuit"),
+            Plugins.rail(Plugins.DEFAULT_ON, listOf("route", "board", "point")).map { it.id }, "a variant's order first, the rest as they were")
         val noElectric = Plugins.toggle(Plugins.DEFAULT_ON, Plugins.ELECTRIC.id)
-        assertEquals(listOf("select", "memo", "tag", "room", "line", "measure"), Plugins.rail(noElectric).map { it.id })
+        assertEquals(listOf("select", "memo", "tag", "room", "template", "line", "measure"), Plugins.rail(noElectric).map { it.id })
         assertEquals(noElectric, Plugins.toggle(noElectric, Plugins.NOTE.id), "the note taker stays")
         assertTrue(Plugins.PHOTO.id !in Plugins.DEFAULT_ON, "Fotópont starts off")
-        assertEquals(listOf("select", "memo", "tag", "room", "line", "measure", "photo"),
+        assertEquals(listOf("select", "memo", "tag", "room", "template", "line", "measure", "photo"),
             Plugins.rail(Plugins.toggle(noElectric, Plugins.PHOTO.id)).map { it.id }, "switched on, its tool joins the rail")
         assertEquals(Plugins.DEFAULT_ON, Plugins.toggle(noElectric, Plugins.ELECTRIC.id), "back in catalogue order")
     }

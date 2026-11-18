@@ -68,6 +68,14 @@ object Ops {
         return s1.copy(rooms = s1.rooms + Room(id, poly, "", kinds)) to id
     }
 
+    /** A template's shape (the unit square) stretched over the dragged box (the Sablon tool, WP M31). */
+    fun addTemplateRoom(s: Sketch, unit: List<Pt>, a: Pt, b: Pt, tol: Double): Pair<Sketch, String>? {
+        val p = snapAxes(s, a, tol); val q = snapAxes(s, b, tol)
+        if (abs(p.x - q.x) < MIN_ROOM || abs(p.y - q.y) < MIN_ROOM || unit.size < 3) return null
+        val x0 = minOf(p.x, q.x); val y0 = minOf(p.y, q.y); val w = abs(p.x - q.x); val h = abs(p.y - q.y)
+        return addPolyRoom(s, unit.map { Pt(x0 + it.x * w, y0 + it.y * h) })
+    }
+
     fun addLine(s: Sketch, pts: List<Pt>): Pair<Sketch, String>? {
         if (pts.size < 2) return null
         val (id, s1) = s.nextId("L")

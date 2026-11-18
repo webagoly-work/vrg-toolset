@@ -402,6 +402,19 @@ object FieldKit {
     }
 }
 
+/** Choosing a variant (WP M31): it becomes the sketch's, switched on, with its tags, preset scope and plugins added. */
+object VariantOps {
+    fun activate(s: Sketch, v: Variant): Sketch {
+        val tags = s.tags + v.tags.filter { t -> s.tags.none { it.id == t.id } }
+        val scope = s.scope + v.scopePreset.filterKeys { (s.scope[it] ?: 0) <= 0 }
+        val plugins = (s.plugins + v.pluginsOn).distinct()
+        return s.copy(variant = v.id, variantOn = true, tags = tags, scope = scope, plugins = plugins)
+    }
+
+    /** The plugins in force: the sketch's, with the variant's off-list taken away while it is on. */
+    fun plugins(s: Sketch, v: Variant?) = if (v != null && s.variantOn) s.plugins - v.pluginsOff.toSet() else s.plugins
+}
+
 /** The intake edits (WP M27-M30); the sketch's own edits are in Ops and PhotoOps. */
 object Intake {
     fun addEntry(s: Sketch, text: String, chips: List<String>, room: String?, target: String?, open: Boolean, voice: Boolean, now: Long): Pair<Sketch, String>? {

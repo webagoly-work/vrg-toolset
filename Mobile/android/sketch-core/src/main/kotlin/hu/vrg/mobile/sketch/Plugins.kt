@@ -24,6 +24,7 @@ object Tools {
     val MEMO = Tool("memo", "✎", "Memó", "Koppints bárhová: memó oda. Bármely elemen tartva: kerék → Memó.")
     val TAG = Tool("tag", "#", "Címke", "Húzz egy címkét a sávból az elemre vagy a lapra; koppintva a kijelölt címke kerül oda.")
     val ROOM = Tool("room", "▭", "Szoba", "Húzz téglalapot: egy szoba. A szomszéd falához ugrik.")
+    val TEMPLATE = Tool("template", "⌗", "Sablon", "Válassz alakot lent (L, U, T, fülkés…), és húzd a szoba méretére.")
     val LINE = Tool("line", "⌇", "Vonal", "Koppints sarokról sarokra; az első pontra koppintva szoba lesz. Kész: nyitott vonal.")
     val MEASURE = Tool("measure", "↔", "Méret", "Koppints egy falra: annak hossza. Szoba belsejébe: szélesség × mélység.")
     val POINT = Tool("point", "•", "Pont", "Koppints a fal mellé: szerelési pont a falon. Tartsd: kerék a típushoz.")
@@ -32,14 +33,14 @@ object Tools {
     val ROUTE = Tool("route", "〰", "Nyomvonal", "Húzd végig, merre megy a kábel; a vége pontra vagy Elosztóra ugrik.")
     val PHOTO = Tool("photo", "◉", "Fotópont", "Koppints a szoba közepére: Fotópont. Koppints rá: kamera, utána húzz arra, amerre a kép néz.")
 
-    val ALL = listOf(SELECT, MEMO, TAG, ROOM, LINE, MEASURE, POINT, CIRCUIT, BOARD, ROUTE, PHOTO)
+    val ALL = listOf(SELECT, MEMO, TAG, ROOM, TEMPLATE, LINE, MEASURE, POINT, CIRCUIT, BOARD, ROUTE, PHOTO)
     fun of(id: String?) = ALL.firstOrNull { it.id == id }
 }
 
 object Plugins {
     /** Always there: the note taker itself. */
     val NOTE = Plugin("jegyzet", "Jegyzet", "Mozgatás, memó, címkék: a vázlat jegyzetfüzet része.", listOf(Tools.SELECT, Tools.MEMO, Tools.TAG), "M24")
-    val PLAN = Plugin("alaprajz", "Alaprajz", "Szobák téglalappal vagy vonallal, méretek a falakon.", listOf(Tools.ROOM, Tools.LINE, Tools.MEASURE), "M24")
+    val PLAN = Plugin("alaprajz", "Alaprajz", "Szobák téglalappal vagy vonallal, méretek a falakon.", listOf(Tools.ROOM, Tools.TEMPLATE, Tools.LINE, Tools.MEASURE), "M24")
     val ELECTRIC = Plugin("villany", "Villany", "Szerelési pontok, áramkörök, Elosztó és nyomvonal.", listOf(Tools.POINT, Tools.CIRCUIT, Tools.BOARD, Tools.ROUTE), "M24")
     val PHOTO = Plugin("fotopont", "Fotópont", "Szobánként egy pont, a szoba négy oldala felé egy-egy fotó.", listOf(Tools.PHOTO), "M25")
 
@@ -49,8 +50,12 @@ object Plugins {
     fun of(id: String?) = ALL.firstOrNull { it.id == id }
 
     /** The rail: the note taker's tools, then each switched-on plugin's, in the catalogue's order; plans left out. */
-    fun rail(on: List<String>): List<Tool> =
-        ALL.filter { it.id == NOTE.id || (it.id in on && it.built) }.flatMap { it.tools }.filter { it.built }
+    fun rail(on: List<String>, order: List<String>? = null): List<Tool> {
+        val tools = ALL.filter { it.id == NOTE.id || (it.id in on && it.built) }.flatMap { it.tools }.filter { it.built }
+        if (order.isNullOrEmpty()) return tools
+        // a variant's order (WP M31): its tools first in its order, the rest after, as they were
+        return tools.sortedBy { t -> order.indexOf(t.id).let { if (it < 0) order.size + tools.indexOf(t) else it } }
+    }
 
     /** Switching a plugin; the note taker cannot be switched off. */
     fun toggle(on: List<String>, id: String): List<String> = when {

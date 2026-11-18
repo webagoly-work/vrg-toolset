@@ -67,26 +67,40 @@ object Wheels {
 
     private fun type(t: PointType) = WheelItem("type:" + t.id, t.label, t.glyph)
 
-    /** An installation point: its type, its state, memo, tag, circuit, delete. */
-    fun forPoint(p: SketchPoint): Wheel {
+    val POINT_ORDER = listOf(PointType.SOCKET, PointType.SWITCH, PointType.LIGHT, PointType.JUNCTION, PointType.DATA, PointType.FIXED, PointType.SENSOR, PointType.BOARD)
+
+    /**
+     * An installation point: its type, its state, memo, tag, circuit, delete. [order] (a variant's pointRing) puts its
+     * types first: four on the first ring, four on the second; the defaults fill the rest.
+     */
+    fun forPoint(p: SketchPoint, order: List<String>? = null): Wheel {
         val st = WheelItem("state", p.state.other().label, if (p.state == PointState.EXISTING) "○" else "●")
+        val o = ((order ?: emptyList()).map { PointType.of(it) }.filter { order != null } + POINT_ORDER).distinct()
+        val nw = o.getOrNull(8) ?: PointType.POINT
         return Wheel(
             p.type.label, p.id,
             listOf(
-                listOf(type(PointType.SOCKET), type(PointType.SWITCH), type(PointType.LIGHT), type(PointType.JUNCTION), more(), MEMO, st, DEL),
-                listOf(type(PointType.DATA), type(PointType.FIXED), type(PointType.SENSOR), type(PointType.BOARD), back(), TAG,
-                    WheelItem("circuit", "Áramkörbe", "◌"), type(PointType.POINT)),
+                listOf(type(o[0]), type(o[1]), type(o[2]), type(o[3]), more(), MEMO, st, DEL),
+                listOf(type(o[4]), type(o[5]), type(o[6]), type(o[7]), back(), TAG, WheelItem("circuit", "Áramkörbe", "◌"), type(nw)),
             ),
         )
     }
 
+    /** The room kinds as wheel rings: seven a ring, slot 4 (South) moves on, the last ring's goes back. [first] leads. */
+    fun kindRings(first: List<String>? = null): List<List<String?>> {
+        val all = RoomKinds.RINGS.flatten().filter { it != null && it != ">" && it != "<" }.map { it!! }
+        val order = ((first ?: emptyList()).filter { it in all } + all).distinct()
+        val chunks = order.chunked(7)
+        return chunks.mapIndexed { i, c -> (0 until 8).map { s -> when { s == 4 -> if (i == chunks.size - 1) "<" else ">"; else -> c.getOrNull(if (s < 4) s else s - 1) } } }
+    }
+
     /** A room: name, sizes, memo, tag, then its kinds over three rings (the Planner's room-type wheel). */
-    fun forRoom(r: Room): Wheel {
+    fun forRoom(r: Room, first: List<String>? = null): Wheel {
         val actions = listOf(
             WheelItem("name", "Név", "Aa"), WheelItem("measure", "Méret", "↔"), MEMO, TAG,
             WheelItem(MORE, "Típus", "›"), WheelItem("points", "Pontjai körbe", "◌"), DEL, null,
         )
-        val kinds = RoomKinds.RINGS.map { ring ->
+        val kinds = kindRings(first).map { ring ->
             ring.map { k ->
                 when (k) {
                     null -> null

@@ -76,3 +76,34 @@ class PhotosTest {
         assertEquals(listOf(Shot(180, "d.jpg", 9)), back.photos[0].shots)
     }
 }
+
+class VariantToolsTest {
+    @Test fun theDefaultWheelsAreTheOldOnes() {
+        val p = SketchPoint("P1", Pt(0.0, 0.0))
+        assertEquals(Wheels.forPoint(p), Wheels.forPoint(p, null))
+        assertEquals(RoomKinds.RINGS, Wheels.kindRings(), "the Planner's three rings, unchanged")
+        val v = Wheels.forPoint(p, listOf("light", "socket", "fixed"))
+        assertEquals(listOf("type:light", "type:socket", "type:fixed", "type:switch"), (0..3).map { v.rings[0][it]!!.id })
+        assertEquals("type:pont", v.rings[1][7]!!.id)
+        val r = Wheels.kindRings(listOf("furdo", "wc", "mosokonyha"))
+        assertEquals(listOf("furdo", "wc", "mosokonyha", "nappali", ">", "konyha", "halo", "eloszoba"), r[0])
+        assertEquals(16, r.flatten().count { it != null && it != ">" && it != "<" }, "every kind still on a ring")
+    }
+
+    @Test fun aTemplateStretchesOverTheDrag() {
+        val l = listOf(Pt(0.0, 0.0), Pt(1.0, 0.0), Pt(1.0, 0.5), Pt(0.5, 0.5), Pt(0.5, 1.0), Pt(0.0, 1.0))
+        val (s, id) = Ops.addTemplateRoom(Sketch("S"), l, Pt(10.0, 10.0), Pt(110.0, 90.0), 4.0)!!
+        assertEquals(listOf(Pt(10.0, 10.0), Pt(110.0, 10.0), Pt(110.0, 50.0), Pt(60.0, 50.0), Pt(60.0, 90.0), Pt(10.0, 90.0)), s.room(id)!!.poly)
+        assertEquals(null, Ops.addTemplateRoom(Sketch("S"), l, Pt(0.0, 0.0), Pt(10.0, 10.0), 4.0))
+    }
+
+    @Test fun choosingAVariantBringsItsTagsScopeAndPlugins() {
+        val v = FieldKit.parseVariant(java.io.File(System.getProperty("vrg.repo") ?: "../..", "Sketcher/variants/furdo-felujitas.json").readText())
+        val s = VariantOps.activate(Sketch("S", scope = mapOf("furdo" to 3)), v)
+        assertEquals("furdo-felujitas", s.variant); assertTrue(s.variantOn)
+        assertEquals(3, s.scope["furdo"], "a quantity already set stays"); assertEquals(1, s.scope["felujitas"])
+        assertTrue(s.tags.any { it.id == "T-zona1" } && Plugins.PHOTO.id in s.plugins)
+        assertEquals(s, VariantOps.activate(s, v).copy(), "choosing it twice changes nothing more")
+        assertEquals(Plugins.rail(s.plugins, v.rail).first().id, "room")
+    }
+}
