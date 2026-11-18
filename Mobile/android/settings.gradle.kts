@@ -22,10 +22,11 @@ dependencyResolutionManagement {
 rootProject.name = "VRG-Mobile"
 
 // The pure Kotlin modules: build and test on any JDK, no Android SDK.
-include(":kit-core", ":airdeck-core", ":relay-core")
+include(":kit-core", ":airdeck-core", ":relay-core", ":pager-core")
 if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":feature-notes", ":feature-update", ":feature-pulse", ":feature-sphere", ":feature-ports", ":feature-launch", ":feature-drop", ":feature-screen", ":feature-city", ":feature-inbox", ":feature-net", ":app")
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
 if (!jvmOnly) include(":feature-archive") // WP M18 Archívum
 if (!jvmOnly) include(":feature-apps")    // WP M21 Alkalmazások
 if (!jvmOnly) include(":feature-claude")  // WP M22 Claude
 if (!jvmOnly) include(":feature-pcwin")   // WP M23 PC ablakok
+if (!jvmOnly) include(":feature-pager")   // WP M24 Csipogó

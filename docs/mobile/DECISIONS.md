@@ -254,6 +254,28 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** the relay re-runs the presets (a second copy of the Desktop's feed engine); **C** the relay asks the
   running Desktop for its cached feed (needs the Desktop open, and a new channel between them).
 
+- **D-19 · Csipogó: what carries the pager (M24), 2026-11-18.** Chosen in the session (the Founder asked for a
+  reimagined Site Pager and left the choices to it). Chosen: **A** — **BLE advertisements for the pager itself and
+  LE L2CAP channels for chat and voice**: the pager frame rides in every phone's beacon, so a page needs no
+  connection, reaches every phone in range at once and gives the RSSI for the distance for free; the link (Android
+  10+) carries what does not fit in 23 bytes. No pairing dialog anywhere. Rejected: **B** Google Nearby Connections
+  (needs Play services, an opaque protocol a future ESP32 pager could never join, no RSSI); **C** Bluetooth Classic
+  RFCOMM (discoverable-mode prompts and bonding on site, no broadcast); **D** Wi-Fi Direct / a hotspot (one phone
+  becomes the access point, minutes of setup, no proximity).
+- **D-20 · Csipogó: the crew code is the key (M24), 2026-11-18.** Chosen in the session. Chosen: **A** — a typed
+  crew code gives the crew id byte (the pager's `crew` field) and an HMAC-SHA256 key; every beacon carries a 4-byte
+  MAC and the epoch minute (± 2 min), every link starts with a nonce handshake. It answers the builder's own warning
+  about replayable fixed-code fobs. Not encrypted (said on screen and in the WP). Rejected: **B** no authentication
+  (anyone's phone could send KAPCSOLD FEL into a crew); **C** full encryption with bonded links (pairing dialogs,
+  and the beacon has no room for a nonce and a tag both).
+- **D-21 · Csipogó: shape on the phone (M24), 2026-11-18.** Chosen in the session. Chosen: **A** — one feature in
+  Kapcsolat (`pager`, 📟), the pager's codes and key map unchanged (1–14, K1–K3 short / long, types 1–14 + 0 idle),
+  units 1–30 instead of 1–8, the Panel drawn after the B2 belt pager, Hungarian labels with the original English in
+  `pager-core`. HUB mode, the LIGHT / HEAVY ports, ESP-NOW modules and the key fob are not carried over (no ports on a
+  phone); a future hardware unit can join the same frame. Rejected: **B** a fresh message set designed for phones
+  (would lose the pager's muscle memory and the path back to hardware).
+  Details: `WP/M24.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

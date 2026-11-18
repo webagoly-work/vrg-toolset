@@ -134,10 +134,16 @@ object Catalogue {
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
     )
 
+    // WP M24: the Site Pager (the ESP32-S3 + nRF905 pager pair, Archive "Site Pager Builder") reimagined on phones.
+    val PAGER = FeatureInfo(
+        "pager", "Csipogó", "Terepi személyhívó Bluetooth-on, internet nélkül: hívás gombnyomásra, gyors üzenetek LÁTTAM visszaigazolással, közelségjelző, csevegés, adóvevő, őrzés és mozdulatlanság-riasztás.",
+        "📟", Group.LINK, Stage.BETA, "M24", setOf(Need.BLUETOOTH),
+    )
+
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, CLAUDE,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
     )

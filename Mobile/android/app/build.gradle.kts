@@ -71,4 +71,5 @@ dependencies {
     implementation(project(":feature-apps"))
     implementation(project(":feature-claude"))
     implementation(project(":feature-pcwin"))
+    implementation(project(":feature-pager"))
 }

@@ -132,7 +132,7 @@ echo.
 pushd "%ANDROID_DIR%"
 :: kit-core and airdeck-core are plain Kotlin modules; --configure-on-demand keeps the Android
 :: module out of it, so this runs without the Android SDK
-call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test
+call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :pager-core:test
 set "RC=%ERRORLEVEL%"
 popd
 :: WP M16: kit\...\theme\KitTokens.kt must still match the VRG UI Kit tokens
@@ -143,7 +143,7 @@ if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\desk-gen.js" --check
 if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 echo.
 if "%RC%"=="0" echo   Core tesztek: rendben.
-if not "%RC%"=="0" echo   HIBA: core tesztek ^(kod %RC%^) - reszletek: android\kit-core es android\airdeck-core \build\reports\tests
+if not "%RC%"=="0" echo   HIBA: core tesztek ^(kod %RC%^) - reszletek: android\kit-core, android\airdeck-core es android\pager-core \build\reports\tests
 goto DONE_PAUSE
 
 :DO_E2E

@@ -31,6 +31,7 @@ class KitCoreTest {
             Links.route("vrg://pair?ws=ws%3A%2F%2F192.168.1.24%3A47291&c=abc"),
         )
         assertNull(Links.route("vrg://nincs-ilyen"))
+        assertEquals(Route("pager", "", mapOf("crew" to "VILLANY-01")), Links.route("vrg://pager?crew=VILLANY-01"))   // M24 crew invite
     }
 
     @Test fun legacyLegegerLinks() {
