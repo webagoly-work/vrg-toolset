@@ -40,4 +40,22 @@ object HomeLayout {
 
     /** Icon columns for the groups' grid: 4 upright (the user's choice), 5 in the right-hand pane lying down. */
     fun columns(landscape: Boolean): Int = if (landscape) 5 else 4
+
+    /**
+     * The Sketcher's surveys as the hero counts them: the files in `filesDir/[SKETCH_DIR]` named `<id>[SKETCH_SUFFIX]`.
+     * They are SketchStore's names in feature-sketch (another session's module, not changed from here);
+     * HomeLayoutTest reads that source and fails if they drift. A save's `.tmp` file is not counted.
+     */
+    const val SKETCH_DIR = "sketch"
+    const val SKETCH_SUFFIX = ".vsketch.json"
+
+    /** Whether a file in the sketch folder is a survey. */
+    fun isSketchFile(name: String): Boolean = name.endsWith(SKETCH_SUFFIX) && name.length > SKETCH_SUFFIX.length
+
+    /** The hero's count line; null (not counted yet) shows nothing. */
+    fun sketchCountLabel(count: Int?): String? = when {
+        count == null -> null
+        count <= 0 -> "Még nincs felmérés a telefonon"
+        else -> "$count felmérés a telefonon"
+    }
 }

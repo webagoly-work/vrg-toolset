@@ -337,7 +337,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   home window as 4-column icons, Kompakt as 2-column tiles); **lying down** the hero and the quick row take the left
   40 % and the groups scroll on the right (5 icon / 3 tile columns), from 600 dp wide, so a Lapok cell holding the
   home stays one column. Sketcher also has a dial in the Asztal dock beside ◣, one tap from every sheet. The layout is
-  `kit-core/HomeLayout.kt`, tested (every catalogue entry on the home exactly once); ids and routes are unchanged.
+  `kit-core/HomeLayout.kt`, tested (every catalogue entry on the home exactly once); ids and routes are unchanged. The hero shows the
+  phone's survey count, read from the Sketcher's folder (not its code, which another session owns), names pinned by a test.
   Rejected: **B** Sketcher only as a dock pin with the grid reordered (least change, but not prominent on Kompakt);
   **C** a Terep / Iroda split with big field tiles and an office list (biggest change; kept as a later idea if the
   field use grows past the Sketcher).

@@ -22,8 +22,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -43,6 +45,9 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.pair.PairFeature
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 // The home's layout (WP M32, D-35), shared by both homes: the Asztal's home window draws its groups as icons, the
 // Kompakt home as tiles; everything else (the Sketcher hero, the quick row, the foldable groups, the landscape split)
@@ -109,12 +114,22 @@ internal fun SketchHero(open: (String) -> Unit) {
     val f = HomeLayout.HERO
     val built = Registry.isBuilt(f)
     val shape = RoundedCornerShape(Melyviz.radius)
+    // the surveys on the phone, counted from the Sketcher's folder each time the home is shown (opening a feature takes
+    // the home out of composition, so coming back from the Sketcher counts again); off the main thread
+    val ctx = LocalContext.current
+    val count by produceState<Int?>(null) {
+        value = withContext(Dispatchers.IO) {
+            try { File(ctx.filesDir, HomeLayout.SKETCH_DIR).list()?.count { HomeLayout.isSketchFile(it) } ?: 0 }
+            catch (e: SecurityException) { null }
+        }
+    }
+    val countLabel = HomeLayout.sketchCountLabel(count)
     Column(
         Modifier.fillMaxWidth().heightIn(min = 104.dp)
             .background(Melyviz.raised, shape)
             .border(BorderStroke(1.5.dp, if (built) Melyviz.glow else Melyviz.lineSoft), shape)
             .clickable(onClickLabel = "megnyitás") { open(f.id) }
-            .semantics { contentDescription = f.title + ", helyszíni felmérés" }
+            .semantics { contentDescription = f.title + ", helyszíni felmérés" + (countLabel?.let { ", $it" } ?: "") }
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -124,6 +139,8 @@ internal fun SketchHero(open: (String) -> Unit) {
                 Text(f.title.uppercase(), style = Melyviz.title.copy(fontSize = 17.sp, color = Melyviz.ink, letterSpacing = 1.2.sp), maxLines = 1)
                 Text("Helyszíni szemle · vázlat, jegyzet, kamera, helyszín", style = Melyviz.small.copy(fontSize = 11.sp), maxLines = 2,
                     overflow = TextOverflow.Ellipsis)
+                if (countLabel != null) Text(countLabel, style = Melyviz.readout.copy(fontSize = 11.sp,
+                    color = if (count == 0) Melyviz.muted else Melyviz.sand), maxLines = 1, modifier = Modifier.padding(top = 2.dp))
             }
             StageBadge(f.stage)
             Text("›", style = Melyviz.title.copy(color = Melyviz.glow), modifier = Modifier.padding(start = 8.dp))

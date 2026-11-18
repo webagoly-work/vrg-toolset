@@ -51,4 +51,24 @@ class HomeLayoutTest {
         assertEquals(setOf(Group.LINK), ShellPrefs.foldedOf("LINK,nincs-ilyen,"))
         assertFalse(Group.APP in ShellPrefs.foldedOf(""))
     }
+
+    @Test fun sketchCount() {
+        assertEquals(null, HomeLayout.sketchCountLabel(null))
+        assertEquals("Még nincs felmérés a telefonon", HomeLayout.sketchCountLabel(0))
+        assertEquals("1 felmérés a telefonon", HomeLayout.sketchCountLabel(1))
+        assertEquals("12 felmérés a telefonon", HomeLayout.sketchCountLabel(12))
+        assertTrue(HomeLayout.isSketchFile("a1b2.vsketch.json"))
+        assertFalse(HomeLayout.isSketchFile("a1b2.tmp"), "a save in progress is not a survey")
+        assertFalse(HomeLayout.isSketchFile(".vsketch.json"))
+        assertFalse(HomeLayout.isSketchFile("photos"))
+    }
+
+    /** The count reads the Sketcher's folder without its code: pin the names to SketchStore's source. */
+    @Test fun sketchNamesMatchTheSketcherStore() {
+        val src = java.io.File("../feature-sketch/src/main/kotlin/hu/vrg/mobile/sketch/ui/SketchFeature.kt")
+        assertTrue(src.exists(), "SketchFeature.kt moved: update HomeLayout.SKETCH_DIR / SKETCH_SUFFIX and this path")
+        val text = src.readText()
+        assertTrue("File(app.filesDir, \"${HomeLayout.SKETCH_DIR}\")" in text, "the Sketcher's folder is no longer filesDir/${HomeLayout.SKETCH_DIR}")
+        assertTrue("\"\$id${HomeLayout.SKETCH_SUFFIX}\"" in text, "the Sketcher's file name is no longer <id>${HomeLayout.SKETCH_SUFFIX}")
+    }
 }
