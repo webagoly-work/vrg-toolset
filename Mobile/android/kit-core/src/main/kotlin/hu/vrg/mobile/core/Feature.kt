@@ -143,11 +143,16 @@ object Catalogue {
         "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
         "📷", Group.WORK, Stage.BETA, "M25", setOf(Need.CAMERA),
     )
+    // WP M33: the Site Pager (the ESP32-S3 + nRF905 pager pair, Archive "Site Pager Builder") reimagined on phones.
+    val PAGER = FeatureInfo(
+        "pager", "Csipogó", "Terepi személyhívó Bluetooth-on, internet nélkül: hívás gombnyomásra, gyors üzenetek LÁTTAM visszaigazolással, közelségjelző, csevegés, adóvevő, őrzés és mozdulatlanság-riasztás.",
+        "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
+    )
 
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, CLAUDE,
         SKETCH, PHOTO,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,

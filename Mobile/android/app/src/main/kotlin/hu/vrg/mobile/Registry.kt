@@ -15,6 +15,7 @@ import hu.vrg.mobile.launch.LaunchFeature
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.net.NetFeature
 import hu.vrg.mobile.notes.NotesFeature
+import hu.vrg.mobile.pager.app.PagerFeature
 import hu.vrg.mobile.pair.PairFeature
 import hu.vrg.mobile.ports.PortsFeature
 import hu.vrg.mobile.pulse.PulseFeature
@@ -55,6 +56,7 @@ object Registry {
         PhotoFeature,
         InboxFeature,
         NetFeature,
+        PagerFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

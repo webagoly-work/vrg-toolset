@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Időjárás</title>
+<!--
+  VRG Időjárás — multi-source weather for field work: the consensus of every source with its uncertainty,
+  the work windows per activity, the alerts from config/rules.json, the official warnings and the sources'
+  licences. Served by Weather/serve.js (http://localhost:8808); the same commands run from the CLI
+  (node Weather/vrg-weather.js help). No library, no CDN: offline.
+
+  URL:  #<place id>          the place (job sites: #job-<code>)
+  Keys: 1-9  place   R  refresh   G  quick round   M  model round   T  today / tomorrow brief   Esc  close
+-->
+<style>
+/* melyviz:begin */
+/* Mélyvíz — the VRG dev-side style (CITY-D26, 2026-10-27), shared by every dev-side app. Spec: docs/city/melyviz.md.
+   This file is the source. Apps carry a copy between the markers  melyviz:begin / melyviz:end  that
+   tools/melyviz-sync.js writes; `node tools/melyviz-sync.js --check` fails when a copy has drifted.
+   Do not edit a copy inside an app — edit this file and sync.
+
+   Tokens are --mv-* so they never collide with an app's own names; an app maps its variables onto them.
+   The base layer applies only under html.mv, so adding the block changes nothing until the app opts in.
+   M1 ice = the instrument and you (selection, focus, "you are here"); warm = activity (running, heat, recent work).
+   M5 smoked glass, 1 px hairlines, square controls, two cut corners, no rounded corners, no drop shadows.
+   M6 numbers and readouts mono; titles in the condensed voice; small labels uppercase and tracked. */
+:root {
+  --mv-bg: #0a141c; --mv-horizon: #11202b;
+  --mv-panel: rgba(20, 30, 38, .74); --mv-panel-solid: #121c24; --mv-raised: #17232c;
+  --mv-line: rgba(232, 240, 246, .15); --mv-line-strong: rgba(232, 240, 246, .34);
+  --mv-text: #e8f0f6; --mv-dim: #a6afb7; --mv-faint: #646d74;
+  --mv-accent: #93d3e6; --mv-accent-soft: rgba(147, 211, 230, .14); --mv-accent-glow: rgba(147, 211, 230, .5);
+  --mv-warm: #e8a873; --mv-warm-soft: rgba(232, 168, 115, .14);
+  --mv-ok: #8bcca1; --mv-warn: #e3be7b; --mv-crit: #e4877d;
+  --mv-cut: 6px; --mv-blur: 12px; --mv-glow: 3px;
+  --mv-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --mv-voice: Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --mv-sans: "Segoe UI", system-ui, sans-serif;
+}
+html.mv.low-glow { --mv-glow: 0px; }
+
+/* ---- base layer (opt-in: html.mv; zero specificity, so any app rule wins) ---- */
+:where(html.mv) { color-scheme: dark; }
+:where(html.mv) :where(body) { background: var(--mv-bg); color: var(--mv-text); font-family: var(--mv-sans); }
+:where(html.mv) :where(:is(h1, h2, h3)) { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; }
+:where(html.mv) :where(:is(code, kbd, pre, samp, .mv-num)) { font-family: var(--mv-mono); }
+:where(html.mv) :where(:focus-visible) { outline: 2px solid var(--mv-accent); outline-offset: 2px; }
+:where(html.mv) ::selection { background: var(--mv-accent-soft); color: var(--mv-text); }
+:where(html.mv) :where(:is(button, input, select, textarea)) { font: inherit; color: var(--mv-text); border-radius: 0; }
+:where(html.mv) :where(:is(button, select, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea)) {
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: none; }
+:where(html.mv) :where(button) { cursor: pointer; }
+:where(html.mv) :where(button:hover:not(:disabled)) { border-color: var(--mv-accent); }
+:where(html.mv) :where(:is(input, select, textarea):focus) { border-color: var(--mv-accent); outline: none; box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+:where(html.mv) :where(:is(input[type=checkbox], input[type=radio], input[type=range])) { accent-color: var(--mv-accent); }
+:where(html.mv) :where(input, textarea)::placeholder { color: var(--mv-faint); }
+:where(html.mv) :where(:disabled) { opacity: .45; cursor: default; }
+:where(html.mv) :where(table) { border-collapse: collapse; }
+:where(html.mv) :where(:is(th, td)) { border-color: var(--mv-line); }
+:where(html.mv) :where(th) { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; }
+:where(html.mv) :where(a) { color: var(--mv-accent); }
+:where(html.mv) :where(hr) { border: 0; border-top: 1px solid var(--mv-line); }
+:where(html.mv) { scrollbar-color: var(--mv-line-strong) transparent; scrollbar-width: thin; }
+
+/* ---- components (usable anywhere) ---- */
+.mv-glass {
+  border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: blur(var(--mv-blur)) saturate(1.2); backdrop-filter: blur(var(--mv-blur)) saturate(1.2);
+  background: var(--mv-panel); }
+.mv-solid { border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none; background: var(--mv-panel-solid); }
+/* two cut corners (top left, bottom right) drawn as diagonals; layer on .mv-glass or .mv-solid */
+.mv-cut {
+  clip-path: polygon(var(--mv-cut) 0, 100% 0, 100% calc(100% - var(--mv-cut)), calc(100% - var(--mv-cut)) 100%, 0 100%, 0 var(--mv-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--mv-cut) var(--mv-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.mv-title { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mv-label { font-family: var(--mv-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; color: var(--mv-dim); }
+.mv-btn { background: none; border: 1px solid var(--mv-line-strong); border-radius: 0; color: inherit; font: inherit; padding: 3px 10px; cursor: pointer; }
+.mv-btn:hover { border-color: var(--mv-accent); }
+.mv-on, .mv-btn.on { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+.mv-live { color: var(--mv-warm); }
+.mv-badge { font: 11px var(--mv-mono); padding: 1px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; }
+.mv-badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.mv-badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.mv-badge.crit { color: var(--mv-crit); border-color: var(--mv-crit); }
+
+/* print stays paper: Mélyvíz is a screen style */
+@media print {
+  :where(html.mv) { color-scheme: light; }
+  :where(html.mv) body { background: #fff; color: #000; }
+  .mv-glass, .mv-solid { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* melyviz:end */
+:root {
+  --ok: var(--mv-ok); --amber: var(--mv-warn); --red: var(--mv-crit); --info: var(--mv-accent);
+  --cell: 11px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--mv-bg); color: var(--mv-text); }
+body { font: 13px/1.4 var(--mv-sans); }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 16px; border-bottom: 1px solid var(--mv-line);
+  background: var(--mv-horizon); position: sticky; top: 0; z-index: 3; }
+.brand { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; font-size: 20px; letter-spacing: .08em; }
+.brand b { color: var(--mv-accent); font-weight: 600; }
+.badge { font: 600 10.5px/1 var(--mv-sans); text-transform: uppercase; letter-spacing: .12em; padding: 4px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); }
+.badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.spacer { flex: 1; }
+select, button { padding: 6px 10px; font-size: 13px; }
+button.primary { border-color: var(--mv-accent); color: var(--mv-accent); }
+button[aria-busy=true] { opacity: .6; cursor: progress; }
+main { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 14px; padding: 14px 16px 40px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+section.card { padding: 12px 14px; margin-bottom: 14px; }
+h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .14em; color: var(--mv-dim); }
+.num { font-family: var(--mv-mono); }
+.dim { color: var(--mv-dim); } .faint { color: var(--mv-faint); }
+.now-big { font: 600 40px/1 var(--mv-mono); }
+.now-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 10px; margin-top: 10px; }
+.now-grid div span { display: block; font-size: 10.5px; color: var(--mv-faint); text-transform: uppercase; letter-spacing: .1em; }
+.conf { font-size: 11px; padding: 1px 6px; border: 1px solid var(--mv-line-strong); }
+.conf.magas { color: var(--mv-ok); border-color: var(--mv-ok); } .conf.közepes { color: var(--mv-warn); border-color: var(--mv-warn); }
+.conf.alacsony { color: var(--mv-crit); border-color: var(--mv-crit); } .conf.egy { color: var(--mv-dim); }
+/* work windows */
+.win { display: grid; grid-template-columns: 120px 1fr; gap: 4px 8px; align-items: center; }
+.win .lab { font-size: 12px; color: var(--mv-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip { display: flex; gap: 1px; }
+.strip i { flex: 1; min-width: 3px; height: 16px; background: var(--ok); opacity: .55; }
+.strip i.info { background: var(--info); opacity: .8; } .strip i.amber { background: var(--amber); opacity: 1; } .strip i.red { background: var(--red); opacity: 1; }
+.strip i.day { box-shadow: -2px 0 0 var(--mv-line-strong); }
+.axis { display: flex; font: 10px var(--mv-mono); color: var(--mv-faint); }
+.axis span { flex: 1; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--mv-dim); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+/* alerts */
+.alerts { list-style: none; margin: 0; padding: 0; }
+.alerts li { border-left: 3px solid var(--mv-line-strong); padding: 6px 8px; margin-bottom: 6px; background: var(--mv-raised); }
+.alerts li.red { border-color: var(--red); } .alerts li.amber { border-color: var(--amber); } .alerts li.info { border-color: var(--info); }
+.alerts li.ack { opacity: .6; }
+.alerts .t { display: flex; gap: 8px; align-items: baseline; }
+.alerts .when { font: 11px var(--mv-mono); color: var(--mv-dim); white-space: nowrap; }
+.alerts .basis { font-size: 11px; color: var(--mv-faint); margin-top: 2px; }
+.alerts .basis b { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+.alerts button { margin-left: auto; padding: 1px 6px; font-size: 11px; }
+/* meteogram */
+svg.mg { width: 100%; height: auto; display: block; }
+svg.mg text { fill: var(--mv-faint); font: 10px var(--mv-mono); }
+svg.mg .grid { stroke: var(--mv-line); stroke-width: 1; }
+svg.mg .now { stroke: var(--mv-warm); stroke-dasharray: 3 3; }
+svg.mg .member { fill: none; stroke: var(--mv-dim); stroke-width: 1; opacity: .45; }
+svg.mg .fused { fill: none; stroke: var(--mv-accent); stroke-width: 2; }
+svg.mg .band { fill: var(--mv-accent-soft); }
+svg.mg .bar { fill: var(--mv-accent); opacity: .7; }
+svg.mg .pop { fill: none; stroke: var(--mv-warm); stroke-width: 1.2; }
+svg.mg .lim { stroke-dasharray: 5 4; stroke-width: 1; }
+svg.mg .lim.amber { stroke: var(--amber); } svg.mg .lim.red { stroke: var(--red); }
+svg.mg .lab { font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; fill: var(--mv-dim); }
+.tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.tabs button[aria-pressed=true] { border-color: var(--mv-accent); color: var(--mv-accent); }
+/* brief */
+.brief { white-space: normal; }
+.brief h3 { margin: 10px 0 4px; font-size: 12px; color: var(--mv-dim); text-transform: uppercase; letter-spacing: .12em; }
+.brief ul { margin: 0; padding-left: 18px; }
+.brief .foot { color: var(--mv-faint); font-size: 11px; margin-top: 10px; }
+/* tables */
+table { width: 100%; font-size: 12px; }
+th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--mv-line); vertical-align: top; }
+td.st { white-space: nowrap; font-family: var(--mv-mono); }
+td.st.ok { color: var(--mv-ok); } td.st.off { color: var(--mv-faint); } td.st.stale { color: var(--mv-warn); } td.st.bad { color: var(--mv-crit); }
+.places { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto; }
+.places li { display: flex; gap: 8px; padding: 4px 6px; cursor: pointer; align-items: center; }
+.places li[aria-current=true] { background: var(--mv-accent-soft); }
+.places li:hover { background: var(--mv-raised); }
+.places .k { font: 10px var(--mv-mono); color: var(--mv-faint); width: 14px; }
+.dot { width: 8px; height: 8px; background: var(--mv-line-strong); flex: none; }
+.dot.l3 { background: var(--red); } .dot.l2 { background: var(--amber); } .dot.l1 { background: var(--info); }
+.toast { position: fixed; right: 16px; bottom: 16px; max-width: 520px; padding: 10px 12px; white-space: pre-wrap; font: 12px var(--mv-mono); z-index: 9; display: none; }
+.toast.show { display: block; }
+footer { padding: 10px 16px 24px; color: var(--mv-faint); font-size: 11px; text-align: center; }
+.empty { color: var(--mv-faint); font-style: italic; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">VRG <b>IDŐJÁRÁS</b></div>
+  <span id="use" class="badge">…</span>
+  <span id="replay" class="badge warn" hidden>VISSZAJÁTSZÁS</span>
+  <select id="placeSel" aria-label="Hely"></select>
+  <span class="spacer"></span>
+  <span id="tick" class="faint num"></span>
+  <button id="bGyors" title="G — figyelmeztetések, mérések, villámok, riasztások">Gyors kör</button>
+  <button id="bModell" title="M — előrejelzések, konszenzus, riasztások">Modellfrissítés</button>
+  <button id="bReggel" class="primary" title="Minden forrás, ellenőrzés, brief">Teljes kör</button>
+  <button id="bRefresh" title="R — újratöltés">↻</button>
+</header>
+<main>
+  <div>
+    <section class="card mv-glass mv-cut" id="nowCard"><h2>Most</h2><div id="now" class="empty">betöltés…</div></section>
+    <section class="card mv-glass" id="alertCard"><h2>Riasztások</h2><ul id="alerts" class="alerts"></ul></section>
+    <section class="card mv-glass"><h2>Hivatalos figyelmeztetések</h2><div id="warnings"></div></section>
+    <section class="card mv-glass"><h2>Helyek</h2><ul id="places" class="places"></ul></section>
+  </div>
+  <div>
+    <section class="card mv-glass mv-cut"><h2>Munkaablak · 48 óra</h2><div id="windows"></div>
+      <div class="legend"><span><i style="background:var(--ok);opacity:.55"></i>jó</span><span><i style="background:var(--info)"></i>információ</span>
+        <span><i style="background:var(--amber)"></i>óvatosan</span><span><i style="background:var(--red)"></i>tilos</span><span class="faint">függőleges vonal = éjfél</span></div></section>
+    <section class="card mv-glass"><h2>Meteogram · konszenzus és források</h2><div id="mg"></div>
+      <div class="legend"><span><i style="background:var(--mv-accent)"></i>konszenzus</span><span><i style="background:var(--mv-accent-soft)"></i>bizonytalanság (± szórás)</span>
+        <span><i style="background:var(--mv-dim);opacity:.5"></i>egyes források</span><span><i style="background:var(--mv-warm)"></i>csapadék valószínűsége</span></div></section>
+    <section class="card mv-glass"><div class="tabs"><button id="tToday" aria-pressed="true">Ma</button><button id="tTomorrow" aria-pressed="false">Holnap</button></div><div id="brief" class="brief"></div></section>
+    <section class="card mv-glass"><h2>Források</h2><div id="sources"></div></section>
+    <section class="card mv-glass"><h2>Futásnapló</h2><div id="runs"></div></section>
+  </div>
+</main>
+<footer id="foot"></footer>
+<div id="toast" class="toast mv-solid"></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const TZ = 'Europe/Budapest';
+let OV = null, PL = null, placeId = null, briefDay = 'today';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const f1 = x => (x == null ? '–' : x.toFixed(1).replace('.', ','));
+const f0 = x => (x == null ? '–' : String(Math.round(x)));
+const fmtT = (t, o) => new Intl.DateTimeFormat('hu-HU', { timeZone: TZ, ...o }).format(new Date(t));
+const hh = t => fmtT(t, { hour: '2-digit', minute: '2-digit' });
+const dayHour = t => fmtT(t, { month: '2-digit', day: '2-digit', hour: '2-digit' }) + 'h';
+const localHour = t => +fmtT(t, { hour: '2-digit', hourCycle: 'h23' });
+const WMO = { 0: 'derült', 1: 'túlnyomóan derült', 2: 'részben felhős', 3: 'borult', 45: 'köd', 48: 'zúzmarás köd', 51: 'gyenge szitálás', 53: 'szitálás', 55: 'erős szitálás',
+  56: 'ónos szitálás', 57: 'erős ónos szitálás', 61: 'gyenge eső', 63: 'eső', 65: 'erős eső', 66: 'ónos eső', 67: 'erős ónos eső', 71: 'gyenge havazás', 73: 'havazás',
+  75: 'erős havazás', 77: 'hószemcse', 80: 'gyenge zápor', 81: 'zápor', 82: 'heves zápor', 85: 'hózápor', 86: 'erős hózápor', 95: 'zivatar', 96: 'zivatar jégesővel', 99: 'heves zivatar jégesővel' };
+const BASIS = { legal: 'jogszabály', standard: 'szabvány', datasheet: 'adatlap', practice: 'gyakorlat', 'public-health': 'népegészségügy', official: 'hivatalos' };
+const LEVEL = { red: 'tilos', amber: 'óvatosan', info: 'info' };
+
+async function api(p, opt) {
+  const r = await fetch(p, opt);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.status);
+  return j;
+}
+function toast(msg, ms = 6000) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), ms); }
+
+async function loadOverview() {
+  OV = await api('/api/overview');
+  $('use').textContent = OV.use === 'commercial' ? 'üzleti' : 'kiértékelés';
+  $('use').className = 'badge ' + (OV.use === 'commercial' ? 'ok' : 'warn');
+  $('use').title = OV.use === 'commercial' ? 'Csak üzletileg is használható források futnak' : 'KIÉRTÉKELÉS: nem üzleti források is futnak — VRG munkára nem';
+  $('replay').hidden = !OV.replay;
+  $('tick').textContent = OV.tick ? 'ütemező ' + hh(OV.tick) : 'ütemező nem fut';
+  if (!placeId || !OV.places.some(p => p.id === placeId)) placeId = (location.hash.slice(1) && decodeURIComponent(location.hash.slice(1))) || (OV.places.find(p => p.id === 'budapest') || OV.places[0] || {}).id;
+  $('placeSel').innerHTML = OV.places.map(p => `<option value="${esc(p.id)}"${p.id === placeId ? ' selected' : ''}>${esc(p.kind === 'job' ? '◆ ' + p.name : p.name)}</option>`).join('');
+  $('places').innerHTML = OV.places.map((p, i) => `<li data-id="${esc(p.id)}" aria-current="${p.id === placeId}"><span class="k">${i < 9 ? i + 1 : ''}</span><span class="dot ${p.open && p.open.worst ? 'l' + p.open.worst : ''}"></span>
+    <span>${esc(p.name)}</span><span class="spacer"></span><span class="faint num">${p.open && p.open.n ? p.open.n : ''}</span></li>`).join('');
+  for (const li of $('places').children) li.onclick = () => pick(li.dataset.id);
+  renderSources(); renderRuns(); renderWarnings();
+}
+
+function renderSources() {
+  const kind = { forecast: 'előrejelzés', observation: 'mérés', warning: 'figyelmeztetés', lightning: 'villám', airquality: 'légminőség', climate: 'klíma / PV', link: 'hivatkozás' };
+  const com = { yes: 'igen', key: 'kulccsal', no: 'nem' };
+  $('sources').innerHTML = `<table><tr><th>Állapot</th><th>Forrás</th><th>Fajta</th><th>Üzleti</th><th>Licenc</th></tr>` + OV.sources.map(s => {
+    const bad = s.last && ['http', 'net', 'parse'].includes(s.last.status);
+    const st = !s.run ? ['off', 'ki'] : bad ? ['bad', s.last.status] : s.stale ? ['stale', s.lastOk ? s.ageMin + ' p' : 'nincs adat'] : ['ok', s.lastOk ? s.ageMin + ' p' : 'kész'];
+    return `<tr><td class="st ${st[0]}" title="${esc(s.why || (s.last && s.last.error) || '')}">${esc(st[1])}</td><td>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name)}
+      ${s.verified !== 'yes' && s.kind !== 'link' ? '<span class="faint" title="Az értelmező még nincs élő válaszon ellenőrizve (doctor --live)"> · nem ellenőrzött</span>' : ''}
+      ${!s.run && s.why ? `<div class="faint">${esc(s.why)}</div>` : ''}</td><td class="dim">${esc(kind[s.kind] || s.kind)}</td><td class="dim">${esc(com[s.commercial] || s.commercial)}</td>
+      <td class="faint">${esc(s.licence)}</td></tr>`;
+  }).join('') + '</table>';
+  $('foot').textContent = OV.sources.filter(s => s.run).map(s => s.attribution).join(' · ');
+}
+function renderRuns() {
+  $('runs').innerHTML = OV.runs.length ? `<table><tr><th>Mikor</th><th>Folyamat</th><th>Eredmény</th></tr>` + OV.runs.map(r =>
+    `<tr><td class="num dim">${esc(fmtT(r.started, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(r.name)}</td>
+     <td class="st ${r.status === 'ok' ? 'ok' : r.status === 'warn' ? 'stale' : 'bad'}" title="${esc(r.summary || '')}">${esc(r.status)}</td></tr>`).join('') + '</table>'
+    : '<div class="empty">Még nem futott folyamat.</div>';
+}
+function renderWarnings() {
+  const lv = { 2: ['amber', 'sárga'], 3: ['red', 'narancs'], 4: ['red', 'piros'], 1: ['info', 'zöld'] };
+  $('warnings').innerHTML = OV.warnings.length ? '<ul class="alerts">' + OV.warnings.map(w => `<li class="${(lv[w.level] || ['info'])[0]}"><div class="t"><b>${esc(w.event || w.type)}</b>
+    <span class="dim">${esc(w.area)} · ${esc((lv[w.level] || ['', '?'])[1])}</span></div><div class="when">${esc(dayHour(w.onset))} – ${esc(dayHour(w.expires))}</div></li>`).join('') + '</ul>'
+    : '<div class="empty">Nincs érvényes figyelmeztetés.</div>';
+}
+
+async function pick(id) {
+  placeId = id; history.replaceState(null, '', '#' + encodeURIComponent(id));
+  for (const li of $('places').children) li.setAttribute('aria-current', li.dataset.id === id);
+  $('placeSel').value = id;
+  PL = await api('/api/place/' + encodeURIComponent(id) + '?hours=72');
+  renderNow(); renderWindows(); renderAlerts(); renderMg(); renderBrief();
+}
+
+function renderNow() {
+  const c = PL.current, f = c.fused, o = c.obs;
+  if (!f && !o) { $('now').innerHTML = '<div class="empty">Nincs adat erre az órára. Futtasd a Modellfrissítést.</div>'; return; }
+  const v = (x, unit) => `<b class="num">${x}</b> ${unit}`;
+  $('now').innerHTML = `<div style="display:flex;align-items:baseline;gap:12px"><div class="now-big">${f1(f ? f.t2m : o.t2m)}°</div>
+    <div><div>${esc(f && f.wmo != null ? WMO[f.wmo] || f.wmo : '')}</div>${f ? `<span class="conf ${esc(f._conf.t2m)}" title="A források egyezése">biztonság: ${esc(f._conf.t2m || '–')}</span>` : ''}</div></div>
+    <div class="now-grid">
+      <div><span>Hőérzet</span>${v(f1(f && f.tapp), '°C')}</div><div><span>Szél / lökés</span>${v(f1(f && f.wind) + ' / ' + f1(f && f.gust), 'm/s')}</div>
+      <div><span>Csapadék</span>${v(f1(f && f.precip), 'mm/h')} <span class="dim">${f && f.pop != null ? f0(f.pop) + ' %' : ''}</span></div>
+      <div><span>Páratartalom</span>${v(f0(f && f.rh2m), '%')}</div><div><span>Felhőzet</span>${v(f0(f && f.cloud), '%')}</div><div><span>Források</span>${v(f ? f._n.t2m : '–', '')}</div>
+    </div>
+    ${o ? `<div class="dim" style="margin-top:10px">Mérés · ${esc(o.station)} (${f1(o.km)} km, ${esc(hh(o.at))}): <b class="num">${f1(o.t2m)} °C</b>, szél ${f1(o.wind)} / lökés ${f1(o.gust)} m/s${o.rh2m != null ? ', ' + f0(o.rh2m) + ' %' : ''}</div>` : '<div class="faint" style="margin-top:10px">Nincs mérőállomás 25 km-en belül vagy friss mérés.</div>'}`;
+}
+
+function renderWindows() {
+  const acts = Object.fromEntries(OV.activities.map(a => [a.id, a.hu]));
+  const rows = Object.entries(PL.windows);
+  if (!rows.length) { $('windows').innerHTML = '<div class="empty">Nincs tevékenység ehhez a helyhez.</div>'; return; }
+  const first = rows[0][1];
+  $('windows').innerHTML = '<div class="win">' + rows.map(([act, hs]) => `<div class="lab" title="${esc(acts[act] || act)}">${esc(acts[act] || act)}</div><div class="strip">` +
+    hs.map(h => `<i class="${h.level === 'ok' ? '' : h.level}${localHour(h.valid) === 1 ? ' day' : ''}" title="${esc(dayHour(new Date(new Date(h.valid) - 3600e3)))}–${esc(hh(h.valid))} · ${esc(LEVEL[h.level] || 'jó')}${h.why.length ? '\n' + h.why.map(esc).join('\n') : ''}"></i>`).join('') + '</div>').join('') +
+    `<div></div><div class="axis">${first.filter((_, i) => i % 6 === 0).map(h => `<span>${esc(fmtT(new Date(new Date(h.valid) - 3600e3), { hour: '2-digit' }))}h</span>`).join('')}</div></div>`;
+}
+
+function renderAlerts() {
+  const acts = Object.fromEntries(OV.activities.map(a => [a.id, a.hu]));
+  const list = PL.alerts;
+  $('alerts').innerHTML = list.length ? list.map(a => `<li class="${esc(a.level)} ${a.status === 'ack' ? 'ack' : ''}" title="${esc(a.detail || '')}">
+    <div class="t"><span class="when">${esc(dayHour(a.starts))}–${esc(hh(a.ends))}</span><span class="dim">${esc(a.activity === '*' ? 'mindenki' : acts[a.activity] || a.activity)}</span>
+    ${a.status === 'open' && a.level !== 'info' ? `<button data-ack="${a.id}" title="Nyugtázás: láttam, intézkedtem">nyugtáz</button>` : a.status === 'ack' ? '<span class="faint" style="margin-left:auto">nyugtázva</span>' : ''}</div>
+    <div>${esc(a.title)}</div>
+    <div class="basis"><b>${esc(BASIS[(PL.rules[a.rule_id] || {}).basis] || '')}</b> ${esc((PL.rules[a.rule_id] || {}).source || '')}</div>
+    </li>`).join('') : '<li class="empty" style="border:0;background:none">Nincs riasztás ennél a helynél.</li>';
+  for (const b of $('alerts').querySelectorAll('button[data-ack]')) b.onclick = async () => { await post('/api/ack/' + b.dataset.ack); await refresh(); };
+}
+
+// ---- meteogram: three panels sharing the time axis
+function renderMg() {
+  const H = PL.hours.filter(h => h.t2m != null || h.gust != null);
+  if (H.length < 2) { $('mg').innerHTML = '<div class="empty">Nincs konszenzus-előrejelzés. Futtasd a Modellfrissítést.</div>'; return; }
+  const W = 900, L = 36, R = 10, PH = [130, 80, 110], GAP = 26, TOP = 14;
+  const t0 = new Date(H[0].valid).getTime(), t1 = new Date(H[H.length - 1].valid).getTime();
+  const x = t => L + (new Date(t).getTime() - t0) / (t1 - t0) * (W - L - R);
+  let y0 = TOP, svg = '';
+  const nowX = x(new Date());
+  const panel = (h, title, vals, fmt, draw) => {
+    const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.12 || 1;
+    const a = lo >= 0 && lo - pad < 0 ? 0 : lo - pad, b = hi + pad, y = v => y0 + h - (v - a) / (b - a) * h;   // amounts never go below zero
+    let s = `<text class="lab" x="${L}" y="${y0 - 3}">${title}</text>`;
+    for (let k = 0; k <= 3; k++) { const v = a + (b - a) * k / 3; s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${fmt(v)}</text>`; }
+    s += draw(y, a, b);
+    y0 += h + GAP;
+    return s;
+  };
+  const path = pts => pts.filter(p => p[1] != null).map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('');
+  const members = v => { const m = new Set(); for (const h of H) Object.keys(h._members[v] || {}).forEach(k => m.add(k)); return [...m]; };
+  const seriesPanel = (v, title, unit, limits = []) => {
+    const vals = H.flatMap(h => [h[v], ...Object.values(h._members[v] || {}), h[v] != null ? h[v] + (h._spread[v] || 0) : null, h[v] != null ? h[v] - (h._spread[v] || 0) : null]).filter(z => z != null);
+    for (const l of limits) vals.push(l.v);
+    if (!vals.length) return '';
+    return panel(PH[v === 't2m' ? 0 : 2], title, vals, z => z.toFixed(0) + unit, y => {
+      let s = '';
+      const up = H.filter(h => h[v] != null).map(h => [x(h.valid), y(h[v] + (h._spread[v] || 0))]), dn = H.filter(h => h[v] != null).map(h => [x(h.valid), y(h[v] - (h._spread[v] || 0))]).reverse();
+      s += `<path class="band" d="${path(up)}${path(dn).replace(/^M/, 'L')}Z"/>`;
+      for (const m of members(v)) s += `<path class="member" d="${path(H.map(h => [x(h.valid), (h._members[v] || {})[m] != null ? y(h._members[v][m]) : null]))}"><title>${esc(m)}</title></path>`;
+      for (const l of limits) s += `<line class="lim ${l.c}" x1="${L}" x2="${W - R}" y1="${y(l.v)}" y2="${y(l.v)}"/><text x="${W - R}" y="${y(l.v) - 3}" text-anchor="end" style="fill:var(--${l.c === 'red' ? 'red' : 'amber'})">${l.t}</text>`;
+      s += `<path class="fused" d="${path(H.map(h => [x(h.valid), h[v] != null ? y(h[v]) : null]))}"/>`;
+      return s;
+    });
+  };
+  svg += seriesPanel('t2m', 'Hőmérséklet °C', '°', [{ v: 5, c: 'amber', t: '+5 °C PVC kábel' }, { v: 0, c: 'red', t: 'fagy' }]);
+  // precipitation: fused bars + probability line (0-100 % mapped onto the panel)
+  const pr = H.map(h => h.precip || 0), pmax = Math.max(1, ...pr);
+  svg += panel(PH[1], 'Csapadék mm/h · valószínűség %', [0, pmax], z => z.toFixed(1), (y, a, b) => {
+    const bw = Math.max(2, (W - L - R) / H.length - 1);
+    let s = H.map(h => h.precip > 0.02 ? `<rect class="bar" x="${(x(h.valid) - bw).toFixed(1)}" y="${y(h.precip).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(h.precip)).toFixed(1)}"><title>${esc(dayHour(h.valid))}: ${f1(h.precip)} mm, ${f0(h.pop)} %</title></rect>` : '').join('');
+    s += `<path class="pop" d="${path(H.map(h => [x(h.valid), h.pop != null ? y(a + (b - a) * h.pop / 100) : null]))}"/>`;
+    return s;
+  });
+  svg += seriesPanel('gust', 'Széllökés m/s', '', [{ v: 7.6, c: 'amber', t: '7,6 létra / állvány' }, { v: 10, c: 'red', t: '10 tető' }, { v: 12.5, c: 'red', t: '12,5 emelőkosár (EN 280)' }]);
+  // time axis: midnight lines and 6-hour ticks
+  let ax = '';
+  for (let t = Math.ceil(t0 / 3600e3) * 3600e3; t <= t1; t += 3600e3) {
+    const hr = localHour(t);
+    if (hr % 6) continue;
+    ax += `<line class="grid" x1="${x(t)}" x2="${x(t)}" y1="${TOP}" y2="${y0 - GAP}" ${hr === 0 ? 'style="stroke:var(--mv-line-strong)"' : ''}/>` +
+      `<text x="${x(t)}" y="${y0 - GAP + 12}" text-anchor="middle">${hr === 0 ? esc(fmtT(t, { month: '2-digit', day: '2-digit' })) : hr + 'h'}</text>`;
+  }
+  if (nowX > L && nowX < W - R) ax += `<line class="now" x1="${nowX}" x2="${nowX}" y1="${TOP}" y2="${y0 - GAP}"/><text x="${nowX + 3}" y="${TOP + 8}" style="fill:var(--mv-warm)">most</text>`;
+  $('mg').innerHTML = `<svg class="mg" viewBox="0 0 ${W} ${y0 - GAP + 18}" role="img" aria-label="Meteogram">${ax}${svg}</svg>`;
+}
+
+function md(s) {
+  // the brief's small markdown: headings, bullets, bold, italic, rule
+  const lines = String(s).split('\n'); let out = '', inList = false;
+  const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|\s)_(.+?)_(?=\s|$)/g, '$1<i class="faint">$2</i>').replace(/`(.+?)`/g, '<code>$1</code>');
+  for (const l of lines) {
+    if (/^- /.test(l)) { if (!inList) { out += '<ul>'; inList = true; } out += '<li>' + inline(l.slice(2)) + '</li>'; continue; }
+    if (/^\s{2}\S/.test(l) && inList) { out = out.replace(/<\/li>$/, '<br>' + inline(l.trim()) + '</li>'); continue; }
+    if (inList) { out += '</ul>'; inList = false; }
+    if (/^# /.test(l)) out += `<h2 style="color:var(--mv-text)">${inline(l.slice(2))}</h2>`;
+    else if (/^## /.test(l)) out += `<h3>${inline(l.slice(3))}</h3>`;
+    else if (/^---/.test(l)) out += '';
+    else if (/^_.*_$/.test(l.trim())) out += `<div class="foot">${esc(l.trim().slice(1, -1))}</div>`;
+    else if (l.trim()) out += `<p style="margin:4px 0">${inline(l)}</p>`;
+  }
+  return out + (inList ? '</ul>' : '');
+}
+function renderBrief() {
+  $('brief').innerHTML = md(briefDay === 'today' ? PL.brief : PL.briefTomorrow);
+  $('tToday').setAttribute('aria-pressed', briefDay === 'today'); $('tTomorrow').setAttribute('aria-pressed', briefDay !== 'today');
+}
+
+async function post(p, bodyObj) {
+  return api(p, { method: 'POST', headers: { 'x-vrg': '1', 'content-type': 'application/json' }, body: bodyObj ? JSON.stringify(bodyObj) : '{}' });
+}
+async function runPipe(name, btn) {
+  btn.setAttribute('aria-busy', 'true');
+  try {
+    const r = await post('/api/run/' + name);
+    if (r.error) toast(r.error);
+    else toast(`${name}: ${r.status}\n` + (r.steps || []).map(s => `${s.status.padEnd(4)} ${s.line}  ${s.summary || ''}`).join('\n'));
+    await refresh();
+  } catch (e) { toast('Hiba: ' + e.message); }
+  btn.removeAttribute('aria-busy');
+}
+async function refresh() { await loadOverview(); if (placeId) await pick(placeId); }
+
+$('placeSel').onchange = e => pick(e.target.value);
+$('bGyors').onclick = e => runPipe('gyors', e.currentTarget);
+$('bModell').onclick = e => runPipe('modell', e.currentTarget);
+$('bReggel').onclick = e => runPipe('reggel', e.currentTarget);
+$('bRefresh').onclick = () => refresh();
+$('tToday').onclick = () => { briefDay = 'today'; renderBrief(); };
+$('tTomorrow').onclick = () => { briefDay = 'tomorrow'; renderBrief(); };
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input, select, textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if (/^[1-9]$/.test(k) && OV && OV.places[+k - 1]) pick(OV.places[+k - 1].id);
+  else if (k === 'R') refresh();
+  else if (k === 'G') $('bGyors').click();
+  else if (k === 'M') $('bModell').click();
+  else if (k === 'T') { briefDay = briefDay === 'today' ? 'tomorrow' : 'today'; renderBrief(); }
+  else if (k === 'ESCAPE') $('toast').classList.remove('show');
+});
+window.addEventListener('hashchange', () => { const id = decodeURIComponent(location.hash.slice(1)); if (id && id !== placeId) pick(id); });
+refresh().catch(e => { $('now').innerHTML = `<div class="empty">A szerver nem válaszol: ${esc(e.message)}. Indítsd: node Weather/serve.js</div>`; });
+setInterval(() => refresh().catch(() => {}), 5 * 60e3);
+</script>
+</body>
+</html>

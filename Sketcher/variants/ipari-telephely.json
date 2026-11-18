@@ -1,0 +1,1059 @@
+{
+ "kind": "vrg-sketcher-variant",
+ "v": 1,
+ "id": "ipari-telephely",
+ "name": "Ipari telephely: kör, lámpa, csere",
+ "sym": "▤",
+ "color": "#5470b0",
+ "premise": "Kis ipari telephely (csarnok, raktár, iroda) villamos munkái: új áramkör és a nyomvonala, új lámpatestek, meglévő fényforrások cseréje. A lámpák helye és magassága, a táplálás útja és a hozzáférés a lényeg; az alaprajz csak a tájékozódáshoz kell.",
+ "topics": [
+  "ipari",
+  "csarnok",
+  "raktar",
+  "aramkor",
+  "nyomvonal",
+  "lampa",
+  "fenyforras",
+  "kabeltalca"
+ ],
+ "author": "Claude (GO VARIANT protocol)",
+ "created": "2026-11-18",
+ "plugins": {
+  "on": [
+   "fotopont"
+  ],
+  "off": []
+ },
+ "rail": [
+  "point",
+  "board",
+  "route",
+  "circuit",
+  "measure",
+  "photo",
+  "memo",
+  "tag",
+  "room",
+  "template",
+  "line",
+  "select"
+ ],
+ "pointRing": [
+  "light",
+  "junction",
+  "fixed",
+  "socket",
+  "board",
+  "switch",
+  "sensor",
+  "pont"
+ ],
+ "pointPresets": [
+  {
+   "label": "Csarnoklámpa",
+   "glyph": "✺",
+   "type": "light",
+   "tags": []
+  },
+  {
+   "label": "LED panel",
+   "glyph": "▦",
+   "type": "light",
+   "tags": []
+  },
+  {
+   "label": "Fényforrás-csere",
+   "glyph": "◐",
+   "type": "light",
+   "tags": [
+    "T-fenycsere"
+   ]
+  },
+  {
+   "label": "Vészvilágító",
+   "glyph": "⚑",
+   "type": "light",
+   "tags": [
+    "T-vesz"
+   ]
+  },
+  {
+   "label": "CEE 16 A",
+   "glyph": "⊛",
+   "type": "socket",
+   "tags": [
+    "T-cee"
+   ]
+  },
+  {
+   "label": "CEE 32 A",
+   "glyph": "⊛",
+   "type": "socket",
+   "tags": [
+    "T-cee",
+    "T-ded"
+   ]
+  },
+  {
+   "label": "Gépbekötés",
+   "glyph": "⚙",
+   "type": "fixed",
+   "tags": [
+    "T-ded"
+   ]
+  },
+  {
+   "label": "Kötődoboz IP65",
+   "glyph": "◇",
+   "type": "junction",
+   "tags": [
+    "T-ip65"
+   ]
+  },
+  {
+   "label": "Alelosztó",
+   "glyph": "▣",
+   "type": "board",
+   "tags": []
+  },
+  {
+   "label": "Mozgásérzékelő",
+   "glyph": "◎",
+   "type": "sensor",
+   "tags": []
+  }
+ ],
+ "roomRing": [
+  "egyeb",
+  "dolgozo",
+  "kamra",
+  "gepeszet",
+  "kozlekedo",
+  "wc",
+  "kulter"
+ ],
+ "templates": [
+  {
+   "id": "csarnok-irodasarok",
+   "label": "Csarnok, irodasarokkal",
+   "sym": "⌐",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     0.3,
+     1
+    ],
+    [
+     0.3,
+     0.7
+    ],
+    [
+     0,
+     0.7
+    ]
+   ]
+  },
+  {
+   "id": "csarnok-rakodo",
+   "label": "Csarnok + rakodó",
+   "sym": "⊓",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     0.85
+    ],
+    [
+     0.62,
+     0.85
+    ],
+    [
+     0.62,
+     1
+    ],
+    [
+     0.38,
+     1
+    ],
+    [
+     0.38,
+     0.85
+    ],
+    [
+     0,
+     0.85
+    ]
+   ]
+  }
+ ],
+ "tags": [
+  {
+   "id": "T-fenycsere",
+   "name": "Fényforrás-csere",
+   "color": "#e0b020"
+  },
+  {
+   "id": "T-vesz",
+   "name": "Vészvilágítás",
+   "color": "#3dae5a"
+  },
+  {
+   "id": "T-cee",
+   "name": "CEE",
+   "color": "#2a8cdb"
+  },
+  {
+   "id": "T-ip65",
+   "name": "IP65",
+   "color": "#20a8a0"
+  },
+  {
+   "id": "T-talca",
+   "name": "Kábeltálca",
+   "color": "#b07a2a"
+  },
+  {
+   "id": "T-magas",
+   "name": "Magasban",
+   "color": "#c03fa8"
+  }
+ ],
+ "scopePreset": {
+  "ipari": 1,
+  "bovites": 1,
+  "vilagitas": 1,
+  "fenycsere": 1
+ },
+ "scope": [
+  {
+   "id": "fenycsere",
+   "label": "Fényforrás-csere",
+   "sym": "◐",
+   "group": "jelleg"
+  },
+  {
+   "id": "ipari",
+   "label": "Csarnok, telephely",
+   "sym": "▤",
+   "group": "terulet"
+  },
+  {
+   "id": "talca",
+   "label": "Kábeltálca",
+   "sym": "≡",
+   "group": "rendszer"
+  },
+  {
+   "id": "veszvil",
+   "label": "Vészvilágítás",
+   "sym": "⚑",
+   "group": "rendszer"
+  },
+  {
+   "id": "csarnoklampa",
+   "label": "Csarnoklámpa",
+   "sym": "✺",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "cee",
+   "label": "CEE aljzat",
+   "sym": "⊛",
+   "group": "igeny",
+   "qty": true
+  },
+  {
+   "id": "gepbekotes",
+   "label": "Gépbekötés",
+   "sym": "⚙",
+   "group": "igeny",
+   "qty": true
+  }
+ ],
+ "chips": [
+  {
+   "id": "uzem_kozben",
+   "label": "Üzem közben",
+   "sym": "⚙",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "targonca",
+   "label": "Targonca",
+   "sym": "⇄",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "porta",
+   "label": "Porta, belépés",
+   "sym": "⚿",
+   "color": "#8a5cd6",
+   "group": "helyzet"
+  },
+  {
+   "id": "emelo_kell",
+   "label": "Emelő kell",
+   "sym": "⇡",
+   "color": "#e8641c",
+   "group": "helyzet",
+   "sets": {
+    "answer": {
+     "q": "ip_emelo",
+     "opt": "berel"
+    }
+   }
+  },
+  {
+   "id": "aramtalanitas",
+   "label": "Áramtalanítás?",
+   "sym": "⏻",
+   "color": "#d64545",
+   "group": "ugyfel",
+   "open": true
+  }
+ ],
+ "keywords": [
+  {
+   "id": "ip_csarnok",
+   "re": "csarnok|high ?bay|raktar|uzemcsarnok",
+   "suggest": {
+    "scope": [
+     "ipari"
+    ]
+   }
+  },
+  {
+   "id": "ip_fenycsere",
+   "re": "fenyforras|izzocsere|izzo csere|csocsere|fenycso|kiegett|nem vilagit",
+   "suggest": {
+    "scope": [
+     "fenycsere"
+    ]
+   }
+  },
+  {
+   "id": "ip_veszvil",
+   "re": "veszvil|menekul|iranyfeny|exit",
+   "suggest": {
+    "scope": [
+     "veszvil"
+    ]
+   }
+  },
+  {
+   "id": "ip_cee",
+   "re": "\\bcee\\b|ipari (dugalj|aljzat)|harom ?fazisu aljzat|3 ?fazisu aljzat",
+   "suggest": {
+    "scope": [
+     "cee"
+    ]
+   }
+  },
+  {
+   "id": "ip_gep",
+   "re": "gep(et|ek|hez)? ?bekot|kompresszor|szerszamgep|\\bcnc\\b|\\bprese?\\b",
+   "suggest": {
+    "scope": [
+     "gepbekotes"
+    ]
+   }
+  },
+  {
+   "id": "ip_talca",
+   "re": "talca|kabellet|kabel ?letra",
+   "suggest": {
+    "scope": [
+     "talca"
+    ]
+   }
+  },
+  {
+   "id": "egett",
+   "re": "(?<!ki)eget|ego szag|egett szag|szikraz|meleged|felforrosod",
+   "suggest": {
+    "scope": [
+     "hiba"
+    ]
+   }
+  }
+ ],
+ "questions": [
+  {
+   "id": "ip_aramkor",
+   "q": "Mit táplál az új kör?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   },
+   "multi": true,
+   "options": [
+    {
+     "id": "lampak",
+     "label": "Új lámpákat",
+     "sets": {
+      "scope": [
+       "csarnoklampa"
+      ]
+     }
+    },
+    {
+     "id": "gep",
+     "label": "Gépet, berendezést",
+     "sets": {
+      "scope": [
+       "gepbekotes"
+      ]
+     }
+    },
+    {
+     "id": "cee",
+     "label": "CEE aljzatokat",
+     "sets": {
+      "scope": [
+       "cee"
+      ]
+     }
+    },
+    {
+     "id": "iroda",
+     "label": "Irodát, szociális részt"
+    },
+    {
+     "id": "egyeb",
+     "label": "Mást"
+    }
+   ]
+  },
+  {
+   "id": "ip_terheles",
+   "q": "Mekkora az új terhelés?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "answer": "ip_aramkor",
+      "is": [
+       "gep",
+       "cee"
+      ]
+     },
+     {
+      "scope": [
+       "gepbekotes",
+       "cee"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "1f16",
+     "label": "1 fázis, 16 A-ig"
+    },
+    {
+     "id": "3f16",
+     "label": "3 fázis, 16 A"
+    },
+    {
+     "id": "3f32",
+     "label": "3 fázis, 32 A"
+    },
+    {
+     "id": "nagyobb",
+     "label": "Nagyobb: méretezni kell"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Nem tudja"
+    }
+   ]
+  },
+  {
+   "id": "ip_tapforras",
+   "q": "Honnan kap táplálást?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "alelosz",
+     "label": "Csarnok alelosztójából"
+    },
+    {
+     "id": "fo",
+     "label": "A főelosztóból"
+    },
+    {
+     "id": "uj",
+     "label": "Új alelosztó kell"
+    },
+    {
+     "id": "nemderult",
+     "label": "Nem derült ki"
+    }
+   ]
+  },
+  {
+   "id": "ip_nyomvonal",
+   "q": "Merre megy a nyomvonal?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   },
+   "multi": true,
+   "options": [
+    {
+     "id": "talca",
+     "label": "Meglévő kábeltálcán",
+     "sets": {
+      "scope": [
+       "talca"
+      ]
+     }
+    },
+    {
+     "id": "ujtalca",
+     "label": "Új tálcán, létrán",
+     "sets": {
+      "scope": [
+       "talca"
+      ]
+     }
+    },
+    {
+     "id": "cso",
+     "label": "Védőcsőben, falon"
+    },
+    {
+     "id": "padlo",
+     "label": "Padlóban, födémben"
+    },
+    {
+     "id": "kozott",
+     "label": "Épületek között, földben"
+    }
+   ]
+  },
+  {
+   "id": "ip_magassag",
+   "q": "Milyen magasan vannak a lámpák?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "fenycsere",
+       "csarnoklampa",
+       "vilagitas"
+      ]
+     }
+    ]
+   },
+   "num": {
+    "unit": "m"
+   },
+   "options": [
+    {
+     "id": "4",
+     "label": "4 m alatt, létráról"
+    },
+    {
+     "id": "6",
+     "label": "4–6 m"
+    },
+    {
+     "id": "10",
+     "label": "6–10 m"
+    },
+    {
+     "id": "10+",
+     "label": "10 m felett"
+    }
+   ]
+  },
+  {
+   "id": "ip_emelo",
+   "q": "Lesz emelő?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "answer": "ip_magassag",
+      "is": [
+       "6",
+       "10",
+       "10+"
+      ]
+     },
+     {
+      "chip": "emelo_kell"
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "helyben",
+     "label": "Van a helyszínen (személyemelő)"
+    },
+    {
+     "id": "berel",
+     "label": "Bérelni kell"
+    },
+    {
+     "id": "allvany",
+     "label": "Állvány is elég"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Még nem tudni"
+    }
+   ]
+  },
+  {
+   "id": "ip_lampa_most",
+   "q": "Milyen most a világítás?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "fenycsere",
+       "csarnoklampa",
+       "vilagitas"
+      ]
+     }
+    ]
+   },
+   "multi": true,
+   "options": [
+    {
+     "id": "fenycso",
+     "label": "Fénycsöves armatúra"
+    },
+    {
+     "id": "fh",
+     "label": "Fémhalogén, higanygőz"
+    },
+    {
+     "id": "ledhb",
+     "label": "LED csarnoklámpa"
+    },
+    {
+     "id": "panel",
+     "label": "LED panel, raszter"
+    },
+    {
+     "id": "vegyes",
+     "label": "Vegyes"
+    }
+   ]
+  },
+  {
+   "id": "ip_csere_mod",
+   "q": "Mi legyen a cserével?",
+   "group": "ipari",
+   "prio": 1,
+   "who": "ugyfel",
+   "when": {
+    "scope": [
+     "fenycsere"
+    ]
+   },
+   "options": [
+    {
+     "id": "fenyforras",
+     "label": "Csak a fényforrás"
+    },
+    {
+     "id": "lampatest",
+     "label": "Az egész lámpatest"
+    },
+    {
+     "id": "retrofit",
+     "label": "LED-retrofit (előtét kiiktatva)"
+    },
+    {
+     "id": "nemtudja",
+     "label": "Ajánlatot kér rá"
+    }
+   ]
+  },
+  {
+   "id": "ip_kapcsolas",
+   "q": "Hogyan kapcsolják a világítást?",
+   "group": "ipari",
+   "prio": 2,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "fenycsere",
+       "csarnoklampa",
+       "vilagitas"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "eloszto",
+     "label": "Elosztóból, kismegszakítóval"
+    },
+    {
+     "id": "fali",
+     "label": "Falikapcsolóval"
+    },
+    {
+     "id": "magnes",
+     "label": "Mágnes- vagy időkapcsolóval"
+    },
+    {
+     "id": "erzekelo",
+     "label": "Érzékelővel, DALI-val"
+    },
+    {
+     "id": "nemderult",
+     "label": "Nem derült ki"
+    }
+   ]
+  },
+  {
+   "id": "ip_veszvil",
+   "q": "Van vészvilágítás?",
+   "group": "ipari",
+   "prio": 2,
+   "who": "szemle",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "veszvil"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "beepitett",
+     "label": "Igen, beépített akkus"
+    },
+    {
+     "id": "kozponti",
+     "label": "Igen, központi akkus"
+    },
+    {
+     "id": "nincs",
+     "label": "Nincs"
+    },
+    {
+     "id": "nemderult",
+     "label": "Nem derült ki"
+    }
+   ]
+  },
+  {
+   "id": "ip_munkaido",
+   "q": "Mikor lehet dolgozni?",
+   "group": "ipari",
+   "prio": 2,
+   "who": "ugyfel",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   },
+   "options": [
+    {
+     "id": "kozben",
+     "label": "Üzem közben"
+    },
+    {
+     "id": "utan",
+     "label": "Műszak után"
+    },
+    {
+     "id": "hetvege",
+     "label": "Hétvégén"
+    },
+    {
+     "id": "leallas",
+     "label": "Tervezett leálláskor"
+    }
+   ]
+  }
+ ],
+ "shotlist": [
+  {
+   "id": "ip_csarnok",
+   "purpose": "szoba",
+   "label": "Csarnok áttekintő, mennyezettel",
+   "hint": "Sarokból, hogy a lámpasorok és a tálcák látsszanak.",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ip_lampatest",
+   "purpose": "meglevo",
+   "label": "Lámpatest közelről + adattábla",
+   "hint": "Típus, teljesítmény, foglalat; ha elérhető, a fényforrás felirata.",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "fenycsere",
+       "csarnoklampa",
+       "vilagitas"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ip_magassag_foto",
+   "purpose": "hely",
+   "label": "Szerelési magasság",
+   "hint": "Lézer vagy mérőszalag a képen; mellé ember vagy ajtó a léptékhez.",
+   "when": {
+    "any": [
+     {
+      "any": [
+       {
+        "variant": "ipari-telephely"
+       },
+       {
+        "scope": [
+         "ipari"
+        ]
+       }
+      ]
+     },
+     {
+      "scope": [
+       "fenycsere",
+       "csarnoklampa",
+       "vilagitas"
+      ]
+     }
+    ]
+   },
+   "prio": 2
+  },
+  {
+   "id": "ip_alelosz",
+   "purpose": "eloszto",
+   "label": "Alelosztó nyitva",
+   "hint": "Szabad hely, feliratok, a betáp kábele.",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ip_talca",
+   "purpose": "nyomvonal",
+   "label": "Tálca, átvezetések",
+   "hint": "Tálcák, falátvezetések, tűzszakasz-határok az új kör útján.",
+   "when": {
+    "any": [
+     {
+      "variant": "ipari-telephely"
+     },
+     {
+      "scope": [
+       "ipari"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ip_gep",
+   "purpose": "hely",
+   "label": "Gép adattáblája, bekötési pont",
+   "when": {
+    "any": [
+     {
+      "scope": [
+       "gepbekotes"
+      ]
+     },
+     {
+      "answer": "ip_aramkor",
+      "is": [
+       "gep"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ip_veszvil_foto",
+   "purpose": "meglevo",
+   "label": "Vészvilágító, irányfény",
+   "when": {
+    "scope": [
+     "veszvil"
+    ]
+   },
+   "prio": 2
+  }
+ ],
+ "hints": {
+  "point": "Lámpánként egy pont, a magasság a kérdésbe kerül. A meglévő lámpa szürke, a tervezett színes.",
+  "route": "Húzd végig az elosztótól, a tálca vagy a cső útján; a hossz a Rendezésben látszik.",
+  "circuit": "Jelöld ki a lámpákat vagy aljzatokat, és fűzd egy körre; a gép dedikált kört kap.",
+  "board": "Az alelosztó helye: az új kör innen indul. Ha új alelosztó kell, a betáp útját is húzd meg.",
+  "measure": "Csarnokban a szerelési magasság számít: írd a kérdésbe vagy egy memóba.",
+  "photo": "A Képlista végigvezet: csarnok, lámpatest, adattábla, elosztó, tálca.",
+  "tag": "Csere: a Fényforrás-csere címke a meglévő (szürke) lámpára kerül, nem új pontra."
+ }
+}

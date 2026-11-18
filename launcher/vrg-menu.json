@@ -117,6 +117,7 @@
     { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" },
     { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" },
     { "key": "H", "id": "terkep", "name": "VRG Térkép · offline térkép", "port": 8802, "js": "{repo}\\Map\\serve.js" },
+    { "key": "W", "id": "idojaras", "name": "VRG Időjárás · többforrású előrejelzés + ütemező", "port": 8808, "js": "{repo}\\Weather\\serve.js", "args": ["--no-open", "--daemon"] },
     { "key": "V", "id": "stack", "name": "Rétegverem · Konnektóm", "port": 8806, "open": "/connectome.html", "js": "{stack}\\serve.js" }
   ],
 
@@ -260,14 +261,33 @@
             { "key": "R", "name": "Leírás", "hint": "README.md", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["readme"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Mobile" }
           ] } },
-      { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133", "menu": {
+      { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133 · I időjárás", "menu": {
           "title": "VARLER CONSOLE", "subtitle": "{repo}\\Console",
           "items": [
             { "key": "S", "name": "Indítás", "hint": ":8133", "server": "console" },
             { "key": "R", "name": "Ügynöknyom közvetítő", "hint": ":8134", "server": "trace-relay" },
             { "key": "T", "name": "Teszt", "hint": "npm test", "cwd": "{repo}\\Console", "steps": [{ "exe": "{npm}", "args": ["test"] }] },
             { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Console"] },
-            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Console" }
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Console" },
+            { "key": "I", "name": "VRG Időjárás", "hint": "többforrású előrejelzés, munkaablak, riasztás", "menu": {
+                "title": "VRG IDŐJÁRÁS", "subtitle": "{repo}\\Weather",
+                "note": "Az adatbázis: Weather\\data\\weather.sqlite. Minden parancs: node Weather\\vrg-weather.js help",
+                "items": [
+                  { "key": "1", "name": "Megnyitás", "hint": ":8808, az ütemezővel együtt", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8808/"],
+                    "server": "idojaras", "serverArgs": ["--no-open", "--daemon"], "page": "{repo}\\Weather\\vrg-idojaras.html" },
+                  { "key": "R", "name": "Reggeli kör", "hint": "minden forrás, ellenőrzés, mai brief", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "run", "reggel"] }] },
+                  { "key": "G", "name": "Gyors kör", "hint": "figyelmeztetések, mérések, riasztások", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "run", "gyors"] }] },
+                  { "key": "B", "name": "Brief minden helyre", "hint": "ma, mentve data\\briefs", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "brief", "--all", "--save"] }] },
+                  { "key": "A", "name": "Riasztások", "hint": "nyitott, súly szerint", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "alerts", "--list"] }] },
+                  { "key": "J", "name": "Munkák szinkronja", "hint": "folyamatban lévő munkák a Térképből", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "sync-jobs"] }] },
+                  { "key": "F", "name": "Források", "hint": "licenc, kapu, frissesség", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "sources"] }] },
+                  { "key": "D", "name": "Doktor", "hint": "egészségellenőrzés", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "doctor"] }] },
+                  { "key": "L", "name": "Élő ellenőrzés", "hint": "egy valódi kérés forrásonként (hálózat)", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "doctor", "--live"] }] },
+                  { "key": "U", "name": "Ütemező külön ablakban", "hint": "szerver nélkül", "cwd": "{repo}", "window": true, "steps": [{ "exe": "{node}", "args": ["Weather\\vrg-weather.js", "daemon"] }] },
+                  { "key": "E", "name": "Bemutató", "hint": "KITALÁLT adatok, hálózat nélkül, :8809", "cwd": "{repo}", "window": true, "steps": [{ "exe": "{node}", "args": ["Weather\\tools\\demo.js"] }] },
+                  { "key": "T", "name": "Teszt", "hint": "node Weather\\test\\run.js", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Weather\\test\\run.js"] }] },
+                  { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Weather" }
+                ] } }
           ] } },
       { "key": "V", "name": "Vendor", "hint": "lista · letöltés", "was": "L D", "menu": {
           "title": "VENDOR KOMPONENSEK", "subtitle": "vendor-manifest.json · Vendor\\",
