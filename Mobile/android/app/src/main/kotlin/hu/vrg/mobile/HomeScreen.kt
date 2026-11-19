@@ -29,69 +29,16 @@ import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.update.UpdateFeature
 
-// The Kompakt home: the Sketcher hero, the quick row, then every other feature of the catalogue as a tile, grouped
-// (WP M32). Built ones open; planned ones open their PlannedScreen, which says what they will do and which WP builds them.
+// Parts shared by the home and the shell: the update mark, the stage badge and the PlannedScreen of a planned feature
+// (what it will do and which WP builds it). The Kompakt home that lived here is the one-page view now (WP M38).
 
-/** "⟳ új" in the header while an update waits; opens Frissítés. */
+/** "⟳ új" in the top bar while an update waits; opens Frissítés. */
 @Composable
-private fun UpdateMark(onOpen: () -> Unit) {
+internal fun UpdateMark(onOpen: () -> Unit) {
     val state by UpdateFeature.state.collectAsStateWithLifecycle()
     if (state.waiting) {
         Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand),
             modifier = Modifier.clickable(onClick = onOpen).padding(8.dp))
-    }
-}
-
-@Composable
-fun HomeScreen(onOpen: (String) -> Unit) {
-    // WP M32 (D-35): the same layout as the Asztal's home window (HomeParts.kt), drawn with tiles: 2 columns upright,
-    // 3 in the right-hand pane lying down. The QR scan button of 2026-11-14 is the quick row's first slot now.
-    HomeBody(
-        Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 16.dp, vertical = 4.dp),
-        open = onOpen,
-        cols = { landscape -> if (landscape) 3 else 2 },
-        gap = 10,
-        header = {
-            Row(Modifier.padding(bottom = 10.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
-                    Text("A VRG munka társalkalmazása", style = Melyviz.small)
-                }
-                UpdateMark { onOpen(Catalogue.UPDATE.id) }
-                Text(
-                    Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted),
-                    modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
-                )
-            }
-        },
-        footer = {
-            Spacer(Modifier.height(24.dp))
-            Text("v${BuildConfig.VERSION_NAME}", style = Melyviz.readout)
-        },
-    ) { f, m -> FeatureRco(f, onOpen, sheets = false, modifier = m) { inner -> Tile(f, inner) } }
-}
-
-@Composable
-private fun Tile(f: FeatureInfo, modifier: Modifier) {
-    val built = Registry.isBuilt(f)
-    // WP M16: a feature that is working shows its MINI ring around the glyph (notes outbox, update download, pulse
-    // refresh); at rest nothing is drawn, so the tile looks as it always did.
-    val status = ringOf(f)
-    val shape = RoundedCornerShape(Melyviz.radius)
-    Column(
-        modifier.heightIn(min = 112.dp)
-            .background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.7f), shape)
-            .border(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), shape)
-            .padding(12.dp),   // the tap and the RCO come in with [modifier] (FeatureRco)
-    ) {
-        Row {
-            Mini(f.glyph, f.title, status, size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
-            Spacer(Modifier.weight(1f))
-            StageBadge(f.stage)
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(f.title, style = Melyviz.label.copy(color = if (built) Melyviz.ink else Melyviz.muted))
-        Text(f.blurb, style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 3)
     }
 }
 

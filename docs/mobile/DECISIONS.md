@@ -427,6 +427,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** auto-approve every request that reaches the owner's phone, links included (a messenger link would
   approve a phone nobody looked at); **C** keep the grant QR as the only way in (one more scan the Founder asked to drop).
 
+- **D-47 · Kezdőlap: numbered pages, one long page, a Katalógus (M38), 2026-11-19.** The Founder set the order and
+  answered four questions the same day: the planned programs (Workflow Kit, Térkép, Időjárás, Vault) get **"Terv"
+  tiles** with a Katalógus page each, built later in sessions of their own; the old quick row goes **into the pages**
+  (QR beolvasás stays in the top bar); **Kompakt becomes the one-page view**; Archívum was the broken screen.
+  Chosen in the session: the pages are plain data (`HomeLayout.PAGES`, tested: every catalogue entry once); the top
+  bar and the dock are page 0 on every page; a page of ≤ 3 entries is big cards, longer ones an icon grid; ⌂'s long
+  press flips `ShellPrefs.home` (ids kept: `desk` = paged, `compact` = one page); Planner / Kalkulátorok / Készlet are
+  catalogue entries that open M21 web apps (Készlet gathers BuildTree and Valena until the new Inventory); the paged
+  home swipes its own pages, so the swipe to Gömb stays only on the one-page view (Gömb is on page 7). Replaces the
+  Sketcher hero, the quick row and the group folding of D-35 (the Sketcher keeps the first card, its count and the
+  dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
+  swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

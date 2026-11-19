@@ -64,7 +64,7 @@ import hu.vrg.mobile.kit.ui.rco
 // The Asztal (WP M19): the VRG Desktop's frame on the phone. Top strip (sheet tabs, Kommand, the orientation toggle,
 // settings), the sheet area, and the dock with the ◣ menu dial, the open windows and the ◢ Rétegverem dial. What a
 // tap does is the shell's (ShellActivity.openUnit / runKommand); this file only draws. Upright and lying down use the
-// same parts: the icon grid takes 4 columns upright and 8 lying down.
+// same parts. The home in the sheet area is HomeParts.kt (WP M38: numbered pages or one long page).
 
 /** What the Asztal needs from the shell. */
 class DeskActions(
@@ -76,12 +76,18 @@ class DeskActions(
     val closeWindow: (String) -> Unit = {},
     /** Takes every window but [keep] off the dock; null keeps none. */
     val closeOthers: (keep: String?) -> Unit = {},
+    /** The home's own actions (WP M38): open a web app of a home tile, the Katalógus at a page, the QR scanner. */
+    val openApp: (String) -> Unit = {},
+    val describe: (String) -> Unit = {},
+    val scan: () -> Unit = {},
 )
 
 @Composable
 fun DeskScreen(
     windows: List<String>,
     act: DeskActions,
+    /** The home as one long page (the old Kompakt) instead of the swiped pages (WP M38). */
+    list: Boolean = false,
     sheetArea: (@Composable (Modifier) -> Unit)? = null,
     tabs: (@Composable () -> Unit)? = null,
 ) {
@@ -102,18 +108,18 @@ fun DeskScreen(
                         .clickable { kommand = true }.padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { Text("⌕  Kommand…", style = Melyviz.label.copy(color = Melyviz.muted)) }
-                Text(
-                    look.orientation.glyph + " " + look.orientation.label, style = Melyviz.small.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable(onClick = act.cycleOrientation).padding(horizontal = 8.dp, vertical = 10.dp)
-                        .semantics { contentDescription = "Tájolás: ${look.orientation.label}, koppintásra a következő" },
-                )
-                Text(Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted, fontSize = 18.sp),
-                    modifier = Modifier.clickable { act.open(Catalogue.SETTINGS.id) }.padding(6.dp))
+                // WP M38: the top bar is "page 0" with the dock, on every page: the update mark, the QR scanner, the
+                // Katalógus, the orientation (its glyph only, for room) and the settings
+                UpdateMark { act.open(Catalogue.UPDATE.id) }
+                StripButton("▦", "QR beolvasás", act.scan)
+                StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) }
+                StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", act.cycleOrientation)
+                StripButton(Catalogue.SETTINGS.glyph, Catalogue.SETTINGS.title) { act.open(Catalogue.SETTINGS.id) }
             }
 
             // ---- the sheet area (M20) or the home window ------------------------------------------
             if (sheetArea != null) sheetArea(Modifier.weight(1f).fillMaxWidth())
-            else HomeWindow(Modifier.weight(1f).fillMaxWidth(), act.open)
+            else HomeWindow(Modifier.weight(1f).fillMaxWidth(), HomeActions(act.open, act.openApp, act.describe), list)
 
             // ---- dock ---------------------------------------------------------------------------
             Row(Modifier.fillMaxWidth().background(Melyviz.abyss.copy(alpha = 0.7f)).padding(horizontal = 6.dp, vertical = 6.dp),
@@ -121,7 +127,7 @@ fun DeskScreen(
                 Dial("◣", "Menü") { menu = !menu; kommand = false }
                 // VRG Sketcher, one tap from every sheet too (D-35); the Desktop's dock has its `sketcher` unit (D-34)
                 Spacer(Modifier.width(6.dp))
-                Dial(HomeLayout.HERO.glyph, HomeLayout.HERO.title) { act.open(HomeLayout.HERO.id) }
+                Dial(Catalogue.SKETCH.glyph, Catalogue.SKETCH.title) { act.open(Catalogue.SKETCH.id) }
                 Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (windows.isEmpty()) Text("nincs nyitott ablak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(8.dp))
@@ -153,6 +159,14 @@ private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
     }
 }
 
+/** A top bar button: a glyph with a 44 dp target and its name for TalkBack. */
+@Composable
+private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
+    Box(Modifier.size(40.dp).clickable(onClick = onClick).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
+        Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.muted, fontSize = 17.sp))
+    }
+}
+
 @Composable
 private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
     Box(
@@ -160,29 +174,6 @@ private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
             .clickable(onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
-}
-
-/** The home window (WP M32, D-35): the Sketcher hero, the quick row, then the phone's other features as desktop icons in
- *  foldable groups; 4 columns upright, lying down the hero on the left and 5 columns on the right (HomeParts.kt). */
-@Composable
-internal fun HomeWindow(modifier: Modifier, open: (String) -> Unit) {
-    HomeBody(modifier.padding(horizontal = 10.dp), open, cols = { landscape -> HomeLayout.columns(landscape) }) { f, m ->
-        FeatureRco(f, open, sheets = true, modifier = m) { inner -> Icon(f, inner) }
-    }
-}
-
-@Composable
-private fun Icon(f: FeatureInfo, modifier: Modifier) {
-    val built = Registry.isBuilt(f)
-    // the tap and the RCO come in with [modifier] (FeatureRco)
-    Column(modifier.padding(vertical = 8.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(46.dp).background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-            Text(f.glyph, style = Melyviz.glyph.copy(color = if (built) Melyviz.glow else Melyviz.faint))
-        }
-        Text(f.title, style = Melyviz.small.copy(fontSize = 10.sp, color = if (built) Melyviz.ink else Melyviz.muted), maxLines = 1,
-            overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
-    }
 }
 
 private fun reachTag(u: DeskUnit): String = when (u.reach) {

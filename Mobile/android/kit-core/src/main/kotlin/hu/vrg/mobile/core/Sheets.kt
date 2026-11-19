@@ -534,8 +534,8 @@ object PhoneSheets {
     /** Desktop panes the phone has its own feature for (files = PC ablakok, M23). term and git are dev level; mail and feed stay on the PC (D-18). */
     private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id, "chat" to Catalogue.CLAUDE.id, "files" to Catalogue.PCWIN.id)
 
-    /** Shell parts, not windows: the Asztal and Lapok themselves. */
-    private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id)
+    /** Shell parts, not windows: the Asztal, Lapok, the Katalógus and the home shortcuts to the web apps (WP M38). */
+    private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id) + HomeLayout.SHORTCUTS.keys
 
     /** A phone feature that can be a window: known, not only planned, not the frame. */
     fun isWindow(featureId: String): Boolean {

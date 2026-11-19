@@ -60,6 +60,8 @@ import hu.vrg.mobile.kit.theme.Palettes
 import hu.vrg.mobile.sphere.SphereFeature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.core.HomeLayout
+import hu.vrg.mobile.pair.PairFeature
 
 // The one Activity. It shows either the home screen or one feature, routes links and keys to the
 // feature on screen, and owns everything window-wide (system bars, keep-screen-on) so a feature
@@ -73,8 +75,10 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     private var message by mutableStateOf<String?>(null)
     /** The Asztal's dock (WP M19): the features opened in this run, newest first. */
     private var windows by mutableStateOf<List<String>>(emptyList())
-    /** "Irányítópult nézet" from the Asztal's menu shows the Kompakt home once, until Back. */
+    /** "Irányítópult nézet" from the Asztal's menu shows the home as one long page once, until Back (WP M38). */
     private var compactPeek by mutableStateOf(false)
+    /** The Katalógus on screen (WP M38): the id of the page it opened at ("" = the first); null = not shown. */
+    private var catalogAt by mutableStateOf<String?>(null)
     /** The feature a Lapok window shows full (WP M20); keys and the foreground go to it while no feature has the screen. */
     private var sheetFull by mutableStateOf<String?>(null)
 
@@ -111,7 +115,13 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                         Box(Modifier.fillMaxSize().systemBarsPadding()) { feature.Screen(this@ShellActivity) }
                     } else {
                         val planned = Catalogue.byId(id)
-                        if (planned != null) {
+                        val at = catalogAt
+                        if (at != null) {
+                            BackHandler { catalogAt = null }
+                            Box(Modifier.fillMaxSize().systemBarsPadding()) {
+                                CatalogScreen(at, onBack = { catalogAt = null }, onOpen = { fid -> catalogAt = null; open(fid) })
+                            }
+                        } else if (planned != null) {
                             BackHandler { home() }
                             PlannedScreen(planned, onBack = ::home)
                         } else {
@@ -133,33 +143,33 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         val toHome: () -> Unit = { scope.launch { pages.animateScrollToPage(0) } }
         BackHandler(pages.currentPage != 0, toHome)
         val sheets by SheetsStore.flow.collectAsStateWithLifecycle()
-        // a sheet's windows have drags of their own (move, resize, a full feature's touchpad): no page swipe while a sheet is up
-        val onSheet = mode == HomeMode.DESK && !compactPeek && sheets.active.isNotEmpty()
-        HorizontalPager(pages, Modifier.fillMaxSize(), userScrollEnabled = !onSheet) { page ->
+        // a sheet's windows have drags of their own (move, resize, a full feature's touchpad): no page swipe while a sheet
+        // is up; the paged home swipes its own pages (Gömb is on its page 7), so only the one long page swipes to Gömb
+        val list = mode == HomeMode.COMPACT || compactPeek
+        val onSheet = sheets.active.isNotEmpty()
+        HorizontalPager(pages, Modifier.fillMaxSize(), userScrollEnabled = !onSheet && (list || pages.currentPage != 0)) { page ->
             if (page != 0) Box(Modifier.fillMaxSize().systemBarsPadding()) { SphereFeature.Page(back = toHome, signIn = { open(Catalogue.ACCOUNT.id) }) }
             else Box(Modifier.fillMaxSize()) {
                 VarlerWatermark()        // the Varler mark, faint, in the palette's glow, behind both homes
-                if (mode == HomeMode.COMPACT || compactPeek) {
-                    BackHandler(compactPeek) { compactPeek = false }
-                    HomeScreen(onOpen = ::open)
-                } else Desk(sheets)
+                BackHandler(compactPeek) { compactPeek = false }
+                Desk(sheets, list)
             }
         }
     }
 
     /** The Asztal with its Lapok (WP M20): the tabs in the top strip, the active sheet in the sheet area, the panels over it. */
     @Composable
-    private fun Desk(sheets: SheetsDoc) {
+    private fun Desk(sheets: SheetsDoc, list: Boolean) {
         var pickAt by remember { mutableStateOf<Cell?>(null) }
         var picking by remember { mutableStateOf(false) }
         var adding by remember { mutableStateOf(false) }
         var menuFor by remember { mutableStateOf<String?>(null) }
         Box(Modifier.fillMaxSize()) {
             DeskScreen(
-                windows, desk,
+                windows, desk, list,
                 sheetArea = if (Sheets.phone.sheetOf(sheets, sheets.active) == null) null
                 else { m -> SheetArea(m, sheets, sheetsHost) { c -> pickAt = c; picking = true } },
-                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }) },
+                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView) },
             )
             if (picking) SheetPicker(pickAt) { picking = false }
             if (adding) NewSheetPanel(sheets) { adding = false }
@@ -187,7 +197,18 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         cycleOrientation = { ShellSettings.update { it.copy(orientation = it.orientation.next()) }.also { note("Tájolás: " + ShellSettings.value.orientation.label) } },
         // the dock's RCO: a window leaves the bar (the dock only shows on the Asztal, so none of them is on screen)
         closeWindow = { id -> windows = windows - id },
-        closeOthers = { keep -> windows = windows.filter { it == keep } })
+        closeOthers = { keep -> windows = windows.filter { it == keep } },
+        openApp = { id -> openRoute(Route(Catalogue.APPS.id, id)) },
+        describe = { id -> catalogAt = id },
+        scan = { PairFeature.scan(); open(Catalogue.PAIR.id) })
+
+    /** A long press on ⌂ (WP M38): the swiped pages ⇄ one long page, the same order. Kept as the Kezdőlap setting. */
+    private fun toggleHomeView() {
+        compactPeek = false
+        val next = if (ShellSettings.value.home == HomeMode.DESK) HomeMode.COMPACT else HomeMode.DESK
+        ShellSettings.update { it.copy(home = next) }
+        note("Kezdőlap: " + next.label.lowercase())
+    }
 
     private fun applyOrientation(o: Orientation) {
         requestedOrientation = when (o) {
@@ -268,9 +289,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     }
 
     override fun open(featureId: String) {
-        if (featureId == Catalogue.DESK.id) {   // the Asztal is the home itself; from Kompakt its tile makes it the home
+        catalogAt = null
+        if (featureId == Catalogue.DESK.id) {   // the Asztal is the home itself
             home(); compactPeek = false
-            if (ShellSettings.value.home != HomeMode.DESK) { ShellSettings.update { it.copy(home = HomeMode.DESK) }; note("Kezdőlap: Asztal (Beállításokban visszaváltható)") }
+            return
+        }
+        if (featureId == Catalogue.CATALOG.id) { home(); catalogAt = ""; return }   // WP M38: a shell screen over the home
+        HomeLayout.SHORTCUTS[featureId]?.let { apps ->   // WP M38: a home tile for web apps of Alkalmazások
+            if (apps.size == 1) openRoute(Route(Catalogue.APPS.id, apps[0])) else openRoute(Route(Catalogue.APPS.id))
             return
         }
         if (featureId == Catalogue.SHEETS.id) {   // Lapok lives in the Asztal: show a sheet (the first one, or a new blank one)

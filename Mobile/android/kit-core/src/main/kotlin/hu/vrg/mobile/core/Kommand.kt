@@ -89,8 +89,9 @@ object Kommand {
 
 /** Kezdőlap (WP M19): the Asztal frame, or the tile home it replaces, kept as Kompakt. */
 enum class HomeMode(val id: String, val label: String) {
-    DESK("desk", "Asztal"),
-    COMPACT("compact", "Kompakt");
+    // the paged home and the one long page (WP M38): the ids stay, so a stored Kompakt becomes the one-page view
+    DESK("desk", "Lapozós"),
+    COMPACT("compact", "Egy oldal");
 
     companion object { fun of(id: String?): HomeMode = entries.firstOrNull { it.id == id } ?: DESK }
 }

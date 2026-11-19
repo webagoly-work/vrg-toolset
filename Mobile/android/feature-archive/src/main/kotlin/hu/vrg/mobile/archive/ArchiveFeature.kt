@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewGroup
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -249,6 +250,10 @@ object ArchiveFeature : VrgFeature {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(ctx: Context): WebView = WebView(ctx).apply {
+        // AndroidView adds the view with default WRAP_CONTENT layout params, and a WebView whose height is WRAP_CONTENT
+        // lays the page out on a zero-height viewport (force-zero-layout-height): the page's height: 100% became 0 and
+        // the archive's list collapsed under its header (2026-11-19). MATCH_PARENT gives the page the WebView's height.
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.allowFileAccess = false

@@ -54,6 +54,14 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M35** | Eszközök (`devices`) | **BETA** (built 2026-11-18, D-39–D-41, waiting for the phone check): Proton Vault's device approval: a phone asks with a QR, the owner's phone approves (`Mobile/trust/devices.json` on main) and shows a grant QR only that phone opens (ECDH + AES-GCM, WebCrypto-compatible); the list unlocks the app without a new build and, with the release lock on, decides who is offered updates | internet | high (`DeviceTrust` + WebCrypto fixture) |
 | **M36** | iPhone (web app) | **BETA** (built 2026-11-18, D-42, D-43, waiting for Pages to be switched on and the phone check): VRG Mobile's online part as a web app for the iPhone: Eszköz (the M35 approval, same crypto), Haladás, Frissítés behind the release lock, Megjelenés with the app's palettes and icon; `Mobile/web/`, GitHub Pages | internet | high (browser test) |
 | **M37** | RCO (the shell + seven features) | **BETA** (built 2026-11-19, D-45, waiting for the phone check): the toolset's right-click menu as a long press, one shared part (`kit/ui/Rco.kt`) on the Asztal dock's windows (close, close others, close all), the home icons (open on a sheet, fold the group), Értesítések, PC ablakok, Alkalmazások, Haladás, Claude and the Légegér screenshots | — | low |
+| **M38** | Kezdőlap lapok + Katalógus (`catalog`) | **BETA** (built 2026-11-19, D-47, waiting for the phone check): the home in eight numbered swiped pages in the Founder's order with the top bar and dock on every page, ⌂'s long press for one long page (the old Kompakt), and the Katalógus: a page for every phone and Desktop program | — | medium |
+| **M39** | Varler Planner tile (`planner`) | **BETA** (2026-11-19): the home tile opening the Planner web app (M21) | GitHub | low |
+| **M40** | Kalkulátorok tile (`calc`) | **BETA** (2026-11-19): the three calculator web apps under one tile | GitHub | low |
+| **M41** | Készlet tile (`inventory`) | **BETA** (2026-11-19): Készlet, VRG BuildTree and the Valena választó under one tile, until the overhauled Inventory | GitHub | low |
+| **M42** | Varler Workflow Kit (`workflow`) | **PLANNED** (2026-11-19): the office path on the phone | — | — |
+| **M43** | VRG Térkép (`map`) | **PLANNED** (2026-11-19) | — | — |
+| **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
+| **M45** | Vault (`vault`) | **PLANNED** (2026-11-19) | — | — |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

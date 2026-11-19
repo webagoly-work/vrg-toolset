@@ -41,6 +41,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
+import androidx.compose.ui.geometry.CornerRadius
 
 // The disc, drawn like Solomon/src/index.html: ambient dots, the documents, the arcs of the clashes and the
 // island names. A drag that starts inside it turns the sphere and is consumed here, so the pager never sees
@@ -174,7 +175,9 @@ internal fun Disc(map: SphereMap, spin: Spin, still: Boolean, selected: SphereDo
                 placed.add(box)
                 val at = Offset(cx + r * q.first - text.size.width / 2f, cy - r * q.second - text.size.height / 2f)
                 val a = min(1f, (q.third - .2f) * 3)
-                drawText(text, abyss, at, alpha = a, drawStyle = Stroke(3.5f * u))
+                // 2026-11-19: the label sat on a thick stroked copy of itself, which some phones drew as solid blocks
+                // (unreadable). A dark rounded plate behind plain text reads on every palette.
+                drawRoundRect(abyss.copy(alpha = .82f * a), Offset(box[0], box[1]), Size(box[2], box[3]), CornerRadius(5 * u))
                 drawText(text, muted, at, alpha = a)
             }
     }

@@ -154,6 +154,10 @@ main { flex: 1; display: grid; grid-template-columns: minmax(280px, 400px) 1fr; 
 }
 /* touch (a phone, VRG Mobile's Archívum, WP M18): every control at least 44 px tall */
 @media (max-width: 760px), (pointer: coarse) {
+  /* The app's WebView may lay the page out on a zero-height viewport (a WebView sized WRAP_CONTENT does: height 100% and vh
+     are 0 there, only position: fixed gets the real screen). With html/body { height: 100% } the list then collapsed to its
+     padding under the header and no entry showed (M18, 2026-11-19). Pinned to the screen, the body no longer depends on it. */
+  body { position: fixed; inset: 0; height: auto; }
   .seg button { min-height: 44px; min-width: 56px; }
   header select, header input[type=search] { min-height: 44px; }
   .card { min-height: 52px; padding-top: 10px; padding-bottom: 10px; }

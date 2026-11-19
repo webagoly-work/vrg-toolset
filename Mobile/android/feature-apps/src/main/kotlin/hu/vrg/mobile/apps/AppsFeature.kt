@@ -86,6 +86,7 @@ import androidx.compose.runtime.setValue
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import android.view.ViewGroup
 
 // Alkalmazások (WP M21): the Desktop's in-shell HTML apps on the phone. Which apps and which files each may read come from the Desktop's
 // own catalog (DeskApps.kt, generated); what is served is AppScheme.decide, a port of the Desktop's vrg-app:// rules.
@@ -300,6 +301,9 @@ object AppsFeature : VrgFeature {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(ctx: Context, app: DeskApp, host: FeatureHost): WebView = WebView(ctx).apply {
+        // MATCH_PARENT, as in Archívum (2026-11-19): with AndroidView's default WRAP_CONTENT the WebView lays the page out
+        // on a zero-height viewport, and a page sized by height: 100% collapses (the archive's list did).
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.databaseEnabled = true

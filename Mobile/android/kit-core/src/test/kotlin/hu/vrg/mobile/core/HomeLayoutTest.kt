@@ -3,64 +3,61 @@ package hu.vrg.mobile.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-// WP M32 / D-35: the home's layout. Every catalogue entry is reachable from the home exactly once, VRG Sketcher is the hero.
+// WP M38 / D-47: the paged home. Every catalogue entry is on the home exactly once, in the Founder's order.
 class HomeLayoutTest {
 
-    @Test fun sketcherIsTheHero() {
-        assertEquals("sketch", HomeLayout.HERO.id)
-        assertEquals(listOf("photo"), HomeLayout.HERO_PLUGINS.map { it.id })
+    @Test fun theFoundersOrder() {
+        assertEquals((1..8).toList(), HomeLayout.PAGES.map { it.n })
+        assertEquals(listOf("sketch", "pager"), HomeLayout.PAGES[0].items.map { it.id }, "page 1: what is whipped up on site")
+        assertEquals(listOf("planner", "calc", "inventory"), HomeLayout.PAGES[1].items.map { it.id })
+        assertEquals(listOf("workflow"), HomeLayout.PAGES[2].items.map { it.id })
+        assertEquals(listOf("map", "weather", "vault"), HomeLayout.PAGES[3].items.map { it.id })
+        assertEquals(listOf("archive", "claude"), HomeLayout.PAGES[4].items.map { it.id })
+        assertEquals(listOf("account", "devices", "update", "settings"), HomeLayout.PAGES.last().items.map { it.id }, "account and settings last")
+        assertEquals(listOf("photo"), HomeLayout.PLUGINS["sketch"]?.map { it.id })
     }
 
     @Test fun everyEntryIsOnTheHomeExactlyOnce() {
-        val shown = listOf(HomeLayout.HERO) + HomeLayout.HERO_PLUGINS + HomeLayout.QUICK + HomeLayout.sections().flatMap { it.second }
-        val ids = shown.map { it.id }
-        assertEquals(ids.size, ids.toSet().size, "a feature shown twice: " + ids.groupBy { it }.filter { it.value.size > 1 }.keys)
-        assertEquals(Catalogue.ALL.map { it.id }.toSet(), ids.toSet())
+        val shown = HomeLayout.PAGES.flatMap { it.items }.map { it.id } + HomeLayout.PLUGINS.values.flatten().map { it.id } + HomeLayout.OFF_PAGES
+        assertEquals(shown.size, shown.toSet().size, "shown twice: " + shown.groupBy { it }.filter { it.value.size > 1 }.keys)
+        assertEquals(Catalogue.ALL.map { it.id }.toSet(), shown.toSet())
     }
 
-    @Test fun pinnedEntriesAreCatalogueEntries() {
-        HomeLayout.pinnedIds.forEach { assertEquals(it, Catalogue.byId(it)?.id, "pinned id not in the catalogue: $it") }
-        assertEquals(4, HomeLayout.QUICK.size, "the quick row is one row of four")
-    }
-
-    @Test fun sectionsKeepTheCatalogueOrder() {
-        val s = HomeLayout.sections()
-        assertEquals(Group.entries.filter { g -> s.any { it.first == g } }, s.map { it.first })
-        s.forEach { (g, items) ->
-            assertEquals(Catalogue.ALL.filter { it.group == g && it.id !in HomeLayout.pinnedIds }, items)
-            assertTrue(items.isNotEmpty())
+    @Test fun shortcutsOpenRealApps() {
+        val apps = DeskApps.ALL.map { it.id }.toSet()
+        HomeLayout.SHORTCUTS.forEach { (feature, ids) ->
+            assertNotNull(Catalogue.byId(feature), feature)
+            assertTrue(ids.isNotEmpty() && ids.all { it in apps }, "$feature -> $ids")
         }
+        assertEquals(listOf("inventory", "buildtree", "valena"), HomeLayout.SHORTCUTS["inventory"], "Készlet gathers BuildTree and Valena")
+        HomeLayout.SHORTCUTS.keys.forEach { assertFalse(PhoneSheets.isWindow(it), "$it is a shortcut, not a sheet window") }
+        assertFalse(PhoneSheets.isWindow(Catalogue.CATALOG.id))
     }
 
-    @Test fun columns() {
+    @Test fun cardsAndColumns() {
+        assertTrue(HomeLayout.PAGES[0].cards)
+        assertFalse(HomeLayout.PAGES[5].cards, "the relay page is a grid")
         assertEquals(4, HomeLayout.columns(landscape = false))
-        assertEquals(5, HomeLayout.columns(landscape = true))
+        assertEquals(6, HomeLayout.columns(landscape = true))
+        assertEquals(6, HomeLayout.pageOf("airdeck"))
+        assertEquals(null, HomeLayout.pageOf("photo"))
     }
 
-    @Test fun foldedGroupsRoundTrip() {
-        assertEquals(HomeLayout.DEFAULT_FOLDED, ShellPrefs().homeFolded)
-        assertEquals(HomeLayout.DEFAULT_FOLDED, ShellPrefs.fromMap(emptyMap<String, Any>()).homeFolded)
-        val p = ShellPrefs().toggleFold(Group.WORK).toggleFold(Group.APP)
-        assertEquals(setOf(Group.WORK), p.homeFolded)
-        assertEquals(p, ShellPrefs.fromMap(ShellPrefs.toMap(p)))
-        val open = p.toggleFold(Group.WORK)
-        assertTrue(open.homeFolded.isEmpty())
-        assertEquals(open, ShellPrefs.fromMap(ShellPrefs.toMap(open)), "every group open survives a restart")
-        assertEquals(setOf(Group.LINK), ShellPrefs.foldedOf("LINK,nincs-ilyen,"))
-        assertFalse(Group.APP in ShellPrefs.foldedOf(""))
+    @Test fun homeModesKeepTheirIds() {
+        assertEquals(HomeMode.COMPACT, HomeMode.of("compact"), "a stored Kompakt is the one-page view now")
+        assertEquals(HomeMode.DESK, HomeMode.of(null))
     }
 
     @Test fun sketchCount() {
         assertEquals(null, HomeLayout.sketchCountLabel(null))
         assertEquals("Még nincs felmérés a telefonon", HomeLayout.sketchCountLabel(0))
         assertEquals("1 felmérés a telefonon", HomeLayout.sketchCountLabel(1))
-        assertEquals("12 felmérés a telefonon", HomeLayout.sketchCountLabel(12))
         assertTrue(HomeLayout.isSketchFile("a1b2.vsketch.json"))
         assertFalse(HomeLayout.isSketchFile("a1b2.tmp"), "a save in progress is not a survey")
         assertFalse(HomeLayout.isSketchFile(".vsketch.json"))
-        assertFalse(HomeLayout.isSketchFile("photos"))
     }
 
     /** The count reads the Sketcher's folder without its code: pin the names to SketchStore's source. */

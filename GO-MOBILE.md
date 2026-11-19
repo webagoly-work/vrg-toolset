@@ -91,6 +91,9 @@ What changes locally compared with the cloud:
 - **M36** iPhone web app built 2026-11-18 (cloud session, D-42, D-43), **BETA**: `docs/mobile/WP/M36.md`. `Mobile/web/` on GitHub Pages (`mobile-web.yml`); **one-time: Settings → Pages → Source: GitHub Actions**. `node Mobile/tests/web-app.js` is its browser test.
 - **M37** RCO built 2026-11-19 (cloud session, D-45), **BETA**: the long-press menu on the dock windows, the home icons
   and seven lists. `docs/mobile/WP/M37.md` → "Telefonon ellenőrizni".
+- **M38** Kezdőlap lapok + Katalógus built 2026-11-19 (cloud session, D-47), **BETA**: the home in numbered pages, the
+  one-page view on ⌂'s long press, the Katalógus; M39–M41 tiles for the Planner, the calculators and Készlet; M42–M45
+  (Workflow Kit, Térkép, Időjárás, Vault) planned. `docs/mobile/WP/M38.md` → "Telefonon ellenőrizni".
 
 ## 3. What the user asked for, mapped to WPs
 

@@ -77,6 +77,7 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.floor
+import hu.vrg.mobile.core.Route
 
 // Lapok (WP M20): the Desktop's sheets in the Asztal's sheet area. The model is kit-core's Sheets (a port of the Desktop's sheets.js) on
 // the phone's 2 × 4 grid; lying down the same sheet is drawn transposed, 4 × 2 (D-16). This file draws and turns gestures into model
@@ -121,10 +122,11 @@ private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
 // ------------------------------------------------------------------ the tabs in the top strip
 
 @Composable
-fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit) {
+fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null) {
     Row(Modifier.widthIn(max = 200.dp).horizontalScroll(rememberScrollState()).padding(end = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Tab("⌂", doc.active.isEmpty(), "Munkapad", { SheetsStore.update { P.activate(it, "") } }, null)
+        // ⌂: the home; a long press switches it between the swiped pages and one long page (WP M38)
+        Tab("⌂", doc.active.isEmpty(), "Munkapad", { SheetsStore.update { P.activate(it, "") } }, onHomeLong)
         doc.sheets.forEach { s -> Tab(s.name, doc.active == s.id, "Lap: ${s.name}", { SheetsStore.update { P.activate(it, s.id) } }) { onMenu(s.id) } }
         if (doc.sheets.size < Sheets.MAX_SHEETS) Tab("+", false, "Új lap", onAdd, null)
     }
@@ -304,7 +306,10 @@ private fun FullWindow(modifier: Modifier, w: SheetWin, sh: SheetsHost) {
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when {
-                w.kind == "home" -> HomeWindow(Modifier.fillMaxSize(), sh.host::open)
+                // a sheet window holding the home: the one long page (a small window has no room for the page strip)
+                w.kind == "home" -> HomeWindow(Modifier.fillMaxSize(), HomeActions(sh.host::open, openApp = { id ->
+                    sh.host.open(Catalogue.APPS.id); Registry.feature(Catalogue.APPS.id)?.open(Route(Catalogue.APPS.id, id))
+                }), list = true)
                 w.kind == "app" -> AppsFeature.AppView(w.open.removePrefix("cat:"), sh.host, Modifier.fillMaxSize()) { SheetsStore.update { P.restore(it, w.id) } }
                 f != null -> f.Screen(sh.host)
                 else -> Text("$title: ez az ablak ezen a telefonon nem nyílik meg.", style = Melyviz.small, modifier = Modifier.padding(16.dp))

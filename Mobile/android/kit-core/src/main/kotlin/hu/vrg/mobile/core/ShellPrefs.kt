@@ -56,11 +56,7 @@ data class ShellPrefs(
     val orientation: Orientation = Orientation.PORTRAIT,
     /** Kommand's recent ids, newest first (the palette's `palette.recent`). */
     val kommandRecent: List<String> = emptyList(),
-    /** Kezdőlap (WP M32, D-35): the home's groups the user folded; both homes share it. */
-    val homeFolded: Set<Group> = HomeLayout.DEFAULT_FOLDED,
 ) {
-    /** Folds an open group, opens a folded one. */
-    fun toggleFold(g: Group): ShellPrefs = copy(homeFolded = if (g in homeFolded) homeFolded - g else homeFolded + g)
 
     /**
      * The one-off migration: before M1 the look was a Légegér setting. The first start of an M1 build
@@ -99,7 +95,6 @@ data class ShellPrefs(
         const val K_HOME = "home"
         const val K_ORIENTATION = "orientation"
         const val K_KOMMAND_RECENT = "kommandRecent"
-        const val K_HOME_FOLDED = "homeFolded"
 
         /** From whatever SharedPreferences.getAll() returned; anything unreadable becomes the default. */
         fun fromMap(m: Map<String, *>): ShellPrefs {
@@ -115,7 +110,6 @@ data class ShellPrefs(
                 home = HomeMode.of(m[K_HOME] as? String),
                 orientation = Orientation.of(m[K_ORIENTATION] as? String),
                 kommandRecent = (m[K_KOMMAND_RECENT] as? String).orEmpty().split('\n').filter { it.isNotEmpty() && it.length <= 80 }.take(Kommand.MAX_RECENT),
-                homeFolded = foldedOf(m[K_HOME_FOLDED] as? String),
             )
         }
 
@@ -130,13 +124,8 @@ data class ShellPrefs(
             K_HOME to p.home.id,
             K_ORIENTATION to p.orientation.id,
             K_KOMMAND_RECENT to p.kommandRecent.joinToString("\n"),
-            K_HOME_FOLDED to p.homeFolded.sortedBy { it.ordinal }.joinToString(",") { it.name },
         )
 
-        /** Never stored = the default; stored empty = every group open; unknown names are dropped. */
-        fun foldedOf(s: String?): Set<Group> =
-            if (s == null) HomeLayout.DEFAULT_FOLDED
-            else s.split(',').mapNotNull { n -> Group.entries.firstOrNull { it.name == n.trim() } }.toSet()
     }
 }
 

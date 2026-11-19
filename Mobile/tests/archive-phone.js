@@ -13,8 +13,13 @@
 //   - Back as the app runs it (ArchiveWeb.BACK_JS, read from Archive.kt): viewer → entry → list → "leave";
 //   - claude.ai links open outside (target=_blank: the WebView hands them to the phone's browser);
 //   - #<id>/open (vrg://archive/<id>/open) opens straight into the viewer; every saved page loads with 200;
-//   - archive.js and index.json are not served; the page throws nothing.
-// Needs chrome-headless-shell (H:\VRG\Full\tools, or $CHROME).
+//   - archive.js and index.json are not served; the page throws nothing;
+//   - the app's WebView (412 x 915, the Redmi Note 13 Pro): the entries show and scroll, the entry and the viewer fill the
+//     screen, both with the WebView's real height and with the zero-height layout viewport a WRAP_CONTENT WebView gets
+//     (Blink's forceZeroLayoutHeight, the setting Android's WebView turns on for it). In that mode the list once collapsed
+//     to its padding under the header (2026-11-19); feature-archive now gives the WebView MATCH_PARENT layout params
+//     (checked in its source) and the page pins its body to the screen, so an older APK shows the list after one refresh.
+// Needs chrome-headless-shell (H:\VRG\Full\tools, or $CHROME), else Playwright's Chromium when it is installed.
 'use strict';
 const fs = require('fs'), path = require('path'), os = require('os'), http = require('http');
 const { spawn, execFileSync } = require('child_process');
@@ -25,7 +30,9 @@ const KT = fs.readFileSync(path.join(REPO, 'Mobile', 'android', 'kit-core', 'src
 const rel = path.join('..', 'tools', 'chrome-headless-shell', 'chrome-headless-shell.exe');
 let common = REPO;
 try { common = path.dirname(path.resolve(REPO, execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd: REPO, encoding: 'utf8' }).trim())); } catch { /* not a repo */ }
-const CHROME = [process.env.CHROME, path.join(REPO, rel), path.join(common, rel)].find(p => p && fs.existsSync(p));
+const playwrightChrome = () => { try { return require('playwright').chromium.executablePath(); } catch { return null; } };
+const CHROME = [process.env.CHROME, path.join(REPO, rel), path.join(common, rel), playwrightChrome()].find(p => p && fs.existsSync(p));
+const FEATURE = fs.readFileSync(path.join(REPO, 'Mobile', 'android', 'feature-archive', 'src', 'main', 'kotlin', 'hu', 'vrg', 'mobile', 'archive', 'ArchiveFeature.kt'), 'utf8');
 
 // the phone's own strings, read from the Kotlin source so the test runs exactly what the app runs
 const BACK_JS = (/const val BACK_JS = ([\s\S]*?)\n\n/.exec(KT) || [])[1]?.match(/"((?:[^"\\]|\\.)*)"/g)?.map(s => JSON.parse(s)).join('');
@@ -52,9 +59,12 @@ const server = http.createServer((req, res) => {
 });
 
 // ---- a minimal DevTools client (Node's own WebSocket) -------------------------------------------------
-async function launch(origin) {
-  const proc = spawn(CHROME, ['--headless', '--remote-debugging-port=0', '--window-size=375,812',
-    `--user-data-dir=${path.join(tmp, 'profile')}`, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+let launches = 0;
+async function launch(origin, { width = 375, height = 812, dpr = 2, args = [] } = {}) {
+  // Chrome refuses to run as root (a Linux container) without --no-sandbox
+  const root = typeof process.getuid === 'function' && process.getuid() === 0 ? ['--no-sandbox'] : [];
+  const proc = spawn(CHROME, ['--headless', '--remote-debugging-port=0', `--window-size=${width},${height}`, ...root, ...args,
+    `--user-data-dir=${path.join(tmp, 'profile' + ++launches)}`, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   const wsUrl = await new Promise((resolve, reject) => {
     let err = '';
     const t = setTimeout(() => reject(new Error('Chrome did not start: ' + err.slice(-300))), 30000);
@@ -87,7 +97,7 @@ async function launch(origin) {
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
-  await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
+  await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: dpr, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   const evaluate = async expr => {
     const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
@@ -113,6 +123,13 @@ const SMALLEST = sel => `(() => { let min = null;
   for (const e of document.querySelectorAll(${JSON.stringify(sel)})) { const r = e.getBoundingClientRect(); if (!r.width || !r.height || getComputedStyle(e).visibility === 'hidden') continue;
     if (!min || r.height < min.h) min = { h: Math.round(r.height * 10) / 10, what: e.tagName + '.' + e.className + ' ' + (e.textContent || e.placeholder || '').trim().slice(0, 20) }; }
   return min; })()`;
+// how much of the list a finger can reach: the list's box, and the cards whose centre is on screen and hit by a tap there
+const LIST_SHOWS = `(() => { const l = document.querySelector('[data-role=list]').getBoundingClientRect(), h = document.querySelector('.list h2');
+  const reach = c => { const r = c.getBoundingClientRect(), y = r.top + r.height / 2; if (!r.height || y < l.top || y > Math.min(l.bottom, innerHeight)) return false;
+    const e = document.elementFromPoint(r.left + r.width / 2, y); return !!e && c.contains(e); };
+  const cards = [...document.querySelectorAll('.card')];
+  return { top: Math.round(l.top), bottom: Math.round(l.bottom), screen: innerHeight, cards: cards.filter(reach).length,
+    head: !!h && h.getBoundingClientRect().bottom <= l.bottom, last: cards.length ? reach(cards[cards.length - 1]) : false }; })()`;
 const STATE = 'JSON.stringify({ reading: document.body.classList.contains("reading"), open: !document.querySelector("[data-role=viewer]").hidden, hash: location.hash })';
 
 (async () => {
@@ -213,8 +230,41 @@ const STATE = 'JSON.stringify({ reading: document.body.classList.contains("readi
   } finally {
     c.ws.close(); c.proc.kill(); server.close();
     await sleep(300);
-    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* Chrome still letting go of its profile */ }
   }
+  // ---- the app's WebView on the phone: 412 x 915 at 1:1, with its real height and with a zero-height layout viewport
+  ok(/layoutParams\s*=\s*ViewGroup\.LayoutParams\(\s*ViewGroup\.LayoutParams\.MATCH_PARENT,\s*ViewGroup\.LayoutParams\.MATCH_PARENT\s*\)/.test(FEATURE),
+    'feature-archive gives its WebView MATCH_PARENT layout params (WRAP_CONTENT lays the page out at zero height)');
+  for (const [mode, args] of [['WebView', []], ['WebView, zero layout height', ['--blink-settings=forceZeroLayoutHeight=true']]]) {
+    await new Promise(r => server.listen(0, '127.0.0.1', r));
+    const o = `http://127.0.0.1:${server.address().port}`;
+    const w = await launch(o, { width: 412, height: 915, dpr: 1, args });
+    try {
+      await w.send('Page.navigate', { url: `${o}/archive/vrg-archive.html` });
+      ok(await w.until('document.querySelectorAll(".card").length > 0'), `${mode}: the list draws`);
+      let v = await w.evaluate(LIST_SHOWS);
+      ok(v.bottom >= v.screen - 1 && v.head && v.cards >= Math.floor((v.screen - v.top) / 52) - 1,
+        `${mode}: the entries show below the header, down to the bottom of the screen (${JSON.stringify(v)})`);
+      await w.evaluate('(() => { const l = document.querySelector("[data-role=list]"); l.scrollTop = l.scrollHeight; })()');
+      await sleep(100);
+      v = await w.evaluate(LIST_SHOWS);
+      ok(v.last, `${mode}: the list scrolls to its last entry (${JSON.stringify(v)})`);
+      const first = items.find(i => i.file);
+      await w.tap(`.card[data-id="${first.id}"]`);
+      const d = await w.evaluate('(() => { const r = document.querySelector("[data-role=detail]").getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom)]; })()');
+      ok(d[1] >= 914, `${mode}: the entry fills the screen below the header (${d})`);
+      await w.tap('.detail .acts .go');
+      ok(await w.until('!document.querySelector("[data-role=viewer]").hidden'), `${mode}: ▶ opens the viewer`);
+      const f = await w.evaluate('(() => { const r = document.querySelector("[data-role=frame]").getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })()');
+      ok(f[0] === 412 && f[1] > 800, `${mode}: the viewer fills the screen (${f})`);
+    } catch (e) {
+      fail++; console.log('  FAIL ' + mode + ': ' + (e.stack || e));
+    } finally {
+      w.ws.close(); w.proc.kill(); server.close();
+      await sleep(300);
+    }
+  }
+  try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* Chrome still letting go of its profile */ }
+
   console.log(`archive-phone: ${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
 })();

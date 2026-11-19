@@ -1,48 +1,60 @@
 package hu.vrg.mobile.core
 
-// The home screen's layout (WP M32, D-35): what sits where, as plain data, shared by both homes (the Asztal's home
-// window and the Kompakt tile home), so they show the same things in the same order and a test can check that every
-// catalogue entry is reachable from the home exactly once.
-//
-//   1. the hero: VRG Sketcher, full width, with its plugins as chips on it (Fotópont);
-//   2. the quick row: four pinned features, one tap each (the QR scan, Légegér, Átadás, Gyorsjegyzet);
-//   3. the catalogue's groups, minus what is already above, each one foldable (the folded set is a ShellPrefs value).
-//
-// Ids only point at Catalogue entries; nothing here renames or re-ids a feature (deep links `vrg://<id>` use them).
+// The home screen's layout (WP M38, D-47): numbered pages, swiped sideways, each a band of the work in the order the
+// Founder set on 2026-11-19 — first what has to be whipped up at once on site, then the tools of a few minutes, the
+// Desktop-side work, the relay and connection tools, the rest, and last the account and the settings. The top bar
+// and the dock (page "0") stay on screen over every page. A long press on ⌂ switches to one long page with the same
+// order (the old Kompakt). Plain data, shared by both views; HomeLayoutTest checks every catalogue entry is on the
+// home exactly once. Ids only point at Catalogue entries; nothing here renames a feature (deep links use the ids).
+
+/** One page of the home. [short] is its label in the page strip. */
+data class HomePage(val n: Int, val title: String, val short: String, val items: List<FeatureInfo>) {
+    /** A page with few entries draws them as big cards; a longer one as an icon grid. */
+    val cards: Boolean get() = items.size <= 3
+}
 
 object HomeLayout {
-    /** The field survey instrument: always the first thing on the home, one tap (D-35). */
-    val HERO: FeatureInfo = Catalogue.SKETCH
+    val PAGES: List<HomePage> = listOf(
+        HomePage(1, "Terep: azonnal kell", "Terep", listOf(Catalogue.SKETCH, Catalogue.PAGER)),
+        HomePage(2, "Munka: pár perc", "Munka", listOf(Catalogue.PLANNER, Catalogue.CALC, Catalogue.INVENTORY)),
+        HomePage(3, "Workflow Kit", "Workflow", listOf(Catalogue.WORKFLOW)),
+        HomePage(4, "Térkép · Időjárás · Vault", "Térkép", listOf(Catalogue.MAP, Catalogue.WEATHER, Catalogue.VAULT)),
+        HomePage(5, "Archívum · Claude", "Archívum", listOf(Catalogue.ARCHIVE, Catalogue.CLAUDE)),
+        HomePage(6, "Kapcsolat a PC-vel", "Kapcsolat", listOf(
+            Catalogue.PAIR, Catalogue.NET, Catalogue.AIRDECK, Catalogue.SCREEN,
+            Catalogue.DROP, Catalogue.PCWIN, Catalogue.LAUNCH, Catalogue.PORTS,
+        )),
+        HomePage(7, "Egyéb", "Egyéb", listOf(
+            Catalogue.NOTES, Catalogue.INBOX, Catalogue.PULSE, Catalogue.CITY,
+            Catalogue.SPHERE, Catalogue.STACK, Catalogue.APPS, Catalogue.SHEETS,
+        )),
+        HomePage(8, "Fiók és beállítások", "Fiók", listOf(Catalogue.ACCOUNT, Catalogue.DEVICES, Catalogue.UPDATE, Catalogue.SETTINGS)),
+    )
 
-    /** The hero's plugins, drawn as chips on the hero card instead of tiles of their own. */
-    val HERO_PLUGINS: List<FeatureInfo> = listOf(Catalogue.PHOTO)
+    /** A feature's plugins, drawn as chips on its card instead of tiles of their own (Fotópont on the Sketcher). */
+    val PLUGINS: Map<String, List<FeatureInfo>> = mapOf(Catalogue.SKETCH.id to listOf(Catalogue.PHOTO))
 
-    /** The quick row, left to right. PAIR's slot starts the QR scanner at once (the 2026-11-14 scan button). */
-    val QUICK: List<FeatureInfo> = listOf(Catalogue.PAIR, Catalogue.AIRDECK, Catalogue.DROP, Catalogue.NOTES)
-
-    /** Groups folded on a fresh install: Alkalmazás holds the shell's own parts, reachable from the header too. */
-    val DEFAULT_FOLDED: Set<Group> = setOf(Group.APP)
-
-    /** The ids above the groups, which the groups therefore leave out. */
-    val pinnedIds: Set<String> get() = (listOf(HERO) + HERO_PLUGINS + QUICK).map { it.id }.toSet()
-
-    /** The catalogue's groups in order, without the pinned entries; a group left empty is dropped. */
-    fun sections(all: List<FeatureInfo> = Catalogue.ALL): List<Pair<Group, List<FeatureInfo>>> {
-        val pinned = pinnedIds
-        return Group.entries.map { g -> g to all.filter { it.group == g && it.id !in pinned } }.filter { it.second.isNotEmpty() }
-    }
-
-    /** Lying down the home splits: the hero and the quick row take this share of the width on the left, the groups the rest. */
-    const val LANDSCAPE_LEFT = 0.4f
-
-    /** Below this width (dp) a wider-than-tall space still gets the upright column, e.g. a Lapok cell holding the home. */
-    const val SPLIT_MIN_WIDTH_DP = 600
-
-    /** Icon columns for the groups' grid: 4 upright (the user's choice), 5 in the right-hand pane lying down. */
-    fun columns(landscape: Boolean): Int = if (landscape) 5 else 4
+    /** On the home but not on a page: the home itself, and the Katalógus, which has its button in the top bar. */
+    val OFF_PAGES: Set<String> = setOf(Catalogue.DESK.id, Catalogue.CATALOG.id)
 
     /**
-     * The Sketcher's surveys as the hero counts them: the files in `filesDir/[SKETCH_DIR]` named `<id>[SKETCH_SUFFIX]`.
+     * Home tiles that open web apps of Alkalmazások (M21) by their app ids: one opens at once, several are offered
+     * as a pick (the three calculators; Készlet, BuildTree and Valena until the new Inventory merges them).
+     */
+    val SHORTCUTS: Map<String, List<String>> = mapOf(
+        Catalogue.PLANNER.id to listOf("planner"),
+        Catalogue.CALC.id to listOf("calc-panel", "calc-general", "calc-led"),
+        Catalogue.INVENTORY.id to listOf("inventory", "buildtree", "valena"),
+    )
+
+    /** The page a feature is on (1-based), or null. */
+    fun pageOf(id: String): Int? = PAGES.firstOrNull { p -> p.items.any { it.id == id } }?.n
+
+    /** Icon columns of a grid page: 4 upright, 6 lying down. */
+    fun columns(landscape: Boolean): Int = if (landscape) 6 else 4
+
+    /**
+     * The Sketcher's surveys as its card counts them: the files in `filesDir/[SKETCH_DIR]` named `<id>[SKETCH_SUFFIX]`.
      * They are SketchStore's names in feature-sketch (another session's module, not changed from here);
      * HomeLayoutTest reads that source and fails if they drift. A save's `.tmp` file is not counted.
      */
@@ -52,7 +64,7 @@ object HomeLayout {
     /** Whether a file in the sketch folder is a survey. */
     fun isSketchFile(name: String): Boolean = name.endsWith(SKETCH_SUFFIX) && name.length > SKETCH_SUFFIX.length
 
-    /** The hero's count line; null (not counted yet) shows nothing. */
+    /** The Sketcher card's count line; null (not counted yet) shows nothing. */
     fun sketchCountLabel(count: Int?): String? = when {
         count == null -> null
         count <= 0 -> "Még nincs felmérés a telefonon"

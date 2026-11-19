@@ -70,6 +70,7 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
+import android.view.ViewGroup
 
 // Rétegverem (WP M17): the VRG Stack's two 3D pages on the phone. The stack is built on the PC and published on
 // `stack-pages` by Mobile/stack/publish-stack.js (START → R Rétegverem → T); each page is one self-contained HTML
@@ -230,6 +231,9 @@ object StackFeature : VrgFeature {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(ctx: Context): WebView = WebView(ctx).apply {
+        // MATCH_PARENT, as in Archívum (2026-11-19): with AndroidView's default WRAP_CONTENT the WebView lays the page out
+        // on a zero-height viewport, and a page sized by height: 100% collapses (the archive's list did).
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.allowFileAccess = false

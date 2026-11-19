@@ -155,13 +155,50 @@ object Catalogue {
         "🔐", Group.APP, Stage.BETA, "M35", setOf(Need.INTERNET),
     )
 
+    // The paged home (2026-11-19, WP M38): the Desktop's work tools as tiles of their own. Planner, Kalkulátorok and
+    // Készlet open the M21 web apps (Kalkulátorok and Készlet offer their members: the three calculators; Készlet,
+    // VRG BuildTree and the Valena választó until they merge into an overhauled Inventory). The rest is planned.
+    val PLANNER = FeatureInfo(
+        "planner", "Varler Planner", "A villamos tervező a telefonon: alaprajz, áramkörök, nézetek; a Desktop Plannerével azonos fájl.",
+        "🏠", Group.WORK, Stage.BETA, "M39", setOf(Need.INTERNET, Need.GITHUB),
+    )
+    val CALC = FeatureInfo(
+        "calc", "Kalkulátorok", "Panel anyagár, általános villanyszerelői és LED árkalkulátor egy helyen.",
+        "🧮", Group.WORK, Stage.BETA, "M40", setOf(Need.INTERNET, Need.GITHUB),
+    )
+    val INVENTORY = FeatureInfo(
+        "inventory", "Készlet", "Anyagok és szerszámok; alatta a VRG BuildTree és a Valena választó, amíg egy új Készletbe olvadnak.",
+        "📦", Group.WORK, Stage.BETA, "M41", setOf(Need.INTERNET, Need.GITHUB),
+    )
+    val WORKFLOW = FeatureInfo(
+        "workflow", "Varler Workflow Kit", "Az irodai út a telefonon: költségvetési tervezet, árajánlat, munkalap a Planner, a kalkulátorok és a Készlet adataiból.",
+        "⚒", Group.WORK, Stage.PLANNED, "M42",
+    )
+    val MAP = FeatureInfo(
+        "map", "VRG Térkép", "Részletes térkép, 3D város és terepi rétegek: munkák, címek, útvonalak a telefonon.",
+        "🗺", Group.WORK, Stage.PLANNED, "M43", setOf(Need.INTERNET),
+    )
+    val WEATHER = FeatureInfo(
+        "weather", "VRG Időjárás", "Hivatalos és globális források egyesítve, terepi szabályokkal: lehet-e ma kint dolgozni.",
+        "⛅", Group.WORK, Stage.PLANNED, "M44", setOf(Need.INTERNET),
+    )
+    val VAULT = FeatureInfo(
+        "vault", "Vault", "Titkosított személyes adattár, telefonok jóváhagyása QR-kóddal (a Proton Vault útja).",
+        "🔒", Group.APP, Stage.PLANNED, "M45", setOf(Need.INTERNET, Need.GITHUB),
+    )
+    val CATALOG = FeatureInfo(
+        "catalog", "Katalógus", "Minden program, funkció és eszköz egy-egy lapon, a telefonon és az Asztalon: új felhasználóknak.",
+        "📖", Group.APP, Stage.BETA, "M38",
+    )
+
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, PAGER, CLAUDE,
         SKETCH, PHOTO,
+        PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
-        UPDATE, DEVICES, SETTINGS,
+        UPDATE, DEVICES, VAULT, CATALOG, SETTINGS,
     )
 
     fun byId(id: String?): FeatureInfo? = ALL.firstOrNull { it.id == id }
