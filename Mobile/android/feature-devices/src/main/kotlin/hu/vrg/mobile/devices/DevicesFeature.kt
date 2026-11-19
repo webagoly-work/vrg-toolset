@@ -38,13 +38,13 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.DeviceRequest
 import hu.vrg.mobile.core.DeviceTrust
 import hu.vrg.mobile.core.Route
-import hu.vrg.mobile.core.Updates
 import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.Trust
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.InstallQrPanel
 import hu.vrg.mobile.kit.ui.QrCode
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
@@ -158,19 +158,7 @@ object DevicesFeature : VrgFeature {
                 if (!showInstall) {
                     Text("Egy QR, amit a másik telefon kamerájával beolvasva letölti a VRG Mobile legújabb kiadását. Csak neked látszik.", style = Melyviz.small)
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Telepítő QR", true) { showInstall = true } }
-                } else {
-                    QrCode(Updates.PUBLIC_APK, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A VRG Mobile letöltésének QR-kódja")
-                    Text("1. A másik telefon kamerájával olvasd be: a böngésző letölti a vrg-mobile.apk fájlt.\n" +
-                        "2. Megnyitáskor engedélyezni kell a böngészőnek az ismeretlen alkalmazások telepítését.\n" +
-                        "3. Az app zárolva indul: ott Hozzáférés kérése ›, a kérés QR-kódját te olvasod be itt.",
-                        style = Melyviz.small)
-                    Text(Updates.PUBLIC_APK, style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 4.dp))
-                    Row(Modifier.padding(vertical = 6.dp)) {
-                        VrgChip("Link megosztása") { share(ctx, "VRG Mobile letöltése (Android):\n" + Updates.PUBLIC_APK) }
-                        Spacer(Modifier.width(6.dp))
-                        VrgChip("Elrejtés") { showInstall = false }
-                    }
-                }
+                } else InstallQrPanel(onClose = { showInstall = false })
             }
             (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
             (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->

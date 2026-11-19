@@ -403,6 +403,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   on a private repo, but needs an HTTP server on the phone and the same network; kept for when the repo goes private);
   **C** a short-lived signed asset link fetched with the owner's token (expires in minutes, and the token stays out of
   QR codes).
+  Later the same day the Founder asked for it on the home too: a slim *Telepítő QR* button under the quick row on
+  both homes (same owner check), opening the same panel (`kit/ui/InstallQr.kt`) in a dialog.
 
 ## Open (to ask when the WP that needs them starts)
 

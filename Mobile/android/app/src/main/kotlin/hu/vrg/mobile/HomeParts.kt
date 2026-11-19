@@ -22,6 +22,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +36,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
@@ -41,7 +45,9 @@ import hu.vrg.mobile.core.Group
 import hu.vrg.mobile.core.HomeLayout
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.ShellSettings
+import hu.vrg.mobile.kit.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.InstallQrPanel
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.pair.PairFeature
@@ -88,6 +94,7 @@ internal fun HomeBody(
                 header?.invoke()
                 SketchHero(open)
                 QuickRow(open, Modifier.padding(top = 10.dp))
+                OwnerInstallButton(Modifier.padding(top = 8.dp))
                 HomeGroups(cols(false), gap, open, cell)
                 footer?.invoke()
             }
@@ -97,6 +104,7 @@ internal fun HomeBody(
                     header?.invoke()
                     SketchHero(open)
                     QuickRow(open, Modifier.padding(top = 10.dp))
+                    OwnerInstallButton(Modifier.padding(top = 8.dp))
                     footer?.invoke()
                 }
                 Spacer(Modifier.width(12.dp))
@@ -191,6 +199,44 @@ private fun QuickButton(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit)
         Mini(f.glyph, f.title, ringOf(f), size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
         Text(quickLabel(f), style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.ink), maxLines = 1,
             overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
+    }
+}
+
+/**
+ * The install QR (D-44) on the home: a slim button under the quick row, drawn only on the owner's own phone (this phone
+ * is the trusted list's owner entry; the list is cached, so it shows from the start). It opens the same panel as
+ * Eszközök in a dialog.
+ */
+@Composable
+internal fun OwnerInstallButton(modifier: Modifier = Modifier) {
+    val list by Trust.list.collectAsStateWithLifecycle()
+    if (list == null || !Trust.isOwner) return
+    var open by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(Melyviz.radiusSmall)
+    Row(
+        modifier.fillMaxWidth().heightIn(min = 48.dp).background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape)
+            .clickable { open = true }.semantics { role = Role.Button; contentDescription = "Telepítő QR másik telefonra" }
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("▦", style = Melyviz.glyph.copy(fontSize = 18.sp, color = Melyviz.glow))
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Telepítő QR", style = Melyviz.label.copy(color = Melyviz.ink))
+            Text("másik telefonra · csak neked látszik", style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Text("›", style = Melyviz.title.copy(color = Melyviz.glowDim))
+    }
+    if (open) Dialog(onDismissRequest = { open = false }) {
+        val dshape = RoundedCornerShape(Melyviz.radius)
+        Column(
+            Modifier.fillMaxWidth().background(Melyviz.deep, dshape).border(1.dp, Melyviz.glowDim, dshape)
+                .verticalScroll(rememberScrollState()).padding(16.dp),
+        ) {
+            Text("TELEPÍTŐ QR", style = Melyviz.title.copy(fontSize = 15.sp))
+            Text("A VRG Mobile legújabb kiadása egy másik telefonra.", style = Melyviz.small)
+            InstallQrPanel(onClose = { open = false })
+        }
     }
 }
 
