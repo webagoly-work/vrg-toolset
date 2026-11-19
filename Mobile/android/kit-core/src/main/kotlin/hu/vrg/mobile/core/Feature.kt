@@ -92,7 +92,7 @@ object Catalogue {
         "▣", Group.CONTROL, Stage.BETA, "M13", setOf(Need.RELAY),
     )
     val SPHERE = FeatureInfo(
-        "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. A kezdőlapról balra húzva is elérhető.",
+        "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. Az egyoldalas kezdőlapról balra húzva is elérhető.",
         "◉", Group.WORK, Stage.LIVE, "M14", setOf(Need.INTERNET, Need.GITHUB),
     )
     val STACK = FeatureInfo(
