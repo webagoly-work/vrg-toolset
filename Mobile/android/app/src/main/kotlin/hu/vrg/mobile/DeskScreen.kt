@@ -57,6 +57,9 @@ import hu.vrg.mobile.core.KommandItem
 import hu.vrg.mobile.core.Reach
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // The Asztal (WP M19): the VRG Desktop's frame on the phone. Top strip (sheet tabs, Kommand, the orientation toggle,
 // settings), the sheet area, and the dock with the ◣ menu dial, the open windows and the ◢ Rétegverem dial. What a
@@ -69,6 +72,10 @@ class DeskActions(
     val openUnit: (DeskUnit) -> Unit,
     val runKommand: (String) -> Unit,
     val cycleOrientation: () -> Unit,
+    /** Takes a window off the dock (its RCO menu). */
+    val closeWindow: (String) -> Unit = {},
+    /** Takes every window but [keep] off the dock; null keeps none. */
+    val closeOthers: (keep: String?) -> Unit = {},
 )
 
 @Composable
@@ -118,17 +125,31 @@ fun DeskScreen(
                 Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (windows.isEmpty()) Text("nincs nyitott ablak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(8.dp))
-                    windows.mapNotNull { Catalogue.byId(it) }.forEach { f ->
-                        Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
-                            modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
-                                .clickable { act.open(f.id) }.padding(horizontal = 10.dp, vertical = 8.dp))
-                    }
+                    windows.mapNotNull { Catalogue.byId(it) }.forEach { f -> WindowChip(f, windows.size, act) }
                 }
                 Dial("◢", "Rétegverem") { act.open(Catalogue.STACK.id) }
             }
         }
         if (menu) MenuPanel(Modifier.align(Alignment.BottomStart)) { u -> menu = false; act.openUnit(u) }
         if (kommand) KommandPanel(windows, onClose = { kommand = false }) { id -> kommand = false; act.runKommand(id) }
+    }
+}
+
+/** An open window on the dock: tap opens it, long press (RCO) closes it, the others, or all of them. */
+@Composable
+private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
+    var menu by remember { mutableStateOf(false) }
+    Box {
+        Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
+            modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
+                .rco(onClick = { act.open(f.id) }, onLong = { menu = true }, longLabel = "ablak műveletei")
+                .padding(horizontal = 10.dp, vertical = 8.dp))
+        RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
+            RcoItem("▣", "Megnyitás") { act.open(f.id) },
+            RcoItem("✕", "Bezárás", danger = true) { act.closeWindow(f.id) },
+            if (count > 1) RcoItem("⊟", "Többi bezárása") { act.closeOthers(f.id) } else null,
+            if (count > 1) RcoItem("⊠", "Mind bezárása", danger = true) { act.closeOthers(null) } else null,
+        ))
     }
 }
 

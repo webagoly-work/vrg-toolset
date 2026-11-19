@@ -184,7 +184,10 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     // ---- the Asztal (WP M19) ------------------------------------------------------------------------
 
     private val desk = DeskActions(open = ::open, openUnit = ::openUnit, runKommand = ::runKommand,
-        cycleOrientation = { ShellSettings.update { it.copy(orientation = it.orientation.next()) }.also { note("Tájolás: " + ShellSettings.value.orientation.label) } })
+        cycleOrientation = { ShellSettings.update { it.copy(orientation = it.orientation.next()) }.also { note("Tájolás: " + ShellSettings.value.orientation.label) } },
+        // the dock's RCO: a window leaves the bar (the dock only shows on the Asztal, so none of them is on screen)
+        closeWindow = { id -> windows = windows - id },
+        closeOthers = { keep -> windows = windows.filter { it == keep } })
 
     private fun applyOrientation(o: Orientation) {
         requestedOrientation = when (o) {
