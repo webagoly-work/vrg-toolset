@@ -51,6 +51,8 @@ import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.kit.ui.VrgToggle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.ScannedLinks
+import kotlinx.coroutines.delay
 
 // Eszközök (WP M35): Proton Vault's way in, for VRG Mobile. One account (the owner's GitHub); the phones are what
 // differ. A phone that is not on the list shows its request as a QR; the owner's phone reads it (the home's QR
@@ -64,8 +66,16 @@ object DevicesFeature : VrgFeature {
     /** A request or a grant that arrived by link (QR scanner, camera app, messenger), waiting on the screen. */
     private val incoming = MutableStateFlow<DeviceTrust.Parsed?>(null)
 
+    /** The waiting request was read by this phone's own scanner (ScannedLinks), not tapped in a messenger. */
+    private val scanned = MutableStateFlow(false)
+
+    /** While this phone waits for approval it reads the list this often; the owner's approval unlocks it by itself. */
+    private const val WAIT_POLL_MS = 10_000L
+
     override fun open(route: Route): Boolean {
-        val raw = route.params["req"]?.let { "req=$it" } ?: route.params["grant"]?.let { "grant=$it" } ?: return route.path.isEmpty()
+        val req = route.params["req"]
+        val raw = req?.let { "req=$it" } ?: route.params["grant"]?.let { "grant=$it" } ?: return route.path.isEmpty()
+        scanned.value = req != null && ScannedLinks.consume(req)
         incoming.value = DeviceTrust.read(raw)
         return true
     }
@@ -85,31 +95,91 @@ object DevicesFeature : VrgFeature {
         var grantLink by remember { mutableStateOf<Pair<String, DeviceRequest>?>(null) }
         var name by remember { mutableStateOf(Trust.name) }
         val owner = GitHub.canWrite
+        // the admin phone (2026-11-19): the list's owner entry, signed in. A request its own scanner reads is approved
+        // at once: the QR came straight off the other phone's screen, so the code check by eye adds nothing there.
+        // A pasted or messenger request still waits for Jóváhagyás and the code check.
+        val admin = Trust.isOwner && owner
+        // the full page is the owner's (or a phone holding the owner's token); every other phone gets the short one
+        val full = Trust.isOwner || owner
+        val listed = list?.has(Trust.id) == true
         LaunchedEffect(Unit) { note = Trust.refresh() }
 
-        // a grant for this phone: open it at once
+        // a grant for this phone: open it at once; a request scanned on the admin phone: approve it at once
         LaunchedEffect(inc) {
-            val g = (inc as? DeviceTrust.Parsed.Grant)?.g ?: return@LaunchedEffect
-            note = try { "Engedély elfogadva: " + Trust.accept(g) } catch (e: Exception) { e.message ?: "Az engedély nem nyílt meg." }
-            incoming.value = null
+            when (val i = inc) {
+                is DeviceTrust.Parsed.Grant -> {
+                    note = try { "Engedély elfogadva: " + Trust.accept(i.g) } catch (e: Exception) { e.message ?: "Az engedély nem nyílt meg." }
+                    incoming.value = null
+                }
+                is DeviceTrust.Parsed.Req -> if (scanned.value && admin && !busy) {
+                    scanned.value = false
+                    val r = i.r
+                    if (Trust.list.value?.has(r.id) == true) { note = "${r.name} már a listán van."; incoming.value = null; return@LaunchedEffect }
+                    busy = true
+                    val (link, problem) = Trust.approve(r, false)
+                    busy = false
+                    if (link != null) {
+                        grantLink = link to r; incoming.value = null
+                        note = "Jóváhagyva beolvasással: ${r.name} (kód ${r.code}). A másik telefon magától feloldódik, legfeljebb egy perc."
+                    } else note = problem   // the card below stays: Jóváhagyás by hand once the problem is fixed
+                }
+                else -> {}
+            }
+        }
+
+        // this phone waits for approval: read the list now and then, so the owner's approval unlocks it without a grant QR
+        LaunchedEffect(listed) {
+            if (listed) return@LaunchedEffect
+            while (true) {
+                delay(WAIT_POLL_MS)
+                Trust.refresh()
+                if (Trust.listed) { note = "Jóváhagyva: a telefon feloldva."; break }
+            }
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
             Text("ESZKÖZÖK", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Egy fiók (a tulajdonosé), a telefonok különböznek: mindegyiket QR-kóddal hagyja jóvá a tulajdonos telefonja.", style = Melyviz.small)
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
+
+            if (!full) {
+                // ---- the short page: every phone but the owner's sees only what it needs
+                if (listed) {
+                    Text("Ez a telefon jóvá van hagyva.", style = Melyviz.label.copy(color = Melyviz.kelp), modifier = Modifier.padding(top = 10.dp))
+                    granted?.let { Text(it, style = Melyviz.small) }
+                    Text(Access.code, style = Melyviz.readout, modifier = Modifier.padding(top = 4.dp))
+                } else {
+                    val req = remember { Trust.request() }
+                    val link = DeviceTrust.requestLink(req)
+                    Text("Mutasd meg ezt a QR-kódot a tulajdonosnak: ő a saját telefonjával beolvassa.", style = Melyviz.label, modifier = Modifier.padding(top = 10.dp))
+                    QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A hozzáférés-kérés QR-kódja")
+                    Text("Kód: ${req.code}", style = Melyviz.title.copy(fontSize = 20.sp, fontFamily = Melyviz.mono))
+                    Text("Jóváhagyásra vár… a telefon magától feloldódik.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp))
+                    Row(Modifier.padding(vertical = 8.dp)) {
+                        VrgChip("Megosztás") { share(ctx, "VRG Mobile hozzáférés-kérés (${req.name}, kód ${req.code}):\n$link") }
+                        Spacer(Modifier.width(6.dp))
+                        VrgChip("Engedély beillesztése") { clipboard.getText()?.text?.let { incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
+                    }
+                }
+                (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
+                (inc as? DeviceTrust.Parsed.Req)?.let { Text("Kérést csak a tulajdonos telefonja hagyhat jóvá.", style = Melyviz.small.copy(color = Melyviz.sand)) }
+                Spacer(Modifier.height(24.dp))
+                return@Column
+            }
+
+            // ---- the full page (the owner)
+            Text("Egy fiók (a tulajdonosé), a telefonok különböznek: mindegyiket QR-kóddal hagyja jóvá a tulajdonos telefonja.", style = Melyviz.small)
 
             // ---- this phone
             VrgSectionTitle("Ez a telefon")
             Text(Access.code, style = Melyviz.title.copy(fontSize = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Melyviz.glow, fontFamily = Melyviz.mono))
             val status = when {
                 list == null -> "A lista még nincs beolvasva."
-                Trust.isOwner -> "Tulajdonos."
-                Trust.listed -> "Jóváhagyott eszköz" + (granted?.let { ": $it" } ?: ".")
+                Trust.isOwner -> "Tulajdonos" + if (admin) " · a beolvasott kéréseket azonnal jóváhagyja." else " · jóváhagyáshoz GitHub belépés kell."
+                listed -> "Jóváhagyott eszköz" + (granted?.let { ": $it" } ?: ".")
                 else -> "Nincs a megbízható eszközök között."
             }
-            Text(status, style = Melyviz.label.copy(color = if (Trust.listed) Melyviz.kelp else Melyviz.sand))
+            Text(status, style = Melyviz.label.copy(color = if (listed) Melyviz.kelp else Melyviz.sand))
             if (list?.gated == true) Text(if (Trust.updatesAllowed()) "Frissítést kaphat." else "Frissítést csak jóváhagyás után kap (a kiadások zárolva).", style = Melyviz.small)
             OutlinedTextField(name, { name = it.take(40) }, Modifier.fillMaxWidth().padding(top = 6.dp), singleLine = true,
                 label = { Text("A telefon neve a listán", style = Melyviz.small) }, colors = fieldColors())
@@ -118,23 +188,20 @@ object DevicesFeature : VrgFeature {
                 VrgChip("Lista frissítése") { scope.launch { busy = true; note = Trust.refresh() ?: "A lista friss."; busy = false } }
             }
 
-            if (!Trust.listed || showRequest) {
+            if (!listed || showRequest) {
                 VrgSectionTitle("Hozzáférés kérése")
-                if (!showRequest) VrgChip("Kérés QR-kódja", true) { showRequest = true }
+                if (!showRequest && listed) VrgChip("Kérés QR-kódja", true) { showRequest = true }
                 else {
                     val req = remember { Trust.request() }
                     val link = DeviceTrust.requestLink(req)
                     QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A hozzáférés-kérés QR-kódja")
                     Text("Ellenőrző kód: ${req.code}", style = Melyviz.title.copy(fontSize = 20.sp, fontFamily = Melyviz.mono))
-                    Text("A tulajdonos a saját telefonján olvassa be (kezdőlap: QR beolvasása, vagy a kamerája), és ugyanezt a kódot kell látnia. Messengeren is elküldheted.",
-                        style = Melyviz.small)
                     Row(Modifier.padding(vertical = 6.dp)) {
                         VrgChip("Megosztás") { share(ctx, "VRG Mobile hozzáférés-kérés (${req.name}, kód ${req.code}):\n$link") }
                         Spacer(Modifier.width(6.dp))
-                        VrgChip("Elrejtés") { showRequest = false }
+                        if (listed) VrgChip("Elrejtés") { showRequest = false }
                     }
                 }
-                Text("A választ (engedély QR) a telefon kamerájával olvasd be, vagy másold ki az üzenetből:", style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
                 Row(Modifier.padding(vertical = 6.dp)) {
                     VrgChip("Engedély beillesztése") { clipboard.getText()?.text?.let { incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
                 }
@@ -143,11 +210,12 @@ object DevicesFeature : VrgFeature {
             // ---- the owner's side
             if (owner) {
                 VrgSectionTitle("Jóváhagyás (tulajdonos)")
-                Text("Egy kérés QR-kódját a kezdőlap QR beolvasásával vagy a kamerával olvasd be; messengeren kapott kérést illessz be.", style = Melyviz.small)
+                Text(if (admin) "Olvasd be a másik telefon kérés-QR-ját (kezdőlap: QR beolvasás): azonnal jóváhagyja, a másik telefon magától feloldódik. Messengeren kapott kérést illessz be (ott a kódot ellenőrizd)."
+                    else "Egy kérés QR-kódját a kezdőlap QR beolvasásával vagy a kamerával olvasd be; messengeren kapott kérést illessz be.", style = Melyviz.small)
                 Row(Modifier.padding(vertical = 6.dp)) {
                     VrgChip("QR beolvasása ›") { host.open(Catalogue.PAIR.id) }
                     Spacer(Modifier.width(6.dp))
-                    VrgChip("Kérés beillesztése") { clipboard.getText()?.text?.let { incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
+                    VrgChip("Kérés beillesztése") { clipboard.getText()?.text?.let { scanned.value = false; incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
                 }
             }
             // ---- the install QR (2026-11-19): only on the owner's own phone (this phone is the list's owner entry),
@@ -163,13 +231,15 @@ object DevicesFeature : VrgFeature {
             (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
             (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->
                 if (!owner) Text("Kérés érkezett (${r.name}), de jóváhagyni csak a tulajdonos telefonja tud (GitHub belépéssel).", style = Melyviz.small.copy(color = Melyviz.sand))
+                else if (busy && admin) Text("Jóváhagyás…", style = Melyviz.small)
                 else Approve(r, busy, onDone = { link -> grantLink = link to r; incoming.value = null }, onBusy = { busy = it }, onNote = { note = it },
                     onCancel = { incoming.value = null })
             }
             grantLink?.let { (link, r) ->
                 VrgSectionTitle("Engedély: ${r.name}")
                 QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "Az engedély QR-kódja")
-                Text(if (r.back != null) "Az iPhone a saját kamerájával olvassa be: a VRG webapp nyílik meg vele." else "A másik telefon a kamerájával olvassa be (vagy Eszközök → Engedély beillesztése).",
+                Text(if (r.back != null) "Az iPhone a saját kamerájával olvassa be: a VRG webapp nyílik meg vele."
+                    else "Nem kötelező: a másik telefon magától feloldódik (legfeljebb egy perc). Ha azonnal kell, a kamerájával olvassa be.",
                     style = Melyviz.small)
                 Row(Modifier.padding(vertical = 6.dp)) {
                     VrgChip("Megosztás") { share(ctx, "VRG Mobile engedély ide: ${r.name}\n$link") }

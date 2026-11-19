@@ -416,6 +416,17 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Rejected: **B** a bottom sheet instead of a dropdown (heavier for two to four lines, and it hides what was pressed);
   **C** a menu on every item, single buttons included (the Founder asked for genuine ones).
 
+- **D-46 · Eszközök: the admin phone approves on scan, the asker unlocks itself (M35), 2026-11-19.** Asked by the
+  Founder: "the app should detect my admin phone so that scanning other phones auto allow them", and "every other
+  phone … should not have that many info". Chosen in the session: **A** — the admin phone is the list's owner entry
+  signed in to GitHub; a request its own scanner reads (marked in-process by `ScannedLinks`, not an Intent extra)
+  is approved without the card: the QR came straight off the asking phone's screen, so the code check by eye adds
+  nothing. A pasted or messenger request still shows the card and needs the tap (there the code check is what stops
+  a forwarded or altered request). The asking phone polls the list every 10 s while it waits and unlocks by itself;
+  the grant QR stays for the token handover and the iPhone. Every phone but the owner's sees a short Eszközök.
+  Rejected: **B** auto-approve every request that reaches the owner's phone, links included (a messenger link would
+  approve a phone nobody looked at); **C** keep the grant QR as the only way in (one more scan the Founder asked to drop).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

@@ -73,6 +73,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
+import hu.vrg.mobile.kit.ScannedLinks
 
 // QR párosítás (WP M2): read the QR on the PC's screen (http://localhost:47291/pair) and become a
 // trusted phone. The scan can come from here (CameraX + ML Kit, bundled model) or from the phone's
@@ -123,6 +124,7 @@ object PairFeature : VrgFeature {
 
     /** A link the app itself answers (vrg://…, the Planner's phone-sender QR): back through the shell's link routing. */
     private fun openLink(ctx: Context, raw: String) {
+        ScannedLinks.mark(raw)   // so Eszközök knows a device request came from this scanner, not from a messenger
         runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(raw)).setPackage(ctx.packageName).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)) }
     }
 
