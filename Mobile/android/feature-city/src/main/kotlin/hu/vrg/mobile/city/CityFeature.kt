@@ -72,8 +72,9 @@ import java.io.FileInputStream
 // off. The page is served from https://appassets.androidplatform.net/city/<key>/city.html by
 // shouldInterceptRequest, which answers only that one file per key; every other request (the page's /api/
 // calls to the PC's Kódváros segéd, any other host) gets an empty 403, so nothing leaves the phone and
-// nothing of the phone is readable. Links to other sites open in the browser. Touch: assets/city-touch.js
-// (one finger orbits, two pan and pinch-zoom), injected when the page has loaded.
+// nothing of the phone is readable. Links to other sites open in the browser. Layout: assets/city-phone.js
+// (Kódváros's PC toolbars folded into one row and a ☰ sheet); touch: assets/city-touch.js (one finger orbits,
+// two pan and pinch-zoom). Both are injected when the page has loaded, the layout first.
 
 object CityFeature : VrgFeature {
     override val info = Catalogue.CITY
@@ -84,7 +85,7 @@ object CityFeature : VrgFeature {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var root: File
     private lateinit var prefs: SharedPreferences
-    private var touchJs = ""
+    private var pageJs = ""
 
     /** The branches with a city on city-pages (main first); empty until the first listing. */
     val branches = MutableStateFlow<List<String>>(emptyList())
@@ -109,7 +110,11 @@ object CityFeature : VrgFeature {
         prefs = app.getSharedPreferences("city", Context.MODE_PRIVATE)
         selected.value = prefs.getString("branch", null) ?: "main"
         shown.value = local(selected.value)
-        touchJs = try { app.assets.open("city-touch.js").bufferedReader().use { it.readText() } } catch (e: Exception) { "" }
+        // city-phone.js before city-touch.js: its listener that closes the sheet must run before the touch adapter's.
+        // Each in its own try, so a failing layout never costs the touch adapter.
+        pageJs = listOf("city-phone.js", "city-touch.js").mapNotNull { name ->
+            try { app.assets.open(name).bufferedReader().use { it.readText() } } catch (e: Exception) { null }
+        }.joinToString("\n") { "try {\n$it\n} catch (e) { console.error(e) }" }
     }
 
     // ---- the phone's copies ---------------------------------------------------------------------------
@@ -265,7 +270,7 @@ object CityFeature : VrgFeature {
             }
 
             override fun onPageFinished(view: WebView, url: String) {
-                if (touchJs.isNotEmpty()) view.evaluateJavascript(touchJs, null)
+                if (pageJs.isNotEmpty()) view.evaluateJavascript(pageJs, null)
             }
 
             override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
