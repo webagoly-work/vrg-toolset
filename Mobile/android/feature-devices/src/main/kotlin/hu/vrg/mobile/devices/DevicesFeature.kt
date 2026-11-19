@@ -38,6 +38,7 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.DeviceRequest
 import hu.vrg.mobile.core.DeviceTrust
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.core.Updates
 import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.Trust
@@ -80,6 +81,7 @@ object DevicesFeature : VrgFeature {
         var note by remember { mutableStateOf<String?>(null) }
         var busy by remember { mutableStateOf(false) }
         var showRequest by remember { mutableStateOf(false) }
+        var showInstall by remember { mutableStateOf(false) }
         var grantLink by remember { mutableStateOf<Pair<String, DeviceRequest>?>(null) }
         var name by remember { mutableStateOf(Trust.name) }
         val owner = GitHub.canWrite
@@ -146,6 +148,28 @@ object DevicesFeature : VrgFeature {
                     VrgChip("QR beolvasása ›") { host.open(Catalogue.PAIR.id) }
                     Spacer(Modifier.width(6.dp))
                     VrgChip("Kérés beillesztése") { clipboard.getText()?.text?.let { incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
+                }
+            }
+            // ---- the install QR (2026-11-19): only on the owner's own phone (this phone is the list's owner entry),
+            // not on a phone that was merely handed the owner's token. A phone without the app reads it with its camera,
+            // downloads the newest release and installs it; it then starts locked and asks for access as above.
+            if (Trust.isOwner) {
+                VrgSectionTitle("Telepítés másik telefonra")
+                if (!showInstall) {
+                    Text("Egy QR, amit a másik telefon kamerájával beolvasva letölti a VRG Mobile legújabb kiadását. Csak neked látszik.", style = Melyviz.small)
+                    Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Telepítő QR", true) { showInstall = true } }
+                } else {
+                    QrCode(Updates.PUBLIC_APK, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A VRG Mobile letöltésének QR-kódja")
+                    Text("1. A másik telefon kamerájával olvasd be: a böngésző letölti a vrg-mobile.apk fájlt.\n" +
+                        "2. Megnyitáskor engedélyezni kell a böngészőnek az ismeretlen alkalmazások telepítését.\n" +
+                        "3. Az app zárolva indul: ott Hozzáférés kérése ›, a kérés QR-kódját te olvasod be itt.",
+                        style = Melyviz.small)
+                    Text(Updates.PUBLIC_APK, style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 4.dp))
+                    Row(Modifier.padding(vertical = 6.dp)) {
+                        VrgChip("Link megosztása") { share(ctx, "VRG Mobile letöltése (Android):\n" + Updates.PUBLIC_APK) }
+                        Spacer(Modifier.width(6.dp))
+                        VrgChip("Elrejtés") { showInstall = false }
+                    }
                 }
             }
             (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }

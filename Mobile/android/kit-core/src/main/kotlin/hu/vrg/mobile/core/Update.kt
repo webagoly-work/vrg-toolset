@@ -48,6 +48,14 @@ data class ReleaseAssets(val updateJsonUrl: String, val apkUrl: String) {
 
 object Updates {
     const val LATEST = "${VrgRepo.PATH}/releases/latest"
+
+    /**
+     * The newest APK for a phone that has no VRG Mobile yet (the owner's Telepítő QR in Eszközök, 2026-11-19): GitHub's
+     * fixed "latest release" link, which redirects to `mobile-v<code>/vrg-mobile.apk`. Only mobile-release.yml makes
+     * releases in this repo, so "latest" is always the app. Needs no sign-in while the repo is public; if it becomes
+     * private the link answers 404 and the QR has to go (M35, Known limits).
+     */
+    const val PUBLIC_APK = "https://github.com/${VrgRepo.FULL}/releases/latest/download/${ReleaseAssets.APK}"
     const val CHECK_EVERY_MS = 6L * 60 * 60 * 1000
 
     fun isNewer(info: UpdateInfo, installedCode: Long) = info.code > installedCode

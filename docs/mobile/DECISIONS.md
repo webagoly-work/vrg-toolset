@@ -394,6 +394,16 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   same-origin service worker, HTML served as text); a PC-hosted page (not reachable on the road).
   Details: `WP/M36.md`.
 
+- **D-44 · Eszközök: the install QR (M35), 2026-11-19.** Asked by the Founder: "a QR code within the app that shows up
+  only to me that lets other phones download the apk". Chosen in the session: **A** — GitHub's fixed latest-release
+  link (`Updates.PUBLIC_APK`; only `mobile-release.yml` makes releases, so "latest" is always the app), drawn only when
+  this phone is the trusted list's owner entry (`Trust.isOwner`), behind a *Telepítő QR* tap. It works with no sign-in
+  because the repo is public; the new phone still starts locked and is let in by the D-39 approval, so the QR only
+  saves typing the link. Rejected: **B** the owner's phone serving its own installed APK over WiFi (works offline and
+  on a private repo, but needs an HTTP server on the phone and the same network; kept for when the repo goes private);
+  **C** a short-lived signed asset link fetched with the owner's token (expires in minutes, and the token stays out of
+  QR codes).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

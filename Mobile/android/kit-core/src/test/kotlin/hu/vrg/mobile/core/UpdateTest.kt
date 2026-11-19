@@ -69,4 +69,9 @@ class UpdateTest {
     @Test fun aClockMovedBackDoesNotBlockTheCheck() {
         assertTrue(Updates.checkDue(1000 * hour, 900 * hour))
     }
+
+    @Test fun publicApkLink() {
+        assertEquals("https://github.com/webagoly-work/vrg-toolset/releases/latest/download/vrg-mobile.apk", Updates.PUBLIC_APK)
+        assertTrue(Updates.PUBLIC_APK.endsWith("/" + ReleaseAssets.APK), "the QR's file name is the release's asset name")
+    }
 }
