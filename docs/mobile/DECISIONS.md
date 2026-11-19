@@ -410,8 +410,9 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   "genuine RCO opportunities throughout the app". Chosen in the session: **A** — one shared part (`kit/ui/Rco.kt`:
   tap unchanged, long press with a haptic tick and a TalkBack label, a Mélyvíz dropdown anchored to the item) on the
   dock windows and seven lists where it saves taps or adds a missing copy / share (WP M37 has the table). Where a long
-  press already means something (Indítópult's detail, Lapok drag and picker, Csipogó's long message and SOS, touch
-  surfaces) it is left alone; Indítópult's is the Founder's call. Closing a dock window takes it off the bar only.
+  press already means something (Lapok drag and picker, Csipogó's long message and SOS, touch surfaces) it is left
+  alone. Indítópult's long press (the detail panel) was asked about and the Founder said yes the same day: it is a
+  menu now, with Részletek keeping the panel. Closing a dock window takes it off the bar only.
   Rejected: **B** a bottom sheet instead of a dropdown (heavier for two to four lines, and it hides what was pressed);
   **C** a menu on every item, single buttons included (the Founder asked for genuine ones).
 

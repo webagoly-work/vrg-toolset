@@ -5,11 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,6 +70,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // Indítópult (WP M11): START's tools as a grid with their START keys. A tap starts one on the PC (the
 // relay opens its page, starting its server first when needed); a long-press selects it and shows
@@ -213,15 +214,30 @@ object LaunchFeature : VrgFeature {
     private fun Body(l: LaunchList, ctx: Context, host: FeatureHost) {
         val going by starting.collectAsStateWithLifecycle()
         var picked by remember { mutableStateOf<String?>(null) }
-        Text("Koppintás: indítás a PC-n · hosszan nyomva: több", style = Melyviz.small)
+        Text("Koppintás: indítás a PC-n · hosszan nyomva: menü (telefonon, napló, leállítás, részletek)", style = Melyviz.small)
         for ((group, entries) in l.groups()) {
             VrgSectionTitle(group)
             entries.chunked(3).forEach { row ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { e ->
+                        // RCO (D-45, the Founder's yes of 2026-11-19): the long press is a menu now; Részletek and
+                        // Napló still open the detail panel under the row (Napló shows its tail there)
                         Tile(e, l, e.id in going, e.id == picked, Modifier.weight(1f),
                             onTap = { run(e)?.let(host::note) },
-                            onLong = { picked = if (picked == e.id) null else e.id; log.value = null })
+                            menu = listOfNotNull(
+                                RcoItem("▶", "A PC-n") { run(e)?.let(host::note) },
+                                if (Launch.openableHere(l, e)) RcoItem("📱", "Megnyitás a telefonon") { openHere(ctx, l, e)?.let(host::note) } else null,
+                                if (e.server != null) RcoItem("≡", "Napló") {
+                                    picked = e.id; log.value = null
+                                    LaunchMsgs.log(e.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") }
+                                } else null,
+                                if (e.server != null && l.isMine(e)) RcoItem("■", "Leállítás", danger = true) {
+                                    LaunchMsgs.stop(e.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") }
+                                } else null,
+                                RcoItem("ⓘ", if (picked == e.id) "Részletek elrejtése" else "Részletek") {
+                                    picked = if (picked == e.id) null else e.id; log.value = null
+                                },
+                            ))
                     }
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
@@ -230,18 +246,19 @@ object LaunchFeature : VrgFeature {
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun Tile(e: LaunchEntry, l: LaunchList, going: Boolean, picked: Boolean, modifier: Modifier, onTap: () -> Unit, onLong: () -> Unit) {
+    private fun Tile(e: LaunchEntry, l: LaunchList, going: Boolean, picked: Boolean, modifier: Modifier, onTap: () -> Unit, menu: List<RcoItem>) {
         val shape = RoundedCornerShape(12.dp)
         val running = l.isRunning(e)
         val state = when { going -> "indul"; running -> "fut"; e.server != null -> "nem fut"; else -> null }
+        var open by remember { mutableStateOf(false) }
+        Box(modifier) {
         Box(
-            modifier.heightIn(min = 76.dp).clip(shape)
+            Modifier.fillMaxWidth().heightIn(min = 76.dp).clip(shape)
                 .background(if (picked) Melyviz.raised else Melyviz.surface)
                 .border(1.dp, if (picked) Melyviz.glow else Melyviz.line, shape)
                 .alpha(if (e.exists) 1f else 0.45f)
-                .combinedClickable(onClick = onTap, onLongClick = onLong)
+                .rco(onClick = onTap, onLong = { open = true }, longLabel = "indítás és napló")
                 .semantics { contentDescription = listOfNotNull(e.key, e.name, state, if (!e.exists) "nincs a PC-n" else null).joinToString(", ") }
                 .padding(8.dp),
         ) {
@@ -253,6 +270,8 @@ object LaunchFeature : VrgFeature {
                 Modifier.align(Alignment.TopEnd).size(8.dp).clip(CircleShape)
                     .background(when { going -> Melyviz.sand; running -> Melyviz.glow; else -> Melyviz.faint }),
             )
+        }
+        RcoMenu(open, { open = false }, "${e.key} · ${e.name}", menu)
         }
     }
 
