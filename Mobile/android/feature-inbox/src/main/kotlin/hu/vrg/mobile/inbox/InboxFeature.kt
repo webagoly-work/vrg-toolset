@@ -94,6 +94,12 @@ import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.ui.shareText
 
 // Értesítések (WP M10, D-11 = C): what happened, in one list grouped by day, with phone notifications for
 // what matters. GitHub is polled every 15 minutes by WorkManager (and once whenever the app comes on
@@ -362,7 +368,7 @@ object InboxFeature : VrgFeature {
                 )
                 days.forEach { (day, events) ->
                     VrgSectionTitle(dayLabel(day))
-                    events.forEach { e -> EventRow(e) { openEvent(ctx, host, e) } }
+                    events.forEach { e -> EventRow(e, onFilter = { filter = e.kind }) { openEvent(ctx, host, e) } }
                 }
                 Spacer(Modifier.height(24.dp))
             }
@@ -382,21 +388,33 @@ object InboxFeature : VrgFeature {
     }
 
     @Composable
-    private fun EventRow(e: InboxEvent, onTap: () -> Unit) {
+    private fun EventRow(e: InboxEvent, onFilter: () -> Unit, onTap: () -> Unit) {
         val mark = when (e.level) { InboxLevel.BAD -> Melyviz.coral; InboxLevel.GOOD -> Melyviz.kelp; InboxLevel.INFO -> Melyviz.glow }
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable(onClick = onTap)
-                .semantics { contentDescription = listOfNotNull(e.kind.label, if (e.read) null else "olvasatlan", e.title, e.text).joinToString(", ") }
-                .padding(vertical = 7.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Box(Modifier.padding(top = 5.dp).size(8.dp).clip(CircleShape).background(if (e.read) Melyviz.line else mark))
-            Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) {
-                Text(e.title, style = Melyviz.label.copy(color = if (e.read) Melyviz.muted else Melyviz.ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                if (e.text.isNotEmpty()) Text(e.text, style = Melyviz.small, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        // RCO (long press): mark it read without leaving the list, copy or share its link, show only its kind
+        var menu by remember { mutableStateOf(false) }
+        val ctx = LocalContext.current
+        val clipboard = LocalClipboardManager.current
+        Box {
+            RcoMenu(menu, { menu = false }, e.title, listOfNotNull(
+                if (!e.read) RcoItem("✓", "Olvasottnak jelöl") { markRead(e) } else null,
+                e.url?.let { u -> RcoItem("⧉", "Link másolása") { clipboard.setText(AnnotatedString(u)) } },
+                e.url?.let { u -> RcoItem("↗", "Megosztás") { shareText(ctx, e.title + "\n" + u) } },
+                RcoItem("⊟", "Csak ${e.kind.label}") { onFilter() },
+            ))
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).rco(onClick = onTap, onLong = { menu = true })
+                    .semantics { contentDescription = listOfNotNull(e.kind.label, if (e.read) null else "olvasatlan", e.title, e.text).joinToString(", ") }
+                    .padding(vertical = 7.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Box(Modifier.padding(top = 5.dp).size(8.dp).clip(CircleShape).background(if (e.read) Melyviz.line else mark))
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(e.title, style = Melyviz.label.copy(color = if (e.read) Melyviz.muted else Melyviz.ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    if (e.text.isNotEmpty()) Text(e.text, style = Melyviz.small, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                }
+                Text("${e.kind.label} · ${TIME.format(Date(e.at))}", style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 8.dp))
             }
-            Text("${e.kind.label} · ${TIME.format(Date(e.at))}", style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 8.dp))
         }
     }
 

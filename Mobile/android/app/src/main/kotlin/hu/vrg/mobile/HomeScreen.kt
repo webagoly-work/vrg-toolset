@@ -68,11 +68,11 @@ fun HomeScreen(onOpen: (String) -> Unit) {
             Spacer(Modifier.height(24.dp))
             Text("v${BuildConfig.VERSION_NAME}", style = Melyviz.readout)
         },
-    ) { f, m -> Tile(f, m) { onOpen(f.id) } }
+    ) { f, m -> FeatureRco(f, onOpen, sheets = false, modifier = m) { inner -> Tile(f, inner) } }
 }
 
 @Composable
-private fun Tile(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
+private fun Tile(f: FeatureInfo, modifier: Modifier) {
     val built = Registry.isBuilt(f)
     // WP M16: a feature that is working shows its MINI ring around the glyph (notes outbox, update download, pulse
     // refresh); at rest nothing is drawn, so the tile looks as it always did.
@@ -82,8 +82,7 @@ private fun Tile(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
         modifier.heightIn(min = 112.dp)
             .background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.7f), shape)
             .border(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), shape)
-            .clickable(onClick = onClick)
-            .padding(12.dp),
+            .padding(12.dp),   // the tap and the RCO come in with [modifier] (FeatureRco)
     ) {
         Row {
             Mini(f.glyph, f.title, status, size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)

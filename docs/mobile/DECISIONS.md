@@ -406,6 +406,15 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Later the same day the Founder asked for it on the home too: a slim *Telepítő QR* button under the quick row on
   both homes (same owner check), opening the same panel (`kit/ui/InstallQr.kt`) in a dialog.
 
+- **D-45 · RCO: the long-press menu (M37), 2026-11-19.** Asked by the Founder: RCO on the dock's windows, then
+  "genuine RCO opportunities throughout the app". Chosen in the session: **A** — one shared part (`kit/ui/Rco.kt`:
+  tap unchanged, long press with a haptic tick and a TalkBack label, a Mélyvíz dropdown anchored to the item) on the
+  dock windows and seven lists where it saves taps or adds a missing copy / share (WP M37 has the table). Where a long
+  press already means something (Indítópult's detail, Lapok drag and picker, Csipogó's long message and SOS, touch
+  surfaces) it is left alone; Indítópult's is the Founder's call. Closing a dock window takes it off the bar only.
+  Rejected: **B** a bottom sheet instead of a dropdown (heavier for two to four lines, and it hides what was pressed);
+  **C** a menu on every item, single buttons included (the Founder asked for genuine ones).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

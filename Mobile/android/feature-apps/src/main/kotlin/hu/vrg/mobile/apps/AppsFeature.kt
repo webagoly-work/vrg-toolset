@@ -81,6 +81,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // Alkalmazások (WP M21): the Desktop's in-shell HTML apps on the phone. Which apps and which files each may read come from the Desktop's
 // own catalog (DeskApps.kt, generated); what is served is AppScheme.decide, a port of the Desktop's vrg-app:// rules.
@@ -416,18 +421,26 @@ object AppsFeature : VrgFeature {
                         s.ready(a) -> String.format(Locale.ROOT, "%.1f MB", (s.have?.bytes ?: 0) / 1048576.0) + if (s.offline) " · offline" else " · a telefonon"
                         else -> "még nincs letöltve"
                     }
-                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { showing.value = a.id }.padding(vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).border(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.Center) {
-                            Text(a.hu.split(' ').take(2).joinToString("") { it.take(1) }.uppercase(Locale.ROOT), style = Melyviz.readout.copy(color = if (s.ready(a)) Melyviz.glow else Melyviz.faint))
+                    // RCO (long press): download or refresh one app without opening it
+                    var menu by remember { mutableStateOf(false) }
+                    Box {
+                        RcoMenu(menu, { menu = false }, a.hu, listOf(
+                            RcoItem("▣", "Megnyitás") { showing.value = a.id },
+                            RcoItem("⟳", if (s.have != null) "Frissítés" else "Letöltés", enabled = !s.busy) { refresh(a.id) },
+                        ))
+                        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).rco(onClick = { showing.value = a.id }, onLong = { menu = true }).padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).border(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.Center) {
+                                Text(a.hu.split(' ').take(2).joinToString("") { it.take(1) }.uppercase(Locale.ROOT), style = Melyviz.readout.copy(color = if (s.ready(a)) Melyviz.glow else Melyviz.faint))
+                            }
+                            Column(Modifier.weight(1f).padding(start = 10.dp)) {
+                                Text(a.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(state, style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1)
+                                s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                            }
+                            Text("›", style = Melyviz.title.copy(color = Melyviz.muted))
                         }
-                        Column(Modifier.weight(1f).padding(start = 10.dp)) {
-                            Text(a.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(state, style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1)
-                            s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                        }
-                        Text("›", style = Melyviz.title.copy(color = Melyviz.muted))
                     }
                 }
             }

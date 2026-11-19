@@ -61,6 +61,12 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.ui.shareText
 
 // Claude (WP M22). VRG Mobile never signs in to Claude and never sees a Claude password or token: the official Claude app is the
 // sign-in, and this feature only opens it (ClaudeApp: the app when installed, else claude.ai in the browser).
@@ -254,18 +260,30 @@ object ClaudeFeature : VrgFeature {
 
     @Composable
     private fun SessionRow(s: ClaudeSession, l: ClaudeList, host: FeatureHost, ctx: Context) {
-        Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(8.dp).background(if (s.alive) Melyviz.current else Melyviz.faint, CircleShape)
-                    .semantics { contentDescription = if (s.alive) "fut" else "leállt" })
-                Text(s.name, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(start = 8.dp))
-            }
-            Text("${l.folderName(s.folder)} · ${s.account} fiók · ${TIME.format(Date(s.started))}" + if (!s.alive) " · leállt" else "",
-                style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 16.dp))
-            Row(Modifier.padding(start = 16.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (s.url != null) VrgChip("✶ Megnyitás a Claude-ban") { openClaude(ctx, s.url)?.let(host::note) }
-                else if (s.alive) Text("a link még nem jött meg…", style = Melyviz.small.copy(color = Melyviz.muted))
-                if (s.alive) VrgChip("■ Leállítás") { ClaudeMsgs.stop(s.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") } }
+        // RCO (long press): the session's link copied or shared (to finish it on another device), next to the chips
+        var menu by remember { mutableStateOf(false) }
+        val clipboard = LocalClipboardManager.current
+        Box {
+            RcoMenu(menu, { menu = false }, s.name, listOfNotNull(
+                s.url?.let { u -> RcoItem("✶", "Megnyitás a Claude-ban") { openClaude(ctx, u)?.let(host::note) } },
+                s.url?.let { u -> RcoItem("⧉", "Link másolása") { clipboard.setText(AnnotatedString(u)) } },
+                s.url?.let { u -> RcoItem("⇪", "Megosztás") { shareText(ctx, s.name + "\n" + u) } },
+                if (s.alive) RcoItem("■", "Leállítás", danger = true) { ClaudeMsgs.stop(s.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") } } else null,
+            ))
+            Column(Modifier.fillMaxWidth().rco(onClick = { s.url?.let { u -> openClaude(ctx, u)?.let(host::note) } }, onLong = { menu = true },
+                onClickLabel = if (s.url != null) "megnyitás a Claude-ban" else null).padding(vertical = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(8.dp).background(if (s.alive) Melyviz.current else Melyviz.faint, CircleShape)
+                        .semantics { contentDescription = if (s.alive) "fut" else "leállt" })
+                    Text(s.name, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(start = 8.dp))
+                }
+                Text("${l.folderName(s.folder)} · ${s.account} fiók · ${TIME.format(Date(s.started))}" + if (!s.alive) " · leállt" else "",
+                    style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 16.dp))
+                Row(Modifier.padding(start = 16.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (s.url != null) VrgChip("✶ Megnyitás a Claude-ban") { openClaude(ctx, s.url)?.let(host::note) }
+                    else if (s.alive) Text("a link még nem jött meg…", style = Melyviz.small.copy(color = Melyviz.muted))
+                    if (s.alive) VrgChip("■ Leállítás") { ClaudeMsgs.stop(s.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") } }
+                }
             }
         }
     }

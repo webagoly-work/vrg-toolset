@@ -40,6 +40,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // 📸 — the screenshot that just arrived from the PC, ready to keep: save to the gallery, share to any
 // app, take another, or pick an earlier one from the strip.
@@ -89,21 +92,39 @@ fun ShotSheet(file: File?, onPick: (File) -> Unit, onClose: () -> Unit) {
         if (shots.size > 1) {
             SectionTitle("Korábbiak")
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                shots.forEach { f -> Thumb(f, selected = f == file) { onPick(f) } }
+                // RCO on a thumbnail (long press): share, save or delete that shot without selecting it first
+                shots.forEach { f ->
+                    Thumb(f, selected = f == file, onClick = { onPick(f) }, menu = listOf(
+                        RcoItem("⇪", "Megosztás") { ctx.startActivity(ShotStore.shareIntent(ctx, f)) },
+                        RcoItem("⬇", "Mentés a Galériába") {
+                            scope.launch { saved = ShotStore.saveToGallery(ctx, f)?.let { "Elmentve: $it" } ?: "A mentés nem sikerült." }
+                        },
+                        RcoItem("✕", "Törlés", danger = true) {
+                            val next = shots.firstOrNull { it != f }
+                            Deck.deleteShot(f)
+                            if (f == file) { if (next != null) onPick(next) else onClose() }
+                        },
+                    ))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun Thumb(f: File, selected: Boolean, onClick: () -> Unit) {
+private fun Thumb(f: File, selected: Boolean, onClick: () -> Unit, menu: List<RcoItem>) {
     val bmp by produceState<ImageBitmap?>(null, f) { value = withContext(Dispatchers.IO) { decode(f, 240) } }
     val shape = RoundedCornerShape(8.dp)
-    Box(
-        Modifier.size(96.dp, 64.dp).clip(shape).background(Melyviz.abyss)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape).clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) { bmp?.let { Image(it, contentDescription = f.name, contentScale = ContentScale.Crop, modifier = Modifier.size(96.dp, 64.dp)) } }
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Box(
+            Modifier.size(96.dp, 64.dp).clip(shape).background(Melyviz.abyss)
+                .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+                .rco(onClick = onClick, onLong = { open = true }),
+            contentAlignment = Alignment.Center,
+        ) { bmp?.let { Image(it, contentDescription = f.name, contentScale = ContentScale.Crop, modifier = Modifier.size(96.dp, 64.dp)) } }
+        RcoMenu(open, { open = false }, f.name, menu)
+    }
 }
 
 /** Decodes with a power-of-two sample size so a 4K desktop does not cost 30 MB of heap per preview. */

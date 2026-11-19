@@ -167,14 +167,15 @@ private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
 @Composable
 internal fun HomeWindow(modifier: Modifier, open: (String) -> Unit) {
     HomeBody(modifier.padding(horizontal = 10.dp), open, cols = { landscape -> HomeLayout.columns(landscape) }) { f, m ->
-        Icon(f, m) { open(f.id) }
+        FeatureRco(f, open, sheets = true, modifier = m) { inner -> Icon(f, inner) }
     }
 }
 
 @Composable
-private fun Icon(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
+private fun Icon(f: FeatureInfo, modifier: Modifier) {
     val built = Registry.isBuilt(f)
-    Column(modifier.clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    // the tap and the RCO come in with [modifier] (FeatureRco)
+    Column(modifier.padding(vertical = 8.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.size(46.dp).background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
             .border(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
             Text(f.glyph, style = Melyviz.glyph.copy(color = if (built) Melyviz.glow else Melyviz.faint))

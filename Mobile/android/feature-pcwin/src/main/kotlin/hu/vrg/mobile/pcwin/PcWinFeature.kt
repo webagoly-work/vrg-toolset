@@ -57,6 +57,14 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // PC ablakok (WP M23): the VRG Desktop's files window on the phone. With a paired PC whose relay runs with --files, the PC's work
 // folders (D-17: Repó, VRG Full, Közös) read-only: browse, a look at a text or an image, and ⇄ Átadásra, which puts a copy on the
@@ -211,10 +219,26 @@ object PcWinFeature : VrgFeature {
 
     @Composable
     private fun RowLine(r: PcRow) {
-        Column(Modifier.fillMaxWidth().clickable { if (r.dir) go(r.h) else lookAt(r) }.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Text((if (r.dir) "▸ " else "  ") + r.name, style = Melyviz.label.copy(color = if (r.dir) Melyviz.current else Melyviz.ink),
-                maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (!r.dir) Text("${PcFiles.size(r.bytes)} · ${TIME.format(Date(r.mtime))}", style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 16.dp))
+        // RCO (long press): a file goes onto the Átadás board without reading it first (big or binary files), or its
+        // name is copied; a folder opens. The tap is unchanged.
+        var menu by remember { mutableStateOf(false) }
+        val clipboard = LocalClipboardManager.current
+        Box {
+            Column(Modifier.fillMaxWidth().rco(onClick = { if (r.dir) go(r.h) else lookAt(r) }, onLong = { menu = true })
+                .padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Text((if (r.dir) "▸ " else "  ") + r.name, style = Melyviz.label.copy(color = if (r.dir) Melyviz.current else Melyviz.ink),
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (!r.dir) Text("${PcFiles.size(r.bytes)} · ${TIME.format(Date(r.mtime))}", style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 16.dp))
+            }
+            RcoMenu(menu, { menu = false }, r.name,
+                if (r.dir) listOf(
+                    RcoItem("▸", "Megnyitás") { go(r.h) },
+                    RcoItem("⧉", "Név másolása") { clipboard.setText(AnnotatedString(r.name)) },
+                ) else listOf(
+                    RcoItem("⇄", "Átadásra") { copy(r.h) },
+                    RcoItem("▣", "Megnézés") { lookAt(r) },
+                    RcoItem("⧉", "Név másolása") { clipboard.setText(AnnotatedString(r.name)) },
+                ))
         }
     }
 

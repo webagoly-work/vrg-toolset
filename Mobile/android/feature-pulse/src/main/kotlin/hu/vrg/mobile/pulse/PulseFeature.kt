@@ -59,6 +59,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.ui.shareText
 
 // Haladás (WP M4, D-8 = A): one screen for "where does the work stand?". Everything lands on main, so
 // main comes first: its commits, its CI and the tools it changed this week. A branch shows only while it
@@ -220,10 +230,7 @@ object PulseFeature : VrgFeature {
         v.branches.forEach { b ->
             Text(b.name, style = Melyviz.title)
             Text("${b.ahead} előrébb · ${b.behind} mögötte · ${ago(b.last.at)}", style = Melyviz.small)
-            b.pull?.let { p ->
-                Text("PR #${p.number}", style = Melyviz.small.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { open(ctx, p.url) }.padding(vertical = 2.dp))
-            }
+            b.pull?.let { p -> PrLine(p.number, p.url, ctx) }
             Commit(b.last, ctx)
             Spacer(Modifier.height(8.dp))
         }
@@ -245,9 +252,36 @@ object PulseFeature : VrgFeature {
 
     @Composable
     private fun Commit(c: CommitLine, ctx: Context) {
-        Column(Modifier.fillMaxWidth().clickable { open(ctx, c.url) }.padding(vertical = 3.dp)) {
-            Text(c.message, style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text("${c.sha.take(7)} · ${ago(c.at)}", style = Melyviz.readout.copy(fontSize = 11.sp))
+        // RCO (long press): the SHA or the link to the clipboard, or shared, without opening GitHub
+        var menu by remember { mutableStateOf(false) }
+        val clipboard = LocalClipboardManager.current
+        Box {
+            Column(Modifier.fillMaxWidth().rco(onClick = { open(ctx, c.url) }, onLong = { menu = true }).padding(vertical = 3.dp)) {
+                Text(c.message, style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text("${c.sha.take(7)} · ${ago(c.at)}", style = Melyviz.readout.copy(fontSize = 11.sp))
+            }
+            RcoMenu(menu, { menu = false }, c.sha.take(7), listOf(
+                RcoItem("↗", "Megnyitás a GitHubon") { open(ctx, c.url) },
+                RcoItem("#", "SHA másolása") { clipboard.setText(AnnotatedString(c.sha)) },
+                RcoItem("⧉", "Link másolása") { clipboard.setText(AnnotatedString(c.url)) },
+                RcoItem("⇪", "Megosztás") { shareText(ctx, c.message.lineSequence().first() + "\n" + c.url) },
+            ))
+        }
+    }
+
+    /** A pull request line with the same RCO as a commit (link copy and share). */
+    @Composable
+    private fun PrLine(number: Int, url: String, ctx: Context) {
+        var menu by remember { mutableStateOf(false) }
+        val clipboard = LocalClipboardManager.current
+        Box {
+            Text("PR #$number", style = Melyviz.small.copy(color = Melyviz.current),
+                modifier = Modifier.rco(onClick = { open(ctx, url) }, onLong = { menu = true }).padding(vertical = 2.dp))
+            RcoMenu(menu, { menu = false }, "PR #$number", listOf(
+                RcoItem("↗", "Megnyitás a GitHubon") { open(ctx, url) },
+                RcoItem("⧉", "Link másolása") { clipboard.setText(AnnotatedString(url)) },
+                RcoItem("⇪", "Megosztás") { shareText(ctx, "PR #$number\n$url") },
+            ))
         }
     }
 }

@@ -54,6 +54,12 @@ import hu.vrg.mobile.pair.PairFeature
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.compose.runtime.LaunchedEffect
+import hu.vrg.mobile.core.PhoneSheets
+import hu.vrg.mobile.core.Sheets
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 
 // The home's layout (WP M32, D-35), shared by both homes: the Asztal's home window draws its groups as icons, the
 // Kompakt home as tiles; everything else (the Sketcher hero, the quick row, the foldable groups, the landscape split)
@@ -236,6 +242,51 @@ internal fun OwnerInstallButton(modifier: Modifier = Modifier) {
             Text("TELEPÍTŐ QR", style = Melyviz.title.copy(fontSize = 15.sp))
             Text("A VRG Mobile legújabb kiadása egy másik telefonra.", style = Melyviz.small)
             InstallQrPanel(onClose = { open = false })
+        }
+    }
+}
+
+/**
+ * Puts a feature in a window on a Lapok sheet (the home icons' RCO): on the active sheet when it has a free cell,
+ * otherwise on a new sheet named after the feature. Returns what to tell the user.
+ */
+internal fun openOnSheet(f: FeatureInfo): String {
+    val r = PhoneSheets.resolve("feat:${f.id}") ?: return "${f.title}: lapon nem nyitható."
+    val p = Sheets.phone
+    var placed = false
+    SheetsStore.update { d0 ->
+        val onActive = if (p.sheetOf(d0, d0.active) != null) p.openWin(d0, d0.active, p.newPaneId(d0, r.kind), r.kind, r.open!!, r.state) else d0
+        if (onActive != d0) { placed = true; return@update onActive }
+        val d1 = p.addSheet(d0, f.title)
+        if (d1 == d0) return@update d0
+        val d2 = p.openWin(d1, d1.active, p.newPaneId(d1, r.kind), r.kind, r.open!!, r.state)
+        placed = d2 != d1
+        if (placed) d2 else d0
+    }
+    return if (placed) "${f.title}: lapon." else "Nincs hely új lapnak (legfeljebb ${Sheets.MAX_SHEETS})."
+}
+
+/**
+ * A feature in the home's groups with its RCO (long press): Megnyitás, Megnyitás lapon (the Asztal only, a built
+ * feature) and folding its group. [modifier] is the grid cell's (its weight); [content] draws the icon or the tile with
+ * the modifier it is given.
+ */
+@Composable
+internal fun FeatureRco(f: FeatureInfo, open: (String) -> Unit, sheets: Boolean, modifier: Modifier, content: @Composable (Modifier) -> Unit) {
+    var menu by remember { mutableStateOf(false) }
+    var said by remember { mutableStateOf<String?>(null) }
+    Column(modifier) {
+        Box {
+            content(Modifier.fillMaxWidth().rco(onClick = { open(f.id) }, onLong = { menu = true }))
+            RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
+                RcoItem(f.glyph, "Megnyitás") { open(f.id) },
+                if (sheets && Registry.isBuilt(f) && PhoneSheets.isWindow(f.id)) RcoItem("▦", "Megnyitás lapon") { said = openOnSheet(f) } else null,
+                RcoItem("▸", "${f.group.label} összecsukása") { ShellSettings.update { it.toggleFold(f.group) } },
+            ))
+        }
+        said?.let { text ->
+            LaunchedEffect(text) { kotlinx.coroutines.delay(2500); said = null }
+            Text(text, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 2)
         }
     }
 }
