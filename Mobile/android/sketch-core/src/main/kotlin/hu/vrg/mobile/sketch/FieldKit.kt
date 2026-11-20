@@ -341,7 +341,7 @@ object FieldKit {
         val items = kit.shotlist.filter { f.eval(it.cond) }
         val have = items.associate { it.id to 0 }.toMutableMap()
         s.captures.filter { it.shot != null }.forEach { c -> if (c.shot in have) have[c.shot!!] = have[c.shot]!! + 1 }
-        s.captures.filter { (it.shot == null || it.shot !in have) && it.kind != CaptureKind.SIGNATURE }.forEach { c ->   // a signature fills no item (M47)
+        s.captures.filter { (it.shot == null || it.shot !in have) && it.kind != CaptureKind.SIGNATURE }.forEach { c ->   // a signature fills no item (M46)
             val it2 = items.firstOrNull { it.purpose == c.purpose && it.room == null && have[it.id]!! < it.need } ?: return@forEach
             have[it2.id] = have[it2.id]!! + 1
         }
@@ -493,7 +493,7 @@ object Intake {
     fun setSite(s: Sketch, f: (Site) -> Site) = s.copy(site = f(s.site ?: Site()))
 
     /** The capture's board file name: `<sketch>_<capture id>_<purpose>.jpg` (WP M29, as M25's photos). */
-    fun exportName(s: Sketch, c: Capture) = "${SketchJson.fileStem(s)}_${c.id}_${if (c.kind == CaptureKind.SIGNATURE) "alairas" else c.purpose}.${CaptureKind.ext(c.kind)}"   // M47: .mp4 / .png
+    fun exportName(s: Sketch, c: Capture) = "${SketchJson.fileStem(s)}_${c.id}_${if (c.kind == CaptureKind.SIGNATURE) "alairas" else c.purpose}.${CaptureKind.ext(c.kind)}"   // M46: .mp4 / .png
 
     /** Every photo file the survey keeps (captures + photo points), for clean-up. */
     fun files(s: Sketch) = Photos.files(s) + s.captures.map { it.file }

@@ -65,7 +65,7 @@ object Camera2 {
     )
 
     /**
-     * D-62: GPS is stripped from every exported copy unless the user keeps it on that photo; a "személyes adat" photo
+     * D-57: GPS is stripped from every exported copy unless the user keeps it on that photo; a "személyes adat" photo
      * never keeps it. A photo with blur leaves the phone only blurred. A plain photo without marks or blur is copied
      * as it is (and its GPS tag removed in place on the copy).
      */
@@ -80,7 +80,7 @@ object Camera2 {
 
     // ---- the walk video ---------------------------------------------------------------------------------------------
 
-    /** The camera app is asked to stop here (most honour it; D-64). */
+    /** The camera app is asked to stop here (most honour it; D-60). */
     const val VIDEO_MAX_S = 90
     /** Over this the video is flagged: slow to send, heavy on the PC board. */
     const val VIDEO_WARN_BYTES = 80L * 1024 * 1024

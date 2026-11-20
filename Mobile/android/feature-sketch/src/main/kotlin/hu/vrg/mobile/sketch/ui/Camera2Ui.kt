@@ -173,7 +173,7 @@ internal fun OcrRunner(st: EditorState) {
 
 // ---- files ------------------------------------------------------------------------------------------------------------
 
-/** CaptureVideo with a length and size limit the camera app is asked to keep (most do; D-64). */
+/** CaptureVideo with a length and size limit the camera app is asked to keep (most do; D-60). */
 internal class CaptureWalkVideo : ActivityResultContracts.CaptureVideo() {
     override fun createIntent(context: Context, input: Uri): Intent = super.createIntent(context, input)
         .putExtra(MediaStore.EXTRA_DURATION_LIMIT, Camera2.VIDEO_MAX_S)
@@ -276,7 +276,7 @@ internal fun copyWithoutGps(src: File, out: File): File? {
 }
 
 /**
- * What one capture sends with the package (D-62): the main file under its board name (a photo with blur only blurred,
+ * What one capture sends with the package (D-57): the main file under its board name (a photo with blur only blurred,
  * its GPS removed unless kept), a "_jel" copy with the markup burned in, the video or the signature as they are.
  */
 internal fun exportCapture(s: Sketch, c: Capture, src: File, out: File): List<File> {

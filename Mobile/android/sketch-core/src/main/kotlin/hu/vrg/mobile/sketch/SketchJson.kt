@@ -153,7 +153,7 @@ object SketchJson {
         )
     }
 
-    // WP M47 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)
+    // WP M46 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)
     private fun writeCapture2(c: Capture, j: JSONObject) {
         if (c.kind != CaptureKind.PHOTO) j.put("kind", c.kind)
         c.phase?.let { j.put("phase", it) }; c.pair?.let { j.put("pair", it) }

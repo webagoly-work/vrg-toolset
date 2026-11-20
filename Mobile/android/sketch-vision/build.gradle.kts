@@ -1,7 +1,7 @@
 // VRG Sketcher, Kamera 2: the on-device vision behind one small interface (TextReader), so the recogniser can be
 // swapped without touching the Sketcher. Today: Google ML Kit's BUNDLED Latin text recognition (v2), which runs
-// offline with the model inside the APK (about 4 MB per CPU architecture; D-60 in docs/mobile/DECISIONS.md).
-// Face detection is deliberately not here: its bundled model is about 6.9 MB (D-61, a documented later step).
+// offline with the model inside the APK (about 4 MB per CPU architecture; D-55 in docs/mobile/DECISIONS.md).
+// Face detection is deliberately not here: its bundled model is about 6.9 MB (D-56, a documented later step).
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")

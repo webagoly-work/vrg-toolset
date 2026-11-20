@@ -48,7 +48,7 @@ Symbols and colours, not text buttons. The same codes on the phone and the Deskt
 | Jegyzet | ✎ | amber `#e0b020` | M27: the conversation log: text or dictation, quick chips instead of typing, background suggestions |
 | Munkakör | ☰ | green `#3dae5a` | M28: what the job is and what the client wants (toggles, quantities), the scope card |
 | Kérdések | ? | orange `#e8641c` | M28: the shadow questionnaire: options + free text, appears as the job takes shape |
-| Kamera | ◉ | blue `#2a8cdb` | M29: purpose-tagged photos, the shot list, markup, series, gallery |
+| Kamera | ◉ | blue `#2a8cdb` | M29: purpose-tagged photos, the shot list, markup, series, gallery; M46: type-plate reading, blur and privacy on export, before / after, signature, walk video |
 | Helyszín | ⌖ | violet `#8a5cd6` | M30: address, GPS, VRG Térkép, the building footprint against the sketch |
 | Nyitott | ⚑ | red `#d64545` | M26: every loose end, one tap to jump to it |
 
@@ -64,7 +64,7 @@ a v1 file opens with empty intake.
 | `entries` | `{id E…, at, text, chips[], room?, target?, open, voice}` | a note or a chip-only fact; `open` = Tisztázandó |
 | `scope` | `{id → qty}` | munkakör toggles; qty for countable wants |
 | `answers` | `{qid → {options[], text, at, state}}` | state `answered` / `later` / `skip` |
-| `captures` | `{id C…, file, purpose, at, room?, target?, shot?, note, lat?, lon?, marks[]}` | a purpose photo; `shot` = the shot-list item it fulfils; marks = vector markup over the photo |
+| `captures` | `{id C…, file, purpose, at, room?, target?, shot?, note, lat?, lon?, marks[]}` + M46 `{kind?, phase?, pair?, privacy?, keepGps?, ocrAt?, ocr[]?, durationMs?, bytes?, signer?}` | a purpose photo (or M46: a walk video, a signature); `shot` = the shot-list item it fulfils; marks = vector markup over the photo (M46: also blur `elmos` / `elmos_ecset`); `pair` = an after-photo's before; `ocr` = what the type-plate reader found |
 | `site` | `{address, lat?, lon?, source, footprint?}` | the place; footprint = the building's outline measured from the map |
 | `dismissed` | `[ids]` | suggestions and shadow items the user swiped away (they do not come back) |
 | `seen` | `{id → time}` | when a shadow question first appeared (new ones are marked) |
@@ -115,4 +115,13 @@ toggle in the top corner, switching between the original and the variant at any 
 | VRG Térkép | embedded through the relay's port proxy (M8) when paired; GPS and OSM otherwise | embedded `localhost:8802/?embed=1` |
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61.
+
+## 7. Kamera 2 (M46)
+
+The camera's second round (`docs/mobile/WP/M46.md`): label and type-plate photos are read on the phone (`sketch-vision`
+`TextReader`, ML Kit bundled; parsed by `sketch-core` `TypePlate.kt`) and their numbers offered as chips that fill an
+answer or a note only when tapped; blur (▦ / ▒) kept as vectors and burned in on export, a *Személyes adat* flag, GPS
+stripped from every exported copy unless kept; before / after pairs compared with a slider; the client's signature as a
+*dokumentum* capture; the walk video as a capture of kind video; the ◉ hold menu leads with the next missing shots,
+and „＋ még” repeats the last purpose. The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.

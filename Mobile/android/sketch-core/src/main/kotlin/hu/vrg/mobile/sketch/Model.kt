@@ -138,7 +138,7 @@ data class Answer(val q: String, val options: List<String> = emptyList(), val te
 
 enum class MarkKind(val id: String) {
     ARROW("nyil"), CIRCLE("kor"), LINE("vonal"), FREE("szabad"), TEXT("szoveg"),
-    /** WP M47 (Kamera 2): a blurred rectangle (2 points: corners) and a blurred brush stroke ([Mark.w] wide). */
+    /** WP M46 (Kamera 2): a blurred rectangle (2 points: corners) and a blurred brush stroke ([Mark.w] wide). */
     BLUR("elmos"), BLUR_BRUSH("elmos_ecset");
     val blur get() = this == BLUR || this == BLUR_BRUSH
     companion object { fun of(id: String?) = entries.firstOrNull { it.id == id } ?: FREE }
@@ -160,7 +160,7 @@ data class Capture(
     val lat: Double? = null,
     val lon: Double? = null,
     val marks: List<Mark> = emptyList(),
-    // WP M47 (Kamera 2), every field optional: an M29 file reads with these defaults
+    // WP M46 (Kamera 2), every field optional: an M29 file reads with these defaults
     /** "photo" (jpg), "video" (mp4, the walk video), "signature" (png, the client's signature). */
     val kind: String = CaptureKind.PHOTO,
     /** Before / after: "elotte" or "utana" (null = neither); an after photo names its before in [pair]. */
@@ -168,7 +168,7 @@ data class Capture(
     val pair: String? = null,
     /** Személyes adat: the photo shows a person, a house number, a name; it leaves the phone only blurred, never with GPS. */
     val privacy: Boolean = false,
-    /** The exported copy keeps the GPS position (default: stripped, D-62). */
+    /** The exported copy keeps the GPS position (default: stripped, D-57). */
     val keepGps: Boolean = false,
     /** Type-plate reading (TypePlate.kt): when it ran (0 = never) and what it found. */
     val ocrAt: Long = 0,

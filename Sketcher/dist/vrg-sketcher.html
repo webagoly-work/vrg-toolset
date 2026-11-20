@@ -299,7 +299,7 @@ window.VRG_VARIANTS = [{"kind":"vrg-sketcher-variant","v":1,"id":"ev-tolto","nam
     const items = kit.shotlist.filter(h => evalCond(h.cond, f)), have = new Map(items.map(h => [h.id, 0]));
     const caps = s.captures || [];
     caps.filter(c => c.shot != null).forEach(c => { if (have.has(c.shot)) have.set(c.shot, have.get(c.shot) + 1); });
-    caps.filter(c => (c.shot == null || !have.has(c.shot)) && c.kind !== 'signature').forEach(c => {   // a signature fills no item (M47)
+    caps.filter(c => (c.shot == null || !have.has(c.shot)) && c.kind !== 'signature').forEach(c => {   // a signature fills no item (M46)
       const it = items.find(h => h.purpose === (c.purpose || 'egyeb') && h.room == null && have.get(h.id) < h.need);
       if (it) have.set(it.id, have.get(it.id) + 1);
     });

@@ -82,11 +82,11 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     pkg.writeText(PlannerExport.build(s, n).toString(1))
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-62): no GPS leaves the phone by default
+        if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
-        // Kamera 2 (D-62): blur burned in, GPS removed unless kept, videos and signatures as they are
+        // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
         exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out)
     }
     listOf(pkg to MIME) + (photos + caps).map { it to mimeOf(it) }

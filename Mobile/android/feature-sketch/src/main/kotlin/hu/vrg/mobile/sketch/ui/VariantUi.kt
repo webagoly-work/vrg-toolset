@@ -143,7 +143,7 @@ private fun writeRequest(ctx: Context, st: EditorState, premise: String, topics:
         // the request names the photos by purpose only, never by the survey's (client's) name
         val f = File(out, "variant-photo-${c.id}-${c.purpose}.jpg")
         if (c.privacy || c.kind != hu.vrg.mobile.sketch.CaptureKind.PHOTO) return@mapNotNull null
-        // Kamera 2 (D-62): the blur burned in, the GPS removed
+        // Kamera 2 (D-57): the blur burned in, the GPS removed
         if (c.marks.any { it.kind.blur }) burnMarks(src, c.marks.filter { it.kind.blur }, f) else copyWithoutGps(src, f)
     }
     val now = System.currentTimeMillis()

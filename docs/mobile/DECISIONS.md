@@ -479,6 +479,52 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
+- **D-55 · Kamera 2: the text recogniser is ML Kit's bundled Latin model, behind one module (M46), 2026-11-20.**
+  Taken in fork F3 without asking (FORKS.md rule 5), to confirm. `com.google.mlkit:text-recognition:16.0.1` in the new
+  module `sketch-vision`, behind `TextReader` (plain text out; the parsing is pure Kotlin in `sketch-core`
+  `TypePlate.kt`), so another engine only has to return text. **Why bundled:** it works offline in a cellar with no
+  signal and needs no Google Play download on first use (the unbundled variant, ~260 KB, downloads its model through
+  Play services). **Licence / terms:** ML Kit is free of charge and closed source, used under Google's ML Kit Terms
+  (developers.google.com/ml-kit/terms) and the Google APIs Terms; the bundled model runs on the device and no image
+  leaves it; Google's terms allow the SDK to send usage and performance metrics, not the image content (to re-read
+  before a public release). **Size:** about 4 MB per CPU architecture (Google's figure); the APK now carries only
+  `arm64-v8a` and `armeabi-v7a` (`abiFilters` in `app/build.gradle.kts`: x86 is emulators only), so about +8 MB.
+  Rejected: Tesseract (≈ 20 MB with the Hungarian data, slower, worse on photos), the unbundled ML Kit (needs Play
+  services and a first download). **Rule:** a finding is offered as a chip and fills an answer or a note line only
+  when tapped; label photos (purpose *Típustábla*, the label items of the shot list) are read by themselves, others on
+  a tap. Details: `WP/M46.md`.
+- **D-56 · Kamera 2: no automatic face detection for now (M46), 2026-11-20.** Taken in fork F3. ML Kit's bundled face
+  model adds about 6.9 MB per architecture (the unbundled one needs Play services), more than the brief's "only if it
+  stays small". The manual blur (▦ rectangle, ▒ brush) covers faces, house numbers and names. **Later step:**
+  `sketch-vision` gets a `FaceFinder` beside `TextReader` that proposes blur rectangles on photos flagged
+  *Személyes adat*, if the size is accepted or a smaller model appears.
+- **D-57 · Kamera 2: GPS is stripped from exported copies by default (M46), 2026-11-20.** Taken in fork F3. Every
+  photo that leaves the phone (the package's purpose photos and Fotópont photos, variant-request photos) has its EXIF
+  position removed; when the rewrite fails the copy is re-encoded without EXIF rather than sent with it. Per photo
+  *⌖ GPS a kiadott képen marad* keeps it (the survey file keeps the position either way, it is the Founder's own
+  record). A photo flagged **Személyes adat** never keeps it. A photo with a blur mark leaves the phone **only blurred**
+  (the original stays on the phone); personal photos, videos and signatures are never offered for a variant request
+  (which ends up in Git). Rejected: keeping GPS by default (a photo forwarded from the PC to a supplier or a client
+  carries the client's address in its metadata).
+- **D-58 · Kamera 2: before / after is a pair by reference, compared with a slider (M46), 2026-11-20.** Taken in fork F3.
+  The after-photo names its before (`phase` utana + `pair`); one after per before (a new one replaces the old). The
+  candidates are earlier photos of the same purpose, the same room first, then the same shot item, the newest first.
+  The phone's camera app gives no live ghost overlay (TakePicture intent, M29), so the comparison is in the viewer: a
+  slider revealing the after over the before, or side by side. A live overlay needs an own camera (CameraX): later.
+- **D-59 · Kamera 2: the client's signature is a PNG under a fixed statement (M46), 2026-11-20.** Taken in fork F3. Three
+  statements (átvétel / hozzájárulás a fotózáshoz / mindkettő), the signer's name and the time written into the PNG
+  under the strokes and stored on the capture (purpose *dokumentum*, kind *signature*); exported as `…_alairas.png`.
+  It is a record of consent on site, **not** a qualified electronic signature. It fills no shot-list item (otherwise it
+  would tick *A régi dokumentáció*); the Kotlin and JS engines both skip it, the fixture checks it. The statement texts
+  are to be confirmed by the Founder (question 2 of the F3 report).
+- **D-60 · Kamera 2: the walk video goes through the camera app, limited and warned (M46), 2026-11-20.** Taken in fork F3.
+  CaptureVideo with `EXTRA_DURATION_LIMIT` 90 s and `EXTRA_SIZE_LIMIT` 150 MB (most camera apps honour them); a warning
+  over 80 MB or a long video; no re-compression on the phone (no extra library). Purpose *Nyomvonal* unless chosen
+  otherwise. Exported as `…_<cél>.mp4` with the package.
+- **D-61 · Kamera 2: faster purpose switching (M46), 2026-11-20.** Taken in fork F3. The ◉ hold menu starts with the next
+  four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
+  three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
+  (not during Sorozat, which already returns to the camera).
 
 ## Open (to ask when the WP that needs them starts)
 
