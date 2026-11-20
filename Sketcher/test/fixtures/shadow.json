@@ -2014,6 +2014,385 @@
    }
   },
   {
+   "name": "Kamera 2: a signature (dokumentum) fills no shot item, a video does; an after photo paired with its before",
+   "sketch": {
+    "kind": "vrg-vazlat",
+    "v": 2,
+    "id": "FX",
+    "name": "Fixture",
+    "seq": 50,
+    "rooms": [],
+    "lines": [],
+    "points": [],
+    "measures": [],
+    "circuits": [],
+    "routes": [],
+    "memos": [],
+    "tags": [
+     {
+      "id": "T-furdo",
+      "name": "Fürdő",
+      "col": 4280978651,
+      "preset": "kind:furdo"
+     }
+    ],
+    "tagUses": [],
+    "photos": [],
+    "entries": [],
+    "scope": {
+     "ev": 1
+    },
+    "answers": {},
+    "captures": [
+     {
+      "id": "C1",
+      "file": "s.png",
+      "purpose": "dokumentum",
+      "at": 1763460000000,
+      "note": "A felmérést átvettem",
+      "kind": "signature",
+      "signer": "Ügyfél"
+     },
+     {
+      "id": "C2",
+      "file": "v.mp4",
+      "purpose": "nyomvonal",
+      "at": 1763460000000,
+      "note": "",
+      "kind": "video",
+      "durationMs": 42000,
+      "bytes": 30000000
+     },
+     {
+      "id": "C3",
+      "file": "a.jpg",
+      "purpose": "hiba",
+      "at": 1763459991000,
+      "note": "",
+      "phase": "elotte"
+     },
+     {
+      "id": "C4",
+      "file": "b.jpg",
+      "purpose": "hiba",
+      "at": 1763460000000,
+      "note": "",
+      "phase": "utana",
+      "pair": "C3"
+     }
+    ],
+    "dismissed": [],
+    "seen": {}
+   },
+   "now": 1763460000000,
+   "variant": null,
+   "expect": {
+    "facts": {
+     "scope": [
+      "ev"
+     ],
+     "answers": {},
+     "rooms": [],
+     "points": [],
+     "tags": [],
+     "kw": [],
+     "chips": [],
+     "photos": [
+      "dokumentum",
+      "hiba",
+      "nyomvonal"
+     ],
+     "site": false,
+     "variant": null
+    },
+    "questions": [
+     [
+      "lenyeg",
+      true,
+      false,
+      false
+     ],
+     [
+      "ingatlan",
+      true,
+      false,
+      false
+     ],
+     [
+      "hozzaferes",
+      true,
+      false,
+      false
+     ],
+     [
+      "hatarido",
+      true,
+      false,
+      false
+     ],
+     [
+      "keret",
+      true,
+      false,
+      false
+     ],
+     [
+      "lakott",
+      true,
+      false,
+      false
+     ],
+     [
+      "foto",
+      true,
+      false,
+      false
+     ],
+     [
+      "fazis",
+      true,
+      false,
+      false
+     ],
+     [
+      "fobizt",
+      true,
+      false,
+      false
+     ],
+     [
+      "mero_hely",
+      true,
+      false,
+      false
+     ],
+     [
+      "bekotes",
+      true,
+      false,
+      false
+     ],
+     [
+      "szabad_hely",
+      true,
+      false,
+      false
+     ],
+     [
+      "foldeles",
+      true,
+      false,
+      false
+     ],
+     [
+      "auto_kw",
+      true,
+      false,
+      false
+     ],
+     [
+      "parkolo",
+      true,
+      false,
+      false
+     ],
+     [
+      "tavolsag",
+      true,
+      false,
+      false
+     ],
+     [
+      "doksi",
+      true,
+      false,
+      false
+     ],
+     [
+      "dontes",
+      true,
+      false,
+      false
+     ],
+     [
+      "uj_fogyaszto",
+      true,
+      false,
+      false
+     ],
+     [
+      "mero_allapot",
+      true,
+      false,
+      false
+     ],
+     [
+      "felirat",
+      true,
+      false,
+      false
+     ],
+     [
+      "uj_eloszto",
+      true,
+      false,
+      false
+     ],
+     [
+      "okos_tolto",
+      true,
+      false,
+      false
+     ],
+     [
+      "wifi_park",
+      true,
+      false,
+      false
+     ]
+    ],
+    "unseen": [
+     "lenyeg",
+     "ingatlan",
+     "hozzaferes",
+     "hatarido",
+     "keret",
+     "lakott",
+     "foto",
+     "doksi",
+     "dontes",
+     "fazis",
+     "fobizt",
+     "mero_hely",
+     "bekotes",
+     "uj_fogyaszto",
+     "mero_allapot",
+     "szabad_hely",
+     "felirat",
+     "foldeles",
+     "uj_eloszto",
+     "auto_kw",
+     "parkolo",
+     "tavolsag",
+     "okos_tolto",
+     "wifi_park"
+    ],
+    "suggestions": [],
+    "shots": [
+     [
+      "epulet_eleje",
+      0,
+      false
+     ],
+     [
+      "merohely_zart",
+      0,
+      false
+     ],
+     [
+      "merohely_nyitott",
+      0,
+      false
+     ],
+     [
+      "mero_tabla",
+      0,
+      false
+     ],
+     [
+      "fobizt_tabla",
+      0,
+      false
+     ],
+     [
+      "eloszto_zart",
+      0,
+      false
+     ],
+     [
+      "eloszto_nyitott",
+      0,
+      false
+     ],
+     [
+      "fi_tabla",
+      0,
+      false
+     ],
+     [
+      "szabad_hely",
+      0,
+      false
+     ],
+     [
+      "ev_hely",
+      0,
+      false
+     ],
+     [
+      "ev_parkolo",
+      0,
+      false
+     ],
+     [
+      "ev_utvonal",
+      1,
+      false
+     ],
+     [
+      "hozzaferes",
+      0,
+      false
+     ],
+     [
+      "eloszto_felirat",
+      0,
+      false
+     ],
+     [
+      "foldeles",
+      0,
+      false
+     ]
+    ],
+    "open": [
+     "kerdes|question|lenyeg|Mi a kérés lényege?",
+     "kerdes|question|ingatlan|Milyen ingatlan?",
+     "kerdes|question|hozzaferes|Ki fér hozzá az ingatlanhoz?",
+     "kerdes|question|hatarido|Mikorra kell elkészülni?",
+     "kerdes|question|keret|Van költségkeret?",
+     "kerdes|question|lakott|Lakott lesz közben az ingatlan?",
+     "kerdes|question|foto|Fényképezhetünk?",
+     "kerdes|question|fazis|Hány fázis a bekötés most?",
+     "kerdes|question|fobizt|Főbiztosíték?",
+     "kerdes|question|mero_hely|Hol van a mérő?",
+     "kerdes|question|bekotes|Hogyan jön be a hálózat?",
+     "kerdes|question|szabad_hely|Van szabad hely az elosztóban?",
+     "kerdes|question|foldeles|Földelés?",
+     "kerdes|question|auto_kw|Az autó töltési teljesítménye (AC)?",
+     "kerdes|question|parkolo|Hol parkol az autó?",
+     "kerdes|question|tavolsag|Milyen messze van az elosztótól?",
+     "kamera|shot|epulet_eleje|Fotó: Épület / bejárat eleje",
+     "kamera|shot|merohely_zart|Fotó: Mérőszekrény zárva, környezettel",
+     "kamera|shot|merohely_nyitott|Fotó: Mérőszekrény nyitva: mérő, főbiztosíték",
+     "kamera|shot|mero_tabla|Fotó: Mérő címkéje: gyári szám, típus",
+     "kamera|shot|fobizt_tabla|Fotó: Főbiztosíték értéke",
+     "kamera|shot|eloszto_zart|Fotó: Elosztó zárva, a helyiséggel",
+     "kamera|shot|eloszto_nyitott|Fotó: Elosztó nyitva, olvasható címkékkel",
+     "kamera|shot|fi_tabla|Fotó: FI-relé címkéje (30 mA?)",
+     "kamera|shot|szabad_hely|Fotó: Szabad DIN-hely",
+     "kamera|shot|ev_hely|Fotó: A töltő tervezett helye",
+     "kamera|shot|ev_parkolo|Fotó: A parkolóhely, a töltőcsatlakozó oldala",
+     "kamera|shot|ev_utvonal|Fotó: Kábelút az elosztótól a töltőig (1/2)",
+     "helyszin|site|site|Nincs cím"
+    ],
+    "afterScope": {
+     "ev": 1
+    },
+    "afterAnswers": {}
+   }
+  },
+  {
    "name": "variant switched on, and a chip effect already applied",
    "sketch": {
     "kind": "vrg-vazlat",

@@ -39,6 +39,10 @@ const CASES = [
   ['points and circuits in random order: a typeless point, a circuit without its board', S({
     points: [{ id: 'P1', at: [0, 0], type: 'pont', st: 'tervezett' }, { id: 'P2', at: [5, 0], type: 'socket', st: 'tervezett' }, { id: 'P3', at: [9, 9], type: 'board', st: 'meglevo' }],
     circuits: [{ id: 'K4', name: 'K1', col: 4293420060, members: ['P2'], ded: false }], site: { address: 'Kossuth u. 12', source: 'kezi' } })],
+  ['Kamera 2: a signature (dokumentum) fills no shot item, a video does; an after photo paired with its before', S({ scope: { ev: 1 },
+    captures: [{ id: 'C1', file: 's.png', purpose: 'dokumentum', at: NOW, note: 'A felmérést átvettem', kind: 'signature', signer: 'Ügyfél' },
+      { id: 'C2', file: 'v.mp4', purpose: 'nyomvonal', at: NOW, note: '', kind: 'video', durationMs: 42000, bytes: 30000000 },
+      { id: 'C3', file: 'a.jpg', purpose: 'hiba', at: NOW - 9000, note: '', phase: 'elotte' }, { id: 'C4', file: 'b.jpg', purpose: 'hiba', at: NOW, note: '', phase: 'utana', pair: 'C3' }] })],
   ['variant switched on, and a chip effect already applied', S({ variant: 'furdo-felujitas', variantOn: true, scope: { furdo: 1 },
     entries: [{ id: 'E1', at: NOW, text: 'bojlert is cserélnénk', chips: ['berlo'] }], answers: { hozzaferes: { options: ['berlo'], text: '', at: NOW, state: 'answered' } } })],
 ];

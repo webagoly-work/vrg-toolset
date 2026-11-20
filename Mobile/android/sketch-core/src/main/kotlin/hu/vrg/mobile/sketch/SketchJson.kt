@@ -102,8 +102,9 @@ object SketchJson {
             if (c.marks.isNotEmpty()) j.put("marks", JSONArray().also { ma -> c.marks.forEach { m ->
                 ma.put(JSONObject().put("kind", m.kind.id).put("pts", JSONArray().also { pa -> m.pts.forEach { p ->
                     pa.put(JSONArray().put(Math.round(p.x * 10000) / 10000.0).put(Math.round(p.y * 10000) / 10000.0)) } })
-                    .put("text", m.text).put("col", m.color))
+                    .put("text", m.text).put("col", m.color).also { if (m.w > 0) it.put("w", Math.round(m.w * 10000) / 10000.0) })
             } })
+            writeCapture2(c, j)
             a.put(j)
         } })
         o.put("dismissed", strs(s.dismissed.sorted()))
@@ -141,8 +142,8 @@ object SketchJson {
                     list(c.optJSONArray("marks")) { m ->
                         val pa = m.optJSONArray("pts")
                         Mark(MarkKind.of(m.str("kind")), if (pa == null) emptyList() else (0 until pa.length()).mapNotNull { readPtRaw(pa.optJSONArray(it)) },
-                            m.optString("text"), m.optLong("col", 0xFFE8641C))
-                    })
+                            m.optString("text"), m.optLong("col", 0xFFE8641C), m.optDouble("w", 0.0).takeIf { !it.isNaN() } ?: 0.0)
+                    }).let { readCapture2(c, it) }
             },
             dismissed = readStrs(o.optJSONArray("dismissed")).toSet(),
             seen = longMap(o.optJSONObject("seen")),
@@ -151,6 +152,30 @@ object SketchJson {
             draft = o.optString("draft"),
         )
     }
+
+    // WP M47 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)
+    private fun writeCapture2(c: Capture, j: JSONObject) {
+        if (c.kind != CaptureKind.PHOTO) j.put("kind", c.kind)
+        c.phase?.let { j.put("phase", it) }; c.pair?.let { j.put("pair", it) }
+        if (c.privacy) j.put("privacy", true); if (c.keepGps) j.put("keepGps", true)
+        if (c.ocrAt > 0) j.put("ocrAt", c.ocrAt)
+        if (c.ocr.isNotEmpty()) j.put("ocr", JSONArray().also { a -> c.ocr.forEach { h ->
+            val o = JSONObject().put("kind", h.kind).put("value", h.value).put("raw", h.raw)
+            if (h.used) o.put("used", true); if (h.dropped) o.put("dropped", true)
+            a.put(o)
+        } })
+        if (c.durationMs > 0) j.put("durationMs", c.durationMs); if (c.bytes > 0) j.put("bytes", c.bytes)
+        if (c.signer.isNotEmpty()) j.put("signer", c.signer)
+    }
+
+    private fun readCapture2(o: JSONObject, c: Capture) = c.copy(
+        kind = o.str("kind") ?: CaptureKind.PHOTO,
+        phase = o.str("phase"), pair = o.str("pair"),
+        privacy = o.optBoolean("privacy"), keepGps = o.optBoolean("keepGps"),
+        ocrAt = o.optLong("ocrAt"),
+        ocr = list(o.optJSONArray("ocr")) { h -> OcrHit(h.str("kind") ?: return@list null, h.optString("value"), h.optString("raw"), h.optBoolean("used"), h.optBoolean("dropped")) },
+        durationMs = o.optLong("durationMs"), bytes = o.optLong("bytes"), signer = o.optString("signer"),
+    )
 
     /** Null when [o] is not a sketch file. */
     fun read(o: JSONObject): Sketch? {

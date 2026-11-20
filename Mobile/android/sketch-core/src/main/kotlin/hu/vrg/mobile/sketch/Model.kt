@@ -137,12 +137,15 @@ enum class AnswerState(val id: String) {
 data class Answer(val q: String, val options: List<String> = emptyList(), val text: String = "", val at: Long = 0, val state: AnswerState = AnswerState.ANSWERED)
 
 enum class MarkKind(val id: String) {
-    ARROW("nyil"), CIRCLE("kor"), LINE("vonal"), FREE("szabad"), TEXT("szoveg");
+    ARROW("nyil"), CIRCLE("kor"), LINE("vonal"), FREE("szabad"), TEXT("szoveg"),
+    /** WP M47 (Kamera 2): a blurred rectangle (2 points: corners) and a blurred brush stroke ([Mark.w] wide). */
+    BLUR("elmos"), BLUR_BRUSH("elmos_ecset");
+    val blur get() = this == BLUR || this == BLUR_BRUSH
     companion object { fun of(id: String?) = entries.firstOrNull { it.id == id } ?: FREE }
 }
 
 /** Markup over a photo: points in 0..1 of the photo's width and height (upright), so it fits any size. */
-data class Mark(val kind: MarkKind, val pts: List<Pt>, val text: String = "", val color: Long = 0xFFE8641C)
+data class Mark(val kind: MarkKind, val pts: List<Pt>, val text: String = "", val color: Long = 0xFFE8641C, val w: Double = 0.0)
 
 /** A photo taken for a purpose (Kamera, WP M29): what it shows, where, which shot-list item it fulfils. */
 data class Capture(
@@ -157,7 +160,38 @@ data class Capture(
     val lat: Double? = null,
     val lon: Double? = null,
     val marks: List<Mark> = emptyList(),
+    // WP M47 (Kamera 2), every field optional: an M29 file reads with these defaults
+    /** "photo" (jpg), "video" (mp4, the walk video), "signature" (png, the client's signature). */
+    val kind: String = CaptureKind.PHOTO,
+    /** Before / after: "elotte" or "utana" (null = neither); an after photo names its before in [pair]. */
+    val phase: String? = null,
+    val pair: String? = null,
+    /** Személyes adat: the photo shows a person, a house number, a name; it leaves the phone only blurred, never with GPS. */
+    val privacy: Boolean = false,
+    /** The exported copy keeps the GPS position (default: stripped, D-62). */
+    val keepGps: Boolean = false,
+    /** Type-plate reading (TypePlate.kt): when it ran (0 = never) and what it found. */
+    val ocrAt: Long = 0,
+    val ocr: List<OcrHit> = emptyList(),
+    /** A video's length and size; a signature's signer. */
+    val durationMs: Long = 0,
+    val bytes: Long = 0,
+    val signer: String = "",
 )
+
+object CaptureKind {
+    const val PHOTO = "photo"
+    const val VIDEO = "video"
+    const val SIGNATURE = "signature"
+    fun ext(kind: String) = when (kind) { VIDEO -> "mp4"; SIGNATURE -> "png"; else -> "jpg" }
+}
+
+/**
+ * One thing the type-plate reader found on a photo: [kind] (TypePlate.Kinds), the value as it should be written
+ * ("3×25 A", "30 mA", "12345678"), the text it was read from, and whether the user applied it ([used]) or swiped it
+ * away ([dropped]). Nothing is applied without a tap.
+ */
+data class OcrHit(val kind: String, val value: String, val raw: String = "", val used: Boolean = false, val dropped: Boolean = false)
 
 /** The building's outline as the map knows it (WP M30): its oriented size in metres. */
 data class Footprint(val w: Double, val d: Double, val area: Double, val angle: Double, val src: String, val at: Long = 0)
