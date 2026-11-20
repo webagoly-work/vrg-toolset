@@ -118,7 +118,8 @@
     { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" },
     { "key": "H", "id": "terkep", "name": "VRG Térkép · offline térkép", "port": 8802, "js": "{repo}\\Map\\serve.js" },
     { "key": "W", "id": "idojaras", "name": "VRG Időjárás · többforrású előrejelzés + ütemező", "port": 8808, "js": "{repo}\\Weather\\serve.js", "args": ["--no-open", "--daemon"] },
-    { "key": "V", "id": "stack", "name": "Rétegverem · Konnektóm", "port": 8806, "open": "/connectome.html", "js": "{stack}\\serve.js" }
+    { "key": "V", "id": "stack", "name": "Rétegverem · Konnektóm", "port": 8806, "open": "/connectome.html", "js": "{stack}\\serve.js" },
+    { "key": "N", "id": "munkavaszon", "name": "Munkavászon · Claude munkamenet élőben", "port": 8809, "js": "{repo}\\SessionCanvas\\serve.js" }
   ],
 
   "programs": [
