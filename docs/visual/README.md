@@ -3,7 +3,7 @@
 *2026-11-20. A plan for every tool in the repo whose main job is to **show** something: what each one is, which
 ones earn their place, where they live in the VRG Asztal and VRG Mobile, and one design that joins the
 best of them into the Founder's own overview board. The interactive design is `latoter.html` (https://claude.ai/artifact/12mKZNpQSRhSvVG5XZ5mhm,
-in the Archive). Decisions to take are in §8 (**VIS-Q1…Q9**). Builds on the **VRG Overhaul Plan**
+in the Archive). Decisions are in §8 (**VIS-Q1…Q9**, all answered 2026-11-20). Builds on the **VRG Overhaul Plan**
 (Archive `vrg-overhaul-plan`, 2026-11-14) and does not change its P0–P6: this is the plan for its
 "Workshop and visualisation" rows.*
 
@@ -84,14 +84,14 @@ another part) · **retire** (remove once its job has moved) · **Labor** (to the
 | Stack Futásnapló (`runs.html`) | snapshot | **keep** | The day view of runs; clicking a run opens it in Munkavászon. |
 | Stack Vezérlőterem (`control.html`) | snapshot | **keep** | The Council's flow; a Munkamenet lens at Dev. |
 | Kódváros agents / session replay | shadow | **rework** | Reads the event spine instead of its own transcript parser. |
-| Konnektóm "firing" | replay | **keep** | Reads the spine for its pulses. |
+| Konnektóm "firing" | replay | **Labor** (VIS-Q5) | The idea moves to the Stack Viewer: lit paths instead of a firing brain. |
 
 ### Tudás
 | Tool | Liveness | Fate | Target |
 |---|---|---|---|
-| Konnektóm | snapshot | **keep** | The Tudás **structure** lens (3D). |
-| Holo (Polip / Gömb / Föld / Mag) | snapshot | **merge** | Keep one form (VIS-Q5; recommendation: Polip, the one that reads DevLog lines) as a Konnektóm mode; the others go to Labor. |
-| Rétegek (`layers.html`, isometric) | snapshot | **rework** | Replaced by the Stack Viewer (STK-Q25 = A). Build the Viewer on kit `layerstack` so the isometric look is shared with the board (VIS-Q6). |
+| Konnektóm | snapshot | **Labor** (VIS-Q5) | Off the menus and the phone's M17 chips; kept on the Labor shelf. |
+| Holo (Polip / Gömb / Föld / Mag) | snapshot | **Labor** (VIS-Q5) | All four forms. |
+| Rétegek (`layers.html`, isometric) → Stack Viewer | snapshot + lit paths | **promote: the main visual** (VIS-Q5, Q6) | Replaced by the Stack Viewer (STK-Q25 = A), drawn with kit `layerstack` (VIS-Q6 = A). The Founder named it the main feature: the view that lights up the paths a workflow touches. How it merges with the Munkavászon's activity is reassessed in `stack-lens/` (fork, 2026-11-20). |
 | Konnektóm-labor | snapshot (frozen) | **Labor** | It is a gift file with a frozen Stack copy and a missing rebuild path. Out of the catalog's User level; Archive only. |
 | Solomon Gömb (+ phone Gömb) | snapshot | **keep** | The Tudás **documents** lens; a different subject (documents and rulings), so not a duplicate. |
 | Vonaltérkép (metro) | snapshot | **keep** | The Tudás **lines** lens. |
@@ -175,7 +175,8 @@ the one tail server (the trace relay keeps the gates).
 - **The Áttekintés (Dashboard view)** gets one card: a still Sziget thumbnail with the live counts, opening the board.
 - **The ◢ dial** (Rétegverem) becomes the **lens dial**: its rows are the lenses of the selected subject
   (from the catalog), not the layer letters. The layer letters stay inside the Stack lens.
-- **Lapok:** a Dev preset "Látótér" puts the board in the top-left 3×3 and the Munkavászon ribbon along the bottom row.
+- **Lapok:** the Látótér is a content you can pick for a Lap's window (the free-cell picker), like any app; a Dev preset
+  "Látótér" puts the board in the top-left 3×3 and the Munkavászon ribbon along the bottom row (VIS-Q7).
 
 **VRG Mobile.**
 - Page 7 (Egyéb) loses Kódváros, Gömb, Rétegverem as separate icons; they become lenses. A new page
@@ -247,19 +248,24 @@ Sizes are rough sessions. Each phase ends with a check, as in the Overhaul.
 V0–V1 fit inside the Overhaul's P1 (registry), V3 inside P4 (one visual system), V4–V5 after P3
 (one workspace). Nothing here blocks the Overhaul.
 
-## 8. Decisions for the Founder
+## 8. Decisions (answered 2026-11-20)
 
-| Id | Question | Options (recommendation first) |
+| Id | Question | Answer |
 |---|---|---|
-| **VIS-Q1** | The name of the board | **Látótér** / Műhelysziget / Áttekintő tábla |
-| **VIS-Q2** | The liveness words (snapshot, generative canvas, shadow, twin, simulation, explainer) | **Into the glossary as fixed terms** / keep informal |
-| **VIS-Q3** | How visuals are registered | **`type: view` + a `lens` block in the catalog** / a separate `lenses.json` |
-| **VIS-Q4** | The event spine | **Extract the Munkavászon model into `shared/vrg-events`** / keep each reader's parser |
-| **VIS-Q5** | Holo's four forms | **Keep Polip as a Konnektóm mode, the rest to Labor** / keep all four |
-| **VIS-Q6** | The Stack Viewer's isometric drawing | **Kit `layerstack` (SVG, shared with the board)** / its own WebGL as in Rétegek |
-| **VIS-Q7** | Where the board lives on the Desktop | **The Desktop view's ground at Dev + overlay mode** / a third primary view / a Lap preset only |
-| **VIS-Q8** | Retire the duplicates (BRIDGE BuildTree copy, `_source-variants`, `omnicomm_spectrum_1`, `varler_mindmd2.html`, Archive spike copies) | **Yes, after one last diff** / keep |
-| **VIS-Q9** | The board on the phone | **Read-only first, actions after V5 behind the M35 approval** / read-only for good |
+| **VIS-Q1** | The name of the board | **A · Látótér** |
+| **VIS-Q2** | The liveness words (snapshot, generative canvas, shadow, twin, simulation, explainer) | **A · fixed terms in the glossary and the catalog** |
+| **VIS-Q3** | How visuals are registered | **A · `type: view` + a `lens` block in the catalog** |
+| **VIS-Q4** | The event spine | **A · extract the Munkavászon model into `shared/vrg-events`** |
+| **VIS-Q5** | Holo's four forms | **Other:** everything in this line goes to the Labor shelf (Konnektóm, Holo's four forms, the Konnektóm firing, Konnektóm-labor) **except the Stack layers**, which become the main visual: it should light up the paths a workflow touches, and the merge of the two is reassessed on a fork session (`stack-lens/`). |
+| **VIS-Q6** | The Stack Viewer's isometric drawing | **A · kit `layerstack` (SVG, shared with the board)** |
+| **VIS-Q7** | Where the board lives on the Desktop | **Three places:** a content you can open as a page in a Lap's windows (the picker), the Desktop view's ground at Dev, and overlay mode |
+| **VIS-Q8** | Retire the duplicates | **A · yes, after one last diff** |
+| **VIS-Q9** | The board on the phone | **A · read-only first, actions after V5 behind the M35 approval** |
+
+**What changes because of VIS-Q5.** The Stack Viewer moves ahead of the island: V3's "Stack Viewer on kit
+`layerstack`" becomes the first visual to build after the spine (V2), with lit paths from the spine as its
+reason to exist. The island (V4) waits for the fork's reassessment; it may become the Viewer's top layer
+rather than a separate board.
 
 ## 9. Motion and controls (summary; the full spec is in `latoter.html`, tab *Mozgás*)
 

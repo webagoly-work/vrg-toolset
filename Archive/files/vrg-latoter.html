@@ -356,8 +356,8 @@ table.gest { border-collapse: collapse; width: 100%; min-width: 640px; font-size
     <h1 style="font-size:28px">Sorrend és döntések</h1>
     <p class="lead">A Látótér a negyedik lépés. Előbb rend (V0), egy lencse-regiszter (V1) és egy eseménygerinc (V2), különben a tábla lenne a 46. külön vizualizáció saját olvasóval és saját menüponttal. A teljes terv: <span class="mono">docs/visual/README.md</span>.</p>
     <div class="phases" id="phases"></div>
-    <h2 style="margin-top:26px;font-size:20px">A te döntéseid</h2>
-    <p class="lead">A keretes lehetőség az ajánlás. Amit itt kiválasztasz, csak ebben a böngészőben marad meg: írd meg a választ a következő munkamenetben (pl. „VIS-Q1 A”).</p>
+    <h2 style="margin-top:26px;font-size:20px">A döntéseid (2026-11-20)</h2>
+    <p class="lead">Mind a kilenc eldőlt. A keretes lehetőség volt az ajánlás, a kitöltött a választásod.</p>
     <div class="dec" id="dec"></div>
   </div></div></section>
 </div>
@@ -906,10 +906,10 @@ table.gest { border-collapse: collapse; width: 100%; min-width: 640px; font-size
     ['Futásnapló', 'mm', 'snap', 'keep', 'A futások napi nézete; egy futásra kattintva a Munkavászon nyílik.'],
     ['Vezérlőterem', 'mm', 'snap', 'keep', 'A Tanács folyama; Munkamenet-lencse Fejlesztő szinten.'],
     ['Kódváros ügynökök', 'mm', 'shadow', 'rework', 'Saját átiratolvasó helyett az eseménygerincet olvassa.'],
-    ['Konnektóm', 'tud', 'snap', 'keep', 'A Tudás szerkezet-lencséje (3D).'],
-    ['Konnektóm tüzelés', 'tud', 'gen', 'keep', 'Az impulzusait az eseménygerincből kapja.'],
-    ['Holo (4 alak)', 'tud', 'snap', 'merge', 'Egy alak (Polip) a Konnektóm módja lesz; a többi a Laborba.'],
-    ['Rétegek (izometrikus)', 'tud', 'snap', 'rework', 'Helyette a Stack Viewer (STK-Q25 = A), a kit layerstack-jére építve, így az izometria közös a táblával.'],
+    ['Konnektóm', 'tud', 'snap', 'labor', 'VIS-Q5: Labor-polc; a Stack-nézet lesz a fő vizualizáció.'],
+    ['Konnektóm tüzelés', 'tud', 'gen', 'labor', 'VIS-Q5: az ötlet a Stack-nézetbe költözik: felvillanó utak tüzelő agy helyett.'],
+    ['Holo (4 alak)', 'tud', 'snap', 'labor', 'VIS-Q5: mind a négy alak a Labor-polcra.'],
+    ['Rétegek → Stack-nézet', 'tud', 'snap', 'promote', 'VIS-Q5/Q6: a fő vizualizáció, kit layerstack-en; felvillantja a munkafolyamat által érintett utakat. Az összeolvadást a stack-lens vizsgálat dönti el.'],
     ['Konnektóm-labor', 'tud', 'snap', 'labor', 'Ajándékfájl fagyott Stack-másolattal és hiányzó újraépítéssel: csak Archívum.'],
     ['Solomon Gömb', 'tud', 'snap', 'keep', 'A Tudás dokumentum-lencséje; más tárgy (dokumentumok, döntések), nem duplikátum.'],
     ['Vonaltérkép', 'tud', 'snap', 'keep', 'A Tudás vonal-lencséje.'],
@@ -1003,16 +1003,20 @@ table.gest { border-collapse: collapse; width: 100%; min-width: 640px; font-size
     ['VIS-Q8', 'A duplikátumok kivezetése', ['Igen, egy utolsó diff után', 'Maradjanak']],
     ['VIS-Q9', 'A tábla a telefonon', ['Előbb csak olvasható, műveletek V5 után az M35-jóváhagyással', 'Végleg csak olvasható']],
   ];
+  // the Founder's answers, 2026-11-20
+  var ANS = { 'VIS-Q1': 'A', 'VIS-Q2': 'A', 'VIS-Q3': 'A', 'VIS-Q4': 'A', 'VIS-Q6': 'A', 'VIS-Q8': 'A', 'VIS-Q9': 'A',
+    'VIS-Q5': 'Egyéb: minden a Labor-polcra, kivéve a Stack-rétegeket; a Stack-nézet lesz a fő vizualizáció, ami felvillantja a munkafolyamat által érintett utakat. Az összeolvadást egy elágazó munkamenet vizsgálja.',
+    'VIS-Q7': 'Három helyen: lapként a Lap ablakainak tartalomválasztójában, az Asztal-nézet talajaként Fejlesztő szinten, és overlay módban.' };
   function buildDec() {
     $('#dec').innerHTML = DQ.map(function (q) {
-      var pick = store.get(q[0]);
-      return '<div class="dq"><span class="id">' + q[0] + '</span><span>' + q[1] + '</span><div class="opts">' + q[2].map(function (o, k) {
+      var pick = ANS[q[0]] || store.get(q[0]), other = pick && pick.length > 1;
+      return '<div class="dq"><span class="id">' + q[0] + '</span><span>' + q[1] + (pick ? ' <span class="mono" style="color:var(--ok);font-size:11px">· DÖNTVE</span>' : '') + '</span><div class="opts">' + q[2].map(function (o, k) {
         var letter = String.fromCharCode(65 + k);
         return '<button data-q="' + q[0] + '" data-o="' + letter + '" class="' + (k === 0 ? 'rec ' : '') + (pick === letter ? 'pick' : '') + '">' + letter + ' · ' + o + (k === 0 ? ' (ajánlott)' : '') + '</button>';
-      }).join('') + '</div></div>';
+      }).join('') + '</div>' + (other ? '<div style="grid-column:2;font-size:12.5px;color:var(--text);border-left:2px solid var(--ok);padding-left:8px">' + pick + '</div>' : '') + '</div>';
     }).join('');
   }
-  $('#dec').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { store.set(b.dataset.q, b.dataset.o); buildDec(); } });
+  $('#dec').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b && !ANS[b.dataset.q]) { store.set(b.dataset.q, b.dataset.o); buildDec(); } });
 
   /* ================= routing ================= */
   var route = 'latoter';
