@@ -1,0 +1,1034 @@
+<title>VRG Látótér</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=Barlow:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<!--
+  VRG Látótér: the design prototype for docs/visual/README.md. Four tabs (#latoter #rendszer #mozgas #terv).
+  The board runs on made-up data (a deterministic event stream), so every gesture can be tried here.
+  Mélyvíz look (shared/melyviz.css tokens), single dark theme on purpose: it is the dev-side style.
+-->
+<style>
+/* Layout: one full-height app; top bar, stage (board) with ribbon, side panel; other tabs scroll. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c; --glass: rgba(18, 28, 36, .82);
+  --line: rgba(232, 240, 246, .14); --line-s: rgba(232, 240, 246, .32);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #6b747b;
+  --ice: #93d3e6; --ice-soft: rgba(147, 211, 230, .14); --warm: #e8a873; --warm-soft: rgba(232, 168, 115, .16);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --s-kod: #6fa8c7; --s-mm: #a48fd6; --s-tud: #7fc8b0; --s-mun: #c9a77a; --s-epu: #d39a86; --s-gep: #8fa0b8; --s-kor: #9cc28f;
+  --f-voice: Bahnschrift, "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Segoe UI", Barlow, system-ui, sans-serif;
+  --f-mono: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  --d1: 80ms; --d2: 150ms; --d3: 240ms; --d4: 420ms; --ease: cubic-bezier(.2, .7, .2, 1);
+  --cut: 6px;
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: reduce) { :root { --d1: 1ms; --d2: 1ms; --d3: 1ms; --d4: 1ms; } }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 var(--f-body); overflow: hidden; }
+.app { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+button { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line-s); border-radius: 0; cursor: pointer;
+  padding: 5px 10px; transition: border-color var(--d2) var(--ease), background var(--d2) var(--ease), transform var(--d1) var(--ease); }
+button:hover { border-color: var(--ice); }
+button:active { transform: translateY(1px) scale(.98); background: var(--raised); }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.lbl { font: 600 11px var(--f-voice); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+h1, h2, h3 { font-family: var(--f-voice); font-weight: 600; letter-spacing: .03em; margin: 0; text-wrap: balance; }
+
+/* top bar */
+.top { display: flex; align-items: center; gap: 14px; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; min-width: 0; }
+.brand { font: 600 16px var(--f-voice); letter-spacing: .2em; color: var(--ice); white-space: nowrap; }
+.tabs { display: flex; gap: 2px; }
+.tabs a { color: var(--dim); text-decoration: none; font: 600 12px var(--f-voice); letter-spacing: .12em; text-transform: uppercase; padding: 6px 10px;
+  border-bottom: 2px solid transparent; transition: color var(--d2) var(--ease), border-color var(--d2) var(--ease); }
+.tabs a:hover { color: var(--text); }
+.tabs a.on { color: var(--text); border-color: var(--ice); }
+.chip { font: 11px var(--f-mono); color: var(--warm); border: 1px solid var(--warm-soft); padding: 2px 6px; margin-left: auto; white-space: nowrap; }
+
+.view { min-height: 0; }
+.view[hidden] { display: none !important; }
+.scroll { overflow-y: auto; height: 100%; }
+.page { max-width: 1180px; margin: 0 auto; padding-block: 22px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---------- board ---------- */
+.board { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 0; }
+.stage { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; min-height: 0;
+  background: radial-gradient(120% 90% at 50% 10%, var(--horizon), var(--bg)); }
+.bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--glass); z-index: 2; }
+.crumb { display: flex; gap: 6px; align-items: center; font: 600 13px var(--f-voice); letter-spacing: .06em; min-width: 0; }
+.crumb button { padding: 2px 6px; border-color: transparent; background: none; }
+.crumb button:hover { border-color: var(--line-s); }
+.crumb .sep { color: var(--faint); }
+.pips { display: flex; gap: 4px; align-items: center; }
+.pips i { width: 18px; height: 4px; background: var(--line-s); transition: background var(--d3) var(--ease), width var(--d3) var(--ease); }
+.pips i.on { background: var(--ice); width: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--line-s); margin-left: auto; }
+.seg button { border: 0; padding: 4px 10px; font: 600 11.5px var(--f-voice); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); background: none; display: inline-flex; gap: 6px; align-items: center; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { color: var(--bg); background: var(--ice); }
+.seg button.on.live { background: var(--warm); }
+.shape { width: 9px; height: 9px; display: inline-block; border: 1.5px solid currentColor; }
+.shape.half { background: linear-gradient(135deg, currentColor 50%, transparent 50%); }
+.shape.full { background: currentColor; }
+.canvas-wrap { position: relative; min-height: 0; overflow: hidden; touch-action: none; }
+#iso { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; transition: filter var(--d4) var(--ease), transform var(--d4) var(--ease); }
+#iso.drag { cursor: grabbing; }
+.canvas-wrap.dim #iso { filter: blur(3px) brightness(.55); transform: scale(1.03); }
+#ring { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#ring .sec { pointer-events: all; cursor: pointer; }
+#ring .sec path { fill: rgba(18, 28, 36, .9); stroke: var(--line-s); transition: fill var(--d2) var(--ease), stroke var(--d2) var(--ease); }
+#ring .sec:hover path, #ring .sec:focus path { fill: var(--ice-soft); stroke: var(--ice); }
+#ring .sec text { fill: var(--text); font: 600 11px var(--f-voice); letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+#ring .sec .k { fill: var(--faint); font: 10px var(--f-mono); letter-spacing: 0; text-transform: none; }
+#ring .hub circle { fill: var(--panel); stroke: var(--ice); }
+#ring .hub text { fill: var(--ice); font: 600 10px var(--f-voice); letter-spacing: .12em; }
+#ring .grow { animation: ringIn var(--d3) var(--ease) both; }
+@keyframes ringIn { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: none; } }
+.toast { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--line-s); padding: 7px 12px;
+  font-size: 12.5px; pointer-events: none; opacity: 0; transition: opacity var(--d3) var(--ease); z-index: 6; max-width: 90%; }
+.toast.on { opacity: 1; }
+
+/* level 2 (plot) and 3 (detail) */
+.plot { position: absolute; inset: auto 12px 12px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px;
+  transform: translateY(18px); opacity: 0; pointer-events: none; transition: transform var(--d4) var(--ease), opacity var(--d4) var(--ease); z-index: 3; }
+.plot.on { transform: none; opacity: 1; pointer-events: auto; }
+.card { background: var(--glass); border: 1px solid var(--line-s); padding: 8px; cursor: pointer; display: grid; gap: 6px; text-align: left;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  transition: transform var(--d3) var(--ease), border-color var(--d2) var(--ease); }
+.card:hover, .card:focus-visible { transform: translateY(-3px); border-color: var(--ice); }
+.card canvas { width: 100%; height: 92px; display: block; background: var(--bg); }
+.card .h { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.card .h b { font: 600 13px var(--f-voice); letter-spacing: .06em; }
+.card .k { font: 10.5px var(--f-mono); color: var(--faint); }
+.detail { position: absolute; inset: 10px; background: var(--panel); border: 1px solid var(--line-s); display: grid; grid-template-rows: auto 1fr;
+  transform: scale(.94); opacity: 0; pointer-events: none; transition: transform var(--d4) var(--ease), opacity var(--d4) var(--ease); z-index: 4; }
+.detail.on { transform: none; opacity: 1; pointer-events: auto; }
+.detail .wh { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.detail .wh b { font: 600 14px var(--f-voice); letter-spacing: .08em; }
+.detail .wh .sp { margin-left: auto; display: flex; gap: 6px; }
+.detail canvas { width: 100%; height: 100%; display: block; }
+
+/* ribbon */
+.ribbon { border-top: 1px solid var(--line); background: var(--glass); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; z-index: 2; }
+.ribbon .l, .ribbon .r { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 6px 10px; }
+.ribbon .r { align-items: flex-end; }
+#rib { width: 100%; height: 84px; display: block; cursor: ew-resize; touch-action: none; }
+.livepill { font: 600 11px var(--f-voice); letter-spacing: .14em; padding: 3px 8px; border: 1px solid var(--warm); color: var(--warm); background: none; }
+.livepill.on { background: var(--warm); color: var(--bg); animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 50% { box-shadow: 0 0 0 4px var(--warm-soft); } }
+@media (prefers-reduced-motion: reduce) { .livepill.on { animation: none; } }
+
+/* side */
+.side { border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; min-height: 0; }
+.side section { padding: 12px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 7px; }
+.side h3 { font-size: 15px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12.5px; }
+.kv span:nth-child(odd) { color: var(--faint); }
+.lenslist { display: grid; gap: 4px; }
+.lenslist button { text-align: left; display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; padding: 5px 8px; }
+.lenslist .k { font: 10.5px var(--f-mono); color: var(--faint); }
+.act { display: grid; gap: 3px; font-size: 12px; }
+.act div { display: grid; grid-template-columns: 9px 1fr auto; gap: 7px; align-items: center; }
+.act i { width: 9px; height: 9px; display: block; }
+.act .t { font: 10.5px var(--f-mono); color: var(--faint); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11.5px; color: var(--dim); }
+.legend span { display: inline-flex; gap: 5px; align-items: center; }
+.legend i { width: 10px; height: 10px; display: inline-block; }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12px; }
+kbd { font: 11px var(--f-mono); border: 1px solid var(--line-s); padding: 0 5px; color: var(--text); white-space: nowrap; }
+
+/* ---------- rendszerezés ---------- */
+.lead { max-width: 70ch; color: var(--dim); }
+.matrix-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); }
+table.matrix { border-collapse: collapse; width: 100%; min-width: 940px; }
+.matrix th, .matrix td { border: 1px solid var(--line); vertical-align: top; padding: 7px; }
+.matrix thead th { text-align: left; background: var(--panel); position: sticky; top: 0; }
+.matrix thead th .lbl { display: flex; gap: 6px; align-items: center; }
+.matrix tbody th { width: 120px; text-align: left; background: var(--panel); font: 600 13px var(--f-voice); letter-spacing: .06em; }
+.matrix tbody th i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
+.tool { display: flex; gap: 5px; align-items: center; font-size: 12px; padding: 3px 6px; margin: 0 0 4px; border: 1px solid var(--line); background: var(--raised); width: 100%; text-align: left; }
+.tool .f { font: 600 9.5px var(--f-voice); letter-spacing: .1em; padding: 1px 4px; margin-left: auto; white-space: nowrap; }
+.f-keep { color: var(--ok); border: 1px solid currentColor; }
+.f-promote { color: var(--bg); background: var(--ice); }
+.f-rework { color: var(--warn); border: 1px solid currentColor; }
+.f-merge { color: var(--ice); border: 1px dashed currentColor; }
+.f-retire { color: var(--crit); border: 1px solid currentColor; text-decoration: line-through; }
+.f-labor { color: var(--dim); border: 1px dotted currentColor; }
+.tool.off { opacity: .25; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+.filters button.on { border-color: var(--ice); color: var(--ice); }
+.why { margin-top: 12px; min-height: 64px; border: 1px solid var(--line-s); padding: 10px 12px; background: var(--panel); font-size: 13px; }
+.why b { font-family: var(--f-voice); letter-spacing: .06em; }
+.tally { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+.tally div { display: grid; }
+.tally b { font: 600 26px var(--f-voice); }
+.tally span { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+
+/* ---------- mozgás ---------- */
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+.spec { border: 1px solid var(--line); background: var(--panel); padding: 12px; display: grid; gap: 8px; align-content: start; }
+.spec h3 { font-size: 15px; display: flex; justify-content: space-between; gap: 8px; }
+.spec h3 .mono { font-size: 11px; color: var(--faint); font-weight: 400; }
+.spec p { margin: 0; font-size: 12.5px; color: var(--dim); }
+.demo { height: 96px; border: 1px solid var(--line); background: var(--bg); position: relative; overflow: hidden; display: grid; place-items: center; }
+.d-press { padding: 8px 16px; font: 600 12px var(--f-voice); letter-spacing: .14em; }
+.d-lift { width: 46px; height: 46px; background: var(--s-kod); transition: transform var(--d3) var(--ease), box-shadow var(--d3) var(--ease); cursor: pointer; }
+.d-lift.on { transform: translateY(-6px) scale(1.04); box-shadow: 0 10px 0 -4px rgba(147, 211, 230, .35); outline: 1px solid var(--ice); }
+.d-ripple i { position: absolute; border: 1.5px solid var(--ice); border-radius: 50%; width: 10px; height: 10px; opacity: 0; }
+.d-ripple i.go { animation: rip 650ms var(--ease) forwards; }
+@keyframes rip { from { transform: scale(1); opacity: .9; } to { transform: scale(7); opacity: 0; } }
+.d-pulse i { width: 16px; height: 16px; background: var(--warm); animation: wp 1.1s ease-in-out infinite; }
+@keyframes wp { 50% { opacity: .35; transform: scale(.85); } }
+.d-grow i { width: 50px; background: var(--s-tud); height: 22px; transition: height var(--d4) var(--ease); align-self: end; margin-bottom: 18px; }
+.d-sweep i { position: absolute; top: 10px; bottom: 10px; width: 2px; background: var(--ice); left: 12%; }
+.d-sweep i.go { animation: sw 900ms var(--ease) forwards; }
+@keyframes sw { to { left: 86%; } }
+.d-levels { display: flex; gap: 10px; }
+.d-levels span { width: 54px; height: 54px; border: 1px solid var(--line-s); display: grid; place-items: center; font: 600 11px var(--f-voice); letter-spacing: .1em; color: var(--dim);
+  transition: transform var(--d4) var(--ease), border-color var(--d3) var(--ease), color var(--d3) var(--ease); }
+.d-levels span.on { transform: scale(1.18); border-color: var(--ice); color: var(--ice); }
+.fing { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: rgba(147, 211, 230, .65); box-shadow: 0 0 0 4px rgba(147, 211, 230, .18); }
+.g-pinch .a { animation: pinA 1.8s var(--ease) infinite; } .g-pinch .b { animation: pinB 1.8s var(--ease) infinite; }
+@keyframes pinA { 0%, 100% { left: 30%; top: 30%; } 50% { left: 44%; top: 44%; } }
+@keyframes pinB { 0%, 100% { left: 64%; top: 60%; } 50% { left: 50%; top: 48%; } }
+.g-two .a, .g-two .b { animation: two 1.8s var(--ease) infinite; } .g-two .a { top: 30%; } .g-two .b { top: 58%; }
+@keyframes two { 0%, 100% { left: 22%; } 50% { left: 70%; } }
+.g-long .a { left: 46%; top: 40%; animation: lp 1.8s ease-in-out infinite; }
+@keyframes lp { 0%, 30% { box-shadow: 0 0 0 4px rgba(147, 211, 230, .18); } 70%, 100% { box-shadow: 0 0 0 18px rgba(147, 211, 230, 0); } }
+.g-pan .a { animation: pan 1.8s var(--ease) infinite; top: 44%; }
+@keyframes pan { 0%, 100% { left: 30%; top: 30%; } 50% { left: 62%; top: 56%; } }
+.g-dbl .a { left: 46%; top: 40%; animation: dbl 1.4s steps(1) infinite; }
+@keyframes dbl { 0%, 20%, 40% { opacity: 1; } 10%, 30%, 50%, 100% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .fing, .d-pulse i { animation: none !important; } }
+table.gest { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13px; }
+.gest th, .gest td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+.gest th { color: var(--dim); font: 600 11px var(--f-voice); letter-spacing: .12em; text-transform: uppercase; }
+.dirs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+.dir { border: 1px solid var(--line); padding: 12px; background: var(--panel); display: grid; gap: 6px; }
+.dir .arrow { font: 600 28px var(--f-voice); color: var(--ice); }
+
+/* ---------- terv ---------- */
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 16px; }
+.ph { border: 1px solid var(--line); border-top: 3px solid var(--ice); padding: 10px; background: var(--panel); display: grid; gap: 4px; align-content: start; }
+.ph.later { border-top-color: var(--faint); }
+.ph b { font: 600 15px var(--f-voice); letter-spacing: .06em; }
+.ph .k { font: 10.5px var(--f-mono); color: var(--faint); }
+.ph p { margin: 0; font-size: 12.5px; color: var(--dim); }
+.dec { display: grid; gap: 8px; margin-top: 16px; }
+.dq { border: 1px solid var(--line); background: var(--panel); padding: 10px 12px; display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 4px 12px; }
+.dq .id { font: 600 13px var(--f-mono); color: var(--ice); }
+.dq .opts { display: flex; gap: 6px; flex-wrap: wrap; grid-column: 2; }
+.dq .opts button { font-size: 12px; padding: 3px 8px; }
+.dq .opts button.rec { border-color: var(--ice); }
+.dq .opts button.pick { background: var(--ice); color: var(--bg); }
+.note { font-size: 12px; color: var(--faint); margin-top: 8px; }
+
+@media (max-width: 860px) {
+  body { overflow: auto; }
+  .board { grid-template-columns: 1fr; grid-template-rows: minmax(420px, 70vh) auto; height: auto; }
+  .app { height: auto; min-height: 100%; }
+  .view.board-view { height: auto; }
+  .side { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .chip { display: none; }
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <span class="brand">VRG LÁTÓTÉR</span>
+    <nav class="tabs" aria-label="Lapok">
+      <a href="#latoter" data-tab="latoter">Látótér</a>
+      <a href="#rendszer" data-tab="rendszer">Rendszerezés</a>
+      <a href="#mozgas" data-tab="mozgas">Mozgás</a>
+      <a href="#terv" data-tab="terv">Terv</a>
+    </nav>
+    <span class="chip">MINTA ADAT · tervezési prototípus</span>
+  </header>
+
+  <!-- ================= LÁTÓTÉR ================= -->
+  <section class="view board-view" id="v-latoter">
+    <div class="board">
+      <div class="stage">
+        <div class="bar">
+          <div class="crumb" id="crumb"></div>
+          <div class="pips" aria-label="Szint"><i></i><i></i><i></i></div>
+          <div class="seg" role="radiogroup" aria-label="Élőség">
+            <button data-live="snap" role="radio"><span class="shape"></span>Pillanatkép</button>
+            <button data-live="replay" role="radio"><span class="shape half"></span>Visszajátszás</button>
+            <button data-live="live" role="radio" class="on live"><span class="shape full"></span>Élő</button>
+          </div>
+        </div>
+        <div class="canvas-wrap" id="wrap">
+          <canvas id="iso" tabindex="0" aria-label="A műhely szigete: minden funkció egy dioráma"></canvas>
+          <svg id="ring" aria-hidden="false"></svg>
+          <div class="plot" id="plot"></div>
+          <div class="detail" id="detail">
+            <div class="wh"><button id="up" title="Esc">↑ Vissza</button><b id="dTitle"></b><span class="mono" id="dMeta" style="color:var(--faint);font-size:11px"></span>
+              <span class="sp"><button id="dOpen">Megnyitás az Asztalon</button></span></div>
+            <canvas id="dCv"></canvas>
+          </div>
+          <div class="toast" id="toast"></div>
+        </div>
+        <div class="ribbon">
+          <div class="l"><span class="lbl">Munkavászon</span><span class="mono" id="clock" style="font-size:12px"></span></div>
+          <canvas id="rib" aria-label="Idősáv: húzd az időben"></canvas>
+          <div class="r"><button class="livepill on" id="liveBtn">ÉLŐ</button><button id="playBtn" style="font-size:12px;padding:2px 8px">▶ ×20</button></div>
+        </div>
+      </div>
+      <aside class="side">
+        <section id="sel"></section>
+        <section><span class="lbl">Most a műhelyben</span><div class="act" id="act"></div></section>
+        <section><span class="lbl">Jelek a szigeten</span>
+          <div class="legend">
+            <span><i style="background:var(--warm)"></i>fut (meleg)</span><span><i style="background:var(--ice)"></i>te / kijelölés (jég)</span>
+            <span>⛵ ügynök, konvoj = párhuzamos</span><span>🏗 háttérfeladat (daru)</span><span>▲ zászló = nyitott döntés</span><span>▮ lobogó = parancs</span>
+          </div></section>
+        <section><span class="lbl">Kezelés</span>
+          <div class="keys">
+            <kbd>katt</kbd><span>kijelöl · lencsegyűrű</span><kbd>Enter / ↓</kbd><span>mélyebbre (Telek, Részlet)</span>
+            <kbd>Esc / ↑</kbd><span>feljebb</span><kbd>← →</kbd><span>idő léptetése</span><kbd>Space</kbd><span>lejátszás</span>
+            <kbd>L</kbd><span>vissza élőbe</span><kbd>1–7</kbd><span>lencse a gyűrűn</span><kbd>húzás</kbd><span>mozgatás</span>
+            <kbd>csipet / Ctrl+görgő</kbd><span>szintváltás</span><kbd>2 ujj ← →</kbd><span>idő (Shift+görgő)</span><kbd>hosszú nyomás</kbd><span>lencsegyűrű</span>
+            <kbd>dupla koppintás</kbd><span>haza</span>
+          </div></section>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= RENDSZEREZÉS ================= -->
+  <section class="view" id="v-rendszer" hidden><div class="scroll"><div class="page">
+    <h1 style="font-size:28px">Minden vizualizáció, két tengelyen</h1>
+    <p class="lead">Sorok: miről szól (tárgy). Oszlopok: mennyire él (élőség). Minden cella a mai eszközöket mutatja, a sorsukkal. Kattints egy eszközre a döntés indoklásáért; a szűrők egy sorsot emelnek ki.</p>
+    <div class="tally" id="tally"></div>
+    <div class="filters" id="filters"></div>
+    <div class="why" id="why"><span style="color:var(--faint)">Válassz egy eszközt a táblából.</span></div>
+    <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+  </div></div></section>
+
+  <!-- ================= MOZGÁS ================= -->
+  <section class="view" id="v-mozgas" hidden><div class="scroll"><div class="page">
+    <h1 style="font-size:28px">Belső logika, irányok, mozdulatok</h1>
+    <p class="lead">Minden iránynak egy jelentése van, mindenhol. Minden animációnak egy jelentése van. Az időzítés a VRG UI Kit tokenjeiből jön; csökkentett mozgásnál minden váltás vágás.</p>
+    <div class="dirs">
+      <div class="dir"><span class="arrow">← →</span><b>Idő</b><span style="color:var(--dim);font-size:13px">Balra a múlt, jobbra a most. Mint a Munkavászon, az Ötletfolyam és a Futásnapló.</span></div>
+      <div class="dir"><span class="arrow">↑ ↓</span><b>Szint</b><span style="color:var(--dim);font-size:13px">Fel: áttekintés (Sziget). Le: részlet (Telek, majd Részlet). Csipet ugyanez.</span></div>
+      <div class="dir"><span class="arrow">◔</span><b>Nézőpont</b><span style="color:var(--dim);font-size:13px">A kijelölt dolog körüli gyűrű: melyik lencsén át nézed (szerkezet, idő, élő, …).</span></div>
+      <div class="dir"><span class="arrow">◐</span><b>Élőség</b><span style="color:var(--dim);font-size:13px">Pillanatkép · Visszajátszás · Élő: egy kapcsoló, alak is jelzi, nem csak szín.</span></div>
+    </div>
+    <h2 style="margin-top:26px;font-size:20px">Gombok és jelek mozgása</h2>
+    <div class="grid3">
+      <div class="spec"><h3>Lenyomás <span class="mono">80 ms · --vk-dur-1</span></h3><div class="demo"><button class="d-press">MEGNYITÁS</button></div><p>1 px-t süllyed és 2%-ot zsugorodik. Utána: dolgozik (csík), kész vagy hiba felirattal. Soha nincs néma kattintás.</p></div>
+      <div class="spec"><h3>Kijelölés: emelés <span class="mono">240 ms · --vk-dur-3</span></h3><div class="demo"><span class="d-lift" id="dLift" tabindex="0" role="button" aria-label="Emelés kipróbálása"></span></div><p>A dioráma 6 px-t emelkedik, 4%-ot nő, jég kontúrt kap, alatta lap. Csak a kijelölés emel.</p></div>
+      <div class="spec"><h3>Szintváltás <span class="mono">420 ms · --vk-dur-4</span></h3><div class="demo"><div class="d-levels" id="dLv"><span class="on">SZIGET</span><span>TELEK</span><span>RÉSZLET</span></div></div><p>Kamera-tolás (Kódváros R10: ≥ 400 ms). A hátrahagyott szint elmosódik és sötétül, nem tűnik el: tudod, honnan jöttél.</p></div>
+      <div class="spec"><h3>Megérkezett <span class="mono">650 ms · hullám</span></h3><div class="demo d-ripple" id="dRip"><i></i></div><p>Új esemény: egy jég gyűrű a helyén. Kattintás üres vízre: ugyanez (Mélyvíz M2).</p></div>
+      <div class="spec"><h3>Fut <span class="mono">1,1 s · lüktetés</span></h3><div class="demo d-pulse"><i></i></div><p>Meleg lüktetés, amíg egy munka fut (Mélyvíz M1: meleg = tevékenység). Megállt: kiold.</p></div>
+      <div class="spec"><h3>Nőtt <span class="mono">420 ms · emelkedés</span></h3><div class="demo d-grow" id="dGrow"><i></i></div><p>Egy commit után a dioráma egy lépcsőt nő (a Kódváros K2 növekedése). A helyek soha nem mozdulnak.</p></div>
+      <div class="spec"><h3>Időben mozdult <span class="mono">900 ms · söprés</span></h3><div class="demo d-sweep" id="dSweep"><i></i></div><p>Az idősáv jég vonala söpör, a sziget visszajátssza a közbeeső eseményeket.</p></div>
+      <div class="spec"><h3>Lencsegyűrű <span class="mono">240 ms · lépcsőzve</span></h3><div class="demo"><svg viewBox="0 0 120 90" width="140" height="96" id="dRing"></svg></div><p>A szektorok 25 ms-os lépcsőkkel nyílnak a kijelölt dolog körül; számbillentyű választ. A Sarokvezérlő geometriáját követi.</p></div>
+    </div>
+    <h2 style="margin-top:26px;font-size:20px">Mozdulatok</h2>
+    <div class="grid3">
+      <div class="spec"><h3>Csipet</h3><div class="demo g-pinch"><span class="fing a"></span><span class="fing b"></span></div><p>Szintváltás, pattanva a három szintre. Asztalon: Ctrl+görgő.</p></div>
+      <div class="spec"><h3>Két ujj vízszintesen</h3><div class="demo g-two"><span class="fing a"></span><span class="fing b"></span></div><p>Idő: a sziget visszajátszik. Asztalon: Shift+görgő vagy az idősáv húzása.</p></div>
+      <div class="spec"><h3>Hosszú nyomás</h3><div class="demo g-long"><span class="fing a"></span></div><p>Lencsegyűrű a dioráma körül; a telefon RCO menüje (M37) ugyanígy nyílik.</p></div>
+      <div class="spec"><h3>Egy ujj húzása</h3><div class="demo g-pan"><span class="fing a"></span></div><p>Mozgatás a szigeten. Forgatás nincs: a sziget rögzített izometria, a helyek nem mozdulnak.</p></div>
+      <div class="spec"><h3>Dupla koppintás</h3><div class="demo g-dbl"><span class="fing a"></span></div><p>Haza: a teljes sziget (a Stack touch.js szerint).</p></div>
+    </div>
+    <h2 style="margin-top:26px;font-size:20px">Ugyanaz Asztalon és telefonon</h2>
+    <div class="matrix-wrap"><table class="gest">
+      <thead><tr><th>Mit</th><th>Asztal (egér, billentyű)</th><th>Telefon (VRG Mobile)</th><th>Animáció</th></tr></thead>
+      <tbody>
+        <tr><td>Kijelölés</td><td>kattintás, Tab a diorámák között</td><td>koppintás</td><td>emelés, 240 ms</td></tr>
+        <tr><td>Lencsegyűrű</td><td>kattintás a kijelöltre, jobb klikk</td><td>hosszú nyomás (RCO)</td><td>szektorok lépcsőzve</td></tr>
+        <tr><td>Mélyebbre</td><td>Enter, ↓, Ctrl+görgő be</td><td>csipet szét, koppintás a kártyán</td><td>kamera-tolás, 420 ms</td></tr>
+        <tr><td>Feljebb</td><td>Esc, ↑, Ctrl+görgő ki</td><td>csipet össze, Vissza gomb</td><td>tükörkép</td></tr>
+        <tr><td>Időben</td><td>← →, Shift+görgő, idősáv húzása</td><td>két ujj vízszintesen, idősáv</td><td>söprés, visszajátszás</td></tr>
+        <tr><td>Élőbe vissza</td><td>L, ÉLŐ gomb</td><td>ÉLŐ gomb</td><td>meleg lélegzés a gombon</td></tr>
+        <tr><td>Haza</td><td>Home, dupla kattintás üres vízen</td><td>dupla koppintás</td><td>kamera vissza</td></tr>
+        <tr><td>Megnyitás</td><td>Részlet: „Megnyitás az Asztalon”</td><td>ugyanaz, ablakként a dokkon</td><td>lenyomás → dolgozik → kész</td></tr>
+      </tbody></table></div>
+  </div></div></section>
+
+  <!-- ================= TERV ================= -->
+  <section class="view" id="v-terv" hidden><div class="scroll"><div class="page">
+    <h1 style="font-size:28px">Sorrend és döntések</h1>
+    <p class="lead">A Látótér a negyedik lépés. Előbb rend (V0), egy lencse-regiszter (V1) és egy eseménygerinc (V2), különben a tábla lenne a 46. külön vizualizáció saját olvasóval és saját menüponttal. A teljes terv: <span class="mono">docs/visual/README.md</span>.</p>
+    <div class="phases" id="phases"></div>
+    <h2 style="margin-top:26px;font-size:20px">A te döntéseid</h2>
+    <p class="lead">A keretes lehetőség az ajánlás. Amit itt kiválasztasz, csak ebben a böngészőben marad meg: írd meg a választ a következő munkamenetben (pl. „VIS-Q1 A”).</p>
+    <div class="dec" id="dec"></div>
+  </div></div></section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var css = getComputedStyle(document.documentElement);
+  var V = function (n) { return css.getPropertyValue(n).trim(); };
+  var C = { bg: V('--bg'), panel: V('--panel'), raised: V('--raised'), text: V('--text'), dim: V('--dim'), faint: V('--faint'), line: V('--line'), lineS: V('--line-s'),
+    ice: V('--ice'), warm: V('--warm'), ok: V('--ok'), warn: V('--warn'), crit: V('--crit') };
+  var MONO = V('--f-mono'), VOICE = V('--f-voice');
+  var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rgba = function (hex, a) { var n = parseInt(hex.replace('#', ''), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; };
+  var rgbOf = function (c) { var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(c); if (m) return [+m[1], +m[2], +m[3]]; var n = parseInt(c.replace('#', ''), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  var shade = function (hex, f) { var q = rgbOf(hex), r = q[0], g = q[1], b = q[2];
+    var m = function (v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }; return 'rgb(' + m(r) + ',' + m(g) + ',' + m(b) + ')'; };
+  var store = { get: function (k) { try { return localStorage.getItem('latoter.' + k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem('latoter.' + k, v); } catch (e) {} } };
+
+  /* ================= data: subjects, features, lenses ================= */
+  var SUBJ = {
+    kod: { hu: 'Kód', col: V('--s-kod'), box: [1, 1, 11, 9] },
+    mm: { hu: 'Munkamenet', col: V('--s-mm'), box: [13, 1, 23, 8], harbour: true },
+    tud: { hu: 'Tudás', col: V('--s-tud'), box: [25, 1, 36, 11] },
+    mun: { hu: 'Munka', col: V('--s-mun'), box: [1, 12, 11, 21] },
+    epu: { hu: 'Épület', col: V('--s-epu'), box: [13, 11, 23, 21] },
+    gep: { hu: 'Gép', col: V('--s-gep'), box: [25, 14, 33, 21] },
+    kor: { hu: 'Környezet', col: V('--s-kor'), box: [34, 15, 38, 21] },
+  };
+  var LENS = {
+    kod: [['Kódváros', 'structure', 'codecity'], ['Commit-hőtérkép', 'time', 'layer.r']],
+    mm: [['Munkavászon', 'time', 'munkavaszon'], ['Ügynöknyom', 'live', 'trace'], ['Futásnapló', 'day', 'layer.u'], ['Vezérlőterem', 'flow', 'layer.a']],
+    tud: [['Konnektóm', 'graph', 'stack.connectome'], ['Stack-nézet', 'layers', 'stack.viewer'], ['Solomon Gömb', 'sphere', 'solomon'], ['Vonaltérkép', 'lines', 'layer.l'], ['Ötletfolyam', 'river', 'layer.i'], ['Divergencia', 'signals', 'divergence']],
+    mun: [['Térkép', 'map', 'map']],
+    epu: [['Planner nézetek', 'axo', 'planner'], ['Ügyfélnézet', 'axo', 'client-preview'], ['Topológia', 'lines', 'topology']],
+    gep: [['Gépország', 'land', 'homeland'], ['CYD képernyők', 'screen', 'planner-cyd']],
+    kor: [['Időjárás', 'weather', 'weather']],
+  };
+  var ASPECT = { structure: 'szerkezet', time: 'idő', live: 'élő', day: 'nap', flow: 'folyam', graph: 'szerkezet', layers: 'rétegek', sphere: 'dokumentumok',
+    lines: 'vonalak', river: 'idő', signals: 'jelek', map: 'térkép', axo: 'modell', land: 'élő', screen: 'eszköz', weather: 'élő' };
+  // [id, name, subject, i, j, w, d, mass(storeys), state]
+  var F = [
+    ['codecity', 'Kódváros', 'kod', 2, 2, 4, 3, 5, 'beta'], ['stack', 'Rétegverem', 'kod', 7, 2, 3, 3, 4, 'live'], ['repo', 'Repó és Git', 'kod', 2, 6, 3, 2, 2, 'live'],
+    ['build', 'Buildek', 'kod', 6, 6, 3, 2, 2, 'live'],
+    ['munkavaszon', 'Munkavászon', 'mm', 14, 2, 3, 2, 3, 'beta'], ['trace', 'Ügynöknyom', 'mm', 18, 2, 2, 2, 2, 'beta'], ['council', 'Tanács', 'mm', 21, 2, 2, 2, 3, 'live'],
+    ['prompts', 'Promptok', 'mm', 14, 5, 2, 2, 1, 'live'],
+    ['konnektom', 'Konnektóm', 'tud', 26, 2, 3, 3, 4, 'live'], ['solomon', 'Solomon Gömb', 'tud', 30, 2, 3, 2, 3, 'beta'], ['divergence', 'Divergencia', 'tud', 34, 2, 2, 2, 2, 'beta'],
+    ['decisions', 'Döntésnapló', 'tud', 26, 6, 2, 2, 2, 'live'], ['lineage', 'Ötletfolyam', 'tud', 29, 6, 3, 2, 2, 'live'], ['metro', 'Vonaltérkép', 'tud', 33, 6, 3, 3, 3, 'live'],
+    ['jobs', 'Munkák', 'mun', 2, 13, 3, 3, 3, 'live'], ['kit', 'Workflow Kit', 'mun', 6, 13, 3, 2, 3, 'live'], ['inventory', 'Készlet', 'mun', 2, 17, 3, 2, 2, 'live'],
+    ['calc', 'Kalkulátorok', 'mun', 6, 17, 2, 2, 1, 'live'], ['map', 'Térkép', 'mun', 9, 16, 2, 3, 2, 'live'],
+    ['planner', 'Varler Planner', 'epu', 14, 12, 4, 3, 6, 'live'], ['client', 'Ügyfélnézet', 'epu', 19, 12, 3, 2, 2, 'dev'], ['bridge', 'BRIDGE', 'epu', 14, 16, 3, 3, 3, 'live'],
+    ['topology', 'Topológia', 'epu', 18, 16, 3, 3, 3, 'planned'],
+    ['cyd', 'Planner CYD', 'gep', 26, 15, 2, 2, 2, 'beta'], ['servicekit', 'ServiceKit', 'gep', 29, 15, 2, 2, 2, 'dev'], ['homeland', 'Gépország', 'gep', 26, 18, 4, 2, 2, 'beta'],
+    ['weather', 'Időjárás', 'kor', 35, 16, 2, 3, 2, 'beta'],
+  ].map(function (r, n) { return { id: r[0], name: r[1], sub: r[2], i: r[3], j: r[4], w: r[5], d: r[6], h: r[7], state: r[8], n: n, flags: 0 }; });
+  var FB = {}; F.forEach(function (f) { FB[f.id] = f; });
+  FB.decisions.flags = 3; FB.planner.flags = 1; FB.codecity.flags = 1; FB.metro.flags = 2;
+  // which dioramas a session works in (the spine maps files to features through the catalog's from: dir:…)
+  var WORK = ['planner', 'codecity', 'munkavaszon', 'stack', 'inventory', 'kit', 'bridge', 'build', 'jobs', 'solomon'];
+  var CATS = [['read', '#93d3e6'], ['search', '#5fa8d3'], ['edit', '#e8a873'], ['shell', '#e3be7b'], ['web', '#8bcca1'], ['agent', '#b39cf0']];
+  var CMDS = [['/deep-research', 'research', '#7fc8f8', 'tud'], ['GO PLANNER', 'go', '#f0a875', 'epu'], ['/code-review', 'review', '#e4b46d', 'kod'], ['plan mode', 'plan', '#c9d77a', 'mun'], ['/batch', 'batch', '#c9a0f2', 'kod']];
+
+  /* ================= a deterministic event stream (made-up data) ================= */
+  var STEP = 5000;
+  var hash = function (k, s) { var x = Math.sin(k * 127.1 + (s || 0) * 311.7) * 43758.5453; return x - Math.floor(x); };
+  var T0 = Date.now() - 50 * 60000;
+  var focusAt = function (t) { var k = Math.floor((t - T0) / (7 * 60000)); return WORK[Math.floor(hash(k, 9) * WORK.length)]; };
+  function eventsAt(T, lookback) {   // events whose span covers T, or that started in [T-lookback, T]
+    var out = [], k1 = Math.floor((T - T0) / STEP), k0 = Math.floor((T - (lookback || 160000) - T0) / STEP);
+    for (var k = k0; k <= k1; k++) {
+      var t = T0 + k * STEP, h = hash(k, 1);
+      if (h < 0.78) {
+        var f = hash(k, 2) < 0.75 ? focusAt(t) : WORK[Math.floor(hash(k, 3) * WORK.length)];
+        var cat = CATS[Math.floor(hash(k, 4) * 5)];
+        out.push({ kind: 'call', t: t, dur: 1500 + hash(k, 5) * 16000, f: f, cat: cat[0], col: cat[1] });
+      }
+      if (k % 70 === 13) {               // a parallel fan-out (deep-research style): a convoy
+        var n = 3 + Math.floor(hash(k, 6) * 2), tg = ['konnektom', 'solomon', 'lineage', 'metro', 'decisions'];
+        for (var a = 0; a < n; a++) out.push({ kind: 'boat', t: t + a * 600, dur: 70000 + hash(k, 10 + a) * 70000, f: tg[(a + k) % tg.length], fan: k, idx: a, n: n });
+      }
+      if (k % 110 === 40) out.push({ kind: 'crane', t: t, dur: 60000 + hash(k, 7) * 60000, f: focusAt(t) });
+      if (k % 108 === 2) { var c = CMDS[Math.floor(hash(k, 8) * CMDS.length)]; out.push({ kind: 'cmd', t: t, dur: 240000 + hash(k, 11) * 120000, name: c[0], col: c[2], sub: c[3] }); }
+      if (k % 96 === 50) out.push({ kind: 'commit', t: t, dur: 3000, f: focusAt(t) });
+    }
+    return out;
+  }
+  function growthAt(f, T) {   // commits so far add storeys (capped): the board grows
+    var g = 0, k1 = Math.floor((T - T0) / STEP);
+    for (var k = 50; k <= k1; k += 96) if (focusAt(T0 + k * STEP) === f.id) g++;
+    return Math.min(2, g) * 0.5;
+  }
+
+  /* ================= state ================= */
+  var live = 'live', T = Date.now(), playing = false, level = 1, sel = null, lens = null, hoverF = null;
+  var cam = { x: 0, y: 0, s: 1, tx: 0, ty: 0, ts: 1 }, A = 14, ripples = [], born = {};
+
+  /* ================= isometric drawing ================= */
+  var cv = $('#iso'), g = cv.getContext('2d'), W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = window.devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    if (!cam.fit) home(true);
+  }
+  function P(i, j, z) { return [(i - j) * A, (i + j) * A / 2 - (z || 0) * A * 0.62]; }
+  function S(p) { return [W / 2 + (p[0] + cam.x) * cam.s, H / 2 + (p[1] + cam.y) * cam.s]; }
+  function iso(i, j, z) { return S(P(i, j, z)); }
+  function poly(pts, fill, stroke, lw) {
+    g.beginPath(); pts.forEach(function (p, k) { if (k) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.closePath();
+    if (fill) { g.fillStyle = fill; g.fill(); }
+    if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw || 1; g.stroke(); }
+  }
+  function box(i, j, w, d, z, h, col, opt) {
+    opt = opt || {};
+    var top = [iso(i, j, z + h), iso(i + w, j, z + h), iso(i + w, j + d, z + h), iso(i, j + d, z + h)];
+    var left = [iso(i, j + d, z), iso(i + w, j + d, z), iso(i + w, j + d, z + h), iso(i, j + d, z + h)];
+    var right = [iso(i + w, j, z), iso(i + w, j + d, z), iso(i + w, j + d, z + h), iso(i + w, j, z + h)];
+    if (opt.ghost) {
+      g.setLineDash([3, 3]); [left, right, top].forEach(function (f) { poly(f, null, opt.ghost, 1); }); g.setLineDash([]); return top;
+    }
+    poly(left, shade(col, -0.35), opt.edge || null); poly(right, shade(col, -0.18), opt.edge || null); poly(top, shade(col, 0.08), opt.edge || 'rgba(232,240,246,.18)');
+    if (opt.lit) {   // windows on the two visible faces; lit share = activity
+      var rows = Math.max(1, Math.floor(h * 2)), n = 0;
+      for (var r = 0; r < rows; r++) for (var c = 0; c < Math.max(1, w * 2); c++) {
+        var on = hash(opt.seed + r * 7 + c, 3) < opt.lit;
+        var a = iso(i + (c + 0.35) / 2, j + d, z + (r + 0.35) / 2), b = iso(i + (c + 0.75) / 2, j + d, z + (r + 0.35) / 2);
+        g.strokeStyle = on ? rgba(C.warm, 0.95) : 'rgba(232,240,246,.08)'; g.lineWidth = Math.max(1, cam.s * 1.6);
+        g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); n++;
+      }
+    }
+    return top;
+  }
+  function centerOf(f) { return iso(f.i + f.w / 2, f.j + f.d / 2, 0); }
+
+  function drawBoard(now) {
+    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
+    // water grid
+    g.strokeStyle = 'rgba(147,211,230,.045)'; g.lineWidth = 1;
+    for (var q = -6; q <= 44; q += 2) { var a = iso(q, -6, 0), b = iso(q, 28, 0), c = iso(-6, q - 16, 0), d = iso(44, q - 16, 0); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(c[0], c[1]); g.lineTo(d[0], d[1]); g.stroke(); }
+    var evs = live === 'snap' ? [] : eventsAt(T), act = {}, cranes = {}, cmds = [], boats = [], commits = {};
+    evs.forEach(function (e) {
+      var on = e.t <= T && e.t + e.dur > T;
+      if (e.kind === 'call' && on) { act[e.f] = (act[e.f] || 0) + 1; (act['c:' + e.f] = act['c:' + e.f] || []).push(e); }
+      if (e.kind === 'crane' && on) cranes[e.f] = e;
+      if (e.kind === 'cmd' && on) cmds.push(e);
+      if (e.kind === 'boat' && on) boats.push(e);
+      if (e.kind === 'commit' && on) commits[e.f] = e;
+    });
+    // district ground (land), drawn as plinth slabs per subject
+    Object.keys(SUBJ).forEach(function (k) {
+      var s = SUBJ[k], b = s.box, dimmed = level >= 2 && sel && sel.sub !== k;
+      g.globalAlpha = dimmed ? 0.25 : 1;
+      box(b[0], b[1], b[2] - b[0], b[3] - b[1], -0.5, 0.5, shade(s.col, -0.62), { edge: rgba(s.col, 0.35) });
+      var lp = iso(b[0] + 0.3, b[3] - 0.2, 0);
+      g.fillStyle = rgba(s.col, 0.85); g.font = '600 ' + Math.max(9, 11 * cam.s) + 'px ' + VOICE; g.textAlign = 'left';
+      g.fillText(s.hu.toUpperCase(), lp[0] - 4, lp[1] + 14 * cam.s);
+      g.globalAlpha = 1;
+    });
+    // command banners over their district
+    cmds.forEach(function (e, n) {
+      var b = SUBJ[e.sub].box, p = iso((b[0] + b[2]) / 2, b[1], 7 + n * 1.4);
+      var k = Math.min(1, (T - e.t) / 1500);
+      g.fillStyle = rgba(e.col, 0.9); g.font = '600 ' + Math.max(9, 11 * cam.s) + 'px ' + VOICE;
+      var tw = g.measureText(e.name).width + 14;
+      g.fillRect(p[0], p[1] - 14 * cam.s, tw * k, 16 * cam.s);
+      g.fillStyle = C.bg; if (k > 0.9) g.fillText(e.name, p[0] + 7, p[1] - 2 * cam.s);
+      g.strokeStyle = rgba(e.col, 0.6); g.beginPath(); g.moveTo(p[0], p[1] - 14 * cam.s); g.lineTo(p[0], p[1] + 28 * cam.s); g.stroke();
+    });
+    // dioramas, back to front
+    F.slice().sort(function (a, b) { return (a.i + a.j) - (b.i + b.j); }).forEach(function (f) {
+      var s = SUBJ[f.sub], dimmed = level >= 2 && sel && sel.sub !== f.sub;
+      var isSel = sel === f, lift = isSel ? -0.5 : 0, z = 0.05 + (isSel ? 0.35 : 0);
+      g.globalAlpha = dimmed ? 0.18 : 1;
+      var lit = act[f.id] ? Math.min(0.95, 0.25 + act[f.id] * 0.22) : live === 'snap' ? 0.06 : 0.1;
+      var hgt = f.h * 0.55 + growthAt(f, T);
+      if (f.state === 'planned') { box(f.i, f.j, f.w, f.d, z, hgt, s.col, { ghost: rgba(s.col, 0.7) }); }
+      else {
+        box(f.i, f.j, f.w, f.d, z, 0.35, shade(s.col, -0.45), { edge: isSel ? C.ice : null });
+        // a building or two on the plinth, seeded by id
+        var bw = Math.max(1, f.w - 1), bd = Math.max(1, f.d - 1);
+        box(f.i + 0.5, f.j + 0.5, bw, bd, z + 0.35, hgt, s.col, { lit: lit, seed: f.n * 31, edge: isSel ? C.ice : null });
+        if (f.w >= 3 && f.h >= 3) box(f.i + f.w - 1.2, f.j + 0.3, 0.8, 0.8, z + 0.35, hgt * 1.35, shade(s.col, 0.1), { lit: lit, seed: f.n * 17 });
+        if (f.state === 'dev') { g.setLineDash([2, 3]); poly([iso(f.i + 0.3, f.j + 0.3, z + 0.35 + hgt + 0.6), iso(f.i + f.w - 0.3, f.j + 0.3, z + 0.35 + hgt + 0.6)], null, rgba(C.text, 0.4)); g.setLineDash([]); }
+      }
+      if (isSel) { var cc = centerOf(f); g.strokeStyle = rgba(C.ice, 0.5); g.beginPath(); g.ellipse(cc[0], cc[1], (f.w + f.d) * A * 0.55 * cam.s, (f.w + f.d) * A * 0.28 * cam.s, 0, 0, 7); g.stroke(); }
+      // running calls: warm pulse at the roof, coloured by kind
+      (act['c:' + f.id] || []).slice(-3).forEach(function (e, n) {
+        var p = iso(f.i + f.w / 2, f.j + f.d / 2, z + 0.35 + hgt + 0.5 + n * 0.5), r = (3 + 2 * Math.sin(now / 160 + n)) * cam.s;
+        g.fillStyle = rgba(e.col, 0.9); g.beginPath(); g.arc(p[0], p[1], Math.max(1.5, r), 0, 7); g.fill();
+        if (!born[e.t + f.id]) { born[e.t + f.id] = 1; ripples.push({ x: p[0] - W / 2, y: p[1] - H / 2, col: e.col, t: now, s: cam.s, cx: cam.x, cy: cam.y }); }
+      });
+      if (commits[f.id]) { var cp = centerOf(f); g.strokeStyle = rgba(s.col, 0.9 * (1 - (T - commits[f.id].t) / 3000)); g.lineWidth = 2; g.beginPath(); g.ellipse(cp[0], cp[1], f.w * A * cam.s, f.w * A * 0.5 * cam.s, 0, 0, 7); g.stroke(); g.lineWidth = 1; }
+      if (cranes[f.id]) {   // a background job: a crane with a bobbing load
+        var b0 = iso(f.i + f.w - 0.2, f.j + 0.2, z), b1 = iso(f.i + f.w - 0.2, f.j + 0.2, z + hgt + 2.4), arm = iso(f.i + f.w - 2, f.j + 0.2, z + hgt + 2.4);
+        g.strokeStyle = C.warm; g.lineWidth = 1.5; g.beginPath(); g.moveTo(b0[0], b0[1]); g.lineTo(b1[0], b1[1]); g.lineTo(arm[0], arm[1]); g.stroke();
+        var bob = (Math.sin(now / 400) + 1) * 4 * cam.s; g.beginPath(); g.moveTo(arm[0] + 6, arm[1]); g.lineTo(arm[0] + 6, arm[1] + 10 * cam.s + bob); g.stroke();
+        g.fillStyle = C.warm; g.fillRect(arm[0] + 3, arm[1] + 10 * cam.s + bob, 6 * cam.s, 5 * cam.s); g.lineWidth = 1;
+      }
+      for (var fl = 0; fl < f.flags && live !== 'snap'; fl++) {   // open decisions: small flags
+        var fp = iso(f.i + 0.4 + fl * 0.5, f.j + f.d - 0.3, z + 0.35);
+        g.strokeStyle = C.text; g.beginPath(); g.moveTo(fp[0], fp[1]); g.lineTo(fp[0], fp[1] - 14 * cam.s); g.stroke();
+        poly([[fp[0], fp[1] - 14 * cam.s], [fp[0] + 7 * cam.s, fp[1] - 11 * cam.s], [fp[0], fp[1] - 8 * cam.s]], C.warn);
+      }
+      g.globalAlpha = 1;
+    });
+    // names on top of every building, on a dark plate so they stay readable
+    F.forEach(function (f) {
+      var isSel = sel === f, dimmed = level >= 2 && sel && sel.sub !== f.sub;
+      if (dimmed || !(cam.s > 0.75 || isSel || hoverF === f)) return;
+      var lp2 = iso(f.i + f.w / 2, f.j + f.d, 0), fs = Math.max(9, 10.5 * Math.min(1.3, cam.s));
+      g.font = (isSel ? '600 ' : '') + fs + 'px ' + MONO; g.textAlign = 'center';
+      var tw = g.measureText(f.name).width;
+      g.fillStyle = 'rgba(10,20,28,.72)'; g.fillRect(lp2[0] - tw / 2 - 3, lp2[1] + 13 * cam.s - fs, tw + 6, fs + 4);
+      g.fillStyle = isSel ? C.ice : hoverF === f ? C.text : rgba(C.text, 0.8);
+      g.fillText(f.name, lp2[0], lp2[1] + 13 * cam.s);
+    });
+    // boats: agents leave the Munkamenet harbour for their target and come back; a fan-out is a convoy
+    boats.forEach(function (e) {
+      var f = FB[e.f], hb = iso(SUBJ.mm.box[2] + 0.8, SUBJ.mm.box[3] + 0.8, 0), tg = iso(f.i - 0.8, f.j + f.d + 0.8, 0);
+      var u = (T - e.t) / e.dur, k = u < 0.2 ? u / 0.2 : u > 0.85 ? (1 - u) / 0.15 : 1;
+      var off = (e.idx - (e.n - 1) / 2) * 7 * cam.s, x = hb[0] + (tg[0] - hb[0]) * k + off, y = hb[1] + (tg[1] - hb[1]) * k - Math.sin(k * Math.PI) * 18 * cam.s + off * 0.5;
+      g.strokeStyle = rgba('#b39cf0', 0.25); g.setLineDash([2, 4]); g.beginPath(); g.moveTo(hb[0] + off, hb[1]); g.lineTo(x, y); g.stroke(); g.setLineDash([]);
+      poly([[x - 6 * cam.s, y], [x, y - 4 * cam.s], [x + 6 * cam.s, y], [x, y + 3 * cam.s]], '#b39cf0', rgba(C.text, 0.5));
+    });
+    // ripples
+    ripples = ripples.filter(function (r) {
+      var k = (now - r.t) / 650; if (k >= 1) return false;
+      g.strokeStyle = rgba(r.col, 0.7 * (1 - k)); g.beginPath(); g.arc(W / 2 + r.x + (cam.x - r.cx) * cam.s, H / 2 + r.y + (cam.y - r.cy) * cam.s, 4 + 22 * k, 0, 7); g.stroke();
+      return true;
+    }).slice(-40);
+    return { act: act, cranes: cranes, cmds: cmds, boats: boats };
+  }
+
+  /* ================= camera and levels ================= */
+  function home(instant) {
+    var w = 52 * A, h = 34 * A;
+    cam.ts = Math.max(0.35, Math.min(1.6, Math.min(W / w, (H - 10) / h)));
+    var c = P(19, 11, 0); cam.tx = -c[0]; cam.ty = -c[1];
+    if (instant) { cam.x = cam.tx; cam.y = cam.ty; cam.s = cam.ts; }
+    cam.fit = true;
+  }
+  function focusSub(k) {
+    var b = SUBJ[k].box, c = P((b[0] + b[2]) / 2, (b[1] + b[3]) / 2 - 2, 0), w = (b[2] - b[0] + b[3] - b[1]) * A * 1.15;
+    cam.tx = -c[0]; cam.ty = -c[1] + 30; cam.ts = Math.max(0.6, Math.min(2.4, W / w));
+  }
+  function setLevel(n) {
+    level = Math.max(1, Math.min(3, n));
+    if (level >= 2 && !sel) { level = 1; toast('Előbb jelölj ki egy diorámát.'); }
+    if (level === 1) { home(); lens = null; }
+    if (level === 2) { focusSub(sel.sub); lens = null; buildPlot(); }
+    if (level === 3 && !lens) lens = LENS[sel.sub][0];
+    $('#plot').classList.toggle('on', level === 2);
+    $('#detail').classList.toggle('on', level === 3);
+    $('#wrap').classList.toggle('dim', level === 3);
+    document.querySelectorAll('.pips i').forEach(function (p, k) { p.classList.toggle('on', k < level); });
+    if (level === 3) { $('#dTitle').textContent = lens[0]; $('#dMeta').textContent = SUBJ[sel.sub].hu + ' · ' + ASPECT[lens[1]] + ' · catalog: ' + lens[2]; sizeDetail(); }
+    hideRing(); crumb(); side();
+  }
+  function crumb() {
+    var h = '<button data-go="1">Sziget</button>';
+    if (sel && level >= 2) h += '<span class="sep">›</span><button data-go="2">' + SUBJ[sel.sub].hu + ' · ' + sel.name + '</button>';
+    if (lens && level === 3) h += '<span class="sep">›</span><button data-go="3">' + lens[0] + '</button>';
+    $('#crumb').innerHTML = h;
+  }
+  $('#crumb').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setLevel(+b.dataset.go); });
+
+  /* ================= lens ring ================= */
+  var ring = $('#ring');
+  function showRing(f) {
+    var c = centerOf(f), L = LENS[f.sub], n = L.length + 1, R0 = 34, R1 = 92, gap = 0.05, start = -Math.PI * 0.95, span = Math.PI * 1.9;
+    var h = '';
+    for (var k = 0; k < n; k++) {
+      var a0 = start + span * k / n + gap, a1 = start + span * (k + 1) / n - gap, lensK = L[k];
+      var p = function (r, a) { return (c[0] + r * Math.cos(a)).toFixed(1) + ' ' + (c[1] + r * Math.sin(a)).toFixed(1); };
+      var large = a1 - a0 > Math.PI ? 1 : 0, mid = (a0 + a1) / 2, tx = c[0] + (R1 + 16) * Math.cos(mid), ty = c[1] + (R1 + 16) * Math.sin(mid);
+      var label = lensK ? lensK[0] : 'Telek ↓', key = lensK ? String(k + 1) : 'Enter';
+      h += '<g class="sec grow" tabindex="0" role="button" aria-label="' + label + '" data-k="' + k + '" style="animation-delay:' + (k * 25) + 'ms;transform-origin:' + c[0] + 'px ' + c[1] + 'px">' +
+        '<path d="M' + p(R0, a0) + ' A' + R0 + ' ' + R0 + ' 0 ' + large + ' 1 ' + p(R0, a1) + ' L' + p(R1, a1) + ' A' + R1 + ' ' + R1 + ' 0 ' + large + ' 0 ' + p(R1, a0) + 'Z"/>' +
+        '<text x="' + tx.toFixed(0) + '" y="' + ty.toFixed(0) + '" text-anchor="' + (Math.cos(mid) < -0.2 ? 'end' : Math.cos(mid) > 0.2 ? 'start' : 'middle') + '">' + label + '</text>' +
+        '<text class="k" x="' + tx.toFixed(0) + '" y="' + (ty + 12).toFixed(0) + '" text-anchor="' + (Math.cos(mid) < -0.2 ? 'end' : Math.cos(mid) > 0.2 ? 'start' : 'middle') + '">' + key + (lensK ? ' · ' + ASPECT[lensK[1]] : '') + '</text></g>';
+    }
+    h += '<g class="hub grow"><circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + (R0 - 6) + '"/><text x="' + c[0] + '" y="' + (c[1] + 4) + '" text-anchor="middle">' + (n - 1) + ' LENCSE</text></g>';
+    ring.innerHTML = h; ring.dataset.f = f.id;
+  }
+  function hideRing() { ring.innerHTML = ''; delete ring.dataset.f; }
+  ring.addEventListener('click', function (e) { var s = e.target.closest('.sec'); if (s) pickRing(+s.dataset.k); });
+  ring.addEventListener('keydown', function (e) { var s = e.target.closest('.sec'); if (s && e.key === 'Enter') pickRing(+s.dataset.k); });
+  function pickRing(k) {
+    if (!sel) return;
+    var L = LENS[sel.sub];
+    if (k < L.length) { lens = L[k]; setLevel(3); } else setLevel(2);
+  }
+
+  /* ================= level 2: plot cards with live miniatures ================= */
+  function buildPlot() {
+    var L = LENS[sel.sub];
+    $('#plot').innerHTML = L.map(function (l, k) {
+      return '<button class="card" data-k="' + k + '"><span class="h"><b>' + l[0] + '</b><span class="k">' + (k + 1) + ' · ' + ASPECT[l[1]] + '</span></span><canvas data-mini="' + l[1] + '"></canvas><span class="k">catalog: ' + l[2] + '</span></button>';
+    }).join('');
+  }
+  $('#plot').addEventListener('click', function (e) { var c = e.target.closest('.card'); if (c) { lens = LENS[sel.sub][+c.dataset.k]; setLevel(3); } });
+
+  /* miniatures: one drawing per aspect, cheap, from the same event stream */
+  function mini(c2, kind, w, h, now, big) {
+    var x = c2, sc = big ? 1.8 : 1;
+    x.fillStyle = C.bg; x.fillRect(0, 0, w, h);
+    var col = sel ? SUBJ[sel.sub].col : C.ice, k, t;
+    if (kind === 'time' || kind === 'river' || kind === 'day') {   // Munkavászon-like lanes
+      var span = big ? 900000 : 420000, t0 = T - span;
+      var ev = eventsAt(T, span), lanes = ['read', 'search', 'edit', 'shell', 'web', 'agent'];
+      x.fillStyle = 'rgba(232,240,246,.05)'; for (k = 0; k < lanes.length; k++) x.fillRect(0, 14 + k * (h - 20) / lanes.length, w, 1);
+      ev.forEach(function (e) {
+        var xa = (e.t - t0) / span * w, xb = Math.min(T, e.t + e.dur); xb = (xb - t0) / span * w; if (xa > w) return;
+        if (e.kind === 'call') { var li = lanes.indexOf(e.cat); x.fillStyle = rgba(e.col, 0.75); x.fillRect(xa, 16 + li * (h - 20) / lanes.length, Math.max(2, xb - xa), 4 * sc); }
+        if (e.kind === 'boat') { x.fillStyle = 'rgba(179,156,240,.6)'; x.fillRect(xa, h - 9 - e.idx * 3 * sc, Math.max(2, xb - xa), 2 * sc); }
+        if (e.kind === 'cmd') { x.fillStyle = rgba(e.col, 0.35); x.fillRect(xa, 2, Math.max(2, xb - xa), 8 * sc); }
+      });
+      x.fillStyle = C.ice; x.fillRect(w - 2, 0, 2, h);
+      if (kind === 'river') { x.strokeStyle = rgba(col, 0.6); for (k = 0; k < 4; k++) { x.beginPath(); for (t = 0; t <= w; t += 6) x.lineTo(t, h / 2 + Math.sin(t / 40 + k + now / 3000) * (10 + k * 5) * sc); x.stroke(); } }
+    } else if (kind === 'structure' || kind === 'axo' || kind === 'land') {   // a small iso block city
+      for (var i2 = 0; i2 < 7; i2++) for (var j2 = 0; j2 < 5; j2++) {
+        var hh = (2 + hash(i2 * 9 + j2, 4) * 12) * sc, cx = w / 2 + (i2 - j2) * 9 * sc, cy = h * 0.42 + (i2 + j2) * 4.5 * sc;
+        var on = eventsAt(T, 20000).some(function (e) { return e.kind === 'call' && Math.floor(hash(e.t, 2) * 35) === i2 * 5 + j2; });
+        x.fillStyle = shade(col, -0.3); x.fillRect(cx - 4 * sc, cy - hh, 8 * sc, hh); x.fillStyle = on ? C.warm : shade(col, 0.1); x.fillRect(cx - 4 * sc, cy - hh - 2 * sc, 8 * sc, 2 * sc);
+      }
+    } else if (kind === 'graph' || kind === 'sphere' || kind === 'layers') {
+      var N = big ? 90 : 46, pts = [];
+      for (k = 0; k < N; k++) { var a = hash(k, 1) * 6.283 + now / (kind === 'sphere' ? 9000 : 30000), r = (kind === 'layers' ? 0.3 + (k % 4) * 0.18 : Math.sqrt(hash(k, 2))) * Math.min(w, h) * 0.42;
+        pts.push([w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r * (kind === 'layers' ? 0.35 : 0.8) + (kind === 'layers' ? ((k % 4) - 1.5) * 16 * sc : 0)]); }
+      x.strokeStyle = rgba(col, 0.18); for (k = 0; k < N; k++) { var q = pts[(k * 7 + 3) % N]; x.beginPath(); x.moveTo(pts[k][0], pts[k][1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      pts.forEach(function (p, k3) { x.fillStyle = k3 % 11 === Math.floor(now / 700) % 11 ? C.warm : rgba(col, 0.9); x.fillRect(p[0] - 1.5, p[1] - 1.5, 3 * sc, 3 * sc); });
+    } else if (kind === 'live' || kind === 'flow') {   // a ring view (Ügynöknyom-like)
+      var cx2 = w / 2, cy2 = h / 2, R = Math.min(w, h) * 0.38;
+      x.strokeStyle = rgba(C.ice, 0.35); x.beginPath(); x.arc(cx2, cy2, R, 0, 7); x.stroke(); x.beginPath(); x.arc(cx2, cy2, R * 0.55, 0, 7); x.stroke();
+      eventsAt(T, 30000).filter(function (e) { return e.kind === 'call'; }).slice(-14).forEach(function (e, n) {
+        var a2 = n / 14 * 6.283, on2 = e.t + e.dur > T; x.strokeStyle = rgba(e.col, on2 ? 0.9 : 0.35); x.beginPath(); x.moveTo(cx2, cy2); x.lineTo(cx2 + Math.cos(a2) * R, cy2 + Math.sin(a2) * R); x.stroke();
+        x.fillStyle = e.col; x.fillRect(cx2 + Math.cos(a2) * R - 2, cy2 + Math.sin(a2) * R - 2, 4 * sc, 4 * sc);
+      });
+      x.fillStyle = C.ice; x.fillRect(cx2 - 3, cy2 - 3, 6, 6);
+    } else if (kind === 'lines') {
+      var cols = ['#93d3e6', '#e8a873', '#8bcca1', '#b39cf0'];
+      cols.forEach(function (c3, n) { x.strokeStyle = c3; x.lineWidth = 2 * sc; x.beginPath(); x.moveTo(6, 12 + n * (h - 24) / 3); x.lineTo(w * 0.35, 12 + n * (h - 24) / 3); x.lineTo(w * 0.55, h / 2); x.lineTo(w - 6, 12 + ((n + 1) % 4) * (h - 24) / 3); x.stroke(); });
+      x.lineWidth = 1;
+    } else if (kind === 'signals') {
+      var cx3 = w / 2, cy3 = h / 2, R2 = Math.min(w, h) * 0.32; x.strokeStyle = rgba(col, 0.9); x.beginPath();
+      for (k = 0; k <= 120; k++) { var a3 = k / 120 * 6.283, pk = [0.3, 1.4, 3.2, 4.6].some(function (p) { return Math.abs(a3 - p) < 0.15; }) ? 14 * sc : 0; x.lineTo(cx3 + Math.cos(a3) * (R2 + pk), cy3 + Math.sin(a3) * (R2 + pk)); }
+      x.stroke();
+    } else if (kind === 'map') {
+      x.strokeStyle = rgba(col, 0.35); for (k = 0; k < 8; k++) { x.beginPath(); for (t = 0; t <= w; t += 8) x.lineTo(t, 10 + k * h / 8 + Math.sin(t / 30 + k) * 5); x.stroke(); }
+      for (k = 0; k < 6; k++) { x.fillStyle = k === 2 ? C.warm : C.ice; x.beginPath(); x.arc(hash(k, 3) * w, 12 + hash(k, 4) * (h - 24), 3 * sc, 0, 7); x.fill(); }
+    } else if (kind === 'weather') {
+      for (var m = 0; m < 8; m++) { x.strokeStyle = m ? rgba(col, 0.25) : C.text; x.beginPath(); for (t = 0; t <= w; t += 6) x.lineTo(t, h / 2 + Math.sin(t / 60 + m * 0.3) * h * 0.25 + (hash(m, t) - 0.5) * 6); x.stroke(); }
+    } else if (kind === 'screen') {
+      x.strokeStyle = C.lineS; x.strokeRect(w / 2 - 50 * sc, h / 2 - 34 * sc, 100 * sc, 68 * sc);
+      x.fillStyle = C.warm; x.font = (11 * sc) + 'px ' + MONO; x.textAlign = 'center'; x.fillText('ÁLLAPOT · 230.1 V', w / 2, h / 2);
+    }
+  }
+  function sizeDetail() { var c2 = $('#dCv'); c2.width = c2.clientWidth * DPR; c2.height = c2.clientHeight * DPR; }
+
+  /* ================= ribbon (the Munkavászon in miniature) ================= */
+  var rib = $('#rib'), rg = rib.getContext('2d'), RSPAN = 30 * 60000;
+  function drawRibbon() {
+    var w = rib.clientWidth, h = rib.clientHeight;
+    if (rib.width !== Math.round(w * DPR)) { rib.width = Math.round(w * DPR); rib.height = Math.round(h * DPR); }
+    rg.setTransform(DPR, 0, 0, DPR, 0, 0); rg.clearRect(0, 0, w, h);
+    var t0 = T - RSPAN * 0.85, x = function (t) { return (t - t0) / RSPAN * w; };
+    var ev = eventsAt(T + RSPAN * 0.15, RSPAN), lanes = ['read', 'search', 'edit', 'shell', 'web', 'agent'];
+    for (var m = Math.ceil(t0 / 300000) * 300000; m < t0 + RSPAN; m += 300000) { rg.fillStyle = 'rgba(232,240,246,.06)'; rg.fillRect(x(m), 0, 1, h); rg.fillStyle = C.faint; rg.font = '9.5px ' + MONO; rg.fillText(new Date(m).toTimeString().slice(0, 5), x(m) + 3, h - 3); }
+    ev.forEach(function (e) {
+      if (e.t > T && live !== 'replay') return;
+      var xa = x(e.t), xb = x(Math.min(e.t + e.dur, Math.max(T, e.t))), future = e.t > T;
+      rg.globalAlpha = future ? 0.25 : 1;
+      if (e.kind === 'cmd') { rg.fillStyle = rgba(e.col, 0.3); rg.fillRect(xa, 2, Math.max(2, x(e.t + e.dur) - xa), 9); rg.fillStyle = e.col; rg.font = '600 9.5px ' + VOICE; rg.fillText(e.name, xa + 4, 10); }
+      if (e.kind === 'call') { var li = lanes.indexOf(e.cat); rg.fillStyle = rgba(e.col, 0.8); rg.fillRect(xa, 15 + li * 7, Math.max(2, xb - xa), 5); }
+      if (e.kind === 'boat') { rg.fillStyle = 'rgba(179,156,240,.7)'; rg.fillRect(xa, 58 + e.idx * 3, Math.max(2, xb - xa), 2); }
+      if (e.kind === 'crane') { rg.strokeStyle = rgba(C.warm, 0.8); rg.setLineDash([4, 3]); rg.strokeRect(xa, 70, Math.max(2, xb - xa), 4); rg.setLineDash([]); }
+      rg.globalAlpha = 1;
+    });
+    var xp = x(T); rg.fillStyle = live === 'live' ? C.warm : C.ice; rg.fillRect(xp - 1, 0, 2, h);
+    rg.beginPath(); rg.arc(xp, 42, 4, 0, 7); rg.fill();
+    $('#clock').textContent = new Date(T).toTimeString().slice(0, 8) + (live === 'live' ? ' · most' : ' · ' + Math.round((Date.now() - T) / 60000) + ' perce');
+  }
+
+  /* ================= side panel ================= */
+  var lastSide = 0;
+  function side(st) {
+    var h;
+    if (!sel) h = '<span class="lbl">Kijelölés</span><h3>A műhely szigete</h3><p style="margin:0;font-size:12.5px;color:var(--dim)">Minden funkció egy dioráma a tárgya kerületében. Kattints egyre: körülötte megnyílik a lencsegyűrű. A meleg ablakok azt mutatják, min dolgozik most egy munkamenet.</p>';
+    else {
+      h = '<span class="lbl">Kijelölve · ' + SUBJ[sel.sub].hu + '</span><h3 style="color:' + SUBJ[sel.sub].col + '">' + sel.name + '</h3>' +
+        '<div class="kv"><span>állapot</span><span>' + { live: 'éles', beta: 'teszt', dev: 'fejlesztés', planned: 'tervezett' }[sel.state] + '</span><span>nyitott döntés</span><span>' + sel.flags + '</span>' +
+        '<span>szint</span><span>' + ['', 'Sziget', 'Telek', 'Részlet'][level] + '</span></div><span class="lbl" style="margin-top:4px">Lencsék</span><div class="lenslist">' +
+        LENS[sel.sub].map(function (l, k) { return '<button data-k="' + k + '"><span class="mono" style="color:var(--faint)">' + (k + 1) + '</span><span>' + l[0] + '</span><span class="k">' + ASPECT[l[1]] + '</span></button>'; }).join('') + '</div>';
+    }
+    $('#sel').innerHTML = h;
+  }
+  $('#sel').addEventListener('click', function (e) { var b = e.target.closest('button[data-k]'); if (b && sel) { lens = LENS[sel.sub][+b.dataset.k]; setLevel(3); } });
+  function activity(st) {
+    var rows = [];
+    st.cmds.forEach(function (e) { rows.push([e.col, e.name + ' · ' + SUBJ[e.sub].hu, Math.round((T - e.t) / 60000) + ' p']); });
+    var fans = {}; st.boats.forEach(function (e) { fans[e.fan] = fans[e.fan] || { n: e.n, t: e.t, f: [] }; fans[e.fan].f.push(FB[e.f].name); });
+    Object.keys(fans).forEach(function (k) { rows.push(['#b39cf0', 'Párhuzamos: ' + fans[k].n + ' ügynök → ' + fans[k].f.join(', '), Math.round((T - fans[k].t) / 1000) + ' s']); });
+    Object.keys(st.cranes).forEach(function (k) { rows.push([C.warm, 'Háttér: build · ' + FB[k].name, Math.round((T - st.cranes[k].t) / 1000) + ' s']); });
+    Object.keys(st.act).filter(function (k) { return k.indexOf('c:') === 0; }).forEach(function (k) { var e = st.act[k][st.act[k].length - 1]; rows.push([e.col, e.cat + ' · ' + FB[k.slice(2)].name, Math.round((T - e.t) / 1000) + ' s']); });
+    $('#act').innerHTML = rows.length ? rows.slice(0, 9).map(function (r) { return '<div><i style="background:' + r[0] + '"></i><span>' + r[1] + '</span><span class="t">' + r[2] + '</span></div>'; }).join('')
+      : '<span style="color:var(--faint);font-size:12px">' + (live === 'snap' ? 'Pillanatkép: csak a szerkezet látszik.' : 'Csend: most nem fut semmi.') + '</span>';
+  }
+
+  /* ================= input ================= */
+  function pick(x, y) {
+    var best = null, bd = 1e9;
+    F.forEach(function (f) {
+      var c = iso(f.i + f.w / 2, f.j + f.d / 2, f.h * 0.3), dx = x - c[0], dy = (y - c[1]) * 1.6, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < (f.w + f.d) * A * 0.5 * cam.s && d < bd) { bd = d; best = f; }
+    });
+    return best;
+  }
+  function select(f, ringToo) {
+    sel = f; hideRing();
+    if (f && ringToo !== false) showRing(f);
+    if (!f && level > 1) setLevel(1);
+    side();
+  }
+  var pts = {}, gesture = null, lastTap = 0, pressTimer = null;
+  var wrap = $('#wrap');
+  cv.addEventListener('pointerdown', function (e) {
+    cv.setPointerCapture(e.pointerId); pts[e.pointerId] = { x: e.offsetX, y: e.offsetY, x0: e.offsetX, y0: e.offsetY };
+    var ids = Object.keys(pts);
+    if (ids.length === 1) {
+      gesture = { kind: 'tap', cx: cam.x, cy: cam.y };
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(function () { if (gesture && gesture.kind === 'tap') { var f = pick(e.offsetX, e.offsetY); if (f) { select(f, true); gesture.kind = 'done'; if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {} } } }, 500);
+    } else if (ids.length === 2) {
+      clearTimeout(pressTimer);
+      var a = pts[ids[0]], b = pts[ids[1]];
+      gesture = { kind: 'two', d0: Math.hypot(a.x - b.x, a.y - b.y), mx0: (a.x + b.x) / 2, T0: T, done: false };
+    }
+  });
+  cv.addEventListener('pointermove', function (e) {
+    var p = pts[e.pointerId];
+    if (!p) { var h2 = pick(e.offsetX, e.offsetY); if (h2 !== hoverF) { hoverF = h2; cv.style.cursor = h2 ? 'pointer' : 'grab'; } return; }
+    p.x = e.offsetX; p.y = e.offsetY;
+    var ids = Object.keys(pts);
+    if (gesture && ids.length === 1 && (gesture.kind === 'tap' || gesture.kind === 'pan')) {
+      var dx = p.x - p.x0, dy = p.y - p.y0;
+      if (gesture.kind === 'tap' && Math.hypot(dx, dy) > 6) { gesture.kind = 'pan'; clearTimeout(pressTimer); cv.classList.add('drag'); cam.fit = false; hideRing(); }
+      if (gesture.kind === 'pan') { cam.tx = cam.x = gesture.cx + dx / cam.s; cam.ty = cam.y = gesture.cy + dy / cam.s; }
+    } else if (gesture && gesture.kind === 'two' && ids.length === 2) {
+      var a = pts[ids[0]], b = pts[ids[1]], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2;
+      var ratio = d / gesture.d0, shift = mx - gesture.mx0;
+      if (!gesture.done && Math.abs(Math.log(ratio)) > 0.28) { gesture.done = true; setLevel(level + (ratio > 1 ? 1 : -1)); }
+      else if (!gesture.done && Math.abs(shift) > 12) { toReplay(); T = Math.min(Date.now(), gesture.T0 - shift * 4000); }
+    }
+  });
+  function up(e) {
+    var p = pts[e.pointerId]; delete pts[e.pointerId]; clearTimeout(pressTimer); cv.classList.remove('drag');
+    if (gesture && gesture.kind === 'tap' && p) {
+      var now = performance.now();
+      if (now - lastTap < 300) { lastTap = 0; select(null); setLevel(1); gesture = null; return; }
+      lastTap = now;
+      var f = pick(p.x, p.y);
+      if (f) { if (sel === f && level === 1) { if (ring.dataset.f) setLevel(2); else showRing(f); } else { select(f, level === 1); if (level === 2) { focusSub(f.sub); buildPlot(); crumb(); } } }
+      else { select(null); ripples.push({ x: p.x - W / 2, y: p.y - H / 2, col: C.ice, t: performance.now(), cx: cam.x, cy: cam.y }); }
+    }
+    if (!Object.keys(pts).length) gesture = null;
+  }
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) { if (!wheelLock) { wheelLock = true; setLevel(level + (e.deltaY < 0 ? 1 : -1)); setTimeout(function () { wheelLock = false; }, 450); } return; }
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { toReplay(); T = Math.min(Date.now(), T + (e.deltaX || e.deltaY) * 3000); return; }
+    cam.fit = false; cam.ts = cam.s = Math.max(0.35, Math.min(3, cam.s * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); hideRing();
+  }, { passive: false });
+  var wheelLock = false;
+  // ribbon scrubbing
+  var ribDrag = null;
+  rib.addEventListener('pointerdown', function (e) { rib.setPointerCapture(e.pointerId); ribDrag = { x: e.clientX, T: T }; toReplay(); });
+  rib.addEventListener('pointermove', function (e) { if (ribDrag) T = Math.min(Date.now(), ribDrag.T - (e.clientX - ribDrag.x) / rib.clientWidth * RSPAN); });
+  rib.addEventListener('pointerup', function () { ribDrag = null; });
+  function toReplay() { if (live === 'live') setLive('replay'); }
+  function setLive(m) {
+    live = m; if (m === 'live') { T = Date.now(); playing = false; }
+    document.querySelectorAll('.seg button').forEach(function (b) { b.classList.toggle('on', b.dataset.live === m); b.setAttribute('aria-checked', b.dataset.live === m); });
+    $('#liveBtn').classList.toggle('on', m === 'live');
+    $('#playBtn').textContent = playing ? '❚❚ ×20' : '▶ ×20';
+  }
+  document.querySelectorAll('.seg button').forEach(function (b) { b.addEventListener('click', function () { setLive(b.dataset.live); }); });
+  $('#liveBtn').addEventListener('click', function () { setLive('live'); });
+  $('#playBtn').addEventListener('click', function () { if (live === 'live') setLive('replay'); if (T >= Date.now() - 1000) T -= 20 * 60000; playing = !playing; setLive(live); });
+  $('#up').addEventListener('click', function () { setLevel(level - 1); });
+  $('#dOpen').addEventListener('click', function () { var b = this; b.textContent = 'Nyitás…'; setTimeout(function () { b.textContent = 'Megnyitás az Asztalon'; toast('Az Asztal megnyitná: ' + lens[2] + ' (catalog id → desktop.open)'); }, 420); });
+  var toastT = 0;
+  function toast(s) { var t = $('#toast'); t.textContent = s; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('on'); }, 2400); }
+  window.addEventListener('keydown', function (e) {
+    if (route !== 'latoter' || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    var k = e.key;
+    if (k === 'Enter' || k === 'ArrowDown') { e.preventDefault(); if (level === 1 && sel && !ring.dataset.f) showRing(sel); else setLevel(level + 1); }
+    else if (k === 'Escape' || k === 'ArrowUp') { e.preventDefault(); if (ring.dataset.f) hideRing(); else if (level > 1) setLevel(level - 1); else select(null); }
+    else if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); toReplay(); T = Math.min(Date.now(), T + (k === 'ArrowLeft' ? -1 : 1) * 60000); }
+    else if (k === ' ') { e.preventDefault(); $('#playBtn').click(); }
+    else if (k === 'l' || k === 'L') setLive('live');
+    else if (k === 'Home') { setLevel(1); }
+    else if (k === 'Tab' && document.activeElement === cv) { e.preventDefault(); var n = sel ? (sel.n + (e.shiftKey ? F.length - 1 : 1)) % F.length : 0; select(F[n], level === 1); if (level === 2) { focusSub(F[n].sub); buildPlot(); crumb(); } }
+    else if (/^[1-7]$/.test(k) && sel) { var L = LENS[sel.sub]; if (+k <= L.length) { lens = L[+k - 1]; setLevel(3); } }
+  });
+
+  /* ================= loop ================= */
+  var last = 0;
+  function frame(now) {
+    var dt = last ? Math.min(100, now - last) : 16; last = now;
+    if (live === 'live') T = Date.now();
+    else if (playing) { T += dt * 20; if (T >= Date.now()) { T = Date.now(); playing = false; setLive('live'); } }
+    if (route === 'latoter') {
+      var e = reduced ? 1 : Math.min(1, dt / 120);
+      cam.x += (cam.tx - cam.x) * e; cam.y += (cam.ty - cam.y) * e; cam.s += (cam.ts - cam.s) * e;
+      if (cv.clientWidth !== W || cv.clientHeight !== H) resize();
+      var st = drawBoard(now);
+      if (ring.dataset.f && sel && level === 1 && !reduced && Math.abs(cam.tx - cam.x) + Math.abs(cam.ty - cam.y) > 0.5) showRing(sel);
+      drawRibbon();
+      if (now - lastSide > 300) { lastSide = now; activity(st); }
+      if (level === 2) document.querySelectorAll('#plot canvas').forEach(function (c2) {
+        var w = c2.clientWidth, h = c2.clientHeight; if (c2.width !== w * DPR) { c2.width = w * DPR; c2.height = h * DPR; }
+        var x = c2.getContext('2d'); x.setTransform(DPR, 0, 0, DPR, 0, 0); mini(x, c2.dataset.mini, w, h, now, false);
+      });
+      if (level === 3 && lens) { var dc = $('#dCv'), w3 = dc.clientWidth, h3 = dc.clientHeight; if (dc.width !== Math.round(w3 * DPR)) sizeDetail(); var x3 = dc.getContext('2d'); x3.setTransform(DPR, 0, 0, DPR, 0, 0); mini(x3, lens[1], w3, h3, now, true); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ================= RENDSZEREZÉS ================= */
+  var LIVENESS = [['snap', 'Pillanatkép', ''], ['gen', 'Generatív vászon', 'half'], ['shadow', 'Digitális árnyék', 'full'], ['twin', 'Digitális iker', 'full'], ['sim', 'Szimuláció', ''], ['expl', 'Magyarázó', '']];
+  var FATE = { keep: 'MARAD', promote: 'KIEMEL', rework: 'ÁTDOLGOZ', merge: 'BEOLVAD', retire: 'KIVEZET', labor: 'LABOR' };
+  // [name, subject, liveness, fate, target]
+  var TOOLS = [
+    ['Kódváros', 'kod', 'snap', 'keep', 'A Kód szerkezet-lencséje (3D, Részlet szint). Fejléc, paletta, billentyűk a kitből; a Ctrl+Alt+K felszabadul.'],
+    ['Kódváros 2.0 növekedés', 'kod', 'snap', 'promote', 'Az egyetlen növekedési elrendezés: ez helyezi el a Látótér szigeteit. A v2 README fejlécét frissíteni kell.'],
+    ['Gépország Növekedés-terv', 'kod', 'snap', 'merge', 'A K2-01 elrendezésbe olvad; Gépország a PC-re marad.'],
+    ['kit citymap', 'kod', 'snap', 'rework', 'A K2-01 elrendezés 2D / izometrikus rajzolója: a tábla talaja és a Kódváros Egyszerű nézete. Előbb a telkek rajzolási sorrendje.'],
+    ['Commit-pixel', 'kod', 'gen', 'rework', 'A Kód idő-lencséje, a kit heatgrid-jére építve (egy rács, nem kettő).'],
+    ['Kódváros visszajátszás', 'kod', 'gen', 'keep', 'A Kódváros része; az eseménygerincet olvassa.'],
+    ['Asztal heti commit-sávok', 'kod', 'snap', 'merge', 'A Mérőszámok szakasz a heatgrid-lencsét mutatja.'],
+    ['Munkavászon', 'mm', 'gen', 'promote', 'A Munkamenet idő-lencséje és az eseménygerinc forrása. Port: :8810.'],
+    ['Munkavászon élő', 'mm', 'shadow', 'promote', 'Ugyanaz élőben; a tábla idősávja ez kicsiben.'],
+    ['Ügynöknyom', 'mm', 'shadow', 'keep', 'A Munkamenet élő lencséje (gyűrű), és az egyetlen hely, ahol engedélykapu válaszolható.'],
+    ['Stack Visszajátszás', 'mm', 'gen', 'retire', 'A Munkavászon valós idővel, képekkel és párhuzamos ágakkal játssza vissza a munkamenetet; a #sel= linkek oda mennek.'],
+    ['Futásnapló', 'mm', 'snap', 'keep', 'A futások napi nézete; egy futásra kattintva a Munkavászon nyílik.'],
+    ['Vezérlőterem', 'mm', 'snap', 'keep', 'A Tanács folyama; Munkamenet-lencse Fejlesztő szinten.'],
+    ['Kódváros ügynökök', 'mm', 'shadow', 'rework', 'Saját átiratolvasó helyett az eseménygerincet olvassa.'],
+    ['Konnektóm', 'tud', 'snap', 'keep', 'A Tudás szerkezet-lencséje (3D).'],
+    ['Konnektóm tüzelés', 'tud', 'gen', 'keep', 'Az impulzusait az eseménygerincből kapja.'],
+    ['Holo (4 alak)', 'tud', 'snap', 'merge', 'Egy alak (Polip) a Konnektóm módja lesz; a többi a Laborba.'],
+    ['Rétegek (izometrikus)', 'tud', 'snap', 'rework', 'Helyette a Stack Viewer (STK-Q25 = A), a kit layerstack-jére építve, így az izometria közös a táblával.'],
+    ['Konnektóm-labor', 'tud', 'snap', 'labor', 'Ajándékfájl fagyott Stack-másolattal és hiányzó újraépítéssel: csak Archívum.'],
+    ['Solomon Gömb', 'tud', 'snap', 'keep', 'A Tudás dokumentum-lencséje; más tárgy (dokumentumok, döntések), nem duplikátum.'],
+    ['Vonaltérkép', 'tud', 'snap', 'keep', 'A Tudás vonal-lencséje.'],
+    ['Thread Board', 'tud', 'snap', 'merge', 'A Vonaltérkép tábla-módja lesz; git-en kívüli fájl nem kerül menübe.'],
+    ['Ötletfolyam', 'tud', 'gen', 'keep', 'A Tudás idő-lencséje.'],
+    ['MindMap ötlet-idővonal', 'tud', 'snap', 'retire', 'A MindMap szerkesztő marad; az ötlet-idővonal az Ötletfolyam dolga.'],
+    ['Divergencia-tábla', 'tud', 'shadow', 'keep', 'A Tudás jel-lencséje; a gyűrűje a tábla értesítő jelzőfénye.'],
+    ['Divergencia-gyűrű (logó)', 'tud', 'gen', 'keep', 'Márka-elem; a gyűrű-implementációk közül ez marad külön.'],
+    ['VRG Térkép', 'mun', 'snap', 'keep', 'Felhasználói alkalmazás; a Munka térkép-lencséje.'],
+    ['Térkép munkák-réteg', 'mun', 'shadow', 'keep', 'A munkák hőtérképe a Térképen.'],
+    ['Planner nézetek V0–V9', 'epu', 'snap', 'keep', 'Termékoldal, a Planneren belül. Nem kerül a fejlesztői táblára.'],
+    ['Ügyfélnézet', 'epu', 'snap', 'keep', 'Termékoldal; ügyfélnek szóló modell.'],
+    ['Topológia (terv)', 'epu', 'twin', 'keep', 'Élő BRIDGE-szenzorokkal a VRG első valódi digitális ikre (V6).'],
+    ['BRIDGE-DN ábrák, szekrény-SVG-k', 'epu', 'expl', 'keep', 'Dokumentumok a bridge készletben; menüpont nélkül.'],
+    ['BRIDGE / BuildTree másolatok', 'epu', 'expl', 'retire', 'Duplikátumok (VIS-Q8).'],
+    ['BuildTree diagram-helyőrző', 'gep', 'snap', 'retire', 'Üres helyőrző; kikerül, amíg nincs ESPBLOK-nézet.'],
+    ['Planner CYD', 'gep', 'shadow', 'keep', 'Eszköz; a lapjai a Plannert tükrözik.'],
+    ['CYD szimulátorok', 'gep', 'sim', 'labor', 'Labor-polc; a kit cyd komponense marad.'],
+    ['Gépország', 'gep', 'shadow', 'keep', 'A Gép élő lencséje.'],
+    ['Tárház (Kódváros)', 'gep', 'shadow', 'merge', 'A Birtokba olvad: egy meghajtó-mint-birtok nézet, nem kettő.'],
+    ['Időjárás', 'kor', 'shadow', 'keep', 'Felhasználói alkalmazás; a Környezet lencséje.'],
+    ['Open MCT spike', 'kor', 'shadow', 'retire', 'A Munkavászon és az Asztal lefedi a telemetria-konzolt.'],
+    ['FLIP, Örvénylabor, chase', 'kor', 'sim', 'labor', 'Az Archívum Labor-polca; a docs/research másolatból egy marad.'],
+    ['Site Pager próbapad', 'gep', 'sim', 'labor', 'Labor-polc.'],
+    ['Feature Dioramas', 'kod', 'expl', 'promote', 'A tábla építőkockái. A hiányzó dioramas/build.js-t vissza kell állítani.'],
+    ['Kit emblem', 'kod', 'expl', 'promote', 'A tábla dioráma-nyelve (activity bemenet = világító ablakok).'],
+    ['Kódváros 2.0 terv, Gépország lap', 'kod', 'expl', 'keep', 'Archívum-tanulmányok.'],
+    ['Négy gyűrű-implementáció', 'tud', 'expl', 'merge', 'Egy kit-gyűrű (Overhaul P4).'],
+  ];
+  var fateFilter = null;
+  function buildMatrix() {
+    var h = '<thead><tr><th><span class="lbl">Tárgy ↓ · élőség →</span></th>' + LIVENESS.map(function (l) { return '<th><span class="lbl"><span class="shape ' + l[2] + '"' + (l[0] === 'sim' ? ' style="border-style:dashed"' : '') + '></span>' + l[1] + '</span></th>'; }).join('') + '</tr></thead><tbody>';
+    Object.keys(SUBJ).forEach(function (k) {
+      h += '<tr><th><i style="background:' + SUBJ[k].col + '"></i>' + SUBJ[k].hu + '</th>';
+      LIVENESS.forEach(function (l) {
+        h += '<td>' + TOOLS.map(function (t, n) { return t[1] === k && t[2] === l[0] ? '<button class="tool' + (fateFilter && fateFilter !== t[3] ? ' off' : '') + '" data-n="' + n + '">' + t[0] + '<span class="f f-' + t[3] + '">' + FATE[t[3]] + '</span></button>' : ''; }).join('') + '</td>';
+      });
+      h += '</tr>';
+    });
+    $('#matrix').innerHTML = h + '</tbody>';
+    var cnt = {}; TOOLS.forEach(function (t) { cnt[t[3]] = (cnt[t[3]] || 0) + 1; });
+    $('#tally').innerHTML = '<div><b>' + TOOLS.length + '</b><span>vizuális eszköz</span></div>' + Object.keys(FATE).map(function (f) { return '<div><b>' + (cnt[f] || 0) + '</b><span>' + FATE[f].toLowerCase() + '</span></div>'; }).join('');
+    $('#filters').innerHTML = '<span class="lbl">Sors:</span><button data-f="">mind</button>' + Object.keys(FATE).map(function (f) { return '<button data-f="' + f + '" class="' + (fateFilter === f ? 'on' : '') + '"><span class="f f-' + f + '" style="font:600 9.5px var(--f-voice);letter-spacing:.1em;padding:1px 4px">' + FATE[f] + '</span></button>'; }).join('');
+  }
+  $('#filters').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { fateFilter = b.dataset.f || null; buildMatrix(); } });
+  $('#matrix').addEventListener('click', function (e) {
+    var b = e.target.closest('.tool'); if (!b) return; var t = TOOLS[+b.dataset.n];
+    $('#why').innerHTML = '<b>' + t[0] + '</b> · ' + SUBJ[t[1]].hu + ' · ' + LIVENESS.filter(function (l) { return l[0] === t[2]; })[0][1] + ' · <span class="f f-' + t[3] + '" style="font:600 10px var(--f-voice);letter-spacing:.1em;padding:1px 5px">' + FATE[t[3]] + '</span><div style="margin-top:6px;color:var(--dim)">' + t[4] + '</div>';
+  });
+
+  /* ================= MOZGÁS demos ================= */
+  $('#dLift').addEventListener('click', function () { this.classList.toggle('on'); });
+  $('#dLift').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.classList.toggle('on'); } });
+  var lv = 0; setInterval(function () { if (route !== 'mozgas') return; lv = (lv + 1) % 3; document.querySelectorAll('#dLv span').forEach(function (s, k) { s.classList.toggle('on', k === lv); }); }, 1400);
+  setInterval(function () {
+    if (route !== 'mozgas') return;
+    var r = $('#dRip i'); r.classList.remove('go'); void r.offsetWidth; r.style.left = (20 + Math.random() * 60) + '%'; r.style.top = (20 + Math.random() * 50) + '%'; r.classList.add('go');
+    var s = $('#dSweep i'); s.classList.remove('go'); void s.offsetWidth; s.classList.add('go');
+    var gr = $('#dGrow i'); gr.style.height = (parseInt(gr.style.height || '22', 10) >= 62 ? 22 : parseInt(gr.style.height || '22', 10) + 14) + 'px';
+  }, 1500);
+  (function () {
+    var svg = $('#dRing'), h = '', c = [60, 45];
+    for (var k = 0; k < 5; k++) {
+      var a0 = -Math.PI * 0.95 + Math.PI * 1.9 * k / 5 + 0.05, a1 = -Math.PI * 0.95 + Math.PI * 1.9 * (k + 1) / 5 - 0.05;
+      var p = function (r, a) { return (c[0] + r * Math.cos(a)).toFixed(1) + ' ' + (c[1] + r * Math.sin(a)).toFixed(1); };
+      h += '<path class="dr" style="animation:ringIn 240ms cubic-bezier(.2,.7,.2,1) ' + (k * 25) + 'ms both;transform-origin:60px 45px;fill:' + (k === 2 ? 'rgba(147,211,230,.25)' : 'rgba(18,28,36,.9)') + ';stroke:' + (k === 2 ? '#93d3e6' : 'rgba(232,240,246,.32)') + '" d="M' + p(14, a0) + ' A14 14 0 0 1 ' + p(14, a1) + ' L' + p(38, a1) + ' A38 38 0 0 0 ' + p(38, a0) + 'Z"/>';
+    }
+    svg.innerHTML = h + '<circle cx="60" cy="45" r="9" fill="#121c24" stroke="#93d3e6"/>';
+    setInterval(function () { if (route !== 'mozgas') return; svg.querySelectorAll('.dr').forEach(function (d) { d.style.animation = 'none'; void d.getBoundingClientRect(); d.style.animation = ''; }); svg.innerHTML = svg.innerHTML; }, 2200);
+  })();
+
+  /* ================= TERV ================= */
+  var PH = [
+    ['V0', 'Rendrakás', '1–2 munkamenet', 'Kivezetések, Labor-polc, összevonások, elavult leltár; a :8809 portütközés javítva.'],
+    ['V1', 'Lencse-regiszter', '1–2', 'type: view + lens mezők a katalógusban; a ◢ tárcsa és a telefon 7. oldala ebből listáz.'],
+    ['V2', 'Eseménygerinc', '2–3', 'shared/vrg-events a Munkavászon modelljéből; minden olvasó erre vált.'],
+    ['V3', 'Kit-vizualizációk', '3–4', 'Stack Viewer layerstack-en, Commit-pixel heatgrid-en, egy gyűrű, citymap javítás, dioráma-generátor.'],
+    ['V4', 'A tábla', '4', 'Sziget + idősáv + lencsegyűrű + három szint + mozdulatok; Asztal-talaj, overlay, telefon.'],
+    ['V5', 'Vezérlés', '2', 'Gyűrű-műveletek launch.act-on és a promptkönyvtáron át; döntés-zászlók.'],
+    ['V6', 'Iker (termék)', 'később', 'A Topológia után: élő BRIDGE-szenzorok a Planner modellen.'],
+  ];
+  $('#phases').innerHTML = PH.map(function (p, k) { return '<div class="ph' + (k === 6 ? ' later' : '') + '"><span class="k">' + p[0] + ' · ' + p[2] + '</span><b>' + p[1] + '</b><p>' + p[3] + '</p></div>'; }).join('');
+  var DQ = [
+    ['VIS-Q1', 'A tábla neve', ['Látótér', 'Műhelysziget', 'Áttekintő tábla']],
+    ['VIS-Q2', 'Az élőség-szavak (pillanatkép, generatív vászon, árnyék, iker, szimuláció, magyarázó)', ['A szójegyzékbe, rögzített fogalomként', 'Maradjanak kötetlenek']],
+    ['VIS-Q3', 'Hogyan regisztráljuk a vizualizációkat', ['type: view + lens blokk a katalógusban', 'Külön lenses.json']],
+    ['VIS-Q4', 'Az eseménygerinc', ['A Munkavászon modellje → shared/vrg-events', 'Minden olvasó tartsa a sajátját']],
+    ['VIS-Q5', 'A Holo négy alakja', ['Polip a Konnektóm módjaként, a többi Labor', 'Mind a négy marad']],
+    ['VIS-Q6', 'A Stack Viewer izometriája', ['Kit layerstack (SVG, közös a táblával)', 'Saját WebGL, mint a Rétegek']],
+    ['VIS-Q7', 'Hol él a tábla az Asztalon', ['Az Asztal-nézet talaja Fejlesztő szinten + overlay', 'Harmadik fő nézet', 'Csak egy Lap-sablon']],
+    ['VIS-Q8', 'A duplikátumok kivezetése', ['Igen, egy utolsó diff után', 'Maradjanak']],
+    ['VIS-Q9', 'A tábla a telefonon', ['Előbb csak olvasható, műveletek V5 után az M35-jóváhagyással', 'Végleg csak olvasható']],
+  ];
+  function buildDec() {
+    $('#dec').innerHTML = DQ.map(function (q) {
+      var pick = store.get(q[0]);
+      return '<div class="dq"><span class="id">' + q[0] + '</span><span>' + q[1] + '</span><div class="opts">' + q[2].map(function (o, k) {
+        var letter = String.fromCharCode(65 + k);
+        return '<button data-q="' + q[0] + '" data-o="' + letter + '" class="' + (k === 0 ? 'rec ' : '') + (pick === letter ? 'pick' : '') + '">' + letter + ' · ' + o + (k === 0 ? ' (ajánlott)' : '') + '</button>';
+      }).join('') + '</div></div>';
+    }).join('');
+  }
+  $('#dec').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { store.set(b.dataset.q, b.dataset.o); buildDec(); } });
+
+  /* ================= routing ================= */
+  var route = 'latoter';
+  function go() {
+    var h = (location.hash || '#latoter').slice(1); if (!/^(latoter|rendszer|mozgas|terv)$/.test(h)) h = 'latoter';
+    route = h;
+    ['latoter', 'rendszer', 'mozgas', 'terv'].forEach(function (k) { $('#v-' + k).hidden = k !== h; });
+    document.querySelectorAll('.tabs a').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === h); if (a.dataset.tab === h) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (h === 'latoter') { resize(); home(true); }
+  }
+  window.addEventListener('hashchange', go);
+  window.addEventListener('resize', function () { if (route === 'latoter') { resize(); if (level === 1 && cam.fit) home(); if (level === 3) sizeDetail(); } });
+
+  buildMatrix(); buildDec(); go(); crumb(); side(); setLive('live');
+  // a realistic first frame: Planner selected with its lens ring open
+  setTimeout(function () { if (!sel) { select(FB.planner, true); } }, 700);
+  requestAnimationFrame(frame);
+})();
+</script>

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* VRG Munkavászon - live server. Serves the page and tails Claude Code's session transcripts to it.
-     node SessionCanvas/serve.js [--port 8809] [--dir <claude config dir>]...     http://localhost:8809
+     node SessionCanvas/serve.js [--port 8810] [--dir <claude config dir>]...     http://localhost:8810
 
    Reads, never writes: <config>/projects/<project>/<session>.jsonl and its <session>/subagents/*.jsonl.
    Config dirs: --dir, VRG_CLAUDE_DIRS (path-list), CLAUDE_CONFIG_DIR, ~/.claude, and the second account
@@ -18,7 +18,7 @@ const HERE = __dirname, REPO = path.resolve(HERE, '..'), FULL = path.dirname(REP
 const PAGE = path.join(HERE, 'vrg-munkavaszon.html');
 const argv = process.argv.slice(2);
 const arg = (k) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
-const PORT = Number(arg('--port') || process.env.VRG_CANVAS_PORT || 8809);
+const PORT = Number(arg('--port') || process.env.VRG_CANVAS_PORT || 8810);
 const POLL_MS = 600, BATCH = 400;
 
 function roots() {

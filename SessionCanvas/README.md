@@ -34,7 +34,7 @@ jump there). Click any mark on the canvas for its details: input, output, durati
 
 ## Run it
 
-- **Live:** START → O → **N**, or `node SessionCanvas/serve.js`, then <http://localhost:8809>. The page follows the
+- **Live:** START → O → **N**, or `node SessionCanvas/serve.js`, then <http://localhost:8810>. The page follows the
   newest session (untick *mindig a legújabb* to stay on the one you pick). On connect it draws the session's history
   fast, then continues in real time.
 - **File:** open `vrg-munkavaszon.html` directly and drop a transcript on it. Drop the main `.jsonl` together with
