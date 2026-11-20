@@ -440,6 +440,21 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
   swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
 
+- **D-52 · Varler Workflow Kit: the client data sealed to the phone's device key, through GitHub (M42), 2026-11-20.**
+  (D-48 … D-51 are left to the parallel sessions M43–M45.) Asked: what the phone does with the Kit — **A** read-only
+  through the relay, **B** a web app like M21, **C** a native screen fed by the Planner, the calculators and Készlet.
+  The Founder: C overall, A could be sufficient; the client data is the real problem; could the phone hold an
+  encrypted copy in the Vault? The Vault as built (M45, D-48 A) holds no key in VRG Mobile, so it could not feed this
+  screen. Asked next, with **A** a sealed copy fetched over the relay, **B** through the Proton Vault with a native
+  reader, **C** sealed to the device via GitHub, **D** relay only: the Founder chose **C**. The PC
+  (`tools/workflow-seal.js`) packs each job's steps, offer variants, texts and file list, gzips it and seals it to the
+  Eszközök P-256 key (ECDH + AES-GCM, WebCrypto's shape, the id as AAD) of each phone that is on devices.json **and**
+  whose 6-character code the Founder confirmed on the PC (`trust <ID> <CODE>`, pinned outside Git); only ciphertext
+  and public keys are on the orphan branch `workflow-sealed`. This bends "client data never enters Git" knowingly: it
+  enters only sealed. No PDFs in the pack (PC ablakok has them). The estimate on the phone (the rest of C) waits for
+  the Kit's pricing rules to be in the repo. Rejected: relay-only (nothing offline); the Vault (no way to read it here
+  yet); a web app (the Kit is not packaged).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

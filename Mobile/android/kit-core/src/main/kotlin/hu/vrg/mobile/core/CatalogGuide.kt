@@ -119,13 +119,15 @@ object CatalogGuide {
         // 3 · Workflow Kit
         GuidePage(
             id = "workflow", title = "Varler Workflow Kit", glyph = "⚒", side = GuideSide.BOTH,
-            what = "Az irodai út a felméréstől az ajánlatig: kérdéssor, mennyiségek, árazás, végül a Költségvetési Tervezet és az Árajánlat dokumentuma.",
+            what = "A PC-n futó árajánlati munkák a telefonon: melyik munka hol tart (kérdéssor, anyagkigyűjtés, árazás, ajánlat, dokumentum), a változatok munkadíja, anyaga, összege és az ajánlat szövegei. Az ügyféladat titkosítva, csak ennek a telefonnak.",
             how = listOf(
-                "A telefonon még tervben van; addig a PC-n használható.",
-                "A PC-n a kit a VRG Full mappában van (Varler_Workflow_Kit), nem a repóban, mert ügyféladat is van benne.",
-                "A lépések sorban: kérdéssor (mit kér az ügyfél), anyagkigyűjtés, árazás, ajánlat, dokumentum.",
-                "A telefonon a kit fájljai a PC ablakokban olvashatók (◣ menü → Workflow Kit), párosított PC-vel.",
+                "Először a telefonon: Kulcs közzététele. A képernyő mutat egy 6 jegyű kódot.",
+                "A PC-n egyszer: node tools/workflow-seal.js trust <azonosító> <kód>, utána seal. A PC csak ennek a telefonnak a kulcsára titkosít.",
+                "⟳ letölti a titkosított csomagot; offline is megnyílik, a kulcs a telefon Keystore-jában van.",
+                "Egy munkára koppintva: a lépések, a változatok összegei, a szövegek és a fájlok listája. A PDF-ek a PC ablakokban olvashatók (◣ menü → Workflow Kit).",
+                "A képernyőről nem készül képernyőkép, és a Képernyő is feketét mutat, amíg nyitva van.",
             ),
+            needs = "GitHub belépés; a csomagot a PC készíti",
             pair = "Asztal: Varler Workflow Kit (Munka → Árazás)",
         ),
 

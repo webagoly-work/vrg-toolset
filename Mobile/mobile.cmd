@@ -155,6 +155,8 @@ if not exist "%PLANNER_DIR%\node_modules\ws" goto NO_WS
 pushd "%REPO%"
 rem QR pairing (WP M2): Node only, own port 47391, no Playwright needed
 "%NODE_EXE%" "Mobile\tests\relay-pair.js"
+rem Workflow Kit (WP M42): Node only, temporary folders, made-up jobs and keys
+"%NODE_EXE%" "Mobile\tests\workflow-seal.js"
 rem Localhost (WP M8): Node only, ports 47393 + 47394, opens no window (dry run)
 "%NODE_EXE%" "Mobile\tests\relay-ports.js"
 rem Inditopult (WP M11): Node only, port 47395, starts and opens nothing (dry run)

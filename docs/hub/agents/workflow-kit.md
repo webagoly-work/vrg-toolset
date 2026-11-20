@@ -30,6 +30,9 @@ node agents/install.js <dir>/.claude/agents --check
 The funnel steps and their commands are in `FUNNEL_BRIEF.md`. Do not re-run Monte Carlo to read a number:
 read `price.json` or `offer.json` (`RULES_CODEWORK.md` §7).
 
+On the phone (VRG Mobile WP M42): `node tools/workflow-seal.js status | trust <ID> <CODE> | seal` from the repo root
+seals the jobs to the owner's phone; run `seal` after a job changes. Only ciphertext reaches the `workflow-sealed` branch.
+
 ## 5. Rules and traps
 - Offer level is Monte Carlo P50; a band may clamp it; 5 000 Ft step; clean unit prices (RULES_CODEWORK §8).
 - Materials: gross price + 10 % handling, expected ±10 %, settled by invoices; deposit 80–100 %

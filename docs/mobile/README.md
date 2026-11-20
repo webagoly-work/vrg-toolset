@@ -58,7 +58,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M39** | Varler Planner tile (`planner`) | **BETA** (2026-11-19): the home tile opening the Planner web app (M21) | GitHub | low |
 | **M40** | Kalkulátorok tile (`calc`) | **BETA** (2026-11-19): the three calculator web apps under one tile | GitHub | low |
 | **M41** | Készlet tile (`inventory`) | **BETA** (2026-11-19): Készlet, VRG BuildTree and the Valena választó under one tile, until the overhauled Inventory | GitHub | low |
-| **M42** | Varler Workflow Kit (`workflow`) | **PLANNED** (2026-11-19): the office path on the phone | — | — |
+| **M42** | Varler Workflow Kit (`workflow`) | **BETA** (built 2026-11-20, D-52 = C, waiting for the phone check): the PC's quote jobs sealed to the owner's phone (Eszközök key, ECDH + AES-GCM) by `tools/workflow-seal.js`, carried on the `workflow-sealed` branch; job list, steps, variant totals, texts; FLAG_SECURE | GitHub | high (seal + Node/JVM fixture) |
 | **M43** | VRG Térkép (`map`) | **PLANNED** (2026-11-19) | — | — |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **PLANNED** (2026-11-19) | — | — |
