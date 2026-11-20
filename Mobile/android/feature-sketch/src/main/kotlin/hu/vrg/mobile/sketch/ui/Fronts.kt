@@ -157,6 +157,7 @@ internal fun ScopeFront(st: EditorState) = FrontPage(st, "munkakor") {
             Text(label + ": " + items.joinToString(", ") { (s, n) -> s.label + if (s.qty && n > 1) " ×$n" else "" }, style = Melyviz.small.copy(color = col))
         }
     }
+    TakeoffCard(st)   // the Munkakör lap (WP M58, TakeoffUi.kt)
     FieldKit.SCOPE_GROUPS.forEach { (g, label) ->
         val items = st.kit.scope.filter { it.group == g }
         if (items.isEmpty()) return@forEach
