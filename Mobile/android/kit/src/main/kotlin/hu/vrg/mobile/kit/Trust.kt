@@ -85,6 +85,12 @@ object Trust {
         return kp.private to j
     }
 
+    /** This phone's public device key: Workflow Kit (WP M42) publishes it so the PC can seal packs to this phone. */
+    fun publicKey(): Jwk = keys().second
+
+    /** Runs [f] with this phone's private device key, which never leaves the app (WP M42 opens sealed packs with it). */
+    fun <T> withDeviceKey(f: (PrivateKey) -> T): T = f(keys().first)
+
     fun request(): DeviceRequest {
         val app = runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "?"
         return DeviceTrust.request(id, name, "${Build.MANUFACTURER} ${Build.MODEL}", "Android ${Build.VERSION.RELEASE}", app, keys().second,

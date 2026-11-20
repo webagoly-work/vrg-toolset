@@ -32,4 +32,5 @@ if (!jvmOnly) include(":feature-pcwin")   // WP M23 PC ablakok
 if (!jvmOnly) include(":feature-sketch")  // WP M24 Vázlat
 if (!jvmOnly) include(":feature-pager")   // WP M33 Csipogó
 if (!jvmOnly) include(":feature-devices") // WP M35 Eszközök
+if (!jvmOnly) include(":feature-workflow") // WP M42 Varler Workflow Kit
 if (!jvmOnly) include(":feature-map")     // WP M43 VRG Térkép

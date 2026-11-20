@@ -171,8 +171,8 @@ object Catalogue {
         "📦", Group.WORK, Stage.BETA, "M41", setOf(Need.INTERNET, Need.GITHUB),
     )
     val WORKFLOW = FeatureInfo(
-        "workflow", "Varler Workflow Kit", "Az irodai út a telefonon: költségvetési tervezet, árajánlat, munkalap a Planner, a kalkulátorok és a Készlet adataiból.",
-        "⚒", Group.WORK, Stage.PLANNED, "M42",
+        "workflow", "Varler Workflow Kit", "A PC munkái titkosítva ezen a telefonon: hol tart a kérdéssor, az árazás, az ajánlat; a Költségvetési Tervezet és az Árajánlat összegei.",
+        "⚒", Group.WORK, Stage.BETA, "M42", setOf(Need.INTERNET, Need.GITHUB),
     )
     val MAP = FeatureInfo(
         "map", "VRG Térkép", "Magyarország térképe 3D épületekkel és domborzattal: saját hely, a Vázlatok helyszínei, a munkák (PC-vel) és navigáció.",

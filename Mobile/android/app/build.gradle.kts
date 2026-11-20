@@ -74,5 +74,6 @@ dependencies {
     implementation(project(":feature-sketch"))
     implementation(project(":feature-pager"))
     implementation(project(":feature-devices"))
+    implementation(project(":feature-workflow"))
     implementation(project(":feature-map"))
 }

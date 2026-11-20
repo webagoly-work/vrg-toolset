@@ -29,7 +29,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 8 | `settings` | Beállítások | `Dashboard/shell/lib/settings.js`, `tray.js`, `selmenu.js` | M1 Beállítások | native (exists); M19 adds Kezdőlap + Tájolás | M1 / M19 |
 | 9 | `planner` | Varler Planner | `Planner/projects/varler-planner/dist/varler_planner.html` | — (M12 photos tagged for it) | webapp | **M21** |
 | 10 | `client-preview` | Ügyfélnézet | inside the Planner (`feat:b4`) | — | webapp, inside the Planner | M21 |
-| 11 | `workflow-kit` | Varler Workflow Kit | `H:\VRG\Full\Varler_Workflow_Kit` (outside the repo) | — | pc: read-only files window (not on GitHub, carries client data) | **M23** |
+| 11 | `workflow-kit` | Varler Workflow Kit | `H:\VRG\Full\Varler_Workflow_Kit` (outside the repo) | M42 Workflow Kit | native: the jobs sealed to the phone key (`tools/workflow-seal.js`, D-52); the PDFs pc via M23 | **M42** / M23 |
 | 12 | `calc-panel` | Panel anyagár kalkulátor | `Calculator/panel_anyagar_kalkulator.html` | — | webapp | **M21** |
 | 13 | `calc-general` | Általános kalkulátor | `Calculator/Altalanos_Villanyszerelui_Kalkulator.html` | — | webapp | **M21** |
 | 14 | `calc-led` | LED árkalkulátor | `Calculator/led_arkalkulator.html` | — | webapp | **M21** |
