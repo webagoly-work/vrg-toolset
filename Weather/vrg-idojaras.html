@@ -260,7 +260,7 @@ async function loadOverview() {
 }
 
 function renderSources() {
-  const kind = { forecast: 'előrejelzés', observation: 'mérés', warning: 'figyelmeztetés', lightning: 'villám', airquality: 'légminőség', climate: 'klíma / PV', link: 'hivatkozás' };
+  const kind = { forecast: 'előrejelzés', observation: 'mérés', warning: 'figyelmeztetés', lightning: 'villám', airquality: 'légminőség', climate: 'klíma / PV', link: 'hivatkozás', grid: 'térkép-mező', radar: 'radar' };
   const com = { yes: 'igen', key: 'kulccsal', no: 'nem' };
   $('sources').innerHTML = `<table><tr><th>Állapot</th><th>Forrás</th><th>Fajta</th><th>Üzleti</th><th>Licenc</th></tr>` + OV.sources.map(s => {
     const bad = s.last && ['http', 'net', 'parse'].includes(s.last.status);

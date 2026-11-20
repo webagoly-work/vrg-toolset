@@ -12,7 +12,7 @@
 const HTTP = require('./http');
 const S = require('./sources');
 const P = require('./places');
-const { now, nearest, fold } = require('./common');
+const { now, nearest, areaMatch } = require('./common');
 const { iso } = require('./db');
 
 function fresh(db, src, placeId) {
@@ -37,8 +37,7 @@ function linkWarnings(db, places) {
   const ws = db.all('SELECT id, area FROM warning WHERE expires >= ?', iso(now()));
   db.tx(() => {
     for (const w of ws) for (const p of places) {
-      const a = fold(w.area);
-      if ((p.warn_areas || []).some(x => { const f = fold(x); return f && (a.includes(f) || f.includes(a)); }))
+      if ((p.warn_areas || []).some(x => areaMatch(w.area, x)))
         db.run('INSERT OR IGNORE INTO warning_place (warning_id, place_id) VALUES (?, ?)', w.id, p.id);
     }
   });
@@ -85,7 +84,14 @@ async function run(ctx, { ids = [], place = null, force = false, opts = {} } = {
     if (src.kind === 'climate' && !ids.includes(src.id)) continue;
     const ad = S.adapter(src);
     const o = { force, ...opts };
-    if (ad.scope === 'global') results.push(await one(ctx, src, ad, null, places, o));
+    if (ad.scope === 'grid') {
+      // whole-country fields for the VRG Térkép: the adapter makes its own requests (lib/grid.js)
+      if (!o.force && !ctx.replay && fresh(ctx.db, src, 'grid-run')) { results.push({ source: src.id, place: 'grid', status: 'fresh', rows: 0 }); continue; }
+      try { results.push(...await ad.run(ctx, src, o)); } catch (e) { results.push({ source: src.id, place: 'grid', status: 'error', error: e.message }); }
+      ctx.db.run("INSERT INTO fetch_log (source_id, place_id, started, finished, status, rows) VALUES (?, 'grid-run', ?, ?, ?, ?)", src.id, iso(now()), iso(now()),
+        results[results.length - 1].status === 'ok' ? 'ok' : 'skipped', results[results.length - 1].rows || 0);
+    }
+    else if (ad.scope === 'global') results.push(await one(ctx, src, ad, null, places, o));
     else if (ad.scope === 'place') for (const p of places) results.push(await one(ctx, src, ad, p, places, o));
     else if (ad.scope === 'station') {
       // each place to its nearest station; each station fetched once for all its places
@@ -100,6 +106,11 @@ async function run(ctx, { ids = [], place = null, force = false, opts = {} } = {
     }
   }
   linkWarnings(db, P.list(db));
+  // fresh station measurements -> the measured field for the map (inverse-distance grid, last hours)
+  if (results.some(r => r.source === 'hungaromet-obs' && r.status === 'ok')) {
+    try { const g = require('./grid').buildObs(ctx); results.push({ source: 'obs-idw', place: 'grid', status: 'ok', rows: g.frames }); }
+    catch (e) { results.push({ source: 'obs-idw', place: 'grid', status: 'error', error: e.message }); }
+  }
   return results;
 }
 

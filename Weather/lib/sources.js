@@ -11,6 +11,9 @@ const ADAPTERS = {
   'hungaromet-obs': () => require('./adapters/hungaromet-obs'),
   'hungaromet-lightning': () => require('./adapters/hungaromet-lightning'),
   'pvgis': () => require('./adapters/pvgis'),
+  'open-meteo-grid': () => require('./adapters/open-meteo-grid'),
+  'met-no-grid': () => require('./adapters/met-no-grid'),
+  'hungaromet-radar': () => require('./adapters/hungaromet-radar'),
 };
 const adapter = src => (src.adapter && ADAPTERS[src.adapter] ? ADAPTERS[src.adapter]() : null);
 

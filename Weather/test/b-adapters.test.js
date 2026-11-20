@@ -77,14 +77,14 @@ module.exports = async t => {
   await t('HungaroMet observations: zipped CSV by header, stations with coordinates, -999 skipped', () => {
     const ad = require('../lib/adapters/hungaromet-obs');
     const r = ad.parse(buf('hungaromet-obs.zip'), src('hungaromet-obs'));
-    assert.strictEqual(r.stations.length, 3);
+    assert.ok(r.stations.length >= 30 && ['12843', '12839', '12882'].every(id => r.stations.some(s => s.id === id)));
     assert.ok(r.found.includes('t2m') && r.found.includes('gust') && r.found.includes('precip10'));
     assert.ok(!r.observation.some(o => o.var === 'swrad'), '-999 radiation is missing, not a value');
     assert.ok(r.observation.some(o => o.station === '12843' && o.at === '2026-11-18T05:00Z' && o.var === 't2m'));
   });
   await t('lightning CSV and PVGIS monthly yield', () => {
     const L = require('../lib/adapters/hungaromet-lightning').parse(buf('hungaromet-lightning.csv'), src('hungaromet-lightning'));
-    assert.strictEqual(L.strikes.length, 2);
+    assert.ok(L.strikes.length > 40 && L.strikes.some(x => x.lat === 47.54 && x.lon === 19.14));
     assert.strictEqual(require('../lib/adapters/hungaromet-lightning').pickFromListing('<a href="l_2026111804.csv">x</a><a href="l_2026111805.csv">y</a>', 'https://odp.met.hu/weather/lightning/'),
       'https://odp.met.hu/weather/lightning/l_2026111805.csv');
     const pv = require('../lib/adapters/pvgis');

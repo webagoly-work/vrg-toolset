@@ -19,7 +19,7 @@ The server is also START **O** → **W**. Or:
 node Weather/serve.js --daemon        # page + scheduler, http://localhost:8808
 node Weather/vrg-weather.js help      # every command
 node Weather/tools/demo.js            # offline demo on INVENTED data, :8809, real database untouched
-node Weather/test/run.js              # 44 tests, invented data only, no network
+node Weather/test/run.js              # 52 tests, invented data only, no network
 ```
 
 First time on the PC:
@@ -54,6 +54,7 @@ Everything is a command, and pipelines are lists of commands, so anything you ca
 | `brief [place/--all] [--day tomorrow] [--save]` | the Hungarian work-day briefing, as markdown |
 | `pv <place> [--kwp --angle --aspect --loss]` | PVGIS monthly yield |
 | `export` | `data/export/latest.json` for the VRG Asztal, Kapu and VRG Mobile (job sites without coordinates) |
+| `fetch open-meteo-grid met-no-grid` · `run terkep` | the VRG Térkép's weather fields over Hungary (lib/grid.js), plus stations, strikes, radar and warnings for its W layer |
 | `run <pipeline>` · `pipelines` · `daemon [--once]` | pipelines and the scheduler (`config/pipelines.json`) |
 | `doctor [--live]` · `sql "SELECT …"` · `prune` | health check, read-only SQL, retention |
 
@@ -69,6 +70,7 @@ network. Console text is ASCII under the Windows codepage; `VRG_UTF8=1` keeps th
 | `reggel` | 05:40 | everything, including verify, the day's brief and export |
 | `este` | 18:10 | tomorrow's brief and prune |
 | `pv` | 1st of the month | PVGIS |
+| `terkep` | on demand (the Térkép's Frissítés, START W → I → M) | everything the Térkép's W layer draws |
 
 A failed step is logged in `run` and the pipeline goes on.
 
@@ -96,6 +98,15 @@ Weather/
 3. Add its entry to `config/sources.json`, with licence, attribution, `commercial` and `verified`.
 
 The variables are in `lib/vars.js`. Never rename one.
+
+## The VRG Térkép
+
+The Térkép's **W** layer (`docs/map/WEATHER-MAP.md`) reads this database through `lib/maplayers.js`. The fields:
+
+- Open-Meteo on a 0.25° grid when its key is set, otherwise MET Norway on a 0.5° grid;
+- the HungaroMet stations interpolated every 10 minutes;
+- lightning, radar frames, the warnings placed on `config/areas.json`;
+- per job code, the worst weather alert of the next 24 hours.
 
 ## Licences
 
