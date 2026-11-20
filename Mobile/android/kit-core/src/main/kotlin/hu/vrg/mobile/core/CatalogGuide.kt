@@ -298,16 +298,17 @@ object CatalogGuide {
 
         // 7 · Egyéb
         GuidePage(
-            id = "notes", title = "Gyorsjegyzet", glyph = "✎", side = GuideSide.PHONE,
-            what = "Rövid jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként működik. Bárhonnan olvasható, a munkamenetek is látják.",
+            id = "notes", title = "Jegyzetek", glyph = "✎", side = GuideSide.PHONE,
+            what = "A központi jegyzet app: minden jegyzet egy helyen. A Sketcher Jegyzet frontja és a többi funkció is ide ír, a jegyzeten színes jelvény mutatja, honnan jött.",
             how = listOf(
-                "Írd be vagy diktáld (🎤), válassz címkét (melyik eszközről szól), és küldd el.",
-                "Internet nélkül is írhatsz: a jegyzet sorba áll, és magától elmegy, amikor lesz net.",
+                "⚙ → Változat: Egyszerű, Terepi, Iroda, Fejlesztő vagy Teljes. A változat dönti el, mely modulok látszanak; a modulok egyenként is ki-be kapcsolhatók.",
+                "Új jegyzet, mai jegyzet, sablonból (bejárás, ügyfélhívás, anyaglista…), vagy a gyors mezőből; diktálva is (🎤).",
+                "Keresés ékezet nélkül is; szűrés forrásra, címkére, füzetre; kitűzés, archívum, kuka.",
+                "A Sketcher jegyzete összekötött: itt javítod, a felmérésbe is átmegy, és onnan „Megnyitás: Sketcher” visz vissza.",
                 "Más appból „Megosztás → VRG Mobile”: a szövegből jegyzet lesz.",
-                "Alul a mai nap jegyzetei olvashatók vissza.",
             ),
-            needs = "internet, GitHub belépés",
-            pair = "A repó mobile-log branche, naponta egy fájllal",
+            needs = "semmi; a szinkronhoz internet és GitHub belépés",
+            pair = "A repó privát vrg-notes branche, jegyzetenként egy fájl (notes/)",
         ),
         GuidePage(
             id = "inbox", title = "Értesítések", glyph = "🔔", side = GuideSide.PHONE,
@@ -408,7 +409,7 @@ object CatalogGuide {
         // 8 · Fiók és beállítások
         GuidePage(
             id = "account", title = "GitHub fiók", glyph = "⎔", side = GuideSide.PHONE,
-            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Gyorsjegyzet, Archívum, Frissítés és a többi) ezt a fiókot használja.",
+            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Jegyzetek, Archívum, Frissítés és a többi) ezt a fiókot használja.",
             how = listOf(
                 "Belépés: a telefon egy nagy kódot mutat, és megnyitja a github.com/login/device oldalt.",
                 "Írd be ott a kódot. A telefon magától észreveszi, hogy beléptél.",

@@ -480,6 +480,25 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
 
+- **D-55 · Jegyzetek: one central Notes app, phone first (M46), 2026-11-20.** Asked: the Founder wants one central
+  Notes app users mainly use, with selectable versions (module sets) and a hub other features write into, tagged by
+  origin. Asked which platform first: the Founder chose **A**, the phone (VRG Mobile, replacing Gyorsjegyzet M6);
+  the Desktop page follows on the same files (`Notes/catalog/noteskit.json`, the `vrg-note` format). Rejected for
+  now: **B** desktop first (a self-contained page needs a local server to share storage between tools); **C** both
+  at once (slower to a usable first version).
+- **D-56 · Jegyzetek: where the notes live (M46), 2026-11-20.** Asked, with the warning that Sketcher notes carry
+  client details: **A** each device + the PC over the relay (client data never on GitHub), **B** a private git
+  branch, **C** the OneDrive Shared folder. The Founder chose **B**: the branch `vrg-notes`, one JSON file per note
+  (`notes/<id>.json`), sha-guarded writes, conflicts kept as a separate note tagged `ütközés`, a tombstone for an
+  emptied trash. This bends "client data never enters Git" knowingly and **unsealed** (unlike D-52); sealing the
+  notes of `client` origins to the devices' keys is the follow-up to offer.
+- **D-57 · Jegyzetek: who owns a feature's note (M46), 2026-11-20.** Asked: **A** a linked mirror, **B** the hub owns
+  it, **C** a one-way copy. The Founder chose **A**: the feature keeps its record (the Sketcher's Entry stays in the
+  survey and goes to the Planner with it) and the hub holds the same note with a fixed id; the base of the three-way
+  merge is the source's text when the two last agreed (`origin.seen`). Source changed → the note follows; note
+  changed → the source takes it when it next opens; both → the note keeps both texts and the source takes that; a
+  trashed note is never revived; a deleted record marks the note `gone`. Details: `WP/M46.md`, `Notes/README.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

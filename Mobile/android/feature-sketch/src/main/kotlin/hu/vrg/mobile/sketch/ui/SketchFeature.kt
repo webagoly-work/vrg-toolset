@@ -35,6 +35,10 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.notes.Notes
+import hu.vrg.mobile.core.Route
+import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
@@ -55,17 +59,35 @@ object SketchFeature : VrgFeature {
     private lateinit var app: Application
     internal val store by lazy { SketchStore(File(app.filesDir, "sketch")) }
 
-    override fun init(app: Application) { this.app = app; SketcherKit.init(app) }
+    /** A survey to open, from a link (vrg://sketch/open?id=…) or VRG Jegyzetek's "Megnyitás: Sketcher". */
+    private val pending = MutableStateFlow<String?>(null)
+
+    override fun init(app: Application) {
+        this.app = app; SketcherKit.init(app)
+        // VRG Jegyzetek (WP M46): the Jegyzet front's entries are notes of the central app too; its "open in the
+        // source" lands here with "<sketch id>/<entry id>"
+        Notes.init(app)
+        Notes.onOpen(SketchNotes.ORIGIN) { ref -> pending.value = ref.substringBefore('/') }
+    }
+
+    override fun open(route: Route): Boolean {
+        if (route.path != "open") return route.path.isEmpty()
+        pending.value = route.params["id"]?.takeIf { it.isNotBlank() } ?: return false
+        return true
+    }
 
     @Composable
     override fun Screen(host: FeatureHost) {
         var openId by rememberSaveable { mutableStateOf<String?>(null) }
+        val want by pending.collectAsStateWithLifecycle()
+        LaunchedEffect(want) { want?.let { openId = it; pending.value = null } }
         val id = openId
         if (id == null) {
             SketchList(host) { openId = it }
             return
         }
-        val sketch = remember(id) { store.load(id) }
+        // texts edited in VRG Jegyzetek come into the survey before it opens (the linked mirror, D-57 = A)
+        val sketch = remember(id) { store.load(id)?.let(SketchNotes::pull) }
         if (sketch == null) {
             LaunchedEffect(id) { host.note("A vázlat nem nyitható meg."); openId = null }
             return
@@ -198,7 +220,7 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
             containerColor = Melyviz.raised,
             title = { Text("Törlöd: ${e.name.ifBlank { "Névtelen vázlat" }}?", style = Melyviz.label) },
             text = { Text("A telefonról törlődik; ami már a PC-n van, az megmarad.", style = Melyviz.small) },
-            confirmButton = { TextButton({ store.delete(e.id); deleting = null; tick++ }) { Text("Törlés", color = Melyviz.coral) } },
+            confirmButton = { TextButton({ store.delete(e.id); SketchNotes.deleted(e.id); deleting = null; tick++ }) { Text("Törlés", color = Melyviz.coral) } },
             dismissButton = { TextButton({ deleting = null }) { Text("Mégse", color = Melyviz.muted) } },
         )
     }

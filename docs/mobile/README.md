@@ -21,7 +21,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M1** | Beállítások (`settings`) | **LIVE** (built 2026-10-29, checked on the phone 2026-10-30): shell-wide look (palette, size) moved out of Légegér, About + log, paired PCs list | — | high |
 | **M2** | QR párosítás (`pair`) | **LIVE** (built 2026-10-29, checked on the phone 2026-10-30): scan the PC's QR: relay address + one-time code → a **trusted** phone; QR for Légegér | camera, relay | high (relay + parser) |
 | **M3** | GitHub fiók (`account`) | **LIVE** (built 2026-10-30, checked on the phone 2026-10-31): GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
-| **M6** | Gyorsjegyzet (`notes`) | **LIVE** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
+| **M6** | Gyorsjegyzet (`notes`) | **merged into M46** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes to the `mobile-log` chat log; now the Gyorsjegyzet and Projektnapló modules of Jegyzetek | GitHub | high |
 | **M9** | Frissítés (`update`) | **LIVE** (built and checked on the phone 2026-10-31): self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
 | **M4** | Haladás (`pulse`) | **LIVE** (built 2026-10-31, D-8 = A, checked on the phone 2026-11-05): main first, then branches with unmerged work; which tools changed, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | **LIVE** (built 2026-11-05, D-10 = C, checked on the phone 2026-11-12): the PC's local servers: open on the phone (relay proxy, `--ports`) or in a separate desktop window | relay | high (relay) |
@@ -62,6 +62,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
+| **M46** | Jegyzetek (`notes`) | **BETA** (built 2026-11-20, D-55, D-56, D-57, waiting for the phone check): the central Notes app: versions (Egyszerű, Terepi, Iroda, Fejlesztő, Teljes) of one modular app, a hub every feature writes into with its origin on the note, the Sketcher's Jegyzet as a linked mirror, sync to the private `vrg-notes` branch (`Notes/`, `kit-core/NoteHub.kt`) | — (GitHub to sync) | high (`NoteHub` 23 tests) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
