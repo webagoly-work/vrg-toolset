@@ -106,7 +106,10 @@
     const hint = mode === 'outline'
       ? (S.outline.length < 3 ? 'Koppints az épület sarkaira sorban (legalább 3). ' : 'Húzd a sarkot a javításhoz; a fehér pont új sarkot ad; koppintott sarok törölhető. ') + (sat ? '' : 'A 🛰 műholdképen könnyebb.')
       : S.rooms.length ? 'Húzd a vázlatot a helyére, a ⟲ ⟳ gombokkal forgasd; ⤢ = automatikus illesztés a körvonalra.' : 'A vázlaton még nincs megoldott szoba (Rendezés).';
-    const lines = rep ? M().reportLines(rep) : [];
+    // on a phone the panel must leave the map visible: the verdict, the numbers and the three worst walls
+    const worst = rep ? Object.assign({}, rep, { walls: rep.walls.slice().sort((a, b) => b.out - a.out) }) : null;
+    const all = worst ? M().reportLines(worst) : [];
+    const lines = rep && rep.walls.length > 3 ? all.slice(0, 5).concat(['· … és még ' + (rep.walls.length - 3) + ' fal (pirossal)']) : all;
     el.innerHTML =
       `<div class="h"><span style="color:${VIOLET}">⌖</span><span class="t">Helyszín · ${esc(S.name || 'Vázlat')}</span>` +
         `<button type="button" data-a="cancel" title="Bezárás mentés nélkül">✕</button><button type="button" class="go" data-a="done">✓ Kész</button></div>` +
