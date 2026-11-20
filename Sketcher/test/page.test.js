@@ -173,6 +173,26 @@ ok(out.sketch.answers.lenyeg.options[0] === 'csere' && out.sketch.entries.length
 ok(out.sketch.scope.felujitas === 1 && out.sketch.dismissed.includes('kw:bojler') && out.sketch.variant === 'furdo-felujitas', 'saved sketch has scope, dismissed, variant');
 ok(!/blob:/.test(txt), 'no object URLs in the saved file');
 
+// the Munkakör lap (takeoff, docs/sketcher/TAKEOFF.md): the same as the engine gives, carried in the package
+const TK = require(path.join(ROOT, 'Sketcher/lib/takeoff.js'));
+ok(out.takeoff && out.takeoff.kind === 'vrg-sketch-takeoff' && out.takeoff.v === 1, 'the saved package carries its takeoff');
+const kitJ = JSON.parse(fs.readFileSync(path.join(ROOT, 'Sketcher/catalog/fieldkit.json'), 'utf8'));
+const vJ = JSON.parse(fs.readFileSync(path.join(ROOT, 'Sketcher/variants/furdo-felujitas.json'), 'utf8'));
+const rulesJ = JSON.parse(fs.readFileSync(path.join(ROOT, 'Sketcher/catalog/takeoff.json'), 'utf8'));
+const want = TK.build(FK.withVariant(FK.parseKit(kitJ), vJ), TK.parseRules(rulesJ), out.sketch, TK.planFromPackage(out), { now: out.takeoff.made });
+eq(out.takeoff.items, want.items, 'the page\'s takeoff is the engine\'s');
+click(rail('munkakor'));
+ok($('#takeoff') && /Munkakör lap/.test($('#takeoff').textContent), 'the Munkakör front opens with the Munkakör lap');
+eq($$('#takeoff .tk-item').length, want.items.length, 'one row per item');
+ok($$('#takeoff .tk-item.est').length === want.counts.est && $$('#takeoff .tk-item.open').length === want.counts.open, 'guessed and open rows are marked');
+const tkBefore = $$('#takeoff .tk-item').length;
+click($('.stepper[data-scope="ledszalag"] button[data-act="sinc"]'));
+ok($$('#takeoff .tk-item').length === tkBefore + 1 && $('#takeoff .tk-item[data-item="igeny.ledszalag"]'), 'the lap follows the scope live');
+const ex = sk.exportTakeoff();
+ok(ex && JSON.parse(ex.json).kind === 'vrg-sketch-takeoff' && /^# Munkakör lap — Kossuth u\. 12/.test(ex.md) && /LED-szalag/.test(ex.md), 'the export gives the JSON and the summary');
+click($('[data-act="tkexport"]'));
+ok(/takeoff\.json \+ \.md/.test(mainText()), 'the button reports the export');
+
 // bare survey
 sk.load(pkgObj.sketch);
 ok(sk.state().name === 'Kossuth u. 12', 'bare survey opens');
