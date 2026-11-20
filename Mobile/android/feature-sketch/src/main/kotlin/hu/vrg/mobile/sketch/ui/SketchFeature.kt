@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
@@ -57,15 +58,34 @@ object SketchFeature : VrgFeature {
 
     override fun init(app: Application) { this.app = app; SketcherKit.init(app) }
 
+    // F1: vrg://sketch?open=<id>&front=helyszin opens a survey on a front (the phone's map hands the Helyszín back this way)
+    private var pendingOpen by mutableStateOf<Pair<String, String?>?>(null)
+    private var pendingFront: Pair<String, String>? = null
+
+    override fun open(route: Route): Boolean {
+        val id = route.params["open"]?.takeIf { SiteHandoff.SAFE_ID.matches(it) } ?: return true
+        pendingOpen = id to route.params["front"]?.takeIf { it in FRONTS }
+        return true
+    }
+
+    private val FRONTS = setOf("vazlat", "jegyzet", "munkakor", "kerdes", "kamera", "helyszin", "nyitott")
+
+    /** The front a survey opened by a link starts on (once). */
+    internal fun takeFront(id: String): String? = pendingFront?.takeIf { it.first == id }?.second.also { pendingFront = null }
+
     @Composable
     override fun Screen(host: FeatureHost) {
         var openId by rememberSaveable { mutableStateOf<String?>(null) }
+        val want = pendingOpen
+        LaunchedEffect(want) {
+            if (want != null) { pendingOpen = null; want.second?.let { pendingFront = want.first to it }; openId = want.first }
+        }
         val id = openId
         if (id == null) {
             SketchList(host) { openId = it }
             return
         }
-        val sketch = remember(id) { store.load(id) }
+        val sketch = remember(id) { store.load(id)?.let { SiteHandoff.take(store, it) } }
         if (sketch == null) {
             LaunchedEffect(id) { host.note("A vázlat nem nyitható meg."); openId = null }
             return
@@ -128,7 +148,10 @@ class SketchStore(private val dir: File) {
     /** Where a sketch's photos are kept (WP M25); the FileProvider shares this folder with the camera app. */
     fun photoDir(id: String) = File(dir, "photos/$id")
 
-    fun delete(id: String) { file(id).delete(); photoDir(id).deleteRecursively() }
+    fun delete(id: String) { file(id).delete(); photoDir(id).deleteRecursively(); handoff(id).delete() }
+
+    /** The phone map's answer for a survey (F1), waiting until the survey opens again. */
+    fun handoff(id: String) = File(dir, hu.vrg.mobile.sketch.SiteLink.handoffPath(id))
 
     fun create(name: String): Sketch {
         val now = System.currentTimeMillis()

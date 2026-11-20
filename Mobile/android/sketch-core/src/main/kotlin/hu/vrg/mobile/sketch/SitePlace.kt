@@ -230,6 +230,9 @@ object SitePlace {
 object SiteLink {
     const val V = 1
 
+    /** Where the map leaves its answer for the Sketcher, relative to the sketches' folder (files/sketch/). */
+    fun handoffPath(id: String) = "handoff/$id.site.json"
+
     fun payload(s: Sketch, norm: Norm): JSONObject {
         val site = s.site ?: Site()
         val o = JSONObject().put("kind", "vrg-site").put("v", V).put("id", s.id).put("name", s.name)
@@ -243,12 +246,14 @@ object SiteLink {
         return o
     }
 
-    data class Result(val id: String, val outline: List<Pair<Double, Double>>?, val outlineSrc: String, val place: Placement?, val clearPlace: Boolean)
+    /** [center]: "⇣ Hely átvétele", the map's centre as the job's place (the M30 Átvétel, now without a PC). */
+    data class Result(val id: String, val outline: List<Pair<Double, Double>>?, val outlineSrc: String, val place: Placement?, val clearPlace: Boolean,
+                      val center: Pair<Double, Double>? = null)
 
     /** The page's answer; null when it is not one. [outline] null = unchanged, empty = cleared. */
     fun parseResult(json: String): Result? = try {
         val o = JSONObject(json)
-        if (o.optString("kind") != "vrg-site-result" || o.optInt("v") != V) null
+        if (o.optString("kind") != "vrg-site-result" || o.optInt("v") != V || o.optBoolean("cancelled")) null
         else {
             val id = o.optString("id").takeIf { SAFE_ID.matches(it) }
             if (id == null) null
@@ -256,7 +261,9 @@ object SiteLink {
                 if (o.has("outline")) SitePlace.readOutline(o.optJSONArray("outline")) else null,
                 o.optString("outlineSrc", "rajz").takeIf { it in SOURCES } ?: "rajz",
                 SitePlace.readPlace(o.optJSONObject("place")),
-                o.has("place") && o.isNull("place"))
+                o.has("place") && o.isNull("place"),
+                o.optJSONArray("center")?.let { c -> val la = c.optDouble(0); val lo = c.optDouble(1)
+                    if (la.isNaN() || lo.isNaN() || abs(la) > 90 || abs(lo) > 180) null else la to lo })
         }
     } catch (e: Exception) { null }
 
@@ -266,6 +273,7 @@ object SiteLink {
     /** The survey with the page's answer applied: the outline (its footprint measured again) and the placement. */
     fun apply(s: Sketch, r: Result, now: Long): Sketch = Intake.setSite(s) { site ->
         var t = site
+        r.center?.let { (la, lo) -> t = t.copy(lat = la, lon = lo, source = "terkep") }
         r.outline?.let { o ->
             t = if (o.size >= 3) t.copy(outline = o, footprint = SiteMath.footprint(o, r.outlineSrc, now)) else t.copy(outline = emptyList(), footprint = null)
             if (t.lat == null && o.size >= 3) t = t.copy(lat = o.sumOf { it.first } / o.size, lon = o.sumOf { it.second } / o.size, source = "terkep")
@@ -278,8 +286,9 @@ object SiteLink {
     }
 
     /** The result as the page writes it (tests, and the phone's own ⤢ Illesztés). */
-    fun resultJson(id: String, outline: List<Pair<Double, Double>>?, src: String, place: Placement?): JSONObject {
+    fun resultJson(id: String, outline: List<Pair<Double, Double>>?, src: String, place: Placement?, center: Pair<Double, Double>? = null): JSONObject {
         val o = JSONObject().put("kind", "vrg-site-result").put("v", V).put("id", id).put("outlineSrc", src)
+        center?.let { o.put("center", JSONArray().put(it.first).put(it.second)) }
         outline?.let { o.put("outline", SitePlace.outlineJson(it)) }
         o.put("place", place?.let { p -> JSONObject().put("lat", p.lat).put("lon", p.lon).put("rot", p.rot).put("auto", p.auto) } ?: JSONObject.NULL)
         return o

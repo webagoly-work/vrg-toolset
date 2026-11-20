@@ -115,8 +115,11 @@ class SitePlaceTest {
         // the place is kept when the page only cleared the placement
         val cleared = SiteLink.apply(after, SiteLink.parseResult(SiteLink.resultJson("v1abc", null, "rajz", null).toString())!!, 43)
         assertNull(cleared.site!!.place); assertEquals(o, cleared.site!!.outline)
+        val centred = SiteLink.apply(cleared, SiteLink.parseResult(SiteLink.resultJson("v1abc", null, "rajz", null, 47.6 to 19.1).toString())!!, 44)
+        assertEquals(47.6, centred.site!!.lat); assertEquals("terkep", centred.site!!.source); assertEquals(o, centred.site!!.outline)
         assertNull(SiteLink.parseResult("{\"kind\":\"vrg-site-result\",\"v\":1,\"id\":\"../x\"}"), "an unsafe id")
         assertNull(SiteLink.parseResult("{\"kind\":\"other\"}")); assertNull(SiteLink.parseResult("nope"))
+        assertNull(SiteLink.parseResult("{\"kind\":\"vrg-site-result\",\"v\":1,\"id\":\"a\",\"cancelled\":true}"), "✕ changes nothing")
         assertEquals("rajz", SiteLink.parseResult("{\"kind\":\"vrg-site-result\",\"v\":1,\"id\":\"a\",\"outlineSrc\":\"evil\"}")!!.outlineSrc)
     }
 }

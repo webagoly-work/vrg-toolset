@@ -74,7 +74,9 @@ import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.MiniTrack
 import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.sketch.SiteLink
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.Solver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -149,6 +151,10 @@ object MapFeature : VrgFeature {
     /** The paired PC's relay link for /p/8802/: its ws:// address and the proxy token (null = no PC). */
     @Volatile private var pc: Pair<String, String>? = null
     @Volatile private var pendingJob: String? = null
+    /** F1: the survey whose Helyszín the map opens on (vrg://map?site=<id>), until the page is built for it. */
+    @Volatile private var pendingSite: String? = null
+    /** The survey the open page is on (its site layer), so ‹ and Back return to the Sketcher instead of the home. */
+    @Volatile private var activeSite: String? = null
     private val writes = AtomicInteger()
 
     override fun init(app: Application) {
@@ -162,6 +168,7 @@ object MapFeature : VrgFeature {
     override fun open(route: Route): Boolean {
         val job = route.params["job"] ?: route.path.trim('/').removePrefix("job/").takeIf { route.path.trim('/').startsWith("job/") }
         if (job != null && MapPhone.JOB.matches(job)) { pendingJob = job; state.update { it.copy(url = null) } }
+        route.params["site"]?.takeIf { MapPhone.SITE_ID.matches(it) }?.let { pendingSite = it; state.update { s -> s.copy(url = null) } }
         return true
     }
 
@@ -182,8 +189,8 @@ object MapFeature : VrgFeature {
                     val missing = page ?: libs
                     val hash = prefs.getString("hash", null)
                     val url = if (missing != null && !haveAll()) null
-                        else MapPhone.pageUrl(if (mode == Mode.PC) MapPhone.Mode.PC else MapPhone.Mode.INTERNET, build(), pendingJob, hash)
-                    pendingJob = null
+                        else MapPhone.pageUrl(if (mode == Mode.PC) MapPhone.Mode.PC else MapPhone.Mode.INTERNET, build(), pendingJob, hash, pendingSite)
+                    activeSite = pendingSite; pendingJob = null; pendingSite = null
                     set { it.copy(mode = mode, url = url, loaded = it.loaded + 1, problem = missing, step = null) }
                     if (url == null) ring.fail() else ring.done()
                 }
@@ -378,8 +385,11 @@ object MapFeature : VrgFeature {
                     else fileResp(f, head, null)
                 }
                 is MapReq.Lib -> fileResp(libFile(r.file), head, null)
-                is MapReq.Phone -> if (r.path == MapPhone.PHONE_JS) resp(200, "text/javascript", appCtx.assets.open("map-phone.js"))
-                    else resp(200, "application/json", ByteArrayInputStream(sites().toByteArray()))
+                is MapReq.Phone -> when (r.path) {
+                    MapPhone.PHONE_JS -> resp(200, "text/javascript", appCtx.assets.open("map-phone.js"))
+                    MapPhone.SITE -> site(u.getQueryParameter("id"))
+                    else -> resp(200, "application/json", ByteArrayInputStream(sites().toByteArray()))
+                }
                 is MapReq.Data -> data(r, req.method, range, u.encodedQuery)
                 is MapReq.Jobs -> jobs(r.path)
                 is MapReq.Remote -> remote(r.url + (u.encodedQuery?.let { "?$it" } ?: ""), range,
@@ -498,6 +508,36 @@ object MapFeature : VrgFeature {
         return JSONObject().put("sites", arr).toString()
     }
 
+    /**
+     * F1: one survey for the site layer, read from the Sketcher's file (read-only): its place, outline, placement and the solved
+     * rooms in metres. No address (the page does not need it); shown in the page, never sent anywhere.
+     */
+    private fun site(id: String?): WebResourceResponse {
+        if (id == null || !MapPhone.SITE_ID.matches(id)) return resp(404)
+        val f = File(sketches, "$id.vsketch.json")
+        val s = try { SketchJson.read(f.readText()) } catch (e: Exception) { null } ?: return resp(404)
+        return resp(200, "application/json", ByteArrayInputStream(SiteLink.payload(s, Solver().solve(s)).toString().toByteArray()))
+    }
+
+    /** F1: the site layer's ✓ Kész / ✕: the answer is left for the Sketcher (it owns the survey file), then back to its Helyszín. */
+    private fun siteDone(host: FeatureHost, d: String?) {
+        val r = d?.let { SiteLink.parseResult(it) }
+        val id = r?.id ?: d?.let { runCatching { JSONObject(it).optString("id") }.getOrNull() }?.takeIf { MapPhone.SITE_ID.matches(it) }
+        if (r != null) {
+            try {
+                val f = File(sketches, SiteLink.handoffPath(r.id)); f.parentFile?.mkdirs()
+                val part = File(f.path + ".part"); part.writeText(d); f.delete(); part.renameTo(f)
+            } catch (e: Exception) { VrgLog.w(TAG, "site: ${e.message}"); host.note("A helyszín nem menthető."); return }
+        }
+        state.update { it.copy(url = null) }          // the next open is the plain map again
+        activeSite = null
+        if (id == null) { host.home(); return }
+        runCatching {
+            host.activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("vrg://${Catalogue.SKETCH.id}?open=$id&front=helyszin"))
+                .setPackage(host.activity.packageName).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }.onFailure { host.open(Catalogue.SKETCH.id) }
+    }
+
     // ---- the WebView ----------------------------------------------------------------------------------------------
 
     private val asks = AtomicInteger()
@@ -532,6 +572,7 @@ object MapFeature : VrgFeature {
                 catch (e: Exception) { host.note("Nincs navigációs alkalmazás a telefonon.") }
             }
             "sketch" -> host.open(Catalogue.SKETCH.id)
+            "site" -> siteDone(host, q.getQueryParameter("d"))
         }
         return true
     }
@@ -590,13 +631,15 @@ object MapFeature : VrgFeature {
         val s by state.collectAsStateWithLifecycle()
         val web = remember { arrayOfNulls<WebView>(1) }
         LaunchedEffect(Unit) { if (state.value.url == null) prepare() }
-        LaunchedEffect(s.url) { if (s.url == null && !s.busy && s.loaded > 0 && pendingJob != null) prepare() }
-        BackHandler { keepHash(web[0]); host.home() }
+        LaunchedEffect(s.url) { if (s.url == null && !s.busy && s.loaded > 0 && (pendingJob != null || pendingSite != null)) prepare() }
+        // F1: from a survey's Helyszín, ‹ and Back go back to it (nothing saved: ✓ Kész saves)
+        val leave = { keepHash(web[0]); activeSite?.let { siteDone(host, JSONObject().put("id", it).toString()) } ?: host.home() }
+        BackHandler { leave() }
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                    modifier = Modifier.clickable { keepHash(web[0]); host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    modifier = Modifier.clickable { leave() }.padding(horizontal = 4.dp, vertical = 6.dp))
                 Text("VRG TÉRKÉP", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, modifier = Modifier.weight(1f))
                 when (s.mode) {
                     Mode.PC -> VrgChip("PC adat", selected = true) { host.note("A térkép és a munkák a PC-ről jönnek, a relén át.") }

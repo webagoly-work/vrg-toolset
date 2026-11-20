@@ -108,6 +108,7 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     val store = SketchFeature.store
     val ctx = LocalContext.current
     val st = remember(initial.id) { EditorState(initial) {} }
+    LaunchedEffect(initial.id) { SketchFeature.takeFront(initial.id)?.let { st.front = it } }   // F1: back from the map on Helyszín
     var showNorm by remember { mutableStateOf(false) }
 
     // the photos (Fotópont M25, captures M29) live with the survey (files/sketch/photos/<id>/); the camera app takes them
