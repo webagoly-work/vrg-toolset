@@ -75,4 +75,5 @@ dependencies {
     implementation(project(":feature-pager"))
     implementation(project(":feature-devices"))
     implementation(project(":feature-vault"))
+    implementation(project(":feature-workflow"))
 }

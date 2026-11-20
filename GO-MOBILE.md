@@ -96,6 +96,9 @@ What changes locally compared with the cloud:
   (Workflow Kit, Térkép, Időjárás, Vault) planned. `docs/mobile/WP/M38.md` → "Telefonon ellenőrizni".
 - **M45** Vault built 2026-11-20 (cloud session, D-48 = A, D-49 = A), **BETA**: the Proton Vault's own web app inside the
   app, with its own device approval. `docs/mobile/WP/M45.md` → "Telefonon ellenőrizni" (step 1 may need the Vault's address).
+- **M42** Varler Workflow Kit built 2026-11-20 (cloud session, D-52 = C), **BETA**: the PC seals each Kit job to the owner's
+  phone key (`node tools/workflow-seal.js trust <ID> <CODE>`, then `seal`), only ciphertext on the `workflow-sealed`
+  branch. `docs/mobile/WP/M42.md` → "Telefonon ellenőrizni" (13 steps, two on the PC).
 
 ## 3. What the user asked for, mapped to WPs
 

@@ -5,9 +5,9 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js']
   pull_request:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js']
   workflow_dispatch:
 
 permissions:
@@ -40,6 +40,7 @@ jobs:
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
           node Mobile/catalogue/icon-gen.js --check
+          node Mobile/tests/workflow-seal.js
       - name: VRG Sketcher (field kit, fixture, variants, Desktop page)
         working-directory: .
         run: node Sketcher/test/run.js
