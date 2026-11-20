@@ -72,6 +72,10 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 
 ### Later, not yet WPs (extrapolated)
 
+- **Personal App v1** (2026-11-20): the code we own sorted into a General and a Founder edition, editions as a
+  catalogue filter; open questions Q1–Q6. [PERSONAL-APP.md](PERSONAL-APP.md), background in
+  `docs/research/reports/Personal apps - software for one.md`.
+
 - **Vault native reader** (the Founder's reminder, 2026-11-20, D-53 B): a Kotlin reader of `webagoly-work/data-vault` beside or
   instead of M45's WebView. First attach the data-vault repo, read its format and crypto, check M45's guesses (address,
   `VaultWeb.ALLOWED_HOSTS`, the grant link), then ask: replace or beside, read-only or read-write, its device key vs D-54.
