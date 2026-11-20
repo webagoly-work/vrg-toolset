@@ -3,6 +3,30 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "retegfeny-sketch",
+      "title": "Rétegfény vázlat",
+      "created": "2026-11-20",
+      "updated": "2026-11-20",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "study",
+      "summary": "Sketch of Rétegfény: the Stack's layers lit by the work that touches them: warm nodes with a 90 s half-life, a ring for writes, pillars through the layers, one tracer per subagent; made-up data.",
+      "purpose": "Show the look of the VIS-Q5 direction (the Stack as the main visual, lighting the paths a workflow touches); the study is docs/visual/stack-lens/README.md.",
+      "context": [
+        "fork session of the Látótér plan after the Founder's VIS-Q5 answer",
+        "the Stack data cannot be built in the cloud container, so the sketch uses invented nodes"
+      ],
+      "tags": [
+        "retegfeny",
+        "stack",
+        "munkavaszon",
+        "visual-plan"
+      ],
+      "file": "files/retegfeny-sketch.html",
+      "url": "https://claude.ai/artifact/Ktt9ZB2ndhgiHULBLk6MzF"
+    },
+    {
       "id": "vrg-latoter",
       "title": "VRG Látótér",
       "created": "2026-11-20",

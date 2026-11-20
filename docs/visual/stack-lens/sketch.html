@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rétegfény vázlat</title>
+<!-- Rétegfény sketch (docs/visual/stack-lens/README.md). MADE-UP DATA: invented nodes and a scripted session,
+     only to show the look: planes in natural order, a touch lighting its node, activation reaching neighbours,
+     the pillar drawn through the planes, a write's ring, agent tracers during a fan-out, and decay. -->
+<style>
+:root { --bg: #0a141c; --panel: #121c24; --line: rgba(232,240,246,.15); --text: #e8f0f6; --dim: #a6afb7; --faint: #646d74;
+  --ice: #93d3e6; --warm: #e8a873; --mono: "Cascadia Mono", Consolas, ui-monospace, monospace; --voice: Bahnschrift, "Arial Narrow", sans-serif; color-scheme: dark; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 13px/1.4 "Segoe UI", system-ui, sans-serif; display: grid; grid-template-rows: auto 1fr auto; }
+header { display: flex; gap: 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+h1 { margin: 0; font: 600 15px var(--voice); letter-spacing: .14em; color: var(--ice); }
+.tag { font: 11px var(--mono); color: var(--warm); border: 1px solid rgba(232,168,115,.4); padding: 1px 6px; }
+button { font: 12px var(--mono); color: var(--text); background: var(--panel); border: 1px solid var(--line); padding: 4px 9px; cursor: pointer; }
+button:hover, button:focus-visible { border-color: var(--ice); outline: none; }
+#cv { width: 100%; height: 100%; display: block; }
+footer { padding: 6px 16px; border-top: 1px solid var(--line); font: 12px var(--mono); color: var(--dim); display: flex; gap: 16px; flex-wrap: wrap; }
+footer b { color: var(--text); font-weight: 400; }
+</style>
+</head>
+<body>
+<header><h1>RÉTEGFÉNY</h1><span class="tag">KITALÁLT ADAT · vázlat</span><button id="play">⏸</button><button id="again">↺ újra</button>
+  <span style="color:var(--dim);font-size:12px">meleg = munka érinti · szaggatott vonal = ügynök nyoma · gyűrű = írás · függőleges = pillér</span></header>
+<canvas id="cv"></canvas>
+<footer><span id="clock"></span><span id="step"></span></footer>
+<script>
+(function () {
+  'use strict';
+  var cv = document.getElementById('cv'), g = cv.getContext('2d'), W, H, DPR;
+  var ICE = '#93d3e6', WARM = '#e8a873', TEXT = '#e8f0f6', FAINT = '#646d74';
+  var PLANES = [['F', 'Kirakat', '#c9d77a'], ['Q', 'Döntések', '#e3be7b'], ['L', 'Vonalak', '#b39cf0'], ['A', 'Ügynöki gerinc', '#e59cc8'], ['C', 'Kód', '#93d3e6'], ['G', 'Adatgömb', '#8bcca1']];
+  // made-up nodes: [id, plane, x, y (0..100), pillar]
+  var N = [], byId = {}, rnd = function (k) { var x = Math.sin(k * 91.7) * 43758.5; return x - Math.floor(x); };
+  var PIL = ['planner', 'inventory', 'stack', 'mobile'];
+  PLANES.forEach(function (p, pi) {
+    for (var k = 0; k < 26; k++) {
+      var pil = PIL[k % 4], col = PIL.indexOf(pil);
+      var n = { id: p[0] + k, plane: pi, x: 8 + col * 24 + rnd(pi * 50 + k) * 16, y: 8 + rnd(pi * 70 + k + 3) * 84, pillar: pil, e: 0, ring: 0 };
+      N.push(n); byId[n.id] = n;
+    }
+  });
+  var ADJ = {}; N.forEach(function (n) { ADJ[n.id] = N.filter(function (m) { return m !== n && m.pillar === n.pillar && Math.abs(m.plane - n.plane) <= 1 && rnd(n.id.length * 7 + m.x) < 0.18; }).map(function (m) { return m.id; }); });
+  // a scripted session: [t s, agent, node, write?]
+  var S = [[1, 'main', 'Q3'], [2, 'main', 'A3'], [3.5, 'main', 'C3'], [4.5, 'main', 'C3', 1], [6, 'main', 'L7'],
+    [8, 'r1', 'G5'], [8.2, 'r2', 'G9'], [8.4, 'r3', 'G2'], [8.6, 'r4', 'C14'], [10, 'r1', 'G1'], [10.5, 'r2', 'G13'], [11, 'r3', 'C6'], [11.4, 'r4', 'C18'],
+    [12.5, 'r1', 'G5', 1], [13, 'r3', 'G2', 1], [14, 'r2', 'G9', 1], [15.5, 'r4', 'G22', 1], [17.5, 'w', 'G5'], [18, 'w', 'G9'], [18.5, 'w', 'G2'], [19, 'w', 'G22'], [20.5, 'w', 'G25', 1],
+    [23, 'main', 'F3'], [24, 'main', 'C3', 1]];
+  var AG = { main: 'fő', r1: 'k1', r2: 'k2', r3: 'k3', r4: 'k4', w: 'író' };
+  var t = 0, playing = true, idx = 0, trace = {}, pillarsLit = {};
+  function iso(x, y, pi) { var s = Math.min(W / 260, (H - 40) / 560), cx = W / 2 + 40, top = 20; return [cx + (x - y) * 0.95 * s, top + (x + y) * 0.32 * s + pi * 88 * s]; }   // planes 64 high, 88 apart: none covers another
+  function plane(pi) { return [iso(0, 0, pi), iso(100, 0, pi), iso(100, 100, pi), iso(0, 100, pi)]; }
+  function touch(id, write) {
+    var n = byId[id]; if (!n) return;
+    n.e = 1; if (write) n.ring = 1;
+    (ADJ[id] || []).forEach(function (m) { byId[m].e = Math.max(byId[m].e, 0.45 / Math.pow(ADJ[id].length, 0.5)); });   // one hop, damped
+    pillarsLit[n.pillar] = 1;
+  }
+  function resize() { DPR = devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  window.addEventListener('resize', resize); resize();
+  var last = 0;
+  function frame(now) {
+    var dt = last ? Math.min(0.1, (now - last) / 1000) : 0.016; last = now;
+    if (playing) { t += dt; while (idx < S.length && S[idx][0] <= t) { var s = S[idx]; touch(s[2], s[3]); (trace[s[1]] = trace[s[1]] || []).push(s[2]); if (trace[s[1]].length > 4) trace[s[1]].shift(); document.getElementById('step').textContent = AG[s[1]] + ' · ' + (s[3] ? 'írás' : 'olvasás') + ' · ' + s[2]; idx++; } }
+    var k = Math.pow(0.5, dt / 4);   // sketch half-life 4 s (live: 90 s)
+    N.forEach(function (n) { if (playing) { n.e *= k; n.ring = Math.max(0, n.ring - dt * 2.4); } });
+    Object.keys(pillarsLit).forEach(function (p) { if (playing) { pillarsLit[p] *= k; if (pillarsLit[p] < 0.05) delete pillarsLit[p]; } });
+    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
+    PLANES.forEach(function (p, pi) {
+      var q = plane(pi); g.beginPath(); q.forEach(function (v, i) { if (i) g.lineTo(v[0], v[1]); else g.moveTo(v[0], v[1]); }); g.closePath();
+      g.fillStyle = 'rgba(18,28,36,.78)'; g.fill(); g.strokeStyle = p[2] + '55'; g.stroke();
+      g.fillStyle = p[2]; g.font = '600 11px ' + getComputedStyle(document.body).getPropertyValue('--voice'); g.fillText(p[0] + ' · ' + p[1].toUpperCase(), Math.max(8, q[3][0] - 140), q[3][1] + 4);
+    });
+    // pillars: a warm vertical through the planes the lit pillar has lit nodes on
+    Object.keys(pillarsLit).forEach(function (p) {
+      var lit = N.filter(function (n) { return n.pillar === p && n.e > 0.08; }).sort(function (a, b) { return a.plane - b.plane; });
+      if (lit.length < 2) return;
+      var cx = 8 + PIL.indexOf(p) * 24 + 8, a = iso(cx, 50, lit[0].plane), b = iso(cx, 50, lit[lit.length - 1].plane);
+      g.strokeStyle = 'rgba(232,168,115,' + (0.6 * pillarsLit[p]).toFixed(2) + ')'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); g.lineWidth = 1;
+      lit.forEach(function (n) { var c = iso(cx, 50, n.plane), d = iso(n.x, n.y, n.plane); g.strokeStyle = 'rgba(232,168,115,' + (0.3 * n.e).toFixed(2) + ')'; g.beginPath(); g.moveTo(c[0], c[1]); g.lineTo(d[0], d[1]); g.stroke(); });
+    });
+    N.forEach(function (n) {
+      var p = iso(n.x, n.y, n.plane), lit = n.e > 0.03;
+      g.fillStyle = lit ? 'rgba(232,168,115,' + (0.25 + 0.75 * n.e).toFixed(2) + ')' : PLANES[n.plane][2] + '66';
+      g.beginPath(); g.arc(p[0], p[1], lit ? 2.5 + 3 * n.e : 2, 0, 7); g.fill();
+      if (n.ring > 0) { g.strokeStyle = 'rgba(232,168,115,' + n.ring.toFixed(2) + ')'; g.beginPath(); g.arc(p[0], p[1], 6 + (1 - n.ring) * 14, 0, 7); g.stroke(); }
+    });
+    // agent tracers: the coordinator solid, subagents dotted
+    Object.keys(trace).forEach(function (a) {
+      var ids = trace[a], fresh = ids.length && byId[ids[ids.length - 1]].e > 0.1; if (!fresh) return;
+      g.strokeStyle = a === 'main' ? 'rgba(232,240,246,.7)' : 'rgba(232,240,246,.45)'; g.setLineDash(a === 'main' ? [] : [2, 3]);
+      g.beginPath(); ids.forEach(function (id, i) { var n = byId[id], p = iso(n.x, n.y, n.plane); if (i) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.stroke(); g.setLineDash([]);
+      var hn = byId[ids[ids.length - 1]], hp = iso(hn.x, hn.y, hn.plane); g.fillStyle = TEXT; g.font = '10px ' + getComputedStyle(document.body).getPropertyValue('--mono'); g.fillText(AG[a], hp[0] + 8, hp[1] - 6);
+    });
+    document.getElementById('clock').textContent = 'idő ' + t.toFixed(1) + ' s / ' + S[S.length - 1][0] + ' s';
+    if (t > S[S.length - 1][0] + 6 && playing) { t = 0; idx = 0; trace = {}; }
+    requestAnimationFrame(frame);
+  }
+  document.getElementById('play').onclick = function () { playing = !playing; this.textContent = playing ? '⏸' : '▶'; };
+  document.getElementById('again').onclick = function () { t = 0; idx = 0; trace = {}; N.forEach(function (n) { n.e = 0; n.ring = 0; }); pillarsLit = {}; };
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
