@@ -1,4 +1,4 @@
-// Map/lib/site-math.js — the sketch on the building (VRG Sketcher Helyszín ↔ Térkép, WP F1): pure maths, no DOM.
+// Map/lib/site-math.js — the sketch on the building (VRG Sketcher Helyszín ↔ Térkép, WP M48): pure maths, no DOM.
 // The same rules as the phone's sketch-core SitePlace.kt; Sketcher/test/fixtures/site.json is written from this file
 // (node Sketcher/tools/make-fixture.js) and replayed by the JVM test, so the two cannot drift.
 //

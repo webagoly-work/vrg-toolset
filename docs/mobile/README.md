@@ -62,6 +62,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
+| **M48** | Helyszín ↔ Térkép (`sketch`, `map`) | **BETA** (built 2026-11-20 in fork F1, D-65 … D-69, waiting for the phone check): the Sketcher's Helyszín on the phone's own VRG Térkép, PC or not; the building outline drawn or corrected on the map, Esri satellite on a tap; the sketch placed on the building (fit, drag, turn) with the turn, offset and walls that stick out; the same on the Desktop; the map's W-layer break on the phone fixed | internet on a tap | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

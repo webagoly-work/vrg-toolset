@@ -1,4 +1,4 @@
-// Map/lib/site-layer.js — VRG Sketcher Helyszín on VRG Térkép (fork F1): the building's outline drawn or corrected on the
+// Map/lib/site-layer.js — VRG Sketcher Helyszín on VRG Térkép (fork F1, WP M48): the building's outline drawn or corrected on the
 // map (optionally over satellite imagery), and the solved sketch placed on it (moved, turned, fitted), with the mismatch
 // in the field's words. The maths is Map/lib/site-math.js (the phone's SitePlace.kt replays the same fixture).
 //
