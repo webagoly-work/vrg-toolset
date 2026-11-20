@@ -72,6 +72,10 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 
 ### Later, not yet WPs (extrapolated)
 
+- **Vault native reader** (the Founder's reminder, 2026-11-20, D-48 B): a Kotlin reader of `webagoly-work/data-vault` beside or
+  instead of M45's WebView. First attach the data-vault repo, read its format and crypto, check M45's guesses (address,
+  `VaultWeb.ALLOWED_HOSTS`, the grant link), then ask: replace or beside, read-only or read-write, its device key vs D-49.
+
 - **Quick Settings tile + home widget**: Légegér on/off from the shade, a widget for a quick note.
 - **Planner site mode**: the measurements and the layout are M24 (Vázlat), the room photos M25 (Fotópont), both BETA; still
   later: the sketch sent straight into a running Planner over the relay (D-20 B), existing points onto the Planner's
