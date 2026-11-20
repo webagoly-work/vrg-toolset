@@ -392,7 +392,7 @@ object MapFeature : VrgFeature {
         }
     }
 
-    /** /data/*: through the relay in PC mode (public parts kept on the phone); without the PC, only the kept parts. */
+    /** The /data files: through the relay in PC mode (public parts kept on the phone); without the PC, only the kept parts. */
     private fun data(r: MapReq.Data, method: String, range: MapRange?, query: String?): WebResourceResponse {
         val kept = File(root, "data/${r.rel}")
         if (pc == null) return if (r.keep) fileResp(kept, method.equals("HEAD", true), range) else resp(404)
