@@ -104,3 +104,13 @@ code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; bord
 .msg.err { border-color: var(--crit); color: var(--crit); }
 .msg.ok { border-color: var(--ok); color: var(--ok); }
 @media (max-width: 960px) { #main { padding: 10px 10px 40px; } .kv { grid-template-columns: 100px 1fr; } .grid { grid-template-columns: 1fr; } }
+/* Kamera 2 */
+.cap-card video.thumb { object-fit: cover; }
+.card.pair { display: flex; gap: 10px; flex-wrap: wrap; }
+.card.pair figure { margin: 0; flex: 1 1 220px; }
+.pairimg { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid var(--line2); background: var(--sunk); }
+.sigimg { display: block; max-width: 320px; width: 100%; margin-top: 6px; background: #fff; border: 1px solid var(--line2); }
+.tag.warn, .warn { color: var(--crit); }
+.tag.ok { color: var(--ok); }
+.tag.dim { opacity: .5; text-decoration: line-through; }
+.ocr { margin-top: 3px; }

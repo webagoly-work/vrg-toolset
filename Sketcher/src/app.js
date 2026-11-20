@@ -80,8 +80,10 @@
   }
 
   // ---- photos in memory ------------------------------------------------------------------------------------------
+  // Kamera 2: a video is .mp4, a signature .png named "alairas" (sketch-core Intake.exportName)
+  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : 'jpg';
   function captureNames(c) {
-    const n = [base(c.file), stem() + '_' + c.id + '_' + (c.purpose || 'egyeb') + '.jpg'];
+    const n = [base(c.file), stem() + '_' + c.id + '_' + (c.kind === 'signature' ? 'alairas' : (c.purpose || 'egyeb')) + '.' + capExt(c)];
     return n.filter(Boolean);
   }
   function attach(list) {
@@ -240,7 +242,7 @@
 
   function vKamera(d) {
     const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
-    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
+    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
     h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
       (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
     h += '<h3>Célfotók</h3>';
@@ -251,6 +253,7 @@
     });
     const rest = caps.filter(c => !used.has(c.purpose || 'egyeb')); if (rest.length) h += rest.map(capCard).join('');
     if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
+    h += vCamera2(caps);
     const pp = (S.photos || []);
     if (pp.length) h += '<h3>Fotópontok</h3>' + pp.map(p => '<div class="card"><b>' + esc(p.id) + '</b> ' + esc(roomName(p.room)) + ' ' + (p.shots || []).map(x => {
       const u = files.get(base(x.file)); return u ? '<img class="thumb" src="' + esc(u) + '" alt="' + esc(x.file) + '">' : '<span class="tag">' + esc(base(x.file)) + '</span>';
@@ -259,9 +262,48 @@
   }
   function capCard(c) {
     const u = thumbFor(c);
-    return '<div class="card cap-card" data-cap="' + esc(c.id) + '">' + (u ? '<img class="thumb" src="' + esc(u) + '" alt="">' : '<div class="thumb">nincs kép</div>') +
-      '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + '</div>' +
-      (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : 'nincs kép') + '</div>'
+      : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
+    return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
+      '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
+      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+  }
+  // ---- Kamera 2: video, signature, personal data, type-plate readings, before / after ---------------------------
+  const mb = b => b > 0 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : '?';   // as Camera2.mb
+  const dur = ms => { const t = Math.round((ms || 0) / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+  function capBadges(c) {
+    const b = [];
+    if (c.kind === 'video') b.push('<span class="tag" data-b="video">▶ ' + esc(dur(c.durationMs)) + ' · ' + esc(mb(c.bytes)) + '</span>');
+    if (c.kind === 'signature') b.push('<span class="tag" data-b="signature">✍ aláírás</span>');
+    if (c.privacy) b.push('<span class="tag warn" data-b="privacy">👤 személyes adat</span>');
+    if ((c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset')) b.push('<span class="tag" data-b="blur">▦ elmosva</span>');
+    if (c.phase === 'elotte') b.push('<span class="tag" data-b="before">◐ előtte</span>');
+    if (c.phase === 'utana') b.push('<span class="tag" data-b="after">◑ utána: ' + esc(c.pair || '') + '</span>');
+    if (c.keepGps) b.push('<span class="tag" data-b="gps">⌖ GPS marad</span>');
+    return b.length ? ' ' + b.join(' ') : '';
+  }
+  function capExtra(c) {
+    let h = '';
+    if (c.kind === 'signature') h += '<div class="sig"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) + '</div>';
+    const hits = c.ocr || [];
+    if (hits.length) h += '<div class="ocr small">▤ ' + hits.map(x => '<span class="tag ' + (x.used ? 'ok' : x.dropped ? 'dim' : '') + '" data-ocr="' + esc(x.kind) + '">' +
+      (x.used ? '✓ ' : '') + esc(x.value) + '</span>').join(' ') + '</div>';
+    return h;
+  }
+  function vCamera2(caps) {
+    let h = '';
+    const pairs = caps.filter(c => c.phase === 'utana' && c.pair).map(a => [caps.find(b => b.id === a.pair), a]).filter(p => p[0]);
+    if (pairs.length) h += '<h3>Előtte / utána</h3>' + pairs.map(([b, a]) => {
+      const one = (c, l) => { const u = thumbFor(c); return '<figure><figcaption class="small">' + l + ' · ' + esc(fmtTime(c.at)) + '</figcaption>' +
+        (u ? '<img class="pairimg" src="' + esc(u) + '" alt="">' : '<div class="thumb">' + esc(c.id) + '</div>') + '</figure>'; };
+      return '<div class="card pair" data-pair="' + esc(b.id + '-' + a.id) + '">' + one(b, 'Előtte') + one(a, 'Utána') + '</div>';
+    }).join('');
+    const sigs = caps.filter(c => c.kind === 'signature');
+    if (sigs.length) h += '<h3>Aláírás</h3>' + sigs.map(c => '<div class="card"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) +
+      '<div class="small">' + esc(c.note) + '</div>' + (thumbFor(c) ? '<img class="sigimg" src="' + esc(thumbFor(c)) + '" alt="aláírás">' : '<div class="small faint mono">' + esc(captureNames(c)[1]) + '</div>') + '</div>').join('');
+    const priv = caps.filter(c => c.privacy && !(c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset'));
+    if (priv.length) h += '<p class="small warn">👤 ' + priv.length + ' személyes adatot mutató fotón nincs elmosás (a telefonon: ✎ Jelölés → ▦ / ▒).</p>';
+    return h;
   }
 
   function vHelyszin() {
