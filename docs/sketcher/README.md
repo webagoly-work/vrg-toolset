@@ -116,3 +116,9 @@ toggle in the top corner, switching between the original and the variant at any 
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 
 Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`.
+
+## 7. Open dev line: Kamera+ (room box, measuring, house 3D)
+
+Opened 2026-11-20 and not built yet: `CAMERA-LINE.md` (stages K1–K7, open questions Q1–Q4), research in
+`docs/research/2026-11-20_room-capture-and-measurement.md`. The first stage is the room box: the sketched room
+raised to its ceiling height, with the Fotópont photos projected onto its walls (offline, no AI).
