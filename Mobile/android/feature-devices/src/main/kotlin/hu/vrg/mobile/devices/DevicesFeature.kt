@@ -45,6 +45,8 @@ import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.InstallQrPanel
+import hu.vrg.mobile.kit.ui.IphoneGuideView
+import hu.vrg.mobile.kit.ui.IphoneGuides
 import hu.vrg.mobile.kit.ui.QrCode
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
@@ -92,6 +94,8 @@ object DevicesFeature : VrgFeature {
         var busy by remember { mutableStateOf(false) }
         var showRequest by remember { mutableStateOf(false) }
         var showInstall by remember { mutableStateOf(false) }
+        var showWebQr by remember { mutableStateOf(false) }
+        var showGuide by remember { mutableStateOf(false) }
         var grantLink by remember { mutableStateOf<Pair<String, DeviceRequest>?>(null) }
         var name by remember { mutableStateOf(Trust.name) }
         val owner = GitHub.canWrite
@@ -228,6 +232,25 @@ object DevicesFeature : VrgFeature {
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Telepítő QR", true) { showInstall = true } }
                 } else InstallQrPanel(onClose = { showInstall = false })
             }
+            // ---- iPhone (2026-11-20): an iPhone runs the web app (WP M36), not the APK. The guide is the same file the
+            // web app shows (Mobile/web/guide/iphone.json, bundled); the QR opens the web app in the iPhone's camera.
+            VrgSectionTitle("iPhone csatlakoztatása")
+            Text("Az iPhone nem telepítheti az Android alkalmazást: a VRG Mobile webappot használja, és ugyanígy, QR-kóddal hagyod jóvá. " +
+                "1. az iPhone Kamerájával beolvassa a Webapp QR-t, 2. ott Eszköz → Kérés QR-kódja, 3. te QR beolvasása, 4. az iPhone magától feloldódik.",
+                style = Melyviz.small)
+            Row(Modifier.padding(vertical = 6.dp)) {
+                VrgChip(if (showWebQr) "Webapp QR elrejtése" else "Webapp QR", !showWebQr) { showWebQr = !showWebQr }
+                Spacer(Modifier.width(6.dp))
+                VrgChip(if (showGuide) "Útmutató elrejtése" else "Részletes útmutató") { showGuide = !showGuide }
+            }
+            if (showWebQr) {
+                val url = IphoneGuides.load(ctx)?.url ?: "https://webagoly-work.github.io/vrg-toolset/mobile/"
+                QrCode(url, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A VRG Mobile webapp címe QR-kódban")
+                Text("Az iPhone Kamera alkalmazásával olvasd be, és koppints a sárga „Safari” feliratra.", style = Melyviz.small)
+                Text(url, style = Melyviz.readout.copy(fontSize = 10.sp))
+                Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Link megosztása") { share(ctx, "VRG Mobile iPhone-ra (webapp):\n$url") } }
+            }
+            if (showGuide) IphoneGuideView(Modifier.padding(vertical = 6.dp))
             (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
             (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->
                 if (!owner) Text("Kérés érkezett (${r.name}), de jóváhagyni csak a tulajdonos telefonja tud (GitHub belépéssel).", style = Melyviz.small.copy(color = Melyviz.sand))
@@ -238,7 +261,7 @@ object DevicesFeature : VrgFeature {
             grantLink?.let { (link, r) ->
                 VrgSectionTitle("Engedély: ${r.name}")
                 QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "Az engedély QR-kódja")
-                Text(if (r.back != null) "Az iPhone a saját kamerájával olvassa be: a VRG webapp nyílik meg vele."
+                Text(if (r.back != null) "iPhone: magától feloldódik, ha az Eszköz oldal nyitva marad (legfeljebb néhány perc). Azonnalihoz vagy tokennel: Safariban a Kamerájával olvassa be ezt; kezdőképernyős appban a megosztott üzenetet illessze be (Eszköz → Engedély beillesztése)."
                     else "Nem kötelező: a másik telefon magától feloldódik (legfeljebb egy perc). Ha azonnal kell, a kamerájával olvassa be.",
                     style = Melyviz.small)
                 Row(Modifier.padding(vertical = 6.dp)) {

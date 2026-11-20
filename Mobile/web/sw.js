@@ -2,7 +2,7 @@
 // (Frissítés → Frissítés most, which the page allows only to approved devices while the release lock is on).
 const CACHE = 'vrg-mobile-web';
 const FILES = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/device.js', 'js/qr.js', 'js/mark.js', 'palettes.json',
-  'img/mark.svg', 'manifest.webmanifest', 'version.json'];
+  'img/mark.svg', 'manifest.webmanifest', 'version.json', 'guide/iphone.json'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
