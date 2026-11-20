@@ -77,4 +77,5 @@ dependencies {
     implementation(project(":feature-vault"))
     implementation(project(":feature-workflow"))
     implementation(project(":feature-map"))
+    implementation(project(":feature-tag"))
 }

@@ -45,7 +45,7 @@ jobs:
           test -n "$MOBILE_KEYSTORE_B64" || { echo "MOBILE_KEYSTORE_B64 is not set"; exit 1; }
           echo "$MOBILE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/vrg-mobile.jks"
       - name: Tests (pure Kotlin)
-        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :pager-core:test
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :pager-core:test :tag-core:test
       - name: Signed APK
         env:
           VRG_VERSION_CODE: ${{ steps.version.outputs.code }}

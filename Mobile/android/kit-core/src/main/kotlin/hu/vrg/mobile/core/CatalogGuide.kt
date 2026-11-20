@@ -394,6 +394,17 @@ object CatalogGuide {
             pair = "Asztal: Munkaterek és lapok",
         ),
         GuidePage(
+            id = "tag", title = "Tárgykereső", glyph = "🏷", side = GuideSide.PHONE,
+            what = "Kísérleti. Apple Find My címke (például ISYTag vagy AirTag) Androidról, közvetlenül Bluetooth-on. Az Apple hálózatán jelentett helyet Android nem látja: azt csak a címke gazdájának Apple eszköze mutatja.",
+            how = listOf(
+                "Környék: minden Find My címke a közelben, távolsággal és elemszinttel.",
+                "Ez az enyém: tartsd a címkét a telefon hátához, és a Tárgykereső megjegyzi. A címke néha új címet kap, ezt követi.",
+                "Keresés: nagy távolságkijelzés és hangjelzés, ami közeledve gyorsul. A Csipogtatás megszólaltatja a címkét, ha engedi.",
+                "Ottfelejtés: ha bekapcsolod, értesítést kapsz, amikor a címke lemarad. A telefon azt is megjegyzi, hol hallotta utoljára.",
+            ),
+            needs = "Bluetooth (a hely megjegyzéséhez helymeghatározás)",
+        ),
+        GuidePage(
             id = "desk", title = "Asztal", glyph = "◧", side = GuideSide.PHONE,
             what = "Maga a kezdőlap: a VRG Asztal egyszerűsített változata a telefonon. Számozott lapok oldalra lapozva, felül a sáv, alul a dokk.",
             how = listOf(

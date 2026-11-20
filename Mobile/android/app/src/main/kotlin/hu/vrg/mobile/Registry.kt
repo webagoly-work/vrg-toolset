@@ -28,6 +28,7 @@ import hu.vrg.mobile.sketch.ui.PhotoFeature
 import hu.vrg.mobile.sketch.ui.SketchFeature
 import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.stack.StackFeature
+import hu.vrg.mobile.tag.app.TagFeature
 import hu.vrg.mobile.update.UpdateFeature
 import hu.vrg.mobile.workflow.WorkflowFeature
 import hu.vrg.mobile.core.HomeLayout
@@ -66,6 +67,7 @@ object Registry {
         VaultFeature,
         WorkflowFeature,
         MapFeature,
+        TagFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

@@ -479,7 +479,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
+- **D-55 · Tárgykereső: which state of the tag to build for (M46, experimental), 2026-11-20.** Taken while building, the
+  Founder may revisit. Chosen: **both** — a never-paired tag (pairing mode, `FD44`) and one paired to someone's Apple ID
+  (the separated advertisement with its rotating key) — with **no Apple account anywhere in VRG Mobile**. The phone
+  works only with what the tag says over Bluetooth: distance, ring, left-behind, the phone's last place. Rejected for
+  now: signing in to Apple from the phone (an Apple ID password in VRG Mobile, against Apple's terms, and still no key
+  to decrypt with). Details: `WP/M46.md`.
 
 ## Open (to ask when the WP that needs them starts)
 
-None.
+- **D-56 · Tárgykereső: a remote location for the Find My tag? (M46), asked 2026-11-20.** Android cannot read Apple's
+  network; the options are around that. **A** (recommended) local only, as built: distance, ring, left-behind and the
+  phone's last place; nothing more to set up. **B** the Apple way, through the PC: pair the tag once with an iPhone /
+  Mac, export its key from the Mac's keychain, and let a PC helper (FindMy.py-style, with an Apple ID and anisette)
+  fetch its location reports for the phone through the relay. Unofficial, against Apple's terms, breaks when Apple
+  changes things, needs a Mac at least once. **C** add a Google Find Hub tag (e.g. Chipolo Point, Pebblebee for
+  Android) for the things that must be found remotely, and keep the ISYTag local. Details: `WP/M46.md`.

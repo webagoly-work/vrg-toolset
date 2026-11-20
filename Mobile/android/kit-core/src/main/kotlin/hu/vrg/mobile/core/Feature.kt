@@ -149,6 +149,12 @@ object Catalogue {
         "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
     )
 
+    // WP M46 (experimental, 2026-11-20): Apple Find My tags (the ISYTag, AirTags) used from Android over plain BLE.
+    val TAG = FeatureInfo(
+        "tag", "Tárgykereső", "Kísérleti: Apple Find My címke (ISYTag, AirTag) Androidról: milyen messze van, csipogtatás, ottfelejtés-riasztás és az utolsó hely, ahol a telefon hallotta.",
+        "🏷", Group.LINK, Stage.BETA, "M46", setOf(Need.BLUETOOTH),
+    )
+
     // WP M35: Proton Vault's device approval for VRG Mobile: one account, the phones differ, approved by QR.
     val DEVICES = FeatureInfo(
         "devices", "Eszközök", "Ez a telefon és a megbízható eszközök: hozzáférés kérése QR-kóddal, jóváhagyás a tulajdonos telefonján, a frissítések zárolása a listára.",
@@ -194,7 +200,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, CLAUDE,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

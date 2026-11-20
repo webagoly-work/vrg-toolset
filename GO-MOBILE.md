@@ -102,6 +102,11 @@ What changes locally compared with the cloud:
 - **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
   "Telefonon ellenőrizni" (11 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
   `kit-core/MapPhone.kt`.
+- **M46** Tárgykereső built 2026-11-20 (cloud session, **experimental**, D-55 taken, **D-56 open**), **BETA**: the
+  Founder's ISYTag (Apple Find My only) used from Android over plain BLE: distance, "Ez az enyém", relink, Keresés,
+  Csipogtatás, Ottfelejtés, last place; no remote location (Apple's network). `docs/mobile/WP/M46.md` → "Telefonon
+  ellenőrizni" (10 steps, the 9th needs an iPhone). `tag-core` tests in `mobile.cmd test` and Actions; `feature-tag`
+  not yet compiled (the first Actions run is its check).
 
 ## 3. What the user asked for, mapped to WPs
 

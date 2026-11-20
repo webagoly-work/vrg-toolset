@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 rootProject.name = "VRG-Mobile"
 
 // The pure Kotlin modules: build and test on any JDK, no Android SDK.
-include(":kit-core", ":airdeck-core", ":relay-core", ":sketch-core", ":pager-core")
+include(":kit-core", ":airdeck-core", ":relay-core", ":sketch-core", ":pager-core", ":tag-core")
 if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":feature-notes", ":feature-update", ":feature-pulse", ":feature-sphere", ":feature-ports", ":feature-launch", ":feature-drop", ":feature-screen", ":feature-city", ":feature-inbox", ":feature-net", ":app")
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
 if (!jvmOnly) include(":feature-archive") // WP M18 Archívum
@@ -35,3 +35,4 @@ if (!jvmOnly) include(":feature-devices") // WP M35 Eszközök
 if (!jvmOnly) include(":feature-vault")   // WP M45 Vault
 if (!jvmOnly) include(":feature-workflow") // WP M42 Varler Workflow Kit
 if (!jvmOnly) include(":feature-map")     // WP M43 VRG Térkép
+if (!jvmOnly) include(":feature-tag")     // WP M46 Tárgykereső (experimental)

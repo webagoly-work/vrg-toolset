@@ -85,7 +85,7 @@ const TILES = [
   { id: 'frissites', glyph: '⟳', t: 'Frissítés', s: 'A webapp új verziója' },
   { id: 'megjelenes', glyph: '🎨', t: 'Megjelenés', s: 'A VRG Mobile palettái' },
 ];
-const ANDROID_ONLY = ['Csipogó', 'Légegér', 'Képernyő', 'Átadás', 'Hálózat'];
+const ANDROID_ONLY = ['Csipogó', 'Tárgykereső', 'Légegér', 'Képernyő', 'Átadás', 'Hálózat'];
 
 function home() {
   const tl = TRUST_LIST || (() => { try { return JSON.parse(D.LS.get('trust') || 'null'); } catch (e) { return null; } })();
