@@ -47,4 +47,5 @@ androidComponents {
 dependencies {
     implementation(project(":kit"))
     implementation(project(":sketch-core"))
+    implementation(project(":sketch-vision"))   // Kamera 2: type-plate reading (TextReader)
 }

@@ -88,7 +88,7 @@ import kotlin.math.sin
 /** A small thumbnail, decoded off the main thread. */
 @Composable
 private fun thumb(f: File, px: Int): ImageBitmap? = produceState<ImageBitmap?>(null, f.path, f.lastModified()) {
-    value = withContext(Dispatchers.IO) { loadPhoto(f, px)?.asImageBitmap() }
+    value = withContext(Dispatchers.IO) { loadAny(f, px)?.asImageBitmap() }     // Kamera 2: videos and signatures too
 }.value
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -119,6 +119,7 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
                 }
             }
         }
+        Camera2Section(st)
         Text("Képlista", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
         if (sh.shots.isEmpty()) Text("A munkakör alakulásával jelennek meg a kötelező képek.", style = Melyviz.small)
         sh.shots.forEach { s -> key(s.item.id) {
@@ -145,6 +146,7 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
                     val img = thumb(File(dir, c.file), 240)
                     Box(Modifier.size(84.dp).clip(RoundedCornerShape(8.dp)).background(Melyviz.surface).clickable { st.ask = Ask.CaptureView(c.id) }) {
                         if (img != null) Image(img, contentDescription = p.label, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                        CaptureBadges(c, Modifier.align(Alignment.TopStart).padding(2.dp))
                         if (c.marks.isNotEmpty()) Text("✎", style = Melyviz.small.copy(color = Color.White), modifier = Modifier.align(Alignment.TopEnd).padding(3.dp))
                         st.sketch.room(c.room)?.let { Text(roomTitle(it.name, it.kinds), style = Melyviz.small.copy(fontSize = 8.sp, color = Color.White),
                             modifier = Modifier.align(Alignment.BottomStart).background(Color(0x99000000)).padding(horizontal = 3.dp)) }
@@ -169,7 +171,8 @@ private fun toPhotoPoint(st: EditorState) {
 internal fun PurposePicker(st: EditorState, close: () -> Unit) = AlertDialog(
     onDismissRequest = close, containerColor = Melyviz.raised,
     title = { Text("◉ Mit fotózol?", style = Melyviz.label.copy(color = st.frontColor("kamera"))) },
-    text = {
+    text = { Column(Modifier.verticalScroll(rememberScrollState())) {
+        QuickRow(st, close)      // Kamera 2: the next missing shots first, video, signature, the recent purposes
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             st.kit.purposes.forEach { p ->
                 val c = Color(p.color)
@@ -181,7 +184,7 @@ internal fun PurposePicker(st: EditorState, close: () -> Unit) = AlertDialog(
                 }
             }
         }
-    },
+    } },
     confirmButton = { TextButton(close) { Text("Mégse", color = Melyviz.muted) } },
 )
 
@@ -193,6 +196,7 @@ private val MARK_COLORS = listOf(0xFFE8641C, 0xFFD64545, 0xFFE0B020, 0xFF27C2B0,
 internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
     val c = st.sketch.capture(id) ?: return close()
     val dir = st.photoDir ?: return close()
+    if (c.kind != hu.vrg.mobile.sketch.CaptureKind.PHOTO) { MediaViewer(st, c, close); return }    // Kamera 2
     val bmp = remember(c.file) { loadPhoto(File(dir, c.file), 1600)?.asImageBitmap() }
     var marking by remember { mutableStateOf(false) }
     var kind by remember { mutableStateOf(MarkKind.ARROW) }
@@ -227,21 +231,22 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                                 onDragStart = { o -> draft = listOf(Pt((o.x / size.width).toDouble(), (o.y / size.height).toDouble())) },
                                 onDrag = { ch, _ -> ch.consume(); val q = ch.position
                                     val pt = Pt((q.x / size.width).toDouble().coerceIn(0.0, 1.0), (q.y / size.height).toDouble().coerceIn(0.0, 1.0))
-                                    draft = if (kind == MarkKind.FREE) (draft ?: emptyList()) + pt else listOf(draft?.firstOrNull() ?: pt, pt) },
+                                    draft = if (kind == MarkKind.FREE || kind == MarkKind.BLUR_BRUSH) (draft ?: emptyList()) + pt else listOf(draft?.firstOrNull() ?: pt, pt) },
                                 onDragEnd = { val d = draft; draft = null
-                                    if (d != null && d.size >= 2) st.editCapture(id) { it.copy(marks = it.marks + Mark(kind, d, "", color)) } },
+                                    if (d != null && d.size >= 2) st.editCapture(id) { it.copy(marks = it.marks + Mark(kind, d, "", color, w = if (kind == MarkKind.BLUR_BRUSH) BRUSH_W else 0.0)) } },
                                 onDragCancel = { draft = null },
                             )
                         }) {
                         c.marks.forEach { m -> drawMark(m) }
-                        draft?.let { drawMark(Mark(kind, it, "", color)) }
+                        draft?.let { drawMark(Mark(kind, it, "", color, w = if (kind == MarkKind.BLUR_BRUSH) BRUSH_W else 0.0)) }
                     }
                 }
             } else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
                 if (marking) {
-                    listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T").forEach { (k, sym) ->
+                    listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T",
+                        MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒").forEach { (k, sym) ->
                         Pill(sym, Color(color), kind == k) { kind = k }
                     }
                     MARK_COLORS.forEach { mc -> Box(Modifier.size(24.dp).clip(RoundedCornerShape(50)).background(Color(mc))
@@ -249,6 +254,8 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                     if (c.marks.isNotEmpty()) Pill("↶", Melyviz.faint, false) { st.editCapture(id) { it.copy(marks = it.marks.dropLast(1)) } }
                 }
             }
+            if (marking && kind.blur) Text("▦ / ▒ elmosás: a kiadott képen kockásítva, az eredeti a telefonon marad.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
+            PhotoExtras(st, c)       // Kamera 2: reading, privacy, before / after
             Text("Cél", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 st.kit.purposes.filter { it.id != "szoba" }.forEach { p -> Pill(p.sym + " " + p.label, Color(p.color), c.purpose == p.id) {
@@ -297,6 +304,7 @@ private fun DrawScope.drawMark(m: Mark) {
             drawOval(col, Offset(min(a.x, b.x), min(a.y, b.y)), Size(kotlin.math.abs(b.x - a.x), kotlin.math.abs(b.y - a.y)), style = Stroke(w))
         }
         MarkKind.FREE -> for (i in 0 until m.pts.size - 1) drawLine(col, P(m.pts[i]), P(m.pts[i + 1]), w)
+        MarkKind.BLUR, MarkKind.BLUR_BRUSH -> drawBlurPreview(m)
         MarkKind.TEXT -> m.pts.firstOrNull()?.let { p ->
             val paint = Paint().apply { color = col.toArgb(); textSize = w * 7; isAntiAlias = true; setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK) }
             drawContext.canvas.nativeCanvas.drawText(m.text, P(p).x, P(p).y, paint)
@@ -309,7 +317,7 @@ private fun DrawScope.drawMark(m: Mark) {
  */
 internal fun burnMarks(src: File, marks: List<Mark>, out: File): File? {
     val b = loadPhoto(src, 2400) ?: return null
-    val bmp = b.copy(Bitmap.Config.ARGB_8888, true)
+    val bmp = applyBlur(b, marks)      // Kamera 2: blur first (a mutable copy either way)
     val cv = ACanvas(bmp)
     val w = max(4f, min(bmp.width, bmp.height) / 160f)
     val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = w; strokeCap = Paint.Cap.ROUND }
@@ -334,6 +342,7 @@ internal fun burnMarks(src: File, marks: List<Mark>, out: File): File? {
                 val path = APath(); path.moveTo(x(m.pts[0]), y(m.pts[0])); m.pts.drop(1).forEach { path.lineTo(x(it), y(it)) }
                 cv.drawPath(path, paint)
             }
+            MarkKind.BLUR, MarkKind.BLUR_BRUSH -> {}     // burned in by applyBlur
             MarkKind.TEXT -> m.pts.firstOrNull()?.let { p ->
                 val t = Paint().apply { color = m.color.toInt(); textSize = w * 7; isAntiAlias = true; setShadowLayer(5f, 0f, 0f, android.graphics.Color.BLACK) }
                 cv.drawText(m.text, x(p), y(p), t)

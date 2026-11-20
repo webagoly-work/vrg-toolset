@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kamera 2's vision module: no permission of its own (it reads a bitmap the Sketcher already has). -->
+<manifest />

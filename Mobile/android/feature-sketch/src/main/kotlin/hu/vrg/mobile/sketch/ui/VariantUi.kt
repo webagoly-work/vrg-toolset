@@ -108,7 +108,8 @@ internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
                 if (st.sketch.captures.isNotEmpty()) {
                     Text("Fotók az ügynöknek (legfeljebb 5; a házszámot, arcot kerüld)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        st.sketch.captures.forEach { c ->
+                        // Kamera 2: personal photos, videos and signatures never go to an agent
+                        st.sketch.captures.filter { it.kind == hu.vrg.mobile.sketch.CaptureKind.PHOTO && !it.privacy }.forEach { c ->
                             val p = st.kit.purpose(c.purpose)
                             Pill((p?.sym ?: "•") + " " + c.id, Color(p?.color ?: 0xFF7D8590), c.id in photos) {
                                 photos = if (c.id in photos) photos - c.id else if (photos.size < 5) photos + c.id else photos
@@ -141,7 +142,9 @@ private fun writeRequest(ctx: Context, st: EditorState, premise: String, topics:
         val src = dir?.let { File(it, c.file) }?.takeIf { it.exists() } ?: return@mapNotNull null
         // the request names the photos by purpose only, never by the survey's (client's) name
         val f = File(out, "variant-photo-${c.id}-${c.purpose}.jpg")
-        src.copyTo(f, overwrite = true); f
+        if (c.privacy || c.kind != hu.vrg.mobile.sketch.CaptureKind.PHOTO) return@mapNotNull null
+        // Kamera 2 (D-62): the blur burned in, the GPS removed
+        if (c.marks.any { it.kind.blur }) burnMarks(src, c.marks.filter { it.kind.blur }, f) else copyWithoutGps(src, f)
     }
     val now = System.currentTimeMillis()
     val req = File(out, "variant-request-$now.json")

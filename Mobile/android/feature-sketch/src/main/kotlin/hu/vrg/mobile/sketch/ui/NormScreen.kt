@@ -77,22 +77,19 @@ private const val MIME = "application/json"
  */
 private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
     val out = FileStore.cacheDir(ctx, "sketch")
-    out.listFiles()?.forEach { if (it.name.endsWith(".jpg")) it.delete() }        // the last export's copies
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
     pkg.writeText(PlannerExport.build(s, n).toString(1))
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else File(out, name).also { src.copyTo(it, overwrite = true) }
+        if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-62): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
-        val src = File(SketchFeature.store.photoDir(s.id), c.file)
-        if (!src.exists()) return@flatMap emptyList<File>()
-        val name = Intake.exportName(s, c)
-        val f = File(out, name).also { src.copyTo(it, overwrite = true) }
-        listOfNotNull(f, if (c.marks.isEmpty()) null else burnMarks(src, c.marks, File(out, name.removeSuffix(".jpg") + "_jel.jpg")))
+        // Kamera 2 (D-62): blur burned in, GPS removed unless kept, videos and signatures as they are
+        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out)
     }
-    listOf(pkg to MIME) + (photos + caps).map { it to "image/jpeg" }
+    listOf(pkg to MIME) + (photos + caps).map { it to mimeOf(it) }
 }
 
 internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {

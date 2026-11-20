@@ -47,6 +47,8 @@ data class WheelUi(val wheel: Wheel, val center: Offset, val ring: Int, val sel:
 data class CameraReq(
     val photo: String?, val deg: Int?, val purpose: String? = null, val shot: String? = null,
     val target: String? = null, val room: String? = null,
+    /** Kamera 2: the photo is the after of this before-photo; [video] = the walk video (CaptureVideo). */
+    val pairOf: String? = null, val video: Boolean = false,
 )
 
 /** What a dialog is asked for. */
@@ -62,6 +64,10 @@ sealed class Ask {
     data class CaptureView(val id: String) : Ask()
     data class EntryEdit(val id: String) : Ask()
     object Purposes : Ask()
+    // Kamera 2: the client's signature pad, a before / after comparison, choosing the before of an after
+    object Signature : Ask()
+    data class Compare(val before: String, val after: String) : Ask()
+    data class PairPick(val id: String) : Ask()
     object VariantRequest : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
@@ -130,6 +136,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     var pendingShot by mutableStateOf<Pair<String, String>?>(null); private set
     var photoDir: java.io.File? = null
     var dropFile: (String) -> Unit = {}
+    /** Kamera 2: "+ ugyanez még", the type-plate reader's queue (Camera2Ui.kt). */
+    val cam2 = Cam2State()
 
     /** Where the canvas is on screen and its size (px), for tags dragged in from the tray. */
     var canvasOrigin = Offset.Zero
@@ -493,8 +501,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     /** A purpose photo is back from the camera. */
     fun captureTaken(req: CameraReq, file: String, lat: Double?, lon: Double?) {
         val purpose = req.purpose ?: this.purpose
-        val (s, _) = Intake.addCapture(sketch, file, purpose, req.room ?: focusRoom, req.target, req.shot, now, lat, lon)
-        edit(s)
+        val (s, id) = Intake.addCapture(sketch, file, purpose, req.room ?: focusRoom, req.target, req.shot, now, lat, lon)
+        edit(if (req.pairOf != null) hu.vrg.mobile.sketch.Camera2.pair(s, id, req.pairOf) else s)
+        cam2.taken(this, req, id)
         note = "◉ " + (kit.purpose(purpose)?.label ?: purpose) + " mentve" + (if (series) " · sorozat: a kamera visszajön" else "")
     }
 

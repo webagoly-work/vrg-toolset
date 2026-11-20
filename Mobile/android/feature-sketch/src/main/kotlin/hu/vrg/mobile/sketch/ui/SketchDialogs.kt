@@ -248,6 +248,9 @@ internal fun SketchDialogs(st: EditorState) {
         }
         is Ask.Purposes -> PurposePicker(st, close)
         is Ask.CaptureView -> CaptureViewer(st, a.id, close)
+        is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
+        is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
+        is Ask.PairPick -> PairPickDialog(st, a.id, close)
         is Ask.VariantRequest -> VariantRequestDialog(st, close)
         is Ask.EntryEdit -> {
             val e = s.entry(a.id) ?: return close()

@@ -128,8 +128,23 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
             }
         } else { f.delete(); st.note = if (st.series && req.photo == null) "Sorozat vége." else "Nem készült fotó." }
     }
+    // Kamera 2: the walk video, through the camera app's video mode with a length / size limit
+    var filming by remember { mutableStateOf<Pair<CameraReq, String>?>(null) }
+    val film = rememberLauncherForActivityResult(CaptureWalkVideo()) { ok ->
+        val (req, name) = filming ?: return@rememberLauncherForActivityResult
+        filming = null
+        val f = File(dir, name)
+        if (ok && f.length() > 0) st.videoTaken(req, name, videoDuration(f), f.length())
+        else { f.delete(); st.note = "Nem készült videó." }
+    }
     fun startCamera(req: CameraReq) {
         dir.mkdirs()
+        if (req.video) {
+            val vname = "V-" + System.currentTimeMillis().toString(36) + ".mp4"
+            filming = req to vname
+            try { film.launch(FileStore.uri(ctx, File(dir, vname))) } catch (e: Exception) { filming = null; host.note("Nincs videó rögzítő alkalmazás.") }
+            return
+        }
         val name = (req.photo ?: "C") + "-" + System.currentTimeMillis().toString(36) + ".jpg"
         shooting = req to name
         try { shoot.launch(FileStore.uri(ctx, File(dir, name))) } catch (e: Exception) { shooting = null; host.note("Nincs kamera alkalmazás.") }
@@ -154,7 +169,7 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
             // files no longer in the survey (retaken, deleted, a shot never given a direction) go when leaving it:
             // undo can still bring one back while the survey is open
             val keep = Intake.files(st.sketch)
-            dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second) it.delete() }
+            dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second && it.name != filming?.second) it.delete() }
         }
     }
     LaunchedEffect(st.note) { if (st.note != null) { delay(4500); st.note = null } }
@@ -194,11 +209,13 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
                 }
             }
             CaptureButtons(st, Modifier.align(Alignment.BottomEnd))
+            AgainPill(st, Modifier.align(Alignment.BottomEnd).padding(end = 80.dp, bottom = 22.dp))   // Kamera 2: "+ még"
         }
         if (st.front == "vazlat") { ToolOptions(st); ToolRail(st) }
     }
     if (st.noteOpen) QuickNote(st)
     SketchDialogs(st)
+    OcrRunner(st)            // Kamera 2: type-plate reading in the background
 }
 
 /** The photo's own position (camera apps write it when location tagging is on); null when it has none. */
