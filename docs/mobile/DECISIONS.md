@@ -440,6 +440,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
   swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
 
+- **D-48 · VRG Térkép reaches the phone as a web app, with the PC's data when it is there (M43), 2026-11-20.**
+  Asked by the Founder, answered **A**: the PC's own `Map/vrg-terkep.html` from `main` on its own origin (the M21 way),
+  the libraries from the pinned npm tarballs (sha512-checked); with a paired PC its offline data and the J layer through
+  the relay's `/p/8802/`, without one the page's `?remote=1` mode over the public planet files with a 400 MB tile cache,
+  so what was looked at once opens offline on site. Rejected: **B** through the relay only (no map on site, where the PC
+  is not); **C** a native MapLibre module (a second map to keep in step with the page, and not checkable in a cloud
+  session).
+- **D-49 · The layers on site: own position + Vázlat sites, the jobs, Navigáció (M43), 2026-11-20.** Answered
+  **A + B + C**: the GPS dot and the Sketcher's sites from the phone's own files (nothing sent); the J layer through the
+  relay only, never stored on the phone (MAP-D2 B's controls apply unchanged); Navigáció on a tap hands the phone's
+  navigation app a `geo:` link with coordinates and the job code / sketch name, never an address (D-31). No route
+  planning of our own.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

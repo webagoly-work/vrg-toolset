@@ -71,6 +71,14 @@ the drafted `jobs\_elozmenyek\helyszinek.json` with the offline index (never onl
 `jobs\_elozmenyek\helyek.json`. Ways in: `?job=CODE`, the 📍 in the VRG Asztal's Munkák, the phone
 through the VRG Mobile relay.
 
+## On the phone (VRG Mobile, WP M43)
+
+VRG Mobile's **VRG Térkép** shows this same page, fetched from `main`, with the paired PC's data and the J layer
+through the relay (`/p/8802/`), or without the PC in the `?remote=1` mode with a tile cache on the phone. It adds the
+phone's position, the Vázlat sites and Navigáció. It relies on `window.vrgMap` carrying `map` and `maplibregl`, on the
+`?remote=1` / `build=` parameters and on the `/vendor/…` paths: `Mobile/android/kit-core/.../MapPhone.kt` and its test
+check them. Details: `docs/mobile/WP/M43.md`.
+
 Controls: no-store, an access log (`helyek-log.jsonl`, local vs relay), a kill switch (the flag file
 `jobs\_elozmenyek\TERKEP-KI` or `"jobsLayer": false` on START's M entry), never in Kapu guest mode, OTG
 or `?embed=1` (unless `&jobs=1`), and an "ÜGYFÉLADAT" badge while on. Decisions MAP-D1…D4, the data flow and

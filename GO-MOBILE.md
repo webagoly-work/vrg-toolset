@@ -94,6 +94,9 @@ What changes locally compared with the cloud:
 - **M38** Kezdőlap lapok + Katalógus built 2026-11-19 (cloud session, D-47), **BETA**: the home in numbered pages, the
   one-page view on ⌂'s long press, the Katalógus; M39–M41 tiles for the Planner, the calculators and Készlet; M42–M45
   (Workflow Kit, Térkép, Időjárás, Vault) planned. `docs/mobile/WP/M38.md` → "Telefonon ellenőrizni".
+- **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
+  "Telefonon ellenőrizni" (11 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
+  `kit-core/MapPhone.kt`.
 
 ## 3. What the user asked for, mapped to WPs
 

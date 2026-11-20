@@ -59,7 +59,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M40** | Kalkulátorok tile (`calc`) | **BETA** (2026-11-19): the three calculator web apps under one tile | GitHub | low |
 | **M41** | Készlet tile (`inventory`) | **BETA** (2026-11-19): Készlet, VRG BuildTree and the Valena választó under one tile, until the overhauled Inventory | GitHub | low |
 | **M42** | Varler Workflow Kit (`workflow`) | **PLANNED** (2026-11-19): the office path on the phone | — | — |
-| **M43** | VRG Térkép (`map`) | **PLANNED** (2026-11-19) | — | — |
+| **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **PLANNED** (2026-11-19) | — | — |
 

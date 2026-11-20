@@ -132,15 +132,15 @@ object CatalogGuide {
         // 4 · Térkép · Időjárás · Vault
         GuidePage(
             id = "map", title = "VRG Térkép", glyph = "🗺", side = GuideSide.BOTH,
-            what = "Offline Magyarország-térkép saját terepi stílusban: címkeresés, 3D épületek, domborzat. A munkák rétege megmutatja, hol vannak a munkák.",
+            what = "Magyarország térképe saját terepi stílusban: címkeresés, 3D épületek, domborzat. A telefonon a saját helyed, a Vázlatok helyszínei és párosított PC-vel a munkák is rajta vannak.",
             how = listOf(
-                "A telefonon még tervben van; addig párosított PC-vel a Localhost nyitja meg a PC térképét.",
-                "A PC-n: START → M (localhost:8802). Az első indítás kb. 1,7 GB térképadatot tölt le.",
-                "Keresés: „Váci u. 12” vagy „Budaörs Fő utca”. Az ékezet és a rövidítés elhagyható.",
-                "Billentyűk a PC-n: 3 = 3D épületek, T = domborzat, J = munkák, G = Google nézet.",
-                "A Sketcher Helyszín nézete is ezt a térképet használja, a relén át.",
+                "Első megnyitáskor a telefon letölti az oldalt (GitHub belépés kell) és a térképmotort; utána offline is nyílik.",
+                "Párosított PC-vel (START → M fut) a „PC adat” jelzés látszik: a PC térképe és a Munkák gomb a relén át. A munkák adata nem marad a telefonon.",
+                "PC nélkül az „Internet” jelzés: a térkép az internetről jön, és amit egyszer megnéztél, a helyszínen offline is megjelenik.",
+                "A ◎ gomb a saját helyed (csak a térképen látszik). A lila pöttyök a Vázlatok helyszínei.",
+                "Munka vagy helyszín kártyáján a Navigáció a navigációs alkalmazásnak csak a koordinátát és a kódot adja át, a címet nem.",
             ),
-            needs = "internet",
+            needs = "internet az első letöltéshez; a munkákhoz a PC reléje (párosítva)",
             pair = "Asztal: VRG Térkép (START M)",
         ),
         GuidePage(
