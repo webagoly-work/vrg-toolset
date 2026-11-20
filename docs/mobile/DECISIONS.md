@@ -440,6 +440,17 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
   swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
 
+- **D-48 · ◢ opens the layers, not the Rétegverem page (VIS-Q5), 2026-11-20.** The Founder: a short tap on the dock's
+  ◢ should not open the layers view; it opens a menu like ◣, every layer as a row in the stack's vertical order, the
+  Rétegek (all layers) view as the last row, and a layer row opens that layer's one view. The same on the Asztal's ◢
+  column, which drops Konnektóm and Holo (Labor shelf, VIS-Q5). Asked in the session: the layers whose pages live on
+  the PC's Stack server get **published too** (`publish-stack.js` bundles lineage, decisions, metro, control, runs,
+  commits as optional pages of `stack-pages`). Chosen in the session: `StackMenu.ROWS` in kit-core (tested: order,
+  Rétegek last, every target real); a row opens `vrg://stack/<page>` through the feature's `open(route)`, C and G open
+  Kódváros and Gömb, F and Z are dimmed with the reason (F is the Asztal's Áttekintés, Z has no view yet); the layer
+  pages are optional in `stack/meta.json`, so a publish from before them still loads and a missing layer says how to
+  publish it. The Rétegverem screen keeps its three 3D chips, plus the open layer page's chip while it is shown.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

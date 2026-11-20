@@ -49,6 +49,7 @@ import hu.vrg.mobile.core.GitHubUrls
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.StackMeta
 import hu.vrg.mobile.core.StackPages
+import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.core.StackSync
 import hu.vrg.mobile.core.VrgRepo
 import hu.vrg.mobile.kit.FeatureHost
@@ -132,6 +133,13 @@ object StackFeature : VrgFeature {
     private fun local(): StackMeta? = try { file(StackPages.META).takeIf { it.exists() }?.readText()?.let { StackMeta.parse(it) } } catch (e: Exception) { null }
     private fun have(): Map<String, Long> = StackPages.PAGES.associate { it.file to (file(it.file).takeIf { f -> f.isFile }?.length() ?: -1L) }
 
+    /** vrg://stack/<page> opens that page: the ◢ dial's layer rows (VIS-Q5) come in this way. */
+    override fun open(route: Route): Boolean {
+        val id = route.path.trim('/')
+        if (id.isNotEmpty()) choose(id)
+        return true
+    }
+
     fun choose(id: String) {
         val p = StackPages.page(id)
         if (p == page.value) return
@@ -186,7 +194,7 @@ object StackFeature : VrgFeature {
         var before = 0L
         val started = System.currentTimeMillis()
         val parts = mutableListOf<Pair<File, File>>()
-        for (p in StackPages.PAGES) {
+        for (p in meta.pages()) {                        // the 3D pages always, a layer page when the PC published it
             val want = meta.bytes(p)
             val part = file(p.file + ".part")
             val got = GitHub.download(GitHubUrls.API + StackPages.contents(VrgRepo.PATH, p.file), part, RAW) { done ->
@@ -307,7 +315,8 @@ object StackFeature : VrgFeature {
                         modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
                     Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f))
-                    StackPages.PAGES.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
+                    // the three 3D pages; a layer page (opened from the ◢ dial) shows as a fourth chip while it is on screen
+                    StackPages.PAGES.filter { !it.optional || it == current }.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
                     VrgChip(if (loading) "…" else "⟳") { refresh() }
                     if (meta != null) VrgChip("⛶") { full.value = true }
                 }
@@ -327,6 +336,9 @@ object StackFeature : VrgFeature {
                 val m = meta
                 if (m == null) {
                     Text(if (loading) "Betöltés…" else "Itt jelenik meg a Rétegverem.", style = Melyviz.small)
+                } else if (m.bytes(current) <= 0L) {
+                    Text("${current.title}: ez a réteg még nincs a telefonon. A PC-n egy közzététel hozza át: node Mobile/stack/publish-stack.js --push",
+                        style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(16.dp))
                 } else {
                     val url = pageUrl(current.file)
                     AndroidView(

@@ -33,12 +33,12 @@ test('◣ tree: Munka splits into Tervezés · Árazás · Anyag; every leaf ope
   assert.ok(!leaves.some(l => cat.get(l.id) && cat.get(l.id).level !== 'user'), 'no dev item in the user tree');
 });
 
-test('◢ dial: User shows F, I, Q and Keresés; Dev all ten layers in order, then Konnektóm · Holo · Rétegek · Keresés', () => {
+test('◢ dial: User shows F, I, Q and Keresés; Dev all ten layers top to bottom, then Keresés, Rétegek last (VIS-Q5)', () => {
   const u = D.stackDial(cat.listFor('user')).children;
   assert.deepEqual(u.map(r => r.layer || r.id), ['F', 'I', 'Q', 'stack.search']);
   const d = D.stackDial(cat.listFor('dev')).children;
   assert.deepEqual(d.filter(r => r.layer).map(r => r.layer), D.LAYERS);
-  assert.deepEqual(d.filter(r => !r.layer).map(r => r.id), ['stack.connectome', 'stack.orb', 'stack.layers', 'stack.search']);
+  assert.deepEqual(d.filter(r => !r.layer).map(r => r.id), ['stack.search', 'stack.layers']);
   assert.equal(d.find(r => r.layer === 'Z').opens, false, 'Z is machine-only: shown, not openable');
 });
 

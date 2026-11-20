@@ -46,7 +46,7 @@ VRG Desktop.exe  (Electron 44.7.1 portable, one instance, frameless, default win
     │    workspace    empty Mélyvíz ground — or the open windows (the existing layout: tabs, splits, panes) when something is open
     │    bottom dock  pinned User apps + running windows (Dev: dev items after a divider) + "show desktop"
     │    ◣ Sarokvezérlő  main menu by function: Munka · Alkalmazások · Fájlok · Rendszer (Dev: + Fejlesztés), ≤ 5 rows, breadcrumb, type-to-search
-    │    ◢ Rétegverem dial  the same component mirrored: the layers F I Q L A U R C G Z + Konnektóm · Holo · Rétegek · Keresés (User: F I Q + Keresés)
+    │    ◢ Rétegverem dial  the same component mirrored: the layers F I Q L A U R C G Z top to bottom, then Keresés, Rétegek last (User: F I Q + Keresés; VIS-Q5, 2026-11-20)
     ├ toggle: double Tab (≤ 350 ms, not in a text field or terminal) · double-click on empty background · the corner toggle button
     └ everything opens INSIDE, on the Desktop view's workspace:
          HTML apps → an in-shell window on  vrg-app://<catalog-id>/<repo path>  (a real origin: localStorage works; only that

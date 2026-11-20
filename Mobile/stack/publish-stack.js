@@ -13,6 +13,8 @@
 //
 // What it bundles (each page becomes ONE self-contained HTML file; the phone loads nothing else):
 //   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html     layers.html -> stack/retegek.html
+//   and the layer pages (optional, VIS-Q5): lineage -> otletfolyam, decisions -> dontesek, metro -> vonalak,
+//   control -> vezerloterem, runs -> futasnaplo, commits -> commitok
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
 //   The data is node ids, titles, kinds, sizes, times and links; never a file's content. The repo is private.
@@ -83,6 +85,46 @@ function bundle(stack, repo, page) {
   return { html, data };
 }
 
+// The layer pages (VIS-Q5, 2026-11-20): the ◢ dial on the phone opens one view per layer. Each page reads its own
+// out/<name>-data.js plus kit CSS and JS by relative path; all of it is inlined (fonts as data: URIs). A page whose
+// data the PC has not built is left out of the publish; the phone treats these pages as optional.
+const LAYER_PAGES = [
+  ['lineage.html', 'otletfolyam.html'], ['decisions.html', 'dontesek.html'], ['metro.html', 'vonalak.html'],
+  ['control.html', 'vezerloterem.html'], ['runs.html', 'futasnaplo.html'], ['commits.html', 'commitok.html'],
+];
+const PHONE_NAME = Object.fromEntries([['connectome.html', 'konnektom.html'], ['orb.html', 'holo.html'], ['layers.html', 'retegek.html'], ...LAYER_PAGES]);
+const MIME = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.svg': 'image/svg+xml', '.png': 'image/png' };
+
+function bundleLayer(stack, page) {
+  const at = f => path.resolve(stack, f);
+  let html = fs.readFileSync(at(page), 'utf8');
+  const missing = [];
+  html = html.replace(/<link rel="stylesheet" href="([^"]+)">/g, (m, href) => {
+    const f = at(href);
+    if (!fs.existsSync(f)) { missing.push(href); return m; }
+    const sheet = fs.readFileSync(f, 'utf8').replace(/url\(\s*["']?([^"')]+)["']?\s*\)/g, (u, ref) => {
+      if (/^(data:|https?:|#)/.test(ref)) return u;
+      const rf = path.resolve(path.dirname(f), ref);
+      if (!fs.existsSync(rf)) return u;
+      return `url("data:${MIME[path.extname(rf).toLowerCase()] || 'application/octet-stream'};base64,${fs.readFileSync(rf).toString('base64')}")`;
+    });
+    return `<style>/* ${href} */\n${css(sheet)}\n</style>`;
+  });
+  let first = true;
+  html = html.replace(/<script src="([^"]+)"><\/script>/g, (m, src) => {
+    const f = at(src);
+    if (!fs.existsSync(f)) { missing.push(src); return m; }
+    const pre = first ? '<script>window.STACK_BUNDLE = true;</script>\n' : '';
+    first = false;
+    return `${pre}<script>/* ${src} */\n${js(fs.readFileSync(f, 'utf8'))}</script>`;
+  });
+  // links between stack pages point at the names the phone keeps them under
+  html = html.replace(/href="([a-z-]+\.html)((?:#|\?)[^"]*)?"/g, (m, f, rest) => PHONE_NAME[f] ? `href="${PHONE_NAME[f]}${rest || ''}"` : m);
+  if (missing.length) return { missing };
+  if (/<script src=|<link rel="stylesheet"/.test(html)) throw new Error(page + ': something external is still linked');
+  return { html };
+}
+
 function git(repo, argv, input) {
   return execFileSync('git', argv, { cwd: repo, input, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
 }
@@ -95,6 +137,11 @@ function main() {
   const kon = bundle(a.stack, a.repo, 'connectome.html'), holo = bundle(a.stack, a.repo, 'orb.html'), ret = bundle(a.stack, a.repo, 'layers.html');
   const D = JSON.parse(kon.data.slice(kon.data.indexOf('=') + 1).trim().replace(/;\s*$/, ''));
   const files = { 'konnektom.html': kon.html, 'holo.html': holo.html, 'retegek.html': ret.html };
+  for (const [page, name] of LAYER_PAGES) {
+    const b = bundleLayer(a.stack, page);
+    if (b.missing) console.log(`${page}: left out (missing ${b.missing.join(', ')}; run: node stack.js build)`);
+    else files[name] = b.html;
+  }
   const meta = {
     kind: 'vrg-stack-meta', generated: D.generated, stackGenerated: D.stackGenerated, published: new Date().toISOString(),
     nodes: D.nodes.length, points: D.neurons, lines: (D.lines || []).length,
@@ -104,9 +151,9 @@ function main() {
   fs.writeFileSync(path.join(out, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   fs.writeFileSync(path.join(out, 'README.md'), README);
 
-  // the commit: README.md + stack/{konnektom.html, holo.html, retegek.html, meta.json}
+  // the commit: README.md + stack/{konnektom.html, holo.html, retegek.html, the layer pages, meta.json}
   const blob = f => git(a.repo, ['hash-object', '-w', '--', f]);
-  const sub = git(a.repo, ['mktree'], ['holo.html', 'konnektom.html', 'meta.json', 'retegek.html'].map(f => `100644 blob ${blob(path.join(out, f))}\t${f}`).join('\n') + '\n');
+  const sub = git(a.repo, ['mktree'], Object.keys(files).concat('meta.json').sort().map(f => `100644 blob ${blob(path.join(out, f))}\t${f}`).join('\n') + '\n');
   const root = git(a.repo, ['mktree'], `100644 blob ${blob(path.join(out, 'README.md'))}\tREADME.md\n040000 tree ${sub}\tstack\n`);
   const env = { ...process.env, GIT_AUTHOR_NAME: 'VRG Stack', GIT_AUTHOR_EMAIL: 'stack@vrg.local', GIT_COMMITTER_NAME: 'VRG Stack', GIT_COMMITTER_EMAIL: 'stack@vrg.local' };
   const commit = execFileSync('git', ['commit-tree', root, '-m', `stack-pages: ${meta.nodes} nodes, data ${meta.generated}`], { cwd: a.repo, env, encoding: 'utf8' }).trim();
@@ -124,4 +171,4 @@ function main() {
 if (require.main === module) {
   try { main(); } catch (e) { console.error('publish-stack: ' + e.message); process.exit(1); }
 }
-module.exports = { bundle, js };
+module.exports = { bundle, bundleLayer, LAYER_PAGES, js };

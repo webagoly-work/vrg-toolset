@@ -12,11 +12,19 @@ object StackPages {
     const val DIR = "stack"
     const val META = "meta.json"
 
-    /** The three pages, in the order of the chips. Ids are stable: settings and deep links use them. */
+    /** The pages, in the order of the chips. Ids are stable: settings and deep links (vrg://stack/<id>) use them.
+     *  The first three are in every publish; the layer pages (VIS-Q5, 2026-11-20) are optional, so a publish made
+     *  before them still loads and a layer whose data was missing on the PC is simply not offered. */
     val PAGES = listOf(
         StackPage("konnektom", "Konnektóm", "konnektom.html"),
         StackPage("holo", "Holo", "holo.html"),
         StackPage("retegek", "Rétegek", "retegek.html"),
+        StackPage("otletfolyam", "Ötletfolyam", "otletfolyam.html", optional = true),
+        StackPage("dontesek", "Döntésnapló", "dontesek.html", optional = true),
+        StackPage("vonalak", "Vonaltérkép", "vonalak.html", optional = true),
+        StackPage("vezerloterem", "Vezérlőterem", "vezerloterem.html", optional = true),
+        StackPage("futasnaplo", "Futásnapló", "futasnaplo.html", optional = true),
+        StackPage("commitok", "Commit-pixel", "commitok.html", optional = true),
     )
 
     fun page(id: String?): StackPage = PAGES.firstOrNull { it.id == id } ?: PAGES.first()
@@ -26,7 +34,43 @@ object StackPages {
     fun contents(repoPath: String, file: String) = "$repoPath/contents/$DIR/$file?ref=$BRANCH"
 }
 
-data class StackPage(val id: String, val title: String, val file: String)
+data class StackPage(val id: String, val title: String, val file: String, val optional: Boolean = false)
+
+/** The ◢ dial on the phone's dock (VIS-Q5): every layer of the stack, top to bottom as the Desktop's ◢ lists them
+ *  (F I Q L A U R C G Z), each opening the one view of that layer, and Rétegek (all layers at once) as the last row. */
+object StackMenu {
+    sealed interface Target {
+        /** A page of the Rétegverem feature (vrg://stack/<page>). */
+        data class Page(val page: String) : Target
+        /** Another feature on the phone. */
+        data class Feature(val id: String) : Target
+        /** No view on the phone; [why] says where it is. */
+        data class None(val why: String) : Target
+    }
+
+    data class Row(val layer: String, val title: String, val target: Target)
+
+    val ROWS = listOf(
+        Row("F", "Kiemelt", Target.None("az Asztal Áttekintés nézete")),
+        Row("I", "Ötletfolyam", Target.Page("otletfolyam")),
+        Row("Q", "Döntésnapló", Target.Page("dontesek")),
+        Row("L", "Vonaltérkép", Target.Page("vonalak")),
+        Row("A", "Vezérlőterem", Target.Page("vezerloterem")),
+        Row("U", "Futásnapló", Target.Page("futasnaplo")),
+        Row("R", "Commit-pixel", Target.Page("commitok")),
+        Row("C", "Kódváros", Target.Feature(Catalogue.CITY.id)),
+        Row("G", "Gömb", Target.Feature(Catalogue.SPHERE.id)),
+        Row("Z", "Kódex", Target.None("még nincs nézete")),
+        Row("", "Rétegek", Target.Page("retegek")),
+    )
+
+    /** A layer page that is not in the phone's copy yet: the row says so instead of opening an empty screen. */
+    fun available(row: Row, meta: StackMeta?): Boolean = when (val t = row.target) {
+        is Target.Page -> meta == null || meta.bytes(StackPages.page(t.page)) > 0L || !StackPages.page(t.page).optional
+        is Target.Feature -> true
+        is Target.None -> false
+    }
+}
 
 /** stack/meta.json, as publish-stack.js writes it. */
 data class StackMeta(
@@ -50,6 +94,8 @@ data class StackMeta(
     val generatedLabel: String get() = generated.take(16).replace('T', ' ')
 
     fun bytes(page: StackPage): Long = files[page.file] ?: 0L
+    /** The pages this publish has: the three 3D pages always, the layer pages when the PC had their data. */
+    fun pages(): List<StackPage> = StackPages.PAGES.filter { bytes(it) > 0L }
 
     companion object {
         const val KIND = "vrg-stack-meta"
@@ -61,7 +107,7 @@ data class StackMeta(
                 val fo = o.optJSONObject("files") ?: JSONObject()
                 val files = fo.keys().asSequence().associateWith { fo.optLong(it) }
                 StackMeta(o.optString("generated"), o.optString("published"), o.optInt("nodes"), o.optInt("points"), o.optInt("lines"), files)
-                    .takeIf { it.published.isNotEmpty() && StackPages.PAGES.all { p -> (files[p.file] ?: 0L) > 0L } }
+                    .takeIf { it.published.isNotEmpty() && StackPages.PAGES.filter { p -> !p.optional }.all { p -> (files[p.file] ?: 0L) > 0L } }
             }
         } catch (e: Exception) { null }
     }
@@ -84,7 +130,7 @@ sealed interface StackSync {
             !answered -> Offline
             remote == null -> Missing
             local != null && local.published == remote.published &&
-                StackPages.PAGES.all { have[it.file] == remote.bytes(it) } -> Fresh
+                StackPages.PAGES.filter { remote.bytes(it) > 0L }.all { have[it.file] == remote.bytes(it) } -> Fresh
             else -> Download(remote)
         }
     }

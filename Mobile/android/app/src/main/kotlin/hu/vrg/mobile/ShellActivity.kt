@@ -199,6 +199,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         closeWindow = { id -> windows = windows - id },
         closeOthers = { keep -> windows = windows.filter { it == keep } },
         openApp = { id -> openRoute(Route(Catalogue.APPS.id, id)) },
+        openRoute = { r -> openRoute(r) },
         describe = { id -> catalogAt = id },
         scan = { PairFeature.scan(); open(Catalogue.PAIR.id) })
 

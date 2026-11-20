@@ -43,4 +43,32 @@ class StackTest {
         assertIs<StackSync.Download>(StackSync.decide(m, have - "holo.html", m, answered = true))
         assertIs<StackSync.Download>(StackSync.decide(m, have, m.copy(published = "2026-11-08T00:00:00Z"), answered = true))
     }
+
+    @Test fun layerPagesAreOptional() {
+        val m = StackMeta.parse(json)!!                         // a publish from before the layer pages
+        assertEquals(listOf("konnektom", "holo", "retegek"), m.pages().map { it.id })
+        val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
+        assertIs<StackSync.Fresh>(StackSync.decide(m, have, m, answered = true))
+        val withLayers = m.copy(files = m.files + ("dontesek.html" to 90000L))
+        assertIs<StackSync.Download>(StackSync.decide(m, have, withLayers, answered = true))
+        assertIs<StackSync.Fresh>(StackSync.decide(withLayers, have + ("dontesek.html" to 90000L), withLayers, answered = true))
+        assertEquals("dontesek", StackPages.byFile("dontesek.html")?.id)
+    }
+
+    @Test fun stackMenuIsTheLayersTopToBottomWithRetegekLast() {
+        val rows = StackMenu.ROWS
+        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "Z", ""), rows.map { it.layer })
+        assertEquals("Rétegek", rows.last().title)
+        rows.forEach { r ->                                      // every page target is a real page id
+            val t = r.target
+            if (t is StackMenu.Target.Page) assertEquals(t.page, StackPages.page(t.page).id)
+            if (t is StackMenu.Target.Feature) assertEquals(t.id, Catalogue.byId(t.id)?.id)
+        }
+        val old = StackMeta.parse(json)!!
+        val dontesek = rows.first { it.layer == "Q" }
+        assertEquals(false, StackMenu.available(dontesek, old), "not published yet: the row says so")
+        assertEquals(true, StackMenu.available(dontesek, old.copy(files = old.files + ("dontesek.html" to 1L))))
+        assertEquals(true, StackMenu.available(rows.last(), old))
+        assertEquals(false, StackMenu.available(rows.first { it.layer == "Z" }, old))
+    }
 }

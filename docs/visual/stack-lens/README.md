@@ -199,3 +199,16 @@ reading keeps them.
   answered before SL1, or the next session builds the wrong Viewer.
 - **Privacy.** G holds job documents with client names. The page needs the same redaction switch as the
   Munkavászon (Kitakarás) before any screenshot leaves the PC.
+
+## Answers (2026-11-20)
+
+| Id | Answer |
+|---|---|
+| **STL-Q1** Name | **B · Érintésnyom** (the lit-paths view; "Rétegfény" above is the study's working name for it) |
+| **STL-Q2** What goes to Labor | Answered with a direction: the ◢ Stack button opens a menu of the layers top to bottom (Rétegek last), each layer opening its own view. That layer menu is the **base outline of the whole Stack**; the session-workflow visualizer (Érintésnyom, fed by the Munkavászon's spine) sits **on top of it**. Built the same day on the Asztal and VRG Mobile (D-48). |
+| **STL-Q3** The byte-particle Viewer (S9/S10) | **B · build both**: Érintésnyom at node level on the kit `layerstack` (SVG) and the WebGL2 byte-particle Viewer |
+| **STL-Q4** Live source | **A · the event spine** (`SessionCanvas/serve.js`, call level, subagents) |
+| **STL-Q5** Inferred links | **B, with a condition:** inferred matches light too, dimmer and **in another colour**, and stored **separately in the data**, so the exact (real) lines can always be extracted on their own |
+| **STL-Q6** Where it lives | Settled by the STL-Q2 answer: on top of the ◢ layer menu and the Rétegek view |
+| **STL-Q7** First use beyond live work | **A · Forecast** as the primary, with **B · a decision's blast radius** wanted as well |
+

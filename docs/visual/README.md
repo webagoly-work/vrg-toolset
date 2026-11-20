@@ -267,6 +267,12 @@ V0–V1 fit inside the Overhaul's P1 (registry), V3 inside P4 (one visual system
 reason to exist. The island (V4) waits for the fork's reassessment; it may become the Viewer's top layer
 rather than a separate board.
 
+**The fork's answers (STL-Q1…Q7, `stack-lens/README.md`).** The lit-paths view is **Érintésnyom**; the ◢ Stack
+button now opens the layers top to bottom with Rétegek last on the Asztal and the phone (D-48), which is the
+base outline of the Stack; Érintésnyom sits on top of it, fed by the event spine; inferred links light dimmer and in
+another colour, kept apart in the data; both the SVG view and the WebGL byte-particle Viewer get built; Forecast
+first, a decision's blast radius next.
+
 ## 9. Motion and controls (summary; the full spec is in `latoter.html`, tab *Mozgás*)
 
 - **Timing from the kit:** press 80 ms (`--vk-dur-1`), hover and chips 150 ms, lens change 240 ms,

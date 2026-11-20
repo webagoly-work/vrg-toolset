@@ -4,7 +4,7 @@
 //   boot({ authEnabled })          the boot steps: ['splash', 'gate'?, 'ready']
 //   sections(list, level, defs)    the Dashboard view's sections from catalog.listFor(level)
 //   suiTree(list, level, groups)   the ◣ Sarokvezérlő menu tree, by function
-//   stackDial(list)                the ◢ Rétegverem dial's rows: layers F I Q L A U R C G Z, then the pages
+//   stackDial(list)                the ◢ Rétegverem dial's rows: layers F I Q L A U R C G Z (top to bottom), then Keresés, Rétegek last
 //   dock(list, level, pinned, running)   the bottom dock: pinned User apps, (Dev) a divider + dev items, then running windows
 //   topStrip(list, chosen)         the top strip: built-in widgets + catalog shortcuts, in the chosen order
 (function (root, factory) {
@@ -16,7 +16,9 @@
   const RANK = { user: 0, dev: 1, all: 2 };
   const VIEWS = ['dashboard', 'desktop'];
   const LAYERS = ['F', 'I', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'Z'];
-  const STACK_PAGES = ['stack.connectome', 'stack.orb', 'stack.layers', 'stack.search'];
+  // VIS-Q5 (2026-11-20): the layers top to bottom, then search, and the Rétegek (all layers) view as the last row;
+  // Konnektóm and Holo went to the Labor shelf and are no longer offered here
+  const STACK_PAGES = ['stack.search', 'stack.layers'];
   const GROUP_ORDER = ['munka', 'alkalmazasok', 'fajlok', 'rendszer', 'fejlesztes'];
   const DEFAULT_TOGGLE = { key: 'Tab', ms: 350 };
   const MAX_DOCK = 16, MAX_TOP = 12;
