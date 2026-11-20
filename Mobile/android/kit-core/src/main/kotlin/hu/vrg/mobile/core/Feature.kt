@@ -183,8 +183,8 @@ object Catalogue {
         "⛅", Group.WORK, Stage.PLANNED, "M44", setOf(Need.INTERNET),
     )
     val VAULT = FeatureInfo(
-        "vault", "Vault", "Titkosított személyes adattár, telefonok jóváhagyása QR-kóddal (a Proton Vault útja).",
-        "🔒", Group.APP, Stage.PLANNED, "M45", setOf(Need.INTERNET, Need.GITHUB),
+        "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",
+        "🔒", Group.APP, Stage.BETA, "M45", setOf(Need.INTERNET),
     )
     val CATALOG = FeatureInfo(
         "catalog", "Katalógus", "Minden program, funkció és eszköz egy-egy lapon, a telefonon és az Asztalon: új felhasználóknak.",

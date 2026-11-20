@@ -158,15 +158,14 @@ object CatalogGuide {
         ),
         GuidePage(
             id = "vault", title = "Vault", glyph = "🔒", side = GuideSide.PHONE,
-            what = "Titkosított személyes adattár (Proton Vault), külön repóban. Hozzáférést a telefonok kapnak, QR-kódos jóváhagyással.",
+            what = "A titkosított személyes adattár (Proton Vault) saját webes felülete, a VRG Mobile-on belül. A titkosítás a Vaulté: a VRG Mobile nem lát bele.",
             how = listOf(
-                "A telefonon még tervben van; a csempe a tervet mutatja.",
-                "Minden telefonnak saját azonosítója és kulcsa van.",
-                "Egy új telefon QR-kóddal kér hozzáférést. A tulajdonos telefonja szemmel ellenőrzi a kódot, és felveszi a listára.",
-                "A válasz egy engedély, amit csak a kérő telefon tud kinyitni.",
-                "Az Eszközök oldal ma is pontosan így engedi be a telefonokat.",
+                "Első megnyitáskor a Vault ezt a telefont új eszközként látja: a Vaultban QR-kóddal kérsz hozzáférést, a tulajdonos telefonja jóváhagyja.",
+                "Ez a jóváhagyás külön van az Eszközöktől: a VRG Mobile-ba engedett telefon még nem látja a Vaultot.",
+                "⚙: a Vault címe, egy üzenetben kapott Vault-link megnyitása itt, és a Vault adatainak törlése a telefonról.",
+                "Képernyőkép és képernyőmegosztás a Vault oldalán tiltva; letöltést nem ment a közös tárhelyre.",
             ),
-            needs = "internet és GitHub belépés",
+            needs = "internet",
         ),
 
         // 5 · Archívum · Claude

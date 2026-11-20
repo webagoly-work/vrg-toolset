@@ -94,6 +94,8 @@ What changes locally compared with the cloud:
 - **M38** Kezdőlap lapok + Katalógus built 2026-11-19 (cloud session, D-47), **BETA**: the home in numbered pages, the
   one-page view on ⌂'s long press, the Katalógus; M39–M41 tiles for the Planner, the calculators and Készlet; M42–M45
   (Workflow Kit, Térkép, Időjárás, Vault) planned. `docs/mobile/WP/M38.md` → "Telefonon ellenőrizni".
+- **M45** Vault built 2026-11-20 (cloud session, D-48 = A, D-49 = A), **BETA**: the Proton Vault's own web app inside the
+  app, with its own device approval. `docs/mobile/WP/M45.md` → "Telefonon ellenőrizni" (step 1 may need the Vault's address).
 
 ## 3. What the user asked for, mapped to WPs
 

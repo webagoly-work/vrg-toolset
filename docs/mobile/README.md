@@ -61,7 +61,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M42** | Varler Workflow Kit (`workflow`) | **PLANNED** (2026-11-19): the office path on the phone | — | — |
 | **M43** | VRG Térkép (`map`) | **PLANNED** (2026-11-19) | — | — |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
-| **M45** | Vault (`vault`) | **PLANNED** (2026-11-19) | — | — |
+| **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

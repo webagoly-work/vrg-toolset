@@ -440,6 +440,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
   swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
 
+- **D-48 · Vault: what it is on the phone (M45), 2026-11-20.** Asked: three options; the Founder chose **A**, with a
+  reminder for B. Chosen: **A** — the Vault's own web app (`webagoly-work/data-vault`) in a confined WebView inside VRG
+  Mobile: its own crypto, no vault key and no decryption in VRG Mobile, nothing written to shared storage, FLAG_SECURE,
+  requests only to its origin and GitHub (`kit-core VaultWeb`). Rejected for now: **B** a native reader of the vault in
+  Kotlin (re-implements the Vault's crypto, needs the data-vault repo in the session; kept as a later step); **C** only
+  a link to the browser (the browser holds the device key, outside the app's lock).
+- **D-49 · Vault: its approval is separate from Eszközök (M35), 2026-11-20.** Asked: the Founder chose **A**. The Vault
+  page keeps its own device key and its own QR approval (PV-D11 / PV-D12); an Eszközök approval does not open the vault
+  and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
+  web page, and every phone let into VRG Mobile reaching the secrets).
+  Details: `WP/M45.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
