@@ -3,6 +3,31 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "lite-terepkeszlet",
+      "title": "Lite terepkészlet",
+      "created": "2026-11-20",
+      "updated": "2026-11-20",
+      "lang": "hu",
+      "vrg": true,
+      "group": "Field work",
+      "kind": "tool",
+      "summary": "Villanyszerelő terepkészlet-választó: hat kategória (szerszám, mérés, gép, szerelési anyag, fogyóanyag, védelem), 3–12 darabig minden darabszámra egy kész válogatás, kipipálható csomaglistával és becsült tömeggel.",
+      "purpose": "Hogy könnyű, táskás terepmunkára (gyalog megközelíthető cím) gyorsan összeálljon, mit vigyen, ha kategóriánként csak X darab fér.",
+      "context": [
+        "Budai vári munka: GU10 foglalat, kötődoboz, E27 izzó, csengőnyomó csere; autóval nem megközelíthető cím",
+        "Előtte: táskalista, árbecslés a VarlerÁron árlistából, 42 000 Ft-os AAM díjbekérő"
+      ],
+      "tags": [
+        "terepmunka",
+        "csomaglista",
+        "szerszám",
+        "lite",
+        "interactive"
+      ],
+      "file": "files/lite-terepkeszlet.html",
+      "url": "https://claude.ai/artifact/T3RxzdtuUB2hs1TwVpNvht"
+    },
+    {
       "id": "vrg-latoter",
       "title": "VRG Látótér",
       "created": "2026-11-20",

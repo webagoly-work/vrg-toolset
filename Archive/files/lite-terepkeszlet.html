@@ -1,0 +1,433 @@
+<title>Lite terepkészlet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: left third = category steppers stacked vertically, right two thirds = the packing note with checkboxes.
+   Mélyvíz (VRG dev-side style, shared/melyviz.css): one deliberate dark look, square controls, hairlines, ice = you/selection, warm = changed. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .15); --line-strong: rgba(232, 240, 246, .34);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #646d74;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .14); --accent-glow: rgba(147, 211, 230, .5);
+  --warm: #e8a873; --warm-soft: rgba(232, 168, 115, .14);
+  --ok: #8bcca1; --crit: #e4877d;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, "SF Mono", Menlo, monospace;
+  --voice: Bahnschrift, "DIN Alternate", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --sans: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --cut: 6px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg) linear-gradient(var(--horizon), var(--bg) 320px) no-repeat;
+  color: var(--text); font: 14px/1.5 var(--sans);
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+h1, h2, h3 { font-family: var(--voice); font-stretch: 75%; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.label { font: 10.5px var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--dim); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button, input { font: inherit; color: var(--text); border-radius: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; border-bottom: 1px solid var(--line-strong); padding-bottom: 12px; }
+header.top h1 { font-size: 30px; line-height: 1; }
+header.top p { margin: 6px 0 0; color: var(--dim); max-width: 62ch; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { border: 1px solid var(--line-strong); background: var(--panel); }
+.cut { clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+
+/* left column */
+.side { display: flex; flex-direction: column; gap: 10px; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn { background: none; border: 1px solid var(--line-strong); padding: 5px 11px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.cat { padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
+.cat h2 { font-size: 17px; }
+.cat .desc { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; line-height: 1.4; }
+.step { display: flex; align-items: stretch; }
+.step button { width: 34px; height: 36px; background: var(--raised); border: 1px solid var(--line-strong); cursor: pointer; font-size: 18px; line-height: 1; }
+.step button:hover { border-color: var(--accent); }
+.step input { width: 48px; height: 36px; text-align: center; background: var(--bg); border: 1px solid var(--line-strong); border-left: 0; border-right: 0; font: 600 16px var(--mono); -moz-appearance: textfield; appearance: textfield; }
+.step input::-webkit-outer-spin-button, .step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.step input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 3px var(--accent-glow); }
+.ticks { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 2px; }
+.ticks i { height: 5px; background: var(--line); }
+.ticks i.on { background: var(--accent); }
+.cat.off h2, .cat.off .desc { color: var(--faint); }
+.hint { grid-column: 1 / -1; color: var(--warm); font-size: 12px; min-height: 0; }
+.hint:empty { display: none; }
+
+.go { width: 100%; padding: 12px; font: 700 18px var(--voice); font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); cursor: pointer; }
+.go:hover { box-shadow: 0 0 3px var(--accent-glow); }
+.go.stale { color: var(--warm); border-color: var(--warm); background: var(--warm-soft); }
+.side .foot { color: var(--faint); font-size: 12px; line-height: 1.45; }
+
+/* right: the note */
+.note { padding: 16px 18px 20px; min-width: 0; }
+.note-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.note-head h2 { font-size: 22px; }
+.totals { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { font: 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); color: var(--dim); white-space: nowrap; }
+.badge.ok { color: var(--ok); border-color: var(--ok); }
+.badge.warm { color: var(--warm); border-color: var(--warm); }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.stale-msg { margin-top: 10px; color: var(--warm); font-size: 13px; }
+.stale-msg[hidden] { display: none; }
+.sec { margin-top: 18px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.sec-head h3 { font-size: 18px; }
+.sec-head .meta { font: 12px var(--mono); color: var(--dim); }
+.delta { margin: 4px 0 8px; color: var(--dim); font-size: 12.5px; }
+.delta b { color: var(--warm); font-weight: 600; }
+.delta s { color: var(--faint); }
+ul.items { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+ul.items li { border-bottom: 1px solid var(--line); }
+ul.items label { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 2px; cursor: pointer; align-items: start; }
+ul.items input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent); cursor: pointer; }
+ul.items .n { font-weight: 600; }
+ul.items .d { grid-column: 2 / 3; color: var(--dim); font-size: 12.5px; line-height: 1.4; }
+ul.items .g { grid-row: 1; grid-column: 3; font: 11.5px var(--mono); color: var(--faint); white-space: nowrap; padding-top: 2px; }
+ul.items li.new .n::after { content: "új"; margin-left: 8px; font: 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--warm); border: 1px solid var(--warm); padding: 0 4px; vertical-align: 2px; }
+ul.items input:checked ~ .n { color: var(--faint); text-decoration: line-through; }
+ul.items input:checked ~ .d { color: var(--faint); }
+.empty { color: var(--faint); margin-top: 18px; }
+.copied { color: var(--ok); font: 12px var(--mono); align-self: center; }
+textarea.fallback { width: 100%; height: 160px; margin-top: 10px; background: var(--bg); color: var(--text); border: 1px solid var(--line-strong); font: 12px var(--mono); }
+@media (prefers-reduced-motion: no-preference) { .note { transition: opacity .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="label">VRG · terepmunka · Varler</div>
+      <h1>Lite terepkészlet</h1>
+      <p>Ha kategóriánként csak X darabot vihetsz: kategóriánként 3–12 darabig minden darabszámra egy kész, kiegyensúlyozott válogatás. Kisebb darabszámnál a többfunkciós darabok nyernek, nagyobbnál szétválnak.</p>
+    </div>
+    <div class="presets" role="group" aria-label="Előbeállítások">
+      <button class="btn" type="button" id="pr-bag" data-preset="bag">Táskás (Budai vár)</button>
+      <button class="btn" type="button" id="pr-min" data-preset="min">Minimum 3-asával</button>
+      <button class="btn" type="button" id="pr-mid" data-preset="mid">Közepes</button>
+      <button class="btn" type="button" id="pr-max" data-preset="max">Teljes 12-esével</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside class="side" id="side" aria-label="Darabszám kategóriánként"></aside>
+    <section class="note panel cut" id="note" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+/* ---------- data: every item once, then one hand-picked list per category per count ---------- */
+const CATS = [
+ { id:'sz', name:'Szerszámok', desc:'Kéziszerszám, szigetelt (VDE) ahol feszültség közelébe kerül.',
+   items:{
+    blade:['Cserélhető pengés VDE csavarhúzó, 6 penge','lapos 2,5 / 3,5 / 5,5, PH1, PH2, PZ2; egy nyél, a vékony pengék a süllyesztett sorkapcsokba is beférnek',250],
+    multi:['VDE villanyszerelő multifogó','fog, vág, blankol 0,75–2,5 mm²-ig; egy fogó három helyett',200],
+    knife:['VDE kábelkés (köpenybontó)','MBCu/NYM köpeny bontása, régi szigetelés lefejtése',80],
+    needle:['VDE hosszú csőrű fogó','szűk dobozban, lámpatestben fogás; szemhajlítás csavaros kötéshez',170],
+    flat35:['VDE lapos csavarhúzó, 3,5 mm','a leggyakrabban kézbe vett darab: sorkapocs, WAGO-nyitás, emelés',60],
+    strip:['Automata blankoló','0,2–6 mm² beállítás nélkül, vágóéllel',180],
+    cutter:['VDE oldalcsípő','vezetékvágás, kötegelő levágása',180],
+    crimp:['Érvéghüvely-krimpelő, önbeálló','0,25–6 mm²; sodrott ér csavaros sorkapocsba (kismegszakító, kapcsoló)',450],
+    pm:['VDE PlusMinus PZ2 csavarhúzó','kismegszakító- és FI-sorkapcsok kombinált fejére; csavarmeghúzás az elosztóban',70],
+    snap:['Tördelhető pengés kés','gipszkarton, kábelcsatorna, csomagolás; a kábelkést kíméli',60],
+    pump:['Vízpumpafogó, 180 mm','tömszelence, védőcső-anya, lámpatest-rögzítőgyűrű',150],
+    ratchet:['Racsnis bittartó + bitkészlet','TX, imbusz, PH/PZ: lámpatest- és burkolatcsavarok',300],
+    fish:['Behúzórugó, 10 m, tekercsben','vezetékcsere meglévő védőcsőben',350]},
+   lists:{3:['blade','multi','knife'],4:['blade','multi','knife','needle'],5:['blade','multi','knife','needle','flat35'],
+    6:['blade','knife','needle','flat35','strip','cutter'],7:['blade','knife','needle','flat35','strip','cutter','crimp'],
+    8:['blade','knife','needle','flat35','strip','cutter','crimp','pm'],9:['blade','knife','needle','flat35','strip','cutter','crimp','pm','snap'],
+    10:['blade','knife','needle','flat35','strip','cutter','crimp','pm','snap','pump'],11:['blade','knife','needle','flat35','strip','cutter','crimp','pm','snap','pump','ratchet'],
+    12:['blade','knife','needle','flat35','strip','cutter','crimp','pm','snap','pump','ratchet','fish']},
+   why:{6:'A multifogót a blankoló, az oldalcsípő és a hosszú csőrű fogó együtt kiváltja, mindegyik jobban végzi a maga dolgát.'}},
+
+ { id:'me', name:'Mérőeszközök', desc:'Feszültségmentesség, azonosítás, a régi hálózat állapota.',
+   items:{
+    duspol:['Kétpólusú feszültségvizsgáló','a feszültségmentesség megállapítása (az érintésmentes ezt nem váltja ki); folytonosság, FI-próba terheléssel',300],
+    ncv:['Érintésmentes fázisceruza','gyors előszűrés, fázis keresése a falban, megszakadt ér nyoma',30],
+    multi:['Kompakt multiméter (CAT III)','csengőtrafó, törpefeszültség, ellenállás, folytonosság',250],
+    sock:['Dugalj-tesztelő FI-próbagombbal','bekötés, PE megléte, 30 mA-es FI-oldás; dugaljanként 2 másodperc',80],
+    tracer:['Kismegszakító-kereső (adó + vevő)','jelöletlen körök azonosítása régi elosztóban, kapcsolgatás nélkül',250],
+    therm:['Telefonos hőkamera-adapter','laza, melegedő kötés megtalálása terhelés alatt; ellenőrzés előtt és után',40],
+    torque:['Nyomatékos VDE csavarhúzó, 1–5 Nm','csavarmeghúzás a gyártói nyomatékra (kismegszakítónál jellemzően 2–2,5 Nm)',200],
+    insul:['Szigetelésellenállás-mérő, 250/500 V','a régi, elöregedett vezeték állapota csere előtt és után',500],
+    clamp:['Lakatfogós multiméter','a multiméter tudása + áramfelvétel terhelés alatt (túlterhelt kör)',350],
+    laser:['Lézeres távolságmérő','nyomvonal, belmagasság, anyagkiírás felméréskor',100],
+    scan:['Fali vezeték- és fémkereső','fúrás előtt: rejtett vezeték, cső, vasalás',200],
+    endo:['Endoszkóp-kamera telefonra','álmennyezetbe, üregbe, doboz mögé nézés a spot-furaton át',120],
+    mft:['Installációs vizsgáló (MFT)','szigetelés, hurokimpedancia, FI-idő, földelés; mérési jegyzőkönyvhöz',900],
+    leads:['Mérőzsinór-készlet hosszabbítóval, krokodilcsipeszek','PE-folytonosság mérése távoli pontig',200]},
+   lists:{3:['duspol','ncv','multi'],4:['duspol','ncv','multi','sock'],5:['duspol','ncv','multi','sock','tracer'],
+    6:['duspol','ncv','multi','sock','tracer','therm'],7:['duspol','ncv','multi','sock','tracer','therm','torque'],
+    8:['duspol','ncv','multi','sock','tracer','therm','torque','insul'],
+    9:['duspol','ncv','clamp','sock','tracer','therm','torque','insul','laser'],
+    10:['duspol','ncv','clamp','sock','tracer','therm','torque','insul','laser','scan'],
+    11:['duspol','ncv','clamp','sock','tracer','therm','torque','insul','laser','scan','endo'],
+    12:['duspol','ncv','clamp','sock','tracer','therm','torque','mft','laser','scan','endo','leads']},
+   why:{9:'A lakatfogó mindent tud, amit a kompakt multiméter, és áramot is mér, így a helye felszabadul a távolságmérőnek.',
+        12:'Az MFT kiváltja a szigetelésmérőt, és hurokimpedanciát meg FI-kioldási időt is mér; a felszabadult helyre mérőzsinór-készlet jön.'}},
+
+ { id:'ge', name:'Gépek és elektromos eszközök', desc:'Akkus gépek, világítás, töltés, ideiglenes áram.',
+   items:{
+    head:['Fejlámpa (tölthető)','áramtalanított helyiségben két szabad kéz',90],
+    drill:['12 V akkus fúró-csavarozó, 2 akku, alap fúró- és bitkészlet','6/8 beton- és fafúró, PH/PZ/TX bitek: dobozrögzítés, tipli',1300],
+    work:['Akkus munkalámpa, mágneses','elosztó előtt, mennyezet alatt; a fejlámpát egészíti ki',250],
+    pb:['Power bank + töltőkábelek','telefon (fotó, hőkamera), fejlámpa, munkalámpa töltése',250],
+    vac:['Akkus kézi porszívó','fúrás pora a lakott lakásban; az ügyfél ezt látja',700],
+    ext:['Hosszabbító, 5 m, 3 aljzat','ideiglenes áram egy élő körről',500],
+    holes:['Körkivágó korona, 35 és 68 mm','spot-furat és szerelvénydoboz helye gipszkartonban, fában',250],
+    osc:['Oszcilláló multigép (12 V, közös akku)','gipszkarton-kivágás, léc, kis horonyjavítás',1000],
+    sds:['Akkus SDS-plus fúrókalapács','tégla, beton furat, kis vésés dobozhoz',1900],
+    heat:['Mini hőlégfúvó / zsebégő','zsugorcső, hidegben merev PVC-szigetelés',200],
+    prcd:['PRCD-s hosszabbító (30 mA), 5 m','ideiglenes áram FI nélküli régi hálózatról is védetten',700],
+    temp:['Ideiglenes lámpa dugvillával (E27 LED)','világítás a helyiségben, amíg a lámpakör ki van kapcsolva',300],
+    line:['Vonallézer','spotsor, szerelvénysor egy vonalba',400]},
+   lists:{3:['head','drill','work'],4:['head','drill','work','pb'],5:['head','drill','work','pb','vac'],
+    6:['head','drill','work','pb','vac','ext'],7:['head','drill','work','pb','vac','ext','holes'],
+    8:['head','drill','work','pb','vac','ext','holes','osc'],9:['head','drill','work','pb','vac','ext','holes','osc','sds'],
+    10:['head','drill','work','pb','vac','ext','holes','osc','sds','heat'],
+    11:['head','drill','work','pb','vac','prcd','holes','osc','sds','heat','temp'],
+    12:['head','drill','work','pb','vac','prcd','holes','osc','sds','heat','temp','line']},
+   why:{11:'A sima hosszabbító helyére PRCD-s kerül: régi, FI nélküli hálózatról is védett az ideiglenes áram. Mellé ideiglenes lámpa jön.'}},
+
+ { id:'an', name:'Szerelési anyag', desc:'Alkatrészek, amelyek a helyszínen beépülnek vagy tartalékként utaznak.',
+   items:{
+    wago:['WAGO 221 válogatás (2-, 3-, 5-pólusú)','réz tömör és sodrott ér, 0,2–4 mm²',150],
+    cable:['Vezeték, 3×1,5 mm², 5 m','H07V-U (kék, barna, zöld-sárga) csőbe, vagy NYM-J (MBCu) falon kívül; a helyszínhez',500],
+    box:['Falon kívüli kötődoboz, IP54, 2 db','bármilyen felületen szabályos kötés',150],
+    alu:['WAGO 2273 + Alu-Plus kontaktpaszta','alumínium–réz átmenet; a 221-es csak rézhez való',80],
+    mech:['Tartalék szerelvény-mechanizmusok, körmös','101 kapcsoló, 106 váltó, dugalj; régi dobozba is beakad',300],
+    sockets:['Lámpafoglalatok: E27 és GU10 kerámia','a régi bakelit foglalat gyakran szétmorzsolódik',120],
+    bulbs:['Tartalék LED izzók: E27 és GU10','csere után azonnal kipróbálható, a hibás izzó kizárható',200],
+    mcb:['Tartalék kismegszakító: B10, B16','rossz vagy túlmelegedett megszakító cseréje az ellenőrzéskor',250],
+    gkbox:['Üreges falba, gipszkartonba szerelhető kötődoboz, fedeles','álmennyezet, szerelt fal',100],
+    term:['Porcelán lámpasorkapocs, csillárkötő-léc','hőálló bekötés lámpatestben, ahol a WAGO nem fér el',80],
+    duct:['Kábelcsatorna 16×16, 2×1 m + végelemek','falon kívüli kerülőút, ha a régi cső nem húzható',400],
+    rcbo:['Kombinált FI-kismegszakító, 1P+N C16 30 mA','FI nélküli régi kör védelme egy modulon; helyszíni bővítés',200]},
+   lists:{3:['wago','cable','box'],4:['wago','cable','box','alu'],5:['wago','cable','box','alu','mech'],
+    6:['wago','cable','box','alu','mech','sockets'],7:['wago','cable','box','alu','mech','sockets','bulbs'],
+    8:['wago','cable','box','alu','mech','sockets','bulbs','mcb'],9:['wago','cable','box','alu','mech','sockets','bulbs','mcb','gkbox'],
+    10:['wago','cable','box','alu','mech','sockets','bulbs','mcb','gkbox','term'],
+    11:['wago','cable','box','alu','mech','sockets','bulbs','mcb','gkbox','term','duct'],
+    12:['wago','cable','box','alu','mech','sockets','bulbs','mcb','gkbox','term','duct','rcbo']},
+   why:{}},
+
+ { id:'fo', name:'Fogyóanyag', desc:'Ami munka közben elfogy; kis kiszerelésben, rendezve.',
+   items:{
+    tape:['Szigetelőszalag (fekete, kék, zöld-sárga)','szigetelés, érjelölés, ideiglenes rögzítés',120],
+    ferrule:['Érvéghüvely-válogatás, 0,5–2,5 mm²','sodrott ér csavaros sorkapocsba',80],
+    plugs:['Tipli + csavar válogatás (5, 6, 8)','doboz, csatorna, lámpatest rögzítése',250],
+    ties:['Kábelkötegelő, 100 és 200 mm','kötegelés, rögzítés dobozban és álmennyezetben',60],
+    mark:['Jelölő filc + öntapadós címke','körfelirat az elosztóban, érjelölés bontás előtt',40],
+    shrink:['Zsugorcső-válogatás','toldás, érvég, sérült szigetelés javítása',50],
+    batt:['Tartalék elemek (AAA, AA, 9 V)','a mérőműszer mindig a legrosszabbkor merül le',120],
+    mask:['Maszkolószalag','körjelölés, felület védelme, fúráspont jelölése',100],
+    sleeve:['Szilikon hőálló szigetelőharisnya, 1 m','lámpa közelében, ahol a PVC-szigetelés megkeményedik',30],
+    plaster:['Gyorskötő gipsz, 1 kg','doboz bekötése, furat javítása',1000],
+    contact:['Kontakttisztító spray (kicsi)','oxidált régi érintkezők, foglalatok',200],
+    clips:['Kábelrögzítő bilincs, kábelszeg válogatás','falon kívüli vezeték rögzítése',120]},
+   lists:{3:['tape','ferrule','plugs'],4:['tape','ferrule','plugs','ties'],5:['tape','ferrule','plugs','ties','mark'],
+    6:['tape','ferrule','plugs','ties','mark','shrink'],7:['tape','ferrule','plugs','ties','mark','shrink','batt'],
+    8:['tape','ferrule','plugs','ties','mark','shrink','batt','mask'],9:['tape','ferrule','plugs','ties','mark','shrink','batt','mask','sleeve'],
+    10:['tape','ferrule','plugs','ties','mark','shrink','batt','mask','sleeve','plaster'],
+    11:['tape','ferrule','plugs','ties','mark','shrink','batt','mask','sleeve','plaster','contact'],
+    12:['tape','ferrule','plugs','ties','mark','shrink','batt','mask','sleeve','plaster','contact','clips']},
+   why:{}},
+
+ { id:'ve', name:'Védelem és rend', desc:'Biztonság, kizárás, és hogy a lakás tisztán maradjon.',
+   items:{
+    lock:['Kizáró készlet: kismegszakító-kizáró, lakat, figyelmeztető címke','„Ne kapcsold be – szerelés”; régi olvadóbiztosítónál a betét zsebbe kerül',150],
+    glasses:['Védőszemüveg','mennyezeti munka: hulló por, vakolat',40],
+    gloves:['Szerelőkesztyű + nitrilkesztyű','vágás, kosz; az ügyfél lakása tiszta marad',80],
+    sheet:['Takarófólia','bútor, padló a munkaterület alatt',300],
+    shoe:['Cipővédő','lakott lakásban ez az első benyomás',50],
+    bags:['Hulladékzsák','bontott foglalat, vezeték, csomagolás; semmi nem marad ott',80],
+    ffp2:['FFP2 pormaszk','fúrás, régi mennyezet pora',20],
+    first:['Mini elsősegélycsomag','vágás, horzsolás',150],
+    org:['Aprócikk-rendező doboz','WAGO, hüvely, csavar egy helyen; gyorsabb, és semmi nem fogy el észrevétlenül',300],
+    vdeg:['Szigetelő kesztyű, 1000 V (0. osztály)','elosztóban, az élő főkapcsoló-oldal közelében',250],
+    mat:['Szigetelő takarólap (gumi)','élő részek letakarása a munkaterület mellett',300],
+    stepu:['Összecsukható fellépő, 2 fok','ha a helyszínen nincs létra; kb. 2,6 m belmagasságig',3000]},
+   lists:{3:['lock','glasses','gloves'],4:['lock','glasses','gloves','sheet'],5:['lock','glasses','gloves','sheet','shoe'],
+    6:['lock','glasses','gloves','sheet','shoe','bags'],7:['lock','glasses','gloves','sheet','shoe','bags','ffp2'],
+    8:['lock','glasses','gloves','sheet','shoe','bags','ffp2','first'],9:['lock','glasses','gloves','sheet','shoe','bags','ffp2','first','org'],
+    10:['lock','glasses','gloves','sheet','shoe','bags','ffp2','first','org','vdeg'],
+    11:['lock','glasses','gloves','sheet','shoe','bags','ffp2','first','org','vdeg','mat'],
+    12:['lock','glasses','gloves','sheet','shoe','bags','ffp2','first','org','vdeg','mat','stepu']},
+   why:{}}
+];
+
+const PRESETS = {
+  bag:{ label:'Táskás (Budai vár)', v:{sz:6, me:4, ge:3, an:7, fo:6, ve:6} },
+  min:{ label:'Minimum 3-asával', v:{sz:3, me:3, ge:3, an:3, fo:3, ve:3} },
+  mid:{ label:'Közepes', v:{sz:8, me:7, ge:6, an:8, fo:8, ve:8} },
+  max:{ label:'Teljes 12-esével', v:{sz:12, me:12, ge:12, an:12, fo:12, ve:12} }
+};
+
+/* ---------- pure helpers ---------- */
+function clampCount(raw){ const n = Math.round(Number(raw)); if (!isFinite(n) || n <= 0) return 0; if (n < 3) return 3; return Math.min(12, n); }
+function listFor(cat, n){ return n ? cat.lists[n] : []; }
+function delta(cat, n){
+  if (n <= 3) return { add:[], rem:[] };
+  const cur = cat.lists[n], prev = cat.lists[n-1];
+  return { add: cur.filter(x => !prev.includes(x)), rem: prev.filter(x => !cur.includes(x)) };
+}
+const kg = g => (g/1000).toLocaleString('hu-HU', { minimumFractionDigits:1, maximumFractionDigits:1 }) + ' kg';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- per-viewer storage (may be unavailable) ---------- */
+const store = {
+  get(k, fb){ try { const v = localStorage.getItem('lite-keszlet:'+k); return v == null ? fb : JSON.parse(v); } catch(e){ return fb; } },
+  set(k, v){ try { localStorage.setItem('lite-keszlet:'+k, JSON.stringify(v)); } catch(e){} }
+};
+let counts = store.get('counts', null) || Object.assign({}, PRESETS.bag.v);
+let checked = store.get('checked', {});
+let built = null; // counts used for the last Összeállítás
+
+/* ---------- left column ---------- */
+const side = document.getElementById('side');
+function renderSide(){
+  side.innerHTML = CATS.map(c => `
+    <div class="cat panel${counts[c.id] ? '' : ' off'}" id="cat-${c.id}">
+      <h2>${esc(c.name)}</h2>
+      <div class="step">
+        <button type="button" id="dec-${c.id}" data-cat="${c.id}" data-d="-1" aria-label="${esc(c.name)}: kevesebb">−</button>
+        <input type="number" id="n-${c.id}" data-cat="${c.id}" min="0" max="12" step="1" inputmode="numeric" value="${counts[c.id]}" aria-label="${esc(c.name)} darabszám">
+        <button type="button" id="inc-${c.id}" data-cat="${c.id}" data-d="1" aria-label="${esc(c.name)}: több">+</button>
+      </div>
+      <div class="desc">${esc(c.desc)}</div>
+      <div class="ticks" aria-hidden="true">${[3,4,5,6,7,8,9,10,11,12].map(i => `<i class="${counts[c.id] >= i ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="hint" id="hint-${c.id}"></div>
+    </div>`).join('') + `
+    <button type="button" class="go" id="go">Összeállítás</button>
+    <div class="foot">3–12 darab kategóriánként; a 0 kihagyja a kategóriát. A tömeg tájékoztató becslés. A pipák ebben a böngészőben megmaradnak.</div>`;
+}
+function setCount(id, value, hintText){
+  counts[id] = value; store.set('counts', counts);
+  const card = document.getElementById('cat-'+id);
+  card.classList.toggle('off', !value);
+  card.querySelectorAll('.ticks i').forEach((t, i) => t.classList.toggle('on', value >= i+3));
+  document.getElementById('n-'+id).value = value;
+  document.getElementById('hint-'+id).textContent = hintText || '';
+  markPresets(); markStale();
+}
+side.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.id === 'go') { build(); return; }
+  if (b.dataset.cat) {
+    const id = b.dataset.cat, cur = counts[id], d = +b.dataset.d;
+    let next = d > 0 ? (cur === 0 ? 3 : Math.min(12, cur+1)) : (cur <= 3 ? 0 : cur-1);
+    setCount(id, next, next === 0 ? 'Kimarad az összeállításból.' : '');
+  }
+});
+side.addEventListener('change', e => {
+  const inp = e.target.closest('input[data-cat]');
+  if (!inp) return;
+  const raw = Math.round(Number(inp.value)), v = clampCount(inp.value);
+  let hint = '';
+  if (raw === 1 || raw === 2) hint = 'A legkisebb összeállítás 3 darabos, ezért 3 lett.';
+  else if (raw > 12) hint = 'A legnagyobb összeállítás 12 darabos.';
+  else if (v === 0) hint = 'Kimarad az összeállításból.';
+  setCount(inp.dataset.cat, v, hint);
+});
+side.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-cat]')) { e.target.dispatchEvent(new Event('change', {bubbles:true})); build(); } });
+
+/* presets */
+function markPresets(){
+  document.querySelectorAll('[data-preset]').forEach(b => {
+    const p = PRESETS[b.dataset.preset].v;
+    b.classList.toggle('on', CATS.every(c => p[c.id] === counts[c.id]));
+  });
+}
+document.querySelector('.presets').addEventListener('click', e => {
+  const b = e.target.closest('[data-preset]'); if (!b) return;
+  const p = PRESETS[b.dataset.preset].v;
+  CATS.forEach(c => setCount(c.id, p[c.id], ''));
+  build();
+});
+
+/* ---------- right: the note ---------- */
+const note = document.getElementById('note');
+function sameCounts(a, b){ return a && CATS.every(c => a[c.id] === b[c.id]); }
+function markStale(){
+  const stale = built && !sameCounts(built, counts);
+  const go = document.getElementById('go'); if (go) go.classList.toggle('stale', !!stale);
+  const m = document.getElementById('stale'); if (m) m.hidden = !stale;
+}
+function build(){
+  built = Object.assign({}, counts);
+  const active = CATS.filter(c => counts[c.id]);
+  let totalN = 0, totalG = 0;
+  active.forEach(c => c.lists[counts[c.id]].forEach(id => { totalN++; totalG += c.items[id][2]; }));
+  const sig = CATS.map(c => counts[c.id]).join('-');
+  let h = `<div class="note-head"><h2>Csomaglista</h2>
+    <div class="totals"><span class="badge">${active.length} kategória</span><span class="badge num">${totalN} tétel</span>
+    <span class="badge num">≈ ${kg(totalG)}</span><span class="badge num" id="done-badge"></span></div></div>
+    <div class="tools"><button type="button" class="btn" id="copy">Másolás szövegként</button>
+    <button type="button" class="btn" id="clear">Pipák törlése</button><span class="copied" id="copied"></span></div>
+    <div class="stale-msg" id="stale" hidden>A darabszám módosult. Nyomd meg az Összeállítás gombot az új listához.</div>
+    <div class="label" style="margin-top:12px">Kód: <span class="num">${sig}</span> · sorrend: ${CATS.map(c => esc(c.name.split(' ')[0])).join(', ')}</div>`;
+  if (!active.length) h += `<p class="empty">Minden kategória 0-n áll. Adj meg legalább egy kategóriában 3 és 12 közötti darabszámot.</p>`;
+  active.forEach(c => {
+    const n = counts[c.id], ids = c.lists[n], d = delta(c, n);
+    const g = ids.reduce((s, id) => s + c.items[id][2], 0);
+    let dl = n === 3 ? 'Alapkészlet: ez a három darab a minimum, amivel a kategória még működik.'
+      : 'A ' + (n-1) + ' darabos szinthez képest: ' + d.add.map(id => '<b>+ ' + esc(c.items[id][0]) + '</b>').join(', ')
+        + (d.rem.length ? '; helyette kimarad: ' + d.rem.map(id => '<s>' + esc(c.items[id][0]) + '</s>').join(', ') : '') + '.';
+    if (c.why[n]) dl += ' ' + esc(c.why[n]);
+    h += `<div class="sec"><div class="sec-head"><h3>${esc(c.name)}</h3><span class="meta">${n} db · ≈ ${kg(g)}</span></div>
+      <div class="delta">${dl}</div><ul class="items">` +
+      ids.map(id => { const it = c.items[id], key = c.id+'.'+id;
+        return `<li class="${d.add.includes(id) ? 'new' : ''}"><label><input type="checkbox" id="ck-${key.replace('.','-')}" data-key="${key}"${checked[key] ? ' checked' : ''}>
+        <span class="n">${esc(it[0])}</span><span class="g">${it[2] >= 1000 ? kg(it[2]) : it[2] + ' g'}</span><span class="d">${esc(it[1])}</span></label></li>`; }).join('') +
+      `</ul></div>`;
+  });
+  note.innerHTML = h;
+  updateDone(); markStale();
+}
+function updateDone(){
+  const boxes = note.querySelectorAll('input[data-key]'), b = document.getElementById('done-badge');
+  if (!b) return;
+  const done = [...boxes].filter(x => x.checked).length;
+  b.textContent = 'bepakolva ' + done + '/' + boxes.length;
+  b.className = 'badge num' + (boxes.length && done === boxes.length ? ' ok' : done ? ' warm' : '');
+}
+note.addEventListener('change', e => {
+  const x = e.target.closest('input[data-key]'); if (!x) return;
+  if (x.checked) checked[x.dataset.key] = 1; else delete checked[x.dataset.key];
+  store.set('checked', checked); updateDone();
+});
+function asText(){
+  const lines = ['LITE TEREPKÉSZLET – csomaglista', ''];
+  CATS.filter(c => built[c.id]).forEach(c => {
+    lines.push(c.name.toUpperCase() + ' (' + built[c.id] + ' db)');
+    c.lists[built[c.id]].forEach(id => lines.push((checked[c.id+'.'+id] ? '[x] ' : '[ ] ') + c.items[id][0] + ' – ' + c.items[id][1]));
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+note.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'clear') { checked = {}; store.set('checked', checked); note.querySelectorAll('input[data-key]').forEach(x => x.checked = false); updateDone(); }
+  if (b.id === 'copy') {
+    const txt = asText(), msg = document.getElementById('copied');
+    const fallback = () => { let ta = note.querySelector('textarea.fallback');
+      if (!ta) { ta = document.createElement('textarea'); ta.className = 'fallback'; ta.id = 'copy-text'; ta.setAttribute('aria-label','Csomaglista szövegként'); b.parentNode.after(ta); }
+      ta.value = txt; ta.focus(); ta.select(); msg.textContent = 'Jelöld ki és másold ki a szöveget.'; };
+    try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = 'Vágólapra másolva.'; setTimeout(() => msg.textContent = '', 2500); }, fallback); }
+    catch(err){ fallback(); }
+  }
+});
+
+renderSide(); markPresets(); build();
+</script>
