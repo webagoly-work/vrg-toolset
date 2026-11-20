@@ -2105,13 +2105,13 @@
    "id": "feat:f11",
    "name": "run.exe",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "dev:infra",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane f: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:f12",
@@ -2129,13 +2129,13 @@
    "id": "feat:f13",
    "name": "Own remote access",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "dev:infra",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane f: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p1",
@@ -2157,9 +2157,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 1 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p3",
@@ -2168,10 +2168,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "planner",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 1 feature in lane p: build, test or a dev round"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p4",
@@ -2181,9 +2181,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p5",
@@ -2193,9 +2193,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p6",
@@ -2205,9 +2205,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p7",
@@ -2217,9 +2217,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p8",
@@ -2229,9 +2229,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p9",
@@ -2241,9 +2241,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p10",
@@ -2252,10 +2252,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "planner",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: build, test or a dev round"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p11",
@@ -2265,9 +2265,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p12",
@@ -2276,10 +2276,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "planner",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: build, test or a dev round"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p13",
@@ -2289,9 +2289,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p14",
@@ -2301,9 +2301,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p15",
@@ -2313,57 +2313,57 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "planner",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane p: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p16",
    "name": "Endpoints + room auto-snap",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "planner",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p17",
    "name": "Villany Stack round",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "planner",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p18",
    "name": "Planner MCP + DXF",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "planner",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:p19",
    "name": "Chase sweep-cut 3D",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "planner",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane p: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:m1",
@@ -2429,25 +2429,25 @@
    "id": "feat:m6",
    "name": "Price lists",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "workflow-kit",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 asset in lane m: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:m7",
    "name": "Kit Session 2: agents",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "workflow-kit",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 plan in lane m: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:m8",
@@ -2457,21 +2457,21 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "workflow-kit",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane m: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:m9",
    "name": "One-pass intake",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "workflow-kit",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane m: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:d1",
@@ -2537,13 +2537,13 @@
    "id": "feat:d6",
    "name": "Smart-home catalogue",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "inventory",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 asset in lane d: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:d7",
@@ -2561,13 +2561,13 @@
    "id": "feat:d8",
    "name": "Elosztó DIN-rail builder",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "inventory",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane d: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b1",
@@ -2585,25 +2585,25 @@
    "id": "feat:b2",
    "name": "CLA BRIDGE plan",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "bridge",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 asset in lane b: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b3",
    "name": "BRIDGE standards",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "bridge",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 asset in lane b: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b4",
@@ -2621,37 +2621,37 @@
    "id": "feat:b5",
    "name": "BRIDGE brochure",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "bridge",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 asset in lane b: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b6",
    "name": "Media Wall",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "bridge",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane b: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b7",
    "name": "Feature round K34–K43",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "bridge",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane b: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:b8",
@@ -2669,13 +2669,13 @@
    "id": "feat:b9",
    "name": "CLA open questions",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "bridge",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane b: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:h1",
@@ -2721,9 +2721,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "mobile",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane h: part of the work"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:h5",
@@ -2813,13 +2813,13 @@
    "id": "feat:e6",
    "name": "RL-CYD + RL Field",
    "source": "features",
-   "type": "application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "dev:hw",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 app in lane e: development, knowledge, devices or look"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:e7",
@@ -2837,13 +2837,13 @@
    "id": "feat:e8",
    "name": "Site Pager + S3 projects",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "dev:hw",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane e: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:k1",
@@ -3005,13 +3005,13 @@
    "id": "feat:k13",
    "name": "GO TNT · DNA capsule",
    "source": "features",
-   "type": "work package",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "dev:knowledge",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 4 plan in lane k: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:l1",
@@ -3029,25 +3029,25 @@
    "id": "feat:l2",
    "name": "VRG Visual Base",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "dev:look",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 asset in lane l: development, knowledge, devices or look"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:l3",
    "name": "VRG Title Card",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "dev:look",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 asset in lane l: development, knowledge, devices or look"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:l4",
@@ -3080,34 +3080,34 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "dev:look",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 feature in lane l: development, knowledge, devices or look"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:l7",
    "name": "Object line-art kit",
    "source": "features",
-   "type": "asset",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "dev",
-   "parent": "dev:look",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 asset in lane l: development, knowledge, devices or look"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:l8",
    "name": "Text on the animated logo",
    "source": "features",
-   "type": "idea",
+   "type": "feature",
    "qualifier": "",
-   "scope": "roadmap",
-   "level": "",
-   "parent": "dev:look",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 5 idea in lane l: planned or an idea, not available yet"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x1",
@@ -3173,73 +3173,73 @@
    "id": "feat:x6",
    "name": "Electron",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x7",
    "name": "arduino-cli",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x8",
    "name": "ChromeDriver + headless",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x9",
    "name": "wifi-heatmapper",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x10",
    "name": "FlyBrainLab",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 2 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "feat:x11",
    "name": "Android toolchain",
    "source": "features",
-   "type": "third-party application",
+   "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "all",
-   "parent": "programs",
+   "level": "user",
+   "parent": "",
    "unit": "",
-   "reason": "tier 3 program in lane x: third-party, All"
+   "reason": "tier undefined undefined in lane undefined: part of the work"
   },
   {
    "id": "pane:home",
