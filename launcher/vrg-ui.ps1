@@ -789,7 +789,8 @@ function Act($it) {
   if ($it.groups)   { return Tabs $it }
   if ($it.path)     { return OpenTool $it }
   if ($it.exe)      { return StartExe $it }
-  if ($it.server)   { return OpenServer (Server $it.server) }
+  # an item may open another page of its server (Stack: R S opens /erintesnyom.html on :8806)
+  if ($it.server)   { $s = Server $it.server; if ($it.open) { $s = $s | Select-Object *; $s | Add-Member -NotePropertyName open -NotePropertyValue $it.open -Force }; return OpenServer $s }
   if ($it.url)      { return (OpenedOr (P $it.url) $it.name) }
   if ($it.folder)   { $f = P $it.folder; if (-not (Test-Path -LiteralPath $f)) { return Crit (T $UI.missing @{ path = $f }) }
                       Start-Process explorer.exe (Q $f); return Ok (T $UI.opened @{ name = $it.name }) }

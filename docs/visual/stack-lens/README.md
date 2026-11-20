@@ -212,3 +212,18 @@ reading keeps them.
 | **STL-Q6** Where it lives | Settled by the STL-Q2 answer: on top of the ◢ layer menu and the Rétegek view |
 | **STL-Q7** First use beyond live work | **A · Forecast** as the primary, with **B · a decision's blast radius** wanted as well |
 
+## Built (2026-11-20)
+
+- **SL0:** `Stack/lib/lens.js` (resolver, inference, layout; `test/lens.test.js` checks it against `lib/join.js`), the build
+  stage `out/lens-index.js` (`lib/pipeline.js`), kit `layerstack` `light()` / `tracer()` / attribute-only hover / plane options,
+  and the event spine `shared/vrg-events/events.js` (VIS-Q4; the Munkavászon keeps a synced copy, `tools/events-sync.js`).
+- **SL1 + SL2:** `Stack/erintesnyom.html` with live (Munkavászon server, :8810, which now lets the Stack's origin read
+  `/api/sessions` and `/api/stream`), replay (`out/replay`) and a dropped transcript; exact (warm) and inferred (violet)
+  kept apart; tracers per agent; node card with the layer page link; ribbon with scrubbing. START R → S, catalog
+  `stack.touch` (the first entry with a `lens` block, VIS-Q3), the Asztal's ◢ column above Rétegek.
+- Checked here on a test stack built from this repo's real folders, documents, agents, decision files, commits and the
+  55 real pillars, with this session's own transcript live and from file. Not checked here: the real Stack build
+  (it needs H:), and START's new `open` field on a server item (`vrg-ui.ps1`, no PowerShell in the cloud).
+- **Next:** SL3 Forecast (STL-Q7) and a decision's blast radius; SL4 the phone bundle; skills and plugins as A nodes so
+  `/deep-research` and friends land somewhere.
+

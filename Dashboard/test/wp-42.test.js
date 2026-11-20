@@ -38,7 +38,7 @@ test('◢ dial: User shows F, I, Q and Keresés; Dev all ten layers top to botto
   assert.deepEqual(u.map(r => r.layer || r.id), ['F', 'I', 'Q', 'stack.search']);
   const d = D.stackDial(cat.listFor('dev')).children;
   assert.deepEqual(d.filter(r => r.layer).map(r => r.layer), D.LAYERS);
-  assert.deepEqual(d.filter(r => !r.layer).map(r => r.id), ['stack.search', 'stack.layers']);
+  assert.deepEqual(d.filter(r => !r.layer).map(r => r.id), ['stack.search', 'stack.touch', 'stack.layers']);
   assert.equal(d.find(r => r.layer === 'Z').opens, false, 'Z is machine-only: shown, not openable');
 });
 

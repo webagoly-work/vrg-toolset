@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Érintésnyom</title>
+<!-- Érintésnyom (STL-Q1 = B, 2026-11-20): the Stack's layers, lit by the work that touches them. Each tool call of a
+     Claude session lands on the nodes it touches (the same keys as the recorder: lib/lens.js, tested against
+     lib/join.js), the light spreads along the exact links (lib/activation.js) and halves every 90 s; a write rings the
+     node; each agent leaves a tracer. INFERRED reach (title words, 'alike' links) is violet, dimmer and kept in its own
+     map (STL-Q5), so the exact lines can always be shown alone (the Kikövetkeztetett switch).
+     Sources: Élő = the event spine from the Munkavászon server (SessionCanvas/serve.js, :8810), Visszajátszás =
+     out/replay (stack.js build), Napló = a transcript .jsonl dropped on the page.
+     Data: out/stack-data.js and out/lens-index.js (stack.js build). Study: docs/visual/stack-lens/README.md. -->
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/mini.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/layerstack.css">
+<style>
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #646d74); --acc: var(--vk-accent, #93d3e6);
+    --warm: var(--vk-activity, #e8a873); --inf: var(--vk-idea, #b4a7e6); --crit: var(--vk-crit, #e4877d);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif); }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--tx); font: 13px/1.45 var(--sans); }
+  body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+  header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 16px var(--voice); letter-spacing: .16em; margin: 0; color: var(--acc); }
+  select, button { font: inherit; color: var(--tx); background: var(--s1); border: 1px solid var(--ln2); padding: 3px 8px; border-radius: 0; }
+  button:hover, select:hover { border-color: var(--acc); }
+  button[aria-pressed="true"] { border-color: var(--acc); color: var(--acc); }
+  .chip { display: inline-flex; gap: 6px; align-items: center; font: 11px var(--mono); color: var(--mu); }
+  .chip i { width: 9px; height: 9px; display: inline-block; border-radius: 50%; }
+  #src { font: 11px var(--mono); color: var(--fa); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; min-height: 0; }
+  #stackWrap { overflow: auto; padding: 10px; min-width: 0; }
+  #stack { --vk-layerstack-h: calc(100vh - 210px); }
+  #stack .vk-layerstack__list { flex-basis: 190px; }
+  aside { border-left: 1px solid var(--ln); overflow-y: auto; padding: 12px 14px; display: grid; gap: 12px; align-content: start; }
+  aside h2 { font: 600 11px var(--voice); letter-spacing: .14em; text-transform: uppercase; color: var(--mu); margin: 0 0 4px; }
+  #card .t { font-size: 15px; font-weight: 600; }
+  #card .k { font: 11px var(--mono); color: var(--fa); }
+  #card ol { margin: 6px 0 0; padding-left: 18px; font-size: 12px; }
+  #card a { color: var(--acc); }
+  #now li, #top li { font-size: 12px; list-style: none; display: grid; grid-template-columns: 10px 1fr auto; gap: 6px; align-items: baseline; }
+  #now, #top { margin: 0; padding: 0; }
+  #now i, #top i { width: 8px; height: 8px; display: block; border-radius: 50%; }
+  #now .w, #top .w { font: 10.5px var(--mono); color: var(--fa); }
+  footer { border-top: 1px solid var(--ln); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 12px; }
+  #rib { width: 100%; height: 56px; display: block; cursor: ew-resize; }
+  #clock { font: 11.5px var(--mono); color: var(--mu); min-width: 150px; }
+  #empty { padding: 40px; color: var(--mu); max-width: 70ch; }
+  #empty code { color: var(--acc); }
+  .drop { outline: 2px dashed var(--acc); outline-offset: -8px; }
+  #stack .vk-layerstack__elabel, #stack .vk-layerstack__tracer-label { pointer-events: none; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { border-left: 0; border-top: 1px solid var(--ln); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>ÉRINTÉSNYOM</h1>
+  <select id="mode" aria-label="Forrás">
+    <option value="live">Élő munkamenet</option>
+    <option value="replay">Visszajátszás</option>
+    <option value="file">Napló fájlból</option>
+  </select>
+  <select id="session" aria-label="Munkamenet"></select>
+  <input type="file" id="file" accept=".jsonl" multiple hidden>
+  <button id="play" aria-label="Lejátszás">▶</button>
+  <select id="speed" aria-label="Sebesség"><option value="10">10×</option><option value="60" selected>60×</option><option value="300">300×</option></select>
+  <span class="chip"><i style="background:var(--warm)"></i>érintett (pontos)</span>
+  <button id="inf" aria-pressed="true" title="A kikövetkeztetett elérés külön adat: kikapcsolva csak a pontos vonalak látszanak"><span class="chip"><i style="background:var(--inf)"></i>kikövetkeztetett</span></button>
+  <span id="src"></span>
+</header>
+<main>
+  <div id="stackWrap"><div id="stack"></div><div id="empty" hidden></div></div>
+  <aside>
+    <section id="card"><h2>Csomópont</h2><div class="k">Kattints egy pontra a rétegeken.</div></section>
+    <section><h2>Most</h2><ul id="now"></ul></section>
+    <section><h2>Legjobban érintett</h2><ul id="top"></ul></section>
+  </aside>
+</main>
+<footer>
+  <span id="clock"></span>
+  <canvas id="rib" aria-label="Idősáv: húzd az időben"></canvas>
+  <button id="live" hidden>ÉLŐ</button>
+</footer>
+
+<script src="../shared/vrg-ui-kit/icons/sprite.js"></script>
+<script src="../shared/vrg-ui-kit/components/core.js"></script>
+<script src="../shared/vrg-ui-kit/components/mini.js"></script>
+<script src="../shared/vrg-ui-kit/components/focus.js"></script>
+<script src="../shared/vrg-ui-kit/components/layerstack.js"></script>
+<script src="../shared/vrg-events/events.js"></script>
+<script src="lib/activation.js"></script>
+<script src="lib/lens.js"></script>
+<script src="out/stack-data.js"></script>
+<script src="out/lens-index.js"></script>
+<script src="out/replay/index.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var hhmm = function (t) { var d = new Date(t); return d.toTimeString().slice(0, 8); };
+  var LIVE = (location.search.match(/[?&]canvas=([^&]+)/) || [])[1] || 'http://127.0.0.1:8810';   // the Munkavászon server
+  var HALF = 90000;                                   // light halves every 90 s of session time
+  var WRITES = { Edit: 1, Write: 1, MultiEdit: 1, NotebookEdit: 1 };
+  var CATCOL = { read: '#93d3e6', search: '#5fa8d3', edit: '#e8a873', shell: '#e3be7b', web: '#8bcca1', agent: '#b39cf0', mcp: '#e59cc8', plan: '#c9d77a', other: '#8d979f', prompt: '#93d3e6' };
+  var PAGE = { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
+
+  if (!window.STACK || !window.StackLens) {
+    $('#stack').hidden = true; var em = $('#empty'); em.hidden = false;
+    em.innerHTML = '<p><b>Nincs még Stack-adat.</b> Az Érintésnyom a felépített Stacket világítja meg: futtasd egyszer a PC-n</p><p><code>node Stack/stack.js build</code></p><p>aztán nyisd újra (START R → 7 mellett, vagy a ◢ tárcsáról).</p>';
+    return;
+  }
+  var L = StackLens.create(window.STACK, window.STACK_LENS || {});
+  var lay = L.layout();
+  var nodeById = L.nodes;
+  var ls = VK.layerstack.mount($('#stack'), { label: 'Érintésnyom', planes: lay.planes, entities: lay.entities, labels: 'lit', litLabels: 8, dimPillars: true, planeW: 250, planeD: 64, gap: 62, tilt: 0.55 });
+  $('#src').textContent = 'Stack: ' + String(STACK.generated || '').slice(0, 16).replace('T', ' ') + (window.STACK_LENS ? '' : ' · nincs lens-index (csak útvonalak és kulcsok)');
+
+  /* ---------- steps: one shape for live, replay and file ----------
+     { t, tool, cat, actor, exact: [ids], inferred: Map, write, text } */
+  var steps = [], applied = 0, T = 0, t0 = 0, t1 = 0, playing = false, mode = 'live';
+  var exactE = new Map(), infE = new Map(), lastT = 0, showInf = true, touches = new Map(), trail = {};
+  var catOf = function (tool) { return tool === 'prompt' ? 'prompt' : /^mcp[:_]/.test(tool) ? 'mcp' : SCModel.catOf(tool); };
+
+  function clearTrail() { Object.keys(trail).forEach(function (k) { ls.tracer(k, null); }); trail = {}; }
+  function reset() {
+    clearTrail(); steps = []; applied = 0; exactE = new Map(); infE = new Map(); lastT = 0; touches = new Map();
+    ls.light(null); paintSide();
+  }
+  function decay(to) {
+    if (!lastT) { lastT = to; return; }
+    var f = Math.pow(0.5, Math.max(0, to - lastT) / HALF); lastT = to;
+    if (f >= 0.999) return;
+    exactE = StackActivation.fade(exactE, f); infE = StackActivation.fade(infE, f);
+  }
+  function apply(s) {
+    decay(s.t);
+    if (s.exact.length) {
+      var lit = L.light(s.exact);
+      lit.exact.forEach(function (e, id) { exactE.set(id, Math.min(1, Math.max(exactE.get(id) || 0, e))); infE.delete(id); });
+      s.exact.forEach(function (id) { var a = touches.get(id) || []; a.push(s); touches.set(id, a); });
+      var key = s.actor || 'root', tr = trail[key] = trail[key] || [];
+      tr.push(s.exact[0]); if (tr.length > 6) tr.shift();
+    }
+    s.inferred.forEach(function (e, id) { if (!exactE.has(id)) infE.set(id, Math.min(1, Math.max(infE.get(id) || 0, e * 0.8))); });
+  }
+  function render(writeIds) {
+    var map = new Map();
+    if (showInf) infE.forEach(function (e, id) { map.set(id, { e: e, kind: 'inferred' }); });
+    exactE.forEach(function (e, id) { map.set(id, { e: e, kind: 'exact', write: !!(writeIds && writeIds.has(id)) }); });
+    L.pillars(exactE).forEach(function (e, id) { map.set(id, { e: e, kind: 'exact' }); });
+    if (showInf) L.pillars(infE).forEach(function (e, id) { if (!map.has(id)) map.set(id, { e: e * 0.8, kind: 'inferred' }); });
+    ls.light(map);
+    Object.keys(trail).forEach(function (k) {
+      ls.tracer(k, trail[k], { label: k === 'root' || k === 'agent' ? 'fő' : k.replace(/^a:/, '').slice(0, 8), style: k === 'root' || k === 'agent' ? 'solid' : 'dotted' });
+    });
+  }
+  /* bring the light to time `to`: forward by applying new steps, backward by replaying from the start */
+  function seek(to) {
+    if (to < T || applied > steps.length) { clearTrail(); exactE = new Map(); infE = new Map(); lastT = 0; touches = new Map(); applied = 0; }
+    var writes = new Set();
+    while (applied < steps.length && steps[applied].t <= to) { var s = steps[applied++]; apply(s); if (s.write && to - s.t < 4000) s.exact.forEach(function (id) { writes.add(id); }); }
+    T = to; decay(to); render(writes); paintSide();
+  }
+
+  /* ---------- replay: out/replay/<sid8>.js ---------- */
+  window.REPLAY_LOAD = function (sid, d) {
+    reset();
+    d.steps.forEach(function (r) {
+      var t = Date.parse(r[0]), tool = r[1] === 'prompt' ? 'prompt' : r[2] || r[1], text = r[7] || '';
+      var exact = (r[5] || []).filter(function (id) { return nodeById.has(id); });
+      var inf = r[1] === 'prompt' || r[1] === 'invoke_agent' ? L.infer(text, exact) : L.infer('', exact);
+      steps.push({ t: t, tool: tool, cat: catOf(tool), actor: r[3] || 'agent', exact: exact, inferred: inf, write: !!WRITES[tool], text: text, ok: r[6] });
+    });
+    startTimeline();
+  };
+  function loadReplay(sid) { var s = document.createElement('script'); s.src = 'out/replay/' + sid + '.js'; s.onerror = function () { $('#src').textContent = 'Nincs visszajátszás: out/replay/' + sid + '.js'; }; document.body.appendChild(s); }
+
+  /* ---------- live and file: the event spine (shared/vrg-events) ---------- */
+  var M = null, seen = new Set(), es = null;
+  function fromModel() {
+    var S = M.S, added = false;
+    S.items.forEach(function (it) {
+      var key = it.kind === 'call' ? it.id : it.kind === 'prompt' ? 'p' + it.seq : null;
+      if (!key || seen.has(key)) return; seen.add(key);
+      if (it.kind === 'prompt') {
+        var ex = L.resolve([], it.text, { cwd: S.cwd });
+        steps.push({ t: it.t, tool: 'prompt', cat: 'prompt', actor: 'root', exact: ex, inferred: L.infer(it.text, ex), write: false, text: it.text });
+      } else {
+        var r = L.step(it, { cwd: S.cwd }), agent = it.name === 'Agent' || it.name === 'Task';
+        steps.push({ t: it.t, tool: it.name, cat: it.cat, actor: it.agent, exact: r.exact, inferred: agent ? L.infer(r.text, r.exact) : L.infer('', r.exact), write: !!WRITES[it.name], text: r.text, ok: !it.error });
+      }
+      added = true;
+    });
+    if (added) steps.sort(function (a, b) { return a.t - b.t; });
+    return added;
+  }
+  function connect(file) {
+    if (es) es.close();
+    reset(); M = SCModel.create(); seen = new Set();
+    es = new EventSource(LIVE + '/api/stream?f=' + encodeURIComponent(file));
+    es.onmessage = function (ev) {
+      var m = JSON.parse(ev.data);
+      (m.lines || []).forEach(function (l) { M.add(l, m.agent || 'root'); });
+      if (fromModel() && mode === 'live') { t0 = steps.length ? steps[0].t : Date.now(); seek(Date.now()); }
+    };
+    es.onerror = function () { $('#src').textContent = 'A Munkavászon szervere (' + LIVE + ') nem válaszol: START O → N'; };
+  }
+  function loadFiles(files) {
+    var arr = Array.prototype.slice.call(files || []).filter(function (f) { return /\.jsonl$/i.test(f.name); }); if (!arr.length) return;
+    Promise.all(arr.map(function (f) { return f.text().then(function (s) { return { f: f, s: s }; }); })).then(function (rs) {
+      if (es) { es.close(); es = null; }
+      reset(); M = SCModel.create(); seen = new Set();
+      rs.forEach(function (r) { var sub = /^agent-/.test(r.f.name); r.s.split('\n').forEach(function (l) { M.add(l, sub ? r.f.name.replace(/\.jsonl$/, '') : 'root'); }); });
+      fromModel(); startTimeline();
+      $('#src').textContent = arr[0].name + ' · ' + steps.length + ' lépés';
+    });
+  }
+
+  function startTimeline() {
+    if (!steps.length) { render(); paintSide(); return; }
+    t0 = steps[0].t; t1 = steps[steps.length - 1].t;
+    clearTrail(); T = t0 - 1; applied = 0; exactE = new Map(); infE = new Map(); lastT = 0; touches = new Map();
+    playing = true; $('#play').textContent = '❚❚';
+  }
+
+  /* ---------- side panel ---------- */
+  var selected = null, lastSide = 0;
+  function paintSide() {
+    var now = performance.now(); if (now - lastSide < 200) return; lastSide = now;
+    var recent = steps.slice(0, applied).slice(-8).reverse();
+    $('#now').innerHTML = recent.map(function (s) {
+      var tgt = s.exact.length ? (nodeById.get(s.exact[0]) || {}).title || s.exact[0] : s.inferred.size ? '≈ ' + ((nodeById.get(s.inferred.keys().next().value) || {}).title || '') : '—';
+      return '<li><i style="background:' + (CATCOL[s.cat] || '#888') + '"></i><span>' + esc(s.tool) + ' · ' + esc(String(tgt).slice(0, 48)) + '</span><span class="w">' + hhmm(s.t) + '</span></li>';
+    }).join('') || '<li><span></span><span class="w">Még nincs lépés.</span></li>';
+    var top = []; exactE.forEach(function (e, id) { if (nodeById.has(id)) top.push([id, e, 'exact']); });
+    if (showInf) infE.forEach(function (e, id) { if (nodeById.has(id)) top.push([id, e, 'inf']); });
+    top.sort(function (a, b) { return b[1] - a[1]; });
+    $('#top').innerHTML = top.slice(0, 12).map(function (r) {
+      var n = nodeById.get(r[0]);
+      return '<li><i style="background:' + (r[2] === 'exact' ? 'var(--warm)' : 'var(--inf)') + '"></i><span>' + esc(n.layer + ' · ' + n.title).slice(0, 60) + '</span><span class="w">' + Math.round(r[1] * 100) + '%</span></li>';
+    }).join('');
+    if (selected) card(selected);
+  }
+  function card(id) {
+    var n = nodeById.get(id); if (!n) return;
+    var tch = touches.get(id) || [], e = exactE.get(id) || (n.layer === 'E' ? L.pillars(exactE).get(id) : 0), ie = infE.get(id) || (n.layer === 'E' ? L.pillars(infE).get(id) : 0);
+    var page = PAGE[n.layer];
+    $('#card').innerHTML = '<h2>Csomópont</h2><div class="t">' + esc(n.title) + '</div><div class="k">' + esc(n.id) + ' · ' + esc(n.kind || '') + (n.path ? ' · ' + esc(n.path) : '') + '</div>' +
+      '<div class="k">' + (e ? 'érintve ' + Math.round(e * 100) + '%' : ie ? '<span style="color:var(--inf)">kikövetkeztetve ' + Math.round(ie * 100) + '%</span>' : 'nem érintett') + (tch.length ? ' · ' + tch.length + ' lépés' : '') + '</div>' +
+      (page ? '<div style="margin-top:6px"><a href="' + page + '#sel=' + encodeURIComponent(id) + '">Megnyitás a réteg oldalán ›</a></div>' : n.layer === 'C' ? '<div class="k" style="margin-top:6px">Fájlszinten: Kódváros (START K)</div>' : '') +
+      (tch.length ? '<ol>' + tch.slice(-8).reverse().map(function (s) { return '<li>' + hhmm(s.t) + ' · ' + esc(s.tool) + ' · ' + esc((s.text || '').slice(0, 70)) + '</li>'; }).join('') + '</ol>' : '');
+  }
+  ls.on('focus', function (d) { if (d && d.entity) { selected = d.entity; card(selected); } });
+
+  /* ---------- ribbon ---------- */
+  var rib = $('#rib'), rg = rib.getContext('2d');
+  function span() { return mode === 'live' ? [Date.now() - 30 * 60000, Date.now() + 60000] : [t0, Math.max(t1, t0 + 1000)]; }
+  function drawRibbon() {
+    var dpr = window.devicePixelRatio || 1, w = rib.clientWidth, h = rib.clientHeight;
+    if (rib.width !== Math.round(w * dpr)) { rib.width = Math.round(w * dpr); rib.height = Math.round(h * dpr); }
+    rg.setTransform(dpr, 0, 0, dpr, 0, 0); rg.clearRect(0, 0, w, h);
+    var sp = span(), x = function (t) { return (t - sp[0]) / (sp[1] - sp[0]) * w; };
+    steps.forEach(function (s) {
+      var xx = x(s.t); if (xx < 0 || xx > w) return;
+      var row = s.actor === 'root' || s.actor === 'agent' ? 0 : 1;
+      rg.globalAlpha = s.t <= T ? 1 : 0.25;
+      rg.fillStyle = CATCOL[s.cat] || '#888'; rg.fillRect(xx, 8 + row * 20, 2, s.write ? 16 : 10);
+      if (s.exact.length) { rg.fillStyle = 'rgba(232,168,115,.8)'; rg.fillRect(xx, 4 + row * 20, 2, 2); }
+    });
+    rg.globalAlpha = 1; rg.fillStyle = '#93d3e6'; rg.fillRect(x(T), 0, 2, h);
+    rg.fillStyle = '#646d74'; rg.font = '9.5px ' + getComputedStyle(document.body).getPropertyValue('--mono');
+    rg.fillText('fő', 2, 14); rg.fillText('segéd', 2, 34);
+    $('#clock').textContent = T > 0 ? hhmm(T) + (mode === 'live' ? ' · élő' : ' · ' + (applied) + '/' + steps.length) : '';
+  }
+  var drag = null;
+  rib.addEventListener('pointerdown', function (e) { if (mode === 'live') return; drag = true; rib.setPointerCapture(e.pointerId); scrub(e); });
+  rib.addEventListener('pointermove', function (e) { if (drag) scrub(e); });
+  rib.addEventListener('pointerup', function () { drag = null; });
+  function scrub(e) { var r = rib.getBoundingClientRect(), sp = span(); playing = false; $('#play').textContent = '▶'; seek(sp[0] + (e.clientX - r.left) / r.width * (sp[1] - sp[0])); }
+
+  /* ---------- controls ---------- */
+  function sessions() {
+    var sel = $('#session'); sel.innerHTML = '';
+    if (mode === 'replay') {
+      (window.REPLAY_INDEX || []).slice(0, 200).forEach(function (r) { sel.add(new Option(String(r.start || '').slice(0, 16).replace('T', ' ') + ' · ' + (r.title || r.sid).slice(0, 60) + ' · ' + r.steps + ' lépés', r.sid)); });
+      if (sel.options.length) loadReplay(sel.value); else $('#src').textContent = 'Nincs visszajátszás: stack.js build';
+    } else if (mode === 'live') {
+      fetch(LIVE + '/api/sessions').then(function (r) { return r.json(); }).then(function (j) {
+        (j.sessions || []).forEach(function (s) { sel.add(new Option(new Date(s.mtime).toTimeString().slice(0, 5) + ' · ' + s.project + ' · ' + (s.title || s.id).slice(0, 60), s.file)); });
+        if (sel.options.length) connect(sel.value);
+      }).catch(function () { $('#src').textContent = 'A Munkavászon szervere (' + LIVE + ') nem fut: START O → N, aztán frissíts.'; });
+    } else { $('#file').click(); }
+  }
+  $('#mode').addEventListener('change', function () { mode = this.value; if (es) { es.close(); es = null; } reset(); sessions(); });
+  $('#session').addEventListener('change', function () { if (mode === 'replay') loadReplay(this.value); else if (mode === 'live') connect(this.value); });
+  $('#file').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
+  $('#play').addEventListener('click', function () { if (mode === 'live') return; if (T >= t1) seek(t0 - 1); playing = !playing; this.textContent = playing ? '❚❚' : '▶'; });
+  $('#inf').addEventListener('click', function () { showInf = !showInf; this.setAttribute('aria-pressed', String(showInf)); render(); paintSide(); });
+  var wrap = $('#stackWrap');
+  ['dragenter', 'dragover'].forEach(function (n) { wrap.addEventListener(n, function (e) { e.preventDefault(); wrap.classList.add('drop'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { wrap.addEventListener(n, function (e) { e.preventDefault(); wrap.classList.remove('drop'); }); });
+  wrap.addEventListener('drop', function (e) { mode = 'file'; $('#mode').value = 'file'; loadFiles(e.dataTransfer.files); });
+
+  /* ---------- clock ---------- */
+  var last = 0, lastRender = 0;
+  function frame(now) {
+    var dt = last ? Math.min(100, now - last) : 16; last = now;
+    if (mode === 'live' && steps.length && now - lastRender > 1000) { lastRender = now; seek(Date.now()); }
+    else if (mode !== 'live' && playing && steps.length) {
+      var next = T + dt * +$('#speed').value;
+      // idle stretches (> 60 s with no step) are skipped
+      if (applied < steps.length && steps[applied].t - next > 60000) next = steps[applied].t - 1000;
+      if (next >= t1) { next = t1; playing = false; $('#play').textContent = '▶'; }
+      seek(next);
+    }
+    drawRibbon();
+    requestAnimationFrame(frame);
+  }
+  mode = /[?&]mode=(replay|file)/.test(location.search) ? location.search.match(/mode=(\w+)/)[1] : 'live';
+  $('#mode').value = mode;
+  if (mode !== 'file') sessions();
+  requestAnimationFrame(frame);
+  window.ERINTES = { lens: L, steps: function () { return steps; }, seek: seek, load: loadFiles, state: function () { return { T: T, applied: applied, exact: exactE.size, inferred: infE.size }; } };
+})();
+</script>
+</body>
+</html>
