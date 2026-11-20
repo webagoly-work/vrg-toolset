@@ -103,6 +103,8 @@ object DevicesFeature : VrgFeature {
         var showGuide by remember { mutableStateOf(false) }
         var grantLink by remember { mutableStateOf<Pair<String, DeviceRequest>?>(null) }
         var name by remember { mutableStateOf(Trust.name) }
+        var typedCode by remember { mutableStateOf("") }
+        var typedName by remember { mutableStateOf("") }
         val owner = GitHub.canWrite
         // the admin phone (2026-11-19): the list's owner entry, signed in. A request its own scanner reads is approved
         // at once: the QR came straight off the other phone's screen, so the code check by eye adds nothing there.
@@ -244,6 +246,35 @@ object DevicesFeature : VrgFeature {
                     Text("Egy QR, amit a másik telefon kamerájával beolvasva letölti a VRG Mobile legújabb kiadását. Csak neked látszik.", style = Melyviz.small)
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Telepítő QR", true) { showInstall = true } }
                 } else InstallQrPanel(onClose = { showInstall = false })
+            }
+            // ---- the fallback (2026-11-20): the owner's own phone only. When the QR will not do, the other phone's
+            // Eszközkód (big on its lock screen) is typed here and sent: it goes on the list, the phone unlocks itself.
+            if (Trust.isOwner) {
+                VrgSectionTitle("Jóváhagyás eszközkóddal (tartalék)")
+                Text("Ha a QR nem megy: írd be a másik telefon zárképernyőjén látható eszközkódot, és küldd el. A telefon felkerül a listára, " +
+                    "és 1–5 percen belül magától feloldódik. Itt nincs ellenőrző kód, ezért csak olyan kódot írj be, amit magad láttál azon a telefonon.",
+                    style = Melyviz.small)
+                OutlinedTextField(typedCode, { typedCode = it.uppercase().take(16) }, Modifier.fillMaxWidth().padding(top = 6.dp), singleLine = true,
+                    label = { Text("Eszközkód (XXXX-XXXX-XXXX)", style = Melyviz.small) }, colors = fieldColors())
+                OutlinedTextField(typedName, { typedName = it.take(40) }, Modifier.fillMaxWidth().padding(top = 4.dp), singleLine = true,
+                    label = { Text("Név a listán (nem kötelező)", style = Melyviz.small) }, colors = fieldColors())
+                val ok = DeviceTrust.typedCode(typedCode)
+                if (typedCode.isNotBlank()) Text(if (ok != null) "→ $ok" else "12 betű vagy szám kell (kötőjel nélkül is jó).",
+                    style = Melyviz.small.copy(color = if (ok != null) Melyviz.kelp else Melyviz.coral))
+                Row(Modifier.padding(vertical = 6.dp)) {
+                    if (!owner) VrgChip("GitHub belépés ›", true) { host.open(Catalogue.ACCOUNT.id) }
+                    else VrgChip(if (busy) "Küldés…" else "Küldés", ok != null) {
+                        if (busy || ok == null) return@VrgChip
+                        scope.launch {
+                            busy = true
+                            val problem = Trust.approveByCode(typedCode, typedName)
+                            busy = false
+                            note = problem ?: "Felvéve: ${typedName.trim().ifBlank { ok }} ($ok). A másik telefon magától feloldódik (1–5 perc), ha a zárképernyője nyitva van."
+                            if (problem == null) { typedCode = ""; typedName = "" }
+                        }
+                    }
+                }
+                if (!owner) Text("A küldéshez tokenes GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.coral))
             }
             // ---- iPhone (2026-11-20): an iPhone runs the web app (WP M36), not the APK. The guide is the same file the
             // web app shows (Mobile/web/guide/iphone.json, bundled); the QR opens the web app in the iPhone's camera.
