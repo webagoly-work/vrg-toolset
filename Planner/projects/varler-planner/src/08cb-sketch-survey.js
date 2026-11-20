@@ -1,5 +1,5 @@
 // ==========================================================================
-// 08cb-sketch-survey.js — VRG Sketcher (Mobile WP M26–M29, M58): the survey's intake and takeoff, kept with the job
+// 08cb-sketch-survey.js — VRG Sketcher (Mobile WP M26–M29, M46): the survey's intake and takeoff, kept with the job
 //
 // Part of the Varler Planner source. These files are CONCATENATED IN ORDER
 // by build.js into a single <script>, so they share one scope.
@@ -7,7 +7,7 @@
 
 // 08ca imports the DRAWING of a phone survey (rooms, points, circuits, routes, photo points). The survey also holds the
 // INTAKE: what the job is and what the client wants (scope toggles and quantities), the answered and open questions,
-// the notes with their chips (Tisztázandó = still to clarify) and the purpose photos. Since WP M58 the phone and the
+// the notes with their chips (Tisztázandó = still to clarify) and the purpose photos. Since WP M46 the phone and the
 // Desktop Sketcher put the TAKEOFF next to it in the package (o.takeoff, kind vrg-sketch-takeoff v1,
 // docs/sketcher/TAKEOFF.md): the work items with quantities, what is guessed (≈) and the open decisions (⚑).
 //

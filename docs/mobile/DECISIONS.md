@@ -480,6 +480,30 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
 
+- **D-55 · Takeoff: one engine twice, its rules as data, 2026-11-20** (fork F2, taken for the Founder, rule 5). The takeoff
+  is `Sketcher/lib/takeoff.js` (Desktop, CLI) and `sketch-core/Takeoff.kt` (phone), kept equal by
+  `Sketcher/test/fixtures/takeoff.json` (document and summary), the M26 pattern; what counts as what lives in
+  `Sketcher/catalog/takeoff.json`, bundled with the field kit. Rejected: the phone sending the sketch to the PC to be
+  counted there (no lap on site, offline). Details: `WP/M46.md`, `../sketcher/TAKEOFF.md`.
+- **D-56 · Igények against the drawing: the larger number, marked ≈, 2026-11-20** (F2). A wanted count (Dugalj 4) and the
+  drawn points (1) give `max` = 4, ≈ with *Munkakör: 4, vázlat: 1*, so neither the client's word nor the half-finished
+  drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
+  line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
+- **D-57 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit,
+  a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+  the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
+  them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
+  counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
+- **D-58 · The intake lives on the Planner's building, shown by an action, 2026-11-20** (F2). `B.survey` (the job's
+  facts; every save carries it, no new data collection, nothing drawn so the goldens stay); ⌘K *Felmérés: munkakör
+  lap*. An older package keeps its raw intake by ids. Rejected: notes on the plan (they would clutter the drawing),
+  the Igénylista (per room; the intake is per job).
+- **D-59 · Csere and Bontás by tag; no prices; decisions from a fixed list, 2026-11-20** (F2). Replacement is a tag named
+  *Csere* (or preset `replace`), demolition the *Bontás* preset; the *Tervezett* / *Meglévő* state stays as it is. The
+  export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
+  file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
+  Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

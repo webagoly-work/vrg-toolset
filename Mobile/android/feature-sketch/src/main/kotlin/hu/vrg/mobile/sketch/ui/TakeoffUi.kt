@@ -27,7 +27,7 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.PlanView
 import hu.vrg.mobile.sketch.Takeoff
 
-// The Munkakör lap (WP M58, docs/sketcher/TAKEOFF.md): the takeoff of the survey, live, at the top of the Munkakör front.
+// The Munkakör lap (WP M46, docs/sketcher/TAKEOFF.md): the takeoff of the survey, live, at the top of the Munkakör front.
 // Symbols and colours, little text: one chip per work item (its symbol and quantity), coral and ≈ while it is a guess,
 // ⚑ while an open question can still change it, faded when nothing is done to it (an existing point that stays).
 // A tap on a chip shows its name and why; the ⚑ row lists the open decisions and jumps to Kérdések.

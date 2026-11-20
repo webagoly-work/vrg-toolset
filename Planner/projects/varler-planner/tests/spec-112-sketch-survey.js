@@ -1,4 +1,4 @@
-// VRG Sketcher (Mobile WP M58) — the survey's intake and takeoff imported with the drawing (src/08cb-sketch-survey.js).
+// VRG Sketcher (Mobile WP M46) — the survey's intake and takeoff imported with the drawing (src/08cb-sketch-survey.js).
 //
 // tests/sketch-intake.json is the Planner fixture package (sketch-field.json) with an intake in its sketch and the
 // takeoff the JS engine makes of it (Sketcher/tools/make-takeoff-fixture.js writes it; Sketcher/test/run.js checks it is
