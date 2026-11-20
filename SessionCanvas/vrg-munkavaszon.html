@@ -147,6 +147,17 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 .prog i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--c-plan); transition: width .4s; }
 .prog b { position: absolute; inset: 0 auto 0 0; width: 0; background: repeating-linear-gradient(-45deg, transparent 0 3px, rgba(201,215,122,.45) 3px 6px); }
 #eta { font: 11.5px var(--mv-mono); color: var(--mv-dim); margin: 5px 0 6px; }
+#flowHead { font-size: 12px; margin-bottom: 5px; color: var(--mv-text); }
+#flowHead .eta { font: 11px var(--mv-mono); color: var(--mv-dim); }
+#flow li { display: grid; grid-template-columns: 14px 1fr auto; gap: 6px; align-items: baseline; font-size: 12px; padding: 2px 0; }
+#flow li .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#flow li .w { font: 10.5px var(--mv-mono); color: var(--mv-dim); white-space: nowrap; }
+#flow li.run b { animation: pulse 1.1s ease-in-out infinite; }
+#flow li.done { color: var(--mv-dim); }
+#feed li.cmd { font-family: var(--mv-mono); font-size: 12px; }
+#feed li img, #detail img { display: block; max-width: 100%; max-height: 150px; margin-top: 3px; border: 1px solid var(--mv-line-strong); }
+#detail img { max-height: 420px; }
+#tip img { display: block; max-width: 320px; max-height: 220px; margin-top: 5px; border: 1px solid var(--mv-line-strong); }
 #taskList li { display: grid; grid-template-columns: 16px 1fr auto; gap: 6px; font-size: 12px; padding: 2px 0; color: var(--mv-dim); }
 #taskList li.in_progress { color: var(--mv-text); }
 #taskList li.completed { color: var(--mv-faint); }
@@ -168,6 +179,7 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 #feed li.hid .m { margin: 0; }
 #feed li.note { border-color: var(--c-bg); color: var(--mv-dim); }
 #feed li.err { border-color: var(--c-err); color: var(--c-err); }
+#feed li.image { border-color: var(--c-prompt); color: var(--mv-dim); }
 #feed li .more { color: var(--mv-faint); }
 #detail { border: 1px solid var(--mv-line-strong); padding: 8px 10px; margin-bottom: 8px; font-size: 12px; max-height: 45%; overflow: auto; background: var(--mv-raised); }
 #detail h4 { margin: 0 0 4px; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
@@ -210,6 +222,11 @@ footer button.on { border-color: var(--mv-accent); color: var(--mv-accent); }
       <span id="state" class="pill"><i></i><span></span></span>
       <div id="activeTask"></div>
       <ul id="running"></ul>
+    </section>
+    <section id="flowS" hidden>
+      <h3><span data-i="flow"></span><span id="flowCount" class="mv-num"></span></h3>
+      <div id="flowHead"></div>
+      <ul id="flow"></ul>
     </section>
     <section>
       <h3><span data-i="tasks"></span><span id="taskCount" class="mv-num"></span></h3>
@@ -316,6 +333,34 @@ var SCModel = (function () {
   }
   var tag = function (s, k) { var m = new RegExp('<' + k + '>([\\s\\S]*?)</' + k + '>').exec(s); return m ? m[1].trim() : ''; };
   var stamp = function (e) { var t = Date.parse(e.timestamp); return isNaN(t) ? null : t; };
+  var IMG_EXT = /\.(png|jpe?g|gif|webp|bmp)$/i;
+  /* what a slash command, skill or codephrase is, for its colour and icon; first match wins */
+  var CMD_KINDS = [
+    ['go', /^GO\s+[A-Z]/],
+    ['research', /research|kutat|akecheta|piacmero|search|scout/i],
+    ['batch', /batch|workflow|loop|ultracode|fan-?out|parallel|fleet/i],
+    ['plan', /plan|terv/i],
+    ['review', /review|simplify|security|audit|critique|check|verify/i],
+    ['context', /compact|clear|context|memory|resume|rewind|export/i],
+    ['config', /config|permission|model|fast|mcp|agents|hooks|settings|login|status|doctor|keybind|statusline|init|install|plugin/i],
+    ['build', /run|build|deploy|test|debug|fix|ship|commit|release/i],
+  ];
+  function cmdKind(name, fallback) {
+    var full = String(name || '').trim(), n = full.replace(/^\//, '').replace(/^[\w-]+:/, '');
+    for (var i = 0; i < CMD_KINDS.length; i++) if (CMD_KINDS[i][1].test(i ? n : full)) return CMD_KINDS[i][0];
+    return fallback || 'command';
+  }
+  /* a Workflow script's meta: its name and phase titles, read from the source text (never run) */
+  function workflowMeta(script) {
+    script = String(script || '');
+    var i = script.indexOf('meta'), head = i < 0 ? '' : script.slice(i, i + 4000), out = { name: '', phases: [], labels: [] };
+    var nm = /name\s*:\s*(['"`])(.*?)\1/.exec(head); if (nm) out.name = nm[2];
+    var ph = /phases\s*:\s*\[([\s\S]*?)\]/.exec(head), re = /title\s*:\s*(['"`])(.*?)\1/g, m;
+    if (ph) while ((m = re.exec(ph[1]))) out.phases.push(m[2]);
+    var lr = /label\s*:\s*(['"`])(.*?)\1/g;
+    while ((m = lr.exec(script)) && out.labels.length < 40) out.labels.push(m[2].replace(/\$\{[^}]*\}/g, '*'));
+    return out;
+  }
   var median = function (a) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }); return s[s.length >> 1]; };
 
   function create() {
@@ -323,11 +368,39 @@ var SCModel = (function () {
       t0: null, tEnd: null, title: '', sid: '', cwd: '', branch: '', model: '', version: '',
       items: [], calls: new Map(), bgIndex: new Map(), agentCalls: [],
       tasks: new Map(), taskOrder: [], msgs: new Map(), tokens: [], marks: [],
+      cmds: [], images: [], fans: [], fanByMsg: new Map(), plan: null,
       agents: new Map(), agentOrder: [], totals: { out: 0, think: 0, add: 0, rem: 0 }, ctxMax: 0,
       turns: 0, lines: 0, bad: 0, rev: 0,
     };
     var durCache = { rev: -1, name: null, cat: null };
     var push = function (it) { it.seq = S.items.length; S.items.push(it); return it; };
+
+    /* commands: slash commands, skills, GO codephrases, plan mode, workflows. scope says what ends them:
+       'turn' the turn's end or the next prompt, 'plan' leaving plan mode, 'call' the call's (background) end */
+    function openCmd(name, kind, t, src, scope, extra) {
+      var c = { name: name, kind: kind, t: t, tEnd: null, src: src, scope: scope, n: S.cmds.length, skills: [] };
+      for (var k in extra || {}) c[k] = extra[k];
+      S.cmds.push(c);
+      push({ kind: 'cmd', t: t, agent: 'root', cmd: c, text: name + (c.args ? ' ' + c.args : '') });
+      return c;
+    }
+    function closeCmds(t, scope) { S.cmds.forEach(function (c) { if (c.tEnd == null && c.scope === scope && c.t <= t) c.tEnd = t; }); }
+    function openTurnCmd() { for (var i = S.cmds.length - 1; i >= 0; i--) if (S.cmds[i].scope === 'turn' && S.cmds[i].tEnd == null) return S.cmds[i]; return null; }
+    function currentCmd(t) {
+      for (var i = S.cmds.length - 1; i >= 0; i--) { var c = S.cmds[i]; if (c.kind !== 'plan' && c.t <= t && (c.tEnd == null || c.tEnd >= t)) return c; }
+      return S.plan && S.plan.tEnd == null ? S.plan : null;
+    }
+    function planMode(on, t) {
+      if (on && (!S.plan || S.plan.tEnd != null)) S.plan = openCmd('plan mode', 'plan', t, 'plan', 'plan');
+      if (!on) closeCmds(t, 'plan');
+    }
+    function addImage(o) { o.kind = 'image'; o.n = S.images.length; S.images.push(o); return push(o); }
+    function imagesOf(content, t, key, ref, from) {
+      if (!Array.isArray(content)) return;
+      content.forEach(function (x) {
+        if (x && x.type === 'image' && x.source && x.source.data) addImage({ t: t, agent: key, ref: ref, from: from, mime: x.source.media_type || 'image/png', data: x.source.data });
+      });
+    }
 
     function agentOf(key, t) {
       var a = S.agents.get(key);
@@ -335,7 +408,7 @@ var SCModel = (function () {
       if (t != null) { if (a.t0 == null || t < a.t0) a.t0 = t; if (a.tEnd == null || t > a.tEnd) a.tEnd = t; }
       return a;
     }
-    function link(call, a) { call.sub = a.key; a.parent = call.id; a.label = call.label || a.label; }
+    function link(call, a) { call.sub = a.key; a.parent = call.id; a.label = call.label || a.label; a.type = call.input.subagent_type || ''; }
     function tryLink() {
       S.agentCalls.forEach(function (c) {
         if (c.sub) return;
@@ -371,6 +444,7 @@ var SCModel = (function () {
       var c = S.calls.get(useId) || S.bgIndex.get(taskId);
       if (!c || c.bgEnd != null) return;
       c.bg = true; c.bgEnd = t; c.bgStatus = tag(text, 'status') || 'done';
+      if (c.wf) c.wf.tEnd = t;
       if (/fail|error|kill/i.test(c.bgStatus)) c.bgError = true;
       push({ kind: 'note', note: 'bg', t: t, agent: 'root', ref: c.id, text: tag(text, 'summary') || (c.label + ' · ' + c.bgStatus) });
     }
@@ -385,7 +459,25 @@ var SCModel = (function () {
       if (c.add) S.totals.add += c.add; if (c.rem) S.totals.rem += c.rem;
       S.calls.set(b.id, c); push(c);
       if (key !== 'root') S.agents.get(key).n++;
+      if ((b.name === 'Agent' || b.name === 'Task') && key === 'root') {
+        var fan = S.fanByMsg.get(msg);   // the Agent calls of one message run in parallel: one fan-out
+        if (!fan) { fan = { id: msg, t: t, calls: [], cmd: currentCmd(t), n: S.fans.length }; S.fans.push(fan); S.fanByMsg.set(msg, fan); }
+        fan.calls.push(c); c.fan = fan;
+      }
       if (b.name === 'Agent' || b.name === 'Task') { S.agentCalls.push(c); tryLink(); }
+      if (key === 'root' && b.name === 'Skill' && inp.skill) {
+        var open = openTurnCmd();
+        if (open) open.skills.push(String(inp.skill));
+        else openCmd(String(inp.skill), cmdKind(inp.skill, 'skill'), t, 'skill', 'turn', { args: one(inp.args, 90), call: c });
+      }
+      if (key === 'root' && b.name === 'EnterPlanMode') planMode(true, t);
+      if (key === 'root' && b.name === 'ExitPlanMode' && S.plan) S.plan.plan = inp.plan || S.plan.plan;
+      if (key === 'root' && b.name === 'Workflow') {
+        var wm = workflowMeta(inp.script);
+        c.wf = openCmd(wm.name || inp.name || 'workflow', 'batch', t, 'workflow', 'call', { phases: wm.phases, labels: wm.labels, call: c });
+      }
+      [].concat(inp.files || [], b.name === 'Read' ? [] : [inp.path, inp.file_path, inp.screenshot_path, inp.output_path])
+        .forEach(function (p) { if (typeof p === 'string' && IMG_EXT.test(p)) addImage({ t: t, agent: key, ref: b.id, from: 'path', path: p }); });
       if (b.name === 'TodoWrite') todos(inp.todos, t);
       if (b.name === 'TaskUpdate' && inp.taskId != null) {
         var k = task(inp.taskId, t);
@@ -399,6 +491,8 @@ var SCModel = (function () {
       var c = S.calls.get(b.tool_use_id);
       if (!c) return;
       c.tEnd = t; c.error = !!b.is_error; c.out = clip(textOf(b.content), 6000);
+      imagesOf(b.content, t, key, c.id, 'result');
+      if (c.name === 'ExitPlanMode' && !c.error && key === 'root') planMode(false, t);
       var r = e.toolUseResult;
       if (r && typeof r === 'object') {
         if (r.backgroundTaskId) { c.bg = true; c.bgId = r.backgroundTaskId; S.bgIndex.set(r.backgroundTaskId, c); }
@@ -408,13 +502,14 @@ var SCModel = (function () {
           var k = task(r.task.id, t); k.subject = r.task.subject || c.input.subject || k.subject; k.active = c.input.activeForm || '';
         }
       }
-      if (!c.bg && /^(Bash|PowerShell|Agent|Task)$/.test(c.name) && /^\s*(Command running in background|Async agent launched|Running in the background)/i.test(c.out)) {
+      if (!c.bg && /^(Bash|PowerShell|Agent|Task|Workflow)$/.test(c.name) && /^\s*(Command running in background|Async agent launched|Running in the background|Workflow (started|launched|running))/i.test(c.out)) {
         c.bg = true; var m = /ID:\s*([\w-]+)/.exec(c.out); if (m) { c.bgId = m[1]; S.bgIndex.set(m[1], c); }
       }
       if (c.name === 'TaskCreate' && !(r && r.task)) {
         var mm = /Task #(\w+)/.exec(c.out);
         if (mm) { var kk = task(mm[1], t); kk.subject = c.input.subject || kk.subject; kk.active = c.input.activeForm || ''; }
       }
+      if (c.wf && !c.bg) c.wf.tEnd = t;
       if (key === 'root') S.marks.push({ t: t, k: 'result' });
     }
 
@@ -433,11 +528,17 @@ var SCModel = (function () {
       if (key !== 'root') { var a = S.agents.get(key); if (!a.prompt) { a.prompt = text; tryLink(); } return; }
       if (/^\s*\[Request interrupted/.test(text)) { push({ kind: 'note', note: 'interrupt', t: t, agent: key, text: text.trim() }); return; }
       if (/^\s*<(local-command-stdout|local-command-caveat|system-reminder|bash-stdout|bash-stderr)/.test(text)) return;
-      var cmd = tag(text, 'command-name');
-      if (cmd) text = cmd + ' ' + tag(text, 'command-args');
+      var cmd = tag(text, 'command-name'), args = tag(text, 'command-args');
+      if (cmd) text = cmd + (args ? ' ' + args : '');
       // a new prompt ends anything the previous turn left open
       S.calls.forEach(function (x) { if (x.agent === 'root' && x.tEnd == null && x.t <= t) { x.tEnd = t; x.interrupted = true; } });
+      closeCmds(t, 'turn');
       var it = push({ kind: 'prompt', t: t, agent: key, text: text, n: ++S.turns, human: !e.origin || e.origin.kind === 'human' });
+      var go = /^\s*(GO\s+[A-Z][A-Z0-9]*)\b/.exec(text), slash = !cmd && /^\s*(\/[A-Za-z][\w:.-]*)(?:\s+([\s\S]*))?$/.exec(text);
+      if (cmd) it.cmd = openCmd(cmd, cmdKind(cmd), t, 'slash', 'turn', { args: one(args, 90) });
+      else if (slash) it.cmd = openCmd(slash[1], cmdKind(slash[1]), t, 'slash', 'turn', { args: one(slash[2], 90) });
+      else if (go) it.cmd = openCmd(go[1], 'go', t, 'go', 'turn');
+      imagesOf(c, t, key, null, 'prompt');
       if (!S.title) S.title = one(text, 110);
       S.marks.push({ t: t, k: 'prompt' });
       return it;
@@ -462,7 +563,11 @@ var SCModel = (function () {
         else if (b.type === 'text' && b.text && b.text.trim()) push({ kind: 'say', t: t, agent: key, msg: id, text: b.text, api: !!e.isApiErrorMessage });
         else if (b.type === 'tool_use') addCall(b, t, key, id);
       });
-      if (key === 'root') S.marks.push({ t: t, k: /^(end_turn|stop_sequence|max_tokens|refusal)$/.test(m.stop_reason || '') ? 'end' : 'asst' });
+      if (key === 'root') {
+        var ended = /^(end_turn|stop_sequence|max_tokens|refusal)$/.test(m.stop_reason || '');
+        S.marks.push({ t: t, k: ended ? 'end' : 'asst' });
+        if (ended) closeCmds(t, 'turn');
+      }
     }
 
     /* line: a parsed object or a raw string; agent: 'root' or the subagent file's name (agent-<id>) */
@@ -484,7 +589,10 @@ var SCModel = (function () {
         case 'queue-operation':
           if (e.operation === 'enqueue' && /<task-notification>/.test(e.content || '')) notify(e.content, t);
           break;
-        case 'user': userLine(e, t, key); break;
+        case 'user':
+          var isPrompt = !(Array.isArray(e.message && e.message.content) && e.message.content.some(function (b) { return b.type === 'tool_result'; }));
+          if (key === 'root' && e.permissionMode && isPrompt && !e.isMeta) planMode(e.permissionMode === 'plan', t);
+          userLine(e, t, key); break;
         case 'assistant': asstLine(e, t, key); break;
         case 'system':
           if (/compact/i.test(e.subtype || '')) push({ kind: 'note', note: 'compact', t: t, agent: key, text: 'compact' });
@@ -569,19 +677,122 @@ var SCModel = (function () {
       return { state: st, fg: fg, bg: bg, last: last };
     }
 
-    return { S: S, add: add, expected: expected, progressAt: progressAt, stateAt: stateAt, statusAt: statusAt };
+    var callEnd = function (c) { return c.bg ? c.bgEnd : c.tEnd; };
+    function agentMedian() {
+      var d = [];
+      S.agentCalls.forEach(function (c) { var e = callEnd(c); if (e != null && !c.interrupted) d.push(e - c.t); });
+      return median(d);
+    }
+    function fanName(f) {
+      var d = f.calls.map(function (c) { return c.input.description || ''; }).join(' ');
+      if (f.calls.length === 1 && /report|jelent|writ|írás|összegz|summar|synth/i.test(d)) return 'write';
+      if (f.cmd && f.cmd.kind === 'research') return f.calls.length > 1 ? 'research' : 'single';
+      return f.calls.length > 1 ? 'parallel' : 'single';
+    }
+    /* parallel groups at T: each Agent fan-out, and each Workflow with the subagents that ran inside it */
+    function groups(T) {
+      var out = [];
+      S.fans.forEach(function (f) {
+        if (f.t > T) return;
+        out.push({ id: 'fan:' + f.id, t: f.t, cmd: f.cmd, calls: f.calls, name: fanName(f),
+          agents: f.calls.map(function (c) { return c.sub ? S.agents.get(c.sub) : null; }) });
+      });
+      S.cmds.forEach(function (c) {
+        if (c.src !== 'workflow' || c.t > T) return;
+        var ag = [];
+        S.agentOrder.forEach(function (k) { var a = S.agents.get(k); if (!a.parent && a.t0 >= c.t && (c.tEnd == null || a.t0 <= c.tEnd)) ag.push(a); });
+        out.push({ id: 'wf:' + c.n, t: c.t, cmd: c, calls: [c.call], name: 'workflow', wf: true, agents: ag });
+      });
+      return out.sort(function (a, b) { return a.t - b.t; });
+    }
+    /* a group at T: who is done, the expected run time (median of the finished siblings, else of every
+       finished agent in the session) and the ETA of the slowest one still running */
+    function groupStats(g, T) {
+      var mem = g.wf
+        ? g.agents.map(function (a) { var fin = g.cmd.tEnd != null && g.cmd.tEnd <= T; return { agent: a, start: a.t0, end: fin ? a.tEnd : null }; })
+        : g.calls.map(function (c, i) { var e = callEnd(c); return { call: c, agent: g.agents[i], start: c.t, end: e != null && e <= T ? e : null, err: c.error || c.bgError }; });
+      var durs = [], done = 0;
+      mem.forEach(function (m) { if (m.end != null) { done++; durs.push(m.end - m.start); } });
+      var exp = median(durs) || agentMedian(), eta = null, over = false;
+      // one past the expected time still needs a while: a quarter of its elapsed time, at least 5 s
+      if (done < mem.length && exp) {
+        eta = 0;
+        mem.forEach(function (m) {
+          if (m.end != null) return;
+          var el = T - m.start; if (el > exp) over = true;
+          eta = Math.max(eta, el < exp ? exp - el : Math.max(5000, el * 0.25));
+        });
+      }
+      var end = mem.length && done === mem.length ? Math.max.apply(null, mem.map(function (m) { return m.end; })) : null;
+      if (g.wf && g.cmd.tEnd != null && g.cmd.tEnd <= T) end = g.cmd.tEnd;
+      return { n: mem.length, done: done, mem: mem, exp: exp, eta: eta, end: end, over: over };
+    }
+    function cmdStats(cm, T) {
+      var end = cm.tEnd == null || cm.tEnd > T ? T : cm.tEnd, calls = 0, ag = 0, agDone = 0, eta = null;
+      S.calls.forEach(function (c) { if (c.agent === 'root' && c.t >= cm.t && c.t <= end) calls++; });
+      groups(T).forEach(function (g) {
+        if (g.cmd !== cm) return;
+        var st = groupStats(g, T); ag += st.n; agDone += st.done;
+        if (st.eta != null) eta = Math.max(eta || 0, st.eta);
+      });
+      return { calls: calls, agents: ag, agentsDone: agDone, eta: eta, running: end === T && (cm.tEnd == null || cm.tEnd > T) };
+    }
+    /* what a subagent has done by T, by kind */
+    function agentWork(a, T) {
+      var w = { search: 0, fetch: 0, read: 0, write: 0, other: 0, err: 0, last: null, n: 0 };
+      S.calls.forEach(function (c) {
+        if (c.agent !== a.key || c.t > T) return;
+        w.n++; if (c.error) w.err++;
+        if (c.name === 'WebSearch' || c.cat === 'search') w.search++;
+        else if (c.name === 'WebFetch' || /fetch|scrape|browse/i.test(c.name)) w.fetch++;
+        else if (c.cat === 'read') w.read++;
+        else if (c.cat === 'edit') w.write++;
+        else w.other++;
+      });
+      S.items.forEach(function (it) { if (it.agent === a.key && it.kind === 'say' && it.t <= T) w.last = it; });
+      return w;
+    }
+
+    return { S: S, add: add, expected: expected, progressAt: progressAt, stateAt: stateAt, statusAt: statusAt,
+      groups: groups, groupStats: groupStats, cmdStats: cmdStats, agentWork: agentWork };
   }
 
-  /* A made-up session in the transcript format, ending at `now`: the Demo button and the tests use it. */
+  /* A made-up session in the transcript format, ending at `now`: the Demo button and the tests use it.
+     Plan mode, a CSV feature with a failing test, background build and agent, a UI screenshot, then a
+     /deep-research run (four parallel researchers, a report writer) and a commit. */
+  var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  function b64(s) { // ASCII only: enough for the demo's SVGs, and runs where btoa does not
+    var o = '', i = 0;
+    for (; i < s.length; i += 3) {
+      var a = s.charCodeAt(i), b = s.charCodeAt(i + 1), c = s.charCodeAt(i + 2), n = (a << 16) | ((b || 0) << 8) | (c || 0);
+      o += B64[n >> 18 & 63] + B64[n >> 12 & 63] + (isNaN(b) ? '=' : B64[n >> 6 & 63]) + (isNaN(c) ? '=' : B64[n & 63]);
+    }
+    return o;
+  }
+  function demoShot(kind) {
+    var w = 320, h = 200, x = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 320 200"><rect width="320" height="200" fill="#0f1a22"/>';
+    if (kind === 'ui') {
+      x += '<rect x="0" y="0" width="320" height="22" fill="#17232c"/><text x="10" y="15" font-family="monospace" font-size="10" fill="#93d3e6">KESZLET</text>' +
+        '<rect x="262" y="4" width="48" height="14" fill="#e8a873"/><text x="274" y="15" font-family="monospace" font-size="10" fill="#0a141c">CSV</text>';
+      for (var r = 0; r < 8; r++) x += '<rect x="10" y="' + (32 + r * 20) + '" width="300" height="14" fill="' + (r % 2 ? '#14212a' : '#182833') + '"/>' +
+        '<rect x="16" y="' + (36 + r * 20) + '" width="' + (60 + (r * 37 % 90)) + '" height="6" fill="#a6afb7"/><rect x="240" y="' + (36 + r * 20) + '" width="40" height="6" fill="#8bcca1"/>';
+    } else {
+      x += '<text x="10" y="18" font-family="monospace" font-size="11" fill="#e8f0f6">CSV parse MB/s</text>';
+      [180, 120, 260, 90, 210].forEach(function (v, i) { x += '<rect x="' + (24 + i * 58) + '" y="' + (180 - v * 0.55) + '" width="36" height="' + v * 0.55 + '" fill="' + ['#93d3e6', '#e8a873', '#8bcca1', '#b39cf0', '#e3be7b'][i] + '"/>'; });
+      x += '<rect x="10" y="180" width="300" height="1" fill="#646d74"/>';
+    }
+    return b64(x + '</svg>');
+  }
   function demo(now) {
     now = now || Date.now();
-    var out = [], t = now - 16 * 60000, n = 0, ctx = 28000;
+    var out = [], t = now - 27 * 60000, n = 0, ctx = 28000, pm = 'plan';
     var sid = 'demo0000-5e55-4c4a-9a00-000000000000';
     var iso = function () { return new Date(t).toISOString(); };
     var adv = function (s) { t += Math.round(s * 1000); };
     var id = function (p) { return p + 'demo' + (++n); };
     var L = function (o, agent) {
       var base = { timestamp: iso(), sessionId: sid, cwd: 'H:\\VRG\\Full\\Planner_VRG_U100', gitBranch: 'main', version: 'demo' };
+      if (o.type === 'user' && !agent) base.permissionMode = pm;
       if (agent) { base.isSidechain = true; base.agentId = agent.replace('agent-', ''); }
       for (var k in o) base[k] = o[k];
       out.push({ agent: agent || 'root', line: JSON.stringify(base) });
@@ -592,7 +803,7 @@ var SCModel = (function () {
       blocks.forEach(function (b) {
         L({ type: 'assistant', thinkingDurationMs: think ? think * 9 : undefined,
           message: { id: mid, role: 'assistant', model: 'claude-demo', content: [b], stop_reason: stop || 'tool_use',
-            usage: { input_tokens: 4, cache_read_input_tokens: agent ? 9000 : ctx, cache_creation_input_tokens: 700,
+            usage: { input_tokens: 4, cache_read_input_tokens: agent ? 9000 + n * 40 : ctx, cache_creation_input_tokens: 700,
               output_tokens: 160 + (think || 0) + (b.text ? b.text.length >> 2 : 60), output_tokens_details: { thinking_tokens: think || 0 } } } }, agent);
       });
     };
@@ -604,29 +815,32 @@ var SCModel = (function () {
       for (var k in extra || {}) o[k] = extra[k];
       L(o, agent);
     };
+    var img = function (kind) { return [{ type: 'image', source: { type: 'base64', media_type: 'image/svg+xml', data: demoShot(kind) } }]; };
     var tc = 0;
     var mkTask = function (subject, active) {
       var c = use('TaskCreate', { subject: subject, description: subject, activeForm: active });
       msg([c]); adv(0.8); tc++; res(c, 'Task #' + tc + ' created successfully: ' + subject, { toolUseResult: { task: { id: String(tc), subject: subject } } }); adv(0.4);
+      return tc;
     };
     var upd = function (k, st) { var c = use('TaskUpdate', { taskId: String(k), status: st }); msg([c]); adv(0.5); res(c, 'Updated task #' + k + ' status'); adv(0.3); };
 
+    // 1. plan mode: read, then the plan is approved
     user('Adj a Készlethez CSV-exportot (a szűrt lista oszlopaival), tesztekkel, és nézd meg, mit ír a szabvány az elválasztóról.');
-    adv(6); msg([think(), say('Megnézem, hol épül a Készlet listanézete, aztán négy lépésre bontom.')], 'tool_use', 420);
-    mkTask('A listanézet és a szűrők feltérképezése', 'Feltérképezem a listanézetet');
+    adv(6); msg([think(), say('Tervezés módban vagyok: előbb körülnézek, aztán tervet adok.')], 'tool_use', 380);
+    var r1 = use('Read', { file_path: 'Inventory/src/ui/list.js' }), r2 = use('Read', { file_path: 'Inventory/src/ui/filters.js' }), g1 = use('Grep', { pattern: 'renderRows|columns' });
+    msg([r1, r2, g1]); adv(0.6); res(g1, 'Inventory/src/ui/list.js:41\nInventory/src/ui/list.js:88'); adv(0.5); res(r1, '... 240 lines ...'); adv(0.4); res(r2, '... 120 lines ...');
+    adv(9); var xp = use('ExitPlanMode', { plan: '1. CSV-író modul (RFC 4180)\n2. Tesztek\n3. Export gomb a listanézetben\n4. Build, check-start, commit' });
+    msg([think(), xp], 'tool_use', 900); adv(14); pm = 'auto'; res(xp, 'User has approved your plan.');
+    adv(2); msg([say('Jóváhagyva. A szűrt sorokat a list.js `visibleRows()` adja; arra építem az exportot.')], 'tool_use', 0);
     mkTask('CSV-író modul tesztekkel', 'Írom a CSV-író modult');
     mkTask('Export gomb a listanézetbe', 'Bekötöm az export gombot');
     mkTask('Build, check-start, commit', 'Buildelek és commitolok');
     upd(1, 'in_progress');
-    var r1 = use('Read', { file_path: 'Inventory/src/ui/list.js' }), r2 = use('Read', { file_path: 'Inventory/src/ui/filters.js' }), g1 = use('Grep', { pattern: 'renderRows|columns' });
-    msg([r1, r2, g1]); adv(0.6); res(g1, 'Inventory/src/ui/list.js:41\nInventory/src/ui/list.js:88'); adv(0.5); res(r1, '... 240 lines ...'); adv(0.4); res(r2, '... 120 lines ...');
-    adv(9); msg([think(), say('A szűrt sorokat a list.js `visibleRows()` adja; arra építem az exportot. Az elválasztónál a szabványt egy segédügynök nézi meg a háttérben.')], 'tool_use', 900);
-    var ag = use('Agent', { description: 'CSV elválasztó és idézés a szabványban', subagent_type: 'akecheta', prompt: 'Nézd meg az RFC 4180-at: elválasztó, idézés, sorvég. Írj rövid jegyzetet.' });
+    var ag = use('Agent', { description: 'CSV elválasztó és idézés a szabványban', subagent_type: 'akecheta', prompt: 'Nézd meg az RFC 4180-at: elválasztó, idézés, sorvég. Írj rövid jegyzetet.', run_in_background: true });
     msg([ag]); adv(1.2);
     res(ag, 'Async agent launched successfully. agentId: a1demo (running in background)', { toolUseResult: { status: 'async_launched', agentId: 'a1demo' } });
     var A = 'agent-a1demo';
     adv(0.5); L({ type: 'user', message: { role: 'user', content: 'Nézd meg az RFC 4180-at: elválasztó, idézés, sorvég. Írj rövid jegyzetet.' }, uuid: id('u') }, A);
-    upd(1, 'completed'); upd(2, 'in_progress');
     adv(4); var ws = use('WebSearch', { query: 'RFC 4180 CSV quoting line breaks' }); msg([think(), ws], 'tool_use', 200, A);
     adv(2.5); var e1 = use('Write', { file_path: 'Inventory/src/export/csv.js', content: new Array(58).join('x\n') }); msg([e1]); adv(0.9); res(e1, 'File created');
     adv(3.5); res(ws, 'rfc-editor.org/rfc/rfc4180 ...', {}, A);
@@ -640,27 +854,77 @@ var SCModel = (function () {
     adv(3); var e3 = use('Edit', { file_path: 'Inventory/src/export/csv.js', old_string: 'return v;', new_string: 'if (/[",\\r\\n]/.test(v))\n  return \'"\' + v.replace(/"/g, \'""\') + \'"\';\nreturn v;' }); msg([e3]); adv(0.6); res(e3, 'The file has been updated.');
     adv(1); L({ type: 'queue-operation', operation: 'enqueue', content: '<task-notification>\n<task-id>a1demo</task-id>\n<tool-use-id>' + ag.id + '</tool-use-id>\n<status>completed</status>\n<summary>Agent "CSV elválasztó és idézés a szabványban" completed</summary>\n</task-notification>' });
     adv(2); var b2 = use('Bash', { command: 'npm test -- csv', description: 'CSV tesztek újra' }); msg([b2]); adv(6.5); res(b2, 'PASS test/csv.test.js (6 tests)');
-    upd(2, 'completed'); upd(3, 'in_progress');
+    upd(1, 'completed'); upd(2, 'in_progress');
     adv(5); var mc = use('mcp__vrg-stack__stack_search', { query: 'Készlet listanézet export gomb' }); msg([think(), mc], 'tool_use', 260); adv(1.4); res(mc, '3 nodes');
-    adv(3); var r3 = use('Read', { file_path: 'Inventory/src/ui/toolbar.js' }); msg([r3]); adv(0.5); res(r3, '... 90 lines ...');
     adv(6); var e4 = use('Edit', { file_path: 'Inventory/src/ui/toolbar.js', old_string: '</div>', new_string: '<button data-act="csv">CSV</button>\n</div>' }); msg([e4]); adv(0.5); res(e4, 'The file has been updated.');
     adv(2); var bb = use('Bash', { command: 'npm run build', description: 'Inventory build a háttérben', run_in_background: true }); msg([bb]); adv(0.8);
     res(bb, 'Command running in background with ID: bdemo1. Output is being written to: tasks/bdemo1.output', { toolUseResult: { backgroundTaskId: 'bdemo1' } });
     adv(4); var e5 = use('Edit', { file_path: 'Inventory/src/ui/list.js', old_string: 'export {', new_string: 'export { visibleRows,\n' }); msg([e5]); adv(0.4); res(e5, 'The file has been updated.');
     adv(30); L({ type: 'queue-operation', operation: 'enqueue', content: '<task-notification>\n<task-id>bdemo1</task-id>\n<tool-use-id>' + bb.id + '</tool-use-id>\n<status>completed</status>\n<summary>Background command "Inventory build a háttérben" completed (exit code 0)</summary>\n</task-notification>' });
-    adv(3); upd(3, 'completed'); upd(4, 'in_progress');
+    adv(3); var sh = use('Bash', { command: 'node shot.js http://localhost:8123 export.png', description: 'Képernyőkép az export gombról' }); msg([sh]); adv(4.5); res(sh, 'saved export.png');
+    adv(1); var rd = use('Read', { file_path: 'export.png' }); msg([rd]); adv(0.7); res(rd, img('ui'));
+    adv(3); msg([say('A képen ott az új CSV gomb a lista fejlécében.')], 'tool_use'); upd(2, 'completed'); upd(3, 'in_progress');
     adv(2); var ck = use('Bash', { command: 'node tools/check-start.js', description: 'START registry ellenőrzés' }); msg([ck]); adv(2.2); res(ck, 'ok: 214 paths, 0 problems');
-    adv(4); msg([say('Kész az export: a szűrt lista oszlopai mennek ki, RFC 4180 szerint idézve. Feltöltsem?')], 'end_turn');
-    adv(6 * 60);
+    upd(3, 'completed');
+    adv(4); msg([say('Kész az export: a szűrt lista oszlopai mennek ki, RFC 4180 szerint idézve.')], 'end_turn');
+
+    // 2. /deep-research: four researchers in parallel, then the report writer
+    adv(4 * 60);
+    L({ type: 'user', origin: { kind: 'human' }, uuid: id('u'), message: { role: 'user', content: '<command-message>deep-research</command-message>\n<command-name>/deep-research</command-name>\n<command-args>Melyik CSV-könyvtár illik a böngészős Készlethez?</command-args>' } });
+    L({ type: 'user', isMeta: true, uuid: id('u'), message: { role: 'user', content: [{ type: 'text', text: 'Base directory for this skill: ... (skill instructions)' }] } });
+    adv(5); msg([think(), say('Négy szempontra bontom: sebesség és méret, szabványkövetés, licenc és karbantartás, böngészős API. Párhuzamosan kutatom őket, aztán jelentés készül.')], 'tool_use', 700);
+    var k1 = mkTask('Kutatás', 'Kutatok'), k2 = mkTask('Jelentés megírása', 'Írom a jelentést'), k3 = mkTask('Jelentés átadása', 'Átadom a jelentést');
+    upd(k1, 'in_progress');
+    var mk = use('Bash', { command: 'mkdir -p "research_notes/CSV konyvtarak" reports', description: 'Kutatási mappák' }); msg([mk]); adv(0.4); res(mk, '');
+    adv(2);
+    var topics = [
+      ['r1', 'Sebesség és méret', 62, [['WebSearch', 'csv parser benchmark browser 2026'], ['WebFetch', 'https://github.com/leeoniya/uDSV'], ['Read', 'bench.png'], ['WebFetch', 'https://bundlephobia.com/package/papaparse'], ['Write', 'speed.md']]],
+      ['r2', 'Szabványkövetés', 96, [['WebSearch', 'RFC 4180 compliance csv libraries'], ['WebFetch', 'https://www.rfc-editor.org/rfc/rfc4180'], ['WebSearch', 'csv parser quoted newline bugs'], ['WebFetch', 'https://github.com/mholt/PapaParse/issues'], ['WebFetch', 'https://csv.js.org/parse/'], ['Write', 'standards.md']]],
+      ['r3', 'Licenc és karbantartás', 44, [['WebSearch', 'papaparse license maintenance'], ['WebFetch', 'https://www.npmjs.com/package/papaparse'], ['Write', 'license.md']]],
+      ['r4', 'Böngészős API és streaming', 128, [['WebSearch', 'browser streaming csv parse web worker'], ['WebFetch', 'https://developer.mozilla.org/docs/Web/API/Streams_API'], ['WebSearch', 'papaparse worker chunk'], ['WebFetch', 'https://www.papaparse.com/docs'], ['WebSearch', 'csv export blob download large'], ['Write', 'browser.md']]],
+    ];
+    var fanT = t, calls = topics.map(function (tp) {
+      return use('Agent', { description: tp[1], subagent_type: 'general-purpose', prompt: 'Research ' + tp[1] + ' for a browser CSV library. Save your output notes to research_notes/CSV konyvtarak/' + tp[3][tp[3].length - 1][1] });
+    });
+    msg(calls);
+    topics.forEach(function (tp, i) { // each researcher's own transcript, on its own clock
+      var a = 'agent-' + tp[0], T0 = fanT + 900 + i * 400, steps = tp[3], span = tp[2] * 1000;
+      t = T0; L({ type: 'user', message: { role: 'user', content: calls[i].input.prompt }, uuid: id('u') }, a);
+      steps.forEach(function (st, j) {
+        t = T0 + Math.round(span * (j + 0.3) / steps.length);
+        var inp = st[0] === 'WebSearch' ? { query: st[1] } : st[0] === 'WebFetch' ? { url: st[1] } : st[0] === 'Read' ? { file_path: st[1] } : { file_path: 'research_notes/CSV konyvtarak/' + st[1], content: new Array(30 + j * 7).join('n\n') };
+        var c = use(st[0], inp); msg(j ? [c] : [think(), c], 'tool_use', j ? 0 : 240, a);
+        t += Math.round(span * 0.45 / steps.length);
+        res(c, st[0] === 'Read' ? img('chart') : st[0] === 'Write' ? 'File created' : '... ' + (st[0] === 'WebSearch' ? '10 results' : 'page text'), {}, a);
+      });
+      t = T0 + span; msg([say(tp[1] + ': jegyzet kész, ' + steps.length + ' lépés, forrásokkal.')], 'end_turn', 0, a);
+    });
+    var order = topics.map(function (tp, i) { return [fanT + 900 + i * 400 + tp[2] * 1000 + 600, i]; }).sort(function (x, y) { return x[0] - y[0]; });
+    order.forEach(function (o) { t = o[0]; res(calls[o[1]], topics[o[1]][1] + ': kész, a jegyzet a research_notes mappában.', { toolUseResult: { agentId: topics[o[1]][0], status: 'completed' } }); });
+    adv(3); upd(k1, 'completed'); upd(k2, 'in_progress');
+    var wr = use('Agent', { description: 'Write final report', subagent_type: 'general-purpose', prompt: 'Read the notes in research_notes/CSV konyvtarak/ and synthesize into a research report.' });
+    msg([think(), wr], 'tool_use', 300);
+    var W1 = 'agent-w1', w0 = t + 800; t = w0;
+    L({ type: 'user', message: { role: 'user', content: wr.input.prompt }, uuid: id('u') }, W1);
+    ['speed.md', 'standards.md', 'license.md', 'browser.md'].forEach(function (f, j) { t = w0 + 3000 + j * 2500; var c = use('Read', { file_path: 'research_notes/CSV konyvtarak/' + f }); msg([c], 'tool_use', 0, W1); t += 900; res(c, '... notes ...', {}, W1); });
+    t = w0 + 22000; var rw = use('Write', { file_path: 'reports/CSV konyvtarak.md', content: new Array(140).join('r\n') }); msg([think(), rw], 'tool_use', 1800, W1); t = w0 + 58000; res(rw, 'File created', {}, W1);
+    t = w0 + 61000; msg([say('A jelentés kész: a PapaParse ajánlott (worker, streaming, MIT), az uDSV a leggyorsabb.')], 'end_turn', 0, W1);
+    t = w0 + 62500; res(wr, 'Report saved to reports/CSV konyvtarak.md', { toolUseResult: { agentId: 'w1', status: 'completed' } });
+    adv(2); upd(k2, 'completed'); upd(k3, 'in_progress');
+    var su = use('SendUserFile', { files: ['reports/CSV konyvtarak.md'], status: 'normal' }); msg([su]); adv(1); res(su, '1 file delivered to user.');
+    upd(k3, 'completed');
+    adv(2); msg([say('Elküldtem a jelentést. Röviden: a PapaParse illik a Készlethez (worker + streaming, MIT); ha a sebesség a fő szempont, az uDSV.')], 'end_turn');
+
+    // 3. commit
+    adv(3 * 60);
     user('Igen, commitold és told fel.');
     adv(4); var gc = use('Bash', { command: 'git add -A && git commit -m "Inventory: CSV export" && git push', description: 'Commit és push' }); msg([think(), gc], 'tool_use', 120);
     adv(5.5); res(gc, '[main 3f2a9c1] Inventory: CSV export\n 4 files changed, 104 insertions(+)');
-    upd(4, 'completed');
     adv(2); msg([say('Feltöltve: main 3f2a9c1.')], 'end_turn');
     return out;
   }
 
-  return { create: create, demo: demo, CATS: CATS, catOf: catOf, label: label };
+  return { create: create, demo: demo, CATS: CATS, catOf: catOf, label: label, cmdKind: cmdKind, workflowMeta: workflowMeta };
 })();
 if (typeof module !== 'undefined') module.exports = SCModel;
 /* model:end */
@@ -675,26 +939,36 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       demo: 'Demó', open: 'Napló megnyitása', live: 'Élő', fit: 'Illeszt', follow: 'Követ', redact: 'Kitakarás', newest: 'mindig a legújabb',
       now: 'Most', tasks: 'Feladatok', stats: 'Eszközök', feed: 'Napló',
       st: { empty: 'üres', model: 'gondolkodik / ír', tool: 'eszközt futtat', bg: 'háttérben fut', idle: 'kész, te jössz', ask: 'kérdez, rád vár' },
-      lane: { talk: 'Szöveg', read: 'Olvasás', search: 'Keresés', edit: 'Szerkesztés', shell: 'Parancs', web: 'Web', agent: 'Ügynök', mcp: 'MCP', plan: 'Terv', other: 'Egyéb', bg: 'Háttér' },
+      lane: { cmd: 'Parancs', img: 'Képek', talk: 'Szöveg', read: 'Olvasás', search: 'Keresés', edit: 'Szerkesztés', shell: 'Parancs', web: 'Web', agent: 'Ügynök', mcp: 'MCP', plan: 'Terv', other: 'Egyéb', bg: 'Háttér' },
       eta: 'hátra kb. {eta} (becslés, {avg}/feladat)', etaNone: 'ETA: még nincs kész feladat a becsléshez', noTasks: 'nincs feladatlista ebben a munkamenetben',
       thinkHidden: 'gondolkodás · a szöveg nincs a naplóban', hidden: 'szöveg a naplón kívül', thinkTok: '{tok} gondolati token', fold: '{d} szünet',
       out: 'kimenet', ctx: 'kontextus', lines: 'sor', calls: 'hívás', running: 'fut', expected: 'várható', bgDone: 'háttér kész',
       prompt: 'Kérés', say: 'Claude', think: 'Gondolkodás', note: 'Esemény', err: 'Hiba', input: 'Bemenet', output: 'Kimenet', dur: 'Idő',
       liveOn: 'élő · {n} sor', fileOn: '{n} sor · {f}', demoOn: 'demó', noServer: 'nincs szerver: csak fájl / demó', agent: 'segédügynök',
       sessions: 'Munkamenetek', interrupted: 'megszakítva', compact: 'kontextus tömörítve',
+      flow: 'Párhuzamos munka', cmd: 'Parancs', img: 'Kép', agentsDone: '{d}/{n} kész', nPar: '{n} párhuzamos', over: '(csúszik)',
+      phase: { research: 'Kutatás', write: 'Jelentésírás', parallel: 'Párhuzamos ügynökök', single: 'Ügynök', workflow: 'Munkafolyam' },
+      kind: { research: 'kutatás', batch: 'köteg / munkafolyam', plan: 'tervezés', review: 'átnézés', build: 'futtatás', context: 'kontextus',
+        config: 'beállítás', go: 'GO kódszó', skill: 'skill', command: 'parancs' },
+      planText: 'A terv', skills: 'Skillek', phases: 'Fázisok', members: 'Tagok',
     },
     en: {
       emptyTitle: 'EMPTY CANVAS', emptyText: 'Drop a Claude Code session transcript (.jsonl) here, or run it live: node SessionCanvas/serve.js',
       demo: 'Demo', open: 'Open transcript', live: 'Live', fit: 'Fit', follow: 'Follow', redact: 'Redact', newest: 'always the newest',
       now: 'Now', tasks: 'Tasks', stats: 'Tools', feed: 'Log',
       st: { empty: 'empty', model: 'thinking / writing', tool: 'running a tool', bg: 'background running', idle: 'done, your turn', ask: 'asking, waits for you' },
-      lane: { talk: 'Text', read: 'Read', search: 'Search', edit: 'Edit', shell: 'Shell', web: 'Web', agent: 'Agent', mcp: 'MCP', plan: 'Plan', other: 'Other', bg: 'Background' },
+      lane: { cmd: 'Commands', img: 'Images', talk: 'Text', read: 'Read', search: 'Search', edit: 'Edit', shell: 'Shell', web: 'Web', agent: 'Agent', mcp: 'MCP', plan: 'Plan', other: 'Other', bg: 'Background' },
       eta: 'about {eta} left (estimate, {avg}/task)', etaNone: 'ETA: no finished task to estimate from yet', noTasks: 'no task list in this session',
       thinkHidden: 'thinking · text not in the transcript', hidden: 'text not in the log', thinkTok: '{tok} thinking tokens', fold: '{d} pause',
       out: 'output', ctx: 'context', lines: 'lines', calls: 'calls', running: 'running', expected: 'expected', bgDone: 'background done',
       prompt: 'Prompt', say: 'Claude', think: 'Thinking', note: 'Event', err: 'Error', input: 'Input', output: 'Output', dur: 'Time',
       liveOn: 'live · {n} lines', fileOn: '{n} lines · {f}', demoOn: 'demo', noServer: 'no server: file / demo only', agent: 'subagent',
       sessions: 'Sessions', interrupted: 'interrupted', compact: 'context compacted',
+      flow: 'Parallel work', cmd: 'Command', img: 'Image', agentsDone: '{d}/{n} done', nPar: '{n} in parallel', over: '(overdue)',
+      phase: { research: 'Research', write: 'Report writing', parallel: 'Parallel agents', single: 'Agent', workflow: 'Workflow' },
+      kind: { research: 'research', batch: 'batch / workflow', plan: 'planning', review: 'review', build: 'run', context: 'context',
+        config: 'settings', go: 'GO codephrase', skill: 'skill', command: 'command' },
+      planText: 'The plan', skills: 'Skills', phases: 'Phases', members: 'Members',
     },
   };
   var store = { get: function (k) { try { return localStorage.getItem('sc.' + k); } catch (e) { return null; } },
@@ -739,6 +1013,45 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     var h = hex.replace('#', ''); if (h.length === 3) h = h.replace(/./g, '$&$&');
     var n = parseInt(h, 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
   };
+  /* command kinds: colour and icon (slash commands, skills, GO codephrases, plan mode, workflows) */
+  var KCOL = { research: '#7fc8f8', batch: '#c9a0f2', plan: '#c9d77a', review: '#e4b46d', build: '#e3be7b', context: '#93d3e6',
+    config: '#8d979f', go: '#f0a875', skill: '#e59cc8', command: '#c4ccd2' };
+  var ICON = { research: '◎', batch: '☰', plan: '▦', review: '✔', build: '▶', context: '↺', config: '⚙', go: '➜', skill: '✦', command: '/' };
+  var baseName = function (p) { return String(p || '').split(/[\\/]/).pop(); };
+  var thumbs = new Map();
+  function imgURL(im) {
+    if (im._url != null) return im._url;
+    im._url = '';
+    if (im.data) {
+      try {
+        var bin = atob(im.data), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        im._url = URL.createObjectURL(new Blob([u8], { type: im.mime }));
+      } catch (e) { im._url = 'data:' + im.mime + ';base64,' + im.data; }
+    } else if (im.path && isServed && curSession) im._url = 'api/img?f=' + encodeURIComponent(curSession) + '&p=' + encodeURIComponent(im.path);
+    return im._url;
+  }
+  /* a small copy of each image, drawn once, so the canvas never rescales a full screenshot per frame */
+  function thumb(im) {
+    var tb = thumbs.get(im); if (tb) return tb;
+    tb = { cv: null, w: 0, h: 0, bad: false }; thumbs.set(im, tb);
+    var url = imgURL(im); if (!url) { tb.bad = true; return tb; }
+    var el = new Image();
+    el.onload = function () {
+      var nw = el.naturalWidth || 320, nh = el.naturalHeight || 200, w = Math.min(480, Math.round(200 * nw / nh)), h = Math.round(w * nh / nw);
+      var c = document.createElement('canvas'); c.width = Math.max(1, w); c.height = Math.max(1, h);
+      c.getContext('2d').drawImage(el, 0, 0, c.width, c.height); tb.cv = c; tb.w = c.width; tb.h = c.height;
+    };
+    el.onerror = function () { tb.bad = true; };
+    el.src = url;
+    return tb;
+  }
+  function imgCaption(im) {
+    var call = im.ref && M.S.calls.get(im.ref);
+    if (!call) return im.from === 'prompt' ? tr('prompt') : baseName(im.path);
+    var nm = call.name === 'Read' ? baseName(call.input.file_path) : im.path ? baseName(im.path) : call.name;
+    return nm + (call.agent !== 'root' ? ' · ↳ ' + (M.S.agents.get(call.agent) || {}).label : '');
+  }
   var STATE_COL = { empty: C.faint, model: C.text, tool: C.warm, bg: COL.bg, idle: C.ok, ask: COL.mcp };
 
   /* ---------------- state ---------------- */
@@ -758,10 +1071,12 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     M = SCModel.create(); mode = newMode; born = new Map(); ripples = []; sparks = []; laneBorn = {};
     selected = null; hover = null; camX = 0; camY = 0; follow = true; fitMode = false; cache.rev = -1;
     $('#followBtn').classList.add('on'); $('#detail').hidden = true; lastSide = '';
+    thumbs.forEach(function (tb, im) { if (im._url && im._url.indexOf('blob:') === 0) URL.revokeObjectURL(im._url); });
+    thumbs = new Map();
   }
 
   /* ---------------- time mapping: active time left to right, idle gaps folded ---------------- */
-  var cache = { rev: -1, folds: [], rows: {}, bgRows: {}, maxRow: {}, maxBg: 0, sortedTok: [], feed: [] };
+  var cache = { rev: -1, folds: [], rows: {}, bgRows: {}, maxRow: {}, maxBg: 0, sortedTok: [], feed: [], images: [] };
   function rebuild() {
     var S = M.S; if (cache.rev === S.rev) return;
     cache.rev = S.rev;
@@ -800,8 +1115,9 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     });
     cache.rows = rows; cache.maxRow = maxRow; cache.bgRows = bgRows; cache.maxBg = maxBg;
     cache.sortedTok = S.tokens.slice().sort(function (x, y) { return x.t - y.t; });
+    cache.images = S.images.slice().sort(function (x, y) { return x.t - y.t || x.n - y.n; });
     cache.feed = S.items.filter(function (it) {
-      return it.agent === 'root' && (it.kind !== 'call' || it.error);
+      return (it.agent === 'root' && (it.kind !== 'call' || it.error)) || it.kind === 'image';
     }).sort(function (x, y) { return x.t - y.t || x.seq - y.seq; });
   }
   /* the tail: while nothing runs, the stretch after the last event folds too, so the pen rests */
@@ -860,26 +1176,45 @@ if (typeof module !== 'undefined') module.exports = SCModel;
   }
 
   /* ---------------- layout ---------------- */
+  var IMG_H = 86;
   function lanes(now) {
-    var S = M.S, out = [], used = {}, anyBg = false;
+    var S = M.S, out = [], used = {}, anyBg = false, anyImg = false, anyPlan = false, anyCmd = false;
     S.calls.forEach(function (c) {
       if (c.t > T || c.agent !== 'root') return;
       used[c.cat] = 1;
       if (c.bg && c.tEnd != null && c.tEnd <= T) anyBg = true;
     });
+    S.cmds.forEach(function (c) { if (c.t <= T) { if (c.kind === 'plan') anyPlan = true; else anyCmd = true; } });
+    S.images.forEach(function (im) { if (im.t <= T) anyImg = true; });
+    var rows = (anyPlan ? 1 : 0) + (anyCmd ? 1 : 0);
+    if (rows) out.push({ id: 'cmd', h: 6 + 19 * rows, rows: rows, col: KCOL.command, name: tr('lane.cmd') });
     out.push({ id: 'talk', h: 78, col: COL.talk, name: tr('lane.talk') });
+    if (anyImg) out.push({ id: 'img', h: IMG_H, col: COL.prompt, name: tr('lane.img') });
     SCModel.CATS.forEach(function (k) {
       if (used[k]) out.push({ id: k, cat: k, h: 14 + 14 * ((cache.maxRow[k] || 0) + 1), col: COL[k], name: tr('lane.' + k) });
     });
     if (anyBg) out.push({ id: 'bg', h: 14 + 16 * (cache.maxBg + 1), col: COL.bg, name: tr('lane.bg') });
+    // parallel groups: a header, then one lane per member; a lone agent outside any command gets no header
+    var placed = {};
+    M.groups(T).forEach(function (gp) {
+      var col = gp.cmd ? KCOL[gp.cmd.kind] || COL.agent : COL.agent;
+      var head = gp.wf || gp.cmd || gp.calls.length > 1;
+      if (head) out.push({ id: 'grp:' + gp.id, grp: gp, h: 24, col: col, name: tr('phase.' + gp.name) });
+      gp.agents.forEach(function (a, i) {
+        if (!a || placed[a.key] || a.t0 == null || a.t0 > T) return;
+        placed[a.key] = 1;
+        out.push({ id: 'ag:' + a.key, agent: a, member: head ? gp : null, idx: i, h: 30, col: head ? col : COL.agent,
+          name: '↳ ' + (a.type && a.type !== 'general-purpose' ? a.type + ': ' : '') + a.label });
+      });
+    });
     S.agentOrder.forEach(function (k) {
       var a = S.agents.get(k);
-      if (a.t0 != null && a.t0 <= T) out.push({ id: 'ag:' + k, agent: a, h: 26, col: COL.agent, name: '↳ ' + a.label });
+      if (!placed[k] && a.t0 != null && a.t0 <= T) out.push({ id: 'ag:' + k, agent: a, h: 30, col: COL.agent, name: '↳ ' + a.label });
     });
-    var avail = H - TOP - TOKH - 10, sum = 0;
-    out.forEach(function (l) { sum += l.h; });
-    var grow = sum < avail ? Math.min(1.8, 1 + (avail - sum) / Math.max(1, sum - out[0].h)) : 1;
-    out.forEach(function (l, i) { if (i) { l.pad = (l.h * grow - l.h) / 2; l.h *= grow; } else l.pad = 0; });
+    var avail = H - TOP - TOKH - 10, sum = 0, growable = 0;
+    out.forEach(function (l) { sum += l.h; if (l.cat || l.id === 'bg') growable += l.h; });
+    var grow = sum < avail && growable ? Math.min(1.3, 1 + (avail - sum) / growable) : 1;
+    out.forEach(function (l) { var g2 = l.cat || l.id === 'bg' ? grow : 1; l.pad = (l.h * g2 - l.h) / 2; l.h *= g2; });
     var y = TOP - camY;
     out.forEach(function (l) {
       if (!laneBorn[l.id]) laneBorn[l.id] = now;
@@ -888,6 +1223,13 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     });
     return out;
   }
+  function stripes(x, y, w, h, col, now) {
+    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+    g.strokeStyle = rgba(col, 0.75); g.lineWidth = 2;
+    for (var p = x - 12 + (now / 45) % 8; p < x + w + 12; p += 8) { g.beginPath(); g.moveTo(p, y + h); g.lineTo(p + 8, y); g.stroke(); }
+    g.restore();
+  }
+  function diamond(x, y, d, col) { g.fillStyle = col; g.beginPath(); g.moveTo(x, y - d); g.lineTo(x + d, y); g.lineTo(x, y + d); g.lineTo(x - d, y); g.fill(); }
 
   /* ---------------- drawing ---------------- */
   function resize() {
@@ -938,6 +1280,7 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       if (Math.abs(target - camX) < 0.5) camX = target;
     }
     var L = lanes(now);
+    var laneOf = {}; L.forEach(function (l) { laneOf[l.id] = l; });
     var lanesEnd = L.length ? L[L.length - 1].y + L[L.length - 1].h : TOP;
     var contentH = lanesEnd + camY - TOP, availH = H - TOP - TOKH - 6;
     camY = Math.max(0, Math.min(camY, Math.max(0, contentH - availH)));
@@ -949,6 +1292,27 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       g.fillStyle = i % 2 ? 'rgba(255,255,255,0.012)' : 'rgba(255,255,255,0.028)';
       g.fillRect(GUT, l.y, W - GUT, l.h);
       g.fillStyle = C.line; g.fillRect(GUT, l.y + l.h - 1, W - GUT, 1);
+    });
+
+    // commands: a band on the top lane (plan mode above, the rest below), a faint tint through the lanes while it runs
+    var cmdL = laneOf.cmd;
+    if (cmdL && cmdL.k > 0.05) S.cmds.forEach(function (cm) {
+      if (cm.t > T) return;
+      var xa = sx(cm.t), run = cm.tEnd == null || cm.tEnd > T, xb = sx(run ? T : cm.tEnd);
+      if (xb < GUT - 300 || xa > W + 20) return;
+      var col = KCOL[cm.kind] || KCOL.command, k = birth(cm, now, Math.max(GUT, xa), cmdL.y + 12, col);
+      var row = cmdL.rows === 2 && cm.kind !== 'plan' ? 1 : 0, by = cmdL.y + 4 + row * 19, bh = 16, w = Math.max(4, xb - xa) * k;
+      g.fillStyle = rgba(col, 0.035 * k); g.fillRect(xa, cmdL.y + cmdL.h, w, Math.max(0, bottom - cmdL.y - cmdL.h));
+      g.fillStyle = rgba(col, 0.2); g.fillRect(xa, by, w, bh);
+      if (run) stripes(Math.max(xa, xa + w - 40), by, Math.min(40, w), bh, col, now);
+      g.fillStyle = col; g.fillRect(xa, by, 3, bh); if (!run) g.fillRect(xa + w - 1, by, 1, bh);
+      var st = M.cmdStats(cm, T), bits = [];
+      bits.push(st.agents ? tr('agentsDone', { d: st.agentsDone, n: st.agents }) : st.calls + ' ' + tr('calls'));
+      if (st.eta != null) bits.push('~' + dur(st.eta));
+      if (!run) bits.push(dur(cm.tEnd - cm.t));
+      var lab = (ICON[cm.kind] || '/') + ' ' + cm.name + (cm.skills.length ? ' + ' + cm.skills.join(' + ') : '') + '  ·  ' + bits.join(' · ');
+      var lx = Math.max(xa, GUT + 2); g.globalAlpha = k; txt(red(lab), lx + 8, by + 11.5, Math.max(xa + w - lx - 12, 240), C.text, '600 10.5px ' + MONO); g.globalAlpha = 1;
+      hit(xa, by, Math.max(w, 60), bh, { kind: 'cmdband', cmd: cm, t: cm.t });
     });
 
     // time grid
@@ -978,16 +1342,18 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       hit(a, TOP, FOLD_PX, bottom - TOP, { kind: 'fold', t: f.a, f: f });
     });
 
-    var talk = L[0], spineY = talk.y + 48;
-    // prompts: a line through every lane
+    var talk = laneOf.talk, spineY = talk.y + 48;
+    // prompts: a line through every lane; a label stops where the next prompt starts
+    var pxs = S.items.filter(function (it) { return it.kind === 'prompt' && it.t <= T; }).map(function (it) { return sx(it.t); }).sort(function (a, b) { return a - b; });
     S.items.forEach(function (it) {
       if (it.kind !== 'prompt' || it.t > T) return;
       var x = sx(it.t); if (x < GUT - 300 || x > W) return;
       var k = birth(it, now, x, talk.y + 10, COL.prompt);
       g.fillStyle = rgba(COL.prompt, 0.55 * k); g.fillRect(x, TOP, 1.5, (bottom - TOP) * k);
-      g.fillStyle = COL.prompt; g.fillRect(x, talk.y + 4, 22, 14);
+      g.fillStyle = it.cmd ? KCOL[it.cmd.kind] || COL.prompt : COL.prompt; g.fillRect(x, talk.y + 4, 22, 14);
       txt('#' + it.n, x + 3, talk.y + 15, 20, C.bg, 'bold 10px ' + MONO);
-      g.globalAlpha = k; txt(red(it.text), x + 27, talk.y + 15, 300, COL.prompt, '11.5px ' + MONO); g.globalAlpha = 1;
+      var nextX = pxs.filter(function (v) { return v > x + 1; })[0], room = Math.min(300, (nextX == null ? 1e9 : nextX) - x - 32);
+      g.globalAlpha = k; txt(red(it.text), x + 27, talk.y + 15, room, COL.prompt, '11.5px ' + MONO); g.globalAlpha = 1;
       hit(x - 2, talk.y + 2, 330, 18, it);
     });
 
@@ -1028,7 +1394,6 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     });
 
     // tool calls
-    var laneOf = {}; L.forEach(function (l) { laneOf[l.id] = l; });
     var stripe = (now / 45) % 8;
     S.calls.forEach(function (c) {
       if (c.t > T || c.agent !== 'root') return;
@@ -1093,17 +1458,66 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       hit(xa, by - 2, w, bh + 4, c);
     });
 
-    // subagent lanes: their spawn link and their activity
+    // parallel groups: the header holds the fork (where the Agent calls left), one box per member, the
+    // phase's ETA and the join (when the last one came back); curves fan out to each member and back in
+    var gstats = {};
     L.forEach(function (l) {
-      if (!l.agent) return;
-      var a = l.agent, y = l.y + l.pad + 7;
+      if (!l.grp) return;
+      var gp = l.grp, st = gstats[gp.id] = M.groupStats(gp, T), col = l.col;
+      var xa = sx(gp.t), xe = st.end != null ? sx(st.end) : sx(T), ly = l.y + l.h - 6, key = gp.wf ? gp.cmd.call : gp.calls[0].fan;
+      if (xe < GUT - 400 || xa > W + 20 || l.k < 0.05) return;
+      var k = birth(key, now, xa, ly, col);
+      var src = gp.calls[0] && laneOf[gp.calls[0].cat];
+      if (src && gp.calls[0].agent === 'root') {
+        var ay = src.y + src.pad + 17 + 14 * (cache.rows[gp.calls[0].id] || 0);
+        g.strokeStyle = rgba(col, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(xa, ay); g.lineTo(xa, ly - 5); g.stroke(); g.setLineDash([]);
+      }
+      g.fillStyle = rgba(col, 0.5); g.fillRect(xa, ly - 1, Math.max(1, (xe - xa) * k), 2);
+      diamond(xa, ly, 5, col);
+      L.forEach(function (al) {
+        if (al.member !== gp || !al.agent || al.k < 0.05) return;
+        var a = al.agent, m = st.mem[al.idx] || {}, ay2 = al.y + al.pad + 13, x0 = sx(a.t0);
+        g.strokeStyle = rgba(col, 0.55); g.lineWidth = 1.2;
+        g.beginPath(); g.moveTo(xa, ly); g.bezierCurveTo(xa + 22, ly, x0 - 22, ay2, x0, ay2); g.stroke();
+        if (m.end != null) {
+          var xm = sx(m.end); g.strokeStyle = rgba(col, 0.35);
+          g.beginPath(); g.moveTo(xm, ay2); g.bezierCurveTo(xm + 22, ay2, xe - 22, ly, xe, ly); g.stroke();
+        }
+      });
+      if (st.end != null) {
+        g.fillStyle = col; g.beginPath(); g.arc(xe, ly, 4.5, 0, 7); g.fill();
+        if (!born.has(key.id + ':join')) { born.set(key.id + ':join', now); ripples.push({ x: xe + camX, y: ly + camY, col: col, t: now, big: true }); }
+      } else { g.fillStyle = col; g.beginPath(); g.arc(xe, ly, 3 + Math.sin(now / 160), 0, 7); g.fill(); }
+      var bx = Math.max(xa, GUT + 2) + 10, by = l.y + 4;
+      st.mem.forEach(function (m, i) {
+        g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(bx + i * 10 + 0.5, by + 0.5, 7, 7);
+        if (m.end != null) { g.fillStyle = m.err ? COL.err : col; g.fillRect(bx + i * 10 + 2, by + 2, 4, 4); }
+        else { g.fillStyle = rgba(col, 0.35 + 0.3 * Math.sin(now / 200 + i)); g.fillRect(bx + i * 10 + 2, by + 2, 4, 4); }
+      });
+      var lab = tr('phase.' + gp.name) + (gp.cmd ? ' (' + gp.cmd.name + ')' : '') + ' · ' + tr('nPar', { n: st.n }) + ' · ' + tr('agentsDone', { d: st.done, n: st.n }) +
+        (st.eta != null ? ' · ~' + dur(st.eta) + (st.over ? ' ' + tr('over') : '') : st.end != null ? ' · ' + dur(st.end - gp.t) : '') +
+        (gp.wf && gp.cmd.phases && gp.cmd.phases.length ? ' · ' + gp.cmd.phases.join(' → ') : '');
+      g.globalAlpha = k; txt(red(lab), bx + st.mem.length * 10 + 6, by + 8, 520, C.text, '600 10.5px ' + MONO); g.globalAlpha = 1;
+      hit(xa, l.y, Math.max(120, xe - xa), l.h, { kind: 'grp', g: gp, t: gp.t });
+    });
+
+    // subagent lanes: their activity, an expected-time track for group members, and what they have done
+    L.forEach(function (l) {
+      if (!l.agent || l.k < 0.05) return;
+      var a = l.agent, y = l.y + l.pad + 7, col0 = l.col;
       var parent = a.parent && S.calls.get(a.parent);
       var xs = sx(a.t0), xe = sx(Math.min(T, a.tEnd));
-      if (parent && laneOf.agent) {
+      if (parent && laneOf.agent && !l.member) {
         var py = laneOf.agent.y + laneOf.agent.pad + 17 + 14 * (cache.rows[parent.id] || 0);
         g.strokeStyle = rgba(COL.agent, 0.45); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(sx(parent.t) + 1, py); g.lineTo(xs, y + 6); g.stroke(); g.setLineDash([]);
       }
-      g.fillStyle = rgba(COL.agent, 0.18); g.fillRect(xs, y + 5, Math.max(1, xe - xs), 2);
+      g.fillStyle = rgba(col0, 0.2); g.fillRect(xs, y + 5, Math.max(1, xe - xs), 2);
+      var st = l.member && gstats[l.member.id], m = st && st.mem[l.idx];
+      if (m && st.exp) {
+        var x1 = sx(m.start), x2 = sx(m.start + st.exp), xf = sx(m.end != null ? m.end : T);
+        g.strokeStyle = rgba(col0, 0.4); g.setLineDash([2, 3]); g.strokeRect(x1 + 0.5, y + 15.5, Math.max(1, x2 - x1), 3); g.setLineDash([]);
+        g.fillStyle = rgba(xf > x2 && m.end == null ? C.warm : col0, 0.75); g.fillRect(x1, y + 16, Math.max(1, xf - x1), 2);
+      }
       S.calls.forEach(function (c) {
         if (c.agent !== a.key || c.t > T) return;
         var xa = sx(c.t), run = c.tEnd == null || c.tEnd > T, xb = sx(run ? T : c.tEnd);
@@ -1119,7 +1533,49 @@ if (typeof module !== 'undefined') module.exports = SCModel;
         g.fillStyle = it.kind === 'say' ? COL.talk : rgba(COL.think, 0.6);
         g.fillRect(x - 1.5, y + 3.5, 3, 5); hit(x - 3, y, 6, 12, it);
       });
+      // its work so far, after its last mark: searches, pages, reads, writes; done: a tick and its last words
+      var pe = parent ? (parent.bg ? parent.bgEnd : parent.tEnd) : null;
+      var fin = m ? m.end != null : pe != null && pe <= T;
+      var wk = M.agentWork(a, T), cx = Math.max(GUT + 4, sx(Math.min(T, fin && pe ? Math.max(a.tEnd, pe) : a.tEnd)) + 8);
+      if (cx < W) {
+        g.font = '600 10px ' + MONO;
+        [['◎', wk.search, COL.search], ['⇣', wk.fetch, COL.web], ['▤', wk.read, COL.read], ['✎', wk.write, COL.edit], ['·', wk.other, COL.other]].forEach(function (c) {
+          if (!c[1]) return; var t2 = c[0] + c[1]; g.fillStyle = c[2]; g.fillText(t2, cx, y + 10); cx += g.measureText(t2).width + 6;
+        });
+        if (fin) { g.fillStyle = C.ok; g.fillText('✓', cx, y + 10); cx += 12; if (wk.last) txt(red(wk.last.text.replace(/\s+/g, ' ')), cx, y + 10, 320, C.dim, '10px ' + MONO); }
+        else { g.fillStyle = col0; g.beginPath(); g.arc(xe + 2, y + 6, 2.5 + Math.sin(now / 150), 0, 7); g.fill(); }
+      }
     });
+
+    // images: thumbnails on their own lane, each tied by a leader to the call (or prompt) that brought it
+    var imL = laneOf.img;
+    if (imL && imL.k > 0.05) {
+      var right = -1e9, th = imL.h - 22;
+      cache.images.forEach(function (im) {
+        if (im.t > T) return;
+        var tb = thumb(im), tw = tb.w ? Math.min(th * 2.2, th * tb.w / tb.h) : th * 1.4;
+        var x = Math.max(sx(im.t) - tw / 2, right + 8); right = x + tw;
+        if (x > W + 10 || x + tw < GUT - 40) return;
+        var y = imL.y + 5, call = im.ref && S.calls.get(im.ref);
+        var col = call ? (call.error ? COL.err : COL[call.cat]) : COL.prompt, k = birth(im, now, x + tw / 2, y + th / 2, col);
+        var nx = sx(im.t), ny = spineY;
+        if (call && call.agent === 'root' && laneOf[call.cat]) ny = laneOf[call.cat].y + laneOf[call.cat].pad + 12 + 14 * (cache.rows[call.id] || 0);
+        else if (call && laneOf['ag:' + call.agent]) ny = laneOf['ag:' + call.agent].y + laneOf['ag:' + call.agent].pad + 13;
+        var up = ny < y, sy0 = up ? y : y + th;
+        g.strokeStyle = rgba(col, 0.6); g.setLineDash([2, 3]); g.lineWidth = 1;
+        g.beginPath(); g.moveTo(x + tw / 2, sy0); g.bezierCurveTo(x + tw / 2, sy0 + (up ? -16 : 16), nx, ny + (up ? 16 : -16), nx, ny); g.stroke(); g.setLineDash([]);
+        g.fillStyle = col; g.beginPath(); g.arc(nx, ny, 2.5, 0, 7); g.fill();
+        var sc = 0.8 + 0.2 * k, dw = tw * sc, dh = th * sc, x0 = x + (tw - dw) / 2, y0 = y + (th - dh) / 2;
+        g.globalAlpha = k;
+        g.fillStyle = C.panel; g.fillRect(x0, y0, dw, dh);
+        if (tb.cv && !redact) g.drawImage(tb.cv, x0, y0, dw, dh);
+        else txt(tb.bad ? '▨ ' + baseName(im.path || '') : '…', x0 + 5, y0 + dh / 2 + 4, dw - 10, C.faint, '10px ' + MONO);
+        g.strokeStyle = im === selected || im === hover ? C.accent : col; g.strokeRect(x0 + 0.5, y0 + 0.5, dw - 1, dh - 1);
+        txt(red(imgCaption(im)), x, y + th + 12, tw + 40, C.dim, '9.5px ' + MONO);
+        g.globalAlpha = 1;
+        hit(x, y, tw, th + 14, im);
+      });
+    }
 
     // notes (background done, interrupts, compaction) as ticks on the spine
     S.items.forEach(function (it) {
@@ -1193,9 +1649,14 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       if (l.h < 8) return;
       g.globalAlpha = l.k;
       g.fillStyle = l.col; g.fillRect(8, l.y + l.pad + 8, 3, Math.max(4, Math.min(12, l.h - 12)));
-      txt(l.name.toUpperCase(), 16, l.y + l.pad + 17, GUT - 20, l.agent ? C.dim : C.text, (l.agent ? '' : '600 ') + '10.5px ' + MONO);
+      txt(l.grp ? '⑂ ' + l.name : l.agent ? l.name : l.name.toUpperCase(), 16, l.y + l.pad + (l.grp ? 15 : 17), GUT - 20, l.grp ? l.col : l.agent ? C.dim : C.text, (l.agent ? '' : '600 ') + '10.5px ' + MONO);
+      if (l.grp) { // a bracket over the group's member lanes
+        var last = l; L.forEach(function (m) { if (m.member === l.grp) last = m; });
+        g.fillStyle = rgba(l.col, 0.6); g.fillRect(3, l.y + 6, 2, last.y + last.h - l.y - 10);
+      }
       g.globalAlpha = 1;
       if (l.agent) hit(0, l.y, GUT, l.h, { kind: 'agent', a: l.agent, t: l.agent.t0 });
+      if (l.grp) hit(0, l.y, GUT, l.h, { kind: 'grp', g: l.grp, t: l.grp.t });
     });
     if (selected && selected.kind === 'call') { /* keep the selected bar visible in the detail */ }
     side(now);
@@ -1219,6 +1680,29 @@ if (typeof module !== 'undefined') module.exports = SCModel;
         '</span><span class="eta">' + dur(el) + (eta ? ' · ' + eta : '') + '</span></li>';
     }).join('');
     var activeTask = pr && pr.inprog.length ? '▸ ' + pr.inprog.map(function (x) { return x.active || x.subject; }).join(' · ') : '';
+    var runCmd = null;
+    S.cmds.forEach(function (c) { if (c.t <= T && (c.tEnd == null || c.tEnd > T) && (!runCmd || c.kind !== 'plan')) runCmd = c; });
+    if (runCmd) activeTask = (ICON[runCmd.kind] || '/') + ' ' + runCmd.name + (activeTask ? '   ' + activeTask : '');
+    // the parallel group to show: one still running, else the latest
+    var flowHtml = '', flowHead = '', flowCount = '';
+    if (!empty) {
+      var gs = M.groups(T), pick = null;
+      gs.forEach(function (gp) { var st0 = M.groupStats(gp, T); if (st0.end == null) pick = { gp: gp, st: st0 }; });
+      if (!pick && gs.length) pick = { gp: gs[gs.length - 1], st: M.groupStats(gs[gs.length - 1], T) };
+      if (pick) {
+        var gp = pick.gp, gst = pick.st, gcol = gp.cmd ? KCOL[gp.cmd.kind] : COL.agent;
+        flowCount = gst.done + '/' + gst.n;
+        flowHead = '<span style="color:' + gcol + '">⑂ ' + esc(tr('phase.' + gp.name)) + '</span>' + (gp.cmd ? ' · ' + esc(gp.cmd.name) : '') +
+          ' <span class="eta">' + (gst.eta != null ? '~' + dur(gst.eta) + (gst.over ? ' ' + tr('over') : '') : gst.end != null ? '✓ ' + dur(gst.end - gp.t) : '') + '</span>';
+        flowHtml = gst.mem.map(function (m) {
+          var a = m.agent, run = m.end == null, wk = a ? M.agentWork(a, T) : null;
+          var w = wk ? [['◎', wk.search], ['⇣', wk.fetch], ['▤', wk.read], ['✎', wk.write]].filter(function (x) { return x[1]; }).map(function (x) { return x[0] + x[1]; }).join(' ') : '';
+          var lab = m.call ? m.call.label || m.call.name : a ? a.label : '?';
+          return '<li class="' + (run ? 'run' : 'done') + '"><b style="color:' + (m.err ? COL.err : gcol) + '">' + (run ? '▸' : m.err ? '✕' : '✓') + '</b><span class="nm">' +
+            esc(red(lab)) + '</span><span class="w">' + esc(w ? w + ' · ' : '') + dur((run ? T : m.end) - m.start) + '</span></li>';
+        }).join('');
+      }
+    }
     // tasks
     var tasksHtml = '', count = '', eta = '', bar = 0, part = 0;
     if (pr && pr.total) {
@@ -1243,15 +1727,16 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       '<br>+' + S.totals.add + ' / −' + S.totals.rem + ' ' + tr('lines') + (errs ? ' · <span style="color:' + COL.err + '">' + errs + ' ' + tr('err').toLowerCase() + '</span>' : '');
     // feed: newest first
     var feedItems = cache.feed.filter(function (it) { return it.t <= T; });
-    var key = [lang, redact, T > S.tEnd ? 'e' : Math.floor(T / 1000), feedItems.length, run, count, nCalls, selected && selected.seq].join('|');
+    var key = [lang, redact, T > S.tEnd ? 'e' : Math.floor(T / 1000), feedItems.length, run, count, nCalls, selected && selected.seq, flowHtml, flowHead, activeTask].join('|');
     if (key === lastSide) return; lastSide = key;
     $('#running').innerHTML = run; $('#activeTask').textContent = red(activeTask);
+    $('#flowS').hidden = !flowHtml; $('#flow').innerHTML = flowHtml; $('#flowHead').innerHTML = flowHead; $('#flowCount').textContent = flowCount;
     $('#taskCount').textContent = count; $('#taskBar').style.width = bar + '%'; $('#taskPart').style.width = part + '%';
     $('#eta').textContent = eta; $('#taskList').innerHTML = tasksHtml;
     $('#catBars').innerHTML = bars; $('#tokStats').innerHTML = tokHtml; $('#callCount').textContent = nCalls ? nCalls + ' ' + tr('calls') : '';
     $('#feedCount').textContent = feedItems.length || '';
     var fh = feedItems.slice(-160).reverse().map(function (it) {
-      var cls = it.kind === 'call' ? 'err' : it.kind, head = hhmm(it.t, true) + ' · ', body;
+      var cls = it.kind === 'call' ? 'err' : it.kind, head = hhmm(it.t, true) + ' · ', body, extra = '', pic = '';
       if (it.kind === 'prompt') { head += tr('prompt') + ' #' + it.n; body = it.text; }
       else if (it.kind === 'say') { head += tr('say'); body = it.text; }
       else if (it.kind === 'think') {
@@ -1259,9 +1744,12 @@ if (typeof module !== 'undefined') module.exports = SCModel;
         body = it.text || '';
         if (!body) { cls += ' hid'; head += ' · ' + tr('hidden'); }
       } else if (it.kind === 'note') { head += tr('note'); body = it.note === 'compact' ? tr('compact') : it.text; }
+      else if (it.kind === 'cmd') { head += tr('cmd') + ' · ' + tr('kind.' + it.cmd.kind); body = (ICON[it.cmd.kind] || '/') + ' ' + it.text; extra = ' style="border-color:' + KCOL[it.cmd.kind] + '"'; }
+      else if (it.kind === 'image') { head += tr('img') + ' · ' + imgCaption(it); body = redact ? '▨' : ''; pic = redact ? '' : imgURL(it); }
       else { head += tr('err') + ' · ' + it.name; body = (it.label ? it.label + '\n' : '') + it.out; }
       body = red(body); var long = body.length > 420;
-      return '<li class="' + cls + '" data-seq="' + it.seq + '"><span class="m">' + esc(head) + '</span>' + esc(long ? body.slice(0, 420) : body) + (long ? '<span class="more">…</span>' : '') + '</li>';
+      return '<li class="' + cls + '"' + extra + ' data-seq="' + it.seq + '"><span class="m">' + esc(head) + '</span>' + esc(long ? body.slice(0, 420) : body) + (long ? '<span class="more">…</span>' : '') +
+        (pic ? '<img src="' + esc(pic) + '" alt="">' : '') + '</li>';
     }).join('');
     $('#feed').innerHTML = fh;
     // header
@@ -1277,7 +1765,29 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     else $('#scrub').value = 1000;
   }
 
+  function cmdText(cm) {
+    var st = M.cmdStats(cm, T), run = cm.tEnd == null || cm.tEnd > T, out = [];
+    out.push(tr('kind.' + cm.kind) + (cm.args ? ' · ' + cm.args : ''));
+    out.push(hhmm(cm.t, true) + ' → ' + (run ? '… (' + tr('running') + ')' : hhmm(cm.tEnd, true)) + ' · ' + dur((run ? T : cm.tEnd) - cm.t));
+    out.push(st.calls + ' ' + tr('calls') + (st.agents ? ' · ' + tr('agentsDone', { d: st.agentsDone, n: st.agents }) : '') + (st.eta != null ? ' · ~' + dur(st.eta) : ''));
+    if (cm.skills.length) out.push(tr('skills') + ': ' + cm.skills.join(', '));
+    if (cm.phases && cm.phases.length) out.push(tr('phases') + ': ' + cm.phases.join(' → '));
+    if (cm.plan) out.push('\n' + tr('planText') + ':\n' + cm.plan);
+    return out.join('\n');
+  }
+  function grpText(gp) {
+    var st = M.groupStats(gp, T);
+    return (gp.cmd ? gp.cmd.name + ' · ' : '') + tr('nPar', { n: st.n }) + ' · ' + tr('agentsDone', { d: st.done, n: st.n }) +
+      (st.eta != null ? ' · ~' + dur(st.eta) + (st.over ? ' ' + tr('over') : '') : st.end != null ? ' · ' + dur(st.end - gp.t) : '') +
+      (st.exp ? '\n' + tr('expected') + ' ~' + dur(st.exp) : '') + '\n\n' +
+      st.mem.map(function (m) {
+        var a = m.agent, wk = a ? M.agentWork(a, T) : null;
+        return (m.end == null ? '▸ ' : m.err ? '✕ ' : '✓ ') + (m.call ? m.call.label || m.call.name : a ? a.label : '?') + ' · ' + dur((m.end == null ? T : m.end) - m.start) +
+          (wk ? ' · ◎' + wk.search + ' ⇣' + wk.fetch + ' ▤' + wk.read + ' ✎' + wk.write : '') + (wk && wk.last && m.end != null ? '\n   ' + wk.last.text.replace(/\s+/g, ' ').slice(0, 160) : '');
+      }).join('\n');
+  }
   function showDetail(it) {
+    if (it && it.kind === 'cmd') it = { kind: 'cmdband', cmd: it.cmd, t: it.t };
     var S = M.S, d = $('#detail');
     if (!it) { d.hidden = true; return; }
     var rows = [], title = '';
@@ -1299,6 +1809,14 @@ if (typeof module !== 'undefined') module.exports = SCModel;
       kv(tr('think'), it.text || tr('thinkHidden'));
     } else if (it.kind === 'fold') {
       title = tr('fold', { d: dur(it.f.b - it.f.a) }); kv(tr('dur'), hhmm(it.f.a, true) + ' → ' + hhmm(it.f.b, true));
+    } else if (it.kind === 'image') {
+      title = tr('img') + ' · ' + esc(red(imgCaption(it)));
+      kv(tr('dur'), hhmm(it.t, true) + (it.path ? ' · ' + it.path : '') + (it.mime ? ' · ' + it.mime : ''));
+      if (!redact && imgURL(it)) rows.push('<a href="' + esc(imgURL(it)) + '" target="_blank" rel="noopener"><img src="' + esc(imgURL(it)) + '" alt=""></a>');
+    } else if (it.kind === 'cmdband') {
+      title = '<span style="color:' + KCOL[it.cmd.kind] + '">' + esc((ICON[it.cmd.kind] || '/') + ' ' + it.cmd.name) + '</span>'; kv(tr('cmd'), cmdText(it.cmd));
+    } else if (it.kind === 'grp') {
+      title = '⑂ ' + esc(tr('phase.' + it.g.name)); kv(tr('members'), grpText(it.g));
     } else if (it.kind === 'agent') {
       var a = it.a; title = tr('agent') + ' · ' + esc(a.label); kv(tr('dur'), hhmm(a.t0, true) + ' → ' + hhmm(a.tEnd, true) + ' · ' + dur(a.tEnd - a.t0) + ' · ' + a.n + ' ' + tr('calls')); kv(tr('prompt'), a.prompt);
     } else {
@@ -1465,8 +1983,11 @@ if (typeof module !== 'undefined') module.exports = SCModel;
   function tip(e, it) {
     var el = $('#tip');
     if (!it) { el.style.display = 'none'; return; }
-    var S = M.S, k = '', body = '';
-    if (it.kind === 'call') {
+    var S = M.S, k = '', body = '', pic = '';
+    if (it.kind === 'image') { k = tr('img') + ' · ' + imgCaption(it) + ' · ' + hhmm(it.t, true); body = it.path || ''; pic = redact ? '' : imgURL(it); }
+    else if (it.kind === 'cmdband') { k = (ICON[it.cmd.kind] || '/') + ' ' + it.cmd.name; body = cmdText(it.cmd).slice(0, 900); }
+    else if (it.kind === 'grp') { k = '⑂ ' + tr('phase.' + it.g.name); body = grpText(it.g).slice(0, 1200); }
+    else if (it.kind === 'call') {
       var d0 = it.tEnd != null && it.tEnd <= T ? it.tEnd - it.t : T - it.t;
       k = it.name + ' · ' + dur(d0) + (it.tEnd == null || it.tEnd > T ? ' · ' + tr('running') : '') + (it.error ? ' · ' + tr('err') : '');
       body = (it.add || it.rem ? '+' + (it.add || 0) + ' −' + (it.rem || 0) + ' ' + tr('lines') + '\n' : '') + (it.input.command || it.input.file_path || it.label || '');
@@ -1477,7 +1998,7 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     } else if (it.kind === 'fold') { k = tr('fold', { d: dur(it.f.b - it.f.a) }); body = hhmm(it.f.a, true) + ' → ' + hhmm(it.f.b, true); }
     else if (it.kind === 'agent') { k = tr('agent'); body = it.a.label + '\n' + it.a.n + ' ' + tr('calls'); }
     else { k = (it.kind === 'prompt' ? tr('prompt') + ' #' + it.n : it.kind === 'say' ? tr('say') : tr('note')) + ' · ' + hhmm(it.t, true); body = it.note === 'compact' ? tr('compact') : String(it.text).slice(0, 600); }
-    el.innerHTML = '<div class="k">' + esc(k) + '</div>' + esc(red(body));
+    el.innerHTML = '<div class="k">' + esc(k) + '</div>' + esc(red(body)) + (pic ? '<img src="' + esc(pic) + '" alt="">' : '');
     var r = $('#stage').getBoundingClientRect();
     el.style.display = 'block';
     var x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
@@ -1503,7 +2024,7 @@ if (typeof module !== 'undefined') module.exports = SCModel;
   applyLang(); resize(); initLive();
   if (/[?#&]demo\b/.test(location.search + location.hash)) startDemo();
   requestAnimationFrame(tick);
-  window.SC = { model: function () { return M; }, setT: function (t) { T = t; }, state: function () { return { mode: mode, T: T, pxPerMs: pxPerMs, camX: camX }; } };
+  window.SC = { model: function () { return M; }, setT: function (t) { T = t; }, pause: function () { playing = false; }, state: function () { return { mode: mode, T: T, pxPerMs: pxPerMs, camX: camX }; } };
 })();
 </script>
 </body>

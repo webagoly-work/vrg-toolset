@@ -7,7 +7,10 @@
    at <full>/home/claude-account-b (GO-MAIN). Loopback only, and the Host header must be this port's, so a
    web page cannot read transcripts through a rebound DNS name; no CORS headers, so no other origin can either.
    GET /api/sessions             the newest 80 sessions across the config dirs
-   GET /api/stream?f=<id>        SSE: hello, the file's lines in batches, ready, then every appended line */
+   GET /api/stream?f=<id>        SSE: hello, the file's lines in batches, ready, then every appended line
+   GET /api/img?f=<id>&p=<path>  an image file a tool saved or sent (screenshots, SendUserFile): only a png / jpg /
+                                 gif / webp / bmp whose exact path is written in that session's transcript or one of
+                                 its subagents' (images a tool returned are in the transcript already) */
 'use strict';
 const fs = require('fs'), path = require('path'), http = require('http'), os = require('os');
 
@@ -42,6 +45,34 @@ function resolveId(id) {
   const projects = path.join(ROOTS[+m[1]].dir, 'projects');
   const file = path.resolve(projects, m[2], m[3]);
   return file.startsWith(projects + path.sep) && fs.existsSync(file) ? file : null;
+}
+
+const IMG = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.bmp': 'image/bmp' };
+const texts = new Map(); // file -> { m, text, cwd }: the last few transcripts read whole, for /api/img
+function sessionText(file) {
+  const st = fs.statSync(file), c = texts.get(file);
+  if (c && c.m === st.mtimeMs) return c;
+  let text = fs.readFileSync(file, 'utf8');
+  const sub = path.join(file.replace(/\.jsonl$/, ''), 'subagents');
+  try { fs.readdirSync(sub).filter((f) => f.endsWith('.jsonl')).forEach((f) => { text += '\n' + fs.readFileSync(path.join(sub, f), 'utf8'); }); } catch { /* none */ }
+  const m = /"cwd":"((?:[^"\\]|\\.)*)"/.exec(text);
+  let cwd = ''; try { cwd = m ? JSON.parse('"' + m[1] + '"') : ''; } catch { /* odd cwd */ }
+  const v = { m: st.mtimeMs, text, cwd };
+  texts.set(file, v);
+  if (texts.size > 4) texts.delete(texts.keys().next().value);
+  return v;
+}
+function image(res, file, p) {
+  const type = IMG[path.extname(p).toLowerCase()];
+  if (!type) { res.writeHead(415).end('not an image'); return; }
+  const s = sessionText(file);
+  if (!s.text.includes(JSON.stringify(p).slice(1, -1))) { res.writeHead(403).end('not in this session'); return; }
+  const abs = path.isAbsolute(p) || /^[A-Za-z]:[\\/]/.test(p) ? p : path.resolve(s.cwd || REPO, p);
+  fs.stat(abs, (err, st) => {
+    if (err || !st.isFile() || st.size > 30 * 1024 * 1024) { res.writeHead(404).end('no such image'); return; }
+    res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+    fs.createReadStream(abs).pipe(res);
+  });
 }
 
 const titles = new Map();
@@ -141,6 +172,12 @@ const server = http.createServer((req, res) => {
   if (u.pathname === '/api/sessions') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify({ roots: ROOTS.map((r) => r.account || path.basename(r.dir)), sessions: sessions() }));
+    return;
+  }
+  if (u.pathname === '/api/img') {
+    const file = resolveId(u.searchParams.get('f'));
+    if (!file) { res.writeHead(404).end('no such session'); return; }
+    image(res, file, u.searchParams.get('p') || '');
     return;
   }
   if (u.pathname === '/api/stream') {
