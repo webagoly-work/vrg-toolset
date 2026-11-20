@@ -516,6 +516,13 @@
    "qty": true
   },
   {
+   "id": "cee",
+   "label": "CEE aljzat (ipari)",
+   "sym": "⏻",
+   "group": "igeny",
+   "qty": true
+  },
+  {
    "id": "ipkamera",
    "label": "IP kamera",
    "sym": "◉",
