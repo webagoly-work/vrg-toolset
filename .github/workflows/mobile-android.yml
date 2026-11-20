@@ -5,9 +5,9 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js']
+    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js', 'launcher/vrg-parity.json', 'launcher/vrg-catalog.json', 'tools/parity.js']
   pull_request:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js']
+    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js', 'launcher/vrg-parity.json', 'launcher/vrg-catalog.json', 'tools/parity.js']
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,8 @@ jobs:
           node Mobile/tests/relay-pair.js
           node Mobile/catalogue/icon-gen.js --check
           node Mobile/tests/workflow-seal.js
+          node tools/parity.js --check
+          node --test Dashboard/test/wp-50.test.js
       - name: VRG Sketcher (field kit, fixture, variants, Desktop page)
         working-directory: .
         run: node Sketcher/test/run.js

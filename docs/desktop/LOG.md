@@ -256,3 +256,27 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `wp-49.test.js` 15 (+4: grades / formats, the netstat / netsh parsers in English and Hungarian, the sampler on fakes, the
   download QR); probe: the corner row's values, grades and computed colours, the menu (10), switching metrics on and saving them,
   Esc, ◉; the download QR with a throwaway relay; wp-35 channel pin 112 → 114; `relay-ports.js` 102 (+13).
+
+## WP-50 — one feature list for both apps (2026-11-20, cloud session)
+
+The Founder's ask: every feature is a full feature on both the VRG Desktop and VRG Mobile; one that makes no sense on a device
+(a pager on a PC) is still there, greyed out, and its click shows only its description. Decided with the Founder: every level
+(dev tools too), grey = the list below, the registry and the cards now, each missing port later as its own WP.
+
+- `launcher/vrg-parity.json`: the one two-way list. `desk` = all 96 catalog units on the phone (native / webapp / pc / grey /
+  gap), `phone` = all 34 phone features on the Desktop (full / grey / gap), `queue` = the WPs of the gaps (M47–M60 phone side,
+  WP-51–WP-57 Desktop side). Grey on the phone: VS Code, the .exe build, Programok, BACKUP (+ Toolbox and Zen, retired on the
+  Desktop too). Grey on the Desktop: Légegér, Képernyő, Csipogó, Fotópont, Hálózat.
+- `tools/parity.js` (`--check`): every unit and feature once, every target real (a phone feature, frame part, port, Desktop unit,
+  queued WP), grey with its why, gap with its plan and WP; writes `Dashboard/config/phone-cards.json` and `docs/mobile/PARITY.md`
+  tables 1–3.
+- Desktop: `lib/catalog.js` adds each grey / gap phone feature as `phone:<id>` (type `phone feature`, Alkalmazások → A telefonról,
+  Irányítópult section *A telefon funkciói*); `resolve` → `{ do:'card' }`, which `desk.js` shows as a card (what it is on the
+  phone, why not here / what the Desktop version will do, its WP; Esc, backdrop or Bezárás closes it). Tiles and ◣ rows are
+  dashed / dimmed; the Lapok picker lists them under "A telefonról (leírás)".
+- Phone (M46): `desk-gen.js` reads the list, so `DeskCatalog.kt` holds every unit with its level, description and WP; `Reach.NONE`
+  became `GREY` / `GAP`; the ◣ menu and Kommand list every unit, and a grey / gap one opens `UnitCard` (Posta keeps a "Saját
+  levelező" button until M48).
+- Tests: `wp-50.test.js` 7 (the check, both catalogs covered, the grey lists, the error cases, the cards, the catalog items and
+  their card, a broken cards file). Mobile `KommandTest` (96 units, every target, the grey list). CI runs `parity.js --check` and
+  wp-50 on every push that touches Mobile/ or the lists. Not run here (no H: drive): wp-40…47, `check-catalog.js`, the probe.

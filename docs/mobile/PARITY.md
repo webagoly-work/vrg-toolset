@@ -1,62 +1,204 @@
-# PARITY — the VRG Desktop, unit by unit, on VRG Mobile
+# PARITY — every feature on both apps: the VRG Desktop and VRG Mobile
 
-*Written 2026-11-12 (night run, `NIGHT-DESKTOP.md` N1). The user's ask: VRG Mobile becomes **a simplified VRG
-Desktop**, not only a companion: the same frame, the same User-level catalog, the same Lapok, the same apps, the
-Mélyvíz look. Dev-level items stay off the phone. With a paired PC it reaches further, and with a Claude Remote
-Control session running on the PC, further still.*
+*Rewritten 2026-11-20 (WP-50 / M46). The Founder's ask: every feature is a full feature on both the VRG Desktop and
+VRG Mobile. Where one makes no sense on a device (a pager on a PC) it is still there, greyed out, and a click shows only
+its description. This replaces the one-way map of 2026-11-12 (the User-level units on the phone, dev units left off).*
 
-**How it reaches the phone:**
-- `native`: a Compose screen in VRG Mobile (an M-feature, or a part of the Asztal frame);
-- `webapp`: the same HTML app as on the Desktop, in a confined WebView, fetched from GitHub `main` and kept offline (M21);
-- `pc`: through the paired relay (M2 trust), behind a relay flag;
-- `rc`: only with a Claude Remote Control session the PC started (M22);
-- `no`: dev-only or meaningless on a phone (reason given).
+**The list is one file: `launcher/vrg-parity.json`.** `desk` says how each Desktop unit (`launcher/vrg-catalog.json`,
+every level, categories aside) is on the phone; `phone` says how each phone feature (`Catalogue.ALL`) is on the Desktop.
 
-Source of the list: `launcher/vrg-catalog.json`, every item with `level: "user"` (34 on 2026-11-12, 35 with `phone` on 2026-11-14), then the Desktop's
-window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
+- **full**: it opens and works there. On the phone: `native` (a phone screen or the Asztal frame), `webapp` (the same
+  HTML app offline, M21) or `pc` (through the paired relay: PC ablakok, Localhost `port:<n>`).
+- **grey** (szürke): it makes no sense on that device. The tile is greyed out; a click shows what it is and why.
+- **gap** (hiány): it belongs there and is not built yet. The tile is dimmed; a click shows what it is, what the port
+  will do and its work package (table 3). Each gap is built as its own WP, one at a time.
 
-## 1. The 35 User-level units
+**Where it shows.** Phone: the Asztal's ◣ menu lists every Desktop unit in its group (dev ones under Fejlesztés), and
+Kommand finds them; a grey or gap unit opens a description card. Desktop: the phone features that are grey or gap on the
+PC are tiles in the Irányítópult's *A telefon funkciói* section and in the ◣ menu (Alkalmazások → A telefonról); a click
+opens the same kind of card. Full ones need no extra tile: the Desktop unit is the feature.
 
-| # | Unit (id) | Hungarian name | Desktop source | Mobile today | Reaches the phone | WP |
-|---|---|---|---|---|---|---|
-| 1 | `desktop` | VRG Asztal | `Dashboard/page/vrg-desktop.html`, `frame.js` | tile home (Kompakt) | native: the Asztal frame | **M19** |
-| 2 | `view-dashboard` | Irányítópult nézet | `Dashboard/vrg-dashboard.html` (pane `home`) | M4 Haladás covers the progress part | native: Kompakt home + M4 | M19 |
-| 3 | `view-desktop` | Asztal nézet | `Dashboard/page/desk.js` | — | native: the Asztal frame | **M19** |
-| 4 | `palette` | Parancspaletta | `Dashboard/shell/lib/palette.js`, `page/palette.js` | — | native: Kommand, same scoring ported to `kit-core` | **M19** |
-| 5 | `quick` | Gyorskereső | `Dashboard/shell/lib/quick.js`, `page/quick.js` | — | native: the Kommand field in the top strip | **M19** |
-| 6 | `workspaces` | Munkaterek | `Dashboard/shell/lib/workspaces.js` | — | native: Lapok presets (User level only) | **M20** |
-| 7 | `notifications` | Értesítések | `Dashboard/page/toasts.js` | M10 Értesítések | native (exists) | M10 |
-| 8 | `settings` | Beállítások | `Dashboard/shell/lib/settings.js`, `tray.js`, `selmenu.js` | M1 Beállítások | native (exists); M19 adds Kezdőlap + Tájolás | M1 / M19 |
-| 9 | `planner` | Varler Planner | `Planner/projects/varler-planner/dist/varler_planner.html` | — (M12 photos tagged for it) | webapp | **M21** |
-| 10 | `client-preview` | Ügyfélnézet | inside the Planner (`feat:b4`) | — | webapp, inside the Planner | M21 |
-| 11 | `workflow-kit` | Varler Workflow Kit | `H:\VRG\Full\Varler_Workflow_Kit` (outside the repo) | M42 Workflow Kit | native: the jobs sealed to the phone key (`tools/workflow-seal.js`, D-52); the PDFs pc via M23 | **M42** / M23 |
-| 12 | `calc-panel` | Panel anyagár kalkulátor | `Calculator/panel_anyagar_kalkulator.html` | — | webapp | **M21** |
-| 13 | `calc-general` | Általános kalkulátor | `Calculator/Altalanos_Villanyszerelui_Kalkulator.html` | — | webapp | **M21** |
-| 14 | `calc-led` | LED árkalkulátor | `Calculator/led_arkalkulator.html` | — | webapp | **M21** |
-| 15 | `inventory` | Készlet | `Inventory/dist/vrg-inventory.html` | — (M12 photos tagged for it) | webapp | **M21** |
-| 16 | `valena` | Valena választó | `Toolbox/valena-life-szerelvenytervezo.html` | — | webapp | **M21** |
-| 17 | `buildtree` | VRG BuildTree | `Modder/vrg-buildtree.html` | — | webapp | **M21** |
-| 18 | `bridge` | BRIDGE dokumentáció | `BRIDGE/` (repo docs) + `H:\VRG\Full\BRIDGE` | — | pc: read-only files window; later a webapp reader of the repo's `BRIDGE/` | M23 |
-| 19 | `jobs` | Munkák | `H:\VRG\Full\jobs` (client folders) | — | pc: read-only, copy via M12 Átadás; never through GitHub (client names, addresses) | **M23** |
-| 20 | `files` | Fájlok | `Dashboard/page/panes/files.js`, `shell/lib/fsview.js` | M12 board only | pc: read-only browse of the work roots (Repó, VRG Full, Közös; D-17), relay `--files`; BETA | **M23** |
-| 21 | `archive` | Archívum | `Archive/vrg-archive.html` | M18 Archívum | native (exists) | M18 |
-| 22 | `mindmap` | VRG MindMap | `MindMap/vrg_mindmap.html` | — | webapp | **M21** |
-| 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: the phone's browser (Custom Tab); Kommand opens URLs | M19 |
-| 24 | `mail` | Posta | `Dashboard/page/panes/mail.js`, `shell/lib/gmail.js` | — | no (decided in M23): the PC's mail rides its own Gmail OAuth on the PC; the phone has its own mail app, opened by intent | M23 |
-| 25 | `search` | Belső keresés | `Dashboard/page/panes/search.js`, `shell/lib/innersearch.js` | — | no for now (a relay search over the PC's index is a Later item of M23) | Later |
-| 26 | `feed` | Hírfolyam | `Dashboard/page/panes/feed.js` | — | no (D-18): its presets run inside the Desktop on the PC, with its cache; mail is no for the same kind of reason | M23 |
-| 27 | `map` | VRG Térkép | `Map/serve.js` (port 8802, offline tiles on H:) | M8 Localhost opens it | pc: through M8's `/p/8802/` proxy; Asztal menu links it | M8 / M19 |
-| 28 | `console` | Varler Console | `Console/serve.js` (port 8133) | M8 Localhost opens it | pc: through M8; Asztal menu links it | M8 / M19 |
-| 29 | `mobile` | VRG Mobile | `Mobile/` | itself | — (the phone is this unit) | — |
-| 30 | `servicekit` | ServiceKit | `ServiceKit/` (a device, status dev) | — | no for now: hardware on the bench; a later WP may talk to it over the phone's WiFi | — |
-| 31 | `stack.search` | Keresés (Rétegverem) | `Stack/stack.js q` | M17 Rétegverem | native: Kommand searches the catalog; the Stack search itself stays in M17's pages | M17 / M19 |
-| 32 | `layer.i` | I · Ötletfolyam | `Stack/lineage.html` (server `stack`) | — | native via M17: add the page to `stack-pages` (Later in M17); pc via M8 meanwhile | M17 |
-| 33 | `layer.f` | F · Kiemelt | the Irányítópult (`view: dashboard`) | — | native: the Asztal's home window | M19 |
-| 34 | `layer.q` | Q · Döntésnapló | `Stack/decisions.html` (server `stack`) | — | native via M17 (Later); pc via M8 meanwhile | M17 |
-| 35 | `phone` | Telefon kapcsolat | `Dashboard/page/phone.js`, `shell/lib/phonelink.js` (WP-49) | M2 QR párosítás | native: the home screen's QR beolvasása button opens the scanner, which pairs or opens a server QR from this panel in a Custom Tab (`core/ScanCode.kt`) | M2 / WP-49 |
-| 36 | `sketcher` | VRG Sketcher | `Sketcher/dist/vrg-sketcher.html` (START P → S) | M24 Vázlat … M31 | native: the phone captures the survey (`feat:sketch`); the Desktop page reviews and completes it | M24–M31 |
-| 37 | `rajztar` | Rajztár Stúdió | `shared/rajztar/studio.html` (START P → J) | — | none for now: a PC editor for document packages; a later WP | — |
-| 38 | `konnektom-labor` | Konnektóm-labor | a Rétegverem page (START R → K) | M17 Rétegverem | native via M17, as the other Stack pages (Later: add it to `stack-pages`); pc via M8 meanwhile | M17 |
+**Checks.** `node tools/parity.js --check` (every unit and feature has one line, every target is real, the files below
+are current); `node tools/parity.js` rewrites `Dashboard/config/phone-cards.json` and the tables below.
+`node Mobile/catalogue/desk-gen.js` turns `desk` into the phone's `DeskCatalog.kt`. A new unit or feature on either side
+needs its line in `vrg-parity.json` in the same change.
+
+## 1. The two-way list
+
+<!-- parity:begin (GENERATED by tools/parity.js from launcher/vrg-parity.json; do not edit by hand) -->
+
+**Asztal → telefon:** 96 egység: native 40, webapp 9, pc 13, szürke 6, hiány 28.  
+**Telefon → Asztal:** 34 funkció: teljes 22, szürke 5, hiány 7.
+
+### 1. Az Asztal egységei a telefonon
+
+| # | Egység (id) | Név | Szint | A telefonon | Hová / miért / WP |
+|---|---|---|---|---|---|
+| 1 | `desktop` | VRG Asztal | user | native | `desk` |
+| 2 | `view-dashboard` | Irányítópult nézet | user | native | `kompakt` |
+| 3 | `view-desktop` | Asztal nézet | user | native | `desk` |
+| 4 | `palette` | Parancspaletta | user | native | `kommand` |
+| 5 | `quick` | Gyorskereső | user | native | `kommand` |
+| 6 | `workspaces` | Munkaterek | user | native | `sheets` |
+| 7 | `notifications` | Értesítések | user | native | `inbox` |
+| 8 | `settings` | Beállítások | user | native | `settings` |
+| 9 | `phone` | Telefon kapcsolat | user | native | `pair` |
+| 10 | `planner` | Varler Planner | user | webapp | `planner` |
+| 11 | `rajztar` | Rajztár Stúdió | user | hiány | M47: Tervcsomag és rajzlap megnézése és jóváhagyása a telefonon, a rajzjelek szerkesztése érintéssel. |
+| 12 | `sketcher` | VRG Sketcher | user | native | `sketch` |
+| 13 | `rajztar.catalog` | Rajztár katalógus | dev | hiány | M47: A katalógus böngészése a telefonon, a Rajztár csomag részeként. |
+| 14 | `client-preview` | Ügyfélnézet | user | webapp | `planner` |
+| 15 | `workflow-kit` | Varler Workflow Kit | user | pc | `pcwin` |
+| 16 | `calc-panel` | Panel anyagár kalkulátor | user | webapp | `calc-panel` |
+| 17 | `calc-general` | Általános kalkulátor | user | webapp | `calc-general` |
+| 18 | `calc-led` | LED árkalkulátor | user | webapp | `calc-led` |
+| 19 | `inventory` | Készlet | user | webapp | `inventory` |
+| 20 | `valena` | Valena választó | user | webapp | `valena` |
+| 21 | `buildtree` | VRG BuildTree | user | webapp | `buildtree` |
+| 22 | `bridge` | BRIDGE dokumentáció | user | pc | `pcwin` |
+| 23 | `jobs` | Munkák | user | pc | `pcwin` |
+| 24 | `files` | Fájlok | user | pc | `pcwin` |
+| 25 | `archive` | Archívum | user | native | `archive` |
+| 26 | `konnektom-labor` | Konnektóm-labor | user | native | `stack` |
+| 27 | `konnektom-labor-cmd` | Konnektóm-labor .cmd | dev | native | `stack` |
+| 28 | `mindmap` | VRG MindMap | user | webapp | `mindmap` |
+| 29 | `web` | Böngésző | user | native | `browser` |
+| 30 | `mail` | Posta | user | hiány | M48: A beérkezett levelek listája és olvasása a párosított PC-n át. Addig a gomb a telefon saját levelezőjét nyitja. |
+| 31 | `search` | Belső keresés | user | hiány | M49: Keresés a PC indexében a relén át; a találat a PC ablakokban nyílik. |
+| 32 | `feed` | Hírfolyam | user | hiány | M50: A hírfolyam olvasása a telefonon, a PC gyorsítótárából a relén át. |
+| 33 | `map` | VRG Térkép | user | native | `map` |
+| 34 | `console` | Varler Console | user | pc | `port:8133` |
+| 35 | `weather` | VRG Időjárás | user | hiány | M44: Az időjárás a telefonon, terepi döntéssel: lehet-e ma kint dolgozni. |
+| 36 | `mobile` | VRG Mobile | user | native | `catalog` |
+| 37 | `servicekit` | ServiceKit | user | hiány | M51: Kapcsolat a ServiceKittel a telefon WiFi-jén vagy Bluetooth-on: állapot, mérés, beállítás. |
+| 38 | `term` | Terminál | dev | hiány | M52: Terminál a PC-n a telefonról, a párosított relén át, minden parancs megerősítésével. |
+| 39 | `git` | Git | dev | hiány | M53: A repók állapota, a változások és az ágak megnézése a telefonon, a Haladás mellett. |
+| 40 | `vscode` | VS Code | dev | **szürke** | Asztali kódszerkesztő; telefonon nincs értelme futtatni. |
+| 41 | `github` | GitHub | dev | native | `url:https://github.com/webagoly-work/vrg-toolset` |
+| 42 | `commit` | Commit + feltöltés | dev | hiány | M53: Commit és feltöltés indítása a PC-n a telefonról, ugyanazokkal a védelmekkel (titok, 5 MB, soha nem --force). |
+| 43 | `gitlog` | Napló | dev | native | `pulse` |
+| 44 | `claude-code` | Claude Code | dev | native | `claude` |
+| 45 | `chat` | Claude oldalchat | dev | native | `claude` |
+| 46 | `context` | Kontextuscsomag | dev | hiány | M54: A csomag összeállítása a telefonon és átadása a Claude munkamenetnek. |
+| 47 | `council` | VRG Tanács (ügynökök) | dev | hiány | M54: Az ügynökök és a futó munkáik listája, egy megbízás indítása a telefonról. |
+| 48 | `prompts` | Promptok | dev | hiány | M54: A promptok böngészése, másolása és elküldése egy Claude munkamenetnek a telefonról. |
+| 49 | `go` | GO kódszavak | dev | hiány | M54: A vonalak állapota a telefonon és egy GO kódszó indítása Claude munkamenetben. |
+| 50 | `trace` | Ügynöknyom | dev | pc | `port:8133` |
+| 51 | `munkavaszon` | Munkavászon | dev | hiány | M55: A munkavászon a telefonon a relén át, telefonos elrendezéssel. |
+| 52 | `stack` | VRG Rétegverem | dev | native | `stack` |
+| 53 | `stack.connectome` | Konnektóm | dev | native | `stack` |
+| 54 | `stack.orb` | Holo | dev | native | `stack` |
+| 55 | `stack.layers` | Rétegek | dev | native | `stack` |
+| 56 | `stack.search` | Keresés | user | native | `stack` |
+| 57 | `layer.i` | I · Ötletfolyam | user | native | `stack` |
+| 58 | `layer.f` | F · Kiemelt | user | native | `kompakt` |
+| 59 | `layer.q` | Q · Döntésnapló | user | native | `stack` |
+| 60 | `layer.l` | L · Vonaltérkép | dev | native | `stack` |
+| 61 | `threadboard` | Thread Board | dev | hiány | M56: A szálak táblája olvasva a telefonon. |
+| 62 | `layer.a` | A · Vezérlőterem | dev | native | `stack` |
+| 63 | `layer.u` | U · Futásnapló | dev | native | `stack` |
+| 64 | `layer.r` | R · Commit-pixel | dev | native | `stack` |
+| 65 | `layer.c` | C · Kódváros | dev | native | `city` |
+| 66 | `layer.g` | G · Gömb | dev | native | `sphere` |
+| 67 | `layer.z` | Z · Kódex | dev | hiány | M56: A Kódex olvasása a telefonon, amint az Asztalon elkészül. |
+| 68 | `codecity` | VRG Kódváros | dev | native | `city` |
+| 69 | `solomon` | Solomon Gömb | dev | native | `sphere` |
+| 70 | `divergence` | Divergencia jelzőtábla | dev | pc | `port:8801` |
+| 71 | `devnote` | Fejlesztői jegyzet | dev | native | `notes` |
+| 72 | `docs` | Dokumentáció | dev | pc | `pcwin` |
+| 73 | `coreref` | CoreRef | dev | hiány | M56: A CoreRef olvasása és keresése a telefonon. |
+| 74 | `start` | START indító (tartalék) | dev | native | `launch` |
+| 75 | `backup` | BACKUP | dev | **szürke** | A PC lemezén futó mentés; a telefonról nem indítjuk. |
+| 76 | `servers` | Helyi szerverek | dev | native | `ports` |
+| 77 | `check` | Ellenőrzés | dev | hiány | M57: Az ellenőrzés indítása a PC-n a telefonról, az eredmény a telefonon. |
+| 78 | `desktop-exe` | VRG Desktop .exe építése | dev | **szürke** | A PC-s alkalmazás építése; a telefonról nem indítjuk. |
+| 79 | `kapu` | VRG Kapu | dev | pc | `port:8795` |
+| 80 | `vendor` | VRG Vendor | dev | hiány | M59: A külső források listája és állapota a telefonon, olvasva. |
+| 81 | `toolbox` | Toolbox | dev | **szürke** | Kivezetés alatt az Asztalon is (retire); nem kerül át a telefonra. |
+| 82 | `zen` | Zen munkamenetek | dev | **szürke** | Kivezetés alatt az Asztalon is (retire); nem kerül át a telefonra. |
+| 83 | `planner-cyd` | Planner CYD | dev | pc | `port:8788` |
+| 84 | `board-console` | Board Console | dev | pc | `port:8790` |
+| 85 | `knobpad` | VRG Knob Pad | dev | pc | `port:8177` |
+| 86 | `esp-lab` | ESP labor | dev | pc | `pcwin` |
+| 87 | `uikit` | VRG UI Kit | dev | hiány | M58: A galéria a telefonon, telefonos méretekkel. |
+| 88 | `melyviz` | Mélyvíz stílus | dev | native | `settings` |
+| 89 | `varler-sui` | Varler SUI (HUD) | dev | hiány | M58: A HUD elemei a telefon felületén is. |
+| 90 | `logo` | Varler logó + gyűrű | dev | hiány | M15: A VRG Mobile logós kezdőlapja. |
+| 91 | `programs` | Programok | all | **szürke** | PC-s telepítő; a telefon a saját áruházát használja. |
+| 92 | `otg` | OTG (hordozható) | all | hiány | M60: A bemutató változat a telefonon is, amint az Asztalon elkészül. |
+| 93 | `openmct` | Open MCT kísérlet | all | hiány | M60: A telemetria-felület a telefonon a relén át. |
+| 94 | `servicekit-phone` | ServiceKit Phone | all | hiány | M51: A ServiceKit telefonos része a VRG Mobile-ban. |
+| 95 | `servicekit-cyd` | ServiceKit CYD | all | hiány | M51: A CYD állapota és beállítása a telefonról. |
+| 96 | `research` | Kutatási kísérletek | all | hiány | M56: A kutatási jegyzetek olvasása a telefonon. |
+
+### 2. A telefon funkciói az Asztalon
+
+| # | Funkció (id) | Név | Mobil WP | Az Asztalon | Hová / miért / WP |
+|---|---|---|---|---|---|
+| 1 | `desk` | Asztal | M19 | teljes | `desktop` |
+| 2 | `sheets` | Lapok | M20 | teljes | `workspaces` |
+| 3 | `airdeck` | Légegér | M0 | **szürke** | A telefon maga az egér és a billentyűzet; az Asztalon a gyro relé fogadja, ott nincs mit megnyitni. |
+| 4 | `launch` | Indítópult | M11 | teljes | `start` |
+| 5 | `drop` | Átadás | M12 | hiány | WP-52: Az Átadás tábla az Asztalon: a telefonról jött fotók, fájlok és vágólap egy ablakban, és innen vissza a telefonra. |
+| 6 | `screen` | Képernyő | M13 | **szürke** | A PC képernyőjét a telefonon mutatja; a PC-n önmagát nézné. |
+| 7 | `pcwin` | PC ablakok | M23 | teljes | `files` |
+| 8 | `pair` | QR párosítás | M2 | teljes | `phone` |
+| 9 | `account` | GitHub fiók | M3 | hiány | WP-55: GitHub belépés eszközkóddal az Asztalon, amit az online részek közösen használnak. |
+| 10 | `net` | Hálózat | M7 | **szürke** | A telefon saját kapcsolatai (hotspot, megosztás, Bluetooth HID). A PC hálózati mérőszámai az Asztal címsorában vannak. |
+| 11 | `pager` | Csipogó | M33 | **szürke** | Bluetooth személyhívó telefonok között a terepen, internet nélkül; a PC-n nincs értelme. |
+| 12 | `claude` | Claude | M22 | teljes | `claude-code` |
+| 13 | `sketch` | VRG Sketcher | M24 | teljes | `sketcher` |
+| 14 | `photo` | Fotópont | M25 | **szürke** | A telefon kamerájával fotóz a szoba közepéről. A kész fotókat az Asztalon a VRG Sketcher mutatja. |
+| 15 | `planner` | Varler Planner | M39 | teljes | `planner` |
+| 16 | `calc` | Kalkulátorok | M40 | teljes | `calc-general` |
+| 17 | `inventory` | Készlet | M41 | teljes | `inventory` |
+| 18 | `workflow` | Varler Workflow Kit | M42 | teljes | `workflow-kit` |
+| 19 | `map` | VRG Térkép | M43 | teljes | `map` |
+| 20 | `weather` | VRG Időjárás | M44 | teljes | `weather` |
+| 21 | `pulse` | Haladás | M4 | hiány | WP-51: A main és a nyitott munkák állapota az Asztalon: commitok, PR-ek, CI, melyik eszköz mit kapott. |
+| 22 | `sphere` | Gömb | M14 | teljes | `solomon` |
+| 23 | `city` | Kódváros online | M5 | teljes | `codecity` |
+| 24 | `stack` | Rétegverem | M17 | teljes | `stack` |
+| 25 | `archive` | Archívum | M18 | teljes | `archive` |
+| 26 | `apps` | Alkalmazások | M21 | teljes | `view-dashboard` |
+| 27 | `notes` | Gyorsjegyzet | M6 | teljes | `devnote` |
+| 28 | `ports` | Localhost | M8 | teljes | `servers` |
+| 29 | `inbox` | Értesítések | M10 | teljes | `notifications` |
+| 30 | `update` | Frissítés | M9 | hiány | WP-57: Az Asztal frissítése: új verzió jelzése és telepítése a GitHubról. |
+| 31 | `devices` | Eszközök | M35 | hiány | WP-53: A megbízható eszközök listája az Asztalon: kérések, jóváhagyás, visszavonás. |
+| 32 | `vault` | Vault | M45 | hiány | WP-54: A Proton Vault saját felülete az Asztal böngészőablakában, saját eszközjóváhagyással. |
+| 33 | `catalog` | Katalógus | M38 | hiány | WP-56: A Katalógus lapjai az Asztalon: minden program és funkció egy-egy lapon, új felhasználóknak. |
+| 34 | `settings` | Beállítások | M1 | teljes | `settings` |
+
+### 3. A hiányok munkacsomagjai
+
+| WP | Oldal | Mit | Tagjai |
+|---|---|---|---|
+| M15 | telefon | A VRG Mobile logós kezdőlapja (GO LOGO) | `logo` |
+| M44 | telefon | VRG Időjárás a telefonon | `weather` |
+| M47 | telefon | Rajztár Stúdió a telefonon | `rajztar`, `rajztar.catalog` |
+| M48 | telefon | Posta a telefonon | `mail` |
+| M49 | telefon | Belső keresés a telefonon | `search` |
+| M50 | telefon | Hírfolyam a telefonon | `feed` |
+| M51 | telefon | ServiceKit a telefonon | `servicekit`, `servicekit-phone`, `servicekit-cyd` |
+| M52 | telefon | Terminál a telefonon | `term` |
+| M53 | telefon | Git és commit a telefonon | `git`, `commit` |
+| M54 | telefon | Ügynökök, promptok, GO a telefonon | `context`, `council`, `prompts`, `go` |
+| M55 | telefon | Munkavászon a telefonon | `munkavaszon` |
+| M56 | telefon | Tudás: CoreRef, Kódex, Thread Board, kutatás a telefonon | `threadboard`, `layer.z`, `coreref`, `research` |
+| M57 | telefon | Ellenőrzés a telefonról | `check` |
+| M58 | telefon | Megjelenés: UI Kit és SUI a telefonon | `uikit`, `varler-sui` |
+| M59 | telefon | VRG Vendor a telefonon | `vendor` |
+| M60 | telefon | OTG és Open MCT a telefonon | `otg`, `openmct` |
+| WP-51 | Asztal | Haladás az Asztalon | `pulse` |
+| WP-52 | Asztal | Átadás tábla az Asztalon | `drop` |
+| WP-53 | Asztal | Eszközök az Asztalon | `devices` |
+| WP-54 | Asztal | Vault az Asztalon | `vault` |
+| WP-55 | Asztal | GitHub fiók az Asztalon | `account` |
+| WP-56 | Asztal | Katalógus az Asztalon | `catalog` |
+| WP-57 | Asztal | Frissítés az Asztalon | `update` |
+
+<!-- parity:end -->
 
 ## 2. Window kinds (`KINDS`, `Dashboard/shell/lib/sheets.js`)
 
@@ -65,14 +207,14 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | `home` | `panes/` home (the Irányítópult) | native: the Asztal's home window (the Kompakt tiles as a window face) | M19 / M20 |
 | `empty` | `panes/empty.js` (the picker) | native: long-press a free cell → the Kommand list | M20 |
 | `files` | `panes/files.js` + `viewer.js` | pc, read-only: `feat:pcwin` (text, image, copy to the board) | M23 |
-| `term` | `panes/term.js` | **no**: a terminal is dev level | — |
+| `term` | `panes/term.js` | gap since M46 (was "no, dev level"): a terminal on the PC through the relay, every command confirmed | M52 |
 | `web` | `panes/web.js` | native: a confined WebView or the phone's browser | M20 |
-| `mail` | `panes/mail.js` | no (see unit 24) | M23 |
+| `mail` | `panes/mail.js` | gap since M46 (was "no", M23): the PC's inbox read through the relay; until then the card offers the phone's mail app | M48 |
 | `stack` | `panes/stack.js` | native: M17 Rétegverem | M17 |
 | `chat` | `panes/chat.js` (Claude chat on the PC) | rc: the Claude app, opened on the PC's Remote Control session | M22 |
 | `note` | `panes/note.js` | native: M6 Gyorsjegyzet | M6 |
-| `git` | `panes/git.js` | **no**: git is dev level; M4 Haladás shows the state read-only | — |
-| `feed` | `panes/feed.js` | no (D-18) | M23 |
+| `git` | `panes/git.js` | gap since M46 (was "no, dev level"): status, changes and branches on the phone; M4 Haladás shows the state meanwhile | M53 |
+| `feed` | `panes/feed.js` | gap since M46 (was "no", D-18): the PC's feed cache read through the relay | M50 |
 | `app` | `panes/app.js` (an in-shell HTML app) | webapp | M21 |
 
 ## 3. Frame parts
@@ -90,7 +232,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | Orientation toggle (phone only, the user asked for it by name) | — | native: Automatikus → Álló → Fekvő | M19 |
 | Claude sign-in | the Desktop's `claudeterm` profile | the official Claude app; VRG Mobile only opens it | M22 |
 
-## 4. New WPs from this map
+## 4. The WPs of the 2026-11-12 map (history)
 
 | WP | Feature (id) | What |
 |---|---|---|

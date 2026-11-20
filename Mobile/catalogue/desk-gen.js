@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Mobile/catalogue/desk-gen.js — the VRG Desktop's User-level catalog for the phone's Asztal (WP M19).
+// Mobile/catalogue/desk-gen.js — the VRG Desktop's catalog, every level, for the phone's Asztal (WP M19, M46).
 //
 // The source is the Desktop's catalog, launcher/vrg-catalog.json (CLAUDE.md: the catalog says what exists). Every
-// item with level "user" becomes one DeskUnit in kit-core/.../DeskCatalog.kt, with how it reaches the phone (REACH,
-// the same table as docs/mobile/PARITY.md). It also writes the Kommand fixture: queries run through the Desktop
+// unit (categories aside) becomes one DeskUnit in kit-core/.../DeskCatalog.kt, with how it is on the phone from
+// launcher/vrg-parity.json (the two-way list, WP M46; docs/mobile/PARITY.md). It also writes the Kommand fixture: queries run through the Desktop
 // palette's own search() (Dashboard/shell/lib/palette.js), which KommandTest replays against the Kotlin port.
 //
 //   node Mobile/catalogue/desk-gen.js            (writes DeskCatalog.kt, DeskSheets.kt + Mobile/tests/fixtures/kommand.json)
@@ -12,7 +12,7 @@
 // It also writes DeskSheets.kt: the Desktop's User-level Lapok presets (Dashboard/config/sheets.json, WP M20) as they are, on
 // the Desktop's 4 x 4 grid; the phone fits them onto its own grid (Sheets.fitPreset, D-16).
 //
-// A user unit missing from REACH fails the run: a new Desktop unit needs a line here and in PARITY.md.
+// A unit missing from vrg-parity.json fails the run: a new Desktop unit needs its line there (node tools/parity.js).
 const fs = require('fs');
 const path = require('path');
 
@@ -25,48 +25,10 @@ const OUT_SHEETS = path.join(path.dirname(OUT), 'DeskSheets.kt');
 const OUT_APPS = path.join(path.dirname(OUT), 'DeskApps.kt');
 const palette = require(path.join(REPO, 'Dashboard', 'shell', 'lib', 'palette.js'));
 
-// unit id -> [reach, target]. reach: native (a feature id, or the frame: kompakt / kommand / browser),
-// webapp (an M21 app id), pc (a feature id that goes through the relay, or port:<n> through M8), none (with why).
-const REACH = {
-  'desktop': ['native', 'desk'],
-  'view-dashboard': ['native', 'kompakt'],
-  'view-desktop': ['native', 'desk'],
-  'palette': ['native', 'kommand'],
-  'quick': ['native', 'kommand'],
-  'workspaces': ['native', 'sheets'],
-  'notifications': ['native', 'inbox'],
-  'settings': ['native', 'settings'],
-  'phone': ['native', 'pair'],                 // WP-49: the Desktop's Telefon panel <-> the phone's QR scanner (home button)
-  'planner': ['webapp', 'planner'],
-  'client-preview': ['webapp', 'planner'],
-  'workflow-kit': ['pc', 'pcwin'],
-  'calc-panel': ['webapp', 'calc-panel'],
-  'calc-general': ['webapp', 'calc-general'],
-  'calc-led': ['webapp', 'calc-led'],
-  'inventory': ['webapp', 'inventory'],
-  'valena': ['webapp', 'valena'],
-  'buildtree': ['webapp', 'buildtree'],
-  'bridge': ['pc', 'pcwin'],
-  'jobs': ['pc', 'pcwin'],
-  'files': ['pc', 'pcwin'],
-  'archive': ['native', 'archive'],
-  'sketcher': ['native', 'sketch'],               // VRG Sketcher: the phone is where it captures (WP M24-M31)
-  'mindmap': ['webapp', 'mindmap'],
-  'web': ['native', 'browser'],
-  'mail': ['none', 'a PC levelezése a PC saját Gmail-belépésén fut; a telefonon a saját levelezője nyílik'],
-  'search': ['none', 'a belső keresés a PC Asztalának indexén fut; egy későbbi munkacsomag'],
-  'feed': ['none', 'a hírfolyam az Asztalban fut a PC-n, gyorsítótárral; a telefonon nem (D-18)'],
-  'map': ['pc', 'port:8802'],
-  'console': ['pc', 'port:8133'],
-  'mobile': ['none', 'ez maga a telefon'],
-  'servicekit': ['none', 'eszköz a padon, egy későbbi munkacsomag'],
-  'rajztar': ['none', 'a Rajztár Stúdió a PC-n fut (tervcsomag, rajzlap, rajzjel); a telefonon egy későbbi munkacsomag'],
-  'stack.search': ['native', 'stack'],
-  'layer.i': ['native', 'stack'],
-  'layer.f': ['native', 'kompakt'],
-  'layer.q': ['native', 'stack'],
-  'konnektom-labor': ['native', 'stack'],
-};
+// How each unit is on the phone comes from the one two-way list, launcher/vrg-parity.json (`desk`, WP M46), checked by
+// tools/parity.js: native (a feature id, a frame part desk / kompakt / kommand / browser, or url:https://…), webapp (an M21
+// app id), pc (a feature id through the relay, or port:<n> through M8), grey (no sense on a phone) or gap (to be built).
+const PARITY = path.join(REPO, 'launcher', 'vrg-parity.json');
 
 // queries for the fixture: prefixes, accents, two words, misses, English
 const QUERIES = ['', 'pla', 'kalk', 'kalkulator', 'led', 'arkalk', 'pan anyag', 'keszlet', 'inv', 'asztal', 'ertesites',
@@ -76,14 +38,17 @@ const kt = s => JSON.stringify(String(s)).replace(/\$/g, '\\$');
 
 function units() {
   const c = JSON.parse(fs.readFileSync(CATALOG, 'utf8'));
+  const par = JSON.parse(fs.readFileSync(PARITY, 'utf8'));
   const out = [];
   for (const it of c.items) {
-    if (it.level !== 'user') continue;
-    const r = REACH[it.id];
-    if (!r) throw new Error(`desk-gen: user unit "${it.id}" has no REACH line (and no row in docs/mobile/PARITY.md)`);
-    out.push({ id: it.id, hu: it.title.hu, en: it.title.en || '', group: it.group, icon: it.icon || '', reach: r[0], target: r[1] });
+    if (it.type === 'category') continue;                    // the Fejlesztés folders are menu groups, not units
+    const r = par.desk[it.id];
+    if (!r) throw new Error(`desk-gen: unit "${it.id}" has no line in launcher/vrg-parity.json (run node tools/parity.js)`);
+    const wp = r.phone === 'gap' ? r.wp : '';
+    out.push({ id: it.id, hu: it.title.hu, en: it.title.en || '', group: it.group, icon: it.icon || '', reach: r.phone, target: r.to || '',
+      level: it.level, about: r.about || '', note: r.why || r.plan || '', wp, wpHu: wp ? ((par.queue || {})[wp] || {}).hu || '' : '' });
   }
-  for (const id of Object.keys(REACH)) if (!out.some(u => u.id === id)) throw new Error(`desk-gen: REACH names "${id}", which is not a user unit any more`);
+  for (const id of Object.keys(par.desk)) if (!out.some(u => u.id === id)) throw new Error(`desk-gen: vrg-parity.json names "${id}", which is not a Desktop unit any more`);
   const groups = Object.entries(c.groups).filter(([g]) => out.some(u => u.group === g)).map(([g, v]) => ({ id: g, hu: v.hu }));
   return { out, groups };
 }
@@ -92,14 +57,17 @@ function kotlin({ out, groups }) {
   const L = [];
   L.push('package hu.vrg.mobile.core', '');
   L.push('// GENERATED by Mobile/catalogue/desk-gen.js from launcher/vrg-catalog.json — do not edit by hand.');
-  L.push('// The VRG Desktop\'s User-level units and how each reaches the phone (docs/mobile/PARITY.md, WP M19).', '');
+  L.push('// Every unit of the VRG Desktop and how it is on the phone (launcher/vrg-parity.json, docs/mobile/PARITY.md, WP M19 / M46).', '');
   L.push('object DeskCatalog {');
-  L.push('    /** The Desktop\'s groups, in its order, that hold a User-level unit. */');
+  L.push('    /** The Desktop\'s groups, in its order, that hold a unit. */');
   L.push('    val GROUPS: List<Pair<String, String>> = listOf(');
   for (const g of groups) L.push(`        ${kt(g.id)} to ${kt(g.hu)},`);
   L.push('    )', '');
   L.push('    val UNITS: List<DeskUnit> = listOf(');
-  for (const u of out) L.push(`        DeskUnit(${kt(u.id)}, ${kt(u.hu)}, ${kt(u.en)}, ${kt(u.group)}, ${kt(u.icon)}, Reach.${u.reach.toUpperCase()}, ${kt(u.target)}),`);
+  for (const u of out) {
+    const extra = u.level === 'user' && !u.about && !u.note ? '' : `, ${kt(u.level)}, ${kt(u.about)}, ${kt(u.note)}, ${kt(u.wp)}, ${kt(u.wpHu)}`;
+    L.push(`        DeskUnit(${kt(u.id)}, ${kt(u.hu)}, ${kt(u.en)}, ${kt(u.group)}, ${kt(u.icon)}, Reach.${u.reach.toUpperCase()}, ${kt(u.target)}${extra}),`);
+  }
   L.push('    )');
   L.push('}', '');
   return L.join('\n');
@@ -168,8 +136,8 @@ if (process.argv.includes('--check')) {
     const now = fs.existsSync(f) ? fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n') : '';
     if (now !== s) { console.log('out of date: ' + path.relative(REPO, f) + '  (run node Mobile/catalogue/desk-gen.js)'); bad++; }
   }
-  if (!bad) console.log(`ok DeskCatalog.kt + kommand.json + DeskSheets.kt + DeskApps.kt match the catalog (${data.out.length} user units)`);
+  if (!bad) console.log(`ok DeskCatalog.kt + kommand.json + DeskSheets.kt + DeskApps.kt match the catalog (${data.out.length} units)`);
   process.exit(bad ? 1 : 0);
 }
 for (const [f, s] of files) fs.writeFileSync(f, s);
-console.log(`wrote DeskCatalog.kt + kommand.json + DeskSheets.kt + DeskApps.kt (${data.out.length} user units, ${QUERIES.length} queries)`);
+console.log(`wrote DeskCatalog.kt + kommand.json + DeskSheets.kt + DeskApps.kt (${data.out.length} units, ${QUERIES.length} queries)`);

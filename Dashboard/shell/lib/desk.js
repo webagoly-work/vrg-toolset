@@ -125,7 +125,7 @@
   // node = { label, en?, children:[node] } | leaf { id, label, en?, icon?, kind:'item'|'cmd', status? }
   function suiTree(list, level, groups) {
     if (!LEVELS.includes(level)) level = 'user';
-    const leaf = i => ({ id: i.id, label: i.hu, en: i.en, icon: i.icon || '', kind: 'item', status: i.status, opens: i.opens !== false });
+    const leaf = i => ({ id: i.id, label: i.hu, en: i.en, icon: i.icon || '', kind: 'item', status: i.status, opens: i.opens !== false, card: i.card || '' });
     const byGroup = g => list.filter(i => i.group === g && i.type !== 'category');
     const root = { label: 'MENÜ', en: 'Menu', children: [] };
     for (const g of GROUP_ORDER) {

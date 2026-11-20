@@ -702,7 +702,9 @@ app.on('will-quit', () => presetsLib.stop());
 // The catalog (launcher/vrg-catalog.json) says what exists; the page names a catalog id and main resolves it (lib/catalog.js resolve):
 // a START act (an HTML app opens in-shell on vrg-app://), a server + path (started if down, then the browser pane), a pane kind,
 // a primary view, a frame tool. Settings desk.* are per user; auth.enabled is read here, never set by the page.
-const catalog = createCatalog({ file: path.join(REPO_DIR, 'launcher', 'vrg-catalog.json'), collect: () => R.C, kinds: layoutLib.KINDS });
+// + the phone's grey / gap features as tiles of their own (WP-50, Dashboard/config/phone-cards.json from tools/parity.js)
+const catalog = createCatalog({ file: path.join(REPO_DIR, 'launcher', 'vrg-catalog.json'), collect: () => R.C, kinds: layoutLib.KINDS,
+  cards: path.join(__dirname, '..', 'config', 'phone-cards.json') });
 const isFile = f => { try { return require('fs').statSync(f).isFile(); } catch (e) { return false; } };
 const APP_ROOTS = [path.join(path.resolve(FULL_DIR), 'notes')];          // work folders whose pages may open in-shell too (the Thread Board, WP-46)
 const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile, realpath: p => require('fs').realpathSync.native(p), roots: APP_ROOTS });

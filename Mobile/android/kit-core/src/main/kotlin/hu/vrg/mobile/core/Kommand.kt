@@ -8,16 +8,26 @@ import java.util.Locale
 // order on the phone as in the Desktop's command palette; KommandTest replays the palette's own results
 // (Mobile/tests/fixtures/kommand.json, written by Mobile/catalogue/desk-gen.js).
 
-/** How a Desktop unit reaches the phone (docs/mobile/PARITY.md). */
-enum class Reach { NATIVE, WEBAPP, PC, NONE }
+/**
+ * How a Desktop unit is on the phone (launcher/vrg-parity.json, docs/mobile/PARITY.md, WP M46). NATIVE, WEBAPP and PC open
+ * it; GREY means it makes no sense on a phone (greyed out, a tap shows only its description); GAP means it belongs here and
+ * is not built yet (dimmed, a tap shows the description and the work package that builds it).
+ */
+enum class Reach { NATIVE, WEBAPP, PC, GREY, GAP;
+    /** Opens something on the phone (else the tap shows the description card). */
+    val opens: Boolean get() = this == NATIVE || this == WEBAPP || this == PC
+}
 
 /**
- * One User-level unit of the Desktop's catalog (DeskCatalog.kt, generated). [target] by [reach]: NATIVE a feature id or
- * a frame part (`kompakt`, `kommand`, `browser`), WEBAPP an M21 app id, PC a feature id or `port:<n>` (M8), NONE the reason.
+ * One unit of the Desktop's catalog, any level (DeskCatalog.kt, generated). [target] by [reach]: NATIVE a feature id, a
+ * frame part (`desk`, `kompakt`, `kommand`, `browser`) or `url:https://…`, WEBAPP an M21 app id, PC a feature id or
+ * `port:<n>` (M8); empty for GREY and GAP. [about] says what the unit is on the Desktop, [note] why it is grey or what the
+ * phone version will do, [wp] the work package of a GAP.
  */
 data class DeskUnit(
     val id: String, val hu: String, val en: String, val group: String, val icon: String,
     val reach: Reach, val target: String,
+    val level: String = "user", val about: String = "", val note: String = "", val wp: String = "", val wpHu: String = "",
 )
 
 /** What the palette searches: an id and its Hungarian and English names. */
@@ -64,15 +74,15 @@ object Kommand {
 
     /**
      * The phone's index: the Desktop's units that open something here (`cat:`), the phone's own features (`feat:`), and
-     * the open windows (`win:`, title given by the caller). Units the phone cannot reach are left out of the search;
-     * the ◣ menu still lists them, dimmed, so the map stays whole.
+     * the open windows (`win:`, title given by the caller). Every unit is in it (WP M46): a GREY or GAP one opens its
+     * description card, as in the ◣ menu, so the phone finds every Desktop feature.
      */
     fun index(units: List<DeskUnit> = DeskCatalog.UNITS, features: List<FeatureInfo> = Catalogue.ALL, windows: List<Pair<String, String>> = emptyList()): List<KommandItem> {
         val out = ArrayList<KommandItem>()
         val seen = HashSet<String>()
         fun add(id: String, hu: String, en: String) { if (seen.add(id)) out += KommandItem(id, hu, en) }
         windows.forEach { (id, title) -> add("win:$id", "Ablak · $title", "window") }
-        units.filter { it.reach != Reach.NONE }.forEach { add("cat:${it.id}", it.hu, it.en) }
+        units.forEach { add("cat:${it.id}", it.hu, it.en) }
         features.forEach { add("feat:${it.id}", it.title, it.id) }
         return out
     }

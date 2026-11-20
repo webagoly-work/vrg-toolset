@@ -99,6 +99,7 @@
         else if (r.frame === 'phone' && window.VRGPhone) window.VRGPhone.open();
         return true;
       case 'start': toast(false, 'Ez a START-ban fut (' + r.key + ').', 'This one runs in START (' + r.key + ').'); return false;
+      case 'card': showCard(r.card || {}); return true;
       case 'done': toast(r.result && r.result.ok !== false, (r.result && r.result.hu) || 'Elindítva.', (r.result && r.result.en) || 'Started.'); return true;
     }
     setView('desktop');
@@ -111,6 +112,31 @@
       return true;
     }
     return false;
+  }
+  // WP-50: the description card of a phone feature (launcher/vrg-parity.json). grey = no sense on a PC, gap = being built for the
+  // Desktop. It shows what the feature is on VRG Mobile and why / what will come; nothing runs. Esc, the backdrop or Bezárás closes it.
+  function showCard(c) {
+    const old = document.querySelector('[data-role="phone-card"]');
+    if (old) old.remove();
+    const grey = c.state === 'grey';
+    let box;
+    const close = () => { box.remove(); document.removeEventListener('keydown', onKey, true); };
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
+    const ok = h('button', { type: 'button', 'data-role': 'card-close', onclick: () => close() }, 'Bezárás');
+    box = h('div', { 'data-role': 'phone-card', 'data-state': c.state || '', onclick: e => { if (e.target === box) close(); } },
+      h('div', { class: 'pc-box', role: 'dialog', 'aria-modal': 'true', 'aria-label': c.hu || '' },
+        h('div', { class: 'pc-head' }, h('span', { class: 'mono' }, c.glyph || '📱'),
+          h('span', {}, h('span', { class: 't' }, c.hu || ''), h('span', { class: 'ty' }, 'VRG Mobile funkció' + (c.mobileWp ? ' · ' + c.mobileWp : '') + (c.stage ? ' · ' + c.stage : '')))),
+        h('div', { class: 'pc-state' }, grey ? 'AZ ASZTALON NEM ELÉRHETŐ' : 'KÉSZÜL AZ ASZTALRA' + (c.wp ? ' · ' + c.wp : '')),
+        c.about ? h('p', { class: 'pc-about' }, c.about) : null,
+        grey && c.why ? h('p', { class: 'pc-note' }, 'Miért: ' + c.why) : null,
+        !grey && c.plan ? h('p', { class: 'pc-note' }, 'Az Asztalon: ' + c.plan) : null,
+        !grey && c.wpHu ? h('p', { class: 'pc-wp' }, 'Munkacsomag: ' + c.wp + ' · ' + c.wpHu) : null,
+        h('div', { class: 'pc-foot' }, h('span', { class: 'sub' }, 'A telefonon: VRG Mobile → ' + (c.hu || '')), ok)));
+    document.body.append(box);
+    document.addEventListener('keydown', onKey, true);
+    ok.focus();
+    return box;
   }
   async function openServer(id) {                                       // a registry server in the browser pane, started if it is down
     const r = await call('server', { id });
@@ -126,7 +152,7 @@
   // ------------------------------------------------------------ Irányítópult nézet
   function tile(it) {
     const att = D.attached(it, S.items, S.level);
-    const t = h('div', { class: 'tile', 'data-id': it.id, 'data-level': it.level, 'data-role': 'tile' },
+    const t = h('div', { class: 'tile', 'data-id': it.id, 'data-level': it.level, 'data-role': 'tile', 'data-card': it.card || null },
       h('button', { type: 'button', class: 'main', disabled: !it.opens, title: it.en + ' · ' + it.type, onclick: () => openItem(it.id) },
         h('span', { class: 'mono' }, it.icon || it.hu.slice(0, 2).toUpperCase()),
         h('span', {}, h('span', { class: 't' }, it.hu, it.status !== 'live' ? h('span', { class: 'st' }, it.status) : null), h('span', { class: 'ty' }, it.label || it.type))));

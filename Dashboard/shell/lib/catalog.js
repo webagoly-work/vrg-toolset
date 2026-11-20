@@ -92,11 +92,29 @@ function validate(cat, { C, kinds = [] } = {}) {
   return errs;
 }
 
-function createCatalog({ file, collect = () => null, kinds = [] }) {
+// The phone's features the Desktop shows as tiles of their own (WP-50, launcher/vrg-parity.json): every VRG Mobile feature
+// that is grey (no sense on a PC) or gap (not built for the Desktop yet) in Dashboard/config/phone-cards.json, written by
+// tools/parity.js. Each becomes a catalog item "phone:<feature>" in Alkalmazások → A telefonról and the Irányítópult's
+// "A telefon funkciói" section; it opens nothing, its click shows the description card ({ do:'card' }).
+function phoneItems(cardsFile) {
+  if (!cardsFile) return [];
+  let j;
+  try { j = JSON.parse(fs.readFileSync(cardsFile, 'utf8')); } catch (e) { return []; }
+  const STAT = { live: 'live', beta: 'beta', planned: 'planned' };
+  return (Array.isArray(j.cards) ? j.cards : []).filter(c => c && /^phone:[a-z0-9-]{1,40}$/.test(c.id) && ['grey', 'gap'].includes(c.state)).map(c => ({
+    id: c.id, title: { hu: String(c.hu || c.feature), en: 'VRG Mobile · ' + c.feature }, type: 'phone feature', qualifier: 'VRG Mobile ' + (c.mobileWp || ''),
+    level: 'user', group: 'alkalmazasok', sub: 'telefon', status: STAT[c.stage] || 'beta', icon: String(c.glyph || ''),
+    launch: { card: true }, surfaces: { dashboard: 'telefon' }, from: [],
+    card: { state: c.state, hu: String(c.hu || ''), glyph: String(c.glyph || ''), about: String(c.about || ''), why: String(c.why || ''), plan: String(c.plan || ''),
+      wp: String(c.wp || ''), wpHu: String(c.wpHu || ''), mobileWp: String(c.mobileWp || ''), stage: String(c.stage || '') },
+  }));
+}
+
+function createCatalog({ file, collect = () => null, kinds = [], cards = '' }) {
   let cat = { items: [], groups: {}, sections: {} }, errors = ['not loaded'], byId = new Map();
 
   function load() {
-    try { cat = readCatalog(file); errors = validate(cat, { C: collect(), kinds }); }
+    try { cat = readCatalog(file); errors = validate(cat, { C: collect(), kinds }); cat.items = cat.items.concat(phoneItems(cards)); }
     catch (e) { cat = { items: [], groups: {}, sections: {} }; errors = ['catalog: ' + e.message]; }
     byId = new Map(cat.items.filter(i => i && typeof i.id === 'string').map(i => [i.id, i]));
     return errors;
@@ -135,14 +153,17 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
       id: it.id, hu: it.title.hu, en: it.title.en, type: it.type, qualifier: it.qualifier || '', label: typeLabel(cat.types, it),
       level: effectiveLevel(it), declared: it.level, parent: it.parent || '', group: it.group, sub: it.sub || '',
       status: it.status, icon: it.icon || '', surfaces: { ...(it.surfaces || {}) }, opens: !!r, win: isWin(r), children: children(it.id, level, C),
+      card: it.card ? it.card.state : '',
     }; });
   }
 
   // id → what main does: { do:'act', act, app? } | { do:'web', server, url } | { do:'pane', kind } | { do:'view', view, section? }
-  //                     | { do:'frame', frame } | { do:'start', key } | null (nothing to open, or unknown)
+  //                     | { do:'frame', frame } | { do:'start', key } | { do:'card', id, card } (a phone feature, WP-50)
+//                     | null (nothing to open, or unknown)
   function resolve(id, snap) {
     const it = get(id);
     if (!it) return null;
+    if (it.card) return { do: 'card', id: it.id, card: { ...it.card } };   // a phone feature: its description, nothing to run (WP-50)
     const L = it.launch || {}, C = snap || collect() || {};
     if (L.act && C.startActs && C.startActs[L.act]) return { do: 'act', act: L.act, app: !!L.app };
     if (L.server) { const s = serverOf(C, L.server); return s ? { do: 'web', server: s.id, url: 'http://127.0.0.1:' + s.port + (L.path || s.open || '/') } : null; }
@@ -192,4 +213,4 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   };
 }
 
-module.exports = { createCatalog, validate, LEVELS, RANK, FRAMES, VIEWS, readCatalog, featureAct, USER_STATUS, effectiveLevel, isCategory, typeLabel };
+module.exports = { createCatalog, phoneItems, validate, LEVELS, RANK, FRAMES, VIEWS, readCatalog, featureAct, USER_STATUS, effectiveLevel, isCategory, typeLabel };

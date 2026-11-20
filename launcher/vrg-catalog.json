@@ -5,6 +5,7 @@
   "types": {
     "application": { "en": "Application", "hu": "Alkalmazás", "kind": "unit" },
     "companion app": { "en": "Companion app", "hu": "Társalkalmazás", "kind": "unit" },
+    "phone feature": { "en": "Phone feature", "hu": "Telefonos funkció", "kind": "unit" },
     "utility": { "en": "Utility", "hu": "Segédprogram", "kind": "unit" },
     "feature": { "en": "Feature", "hu": "Funkció", "kind": "unit" },
     "feature module": { "en": "Feature module", "hu": "Funkciómodul", "kind": "unit" },
@@ -62,7 +63,7 @@
   },
   "groups": {
     "munka":       { "hu": "Munka",          "en": "Work",         "subs": { "tervezes": "Tervezés", "arazas": "Árazás", "anyag": "Anyag" } },
-    "alkalmazasok":{ "hu": "Alkalmazások",   "en": "Applications", "subs": { "iroda": "Iroda", "terep": "Terep" } },
+    "alkalmazasok":{ "hu": "Alkalmazások",   "en": "Applications", "subs": { "iroda": "Iroda", "terep": "Terep", "telefon": "A telefonról" } },
     "fajlok":      { "hu": "Fájlok",         "en": "Files",        "subs": {} },
     "rendszer":    { "hu": "Rendszer",       "en": "System",       "subs": {} },
     "fejlesztes":  { "hu": "Fejlesztés",     "en": "Development",  "subs": { "dev:repo": "Repó & Git", "dev:ai": "Ügynökök & AI", "dev:knowledge": "Tudás", "dev:infra": "Infrastruktúra", "dev:hw": "Eszközök & hardver", "dev:look": "Megjelenés" } }
@@ -72,6 +73,7 @@
     "apps":      { "hu": "Alkalmazások",         "en": "Applications",     "level": "user" },
     "programok": { "hu": "Programok",            "en": "Programs",         "level": "user" },
     "archivum":  { "hu": "Archívum",             "en": "Artifact archive", "level": "user" },
+    "telefon":   { "hu": "A telefon funkciói",   "en": "Phone features",   "level": "user" },
     "munkak":    { "hu": "Munkák",               "en": "Jobs",             "level": "user" },
     "allapot":   { "hu": "Állapot",              "en": "Status",           "level": "user" },
     "vonalak":   { "hu": "Fejlesztési vonalak",  "en": "Development lines", "level": "dev" },

@@ -62,6 +62,11 @@
    "en": "VRG Sketcher"
   },
   {
+   "id": "cat:rajztar.catalog",
+   "hu": "Rajztár katalógus",
+   "en": "Drawing store catalog"
+  },
+  {
    "id": "cat:client-preview",
    "hu": "Ügyfélnézet",
    "en": "Client preview"
@@ -127,6 +132,11 @@
    "en": "Connectome lab"
   },
   {
+   "id": "cat:konnektom-labor-cmd",
+   "hu": "Konnektóm-labor .cmd",
+   "en": "Connectome lab bootleg"
+  },
+  {
    "id": "cat:mindmap",
    "hu": "VRG MindMap",
    "en": "VRG MindMap"
@@ -162,6 +172,11 @@
    "en": "Varler Console"
   },
   {
+   "id": "cat:weather",
+   "hu": "VRG Időjárás",
+   "en": "VRG Weather"
+  },
+  {
    "id": "cat:mobile",
    "hu": "VRG Mobile",
    "en": "VRG Mobile"
@@ -170,6 +185,96 @@
    "id": "cat:servicekit",
    "hu": "ServiceKit",
    "en": "ServiceKit"
+  },
+  {
+   "id": "cat:term",
+   "hu": "Terminál",
+   "en": "Terminal"
+  },
+  {
+   "id": "cat:git",
+   "hu": "Git",
+   "en": "Git panel"
+  },
+  {
+   "id": "cat:vscode",
+   "hu": "VS Code",
+   "en": "VS Code"
+  },
+  {
+   "id": "cat:github",
+   "hu": "GitHub",
+   "en": "GitHub"
+  },
+  {
+   "id": "cat:commit",
+   "hu": "Commit + feltöltés",
+   "en": "Commit + push"
+  },
+  {
+   "id": "cat:gitlog",
+   "hu": "Napló",
+   "en": "Git log"
+  },
+  {
+   "id": "cat:claude-code",
+   "hu": "Claude Code",
+   "en": "Claude Code"
+  },
+  {
+   "id": "cat:chat",
+   "hu": "Claude oldalchat",
+   "en": "Claude side chat"
+  },
+  {
+   "id": "cat:context",
+   "hu": "Kontextuscsomag",
+   "en": "Context packs"
+  },
+  {
+   "id": "cat:council",
+   "hu": "VRG Tanács (ügynökök)",
+   "en": "VRG Council (agents)"
+  },
+  {
+   "id": "cat:prompts",
+   "hu": "Promptok",
+   "en": "Prompt library"
+  },
+  {
+   "id": "cat:go",
+   "hu": "GO kódszavak",
+   "en": "GO codephrases"
+  },
+  {
+   "id": "cat:trace",
+   "hu": "Ügynöknyom",
+   "en": "Agent trace"
+  },
+  {
+   "id": "cat:munkavaszon",
+   "hu": "Munkavászon",
+   "en": "Session Canvas"
+  },
+  {
+   "id": "cat:stack",
+   "hu": "VRG Rétegverem",
+   "en": "VRG Stack"
+  },
+  {
+   "id": "cat:stack.connectome",
+   "hu": "Konnektóm",
+   "en": "Connectome"
+  },
+  {
+   "id": "cat:stack.orb",
+   "hu": "Holo",
+   "en": "Holo"
+  },
+  {
+   "id": "cat:stack.layers",
+   "hu": "Rétegek",
+   "en": "Layers"
   },
   {
    "id": "cat:stack.search",
@@ -190,6 +295,191 @@
    "id": "cat:layer.q",
    "hu": "Q · Döntésnapló",
    "en": "Q · Decisions"
+  },
+  {
+   "id": "cat:layer.l",
+   "hu": "L · Vonaltérkép",
+   "en": "L · DevLog lines"
+  },
+  {
+   "id": "cat:threadboard",
+   "hu": "Thread Board",
+   "en": "Thread Board"
+  },
+  {
+   "id": "cat:layer.a",
+   "hu": "A · Vezérlőterem",
+   "en": "A · Control room"
+  },
+  {
+   "id": "cat:layer.u",
+   "hu": "U · Futásnapló",
+   "en": "U · Run log"
+  },
+  {
+   "id": "cat:layer.r",
+   "hu": "R · Commit-pixel",
+   "en": "R · Commit pixels"
+  },
+  {
+   "id": "cat:layer.c",
+   "hu": "C · Kódváros",
+   "en": "C · Code city"
+  },
+  {
+   "id": "cat:layer.g",
+   "hu": "G · Gömb",
+   "en": "G · Data globe"
+  },
+  {
+   "id": "cat:layer.z",
+   "hu": "Z · Kódex",
+   "en": "Z · Codec"
+  },
+  {
+   "id": "cat:codecity",
+   "hu": "VRG Kódváros",
+   "en": "VRG Code City"
+  },
+  {
+   "id": "cat:solomon",
+   "hu": "Solomon Gömb",
+   "en": "Solomon Sphere"
+  },
+  {
+   "id": "cat:divergence",
+   "hu": "Divergencia jelzőtábla",
+   "en": "Divergence board"
+  },
+  {
+   "id": "cat:devnote",
+   "hu": "Fejlesztői jegyzet",
+   "en": "Dev note"
+  },
+  {
+   "id": "cat:docs",
+   "hu": "Dokumentáció",
+   "en": "Documentation"
+  },
+  {
+   "id": "cat:coreref",
+   "hu": "CoreRef",
+   "en": "CoreRef"
+  },
+  {
+   "id": "cat:start",
+   "hu": "START indító (tartalék)",
+   "en": "START launcher (fallback)"
+  },
+  {
+   "id": "cat:backup",
+   "hu": "BACKUP",
+   "en": "BACKUP"
+  },
+  {
+   "id": "cat:servers",
+   "hu": "Helyi szerverek",
+   "en": "Local servers"
+  },
+  {
+   "id": "cat:check",
+   "hu": "Ellenőrzés",
+   "en": "Checks"
+  },
+  {
+   "id": "cat:desktop-exe",
+   "hu": "VRG Desktop .exe építése",
+   "en": "Build VRG Desktop.exe"
+  },
+  {
+   "id": "cat:kapu",
+   "hu": "VRG Kapu",
+   "en": "VRG Gate"
+  },
+  {
+   "id": "cat:vendor",
+   "hu": "VRG Vendor",
+   "en": "VRG Vendor"
+  },
+  {
+   "id": "cat:toolbox",
+   "hu": "Toolbox",
+   "en": "Toolbox"
+  },
+  {
+   "id": "cat:zen",
+   "hu": "Zen munkamenetek",
+   "en": "Zen browser sessions"
+  },
+  {
+   "id": "cat:planner-cyd",
+   "hu": "Planner CYD",
+   "en": "Planner CYD"
+  },
+  {
+   "id": "cat:board-console",
+   "hu": "Board Console",
+   "en": "Board Console"
+  },
+  {
+   "id": "cat:knobpad",
+   "hu": "VRG Knob Pad",
+   "en": "VRG Knob Pad"
+  },
+  {
+   "id": "cat:esp-lab",
+   "hu": "ESP labor",
+   "en": "ESP lab"
+  },
+  {
+   "id": "cat:uikit",
+   "hu": "VRG UI Kit",
+   "en": "VRG UI Kit"
+  },
+  {
+   "id": "cat:melyviz",
+   "hu": "Mélyvíz stílus",
+   "en": "Mélyvíz style"
+  },
+  {
+   "id": "cat:varler-sui",
+   "hu": "Varler SUI (HUD)",
+   "en": "Varler SUI (HUD tokens)"
+  },
+  {
+   "id": "cat:logo",
+   "hu": "Varler logó + gyűrű",
+   "en": "Varler logo + ring"
+  },
+  {
+   "id": "cat:programs",
+   "hu": "Programok",
+   "en": "Programs"
+  },
+  {
+   "id": "cat:otg",
+   "hu": "OTG (hordozható)",
+   "en": "OTG (portable build)"
+  },
+  {
+   "id": "cat:openmct",
+   "hu": "Open MCT kísérlet",
+   "en": "Open MCT spike"
+  },
+  {
+   "id": "cat:servicekit-phone",
+   "hu": "ServiceKit Phone",
+   "en": "ServiceKit Phone"
+  },
+  {
+   "id": "cat:servicekit-cyd",
+   "hu": "ServiceKit CYD",
+   "en": "ServiceKit CYD"
+  },
+  {
+   "id": "cat:research",
+   "hu": "Kutatási kísérletek",
+   "en": "Research spikes"
   }
  ],
  "recent": [
@@ -214,6 +504,7 @@
     "cat:planner",
     "cat:rajztar",
     "cat:sketcher",
+    "cat:rajztar.catalog",
     "cat:client-preview",
     "cat:workflow-kit",
     "cat:calc-panel",
@@ -225,6 +516,7 @@
     "cat:files",
     "cat:archive",
     "cat:konnektom-labor",
+    "cat:konnektom-labor-cmd",
     "cat:mindmap",
     "cat:web",
     "cat:mail",
@@ -232,17 +524,74 @@
     "cat:feed",
     "cat:map",
     "cat:console",
+    "cat:weather",
     "cat:mobile",
     "cat:servicekit",
+    "cat:term",
+    "cat:git",
+    "cat:vscode",
+    "cat:github",
+    "cat:commit",
+    "cat:gitlog",
+    "cat:claude-code",
+    "cat:chat",
+    "cat:context",
+    "cat:council",
+    "cat:prompts",
+    "cat:go",
+    "cat:trace",
+    "cat:munkavaszon",
+    "cat:stack",
+    "cat:stack.connectome",
+    "cat:stack.orb",
+    "cat:stack.layers",
     "cat:stack.search",
     "cat:layer.i",
     "cat:layer.f",
-    "cat:layer.q"
+    "cat:layer.q",
+    "cat:layer.l",
+    "cat:threadboard",
+    "cat:layer.a",
+    "cat:layer.u",
+    "cat:layer.r",
+    "cat:layer.c",
+    "cat:layer.g",
+    "cat:layer.z",
+    "cat:codecity",
+    "cat:solomon",
+    "cat:divergence",
+    "cat:devnote",
+    "cat:docs",
+    "cat:coreref",
+    "cat:start",
+    "cat:backup",
+    "cat:servers",
+    "cat:check",
+    "cat:desktop-exe",
+    "cat:kapu",
+    "cat:vendor",
+    "cat:toolbox",
+    "cat:zen",
+    "cat:planner-cyd",
+    "cat:board-console",
+    "cat:knobpad",
+    "cat:esp-lab",
+    "cat:uikit",
+    "cat:melyviz",
+    "cat:varler-sui",
+    "cat:logo",
+    "cat:programs",
+    "cat:otg",
+    "cat:openmct",
+    "cat:servicekit-phone",
+    "cat:servicekit-cyd",
+    "cat:research"
    ]
   },
   {
    "q": "pla",
    "ids": [
+    "cat:planner-cyd",
     "cat:planner"
    ]
   },
@@ -317,7 +666,10 @@
   },
   {
    "q": "rete",
-   "ids": []
+   "ids": [
+    "cat:stack.layers",
+    "cat:stack"
+   ]
   },
   {
    "q": "map",
@@ -339,7 +691,16 @@
     "cat:buildtree",
     "cat:mindmap",
     "cat:map",
-    "cat:mobile"
+    "cat:weather",
+    "cat:mobile",
+    "cat:council",
+    "cat:stack",
+    "cat:codecity",
+    "cat:desktop-exe",
+    "cat:kapu",
+    "cat:vendor",
+    "cat:knobpad",
+    "cat:uikit"
    ]
   },
   {
@@ -389,7 +750,9 @@
    "q": "munka",
    "ids": [
     "cat:workspaces",
-    "cat:jobs"
+    "cat:jobs",
+    "cat:munkavaszon",
+    "cat:zen"
    ]
   }
  ],

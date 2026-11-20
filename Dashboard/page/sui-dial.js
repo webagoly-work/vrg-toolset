@@ -101,7 +101,10 @@
           if (row.kind === 'node') ch.textContent = '›';
           else if (row.it.stay) ch.textContent = '↺';
           if (row.it.id) b.dataset.id = row.it.id;
-          if (row.kind === 'leaf' && row.it.opens === false) {
+          if (row.it.card) {                                              // a phone feature (WP-50): dimmed, its click shows the card
+            b.dataset.card = row.it.card;
+            const why = document.createElement('span'); why.className = 'why'; why.textContent = row.it.card === 'grey' ? 'telefonos · csak leírás' : 'telefonos · készül'; lb.append(why);
+          } else if (row.kind === 'leaf' && row.it.opens === false) {
             b.setAttribute('aria-disabled', 'true');
             const why = document.createElement('span'); why.className = 'why'; why.textContent = 'nem elérhető most'; lb.append(why);
           }

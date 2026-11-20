@@ -176,14 +176,7 @@ private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
     ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
 }
 
-private fun reachTag(u: DeskUnit): String = when (u.reach) {
-    Reach.NATIVE -> ""
-    Reach.WEBAPP -> "web"
-    Reach.PC -> "PC"
-    Reach.NONE -> "—"
-}
-
-/** ◣: the Desktop's catalog at User level, in the Desktop's groups. A unit the phone cannot open is dimmed, not hidden. */
+/** ◣: the Desktop's whole catalog, every level, in the Desktop's groups (M46). A grey or gap unit is dimmed, not hidden: a tap opens its card. */
 @Composable
 private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
     Column(
@@ -197,7 +190,7 @@ private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
             if (units.isEmpty()) return@forEach
             Text(name.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.4.sp, color = Melyviz.glowDim), modifier = Modifier.padding(top = 10.dp, bottom = 2.dp))
             units.forEach { u ->
-                val off = u.reach == Reach.NONE
+                val off = !u.reach.opens
                 Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).clickable { onUnit(u) }.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(u.icon.ifEmpty { "·" }, style = Melyviz.readout.copy(color = if (off) Melyviz.faint else Melyviz.glow), modifier = Modifier.width(30.dp))
                     Text(u.hu, style = Melyviz.label.copy(color = if (off) Melyviz.faint else Melyviz.ink), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -409,7 +409,7 @@
     for (const it of S.catalog) {
       if (!it.opens || RANK[it.level] > lv || it.type === 'category') continue;
       const grp = (S.groups[it.group] || {}).hu || it.group || 'Egyéb';
-      out.push({ id: 'cat:' + it.id, hu: it.hu, en: it.en, grp: it.win ? grp : 'Indítás külön (nem ablak)', ic: it.icon || it.hu.slice(0, 2).toUpperCase(), ext: !it.win, go: () => openCat(it) });
+      out.push({ id: 'cat:' + it.id, hu: it.hu, en: it.en, grp: it.card ? 'A telefonról (leírás)' : it.win ? grp : 'Indítás külön (nem ablak)', ic: it.icon || it.hu.slice(0, 2).toUpperCase(), ext: !it.win, go: () => openCat(it) });
     }
     if (!t) return out;
     const P = window.VRGPaletteLib;

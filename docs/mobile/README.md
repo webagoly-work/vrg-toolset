@@ -62,6 +62,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
+| **M46** | Paritás (every feature on both apps) | **BETA** (built 2026-11-20, waiting for the phone check): `launcher/vrg-parity.json` is the one two-way list; the ◣ menu and Kommand show every Desktop unit, every level; a grey or gap one opens its description card (`UnitCard.kt`); the Desktop shows the phone's grey / gap features as tiles with the same card (WP-50). The gaps are queued as M47–M60 and WP-51–WP-57 (`docs/mobile/PARITY.md` table 3) | — | small (`DeskCatalog` from the list, `Reach.GREY` / `GAP`) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

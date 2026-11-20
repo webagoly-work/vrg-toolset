@@ -73,6 +73,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     /** The feature on screen; null = home. Compose state. */
     private var current by mutableStateOf<String?>(null)
     private var message by mutableStateOf<String?>(null)
+    /** The description card of a grey or gap Desktop unit (WP M46); null = not shown. */
+    private var card by mutableStateOf<DeskUnit?>(null)
     /** The Asztal's dock (WP M19): the features opened in this run, newest first. */
     private var windows by mutableStateOf<List<String>>(emptyList())
     /** "Irányítópult nézet" from the Asztal's menu shows the home as one long page once, until Back (WP M38). */
@@ -129,6 +131,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                         }
                     }
                     Note(message, Modifier.align(Alignment.BottomCenter))
+                    card?.let { u -> UnitCard(u, onClose = { card = null }, extra = if (u.id == "mail") "Saját levelező" to ::mailApp else null) }
                 }
             } }
         }
@@ -218,7 +221,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         }
     }
 
-    /** A Desktop unit from the ◣ menu or Kommand: the phone's feature, an M21 app, the relay's side, or why not. */
+    /** A Desktop unit from the ◣ menu or Kommand: the phone's feature, an M21 app, the relay's side, or its description card. */
     private fun openUnit(u: DeskUnit) {
         when (u.reach) {
             Reach.NATIVE -> when (u.target) {
@@ -226,7 +229,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 "kompakt" -> compactPeek = true
                 "kommand" -> note("A Kommand a felső sávban van.")
                 "browser" -> browse("https://www.google.com/")
-                else -> open(u.target)
+                else -> if (u.target.startsWith("url:")) browse(u.target.removePrefix("url:")) else open(u.target)
             }
             Reach.WEBAPP -> openRoute(Route(Catalogue.APPS.id, u.target))
             Reach.PC -> when {
@@ -235,7 +238,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 u.target == Catalogue.PCWIN.id && u.id in hu.vrg.mobile.core.PcFiles.PLACES -> openRoute(Route(u.target, u.id))
                 else -> open(u.target)
             }
-            Reach.NONE -> if (u.id == "mail") mailApp() else note("${u.hu}: ${u.target}")
+            // M46: what the phone does not open shows its card: what it is on the Desktop, why not here or what will come
+            Reach.GREY, Reach.GAP -> card = u
         }
     }
 

@@ -40,27 +40,36 @@ class KommandTest {
     @Test fun theFixtureIsTheGeneratedCatalog() {
         val ids = fx.getJSONArray("items").let { a -> (0 until a.length()).map { a.getJSONObject(it).getString("id") } }
         assertEquals(DeskCatalog.UNITS.map { "cat:" + it.id }, ids)
-        assertEquals(38, DeskCatalog.UNITS.size, "the Desktop had 38 User-level units on 2026-11-18 (+ sketcher, rajztar, konnektom-labor); a new one needs a PARITY.md row")
+        assertEquals(96, DeskCatalog.UNITS.size, "the Desktop had 96 units, every level, on 2026-11-20 (M46); a new one needs its line in launcher/vrg-parity.json")
     }
 
-    @Test fun theIndexLeavesOutWhatThePhoneCannotOpen() {
+    @Test fun everyUnitIsInTheIndex() {
+        // M46: grey and gap units are searchable too; they open their description card
         val ix = Kommand.index(windows = listOf("w1" to "Planner"))
         assertEquals("win:w1", ix.first().id)
-        assertTrue(ix.none { it.id == "cat:mail" || it.id == "cat:mobile" })
-        assertTrue(ix.any { it.id == "cat:planner" } && ix.any { it.id == "feat:airdeck" })
+        assertTrue(DeskCatalog.UNITS.all { u -> ix.any { it.id == "cat:${u.id}" } })
+        assertTrue(ix.any { it.id == "cat:mail" } && ix.any { it.id == "cat:vscode" } && ix.any { it.id == "feat:airdeck" })
         assertEquals(ix.size, ix.map { it.id }.toSet().size)
         assertEquals("feat:airdeck", Kommand.search(ix, "legeger").first().id)
     }
 
-    @Test fun everyNativeTargetIsAFeatureOrAFramePart() {
-        val frame = setOf("kompakt", "kommand", "browser")
+    @Test fun everyTargetIsRealAndEveryCardHasItsText() {
+        val frame = setOf("desk", "kompakt", "kommand", "browser")
         for (u in DeskCatalog.UNITS) when (u.reach) {
-            Reach.NATIVE -> assertTrue(u.target in frame || Catalogue.byId(u.target) != null, u.id)
+            Reach.NATIVE -> assertTrue(u.target in frame || Catalogue.byId(u.target) != null || u.target.startsWith("url:https://"), u.id)
             Reach.PC -> assertTrue(u.target.startsWith("port:") || Catalogue.byId(u.target) != null, u.id)
             Reach.WEBAPP -> assertTrue(Regex("[a-z0-9-]+").matches(u.target), u.id)
-            Reach.NONE -> assertTrue(u.target.isNotBlank(), u.id)
+            Reach.GREY -> assertTrue(u.target.isEmpty() && u.about.isNotBlank() && u.note.isNotBlank() && u.wp.isEmpty(), u.id)
+            Reach.GAP -> assertTrue(u.target.isEmpty() && u.about.isNotBlank() && u.note.isNotBlank() && u.wp.isNotBlank() && u.wpHu.isNotBlank(), u.id)
         }
         assertTrue(DeskCatalog.GROUPS.map { it.first }.containsAll(DeskCatalog.UNITS.map { it.group }.toSet()))
+        assertTrue(DeskCatalog.UNITS.any { it.level == "dev" } && DeskCatalog.UNITS.any { it.level == "all" }, "every level, not only User")
+    }
+
+    @Test fun greyOnThePhoneIsTheFoundersList() {
+        // 2026-11-20: VS Code, the .exe build, the program installer and BACKUP; Toolbox and Zen are being retired on the Desktop too
+        assertEquals(setOf("vscode", "desktop-exe", "programs", "backup", "toolbox", "zen"), DeskCatalog.UNITS.filter { it.reach == Reach.GREY }.map { it.id }.toSet())
+        assertTrue(DeskCatalog.UNITS.none { it.reach.opens && it.target.isEmpty() })
     }
 
     @Test fun recentAndUrls() {

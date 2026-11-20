@@ -391,3 +391,26 @@ table.cat td.lv { font: 11px var(--mv-mono); color: var(--mv-dim); }
 /* the empty pane's "open …" buttons in the shell's look (they were browser-default buttons since D1) */
 [data-pane][data-kind="empty"] button { background: var(--mv-raised); border: 1px solid var(--mv-line); color: var(--mv-text); font: 12px var(--mv-mono); letter-spacing: .04em; padding: 6px 12px; min-width: 140px; text-align: left; }
 [data-pane][data-kind="empty"] button:hover, [data-pane][data-kind="empty"] button:focus-visible { border-color: var(--mv-accent); color: var(--mv-accent); outline: none; }
+
+/* ---------------------------------------------------------------- WP-50: phone features (grey / gap) and their card */
+.tile[data-card] { border-style: dashed; }
+.tile[data-card] > button.main { color: var(--mv-dim); }
+.tile[data-card] .mono { color: var(--mv-dim); border-color: var(--mv-line); }
+.tile[data-card="grey"] > button.main, .tile[data-card="grey"] .mono { color: var(--mv-faint); }
+.sui-item[data-card] .lb { color: var(--mv-dim); }
+.sui-item[data-card="grey"] .lb, .sui-item[data-card="grey"] .ic { color: var(--mv-faint); }
+[data-role="phone-card"] { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .55); }
+[data-role="phone-card"] .pc-box { width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 64px); overflow: auto; background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); padding: 16px 18px; color: var(--mv-text); font: 13px/1.45 var(--mv-sans); }
+[data-role="phone-card"][data-state="grey"] .pc-box { border-color: var(--mv-line); }
+[data-role="phone-card"] .pc-head { display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center; }
+[data-role="phone-card"] .pc-head .mono { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--mv-line-strong); font: 600 16px var(--mv-mono); }
+[data-role="phone-card"] .pc-head .t { display: block; font-weight: 600; font-size: 15px; }
+[data-role="phone-card"] .pc-head .ty { display: block; color: var(--mv-dim); font-size: 11px; }
+[data-role="phone-card"] .pc-state { margin: 12px 0 6px; font: 600 11px var(--mv-mono); letter-spacing: .08em; color: var(--mv-accent); }
+[data-role="phone-card"][data-state="grey"] .pc-state { color: var(--mv-dim); }
+[data-role="phone-card"] p { margin: 6px 0; }
+[data-role="phone-card"] .pc-note, [data-role="phone-card"] .pc-wp { color: var(--mv-dim); }
+[data-role="phone-card"] .pc-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+[data-role="phone-card"] .pc-foot .sub { flex: 1; color: var(--mv-faint); font-size: 11px; }
+[data-role="phone-card"] button { background: none; border: 1px solid var(--mv-line-strong); color: var(--mv-accent); font: inherit; padding: 6px 14px; cursor: pointer; }
+[data-role="phone-card"] button:hover, [data-role="phone-card"] button:focus-visible { background: var(--mv-raised); outline: 1px solid var(--mv-accent); }
