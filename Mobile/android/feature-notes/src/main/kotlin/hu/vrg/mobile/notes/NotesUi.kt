@@ -358,9 +358,10 @@ private fun NoteEditor(host: FeatureHost, id: String, onBack: () -> Unit) {
                     if (g.gone) "A forrásban törölték; a jegyzet itt megmaradt."
                     else "Összekötve: a szöveg ${src.label} felé is átmegy, amikor a felmérés legközelebb megnyílik.",
                     style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 3.dp))
-                if (!g.gone && src?.feature != null) Row(Modifier.padding(top = 4.dp)) {
+                val feature = src?.feature
+                if (!g.gone && src != null && feature != null) Row(Modifier.padding(top = 4.dp)) {
                     VrgChip("Megnyitás: ${src.label} ›") {
-                        if (Notes.openSource(n)) host.open(src.feature) else host.note("${src.label} most nem nyitható meg innen.")
+                        if (Notes.openSource(n)) host.open(feature) else host.note("${src.label} most nem nyitható meg innen.")
                     }
                 }
             }
