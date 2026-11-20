@@ -162,8 +162,18 @@ data class Capture(
 /** The building's outline as the map knows it (WP M30): its oriented size in metres. */
 data class Footprint(val w: Double, val d: Double, val area: Double, val angle: Double, val src: String, val at: Long = 0)
 
-/** Where the job is (WP M30). [source]: "kezi" typed, "gps" the phone's position, "terkep" VRG Térkép, "osm" Nominatim. */
-data class Site(val address: String = "", val lat: Double? = null, val lon: Double? = null, val source: String = "kezi", val footprint: Footprint? = null)
+/**
+ * Where the solved sketch sits on the map (F1): its box centre at [lat]/[lon], turned [rot] degrees clockwise.
+ * [auto] = still the first fit (SitePlace.autoFit), false once the user moved or turned it.
+ */
+data class Placement(val lat: Double, val lon: Double, val rot: Double, val auto: Boolean = true, val at: Long = 0)
+
+/**
+ * Where the job is (WP M30). [source]: "kezi" typed, "gps" the phone's position, "terkep" VRG Térkép, "osm" Nominatim.
+ * F1: [outline] = the building's corners (lat, lon), from OSM or drawn on the map; [place] = the sketch on it.
+ */
+data class Site(val address: String = "", val lat: Double? = null, val lon: Double? = null, val source: String = "kezi", val footprint: Footprint? = null,
+                val outline: List<Pair<Double, Double>> = emptyList(), val place: Placement? = null)
 
 /** Which level of the building the sketch is: the Planner's level ids. */
 enum class Level(val id: String, val label: String, val heightMm: Int) {

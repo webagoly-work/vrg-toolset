@@ -83,6 +83,7 @@ object SketchJson {
                 j.put("footprint", JSONObject().put("w", Math.round(f.w * 100) / 100.0).put("d", Math.round(f.d * 100) / 100.0)
                     .put("area", Math.round(f.area * 10) / 10.0).put("angle", Math.round(f.angle * 10) / 10.0).put("src", f.src).put("at", f.at))
             }
+            SitePlace.writeSite(t, j)
             o.put("site", j)
         }
         o.put("entries", JSONArray().also { a -> s.entries.forEach { e ->
@@ -122,6 +123,7 @@ object SketchJson {
         val site = o.optJSONObject("site")?.let { t ->
             Site(t.optString("address"), dbl(t, "lat"), dbl(t, "lon"), t.optString("source", "kezi"),
                 t.optJSONObject("footprint")?.let { f -> Footprint(f.optDouble("w"), f.optDouble("d"), f.optDouble("area"), f.optDouble("angle"), f.optString("src"), f.optLong("at")) })
+                .let { SitePlace.readSite(t, it) }
         }
         val answers = o.optJSONObject("answers")?.let { j -> j.keys().asSequence().mapNotNull { k ->
             val a = j.optJSONObject(k) ?: return@mapNotNull null
