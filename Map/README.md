@@ -31,6 +31,7 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/geocode.js` — the offline geocoder (index, query parsing, search, job addresses), shared by the
   page, `tools/build-jobs.js` and the tests.
 - `lib/jobs-layer.js` — the **J** layer: the jobs on the map (client data, see below).
+- `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).
 - `serve.js` — static server with HTTP Range (a `.pmtiles` file is read in pieces, no tile server), plus
@@ -46,7 +47,7 @@ to `H:\VRG\Full\tools\pmtiles`.
   Accents and abbreviations (u., krt., sgt., rkp., ltp.) are optional. Offline first; the
   "Keresés az interneten" row asks OSM Nominatim (online, one request a second).
 - Picking a result flies there tilted and turned, so terrain and building heights read at once.
-- Keys: `/` search · `3` 3D buildings · `T` terrain · `J` jobs · `N` north · `G` Google view · `Esc` close.
+- Keys: `/` search · `3` 3D buildings · `T` terrain · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
   With the jobs on: `D` density · `I` timeline · `,` / `.` previous / next job · job codes in the search box.
 - URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?q=…` searches on load; `?embed=1` is the slim
   UI for embedding in Kapu or the Planner; `?job=BK2` opens the job layer at that job.
@@ -75,3 +76,17 @@ Controls: no-store, an access log (`helyek-log.jsonl`, local vs relay), a kill s
 `jobs\_elozmenyek\TERKEP-KI` or `"jobsLayer": false` on START's M entry), never in Kapu guest mode, OTG
 or `?embed=1` (unless `&jobs=1`), and an "ÜGYFÉLADAT" badge while on. Decisions MAP-D1…D4, the data flow and
 how to confirm the drafted addresses: `docs/map/JOBS-MAP.md`.
+
+## The weather (W layer)
+
+**W** draws what VRG Időjárás (`Weather/`) fetched from online sources, animated on a 48-hour timeline (or the last
+3 hours of measurements). Every layer has its own toggle and they overlay each other:
+
+- temperature, cloud, the gust bands at the alert limits, precipitation;
+- radar, warnings, job weather risk, lightning, wind particles, station readings.
+
+serve.js reads `Weather/data/weather.sqlite` read-only under `/weather/*`. The **Frissítés** button runs
+Weather's `terkep` pipeline. The job weather is client data and follows the J layer's switches and log. START's M
+entry `"weatherLayer": false` turns W off. Design, data flow and open items: `docs/map/WEATHER-MAP.md`.
+`node Map/test/run.js weather` runs its tests; the page test runs on a stub basemap, without the download.
+

@@ -36,13 +36,55 @@
       "prior_weight": 1.0,
       "max_station_km": 45,
       "stations": [
-        { "id": "12843", "name": "Budapest-Pestszentlőrinc", "lat": 47.429, "lon": 19.182, "elev": 138 },
-        { "id": "12839", "name": "Budapest Liszt Ferenc repülőtér", "lat": 47.433, "lon": 19.262, "elev": 151 },
-        { "id": "12822", "name": "Győr", "lat": 47.707, "lon": 17.674, "elev": 116 },
-        { "id": "12882", "name": "Debrecen", "lat": 47.489, "lon": 21.615, "elev": 108 },
-        { "id": "12942", "name": "Pécs", "lat": 45.997, "lon": 18.229, "elev": 201 },
-        { "id": "12982", "name": "Szeged", "lat": 46.255, "lon": 20.091, "elev": 82 },
-        { "id": "12772", "name": "Miskolc", "lat": 48.101, "lon": 20.775, "elev": 233 }
+        {
+          "id": "12843",
+          "name": "Budapest-Pestszentlőrinc",
+          "lat": 47.429,
+          "lon": 19.182,
+          "elev": 138
+        },
+        {
+          "id": "12839",
+          "name": "Budapest Liszt Ferenc repülőtér",
+          "lat": 47.433,
+          "lon": 19.262,
+          "elev": 151
+        },
+        {
+          "id": "12822",
+          "name": "Győr",
+          "lat": 47.707,
+          "lon": 17.674,
+          "elev": 116
+        },
+        {
+          "id": "12882",
+          "name": "Debrecen",
+          "lat": 47.489,
+          "lon": 21.615,
+          "elev": 108
+        },
+        {
+          "id": "12942",
+          "name": "Pécs",
+          "lat": 45.997,
+          "lon": 18.229,
+          "elev": 201
+        },
+        {
+          "id": "12982",
+          "name": "Szeged",
+          "lat": 46.255,
+          "lon": 20.091,
+          "elev": 82
+        },
+        {
+          "id": "12772",
+          "name": "Miskolc",
+          "lat": 48.101,
+          "lon": 20.775,
+          "elev": 233
+        }
       ],
       "verified": "no",
       "notes": "Statistically post-processed (MOS) point forecast, 10 days, hourly, incl. thunderstorm probability (wwT) and precipitation probability (R101). Station ids are WMO numbers; whether each is in the MOSMIX catalogue is checked by `doctor --live` (a 404 marks the station missing)."
@@ -55,7 +97,12 @@
       "adapter": "open-meteo",
       "url": "https://api.open-meteo.com/v1/forecast",
       "url_key": "https://customer-api.open-meteo.com/v1/forecast",
-      "models": ["icon_d2", "icon_eu", "ecmwf_ifs025", "gfs_seamless"],
+      "models": [
+        "icon_d2",
+        "icon_eu",
+        "ecmwf_ifs025",
+        "gfs_seamless"
+      ],
       "licence": "CC BY 4.0 (data), API terms: free tier non-commercial only",
       "licence_url": "https://open-meteo.com/en/terms",
       "attribution": "Weather data by Open-Meteo.com (CC BY 4.0)",
@@ -120,22 +167,78 @@
       "enabled": true,
       "prior_weight": 1.0,
       "columns": {
-        "time": ["Time", "time", "Datum", "Date"],
-        "station": ["StationNumber", "Station", "StationId", "WMO"],
-        "name": ["StationName", "Name"],
-        "lat": ["Latitude", "Lat"],
-        "lon": ["Longitude", "Lon"],
-        "elev": ["Elevation", "Elev"],
-        "t2m": ["ta", "t", "TA"],
-        "rh2m": ["u", "U", "rh"],
-        "precip10": ["r", "R", "rr"],
-        "wind": ["f", "fs", "FF"],
-        "wdir": ["fd", "fsd", "DD"],
-        "gust": ["fx", "FX"],
-        "pmsl": ["p0", "P0", "pmsl"],
-        "swrad": ["sg", "SG"]
+        "time": [
+          "Time",
+          "time",
+          "Datum",
+          "Date"
+        ],
+        "station": [
+          "StationNumber",
+          "Station",
+          "StationId",
+          "WMO"
+        ],
+        "name": [
+          "StationName",
+          "Name"
+        ],
+        "lat": [
+          "Latitude",
+          "Lat"
+        ],
+        "lon": [
+          "Longitude",
+          "Lon"
+        ],
+        "elev": [
+          "Elevation",
+          "Elev"
+        ],
+        "t2m": [
+          "ta",
+          "t",
+          "TA"
+        ],
+        "rh2m": [
+          "u",
+          "U",
+          "rh"
+        ],
+        "precip10": [
+          "r",
+          "R",
+          "rr"
+        ],
+        "wind": [
+          "f",
+          "fs",
+          "FF"
+        ],
+        "wdir": [
+          "fd",
+          "fsd",
+          "DD"
+        ],
+        "gust": [
+          "fx",
+          "FX"
+        ],
+        "pmsl": [
+          "p0",
+          "P0",
+          "pmsl"
+        ],
+        "swrad": [
+          "sg",
+          "SG"
+        ]
       },
-      "missing": ["-999", "EOR", ""],
+      "missing": [
+        "-999",
+        "EOR",
+        ""
+      ],
       "verified": "no",
       "notes": "What really happened: the ground truth for verification, and the 'Most' card. The CSV is read by its header, so a renamed column is a config change, not a code change. 'Do not alter': unit conversions are stored, the raw file is kept gzipped in data/raw for the audit."
     },
@@ -154,7 +257,29 @@
       "cadence_min": 5,
       "enabled": false,
       "prior_weight": 1.0,
-      "columns": { "time": ["Time", "time", "DateTime"], "lat": ["Latitude", "lat", "Lat"], "lon": ["Longitude", "lon", "Lon"], "amp": ["Current", "Amplitude", "kA", "amp"] },
+      "columns": {
+        "time": [
+          "Time",
+          "time",
+          "DateTime"
+        ],
+        "lat": [
+          "Latitude",
+          "lat",
+          "Lat"
+        ],
+        "lon": [
+          "Longitude",
+          "lon",
+          "Lon"
+        ],
+        "amp": [
+          "Current",
+          "Amplitude",
+          "kA",
+          "amp"
+        ]
+      },
       "verified": "no",
       "notes": "Off until the folder's file pattern and freshness are confirmed (research could not open odp.met.hu). The parser reads any CSV with time/lat/lon columns. Blitzortung is NOT an alternative: its terms forbid commercial and warning use."
     },
@@ -177,22 +302,69 @@
       "notes": "Monthly PV yield per kWp for a place, for offers and for 'is today a commissioning day' (actual irradiance vs the month's typical)."
     },
     {
+      "id": "open-meteo-grid",
+      "name": "Open-Meteo rács (Térkép-mezők, 0,25°)",
+      "provider": "Open-Meteo.com",
+      "kind": "grid",
+      "adapter": "open-meteo-grid",
+      "url": "https://api.open-meteo.com/v1/forecast",
+      "url_key": "https://customer-api.open-meteo.com/v1/forecast",
+      "chunk": 100,
+      "licence": "CC BY 4.0 (data), API terms: free tier non-commercial only",
+      "licence_url": "https://open-meteo.com/en/terms",
+      "attribution": "Weather data by Open-Meteo.com (CC BY 4.0)",
+      "commercial": "key",
+      "auth": "apikey for commercial use (settings.local.json: keys.openMeteo)",
+      "cadence_min": 60,
+      "enabled": true,
+      "prior_weight": 1.0,
+      "verified": "no",
+      "notes": "Temperature, precipitation, cloud, wind and gust fields over Hungary every hour, -3 h to +48 h, for the VRG Térkép weather layers. Several coordinates in one request; ~380 points in 4 chunks."
+    },
+    {
+      "id": "met-no-grid",
+      "name": "MET Norway rács (Térkép-mezők, 0,5°)",
+      "provider": "Norwegian Meteorological Institute",
+      "kind": "grid",
+      "adapter": "met-no-grid",
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={lat}&lon={lon}",
+      "perSecond": 4,
+      "licence": "CC BY 4.0 / NLOD 2.0",
+      "licence_url": "https://api.met.no/doc/License",
+      "attribution": "Adatok: MET Norway (CC BY 4.0)",
+      "commercial": "yes",
+      "auth": "User-Agent with a contact (settings.local.json: contact)",
+      "cadence_min": 60,
+      "enabled": true,
+      "prior_weight": 1.0,
+      "verified": "no",
+      "notes": "The company-safe field source: 105 points, one request each, at most 4 a second, each honouring its own Expires. Coarser than Open-Meteo; the map interpolates smoothly."
+    },
+    {
       "id": "hungaromet-radar",
-      "name": "HungaroMet radarkompozit (kép)",
-      "provider": "HungaroMet Nonprofit Zrt.",
-      "kind": "link",
-      "adapter": null,
-      "url": "https://www.met.hu/idojaras/aktualis_idojaras/radar/",
-      "licence": "HungaroMet terms",
+      "name": "HungaroMet radarkompozit (Térkép-animáció)",
+      "provider": "HungaroMet Nonprofit Zrt. (odp.met.hu)",
+      "kind": "radar",
+      "adapter": "hungaromet-radar",
+      "url": "https://odp.met.hu/weather/radar/composite/png/refl2D/",
+      "fileRe": "(\\d{12})\\D*\\.png$",
+      "bounds": [
+        13.5,
+        44.0,
+        25.5,
+        50.5
+      ],
+      "keep": 12,
+      "licence": "HungaroMet open data terms: free use, cite the source, do not alter the data",
       "licence_url": "https://odp.met.hu/",
-      "attribution": "Radar: HungaroMet",
+      "attribution": "Radar: HungaroMet Nonprofit Zrt.",
       "commercial": "yes",
       "auth": "none",
-      "cadence_min": 0,
-      "enabled": true,
+      "cadence_min": 5,
+      "enabled": false,
       "prior_weight": 0,
       "verified": "no",
-      "notes": "A link on the page, not stored. Radar composites as data (netCDF) are a later phase; RainViewer was dropped (personal use only and cut back in 2026)."
+      "notes": "OFF until confirmed: the folder, the file-name pattern (fileRe, first group = UTC time YYYYMMDDhhmm) and the image's box (bounds W,S,E,N) are GUESSES — the research could not open odp.met.hu. Set the three from the real folder, run `doctor --live`, then enabled: true. The page shows the frames unaltered, as an overlay."
     }
   ]
 }

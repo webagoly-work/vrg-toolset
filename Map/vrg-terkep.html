@@ -13,7 +13,9 @@
         ?q=Budapest Váci út 12         search on load and fly there
         ?embed=1                        slim UI for embedding in Kapu / Planner
         ?job=BK2                        the job layer on, fly to that job (internal; docs/map/JOBS-MAP.md)
-  Keys: /  search   3  3D buildings   T  terrain   J  jobs   G  Google 3D view   N  north   Esc  close
+        ?wx=1 / ?wx=0                   the weather layer on at load / hidden (docs/map/WEATHER-MAP.md)
+  Keys: /  search   3  3D buildings   T  terrain   J  jobs   W  weather   G  Google 3D view   N  north   Esc  close
+        with W on: P play/pause   [ ]  step   M  forecast / measured
 
   Libraries (Vendor/, see vendor-manifest.json):
     MapLibre GL JS — Copyright (c) 2023, MapLibre contributors; (c) 2020 Mapbox. BSD-3-Clause.
@@ -148,6 +150,42 @@
     border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -4px 18px rgba(0,0,0,.25);padding:14px 16px 18px}
   #jobs-sheet .jclose{position:absolute;right:8px;top:6px;border:0;background:none;color:var(--ink-2);font-size:18px;min-width:40px;min-height:40px;cursor:pointer}
   #results .k.munka{color:var(--accent);font-weight:700}
+  /* W: the weather layer (lib/weather-layer.js, docs/map/WEATHER-MAP.md) — same panel language as the J legend */
+  #wx-panel{position:absolute;right:12px;bottom:30px;z-index:5;width:min(440px,calc(100vw - 24px));box-sizing:border-box;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #wx-panel[hidden],#wx-read[hidden]{display:none}
+  #wx-panel.collapsed .lg-b{display:none}
+  #wx-panel .lg-h .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  #wx-panel .wx-layers .lg-chip[aria-pressed=false]{text-decoration:none;opacity:.55;background:none}
+  #wx-panel .lg-chip[data-empty]{opacity:.42}
+  #wx-panel .lg-chip[data-empty][aria-pressed=true]{text-decoration:none}
+  #wx-panel .lg-chip .dot{box-shadow:0 0 0 1.5px #1f1d1a inset}
+  #wx-panel .lg-chip:disabled{opacity:.4;cursor:not-allowed}
+  .wx-eval{font:700 10px/1 inherit;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#8b5a1f;border-radius:999px;padding:4px 7px;white-space:nowrap}
+  .wx-time output{min-width:140px;white-space:nowrap}
+  .wx-time output.wx-past{color:var(--accent)}
+  .wx-legend{margin-top:6px;display:grid;gap:5px}
+  .wx-ramp{display:grid;grid-template-columns:96px 1fr 34px;align-items:center;gap:8px;position:relative}
+  .wx-ramp>span:first-child{color:var(--ink-2)} .wx-ramp em{font-style:normal;color:var(--faint);font-size:11px}
+  .wx-ramp>i{height:9px;border-radius:5px;border:1px solid var(--line)}
+  .wx-ticks{position:absolute;left:104px;right:42px;top:12px;height:12px;font:10px ui-monospace,Consolas,monospace;color:var(--faint)}
+  .wx-ticks b{position:absolute;transform:translateX(-50%);font-weight:400}
+  .wx-ramp:has(.wx-ticks){padding-bottom:12px}
+  .wx-age{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--faint);grid-column:2/4}
+  .wx-age i{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px #1f1d1a inset;margin-left:4px}
+  .wx-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:7px;padding-top:6px;border-top:1px dashed var(--line);font-size:11px;color:var(--faint)}
+  .wx-foot>span:first-child{min-width:0}
+  .wx-attr{font-size:10.5px;color:var(--faint);margin-top:4px;line-height:1.35}
+  .wx-ctl{display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .wx-ctl input{width:70px;accent-color:var(--accent);vertical-align:middle}
+  .wx-overlay{position:absolute;left:0;top:0;pointer-events:none}
+  .wx-overlay[hidden]{display:none}
+  #wx-read{position:absolute;z-index:6;pointer-events:none;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 9px;
+    font:12px/1.2 "Segoe UI",system-ui,sans-serif;box-shadow:var(--shadow);white-space:nowrap}
+  .jcard .wx-jobline{margin-top:8px;padding:6px 8px;border-left:3px solid var(--c);background:var(--field);border-radius:0 6px 6px 0;font-size:12px}
+  .jcard .wx-jobline b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+  body.wx-on .maplibregl-ctrl-top-right{bottom:auto;top:262px}
+  @media (max-width:980px){ body.wx-on.jobs-on #wx-panel{bottom:auto;top:64px;right:72px;width:min(380px,calc(100vw - 96px))} }
   /* R10: the phone (also through the VRG Mobile relay) */
   @media (max-width:640px){
     .panel{top:8px;left:8px;width:calc(100vw - 16px)}
@@ -162,6 +200,9 @@
     .lg-chip{min-height:34px;padding:5px 11px}
     .maplibregl-ctrl-top-right{bottom:auto;top:126px}
     body.jobs-on .maplibregl-ctrl-top-right{top:140px}
+    #wx-panel{left:0;right:0;bottom:0;width:auto;border-radius:14px 14px 0 0;padding:8px 12px 12px;max-height:46vh;overflow:auto}
+    body.wx-on.jobs-on #wx-panel{top:auto;right:0;width:auto;bottom:0;z-index:7}
+    body.wx-on .maplibregl-ctrl-top-right{top:126px}
   }
 </style>
 </head>
@@ -183,6 +224,7 @@
   <button class="btn" id="b-terrain" aria-pressed="true" title="Domborzat">Domb<kbd>T</kbd></button>
   <button class="btn" id="b-north" title="Északra, felülnézet">É<kbd>N</kbd></button>
   <button class="btn" id="b-jobs" aria-pressed="false" title="Munkák a térképen (ügyféladat, csak belső)">Munkák<kbd>J</kbd></button>
+  <button class="btn" id="b-wx" aria-pressed="false" title="Időjárás-rétegek: mezők, szél, csapadék, villám, mérések, figyelmeztetések (VRG Időjárás, online források)">Időjárás<kbd>W</kbd></button>
   <button class="btn" id="b-google" aria-pressed="false" title="Google 3D nézet ugyanerre a helyre (online)">Google 3D<kbd>G</kbd></button>
 </div>
 
@@ -200,6 +242,8 @@
 <div id="jobs-legend" hidden aria-label="Munkák jelmagyarázata"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <aside id="jobs-sheet" hidden aria-label="Munka adatai"></aside>
+<aside id="wx-panel" hidden aria-label="Időjárás-rétegek"></aside>
+<div id="wx-read" hidden></div>
 <div id="notice"><div id="notice-body"></div></div>
 
 <script>
@@ -216,6 +260,7 @@ if (location.protocol === 'file:') {
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initJobs } from '/lib/jobs-layer.js';
+import { initWeather } from '/lib/weather-layer.js';
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -512,7 +557,10 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 // ---------------------------------------------------------------- J: the jobs (lib/jobs-layer.js; client data, internal only)
 const jobs = initJobs({ map, maplibregl, params, store, toast });
 
-window.vrgMap = { map, searchOffline, camera, jobs };   // for tests and the console
+// ---------------------------------------------------------------- W: the weather (lib/weather-layer.js; VRG Időjárás data)
+const weather = initWeather({ map, maplibregl, params, store, toast });
+
+window.vrgMap = { map, searchOffline, camera, jobs, weather };   // for tests and the console
 </script>
 </body>
 </html>

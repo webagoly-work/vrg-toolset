@@ -125,11 +125,13 @@ function hungarometObs(now) {
     for (const [id, name, lat, lon, el] of st)
       lines.push([stamp, id, name, lat, lon, el, (x.rain / 6).toFixed(2), ' ', x.temp.toFixed(1), ' ', Math.round(x.rh), ' ', -999, ' ', x.wind.toFixed(1), ' ', 290, ' ', x.gust.toFixed(1), ' ', x.p.toFixed(1), ' ', 'EOR'].join(';'));
   }
+  lines.push(...require('./fixtures-map').stationLines(now).lines);   // ~40 invented stations for the map's field
   return zip.make('HABP_10M_SYNOP_LATEST.csv', lines.join('\r\n'));
 }
 
 function lightning(now) {
-  return ['Time;Latitude;Longitude;Current', `${isoZ(now - 10 * 60e3)};47.540;19.140;-12.3`, `${isoZ(now - 3 * H)};46.10;18.20;8.1`].join('\n');
+  return ['Time;Latitude;Longitude;Current', `${isoZ(now - 10 * 60e3)};47.540;19.140;-12.3`, `${isoZ(now - 3 * H)};46.10;18.20;8.1`,
+    ...require('./fixtures-map').strikeLines(now)].join('\n');
 }
 
 function pvgis() {
@@ -152,6 +154,9 @@ function make(dir, nowIso) {
   w('hungaromet-obs.zip', hungarometObs(now));
   w('hungaromet-lightning.csv', lightning(now));
   w('pvgis.json', pvgis());
+  // the VRG Térkép fields: grid answers, radar frames (test/fixtures-map.js)
+  const M = require('./fixtures-map');
+  for (const files of [M.openMeteoGrid(now), M.metNoGrid(now), M.radarFrames(now)]) for (const [f, d] of Object.entries(files)) w(f, d);
   return dir;
 }
 

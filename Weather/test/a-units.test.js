@@ -89,6 +89,9 @@ module.exports = async t => {
   await t('helpers: distance, local time, arguments, ASCII console text', () => {
     assert.ok(Math.abs(km({ lat: 47.4979, lon: 19.0402 }, { lat: 47.429, lon: 19.182 }) - 13.1) < 0.3);
     assert.strictEqual(local('2026-11-18T23:30:00Z').date, '2026-11-19');
+    const { areaMatch } = require('../lib/common');
+    assert.ok(areaMatch('Pest vármegye', 'Pest') && areaMatch('Budapest', 'Budapest') && areaMatch('Érd', 'Érd'));
+    assert.ok(!areaMatch('Pest', 'Budapest') && !areaMatch('Budapest', 'Pest'), '"Pest" is not inside "Budapest"');
     assert.deepStrictEqual(parseArgs(['fetch', 'met-no', '--place', 'erd', '--force', '--day=tomorrow']), { _: ['fetch', 'met-no'], place: 'erd', force: true, day: 'tomorrow' });
     assert.deepStrictEqual(splitCmd('brief "Budapest belváros" --save'), ['brief', 'Budapest belváros', '--save']);
     assert.strictEqual(ascii('Széllökés −2 °C, ő ű ≥ · 🔴'), 'Szellokes -2 C, o u >= - [X]');

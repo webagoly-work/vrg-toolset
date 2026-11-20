@@ -8,6 +8,10 @@
 //   /vendor/maplibre-gl/*   Vendor/maplibre-gl/dist
 //   /vendor/pmtiles/*       Vendor/pmtiles/dist
 //   /jobs/status            is the job layer on? { on, reason } — no client data, not logged
+//   /weather/*              the W layer: weather fields, stations, strikes, warnings, radar from VRG Időjárás
+//                           (Weather/data/weather.sqlite, read-only; Weather/lib/maplayers.js); /weather/jobs is client
+//                           data and follows the job layer's switches; POST /weather/refresh runs Weather's 'terkep'
+//                           pipeline (x-vrg: 1 and a localhost origin only). docs/map/WEATHER-MAP.md
 //   /jobs/helyek.json       the job layer (client data, outside Git: jobs\_elozmenyek\helyek.json),
 //                           no-store, every request logged to jobs\_elozmenyek\helyek-log.jsonl
 //
@@ -116,6 +120,68 @@ function serveJobs(req, res) {
   res.end(req.method === 'HEAD' ? undefined : body);
 }
 
+// ---------------------------------------------------------------- the weather layer (W), from VRG Időjárás
+// Off when launcher/vrg-menu.json's M entry says "weatherLayer": false. In a worktree without its own
+// Weather/data the main checkout's database is read.
+if (!process.env.VRG_WEATHER_DATA && MAIN && !isDir(path.join(REPO, 'Weather', 'data')) && isDir(path.join(MAIN, 'Weather', 'data')))
+  process.env.VRG_WEATHER_DATA = path.join(MAIN, 'Weather', 'data');
+let wxBusy = null;
+function weatherSwitch() {
+  try {
+    const m = JSON.parse(fs.readFileSync(MENU, 'utf8'));
+    const t = ((m.start && m.start.tools) || []).find(x => x.server === 'terkep' || x.key === 'M');
+    return !(t && t.weatherLayer === false);
+  } catch { return true; }
+}
+function wxLib() { return require(path.join(REPO, 'Weather', 'lib', 'maplayers.js')); }
+async function serveWeather(req, res) {
+  const u = new URL(req.url, 'http://localhost'), p = u.pathname;
+  const json = (code, body) => res.writeHead(code, NOSTORE).end(req.method === 'HEAD' ? undefined : JSON.stringify(body));
+  if (!weatherSwitch()) return json(p === '/weather/status' ? 200 : 403, { on: false, reason: 'Kikapcsolva a START registryben (weatherLayer: false).' });
+  if (req.method === 'POST') {
+    if (p !== '/weather/refresh') return json(404, {});
+    const o = req.headers.origin;
+    if (req.headers['x-vrg'] !== '1' || (o && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o))) return json(403, { error: 'csak a saját oldalról' });
+    if (wxBusy) return json(409, { error: 'fut már' });
+    wxBusy = Date.now();
+    try {
+      const C = require(path.join(REPO, 'Weather', 'lib', 'commands.js'));
+      const ctx = C.context({});
+      try { const r = await require(path.join(REPO, 'Weather', 'lib', 'pipeline.js')).runPipeline(ctx, 'terkep', C.dispatch); return json(200, { status: r.status, steps: r.steps }); }
+      finally { ctx.db.close(); }
+    } catch (e) { return json(500, { error: String(e.message || e) }); }
+    finally { wxBusy = null; }
+  }
+  let M;
+  try { M = wxLib().make(); } catch (e) { return json(500, { on: false, reason: 'VRG Időjárás nem tölthető be: ' + e.message }); }
+  try {
+    if (p === '/weather/status') return json(200, { ...M.status(), busy: !!wxBusy, jobs: jobsState().on });
+    if (!M.available) return json(404, { error: 'nincs időjárás-adatbázis' });
+    if (p === '/weather/fields') { const f = M.fields(u.searchParams.get('mode') === 'obs' ? 'obs' : 'forecast'); return f ? json(200, f) : json(404, { error: 'nincs mező' }); }
+    if (p === '/weather/stations') return json(200, M.stations());
+    if (p === '/weather/lightning') return json(200, M.lightning(Math.min(180, +u.searchParams.get('min') || 60)));
+    if (p === '/weather/warnings') return json(200, M.warnings());
+    if (p === '/weather/radar') return json(200, M.radar());
+    const rf = /^\/weather\/radar\/([^/]+)\/([^/]+)$/.exec(p);
+    if (rf) {
+      const f = M.radarFile(decodeURIComponent(rf[1]), decodeURIComponent(rf[2]));
+      if (!f || !isFile(f)) return json(404, {});
+      const b = fs.readFileSync(f);
+      return res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'max-age=3600', 'Content-Length': b.length }).end(req.method === 'HEAD' ? undefined : b);
+    }
+    if (p === '/weather/jobs') {
+      // client data: the job codes. Same switches and the same access log as /jobs/helyek.json
+      const st = jobsState();
+      if (!st.on) { logAccess(req, { ok: false, reason: 'off', what: 'weather' }); return json(403, st); }
+      const j = M.jobs();
+      logAccess(req, { ok: true, n: Object.keys(j).length, what: 'weather' });
+      return json(200, j);
+    }
+    return json(404, {});
+  } catch (e) { return json(500, { error: String(e.message || e) }); }
+  finally { M.close(); }
+}
+
 // --allow-remote (testing without the download): /remote/<host>/<path> forwards GET + Range to the
 // two planet files' hosts. build.protomaps.com sends no CORS header, so the page cannot read it itself.
 const REMOTE_HOSTS = new Set(['build.protomaps.com', 'download.mapterhorn.com', 'protomaps.github.io']);
@@ -135,6 +201,7 @@ async function proxy(req, res) {
 }
 
 function handle(req, res) {
+  if (req.url.startsWith('/weather/')) { serveWeather(req, res); return; }
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
   if (req.url.startsWith('/remote/')) { proxy(req, res); return; }
   if (req.url.startsWith('/jobs/')) { serveJobs(req, res); return; }
@@ -177,7 +244,7 @@ function handle(req, res) {
   fs.createReadStream(file).pipe(res);
 }
 
-module.exports = { handle, jobsState, resolve, DATA, VENDOR, JOBS };
+module.exports = { handle, jobsState, weatherSwitch, resolve, DATA, VENDOR, JOBS };
 
 if (require.main === module) {
   http.createServer(handle).listen(PORT, '127.0.0.1', () => {

@@ -41,7 +41,7 @@ note, so it works from any Claude account on this PC. Written 2026-10-30 at the 
 | Inventory | `Inventory/` | green | — |
 | Varler logo (animated v1, divergence ring) | `shared/varler-logo` | v1 + ring built 2026-11-02; toggle and Mobile home next | LOGO |
 | OpenWrt | `GO-OPENWRT.md` | P0 not started | OPENWRT |
-| VRG Időjárás (weather) | `Weather/`, `docs/research/reports/VRG Weather - sources, fusion and field rules.md` | built 2026-11-18, beta: 44 tests green on invented data; parsers not yet checked live (`doctor --live`, W1-W8 in the report); START W → I, server O → W :8808 | — |
+| VRG Időjárás (weather) | `Weather/`, `docs/research/reports/VRG Weather - sources, fusion and field rules.md` | built 2026-11-18, beta: 52 tests green on invented data; parsers not yet checked live (`doctor --live`, W1-W8 in the report); START W → I, server O → W :8808. **Térkép W layer** (2026-11-20, `docs/map/WEATHER-MAP.md`): animated fields, wind, rain, lightning, stations, warnings, job risk; 13 Map tests | — |
 
 ## 4. What can run now
 
