@@ -146,6 +146,31 @@ eq(sk.state().site.address, 'Fő utca 3', 'address editable');
 ok(/q=F%C5%91%20utca%203/.test($('#mapframe').getAttribute('src')), 'map query follows the address');
 ok(/Terv teljes mérete/.test(mainText()), 'plan overall size shown');
 
+// Helyszín F1: the sketch on the building (outline from the map, ⤢ fit, the report, the survey sent to the embedded map)
+ok(/Még nincs körvonal/.test(mainText()), 'no outline yet: says how to get one');
+const SMj = w.VrgSiteMath;
+ok(SMj && typeof SMj.autoFit === 'function', 'site maths inlined');
+const ring = [[-3.2, -1.8], [3.2, -1.8], [3.2, 1.8], [-3.2, 1.8]].map(p => SMj.toLatLon(47.515, 19.08, p[0], p[1]));
+sk.siteApply({ kind: 'vrg-site-result', v: 1, id: 'x', cancelled: true, outline: ring });
+ok(!(sk.state().site.outline), 'a cancelled answer changes nothing');
+sk.siteApply({ kind: 'vrg-site-result', v: 1, id: 'x', outline: ring, outlineSrc: 'muhold', place: null, center: [47.515, 19.08] });
+eq([sk.state().site.outline.length, sk.state().site.footprint.src, sk.state().site.lat, sk.state().site.source], [4, 'muhold', 47.515, 'terkep'], 'the map answer applied');
+ok(Math.abs(sk.state().site.footprint.w - 6.4) < 0.05 && Math.abs(sk.state().site.footprint.d - 3.6) < 0.05, 'footprint measured from the outline');
+ok($('[data-act="sitefit"]') && /Még nincs elhelyezve/.test(mainText()), 'fit offered before a placement');
+click($('[data-act="sitefit"]'));
+ok(sk.state().site.place && sk.state().site.place.auto === true, '⤢ places the sketch');
+ok(/A vázlat a körvonalon belül van, a falak párhuzamosak/.test(mainText()), 'the report: inside, parallel');
+eq($$('svg.siteplace polygon').length, 3, 'outline + two rooms drawn');
+let sent = null; $('#mapframe').contentWindow.postMessage = (m, o) => { sent = [m, o]; };
+click($('[data-act="sitemap"]'));
+ok(sent && sent[0].kind === 'vrg-site' && sent[0].rooms.length === 2 && sent[1] === 'http://localhost:8802', 'the survey goes to the embedded map only');
+ok(sent && !('address' in sent[0]), 'the map does not get the address');
+sk.siteApply({ kind: 'vrg-site-result', v: 1, id: 'x', outline: ring, outlineSrc: 'rajz', place: { lat: 47.51502, lon: 19.08, rot: 12, auto: false } });
+ok(/kilóg|elfordulnak/.test(mainText()) && $$('svg.siteplace line.sb').length > 0, 'a turned sketch: walls marked, the report says so');
+click($('[data-act="siteclear"]'));
+ok(!sk.state().site.place, 'placement cleared');
+click($('[data-act="sitefit"]'));
+
 // Kamera
 click(rail('kamera'));
 ok($$('.shotrow').length > 0 && $('#fphotos'), 'shot list and photo attach input');
@@ -172,6 +197,7 @@ ok(JSON.stringify(out.plan) === JSON.stringify(pkgObj.plan), 'plan is unchanged 
 ok(out.sketch.answers.lenyeg.options[0] === 'csere' && out.sketch.entries.length === 2 && out.sketch.seq === sk.state().seq, 'saved sketch has answers, entries, seq');
 ok(out.sketch.scope.felujitas === 1 && out.sketch.dismissed.includes('kw:bojler') && out.sketch.variant === 'furdo-felujitas', 'saved sketch has scope, dismissed, variant');
 ok(!/blob:/.test(txt), 'no object URLs in the saved file');
+ok(out.sketch.site.outline.length === 4 && out.sketch.site.place && typeof out.sketch.site.place.rot === 'number', 'saved survey keeps outline and placement');
 
 // bare survey
 sk.load(pkgObj.sketch);
