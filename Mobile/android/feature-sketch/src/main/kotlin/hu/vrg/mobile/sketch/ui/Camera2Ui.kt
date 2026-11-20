@@ -265,7 +265,20 @@ internal fun stripGps(f: File): Boolean = try {
     true
 } catch (e: Exception) { false }
 
-internal fun setGps(f: File, lat: Double, lon: Double) { try { ExifInterface(f.path).apply { setLatLong(lat, lon); saveAttributes() } } catch (e: Exception) { } }
+/** android.media.ExifInterface has no setLatLong: the degrees / minutes / seconds rationals are written by hand. */
+internal fun setGps(f: File, lat: Double, lon: Double) {
+    fun dms(v: Double): String {
+        val a = kotlin.math.abs(v); val d = a.toInt(); val m = ((a - d) * 60).toInt(); val s = Math.round(((a - d) * 60 - m) * 60 * 1000)
+        return "$d/1,$m/1,$s/1000"
+    }
+    try {
+        ExifInterface(f.path).apply {
+            setAttribute(ExifInterface.TAG_GPS_LATITUDE, dms(lat)); setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, if (lat >= 0) "N" else "S")
+            setAttribute(ExifInterface.TAG_GPS_LONGITUDE, dms(lon)); setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, if (lon >= 0) "E" else "W")
+            saveAttributes()
+        }
+    } catch (e: Exception) { }
+}
 
 /** A copied photo with its GPS removed; when that fails the copy is re-encoded (no EXIF at all) rather than sent with it. */
 internal fun copyWithoutGps(src: File, out: File): File? {
