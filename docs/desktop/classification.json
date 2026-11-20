@@ -302,6 +302,30 @@
    "reason": "a build / test / serve action of START P, drawn behind planner"
   },
   {
+   "id": "menu:proj:P/S",
+   "name": "Planner · VRG Sketcher",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
+   "id": "menu:proj:P/H",
+   "name": "Planner · Sketcher build + teszt",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
    "id": "menu:proj:P/O",
    "name": "Planner · Mappa megnyitása",
    "source": "vrg-menu",
@@ -722,6 +746,30 @@
    "reason": "is the catalog item `archive`"
   },
   {
+   "id": "menu:proj:R/K",
+   "name": "Rétegverem · Konnektóm-labor",
+   "source": "vrg-menu",
+   "type": "application",
+   "qualifier": "connectome lab",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "konnektom-labor",
+   "reason": "is the catalog item `konnektom-labor`"
+  },
+  {
+   "id": "menu:proj:R/E",
+   "name": "Rétegverem · Konnektóm-labor .cmd",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "self-extracting hand-off",
+   "scope": "open",
+   "level": "dev",
+   "parent": "konnektom-labor",
+   "unit": "konnektom-labor-cmd",
+   "reason": "is the catalog item `konnektom-labor-cmd`"
+  },
+  {
    "id": "menu:proj:R/T",
    "name": "Rétegverem · Telefonra",
    "source": "vrg-menu",
@@ -940,6 +988,18 @@
   {
    "id": "menu:proj:W/O",
    "name": "Varler Console · Mappa megnyitása",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "console",
+   "unit": "",
+   "reason": "a build / test / serve action of START W, drawn behind console"
+  },
+  {
+   "id": "menu:proj:W/I",
+   "name": "Varler Console · VRG Időjárás",
    "source": "vrg-menu",
    "type": "command",
    "qualifier": "",
@@ -1560,6 +1620,18 @@
    "parent": "map",
    "unit": "",
    "reason": "background process with a port: Dev, behind map"
+  },
+  {
+   "id": "srv:idojaras",
+   "name": "VRG Időjárás · többforrású előrejelzés + ütemező",
+   "source": "vrg-menu",
+   "type": "service",
+   "qualifier": "local server",
+   "scope": "open",
+   "level": "dev",
+   "parent": "weather",
+   "unit": "",
+   "reason": "background process with a port: Dev, behind weather"
   },
   {
    "id": "srv:stack",
@@ -5162,6 +5234,270 @@
    "reason": "planned"
   },
   {
+   "id": "mobile:M24",
+   "name": "Vázlat",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M25",
+   "name": "Fotópont",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M26",
+   "name": "VRG Sketcher",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M27",
+   "name": "Jegyzet",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M28",
+   "name": "Munkakör and Kérdések",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M29",
+   "name": "Kamera",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M30",
+   "name": "Helyszín",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M31",
+   "name": "Variánsok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M32",
+   "name": "Kezdőlap",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M33",
+   "name": "Csipogó",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M34",
+   "name": "Ikon",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M35",
+   "name": "Eszközök",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M36",
+   "name": "iPhone",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M37",
+   "name": "RCO",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M38",
+   "name": "Kezdőlap lapok + Katalógus",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M39",
+   "name": "Varler Planner tile",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M40",
+   "name": "Kalkulátorok tile",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M41",
+   "name": "Készlet tile",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M42",
+   "name": "Varler Workflow Kit",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M43",
+   "name": "VRG Térkép",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M44",
+   "name": "VRG Időjárás",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M45",
+   "name": "Vault",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "source": "mobile",
@@ -5474,6 +5810,18 @@
    "reason": "command-line script, run by START, a build, an agent or a developer"
   },
   {
+   "id": "tool:bootleg",
+   "name": "tools/bootleg.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
    "id": "tool:brief-state",
    "name": "tools/brief-state.js",
    "source": "tools",
@@ -5650,6 +5998,18 @@
    "scope": "open",
    "level": "dev",
    "parent": "context",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
+   "id": "tool:workflow-seal",
+   "name": "tools/workflow-seal.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
    "unit": "",
    "reason": "command-line script, run by START, a build, an agent or a developer"
   },
@@ -6182,6 +6542,18 @@
    "reason": "design, decisions and briefs"
   },
   {
+   "id": "doc:map",
+   "name": "docs/map",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
    "id": "doc:mobile",
    "name": "docs/mobile",
    "source": "docs",
@@ -6226,6 +6598,18 @@
    "scope": "open",
    "level": "dev",
    "parent": "servers",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:sketcher",
+   "name": "docs/sketcher",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
    "unit": "",
    "reason": "design, decisions and briefs"
   },
@@ -6352,6 +6736,18 @@
   {
    "id": "go:route",
    "name": "GO ROUTE",
+   "source": "docs",
+   "type": "runbook",
+   "qualifier": "session entry point",
+   "scope": "open",
+   "level": "dev",
+   "parent": "go",
+   "unit": "",
+   "reason": "a GO codephrase file a session reads"
+  },
+  {
+   "id": "go:variant",
+   "name": "GO VARIANT",
    "source": "docs",
    "type": "runbook",
    "qualifier": "session entry point",
@@ -6578,6 +6974,18 @@
    "reason": "is the catalog item `servicekit-phone` (planned)"
   },
   {
+   "id": "dir:Sketcher",
+   "name": "Sketcher",
+   "source": "folders",
+   "type": "application",
+   "qualifier": "field survey: sketch, notes, scope, questions, photos, site",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "sketcher",
+   "reason": "is the catalog item `sketcher`"
+  },
+  {
    "id": "dir:Solomon",
    "name": "Solomon",
    "source": "folders",
@@ -6612,6 +7020,18 @@
    "parent": "dev:infra",
    "unit": "toolbox",
    "reason": "is the catalog item `toolbox`"
+  },
+  {
+   "id": "dir:Weather",
+   "name": "Weather",
+   "source": "folders",
+   "type": "application",
+   "qualifier": "multi-source weather feed, work windows, alerts",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "weather",
+   "reason": "is the catalog item `weather`"
   },
   {
    "id": "launcher:vrg-ui",
