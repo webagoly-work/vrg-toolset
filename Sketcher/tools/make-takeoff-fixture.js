@@ -82,9 +82,21 @@ function build() {
   return JSON.stringify({ about: 'Written by Sketcher/tools/make-takeoff-fixture.js from Sketcher/lib/takeoff.js; replayed by TakeoffTest. Do not edit.', now: NOW, cases }, null, 1) + '\n';
 }
 
-const text = build();
+// the Planner's import test (spec-112) reads a package that carries the takeoff, as the phone's export now writes it
+const PLANNER_OUT = path.join(REPO, 'Planner', 'projects', 'varler-planner', 'tests', 'sketch-intake.json');
+function plannerPackage(text) {
+  const c = JSON.parse(text).cases[1];
+  return JSON.stringify(Object.assign({}, c.input, { takeoff: c.expect }), null, 1) + '\n';
+}
+
+const text = build(), ptext = plannerPackage(text);
 if (process.argv.includes('--check')) {
   const old = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
   if (old !== text) { console.error('takeoff.json is stale: node Sketcher/tools/make-takeoff-fixture.js'); process.exit(1); }
-  console.log('takeoff.json up to date (' + JSON.parse(text).cases.length + ' cases)');
-} else { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, text); console.log('wrote ' + path.relative(process.cwd(), OUT)); }
+  const pold = fs.existsSync(PLANNER_OUT) ? fs.readFileSync(PLANNER_OUT, 'utf8') : '';
+  if (pold !== ptext) { console.error('Planner tests/sketch-intake.json is stale: node Sketcher/tools/make-takeoff-fixture.js'); process.exit(1); }
+  console.log('takeoff.json up to date (' + JSON.parse(text).cases.length + ' cases), Planner sketch-intake.json too');
+} else {
+  fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, text); fs.writeFileSync(PLANNER_OUT, ptext);
+  console.log('wrote ' + path.relative(process.cwd(), OUT) + ' and ' + path.relative(process.cwd(), PLANNER_OUT));
+}
