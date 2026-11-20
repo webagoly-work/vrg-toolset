@@ -512,7 +512,7 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 // ---------------------------------------------------------------- J: the jobs (lib/jobs-layer.js; client data, internal only)
 const jobs = initJobs({ map, maplibregl, params, store, toast });
 
-window.vrgMap = { map, searchOffline, camera, jobs };   // for tests and the console
+window.vrgMap = { map, maplibregl, searchOffline, camera, jobs };   // for tests, the console and the phone (VRG Mobile M43)
 </script>
 </body>
 </html>

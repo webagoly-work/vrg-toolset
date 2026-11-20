@@ -175,8 +175,8 @@ object Catalogue {
         "⚒", Group.WORK, Stage.BETA, "M42", setOf(Need.INTERNET, Need.GITHUB),
     )
     val MAP = FeatureInfo(
-        "map", "VRG Térkép", "Részletes térkép, 3D város és terepi rétegek: munkák, címek, útvonalak a telefonon.",
-        "🗺", Group.WORK, Stage.PLANNED, "M43", setOf(Need.INTERNET),
+        "map", "VRG Térkép", "Magyarország térképe 3D épületekkel és domborzattal: saját hely, a Vázlatok helyszínei, a munkák (PC-vel) és navigáció.",
+        "🗺", Group.WORK, Stage.BETA, "M43", setOf(Need.INTERNET),
     )
     val WEATHER = FeatureInfo(
         "weather", "VRG Időjárás", "Hivatalos és globális források egyesítve, terepi szabályokkal: lehet-e ma kint dolgozni.",

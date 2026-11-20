@@ -440,23 +440,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   dock button). Rejected: a vertical scroll of sections with sticky headers as the default (the Founder asked for
   swiped pages); keeping Kompakt as a third layout (one more to maintain, nothing it does that the one page does not).
 
-- **D-48 · Vault: what it is on the phone (M45), 2026-11-20.** Asked: three options; the Founder chose **A**, with a
-  reminder for B. Chosen: **A** — the Vault's own web app (`webagoly-work/data-vault`) in a confined WebView inside VRG
-  Mobile: its own crypto, no vault key and no decryption in VRG Mobile, nothing written to shared storage, FLAG_SECURE,
-  requests only to its origin and GitHub (`kit-core VaultWeb`). Rejected for now: **B** a native reader of the vault in
-  Kotlin (re-implements the Vault's crypto, needs the data-vault repo in the session; kept as a later step); **C** only
-  a link to the browser (the browser holds the device key, outside the app's lock).
-- **D-49 · Vault: its approval is separate from Eszközök (M35), 2026-11-20.** Asked: the Founder chose **A**. The Vault
-  page keeps its own device key and its own QR approval (PV-D11 / PV-D12); an Eszközök approval does not open the vault
-  and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
-  web page, and every phone let into VRG Mobile reaching the secrets).
-  Details: `WP/M45.md`.
+- **D-48 · VRG Térkép reaches the phone as a web app, with the PC's data when it is there (M43), 2026-11-20.**
+  Asked by the Founder, answered **A**: the PC's own `Map/vrg-terkep.html` from `main` on its own origin (the M21 way),
+  the libraries from the pinned npm tarballs (sha512-checked); with a paired PC its offline data and the J layer through
+  the relay's `/p/8802/`, without one the page's `?remote=1` mode over the public planet files with a 400 MB tile cache,
+  so what was looked at once opens offline on site. Rejected: **B** through the relay only (no map on site, where the PC
+  is not); **C** a native MapLibre module (a second map to keep in step with the page, and not checkable in a cloud
+  session).
+- **D-49 · The layers on site: own position + Vázlat sites, the jobs, Navigáció (M43), 2026-11-20.** Answered
+  **A + B + C**: the GPS dot and the Sketcher's sites from the phone's own files (nothing sent); the J layer through the
+  relay only, never stored on the phone (MAP-D2 B's controls apply unchanged); Navigáció on a tap hands the phone's
+  navigation app a `geo:` link with coordinates and the job code / sketch name, never an address (D-31). No route
+  planning of our own.
 
 - **D-52 · Varler Workflow Kit: the client data sealed to the phone's device key, through GitHub (M42), 2026-11-20.**
   (D-48 … D-51 are left to the parallel sessions M43–M45.) Asked: what the phone does with the Kit — **A** read-only
   through the relay, **B** a web app like M21, **C** a native screen fed by the Planner, the calculators and Készlet.
   The Founder: C overall, A could be sufficient; the client data is the real problem; could the phone hold an
-  encrypted copy in the Vault? The Vault as built (M45, D-48 A) holds no key in VRG Mobile, so it could not feed this
+  encrypted copy in the Vault? The Vault as built (M45, D-53 A) holds no key in VRG Mobile, so it could not feed this
   screen. Asked next, with **A** a sealed copy fetched over the relay, **B** through the Proton Vault with a native
   reader, **C** sealed to the device via GitHub, **D** relay only: the Founder chose **C**. The PC
   (`tools/workflow-seal.js`) packs each job's steps, offer variants, texts and file list, gzips it and seals it to the
@@ -466,6 +467,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   enters only sealed. No PDFs in the pack (PC ablakok has them). The estimate on the phone (the rest of C) waits for
   the Kit's pricing rules to be in the repo. Rejected: relay-only (nothing offline); the Vault (no way to read it here
   yet); a web app (the Kit is not packaged).
+
+- **D-53 · Vault: what it is on the phone (M45), 2026-11-20.** Asked: three options; the Founder chose **A**, with a
+  reminder for B. Chosen: **A** — the Vault's own web app (`webagoly-work/data-vault`) in a confined WebView inside VRG
+  Mobile: its own crypto, no vault key and no decryption in VRG Mobile, nothing written to shared storage, FLAG_SECURE,
+  requests only to its origin and GitHub (`kit-core VaultWeb`). Rejected for now: **B** a native reader of the vault in
+  Kotlin (re-implements the Vault's crypto, needs the data-vault repo in the session; kept as a later step); **C** only
+  a link to the browser (the browser holds the device key, outside the app's lock).
+- **D-54 · Vault: its approval is separate from Eszközök (M35), 2026-11-20.** Asked: the Founder chose **A**. The Vault
+  page keeps its own device key and its own QR approval (PV-D11 / PV-D12); an Eszközök approval does not open the vault
+  and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
+  web page, and every phone let into VRG Mobile reaching the secrets).
+  Details: `WP/M45.md`.
 
 ## Open (to ask when the WP that needs them starts)
 

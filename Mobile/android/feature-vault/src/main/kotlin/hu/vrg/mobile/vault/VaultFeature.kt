@@ -64,7 +64,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.ByteArrayInputStream
 import java.util.concurrent.atomic.AtomicInteger
 
-// Vault (WP M45, D-48 = A, D-49 = A): the Proton Vault's own web app (webagoly-work/data-vault) inside VRG Mobile.
+// Vault (WP M45, D-53 = A, D-54 = A): the Proton Vault's own web app (webagoly-work/data-vault) inside VRG Mobile.
 //
 // VRG Mobile adds no vault crypto and holds no vault key. The Vault page keeps its own device identity (its P-256 key
 // in its own localStorage / IndexedDB, PV-D11) and its own QR approval (PV-D12), separate from Eszközök (M35): being

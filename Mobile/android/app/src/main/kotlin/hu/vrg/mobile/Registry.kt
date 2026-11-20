@@ -14,6 +14,7 @@ import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.inbox.InboxFeature
 import hu.vrg.mobile.launch.LaunchFeature
+import hu.vrg.mobile.map.MapFeature
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.net.NetFeature
 import hu.vrg.mobile.notes.NotesFeature
@@ -64,6 +65,7 @@ object Registry {
         DevicesFeature,
         VaultFeature,
         WorkflowFeature,
+        MapFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

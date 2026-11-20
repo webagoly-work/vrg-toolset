@@ -59,9 +59,9 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M40** | Kalkulátorok tile (`calc`) | **BETA** (2026-11-19): the three calculator web apps under one tile | GitHub | low |
 | **M41** | Készlet tile (`inventory`) | **BETA** (2026-11-19): Készlet, VRG BuildTree and the Valena választó under one tile, until the overhauled Inventory | GitHub | low |
 | **M42** | Varler Workflow Kit (`workflow`) | **BETA** (built 2026-11-20, D-52 = C, waiting for the phone check): the PC's quote jobs sealed to the owner's phone (Eszközök key, ECDH + AES-GCM) by `tools/workflow-seal.js`, carried on the `workflow-sealed` branch; job list, steps, variant totals, texts; FLAG_SECURE | GitHub | high (seal + Node/JVM fixture) |
-| **M43** | VRG Térkép (`map`) | **PLANNED** (2026-11-19) | — | — |
+| **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
-| **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
+| **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
@@ -72,9 +72,9 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 
 ### Later, not yet WPs (extrapolated)
 
-- **Vault native reader** (the Founder's reminder, 2026-11-20, D-48 B): a Kotlin reader of `webagoly-work/data-vault` beside or
+- **Vault native reader** (the Founder's reminder, 2026-11-20, D-53 B): a Kotlin reader of `webagoly-work/data-vault` beside or
   instead of M45's WebView. First attach the data-vault repo, read its format and crypto, check M45's guesses (address,
-  `VaultWeb.ALLOWED_HOSTS`, the grant link), then ask: replace or beside, read-only or read-write, its device key vs D-49.
+  `VaultWeb.ALLOWED_HOSTS`, the grant link), then ask: replace or beside, read-only or read-write, its device key vs D-54.
 
 - **Quick Settings tile + home widget**: Légegér on/off from the shade, a widget for a quick note.
 - **Planner site mode**: the measurements and the layout are M24 (Vázlat), the room photos M25 (Fotópont), both BETA; still

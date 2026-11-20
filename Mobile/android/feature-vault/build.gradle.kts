@@ -1,4 +1,4 @@
-// Vault (WP M45) as a VRG Mobile feature module: the Proton Vault's own web app in a confined WebView (D-48, D-49).
+// Vault (WP M45) as a VRG Mobile feature module: the Proton Vault's own web app in a confined WebView (D-53, D-54).
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")

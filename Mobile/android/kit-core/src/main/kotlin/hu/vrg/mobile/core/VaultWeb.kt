@@ -1,7 +1,7 @@
 package hu.vrg.mobile.core
 
-// Vault (WP M45, D-48): VRG Mobile opens the Proton Vault's own web app (webagoly-work/data-vault) in a confined
-// WebView. The Vault keeps its own crypto, its own device key and its own QR approval (PV-D11 / PV-D12, D-49): VRG
+// Vault (WP M45, D-53): VRG Mobile opens the Proton Vault's own web app (webagoly-work/data-vault) in a confined
+// WebView. The Vault keeps its own crypto, its own device key and its own QR approval (PV-D11 / PV-D12, D-54): VRG
 // Mobile decrypts nothing and holds no vault key. These are the rules that WebView follows, as plain data so
 // `gradlew :kit-core:test` checks them.
 //
