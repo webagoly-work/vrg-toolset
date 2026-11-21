@@ -11,7 +11,7 @@
 // paginates (A4, 14 mm margins, no fixed footers to overlap: D-81), sections and photos never split.
 //
 //   const R = require('./report.js');   // or window.VRGReport in the page
-//   const m = R.model(kit, survey, takeoff, { now, roomName, photoUrl, planSvg, siteSvg, siteLines });
+//   const m = R.model(kit, survey, takeoff, { now, roomName, photoUrl, planSvg, siteSvg, siteLines, withheld });
 //   const html = R.html(m);              // a whole document: open it in a window and print
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -28,12 +28,12 @@
   // ---- the model: everything the document shows, already in words -----------------------------------------------
   function model(kit, s, t, o) {
     o = o || {};
-    const roomName = o.roomName || (id => id || ''), photoUrl = o.photoUrl || (() => null);
+    const roomName = o.roomName || (id => id || ''), photoUrl = o.photoUrl || (() => null), withheld = o.withheld || (() => false);   // F9: the phone withholds an unblurred personal photo
     const caps = (s && s.captures) || [];
     const purposes = (kit && kit.purposes) || [];
     const pLabel = id => purposes.find(p => p.id === id) || { id, label: id, sym: '◉', color: '#888' };
     const shot = c => ({ id: c.id, kind: c.kind || 'photo', url: photoUrl(c), caption: c.note || '', at: time(c.at), room: c.room ? roomName(c.room) : '',
-      phase: c.phase || '', pair: c.pair || '', signer: c.signer || '', durationMs: c.durationMs || 0, privacy: !!c.privacy });
+      phase: c.phase || '', pair: c.pair || '', signer: c.signer || '', durationMs: c.durationMs || 0, privacy: !!c.privacy, withheld: !!withheld(c) });
     // photos by purpose, in the kit's order; a video is listed, not shown; a signature has its own section; audio too
     const photos = [], seen = new Set();
     purposes.concat(caps.map(c => pLabel(c.purpose || 'egyeb'))).forEach(p => {
@@ -183,7 +183,7 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     // 6 the drawing
     h += sec('Vázlat', m.planSvg && /<svg/.test(m.planSvg) ? '<div class="rajz" id="rajz">' + m.planSvg + '</div><p class="apro">Piros: tervezett pont · szürke: meglévő · szaggatott fal: becsült méret.</p>' : '');
     // 7 the photos by purpose
-    const fig = p => '<figure data-cap="' + esc(p.id) + '">' + (p.kind === 'video' ? '<div class="nincs">▶ videó ' + esc(p.id) + '</div>' : p.url ? '<img src="' + esc(p.url) + '" alt="">' : p.privacy ? '<div class="nincs">' + esc(p.id) + ' · személyes adat, elmosás nélkül nem kerül bele</div>' : '<div class="nincs">' + esc(p.id) + ' (nincs csatolva)</div>') +
+    const fig = p => '<figure data-cap="' + esc(p.id) + '">' + (p.kind === 'video' ? '<div class="nincs">▶ videó ' + esc(p.id) + '</div>' : p.url ? '<img src="' + esc(p.url) + '" alt="">' : p.withheld ? '<div class="nincs">' + esc(p.id) + ' · személyes adat, elmosás nélkül nem kerül bele</div>' : '<div class="nincs">' + esc(p.id) + ' (nincs csatolva)</div>') +
       '<figcaption>' + esc([p.caption, p.room, p.phase === 'elotte' ? 'előtte' : p.phase === 'utana' ? 'utána' : '', p.at].filter(Boolean).join(' · ')) + '</figcaption></figure>';
     h += sec('Fotók', m.photos.map(g => '<h3>' + esc(g.sym + ' ' + g.label) + ' <span class="apro">(' + g.items.length + ')</span></h3><div class="fotok">' + g.items.map(fig).join('') + '</div>').join('') +
       (m.audio.length ? '<h3>🎙 Hangjegyzetek</h3><ul class="lista" id="hang">' + m.audio.map(a => '<li>' + esc(a.id) + ' · ' + esc(dur(a.durationMs)) + (a.caption ? ' · ' + esc(a.caption) : '') + ' <span class="apro">' + esc(a.at) + '</span></li>').join('') + '</ul>' : ''));

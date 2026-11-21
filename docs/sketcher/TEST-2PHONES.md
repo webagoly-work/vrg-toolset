@@ -104,7 +104,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
 - [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
-## B telefon — kamera és helyszín (50 lépés)
+## B telefon — kamera és helyszín (60 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -175,6 +175,19 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M31.4** A sarok ◐-jére koppintva az eredeti; vissza.
 - [ ] **M31.5** ⚙ → ＋ Új variáns kérése: két mondat, kulcsszavak, egy fotó → Küldés → PC-re; a vágólapon a GO VARIANT szöveg. A PC-n egy Claude Code munkamenetben `GO VARIANT` + a fájl: az ügynök kérdez, megírja, commitolja.
 - [ ] **M31.6** ⟳ Frissítés a main ágról: az új variáns megjelenik.
+
+### M54 · Jegyzőkönyv a telefonon: the Felmérési jegyzőkönyv printed and shared from the phone
+
+- [ ] **M54.1** ⚙ → **Felmérés funkciók**: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva.
+- [ ] **M54.2** Egy felmérés néhány célfotóval, egy aláírással és egy helyszín-körvonallal → Rendezés: a Küldés mellett **📄 Jegyzőkönyv**.
+- [ ] **M54.3** 📄 Jegyzőkönyv → **🖨 Nyomtatás / PDF**: megnyílik az Android nyomtatás ablaka, A4. *PDF mentése* → a PDF-ben a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek, a vázlat, a fotók célonként, a helyszín rajza és az aláírás.
+- [ ] **M54.4** Ugyanez **⇪ Átadás (.html)** → PC-re: a PC táblán egy `….jegyzokonyv.html`; böngészőben megnyitva ugyanaz, mint a PDF, a fotók is látszanak (internet nélkül is), és ugyanaz, mint az Asztal Sketcher oldalán a **Jegyzőkönyv** gomb.
+- [ ] **M54.5** Egy fotón ▦ elmosás → a jegyzőkönyvben a fotó elmosva látszik. Egy 👤 *Személyes adat* fotó elmosás nélkül: a helyén „személyes adat, elmosás nélkül nem kerül bele”; elmosva bekerül.
+- [ ] **M54.6** A PC-n a HTML-ből mentett fotó (jobb klikk → kép mentése) tulajdonságaiban nincs GPS hely.
+- [ ] **M54.7** Helyszín → 👤 Ügyfél kitöltve, a pill „Kiadáskor törlődik”: a jegyzőkönyvben nincs ügyfél sor. „A kiadott csomagban marad”-ra kapcsolva: benne van a név, a telefon, az e-mail.
+- [ ] **M54.8** Egy jegyzet ⚑ Tisztázandó jelöléssel: a jegyzőkönyvben ott van. **Az ügyfélnek** bekapcsolva: se a Tisztázandó jegyzet, se az *Ellenőrizni* lista nincs benne; a többi jegyzet és a nyitott kérdések igen.
+- [ ] **M54.9** ⚙ → Felmérés funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. *Mind* visszakapcsolja.
+- [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
 ## X. Közös lépések (mindkét telefon + PC)
 

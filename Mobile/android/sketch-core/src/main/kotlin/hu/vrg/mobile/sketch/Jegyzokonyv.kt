@@ -67,6 +67,7 @@ object Jegyzokonyv {
             .put("variant", variant ?: JSONObject.NULL)
             .put("rooms", rooms)
             .put("photos", pics)
+            .put("withheld", JSONArray(s.captures.filter { it.kind == CaptureKind.PHOTO && !pictured(it) }.map { it.id }))
             .put("planSvg", PlanSvg.svg(survey, plan))
             .put("siteSvg", site.svg)
             .put("siteLines", JSONArray(site.lines))

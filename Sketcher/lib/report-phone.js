@@ -18,14 +18,14 @@
     inp = inp || {};
     // the kit as the Desktop page has it: the catalog with the survey's variant on top (app.js kit())
     const kit = FK.withVariant(FK.parseKit(inp.catalog), inp.variant || null);
-    const S = inp.survey || {}, rooms = inp.rooms || [], photos = inp.photos || {};
+    const S = inp.survey || {}, rooms = inp.rooms || [], photos = inp.photos || {}, held = new Set(inp.withheld || []);
     const roomName = id => {
       if (!id) return '';
       const n = rooms.find(r => r.id === id);
       return n && n.name || ((S.rooms || []).find(r => r.id === id) || {}).name || id;
     };
     return R.html(R.model(kit, S, inp.takeoff || null, { now: inp.now || Date.now(), roomName, photoUrl: c => photos[c.id] || null,
-      planSvg: inp.planSvg || '', siteSvg: inp.siteSvg || '', siteLines: inp.siteLines || [] }));
+      planSvg: inp.planSvg || '', siteSvg: inp.siteSvg || '', siteLines: inp.siteLines || [], withheld: c => held.has(c.id) }));
   }
   function run() {
     const io = root.VRGIn;

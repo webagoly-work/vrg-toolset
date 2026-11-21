@@ -22,7 +22,7 @@ const kit = FK.withVariant(FK.parseKit(catalog), null);
 const t = TK.build(kit, rules, S, TK.planFromPackage(pkg), { now: NOW });
 const dot = 'data:image/jpeg;base64,/9j/AA==';
 const input = { survey: S, takeoff: t, catalog, variant: null, rooms: pkg.plan.data.floors.map(f => ({ id: f.sk.id, name: f.name })),
-  photos: { C1: dot, C3: 'data:image/png;base64,iVBO' }, planSvg: fx.cases[0].svg, siteSvg: fx.cases[2].svg, siteLines: fx.cases[2].lines, now: NOW };
+  photos: { C1: dot, C3: 'data:image/png;base64,iVBO' }, withheld: ['C2'], planSvg: fx.cases[0].svg, siteSvg: fx.cases[2].svg, siteLines: fx.cases[2].lines, now: NOW };
 const html = P.render(input, FK, R);
 ok(/^<!doctype html>/.test(html) && /Felmérési jegyzőkönyv/.test(html), 'a whole document');
 ok(html.includes('<img src="' + dot + '"'), 'the photo as a data: URL, so the file opens anywhere');
@@ -32,7 +32,8 @@ ok(html.includes('id="plansvg"') && html.includes('class="siteplace"') && html.i
 ok(html.includes('Kelt: 2026. 11. 21.'), 'dated by the phone');
 // the same as the Desktop would print for the same inputs (one renderer)
 const desk = R.html(R.model(kit, S, t, { now: NOW, roomName: id => (input.rooms.find(r => r.id === id) || {}).name || id, photoUrl: c => input.photos[c.id] || null,
-  planSvg: input.planSvg, siteSvg: input.siteSvg, siteLines: input.siteLines }));
+  planSvg: input.planSvg, siteSvg: input.siteSvg, siteLines: input.siteLines, withheld: c => c.id === 'C2' }));
+ok(/C2 \(nincs csatolva\)/.test(R.html(R.model(kit, S, t, { now: NOW }))), 'on the Desktop an unattached photo is only "nincs csatolva"');
 ok(desk === html, 'report-phone.js prints what report.js prints on the Desktop');
 // in the WebView: VRGIn bridge
 const got = {}; const root = { VRGIn: { input: () => JSON.stringify(input), done: h => { got.html = h; }, fail: m => { got.err = m; } }, VRGFieldKit: FK, VRGReport: R };

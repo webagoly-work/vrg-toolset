@@ -163,3 +163,12 @@ Fork F5 (`docs/mobile/WP/M50.md`): the Planner's survey panel shows the **wants 
 (`ClientInfo.kt`, personal, D-82); a variant's `draw.lineClose` (`auto` / `ask`) says what the Vonal tool's Kész does;
 a phone without a speech recogniser records a **sound note** (capture kind `audio`, `.m4a`, `AudioNotes.kt`).
 
+## 11. The jegyzőkönyv on the phone (M54)
+
+Fork F9 (`docs/mobile/WP/M54.md`): Rendezés → **📄 Jegyzőkönyv** makes the same *Felmérési jegyzőkönyv* as the Desktop
+page on the phone: `Sketcher/lib/report.js` + `fieldkit.js` + `report-phone.js` bundled as assets and run in a hidden
+WebView; the drawing and the site from `PlanSvg.kt` / `SiteSvg.kt` (= `app.js` `svgPlan` / `sitePlaceSvg`, fixture
+`test/fixtures/report.json` by `tools/make-report-fixture.js`); out as **Nyomtatás / PDF** (the system print dialog) or
+**Átadás** (`<név>.jegyzokonyv.html`, photos inside). The export rules apply (client only when kept, no GPS, blur burned
+in, personal photos only blurred); *Az ügyfélnek* also drops the Tisztázandó notes and the Ellenőrizni lines. Switch:
+⚙ → Felmérés funkciók → *📄 Jegyzőkönyv a telefonon*.

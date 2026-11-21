@@ -55,6 +55,7 @@ class JegyzokonyvTest {
         val t = JSONObject().put("notes", JSONArray().put(JSONObject().put("text", "x").put("open", true))).put("checks", JSONArray().put("y"))
         val inp = Jegyzokonyv.input(s, Solver().solve(s), t, catalog, null, mapOf("a" to "data:a", "b" to "data:b", "d" to "data:d"), forClient = true, now = 5)
         assertEquals(setOf("a", "d"), inp.getJSONObject("photos").keySet(), "only the pictured ones, whatever the phone handed over")
+        assertEquals("[\"b\"]", inp.getJSONArray("withheld").toString(), "the unblurred personal photo is named as withheld")
         assertEquals(0, inp.getJSONObject("takeoff").getJSONArray("notes").length())
         assertTrue(inp.getString("planSvg").startsWith("<svg id=\"plansvg\""))
         assertEquals("", inp.getString("siteSvg"), "no outline, no site drawing")
