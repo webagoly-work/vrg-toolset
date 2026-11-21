@@ -11,6 +11,9 @@ tells the Founder when a fork can be archived.
 | F2 Felmérés → árajánlat | `sketcher/f2-arajanlat` | the survey's scope, quantities, answers and lengths into the Planner, and a takeoff / intake export the Varler Workflow Kit can read |
 | F3 Kamera 2 | `sketcher/f3-kamera` | the camera's second round from `../research/2026-11-18_field-survey-camera-notes.md`: type-plate OCR, privacy on export, before / after, client signature, walk video |
 | F4 Apró hiányok | `sketcher/f4-finom` | client wants per room, variants on the long-press (RCO) menu, variants that tune drawing-tool behaviour, the kit's „égett” detector |
+| F5 Maradékok | `sketcher/f5-maradek` | what F1–F4 left out: wants per room in the Planner, the survey report, client fields, draw extras, the audio note (WP M50, D-80…D-89) |
+| F6 Kapcsolók | `sketcher/f6-kapcsolok` | the Founder's rule D-90 for every Sketcher feature: one registry, a switch for each and for all, phone ⚙ + Desktop (WP M51, D-91…D-99) |
+| F7 Saját kamera | `sketcher/f7-kamera` | an in-app camera (CameraX): ghost overlay for after-photos, purpose bar and next shots on the viewfinder, series, torch, level; the camera app stays the fallback (WP M52, D-100…D-109) |
 
 ## Rules every fork follows
 
