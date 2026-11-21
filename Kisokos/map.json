@@ -18,6 +18,7 @@
     { "id": "rg", "hu": "Rögzítéstechnika", "color": "#e4877d", "dir": "rogzitestechnika" },
     { "id": "kv", "hu": "Kommunikációs vonalak", "color": "#8fa8e8", "dir": "kommunikacios-vonalak" },
     { "id": "el", "hu": "Előírások", "color": "#e3a3c4" },
+    { "id": "vt", "hu": "Világítótestek", "color": "#f2dc8c", "planned": "2026-11-22: docs/kisokos/vilagitotestek.md" },
     { "id": "sx", "hu": "Szótár", "color": "#c6ced4" }
   ],
   "axes": [
@@ -28,7 +29,7 @@
               ["Anyagfizika", "Vezetés, szigetelés, félvezetők, mágneses anyagok.", ["al"]],
               ["Kvantum-határ", "Kvantumelektrodinamika, szupravezetés, spintronika, topologikus anyagok.", ["al"]]],
         "B": [["Szerelési gyakorlat", "Kötéstechnika, csövezés, dobozolás, elosztószerelés, mérés.", ["tk", "rg"]],
-              ["Rendszerek a lakásban", "Áramkörök, védelmek, világítás, a fűtés és hűtés villamos része, kommunikációs hálózat.", ["ez", "kv"]],
+              ["Rendszerek a lakásban", "Áramkörök, védelmek, világítás, a fűtés és hűtés villamos része, kommunikációs hálózat.", ["ez", "kv", "vt"]],
               ["Ügyféligény", "Komfort, biztonság, akadálymentesség, energiaköltség.", ["ez"]],
               ["Üzemeltetés", "Hibakeresés, karbantartás, időszakos felülvizsgálat, bővíthetőség.", ["tk", "el"]]] } },
     { "n": 2, "hu": "Tudásút", "q": "Milyen úton tanulható?", "A": "Akadémiai ág", "B": "Szakképzési ág",

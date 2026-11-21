@@ -49,6 +49,7 @@ be in several volumes.
 | rg | Rögzítéstechnika | one card per material: drilling, bit, anchor, screw, load, traps, search terms | manufacturer catalogues, own experience |
 | kv | Kommunikációs vonalak | one-pagers on one shared frequency / wavelength scale | standards summaries, open sources |
 | el | Előírások | which standard / rule covers what; own summary + reference only | summaries only |
+| vt | Világítótestek | every light fixture type, ceiling lamp to niche (planned 2026-11-22, `vilagitotestek.md`) | types from catalogues; products from Inventory |
 | sx | Szótár | cross-cutting: every term in HU · EN · DE with synonyms (tipli = dübel) and shop type | own collection |
 
 ## 3. Card formats
@@ -146,3 +147,5 @@ and "what goes wrong if not".
 - Every Rögzítéstechnika and Kommunikációs vonalak card waits for the Founder's review.
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.
+- **Világítótestek (vt)**, a dedicated light-fixture catalogue: scope, card format and order in
+  `vilagitotestek.md`; its DevLog line is written out there, ready to paste into `notes/devlog/lines.js` on H:.
