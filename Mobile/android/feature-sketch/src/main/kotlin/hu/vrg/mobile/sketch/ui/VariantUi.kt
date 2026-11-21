@@ -97,7 +97,7 @@ internal fun VariantRequestDialog(st: EditorState, inlineNote: Boolean = false, 
                 Text("Egy-három mondat a munkáról: mi a feladat, milyen a hely, mire figyelj. Az ügynök ebből tervez, és visszakérdez.", style = Melyviz.small)
                 Field(premise, { premise = it }, "A munka lényege", lines = 3)
                 Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                    try { dictate.launch(dictationIntent("Mondd el a munkát")) } catch (e: ActivityNotFoundException) { st.note = "Nincs beszédfelismerő a telefonon." }
+                    try { dictate.launch(dictationIntent("Mondd el a munkát")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                 }.padding(vertical = 4.dp))
                 Text("Kulcsszavak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 6.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

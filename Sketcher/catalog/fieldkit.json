@@ -908,7 +908,10 @@
      "id": "datum",
      "label": "Konkrét dátum"
     }
-   ]
+   ],
+   "num": {
+    "unit": "dátum"
+   }
   },
   {
    "id": "keret",

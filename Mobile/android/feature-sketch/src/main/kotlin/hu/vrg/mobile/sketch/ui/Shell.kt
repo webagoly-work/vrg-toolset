@@ -145,6 +145,9 @@ internal fun ChipPill(c: KChip, on: Boolean, onClick: () -> Unit) {
     }
 }
 
+/** F4: no speech recogniser on the phone (no Google app, a de-Googled ROM): the keyboard's own mic still dictates. */
+internal const val NO_RECOGNIZER = "Nincs beszédfelismerő a telefonon: a billentyűzet 🎤 gombjával diktálhatsz a mezőbe."
+
 internal fun dictationIntent(prompt: String) = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
     .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
     .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "hu-HU")
@@ -176,7 +179,7 @@ internal fun QuickNote(st: EditorState) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = "Nincs beszédfelismerő a telefonon." }
+                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                     }.padding(vertical = 6.dp))
                     Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
                         modifier = Modifier.clickable { open = !open }.padding(vertical = 6.dp))
