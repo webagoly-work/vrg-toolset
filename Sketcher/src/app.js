@@ -117,7 +117,7 @@
 
   // ---- photos in memory ------------------------------------------------------------------------------------------
   // Kamera 2: a video is .mp4, a signature .png named "alairas" (sketch-core Intake.exportName)
-  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : 'jpg';
+  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : c.kind === 'audio' ? 'm4a' : 'jpg';   // F5: a sound note is .m4a
   function captureNames(c) {
     const n = [base(c.file), stem() + '_' + c.id + '_' + (c.kind === 'signature' ? 'alairas' : (c.purpose || 'egyeb')) + '.' + capExt(c)];
     return n.filter(Boolean);
@@ -314,7 +314,7 @@
 
   function vKamera(d) {
     const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
-    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
+    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4,audio/mp4,.m4a" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
     h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
       (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
     h += '<h3>Célfotók</h3>';
@@ -323,7 +323,9 @@
       const list = caps.filter(c => (c.purpose || 'egyeb') === p.id); if (!list.length) return; used.add(p.id);
       h += '<div class="small" style="color:' + esc(p.color) + '">' + esc(p.sym) + ' ' + esc(p.label) + ' (' + list.length + ')</div>' + list.map(capCard).join('');
     });
-    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb')); if (rest.length) h += rest.map(capCard).join('');
+    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb') && c.kind !== 'audio'); if (rest.length) h += rest.map(capCard).join('');
+    // F5 (WP M50, D-81): the sound notes (the dictation fallback), played once their .m4a is attached
+    const auds = caps.filter(c => c.kind === 'audio'); if (auds.length) h += '<h3 id="hangok">🎙 Hangjegyzetek (' + auds.length + ')</h3>' + auds.map(capCard).join('');
     if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
     h += vCamera2(caps);
     const pp = (S.photos || []);
@@ -334,7 +336,8 @@
   }
   function capCard(c) {
     const u = thumbFor(c);
-    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : 'nincs kép') + '</div>'
+    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : c.kind === 'audio' ? '🎙 hang' : 'nincs kép') + '</div>'
+      : c.kind === 'audio' ? '<audio class="aud" src="' + esc(u) + '" controls preload="metadata"></audio>'
       : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
     return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
       '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
@@ -347,6 +350,7 @@
     const b = [];
     if (c.kind === 'video') b.push('<span class="tag" data-b="video">▶ ' + esc(dur(c.durationMs)) + ' · ' + esc(mb(c.bytes)) + '</span>');
     if (c.kind === 'signature') b.push('<span class="tag" data-b="signature">✍ aláírás</span>');
+    if (c.kind === 'audio') b.push('<span class="tag" data-b="audio">🎙 ' + esc(dur(c.durationMs)) + '</span>');   // F5 (WP M50)
     if (c.privacy) b.push('<span class="tag warn" data-b="privacy">👤 személyes adat</span>');
     if ((c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset')) b.push('<span class="tag" data-b="blur">▦ elmosva</span>');
     if (c.phase === 'elotte') b.push('<span class="tag" data-b="before">◐ előtte</span>');

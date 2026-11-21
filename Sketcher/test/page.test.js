@@ -328,6 +328,19 @@ ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '
   { const o = JSON.stringify(sk.output()); ok(!/Felmérési jegyzőkönyv|<!doctype/i.test(o), 'nothing of the report is stored in the survey'); }
 }
 
+// F5 (WP M50): a sound note (kind audio) on Kamera, in the report, not among the photos
+{
+  const s = sk.state();
+  s.captures = (s.captures || []).concat([{ id: 'C95', file: 'hang_1.m4a', purpose: 'hang', kind: 'audio', at: 1763460009000, note: 'a csempe alatt?', durationMs: 42000, bytes: 300000 }]);
+  click(rail('kamera'));
+  const card = $('.cap-card[data-cap="C95"]');
+  ok($('#hangok') && card && /0:42/.test(card.textContent) && /🎙 hang/.test(card.textContent), 'Kamera lists the sound note under Hangjegyzetek');
+  ok(/_C95_hang\.m4a/.test(card.textContent), 'its PC file name is .m4a');
+  const rd = new JSDOM(sk.reportHtml()).window.document;
+  ok(/0:42/.test(rd.querySelector('#hang').textContent) && !rd.querySelector('figure[data-cap="C95"]'), 'the report lists it, not as a photo');
+  ok(!sk.takeoff().photos.some(p => p.purpose === 'hang'), 'the takeoff does not count it as a photo');
+}
+
 let bad = null; try { sk.load({ kind: 'nope' }); } catch (e) { bad = e; }
 ok(!!bad, 'unknown file is rejected');
 ok(errors.length === 0, 'no script errors: ' + errors.join('; '));

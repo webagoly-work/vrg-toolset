@@ -183,7 +183,9 @@ object CaptureKind {
     const val PHOTO = "photo"
     const val VIDEO = "video"
     const val SIGNATURE = "signature"
-    fun ext(kind: String) = when (kind) { VIDEO -> "mp4"; SIGNATURE -> "png"; else -> "jpg" }
+    /** F5 (WP M50): a sound note, the dictation fallback (AudioNotes.kt). */
+    const val AUDIO = "audio"
+    fun ext(kind: String) = when (kind) { VIDEO -> "mp4"; SIGNATURE -> "png"; AUDIO -> "m4a"; else -> "jpg" }
 }
 
 /**
