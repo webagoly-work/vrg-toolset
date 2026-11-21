@@ -1,0 +1,582 @@
+<title>VRG Füzet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working phone on the left (the real kits and rules, in the browser), the story of the fork on the right;
+   stacked on a phone. The Mélyvíz look shared with the other VRG pages: deep water, one ice-blue glow. Dark first. */
+:root {
+  --bg: #0a141c; --bg-2: #11202b; --panel: #121c24; --raised: #17232c; --deep: #0d1820;
+  --line: rgba(232, 240, 246, .15); --line-strong: rgba(232, 240, 246, .34);
+  --fg: #e8f0f6; --dim: #a6afb7; --faint: #7b848b;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13); --glow: rgba(147, 211, 230, .45); --on-accent: #0a141c;
+  --warm: #e8a873; --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --voice: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa; --deep: #f3f7f9;
+    --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+    --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+    --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25); --on-accent: #ffffff;
+    --warm: #a5551d; --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa; --deep: #f3f7f9;
+  --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+  --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+  --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25); --on-accent: #ffffff;
+  --warm: #a5551d; --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: radial-gradient(120% 60% at 50% 0%, var(--bg-2), var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; line-height: 1.12; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+code { font-family: var(--mono); font-size: .86em; background: var(--accent-soft); padding: .05em .35em; border-radius: 3px; overflow-wrap: anywhere; }
+button, input, textarea { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+
+.wrap { max-width: 1160px; margin: 0 auto; }
+.mast { padding-block: 44px 28px; display: grid; gap: 14px; border-bottom: 1px solid var(--line); }
+.mast h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; line-height: .95; }
+.mast h1 span { color: var(--accent); text-shadow: 0 0 22px var(--glow); }
+.mast .lede { font-size: 18.5px; color: var(--dim); max-width: 66ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.meta span { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+.grid { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 48px; padding-top: 32px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
+.stage { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 10px; }
+@media (max-width: 900px) { .stage { position: static; } }
+.stage .label { text-align: center; }
+
+/* the phone */
+.phone { width: 100%; max-width: 400px; margin: 0 auto; height: 760px; max-height: calc(100vh - 80px); min-height: 560px;
+  border: 1px solid var(--line-strong); border-radius: 34px; background: var(--deep); padding: 14px 10px; display: grid; grid-template-rows: auto minmax(0, 1fr);
+  box-shadow: 0 0 0 6px var(--panel), 0 24px 60px rgba(0, 0, 0, .35); }
+.notch { width: 92px; height: 6px; border-radius: 3px; background: var(--line-strong); margin: 0 auto 10px; }
+#app { overflow-y: auto; overflow-x: hidden; padding: 2px 8px 24px; font-size: 14px; scrollbar-width: thin; }
+.row { display: flex; align-items: center; gap: 6px; }
+.grow { flex: 1; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.chip:hover { border-color: var(--line-strong); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip.hot { border-color: var(--crit); color: var(--crit); }
+.back { background: none; border: 0; padding: 6px 0; color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.ttl { font-family: var(--voice); font-size: 21px; font-weight: 700; letter-spacing: .12em; margin: 2px 0 4px; }
+.sm { font-size: 11.5px; color: var(--dim); }
+.ro { font-family: var(--mono); font-size: 10.5px; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sec { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); opacity: .8; margin: 14px 0 6px; }
+.field { width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13.5px; }
+.field:focus { border-color: var(--accent); outline: none; }
+textarea.field { min-height: 84px; resize: vertical; }
+.lbl { font-size: 11.5px; color: var(--dim); margin: 8px 0 4px; display: block; }
+.entry { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; padding: 8px 4px; border-radius: 8px; cursor: pointer; align-items: start; width: 100%; text-align: left; background: none; border: 0; }
+.entry:hover { background: var(--accent-soft); }
+.entry .sym { font-size: 16px; line-height: 1.2; text-align: center; }
+.entry .t { font-weight: 500; font-size: 13.5px; overflow-wrap: anywhere; }
+.check { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 5px 0; }
+.box { background: none; border: 0; font-size: 19px; cursor: pointer; padding: 0; line-height: 1; }
+.done .t { color: var(--faint); text-decoration: line-through; }
+.tally { display: flex; justify-content: space-between; gap: 10px; padding: 7px 2px; border-bottom: 1px dashed var(--line); }
+.tally b { font-family: var(--mono); font-weight: 500; color: var(--accent); font-size: 13px; font-variant-numeric: tabular-nums; }
+.card { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 10px; display: grid; gap: 3px; margin-top: 8px; }
+.kind { font-size: 11px; font-weight: 600; }
+.k-DUE, .k-LIMIT { color: var(--crit); } .k-OPEN, .k-MISSING { color: var(--warn); } .k-STALE { color: var(--fg); } .k-SUGGEST { color: var(--accent); }
+.toggle { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; cursor: pointer; font-size: 13px; }
+.sw { width: 34px; height: 20px; border-radius: 10px; background: var(--line-strong); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); transition: left .15s; }
+.sw.on { background: var(--accent); } .sw.on::after { left: 17px; background: var(--on-accent); }
+.note { font-size: 11.5px; color: var(--warn); margin-top: 6px; }
+.demo { font-size: 10.5px; color: var(--faint); border: 1px dashed var(--line); border-radius: 8px; padding: 5px 8px; margin: 6px 0 2px; display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.demo button { background: none; border: 0; color: var(--accent); font-size: 10.5px; cursor: pointer; padding: 0; }
+.stars button { background: none; border: 0; font-size: 19px; cursor: pointer; color: var(--faint); padding: 0 6px 0 0; }
+.stars button.on { color: var(--warn); }
+.empty { color: var(--faint); font-size: 12.5px; padding: 12px 2px; }
+
+/* the story */
+.story { display: grid; gap: 40px; min-width: 0; }
+.story section { display: grid; gap: 14px; }
+.story h2 { font-size: clamp(28px, 3.6vw, 36px); }
+.prose { display: grid; gap: 12px; max-width: 66ch; color: var(--dim); }
+.prose b { color: var(--fg); font-weight: 600; }
+.try { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: t; max-width: 66ch; }
+.try li { counter-increment: t; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; color: var(--dim); }
+.try li::before { content: counter(t); font-family: var(--mono); font-size: 12px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); margin-top: 2px; }
+.try li b { color: var(--fg); font-weight: 600; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 500; background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td { color: var(--dim); } td:first-child { color: var(--fg); }
+.kits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 560px) { .kits { grid-template-columns: minmax(0, 1fr); } }
+.kitc { border: 1px solid var(--line); border-top: 3px solid var(--c, var(--accent)); background: var(--panel); padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.kitc h3 { font-size: 22px; }
+.kitc p { color: var(--dim); font-size: 14.5px; }
+.kitc .ro { white-space: normal; }
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); }
+@media (max-width: 640px) { .flow { grid-template-columns: minmax(0, 1fr); } }
+.flow div { background: var(--panel); padding: 14px; border-right: 1px solid var(--line); display: grid; gap: 4px; align-content: start; }
+.flow div:last-child { border-right: 0; }
+.flow .label { color: var(--accent); }
+.flow p { font-size: 14px; color: var(--dim); }
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 640px) { .status { grid-template-columns: minmax(0, 1fr); } }
+.status div { background: var(--panel); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.status b { font-family: var(--voice); font-size: 22px; font-weight: 600; }
+.status p { font-size: 14px; color: var(--dim); }
+.pill { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.ok { color: var(--ok); } .pill.wait { color: var(--warn); }
+footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); }
+footer p { font-size: 13px; color: var(--faint); max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { .sw::after { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="label">VRG Mobile · WP M46 · beta · 2026-11-21</div>
+    <h1>VRG <span>Füzet</span></h1>
+    <p class="lede">One notebook for everything that comes up during the day. Notes, to-dos, measurements, materials, meter readings and walks all go into one store. Kits make it fit each part of the work or the house. It's forked from the VRG Sketcher's engine and ships in the APK; the phone below runs the same kits and the same rules in your browser.</p>
+    <div class="meta"><span>notebook-core · 24 tests green</span><span>Actions run 173 · APK built</span><span>phone check pending</span></div>
+  </header>
+
+  <div class="grid">
+    <div class="stage">
+      <div class="phone" aria-label="VRG Füzet, working demo">
+        <div class="notch" aria-hidden="true"></div>
+        <div id="app"></div>
+      </div>
+      <div class="label">Working demo · example entries · saved only in this browser</div>
+    </div>
+
+    <div class="story">
+      <section>
+        <h2>Try it</h2>
+        <ol class="try">
+          <li><span>Tap <b>⚑ Nyitott</b>. The 0.4 MΩ insulation reading breaks its 1 MΩ limit, the boiler service is overdue, and the ladder note offers to become a to-do.</span></li>
+          <li><span>Open <b>⚒ Munka</b>, then <b>◷ Munkaidő</b>: hours add up per week. <b>▣ Anyagok</b> counts "Dugalj" and "dugalj" as one material.</span></li>
+          <li><span>Type <b>kazan</b> into the search without the accent. It finds the boiler entry in the Otthon kit.</span></li>
+          <li><span>Write a note with <b>✎ Jegyzet</b>, such as "elromlott a csap". Nyitott suggests moving it into Otthon as maintenance.</span></li>
+          <li><span>In <b>⚙ Kitek</b>, switch on the Kutya kit and a "no walk today" reminder appears. The export there is the same file format the phone writes.</span></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Forked from the Sketcher</h2>
+        <p class="prose">The Sketcher was already a note taker built from modules: fronts, a catalog that is pure data, and variants written by an agent. The fork keeps the engine's rules, drops the floor plan, and opens them to every kind of entry. The Sketcher itself is unchanged.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>In the Sketcher</th><th>In the Füzet</th></tr></thead>
+          <tbody>
+            <tr><td>Every capture stands alone; links can come later</td><td>An entry: kit, type, time, text, fields, tags, links, done, open</td></tr>
+            <tr><td>"What's missing" is computed every time</td><td>Nyitott: due, out of limit, to clear up, missing, not done in a while, suggestion</td></tr>
+            <tr><td>The catalog is a JSON file; keywords behind the notes</td><td>A kit is a JSON file; keywords suggest a tag or move a note into a kit</td></tr>
+            <tr><td>Variants made by an agent from a phone request</td><td>Kits made by an agent from a Kérés entry</td></tr>
+            <tr><td>✎ on every front; nothing half-typed is lost</td><td>✎ Jegyzet always on the home; the unsent note is kept as a draft</td></tr>
+            <tr><td>One survey, one file</td><td>One store for every kit: one search, one export</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section>
+        <h2>The four kits</h2>
+        <div class="kits" id="kitcards"></div>
+      </section>
+
+      <section>
+        <h2>How it grows</h2>
+        <div class="flow">
+          <div><span class="label">1 · Phone</span><p>⚙ Kitek → ✦ Kit kérése saves a request and opens the share sheet with a template.</p></div>
+          <div><span class="label">2 · Claude</span><p>A session follows <code>Mobile/notebook/PROTOCOL.md</code> and writes one kit JSON.</p></div>
+          <div><span class="label">3 · Check</span><p>The core tests parse every kit and refuse any error or warning.</p></div>
+          <div><span class="label">4 · Back</span><p>Push, and the next APK carries it. Or load the file straight away under ⚙ Kitek.</p></div>
+        </div>
+        <p class="prose">A kit holds the four parts of the framework: <b>entries</b> (types and fields), <b>views</b> (log, list, tick-off list, totals), <b>actions</b> (quick chips) and <b>rules</b> (deadlines, limits, "not done in a while", keywords). A kit never holds code, so anyone can write one and the phone can always load it.</p>
+      </section>
+
+      <section>
+        <h2>Where it stands</h2>
+        <div class="status">
+          <div><span class="pill ok">done</span><b>Core</b><p>Kits, store, search, views, open items and the export/import merge. 24 tests, run in the cloud session.</p></div>
+          <div><span class="pill ok">done</span><b>APK</b><p>GitHub Actions compiled the screens and built the debug APK (run 173, after one fix).</p></div>
+          <div><span class="pill wait">yours</span><b>Phone check</b><p>15 steps in <code>docs/mobile/WP/M46.md</code>. Defaults D-55 to D-59 are open to change.</p></div>
+        </div>
+        <p class="prose">Not built yet: location on entries, editing a kit on the phone, sync between phones (export and import cover that for now), and the Sketcher's survey as a kit.</p>
+      </section>
+    </div>
+  </div>
+
+  <footer><p>VRG toolset, 2026-11-21. Branch <code>claude/magical-goodall-i0u8jm</code>. The demo is a JavaScript copy of <code>notebook-core</code> running the bundled kits from <code>Mobile/notebook/kits</code>. The entries are invented examples and are kept only in this browser. Labels inside the phone are in Hungarian, as on the real app.</p></footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const KITS = [{"kind":"vrg-fuzet-kit","v":1,"id":"alap","name":"Alap","sym":"✎","color":"#93d3e6","about":"Ami mindig kell: jegyzet, teendő és kérés egy új kitre vagy funkcióra. Nem kapcsolható ki.","types":[{"id":"jegyzet","label":"Jegyzet","sym":"✎","fields":[]},{"id":"teendo","label":"Teendő","sym":"☐","checkable":true,"fields":[{"id":"hatarido","label":"Határidő","kind":"date","due":true}]},{"id":"keres","label":"Kérés","sym":"✦","color":"#b08ad8","fields":[{"id":"mit","label":"Mit kérsz (kit, nézet, mező, szabály)?","kind":"text","required":true},{"id":"miert","label":"Mire kell?","kind":"text"}]}],"chips":[{"id":"tisztazando","label":"Tisztázandó","sym":"⚑","open":true},{"id":"otlet","label":"Ötlet","sym":"★","tag":"ötlet"},{"id":"fontos","label":"Fontos","sym":"!","tag":"fontos"}],"views":[{"id":"minden","label":"Napló","sym":"▤","kind":"timeline"},{"id":"teendok","label":"Teendők","sym":"☐","kind":"checklist","types":["teendo"]},{"id":"keresek","label":"Kérések","sym":"✦","kind":"list","types":["keres"]}],"rules":[],"keywords":[{"id":"holnap","re":"\\bholnap|\\bmajd\\b|\\bel kell\\b|\\bne felejtsd","suggest":{"type":"teendo"}}]},{"kind":"vrg-fuzet-kit","v":1,"id":"kutya","name":"Kutya","sym":"🐕","color":"#d9a15b","about":"Minta kit (a Personal App v1 Q4 kérdéséig): séta, etetés, súly, állatorvos határidővel.","types":[{"id":"seta","label":"Séta","sym":"🦮","fields":[{"id":"perc","label":"Időtartam","kind":"number","unit":"perc","required":true},{"id":"km","label":"Táv","kind":"number","unit":"km"},{"id":"kedv","label":"Kedve","kind":"rating"}]},{"id":"etetes","label":"Etetés","sym":"🍖","fields":[{"id":"mit","label":"Mit","kind":"text"},{"id":"adag","label":"Adag","kind":"number","unit":"g"}]},{"id":"suly","label":"Súly","sym":"⚖","fields":[{"id":"kg","label":"Súly","kind":"number","unit":"kg","required":true}]},{"id":"orvos","label":"Állatorvos","sym":"✚","checkable":true,"fields":[{"id":"idopont","label":"Időpont","kind":"date","due":true},{"id":"ok","label":"Ok","kind":"choice","options":["oltás","féregtelenítés","kontroll","betegség"]}]}],"chips":[{"id":"rendben","label":"Minden rendben","sym":"✓","tag":"rendben"},{"id":"figyelni","label":"Figyelni kell","sym":"⚑","open":true,"tag":"egészség"}],"views":[{"id":"naplo","label":"Napló","sym":"▤","kind":"timeline"},{"id":"setak","label":"Séták","sym":"🦮","kind":"tally","types":["seta"],"by":"week","sum":"perc"},{"id":"suly","label":"Súly","sym":"⚖","kind":"list","types":["suly"]},{"id":"orvos","label":"Állatorvos","sym":"✚","kind":"checklist","types":["orvos"]}],"rules":[{"id":"napi-seta","kind":"stale","type":"seta","days":1,"label":"Ma még nem volt séta"}],"keywords":[{"id":"egeszseg","re":"\\bhány|\\bhasmen|\\bsánt|\\bsant|\\bnem eszik|\\bvakar","suggest":{"tag":"egészség"}}]},{"kind":"vrg-fuzet-kit","v":1,"id":"munka","name":"Munka","sym":"⚒","color":"#e8a873","about":"A napi villanyszerelői munka röviden: munkák, mérések határértékkel, anyag, munkaidő. A felmérés a VRG Sketcherben marad; ez a gyors napló mellé.","types":[{"id":"munka","label":"Munka","sym":"⚒","fields":[{"id":"nev","label":"Munka neve vagy kódja","kind":"text","required":true},{"id":"allapot","label":"Állapot","kind":"choice","options":["felmérés","ajánlat","folyamatban","kész","számlázva"]}]},{"id":"szigeteles","label":"Szigetelési ellenállás","sym":"Ω","fields":[{"id":"aramkor","label":"Áramkör","kind":"text","required":true},{"id":"ertek","label":"Mért érték","kind":"number","unit":"MΩ","required":true,"min":1}]},{"id":"rcd","label":"Áramvédő kioldási idő","sym":"⏱","fields":[{"id":"aramkor","label":"Áramkör","kind":"text","required":true},{"id":"ertek","label":"Kioldási idő IΔn-nél","kind":"number","unit":"ms","required":true,"max":300}]},{"id":"anyag","label":"Anyag","sym":"▣","fields":[{"id":"nev","label":"Anyag","kind":"text","required":true},{"id":"db","label":"Mennyiség","kind":"number","required":true},{"id":"egyseg","label":"Egység","kind":"choice","options":["db","m","csomag","doboz"]}]},{"id":"ido","label":"Munkaidő","sym":"◷","fields":[{"id":"perc","label":"Időtartam","kind":"number","unit":"perc","required":true},{"id":"munka","label":"Melyik munka","kind":"text"}]}],"chips":[{"id":"ugyfel-ker","label":"Ügyfél kéri","sym":"★","tag":"ügyfél"},{"id":"hiany","label":"Hiányzik anyag","sym":"▣","type":"anyag","tag":"beszerezni"},{"id":"visszamenni","label":"Vissza kell menni","sym":"↺","open":true}],"views":[{"id":"naplo","label":"Napló","sym":"▤","kind":"timeline"},{"id":"munkak","label":"Munkák","sym":"⚒","kind":"tally","types":["munka"],"by":"field:allapot"},{"id":"meresek","label":"Mérések","sym":"Ω","kind":"list","types":["szigeteles","rcd"]},{"id":"ora","label":"Munkaidő","sym":"◷","kind":"tally","types":["ido"],"by":"week","sum":"perc"},{"id":"anyagok","label":"Anyagok","sym":"▣","kind":"tally","types":["anyag"],"by":"field:nev","sum":"db"}],"rules":[],"keywords":[{"id":"beszerez","re":"\\bvenni kell|\\bbeszerez|\\belfogyott|\\bnincs (több|eleg|elég)","suggest":{"tag":"beszerezni"}},{"id":"szamla","re":"\\bszámla|\\bszamla|\\bfizet","suggest":{"tag":"pénz"}}]},{"kind":"vrg-fuzet-kit","v":1,"id":"otthon","name":"Otthon","sym":"⌂","color":"#8bcca1","about":"A ház: mérőórák havonta, karbantartás határidővel, bevásárlólista.","types":[{"id":"meroora","label":"Mérőóra","sym":"◔","fields":[{"id":"ora","label":"Melyik óra","kind":"choice","options":["villany","gáz","víz"],"required":true},{"id":"allas","label":"Állás","kind":"number","required":true}]},{"id":"karbantartas","label":"Karbantartás","sym":"⚙","checkable":true,"fields":[{"id":"mit","label":"Mit","kind":"text","required":true},{"id":"kovetkezo","label":"Esedékes","kind":"date","due":true}]},{"id":"venni","label":"Bevásárlás","sym":"☐","checkable":true,"fields":[{"id":"mit","label":"Mit","kind":"text","required":true},{"id":"db","label":"Mennyi","kind":"number"}]}],"chips":[{"id":"surgos","label":"Sürgős","sym":"!","tag":"sürgős"}],"views":[{"id":"venni","label":"Bevásárlás","sym":"☐","kind":"checklist","types":["venni"]},{"id":"karbantartas","label":"Karbantartás","sym":"⚙","kind":"checklist","types":["karbantartas"]},{"id":"orak","label":"Mérőórák","sym":"◔","kind":"tally","types":["meroora"],"by":"field:ora"},{"id":"naplo","label":"Napló","sym":"▤","kind":"timeline"}],"rules":[{"id":"havi-ora","kind":"stale","type":"meroora","days":31,"label":"Havi mérőóra-leolvasás"}],"keywords":[{"id":"elromlott","re":"\\belromlott|\\bnem m(ű|u)k(ö|o)dik|\\bcsöpög|\\bcsopog","suggest":{"type":"karbantartas"}}]}];
+  const BASE = 'alap', NOTE = 'jegyzet', KEY = 'vrg-fuzet-demo-v1', SUGGEST_DAYS = 14;
+  const DAYS = ['hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat', 'vasárnap'];
+  const MONTHS = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+  const KIND = { DUE: ['Esedékes', '⏰'], LIMIT: ['Határérték', '⚠'], OPEN: ['Tisztázandó', '⚑'], MISSING: ['Hiányzik', '◌'], STALE: ['Rég volt', '↺'], SUGGEST: ['Javaslat', '✦'] };
+  const ORDER = ['DUE', 'LIMIT', 'OPEN', 'MISSING', 'STALE', 'SUGGEST'];
+
+  // ---- the library ------------------------------------------------------------------------------------------------
+  KITS.forEach(k => {
+    k.chips = k.chips || []; k.views = (k.views && k.views.length) ? k.views : [{ id: 'naplo', label: 'Napló', sym: '▤', kind: 'timeline' }];
+    k.rules = k.rules || []; k.keywords = (k.keywords || []).map(w => Object.assign({}, w, { rx: new RegExp(w.re, 'i') }));
+    k.types.forEach(t => { t.fields = t.fields || []; });
+  });
+  const ALL = KITS.slice().sort((a, b) => (a.id !== BASE) - (b.id !== BASE) || a.name.localeCompare(b.name, 'hu'));
+  const kitOf = id => ALL.find(k => k.id === id) || null;
+  const typeOf = e => { const k = kitOf(e.kit); return k ? k.types.find(t => t.id === e.type) || null : null; };
+  const fieldOf = (t, id) => t ? t.fields.find(f => f.id === id) || null : null;
+
+  // ---- helpers ----------------------------------------------------------------------------------------------------
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fold = s => String(s).normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase();
+  const pad = n => String(n).padStart(2, '0');
+  const ymdOf = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const ymd = at => ymdOf(new Date(at));
+  const parseYmd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '').trim()); if (!m) return null; const d = new Date(+m[1], +m[2] - 1, +m[3]); return d.getMonth() === +m[2] - 1 ? d : null; };
+  const dayNo = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  const num = n => Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',');
+  function isoWeek(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const wd = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - wd); const y = t.getUTCFullYear(); return [y, Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7)]; }
+  const blank = v => v == null || (typeof v === 'string' && !v.trim()) || (Array.isArray(v) && !v.length);
+  function valueText(f, v) {
+    if (typeof v === 'string') { if (f && f.kind === 'date') { const d = parseYmd(v); return d ? d.getFullYear() + '. ' + pad(d.getMonth() + 1) + '. ' + pad(d.getDate()) + '.' : v; } return v; }
+    if (typeof v === 'number') return f && f.kind === 'rating' ? '★'.repeat(Math.max(0, Math.min(5, v | 0))) : num(v) + (f && f.unit ? ' ' + f.unit : '');
+    if (typeof v === 'boolean') return v ? 'igen' : 'nem';
+    if (Array.isArray(v)) return v.join(', ');
+    return '';
+  }
+  function summary(e) {
+    const t = typeOf(e); const order = t ? t.fields.map(f => f.id) : Object.keys(e.f || {}).sort();
+    return order.filter(id => e.f && !blank(e.f[id])).map(id => valueText(fieldOf(t, id), e.f[id])).join(' · ');
+  }
+  function title(e) {
+    const line = (e.text || '').split('\n').find(l => l.trim());
+    if (line) return line.trim().slice(0, 120);
+    const s = summary(e); if (s) return s;
+    const t = typeOf(e); return t ? t.label : e.type;
+  }
+  function dayTitle(d, today) {
+    const n = dayNo(d), tn = dayNo(today);
+    if (n === tn) return 'Ma'; if (n === tn - 1) return 'Tegnap';
+    return (d.getFullYear() !== today.getFullYear() ? d.getFullYear() + '. ' : '') + MONTHS[d.getMonth()] + ' ' + d.getDate() + '., ' + DAYS[(d.getDay() + 6) % 7];
+  }
+  const isOn = (s, id) => id === BASE || s.kitsOn.includes(id);
+  const onKits = s => ALL.filter(k => isOn(s, k.id));
+  const nid = () => 'E' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  // ---- engine (a copy of notebook-core/Engine.kt) ------------------------------------------------------------------
+  function search(s, q) {
+    const words = q.trim().split(/\s+/).filter(Boolean); if (!words.length) return [];
+    const tags = words.filter(w => w[0] === '#' && w.length > 1).map(w => fold(w.slice(1)));
+    const plain = words.filter(w => w[0] !== '#').map(fold);
+    return s.entries.filter(e => {
+      const t = typeOf(e), k = kitOf(e.kit);
+      const hay = fold([e.text, t ? t.label : e.type, k ? k.name : e.kit, summary(e), (e.tags || []).join(' ')].join(' '));
+      return tags.every(tg => (e.tags || []).some(x => fold(x) === tg)) && plain.every(w => hay.includes(w));
+    }).sort((a, b) => b.at - a.at);
+  }
+  function entriesOf(s, kit, v) {
+    return s.entries.filter(e => e.kit === kit.id && (!v.types || !v.types.length || v.types.includes(e.type)) && (!v.tags || !v.tags.length || (e.tags || []).some(t => v.tags.includes(t))));
+  }
+  function view(s, kit, v, now) {
+    const es = entriesOf(s, kit, v), today = new Date(now);
+    if (v.kind === 'list') return [{ key: '', title: v.label, entries: es.sort((a, b) => b.at - a.at) }];
+    if (v.kind === 'timeline') {
+      const g = new Map(); es.forEach(e => { const k = ymd(e.at); if (!g.has(k)) g.set(k, []); g.get(k).push(e); });
+      return [...g.keys()].sort().reverse().map(k => ({ key: k, title: dayTitle(parseYmd(k), today), entries: g.get(k).sort((a, b) => b.at - a.at) }));
+    }
+    if (v.kind === 'checklist') {
+      const due = e => { const t = typeOf(e); const f = t && t.fields.find(x => x.due); const d = f && parseYmd(e.f && e.f[f.id]); return d ? dayNo(d) : Infinity; };
+      const todo = es.filter(e => !e.done).sort((a, b) => due(a) - due(b) || a.at - b.at);
+      const done = es.filter(e => e.done).sort((a, b) => (b.ed || b.at) - (a.ed || a.at));
+      return [{ key: 'todo', title: 'Teendő', entries: todo }, { key: 'done', title: 'Kész', entries: done }];
+    }
+    // tally
+    const by = v.by || 'day', timed = by === 'day' || by === 'week' || by === 'month';
+    const unit = v.sum ? (kit.types.map(t => fieldOf(t, v.sum)).find(f => f && f.unit) || {}).unit : null;
+    const groups = new Map();
+    const put = (key, ttl, e) => { if (!groups.has(key)) groups.set(key, { key, title: ttl, first: e.at, entries: [] }); const g = groups.get(key); if (e.at < g.first) { g.first = e.at; g.title = ttl; } g.entries.push(e); };
+    es.forEach(e => {
+      const d = new Date(e.at);
+      if (by === 'day') put(ymd(e.at), dayTitle(d, today), e);
+      else if (by === 'week') { const [y, w] = isoWeek(d), [ty, tw] = isoWeek(today); put(y + '-W' + pad(w), y === ty && w === tw ? 'Ez a hét' : y + '. ' + w + '. hét', e); }
+      else if (by === 'month') put(d.getFullYear() + '-' + pad(d.getMonth() + 1), d.getFullYear() + '. ' + MONTHS[d.getMonth()], e);
+      else if (by === 'type') { const t = typeOf(e); put(e.type, t ? t.label : e.type, e); }
+      else if (by === 'tag') { if (!(e.tags || []).length) put('', '(címke nélkül)', e); else e.tags.forEach(t => put(t, '#' + t, e)); }
+      else if (by.startsWith('field:')) { const id = by.slice(6); const v2 = e.f && e.f[id]; const txt = blank(v2) ? null : valueText(fieldOf(typeOf(e), id), v2); put(txt ? fold(txt) : '', txt || '(üres)', e); }
+    });
+    const secs = [...groups.values()].map(g => ({ key: g.key, title: g.title, entries: g.entries.sort((a, b) => b.at - a.at), sum: v.sum ? g.entries.reduce((n, e) => n + (typeof (e.f || {})[v.sum] === 'number' ? e.f[v.sum] : 0), 0) : null, unit }));
+    return timed ? secs.sort((a, b) => a.key < b.key ? 1 : -1) : secs.sort((a, b) => ((b.sum != null ? b.sum : b.entries.length) - (a.sum != null ? a.sum : a.entries.length)) || a.title.localeCompare(b.title, 'hu'));
+  }
+  function openItems(s, now) {
+    const today = new Date(now), tn = dayNo(today), on = onKits(s), ids = on.map(k => k.id), out = [];
+    s.entries.filter(e => ids.includes(e.kit)).sort((a, b) => b.at - a.at).forEach(e => {
+      const t = typeOf(e), name = title(e);
+      if (e.open) out.push({ key: 'open:' + e.id, kind: 'OPEN', kit: e.kit, entry: e.id, title: name, detail: t ? t.label : e.type });
+      (t ? t.fields : []).forEach(f => {
+        const v = e.f ? e.f[f.id] : undefined;
+        if (f.required && !e.done && blank(v)) out.push({ key: 'miss:' + e.id + ':' + f.id, kind: 'MISSING', kit: e.kit, entry: e.id, title: name, detail: t.label + ': ' + f.label });
+        const d = f.due && !e.done && typeof v === 'string' ? parseYmd(v) : null;
+        if (d && dayNo(d) <= tn) out.push({ key: 'due:' + e.id + ':' + f.id, kind: 'DUE', kit: e.kit, entry: e.id, title: name, detail: dayNo(d) === tn ? f.label + ': ma' : f.label + ': ' + valueText(f, v) + ', lejárt' });
+        if (typeof v === 'number' && f.kind === 'number') {
+          const low = f.min != null && v < f.min, high = f.max != null && v > f.max;
+          if (low || high) out.push({ key: 'limit:' + e.id + ':' + f.id, kind: 'LIMIT', kit: e.kit, entry: e.id, title: name,
+            detail: f.label + ': ' + valueText(f, v) + ', ' + (low ? 'legalább ' + num(f.min) : 'legfeljebb ' + num(f.max)) + (f.unit ? ' ' + f.unit : '') + ' kell' });
+        }
+      });
+    });
+    on.forEach(k => k.rules.filter(r => r.kind === 'stale').forEach(r => {
+      const last = s.entries.filter(e => e.kit === k.id && e.type === r.type).reduce((m, e) => Math.max(m, e.at), -Infinity);
+      const since = isFinite(last) ? tn - dayNo(new Date(last)) : null;
+      const tl = (k.types.find(t => t.id === r.type) || {}).label || r.type;
+      if (since == null || since >= r.days) out.push({ key: 'stale:' + k.id + ':' + r.id + ':' + ymdOf(today), kind: 'STALE', kit: k.id, entry: null, title: r.label, detail: since == null ? 'még nincs ilyen: ' + tl : 'utoljára ' + since + ' napja: ' + tl });
+    }));
+    const from = tn - SUGGEST_DAYS;
+    s.entries.filter(e => isOn(s, e.kit) && !e.done && (e.text || '').trim() && dayNo(new Date(e.at)) >= from).forEach(e => {
+      const text = e.text.toLowerCase(), name = title(e);
+      on.forEach(k => k.keywords.filter(w => w.rx.test(text)).forEach(w => {
+        const sg = w.suggest || {};
+        if (sg.tag && !(e.tags || []).includes(sg.tag)) out.push({ key: 'kw:' + e.id + ':' + k.id + ':' + w.id + ':tag', kind: 'SUGGEST', kit: e.kit, entry: e.id, title: name, detail: 'címke: #' + sg.tag, tag: sg.tag });
+        const plainNote = e.kit === BASE && e.type === NOTE;
+        if (sg.type && plainNote && !(e.kit === k.id && e.type === sg.type)) out.push({ key: 'kw:' + e.id + ':' + k.id + ':' + w.id + ':type', kind: 'SUGGEST', kit: e.kit, entry: e.id, title: name,
+          detail: 'legyen ' + k.name + ' › ' + ((k.types.find(t => t.id === sg.type) || {}).label || sg.type), toKit: k.id, toType: sg.type });
+      }));
+    });
+    return out.filter(i => !s.dismissed.includes(i.key)).sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
+  }
+  function merge(local, inc) {
+    const gone = new Set([...local.gone, ...(inc.gone || [])]); const mine = new Map(local.entries.map(e => [e.id, e])); const out = new Map(mine);
+    let added = 0, updated = 0;
+    (inc.entries || []).forEach(e => { if (!e || !e.id || gone.has(e.id)) return; const m = mine.get(e.id); if (!m) { out.set(e.id, e); added++; } else if ((e.ed || e.at) > (m.ed || m.at)) { out.set(e.id, e); updated++; } });
+    let removed = 0; gone.forEach(id => { if (out.delete(id)) removed++; });
+    const entries = [...out.values()].map(e => e.links && e.links.some(l => gone.has(l)) ? Object.assign({}, e, { links: e.links.filter(l => !gone.has(l)) }) : e);
+    return { store: Object.assign({}, local, { entries, gone: [...gone], kitsOn: [...new Set([...local.kitsOn, ...(inc.kitsOn || [])])], dismissed: [...new Set([...local.dismissed, ...(inc.dismissed || [])])] }), added, updated, removed };
+  }
+
+  // ---- example entries ---------------------------------------------------------------------------------------------
+  function sample() {
+    const now = new Date(), at = (daysAgo, h, m) => { const d = new Date(now); d.setDate(d.getDate() - daysAgo); d.setHours(h, m || 0, 0, 0); return Math.min(d.getTime(), Date.now() - 60000); };
+    const date = n => { const d = new Date(now); d.setDate(d.getDate() + n); return ymdOf(d); };
+    let i = 0; const E = (kit, type, a, rest) => Object.assign({ id: 'X' + (++i), kit, type, at: a, text: '', f: {}, tags: [], links: [], done: false, open: false }, rest);
+    return { entries: [
+      E('alap', 'jegyzet', at(0, 7, 40), { text: 'Holnap el kell hozni a létrát a raktárból' }),
+      E('alap', 'jegyzet', at(0, 9, 5), { text: 'Kérdezd meg, hány fázis van a házban', open: true }),
+      E('alap', 'jegyzet', at(1, 16, 20), { text: 'Elfogyott a kötődoboz a kocsiban' }),
+      E('alap', 'teendo', at(1, 18, 0), { text: 'Árajánlat a fürdőre (minta)', f: { hatarido: date(2) } }),
+      E('munka', 'munka', at(3, 8, 0), { f: { nev: 'Fürdő felújítás (minta)', allapot: 'folyamatban' } }),
+      E('munka', 'munka', at(10, 8, 0), { f: { nev: 'Konyha bővítés (minta)', allapot: 'ajánlat' } }),
+      E('munka', 'szigeteles', at(0, 10, 5), { f: { aramkor: 'F2 nappali', ertek: 250 } }),
+      E('munka', 'szigeteles', at(0, 10, 15), { f: { aramkor: 'F3 konyha', ertek: 0.4 } }),
+      E('munka', 'rcd', at(0, 10, 30), { f: { aramkor: 'F1', ertek: 23 } }),
+      E('munka', 'ido', at(0, 15, 0), { f: { perc: 180, munka: 'Fürdő' } }),
+      E('munka', 'ido', at(1, 15, 0), { f: { perc: 240, munka: 'Fürdő' } }),
+      E('munka', 'ido', at(8, 15, 0), { f: { perc: 300, munka: 'Konyha' } }),
+      E('munka', 'anyag', at(1, 11, 0), { f: { nev: 'Dugalj', db: 4, egyseg: 'db' } }),
+      E('munka', 'anyag', at(0, 11, 0), { f: { nev: 'dugalj', db: 2, egyseg: 'db' } }),
+      E('munka', 'anyag', at(0, 11, 10), { f: { nev: 'NYM-J 3x2,5', db: 50, egyseg: 'm' }, tags: ['beszerezni'] }),
+      E('otthon', 'karbantartas', at(30, 19, 0), { f: { mit: 'Kazán éves ellenőrzése', kovetkezo: date(-3) } }),
+      E('otthon', 'karbantartas', at(5, 19, 0), { f: { mit: 'Füstérzékelő elem', kovetkezo: date(20) } }),
+      E('otthon', 'venni', at(0, 8, 0), { f: { mit: 'Tej' } }),
+      E('otthon', 'venni', at(1, 8, 0), { f: { mit: 'Villanykörte E27', db: 2 }, done: true, ed: at(0, 8, 30) }),
+      E('otthon', 'meroora', at(40, 20, 0), { f: { ora: 'villany', allas: 48213 } }),
+      E('kutya', 'seta', at(1, 7, 0), { f: { perc: 35, km: 2.4, kedv: 5 } }),
+    ], gone: [], kitsOn: ['alap', 'munka', 'otthon'], dismissed: [], draft: '' };
+  }
+
+  // ---- state -------------------------------------------------------------------------------------------------------
+  function load() { try { const t = localStorage.getItem(KEY); if (t) { const s = JSON.parse(t); if (s && Array.isArray(s.entries)) return Object.assign({ gone: [], kitsOn: [BASE], dismissed: [], draft: '' }, s); } } catch (e) { /* no storage here */ } return sample(); }
+  let S = load();
+  const ui = { place: 'home', kit: BASE, view: null, q: '', edit: null, isNew: false, tag: '', msg: '', undo: null, io: '' };
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage refused: the demo still works for this visit */ } }
+  function change(fn) { S = fn(S); save(); render(); }
+  const newEntry = (kit, type, text) => ({ id: nid(), kit, type, at: Date.now(), text: text || '', f: {}, tags: [], links: [], done: false, open: false });
+  function upd(s, id, fn) { return Object.assign({}, s, { entries: s.entries.map(e => e.id === id ? Object.assign(fn(e), { id: e.id, at: e.at, ed: Date.now() }) : e) }); }
+
+  // ---- rendering ---------------------------------------------------------------------------------------------------
+  const chip = (text, act, data, cls) => '<button type="button" class="chip ' + (cls || '') + '" data-act="' + act + '"' + Object.keys(data || {}).map(k => ' data-' + k + '="' + esc(data[k]) + '"').join('') + '>' + esc(text) + '</button>';
+  const stamp = at => { const d = new Date(at), today = new Date(); return (ymdOf(d) === ymdOf(today) ? '' : pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + '. ') + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+  function entryRow(e, showKit) {
+    const t = typeOf(e), k = kitOf(e.kit), sub = [showKit ? (k ? k.name : e.kit) : null, e.text.trim() && summary(e) ? summary(e) : null, (e.tags || []).length ? e.tags.map(x => '#' + x).join(' ') : null].filter(Boolean).join(' · ');
+    return '<button type="button" class="entry" data-act="open-entry" data-id="' + esc(e.id) + '"><span class="sym" style="color:' + esc((t && t.color) || (k && k.color) || 'var(--accent)') + '">' + esc(t ? t.sym : '•') + '</span><span><span class="t">' + (e.open ? '⚑ ' : '') + esc(title(e)) + '</span>' + (sub ? '<br><span class="sm">' + esc(sub) + '</span>' : '') + '</span><span class="ro">' + esc(stamp(e.at)) + '</span></button>';
+  }
+  function checkRow(e) {
+    const t = typeOf(e), f = t && t.fields.find(x => x.due), due = f && e.f[f.id] ? valueText(f, e.f[f.id]) : '';
+    return '<div class="check ' + (e.done ? 'done' : '') + '"><button type="button" class="box" data-act="tick" data-id="' + esc(e.id) + '" aria-label="' + (e.done ? 'Visszanyitás' : 'Kész') + '" style="color:' + (e.done ? 'var(--ok)' : 'var(--fg)') + '">' + (e.done ? '☑' : '☐') + '</button><button type="button" class="entry" style="grid-template-columns:1fr;padding:2px" data-act="open-entry" data-id="' + esc(e.id) + '"><span><span class="t">' + esc(title(e)) + '</span>' + (due ? '<br><span class="sm">' + esc(due) + '</span>' : '') + '</span></button><span class="ro">' + esc(stamp(e.at)) + '</span></div>';
+  }
+  function home() {
+    const kits = onKits(S), kit = kits.find(k => k.id === ui.kit) || kits[0], v = kit && (kit.views.find(x => x.id === ui.view) || kit.views[0]);
+    const open = openItems(S, Date.now()), hot = open.some(i => i.kind === 'DUE' || i.kind === 'LIMIT');
+    let h = '<div class="row"><span class="ttl grow">VRG FÜZET</span>' + chip('⚑ Nyitott ' + open.length, 'go', { p: 'open' }, hot ? 'hot' : '') + chip('⚙ Kitek', 'go', { p: 'kits' }) + '</div>';
+    h += '<div class="demo"><span>Példa bejegyzések, csak ebben a böngészőben.</span><button type="button" data-act="reset">Példák visszaállítása</button></div>';
+    h += '<input id="q" class="field" type="search" placeholder="Keresés mindenben (#címke is)" value="' + esc(ui.q) + '" data-in="q" style="margin-top:6px">';
+    h += '<div class="strip" style="margin-top:8px">' + chip('✎ Jegyzet', 'new', { kit: BASE, type: NOTE }, 'on') + (kit ? kit.types.filter(t => !(kit.id === BASE && t.id === NOTE)).map(t => chip('＋ ' + t.sym + ' ' + t.label, 'new', { kit: kit.id, type: t.id })).join('') : '') + '</div>';
+    if (ui.undo) h += '<div class="row" style="margin-top:6px"><span class="sm grow">Bejegyzés törölve.</span>' + chip('Visszavonás', 'undo') + chip('✕', 'undo-x') + '</div>';
+    if (ui.q.trim()) {
+      const found = search(S, ui.q);
+      return h + '<div class="sec">Találat · ' + found.length + '</div>' + (found.map(e => entryRow(e, true)).join('') || '<div class="empty">Nincs találat.</div>');
+    }
+    h += '<div class="strip" style="margin-top:10px">' + kits.map(k => chip(k.sym + ' ' + k.name, 'kit', { id: k.id }, k.id === (kit && kit.id) ? 'on' : '')).join('') + '</div>';
+    if (!kit || !v) return h + '<div class="empty">Nincs bekapcsolt kit.</div>';
+    h += '<div class="strip" style="margin-top:6px">' + kit.views.map(x => chip(x.sym + ' ' + x.label, 'view', { id: x.id }, x.id === v.id ? 'on' : '')).join('') + '</div>';
+    const secs = view(S, kit, v, Date.now());
+    if (secs.every(s => !s.entries.length)) h += '<div class="empty">Itt még nincs bejegyzés. A fenti ＋ gombokkal veszel fel.</div>';
+    secs.filter(s => s.entries.length || v.kind === 'checklist').forEach(s => {
+      const total = s.sum != null ? ' · ' + num(s.sum) + (s.unit ? ' ' + s.unit : '') : '';
+      if (v.kind === 'tally') { h += '<div class="tally"><span>' + esc(s.title) + '</span><b>' + s.entries.length + ' db' + esc(total) + '</b></div>'; return; }
+      h += '<div class="sec">' + esc(s.title) + ' · ' + s.entries.length + esc(total) + '</div>' + s.entries.map(e => v.kind === 'checklist' ? checkRow(e) : entryRow(e, false)).join('');
+    });
+    return h;
+  }
+  function fieldInput(f, v) {
+    const label = esc(f.label + (f.unit ? ' (' + f.unit + ')' : '') + (f.required ? ' *' : '')), id = 'f-' + f.id;
+    if (f.kind === 'text') return '<label class="lbl" for="' + id + '">' + label + '</label><input id="' + id + '" class="field" data-in="field" data-f="' + esc(f.id) + '" value="' + esc(typeof v === 'string' ? v : '') + '">';
+    if (f.kind === 'number') {
+      const lim = [f.min != null ? '≥ ' + num(f.min) : '', f.max != null ? '≤ ' + num(f.max) : ''].filter(Boolean).join(' ');
+      return '<label class="lbl" for="' + id + '">' + label + (lim ? ' &nbsp;' + esc(lim) : '') + '</label><input id="' + id + '" class="field" inputmode="decimal" data-in="num" data-f="' + esc(f.id) + '" value="' + esc(typeof v === 'number' ? num(v) : (ui.raw && ui.raw[f.id]) || '') + '">';
+    }
+    if (f.kind === 'choice' || f.kind === 'multi') {
+      const cur = f.kind === 'multi' ? (Array.isArray(v) ? v : []) : [v];
+      return '<span class="lbl">' + label + '</span><div class="chips">' + f.options.map(o => chip(o, 'opt', { f: f.id, o, m: f.kind === 'multi' ? 1 : 0 }, cur.includes(o) ? 'on' : '')).join('') + '</div>';
+    }
+    if (f.kind === 'check') return '<div class="toggle" data-act="flag" data-f="' + esc(f.id) + '"><span>' + label + '</span><span class="sw ' + (v ? 'on' : '') + '"></span></div>';
+    if (f.kind === 'date') {
+      const bad = typeof v === 'string' && v && !parseYmd(v);
+      return '<label class="lbl" for="' + id + '">' + label + ' &nbsp;ÉÉÉÉ-HH-NN</label><input id="' + id + '" class="field" data-in="field" data-f="' + esc(f.id) + '" value="' + esc(typeof v === 'string' ? v : '') + '"' + (bad ? ' style="border-color:var(--crit)"' : '') + '><div class="chips" style="margin-top:5px">' +
+        [['Ma', 0], ['Holnap', 1], ['+1 hét', 7], ['+1 hónap', 30]].map(([t, n]) => chip(t, 'date', { f: f.id, n })).join('') + '</div>';
+    }
+    if (f.kind === 'rating') { const n = typeof v === 'number' ? v : 0; return '<span class="lbl">' + label + '</span><div class="stars">' + [1, 2, 3, 4, 5].map(i => '<button type="button" class="' + (i <= n ? 'on' : '') + '" data-act="rate" data-f="' + esc(f.id) + '" data-n="' + i + '" aria-label="' + i + ' csillag">' + (i <= n ? '★' : '☆') + '</button>').join('') + '</div>'; }
+    return '';
+  }
+  function editor() {
+    const e = ui.edit, kit = kitOf(e.kit), t = kit && kit.types.find(x => x.id === e.type);
+    let h = '<button type="button" class="back" data-act="go" data-p="home">‹ Mégse</button><div class="ttl">' + (ui.isNew ? 'ÚJ BEJEGYZÉS' : 'BEJEGYZÉS') + '</div>';
+    if (!ui.isNew) h += '<div class="sm">Felvéve: ' + esc(stamp(e.at)) + (e.ed ? ' · módosítva: ' + esc(stamp(e.ed)) : '') + '</div>';
+    h += '<div class="sec">Kit és típus</div><div class="chips">' + onKits(S).map(k => chip(k.sym + ' ' + k.name, 'ekit', { id: k.id }, k.id === e.kit ? 'on' : '')).join('') + '</div>';
+    if (kit) h += '<div class="chips" style="margin-top:6px">' + kit.types.map(x => chip(x.sym + ' ' + x.label, 'etype', { id: x.id }, x.id === e.type ? 'on' : '')).join('') + '</div>';
+    h += '<textarea id="txt" class="field" style="margin-top:10px" placeholder="Szöveg (nem kötelező)" data-in="text">' + esc(e.text) + '</textarea>';
+    if (t && t.fields.length) h += '<div class="sec">' + esc(t.label) + '</div>' + t.fields.map(f => fieldInput(f, e.f[f.id])).join('');
+    const chips = (kitOf(BASE).chips || []).concat(kit && kit.id !== BASE ? kit.chips : []);
+    if (chips.length) h += '<div class="sec">Gyors jelölés</div><div class="chips">' + chips.map(c => { const on = (c.tag && e.tags.includes(c.tag)) || (c.open && e.open && !c.tag); return chip(c.sym + ' ' + c.label, 'qchip', { id: c.id, kit: chips.indexOf(c) < (kitOf(BASE).chips || []).length ? BASE : kit.id }, on ? 'on' : ''); }).join('') + '</div>';
+    h += '<div class="sec">Címkék</div><div class="chips">' + e.tags.map(x => chip('#' + x + ' ✕', 'untag', { t: x })).join('') + '</div><input id="tag" class="field" style="margin-top:6px" placeholder="új címke, szóközzel zárva" data-in="tag" value="' + esc(ui.tag) + '">';
+    h += '<div class="toggle" data-act="eopen"><span>⚑ Tisztázandó</span><span class="sw ' + (e.open ? 'on' : '') + '"></span></div>';
+    if (t && t.checkable) h += '<div class="toggle" data-act="edone"><span>☑ Kész</span><span class="sw ' + (e.done ? 'on' : '') + '"></span></div>';
+    h += '<div class="chips" style="margin-top:14px">' + chip('Mentés', 'save', {}, 'on') + (ui.isNew ? '' : chip('Törlés', 'del')) + chip('Mégse', 'go', { p: 'home' }) + '</div>';
+    return h;
+  }
+  function openPlace() {
+    const items = openItems(S, Date.now());
+    let h = '<button type="button" class="back" data-act="go" data-p="home">‹ Füzet</button><div class="ttl">NYITOTT · ' + items.length + '</div><div class="sm">Mi esedékes, mi lóg ki a határértékből, mi hiányzik, mire utal egy jegyzet. Ki van számolva, nem kell lezárni: ami rendbe jön, eltűnik.</div>';
+    if (!items.length) h += '<div class="empty">Nincs nyitott szál.</div>';
+    items.forEach(i => {
+      const k = kitOf(i.kit);
+      h += '<div class="card"><div class="row"><span class="kind k-' + i.kind + ' grow">' + KIND[i.kind][1] + ' ' + KIND[i.kind][0] + '</span><span class="sm" style="color:' + esc(k ? k.color : 'inherit') + '">' + esc((k ? k.sym + ' ' + k.name : i.kit)) + '</span></div><div class="t" style="font-weight:500">' + esc(i.title) + '</div><div class="sm">' + esc(i.detail) + '</div><div class="chips" style="margin-top:6px">' +
+        (i.kind === 'SUGGEST' ? chip('Alkalmaz', 'apply', { key: i.key }, 'on') : '') + (i.entry ? chip('Megnyitás', 'open-entry', { id: i.entry }) : '') + chip('Elvet', 'dismiss', { key: i.key }) + '</div></div>';
+    });
+    return h;
+  }
+  function kitsPlace() {
+    let h = '<button type="button" class="back" data-act="go" data-p="home">‹ Füzet</button><div class="ttl">KITEK</div><div class="sm">Egy kit a füzet egy alkalmazása. A bejegyzések a kit kikapcsolásakor is megmaradnak.</div>';
+    if (ui.msg) h += '<div class="note">' + esc(ui.msg) + '</div>';
+    ALL.forEach(k => {
+      const n = S.entries.filter(e => e.kit === k.id).length;
+      h += '<div class="card" style="border-top:3px solid ' + esc(k.color) + '"><div class="row"><span style="font-size:18px">' + esc(k.sym) + '</span><span class="grow" style="font-weight:600">' + esc(k.name) + '</span><span class="ro">' + k.types.length + ' típus · ' + k.views.length + ' nézet · ' + n + ' bejegyzés</span></div><div class="sm">' + esc(k.about) + '</div>' +
+        (k.id === BASE ? '<div class="sm" style="color:var(--faint)">Mindig be van kapcsolva.</div>' : '<div class="toggle" data-act="kiton" data-id="' + esc(k.id) + '"><span>Bekapcsolva</span><span class="sw ' + (isOn(S, k.id) ? 'on' : '') + '"></span></div>') + '</div>';
+    });
+    h += '<div class="sec">A füzet egy fájlban</div><div class="sm">Az export egy sima JSON fájl, ugyanaz, amit a telefon ír. Importáláskor összefésül: a frissebb nyer, a törlés megmarad.</div>';
+    h += '<div class="chips" style="margin-top:6px">' + chip('Export megjelenítése', 'export') + chip('Másolás', 'copy') + chip('Import (beillesztett szöveg)', 'import') + '</div>';
+    h += '<textarea id="io" class="field" style="margin-top:6px;min-height:120px;font-family:var(--mono);font-size:11px" placeholder="Ide jelenik meg az export, vagy ide illeszd be az importálandó füzetet." data-in="io">' + esc(ui.io) + '</textarea>';
+    return h;
+  }
+  const app = document.getElementById('app');
+  function render() {
+    const a = document.activeElement, id = a && a.id, s0 = a && a.selectionStart, s1 = a && a.selectionEnd, top = app.scrollTop;
+    app.innerHTML = ui.place === 'edit' ? editor() : ui.place === 'open' ? openPlace() : ui.place === 'kits' ? kitsPlace() : home();
+    app.scrollTop = top;
+    if (id) { const n = document.getElementById(id); if (n && n.closest('#app')) { n.focus(); try { if (s0 != null) n.setSelectionRange(s0, s1); } catch (e) { /* not a text field */ } } }
+  }
+  function go(p) { ui.place = p; ui.msg = ''; if (p !== 'edit') { ui.edit = null; ui.tag = ''; ui.raw = {}; } app.scrollTop = 0; render(); }
+  function startEdit(e, isNew) { ui.edit = JSON.parse(JSON.stringify(e)); ui.isNew = isNew; ui.tag = ''; ui.raw = {}; go('edit'); }
+
+  app.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-act]'); if (!b || !app.contains(b)) return;
+    const d = b.dataset, e = ui.edit;
+    switch (d.act) {
+      case 'go': go(d.p); break;
+      case 'reset': S = sample(); save(); ui.q = ''; ui.kit = BASE; ui.view = null; ui.undo = null; render(); break;
+      case 'kit': ui.kit = d.id; ui.view = null; render(); break;
+      case 'view': ui.view = d.id; render(); break;
+      case 'new': startEdit(newEntry(d.kit, d.type, d.kit === BASE && d.type === NOTE ? S.draft : ''), true); break;
+      case 'open-entry': { const x = S.entries.find(y => y.id === d.id); if (x) startEdit(x, false); break; }
+      case 'tick': change(s => upd(s, d.id, x => Object.assign({}, x, { done: !x.done }))); break;
+      case 'undo': if (ui.undo) { S = ui.undo; ui.undo = null; save(); render(); } break;
+      case 'undo-x': ui.undo = null; render(); break;
+      case 'ekit': { const k = kitOf(d.id); if (k && k.id !== e.kit) { e.kit = k.id; e.type = k.types[0].id; } render(); break; }
+      case 'etype': e.type = d.id; render(); break;
+      case 'opt': { if (d.m === '1') { const cur = Array.isArray(e.f[d.f]) ? e.f[d.f] : []; const n = cur.includes(d.o) ? cur.filter(x => x !== d.o) : cur.concat(d.o); if (n.length) e.f[d.f] = n; else delete e.f[d.f]; } else { if (e.f[d.f] === d.o) delete e.f[d.f]; else e.f[d.f] = d.o; } render(); break; }
+      case 'flag': e.f[d.f] = !e.f[d.f]; render(); break;
+      case 'date': { const x = new Date(); x.setDate(x.getDate() + (+d.n)); e.f[d.f] = ymdOf(x); render(); break; }
+      case 'rate': { const n = +d.n; if (e.f[d.f] === n) delete e.f[d.f]; else e.f[d.f] = n; render(); break; }
+      case 'qchip': { const k = kitOf(d.kit), c = k && k.chips.find(x => x.id === d.id); if (!c) break; const on = (c.tag && e.tags.includes(c.tag)) || (c.open && e.open && !c.tag);
+        if (c.tag) e.tags = e.tags.includes(c.tag) ? e.tags.filter(x => x !== c.tag) : e.tags.concat(c.tag);
+        if (c.open) e.open = !on; const ek = kitOf(e.kit); if (c.type && ek && ek.types.some(t => t.id === c.type)) e.type = c.type; render(); break; }
+      case 'untag': e.tags = e.tags.filter(x => x !== d.t); render(); break;
+      case 'eopen': e.open = !e.open; render(); break;
+      case 'edone': e.done = !e.done; render(); break;
+      case 'save': {
+        const t = ui.tag.replace(/[#,\s]/g, ''); if (t && !e.tags.includes(t)) e.tags.push(t);
+        const exists = S.entries.some(x => x.id === e.id);
+        S = exists ? upd(S, e.id, () => e) : Object.assign({}, S, { entries: S.entries.concat(e), draft: e.kit === BASE && e.type === NOTE ? '' : S.draft });
+        if (!exists && ui.isNew && e.kit === BASE && e.type === NOTE) S.draft = '';
+        save(); go('home'); break;
+      }
+      case 'del': ui.undo = S; S = Object.assign({}, S, { entries: S.entries.filter(x => x.id !== e.id).map(x => x.links && x.links.includes(e.id) ? Object.assign({}, x, { links: x.links.filter(l => l !== e.id) }) : x), gone: S.gone.concat(e.id) }); save(); go('home'); break;
+      case 'apply': { const i = openItems(S, Date.now()).find(x => x.key === d.key); if (!i) break;
+        change(s => { let n = s; if (i.tag) n = upd(n, i.entry, x => Object.assign({}, x, { tags: x.tags.includes(i.tag) ? x.tags : x.tags.concat(i.tag) })); else if (i.toKit) n = upd(n, i.entry, x => Object.assign({}, x, { kit: i.toKit, type: i.toType })); return Object.assign({}, n, { dismissed: n.dismissed.concat(i.key) }); }); break; }
+      case 'dismiss': change(s => Object.assign({}, s, { dismissed: s.dismissed.concat(d.key) })); break;
+      case 'kiton': change(s => Object.assign({}, s, { kitsOn: s.kitsOn.includes(d.id) ? s.kitsOn.filter(x => x !== d.id) : s.kitsOn.concat(d.id) })); break;
+      case 'export': ui.io = JSON.stringify({ kind: 'vrg-fuzet', v: 1, entries: S.entries.slice().sort((a, b) => a.at - b.at), gone: S.gone, kitsOn: S.kitsOn, dismissed: S.dismissed }, null, 1); ui.msg = 'Az export a lenti mezőben. Másold ki, vagy illeszd be egy másik telefonon.'; render(); break;
+      case 'copy': { const ta = document.getElementById('io'); const txt = ui.io; if (!txt) { ui.msg = 'Előbb az Export megjelenítése.'; render(); break; }
+        (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { ui.msg = 'Kimásolva.'; render(); }, () => { if (ta) { ta.focus(); ta.select(); } ui.msg = 'A böngésző nem engedte: a szöveg ki van jelölve, másold kézzel.'; }); break; }
+      case 'import': { try { const inc = JSON.parse(ui.io); if (!inc || inc.kind !== 'vrg-fuzet') throw new Error('Nem Füzet fájl.'); if ((inc.v || 1) > 1) throw new Error('Újabb Füzet írta.');
+        const m = merge(S, inc); S = m.store; save(); ui.msg = (m.added + m.updated + m.removed) ? [m.added && m.added + ' új', m.updated && m.updated + ' frissebb', m.removed && m.removed + ' törölt'].filter(Boolean).join(', ') + ' bejegyzés.' : 'Nincs új a fájlban.'; }
+        catch (err) { ui.msg = 'Nem olvasható: ' + (err.message || err); } render(); break; }
+    }
+  });
+  app.addEventListener('input', ev => {
+    const n = ev.target, w = n.dataset && n.dataset.in; if (!w) return;
+    if (w === 'q') { ui.q = n.value; render(); return; }
+    if (w === 'io') { ui.io = n.value; return; }
+    if (w === 'tag') { const v = n.value; if (/[\s,]$/.test(v)) { const t = v.replace(/[#,\s]/g, ''); if (t && !ui.edit.tags.includes(t)) ui.edit.tags.push(t); ui.tag = ''; render(); } else ui.tag = v; return; }
+    const e = ui.edit; if (!e) return;
+    if (w === 'text') { e.text = n.value; if (ui.isNew && e.kit === BASE && e.type === NOTE) { S.draft = n.value; save(); } return; }
+    if (w === 'field') { if (n.value.trim()) e.f[n.dataset.f] = n.value; else delete e.f[n.dataset.f]; return; }
+    if (w === 'num') { ui.raw = ui.raw || {}; ui.raw[n.dataset.f] = n.value; const x = parseFloat(n.value.trim().replace(',', '.')); if (isFinite(x) && /^-?\d+([.,]\d+)?$/.test(n.value.trim())) e.f[n.dataset.f] = x; else delete e.f[n.dataset.f]; }
+  });
+
+  // kit cards in the story
+  document.getElementById('kitcards').innerHTML = ALL.map(k => '<div class="kitc" style="--c:' + esc(k.color) + '"><h3>' + esc(k.sym + ' ' + k.name) + '</h3><p>' + esc(k.about) + '</p><span class="ro">' + esc(k.types.map(t => t.label).join(' · ')) + '</span></div>').join('');
+  render();
+})();
+</script>
