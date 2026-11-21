@@ -114,3 +114,21 @@ code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; bord
 .tag.ok { color: var(--ok); }
 .tag.dim { opacity: .5; text-decoration: line-through; }
 .ocr { margin-top: 3px; }
+/* F1: the sketch on the building */
+svg.siteplace { width: 100%; max-height: 320px; background: var(--sunk); border: 1px solid var(--line2); border-radius: 6px; margin-bottom: 6px; }
+svg.siteplace .so { fill: rgba(138, 92, 214, 0.10); stroke: #8a5cd6; stroke-dasharray: 0.6 0.3; }
+svg.siteplace .sp { fill: rgba(39, 194, 176, 0.28); stroke: #137d72; }
+svg.siteplace .sb { stroke: #d64545; }
+svg.siteplace text { fill: var(--muted, #888); }
+#siteplace .ok { color: #3dae5a; } #siteplace .bad { color: #d64545; }
+/* the Munkakör lap (takeoff, docs/sketcher/TAKEOFF.md) */
+.tk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 12px; margin: 8px 0; }
+.tk-item { display: flex; gap: 6px; align-items: baseline; padding: 2px 4px; border-left: 3px solid #3dae5a; }
+.tk-item .sym { width: 1.4em; text-align: center; }
+.tk-item .lb { flex: 1; }
+.tk-item .q { font-variant-numeric: tabular-nums; font-weight: 600; }
+.tk-item .fl { width: 1em; color: #d64545; }
+.tk-item.est { border-left-color: #e8641c; }
+.tk-item.est .q { color: #e8641c; }
+.tk-item.keep { opacity: .6; border-left-color: #a6afb7; }
+.tk-dec { margin: 4px 0; }

@@ -49,7 +49,7 @@ Symbols and colours, not text buttons. The same codes on the phone and the Deskt
 | Munkakör | ☰ | green `#3dae5a` | M28: what the job is and what the client wants (toggles, quantities), the scope card |
 | Kérdések | ? | orange `#e8641c` | M28: the shadow questionnaire: options + free text, appears as the job takes shape |
 | Kamera | ◉ | blue `#2a8cdb` | M29: purpose-tagged photos, the shot list, markup, series, gallery; M46: type-plate reading, blur and privacy on export, before / after, signature, walk video |
-| Helyszín | ⌖ | violet `#8a5cd6` | M30: address, GPS, VRG Térkép, the building footprint against the sketch |
+| Helyszín | ⌖ | violet `#8a5cd6` | M30: address, GPS, VRG Térkép, the building footprint against the sketch; M48: the outline drawn on the map, the sketch placed on the building |
 | Nyitott | ⚑ | red `#d64545` | M26: every loose end, one tap to jump to it |
 
 Points, circuits and tags keep their own colours (M24); the front colours mark *functions*.
@@ -65,7 +65,7 @@ a v1 file opens with empty intake.
 | `scope` | `{id → qty}` | munkakör toggles; qty for countable wants |
 | `answers` | `{qid → {options[], text, at, state}}` | state `answered` / `later` / `skip` |
 | `captures` | `{id C…, file, purpose, at, room?, target?, shot?, note, lat?, lon?, marks[]}` + M46 `{kind?, phase?, pair?, privacy?, keepGps?, ocrAt?, ocr[]?, durationMs?, bytes?, signer?}` | a purpose photo (or M46: a walk video, a signature); `shot` = the shot-list item it fulfils; marks = vector markup over the photo (M46: also blur `elmos` / `elmos_ecset`); `pair` = an after-photo's before; `ocr` = what the type-plate reader found |
-| `site` | `{address, lat?, lon?, source, footprint?}` | the place; footprint = the building's outline measured from the map |
+| `site` | `{address, lat?, lon?, source, footprint?, outline?, place?}` | the place; footprint = the building's outline measured from the map; outline = its corners `[lat, lon]` (OSM, drawn, or traced over satellite); place = where the solved sketch sits on it `{lat, lon, rot, auto}` (M48) |
 | `dismissed` | `[ids]` | suggestions and shadow items the user swiped away (they do not come back) |
 | `seen` | `{id → time}` | when a shadow question first appeared (new ones are marked) |
 | `variant`, `variantOn` | id, bool | the active variant and the corner toggle |
@@ -112,10 +112,11 @@ toggle in the top corner, switching between the original and the variant at any 
 |---|---|---|
 | capture: sketch, notes, scope, questions, camera, site | all (`feature-sketch` + `sketch-core`) | review and complete: answer questions, read notes, attach photos (`Sketcher/dist/vrg-sketcher.html`) |
 | the catalog and variants | assets + `main` via GitHub | inlined + the repo |
-| VRG Térkép | embedded through the relay's port proxy (M8) when paired; GPS and OSM otherwise | embedded `localhost:8802/?embed=1` |
+| VRG Térkép | the phone's own map (M43) on the survey: outline drawn / corrected, 🛰 satellite, the sketch placed (M48); the PC's through the relay as before | embedded `localhost:8802/?embed=1`, the survey handed to it by postMessage (M48) |
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
+| the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-62 (D-62: every feature built in, on by default, switchable).
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-72 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71; the site placement (M48): D-62 … D-66.
 
 ## 7. Kamera 2 (M46)
 
@@ -125,4 +126,14 @@ answer or a note only when tapped; blur (▦ / ▒) kept as vectors and burned i
 stripped from every exported copy unless kept; before / after pairs compared with a slider; the client's signature as a
 *dokumentum* capture; the walk video as a capture of kind video; the ◉ hold menu leads with the next missing shots,
 and „＋ még” repeats the last purpose. Faces are found on the phone too (`FaceFinder`) and proposed as blur rectangles.
-Every one of these is a switch in ⚙ → *Kamera funkciók* (`CameraFeatures`, one setting per phone, D-62). The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
+Every one of these is a switch in ⚙ → *Kamera funkciók* (`CameraFeatures`, one setting per phone, D-72). The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
+
+## 8. From survey to quote (M47)
+
+The scope toggles, the answers and the drawing together say how much work the job is. The **takeoff**
+(`Sketcher/lib/takeoff.js` and its Kotlin twin `sketch-core/Takeoff.kt`, rules in `Sketcher/catalog/takeoff.json`) turns
+them into work items with quantities: points by type and action, machines, circuits, boards, cable metres, systems; ≈
+where it is a guess, ⚑ where an open question can still change it. It carries no prices. The export
+(`vrg-sketch-takeoff` v1 + a Hungarian summary) is the hand-over to the Varler Workflow Kit on the PC; the contract and
+the brief for that session are in `TAKEOFF.md`. The Planner keeps the intake and the takeoff with the job.
+

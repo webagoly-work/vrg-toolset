@@ -294,7 +294,7 @@ internal fun SketchDialogs(st: EditorState) {
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
                     VariantSection(st)
-                    CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-62)
+                    CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-72)
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

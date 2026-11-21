@@ -114,7 +114,7 @@ class Cam2State {
     /** Photos waiting for the type-plate reader, and the one being read now. */
     var readQueue by mutableStateOf<List<String>>(emptyList())
     var reading by mutableStateOf<String?>(null)
-    /** The switched-off features (CameraFeatures, D-62; the phone's preference, loaded by OcrRunner). */
+    /** The switched-off features (CameraFeatures, D-72; the phone's preference, loaded by OcrRunner). */
     var off by mutableStateOf<Set<String>>(emptySet())
     var saveOff: (Set<String>) -> Unit = {}
     /** Face finding: the queue, the photo being searched, the blur rectangles proposed per photo (not yet accepted). */
@@ -790,7 +790,7 @@ private fun writeSignature(out: File, strokes: List<List<Offset>>, box: IntSize,
     true
 } catch (e: Exception) { false }
 
-/** ⚙ → Kamera funkciók: every Kamera 2 feature on its own switch, and all at once (D-62). One setting per phone. */
+/** ⚙ → Kamera funkciók: every Kamera 2 feature on its own switch, and all at once (D-72). One setting per phone. */
 @Composable
 internal fun CameraFeatureSection(st: EditorState) {
     val cam = st.cam2

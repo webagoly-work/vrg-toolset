@@ -2,7 +2,8 @@
 // The engine (window.VRGFieldKit), the catalog (window.VRG_FIELDKIT) and the variants (window.VRG_VARIANTS) are inlined by tools/build.js.
 (function () {
   'use strict';
-  const FK = window.VRGFieldKit;
+  const FK = window.VRGFieldKit, TK = window.VRGTakeoff;
+  const RULES = TK.parseRules(window.VRG_TAKEOFF_RULES);
   const BASE = FK.parseKit(window.VRG_FIELDKIT);
   const VARIANTS = window.VRG_VARIANTS || [];
   const GROUPS = [['jelleg', 'Jelleg'], ['terulet', 'Terület'], ['rendszer', 'Rendszer'], ['igeny', 'Igény']];
@@ -59,16 +60,30 @@
     flash(null); persist(); render();
     return S;
   }
-  function output() { return pkg ? Object.assign({}, pkg, { sketch: S }) : S; }
+  // the takeoff (Munkakör lap, docs/sketcher/TAKEOFF.md): from the package's solved plan, or the raw sketch (all ≈)
+  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp() }); }
+  // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
+  function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
+  function download(text, name, type) {
+    try {
+      const url = URL.createObjectURL(new Blob([text], { type }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+  }
   function save() {
     if (!S) return null;
     const text = JSON.stringify(output(), null, 1);
-    try {
-      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-      const a = document.createElement('a'); a.href = url; a.download = stem() + '.vsketch.json';
-      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
-    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+    download(text, stem() + '.vsketch.json', 'application/json');
     return text;
+  }
+  // the intake / takeoff export for the Varler Workflow Kit: <stem>.takeoff.json + <stem>.takeoff.md
+  function exportTakeoff() {
+    if (!S) return null;
+    const t = takeoff(), json = JSON.stringify(t, null, 1) + '\n', md = TK.markdown(t);
+    download(json, stem() + '.takeoff.json', 'application/json');
+    download(md, stem() + '.takeoff.md', 'text/markdown');
+    return { json, md, takeoff: t };
   }
   function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
   async function openFiles(list) {
@@ -212,9 +227,24 @@
     return h;
   }
 
+  // the Munkakör lap: the takeoff live, symbols and colours, ≈ guessed, ⚑ an open decision changes it
+  function takeoffCard() {
+    const t = takeoff(), c = t.counts;
+    const row = it => '<div class="tk-item' + (it.work ? '' : ' keep') + (it.est ? ' est' : '') + (it.open.length ? ' open' : '') + '" data-item="' + esc(it.id) + '" title="' + esc(it.note) + '">' +
+      '<span class="sym">' + esc(it.sym) + '</span><span class="lb">' + esc(it.label) + '</span><span class="q">' + (it.est ? '≈' : '') + esc(TK.fmt(it.qty)) + ' ' + esc(it.unit) + '</span>' +
+      '<span class="fl">' + (it.open.length ? '⚑' : '') + '</span></div>';
+    return '<div class="card tk" id="takeoff"><div class="row"><h3 style="margin:0">☰ Munkakör lap</h3><span class="grow"></span>' +
+      '<span class="small muted">' + c.items + ' tétel · ≈ ' + c.est + ' · ⚑ ' + c.decisions + (c.tisztazando ? ' · Tisztázandó ' + c.tisztazando : '') + '</span>' +
+      '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button></div>' +
+      (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
+      (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
+      (t.checks.length ? '<div class="small" style="color:#e0b020">' + t.checks.map(esc).join('<br>') + '</div>' : '') +
+      '<div class="small faint">' + (pkg ? 'Hosszak a megoldott tervből (mm).' : 'Nincs megoldott terv: a hosszak a vázlat léptékéből, mind ≈.') + ' Árat nem tartalmaz (Workflow Kit).</div></div>';
+  }
+
   function vMunkakor(d) {
     const sc = S.scope || {}, col = frontOf('munkakor').color;
-    return GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
+    return takeoffCard() + GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
       const n = sc[x.id] || 0;
       if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
         '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
@@ -315,10 +345,71 @@
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
     if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    h += sitePlaceCard();
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
-    return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
+    return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson. A <b>🗺 Szerkesztés a térképen</b> a körvonalat és a vázlatot a lenti térképre teszi; ott ✓ Kész hozza vissza.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
   }
+
+  // ---- F1: the sketch on the building (Map/lib/site-math.js, the same maths as the phone and the map page) --------
+  const SM = window.VrgSiteMath;
+  const siteRooms = () => SM ? SM.roomsFromMm(floors()) : [];
+  function sitePlaceCard() {
+    const si = S.site || {}, out = si.outline || [], rooms = siteRooms();
+    let h = '<h3>A vázlat az épületen</h3><div class="card" id="siteplace">';
+    if (!SM) return h + '<p class="small muted">(a helyszín számítása hiányzik a lapból)</p></div>';
+    const acts = '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="sitemap">🗺 Szerkesztés a térképen</button>' +
+      (out.length >= 3 && rooms.length ? '<button class="btn sm" data-act="sitefit">⤢ Illesztés</button>' : '') +
+      (si.place ? '<button class="btn sm" data-act="siteclear">✕ Elhelyezés</button>' : '') + '</div>';
+    if (out.length < 3) return h + '<p class="small muted">Még nincs körvonal: a telefon Helyszínén (OSM vagy rajz a térképen), vagy itt a térképen rajzolva.</p>' + acts + '</div>';
+    if (!rooms.length) return h + '<p class="small muted">A csomagban nincs megoldott terv (a telefon Rendezés → csomag): a vázlat nem helyezhető el.</p>' + acts + '</div>';
+    const rep = si.place ? SM.report(rooms, out, si.place) : null;
+    h += sitePlaceSvg(out, rooms, si.place, rep);
+    h += rep ? SM.reportLines(rep).map((l, i) => '<div class="' + (i === 0 ? (rep.verdict === 'rendben' ? 'ok' : 'bad') : 'small') + '">' + esc(l) + '</div>').join('')
+      : '<p class="small muted">Még nincs elhelyezve: ⤢ Illesztés, vagy a térképen.</p>';
+    if (si.place) h += '<div class="small muted">Elforgatás ' + f1(si.place.rot) + '°' + (si.place.auto ? ' (automatikus)' : ' (kézzel igazítva)') + '</div>';
+    return h + acts + '</div>';
+  }
+  function sitePlaceSvg(out, rooms, place, rep) {
+    const lat0 = out.reduce((a, p) => a + p[0], 0) / out.length, lon0 = out.reduce((a, p) => a + p[1], 0) / out.length;
+    const poly = out.map(p => SM.local(lat0, lon0, p[0], p[1])), pr = place ? SM.placed(rooms, place, lat0, lon0) : [];
+    const pts = poly.concat(...pr.map(r => r.poly)); let b = bbox(pts); const ext = Math.max(b[2] - b[0], b[3] - b[1], 1), pad = ext * 0.1;
+    b = [b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad];
+    const P = p => p.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' '), sw = ext / 150;
+    let svg = '<svg class="siteplace" viewBox="' + b[0] + ' ' + b[1] + ' ' + (b[2] - b[0]) + ' ' + (b[3] - b[1]) + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<polygon class="so" points="' + P(poly) + '" stroke-width="' + sw * 2 + '"/>';
+    pr.forEach(r => { svg += '<polygon class="sp" points="' + P(r.poly) + '" stroke-width="' + sw + '"/>'; });
+    (rep ? rep.walls : []).forEach(w => { const r = pr[w.room].poly, a = r[w.edge], c = r[(w.edge + 1) % r.length];
+      svg += '<line class="sb" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + c[0] + '" y2="' + c[1] + '" stroke-width="' + sw * 3 + '"/>'; });
+    return svg + '<text x="' + (b[0] + pad * 0.3) + '" y="' + (b[1] + pad * 0.8) + '" font-size="' + ext * 0.05 + '">É ↑</text></svg>';
+  }
+  function siteApply(r) {
+    if (!r || r.kind !== 'vrg-site-result' || r.cancelled || !S) return;
+    commit(() => {
+      const si = Object.assign({ address: '', source: 'kezi' }, S.site), now = stamp();
+      if (Array.isArray(r.center) && r.center.length === 2) { si.lat = r.center[0]; si.lon = r.center[1]; si.source = 'terkep'; }
+      if (Array.isArray(r.outline)) {
+        if (r.outline.length >= 3) {
+          const fp = SM.footprint(r.outline), src = ['osm', 'rajz', 'muhold'].includes(r.outlineSrc) ? r.outlineSrc : 'rajz';
+          si.outline = r.outline; si.footprint = { w: fp.w, d: fp.d, area: fp.area, angle: Math.round((fp.axis % 90) * 10) / 10, src, at: now };
+          if (si.lat == null) { si.lat = r.outline.reduce((a, p) => a + p[0], 0) / r.outline.length; si.lon = r.outline.reduce((a, p) => a + p[1], 0) / r.outline.length; si.source = 'terkep'; }
+        } else { delete si.outline; delete si.footprint; }
+      }
+      if (r.place) si.place = { lat: r.place.lat, lon: r.place.lon, rot: r.place.rot, auto: !!r.place.auto, at: now }; else if (r.place === null) delete si.place;
+      S.site = si;
+    });
+    flash('A térkép változásai átvéve (Mentés: a frissített fájl).', 'ok'); render();
+  }
+  function siteSend() {
+    const f = $('mapframe'); if (!f || !f.contentWindow) { flash('Nincs térkép a lapon.', 'warn'); render(); return; }
+    const si = S.site || {};
+    f.contentWindow.postMessage({ kind: 'vrg-site', v: 1, id: S.id || 'asztal', name: S.name || '', lat: typeof si.lat === 'number' ? si.lat : undefined,
+      lon: typeof si.lon === 'number' ? si.lon : undefined, outline: si.outline || [], outlineSrc: si.footprint && si.footprint.src || '', place: si.place || null, rooms: siteRooms() }, 'http://localhost:8802');
+  }
+  window.addEventListener('message', e => {
+    const f = $('mapframe'); if (!f || e.source !== f.contentWindow || !e.data) return;
+    if (e.data.kind === 'vrg-site-result') siteApply(e.data);
+  });
 
   function vNyitott(d) {
     if (!d.open.length) return '<div class="empty">Nincs nyitott szál — minden rendben.</div>';
@@ -393,7 +484,11 @@
     const a = t.dataset.act, id = t.dataset.id, q = t.dataset.q, k = () => kit();
     switch (a) {
       case 'front': front(t.dataset.front); break;
+      case 'sitemap': siteSend(); break;
+      case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
+      case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
+      case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
       case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
@@ -472,6 +567,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
