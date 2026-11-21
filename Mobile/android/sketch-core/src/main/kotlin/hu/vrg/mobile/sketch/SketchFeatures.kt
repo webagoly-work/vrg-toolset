@@ -10,12 +10,15 @@ object SketchFeatures {
     const val AUDIO = "audio"
     const val CSERE_OLD = "csere_old"
     const val LINE_CLOSE = "line_close"
+    /** F9 (WP M54, D-127): the Felmérési jegyzőkönyv printed and shared from the phone (Rendezés → Jegyzőkönyv). */
+    const val REPORT = "report"
 
     val ALL = listOf(
         Feature(CLIENT, "👤", "Ügyféladatok", "név, telefon, e-mail a Helyszínen (személyes adat)"),
         Feature(AUDIO, "🎙", "Hangjegyzet", "hangfelvétel, ha nincs beszédfelismerő"),
         Feature(CSERE_OLD, "↻", "Csere címke régi felmérésben", "megnyitáskor kiegészíti a címkéket"),
         Feature(LINE_CLOSE, "⌇", "Vonal: Kész zár", "a variáns lineClose beállítása (szoba / kérdés)"),
+        Feature(REPORT, "📄", "Jegyzőkönyv a telefonon", "Rendezés → Jegyzőkönyv: nyomtatás / PDF, Átadás"),
     )
 
     fun of(id: String) = ALL.firstOrNull { it.id == id }

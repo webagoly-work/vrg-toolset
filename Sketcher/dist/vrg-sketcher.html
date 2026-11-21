@@ -1008,7 +1008,7 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     // 6 the drawing
     h += sec('Vázlat', m.planSvg && /<svg/.test(m.planSvg) ? '<div class="rajz" id="rajz">' + m.planSvg + '</div><p class="apro">Piros: tervezett pont · szürke: meglévő · szaggatott fal: becsült méret.</p>' : '');
     // 7 the photos by purpose
-    const fig = p => '<figure data-cap="' + esc(p.id) + '">' + (p.kind === 'video' ? '<div class="nincs">▶ videó ' + esc(p.id) + '</div>' : p.url ? '<img src="' + esc(p.url) + '" alt="">' : '<div class="nincs">' + esc(p.id) + ' (nincs csatolva)</div>') +
+    const fig = p => '<figure data-cap="' + esc(p.id) + '">' + (p.kind === 'video' ? '<div class="nincs">▶ videó ' + esc(p.id) + '</div>' : p.url ? '<img src="' + esc(p.url) + '" alt="">' : p.privacy ? '<div class="nincs">' + esc(p.id) + ' · személyes adat, elmosás nélkül nem kerül bele</div>' : '<div class="nincs">' + esc(p.id) + ' (nincs csatolva)</div>') +
       '<figcaption>' + esc([p.caption, p.room, p.phase === 'elotte' ? 'előtte' : p.phase === 'utana' ? 'utána' : '', p.at].filter(Boolean).join(' · ')) + '</figcaption></figure>';
     h += sec('Fotók', m.photos.map(g => '<h3>' + esc(g.sym + ' ' + g.label) + ' <span class="apro">(' + g.items.length + ')</span></h3><div class="fotok">' + g.items.map(fig).join('') + '</div>').join('') +
       (m.audio.length ? '<h3>🎙 Hangjegyzetek</h3><ul class="lista" id="hang">' + m.audio.map(a => '<li>' + esc(a.id) + ' · ' + esc(dur(a.durationMs)) + (a.caption ? ' · ' + esc(a.caption) : '') + ' <span class="apro">' + esc(a.at) + '</span></li>').join('') + '</ul>' : ''));

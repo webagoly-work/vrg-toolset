@@ -21,9 +21,15 @@ android {
 // The VRG Sketcher field kit and its variants come from the repo's Sketcher/ folder, the same files the Desktop page
 // inlines (docs/sketcher/README.md section 4): one source, copied into the APK's assets (sketcher/...) at build time.
 // Registered through AGP's generated-sources hook, so every task that reads assets (merge, lint) depends on it.
+// F9 (WP M54, D-121): the Felmérési jegyzőkönyv's renderer, the Desktop's own files from Sketcher/lib, into
+// assets sketcher/report/. Sketcher/test/report-phone.test.js checks this list; the task checks every copy byte for byte.
+val REPORT_ASSETS = listOf("fieldkit.js", "report.js", "report-phone.js")
+
 abstract class SketcherAssets : DefaultTask() {
     @get:InputDirectory abstract val catalog: DirectoryProperty
     @get:InputDirectory abstract val variants: DirectoryProperty
+    @get:InputDirectory abstract val lib: DirectoryProperty
+    @get:Input abstract val report: ListProperty<String>
     @get:OutputDirectory abstract val out: DirectoryProperty
 
     @TaskAction fun copy() {
@@ -33,12 +39,20 @@ abstract class SketcherAssets : DefaultTask() {
         catalog.get().file("fieldkit.json").asFile.copyTo(File(o, "sketcher/fieldkit.json"), true)
         catalog.get().file("takeoff.json").asFile.copyTo(File(o, "sketcher/takeoff.json"), true)
         variants.get().asFile.listFiles { f -> f.name.endsWith(".json") }?.forEach { it.copyTo(File(o, "sketcher/variants/" + it.name), true) }
+        File(o, "sketcher/report").mkdirs()
+        report.get().forEach { n ->
+            val src = lib.get().file(n).asFile
+            val dst = src.copyTo(File(o, "sketcher/report/" + n), true)
+            check(dst.readBytes().contentEquals(src.readBytes())) { "sketcher/report/" + n + " differs from Sketcher/lib/" + n }
+        }
     }
 }
 
 val sketcherAssets = tasks.register<SketcherAssets>("sketcherAssets") {
     catalog.set(rootProject.file("../../Sketcher/catalog"))
     variants.set(rootProject.file("../../Sketcher/variants"))
+    lib.set(rootProject.file("../../Sketcher/lib"))
+    report.set(REPORT_ASSETS)
     out.set(layout.buildDirectory.dir("generated/sketcher-assets"))
 }
 androidComponents {
