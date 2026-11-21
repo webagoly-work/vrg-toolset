@@ -80,6 +80,7 @@ import androidx.compose.ui.window.DialogProperties
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.Camera2
+import hu.vrg.mobile.sketch.CameraFeatures
 import hu.vrg.mobile.sketch.Capture
 import hu.vrg.mobile.sketch.CaptureKind
 import hu.vrg.mobile.sketch.Intake
@@ -88,7 +89,10 @@ import hu.vrg.mobile.sketch.MarkKind
 import hu.vrg.mobile.sketch.Pt
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.TypePlate
+import hu.vrg.mobile.sketch.vision.FaceFinder
 import hu.vrg.mobile.sketch.vision.TextReader
+import hu.vrg.mobile.kit.ui.VrgToggle
+import androidx.compose.ui.graphics.PathEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -110,13 +114,32 @@ class Cam2State {
     /** Photos waiting for the type-plate reader, and the one being read now. */
     var readQueue by mutableStateOf<List<String>>(emptyList())
     var reading by mutableStateOf<String?>(null)
+    /** The switched-off features (CameraFeatures, D-62; the phone's preference, loaded by OcrRunner). */
+    var off by mutableStateOf<Set<String>>(emptySet())
+    var saveOff: (Set<String>) -> Unit = {}
+    /** Face finding: the queue, the photo being searched, the blur rectangles proposed per photo (not yet accepted). */
+    var faceQueue by mutableStateOf<List<String>>(emptyList())
+    var finding by mutableStateOf<String?>(null)
+    var faces by mutableStateOf<Map<String, List<Mark>>>(emptyMap())
+
+    fun on(id: String) = CameraFeatures.on(off, id)
+    fun setOff(next: Set<String>) { off = next; saveOff(next) }
 
     fun taken(st: EditorState, req: CameraReq, id: String) {
-        again = req.copy(pairOf = null); againAt = System.currentTimeMillis()
-        st.sketch.capture(id)?.let { if (TypePlate.readsByItself(it)) read(id) }
+        if (on(CameraFeatures.AGAIN)) { again = req.copy(pairOf = null); againAt = System.currentTimeMillis() }
+        st.sketch.capture(id)?.let { if (on(CameraFeatures.OCR_AUTO) && TypePlate.readsByItself(it)) read(id) }
     }
 
-    fun read(id: String) { if (id !in readQueue && id != reading) readQueue = readQueue + id }
+    fun read(id: String) { if (on(CameraFeatures.OCR) && id !in readQueue && id != reading) readQueue = readQueue + id }
+    fun findFaces(id: String) { if (on(CameraFeatures.FACES) && id !in faceQueue && id != finding) faceQueue = faceQueue + id }
+    fun dropFaces(id: String) { faces = faces - id }
+}
+
+/** The feature switches, one per phone (SharedPreferences "sketcher-camera"; only the switched-off ids are stored). */
+internal object CameraPrefs {
+    private const val KEY = "off"
+    fun off(ctx: Context): Set<String> = CameraFeatures.read(ctx.getSharedPreferences("sketcher-camera", Context.MODE_PRIVATE).getString(KEY, ""))
+    fun save(ctx: Context, off: Set<String>) { ctx.getSharedPreferences("sketcher-camera", Context.MODE_PRIVATE).edit().putString(KEY, CameraFeatures.write(off)).apply() }
 }
 
 // ---- the editor's Kamera 2 actions ------------------------------------------------------------------------------------
@@ -156,6 +179,12 @@ internal fun EditorState.ocrDone(id: String, text: String?) {
 /** Runs the type-plate reader on the queued photos, one at a time, off the main thread. Placed once on the editor. */
 @Composable
 internal fun OcrRunner(st: EditorState) {
+    val ctx = LocalContext.current
+    LaunchedEffect(Unit) {
+        st.cam2.off = withContext(Dispatchers.IO) { CameraPrefs.off(ctx) }
+        st.cam2.saveOff = { o -> CameraPrefs.save(ctx, o) }
+    }
+    FaceRunner(st)
     val head = st.cam2.readQueue.firstOrNull()
     LaunchedEffect(head) {
         val id = head ?: return@LaunchedEffect
@@ -169,6 +198,41 @@ internal fun OcrRunner(st: EditorState) {
         if (c != null) st.ocrDone(id, text)
         st.cam2.readQueue = st.cam2.readQueue - id
     }
+}
+
+/** Finds faces on the queued photos and keeps them as blur proposals (accepted or dropped in the viewer, D-56 = B). */
+@Composable
+private fun FaceRunner(st: EditorState) {
+    val head = st.cam2.faceQueue.firstOrNull()
+    LaunchedEffect(head) {
+        val id = head ?: return@LaunchedEffect
+        val dir = st.photoDir
+        val c = st.sketch.capture(id)
+        st.cam2.finding = id
+        val boxes = if (c == null || dir == null) null else withContext(Dispatchers.Default) {
+            loadPhoto(File(dir, c.file), 1600)?.let { FaceFinder.default.find(it) }
+        }
+        st.cam2.finding = null
+        if (c != null) {
+            if (boxes == null) st.note = "☺ Az arckeresés nem sikerült ezen a képen."
+            else {
+                val p = CameraFeatures.proposals(boxes.map { CameraFeatures.Box(it[0].toDouble(), it[1].toDouble(), it[2].toDouble(), it[3].toDouble()) }, c.marks)
+                st.cam2.faces = if (p.isEmpty()) st.cam2.faces - id else st.cam2.faces + (id to p)
+                st.note = if (p.isEmpty()) "☺ Nem találtam (új) arcot." else "☺ ${p.size} arc: az elmosás jóváhagyásra vár a fotón."
+            }
+        }
+        st.cam2.faceQueue = st.cam2.faceQueue - id
+    }
+}
+
+/** A proposed blur (a face): dashed outline over a light veil, until accepted. */
+internal fun DrawScope.drawProposal(m: Mark) {
+    if (m.pts.size < 2) return
+    val a = Offset((m.pts[0].x * size.width).toFloat(), (m.pts[0].y * size.height).toFloat())
+    val b = Offset((m.pts[1].x * size.width).toFloat(), (m.pts[1].y * size.height).toFloat())
+    val tl = Offset(min(a.x, b.x), min(a.y, b.y)); val sz = Size(kotlin.math.abs(b.x - a.x), kotlin.math.abs(b.y - a.y))
+    drawRect(Color(0x55D64545), tl, sz)
+    drawRect(Color(0xFFD64545), tl, sz, style = Stroke(2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f))))
 }
 
 // ---- files ------------------------------------------------------------------------------------------------------------
@@ -292,13 +356,15 @@ internal fun copyWithoutGps(src: File, out: File): File? {
  * What one capture sends with the package (D-57): the main file under its board name (a photo with blur only blurred,
  * its GPS removed unless kept), a "_jel" copy with the markup burned in, the video or the signature as they are.
  */
-internal fun exportCapture(s: Sketch, c: Capture, src: File, out: File): List<File> {
+internal fun exportCapture(s: Sketch, c: Capture, src: File, out: File, stripGps: Boolean = true): List<File> {
     if (!src.exists()) return emptyList()
     val name = Intake.exportName(s, c)
     if (c.kind != CaptureKind.PHOTO) return listOf(File(out, name).also { src.copyTo(it, overwrite = true) })
-    val plan = Camera2.exportPlan(c)
+    val plan = Camera2.exportPlan(c, stripGps)
     val made = if (plan.burnBlur) {
         burnMarks(src, c.marks.filter { it.kind.blur }, File(out, name))
+    } else if (plan.gps) {
+        File(out, name).also { src.copyTo(it, overwrite = true) }          // GPS kept: the camera's own copy
     } else {
         copyWithoutGps(src, File(out, name))
     }
@@ -318,7 +384,7 @@ internal fun mimeOf(f: File) = when (f.extension.lowercase()) { "mp4" -> "video/
 internal fun AgainPill(st: EditorState, modifier: Modifier) {
     val r = st.cam2.again ?: return
     LaunchedEffect(st.cam2.againAt) { delay(9000); st.cam2.again = null }
-    if (st.series) return
+    if (st.series || !st.cam2.on(CameraFeatures.AGAIN)) return
     val p = st.kit.purpose(r.purpose)
     val col = Color(p?.color ?: 0xFF2A8CDB)
     Row(modifier.clip(RoundedCornerShape(50)).background(Melyviz.raised).border(1.dp, col, RoundedCornerShape(50))
@@ -334,7 +400,7 @@ internal fun AgainPill(st: EditorState, modifier: Modifier) {
 @Composable
 internal fun QuickRow(st: EditorState, close: () -> Unit) {
     val miss = remember(st.sketch, st.kit) { Camera2.nextMissing(st.kit, st.sketch) }
-    if (miss.isNotEmpty()) {
+    if (miss.isNotEmpty() && st.cam2.on(CameraFeatures.QUICK)) {
         Text("Hiányzik", style = Melyviz.small.copy(color = Melyviz.faint))
         miss.forEach { s -> key(s.item.id) {
             val p = st.kit.purpose(s.item.purpose); val c = Color(p?.color ?: 0xFF7D8590)
@@ -347,9 +413,9 @@ internal fun QuickRow(st: EditorState, close: () -> Unit) {
         } }
     }
     Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        BigTile("🎥", "Séta videó", Color(0xFF20A8A0)) { close(); st.shootVideo() }
-        BigTile("✍", "Aláírás", Color(0xFFB07A2A)) { close(); st.ask = Ask.Signature }
-        Camera2.recentPurposes(st.kit, st.sketch).forEach { id -> st.kit.purpose(id)?.let { p ->
+        if (st.cam2.on(CameraFeatures.VIDEO)) BigTile("🎥", "Séta videó", Color(0xFF20A8A0)) { close(); st.shootVideo() }
+        if (st.cam2.on(CameraFeatures.SIGNATURE)) BigTile("✍", "Aláírás", Color(0xFFB07A2A)) { close(); st.ask = Ask.Signature }
+        if (st.cam2.on(CameraFeatures.QUICK)) Camera2.recentPurposes(st.kit, st.sketch).forEach { id -> st.kit.purpose(id)?.let { p ->
             BigTile(p.sym, p.label, Color(p.color)) { close(); st.shoot(p.id) }
         } }
     }
@@ -397,14 +463,15 @@ internal fun Camera2Section(st: EditorState) {
     val s = st.sketch
     Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         val vids = s.captures.count { it.kind == CaptureKind.VIDEO }; val sigs = Camera2.signatures(s).size
-        BigTile("🎥", "Séta videó" + if (vids > 0) " ($vids)" else "", Color(0xFF20A8A0)) { st.shootVideo() }
-        BigTile("✍", "Aláírás" + if (sigs > 0) " ($sigs)" else "", Color(0xFFB07A2A)) { st.ask = Ask.Signature }
+        if (st.cam2.on(CameraFeatures.VIDEO)) BigTile("🎥", "Séta videó" + if (vids > 0) " ($vids)" else "", Color(0xFF20A8A0)) { st.shootVideo() }
+        if (st.cam2.on(CameraFeatures.SIGNATURE)) BigTile("✍", "Aláírás" + if (sigs > 0) " ($sigs)" else "", Color(0xFFB07A2A)) { st.ask = Ask.Signature }
+        BigTile("⚙", "Funkciók", Melyviz.faint) { st.ask = Ask.PluginSheet }
     }
     val open = Camera2.privacyOpen(s)
-    if (open.isNotEmpty()) Text("👤 ${open.size} személyes fotón még nincs elmosás: koppints, ✎ Jelölés → ▦ / ▒",
+    if (open.isNotEmpty() && st.cam2.on(CameraFeatures.PRIVACY)) Text("👤 ${open.size} személyes fotón még nincs elmosás: koppints, ✎ Jelölés → ▦ / ▒",
         style = Melyviz.small.copy(color = Melyviz.coral), modifier = Modifier.padding(top = 8.dp).clickable { st.ask = Ask.CaptureView(open.first().id) })
     val reads = s.captures.filter { c -> c.ocr.any { !it.used && !it.dropped } }
-    if (reads.isNotEmpty() || st.cam2.reading != null) {
+    if ((reads.isNotEmpty() || st.cam2.reading != null) && st.cam2.on(CameraFeatures.OCR)) {
         Text("▤ Kiolvasva" + if (st.cam2.reading != null) " · olvasás…" else "", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         reads.forEach { c -> key(c.id) {
             Row(verticalAlignment = Alignment.Top) {
@@ -414,7 +481,7 @@ internal fun Camera2Section(st: EditorState) {
         } }
     }
     val pairs = Camera2.pairs(s); val waiting = Camera2.waiting(s)
-    if (pairs.isNotEmpty() || waiting.isNotEmpty()) {
+    if ((pairs.isNotEmpty() || waiting.isNotEmpty()) && st.cam2.on(CameraFeatures.PAIRS)) {
         Text("◐ Előtte / utána", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             pairs.forEach { (b, a) -> key(b.id + a.id) {
@@ -456,6 +523,8 @@ internal fun OcrChips(st: EditorState, c: Capture) {
 @Composable
 internal fun PhotoExtras(st: EditorState, c: Capture) {
     val s = st.sketch
+    val cam = st.cam2
+    if (cam.on(CameraFeatures.OCR)) {
     Text("▤ Adattábla, címke", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         val busy = st.cam2.reading == c.id || c.id in st.cam2.readQueue
@@ -463,19 +532,34 @@ internal fun PhotoExtras(st: EditorState, c: Capture) {
         if (c.ocrAt > 0 && c.ocr.isEmpty()) Text("nem találtam értéket", style = Melyviz.small.copy(color = Melyviz.faint))
     }
     if (c.ocr.isNotEmpty()) Box(Modifier.padding(top = 6.dp)) { Column { OcrChips(st, c) } }
+    }
 
     Text("Adatvédelem", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Pill(if (c.privacy) "👤 Személyes adat" else "👤 Nincs személyes adat", Melyviz.coral, c.privacy) {
+        if (cam.on(CameraFeatures.PRIVACY)) Pill(if (c.privacy) "👤 Személyes adat" else "👤 Nincs személyes adat", Melyviz.coral, c.privacy) {
+            val turningOn = !c.privacy
             st.editCapture(c.id) { it.copy(privacy = !it.privacy, keepGps = if (!it.privacy) false else it.keepGps) }
+            if (turningOn && cam.on(CameraFeatures.FACES_AUTO)) cam.findFaces(c.id)
         }
-        if (c.lat != null && !c.privacy) Pill(if (c.keepGps) "⌖ GPS a kiadott képen marad" else "⌖ GPS kiadáskor törlődik", st.frontColor("helyszin"), c.keepGps) {
+        if (c.lat != null && !c.privacy && cam.on(CameraFeatures.GPS_STRIP)) Pill(if (c.keepGps) "⌖ GPS a kiadott képen marad" else "⌖ GPS kiadáskor törlődik", st.frontColor("helyszin"), c.keepGps) {
             st.editCapture(c.id) { it.copy(keepGps = !it.keepGps) }
         }
+        if (cam.on(CameraFeatures.FACES)) {
+            val busy = cam.finding == c.id || c.id in cam.faceQueue
+            Pill(if (busy) "☺ Keresés…" else "☺ Arcok keresése", Melyviz.coral, busy) { cam.findFaces(c.id) }
+        }
     }
-    if (c.privacy && c.marks.none { it.kind.blur }) Text("Mosd el az arcot, a házszámot, a nevet: ✎ Jelölés → ▦ téglalap / ▒ ecset.",
+    cam.faces[c.id]?.takeIf { it.isNotEmpty() }?.let { prop ->
+        Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("☺ ${prop.size} arc", style = Melyviz.small.copy(color = Melyviz.coral))
+            Pill("✓ Elmosás", Melyviz.coral, true) { st.editCapture(c.id) { it.copy(marks = it.marks + prop) }; cam.dropFaces(c.id) }
+            Pill("✕", Melyviz.faint, false) { cam.dropFaces(c.id) }
+        }
+    }
+    if (c.privacy && c.marks.none { it.kind.blur } && cam.on(CameraFeatures.BLUR)) Text("Mosd el az arcot, a házszámot, a nevet: ✎ Jelölés → ▦ téglalap / ▒ ecset.",
         style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp))
 
+    if (!cam.on(CameraFeatures.PAIRS)) return
     Text("◐ Előtte / utána", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
     val partner = if (c.phase == Camera2.AFTER) s.capture(c.pair) else Camera2.afterOf(s, c.id)
     val kam = st.frontColor("kamera")
@@ -705,3 +789,17 @@ private fun writeSignature(out: File, strokes: List<List<Offset>>, box: IntSize,
     out.outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     true
 } catch (e: Exception) { false }
+
+/** ⚙ → Kamera funkciók: every Kamera 2 feature on its own switch, and all at once (D-62). One setting per phone. */
+@Composable
+internal fun CameraFeatureSection(st: EditorState) {
+    val cam = st.cam2
+    Text("Kamera funkciók (minden felmérésre)", style = Melyviz.label.copy(color = st.frontColor("kamera")), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+    VrgToggle("Mind", CameraFeatures.allOn(cam.off)) { cam.setOff(CameraFeatures.all(it)) }
+    CameraFeatures.ALL.forEach { f ->
+        val need = f.needs
+        val blocked = need != null && !cam.on(need)
+        VrgToggle(f.sym + " " + f.label + ": " + f.blurb + if (blocked) " (előbb: " + (need?.let { CameraFeatures.of(it)?.label } ?: "") + ")" else "",
+            f.id !in cam.off && !blocked) { want -> if (!blocked || !want) cam.setOff(if (want) cam.off - f.id else cam.off + f.id) }
+    }
+}

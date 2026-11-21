@@ -69,10 +69,12 @@ object Camera2 {
      * never keeps it. A photo with blur leaves the phone only blurred. A plain photo without marks or blur is copied
      * as it is (and its GPS tag removed in place on the copy).
      */
-    fun exportPlan(c: Capture): ExportPlan {
+    fun exportPlan(c: Capture, stripGps: Boolean = true): ExportPlan {
         val blur = c.marks.any { it.kind.blur }
         val other = c.marks.any { !it.kind.blur }
-        return ExportPlan(burnBlur = blur && c.kind == CaptureKind.PHOTO, marked = other && c.kind == CaptureKind.PHOTO, gps = c.keepGps && !c.privacy && c.kind == CaptureKind.PHOTO)
+        // [stripGps] = the "GPS törlése kiadáskor" switch (CameraFeatures, D-62); a personal photo loses it regardless
+        return ExportPlan(burnBlur = blur && c.kind == CaptureKind.PHOTO, marked = other && c.kind == CaptureKind.PHOTO,
+            gps = (c.keepGps || !stripGps) && !c.privacy && c.kind == CaptureKind.PHOTO)
     }
 
     /** Personal-data photos with nothing blurred yet: a loose end before the package goes. */

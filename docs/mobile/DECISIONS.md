@@ -493,11 +493,14 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   services and a first download). **Rule:** a finding is offered as a chip and fills an answer or a note line only
   when tapped; label photos (purpose *Típustábla*, the label items of the shot list) are read by themselves, others on
   a tap. Details: `WP/M46.md`.
-- **D-56 · Kamera 2: no automatic face detection for now (M46), 2026-11-20.** Taken in fork F3. ML Kit's bundled face
-  model adds about 6.9 MB per architecture (the unbundled one needs Play services), more than the brief's "only if it
-  stays small". The manual blur (▦ rectangle, ▒ brush) covers faces, house numbers and names. **Later step:**
-  `sketch-vision` gets a `FaceFinder` beside `TextReader` that proposes blur rectangles on photos flagged
-  *Személyes adat*, if the size is accepted or a smaller model appears.
+- **D-56 · Kamera 2: automatic face detection, built in and switchable (M46), 2026-11-20 → answered 2026-11-21: B.**
+  Proposed A (no face detection: ML Kit's bundled face model adds about 6.9 MB per architecture); the Founder chose
+  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-62).
+  `sketch-vision` `FaceFinder` (`com.google.mlkit:face-detection:16.1.7`, bundled, accurate mode, faces from 5 % of the
+  picture) beside `TextReader`; `sketch-core` `CameraFeatures.proposals` turns each face into a blur rectangle grown by
+  20 % and clipped, never twice over an existing one. The rectangles are only **proposed** (dashed red over the photo,
+  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-62).
+  The APK grows by about 14 MB more (two ARM architectures).
 - **D-57 · Kamera 2: GPS is stripped from exported copies by default (M46), 2026-11-20.** Taken in fork F3. Every
   photo that leaves the phone (the package's purpose photos and Fotópont photos, variant-request photos) has its EXIF
   position removed; when the rewrite fails the copy is re-encoded without EXIF rather than sent with it. Per photo
@@ -505,7 +508,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   record). A photo flagged **Személyes adat** never keeps it. A photo with a blur mark leaves the phone **only blurred**
   (the original stays on the phone); personal photos, videos and signatures are never offered for a variant request
   (which ends up in Git). Rejected: keeping GPS by default (a photo forwarded from the PC to a supplier or a client
-  carries the client's address in its metadata).
+  carries the client's address in its metadata). **Answered 2026-11-21: A** (stripped by default, kept per photo); the
+  strip itself is a switch too (D-62: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
 - **D-58 · Kamera 2: before / after is a pair by reference, compared with a slider (M46), 2026-11-20.** Taken in fork F3.
   The after-photo names its before (`phase` utana + `pair`); one after per before (a new one replaces the old). The
   candidates are earlier photos of the same purpose, the same room first, then the same shot item, the newest first.
@@ -516,7 +520,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   under the strokes and stored on the capture (purpose *dokumentum*, kind *signature*); exported as `…_alairas.png`.
   It is a record of consent on site, **not** a qualified electronic signature. It fills no shot-list item (otherwise it
   would tick *A régi dokumentáció*); the Kotlin and JS engines both skip it, the fixture checks it. The statement texts
-  are to be confirmed by the Founder (question 2 of the F3 report).
+  are to be confirmed by the Founder (question 2 of the F3 report). **Answered 2026-11-21: A** (the texts stay; the
+  Founder refines them later).
 - **D-60 · Kamera 2: the walk video goes through the camera app, limited and warned (M46), 2026-11-20.** Taken in fork F3.
   CaptureVideo with `EXTRA_DURATION_LIMIT` 90 s and `EXTRA_SIZE_LIMIT` 150 MB (most camera apps honour them); a warning
   over 80 MB or a long video; no re-compression on the phone (no extra library). Purpose *Nyomvonal* unless chosen
@@ -525,6 +530,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
   three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
   (not during Sorozat, which already returns to the camera).
+
+- **D-62 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
+  The Founder, answering F3's question 3: *"my general approach towards features modularity: … I would default to have
+  upcoming features and programs be integrated so we have them, but everything generally should be modular in its core
+  design (with settings behind features to tinker with them, toggle each or all features as it pleases for high level
+  customizations and user preference first design)."* **Rule for every WP from now on:** when a feature is optional,
+  build it rather than leave it out; give it a switch (and a switch for the whole group) in the place the user tunes
+  that tool; default on; a feature that needs another goes off with it; the stored setting lists only what is OFF, so
+  a feature added later arrives on. First applied: Kamera 2 (M46), `sketch-core` `CameraFeatures` (12 switches: szöveg
+  kiolvasása, címkefotó magától, elmosás, arckeresés, arckeresés személyes fotón, személyes adat, GPS törlése,
+  előtte / utána, aláírás, séta videó, hiányzók elöl, „+ még”), one setting per phone in ⚙ → *Kamera funkciók* (and the
+  Kamera front's ⚙ Funkciók tile).
 
 ## Open (to ask when the WP that needs them starts)
 
