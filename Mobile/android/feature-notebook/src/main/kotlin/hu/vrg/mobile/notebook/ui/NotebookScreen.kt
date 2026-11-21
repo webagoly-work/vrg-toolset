@@ -312,12 +312,14 @@ private fun EditPlace(host: FeatureHost, store: Store, lib: Library, start: Entr
             VrgSectionTitle("Gyors jelölés")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 chips.forEach { c ->
-                    val on = (c.tag != null && c.tag in e.tags) || (c.open && e.open && c.tag == null)
+                    val tag: String? = c.tag
+                    val ctype: String? = c.type
+                    val on = (tag != null && tag in e.tags) || (c.open && e.open && tag == null)
                     VrgChip("${c.sym} ${c.label}", selected = on) {
                         var n = e
-                        if (c.tag != null) n = n.copy(tags = if (c.tag in n.tags) n.tags - c.tag else n.tags + c.tag)
+                        if (tag != null) n = n.copy(tags = if (tag in n.tags) n.tags - tag else n.tags + tag)
                         if (c.open) n = n.copy(open = !on)
-                        if (c.type != null && kit?.type(c.type) != null) n = n.copy(type = c.type)
+                        if (ctype != null && kit?.type(ctype) != null) n = n.copy(type = ctype)
                         e = n
                     }
                 }
