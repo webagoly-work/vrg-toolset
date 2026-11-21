@@ -794,8 +794,8 @@ internal fun CameraFeatureSection(st: EditorState) {
     Text("Kamera funkciók (minden felmérésre)", style = Melyviz.label.copy(color = st.frontColor("kamera")), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
     VrgToggle("Mind", CameraFeatures.allOn(cam.off)) { cam.applyOff(CameraFeatures.all(it)) }
     CameraFeatures.ALL.forEach { f ->
-        val need = f.needs
-        val blocked = need != null && !cam.on(need)
+        val need = (listOfNotNull(f.needs) + f.also).firstOrNull { !cam.on(it) }      // M52: [also] prerequisites too
+        val blocked = need != null
         VrgToggle(f.sym + " " + f.label + ": " + f.blurb + if (blocked) " (előbb: " + (need?.let { CameraFeatures.of(it)?.label } ?: "") + ")" else "",
             f.id !in cam.off && !blocked) { want -> if (!blocked || !want) cam.applyOff(if (want) cam.off - f.id else cam.off + f.id) }
     }

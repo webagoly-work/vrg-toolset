@@ -464,6 +464,64 @@
      ]
     },
     {
+     "n": 52,
+     "title": "M52 · Saját kamera: the in-app camera (ghost overlay, purpose on the viewfinder, series, torch, level)",
+     "items": [
+      {
+       "id": "M52.1",
+       "text": "◉ (koppintás) bármelyik nézetből: a **VRG saját kamerája** nyílik (nem a telefon kamera-appja). Felül a cél színes jelvénye, a szoba (⌂) és a darabszám; lent az exponáló gomb a cél színével."
+      },
+      {
+       "id": "M52.2",
+       "text": "Egy fotó: rövid villanás, bal alsó sarokban a kis kép, a darabszám nő; a kamera **nyitva marad**. Még kettő, majd **✓ 3**: „◉ Sorozat vége · 3 fotó”; a Kamera nézet galériájában ott a három kép a céllal és a szobával."
+      },
+      {
+       "id": "M52.3",
+       "text": "Sorozat közben a kis képen **↶**: az utolsó fotó eltűnik (a galériából is); a szerkesztő visszavonása visszahozza."
+      },
+      {
+       "id": "M52.4",
+       "text": "A cél jelvényére koppintva a **sáv**: elöl piros pöttyös, kis felirattal a hiányzó képlista-tételek, utána a célok csak jellel. Egy hiányzó tételt választva a darabszám „0/1” lesz; fotó után a sáv következő hiányzója jön."
+      },
+      {
+       "id": "M52.5",
+       "text": "A ⌂ szoba-chip koppintásra végigmegy a szobákon (és „—”); az így készült fotó a viewerben azt a szobát mutatja."
+      },
+      {
+       "id": "M52.6",
+       "text": "Egy hibáról fotó → viewer → **◑ Utána fotó**: a keresőn **áttetszőn az előtte-kép**; a csúszkával erősebb / halványabb, ◐ elrejti. Fotó után a szellemkép eltűnik; a viewerben a ◐ Összevetés a párt mutatja."
+      },
+      {
+       "id": "M52.7",
+       "text": "Egy ◐ *Ez előtte-kép* jelölésű fotó céljával nyitva a kamerát: **◐ Előtte-kép (1)** chip; koppintva megjelenik a szellemkép, a következő fotó a párja lesz."
+      },
+      {
+       "id": "M52.8",
+       "text": "Sötét elosztószekrény: **ϟ** felkapcsolja a lámpát (újranyitáskor megint ki). Koppintás a képre: sárga kör, ott élesít; két ujjal nagyítás, felül „2,0×”."
+      },
+      {
+       "id": "M52.9",
+       "text": "A telefont döntve a **vízszintvonal** fordul, ±1°-on belül zöld, alatta a fok; a padlóra fordítva buborék lesz belőle. A **▦** gomb a harmadoló rácsot rejti / mutatja. Fekve (fektetett telefonnal) készült fotó a galériában is fekvő."
+      },
+      {
+       "id": "M52.10",
+       "text": "Helymeghatározás engedéllyel (Helyszín → Itt vagyok egyszer): a saját kamerás fotó viewerében **⌖ koordináta**; a kiadott képből a GPS ugyanúgy kikerül, mint eddig (M46 4. lépés)."
+      },
+      {
+       "id": "M52.11",
+       "text": "⚙ → **Kamera funkciók**: *Saját kamera* ki → a ◉ megint a telefon kamera-appját nyitja (M29 ⟳ Sorozat úgy működik, mint eddig). Vissza be; egyenként *Lámpa*, *Rács*, *Vízszintező*, *Szellemkép* ki: a gombjuk / vonaluk eltűnik. *Előtte / utána* ki: a *Szellemkép* is kikapcsol. *Sorozat a kamerában* ki: fotó után a kamera bezár."
+      },
+      {
+       "id": "M52.12",
+       "text": "Fotópont (Vázlat → szoba közepe → pont): a saját kamera egy fotó után bezár, és a húzással megadod az irányt, mint eddig."
+      },
+      {
+       "id": "M52.13",
+       "text": "Két telefonnal: a saját kamerás felmérés Átadással a PC-re / a másik telefonra — a Desktop oldal Kamera nézetében a képek ugyanúgy látszanak, semmi új vagy hibás jel nincs rajtuk."
+      }
+     ]
+    },
+    {
      "n": 30,
      "title": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
      "items": [
@@ -632,7 +690,7 @@
      ]
     }
    ],
-   "count": 64
+   "count": 77
   }
  },
  "cross": [

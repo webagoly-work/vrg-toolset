@@ -48,7 +48,7 @@ Symbols and colours, not text buttons. The same codes on the phone and the Deskt
 | Jegyzet | ✎ | amber `#e0b020` | M27: the conversation log: text or dictation, quick chips instead of typing, background suggestions |
 | Munkakör | ☰ | green `#3dae5a` | M28: what the job is and what the client wants (toggles, quantities), the scope card |
 | Kérdések | ? | orange `#e8641c` | M28: the shadow questionnaire: options + free text, appears as the job takes shape |
-| Kamera | ◉ | blue `#2a8cdb` | M29: purpose-tagged photos, the shot list, markup, series, gallery; M46: type-plate reading, blur and privacy on export, before / after, signature, walk video |
+| Kamera | ◉ | blue `#2a8cdb` | M29: purpose-tagged photos, the shot list, markup, series, gallery; M46: type-plate reading, blur and privacy on export, before / after, signature, walk video; M52: the in-app camera (purpose strip, series, ghost, torch, level, grid) |
 | Helyszín | ⌖ | violet `#8a5cd6` | M30: address, GPS, VRG Térkép, the building footprint against the sketch; M48: the outline drawn on the map, the sketch placed on the building |
 | Nyitott | ⚑ | red `#d64545` | M26: every loose end, one tap to jump to it |
 
@@ -126,7 +126,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84; the in-app camera (M52): D-100 … D-109.
 
 ## 7. Kamera 2 (M46)
 
@@ -163,12 +163,22 @@ Fork F5 (`docs/mobile/WP/M50.md`): the Planner's survey panel shows the **wants 
 (`ClientInfo.kt`, personal, D-82); a variant's `draw.lineClose` (`auto` / `ask`) says what the Vonal tool's Kész does;
 a phone without a speech recogniser records a **sound note** (capture kind `audio`, `.m4a`, `AudioNotes.kt`).
 
-## 11. Feature switches (M51)
+## 11. Saját kamera (M52)
+
+Fork F7 (`docs/mobile/WP/M52.md`): ◉ opens the Sketcher's **own camera** (CameraX, `feature-sketch` `LiveCamera.kt`)
+instead of the phone's camera app; the photo takes the same path into the survey, so the file format, the Desktop page
+and the exports do not change. On the viewfinder: the purpose badge and its strip (the shot list's next missing items
+first), the room, the count, a series until ✓ with the last thumbnail and ↶, the before-photo as a ghost for an
+after-photo, torch, tap-to-focus, pinch zoom, the level line and the grid. The pure half is `sketch-core`
+`CameraLive.kt`. Every part is a switch in ⚙ → Kamera funkciók; *Saját kamera* off (or CameraX failing on a phone)
+brings the camera app back.
+
+## 12. Feature switches (M51)
 
 Fork F6 (`docs/mobile/WP/M51.md`, D-91 … D-99), the Founder's rule D-90 for the whole Sketcher: **every feature has a
 switch, each group and everything has a Mind switch, everything is on by default** (except D-79's implied dedicated
 circuits), and the setting lists only what differs, so a new feature arrives on. The list is
-`Sketcher/catalog/features.json` (66 features in 9 groups: the 7 fronts, Variánsok, Rendezés / export); `sketch-core`
+`Sketcher/catalog/features.json` (73 features in 9 groups: the 7 fronts, Variánsok, Rendezés / export); `sketch-core`
 `Features.kt` and `Sketcher/lib/features.js` switch it the same way (fixture `test/fixtures/features.json`).
 
 - Per phone (⚙ → ⚙ Funkciók ›, or the Kamera front's ⚙ Funkciók tile) and per browser (the Desktop's ⚙ Funkciók front),
@@ -177,5 +187,5 @@ circuits), and the setting lists only what differs, so a new feature arrives on.
   the package); the survey's data stays, the package file is the same, privacy on export is unchanged.
 - A feature that needs another is greyed while that one is off; a front with nothing on leaves the front bar; a variant
   never brings back what the user switched off.
-- The camera's switches (F3) and F5's four are part of the list; their settings stay where they were saved.
+- The camera's switches (F3, F7's Saját kamera included) and F5's four are part of the list; their settings stay where they were saved.
 

@@ -104,7 +104,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
 - [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
-## B telefon — kamera és helyszín (64 lépés)
+## B telefon — kamera és helyszín (77 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -144,6 +144,22 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M46.10** ⚙ → **Kamera funkciók**: *Mind* ki → a ▤, ▦, ☺, 🎥, ✍, ◐ gombok eltűnnek; egyenként vissza. *Elmosás* ki: az *Arckeresés* is kikapcsol. Az app újraindítása után a beállítás megmarad (a másik telefonon külön állítható).
 - [ ] **M46.11** Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik.
 - [ ] **M46.12** Két telefonnal: az egyiken készült felmérést (aláírással, videóval, párral) Átadással a másikra / a PC-re küldve a Desktop oldal (START S) Kamera nézetében a kártyák, a pár és az aláírás látszanak; a videó a fájl csatolása után lejátszható.
+
+### M52 · Saját kamera: the in-app camera (ghost overlay, purpose on the viewfinder, series, torch, level)
+
+- [ ] **M52.1** ◉ (koppintás) bármelyik nézetből: a **VRG saját kamerája** nyílik (nem a telefon kamera-appja). Felül a cél színes jelvénye, a szoba (⌂) és a darabszám; lent az exponáló gomb a cél színével.
+- [ ] **M52.2** Egy fotó: rövid villanás, bal alsó sarokban a kis kép, a darabszám nő; a kamera **nyitva marad**. Még kettő, majd **✓ 3**: „◉ Sorozat vége · 3 fotó”; a Kamera nézet galériájában ott a három kép a céllal és a szobával.
+- [ ] **M52.3** Sorozat közben a kis képen **↶**: az utolsó fotó eltűnik (a galériából is); a szerkesztő visszavonása visszahozza.
+- [ ] **M52.4** A cél jelvényére koppintva a **sáv**: elöl piros pöttyös, kis felirattal a hiányzó képlista-tételek, utána a célok csak jellel. Egy hiányzó tételt választva a darabszám „0/1” lesz; fotó után a sáv következő hiányzója jön.
+- [ ] **M52.5** A ⌂ szoba-chip koppintásra végigmegy a szobákon (és „—”); az így készült fotó a viewerben azt a szobát mutatja.
+- [ ] **M52.6** Egy hibáról fotó → viewer → **◑ Utána fotó**: a keresőn **áttetszőn az előtte-kép**; a csúszkával erősebb / halványabb, ◐ elrejti. Fotó után a szellemkép eltűnik; a viewerben a ◐ Összevetés a párt mutatja.
+- [ ] **M52.7** Egy ◐ *Ez előtte-kép* jelölésű fotó céljával nyitva a kamerát: **◐ Előtte-kép (1)** chip; koppintva megjelenik a szellemkép, a következő fotó a párja lesz.
+- [ ] **M52.8** Sötét elosztószekrény: **ϟ** felkapcsolja a lámpát (újranyitáskor megint ki). Koppintás a képre: sárga kör, ott élesít; két ujjal nagyítás, felül „2,0×”.
+- [ ] **M52.9** A telefont döntve a **vízszintvonal** fordul, ±1°-on belül zöld, alatta a fok; a padlóra fordítva buborék lesz belőle. A **▦** gomb a harmadoló rácsot rejti / mutatja. Fekve (fektetett telefonnal) készült fotó a galériában is fekvő.
+- [ ] **M52.10** Helymeghatározás engedéllyel (Helyszín → Itt vagyok egyszer): a saját kamerás fotó viewerében **⌖ koordináta**; a kiadott képből a GPS ugyanúgy kikerül, mint eddig (M46 4. lépés).
+- [ ] **M52.11** ⚙ → **Kamera funkciók**: *Saját kamera* ki → a ◉ megint a telefon kamera-appját nyitja (M29 ⟳ Sorozat úgy működik, mint eddig). Vissza be; egyenként *Lámpa*, *Rács*, *Vízszintező*, *Szellemkép* ki: a gombjuk / vonaluk eltűnik. *Előtte / utána* ki: a *Szellemkép* is kikapcsol. *Sorozat a kamerában* ki: fotó után a kamera bezár.
+- [ ] **M52.12** Fotópont (Vázlat → szoba közepe → pont): a saját kamera egy fotó után bezár, és a húzással megadod az irányt, mint eddig.
+- [ ] **M52.13** Két telefonnal: a saját kamerás felmérés Átadással a PC-re / a másik telefonra — a Desktop oldal Kamera nézetében a képek ugyanúgy látszanak, semmi új vagy hibás jel nincs rajtuk.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

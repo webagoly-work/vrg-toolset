@@ -75,7 +75,8 @@
 
   // the stores (D-96): the phone's camera set (unprefixed), D-79's boolean, the general set
   // F3's CameraFeatures ids (sketch-core CameraFeatures.kt); FeaturesTest checks the list against it
-  const CAMERA_IDS = ['ocr', 'ocr_auto', 'blur', 'faces', 'faces_auto', 'privacy', 'gps_strip', 'pairs', 'signature', 'video', 'quick', 'again'];
+  const CAMERA_IDS = ['ocr', 'ocr_auto', 'blur', 'faces', 'faces_auto', 'privacy', 'gps_strip', 'pairs', 'signature', 'video', 'quick', 'again',
+    'live', 'live_gps', 'live_series', 'live_ghost', 'live_level', 'live_grid', 'live_torch'];   // F7 (M52): the in-app camera
   const isCam = id => id.startsWith('kamera.') && CAMERA_IDS.indexOf(id.slice(7)) >= 0;
   // F5's SketchFeatures ids (sketch-core SketchFeatures.kt, the phone's "sketcher-features" / off) → the registry's
   const SKETCH_IDS = { client: 'helyszin.client', audio: 'jegyzet.audio', csere_old: 'vazlat.csere_old', line_close: 'vazlat.line_close' };
