@@ -167,10 +167,10 @@ internal object SketchFeaturePrefs {
 
 /** ⚙ → Felmérés funkciók: each F5 feature on its own switch, and all at once (D-90). */
 @Composable
-internal fun SketchFeatureSection() {
+internal fun SketchFeatureSection(st: EditorState) {
     val ctx = LocalContext.current
     var off by remember { mutableStateOf(SketchFeaturePrefs.off(ctx)) }
-    val set = { o: Set<String> -> off = o; SketchFeaturePrefs.save(ctx, o) }
+    val set = { o: Set<String> -> off = o; st.featOff = o; SketchFeaturePrefs.save(ctx, o) }
     Text("Felmérés funkciók (minden felmérésre)", style = Melyviz.label, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
     VrgToggle("Mind", SketchFeatures.allOn(off)) { set(SketchFeatures.all(it)) }
     SketchFeatures.ALL.forEach { f -> VrgToggle(f.sym + " " + f.label + ": " + f.blurb, f.id !in off) { want -> set(if (want) off - f.id else off + f.id) } }

@@ -674,7 +674,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun setMeasure(room: String, kind: MeasureKind, mm: Int, edge: Int = -1) = edit(Ops.setMeasure(sketch, room, kind, mm, edge))
 
     // ---- F4 (WP M49): a variant's drawing tune (sketch-core DrawTune.kt); the original when none --------------------
-    val draw: DrawTune get() = variant?.draw ?: DrawTune()
+    /** F5 (D-90): the Felmérés funkciók switched off on this phone (SketchFeaturePrefs), set when the editor opens. */
+    var featOff by mutableStateOf<Set<String>>(emptySet())
+    val draw: DrawTune get() = hu.vrg.mobile.sketch.SketchFeatures.tune(featOff, variant?.draw ?: DrawTune())
     /** A corner onto a neighbour's wall line, else onto the variant's grid (in the sketch's current scale). */
     private fun corner(p: Pt, skip: String? = null) = Draw.corner(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY, skip)
     private fun roomMade(id: String, msg: String) {

@@ -29,6 +29,12 @@ class SketchFeaturesTest {
         assertNull(SketchFeatures.forExport(emptySet(), ClientInfo.setKeep(withAll, false)).client)
     }
 
+    @Test fun lineCloseFollowsItsSwitch() {
+        val t = DrawTune(snapAngle = 90, lineClose = "auto")
+        assertEquals(t, SketchFeatures.tune(emptySet(), t))
+        assertEquals(DrawTune(snapAngle = 90), SketchFeatures.tune(setOf(SketchFeatures.LINE_CLOSE), t))
+    }
+
     @Test fun csereOnOpenFollowsItsSwitch() {
         val old = s0.copy(tags = Tags.PRESETS.filter { it.preset != "replace" })
         assertTrue(SketchFeatures.onOpen(emptySet(), old).tags.any { it.preset == "replace" })

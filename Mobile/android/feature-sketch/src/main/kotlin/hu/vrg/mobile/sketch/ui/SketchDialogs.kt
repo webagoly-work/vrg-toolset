@@ -302,7 +302,7 @@ internal fun SketchDialogs(st: EditorState) {
                     }
                     VariantSection(st)
                     CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-90)
-                    SketchFeatureSection()          // F5 (WP M50): the client, the sound note, Csere on older surveys (D-90)
+                    SketchFeatureSection(st)        // F5 (WP M50): the client, the sound note, Csere on older surveys (D-90)
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

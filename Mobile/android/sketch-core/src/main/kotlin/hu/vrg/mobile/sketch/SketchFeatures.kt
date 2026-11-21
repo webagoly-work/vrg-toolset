@@ -9,11 +9,13 @@ object SketchFeatures {
     const val CLIENT = "client"
     const val AUDIO = "audio"
     const val CSERE_OLD = "csere_old"
+    const val LINE_CLOSE = "line_close"
 
     val ALL = listOf(
         Feature(CLIENT, "👤", "Ügyféladatok", "név, telefon, e-mail a Helyszínen (személyes adat)"),
         Feature(AUDIO, "🎙", "Hangjegyzet", "hangfelvétel, ha nincs beszédfelismerő"),
         Feature(CSERE_OLD, "↻", "Csere címke régi felmérésben", "megnyitáskor kiegészíti a címkéket"),
+        Feature(LINE_CLOSE, "⌇", "Vonal: Kész zár", "a variáns lineClose beállítása (szoba / kérdés)"),
     )
 
     fun of(id: String) = ALL.firstOrNull { it.id == id }
@@ -22,6 +24,9 @@ object SketchFeatures {
     fun allOn(off: Set<String>) = ALL.none { it.id in off }
     fun write(off: Set<String>) = off.sorted().joinToString(",")
     fun read(s: String?): Set<String> = s.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+
+    /** A variant's drawing tune with the switches applied: lineClose only when on (D-83). */
+    fun tune(off: Set<String>, t: DrawTune): DrawTune = if (on(off, LINE_CLOSE) || t.lineClose.isEmpty()) t else t.copy(lineClose = "")
 
     /** What the phone does when it opens a survey: the built-in Csere tag for an older one (D-80), when on. */
     fun onOpen(off: Set<String>, s: Sketch): Sketch = if (on(off, CSERE_OLD)) Tags.withBuiltins(s) else s
