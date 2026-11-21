@@ -233,7 +233,7 @@ object SiteLink {
     /** Where the map leaves its answer for the Sketcher, relative to the sketches' folder (files/sketch/). */
     fun handoffPath(id: String) = "handoff/$id.site.json"
 
-    fun payload(s: Sketch, norm: Norm): JSONObject {
+    fun payload(s: Sketch, norm: Norm, hide: List<String> = emptyList()): JSONObject {
         val site = s.site ?: Site()
         val o = JSONObject().put("kind", "vrg-site").put("v", V).put("id", s.id).put("name", s.name)
         site.lat?.let { o.put("lat", it) }; site.lon?.let { o.put("lon", it) }
@@ -243,6 +243,7 @@ object SiteLink {
         o.put("rooms", JSONArray().also { a -> SitePlace.rooms(norm).forEach { r ->
             a.put(JSONObject().put("name", r.name).put("poly", JSONArray().also { pa -> r.poly.forEach { pa.put(JSONArray().put(Math.round(it.x * 1000) / 1000.0).put(Math.round(it.y * 1000) / 1000.0)) } }))
         } })
+        if (hide.isNotEmpty()) o.put("hide", JSONArray(hide))   // M51: the switched-off site features (Features.mapHide)
         return o
     }
 

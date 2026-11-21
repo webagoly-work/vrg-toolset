@@ -113,9 +113,9 @@
     el.innerHTML =
       `<div class="h"><span style="color:${VIOLET}">⌖</span><span class="t">Helyszín · ${esc(S.name || 'Vázlat')}</span>` +
         `<button type="button" data-a="cancel" title="Bezárás mentés nélkül">✕</button><button type="button" class="go" data-a="done">✓ Kész</button></div>` +
-      `<div class="row"><button type="button" data-a="m-outline" aria-pressed="${mode === 'outline'}">▱ Körvonal</button>` +
-        `<button type="button" data-a="m-place" aria-pressed="${mode === 'place'}" ${S.rooms.length ? '' : 'disabled'}>◫ Vázlat</button>` +
-        `<button type="button" data-a="sat" aria-pressed="${sat}" title="Esri műholdkép, csak most, nem tárolódik">🛰 Műhold</button>` +
+      `<div class="row">` + (S.hide.includes('outline') ? '' : `<button type="button" data-a="m-outline" aria-pressed="${mode === 'outline'}">▱ Körvonal</button>`) +
+        (S.hide.includes('place') ? '' : `<button type="button" data-a="m-place" aria-pressed="${mode === 'place'}" ${S.rooms.length ? '' : 'disabled'}>◫ Vázlat</button>`) +
+        (S.hide.includes('satellite') ? '' : `<button type="button" data-a="sat" aria-pressed="${sat}" title="Esri műholdkép, csak most, nem tárolódik">🛰 Műhold</button>`) +
         (S.canCenter ? `<button type="button" data-a="center" title="A munka helye a térkép közepe lesz">⇣ Hely átvétele</button>` : '') + `</div>` +
       (mode === 'outline'
         ? `<div class="row"><button type="button" data-a="del" ${sel >= 0 ? '' : 'disabled'}>✕ Sarok</button><button type="button" data-a="undo" ${S.outline.length ? '' : 'disabled'}>↶ Utolsó</button>` +
@@ -212,9 +212,11 @@
     S = { id: String(data.id || ''), name: data.name || '', lat: typeof data.lat === 'number' ? data.lat : null, lon: typeof data.lon === 'number' ? data.lon : null,
       outline: (data.outline || []).filter(p => Array.isArray(p) && p.length >= 2).map(p => [+p[0], +p[1]]),
       src: data.outlineSrc || 'rajz', place: data.place && typeof data.place.lat === 'number' ? Object.assign({}, data.place) : null,
-      rooms: (data.rooms || []).filter(r => r.poly && r.poly.length >= 3), canCenter: !!opts.canCenter, center: null };
+      rooms: (data.rooms || []).filter(r => r.poly && r.poly.length >= 3), canCenter: !!opts.canCenter, center: null,
+      hide: Array.isArray(data.hide) ? data.hide.map(String) : [] };   // M51: the Sketcher's switched-off site features
     if (!['osm', 'rajz', 'muhold'].includes(S.src)) S.src = 'rajz';
     mode = S.outline.length >= 3 && S.rooms.length ? 'place' : 'outline';
+    if (S.hide.includes('outline') && !S.hide.includes('place')) mode = 'place'; else if (S.hide.includes('place')) mode = 'outline';
     if (mode === 'place' && !S.place) S.place = firstPlace();
     ensureLayers(); flat(true);
     const pts = S.outline.map(p => [p[1], p[0]]).concat(placedRings().flatMap(r => r.ring));

@@ -74,8 +74,12 @@ class JegyzokonyvTest {
     }
 
     @Test fun theSwitchIsInTheRegistry() {
-        assertEquals("📄", SketchFeatures.of(SketchFeatures.REPORT)?.sym)
-        assertTrue(SketchFeatures.on(emptySet(), SketchFeatures.REPORT), "new features arrive on (D-90)")
-        assertFalse(SketchFeatures.on(SketchFeatures.all(false), SketchFeatures.REPORT), "Mind off switches it off too")
+        val id = "export.report_phone"
+        assertEquals("📄", Features.of(id)?.sym); assertEquals("export", Features.of(id)?.front)
+        assertTrue(Features.on(emptySet(), id), "new features arrive on (D-90)")
+        assertFalse(Features.on(setOf("export.report"), id), "the Desktop's Jegyzőkönyv off takes the phone's with it")
+        assertEquals("export.report", Features.blockedBy(setOf("export.report"), id)?.id)
+        assertFalse(Features.on(Features.all(emptySet(), false), id), "Mind ki switches it off too")
+        assertTrue(SketchFeatures.ALL.none { it.id == "report" }, "not in F5's list: the registry owns it")
     }
 }
