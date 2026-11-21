@@ -1,6 +1,6 @@
 # VRG Sketcher — the takeoff (Munkakör lap) and its export contract
 
-*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M46 (`../mobile/WP/M46.md`), decisions D-55 … D-59.*
+*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M47 (`../mobile/WP/M47.md`), decisions D-67 … D-71.*
 
 The Founder: *"Some combination of selectable toggles can express the nature of the job but also can add concrete wants
 and needs to the order — the point is that these create the natural categorizations that **outline the scope and

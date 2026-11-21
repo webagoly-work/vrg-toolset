@@ -114,9 +114,9 @@ toggle in the top corner, switching between the original and the variant at any 
 | the catalog and variants | assets + `main` via GitHub | inlined + the repo |
 | VRG Térkép | embedded through the relay's port proxy (M8) when paired; GPS and OSM otherwise | embedded `localhost:8802/?embed=1` |
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
-| the takeoff (Munkakör lap, M46) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
+| the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-## 7. From survey to quote (M46)
+## 7. From survey to quote (M47)
 
 The scope toggles, the answers and the drawing together say how much work the job is. The **takeoff**
 (`Sketcher/lib/takeoff.js` and its Kotlin twin `sketch-core/Takeoff.kt`, rules in `Sketcher/catalog/takeoff.json`) turns
@@ -125,4 +125,4 @@ where it is a guess, ⚑ where an open question can still change it. It carries 
 (`vrg-sketch-takeoff` v1 + a Hungarian summary) is the hand-over to the Varler Workflow Kit on the PC; the contract and
 the brief for that session are in `TAKEOFF.md`. The Planner keeps the intake and the takeoff with the job.
 
-Decisions taken while building: D-27 … D-34 (M46: D-55 … D-59) in `docs/mobile/DECISIONS.md`.
+Decisions taken while building: D-27 … D-34 (M47: D-67 … D-71) in `docs/mobile/DECISIONS.md`.
