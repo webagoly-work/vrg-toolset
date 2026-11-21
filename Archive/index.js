@@ -4,6 +4,32 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "vrg-kisokos",
+   "title": "VRG Kisokos",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "board",
+   "summary": "Scope map of the offline work handbook: 8 axes and 4 rings around residential electrical work, 8 volumes, and sample pages for fixing technique, communication lines and the trades on site.",
+   "purpose": "To map out what the Kisokos knowledge base covers and which formats its cards use.",
+   "context": [
+    "New idea from the Founder: a Kisokos encyclopaedia for offline use",
+    "Fills the empty Atlas slot of the TUD group in the Kapu topology"
+   ],
+   "tags": [
+    "kisokos",
+    "knowledge-base",
+    "rogzitestechnika",
+    "protocols",
+    "trades",
+    "map"
+   ],
+   "file": "files/vrg-kisokos.html",
+   "url": "https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3"
+  },
+  {
    "id": "vrg-latoter",
    "title": "VRG Látótér",
    "created": "2026-11-20",
