@@ -114,3 +114,10 @@ code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; bord
 .tag.ok { color: var(--ok); }
 .tag.dim { opacity: .5; text-decoration: line-through; }
 .ocr { margin-top: 3px; }
+/* F1: the sketch on the building */
+svg.siteplace { width: 100%; max-height: 320px; background: var(--sunk); border: 1px solid var(--line2); border-radius: 6px; margin-bottom: 6px; }
+svg.siteplace .so { fill: rgba(138, 92, 214, 0.10); stroke: #8a5cd6; stroke-dasharray: 0.6 0.3; }
+svg.siteplace .sp { fill: rgba(39, 194, 176, 0.28); stroke: #137d72; }
+svg.siteplace .sb { stroke: #d64545; }
+svg.siteplace text { fill: var(--muted, #888); }
+#siteplace .ok { color: #3dae5a; } #siteplace .bad { color: #d64545; }

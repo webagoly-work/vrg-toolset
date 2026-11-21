@@ -63,6 +63,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
 | **M46** | Kamera 2 (in `sketch`) | **BETA** (built 2026-11-20 in fork F3, D-55 … D-61, waiting for the phone check): type-plate reading (ML Kit bundled, offline) offered as chips, blur marks + személyes adat + GPS stripped on export, before / after with a slider, client signature, walk video, the next missing shots first on the ◉ hold menu, „+ még” | camera | medium (`sketch-vision`, `TypePlate`, `Camera2`) |
+| **M48** | Helyszín ↔ Térkép (`sketch`, `map`) | **BETA** (built 2026-11-20 in fork F1, D-62 … D-66, waiting for the phone check): the Sketcher's Helyszín on the phone's own VRG Térkép, PC or not; the building outline drawn or corrected on the map, Esri satellite on a tap; the sketch placed on the building (fit, drag, turn) with the turn, offset and walls that stick out; the same on the Desktop; the map's W-layer break on the phone fixed | internet on a tap | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
