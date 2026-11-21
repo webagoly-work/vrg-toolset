@@ -557,12 +557,12 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
   fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
   entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
-- **D-77 · F5: Csere is a built-in tag; an older survey gets it on open (M50), 2026-11-21.** Taken in fork F5 (M47
-  question 1, recommended A). `Tags.PRESETS` gains *Csere* (`T-csere`, preset `replace`); the takeoff's `replaceTags`
-  already counted it (D-71). A survey made before has a stored tag list without it: the phone adds it when it opens one
-  that has neither a `replace` preset nor a tag named Csere, so the user's own *Csere* is not doubled. Rejected: adding it
+- **D-80 · F5: the built-in Csere tag reaches older surveys too (M50), 2026-11-21.** Taken in fork F5, extending D-77
+  (the Founder's A; F5 had built the same `T-csere` preset in parallel, the merge kept one). A survey made before has a
+  stored tag list without it: the phone adds it when it opens one that has neither a `replace` preset nor a tag named
+  Csere, so the user's own *Csere* is not doubled and still counts by name. Rejected: adding it
   while reading every file (it would change the read of shared fixtures and round trips), a third point state (D-71).
-- **D-78 · F5: the Felmérési jegyzőkönyv is the Desktop page's, built at run time, the browser paginates (M50),
+- **D-81 · F5: the Felmérési jegyzőkönyv is the Desktop page's, built at run time, the browser paginates (M50),
   2026-11-21.** Taken in fork F5. One document from the open survey (`Sketcher/lib/report.js`), opened in a window and
   printed to PDF by the browser; never stored, so no client data reaches Git. Varler Papír tokens, but not its fixed
   `.lap` sheets (D11 of the style study): a survey's length is unknown, so the page flows with `@page` margins and no
@@ -570,18 +570,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   and the takeoff together, and a Kotlin renderer would be a third engine to keep equal; the package to the PC and one
   button is enough. Rejected: a generated PDF (a library, fonts embedded), the Workflow Kit's offer generator (that is the
   quote, not the survey).
-- **D-79 · F5: the client's contact is personal: kept on the phone, stripped on export unless kept (M50), 2026-11-21.**
+- **D-82 · F5: the client's contact is personal: kept on the phone, stripped on export unless kept (M50), 2026-11-21.**
   Taken in fork F5, D-57's rule for GPS. Name, phone, e-mail (the address is the site's) in an optional `client` object;
   every copy that leaves the phone (the Rendezés package and its takeoff) drops it unless *A kiadott csomagban marad* is on;
   a variant request never reads it; no fixture carries it. The Desktop page and the Planner show it from the user's own
   file. Rejected: a client record across jobs (the Workflow Kit owns clients), always exporting it (a package forwarded
   to a colleague would carry a private person's phone number).
-- **D-80 · F5: lineClose auto / ask; no wallThickness (M50), 2026-11-21.** Taken in fork F5 (M49 left both out). `auto`:
+- **D-83 · F5: lineClose auto / ask; no wallThickness (M50), 2026-11-21.** Taken in fork F5 (M49 left both out). `auto`:
   the Vonal tool's Kész with 3+ corners makes a room, and closing on the first corner reaches twice as far; `ask`: Kész
   asks once (room or open line). Only Kész asks, so drawing a room by tapping its first corner never gets a dialog
   (D-74's worry). `wallThickness` stays out: the sketch's rooms are inner faces and the Planner imports floors, not walls,
   so nothing would read it; the variant check keeps rejecting it.
-- **D-81 · F5: no recogniser, a sound note (M50), 2026-11-21.** Taken in fork F5 (reverses the "not yet" of D-76). The app
+- **D-84 · F5: no recogniser, a sound note (M50), 2026-11-21.** Taken in fork F5 (reverses the "not yet" of D-76). The app
   records itself (MediaRecorder, AAC `.m4a`, at most 3 minutes) instead of asking a recorder app, which many phones lack;
   RECORD_AUDIO is asked on the first tap only. A capture of kind `audio`, purpose `hang` (not a photo purpose, so no shot
   list item and no takeoff photo; both engines skip it, pinned by the shared fixture). Shown only when the phone has no
@@ -630,8 +630,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   drawn points (1) give `max` = 4, ≈ with *Munkakör: 4, vázlat: 1*, so neither the client's word nor the half-finished
   drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
   line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
-- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit,
-  a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit
+  (since D-79 only with its toggle on), a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
   the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
   them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
   counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
@@ -644,6 +644,20 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
   file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
   Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
+
+- **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
+  preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
+  device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner
+  fixture `sketch-field.json` was refreshed for it. Rejected: **B** only a user-made tag. Details: `WP/M47.md`.
+- **D-78 · Cable reserve per end: 300 mm, 2026-11-21.** Asked: the Founder chose **A**. `cable.endReserveMm` stays 300
+  (`--reserve` on the CLI for one job). Rejected: **B** 500 mm, **C** another value.
+- **D-79 · Implied dedicated circuits: none by default, a general toggle, 2026-11-21.** Asked: the Founder chose **C**
+  ("should be toggle option to add these generally"). The takeoff assumes no dedicated circuit for the big machines and
+  systems (`impliedDedicated: false` in the rules); a check line says how many they may need. One toggle switches the
+  assumption on for every survey: on the phone the Munkakör lap's *◉ Dedikált kör a nagy gépeknek* (kept in the app's
+  settings), on the Desktop the same button (kept in the browser), on the CLI `--implied-dedicated`; the export records
+  it in `config.impliedDedicated`. On, they count as before (≈ with the reason). Rejected: **A** always on, **B** only
+  the hob, the oven and CEE.
 
 ## Open (to ask when the WP that needs them starts)
 

@@ -54,6 +54,7 @@
   {"id": "kaputelefon", "dedicated": 0},
   {"id": "vilagitas", "dedicated": 0}
  ],
+ "impliedDedicated": false,
  "boardScope": "eloszto",
  "newBoardQ": "uj_eloszto",
  "newBoardOpt": "igen",

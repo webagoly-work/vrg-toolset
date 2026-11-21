@@ -133,7 +133,7 @@ class SketchStore(private val dir: File) {
         .sortedByDescending { it.updated }
 
     fun load(id: String): Sketch? = file(id).takeIf { it.exists() }?.let { f ->
-        // F5 (D-77): an older survey gets the built-in Csere tag
+        // F5 (D-80): an older survey gets the built-in Csere tag
         try { SketchJson.read(f.readText())?.let(Tags::withBuiltins) } catch (e: Exception) { null }
     }
 

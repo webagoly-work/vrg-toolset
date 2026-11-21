@@ -39,7 +39,7 @@ import hu.vrg.mobile.sketch.Intake
 import kotlinx.coroutines.delay
 import java.io.File
 
-// F5 (WP M50, D-81): the dictation fallback. When the phone has no speech recogniser, the note's 🎤 offers
+// F5 (WP M50, D-84): the dictation fallback. When the phone has no speech recogniser, the note's 🎤 offers
 // "⏺ Hangjegyzet": a short recording (MediaRecorder, AAC .m4a, at most 3 minutes) kept as a capture of kind audio
 // (sketch-core AudioNotes.kt), played back here, exported with the package, listed on the Desktop page.
 

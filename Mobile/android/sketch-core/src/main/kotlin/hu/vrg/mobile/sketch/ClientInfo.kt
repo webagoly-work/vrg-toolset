@@ -2,7 +2,7 @@ package hu.vrg.mobile.sketch
 
 import org.json.JSONObject
 
-// F5 (WP M50, D-79): the client's contact on the survey, entered on the phone (Helyszín → Ügyfél). Name, phone and
+// F5 (WP M50, D-82): the client's contact on the survey, entered on the phone (Helyszín → Ügyfél). Name, phone and
 // e-mail; the address is the site's (Site.address), not stored twice. It is PERSONAL data, so the D-57 rule F3 used for
 // GPS applies: it stays in the survey file on the phone, and every copy that leaves the phone (the Rendezés package,
 // its takeoff, a share) has it stripped unless the user ticked "Ügyféladat a kiadott csomagban marad" (keep). It is

@@ -62,7 +62,11 @@
     return S;
   }
   // the takeoff (Munkakör lap, docs/sketcher/TAKEOFF.md): from the package's solved plan, or the raw sketch (all ≈)
-  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp() }); }
+  // D-79: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
+  const IMPLIED_KEY = 'vrg-sketcher-implied-dedicated';
+  let implied = (() => { try { return localStorage.getItem(IMPLIED_KEY) === '1'; } catch (e) { return !!RULES.impliedDedicated; } })();
+  function setImplied(on) { implied = !!on; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } }
+  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp(), impliedDedicated: implied }); }
   // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
   function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
   function download(text, name, type) {
@@ -259,6 +263,8 @@
       '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button></div>' +
       (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
       (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
+      '<div class="row"><button class="pill ' + (implied ? 'sel' : 'off') + '" id="tkimplied" data-act="tkimplied" style="--c:#3dae5a" title="Minden felmérésre ebben a böngészőben">' +
+      '<i>◉</i>Dedikált kör a nagy gépeknek (≈)</button></div>' +
       (t.checks.length ? '<div class="small" style="color:#e0b020">' + t.checks.map(esc).join('<br>') + '</div>' : '') +
       '<div class="small faint">' + (pkg ? 'Hosszak a megoldott tervből (mm).' : 'Nincs megoldott terv: a hosszak a vázlat léptékéből, mind ≈.') + ' Árat nem tartalmaz (Workflow Kit).</div></div>';
   }
@@ -324,7 +330,7 @@
       h += '<div class="small" style="color:' + esc(p.color) + '">' + esc(p.sym) + ' ' + esc(p.label) + ' (' + list.length + ')</div>' + list.map(capCard).join('');
     });
     const rest = caps.filter(c => !used.has(c.purpose || 'egyeb') && c.kind !== 'audio'); if (rest.length) h += rest.map(capCard).join('');
-    // F5 (WP M50, D-81): the sound notes (the dictation fallback), played once their .m4a is attached
+    // F5 (WP M50, D-84): the sound notes (the dictation fallback), played once their .m4a is attached
     const auds = caps.filter(c => c.kind === 'audio'); if (auds.length) h += '<h3 id="hangok">🎙 Hangjegyzetek (' + auds.length + ')</h3>' + auds.map(capCard).join('');
     if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
     h += vCamera2(caps);
@@ -391,7 +397,7 @@
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
     if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
-    // F5 (WP M50, D-79): the client's contact; the address is the site's. Personal: it stays in this file and the report
+    // F5 (WP M50, D-82): the client's contact; the address is the site's. Personal: it stays in this file and the report
     const cl = S.client || {};
     h += '<h3>👤 Ügyfél</h3><div class="card" id="client"><div class="kv"><b>Név</b><input type="text" data-client="name" value="' + esc(cl.name) + '">' +
       '<b>Telefon</b><input type="text" data-client="phone" value="' + esc(cl.phone) + '"><b>E-mail</b><input type="text" data-client="email" value="' + esc(cl.email) + '">' +
@@ -552,6 +558,7 @@
       case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
       case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
+      case 'tkimplied': setImplied(!implied); render(); break;
       case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
       case 'report': { if (S) { openReport(); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
@@ -604,7 +611,7 @@
         S.site = si;
       }, false);
       if (cur === 'helyszin') render();
-    } else if (t.dataset.client) {                    // F5 (WP M50, D-79): the client's contact, personal (sketch-core ClientInfo)
+    } else if (t.dataset.client) {                    // F5 (WP M50, D-82): the client's contact, personal (sketch-core ClientInfo)
       commit(() => {
         const c = Object.assign({ name: '', phone: '', email: '' }, S.client), key = t.dataset.client;
         if (key === 'keep') c.keep = t.checked; else c[key] = t.value.trim();
@@ -642,6 +649,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, reportHtml, openReport };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

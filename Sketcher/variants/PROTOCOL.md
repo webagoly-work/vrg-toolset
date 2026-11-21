@@ -26,7 +26,7 @@ What it can reshape (all optional; schema by example: `furdo-felujitas.json`, `e
 | `scopePreset` | munkakör toggles switched on when the variant is first chosen | `{scope id: qty}` from the kit |
 | `chips`, `scope`, `keywords`, `questions`, `shotlist`, `purposes` | extra quick chips, toggles, detectors, questions, shot-list items, photo purposes | the kit's shapes; a same `id` replaces the kit's entry |
 | `hints` | one line per tool shown while it is active | `{tool id: text}` |
-| `draw` | how the drawing tools behave (M49) | `{snapAngle: 0/15/30/45/90 (deg, the Vonal step), snapGrid: m (0-10), defaultRoom: {w, d} m (a tap lays it), measureFirst: bool, pointSnap: wall/free, lineClose: auto/ask (M50: what the Vonal's Kész does with 3+ corners)}`; all optional; there is no wall thickness (D-80); use it when the job's shape is regular (halls: 90°, a coarse grid, a big tap room) |
+| `draw` | how the drawing tools behave (M49) | `{snapAngle: 0/15/30/45/90 (deg, the Vonal step), snapGrid: m (0-10), defaultRoom: {w, d} m (a tap lays it), measureFirst: bool, pointSnap: wall/free, lineClose: auto/ask (M50: what the Vonal's Kész does with 3+ corners)}`; all optional; there is no wall thickness (D-83); use it when the job's shape is regular (halls: 90°, a coarse grid, a big tap room) |
 
 The condition language for `when` and the effects for `sets` are in `docs/sketcher/README.md` §4. Questions follow
 the house decision style: **2–5 short options, the likely one first, free text always possible**; `prio` 1 = ask

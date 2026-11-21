@@ -75,7 +75,7 @@ class DrawTuneTest {
         assertEquals("auto", v["furdo-felujitas"]!!.draw.lineClose)
     }
 
-    // F5 (WP M50, D-80): lineClose decides what the Vonal tool's Kész does with 3+ corners
+    // F5 (WP M50, D-83): lineClose decides what the Vonal tool's Kész does with 3+ corners
     @Test fun lineCloseAutoOrAsk() {
         assertEquals("auto", Draw.parse(JSONObject("""{"lineClose":"auto"}""")).lineClose)
         assertEquals("ask", Draw.parse(JSONObject("""{"lineClose":"ask"}""")).lineClose)

@@ -79,12 +79,12 @@ private const val MIME = "application/json"
  * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
  */
 private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
-    val s = ClientInfo.forExport(s0)   // F5 (D-79): the client's contact leaves the phone only when kept
+    val s = ClientInfo.forExport(s0)   // F5 (D-82): the client's contact leaves the phone only when kept
     val out = FileStore.cacheDir(ctx, "sketch")
     out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
     // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
-    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n)) }
+    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
     val pj = PlannerExport.build(s, n)
     tk?.let { pj.put("takeoff", it.json) }
     pkg.writeText(pj.toString(1))

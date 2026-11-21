@@ -100,12 +100,14 @@
   }
 
   // ---- the takeoff ------------------------------------------------------------------------------------------------
-  // opts: {now, endReserveMm, looseEndMm}
+  // opts: {now, endReserveMm, looseEndMm, impliedDedicated}
   function build(kit, rules, s, plan, opts) {
     opts = opts || {};
     plan = plan || planRaw(s, rules);
     const now = opts.now == null ? Date.now() : opts.now;
     const reserve = opts.endReserveMm == null ? rules.cable.endReserveMm : opts.endReserveMm;
+    // D-79: the dedicated circuits the machines and systems imply are counted only when asked (a general toggle)
+    const impliedOn = opts.impliedDedicated == null ? !!rules.impliedDedicated : !!opts.impliedDedicated;
     const loose = opts.looseEndMm == null ? rules.cable.looseEndMm : opts.looseEndMm;
     const ceil = levelH(rules, levelOf(s));
     const A = {}; (rules.actions || []).forEach(a => { A[a.id] = a; });
@@ -157,9 +159,10 @@
     const dedOf = c => !!c.ded || tagHit(FK.tagsOf(s, c.id), rules.dedicatedTags) || (c.members || []).some(m => tagHit(FK.tagsOf(s, m), rules.dedicatedTags));
     const ded = circuits.filter(dedOf), gen = circuits.filter(c => !dedOf(c));
     if (gen.length) items.push(item('aramkor.altalanos', 'aramkor', 'Áramkör — általános', '◌', 'db', gen.length, { refs: gen.map(c => c.id) }));
-    const dq = Math.max(ded.length, implied);
-    if (dq > 0) items.push(item('aramkor.dedikalt', 'aramkor', 'Áramkör — dedikált', '◉', 'db', dq, { est: implied > ded.length,
-      note: implied > 0 && implied !== ded.length ? 'gépek, rendszerek szerint: ' + implied + ', vázlat: ' + ded.length : '', refs: ded.map(c => c.id) }));
+    const dq = impliedOn ? Math.max(ded.length, implied) : ded.length;
+    if (dq > 0) items.push(item('aramkor.dedikalt', 'aramkor', 'Áramkör — dedikált', '◉', 'db', dq, { est: impliedOn && implied > ded.length,
+      note: impliedOn && implied > 0 && implied !== ded.length ? 'gépek, rendszerek szerint: ' + fmt(implied) + ', vázlat: ' + ded.length : '', refs: ded.map(c => c.id) }));
+    if (!impliedOn && implied > ded.length) checks.push('A gépek, rendszerek szerint ' + fmt(implied) + ' dedikált kör kellhet, a vázlaton ' + ded.length + ' van');
 
     // boards: the one feeding most circuits is the main one, the others are taken for sub-boards (≈)
     const boards = points.filter(p => typeOf(p) === 'board');
@@ -265,7 +268,7 @@
       kind: KIND, v: V, made: now,
       source: { name: s.name || '', id: s.id || '', level: levelOf(s), plan: plan.solved ? 'megoldott' : 'nyers',
         variant: s.variantOn && s.variant ? s.variant : '' },
-      config: { endReserveMm: reserve, looseEndMm: loose, ceilingMm: ceil },
+      config: { endReserveMm: reserve, looseEndMm: loose, ceilingMm: ceil, impliedDedicated: impliedOn },
       counts: { items: items.length, work: items.filter(x => x.work).length, est: items.filter(x => x.est).length, open: items.filter(x => x.open.length).length,
         decisions: decisions.length, tisztazando: notes.filter(n => n.open).length,
         answered: questions.filter(q => q.state === 'answered').length, questionsOpen: questions.filter(q => q.state !== 'answered').length,

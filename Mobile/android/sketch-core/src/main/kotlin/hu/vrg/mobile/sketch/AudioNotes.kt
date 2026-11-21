@@ -1,6 +1,6 @@
 package hu.vrg.mobile.sketch
 
-// F5 (WP M50, D-81): the dictation fallback. A phone with no speech recogniser (no Google app, a de-Googled ROM) can
+// F5 (WP M50, D-84): the dictation fallback. A phone with no speech recogniser (no Google app, a de-Googled ROM) can
 // still keep what the client said: a short sound recording (MediaRecorder, AAC in .m4a), a capture of kind "audio",
 // purpose "hang" (not a photo purpose: it fills no shot-list item, the takeoff does not count it as a photo). Played
 // back in the viewer, exported with the package as <stem>_<id>_hang.m4a, listed on the Desktop page and in the report.

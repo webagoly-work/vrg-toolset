@@ -6,7 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// F5 (WP M50, D-79): the client's contact is personal: in the file on the phone, out of every copy that leaves it unless
+// F5 (WP M50, D-82): the client's contact is personal: in the file on the phone, out of every copy that leaves it unless
 // kept, never in a variant request.
 class ClientInfoTest {
     private val room = Room("R1", listOf(Pt(0.0, 0.0), Pt(100.0, 0.0), Pt(100.0, 80.0), Pt(0.0, 80.0)))

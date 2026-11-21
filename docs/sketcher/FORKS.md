@@ -44,3 +44,12 @@ tells the Founder when a fork can be archived.
    and D numbers, what was built, what was left out and why, and the questions. Then stop; the coordinator merges and
    tells the Founder the fork can be archived.
 8. Client data never enters Git (`../../CLAUDE.md`, `../../Sketcher/variants/PROTOCOL.md`). No model names in commits.
+
+## Status (coordinator)
+
+- F1 → WP M48 (D-62…D-66), F2 → M47 (D-67…D-71), F3 → M46 (D-55…D-61), F4 → M49 (D-72…D-76): all on `main` (ec6b90b), the sessions archivable.
+- F5 Maradékok (`sketcher/f5-maradek`, WP M50, D-77…) builds what the forks left out.
+- **The two-phone test:** `node Sketcher/tools/test-plan.js` writes `TEST-2PHONES.md` + `test-2phones.json` from every WP's
+  „Telefonon ellenőrizni” list (A: rajz és beszélgetés, B: kamera és helyszín, X: közös). Re-run it after a WP's list
+  changes (`--check` exits 1 when stale). The shared checklist page (live ticks from both phones, the Hibák list) is
+  https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre (Archive: Kéttelefonos teszt).

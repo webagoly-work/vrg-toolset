@@ -8,7 +8,7 @@
 // Style: Varler Papír (shared/varler-doc/varler-doc.css, docs/research/2026-11-06_varler-document-style.md): warm ink,
 // no area darker than the wash, one red accent (here: ⚑ open / Tisztázandó), hanging section numerals, hairline tables,
 // Bahnschrift for figures. Unlike the Költségvetési Tervezet the length is not known in advance, so the browser
-// paginates (A4, 14 mm margins, no fixed footers to overlap: D-78), sections and photos never split.
+// paginates (A4, 14 mm margins, no fixed footers to overlap: D-81), sections and photos never split.
 //
 //   const R = require('./report.js');   // or window.VRGReport in the page
 //   const m = R.model(kit, survey, takeoff, { now, roomName, photoUrl, planSvg, siteSvg, siteLines });

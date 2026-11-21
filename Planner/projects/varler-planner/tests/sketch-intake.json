@@ -629,13 +629,14 @@
   "config": {
    "endReserveMm": 300,
    "looseEndMm": 0,
-   "ceilingMm": 2700
+   "ceilingMm": 2700,
+   "impliedDedicated": false
   },
   "counts": {
-   "items": 13,
-   "work": 12,
-   "est": 5,
-   "open": 11,
+   "items": 12,
+   "work": 11,
+   "est": 4,
+   "open": 10,
    "decisions": 11,
    "tisztazando": 1,
    "answered": 1,
@@ -810,24 +811,6 @@
     ]
    },
    {
-    "id": "aramkor.dedikalt",
-    "cat": "aramkor",
-    "label": "Áramkör — dedikált",
-    "sym": "◉",
-    "unit": "db",
-    "qty": 3,
-    "est": true,
-    "work": true,
-    "open": [
-     "uj_fogyaszto",
-     "fozolap_tipus",
-     "klima_db",
-     "fazis"
-    ],
-    "note": "gépek, rendszerek szerint: 3, vázlat: 0",
-    "refs": []
-   },
-   {
     "id": "eloszto.uj",
     "cat": "eloszto",
     "label": "Elosztó — új",
@@ -985,7 +968,6 @@
     "state": "open",
     "affects": [
      "gep.fozolap",
-     "aramkor.dedikalt",
      "rendszer.ev",
      "rendszer.klima"
     ]
@@ -996,8 +978,7 @@
     "who": "ugyfel",
     "state": "open",
     "affects": [
-     "gep.fozolap",
-     "aramkor.dedikalt"
+     "gep.fozolap"
     ]
    },
    {
@@ -1019,7 +1000,6 @@
     "who": "ugyfel",
     "state": "open",
     "affects": [
-     "aramkor.dedikalt",
      "rendszer.klima"
     ]
    },
@@ -1047,13 +1027,14 @@
     "who": "szemle",
     "state": "open",
     "affects": [
-     "aramkor.dedikalt",
      "rendszer.ev",
      "rendszer.klima"
     ]
    }
   ],
-  "checks": [],
+  "checks": [
+   "A gépek, rendszerek szerint 3 dedikált kör kellhet, a vázlaton 0 van"
+  ],
   "questions": [
    {
     "q": "lenyeg",

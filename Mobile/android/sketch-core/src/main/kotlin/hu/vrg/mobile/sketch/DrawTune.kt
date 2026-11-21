@@ -22,11 +22,11 @@ import kotlin.math.sin
 //   measureFirst  bool    a new room opens its size dialog at once
 //   pointSnap     wall | free   wall (default): a point near a wall sits on it; free: points stay where they are put
 //                         (devices on hall columns, ceiling grids)
-//   lineClose     auto | ask    F5 (WP M50, D-80): what the Vonal tool's Kész does with 3+ corners. auto: closes them
+//   lineClose     auto | ask    F5 (WP M50, D-83): what the Vonal tool's Kész does with 3+ corners. auto: closes them
 //                         into a room (and a tap within twice the usual reach of the first corner closes too); ask: one
 //                         question, room or open line. Missing = the original: Kész leaves an open line, only a tap on the
 //                         first corner makes a room. (wallThickness is NOT a key: the sketch's rooms are inner faces and
-//                         nothing downstream builds walls from them yet, see D-80.)
+//                         nothing downstream builds walls from them yet, see D-83.)
 //
 // Metres become sketch units through the sketch's current scale (the Solver's mm per unit on each axis), so a grid
 // stays a real 1 m grid after the first measure. Everything here is pure and tested (DrawTuneTest); the editor only

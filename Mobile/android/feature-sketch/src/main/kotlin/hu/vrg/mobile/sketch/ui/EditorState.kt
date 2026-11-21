@@ -619,7 +619,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     fun lineBack() { lineDraft = lineDraft.dropLast(1) }
     fun lineDone() {
-        // F5 (WP M50, D-80): a variant's lineClose decides what Kész does with 3+ corners
+        // F5 (WP M50, D-83): a variant's lineClose decides what Kész does with 3+ corners
         when (Draw.lineDone(draw, lineDraft.size)) {
             Draw.LineDone.ROOM -> { lineClose(); return }
             Draw.LineDone.ASK -> { ask = Ask.LineClose; return }

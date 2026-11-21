@@ -74,13 +74,14 @@ object Tags {
         Tag("T-ip44", "IP44", 0xFF3DAE5A, "ip44"),
         Tag("T-ded", "Dedikált", 0xFFD64545, "dedicated"),
         Tag("T-bontas", "Bontás", 0xFF8A5CD6, "remove"),
-        // F5 (WP M50, D-77): "replace this existing point"; the takeoff counts it as action csere (takeoff.json replaceTags)
+        // the Founder, 2026-11-21 (D-77): an existing point to be replaced; the takeoff counts it as csere
         Tag("T-csere", "Csere", 0xFFE8641C, "replace"),
     )
 
-    /** The built-in Csere tag (F5, D-77). */
+    /** The built-in Csere tag (D-77). */
     val CSERE: Tag get() = PRESETS.first { it.preset == "replace" }
 
+    // F5 (WP M50, D-80): extends D-77 to the surveys made before it
     /**
      * An older survey (made before Csere was a preset) gets the Csere tag when the phone opens it, unless it already has
      * one: a tag with preset `replace` or a tag the user named Csere (D-71's way, still counted the same). Nothing else

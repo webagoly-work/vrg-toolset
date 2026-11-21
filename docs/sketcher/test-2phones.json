@@ -1,0 +1,594 @@
+{
+ "kind": "vrg-sketcher-test-plan",
+ "v": 1,
+ "prep": [
+  "Mindkét telefonon a legújabb kiadás (Beállítások → Frissítés); a Névjegy ugyanazt a verziót mutatja.",
+  "A B telefon be van engedve (Eszközök: QR vagy Eszközkód, M35); mindkettőn nyílik a VRG Sketcher a kezdőlap nagy csempéjéről.",
+  "A PC-n START fut; a relay `--ports`-szal (`Mobile\\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.",
+  "Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül."
+ ],
+ "phones": {
+  "A": {
+   "name": "A telefon — rajz és beszélgetés",
+   "sub": "a tulajdonos telefonja (párosított PC, Átadás)",
+   "wps": [
+    {
+     "n": 24,
+     "title": "M24 · Vázlat (`sketch`): the field sketch, the Planner's quick build for the site",
+     "items": [
+      {
+       "id": "M24.1",
+       "text": "Kezdőlap → Munka → **Vázlat** → *＋ Új vázlat*. Az üres lapon a **Szoba** eszköz az aktív."
+      },
+      {
+       "id": "M24.2",
+       "text": "Húzz három téglalapot egymás mellé / alá: a szomszédos falak egymáshoz ugranak. Két ujjal nagyítás, görgetés; egy ujjal, eszköz nélkül görgetés."
+      },
+      {
+       "id": "M24.3",
+       "text": "**Méret**: koppints az első szoba belsejébe, add meg mindkét méretet; a második szobának csak a szélességét, a harmadiknak csak a mélységét. A szobák felirata: mért / számolt méret glow színnel, a becsült `≈`-vel, korall színnel és szaggatott fallal."
+      },
+      {
+       "id": "M24.4",
+       "text": "**Vonal**: egy L alakú szoba sarokról sarokra; a 12°-on belüli szakasz vízszintes / függőleges lesz; az első pontra koppintva szoba."
+      },
+      {
+       "id": "M24.5",
+       "text": "**Pont**: *Meglévő* és *Tervezett* pontok a falak mellé (a falra ugranak); a két szín jól elválik a napon is."
+      },
+      {
+       "id": "M24.6",
+       "text": "Tarts egy pontot: a kerék az ujj alatt; húzd a *Kapcsoló* felé és engedd el. Dél = a második gyűrű; ott a *Gyengeáram*. Középen elengedve a kerék nyitva marad, koppintással is választható. Vissza gomb: bezárja."
+      },
+      {
+       "id": "M24.7",
+       "text": "Tarts egy szobát: *Típus ›* → Konyha, majd Étkező (a kerék nyitva marad, több típus is lehet); *Név*."
+      },
+      {
+       "id": "M24.8",
+       "text": "Tarts üres lapot: *Memó* → a memó oda kerül. Egy pont kerekén *Memó*: a memó mellé, vékony vonallal."
+      },
+      {
+       "id": "M24.9",
+       "text": "**Áramkör**: koppints három pontra, majd *＋ Új kör* és keret húzása két másik pont köré. **Elosztó** egy falra, *⚡ Bekötés*: a körök szaggatott vonallal az Elosztóhoz."
+      },
+      {
+       "id": "M24.10",
+       "text": "**Nyomvonal**: húzd egy kapcsolótól a lámpáig; a vége a pontokra ugrik. Mozgasd a lámpát (*Mozgat*): a vége követi."
+      },
+      {
+       "id": "M24.11",
+       "text": "**Címke**: húzd a *Fürdő* címkét egy szobára, az *IP44*-et egy pontra, egy saját címkét a lapra."
+      },
+      {
+       "id": "M24.12",
+       "text": "⚙: kapcsold ki a *Villany* bővítményt (a sáv rövidül), majd vissza. Koppints kétszer ugyanarra az eszközre: az előzőre vált vissza."
+      },
+      {
+       "id": "M24.13",
+       "text": "↶ / ↷ minden lépésen; zárd be az appot egy szoba közepén, nyisd újra: minden megvan."
+      },
+      {
+       "id": "M24.14",
+       "text": "**Rendezés ›**: a terv mm-ben, falanként mért / számolt / ≈ becsült; egy szándékos ellentmondó méret (a teljes szélesség 500 mm-rel több) korall sorként jelenik meg."
+      },
+      {
+       "id": "M24.15",
+       "text": "*⇪ Küldés a Plannerbe* → *PC-re* (Átadás): a fájl a PC tábláján. A PC-n Planner → *Terv betöltése fájlból*: új projekt \"… (vázlat)\", a becsült falak narancs szaggatottal `≈` mérettel, a szoba `≈ becsült méret`. ⌘K → *Vázlat: méretek ellenőrizve*: a jelölés eltűnik; Ctrl+Z visszahozza. *Falak létrehozása* a vázlat szobáin."
+      },
+      {
+       "id": "M24.16",
+       "text": "*⤓ Mentés a telefonra*: Letöltések / VRG Vázlat."
+      }
+     ]
+    },
+    {
+     "n": 26,
+     "title": "M26 · VRG Sketcher (`sketch`): the field instrument, its frame and the loose ends",
+     "items": [
+      {
+       "id": "M26.1",
+       "text": "Kezdőlap → **VRG Sketcher** → *＋ Új felmérés*. A felső sáv alatt hét szimbólum a saját színében."
+      },
+      {
+       "id": "M26.2",
+       "text": "Bármelyik nézetből: **✎** (jegyzet) és **◉** (fotó) a jobb alsó sarokban; a nézet utána ugyanott marad."
+      },
+      {
+       "id": "M26.3",
+       "text": "Kezdj jegyzetet, zárd be mentés nélkül, válts nézetet, zárd be az appot: a ✎ megnyitva a félbehagyott szöveg ott van, a Nyitott (⚑) mutatja."
+      },
+      {
+       "id": "M26.4",
+       "text": "Össze-vissza sorrend: előbb egy jegyzet a konyháról, aztán a szoba rajza, aztán a mérete, aztán egy fotó: minden megmarad, a Nyitott követi, mi hiányzik."
+      },
+      {
+       "id": "M26.5",
+       "text": "Nyitott: koppints egy-egy sorra: a megfelelő nézet / kamera / szerkesztő nyílik."
+      }
+     ]
+    },
+    {
+     "n": 27,
+     "title": "M27 · Jegyzet: the conversation, quick chips and the background behind the notes",
+     "items": [
+      {
+       "id": "M27.1",
+       "text": "✎ → diktálj: „A konyhába indukciós főzőlap kell, a keret nyolcszázezer forint, három fázis van” → Mentés. A Jegyzet nézetben javaslatkártyák: Főzőlap, Konyha, Keret, Fázis; egy elfogadva, egy elhúzva; a Kérdések frissül."
+      },
+      {
+       "id": "M27.2",
+       "text": "Csak chipek (pl. ⏱ Határidő + Lakott) szöveg nélkül: tényként mentődik, a Lakott a kérdést is megválaszolja."
+      },
+      {
+       "id": "M27.3",
+       "text": "Egy szobára koppintás után ✎: a jegyzet azt a szobát kapja; ✕-szel leválasztható."
+      },
+      {
+       "id": "M27.4",
+       "text": "⚑ jegyzet: a Nyitottban megjelenik; ⚐-re váltva eltűnik."
+      }
+     ]
+    },
+    {
+     "n": 28,
+     "title": "M28 · Munkakör and Kérdések: the job's shape, and the questionnaire as a digital shadow",
+     "items": [
+      {
+       "id": "M28.1",
+       "text": "Üres felmérés: Kérdések hét alapkérdéssel, mind ● új; a jelvény a számukkal."
+      },
+      {
+       "id": "M28.2",
+       "text": "*Mi a kérés lényege?* → Csere, felújítás: a Munkakörben Felújítás be, a Kérdésekben megjelenik a hálózat kora, anyaga, FI-relé…"
+      },
+      {
+       "id": "M28.3",
+       "text": "Munkakör → ⚡ E-autó töltő: a töltő kérdései; Ingatlan → Társasházi lakás: a hozzájárulás kérdése is."
+      },
+      {
+       "id": "M28.4",
+       "text": "Egy kérdés Később: a nyitottak alá kerül; Nem releváns: eltűnik; ↺: visszajön."
+      },
+      {
+       "id": "M28.5",
+       "text": "Szöveges válasz a keretre: ✓ Mentés; a Megválaszolva alatt látszik."
+      },
+      {
+       "id": "M28.6",
+       "text": "Igények: Dugalj 4 (− +), a munkakör kártyán „Dugalj ×4”."
+      }
+     ]
+    },
+    {
+     "n": 47,
+     "title": "M47 · Munkakör lap: the survey's takeoff, into the Planner and out to the Workflow Kit",
+     "items": [
+      {
+       "id": "M47.1",
+       "text": "VRG Sketcher → egy felmérés → **☰ Munkakör**: legfelül a **Munkakör lap** kártya (☰). Üres felmérésen: „Még nincs tétel”."
+      },
+      {
+       "id": "M47.2",
+       "text": "Kapcsold be: *Felújítás, csere*, *Igények → Dugalj* 4-re. A lapon megjelenik egy ⊙ chip **≈4**, korall színnel."
+      },
+      {
+       "id": "M47.3",
+       "text": "Vázlat: tegyél le két *Tervezett* dugaljat. Vissza a Munkakörbe: a chip még mindig ≈4 (a Munkakör 4-et mond, a vázlaton 2 van). Koppints rá: „Dugalj — új · ≈ 4 db”, alatta „Munkakör: 4, vázlat: 2”."
+      },
+      {
+       "id": "M47.4",
+       "text": "Egy *Meglévő* dugaljra húzd a *Bontás* címkét, egy másikra a beépített *Csere* címkét (új felmérésben a tálcán van): két új chip (bontás, csere); egy címke nélküli meglévő pont halványan jelenik meg (marad)."
+      },
+      {
+       "id": "M47.5",
+       "text": "Rajzolj egy nyomvonalat egy kapcsolótól egy lámpáig: 〰 chip méterrel. Kösd áramkörbe a pontokat és *⚡ Bekötés* egy Elosztóhoz nyomvonal nélkül: ⚡ **≈** chip (rajzolatlan bekötés)."
+      },
+      {
+       "id": "M47.6",
+       "text": "*Igények → Főzőlap* 1: ⊞ chip ⚑ jellel; dedikált kör **nincs**, csak egy sárga sor: „A gépek, rendszerek szerint 1 dedikált kör kellhet…”. Kapcsold be a lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót: megjelenik a ◉ ≈1 chip. Nyiss egy másik felmérést: ott is be van kapcsolva (általános beállítás); kapcsold vissza. A piros ⚑ „Milyen főzőlap?” — koppints rá: a Kérdések nyílik. Válaszolj: a ⚑ eltűnik a főzőlapról."
+      },
+      {
+       "id": "M47.7",
+       "text": "*E-autó töltő* be: ⚡ e-autó kábel **≈0 m ⚑**; válaszolj a „Milyen messze van az elosztótól?” kérdésre (5–15 m): ≈15 m."
+      },
+      {
+       "id": "M47.8",
+       "text": "Rendezés › **⇪ Küldés a Plannerbe** → *PC-re*: a csomag mellett `…takeoff.json` és `…takeoff.md` is a PC táblájára kerül; az üzenet „+ munkakör lap”."
+      },
+      {
+       "id": "M47.9",
+       "text": "PC: Planner → *Terv betöltése fájlból* → a csomag. A HUD végén „felmérés: N tétel (≈ …), … nyitott döntés, … tisztázandó”. ⌘K → **Felmérés: munkakör lap**: munkakör, tételek ≈ / ⚑ jellel, döntések, válaszok, jegyzetek (a Tisztázandó piros), fotók. Mentsd a projektet, nyisd újra: megvan."
+      },
+      {
+       "id": "M47.10",
+       "text": "PC: a `.takeoff.md` megnyitva magyar összefoglaló; `node tools/sketch-takeoff.js <csomag>` ugyanazt írja."
+      },
+      {
+       "id": "M47.11",
+       "text": "**Két telefon**: ugyanazt a csomagot (Átadás) nyisd meg a másikon is: a Munkakör lap ugyanazokat a számokat mutatja."
+      },
+      {
+       "id": "M47.12",
+       "text": "Asztal: START P → S (VRG Sketcher) → a csomag → ☰ Munkakör: ugyanaz a lap; **⇩ Takeoff** letölti a két fájlt."
+      }
+     ]
+    },
+    {
+     "n": 49,
+     "title": "M49 · Apró hiányok: wants per room, variants on the long press, variants that tune the drawing tools",
+     "items": [
+      {
+       "id": "M49.1",
+       "text": "Egy felmérésben rajzolj két szobát (Konyha, Fürdő), koppints a Konyhára, majd Munkakör → Igények: a *Hová* a Konyhán áll; Dugalj + + → „Dugalj 2 (2 itt)”."
+      },
+      {
+       "id": "M49.2",
+       "text": "Hová → Általános, Dugalj + → 3; a Szobánként kártyán Konyha: Dugalj ×2, Általános: Dugalj ×1."
+      },
+      {
+       "id": "M49.3",
+       "text": "Tartsd lenyomva a Konyha Dugalj ×2-t → „Egyet ide: Fürdő”: Fürdő ×1, Konyha ×1, az összesen marad 3."
+      },
+      {
+       "id": "M49.4",
+       "text": "Hová → Általános, Dugalj − háromszor: mind eltűnik, a szobákból is."
+      },
+      {
+       "id": "M49.5",
+       "text": "Rendezés → Küldés → PC-re: a Plannerben betöltve a csomag `plan.wants`-ában és a Konyha szoba `sk.wants`-ában ott a dugalj (a Planner panelje még nem mutatja; az Asztal Sketcher oldalán a Munkakör igen)."
+      },
+      {
+       "id": "M49.6",
+       "text": "Kezdőlap: tartsd lenyomva a VRG Sketcher kártyát → *Új felmérés: Ipari telephely* → új felmérés nyílik, a sarokban ▤. Ugyanez az Asztal dokkjának Sketcher gombján."
+      },
+      {
+       "id": "M49.7",
+       "text": "Kezdőlap → hosszú nyomás → ⟳ Variánsok frissítése: rövid üzenet (GitHub belépéssel a main ág variánsai). ＋ Új variáns kérése: a kérés ablaka felmérés nélkül nyílik; Küldés → megosztás, a vágólapon a GO VARIANT szöveg."
+      },
+      {
+       "id": "M49.8",
+       "text": "A szerkesztőben a sarok kapcsolóját tartsd lenyomva: a variánsok listája; *Fürdőszoba felújítás* → átvált; *Eredeti Sketcher* → vissza. Variáns nélküli felmérésben a halvány ◐-re koppintva ugyanez a lista."
+      },
+      {
+       "id": "M49.9",
+       "text": "Ipari telephely variánsban Szoba eszköz → koppints az üres lapra: 30 × 20 m-es csarnok, és rögtön a méret ablaka nyílik. Vonal eszköz: a szakaszok csak vízszintesek / függőlegesek; a sarkok 1 m-es rácsra esnek."
+      },
+      {
+       "id": "M49.10",
+       "text": "Ipari telephely: Pont a fal közelében: ott marad, ahová tetted (nem ugrik a falra). Eredeti módban ugyanez a falra ugrik."
+      },
+      {
+       "id": "M49.11",
+       "text": "Fürdőszoba variánsban egy koppintás: 2,4 × 1,8 m-es fürdő; az eredetiben a koppintás csak súgót mutat."
+      },
+      {
+       "id": "M49.12",
+       "text": "Jegyzet: „két kiégett izzó a folyosón” → nincs Hiba-javaslat; „megégett a konnektor” → van."
+      },
+      {
+       "id": "M49.13",
+       "text": "Kérdések → *Mikorra kell elkészülni?*: a válasz mellett dátum-mező."
+      },
+      {
+       "id": "M49.14",
+       "text": "Beszédfelismerő nélküli telefonon (ha van ilyen) a 🎤: az új üzenet a billentyűzet mikrofonjáról."
+      }
+     ]
+    },
+    {
+     "n": 50,
+     "title": "M50 · Maradékok: wants in the Planner, the Csere tag, the survey report, the client's contact, lineClose, the sound note",
+     "items": [
+      {
+       "id": "M50.1",
+       "text": "Új felmérés → Címke eszköz: a sávban ott a narancs **Csere** címke. Egy régi felmérést megnyitva szintén ott van (ha nem volt saját *Csere* címkéje)."
+      },
+      {
+       "id": "M50.2",
+       "text": "Rajzolj egy meglévő dugaljat, tedd rá a Csere címkét → Munkakör lap: *Dugalj — csere 1 db*."
+      },
+      {
+       "id": "M50.3",
+       "text": "Helyszín → **👤 Ügyfél**: írd be a nevet és a telefont → ✓ Ügyfél mentése. A pill: „Kiadáskor törlődik”."
+      },
+      {
+       "id": "M50.4",
+       "text": "Rendezés → Küldés → PC-re: a PC-n a `.vsketch.json`-ban **nincs** `client`. Kapcsold a pillt „A kiadott csomagban marad”-ra, küldd újra: most benne van; a Plannerben a *Felmérés: munkakör lap* tetején „👤 Ügyfél: …”."
+      },
+      {
+       "id": "M50.5",
+       "text": "⚙ → Új variáns kérése → Küldés: a kérés JSON-jában nincs az ügyfél neve, telefonja."
+      },
+      {
+       "id": "M50.6",
+       "text": "Munkakör → Igények → Hová: Konyha, Dugalj + + → küldd a PC-re, a Plannerben *Felmérés: munkakör lap* → **Igények szobánként**: „Konyha: ⊙ Dugalj ×2”."
+      },
+      {
+       "id": "M50.7",
+       "text": "Az Asztal Sketcher oldalán nyisd meg a csomagot, csatold a fotókat, majd fent **Jegyzőkönyv**: új ablak, a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek az igényekkel, a vázlat, a fotók célonként, a helyszín és az aláírás. *Nyomtatás / PDF* → PDF mentése: A4, a szakaszok nem törnek ketté."
+      },
+      {
+       "id": "M50.8",
+       "text": "Fürdőszoba felújítás variánsban Vonal eszköz: négy sarok, majd **Kész** → szoba lesz (nem nyitott vonal). Az eredetiben ugyanez nyitott vonal marad."
+      },
+      {
+       "id": "M50.9",
+       "text": "Beszédfelismerő nélküli telefonon (vagy ha a 🎤 „Nincs beszédfelismerő” üzenetet ad) a jegyzetben megjelenik a **⏺ Hangjegyzet**: Felvétel → mondj valamit → ■ Kész. Kamera front: *🎙 Hangjegyzetek (1)* → ▶ Lejátszás szól."
+      },
+      {
+       "id": "M50.10",
+       "text": "Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva."
+      }
+     ]
+    }
+   ],
+   "count": 67
+  },
+  "B": {
+   "name": "B telefon — kamera és helyszín",
+   "sub": "a második telefon (Eszközök: jóváhagyva)",
+   "wps": [
+    {
+     "n": 25,
+     "title": "M25 · Fotópont (`photo`): photos of every room, taken from a point on the sketch, with their direction",
+     "items": [
+      {
+       "id": "M25.1",
+       "text": "Egy vázlatban ⚙ → *Fotópont* be: a ◉ eszköz megjelenik a sávban. A kezdőlap Fotópont csempéje a Vázlatba visz."
+      },
+      {
+       "id": "M25.2",
+       "text": "◉: koppints egy szoba közepe közelébe: a pont a közepére ugrik. Koppints a pontra: első alkalommal a kamera engedély, aztán a kamera alkalmazás."
+      },
+      {
+       "id": "M25.3",
+       "text": "Fotó után: a négy cikk homokszínű, a sor \"A fotó iránya…\". Húzz jobbra: K fotó mentve, \"Következő: É\" (vagy a következő hiányzó). Még egy fotó, és koppints a pont mellé lefelé: D."
+      },
+      {
+       "id": "M25.4",
+       "text": "◉-vel koppints egy üres cikkre (pl. Ny): rögtön kamera, húzás nélkül Ny lesz."
+      },
+      {
+       "id": "M25.5",
+       "text": "Koppints egy kitöltött cikkre: a fotó állva (fekvő és álló telefonnal készült képen is). *É*-re váltás: a cikk átkerül; *Újra*: új kép, a régi eltűnik; *Törlés*."
+      },
+      {
+       "id": "M25.6",
+       "text": "Tartsd a pontot: a kerék négy oldala a négy irány (✓ / +), Memó, Címke, Törlés."
+      },
+      {
+       "id": "M25.7",
+       "text": "Fotó után *Elvet*, illetve a Vissza gomb: a kép nem marad meg. A kamerából fotó nélkül visszalépve sem marad semmi."
+      },
+      {
+       "id": "M25.8",
+       "text": "Mozgasd a szobát (*Mozgat*): a pont vele megy. Zárd be és nyisd újra a vázlatot: a fotók megvannak."
+      },
+      {
+       "id": "M25.9",
+       "text": "*Rendezés*: a pontok kúpokkal; \"N fotó megy vele\". *Küldés a Plannerbe* → *PC-re*: a csomag és minden fotó külön fájlként a PC tábláján, `<vázlat>_F<n>_<oldal>.jpg` nevekkel. *Mentés a telefonra*: Letöltések és Képek / VRG Vázlat."
+      },
+      {
+       "id": "M25.10",
+       "text": "A PC-n: Planner → *Terv betöltése fájlból* (a csomag): a pontok \"📷 n/4\" és kúpok. ⌘K → *Vázlat: fotók* → *Fotók csatolása*: a tábla mappájából mind kijelölve; a képek a helyükre kerülnek, a kúpok sötétebbek; egy idegen kép neve a sorban. Kattintás: nagyítás. Ctrl+Z: a csatolás visszavonva."
+      }
+     ]
+    },
+    {
+     "n": 29,
+     "title": "M29 · Kamera: photos with a purpose, the shot list and markup",
+     "items": [
+      {
+       "id": "M29.1",
+       "text": "◉ (koppintás) bármelyik nézetből: kamera → a fotó az aktuális céllal; ◉ tartva: a célválasztó."
+      },
+      {
+       "id": "M29.2",
+       "text": "Kamera nézet → Képlista: Munkakör → E-autó után megjelennek a töltő képei; egy koppintás → kamera → ✓."
+      },
+      {
+       "id": "M29.3",
+       "text": "⟳ Sorozat be: három fotó egymás után ugyanazzal a céllal; a kamerából fotó nélkül kilépve „Sorozat vége”."
+      },
+      {
+       "id": "M29.4",
+       "text": "Egy fotó → ✎ Jelölés: nyíl, kör, szöveg; ↶; Bezár és újranyitás: a jelölés megvan."
+      },
+      {
+       "id": "M29.5",
+       "text": "Felirat diktálva; szoba átállítva; a Rendezés → Küldés után a PC táblán a `_jel.jpg` is ott van."
+      },
+      {
+       "id": "M29.6",
+       "text": "Helymeghatározással készült fotón a viewer koordinátát mutat."
+      }
+     ]
+    },
+    {
+     "n": 46,
+     "title": "M46 · Kamera 2: type-plate reading, privacy on export, before / after, signature, walk video, faster purposes",
+     "items": [
+      {
+       "id": "M46.1",
+       "text": "Kamera nézet → **▤ Típustábla** csempe: fotózd le a mérő címkéjét. Pár másodperc múlva: „▤ n adat a képen”. A Kamera nézetben a *▤ Kiolvasva* sorban: *＋ Mérő gyári szám …*, *＋ Főbiztosíték 3×25 A* stb. Koppints egyre: a Kérdések nézetben a válasz kitöltve; a ✕ eltünteti a találatot. Semmi nem töltődik ki magától."
+      },
+      {
+       "id": "M46.2",
+       "text": "Egy elosztó-fotón a viewerben **▤ Szöveg kiolvasása**: a kismegszakítók (C16, B25…) és az FI 30 mA chipként jönnek."
+      },
+      {
+       "id": "M46.3",
+       "text": "Egy fotón **👤 Személyes adat** be; ✎ Jelölés → **▦** húzással egy téglalap, **▒** ecsettel egy csík: szürke folt. Rendezés → Küldés a Plannerbe → PC-re: a PC-n a kép azon része kockás, az eredeti a telefonon ép."
+      },
+      {
+       "id": "M46.4",
+       "text": "Helymeghatározással készült fotó: a PC-n a fájl tulajdonságaiban **nincs GPS**. Egy másik fotón *⌖ GPS a kiadott képen marad* be: annál megvan. Személyes fotón ez a gomb nem látszik."
+      },
+      {
+       "id": "M46.5",
+       "text": "Egy hibáról fotó → viewer → **◑ Utána fotó**: kamera, ugyanaz a cél és szoba; vissza a viewerbe → **◐ Összevetés**: a csúszkával húzva az előtte / utána kép; *Egymás mellett*. A Kamera nézetben a pár két kis képe."
+      },
+      {
+       "id": "M46.6",
+       "text": "Kamera nézet → **✍ Aláírás**: *Mindkettő*, név, aláírás az ujjal, *Mentés*. A galériában (Dokumentum) a ✍ kép, a viewerben név, időpont, nyilatkozat. Exportban `…_alairas.png`."
+      },
+      {
+       "id": "M46.7",
+       "text": "Kamera nézet → **🎥 Séta videó**: 20–30 mp séta a nyomvonalon. Vissza: „🎥 Videó mentve (0:25, 18,3 MB)”; a galériában ▶ + hossz; a viewerben *▶ Lejátszás*. Exportban `…_nyomvonal.mp4`."
+      },
+      {
+       "id": "M46.8",
+       "text": "**◉ tartva**: felül *Hiányzik* a következő hiányzó képekkel; egy koppintás → kamera arra a tételre; alatta 🎥 ✍ és a legutóbbi célok."
+      },
+      {
+       "id": "M46.9",
+       "text": "Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik."
+      },
+      {
+       "id": "M46.10",
+       "text": "Két telefonnal: az egyiken készült felmérést (aláírással, videóval, párral) Átadással a másikra / a PC-re küldve a Desktop oldal (START S) Kamera nézetében a kártyák, a pár és az aláírás látszanak; a videó a fájl csatolása után lejátszható."
+      }
+     ]
+    },
+    {
+     "n": 30,
+     "title": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
+     "items": [
+      {
+       "id": "M30.1",
+       "text": "Helyszín → cím → ✓; ⌖ Itt vagyok: engedély, koordináta „a telefon helye”."
+      },
+      {
+       "id": "M30.2",
+       "text": "Párosított PC, `Mobile\\mobile.cmd relay` (--ports), START → szerver H: 🗺 Megnyitás → a ház a térképen; mozgasd, ⇣ Átvétel → „VRG Térkép”."
+      },
+      {
+       "id": "M30.3",
+       "text": "🔎 Cím keresése → lista → egy sor → koordináta „OSM keresés”."
+      },
+      {
+       "id": "M30.4",
+       "text": "▱ Épület körvonala egy családi háznál: méret m-ben, és mellette a vázlathoz mért „egyezik / kisebb / NAGYOBB”. Egy méretet szándékosan elrontva: „NAGYOBB”."
+      }
+     ]
+    },
+    {
+     "n": 48,
+     "title": "M48 · Helyszín ↔ Térkép: the outline drawn on the phone's own map, the sketch placed on the building",
+     "items": [
+      {
+       "id": "M48.1",
+       "text": "Egy felmérésben rajzolj két szobát, adj méreteket (Rendezés: legyen megoldott terv). Helyszín → ⌖ Itt vagyok (GPS)."
+      },
+      {
+       "id": "M48.2",
+       "text": "**🗺 Körvonal és vázlat a térképen** → a VRG Térkép nyílik (PC nélkül is: a fejlécben Internet), felülnézetben, a helyedre; alul a lila **Helyszín** panel."
+      },
+      {
+       "id": "M48.3",
+       "text": "**🛰 Műhold** → a műholdkép megjelenik, alatta az Esri felirat. Kapcsold ki és be: csak koppintásra jön."
+      },
+      {
+       "id": "M48.4",
+       "text": "**▱ Körvonal**: koppints a ház sarkaira sorban → lila körvonal; húzz el egy sarkot → követi; a fehér pontot húzva új sarok; egy sarokra koppintva **✕ Sarok** törli."
+      },
+      {
+       "id": "M48.5",
+       "text": "**◫ Vázlat** → a vázlat rákerül, a ház falaihoz forgatva; alul „A vázlat a körvonalon belül van…” vagy mi lóg ki. Húzd el az ujjaddal, forgasd **⟳ 15°**-kal → piros falak, „… fala kilóg”; **⤢ Illesztés** → vissza."
+      },
+      {
+       "id": "M48.6",
+       "text": "**⇣ Hely átvétele**, majd **✓ Kész** → visszajön a Sketcher **Helyszín** nézete: a körvonal mérete („műholdról rajzolt”), a vázlat az épületen sorai, a koordináta „VRG Térkép”."
+      },
+      {
+       "id": "M48.7",
+       "text": "Zárd be az appot, nyisd újra, nyisd meg a felmérést: minden megmaradt. A térképet újra megnyitva a körvonal és a vázlat ott van, ahol hagytad."
+      },
+      {
+       "id": "M48.8",
+       "text": "A térképen **✕** vagy a vissza gomb → a Helyszínre jön vissza, változás nélkül."
+      },
+      {
+       "id": "M48.9",
+       "text": "Helyszín → **▱ Épület körvonala** (OSM) egy családi háznál → a körvonal azonnal elhelyezhető: **⤢ Illesztés** a telefonon, térkép nélkül; **✕ Elhelyezés** törli."
+      },
+      {
+       "id": "M48.10",
+       "text": "A **második telefonon** ugyanez egy másik felméréssel; utána a VRG Térkép kezdőlapról nyitva a sima térkép jön (nem a helyszín panel), a lila pöttyök ott vannak."
+      },
+      {
+       "id": "M48.11",
+       "text": "Asztal: a csomagot nyisd meg a VRG Sketcher Asztal oldalán (START S) → Helyszín → *A vázlat az épületen* ugyanazt mutatja; a START H szerverrel **🗺 Szerkesztés a térképen** → a lenti térképen módosíts, ✓ Kész → átveszi; Mentés."
+      },
+      {
+       "id": "M48.12",
+       "text": "A VRG Térkép a telefonon a Helyszín nélkül is nyílik (a W időjárás réteg miatt eddig nem nyílt — D-66)."
+      }
+     ]
+    },
+    {
+     "n": 31,
+     "title": "M31 · Variánsok: a Variant Sketcher for one kind of job, made by an agent",
+     "items": [
+      {
+       "id": "M31.1",
+       "text": "⚙ → Variánsok → *Fürdőszoba felújítás*: a sáv Szoba, Sablon, Méret, Pont, Fotópont…; a sarokban 🛁."
+      },
+      {
+       "id": "M31.2",
+       "text": "Sablon → *Kádfülkés fürdő* → húzd: a fürdő alakja kész. Pont: *Tükörvilágítás*, *Aljzat IP44* előre."
+      },
+      {
+       "id": "M31.3",
+       "text": "A szoba kereke: Fürdő, WC, Mosókonyha elöl. A Kérdésekben a fürdő saját kérdései (zóna, FI)."
+      },
+      {
+       "id": "M31.4",
+       "text": "A sarok ◐-jére koppintva az eredeti; vissza."
+      },
+      {
+       "id": "M31.5",
+       "text": "⚙ → ＋ Új variáns kérése: két mondat, kulcsszavak, egy fotó → Küldés → PC-re; a vágólapon a GO VARIANT szöveg. A PC-n egy Claude Code munkamenetben `GO VARIANT` + a fájl: az ügynök kérdez, megírja, commitolja."
+      },
+      {
+       "id": "M31.6",
+       "text": "⟳ Frissítés a main ágról: az új variáns megjelenik."
+      }
+     ]
+    }
+   ],
+   "count": 48
+  }
+ },
+ "cross": [
+  {
+   "id": "X1",
+   "text": "A: Rendezés → Küldés PC-re. A PC-n az Asztal Sketcher oldalán a csomag megnyílik: Munkakör lap, kérdések, fotók, helyszín, szobánkénti igények ugyanazok, mint a telefonon."
+  },
+  {
+   "id": "X2",
+   "text": "A csomagot a Plannerben is nyisd meg (⌘K → Vázlat): a szobák, pontok, a ≈ jelölt méretek és a „Felmérés: munkakör lap” megvan."
+  },
+  {
+   "id": "X3",
+   "text": "B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a GPS csak ott van benne, ahol meghagytad."
+  },
+  {
+   "id": "X4",
+   "text": "B: ⚙ → Variánsok → ＋ Új variáns kérése két fotóval → a kérés a PC táblán; benne nincs ügyfélnév, cím, személyes fotó."
+  },
+  {
+   "id": "X5",
+   "text": "Mindkét telefonon egyszerre: a VRG Térkép PC nélkül is nyílik (mobilnet), a másik telefon felmérése nem látszik (minden telefon csak a sajátját)."
+  },
+  {
+   "id": "X6",
+   "text": "A ⟳ Frissítés a main ágról (Variánsok) mindkét telefonon ugyanazt a variánslistát adja (Fürdő, E-autó, Ipari telephely)."
+  },
+  {
+   "id": "X7",
+   "text": "Csere: A és B felmérést cserél Átadáson át (A küldi a PC-re, B a PC tábláról megnyitja a Desktopon) — az eredmény ugyanaz, mint A-n."
+  }
+ ]
+}

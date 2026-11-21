@@ -26,6 +26,7 @@ data class TakeoffRules(
     val scopePoints: List<Pair<String, String>> = emptyList(),
     val machines: List<Pair<String, Int>> = emptyList(),
     val systems: List<SystemRule> = emptyList(),
+    val impliedDedicated: Boolean = false,
     val boardScope: String = "eloszto", val newBoardQ: String = "uj_eloszto", val newBoardOpt: String = "igen",
     val decisions: List<Pair<String, List<String>>> = emptyList(),
 ) {
@@ -62,6 +63,7 @@ data class TakeoffRules(
                     SystemRule(it.getString("id"), it.optInt("dedicated"), if (it.has("qtyQ")) it.getString("qtyQ") else null,
                         pairsD(it.optJSONArray("qtyMap")), strs(it.optJSONArray("qtyEst")))
                 },
+                impliedDedicated = o.optBoolean("impliedDedicated", false),
                 boardScope = o.optString("boardScope", "eloszto"), newBoardQ = o.optString("newBoardQ", "uj_eloszto"), newBoardOpt = o.optString("newBoardOpt", "igen"),
                 decisions = objs(o.optJSONArray("decisions")).map { it.getString("q") to strs(it.optJSONArray("affects")) },
             )
@@ -203,9 +205,11 @@ object Takeoff {
     private fun jstrs(l: List<String>) = JSONArray().also { a -> l.forEach { a.put(it) } }
 
     fun build(kit: Kit, rules: TakeoffRules, s: Sketch, plan0: PlanView?, now: Long = System.currentTimeMillis(),
-              endReserveMm: Int? = null, looseEndMm: Int? = null): Result {
+              endReserveMm: Int? = null, looseEndMm: Int? = null, impliedDedicated: Boolean? = null): Result {
         val plan = plan0 ?: PlanView.raw(s, rules)
         val reserve = endReserveMm ?: rules.endReserveMm
+        // D-79: the dedicated circuits the machines and systems imply are counted only when asked (a general toggle)
+        val impliedOn = impliedDedicated ?: rules.impliedDedicated
         val loose = looseEndMm ?: rules.looseEndMm
         val ceil = rules.levelH(s.level.id)
         val items = mutableListOf<Item>(); val checks = mutableListOf<String>()
@@ -258,9 +262,10 @@ object Takeoff {
         fun dedOf(c: Circuit) = c.dedicated || tagHit(Ops.tagsOf(s, c.id), rules.dedicatedTags) || c.members.any { m -> tagHit(Ops.tagsOf(s, m), rules.dedicatedTags) }
         val ded = circuits.filter { dedOf(it) }; val gen = circuits.filter { !dedOf(it) }
         if (gen.isNotEmpty()) items += Item("aramkor.altalanos", "aramkor", "Áramkör — általános", "◌", "db", gen.size.toDouble(), refs = gen.map { it.id })
-        val dq = max(ded.size.toDouble(), implied)
-        if (dq > 0) items += Item("aramkor.dedikalt", "aramkor", "Áramkör — dedikált", "◉", "db", dq, est = implied > ded.size,
-            note = if (implied > 0 && implied != ded.size.toDouble()) "gépek, rendszerek szerint: ${fmt(implied)}, vázlat: ${ded.size}" else "", refs = ded.map { it.id })
+        val dq = if (impliedOn) max(ded.size.toDouble(), implied) else ded.size.toDouble()
+        if (dq > 0) items += Item("aramkor.dedikalt", "aramkor", "Áramkör — dedikált", "◉", "db", dq, est = impliedOn && implied > ded.size,
+            note = if (impliedOn && implied > 0 && implied != ded.size.toDouble()) "gépek, rendszerek szerint: ${fmt(implied)}, vázlat: ${ded.size}" else "", refs = ded.map { it.id })
+        if (!impliedOn && implied > ded.size) checks += "A gépek, rendszerek szerint ${fmt(implied)} dedikált kör kellhet, a vázlaton ${ded.size} van"
 
         // boards: the one feeding most circuits is the main one, the others are taken for sub-boards (≈)
         val boards = points.filter { it.type == PointType.BOARD }
@@ -378,7 +383,7 @@ object Takeoff {
         val j = JSONObject().put("kind", KIND).put("v", V).put("made", now)
         j.put("source", JSONObject().put("name", s.name).put("id", s.id).put("level", s.level.id).put("plan", if (plan.solved) "megoldott" else "nyers")
             .put("variant", if (s.variantOn && s.variant != null) s.variant else ""))
-        j.put("config", JSONObject().put("endReserveMm", reserve).put("looseEndMm", loose).put("ceilingMm", ceil))
+        j.put("config", JSONObject().put("endReserveMm", reserve).put("looseEndMm", loose).put("ceilingMm", ceil).put("impliedDedicated", impliedOn))
         j.put("counts", JSONObject().put("items", items.size).put("work", items.count { it.work }).put("est", items.count { it.est })
             .put("open", items.count { it.open.isNotEmpty() }).put("decisions", decisions.size).put("tisztazando", notes.count { it.open })
             .put("answered", questions.count { it.state == "answered" }).put("questionsOpen", questions.count { it.state != "answered" })

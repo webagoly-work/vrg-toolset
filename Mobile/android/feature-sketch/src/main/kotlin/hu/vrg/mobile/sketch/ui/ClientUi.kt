@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.ClientInfo
 
-// F5 (WP M50, D-79): the client's contact on the Helyszín front. Personal: kept in the survey on the phone, stripped from
+// F5 (WP M50, D-82): the client's contact on the Helyszín front. Personal: kept in the survey on the phone, stripped from
 // the Rendezés package unless "marad" is on; never in a variant request. The address is the site's (above).
 
 @Composable

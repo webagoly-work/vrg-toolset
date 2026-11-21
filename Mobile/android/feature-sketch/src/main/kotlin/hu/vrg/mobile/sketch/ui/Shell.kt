@@ -165,7 +165,7 @@ internal fun QuickNote(st: EditorState) {
     var open by remember { mutableStateOf(false) }
     var voice by remember { mutableStateOf(false) }
     var room by remember { mutableStateOf(st.focusRoom) }
-    // F5 (WP M50, D-81): no recogniser → a sound note instead
+    // F5 (WP M50, D-84): no recogniser → a sound note instead
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var noRecognizer by remember { mutableStateOf(!hasRecognizer(ctx)) }
     var recording by remember { mutableStateOf(false) }

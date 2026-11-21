@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-// F5 (WP M50, D-81): the dictation fallback: a sound note is a capture of kind audio, purpose hang, an .m4a.
+// F5 (WP M50, D-84): the dictation fallback: a sound note is a capture of kind audio, purpose hang, an .m4a.
 class AudioNotesTest {
     private val room = Room("R1", listOf(Pt(0.0, 0.0), Pt(100.0, 0.0), Pt(100.0, 80.0), Pt(0.0, 80.0)), "Konyha")
     private val s0 = Sketch("A1", name = "Hang próba", rooms = listOf(room))

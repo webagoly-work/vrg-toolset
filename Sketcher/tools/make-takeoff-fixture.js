@@ -68,14 +68,15 @@ const CASES = [
     captures: [{ id: 'C52', file: 'x.jpg', purpose: 'eloszto', at: NOW, note: '' }] }), {}],
   ['the package with a bigger reserve per end', PKG, { endReserveMm: 500, looseEndMm: 150 }],
   ['a bare survey file (no plan): demolition, replacement by a user tag, two boards, home runs, a variant', Object.assign(clone(RAW), { variant: 'furdo-felujitas', variantOn: true }), {}],
+  ['the bare survey with the implied dedicated circuits switched on', clone(RAW), { impliedDedicated: true }],
   ['the same without the variant, the EV answer missing', Object.assign(clone(RAW), { answers: Object.assign({}, RAW.answers, { tavolsag: A([], 'later'), klima_db: A(['2']) }) }), {}],
   // F4 (WP M49): the client's wants by room show on the rooms; the job totals stay what drives the items
   ['wants by room: two in the kitchen, one in the pantry, one for the job', Object.assign(clone(RAW), { scope: Object.assign({}, RAW.scope, { dugalj: 4, lampa: 1 }),
     roomScope: { R1: { dugalj: 2, lampa: 1 }, R2: { dugalj: 1 } } }), {}],
-  // F5 (WP M50, D-77): the built-in Csere tag (preset replace) marks a replacement, the user's own tag is gone
+  // F5 (WP M50, D-80): the built-in Csere tag (preset replace) marks a replacement, the user's own tag is gone
   ['the built-in Csere tag', Object.assign(clone(RAW), { tags: RAW.tags.filter(t => t.id !== 'T19').concat([{ id: 'T-csere', name: 'Csere', col: 4293420060, preset: 'replace' }]),
     tagUses: RAW.tagUses.map(u => u.tag === 'T19' ? Object.assign({}, u, { tag: 'T-csere' }) : u) }), {}],
-  // F5 (WP M50, D-81): a sound note (kind audio) is listed nowhere among the photos
+  // F5 (WP M50, D-84): a sound note (kind audio) is listed nowhere among the photos
   ['a sound note beside the photos', Object.assign(clone(RAW), { captures: RAW.captures.concat([{ id: 'C40', file: 'hang_1.m4a', purpose: 'hang', kind: 'audio', at: NOW, note: 'a csempe alatt?', durationMs: 42000, bytes: 300000 }]) }), {}],
   ['an empty survey', { kind: 'vrg-vazlat', v: 2, id: 'E0', name: '', seq: 0, rooms: [], points: [], circuits: [], routes: [], memos: [], entries: [], scope: {}, answers: {}, captures: [] }, {}],
 ];
