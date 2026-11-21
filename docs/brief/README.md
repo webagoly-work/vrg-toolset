@@ -157,8 +157,8 @@ lists every deny source it read. On the H: PC, keep the list next to the anonymi
 5. **One brief text for both versions**, differing only in names, the locale and the sample data, so two design results
    can be compared.
 6. **Phases → stages.** "Phase" is an electrical word; B's text, and the briefs, say "stage".
-7. **In-progress forks are described as part of the system** (the Survey's switch registry, the end-to-end tests, the
-   report from the phone), marked *in progress*.
+7. **Parallel forks are described as part of the system.** F6 (one feature registry, ⚙ Funkciók) and F9 (the report from
+   the phone) landed on `main` while this fork ran and are described as built (beta); F8 (end-to-end tests) as *in progress*.
 8. **The brief asks for no live questions**: the design session works through, writes assumptions, and ends with
    numbered questions, recommended option first (the house rule).
 

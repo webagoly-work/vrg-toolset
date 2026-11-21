@@ -212,9 +212,13 @@ The owner's general rule: *everything integrated, but modular.*
 - A feature that depends on another switches off with it (e.g. the ghost overlay needs before/after photos).
 - **User preference first:** a feature switched off leaves **no trace** in the UI or the exports. Data already captured
   stays and still exports safely (a blur already drawn is still burned in).
-- Built so far: *Camera features* ‹Kamera funkciók› (19 switches) and *Survey features* ‹Felmérés funkciók› (client
-  data, sound note, the Replace tag in old surveys, line auto-close). **In progress:** one registry for every Survey
-  feature with the same switches on the phone and the desktop.
+- **One registry holds every Survey feature** (beta): about 75 features in nine groups, one group per front plus
+  variants and review / export. Each feature has a symbol, a short label, a default and what it **requires**; a few
+  basic tools are locked on. The same screen ⚙ → *Features* ‹Funkciók› exists on the phone and on the desktop page: per group a
+  list of symbol + label + switch and an **all on / off** row; switching a feature off greys out (and switches off)
+  everything that requires it. One setting per phone, one per browser. Examples of dependencies: the ghost overlay
+  needs the in-app camera and before / after pairs; face search needs blur; satellite view needs the map; the report
+  from the phone needs the report.
 - Plugins of the sketch canvas (tool packs) are switches too, remembered per survey.
 
 ### 4.4 Multi-device
@@ -702,7 +706,7 @@ and no caption, no address.
   never stored: header (place, date, variant, client if kept, counts); work; scope and takeoff (≈ / ⚑, decisions);
   questions and answers; notes (*to be clarified* in red, memos); rooms; the sketch; photos by purpose (before / after,
   video and sound notes listed); site (outline with the placed sketch and its report); signature. From the desktop page
-  today; **from the phone in progress** (print / PDF or a self-contained page shared through the handover board, photos
+  today and **from the phone** (beta: print / PDF or a self-contained page shared through the handover board, photos
   downscaled, the export privacy rules applied, a *for the client* mode that also drops *to be clarified* notes and
   internal checks, a warning above 15 MB, its own switch).
 - **The desktop Survey page:** review and complete a survey and save it back in the same format: an overview (scope,
@@ -713,9 +717,7 @@ and no caption, no address.
 
 #### In progress on the Survey
 
-- **One feature-switch registry** for every Survey feature, the same switches on the phone ⚙ and the desktop page.
 - **End-to-end tests** phone → package → desktop → Planner, and a cross-check of every seam.
-- **The survey report from the phone** (above).
 
 ### 5.8 The Planner (PC, live; also on the phone as a web app)
 
@@ -867,8 +869,8 @@ and quantities, in one offline HTML file.
 | Status | Items |
 |---|---|
 | Live | Planner, calculators, Stock, product picker, parts builder, mind map, map, knowledge graph, text launcher, backup, commit guard, UI kit; on the phone: settings, pairing, account, update, progress, quick note, local servers, remote launcher, handover, sphere |
-| Beta | desktop shell, drawing library studio, **Survey instrument**, archive, field console, weather, gate page, code city, sphere board, signal board, session canvas, agent trace; on the phone: home, sheets, devices, iPhone web app, notifications, screen, PC files, AI sessions, apps, estimate workflow, map, vault, crew pager |
-| In progress | the Survey's switch registry, end-to-end tests, the report from the phone |
+| Beta | desktop shell, drawing library studio, **Survey instrument** (with its feature registry and the report from the phone), archive, field console, weather, gate page, code city, sphere board, signal board, session canvas, agent trace; on the phone: home, sheets, devices, iPhone web app, notifications, screen, PC files, AI sessions, apps, estimate workflow, map, vault, crew pager |
+| In progress | the Survey's end-to-end tests and seam audit |
 | Planned | portable USB build, weather on the phone, a push service, a home-screen widget, the Planner's live site mode, barcode intake into Stock, a note that becomes an AI task |
 
 ---
