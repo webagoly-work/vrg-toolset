@@ -495,11 +495,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   a tap. Details: `WP/M46.md`.
 - **D-56 · Kamera 2: automatic face detection, built in and switchable (M46), 2026-11-20 → answered 2026-11-21: B.**
   Proposed A (no face detection: ML Kit's bundled face model adds about 6.9 MB per architecture); the Founder chose
-  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-72).
+  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-77).
   `sketch-vision` `FaceFinder` (`com.google.mlkit:face-detection:16.1.7`, bundled, accurate mode, faces from 5 % of the
   picture) beside `TextReader`; `sketch-core` `CameraFeatures.proposals` turns each face into a blur rectangle grown by
   20 % and clipped, never twice over an existing one. The rectangles are only **proposed** (dashed red over the photo,
-  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-72).
+  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-77).
   The APK grows by about 14 MB more (two ARM architectures).
 - **D-57 · Kamera 2: GPS is stripped from exported copies by default (M46), 2026-11-20.** Taken in fork F3. Every
   photo that leaves the phone (the package's purpose photos and Fotópont photos, variant-request photos) has its EXIF
@@ -509,7 +509,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (the original stays on the phone); personal photos, videos and signatures are never offered for a variant request
   (which ends up in Git). Rejected: keeping GPS by default (a photo forwarded from the PC to a supplier or a client
   carries the client's address in its metadata). **Answered 2026-11-21: A** (stripped by default, kept per photo); the
-  strip itself is a switch too (D-72: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
+  strip itself is a switch too (D-77: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
 - **D-58 · Kamera 2: before / after is a pair by reference, compared with a slider (M46), 2026-11-20.** Taken in fork F3.
   The after-photo names its before (`phase` utana + `pair`); one after per before (a new one replaces the old). The
   candidates are earlier photos of the same purpose, the same room first, then the same shot item, the newest first.
@@ -530,6 +530,38 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
   three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
   (not during Sorozat, which already returns to the camera).
+- **D-72 · F4: the client's wants by room keep the job total in `scope` (M49), 2026-11-21.** Taken in fork F4. A
+  countable want (an *igény* with a quantity) can belong to a room: a new optional `roomScope {room → {want → qty}}`
+  holds the rooms' part, `scope` stays the job total, the rest is *Általános* (derived, never stored). Every reader of
+  `scope` (the conditions, the scope card, F2's takeoff, the Planner's raw intake) stays right without knowing about
+  rooms. The Munkakör's + / − go to the room chosen under *Hová* (the room in focus when the front opens); a total
+  lowered below the rooms takes back from the last room first; a deleted room's entry stays in the file and counts as
+  Általános (an undo brings the room back with its wants). Rejected: a per-room list of separate *igény* records with
+  categories (the research's wording): it duplicates the scope toggles and breaks every reader of the totals.
+- **D-73 · F4: the Sketcher's variants on its long press start a new survey (M49), 2026-11-21.** Taken in fork F4. On the
+  home tile (hero card, grid icon, Kompakt) and the Asztal dock's Sketcher dial, the RCO lists *Új felmérés: <variant>*
+  for each variant, *Új felmérés: eredeti*, ⟳ *Variánsok frissítése* and ＋ *Új variáns kérése* (opened without a
+  survey: the request carries the premise and toggles, its counts are zero). From outside the Sketcher a variant line
+  means "I am starting this kind of job"; switching the survey already open is the editor's corner toggle, whose long
+  press has the same list for that survey (a tap still toggles; with no variant chosen a faint ◐ opens the list).
+  Rejected: reopening the last survey with the variant (it silently reshapes a survey the user may be in the middle of).
+- **D-74 · F4: a variant tunes five drawing behaviours, nothing else (M49), 2026-11-21.** Taken in fork F4. The optional
+  `draw` block: `snapAngle` (0 / 15 / 30 / 45 / 90°, the Vonal tool's step; 0 = the original 12° axis lock),
+  `snapGrid` (m, corners of Szoba, Sablon, Vonal and corner moves; a neighbour's corner line still wins), `defaultRoom`
+  `{w, d}` (m, a tap on paper with Szoba lays one), `measureFirst` (a new room opens its size dialog), `pointSnap`
+  `wall` / `free`. Metres become sketch units through the sketch's current scale (the Solver's mm per unit), so the
+  grid stays real after the first measure. The phone ignores a bad value (falls back to the original); the variant
+  check rejects it. Left out: `wallThickness` (the sketch has no walls; the Planner builds them, and its wall tool is
+  not this fork's) and `lineClose` (closing on the first point already works; an "ask" mode adds a dialog to every room).
+- **D-75 · F4: the kit's égett detector skips kiégett (M49), 2026-11-21.** Taken in fork F4. `(?<!ki)eget|…` in
+  `fieldkit.json`: a burnt-out lamp (*kiégett izzó*) no longer suggests a fault, *megégett*, *égett szag* still do. Java
+  and JS regexes both take the lookbehind (FieldKitTest parses the kit; the fixture has the three cases). The
+  ipari-telephely override is gone.
+- **D-76 · F4 sweep: the deadline gets a date field; no audio fallback yet (M49), 2026-11-21.** Taken in fork F4. *Mikorra
+  kell elkészülni?* has a `num` field (unit *dátum*) like the budget (*Ft*): budget and deadline are now both an option
+  plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
+  fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
+  entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
 
 - **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
   (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
@@ -587,7 +619,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
   file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
   Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
-- **D-72 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
+- **D-77 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
   The Founder, answering F3's question 3: *"my general approach towards features modularity: … I would default to have
   upcoming features and programs be integrated so we have them, but everything generally should be modular in its core
   design (with settings behind features to tinker with them, toggle each or all features as it pleases for high level

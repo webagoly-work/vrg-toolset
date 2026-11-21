@@ -81,6 +81,7 @@ object SketchFeature : VrgFeature {
             if (want != null) { pendingOpen = null; want.second?.let { pendingFront = want.first to it }; openId = want.first }
         }
         val id = openId
+        SketchLaunchHost(host) { openId = it }   // F4: a long press on the Sketcher's tile or dock dial (SketchLaunch.kt)
         if (id == null) {
             SketchList(host) { openId = it }
             return

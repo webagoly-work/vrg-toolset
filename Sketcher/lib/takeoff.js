@@ -253,7 +253,10 @@
       const k = kit.purposes.find(p => p.id === id) || { label: id, sym: '◉' };
       photos.push({ purpose: id, label: k.label, sym: k.sym, n, files: list.map(c => stem + '_' + c.id + '_' + (c.purpose || 'egyeb') + '.jpg') });
     });
-    const rooms = plan.rooms.map(r => ({ id: r.id, name: roomTitle(r), kinds: r.kinds.slice(), areaM2: a1(area(r.poly)), est: r.est }));
+    // F4 (WP M49): the client's wants a room holds (roomScope), only on a room that has some
+    const roomWants = id => kit.scope.filter(k => k.qty && (((s.roomScope || {})[id] || {})[k.id] || 0) > 0)
+      .map(k => ({ id: k.id, label: k.label, sym: k.sym, qty: s.roomScope[id][k.id] }));
+    const rooms = plan.rooms.map(r => { const o = { id: r.id, name: roomTitle(r), kinds: r.kinds.slice(), areaM2: a1(area(r.poly)), est: r.est }, w = roomWants(r.id); if (w.length) o.wants = w; return o; });
     const scope = GROUPS.map(([g, label]) => ({ group: g, label, items: kit.scope.filter(k => k.group === g && scopeQ(s, k.id)).map(k => ({ id: k.id, label: k.label, sym: k.sym, qty: scopeQ(s, k.id) })) }))
       .filter(g => g.items.length);
 
@@ -311,7 +314,7 @@
       t.memos.forEach(m => L.push('- ✎ ' + m.text));
     }
     if (t.photos.length) { L.push(''); L.push('## Fotók'); L.push(''); t.photos.forEach(p => L.push('- ' + p.sym + ' ' + p.label + ': ' + p.n)); }
-    if (t.rooms.length) { L.push(''); L.push('## Helyiségek'); L.push(''); t.rooms.forEach(r => L.push('- ' + r.name + ': ' + (r.est ? '≈ ' : '') + fmt(r.areaM2) + ' m²')); }
+    if (t.rooms.length) { L.push(''); L.push('## Helyiségek'); L.push(''); t.rooms.forEach(r => L.push('- ' + r.name + ': ' + (r.est ? '≈ ' : '') + fmt(r.areaM2) + ' m²' + (r.wants ? ' — ' + r.wants.map(w => w.label + ' ×' + w.qty).join(', ') : ''))); }
     return L.join('\n') + '\n';
   }
 

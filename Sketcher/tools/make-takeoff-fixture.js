@@ -69,6 +69,9 @@ const CASES = [
   ['the package with a bigger reserve per end', PKG, { endReserveMm: 500, looseEndMm: 150 }],
   ['a bare survey file (no plan): demolition, replacement by a user tag, two boards, home runs, a variant', Object.assign(clone(RAW), { variant: 'furdo-felujitas', variantOn: true }), {}],
   ['the same without the variant, the EV answer missing', Object.assign(clone(RAW), { answers: Object.assign({}, RAW.answers, { tavolsag: A([], 'later'), klima_db: A(['2']) }) }), {}],
+  // F4 (WP M49): the client's wants by room show on the rooms; the job totals stay what drives the items
+  ['wants by room: two in the kitchen, one in the pantry, one for the job', Object.assign(clone(RAW), { scope: Object.assign({}, RAW.scope, { dugalj: 4, lampa: 1 }),
+    roomScope: { R1: { dugalj: 2, lampa: 1 }, R2: { dugalj: 1 } } }), {}],
   ['an empty survey', { kind: 'vrg-vazlat', v: 2, id: 'E0', name: '', seq: 0, rooms: [], points: [], circuits: [], routes: [], memos: [], entries: [], scope: {}, answers: {}, captures: [] }, {}],
 ];
 

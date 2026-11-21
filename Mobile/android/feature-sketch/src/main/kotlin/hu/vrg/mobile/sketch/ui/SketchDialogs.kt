@@ -251,7 +251,7 @@ internal fun SketchDialogs(st: EditorState) {
         is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
         is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
         is Ask.PairPick -> PairPickDialog(st, a.id, close)
-        is Ask.VariantRequest -> VariantRequestDialog(st, close)
+        is Ask.VariantRequest -> VariantRequestDialog(st, close = close)
         is Ask.EntryEdit -> {
             val e = s.entry(a.id) ?: return close()
             var text by remember(a) { mutableStateOf(e.text) }
@@ -294,7 +294,7 @@ internal fun SketchDialogs(st: EditorState) {
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
                     VariantSection(st)
-                    CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-72)
+                    CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-77)
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

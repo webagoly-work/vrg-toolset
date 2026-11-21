@@ -6136,6 +6136,1506 @@
    "markdown": "# Munkakör lap — Árvíztűrő tükörfúrógép 7.\n\n*vrg-sketch-takeoff v1 · felmérés TX · terv: nyers · 2 helyiség, 18 m²*\n\n≈ = becsült, ⚑ = nyitott döntés változtathat rajta. Árat nem tartalmaz: az árazás a Varler Workflow Kit dolga.\n\n## Munkakör\n\n- **A munka jellege:** Felújítás, csere, Elosztó csere\n- **Terület:** Konyha\n- **Rendszerek:** E-autó töltő, Okosotthon, Klíma\n- **Igények:** Dugalj ×5, LED-szalag ×3, Főzőlap, Sütő, Mosogatógép, CEE aljzat (ipari)\n\n## Tételek\n\n| | Tétel | Mennyiség | | Megjegyzés |\n|---|---|---|---|---|\n| ⊙ | Dugalj — új | 5 db | ≈ ⚑ | Munkakör: 5, vázlat: 1 |\n| ⊙ | Dugalj — csere | 1 db | ⚑ |  |\n| ⊙ | Dugalj — bontás | 1 db | ⚑ |  |\n| ⊘ | Kapcsoló — új | 1 db | ⚑ |  |\n| ✱ | Lámpa — csere | 1 db | ⚑ |  |\n| ⊗ | Fix bekötés — új | 1 db | ⚑ |  |\n| • | Típus nélküli pont — új | 1 db | ≈ ⚑ |  |\n| ⊞ | Főzőlap | 1 db | ⚑ |  |\n| ▢ | Sütő | 1 db | ⚑ |  |\n| ◌ | Mosogatógép | 1 db | ⚑ |  |\n| ⏻ | CEE aljzat (ipari) | 1 db | ⚑ |  |\n| ◌ | Áramkör — általános | 2 db |  |  |\n| ◉ | Áramkör — dedikált | 7 db | ≈ ⚑ | gépek, rendszerek szerint: 7, vázlat: 1 |\n| ▣ | Elosztó — csere | 1 db | ⚑ |  |\n| ▣ | Alelosztó — új | 1 db | ≈ ⚑ | alelosztónak vettük |\n| ▣ | Elosztó — új | 1 db | ≈ ⚑ | a válasz szerint: Kell új elosztó? |\n| 〰 | Kábel a nyomvonalon | 4,8 m | ≈ ⚑ | nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz |\n| ⚡ | Kábel az elosztótól (rajzolatlan) | 18,4 m | ≈ ⚑ | az elosztótól a legközelebbi pontig, derékszögben |\n| ⚡ | Kábel az e-autó töltőhöz | 0 m | ≈ ⚑ | a távolság még nincs meg |\n| ⚡ | E-autó töltő | 1 db | ⚑ |  |\n| ❄ | Klíma | 2 db | ⚑ |  |\n| ◈ | Okosotthon | 1 db | ⚑ |  |\n| ═ | LED-szalag | 3 db |  |  |\n\n**Kábel a nyomvonalon** szakaszonként: Világítás 4,3 m, N17 0,5 m\n\n**Kábel az elosztótól (rajzolatlan)** szakaszonként: Konyha 8,6 m, Sütő 9,8 m\n\n## Döntésre vár ⚑\n\n- ⏱ Mikor készült a hálózat? → Dugalj — új, Dugalj — csere, Dugalj — bontás, Kapcsoló — új, Lámpa — csere, Fix bekötés — új, Típus nélküli pont — új, Kábel a nyomvonalon, Kábel az elosztótól (rajzolatlan), Kábel az e-autó töltőhöz\n- Van szabad hely az elosztóban? → Elosztó — csere, Alelosztó — új, Elosztó — új\n- Lesz új nagy fogyasztó? → Főzőlap, Sütő, Mosogatógép, CEE aljzat (ipari), Áramkör — dedikált, E-autó töltő, Klíma, Okosotthon\n- Milyen főzőlap? → Főzőlap, Áramkör — dedikált\n- Mit vezéreljen? → Okosotthon\n- Az autó töltési teljesítménye (AC)? → E-autó töltő\n- ⏱ Milyen messze van az elosztótól? → Kábel az e-autó töltőhöz\n- Hány fázis a bekötés most? → Áramkör — dedikált, E-autó töltő, Klíma, Okosotthon\n\n## Ellenőrizni\n\n- Gépbekötés a Munkakörben: 4, fix bekötés a vázlaton: 1\n\n## Kérdések (5 megválaszolva, 31 nyitott)\n\n- ✓ Mi a kérés lényege? — Csere, felújítás\n- ○ Milyen ingatlan?\n- ○ Ki fér hozzá az ingatlanhoz?\n- ○ Mikorra kell elkészülni?\n- ○ Van költségkeret?\n- ○ Lakott lesz közben az ingatlan?\n- ○ Van régi dokumentáció (terv, jegyzőkönyv)?\n- ○ Ki dönt a megrendelésről?\n- ⏱ Mikor készült a hálózat?\n- ✓ Vezeték anyaga? — Alumínium\n- ○ Van FI-relé (életvédelmi)?\n- ○ Biztosítékok típusa?\n- ○ Mikor volt utoljára érintésvédelmi felülvizsgálat?\n- ○ Hány fázis a bekötés most?\n- ○ Főbiztosíték?\n- ○ Hol van a mérő?\n- ○ Hogyan jön be a hálózat?\n- ○ Lesz új nagy fogyasztó?\n- ○ Mérőszekrény állapota?\n- ○ Van szabad hely az elosztóban?\n- ○ Van áramköri felirat / lista?\n- ○ Földelés?\n- ✓ Kell új elosztó? — Igen\n- ✓ Milyen gépek lesznek a konyhában? — Sütő, Főzőlap\n- ○ Milyen főzőlap?\n- ○ Kész a csempézés?\n- ○ Ki jelöli ki a gépek bekötési helyét?\n- ○ Az autó töltési teljesítménye (AC)?\n- ○ Hol parkol az autó?\n- ⏱ Milyen messze van az elosztótól?\n- ○ Okos funkció a töltőn?\n- ○ Van WiFi a töltő helyén?\n- ○ Milyen okosotthon rendszer?\n- ○ Mit vezéreljen?\n- ✓ Hány beltéri egység lesz? — 2\n- ○ Hol lesz a kültéri egység?\n\n## Jegyzetek\n\n- Az alu vezetéket mind cserélni kell | sürgős [Probléma, Fontos] · konyha\n- ⚑ Tisztázandó: a garázsba is? [Tisztázandó] · R9\n- ✎ régi alu\n\n## Fotók\n\n- ▣ Elosztó: 2\n- ◎ Szoba (Fotópont): 2\n- ◉ idegen: 1\n\n## Helyiségek\n\n- konyha: ≈ 12 m²\n- Kamra: ≈ 6 m²\n"
   },
   {
+   "name": "wants by room: two in the kitchen, one in the pantry, one for the job",
+   "input": {
+    "kind": "vrg-vazlat",
+    "v": 2,
+    "id": "TX",
+    "name": "Árvíztűrő tükörfúrógép 7.",
+    "level": "upper",
+    "seq": 60,
+    "plugins": [
+     "alaprajz",
+     "villany"
+    ],
+    "rooms": [
+     {
+      "id": "R1",
+      "poly": [
+       [
+        0,
+        0
+       ],
+       [
+        160,
+        0
+       ],
+       [
+        160,
+        120
+       ],
+       [
+        0,
+        120
+       ]
+      ],
+      "name": "",
+      "kinds": [
+       "konyha"
+      ]
+     },
+     {
+      "id": "R2",
+      "poly": [
+       [
+        160,
+        0
+       ],
+       [
+        240,
+        0
+       ],
+       [
+        240,
+        120
+       ],
+       [
+        160,
+        120
+       ]
+      ],
+      "name": "Kamra",
+      "kinds": []
+     }
+    ],
+    "lines": [],
+    "measures": [],
+    "points": [
+     {
+      "id": "P3",
+      "at": [
+       40,
+       0
+      ],
+      "type": "socket",
+      "st": "meglevo",
+      "room": "R1",
+      "edge": 0,
+      "t": 0.25
+     },
+     {
+      "id": "P4",
+      "at": [
+       80,
+       0
+      ],
+      "type": "socket",
+      "st": "meglevo",
+      "room": "R1",
+      "edge": 0,
+      "t": 0.5
+     },
+     {
+      "id": "P5",
+      "at": [
+       120,
+       0
+      ],
+      "type": "socket",
+      "st": "tervezett",
+      "room": "R1",
+      "edge": 0,
+      "t": 0.75
+     },
+     {
+      "id": "P6",
+      "at": [
+       80,
+       60
+      ],
+      "type": "light",
+      "st": "meglevo"
+     },
+     {
+      "id": "P7",
+      "at": [
+       0,
+       60
+      ],
+      "type": "fixed",
+      "st": "tervezett",
+      "room": "R1",
+      "edge": 3,
+      "t": 0.5
+     },
+     {
+      "id": "P8",
+      "at": [
+       240,
+       60
+      ],
+      "type": "board",
+      "st": "meglevo",
+      "room": "R2",
+      "edge": 1,
+      "t": 0.5
+     },
+     {
+      "id": "P9",
+      "at": [
+       200,
+       120
+      ],
+      "type": "board",
+      "st": "tervezett",
+      "room": "R2",
+      "edge": 2,
+      "t": 0.5
+     },
+     {
+      "id": "P10",
+      "at": [
+       100,
+       100
+      ],
+      "type": "pont",
+      "st": "tervezett"
+     },
+     {
+      "id": "P11",
+      "at": [
+       160,
+       40
+      ],
+      "type": "switch",
+      "st": "tervezett",
+      "room": "R1",
+      "edge": 1,
+      "t": 0.33
+     }
+    ],
+    "circuits": [
+     {
+      "id": "K12",
+      "name": "Konyha",
+      "col": 4293420060,
+      "members": [
+       "P3",
+       "P4",
+       "P5"
+      ],
+      "board": "P8",
+      "ded": false
+     },
+     {
+      "id": "K13",
+      "name": "Sütő",
+      "col": 4280978651,
+      "members": [
+       "P7"
+      ],
+      "board": "P8",
+      "ded": false
+     },
+     {
+      "id": "K14",
+      "name": "Világítás",
+      "col": 4282232922,
+      "members": [
+       "P6",
+       "P11"
+      ],
+      "board": "P9",
+      "ded": false
+     },
+     {
+      "id": "K15",
+      "name": "Üres",
+      "col": 4282232922,
+      "members": [],
+      "ded": false
+     }
+    ],
+    "routes": [
+     {
+      "id": "N16",
+      "pts": [
+       [
+        160,
+        40
+       ],
+       [
+        120,
+        40
+       ],
+       [
+        80,
+        60
+       ]
+      ],
+      "a": "P11",
+      "b": "P6",
+      "circuit": "K14"
+     },
+     {
+      "id": "N17",
+      "pts": [
+       [
+        10,
+        10
+       ],
+       [
+        30,
+        10
+       ]
+      ]
+     }
+    ],
+    "memos": [
+     {
+      "id": "J18",
+      "at": [
+       20,
+       20
+      ],
+      "text": "régi alu"
+     }
+    ],
+    "tags": [
+     {
+      "id": "T-bontas",
+      "name": "Bontás",
+      "col": 4287257814,
+      "preset": "remove"
+     },
+     {
+      "id": "T-ded",
+      "name": "Dedikált",
+      "col": 4292232517,
+      "preset": "dedicated"
+     },
+     {
+      "id": "T19",
+      "name": "Csere",
+      "col": 4293420060
+     }
+    ],
+    "tagUses": [
+     {
+      "id": "U20",
+      "tag": "T-bontas",
+      "target": "P3"
+     },
+     {
+      "id": "U21",
+      "tag": "T19",
+      "target": "P4"
+     },
+     {
+      "id": "U22",
+      "tag": "T-ded",
+      "target": "P7"
+     },
+     {
+      "id": "U23",
+      "tag": "T19",
+      "target": "P6"
+     }
+    ],
+    "photos": [
+     {
+      "id": "F24",
+      "at": [
+       80,
+       60
+      ],
+      "room": "R1",
+      "shots": [
+       {
+        "deg": 0,
+        "file": "a.jpg",
+        "taken": 1
+       },
+       {
+        "deg": 180,
+        "file": "b.jpg",
+        "taken": 2
+       }
+      ]
+     }
+    ],
+    "entries": [
+     {
+      "id": "E25",
+      "at": 1763459991000,
+      "text": "Az alu vezetéket mind cserélni kell | sürgős",
+      "chips": [
+       "problema",
+       "fontos"
+      ],
+      "room": "R1"
+     },
+     {
+      "id": "E26",
+      "at": 1763459992000,
+      "text": "a garázsba is?",
+      "chips": [
+       "tisztazando"
+      ],
+      "open": true,
+      "room": "R9"
+     }
+    ],
+    "scope": {
+     "felujitas": 1,
+     "eloszto": 1,
+     "konyha": 1,
+     "dugalj": 4,
+     "suto": 1,
+     "fozolap": 1,
+     "mosogatogep": 1,
+     "cee": 1,
+     "ledszalag": 3,
+     "klima": 1,
+     "ev": 1,
+     "okos": 1,
+     "lampa": 1
+    },
+    "answers": {
+     "lenyeg": {
+      "options": [
+       "csere"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "klima_db": {
+      "options": [
+       "4+"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "tavolsag": {
+      "options": [
+       "15"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "uj_eloszto": {
+      "options": [
+       "igen"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "anyag": {
+      "options": [
+       "alu"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "kor": {
+      "options": [],
+      "text": "",
+      "at": 1763459999000,
+      "state": "later"
+     },
+     "gepek": {
+      "options": [
+       "suto",
+       "fozolap"
+      ],
+      "text": "",
+      "at": 1763459999000,
+      "state": "answered"
+     },
+     "foto": {
+      "options": [],
+      "text": "",
+      "at": 1763459999000,
+      "state": "skip"
+     }
+    },
+    "captures": [
+     {
+      "id": "C27",
+      "file": "c.jpg",
+      "purpose": "eloszto",
+      "at": 1763460000000,
+      "note": ""
+     },
+     {
+      "id": "C28",
+      "file": "d.jpg",
+      "purpose": "eloszto",
+      "at": 1763460000000,
+      "note": "fedél nélkül"
+     },
+     {
+      "id": "C29",
+      "file": "e.jpg",
+      "purpose": "idegen",
+      "at": 1763460000000,
+      "note": ""
+     }
+    ],
+    "dismissed": [],
+    "seen": {},
+    "roomScope": {
+     "R1": {
+      "dugalj": 2,
+      "lampa": 1
+     },
+     "R2": {
+      "dugalj": 1
+     }
+    }
+   },
+   "opts": {},
+   "variant": null,
+   "expect": {
+    "kind": "vrg-sketch-takeoff",
+    "v": 1,
+    "made": 1763460000000,
+    "source": {
+     "name": "Árvíztűrő tükörfúrógép 7.",
+     "id": "TX",
+     "level": "upper",
+     "plan": "nyers",
+     "variant": ""
+    },
+    "config": {
+     "endReserveMm": 300,
+     "looseEndMm": 0,
+     "ceilingMm": 2700
+    },
+    "counts": {
+     "items": 24,
+     "work": 24,
+     "est": 10,
+     "open": 22,
+     "decisions": 7,
+     "tisztazando": 1,
+     "answered": 6,
+     "questionsOpen": 30,
+     "rooms": 2,
+     "areaM2": 18,
+     "photos": 5
+    },
+    "scope": [
+     {
+      "group": "jelleg",
+      "label": "A munka jellege",
+      "items": [
+       {
+        "id": "felujitas",
+        "label": "Felújítás, csere",
+        "sym": "↻",
+        "qty": 1
+       },
+       {
+        "id": "eloszto",
+        "label": "Elosztó csere",
+        "sym": "▣",
+        "qty": 1
+       }
+      ]
+     },
+     {
+      "group": "terulet",
+      "label": "Terület",
+      "items": [
+       {
+        "id": "konyha",
+        "label": "Konyha",
+        "sym": "🍳",
+        "qty": 1
+       }
+      ]
+     },
+     {
+      "group": "rendszer",
+      "label": "Rendszerek",
+      "items": [
+       {
+        "id": "ev",
+        "label": "E-autó töltő",
+        "sym": "⚡",
+        "qty": 1
+       },
+       {
+        "id": "okos",
+        "label": "Okosotthon",
+        "sym": "◈",
+        "qty": 1
+       },
+       {
+        "id": "klima",
+        "label": "Klíma",
+        "sym": "❄",
+        "qty": 1
+       }
+      ]
+     },
+     {
+      "group": "igeny",
+      "label": "Igények",
+      "items": [
+       {
+        "id": "dugalj",
+        "label": "Dugalj",
+        "sym": "⊙",
+        "qty": 4
+       },
+       {
+        "id": "lampa",
+        "label": "Lámpa",
+        "sym": "✱",
+        "qty": 1
+       },
+       {
+        "id": "ledszalag",
+        "label": "LED-szalag",
+        "sym": "═",
+        "qty": 3
+       },
+       {
+        "id": "fozolap",
+        "label": "Főzőlap",
+        "sym": "⊞",
+        "qty": 1
+       },
+       {
+        "id": "suto",
+        "label": "Sütő",
+        "sym": "▢",
+        "qty": 1
+       },
+       {
+        "id": "mosogatogep",
+        "label": "Mosogatógép",
+        "sym": "◌",
+        "qty": 1
+       },
+       {
+        "id": "cee",
+        "label": "CEE aljzat (ipari)",
+        "sym": "⏻",
+        "qty": 1
+       }
+      ]
+     }
+    ],
+    "items": [
+     {
+      "id": "pont.socket.uj",
+      "cat": "pont",
+      "label": "Dugalj — új",
+      "sym": "⊙",
+      "unit": "db",
+      "qty": 4,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "Munkakör: 4, vázlat: 1",
+      "refs": [
+       "P5"
+      ]
+     },
+     {
+      "id": "pont.socket.csere",
+      "cat": "pont",
+      "label": "Dugalj — csere",
+      "sym": "⊙",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P4"
+      ]
+     },
+     {
+      "id": "pont.socket.bontas",
+      "cat": "pont",
+      "label": "Dugalj — bontás",
+      "sym": "⊙",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P3"
+      ]
+     },
+     {
+      "id": "pont.switch.uj",
+      "cat": "pont",
+      "label": "Kapcsoló — új",
+      "sym": "⊘",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P11"
+      ]
+     },
+     {
+      "id": "pont.light.uj",
+      "cat": "pont",
+      "label": "Lámpa — új",
+      "sym": "✱",
+      "unit": "db",
+      "qty": 1,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "Munkakör: 1, vázlat: 0",
+      "refs": []
+     },
+     {
+      "id": "pont.light.csere",
+      "cat": "pont",
+      "label": "Lámpa — csere",
+      "sym": "✱",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P6"
+      ]
+     },
+     {
+      "id": "pont.fixed.uj",
+      "cat": "pont",
+      "label": "Fix bekötés — új",
+      "sym": "⊗",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P7"
+      ]
+     },
+     {
+      "id": "pont.pont.uj",
+      "cat": "pont",
+      "label": "Típus nélküli pont — új",
+      "sym": "•",
+      "unit": "db",
+      "qty": 1,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "",
+      "refs": [
+       "P10"
+      ]
+     },
+     {
+      "id": "gep.fozolap",
+      "cat": "gep",
+      "label": "Főzőlap",
+      "sym": "⊞",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto",
+       "fozolap_tipus"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "gep.suto",
+      "cat": "gep",
+      "label": "Sütő",
+      "sym": "▢",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "gep.mosogatogep",
+      "cat": "gep",
+      "label": "Mosogatógép",
+      "sym": "◌",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "gep.cee",
+      "cat": "gep",
+      "label": "CEE aljzat (ipari)",
+      "sym": "⏻",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "aramkor.altalanos",
+      "cat": "aramkor",
+      "label": "Áramkör — általános",
+      "sym": "◌",
+      "unit": "db",
+      "qty": 2,
+      "est": false,
+      "work": true,
+      "open": [],
+      "note": "",
+      "refs": [
+       "K12",
+       "K14"
+      ]
+     },
+     {
+      "id": "aramkor.dedikalt",
+      "cat": "aramkor",
+      "label": "Áramkör — dedikált",
+      "sym": "◉",
+      "unit": "db",
+      "qty": 9,
+      "est": true,
+      "work": true,
+      "open": [
+       "uj_fogyaszto",
+       "fozolap_tipus",
+       "fazis"
+      ],
+      "note": "gépek, rendszerek szerint: 9, vázlat: 1",
+      "refs": [
+       "K13"
+      ]
+     },
+     {
+      "id": "eloszto.csere",
+      "cat": "eloszto",
+      "label": "Elosztó — csere",
+      "sym": "▣",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "szabad_hely"
+      ],
+      "note": "",
+      "refs": [
+       "P8"
+      ]
+     },
+     {
+      "id": "aleloszto.uj",
+      "cat": "aleloszto",
+      "label": "Alelosztó — új",
+      "sym": "▣",
+      "unit": "db",
+      "qty": 1,
+      "est": true,
+      "work": true,
+      "open": [
+       "szabad_hely"
+      ],
+      "note": "alelosztónak vettük",
+      "refs": [
+       "P9"
+      ]
+     },
+     {
+      "id": "eloszto.uj",
+      "cat": "eloszto",
+      "label": "Elosztó — új",
+      "sym": "▣",
+      "unit": "db",
+      "qty": 1,
+      "est": true,
+      "work": true,
+      "open": [
+       "szabad_hely"
+      ],
+      "note": "a válasz szerint: Kell új elosztó?",
+      "refs": []
+     },
+     {
+      "id": "kabel.nyomvonal",
+      "cat": "kabel",
+      "label": "Kábel a nyomvonalon",
+      "sym": "〰",
+      "unit": "m",
+      "qty": 4.8,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz",
+      "refs": [
+       "N16",
+       "N17"
+      ],
+      "parts": [
+       {
+        "ref": "N16",
+        "label": "Világítás",
+        "m": 4.3
+       },
+       {
+        "ref": "N17",
+        "label": "",
+        "m": 0.5
+       }
+      ]
+     },
+     {
+      "id": "kabel.bekotes",
+      "cat": "kabel",
+      "label": "Kábel az elosztótól (rajzolatlan)",
+      "sym": "⚡",
+      "unit": "m",
+      "qty": 18.4,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "az elosztótól a legközelebbi pontig, derékszögben",
+      "refs": [
+       "K12",
+       "K13"
+      ],
+      "parts": [
+       {
+        "ref": "K12",
+        "label": "Konyha",
+        "m": 8.6
+       },
+       {
+        "ref": "K13",
+        "label": "Sütő",
+        "m": 9.8
+       }
+      ]
+     },
+     {
+      "id": "kabel.ev",
+      "cat": "kabel",
+      "label": "Kábel az e-autó töltőhöz",
+      "sym": "⚡",
+      "unit": "m",
+      "qty": 15,
+      "est": true,
+      "work": true,
+      "open": [
+       "kor"
+      ],
+      "note": "a válasz szerint",
+      "refs": []
+     },
+     {
+      "id": "rendszer.ev",
+      "cat": "rendszer",
+      "label": "E-autó töltő",
+      "sym": "⚡",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto",
+       "auto_kw",
+       "fazis"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "rendszer.klima",
+      "cat": "rendszer",
+      "label": "Klíma",
+      "sym": "❄",
+      "unit": "db",
+      "qty": 4,
+      "est": true,
+      "work": true,
+      "open": [
+       "uj_fogyaszto",
+       "fazis"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "rendszer.okos",
+      "cat": "rendszer",
+      "label": "Okosotthon",
+      "sym": "◈",
+      "unit": "db",
+      "qty": 1,
+      "est": false,
+      "work": true,
+      "open": [
+       "uj_fogyaszto",
+       "okos_mit",
+       "fazis"
+      ],
+      "note": "",
+      "refs": []
+     },
+     {
+      "id": "igeny.ledszalag",
+      "cat": "igeny",
+      "label": "LED-szalag",
+      "sym": "═",
+      "unit": "db",
+      "qty": 3,
+      "est": false,
+      "work": true,
+      "open": [],
+      "note": "",
+      "refs": []
+     }
+    ],
+    "decisions": [
+     {
+      "q": "kor",
+      "label": "Mikor készült a hálózat?",
+      "who": "ugyfel",
+      "state": "later",
+      "affects": [
+       "pont.socket.uj",
+       "pont.socket.csere",
+       "pont.socket.bontas",
+       "pont.switch.uj",
+       "pont.light.uj",
+       "pont.light.csere",
+       "pont.fixed.uj",
+       "pont.pont.uj",
+       "kabel.nyomvonal",
+       "kabel.bekotes",
+       "kabel.ev"
+      ]
+     },
+     {
+      "q": "szabad_hely",
+      "label": "Van szabad hely az elosztóban?",
+      "who": "szemle",
+      "state": "open",
+      "affects": [
+       "eloszto.csere",
+       "aleloszto.uj",
+       "eloszto.uj"
+      ]
+     },
+     {
+      "q": "uj_fogyaszto",
+      "label": "Lesz új nagy fogyasztó?",
+      "who": "ugyfel",
+      "state": "open",
+      "affects": [
+       "gep.fozolap",
+       "gep.suto",
+       "gep.mosogatogep",
+       "gep.cee",
+       "aramkor.dedikalt",
+       "rendszer.ev",
+       "rendszer.klima",
+       "rendszer.okos"
+      ]
+     },
+     {
+      "q": "fozolap_tipus",
+      "label": "Milyen főzőlap?",
+      "who": "ugyfel",
+      "state": "open",
+      "affects": [
+       "gep.fozolap",
+       "aramkor.dedikalt"
+      ]
+     },
+     {
+      "q": "okos_mit",
+      "label": "Mit vezéreljen?",
+      "who": "ugyfel",
+      "state": "open",
+      "affects": [
+       "rendszer.okos"
+      ]
+     },
+     {
+      "q": "auto_kw",
+      "label": "Az autó töltési teljesítménye (AC)?",
+      "who": "ugyfel",
+      "state": "open",
+      "affects": [
+       "rendszer.ev"
+      ]
+     },
+     {
+      "q": "fazis",
+      "label": "Hány fázis a bekötés most?",
+      "who": "szemle",
+      "state": "open",
+      "affects": [
+       "aramkor.dedikalt",
+       "rendszer.ev",
+       "rendszer.klima",
+       "rendszer.okos"
+      ]
+     }
+    ],
+    "checks": [
+     "Gépbekötés a Munkakörben: 4, fix bekötés a vázlaton: 1"
+    ],
+    "questions": [
+     {
+      "q": "lenyeg",
+      "label": "Mi a kérés lényege?",
+      "who": "ugyfel",
+      "state": "answered",
+      "options": [
+       "Csere, felújítás"
+      ],
+      "text": ""
+     },
+     {
+      "q": "ingatlan",
+      "label": "Milyen ingatlan?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "hozzaferes",
+      "label": "Ki fér hozzá az ingatlanhoz?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "hatarido",
+      "label": "Mikorra kell elkészülni?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "keret",
+      "label": "Van költségkeret?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "lakott",
+      "label": "Lakott lesz közben az ingatlan?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "doksi",
+      "label": "Van régi dokumentáció (terv, jegyzőkönyv)?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "dontes",
+      "label": "Ki dönt a megrendelésről?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "kor",
+      "label": "Mikor készült a hálózat?",
+      "who": "ugyfel",
+      "state": "later",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "anyag",
+      "label": "Vezeték anyaga?",
+      "who": "szemle",
+      "state": "answered",
+      "options": [
+       "Alumínium"
+      ],
+      "text": ""
+     },
+     {
+      "q": "fi",
+      "label": "Van FI-relé (életvédelmi)?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "biztositek",
+      "label": "Biztosítékok típusa?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "vizsgalat",
+      "label": "Mikor volt utoljára érintésvédelmi felülvizsgálat?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "fazis",
+      "label": "Hány fázis a bekötés most?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "fobizt",
+      "label": "Főbiztosíték?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "mero_hely",
+      "label": "Hol van a mérő?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "bekotes",
+      "label": "Hogyan jön be a hálózat?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "uj_fogyaszto",
+      "label": "Lesz új nagy fogyasztó?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "mero_allapot",
+      "label": "Mérőszekrény állapota?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "szabad_hely",
+      "label": "Van szabad hely az elosztóban?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "felirat",
+      "label": "Van áramköri felirat / lista?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "foldeles",
+      "label": "Földelés?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "uj_eloszto",
+      "label": "Kell új elosztó?",
+      "who": "ugyfel",
+      "state": "answered",
+      "options": [
+       "Igen"
+      ],
+      "text": ""
+     },
+     {
+      "q": "gepek",
+      "label": "Milyen gépek lesznek a konyhában?",
+      "who": "ugyfel",
+      "state": "answered",
+      "options": [
+       "Sütő",
+       "Főzőlap"
+      ],
+      "text": ""
+     },
+     {
+      "q": "fozolap_tipus",
+      "label": "Milyen főzőlap?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "csempe",
+      "label": "Kész a csempézés?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "bekotes_hely",
+      "label": "Ki jelöli ki a gépek bekötési helyét?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "auto_kw",
+      "label": "Az autó töltési teljesítménye (AC)?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "parkolo",
+      "label": "Hol parkol az autó?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "tavolsag",
+      "label": "Milyen messze van az elosztótól?",
+      "who": "szemle",
+      "state": "answered",
+      "options": [
+       "5–15 m"
+      ],
+      "text": ""
+     },
+     {
+      "q": "okos_tolto",
+      "label": "Okos funkció a töltőn?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "wifi_park",
+      "label": "Van WiFi a töltő helyén?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "okos_rendszer",
+      "label": "Milyen okosotthon rendszer?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "okos_mit",
+      "label": "Mit vezéreljen?",
+      "who": "ugyfel",
+      "state": "open",
+      "options": [],
+      "text": ""
+     },
+     {
+      "q": "klima_db",
+      "label": "Hány beltéri egység lesz?",
+      "who": "ugyfel",
+      "state": "answered",
+      "options": [
+       "4 vagy több"
+      ],
+      "text": ""
+     },
+     {
+      "q": "kulteri_egyseg",
+      "label": "Hol lesz a kültéri egység?",
+      "who": "szemle",
+      "state": "open",
+      "options": [],
+      "text": ""
+     }
+    ],
+    "notes": [
+     {
+      "id": "E25",
+      "text": "Az alu vezetéket mind cserélni kell | sürgős",
+      "chips": [
+       "Probléma",
+       "Fontos"
+      ],
+      "room": "konyha",
+      "open": false
+     },
+     {
+      "id": "E26",
+      "text": "a garázsba is?",
+      "chips": [
+       "Tisztázandó"
+      ],
+      "room": "R9",
+      "open": true
+     }
+    ],
+    "memos": [
+     {
+      "id": "J18",
+      "text": "régi alu"
+     }
+    ],
+    "photos": [
+     {
+      "purpose": "eloszto",
+      "label": "Elosztó",
+      "sym": "▣",
+      "n": 2,
+      "files": [
+       "arvizturo-tukorfurogep-7_C27_eloszto.jpg",
+       "arvizturo-tukorfurogep-7_C28_eloszto.jpg"
+      ]
+     },
+     {
+      "purpose": "szoba",
+      "label": "Szoba (Fotópont)",
+      "sym": "◎",
+      "n": 2,
+      "files": []
+     },
+     {
+      "purpose": "idegen",
+      "label": "idegen",
+      "sym": "◉",
+      "n": 1,
+      "files": [
+       "arvizturo-tukorfurogep-7_C29_idegen.jpg"
+      ]
+     }
+    ],
+    "rooms": [
+     {
+      "id": "R1",
+      "name": "konyha",
+      "kinds": [
+       "konyha"
+      ],
+      "areaM2": 12,
+      "est": true,
+      "wants": [
+       {
+        "id": "dugalj",
+        "label": "Dugalj",
+        "sym": "⊙",
+        "qty": 2
+       },
+       {
+        "id": "lampa",
+        "label": "Lámpa",
+        "sym": "✱",
+        "qty": 1
+       }
+      ]
+     },
+     {
+      "id": "R2",
+      "name": "Kamra",
+      "kinds": [],
+      "areaM2": 6,
+      "est": true,
+      "wants": [
+       {
+        "id": "dugalj",
+        "label": "Dugalj",
+        "sym": "⊙",
+        "qty": 1
+       }
+      ]
+     }
+    ]
+   },
+   "markdown": "# Munkakör lap — Árvíztűrő tükörfúrógép 7.\n\n*vrg-sketch-takeoff v1 · felmérés TX · terv: nyers · 2 helyiség, 18 m²*\n\n≈ = becsült, ⚑ = nyitott döntés változtathat rajta. Árat nem tartalmaz: az árazás a Varler Workflow Kit dolga.\n\n## Munkakör\n\n- **A munka jellege:** Felújítás, csere, Elosztó csere\n- **Terület:** Konyha\n- **Rendszerek:** E-autó töltő, Okosotthon, Klíma\n- **Igények:** Dugalj ×4, Lámpa, LED-szalag ×3, Főzőlap, Sütő, Mosogatógép, CEE aljzat (ipari)\n\n## Tételek\n\n| | Tétel | Mennyiség | | Megjegyzés |\n|---|---|---|---|---|\n| ⊙ | Dugalj — új | 4 db | ≈ ⚑ | Munkakör: 4, vázlat: 1 |\n| ⊙ | Dugalj — csere | 1 db | ⚑ |  |\n| ⊙ | Dugalj — bontás | 1 db | ⚑ |  |\n| ⊘ | Kapcsoló — új | 1 db | ⚑ |  |\n| ✱ | Lámpa — új | 1 db | ≈ ⚑ | Munkakör: 1, vázlat: 0 |\n| ✱ | Lámpa — csere | 1 db | ⚑ |  |\n| ⊗ | Fix bekötés — új | 1 db | ⚑ |  |\n| • | Típus nélküli pont — új | 1 db | ≈ ⚑ |  |\n| ⊞ | Főzőlap | 1 db | ⚑ |  |\n| ▢ | Sütő | 1 db | ⚑ |  |\n| ◌ | Mosogatógép | 1 db | ⚑ |  |\n| ⏻ | CEE aljzat (ipari) | 1 db | ⚑ |  |\n| ◌ | Áramkör — általános | 2 db |  |  |\n| ◉ | Áramkör — dedikált | 9 db | ≈ ⚑ | gépek, rendszerek szerint: 9, vázlat: 1 |\n| ▣ | Elosztó — csere | 1 db | ⚑ |  |\n| ▣ | Alelosztó — új | 1 db | ≈ ⚑ | alelosztónak vettük |\n| ▣ | Elosztó — új | 1 db | ≈ ⚑ | a válasz szerint: Kell új elosztó? |\n| 〰 | Kábel a nyomvonalon | 4,8 m | ≈ ⚑ | nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz |\n| ⚡ | Kábel az elosztótól (rajzolatlan) | 18,4 m | ≈ ⚑ | az elosztótól a legközelebbi pontig, derékszögben |\n| ⚡ | Kábel az e-autó töltőhöz | 15 m | ≈ ⚑ | a válasz szerint |\n| ⚡ | E-autó töltő | 1 db | ⚑ |  |\n| ❄ | Klíma | 4 db | ≈ ⚑ |  |\n| ◈ | Okosotthon | 1 db | ⚑ |  |\n| ═ | LED-szalag | 3 db |  |  |\n\n**Kábel a nyomvonalon** szakaszonként: Világítás 4,3 m, N17 0,5 m\n\n**Kábel az elosztótól (rajzolatlan)** szakaszonként: Konyha 8,6 m, Sütő 9,8 m\n\n## Döntésre vár ⚑\n\n- ⏱ Mikor készült a hálózat? → Dugalj — új, Dugalj — csere, Dugalj — bontás, Kapcsoló — új, Lámpa — új, Lámpa — csere, Fix bekötés — új, Típus nélküli pont — új, Kábel a nyomvonalon, Kábel az elosztótól (rajzolatlan), Kábel az e-autó töltőhöz\n- Van szabad hely az elosztóban? → Elosztó — csere, Alelosztó — új, Elosztó — új\n- Lesz új nagy fogyasztó? → Főzőlap, Sütő, Mosogatógép, CEE aljzat (ipari), Áramkör — dedikált, E-autó töltő, Klíma, Okosotthon\n- Milyen főzőlap? → Főzőlap, Áramkör — dedikált\n- Mit vezéreljen? → Okosotthon\n- Az autó töltési teljesítménye (AC)? → E-autó töltő\n- Hány fázis a bekötés most? → Áramkör — dedikált, E-autó töltő, Klíma, Okosotthon\n\n## Ellenőrizni\n\n- Gépbekötés a Munkakörben: 4, fix bekötés a vázlaton: 1\n\n## Kérdések (6 megválaszolva, 30 nyitott)\n\n- ✓ Mi a kérés lényege? — Csere, felújítás\n- ○ Milyen ingatlan?\n- ○ Ki fér hozzá az ingatlanhoz?\n- ○ Mikorra kell elkészülni?\n- ○ Van költségkeret?\n- ○ Lakott lesz közben az ingatlan?\n- ○ Van régi dokumentáció (terv, jegyzőkönyv)?\n- ○ Ki dönt a megrendelésről?\n- ⏱ Mikor készült a hálózat?\n- ✓ Vezeték anyaga? — Alumínium\n- ○ Van FI-relé (életvédelmi)?\n- ○ Biztosítékok típusa?\n- ○ Mikor volt utoljára érintésvédelmi felülvizsgálat?\n- ○ Hány fázis a bekötés most?\n- ○ Főbiztosíték?\n- ○ Hol van a mérő?\n- ○ Hogyan jön be a hálózat?\n- ○ Lesz új nagy fogyasztó?\n- ○ Mérőszekrény állapota?\n- ○ Van szabad hely az elosztóban?\n- ○ Van áramköri felirat / lista?\n- ○ Földelés?\n- ✓ Kell új elosztó? — Igen\n- ✓ Milyen gépek lesznek a konyhában? — Sütő, Főzőlap\n- ○ Milyen főzőlap?\n- ○ Kész a csempézés?\n- ○ Ki jelöli ki a gépek bekötési helyét?\n- ○ Az autó töltési teljesítménye (AC)?\n- ○ Hol parkol az autó?\n- ✓ Milyen messze van az elosztótól? — 5–15 m\n- ○ Okos funkció a töltőn?\n- ○ Van WiFi a töltő helyén?\n- ○ Milyen okosotthon rendszer?\n- ○ Mit vezéreljen?\n- ✓ Hány beltéri egység lesz? — 4 vagy több\n- ○ Hol lesz a kültéri egység?\n\n## Jegyzetek\n\n- Az alu vezetéket mind cserélni kell | sürgős [Probléma, Fontos] · konyha\n- ⚑ Tisztázandó: a garázsba is? [Tisztázandó] · R9\n- ✎ régi alu\n\n## Fotók\n\n- ▣ Elosztó: 2\n- ◎ Szoba (Fotópont): 2\n- ◉ idegen: 1\n\n## Helyiségek\n\n- konyha: ≈ 12 m² — Dugalj ×2, Lámpa ×1\n- Kamra: ≈ 6 m² — Dugalj ×1\n"
+  },
+  {
    "name": "an empty survey",
    "input": {
     "kind": "vrg-vazlat",

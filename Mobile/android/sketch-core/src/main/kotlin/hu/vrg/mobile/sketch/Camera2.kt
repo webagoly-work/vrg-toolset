@@ -72,7 +72,7 @@ object Camera2 {
     fun exportPlan(c: Capture, stripGps: Boolean = true): ExportPlan {
         val blur = c.marks.any { it.kind.blur }
         val other = c.marks.any { !it.kind.blur }
-        // [stripGps] = the "GPS törlése kiadáskor" switch (CameraFeatures, D-72); a personal photo loses it regardless
+        // [stripGps] = the "GPS törlése kiadáskor" switch (CameraFeatures, D-77); a personal photo loses it regardless
         return ExportPlan(burnBlur = blur && c.kind == CaptureKind.PHOTO, marked = other && c.kind == CaptureKind.PHOTO,
             gps = (c.keepGps || !stripGps) && !c.privacy && c.kind == CaptureKind.PHOTO)
     }

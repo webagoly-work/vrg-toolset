@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-// D-72: every Kamera 2 feature on by default, each and all switchable; faces become blur proposals.
+// D-77: every Kamera 2 feature on by default, each and all switchable; faces become blur proposals.
 class CameraFeaturesTest {
     @Test fun everythingIsOnByDefaultAndANewFeatureArrivesOn() {
         assertTrue(CameraFeatures.ALL.all { CameraFeatures.on(emptySet(), it.id) })

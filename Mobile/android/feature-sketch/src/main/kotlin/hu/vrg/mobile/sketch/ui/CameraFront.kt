@@ -270,7 +270,7 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
             Field(note, { note = it }, "Felirat, megjegyzés", lines = 2)
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                    try { dictate.launch(dictationIntent("Mi látszik a képen?")) } catch (e: ActivityNotFoundException) { st.note = "Nincs beszédfelismerő a telefonon." }
+                    try { dictate.launch(dictationIntent("Mi látszik a képen?")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                 }.padding(vertical = 8.dp))
                 if (c.lat != null && c.lon != null) Text("⌖ %.5f, %.5f".format(c.lat, c.lon), style = Melyviz.readout, modifier = Modifier.padding(vertical = 8.dp))
                 Spacer(Modifier.weight(1f))

@@ -63,6 +63,7 @@ a v1 file opens with empty intake.
 |---|---|---|
 | `entries` | `{id E…, at, text, chips[], room?, target?, open, voice}` | a note or a chip-only fact; `open` = Tisztázandó |
 | `scope` | `{id → qty}` | munkakör toggles; qty for countable wants |
+| `roomScope` | `{room id → {id → qty}}` | M49: the part of a countable want that belongs to a room; `scope` stays the job total, the rest is *Általános* |
 | `answers` | `{qid → {options[], text, at, state}}` | state `answered` / `later` / `skip` |
 | `captures` | `{id C…, file, purpose, at, room?, target?, shot?, note, lat?, lon?, marks[]}` + M46 `{kind?, phase?, pair?, privacy?, keepGps?, ocrAt?, ocr[]?, durationMs?, bytes?, signer?}` | a purpose photo (or M46: a walk video, a signature); `shot` = the shot-list item it fulfils; marks = vector markup over the photo (M46: also blur `elmos` / `elmos_ecset`); `pair` = an after-photo's before; `ocr` = what the type-plate reader found |
 | `site` | `{address, lat?, lon?, source, footprint?, outline?, place?}` | the place; footprint = the building's outline measured from the map; outline = its corners `[lat, lon]` (OSM, drawn, or traced over satellite); place = where the solved sketch sits on it `{lat, lon, rot, auto}` (M48) |
@@ -104,7 +105,15 @@ the phone packs a request and hands it to an agent (Átadás to the PC, or the C
 **GO VARIANT**. The agent follows `Sketcher/variants/PROTOCOL.md`: reads the request, plans a first version, asks the
 crucial questions back, writes and validates the variant, commits it to `main`. The phone picks it up from GitHub
 (and from its bundled assets after the next release). In a sketch, ⚙ lists the variants; the chosen one shows as a
-toggle in the top corner, switching between the original and the variant at any moment.
+toggle in the top corner, switching between the original and the variant at any moment. Its long press (RCO) lists the variants,
+the original, ⟳ refresh and ＋ request; the same list (each variant starting a new survey) is on the long press of the
+Sketcher's home tile and its Asztal dock dial (M49, D-73).
+
+A variant can also **tune the drawing tools** (M49, D-74): an optional `draw` block with `snapAngle` (the Vonal tool's
+step: 0 / 15 / 30 / 45 / 90°), `snapGrid` (m: corners land on the grid unless a neighbour's corner line is near),
+`defaultRoom {w, d}` (m: a tap on paper with Szoba lays a room of that size), `measureFirst` (a new room opens its size
+dialog) and `pointSnap` (`wall` / `free`). Metres follow the sketch's current scale. `sketch-core` `DrawTune.kt` is the
+logic; a bad value falls back to the original on the phone and fails `variant-check`.
 
 ## 6. Where things run
 
@@ -116,7 +125,7 @@ toggle in the top corner, switching between the original and the variant at any 
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-72 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71; the site placement (M48): D-62 … D-66.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-77 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
 
 ## 7. Kamera 2 (M46)
 
@@ -126,7 +135,7 @@ answer or a note only when tapped; blur (▦ / ▒) kept as vectors and burned i
 stripped from every exported copy unless kept; before / after pairs compared with a slider; the client's signature as a
 *dokumentum* capture; the walk video as a capture of kind video; the ◉ hold menu leads with the next missing shots,
 and „＋ még” repeats the last purpose. Faces are found on the phone too (`FaceFinder`) and proposed as blur rectangles.
-Every one of these is a switch in ⚙ → *Kamera funkciók* (`CameraFeatures`, one setting per phone, D-72). The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
+Every one of these is a switch in ⚙ → *Kamera funkciók* (`CameraFeatures`, one setting per phone, D-77). The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
 
 ## 8. From survey to quote (M47)
 
@@ -137,3 +146,10 @@ where it is a guess, ⚑ where an open question can still change it. It carries 
 (`vrg-sketch-takeoff` v1 + a Hungarian summary) is the hand-over to the Varler Workflow Kit on the PC; the contract and
 the brief for that session are in `TAKEOFF.md`. The Planner keeps the intake and the takeoff with the job.
 
+## 9. The small gaps (M49)
+
+Fork F4 (`docs/mobile/WP/M49.md`): the client's **wants per room** (Munkakör → Igények → *Hová* and *Szobánként*; a
+long press re-links one; `sketch-core` `Wants.kt` = `fieldkit.js` `wants`, pinned by the shared fixture; the Planner
+package carries `sk.wants` per room and `plan.wants`); the **variants on the long press** of the Sketcher's tile, dock
+dial and corner toggle (`SketchLaunch.kt`); variants that **tune the drawing tools** (§5, `DrawTune.kt`); the kit's
+*égett* detector skips *kiégett*; the deadline question has a date field.

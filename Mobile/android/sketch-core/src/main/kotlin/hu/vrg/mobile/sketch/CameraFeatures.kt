@@ -1,6 +1,6 @@
 package hu.vrg.mobile.sketch
 
-// Kamera 2's features as switches (the Founder, 2026-11-21, D-72): every feature is built in and on by default, and
+// Kamera 2's features as switches (the Founder, 2026-11-21, D-77): every feature is built in and on by default, and
 // each one, or all of them at once, can be switched off in ⚙ → Kamera funkciók. The phone stores only what is OFF,
 // so a feature added later arrives switched on. A feature that needs another is off while the other is off.
 

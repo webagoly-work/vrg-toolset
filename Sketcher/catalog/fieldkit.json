@@ -709,7 +709,7 @@
   },
   {
    "id": "egett",
-   "re": "eget|ego szag|egett szag|szikraz|meleged|felforrosod",
+   "re": "(?<!ki)eget|ego szag|egett szag|szikraz|meleged|felforrosod",
    "suggest": {
     "scope": [
      "hiba"
@@ -915,7 +915,10 @@
      "id": "datum",
      "label": "Konkrét dátum"
     }
-   ]
+   ],
+   "num": {
+    "unit": "dátum"
+   }
   },
   {
    "id": "keret",
