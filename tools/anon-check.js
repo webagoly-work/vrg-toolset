@@ -63,6 +63,8 @@ const TRADE = [
   ['HU trade abbreviation', W('FI|ÁVK|AVK|MSZ|HD 60364|EPH')],
   ['EN trade word', STEM('electric|electrician|electro|breaker|socket|outlet|wiring|wire|cable|cabling|voltage|ampere|amperage|earthing|grounding|ground fault|conduit|junction box|switchboard|switchgear|consumer unit|panelboard|distribution board|fuse|luminaire|lamp|light switch|light fitting|lighting|photovoltaic|solar|inverter|heat pump|wallbox|charger|charging|kilowatt|watt|megger|insulation resist|residual current|overcurrent|short circuit|three-phase|single-phase|live wire|neutral wire|busbar|terminal block|rcd|rcbo|mcb')],
   ['EN trade word (whole)', WI('circuit|circuits|meter|meters|volt|volts|amp|amps|phase|phases|power point|EV|PV|kW|kWh|kVA|mA|IP\\d\\d|CEE|DIN rail|Schuko|NYM|MT|MBCu|FTP|UTP|ESP32|ESP|Arduino|smart home|smart-home|intercom|doorbell|antenna')],
+  ['locale giveaway (B)', STEM('Hungar|Magyar|Budapest|forint')],
+  ['locale giveaway (B, whole)', W('HUF|Ft')],
   ['trade giveaway phrase', WI('installer of|installation work|installation trade|burnt|scorched|sparks?|shock')],
 ];
 
