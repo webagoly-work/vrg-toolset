@@ -17,7 +17,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 
 ### M24 · Vázlat (`sketch`): the field sketch, the Planner's quick build for the site
 
-- [ ] **M24.1** Kezdőlap → Munka → **Vázlat** → *＋ Új vázlat*. Az üres lapon a **Szoba** eszköz az aktív.
+- [ ] **M24.1** Kezdőlap → a nagy **VRG Sketcher** csempe (M32) → *＋ Új felmérés* → a **Vázlat** nézet. Az üres lapon a **Szoba** eszköz az aktív.
 - [ ] **M24.2** Húzz három téglalapot egymás mellé / alá: a szomszédos falak egymáshoz ugranak. Két ujjal nagyítás, görgetés; egy ujjal, eszköz nélkül görgetés.
 - [ ] **M24.3** **Méret**: koppints az első szoba belsejébe, add meg mindkét méretet; a második szobának csak a szélességét, a harmadiknak csak a mélységét. A szobák felirata: mért / számolt méret glow színnel, a becsült `≈`-vel, korall színnel és szaggatott fallal.
 - [ ] **M24.4** **Vonal**: egy L alakú szoba sarokról sarokra; a 12°-on belüli szakasz vízszintes / függőleges lesz; az első pontra koppintva szoba.
