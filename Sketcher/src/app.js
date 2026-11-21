@@ -348,9 +348,20 @@
       return '<h3 style="color:' + esc(f.color) + '">' + esc(f.sym) + ' ' + esc(f.label) + ' (' + l.length + ')</h3>' + l.map(leHtml).join(''); }).join('');
   }
 
+  // F4 (WP M49): what the variant tunes in the phone's drawing tools (sketch-core DrawTune.describe, same words)
+  function drawLine(v) {
+    const d = v.draw; if (!d) return '';
+    const n = x => String(x).replace('.', ','), out = [];
+    if (d.snapAngle > 0) out.push('Vonal: ' + d.snapAngle + '°-os lépés');
+    if (d.snapGrid > 0) out.push('Rács: ' + n(d.snapGrid) + ' m');
+    if (d.defaultRoom) out.push('Koppintás = ' + n(d.defaultRoom.w) + ' × ' + n(d.defaultRoom.d) + ' m szoba');
+    if (d.measureFirst) out.push('Új szoba: rögtön a méret');
+    if (d.pointSnap === 'free') out.push('Pont: nem ugrik a falra');
+    return out.length ? '<div class="small draw" data-draw="' + esc(v.id) + '">✎ ' + out.map(esc).join(' · ') + '</div>' : '';
+  }
   function vVariansok() {
     return '<div class="grid">' + VARIANTS.map(v => '<div class="card" style="border-left:3px solid ' + esc(v.color) + '"><div style="font-size:18px;color:' + esc(v.color) + '">' + esc(v.sym) + ' <b>' + esc(v.name) + '</b>' +
-      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' +
+      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' + drawLine(v) +
       '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="vpick" data-id="' + esc(v.id) + '">Használat ebben a felmérésben</button></div></div>').join('') + '</div>' +
       '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
       '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>';

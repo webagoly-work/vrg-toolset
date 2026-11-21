@@ -276,6 +276,17 @@
   const POINT_TYPES = ['pont', 'socket', 'switch', 'light', 'junction', 'data', 'fixed', 'sensor', 'board'];
   const ROOM_KINDS = ['nappali', 'konyha', 'halo', 'furdo', 'wc', 'eloszoba', 'kozlekedo', 'etkezo', 'dolgozo', 'kamra', 'gepeszet', 'gyerek', 'gardrob', 'mosokonyha', 'kulter', 'egyeb'];
   const PLUGINS = ['alaprajz', 'villany', 'fotopont'];
+  // F4 (WP M49): the drawing tune (Kotlin: sketch-core DrawTune.kt, which ignores a bad value; here it is an error)
+  const DRAW_KEYS = ['snapAngle', 'snapGrid', 'defaultRoom', 'measureFirst', 'pointSnap'], DRAW_ANGLES = [0, 15, 30, 45, 90];
+  function checkDraw(d, errs) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) { errs.push('draw: an object'); return; }
+    Object.keys(d).forEach(k => { if (!DRAW_KEYS.includes(k)) errs.push('draw: unknown key ' + k + ' (known: ' + DRAW_KEYS.join(', ') + ')'); });
+    if (d.snapAngle !== undefined && !DRAW_ANGLES.includes(d.snapAngle)) errs.push('draw.snapAngle: one of ' + DRAW_ANGLES.join(', ') + ' (degrees)');
+    if (d.snapGrid !== undefined && !(typeof d.snapGrid === 'number' && d.snapGrid >= 0 && d.snapGrid <= 10)) errs.push('draw.snapGrid: metres, 0-10');
+    if (d.defaultRoom !== undefined) { const r = d.defaultRoom; if (!r || !(r.w > 0 && r.w <= 200 && r.d > 0 && r.d <= 200)) errs.push('draw.defaultRoom: {w, d} in metres, 0-200'); }
+    if (d.measureFirst !== undefined && typeof d.measureFirst !== 'boolean') errs.push('draw.measureFirst: true or false');
+    if (d.pointSnap !== undefined && !['wall', 'free'].includes(d.pointSnap)) errs.push('draw.pointSnap: wall or free');
+  }
   function validateVariant(v, kit) {
     const errs = [];
     if (!v || v.kind !== VARIANT_KIND) return ['kind must be ' + VARIANT_KIND];
@@ -297,10 +308,11 @@
     const scopeIds = new Set((kit && kit.scope || []).map(x => x.id).concat((v.scope || []).map(x => x.id)));
     Object.keys(sc).forEach(k => { if (kit && !scopeIds.has(k)) errs.push('scopePreset: unknown scope ' + k); });
     (v.tags || []).forEach((t, i) => { if (!t.id || !t.name) errs.push('tags[' + i + ']: id and name'); });
+    if (v.draw !== undefined) checkDraw(v.draw, errs);
     return errs;
   }
 
   return { KIND, VARIANT_KIND, SKETCH_KIND, FRESH_MS, fold, parseCond, evalCond, parseKit, withVariant, facts, hits, questions, unseen,
     suggestions, applied, apply, shots, open, tagsOf, validateKit, validateVariant, RAIL_TOOLS, POINT_TYPES, ROOM_KINDS,
-    wants, wantTotal, addWant, moveWant, trimWant };
+    wants, wantTotal, addWant, moveWant, trimWant, DRAW_KEYS };
 });

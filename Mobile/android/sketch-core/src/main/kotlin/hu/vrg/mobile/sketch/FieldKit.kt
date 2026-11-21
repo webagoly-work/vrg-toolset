@@ -98,6 +98,8 @@ data class Variant(
     val hints: Map<String, String> = emptyMap(),
     /** The catalog additions (chips, scope, keywords, questions, shotlist, purposes, templates) as a kit to merge. */
     val adds: Kit = Kit(),
+    /** F4 (WP M49): how the drawing tools behave in this variant (DrawTune.kt). */
+    val draw: DrawTune = DrawTune(),
 )
 
 data class Kit(
@@ -196,6 +198,7 @@ object FieldKit {
             scopePreset = sc?.let { j -> j.keys().asSequence().associateWith { j.optInt(it, 1) } } ?: emptyMap(),
             hints = o.optJSONObject("hints")?.let { j -> j.keys().asSequence().associateWith { j.optString(it) } } ?: emptyMap(),
             adds = parseLists(o),
+            draw = Draw.parse(o.optJSONObject("draw")),
         )
     }
 

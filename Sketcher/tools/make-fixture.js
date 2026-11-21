@@ -43,6 +43,11 @@ const CASES = [
     captures: [{ id: 'C1', file: 's.png', purpose: 'dokumentum', at: NOW, note: 'A felmérést átvettem', kind: 'signature', signer: 'Ügyfél' },
       { id: 'C2', file: 'v.mp4', purpose: 'nyomvonal', at: NOW, note: '', kind: 'video', durationMs: 42000, bytes: 30000000 },
       { id: 'C3', file: 'a.jpg', purpose: 'hiba', at: NOW - 9000, note: '', phase: 'elotte' }, { id: 'C4', file: 'b.jpg', purpose: 'hiba', at: NOW, note: '', phase: 'utana', pair: 'C3' }] })],
+  // F4: a burnt-out lamp (kiégett) is no fault; a burnt smell still is
+  ['kiégett izzó: no fault suggested; égett szag still is', S({ entries: [{ id: 'E1', at: NOW, text: 'A folyosón két kiégett izzó van', chips: [] }] })],
+  ['ipari-telephely on, kiégett: the fényforrás-csere detector, no fault (the kit fix replaced the variant override)', S({ variant: 'ipari-telephely', variantOn: true,
+    entries: [{ id: 'E1', at: NOW, text: 'A csarnokban hat kiégett lámpa', chips: [] }] })],
+  ['megégett konnektor: still a fault', S({ entries: [{ id: 'E1', at: NOW, text: 'A konyhában megégett a konnektor', chips: [] }] })],
   // F4 (WP M49): the client's wants by room; the job total stays scope, the rest is Általános
   ['wants by room: two rooms, a general part, a deleted room counts as general', S({
     rooms: [{ id: 'R1', poly: [[0, 0], [100, 0], [100, 80], [0, 80]], name: 'Konyha', kinds: ['konyha'] }, { id: 'R2', poly: [[100, 0], [180, 0], [180, 80], [100, 80]], name: '', kinds: ['furdo'] }],

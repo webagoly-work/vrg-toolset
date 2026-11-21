@@ -228,6 +228,15 @@ ok(JSON.parse(sk.save()).captures.find(c => c.id === 'C94').pair === 'C93', 'Kam
   ok(sv.scope.lampa === 1 && !sv.roomScope?.[rooms[0]], 'saved: a general want has no room');
 }
 
+// F4: the drawing tune is shown on the Variánsok cards and validated
+click(rail('variansok'));
+ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '') && /30 × 20 m/.test($('[data-draw="ipari-telephely"]').textContent), 'ipari-telephely shows its drawing tune');
+{
+  const base = { kind: FK.VARIANT_KIND, id: 'proba', name: 'Próba', premise: 'Egy próbaváltozat a rajzhangolás ellenőrzéséhez.' };
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 90, snapGrid: 0.5, defaultRoom: { w: 4, d: 3 }, measureFirst: true, pointSnap: 'free' } })), [], 'a good draw block passes');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 37, snapGrid: -1, defaultRoom: { w: 0 }, measureFirst: 'yes', pointSnap: 'x', wallThickness: 30 } })).length, 6, 'every bad draw key is reported');
+}
+
 let bad = null; try { sk.load({ kind: 'nope' }); } catch (e) { bad = e; }
 ok(!!bad, 'unknown file is rejected');
 ok(errors.length === 0, 'no script errors: ' + errors.join('; '));
