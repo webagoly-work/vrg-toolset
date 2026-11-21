@@ -686,7 +686,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   per front or per fork (the Founder asked for *each or all*, in one place).
 - **D-92 · The switches belong to the phone (the browser), not to the survey (M51), 2026-11-21.** Taken in fork F6.
   One setting per phone and one per browser, for every survey; the phone and the Desktop do not share them (each is the
-  user's own tool there). The survey *plugins* (alaprajz, villany, fotopont) stay per survey and are a separate thing:
+  user's own tool there). **Answered 2026-11-21: A** (they stay separate; the package never carries them). The survey *plugins* (alaprajz, villany, fotopont) stay per survey and are a separate thing:
   a plugin decides what one survey uses, a switch what the user ever wants to see. A plugin whose every tool is switched
   off is not offered.
 - **D-93 · Off leaves no trace, deletes nothing and never changes a file's meaning (M51), 2026-11-21.** Taken in fork
@@ -701,7 +701,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   prerequisite. *Mind* per group and for everything: Mind ki switches every feature off, **Mind be** switches every
   default-on feature on and leaves the default-off option (D-79's implied dedicated circuits) as it was, so „all on”
   never changes a quantity behind the user's back. *Mozgat* is locked on: the canvas always has a tool, Vázlat always
-  stays on the front bar. Rejected: Mind be = everything incl. the options.
+  stays on the front bar. Rejected: Mind be = everything incl. the options. **Answered 2026-11-21: A** (Mind be leaves the
+  option as it was).
 - **D-95 · A variant cannot switch on what the user switched off (M51), 2026-11-21.** Taken in fork F6. User
   preference first: everything a variant brings passes through the registry after it — its rail order and plugins
   (`Features.rail`), its drawing tune (`Features.draw`: *Rajz-hangolás* off = the original tools), the hold wheel
@@ -718,7 +719,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   falls back to Vázlat (Áttekintés on the Desktop). The Kamera front needs *Fotó céllal*; its other features depend on it.
 - **D-98 · Without the hold wheel there is no wheel (M51), 2026-11-21.** Taken in fork F6. *Tartásra kerék* off: a hold
   on the canvas does nothing; the point type is still chosen on the Pont tool's row, ↶ still undoes, but Törlés lives on
-  the wheel (question 2 of the F6 report). Other switched-off features leave their wheel sectors empty, so the
+  the wheel (question 2 of the F6 report; **answered 2026-11-21: A**, no separate Törlés, the wheel can be switched back on). Other switched-off features leave their wheel sectors empty, so the
   directions the hand knows do not move.
 - **D-99 · The map's site panel follows the Sketcher's switches (M51), 2026-11-21.** Taken in fork F6. The phone's map
   page gets `hide` in `/__phone/site.json` (from the general store; the map only reads it), the Desktop sends it with the
