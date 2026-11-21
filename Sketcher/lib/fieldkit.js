@@ -277,7 +277,7 @@
   const ROOM_KINDS = ['nappali', 'konyha', 'halo', 'furdo', 'wc', 'eloszoba', 'kozlekedo', 'etkezo', 'dolgozo', 'kamra', 'gepeszet', 'gyerek', 'gardrob', 'mosokonyha', 'kulter', 'egyeb'];
   const PLUGINS = ['alaprajz', 'villany', 'fotopont'];
   // F4 (WP M49): the drawing tune (Kotlin: sketch-core DrawTune.kt, which ignores a bad value; here it is an error)
-  const DRAW_KEYS = ['snapAngle', 'snapGrid', 'defaultRoom', 'measureFirst', 'pointSnap'], DRAW_ANGLES = [0, 15, 30, 45, 90];
+  const DRAW_KEYS = ['snapAngle', 'snapGrid', 'defaultRoom', 'measureFirst', 'pointSnap', 'lineClose'], DRAW_ANGLES = [0, 15, 30, 45, 90];
   function checkDraw(d, errs) {
     if (!d || typeof d !== 'object' || Array.isArray(d)) { errs.push('draw: an object'); return; }
     Object.keys(d).forEach(k => { if (!DRAW_KEYS.includes(k)) errs.push('draw: unknown key ' + k + ' (known: ' + DRAW_KEYS.join(', ') + ')'); });
@@ -286,6 +286,7 @@
     if (d.defaultRoom !== undefined) { const r = d.defaultRoom; if (!r || !(r.w > 0 && r.w <= 200 && r.d > 0 && r.d <= 200)) errs.push('draw.defaultRoom: {w, d} in metres, 0-200'); }
     if (d.measureFirst !== undefined && typeof d.measureFirst !== 'boolean') errs.push('draw.measureFirst: true or false');
     if (d.pointSnap !== undefined && !['wall', 'free'].includes(d.pointSnap)) errs.push('draw.pointSnap: wall or free');
+    if (d.lineClose !== undefined && !['auto', 'ask'].includes(d.lineClose)) errs.push('draw.lineClose: auto or ask');   // F5 (WP M50)
   }
   function validateVariant(v, kit) {
     const errs = [];

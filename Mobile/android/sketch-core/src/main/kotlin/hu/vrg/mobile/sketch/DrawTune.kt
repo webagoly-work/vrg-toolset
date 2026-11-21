@@ -22,6 +22,11 @@ import kotlin.math.sin
 //   measureFirst  bool    a new room opens its size dialog at once
 //   pointSnap     wall | free   wall (default): a point near a wall sits on it; free: points stay where they are put
 //                         (devices on hall columns, ceiling grids)
+//   lineClose     auto | ask    F5 (WP M50, D-83): what the Vonal tool's Kész does with 3+ corners. auto: closes them
+//                         into a room (and a tap within twice the usual reach of the first corner closes too); ask: one
+//                         question, room or open line. Missing = the original: Kész leaves an open line, only a tap on the
+//                         first corner makes a room. (wallThickness is NOT a key: the sketch's rooms are inner faces and
+//                         nothing downstream builds walls from them yet, see D-83.)
 //
 // Metres become sketch units through the sketch's current scale (the Solver's mm per unit on each axis), so a grid
 // stays a real 1 m grid after the first measure. Everything here is pure and tested (DrawTuneTest); the editor only
@@ -32,6 +37,8 @@ data class DrawTune(
     val defaultRoom: Pair<Double, Double>? = null,
     val measureFirst: Boolean = false,
     val freePoints: Boolean = false,
+    /** F5: "" (original), "auto" or "ask". */
+    val lineClose: String = "",
 ) {
     val isDefault get() = this == DrawTune()
 
@@ -42,6 +49,7 @@ data class DrawTune(
         defaultRoom?.let { "Koppintás = ${fmt(it.first)} × ${fmt(it.second)} m szoba" },
         if (measureFirst) "Új szoba: rögtön a méret" else null,
         if (freePoints) "Pont: nem ugrik a falra" else null,
+        when (lineClose) { "auto" -> "Vonal: Kész = szoba"; "ask" -> "Vonal: Kész → szoba vagy vonal?"; else -> null },
     )
 
     private fun fmt(v: Double) = if (v == floor(v)) v.toLong().toString() else v.toString().replace('.', ',')
@@ -61,8 +69,23 @@ object Draw {
             val w = j.optDouble("w", 0.0); val d = j.optDouble("d", 0.0)
             if (w > 0 && d > 0 && w <= MAX_ROOM_M && d <= MAX_ROOM_M) w to d else null
         }
-        return DrawTune(a, g, r, o.optBoolean("measureFirst"), o.optString("pointSnap") == "free")
+        return DrawTune(a, g, r, o.optBoolean("measureFirst"), o.optString("pointSnap") == "free",
+            o.optString("lineClose").takeIf { it in LINE_CLOSE } ?: "")
     }
+
+    val LINE_CLOSE = setOf("auto", "ask")
+
+    /** F5: what the Vonal tool's Kész does with [corners] corners drawn. */
+    enum class LineDone { ROOM, LINE, ASK }
+    fun lineDone(t: DrawTune, corners: Int): LineDone = when {
+        corners < 3 -> LineDone.LINE
+        t.lineClose == "auto" -> LineDone.ROOM
+        t.lineClose == "ask" -> LineDone.ASK
+        else -> LineDone.LINE
+    }
+
+    /** F5: how near the first corner a tap closes the line into a room. */
+    fun closeTol(t: DrawTune, tol: Double) = if (t.lineClose == "auto") tol * 2 else tol
 
     /** The Vonal tool's next corner from [prev]: the original axis lock, or the direction turned to a step of snapAngle. */
     fun lock(prev: Pt, p: Pt, t: DrawTune): Pt {

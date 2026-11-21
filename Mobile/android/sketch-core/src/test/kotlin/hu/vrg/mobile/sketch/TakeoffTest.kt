@@ -110,4 +110,23 @@ class TakeoffTest {
         assertEquals(0, r.items.size)
         assertTrue(Takeoff.markdown(r.json).contains("Még nincs tétel."))
     }
+
+    // F5 (WP M50, D-80): Csere is a built-in tag; the takeoff counts a point carrying it as action csere
+    @Test fun theBuiltInCsereTagCountsAsReplacement() {
+        assertTrue(Sketch("N").tags.any { it.id == "T-csere" && it.preset == "replace" && it.name == "Csere" }, "a new survey has it")
+        val s = Sketch("X", points = listOf(
+            SketchPoint("P1", Pt(0.0, 0.0), PointType.SOCKET, PointState.EXISTING),
+            SketchPoint("P2", Pt(10.0, 0.0), PointType.SOCKET, PointState.EXISTING)),
+            tagUses = listOf(TagUse("U3", "T-csere", "P1")))
+        val ids = Takeoff.build(kit, rules, s, null, 1L).items.map { it.id }
+        assertTrue("pont.socket.csere" in ids && "pont.socket.marad" in ids, ids.toString())
+        // an older survey without it gets it on open; one that has a user's Csere keeps its own, nothing added
+        val old = s.copy(tags = Tags.PRESETS.filter { it.preset != "replace" })
+        assertEquals(old.tags.size + 1, Tags.withBuiltins(old).tags.size)
+        val mine = s.copy(tags = old.tags + Tag("T9", "csere ", 1L, null))
+        assertEquals(mine, Tags.withBuiltins(mine))
+        assertEquals(Sketch("N"), Tags.withBuiltins(Sketch("N")))
+        // the file keeps it
+        assertEquals(Sketch("N").tags, SketchJson.read(SketchJson.write(Sketch("N")).toString())!!.tags)
+    }
 }

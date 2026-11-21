@@ -246,7 +246,7 @@
     const roomName = id => { if (!id) return ''; const r = plan.rooms.find(x => x.id === id); if (r) return roomTitle(r); const q = (s.rooms || []).find(x => x.id === id); return q ? q.name || id : id; };
     const notes = (s.entries || []).map(e => ({ id: e.id, text: e.text || '', chips: (e.chips || []).map(chipLabel), room: roomName(e.room), open: !!e.open }));
     const memos = (s.memos || []).map(m => ({ id: m.id, text: m.text || '' }));
-    const stem = stemOf(s), caps = s.captures || [], photos = [];
+    const stem = stemOf(s), caps = (s.captures || []).filter(c => c.kind !== 'audio'), photos = [];   // F5: a sound note is not a photo
     const purposeIds = kit.purposes.map(p => p.id);
     caps.forEach(c => { const p = c.purpose || 'egyeb'; if (!purposeIds.includes(p)) purposeIds.push(p); });
     const roomShots = (s.photos || []).reduce((n, p) => n + (p.shots || []).length, 0);

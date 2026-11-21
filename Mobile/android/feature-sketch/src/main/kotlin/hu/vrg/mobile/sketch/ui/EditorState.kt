@@ -73,6 +73,8 @@ sealed class Ask {
     object VariantRequest : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
+    /** F5: the variant's lineClose = ask: Kész with 3+ corners asks room or open line. */
+    object LineClose : Ask()
 }
 
 /**
@@ -609,11 +611,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     private fun lineTap(raw: Pt) {
         val d = lineDraft
-        if (d.size >= 3 && raw.dist(d.first()) <= tol) {
-            val made = commit(Ops.addPolyRoom(sketch, d))
-            if (made == null) note = "A vonal keresztezi magát: nem lett szoba." else roomMade(made, "Szoba kész.")
-            lineDraft = emptyList(); lineCursor = null; return
-        }
+        if (d.size >= 3 && raw.dist(d.first()) <= Draw.closeTol(draw, tol)) { lineClose(); return }   // F5: auto reaches further
         val p = if (d.isEmpty()) corner(raw) else Draw.lock(d.last(), corner(raw), draw)   // F4: the variant's angle step and grid
         lineDraft = d + p; lineCursor = null
         note = if (lineDraft.size >= 3) "Az első pontra koppintva szoba lesz." else null
@@ -621,7 +619,25 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     fun lineBack() { lineDraft = lineDraft.dropLast(1) }
     fun lineDone() {
+        // F5 (WP M50, D-83): a variant's lineClose decides what Kész does with 3+ corners
+        when (Draw.lineDone(draw, lineDraft.size)) {
+            Draw.LineDone.ROOM -> { lineClose(); return }
+            Draw.LineDone.ASK -> { ask = Ask.LineClose; return }
+            Draw.LineDone.LINE -> {}
+        }
+        lineOpen()
+    }
+    /** The drawn corners as an open line (the original Kész). */
+    fun lineOpen() {
         if (lineDraft.size >= 2) commit(Ops.addLine(sketch, lineDraft))
+        lineDraft = emptyList(); lineCursor = null
+    }
+    /** The drawn corners closed into a room. */
+    fun lineClose() {
+        val d = lineDraft
+        if (d.size < 3) { lineOpen(); return }
+        val made = commit(Ops.addPolyRoom(sketch, d))
+        if (made == null) note = "A vonal keresztezi magát: nem lett szoba." else roomMade(made, "Szoba kész.")
         lineDraft = emptyList(); lineCursor = null
     }
     fun lineDrop() { lineDraft = emptyList(); lineCursor = null }
@@ -658,7 +674,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun setMeasure(room: String, kind: MeasureKind, mm: Int, edge: Int = -1) = edit(Ops.setMeasure(sketch, room, kind, mm, edge))
 
     // ---- F4 (WP M49): a variant's drawing tune (sketch-core DrawTune.kt); the original when none --------------------
-    val draw: DrawTune get() = variant?.draw ?: DrawTune()
+    /** F5 (D-90): the Felmérés funkciók switched off on this phone (SketchFeaturePrefs), set when the editor opens. */
+    var featOff by mutableStateOf<Set<String>>(emptySet())
+    val draw: DrawTune get() = hu.vrg.mobile.sketch.SketchFeatures.tune(featOff, variant?.draw ?: DrawTune())
     /** A corner onto a neighbour's wall line, else onto the variant's grid (in the sketch's current scale). */
     private fun corner(p: Pt, skip: String? = null) = Draw.corner(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY, skip)
     private fun roomMade(id: String, msg: String) {

@@ -252,6 +252,13 @@ internal fun SketchDialogs(st: EditorState) {
         is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
         is Ask.PairPick -> PairPickDialog(st, a.id, close)
         is Ask.VariantRequest -> VariantRequestDialog(st, close = close)
+        is Ask.LineClose -> AlertDialog(                              // F5 (WP M50): the variant's lineClose = ask
+            onDismissRequest = close, containerColor = Melyviz.raised,
+            title = { Text("Kész: ${st.lineDraft.size} sarok", style = Melyviz.label) },
+            text = { Text("Legyen belőle szoba, vagy maradjon nyitott vonal?", style = Melyviz.small) },
+            confirmButton = { TextButton({ close(); st.lineClose() }) { Text("Szoba", color = Melyviz.glow) } },
+            dismissButton = { TextButton({ close(); st.lineOpen() }) { Text("Nyitott vonal", color = Melyviz.muted) } },
+        )
         is Ask.EntryEdit -> {
             val e = s.entry(a.id) ?: return close()
             var text by remember(a) { mutableStateOf(e.text) }
@@ -295,6 +302,7 @@ internal fun SketchDialogs(st: EditorState) {
                     }
                     VariantSection(st)
                     CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-90)
+                    SketchFeatureSection(st)        // F5 (WP M50): the client, the sound note, Csere on older surveys (D-90)
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },
