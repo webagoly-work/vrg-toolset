@@ -86,6 +86,26 @@
     download(md, stem() + '.takeoff.md', 'text/markdown');
     return { json, md, takeoff: t };
   }
+  // F5 (WP M50): the Felmérési jegyzőkönyv (Sketcher/lib/report.js), built now from the open survey; never stored
+  const RP = window.VRGReport;
+  function reportHtml() {
+    if (!S || !RP) return '';
+    const si = S.site || {}, out = si.outline || [];
+    let siteSvg = '', siteLines = [];
+    if (SM && out.length >= 3) {
+      const rooms = siteRooms(), rep = si.place && rooms.length ? SM.report(rooms, out, si.place) : null;
+      siteSvg = sitePlaceSvg(out, rooms, si.place && rooms.length ? si.place : null, rep); siteLines = rep ? SM.reportLines(rep) : [];
+    }
+    return RP.html(RP.model(kit(), S, takeoff(), { now: stamp(), roomName, photoUrl: thumbFor, planSvg: svgPlan(), siteSvg, siteLines }));
+  }
+  function openReport() {
+    const h = reportHtml(); if (!h) return '';
+    let w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    if (w && w.document) { w.document.open(); w.document.write(h); w.document.close(); flash('Jegyzőkönyv: új ablakban (Nyomtatás / PDF).', 'ok'); }
+    else { download(h, stem() + '.jegyzokonyv.html', 'text/html'); flash('Jegyzőkönyv letöltve: ' + stem() + '.jegyzokonyv.html (a felugró ablak tiltva).', 'ok'); }
+    return h;
+  }
   function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
   async function openFiles(list) {
     const arr = Array.from(list || []), js = arr.filter(f => /\.json$/i.test(f.name) || f.type === 'application/json'), ph = arr.filter(f => !js.includes(f));
@@ -522,6 +542,7 @@
       case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
       case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
+      case 'report': { if (S) { openReport(); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
       case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
@@ -602,6 +623,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, reportHtml, openReport };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
