@@ -16129,7 +16129,12 @@ function svyFromPackage(o){const sk=(o&&o.sketch)||{},t=svyTakeoff(o);
     raw:{scope:Object.assign({},sk.scope||{}),answers:ans,
       entries:(sk.entries||[]).map(e=>({id:e.id,text:e.text||'',chips:(e.chips||[]).slice(),open:!!e.open,room:e.room||''})),
       captures:(sk.captures||[]).map(c=>({id:c.id,purpose:c.purpose||'egyeb',file:c.file||'',note:c.note||''}))},
-    ...(wants?{wants}:{})};}
+    ...(wants?{wants}:{}),...(svyClient(sk)?{client:svyClient(sk)}:{})};}
+// F5 (WP M50, D-79): the client's contact, only when the phone kept it in the package (personal: the project file is the
+// user's own; nothing of it is drawn or in the goldens)
+function svyClient(sk){const c=sk&&sk.client;if(!c||typeof c!=='object')return null;
+  const o={name:String(c.name||'').trim(),phone:String(c.phone||'').trim(),email:String(c.email||'').trim()};
+  return o.name||o.phone||o.email?o:null;}
 
 function svySurvey(){return (typeof B==='object'&&B&&B.survey)||null;}
 
@@ -16180,7 +16185,8 @@ function svyWantsHtml(w){if(!w||!w.rooms||!w.rooms.length)return '';
     +((w.general||[]).length?line('svy-want svy-general','',`Általános`,w.general):'')+`</div>`;}
 
 function svyHtml(sv){if(!sv)return '<div class="mrow">Ehhez a tervhez nincs felmérés.</div>';
-  return `<div id="svyBody" style="max-height:62vh;overflow:auto">`+(sv.takeoff?svyTakeoffHtml(sv.takeoff):svyRawHtml(sv.raw))+svyWantsHtml(sv.wants)+`</div>`;}
+  const cl=sv.client?`<div class="mrow svy-client" style="font-size:12px">👤 <b>Ügyfél:</b>&nbsp;${esc([sv.client.name,sv.client.phone,sv.client.email].filter(Boolean).join(' · '))}</div>`:'';
+  return `<div id="svyBody" style="max-height:62vh;overflow:auto">`+cl+(sv.takeoff?svyTakeoffHtml(sv.takeoff):svyRawHtml(sv.raw))+svyWantsHtml(sv.wants)+`</div>`;}
 function svyOpen(){const sv=svySurvey();openModal('Felmérés: munkakör lap'+(sv&&sv.name?' — '+esc(sv.name):''),svyHtml(sv),()=>true,'Kész');}
 
 registerActions([{id:'sketch.survey',label:'Felmérés: munkakör lap',icon:'☰',group:'Helyiség',

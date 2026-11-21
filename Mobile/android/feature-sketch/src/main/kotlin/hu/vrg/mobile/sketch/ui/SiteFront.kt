@@ -154,6 +154,7 @@ internal fun SiteFront(st: EditorState) {
         }
         site?.let { s0 -> s0.lat?.let { la -> Text("⌖ %.6f, %.6f · %s".format(la, s0.lon ?: 0.0, when (s0.source) { "gps" -> "a telefon helye"; "terkep" -> "VRG Térkép"; "osm" -> "OSM keresés"; else -> "kézi" }),
             style = Melyviz.readout, modifier = Modifier.padding(vertical = 6.dp)) } }
+        ClientCard(st, col)   // F5 (WP M50): the client's contact, personal
 
         // F1: the phone's own VRG Térkép (M43), PC or not: the outline drawn / corrected (🛰 on a tap), the sketch placed on it,
         // the job's place taken from the map's centre. The map leaves its answer for this survey and comes back here.

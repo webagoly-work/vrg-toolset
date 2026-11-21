@@ -252,6 +252,8 @@ data class Sketch(
     val draft: String = "",
     /** F4 (WP M49): the client's wants by room, {room id → {scope id → qty}}; [scope] stays the job's total (Wants.kt). */
     val roomScope: Map<String, Map<String, Int>> = emptyMap(),
+    /** F5 (WP M50): the client's contact, personal, stripped on export unless kept (ClientInfo.kt). */
+    val client: Client? = null,
 ) {
     /** The next id with [prefix], and the sketch with its counter moved on. */
     fun nextId(prefix: String): Pair<String, Sketch> = (prefix + (seq + 1)) to copy(seq = seq + 1)

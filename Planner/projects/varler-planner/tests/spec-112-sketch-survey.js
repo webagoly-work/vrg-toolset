@@ -104,6 +104,16 @@ setTimeout(async()=>{
   const wo=JSON.parse(JSON.stringify(ww));delete wo.takeoff;w.hardResetWorkspace();w.skiImport(wo);
   ok('without a takeoff: the room names from the plan, the ids as labels',B().survey.wants.rooms[1].name==='Fürdő'&&B().survey.wants.rooms[0].items[0].label==='dugalj');
   ok('nothing drawn with the wants',!/svy/.test(scene()));
+  ok('no client in the fixture package',!('client' in B().survey));
+
+  // ---------- 10. F5: the client's contact, when the phone kept it in the package ----------
+  const wc=JSON.parse(PKG);wc.sketch.client={name:'Minta Ügyfél',phone:'+36 30 000 0000',email:'',keep:true};
+  w.hardResetWorkspace();w.skiImport(wc);
+  ok('the contact is kept with the job',B().survey.client&&B().survey.client.name==='Minta Ügyfél'&&B().survey.client.email==='');
+  w.actionById('sketch.survey').run({});
+  ok('the panel shows it',/Ügyfél:<\/b>&nbsp;Minta Ügyfél · \+36 30 000 0000/.test($('svyBody').innerHTML),$('svyBody').innerHTML.slice(0,300));
+  w.closeModal();
+  ok('nothing drawn with the client',!/Minta/.test(scene()));
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

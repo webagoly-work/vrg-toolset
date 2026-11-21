@@ -1600,6 +1600,12 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
     if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    // F5 (WP M50, D-79): the client's contact; the address is the site's. Personal: it stays in this file and the report
+    const cl = S.client || {};
+    h += '<h3>👤 Ügyfél</h3><div class="card" id="client"><div class="kv"><b>Név</b><input type="text" data-client="name" value="' + esc(cl.name) + '">' +
+      '<b>Telefon</b><input type="text" data-client="phone" value="' + esc(cl.phone) + '"><b>E-mail</b><input type="text" data-client="email" value="' + esc(cl.email) + '">' +
+      '<b></b><label class="small"><input type="checkbox" data-client="keep"' + (cl.keep ? ' checked' : '') + '> a telefon kiadott csomagjában is marad</label></div>' +
+      '<div class="small muted">Személyes adat: a felmérés fájljában és a jegyzőkönyvben van; variáns-kérésbe soha nem kerül, Gitbe sem.</div></div>';
     h += sitePlaceCard();
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
@@ -1804,6 +1810,14 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
         if (key === 'address') si.address = t.value;
         else if (t.value.trim() === '') delete si[key]; else if (!isNaN(parseFloat(t.value.replace(',', '.')))) si[key] = parseFloat(t.value.replace(',', '.'));
         S.site = si;
+      }, false);
+      if (cur === 'helyszin') render();
+    } else if (t.dataset.client) {                    // F5 (WP M50, D-79): the client's contact, personal (sketch-core ClientInfo)
+      commit(() => {
+        const c = Object.assign({ name: '', phone: '', email: '' }, S.client), key = t.dataset.client;
+        if (key === 'keep') c.keep = t.checked; else c[key] = t.value.trim();
+        if (!c.keep) delete c.keep;
+        if (!c.name && !c.phone && !c.email) delete S.client; else S.client = c;
       }, false);
       if (cur === 'helyszin') render();
     } else if (t.id === 'ntext' || t.id === 'nopen' || t.id === 'nroom') syncNote();

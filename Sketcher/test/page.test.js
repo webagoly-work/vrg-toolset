@@ -307,6 +307,16 @@ ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '
   ok(/Minta Ügyfél/.test(q('.alairas').textContent) && !q('.fotok figure[data-cap="C93"]'), 'the signature in its own section, not among the photos');
   ok(/47\.50000, 19\.04000/.test(r) && /Kossuth u\. 12/.test(q('.meta').textContent), 'the site');
   ok(!q('#ugyfel'), 'no client contact: no client row');
+  // F5: the client's contact on Helyszín, into the report
+  click(rail('helyszin'));
+  const cn = $('#client [data-client="name"]'); cn.value = 'Minta Ügyfél'; cn.dispatchEvent(new w.Event('change', { bubbles: true }));
+  const cp = $('#client [data-client="phone"]'); cp.value = ' +36 30 000 0000 '; cp.dispatchEvent(new w.Event('change', { bubbles: true }));
+  eq(sk.state().client, { name: 'Minta Ügyfél', phone: '+36 30 000 0000', email: '' }, 'the contact is on the survey');
+  ok(/Minta Ügyfél/.test(new JSDOM(sk.reportHtml()).window.document.querySelector('#ugyfel').textContent), 'the report has the client row');
+  const ck = $('#client [data-client="keep"]'); ck.checked = true; ck.dispatchEvent(new w.Event('change', { bubbles: true }));
+  ok(sk.state().client.keep === true, 'keep is stored');
+  ['name', 'phone'].forEach(k => { const x = $('#client [data-client="' + k + '"]'); x.value = ''; x.dispatchEvent(new w.Event('change', { bubbles: true })); });
+  ok(!('client' in sk.state()), 'all blank removes it');
   // through the header button: a new window, or a download when popups are blocked
   let wrote = '';
   w.open = () => ({ document: { open() {}, write(x) { wrote += x; }, close() {} } });
