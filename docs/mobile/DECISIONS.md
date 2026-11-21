@@ -870,6 +870,23 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   bolt, WC, Megálló switchable, at most six on), one per category in that order; the list follows the user after 25 m or
   30 s; a selected place stays the target; tap frames, hold (RCO, right-click on the PC) selects.
 
+- **D-133 … D-136 · Szobadoboz (M56, dev line skcam K1), 2026-11-21.** Taken for the Founder while building ("proceed
+  with the outlined dev work"); each can be revisited.
+  - **D-133 · Where the room's shape comes from.** Chosen **A**: from the sketch (the plan's outline in mm, the photo
+    point, the side), with the photos projected onto it. Rejected: **B** photogrammetry from the four photos (turning on
+    one spot gives no parallax, so there is no depth to recover); **C** a learned depth model (not offline-light, and its
+    sizes are guesses).
+  - **D-134 · Where it shows first.** Chosen **A**: the Desktop Sketcher page, an overlay opened from the Vázlat front
+    (the photos and the package are already there; the PC has the screen for it). Rejected: **B** the phone first (the
+    WebView route of M54 is K1b); **C** the Planner (a large app; it can reuse `roombox.js` later).
+  - **D-135 · How it is drawn.** Chosen **A**: our own WebGL 1 (one shader, ~150 lines), offline from `file://`.
+    Rejected: **B** three.js (≈600 KB inlined into the page, or a CDN, against the offline rule); **C** a 2D canvas
+    unwrap of the walls (no "standing in the room" view).
+  - **D-136 · Where the corrections live.** Chosen **A**: an optional survey key `box` written by the Desktop (room
+    heights, camera height, per-photo direction / tilt / field of view); the survey stays v2. Known gap: the phone
+    ignores unknown keys, so a survey re-saved on the phone drops `box` until K1b keeps it. Rejected: **B** a separate
+    side file (one more file to carry); **C** browser storage only (lost with the browser, not in the survey).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

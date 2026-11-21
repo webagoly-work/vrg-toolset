@@ -17,6 +17,7 @@
 
   let S = null, pkg = null, cur = 'attekintes', msg = null, fileName = '';
   let files = new Map();                       // photo file name -> object URL (memory only, never saved)
+  const boxMeta = new Map(), boxImg = new Map();   // skcam K1: file name -> {f35, w, h} from EXIF, and an upright canvas (memory only)
   let note = { text: '', chips: new Set(), open: false, room: '' };
   let wantRoom = '';   // F4 (WP M49): where the Munkakör's + / − put a want: '' = Általános, else a room id
   let starter = '';
@@ -66,7 +67,8 @@
     else if (obj.kind === 'vrg-vazlat') { pkg = null; S = obj; }
     else throw new Error('Ismeretlen fájl (kind: ' + obj.kind + ') — vrg-sketch vagy vrg-vazlat kell.');
     files.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
-    files = new Map(); fileName = name || ''; note = { text: '', chips: new Set(), open: false, room: '' };
+    files = new Map(); boxMeta.clear(); boxImg.clear(); if (typeof boxClose === 'function' && ui.open) { ui.open = false; if (boxEl) boxEl.hidden = true; }
+    fileName = name || ''; note = { text: '', chips: new Set(), open: false, room: '' };
     flash(null); persist(); render();
     return S;
   }
@@ -154,7 +156,7 @@
     (S.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
 (pkg && pkg.plan && pkg.plan.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
     let n = 0;
-    Array.from(list).forEach(f => { if (want.has(f.name)) { if (files.has(f.name)) URL.revokeObjectURL(files.get(f.name)); files.set(f.name, URL.createObjectURL(f)); n++; } });
+    Array.from(list).forEach(f => { if (want.has(f.name)) { if (files.has(f.name)) URL.revokeObjectURL(files.get(f.name)); files.set(f.name, URL.createObjectURL(f)); boxPrep(f); n++; } });
     flash(n + ' / ' + list.length + ' fotó párosítva (csak a memóriában, a mentett fájlba nem kerül).', n ? 'ok' : '');
     render();
   }
@@ -251,7 +253,7 @@
   function vVazlat() {
     return '<div class="svgwrap">' + svgPlan() + '</div><div class="legend"><span><i style="background:#d9a441"></i>meglévő</span><span><i style="background:#27c2b0"></i>tervezett</span>' +
       '<span><i style="background:#e8641c"></i>≈ becsült él</span><span><i style="background:#2a8cdb"></i>fotópont (kitöltött = van kép)</span>' +
-      '<span>' + (floors().length ? 'Terv: mm-ben (Planner adat)' : 'Csak vázlat: rajzegységben') + '</span></div>';
+      '<span>' + (floors().length ? 'Terv: mm-ben (Planner adat)' : 'Csak vázlat: rajzegységben') + '</span></div>' + boxCard();
   }
 
   function vJegyzet(d) {
@@ -561,6 +563,131 @@
     });
     return h;
   }
+  // ---- Szobadoboz (dev line skcam, stage K1): the room in 3D with its Fotópont photos ------------------------------
+  // lib/roombox.js does the maths, lib/roombox-gl.js draws; the overlay lives outside #main, so a re-render of the
+  // page does not drop the WebGL canvas. Corrections go into the survey's optional `box` key (see lib/roombox.js).
+  const RB = window.VRGRoomBox, RBGL = window.VRGRoomBoxGL;
+  const ui = { open: false, room: '', mode: 'orbit', az: 30, el: 50, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null };
+  let gl3 = null, boxEl = null;
+  function boxPrep(f) {
+    if (!RB) return;
+    const name = f.name;
+    if (/\.jpe?g$/i.test(name) && f.slice) f.slice(0, 262144).arrayBuffer().then(b => { boxMeta.set(name, RB.exif(b)); boxRedraw(true); }).catch(() => {});
+    if (!/^image\//.test(f.type || '') && !/\.(jpe?g|png|webp)$/i.test(name)) return;
+    const img = new Image();
+    img.onload = () => {                         // drawn onto a canvas: the browser applies the EXIF orientation, and big photos shrink
+      const k = Math.min(1, 2048 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const m = Object.assign({}, boxMeta.get(name)); m.w = img.naturalWidth; m.h = img.naturalHeight; boxMeta.set(name, m);
+      boxImg.set(name, c);
+      if (ui.open) boxRedraw(true); else if (cur === 'vazlat') render();   // the card counts the attached photos
+    };
+    img.src = files.get(name);
+  }
+  const boxLevel = () => { const id = pkg && pkg.level || S && S.level; return { heightMm: id === 'basement' ? 2500 : 2700 }; };
+  const boxMetaOf = file => { const m = boxMeta.get(base(file)); return m && (m.w || m.f35) ? m : null; };
+  function boxScene() { return pkg && pkg.plan && RB ? RB.scene(pkg.plan, S && S.box, boxMetaOf, boxLevel()) : []; }
+  function boxCard() {
+    if (!on('vazlat.roombox')) return '';
+    if (!floors().length) return '<div class="card box-card"><b>⬚ Szobadoboz (3D)</b> <span class="small muted">A 3D szobához méretek kellenek: nyisd meg a telefon Planner-csomagját (Rendezés → Küldés a Plannerbe), nem csak a vázlatot.</span></div>';
+    const rooms = boxScene(), shots = rooms.reduce((a, r) => a + r.shots.length, 0), withImg = rooms.reduce((a, r) => a + r.shots.filter(x => boxImg.has(base(x.file))).length, 0);
+    return '<div class="card box-card"><button class="btn" data-bact="open">⬚ Szobadoboz (3D)</button> <span class="small muted">' + rooms.length + ' helyiség · ' + shots + ' fotópont-kép' +
+      (shots ? ' · ' + withImg + ' csatolva' + (withImg < shots ? ' (a többit a Kamera nézetben: Fotók csatolása)' : '') : '') + '</span></div>';
+  }
+  function boxOpen() {
+    if (!RB || !RBGL) return;
+    if (!boxEl) {
+      boxEl = document.createElement('div'); boxEl.id = 'box3d'; boxEl.className = 'box3d';
+      boxEl.innerHTML = '<div class="bx-top"><b>⬚ Szobadoboz</b><select id="bxroom" data-b="room"></select><span class="seg"><button class="btn sm" data-bact="mode" data-m="orbit">Felülről</button><button class="btn sm" data-bact="mode" data-m="stand">A fotópontból</button></span><span class="grow"></span>' +
+        '<span class="small muted" id="bxhint"></span><button class="btn sm" data-bact="close" title="Bezárás (Esc)">✕</button></div><div class="bx-body"><canvas id="bxc"></canvas><aside id="bxside"></aside></div>';
+      document.getElementById('root').appendChild(boxEl);
+      boxEl.addEventListener('click', boxClick); boxEl.addEventListener('input', e => boxInput(e, false)); boxEl.addEventListener('change', e => boxInput(e, true));
+      const c = boxEl.querySelector('#bxc');
+      let drag = null;
+      c.addEventListener('pointerdown', e => { drag = [e.clientX, e.clientY]; c.setPointerCapture(e.pointerId); });
+      c.addEventListener('pointermove', e => {
+        if (!drag) return; const dx = e.clientX - drag[0], dy = e.clientY - drag[1]; drag = [e.clientX, e.clientY];
+        if (ui.mode === 'orbit') { ui.az -= dx * 0.4; ui.el = Math.max(8, Math.min(89, ui.el + dy * 0.3)); } else { ui.yaw -= dx * 0.2; ui.pitch = Math.max(-80, Math.min(80, ui.pitch + dy * 0.2)); }
+        boxRedraw();
+      });
+      c.addEventListener('pointerup', () => { drag = null; });
+      c.addEventListener('wheel', e => { e.preventDefault(); if (ui.mode === 'orbit') ui.zoom = Math.max(1.1, Math.min(8, ui.zoom * (e.deltaY > 0 ? 1.1 : 0.9))); else ui.fov = Math.max(30, Math.min(110, ui.fov + (e.deltaY > 0 ? 4 : -4))); boxRedraw(); }, { passive: false });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.open) boxClose(); });
+      window.addEventListener('resize', () => boxRedraw());
+      try { gl3 = RBGL.create(c); } catch (e) { gl3 = null; }
+    }
+    const rooms = boxScene();
+    if (!rooms.find(r => r.id === ui.room)) ui.room = (rooms.find(r => r.shots.length) || rooms[0] || {}).id || '';
+    ui.open = true; boxEl.hidden = false; boxRedraw(true);
+  }
+  function boxClose() { ui.open = false; if (boxEl) boxEl.hidden = true; render(); }
+  const boxRoom = () => boxScene().find(r => r.id === ui.room) || null;
+  function boxRedraw(side) {
+    if (!ui.open || !boxEl) return;
+    const room = boxRoom(), hint = boxEl.querySelector('#bxhint');
+    boxEl.querySelectorAll('[data-bact="mode"]').forEach(b => b.classList.toggle('on', b.dataset.m === ui.mode));
+    if (side) boxSide(room);
+    if (!gl3) { hint.textContent = 'Ez a böngésző nem tud WebGL-t: a 3D nézet nem rajzolható.'; return; }
+    const r = gl3.draw(room, f => boxImg.get(base(f)) || null, { mode: ui.mode, az: ui.az, el: ui.el, zoom: ui.zoom, yaw: ui.yaw, pitch: ui.pitch, fov: ui.fov, point: ui.point }, { hi: ui.hi });
+    hint.textContent = !room ? '' : ui.mode === 'orbit' ? 'Húzás: forgatás · görgő: nagyítás' : 'Húzás: körülnézés · görgő: látószög ' + Math.round(ui.fov) + '°';
+    boxEl.dataset.drawn = r ? String(r.textured) : '0';
+  }
+  const num = v => { const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) ? x : null; };
+  function boxSide(room) {
+    const sel = boxEl.querySelector('#bxroom'), rooms = boxScene();
+    sel.innerHTML = rooms.map(r => '<option value="' + esc(r.id) + '"' + (r.id === ui.room ? ' selected' : '') + '>' + esc(r.name) + (r.shots.length ? ' · ' + r.shots.length + ' kép' : '') + '</option>').join('');
+    const side = boxEl.querySelector('#bxside');
+    if (!room) { side.innerHTML = '<p class="muted">Nincs helyiség a tervben.</p>'; return; }
+    const B = S.box || {}, covered = room.cover.filter(Boolean).length;
+    let h = '<div class="kv"><b>Alapterület</b><span>' + f1(room.area) + ' m²</span><b>Kerület</b><span>' + f1(room.perimeter) + ' m</span><b>Falak képpel</b><span>' + covered + ' / ' + room.walls.length + '</span></div>' +
+      '<label class="bx-f">Belmagasság (cm) <input type="number" min="180" max="600" step="1" data-b="h" value="' + Math.round(room.h / 10) + '"></label>' +
+      '<label class="bx-f">Szemmagasság a fotónál (cm) <input type="number" min="60" max="220" step="1" data-b="eye" value="' + Math.round(room.eye / 10) + '"></label>';
+    if (!room.shots.length) h += '<p class="small muted">Ebben a helyiségben nincs fotópont: a doboz kép nélkül, a méretekből áll.</p>';
+    else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
+    room.shots.forEach((x, i) => {
+      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', alap: 'alapérték' }[x.f35src];
+      h += '<div class="bx-shot' + (ui.hi === i ? ' hi' : '') + '" data-key="' + esc(x.key) + '"><div class="row"><button class="btn sm" data-bact="hi" data-i="' + i + '" title="Kiemelés a 3D nézetben">' + esc(x.side || x.deg + '°') + '</button>' +
+        '<span class="small ' + (img ? '' : 'muted') + '">' + esc(base(x.file)) + (img ? '' : ' (nincs csatolva)') + '</span>' +
+        '<button class="btn sm" data-bact="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" title="Nézd innen">👁</button></div>' +
+        '<label>Irány ' + (x.fix.yaw >= 0 ? '+' : '') + f1(x.fix.yaw) + '°<input type="range" min="-30" max="30" step="0.5" data-b="yaw" data-key="' + esc(x.key) + '" value="' + x.fix.yaw + '"></label>' +
+        '<label>Dőlés ' + (x.pitch >= 0 ? '+' : '') + f1(x.pitch) + '°<input type="range" min="-25" max="25" step="0.5" data-b="pitch" data-key="' + esc(x.key) + '" value="' + x.pitch + '"></label>' +
+        '<label>Látószög ' + Math.round(x.fovH) + '° · ' + f1(x.f35) + ' mm (' + src + ')<input type="number" min="8" max="80" step="0.5" data-b="f35" data-key="' + esc(x.key) + '" placeholder="auto" value="' + (x.fix.f35 || '') + '"></label></div>';
+    });
+    if (room.shots.length) h += '<div class="acts"><button class="btn sm dim" data-bact="reset">Javítások törlése ebben a helyiségben</button></div>';
+    side.innerHTML = h;
+  }
+  function boxSet(fn, live) {
+    const b = clone(S.box || {}); fn(b);
+    ['h', 'shots'].forEach(k => { if (b[k] && !Object.keys(b[k]).length) delete b[k]; });
+    commit(() => { if (Object.keys(b).length) S.box = b; else delete S.box; }, false);
+    boxRedraw(!live);
+  }
+  function boxInput(e, done) {
+    const t = e.target, k = t.dataset.b; if (!k || !S) return;
+    if (k === 'room') { if (done) { ui.room = t.value; ui.hi = null; boxRedraw(true); } return; }
+    const v = num(t.value), room = boxRoom();
+    if (k === 'h') { if (!done || !room) return; boxSet(b => { b.h = b.h || {}; if (v > 0) b.h[room.id] = Math.round(v * 10); else delete b.h[room.id]; }); return; }
+    if (k === 'eye') { if (!done) return; boxSet(b => { if (v > 0) b.eye = Math.round(v * 10); else delete b.eye; }); return; }
+    const key = t.dataset.key;
+    boxSet(b => {
+      b.shots = b.shots || {}; const o = Object.assign({}, b.shots[key]);
+      if (k === 'f35') { if (v > 0) o.f35 = v; else delete o.f35; } else if (v) o[k] = v; else delete o[k];
+      if (Object.keys(o).length) b.shots[key] = o; else delete b.shots[key];
+    }, !done);
+    if (!done) { const lab = t.closest('label'); if (lab && k !== 'f35') lab.firstChild.textContent = (k === 'yaw' ? 'Irány ' : 'Dőlés ') + (v >= 0 ? '+' : '') + f1(v || 0) + '°'; }
+  }
+  function boxClick(e) {
+    const t = e.target.closest('[data-bact]'); if (!t) return;
+    const a = t.dataset.bact;
+    if (a === 'close') boxClose();
+    else if (a === 'mode') { ui.mode = t.dataset.m; if (ui.mode === 'stand' && !ui.point) { const r = boxRoom(); if (r && r.shots[0]) { ui.point = r.shots[0].point; ui.yaw = r.shots[0].yaw; ui.pitch = 0; } } boxRedraw(); }
+    else if (a === 'stand') { ui.mode = 'stand'; ui.point = t.dataset.p; ui.yaw = +t.dataset.deg; ui.pitch = 0; boxRedraw(); }
+    else if (a === 'hi') { const i = +t.dataset.i; ui.hi = ui.hi === i ? null : i; boxRedraw(true); }
+    else if (a === 'reset') { const r = boxRoom(); if (r) boxSet(b => { if (b.h) delete b.h[r.id]; if (b.shots) r.shots.forEach(x => delete b.shots[x.key]); }); }
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('#main [data-bact="open"]'); if (t && S) boxOpen(); });
+
   const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok, funkciok: vFunkciok };
 
   function render() {
@@ -696,6 +823,7 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
+    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
