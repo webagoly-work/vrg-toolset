@@ -1,4 +1,4 @@
-# HALCYON — system overview (version A)
+# HALCYON — system overview (version B)
 
 *An anonymous description of a real software family, written for designers and AI design sessions that will never see its
 code, its database or its owner. Personal data has been removed, and so has the specific trade: Halcyon is described as
@@ -92,7 +92,7 @@ keyboard-driven on a large screen. The same person switches between the two seve
   views, the gate page's helper, the phone relay…). A checker refuses two servers on one port. The launcher starts a
   server if it is down and then opens it.
 - **Two registries.** One file says **how** to run everything (tools, build and test steps, servers, programs, prompts,
-  backup settings). A second, the **catalog**, says **what** exists: about 90 units, each with a type from a fixed list,
+  backup settings). A second, the **catalog**, says **what** exists: around a hundred units, each with a type from a fixed list,
   a level (*user* < *dev* < *all*), a parent, a group, a status (live / beta / dev / planned / retire), the surfaces it
   appears on and how it opens. House rule: *a tool that is not in the registry does not exist*. Check scripts fail a
   commit on a dangling path, a duplicate key or port, or a dev item without a parent.
@@ -158,13 +158,13 @@ in two languages, pinned equal by shared test fixtures.
 | phone ↔ PC | clipboard | relay, both directions | on a tap |
 | phone → PC | pointer, keys, gyro | air mouse over Bluetooth HID, or the relay | while held |
 | PC → phone | the PC's screen (6–10 frames/s) | relay, only when enabled; the PC shows a notice "the phone sees the screen" with Stop | while watched |
-| PC → phone | local servers, START tools, logs, folder listings (read-only) | relay proxy with short tickets | on a tap |
+| PC → phone | local servers, launcher tools, logs, folder listings (read-only) | relay proxy with short tickets | on a tap |
 | phone → cloud | quick notes | appended to a notes log branch; offline **outbox** retries | on send |
 | cloud → phone | progress, CI state, releases, published pages, variants, apps | changed files only, conditional requests, resumable downloads, offline copies dated | on open / pull |
 | PC → cloud → phone | priced job packs | encrypted to the phone's own key, carried on a private branch, opened in memory only | after pinning the phone |
 | phone → cloud | device approval of a second phone | the owner's phone writes the trust list; a grant QR only the new phone can open | once per device |
 | phone → AI agent → cloud → phone | a request for a job-type variant | request file (no client data) handed to an agent, who commits a variant; phones refresh it | on request |
-| PC → cloud | everything else | commit guard pushes to a collect branch only, never the main branch, never forced | on S |
+| PC → cloud | everything else | commit guard pushes to a collect branch only, never the main branch, never forced | on the commit key |
 | PC → backup drive | all branches + work folders | backup menu: nothing overwritten without an archived copy | on demand |
 
 There is **no live sync** between devices. Work moves as **packages** through the handover board, the share sheet or
@@ -213,7 +213,7 @@ The owner's general rule: *everything integrated, but modular.*
 - A feature that depends on another switches off with it (e.g. the ghost overlay needs before/after photos).
 - **User preference first:** a feature switched off leaves **no trace** in the UI or the exports. Data already captured
   stays and still exports safely (a blur already drawn is still burned in).
-- Built so far: *Camera features* (19 switches) and *Survey features* (client
+- Built so far: *Camera features* (about twenty switches) and *Survey features* (client
   data, sound note, the Replace tag in old surveys, line auto-close). **In progress:** one registry for every Survey
   feature with the same switches on the phone and the desktop.
 - Plugins of the sketch canvas (tool packs) are switches too, remembered per survey.
@@ -225,7 +225,7 @@ The owner's general rule: *everything integrated, but modular.*
   lock is on. An iPhone joins as a web app with the same approval cryptography.
 - **Two phones at once on a survey** is the designed test case: phone A draws and talks (sketch, notes, scope,
   questions), phone B photographs and locates (camera, site, variants). Their surveys meet on the PC and must give the
-  same numbers. A generated two-phone checklist (≈130 steps, numbered, primary-locale) drives the test; a shared live
+  same numbers. A generated two-phone checklist (well over a hundred numbered steps) drives the test; a shared live
   checklist page collects ticks from both phones and a bug list.
 - **Crew phones** talk to each other over Bluetooth LE with the pager (no internet, no PC).
 - Feature switches are **per phone**. Notes carry their device, so a phone does not notify itself about its own note.
@@ -234,20 +234,18 @@ The owner's general rule: *everything integrated, but modular.*
 
 - Every UI string is in one **non-English primary locale**; English appears only as a small italic gloss in some kits and
   documents, and in code. Design for it, not for English:
-- The language has long compound words, many suffixes and **diacritics** (including double-acute vowels that many
-  display faces lack): plan for labels 30–40 % longer than English, avoid fixed-width text buttons, and never set titles
+- The language has long compound words, many suffixes and **diacritics**: plan for labels 30–40 % longer than English, avoid fixed-width text buttons, and never set titles
   in a typeface without full Latin Extended-A coverage.
 - Text-mode console output stays ASCII (accented letters garble in the console code page), so launcher screens show
   text without accents or keep it in a data file.
-- Number format: decimal comma, space as the thousands separator, 24-hour time, day-month-year dates; a local currency
-  without minor units in everyday use.
+- Number format: decimal comma and a space as the thousands separator.
 
 ### 4.6 Interaction house rules
 
 - **Symbols and colour codes instead of text buttons.** Each umbrella app and each "front" has one symbol and one colour,
   the same on phone and desktop.
 - **One button reaches each umbrella app** on the phone and on the desktop.
-- **The long-press menu everywhere** ("RCO", the toolset's right-click menu; a long press on touch): one buzz, a dropdown
+- **The long-press menu everywhere** (the toolset's right-click menu; a long press on touch): one buzz, a dropdown
   anchored to the item, titled with the item's name, destructive lines in coral. Not used where a long press already
   means drag, resize or SOS.
 - **Quick capture is never more than one tap away** (✎ note, ◉ photo on every survey front).
@@ -257,14 +255,14 @@ The owner's general rule: *everything integrated, but modular.*
 
 ### 4.7 Visual languages in use today
 
-- **Deep Water** (the tool look): dark slate-void ground (#0a141c), smoked-glass panels, 1 px hairlines, square controls
-  with two chamfered corners, no drop shadows, low glow. **Two temperatures, two meanings:** ice (#93d3e6) = the
-  instrument and *you* (selection, focus, "you are here"); warm copper (#e8a873) = *the system is working* (running,
+- **Deep Water** (the tool look): dark slate-void ground, smoked-glass panels, 1 px hairlines, square controls
+  with two chamfered corners, no drop shadows, low glow. **Two temperatures, two meanings:** ice = the
+  instrument and *you* (selection, focus, "you are here"); warm copper = *the system is working* (running,
   recent activity). Numbers in monospace, titles in a condensed DIN-like face, small labels uppercase and tracked.
-  Water ripples only when clicked. Semantic colours: ok #8bcca1, warn #e3be7b, critical #e4877d.
+  Water ripples only when clicked. Semantic colours: a soft green ok, a sand warn, a coral critical.
 - **8-bit terminal**: the text launcher draws Deep Water as an 8-bit text UI with a pixel logo.
-- **Paper** (client documents): warm ink, never black (#2f2c28), hairline rules, an ink-budget rule (no fill darker than
-  a pale wash), one accent "signal red" (#b5452f) used only for *new/changed* on plans and *the payable total*; a hairline
+- **Paper** (client documents): warm ink, never black, hairline rules, an ink-budget rule (no fill darker than
+  a pale wash), one accent "signal red" used only for *new/changed* on plans and *the payable total*; a hairline
   running in from the paper edge that ends on a small open dot; a warm serif for titles and the total, a DIN-style
   sans for everything else (codes, dates, numbers always in the sans); hanging section numerals; tables without
   vertical rules.
@@ -273,7 +271,7 @@ The owner's general rule: *everything integrated, but modular.*
   for readouts) and corner radius.
 - **A coded UI kit** (56 components in 11 families, four themes, three densities, one icon sprite, one action registry),
   including "marks" with *one glyph, one meaning*: stage, line state, indicator, level, step, monogram, count.
-- **The status ring ("MINI")**: a small ring on tiles and busy chips with states idle, running (percentage or sweep),
+- **The status ring**: a small ring on tiles and busy chips with states idle, running (percentage or sweep),
   done, error (a notch), waiting (dashed), paused, off; read aloud by the screen reader; still when animations are off.
 - **The brand mark** (a round emblem) and a "peak ring" (a band with peaks and strata) drawn by one engine that morphs
   between them; the ring doubles as a notification board.
@@ -288,8 +286,8 @@ You are free to propose a new visual language; these are the current ones the ow
 
 - A full-screen text UI in a portable terminal; the original front door, kept as the recovery launcher. **Keys are
   stable** (the owner knows them by heart): digits for everyday tools (Planner, calculators, mind map, product picker,
-  Stock, parts builder…), letters for project submenus (P Planner, I Stock, L Mobile, R knowledge graph…), dev items
-  (AI coding assistant, desktop shell, editor, git, local servers, prompt library, checks, programs), **S commit + push**
+  Stock, parts builder…), letters for project submenus (Planner, Stock, Mobile, knowledge graph…), dev items
+  (AI coding assistant, desktop shell, editor, git, local servers, prompt library, checks, programs), **commit + push**
   highlighted, **Q quit**.
 - A status row counts each repository's changes and unpushed commits. Every "open" asks which browser.
 - Messages: running / done / "failed (code n), later steps skipped" / "server did not answer in 10 s" / "not installed"
@@ -464,7 +462,7 @@ technicians in different rooms or floors.
 - **Guard modes:** guard (lay the phone still to arm; moved → alarm to the crew) and man-down (impact or no motion for
   1–5 min → local pre-alarm, then crew alarm; SEEN cancels). **Repeater mode:** a phone left in the stairwell relays
   everything.
-- **Safety wording:** "stop / start equipment" messages say on screen that they are **not a safety isolation** and to
+- **Safety wording:** "stop work / resume" messages say on screen that they are **not a formal safety procedure** and to
   wait for SEEN; in the full list they need a long press.
 
 ### 5.7 The Survey instrument (phone + desktop page, beta; the centre of current work)
@@ -503,13 +501,13 @@ back. So:
 
 | Front | Symbol | Colour | Holds | Badge counts |
 |---|---|---|---|---|
-| Sketch | ◫ | teal #27c2b0 | rooms, sizes, points, groups, hubs, routes, memos, tags, photo points | — |
-| Notes | ✎ | amber #e0b020 | the conversation log, chips, background suggestions | pending suggestions |
-| Scope | ☰ | green #3dae5a | what the job is, the client's wants, the live takeoff | — |
-| Questions | ? | orange #e8641c | the shadow questionnaire | open; filled when one is new |
-| Camera | ◉ | blue #2a8cdb | purpose photos, the shot list, markup, video, signature, sound notes | missing shots |
-| Site | ⌖ | violet #8a5cd6 | address, GPS, map outline, the sketch placed on the building, client contact | — |
-| Open | ⚑ | red #d64545 | every loose end | all open items |
+| Sketch | ◫ | teal | rooms, sizes, points, groups, hubs, routes, memos, tags, photo points | — |
+| Notes | ✎ | amber | the conversation log, chips, background suggestions | pending suggestions |
+| Scope | ☰ | green | what the job is, the client's wants, the live takeoff | — |
+| Questions | ? | orange | the shadow questionnaire | open; filled when one is new |
+| Camera | ◉ | blue | purpose photos, the shot list, markup, video, signature, sound notes | missing shots |
+| Site | ⌖ | violet | address, GPS, map outline, the sketch placed on the building, client contact | — |
+| Open | ⚑ | red | every loose end | all open items |
 
 Front colours mark *functions*; points, groups and tags keep their own colours.
 
@@ -542,15 +540,15 @@ Front colours mark *functions*; points, groups and tags keep their own colours.
   tag, kinds ›, its points into a group, delete), a **wall** (its length, point here, memo, tag, hub here, room),
   **empty paper** (memo, tag, point here), a **photo point** (its four directions at the wheel's four sides, ✓ taken /
   + take), a **memo** (edit, tag, delete).
-- **Room kinds:** sixteen, each with a glyph, in rings (living room, kitchen, bedroom, bathroom, WC, hall, corridor,
+- **Room kinds:** about sixteen, each with a glyph, in rings (living room, kitchen, bedroom, bathroom, WC, hall, corridor,
   dining, study, storage, plant room / garage, children's room, wardrobe, laundry, terrace / balcony, other); several
   per room; the room's automatic name joins them ("Kitchen + Dining").
-- **Points:** about nine types, each with a glyph — untyped •, wall unit ⊙, control ⊘, overhead unit ✱, junction node ◇,
-  data point ◈, fixed unit ⊗, sensor ◎, hub ▣ — each with a standard mounting height for export. **Two states: existing**
+- **Points:** an untyped point • plus about eight types, each a glyph and a short name (in the sample data: type A ⊙,
+  type B ⊘, type C ✱, junction ◇, data ◈, fixed ⊗, sensor ◎, hub ▣), each with a default height for export. **Two states: existing**
   (sand, with a ring) and **planned** (glow colour); both must read in sunlight. Actions such as *replace* or
   *remove* are tags, not a third state.
-- **Groups:** a set of points served by one hub: name, colour, dedicated flag, a separation flag, members, the serving hub.
-- **Tags:** presets with a meaning downstream (bathroom, kitchen, wet zone, protected, dedicated, remove, **replace** in orange)
+- **Groups:** a set of points served by one hub: name, colour, dedicated flag, members, the serving hub.
+- **Tags:** presets with a meaning downstream (bathroom, kitchen, wet area, dedicated, remove, **replace** in orange)
   and user tags in a rotating palette; a loose tag on paper becomes a note.
 - **The solver:** the rough sketch becomes millimetres live. Room corners cluster into shared wall lines; each measure is
   an equation; the rest is guessed from the sketch's proportions. Every wall is labelled **measured**,
@@ -572,23 +570,22 @@ Front colours mark *functions*; points, groups and tags keep their own colours.
   hard · 7 weekends only · ≋ dust-free. A chip alone is a valid fact; some chips answer a question (tenant → access).
   The room in focus is attached automatically (✕ detaches).
 - **Background detectors:** every note, memo and photo caption is folded (lower case, accents removed) and run through
-  ~27 keyword detectors (large appliances, add-on systems, rooms, old or outdated materials, a safety device mentioned,
-  intermittent faults, damage words (a smell, stains, marks), money amounts, the supply type, "urgent / tomorrow",
-  shared building, tenant). **Detectors only suggest:** a **ghost card** to accept with one tap or swipe away; a swiped one never returns
-  ("no safety device" must not silently read as "safety device"; a worn-out consumable is not a fault).
+  a few dozen keyword detectors (appliances, add-on systems, rooms, outdated materials, intermittent faults, damage
+  words, money amounts, "urgent / tomorrow", shared building, tenant). **Detectors only suggest:** a **ghost card** to
+  accept with one tap or swipe away; a swiped one never returns ("no X" must not silently read as "X"; a worn-out
+  consumable is not a fault).
 - **Log:** newest first: time, 🎤 if dictated, chips as coloured pills, room, ⚑ toggle; tap to edit.
 - **Sound note** (a switch): a phone without speech recognition records up to 3 minutes; listed under the camera as 🎙;
   never transcribed.
 
 #### Scope front ☰
 
-- **Toggles in four groups** (about 42): *nature of the work* (new fit-out, renovation / replacement, extension,
+- **Toggles in four groups** (about forty): *nature of the work* (new fit-out, renovation / replacement, extension,
   fault finding, inspection, service entry / capacity, hub replacement, survey or quote only) · *area* (whole flat or
   house, kitchen, bathroom, rooms, garden / outdoor, garage / workshop, common areas) · *systems* (about ten add-on
-  systems: a large external unit, a roof-mounted add-on, automation, a data network, security cameras, door entry,
-  climate units, floor systems, decorative linear units) · *wants* with − n + quantities (wall units, controls, overhead
-  units, linear strips, large appliances for cooking, laundry and water heating, comfort units, data points, outdoor
-  wall units, heavy-duty wall units, cameras).
+  systems, each with its own questions and shots: an outdoor unit, a roof unit, automation, a data network, cameras,
+  door entry, climate, floor systems…) · *wants* with − n + quantities (about twenty: points of each common type, large
+  appliances, outdoor points, cameras, and so on).
 - **Scope card:** rooms and m² (guessed ones counted), planned and existing points by type, groups, hubs, photos,
   notes, answered / open questions.
 - **Wants per room:** "where to" picks *general* or a room (starts on the room in focus); "by room"
@@ -599,22 +596,21 @@ Front colours mark *functions*; points, groups and tags keep their own colours.
 
 #### Questions front ?
 
-- About 48 questions; each has a **condition** and is shown only while it holds (on scope, an answer, a room kind, a
+- About fifty questions; each has a **condition** and is shown only while it holds (on scope, an answer, a room kind, a
   point type, a tag, a keyword hit, a chip, a photo purpose, the site, the variant; combined with all / any / not).
 - **Order:** open first (priority, then arrival), then *later*, then answered ones folded. **Card:** ● new (10 min) ·
   ☺ ask the client / ◎ look yourself · option chips (single or multi, 2–5 short options, the likely one first) · a free
   text box · ⏱ later · ⊘ not relevant · ↺ reset. Filter: all / client / inspection. Answering can switch on scope,
   which brings new questions. The deadline question has a date field.
 - **Topics:** always (the request, property type, access, deadline, budget, occupied during work, photo permission,
-  old documentation, decision maker), the existing installation (age, materials, safety devices present, problems seen,
-  last inspection), the service entry (supply type, entry rating, where it is, how it comes in, new large units), the
-  hub (free space, labelling, baseline safety checks, need a new hub), bathroom, kitchen (appliances, finishes done),
-  the large external unit (size, place, distance from the hub, consent in a shared building), the roof add-on
-  (roof, orientation, shading), automation (which system, what to control), data network, climate units.
+  old documentation, decision maker), what exists already (age, condition, problems seen, last inspection), the
+  service entry (where it is, its capacity), the hub (free space, labelling, need a new one), bathroom, kitchen
+  (appliances, finishes done), the outdoor unit (place, distance from the hub, consent in a shared building), the roof
+  unit (access, condition), automation (which system, what to control), data network, climate units.
 
 #### Camera front ◉
 
-- **Thirteen photo purposes**, each a symbol + colour: building outside ⌂, surroundings ⛬, access ⇥, service entry ⌁,
+- **About a dozen photo purposes**, each a symbol + colour: building outside ⌂, surroundings ⛬, access ⇥, service entry ⌁,
   hub ▣, existing fitting ○, planned location ✚, fault / hazard ⚠, equipment label ▤, route / wall 〰, room ◎,
   document ▧, other •.
 - **◉ gestures:** tap = shoot for the current purpose (its symbol is on the button); **hold** = the purpose menu,
@@ -622,10 +618,9 @@ Front colours mark *functions*; points, groups and tags keep their own colours.
   full grid. After a shot a "+ (symbol) again" pill stays 9 s.
 - **Each capture records** purpose, room in focus, the shot-list item it fulfils, time, GPS from the photo, a typed or
   dictated caption.
-- **The shot list** (~27 items) grows with the job (building front, access, the service entry closed and open, its label and rating, the hub closed and open, the group
-  list, safety device labels, baseline safety checks, free space in the hub, fault traces, bathroom and kitchen photo
-  points, the external unit's place and route, roof sides and shading for the roof add-on, a typical existing wall unit
-  per room, old documentation…): ✓ when done, have / need counts; tap to
+- **The shot list** (a few dozen items) grows with the job (building front, access, the service entry and its label, the hub closed and open with its
+  labels, fault traces, bathroom and kitchen photo points, the outdoor unit's place and route, the roof, a typical
+  existing point per room, old documentation…): ✓ when done, have / need counts; tap to
   shoot for that item.
 - **Series**: the camera returns after each shot until cancelled.
 - **Gallery** grouped by purpose; badges ▶ video, ✍ signature, 👤 personal, ◐ before, ◑ after, ▤ text read.
@@ -648,7 +643,7 @@ Front colours mark *functions*; points, groups and tags keep their own colours.
   shot-list item moves on to the next missing one; the **ghost** of the before-photo at 40 % (slider to 80 %) for an
   after-photo; tap to focus, pinch zoom, a **level** line (green within 1°, a bubble when the phone lies flat), a
   thirds grid.
-- **Camera feature switches:** 19, each with "all on / off".
+- **Camera feature switches:** about twenty, each with "all on / off".
 
 #### Site front ⌖
 
@@ -678,9 +673,8 @@ and no caption, no address.
   detectors, questions and shot-list items, one hint per tool, and drawing behaviour (angle step 0/15/30/45/90°, a snap
   grid, a room of a given size on a tap, size dialog first, points free or on walls, what *Done* does with an open
   line). It reorders and adds; **it never hides what the original shows.** It is data only, so it cannot break the app.
-- Examples: bathroom renovation (wet-zone tags, size first, 10 cm grid), large external unit install (route and hub
-  first, garage template, wall penetrations), small commercial hall (high-mounted units, safety signage units,
-  heavy-duty wall units, a 1 m grid, a 30 × 20 m hall on a tap).
+- Examples: bathroom renovation (wet-area tags, size first, 10 cm grid), outdoor unit install (route and hub
+  first, garage template, wall penetrations), small commercial hall (high-mounted points, heavy-duty points, a 1 m grid, a 30 × 20 m hall on a tap).
 - **On the phone:** ⚙ → variants; the **corner toggle** (the variant's symbol in its colour, or a grey ◐) switches
   between the original and the variant at any moment; its long press lists variants, original, refresh, request.
 - **Requesting one:** ⚙ → "request a new variant": 1–3 sentences (typed or dictated), keyword toggles, up to 5 photos
@@ -699,7 +693,7 @@ and no caption, no address.
 - **The takeoff** (the hand-over to pricing): work items with quantities and no prices — points by type × action (new /
   replace / remove / stays), wants vs drawing reconciled (the larger wins, ≈ with a note "scope: 4, sketch: 1"),
   appliance connections, general and dedicated groups, hubs, **route metres** (each drawn route's solved length +
-  drops + a reserve per end; undrawn runs back to the hub estimated, ≈), systems, open **decisions** (⚑, each naming what it
+  an allowance at each end; undrawn runs back to the hub estimated, ≈), systems, open **decisions** (⚑, each naming what it
   affects), checks, photos by purpose, rooms with area and wants. Produced on the phone (review), on the desktop page and
   by a command-line tool. The estimate workflow on the PC reads it: pre-fill only matched answers, keep ≈ and ⚑ visible
   as assumptions, treat decisions and *to be clarified* notes as open points of the offer.
@@ -752,25 +746,24 @@ quantities, in one offline HTML file.
   (quantities from the drawing, then pricing). A market-measure agent compares a finished budget with published price
   lists. Jobs are sealed to the owner's phone (§5.5).
 - **Calculators** (live, phone-friendly single files): a material-cost calculator for a renovation at the company's own
-  prices, a general trade calculator, and a pricing calculator for linear units (per metre, per joint, per supply unit,
-  per control channel). They read labour price lists and a complexity-factor library.
-- **Stock** (live): a vendor-neutral material database (~220 items: brand, part number, category, weight,
+  prices, a general trade calculator, and a pricing calculator for one
+  kind of repetitive item with a weighted complexity factor. They read labour price lists and a complexity-factor library.
+- **Stock** (live): a vendor-neutral material database (a few hundred items: brand, part number, category, weight,
   barcode, datasheet; ids never reused). Screens: catalogue table (column chooser, unknowns sink, detail drawer, `/`
   search), order lists with quantities and totals, export profiles with preview, projects (import a Planner drawing and
   see what it needs on a floor diagram that colours itself from the order list), price check (load, diff, apply, log),
   QR of a list or item, data completeness. **Vendor rule:** vendor-specific data (article numbers, prices, stock) shows
   only when that vendor is selected.
-- **Product-family picker** (live): a configurator for one modular fittings product family (inserts, frames, covers).
+- **Product-family picker** (live): a configurator for one supplier's modular product range (compatible parts and finishes).
 - **Parts builder** (live): hardware stock with a change log that asks for a reason on a decrease and an invoice number
   on an increase; a device builder (first click sets the base, further clicks attach nodes by bus, coloured by
   compatibility, a floating tree with a mini diagram, "done ✓" to a gallery).
 - **Drawing library studio** (beta): an offline knowledge base and editor for the trade's professional design packages:
-  legal and standards sources, ~37 document types with a need matrix by project class and stage, sheet formats (frames,
-  title block, revision table, line types, lettering, scales, layers, legend), naming conventions, ~155 symbols on a
-  2.5 mm grid. Screens: *package* (class, stage, conditions → a numbered drawing register, missing mandatory sheets
+  legal and standards sources, a few dozen document types with a need matrix by project class and stage, sheet formats (frames,
+  title block, revision table, line types, lettering, scales, layers, legend), naming conventions, a symbol
+  library on a fixed grid. Screens: *package* (class, stage, conditions → a numbered drawing register, missing mandatory sheets
   counted, an A4 drawing list), *sheet* (a true-millimetre sheet with frame, title block, revision table, a legend of
-  only the symbols used, a scale bar), *symbol editor*, and a catalog page. Planned: schematic hub diagrams from the
-  Planner's groups.
+  only the symbols used, a scale bar), *symbol editor*, and a catalog page.
 - **A standards document set** for building-automation systems (architecture, a central cabinet, radio,
   backup, an installation standard, a sensor catalogue).
 - **Document generation** overall: budget drafts, drawing packages, the survey report, weather work-day briefs, service
@@ -778,7 +771,7 @@ quantities, in one offline HTML file.
 
 ### 5.10 Map and weather (PC + phone)
 
-- **Map** (live): an offline, keyless country map (a one-time ~1.7 GB download recorded with source, date,
+- **Map** (live): an offline, keyless regional map (a large one-time download recorded with source, date,
   licence and size) with address search (offline first, accents optional, an online fallback row), 3D buildings,
   terrain and hillshade. Keys: `/` search · 3 buildings · T terrain · J jobs · W weather · N north · Esc. **Jobs layer:**
   pins by status (in progress / finished / failed) with an approximate-location ring and a card; density, timeline,
@@ -788,7 +781,7 @@ quantities, in one offline HTML file.
 - **Weather** (beta): multi-source weather for field work. It keeps the provenance of every forecast, merges
   sources into a consensus with uncertainty, scores each source against measurements, and turns the result into **work
   windows** and **alerts** per job site and activity (lightning, gusts for work at height, frost limits for materials,
-  rain, heat, official warnings, good days for outdoor commissioning). A primary-locale work-day brief at 05:40 and tomorrow's brief
+  rain, heat, official warnings, good days for outdoor commissioning). A primary-locale work-day brief early each morning and tomorrow's brief
   in the evening; a licence mode that shows an "evaluation" banner; a demo on invented data. Job sites leave only as
   forecast coordinates.
 
