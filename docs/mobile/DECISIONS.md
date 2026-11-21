@@ -495,11 +495,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   a tap. Details: `WP/M46.md`.
 - **D-56 · Kamera 2: automatic face detection, built in and switchable (M46), 2026-11-20 → answered 2026-11-21: B.**
   Proposed A (no face detection: ML Kit's bundled face model adds about 6.9 MB per architecture); the Founder chose
-  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-77).
+  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-90).
   `sketch-vision` `FaceFinder` (`com.google.mlkit:face-detection:16.1.7`, bundled, accurate mode, faces from 5 % of the
   picture) beside `TextReader`; `sketch-core` `CameraFeatures.proposals` turns each face into a blur rectangle grown by
   20 % and clipped, never twice over an existing one. The rectangles are only **proposed** (dashed red over the photo,
-  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-77).
+  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-90).
   The APK grows by about 14 MB more (two ARM architectures).
 - **D-57 · Kamera 2: GPS is stripped from exported copies by default (M46), 2026-11-20.** Taken in fork F3. Every
   photo that leaves the phone (the package's purpose photos and Fotópont photos, variant-request photos) has its EXIF
@@ -509,7 +509,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (the original stays on the phone); personal photos, videos and signatures are never offered for a variant request
   (which ends up in Git). Rejected: keeping GPS by default (a photo forwarded from the PC to a supplier or a client
   carries the client's address in its metadata). **Answered 2026-11-21: A** (stripped by default, kept per photo); the
-  strip itself is a switch too (D-77: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
+  strip itself is a switch too (D-90: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
 - **D-58 · Kamera 2: before / after is a pair by reference, compared with a slider (M46), 2026-11-20.** Taken in fork F3.
   The after-photo names its before (`phase` utana + `pair`); one after per before (a new one replaces the old). The
   candidates are earlier photos of the same purpose, the same room first, then the same shot item, the newest first.
@@ -619,7 +619,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
   file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
   Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
-- **D-77 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
+- **D-90 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
   The Founder, answering F3's question 3: *"my general approach towards features modularity: … I would default to have
   upcoming features and programs be integrated so we have them, but everything generally should be modular in its core
   design (with settings behind features to tinker with them, toggle each or all features as it pleases for high level
