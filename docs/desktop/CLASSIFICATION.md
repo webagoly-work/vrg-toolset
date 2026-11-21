@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 117 | 34 |
-| open · dev | 286 | 57 |
+| open · user | 120 | 37 |
+| open · dev | 296 | 58 |
 | open · all | 24 | 1 |
 | internal | 77 | 0 |
-| roadmap | 52 | 5 |
-| **total** | **556** | **97** |
+| roadmap | 74 | 5 |
+| **total** | **591** | **101** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -48,6 +48,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `phone` | Telefon kapcsolat · *Phone link* | dialog · radios, servers, QR | `desktop` | rendszer | beta |
 | `planner` | Varler Planner · *Varler Planner* | application |  | munka / tervezes | live |
 | `rajztar` | Rajztár Stúdió · *Drawing store studio* | application · electrical document package, sheet and symbol editor |  | munka / tervezes | beta |
+| `sketcher` | VRG Sketcher · *VRG Sketcher* | application · field survey: sketch, notes, scope, questions, photos, site |  | alkalmazasok / terep | beta |
 | `workflow-kit` | Varler Workflow Kit · *Varler Workflow Kit* | document set · workflow kit |  | munka / arazas | live |
 | `calc-panel` | Panel anyagár kalkulátor · *Panel material price calculator* | utility · calculator |  | munka / arazas | live |
 | `calc-general` | Általános kalkulátor · *General electrician calculator* | utility · calculator |  | munka / arazas | live |
@@ -59,6 +60,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `jobs` | Munkák · *Jobs* | folder · job records |  | fajlok | live |
 | `files` | Fájlok · *Files* | panel · file manager |  | fajlok | live |
 | `archive` | Archívum · *Artifact archive* | knowledge base · artifact archive |  | fajlok | beta |
+| `konnektom-labor` | Konnektóm-labor · *Connectome lab* | application · connectome lab |  | alkalmazasok | beta |
 | `mindmap` | VRG MindMap · *VRG MindMap* | application |  | alkalmazasok / iroda | live |
 | `web` | Böngésző · *Browser* | panel · embedded browser |  | alkalmazasok / iroda | live |
 | `mail` | Posta · *Mail* | panel · mail client |  | alkalmazasok / iroda | beta |
@@ -66,6 +68,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feed` | Hírfolyam · *Feeds* | panel · saved-query feed |  | alkalmazasok / iroda | live |
 | `map` | VRG Térkép · *VRG Map* | application |  | alkalmazasok / terep | live |
 | `console` | Varler Console · *Varler Console* | companion app · field PWA |  | alkalmazasok / terep | beta |
+| `weather` | VRG Időjárás · *VRG Weather* | application · multi-source weather feed, work windows, alerts |  | alkalmazasok / terep | beta |
 | `mobile` | VRG Mobile · *VRG Mobile* | companion app · Android |  | alkalmazasok / terep | beta |
 | `stack.search` | Keresés · *Search* | view · search | `stack` | fejlesztes | live |
 | `layer.i` | I · Ötletfolyam · *I · Ideas* | view · stack layer | `stack` | fejlesztes | live |
@@ -78,6 +81,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 |---|---|---|---|---|---|
 | `rajztar.catalog` | Rajztár katalógus · *Drawing store catalog* | knowledge base · symbols, document types, formats, sources | `rajztar` | munka / tervezes | live |
 | `client-preview` | Ügyfélnézet · *Client preview* (user) | feature | `planner` | munka / tervezes | dev |
+| `konnektom-labor-cmd` | Konnektóm-labor .cmd · *Connectome lab bootleg* | command · self-extracting hand-off | `konnektom-labor` | fejlesztes | beta |
 | `servicekit` | ServiceKit · *ServiceKit* (user) | device · portable field kit |  | alkalmazasok / terep | dev |
 | `dev:repo` | Repó & Git · *Repository & Git* | category · dev root |  | fejlesztes | live |
 | `dev:ai` | Ügynökök & AI · *Agents & AI* | category · dev root |  | fejlesztes | live |
@@ -164,24 +168,24 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 
 | type | EN · HU | kind | rows |
 |---|---|---|---:|
-| `application` | Application · Alkalmazás | unit | 27 |
+| `application` | Application · Alkalmazás | unit | 30 |
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
-| `feature module` | Feature module · Funkciómodul | unit | 24 |
+| `feature module` | Feature module · Funkciómodul | unit | 46 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
 | `module` | Module · Modul | unit | 52 |
 | `library` | Library · Könyvtár | unit | 2 |
-| `command` | Command · Parancs | unit | 97 |
+| `command` | Command · Parancs | unit | 101 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
-| `cli tool` | CLI tool · Parancssori eszköz | unit | 12 |
-| `service` | Service · Szolgáltatás | unit | 18 |
+| `cli tool` | CLI tool · Parancssori eszköz | unit | 14 |
+| `service` | Service · Szolgáltatás | unit | 19 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 10 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 11 |
-| `document set` | Document set · Dokumentumcsomag | unit | 18 |
-| `runbook` | Runbook · Forgatókönyv | unit | 10 |
+| `document set` | Document set · Dokumentumcsomag | unit | 20 |
+| `runbook` | Runbook · Forgatókönyv | unit | 11 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
 | `ai coding assistant` | AI coding assistant · MI kódsegéd | unit | 3 |
 | `hook` | Hook · Horog | unit | 1 |
@@ -250,6 +254,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:P/J` | Planner · Rajztár Stúdió | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/K` | Planner · Rajztár katalógus | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/R` | Planner · Rajztár build + teszt | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/S` | Planner · VRG Sketcher | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/H` | Planner · Sketcher build + teszt | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/O` | Planner · Mappa megnyitása | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:I` | Készlet | application | open | user |  | is the catalog item `inventory` |
 | `menu:proj:I/B` | Készlet · Build | command | open | dev | `inventory` | a build / test / serve action of START I, drawn behind inventory |
@@ -285,6 +291,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:R/F` | Rétegverem · Futásnapló | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/L` | Rétegverem · Thread Board | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/A` | Rétegverem · Archívum | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
+| `menu:proj:R/K` | Rétegverem · Konnektóm-labor | application · connectome lab | open | user |  | is the catalog item `konnektom-labor` |
+| `menu:proj:R/E` | Rétegverem · Konnektóm-labor .cmd | command · self-extracting hand-off | open | dev | `konnektom-labor` | is the catalog item `konnektom-labor-cmd` |
 | `menu:proj:R/T` | Rétegverem · Telefonra | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/B` | Rétegverem · Újraépítés | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
 | `menu:proj:R/D` | Rétegverem · Doktor | command | open | dev | `stack` | a build / test / serve action of START R, drawn behind stack |
@@ -304,6 +312,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:W/T` | Varler Console · Teszt | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
 | `menu:proj:W/V` | Varler Console · VS Code | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
 | `menu:proj:W/O` | Varler Console · Mappa megnyitása | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
+| `menu:proj:W/I` | Varler Console · VRG Időjárás | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
 | `menu:proj:V` | Vendor | utility · vendored-component browser | open | dev | `dev:infra` | is the catalog item `vendor` |
 | `menu:proj:V/L` | Vendor · Komponensek listája | command | open | dev | `vendor` | a build / test / serve action of START V, drawn behind vendor |
 | `menu:proj:V/D` | Vendor · Komponensek letöltése | command | open | dev | `vendor` | a build / test / serve action of START V, drawn behind vendor |
@@ -355,6 +364,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `srv:solomon` | Solomon Gömb · döntésekkel | service · local server | open | dev | `solomon` | background process with a port: Dev, behind solomon |
 | `srv:divergence` | Divergencia · jelzőtábla | service · local server | open | dev | `divergence` | background process with a port: Dev, behind divergence |
 | `srv:terkep` | VRG Térkép · offline térkép | service · local server | open | dev | `map` | background process with a port: Dev, behind map |
+| `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | service · local server | open | dev | `weather` | background process with a port: Dev, behind weather |
 | `srv:stack` | Rétegverem · Konnektóm | service · local server | open | dev | `stack` | background process with a port: Dev, behind stack |
 | `menu:prog:1` | Chrome | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
 | `menu:prog:2` | Opera GX | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
@@ -655,6 +665,28 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `mobile:M21` | Alkalmazások | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M22` | Claude | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M23` | PC ablakok | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M24` | Vázlat | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M25` | Fotópont | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M26` | VRG Sketcher | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M27` | Jegyzet | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M28` | Munkakör and Kérdések | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M29` | Kamera | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M30` | Helyszín | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M31` | Variánsok | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M32` | Kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M33` | Csipogó | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M34` | Ikon | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M35` | Eszközök | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M36` | iPhone | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M37` | RCO | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M38` | Kezdőlap lapok + Katalógus | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M39` | Varler Planner tile | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M40` | Kalkulátorok tile | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M41` | Készlet tile | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M42` | Varler Workflow Kit | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M43` | VRG Térkép | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M44` | VRG Időjárás | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M45` | Vault | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M15` | Logó kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry · generated tool list | internal |  | `mobile` | the phone's tool list, generated |
 | `stack:commits` | VRG Commit-pixel | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |
@@ -681,6 +713,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `layer:G` | Réteg G · Data Globe | view · stack layer | open | dev | `stack` | is the catalog item `layer.g` |
 | `layer:Z` | Réteg Z · Codec | view · stack layer, machine only | open | dev | `stack` | is the catalog item `layer.z` |
 | `tool:anonymise` | tools/anonymise.js | cli tool | open | dev | `dev:repo` | command-line script, run by START, a build, an agent or a developer |
+| `tool:bootleg` | tools/bootleg.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:brief-state` | tools/brief-state.js | cli tool | open | dev | `council` | command-line script, run by START, a build, an agent or a developer |
 | `tool:build-hub` | tools/build-hub.js | cli tool | open | dev | `kapu` | command-line script, run by START, a build, an agent or a developer |
 | `tool:build-mobile-tools` | tools/build-mobile-tools.js | cli tool | open | dev | `mobile` | command-line script, run by START, a build, an agent or a developer |
@@ -696,6 +729,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `tool:solomon` | tools/solomon.js | cli tool | open | dev | `solomon` | command-line script, run by START, a build, an agent or a developer |
 | `tool:standin` | tools/standin.js | cli tool | open | dev | `council` | command-line script, run by START, a build, an agent or a developer |
 | `tool:vrg-ctx` | tools/vrg-ctx.js | cli tool | open | dev | `context` | command-line script, run by START, a build, an agent or a developer |
+| `tool:workflow-seal` | tools/workflow-seal.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:hub-admin` | Kapu admin | gate · sign-in + guest launcher page | open | dev | `dev:infra` | is the catalog item `kapu` |
 | `prompt:01-uj-funkcio` | Prompt · 01-uj-funkcio | prompt template | open | dev | `prompts` | a session starter in the prompt library |
 | `prompt:02-hibakereses` | Prompt · 02-hibakereses | prompt template | open | dev | `prompts` | a session starter in the prompt library |
@@ -740,10 +774,12 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `doc:handoff` | docs/handoff | document set · pack | open | dev | `dev:ai` | design, decisions and briefs |
 | `doc:housekeeping` | docs/housekeeping | document set · pack | open | dev | `dev:infra` | design, decisions and briefs |
 | `doc:hub` | docs/hub | document set · pack | open | dev | `kapu` | design, decisions and briefs |
+| `doc:map` | docs/map | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:mobile` | docs/mobile | document set · pack | open | dev | `mobile` | design, decisions and briefs |
 | `doc:notes` | docs/notes | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:research` | docs/research | document set · research notes | roadmap |  | `dev:knowledge` | is the catalog item `research` (planned) |
 | `doc:services-server` | docs/services-server.md | document set · pack | open | dev | `servers` | design, decisions and briefs |
+| `doc:sketcher` | docs/sketcher | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:solomon` | docs/solomon | document set · pack | open | dev | `solomon` | design, decisions and briefs |
 | `doc:workflow` | docs/workflow | document set · pack | open | dev | `workflow-kit` | design, decisions and briefs |
 | `go:city` | GO CITY | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
@@ -755,6 +791,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `go:openwrt` | GO OPENWRT | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `go:planner` | GO PLANNER | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `go:route` | GO ROUTE | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
+| `go:variant` | GO VARIANT | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `dir:Archive` | Archive | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
 | `dir:BRIDGE` | BRIDGE | document set · standards | open | user |  | is the catalog item `bridge` |
 | `dir:Calculator` | Calculator | utility · calculator | open | user |  | is the catalog item `calc-led` |
@@ -773,9 +810,11 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dir:ServiceKit` | ServiceKit | device · portable field kit | open | dev |  | is the catalog item `servicekit` (dev: shown from dev) |
 | `dir:ServiceKitCYD` | ServiceKitCYD | folder · source | internal |  | `servicekit-cyd` | a top-level folder; what it holds is classified by its own rows |
 | `dir:ServiceKitPhone` | ServiceKitPhone | companion app | roadmap |  | `servicekit` | is the catalog item `servicekit-phone` (planned) |
+| `dir:Sketcher` | Sketcher | application · field survey: sketch, notes, scope, questions, photos, site | open | user |  | is the catalog item `sketcher` |
 | `dir:Solomon` | Solomon | application · knowledge visualization | open | dev | `dev:knowledge` | is the catalog item `solomon` |
 | `dir:Stack` | Stack | knowledge base · graph | open | dev | `dev:knowledge` | is the catalog item `stack` |
 | `dir:Toolbox` | Toolbox | launcher · legacy page | open | dev | `dev:infra` | is the catalog item `toolbox` |
+| `dir:Weather` | Weather | application · multi-source weather feed, work windows, alerts | open | user |  | is the catalog item `weather` |
 | `launcher:vrg-ui` | launcher/vrg-ui.ps1 | launcher · text UI, fallback | open | dev | `dev:infra` | is the catalog item `start` |
 | `launcher:backup` | launcher/backup.ps1 | utility · backup, text UI | open | dev | `dev:infra` | is the catalog item `backup` |
 | `launcher:vrg-git` | launcher/vrg-git.ps1 | module · START launcher part | internal |  | `commit` | a part of the START launcher |

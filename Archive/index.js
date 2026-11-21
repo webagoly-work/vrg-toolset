@@ -4,6 +4,51 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "kettelefonos-teszt",
+   "title": "Kéttelefonos teszt",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "A VRG Sketcher telefonos ellenőrzései két telefonra osztva, közös élő pipálással és Hibák listával.",
+   "purpose": "A két telefon egyszerre teszteli az M24–M31 és M46–M49 munkacsomagokat; a hibák megjegyzéssel visszaolvashatók.",
+   "context": [
+    "F1–F4 fork összevonva a main ágra",
+    "a Founder kéttelefonos tesztet kért a végére"
+   ],
+   "tags": [],
+   "file": "files/kettelefonos-teszt.html",
+   "url": "https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre"
+  },
+  {
+   "id": "vrg-latoter",
+   "title": "VRG Látótér",
+   "created": "2026-11-20",
+   "updated": "2026-11-20",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "study",
+   "summary": "Design prototype for the VRG visual layer: an isometric workshop island fed by live session activity (dioramas, boats for subagents, cranes for background jobs, command banners), three zoom levels with a lens ring, the Munkavászon ribbon for time, plus the classification of all 46 visual tools, the motion and gesture grammar, and the roadmap V0-V6 with decisions VIS-Q1-Q9.",
+   "purpose": "Sort the scattered visual tools into one system and show how the Munkavászon and the isometric dioramas meet in an overview board for the Founder; the written plan is docs/visual/README.md.",
+   "context": [
+    "Munkavászon built in the same session",
+    "asked where it fits in Desktop and Mobile, and for a professional overview of every visualizer",
+    "made-up event data; the board is a design, not wired to the spine yet"
+   ],
+   "tags": [
+    "latoter",
+    "munkavaszon",
+    "isometric",
+    "dioramas",
+    "visual-plan"
+   ],
+   "file": "files/vrg-latoter.html",
+   "url": "https://claude.ai/artifact/12mKZNpQSRhSvVG5XZ5mhm"
+  },
+  {
    "id": "feature-dioramas",
    "title": "Feature Dioramas",
    "created": "2026-11-15",

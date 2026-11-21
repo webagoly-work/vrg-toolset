@@ -1,0 +1,777 @@
+{
+ "about": "Written by Sketcher/tools/make-site-fixture.js from Map/lib/site-math.js; replayed by SitePlaceTest. Do not edit.",
+ "cases": [
+  {
+   "about": "a house drawn north-up, the building at 17°",
+   "outline": [
+    [
+     47.5150502,
+     19.0799392
+    ],
+    [
+     47.5150186,
+     19.080092
+    ],
+    [
+     47.5149498,
+     19.0800608
+    ],
+    [
+     47.5149814,
+     19.079908
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Nappali",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       7,
+       0
+      ],
+      [
+       7,
+       7.8
+      ],
+      [
+       0,
+       7.8
+      ]
+     ]
+    },
+    {
+     "name": "Konyha",
+     "poly": [
+      [
+       7,
+       0
+      ],
+      [
+       11.8,
+       0
+      ],
+      [
+       11.8,
+       7.8
+      ],
+      [
+       7,
+       7.8
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 12,
+    "d": 8.01,
+    "area": 96,
+    "axis": 17.1
+   },
+   "fit": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 17.05,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 17.05,
+    "auto": true
+   },
+   "report": {
+    "turn": 0,
+    "offset": 0,
+    "offsetDir": "",
+    "walls": [],
+    "inside": 1,
+    "verdict": "rendben"
+   },
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ],
+   "corners": [
+    [
+     [
+      19.0799401,
+      47.5150491
+     ],
+     [
+      19.0800292,
+      47.5150306
+     ],
+     [
+      19.0799988,
+      47.5149636
+     ],
+     [
+      19.0799097,
+      47.514982
+     ]
+    ],
+    [
+     [
+      19.0800292,
+      47.5150306
+     ],
+     [
+      19.0800903,
+      47.515018
+     ],
+     [
+      19.0800599,
+      47.5149509
+     ],
+     [
+      19.0799988,
+      47.5149636
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "the same, the user turned it 10° more",
+   "outline": [
+    [
+     47.5150502,
+     19.0799392
+    ],
+    [
+     47.5150186,
+     19.080092
+    ],
+    [
+     47.5149498,
+     19.0800608
+    ],
+    [
+     47.5149814,
+     19.079908
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Nappali",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       7,
+       0
+      ],
+      [
+       7,
+       7.8
+      ],
+      [
+       0,
+       7.8
+      ]
+     ]
+    },
+    {
+     "name": "Konyha",
+     "poly": [
+      [
+       7,
+       0
+      ],
+      [
+       11.8,
+       0
+      ],
+      [
+       11.8,
+       7.8
+      ],
+      [
+       7,
+       7.8
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 12,
+    "d": 8.01,
+    "area": 96,
+    "axis": 17.1
+   },
+   "fit": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 17.05,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 27.05,
+    "auto": false
+   },
+   "report": {
+    "turn": 10,
+    "offset": 0,
+    "offsetDir": "",
+    "walls": [
+     {
+      "room": 0,
+      "name": "Nappali",
+      "edge": 0,
+      "dir": "ÉK",
+      "out": 0.75
+     },
+     {
+      "room": 0,
+      "name": "Nappali",
+      "edge": 3,
+      "dir": "ÉNy",
+      "out": 0.35
+     },
+     {
+      "room": 1,
+      "name": "Konyha",
+      "edge": 1,
+      "dir": "DK",
+      "out": 0.35
+     },
+     {
+      "room": 1,
+      "name": "Konyha",
+      "edge": 2,
+      "dir": "DNy",
+      "out": 0.78
+     }
+    ],
+    "inside": 0.658,
+    "verdict": "kilog"
+   },
+   "lines": [
+    "A vázlat 4 fala kilóg a körvonalból.",
+    "Elfordulás: 10,0° · középpont eltérése: 0,0 m",
+    "· Nappali, északkeleti fal: 0,8 m-rel kilóg",
+    "· Nappali, északnyugati fal: 0,4 m-rel kilóg",
+    "· Konyha, délkeleti fal: 0,4 m-rel kilóg",
+    "· Konyha, délnyugati fal: 0,8 m-rel kilóg"
+   ],
+   "corners": [
+    [
+     [
+      19.0799536,
+      47.5150554
+     ],
+     [
+      19.0800367,
+      47.5150267
+     ],
+     [
+      19.0799894,
+      47.5149643
+     ],
+     [
+      19.0799064,
+      47.5149929
+     ]
+    ],
+    [
+     [
+      19.0800367,
+      47.5150267
+     ],
+     [
+      19.0800936,
+      47.5150071
+     ],
+     [
+      19.0800464,
+      47.5149446
+     ],
+     [
+      19.0799894,
+      47.5149643
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "an L-shaped building and an L-shaped plan",
+   "outline": [
+    [
+     47.5150275,
+     19.0799369
+    ],
+    [
+     47.5150847,
+     19.0800724
+    ],
+    [
+     47.515039,
+     19.0801148
+    ],
+    [
+     47.5150104,
+     19.080047
+    ],
+    [
+     47.5149799,
+     19.0800752
+    ],
+    [
+     47.5149513,
+     19.0800075
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Szoba",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       12,
+       0
+      ],
+      [
+       12,
+       6
+      ],
+      [
+       0,
+       6
+      ]
+     ]
+    },
+    {
+     "name": "Fürdő",
+     "poly": [
+      [
+       0,
+       6
+      ],
+      [
+       6,
+       6
+      ],
+      [
+       6,
+       10
+      ],
+      [
+       0,
+       10
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 12,
+    "d": 10,
+    "area": 95.9,
+    "axis": 148
+   },
+   "fit": {
+    "lat": 47.515018,
+    "lon": 19.0800399,
+    "rot": -32.05,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.515018,
+    "lon": 19.0800399,
+    "rot": -32.05,
+    "auto": true
+   },
+   "report": {
+    "turn": 0,
+    "offset": 0,
+    "offsetDir": "",
+    "walls": [],
+    "inside": 0.468,
+    "verdict": "rendben"
+   },
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ],
+   "corners": [
+    [
+     [
+      19.0799369,
+      47.5150275
+     ],
+     [
+      19.0800723,
+      47.5150847
+     ],
+     [
+      19.0801147,
+      47.515039
+     ],
+     [
+      19.0799793,
+      47.5149817
+     ]
+    ],
+    [
+     [
+      19.0799793,
+      47.5149817
+     ],
+     [
+      19.080047,
+      47.5150104
+     ],
+     [
+      19.0800752,
+      47.5149799
+     ],
+     [
+      19.0800075,
+      47.5149513
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "a flat in a bigger building, moved north",
+   "outline": [
+    [
+     47.5150745,
+     19.0798092
+    ],
+    [
+     47.515051,
+     19.0802071
+    ],
+    [
+     47.5149255,
+     19.0801908
+    ],
+    [
+     47.514949,
+     19.0797929
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Szoba",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       0,
+       3
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 30,
+    "d": 14.01,
+    "area": 420.2,
+    "axis": 5
+   },
+   "fit": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 5,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.51503,
+    "lon": 19.08,
+    "rot": 5,
+    "auto": false
+   },
+   "report": {
+    "turn": 0,
+    "offset": 3.34,
+    "offsetDir": "É",
+    "walls": [],
+    "inside": 1,
+    "verdict": "eltolva"
+   },
+   "lines": [
+    "A vázlat a körvonalon belül van, de nem középen.",
+    "Elfordulás: 0,0° · középpont eltérése: 3,3 m É"
+   ],
+   "corners": [
+    [
+     [
+      19.0799752,
+      47.515045
+     ],
+     [
+      19.0800283,
+      47.5150419
+     ],
+     [
+      19.0800248,
+      47.515015
+     ],
+     [
+      19.0799717,
+      47.5150181
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "a plan bigger than its building",
+   "outline": [
+    [
+     47.515036,
+     19.0799201
+    ],
+    [
+     47.515036,
+     19.0800799
+    ],
+    [
+     47.514964,
+     19.0800799
+    ],
+    [
+     47.514964,
+     19.0799201
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Nappali",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       14,
+       0
+      ],
+      [
+       14,
+       7.8
+      ],
+      [
+       0,
+       7.8
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 12,
+    "d": 8.01,
+    "area": 96.1,
+    "axis": 0
+   },
+   "fit": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 0,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 0,
+    "auto": true
+   },
+   "report": {
+    "turn": 0,
+    "offset": 0,
+    "offsetDir": "",
+    "walls": [
+     {
+      "room": 0,
+      "name": "Nappali",
+      "edge": 1,
+      "dir": "K",
+      "out": 1
+     },
+     {
+      "room": 0,
+      "name": "Nappali",
+      "edge": 3,
+      "dir": "Ny",
+      "out": 1
+     }
+    ],
+    "inside": 0.55,
+    "verdict": "kilog"
+   },
+   "lines": [
+    "A vázlat 2 fala kilóg a körvonalból.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m",
+    "· Nappali, keleti fal: 1,0 m-rel kilóg",
+    "· Nappali, nyugati fal: 1,0 m-rel kilóg"
+   ],
+   "corners": [
+    [
+     [
+      19.0799068,
+      47.5150351
+     ],
+     [
+      19.0800932,
+      47.5150351
+     ],
+     [
+      19.0800932,
+      47.5149649
+     ],
+     [
+      19.0799068,
+      47.5149649
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "a plan drawn long side north, the building long side east-west",
+   "outline": [
+    [
+     47.5150594,
+     19.0800386
+    ],
+    [
+     47.5149531,
+     19.0800663
+    ],
+    [
+     47.5149406,
+     19.0799614
+    ],
+    [
+     47.5150469,
+     19.0799337
+    ]
+   ],
+   "rooms": [
+    {
+     "name": "Előszoba",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       8,
+       12
+      ],
+      [
+       0,
+       12
+      ]
+     ]
+    }
+   ],
+   "footprint": {
+    "w": 12,
+    "d": 8,
+    "area": 96,
+    "axis": 80
+   },
+   "fit": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": -10,
+    "auto": true
+   },
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": -10,
+    "auto": true
+   },
+   "report": {
+    "turn": 0,
+    "offset": 0,
+    "offsetDir": "",
+    "walls": [],
+    "inside": 0.678,
+    "verdict": "rendben"
+   },
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ],
+   "corners": [
+    [
+     [
+      19.0799337,
+      47.5150469
+     ],
+     [
+      19.0800386,
+      47.5150594
+     ],
+     [
+      19.0800663,
+      47.5149531
+     ],
+     [
+      19.0799614,
+      47.5149406
+     ]
+    ]
+   ]
+  },
+  {
+   "about": "no plan yet",
+   "outline": [
+    [
+     47.515036,
+     19.0799201
+    ],
+    [
+     47.515036,
+     19.0800799
+    ],
+    [
+     47.514964,
+     19.0800799
+    ],
+    [
+     47.514964,
+     19.0799201
+    ]
+   ],
+   "rooms": [],
+   "footprint": {
+    "w": 12,
+    "d": 8.01,
+    "area": 96.1,
+    "axis": 0
+   },
+   "fit": null,
+   "place": null,
+   "report": null,
+   "lines": [],
+   "corners": []
+  }
+ ]
+}

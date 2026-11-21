@@ -157,6 +157,22 @@ object Trust {
         return DeviceTrust.grantLink(g, req.back) to null
     }
 
+    /**
+     * The fallback (2026-11-20): the owner types another phone's Eszközkód (its lock screen) and it goes on the list.
+     * No key and no code check, so no grant and no token handover: the phone just finds itself listed and unlocks.
+     * Returns a problem or null. Never touches an entry already on the list (the owner's own above all).
+     */
+    suspend fun approveByCode(typed: String, label: String): String? {
+        val code = DeviceTrust.typedCode(typed) ?: return "Az eszközkód 12 betű vagy szám, például 6CDB-FB09-6833."
+        if (DeviceTrust.sameId(code, id)) return "Ez a saját telefonod kódja."
+        if (_list.value?.has(code) == true) return "Ez az eszköz már a listán van."
+        val n = label.trim().take(40).ifBlank { "Eszköz $code" }
+        val by = "$name · $id · eszközkóddal"
+        return change("trust: $n ($code) jóváhagyva eszközkóddal") { t ->
+            if (t.has(code)) t else t.with(TrustedDevice(code, n, "kézzel felvéve", "?", "", Instant.now().toString(), by))
+        }.also { if (it == null) VrgLog.i(TAG, "Eszközkóddal felvéve: $n ($code)") }
+    }
+
     suspend fun setGated(on: Boolean): String? = change("trust: kiadások ${if (on) "zárolva" else "nyitva"}") { it.copy(gated = on) }
 
     suspend fun remove(deviceId: String): String? = change("trust: $deviceId eltávolítva") { it.without(deviceId) }

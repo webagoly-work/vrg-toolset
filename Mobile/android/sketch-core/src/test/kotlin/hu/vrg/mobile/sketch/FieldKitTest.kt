@@ -76,6 +76,10 @@ class FieldKitTest {
             val an = e.getJSONObject("afterAnswers")
             assertEquals(an.keys().asSequence().associateWith { q -> an.getJSONArray(q).let { listOf(strs(it.getJSONArray(0)).toString(), it.getString(1)) } }.toSortedMap(),
                 after.answers.mapValues { listOf(it.value.options.sorted().toString(), it.value.text) }.toSortedMap(), "$name: answers after the suggestions")
+            // F4 (WP M49): the wants by room
+            val ew = e.getJSONArray("wants")
+            assertEquals((0 until ew.length()).map { i -> ew.getJSONArray(i).let { r -> listOf(r.getString(0), r.getInt(1).toString(), r.getInt(2).toString(), strs(r.getJSONArray(3)).toString()) } },
+                Wants.lines(k, s).map { w -> listOf(w.id, w.total.toString(), w.general.toString(), w.rooms.map { "${it.first}:${it.second}" }.toString()) }, "$name: wants")
         }
     }
 

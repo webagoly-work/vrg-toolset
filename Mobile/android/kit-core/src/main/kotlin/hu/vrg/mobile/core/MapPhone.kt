@@ -33,12 +33,17 @@ object MapPhone {
 
     /** The page and the repo files it loads, all fetched from main and kept for the offline open. */
     val APP = DeskApp(ID, "VRG Térkép", "Map/vrg-terkep.html", listOf("Map/lib", "Map/style"))
-    val PAGE_FILES = listOf("Map/vrg-terkep.html", "Map/lib/geocode.js", "Map/lib/jobs-layer.js", "Map/lib/sun.js", "Map/lib/shadow-layer.js",
-        "Map/style/terep.json")
+    val PAGE_FILES = listOf("Map/vrg-terkep.html", "Map/lib/geocode.js", "Map/lib/jobs-layer.js", "Map/style/terep.json",
+        // the weather layer (loaded by the page since its W layer) and the Sketcher's site layer (F1)
+        "Map/lib/weather-layer.js", "Map/lib/site-math.js", "Map/lib/site-layer.js",
+        // the shadows (S, docs/map/SHADOWS.md)
+        "Map/lib/sun.js", "Map/lib/shadow-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
     const val SITES = "/__phone/sites.json"
+    /** One survey for the site layer (F1): `?id=<sketch id>`; its place, outline, placement and solved rooms. */
+    const val SITE = "/__phone/site.json"
 
     /** = Map/serve.js REMOTE_HOSTS: the public servers ?remote=1 reads. */
     val REMOTE_HOSTS = setOf("build.protomaps.com", "download.mapterhorn.com", "protomaps.github.io")
@@ -52,15 +57,18 @@ object MapPhone {
     enum class Mode { PC, INTERNET }
 
     /** The page's address for a mode. [hash] is the camera (`#zoom/lat/lon/bearing/pitch`) the map had when it was left. */
-    fun pageUrl(mode: Mode, build: String, job: String? = null, hash: String? = null): String {
+    fun pageUrl(mode: Mode, build: String, job: String? = null, hash: String? = null, site: String? = null): String {
         val q = mutableListOf<String>()
         if (mode == Mode.INTERNET) { q += "remote=1"; q += "build=" + (build.takeIf { MapBuilds.valid(it) } ?: DEFAULT_BUILD) }
         job?.takeIf { JOB.matches(it) }?.let { q += "job=$it" }
+        site?.takeIf { SITE_ID.matches(it) }?.let { q += "site=$it" }
         val h = hash?.takeIf { HASH.matches(it) } ?: ""
         return "$ORIGIN/vrg-terkep.html" + (if (q.isEmpty()) "" else "?" + q.joinToString("&")) + h
     }
 
     val JOB = Regex("[A-Za-z0-9_-]{1,24}")
+    /** A sketch id (SketchStore: "v" + base-36 time). */
+    val SITE_ID = Regex("[A-Za-z0-9_-]{1,64}")
     private val HASH = Regex("#[0-9.]+/-?[0-9.]+/-?[0-9.]+(/-?[0-9.]+(/[0-9.]+)?)?")
 
     /** The page with the phone's script added before </body> (the page itself is the PC's, unchanged). */
@@ -106,8 +114,8 @@ object MapRoute {
         val segs = cleanSegments(path) ?: return MapReq.Refused(403, "path")
         val p = segs.joinToString("/")
         if (p == "" || p == "vrg-terkep.html" || p == "index.html") return MapReq.Page(MapPhone.APP.page)
-        if ("Map/$p" in MapPhone.PAGE_FILES) return MapReq.Page("Map/$p")
-        if ("/$p" == MapPhone.PHONE_JS || "/$p" == MapPhone.SITES) return MapReq.Phone("/$p")
+        if ("Map/$p" in MapPhone.PAGE_FILES && "Map/$p" != MapPhone.APP.page) return MapReq.Page("Map/$p")
+        if ("/$p" == MapPhone.PHONE_JS || "/$p" == MapPhone.SITES || "/$p" == MapPhone.SITE) return MapReq.Phone("/$p")
         if (segs[0] == "vendor") return MapVendor.FILES.firstOrNull { it.served == "/$p" }?.let { MapReq.Lib(it) } ?: MapReq.Refused(404, "not a library file")
         if (segs[0] == "jobs") return if (p == "jobs/status" || p == "jobs/helyek.json") MapReq.Jobs("/$p") else MapReq.Refused(404, "jobs")
         if (segs[0] == "data" && segs.size >= 2) {
@@ -129,10 +137,11 @@ object MapRoute {
 
     /**
      * A request off the map's origin may go to the network only for what the page does on the user's tap: the online search
-     * (Nominatim, "Keresés az interneten") and the Google view (G: the keyless embed, or Cesium from jsDelivr with the user's key).
+     * (Nominatim, "Keresés az interneten"), the Google view (G: the keyless embed, or Cesium from jsDelivr with the user's key) and
+     * the Sketcher site layer's satellite image (🛰: Esri World Imagery; the WebView does not cache it, the tile cache never sees it).
      * Everything else is refused, so nothing the page holds leaves the phone by itself.
      */
-    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net")
+    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net", "server.arcgisonline.com")
     private val OUT_SUFFIXES = listOf("google.com", "gstatic.com", "googleapis.com", "ggpht.com", "googleusercontent.com")
     fun mayGoOut(scheme: String?, host: String?, method: String?): Boolean {
         if (scheme != "https" || host == null || method == null || !method.equals("GET", true)) return false

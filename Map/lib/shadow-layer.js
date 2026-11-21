@@ -23,7 +23,7 @@ export function initShadows({ map, params, store, toast }) {
   const btn = $('#b-sun'), panel = $('#sun-panel');
   const api = { on: false, at: null, sun: null, count: 0, toggle, set: setTime, isOn: () => on };
   window.vrgShadows = api;
-  if (!btn || !panel || !S()) return api;
+  if (!btn || !panel || !S()) return null;     // the page then removes the S button
 
   let on = false, at = new Date(), times = null, light = null, features = [], timer = 0, frame = 0, playing = 0;
   panel.innerHTML = `

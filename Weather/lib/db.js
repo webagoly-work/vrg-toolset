@@ -35,7 +35,7 @@ function sqlite() {
   return DatabaseSync;
 }
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT);
 
@@ -108,6 +108,16 @@ CREATE TABLE IF NOT EXISTS outbox (
 
 CREATE TABLE IF NOT EXISTS run (
   id INTEGER PRIMARY KEY, kind TEXT, name TEXT, started TEXT, finished TEXT, status TEXT, summary TEXT);
+
+-- schema 2: fields for the VRG Térkép weather layers (lib/grid.js)
+CREATE TABLE IF NOT EXISTS grid_frame (
+  source_id TEXT, issued_at TEXT, valid_at TEXT, var TEXT,
+  lon0 REAL, lat0 REAL, dlon REAL, dlat REAL, nx INTEGER, ny INTEGER,
+  data BLOB,            -- Float32Array, row-major from the south-west corner, NaN = no value
+  PRIMARY KEY (source_id, issued_at, valid_at, var)) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS radar_frame (
+  source_id TEXT, at TEXT, file TEXT, west REAL, south REAL, east REAL, north REAL,
+  PRIMARY KEY (source_id, at)) WITHOUT ROWID;
 `;
 
 const nowIso = () => iso(new Date());
@@ -127,6 +137,7 @@ function open(file, opts = {}) {
     db.exec(SCHEMA);
     const v = db.prepare("SELECT v FROM meta WHERE k = 'schema'").get();
     if (!v) db.prepare("INSERT INTO meta (k, v) VALUES ('schema', ?), ('created', ?)").run(String(SCHEMA_VERSION), nowIso());
+    else if (+v.v < SCHEMA_VERSION) db.prepare("UPDATE meta SET v = ? WHERE k = 'schema'").run(String(SCHEMA_VERSION));   // additive: CREATE IF NOT EXISTS did the rest
   }
   return wrap(db);
 }

@@ -16,6 +16,7 @@ for (const f of fs.readdirSync(path.join(ROOT, 'config'))) if (f.endsWith('.json
 fs.writeFileSync(path.join(CFG, 'settings.local.json'), JSON.stringify({ use: 'evaluation', contact: 'test@example.invalid' }));
 const src = JSON.parse(fs.readFileSync(path.join(CFG, 'sources.json'), 'utf8'));
 src.sources.find(s => s.id === 'hungaromet-lightning').enabled = true;
+src.sources.find(s => s.id === 'hungaromet-radar').enabled = true;
 fs.writeFileSync(path.join(CFG, 'sources.json'), JSON.stringify(src));
 
 Object.assign(process.env, {

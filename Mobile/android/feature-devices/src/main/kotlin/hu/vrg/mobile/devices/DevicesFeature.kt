@@ -71,6 +71,9 @@ object DevicesFeature : VrgFeature {
     /** The waiting request was read by this phone's own scanner (ScannedLinks), not tapped in a messenger. */
     private val scanned = MutableStateFlow(false)
 
+    /** Bumped on every link that arrives, so the same request scanned again is acted on again (2026-11-20). */
+    private val arrivals = MutableStateFlow(0)
+
     /** While this phone waits for approval it reads the list this often; the owner's approval unlocks it by itself. */
     private const val WAIT_POLL_MS = 10_000L
 
@@ -79,6 +82,7 @@ object DevicesFeature : VrgFeature {
         val raw = req?.let { "req=$it" } ?: route.params["grant"]?.let { "grant=$it" } ?: return route.path.isEmpty()
         scanned.value = req != null && ScannedLinks.consume(req)
         incoming.value = DeviceTrust.read(raw)
+        arrivals.value++
         return true
     }
 
@@ -90,6 +94,7 @@ object DevicesFeature : VrgFeature {
         val list by Trust.list.collectAsStateWithLifecycle()
         val granted by Trust.granted.collectAsStateWithLifecycle()
         val inc by incoming.collectAsStateWithLifecycle()
+        val arrival by arrivals.collectAsStateWithLifecycle()
         var note by remember { mutableStateOf<String?>(null) }
         var busy by remember { mutableStateOf(false) }
         var showRequest by remember { mutableStateOf(false) }
@@ -98,6 +103,8 @@ object DevicesFeature : VrgFeature {
         var showGuide by remember { mutableStateOf(false) }
         var grantLink by remember { mutableStateOf<Pair<String, DeviceRequest>?>(null) }
         var name by remember { mutableStateOf(Trust.name) }
+        var typedCode by remember { mutableStateOf("") }
+        var typedName by remember { mutableStateOf("") }
         val owner = GitHub.canWrite
         // the admin phone (2026-11-19): the list's owner entry, signed in. A request its own scanner reads is approved
         // at once: the QR came straight off the other phone's screen, so the code check by eye adds nothing there.
@@ -109,7 +116,9 @@ object DevicesFeature : VrgFeature {
         LaunchedEffect(Unit) { note = Trust.refresh() }
 
         // a grant for this phone: open it at once; a request scanned on the admin phone: approve it at once
-        LaunchedEffect(inc) {
+        // keyed on the arrival too (the same QR scanned twice) and on admin (signed in since the request came: a request
+        // the owner's scanner read waits here, and is approved once the owner is back from GitHub fiók with a token)
+        LaunchedEffect(inc, arrival, admin) {
             when (val i = inc) {
                 is DeviceTrust.Parsed.Grant -> {
                     note = try { "Engedély elfogadva: " + Trust.accept(i.g) } catch (e: Exception) { e.message ?: "Az engedély nem nyílt meg." }
@@ -166,7 +175,7 @@ object DevicesFeature : VrgFeature {
                     }
                 }
                 (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
-                (inc as? DeviceTrust.Parsed.Req)?.let { Text("Kérést csak a tulajdonos telefonja hagyhat jóvá.", style = Melyviz.small.copy(color = Melyviz.sand)) }
+                (inc as? DeviceTrust.Parsed.Req)?.r?.let { r -> NeedsSignIn(r, host, ownerPhone = false) }
                 Spacer(Modifier.height(24.dp))
                 return@Column
             }
@@ -184,6 +193,12 @@ object DevicesFeature : VrgFeature {
                 else -> "Nincs a megbízható eszközök között."
             }
             Text(status, style = Melyviz.label.copy(color = if (listed) Melyviz.kelp else Melyviz.sand))
+            if (Trust.isOwner && !owner) {
+                Text(if (GitHub.signedIn) "A repó nevével vagy belépve: ez csak olvasás. A jóváhagyás a listát írja, ehhez tokenes (eszközkódos) GitHub belépés kell."
+                    else "Nincs GitHub belépés (vagy lejárt). A jóváhagyás a listát írja, ehhez tokenes (eszközkódos) belépés kell.",
+                    style = Melyviz.small.copy(color = Melyviz.coral))
+                Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub belépés ›", true) { host.open(Catalogue.ACCOUNT.id) } }
+            }
             if (list?.gated == true) Text(if (Trust.updatesAllowed()) "Frissítést kaphat." else "Frissítést csak jóváhagyás után kap (a kiadások zárolva).", style = Melyviz.small)
             OutlinedTextField(name, { name = it.take(40) }, Modifier.fillMaxWidth().padding(top = 6.dp), singleLine = true,
                 label = { Text("A telefon neve a listán", style = Melyviz.small) }, colors = fieldColors())
@@ -232,6 +247,35 @@ object DevicesFeature : VrgFeature {
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Telepítő QR", true) { showInstall = true } }
                 } else InstallQrPanel(onClose = { showInstall = false })
             }
+            // ---- the fallback (2026-11-20): the owner's own phone only. When the QR will not do, the other phone's
+            // Eszközkód (big on its lock screen) is typed here and sent: it goes on the list, the phone unlocks itself.
+            if (Trust.isOwner) {
+                VrgSectionTitle("Jóváhagyás eszközkóddal (tartalék)")
+                Text("Ha a QR nem megy: írd be a másik telefon zárképernyőjén látható eszközkódot, és küldd el. A telefon felkerül a listára, " +
+                    "és 1–5 percen belül magától feloldódik. Itt nincs ellenőrző kód, ezért csak olyan kódot írj be, amit magad láttál azon a telefonon.",
+                    style = Melyviz.small)
+                OutlinedTextField(typedCode, { typedCode = it.uppercase().take(16) }, Modifier.fillMaxWidth().padding(top = 6.dp), singleLine = true,
+                    label = { Text("Eszközkód (XXXX-XXXX-XXXX)", style = Melyviz.small) }, colors = fieldColors())
+                OutlinedTextField(typedName, { typedName = it.take(40) }, Modifier.fillMaxWidth().padding(top = 4.dp), singleLine = true,
+                    label = { Text("Név a listán (nem kötelező)", style = Melyviz.small) }, colors = fieldColors())
+                val ok = DeviceTrust.typedCode(typedCode)
+                if (typedCode.isNotBlank()) Text(if (ok != null) "→ $ok" else "12 betű vagy szám kell (kötőjel nélkül is jó).",
+                    style = Melyviz.small.copy(color = if (ok != null) Melyviz.kelp else Melyviz.coral))
+                Row(Modifier.padding(vertical = 6.dp)) {
+                    if (!owner) VrgChip("GitHub belépés ›", true) { host.open(Catalogue.ACCOUNT.id) }
+                    else VrgChip(if (busy) "Küldés…" else "Küldés", ok != null) {
+                        if (busy || ok == null) return@VrgChip
+                        scope.launch {
+                            busy = true
+                            val problem = Trust.approveByCode(typedCode, typedName)
+                            busy = false
+                            note = problem ?: "Felvéve: ${typedName.trim().ifBlank { ok }} ($ok). A másik telefon magától feloldódik (1–5 perc), ha a zárképernyője nyitva van."
+                            if (problem == null) { typedCode = ""; typedName = "" }
+                        }
+                    }
+                }
+                if (!owner) Text("A küldéshez tokenes GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.coral))
+            }
             // ---- iPhone (2026-11-20): an iPhone runs the web app (WP M36), not the APK. The guide is the same file the
             // web app shows (Mobile/web/guide/iphone.json, bundled); the QR opens the web app in the iPhone's camera.
             VrgSectionTitle("iPhone csatlakoztatása")
@@ -253,7 +297,7 @@ object DevicesFeature : VrgFeature {
             if (showGuide) IphoneGuideView(Modifier.padding(vertical = 6.dp))
             (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
             (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->
-                if (!owner) Text("Kérés érkezett (${r.name}), de jóváhagyni csak a tulajdonos telefonja tud (GitHub belépéssel).", style = Melyviz.small.copy(color = Melyviz.sand))
+                if (!owner) NeedsSignIn(r, host, ownerPhone = Trust.isOwner)
                 else if (busy && admin) Text("Jóváhagyás…", style = Melyviz.small)
                 else Approve(r, busy, onDone = { link -> grantLink = link to r; incoming.value = null }, onBusy = { busy = it }, onNote = { note = it },
                     onCancel = { incoming.value = null })
@@ -292,6 +336,26 @@ object DevicesFeature : VrgFeature {
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+
+    /** A request arrived on a phone without a GitHub token: show it (with its code) and the way to sign in. It stays here;
+     *  back from GitHub fiók with a token, a scanned one is approved at once, a pasted one gets the Jóváhagyás card. */
+    @Composable
+    private fun NeedsSignIn(r: DeviceRequest, host: FeatureHost, ownerPhone: Boolean) {
+        val shape = RoundedCornerShape(Melyviz.radius)
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.sand, shape).padding(14.dp)) {
+            Text("KÉRÉS: ${r.name}", style = Melyviz.title)
+            Text(r.code, style = Melyviz.title.copy(fontSize = 34.sp, letterSpacing = 4.sp, color = Melyviz.glow, fontFamily = Melyviz.mono), modifier = Modifier.padding(vertical = 6.dp))
+            Text(if (ownerPhone) "Ez a te telefonod, de a jóváhagyáshoz GitHub-írás kell. Lépj be eszközkóddal (GitHub fiók → Belépés), " +
+                    "majd gyere vissza ide: a kérés megvárja, és beolvasott kérésnél azonnal jóváhagyja."
+                else "Jóváhagyni a tulajdonos telefonja tud, tokenes GitHub belépéssel. Ha ez a tulajdonos telefonja, lépj be, majd gyere vissza ide: a kérés megvárja.",
+                style = Melyviz.small)
+            Row(Modifier.padding(top = 8.dp)) {
+                VrgChip("GitHub belépés ›", true) { host.open(Catalogue.ACCOUNT.id) }
+                Spacer(Modifier.width(6.dp))
+                VrgChip("Elvetés") { incoming.value = null; scanned.value = false }
+            }
         }
     }
 
