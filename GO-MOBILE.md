@@ -104,8 +104,8 @@ What changes locally compared with the cloud:
   `kit-core/MapPhone.kt`.
 - **M46–M53** the VRG Sketcher forks (`docs/sketcher/FORKS.md`), 2026-11-20/21, cloud sessions, each **BETA**: M46
   Kamera 2 (F3, D-55 … D-61, D-90), M47 Munkakör lap + takeoff (F2, D-67 … D-71, D-77 … D-79), M48 Helyszín ↔ Térkép
-  (F1, D-62 … D-66), M49 Apró hiányok (F4, D-72 … D-76), M50 Maradékok (F5, D-80 … D-84), M51 Kapcsolók (F6, D-91 …),
-  M52 Saját kamera (F7, D-100 …), M53 Összefésülés (F8, D-110 … D-114: the forks tested together end to end). Their
+  (F1, D-62 … D-66), M49 Apró hiányok (F4, D-72 … D-76), M50 Maradékok (F5, D-80 … D-84), M51 Kapcsolók (F6, D-91 … D-99),
+  M52 Saját kamera (F7, D-100 … D-109), M53 Összefésülés (F8, D-110 … D-114: the forks tested together end to end). Their
   phone lists make one two-phone plan: `docs/sketcher/TEST-2PHONES.md` (`node Sketcher/tools/test-plan.js`).
 
 ## 3. What the user asked for, mapped to WPs

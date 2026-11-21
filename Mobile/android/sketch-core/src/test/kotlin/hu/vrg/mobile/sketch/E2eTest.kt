@@ -314,6 +314,28 @@ class E2eTest {
         assertEquals(true, export(s, true).second.json.getJSONObject("config").getBoolean("impliedDedicated"))
     }
 
+    /**
+     * F6 (M51, D-93): with every feature switched off the package is the same, only the files beside it change. The one
+     * exception is F5's sound notes (D-84: off = they do not leave the phone), a question for the Founder (M53).
+     */
+    @Test fun everythingOffKeepsThePackage() {
+        val s = flat()
+        val off = Features.all(emptySet(), false)
+        val st = Features.toStores(off)
+        assertFalse(st.implied, "all off keeps D-79's implied circuits off")
+        assertFalse(Features.on(off, "export.photos") || Features.on(off, "export.burned") || Features.on(off, "export.takeoff"), "no side files")
+        val n = Solver().solve(s)
+        fun pkg(x: Sketch, sketchOff: Set<String>): JSONObject {
+            val e = SketchFeatures.forExport(sketchOff, x); val nn = Solver().solve(e)
+            return PlannerExport.build(e, nn, NOW).put("takeoff", Takeoff.build(kitFor(e), rules, e, PlanView.of(e, nn), now = NOW, impliedDedicated = st.implied).json)
+        }
+        val on = pkg(s, emptySet()); val allOff = pkg(s, st.sketchOff)
+        val noAudio = pkg(s.copy(captures = s.captures.filter { it.kind != CaptureKind.AUDIO }), emptySet())
+        assertTrue(allOff.similar(noAudio), "everything off: the package is the all-on one without the sound notes")
+        assertFalse(allOff.similar(on), "the sound notes are the only difference (D-84 against D-93)")
+        assertTrue(n.rooms.isNotEmpty())
+    }
+
     // ---- the old files -----------------------------------------------------------------------------------------------
 
     /** Every key [old] had is still there with the same value after a read → write (except those listed). */

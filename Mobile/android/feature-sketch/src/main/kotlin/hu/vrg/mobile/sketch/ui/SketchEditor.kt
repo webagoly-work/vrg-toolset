@@ -239,6 +239,7 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     if (st.noteOpen) QuickNote(st)
     SketchDialogs(st)
     OcrRunner(st)            // Kamera 2: type-plate reading in the background
+    FeatureSync(st)          // M51: the feature switches (FeaturesUi.kt)
 }
 
 /** The photo's own position (camera apps write it when location tagging is on); null when it has none. */
@@ -264,12 +265,12 @@ private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
         // variant chosen yet a faint ◐ stands there and a tap opens the same list
         val allVariants by SketcherKit.variants.collectAsState()
         val cur = SketcherKit.variant(st.sketch.variant)
-        if (cur != null || allVariants.isNotEmpty()) Box {
+        if ((cur != null || allVariants.isNotEmpty()) && feat("variansok.use")) Box {
             var vmenu by remember { mutableStateOf(false) }
             val on = st.sketch.variantOn && cur != null
             Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.faint),
                 modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
-                    .rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { vmenu = true }, longLabel = "variánsok")
+                    .rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { if (feat("variansok.longpress") || cur == null) vmenu = true }, longLabel = "variánsok")
                     .padding(horizontal = 8.dp, vertical = 2.dp)
                     .semantics { contentDescription = (if (on) cur!!.name else "Eredeti") + ": váltás" })
             RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })

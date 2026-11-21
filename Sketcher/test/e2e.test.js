@@ -121,6 +121,20 @@ function desktop(done) {
       eq(Object.keys(p.sketch).filter(k => J(out.sketch[k]) !== J(p.sketch[k]) && k !== 'seen'), [], id + ': the survey is unchanged by a save');
       eq(out.takeoff.items, p.takeoff.items, id + ': the saved takeoff is the phone\'s');
     }
+    // F6 (M51, D-93): every feature off in this browser: the saved package is the same, the takeoff too
+    {
+      const FE = require(path.join(ROOT, 'Sketcher/lib/features.js'));
+      const a = scenarios[0];
+      sk.load(JSON.parse(JSON.stringify(a.package)));
+      const before = JSON.parse(sk.save());
+      sk.setFeatures(FE.all(sk.features(), false));
+      ok(!FE.on(sk.features(), 'export.takeoff') && !FE.on(sk.features(), 'export.report'), 'every feature off on the page');
+      for (const f of fronts) { const b = rail(f); if (b) { click(b); ok(!$('#main .msg.err'), 'all off: front ' + f + ' still renders'); } }
+      const after = JSON.parse(sk.save());
+      delete after.takeoff.made; delete before.takeoff.made;   // the page stamps the time it was saved
+      eq(after, before, 'all off: the saved package is unchanged (D-93)');
+      sk.setFeatures(FE.all(sk.features(), true));
+    }
     // the toggle still works and then becomes the page's own
     const b = scenarios.find(x => x.package.takeoff.config.impliedDedicated);
     if (b) {

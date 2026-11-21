@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (68 lépés)
+## A telefon — rajz és beszélgetés (73 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -104,7 +104,15 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
 - [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
-## B telefon — kamera és helyszín (67 lépés)
+### M53 · Összefésülés: the Sketcher forks tested together, end to end, and their seams
+
+- [ ] **M53.1** A telefonon kapcsold be a Munkakör lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót, adj a felmérésnek főzőlapot, és küldd a csomagot a PC-re. Az Asztal Sketcher oldalán (START P → S) megnyitva a Munkakör lapon ugyanannyi dedikált kör van, mint a telefonon, a kapcsoló mellett „a telefon beállítása szerint”.
+- [ ] **M53.2** Ugyanott kapcsold ki a kapcsolót: a felirat eltűnik, a lap a böngésző saját beállítását követi.
+- [ ] **M53.3** Egy felmérésben vegyél fel séta videót és aláírást, küldd a PC-re, nyisd meg a Plannerben (⌘K → *Felmérés: munkakör lap*): a Fotók sorban a videó `…_nyomvonal.mp4`, az aláírás `…_alairas.png` néven szerepel, és a PC táblán pontosan ilyen nevű fájlok vannak.
+- [ ] **M53.4** Egy régi (november 18. előtti) felmérést nyiss meg a telefonon: minden rajz, jegyzet, fotó megvan, a címkék között ott a *Csere*.
+- [ ] **M53.5** A telefonon ⚙ → ⚙ Funkciók → *Mind* ki, küldd a csomagot a PC-re: a `.vsketch.json` ugyanaz, mint bekapcsolva (hangjegyzet nélkül, ha volt), mellette nincs fotó és nincs `.takeoff` fájl. Utána *Mind* vissza be.
+
+## B telefon — kamera és helyszín (77 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -192,12 +200,22 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M31.5** ⚙ → ＋ Új variáns kérése: két mondat, kulcsszavak, egy fotó → Küldés → PC-re; a vágólapon a GO VARIANT szöveg. A PC-n egy Claude Code munkamenetben `GO VARIANT` + a fájl: az ügynök kérdez, megírja, commitolja.
 - [ ] **M31.6** ⟳ Frissítés a main ágról: az új variáns megjelenik.
 
-### M53 · Összefésülés: the Sketcher forks tested together, end to end, and their seams
+### M51 · Kapcsolók: every Sketcher feature on its own switch (the Founder's rule D-90)
 
-- [ ] **M53.1** A telefonon kapcsold be a Munkakör lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót, adj a felmérésnek főzőlapot, és küldd a csomagot a PC-re. Az Asztal Sketcher oldalán (START P → S) megnyitva a Munkakör lapon ugyanannyi dedikált kör van, mint a telefonon, a kapcsoló mellett „a telefon beállítása szerint”.
-- [ ] **M53.2** Ugyanott kapcsold ki a kapcsolót: a felirat eltűnik, a lap a böngésző saját beállítását követi.
-- [ ] **M53.3** Egy felmérésben vegyél fel séta videót és aláírást, küldd a PC-re, nyisd meg a Plannerben (⌘K → *Felmérés: munkakör lap*): a Fotók sorban a videó `…_nyomvonal.mp4`, az aláírás `…_alairas.png` néven szerepel, és a PC táblán pontosan ilyen nevű fájlok vannak.
-- [ ] **M53.4** Egy régi (november 18. előtti) felmérést nyiss meg a telefonon: minden rajz, jegyzet, fotó megvan, a címkék között ott a *Csere*.
+- [ ] **M51.1** ⚙ → **⚙ Funkciók ›**: kilenc csoport a front jelével és színével, soronként jel + 1–3 szó + kapcsoló; minden be, kivéve a *Dedikált kör nagy gépnek* sort; a *Mozgat* kapcsolója nem mozdul.
+- [ ] **M51.2** Vázlat csoport → *Pont* ki: a sávból eltűnik a • Pont, az *Áramkör* sora szürke („előbb: Pont”), a ◌ Áramkör is eltűnik. *Pont* vissza: mindkettő visszajön.
+- [ ] **M51.3** *Tartásra kerék* ki: a lapon tartott ujj nem nyit kereket. Vissza be; *Memó* ki: a kerékről a ✎ Memó helye üres.
+- [ ] **M51.4** Kérdések csoport → a csoport kapcsolója ki: a Kérdések front eltűnik a sávból, a Nyitottból is a kérdések; a felmérés válaszai megmaradnak (vissza be: ott vannak).
+- [ ] **M51.5** Jegyzet → *Gyors chipek* ki: a ✎ ablakban nincs Ügyfél / Helyzet sor; *Diktálás* ki: nincs 🎤 sem a jegyzetnél, sem a fotó feliratánál.
+- [ ] **M51.6** Kamera → *Fotó céllal* ki: a ◉ gomb eltűnik minden frontról, a Kamera front a sávból; a Kamera csoport többi sora szürke. Vissza be: minden úgy van, ahogy volt (a Kamera funkciók korábbi beállítása is).
+- [ ] **M51.7** Kamera front → ⚙ Funkciók csempe: ugyanez a lap nyílik, a Kamera csoport elöl.
+- [ ] **M51.8** Munkakör → *Munkakör lap* ki: a lap kártyája eltűnik, a Rendezés mentése nem ír .takeoff fájlokat; a csomag (.vsketch.json) ugyanaz. *Dedikált kör nagy gépnek* be itt → a Munkakör lapon is be (ugyanaz a kapcsoló).
+- [ ] **M51.9** Helyszín → *Műhold* és *Körvonal rajzolása* ki → 🗺 a térképen: a panelen nincs 🛰 és ▱, a ◫ Vázlat aktív.
+- [ ] **M51.10** Rendezés / export → *Fotók a csomagban* ki → Küldés: csak a csomag (és a munkakör lap) megy, fotó nem; a videó és az aláírás igen.
+- [ ] **M51.11** Variáns bekapcsolva → Vázlat → *Fotópont* ki: a variáns sorrendje mellett sincs ◉ Fotópont a sávban; *Rajz-hangolás* ki: a variáns rácsa és szögléptéke nem él, a sima rajz igen.
+- [ ] **M51.12** Variánsok → *Hosszú nyomásra* ki: a kezdőlap Sketcher csempéjén a hosszú nyomás nem kínál variánst.
+- [ ] **M51.13** Fent *Mind* ki: csak a Vázlat marad a sávban, rajta a Mozgat; *Mind* be: minden visszajön, a *Dedikált kör* marad, ahogy volt.
+- [ ] **M51.14** Az asztali Sketcher oldalon (böngésző) a ⚙ Funkciók front ugyanezt a listát mutatja; ott kikapcsolt Kérdések a telefont nem érintik (böngészőnként külön).
 
 ## X. Közös lépések (mindkét telefon + PC)
 

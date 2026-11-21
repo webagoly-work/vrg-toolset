@@ -57,7 +57,7 @@ object SketchFeature : VrgFeature {
     private lateinit var app: Application
     internal val store by lazy { SketchStore(File(app.filesDir, "sketch")) }
 
-    override fun init(app: Application) { this.app = app; SketcherKit.init(app) }
+    override fun init(app: Application) { this.app = app; SketcherKit.init(app); FeaturePrefs.init(app) }   // M51: the feature switches after the kit (D-79's toggle)
 
     // F1: vrg://sketch?open=<id>&front=helyszin opens a survey on a front (the phone's map hands the Helyszín back this way)
     private var pendingOpen by mutableStateOf<Pair<String, String?>?>(null)

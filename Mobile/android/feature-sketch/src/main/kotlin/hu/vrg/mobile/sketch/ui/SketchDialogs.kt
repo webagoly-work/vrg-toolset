@@ -289,20 +289,21 @@ internal fun SketchDialogs(st: EditorState) {
                 dismissButton = { TextButton({ st.deleteEntry(a.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
             )
         }
+        is Ask.FeatureSheet -> FeatureSheet(st, a.front, close)
         is Ask.PluginSheet -> AlertDialog(
             onDismissRequest = close, containerColor = Melyviz.raised,
             title = { Text("Bővítmények", style = Melyviz.label) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text("A Vázlat jegyzetfüzet; a bővítmények adják az eszközeit. Ami ki van kapcsolva, nem foglal helyet a sávban.", style = Melyviz.small)
-                    Plugins.ALL.forEach { p ->
+                    Plugins.ALL.filter { hu.vrg.mobile.sketch.Features.pluginShown(it, FeaturePrefs.flipped) }.forEach { p ->
                         val label = p.label + if (!p.built) " (${p.wp}, tervben)" else ""
                         if (p.id == Plugins.NOTE.id || !p.built) Text("· $label: ${p.blurb}", style = Melyviz.small.copy(color = if (p.built) Melyviz.ink else Melyviz.faint), modifier = Modifier.padding(vertical = 6.dp))
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
-                    VariantSection(st)
-                    CameraFeatureSection(st)        // Kamera 2: each feature on its own switch (D-90)
-                    SketchFeatureSection(st)        // F5 (WP M50): the client, the sound note, Csere on older surveys (D-90)
+                    if (feat("variansok.use")) VariantSection(st)
+                    // M51: every feature on its own switch (the camera's D-90 list is part of it)
+                    Text("⚙ Funkciók ›", style = Melyviz.label.copy(color = Melyviz.glow), modifier = Modifier.clickable { st.ask = Ask.FeatureSheet() }.padding(top = 14.dp, bottom = 6.dp))
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

@@ -40,11 +40,13 @@ fun sketcherRcoItems(open: () -> Unit, say: ((String) -> Unit)? = null): List<Rc
     val scope = rememberCoroutineScope()
     val all by SketcherKit.variants.collectAsState()
     val tell: (String) -> Unit = say ?: { Toast.makeText(ctx, it, Toast.LENGTH_SHORT).show() }
+    if (!feat("variansok.longpress")) return emptyList()   // M51: switched off, the long press keeps only its own lines
     return all.map { v -> RcoItem(v.sym, "Új felmérés: " + v.name) { SketchLaunch.pending = SketchLaunch.Req.New(v.id); open() } } +
         listOf(
             RcoItem("◐", "Új felmérés: eredeti") { SketchLaunch.pending = SketchLaunch.Req.New(null); open() },
-            RcoItem("⟳", "Variánsok frissítése") { tell("Frissítés…"); scope.launch { tell(SketcherKit.refresh(ctx)) } },
-            RcoItem("＋", "Új variáns kérése") { SketchLaunch.pending = SketchLaunch.Req.Request; open() },
+        ) + listOfNotNull(
+            if (feat("variansok.refresh")) RcoItem("⟳", "Variánsok frissítése") { tell("Frissítés…"); scope.launch { tell(SketcherKit.refresh(ctx)) } } else null,
+            if (feat("variansok.request")) RcoItem("＋", "Új variáns kérése") { SketchLaunch.pending = SketchLaunch.Req.Request; open() } else null,
         )
 }
 
@@ -57,8 +59,9 @@ internal fun editorVariantItems(st: EditorState, all: List<Variant>, say: (Strin
     return all.map { v -> RcoItem(if (v.id == on) "◉" else v.sym, v.name, enabled = v.id != on) { st.chooseVariant(v) } } +
         listOf(
             RcoItem(if (on == null) "◉" else "◐", "Eredeti Sketcher", enabled = on != null) { st.chooseVariant(null) },
-            RcoItem("⟳", "Variánsok frissítése") { say("Frissítés…"); scope.launch { say(SketcherKit.refresh(ctx)) } },
-            RcoItem("＋", "Új variáns kérése") { st.ask = Ask.VariantRequest },
+        ) + listOfNotNull(
+            if (feat("variansok.refresh")) RcoItem("⟳", "Variánsok frissítése") { say("Frissítés…"); scope.launch { say(SketcherKit.refresh(ctx)) } } else null,
+            if (feat("variansok.request")) RcoItem("＋", "Új variáns kérése") { st.ask = Ask.VariantRequest } else null,
         )
 }
 
