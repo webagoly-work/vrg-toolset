@@ -645,6 +645,54 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   it in `config.impliedDedicated`. On, they count as before (≈ with the reason). Rejected: **A** always on, **B** only
   the hob, the oven and CEE.
 
+- **D-100 · The in-app camera is CameraX 1.4.1, the version QR párosítás already ships (M52), 2026-11-21** (fork F7, taken
+  for the Founder, rule 5). `androidx.camera:camera-camera2 / camera-lifecycle / camera-view` 1.4.1, **Apache-2.0**, min SDK
+  21 (ours is 28). `feature-pair` already puts the same three artifacts in the APK, so `feature-sketch` naming them adds
+  only its own code (estimated under 0.1 MB; no new native code). Preview + ImageCapture bound to the editor's
+  lifecycle, the same `AndroidView { PreviewView }` pattern as the QR scanner. Rejected: Camera2 by hand (several times
+  the code for the same preview / capture / torch / zoom / focus), a third-party camera library (a new licence and size
+  for nothing CameraX lacks). Details: `WP/M52.md`.
+- **D-101 · The camera app stays the fallback (M52), 2026-11-21.** ⚙ → Kamera funkciók → *◉ Saját kamera* off = the
+  phone's camera app exactly as before (M29 / M46). With it on, a CameraX bind or capture failure falls back to the
+  camera app for the rest of the app's run (a note says so) and the next start tries CameraX again. The walk video and
+  the signature are unchanged (the camera app's video mode, the pad).
+- **D-102 · An in-app photo lands where a camera-app photo lands (M52), 2026-11-21.** The file is written straight into
+  `files/sketch/photos/<id>/` under the same name scheme (`C-<base36 time>.jpg`, Fotópont `<F id>-…`), then goes
+  through the same `captureTaken` / `photoTaken` path: same Capture record, GPS read back from the file's own EXIF, the
+  type-plate reader and the face hooks, D-57 stripping on export. GPS: CameraX writes the phone's last known position
+  into the EXIF only when the location permission was **already** granted (Helyszín asks for it; the camera never
+  asks) and *⌖ Helyadat a fotón* is on. Nothing new in the survey file, so the Desktop page and an older phone see an
+  ordinary photo.
+- **D-103 · The viewfinder's purpose strip (M52), 2026-11-21.** Symbols and colours, little text. The current purpose is
+  a coloured badge (symbol + short label); a tap opens the strip: the shot list's next four missing items first (marked
+  with a dot, room items left out: they are Fotópont's), then the current purpose, the three used last, then the
+  catalog's order; *Szoba* never (Fotópont). With *Hiányzók elöl* (QUICK) off the missing items are left out. The room
+  in focus is a chip (a tap cycles the rooms and *—*); the count is the photos of that purpose (and item).
+- **D-104 · Series in the camera (M52), 2026-11-21.** With *⟳ Sorozat a kamerában* on, the camera stays open after each
+  shot until **✓** (or Back); off, it closes after a shot unless the M29 *⟳ Sorozat* is on. After a shot for a
+  shot-list item that is now complete, the next shot goes to the next missing item of the same purpose, else to the
+  purpose without an item. The last thumbnail with **↶** deletes that shot (an ordinary edit: the editor's undo can
+  bring it back). Fotópont photos always close after one shot, for the direction swipe.
+- **D-105 · The ghost overlay (M52), 2026-11-21.** For an after-photo (◑ Utána, `pairOf`) the before-photo lies over the
+  preview, cropped the way the preview is (fill-centre), at 40 % by default, slider 0–80 %, a ◐ button hides it. On the
+  viewfinder a ◐ chip also lists the befores of the current purpose still waiting (same room first): picking one pairs
+  the next shot with it. After the after-photo the pair is done and the ghost goes. Needs *◐ Előtte / utána* too.
+- **D-106 · Level and grid (M52), 2026-11-21.** The gravity sensor (the accelerometer where there is none), low-pass 0.15:
+  a line across the preview turned by the roll against the nearest quarter turn, green within 1°, the degrees beside it;
+  lying nearly flat (pointing at the floor or the ceiling) it becomes a bubble. The grid is the rule of thirds, shown
+  while *▦ Rács* is on, with a viewfinder button to hide it for that session.
+- **D-107 · Torch, focus, zoom (M52), 2026-11-21.** The torch button (only when the camera has a flash unit) starts off
+  every time the camera opens. A tap on the preview focuses and meters there (3 s, then back to auto) with a ring;
+  pinch zooms within the camera's range, the factor shown while it is not 1×. Focus and zoom are the camera's basic
+  behaviour and have no switch of their own; everything else does (D-108).
+- **D-108 · Seven new switches (M52), 2026-11-21.** In `CameraFeatures` (until F6's registry takes them over, M51):
+  *◉ Saját kamera* and, each needing it, *⌖ Helyadat a fotón*, *⟳ Sorozat a kamerában*, *◐ Szellemkép* (also needs
+  *Előtte / utána*: a new `also` list of prerequisites), *⊖ Vízszintező*, *▦ Rács*, *ϟ Lámpa*. All on by default; a
+  phone that stored Kamera 2's switched-off list gets them on.
+- **D-109 · The capture moment (M52), 2026-11-21.** The shutter takes the picture with `CAPTURE_MODE_MINIMIZE_LATENCY`,
+  rotated by the phone's real orientation (the screen may stay portrait), a short white flash on the preview, the shot's
+  thumbnail in the corner. A capture error leaves the camera open with a note; a second one in a row falls back (D-101).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
