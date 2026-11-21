@@ -18,7 +18,7 @@
     { "id": "rg", "hu": "Rögzítéstechnika", "color": "#e4877d", "dir": "rogzitestechnika" },
     { "id": "kv", "hu": "Kommunikációs vonalak", "color": "#8fa8e8", "dir": "kommunikacios-vonalak" },
     { "id": "el", "hu": "Előírások", "color": "#e3a3c4" },
-    { "id": "vt", "hu": "Világítótestek", "color": "#f2dc8c", "planned": "2026-11-22: docs/kisokos/vilagitotestek.md" },
+    { "id": "vt", "hu": "Világítótestek", "color": "#f2dc8c", "dir": "vilagitotestek" },
     { "id": "sx", "hu": "Szótár", "color": "#c6ced4" }
   ],
   "axes": [

@@ -112,11 +112,11 @@ Every layer should have **one interactive page** where a person sees that layer 
 - **Source:** `Solomon/data/signals.json` (its docs list) and the documents themselves.
 - **Rule:** the Solomon ladder applies: the script finds, Caleb judges, the Founder rules. Nothing writes to a document.
 
-### K · Kisokos (Handbook): 166 nodes (2026-11-22)
-- **Is:** the work knowledge itself, not the dev work: the Villanyszerelés core, 8 axes with 4 term nodes per pole, the 9 volumes, every Kisokos card (Rögzítéstechnika: 53, Kommunikációs vonalak: 27), and the knowledge bases outside the Kisokos (Rajztár, Készlet, CoreRef, Modulshop) placed by how much of them overlaps the core.
+### K · Kisokos (Handbook): 192 nodes (2026-11-22)
+- **Is:** the work knowledge itself, not the dev work: the Villanyszerelés core, 8 axes with 4 term nodes per pole, the 9 volumes, every Kisokos card (Rögzítéstechnika: 53, Kommunikációs vonalak: 27, Világítótestek: 25), and the knowledge bases outside the Kisokos (Rajztár, Készlet, CoreRef, Modulshop) placed by how much of them overlaps the core.
 - **Order:** space. The core is a sphere; each axis runs through it with its two poles opposite; a term node's ring is its distance from daily work (1 = needed tomorrow … 4 = the horizon).
 - **Node kinds:** core · axis · term · volume · card/<kind> · knowledge base.
-- **Edges:** `on-axis` (term → axis → core), `gravitates` (card or base → the core or its term node), `holds` (volume → card), `uses` (material → its bits, anchors, screws), `rokon` (a line → its related lines).
+- **Edges:** `on-axis` (term → axis → core), `gravitates` (card or base → the core or its term node), `holds` (volume → card), `uses` (material → its bits, anchors, screws; a lamp type → its fixings and control lines in other volumes), `rokon` (a line → its related lines).
 - **Source:** `Kisokos/map.json` + `Kisokos/<volume>/*.json`, read through `Kisokos/kisokos.js` (the same loader its checker uses).
 - **Rule:** a card's place is set by hand: `{ core: '<axis><pole>' }` for core knowledge (it grows inside the sphere from that pole's entry point) or `{ term, overlap }` for knowledge with its own identity (the overlap share grows inside the core). Size is never set by hand: 1 cube = 1 KB of the card or base.
 - **Page:** `kisokos.html`, data `out/kisokos-data.js` (every build, or `stack.js kisokos`; `--standalone <file>` writes one self-contained page).

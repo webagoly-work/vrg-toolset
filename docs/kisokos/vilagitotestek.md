@@ -5,7 +5,9 @@ niche ones. It becomes its own Kisokos volume, **vt · Világítótestek** (plan
 no cards yet). One card = one *type* of fixture, not one product: products come later from the
 Készlet (Inventory) and from datasheets, and point back at their type.
 
-Status: **idea**. This file is the scope, the card format and the order to build in.
+Status: **started** (2026-11-22). Families 1, 2 and 6 are in `Kisokos/vilagitotestek/lampak.json`: 25 draft type
+cards, each with a generated light-distribution drawing (`Kisokos/lib/lampa-svg.js`, `vilagitotestek/svg/`) and the
+cheat sheet `vilagitotestek/KISOKOS.md`. This file is the scope, the card format and the order to build in.
 
 ## 1. Why a separate volume
 
@@ -65,13 +67,18 @@ karakterisztika) as a polar curve, so a downlight, a wall washer and a pendant c
 
 ## 5. Order
 
-1. Families 1, 2, 6 (ceiling, wall, wet rooms): what every flat has; about 25 cards.
+1. ✅ Families 1, 2, 6 (ceiling, wall, wet rooms): 25 cards (2026-11-22).
 2. Families 3, 4, 7 (hidden, furniture, outdoor): what clients ask for; about 25 cards.
 3. Family 8 (emergency): rules-heavy, needs the Előírások summaries.
 4. Families 5, 9, 10: completeness.
-5. The light-distribution drawing, once the photometry fields are settled.
+5. ✅ The light-distribution drawing: generic per type (`distribution: { type, angle }`), built with step 1.
 
-## 6. Open questions
+## 6. Decisions (2026-11-22, the Founder: "go with your proposals")
+
+VT1–VT3 = the proposals below: plug-in lamps in, briefly; types now, products later from Inventory; a generic
+light-distribution drawing per type, real LDT / IES files only once a product card exists.
+
+### The questions as they were asked
 
 - **VT1** Plug-in lamps (family 5): in the catalogue as types, or left out because nothing is installed?
   Proposal: in, briefly, because clients ask.
@@ -87,11 +94,12 @@ Kisokos itself has no line yet, add that first and keep `from` pointing at it.
 
 ```js
 { id: 'kisokos-vilagitotest', name: 'Kisokos · Lámpák és világítótestek', lane: '<the Kisokos lane>',
-  status: 'idea', from: ['kisokos'],
+  status: 'active', from: ['kisokos'],
   brief: 'Dedicated catalogue of every light fixture type, from the basic ceiling lamp to the niche ones: one card per type, with fixing, control, rules and the Rajztár symbol linked.',
-  milestones: [['11-22', 'idea recorded: docs/kisokos/vilagitotestek.md; volume vt planned in Kisokos/map.json']],
-  remaining: ['answer VT1–VT3', 'families 1, 2, 6 (~25 cards)', 'families 3, 4, 7', 'family 8 (emergency, needs Előírások)', 'families 5, 9, 10', 'light-distribution drawing'],
-  nextStep: 'Answer VT1–VT3, then draft the ceiling, wall and wet-room cards (families 1, 2, 6).',
+  milestones: [['11-22', 'idea recorded: docs/kisokos/vilagitotestek.md; volume vt planned in Kisokos/map.json'],
+               ['11-22', 'VT1–VT3 answered (proposals); families 1, 2, 6: 25 type cards with generic light-distribution drawings']],
+  remaining: ['Founder review of the 25 cards', 'families 3, 4, 7 (~25 cards)', 'family 8 (emergency, needs Előírások)', 'families 5, 9, 10'],
+  nextStep: 'Review families 1, 2, 6, then draft the hidden, furniture and outdoor cards (families 3, 4, 7).',
   notes: ['Types, not products; products come from Inventory and point at their type.'],
   feeds: [['kisokos']] },
 ```

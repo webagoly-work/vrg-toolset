@@ -318,13 +318,14 @@ function kisokos() {
   const toPlace = (id, pl) => pl.core ? { a: id, b: 'K:core', rel: 'gravitates', w: 1 } : { a: id, b: 'K:term.' + pl.term, rel: 'gravitates', w: 1 };
   for (const c of K.cards) {
     const id = 'K:card.' + c.gid;
-    nodes.push(node('K', 'card.' + c.gid, { kind: 'card/' + c.kind, title: c.title, brief: clip(c.recognise || c.holds || c.what || c.how || c.mode || c.thread || '', 260),
+    nodes.push(node('K', 'card.' + c.gid, { kind: 'card/' + c.kind, title: c.title, brief: clip(c.recognise || c.holds || c.what || c.how || c.mode || c.thread || '', 260),   // what / how: lamp and line cards
       t: c.added, state: c.reviewed ? 'reviewed' : 'draft', lane: c.place.core || c.place.term,
       text: [c.title, (c.aka || []).join(', '), flat(c), c.file].join(' \n'), extra: { file: c.file, vol: c.vol, cubes: c.cubes } }));
     edges.push({ a: 'K:vol.' + c.vol, b: id, rel: 'holds' }, toPlace(id, c.place));
     const refs = new Set([...(c.drill && c.drill.bits || []), ...Object.values(c.anchors || {}).filter(Array.isArray).flat(), ...(c.screws || []), ...(c.with || [])]);
     for (const r of refs) if (K.cards.some(x => x.vol === c.vol && x.id === r)) edges.push({ a: id, b: `K:card.${c.vol}.${r}`, rel: 'uses' });
     for (const r of c.related || []) if (K.cards.some(x => x.vol === c.vol && x.id === r)) edges.push({ a: id, b: `K:card.${c.vol}.${r}`, rel: 'rokon' });
+    for (const f of (KL.XREFS || {})[c.kind] || []) for (const r of c[f] || []) if (K.cards.some(x => x.gid === r)) edges.push({ a: id, b: 'K:card.' + r, rel: 'uses' });   // into another volume
   }
   for (const s of K.sources) {
     const id = 'K:src.' + s.id;

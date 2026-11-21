@@ -22,7 +22,13 @@ Kisokos/
                               connector, standard, where in a flat, installation rules, traps, terms, shop
     svg/                      GENERATED: one one-pager per line + spektrum.svg (all lines on one scale)
     KISOKOS.md                GENERATED cheat sheet with the drawings
+  vilagitotestek/             volume vt, Világítótestek (families 1, 2, 6 so far; scope: docs/kisokos/vilagitotestek.md)
+    lampak.json               25 fixture types: mounting, light source, protection, photometry, distribution,
+                              control (+ lines), install (+ fixing), rules, Rajztár symbol, rooms, traps, terms, shop
+    svg/                      GENERATED: one light-distribution drawing per type
+    KISOKOS.md                GENERATED cheat sheet with the drawings
   lib/vonal-svg.js            the one drawing of a line, used by kisokos.js and by the Stack's 3D page
+  lib/lampa-svg.js            the one drawing of a lamp type (generic polar light distribution + key figures)
 ```
 
 ## Rules
@@ -33,7 +39,8 @@ Kisokos/
   source cards; only the Founder sets `reviewed` (a date). For Rögzítéstechnika the Founder's site
   experience overrides any source. Load values are never written on a card: the manufacturer's
   datasheet gives them.
-- **Ids are stable** (lowercase, hyphens). Cards point at each other by id inside their volume
+- **Ids are stable** (lowercase, hyphens). A link into another volume is written `<volume>.<id>`
+  (a lamp's `fixing: ['rg.gipszkarton']`, `lines: ['kv.dali']`). Cards point at each other by id inside their volume
   (`drill.bits`, `anchors.*`, `screws`, `for`, `with`); `check` fails on a dangling one.
 - **Place is set by hand, size never.** `place: { core: '8A' }` = core knowledge, leaning to that
   pole's entry point into the core sphere. `place: { term: '5A1', overlap: 0.5 }` = its own thing,

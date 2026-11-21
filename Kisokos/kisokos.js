@@ -5,7 +5,8 @@
 //   node Kisokos/kisokos.js check     validate map.json and every card (ids, places, cross-references,
 //                                     search terms); exit 1 on a problem
 //   node Kisokos/kisokos.js md        write each volume's KISOKOS.md cheat sheet (and, for the lines,
-//                                     svg/<id>.svg one-pagers + svg/spektrum.svg through lib/vonal-svg.js)
+//                                     svg/<id>.svg one-pagers + svg/spektrum.svg through lib/vonal-svg.js;
+//                                     for the fixtures svg/<id>.svg through lib/lampa-svg.js)
 //   node Kisokos/kisokos.js stats     cards, bytes and cubes per volume and per knowledge base
 //
 // Used by Stack/lib/layers.js (layer K) and Stack/lib/kisokos.js (the 3D page's data) through load().
@@ -25,9 +26,11 @@ const path = require('path');
 const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const LANGS = ['hu', 'en', 'de'];
-const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'] };
-const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal' };
+const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'], lampa: ['related'] };
+const XREFS = { lampa: ['fixing', 'lines'] };   // links into other volumes, written '<volume>.<id>'
+const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal', lampa: 'Lámpatest-típus' };
 const VS = require('./lib/vonal-svg');
+const LS = require('./lib/lampa-svg');
 
 const readJson = f => JSON.parse(fs.readFileSync(f, 'utf8').replace(/^﻿/, ''));
 function bytesOf(p) {
@@ -63,9 +66,11 @@ function load(root = ROOT) {
     for (const p of s.paths) { const r = bytesOf(p); bytes += r.bytes; files += r.files; if (r.missing) missing.push(p); }
     return { ...s, bytes, files, missing };
   });
+  let symbols = null;
+  try { const sj = readJson(path.join(REPO, 'shared', 'rajztar', 'data', 'symbols.json')); symbols = new Set((sj.items || sj.symbols || []).map(s => s.id)); } catch { symbols = null; }
   const cube = map.cubeBytes || 1024;
   for (const x of [...cards, ...sources]) x.cubes = Math.max(1, Math.round(x.bytes / cube));
-  return { map, terms, termIds, cards, sources, problems, root, repo: REPO };
+  return { map, terms, termIds, cards, sources, problems, symbols, root, repo: REPO };
 }
 
 function check(K = load()) {
@@ -100,6 +105,19 @@ function check(K = load()) {
       if (!c.drill || !['igen', 'nem', 'óvatosan'].includes(c.drill.hammer)) P.push(`${who}: drill.hammer must be igen, nem or óvatosan`);
       if (!Array.isArray(c.traps)) P.push(`${who}: traps must be a list`);
     }
+    for (const field of XREFS[c.kind] || []) for (const r of c[field] || []) {
+      const m = /^([a-z]+)\.([a-z0-9-]+)$/.exec(r);
+      if (!m || !(byVol[m[1]] && byVol[m[1]].has(m[2]))) P.push(`${who}: ${field} names "${r}", which is not a card (write <volume>.<id>, e.g. rg.gipszkarton)`);
+    }
+    if (c.kind === 'lampa') {
+      for (const f of ['what', 'mounting', 'sources', 'rooms']) if (!c[f]) P.push(`${who}: no ${f}`);
+      if (!(Number.isInteger(c.family) && LS.FAM[c.family])) P.push(`${who}: family must be 1..10`);
+      if (!c.protection || !c.protection.ip) P.push(`${who}: no protection.ip`);
+      if (!c.distribution || !LS.TYPES[c.distribution.type]) P.push(`${who}: distribution.type must be one of ${Object.keys(LS.TYPES).join(', ')}`);
+      else if (['wide', 'narrow', 'updown'].includes(c.distribution.type) && !(c.distribution.angle > 0 && c.distribution.angle < 180)) P.push(`${who}: distribution.angle (beam, degrees) is needed for ${c.distribution.type}`);
+      if (c.symbol && K.symbols && !K.symbols.has(c.symbol)) P.push(`${who}: symbol "${c.symbol}" is not in shared/rajztar/data/symbols.json`);
+      for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
+    }
     if (c.kind === 'vonal') {
       for (const f of ['how', 'medium', 'signal', 'rate', 'distance', 'topology', 'home']) if (!c[f]) P.push(`${who}: no ${f}`);
       if (!VS.KCOL[c.waveform]) P.push(`${who}: waveform must be one of ${Object.keys(VS.KCOL).join(', ')}`);
@@ -118,7 +136,49 @@ function md(K = load()) {
   const out = [];
   if (K.cards.some(c => c.vol === 'rg')) out.push(mdRg(K));
   if (K.cards.some(c => c.vol === 'kv')) out.push(mdKv(K));
+  if (K.cards.some(c => c.vol === 'vt')) out.push(mdVt(K));
   return out.join('\n');
+}
+
+function mdVt(K) {
+  const vol = K.map.volumes.find(v => v.id === 'vt');
+  const dir = path.join(K.root, vol.dir), sdir = path.join(dir, 'svg');
+  const cs = K.cards.filter(c => c.vol === 'vt').sort((a, b) => a.family - b.family);
+  fs.mkdirSync(sdir, { recursive: true });
+  const keep = new Set(cs.map(c => c.id + '.svg'));
+  for (const f of fs.readdirSync(sdir)) if (f.endsWith('.svg') && !keep.has(f)) fs.unlinkSync(path.join(sdir, f));
+  for (const c of cs) fs.writeFileSync(path.join(sdir, c.id + '.svg'), LS.card(c));
+  const any = r => { const m = /^([a-z]+)\.(.+)$/.exec(r); return m ? name(K, m[1], m[2]) : r; };
+  const cell = s => String(s || '').replace(/\|/g, '/');
+  const L = ['# Lámpák és világítótestek — a Kisokos', '',
+    '*Generálva a kártyákból (`node Kisokos/kisokos.js md`); ne szerkeszd kézzel, a kártyát szerkeszd a `lampak.json`-ban. ' +
+    'Egy kártya = egy lámpatest-típus, nem termék. A fényeloszlás-rajz típusonként általános (sematikus), nem egy termék mért adata. ' +
+    'Vázlat: minden kártya ellenőrzésre vár; a pontos adat a termék adatlapján van.*', '',
+    '## Gyorstábla', '', '| Típus | Család | Szerelés | Védettség | Fényeloszlás | Rajzjel |', '|---|---|---|---|---|---|'];
+  for (const c of cs) L.push(`| ${c.title} | ${LS.FAM[c.family]} | ${cell(c.mounting)} | ${cell(c.protection.ip)} | ${LS.TYPES[c.distribution.type]}${c.distribution.angle ? ' ' + c.distribution.angle + '°' : ''} | \`${c.symbol || ''}\` |`);
+  L.push('');
+  for (const fam of [...new Set(cs.map(c => c.family))]) {
+    L.push(`## ${fam}. ${LS.FAM[fam]}`, '');
+    for (const c of cs.filter(x => x.family === fam)) {
+      L.push(`### ${c.title}`, '');
+      if (c.aka && c.aka.length) L.push(`*Más néven:* ${c.aka.join(', ')}`, '');
+      L.push(`![${c.title}](svg/${c.id}.svg)`, '', c.what, '');
+      const row = (k, v) => { if (v) L.push(`- **${k}:** ${v}`); };
+      const ph = c.photometry || {}, pr = c.protection || {};
+      row('Szerelés', c.mounting); row('Fényforrás', c.sources); row('Védettség', [pr.ip, pr.ik, pr.class].filter(Boolean).join(' · '));
+      row('Fény', [ph.lm, ph.cct, ph.cri, ph.beam].filter(Boolean).join(' · '));
+      row('Vezérlés', c.control + (c.lines && c.lines.length ? ` (vonalak: ${c.lines.map(any).join(', ')})` : ''));
+      if (c.install && c.install.length) { L.push('- **Beépítés:**'); for (const t of c.install) L.push(`  - ${t}`); }
+      if (c.fixing && c.fixing.length) row('Rögzítés', c.fixing.map(any).join(', '));
+      row('Előírás', c.rules); row('Rajzjel', c.symbol ? '`' + c.symbol + '` (Rajztár)' : ''); row('Hova', c.rooms);
+      if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
+      if (c.related && c.related.length) row('Rokon típusok', c.related.map(r => name(K, 'vt', r)).join(', '));
+      L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
+      row('Hol kapható', c.shop); L.push('');
+    }
+  }
+  fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
+  return `wrote ${path.relative(K.repo, path.join(dir, 'KISOKOS.md'))} (${cs.length} cards) + ${cs.length} svg`;
 }
 
 function mdKv(K) {
@@ -206,7 +266,7 @@ function stats(K = load()) {
   return rows.join('\n');
 }
 
-module.exports = { load, check, md, stats, KIND_HU, VS };
+module.exports = { load, check, md, stats, KIND_HU, VS, LS, XREFS };
 
 if (require.main === module) {
   const cmd = process.argv[2];

@@ -28,7 +28,7 @@ function build(graph) {
     const { vol, kind, gid, file, bytes, cubes, place, title, aka, added, ...rest } = c;   // rest = the card's own fields
     delete rest.id;
     items.push({ id: 'card.' + gid, type: 'card', vol, kind, title, aka: aka || [], place, cubes, bytes, added, file, card: rest,
-      ...(kind === 'vonal' ? { svg: VS.onePager(c, lines) } : {}) });   // a line carries its one-pager drawing
+      ...(kind === 'vonal' ? { svg: VS.onePager(c, lines) } : kind === 'lampa' ? { svg: KM.LS.card(c) } : {}) });   // lines and lamp types carry their drawing
   }
   for (const s of K.sources) items.push({ id: 'src.' + s.id, type: 'source', vol: s.volume, color: s.color, kind: 'tudásbázis', title: s.title, aka: [], place: s.place,
     cubes: s.cubes, bytes: s.bytes, added: '', file: s.paths.join(' · '), src: { sub: s.sub, why: s.why, paths: s.paths, files: s.files } });
