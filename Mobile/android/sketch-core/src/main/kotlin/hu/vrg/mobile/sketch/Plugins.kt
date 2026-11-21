@@ -74,7 +74,25 @@ object Tags {
         Tag("T-ip44", "IP44", 0xFF3DAE5A, "ip44"),
         Tag("T-ded", "Dedikált", 0xFFD64545, "dedicated"),
         Tag("T-bontas", "Bontás", 0xFF8A5CD6, "remove"),
+        // F5 (WP M50, D-77): "replace this existing point"; the takeoff counts it as action csere (takeoff.json replaceTags)
+        Tag("T-csere", "Csere", 0xFFE8641C, "replace"),
     )
+
+    /** The built-in Csere tag (F5, D-77). */
+    val CSERE: Tag get() = PRESETS.first { it.preset == "replace" }
+
+    /**
+     * An older survey (made before Csere was a preset) gets the Csere tag when the phone opens it, unless it already has
+     * one: a tag with preset `replace` or a tag the user named Csere (D-71's way, still counted the same). Nothing else
+     * changes; a survey that has it is returned as it is.
+     */
+    fun withBuiltins(s: Sketch): Sketch {
+        val has = s.tags.any { it.preset == "replace" || fold(it.name) == "csere" || it.id == CSERE.id }
+        return if (has) s else s.copy(tags = s.tags + CSERE)
+    }
+
+    private fun fold(t: String) = java.text.Normalizer.normalize(t.trim().lowercase(), java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "")
     private val PALETTE = listOf(0xFFE8641C, 0xFFC03FA8, 0xFF5470B0, 0xFF2A8C8C, 0xFFB07A2A, 0xFF7A5CC0)
     fun colorFor(n: Int) = PALETTE[n % PALETTE.size]
 }

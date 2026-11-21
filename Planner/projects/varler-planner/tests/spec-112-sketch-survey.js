@@ -81,6 +81,29 @@ setTimeout(async()=>{
   w.importProjectFile(new w.File([PKG],'kossuth.vsketch.json',{type:'application/json'}));
   await new Promise(r=>setTimeout(r,400));
   ok('the file import keeps the survey',B().survey&&B().survey.takeoff&&/felmérés:/.test($('hud').textContent));
+  ok('no room wants, no wants key',!('wants' in B().survey));
+
+  // ---------- 9. F5 (WP M50): the client's wants by room, as the phone's export writes them (WP M49) ----------
+  const ww=JSON.parse(PKG);
+  ww.sketch.roomScope={R1:{dugalj:2},R2:{ledszalag:1},R9:{dugalj:1}};   // R9: a deleted room → Általános
+  ww.plan.wants=[{id:'dugalj',total:3,general:1,rooms:{R1:2}},{id:'ledszalag',total:2,general:1,rooms:{R2:1}}];
+  ww.plan.data.floors[0].sk.wants={dugalj:2};ww.plan.data.floors[1].sk.wants={ledszalag:1};
+  ww.takeoff.rooms[0].wants=[{id:'dugalj',label:'Dugalj',sym:'⊙',qty:2}];ww.takeoff.rooms[1].wants=[{id:'ledszalag',label:'LED-szalag',sym:'═',qty:1}];
+  w.hardResetWorkspace();w.skiImport(ww);
+  const wv=B().survey.wants;
+  ok('the wants are kept by room',wv&&wv.rooms.length===2&&wv.rooms[0].name==='Nappali'&&wv.rooms[0].items[0].qty===2&&wv.rooms[1].items[0].label==='LED-szalag',JSON.stringify(wv));
+  ok('the rest is Általános (a deleted room counts there)',wv.general.length===2&&wv.general.find(i=>i.id==='dugalj').qty===1&&wv.general.find(i=>i.id==='ledszalag').qty===1,JSON.stringify(wv&&wv.general));
+  ok('a save carries them',w.sessionObj().building.survey.wants.rooms.length===2);
+  w.actionById('sketch.survey').run({});
+  const wr=w.document.querySelectorAll('#svyBody .svy-want');
+  ok('the panel: Igények szobánként, one line per room + Általános',/Igények szobánként/.test($('svyBody').innerHTML)&&wr.length===3);
+  ok('the room line',/Nappali:<\/i> ⊙ Dugalj ×2/.test(wr[0].innerHTML)&&wr[0].getAttribute('data-room')==='R1',wr[0]&&wr[0].innerHTML);
+  ok('the Általános line',wr[2].classList.contains('svy-general')&&/Általános:<\/i> ⊙ Dugalj ×1, ═ LED-szalag ×1/.test(wr[2].innerHTML),wr[2]&&wr[2].innerHTML);
+  w.closeModal();
+  // an older phone (no takeoff): the ids, the names from the floors
+  const wo=JSON.parse(JSON.stringify(ww));delete wo.takeoff;w.hardResetWorkspace();w.skiImport(wo);
+  ok('without a takeoff: the room names from the plan, the ids as labels',B().survey.wants.rooms[1].name==='Fürdő'&&B().survey.wants.rooms[0].items[0].label==='dugalj');
+  ok('nothing drawn with the wants',!/svy/.test(scene()));
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

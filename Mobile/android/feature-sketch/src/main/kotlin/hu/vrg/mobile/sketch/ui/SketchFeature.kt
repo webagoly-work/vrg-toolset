@@ -41,6 +41,7 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.Tags
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -132,7 +133,8 @@ class SketchStore(private val dir: File) {
         .sortedByDescending { it.updated }
 
     fun load(id: String): Sketch? = file(id).takeIf { it.exists() }?.let { f ->
-        try { SketchJson.read(f.readText()) } catch (e: Exception) { null }
+        // F5 (D-77): an older survey gets the built-in Csere tag
+        try { Tags.withBuiltins(SketchJson.read(f.readText())) } catch (e: Exception) { null }
     }
 
     fun save(s: Sketch) {
