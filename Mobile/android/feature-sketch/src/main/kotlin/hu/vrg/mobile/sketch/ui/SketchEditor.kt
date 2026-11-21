@@ -141,8 +141,11 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
         if (ok && f.length() > 0) st.videoTaken(req, name, videoDuration(f), f.length())
         else { f.delete(); st.note = "Nem készült videó." }
     }
+    // Saját kamera (WP M52): the in-app CameraX camera for photos, the camera app when it is off or failed (D-101)
+    var live by remember { mutableStateOf<CameraReq?>(null) }
     fun startCamera(req: CameraReq) {
         dir.mkdirs()
+        if (!req.video && st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.LIVE) && !LiveFallback.failed) { live = req; return }
         if (req.video) {
             val vname = "V-" + System.currentTimeMillis().toString(36) + ".mp4"
             filming = req to vname
@@ -190,6 +193,21 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
         }
     }
 
+    live?.let { r ->
+        LiveCamera(st, r, dir,
+            onShot = { q, name ->
+                if (q.photo != null) { st.photoTaken(q, name); null }
+                else {
+                    val ll = exifLatLon(File(dir, name))
+                    st.captureTaken(q, name, ll?.first, ll?.second)
+                    st.sketch.captures.lastOrNull { it.file == name }?.id
+                }
+            },
+            onFail = { q, why -> LiveFallback.failed = true; live = null; host.note(why); startCamera(q) },
+            onClose = { n -> live = null; if (r.photo == null && n > 1) st.note = "◉ Sorozat vége · $n fotó" },
+        )
+        return
+    }
     if (showNorm) { NormScreen(st, host) { showNorm = false }; SketchDialogs(st); return }
 
     val sh = remember(st.sketch, st.kit, st.norm) { Shadow(st) }
