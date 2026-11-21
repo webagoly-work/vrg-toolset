@@ -10,6 +10,10 @@
   const TYPES = { socket: 'Dugalj', switch: 'Kapcsoló', light: 'Lámpa', junction: 'Kötődoboz', data: 'Adat', fixed: 'Fix bekötés', sensor: 'Érzékelő', board: 'Elosztó', pont: 'Típustalan' };
   const EXTRA = { attekintes: { id: 'attekintes', label: 'Áttekintés', sym: '▤', color: '#93d3e6' }, variansok: { id: 'variansok', label: 'Variánsok', sym: '◐', color: '#b08ad8' } };
   const LAST_KEY = 'vrg-sketcher-last';
+  // WP M51 (D-91…D-99): every feature on its own switch, kept per browser (lib/features.js, catalog/features.json).
+  // The stored list is what differs from the default; D-79's own key keeps the implied-dedicated toggle.
+  const FE = window.VRGFeatures, FEAT_KEY = 'vrg-sketcher-features';
+  EXTRA.funkciok = { id: 'funkciok', label: 'Funkciók', sym: '⚙', color: '#a6afb7' };
 
   let S = null, pkg = null, cur = 'attekintes', msg = null, fileName = '';
   let files = new Map();                       // photo file name -> object URL (memory only, never saved)
@@ -65,7 +69,16 @@
   // D-79: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
   const IMPLIED_KEY = 'vrg-sketcher-implied-dedicated';
   let implied = (() => { try { return localStorage.getItem(IMPLIED_KEY) === '1'; } catch (e) { return !!RULES.impliedDedicated; } })();
-  function setImplied(on) { implied = !!on; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } }
+  function setImplied(on) { implied = !!on; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } FL = FE.fromStores(Object.assign(FE.toStores(FL), { implied })); }
+  let FL = (() => { let g = []; try { g = FE.read(localStorage.getItem(FEAT_KEY)); } catch (e) { /* no storage */ } return FE.fromStores({ cameraOff: [], implied, general: g }); })();
+  const on = id => FE.on(FL, id);
+  function setFeatures(next) {
+    const st = FE.toStores(next); FL = FE.read(FE.write(next));
+    try { localStorage.setItem(FEAT_KEY, FE.write(st.general)); } catch (e) { /* no storage: this page only */ }
+    if (st.implied !== implied) setImplied(st.implied);
+    if (cur !== 'funkciok' && !viewShown(cur)) cur = 'attekintes';
+  }
+  const viewShown = id => id === 'attekintes' || id === 'funkciok' || (id === 'variansok' ? on('variansok.use') : FE.visibleFronts(FL, [id]).length > 0);
   function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp(), impliedDedicated: implied }); }
   // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
   function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
@@ -174,12 +187,14 @@
   // ---- fronts ----------------------------------------------------------------------------------------------------
   function derived() {
     const k = kit(), f = FK.facts(k, S), now = stamp();
-    return { k, f, qs: FK.questions(k, S, f, now), shots: FK.shots(k, S, f), open: FK.open(k, S, norm(), f), sug: FK.suggestions(k, S) };
+    // M51 (D-93): a feature switched off leaves no trace: its cards, badges and loose ends go; the data stays
+    return { k, f, qs: on('kerdes.questions') ? FK.questions(k, S, f, now) : [], shots: on('kamera.shotlist') ? FK.shots(k, S, f) : [],
+      open: FK.open(k, S, norm(), f).filter(o => FE.openShown(FL, o)), sug: on('jegyzet.keywords') ? FK.suggestions(k, S) : [] };
   }
 
   function vAttekintes(d) {
     const sc = S.scope || {}, fl = floors();
-    let h = '<div class="grid"><div class="card"><h3 style="margin-top:0">Munkakör</h3>';
+    let h = '<div class="grid">' + (on('munkakor.summary') ? '<div class="card"><h3 style="margin-top:0">Munkakör</h3>' : '<div hidden>');
     let any = false;
     GROUPS.forEach(([g, label]) => {
       const sel = d.k.scope.filter(x => x.group === g && sc[x.id] > 0);
@@ -212,10 +227,10 @@
 
   function vJegyzet(d) {
     const k = d.k, rooms = norm().rooms;
-    let h = '<div class="card"><textarea id="ntext" placeholder="Jegyzet: amit az ügyfél mondott…">' + esc(note.text) + '</textarea><div style="margin-top:6px">' +
-      k.chips.map(c => '<button class="pill ' + (note.chips.has(c.id) ? 'sel' : '') + '" data-act="nchip" data-id="' + esc(c.id) + '" style="--c:' + esc(c.color) + '"><i>' + esc(c.sym) + '</i>' + esc(c.label) + '</button>').join('') +
+    let h = !on('jegyzet.quick') ? '' : '<div class="card"><textarea id="ntext" placeholder="Jegyzet: amit az ügyfél mondott…">' + esc(note.text) + '</textarea><div style="margin-top:6px">' +
+      (on('jegyzet.chips') ? k.chips : []).map(c => '<button class="pill ' + (note.chips.has(c.id) ? 'sel' : '') + '" data-act="nchip" data-id="' + esc(c.id) + '" style="--c:' + esc(c.color) + '"><i>' + esc(c.sym) + '</i>' + esc(c.label) + '</button>').join('') +
       '</div><div class="row"><select id="nroom" style="width:auto"><option value="">(helyiség nélkül)</option>' + rooms.map(r => '<option value="' + esc(r.id) + '"' + (note.room === r.id ? ' selected' : '') + '>' + esc(r.name || r.id) + '</option>').join('') + '</select>' +
-      '<label class="small"><input type="checkbox" id="nopen"' + (note.open ? ' checked' : '') + '> ⚑ Tisztázandó</label><span class="grow"></span><button class="btn primary" id="nadd" data-act="nadd">Hozzáad</button></div></div>';
+      (on('jegyzet.unclear') ? '<label class="small"><input type="checkbox" id="nopen"' + (note.open ? ' checked' : '') + '> ⚑ Tisztázandó</label>' : '') + '<span class="grow"></span><button class="btn primary" id="nadd" data-act="nadd">Hozzáad</button></div></div>';
     if (d.sug.length) {
       h += '<h3>Javaslatok a jegyzetekből</h3><div>' + d.sug.map(g => {
         const e = g.effect, parts = e.scope.map(s => (k.scope.find(x => x.id === s) || { label: s }).label);
@@ -225,9 +240,9 @@
       }).join('') + '</div>';
     }
     const ents = (S.entries || []).slice().reverse();
-    h += '<h3>Napló</h3>' + (ents.length ? '<div class="tl">' + ents.map(e => '<div class="ent' + (e.open ? ' open' : '') + '" data-ent="' + esc(e.id) + '"><div class="meta"><span>' + esc(fmtTime(e.at)) + '</span>' +
+    if (on('jegyzet.log')) h += '<h3>Napló</h3>' + (ents.length ? '<div class="tl">' + ents.map(e => '<div class="ent' + (e.open ? ' open' : '') + '" data-ent="' + esc(e.id) + '"><div class="meta"><span>' + esc(fmtTime(e.at)) + '</span>' +
       (e.room ? '<span>⌂ ' + esc(roomName(e.room)) + '</span>' : '') + (e.voice ? '<span>🎙</span>' : '') +
-      '<button class="flag ' + (e.open ? 'on' : '') + '" data-act="eopen" data-id="' + esc(e.id) + '" title="Tisztázandó">⚑</button></div>' +
+      (on('jegyzet.unclear') ? '<button class="flag ' + (e.open ? 'on' : '') + '" data-act="eopen" data-id="' + esc(e.id) + '" title="Tisztázandó">⚑</button>' : '') + '</div>' +
       (e.text ? '<div class="txt">' + esc(e.text) + '</div>' : '') + '<div>' + (e.chips || []).map(chipPill).join('') + '</div></div>').join('') + '</div>' : '<div class="empty">Még nincs jegyzet.</div>');
     return h;
   }
@@ -240,7 +255,7 @@
       '<span class="fl">' + (it.open.length ? '⚑' : '') + '</span></div>';
     return '<div class="card tk" id="takeoff"><div class="row"><h3 style="margin:0">☰ Munkakör lap</h3><span class="grow"></span>' +
       '<span class="small muted">' + c.items + ' tétel · ≈ ' + c.est + ' · ⚑ ' + c.decisions + (c.tisztazando ? ' · Tisztázandó ' + c.tisztazando : '') + '</span>' +
-      '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button></div>' +
+      (on('export.takeoff') ? '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button>' : '') + '</div>' +
       (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
       (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
       '<div class="row"><button class="pill ' + (implied ? 'sel' : 'off') + '" id="tkimplied" data-act="tkimplied" style="--c:#3dae5a" title="Minden felmérésre ebben a böngészőben">' +
@@ -253,12 +268,12 @@
     const sc = S.scope || {}, col = frontOf('munkakor').color, rooms = S.rooms || [];
     if (wantRoom && !rooms.some(r => r.id === wantRoom)) wantRoom = '';
     const here = (id) => wantRoom ? (((S.roomScope || {})[wantRoom] || {})[id] || 0) : null;
-    return takeoffCard() + GROUPS.map(([g, label]) => '<h3>' + label + '</h3>' + (g === 'igeny' ? wantWhere(rooms) : '') + '<div>' + d.k.scope.filter(x => x.group === g).map(x => {
+    return (on('munkakor.takeoff') ? takeoffCard() : '') + (on('munkakor.scope') ? GROUPS : []).map(([g, label]) => '<h3>' + label + '</h3>' + (g === 'igeny' && on('munkakor.wants') ? wantWhere(rooms) : '') + '<div>' + d.k.scope.filter(x => x.group === g).map(x => {
       const n = x.qty ? FK.wantTotal(S, x.id) : sc[x.id] || 0, h = x.qty ? here(x.id) : null;
       if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
         '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + (h ? '<small class="here"> (' + h + ' itt)</small>' : '') + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
       return '<button class="pill ' + (n ? 'sel' : 'off') + '" data-act="stoggle" data-id="' + esc(x.id) + '" data-scope="' + esc(x.id) + '" style="--c:' + col + '"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</button>';
-    }).join('') + '</div>' + (g === 'igeny' ? wantsByRoom(d.k) : '')).join('');
+    }).join('') + '</div>' + (g === 'igeny' && on('munkakor.wants') ? wantsByRoom(d.k) : '')).join('');
   }
   // F4: where + / − go, and the wants per room (a room's own, then the job's); ⇠ / → re-link one
   function wantWhere(rooms) {
@@ -282,12 +297,12 @@
 
   function qCard(x) {
     const q = x.q, a = x.answer, chosen = new Set(a && a.options || []), c = frontOf('kerdes').color;
-    return '<div class="card qcard' + (x.fresh ? ' fresh' : '') + (x.later ? ' later' : '') + '" data-q="' + esc(q.id) + '" style="--c:' + c + '"><div class="qt">' + esc(q.q) +
-      (x.fresh ? '<span class="tag new">új</span>' : '') + (x.later ? '<span class="tag">később</span>' : '') + (q.multi ? '<span class="tag">több is</span>' : '') + '</div><div>' +
+    return '<div class="card qcard' + (x.fresh && on('kerdes.fresh') ? ' fresh' : '') + (x.later ? ' later' : '') + '" data-q="' + esc(q.id) + '" style="--c:' + c + '"><div class="qt">' + esc(q.q) +
+      (x.fresh && on('kerdes.fresh') ? '<span class="tag new">új</span>' : '') + (x.later ? '<span class="tag">később</span>' : '') + (q.multi ? '<span class="tag">több is</span>' : '') + '</div><div>' +
       q.options.map(o => '<button class="pill ' + (chosen.has(o.id) ? 'sel' : '') + '" data-act="qopt" data-q="' + esc(q.id) + '" data-o="' + esc(o.id) + '">' + esc(o.label) + '</button>').join('') + '</div>' +
       (q.num ? '<div class="row"><input type="text" data-qtext="' + esc(q.id) + '" value="' + esc(a && a.text) + '" placeholder="Érték"><span class="muted">' + esc(q.num.unit) + '</span></div>'
         : '<textarea data-qtext="' + esc(q.id) + '" placeholder="Megjegyzés (szabad szöveg)">' + esc(a && a.text) + '</textarea>') +
-      '<div class="acts"><button class="btn sm" data-act="qlater" data-q="' + esc(q.id) + '">Később</button><button class="btn sm" data-act="qskip" data-q="' + esc(q.id) + '">Nem releváns</button>' +
+      '<div class="acts">' + (on('kerdes.later') ? '<button class="btn sm" data-act="qlater" data-q="' + esc(q.id) + '">Később</button><button class="btn sm" data-act="qskip" data-q="' + esc(q.id) + '">Nem releváns</button>' : '') +
       (a ? '<button class="btn sm dim" data-act="qclear" data-q="' + esc(q.id) + '">Törlés</button>' : '') + '</div></div>';
   }
   function vKerdes(d) {
@@ -301,7 +316,7 @@
   function vKamera(d) {
     const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
     let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
-    h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
+    if (on('kamera.shotlist')) h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
       (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
     h += '<h3>Célfotók</h3>';
     const used = new Set();
@@ -351,29 +366,30 @@
   function vCamera2(caps) {
     let h = '';
     const pairs = caps.filter(c => c.phase === 'utana' && c.pair).map(a => [caps.find(b => b.id === a.pair), a]).filter(p => p[0]);
-    if (pairs.length) h += '<h3>Előtte / utána</h3>' + pairs.map(([b, a]) => {
+    if (pairs.length && on('kamera.pairs')) h += '<h3>Előtte / utána</h3>' + pairs.map(([b, a]) => {
       const one = (c, l) => { const u = thumbFor(c); return '<figure><figcaption class="small">' + l + ' · ' + esc(fmtTime(c.at)) + '</figcaption>' +
         (u ? '<img class="pairimg" src="' + esc(u) + '" alt="">' : '<div class="thumb">' + esc(c.id) + '</div>') + '</figure>'; };
       return '<div class="card pair" data-pair="' + esc(b.id + '-' + a.id) + '">' + one(b, 'Előtte') + one(a, 'Utána') + '</div>';
     }).join('');
     const sigs = caps.filter(c => c.kind === 'signature');
-    if (sigs.length) h += '<h3>Aláírás</h3>' + sigs.map(c => '<div class="card"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) +
+    if (sigs.length && on('kamera.signature')) h += '<h3>Aláírás</h3>' + sigs.map(c => '<div class="card"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) +
       '<div class="small">' + esc(c.note) + '</div>' + (thumbFor(c) ? '<img class="sigimg" src="' + esc(thumbFor(c)) + '" alt="aláírás">' : '<div class="small faint mono">' + esc(captureNames(c)[1]) + '</div>') + '</div>').join('');
     const priv = caps.filter(c => c.privacy && !(c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset'));
-    if (priv.length) h += '<p class="small warn">👤 ' + priv.length + ' személyes adatot mutató fotón nincs elmosás (a telefonon: ✎ Jelölés → ▦ / ▒).</p>';
+    if (priv.length && on('kamera.privacy')) h += '<p class="small warn">👤 ' + priv.length + ' személyes adatot mutató fotón nincs elmosás (a telefonon: ✎ Jelölés → ▦ / ▒).</p>';
     return h;
   }
 
   function vHelyszin() {
     const si = S.site || {}, fl = floors();
-    let h = '<div class="card"><div class="kv"><b>Cím</b><input type="text" data-site="address" value="' + esc(si.address) + '">' +
+    let h = !on('helyszin.address') ? '' : '<div class="card"><div class="kv"><b>Cím</b><input type="text" data-site="address" value="' + esc(si.address) + '">' +
       '<b>Szélesség</b><input type="text" data-site="lat" value="' + esc(si.lat) + '"><b>Hosszúság</b><input type="text" data-site="lon" value="' + esc(si.lon) + '">' +
       '<b>Forrás</b><span>' + esc(si.source || '—') + '</span></div></div>';
     const fp = si.footprint;
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
-    if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
-    h += sitePlaceCard();
+    if ((fp || size) && on('helyszin.footprint')) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    if (on('helyszin.place')) h += sitePlaceCard();
+    if (!on('helyszin.map')) return h;
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
     return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson. A <b>🗺 Szerkesztés a térképen</b> a körvonalat és a vázlatot a lenti térképre teszi; ott ✓ Kész hozza vissza.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
@@ -386,7 +402,7 @@
     const si = S.site || {}, out = si.outline || [], rooms = siteRooms();
     let h = '<h3>A vázlat az épületen</h3><div class="card" id="siteplace">';
     if (!SM) return h + '<p class="small muted">(a helyszín számítása hiányzik a lapból)</p></div>';
-    const acts = '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="sitemap">🗺 Szerkesztés a térképen</button>' +
+    const acts = '<div class="acts" style="margin-top:6px">' + (on('helyszin.map') ? '<button class="btn sm" data-act="sitemap">🗺 Szerkesztés a térképen</button>' : '') +
       (out.length >= 3 && rooms.length ? '<button class="btn sm" data-act="sitefit">⤢ Illesztés</button>' : '') +
       (si.place ? '<button class="btn sm" data-act="siteclear">✕ Elhelyezés</button>' : '') + '</div>';
     if (out.length < 3) return h + '<p class="small muted">Még nincs körvonal: a telefon Helyszínén (OSM vagy rajz a térképen), vagy itt a térképen rajzolva.</p>' + acts + '</div>';
@@ -432,7 +448,7 @@
     const f = $('mapframe'); if (!f || !f.contentWindow) { flash('Nincs térkép a lapon.', 'warn'); render(); return; }
     const si = S.site || {};
     f.contentWindow.postMessage({ kind: 'vrg-site', v: 1, id: S.id || 'asztal', name: S.name || '', lat: typeof si.lat === 'number' ? si.lat : undefined,
-      lon: typeof si.lon === 'number' ? si.lon : undefined, outline: si.outline || [], outlineSrc: si.footprint && si.footprint.src || '', place: si.place || null, rooms: siteRooms() }, 'http://localhost:8802');
+      lon: typeof si.lon === 'number' ? si.lon : undefined, outline: si.outline || [], outlineSrc: si.footprint && si.footprint.src || '', place: si.place || null, rooms: siteRooms(), hide: FE.mapHide(FL) }, 'http://localhost:8802');
   }
   window.addEventListener('message', e => {
     const f = $('mapframe'); if (!f || e.source !== f.contentWindow || !e.data) return;
@@ -441,7 +457,7 @@
 
   function vNyitott(d) {
     if (!d.open.length) return '<div class="empty">Nincs nyitott szál — minden rendben.</div>';
-    return BASE.fronts.map(f => { const l = d.open.filter(o => o.front === f.id); if (!l.length) return '';
+    return BASE.fronts.filter(f => viewShown(f.id)).map(f => { const l = d.open.filter(o => o.front === f.id); if (!l.length) return '';
       return '<h3 style="color:' + esc(f.color) + '">' + esc(f.sym) + ' ' + esc(f.label) + ' (' + l.length + ')</h3>' + l.map(leHtml).join(''); }).join('');
   }
 
@@ -458,10 +474,10 @@
   }
   function vVariansok() {
     return '<div class="grid">' + VARIANTS.map(v => '<div class="card" style="border-left:3px solid ' + esc(v.color) + '"><div style="font-size:18px;color:' + esc(v.color) + '">' + esc(v.sym) + ' <b>' + esc(v.name) + '</b>' +
-      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' + drawLine(v) +
+      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' + (on('vazlat.drawtune') ? drawLine(v) : '') +
       '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="vpick" data-id="' + esc(v.id) + '">Használat ebben a felmérésben</button></div></div>').join('') + '</div>' +
-      '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
-      '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>';
+      (!on('variansok.request') ? '' : '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
+      '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>');
   }
 
   // ---- rendering -------------------------------------------------------------------------------------------------
@@ -470,7 +486,7 @@
     if (!S) { h.innerHTML = '<span class="muted">Nincs megnyitott felmérés</span>'; return; }
     const v = VARIANTS.find(x => x.id === S.variant);
     h.innerHTML = '<span class="nm">' + esc(S.name || fileName || 'Névtelen felmérés') + '</span><span class="ad">' + esc(S.site && S.site.address || '') + '</span>' +
-      (S.variant ? '<button class="btn sm ' + (S.variantOn ? 'on' : 'dim') + '" id="vtoggle" data-act="vtoggle" style="--c:' + esc(v ? v.color : '#93d3e6') + '" title="Variáns: ' + esc(v ? v.name : S.variant) + '">◐ ' + esc(v ? v.name : S.variant) + '</button>' : '');
+      (S.variant && on('variansok.use') ? '<button class="btn sm ' + (S.variantOn ? 'on' : 'dim') + '" id="vtoggle" data-act="vtoggle" style="--c:' + esc(v ? v.color : '#93d3e6') + '" title="Variáns: ' + esc(v ? v.name : S.variant) + '">◐ ' + esc(v ? v.name : S.variant) + '</button>' : '');
   }
   function railItem(f, badge, isNew) {
     return '<button class="rb' + (cur === f.id ? ' act' : '') + '" data-act="front" data-front="' + f.id + '" title="' + esc(f.label) + '" style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span><span class="cap">' + esc(f.label) + '</span>' +
@@ -484,19 +500,37 @@
   function renderRail() {
     const r = $('rail'); if (!r) return;
     const b = S ? badges(derived()) : {}, one = f => railItem(f, b[f.id] && b[f.id][0], b[f.id] && b[f.id][1]);
-    r.innerHTML = one(EXTRA.attekintes) + '<div class="sep"></div>' + BASE.fronts.map(one).join('') + '<div class="sep"></div>' + one(EXTRA.variansok);
+    r.innerHTML = one(EXTRA.attekintes) + '<div class="sep"></div>' + BASE.fronts.filter(f => viewShown(f.id)).map(one).join('') + '<div class="sep"></div>' +
+      (on('variansok.use') ? one(EXTRA.variansok) : '') + one(EXTRA.funkciok);   // M51: a front whose features are all off is not on the rail
   }
-  const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok };
+  // ⚙ Funkciók (M51): every feature by front, Mind per front and for everything; the same list as the phone's
+  function vFunkciok() {
+    const sw = (act, attrs, val, dis) => '<button class="sw' + (val ? ' on' : '') + '" role="switch" aria-checked="' + val + '" data-act="' + act + '"' + attrs + (dis ? ' disabled' : '') + '><i></i></button>';
+    let h = '<p class="small muted">Ebben a böngészőben, minden felmérésre. Ami ki van kapcsolva, eltűnik a lapról; az adat megmarad, a mentett fájl ugyanaz.</p>' +
+      '<div class="frow all"><span class="fs">✱</span><b class="fl">Mind</b>' + sw('featall', '', FE.allOn(FL)) + '</div>';
+    FE.FRONTS.forEach(fr => {
+      h += '<div class="fgrp" data-group="' + esc(fr.id) + '" style="--c:' + esc(fr.color) + '"><div class="frow head"><span class="fs">' + esc(fr.sym) + '</span><b class="fl">' + esc(fr.label) + '</b>' +
+        sw('featfront', ' data-front="' + esc(fr.id) + '"', FE.allOn(FL, fr.id)) + '</div>';
+      FE.inFront(fr.id).forEach(f => {
+        const b = FE.blockedBy(FL, f.id);
+        h += '<div class="frow' + (b ? ' dim' : '') + '" data-feature="' + esc(f.id) + '"><span class="fs">' + esc(f.sym) + '</span><span class="fl">' + esc(f.label) + (b ? ' <small>· előbb: ' + esc(b.label) + '</small>' : '') + '</span>' +
+          sw('feat', ' data-id="' + esc(f.id) + '"', FE.on(FL, f.id), f.locked || !!b) + '</div>';
+      });
+      h += '</div>';
+    });
+    return h;
+  }
+  const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok, funkciok: vFunkciok };
 
   function render() {
     renderHeader(); renderRail();
     const m = $('main'); if (!m) return;
-    if (!S) { m.innerHTML = '<div class="empty">Nyiss meg egy felmérést (Megnyitás vagy húzd ide a .vsketch.json fájlt).</div>'; return; }
+    if (!S && cur !== 'funkciok') { m.innerHTML = '<div class="empty">Nyiss meg egy felmérést (Megnyitás vagy húzd ide a .vsketch.json fájlt).</div>'; return; }
     const f = frontOf(cur) || EXTRA.attekintes;
     let body;
     try {
-      const d = derived();
-      if (cur === 'kerdes') {                        // first appearance of each shadow question
+      const d = S ? derived() : null;
+      if (cur === 'kerdes' && d) {                        // first appearance of each shadow question
         const un = FK.unseen(d.k, S, d.f);
         if (un.length) { const t = stamp(); S.seen = Object.assign({}, S.seen || {}); un.forEach(id => { S.seen[id] = t; }); persist(); }
       }
@@ -505,7 +539,7 @@
     m.innerHTML = '<h2 style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span>' + esc(f.label) + '</h2>' +
       (msg ? '<div class="msg ' + msg.cls + '">' + esc(msg.text) + '</div>' : '') + '<div id="view" data-front="' + cur + '">' + body + '</div>';
   }
-  function front(id) { if (!VIEWS[id]) return false; cur = id; render(); return true; }
+  function front(id) { if (!VIEWS[id] || !viewShown(id)) return false; cur = id; render(); return true; }
 
   // ---- actions ---------------------------------------------------------------------------------------------------
   const setAnswer = (q, a) => { S.answers = Object.assign({}, S.answers || {}); if (a) S.answers[q] = a; else delete S.answers[q]; };
@@ -519,10 +553,13 @@
     if (!on) { const o = q.options.find(x => x.id === oid); if (o && o.sets) S = FK.apply(k, o.sets, S, now); }
   }
   function onClick(ev) {
-    const t = ev.target.closest('[data-act]'); if (!t || !S && t.dataset.act !== 'save') return;
+    const t = ev.target.closest('[data-act]'); if (!t || !S && !['save', 'front', 'feat', 'featfront', 'featall'].includes(t.dataset.act)) return;
     const a = t.dataset.act, id = t.dataset.id, q = t.dataset.q, k = () => kit();
     switch (a) {
       case 'front': front(t.dataset.front); break;
+      case 'feat': setFeatures(FE.toggle(FL, id)); render(); break;
+      case 'featfront': setFeatures(FE.all(FL, !FE.allOn(FL, t.dataset.front), t.dataset.front)); render(); break;
+      case 'featall': setFeatures(FE.all(FL, !FE.allOn(FL))); render(); break;
       case 'sitemap': siteSend(); break;
       case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
       case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
@@ -609,6 +646,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, features: () => FL, setFeatures };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

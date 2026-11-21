@@ -149,6 +149,17 @@ module.exports = async t => {
       await p2.close();
     });
 
+    await t('M51: the Sketcher\'s switched-off site features are left out of the panel', async () => {
+      await page.evaluate(rooms => window.vrgSite.open({ id: 'T3', name: 'Kapcsolók', lat: 47.515, lon: 19.08, outline: [], rooms, hide: ['satellite', 'outline'] },
+        { done: r => { window.__res = r; }, canCenter: true }), ROOMS);
+      await settle();
+      assert.strictEqual(await page.locator('#site-panel button[data-a="sat"]').count(), 0, '🛰 hidden');
+      assert.strictEqual(await page.locator('#site-panel button[data-a="m-outline"]').count(), 0, '▱ hidden');
+      assert.strictEqual(await page.locator('#site-panel button[data-a="m-place"]').count(), 1, '◫ stays');
+      assert.strictEqual((await st()).mode, 'place');
+      await btn('cancel'); await settle();
+    });
+
     await t('no page errors', async () => { assert.deepStrictEqual(errors, []); });
   } finally { await browser.close(); srv.close(); }
 };

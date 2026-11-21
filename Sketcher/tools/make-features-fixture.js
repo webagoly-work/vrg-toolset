@@ -37,7 +37,8 @@ function snap(flipped) {
     mindBe: F.all(flipped, true), mindKi: F.all(flipped, false),
     frontBe: Object.fromEntries(fronts.map(id => [id, F.all(flipped, true, id)])),
     stores: F.toStores(flipped), cameraOff: F.cameraOff(flipped),
-    rail: F.rail(RAIL, flipped), draw: F.draw({ snapAngle: 90 }, flipped) !== null,
+    rail: F.rail(RAIL, flipped), mapHide: F.mapHide(flipped),
+    openShown: Object.fromEntries(F.OPEN_KINDS.concat(['room']).map(k => [k, F.openShown(flipped, { kind: k, front: k === 'question' ? 'kerdes' : 'vazlat' })])), draw: F.draw({ snapAngle: 90 }, flipped) !== null,
     toggled: Object.fromEntries(['vazlat.select', 'vazlat.point', 'munkakor.implied', 'kamera.ocr', 'jovobeli.valami'].map(id => [id, F.toggle(flipped, id)])),
   };
 }

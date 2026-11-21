@@ -210,6 +210,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [],
@@ -431,6 +445,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -665,6 +693,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": false,
+    "capture": false,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -894,6 +936,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": false,
+    "point": false,
+    "circuit": false,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -1123,6 +1179,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -1357,6 +1427,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -1608,6 +1692,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": false,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -2365,6 +2463,24 @@
    "rail": [
     "select"
    ],
+   "mapHide": [
+    "outline",
+    "satellite",
+    "place"
+   ],
+   "openShown": {
+    "draft": false,
+    "entry": false,
+    "suggestion": false,
+    "question": false,
+    "shot": false,
+    "capture": false,
+    "photo": false,
+    "point": false,
+    "circuit": false,
+    "site": false,
+    "room": true
+   },
    "draw": false,
    "toggled": {
     "vazlat.select": [
@@ -2892,6 +3008,20 @@
     "board",
     "route"
    ],
+   "mapHide": [],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": true,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [
@@ -3188,6 +3318,24 @@
     "board",
     "route"
    ],
+   "mapHide": [
+    "outline",
+    "satellite",
+    "place"
+   ],
+   "openShown": {
+    "draft": true,
+    "entry": true,
+    "suggestion": true,
+    "question": true,
+    "shot": true,
+    "capture": true,
+    "photo": true,
+    "point": true,
+    "circuit": true,
+    "site": false,
+    "room": true
+   },
    "draw": true,
    "toggled": {
     "vazlat.select": [

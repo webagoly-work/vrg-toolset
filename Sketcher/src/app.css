@@ -136,3 +136,16 @@ svg.siteplace text { fill: var(--muted, #888); }
 .stepper .here { color: var(--c); font-size: 10px; }
 .card.wants { margin-top: 6px; } .card.wants .wrow { margin-top: 5px; } .card.wants .wrow b { margin-right: 6px; }
 .card.wants .pill .x { margin-left: 4px; }
+/* M51 ⚙ Funkciók: one row per feature (symbol, 1–3 words, switch), grouped by front in its colour */
+.fgrp { margin: 12px 0 4px; }
+.frow { display: flex; align-items: center; gap: 8px; padding: 3px 0; max-width: 520px; }
+.frow .fs { width: 24px; text-align: center; color: var(--c, #a6afb7); }
+.frow .fl { flex: 1; }
+.frow.head .fl { color: var(--c, #a6afb7); }
+.frow.dim { opacity: .45; }
+.frow small { color: #7d8590; }
+.sw { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #3a4550; background: #1b232b; position: relative; cursor: pointer; padding: 0; }
+.sw i { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #7d8590; transition: left .12s; }
+.sw.on { background: #27c2b0; border-color: #27c2b0; }
+.sw.on i { left: 20px; background: #0b1116; }
+.sw:disabled { cursor: default; }

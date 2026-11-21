@@ -63,6 +63,13 @@
   const rail = (toolIds, flipped) => toolIds.filter(t => on(flipped, tool(t)));
   const draw = (tune, flipped) => on(flipped, 'vazlat.drawtune') ? tune : null;
 
+  // the map page's site panel (▱ Körvonal, 🛰 Műhold, ◫ Vázlat) and the loose ends (Nyitott) follow the switches too
+  const mapHide = flipped => [['outline', 'helyszin.outline'], ['satellite', 'helyszin.satellite'], ['place', 'helyszin.place']].filter(x => !on(flipped, x[1])).map(x => x[0]);
+  const OPEN = { draft: 'jegyzet.quick', entry: 'jegyzet.unclear', suggestion: 'jegyzet.keywords', question: 'kerdes.questions', shot: 'kamera.shotlist',
+    capture: 'kamera.capture', photo: 'vazlat.photo', point: 'vazlat.point', circuit: 'vazlat.circuit', site: 'helyszin.address' };
+  const openFeature = kind => OPEN[kind] || null;
+  const openShown = (flipped, o) => { const f = openFeature(o.kind); return (!f || on(flipped, f)) && visibleFronts(flipped).indexOf(o.front) >= 0; };
+
   const write = flipped => norm(flipped).join(',');
   const read = s => norm(String(s || '').split(',').map(x => x.trim()).filter(Boolean));
 
@@ -81,5 +88,5 @@
   const cameraOff = flipped => CAMERA_IDS.filter(id => !on(flipped, camera(id)));
 
   return { DATA, FRONTS, ALL, CAMERA_IDS, of, inFront, tool, camera, own, on: (f, id) => on(f, id, 0), blockedBy, set, toggle,
-    all, allOn, visibleFronts, rail, draw, write, read, fromStores, toStores, cameraOff };
+    all, allOn, visibleFronts, rail, draw, mapHide, openFeature, openShown, OPEN_KINDS: Object.keys(OPEN), write, read, fromStores, toStores, cameraOff };
 });

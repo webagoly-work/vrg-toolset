@@ -133,16 +133,4 @@ private fun VSwitch(value: Boolean, enabled: Boolean, onChange: (Boolean) -> Uni
     ))
 
 /** A loose end is listed only while the feature it belongs to is on (D-93). */
-internal fun openShown(o: hu.vrg.mobile.sketch.FieldKit.Open): Boolean = when (o.kind) {
-    "draft" -> feat("jegyzet.quick")
-    "entry" -> feat("jegyzet.unclear")
-    "suggestion" -> feat("jegyzet.keywords")
-    "question" -> feat("kerdes.questions")
-    "shot" -> feat("kamera.shotlist")
-    "capture" -> feat("kamera.capture")
-    "photo" -> feat("vazlat.photo")
-    "point" -> feat("vazlat.point")
-    "circuit" -> feat("vazlat.circuit")
-    "site" -> feat("helyszin.address")
-    else -> true
-}
+internal fun openShown(o: hu.vrg.mobile.sketch.FieldKit.Open): Boolean = Features.openShown(FeaturePrefs.flipped, o.kind, o.front)

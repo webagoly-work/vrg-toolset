@@ -71,6 +71,9 @@ class FeaturesTest {
             assertEquals(Features.Stores(set(st.getJSONArray("cameraOff")), st.getBoolean("implied"), set(st.getJSONArray("general"))), Features.toStores(fl), n)
             assertEquals(set(c.getJSONArray("cameraOff")), Features.cameraOff(fl), n)
             assertEquals(strs(c.getJSONArray("rail")), Features.rail(rail, fl).map { it.id }, n)
+            assertEquals(strs(c.getJSONArray("mapHide")), Features.mapHide(fl), n)
+            val os = c.getJSONObject("openShown")
+            os.keys().forEach { k -> assertEquals(os.getBoolean(k), Features.openShown(fl, k, if (k == "question") "kerdes" else "vazlat"), "$n open $k") }
             assertEquals(c.getBoolean("draw"), Features.draw(DrawTune(snapAngle = 90), fl) != DrawTune(), n)
             val tg = c.getJSONObject("toggled")
             tg.keys().forEach { id -> assertEquals(set(tg.getJSONArray(id)), Features.toggle(fl, id), "$n $id") }

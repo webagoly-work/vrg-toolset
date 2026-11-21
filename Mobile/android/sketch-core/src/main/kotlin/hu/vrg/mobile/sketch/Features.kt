@@ -183,6 +183,17 @@ object Features {
     fun mapHide(flipped: Set<String>): List<String> =
         listOf("outline" to "helyszin.outline", "satellite" to "helyszin.satellite", "place" to "helyszin.place").filter { !on(flipped, it.second) }.map { it.first }
 
+    /** The feature a loose end (FieldKit.Open.kind) belongs to; null = always listed (a guessed room size). */
+    fun openFeature(kind: String): String? = when (kind) {
+        "draft" -> "jegyzet.quick"; "entry" -> "jegyzet.unclear"; "suggestion" -> "jegyzet.keywords"; "question" -> "kerdes.questions"
+        "shot" -> "kamera.shotlist"; "capture" -> "kamera.capture"; "photo" -> "vazlat.photo"; "point" -> "vazlat.point"
+        "circuit" -> "vazlat.circuit"; "site" -> "helyszin.address"; else -> null
+    }
+
+    /** Nyitott lists a loose end only while its feature is on and its front is on the bar (D-93). */
+    fun openShown(flipped: Set<String>, kind: String, front: String): Boolean =
+        (openFeature(kind)?.let { on(flipped, it) } ?: true) && front in visibleFronts(flipped)
+
     /** A survey plugin is shown when at least one of its tools is on (the note taker always). */
     fun pluginShown(p: Plugin, flipped: Set<String>) = p.id == Plugins.NOTE.id || p.tools.any { on(flipped, tool(it.id)) }
 

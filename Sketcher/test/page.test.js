@@ -33,7 +33,7 @@ ok(sk.state().kind === 'vrg-vazlat' && sk.state().name === 'Kossuth u. 12', 'pac
 ok($('#hinfo').textContent.includes('Kossuth u. 12'), 'header shows the survey name');
 
 // fronts
-const fronts = ['attekintes', 'vazlat', 'jegyzet', 'munkakor', 'kerdes', 'kamera', 'helyszin', 'nyitott', 'variansok'];
+const fronts = ['attekintes', 'vazlat', 'jegyzet', 'munkakor', 'kerdes', 'kamera', 'helyszin', 'nyitott', 'variansok', 'funkciok'];
 eq($$('.rb').length, fronts.length, 'rail has one symbol per front');
 ok($$('.rb .sym').every(s => s.textContent.trim().length > 0) && $$('.rb').every(b => b.getAttribute('title')), 'every rail button is a symbol with a tooltip');
 for (const f of fronts) {
@@ -290,6 +290,34 @@ ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '
   const base = { kind: FK.VARIANT_KIND, id: 'proba', name: 'Próba', premise: 'Egy próbaváltozat a rajzhangolás ellenőrzéséhez.' };
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 90, snapGrid: 0.5, defaultRoom: { w: 4, d: 3 }, measureFirst: true, pointSnap: 'free' } })), [], 'a good draw block passes');
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 37, snapGrid: -1, defaultRoom: { w: 0 }, measureFirst: 'yes', pointSnap: 'x', wallThickness: 30 } })).length, 6, 'every bad draw key is reported');
+}
+
+// M51: ⚙ Funkciók — one row per feature, switches leave no trace, data and the saved file stay the same
+{
+  const F = require(path.join(ROOT, 'Sketcher/lib/features.js'));
+  const same = t => { const o = JSON.parse(t); return JSON.stringify([o.sketch, o.plan, o.takeoff && o.takeoff.items, Object.keys(o).sort()]); };
+  const before = same(sk.save());
+  click(rail('funkciok'));
+  eq($$('.frow[data-feature]').length, F.ALL.length, 'Funkciók lists every feature of the registry');
+  eq($$('.fgrp').map(g => g.dataset.group), F.FRONTS.map(f => f.id), 'grouped by front, in the registry order');
+  ok($('.frow[data-feature="vazlat.select"] .sw').disabled, 'Mozgat cannot be switched off');
+  click($('.fgrp[data-group="kerdes"] .frow.head .sw'));
+  ok(!rail('kerdes'), 'Kérdések: Mind ki takes the front off the rail');
+  click(rail('nyitott'));
+  ok(!$$('.le').some(b => b.dataset.front === 'kerdes'), 'and its loose ends leave Nyitott');
+  click(rail('funkciok')); click($('.frow[data-feature="jegyzet.chips"] .sw'));
+  click(rail('jegyzet'));
+  ok(!$('[data-act="nchip"]'), 'Gyors chipek off: no chips under the note');
+  click(rail('funkciok')); click($('.frow[data-feature="vazlat.point"] .sw'));
+  ok($('.frow[data-feature="vazlat.circuit"]').classList.contains('dim') && $('.frow[data-feature="vazlat.circuit"] .sw').disabled, 'Áramkör greyed while Pont is off');
+  click($('.frow[data-feature="munkakor.takeoff"] .sw')); click(rail('munkakor'));
+  ok(!$('#takeoff'), 'Munkakör lap off: no takeoff card');
+  eq(same(sk.save()), before, 'nothing switched off changes the saved package (survey, plan, takeoff items)');
+  ok(sk.features().includes('kerdes.questions') && sk.features().includes('jegyzet.chips'), 'the switches are the flipped ids');
+  click(rail('funkciok')); click($('.frow.all .sw'));
+  ok(rail('kerdes') && $('.frow[data-feature="jegyzet.chips"] .sw').classList.contains('on'), 'Mind be brings everything back');
+  ok(!$('.frow[data-feature="munkakor.implied"] .sw').classList.contains('on'), 'Mind be leaves the default-off option alone');
+  eq(same(sk.save()), before, 'and the package is still the same');
 }
 
 let bad = null; try { sk.load({ kind: 'nope' }); } catch (e) { bad = e; }
