@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (73 lépés)
+## A telefon — rajz és beszélgetés (83 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -111,6 +111,19 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M53.3** Egy felmérésben vegyél fel séta videót és aláírást, küldd a PC-re, nyisd meg a Plannerben (⌘K → *Felmérés: munkakör lap*): a Fotók sorban a videó `…_nyomvonal.mp4`, az aláírás `…_alairas.png` néven szerepel, és a PC táblán pontosan ilyen nevű fájlok vannak.
 - [ ] **M53.4** Egy régi (november 18. előtti) felmérést nyiss meg a telefonon: minden rajz, jegyzet, fotó megvan, a címkék között ott a *Csere*.
 - [ ] **M53.5** A telefonon ⚙ → ⚙ Funkciók → *Mind* ki, küldd a csomagot a PC-re: a `.vsketch.json` ugyanaz, mint bekapcsolva (hangjegyzet nélkül, ha volt), mellette nincs fotó és nincs `.takeoff` fájl. Utána *Mind* vissza be.
+
+### M54 · Jegyzőkönyv a telefonon: the Felmérési jegyzőkönyv printed and shared from the phone
+
+- [ ] **M54.1** ⚙ → **Funkciók** → *Rendezés / export*: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva.
+- [ ] **M54.2** Egy felmérés néhány célfotóval, egy aláírással és egy helyszín-körvonallal → Rendezés: a Küldés mellett **📄 Jegyzőkönyv**.
+- [ ] **M54.3** 📄 Jegyzőkönyv → **🖨 Nyomtatás / PDF**: megnyílik az Android nyomtatás ablaka, A4. *PDF mentése* → a PDF-ben a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek, a vázlat, a fotók célonként, a helyszín rajza és az aláírás.
+- [ ] **M54.4** Ugyanez **⇪ Átadás (.html)** → PC-re: a PC táblán egy `….jegyzokonyv.html`; böngészőben megnyitva ugyanaz, mint a PDF, a fotók is látszanak (internet nélkül is), és ugyanaz, mint az Asztal Sketcher oldalán a **Jegyzőkönyv** gomb.
+- [ ] **M54.5** Egy fotón ▦ elmosás → a jegyzőkönyvben a fotó elmosva látszik. Egy 👤 *Személyes adat* fotó elmosás nélkül: a helyén „személyes adat, elmosás nélkül nem kerül bele”; elmosva bekerül.
+- [ ] **M54.6** A PC-n a HTML-ből mentett fotó (jobb klikk → kép mentése) tulajdonságaiban nincs GPS hely.
+- [ ] **M54.7** Helyszín → 👤 Ügyfél kitöltve, a pill „Kiadáskor törlődik”: a jegyzőkönyvben nincs ügyfél sor. „A kiadott csomagban marad”-ra kapcsolva: benne van a név, a telefon, az e-mail.
+- [ ] **M54.8** Egy jegyzet ⚑ Tisztázandó jelöléssel: a jegyzőkönyvben ott van. **Az ügyfélnek** bekapcsolva: se a Tisztázandó jegyzet, se az *Ellenőrizni* lista nincs benne; a többi jegyzet és a nyitott kérdések igen.
+- [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
+- [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
 ## B telefon — kamera és helyszín (77 lépés)
 

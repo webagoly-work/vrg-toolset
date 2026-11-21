@@ -797,9 +797,41 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-114 · F8: what CI covers for the Sketcher (M53), 2026-11-21.** Taken in fork F8. *VRG Mobile (Android)* now also
   starts on `Map/lib/site-math.js` (inlined into the Desktop page, replayed by the JVM), the Planner's sketch import and
   survey sources and fixtures, and runs the Planner's spec-111 / spec-112 after building it from source, so the e2e test
-  opens the Planner as it is. The release workflow's paths stay as they are: the APK takes only `Sketcher/catalog` and
-  `Sketcher/variants` from outside `Mobile/android` (`feature-sketch/build.gradle.kts`), and the map page comes from
-  `main` at run time (M43).
+  opens the Planner as it is. The release workflow starts on everything the APK takes from outside `Mobile/android`
+  (`feature-sketch/build.gradle.kts`): `Sketcher/catalog`, `Sketcher/variants` and, since F9 bundles the report,
+  `Sketcher/lib`; the map page comes from `main` at run time (M43).
+- **D-115 … D-119 · not used.** Reserved for fork F8, which needed D-110 … D-114.
+- **D-120 · F9: the phone's jegyzőkönyv is the Desktop's renderer in a hidden WebView (M54), 2026-11-21.** Taken in fork F9,
+  following the Founder's D-81 B and M50's plan. `report.js` + `fieldkit.js` run through `report-phone.js`; the phone
+  only puts the input together (`Jegyzokonyv.kt`). Rejected: a Kotlin copy of the document (a third engine to keep equal).
+- **D-121 · F9: the renderer is copied from `Sketcher/lib` at build time, checked byte for byte (M54), 2026-11-21.** As the
+  catalog and the variants already are; the Gradle task fails on a differing copy, `report-phone.test.js` checks the
+  list. Rejected: copies committed under `Mobile/` (they would drift, and a check would only report it).
+- **D-122 · F9: PlanSvg / SiteSvg draw from the package plan, numbers as JavaScript prints them (M54), 2026-11-21.** The
+  drawing is the one the Desktop shows when it opens the phone's package (`PlannerExport`'s floors and devices, not the
+  editor's canvas); `JsNum` prints `4000`, not `4000.0`. The fixture is made from `app.js`'s own functions
+  (`make-report-fixture.js`), so a Desktop change makes it stale; the JVM test allows a few ulps per number (Java's
+  and V8's sin / cos may differ in the last bit), never a different text.
+- **D-123 · F9: the report follows the export rules, stricter on photos (M54), 2026-11-21.** `SketchFeatures.forExport`
+  (client only when kept, D-82; no sound notes when off); every photo re-encoded (no EXIF at all, so no GPS even where
+  the package keeps it, D-57), the blur burned in and nothing else; a *Személyes adat* photo only blurred, otherwise
+  named as withheld. Rejected: the package's photo files (full size, GPS where kept, markup copies).
+- **D-124 · F9: *Az ügyfélnek* drops the Tisztázandó notes and the Ellenőrizni lines only (M54), 2026-11-21.** Kept: the
+  Döntésre vár list and the open questions (the client is the one who answers them). A switch in the dialog, off each
+  time it opens (a report for the client is a deliberate choice). Rejected: remembering it per phone.
+- **D-125 · F9: photos at 1200 px, JPEG 80, in the export cache (M54), 2026-11-21.** Sharp at a third of A4 and about
+  150 KB each (40 photos ≈ 6 MB of HTML); signatures as PNG; `cache/sketch/report/` is emptied at the next report.
+- **D-126 · F9: PDF through the system print dialog; over 15 MB Átadás warns and offers it (M54), 2026-11-21.**
+  `PrintManager` + the WebView's print adapter (A4): *PDF mentése* writes the file wherever the user picks, no PDF
+  library. Átadás over 15 MB shows the size with *🖨 Inkább PDF* and *Mégis küldöm*. Rejected: a hard block.
+- **D-127 · F9: the switch *📄 Jegyzőkönyv a telefonon* is the registry's `export.report_phone`, requiring `export.report` (M54), 2026-11-21.**
+  In F6's registry (M51, `Features.kt` = `Sketcher/catalog/features.json`), front *Rendezés / export*, on by default.
+  It requires F6's `export.report` (the Desktop's Jegyzőkönyv), so switching the jegyzőkönyv off anywhere takes the
+  phone's button with it (shown greyed with its reason). Off: no button, nothing made; like every M51 switch, it never
+  changes the package or what a file means (D-93). Built first in F5's `SketchFeatures`, moved when F6 landed.
+- **D-128 · F9: Rendezés → 📄 Jegyzőkönyv, a dialog (M54), 2026-11-21.** Next to the two export buttons (the row now
+  wraps on narrow phones); the dialog has *Az ügyfélnek*, *🖨 Nyomtatás / PDF*, *⇪ Átadás (.html)*, the privacy line and
+  the result's name and size. Rejected: putting it into the Küldés share (the package is what the PC reads).
 
 ## Open (to ask when the WP that needs them starts)
 

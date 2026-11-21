@@ -126,7 +126,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84; the in-app camera (M52): D-100 … D-109; tested together (M53): D-110 … D-114.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84; the in-app camera (M52): D-100 … D-109; tested together (M53): D-110 … D-114; the jegyzőkönyv on the phone (M54): D-120 … D-128.
 
 ## 7. Kamera 2 (M46)
 
@@ -205,3 +205,13 @@ and the Planner and must see the phone's numbers. The tests, in one place:
 | the Planner package | `:sketch-core:test`, Planner spec-111 / spec-112 | `WheelJsonExportTest` (`sketch-field.json`, `VRG_SKETCH_FIXTURE=update`) |
 | end to end | `node Sketcher/test/run.js` + `:sketch-core:test` | `E2eTest` (`fixtures/e2e/`, `VRG_SKETCH_FIXTURE=update`) |
 | the two-phone plan | `node Sketcher/tools/test-plan.js --check` | every WP's *Telefonon ellenőrizni* list |
+
+## 14. The jegyzőkönyv on the phone (M54)
+
+Fork F9 (`docs/mobile/WP/M54.md`): Rendezés → **📄 Jegyzőkönyv** makes the same *Felmérési jegyzőkönyv* as the Desktop
+page on the phone: `Sketcher/lib/report.js` + `fieldkit.js` + `report-phone.js` bundled as assets and run in a hidden
+WebView; the drawing and the site from `PlanSvg.kt` / `SiteSvg.kt` (= `app.js` `svgPlan` / `sitePlaceSvg`, fixture
+`test/fixtures/report.json` by `tools/make-report-fixture.js`); out as **Nyomtatás / PDF** (the system print dialog) or
+**Átadás** (`<név>.jegyzokonyv.html`, photos inside). The export rules apply (client only when kept, no GPS, blur burned
+in, personal photos only blurred); *Az ügyfélnek* also drops the Tisztázandó notes and the Ellenőrizni lines. Switch:
+⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* (registry `export.report_phone`, requires `export.report`).

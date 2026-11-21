@@ -86,6 +86,7 @@
   {"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos"]},
   {"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]},
   {"id":"export.report","front":"export","sym":"▤","label":"Jegyzőkönyv"},
+  {"id":"export.report_phone","front":"export","sym":"📄","label":"Jegyzőkönyv a telefonon","requires":["export.report"]},
   {"id":"kamera.gps_strip","front":"export","sym":"⌖","label":"GPS törlése kiadáskor"}
  ]
 }

@@ -109,6 +109,7 @@ object Features {
         F("export.burned", "export", "✎", "Jelölt másolatok", listOf("export.photos")),
         F("export.takeoff", "export", "▦", "Munkakör lap fájl", listOf("munkakor.takeoff")),
         F("export.report", "export", "▤", "Jegyzőkönyv"),
+        F("export.report_phone", "export", "📄", "Jegyzőkönyv a telefonon", listOf("export.report")),   // F9 (WP M54, D-127)
         F("kamera.gps_strip", "export", "⌖", "GPS törlése kiadáskor"),
     )
 
