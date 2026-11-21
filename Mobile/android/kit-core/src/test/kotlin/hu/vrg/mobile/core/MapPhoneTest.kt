@@ -31,6 +31,15 @@ class MapPhoneTest {
         assertTrue(html.contains("/remote/build.protomaps.com/") && html.contains("remote') === '1'"))
     }
 
+    @Test fun everyScriptThePageLoadsIsKept() {
+        // a new lib file the page loads must be in PAGE_FILES, or the phone serves the page without it (the shadows, 2026-11-21)
+        val html = File(repo, MapPhone.APP.page).readText()
+        val refs = Regex("""(?:src="|from ')/((?:lib|style)/[A-Za-z0-9._-]+)""").findAll(html).map { "Map/" + it.groupValues[1] }.toSet()
+        assertTrue("Map/lib/sun.js" in refs && "Map/lib/shadow-layer.js" in refs, refs.toString())
+        refs.forEach { assertTrue(it in MapPhone.PAGE_FILES, "$it is loaded by the page but not kept on the phone") }
+        refs.forEach { assertEquals(MapReq.Page(it), MapRoute.decide("GET", "/" + it.removePrefix("Map/"))) }
+    }
+
     @Test fun theCatalogueEntryIsBeta() {
         assertEquals("map", Catalogue.MAP.id)
         assertEquals(Stage.BETA, Catalogue.MAP.stage)
@@ -52,6 +61,8 @@ class MapPhoneTest {
         assertEquals(MapReq.Page("Map/vrg-terkep.html"), MapRoute.decide("GET", "/"))
         assertEquals(MapReq.Page("Map/vrg-terkep.html"), MapRoute.decide("GET", "/vrg-terkep.html"))
         assertEquals(MapReq.Page("Map/lib/jobs-layer.js"), MapRoute.decide("GET", "/lib/jobs-layer.js"))
+        assertEquals(MapReq.Page("Map/lib/sun.js"), MapRoute.decide("GET", "/lib/sun.js"))
+        assertIs<MapReq.Refused>(MapRoute.decide("GET", "/lib/other.js"))
         assertEquals(MapReq.Page("Map/style/terep.json"), MapRoute.decide("GET", "/style/terep.json"))
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/serve.js"))
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/tools/build-jobs.js"))

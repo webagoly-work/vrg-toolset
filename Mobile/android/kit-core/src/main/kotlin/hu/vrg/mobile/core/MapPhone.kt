@@ -33,7 +33,8 @@ object MapPhone {
 
     /** The page and the repo files it loads, all fetched from main and kept for the offline open. */
     val APP = DeskApp(ID, "VRG Térkép", "Map/vrg-terkep.html", listOf("Map/lib", "Map/style"))
-    val PAGE_FILES = listOf("Map/vrg-terkep.html", "Map/lib/geocode.js", "Map/lib/jobs-layer.js", "Map/style/terep.json")
+    val PAGE_FILES = listOf("Map/vrg-terkep.html", "Map/lib/geocode.js", "Map/lib/jobs-layer.js", "Map/lib/sun.js", "Map/lib/shadow-layer.js",
+        "Map/style/terep.json")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
@@ -105,7 +106,7 @@ object MapRoute {
         val segs = cleanSegments(path) ?: return MapReq.Refused(403, "path")
         val p = segs.joinToString("/")
         if (p == "" || p == "vrg-terkep.html" || p == "index.html") return MapReq.Page(MapPhone.APP.page)
-        if (p == "lib/geocode.js" || p == "lib/jobs-layer.js" || p == "style/terep.json") return MapReq.Page("Map/$p")
+        if ("Map/$p" in MapPhone.PAGE_FILES) return MapReq.Page("Map/$p")
         if ("/$p" == MapPhone.PHONE_JS || "/$p" == MapPhone.SITES) return MapReq.Phone("/$p")
         if (segs[0] == "vendor") return MapVendor.FILES.firstOrNull { it.served == "/$p" }?.let { MapReq.Lib(it) } ?: MapReq.Refused(404, "not a library file")
         if (segs[0] == "jobs") return if (p == "jobs/status" || p == "jobs/helyek.json") MapReq.Jobs("/$p") else MapReq.Refused(404, "jobs")
