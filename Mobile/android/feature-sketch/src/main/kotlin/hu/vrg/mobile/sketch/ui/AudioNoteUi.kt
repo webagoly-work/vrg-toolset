@@ -128,11 +128,11 @@ internal fun AudioViewer(st: EditorState, c: Capture, close: () -> Unit) {
     val f = File(dir, c.file)
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
     var note by remember(c.note) { mutableStateOf(c.note) }
-    fun stop() { player?.let { p -> try { p.stop() } catch (e: Exception) { }; p.release() }; player = null }
-    DisposableEffect(c.id) { onDispose { stop() } }
+    fun halt() { player?.let { p -> try { p.stop() } catch (e: Exception) { }; p.release() }; player = null }
+    DisposableEffect(c.id) { onDispose { halt() } }
     LaunchedEffect(note) { delay(600); if (note != st.sketch.capture(c.id)?.note) st.editCapture(c.id) { it.copy(note = note) } }
     AlertDialog(
-        onDismissRequest = { stop(); close() }, containerColor = Melyviz.raised,
+        onDismissRequest = { halt(); close() }, containerColor = Melyviz.raised,
         title = { Text("🎙 Hangjegyzet · " + Camera2.duration(c.durationMs), style = Melyviz.label.copy(color = st.frontColor("jegyzet"))) },
         text = {
             Column {
@@ -140,18 +140,18 @@ internal fun AudioViewer(st: EditorState, c: Capture, close: () -> Unit) {
                 if (!f.exists()) Text("A fájl nincs meg.", style = Melyviz.small.copy(color = Melyviz.coral))
                 else Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Pill(if (player == null) "▶ Lejátszás" else "■ Állj", st.frontColor("jegyzet"), player != null) {
-                        if (player != null) stop()
+                        if (player != null) halt()
                         else try {
-                            player = MediaPlayer().apply { setDataSource(f.path); setOnCompletionListener { stop() }; prepare(); start() }
-                        } catch (e: Exception) { stop(); st.note = "A hangfájl nem játszható le." }
+                            player = MediaPlayer().apply { setDataSource(f.path); setOnCompletionListener { halt() }; prepare(); start() }
+                        } catch (e: Exception) { halt(); st.note = "A hangfájl nem játszható le." }
                     }
                 }
                 Field(note, { note = it }, "Miről szól? (a PC-n így látszik)", lines = 2)
                 Text("Fájlnév a PC-n: " + Intake.exportName(st.sketch, c), style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
             }
         },
-        confirmButton = { TextButton({ stop(); close() }) { Text("Kész", color = Melyviz.glow) } },
-        dismissButton = { TextButton({ stop(); st.deleteCapture(c.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
+        confirmButton = { TextButton({ halt(); close() }) { Text("Kész", color = Melyviz.glow) } },
+        dismissButton = { TextButton({ halt(); st.deleteCapture(c.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
     )
 }
 

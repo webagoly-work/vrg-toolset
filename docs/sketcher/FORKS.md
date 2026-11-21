@@ -11,6 +11,7 @@ tells the Founder when a fork can be archived.
 | F2 Felmérés → árajánlat | `sketcher/f2-arajanlat` | the survey's scope, quantities, answers and lengths into the Planner, and a takeoff / intake export the Varler Workflow Kit can read |
 | F3 Kamera 2 | `sketcher/f3-kamera` | the camera's second round from `../research/2026-11-18_field-survey-camera-notes.md`: type-plate OCR, privacy on export, before / after, client signature, walk video |
 | F4 Apró hiányok | `sketcher/f4-finom` | client wants per room, variants on the long-press (RCO) menu, variants that tune drawing-tool behaviour, the kit's „égett” detector |
+| F5 Maradékok | `sketcher/f5-maradek` | the forks' leftovers (WP M50): wants in the Planner panel, a built-in Csere tag, the Felmérési jegyzőkönyv, the client's contact, `lineClose`, the sound note |
 
 ## Rules every fork follows
 

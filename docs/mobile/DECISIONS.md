@@ -557,6 +557,36 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
   fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
   entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
+- **D-77 · F5: Csere is a built-in tag; an older survey gets it on open (M50), 2026-11-21.** Taken in fork F5 (M47
+  question 1, recommended A). `Tags.PRESETS` gains *Csere* (`T-csere`, preset `replace`); the takeoff's `replaceTags`
+  already counted it (D-71). A survey made before has a stored tag list without it: the phone adds it when it opens one
+  that has neither a `replace` preset nor a tag named Csere, so the user's own *Csere* is not doubled. Rejected: adding it
+  while reading every file (it would change the read of shared fixtures and round trips), a third point state (D-71).
+- **D-78 · F5: the Felmérési jegyzőkönyv is the Desktop page's, built at run time, the browser paginates (M50),
+  2026-11-21.** Taken in fork F5. One document from the open survey (`Sketcher/lib/report.js`), opened in a window and
+  printed to PDF by the browser; never stored, so no client data reaches Git. Varler Papír tokens, but not its fixed
+  `.lap` sheets (D11 of the style study): a survey's length is unknown, so the page flows with `@page` margins and no
+  fixed footer that could overlap, sections and photos kept whole. Not on the phone: it needs the solved plan, the photos
+  and the takeoff together, and a Kotlin renderer would be a third engine to keep equal; the package to the PC and one
+  button is enough. Rejected: a generated PDF (a library, fonts embedded), the Workflow Kit's offer generator (that is the
+  quote, not the survey).
+- **D-79 · F5: the client's contact is personal: kept on the phone, stripped on export unless kept (M50), 2026-11-21.**
+  Taken in fork F5, D-57's rule for GPS. Name, phone, e-mail (the address is the site's) in an optional `client` object;
+  every copy that leaves the phone (the Rendezés package and its takeoff) drops it unless *A kiadott csomagban marad* is on;
+  a variant request never reads it; no fixture carries it. The Desktop page and the Planner show it from the user's own
+  file. Rejected: a client record across jobs (the Workflow Kit owns clients), always exporting it (a package forwarded
+  to a colleague would carry a private person's phone number).
+- **D-80 · F5: lineClose auto / ask; no wallThickness (M50), 2026-11-21.** Taken in fork F5 (M49 left both out). `auto`:
+  the Vonal tool's Kész with 3+ corners makes a room, and closing on the first corner reaches twice as far; `ask`: Kész
+  asks once (room or open line). Only Kész asks, so drawing a room by tapping its first corner never gets a dialog
+  (D-74's worry). `wallThickness` stays out: the sketch's rooms are inner faces and the Planner imports floors, not walls,
+  so nothing would read it; the variant check keeps rejecting it.
+- **D-81 · F5: no recogniser, a sound note (M50), 2026-11-21.** Taken in fork F5 (reverses the "not yet" of D-76). The app
+  records itself (MediaRecorder, AAC `.m4a`, at most 3 minutes) instead of asking a recorder app, which many phones lack;
+  RECORD_AUDIO is asked on the first tap only. A capture of kind `audio`, purpose `hang` (not a photo purpose, so no shot
+  list item and no takeoff photo; both engines skip it, pinned by the shared fixture). Shown only when the phone has no
+  recogniser (the manifest's `<queries>` lets Android 11+ say so) or a dictation launch failed. Rejected: always showing it
+  (two microphones side by side), transcribing on the phone (no offline Hungarian model without a paid SDK).
 
 - **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
   (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
