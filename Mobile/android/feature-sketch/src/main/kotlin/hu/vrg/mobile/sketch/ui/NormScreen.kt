@@ -50,6 +50,7 @@ import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
 import hu.vrg.mobile.sketch.Photos
+import hu.vrg.mobile.sketch.PlanView
 import hu.vrg.mobile.sketch.PlannerExport
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -57,6 +58,7 @@ import hu.vrg.mobile.sketch.Pt
 import hu.vrg.mobile.sketch.SizeStatus
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.Takeoff
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,7 +81,14 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     val out = FileStore.cacheDir(ctx, "sketch")
     out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
-    pkg.writeText(PlannerExport.build(s, n).toString(1))
+    // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
+    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n)) }
+    val pj = PlannerExport.build(s, n)
+    tk?.let { pj.put("takeoff", it.json) }
+    pkg.writeText(pj.toString(1))
+    val tkFiles = if (tk == null) emptyList() else Takeoff.fileNames(s).let { (jn, mn) ->
+        listOf(File(out, jn).also { it.writeText(tk.json.toString(1) + "\n") } to MIME, File(out, mn).also { it.writeText(Takeoff.markdown(tk.json)) } to "text/markdown")
+    }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
         if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
@@ -89,7 +98,7 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
         // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
         exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out)
     }
-    listOf(pkg to MIME) + (photos + caps).map { it to mimeOf(it) }
+    listOf(pkg to MIME) + tkFiles + (photos + caps).map { it to mimeOf(it) }
 }
 
 internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
@@ -147,7 +156,8 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                         try {
                             val files = writeExport(ctx, st.sketch, n)
                             shareAll(ctx, files)
-                            done = "Megosztva: ${files[0].first.name}" + if (files.size > 1) " és ${files.size - 1} fotó" else ""
+                            val ph = files.count { it.second == "image/jpeg" }
+                            done = "Megosztva: ${files[0].first.name}" + (if (files.size > ph + 1) " + munkakör lap" else "") + if (ph > 0) " és $ph fotó" else ""
                         } catch (e: Exception) {
                             VrgLog.w("sketch", "Megosztás sikertelen: ${e.message}"); host.note("A megosztás nem sikerült.")
                         }
@@ -157,13 +167,14 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                     scope.launch {
                         val files = writeExport(ctx, st.sketch, n)
                         val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
-                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + if (files.size > 1) " · ${files.size - 1} fotó: Képek / VRG Vázlat" else ""
+                        val ph = files.count { it.second == "image/jpeg" }
+                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
                     }
                 }
             }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
             if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
-            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json; a fotók: ⌘K → Vázlat: fotók. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
+            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
                 style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
             done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
         }

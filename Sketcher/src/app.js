@@ -2,7 +2,8 @@
 // The engine (window.VRGFieldKit), the catalog (window.VRG_FIELDKIT) and the variants (window.VRG_VARIANTS) are inlined by tools/build.js.
 (function () {
   'use strict';
-  const FK = window.VRGFieldKit;
+  const FK = window.VRGFieldKit, TK = window.VRGTakeoff;
+  const RULES = TK.parseRules(window.VRG_TAKEOFF_RULES);
   const BASE = FK.parseKit(window.VRG_FIELDKIT);
   const VARIANTS = window.VRG_VARIANTS || [];
   const GROUPS = [['jelleg', 'Jelleg'], ['terulet', 'Terület'], ['rendszer', 'Rendszer'], ['igeny', 'Igény']];
@@ -59,16 +60,30 @@
     flash(null); persist(); render();
     return S;
   }
-  function output() { return pkg ? Object.assign({}, pkg, { sketch: S }) : S; }
+  // the takeoff (Munkakör lap, docs/sketcher/TAKEOFF.md): from the package's solved plan, or the raw sketch (all ≈)
+  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp() }); }
+  // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
+  function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
+  function download(text, name, type) {
+    try {
+      const url = URL.createObjectURL(new Blob([text], { type }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+  }
   function save() {
     if (!S) return null;
     const text = JSON.stringify(output(), null, 1);
-    try {
-      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-      const a = document.createElement('a'); a.href = url; a.download = stem() + '.vsketch.json';
-      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
-    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+    download(text, stem() + '.vsketch.json', 'application/json');
     return text;
+  }
+  // the intake / takeoff export for the Varler Workflow Kit: <stem>.takeoff.json + <stem>.takeoff.md
+  function exportTakeoff() {
+    if (!S) return null;
+    const t = takeoff(), json = JSON.stringify(t, null, 1) + '\n', md = TK.markdown(t);
+    download(json, stem() + '.takeoff.json', 'application/json');
+    download(md, stem() + '.takeoff.md', 'text/markdown');
+    return { json, md, takeoff: t };
   }
   function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
   async function openFiles(list) {
@@ -212,9 +227,24 @@
     return h;
   }
 
+  // the Munkakör lap: the takeoff live, symbols and colours, ≈ guessed, ⚑ an open decision changes it
+  function takeoffCard() {
+    const t = takeoff(), c = t.counts;
+    const row = it => '<div class="tk-item' + (it.work ? '' : ' keep') + (it.est ? ' est' : '') + (it.open.length ? ' open' : '') + '" data-item="' + esc(it.id) + '" title="' + esc(it.note) + '">' +
+      '<span class="sym">' + esc(it.sym) + '</span><span class="lb">' + esc(it.label) + '</span><span class="q">' + (it.est ? '≈' : '') + esc(TK.fmt(it.qty)) + ' ' + esc(it.unit) + '</span>' +
+      '<span class="fl">' + (it.open.length ? '⚑' : '') + '</span></div>';
+    return '<div class="card tk" id="takeoff"><div class="row"><h3 style="margin:0">☰ Munkakör lap</h3><span class="grow"></span>' +
+      '<span class="small muted">' + c.items + ' tétel · ≈ ' + c.est + ' · ⚑ ' + c.decisions + (c.tisztazando ? ' · Tisztázandó ' + c.tisztazando : '') + '</span>' +
+      '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button></div>' +
+      (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
+      (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
+      (t.checks.length ? '<div class="small" style="color:#e0b020">' + t.checks.map(esc).join('<br>') + '</div>' : '') +
+      '<div class="small faint">' + (pkg ? 'Hosszak a megoldott tervből (mm).' : 'Nincs megoldott terv: a hosszak a vázlat léptékéből, mind ≈.') + ' Árat nem tartalmaz (Workflow Kit).</div></div>';
+  }
+
   function vMunkakor(d) {
     const sc = S.scope || {}, col = frontOf('munkakor').color;
-    return GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
+    return takeoffCard() + GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
       const n = sc[x.id] || 0;
       if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
         '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
@@ -458,6 +488,7 @@
       case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
       case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
+      case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
       case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
@@ -536,6 +567,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
