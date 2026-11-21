@@ -37,7 +37,9 @@ object MapPhone {
         // the weather layer (loaded by the page since its W layer) and the Sketcher's site layer (F1)
         "Map/lib/weather-layer.js", "Map/lib/site-math.js", "Map/lib/site-layer.js",
         // the shadows (S, docs/map/SHADOWS.md)
-        "Map/lib/sun.js", "Map/lib/shadow-layer.js")
+        "Map/lib/sun.js", "Map/lib/shadow-layer.js",
+        // the Térkép-feed (F, WP M55)
+        "Map/lib/feed.js", "Map/lib/feed-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
@@ -98,7 +100,9 @@ sealed interface MapReq {
 
 object MapRoute {
     private val SAFE = Regex("[A-Za-z0-9._~%+@-]+")
-    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json")
+    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json", "pois.json")
+    /** Public data read whole that the phone keeps for offline use (OSM, ODbL): the address index, the feed's points. */
+    private val KEEP = setOf("addresses.json", "manifest.json", "pois.json")
     private val FONT = Regex("fonts/[A-Za-z0-9 %+._-]+/[0-9]+-[0-9]+\\.pbf")
     private val SPRITE = Regex("sprites/[A-Za-z0-9_-]+(@2x)?\\.(json|png)")
 
@@ -122,7 +126,7 @@ object MapRoute {
             val rel = segs.drop(1).joinToString("/")
             val decoded = java.net.URLDecoder.decode(rel.replace("+", "%2B"), "UTF-8")
             return when {
-                rel in DATA_FILES -> MapReq.Data(rel, keep = rel == "addresses.json" || rel == "manifest.json")
+                rel in DATA_FILES -> MapReq.Data(rel, keep = rel in KEEP)
                 FONT.matches(decoded) || SPRITE.matches(rel) -> MapReq.Data(rel, keep = true)
                 else -> MapReq.Refused(404, "not map data")
             }

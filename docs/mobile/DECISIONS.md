@@ -847,6 +847,29 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   wraps on narrow phones); the dialog has *Az ügyfélnek*, *🖨 Nyomtatás / PDF*, *⇪ Átadás (.html)*, the privacy line and
   the result's name and size. Rejected: putting it into the Küldés share (the package is what the PC reads).
 
+- **D-129 · VRG Térkép navigation, N2: our own offline road network (M55 line), 2026-11-21.** Asked by the Founder
+  with the Térkép-feed ("Waze type … intelligent pathfinding"), answered **A**: the PC turns the Hungary OSM extract the
+  map already has into a compact road network, the phone keeps a copy, and routes are computed in the map page
+  (offline, nothing leaves the phone, the same on the PC and the phone). Not built yet (N2). Replaces D-49 C's "no route
+  planning of our own"; the hand-off to a navigation app stays as the fallback. Rejected: **B** an online routing
+  service (internet, the position and destination sent out, usage limits); **C** a native navigation kit (Ferrostar +
+  Valhalla: a second map stack beside the page, against D-48).
+- **D-130 · Traffic: none at first, a traffic service later as an opt-in (N3), 2026-11-21.** Answered **A, then B**:
+  ETAs from road types and speed limits; later a keyed provider (e.g. TomTom, terms to verify) asked only for the
+  chosen route and only on a tap. No free open live-traffic source exists for Hungary. Rejected: **C** no traffic ever.
+- **D-131 · The feed's points come from OpenStreetMap, kept on the phone; own pins never leave it (M55), 2026-11-21.**
+  Answered **A**: `Map/tools/build-pois.js` extracts all of Hungary from the OSM extract into `Map/data/pois.json`; VRG
+  Mobile keeps the copy it reads through the relay (public ODbL data, like the address index). Otthon and the user's own
+  Daniella / szerelvénybolt pins live in the page's storage on the device (D-31). The "Korean type" store is the
+  Chinese/Asian variety store (`shop=variety_store`), confirmed by the Founder; missing Daniella branches are added as
+  own pins, confirmed. Rejected: **B** online lookups (Overpass: the position sent with every search); **C** own list only.
+- **D-132 · Public transport: the nearest stops now, BKK live departures later (M55), 2026-11-21.** Answered **A now as
+  the future fallback, B later**: stops from OSM (offline, all of Hungary); BKK FUTÁR departures for Budapest in a later
+  WP (a free developer key, internet). Taken as defaults in the session (the Founder did not answer the feed-rules
+  question): six cards by default (Otthon, Daniella, szerelvény/barkács, élelmiszerbolt, étkezés, kórház/orvos; Kínai
+  bolt, WC, Megálló switchable, at most six on), one per category in that order; the list follows the user after 25 m or
+  30 s; a selected place stays the target; tap frames, hold (RCO, right-click on the PC) selects.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

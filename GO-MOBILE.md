@@ -108,6 +108,10 @@ What changes locally compared with the cloud:
   M52 Saját kamera (F7, D-100 … D-109), M53 Összefésülés (F8, D-110 … D-116: the forks tested together end to end), M54 Jegyzőkönyv a telefonon (F9,
   D-120 … D-128). Their
   phone lists make one two-phone plan: `docs/sketcher/TEST-2PHONES.md` (`node Sketcher/tools/test-plan.js`).
+- **M55** Térkép-feed built 2026-11-21 (cloud session, D-129 … D-132), **BETA**: the nearest Otthon, Daniella, shops,
+  food, doctor … in the Térkép (key F) with distance, ETA, ghost lines and hold-to-select. `docs/mobile/WP/M55.md` →
+  "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,pois`). N2 (own routing, D-129) and N3
+  (traffic, D-130) are next in that line.
 
 ## 3. What the user asked for, mapped to WPs
 

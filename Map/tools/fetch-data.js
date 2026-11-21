@@ -18,6 +18,7 @@
 //             (Copernicus GLO-30 and national DEMs, see mapterhorn.com)  ~0.35 GB
 //   osm       Geofabrik hungary-latest.osm.pbf (ODbL)       ~0.33 GB
 //   addresses build-addresses.js: the offline search index from the .pbf
+//   pois      build-pois.js: the Térkép-feed points (shops, food, doctors, stops), all of Hungary
 //
 // Every part is recorded in Map/data/manifest.json: source, date, licence, size.
 // Console output stays ASCII (the START console garbles accents).
@@ -173,6 +174,17 @@ function partAddresses() {
     licence: 'ODbL - (c) OpenStreetMap contributors', bytes: fs.statSync(file).size });
 }
 
+function partPois() {
+  const file = path.join(DATA, 'pois.json');
+  const pbf = path.join(DATA, 'src', 'hungary-latest.osm.pbf');
+  if (!fs.existsSync(pbf)) { console.log('- pois: skipped, no OSM extract (run with --only=osm first)'); return; }
+  if (have(file) && fs.statSync(file).mtimeMs > fs.statSync(pbf).mtimeMs) return;
+  console.log('- pois: the Térkép-feed points (shops, food, doctors, stops) for all of Hungary');
+  run(process.execPath, ['--max-old-space-size=4096', path.join(__dirname, 'build-pois.js'), pbf, file]);
+  record('pois', { file: 'pois.json', source: 'built from src/hungary-latest.osm.pbf by Map/tools/build-pois.js',
+    licence: 'ODbL - (c) OpenStreetMap contributors', bytes: fs.statSync(file).size });
+}
+
 (async () => {
   fs.mkdirSync(DATA, { recursive: true });
   if (want('vendor')) partVendor();
@@ -183,5 +195,6 @@ function partAddresses() {
   if (want('terrain')) await partTerrain();
   if (want('osm')) await partOsm();
   if (want('addresses')) partAddresses();
+  if (want('pois')) partPois();
   console.log('Map data ready: ' + DATA);
 })().catch(e => { console.error('FAILED: ' + e.message); process.exitCode = 1; });
