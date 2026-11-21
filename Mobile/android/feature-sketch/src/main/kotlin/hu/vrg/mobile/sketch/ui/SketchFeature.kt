@@ -134,7 +134,7 @@ class SketchStore(private val dir: File) {
 
     fun load(id: String): Sketch? = file(id).takeIf { it.exists() }?.let { f ->
         // F5 (D-77): an older survey gets the built-in Csere tag
-        try { Tags.withBuiltins(SketchJson.read(f.readText())) } catch (e: Exception) { null }
+        try { SketchJson.read(f.readText())?.let(Tags::withBuiltins) } catch (e: Exception) { null }
     }
 
     fun save(s: Sketch) {
