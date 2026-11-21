@@ -283,11 +283,13 @@ internal fun FeatureRco(f: FeatureInfo, act: HomeActions, modifier: Modifier, on
     Column(modifier) {
         Box {
             content(Modifier.fillMaxWidth().rco(onClick = onTap, onLong = { menu = true }))
+            // F4 (WP M49): the Sketcher's variants sit under its own Megnyitás (a new survey in one, ⟳, ＋ request)
+            val extra = if (f.id == Catalogue.SKETCH.id) hu.vrg.mobile.sketch.ui.sketcherRcoItems(open = { act.open(f.id) }, say = { said = it }) else emptyList()
             RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
                 RcoItem(f.glyph, "Megnyitás") { onTap() },
                 act.describe?.let { d -> RcoItem("📖", "Leírás") { d(f.id) } },
                 if (Registry.isBuilt(f) && PhoneSheets.isWindow(f.id)) RcoItem("▦", "Megnyitás lapon") { said = openOnSheet(f) } else null,
-            ))
+            ) + extra)
         }
         said?.let { text ->
             LaunchedEffect(text) { delay(2500); said = null }

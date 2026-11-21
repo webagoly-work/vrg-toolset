@@ -79,7 +79,7 @@ internal fun VariantSection(st: EditorState) {
 /** The request: 1-3 sentences, the toggles that describe the job, a few photos. No client data goes with it. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
+internal fun VariantRequestDialog(st: EditorState, inlineNote: Boolean = false, close: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     var premise by remember { mutableStateOf("") }
@@ -105,6 +105,7 @@ internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
                         Pill(s.sym + " " + s.label, st.frontColor("munkakor"), s.id in topics) { topics = if (s.id in topics) topics - s.id else topics + s.id }
                     }
                 }
+                if (inlineNote) st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }   // F4: opened from the home
                 if (st.sketch.captures.isNotEmpty()) {
                     Text("Fotók az ügynöknek (legfeljebb 5; a házszámot, arcot kerüld)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

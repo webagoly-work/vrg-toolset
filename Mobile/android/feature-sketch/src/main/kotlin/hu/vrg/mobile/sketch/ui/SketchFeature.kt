@@ -61,6 +61,7 @@ object SketchFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         var openId by rememberSaveable { mutableStateOf<String?>(null) }
         val id = openId
+        SketchLaunchHost(host) { openId = it }   // F4: a long press on the Sketcher's tile or dock dial (SketchLaunch.kt)
         if (id == null) {
             SketchList(host) { openId = it }
             return
