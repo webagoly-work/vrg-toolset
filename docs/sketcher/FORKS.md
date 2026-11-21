@@ -15,6 +15,7 @@ tells the Founder when a fork can be archived.
 | F6 Kapcsolók | `sketcher/f6-kapcsolok` | the Founder's rule D-90 for every Sketcher feature: one registry, a switch for each and for all, phone ⚙ + Desktop (WP M51, D-91…D-99) |
 | F7 Saját kamera | `sketcher/f7-kamera` | an in-app camera (CameraX): ghost overlay for after-photos, purpose bar and next shots on the viewfinder, series, torch, level; the camera app stays the fallback (WP M52, D-100…D-109) |
 | F8 Összefésülés | `sketcher/f8-osszefesules` | the seams between the forks merged in parallel: end-to-end tests phone → package → Desktop → Planner, a cross-fork audit and its fixes, the docs and decision index made whole (WP M53, D-110…D-119) |
+| F9 Jegyzőkönyv a telefonon | `sketcher/f9-jegyzokonyv` | the survey report printed and shared from the phone (D-81 B, the plan in WP M50): `report.js` as an asset in a WebView, PlanSvg / SiteSvg, PrintManager PDF + Átadás HTML, the export privacy rules, *Az ügyfélnek* mode, a D-90 switch (WP M54, D-120…D-129) |
 
 ## Rules every fork follows
 
