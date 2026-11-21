@@ -474,6 +474,7 @@
     if (d.defaultRoom) out.push('Koppintás = ' + n(d.defaultRoom.w) + ' × ' + n(d.defaultRoom.d) + ' m szoba');
     if (d.measureFirst) out.push('Új szoba: rögtön a méret');
     if (d.pointSnap === 'free') out.push('Pont: nem ugrik a falra');
+    if (d.lineClose === 'auto') out.push('Vonal: Kész = szoba'); else if (d.lineClose === 'ask') out.push('Vonal: Kész → szoba vagy vonal?');   // F5
     return out.length ? '<div class="small draw" data-draw="' + esc(v.id) + '">✎ ' + out.map(esc).join(' · ') + '</div>' : '';
   }
   function vVariansok() {

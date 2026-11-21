@@ -281,6 +281,9 @@ ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '
   const base = { kind: FK.VARIANT_KIND, id: 'proba', name: 'Próba', premise: 'Egy próbaváltozat a rajzhangolás ellenőrzéséhez.' };
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 90, snapGrid: 0.5, defaultRoom: { w: 4, d: 3 }, measureFirst: true, pointSnap: 'free' } })), [], 'a good draw block passes');
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 37, snapGrid: -1, defaultRoom: { w: 0 }, measureFirst: 'yes', pointSnap: 'x', wallThickness: 30 } })).length, 6, 'every bad draw key is reported');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { lineClose: 'auto' } })), [], 'F5: lineClose auto passes');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { lineClose: 'maybe' } })).length, 1, 'F5: a bad lineClose is reported');
+  ok(/Kész = szoba/.test(($('[data-draw="furdo-felujitas"]') || {}).textContent || ''), 'F5: the bathroom variant shows its lineClose');
 }
 
 // F5 (WP M50): the Felmérési jegyzőkönyv, from the open survey
