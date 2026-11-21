@@ -488,12 +488,12 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   stays the only writer of the survey file (no two writers), and an answer survives the app being killed. Rejected:
   **B** the map embedded in Helyszín (a second copy of M43's request handling in feature-sketch, cramped gestures);
   **C** the map writing the survey file itself (overwritten by the open editor).
-- **D-66 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Chosen: Esri's World
+- **D-66 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Asked (2026-11-21): **A** keyless Esri now, a free ArcGIS key later / **B** the Hungarian state orthophoto / **C** no satellite; the Founder chose **A**. Chosen: Esri's World
   Imagery tiles (`server.arcgisonline.com`, keyless), added only when 🛰 is tapped, attribution shown, not written to the
   phone's tile cache (the WebView runs `LOAD_NO_CACHE`; the phone lets only GET to that host out). Terms checked: Esri's
   terms summary requires attribution and allows offline use only through Esri's own content packages, and an ArcGIS
   account for use outside Esri software; so nothing is cached, and the keyless use is internal, low-volume, interactive.
-  For full compliance a free ArcGIS Location Platform key would be the next step (question 1 of the F1 report).
+  A free ArcGIS Location Platform key stays the later step for full compliance (not now, per the Founder).
   Rejected: Sentinel-2 cloudless (10 m pixels: no building to trace); Google / Bing / Mapbox imagery (a key and stricter
   terms); the Hungarian state orthophoto (registration; a candidate later).
 - **D-67 · How the outline and the placement are stored (M48), 2026-11-20.** `site.outline` = the corners as
