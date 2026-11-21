@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (67 lépés)
+## A telefon — rajz és beszélgetés (68 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -102,8 +102,9 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M50.8** Fürdőszoba felújítás variánsban Vonal eszköz: négy sarok, majd **Kész** → szoba lesz (nem nyitott vonal). Az eredetiben ugyanez nyitott vonal marad.
 - [ ] **M50.9** Beszédfelismerő nélküli telefonon (vagy ha a 🎤 „Nincs beszédfelismerő” üzenetet ad) a jegyzetben megjelenik a **⏺ Hangjegyzet**: Felvétel → mondj valamit → ■ Kész. Kamera front: *🎙 Hangjegyzetek (1)* → ▶ Lejátszás szól.
 - [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
+- [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
-## B telefon — kamera és helyszín (48 lépés)
+## B telefon — kamera és helyszín (50 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -139,8 +140,10 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M46.6** Kamera nézet → **✍ Aláírás**: *Mindkettő*, név, aláírás az ujjal, *Mentés*. A galériában (Dokumentum) a ✍ kép, a viewerben név, időpont, nyilatkozat. Exportban `…_alairas.png`.
 - [ ] **M46.7** Kamera nézet → **🎥 Séta videó**: 20–30 mp séta a nyomvonalon. Vissza: „🎥 Videó mentve (0:25, 18,3 MB)”; a galériában ▶ + hossz; a viewerben *▶ Lejátszás*. Exportban `…_nyomvonal.mp4`.
 - [ ] **M46.8** **◉ tartva**: felül *Hiányzik* a következő hiányzó képekkel; egy koppintás → kamera arra a tételre; alatta 🎥 ✍ és a legutóbbi célok.
-- [ ] **M46.9** Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik.
-- [ ] **M46.10** Két telefonnal: az egyiken készült felmérést (aláírással, videóval, párral) Átadással a másikra / a PC-re küldve a Desktop oldal (START S) Kamera nézetében a kártyák, a pár és az aláírás látszanak; a videó a fájl csatolása után lejátszható.
+- [ ] **M46.9** Egy személyes fotón (arccal): **👤 Személyes adat** be → pár mp múlva piros szaggatott keret az arcon, „☺ 1 arc”; **✓ Elmosás**: szürke folt lesz belőle, exportban kockás. *☺ Arcok keresése* újra: ugyanazt az arcot nem kéri még egyszer.
+- [ ] **M46.10** ⚙ → **Kamera funkciók**: *Mind* ki → a ▤, ▦, ☺, 🎥, ✍, ◐ gombok eltűnnek; egyenként vissza. *Elmosás* ki: az *Arckeresés* is kikapcsol. Az app újraindítása után a beállítás megmarad (a másik telefonon külön állítható).
+- [ ] **M46.11** Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik.
+- [ ] **M46.12** Két telefonnal: az egyiken készült felmérést (aláírással, videóval, párral) Átadással a másikra / a PC-re küldve a Desktop oldal (START S) Kamera nézetében a kártyák, a pár és az aláírás látszanak; a videó a fájl csatolása után lejátszható.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

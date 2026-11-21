@@ -240,6 +240,7 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                             )
                         }) {
                         c.marks.forEach { m -> drawMark(m) }
+                        st.cam2.faces[id]?.forEach { drawProposal(it) }          // Kamera 2: faces waiting for ✓ Elmosás
                         draft?.let { drawMark(Mark(kind, it, "", color, w = if (kind == MarkKind.BLUR_BRUSH) BRUSH_W else 0.0)) }
                     }
                 }
@@ -247,8 +248,8 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
                 if (marking) {
-                    listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T",
-                        MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒").forEach { (k, sym) ->
+                    (listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T") +
+                        if (st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.BLUR)) listOf(MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒") else emptyList()).forEach { (k, sym) ->
                         Pill(sym, Color(color), kind == k) { kind = k }
                     }
                     MARK_COLORS.forEach { mc -> Box(Modifier.size(24.dp).clip(RoundedCornerShape(50)).background(Color(mc))

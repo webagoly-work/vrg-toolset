@@ -45,10 +45,16 @@ tells the Founder when a fork can be archived.
    tells the Founder the fork can be archived.
 8. Client data never enters Git (`../../CLAUDE.md`, `../../Sketcher/variants/PROTOCOL.md`). No model names in commits.
 
+9. **Modular, switchable, integrated (the Founder's general rule, D-90, 2026-11-21):** build upcoming features in and
+   ship them on, but make every feature a module with its own switch in the settings (each one, and all at once), with
+   the stored setting being what the user turned **off**, so new features arrive on. User preference first: a feature
+   the user switched off leaves no trace in the UI or the exports. Camera features already work this way
+   (`sketch-core` `CameraFeatures`, ⚙ → Kamera funkciók); follow that pattern.
+
 ## Status (coordinator)
 
 - F1 → WP M48 (D-62…D-66), F2 → M47 (D-67…D-71), F3 → M46 (D-55…D-61), F4 → M49 (D-72…D-76): all on `main` (ec6b90b), the sessions archivable.
-- F5 Maradékok (`sketcher/f5-maradek`, WP M50, D-77…) builds what the forks left out.
+- F5 Maradékok (`sketcher/f5-maradek`, WP M50, D-80…D-89) builds what the forks left out. F2's answers took D-77…D-79 (the Csere tag, the 300 mm reserve, implied dedicated circuits behind a toggle); F3's second round (the Founder's answers, face detection, every camera feature switchable) took D-90.
 - **The two-phone test:** `node Sketcher/tools/test-plan.js` writes `TEST-2PHONES.md` + `test-2phones.json` from every WP's
   „Telefonon ellenőrizni” list (A: rajz és beszélgetés, B: kamera és helyszín, X: közös). Re-run it after a WP's list
   changes (`--check` exits 1 when stale). The shared checklist page (live ticks from both phones, the Hibák list) is

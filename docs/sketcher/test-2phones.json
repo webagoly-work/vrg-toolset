@@ -319,11 +319,15 @@
       {
        "id": "M50.10",
        "text": "Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva."
+      },
+      {
+       "id": "M50.11",
+       "text": "⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja."
       }
      ]
     }
    ],
-   "count": 67
+   "count": 68
   },
   "B": {
    "name": "B telefon — kamera és helyszín",
@@ -443,10 +447,18 @@
       },
       {
        "id": "M46.9",
-       "text": "Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik."
+       "text": "Egy személyes fotón (arccal): **👤 Személyes adat** be → pár mp múlva piros szaggatott keret az arcon, „☺ 1 arc”; **✓ Elmosás**: szürke folt lesz belőle, exportban kockás. *☺ Arcok keresése* újra: ugyanazt az arcot nem kéri még egyszer."
       },
       {
        "id": "M46.10",
+       "text": "⚙ → **Kamera funkciók**: *Mind* ki → a ▤, ▦, ☺, 🎥, ✍, ◐ gombok eltűnnek; egyenként vissza. *Elmosás* ki: az *Arckeresés* is kikapcsol. Az app újraindítása után a beállítás megmarad (a másik telefonon külön állítható)."
+      },
+      {
+       "id": "M46.11",
+       "text": "Egy fotó után kb. 9 mp-ig a ◉ mellett **＋ (jel) még**: koppintva még egy ugyanarra a célra. Sorozat közben nem látszik."
+      },
+      {
+       "id": "M46.12",
        "text": "Két telefonnal: az egyiken készült felmérést (aláírással, videóval, párral) Átadással a másikra / a PC-re küldve a Desktop oldal (START S) Kamera nézetében a kártyák, a pár és az aláírás látszanak; a videó a fájl csatolása után lejátszható."
       }
      ]
@@ -558,7 +570,7 @@
      ]
     }
    ],
-   "count": 48
+   "count": 50
   }
  },
  "cross": [

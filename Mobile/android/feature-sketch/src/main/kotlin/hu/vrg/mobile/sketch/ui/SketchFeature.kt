@@ -41,7 +41,7 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
-import hu.vrg.mobile.sketch.Tags
+import hu.vrg.mobile.sketch.SketchFeatures
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -87,7 +87,9 @@ object SketchFeature : VrgFeature {
             SketchList(host) { openId = it }
             return
         }
-        val sketch = remember(id) { store.load(id)?.let { SiteHandoff.take(store, it) } }
+        val fctx = androidx.compose.ui.platform.LocalContext.current
+        // F5 (D-80, D-90): an older survey gets the built-in Csere tag, unless that feature is switched off
+        val sketch = remember(id) { store.load(id)?.let { SketchFeatures.onOpen(SketchFeaturePrefs.off(fctx), it) }?.let { SiteHandoff.take(store, it) } }
         if (sketch == null) {
             LaunchedEffect(id) { host.note("A vázlat nem nyitható meg."); openId = null }
             return
@@ -133,8 +135,7 @@ class SketchStore(private val dir: File) {
         .sortedByDescending { it.updated }
 
     fun load(id: String): Sketch? = file(id).takeIf { it.exists() }?.let { f ->
-        // F5 (D-80): an older survey gets the built-in Csere tag
-        try { SketchJson.read(f.readText())?.let(Tags::withBuiltins) } catch (e: Exception) { null }
+        try { SketchJson.read(f.readText()) } catch (e: Exception) { null }
     }
 
     fun save(s: Sketch) {

@@ -21,6 +21,7 @@ import hu.vrg.mobile.sketch.ClientInfo
 
 @Composable
 internal fun ClientCard(st: EditorState, col: Color) {
+    if (!SketchFeaturePrefs.on(androidx.compose.ui.platform.LocalContext.current, hu.vrg.mobile.sketch.SketchFeatures.CLIENT)) return   // D-90: off, no trace
     val c = st.sketch.client
     var name by remember(c?.name) { mutableStateOf(c?.name ?: "") }
     var phone by remember(c?.phone) { mutableStateOf(c?.phone ?: "") }

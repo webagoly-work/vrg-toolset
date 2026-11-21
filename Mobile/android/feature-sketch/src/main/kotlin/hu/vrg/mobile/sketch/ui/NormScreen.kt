@@ -46,7 +46,7 @@ import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
-import hu.vrg.mobile.sketch.ClientInfo
+import hu.vrg.mobile.sketch.SketchFeatures
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
@@ -79,10 +79,11 @@ private const val MIME = "application/json"
  * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
  */
 private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
-    val s = ClientInfo.forExport(s0)   // F5 (D-82): the client's contact leaves the phone only when kept
+    val s = SketchFeatures.forExport(SketchFeaturePrefs.off(ctx), s0)   // F5 (D-82, D-84, D-90): the client only when kept, no sound notes when off
     val out = FileStore.cacheDir(ctx, "sketch")
-    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png") || it.name.endsWith(".m4a")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
+    val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
     // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
     val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
     val pj = PlannerExport.build(s, n)
@@ -93,12 +94,13 @@ private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<Fi
     }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
+        if (!src.exists()) null else if (!strip) File(out, name).also { src.copyTo(it, overwrite = true) }
+        else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
         // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
-        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out)
+        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out, strip)
     }
     listOf(pkg to MIME) + tkFiles + (photos + caps).map { it to mimeOf(it) }
 }

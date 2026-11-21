@@ -36,6 +36,8 @@ import hu.vrg.mobile.sketch.AudioNotes
 import hu.vrg.mobile.sketch.Camera2
 import hu.vrg.mobile.sketch.Capture
 import hu.vrg.mobile.sketch.Intake
+import hu.vrg.mobile.sketch.SketchFeatures
+import hu.vrg.mobile.kit.ui.VrgToggle
 import kotlinx.coroutines.delay
 import java.io.File
 
@@ -155,9 +157,29 @@ internal fun AudioViewer(st: EditorState, c: Capture, close: () -> Unit) {
     )
 }
 
+/** F5 (D-90): the switches of this fork's features, one setting per phone (SharedPreferences "sketcher-features"). */
+internal object SketchFeaturePrefs {
+    private const val KEY = "off"
+    fun off(ctx: Context): Set<String> = SketchFeatures.read(ctx.getSharedPreferences("sketcher-features", Context.MODE_PRIVATE).getString(KEY, ""))
+    fun on(ctx: Context, id: String) = SketchFeatures.on(off(ctx), id)
+    fun save(ctx: Context, off: Set<String>) { ctx.getSharedPreferences("sketcher-features", Context.MODE_PRIVATE).edit().putString(KEY, SketchFeatures.write(off)).apply() }
+}
+
+/** ⚙ → Felmérés funkciók: each F5 feature on its own switch, and all at once (D-90). */
+@Composable
+internal fun SketchFeatureSection() {
+    val ctx = LocalContext.current
+    var off by remember { mutableStateOf(SketchFeaturePrefs.off(ctx)) }
+    val set = { o: Set<String> -> off = o; SketchFeaturePrefs.save(ctx, o) }
+    Text("Felmérés funkciók (minden felmérésre)", style = Melyviz.label, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+    VrgToggle("Mind", SketchFeatures.allOn(off)) { set(SketchFeatures.all(it)) }
+    SketchFeatures.ALL.forEach { f -> VrgToggle(f.sym + " " + f.label + ": " + f.blurb, f.id !in off) { want -> set(if (want) off - f.id else off + f.id) } }
+}
+
 /** The Kamera front's list of sound notes (nothing when there is none). */
 @Composable
 internal fun AudioList(st: EditorState) {
+    if (!SketchFeaturePrefs.on(LocalContext.current, hu.vrg.mobile.sketch.SketchFeatures.AUDIO)) return   // D-90: off, no trace
     val list = AudioNotes.list(st.sketch)
     if (list.isEmpty()) return
     Text("🎙 Hangjegyzetek (${list.size})", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
