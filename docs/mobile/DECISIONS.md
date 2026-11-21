@@ -870,7 +870,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   bolt, WC, Megálló switchable, at most six on), one per category in that order; the list follows the user after 25 m or
   30 s; a selected place stays the target; tap frames, hold (RCO, right-click on the PC) selects.
 
-- **D-133 … D-136 · Szobadoboz (M56, dev line skcam K1), 2026-11-21.** Taken for the Founder while building ("proceed
+- **D-133 … D-136 · Szobadoboz (M57, dev line skcam K1), 2026-11-21.** Taken for the Founder while building ("proceed
   with the outlined dev work"); each can be revisited.
   - **D-133 · Where the room's shape comes from.** Chosen **A**: from the sketch (the plan's outline in mm, the photo
     point, the side), with the photos projected onto it. Rejected: **B** photogrammetry from the four photos (turning on

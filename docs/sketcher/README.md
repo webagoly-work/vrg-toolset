@@ -221,7 +221,7 @@ Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`.
 ## 15. Open dev line: Kamera+ (room box, measuring, house 3D)
 
 Opened 2026-11-20: `CAMERA-LINE.md` (stages K1–K7, open questions Q1–Q4), research in
-`docs/research/2026-11-20_room-capture-and-measurement.md`. **K1 Szobadoboz is built (WP M56, BETA):** on the Desktop
+`docs/research/2026-11-20_room-capture-and-measurement.md`. **K1 Szobadoboz is built (WP M57, BETA):** on the Desktop
 page, Vázlat → ⬚ Szobadoboz (3D) raises the plan's rooms to their ceiling height and projects the Fotópont photos onto
 the walls (offline WebGL, no AI; `lib/roombox.js` + `lib/roombox-gl.js`). It has a dollhouse view, a view standing at
 the photo point, and per-photo fine-tuning saved in the survey's `box` key. Next: K1b (the phone).

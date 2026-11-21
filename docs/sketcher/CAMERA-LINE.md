@@ -9,7 +9,7 @@ Research: `docs/research/2026-11-20_room-capture-and-measurement.md` (sources, l
 Grows out of: M24 Vázlat, M25 Fotópont, M29 Kamera, M30 Helyszín, M52 Saját kamera (`docs/mobile/WP/`). Builds on
 decisions D-24…D-26, D-31, D-90 and D-100…D-109 (`docs/mobile/DECISIONS.md`).
 
-**State, 2026-11-21:** K0 done, **K1 built** (WP M56, BETA, D-133…D-136). Fork **DV1** (Data Vault) turns the line's
+**State, 2026-11-21:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136). Fork **DV1** (Data Vault) turns the line's
 written and collected features into Data Vault cells (§6).
 
 **Since the line opened:** fork F7 (WP M52, D-100…D-109) gave the Sketcher an **in-app CameraX camera**, with the
@@ -36,7 +36,7 @@ cheaper: its viewfinder exists, only the ARCore session is new.
 | Stage | Name | What it is | Runs where | Size | Depends on |
 |---|---|---|---|---|---|
 | **K0** | Kutatás | The research note above | — | done 2026-11-20 | — |
-| **K1** ✓ M56 | Szobadoboz (room box) | Room outline × ceiling height (new per-room size field) → 3D box; each Fotópont photo projected onto the walls it faces (virtual camera at the point, ~1.4 m, FOV from EXIF `FocalLengthIn35mmFilm`, yaw from the side). **One-tap correction per photo**: drag the vertical line of a wall corner in the photo onto the box's corner, which fixes the yaw and the swipe's 90° rounding. Orbit view + "stand at the point" view. The M25 hint asks for 0.5× where the phone has it | **Built** on the Desktop Sketcher page (own WebGL 1, no library, D-135); the Planner can reuse `roombox.js` | S–M | M24, M25 (data already captured) |
+| **K1** ✓ M57 | Szobadoboz (room box) | Room outline × ceiling height (new per-room size field) → 3D box; each Fotópont photo projected onto the walls it faces (virtual camera at the point, ~1.4 m, FOV from EXIF `FocalLengthIn35mmFilm`, yaw from the side). **One-tap correction per photo**: drag the vertical line of a wall corner in the photo onto the box's corner, which fixes the yaw and the swipe's 90° rounding. Orbit view + "stand at the point" view. The M25 hint asks for 0.5× where the phone has it | **Built** on the Desktop Sketcher page (own WebGL 1, no library, D-135); the Planner can reuse `roombox.js` | S–M | M24, M25 (data already captured) |
 | **K2** | Lézer | Bluetooth laser distance meter: pick a wall (or ceiling height) on the sketch, press the meter's button, and the length lands on the wall | phone (Kotlin BLE) | M | **Q1** (which meter) |
 | **K3** | Síkmérés (plane measuring) | In the photo viewer (M29): mark a known rectangle on a wall plane (a printed ArUco/ChArUco card, an A4 sheet, an 80×80 switch frame, a door) → homography → tap two points and read the distance on that plane; heights from the floor line. The same maths rectifies a **facade** from one photo + one width. Optional one-time lens calibration per phone (ChArUco) | phone + Desktop | M | K2 helps (trusted length) |
 | **K4** | Körkép (360) | Eight shots at 45°, or four at 0.5×: stitched into a 360 panorama (OpenCV `Stitcher`, Apache-2.0, on the PC), viewed in Pannellum (MIT); optional HorizonNet (MIT) outline check against the drawn room | PC + viewer anywhere | M | K1 |
@@ -51,7 +51,7 @@ and only after its licence is confirmed.
 
 ## 3. Next step
 
-K1 is built (WP M56; its *Telefonon ellenőrizni* list is the check). **Next: K1b** (the box on the phone, the `box`
+K1 is built (WP M57; its *Telefonon ellenőrizni* list is the check). **Next: K1b** (the box on the phone, the `box`
 key kept by the phone, the lens stored with each shot), then **K2** as soon as Q1 (which laser meter) is answered.
 Corner snapping (drag a corner line onto the box corner) is the K1 polish left open.
 
@@ -82,7 +82,7 @@ fields `Stack/lib/layers.js` reads:
   from: ['<the Sketcher / M25 line id>', 'Fotópont photos → a room render and measuring'],
   brief: 'Offline camera features for the Sketcher: the 4 Fotópont photos projected onto the sketched room (room box), a BLE laser meter, measuring on a plane in a photo, a 360 view, house 3D by PC photogrammetry. No AI session per capture.',
   milestones: [['11-20', 'K0 research: docs/research/2026-11-20_room-capture-and-measurement.md; line brief docs/sketcher/CAMERA-LINE.md'],
-               ['11-21', 'K1 Szobadoboz built on the Desktop page (WP M56, D-133…D-136); fork DV1 opened (Data Vault feature cells)']],
+               ['11-21', 'K1 Szobadoboz built on the Desktop page (WP M57, D-133…D-136); fork DV1 opened (Data Vault feature cells)']],
   remaining: [
     'K1b Szobadoboz on the phone; the phone keeps the box key; lens stored per shot',
     'K2 Lézer: BLE laser meter → wall size (needs Q1: which meter)',
