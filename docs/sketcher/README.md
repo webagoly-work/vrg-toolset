@@ -172,3 +172,29 @@ first), the room, the count, a series until ✓ with the last thumbnail and ↶,
 after-photo, torch, tap-to-focus, pinch zoom, the level line and the grid. The pure half is `sketch-core`
 `CameraLive.kt`. Every part is a switch in ⚙ → Kamera funkciók; *Saját kamera* off (or CameraX failing on a phone)
 brings the camera app back.
+
+## 12. Feature switches (M51)
+
+Fork F6 (`docs/mobile/WP/M51.md`, D-91 … D-99), the Founder's rule D-90 for the whole Sketcher: **every feature has a
+switch, each group and everything has a Mind switch, everything is on by default** (except D-79's implied dedicated
+circuits), and the setting lists only what differs, so a new feature arrives on. The list is
+`Sketcher/catalog/features.json` (73 features in 9 groups: the 7 fronts, Variánsok, Rendezés / export); `sketch-core`
+`Features.kt` and `Sketcher/lib/features.js` switch it the same way (fixture `test/fixtures/features.json`).
+
+- Per phone (⚙ → ⚙ Funkciók ›, or the Kamera front's ⚙ Funkciók tile) and per browser (the Desktop's ⚙ Funkciók front),
+  never per survey; survey plugins stay per survey.
+- Off = no trace in the UI (rail, wheels, chips, fronts, cards, badges, Nyitott, the map's site panel, the files beside
+  the package); the survey's data stays, the package file is the same, privacy on export is unchanged.
+- A feature that needs another is greyed while that one is off; a front with nothing on leaves the front bar; a variant
+  never brings back what the user switched off.
+- The camera's switches (F3, F7's Saját kamera included) and F5's four are part of the list; their settings stay where they were saved.
+
+## 13. The jegyzőkönyv on the phone (M54)
+
+Fork F9 (`docs/mobile/WP/M54.md`): Rendezés → **📄 Jegyzőkönyv** makes the same *Felmérési jegyzőkönyv* as the Desktop
+page on the phone: `Sketcher/lib/report.js` + `fieldkit.js` + `report-phone.js` bundled as assets and run in a hidden
+WebView; the drawing and the site from `PlanSvg.kt` / `SiteSvg.kt` (= `app.js` `svgPlan` / `sitePlaceSvg`, fixture
+`test/fixtures/report.json` by `tools/make-report-fixture.js`); out as **Nyomtatás / PDF** (the system print dialog) or
+**Átadás** (`<név>.jegyzokonyv.html`, photos inside). The export rules apply (client only when kept, no GPS, blur burned
+in, personal photos only blurred); *Az ügyfélnek* also drops the Tisztázandó notes and the Ellenőrizni lines. Switch:
+⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* (registry `export.report_phone`, requires `export.report`).

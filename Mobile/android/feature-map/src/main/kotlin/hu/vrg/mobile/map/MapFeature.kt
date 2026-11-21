@@ -516,8 +516,13 @@ object MapFeature : VrgFeature {
         if (id == null || !MapPhone.SITE_ID.matches(id)) return resp(404)
         val f = File(sketches, "$id.vsketch.json")
         val s = try { SketchJson.read(f.readText()) } catch (e: Exception) { null } ?: return resp(404)
-        return resp(200, "application/json", ByteArrayInputStream(SiteLink.payload(s, Solver().solve(s)).toString().toByteArray()))
+        return resp(200, "application/json", ByteArrayInputStream(SiteLink.payload(s, Solver().solve(s), sketcherMapHide()).toString().toByteArray()))
     }
+
+    /** M51: the Sketcher's switches for the site panel (its general store; the map only reads it). */
+    private fun sketcherMapHide(): List<String> = try {
+        hu.vrg.mobile.sketch.Features.mapHide(hu.vrg.mobile.sketch.Features.read(appCtx.getSharedPreferences("sketcher-features", Context.MODE_PRIVATE).getString("flipped", "")))
+    } catch (e: Exception) { emptyList() }
 
     /** F1: the site layer's ✓ Kész / ✕: the answer is left for the Sketcher (it owns the survey file), then back to its Helyszín. */
     private fun siteDone(host: FeatureHost, d: String?) {

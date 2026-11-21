@@ -68,9 +68,9 @@ internal fun VariantSection(st: EditorState) {
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("⟳ Frissítés a main ágról", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
+        if (feat("variansok.refresh")) Text("⟳ Frissítés a main ágról", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
             modifier = Modifier.clickable { msg = "Frissítés…"; scope.launch { msg = SketcherKit.refresh(ctx) } }.padding(vertical = 6.dp))
-        Text("＋ Új variáns kérése", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
+        if (feat("variansok.request")) Text("＋ Új variáns kérése", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
             modifier = Modifier.clickable { st.ask = Ask.VariantRequest }.padding(vertical = 6.dp))
     }
     msg?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
@@ -96,7 +96,7 @@ internal fun VariantRequestDialog(st: EditorState, inlineNote: Boolean = false, 
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text("Egy-három mondat a munkáról: mi a feladat, milyen a hely, mire figyelj. Az ügynök ebből tervez, és visszakérdez.", style = Melyviz.small)
                 Field(premise, { premise = it }, "A munka lényege", lines = 3)
-                Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
+                if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
                     try { dictate.launch(dictationIntent("Mondd el a munkát")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                 }.padding(vertical = 4.dp))
                 Text("Kulcsszavak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 6.dp))

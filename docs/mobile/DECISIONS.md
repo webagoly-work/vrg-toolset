@@ -662,6 +662,53 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   előtte / utána, aláírás, séta videó, hiányzók elöl, „+ még”), one setting per phone in ⚙ → *Kamera funkciók* (and the
   Kamera front's ⚙ Funkciók tile).
 
+- **D-91 · One feature registry for the whole Sketcher (M51), 2026-11-21.** Taken in fork F6. Every user-facing feature
+  is one entry `{id, front, sym, label, requires, default, locked}` in `Sketcher/catalog/features.json`, grouped by the
+  seven fronts plus *Variánsok* and *Rendezés / export* (73 today). The phone's engine is `sketch-core` `Features.kt`
+  with the list in code (FeaturesTest checks it against the JSON), the Desktop's `Sketcher/lib/features.js`; the shared
+  fixture `Sketcher/test/fixtures/features.json` keeps them equal. F3's `CameraFeatures` and F5's `SketchFeatures` stay
+  as they are (their code still asks them) and appear as the `kamera.*` entries and four more (D-96). Rejected: one list
+  per front or per fork (the Founder asked for *each or all*, in one place).
+- **D-92 · The switches belong to the phone (the browser), not to the survey (M51), 2026-11-21.** Taken in fork F6.
+  One setting per phone and one per browser, for every survey; the phone and the Desktop do not share them (each is the
+  user's own tool there). The survey *plugins* (alaprajz, villany, fotopont) stay per survey and are a separate thing:
+  a plugin decides what one survey uses, a switch what the user ever wants to see. A plugin whose every tool is switched
+  off is not offered.
+- **D-93 · Off leaves no trace, deletes nothing and never changes a file's meaning (M51), 2026-11-21.** Taken in fork
+  F6. A switched-off feature's tools, wheel items, chips, cards, badges, loose ends, fronts and buttons go; the data it
+  made stays in the survey and comes back with the switch. The exported package (`.vsketch.json`) is the same whatever
+  is switched off; the switches decide only the files beside it (photos, marked copies, the `.takeoff` files) and the
+  Desktop's buttons (⇩ Takeoff, Jegyzőkönyv). Privacy on export never follows a UI switch: a personal photo still leaves
+  only blurred and without GPS, and *GPS törlése kiadáskor* has no prerequisite (it sits under Rendezés / export).
+  The Planner and the Workflow Kit read the file as it is.
+- **D-94 · Prerequisites grey, Mind switches, Mozgat stays (M51), 2026-11-21.** Taken in fork F6. A feature whose
+  prerequisite is off is off and shown greyed with „előbb: …”; its own switch is kept, so it returns with the
+  prerequisite. *Mind* per group and for everything: Mind ki switches every feature off, **Mind be** switches every
+  default-on feature on and leaves the default-off option (D-79's implied dedicated circuits) as it was, so „all on”
+  never changes a quantity behind the user's back. *Mozgat* is locked on: the canvas always has a tool, Vázlat always
+  stays on the front bar. Rejected: Mind be = everything incl. the options.
+- **D-95 · A variant cannot switch on what the user switched off (M51), 2026-11-21.** Taken in fork F6. User
+  preference first: everything a variant brings passes through the registry after it — its rail order and plugins
+  (`Features.rail`), its drawing tune (`Features.draw`: *Rajz-hangolás* off = the original tools), the hold wheel
+  (`Features.wheel`), its extra chips, questions and shots (gone with their feature). A variant has no way to switch a
+  feature on; if one ever needs to switch one *off*, it can be added as an optional key later.
+- **D-96 · The settings stay where they were saved (M51), 2026-11-21.** Taken in fork F6. Four stores, read as one and
+  written back split: F3's `sketcher-camera` / `off` (CameraFeatures ids), D-79's `sketcher` / `takeoff.impliedDedicated`,
+  F5's `sketcher-features` / `off` (SketchFeatures ids) and the new `sketcher-features` / `flipped` (every other id that
+  differs from its default). A phone that had switched camera features off keeps them bit for bit (tested), the Munkakör
+  lap's toggle and ⚙ Funkciók are the same switch, and an older app still reads its own store. Ids the app does not
+  know are kept (a newer app's switch). On the Desktop: `vrg-sketcher-features` + D-79's `vrg-sketcher-implied-dedicated`.
+- **D-97 · A front with nothing on leaves the front bar (M51), 2026-11-21.** Taken in fork F6. When every feature of a
+  front is off, its symbol leaves the front bar (the Desktop's rail), its loose ends leave Nyitott, and an open front
+  falls back to Vázlat (Áttekintés on the Desktop). The Kamera front needs *Fotó céllal*; its other features depend on it.
+- **D-98 · Without the hold wheel there is no wheel (M51), 2026-11-21.** Taken in fork F6. *Tartásra kerék* off: a hold
+  on the canvas does nothing; the point type is still chosen on the Pont tool's row, ↶ still undoes, but Törlés lives on
+  the wheel (question 2 of the F6 report). Other switched-off features leave their wheel sectors empty, so the
+  directions the hand knows do not move.
+- **D-99 · The map's site panel follows the Sketcher's switches (M51), 2026-11-21.** Taken in fork F6. The phone's map
+  page gets `hide` in `/__phone/site.json` (from the general store; the map only reads it), the Desktop sends it with the
+  survey; `Map/lib/site-layer.js` leaves out ▱ Körvonal, 🛰 Műhold or ◫ Vázlat and opens in the mode that is left.
+
 - **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
   preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
   device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner
@@ -723,6 +770,37 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-109 · The capture moment (M52), 2026-11-21.** The shutter takes the picture with `CAPTURE_MODE_MINIMIZE_LATENCY`,
   rotated by the phone's real orientation (the screen may stay portrait), a short white flash on the preview, the shot's
   thumbnail in the corner. A capture error leaves the camera open with a note; a second one in a row falls back (D-101).
+- **D-120 · F9: the phone's jegyzőkönyv is the Desktop's renderer in a hidden WebView (M54), 2026-11-21.** Taken in fork F9,
+  following the Founder's D-81 B and M50's plan. `report.js` + `fieldkit.js` run through `report-phone.js`; the phone
+  only puts the input together (`Jegyzokonyv.kt`). Rejected: a Kotlin copy of the document (a third engine to keep equal).
+- **D-121 · F9: the renderer is copied from `Sketcher/lib` at build time, checked byte for byte (M54), 2026-11-21.** As the
+  catalog and the variants already are; the Gradle task fails on a differing copy, `report-phone.test.js` checks the
+  list. Rejected: copies committed under `Mobile/` (they would drift, and a check would only report it).
+- **D-122 · F9: PlanSvg / SiteSvg draw from the package plan, numbers as JavaScript prints them (M54), 2026-11-21.** The
+  drawing is the one the Desktop shows when it opens the phone's package (`PlannerExport`'s floors and devices, not the
+  editor's canvas); `JsNum` prints `4000`, not `4000.0`. The fixture is made from `app.js`'s own functions
+  (`make-report-fixture.js`), so a Desktop change makes it stale; the JVM test allows a few ulps per number (Java's
+  and V8's sin / cos may differ in the last bit), never a different text.
+- **D-123 · F9: the report follows the export rules, stricter on photos (M54), 2026-11-21.** `SketchFeatures.forExport`
+  (client only when kept, D-82; no sound notes when off); every photo re-encoded (no EXIF at all, so no GPS even where
+  the package keeps it, D-57), the blur burned in and nothing else; a *Személyes adat* photo only blurred, otherwise
+  named as withheld. Rejected: the package's photo files (full size, GPS where kept, markup copies).
+- **D-124 · F9: *Az ügyfélnek* drops the Tisztázandó notes and the Ellenőrizni lines only (M54), 2026-11-21.** Kept: the
+  Döntésre vár list and the open questions (the client is the one who answers them). A switch in the dialog, off each
+  time it opens (a report for the client is a deliberate choice). Rejected: remembering it per phone.
+- **D-125 · F9: photos at 1200 px, JPEG 80, in the export cache (M54), 2026-11-21.** Sharp at a third of A4 and about
+  150 KB each (40 photos ≈ 6 MB of HTML); signatures as PNG; `cache/sketch/report/` is emptied at the next report.
+- **D-126 · F9: PDF through the system print dialog; over 15 MB Átadás warns and offers it (M54), 2026-11-21.**
+  `PrintManager` + the WebView's print adapter (A4): *PDF mentése* writes the file wherever the user picks, no PDF
+  library. Átadás over 15 MB shows the size with *🖨 Inkább PDF* and *Mégis küldöm*. Rejected: a hard block.
+- **D-127 · F9: the switch *📄 Jegyzőkönyv a telefonon* is the registry's `export.report_phone`, requiring `export.report` (M54), 2026-11-21.**
+  In F6's registry (M51, `Features.kt` = `Sketcher/catalog/features.json`), front *Rendezés / export*, on by default.
+  It requires F6's `export.report` (the Desktop's Jegyzőkönyv), so switching the jegyzőkönyv off anywhere takes the
+  phone's button with it (shown greyed with its reason). Off: no button, nothing made; like every M51 switch, it never
+  changes the package or what a file means (D-93). Built first in F5's `SketchFeatures`, moved when F6 landed.
+- **D-128 · F9: Rendezés → 📄 Jegyzőkönyv, a dialog (M54), 2026-11-21.** Next to the two export buttons (the row now
+  wraps on narrow phones); the dialog has *Az ügyfélnek*, *🖨 Nyomtatás / PDF*, *⇪ Átadás (.html)*, the privacy line and
+  the result's name and size. Rejected: putting it into the Küldés share (the package is what the PC reads).
 
 ## Open (to ask when the WP that needs them starts)
 

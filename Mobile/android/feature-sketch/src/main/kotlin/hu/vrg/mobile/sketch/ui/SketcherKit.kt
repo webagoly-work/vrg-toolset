@@ -75,6 +75,20 @@ object SketcherKit {
     }
 
     val kit: Kit get() = base
+
+    /** F9 (WP M54): the field kit's catalog JSON as bundled, for the jegyzőkönyv's renderer (report-phone.js). */
+    fun catalogJson(ctx: Context): org.json.JSONObject? = try { org.json.JSONObject(ctx.assets.open("sketcher/fieldkit.json").bufferedReader().readText()) } catch (e: Exception) { null }
+
+    /** F9: the active variant's JSON for [s] (a fetched file wins over a bundled one, as in [reload]); null when off. */
+    fun variantJson(ctx: Context, s: Sketch): org.json.JSONObject? {
+        if (!s.variantOn) return null
+        val id = s.variant ?: return null
+        fun pick(texts: Sequence<String>) = texts.mapNotNull { t -> try { org.json.JSONObject(t).takeIf { it.optString("id") == id } } catch (e: Exception) { null } }.firstOrNull()
+        val fetched = (dir(ctx).listFiles { f -> f.name.endsWith(".json") } ?: emptyArray()).asSequence().map { it.readText() }
+        val bundled = (ctx.assets.list("sketcher/variants") ?: emptyArray()).asSequence().filter { it.endsWith(".json") }
+            .map { n -> ctx.assets.open("sketcher/variants/$n").bufferedReader().readText() }
+        return pick(fetched) ?: pick(bundled)
+    }
     fun variant(id: String?): Variant? = _variants.value.firstOrNull { it.id == id }
 
     /** The kit a survey works with: the variant's additions when it is switched on. */

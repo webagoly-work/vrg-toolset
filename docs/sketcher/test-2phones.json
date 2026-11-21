@@ -626,9 +626,117 @@
        "text": "⟳ Frissítés a main ágról: az új variáns megjelenik."
       }
      ]
+    },
+    {
+     "n": 51,
+     "title": "M51 · Kapcsolók: every Sketcher feature on its own switch (the Founder's rule D-90)",
+     "items": [
+      {
+       "id": "M51.1",
+       "text": "⚙ → **⚙ Funkciók ›**: kilenc csoport a front jelével és színével, soronként jel + 1–3 szó + kapcsoló; minden be, kivéve a *Dedikált kör nagy gépnek* sort; a *Mozgat* kapcsolója nem mozdul."
+      },
+      {
+       "id": "M51.2",
+       "text": "Vázlat csoport → *Pont* ki: a sávból eltűnik a • Pont, az *Áramkör* sora szürke („előbb: Pont”), a ◌ Áramkör is eltűnik. *Pont* vissza: mindkettő visszajön."
+      },
+      {
+       "id": "M51.3",
+       "text": "*Tartásra kerék* ki: a lapon tartott ujj nem nyit kereket. Vissza be; *Memó* ki: a kerékről a ✎ Memó helye üres."
+      },
+      {
+       "id": "M51.4",
+       "text": "Kérdések csoport → a csoport kapcsolója ki: a Kérdések front eltűnik a sávból, a Nyitottból is a kérdések; a felmérés válaszai megmaradnak (vissza be: ott vannak)."
+      },
+      {
+       "id": "M51.5",
+       "text": "Jegyzet → *Gyors chipek* ki: a ✎ ablakban nincs Ügyfél / Helyzet sor; *Diktálás* ki: nincs 🎤 sem a jegyzetnél, sem a fotó feliratánál."
+      },
+      {
+       "id": "M51.6",
+       "text": "Kamera → *Fotó céllal* ki: a ◉ gomb eltűnik minden frontról, a Kamera front a sávból; a Kamera csoport többi sora szürke. Vissza be: minden úgy van, ahogy volt (a Kamera funkciók korábbi beállítása is)."
+      },
+      {
+       "id": "M51.7",
+       "text": "Kamera front → ⚙ Funkciók csempe: ugyanez a lap nyílik, a Kamera csoport elöl."
+      },
+      {
+       "id": "M51.8",
+       "text": "Munkakör → *Munkakör lap* ki: a lap kártyája eltűnik, a Rendezés mentése nem ír .takeoff fájlokat; a csomag (.vsketch.json) ugyanaz. *Dedikált kör nagy gépnek* be itt → a Munkakör lapon is be (ugyanaz a kapcsoló)."
+      },
+      {
+       "id": "M51.9",
+       "text": "Helyszín → *Műhold* és *Körvonal rajzolása* ki → 🗺 a térképen: a panelen nincs 🛰 és ▱, a ◫ Vázlat aktív."
+      },
+      {
+       "id": "M51.10",
+       "text": "Rendezés / export → *Fotók a csomagban* ki → Küldés: csak a csomag (és a munkakör lap) megy, fotó nem; a videó és az aláírás igen."
+      },
+      {
+       "id": "M51.11",
+       "text": "Variáns bekapcsolva → Vázlat → *Fotópont* ki: a variáns sorrendje mellett sincs ◉ Fotópont a sávban; *Rajz-hangolás* ki: a variáns rácsa és szögléptéke nem él, a sima rajz igen."
+      },
+      {
+       "id": "M51.12",
+       "text": "Variánsok → *Hosszú nyomásra* ki: a kezdőlap Sketcher csempéjén a hosszú nyomás nem kínál variánst."
+      },
+      {
+       "id": "M51.13",
+       "text": "Fent *Mind* ki: csak a Vázlat marad a sávban, rajta a Mozgat; *Mind* be: minden visszajön, a *Dedikált kör* marad, ahogy volt."
+      },
+      {
+       "id": "M51.14",
+       "text": "Az asztali Sketcher oldalon (böngésző) a ⚙ Funkciók front ugyanezt a listát mutatja; ott kikapcsolt Kérdések a telefont nem érintik (böngészőnként külön)."
+      }
+     ]
+    },
+    {
+     "n": 54,
+     "title": "M54 · Jegyzőkönyv a telefonon: the Felmérési jegyzőkönyv printed and shared from the phone",
+     "items": [
+      {
+       "id": "M54.1",
+       "text": "⚙ → **Funkciók** → *Rendezés / export*: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva."
+      },
+      {
+       "id": "M54.2",
+       "text": "Egy felmérés néhány célfotóval, egy aláírással és egy helyszín-körvonallal → Rendezés: a Küldés mellett **📄 Jegyzőkönyv**."
+      },
+      {
+       "id": "M54.3",
+       "text": "📄 Jegyzőkönyv → **🖨 Nyomtatás / PDF**: megnyílik az Android nyomtatás ablaka, A4. *PDF mentése* → a PDF-ben a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek, a vázlat, a fotók célonként, a helyszín rajza és az aláírás."
+      },
+      {
+       "id": "M54.4",
+       "text": "Ugyanez **⇪ Átadás (.html)** → PC-re: a PC táblán egy `….jegyzokonyv.html`; böngészőben megnyitva ugyanaz, mint a PDF, a fotók is látszanak (internet nélkül is), és ugyanaz, mint az Asztal Sketcher oldalán a **Jegyzőkönyv** gomb."
+      },
+      {
+       "id": "M54.5",
+       "text": "Egy fotón ▦ elmosás → a jegyzőkönyvben a fotó elmosva látszik. Egy 👤 *Személyes adat* fotó elmosás nélkül: a helyén „személyes adat, elmosás nélkül nem kerül bele”; elmosva bekerül."
+      },
+      {
+       "id": "M54.6",
+       "text": "A PC-n a HTML-ből mentett fotó (jobb klikk → kép mentése) tulajdonságaiban nincs GPS hely."
+      },
+      {
+       "id": "M54.7",
+       "text": "Helyszín → 👤 Ügyfél kitöltve, a pill „Kiadáskor törlődik”: a jegyzőkönyvben nincs ügyfél sor. „A kiadott csomagban marad”-ra kapcsolva: benne van a név, a telefon, az e-mail."
+      },
+      {
+       "id": "M54.8",
+       "text": "Egy jegyzet ⚑ Tisztázandó jelöléssel: a jegyzőkönyvben ott van. **Az ügyfélnek** bekapcsolva: se a Tisztázandó jegyzet, se az *Ellenőrizni* lista nincs benne; a többi jegyzet és a nyitott kérdések igen."
+      },
+      {
+       "id": "M54.9",
+       "text": "⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja."
+      },
+      {
+       "id": "M54.10",
+       "text": "Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et."
+      }
+     ]
     }
    ],
-   "count": 63
+   "count": 87
   }
  },
  "cross": [
