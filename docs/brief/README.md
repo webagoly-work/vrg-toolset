@@ -198,3 +198,7 @@ A fresh reader got only PACK-B and was asked to guess the trade and the locale.
 points served by one hub, routes with a length, a service entry, a checklist that grows with the scope). Together those
 shapes describe this trade to a sharp reader. Going further means abstracting the domain model itself (e.g. "assets on
 a plan, grouped by a parent asset") at the cost of design fidelity: a question for the Founder.
+
+**The Founder's answer (Q1, 2026-11-21): A — keep B as it is.** The feature shapes stay, because the design quality
+depends on them. B is anonymous at the level of words, names, numbers and locale, and is not meant to withstand a
+determined reader who infers the trade from how the features fit together.
