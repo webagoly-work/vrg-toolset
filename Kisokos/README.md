@@ -16,6 +16,13 @@ Kisokos/
     csavarok.json             5 screw kinds: thread, head, what it goes into
     szerszamok.json           3 tools: rotary hammer, wall scanner, hole cleaning
     KISOKOS.md                GENERATED cheat sheet (node Kisokos/kisokos.js md); do not edit
+  kommunikacios-vonalak/      volume kv, Kommunikációs vonalak
+    vonalak.json              27 lines (buses, networks, coax, power-line, radio, light): how it works, medium,
+                              signal + waveform, bands in Hz, rate, distance, topology, power, cable,
+                              connector, standard, where in a flat, installation rules, traps, terms, shop
+    svg/                      GENERATED: one one-pager per line + spektrum.svg (all lines on one scale)
+    KISOKOS.md                GENERATED cheat sheet with the drawings
+  lib/vonal-svg.js            the one drawing of a line, used by kisokos.js and by the Stack's 3D page
 ```
 
 ## Rules
@@ -51,6 +58,12 @@ node Kisokos/kisokos.js md
 node Stack/stack.js kisokos
 ```
 
-`check` exits 1 on any problem. `md` rewrites the cheat sheet; run it after every card change and
-commit both. `stack.js kisokos` refreshes `Stack/out/kisokos-data.js` for the 3D page (START R → S
+`check` exits 1 on any problem. `md` rewrites every volume's cheat sheet (and the line drawings); run it
+after every card change and commit the generated files with the cards.
+
+A line's `bands` is a list of `[fmin, fmax]` in Hz (several for a line on separate bands, like the mobile
+network or fibre wavelengths; `[]` for DC). The wavelength is computed, never typed. `waveform` picks the
+glyph: sine · dc · manchester · baseband · diff · carrier · ofdm · light.
+
+`stack.js kisokos` refreshes `Stack/out/kisokos-data.js` for the 3D page (START R → S
 does this and opens the page; a full `stack.js build` also does it).

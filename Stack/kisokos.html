@@ -74,6 +74,7 @@
   .hint { color: var(--faint); font-size: 12px; }
   .nb { font: 12px var(--sans); color: var(--dim); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nb b { font: 11px var(--mono); color: var(--faint); font-weight: 400; }
+  .svgbox svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
   #empty { position: absolute; inset: 0; display: none; place-items: center; text-align: center; color: var(--dim); font: 13px var(--mono); padding: 20px; }
 </style>
 </head>
@@ -510,6 +511,12 @@ function showItem(i) {
   if (it.aka && it.aka.length) h += `<div class="hint">más néven: ${esc(it.aka.join(', '))}</div>`;
   if (it.type === 'source') {
     h += row('Mi ez', esc(it.src.sub)) + row('Miért itt', esc(it.src.why)) + row('Forrás', esc(it.src.paths.join(' · ')) + ` <span class="hint">(${it.src.files} fájl)</span>`);
+  } else if (it.kind === 'vonal') {
+    h += `<div class="svgbox">${it.svg || ''}</div>`;
+    h += row('Hogyan működik', esc(c.how)) + row('Közeg', esc(c.medium)) + row('Jel', esc(c.signal)) + row('Topológia', esc(c.topology)) + row('Táplálás', esc(c.power));
+    h += row('Kábel', esc(c.cable)) + row('Csatlakozó', esc(c.connector)) + row('Szabvány', esc(c.standard)) + row('A lakásban', esc(c.home));
+    if (c.install && c.install.length) h += row('Szerelés', '<ul>' + c.install.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    if (c.related && c.related.length) h += row('Rokon vonalak', refs(it.vol, c.related));
   } else if (it.kind === 'anyag') {
     const hm = HAMMER[c.drill.hammer] || ['', c.drill.hammer];
     h += row('Felismerés', esc(c.recognise));

@@ -4,7 +4,8 @@
 //
 //   node Kisokos/kisokos.js check     validate map.json and every card (ids, places, cross-references,
 //                                     search terms); exit 1 on a problem
-//   node Kisokos/kisokos.js md        write rogzitestechnika/KISOKOS.md, the readable cheat sheet
+//   node Kisokos/kisokos.js md        write each volume's KISOKOS.md cheat sheet (and, for the lines,
+//                                     svg/<id>.svg one-pagers + svg/spektrum.svg through lib/vonal-svg.js)
 //   node Kisokos/kisokos.js stats     cards, bytes and cubes per volume and per knowledge base
 //
 // Used by Stack/lib/layers.js (layer K) and Stack/lib/kisokos.js (the 3D page's data) through load().
@@ -24,8 +25,9 @@ const path = require('path');
 const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const LANGS = ['hu', 'en', 'de'];
-const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'] };
-const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám' };
+const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'] };
+const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal' };
+const VS = require('./lib/vonal-svg');
 
 const readJson = f => JSON.parse(fs.readFileSync(f, 'utf8').replace(/^﻿/, ''));
 function bytesOf(p) {
@@ -98,6 +100,14 @@ function check(K = load()) {
       if (!c.drill || !['igen', 'nem', 'óvatosan'].includes(c.drill.hammer)) P.push(`${who}: drill.hammer must be igen, nem or óvatosan`);
       if (!Array.isArray(c.traps)) P.push(`${who}: traps must be a list`);
     }
+    if (c.kind === 'vonal') {
+      for (const f of ['how', 'medium', 'signal', 'rate', 'distance', 'topology', 'home']) if (!c[f]) P.push(`${who}: no ${f}`);
+      if (!VS.KCOL[c.waveform]) P.push(`${who}: waveform must be one of ${Object.keys(VS.KCOL).join(', ')}`);
+      if (!Array.isArray(c.bands) || c.bands.some(b => !Array.isArray(b) || b.length !== 2 || !(b[0] > 0) || !(b[1] >= b[0]) || b[1] > 1e16))
+        P.push(`${who}: bands must be [[fmin, fmax], …] in Hz, 0 < fmin ≤ fmax ([] for DC)`);
+      if (c.waveform === 'dc' && c.bands && c.bands.length) P.push(`${who}: a dc line has no bands`);
+      for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
+    }
   }
   for (const s of K.sources) { placeOk(`source ${s.id}`, s.place); if (s.missing.length) P.push(`source ${s.id}: missing ${s.missing.join(', ')}`); }
   return P;
@@ -105,6 +115,54 @@ function check(K = load()) {
 
 const name = (K, vol, id) => { const c = K.cards.find(x => x.vol === vol && x.id === id); return c ? c.title : id; };
 function md(K = load()) {
+  const out = [];
+  if (K.cards.some(c => c.vol === 'rg')) out.push(mdRg(K));
+  if (K.cards.some(c => c.vol === 'kv')) out.push(mdKv(K));
+  return out.join('\n');
+}
+
+function mdKv(K) {
+  const vol = K.map.volumes.find(v => v.id === 'kv');
+  const dir = path.join(K.root, vol.dir), sdir = path.join(dir, 'svg');
+  const cs = K.cards.filter(c => c.vol === 'kv');
+  fs.mkdirSync(sdir, { recursive: true });
+  const keep = new Set(['spektrum.svg', ...cs.map(c => c.id + '.svg')]);
+  for (const f of fs.readdirSync(sdir)) if (f.endsWith('.svg') && !keep.has(f)) fs.unlinkSync(path.join(sdir, f));
+  fs.writeFileSync(path.join(sdir, 'spektrum.svg'), VS.spectrum(cs));
+  for (const c of cs) fs.writeFileSync(path.join(sdir, c.id + '.svg'), VS.onePager(c, cs));
+  const nm = id => name(K, 'kv', id);
+  const L = ['# Kommunikációs vonalak — a Kisokos', '',
+    '*Generálva a kártyákból (`node Kisokos/kisokos.js md`); ne szerkeszd kézzel, a kártyát szerkeszd a `vonalak.json`-ban. ' +
+    'Vázlat: minden kártya ellenőrzésre vár. Minden vonal ugyanazt a rajzot kapja (`svg/<id>.svg`): a sávjai a közös 1 Hz – 1 PHz skálán, ' +
+    'alatta a hullámhossz, halványan a többi vonal, a jelalak és a fő számok.*', '',
+    '![Minden vonal egy skálán](svg/spektrum.svg)', '',
+    '## Gyorstábla', '', '| Vonal | Csoport | Sáv | Sebesség | Távolság | A lakásban |', '|---|---|---|---|---|---|'];
+  const cell = s => String(s || '').replace(/\|/g, '/');
+  for (const c of cs) L.push(`| ${c.title} | ${c.group || ''} | ${VS.bandText(c.bands)} | ${cell(c.rate)} | ${cell(c.distance)} | ${cell(c.home)} |`);
+  L.push('');
+  const groups = [...new Set(cs.map(c => c.group || ''))];
+  for (const g of groups) {
+    L.push(`## ${g ? g[0].toUpperCase() + g.slice(1) : 'Egyéb'}`, '');
+    for (const c of cs.filter(x => (x.group || '') === g)) {
+      L.push(`### ${c.title}`, '');
+      if (c.aka && c.aka.length) L.push(`*Más néven:* ${c.aka.join(', ')}`, '');
+      L.push(`![${c.title}](svg/${c.id}.svg)`, '', c.how, '');
+      const row = (k, v) => { if (v) L.push(`- **${k}:** ${v}`); };
+      row('Közeg', c.medium); row('Jel', `${c.signal} (${VS.KNAME[c.waveform]})`); row('Sáv', VS.bandText(c.bands)); row('Hullámhossz', VS.lambdaText(c.bands));
+      row('Sebesség', c.rate); row('Távolság', c.distance); row('Topológia', c.topology); row('Táplálás', c.power);
+      row('Kábel', c.cable); row('Csatlakozó', c.connector); row('Szabvány', c.standard); row('A lakásban', c.home);
+      if (c.install && c.install.length) { L.push('- **Szerelés:**'); for (const t of c.install) L.push(`  - ${t}`); }
+      if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
+      if (c.related && c.related.length) row('Rokon vonalak', c.related.map(nm).join(', '));
+      L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
+      row('Hol kapható', c.shop); L.push('');
+    }
+  }
+  fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
+  return `wrote ${path.relative(K.repo, path.join(dir, 'KISOKOS.md'))} (${cs.length} cards) + ${cs.length + 1} svg`;
+}
+
+function mdRg(K) {
   const vol = K.map.volumes.find(v => v.id === 'rg');
   const cs = K.cards.filter(c => c.vol === 'rg');
   const L = []; const nm = id => name(K, 'rg', id); const list = a => (a || []).map(nm).join(', ') || '—';
@@ -148,7 +206,7 @@ function stats(K = load()) {
   return rows.join('\n');
 }
 
-module.exports = { load, check, md, stats, KIND_HU };
+module.exports = { load, check, md, stats, KIND_HU, VS };
 
 if (require.main === module) {
   const cmd = process.argv[2];

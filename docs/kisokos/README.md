@@ -10,7 +10,8 @@ Interactive map and samples: <https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3>
 
 Status: **started** (2026-11-21). The sources live in `Kisokos/` (see its README); the Stack has a
 dedicated layer for them, **K · Kisokos**, shown in 3D by `Stack/kisokos.html` (START R → S). The first
-volume, Rögzítéstechnika, has 53 draft cards.
+volume, Rögzítéstechnika, has 53 draft cards; the second, Kommunikációs vonalak (2026-11-22), has 27
+draft line cards, each with the same generated one-pager drawing (`Kisokos/kommunikacios-vonalak/svg/`).
 
 ## 1. The topology: 8 axes, 4 rings
 
@@ -69,9 +70,9 @@ Planned materials: beton, vasbeton, üreges födémpanel, tömör tégla, ürege
 pórusbeton, mészhomoktégla, salakblokk, vályog, terméskő, gipszkarton, gipszrost, OSB és fa,
 trapézlemez, szendvicspanel, ETICS homlokzat, csempe és járólap, üveg.
 
-**Line (Kommunikációs vonalak)** — `medium`, `signal` + `waveform` (one of: sine, dc, manchester,
-baseband, diff, carrier, ofdm, light), `band` [f_min, f_max] in Hz (the wavelength is computed,
-λ = c/f), `rate`, `distance`, `connector`, `home` (where it appears in a flat). Every line is drawn
+**Line (Kommunikációs vonalak)** — `how`, `medium`, `signal` + `waveform` (one of: sine, dc, manchester,
+baseband, diff, carrier, ofdm, light), `bands` [[f_min, f_max], …] in Hz (the wavelength is computed,
+λ = c/f; `[]` = DC), `topology`, `power`, `cable`, `standard`, `install[]`, `related[]`, `rate`, `distance`, `connector`, `home` (where it appears in a flat). Every line is drawn
 on the same log scale, 1 Hz to 1 PHz, with the wavelength underneath. Seed list: 50 Hz mains
 (reference), 0–10 V / 4–20 mA, DALI, KNX TP, RS-485/Modbus, narrowband PLC (CENELEC A), VDSL2,
 broadband PLC, Ethernet Cat5e–6A, coax TV, coax SAT IF, 868 MHz (Z-Wave, LoRa), 2.4 GHz
@@ -142,6 +143,6 @@ and "what goes wrong if not".
 
 - The idea is not yet in the idea timeline (`notes/idea-timeline/data.js`, outside git): add it in
   the H: session so the Stack's I layer shows it.
-- Every Rögzítéstechnika card waits for the Founder's review.
+- Every Rögzítéstechnika and Kommunikációs vonalak card waits for the Founder's review.
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.

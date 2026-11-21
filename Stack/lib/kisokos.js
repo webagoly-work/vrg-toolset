@@ -20,14 +20,15 @@ const X = require('./fsx');
 const KL = () => { const f = path.join(__dirname, '..', '..', 'Kisokos', 'kisokos.js'); delete require.cache[require.resolve(f)]; return require(f); };
 
 function build(graph) {
-  const K = KL().load();
+  const KM = KL(), K = KM.load(), VS = KM.VS, lines = K.cards.filter(c => c.kind === 'vonal');
   if (!graph) graph = X.readJson(path.join(CFG.out, 'stack.json'), null);
   const vols = K.map.volumes.map(v => ({ id: v.id, hu: v.hu, color: v.color, n: K.cards.filter(c => c.vol === v.id).length }));
   const items = [];
   for (const c of K.cards) {
     const { vol, kind, gid, file, bytes, cubes, place, title, aka, added, ...rest } = c;   // rest = the card's own fields
     delete rest.id;
-    items.push({ id: 'card.' + gid, type: 'card', vol, kind, title, aka: aka || [], place, cubes, bytes, added, file, card: rest });
+    items.push({ id: 'card.' + gid, type: 'card', vol, kind, title, aka: aka || [], place, cubes, bytes, added, file, card: rest,
+      ...(kind === 'vonal' ? { svg: VS.onePager(c, lines) } : {}) });   // a line carries its one-pager drawing
   }
   for (const s of K.sources) items.push({ id: 'src.' + s.id, type: 'source', vol: s.volume, color: s.color, kind: 'tudásbázis', title: s.title, aka: [], place: s.place,
     cubes: s.cubes, bytes: s.bytes, added: '', file: s.paths.join(' · '), src: { sub: s.sub, why: s.why, paths: s.paths, files: s.files } });
@@ -51,7 +52,7 @@ function build(graph) {
     axes: K.map.axes.map(a => ({ n: a.n, hu: a.hu, q: a.q, A: a.A, B: a.B })),
     terms: K.terms.map(t => ({ id: t.id, axis: t.axis, pole: t.pole, ring: t.ring, title: t.title, desc: t.desc, vols: t.vols })),
     items, links,
-    stats: { cards: K.cards.length, cubes: items.reduce((s, i) => s + i.cubes, 0), coreCubes, sources: K.sources.length, problems: KL().check(K).length },
+    stats: { cards: K.cards.length, cubes: items.reduce((s, i) => s + i.cubes, 0), coreCubes, sources: K.sources.length, problems: KM.check(K).length },
   };
 }
 

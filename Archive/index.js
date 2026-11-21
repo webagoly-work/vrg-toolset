@@ -33,17 +33,18 @@ window.VRG_ARCHIVE = {
    "id": "vrg-kisokos-3d",
    "title": "VRG Kisokos 3D",
    "created": "2026-11-21",
-   "updated": "2026-11-21",
+   "updated": "2026-11-22",
    "lang": "hu",
    "vrg": true,
    "group": "VRG core",
    "kind": "tool",
-   "summary": "The Stack's K layer in 3D: the Villanyszerelés core as a sphere, 8 axes with term nodes by ring, and every Kisokos card and outside knowledge base as data cubes (1 cube = 1 KB), core cards filling the sphere from the axis entry points, Modulshop reaching in through the wall.",
+   "summary": "The Stack's K layer in 3D: the Villanyszerelés core as a sphere, 8 axes with term nodes by ring, and every Kisokos card (Rögzítéstechnika, Kommunikációs vonalak) and outside knowledge base as data cubes (1 cube = 1 KB); a line card shows its one-pager drawing on the common frequency scale.",
    "purpose": "To see how the Kisokos knowledge sits around the core and grows; a standalone snapshot of Stack/kisokos.html.",
    "context": [
     "Fork of the 2D Kisokos map (vrg-kisokos), which stays as it is",
     "Built together with the first Rögzítéstechnika volume (53 cards) and the Stack layer K",
-    "Rebuild: node Stack/stack.js kisokos --standalone <file>"
+    "Rebuild: node Stack/stack.js kisokos --standalone <file>",
+    "2026-11-22: the Kommunikációs vonalak volume added (27 lines, one shared SVG one-pager each)"
    ],
    "tags": [
     "kisokos",

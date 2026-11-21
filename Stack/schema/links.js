@@ -46,6 +46,7 @@ const LINKS = {
   // K · Kisokos
   'on-axis': R('a tengelyen van', 'lies on axis', 'tengelyén van'),
   gravitates: R('ide gravitál', 'gravitates to', 'ide gravitál ez'),
+  rokon: R('rokona', 'is related to', 'rokona'),
   // vertical joins (build: lib/join.js)
   'ref:p': R('útvonalra hivatkozik', 'names the path of', 'útvonalát említi', 'v'),
   'ref:c': R('commitra hivatkozik', 'names commit', 'commitját említi', 'v'),
