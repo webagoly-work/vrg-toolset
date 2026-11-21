@@ -53,7 +53,12 @@
     if (typeof obj === 'string') obj = JSON.parse(obj);
     if (!obj || typeof obj !== 'object') throw new Error('Nem felmérés fájl.');
     obj = clone(obj);
-    if (obj.kind === 'vrg-sketch' && obj.sketch && obj.sketch.kind === 'vrg-vazlat') { pkg = obj; S = obj.sketch; delete pkg.sketch; }
+    pkgImplied = null;
+    if (obj.kind === 'vrg-sketch' && obj.sketch && obj.sketch.kind === 'vrg-vazlat') {
+      pkg = obj; S = obj.sketch; delete pkg.sketch;
+      const cf = pkg.takeoff && pkg.takeoff.config;
+      if (cf && typeof cf.impliedDedicated === 'boolean') pkgImplied = cf.impliedDedicated;
+    }
     else if (obj.kind === 'vrg-vazlat') { pkg = null; S = obj; }
     else throw new Error('Ismeretlen fájl (kind: ' + obj.kind + ') — vrg-sketch vagy vrg-vazlat kell.');
     files.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
@@ -65,8 +70,12 @@
   // D-79: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
   const IMPLIED_KEY = 'vrg-sketcher-implied-dedicated';
   let implied = (() => { try { return localStorage.getItem(IMPLIED_KEY) === '1'; } catch (e) { return !!RULES.impliedDedicated; } })();
-  function setImplied(on) { implied = !!on; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } }
-  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp(), impliedDedicated: implied }); }
+  // F8 (WP M53, D-111): a package the phone exported carries its takeoff; until the toggle is touched here, the page counts
+  // as the phone did (its ⚙ setting is in takeoff.config), so the Desktop shows the phone's numbers
+  let pkgImplied = null;
+  function setImplied(on) { implied = !!on; pkgImplied = null; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } }
+  const impliedNow = () => pkgImplied == null ? implied : pkgImplied;
+  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp(), impliedDedicated: impliedNow() }); }
   // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
   function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
   function download(text, name, type) {
@@ -243,8 +252,8 @@
       '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button></div>' +
       (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
       (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
-      '<div class="row"><button class="pill ' + (implied ? 'sel' : 'off') + '" id="tkimplied" data-act="tkimplied" style="--c:#3dae5a" title="Minden felmérésre ebben a böngészőben">' +
-      '<i>◉</i>Dedikált kör a nagy gépeknek (≈)</button></div>' +
+      '<div class="row"><button class="pill ' + (impliedNow() ? 'sel' : 'off') + '" id="tkimplied" data-act="tkimplied" style="--c:#3dae5a" title="Minden felmérésre ebben a böngészőben">' +
+      '<i>◉</i>Dedikált kör a nagy gépeknek (≈)</button>' + (pkgImplied != null ? '<span class="small faint" id="tkfromphone">a telefon beállítása szerint</span>' : '') + '</div>' +
       (t.checks.length ? '<div class="small" style="color:#e0b020">' + t.checks.map(esc).join('<br>') + '</div>' : '') +
       '<div class="small faint">' + (pkg ? 'Hosszak a megoldott tervből (mm).' : 'Nincs megoldott terv: a hosszak a vázlat léptékéből, mind ≈.') + ' Árat nem tartalmaz (Workflow Kit).</div></div>';
   }
@@ -527,7 +536,7 @@
       case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
       case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
-      case 'tkimplied': setImplied(!implied); render(); break;
+      case 'tkimplied': setImplied(!impliedNow()); render(); break;
       case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;

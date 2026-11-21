@@ -359,7 +359,6 @@ object Takeoff {
             return s.room(id)?.let { it.name.ifEmpty { id } } ?: id
         }
         val notes = s.entries.map { e -> Note(e.id, e.text, e.chips.map { c -> kit.chip(c)?.label ?: c }, roomName(e.room), e.open) }
-        val stem = SketchJson.fileStem(s)
         val purposeIds = kit.purposes.map { it.id }.toMutableList()
         s.captures.forEach { if (it.purpose !in purposeIds) purposeIds += it.purpose }
         val roomShots = s.photos.sumOf { it.shots.size }
@@ -368,7 +367,7 @@ object Takeoff {
             val n = list.size + if (id == "szoba") roomShots else 0
             if (n == 0) return@mapNotNull null
             val k = kit.purpose(id)
-            PhotoGroup(id, k?.label ?: id, k?.sym ?: "◉", n, list.map { "${stem}_${it.id}_${it.purpose}.jpg" })
+            PhotoGroup(id, k?.label ?: id, k?.sym ?: "◉", n, list.map { Intake.exportName(s, it) })   // F8: the board name (.mp4, _alairas.png)
         }
         val rooms = plan.rooms.map { RoomRow(it.id, roomTitle(it), it.kinds, a1(area(it.poly)), it.est,
             kit.scope.filter { k -> k.qty && (s.roomScope[it.id]?.get(k.id) ?: 0) > 0 }.map { k -> k to s.roomScope[it.id]!![k.id]!! }) }

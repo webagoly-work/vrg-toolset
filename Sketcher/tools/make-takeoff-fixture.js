@@ -73,6 +73,10 @@ const CASES = [
   // F4 (WP M49): the client's wants by room show on the rooms; the job totals stay what drives the items
   ['wants by room: two in the kitchen, one in the pantry, one for the job', Object.assign(clone(RAW), { scope: Object.assign({}, RAW.scope, { dugalj: 4, lampa: 1 }),
     roomScope: { R1: { dugalj: 2, lampa: 1 }, R2: { dugalj: 1 } } }), {}],
+  // F8 (WP M53): a walk video and the client's signature are listed under the names the phone's export gives them
+  ['Kamera 2 media: a video (.mp4) and a signature (_alairas.png) among the photos', Object.assign(clone(RAW), { captures: RAW.captures.concat([
+    { id: 'C40', file: 'v.mp4', purpose: 'nyomvonal', at: NOW, note: '', kind: 'video', durationMs: 61000, bytes: 1000 },
+    { id: 'C41', file: 's.png', purpose: 'dokumentum', at: NOW, note: 'A felmérést átvettem', kind: 'signature', signer: 'Ügyfél' }]) }), {}],
   ['an empty survey', { kind: 'vrg-vazlat', v: 2, id: 'E0', name: '', seq: 0, rooms: [], points: [], circuits: [], routes: [], memos: [], entries: [], scope: {}, answers: {}, captures: [] }, {}],
 ];
 

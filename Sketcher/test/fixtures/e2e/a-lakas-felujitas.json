@@ -1,0 +1,2053 @@
+{
+ "package": {
+  "exported": 1763700000000,
+  "takeoff": {
+   "rooms": [
+    {
+     "est": false,
+     "name": "Konyha",
+     "areaM2": 10.8,
+     "wants": [{
+      "sym": "⊙",
+      "qty": 3,
+      "id": "dugalj",
+      "label": "Dugalj"
+     }],
+     "kinds": ["konyha"],
+     "id": "R1"
+    },
+    {
+     "est": false,
+     "name": "Fürdő",
+     "areaM2": 5.4,
+     "wants": [{
+      "sym": "✱",
+      "qty": 1,
+      "id": "lampa",
+      "label": "Lámpa"
+     }],
+     "kinds": ["furdo"],
+     "id": "R2"
+    },
+    {
+     "est": false,
+     "name": "Előszoba",
+     "areaM2": 6.5,
+     "wants": [{
+      "sym": "⊙",
+      "qty": 1,
+      "id": "dugalj",
+      "label": "Dugalj"
+     }],
+     "kinds": [],
+     "id": "R3"
+    }
+   ],
+   "notes": [
+    {
+     "chips": [
+      "Probléma",
+      "Fontos"
+     ],
+     "id": "E26",
+     "text": "Az alu vezetéket mind cserélni kell",
+     "room": "Konyha",
+     "open": false
+    },
+    {
+     "chips": ["Kívánság"],
+     "id": "E27",
+     "text": "Indukciós főzőlap kell a konyhába",
+     "room": "Konyha",
+     "open": false
+    },
+    {
+     "chips": [
+      "Lakott",
+      "Háziállat"
+     ],
+     "id": "E28",
+     "text": "",
+     "room": "",
+     "open": false
+    },
+    {
+     "chips": ["Tisztázandó"],
+     "id": "E29",
+     "text": "A fürdő szellőzője a közösbe megy?",
+     "room": "Fürdő",
+     "open": true
+    }
+   ],
+   "kind": "vrg-sketch-takeoff",
+   "made": 1763700000000,
+   "counts": {
+    "tisztazando": 1,
+    "rooms": 3,
+    "answered": 8,
+    "work": 14,
+    "est": 2,
+    "questionsOpen": 23,
+    "areaM2": 22.7,
+    "decisions": 4,
+    "items": 15,
+    "photos": 8,
+    "open": 5
+   },
+   "questions": [
+    {
+     "q": "lenyeg",
+     "options": ["Csere, felújítás"],
+     "label": "Mi a kérés lényege?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "ingatlan",
+     "options": ["Társasházi lakás"],
+     "label": "Milyen ingatlan?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "hozzaferes",
+     "options": [],
+     "label": "Ki fér hozzá az ingatlanhoz?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "hatarido",
+     "options": [],
+     "label": "Mikorra kell elkészülni?",
+     "state": "later",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "keret",
+     "options": ["Van, legfeljebb \u2026"],
+     "label": "Van költségkeret?",
+     "state": "answered",
+     "text": "1,5 M Ft",
+     "who": "ugyfel"
+    },
+    {
+     "q": "lakott",
+     "options": [],
+     "label": "Lakott lesz közben az ingatlan?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "foto",
+     "options": [],
+     "label": "Fényképezhetünk?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "dontes",
+     "options": [],
+     "label": "Ki dönt a megrendelésről?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "kor",
+     "options": ["1970\u20131990"],
+     "label": "Mikor készült a hálózat?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "anyag",
+     "options": ["Alumínium"],
+     "label": "Vezeték anyaga?",
+     "state": "answered",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "fi",
+     "options": [],
+     "label": "Van FI-relé (életvédelmi)?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "biztositek",
+     "options": [],
+     "label": "Biztosítékok típusa?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "vizsgalat",
+     "options": [],
+     "label": "Mikor volt utoljára érintésvédelmi felülvizsgálat?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "fazis",
+     "options": [],
+     "label": "Hány fázis a bekötés most?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "fobizt",
+     "options": [],
+     "label": "Főbiztosíték?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "mero_hely",
+     "options": [],
+     "label": "Hol van a mérő?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "bekotes",
+     "options": [],
+     "label": "Hogyan jön be a hálózat?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_fogyaszto",
+     "options": [],
+     "label": "Lesz új nagy fogyasztó?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "mero_allapot",
+     "options": [],
+     "label": "Mérőszekrény állapota?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "szabad_hely",
+     "options": [],
+     "label": "Van szabad hely az elosztóban?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "felirat",
+     "options": [],
+     "label": "Van áramköri felirat / lista?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "foldeles",
+     "options": [],
+     "label": "Földelés?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_eloszto",
+     "options": [],
+     "label": "Kell új elosztó?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "furdo_mit",
+     "options": [
+      "Új lámpák",
+      "Szellőző"
+     ],
+     "label": "Mit szeretne a fürdőben?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "gepek",
+     "options": [
+      "Főzőlap",
+      "Mosogatógép"
+     ],
+     "label": "Milyen gépek lesznek a konyhában?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "fozolap_tipus",
+     "options": ["Indukció"],
+     "label": "Milyen főzőlap?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "csempe",
+     "options": [],
+     "label": "Kész a csempézés?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "bekotes_hely",
+     "options": [],
+     "label": "Ki jelöli ki a gépek bekötési helyét?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "furdo_zona",
+     "options": [],
+     "label": "Hol lesz a kád / zuhany (a zónák miatt)?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "furdo_fi",
+     "options": [],
+     "label": "Külön FI-relé védje a fürdő körét?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "furdo_tukor",
+     "options": [],
+     "label": "Tükörvilágítás és tükör melletti aljzat kell?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    }
+   ],
+   "source": {
+    "level": "upper",
+    "name": "Petőfi u. 7. 2/5",
+    "variant": "furdo-felujitas",
+    "id": "S-A",
+    "plan": "megoldott"
+   },
+   "photos": [
+    {
+     "purpose": "epulet",
+     "sym": "⌂",
+     "files": ["petofi-u-7-2-5_C33_epulet.jpg"],
+     "label": "Épület kívülről",
+     "n": 1
+    },
+    {
+     "purpose": "eloszto",
+     "sym": "▣",
+     "files": ["petofi-u-7-2-5_C30_eloszto.jpg"],
+     "label": "Elosztó",
+     "n": 1
+    },
+    {
+     "purpose": "hiba",
+     "sym": "⚠",
+     "files": [
+      "petofi-u-7-2-5_C31_hiba.jpg",
+      "petofi-u-7-2-5_C32_hiba.jpg"
+     ],
+     "label": "Hiba, veszély",
+     "n": 2
+    },
+    {
+     "purpose": "nyomvonal",
+     "sym": "〰",
+     "files": ["petofi-u-7-2-5_C34_nyomvonal.mp4"],
+     "label": "Nyomvonal, fal",
+     "n": 1
+    },
+    {
+     "purpose": "szoba",
+     "sym": "◎",
+     "files": [],
+     "label": "Szoba (Fotópont)",
+     "n": 2
+    },
+    {
+     "purpose": "dokumentum",
+     "sym": "▧",
+     "files": ["petofi-u-7-2-5_C35_alairas.png"],
+     "label": "Dokumentum",
+     "n": 1
+    }
+   ],
+   "checks": [
+    "Gépbekötés a Munkakörben: 3, fix bekötés a vázlaton: 1",
+    "A gépek, rendszerek szerint 2 dedikált kör kellhet, a vázlaton 1 van"
+   ],
+   "v": 1,
+   "memos": [{
+    "id": "J24",
+    "text": "régi alu, porcelán dobozok"
+   }],
+   "scope": [
+    {
+     "label": "A munka jellege",
+     "items": [
+      {
+       "sym": "↻",
+       "qty": 1,
+       "id": "felujitas",
+       "label": "Felújítás, csere"
+      },
+      {
+       "sym": "▣",
+       "qty": 1,
+       "id": "eloszto",
+       "label": "Elosztó csere"
+      }
+     ],
+     "group": "jelleg"
+    },
+    {
+     "label": "Terület",
+     "items": [
+      {
+       "sym": "🍳",
+       "qty": 1,
+       "id": "konyha",
+       "label": "Konyha"
+      },
+      {
+       "sym": "🛁",
+       "qty": 1,
+       "id": "furdo",
+       "label": "Fürdő"
+      }
+     ],
+     "group": "terulet"
+    },
+    {
+     "label": "Igények",
+     "items": [
+      {
+       "sym": "⊙",
+       "qty": 5,
+       "id": "dugalj",
+       "label": "Dugalj"
+      },
+      {
+       "sym": "✱",
+       "qty": 1,
+       "id": "lampa",
+       "label": "Lámpa"
+      },
+      {
+       "sym": "⊞",
+       "qty": 1,
+       "id": "fozolap",
+       "label": "Főzőlap"
+      },
+      {
+       "sym": "◌",
+       "qty": 1,
+       "id": "mosogatogep",
+       "label": "Mosogatógép"
+      },
+      {
+       "sym": "✣",
+       "qty": 1,
+       "id": "szellozo",
+       "label": "Szellőző"
+      }
+     ],
+     "group": "igeny"
+    }
+   ],
+   "decisions": [
+    {
+     "q": "uj_eloszto",
+     "affects": ["eloszto.csere"],
+     "label": "Kell új elosztó?",
+     "state": "open",
+     "who": "ugyfel"
+    },
+    {
+     "q": "szabad_hely",
+     "affects": ["eloszto.csere"],
+     "label": "Van szabad hely az elosztóban?",
+     "state": "open",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_fogyaszto",
+     "affects": [
+      "gep.fozolap",
+      "gep.mosogatogep",
+      "gep.szellozo",
+      "aramkor.dedikalt"
+     ],
+     "label": "Lesz új nagy fogyasztó?",
+     "state": "open",
+     "who": "ugyfel"
+    },
+    {
+     "q": "fazis",
+     "affects": ["aramkor.dedikalt"],
+     "label": "Hány fázis a bekötés most?",
+     "state": "open",
+     "who": "szemle"
+    }
+   ],
+   "config": {
+    "endReserveMm": 300,
+    "impliedDedicated": false,
+    "looseEndMm": 0,
+    "ceilingMm": 2700
+   },
+   "items": [
+    {
+     "note": "Munkakör: 5, vázlat: 1",
+     "unit": "db",
+     "refs": ["P10"],
+     "sym": "⊙",
+     "work": true,
+     "cat": "pont",
+     "qty": 5,
+     "est": true,
+     "id": "pont.socket.uj",
+     "label": "Dugalj \u2014 új",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P9"],
+     "sym": "⊙",
+     "work": true,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.socket.csere",
+     "label": "Dugalj \u2014 csere",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P8"],
+     "sym": "⊙",
+     "work": true,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.socket.bontas",
+     "label": "Dugalj \u2014 bontás",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P13"],
+     "sym": "⊘",
+     "work": false,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.switch.marad",
+     "label": "Kapcsoló \u2014 meglévő marad",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P14"],
+     "sym": "✱",
+     "work": true,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.light.uj",
+     "label": "Lámpa \u2014 új",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P12"],
+     "sym": "✱",
+     "work": true,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.light.csere",
+     "label": "Lámpa \u2014 csere",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P11"],
+     "sym": "⊗",
+     "work": true,
+     "cat": "pont",
+     "qty": 1,
+     "est": false,
+     "id": "pont.fixed.uj",
+     "label": "Fix bekötés \u2014 új",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": [],
+     "sym": "⊞",
+     "work": true,
+     "cat": "gep",
+     "qty": 1,
+     "est": false,
+     "id": "gep.fozolap",
+     "label": "Főzőlap",
+     "open": ["uj_fogyaszto"]
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": [],
+     "sym": "◌",
+     "work": true,
+     "cat": "gep",
+     "qty": 1,
+     "est": false,
+     "id": "gep.mosogatogep",
+     "label": "Mosogatógép",
+     "open": ["uj_fogyaszto"]
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": [],
+     "sym": "✣",
+     "work": true,
+     "cat": "gep",
+     "qty": 1,
+     "est": false,
+     "id": "gep.szellozo",
+     "label": "Szellőző",
+     "open": ["uj_fogyaszto"]
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": [
+      "K20",
+      "K22"
+     ],
+     "sym": "◌",
+     "work": true,
+     "cat": "aramkor",
+     "qty": 2,
+     "est": false,
+     "id": "aramkor.altalanos",
+     "label": "Áramkör \u2014 általános",
+     "open": []
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["K21"],
+     "sym": "◉",
+     "work": true,
+     "cat": "aramkor",
+     "qty": 1,
+     "est": false,
+     "id": "aramkor.dedikalt",
+     "label": "Áramkör \u2014 dedikált",
+     "open": [
+      "uj_fogyaszto",
+      "fazis"
+     ]
+    },
+    {
+     "note": "",
+     "unit": "db",
+     "refs": ["P15"],
+     "sym": "▣",
+     "work": true,
+     "cat": "eloszto",
+     "qty": 1,
+     "est": false,
+     "id": "eloszto.csere",
+     "label": "Elosztó \u2014 csere",
+     "open": [
+      "uj_eloszto",
+      "szabad_hely"
+     ]
+    },
+    {
+     "note": "nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz",
+     "unit": "m",
+     "refs": ["N23"],
+     "sym": "〰",
+     "work": true,
+     "cat": "kabel",
+     "qty": 4.9,
+     "est": false,
+     "parts": [{
+      "ref": "N23",
+      "label": "Világítás",
+      "m": 4.9
+     }],
+     "id": "kabel.nyomvonal",
+     "label": "Kábel a nyomvonalon",
+     "open": []
+    },
+    {
+     "note": "az elosztótól a legközelebbi pontig, derékszögben",
+     "unit": "m",
+     "refs": [
+      "K20",
+      "K21"
+     ],
+     "sym": "⚡",
+     "work": true,
+     "cat": "kabel",
+     "qty": 18.9,
+     "est": true,
+     "parts": [
+      {
+       "ref": "K20",
+       "label": "Konyha dugalj",
+       "m": 10.6
+      },
+      {
+       "ref": "K21",
+       "label": "Főzőlap",
+       "m": 8.3
+      }
+     ],
+     "id": "kabel.bekotes",
+     "label": "Kábel az elosztótól (rajzolatlan)",
+     "open": []
+    }
+   ]
+  },
+  "level": "upper",
+  "kind": "vrg-sketch",
+  "v": 1,
+  "name": "Petőfi u. 7. 2/5",
+  "sketch": {
+   "rooms": [
+    {
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       120,
+       0
+      ],
+      [
+       120,
+       100
+      ],
+      [
+       0,
+       100
+      ]
+     ],
+     "name": "",
+     "kinds": ["konyha"],
+     "id": "R1"
+    },
+    {
+     "poly": [
+      [
+       120,
+       0
+      ],
+      [
+       180,
+       0
+      ],
+      [
+       180,
+       100
+      ],
+      [
+       120,
+       100
+      ]
+     ],
+     "name": "",
+     "kinds": ["furdo"],
+     "id": "R2"
+    },
+    {
+     "poly": [
+      [
+       0,
+       100
+      ],
+      [
+       180,
+       100
+      ],
+      [
+       180,
+       140
+      ],
+      [
+       0,
+       140
+      ]
+     ],
+     "name": "Előszoba",
+     "kinds": [],
+     "id": "R3"
+    }
+   ],
+   "presetsV": 2,
+   "plugins": [
+    "jegyzet",
+    "alaprajz",
+    "villany",
+    "fotopont"
+   ],
+   "answers": {
+    "doksi": {
+     "at": 1763699995000,
+     "options": [],
+     "text": "",
+     "state": "skip"
+    },
+    "gepek": {
+     "at": 1763699995000,
+     "options": [
+      "fozolap",
+      "mosogatogep"
+     ],
+     "text": "",
+     "state": "answered"
+    },
+    "keret": {
+     "at": 1763699995000,
+     "options": ["max"],
+     "text": "1,5 M Ft",
+     "state": "answered"
+    },
+    "furdo_mit": {
+     "at": 1763699995000,
+     "options": [
+      "lampa",
+      "szellozo"
+     ],
+     "text": "",
+     "state": "answered"
+    },
+    "anyag": {
+     "at": 1763699995000,
+     "options": ["alu"],
+     "text": "",
+     "state": "answered"
+    },
+    "lenyeg": {
+     "at": 1763699995000,
+     "options": ["csere"],
+     "text": "",
+     "state": "answered"
+    },
+    "fozolap_tipus": {
+     "at": 1763699995000,
+     "options": ["indukcio"],
+     "text": "",
+     "state": "answered"
+    },
+    "hatarido": {
+     "at": 1763699995000,
+     "options": [],
+     "text": "",
+     "state": "later"
+    },
+    "ingatlan": {
+     "at": 1763699995000,
+     "options": ["tarsashaz"],
+     "text": "",
+     "state": "answered"
+    },
+    "kor": {
+     "at": 1763699995000,
+     "options": ["70-90"],
+     "text": "",
+     "state": "answered"
+    }
+   },
+   "roomScope": {
+    "R2": {"lampa": 1},
+    "R3": {"dugalj": 1},
+    "R1": {"dugalj": 3}
+   },
+   "photos": [{
+    "at": [
+     60,
+     60
+    ],
+    "id": "F25",
+    "shots": [
+     {
+      "file": "F-k-e.jpg",
+      "deg": 0,
+      "taken": 1763699991000
+     },
+     {
+      "file": "F-k-d.jpg",
+      "deg": 180,
+      "taken": 1763699991100
+     }
+    ],
+    "room": "R1"
+   }],
+   "seen": {
+    "fazis": 1763699999600,
+    "fi": 1763699999600,
+    "furdo_mit": 1763699999600,
+    "uj_eloszto": 1763699999600,
+    "dontes": 1763699999600,
+    "lakott": 1763699999600,
+    "uj_fogyaszto": 1763699999600,
+    "bekotes_hely": 1763699999600,
+    "bekotes": 1763699999600,
+    "kor": 1763699999600,
+    "felirat": 1763699999600,
+    "foldeles": 1763699999600,
+    "fobizt": 1763699999600,
+    "furdo_tukor": 1763699999600,
+    "keret": 1763699999600,
+    "anyag": 1763699999600,
+    "hozzaferes": 1763699999600,
+    "hatarido": 1763699999600,
+    "mero_hely": 1763699999600,
+    "doksi": 1763699999600,
+    "gepek": 1763699999600,
+    "furdo_zona": 1763699999600,
+    "lenyeg": 1763699999600,
+    "vizsgalat": 1763699999600,
+    "foto": 1763699999600,
+    "szabad_hely": 1763699999600,
+    "biztositek": 1763699999600,
+    "furdo_fi": 1763699999600,
+    "fozolap_tipus": 1763699999600,
+    "ingatlan": 1763699999600,
+    "csempe": 1763699999600,
+    "mero_allapot": 1763699999600
+   },
+   "points": [
+    {
+     "st": "meglevo",
+     "edge": 0,
+     "at": [
+      40,
+      0
+     ],
+     "t": 0.3333,
+     "id": "P8",
+     "type": "socket",
+     "room": "R1"
+    },
+    {
+     "st": "meglevo",
+     "edge": 0,
+     "at": [
+      80,
+      0
+     ],
+     "t": 0.6667,
+     "id": "P9",
+     "type": "socket",
+     "room": "R1"
+    },
+    {
+     "st": "tervezett",
+     "edge": 3,
+     "at": [
+      0,
+      50
+     ],
+     "t": 0.5,
+     "id": "P10",
+     "type": "socket",
+     "room": "R1"
+    },
+    {
+     "st": "tervezett",
+     "edge": 1,
+     "at": [
+      120,
+      30
+     ],
+     "t": 0.3,
+     "id": "P11",
+     "type": "fixed",
+     "room": "R1"
+    },
+    {
+     "st": "meglevo",
+     "at": [
+      60,
+      50
+     ],
+     "id": "P12",
+     "type": "light",
+     "room": "R1"
+    },
+    {
+     "st": "meglevo",
+     "edge": 2,
+     "at": [
+      10,
+      100
+     ],
+     "t": 0.9167,
+     "id": "P13",
+     "type": "switch",
+     "room": "R1"
+    },
+    {
+     "st": "tervezett",
+     "at": [
+      150,
+      50
+     ],
+     "id": "P14",
+     "type": "light",
+     "room": "R2"
+    },
+    {
+     "st": "meglevo",
+     "edge": 1,
+     "at": [
+      180,
+      120
+     ],
+     "t": 0.5,
+     "id": "P15",
+     "type": "board",
+     "room": "R3"
+    }
+   ],
+   "routes": [{
+    "a": "P13",
+    "b": "P12",
+    "circuit": "K22",
+    "id": "N23",
+    "pts": [
+     [
+      10,
+      100
+     ],
+     [
+      10,
+      60
+     ],
+     [
+      60,
+      50
+     ]
+    ]
+   }],
+   "measures": [
+    {
+     "mm": 3600,
+     "edge": -1,
+     "kind": "szel",
+     "id": "M4",
+     "room": "R1"
+    },
+    {
+     "mm": 3000,
+     "edge": -1,
+     "kind": "mely",
+     "id": "M5",
+     "room": "R1"
+    },
+    {
+     "mm": 1800,
+     "edge": -1,
+     "kind": "szel",
+     "id": "M6",
+     "room": "R2"
+    },
+    {
+     "mm": 1200,
+     "edge": -1,
+     "kind": "mely",
+     "id": "M7",
+     "room": "R3"
+    }
+   ],
+   "memos": [{
+    "at": [
+     45,
+     8
+    ],
+    "id": "J24",
+    "text": "régi alu, porcelán dobozok",
+    "target": "P8"
+   }],
+   "scope": {
+    "felujitas": 1,
+    "lampa": 1,
+    "mosogatogep": 1,
+    "eloszto": 1,
+    "furdo": 1,
+    "szellozo": 1,
+    "dugalj": 5,
+    "fozolap": 1,
+    "konyha": 1
+   },
+   "variant": "furdo-felujitas",
+   "id": "S-A",
+   "lines": [],
+   "seq": 35,
+   "circuits": [
+    {
+     "col": 4293420060,
+     "ded": false,
+     "members": [
+      "P8",
+      "P9",
+      "P10"
+     ],
+     "name": "Konyha dugalj",
+     "id": "K20",
+     "board": "P15"
+    },
+    {
+     "col": 4280978651,
+     "ded": true,
+     "members": ["P11"],
+     "name": "Főzőlap",
+     "id": "K21",
+     "board": "P15"
+    },
+    {
+     "col": 4282232410,
+     "ded": false,
+     "members": [
+      "P12",
+      "P13",
+      "P14"
+     ],
+     "name": "Világítás",
+     "id": "K22",
+     "board": "P15"
+    }
+   ],
+   "variantOn": true,
+   "captures": [
+    {
+     "note": "",
+     "file": "C-eloszto.jpg",
+     "at": 1763699996000,
+     "purpose": "eloszto",
+     "lon": 19.040235,
+     "id": "C30",
+     "ocrAt": 1763699996010,
+     "room": "R3",
+     "lat": 47.497912,
+     "target": "P15",
+     "ocr": [
+      {
+       "kind": "mero_szam",
+       "raw": "No. 12345678",
+       "value": "12345678"
+      },
+      {
+       "kind": "aram",
+       "raw": "3×25A",
+       "value": "3×25 A"
+      },
+      {
+       "kind": "megszakito",
+       "raw": "B16",
+       "value": "B16"
+      },
+      {
+       "kind": "fi",
+       "raw": "30mA",
+       "value": "30 mA"
+      }
+     ]
+    },
+    {
+     "phase": "elotte",
+     "note": "a lakó a képen",
+     "file": "C-hiba1.jpg",
+     "at": 1763699996200,
+     "purpose": "hiba",
+     "privacy": true,
+     "lon": 19.040235,
+     "id": "C31",
+     "marks": [
+      {
+       "col": 4293420060,
+       "kind": "elmos",
+       "text": "",
+       "pts": [
+        [
+         0.1,
+         0.1
+        ],
+        [
+         0.4,
+         0.5
+        ]
+       ]
+      },
+      {
+       "col": 4293420060,
+       "kind": "nyil",
+       "text": "",
+       "pts": [
+        [
+         0.6,
+         0.6
+        ],
+        [
+         0.8,
+         0.7
+        ]
+       ]
+      }
+     ],
+     "room": "R1",
+     "lat": 47.497912,
+     "target": "P8"
+    },
+    {
+     "phase": "utana",
+     "note": "",
+     "file": "C-hiba2.jpg",
+     "at": 1763699997000,
+     "purpose": "hiba",
+     "id": "C32",
+     "room": "R1",
+     "pair": "C31",
+     "target": "P8"
+    },
+    {
+     "note": "",
+     "keepGps": true,
+     "file": "C-epulet.jpg",
+     "at": 1763699997100,
+     "purpose": "epulet",
+     "lon": 19.0402,
+     "id": "C33",
+     "lat": 47.4979
+    },
+    {
+     "note": "",
+     "file": "V-seta.mp4",
+     "at": 1763699997500,
+     "purpose": "nyomvonal",
+     "kind": "video",
+     "bytes": 41943040,
+     "id": "C34",
+     "durationMs": 72000,
+     "room": "R3"
+    },
+    {
+     "note": "A felmérést átvettem, és hozzájárulok a fotózáshoz.",
+     "file": "S-alairas.png",
+     "at": 1763699999000,
+     "purpose": "dokumentum",
+     "kind": "signature",
+     "id": "C35",
+     "signer": "Kovács Éva"
+    }
+   ],
+   "level": "upper",
+   "kind": "vrg-vazlat",
+   "created": 1763696400000,
+   "dismissed": [],
+   "tagUses": [
+    {
+     "id": "U16",
+     "tag": "T-bontas",
+     "target": "P8"
+    },
+    {
+     "id": "U17",
+     "tag": "T-csere",
+     "target": "P9"
+    },
+    {
+     "id": "U18",
+     "tag": "T-csere",
+     "target": "P12"
+    },
+    {
+     "id": "U19",
+     "tag": "T-ip44",
+     "target": "P14"
+    }
+   ],
+   "tags": [
+    {
+     "col": 4280978651,
+     "name": "Fürdő",
+     "id": "T-furdo",
+     "preset": "kind:furdo"
+    },
+    {
+     "col": 4292915232,
+     "name": "Konyha",
+     "id": "T-konyha",
+     "preset": "kind:konyha"
+    },
+    {
+     "col": 4280330400,
+     "name": "Nedves",
+     "id": "T-nedves",
+     "preset": "wet"
+    },
+    {
+     "col": 4282232410,
+     "name": "IP44",
+     "id": "T-ip44",
+     "preset": "ip44"
+    },
+    {
+     "col": 4292232517,
+     "name": "Dedikált",
+     "id": "T-ded",
+     "preset": "dedicated"
+    },
+    {
+     "col": 4287257814,
+     "name": "Bontás",
+     "id": "T-bontas",
+     "preset": "remove"
+    },
+    {
+     "col": 4293420060,
+     "name": "Csere",
+     "id": "T-csere",
+     "preset": "replace"
+    },
+    {
+     "col": 4280330400,
+     "name": "Zóna 1",
+     "id": "T-zona1"
+    },
+    {
+     "col": 4283723952,
+     "name": "Zóna 2",
+     "id": "T-zona2"
+    }
+   ],
+   "site": {
+    "outline": [
+     [
+      47.4979348,
+      19.0401497
+     ],
+     [
+      47.497918,
+      19.0402669
+     ],
+     [
+      47.4978652,
+      19.0402503
+     ],
+     [
+      47.497882,
+      19.0401331
+     ]
+    ],
+    "address": "Budapest, Petőfi u. 7.",
+    "footprint": {
+     "area": 54,
+     "at": 1763699999500,
+     "d": 6,
+     "src": "osm",
+     "w": 9,
+     "angle": 12
+    },
+    "lon": 19.0402,
+    "source": "osm",
+    "place": {
+     "auto": true,
+     "at": 1763699999500,
+     "rot": 12,
+     "lon": 19.0402,
+     "lat": 47.4979
+    },
+    "lat": 47.4979
+   },
+   "entries": [
+    {
+     "at": 1763699993000,
+     "chips": [
+      "problema",
+      "fontos"
+     ],
+     "id": "E26",
+     "text": "Az alu vezetéket mind cserélni kell",
+     "room": "R1"
+    },
+    {
+     "voice": true,
+     "at": 1763699993100,
+     "chips": ["kivansag"],
+     "id": "E27",
+     "text": "Indukciós főzőlap kell a konyhába",
+     "room": "R1"
+    },
+    {
+     "at": 1763699993200,
+     "chips": [
+      "lakott",
+      "haziallat"
+     ],
+     "id": "E28",
+     "text": ""
+    },
+    {
+     "at": 1763699993300,
+     "chips": ["tisztazando"],
+     "id": "E29",
+     "text": "A fürdő szellőzője a közösbe megy?",
+     "room": "R2",
+     "open": true
+    }
+   ],
+   "v": 2,
+   "name": "Petőfi u. 7. 2/5",
+   "updated": 1763700000000
+  },
+  "plan": {
+   "data": {
+    "floors": [
+     {
+      "stage": "outline",
+      "level": "upper",
+      "nameAuto": true,
+      "kind": "konyha",
+      "poly": [
+       [
+        0,
+        0
+       ],
+       [
+        3600,
+        0
+       ],
+       [
+        3600,
+        3000
+       ],
+       [
+        0,
+        3000
+       ]
+      ],
+      "clear": true,
+      "name": "Konyha",
+      "sk": {
+       "der": [],
+       "src": "vazlat",
+       "est": [],
+       "mea": [
+        0,
+        1,
+        2,
+        3
+       ],
+       "wants": {"dugalj": 3},
+       "id": "R1"
+      },
+      "kinds": ["konyha"],
+      "id": "F1",
+      "fill": "#e9e5da"
+     },
+     {
+      "stage": "outline",
+      "level": "upper",
+      "nameAuto": true,
+      "kind": "furdo",
+      "poly": [
+       [
+        3600,
+        0
+       ],
+       [
+        5400,
+        0
+       ],
+       [
+        5400,
+        3000
+       ],
+       [
+        3600,
+        3000
+       ]
+      ],
+      "clear": true,
+      "name": "Fürdő",
+      "sk": {
+       "der": [
+        1,
+        3
+       ],
+       "src": "vazlat",
+       "est": [],
+       "mea": [
+        0,
+        2
+       ],
+       "wants": {"lampa": 1},
+       "id": "R2"
+      },
+      "kinds": ["furdo"],
+      "id": "F2",
+      "fill": "#e9e5da"
+     },
+     {
+      "stage": "outline",
+      "level": "upper",
+      "poly": [
+       [
+        0,
+        3000
+       ],
+       [
+        5400,
+        3000
+       ],
+       [
+        5400,
+        4200
+       ],
+       [
+        0,
+        4200
+       ]
+      ],
+      "clear": true,
+      "name": "Előszoba",
+      "sk": {
+       "der": [
+        0,
+        2
+       ],
+       "src": "vazlat",
+       "est": [],
+       "mea": [
+        1,
+        3
+       ],
+       "wants": {"dugalj": 1},
+       "id": "R3"
+      },
+      "id": "F3",
+      "fill": "#e9e5da"
+     }
+    ],
+    "notes": [
+     {
+      "level": "upper",
+      "x": 1350,
+      "sk": {
+       "src": "vazlat",
+       "id": "J24",
+       "target": "D4"
+      },
+      "y": 240,
+      "id": "N19",
+      "text": "régi alu, porcelán dobozok"
+     },
+     {
+      "hidden": true,
+      "level": "upper",
+      "x": 1800,
+      "sk": {
+       "src": "vazlat",
+       "photo": true,
+       "id": "F25",
+       "shots": [
+        {
+         "side": "É",
+         "file": "petofi-u-7-2-5_F25_eszak.jpg",
+         "deg": 0,
+         "taken": 1763699991000
+        },
+        {
+         "side": "D",
+         "file": "petofi-u-7-2-5_F25_del.jpg",
+         "deg": 180,
+         "taken": 1763699991100
+        }
+       ],
+       "room": "Konyha"
+      },
+      "y": 1800,
+      "id": "N20",
+      "text": "Fotópont · Konyha (2/4)"
+     }
+    ],
+    "devices": [
+     {
+      "level": "upper",
+      "x": 1200,
+      "h": 300,
+      "sk": {
+       "st": "meglevo",
+       "t": "socket",
+       "src": "vazlat",
+       "id": "P8",
+       "remove": true,
+       "tags": ["Bontás"]
+      },
+      "y": 40,
+      "id": "D4",
+      "type": "socket"
+     },
+     {
+      "level": "upper",
+      "x": 2400,
+      "h": 300,
+      "sk": {
+       "st": "meglevo",
+       "t": "socket",
+       "src": "vazlat",
+       "replace": true,
+       "id": "P9",
+       "tags": ["Csere"]
+      },
+      "y": 40,
+      "id": "D5",
+      "type": "socket"
+     },
+     {
+      "level": "upper",
+      "x": 40,
+      "h": 300,
+      "sk": {
+       "st": "tervezett",
+       "t": "socket",
+       "src": "vazlat",
+       "id": "P10"
+      },
+      "y": 1500,
+      "id": "D6",
+      "type": "socket"
+     },
+     {
+      "level": "upper",
+      "x": 3560,
+      "h": 600,
+      "sk": {
+       "st": "tervezett",
+       "t": "fixed",
+       "src": "vazlat",
+       "id": "P11"
+      },
+      "y": 900,
+      "id": "D7",
+      "type": "socket"
+     },
+     {
+      "level": "upper",
+      "x": 1800,
+      "h": 2700,
+      "sk": {
+       "st": "meglevo",
+       "t": "light",
+       "src": "vazlat",
+       "replace": true,
+       "id": "P12",
+       "tags": ["Csere"]
+      },
+      "y": 1500,
+      "links": [{
+       "p": "P15",
+       "n": "n18"
+      }],
+      "id": "D8",
+      "type": "light"
+     },
+     {
+      "level": "upper",
+      "x": 300,
+      "h": 1100,
+      "sk": {
+       "st": "meglevo",
+       "t": "switch",
+       "src": "vazlat",
+       "id": "P13"
+      },
+      "y": 2960,
+      "links": [{
+       "p": "P15",
+       "n": "n16"
+      }],
+      "id": "D9",
+      "type": "switch"
+     },
+     {
+      "level": "upper",
+      "x": 4500,
+      "h": 2700,
+      "sk": {
+       "st": "tervezett",
+       "t": "light",
+       "src": "vazlat",
+       "ip44": true,
+       "id": "P14",
+       "tags": ["IP44"]
+      },
+      "y": 1500,
+      "id": "D10",
+      "type": "light"
+     },
+     {
+      "level": "upper",
+      "x": 5360,
+      "h": 1600,
+      "sk": {
+       "st": "meglevo",
+       "t": "board",
+       "src": "vazlat",
+       "id": "P15"
+      },
+      "y": 3600,
+      "id": "D11",
+      "type": "board"
+     }
+    ],
+    "v": 2,
+    "paths": [{
+     "nodes": [
+      {
+       "level": "upper",
+       "x": 300,
+       "h": 2700,
+       "y": 3000,
+       "id": "n16"
+      },
+      {
+       "level": "upper",
+       "x": 300,
+       "h": 2700,
+       "y": 1800,
+       "id": "n17"
+      },
+      {
+       "level": "upper",
+       "x": 1800,
+       "h": 2700,
+       "y": 1500,
+       "id": "n18"
+      }
+     ],
+     "level": "upper",
+     "sk": {
+      "circuit": "A14",
+      "src": "vazlat",
+      "id": "N23"
+     },
+     "id": "P15",
+     "sections": [
+      {
+       "circuit": null,
+       "build": "sull_gege"
+      },
+      {
+       "circuit": null,
+       "build": "sull_gege"
+      }
+     ]
+    }],
+    "seq": 20,
+    "circuits": [
+     {
+      "col": "#e8641c",
+      "dedicated": false,
+      "ref": "Konyha dugalj",
+      "members": [
+       "D4",
+       "D5",
+       "D6"
+      ],
+      "name": "Konyha dugalj",
+      "sk": {
+       "src": "vazlat",
+       "id": "K20"
+      },
+      "id": "A12",
+      "board": "D11"
+     },
+     {
+      "col": "#2a8cdb",
+      "dedicated": true,
+      "ref": "Főzőlap",
+      "members": ["D7"],
+      "name": "Főzőlap",
+      "sk": {
+       "src": "vazlat",
+       "id": "K21"
+      },
+      "id": "A13",
+      "board": "D11"
+     },
+     {
+      "col": "#3dae5a",
+      "dedicated": false,
+      "ref": "Világítás",
+      "members": [
+       "D8",
+       "D9",
+       "D10"
+      ],
+      "name": "Világítás",
+      "sk": {
+       "src": "vazlat",
+       "id": "K22"
+      },
+      "id": "A14",
+      "board": "D11"
+     }
+    ]
+   },
+   "center": [
+    2700,
+    2100
+   ],
+   "report": {
+    "scaleX": 30,
+    "measured": 8,
+    "scaleY": 30,
+    "warnings": [],
+    "inferred": 0,
+    "conflicts": [],
+    "derived": 4
+   },
+   "wants": [
+    {
+     "general": 1,
+     "total": 5,
+     "rooms": {
+      "R3": 1,
+      "R1": 3
+     },
+     "id": "dugalj"
+    },
+    {
+     "general": 0,
+     "total": 1,
+     "rooms": {"R2": 1},
+     "id": "lampa"
+    }
+   ],
+   "photos": [{
+    "x": 1800,
+    "y": 1800,
+    "id": "F25",
+    "shots": [
+     {
+      "side": "É",
+      "file": "petofi-u-7-2-5_F25_eszak.jpg",
+      "deg": 0,
+      "taken": 1763699991000
+     },
+     {
+      "side": "D",
+      "file": "petofi-u-7-2-5_F25_del.jpg",
+      "deg": 180,
+      "taken": 1763699991100
+     }
+    ],
+    "room": "Konyha"
+   }]
+  }
+ },
+ "phone": {
+  "site": {
+   "verdict": "rendben",
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ]
+  },
+  "floors": 3,
+  "devices": 8,
+  "counts": {
+   "tisztazando": 1,
+   "rooms": 3,
+   "answered": 8,
+   "work": 14,
+   "est": 2,
+   "questionsOpen": 23,
+   "areaM2": 22.7,
+   "decisions": 4,
+   "items": 15,
+   "photos": 8,
+   "open": 5
+  },
+  "questions": {
+   "answered": 8,
+   "open": 23
+  },
+  "wants": [
+   {
+    "items": {"dugalj": 3},
+    "room": "R1"
+   },
+   {
+    "items": {"lampa": 1},
+    "room": "R2"
+   },
+   {
+    "items": {"dugalj": 1},
+    "room": "R3"
+   },
+   {
+    "items": {
+     "mosogatogep": 1,
+     "szellozo": 1,
+     "dugalj": 1,
+     "fozolap": 1
+    },
+    "room": null
+   }
+  ],
+  "files": [
+   "petofi-u-7-2-5_F25_eszak.jpg",
+   "petofi-u-7-2-5_F25_del.jpg",
+   "petofi-u-7-2-5_C30_eloszto.jpg",
+   "petofi-u-7-2-5_C31_hiba.jpg",
+   "petofi-u-7-2-5_C31_hiba_jel.jpg",
+   "petofi-u-7-2-5_C32_hiba.jpg",
+   "petofi-u-7-2-5_C33_epulet.jpg",
+   "petofi-u-7-2-5_C34_nyomvonal.mp4",
+   "petofi-u-7-2-5_C35_alairas.png"
+  ],
+  "gps": {
+   "C31": false,
+   "C30": false,
+   "C33": true,
+   "C32": false,
+   "C35": false,
+   "C34": false
+  },
+  "items": [
+   [
+    "pont.socket.uj",
+    5,
+    true
+   ],
+   [
+    "pont.socket.csere",
+    1,
+    false
+   ],
+   [
+    "pont.socket.bontas",
+    1,
+    false
+   ],
+   [
+    "pont.switch.marad",
+    1,
+    false
+   ],
+   [
+    "pont.light.uj",
+    1,
+    false
+   ],
+   [
+    "pont.light.csere",
+    1,
+    false
+   ],
+   [
+    "pont.fixed.uj",
+    1,
+    false
+   ],
+   [
+    "gep.fozolap",
+    1,
+    false
+   ],
+   [
+    "gep.mosogatogep",
+    1,
+    false
+   ],
+   [
+    "gep.szellozo",
+    1,
+    false
+   ],
+   [
+    "aramkor.altalanos",
+    2,
+    false
+   ],
+   [
+    "aramkor.dedikalt",
+    1,
+    false
+   ],
+   [
+    "eloszto.csere",
+    1,
+    false
+   ],
+   [
+    "kabel.nyomvonal",
+    4.9,
+    false
+   ],
+   [
+    "kabel.bekotes",
+    18.9,
+    true
+   ]
+  ],
+  "open": 26
+ },
+ "now": 1763700000000,
+ "about": "F8 (WP M53) end-to-end scenario, written by sketch-core E2eTest (VRG_SKETCH_FIXTURE=update); read by Sketcher/test/e2e.test.js. Do not edit.",
+ "markdown": "# Munkakör lap \u2014 Petőfi u. 7. 2/5\n\n*vrg-sketch-takeoff v1 · felmérés S-A · terv: megoldott · variáns: furdo-felujitas · 3 helyiség, 22,7 m²*\n\n≈ = becsült, ⚑ = nyitott döntés változtathat rajta. Árat nem tartalmaz: az árazás a Varler Workflow Kit dolga.\n\n## Munkakör\n\n- **A munka jellege:** Felújítás, csere, Elosztó csere\n- **Terület:** Konyha, Fürdő\n- **Igények:** Dugalj ×5, Lámpa, Főzőlap, Mosogatógép, Szellőző\n\n## Tételek\n\n| | Tétel | Mennyiség | | Megjegyzés |\n|---|---|---|---|---|\n| ⊙ | Dugalj \u2014 új | 5 db | ≈ | Munkakör: 5, vázlat: 1 |\n| ⊙ | Dugalj \u2014 csere | 1 db |  |  |\n| ⊙ | Dugalj \u2014 bontás | 1 db |  |  |\n| ⊘ | Kapcsoló \u2014 meglévő marad | 1 db |  |  |\n| ✱ | Lámpa \u2014 új | 1 db |  |  |\n| ✱ | Lámpa \u2014 csere | 1 db |  |  |\n| ⊗ | Fix bekötés \u2014 új | 1 db |  |  |\n| ⊞ | Főzőlap | 1 db | ⚑ |  |\n| ◌ | Mosogatógép | 1 db | ⚑ |  |\n| ✣ | Szellőző | 1 db | ⚑ |  |\n| ◌ | Áramkör \u2014 általános | 2 db |  |  |\n| ◉ | Áramkör \u2014 dedikált | 1 db | ⚑ |  |\n| ▣ | Elosztó \u2014 csere | 1 db | ⚑ |  |\n| 〰 | Kábel a nyomvonalon | 4,9 m |  | nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz |\n| ⚡ | Kábel az elosztótól (rajzolatlan) | 18,9 m | ≈ | az elosztótól a legközelebbi pontig, derékszögben |\n\n**Kábel a nyomvonalon** szakaszonként: Világítás 4,9 m\n\n**Kábel az elosztótól (rajzolatlan)** szakaszonként: Konyha dugalj 10,6 m, Főzőlap 8,3 m\n\n## Döntésre vár ⚑\n\n- Kell új elosztó? → Elosztó \u2014 csere\n- Van szabad hely az elosztóban? → Elosztó \u2014 csere\n- Lesz új nagy fogyasztó? → Főzőlap, Mosogatógép, Szellőző, Áramkör \u2014 dedikált\n- Hány fázis a bekötés most? → Áramkör \u2014 dedikált\n\n## Ellenőrizni\n\n- Gépbekötés a Munkakörben: 3, fix bekötés a vázlaton: 1\n- A gépek, rendszerek szerint 2 dedikált kör kellhet, a vázlaton 1 van\n\n## Kérdések (8 megválaszolva, 23 nyitott)\n\n- ✓ Mi a kérés lényege? \u2014 Csere, felújítás\n- ✓ Milyen ingatlan? \u2014 Társasházi lakás\n- ○ Ki fér hozzá az ingatlanhoz?\n- ⏱ Mikorra kell elkészülni?\n- ✓ Van költségkeret? \u2014 Van, legfeljebb \u2026 \u2014 \u201e1,5 M Ft\u201d\n- ○ Lakott lesz közben az ingatlan?\n- ○ Fényképezhetünk?\n- ○ Ki dönt a megrendelésről?\n- ✓ Mikor készült a hálózat? \u2014 1970\u20131990\n- ✓ Vezeték anyaga? \u2014 Alumínium\n- ○ Van FI-relé (életvédelmi)?\n- ○ Biztosítékok típusa?\n- ○ Mikor volt utoljára érintésvédelmi felülvizsgálat?\n- ○ Hány fázis a bekötés most?\n- ○ Főbiztosíték?\n- ○ Hol van a mérő?\n- ○ Hogyan jön be a hálózat?\n- ○ Lesz új nagy fogyasztó?\n- ○ Mérőszekrény állapota?\n- ○ Van szabad hely az elosztóban?\n- ○ Van áramköri felirat / lista?\n- ○ Földelés?\n- ○ Kell új elosztó?\n- ✓ Mit szeretne a fürdőben? \u2014 Új lámpák, Szellőző\n- ✓ Milyen gépek lesznek a konyhában? \u2014 Főzőlap, Mosogatógép\n- ✓ Milyen főzőlap? \u2014 Indukció\n- ○ Kész a csempézés?\n- ○ Ki jelöli ki a gépek bekötési helyét?\n- ○ Hol lesz a kád / zuhany (a zónák miatt)?\n- ○ Külön FI-relé védje a fürdő körét?\n- ○ Tükörvilágítás és tükör melletti aljzat kell?\n\n## Jegyzetek\n\n- Az alu vezetéket mind cserélni kell [Probléma, Fontos] · Konyha\n- Indukciós főzőlap kell a konyhába [Kívánság] · Konyha\n- (csak címke) [Lakott, Háziállat]\n- ⚑ Tisztázandó: A fürdő szellőzője a közösbe megy? [Tisztázandó] · Fürdő\n- ✎ régi alu, porcelán dobozok\n\n## Fotók\n\n- ⌂ Épület kívülről: 1\n- ▣ Elosztó: 1\n- ⚠ Hiba, veszély: 2\n- 〰 Nyomvonal, fal: 1\n- ◎ Szoba (Fotópont): 2\n- ▧ Dokumentum: 1\n\n## Helyiségek\n\n- Konyha: 10,8 m² \u2014 Dugalj ×3\n- Fürdő: 5,4 m² \u2014 Lámpa ×1\n- Előszoba: 6,5 m² \u2014 Dugalj ×1\n",
+ "id": "a-lakas-felujitas",
+ "title": "Lakásfelújítás: rajz, Csere/Bontás, igények szobánként, Kamera 2, helyszín a térképen, variáns"
+}

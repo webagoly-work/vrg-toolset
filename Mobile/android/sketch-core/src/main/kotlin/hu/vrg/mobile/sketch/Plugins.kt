@@ -77,6 +77,20 @@ object Tags {
         // the Founder, 2026-11-21 (D-77): an existing point to be replaced; the takeoff counts it as csere
         Tag("T-csere", "Csere", 0xFFE8641C, "replace"),
     )
+    /**
+     * F8 (WP M53, D-112): the preset generation a file knows (`presetsV`). A file from before a preset existed gets it on
+     * opening (unless it has a tag with that meaning or name already); a newer file never does, so a preset the user
+     * deleted stays deleted. v1 = the first six, v2 = + Csere (D-77).
+     */
+    const val PRESETS_V = 2
+    private val SINCE = mapOf("T-csere" to 2)
+
+    /** [tags] read from a file that knew presets up to [known], with the newer presets it is missing. */
+    fun upgrade(tags: List<Tag>, known: Int): List<Tag> {
+        if (known >= PRESETS_V) return tags
+        val add = PRESETS.filter { p -> (SINCE[p.id] ?: 1) > known && tags.none { it.id == p.id || (p.preset != null && it.preset == p.preset) || FieldKit.fold(it.name) == FieldKit.fold(p.name) } }
+        return tags + add
+    }
     private val PALETTE = listOf(0xFFE8641C, 0xFFC03FA8, 0xFF5470B0, 0xFF2A8C8C, 0xFFB07A2A, 0xFF7A5CC0)
     fun colorFor(n: Int) = PALETTE[n % PALETTE.size]
 }

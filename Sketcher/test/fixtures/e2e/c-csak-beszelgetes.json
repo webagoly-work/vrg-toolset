@@ -1,0 +1,512 @@
+{
+ "package": {
+  "exported": 1763700000000,
+  "takeoff": {
+   "rooms": [],
+   "notes": [
+    {
+     "chips": ["Probléma"],
+     "id": "E1",
+     "text": "A biztosíték néha leold, ha megy a mosógép és a vízforraló",
+     "room": "",
+     "open": false
+    },
+    {
+     "chips": [
+      "Visszakérdezni",
+      "Tisztázandó"
+     ],
+     "id": "E2",
+     "text": "Mikor jó a helyszíni bejárás?",
+     "room": "",
+     "open": true
+    }
+   ],
+   "kind": "vrg-sketch-takeoff",
+   "made": 1763700000000,
+   "counts": {
+    "tisztazando": 1,
+    "rooms": 0,
+    "answered": 3,
+    "work": 1,
+    "est": 1,
+    "questionsOpen": 17,
+    "areaM2": 0,
+    "decisions": 5,
+    "items": 1,
+    "photos": 1,
+    "open": 1
+   },
+   "questions": [
+    {
+     "q": "lenyeg",
+     "options": ["Javítás, hibakeresés"],
+     "label": "Mi a kérés lényege?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "ingatlan",
+     "options": [],
+     "label": "Milyen ingatlan?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "hozzaferes",
+     "options": [],
+     "label": "Ki fér hozzá az ingatlanhoz?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "hatarido",
+     "options": [],
+     "label": "Mikorra kell elkészülni?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "keret",
+     "options": [],
+     "label": "Van költségkeret?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "lakott",
+     "options": [],
+     "label": "Lakott lesz közben az ingatlan?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "foto",
+     "options": [],
+     "label": "Fényképezhetünk?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "doksi",
+     "options": [],
+     "label": "Van régi dokumentáció (terv, jegyzőkönyv)?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "dontes",
+     "options": [],
+     "label": "Ki dönt a megrendelésről?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "kor",
+     "options": [],
+     "label": "Mikor készült a hálózat?",
+     "state": "later",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "anyag",
+     "options": [],
+     "label": "Vezeték anyaga?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "fi",
+     "options": [],
+     "label": "Van FI-relé (életvédelmi)?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "biztositek",
+     "options": ["Olvadóbetétes"],
+     "label": "Biztosítékok típusa?",
+     "state": "answered",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "gond",
+     "options": ["Leold a FI / biztosíték"],
+     "label": "Milyen gond volt már?",
+     "state": "answered",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "vizsgalat",
+     "options": [],
+     "label": "Mikor volt utoljára érintésvédelmi felülvizsgálat?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "uj_fogyaszto",
+     "options": [],
+     "label": "Lesz új nagy fogyasztó?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    },
+    {
+     "q": "szabad_hely",
+     "options": [],
+     "label": "Van szabad hely az elosztóban?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "felirat",
+     "options": [],
+     "label": "Van áramköri felirat / lista?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "foldeles",
+     "options": [],
+     "label": "Földelés?",
+     "state": "open",
+     "text": "",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_eloszto",
+     "options": [],
+     "label": "Kell új elosztó?",
+     "state": "open",
+     "text": "",
+     "who": "ugyfel"
+    }
+   ],
+   "source": {
+    "level": "ground",
+    "name": "Telefonos felmérés",
+    "variant": "",
+    "id": "S-C",
+    "plan": "megoldott"
+   },
+   "photos": [{
+    "purpose": "dokumentum",
+    "sym": "▧",
+    "files": ["telefonos-felmeres_C3_alairas.png"],
+    "label": "Dokumentum",
+    "n": 1
+   }],
+   "checks": [],
+   "v": 1,
+   "memos": [],
+   "scope": [
+    {
+     "label": "A munka jellege",
+     "items": [
+      {
+       "sym": "⚠",
+       "qty": 1,
+       "id": "hiba",
+       "label": "Hibaelhárítás"
+      },
+      {
+       "sym": "✓",
+       "qty": 1,
+       "id": "felulvizsgalat",
+       "label": "Felülvizsgálat"
+      }
+     ],
+     "group": "jelleg"
+    },
+    {
+     "label": "Igények",
+     "items": [{
+      "sym": "⊙",
+      "qty": 2,
+      "id": "dugalj",
+      "label": "Dugalj"
+     }],
+     "group": "igeny"
+    }
+   ],
+   "decisions": [
+    {
+     "q": "kor",
+     "affects": ["pont.socket.uj"],
+     "label": "Mikor készült a hálózat?",
+     "state": "later",
+     "who": "ugyfel"
+    },
+    {
+     "q": "anyag",
+     "affects": [],
+     "label": "Vezeték anyaga?",
+     "state": "open",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_eloszto",
+     "affects": [],
+     "label": "Kell új elosztó?",
+     "state": "open",
+     "who": "ugyfel"
+    },
+    {
+     "q": "szabad_hely",
+     "affects": [],
+     "label": "Van szabad hely az elosztóban?",
+     "state": "open",
+     "who": "szemle"
+    },
+    {
+     "q": "uj_fogyaszto",
+     "affects": [],
+     "label": "Lesz új nagy fogyasztó?",
+     "state": "open",
+     "who": "ugyfel"
+    }
+   ],
+   "config": {
+    "endReserveMm": 300,
+    "impliedDedicated": false,
+    "looseEndMm": 0,
+    "ceilingMm": 2700
+   },
+   "items": [{
+    "note": "Munkakör: 2, vázlat: 0",
+    "unit": "db",
+    "refs": [],
+    "sym": "⊙",
+    "work": true,
+    "cat": "pont",
+    "qty": 2,
+    "est": true,
+    "id": "pont.socket.uj",
+    "label": "Dugalj \u2014 új",
+    "open": ["kor"]
+   }]
+  },
+  "level": "ground",
+  "kind": "vrg-sketch",
+  "v": 1,
+  "name": "Telefonos felmérés",
+  "sketch": {
+   "rooms": [],
+   "presetsV": 2,
+   "plugins": [
+    "jegyzet",
+    "alaprajz",
+    "villany"
+   ],
+   "answers": {
+    "biztositek": {
+     "at": 1763699995000,
+     "options": ["olvado"],
+     "text": "",
+     "state": "answered"
+    },
+    "lenyeg": {
+     "at": 1763699995000,
+     "options": ["javitas"],
+     "text": "",
+     "state": "answered"
+    },
+    "gond": {
+     "at": 1763699995000,
+     "options": ["leold"],
+     "text": "",
+     "state": "answered"
+    },
+    "kor": {
+     "at": 1763699995000,
+     "options": [],
+     "text": "",
+     "state": "later"
+    }
+   },
+   "photos": [],
+   "seen": {},
+   "points": [],
+   "routes": [],
+   "measures": [],
+   "memos": [],
+   "scope": {
+    "hiba": 1,
+    "dugalj": 2,
+    "felulvizsgalat": 1
+   },
+   "id": "S-C",
+   "lines": [],
+   "seq": 3,
+   "circuits": [],
+   "captures": [{
+    "note": "A felmérést átvettem, a rögzített adatok a helyszínen elhangzottaknak megfelelnek.",
+    "file": "S-c.png",
+    "at": 1763699999000,
+    "purpose": "dokumentum",
+    "kind": "signature",
+    "id": "C3",
+    "signer": "Nagy Béla"
+   }],
+   "level": "ground",
+   "kind": "vrg-vazlat",
+   "created": 1763699400000,
+   "dismissed": [],
+   "tagUses": [],
+   "tags": [
+    {
+     "col": 4280978651,
+     "name": "Fürdő",
+     "id": "T-furdo",
+     "preset": "kind:furdo"
+    },
+    {
+     "col": 4292915232,
+     "name": "Konyha",
+     "id": "T-konyha",
+     "preset": "kind:konyha"
+    },
+    {
+     "col": 4280330400,
+     "name": "Nedves",
+     "id": "T-nedves",
+     "preset": "wet"
+    },
+    {
+     "col": 4282232410,
+     "name": "IP44",
+     "id": "T-ip44",
+     "preset": "ip44"
+    },
+    {
+     "col": 4292232517,
+     "name": "Dedikált",
+     "id": "T-ded",
+     "preset": "dedicated"
+    },
+    {
+     "col": 4287257814,
+     "name": "Bontás",
+     "id": "T-bontas",
+     "preset": "remove"
+    },
+    {
+     "col": 4293420060,
+     "name": "Csere",
+     "id": "T-csere",
+     "preset": "replace"
+    }
+   ],
+   "site": {
+    "address": "Vác",
+    "source": "kezi"
+   },
+   "entries": [
+    {
+     "voice": true,
+     "at": 1763699500000,
+     "chips": ["problema"],
+     "id": "E1",
+     "text": "A biztosíték néha leold, ha megy a mosógép és a vízforraló"
+    },
+    {
+     "at": 1763699600000,
+     "chips": [
+      "visszakerdez",
+      "tisztazando"
+     ],
+     "id": "E2",
+     "text": "Mikor jó a helyszíni bejárás?",
+     "open": true
+    }
+   ],
+   "v": 2,
+   "name": "Telefonos felmérés",
+   "updated": 1763700000000
+  },
+  "plan": {
+   "data": {
+    "floors": [],
+    "notes": [],
+    "devices": [],
+    "v": 2,
+    "paths": [],
+    "seq": 0,
+    "circuits": []
+   },
+   "center": [
+    6000,
+    4000
+   ],
+   "report": {
+    "scaleX": 25,
+    "measured": 0,
+    "scaleY": 25,
+    "warnings": [],
+    "inferred": 0,
+    "conflicts": [],
+    "derived": 0
+   },
+   "photos": []
+  }
+ },
+ "phone": {
+  "site": {
+   "verdict": null,
+   "lines": []
+  },
+  "floors": 0,
+  "devices": 0,
+  "counts": {
+   "tisztazando": 1,
+   "rooms": 0,
+   "answered": 3,
+   "work": 1,
+   "est": 1,
+   "questionsOpen": 17,
+   "areaM2": 0,
+   "decisions": 5,
+   "items": 1,
+   "photos": 1,
+   "open": 1
+  },
+  "questions": {
+   "answered": 3,
+   "open": 17
+  },
+  "wants": [{
+   "items": {"dugalj": 2},
+   "room": null
+  }],
+  "files": ["telefonos-felmeres_C3_alairas.png"],
+  "gps": {"C3": false},
+  "items": [[
+   "pont.socket.uj",
+   2,
+   true
+  ]],
+  "open": 21
+ },
+ "now": 1763700000000,
+ "about": "F8 (WP M53) end-to-end scenario, written by sketch-core E2eTest (VRG_SKETCH_FIXTURE=update); read by Sketcher/test/e2e.test.js. Do not edit.",
+ "markdown": "# Munkakör lap \u2014 Telefonos felmérés\n\n*vrg-sketch-takeoff v1 · felmérés S-C · terv: megoldott · 0 helyiség, 0 m²*\n\n≈ = becsült, ⚑ = nyitott döntés változtathat rajta. Árat nem tartalmaz: az árazás a Varler Workflow Kit dolga.\n\n## Munkakör\n\n- **A munka jellege:** Hibaelhárítás, Felülvizsgálat\n- **Igények:** Dugalj ×2\n\n## Tételek\n\n| | Tétel | Mennyiség | | Megjegyzés |\n|---|---|---|---|---|\n| ⊙ | Dugalj \u2014 új | 2 db | ≈ ⚑ | Munkakör: 2, vázlat: 0 |\n\n## Döntésre vár ⚑\n\n- ⏱ Mikor készült a hálózat? → Dugalj \u2014 új\n- Vezeték anyaga?\n- Kell új elosztó?\n- Van szabad hely az elosztóban?\n- Lesz új nagy fogyasztó?\n\n## Kérdések (3 megválaszolva, 17 nyitott)\n\n- ✓ Mi a kérés lényege? \u2014 Javítás, hibakeresés\n- ○ Milyen ingatlan?\n- ○ Ki fér hozzá az ingatlanhoz?\n- ○ Mikorra kell elkészülni?\n- ○ Van költségkeret?\n- ○ Lakott lesz közben az ingatlan?\n- ○ Fényképezhetünk?\n- ○ Van régi dokumentáció (terv, jegyzőkönyv)?\n- ○ Ki dönt a megrendelésről?\n- ⏱ Mikor készült a hálózat?\n- ○ Vezeték anyaga?\n- ○ Van FI-relé (életvédelmi)?\n- ✓ Biztosítékok típusa? \u2014 Olvadóbetétes\n- ✓ Milyen gond volt már? \u2014 Leold a FI / biztosíték\n- ○ Mikor volt utoljára érintésvédelmi felülvizsgálat?\n- ○ Lesz új nagy fogyasztó?\n- ○ Van szabad hely az elosztóban?\n- ○ Van áramköri felirat / lista?\n- ○ Földelés?\n- ○ Kell új elosztó?\n\n## Jegyzetek\n\n- A biztosíték néha leold, ha megy a mosógép és a vízforraló [Probléma]\n- ⚑ Tisztázandó: Mikor jó a helyszíni bejárás? [Visszakérdezni, Tisztázandó]\n\n## Fotók\n\n- ▧ Dokumentum: 1\n",
+ "id": "c-csak-beszelgetes",
+ "title": "Csak beszélgetés: jegyzet, válasz, munkakör, aláírás, rajz nélkül"
+}

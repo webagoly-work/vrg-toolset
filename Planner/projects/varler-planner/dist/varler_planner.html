@@ -16101,7 +16101,8 @@ function svyFromPackage(o){const sk=(o&&o.sketch)||{},t=svyTakeoff(o);
     takeoff:t?JSON.parse(JSON.stringify(t)):null,
     raw:{scope:Object.assign({},sk.scope||{}),answers:ans,
       entries:(sk.entries||[]).map(e=>({id:e.id,text:e.text||'',chips:(e.chips||[]).slice(),open:!!e.open,room:e.room||''})),
-      captures:(sk.captures||[]).map(c=>({id:c.id,purpose:c.purpose||'egyeb',file:c.file||'',note:c.note||''}))}};}
+      captures:(sk.captures||[]).map(c=>Object.assign({id:c.id,purpose:c.purpose||'egyeb',file:c.file||'',note:c.note||''},
+        c.kind&&c.kind!=='photo'?{kind:c.kind}:{},c.signer?{signer:c.signer}:{}))}};}   // F8 (M53): a video / signature stays one
 
 function svySurvey(){return (typeof B==='object'&&B&&B.survey)||null;}
 

@@ -247,6 +247,8 @@
     const notes = (s.entries || []).map(e => ({ id: e.id, text: e.text || '', chips: (e.chips || []).map(chipLabel), room: roomName(e.room), open: !!e.open }));
     const memos = (s.memos || []).map(m => ({ id: m.id, text: m.text || '' }));
     const stem = stemOf(s), caps = s.captures || [], photos = [];
+    // F8 (WP M53): the name the phone's export gives the file (sketch-core Intake.exportName): a video .mp4, a signature _alairas.png
+    const exportName = (st, c) => st + '_' + c.id + '_' + (c.kind === 'signature' ? 'alairas' : (c.purpose || 'egyeb')) + '.' + (c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : 'jpg');
     const purposeIds = kit.purposes.map(p => p.id);
     caps.forEach(c => { const p = c.purpose || 'egyeb'; if (!purposeIds.includes(p)) purposeIds.push(p); });
     const roomShots = (s.photos || []).reduce((n, p) => n + (p.shots || []).length, 0);
@@ -254,7 +256,7 @@
       const list = caps.filter(c => (c.purpose || 'egyeb') === id), n = list.length + (id === 'szoba' ? roomShots : 0);
       if (!n) return;
       const k = kit.purposes.find(p => p.id === id) || { label: id, sym: '◉' };
-      photos.push({ purpose: id, label: k.label, sym: k.sym, n, files: list.map(c => stem + '_' + c.id + '_' + (c.purpose || 'egyeb') + '.jpg') });
+      photos.push({ purpose: id, label: k.label, sym: k.sym, n, files: list.map(c => exportName(stem, c)) });
     });
     // F4 (WP M49): the client's wants a room holds (roomScope), only on a room that has some
     const roomWants = id => kit.scope.filter(k => k.qty && (((s.roomScope || {})[id] || {})[k.id] || 0) > 0)
