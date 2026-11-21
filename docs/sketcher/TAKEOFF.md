@@ -1,6 +1,6 @@
 # VRG Sketcher — the takeoff (Munkakör lap) and its export contract
 
-*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M47 (`../mobile/WP/M47.md`), decisions D-67 … D-71.*
+*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M47 (`../mobile/WP/M47.md`), decisions D-67 … D-74.*
 
 The Founder: *"Some combination of selectable toggles can express the nature of the job but also can add concrete wants
 and needs to the order — the point is that these create the natural categorizations that **outline the scope and
@@ -37,8 +37,8 @@ with `sk.id` and their nodes). Or a **bare survey** (kind `vrg-vazlat`): no solv
 
 ## 3. The rules (what each number means)
 
-- **Points** by type and **action**: a *Bontás* tag (preset `remove`, or a tag named *bontás*) → bontás; a *Csere* tag
-  (preset `replace` or a tag named *csere*, since the presets have no Csere tag yet) → csere; otherwise *Tervezett* →
+- **Points** by type and **action**: a *Bontás* tag (preset `remove`, or a tag named *bontás*) → bontás; the *Csere* tag
+  (preset `replace`, built in since D-72; an older survey's own tag named *csere* counts too) → csere; otherwise *Tervezett* →
   új, *Meglévő* → meglévő marad (listed, `work: false`). A point without a type is ≈.
 - **The Igények reconcile with the drawing**: *Dugalj*, *Kültéri aljzat* → socket; *Kapcsoló* → switch; *Lámpa* →
   light; *LAN-pont*, *TV-pont*, *IP kamera* → data. The new count is `max(drawn, wanted)`; when more is wanted than
@@ -47,8 +47,11 @@ with `sk.id` and their nodes). Or a **bare survey** (kind `vrg-vazlat`): no solv
   Törölközőszárító, Szellőző. When their number differs from the drawn *Fix bekötés* points a check line says so
   (*Ellenőrizni*).
 - **Circuits**: drawn circuits with members, *általános* and *dedikált* (the circuit's own flag, a *Dedikált* tag on it
-  or on a member). The dedicated count is `max(drawn, implied)`, where the machines and systems marked `dedicated` imply
-  one each (a Klíma per indoor unit); ≈ when the implied number is larger.
+  or on a member). The machines and systems marked `dedicated` imply one each (a Klíma per indoor unit). **By default
+  nothing is assumed** (D-74, `impliedDedicated: false`): the dedicated count is what is drawn, and a check line says how
+  many the machines may need. With the general toggle on (phone: the Munkakör lap's *◉ Dedikált kör a nagy gépeknek*;
+  Desktop: the same button; CLI: `--implied-dedicated`) the count is `max(drawn, implied)`, ≈ when the implied number
+  is larger.
 - **Boards**: the one feeding the most circuits is the *Elosztó*, any other is taken for an *Alelosztó* (≈). With the
   *Elosztó csere* toggle an existing main board that has no tag is a csere; with no board drawn the toggle still gives
   one Elosztó csere (≈). *Kell új elosztó? → Igen* gives a new one (≈) when none is drawn as new.
@@ -75,7 +78,7 @@ One JSON object. Every key is always present; lists keep their order (rules orde
 {
  "kind": "vrg-sketch-takeoff", "v": 1, "made": 1763460000000,          // ms since 1970
  "source": {"name": "Kossuth u. 12", "id": "V1", "level": "ground", "plan": "megoldott" | "nyers", "variant": ""},
- "config": {"endReserveMm": 300, "looseEndMm": 0, "ceilingMm": 2700},
+ "config": {"endReserveMm": 300, "looseEndMm": 0, "ceilingMm": 2700, "impliedDedicated": false},
  "counts": {"items", "work", "est", "open", "decisions", "tisztazando", "answered", "questionsOpen", "rooms", "areaM2", "photos"},
  "scope": [{"group": "jelleg" | "terulet" | "rendszer" | "igeny", "label", "items": [{"id", "label", "sym", "qty"}]}],
  "items": [{

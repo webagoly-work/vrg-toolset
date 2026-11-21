@@ -68,6 +68,7 @@ const CASES = [
     captures: [{ id: 'C52', file: 'x.jpg', purpose: 'eloszto', at: NOW, note: '' }] }), {}],
   ['the package with a bigger reserve per end', PKG, { endReserveMm: 500, looseEndMm: 150 }],
   ['a bare survey file (no plan): demolition, replacement by a user tag, two boards, home runs, a variant', Object.assign(clone(RAW), { variant: 'furdo-felujitas', variantOn: true }), {}],
+  ['the bare survey with the implied dedicated circuits switched on', clone(RAW), { impliedDedicated: true }],
   ['the same without the variant, the EV answer missing', Object.assign(clone(RAW), { answers: Object.assign({}, RAW.answers, { tavolsag: A([], 'later'), klima_db: A(['2']) }) }), {}],
   ['an empty survey', { kind: 'vrg-vazlat', v: 2, id: 'E0', name: '', seq: 0, rooms: [], points: [], circuits: [], routes: [], memos: [], entries: [], scope: {}, answers: {}, captures: [] }, {}],
 ];

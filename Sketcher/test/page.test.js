@@ -216,6 +216,15 @@ click($('.stepper[data-scope="ledszalag"] button[data-act="sinc"]'));
 ok($$('#takeoff .tk-item').length === tkBefore + 1 && $('#takeoff .tk-item[data-item="igeny.ledszalag"]'), 'the lap follows the scope live');
 const ex = sk.exportTakeoff();
 ok(ex && JSON.parse(ex.json).kind === 'vrg-sketch-takeoff' && /^# Munkakör lap — Kossuth u\. 12/.test(ex.md) && /LED-szalag/.test(ex.md), 'the export gives the JSON and the summary');
+ok(!$$('#takeoff .tk-item').some(x => x.dataset.item === 'aramkor.dedikalt') || !sk.takeoff().items.find(x => x.id === 'aramkor.dedikalt').est, 'off by default: no implied dedicated circuit');
+click($('.stepper[data-scope="fozolap"] button[data-act="sinc"]'));
+ok(!sk.takeoff().items.some(x => x.id === 'aramkor.dedikalt') && sk.takeoff().checks.some(c => /dedikált kör kellhet/.test(c)), 'a hob with the toggle off: no circuit assumed, a check line instead');
+click($('#tkimplied'));
+ok($('#tkimplied').classList.contains('sel') && sk.takeoff().config.impliedDedicated === true, 'the toggle switches the implied dedicated circuits on');
+const dd = sk.takeoff().items.find(x => x.id === 'aramkor.dedikalt');
+ok(dd && dd.est, 'on: the machines give a dedicated circuit, marked as a guess');
+click($('#tkimplied'));
+ok(sk.takeoff().config.impliedDedicated === false, 'and off again');
 click($('[data-act="tkexport"]'));
 ok(/takeoff\.json \+ \.md/.test(mainText()), 'the button reports the export');
 

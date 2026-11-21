@@ -1,6 +1,9 @@
 package hu.vrg.mobile.sketch.ui
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import hu.vrg.mobile.core.GitHubUrls
 import hu.vrg.mobile.core.VrgRepo
 import hu.vrg.mobile.kit.VrgLog
@@ -29,6 +32,19 @@ object SketcherKit {
     @Volatile private var base: Kit = Kit()
     /** The takeoff rules (Sketcher/catalog/takeoff.json, bundled); null when the asset could not be read. */
     @Volatile var rules: TakeoffRules? = null; private set
+
+    /**
+     * D-74 (the Founder, 2026-11-21): count the dedicated circuits the machines and systems imply. Off by default (the
+     * takeoff assumes nothing); a general toggle on the Munkakör lap, kept for every survey on this phone.
+     */
+    private const val PREFS = "sketcher"
+    private const val K_IMPLIED = "takeoff.impliedDedicated"
+    private var prefs: android.content.SharedPreferences? = null
+    var impliedDedicated by mutableStateOf(false); private set
+    fun switchImpliedDedicated(on: Boolean) {
+        impliedDedicated = on
+        prefs?.edit()?.putBoolean(K_IMPLIED, on)?.apply()
+    }
     private val _variants = MutableStateFlow<List<Variant>>(emptyList())
     val variants: StateFlow<List<Variant>> = _variants
     @Volatile private var loaded = false
@@ -38,11 +54,13 @@ object SketcherKit {
     fun init(ctx: Context) {
         if (loaded) return
         loaded = true
+        prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         base = try { FieldKit.parse(ctx.assets.open("sketcher/fieldkit.json").bufferedReader().readText()) }
                catch (e: Exception) { VrgLog.w("sketch", "A field kit nem olvasható: ${e.message}"); Kit() }
         // the takeoff rules (Munkakör lap, docs/sketcher/TAKEOFF.md); without them the lap and its export are left out
         rules = try { TakeoffRules.parse(ctx.assets.open("sketcher/takeoff.json").bufferedReader().readText()) }
                 catch (e: Exception) { VrgLog.w("sketch", "A takeoff szabályok nem olvashatók: ${e.message}"); null }
+        impliedDedicated = prefs?.getBoolean(K_IMPLIED, rules?.impliedDedicated ?: false) ?: false
         reload(ctx)
     }
 

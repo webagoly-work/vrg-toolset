@@ -2,12 +2,13 @@
 // tools/sketch-takeoff.js — a VRG Sketcher survey → its takeoff (Munkakör lap): <stem>.takeoff.json + <stem>.takeoff.md.
 //
 //   node tools/sketch-takeoff.js <package.vsketch.json | survey.vsketch.json> [--out <dir>] [--reserve <mm>] [--loose <mm>]
-//                                 [--stdout] [--md]
+//                                 [--implied-dedicated] [--stdout] [--md]
 //
 // Input: the package the phone or the Desktop Sketcher exports (kind vrg-sketch: the survey + its solved plan), or a bare
 // survey file (kind vrg-vazlat: no plan, lengths at the default scale, all ≈). Output next to the input (or in --out):
 // the vrg-sketch-takeoff v1 document and its Hungarian summary (docs/sketcher/TAKEOFF.md is the contract). --stdout
-// prints the JSON instead (--md: the summary). --reserve / --loose override the cable allowance per end (mm).
+// prints the JSON instead (--md: the summary). --reserve / --loose override the cable allowance per end (mm);
+// --implied-dedicated counts the dedicated circuits the big machines and systems imply (off by default, D-74).
 // The engine is Sketcher/lib/takeoff.js, the same one the Desktop page runs; the phone runs its Kotlin twin.
 // No prices: the Varler Workflow Kit prices it (its takeoff.js → price.js → offer.js, on the PC).
 'use strict';
@@ -18,7 +19,7 @@ const T = require(path.join(REPO, 'Sketcher', 'lib', 'takeoff.js'));
 
 function usage(msg) {
   if (msg) console.error(msg);
-  console.error('usage: node tools/sketch-takeoff.js <package.vsketch.json> [--out <dir>] [--reserve <mm>] [--loose <mm>] [--stdout] [--md]');
+  console.error('usage: node tools/sketch-takeoff.js <package.vsketch.json> [--out <dir>] [--reserve <mm>] [--loose <mm>] [--implied-dedicated] [--stdout] [--md]');
   process.exit(2);
 }
 
@@ -31,6 +32,7 @@ function main(argv) {
     else if (a === '--reserve') opt.reserve = +args[++i];
     else if (a === '--loose') opt.loose = +args[++i];
     else if (a === '--stdout') opt.stdout = true;
+    else if (a === '--implied-dedicated') opt.implied = true;
     else if (a === '--md') opt.md = true;
     else if (a === '-h' || a === '--help') usage();
     else if (a.startsWith('--')) usage('unknown option ' + a);
@@ -50,7 +52,7 @@ function main(argv) {
     const vf = path.join(REPO, 'Sketcher', 'variants', s.variant + '.json');
     if (fs.existsSync(vf)) kit = FK.withVariant(kit, JSON.parse(fs.readFileSync(vf, 'utf8')));
   }
-  const t = T.build(kit, rules, s, inp.plan, { endReserveMm: opt.reserve, looseEndMm: opt.loose });
+  const t = T.build(kit, rules, s, inp.plan, { endReserveMm: opt.reserve, looseEndMm: opt.loose, impliedDedicated: opt.implied ? true : undefined });
   const md = T.markdown(t);
   if (opt.stdout) { process.stdout.write(opt.md ? md : JSON.stringify(t, null, 1) + '\n'); return; }
   const dir = opt.out || path.dirname(path.resolve(file));

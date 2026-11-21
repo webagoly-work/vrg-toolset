@@ -35,12 +35,13 @@ import hu.vrg.mobile.sketch.Takeoff
 
 /** The takeoff of the survey as the editor has it now; null when the rules are missing from the assets. */
 internal fun takeoffOf(st: EditorState): Takeoff.Result? =
-    SketcherKit.rules?.let { Takeoff.build(st.kit, it, st.sketch, PlanView.of(st.sketch, st.norm)) }
+    SketcherKit.rules?.let { Takeoff.build(st.kit, it, st.sketch, PlanView.of(st.sketch, st.norm), impliedDedicated = SketcherKit.impliedDedicated) }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TakeoffCard(st: EditorState) {
-    val tk = remember(st.sketch, st.kit, st.norm) { takeoffOf(st) } ?: return
+    val implied = SketcherKit.impliedDedicated
+    val tk = remember(st.sketch, st.kit, st.norm, implied) { takeoffOf(st) } ?: return
     var picked by remember { mutableStateOf<String?>(null) }
     val col = st.frontColor("munkakor")
     val open = Color(0xFFD64545)
@@ -77,6 +78,11 @@ internal fun TakeoffCard(st: EditorState) {
                 }
             }
         }
+        // D-74: the general toggle: dedicated circuits for the big machines and systems, counted as ≈ (off = assume nothing)
+        Text((if (implied) "◉ ✓ " else "◉ ○ ") + "Dedikált kör a nagy gépeknek (≈, minden felmérésre)",
+            style = Melyviz.small.copy(fontSize = 11.sp, color = if (implied) col else Melyviz.faint),
+            modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(50)).border(1.dp, if (implied) col else Melyviz.line, RoundedCornerShape(50))
+                .clickable { SketcherKit.switchImpliedDedicated(!implied) }.padding(horizontal = 8.dp, vertical = 4.dp))
         if (tk.checks.isNotEmpty()) tk.checks.forEach { Text("! $it", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
     }
 }
