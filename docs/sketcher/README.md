@@ -125,4 +125,4 @@ where it is a guess, ⚑ where an open question can still change it. It carries 
 (`vrg-sketch-takeoff` v1 + a Hungarian summary) is the hand-over to the Varler Workflow Kit on the PC; the contract and
 the brief for that session are in `TAKEOFF.md`. The Planner keeps the intake and the takeoff with the job.
 
-Decisions taken while building: D-27 … D-34 (M46: D-55 … D-59) in `docs/mobile/DECISIONS.md`.
+Decisions taken while building: D-27 … D-34 (M46: D-55 … D-62) in `docs/mobile/DECISIONS.md`.

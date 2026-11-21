@@ -74,6 +74,8 @@ object Tags {
         Tag("T-ip44", "IP44", 0xFF3DAE5A, "ip44"),
         Tag("T-ded", "Dedikált", 0xFFD64545, "dedicated"),
         Tag("T-bontas", "Bontás", 0xFF8A5CD6, "remove"),
+        // the Founder, 2026-11-21 (D-60): an existing point to be replaced; the takeoff counts it as csere
+        Tag("T-csere", "Csere", 0xFFE8641C, "replace"),
     )
     private val PALETTE = listOf(0xFFE8641C, 0xFFC03FA8, 0xFF5470B0, 0xFF2A8C8C, 0xFFB07A2A, 0xFF7A5CC0)
     fun colorFor(n: Int) = PALETTE[n % PALETTE.size]
