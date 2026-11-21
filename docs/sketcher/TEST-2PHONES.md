@@ -79,7 +79,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M49.2** Hová → Általános, Dugalj + → 3; a Szobánként kártyán Konyha: Dugalj ×2, Általános: Dugalj ×1.
 - [ ] **M49.3** Tartsd lenyomva a Konyha Dugalj ×2-t → „Egyet ide: Fürdő”: Fürdő ×1, Konyha ×1, az összesen marad 3.
 - [ ] **M49.4** Hová → Általános, Dugalj − háromszor: mind eltűnik, a szobákból is.
-- [ ] **M49.5** Rendezés → Küldés → PC-re: a Plannerben betöltve a csomag `plan.wants`-ában és a Konyha szoba `sk.wants`-ában ott a dugalj (a Planner panelje még nem mutatja; az Asztal Sketcher oldalán a Munkakör igen).
+- [ ] **M49.5** Rendezés → Küldés → PC-re: a Plannerben betöltve a csomag `plan.wants`-ában és a Konyha szoba `sk.wants`-ában ott a dugalj (M50 óta a Planner panelje is mutatja: *Igények szobánként*; az Asztal Sketcher oldalán a Munkakör is).
 - [ ] **M49.6** Kezdőlap: tartsd lenyomva a VRG Sketcher kártyát → *Új felmérés: Ipari telephely* → új felmérés nyílik, a sarokban ▤. Ugyanez az Asztal dokkjának Sketcher gombján.
 - [ ] **M49.7** Kezdőlap → hosszú nyomás → ⟳ Variánsok frissítése: rövid üzenet (GitHub belépéssel a main ág variánsai). ＋ Új variáns kérése: a kérés ablaka felmérés nélkül nyílik; Küldés → megosztás, a vágólapon a GO VARIANT szöveg.
 - [ ] **M49.8** A szerkesztőben a sarok kapcsolóját tartsd lenyomva: a variánsok listája; *Fürdőszoba felújítás* → átvált; *Eredeti Sketcher* → vissza. Variáns nélküli felmérésben a halvány ◐-re koppintva ugyanez a lista.
@@ -104,7 +104,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
 - [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
-## B telefon — kamera és helyszín (50 lépés)
+## B telefon — kamera és helyszín (54 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -176,11 +176,18 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M31.5** ⚙ → ＋ Új variáns kérése: két mondat, kulcsszavak, egy fotó → Küldés → PC-re; a vágólapon a GO VARIANT szöveg. A PC-n egy Claude Code munkamenetben `GO VARIANT` + a fájl: az ügynök kérdez, megírja, commitolja.
 - [ ] **M31.6** ⟳ Frissítés a main ágról: az új variáns megjelenik.
 
+### M53 · Összefésülés: the Sketcher forks tested together, end to end, and their seams
+
+- [ ] **M53.1** A telefonon kapcsold be a Munkakör lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót, adj a felmérésnek főzőlapot, és küldd a csomagot a PC-re. Az Asztal Sketcher oldalán (START P → S) megnyitva a Munkakör lapon ugyanannyi dedikált kör van, mint a telefonon, a kapcsoló mellett „a telefon beállítása szerint”.
+- [ ] **M53.2** Ugyanott kapcsold ki a kapcsolót: a felirat eltűnik, a lap a böngésző saját beállítását követi.
+- [ ] **M53.3** Egy felmérésben vegyél fel séta videót és aláírást, küldd a PC-re, nyisd meg a Plannerben (⌘K → *Felmérés: munkakör lap*): a Fotók sorban a videó `…_nyomvonal.mp4`, az aláírás `…_alairas.png` néven szerepel, és a PC táblán pontosan ilyen nevű fájlok vannak.
+- [ ] **M53.4** Egy régi (november 18. előtti) felmérést nyiss meg a telefonon: minden rajz, jegyzet, fotó megvan, a címkék között ott a *Csere*.
+
 ## X. Közös lépések (mindkét telefon + PC)
 
 - [ ] **X1** A: Rendezés → Küldés PC-re. A PC-n az Asztal Sketcher oldalán a csomag megnyílik: Munkakör lap, kérdések, fotók, helyszín, szobánkénti igények ugyanazok, mint a telefonon.
 - [ ] **X2** A csomagot a Plannerben is nyisd meg (⌘K → Vázlat): a szobák, pontok, a ≈ jelölt méretek és a „Felmérés: munkakör lap” megvan.
-- [ ] **X3** B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a GPS csak ott van benne, ahol meghagytad.
+- [ ] **X3** B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a képfájlokban GPS csak ott van, ahol meghagytad (a `.vsketch.json` a helyet a te nyilvántartásodnak megtartja, D-57).
 - [ ] **X4** B: ⚙ → Variánsok → ＋ Új variáns kérése két fotóval → a kérés a PC táblán; benne nincs ügyfélnév, cím, személyes fotó.
 - [ ] **X5** Mindkét telefonon egyszerre: a VRG Térkép PC nélkül is nyílik (mobilnet), a másik telefon felmérése nem látszik (minden telefon csak a sajátját).
 - [ ] **X6** A ⟳ Frissítés a main ágról (Variánsok) mindkét telefonon ugyanazt a variánslistát adja (Fürdő, E-autó, Ipari telephely).

@@ -126,7 +126,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84; tested together (M53): D-110 … D-114.
 
 ## 7. Kamera 2 (M46)
 
@@ -163,3 +163,19 @@ Fork F5 (`docs/mobile/WP/M50.md`): the Planner's survey panel shows the **wants 
 (`ClientInfo.kt`, personal, D-82); a variant's `draw.lineClose` (`auto` / `ask`) says what the Vonal tool's Kész does;
 a phone without a speech recogniser records a **sound note** (capture kind `audio`, `.m4a`, `AudioNotes.kt`).
 
+## 11. Tested together, end to end (M53)
+
+Fork F8 (`docs/mobile/WP/M53.md`) checks the forks' seams with real surveys rather than one feature at a time. The
+phone's code writes the scenarios (`sketch-core` `E2eTest.kt` → `Sketcher/test/fixtures/e2e/`): a flat renovation with
+everything F1–F5 added, a new house with the implied dedicated circuits on, a conversation with nothing drawn, and two
+old files (M24 v1, M29-era v2). `Sketcher/test/e2e.test.js` opens the same files with the JS engines, the Desktop page
+and the Planner and must see the phone's numbers. The tests, in one place:
+
+| What | Command | Fixture written by |
+|---|---|---|
+| the field kit twin | `node Sketcher/test/run.js` + `:sketch-core:test` | `Sketcher/tools/make-fixture.js` (`shadow.json`) |
+| the site maths twin | the same | `Sketcher/tools/make-site-fixture.js` (`site.json`) |
+| the takeoff twin | the same | `Sketcher/tools/make-takeoff-fixture.js` (`takeoff.json`, the Planner's `sketch-intake.json`) |
+| the Planner package | `:sketch-core:test`, Planner spec-111 / spec-112 | `WheelJsonExportTest` (`sketch-field.json`, `VRG_SKETCH_FIXTURE=update`) |
+| end to end | `node Sketcher/test/run.js` + `:sketch-core:test` | `E2eTest` (`fixtures/e2e/`, `VRG_SKETCH_FIXTURE=update`) |
+| the two-phone plan | `node Sketcher/tools/test-plan.js --check` | every WP's *Telefonon ellenőrizni* list |

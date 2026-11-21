@@ -236,7 +236,7 @@
       },
       {
        "id": "M49.5",
-       "text": "Rendezés → Küldés → PC-re: a Plannerben betöltve a csomag `plan.wants`-ában és a Konyha szoba `sk.wants`-ában ott a dugalj (a Planner panelje még nem mutatja; az Asztal Sketcher oldalán a Munkakör igen)."
+       "text": "Rendezés → Küldés → PC-re: a Plannerben betöltve a csomag `plan.wants`-ában és a Konyha szoba `sk.wants`-ában ott a dugalj (M50 óta a Planner panelje is mutatja: *Igények szobánként*; az Asztal Sketcher oldalán a Munkakör is)."
       },
       {
        "id": "M49.6",
@@ -568,9 +568,31 @@
        "text": "⟳ Frissítés a main ágról: az új variáns megjelenik."
       }
      ]
+    },
+    {
+     "n": 53,
+     "title": "M53 · Összefésülés: the Sketcher forks tested together, end to end, and their seams",
+     "items": [
+      {
+       "id": "M53.1",
+       "text": "A telefonon kapcsold be a Munkakör lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót, adj a felmérésnek főzőlapot, és küldd a csomagot a PC-re. Az Asztal Sketcher oldalán (START P → S) megnyitva a Munkakör lapon ugyanannyi dedikált kör van, mint a telefonon, a kapcsoló mellett „a telefon beállítása szerint”."
+      },
+      {
+       "id": "M53.2",
+       "text": "Ugyanott kapcsold ki a kapcsolót: a felirat eltűnik, a lap a böngésző saját beállítását követi."
+      },
+      {
+       "id": "M53.3",
+       "text": "Egy felmérésben vegyél fel séta videót és aláírást, küldd a PC-re, nyisd meg a Plannerben (⌘K → *Felmérés: munkakör lap*): a Fotók sorban a videó `…_nyomvonal.mp4`, az aláírás `…_alairas.png` néven szerepel, és a PC táblán pontosan ilyen nevű fájlok vannak."
+      },
+      {
+       "id": "M53.4",
+       "text": "Egy régi (november 18. előtti) felmérést nyiss meg a telefonon: minden rajz, jegyzet, fotó megvan, a címkék között ott a *Csere*."
+      }
+     ]
     }
    ],
-   "count": 50
+   "count": 54
   }
  },
  "cross": [
@@ -584,7 +606,7 @@
   },
   {
    "id": "X3",
-   "text": "B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a GPS csak ott van benne, ahol meghagytad."
+   "text": "B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a képfájlokban GPS csak ott van, ahol meghagytad (a `.vsketch.json` a helyet a te nyilvántartásodnak megtartja, D-57)."
   },
   {
    "id": "X4",

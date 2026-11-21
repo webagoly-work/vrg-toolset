@@ -16,7 +16,7 @@ const WP = n => path.join(REPO, 'docs', 'mobile', 'WP', 'M' + n + '.md');
 // Phone A: the drawing and the conversation. Phone B: the camera and the place. Balanced by step count.
 const PLAN = {
   A: { name: 'A telefon — rajz és beszélgetés', sub: 'a tulajdonos telefonja (párosított PC, Átadás)', wps: [24, 26, 27, 28, 47, 49, 50] },
-  B: { name: 'B telefon — kamera és helyszín', sub: 'a második telefon (Eszközök: jóváhagyva)', wps: [25, 29, 46, 30, 48, 31] },
+  B: { name: 'B telefon — kamera és helyszín', sub: 'a második telefon (Eszközök: jóváhagyva)', wps: [25, 29, 46, 30, 48, 31, 53] },
 };
 const PREP = [
   'Mindkét telefonon a legújabb kiadás (Beállítások → Frissítés); a Névjegy ugyanazt a verziót mutatja.',
@@ -27,7 +27,7 @@ const PREP = [
 const CROSS = [
   { id: 'X1', text: 'A: Rendezés → Küldés PC-re. A PC-n az Asztal Sketcher oldalán a csomag megnyílik: Munkakör lap, kérdések, fotók, helyszín, szobánkénti igények ugyanazok, mint a telefonon.' },
   { id: 'X2', text: 'A csomagot a Plannerben is nyisd meg (⌘K → Vázlat): a szobák, pontok, a ≈ jelölt méretek és a „Felmérés: munkakör lap” megvan.' },
-  { id: 'X3', text: 'B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a GPS csak ott van benne, ahol meghagytad.' },
+  { id: 'X3', text: 'B: Rendezés → Küldés PC-re a fotókkal: a PC táblán a képek a felmérés nevével, a jelöltek `_jel.jpg`-vel; a képfájlokban GPS csak ott van, ahol meghagytad (a `.vsketch.json` a helyet a te nyilvántartásodnak megtartja, D-57).' },
   { id: 'X4', text: 'B: ⚙ → Variánsok → ＋ Új variáns kérése két fotóval → a kérés a PC táblán; benne nincs ügyfélnév, cím, személyes fotó.' },
   { id: 'X5', text: 'Mindkét telefonon egyszerre: a VRG Térkép PC nélkül is nyílik (mobilnet), a másik telefon felmérése nem látszik (minden telefon csak a sajátját).' },
   { id: 'X6', text: 'A ⟳ Frissítés a main ágról (Variánsok) mindkét telefonon ugyanazt a variánslistát adja (Fürdő, E-autó, Ipari telephely).' },
