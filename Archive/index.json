@@ -3,6 +3,26 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "personal-app-v1",
+      "title": "Personal App v1",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "board",
+      "summary": "The code VRG already owns sorted into a first personal app: a General default edition and a Founder edition as home pages of tiles, the inventory with a status filter, and questions Q1-Q6.",
+      "purpose": "Choose the features of the Founder's first personal app from what is already built.",
+      "context": [
+        "follow-up to the Software for One research page",
+        "source docs/mobile/PERSONAL-APP.md",
+        "nothing built or decided yet"
+      ],
+      "tags": [],
+      "file": "files/personal-app-v1.html",
+      "url": "https://claude.ai/artifact/XaMwQR7cDRJpYfPNqA88np"
+    },
+    {
       "id": "software-for-one",
       "title": "Software for One",
       "created": "2026-11-21",
