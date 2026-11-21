@@ -793,15 +793,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   signature under Dokumentum), a sound note not at all (F5, D-84).
 - **D-113 · F8: F5's D-80 kept over F8's file marker for the Csere preset (M53), 2026-11-21.** F8 had first added a
   `presetsV` key so an old survey gets *Csere* once and a deleted *Csere* stays deleted; F5 landed the same fix as
-  D-80 (on open, switchable, answered A by the Founder). The merge keeps D-80 only. Left as a question: under D-80 a
-  *Csere* the user deleted comes back the next time the survey opens (while *Csere címke régi felmérésben* is on).
+  D-80 (on open, switchable, answered A by the Founder). The merge keeps D-80 only. Asked: under D-80 a *Csere* the
+  user deleted comes back the next time the survey opens (while *Csere címke régi felmérésben* is on). **Answered
+  2026-11-21: A** — it stays that way; the switch turns it off. Rejected: **B** a file marker so it is added only once.
 - **D-114 · F8: what CI covers for the Sketcher (M53), 2026-11-21.** Taken in fork F8. *VRG Mobile (Android)* now also
   starts on `Map/lib/site-math.js` (inlined into the Desktop page, replayed by the JVM), the Planner's sketch import and
   survey sources and fixtures, and runs the Planner's spec-111 / spec-112 after building it from source, so the e2e test
   opens the Planner as it is. The release workflow starts on everything the APK takes from outside `Mobile/android`
   (`feature-sketch/build.gradle.kts`): `Sketcher/catalog`, `Sketcher/variants` and, since F9 bundles the report,
   `Sketcher/lib`; the map page comes from `main` at run time (M43).
-- **D-115 … D-119 · not used.** Reserved for fork F8, which needed D-110 … D-114.
+- **D-115 · F8: the exported package keeps every photo's position and the signer's name (M53), 2026-11-21.** Asked in
+  fork F8 (audit 8): the photo FILES leave without GPS (D-57), but the package's survey copy keeps each capture's
+  lat/lon, a personal photo's too, and the signature's signer. **Answered 2026-11-21: A** — the package is the
+  Founder's own record (as D-57 says of the survey file), so it keeps them. Rejected: **B** stripping them from the
+  package for personal photos.
+- **D-116 · F8: a switched-off sound note stays out of the package, the one exception to D-93 (M53), 2026-11-21.**
+  Asked in fork F8 (audit 18): F5's D-84 drops the sound notes from the package while *Hangjegyzet* is off; F6's D-93
+  says the package never changes with the switches. **Answered 2026-11-21: A** — D-84 stands, by the Founder's D-90
+  (a feature switched off leaves no trace in the exports either); D-93 holds for every other switch, and
+  `E2eTest.everythingOffKeepsThePackage` pins exactly this. Rejected: **B** always the same package.
+- **D-117 … D-119 · not used.** Reserved for fork F8, which needed D-110 … D-116.
 - **D-120 · F9: the phone's jegyzőkönyv is the Desktop's renderer in a hidden WebView (M54), 2026-11-21.** Taken in fork F9,
   following the Founder's D-81 B and M50's plan. `report.js` + `fieldkit.js` run through `report-phone.js`; the phone
   only puts the input together (`Jegyzokonyv.kt`). Rejected: a Kotlin copy of the document (a third engine to keep equal).
