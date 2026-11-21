@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (57 lépés)
+## A telefon — rajz és beszélgetés (68 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -89,6 +89,20 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M49.12** Jegyzet: „két kiégett izzó a folyosón” → nincs Hiba-javaslat; „megégett a konnektor” → van.
 - [ ] **M49.13** Kérdések → *Mikorra kell elkészülni?*: a válasz mellett dátum-mező.
 - [ ] **M49.14** Beszédfelismerő nélküli telefonon (ha van ilyen) a 🎤: az új üzenet a billentyűzet mikrofonjáról.
+
+### M50 · Maradékok: wants in the Planner, the Csere tag, the survey report, the client's contact, lineClose, the sound note
+
+- [ ] **M50.1** Új felmérés → Címke eszköz: a sávban ott a narancs **Csere** címke. Egy régi felmérést megnyitva szintén ott van (ha nem volt saját *Csere* címkéje).
+- [ ] **M50.2** Rajzolj egy meglévő dugaljat, tedd rá a Csere címkét → Munkakör lap: *Dugalj — csere 1 db*.
+- [ ] **M50.3** Helyszín → **👤 Ügyfél**: írd be a nevet és a telefont → ✓ Ügyfél mentése. A pill: „Kiadáskor törlődik”.
+- [ ] **M50.4** Rendezés → Küldés → PC-re: a PC-n a `.vsketch.json`-ban **nincs** `client`. Kapcsold a pillt „A kiadott csomagban marad”-ra, küldd újra: most benne van; a Plannerben a *Felmérés: munkakör lap* tetején „👤 Ügyfél: …”.
+- [ ] **M50.5** ⚙ → Új variáns kérése → Küldés: a kérés JSON-jában nincs az ügyfél neve, telefonja.
+- [ ] **M50.6** Munkakör → Igények → Hová: Konyha, Dugalj + + → küldd a PC-re, a Plannerben *Felmérés: munkakör lap* → **Igények szobánként**: „Konyha: ⊙ Dugalj ×2”.
+- [ ] **M50.7** Az Asztal Sketcher oldalán nyisd meg a csomagot, csatold a fotókat, majd fent **Jegyzőkönyv**: új ablak, a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek az igényekkel, a vázlat, a fotók célonként, a helyszín és az aláírás. *Nyomtatás / PDF* → PDF mentése: A4, a szakaszok nem törnek ketté.
+- [ ] **M50.8** Fürdőszoba felújítás variánsban Vonal eszköz: négy sarok, majd **Kész** → szoba lesz (nem nyitott vonal). Az eredetiben ugyanez nyitott vonal marad.
+- [ ] **M50.9** Beszédfelismerő nélküli telefonon (vagy ha a 🎤 „Nincs beszédfelismerő” üzenetet ad) a jegyzetben megjelenik a **⏺ Hangjegyzet**: Felvétel → mondj valamit → ■ Kész. Kamera front: *🎙 Hangjegyzetek (1)* → ▶ Lejátszás szól.
+- [ ] **M50.10** Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva.
+- [ ] **M50.11** ⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja.
 
 ## B telefon — kamera és helyszín (50 lépés)
 

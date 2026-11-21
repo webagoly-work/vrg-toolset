@@ -110,6 +110,9 @@ class E2eTest {
         s = Intake.editCapture(s, cs.second) { it.copy(keepGps = true) }
         s = Camera2.addVideo(s, "V-seta.mp4", "nyomvonal", hall, null, 72_000, 41_943_040, NOW - 2500).first
         s = Camera2.addSignature(s, "S-alairas.png", "Kovács Éva", Camera2.STATEMENTS[2], NOW - 1000).first
+        // F5: the client's contact (not kept in the package, D-82) and a sound note (D-84)
+        s = ClientInfo.set(s, "Minta Ügyfél", "+36 30 000 0000", "minta@example.invalid")
+        s = AudioNotes.add(s, "hang_1.m4a", kitchen, 42_000, 300_000, NOW - 900).first
         // F1: the place, the building from OSM, the sketch fitted on it
         s = Intake.setSite(s) { it.copy(address = "Budapest, Petőfi u. 7.", lat = 47.4979, lon = 19.0402, source = "osm") }
         val ring = outline(47.4979, 19.0402, 9.0, 6.0, 12.0)
@@ -180,14 +183,16 @@ class E2eTest {
     )
 
     /** What the phone's Rendezés export writes (NormScreen.writeExport): the package with the takeoff inside. */
-    private fun export(s: Sketch, implied: Boolean): Pair<JSONObject, Takeoff.Result> {
+    private fun export(s0: Sketch, implied: Boolean): Pair<JSONObject, Takeoff.Result> {
+        val s = SketchFeatures.forExport(emptySet(), s0)   // F5: the client only when kept, sound notes when on
         val n = Solver().solve(s)
         val tk = Takeoff.build(kitFor(s), rules, s, PlanView.of(s, n), now = NOW, impliedDedicated = implied)
         return PlannerExport.build(s, n, NOW).put("takeoff", tk.json) to tk
     }
 
     /** What the phone itself shows for the survey, for the Desktop and the Planner to match. */
-    private fun phone(s: Sketch, tk: Takeoff.Result, pkg: JSONObject): JSONObject {
+    private fun phone(s0: Sketch, tk: Takeoff.Result, pkg: JSONObject): JSONObject {
+        val s = SketchFeatures.forExport(emptySet(), s0)
         val n = Solver().solve(s)
         val k = kitFor(s)
         val site = s.site
@@ -239,9 +244,9 @@ class E2eTest {
             assertEquals(back, SketchJson.read(SketchJson.write(back).toString()), "${sc.id}: a second round changes nothing")
             // the package's sketch is the survey (it reopens on the phone)
             val (pkg, tk) = export(s, sc.implied)
-            assertEquals(back, SketchJson.read(pkg.getJSONObject("sketch")), "${sc.id}: the package's sketch reopens as the survey")
+            assertEquals(SketchFeatures.forExport(emptySet(), back), SketchJson.read(pkg.getJSONObject("sketch")), "${sc.id}: the package's sketch reopens as the survey")
             // the takeoff from the package's plan is the one the phone computed from its own solve
-            val fromPkg = Takeoff.build(kitFor(s), rules, s, PlanView.fromPackage(pkg), now = NOW, impliedDedicated = sc.implied)
+            val fromPkg = Takeoff.build(kitFor(s), rules, SketchFeatures.forExport(emptySet(), s), PlanView.fromPackage(pkg), now = NOW, impliedDedicated = sc.implied)
             assertTrue(fromPkg.json.similar(tk.json), "${sc.id}: the takeoff is the same from the package")
             val f = File(dir, sc.id + ".json")
             val fx = fixture(sc)
@@ -266,6 +271,14 @@ class E2eTest {
         assertTrue(files.any { it.endsWith("_nyomvonal.mp4") } && files.any { it.endsWith("_alairas.png") }, files.toString())
         assertEquals(files.size, files.toSet().size)
         assertTrue(files.all { f -> s.captures.any { Intake.exportName(s, it) == f } }, "every listed file is one the export writes")
+        // F5 (D-82): the client's contact stays on the phone unless kept; the sound note goes, and is no photo (D-84)
+        assertNotNull(s.client); assertFalse(pkg.getJSONObject("sketch").has("client"), "the contact is not in the package")
+        assertFalse("Minta Ügyfél" in pkg.toString() || "example.invalid" in pkg.toString())
+        assertTrue(pkg.getJSONObject("sketch").getJSONArray("captures").let { a -> (0 until a.length()).any { a.getJSONObject(it).optString("kind") == "audio" } })
+        assertTrue(files.none { it.endsWith(".m4a") })
+        val kept = export(ClientInfo.setKeep(s, true), false).first
+        assertTrue(kept.getJSONObject("sketch").has("client"), "kept: it goes")
+        assertFalse(export(s.copy(), false).first.toString().contains("minta@"))
         // the wants by room in the package (F4): on the floors and in plan.wants
         val floors = pkg.getJSONObject("plan").getJSONObject("data").getJSONArray("floors")
         val withWants = (0 until floors.length()).map { floors.getJSONObject(it) }.filter { it.getJSONObject("sk").has("wants") }
@@ -284,7 +297,7 @@ class E2eTest {
         // the variant request (it ends up in Git): no name, address, coordinates or client text in it
         val req = VariantRequests.build(s, kitFor(s), "Fürdőszoba-felújítás panelházban, a szellőző a közösbe megy.", listOf("furdo"),
             listOf("variant-photo-C1-eloszto.jpg"), NOW).toString()
-        listOf(s.name, "Petőfi", "47.49", "19.04", "Kovács", "alu vezeték", s.id).forEach { assertFalse(it in req, "the request carries \"$it\"") }
+        listOf(s.name, "Petőfi", "47.49", "19.04", "Kovács", "alu vezeték", s.id, "Minta", "example.invalid", "+36").forEach { assertFalse(it in req, "the request carries \"$it\"") }
         // the site (F1): fitted, reported; the outline and the placement survive the package
         val site = SketchJson.read(pkg.getJSONObject("sketch"))!!.site!!
         assertEquals(4, site.outline.size); assertNotNull(site.place); assertEquals("osm", site.footprint?.src)
@@ -330,9 +343,11 @@ class E2eTest {
         assertEquals(3, s.rooms.size); assertEquals(5, s.points.size); assertEquals(1, s.circuits.size); assertEquals(2, s.measures.size)
         assertTrue(s.entries.isEmpty() && s.captures.isEmpty() && s.site == null && s.roomScope.isEmpty())
         assertEquals(Plugins.DEFAULT_ON, s.plugins, "no plugins key: the defaults")
-        assertNotNull(s.tag("T-csere"), "the Csere preset (D-77) arrives in an old survey (D-112)")
+        assertNull(s.tag("T-csere"), "reading changes nothing (D-80)")
+        assertNotNull(SketchFeatures.onOpen(emptySet(), s).tag("T-csere"), "opening on the phone adds the Csere preset (D-80)")
+        assertNull(SketchFeatures.onOpen(setOf(SketchFeatures.CSERE_OLD), s).tag("T-csere"), "unless switched off")
         val again = SketchJson.write(s)
-        keeps(raw, again, setOf("v", "tags"))
+        keeps(raw, again, setOf("v"))
         assertEquals(2, again.getInt("v"))
         assertEquals(s, SketchJson.read(again.toString()))
         // the old survey still exports and takes off
@@ -350,16 +365,13 @@ class E2eTest {
         assertTrue(s.roomScope.isEmpty(), "no wants by room: the job totals only")
         assertEquals("Fót, Ady E. u. 2.", s.site?.address); assertTrue(s.site!!.outline.isEmpty()); assertNull(s.site!!.place)
         assertNotNull(s.site!!.footprint)
-        assertNotNull(s.tag("T-csere"))
+        assertNotNull(SketchFeatures.onOpen(emptySet(), s).tag("T-csere"))
         assertNotNull(s.tag("T19"), "the user's own tag stays")
         val again = SketchJson.write(s)
-        keeps(raw, again, setOf("tags"))
+        keeps(raw, again, emptySet())
         assertEquals(s, SketchJson.read(again.toString()))
-        // a v2 file the user had already given the Csere tag (by name) does not get a second one
+        // a survey whose user already named a tag Csere does not get a second one
         val named = JSONObject(raw.toString()); named.getJSONArray("tags").put(JSONObject().put("id", "T77").put("name", "csere").put("col", 1))
-        assertNull(SketchJson.read(named)!!.tag("T-csere"))
-        // and a new file whose user deleted Csere keeps it deleted
-        val deleted = Ops.delete(s, "T-csere")
-        assertNull(SketchJson.read(SketchJson.write(deleted).toString())!!.tag("T-csere"))
+        assertNull(SketchFeatures.onOpen(emptySet(), SketchJson.read(named)!!).tag("T-csere"))
     }
 }

@@ -55,7 +55,6 @@ object SketchJson {
             m.target?.let { o.put("target", it) }
             a.put(o)
         } })
-        .put("presetsV", Tags.PRESETS_V)   // F8 (D-112): which tag presets this file already knows
         .put("tags", JSONArray().also { a -> s.tags.forEach { t ->
             val o = JSONObject().put("id", t.id).put("name", t.name).put("col", t.color)
             t.preset?.let { o.put("preset", it) }
@@ -115,6 +114,7 @@ object SketchJson {
         s.variant?.let { o.put("variant", it) }
         if (s.variantOn) o.put("variantOn", true)
         if (s.draft.isNotEmpty()) o.put("draft", s.draft)
+        ClientInfo.write(s, o)   // F5: personal, only when filled in
     }
 
     private fun readPtRaw(a: JSONArray?) = if (a == null || a.length() < 2) null else Pt(a.optDouble(0), a.optDouble(1))
@@ -154,7 +154,7 @@ object SketchJson {
             variant = o.str("variant"),
             variantOn = o.optBoolean("variantOn"),
             draft = o.optString("draft"),
-        ).let { Wants.read(o, it) }
+        ).let { Wants.read(o, it) }.let { ClientInfo.read(o, it) }
     }
 
     // WP M46 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)
@@ -216,9 +216,9 @@ object SketchJson {
             memos = list(o.optJSONArray("memos")) { m ->
                 Memo(m.str("id") ?: return@list null, readPt(m.optJSONArray("at")) ?: return@list null, m.optString("text"), m.str("target"))
             },
-            tags = if (o.has("tags")) Tags.upgrade(list(o.optJSONArray("tags")) { t ->
+            tags = if (o.has("tags")) list(o.optJSONArray("tags")) { t ->
                 Tag(t.str("id") ?: return@list null, t.optString("name"), t.optLong("col", 0xFF888888), t.str("preset"))
-            }, o.optInt("presetsV", 1)) else Tags.PRESETS,
+            } else Tags.PRESETS,
             tagUses = list(o.optJSONArray("tagUses")) { u ->
                 TagUse(u.str("id") ?: return@list null, u.str("tag") ?: return@list null, u.str("target"), readPt(u.optJSONArray("at")))
             },

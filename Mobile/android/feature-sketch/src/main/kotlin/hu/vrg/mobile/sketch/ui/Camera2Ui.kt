@@ -375,7 +375,7 @@ internal fun exportCapture(s: Sketch, c: Capture, src: File, out: File, stripGps
     return listOfNotNull(main, marked)
 }
 
-internal fun mimeOf(f: File) = when (f.extension.lowercase()) { "mp4" -> "video/mp4"; "png" -> "image/png"; "json" -> "application/json"; else -> "image/jpeg" }
+internal fun mimeOf(f: File) = when (f.extension.lowercase()) { "mp4" -> "video/mp4"; "m4a" -> "audio/mp4"; "png" -> "image/png"; "json" -> "application/json"; else -> "image/jpeg" }
 
 // ---- small pieces on the editor ----------------------------------------------------------------------------------------
 

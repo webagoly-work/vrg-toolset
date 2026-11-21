@@ -16087,22 +16087,55 @@ registerActions([{id:'sketch.photos',label:'Vázlat: fotók',icon:'📷',group:'
 // Both are the job's facts, so they live on the building (B.survey), which every save and project file carries; nothing
 // is drawn, so the golden renders stay byte-identical. "Felmérés: munkakör lap" (⌘K) shows them. A package from an older
 // phone has no takeoff: the raw intake is kept and shown by its ids. Prefix: svy.
+//
+// F5 (WP M50): the client's wants by room (the phone's Munkakör → Igények → Hová, WP M49) come in the package three ways:
+// the takeoff's rooms[].wants (with labels), each room's sk.wants and plan.wants (ids only). svyWants keeps one list,
+// B.survey.wants = {rooms:[{id,name,items:[{id,label,sym,qty}]}], general:[…]} (general = the job total minus the
+// rooms' part), and the panel shows it as "Igények szobánként". A package without room wants has none (the key is left out).
 
 const SVY_KIND='vrg-sketch-takeoff';
 function svyTakeoff(o){const t=o&&o.takeoff;return t&&t.kind===SVY_KIND&&Array.isArray(t.items)?t:null;}
 function svyHasIntake(sk){return !!sk&&(Object.keys(sk.scope||{}).length>0||Object.keys(sk.answers||{}).length>0
   ||(sk.entries||[]).length>0||(sk.captures||[]).length>0);}
 
+// F5: the wants by room, from the takeoff (labels) or the package's own ids; null when no want has a room
+function svyWants(o,t){const sk=(o&&o.sketch)||{},plan=(o&&o.plan)||{},fl=(plan.data&&plan.data.floors)||[];
+  const lab={};((t&&t.scope)||[]).forEach(g=>(g.items||[]).forEach(i=>{lab[i.id]={label:i.label,sym:i.sym||''};}));
+  const L=id=>lab[id]||{label:id,sym:''};
+  const rs={};   // room id → {want → qty}
+  Object.keys(sk.roomScope||{}).forEach(r=>{const m=sk.roomScope[r]||{};Object.keys(m).forEach(k=>{if(m[k]>0)(rs[r]=rs[r]||{})[k]=m[k];});});
+  fl.forEach(f=>{const w=f.sk&&f.sk.wants;if(w&&f.sk.id)Object.keys(w).forEach(k=>{if(w[k]>0)(rs[f.sk.id]=rs[f.sk.id]||{})[k]=w[k];});});
+  (plan.wants||[]).forEach(w=>Object.keys(w.rooms||{}).forEach(r=>{if(w.rooms[r]>0)(rs[r]=rs[r]||{})[w.id]=w.rooms[r];}));
+  ((t&&t.rooms)||[]).forEach(r=>(r.wants||[]).forEach(w=>{(rs[r.id]=rs[r.id]||{})[w.id]=w.qty;if(!lab[w.id])lab[w.id]={label:w.label,sym:w.sym||''};}));
+  const live=new Set(((t&&t.rooms)||[]).map(r=>r.id).concat(fl.map(f=>f.sk&&f.sk.id).filter(Boolean),(sk.rooms||[]).map(r=>r.id)));
+  const ids=Object.keys(rs).filter(r=>live.has(r));   // a deleted room's wants count as Általános (D-72)
+  if(!ids.length)return null;
+  const name=id=>{const tr=((t&&t.rooms)||[]).find(r=>r.id===id);if(tr&&tr.name)return tr.name;
+    const f=fl.find(x=>x.sk&&x.sk.id===id);if(f&&f.name)return f.name;const r=(sk.rooms||[]).find(x=>x.id===id);return (r&&r.name)||id;};
+  const item=(k,q)=>({id:k,label:L(k).label,sym:L(k).sym,qty:q});
+  const rooms=ids.map(id=>({id,name:name(id),items:Object.keys(rs[id]).sort().map(k=>item(k,rs[id][k]))}));
+  const tot={};Object.keys(sk.scope||{}).forEach(k=>{tot[k]=sk.scope[k];});(plan.wants||[]).forEach(w=>{if(w.total!=null)tot[w.id]=w.total;});
+  const general=Object.keys(tot).filter(k=>ids.some(r=>rs[r][k]>0)||(plan.wants||[]).some(w=>w.id===k)).sort()
+    .map(k=>item(k,Math.max(0,tot[k]-ids.reduce((s,r)=>s+(rs[r][k]||0),0)))).filter(i=>i.qty>0);
+  return {rooms,general};}
+
 // the package → B.survey, or null when the survey carries no intake at all
 function svyFromPackage(o){const sk=(o&&o.sketch)||{},t=svyTakeoff(o);
   if(!t&&!svyHasIntake(sk))return null;
+  const wants=svyWants(o,t);
   const ans={};Object.keys(sk.answers||{}).forEach(q=>{const a=sk.answers[q]||{};ans[q]={options:(a.options||[]).slice(),text:a.text||'',state:a.state||'answered'};});
   return {src:'vazlat',id:sk.id||'',name:o.name||sk.name||'',at:o.exported||null,
     takeoff:t?JSON.parse(JSON.stringify(t)):null,
     raw:{scope:Object.assign({},sk.scope||{}),answers:ans,
       entries:(sk.entries||[]).map(e=>({id:e.id,text:e.text||'',chips:(e.chips||[]).slice(),open:!!e.open,room:e.room||''})),
       captures:(sk.captures||[]).map(c=>Object.assign({id:c.id,purpose:c.purpose||'egyeb',file:c.file||'',note:c.note||''},
-        c.kind&&c.kind!=='photo'?{kind:c.kind}:{},c.signer?{signer:c.signer}:{}))}};}   // F8 (M53): a video / signature stays one
+        c.kind&&c.kind!=='photo'?{kind:c.kind}:{},c.signer?{signer:c.signer}:{}))},   // F8 (M53): a video / signature / sound note stays one
+    ...(wants?{wants}:{}),...(svyClient(sk)?{client:svyClient(sk)}:{})};}
+// F5 (WP M50, D-82): the client's contact, only when the phone kept it in the package (personal: the project file is the
+// user's own; nothing of it is drawn or in the goldens)
+function svyClient(sk){const c=sk&&sk.client;if(!c||typeof c!=='object')return null;
+  const o={name:String(c.name||'').trim(),phone:String(c.phone||'').trim(),email:String(c.email||'').trim()};
+  return o.name||o.phone||o.email?o:null;}
 
 function svySurvey(){return (typeof B==='object'&&B&&B.survey)||null;}
 
@@ -16145,8 +16178,16 @@ function svyRawHtml(r){const sec=(h,body)=>body?`<div class="mrow svy-sec" style
   h+=sec('Fotók',Object.keys(by).map(p=>`<div class="svy-ph">${esc(p)}: ${by[p]}</div>`).join(''));
   return h;}
 
+// F5: Igények szobánként — each room's own wants, then the job's (Általános)
+function svyWantsHtml(w){if(!w||!w.rooms||!w.rooms.length)return '';
+  const line=(cls,id,name,items)=>`<div class="${cls}" data-room="${esc(id)}"><i>${esc(name)}:</i> ${items.map(i=>esc((i.sym?i.sym+' ':'')+i.label)+' ×'+i.qty).join(', ')}</div>`;
+  return `<div class="mrow svy-sec svy-wants" style="flex-direction:column;align-items:stretch;gap:3px"><b>Igények szobánként</b>`
+    +w.rooms.map(r=>line('svy-want',r.id,r.name,r.items)).join('')
+    +((w.general||[]).length?line('svy-want svy-general','',`Általános`,w.general):'')+`</div>`;}
+
 function svyHtml(sv){if(!sv)return '<div class="mrow">Ehhez a tervhez nincs felmérés.</div>';
-  return `<div id="svyBody" style="max-height:62vh;overflow:auto">`+(sv.takeoff?svyTakeoffHtml(sv.takeoff):svyRawHtml(sv.raw))+`</div>`;}
+  const cl=sv.client?`<div class="mrow svy-client" style="font-size:12px">👤 <b>Ügyfél:</b>&nbsp;${esc([sv.client.name,sv.client.phone,sv.client.email].filter(Boolean).join(' · '))}</div>`:'';
+  return `<div id="svyBody" style="max-height:62vh;overflow:auto">`+cl+(sv.takeoff?svyTakeoffHtml(sv.takeoff):svyRawHtml(sv.raw))+svyWantsHtml(sv.wants)+`</div>`;}
 function svyOpen(){const sv=svySurvey();openModal('Felmérés: munkakör lap'+(sv&&sv.name?' — '+esc(sv.name):''),svyHtml(sv),()=>true,'Kész');}
 
 registerActions([{id:'sketch.survey',label:'Felmérés: munkakör lap',icon:'☰',group:'Helyiség',

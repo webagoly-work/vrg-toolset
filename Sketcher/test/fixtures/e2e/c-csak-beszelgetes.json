@@ -309,7 +309,6 @@
   "name": "Telefonos felmérés",
   "sketch": {
    "rooms": [],
-   "presetsV": 2,
    "plugins": [
     "jegyzet",
     "alaprajz",

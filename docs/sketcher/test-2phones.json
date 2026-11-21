@@ -275,9 +275,59 @@
        "text": "Beszédfelismerő nélküli telefonon (ha van ilyen) a 🎤: az új üzenet a billentyűzet mikrofonjáról."
       }
      ]
+    },
+    {
+     "n": 50,
+     "title": "M50 · Maradékok: wants in the Planner, the Csere tag, the survey report, the client's contact, lineClose, the sound note",
+     "items": [
+      {
+       "id": "M50.1",
+       "text": "Új felmérés → Címke eszköz: a sávban ott a narancs **Csere** címke. Egy régi felmérést megnyitva szintén ott van (ha nem volt saját *Csere* címkéje)."
+      },
+      {
+       "id": "M50.2",
+       "text": "Rajzolj egy meglévő dugaljat, tedd rá a Csere címkét → Munkakör lap: *Dugalj — csere 1 db*."
+      },
+      {
+       "id": "M50.3",
+       "text": "Helyszín → **👤 Ügyfél**: írd be a nevet és a telefont → ✓ Ügyfél mentése. A pill: „Kiadáskor törlődik”."
+      },
+      {
+       "id": "M50.4",
+       "text": "Rendezés → Küldés → PC-re: a PC-n a `.vsketch.json`-ban **nincs** `client`. Kapcsold a pillt „A kiadott csomagban marad”-ra, küldd újra: most benne van; a Plannerben a *Felmérés: munkakör lap* tetején „👤 Ügyfél: …”."
+      },
+      {
+       "id": "M50.5",
+       "text": "⚙ → Új variáns kérése → Küldés: a kérés JSON-jában nincs az ügyfél neve, telefonja."
+      },
+      {
+       "id": "M50.6",
+       "text": "Munkakör → Igények → Hová: Konyha, Dugalj + + → küldd a PC-re, a Plannerben *Felmérés: munkakör lap* → **Igények szobánként**: „Konyha: ⊙ Dugalj ×2”."
+      },
+      {
+       "id": "M50.7",
+       "text": "Az Asztal Sketcher oldalán nyisd meg a csomagot, csatold a fotókat, majd fent **Jegyzőkönyv**: új ablak, a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek az igényekkel, a vázlat, a fotók célonként, a helyszín és az aláírás. *Nyomtatás / PDF* → PDF mentése: A4, a szakaszok nem törnek ketté."
+      },
+      {
+       "id": "M50.8",
+       "text": "Fürdőszoba felújítás variánsban Vonal eszköz: négy sarok, majd **Kész** → szoba lesz (nem nyitott vonal). Az eredetiben ugyanez nyitott vonal marad."
+      },
+      {
+       "id": "M50.9",
+       "text": "Beszédfelismerő nélküli telefonon (vagy ha a 🎤 „Nincs beszédfelismerő” üzenetet ad) a jegyzetben megjelenik a **⏺ Hangjegyzet**: Felvétel → mondj valamit → ■ Kész. Kamera front: *🎙 Hangjegyzetek (1)* → ▶ Lejátszás szól."
+      },
+      {
+       "id": "M50.10",
+       "text": "Rendezés → Küldés: a PC-re megy egy `…_hang.m4a` is; az Asztal Sketcher oldalán Fotók csatolása → a Kamera alatt a hangjegyzet lejátszható, a Jegyzőkönyvben fel van sorolva."
+      },
+      {
+       "id": "M50.11",
+       "text": "⚙ → **Felmérés funkciók**: kapcsold ki az *Ügyféladatok*-at és a *Hangjegyzet*-et: a Helyszínen nincs Ügyfél kártya, a Kamerán nincs Hangjegyzetek lista, a Rendezés csomagjában nincs `client` és nincs `.m4a`. *Mind* visszakapcsolja."
+      }
+     ]
     }
    ],
-   "count": 57
+   "count": 68
   },
   "B": {
    "name": "B telefon — kamera és helyszín",

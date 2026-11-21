@@ -831,7 +831,6 @@
      "id": "R3"
     }
    ],
-   "presetsV": 2,
    "plugins": [
     "jegyzet",
     "alaprajz",
@@ -1132,7 +1131,7 @@
    "variant": "furdo-felujitas",
    "id": "S-A",
    "lines": [],
-   "seq": 35,
+   "seq": 36,
    "circuits": [
     {
      "col": 4293420060,
@@ -1288,6 +1287,17 @@
      "kind": "signature",
      "id": "C35",
      "signer": "Kovács Éva"
+    },
+    {
+     "note": "",
+     "file": "hang_1.m4a",
+     "at": 1763699999100,
+     "purpose": "hang",
+     "kind": "audio",
+     "bytes": 300000,
+     "id": "C36",
+     "durationMs": 42000,
+     "room": "R1"
     }
    ],
    "level": "upper",
@@ -1956,7 +1966,8 @@
    "petofi-u-7-2-5_C32_hiba.jpg",
    "petofi-u-7-2-5_C33_epulet.jpg",
    "petofi-u-7-2-5_C34_nyomvonal.mp4",
-   "petofi-u-7-2-5_C35_alairas.png"
+   "petofi-u-7-2-5_C35_alairas.png",
+   "petofi-u-7-2-5_C36_hang.m4a"
   ],
   "gps": {
    "C31": false,
@@ -1964,7 +1975,8 @@
    "C33": true,
    "C32": false,
    "C35": false,
-   "C34": false
+   "C34": false,
+   "C36": false
   },
   "items": [
    [

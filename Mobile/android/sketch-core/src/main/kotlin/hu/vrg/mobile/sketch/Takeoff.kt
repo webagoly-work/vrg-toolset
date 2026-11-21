@@ -360,10 +360,11 @@ object Takeoff {
         }
         val notes = s.entries.map { e -> Note(e.id, e.text, e.chips.map { c -> kit.chip(c)?.label ?: c }, roomName(e.room), e.open) }
         val purposeIds = kit.purposes.map { it.id }.toMutableList()
-        s.captures.forEach { if (it.purpose !in purposeIds) purposeIds += it.purpose }
+        val caps = s.captures.filter { it.kind != CaptureKind.AUDIO }   // F5: a sound note is not a photo
+        caps.forEach { if (it.purpose !in purposeIds) purposeIds += it.purpose }
         val roomShots = s.photos.sumOf { it.shots.size }
         val photos = purposeIds.mapNotNull { id ->
-            val list = s.captures.filter { it.purpose == id }
+            val list = caps.filter { it.purpose == id }
             val n = list.size + if (id == "szoba") roomShots else 0
             if (n == 0) return@mapNotNull null
             val k = kit.purpose(id)

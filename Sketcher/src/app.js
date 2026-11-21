@@ -99,6 +99,26 @@
     download(md, stem() + '.takeoff.md', 'text/markdown');
     return { json, md, takeoff: t };
   }
+  // F5 (WP M50): the Felmérési jegyzőkönyv (Sketcher/lib/report.js), built now from the open survey; never stored
+  const RP = window.VRGReport;
+  function reportHtml() {
+    if (!S || !RP) return '';
+    const si = S.site || {}, out = si.outline || [];
+    let siteSvg = '', siteLines = [];
+    if (SM && out.length >= 3) {
+      const rooms = siteRooms(), rep = si.place && rooms.length ? SM.report(rooms, out, si.place) : null;
+      siteSvg = sitePlaceSvg(out, rooms, si.place && rooms.length ? si.place : null, rep); siteLines = rep ? SM.reportLines(rep) : [];
+    }
+    return RP.html(RP.model(kit(), S, takeoff(), { now: stamp(), roomName, photoUrl: thumbFor, planSvg: svgPlan(), siteSvg, siteLines }));
+  }
+  function openReport() {
+    const h = reportHtml(); if (!h) return '';
+    let w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    if (w && w.document) { w.document.open(); w.document.write(h); w.document.close(); flash('Jegyzőkönyv: új ablakban (Nyomtatás / PDF).', 'ok'); }
+    else { download(h, stem() + '.jegyzokonyv.html', 'text/html'); flash('Jegyzőkönyv letöltve: ' + stem() + '.jegyzokonyv.html (a felugró ablak tiltva).', 'ok'); }
+    return h;
+  }
   function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
   async function openFiles(list) {
     const arr = Array.from(list || []), js = arr.filter(f => /\.json$/i.test(f.name) || f.type === 'application/json'), ph = arr.filter(f => !js.includes(f));
@@ -110,7 +130,7 @@
 
   // ---- photos in memory ------------------------------------------------------------------------------------------
   // Kamera 2: a video is .mp4, a signature .png named "alairas" (sketch-core Intake.exportName)
-  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : 'jpg';
+  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : c.kind === 'audio' ? 'm4a' : 'jpg';   // F5: a sound note is .m4a
   function captureNames(c) {
     const n = [base(c.file), stem() + '_' + c.id + '_' + (c.kind === 'signature' ? 'alairas' : (c.purpose || 'egyeb')) + '.' + capExt(c)];
     return n.filter(Boolean);
@@ -309,7 +329,7 @@
 
   function vKamera(d) {
     const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
-    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
+    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4,audio/mp4,.m4a" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
     h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
       (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
     h += '<h3>Célfotók</h3>';
@@ -318,7 +338,9 @@
       const list = caps.filter(c => (c.purpose || 'egyeb') === p.id); if (!list.length) return; used.add(p.id);
       h += '<div class="small" style="color:' + esc(p.color) + '">' + esc(p.sym) + ' ' + esc(p.label) + ' (' + list.length + ')</div>' + list.map(capCard).join('');
     });
-    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb')); if (rest.length) h += rest.map(capCard).join('');
+    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb') && c.kind !== 'audio'); if (rest.length) h += rest.map(capCard).join('');
+    // F5 (WP M50, D-84): the sound notes (the dictation fallback), played once their .m4a is attached
+    const auds = caps.filter(c => c.kind === 'audio'); if (auds.length) h += '<h3 id="hangok">🎙 Hangjegyzetek (' + auds.length + ')</h3>' + auds.map(capCard).join('');
     if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
     h += vCamera2(caps);
     const pp = (S.photos || []);
@@ -329,7 +351,8 @@
   }
   function capCard(c) {
     const u = thumbFor(c);
-    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : 'nincs kép') + '</div>'
+    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : c.kind === 'audio' ? '🎙 hang' : 'nincs kép') + '</div>'
+      : c.kind === 'audio' ? '<audio class="aud" src="' + esc(u) + '" controls preload="metadata"></audio>'
       : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
     return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
       '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
@@ -342,6 +365,7 @@
     const b = [];
     if (c.kind === 'video') b.push('<span class="tag" data-b="video">▶ ' + esc(dur(c.durationMs)) + ' · ' + esc(mb(c.bytes)) + '</span>');
     if (c.kind === 'signature') b.push('<span class="tag" data-b="signature">✍ aláírás</span>');
+    if (c.kind === 'audio') b.push('<span class="tag" data-b="audio">🎙 ' + esc(dur(c.durationMs)) + '</span>');   // F5 (WP M50)
     if (c.privacy) b.push('<span class="tag warn" data-b="privacy">👤 személyes adat</span>');
     if ((c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset')) b.push('<span class="tag" data-b="blur">▦ elmosva</span>');
     if (c.phase === 'elotte') b.push('<span class="tag" data-b="before">◐ előtte</span>');
@@ -382,6 +406,12 @@
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
     if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    // F5 (WP M50, D-82): the client's contact; the address is the site's. Personal: it stays in this file and the report
+    const cl = S.client || {};
+    h += '<h3>👤 Ügyfél</h3><div class="card" id="client"><div class="kv"><b>Név</b><input type="text" data-client="name" value="' + esc(cl.name) + '">' +
+      '<b>Telefon</b><input type="text" data-client="phone" value="' + esc(cl.phone) + '"><b>E-mail</b><input type="text" data-client="email" value="' + esc(cl.email) + '">' +
+      '<b></b><label class="small"><input type="checkbox" data-client="keep"' + (cl.keep ? ' checked' : '') + '> a telefon kiadott csomagjában is marad</label></div>' +
+      '<div class="small muted">Személyes adat: a felmérés fájljában és a jegyzőkönyvben van; variáns-kérésbe soha nem kerül, Gitbe sem.</div></div>';
     h += sitePlaceCard();
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
@@ -463,6 +493,7 @@
     if (d.defaultRoom) out.push('Koppintás = ' + n(d.defaultRoom.w) + ' × ' + n(d.defaultRoom.d) + ' m szoba');
     if (d.measureFirst) out.push('Új szoba: rögtön a méret');
     if (d.pointSnap === 'free') out.push('Pont: nem ugrik a falra');
+    if (d.lineClose === 'auto') out.push('Vonal: Kész = szoba'); else if (d.lineClose === 'ask') out.push('Vonal: Kész → szoba vagy vonal?');   // F5
     return out.length ? '<div class="small draw" data-draw="' + esc(v.id) + '">✎ ' + out.map(esc).join(' · ') + '</div>' : '';
   }
   function vVariansok() {
@@ -538,6 +569,7 @@
       case 'jump': front(t.dataset.front); break;
       case 'tkimplied': setImplied(!impliedNow()); render(); break;
       case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
+      case 'report': { if (S) { openReport(); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
       case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
@@ -588,6 +620,14 @@
         S.site = si;
       }, false);
       if (cur === 'helyszin') render();
+    } else if (t.dataset.client) {                    // F5 (WP M50, D-82): the client's contact, personal (sketch-core ClientInfo)
+      commit(() => {
+        const c = Object.assign({ name: '', phone: '', email: '' }, S.client), key = t.dataset.client;
+        if (key === 'keep') c.keep = t.checked; else c[key] = t.value.trim();
+        if (!c.keep) delete c.keep;
+        if (!c.name && !c.phone && !c.email) delete S.client; else S.client = c;
+      }, false);
+      if (cur === 'helyszin') render();
     } else if (t.id === 'ntext' || t.id === 'nopen' || t.id === 'nroom') syncNote();
   }
   function onInput(ev) {
@@ -618,6 +658,6 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

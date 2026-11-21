@@ -72,5 +72,19 @@ class DrawTuneTest {
         val ip = v["ipari-telephely"]!!.draw
         assertEquals(90, ip.snapAngle); assertTrue(ip.snapGrid >= 1.0); assertTrue(ip.defaultRoom!!.first >= 20.0); assertTrue(ip.freePoints)
         assertTrue(!v["furdo-felujitas"]!!.draw.isDefault)
+        assertEquals("auto", v["furdo-felujitas"]!!.draw.lineClose)
+    }
+
+    // F5 (WP M50, D-83): lineClose decides what the Vonal tool's Kész does with 3+ corners
+    @Test fun lineCloseAutoOrAsk() {
+        assertEquals("auto", Draw.parse(JSONObject("""{"lineClose":"auto"}""")).lineClose)
+        assertEquals("ask", Draw.parse(JSONObject("""{"lineClose":"ask"}""")).lineClose)
+        assertTrue(Draw.parse(JSONObject("""{"lineClose":"maybe","wallThickness":30}""")).isDefault, "a bad value and an unknown key: the original")
+        assertEquals(Draw.LineDone.LINE, Draw.lineDone(DrawTune(), 5), "original: Kész leaves an open line")
+        assertEquals(Draw.LineDone.ROOM, Draw.lineDone(DrawTune(lineClose = "auto"), 3))
+        assertEquals(Draw.LineDone.ASK, Draw.lineDone(DrawTune(lineClose = "ask"), 4))
+        assertEquals(Draw.LineDone.LINE, Draw.lineDone(DrawTune(lineClose = "auto"), 2), "two corners are never a room")
+        assertEquals(10.0, Draw.closeTol(DrawTune(), 10.0)); assertEquals(20.0, Draw.closeTol(DrawTune(lineClose = "auto"), 10.0))
+        assertEquals(listOf("Vonal: Kész = szoba"), DrawTune(lineClose = "auto").describe())
     }
 }

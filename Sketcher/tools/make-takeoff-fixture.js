@@ -77,6 +77,11 @@ const CASES = [
   ['Kamera 2 media: a video (.mp4) and a signature (_alairas.png) among the photos', Object.assign(clone(RAW), { captures: RAW.captures.concat([
     { id: 'C40', file: 'v.mp4', purpose: 'nyomvonal', at: NOW, note: '', kind: 'video', durationMs: 61000, bytes: 1000 },
     { id: 'C41', file: 's.png', purpose: 'dokumentum', at: NOW, note: 'A felmérést átvettem', kind: 'signature', signer: 'Ügyfél' }]) }), {}],
+  // F5 (WP M50, D-80): the built-in Csere tag (preset replace) marks a replacement, the user's own tag is gone
+  ['the built-in Csere tag', Object.assign(clone(RAW), { tags: RAW.tags.filter(t => t.id !== 'T19').concat([{ id: 'T-csere', name: 'Csere', col: 4293420060, preset: 'replace' }]),
+    tagUses: RAW.tagUses.map(u => u.tag === 'T19' ? Object.assign({}, u, { tag: 'T-csere' }) : u) }), {}],
+  // F5 (WP M50, D-84): a sound note (kind audio) is listed nowhere among the photos
+  ['a sound note beside the photos', Object.assign(clone(RAW), { captures: RAW.captures.concat([{ id: 'C40', file: 'hang_1.m4a', purpose: 'hang', kind: 'audio', at: NOW, note: 'a csempe alatt?', durationMs: 42000, bytes: 300000 }]) }), {}],
   ['an empty survey', { kind: 'vrg-vazlat', v: 2, id: 'E0', name: '', seq: 0, rooms: [], points: [], circuits: [], routes: [], memos: [], entries: [], scope: {}, answers: {}, captures: [] }, {}],
 ];
 
