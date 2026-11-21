@@ -123,7 +123,7 @@ class Cam2State {
     var faces by mutableStateOf<Map<String, List<Mark>>>(emptyMap())
 
     fun on(id: String) = CameraFeatures.on(off, id)
-    fun setOff(next: Set<String>) { off = next; saveOff(next) }
+    fun applyOff(next: Set<String>) { off = next; saveOff(next) }
 
     fun taken(st: EditorState, req: CameraReq, id: String) {
         if (on(CameraFeatures.AGAIN)) { again = req.copy(pairOf = null); againAt = System.currentTimeMillis() }
@@ -795,11 +795,11 @@ private fun writeSignature(out: File, strokes: List<List<Offset>>, box: IntSize,
 internal fun CameraFeatureSection(st: EditorState) {
     val cam = st.cam2
     Text("Kamera funkciók (minden felmérésre)", style = Melyviz.label.copy(color = st.frontColor("kamera")), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-    VrgToggle("Mind", CameraFeatures.allOn(cam.off)) { cam.setOff(CameraFeatures.all(it)) }
+    VrgToggle("Mind", CameraFeatures.allOn(cam.off)) { cam.applyOff(CameraFeatures.all(it)) }
     CameraFeatures.ALL.forEach { f ->
         val need = f.needs
         val blocked = need != null && !cam.on(need)
         VrgToggle(f.sym + " " + f.label + ": " + f.blurb + if (blocked) " (előbb: " + (need?.let { CameraFeatures.of(it)?.label } ?: "") + ")" else "",
-            f.id !in cam.off && !blocked) { want -> if (!blocked || !want) cam.setOff(if (want) cam.off - f.id else cam.off + f.id) }
+            f.id !in cam.off && !blocked) { want -> if (!blocked || !want) cam.applyOff(if (want) cam.off - f.id else cam.off + f.id) }
     }
 }
