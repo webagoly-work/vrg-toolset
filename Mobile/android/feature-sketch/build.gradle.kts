@@ -49,4 +49,9 @@ dependencies {
     implementation(project(":kit"))
     implementation(project(":sketch-core"))
     implementation(project(":sketch-vision"))   // Kamera 2: type-plate reading (TextReader)
+    // Saját kamera (WP M52, D-100): CameraX, the same version feature-pair's QR scanner already puts in the APK
+    val camerax = "1.4.1"
+    implementation("androidx.camera:camera-camera2:$camerax")
+    implementation("androidx.camera:camera-lifecycle:$camerax")
+    implementation("androidx.camera:camera-view:$camerax")
 }

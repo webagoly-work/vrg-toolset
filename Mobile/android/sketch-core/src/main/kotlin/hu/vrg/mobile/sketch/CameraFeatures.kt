@@ -5,7 +5,9 @@ package hu.vrg.mobile.sketch
 // so a feature added later arrives switched on. A feature that needs another is off while the other is off.
 
 object CameraFeatures {
-    data class Feature(val id: String, val sym: String, val label: String, val blurb: String, val needs: String? = null)
+    /** [also] (Saját kamera, M52): further prerequisites besides [needs], all of which must be on. */
+    data class Feature(val id: String, val sym: String, val label: String, val blurb: String, val needs: String? = null,
+                       val also: List<String> = emptyList())
 
     const val OCR = "ocr"
     const val OCR_AUTO = "ocr_auto"
@@ -19,6 +21,14 @@ object CameraFeatures {
     const val VIDEO = "video"
     const val QUICK = "quick"
     const val AGAIN = "again"
+    // Saját kamera (WP M52, D-108): the in-app camera and each of its helpers
+    const val LIVE = "live"
+    const val LIVE_GPS = "live_gps"
+    const val SERIES = "live_series"
+    const val GHOST = "live_ghost"
+    const val LEVEL = "live_level"
+    const val GRID = "live_grid"
+    const val TORCH = "live_torch"
 
     val ALL = listOf(
         Feature(OCR, "▤", "Szöveg kiolvasása", "típustábla, címke: számok chipként"),
@@ -33,6 +43,13 @@ object CameraFeatures {
         Feature(VIDEO, "🎥", "Séta videó", "rövid videó a nyomvonalról"),
         Feature(QUICK, "◉", "Hiányzók elöl", "a ◉ tartásra előbb a hiányzó képek"),
         Feature(AGAIN, "＋", "„+ még” gomb", "fotó után ugyanaz még egyszer"),
+        Feature(LIVE, "◉", "Saját kamera", "a VRG kamerája; ki: a telefon kamera-appja"),
+        Feature(LIVE_GPS, "⌖", "Helyadat a fotón", "a saját kamera a helyet a képbe írja (ha van helyengedély)", needs = LIVE),
+        Feature(SERIES, "⟳", "Sorozat a kamerában", "fotó után nyitva marad a ✓-ig", needs = LIVE),
+        Feature(GHOST, "◐", "Szellemkép", "utána-fotónál az előtte-kép áttetszőn a keresőn", needs = LIVE, also = listOf(PAIRS)),
+        Feature(LEVEL, "⊖", "Vízszintező", "dőlésvonal a forgásérzékelőből", needs = LIVE),
+        Feature(GRID, "▦", "Rács", "harmadoló rács a keresőn", needs = LIVE),
+        Feature(TORCH, "ϟ", "Lámpa", "zseblámpa gomb sötét szekrényekhez", needs = LIVE),
     )
 
     fun of(id: String) = ALL.firstOrNull { it.id == id }
@@ -41,7 +58,7 @@ object CameraFeatures {
     fun on(off: Set<String>, id: String): Boolean {
         if (id in off) return false
         val f = of(id) ?: return true
-        return f.needs == null || on(off, f.needs)
+        return (f.needs == null || on(off, f.needs)) && f.also.all { on(off, it) }
     }
 
     fun toggle(off: Set<String>, id: String): Set<String> = if (id in off) off - id else off + id
