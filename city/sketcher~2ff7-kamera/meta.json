@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f7-kamera",
+ "key": "sketcher~2ff7-kamera",
+ "sha": "618a440a8689452fe3e7c5c4bca76b1aebc97794",
+ "head": "618a440",
+ "scannedAt": "2026-11-21T01:36:16.157Z",
+ "commits": 561,
+ "files": 2566,
+ "htmlBytes": 1725644,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44851118866"
+}

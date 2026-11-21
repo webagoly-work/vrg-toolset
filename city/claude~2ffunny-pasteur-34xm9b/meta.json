@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/funny-pasteur-34xm9b",
+ "key": "claude~2ffunny-pasteur-34xm9b",
+ "sha": "a1a8e8cb49cfe4ebcf763d612299c90fa6db61e9",
+ "head": "a1a8e8c",
+ "scannedAt": "2026-11-21T02:37:49.661Z",
+ "commits": 509,
+ "files": 2553,
+ "htmlBytes": 1714315,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44856919648"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/pensive-euler-w7refe",
+ "key": "claude~2fpensive-euler-w7refe",
+ "sha": "19e82cc9094db55dca649d7ccbe359539f0e97e0",
+ "head": "19e82cc",
+ "scannedAt": "2026-11-20T07:17:42.028Z",
+ "commits": 503,
+ "files": 2511,
+ "htmlBytes": 1707486,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44693882909"
+}

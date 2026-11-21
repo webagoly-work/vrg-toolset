@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f8-osszefesules",
+ "key": "sketcher~2ff8-osszefesules",
+ "sha": "767b6cc0f057c7533146dfbb191841320e48e911",
+ "head": "767b6cc",
+ "scannedAt": "2026-11-21T02:24:43.151Z",
+ "commits": 586,
+ "files": 2604,
+ "htmlBytes": 1735446,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44855720812"
+}

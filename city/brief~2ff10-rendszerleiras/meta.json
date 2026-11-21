@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "brief/f10-rendszerleiras",
+ "key": "brief~2ff10-rendszerleiras",
+ "sha": "8838e39563b405176d25759707dd51792c0b30cd",
+ "head": "8838e39",
+ "scannedAt": "2026-11-21T02:25:09.054Z",
+ "commits": 579,
+ "files": 2596,
+ "htmlBytes": 1733150,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44855760161"
+}

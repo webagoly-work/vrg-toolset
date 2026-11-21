@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/quirky-mccarthy-con8dp",
+ "key": "claude~2fquirky-mccarthy-con8dp",
+ "sha": "5f489883a2b1d2dfba67a5a5d448e15b5f2ece0a",
+ "head": "5f48988",
+ "scannedAt": "2026-11-21T09:53:17.302Z",
+ "commits": 594,
+ "files": 2632,
+ "htmlBytes": 1740451,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44891671792"
+}

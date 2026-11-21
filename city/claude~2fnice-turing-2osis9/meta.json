@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/nice-turing-2osis9",
+ "key": "claude~2fnice-turing-2osis9",
+ "sha": "d50521734fe57e10f2ac9968f7b7b20cca02d537",
+ "head": "d505217",
+ "scannedAt": "2026-11-20T03:24:01.369Z",
+ "commits": 491,
+ "files": 2466,
+ "htmlBytes": 1698503,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44667425300"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/awesome-cori-p8e85s",
+ "key": "claude~2fawesome-cori-p8e85s",
+ "sha": "2f78ccd8417d935b827c16a638f460d57537b7ff",
+ "head": "2f78ccd8",
+ "scannedAt": "2026-11-21T10:38:08.779Z",
+ "commits": 589,
+ "files": 2605,
+ "htmlBytes": 1735953,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44895262841"
+}
