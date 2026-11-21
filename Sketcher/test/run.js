@@ -3,7 +3,7 @@
 'use strict';
 const { spawnSync } = require('child_process'), path = require('path');
 const R = path.join(__dirname, '..');
-const steps = [['make-fixture --check', ['tools/make-fixture.js', '--check']], ['make-site-fixture --check', ['tools/make-site-fixture.js', '--check']], ['make-takeoff-fixture --check', ['tools/make-takeoff-fixture.js', '--check']], ['variant-check', ['tools/variant-check.js']],
+const steps = [['make-fixture --check', ['tools/make-fixture.js', '--check']], ['make-site-fixture --check', ['tools/make-site-fixture.js', '--check']], ['make-takeoff-fixture --check', ['tools/make-takeoff-fixture.js', '--check']], ['make-features-fixture --check', ['tools/make-features-fixture.js', '--check']], ['features.test', ['test/features.test.js']], ['variant-check', ['tools/variant-check.js']],
   ['build --check', ['tools/build.js', '--check']], ['page.test', ['test/page.test.js']]];
 let n = 0, failed = 0;
 for (const [name, args] of steps) {
