@@ -16,7 +16,7 @@ const HOLD_MS = 550;
 const MOVE_M = 25, EVERY_MS = 30000;       // refresh the list after 25 m or 30 s of movement
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function initFeed({ map, maplibregl, params, store, toast, router }) {
+export function initFeed({ map, maplibregl, params, store, toast, router, nav }) {
   const $ = s => document.querySelector(s);
   const btn = $('#b-feed'), panel = $('#feed-panel');
   if (!btn || !panel || !F()) return null;
@@ -25,13 +25,15 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
   let drawn = [];
   let rt = null, planning = false, reAt = 0, gen = 0;      // N2: the selected place's route (lib/route-layer.js)
   const REROUTE_M = 45, REROUTE_MS = 8000, ROAD_MAX_M = 60000;
+  let traffic = null, trafficBusy = false;             // N3: the TomTom answer for the selected car route (opt-in, D-130 B)
+  const T = () => window.VRGTraffic;
   let on = false, idx = null, loading = null, watch = null, pos = null, last = null, items = [], sel = null, gear = false;
   let cats = store.get('feedCats', null) || F().defaults();
   let pins = store.get('feedPins', []) || [];
   let mode = store.get('feedMode', 'auto');
   const markers = new Map();
   const api = { isOn: () => on, items: () => items, selected: () => sel, toggle, select, clear, pins: () => pins.slice(),
-    setPosition: (lon, lat) => setPos(lon, lat, 'gps', 5), lines: () => drawn.map(f => f.properties.k), route: () => rt };
+    setPosition: (lon, lat) => setPos(lon, lat, 'gps', 5), lines: () => drawn.map(f => f.properties.k), route: () => rt, traffic: () => traffic };
   window.vrgFeed = api;
 
   panel.innerHTML = `
@@ -68,7 +70,7 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
     pos = { lon, lat, src, acc };
     $('#fd-src').textContent = src === 'gps' ? ' · a helyedtől' + (acc ? ` (±${Math.round(acc)} m)` : '') : ' · a térkép közepétől';
     const moved = !last || F().distance(last.lon, last.lat, lon, lat) > MOVE_M || Date.now() - last.t > EVERY_MS;
-    if (sel) { refreshSelected(); drawLines(); followRoute(); return; }
+    if (sel) { refreshSelected(); drawLines(); followRoute(); if (nav && nav.on()) nav.update(lon, lat); return; }
     if (moved) refresh(true); else drawLines();
   }
   function fromCenter() { if (!pos || pos.src !== 'gps') { const c = map.getCenter(); setPos(c.lng, c.lat, 'center'); } }
@@ -123,8 +125,9 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
       <span class="fd-i">${c.icon}</span>
       <span class="fd-t"><b>${esc(it.name || c.hu)}</b><small>${esc(c.hu)}${it.kind && it.kind !== c.hu ? ' · ' + esc(it.kind) : ''}${it.own ? ' · saját' : ''}</small></span>
       <span class="fd-d"><b>${F().fmtEta(shownEta(it))}</b><small>${F().fmtDist(shownDist(it))}${it.road ? ' úton' : ' légvonal'}</small></span>
-      ${big ? `<span class="fd-act"><button type="button" class="lg-chip" data-nav>Navigáció appban</button><button type="button" class="lg-chip" data-back>✕ Vissza</button>
-        <small class="m">${routeNote()}</small></span>` : ''}
+      ${big ? `<span class="fd-act">${rt && nav ? '<button type="button" class="lg-chip fd-go" data-go>▶ Indulás</button>' : ''}<button type="button" class="lg-chip" data-nav>Navigáció appban</button><button type="button" class="lg-chip" data-back>✕ Vissza</button>
+        ${trafficButton()}
+        <small class="m">${routeNote()}</small>${traffic ? `<small class="fd-traffic">${esc(traffic)}</small>` : ''}</span>` : ''}
     </div>`;
   }
   function renderList() {
@@ -132,9 +135,11 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
     const shown = sel ? items.filter(i => i.cat === sel) : items;
     list.innerHTML = shown.map(card).join('') || '<div class="m">Válassz kategóriát: ⚙</div>';
     list.querySelectorAll('.fd-card:not(.fd-miss)').forEach(el => hold(el, () => focus(el.dataset.cat), () => select(el.dataset.cat)));
-    const nav = list.querySelector('[data-nav]'), back = list.querySelector('[data-back]');
-    if (nav) nav.onclick = e => { e.stopPropagation(); navigate(); };
+    const hand = list.querySelector('[data-nav]'), back = list.querySelector('[data-back]'), go = list.querySelector('[data-go]'), tr = list.querySelector('[data-traffic]');
+    if (hand) hand.onclick = e => { e.stopPropagation(); navigate(); };
     if (back) back.onclick = e => { e.stopPropagation(); clear(); };
+    if (go) go.onclick = e => { e.stopPropagation(); startGuide(); };
+    if (tr) tr.onclick = e => { e.stopPropagation(); checkTraffic(); };
     $('#fd-mode').textContent = mode === 'auto' ? '🚗 Autó' : '🚶 Gyalog';
   }
 
@@ -231,7 +236,8 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
     planning = true; reAt = Date.now(); renderList();
     const r = await router.plan({ lon: pos.lon, lat: pos.lat }, it, mode);
     if (my !== gen || sel !== it.cat) return;
-    planning = false; rt = r;
+    planning = false; rt = r; traffic = null;
+    if (rt && nav && nav.on()) nav.setRoute(rt);
     if (rt) {
       router.draw(rt, cat(it.cat).color);
       it.road = { meters: rt.meters, seconds: rt.seconds };
@@ -241,6 +247,35 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
     } else router.clear();
     renderList(); drawLines();
   }
+  // ---------------------------------------------------------------- N3: guidance and the optional traffic check
+  function startGuide() {
+    const it = items.find(i => i.cat === sel);
+    if (!nav || !rt || !it) return;
+    nav.start(rt, { label: it.cat === 'otthon' ? 'Otthon' : (it.name || cat(it.cat).hu), mode, color: cat(it.cat).color, onStop: () => { renderList(); } });
+    if (pos) nav.update(pos.lon, pos.lat);
+  }
+  function trafficButton() {
+    if (!T() || mode !== 'auto' || !rt) return '';
+    if (!store.get('tomtomKey', '')) return '<small class="m">Forgalom: ⚙ → TomTom kulcs (opcionális).</small>';
+    return `<button type="button" class="lg-chip" data-traffic title="Egy kérés a TomTomhoz: a helyed és a cél koordinátája">${trafficBusy ? '🚦 …' : '🚦 Forgalom'}</button>`;
+  }
+  async function checkTraffic() {
+    const it = items.find(i => i.cat === sel), key = store.get('tomtomKey', '');
+    const u = T() && it && pos ? T().url(key, pos, it) : null;
+    if (!u) { toast('Érvénytelen TomTom kulcs: ⚙ → TomTom kulcs.'); return; }
+    trafficBusy = true; renderList();
+    try {
+      const r = await fetch(u);
+      if (!r.ok) { traffic = T().problem(r.status); }
+      else {
+        const v = T().parse(await r.json());
+        traffic = v ? T().label(v, rt ? rt.seconds : 0) : 'A TomTom válasza nem értelmezhető.';
+        const n = (store.get('tomtomCount', null) || {}), today = new Date().toISOString().slice(0, 10);
+        store.set('tomtomCount', { day: today, n: (n.day === today ? n.n : 0) + 1 });
+      }
+    } catch { traffic = 'A forgalmi adat most nem érhető el (nincs internet?).'; }
+    trafficBusy = false; renderList();
+  }
   function followRoute() {
     if (!rt || planning) return;
     const a = router.along(rt, pos.lon, pos.lat);
@@ -248,7 +283,8 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
   }
   function clear() {
     if (!sel) return;
-    sel = null; rt = null; planning = false; gen++; panel.classList.remove('fd-spider');
+    if (nav && nav.on()) nav.stop();
+    sel = null; rt = null; traffic = null; planning = false; gen++; panel.classList.remove('fd-spider');
     if (router) router.clear();
     refresh(true);
   }
@@ -276,7 +312,12 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
         <button type="button" class="lg-chip" data-home="gps">a helyem</button><button type="button" class="lg-chip" data-home="center">a térkép közepe</button></div>
       <div class="lg-row"><span class="m">Saját pont a térkép közepén:</span>
         <button type="button" class="lg-chip" data-add="daniella">+ Daniella</button><button type="button" class="lg-chip" data-add="szereles">+ Szerelvénybolt</button></div>
-      ${own ? `<div class="lg-row"><span class="m">Saját pontok (csak ebben a böngészőben / telefonon):</span>${own}</div>` : ''}`;
+      ${own ? `<div class="lg-row"><span class="m">Saját pontok (csak ebben a böngészőben / telefonon):</span>${own}</div>` : ''}
+      ${T() ? `<div class="lg-row"><span class="m">TomTom kulcs a forgalomhoz (opcionális; csak koppintásra küld helyet és célt):</span>
+        <input id="fd-tt" type="password" autocomplete="off" spellcheck="false" placeholder="nincs megadva" value="${esc(store.get('tomtomKey', ''))}">
+        <button type="button" class="lg-chip" id="fd-tt-save">Mentés</button>${(() => { const n = store.get('tomtomCount', null), d = new Date().toISOString().slice(0, 10); return n && n.day === d ? `<span class="m">ma ${n.n} kérés</span>` : ''; })()}</div>` : ''}`;
+    const tt = box.querySelector('#fd-tt-save');
+    if (tt) tt.onclick = () => { const v = box.querySelector('#fd-tt').value.trim(); store.set('tomtomKey', v); toast(v ? 'TomTom kulcs mentve (csak ezen az eszközön).' : 'TomTom kulcs törölve.'); renderList(); };
     box.querySelectorAll('.fd-cat').forEach(b => { b.onclick = () => {
       const next = F().toggleCat(cats, b.dataset.cat);
       if (next === cats) { toast('Legfeljebb ' + F().MAX_ON + ' kategória: előbb kapcsolj ki egyet.'); return; }
@@ -319,7 +360,8 @@ export function initFeed({ map, maplibregl, params, store, toast, router }) {
       startWatch(); load();
     } else {
       stopWatch(); map.off('moveend', onMove);
-      sel = null; rt = null; gen++; panel.classList.remove('fd-spider'); items = []; pos = null; last = null;
+      if (nav && nav.on()) nav.stop();
+      sel = null; rt = null; traffic = null; gen++; panel.classList.remove('fd-spider'); items = []; pos = null; last = null;
       if (router) router.clear();
       for (const m of markers.values()) m.remove();
       drawLines();

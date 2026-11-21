@@ -40,7 +40,7 @@ class MapPhoneTest {
         // a new lib file the page loads must be in PAGE_FILES, or the phone serves the page without it (the shadows, 2026-11-21)
         val html = File(repo, MapPhone.APP.page).readText()
         val refs = Regex("""(?:src="|from '|import\('|fetch\(')/((?:lib|style)/[A-Za-z0-9._-]+)""").findAll(html).map { "Map/" + it.groupValues[1] }.toSet()
-        assertTrue("Map/lib/sun.js" in refs && "Map/lib/shadow-layer.js" in refs && "Map/lib/feed-layer.js" in refs && "Map/lib/route-layer.js" in refs, refs.toString())
+        assertTrue("Map/lib/sun.js" in refs && "Map/lib/shadow-layer.js" in refs && "Map/lib/feed-layer.js" in refs && "Map/lib/route-layer.js" in refs && "Map/lib/nav-layer.js" in refs, refs.toString())
         refs.forEach { assertTrue(it in MapPhone.PAGE_FILES, "$it is loaded by the page but not kept on the phone") }
         refs.forEach { assertEquals(MapReq.Page(it), MapRoute.decide("GET", "/" + it.removePrefix("Map/"))) }
     }
@@ -102,6 +102,8 @@ class MapPhoneTest {
         assertTrue(MapRoute.mayGoOut("https", "maps.google.com", "GET"))
         assertTrue(MapRoute.mayGoOut("https", "tile.googleapis.com", "GET"))
         assertTrue(MapRoute.mayGoOut("https", "cdn.jsdelivr.net", "GET"))
+        assertTrue(MapRoute.mayGoOut("https", "api.tomtom.com", "GET"))
+        assertFalse(MapRoute.mayGoOut("https", "api.tomtom.com", "POST"))
         assertTrue(MapRoute.mayGoOut("https", "server.arcgisonline.com", "GET"))   // the site layer's 🛰, on the tap only
         assertFalse(MapRoute.mayGoOut("https", "server.arcgisonline.com", "POST"))
         assertFalse(MapRoute.mayGoOut("http", "maps.google.com", "GET"))

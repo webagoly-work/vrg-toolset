@@ -19,7 +19,7 @@
   else root.VRGRoute = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const CAR_FWD = 1, CAR_BACK = 2, FOOT = 4, STEPS = 8;
+  const CAR_FWD = 1, CAR_BACK = 2, FOOT = 4, STEPS = 8, ROUNDABOUT = 16, LINK = 32, FAST = 64;
   /** Typical car speeds (km/h) per road class, when the way has no maxspeed. */
   const SPEED = { motorway: 110, motorway_link: 60, trunk: 80, trunk_link: 50, primary: 60, primary_link: 45, secondary: 50,
     secondary_link: 40, tertiary: 45, tertiary_link: 35, unclassified: 40, residential: 28, living_street: 10, service: 15, road: 30 };
@@ -34,11 +34,11 @@
   // ---------------------------------------------------------------- reading roads.bin
   function header(bytes) {
     if (bytes[0] !== 86 || bytes[1] !== 82 || bytes[2] !== 71 || bytes[3] !== 82) throw new Error('not a VRG roads file');
-    if (bytes[4] !== 1) throw new Error('roads file version ' + bytes[4]);
+    if (bytes[4] !== 1 && bytes[4] !== 2) throw new Error('roads file version ' + bytes[4]);
     const p = { i: 5 };
     const hl = varint(bytes, p);
     const h = JSON.parse(new TextDecoder().decode(bytes.subarray(p.i, p.i + hl)));
-    return { h, payloadAt: p.i + hl };
+    return { h, payloadAt: p.i + hl, version: bytes[4] };
   }
   function varint(b, p) {
     let r = 0, m = 1, c;
@@ -60,14 +60,21 @@
 
   /** bytes: the whole file; payload: its inflated payload (inflate()), or null to inflate here in Node. */
   function decode(bytes, payload) {
-    const { h } = header(bytes);
+    const { h, version } = header(bytes);
     const b = payload || new Uint8Array(require('zlib').inflateRawSync(bytes.subarray(header(bytes).payloadAt)));
     const p = { i: 0 };
     const n = varint(b, p);
     const lon = new Int32Array(n), lat = new Int32Array(n);
     let x = 0, y = 0;
     for (let i = 0; i < n; i++) { x += zz(varint(b, p)); y += zz(varint(b, p)); lon[i] = x; lat[i] = y; }
+    const names = [''];
+    if (version >= 2) {
+      const nn = varint(b, p), td = new TextDecoder();
+      names.length = 0;
+      for (let i = 0; i < nn; i++) { const l = varint(b, p); names.push(td.decode(b.subarray(p.i, p.i + l))); p.i += l; }
+    }
     const e = varint(b, p);
+    const nm = new Uint32Array(e);
     const ea = new Uint32Array(e), eb = new Uint32Array(e), fl = new Uint8Array(e), sp = new Uint8Array(e), dm = new Float32Array(e);
     const so = new Uint32Array(e + 1);
     let shLon = new Int32Array(Math.max(16, e)), shLat = new Int32Array(Math.max(16, e)), ns = 0;
@@ -75,6 +82,7 @@
     for (let i = 0; i < e; i++) {
       a += varint(b, p); ea[i] = a; eb[i] = a + zz(varint(b, p));
       fl[i] = varint(b, p); sp[i] = varint(b, p); dm[i] = varint(b, p) / 10;
+      if (version >= 2) nm[i] = varint(b, p);
       const k = varint(b, p);
       so[i] = ns;
       let sx = lon[a], sy = lat[a];
@@ -91,7 +99,7 @@
     for (let i = 0; i < n; i++) off[i + 1] = off[i] + deg[i];
     const fill = off.slice(0, n), adj = new Uint32Array(off[n]), rev = new Uint8Array(off[n]);
     for (let i = 0; i < e; i++) { adj[fill[ea[i]]] = i; rev[fill[ea[i]]++] = 0; adj[fill[eb[i]]] = i; rev[fill[eb[i]]++] = 1; }
-    const g = { h, n, e, lon, lat, ea, eb, fl, sp, dm, so, shLon, shLat, off, adj, rev };
+    const g = { h, n, e, lon, lat, ea, eb, fl, sp, dm, so, shLon, shLat, off, adj, rev, names, nm };
     buildGrid(g);
     g.dist = new Float64Array(n); g.stamp = new Uint32Array(n); g.prev = new Int32Array(n); g.gen = 0;
     return g;
@@ -190,16 +198,25 @@
     }
     parts.reverse();
     const coords = [[g.lon[s] / 1e5, g.lat[s] / 1e5]];
+    // legs: one per edge, for the guidance (lib/guide.js): its name, flags, length, coordinate span, and at its
+    // start the number of other edges the mode could have taken instead (0 = no choice there)
+    const legs = [];
+    let came = -1;                                      // the edge we arrived on: going back along it is not a choice
     for (const [edge, r] of parts) {
       const inner = [];
       for (let q = g.so[edge]; q < g.so[edge + 1]; q++) inner.push([g.shLon[q] / 1e5, g.shLat[q] / 1e5]);
       if (r) inner.reverse();
-      const end = r ? g.ea[edge] : g.eb[edge];
+      const startNode = r ? g.eb[edge] : g.ea[edge], end = r ? g.ea[edge] : g.eb[edge];
+      let others = 0;
+      for (let k = g.off[startNode]; k < g.off[startNode + 1]; k++) if (g.adj[k] !== edge && g.adj[k] !== came && canGo(g, g.adj[k], g.rev[k], mode)) others++;
+      came = edge;
+      const from = coords.length - 1;
       coords.push(...inner, [g.lon[end] / 1e5, g.lat[end] / 1e5]);
+      legs.push({ name: g.names[g.nm[edge]] || '', flags: g.fl[edge], meters: g.dm[edge], from, to: coords.length - 1, others });
     }
     // the walk from the position to the road and from the road to the destination, at walking pace by car too
     const a = distance(from.lon, from.lat, coords[0][0], coords[0][1]), b = distance(to.lon, to.lat, coords[coords.length - 1][0], coords[coords.length - 1][1]);
-    return { coords, meters: meters + a + b, seconds: g.dist[t] + (a + b) / WALK, snapped: [a, b], mode, edges: parts.length };
+    return { coords, legs, meters: meters + a + b, seconds: g.dist[t] + (a + b) / WALK, snapped: [a, b], mode, edges: parts.length };
   }
   function ends(g, from, to, mode) {
     const s = nearest(g, from.lon, from.lat, mode, false), t = nearest(g, to.lon, to.lat, mode, true);
@@ -211,7 +228,7 @@
     if (st[0] === st[1]) {           // both ends on the same junction: walk there and on (the snap distances are real)
       const x = g.lon[st[0]] / 1e5, y = g.lat[st[0]] / 1e5;
       const a = distance(from.lon, from.lat, x, y), b = distance(to.lon, to.lat, x, y);
-      return { coords: [[from.lon, from.lat], [x, y], [to.lon, to.lat]], meters: a + b, seconds: (a + b) / WALK, snapped: [a, b], mode, edges: 0 };
+      return { coords: [[from.lon, from.lat], [x, y], [to.lon, to.lat]], legs: [], meters: a + b, seconds: (a + b) / WALK, snapped: [a, b], mode, edges: 0 };
     }
     const it = search(g, st[0], st[1], mode);
     let r;
@@ -248,5 +265,5 @@
     return { off, done: doneM, left: rt.meters * frac, leftSeconds: rt.seconds * frac, at };
   }
 
-  return { CAR_FWD, CAR_BACK, FOOT, STEPS, SPEED, distance, header, inflate, decode, nearest, route, routeAsync, along };
+  return { CAR_FWD, CAR_BACK, FOOT, STEPS, ROUNDABOUT, LINK, FAST, SPEED, distance, header, inflate, decode, nearest, route, routeAsync, along };
 });

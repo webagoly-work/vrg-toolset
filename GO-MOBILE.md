@@ -115,6 +115,9 @@ What changes locally compared with the cloud:
 - **M56** Saját útvonaltervezés (N2) built 2026-11-21 (cloud session, D-129 A), **BETA**: our own offline road network
   and router in the Térkép; the feed's road times, a held place routed and drawn. `docs/mobile/WP/M56.md` →
   "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,roads`). N3 (guidance, traffic) is next.
+- **M57** Vezetés + forgalom (N3) built 2026-11-21 (cloud session, D-130), **BETA**: ▶ Indulás on a routed place:
+  banner, voice (Android TTS on the phone), camera follow, roundabouts, re-planning; 🚦 TomTom traffic with the
+  user's own key on a tap. `docs/mobile/WP/M57.md` → "Telefonon ellenőrizni" (step 0: rebuild `roads.bin`, format 2).
 
 ## 3. What the user asked for, mapped to WPs
 

@@ -41,7 +41,9 @@ object MapPhone {
         // the Térkép-feed (F, WP M55)
         "Map/lib/feed.js", "Map/lib/feed-layer.js",
         // our own offline routing (N2, WP M56)
-        "Map/lib/route.js", "Map/lib/route-layer.js")
+        "Map/lib/route.js", "Map/lib/route-layer.js",
+        // turn-by-turn guidance and the optional traffic check (N3, WP M57)
+        "Map/lib/guide.js", "Map/lib/traffic.js", "Map/lib/nav-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
@@ -147,7 +149,8 @@ object MapRoute {
      * the Sketcher site layer's satellite image (🛰: Esri World Imagery; the WebView does not cache it, the tile cache never sees it).
      * Everything else is refused, so nothing the page holds leaves the phone by itself.
      */
-    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net", "server.arcgisonline.com")
+    // api.tomtom.com: the optional traffic check (WP M57, D-130 B), one request on the user's tap with the user's own key
+    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net", "server.arcgisonline.com", "api.tomtom.com")
     private val OUT_SUFFIXES = listOf("google.com", "gstatic.com", "googleapis.com", "ggpht.com", "googleusercontent.com")
     fun mayGoOut(scheme: String?, host: String?, method: String?): Boolean {
         if (scheme != "https" || host == null || method == null || !method.equals("GET", true)) return false

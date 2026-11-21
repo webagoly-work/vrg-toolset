@@ -33,9 +33,11 @@ function roads() {
   const { writePbf } = require('./pbf-writer.js');
   const { buildRoads } = require('../tools/build-roads.js');
   const at = (dx, dy) => ({ lon: HERE[0] + dx, lat: HERE[1] + dy });
-  const nodes = [{ id: 1, ...at(0, 0) }, { id: 2, ...at(0.002, 0) }, { id: 3, ...at(0.002, -0.001) }, { id: 4, ...at(-0.001, -0.002) }];
+  const nodes = [{ id: 1, ...at(0, 0) }, { id: 2, ...at(0.002, 0) }, { id: 3, ...at(0.002, -0.001) }, { id: 4, ...at(-0.001, -0.002) }, { id: 5, ...at(0.004, 0) }];
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-feed-roads-')), file = path.join(dir, 'r.osm.pbf');
-  writePbf(file, { nodes, ways: [{ id: 10, refs: [1, 2, 3], tags: { highway: 'residential' } }, { id: 11, refs: [1, 4], tags: { highway: 'residential' } }] });
+  // the corner is a junction (Fő utca goes on east), so the guidance announces the right turn into Bolt utca
+  writePbf(file, { nodes, ways: [{ id: 10, refs: [1, 2, 5], tags: { highway: 'residential', name: 'Fő utca' } },
+    { id: 12, refs: [2, 3], tags: { highway: 'residential', name: 'Bolt utca' } }, { id: 11, refs: [1, 4], tags: { highway: 'residential' } }] });
   const bin = buildRoads(file);
   fs.rmSync(dir, { recursive: true, force: true });
   return bin;
@@ -50,17 +52,23 @@ const HARNESS = `<!doctype html><html><head><meta charset="utf-8">
 </head><body><div id="map"></div><button id="b-feed"></button><section id="feed-panel" hidden></section><div id="toast"></div>
 <script src="/lib/feed.js"></script>
 <script src="/lib/route.js"></script>
+<script src="/lib/guide.js"></script>
+<script src="/lib/traffic.js"></script>
+<script>window.spoken = []; Object.defineProperty(window, 'speechSynthesis', { value: { cancel() {}, speak(u) { window.spoken.push(u.text); } } });</script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initFeed } from '/lib/feed-layer.js';
 import { initRoute } from '/lib/route-layer.js';
+import { initNav } from '/lib/nav-layer.js';
 const map = new maplibregl.Map({ container: 'map', style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#eee' } }] },
   center: [${HERE[0]}, ${HERE[1]}], zoom: 14 });
 const mem = {};
 const store = { get: (k, v) => (k in mem ? mem[k] : v), set: (k, v) => { mem[k] = v; } };
 window.toasts = [];
-map.once('load', () => { const router = initRoute({ map });
-  window.feed = initFeed({ map, maplibregl, params: new URLSearchParams('feed=1'), store, toast: t => window.toasts.push(t), router }); window.ready = true; });
+map.once('load', () => { const router = initRoute({ map }), toast = t => window.toasts.push(t);
+  window.nav = initNav({ map, store, toast });
+  window.feed = initFeed({ map, maplibregl, params: new URLSearchParams('feed=1'), store, toast, router, nav: window.nav }); window.ready = true; });
+window.mem = mem;
 window.map = map;
 window.lines = () => (window.feed ? window.feed.lines() : []);
 </script></body></html>`;
@@ -159,6 +167,47 @@ module.exports = async t => {
       const left = await page.textContent('.fd-sel .fd-d');
       assert.ok(/1\d0 m úton/.test(left), 'from the corner about 110 m are left: ' + left);
       await page.evaluate(([x, y]) => window.feed.setPosition(x, y), HERE);
+
+      // N3: ▶ Indulás starts the guidance: the first words, the banner, a prompt before the corner, the arrival, the end
+      await page.click('[data-go]');
+      await page.waitForTimeout(200);
+      assert.ok(await page.evaluate(() => window.nav.on()));
+      assert.ok(!(await page.isHidden('#nav-banner')) && await page.evaluate(() => document.body.classList.contains('nav-on')), 'the banner is up; the page CSS hides the panels under body.nav-on');
+      const steps = await page.evaluate(() => window.nav.steps().map(s => s.text));
+      assert.deepStrictEqual(steps, ['Induljon el kelet felé – Fő utca', 'Forduljon jobbra – Bolt utca', 'Megérkezett: Közeli Aldi']);
+      assert.ok(/Forduljon jobbra – Bolt utca/.test(await page.textContent('#nav-banner')));
+      assert.ok(/érkezés/.test(await page.textContent('#nav-foot')));
+      const first = await page.evaluate(() => window.spoken.slice());
+      assert.ok(/^Induljon el kelet felé – Fő utca\. 150 méter múlva forduljon jobbra – Bolt utca$/.test(first[0]), 'the first words: ' + first[0]);
+      assert.strictEqual(first.length, 1, 'the 250 m prompt is in the first words, not said twice: ' + JSON.stringify(first));
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), [HERE[0] + 0.0012, HERE[1]]);   // 60 m before: the 250 m cue is done
+      await page.waitForTimeout(120);
+      assert.strictEqual(await page.evaluate(() => window.spoken.length), 1);
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), [HERE[0] + 0.00145, HERE[1]]);  // 41 m before: the 50 m cue
+      await page.waitForTimeout(150);
+      const s2 = await page.evaluate(() => window.spoken.slice(-1)[0]);
+      assert.strictEqual(s2, '40 méter múlva forduljon jobbra – Bolt utca');
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), [HERE[0] + 0.0016, HERE[1]]);   // 10 m on: nothing new to say
+      await page.waitForTimeout(100);
+      assert.strictEqual(await page.evaluate(() => window.spoken.length), 2, 'no repeat inside the same cue');
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), [HERE[0] + 0.002, HERE[1] - 0.00095]);   // at the shop
+      await page.waitForTimeout(150);
+      assert.ok((await page.evaluate(() => window.spoken.slice(-1)[0])).startsWith('Megérkezett: Közeli Aldi'));
+      await page.evaluate(() => document.querySelector('#nav-stop').click());   // the bare test page has no CSS: the bar sits under the map
+      await page.waitForTimeout(150);
+      assert.ok(!(await page.evaluate(() => window.nav.on())) && await page.isHidden('#nav-banner') && !(await page.evaluate(() => document.body.classList.contains('nav-on'))));
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), HERE);
+
+      // N3: the optional traffic check, with a key, answered by a stand-in TomTom
+      await page.evaluate(() => { window.mem.tomtomKey = 'testKEY0123456789abcd'; });
+      await page.route('https://api.tomtom.com/**', r => r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ routes: [{ summary: { lengthInMeters: 300, travelTimeInSeconds: 420, trafficDelayInSeconds: 240, noTrafficTravelTimeInSeconds: 180 } }] }) }));
+      await page.evaluate(() => window.feed.select('bolt'));
+      await page.waitForFunction(() => document.querySelector('[data-traffic]'), null, { timeout: 5000 });
+      await page.click('[data-traffic]');
+      await page.waitForFunction(() => window.feed.traffic(), null, { timeout: 5000 });
+      assert.ok(/^Forgalommal ~7 perc \(\+4 perc dugó\)/.test(await page.evaluate(() => window.feed.traffic())));
+      assert.ok(/Forgalommal/.test(await page.textContent('.fd-sel')));
       await page.click('[data-back]');
       await page.waitForTimeout(200);
       assert.strictEqual(await page.evaluate(() => window.feed.selected()), null);

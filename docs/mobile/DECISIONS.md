@@ -858,6 +858,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-130 · Traffic: none at first, a traffic service later as an opt-in (N3), 2026-11-21.** Answered **A, then B**:
   ETAs from road types and speed limits; later a keyed provider (e.g. TomTom, terms to verify) asked only for the
   chosen route and only on a tap. No free open live-traffic source exists for Hungary. Rejected: **C** no traffic ever.
+  **Built 2026-11-21 as WP M57** with the guidance (`docs/map/NAVIGATION.md`): TomTom Routing v1 with the user's own key
+  kept on the device, car routes only, one request per tap; the shown time changes, the route does not.
 - **D-131 · The feed's points come from OpenStreetMap, kept on the phone; own pins never leave it (M55), 2026-11-21.**
   Answered **A**: `Map/tools/build-pois.js` extracts all of Hungary from the OSM extract into `Map/data/pois.json`; VRG
   Mobile keeps the copy it reads through the relay (public ODbL data, like the address index). Otthon and the user's own
