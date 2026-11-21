@@ -82,7 +82,7 @@ internal fun TakeoffCard(st: EditorState) {
         Text((if (implied) "◉ ✓ " else "◉ ○ ") + "Dedikált kör a nagy gépeknek (≈, minden felmérésre)",
             style = Melyviz.small.copy(fontSize = 11.sp, color = if (implied) col else Melyviz.faint),
             modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(50)).border(1.dp, if (implied) col else Melyviz.line, RoundedCornerShape(50))
-                .clickable { SketcherKit.setImpliedDedicated(!implied) }.padding(horizontal = 8.dp, vertical = 4.dp))
+                .clickable { SketcherKit.switchImpliedDedicated(!implied) }.padding(horizontal = 8.dp, vertical = 4.dp))
         if (tk.checks.isNotEmpty()) tk.checks.forEach { Text("! $it", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
     }
 }

@@ -41,7 +41,7 @@ object SketcherKit {
     private const val K_IMPLIED = "takeoff.impliedDedicated"
     private var prefs: android.content.SharedPreferences? = null
     var impliedDedicated by mutableStateOf(false); private set
-    fun setImpliedDedicated(on: Boolean) {
+    fun switchImpliedDedicated(on: Boolean) {
         impliedDedicated = on
         prefs?.edit()?.putBoolean(K_IMPLIED, on)?.apply()
     }
