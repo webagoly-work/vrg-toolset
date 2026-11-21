@@ -1,0 +1,56 @@
+# VRG Kisokos — the sources
+
+The offline work handbook. The concept and the scope map are in `docs/kisokos/README.md`.
+This folder holds the data the Kisokos is made of; everything else (the Stack's K layer, the 3D
+page, the cheat sheets) is generated from it.
+
+```
+Kisokos/
+  map.json                    the core, 8 axes × 2 poles × 4 rings of term nodes, the 9 volumes,
+                              and the knowledge bases outside the Kisokos with their place
+  kisokos.js                  the loader + checker (check · md · stats); the Stack reads through it
+  rogzitestechnika/           volume rg, Rögzítéstechnika
+    anyagok.json              22 materials: recognise, drilling, anchor by load, screw, traps, terms, shop
+    dubelek.json              13 anchor kinds: how it holds, what it goes into, drilling, screw, sizes
+    furoszarak.json           10 bits and core cutters: shank, machine mode, materials, sizes
+    csavarok.json             5 screw kinds: thread, head, what it goes into
+    szerszamok.json           3 tools: rotary hammer, wall scanner, hole cleaning
+    KISOKOS.md                GENERATED cheat sheet (node Kisokos/kisokos.js md); do not edit
+```
+
+## Rules
+
+- **Text in Hungarian; search terms in HU · EN · DE** on every card (decision K2). The search terms
+  are the point: they are what you type into a shop's search box.
+- **Every card is a draft until the Founder reviews it** (`reviewed: null`; K5). An agent may draft and
+  source cards; only the Founder sets `reviewed` (a date). For Rögzítéstechnika the Founder's site
+  experience overrides any source. Load values are never written on a card: the manufacturer's
+  datasheet gives them.
+- **Ids are stable** (lowercase, hyphens). Cards point at each other by id inside their volume
+  (`drill.bits`, `anchors.*`, `screws`, `for`, `with`); `check` fails on a dangling one.
+- **Place is set by hand, size never.** `place: { core: '8A' }` = core knowledge, leaning to that
+  pole's entry point into the core sphere. `place: { term: '5A1', overlap: 0.5 }` = its own thing,
+  gravitating to a term node; `overlap` is the share that lies inside the core; `hang: n` lets an
+  unrelated blob hang past its node. Size is the card's bytes (`cubeBytes`, 1 KB = 1 cube).
+- **Outside knowledge bases** (`map.json → sources`) are read for their size only; the Kisokos never
+  copies them. A new base gets a place, a colour and a `why`.
+- **Rights** (docs/kisokos §4): free texts may be stored with their licence; standards and textbooks
+  only as our own summary plus the reference. Large files (PDF, ZIM) go to `Shared`, not git (K1).
+
+## Commands
+
+```bash
+node Kisokos/kisokos.js check
+```
+
+```bash
+node Kisokos/kisokos.js md
+```
+
+```bash
+node Stack/stack.js kisokos
+```
+
+`check` exits 1 on any problem. `md` rewrites the cheat sheet; run it after every card change and
+commit both. `stack.js kisokos` refreshes `Stack/out/kisokos-data.js` for the 3D page (START R → S
+does this and opens the page; a full `stack.js build` also does it).

@@ -30,6 +30,33 @@ window.VRG_ARCHIVE = {
    "url": "https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3"
   },
   {
+   "id": "vrg-kisokos-3d",
+   "title": "VRG Kisokos 3D",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "The Stack's K layer in 3D: the Villanyszerelés core as a sphere, 8 axes with term nodes by ring, and every Kisokos card and outside knowledge base as data cubes (1 cube = 1 KB), core cards filling the sphere from the axis entry points, Modulshop reaching in through the wall.",
+   "purpose": "To see how the Kisokos knowledge sits around the core and grows; a standalone snapshot of Stack/kisokos.html.",
+   "context": [
+    "Fork of the 2D Kisokos map (vrg-kisokos), which stays as it is",
+    "Built together with the first Rögzítéstechnika volume (53 cards) and the Stack layer K",
+    "Rebuild: node Stack/stack.js kisokos --standalone <file>"
+   ],
+   "tags": [
+    "kisokos",
+    "stack",
+    "3d",
+    "holo",
+    "webgl",
+    "rogzitestechnika"
+   ],
+   "file": "files/vrg-kisokos-3d.html",
+   "url": "https://claude.ai/artifact/8M4RwBmJkLAaUvQwjmtgGL"
+  },
+  {
    "id": "vrg-latoter",
    "title": "VRG Látótér",
    "created": "2026-11-20",

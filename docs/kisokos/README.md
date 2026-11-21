@@ -8,7 +8,9 @@ knowledge laid out along axes around it. It fills the empty **Atlas** slot of th
 Interactive map and samples: <https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3>
 (archived as `Archive` item `vrg-kisokos`).
 
-Status: **idea**. Nothing is built; this file is the scope map and the card formats to start from.
+Status: **started** (2026-11-21). The sources live in `Kisokos/` (see its README); the Stack has a
+dedicated layer for them, **K · Kisokos**, shown in 3D by `Stack/kisokos.html` (START R → S). The first
+volume, Rögzítéstechnika, has 53 draft cards.
 
 ## 1. The topology: 8 axes, 4 rings
 
@@ -123,8 +125,23 @@ and "what goes wrong if not".
 - **K5 Who writes it?** Proposal: an agent gathers sources and drafts, the Founder reviews, and only
   reviewed cards are marked `reviewed`. For Rögzítéstechnika the Founder's site experience rules.
 
-## 8. Not yet done
+## 8. Decisions (2026-11-21, the Founder: "go with your proposals")
+
+- **K1 = proposal.** Text and cards in the repo (`Kisokos/`); large files (PDF, Kiwix ZIM) in `Shared`,
+  referenced by path.
+- **K2 = proposal.** Hungarian text; search terms HU · EN · DE; free sources in their own language.
+- **K3 = proposal.** The Hungarian Wikipedia ZIM whole, from the English one only the electrical and
+  construction topics. Not downloaded yet: it is a multi-gigabyte fetch for the H: session, into `Shared`.
+- **K4 = proposal.** A client-facing part, if one ever comes, uses the Varler look.
+- **K5 = proposal.** An agent drafts and sources, the Founder reviews; only reviewed cards carry a
+  `reviewed` date.
+- **The Kisokos lives on the Stack on its own layer** (K). Its 3D view is a digital shadow of `Kisokos/`:
+  the core as a sphere, the axes through it, 1 cube = 1 KB of knowledge.
+
+## 9. Not yet done
 
 - The idea is not yet in the idea timeline (`notes/idea-timeline/data.js`, outside git): add it in
   the H: session so the Stack's I layer shows it.
-- No START / catalog entry yet: it gets one when there is a first page to open.
+- Every Rögzítéstechnika card waits for the Founder's review.
+- `Stack/layers.html` (the exploded layer planes) does not draw K yet.
+- The other volumes have term nodes but no cards.

@@ -1,0 +1,788 @@
+<title>VRG Kisokos 3D</title>
+<!-- The K layer's own page (Stack/LAYERS.md, K · Kisokos): a digital shadow of Kisokos/ in the Holo look.
+     The Villanyszerelés core is a sphere; 8 axes run through it, each with 4 term nodes per pole by ring (distance from
+     daily work). Knowledge is cubes: 1 cube = 1 KB of source. Core cards grow inside the sphere from the entry point of
+     the pole they lean to; knowledge with its own identity grows around its term node outside, and the share of it
+     that overlaps the core (place.overlap) grows inside, so a base like Modulshop straddles the sphere wall.
+     Data: out/kisokos-data.js (stack.js kisokos or stack.js build). Plain WebGL2, works from file://. -->
+<style>
+/* Mélyvíz — the VRG dev-side style (CITY-D26, 2026-10-27), shared by every dev-side app. Spec: docs/city/melyviz.md.
+   This file is the source. Apps carry a copy between the markers  melyviz:begin / melyviz:end  that
+   tools/melyviz-sync.js writes; `node tools/melyviz-sync.js --check` fails when a copy has drifted.
+   Do not edit a copy inside an app — edit this file and sync.
+
+   Tokens are --mv-* so they never collide with an app's own names; an app maps its variables onto them.
+   The base layer applies only under html.mv, so adding the block changes nothing until the app opts in.
+   M1 ice = the instrument and you (selection, focus, "you are here"); warm = activity (running, heat, recent work).
+   M5 smoked glass, 1 px hairlines, square controls, two cut corners, no rounded corners, no drop shadows.
+   M6 numbers and readouts mono; titles in the condensed voice; small labels uppercase and tracked. */
+:root {
+  --mv-bg: #0a141c; --mv-horizon: #11202b;
+  --mv-panel: rgba(20, 30, 38, .74); --mv-panel-solid: #121c24; --mv-raised: #17232c;
+  --mv-line: rgba(232, 240, 246, .15); --mv-line-strong: rgba(232, 240, 246, .34);
+  --mv-text: #e8f0f6; --mv-dim: #a6afb7; --mv-faint: #646d74;
+  --mv-accent: #93d3e6; --mv-accent-soft: rgba(147, 211, 230, .14); --mv-accent-glow: rgba(147, 211, 230, .5);
+  --mv-warm: #e8a873; --mv-warm-soft: rgba(232, 168, 115, .14);
+  --mv-ok: #8bcca1; --mv-warn: #e3be7b; --mv-crit: #e4877d;
+  --mv-cut: 6px; --mv-blur: 12px; --mv-glow: 3px;
+  --mv-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --mv-voice: Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --mv-sans: "Segoe UI", system-ui, sans-serif;
+}
+html.mv.low-glow { --mv-glow: 0px; }
+
+/* ---- base layer (opt-in: html.mv; zero specificity, so any app rule wins) ---- */
+:where(html.mv) { color-scheme: dark; }
+:where(html.mv) :where(body) { background: var(--mv-bg); color: var(--mv-text); font-family: var(--mv-sans); }
+:where(html.mv) :where(:is(h1, h2, h3)) { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; }
+:where(html.mv) :where(:is(code, kbd, pre, samp, .mv-num)) { font-family: var(--mv-mono); }
+:where(html.mv) :where(:focus-visible) { outline: 2px solid var(--mv-accent); outline-offset: 2px; }
+:where(html.mv) ::selection { background: var(--mv-accent-soft); color: var(--mv-text); }
+:where(html.mv) :where(:is(button, input, select, textarea)) { font: inherit; color: var(--mv-text); border-radius: 0; }
+:where(html.mv) :where(:is(button, select, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea)) {
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: none; }
+:where(html.mv) :where(button) { cursor: pointer; }
+:where(html.mv) :where(button:hover:not(:disabled)) { border-color: var(--mv-accent); }
+:where(html.mv) :where(:is(input, select, textarea):focus) { border-color: var(--mv-accent); outline: none; box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+:where(html.mv) :where(:is(input[type=checkbox], input[type=radio], input[type=range])) { accent-color: var(--mv-accent); }
+:where(html.mv) :where(input, textarea)::placeholder { color: var(--mv-faint); }
+:where(html.mv) :where(:disabled) { opacity: .45; cursor: default; }
+:where(html.mv) :where(table) { border-collapse: collapse; }
+:where(html.mv) :where(:is(th, td)) { border-color: var(--mv-line); }
+:where(html.mv) :where(th) { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; }
+:where(html.mv) :where(a) { color: var(--mv-accent); }
+:where(html.mv) :where(hr) { border: 0; border-top: 1px solid var(--mv-line); }
+:where(html.mv) { scrollbar-color: var(--mv-line-strong) transparent; scrollbar-width: thin; }
+
+/* ---- components (usable anywhere) ---- */
+.mv-glass {
+  border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: blur(var(--mv-blur)) saturate(1.2); backdrop-filter: blur(var(--mv-blur)) saturate(1.2);
+  background: var(--mv-panel); }
+.mv-solid { border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none; background: var(--mv-panel-solid); }
+/* two cut corners (top left, bottom right) drawn as diagonals; layer on .mv-glass or .mv-solid */
+.mv-cut {
+  clip-path: polygon(var(--mv-cut) 0, 100% 0, 100% calc(100% - var(--mv-cut)), calc(100% - var(--mv-cut)) 100%, 0 100%, 0 var(--mv-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--mv-cut) var(--mv-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.mv-title { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mv-label { font-family: var(--mv-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; color: var(--mv-dim); }
+.mv-btn { background: none; border: 1px solid var(--mv-line-strong); border-radius: 0; color: inherit; font: inherit; padding: 3px 10px; cursor: pointer; }
+.mv-btn:hover { border-color: var(--mv-accent); }
+.mv-on, .mv-btn.on { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+.mv-live { color: var(--mv-warm); }
+.mv-badge { font: 11px var(--mv-mono); padding: 1px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; }
+.mv-badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.mv-badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.mv-badge.crit { color: var(--mv-crit); border-color: var(--mv-crit); }
+
+/* print stays paper: Mélyvíz is a screen style */
+@media print {
+  :where(html.mv) { color-scheme: light; }
+  :where(html.mv) body { background: #fff; color: #000; }
+  .mv-glass, .mv-solid { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+</style>
+<style>
+  :root { --bg: var(--mv-bg, #0a141c); --panel: var(--mv-panel-solid, #121c24); --line: var(--mv-line, rgba(232,240,246,.15)); --text: var(--mv-text, #e8f0f6);
+    --dim: #c6ced4; --faint: #95a0a8; --acc: var(--mv-accent, #93d3e6); --warm: var(--mv-warm, #e8a873);
+    --mono: var(--mv-mono, Consolas, ui-monospace, monospace); --sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--mv-voice, Bahnschrift, sans-serif); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 var(--sans); overflow: hidden; display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  h1 { font: 600 16px var(--voice); font-stretch: 75%; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+  #stat { font: 12px var(--mono); color: var(--dim); }
+  .sp { flex: 1; }
+  button { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; border-radius: 0; }
+  button.on, button:hover { color: var(--text); border-color: var(--acc); }
+  button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 350px; min-height: 0; }
+  @media (max-width: 820px) { body { overflow: auto; } main { grid-template-columns: minmax(0, 1fr); grid-template-rows: 62vh auto; } aside { border-left: 0; border-top: 1px solid var(--line); } }
+  #stage { position: relative; min-height: 0; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+  canvas.drag { cursor: grabbing; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .lb { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 11px var(--mono); color: var(--faint); text-shadow: 0 0 4px #000, 0 0 8px #000; }
+  .lb.pole { font: 600 12.5px var(--voice); font-stretch: 80%; letter-spacing: .08em; text-transform: uppercase; color: #b9c4cb; }
+  .lb.pole.on { color: var(--acc); font-size: 14px; }
+  .lb.term { color: #dfeaf1; font: 12px var(--sans); }
+  .lb.term small { font: 10px var(--mono); color: var(--faint); margin-left: 4px; }
+  .lb.core { font: 600 15px var(--voice); font-stretch: 80%; letter-spacing: .05em; color: var(--warm); text-align: center; }
+  .lb.core small { display: block; font: 10.5px var(--mono); color: var(--faint); letter-spacing: 0; }
+  .lb.src { font: 600 12px var(--sans); color: #e4ecf1; }
+  .lb.src small { display: block; font: 10px var(--mono); color: var(--faint); font-weight: 400; }
+  #tip { position: absolute; pointer-events: none; background: rgba(14,24,32,.96); color: #eef4f8; border: 1px solid var(--line); padding: 5px 8px; max-width: 320px; font-size: 12px; display: none; z-index: 3; }
+  #tip .m { font: 11px var(--mono); color: var(--faint); display: block; }
+  #lg { position: absolute; left: 12px; bottom: 12px; background: rgba(10,20,28,.93); border: 1px solid var(--line); padding: 6px 10px; font-size: 12px; max-width: 300px; z-index: 2; }
+  #lg summary { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); cursor: pointer; }
+  #lg[open] summary { margin-bottom: 6px; }
+  #lg .k { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 7px; align-items: center; padding: 1px 0; color: #dfe7ec; }
+  .sw { width: 10px; height: 10px; display: inline-block; border: 1px solid rgba(255,255,255,.35); }
+  aside { border-left: 1px solid var(--line); padding: 10px 14px 18px; overflow: auto; min-height: 0; }
+  h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin: 14px 0 5px; font-weight: 400; }
+  aside > h3:first-child { margin-top: 2px; }
+  .ax { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 6px; width: 100%; text-align: left; padding: 3px 6px; border: 1px solid transparent; background: none; font: 12.5px var(--sans); color: var(--dim); }
+  .ax b { font: 11px var(--mono); color: var(--faint); font-weight: 400; padding-top: 1px; }
+  .ax span small { display: block; font: 11px var(--mono); color: var(--faint); }
+  .ax.on { border-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .grp { font: 11px var(--mono); color: var(--faint); margin: 8px 0 2px; }
+  .it { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; gap: 7px; align-items: center; width: 100%; text-align: left; padding: 2px 6px; background: none; border: 0; border-left: 2px solid transparent; font: 12.5px var(--sans); color: var(--dim); }
+  .it:hover { color: var(--text); } .it.on { border-left-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .it .n { font: 11px var(--mono); color: var(--faint); }
+  .it .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #card { display: grid; gap: 8px; }
+  #card .title { font: 600 20px var(--voice); font-stretch: 80%; letter-spacing: .03em; }
+  #card .kick { font: 11px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+  #card .row { display: grid; gap: 2px; }
+  #card .row > span:first-child { font: 10.5px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .1em; }
+  #card ul { margin: 0; padding-left: 16px; }
+  #card .ref { background: none; border: 0; padding: 0; font: inherit; color: var(--acc); cursor: pointer; text-decoration: underline dotted; }
+  #card .terms { display: flex; flex-wrap: wrap; gap: 4px; }
+  #card .terms span { font: 11.5px var(--mono); background: rgba(255,255,255,.06); padding: 1px 6px; }
+  .pill { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 6px; }
+  .pill.yes { color: var(--mv-ok, #8bcca1); border-color: currentColor; } .pill.no { color: var(--mv-crit, #e4877d); border-color: currentColor; } .pill.mid { color: var(--mv-warn, #e3be7b); border-color: currentColor; }
+  .hint { color: var(--faint); font-size: 12px; }
+  .nb { font: 12px var(--sans); color: var(--dim); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nb b { font: 11px var(--mono); color: var(--faint); font-weight: 400; }
+  #empty { position: absolute; inset: 0; display: none; place-items: center; text-align: center; color: var(--dim); font: 13px var(--mono); padding: 20px; }
+</style>
+<header>
+  <h1>VRG Kisokos <i>K réteg · a tudás 3D árnyéka</i></h1>
+  <span id="stat"></span>
+  <span class="sp"></span>
+  <button id="bGrow" title="A kockák újra felépülnek a forrás sorrendjében">Növekedés</button>
+  <button id="bSpin" class="on" title="Lassú forgás">Forgás</button>
+  <button id="bLab" class="on" title="Címkék">Címkék</button>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="labels"></div>
+    <div id="tip"></div>
+    <div id="empty">Nincs adat. Futtasd a Stack mappában:<br><br>node stack.js kisokos</div>
+    <details id="lg" open>
+      <summary>Jelmagyarázat</summary>
+      <div class="k"><span class="sw" style="background:rgba(232,168,115,.35);border-radius:50%"></span><span>A mag: a lakossági villanyszerelés tudása</span></div>
+      <div class="k"><span class="sw" style="background:none;border-color:#93d3e6"></span><span>1 kocka = 1 KB forrás; minden kártya és tudásbázis a méretével nő</span></div>
+      <div class="k"><span class="sw" style="background:#93d3e6;border-radius:50%;width:6px;height:6px;margin-left:2px"></span><span>Fogalom-csomópont a tengelyen; minél messzebb, annál kevesebb köze a maghoz</span></div>
+      <div id="lgVol"></div>
+      <div class="hint" style="margin-top:4px">Húzás: forgatás · görgő: nagyítás · dupla katt: alaphelyzet</div>
+    </details>
+  </div>
+  <aside>
+    <h3>Tengelyek</h3>
+    <div id="axes"></div>
+    <h3>Kiválasztva</h3>
+    <div id="card"><div class="hint">Kattints egy tengelyre, egy kockára vagy a listában egy elemre.</div></div>
+    <h3>Tudás</h3>
+    <div id="items"></div>
+  </aside>
+</main>
+<script>
+/* VRG Stack pages: touch gestures for the 3D canvases (connectome.html, orb.html; VRG Mobile WP M17).
+   Mouse input stays with each page's own handlers; this file takes only pointerType 'touch'.
+     one finger drag  -> orbit (h.orbit(dx, dy))
+     tap              -> pick (h.tap(x, y)); a second tap within 300 ms -> h.dbl(x, y) (reset the view)
+     long press 0.5 s -> h.long(x, y) (select and show the card)
+     two fingers      -> pinch = h.zoom(factor), twist = h.twist(radians), parallel vertical move = h.tilt(dy)
+     two-finger swipe -> h.swipe(+1 | -1) once per gesture (left = +1): a long horizontal move with little pinch
+   The canvas needs `touch-action: none`, so the browser never scrolls or zooms the page under the gesture.
+   Plain script (no modules), so it works from file:// and inlined in the phone bundle. */
+(function () {
+  'use strict';
+  function attach(el, h) {
+    const pts = new Map();
+    let mode = null, moved = false, longT = null, lastTap = 0, g = null, lastXY = [0, 0];
+    const rel = (x, y) => { const r = el.getBoundingClientRect(); return [x - r.left, y - r.top]; };
+    const pair = () => { const [a, b] = [...pts.values()]; return { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y), ang: Math.atan2(b.y - a.y, b.x - a.x) }; };
+    const busy = on => { if (h.dragging) h.dragging(on); };
+    el.style.touchAction = 'none';
+    el.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'touch') return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
+      clearTimeout(longT);
+      if (pts.size === 1) {
+        mode = 'one'; moved = false; lastXY = [e.clientX, e.clientY];
+        longT = setTimeout(() => {
+          if (mode === 'one' && !moved && pts.size === 1) { mode = 'done'; if (h.long) h.long(...rel(...lastXY)); if (navigator.vibrate) navigator.vibrate(12); }
+        }, 500);
+      } else if (pts.size === 2) {
+        if (moved) busy(false);
+        mode = 'two'; const p = pair(); g = { ...p, sx: p.cx, sy: p.cy, d0: p.d, a0: p.ang, swiped: false }; busy(true);
+      } else mode = 'many';
+    }, { passive: false, capture: true });
+    el.addEventListener('pointermove', e => {
+      const p = pts.get(e.pointerId); if (!p) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+      if (mode === 'one') {
+        if (!moved && Math.hypot(p.x - p.x0, p.y - p.y0) < 8) return;   // still a tap
+        if (!moved) { moved = true; clearTimeout(longT); busy(true); }
+        if (h.orbit) h.orbit(dx, dy);
+      } else if (mode === 'two' && pts.size === 2) {
+        const q = pair();
+        if (g.d > 4 && q.d > 4 && h.zoom) h.zoom(g.d / q.d);
+        let da = q.ang - g.ang; if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+        if (h.twist) h.twist(da);
+        if (h.tilt) h.tilt(q.cy - g.cy);
+        if (!g.swiped && h.swipe && Math.abs(q.cx - g.sx) > 120 && Math.abs(q.cx - g.sx) > 2 * Math.abs(q.cy - g.sy) && Math.abs(q.d - g.d0) < 70) {
+          g.swiped = true; h.swipe(q.cx < g.sx ? 1 : -1);
+        }
+        Object.assign(g, q);
+      }
+    }, { passive: false, capture: true });
+    const end = e => {
+      const p = pts.get(e.pointerId); if (!p) return;
+      e.stopImmediatePropagation();
+      pts.delete(e.pointerId); clearTimeout(longT);
+      if (mode === 'one' && pts.size === 0 && !moved && e.type === 'pointerup') {
+        const now = performance.now(), [x, y] = rel(e.clientX, e.clientY);
+        if (now - lastTap < 300) { lastTap = 0; if (h.dbl) h.dbl(x, y); } else { lastTap = now; if (h.tap) h.tap(x, y); }
+      }
+      if (pts.size === 0) { if (mode !== 'one' || moved) busy(false); mode = null; }
+      else mode = 'settle';   // one finger left after a pinch: wait for a fresh touch, never jump into an orbit
+    };
+    el.addEventListener('pointerup', end, { capture: true });
+    el.addEventListener('pointercancel', end, { capture: true });
+    el.addEventListener('contextmenu', e => { if (pts.size) e.preventDefault(); });
+  }
+  window.StackTouch = { attach };
+})();
+
+</script>
+<script>
+// generated by stack.js kisokos (Stack/lib/kisokos.js)
+window.KISOKOS = {"about":"Generated by Stack/lib/kisokos.js from Kisokos/ — never edit by hand.","generated":"2026-11-21T01:37:46.726Z","cubeBytes":1024,"core":{"id":"core","title":"Villanyszerelés","sub":"lakossági, a mérő után"},"rings":[{"ring":1,"hu":"holnapi munka","en":"needed on the job tomorrow"},{"ring":2,"hu":"szakmai háttér","en":"professional background"},{"ring":3,"hu":"tágabb kör","en":"the neighbouring field"},{"ring":4,"hu":"horizont","en":"the horizon of the field"}],"volumes":[{"id":"tk","hu":"Tankönyv","color":"#93d3e6","n":0},{"id":"al","hu":"Alapok és kutatás","color":"#b9a6e6","n":0},{"id":"sz","hu":"Szakmatérkép","color":"#e8a873","n":0},{"id":"ez","hu":"Eszköztár","color":"#8bcca1","n":0},{"id":"ts","hu":"Társszakmák","color":"#e3be7b","n":0},{"id":"rg","hu":"Rögzítéstechnika","color":"#e4877d","n":53},{"id":"kv","hu":"Kommunikációs vonalak","color":"#8fa8e8","n":0},{"id":"el","hu":"Előírások","color":"#e3a3c4","n":0},{"id":"sx","hu":"Szótár","color":"#c6ced4","n":0}],"axes":[{"n":1,"hu":"Mélység","q":"Mennyire elméleti?","A":"Elmélet","B":"Alkalmazás"},{"n":2,"hu":"Tudásút","q":"Milyen úton tanulható?","A":"Akadémiai ág","B":"Szakképzési ág"},{"n":3,"hu":"Értéklánc","q":"Honnan jön az anyag, és hova megy?","A":"Nyersanyag felé","B":"Végfelhasználó felé"},{"n":4,"hu":"Lépték","q":"Mekkora darabról beszélünk?","A":"Mikro","B":"Makro"},{"n":5,"hu":"Rokon szakmák","q":"Ki dolgozik még az elektromágnességgel?","A":"Erősáram","B":"Gyengeáram"},{"n":6,"hu":"Általános–specifikus","q":"Az elvtől a cikkszámig","A":"Általános","B":"Specifikus"},{"n":7,"hu":"Hagyományos–modern","q":"Melyik korszak megoldása?","A":"Hagyományos","B":"Modern"},{"n":8,"hu":"Építkezés","q":"Kivel dolgozunk egy helyen?","A":"Szerkezet","B":"Gépészet, befejezés"}],"terms":[{"id":"1A1","axis":1,"pole":"A","ring":1,"title":"Villamosságtan","desc":"Ohm és Kirchhoff törvényei, teljesítmény, váltakozó áram, háromfázisú rendszer.","vols":["tk"]},{"id":"1A2","axis":1,"pole":"A","ring":2,"title":"Elektromágnesség","desc":"Maxwell-egyenletek, indukció, mezők és hullámok.","vols":["al","tk"]},{"id":"1A3","axis":1,"pole":"A","ring":3,"title":"Anyagfizika","desc":"Vezetés, szigetelés, félvezetők, mágneses anyagok.","vols":["al"]},{"id":"1A4","axis":1,"pole":"A","ring":4,"title":"Kvantum-határ","desc":"Kvantumelektrodinamika, szupravezetés, spintronika, topologikus anyagok.","vols":["al"]},{"id":"1B1","axis":1,"pole":"B","ring":1,"title":"Szerelési gyakorlat","desc":"Kötéstechnika, csövezés, dobozolás, elosztószerelés, mérés.","vols":["tk","rg"]},{"id":"1B2","axis":1,"pole":"B","ring":2,"title":"Rendszerek a lakásban","desc":"Áramkörök, védelmek, világítás, a fűtés és hűtés villamos része, kommunikációs hálózat.","vols":["ez","kv"]},{"id":"1B3","axis":1,"pole":"B","ring":3,"title":"Ügyféligény","desc":"Komfort, biztonság, akadálymentesség, energiaköltség.","vols":["ez"]},{"id":"1B4","axis":1,"pole":"B","ring":4,"title":"Üzemeltetés","desc":"Hibakeresés, karbantartás, időszakos felülvizsgálat, bővíthetőség.","vols":["tk","el"]},{"id":"2A1","axis":2,"pole":"A","ring":1,"title":"Mérnöki alapok","desc":"BSc-szint: matematika, áramkörelmélet, villamos gépek, energetika.","vols":["tk","al"]},{"id":"2A2","axis":2,"pole":"A","ring":2,"title":"Szakirány","desc":"MSc-szint: villamosenergia-rendszerek, teljesítményelektronika, épületenergetika.","vols":["tk","sz"]},{"id":"2A3","axis":2,"pole":"A","ring":3,"title":"Doktori kutatás","desc":"Szűk szakterület, publikációk, mérési módszerek.","vols":["al"]},{"id":"2A4","axis":2,"pole":"A","ring":4,"title":"Kutatási front","desc":"Friss folyóiratcikkek és preprintek.","vols":["al"]},{"id":"2B1","axis":2,"pole":"B","ring":1,"title":"Kezdő","desc":"Alapfogalmak, balesetvédelem, szerszámok, egyszerű áramkörök.","vols":["tk"]},{"id":"2B2","axis":2,"pole":"B","ring":2,"title":"Szakmunkás","desc":"A villanyszerelő szakmai vizsga teljes anyaga.","vols":["tk","el"]},{"id":"2B3","axis":2,"pole":"B","ring":3,"title":"Mester, tervező","desc":"Méretezés, tervdokumentáció, jogosultságok, vállalkozásvezetés.","vols":["tk","el"]},{"id":"2B4","axis":2,"pole":"B","ring":4,"title":"Szakértő","desc":"Érintésvédelmi felülvizsgálat, villámvédelem, igazságügyi szakértés.","vols":["el"]},{"id":"3A1","axis":3,"pole":"A","ring":1,"title":"Nagykereskedés","desc":"Villamossági nagykereskedések, disztribúció, cikkszámok.","vols":["ez","sz"]},{"id":"3A2","axis":3,"pole":"A","ring":2,"title":"Gyártás","desc":"Kábel-, szerelvény- és készülékgyártás, gyártói rendszerek.","vols":["sz","ez"]},{"id":"3A3","axis":3,"pole":"A","ring":3,"title":"Feldolgozás","desc":"Rézhuzalhúzás, szigetelőanyagok, szilíciumszelet.","vols":["sz"]},{"id":"3A4","axis":3,"pole":"A","ring":4,"title":"Bányászat","desc":"Réz, alumínium, szilícium, ritkaföldfémek.","vols":["sz"]},{"id":"3B1","axis":3,"pole":"B","ring":1,"title":"Átadás","desc":"Mérési jegyzőkönyv, dokumentáció, az ügyfél betanítása.","vols":["el"]},{"id":"3B2","axis":3,"pole":"B","ring":2,"title":"Használat","desc":"Fogyasztás, energiaszámla, a rendszer mindennapjai.","vols":["ez"]},{"id":"3B3","axis":3,"pole":"B","ring":3,"title":"Bővítés, felújítás","desc":"Új igények, a régi hálózat cseréje, utólagos okosítás.","vols":["ez","tk"]},{"id":"3B4","axis":3,"pole":"B","ring":4,"title":"Bontás, újrahasznosítás","desc":"Elektronikai hulladék, réz-visszanyerés, veszélyes anyagok.","vols":["sz","el"]},{"id":"4A1","axis":4,"pole":"A","ring":1,"title":"Szerelvény, készülék","desc":"Kapcsoló, aljzat, kismegszakító, lámpatest.","vols":["ez"]},{"id":"4A2","axis":4,"pole":"A","ring":2,"title":"Alkatrész","desc":"Sorkapocs, érvéghüvely, dübel, csavar, tömszelence.","vols":["ez","rg"]},{"id":"4A3","axis":4,"pole":"A","ring":3,"title":"Anyag","desc":"Rézér, szigetelés, védőcső; keresztmetszet és terhelhetőség.","vols":["tk","al"]},{"id":"4A4","axis":4,"pole":"A","ring":4,"title":"Elektron, atom","desc":"Töltéshordozók és sávszerkezet.","vols":["al"]},{"id":"4B1","axis":4,"pole":"B","ring":1,"title":"Áramkör, helyiség","desc":"Egy áramkör, egy helyiség teljes kiosztása.","vols":["tk"]},{"id":"4B2","axis":4,"pole":"B","ring":2,"title":"Lakás, ház","desc":"Elosztó, mérőhely, betáplálás, földelés.","vols":["tk","el"]},{"id":"4B3","axis":4,"pole":"B","ring":3,"title":"Épület, társasház","desc":"Felszálló, közös hálózat, villámvédelem, tűzvédelem.","vols":["el","sz"]},{"id":"4B4","axis":4,"pole":"B","ring":4,"title":"Ország, kontinens","desc":"Elosztó- és átviteli hálózat, rendszerirányítás.","vols":["sz"]},{"id":"5A1","axis":5,"pole":"A","ring":1,"title":"Ipari és kereskedelmi","desc":"Irodák, üzemek, csarnokok: nagyobb teljesítmény, ipari szerkezetek.","vols":["sz"]},{"id":"5A2","axis":5,"pole":"A","ring":2,"title":"Elosztás","desc":"Az áramszolgáltató hálózata, transzformátorállomás, mérés.","vols":["sz","el"]},{"id":"5A3","axis":5,"pole":"A","ring":3,"title":"Átvitel","desc":"Nagyfeszültségű távvezeték-hálózat és rendszerirányítás.","vols":["sz"]},{"id":"5A4","axis":5,"pole":"A","ring":4,"title":"Termelés","desc":"Erőművek, megújulók, tárolás.","vols":["sz","al"]},{"id":"5B1","axis":5,"pole":"B","ring":1,"title":"Biztonságtechnika","desc":"Riasztó, kamera, beléptető, kaputelefon, tűzjelző.","vols":["ez","kv"]},{"id":"5B2","axis":5,"pole":"B","ring":2,"title":"Épületautomatizálás","desc":"KNX, DALI, Modbus, okosotthon-központok.","vols":["ez","kv"]},{"id":"5B3","axis":5,"pole":"B","ring":3,"title":"Távközlés","desc":"Strukturált hálózat, optika, rádió.","vols":["kv","sz"]},{"id":"5B4","axis":5,"pole":"B","ring":4,"title":"Elektronika, mikrochip","desc":"Áramkörtervezés, beágyazott rendszerek, mikrovezérlők, félvezetőgyártás.","vols":["al","sz"]},{"id":"6A1","axis":6,"pole":"A","ring":1,"title":"Szakmai szabályok","desc":"Az MSZ HD 60364 sorozat, tűzvédelmi előírások, rajzi szabályok.","vols":["el"]},{"id":"6A2","axis":6,"pole":"A","ring":2,"title":"Műszaki elvek","desc":"Érintésvédelmi módok, szelektivitás, feszültségesés, terhelhetőség.","vols":["tk","el"]},{"id":"6A3","axis":6,"pole":"A","ring":3,"title":"Méretezés","desc":"Teljesítményigény, egyidejűség, keresztmetszet-választás.","vols":["tk"]},{"id":"6A4","axis":6,"pole":"A","ring":4,"title":"Természettörvények","desc":"Ami minden szabály mögött áll.","vols":["al"]},{"id":"6B1","axis":6,"pole":"B","ring":1,"title":"Termékcsalád","desc":"Például B és C karakterisztikájú kismegszakítók, áram-védőkapcsoló típusok.","vols":["ez"]},{"id":"6B2","axis":6,"pole":"B","ring":2,"title":"Gyártói rendszer","desc":"Egy szerelvénycsalád kerete, burkolata, betétje.","vols":["ez"]},{"id":"6B3","axis":6,"pole":"B","ring":3,"title":"Típus és adatlap","desc":"Egy konkrét cikkszám műszaki adatai.","vols":["ez"]},{"id":"6B4","axis":6,"pole":"B","ring":4,"title":"A mi munkánk","desc":"Egy adott terv a Plannerben, egy adott munka mappája.","vols":["ez"]},{"id":"7A1","axis":7,"pole":"A","ring":1,"title":"Mai hagyományos","desc":"Mechanikus kapcsoló, hagyományos aljzat, kismegszakító.","vols":["ez"]},{"id":"7A2","axis":7,"pole":"A","ring":2,"title":"Régi lakások","desc":"Alumínium vezeték, nullázás (TN-C), olvadóbiztosító.","vols":["ez","tk","el"]},{"id":"7A3","axis":7,"pole":"A","ring":3,"title":"Örökölt rendszerek","desc":"Textilszigetelésű vezeték, porcelán biztosítótábla.","vols":["ez"]},{"id":"7A4","axis":7,"pole":"A","ring":4,"title":"A villamosítás története","desc":"Miért ilyenek a mai szabályok.","vols":["al"]},{"id":"7B1","axis":7,"pole":"B","ring":1,"title":"Okos szerelvények","desc":"Wi-Fi-s, Zigbee-s, Z-Wave-es kapcsolók és dimmerek.","vols":["ez","kv"]},{"id":"7B2","axis":7,"pole":"B","ring":2,"title":"Okosotthon-rendszerek","desc":"KNX, Matter és Thread, Home Assistant, ESPHome.","vols":["ez","kv"]},{"id":"7B3","axis":7,"pole":"B","ring":3,"title":"Energiamenedzsment","desc":"Napelem, akkumulátor, hőszivattyú, autótöltő.","vols":["ez","sz"]},{"id":"7B4","axis":7,"pole":"B","ring":4,"title":"Ami jön","desc":"Egyenáramú lakáshálózat, félvezetős megszakító, kétirányú autótöltés.","vols":["al","ez"]},{"id":"8A1","axis":8,"pole":"A","ring":1,"title":"Kőműves","desc":"Falazás, vakolás, vésés: a dobozok síkja és a horonyvésés ideje.","vols":["ts","rg"]},{"id":"8A2","axis":8,"pole":"A","ring":2,"title":"Szárazépítő","desc":"Gipszkarton fal és álmennyezet, betét a nehéz tárgyakhoz.","vols":["ts","rg"]},{"id":"8A3","axis":8,"pole":"A","ring":3,"title":"Ács, tetőfedő, bádogos","desc":"Tetőszerkezet, villámvédelmi felfogó, napelem-rögzítés.","vols":["ts","rg"]},{"id":"8A4","axis":8,"pole":"A","ring":4,"title":"Földmunka, alapozás","desc":"Alapföldelő a betonozás előtt, földkábel és védőcső.","vols":["ts","el"]},{"id":"8B1","axis":8,"pole":"B","ring":1,"title":"Víz-, gáz-, fűtésszerelő","desc":"Nyomvonalak keresztezése, EPH-bekötés, kazánkiállás.","vols":["ts","el"]},{"id":"8B2","axis":8,"pole":"B","ring":2,"title":"Burkoló","desc":"Csempeosztás, fürdőszobai zónák, padlófűtés-érzékelő.","vols":["ts","el"]},{"id":"8B3","axis":8,"pole":"B","ring":3,"title":"Festő-mázoló","desc":"A szerelvényezés sorrendje, vakfedelek.","vols":["ts"]},{"id":"8B4","axis":8,"pole":"B","ring":4,"title":"Asztalos, konyhabútor","desc":"Konyhai kiállások a bútorterv szerint.","vols":["ts","ez"]}],"items":[{"id":"card.rg.beton","type":"card","vol":"rg","kind":"anyag","title":"Beton","aka":["monolit beton","betonfal","betonfödém"],"place":{"core":"8A"},"cubes":1,"bytes":1462,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Szürke, nagyon kemény; finom szürke por. Ütés nélkül alig halad a fúró. Kopogtatva tömör, tompa hang.","drill":{"hammer":"igen","bits":["sds-plus","hengeres-kozet"],"note":"Fúrókalapáccsal (SDS-plus) a leggyorsabb. 12 mm fölött és sok furatnál a fúrókalapács kíméli a kezet és a gépet is."},"anchors":{"light":["nylon-terpeszto","beutos-dubel"],"medium":["nylon-terpeszto","betoncsavar"],"heavy":["terpeszto-horgony","beutos-horgony","vegyi"],"note":"Tömör betonban szinte minden dübel működik; a terpesztő fajták itt tartanak a legjobban."},"screws":["forgacslap","menetes-szar"],"traps":["Peremtávolság: a szélhez közeli terpesztő horgony kipattintja a betont. A minimális peremtávolság az adatlapon van.","Repedt betonba csak repedt betonra minősített horgony való.","Födémben és falban futó vezeték, cső: fúrás előtt keresővel (vezetekkereso)."],"terms":{"hu":["SDS-plus fúrószár 6 mm","nylon dübel 8x40","betoncsavar","terpesztő horgony M8","vegyi dübel"],"en":["SDS-plus masonry drill bit","nylon wall plug","concrete screw anchor","wedge anchor","chemical anchor"],"de":["SDS-plus Hammerbohrer","Spreizdübel","Betonschraube","Bolzenanker","Verbundmörtel"]},"shop":"Alapdübel: barkácsáruház, vasbolt. Horgony, betoncsavar, vegyi dübel: rögzítéstechnikai szakkereskedés."}},{"id":"card.rg.vasbeton","type":"card","vol":"rg","kind":"anyag","title":"Vasbeton","aka":["koszorú","pillér","áthidaló","monolit födém"],"place":{"core":"8A"},"cubes":1,"bytes":1422,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Mint a beton, de a fúró időnként megakad, fémes hangot ad, a por színe hirtelen fémesre vált: vasba ütközött.","drill":{"hammer":"igen","bits":["sds-plus","sds-max","gyemant-korona"],"note":"Vasba ütközve ne erőltesd: arrébb kell fúrni. Nagy átmérőhöz (áttörés) gyémánt koronafúró, de a vasalás átvágása statikus engedélyt kér."},"anchors":{"light":["nylon-terpeszto"],"medium":["betoncsavar","nylon-terpeszto"],"heavy":["terpeszto-horgony","beutos-horgony","vegyi"],"note":"Mint a betonnál."},"screws":["forgacslap","menetes-szar"],"traps":["A betonacélt átvágni tilos statikus jóváhagyása nélkül, különösen koszorúban, pillérben, áthidalóban.","Vaskeresővel (vezetekkereso) előre kijelölni a vasak helyét; a pillér és a koszorú sarkában sűrű a vasalás.","A kőzetfúró vasra futva gyorsan tönkremegy; az SDS-plus fúrók egy része vasbetonra készül (négyélű, „rebar” felirat)."],"terms":{"hu":["vaskereső","vasbeton fúrószár négyélű","gyémánt koronafúró"],"en":["rebar detector","4-cutter SDS-plus bit","diamond core bit"],"de":["Bewehrungssucher","4-Schneider Hammerbohrer","Diamantbohrkrone"]},"shop":"Szakkereskedés, szerszámbolt; gyémánt fúrás: gépkölcsönző vagy betonfúró szolgáltatás."}},{"id":"card.rg.ureges-fodempanel","type":"card","vol":"rg","kind":"anyag","title":"Üreges födémpanel","aka":["panelház födém","üreges födém","előregyártott födém","feszített födémpanel"],"place":{"core":"8A"},"cubes":1,"bytes":1444,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Panelházban és sok családi házban: a födémen fúrva 2–5 cm után a fúró hirtelen beszakad egy hosszanti üregbe.","drill":{"hammer":"igen","bits":["sds-plus"],"note":"Ütve fúrható, de az alsó héj vékony. Érdemes egy próbafurattal megkeresni, hol fut üreg és hol a borda."},"anchors":{"light":["billeno","uregesfali-fem","univerzalis"],"medium":["billeno","vegyi"],"heavy":["vegyi"],"note":"A sima terpesztődübel az üregben nem fog. Üreges födémhez gyártott födémdübel vagy szitahüvelyes vegyi dübel kell. Bordába fúrva betonként viselkedik."},"screws":["menetes-szar","forgacslap"],"traps":["Feszített (előfeszített) panelban a feszítőhuzalt megsérteni tilos: a panel tönkremehet.","Lámpa, csillár: a súly és a rögzítés pontja a panel üregéhez igazodjon; nehéz tárgyhoz szakember vagy statikus.","A régi panelban a födém üregeiben gyakran futnak régi vezetékek."],"terms":{"hu":["födémdübel üreges födémbe","billenő dübel","szitahüvely vegyi dübel"],"en":["hollow core slab anchor","toggle bolt","mesh sleeve chemical anchor"],"de":["Hohldeckendübel","Kippdübel","Siebhülse Injektionsmörtel"]},"shop":"Rögzítéstechnikai szakkereskedés; billenő dübel barkácsáruházban is."}},{"id":"card.rg.tomor-tegla","type":"card","vol":"rg","kind":"anyag","title":"Tömör tégla","aka":["kisméretű tégla","nagyméretű tömör tégla","régi tégla"],"place":{"core":"8A"},"cubes":1,"bytes":1084,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Piros-narancs por, egyenletesen halad a fúró. Régi házak főfalai. A habarcsfuga puhább, szürkés vagy fehér por.","drill":{"hammer":"igen","bits":["sds-plus","hengeres-kozet"],"note":"Ütve fúrható. A téglába fúrj, ne a fugába: a fuga gyengébb és morzsalékos."},"anchors":{"light":["nylon-terpeszto"],"medium":["nylon-terpeszto","keretdubel"],"heavy":["vegyi","keretdubel"],"note":"Jól tart minden terpesztődübel, ha a furat a tégla anyagában van."},"screws":["forgacslap","menetes-szar"],"traps":["Régi téglánál a felület mállik: a vakolat vastagságát a dübel hosszába be kell számítani.","A falsarkok és nyílások közelében a tégla elmozdulhat; nagy terhet ne a szélre."],"terms":{"hu":["tégla dübel","keretdübel","kőzetfúró 8 mm"],"en":["solid brick anchor","frame fixing","masonry bit"],"de":["Vollziegel Dübel","Rahmendübel","Steinbohrer"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.ureges-tegla","type":"card","vol":"rg","kind":"anyag","title":"Üreges kerámia falazóblokk","aka":["Porotherm-típusú tégla","B30","vázkerámia","hőszigetelő tégla"],"place":{"core":"8A"},"cubes":1,"bytes":1433,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Vöröses-narancs por. A fúró váltakozva halad, majd hirtelen „beszakad” egy üregbe; a vékony belső bordák csak kis ellenállást adnak.","drill":{"hammer":"nem","bits":["hengeres-kozet","sds-plus","dobozfuro"],"note":"Csak fúró üzemmódban, ütés nélkül. Ütve a belső bordák szétpattannak, és a furat kitágul."},"anchors":{"light":["univerzalis"],"medium":["keretdubel","univerzalis"],"heavy":["vegyi"],"note":"Hosszú dübel kell, amely több bordán is felfekszik vagy az üregben csomóba ugrik. Nehéz teherhez injektáló habarcs szitahüvellyel."},"screws":["forgacslap","menetes-szar"],"traps":["A rövid dübel az első üregben forog és nem tart.","Szerelvénydoboz helye: dobozfúró korona, ütés nélkül; ütve kitörik a borda és nagy lesz a lyuk.","A vakolat vastagságát a dübel hosszába be kell számítani: a vakolat nem tart."],"terms":{"hu":["dübel üreges téglába","keretdübel 10x100","injektáló habarcs szitahüvely"],"en":["hollow brick anchor","frame fixing","injection mortar mesh sleeve"],"de":["Hohlziegel Dübel","Rahmendübel","Injektionsmörtel Siebhülse"]},"shop":"Univerzális dübel: barkácsáruház. Injektáló rendszer: szakkereskedés, egy gyártó habarcsa a saját hüvelyével."}},{"id":"card.rg.porusbeton","type":"card","vol":"rg","kind":"anyag","title":"Pórusbeton","aka":["gázbeton","Ytong-típusú falazóelem","Hebel"],"place":{"core":"8A"},"cubes":1,"bytes":1108,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Fehér vagy világosszürke, könnyű és puha; a fúró szinte magától megy, lisztszerű fehér por. Körömmel is karcolható.","drill":{"hammer":"nem","bits":["hengeres-kozet","fafuro"],"note":"Ütés nélkül. A dübel adatlapja gyakran kisebb fúróátmérőt ír elő, hogy a dübel feszüljön."},"anchors":{"light":["porusbeton-dubel"],"medium":["porusbeton-dubel","keretdubel"],"heavy":["vegyi"],"note":"Pórusbetonhoz gyártott dübel (spirálbordás műanyag vagy fém). Nehézhez pórusbetonra minősített vegyi rendszer."},"screws":["forgacslap"],"traps":["A sima nylon dübel kifordul, csak nagyon könnyű tárgyhoz jó.","A túl nagy furat ugyanazzal a dübellel nem javítható.","Bojler, felső szekrény: előre tervezni a rögzítést."],"terms":{"hu":["gázbeton dübel","pórusbeton tipli"],"en":["aircrete anchor","AAC anchor"],"de":["Porenbetondübel"]},"shop":"Barkácsáruház, szakkereskedés; a falazóanyag gyártója is ajánl rögzítést."}},{"id":"card.rg.meszhomoktegla","type":"card","vol":"rg","kind":"anyag","title":"Mészhomoktégla","aka":["silikát tégla","Silka-típusú elem"],"place":{"core":"8A"},"cubes":1,"bytes":891,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Fehér-szürke, sima, tömör és kemény; finom fehér por. Lehet tömör vagy lyukacsos kivitelű.","drill":{"hammer":"igen","bits":["sds-plus","hengeres-kozet"],"note":"Tömör elemnél ütve; lyukacsos elemnél ütés nélkül, mint az üreges téglánál."},"anchors":{"light":["nylon-terpeszto"],"medium":["nylon-terpeszto","keretdubel"],"heavy":["vegyi","terpeszto-horgony"],"note":"Tömör mészhomokban a terpesztődübel jól tart."},"screws":["forgacslap","menetes-szar"],"traps":["Először meg kell tudni, tömör vagy lyukacsos: a fúró viselkedéséből vagy a szerkezet terveiből."],"terms":{"hu":["mészhomok tégla dübel"],"en":["calcium silicate brick anchor"],"de":["Kalksandstein Dübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.salakblokk","type":"card","vol":"rg","kind":"anyag","title":"Salakbeton blokk","aka":["salaktégla","salakblokk","gázszilikát"],"place":{"core":"8A"},"cubes":1,"bytes":941,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Szürke-fekete, szemcsés, sokszor üreges; a por durva, sötét, morzsalékos. Régebbi családi házakban gyakori.","drill":{"hammer":"óvatosan","bits":["hengeres-kozet","sds-plus"],"note":"Kezdés ütés nélkül; ha tömör részbe ér, kis ütéssel mehet. Ütve könnyen kitörik."},"anchors":{"light":["univerzalis"],"medium":["keretdubel","univerzalis"],"heavy":["vegyi"],"note":"Egyenetlen anyag: hosszú univerzális vagy keretdübel, nehézhez szitahüvelyes vegyi dübel."},"screws":["forgacslap","menetes-szar"],"traps":["Az üregek és a tömör részek váltakoznak: próbafurat ajánlott.","A morzsalékos furat túl nagy lesz, ha ütve fúrják."],"terms":{"hu":["dübel salakblokkba"],"en":["cinder block anchor"],"de":["Schlackenstein Dübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.valyog","type":"card","vol":"rg","kind":"anyag","title":"Vályog","aka":["vályogfal","sárfal","vert fal"],"place":{"core":"8A"},"cubes":1,"bytes":1038,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Régi falusi házak. Barnás-sárgás, puha, morzsalékos agyag; néha szalma látszik benne. A fúró szinte ellenállás nélkül megy.","drill":{"hammer":"nem","bits":["hengeres-kozet","fafuro"],"note":"Ütés nélkül, kis fordulattal."},"anchors":{"light":["univerzalis","porusbeton-dubel"],"medium":["vegyi"],"heavy":["vegyi"],"note":"A terpesztődübel szétnyomja az anyagot. Könnyű terhet hosszú dübellel, nehezebbet szitahüvelyes vegyi dübellel vagy a fal mögé átmenő rögzítéssel."},"screws":["forgacslap","menetes-szar"],"traps":["Nedves vályogfal gyengébb: a teherbírás erősen függ a fal állapotától.","Nehéz tárgyat inkább a födémre vagy egy felszerelt fa alapra (fa) kell rögzíteni, a terhet szétosztva."],"terms":{"hu":["vályogfal rögzítés"],"en":["adobe wall anchor","earth wall fixing"],"de":["Lehmwand Befestigung"]},"shop":"Szakkereskedés (vegyi dübel), barkácsáruház."}},{"id":"card.rg.termesko","type":"card","vol":"rg","kind":"anyag","title":"Terméskő fal","aka":["kőfal","pincefal","lábazat"],"place":{"core":"8A"},"cubes":1,"bytes":949,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Szabálytalan kövek habarcsban. A fúró a kőben kemény, a fugában hirtelen könnyű; a por színe a kőtől függ.","drill":{"hammer":"igen","bits":["sds-plus"],"note":"Kőben ütve. Ha a fúró a fugába csúszik, érdemes áthelyezni a furatot."},"anchors":{"light":["nylon-terpeszto"],"medium":["nylon-terpeszto","vegyi"],"heavy":["vegyi"],"note":"A kőben a terpesztődübel jól tart, a fugában nem. Bizonytalan helyen vegyi dübel, üreges részen szitahüvellyel."},"screws":["forgacslap","menetes-szar"],"traps":["A fugába eső furat gyenge; a habarcs régi pincefalban morzsolódhat.","Nedves pincefalban a vegyi dübel kötése más: az adatlap szerint."],"terms":{"hu":["kőfal dübel","vegyi dübel kőbe"],"en":["natural stone wall anchor"],"de":["Naturstein Dübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.zsaluko","type":"card","vol":"rg","kind":"anyag","title":"Zsalukő","aka":["beton zsaluelem","zsalukőfal"],"place":{"core":"8A"},"cubes":1,"bytes":849,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Beton héjú üreges elem, amelyet építéskor betonnal töltenek ki. Pincefal, kerítés, támfal.","drill":{"hammer":"igen","bits":["sds-plus"],"note":"Kitöltve úgy viselkedik, mint a beton. Ha a fúró a héj után beszakad, az üreg nincs kitöltve."},"anchors":{"light":["nylon-terpeszto"],"medium":["nylon-terpeszto","betoncsavar"],"heavy":["terpeszto-horgony","vegyi"],"note":"Kitöltött falban mint a beton; üres szakaszon szitahüvelyes vegyi dübel."},"screws":["forgacslap","menetes-szar"],"traps":["A kitöltés nem mindig teljes: próbafurattal ellenőrizni."],"terms":{"hu":["zsalukő dübel"],"en":["ICF block anchor","concrete block anchor"],"de":["Schalungsstein Dübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.vegyes-falazat","type":"card","vol":"rg","kind":"anyag","title":"Régi vegyes falazat","aka":["vegyes fal","toldott fal","régi ház fala"],"place":{"core":"8A"},"cubes":1,"bytes":1056,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Régi házakban, bővítéseknél: egy falon belül tégla, kő, vályog, salak és toldások. A fúró viselkedése furatonként más.","drill":{"hammer":"óvatosan","bits":["hengeres-kozet","sds-plus"],"note":"Mindig ütés nélkül kezdeni; csak ha a por és az ellenállás tömör anyagot mutat, akkor ütve."},"anchors":{"light":["univerzalis"],"medium":["univerzalis","keretdubel"],"heavy":["vegyi"],"note":"Az univerzális dübel a tömör és az üreges részben is fog. Nehéz terhet szitahüvelyes vegyi dübellel."},"screws":["forgacslap","menetes-szar"],"traps":["Próbafurat a tervezett hely közelében; a por színe és állaga megmutatja az anyagot.","Régi falban rejtett, dokumentálatlan vezetékek."],"terms":{"hu":["univerzális dübel","vegyi dübel szitahüvely"],"en":["universal wall plug","mesh sleeve"],"de":["Universaldübel","Siebhülse"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.gipszkarton","type":"card","vol":"rg","kind":"anyag","title":"Gipszkarton","aka":["GK fal","szárazépítésű fal","álmennyezet","Rigips"],"place":{"core":"8A"},"cubes":1,"bytes":1332,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Kopogtatva üreges hang, papírfelület, fehér gipszpor. Mögötte fém profil (CW, UW, CD) vagy fa léc; 40–60 cm-enként tömörebb hang.","drill":{"hammer":"nem","bits":["fafuro","hss","gk-korona"],"note":"Ütés nélkül. Szerelvénydobozhoz 68 mm-es körkivágó, üreges falba való dobozzal."},"anchors":{"light":["gk-becsavaros","uregesfali-fem"],"medium":["uregesfali-fem","billeno"],"heavy":[],"note":"Nehéz terhet (bojler, felső szekrény, TV-konzol) csak a profilba vagy az előre beépített fa vagy OSB betétbe szabad rögzíteni."},"screws":["gk-csavar","forgacslap"],"traps":["A nehéz tárgyhoz a betétet a lapozás előtt kell beépíteni: ezt a szárazépítővel kell egyeztetni.","A profilokban vezeték futhat: a nyomvonalakat dokumentálni kell.","Dupla lapnál hosszabb dübel kell; a dübelt a lapvastagsághoz kell választani."],"terms":{"hu":["üreges fali dübel","billenő dübel","gipszkarton dübel","üreges fali doboz 68"],"en":["hollow wall anchor","toggle bolt","drywall anchor","drywall box 68 mm"],"de":["Hohlraumdübel","Kippdübel","Gipskartondübel","Hohlwanddose 68"]},"shop":"Barkácsáruház; a dobozok villamossági nagykereskedésben."}},{"id":"card.rg.gipszrost","type":"card","vol":"rg","kind":"anyag","title":"Gipszrost lap","aka":["Fermacell-típusú lap","gipszrost fal"],"place":{"core":"8A"},"cubes":1,"bytes":889,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Mint a gipszkarton, de nincs papírréteg, a lap tömörebb és keményebb; a por szürkésfehér, szálas.","drill":{"hammer":"nem","bits":["hss","fafuro","gk-korona"],"note":"Ütés nélkül."},"anchors":{"light":["gk-becsavaros","uregesfali-fem"],"medium":["uregesfali-fem","billeno"],"heavy":[],"note":"A lap közvetlenül is jobban tartja a csavart, mint a gipszkarton; nehéz terhet itt is a vázszerkezetre."},"screws":["gk-csavar","forgacslap"],"traps":["A gyártó külön csavart és rögzítési távolságot ír elő a laphoz; a teherbírás a lap vastagságától függ."],"terms":{"hu":["gipszrost lap rögzítés"],"en":["gypsum fibre board fixing"],"de":["Gipsfaserplatte Befestigung"]},"shop":"Barkácsáruház, szárazépítő szakkereskedés."}},{"id":"card.rg.fa","type":"card","vol":"rg","kind":"anyag","title":"Fa","aka":["gerenda","tömör fa","léc","fa födém"],"place":{"core":"8A"},"cubes":1,"bytes":1060,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Forgács jön a furatból. Tetőszerkezet, fa födém, fa ház, burkolatok mögötti léc.","drill":{"hammer":"nem","bits":["fafuro","hss"],"note":"Ütés nélkül. Keményfánál és a szélhez közel előfúrás, hogy ne repedjen."},"anchors":{"light":[],"medium":[],"heavy":[],"note":"Fába nem kell dübel: a csavar közvetlenül tart. Nehéz terhet álványcsavarral vagy átmenő csavarral."},"screws":["forgacslap","allvanycsavar"],"traps":["Tűzvédelem: fa szerkezetre szerelt elosztó, lámpatest és doboz megfelelő jelölésű és minősítésű legyen.","Tartószerkezetet (szarufa, gerenda) nem szabad átfúrással gyengíteni: kis furat a gerenda középvonalában, a végektől távol."],"terms":{"hu":["forgácslapcsavar","álványcsavar","fa csigafúró"],"en":["wood screw","lag screw","auger bit"],"de":["Spanplattenschraube","Sechskant-Holzschraube","Schlangenbohrer"]},"shop":"Barkácsáruház, vasbolt, faipari kereskedés."}},{"id":"card.rg.osb","type":"card","vol":"rg","kind":"anyag","title":"OSB és forgácslap","aka":["OSB lap","forgácslap","bútorlap"],"place":{"core":"8A"},"cubes":1,"bytes":738,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Préselt faforgács lap; az OSB-n nagy, látható forgácsok. Betétként gipszkarton mögött, padlásburkolatként, bútorként.","drill":{"hammer":"nem","bits":["fafuro","hss"],"note":"Ütés nélkül."},"anchors":{"light":[],"medium":[],"heavy":[],"note":"Csavar közvetlenül; a lap vékony élébe nem tart jól."},"screws":["forgacslap"],"traps":["Kihúzásra a vékony lap gyenge: nehéz tárgyat a lap mögötti vázra vagy átmenő csavarral."],"terms":{"hu":["OSB csavar","forgácslapcsavar"],"en":["chipboard screw","OSB fixing"],"de":["Spanplattenschraube","OSB Befestigung"]},"shop":"Barkácsáruház."}},{"id":"card.rg.trapezlemez","type":"card","vol":"rg","kind":"anyag","title":"Trapézlemez, acéllemez","aka":["acél trapézlemez","lemezfal","lemeztető"],"place":{"term":"5A1","overlap":0.5},"cubes":1,"bytes":1019,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Profilozott acéllemez: csarnok, garázs, kerítés, tető. Kopogtatva fémes, dobszerű hang.","drill":{"hammer":"nem","bits":["hss","lepcsos"],"note":"Fémfúró, közepes fordulat. Kábelátvezetéshez lépcsős fúró vagy bimetál körkivágó."},"anchors":{"light":["uregesfali-fem"],"medium":[],"heavy":[],"note":"Lemezhez önfúró lemezcsavar vagy popszegecs; nehéz terhet a mögötte lévő acélvázra."},"screws":["onfuro-lemezcsavar"],"traps":["Kültéren tömítő alátétes csavar, különben a furaton beázik.","A lemez éle vágja a kábelt: átvezetéshez tömszelence vagy élvédő."],"terms":{"hu":["önfúró lemezcsavar","lépcsős fúró","tömszelence"],"en":["self-drilling screw","step drill","cable gland"],"de":["Bohrschraube","Stufenbohrer","Kabelverschraubung"]},"shop":"Vasbolt, fémkereskedés, tetőfedő anyagkereskedés."}},{"id":"card.rg.szendvicspanel","type":"card","vol":"rg","kind":"anyag","title":"Szendvicspanel","aka":["hőszigetelt panel","PUR panel","kőzetgyapot panel"],"place":{"term":"5A1","overlap":0.4},"cubes":1,"bytes":948,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Két vékony acéllemez, közöttük PUR hab vagy kőzetgyapot. Csarnokok, hűtőkamrák, ipari és mezőgazdasági épületek.","drill":{"hammer":"nem","bits":["hss","lepcsos"],"note":"Fémfúró ütés nélkül; a magot nem szabad feltépni."},"anchors":{"light":["uregesfali-fem"],"medium":[],"heavy":[],"note":"A külső lemez csak könnyű terhet bír. Közepes és nehéz terhet átmenő rögzítéssel a vázszerkezetre."},"screws":["onfuro-lemezcsavar","menetes-szar"],"traps":["Minden átvezetés tömítése: a nedvesség a magba jut, és ott marad.","Hűtőkamrában a hőhíd kondenzációt okoz."],"terms":{"hu":["szendvicspanel rögzítés","panel csavar"],"en":["sandwich panel fixing"],"de":["Sandwichpaneel Befestigung"]},"shop":"Szakkereskedés, a panel forgalmazója."}},{"id":"card.rg.etics","type":"card","vol":"rg","kind":"anyag","title":"Hőszigetelt homlokzat","aka":["ETICS","dryvit","homlokzati hőszigetelés","EPS homlokzat"],"place":{"core":"8A"},"cubes":1,"bytes":1362,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Vékony vakolat alatt puha hőszigetelő (EPS vagy kőzetgyapot), alatta a fal. Kopogtatva puha, tompa; a fúró a szigetelésben ellenállás nélkül megy.","drill":{"hammer":"nem","bits":["hengeres-kozet","sds-plus"],"note":"A szigetelésen és a vakolaton ütés nélkül, a falban az alatta lévő anyag szerint."},"anchors":{"light":["etics-rogzito"],"medium":["etics-rogzito"],"heavy":["etics-rogzito"],"note":"Csak a szigetelésbe nagyon könnyű tárgy rögzíthető. Lámpa, kamera, mozgásérzékelő: távtartó rögzítő a falig, vagy a szigeteléskor beépített szerelőelem."},"screws":["menetes-szar","forgacslap"],"traps":["A sima dübellel felhúzott tárgy összenyomja a szigetelést és megbontja a vakolatot.","Hőhíd és beázás: a furatot tömíteni kell.","Kültéri lámpa és kamera helyét a szigetelés előtt érdemes kijelölni és szerelőelemmel előkészíteni."],"terms":{"hu":["távtartó rögzítő hőszigeteléshez","szerelőhenger EPS","szigetelés dübel"],"en":["ETICS spacer fixing","insulation mounting cylinder"],"de":["Abstandsmontage WDVS","Montagezylinder WDVS","Dämmstoffdübel"]},"shop":"Rögzítéstechnikai szakkereskedés, homlokzati anyagkereskedés."}},{"id":"card.rg.csempe","type":"card","vol":"rg","kind":"anyag","title":"Csempe, járólap","aka":["kerámia burkolat","greslap","porcelánlap"],"place":{"core":"8B"},"cubes":1,"bytes":1246,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Fényes vagy matt kerámia a fal síkjában; mögötte ragasztó és a fal anyaga. A greslap (porcelán) nagyon kemény.","drill":{"hammer":"nem","bits":["csempefuro","gyemant-korona"],"note":"A csempét ütés nélkül csempefúróval vagy gyémánt fúróval; utána a fal anyaga szerint folytatni. Kezdéskor ragasztószalag a felületre, hogy a fúró ne csússzon."},"anchors":{"light":["nylon-terpeszto","univerzalis"],"medium":["nylon-terpeszto","keretdubel"],"heavy":["vegyi"],"note":"A dübel a fal anyagában tart, nem a csempében. A dübelt a csempe síkja mögé kell süllyeszteni, különben a terpesztés megrepeszti a csempét."},"screws":["forgacslap"],"traps":["Greslapot ütve fúrni szinte biztos repedés.","A fugába fúrni könnyebb, de a dobozok és szerelvények helyét a csempeosztáshoz kell igazítani.","Fürdőszobai zónák: mit szabad hova szerelni (MSZ HD 60364-7-701)."],"terms":{"hu":["csempefúró","gyémánt fúró greslaphoz"],"en":["tile drill bit","diamond tile drill"],"de":["Fliesenbohrer","Diamant Fliesenbohrer"]},"shop":"Barkácsáruház, burkolóanyag-kereskedés."}},{"id":"card.rg.uveg","type":"card","vol":"rg","kind":"anyag","title":"Üveg","aka":["üvegfal","üveg panel","tükör"],"place":{"core":"8B"},"cubes":1,"bytes":831,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Üveg válaszfal, zuhanyfal, tükör, üveg előtető.","drill":{"hammer":"nem","bits":["csempefuro","gyemant-korona"],"note":"Csak hűtéssel (víz), kis fordulattal, nyomás nélkül, és csak nem edzett üvegbe."},"anchors":{"light":[],"medium":[],"heavy":[],"note":"Üvegre ragasztással vagy szorítóval szerelünk, nem dübellel."},"screws":[],"traps":["Edzett (biztonsági) üveget fúrni nem lehet: szétesik. A furatot gyárilag, edzés előtt kell elkészíteni.","Tükör mögé kábelt vezetni: a tükörragasztó és a hő kölcsönhatása."],"terms":{"hu":["üvegfúró","üveg szorító"],"en":["glass drill bit","glass clamp"],"de":["Glasbohrer","Glasklemme"]},"shop":"Üvegező műhely, barkácsáruház."}},{"id":"card.rg.acelszerkezet","type":"card","vol":"rg","kind":"anyag","title":"Acélszerkezet","aka":["I-gerenda","acél pillér","acél tartó"],"place":{"term":"5A1","overlap":0.4},"cubes":1,"bytes":877,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/anyagok.json","card":{"recognise":"Acél tartók és pillérek: csarnok, tetőtér, garázs, bővítés.","drill":{"hammer":"nem","bits":["hss"],"note":"Tartószerkezetbe fúrni csak a tervező engedélyével. Inkább szorító."},"anchors":{"light":[],"medium":[],"heavy":[],"note":"Gerendaszorítóval vagy kábeltálca-függesztővel, fúrás nélkül."},"screws":["menetes-szar","onfuro-lemezcsavar"],"traps":["A tartó gyengítése és a korrózióvédelem megsértése: fúrás helyett szorító.","Földelés: a fém szerkezet egyenpotenciálú bekötése."],"terms":{"hu":["gerendaszorító","I-gerenda szorító"],"en":["beam clamp","girder clamp"],"de":["Trägerklammer"]},"shop":"Villamossági nagykereskedés (kábeltálca-rendszer), szakkereskedés."}},{"id":"card.rg.forgacslap","type":"card","vol":"rg","kind":"csavar","title":"Forgácslapcsavar","aka":["univerzális facsavar","spax-típusú csavar"],"place":{"core":"4A"},"cubes":1,"bytes":685,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/csavarok.json","card":{"thread":"Teljes vagy részleges durva menet, éles hegy.","head":"Süllyesztett fej; Pozidriv (PZ) vagy Torx (TX) meghajtás.","for":["fa","osb"],"with":["nylon-terpeszto","univerzalis","porusbeton-dubel","gk-becsavaros"],"sizes":"3–6 mm átmérő, 12–200 mm hossz","traps":["Dübelhez az átmérőt a dübel csomagolása adja meg.","Kültérre horganyzott vagy rozsdamentes kivitel."],"terms":{"hu":["forgácslapcsavar 5x50","univerzális csavar TX"],"en":["chipboard screw","wood screw"],"de":["Spanplattenschraube"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.gk-csavar","type":"card","vol":"rg","kind":"csavar","title":"Gipszkarton csavar","aka":["fekete gipszkarton csavar","GK csavar"],"place":{"core":"4A"},"cubes":1,"bytes":646,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/csavarok.json","card":{"thread":"Finom menet fém profilhoz, durva menet fa léchez; fúróhegyes kivitel vastagabb profilhoz.","head":"Trombitafej, Phillips (PH2) meghajtás.","for":["gipszkarton","gipszrost"],"with":[],"sizes":"3,5 × 25–55 mm","traps":["Nem teherhordó csavar tárgyak felfüggesztésére.","Gipszrosthoz a lap gyártójának csavarja."],"terms":{"hu":["gipszkarton csavar finom menet 3,5x25"],"en":["drywall screw fine thread"],"de":["Schnellbauschraube Feingewinde"]},"shop":"Barkácsáruház, szárazépítő szakkereskedés."}},{"id":"card.rg.onfuro-lemezcsavar","type":"card","vol":"rg","kind":"csavar","title":"Önfúró lemezcsavar","aka":["fúróhegyes csavar","tetőcsavar","Bohrschraube"],"place":{"core":"4A"},"cubes":1,"bytes":673,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/csavarok.json","card":{"thread":"Lemezmenet, a hegy fúróként előfúr.","head":"Hatlapfej (gyakran EPDM tömítő alátéttel) vagy lencsefej.","for":["trapezlemez","szendvicspanel","acelszerkezet"],"with":[],"sizes":"4,2–6,3 mm; a fúróhegy hossza a lemezvastagságot határozza meg","traps":["A fúróhegy hossza a teljes átfúrt acélvastagsághoz kell."],"terms":{"hu":["önfúró lemezcsavar tömítő alátéttel"],"en":["self-drilling screw with washer"],"de":["Bohrschraube mit Dichtscheibe"]},"shop":"Vasbolt, tetőfedő anyagkereskedés."}},{"id":"card.rg.menetes-szar","type":"card","vol":"rg","kind":"csavar","title":"Menetes szár, metrikus csavar","aka":["menetes rúd","hatlapfejű csavar","anyacsavar"],"place":{"core":"4A"},"cubes":1,"bytes":738,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/csavarok.json","card":{"thread":"Metrikus menet (M6, M8, M10 …).","head":"Szár: nincs fej, anyával és alátéttel; hatlapfejű csavar.","for":["beton","vasbeton","ureges-fodempanel"],"with":["vegyi","beutos-horgony","uregesfali-fem","billeno"],"sizes":"M6–M24; 1 m-es szálban, méretre vágva","traps":["Vágás után a menet elejét meg kell igazítani (reszelő, anya visszacsavarása).","Kültérre tűzihorganyzott vagy rozsdamentes."],"terms":{"hu":["menetes szár M8","hatlapfejű csavar M8"],"en":["threaded rod","hex bolt"],"de":["Gewindestange","Sechskantschraube"]},"shop":"Vasbolt, csavarszaküzlet."}},{"id":"card.rg.allvanycsavar","type":"card","vol":"rg","kind":"csavar","title":"Álványcsavar","aka":["hatlapfejű facsavar","állványcsavar"],"place":{"core":"4A"},"cubes":1,"bytes":459,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/csavarok.json","card":{"thread":"Durva famenet.","head":"Hatlapfej, csavarkulccsal hajtva.","for":["fa"],"with":["nylon-terpeszto","keretdubel"],"sizes":"6–12 mm átmérő","traps":["Fába előfúrás a magátmérővel."],"terms":{"hu":["álványcsavar 8x80"],"en":["lag screw","coach screw"],"de":["Sechskant-Holzschraube"]},"shop":"Vasbolt, barkácsáruház."}},{"id":"card.rg.nylon-terpeszto","type":"card","vol":"rg","kind":"dubel","title":"Nylon terpesztődübel","aka":["tipli","műanyag dübel","S-dübel","SX-dübel"],"place":{"core":"4A"},"cubes":1,"bytes":969,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Terpesztés: a becsavart csavar szétfeszíti a dübelt a furat falának.","for":["beton","vasbeton","tomor-tegla","meszhomoktegla","termesko","zsaluko","csempe"],"drill":"A fúró átmérője = a dübel átmérője. A furat legyen legalább a dübel hosszánál mélyebb.","screw":"Forgácslapcsavar. Irány: 6 mm-es dübelhez 4–5 mm-es, 8 mm-eshez 5–6 mm-es, 10 mm-eshez 6–8 mm-es csavar. Csavarhossz ≈ dübelhossz + a rögzített tárgy vastagsága + egy csavarátmérő.","sizes":"5, 6, 8, 10, 12, 14 mm","traps":["Üreges anyagban forog és nem tart.","A vakolatban nem tart: a dübel teljes hossza a teherhordó anyagban legyen."],"terms":{"hu":["nylon dübel 6x30","terpesztő dübel","tipli"],"en":["nylon wall plug","expansion plug"],"de":["Spreizdübel","Nylondübel"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.univerzalis","type":"card","vol":"rg","kind":"dubel","title":"Univerzális dübel","aka":["csomózódó dübel","UX-dübel","Duopower-típus","kétkomponensű dübel"],"place":{"core":"4A"},"cubes":1,"bytes":942,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Tömör anyagban terpeszt, üreges anyagban az üregben csomóba ugrik vagy felfekszik a fal belső oldalán.","for":["ureges-tegla","salakblokk","vegyes-falazat","valyog","ureges-fodempanel","csempe"],"drill":"A fúró átmérője = a dübel átmérője. Üreges anyagban ütés nélkül.","screw":"Forgácslapcsavar, a dübel csomagolásán megadott átmérőtartományban; a csavarnak át kell érnie a dübel végén.","sizes":"5–14 mm, rövid és hosszú (L) kivitel","traps":["Üreges anyagban a hosszú kivitel tart jobban.","Túl rövid csavarral a csomózódás nem jön létre."],"terms":{"hu":["univerzális dübel","csomózódó dübel"],"en":["universal wall plug","knotting plug"],"de":["Universaldübel","Allzweckdübel"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.keretdubel","type":"card","vol":"rg","kind":"dubel","title":"Keretdübel","aka":["tokdübel","ablakdübel","hosszú dübel"],"place":{"core":"4A"},"cubes":1,"bytes":903,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Hosszú műanyag hüvely, amely több ponton terpeszt; a rögzített tárgyon át szerelhető (átmenő szerelés).","for":["ureges-tegla","tomor-tegla","salakblokk","meszhomoktegla","porusbeton","vegyes-falazat","csempe"],"drill":"Átmenő szerelés: a rögzített tárgyon és a falon egyszerre fúrva, a dübel átmérőjével.","screw":"A gyári, hozzá való csavar (gyakran hatlap- vagy süllyesztett fejű, a hosszhoz méretezve).","sizes":"8 és 10 mm átmérő, 60–200 mm hossz","traps":["Üreges téglában ütés nélkül fúrni.","A csavart ne cseréld rövidebbre: a dübel teljes hosszában kell terpeszteni."],"terms":{"hu":["keretdübel 10x100","tokdübel"],"en":["frame fixing","frame anchor"],"de":["Rahmendübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.uregesfali-fem","type":"card","vol":"rg","kind":"dubel","title":"Fém üreges fali dübel","aka":["Molly-típusú dübel","üregdübel","fém gipszkarton dübel"],"place":{"core":"4A"},"cubes":1,"bytes":996,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"A fém hüvely a lap mögött összecsúszik és szétnyílik, és a lap hátoldalán felfekszik. A csavar kiszedhető, a dübel bent marad.","for":["gipszkarton","gipszrost","ureges-fodempanel","trapezlemez","szendvicspanel"],"drill":"A dübel átmérőjével, ütés nélkül. A dübelt a lapvastagsághoz kell választani.","screw":"A gyári metrikus csavar (M4–M6); helyette kampó vagy menetes szem is kapható.","sizes":"M4, M5, M6; lapvastagság szerint több hossz","traps":["Rossz lapvastagsághoz választva nem nyílik szét rendesen.","A felhúzáshoz feszítőfogó gyorsabb és biztosabb."],"terms":{"hu":["üreges fali dübel M5","fém üregdübel","feszítőfogó üregdübelhez"],"en":["hollow wall anchor","molly bolt","setting tool"],"de":["Hohlraumdübel Metall","Setzzange"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.billeno","type":"card","vol":"rg","kind":"dubel","title":"Billenő dübel","aka":["rugós billenő","billenőcsavar","toggle"],"place":{"core":"4A"},"cubes":1,"bytes":779,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"A furaton átdugott fém szárny a lap vagy a födémhéj mögött kinyílik vagy átbillen, és nagy felületen fekszik fel.","for":["gipszkarton","gipszrost","ureges-fodempanel"],"drill":"Nagyobb furat kell, mint a csavar, mert a szárnynak át kell férnie (a csomagolás szerint).","screw":"Metrikus csavar vagy kampó, a csomagban.","sizes":"M4–M8","traps":["A csavart kiszedve a szárny leesik az üregbe.","A rögzített tárgyat a csavarra kell fűzni a behelyezés előtt."],"terms":{"hu":["billenő dübel","rugós billenő M6"],"en":["toggle bolt","spring toggle"],"de":["Kippdübel","Federklappdübel"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.gk-becsavaros","type":"card","vol":"rg","kind":"dubel","title":"Becsavarható gipszkarton dübel","aka":["Driva-típusú dübel","gipszkarton csigadübel"],"place":{"core":"4A"},"cubes":1,"bytes":742,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Durva menetű műanyag vagy fém csiga, amely közvetlenül a gipszkarton lapba csavarható.","for":["gipszkarton","gipszrost"],"drill":"Általában nem kell fúrni, a hegye magától indul; profilnál előfúrás.","screw":"Forgácslapcsavar a megadott átmérővel.","sizes":"egy vagy két méret, lapvastagság szerint","traps":["Csak könnyű tárgyhoz: kép, kisebb lámpa, kábelcsatorna.","Túlhúzva kiforog a gipszből."],"terms":{"hu":["gipszkarton dübel becsavarható"],"en":["self-drilling drywall anchor"],"de":["Gipskartondübel selbstbohrend"]},"shop":"Barkácsáruház."}},{"id":"card.rg.porusbeton-dubel","type":"card","vol":"rg","kind":"dubel","title":"Pórusbeton dübel","aka":["gázbeton dübel","spirálbordás dübel"],"place":{"core":"4A"},"cubes":1,"bytes":666,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Széles spirálborda vagy bordázat, amely a puha anyagba vágja magát; becsavarva vagy beütve.","for":["porusbeton","valyog"],"drill":"A gyártó szerint; gyakran a dübel átmérőjénél kisebb fúróval, ütés nélkül.","screw":"Forgácslapcsavar a dübelhez megadott méretben.","sizes":"6–14 mm","traps":["A túl nagy furat nem javítható ugyanezzel a dübellel."],"terms":{"hu":["gázbeton dübel","pórusbeton dübel"],"en":["aircrete anchor"],"de":["Porenbetondübel"]},"shop":"Barkácsáruház, szakkereskedés."}},{"id":"card.rg.betoncsavar","type":"card","vol":"rg","kind":"dubel","title":"Betoncsavar","aka":["falcsavar","Ultracut-típusú csavar","HUS-típusú csavar"],"place":{"core":"4A"},"cubes":1,"bytes":822,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Edzett, vágó menetű csavar, amely dübel nélkül, közvetlenül a betonba vágja a menetét.","for":["beton","vasbeton","zsaluko","meszhomoktegla"],"drill":"Az adatlap szerinti fúróátmérővel és mélységgel; a furatot ki kell tisztítani.","screw":"Maga a csavar a rögzítőelem.","sizes":"5–16 mm, sok hosszban és fejformával","traps":["Rossz fúróátmérővel vagy nem kitisztított furattal nem húzható be vagy nem tart.","Az újrafelhasználhatóságot a gyártó adja meg."],"terms":{"hu":["betoncsavar 7,5","betoncsavar hatlapfejű"],"en":["concrete screw anchor"],"de":["Betonschraube"]},"shop":"Szakkereskedés; egyszerűbb kivitel barkácsáruházban."}},{"id":"card.rg.terpeszto-horgony","type":"card","vol":"rg","kind":"dubel","title":"Csavaros terpesztő horgony","aka":["Bolzenanker","ékes horgony","acél horgony"],"place":{"core":"4A"},"cubes":1,"bytes":784,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Acél menetes csap, amelynek végén egy hüvely az anya meghúzásakor szétfeszül. Átmenő szerelésre.","for":["beton","vasbeton","zsaluko","meszhomoktegla"],"drill":"A csap átmérőjével, a rögzített tárgyon át; a furat tisztítása után beütni, majd az anyát nyomatékkulccsal meghúzni.","screw":"A horgonyon lévő anya és alátét.","sizes":"M6–M20","traps":["Csak tömör betonba; üreges anyagban nem tart.","Peremtávolság és tengelytávolság az adatlap szerint."],"terms":{"hu":["terpesztő horgony M10","acél horgony"],"en":["wedge anchor","through bolt"],"de":["Bolzenanker"]},"shop":"Szakkereskedés."}},{"id":"card.rg.beutos-horgony","type":"card","vol":"rg","kind":"dubel","title":"Beütős horgony","aka":["belső menetes horgony","Einschlaganker","födémhorgony"],"place":{"core":"4A"},"cubes":1,"bytes":852,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Belső menetes acélhüvely, amelyet egy beütőszerszámmal szétfeszítenek. Menetes szárral függesztéshez.","for":["beton","vasbeton"],"drill":"A hüvely átmérőjével, pontos mélységre (mélységütközővel), a furat tisztítása után.","screw":"Menetes szár vagy metrikus csavar a belső menethez.","sizes":"M6–M20 belső menet","traps":["A beütőszerszám nélkül nem feszül szét rendesen.","Kábeltálca, csőfüggesztés: a terhelés irányát a gyártó adja meg."],"terms":{"hu":["beütős horgony M8","beütőszerszám"],"en":["drop-in anchor","setting tool"],"de":["Einschlaganker","Setzwerkzeug"]},"shop":"Szakkereskedés, villamossági nagykereskedés (tálcarendszerhez)."}},{"id":"card.rg.beutos-dubel","type":"card","vol":"rg","kind":"dubel","title":"Beütős dübel","aka":["szegdübel","Nageldübel","gyorsszerelő dübel"],"place":{"core":"4A"},"cubes":1,"bytes":649,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Gallérral szerelt nylon dübel, beütött szegcsavarral; átmenő szerelésre, gyorsan.","for":["beton","tomor-tegla","meszhomoktegla"],"drill":"A dübel átmérőjével, a rögzített tárgyon át.","screw":"A gyári szegcsavar (kiszedhető csavarhúzóval).","sizes":"5–8 mm","traps":["Könnyű tárgyakhoz: kábelcsatorna, bilincs, léc."],"terms":{"hu":["beütős dübel 6x40","szegdübel"],"en":["hammer fixing","nail plug"],"de":["Nageldübel"]},"shop":"Barkácsáruház, villamossági nagykereskedés."}},{"id":"card.rg.vegyi","type":"card","vol":"rg","kind":"dubel","title":"Vegyi dübel","aka":["injektáló habarcs","ragasztott horgony","vegyes horgony"],"place":{"core":"4A"},"cubes":1,"bytes":1293,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Kétkomponensű habarcs, amely a furatban megköt és a menetes szárat az anyaghoz ragasztja; üreges anyagban szitahüvellyel.","for":["beton","vasbeton","ureges-fodempanel","tomor-tegla","ureges-tegla","porusbeton","salakblokk","valyog","termesko","zsaluko","vegyes-falazat","csempe"],"drill":"Az adatlap szerinti átmérő és mélység. A furatot a gyártó előírása szerint ki kell fújni és kefélni, általában többször ismételve (furattisztito).","screw":"Menetes szár (gyakran a habarcshoz ajánlott), belső menetes hüvely vagy betonacél.","sizes":"M8–M24 menetes szár; szitahüvely 12–20 mm","traps":["A kikeményedési idő a hőmérséklettől függ: hidegben jóval hosszabb.","A habarcs és a szitahüvely egy gyártó rendszere legyen.","Az első kinyomott adag nem keveredett: azt el kell dobni."],"terms":{"hu":["vegyi dübel","injektáló habarcs","szitahüvely","kinyomópisztoly"],"en":["chemical anchor","injection mortar","mesh sleeve","dispenser gun"],"de":["Verbundmörtel","Injektionsmörtel","Siebhülse","Auspresspistole"]},"shop":"Rögzítéstechnikai szakkereskedés; egyszerűbb kivitel barkácsáruházban."}},{"id":"card.rg.etics-rogzito","type":"card","vol":"rg","kind":"dubel","title":"Rögzítő hőszigetelt homlokzathoz","aka":["távtartó rögzítő","szerelőhenger","szigetelés dübel"],"place":{"core":"4A"},"cubes":1,"bytes":1035,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/dubelek.json","card":{"holds":"Három fajta: spirálos műanyag dübel a szigetelőanyagba (nagyon könnyű tárgy); távtartó rögzítő, amely a falban tart és a szigetelést nem nyomja össze; utólag vagy a szigeteléskor beépített szerelőhenger vagy szerelőlap.","for":["etics"],"drill":"A fal anyaga szerint, a rendszer adatlapja szerint; a szigetelést ütés nélkül.","screw":"A rendszerhez tartozó csavar vagy menetes szár.","sizes":"szigetelésvastagság szerint","traps":["A furatot és a rögzítést tömíteni kell.","Utólag a szigetelésbe épített henger nagyobb munka: tervezéskor egyszerűbb."],"terms":{"hu":["távtartó rögzítő hőszigeteléshez","szerelőhenger EPS"],"en":["ETICS spacer fixing","insulation mounting cylinder"],"de":["Abstandsmontagesystem WDVS","Montagezylinder"]},"shop":"Rögzítéstechnikai szakkereskedés, homlokzati anyagkereskedés."}},{"id":"card.rg.sds-plus","type":"card","vol":"rg","kind":"furoszar","title":"SDS-plus kőzetfúró","aka":["fúrókalapács fúró","SDS fúró"],"place":{"core":"1B"},"cubes":1,"bytes":916,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"SDS-plus, 10 mm-es szár hornyokkal; csak SDS-plus befogású fúrókalapácsba.","mode":"Ütve fúrás (fúrókalapács); üreges anyagban fúró üzemmódban is használható.","for":["beton","vasbeton","ureges-fodempanel","tomor-tegla","meszhomoktegla","termesko","zsaluko","salakblokk","vegyes-falazat","ureges-tegla","etics"],"sizes":"4–26 mm, hossz 110–1000 mm; két- és négyélű (vasbetonhoz a négyélű)","traps":["A tompa fúró melegszik és lassú: cserélni kell.","Pontos dübelfurathoz minőségi fúró, mert a kopott fúró szűk furatot ad."],"terms":{"hu":["SDS-plus fúrószár 8x160","négyélű SDS fúró"],"en":["SDS-plus drill bit","4-cutter SDS-plus"],"de":["SDS-plus Hammerbohrer","4-Schneider"]},"shop":"Barkácsáruház, szerszámbolt, szakkereskedés."}},{"id":"card.rg.sds-max","type":"card","vol":"rg","kind":"furoszar","title":"SDS-max fúró","aka":["nagy fúrókalapács fúró"],"place":{"core":"1B"},"cubes":1,"bytes":532,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"SDS-max, 18 mm-es szár; nagy fúró- és vésőkalapácsokhoz.","mode":"Ütve fúrás, nagy átmérő és mélység.","for":["beton","vasbeton"],"sizes":"12–40 mm és nagyobb; áttörőfúrók","traps":["Nagy áttörés vasbetonban: statikus engedély és vaskeresés előtte."],"terms":{"hu":["SDS-max fúrószár"],"en":["SDS-max drill bit"],"de":["SDS-max Hammerbohrer"]},"shop":"Szakkereskedés, gépkölcsönző."}},{"id":"card.rg.hengeres-kozet","type":"card","vol":"rg","kind":"furoszar","title":"Hengeres szárú kőzetfúró","aka":["kőzetfúró","betonfúró ütvefúróhoz","falfúró"],"place":{"core":"1B"},"cubes":1,"bytes":669,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hengeres szár, tokmányba; ütvefúróhoz és fúrócsavarozóhoz.","mode":"Ütve (ütvefúró) tömör anyagban, ütés nélkül üreges anyagban.","for":["tomor-tegla","ureges-tegla","porusbeton","meszhomoktegla","salakblokk","valyog","vegyes-falazat","etics","beton"],"sizes":"3–16 mm","traps":["Betonban lassú és hamar kopik: ott SDS-plus a jó választás."],"terms":{"hu":["kőzetfúró 6 mm","falfúró készlet"],"en":["masonry drill bit"],"de":["Steinbohrer"]},"shop":"Barkácsáruház, vasbolt."}},{"id":"card.rg.hss","type":"card","vol":"rg","kind":"furoszar","title":"HSS fémfúró","aka":["csigafúró fémhez","HSS-G","kobaltos fúró"],"place":{"core":"1B"},"cubes":1,"bytes":606,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hengeres szár.","mode":"Ütés nélkül; fémben kis fordulat és hűtés (vágóolaj).","for":["trapezlemez","szendvicspanel","acelszerkezet","gipszkarton","gipszrost","fa","osb"],"sizes":"1–13 mm, nagyobb kivitelben is","traps":["Rozsdamentes acélhoz kobaltötvözetű (HSS-Co) fúró kell."],"terms":{"hu":["HSS fúrószár","kobaltos fúró inoxhoz"],"en":["HSS drill bit","cobalt drill bit"],"de":["HSS Bohrer","HSS-Co"]},"shop":"Barkácsáruház, vasbolt, szerszámbolt."}},{"id":"card.rg.fafuro","type":"card","vol":"rg","kind":"furoszar","title":"Fafúró","aka":["fa csigafúró","lapos fafúró","Forstner-fúró"],"place":{"core":"1B"},"cubes":1,"bytes":546,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hengeres vagy hatszög szár.","mode":"Ütés nélkül.","for":["fa","osb","gipszkarton","porusbeton","valyog"],"sizes":"3–40 mm; kábelátvezetéshez hosszú csigafúró","traps":["Gerendában a furat a középvonalban legyen, a tartó végeitől távol."],"terms":{"hu":["fa csigafúró hosszú","lapos fafúró"],"en":["auger bit","spade bit"],"de":["Schlangenbohrer","Flachfräsbohrer"]},"shop":"Barkácsáruház."}},{"id":"card.rg.csempefuro","type":"card","vol":"rg","kind":"furoszar","title":"Csempe- és üvegfúró","aka":["lándzsahegyű fúró","csempefúró"],"place":{"core":"1B"},"cubes":1,"bytes":532,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hengeres vagy hatszög szár, lándzsa alakú keményfém hegy.","mode":"Ütés nélkül, kis fordulattal; üvegnél vízhűtéssel.","for":["csempe","uveg"],"sizes":"3–12 mm","traps":["Greslaphoz (porcelán) gyémánt fúró kell, a lándzsahegy ott gyorsan kopik."],"terms":{"hu":["csempefúró 6 mm"],"en":["tile and glass drill bit"],"de":["Fliesen- und Glasbohrer"]},"shop":"Barkácsáruház."}},{"id":"card.rg.gyemant-korona","type":"card","vol":"rg","kind":"furoszar","title":"Gyémánt fúró és korona","aka":["gyémántfúró","gyémánt koronafúró","magfúró"],"place":{"core":"1B"},"cubes":1,"bytes":790,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Kisebb méretben hatszög vagy M14 menet sarokcsiszolóhoz; nagy koronák saját befogással, fúróállványra.","mode":"Ütés nélkül, hűtéssel (víz vagy a gyártó szerint szárazon).","for":["csempe","uveg","vasbeton","beton"],"sizes":"5–200 mm és nagyobb","traps":["Vasbeton áttörésnél a vasalás átvágása statikus engedélyt kér.","Szárazon túlmelegszik, ha nem arra készült."],"terms":{"hu":["gyémánt fúró greslaphoz","gyémánt koronafúró"],"en":["diamond drill bit","diamond core bit"],"de":["Diamantbohrer","Diamantbohrkrone"]},"shop":"Szakkereskedés, burkolóanyag-kereskedés, gépkölcsönző."}},{"id":"card.rg.dobozfuro","type":"card","vol":"rg","kind":"furoszar","title":"Dobozfúró korona","aka":["szerelvénydoboz fúró","keményfém korona 68"],"place":{"core":"1B"},"cubes":1,"bytes":702,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"SDS-plus vagy hatszög befogás, központfúróval.","mode":"Üreges téglában ütés nélkül, tömör anyagban a gyártó szerint.","for":["ureges-tegla","tomor-tegla","porusbeton","beton"],"sizes":"68 mm (szerelvénydoboz), 82 mm és mások","traps":["Üreges téglában ütve kitörik a belső borda.","Mélység: a doboz és a vakolat vastagsága szerint."],"terms":{"hu":["dobozfúró 68 mm","korona szerelvénydobozhoz"],"en":["68 mm core bit for socket boxes"],"de":["Dosensenker 68","Hohlbohrkrone"]},"shop":"Villamossági nagykereskedés, szerszámbolt."}},{"id":"card.rg.gk-korona","type":"card","vol":"rg","kind":"furoszar","title":"Gipszkarton körkivágó","aka":["gipszkarton koronafúró","dobozkivágó 68"],"place":{"core":"1B"},"cubes":1,"bytes":570,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hatszög szár, központfúróval.","mode":"Ütés nélkül, közepes fordulat.","for":["gipszkarton","gipszrost"],"sizes":"68 mm (üreges fali doboz), 74 mm (lámpa), mások","traps":["A profil mögött nem szabad dobozt tervezni: előtte meg kell keresni."],"terms":{"hu":["gipszkarton körkivágó 68"],"en":["drywall hole saw 68 mm"],"de":["Gipskarton Dosenbohrer 68"]},"shop":"Villamossági nagykereskedés, barkácsáruház."}},{"id":"card.rg.lepcsos","type":"card","vol":"rg","kind":"furoszar","title":"Lépcsős fúró és bimetál körkivágó","aka":["kúpos lépcsős fúró","körkivágó lemezhez"],"place":{"core":"1B"},"cubes":1,"bytes":603,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/furoszarak.json","card":{"shank":"Hengeres vagy hatszög szár.","mode":"Ütés nélkül, kis fordulat.","for":["trapezlemez","szendvicspanel"],"sizes":"lépcsős: 4–32 mm; bimetál körkivágó: 14–150 mm","traps":["A furat éle sorja: kábel átvezetéshez tömszelence vagy élvédő."],"terms":{"hu":["lépcsős fúró","bimetál körkivágó"],"en":["step drill","bi-metal hole saw"],"de":["Stufenbohrer","Bimetall-Lochsäge"]},"shop":"Barkácsáruház, szerszámbolt."}},{"id":"card.rg.furokalapacs","type":"card","vol":"rg","kind":"szerszam","title":"Fúrókalapács és ütvefúró","aka":["SDS-plus gép","ütvefúrógép","vésőkalapács"],"place":{"core":"1B"},"cubes":1,"bytes":862,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/szerszamok.json","card":{"what":"A fúrókalapács pneumatikus ütőművel dolgozik, SDS befogással: betonban gyors, és vésni is tud. Az ütvefúró mechanikus ütése tokmányos, csak kisebb furatokhoz jó téglában és betonban.","for":["beton","vasbeton","tomor-tegla","termesko","zsaluko","meszhomoktegla"],"use":"Üreges anyagban az ütést ki kell kapcsolni. Mélységütközővel pontos a dübelfurat.","traps":["Üreges téglában ütve tönkremegy a furat.","Vésés üzemmódban ne fúrj: forgás nélkül a fúró beszorul."],"terms":{"hu":["SDS-plus fúrókalapács","ütvefúrógép"],"en":["rotary hammer","hammer drill"],"de":["Bohrhammer","Schlagbohrmaschine"]},"shop":"Szerszámbolt, barkácsáruház, gépkölcsönző."}},{"id":"card.rg.vezetekkereso","type":"card","vol":"rg","kind":"szerszam","title":"Vezeték- és vaskereső","aka":["falszkenner","fémdetektor","vaskereső"],"place":{"core":"1B"},"cubes":1,"bytes":852,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/szerszamok.json","card":{"what":"Megjelöli a falban futó feszültség alatti vezetéket, a fémet (vasalás, cső) és a gipszkarton mögötti profilt vagy fát. A jobb műszerek mélységet is mutatnak.","for":["beton","vasbeton","ureges-fodempanel","gipszkarton","tomor-tegla","vegyes-falazat"],"use":"Fúrás előtt keresztben és hosszában is végigvinni a falon. Fürdő és konyha falában különösen.","traps":["Feszültségmentes vezetéket a feszültségkereső nem lát; nedves falban téves jelzés.","A mélység korlátozott: a mélyen futó cső rejtve maradhat."],"terms":{"hu":["falszkenner","vezetékkereső"],"en":["wall scanner","stud finder"],"de":["Ortungsgerät","Wandscanner"]},"shop":"Szerszámbolt, barkácsáruház."}},{"id":"card.rg.furattisztito","type":"card","vol":"rg","kind":"szerszam","title":"Furattisztító pumpa és kefe","aka":["kifúvó pumpa","furatkefe"],"place":{"core":"1B"},"cubes":1,"bytes":733,"added":"2026-11-21","file":"Kisokos/rogzitestechnika/szerszamok.json","card":{"what":"A furatból a port kifújja (kézi pumpa vagy sűrített levegő), a kefe leválasztja a falra tapadt port. A vegyi dübel és a betoncsavar csak tiszta furatban tart.","for":["beton","vasbeton","tomor-tegla","termesko","zsaluko"],"use":"A gyártó előírása szerint: fújás, kefélés, fújás, többször ismételve.","traps":["A furatban maradt por a vegyi dübel teherbírását jelentősen csökkenti."],"terms":{"hu":["kifúvó pumpa","furattisztító kefe"],"en":["blow-out pump","hole cleaning brush"],"de":["Ausblaspumpe","Reinigungsbürste"]},"shop":"Rögzítéstechnikai szakkereskedés."}},{"id":"src.rajztar","type":"source","vol":"el","color":"#e3a3c4","kind":"tudásbázis","title":"Rajztár","aka":[],"place":{"term":"6A1","overlap":0.7},"cubes":171,"bytes":174666,"added":"","file":"shared/rajztar/data","src":{"sub":"rajzjelek, dokumentumtípusok, formátumok, források","why":"A villamos rajz szabályai és jelei: nagyrészt a szakma magja, a formátumok és a forráslista már a saját világa.","paths":["shared/rajztar/data"],"files":5}},{"id":"src.keszlet","type":"source","vol":"ez","color":"#8bcca1","kind":"tudásbázis","title":"Készlet","aka":[],"place":{"term":"3A1","overlap":0.6},"cubes":130,"bytes":133074,"added":"","file":"Inventory/data/vrg-inventory.csv","src":{"sub":"az anyagkatalógus nagykereskedelmi árakkal","why":"A tételek többsége villanyszerelési anyag, de az árak, cikkszámok és rendelések a kereskedelem világához tartoznak.","paths":["Inventory/data/vrg-inventory.csv"],"files":1}},{"id":"src.coreref","type":"source","vol":"ez","color":"#7fc8b8","kind":"tudásbázis","title":"CoreRef","aka":[],"place":{"term":"7B2","overlap":0.25},"cubes":33,"bytes":33804,"added":"","file":"CoreRef/README.md · CoreRef/coreref-sources.json · CoreRef/docs","src":{"sub":"ESPHome és Home Assistant offline referencia","why":"Az okosotthon szoftveroldala: a szerelvényeken keresztül érinti a villanyszerelést, a nagyobb része a saját rendszere.","paths":["CoreRef/README.md","CoreRef/coreref-sources.json","CoreRef/docs"],"files":4}},{"id":"src.modulshop","type":"source","vol":"ez","color":"#c5d98a","kind":"tudásbázis","title":"Modulshop · BuildTree","aka":[],"place":{"term":"5B4","overlap":0.2},"cubes":66,"bytes":67337,"added":"","file":"Modder/vrg-buildtree-adatbazis-2026-10-13.txt · Modder/vrg-buildtree-keszlet-2026-10-09.txt","src":{"sub":"mikrovezérlők, modulok, alkatrészek","why":"A mikromodulok tudásának egy része (tápellátás, relék, érzékelők bekötése) metszi a villanyszerelést; a nagyobb része a mikroelektronika saját világa.","paths":["Modder/vrg-buildtree-adatbazis-2026-10-13.txt","Modder/vrg-buildtree-keszlet-2026-10-09.txt"],"files":2}}],"links":{},"stats":{"cards":53,"cubes":453,"coreCubes":50,"sources":4,"problems":0}};
+</script>
+<script>
+(function () {
+'use strict';
+document.documentElement.classList.add('mv'); document.documentElement.lang = 'hu';
+const $ = id => document.getElementById(id);
+const D = window.KISOKOS;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================= vectors */
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const len = a => Math.hypot(a[0], a[1], a[2]), norm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+const hashStr = str => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+/* ================= the space: core, axes, rings */
+const R = 1, S = 0.068;                         // core radius, cube edge (= grid step)
+const RING = [1.5, 2.05, 2.65, 3.3];            // term node distance per ring
+const FAR = 3.3 + 0.38;                          // axis end (label just past ring 4)
+const AXN = D ? D.axes.length : 8;
+// 8 axis directions spread evenly with their antipodes (deterministic repulsion), axis 1 pinned straight up
+function axisDirs(n) {
+  const r = rng(7), d = [[0, 1, 0]];
+  for (let i = 1; i < n; i++) d.push(norm([r() - .5, (r() - .5) * .6, r() - .5]));
+  for (let it = 0; it < 900; it++) {
+    const f = d.map(() => [0, 0, 0]);
+    for (let i = 1; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) for (const s of [1, -1]) {
+      const v = sub(d[i], mul(d[j], s)), l = len(v) + 1e-6; f[i] = add(f[i], mul(v, 1 / (l * l * l)));
+    }
+    for (let i = 1; i < n; i++) { const t = sub(f[i], mul(d[i], dot(f[i], d[i]))); d[i] = norm(add(d[i], mul(t, 0.01))); }
+  }
+  return d;
+}
+const DIR = axisDirs(AXN);
+const poleDir = (axis, pole) => pole === 'A' ? DIR[axis - 1] : mul(DIR[axis - 1], -1);
+const termPos = t => mul(poleDir(t.axis, t.pole), RING[t.ring - 1]);
+
+/* ================= cube forms: accretion on one shared grid */
+const occ = new Map();             // "i,j,k" -> cube index
+const cubes = [];                  // { p, item, order, inside }
+const key = (i, j, k) => i + ',' + j + ',' + k;
+const toW = g => [g[0] * S, g[1] * S, g[2] * S];
+const toG = p => [Math.round(p[0] / S), Math.round(p[1] / S), Math.round(p[2] / S)];
+const N6 = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+// grow n cubes from seed; cost(p) is the gravity (lower = preferred), ok(p) the allowed region
+function grow(seed, n, cost, ok, rnd) {
+  const out = [], fr = [], inF = new Set();
+  let g = toG(seed);
+  if (occ.has(key(...g)) || !ok(toW(g))) {   // seed taken: start from the nearest free allowed cell
+    let best = null, bd = 1e9;
+    for (let a = -6; a <= 6; a++) for (let b = -6; b <= 6; b++) for (let c = -6; c <= 6; c++) {
+      const q = [g[0] + a, g[1] + b, g[2] + c], w = toW(q);
+      if (!occ.has(key(...q)) && ok(w)) { const dd = a * a + b * b + c * c; if (dd < bd) { bd = dd; best = q; } }
+    }
+    if (!best) return out; g = best;
+  }
+  const push = q => { const k = key(...q); if (!inF.has(k) && !occ.has(k) && ok(toW(q))) { inF.add(k); fr.push(q); } };
+  const take = q => { occ.set(key(...q), cubes.length); out.push(q); for (const d of N6) push([q[0] + d[0], q[1] + d[1], q[2] + d[2]]); };
+  take(g);
+  // a cube can also join the side of a neighbouring form (the grid is shared), so forms touch but never overlap
+  while (out.length < n && fr.length) {
+    let bi = -1, bc = 1e9;
+    for (let s = 0; s < 18 && fr.length; s++) {
+      const i = (rnd() * fr.length) | 0, q = fr[i];
+      if (occ.has(key(...q))) { fr[i] = fr[fr.length - 1]; fr.pop(); s--; continue; }
+      const c = cost(toW(q)) + rnd() * S * 0.9;
+      if (c < bc) { bc = c; bi = i; }
+    }
+    if (bi < 0) break;
+    const q = fr[bi]; fr[bi] = fr[fr.length - 1]; fr.pop();
+    take(q);
+  }
+  return out;
+}
+const segDist = (p, a, b) => { const ab = sub(b, a), t = Math.max(0, Math.min(1, dot(sub(p, a), ab) / dot(ab, ab))); return len(sub(p, add(a, mul(ab, t)))); };
+
+let items = [], forms = [], terms = [];
+function layout() {
+  if (!D) return;
+  terms = D.terms.map(t => ({ ...t, p: termPos(t) }));
+  items = D.items.map((it, i) => ({ ...it, i, col: hex(it.color || (D.volumes.find(v => v.id === it.vol) || {}).color || '#93d3e6'), cubesIdx: [] }));
+  const sortKey = it => (it.added || '9999') + (it.type === 'card' ? '0' : '1') + it.id;
+  // groups: one form per core pole (core cards) and one per term node (cards or knowledge bases with their own identity)
+  const groups = new Map();
+  for (const it of items) {
+    const g = it.place.core ? 'core:' + it.place.core : 'term:' + it.place.term + (it.type === 'source' ? ':' + it.id : '');
+    (groups.get(g) || groups.set(g, []).get(g)).push(it);
+  }
+  const inside = p => len(p) <= R - S * 0.55, outside = p => len(p) >= R + S * 0.55;
+  // core forms first: they fill the sphere from the entry point inward
+  const order = [...groups.keys()].sort((a, b) => (a.startsWith('core') ? 0 : 1) - (b.startsWith('core') ? 0 : 1) || a.localeCompare(b));
+  for (const g of order) {
+    const list = groups.get(g).sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1);
+    const rnd = rng(hashStr(g));
+    const total = list.reduce((s, it) => s + it.cubes, 0);
+    let cellsIn = [], cellsOut = [], E, T = null;
+    if (g.startsWith('core')) {
+      const pl = list[0].place.core, dir = poleDir(+pl.slice(0, -1), pl.slice(-1));
+      E = mul(dir, R - S);
+      cellsIn = grow(E, total, p => len(sub(p, E)) + 0.25 * Math.max(0, len(p) - (R - S * 2)), inside, rnd);
+    } else {
+      const t = terms.find(x => x.id === list[0].place.term), dir = poleDir(t.axis, t.pole);
+      T = t.p; E = mul(dir, R);
+      const ov = list.reduce((s, it) => s + (it.place.overlap || 0) * it.cubes, 0) / total;
+      const nIn = Math.round(ov * total), nOut = total - nIn, hang = list[0].place.hang || 0;
+      if (nIn) cellsIn = grow(mul(dir, R - S), nIn, p => len(sub(p, E)), inside, rnd);
+      if (nOut) {
+        if (ov > 0) {   // a limb from the sphere wall out along the axis toward its node
+          const A0 = mul(dir, R + S);
+          cellsOut = grow(A0, nOut, p => 1.15 * segDist(p, A0, T) + 0.28 * len(sub(p, T)), outside, rnd);
+        } else {        // its own thing: a blob around the node (or hanging past it), never touching the core
+          const C = add(T, mul(dir, hang * 0.55));
+          cellsOut = grow(C, nOut, p => len(sub(p, C)), p => len(p) >= R + S * 3, rnd);
+        }
+      }
+    }
+    // hand the cells to the items in order: the cards most tied to the core take the inside cells first
+    const byIn = list.slice().sort((a, b) => ((b.place.overlap || (b.place.core ? 1 : 0)) - (a.place.overlap || (a.place.core ? 1 : 0))) || (sortKey(a) < sortKey(b) ? -1 : 1));
+    const queue = [...cellsIn.map(c => [c, true]), ...cellsOut.map(c => [c, false])];
+    let qi = 0;
+    for (const it of byIn) for (let k = 0; k < it.cubes && qi < queue.length; k++) {
+      const [c, ins] = queue[qi++], idx = cubes.length;
+      occ.set(key(...c), idx);
+      cubes.push({ p: toW(c), item: it.i, inside: ins, order: 0 });
+      it.cubesIdx.push(idx);
+    }
+    const all = queue.slice(0, qi).map(q => toW(q[0]));
+    const cen = all.length ? mul(all.reduce((s, p) => add(s, p), [0, 0, 0]), 1 / all.length) : E;
+    forms.push({ g, items: list.map(x => x.i), cen, T, E, ext: all.length ? Math.max(...all.map(p => len(sub(p, cen)))) : 0 });
+    for (const it of list) { const ps = it.cubesIdx.map(i => cubes[i].p); it.cen = ps.length ? mul(ps.reduce((s, p) => add(s, p), [0, 0, 0]), 1 / ps.length) : cen; it.T = T; }
+  }
+  // growth order for the animation: by date, then card before base, then the form's own order
+  const seq = items.slice().sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1);
+  let o = 0; for (const it of seq) for (const ci of it.cubesIdx) cubes[ci].order = o++;
+}
+
+/* ================= GL */
+let gl, progC, progL, progP, progS, buf = {}, cubeCount = 0, sphereN = 0;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); gl.attachShader(p, s); }
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+function attr(p, name, b, n, stride = 0, off = 0, div = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, n, gl.FLOAT, false, stride, off); gl.vertexAttribDivisor(l, div); }
+function unattr(p, names) { for (const n of names) { const l = gl.getAttribLocation(p, n); if (l >= 0) { gl.disableVertexAttribArray(l); gl.vertexAttribDivisor(l, 0); } } }
+const U = (p, n) => gl.getUniformLocation(p, n);
+
+const VS_CUBE = `#version 300 es
+in vec3 aV; in vec3 aPos; in vec3 aCol; in float aOrd; in float aSt;
+uniform mat4 uM; uniform float uGrow; uniform float uS;
+out vec3 vL; out vec3 vC; out float vA; out float vSt;
+void main() {
+  float t = clamp((uGrow - aOrd) / 6.0, 0.0, 1.0);
+  float e = 1.0 - pow(1.0 - t, 3.0);
+  vL = aV; vC = aCol; vA = e; vSt = aSt;
+  gl_Position = uM * vec4(aPos + aV * uS * 0.8 * e, 1.0);
+}`;
+const FS_CUBE = `#version 300 es
+precision highp float;
+in vec3 vL; in vec3 vC; in float vA; in float vSt; out vec4 o;
+void main() {
+  vec3 a = abs(vL);
+  float mx = max(a.x, max(a.y, a.z)), mn = min(a.x, min(a.y, a.z));
+  float mid = a.x + a.y + a.z - mx - mn;             // second largest: near 0.5 only on an edge
+  float edge = smoothstep(0.41, 0.49, mid);
+  float b = vSt > 1.5 ? 1.9 : vSt > 0.5 ? 0.62 : 0.16; // selected · normal · dimmed (additive: dense forms must not burn white)
+  vec3 c = vC * (0.035 + 0.75 * edge) * b;
+  o = vec4(c * vA, 1.0);
+}`;
+const VS_LINE = `#version 300 es
+in vec3 aPos; in vec4 aCol; in float aT;
+uniform mat4 uM; out vec4 vC; out float vT; out float vD;
+void main() { vC = aCol; vT = aT; vD = length(aPos); gl_Position = uM * vec4(aPos, 1.0); }`;
+const FS_LINE = `#version 300 es
+precision highp float;
+in vec4 vC; in float vT; in float vD; uniform float uTime; uniform float uFar; out vec4 o;
+void main() {
+  float a = vC.a;
+  if (vT > 0.5) {   // the selected axis: pulses flow outward, and past the ends it fades toward infinity
+    float flow = 0.72 + 0.28 * sin(vD * 9.0 - uTime * 3.2);
+    float fade = vD > uFar ? 0.25 + 0.75 * exp(-(vD - uFar) / 14.0) : 1.0;
+    a *= flow * fade;
+  }
+  o = vec4(vC.rgb * a, 1.0);
+}`;
+const VS_PT = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aSz; uniform mat4 uM; uniform float uPx; out vec3 vC;
+void main() { vC = aCol; gl_Position = uM * vec4(aPos, 1.0); gl_PointSize = uPx * aSz / max(0.6, gl_Position.w * 0.35); }`;
+const FS_PT = `#version 300 es
+precision highp float;
+in vec3 vC; out vec4 o;
+void main() { vec2 q = gl_PointCoord * 2.0 - 1.0; float r = dot(q, q); if (r > 1.0) discard;
+  float core = smoothstep(0.35, 0.0, r), halo = exp(-r * 3.2) * 0.45; o = vec4(vC * (core + halo), 1.0); }`;
+const VS_SPH = `#version 300 es
+in vec3 aPos; uniform mat4 uM; uniform vec3 uEye; out vec3 vN; out vec3 vV; out vec3 vP;
+void main() { vN = aPos; vP = aPos; vV = normalize(uEye - aPos); gl_Position = uM * vec4(aPos, 1.0); }`;
+const FS_SPH = `#version 300 es
+precision highp float;
+in vec3 vN; in vec3 vV; in vec3 vP; uniform vec3 uC; uniform float uTime; uniform float uFill; out vec4 o;
+void main() {
+  vec3 n = normalize(vN);
+  float f = pow(1.0 - abs(dot(n, normalize(vV))), 2.6);
+  float lat = asin(clamp(n.y, -1.0, 1.0)), lon = atan(n.z, n.x);
+  float g = max(smoothstep(0.035, 0.0, abs(fract(lat * 3.8197) - 0.5) - 0.465), smoothstep(0.035, 0.0, abs(fract(lon * 1.9099) - 0.5) - 0.465));
+  float scan = 0.5 + 0.5 * sin(vP.y * 14.0 - uTime * 1.4);
+  float a = 0.018 + f * 0.42 + g * (0.05 + 0.04 * scan) * (0.4 + f);
+  o = vec4(uC * a, 1.0);
+}`;
+
+function initGL() {
+  const cv = $('cv');
+  gl = cv.getContext('webgl2', { antialias: true, premultipliedAlpha: false });
+  if (!gl) { $('empty').style.display = 'grid'; $('empty').textContent = 'Ehhez a nézethez WebGL2 kell.'; return false; }
+  progC = prog(VS_CUBE, FS_CUBE); progL = prog(VS_LINE, FS_LINE); progP = prog(VS_PT, FS_PT); progS = prog(VS_SPH, FS_SPH);
+  // unit cube, 36 vertices, local coords in [-0.5, 0.5]
+  const F = [[[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[-1, 0, 0], [0, 0, 1], [0, 1, 0]], [[0, 1, 0], [0, 0, 1], [1, 0, 0]], [[0, -1, 0], [1, 0, 0], [0, 0, 1]], [[0, 0, 1], [1, 0, 0], [0, 1, 0]], [[0, 0, -1], [0, 1, 0], [1, 0, 0]]];
+  const cv36 = [];
+  for (const [nn, u, v] of F) { const c = mul(nn, .5), P = (a, b) => add(c, add(mul(u, a * .5), mul(v, b * .5))); for (const q of [P(-1, -1), P(1, -1), P(1, 1), P(-1, -1), P(1, 1), P(-1, 1)]) cv36.push(...q); }
+  buf.cube = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf.cube); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cv36), gl.STATIC_DRAW);
+  // sphere (lat-long triangles)
+  const sv = [], LA = 36, LO = 64;
+  const sp = (i, j) => { const th = Math.PI * i / LA, ph = 2 * Math.PI * j / LO; return [Math.sin(th) * Math.cos(ph) * R, Math.cos(th) * R, Math.sin(th) * Math.sin(ph) * R]; };
+  for (let i = 0; i < LA; i++) for (let j = 0; j < LO; j++) sv.push(...sp(i, j), ...sp(i + 1, j), ...sp(i + 1, j + 1), ...sp(i, j), ...sp(i + 1, j + 1), ...sp(i, j + 1));
+  sphereN = sv.length / 3;
+  buf.sph = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf.sph); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sv), gl.STATIC_DRAW);
+  // cube instances
+  cubeCount = cubes.length;
+  const pos = new Float32Array(cubeCount * 3), col = new Float32Array(cubeCount * 3), ord = new Float32Array(cubeCount);
+  cubes.forEach((c, i) => { pos.set(c.p, i * 3); const k = c.inside ? 1.12 : 1; col.set(mul(items[c.item].col, k), i * 3); ord[i] = c.order; });
+  for (const [n, a] of [['ipos', pos], ['icol', col], ['iord', ord]]) { buf[n] = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf[n]); gl.bufferData(gl.ARRAY_BUFFER, a, gl.STATIC_DRAW); }
+  buf.ist = gl.createBuffer(); stBuf = new Float32Array(cubeCount).fill(1); gl.bindBuffer(gl.ARRAY_BUFFER, buf.ist); gl.bufferData(gl.ARRAY_BUFFER, stBuf, gl.DYNAMIC_DRAW);
+  buf.lines = gl.createBuffer(); buf.pts = gl.createBuffer();
+  return true;
+}
+let stBuf;
+
+/* ================= camera */
+let cam = { yaw: 0.55, pitch: 0.28, dist: 8.2 }, spin = !RM, labelsOn = true;
+const CAM0 = () => ({ yaw: 0.55, pitch: 0.28, dist: innerWidth < 820 ? 12 : 8.2 });
+function eyeOf() { const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch); return [cam.dist * cp * sy, cam.dist * sp, cam.dist * cp * cy]; }
+function mat() {
+  const cv = $('cv'), asp = cv.width / cv.height, f = 1 / Math.tan(0.42), n = 0.05, fa = 400;
+  const P = [f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+  const eye = eyeOf(), zA = norm(eye), xA = norm(cross([0, 1, 0], zA)), yA = cross(zA, xA);
+  const V = [xA[0], yA[0], zA[0], 0, xA[1], yA[1], zA[1], 0, xA[2], yA[2], zA[2], 0, -dot(xA, eye), -dot(yA, eye), -dot(zA, eye), 1];
+  const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c * 4 + r] += P[k * 4 + r] * V[c * 4 + k];
+  return o;
+}
+function project(M, p) { const x = M[0] * p[0] + M[4] * p[1] + M[8] * p[2] + M[12], y = M[1] * p[0] + M[5] * p[1] + M[9] * p[2] + M[13], w = M[3] * p[0] + M[7] * p[1] + M[11] * p[2] + M[15]; return [x / w, y / w, w]; }
+function toScreen(M, p) { const cv = $('cv'), q = project(M, p); return [(q[0] * .5 + .5) * cv.clientWidth, (1 - (q[1] * .5 + .5)) * cv.clientHeight, q[2]]; }
+
+/* ================= state */
+let selAxis = 0, selItem = -1, selTerm = null, hoverItem = -1, volFilter = null, growT0 = 0, curM = null;
+const itemOnAxis = (it, n) => it.place.core ? +it.place.core.slice(0, -1) === n : +String(it.place.term).slice(0, -2) === n;
+
+function buildLines(ts) {
+  const L = [];   // x y z r g b a t
+  const seg = (a, b, c, al, t = 0) => L.push(...a, ...c, al, t, ...b, ...c, al, t);
+  const ice = [0.58, 0.83, 0.9], warm = hex('#e8a873');
+  for (let a = 1; a <= AXN; a++) {
+    const d = DIR[a - 1], on = a === selAxis;
+    if (on) {
+      const far = 220;
+      // three strands a hair apart read as one bright line; it runs from end to end and on out of both ends, into infinity
+      const o1 = mul(norm(cross(d, Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), 0.007), o2 = mul(norm(cross(d, o1)), 0.007);
+      for (const o of [[0, 0, 0], o1, o2]) {
+        seg(add(mul(d, -far), o), add(mul(d, -R), o), ice, 1.0, 1); seg(add(mul(d, R), o), add(mul(d, far), o), ice, 1.0, 1);
+      }
+      seg(mul(d, -R), mul(d, R), ice, 0.4, 0);
+    } else {
+      seg(mul(d, -FAR), mul(d, -R), ice, 0.16); seg(mul(d, R), mul(d, FAR), ice, 0.16);
+      seg(mul(d, -R), mul(d, R), ice, 0.035);
+    }
+  }
+  // tethers: a form with its own identity is tied to its term node
+  for (const f of forms) if (f.T) {
+    const its = f.items.map(i => items[i]), on = its.some(it => it.i === selItem) || its.some(it => itemOnAxis(it, selAxis));
+    seg(f.cen, f.T, its[0].col, on ? 0.45 : 0.16);
+  }
+  // the selected item: a line from each of its cubes' centre to where it gravitates
+  if (selItem >= 0) { const it = items[selItem]; if (it.T) seg(it.cen, it.T, [1, 1, 1], 0.6); }
+  const pts = [];  // x y z r g b size
+  for (const t of terms) {
+    const on = t.axis === selAxis, isSel = selTerm && selTerm.id === t.id;
+    const vc = hex((D.volumes.find(v => v.id === t.vols[0]) || {}).color || '#93d3e6');
+    const c = isSel ? [1, 1, 1] : on ? add(mul(ice, 0.75), mul(vc, 0.35)) : mul(add(mul(ice, 0.5), mul(vc, 0.3)), 0.6);
+    pts.push(...t.p, ...c, isSel ? 2.3 : on ? 1.55 : 0.95);
+  }
+  for (let a = 1; a <= AXN; a++) for (const s of [1, -1]) {   // entry points on the sphere wall
+    const on = a === selAxis; pts.push(...mul(DIR[a - 1], R * s), ...mul(warm, on ? 0.9 : 0.35), on ? 1.4 : 0.8);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.lines); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(L), gl.STREAM_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pts); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pts), gl.STREAM_DRAW);
+  return [L.length / 8, pts.length / 7];
+}
+function updateStates() {
+  for (const it of items) {
+    let s = 1;
+    if (volFilter && it.vol !== volFilter) s = 0;
+    else if (selItem >= 0) s = it.i === selItem ? 2 : 0.6;
+    else if (selAxis && !itemOnAxis(it, selAxis)) s = 0.6;
+    if (hoverItem === it.i && s < 2) s = Math.max(s, 1.6);
+    for (const ci of it.cubesIdx) stBuf[ci] = s >= 1.6 ? 2 : s >= 1 ? 1 : 0;
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.ist); gl.bufferSubData(gl.ARRAY_BUFFER, 0, stBuf);
+}
+
+/* ================= labels */
+const labelEls = [];
+function labelPool(n) { const box = $('labels'); while (labelEls.length < n) { const d = document.createElement('div'); box.appendChild(d); labelEls.push(d); } }
+function drawLabels(M) {
+  const L = [];
+  L.push({ p: [0, 0, 0], cls: 'lb core', html: `${esc(D.core.title)}<small>${esc(D.core.sub)}</small>` });
+  if (labelsOn) {
+    for (let a = 1; a <= AXN; a++) for (const pole of ['A', 'B']) {
+      const ax = D.axes[a - 1], on = a === selAxis;
+      L.push({ p: mul(poleDir(a, pole), FAR + 0.22), cls: 'lb pole' + (on ? ' on' : ''), html: esc(ax[pole]) });
+    }
+    for (const t of terms) if (t.axis === selAxis || (selTerm && selTerm.id === t.id)) L.push({ p: t.p, cls: 'lb term', html: `${esc(t.title)}<small>${t.ring}</small>`, off: 14 });
+    for (const it of items) if (it.type === 'source') { const out = it.cubesIdx.map(i => cubes[i].p).filter(p => len(p) > R), tip = out.length ? out.reduce((a, p) => len(p) > len(a) ? p : a) : it.cen;
+      L.push({ p: add(tip, mul(norm(tip), 0.22)), cls: 'lb src', html: `${esc(it.title)}<small>${it.cubes} kocka · ${Math.round((it.place.overlap || 0) * 100)} % a magban</small>` }); }
+  }
+  labelPool(L.length);
+  const cv = $('cv');
+  labelEls.forEach((el, i) => {
+    const l = L[i];
+    if (!l) { el.style.display = 'none'; return; }
+    const s = toScreen(M, l.p);
+    if (s[2] <= 0 || s[0] < -60 || s[1] < -30 || s[0] > cv.clientWidth + 60 || s[1] > cv.clientHeight + 30) { el.style.display = 'none'; return; }
+    el.style.display = ''; el.className = l.cls; if (el._h !== l.html) { el.innerHTML = l.html; el._h = l.html; }
+    el.style.left = (s[0] + (l.off || 0)) + 'px'; el.style.top = (s[1] + (l.dy || 0)) + 'px';
+    el.style.transform = l.off ? 'translate(0, -50%)' : 'translate(-50%, -50%)';
+  });
+}
+
+/* ================= frame */
+let last = 0, dragging = false;
+function frame(ts) {
+  const dt = Math.min(100, ts - last); last = ts;
+  if (spin && !dragging) cam.yaw += dt * 0.00005;
+  const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = cv.clientWidth * dpr | 0, H = cv.clientHeight * dpr | 0;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  gl.viewport(0, 0, W, H); gl.clearColor(0.031, 0.063, 0.09, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  const M = mat(); curM = M;
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.disable(gl.DEPTH_TEST);
+  // the core sphere
+  gl.useProgram(progS);
+  gl.uniformMatrix4fv(U(progS, 'uM'), false, M); gl.uniform3fv(U(progS, 'uEye'), eyeOf()); gl.uniform3fv(U(progS, 'uC'), hex('#e8a873'));
+  gl.uniform1f(U(progS, 'uTime'), ts / 1000);
+  attr(progS, 'aPos', buf.sph, 3); gl.drawArrays(gl.TRIANGLES, 0, sphereN); unattr(progS, ['aPos']);
+  // axes, tethers, term nodes
+  const [nl, np] = buildLines(ts);
+  gl.useProgram(progL); gl.uniformMatrix4fv(U(progL, 'uM'), false, M); gl.uniform1f(U(progL, 'uTime'), ts / 1000); gl.uniform1f(U(progL, 'uFar'), FAR);
+  attr(progL, 'aPos', buf.lines, 3, 32, 0); attr(progL, 'aCol', buf.lines, 4, 32, 12); attr(progL, 'aT', buf.lines, 1, 32, 28);
+  gl.drawArrays(gl.LINES, 0, nl); unattr(progL, ['aPos', 'aCol', 'aT']);
+  gl.useProgram(progP); gl.uniformMatrix4fv(U(progP, 'uM'), false, M); gl.uniform1f(U(progP, 'uPx'), 13 * dpr);
+  attr(progP, 'aPos', buf.pts, 3, 28, 0); attr(progP, 'aCol', buf.pts, 3, 28, 12); attr(progP, 'aSz', buf.pts, 1, 28, 24);
+  gl.drawArrays(gl.POINTS, 0, np); unattr(progP, ['aPos', 'aCol', 'aSz']);
+  // the cubes
+  const grown = RM ? 1e9 : (ts - growT0) / 1000 * Math.max(60, cubeCount / 5.5);   // the whole growth takes about 6 s
+  gl.useProgram(progC); gl.uniformMatrix4fv(U(progC, 'uM'), false, M); gl.uniform1f(U(progC, 'uGrow'), grown); gl.uniform1f(U(progC, 'uS'), S);
+  attr(progC, 'aV', buf.cube, 3); attr(progC, 'aPos', buf.ipos, 3, 0, 0, 1); attr(progC, 'aCol', buf.icol, 3, 0, 0, 1); attr(progC, 'aOrd', buf.iord, 1, 0, 0, 1); attr(progC, 'aSt', buf.ist, 1, 0, 0, 1);
+  gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, cubeCount); unattr(progC, ['aV', 'aPos', 'aCol', 'aOrd', 'aSt']);
+  drawLabels(M);
+  requestAnimationFrame(frame);
+}
+
+/* ================= picking */
+function pick(x, y) {
+  if (!curM) return null;
+  let best = null, bd = 14 * 14;
+  for (let i = 0; i < cubes.length; i++) { const s = toScreen(curM, cubes[i].p); if (s[2] <= 0) continue; const d = (s[0] - x) ** 2 + (s[1] - y) ** 2; if (d < bd) { bd = d; best = { item: cubes[i].item }; } }
+  for (const t of terms) { const s = toScreen(curM, t.p); if (s[2] <= 0) continue; const d = (s[0] - x) ** 2 + (s[1] - y) ** 2; if (d < bd * 0.9) { bd = d; best = { term: t }; } }
+  return best;
+}
+
+/* ================= panel */
+const VOL = id => (D.volumes.find(v => v.id === id) || { hu: id, color: '#93d3e6' });
+const cardName = (vol, id) => { const it = items.find(x => x.type === 'card' && x.vol === vol && x.id === `card.${vol}.${id}`); return it ? it.title : id; };
+const refs = (vol, ids) => (ids || []).length ? ids.map(r => `<button class="ref" data-ref="card.${esc(vol)}.${esc(r)}">${esc(cardName(vol, r))}</button>`).join(', ') : '—';
+const HAMMER = { igen: ['yes', 'ütve fúrható'], nem: ['no', 'ütés nélkül'], 'óvatosan': ['mid', 'óvatosan, ütés nélkül kezdve'] };
+function whereText(it) {
+  if (it.place.core) { const a = D.axes[+it.place.core.slice(0, -1) - 1], pole = it.place.core.slice(-1); return `A magban, a(z) ${a.hu} tengely „${a[pole]}” belépési pontjánál`; }
+  const t = terms.find(x => x.id === it.place.term), a = D.axes[t.axis - 1];
+  return `${t.title} csomópont (${a.hu} · ${a[t.pole]}, ${t.ring}. gyűrű) · ${Math.round((it.place.overlap || 0) * 100)} % a magban`;
+}
+function row(k, v) { return v ? `<div class="row"><span>${esc(k)}</span><div>${v}</div></div>` : ''; }
+function showItem(i) {
+  selItem = i; selTerm = null; const it = items[i], c = it.card || {};
+  const v = VOL(it.vol);
+  let h = `<div class="kick"><span class="sw" style="background:${esc(it.color || v.color)};margin-right:6px"></span>${esc(v.hu)} · ${esc(it.kind)}</div><div class="title">${esc(it.title)}</div>`;
+  if (it.aka && it.aka.length) h += `<div class="hint">más néven: ${esc(it.aka.join(', '))}</div>`;
+  if (it.type === 'source') {
+    h += row('Mi ez', esc(it.src.sub)) + row('Miért itt', esc(it.src.why)) + row('Forrás', esc(it.src.paths.join(' · ')) + ` <span class="hint">(${it.src.files} fájl)</span>`);
+  } else if (it.kind === 'anyag') {
+    const hm = HAMMER[c.drill.hammer] || ['', c.drill.hammer];
+    h += row('Felismerés', esc(c.recognise));
+    h += row('Fúrás', `<span class="pill ${hm[0]}">${esc(hm[1])}</span> ${refs(it.vol, c.drill.bits)}<div class="hint">${esc(c.drill.note || '')}</div>`);
+    h += row('Dübel terhelés szerint', `könnyű: ${refs(it.vol, c.anchors.light)}<br>közepes: ${refs(it.vol, c.anchors.medium)}<br>nehéz: ${refs(it.vol, c.anchors.heavy)}<div class="hint">${esc(c.anchors.note || '')}</div>`);
+    h += row('Csavar', refs(it.vol, c.screws));
+  } else {
+    h += row('Hogyan tart', esc(c.holds)) + row('Befogás', esc(c.shank)) + row('Üzemmód', esc(c.mode)) + row('Mi ez', esc(c.what)) + row('Menet', esc(c.thread)) + row('Fej', esc(c.head));
+    if (c.for) h += row('Mibe', refs(it.vol, c.for));
+    if (c.with && c.with.length) h += row('Dübelhez', refs(it.vol, c.with));
+    h += row('Fúrás', esc(c.drill)) + row('Csavar', esc(c.screw)) + row('Méretek', esc(c.sizes)) + row('Használat', esc(c.use));
+  }
+  if (c.traps && c.traps.length) h += row('Buktatók', '<ul>' + c.traps.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+  if (c.terms) h += row('Keresőszavak', ['hu', 'en', 'de'].map(l => `<div class="terms"><span style="background:none;color:var(--faint)">${l.toUpperCase()}</span>${c.terms[l].map(t => `<span>${esc(t)}</span>`).join('')}</div>`).join(''));
+  if (c.shop) h += row('Hol kapható', esc(c.shop));
+  h += row('Hol van', esc(whereText(it)));
+  h += row('Méret', `${it.cubes} kocka · ${(it.bytes / 1024).toFixed(1).replace('.', ',')} KB${it.type === 'card' ? (c.reviewed ? ' · ellenőrizve' : ' · vázlat, ellenőrzésre vár') : ''}`);
+  h += row('Fájl', `<span style="font:11px var(--mono)">${esc(it.file)}</span>`);
+  const ln = (D.links || {})[it.id];
+  if (ln && ln.length) h += row('A Stackben', ln.map(l => `<span class="nb"><b>${esc(l[2])}</b> ${esc(l[1])}</span>`).join(''));
+  $('card').innerHTML = h;
+  $('card').querySelectorAll('[data-ref]').forEach(b => b.addEventListener('click', () => { const j = items.findIndex(x => x.id === b.dataset.ref); if (j >= 0) select({ item: j }); }));
+  renderLists();
+}
+function showTerm(t) {
+  selTerm = t; selItem = -1;
+  const a = D.axes[t.axis - 1], near = items.filter(it => it.place.term === t.id);
+  $('card').innerHTML = `<div class="kick">${esc(a.hu)} · ${esc(a[t.pole])} · ${t.ring}. gyűrű</div><div class="title">${esc(t.title)}</div>` +
+    row('Mi ez', esc(t.desc)) + row('Kötet', t.vols.map(v => `<span class="sw" style="background:${VOL(v).color};margin-right:4px"></span>${esc(VOL(v).hu)}`).join(' · ')) +
+    row('Gyűrű', esc((D.rings[t.ring - 1] || {}).hu)) +
+    row('Ide gravitál', near.length ? near.map(it => `<button class="ref" data-i="${it.i}">${esc(it.title)}</button>`).join(', ') : '<span class="hint">még semmi: ennek a fogalomnak nincs kártyája</span>');
+  $('card').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => select({ item: +b.dataset.i })));
+  renderLists();
+}
+function showAxis(n) {
+  const a = D.axes[n - 1], ts = terms.filter(t => t.axis === n), its = items.filter(it => itemOnAxis(it, n));
+  const lad = p => ts.filter(t => t.pole === p).sort((x, y) => p === 'A' ? y.ring - x.ring : x.ring - y.ring).map(t => `<button class="ref" data-t="${t.id}">${esc(t.title)}</button>`).join(' · ');
+  $('card').innerHTML = `<div class="kick">Tengely ${n} / ${AXN}</div><div class="title">${esc(a.hu)}</div><div class="hint">${esc(a.q)}</div>` +
+    row('↑ ' + a.A, lad('A')) + row('↓ ' + a.B, lad('B')) +
+    row('Kocka ezen a tengelyen', `${its.reduce((s, it) => s + it.cubes, 0)} kocka · ${its.length} elem`);
+  $('card').querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => select({ term: terms.find(t => t.id === b.dataset.t) })));
+}
+function select(s) {
+  if (s.item !== undefined) showItem(s.item);
+  else if (s.term) { selAxis = s.term.axis; showTerm(s.term); }
+  updateStates(); renderAxes();
+}
+function renderAxes() {
+  $('axes').innerHTML = D.axes.map(a => `<button class="ax${a.n === selAxis ? ' on' : ''}" data-ax="${a.n}"><b>${a.n}</b><span>${esc(a.hu)}<small>${esc(a.A)} ↔ ${esc(a.B)}</small></span></button>`).join('');
+  $('axes').querySelectorAll('[data-ax]').forEach(b => b.addEventListener('click', () => {
+    const n = +b.dataset.ax; selAxis = selAxis === n ? 0 : n; selItem = -1; selTerm = null;
+    if (selAxis) showAxis(selAxis); else $('card').innerHTML = '<div class="hint">Kattints egy tengelyre, egy kockára vagy a listában egy elemre.</div>';
+    updateStates(); renderAxes(); renderLists();
+  }));
+}
+function renderLists() {
+  const core = items.filter(it => it.place.core), out = items.filter(it => it.type === 'card' && !it.place.core), src = items.filter(it => it.type === 'source');
+  const li = it => `<button class="it${it.i === selItem ? ' on' : ''}" data-i="${it.i}"><span class="sw" style="background:${esc(it.color || VOL(it.vol).color)}"></span><span class="t">${esc(it.title)}</span><span class="n">${it.cubes}</span></button>`;
+  const byPole = {};
+  for (const it of core) (byPole[it.place.core] = byPole[it.place.core] || []).push(it);
+  let h = '';
+  for (const [p, list] of Object.entries(byPole)) { const a = D.axes[+p.slice(0, -1) - 1]; h += `<div class="grp">A mag · ${esc(a.hu)} → ${esc(a[p.slice(-1)])} (${list.reduce((s, x) => s + x.cubes, 0)} kocka)</div>` + list.map(li).join(''); }
+  if (out.length) h += `<div class="grp">Kifelé, saját csomópontnál</div>` + out.map(li).join('');
+  if (src.length) h += `<div class="grp">Tudásbázisok a Kisokoson kívül</div>` + src.map(li).join('');
+  $('items').innerHTML = h;
+  $('items').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => select({ item: +b.dataset.i })));
+}
+
+/* ================= start */
+function start() {
+  if (!D) { $('empty').style.display = 'grid'; return; }
+  layout();
+  if (!initGL()) return;
+  const coreCubes = cubes.filter(c => c.inside).length, cap = Math.round((4 / 3) * Math.PI * R ** 3 / S ** 3);
+  $('stat').textContent = `${D.stats.cards} kártya · ${D.items.length - D.stats.cards} tudásbázis · ${cubes.length} kocka · a mag ${coreCubes} / ~${cap} kockával telt (${(coreCubes / cap * 100).toFixed(1).replace('.', ',')} %)`;
+  $('lgVol').innerHTML = D.volumes.filter(v => items.some(it => it.vol === v.id && it.type === 'card')).map(v => `<div class="k" style="cursor:pointer" data-v="${v.id}"><span class="sw" style="background:${v.color}"></span><span>${esc(v.hu)} (${v.n} kártya)</span></div>`).join('') +
+    items.filter(it => it.type === 'source').map(it => `<div class="k"><span class="sw" style="background:${esc(it.color)}"></span><span>${esc(it.title)}</span></div>`).join('');
+  $('lgVol').querySelectorAll('[data-v]').forEach(el => el.addEventListener('click', () => { volFilter = volFilter === el.dataset.v ? null : el.dataset.v; updateStates(); }));
+  cam = CAM0(); selAxis = 0;
+  if (innerWidth < 820) $('lg').open = false;   // on a phone the legend would cover the scene
+  renderAxes(); renderLists(); updateStates();
+  growT0 = performance.now();
+  const cv = $('cv');
+  let down = null;
+  cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; down = { x: e.clientX, y: e.clientY, moved: false }; dragging = true; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    if (down) {
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) down.moved = true;
+      cam.yaw -= dx * 0.006; cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch + dy * 0.006)); down.x = e.clientX; down.y = e.clientY; return;
+    }
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, p = pick(x, y), tip = $('tip');
+    const hi = p && p.item !== undefined ? p.item : -1;
+    if (hi !== hoverItem) { hoverItem = hi; updateStates(); }
+    if (!p) { tip.style.display = 'none'; return; }
+    if (p.item !== undefined) { const it = items[p.item]; tip.innerHTML = `<b>${esc(it.title)}</b><span class="m">${esc(VOL(it.vol).hu)} · ${it.cubes} kocka · ${esc(whereText(it))}</span>`; }
+    else { const a = D.axes[p.term.axis - 1]; tip.innerHTML = `<b>${esc(p.term.title)}</b><span class="m">${esc(a.hu)} · ${esc(a[p.term.pole])} · ${p.term.ring}. gyűrű</span>`; }
+    tip.style.display = 'block'; tip.style.left = Math.min(x + 14, cv.clientWidth - 330) + 'px'; tip.style.top = (y + 14) + 'px';
+  });
+  const up = e => {
+    if (e.pointerType === 'touch' || !down) return;
+    const wasClick = !down.moved; down = null; dragging = false; cv.classList.remove('drag');
+    if (wasClick) { const r = cv.getBoundingClientRect(), p = pick(e.clientX - r.left, e.clientY - r.top); if (p) select(p); }
+  };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('pointerleave', () => { $('tip').style.display = 'none'; if (hoverItem >= 0) { hoverItem = -1; updateStates(); } });
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(2.2, Math.min(30, cam.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam = CAM0(); });
+  if (window.StackTouch) window.StackTouch.attach(cv, {
+    orbit: (dx, dy) => { cam.yaw -= dx * 0.006; cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch + dy * 0.006)); },
+    zoom: f => { cam.dist = Math.max(2.2, Math.min(30, cam.dist / f)); },
+    tap: (x, y) => { const p = pick(x, y); if (p) select(p); }, long: (x, y) => { const p = pick(x, y); if (p) select(p); },
+    dbl: () => { cam = CAM0(); }, dragging: on => { dragging = on; },
+  });
+  $('bSpin').classList.toggle('on', spin);
+  $('bSpin').addEventListener('click', () => { spin = !spin; $('bSpin').classList.toggle('on', spin); });
+  $('bLab').addEventListener('click', () => { labelsOn = !labelsOn; $('bLab').classList.toggle('on', labelsOn); });
+  $('bGrow').addEventListener('click', () => { growT0 = performance.now(); });
+  requestAnimationFrame(frame);
+}
+start();
+})();
+</script>
+

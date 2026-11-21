@@ -9,7 +9,7 @@
 // Each check returns a list of problems; an empty list means the record is valid.
 'use strict';
 
-const LAYER = /^[FIQLAURCGEZ]$/;
+const LAYER = /^[FIQLAURCGKEZ]$/;
 const ISO = /^\d{4}-\d\d-\d\d/;
 
 function checkNode(n) {

@@ -5,6 +5,7 @@
   {"id":"planner","name":"Planner","area":"Planner","thread":"planner","words":["planner","varler planner"],"paths":["Planner"],"ids":["L:pcore","L:views","L:pwf"]},
   {"id":"mindmap","name":"MindMap","area":"Seeing the work, network","thread":"mindmap","words":["mindmap"],"paths":["MindMap"],"ids":[]},
   {"id":"inventory","name":"Inventory · Készlet","area":"Money path and data","thread":"inventory","words":["inventory","keszlet"],"paths":["Inventory"],"ids":[]},
+  {"id":"kisokos","name":"VRG Kisokos","area":"Wiring and jobs","thread":"","words":["kisokos","rögzítéstechnika","rogzitestechnika"],"paths":["Kisokos","docs/kisokos","Stack/kisokos.html"],"ids":["K:core","K:vol.rg"]},
   {"id":"buildtree","name":"BuildTree · Modulshop","area":"Money path and data","thread":"buildtree","words":["buildtree","modulshop","modder"],"paths":["Modder"],"ids":[]},
   {"id":"calculator","name":"Calculators","area":"Money path and data","thread":"calc","words":["calculator","kalkulator"],"paths":["Calculator"],"ids":[]},
   {"id":"toolbox","name":"Toolbox","area":"Money path and data","thread":"tools","words":["toolbox"],"paths":["Toolbox","toolbox.html"],"ids":[]},
