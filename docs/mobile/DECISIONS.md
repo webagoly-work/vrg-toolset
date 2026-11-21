@@ -819,7 +819,9 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   named as withheld. Rejected: the package's photo files (full size, GPS where kept, markup copies).
 - **D-124 · F9: *Az ügyfélnek* drops the Tisztázandó notes and the Ellenőrizni lines only (M54), 2026-11-21.** Kept: the
   Döntésre vár list and the open questions (the client is the one who answers them). A switch in the dialog, off each
-  time it opens (a report for the client is a deliberate choice). Rejected: remembering it per phone.
+  time it opens (a report for the client is a deliberate choice). Rejected: remembering it per phone. **Answered 2026-11-21: A**:
+  the client's name stays under D-82 in this mode too (in the report only when *A kiadott csomagban marad* is on). Rejected:
+  **B** always in the client's report.
 - **D-125 · F9: photos at 1200 px, JPEG 80, in the export cache (M54), 2026-11-21.** Sharp at a third of A4 and about
   150 KB each (40 photos ≈ 6 MB of HTML); signatures as PNG; `cache/sketch/report/` is emptied at the next report.
 - **D-126 · F9: PDF through the system print dialog; over 15 MB Átadás warns and offers it (M54), 2026-11-21.**
