@@ -1,0 +1,45 @@
+{
+  "kind": "vrg-fuzet-kit", "v": 1,
+  "id": "munka", "name": "Munka", "sym": "⚒", "color": "#e8a873",
+  "about": "A napi villanyszerelői munka röviden: munkák, mérések határértékkel, anyag, munkaidő. A felmérés a VRG Sketcherben marad; ez a gyors napló mellé.",
+  "types": [
+    { "id": "munka", "label": "Munka", "sym": "⚒", "fields": [
+      { "id": "nev", "label": "Munka neve vagy kódja", "kind": "text", "required": true },
+      { "id": "allapot", "label": "Állapot", "kind": "choice", "options": ["felmérés", "ajánlat", "folyamatban", "kész", "számlázva"] }
+    ] },
+    { "id": "szigeteles", "label": "Szigetelési ellenállás", "sym": "Ω", "fields": [
+      { "id": "aramkor", "label": "Áramkör", "kind": "text", "required": true },
+      { "id": "ertek", "label": "Mért érték", "kind": "number", "unit": "MΩ", "required": true, "min": 1.0 }
+    ] },
+    { "id": "rcd", "label": "Áramvédő kioldási idő", "sym": "⏱", "fields": [
+      { "id": "aramkor", "label": "Áramkör", "kind": "text", "required": true },
+      { "id": "ertek", "label": "Kioldási idő IΔn-nél", "kind": "number", "unit": "ms", "required": true, "max": 300 }
+    ] },
+    { "id": "anyag", "label": "Anyag", "sym": "▣", "fields": [
+      { "id": "nev", "label": "Anyag", "kind": "text", "required": true },
+      { "id": "db", "label": "Mennyiség", "kind": "number", "required": true },
+      { "id": "egyseg", "label": "Egység", "kind": "choice", "options": ["db", "m", "csomag", "doboz"] }
+    ] },
+    { "id": "ido", "label": "Munkaidő", "sym": "◷", "fields": [
+      { "id": "perc", "label": "Időtartam", "kind": "number", "unit": "perc", "required": true },
+      { "id": "munka", "label": "Melyik munka", "kind": "text" }
+    ] }
+  ],
+  "chips": [
+    { "id": "ugyfel-ker", "label": "Ügyfél kéri", "sym": "★", "tag": "ügyfél" },
+    { "id": "hiany", "label": "Hiányzik anyag", "sym": "▣", "type": "anyag", "tag": "beszerezni" },
+    { "id": "visszamenni", "label": "Vissza kell menni", "sym": "↺", "open": true }
+  ],
+  "views": [
+    { "id": "naplo", "label": "Napló", "sym": "▤", "kind": "timeline" },
+    { "id": "munkak", "label": "Munkák", "sym": "⚒", "kind": "tally", "types": ["munka"], "by": "field:allapot" },
+    { "id": "meresek", "label": "Mérések", "sym": "Ω", "kind": "list", "types": ["szigeteles", "rcd"] },
+    { "id": "ora", "label": "Munkaidő", "sym": "◷", "kind": "tally", "types": ["ido"], "by": "week", "sum": "perc" },
+    { "id": "anyagok", "label": "Anyagok", "sym": "▣", "kind": "tally", "types": ["anyag"], "by": "field:nev", "sum": "db" }
+  ],
+  "rules": [],
+  "keywords": [
+    { "id": "beszerez", "re": "\\bvenni kell|\\bbeszerez|\\belfogyott|\\bnincs (több|eleg|elég)", "suggest": { "tag": "beszerezni" } },
+    { "id": "szamla", "re": "\\bszámla|\\bszamla|\\bfizet", "suggest": { "tag": "pénz" } }
+  ]
+}

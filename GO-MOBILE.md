@@ -102,6 +102,10 @@ What changes locally compared with the cloud:
 - **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
   "Telefonon ellenőrizni" (11 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
   `kit-core/MapPhone.kt`.
+- **M46** VRG Füzet built 2026-11-21 (cloud session, D-55 … D-59 taken as defaults), **BETA**: the malleable notebook
+  forked from the Sketcher's engine, applications as kits in `Mobile/notebook/kits` (format and agent steps:
+  `Mobile/notebook/PROTOCOL.md`). `docs/mobile/WP/M46.md` → "Telefonon ellenőrizni" (15 steps). `notebook-core` tests
+  in `mobile.cmd test` and Actions.
 
 ## 3. What the user asked for, mapped to WPs
 

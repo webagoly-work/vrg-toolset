@@ -1,0 +1,34 @@
+{
+  "kind": "vrg-fuzet-kit", "v": 1,
+  "id": "otthon", "name": "Otthon", "sym": "⌂", "color": "#8bcca1",
+  "about": "A ház: mérőórák havonta, karbantartás határidővel, bevásárlólista.",
+  "types": [
+    { "id": "meroora", "label": "Mérőóra", "sym": "◔", "fields": [
+      { "id": "ora", "label": "Melyik óra", "kind": "choice", "options": ["villany", "gáz", "víz"], "required": true },
+      { "id": "allas", "label": "Állás", "kind": "number", "required": true }
+    ] },
+    { "id": "karbantartas", "label": "Karbantartás", "sym": "⚙", "checkable": true, "fields": [
+      { "id": "mit", "label": "Mit", "kind": "text", "required": true },
+      { "id": "kovetkezo", "label": "Esedékes", "kind": "date", "due": true }
+    ] },
+    { "id": "venni", "label": "Bevásárlás", "sym": "☐", "checkable": true, "fields": [
+      { "id": "mit", "label": "Mit", "kind": "text", "required": true },
+      { "id": "db", "label": "Mennyi", "kind": "number" }
+    ] }
+  ],
+  "chips": [
+    { "id": "surgos", "label": "Sürgős", "sym": "!", "tag": "sürgős" }
+  ],
+  "views": [
+    { "id": "venni", "label": "Bevásárlás", "sym": "☐", "kind": "checklist", "types": ["venni"] },
+    { "id": "karbantartas", "label": "Karbantartás", "sym": "⚙", "kind": "checklist", "types": ["karbantartas"] },
+    { "id": "orak", "label": "Mérőórák", "sym": "◔", "kind": "tally", "types": ["meroora"], "by": "field:ora" },
+    { "id": "naplo", "label": "Napló", "sym": "▤", "kind": "timeline" }
+  ],
+  "rules": [
+    { "id": "havi-ora", "kind": "stale", "type": "meroora", "days": 31, "label": "Havi mérőóra-leolvasás" }
+  ],
+  "keywords": [
+    { "id": "elromlott", "re": "\\belromlott|\\bnem m(ű|u)k(ö|o)dik|\\bcsöpög|\\bcsopog", "suggest": { "type": "karbantartas" } }
+  ]
+}

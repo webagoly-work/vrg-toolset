@@ -132,7 +132,7 @@ echo.
 pushd "%ANDROID_DIR%"
 :: kit-core and airdeck-core are plain Kotlin modules; --configure-on-demand keeps the Android
 :: module out of it, so this runs without the Android SDK
-call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test
+call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :notebook-core:test
 set "RC=%ERRORLEVEL%"
 popd
 :: WP M16: kit\...\theme\KitTokens.kt must still match the VRG UI Kit tokens

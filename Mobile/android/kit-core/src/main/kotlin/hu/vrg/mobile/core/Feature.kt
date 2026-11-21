@@ -143,6 +143,12 @@ object Catalogue {
         "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
         "📷", Group.WORK, Stage.BETA, "M25", setOf(Need.CAMERA),
     )
+    // WP M46: VRG Füzet, the malleable notebook forked from the Sketcher's engine (docs/mobile/WP/M46.md): one store of
+    // entries, applications as kits (Mobile/notebook/kits), views, derived open items, one search, one export.
+    val NOTEBOOK = FeatureInfo(
+        "notebook", "VRG Füzet", "Egy füzet mindenre: jegyzet, teendő, mérés, mérőóra, séta. Kitek szabják alkalmazásra; egy keresés mindent megtalál, egy fájlba minden kimenthető.",
+        "📓", Group.WORK, Stage.BETA, "M46",
+    )
     // WP M33: the Site Pager (the ESP32-S3 + nRF905 pager pair, Archive "Site Pager Builder") reimagined on phones.
     val PAGER = FeatureInfo(
         "pager", "Csipogó", "Terepi személyhívó Bluetooth-on, internet nélkül: hívás gombnyomásra, gyors üzenetek LÁTTAM visszaigazolással, közelségjelző, csevegés, adóvevő, őrzés és mozdulatlanság-riasztás.",
@@ -195,7 +201,7 @@ object Catalogue {
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, PAGER, CLAUDE,
-        SKETCH, PHOTO,
+        SKETCH, PHOTO, NOTEBOOK,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, DEVICES, VAULT, CATALOG, SETTINGS,

@@ -11,7 +11,7 @@ class HomeLayoutTest {
 
     @Test fun theFoundersOrder() {
         assertEquals((1..8).toList(), HomeLayout.PAGES.map { it.n })
-        assertEquals(listOf("sketch", "pager"), HomeLayout.PAGES[0].items.map { it.id }, "page 1: what is whipped up on site")
+        assertEquals(listOf("sketch", "notebook", "pager"), HomeLayout.PAGES[0].items.map { it.id }, "page 1: what is whipped up on site")
         assertEquals(listOf("planner", "calc", "inventory"), HomeLayout.PAGES[1].items.map { it.id })
         assertEquals(listOf("workflow"), HomeLayout.PAGES[2].items.map { it.id })
         assertEquals(listOf("map", "weather", "vault"), HomeLayout.PAGES[3].items.map { it.id })

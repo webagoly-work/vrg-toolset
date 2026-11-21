@@ -62,6 +62,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M43** | VRG Térkép (`map`) | **BETA** (built 2026-11-20, D-48, D-49, waiting for the phone check): the PC's map page on the phone; the PC's data and the jobs through the relay, else the public planet files with an offline tile cache; own position, the Vázlat sites, Navigáció | — | medium |
 | **M44** | VRG Időjárás (`weather`) | **PLANNED** (2026-11-19) | — | — |
 | **M45** | Vault (`vault`) | **BETA** (built 2026-11-20, D-53, D-54, waiting for the phone check): the Proton Vault's own web app in a confined WebView (its own crypto and its own QR approval, separate from Eszközök; FLAG_SECURE, no downloads, requests only to its origin and GitHub) | internet | medium (`VaultWeb`; the data-vault code not read) |
+| **M46** | VRG Füzet (`notebook`) | **BETA** (built 2026-11-21 in a cloud session, D-55 … D-59 as defaults, waiting for the first Actions build and the phone check): the malleable notebook forked from the Sketcher's engine: one store of entries, applications as kits (`Mobile/notebook/kits`: Alap, Munka, Otthon, Kutya), views (timeline, list, checklist, tally), derived open items, one search, export / import; new kits by agents from a Kérés (`Mobile/notebook/PROTOCOL.md`) | — | high (core) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
