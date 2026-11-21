@@ -301,7 +301,7 @@ You are free to propose a new visual language; these are the current ones the ow
   the UI: uncommitted work is unprotected.
 - **Portable USB build** (planned): build, pick a drive, copy + verify, eject.
 
-### 5.2 The desktop shell ‹Desk› (PC, beta)
+### 5.2 The desktop shell (PC, beta)
 
 A portable desktop workbench that hosts every tool. Boot: splash → gate (sign-in, currently switched off) → the last
 primary view. Window modes: window, work (full screen over the taskbar), overlay.
