@@ -92,6 +92,7 @@ object PlannerExport {
             if (tags.isNotEmpty()) sk.put("tags", JSONArray(tags.map { it.name }))
             if (tags.any { it.preset == "ip44" }) sk.put("ip44", true)
             if (tags.any { it.preset == "remove" }) sk.put("remove", true)
+            if (tags.any { it.preset == "replace" }) sk.put("replace", true)
             o.put("sk", sk)
             devices.put(o); devObj[did] = o
         }

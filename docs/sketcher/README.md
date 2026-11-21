@@ -125,7 +125,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
 
 ## 7. Kamera 2 (M46)
 

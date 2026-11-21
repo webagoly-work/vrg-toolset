@@ -605,8 +605,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   drawn points (1) give `max` = 4, ≈ with *Munkakör: 4, vázlat: 1*, so neither the client's word nor the half-finished
   drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
   line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
-- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit,
-  a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit
+  (since D-79 only with its toggle on), a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
   the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
   them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
   counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
@@ -630,6 +630,20 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   kiolvasása, címkefotó magától, elmosás, arckeresés, arckeresés személyes fotón, személyes adat, GPS törlése,
   előtte / utána, aláírás, séta videó, hiányzók elöl, „+ még”), one setting per phone in ⚙ → *Kamera funkciók* (and the
   Kamera front's ⚙ Funkciók tile).
+
+- **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
+  preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
+  device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner
+  fixture `sketch-field.json` was refreshed for it. Rejected: **B** only a user-made tag. Details: `WP/M47.md`.
+- **D-78 · Cable reserve per end: 300 mm, 2026-11-21.** Asked: the Founder chose **A**. `cable.endReserveMm` stays 300
+  (`--reserve` on the CLI for one job). Rejected: **B** 500 mm, **C** another value.
+- **D-79 · Implied dedicated circuits: none by default, a general toggle, 2026-11-21.** Asked: the Founder chose **C**
+  ("should be toggle option to add these generally"). The takeoff assumes no dedicated circuit for the big machines and
+  systems (`impliedDedicated: false` in the rules); a check line says how many they may need. One toggle switches the
+  assumption on for every survey: on the phone the Munkakör lap's *◉ Dedikált kör a nagy gépeknek* (kept in the app's
+  settings), on the Desktop the same button (kept in the browser), on the CLI `--implied-dedicated`; the export records
+  it in `config.impliedDedicated`. On, they count as before (≈ with the reason). Rejected: **A** always on, **B** only
+  the hob, the oven and CEE.
 
 ## Open (to ask when the WP that needs them starts)
 

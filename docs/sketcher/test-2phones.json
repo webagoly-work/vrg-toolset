@@ -178,7 +178,7 @@
       },
       {
        "id": "M47.4",
-       "text": "Egy *Meglévő* dugaljra húzd a *Bontás* címkét, egy másikra egy saját „Csere” nevű címkét: két új chip (bontás, csere); egy címke nélküli meglévő pont halványan jelenik meg (marad)."
+       "text": "Egy *Meglévő* dugaljra húzd a *Bontás* címkét, egy másikra a beépített *Csere* címkét (új felmérésben a tálcán van): két új chip (bontás, csere); egy címke nélküli meglévő pont halványan jelenik meg (marad)."
       },
       {
        "id": "M47.5",
@@ -186,7 +186,7 @@
       },
       {
        "id": "M47.6",
-       "text": "*Igények → Főzőlap* 1: ⊞ chip ⚑ jellel és ◉ dedikált kör ≈. A lap alján piros ⚑ „Milyen főzőlap?” — koppints rá: a Kérdések nyílik. Válaszolj: a ⚑ eltűnik a főzőlapról."
+       "text": "*Igények → Főzőlap* 1: ⊞ chip ⚑ jellel; dedikált kör **nincs**, csak egy sárga sor: „A gépek, rendszerek szerint 1 dedikált kör kellhet…”. Kapcsold be a lap alján a *◉ Dedikált kör a nagy gépeknek* kapcsolót: megjelenik a ◉ ≈1 chip. Nyiss egy másik felmérést: ott is be van kapcsolva (általános beállítás); kapcsold vissza. A piros ⚑ „Milyen főzőlap?” — koppints rá: a Kérdések nyílik. Válaszolj: a ⚑ eltűnik a főzőlapról."
       },
       {
        "id": "M47.7",

@@ -83,7 +83,7 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
     val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
     // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
-    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n)) }
+    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
     val pj = PlannerExport.build(s, n)
     tk?.let { pj.put("takeoff", it.json) }
     pkg.writeText(pj.toString(1))
