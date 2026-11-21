@@ -81,6 +81,7 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     val out = FileStore.cacheDir(ctx, "sketch")
     out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
+    val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
     // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
     val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
     val pj = PlannerExport.build(s, n)
@@ -91,12 +92,13 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
+        if (!src.exists()) null else if (!strip) File(out, name).also { src.copyTo(it, overwrite = true) }
+        else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
         // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
-        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out)
+        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out, strip)
     }
     listOf(pkg to MIME) + tkFiles + (photos + caps).map { it to mimeOf(it) }
 }

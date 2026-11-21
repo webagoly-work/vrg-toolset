@@ -125,7 +125,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61; survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
 
 ## 7. Kamera 2 (M46)
 
@@ -134,7 +134,8 @@ The camera's second round (`docs/mobile/WP/M46.md`): label and type-plate photos
 answer or a note only when tapped; blur (▦ / ▒) kept as vectors and burned in on export, a *Személyes adat* flag, GPS
 stripped from every exported copy unless kept; before / after pairs compared with a slider; the client's signature as a
 *dokumentum* capture; the walk video as a capture of kind video; the ◉ hold menu leads with the next missing shots,
-and „＋ még” repeats the last purpose. The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
+and „＋ még” repeats the last purpose. Faces are found on the phone too (`FaceFinder`) and proposed as blur rectangles.
+Every one of these is a switch in ⚙ → *Kamera funkciók* (`CameraFeatures`, one setting per phone, D-90). The rules are pure Kotlin in `Camera2.kt`, tested on the JVM.
 
 ## 8. From survey to quote (M47)
 
