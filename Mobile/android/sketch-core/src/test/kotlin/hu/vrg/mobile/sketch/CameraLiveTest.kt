@@ -139,4 +139,14 @@ class CameraLiveTest {
         assertTrue(live.all { CameraFeatures.on(CameraFeatures.read("blur,video"), it) })
         assertTrue(CameraFeatures.all(false).containsAll(live))
     }
+
+    @Test fun audioNotesAreLeftAlone() {
+        // F5's sound notes (kind audio, purpose "hang") never reach the camera's strip, count or ghost
+        var s = survey()
+        val (s1, a) = AudioNotes.add(s, "A-1.m4a", null, 1200, 999, 1); s = Camera2.markBefore(s1, a)
+        assertTrue(CameraLive.strip(kit, s, null).none { it.purpose == AudioNotes.PURPOSE })
+        assertEquals(0, CameraLive.count(s, AudioNotes.PURPOSE))
+        assertTrue(CameraLive.ghostCandidates(s, AudioNotes.PURPOSE, null).isEmpty())
+        assertNull(CameraLive.ghost(s, CameraLive.Series(AudioNotes.PURPOSE, pairOf = a)))
+    }
 }
