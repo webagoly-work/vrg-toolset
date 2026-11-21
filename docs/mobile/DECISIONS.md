@@ -480,7 +480,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
 
-- **D-65 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
+- **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
   (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
   own screen; the map leaves its answer in `files/sketch/handoff/<id>.site.json` and opens
   `vrg://sketch?open=<id>&front=helyszin`; the Sketcher applies it when it opens the survey. Why: drawing corners and
@@ -488,7 +488,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   stays the only writer of the survey file (no two writers), and an answer survives the app being killed. Rejected:
   **B** the map embedded in Helyszín (a second copy of M43's request handling in feature-sketch, cramped gestures);
   **C** the map writing the survey file itself (overwritten by the open editor).
-- **D-66 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Chosen: Esri's World
+- **D-63 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Chosen: Esri's World
   Imagery tiles (`server.arcgisonline.com`, keyless), added only when 🛰 is tapped, attribution shown, not written to the
   phone's tile cache (the WebView runs `LOAD_NO_CACHE`; the phone lets only GET to that host out). Terms checked: Esri's
   terms summary requires attribution and allows offline use only through Esri's own content packages, and an ArcGIS
@@ -496,18 +496,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   For full compliance a free ArcGIS Location Platform key would be the next step (question 1 of the F1 report).
   Rejected: Sentinel-2 cloudless (10 m pixels: no building to trace); Google / Bing / Mapbox imagery (a key and stricter
   terms); the Hungarian state orthophoto (registration; a candidate later).
-- **D-67 · How the outline and the placement are stored (M48), 2026-11-20.** `site.outline` = the corners as
+- **D-64 · How the outline and the placement are stored (M48), 2026-11-20.** `site.outline` = the corners as
   `[lat, lon]` (absolute, so a corrected outline does not move a placement); `site.place` = `{lat, lon, rot, auto, at}`,
   the plan's oriented-box centre on the map and its clockwise turn (absolute too; the offset from the building is derived
   each time, never stored); `site.footprint` stays as before and is measured again from the outline, its `src` = `osm`,
   `rajz` (drawn) or `muhold` (traced over the satellite). All optional; the file stays v2.
-- **D-68 · The fit and the mismatch report (M48), 2026-11-20.** The first placement turns the plan's long axis onto the
+- **D-65 · The fit and the mismatch report (M48), 2026-11-20.** The first placement turns the plan's long axis onto the
   building's and centres the two boxes; of the four quarter-turn candidates the one whose walls stick out least wins, the
   smaller turn on a tie. The report: the turn between the walls folded to ±45° (walls parallel or not, whichever side is
   long), the box-centre offset with its compass direction, and each wall whose **middle 80 %** is more than **0,25 m**
   outside the outline (a wall that is only too long shows as the walls at its ends). Verdicts in order: *kilóg*,
   *elforgatva* (> 3°), *eltolva* (> 1 m), *rendben*. Same numbers on the phone, the map and the Desktop (one fixture).
-- **D-69 · Every lib file the map page loads is one the phone serves (M48), 2026-11-20.** Found: `Map/vrg-terkep.html`
+- **D-66 · Every lib file the map page loads is one the phone serves (M48), 2026-11-20.** Found: `Map/vrg-terkep.html`
   imports `/lib/weather-layer.js` (the W layer, after M43), which the phone did not fetch, so the page's module failed and
   the map did not start on the phone. Chosen: the phone fetches and serves it (and the two site-layer files), a test
   reads the page and fails when it loads a `/lib` file the phone does not serve, and the page loads optional layers

@@ -115,4 +115,4 @@ toggle in the top corner, switching between the original and the variant at any 
 | VRG Térkép | the phone's own map (M43) on the survey: outline drawn / corrected, 🛰 satellite, the sketch placed (M48); the PC's through the relay as before | embedded `localhost:8802/?embed=1`, the survey handed to it by postMessage (M48) |
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; the site placement: D-65 … D-69 (M48).
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; the site placement: D-62 … D-66 (M48).
