@@ -3,6 +3,26 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "software-for-one",
+      "title": "Software for One",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "explainer",
+      "summary": "Research report on personal apps (software for one person): the lineage from situated software to vibe coding, the 2026 landscape, Android developer verification for a self-built APK, critiques, and where VRG Mobile stands.",
+      "purpose": "Get the Founder informed about personal apps and omniapps before choosing the first personal app's features.",
+      "context": [
+        "the Founder asked about personal apps and omniapps",
+        "feature selection in docs/mobile/PERSONAL-APP.md",
+        "source report docs/research/reports/Personal apps - software for one.md"
+      ],
+      "tags": [],
+      "file": "files/software-for-one.html",
+      "url": "https://claude.ai/artifact/KbY4FkcVqsrNG5qYw2Mh7j"
+    },
+    {
       "id": "vrg-latoter",
       "title": "VRG Látótér",
       "created": "2026-11-20",
