@@ -184,3 +184,17 @@ lists every deny source it read. On the H: PC, keep the list next to the anonymi
 - **The Planner's routing engine** is described as a chip-layout-style autorouter; that hints at electronics in general,
   not at the trade.
 - **Appliances** (cooking, laundry, water heating) stay in B as "large appliances": many building trades connect them.
+
+## Blind de-anonymisation tests (2026-11-21)
+
+A fresh reader got only PACK-B and was asked to guess the trade and the locale.
+
+| Round | Trade guessed (electrical) | Locale guessed (Hungarian) | What changed after it |
+|---|---|---|---|
+| 1 | ~90 % | ~90 % | point types made abstract (type A / B / C), safety checks, ratings and roof-orientation questions removed, locale clues (double-acute vowels, currency, date order) dropped, exact hex colours and counts rounded, MINI / RCO / START nicknames dropped |
+| 2 | ~80 % | ~55 % (Czech / Polish / Turkish / Finnish also named) | deposit clause and the "never an offer" naming dropped |
+
+**The limit:** the brief asked B to keep each feature's *shape* (points on a plan with a type and a state, groups of
+points served by one hub, routes with a length, a service entry, a checklist that grows with the scope). Together those
+shapes describe this trade to a sharp reader. Going further means abstracting the domain model itself (e.g. "assets on
+a plan, grouped by a parent asset") at the cost of design fidelity: a question for the Founder.

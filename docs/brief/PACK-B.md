@@ -918,7 +918,7 @@ quantities, in one offline HTML file.
 
 - **Estimate workflow** (live; documents kept outside the repository): a question funnel, pricing rules and a market
   preset proven on real jobs. Stages: questions → material collection → pricing → offer → document. The client document
-  is always a **budget draft** (never called an "offer"): rounded amounts, a material-deposit
+  is always a **budget draft**: rounded amounts, a payment-terms
   clause, a quick summary, numbered sections, a total with a ±10 % band. A quantity engine works in two passes
   (quantities from the drawing, then pricing). A market-measure agent compares a finished budget with published price
   lists. Jobs are sealed to the owner's phone (§5.5).
