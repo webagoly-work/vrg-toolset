@@ -10,6 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -115,6 +117,7 @@ internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
     ctx.startActivity(Intent.createChooser(send, "Vázlat küldése").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) {
     val ctx = LocalContext.current
@@ -122,6 +125,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
     val n = st.norm
     val rep = n.report
     var done by remember { mutableStateOf<String?>(null) }
+    var report by remember { mutableStateOf(false) }   // F9 (WP M54): the Jegyzőkönyv dialog
     val tm = rememberTextMeasurer()
     val c = pal()
 
@@ -154,7 +158,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
             else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
         }
         Column(Modifier.fillMaxWidth().background(Melyviz.surface).padding(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("⇪ Küldés a Plannerbe", selected = true) {
                     scope.launch {
                         try {
@@ -175,6 +179,8 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                         done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
                     }
                 }
+                // F9 (WP M54, D-128): the Felmérési jegyzőkönyv from the phone, behind its D-90 switch
+                if (SketchFeatures.on(st.featOff, SketchFeatures.REPORT)) VrgChip("📄 Jegyzőkönyv") { report = true }
             }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
             if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
@@ -183,6 +189,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
             done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
         }
     }
+    if (report) ReportDialog(st) { report = false }
 }
 
 private fun DrawScope.text(tm: TextMeasurer, s: String, at: Offset, color: Color, size: TextUnit, bold: Boolean = false, bg: Color? = null) {
