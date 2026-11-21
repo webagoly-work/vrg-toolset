@@ -57,10 +57,11 @@ import kotlinx.coroutines.delay
 /** The digital shadow, computed once per change and shared by the fronts and their badges. */
 class Shadow(st: EditorState) {
     val facts = FieldKit.facts(st.kit, st.sketch)
-    val questions = FieldKit.questions(st.kit, st.sketch, facts)
-    val suggestions = FieldKit.suggestions(st.kit, st.sketch)
-    val shots = FieldKit.shots(st.kit, st.sketch, facts)
-    val open = FieldKit.open(st.kit, st.sketch, st.norm, facts)
+    // M51 (D-93): a feature switched off leaves no trace: its cards, badges and loose ends go; the data stays
+    val questions = if (feat("kerdes.questions")) FieldKit.questions(st.kit, st.sketch, facts) else emptyList()
+    val suggestions = if (feat("jegyzet.keywords")) FieldKit.suggestions(st.kit, st.sketch) else emptyList()
+    val shots = if (feat("kamera.shotlist")) FieldKit.shots(st.kit, st.sketch, facts) else emptyList()
+    val open = FieldKit.open(st.kit, st.sketch, st.norm, facts).filter { openShown(it) }
     val openQuestions get() = questions.count { !it.done && !it.later }
     val fresh get() = questions.any { it.fresh }
     val missingShots get() = shots.count { !it.done && it.item.prio == 1 }
@@ -80,7 +81,7 @@ fun EditorState.frontColor(id: String) = Color(fronts().firstOrNull { it.id == i
 internal fun FrontBar(st: EditorState, sh: Shadow) {
     Row(Modifier.fillMaxWidth().background(Melyviz.deep).horizontalScroll(rememberScrollState()).padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        st.fronts().forEach { f ->
+        st.shownFronts().forEach { f ->   // M51: a front whose features are all off is not on the bar
             val on = st.front == f.id
             val col = Color(f.color)
             val badge = when (f.id) {
@@ -101,7 +102,7 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
                 }
                 if (on) Box(Modifier.align(Alignment.BottomCenter).width(30.dp).height(3.dp).background(col, RoundedCornerShape(2.dp)))
                 if (badge > 0) {
-                    val hot = f.id == "kerdes" && sh.fresh
+                    val hot = f.id == "kerdes" && sh.fresh && feat("kerdes.fresh")
                     Text(if (badge > 99) "99+" else "$badge",
                         style = Melyviz.small.copy(fontSize = 9.sp, color = if (hot) Color.White else Melyviz.ink),
                         modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 3.dp)
@@ -118,12 +119,12 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
 internal fun CaptureButtons(st: EditorState, modifier: Modifier) {
     Column(modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         val note = st.frontColor("jegyzet"); val cam = st.frontColor("kamera")
-        Box(Modifier.size(48.dp).clip(CircleShape).background(note).clickable { st.noteOpen = true }
+        if (feat("jegyzet.quick")) Box(Modifier.size(48.dp).clip(CircleShape).background(note).clickable { st.noteOpen = true }
             .semantics { contentDescription = "Gyors jegyzet" }, contentAlignment = Alignment.Center) {
             Text("✎", style = Melyviz.glyph.copy(fontSize = 22.sp, color = Color.Black))
         }
         val p = st.kit.purpose(st.purpose)
-        Box(Modifier.size(56.dp).clip(CircleShape).background(cam)
+        if (feat("kamera.capture")) Box(Modifier.size(56.dp).clip(CircleShape).background(cam)
             .combinedClickable(onClick = { st.shoot(st.purpose) }, onLongClick = { st.ask = Ask.Purposes })
             .semantics { contentDescription = "Fotó: " + (p?.label ?: "egyéb") + ". Tartsd: cél választása." },
             contentAlignment = Alignment.Center) {
@@ -178,16 +179,16 @@ internal fun QuickNote(st: EditorState) {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
+                    if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
                         try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                     }.padding(vertical = 6.dp))
-                    Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
+                    if (feat("jegyzet.unclear")) Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
                         modifier = Modifier.clickable { open = !open }.padding(vertical = 6.dp))
                 }
                 val r = st.sketch.room(room)
                 Text(if (r != null) "Szoba: " + roomTitle(r.name, r.kinds) + "  ✕" else "Nincs szobához kötve",
                     style = Melyviz.small, modifier = Modifier.clickable { room = null }.padding(vertical = 4.dp))
-                listOf("ugyfel" to "Ügyfél", "helyzet" to "Helyzet").forEach { (g, label) ->
+                if (feat("jegyzet.chips")) listOf("ugyfel" to "Ügyfél", "helyzet" to "Helyzet").forEach { (g, label) ->
                     Text(label, style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 6.dp, bottom = 2.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         st.kit.chips.filter { it.group == g }.forEach { c -> ChipPill(c, c.id in chips) { chips = if (c.id in chips) chips - c.id else chips + c.id } }

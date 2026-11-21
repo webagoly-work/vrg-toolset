@@ -72,7 +72,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -93,7 +92,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {},
    "visible": [
@@ -268,7 +268,6 @@
     "kamera.ocr",
     "kamera.ocr_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -289,7 +288,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {
     "kamera.faces": "kamera.blur",
@@ -502,7 +502,9 @@
     "variansok.refresh",
     "variansok.request",
     "export.photos",
-    "export.takeoff"
+    "export.burned",
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {
     "kamera.shotlist": "kamera.capture",
@@ -514,13 +516,11 @@
     "kamera.faces": "kamera.capture",
     "kamera.faces_auto": "kamera.capture",
     "kamera.privacy": "kamera.capture",
-    "kamera.gps_strip": "kamera.capture",
     "kamera.pairs": "kamera.capture",
     "kamera.signature": "kamera.capture",
     "kamera.video": "kamera.capture",
     "kamera.quick": "kamera.capture",
-    "kamera.again": "kamera.capture",
-    "export.burned": "kamera.markup"
+    "kamera.again": "kamera.capture"
    },
    "visible": [
     "vazlat",
@@ -645,7 +645,6 @@
     "faces",
     "faces_auto",
     "privacy",
-    "gps_strip",
     "pairs",
     "signature",
     "video",
@@ -731,7 +730,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -752,7 +750,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {
     "vazlat.circuit": "vazlat.point"
@@ -966,7 +965,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -987,7 +985,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {},
    "visible": [
@@ -1188,7 +1187,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -1208,7 +1206,8 @@
     "variansok.refresh",
     "variansok.request",
     "export.photos",
-    "export.burned"
+    "export.burned",
+    "kamera.gps_strip"
    ],
    "blocked": {
     "munkakor.implied": "munkakor.takeoff",
@@ -1427,7 +1426,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -1448,7 +1446,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {},
    "visible": [
@@ -2027,6 +2026,7 @@
      "jegyzet.log",
      "jegyzet.quick",
      "jegyzet.unclear",
+     "kamera.gps_strip",
      "kerdes.filter",
      "kerdes.fresh",
      "kerdes.later",
@@ -2244,7 +2244,6 @@
      "kamera.capture",
      "kamera.faces",
      "kamera.faces_auto",
-     "kamera.gps_strip",
      "kamera.markup",
      "kamera.ocr",
      "kamera.ocr_auto",
@@ -2720,7 +2719,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -2741,7 +2739,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {},
    "visible": [
@@ -2971,7 +2970,6 @@
     "kamera.faces",
     "kamera.faces_auto",
     "kamera.privacy",
-    "kamera.gps_strip",
     "kamera.pairs",
     "kamera.signature",
     "kamera.video",
@@ -2983,7 +2981,8 @@
     "variansok.request",
     "export.photos",
     "export.burned",
-    "export.takeoff"
+    "export.takeoff",
+    "kamera.gps_strip"
    ],
    "blocked": {},
    "visible": [

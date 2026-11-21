@@ -180,10 +180,7 @@ internal fun EditorState.ocrDone(id: String, text: String?) {
 @Composable
 internal fun OcrRunner(st: EditorState) {
     val ctx = LocalContext.current
-    LaunchedEffect(Unit) {
-        st.cam2.off = withContext(Dispatchers.IO) { CameraPrefs.off(ctx) }
-        st.cam2.saveOff = { o -> CameraPrefs.save(ctx, o) }
-    }
+    // M51: cam2.off follows the feature registry (FeatureSync); the camera's own setting is still where it was
     FaceRunner(st)
     val head = st.cam2.readQueue.firstOrNull()
     LaunchedEffect(head) {
@@ -465,7 +462,7 @@ internal fun Camera2Section(st: EditorState) {
         val vids = s.captures.count { it.kind == CaptureKind.VIDEO }; val sigs = Camera2.signatures(s).size
         if (st.cam2.on(CameraFeatures.VIDEO)) BigTile("🎥", "Séta videó" + if (vids > 0) " ($vids)" else "", Color(0xFF20A8A0)) { st.shootVideo() }
         if (st.cam2.on(CameraFeatures.SIGNATURE)) BigTile("✍", "Aláírás" + if (sigs > 0) " ($sigs)" else "", Color(0xFFB07A2A)) { st.ask = Ask.Signature }
-        BigTile("⚙", "Funkciók", Melyviz.faint) { st.ask = Ask.PluginSheet }
+        BigTile("⚙", "Funkciók", Melyviz.faint) { st.ask = Ask.FeatureSheet("kamera") }   // M51: the Kamera switches first
     }
     val open = Camera2.privacyOpen(s)
     if (open.isNotEmpty() && st.cam2.on(CameraFeatures.PRIVACY)) Text("👤 ${open.size} személyes fotón még nincs elmosás: koppints, ✎ Jelölés → ▦ / ▒",

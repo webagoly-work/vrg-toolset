@@ -142,10 +142,10 @@ internal fun SiteFront(st: EditorState) {
             Text("  HELYSZÍN", style = Melyviz.title.copy(fontSize = 15.sp))
         }
         (busy ?: st.note)?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
-        Field(address, { address = it }, "A munka címe")
+        if (feat("helyszin.address")) Field(address, { address = it }, "A munka címe")   // M51: each part behind its switch
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (address != (site?.address ?: "")) Pill("✓ Cím mentése", col, true) { st.setSite { it.copy(address = address.trim()) } }
-            Pill("⌖ Itt vagyok (GPS)", col, false) {
+            if (feat("helyszin.address") && address != (site?.address ?: "")) Pill("✓ Cím mentése", col, true) { st.setSite { it.copy(address = address.trim()) } }
+            if (feat("helyszin.gps")) Pill("⌖ Itt vagyok (GPS)", col, false) {
                 if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     busy = "Helymeghatározás…"
                     locate(ctx) { l -> busy = null; if (l == null) st.note = "Nincs hely: kapcsold be a helymeghatározást." else st.setSite { it.copy(lat = l.latitude, lon = l.longitude, source = "gps") } }
@@ -157,8 +157,8 @@ internal fun SiteFront(st: EditorState) {
 
         // F1: the phone's own VRG Térkép (M43), PC or not: the outline drawn / corrected (🛰 on a tap), the sketch placed on it,
         // the job's place taken from the map's centre. The map leaves its answer for this survey and comes back here.
-        Text("VRG Térkép a telefonon", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (feat("helyszin.map")) Text("VRG Térkép a telefonon", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        if (feat("helyszin.map")) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pill("🗺 Körvonal és vázlat a térképen", col, true) {
                 SketchFeature.store.save(st.sketch)          // the map reads the file
                 try {
@@ -167,11 +167,11 @@ internal fun SiteFront(st: EditorState) {
                 } catch (e: Exception) { st.note = "A térkép nem nyitható meg." }
             }
         }
-        Text("Ott: ▱ sarkok koppintással, húzással javítás, 🛰 műholdkép (csak koppintásra, nem tárolódik); ◫ a vázlat húzva és forgatva; ⇣ a munka helye a térkép közepe; ✓ Kész ide hozza.",
+        if (feat("helyszin.map")) Text("Ott: ▱ sarkok koppintással, húzással javítás, 🛰 műholdkép (csak koppintásra, nem tárolódik); ◫ a vázlat húzva és forgatva; ⇣ a munka helye a térkép közepe; ✓ Kész ide hozza.",
             style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
 
-        Text("VRG Térkép (a PC offline térképe)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (feat("helyszin.map")) Text("VRG Térkép (a PC offline térképe)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        if (feat("helyszin.map")) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pill(if (map == null) "🗺 Megnyitás" else "🗺 Bezárás", col, map != null) {
                 if (map != null) { map = null; return@Pill }
                 scope.launch {
@@ -192,8 +192,8 @@ internal fun SiteFront(st: EditorState) {
             } }, modifier = Modifier.fillMaxWidth().height(360.dp).padding(vertical = 6.dp))
         }
 
-        Text("Az interneten (OpenStreetMap)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (feat("helyszin.search")) Text("Az interneten (OpenStreetMap)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        if (feat("helyszin.search")) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pill("🔎 Cím keresése", col, false) {
                 if (address.isBlank()) { st.note = "Előbb írd be a címet."; return@Pill }
                 scope.launch {
@@ -215,14 +215,14 @@ internal fun SiteFront(st: EditorState) {
                 }
             }
         }
-        Text("A keresés a címet, a körvonal csak a koordinátát küldi el az OSM-nek; a GPS semmit.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
+        if (feat("helyszin.search")) Text("A keresés a címet, a körvonal csak a koordinátát küldi el az OSM-nek; a GPS semmit.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
         places.forEach { p ->
             Text("· " + p.name, style = Melyviz.label.copy(fontSize = 13.sp), modifier = Modifier.fillMaxWidth().clickable {
                 st.setSite { it.copy(lat = p.lat, lon = p.lon, source = "osm") }; places = emptyList()
             }.padding(vertical = 6.dp))
         }
 
-        st.sketch.site?.footprint?.let { fp ->
+        if (feat("helyszin.footprint")) st.sketch.site?.footprint?.let { fp ->
             Text("Az épület és a vázlat", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
             val cmp = SiteMath.compare(st.norm, fp)
             val m = { v: Double -> "%.1f".format(v).replace('.', ',') }
@@ -231,7 +231,7 @@ internal fun SiteFront(st: EditorState) {
             else Text(cmp.text, style = Melyviz.label.copy(fontSize = 13.sp, color = when (cmp.verdict) {
                 "egyezik" -> Melyviz.glow; "kisebb" -> Melyviz.sand; else -> Color(0xFFD64545) }))
         }
-        SitePlacement(st, col)
+        if (feat("helyszin.place")) SitePlacement(st, col)
     }
 }
 

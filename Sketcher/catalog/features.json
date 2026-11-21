@@ -53,7 +53,6 @@
   {"id":"kamera.faces","front":"kamera","sym":"☺","label":"Arckeresés","requires":["kamera.capture","kamera.blur"]},
   {"id":"kamera.faces_auto","front":"kamera","sym":"☺","label":"Arckeresés személyes fotón","requires":["kamera.capture","kamera.faces"]},
   {"id":"kamera.privacy","front":"kamera","sym":"👤","label":"Személyes adat jelölés","requires":["kamera.capture"]},
-  {"id":"kamera.gps_strip","front":"kamera","sym":"⌖","label":"GPS törlése kiadáskor","requires":["kamera.capture"]},
   {"id":"kamera.pairs","front":"kamera","sym":"◐","label":"Előtte / utána","requires":["kamera.capture"]},
   {"id":"kamera.signature","front":"kamera","sym":"✍","label":"Aláírás","requires":["kamera.capture"]},
   {"id":"kamera.video","front":"kamera","sym":"🎥","label":"Séta videó","requires":["kamera.capture"]},
@@ -73,7 +72,8 @@
   {"id":"variansok.refresh","front":"variansok","sym":"⟳","label":"Frissítés a main ágról","requires":["variansok.use"]},
   {"id":"variansok.request","front":"variansok","sym":"＋","label":"Új variáns kérése"},
   {"id":"export.photos","front":"export","sym":"◉","label":"Fotók a csomagban"},
-  {"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos","kamera.markup"]},
-  {"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]}
+  {"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos"]},
+  {"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]},
+  {"id":"kamera.gps_strip","front":"export","sym":"⌖","label":"GPS törlése kiadáskor"}
  ]
 }

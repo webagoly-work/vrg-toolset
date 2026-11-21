@@ -98,6 +98,8 @@ class FeaturesTest {
         // a fresh phone: everything on except the options that are off by default
         assertEquals(Features.ALL.filter { it.default }.map { it.id }.toSet(), Features.ALL.filter { Features.on(emptySet(), it.id) }.map { it.id }.toSet())
         assertFalse(Features.on(emptySet(), "munkakor.implied"))
+        // the old Kamera funkciók list writing its set replaces only the camera switches
+        assertEquals(setOf("vazlat.memo", "kamera.video"), Features.withCameraOff(setOf("vazlat.memo", "kamera.ocr"), setOf("video")))
     }
 
     @Test fun prerequisitesCarryAndComeBack() {
@@ -128,6 +130,13 @@ class FeaturesTest {
         // its draw tune is ignored while Rajz-hangolás is off, kept while on
         assertFalse(ev.draw.isDefault)
         assertEquals(DrawTune(), Features.draw(ev.draw, off)); assertEquals(ev.draw, Features.draw(ev.draw, emptySet()))
+        // the hold wheel loses the items of features that are off, its sectors stay where they were
+        val pw = Wheels.forPaper()
+        val trimmed = Features.wheel(pw, setOf("vazlat.memo", "vazlat.point"))
+        assertEquals(pw.rings.map { it.size }, trimmed.rings.map { it.size })
+        assertTrue(trimmed.rings.flatten().filterNotNull().none { it.id == "memo" || it.id == "point-here" })
+        assertTrue(trimmed.rings.flatten().filterNotNull().any { it.id == "tag" })
+        assertEquals(pw, Features.wheel(pw, emptySet()))
         // a plugin whose every tool is off is not offered; the note taker always is
         assertFalse(Features.pluginShown(Plugins.PHOTO, off)); assertTrue(Features.pluginShown(Plugins.NOTE, Features.all(emptySet(), false)))
     }

@@ -100,7 +100,7 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
             Text("◉", style = Melyviz.glyph.copy(fontSize = 20.sp, color = col))
             Text("  KAMERA", style = Melyviz.title.copy(fontSize = 15.sp))
             Spacer(Modifier.weight(1f))
-            Pill(if (st.series) "⟳ Sorozat: be" else "⟳ Sorozat", col, st.series) { st.series = !st.series }
+            if (feat("kamera.series")) Pill(if (st.series) "⟳ Sorozat: be" else "⟳ Sorozat", col, st.series) { st.series = !st.series }
         }
         st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
         Text("Koppints a célra: a kamera nyílik, a fotó a célt, a szobát (" +
@@ -120,8 +120,8 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
             }
         }
         Camera2Section(st)
-        Text("Képlista", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
-        if (sh.shots.isEmpty()) Text("A munkakör alakulásával jelennek meg a kötelező képek.", style = Melyviz.small)
+        if (feat("kamera.shotlist")) Text("Képlista", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+        if (sh.shots.isEmpty() && feat("kamera.shotlist")) Text("A munkakör alakulásával jelennek meg a kötelező képek.", style = Melyviz.small)
         sh.shots.forEach { s -> key(s.item.id) {
             val p = st.kit.purpose(s.item.purpose)
             val c = Color(p?.color ?: 0xFF7D8590)
@@ -244,7 +244,7 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                 }
             } else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
+                if (feat("kamera.markup")) Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
                 if (marking) {
                     (listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T") +
                         if (st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.BLUR)) listOf(MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒") else emptyList()).forEach { (k, sym) ->
@@ -269,7 +269,7 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
             }
             Field(note, { note = it }, "Felirat, megjegyzés", lines = 2)
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
+                if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
                     try { dictate.launch(dictationIntent("Mi látszik a képen?")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                 }.padding(vertical = 8.dp))
                 if (c.lat != null && c.lon != null) Text("⌖ %.5f, %.5f".format(c.lat, c.lon), style = Melyviz.readout, modifier = Modifier.padding(vertical = 8.dp))

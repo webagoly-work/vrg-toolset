@@ -87,7 +87,8 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
     val pj = PlannerExport.build(s, n)
     tk?.let { pj.put("takeoff", it.json) }
     pkg.writeText(pj.toString(1))
-    val tkFiles = if (tk == null) emptyList() else Takeoff.fileNames(s).let { (jn, mn) ->
+    // M51: the switches decide which files go BESIDE the package; the package itself never changes (D-93)
+    val tkFiles = if (tk == null || !feat("export.takeoff")) emptyList() else Takeoff.fileNames(s).let { (jn, mn) ->
         listOf(File(out, jn).also { it.writeText(tk.json.toString(1) + "\n") } to MIME, File(out, mn).also { it.writeText(Takeoff.markdown(tk.json)) } to "text/markdown")
     }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
@@ -100,7 +101,12 @@ private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<Fil
         // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
         exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out, strip)
     }
-    listOf(pkg to MIME) + tkFiles + (photos + caps).map { it to mimeOf(it) }
+    val sent = (photos + caps).filter { f ->
+        if (mimeOf(f) != "image/jpeg") true                                    // videos and signatures go as before
+        else feat("export.photos") && (feat("export.burned") || !f.name.endsWith("_jel.jpg"))
+    }
+    (photos + caps).filter { it !in sent }.forEach { it.delete() }
+    listOf(pkg to MIME) + tkFiles + sent.map { it to mimeOf(it) }
 }
 
 internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
@@ -175,7 +181,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 }
             }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
-            if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
+            if (shots > 0 && feat("export.photos")) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
             Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
                 style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
             done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }

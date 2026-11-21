@@ -7,7 +7,8 @@ package hu.vrg.mobile.sketch
 // The stored value lists the ids whose state differs from their default ("flipped"): for the usual default-on feature
 // that is "what the user switched OFF", so a feature added later arrives on. A feature switched off leaves no trace in
 // the UI, never deletes data in a survey and never changes what an exported file means (D-93). A feature whose
-// prerequisite is off is off too, and is shown greyed (its own switch is kept, it comes back with the prerequisite).
+// prerequisite is off is off too, and is shown greyed
+// (GPS törlése never depends on the camera's other switches: privacy on export stays whatever the UI shows) (its own switch is kept, it comes back with the prerequisite).
 // A variant can never switch on what the user switched off (D-95): the rail, the plugins and the draw tune a variant
 // brings all pass through here.
 //
@@ -75,7 +76,6 @@ object Features {
         F("kamera.faces", "kamera", "☺", "Arckeresés", listOf("kamera.capture", "kamera.blur")),
         F("kamera.faces_auto", "kamera", "☺", "Arckeresés személyes fotón", listOf("kamera.capture", "kamera.faces")),
         F("kamera.privacy", "kamera", "👤", "Személyes adat jelölés", listOf("kamera.capture")),
-        F("kamera.gps_strip", "kamera", "⌖", "GPS törlése kiadáskor", listOf("kamera.capture")),
         F("kamera.pairs", "kamera", "◐", "Előtte / utána", listOf("kamera.capture")),
         F("kamera.signature", "kamera", "✍", "Aláírás", listOf("kamera.capture")),
         F("kamera.video", "kamera", "🎥", "Séta videó", listOf("kamera.capture")),
@@ -95,8 +95,9 @@ object Features {
         F("variansok.refresh", "variansok", "⟳", "Frissítés a main ágról", listOf("variansok.use")),
         F("variansok.request", "variansok", "＋", "Új variáns kérése"),
         F("export.photos", "export", "◉", "Fotók a csomagban"),
-        F("export.burned", "export", "✎", "Jelölt másolatok", listOf("export.photos", "kamera.markup")),
+        F("export.burned", "export", "✎", "Jelölt másolatok", listOf("export.photos")),
         F("export.takeoff", "export", "▦", "Munkakör lap fájl", listOf("munkakor.takeoff")),
+        F("kamera.gps_strip", "export", "⌖", "GPS törlése kiadáskor"),
     )
 
     private val byId = ALL.associateBy { it.id }
@@ -162,6 +163,26 @@ object Features {
     /** The variant's draw tune, or the original when Rajz-hangolás is off. */
     fun draw(tune: DrawTune, flipped: Set<String>): DrawTune = if (on(flipped, "vazlat.drawtune")) tune else DrawTune()
 
+    /** The feature a wheel item belongs to (null: always there, e.g. Törlés, a point type, a room kind). */
+    fun wheelFeature(itemId: String): String? = when {
+        itemId == "memo" || itemId == "edit" -> "vazlat.memo"
+        itemId == "tag" -> "vazlat.tag"
+        itemId == "circuit" || itemId == "points" -> "vazlat.circuit"
+        itemId == "measure" || itemId == "measure-edge" -> "vazlat.measure"
+        itemId == "point-here" -> "vazlat.point"
+        itemId == "board-here" -> "vazlat.board"
+        itemId.startsWith("shot:") -> "vazlat.photo"
+        else -> null
+    }
+
+    /** A wheel with the items of switched-off features left as empty sectors (the ring keeps its directions). */
+    fun wheel(w: Wheel, flipped: Set<String>): Wheel =
+        w.copy(rings = w.rings.map { r -> r.map { it?.takeIf { i -> wheelFeature(i.id)?.let { f -> on(flipped, f) } ?: true } } })
+
+    /** What the map page's site panel leaves out (WP M51): its ▱ Körvonal, 🛰 Műhold and ◫ Vázlat buttons. */
+    fun mapHide(flipped: Set<String>): List<String> =
+        listOf("outline" to "helyszin.outline", "satellite" to "helyszin.satellite", "place" to "helyszin.place").filter { !on(flipped, it.second) }.map { it.first }
+
     /** A survey plugin is shown when at least one of its tools is on (the note taker always). */
     fun pluginShown(p: Plugin, flipped: Set<String>) = p.id == Plugins.NOTE.id || p.tools.any { on(flipped, tool(it.id)) }
 
@@ -187,6 +208,10 @@ object Features {
         return Stores(cam, "munkakor.implied" in flipped,
             flipped.filter { it != "munkakor.implied" && !(it.startsWith("kamera.") && it.removePrefix("kamera.") in cameraIds) }.toSet())
     }
+
+    /** [flipped] with its camera switches replaced by F3's [camOff] (what the old Kamera funkciók list writes). */
+    fun withCameraOff(flipped: Set<String>, camOff: Set<String>): Set<String> =
+        flipped.filter { !(it.startsWith("kamera.") && it.removePrefix("kamera.") in cameraIds) }.toSet() + camOff.filter { it in cameraIds }.map { camera(it) }
 
     /** The CameraFeatures off-set the Kamera 2 code reads: every camera switch that is effectively off here. */
     fun cameraOff(flipped: Set<String>): Set<String> = CameraFeatures.ALL.filter { !on(flipped, camera(it.id)) }.map { it.id }.toSet()

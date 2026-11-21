@@ -73,6 +73,8 @@ sealed class Ask {
     object VariantRequest : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
+    /** WP M51: ⚙ → Funkciók, [front]'s switches first (the Kamera front's ⚙ Funkciók tile). */
+    data class FeatureSheet(val front: String? = null) : Ask()
 }
 
 /**
@@ -196,7 +198,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     private fun <T> commit(r: Pair<Sketch, T>?): T? { if (r == null) return null; edit(r.first); return r.second }
 
     // ---- tools ---------------------------------------------------------------------------------------------------
-    val rail get() = Plugins.rail(VariantOps.plugins(sketch, variant), variant?.rail)
+    val rail get() = hu.vrg.mobile.sketch.Features.rail(Plugins.rail(VariantOps.plugins(sketch, variant), variant?.rail), FeaturePrefs.flipped)   // M51: a tool switched off stays out, whatever the variant says
 
     /** The tool's line on the canvas: the variant's own hint while it is on. */
     fun hint(t: Tool) = variant?.hints?.get(t.id) ?: t.hint
@@ -360,6 +362,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- hold: the wheel -------------------------------------------------------------------------------------------
     fun onHold(o: Offset, canvasW: Float, canvasH: Float, radius: Float) {
         cancelDraft()
+        if (!FeaturePrefs.on("vazlat.wheels")) return   // M51: Tartásra kerék switched off
         val h = hitAt(o)
         focusOn(h, toSketch(o))
         val v = variant
@@ -375,7 +378,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             null -> Wheels.forPaper()
         } ?: Wheels.forPaper()
         val c = Offset(o.x.coerceIn(radius, max(radius, canvasW - radius)), o.y.coerceIn(radius, max(radius, canvasH - radius)))
-        wheel = WheelUi(w, c, 0, null, toSketch(o), h, sticky = false)
+        wheel = WheelUi(hu.vrg.mobile.sketch.Features.wheel(w, FeaturePrefs.flipped), c, 0, null, toSketch(o), h, sticky = false)   // M51
     }
 
     fun onHoldMove(o: Offset, hub: Float) {
@@ -416,7 +419,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id.startsWith("type:") -> id?.let { edit(Ops.setType(sketch, it, PointType.of(item.id.removePrefix("type:")))) }
             item.id.startsWith("kind:") -> id?.let {
                 edit(Ops.toggleKind(sketch, it, item.id.removePrefix("kind:")))
-                wheel = w.copy(wheel = Wheels.forRoom(sketch.room(it)!!, variant?.roomRing), sel = null, sticky = true)   // several kinds in a row
+                wheel = w.copy(wheel = hu.vrg.mobile.sketch.Features.wheel(Wheels.forRoom(sketch.room(it)!!, variant?.roomRing), FeaturePrefs.flipped), sel = null, sticky = true)   // several kinds in a row
             }
             item.id == "state" -> id?.let { pid -> sketch.point(pid)?.let { edit(Ops.setState(sketch, pid, it.state.other())) } }
             item.id == "memo" -> ask = if (h == null) Ask.MemoNew(w.at, null) else Ask.MemoNew(beside(h), targetOf(h))
@@ -429,7 +432,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id == "measure-edge" -> if (h != null && h.edge >= 0) ask = Ask.MeasureEdge(h.id, h.edge)
             item.id == "point-here" -> placePoint(w.at)
             item.id == "board-here" -> commit(Ops.addPoint(sketch, w.at, PointType.BOARD, pointState, tol))
-            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = Wheels.forRoom(it, variant?.roomRing), ring = 0, sel = null, sticky = true) } }
+            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = hu.vrg.mobile.sketch.Features.wheel(Wheels.forRoom(it, variant?.roomRing), FeaturePrefs.flipped), ring = 0, sel = null, sticky = true) } }
             item.id == "points" -> id?.let { rid ->
                 val ids = sketch.points.filter { it.room == rid && it.type != PointType.BOARD }.map { it.id }
                 if (ids.isEmpty()) note = "A szobában még nincs pont."
@@ -658,7 +661,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun setMeasure(room: String, kind: MeasureKind, mm: Int, edge: Int = -1) = edit(Ops.setMeasure(sketch, room, kind, mm, edge))
 
     // ---- F4 (WP M49): a variant's drawing tune (sketch-core DrawTune.kt); the original when none --------------------
-    val draw: DrawTune get() = variant?.draw ?: DrawTune()
+    val draw: DrawTune get() = hu.vrg.mobile.sketch.Features.draw(variant?.draw ?: DrawTune(), FeaturePrefs.flipped)   // M51: Rajz-hangolás off = the original
     /** A corner onto a neighbour's wall line, else onto the variant's grid (in the sketch's current scale). */
     private fun corner(p: Pt, skip: String? = null) = Draw.corner(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY, skip)
     private fun roomMade(id: String, msg: String) {
