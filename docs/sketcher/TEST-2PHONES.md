@@ -211,7 +211,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 
 ### M54 · Jegyzőkönyv a telefonon: the Felmérési jegyzőkönyv printed and shared from the phone
 
-- [ ] **M54.1** ⚙ → **Felmérés funkciók**: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva.
+- [ ] **M54.1** ⚙ → **Funkciók** → *Rendezés / export*: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva.
 - [ ] **M54.2** Egy felmérés néhány célfotóval, egy aláírással és egy helyszín-körvonallal → Rendezés: a Küldés mellett **📄 Jegyzőkönyv**.
 - [ ] **M54.3** 📄 Jegyzőkönyv → **🖨 Nyomtatás / PDF**: megnyílik az Android nyomtatás ablaka, A4. *PDF mentése* → a PDF-ben a munkakör, a tételek, a kérdések, a jegyzetek, a helyiségek, a vázlat, a fotók célonként, a helyszín rajza és az aláírás.
 - [ ] **M54.4** Ugyanez **⇪ Átadás (.html)** → PC-re: a PC táblán egy `….jegyzokonyv.html`; böngészőben megnyitva ugyanaz, mint a PDF, a fotók is látszanak (internet nélkül is), és ugyanaz, mint az Asztal Sketcher oldalán a **Jegyzőkönyv** gomb.
@@ -219,7 +219,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.6** A PC-n a HTML-ből mentett fotó (jobb klikk → kép mentése) tulajdonságaiban nincs GPS hely.
 - [ ] **M54.7** Helyszín → 👤 Ügyfél kitöltve, a pill „Kiadáskor törlődik”: a jegyzőkönyvben nincs ügyfél sor. „A kiadott csomagban marad”-ra kapcsolva: benne van a név, a telefon, az e-mail.
 - [ ] **M54.8** Egy jegyzet ⚑ Tisztázandó jelöléssel: a jegyzőkönyvben ott van. **Az ügyfélnek** bekapcsolva: se a Tisztázandó jegyzet, se az *Ellenőrizni* lista nincs benne; a többi jegyzet és a nyitott kérdések igen.
-- [ ] **M54.9** ⚙ → Felmérés funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. *Mind* visszakapcsolja.
+- [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
 ## X. Közös lépések (mindkét telefon + PC)

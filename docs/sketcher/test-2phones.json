@@ -695,7 +695,7 @@
      "items": [
       {
        "id": "M54.1",
-       "text": "⚙ → **Felmérés funkciók**: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva."
+       "text": "⚙ → **Funkciók** → *Rendezés / export*: ott a *📄 Jegyzőkönyv a telefonon* kapcsoló, alapból bekapcsolva."
       },
       {
        "id": "M54.2",
@@ -727,7 +727,7 @@
       },
       {
        "id": "M54.9",
-       "text": "⚙ → Felmérés funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. *Mind* visszakapcsolja."
+       "text": "⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja."
       },
       {
        "id": "M54.10",

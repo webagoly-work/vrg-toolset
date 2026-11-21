@@ -197,4 +197,4 @@ WebView; the drawing and the site from `PlanSvg.kt` / `SiteSvg.kt` (= `app.js` `
 `test/fixtures/report.json` by `tools/make-report-fixture.js`); out as **Nyomtatás / PDF** (the system print dialog) or
 **Átadás** (`<név>.jegyzokonyv.html`, photos inside). The export rules apply (client only when kept, no GPS, blur burned
 in, personal photos only blurred); *Az ügyfélnek* also drops the Tisztázandó notes and the Ellenőrizni lines. Switch:
-⚙ → Felmérés funkciók → *📄 Jegyzőkönyv a telefonon*.
+⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* (registry `export.report_phone`, requires `export.report`).
