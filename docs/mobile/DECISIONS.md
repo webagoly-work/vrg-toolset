@@ -566,7 +566,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (the Founder's A; F5 had built the same `T-csere` preset in parallel, the merge kept one). A survey made before has a
   stored tag list without it: the phone adds it when it opens one that has neither a `replace` preset nor a tag named
   Csere, so the user's own *Csere* is not doubled and still counts by name. Rejected: adding it
-  while reading every file (it would change the read of shared fixtures and round trips), a third point state (D-71).
+  while reading every file (it would change the read of shared fixtures and round trips), a third point state (D-71). **Answered 2026-11-21: A** (on open, switchable).
 - **D-81 · F5: the Felmérési jegyzőkönyv is the Desktop page's, built at run time, the browser paginates (M50),
   2026-11-21.** Taken in fork F5. One document from the open survey (`Sketcher/lib/report.js`), opened in a window and
   printed to PDF by the browser; never stored, so no client data reaches Git. Varler Papír tokens, but not its fixed
@@ -574,13 +574,14 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   fixed footer that could overlap, sections and photos kept whole. Not on the phone: it needs the solved plan, the photos
   and the takeoff together, and a Kotlin renderer would be a third engine to keep equal; the package to the PC and one
   button is enough. Rejected: a generated PDF (a library, fonts embedded), the Workflow Kit's offer generator (that is the
-  quote, not the survey).
+  quote, not the survey). **Answered 2026-11-21: A for now**, and **B planned**: the phone's own report is planned out in `WP/M50.md`
+  (*Planned: the jegyzőkönyv from the phone*) for a later round.
 - **D-82 · F5: the client's contact is personal: kept on the phone, stripped on export unless kept (M50), 2026-11-21.**
   Taken in fork F5, D-57's rule for GPS. Name, phone, e-mail (the address is the site's) in an optional `client` object;
   every copy that leaves the phone (the Rendezés package and its takeoff) drops it unless *A kiadott csomagban marad* is on;
   a variant request never reads it; no fixture carries it. The Desktop page and the Planner show it from the user's own
   file. Rejected: a client record across jobs (the Workflow Kit owns clients), always exporting it (a package forwarded
-  to a colleague would carry a private person's phone number).
+  to a colleague would carry a private person's phone number). **Answered 2026-11-21: A** (stripped unless kept).
 - **D-83 · F5: lineClose auto / ask; no wallThickness (M50), 2026-11-21.** Taken in fork F5 (M49 left both out). `auto`:
   the Vonal tool's Kész with 3+ corners makes a room, and closing on the first corner reaches twice as far; `ask`: Kész
   asks once (room or open line). Only Kész asks, so drawing a room by tapping its first corner never gets a dialog
