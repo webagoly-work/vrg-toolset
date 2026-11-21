@@ -100,8 +100,18 @@ What changes locally compared with the cloud:
   phone key (`node tools/workflow-seal.js trust <ID> <CODE>`, then `seal`), only ciphertext on the `workflow-sealed`
   branch. `docs/mobile/WP/M42.md` → "Telefonon ellenőrizni" (13 steps, two on the PC).
 - **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
-  "Telefonon ellenőrizni" (11 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
+  "Telefonon ellenőrizni" (12 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
   `kit-core/MapPhone.kt`.
+- **M46–M54** the VRG Sketcher forks (`docs/sketcher/FORKS.md`), 2026-11-20/21, cloud sessions, each **BETA**: M46
+  Kamera 2 (F3, D-55 … D-61, D-90), M47 Munkakör lap + takeoff (F2, D-67 … D-71, D-77 … D-79), M48 Helyszín ↔ Térkép
+  (F1, D-62 … D-66), M49 Apró hiányok (F4, D-72 … D-76), M50 Maradékok (F5, D-80 … D-84), M51 Kapcsolók (F6, D-91 … D-99),
+  M52 Saját kamera (F7, D-100 … D-109), M53 Összefésülés (F8, D-110 … D-116: the forks tested together end to end), M54 Jegyzőkönyv a telefonon (F9,
+  D-120 … D-128). Their
+  phone lists make one two-phone plan: `docs/sketcher/TEST-2PHONES.md` (`node Sketcher/tools/test-plan.js`).
+- **M55** Térkép-feed built 2026-11-21 (cloud session, D-129 … D-132), **BETA**: the nearest Otthon, Daniella, shops,
+  food, doctor … in the Térkép (key F) with distance, ETA, ghost lines and hold-to-select. `docs/mobile/WP/M55.md` →
+  "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,pois`). N2 (own routing, D-129) and N3
+  (traffic, D-130) are next in that line.
 
 ## 3. What the user asked for, mapped to WPs
 

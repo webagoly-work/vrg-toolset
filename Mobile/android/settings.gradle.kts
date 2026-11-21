@@ -35,3 +35,4 @@ if (!jvmOnly) include(":feature-devices") // WP M35 Eszközök
 if (!jvmOnly) include(":feature-vault")   // WP M45 Vault
 if (!jvmOnly) include(":feature-workflow") // WP M42 Varler Workflow Kit
 if (!jvmOnly) include(":feature-map")     // WP M43 VRG Térkép
+if (!jvmOnly) include(":sketch-vision")   // Kamera 2: on-device text recognition (ML Kit, bundled)

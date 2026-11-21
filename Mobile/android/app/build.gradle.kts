@@ -30,6 +30,9 @@ android {
         versionName = "0.9.$buildCode"
         // GitHub Actions sets GITHUB_SHA; a desktop build says so instead. Beállítások -> Névjegy shows it.
         // The "git:" prefix keeps an all-digit SHA from being read back as a number from the manifest.
+        // Kamera 2 (D-55): ML Kit's bundled text model ships native code per CPU; phones are ARM, so the x86 copies
+        // (emulators only) are left out of the APK.
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         manifestPlaceholders["gitSha"] = "git:" + (System.getenv("GITHUB_SHA")?.take(7) ?: "helyi")
     }
 

@@ -1,0 +1,1379 @@
+{
+ "exported": 7,
+ "level": "ground",
+ "kind": "vrg-sketch",
+ "v": 1,
+ "name": "Kossuth u. 12",
+ "sketch": {
+  "rooms": [
+   {
+    "poly": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ],
+    "name": "",
+    "kinds": [
+     "nappali"
+    ],
+    "id": "R1"
+   },
+   {
+    "poly": [
+     [
+      100,
+      0
+     ],
+     [
+      150,
+      0
+     ],
+     [
+      150,
+      80
+     ],
+     [
+      100,
+      80
+     ]
+    ],
+    "name": "",
+    "kinds": [],
+    "id": "R2"
+   }
+  ],
+  "plugins": [
+   "jegyzet",
+   "alaprajz",
+   "villany"
+  ],
+  "answers": {
+   "lenyeg": {
+    "options": [
+     "csere"
+    ],
+    "text": "",
+    "at": 1763459999000,
+    "state": "answered"
+   },
+   "kor": {
+    "options": [],
+    "text": "",
+    "at": 1763459999000,
+    "state": "later"
+   }
+  },
+  "photos": [
+   {
+    "at": [
+     50,
+     40
+    ],
+    "id": "F99",
+    "shots": [
+     {
+      "file": "R1-e.jpg",
+      "deg": 90,
+      "taken": 5
+     }
+    ],
+    "room": "R1"
+   }
+  ],
+  "seen": {},
+  "points": [
+   {
+    "st": "meglevo",
+    "edge": 0,
+    "at": [
+     50,
+     0
+    ],
+    "t": 0.5,
+    "id": "P5",
+    "type": "socket",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "edge": 1,
+    "at": [
+     100,
+     40
+    ],
+    "t": 0.5,
+    "id": "P6",
+    "type": "switch",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "at": [
+     50,
+     40
+    ],
+    "id": "P7",
+    "type": "light",
+    "room": "R1"
+   },
+   {
+    "st": "tervezett",
+    "edge": 1,
+    "at": [
+     150,
+     40
+    ],
+    "t": 0.5,
+    "id": "P8",
+    "type": "board",
+    "room": "R2"
+   }
+  ],
+  "routes": [
+   {
+    "a": "P6",
+    "b": "P7",
+    "circuit": "K9",
+    "id": "N10",
+    "pts": [
+     [
+      100,
+      40
+     ],
+     [
+      50,
+      40
+     ]
+    ]
+   }
+  ],
+  "measures": [
+   {
+    "mm": 4000,
+    "edge": -1,
+    "kind": "szel",
+    "id": "M3",
+    "room": "R1"
+   },
+   {
+    "mm": 3200,
+    "edge": -1,
+    "kind": "mely",
+    "id": "M4",
+    "room": "R1"
+   }
+  ],
+  "memos": [
+   {
+    "at": [
+     55,
+     5
+    ],
+    "id": "J11",
+    "text": "régi, bontandó",
+    "target": "P5"
+   }
+  ],
+  "scope": {
+   "felujitas": 1,
+   "dugalj": 3,
+   "fozolap": 1,
+   "ev": 1,
+   "klima": 1,
+   "eloszto": 1,
+   "ledszalag": 2
+  },
+  "id": "V1",
+  "lines": [],
+  "seq": 14,
+  "circuits": [
+   {
+    "col": 4293420060,
+    "ded": false,
+    "members": [
+     "P5",
+     "P6",
+     "P7"
+    ],
+    "name": "K1",
+    "id": "K9",
+    "board": "P8"
+   }
+  ],
+  "captures": [
+   {
+    "id": "C52",
+    "file": "x.jpg",
+    "purpose": "eloszto",
+    "at": 1763460000000,
+    "note": ""
+   }
+  ],
+  "level": "ground",
+  "kind": "vrg-vazlat",
+  "created": 1,
+  "dismissed": [],
+  "tagUses": [
+   {
+    "id": "U12",
+    "tag": "T-ip44",
+    "target": "P5"
+   },
+   {
+    "id": "U13",
+    "tag": "T-furdo",
+    "target": "R2"
+   },
+   {
+    "at": [
+     120,
+     60
+    ],
+    "id": "U14",
+    "tag": "T-nedves"
+   }
+  ],
+  "tags": [
+   {
+    "col": 4280978651,
+    "name": "Fürdő",
+    "id": "T-furdo",
+    "preset": "kind:furdo"
+   },
+   {
+    "col": 4292915232,
+    "name": "Konyha",
+    "id": "T-konyha",
+    "preset": "kind:konyha"
+   },
+   {
+    "col": 4280330400,
+    "name": "Nedves",
+    "id": "T-nedves",
+    "preset": "wet"
+   },
+   {
+    "col": 4282232410,
+    "name": "IP44",
+    "id": "T-ip44",
+    "preset": "ip44"
+   },
+   {
+    "col": 4292232517,
+    "name": "Dedikált",
+    "id": "T-ded",
+    "preset": "dedicated"
+   },
+   {
+    "col": 4287257814,
+    "name": "Bontás",
+    "id": "T-bontas",
+    "preset": "remove"
+   },
+   {
+    "col": 4293420060,
+    "name": "Csere",
+    "id": "T-csere",
+    "preset": "replace"
+   }
+  ],
+  "entries": [
+   {
+    "id": "E50",
+    "at": 1763460000000,
+    "text": "A konyhában indukció kell",
+    "chips": [
+     "kivansag"
+    ],
+    "room": "R1"
+   },
+   {
+    "id": "E51",
+    "at": 1763460000000,
+    "text": "",
+    "chips": [
+     "tisztazando"
+    ],
+    "open": true
+   }
+  ],
+  "v": 2,
+  "name": "Kossuth u. 12",
+  "updated": 2
+ },
+ "plan": {
+  "data": {
+   "floors": [
+    {
+     "stage": "outline",
+     "level": "ground",
+     "nameAuto": true,
+     "kind": "nappali",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       4000,
+       0
+      ],
+      [
+       4000,
+       3200
+      ],
+      [
+       0,
+       3200
+      ]
+     ],
+     "clear": true,
+     "name": "Nappali",
+     "sk": {
+      "der": [],
+      "src": "vazlat",
+      "est": [],
+      "mea": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "id": "R1"
+     },
+     "kinds": [
+      "nappali"
+     ],
+     "id": "F1",
+     "fill": "#e9e5da"
+    },
+    {
+     "stage": "outline",
+     "level": "ground",
+     "nameAuto": true,
+     "kind": "furdo",
+     "poly": [
+      [
+       4000,
+       0
+      ],
+      [
+       6000,
+       0
+      ],
+      [
+       6000,
+       3200
+      ],
+      [
+       4000,
+       3200
+      ]
+     ],
+     "clear": true,
+     "name": "Fürdő",
+     "sk": {
+      "der": [
+       1,
+       3
+      ],
+      "src": "vazlat",
+      "est": [
+       0,
+       2
+      ],
+      "mea": [],
+      "id": "R2",
+      "tags": [
+       "Fürdő"
+      ]
+     },
+     "kinds": [
+      "furdo"
+     ],
+     "id": "F2",
+     "fill": "#e9e5da"
+    }
+   ],
+   "notes": [
+    {
+     "level": "ground",
+     "x": 2200,
+     "sk": {
+      "src": "vazlat",
+      "id": "J11",
+      "target": "D3"
+     },
+     "y": 200,
+     "id": "N11",
+     "text": "régi, bontandó"
+    },
+    {
+     "level": "ground",
+     "x": 4800,
+     "sk": {
+      "src": "vazlat",
+      "id": "U14",
+      "tag": "Nedves"
+     },
+     "y": 2400,
+     "id": "N12",
+     "text": "#Nedves"
+    },
+    {
+     "hidden": true,
+     "level": "ground",
+     "x": 2000,
+     "sk": {
+      "src": "vazlat",
+      "photo": true,
+      "id": "F99",
+      "shots": [
+       {
+        "side": "K",
+        "file": "kossuth-u-12_F99_kelet.jpg",
+        "deg": 90,
+        "taken": 5
+       }
+      ],
+      "room": "Nappali"
+     },
+     "y": 1600,
+     "id": "N13",
+     "text": "Fotópont · Nappali (1/4)"
+    }
+   ],
+   "devices": [
+    {
+     "level": "ground",
+     "x": 2000,
+     "h": 300,
+     "sk": {
+      "st": "meglevo",
+      "t": "socket",
+      "src": "vazlat",
+      "ip44": true,
+      "id": "P5",
+      "tags": [
+       "IP44"
+      ]
+     },
+     "y": 40,
+     "id": "D3",
+     "type": "socket"
+    },
+    {
+     "level": "ground",
+     "x": 3960,
+     "h": 1100,
+     "sk": {
+      "st": "tervezett",
+      "t": "switch",
+      "src": "vazlat",
+      "id": "P6"
+     },
+     "y": 1600,
+     "links": [
+      {
+       "p": "P8",
+       "n": "n9"
+      }
+     ],
+     "id": "D4",
+     "type": "switch"
+    },
+    {
+     "level": "ground",
+     "x": 2000,
+     "h": 2700,
+     "sk": {
+      "st": "tervezett",
+      "t": "light",
+      "src": "vazlat",
+      "id": "P7"
+     },
+     "y": 1600,
+     "links": [
+      {
+       "p": "P8",
+       "n": "n10"
+      }
+     ],
+     "id": "D5",
+     "type": "light"
+    },
+    {
+     "level": "ground",
+     "x": 5960,
+     "h": 1600,
+     "sk": {
+      "st": "tervezett",
+      "t": "board",
+      "src": "vazlat",
+      "id": "P8"
+     },
+     "y": 1600,
+     "id": "D6",
+     "type": "board"
+    }
+   ],
+   "v": 2,
+   "paths": [
+    {
+     "nodes": [
+      {
+       "level": "ground",
+       "x": 4000,
+       "h": 2700,
+       "y": 1600,
+       "id": "n9"
+      },
+      {
+       "level": "ground",
+       "x": 2000,
+       "h": 2700,
+       "y": 1600,
+       "id": "n10"
+      }
+     ],
+     "level": "ground",
+     "sk": {
+      "circuit": "A7",
+      "src": "vazlat",
+      "id": "N10"
+     },
+     "id": "P8",
+     "sections": [
+      {
+       "circuit": null,
+       "build": "sull_gege"
+      }
+     ]
+    }
+   ],
+   "seq": 13,
+   "circuits": [
+    {
+     "col": "#e8641c",
+     "dedicated": false,
+     "ref": "K1",
+     "members": [
+      "D3",
+      "D4",
+      "D5"
+     ],
+     "name": "K1",
+     "sk": {
+      "src": "vazlat",
+      "id": "K9"
+     },
+     "id": "A7",
+     "board": "D6"
+    }
+   ]
+  },
+  "center": [
+   3000,
+   1600
+  ],
+  "report": {
+   "scaleX": 40,
+   "measured": 4,
+   "scaleY": 40,
+   "warnings": [],
+   "inferred": 2,
+   "conflicts": [],
+   "derived": 2
+  },
+  "photos": [
+   {
+    "x": 2000,
+    "y": 1600,
+    "id": "F99",
+    "shots": [
+     {
+      "side": "K",
+      "file": "kossuth-u-12_F99_kelet.jpg",
+      "deg": 90,
+      "taken": 5
+     }
+    ],
+    "room": "Nappali"
+   }
+  ]
+ },
+ "takeoff": {
+  "kind": "vrg-sketch-takeoff",
+  "v": 1,
+  "made": 1763460000000,
+  "source": {
+   "name": "Kossuth u. 12",
+   "id": "V1",
+   "level": "ground",
+   "plan": "megoldott",
+   "variant": ""
+  },
+  "config": {
+   "endReserveMm": 300,
+   "looseEndMm": 0,
+   "ceilingMm": 2700,
+   "impliedDedicated": false
+  },
+  "counts": {
+   "items": 12,
+   "work": 11,
+   "est": 4,
+   "open": 10,
+   "decisions": 11,
+   "tisztazando": 1,
+   "answered": 1,
+   "questionsOpen": 33,
+   "rooms": 2,
+   "areaM2": 19.2,
+   "photos": 2
+  },
+  "scope": [
+   {
+    "group": "jelleg",
+    "label": "A munka jellege",
+    "items": [
+     {
+      "id": "felujitas",
+      "label": "Felújítás, csere",
+      "sym": "↻",
+      "qty": 1
+     },
+     {
+      "id": "eloszto",
+      "label": "Elosztó csere",
+      "sym": "▣",
+      "qty": 1
+     }
+    ]
+   },
+   {
+    "group": "rendszer",
+    "label": "Rendszerek",
+    "items": [
+     {
+      "id": "ev",
+      "label": "E-autó töltő",
+      "sym": "⚡",
+      "qty": 1
+     },
+     {
+      "id": "klima",
+      "label": "Klíma",
+      "sym": "❄",
+      "qty": 1
+     }
+    ]
+   },
+   {
+    "group": "igeny",
+    "label": "Igények",
+    "items": [
+     {
+      "id": "dugalj",
+      "label": "Dugalj",
+      "sym": "⊙",
+      "qty": 3
+     },
+     {
+      "id": "ledszalag",
+      "label": "LED-szalag",
+      "sym": "═",
+      "qty": 2
+     },
+     {
+      "id": "fozolap",
+      "label": "Főzőlap",
+      "sym": "⊞",
+      "qty": 1
+     }
+    ]
+   }
+  ],
+  "items": [
+   {
+    "id": "pont.socket.uj",
+    "cat": "pont",
+    "label": "Dugalj — új",
+    "sym": "⊙",
+    "unit": "db",
+    "qty": 3,
+    "est": true,
+    "work": true,
+    "open": [
+     "kor",
+     "furdo_mit"
+    ],
+    "note": "Munkakör: 3, vázlat: 0",
+    "refs": []
+   },
+   {
+    "id": "pont.socket.marad",
+    "cat": "pont",
+    "label": "Dugalj — meglévő marad",
+    "sym": "⊙",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": false,
+    "open": [
+     "kor",
+     "furdo_mit"
+    ],
+    "note": "",
+    "refs": [
+     "P5"
+    ]
+   },
+   {
+    "id": "pont.switch.uj",
+    "cat": "pont",
+    "label": "Kapcsoló — új",
+    "sym": "⊘",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [
+     "kor",
+     "furdo_mit"
+    ],
+    "note": "",
+    "refs": [
+     "P6"
+    ]
+   },
+   {
+    "id": "pont.light.uj",
+    "cat": "pont",
+    "label": "Lámpa — új",
+    "sym": "✱",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [
+     "kor",
+     "furdo_mit"
+    ],
+    "note": "",
+    "refs": [
+     "P7"
+    ]
+   },
+   {
+    "id": "gep.fozolap",
+    "cat": "gep",
+    "label": "Főzőlap",
+    "sym": "⊞",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [
+     "uj_fogyaszto",
+     "fozolap_tipus",
+     "furdo_mit"
+    ],
+    "note": "",
+    "refs": []
+   },
+   {
+    "id": "aramkor.altalanos",
+    "cat": "aramkor",
+    "label": "Áramkör — általános",
+    "sym": "◌",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [],
+    "note": "",
+    "refs": [
+     "K9"
+    ]
+   },
+   {
+    "id": "eloszto.uj",
+    "cat": "eloszto",
+    "label": "Elosztó — új",
+    "sym": "▣",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [
+     "uj_eloszto",
+     "szabad_hely"
+    ],
+    "note": "",
+    "refs": [
+     "P8"
+    ]
+   },
+   {
+    "id": "kabel.nyomvonal",
+    "cat": "kabel",
+    "label": "Kábel a nyomvonalon",
+    "sym": "〰",
+    "unit": "m",
+    "qty": 4.2,
+    "est": true,
+    "work": true,
+    "open": [
+     "kor",
+     "anyag"
+    ],
+    "note": "nyomvonal + végenként 0,3 m tartalék és a függőleges szakasz",
+    "refs": [
+     "N10"
+    ],
+    "parts": [
+     {
+      "ref": "N10",
+      "label": "K1",
+      "m": 4.2
+     }
+    ]
+   },
+   {
+    "id": "kabel.ev",
+    "cat": "kabel",
+    "label": "Kábel az e-autó töltőhöz",
+    "sym": "⚡",
+    "unit": "m",
+    "qty": 0,
+    "est": true,
+    "work": true,
+    "open": [
+     "kor",
+     "anyag",
+     "tavolsag"
+    ],
+    "note": "a távolság még nincs meg",
+    "refs": []
+   },
+   {
+    "id": "rendszer.ev",
+    "cat": "rendszer",
+    "label": "E-autó töltő",
+    "sym": "⚡",
+    "unit": "db",
+    "qty": 1,
+    "est": false,
+    "work": true,
+    "open": [
+     "uj_fogyaszto",
+     "auto_kw",
+     "fazis"
+    ],
+    "note": "",
+    "refs": []
+   },
+   {
+    "id": "rendszer.klima",
+    "cat": "rendszer",
+    "label": "Klíma",
+    "sym": "❄",
+    "unit": "db",
+    "qty": 1,
+    "est": true,
+    "work": true,
+    "open": [
+     "uj_fogyaszto",
+     "klima_db",
+     "fazis"
+    ],
+    "note": "a darabszám még nincs meg",
+    "refs": []
+   },
+   {
+    "id": "igeny.ledszalag",
+    "cat": "igeny",
+    "label": "LED-szalag",
+    "sym": "═",
+    "unit": "db",
+    "qty": 2,
+    "est": false,
+    "work": true,
+    "open": [],
+    "note": "",
+    "refs": []
+   }
+  ],
+  "decisions": [
+   {
+    "q": "kor",
+    "label": "Mikor készült a hálózat?",
+    "who": "ugyfel",
+    "state": "later",
+    "affects": [
+     "pont.socket.uj",
+     "pont.socket.marad",
+     "pont.switch.uj",
+     "pont.light.uj",
+     "kabel.nyomvonal",
+     "kabel.ev"
+    ]
+   },
+   {
+    "q": "anyag",
+    "label": "Vezeték anyaga?",
+    "who": "szemle",
+    "state": "open",
+    "affects": [
+     "kabel.nyomvonal",
+     "kabel.ev"
+    ]
+   },
+   {
+    "q": "uj_eloszto",
+    "label": "Kell új elosztó?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "eloszto.uj"
+    ]
+   },
+   {
+    "q": "szabad_hely",
+    "label": "Van szabad hely az elosztóban?",
+    "who": "szemle",
+    "state": "open",
+    "affects": [
+     "eloszto.uj"
+    ]
+   },
+   {
+    "q": "uj_fogyaszto",
+    "label": "Lesz új nagy fogyasztó?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "gep.fozolap",
+     "rendszer.ev",
+     "rendszer.klima"
+    ]
+   },
+   {
+    "q": "fozolap_tipus",
+    "label": "Milyen főzőlap?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "gep.fozolap"
+    ]
+   },
+   {
+    "q": "furdo_mit",
+    "label": "Mit szeretne a fürdőben?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "pont.socket.uj",
+     "pont.socket.marad",
+     "pont.switch.uj",
+     "pont.light.uj",
+     "gep.fozolap"
+    ]
+   },
+   {
+    "q": "klima_db",
+    "label": "Hány beltéri egység lesz?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "rendszer.klima"
+    ]
+   },
+   {
+    "q": "auto_kw",
+    "label": "Az autó töltési teljesítménye (AC)?",
+    "who": "ugyfel",
+    "state": "open",
+    "affects": [
+     "rendszer.ev"
+    ]
+   },
+   {
+    "q": "tavolsag",
+    "label": "Milyen messze van az elosztótól?",
+    "who": "szemle",
+    "state": "open",
+    "affects": [
+     "kabel.ev"
+    ]
+   },
+   {
+    "q": "fazis",
+    "label": "Hány fázis a bekötés most?",
+    "who": "szemle",
+    "state": "open",
+    "affects": [
+     "rendszer.ev",
+     "rendszer.klima"
+    ]
+   }
+  ],
+  "checks": [
+   "A gépek, rendszerek szerint 3 dedikált kör kellhet, a vázlaton 0 van"
+  ],
+  "questions": [
+   {
+    "q": "lenyeg",
+    "label": "Mi a kérés lényege?",
+    "who": "ugyfel",
+    "state": "answered",
+    "options": [
+     "Csere, felújítás"
+    ],
+    "text": ""
+   },
+   {
+    "q": "ingatlan",
+    "label": "Milyen ingatlan?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "hozzaferes",
+    "label": "Ki fér hozzá az ingatlanhoz?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "hatarido",
+    "label": "Mikorra kell elkészülni?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "keret",
+    "label": "Van költségkeret?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "lakott",
+    "label": "Lakott lesz közben az ingatlan?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "foto",
+    "label": "Fényképezhetünk?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "doksi",
+    "label": "Van régi dokumentáció (terv, jegyzőkönyv)?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "dontes",
+    "label": "Ki dönt a megrendelésről?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "kor",
+    "label": "Mikor készült a hálózat?",
+    "who": "ugyfel",
+    "state": "later",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "anyag",
+    "label": "Vezeték anyaga?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "fi",
+    "label": "Van FI-relé (életvédelmi)?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "biztositek",
+    "label": "Biztosítékok típusa?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "vizsgalat",
+    "label": "Mikor volt utoljára érintésvédelmi felülvizsgálat?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "fazis",
+    "label": "Hány fázis a bekötés most?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "fobizt",
+    "label": "Főbiztosíték?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "mero_hely",
+    "label": "Hol van a mérő?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "bekotes",
+    "label": "Hogyan jön be a hálózat?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "uj_fogyaszto",
+    "label": "Lesz új nagy fogyasztó?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "mero_allapot",
+    "label": "Mérőszekrény állapota?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "szabad_hely",
+    "label": "Van szabad hely az elosztóban?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "felirat",
+    "label": "Van áramköri felirat / lista?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "foldeles",
+    "label": "Földelés?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "uj_eloszto",
+    "label": "Kell új elosztó?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "furdo_mit",
+    "label": "Mit szeretne a fürdőben?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "fozolap_tipus",
+    "label": "Milyen főzőlap?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "csempe",
+    "label": "Kész a csempézés?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "auto_kw",
+    "label": "Az autó töltési teljesítménye (AC)?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "parkolo",
+    "label": "Hol parkol az autó?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "tavolsag",
+    "label": "Milyen messze van az elosztótól?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "okos_tolto",
+    "label": "Okos funkció a töltőn?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "wifi_park",
+    "label": "Van WiFi a töltő helyén?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "klima_db",
+    "label": "Hány beltéri egység lesz?",
+    "who": "ugyfel",
+    "state": "open",
+    "options": [],
+    "text": ""
+   },
+   {
+    "q": "kulteri_egyseg",
+    "label": "Hol lesz a kültéri egység?",
+    "who": "szemle",
+    "state": "open",
+    "options": [],
+    "text": ""
+   }
+  ],
+  "notes": [
+   {
+    "id": "E50",
+    "text": "A konyhában indukció kell",
+    "chips": [
+     "Kívánság"
+    ],
+    "room": "Nappali",
+    "open": false
+   },
+   {
+    "id": "E51",
+    "text": "",
+    "chips": [
+     "Tisztázandó"
+    ],
+    "room": "",
+    "open": true
+   }
+  ],
+  "memos": [
+   {
+    "id": "J11",
+    "text": "régi, bontandó"
+   }
+  ],
+  "photos": [
+   {
+    "purpose": "eloszto",
+    "label": "Elosztó",
+    "sym": "▣",
+    "n": 1,
+    "files": [
+     "kossuth-u-12_C52_eloszto.jpg"
+    ]
+   },
+   {
+    "purpose": "szoba",
+    "label": "Szoba (Fotópont)",
+    "sym": "◎",
+    "n": 1,
+    "files": []
+   }
+  ],
+  "rooms": [
+   {
+    "id": "R1",
+    "name": "Nappali",
+    "kinds": [
+     "nappali"
+    ],
+    "areaM2": 12.8,
+    "est": false
+   },
+   {
+    "id": "R2",
+    "name": "Fürdő",
+    "kinds": [
+     "furdo"
+    ],
+    "areaM2": 6.4,
+    "est": true
+   }
+  ]
+ }
+}

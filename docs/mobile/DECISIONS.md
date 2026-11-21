@@ -453,6 +453,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   navigation app a `geo:` link with coordinates and the job code / sketch name, never an address (D-31). No route
   planning of our own.
 
+- **D-50, D-51 · not used.** Left to the parallel sessions M43–M45, which needed only D-48 and D-49.
 - **D-52 · Varler Workflow Kit: the client data sealed to the phone's device key, through GitHub (M42), 2026-11-20.**
   (D-48 … D-51 are left to the parallel sessions M43–M45.) Asked: what the phone does with the Kit — **A** read-only
   through the relay, **B** a web app like M21, **C** a native screen fed by the Planner, the calculators and Készlet.
@@ -479,6 +480,395 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   and the Keystore-backed VRG key never reaches the page. Rejected: **B** one approval for both (the VRG key handed to a
   web page, and every phone let into VRG Mobile reaching the secrets).
   Details: `WP/M45.md`.
+- **D-55 · Kamera 2: the text recogniser is ML Kit's bundled Latin model, behind one module (M46), 2026-11-20.**
+  Taken in fork F3 without asking (FORKS.md rule 5), to confirm. `com.google.mlkit:text-recognition:16.0.1` in the new
+  module `sketch-vision`, behind `TextReader` (plain text out; the parsing is pure Kotlin in `sketch-core`
+  `TypePlate.kt`), so another engine only has to return text. **Why bundled:** it works offline in a cellar with no
+  signal and needs no Google Play download on first use (the unbundled variant, ~260 KB, downloads its model through
+  Play services). **Licence / terms:** ML Kit is free of charge and closed source, used under Google's ML Kit Terms
+  (developers.google.com/ml-kit/terms) and the Google APIs Terms; the bundled model runs on the device and no image
+  leaves it; Google's terms allow the SDK to send usage and performance metrics, not the image content (to re-read
+  before a public release). **Size:** about 4 MB per CPU architecture (Google's figure); the APK now carries only
+  `arm64-v8a` and `armeabi-v7a` (`abiFilters` in `app/build.gradle.kts`: x86 is emulators only), so about +8 MB.
+  Rejected: Tesseract (≈ 20 MB with the Hungarian data, slower, worse on photos), the unbundled ML Kit (needs Play
+  services and a first download). **Rule:** a finding is offered as a chip and fills an answer or a note line only
+  when tapped; label photos (purpose *Típustábla*, the label items of the shot list) are read by themselves, others on
+  a tap. Details: `WP/M46.md`.
+- **D-56 · Kamera 2: automatic face detection, built in and switchable (M46), 2026-11-20 → answered 2026-11-21: B.**
+  Proposed A (no face detection: ML Kit's bundled face model adds about 6.9 MB per architecture); the Founder chose
+  **B**: build it ("I would default to have upcoming features and programs be integrated so we have them", D-90).
+  `sketch-vision` `FaceFinder` (`com.google.mlkit:face-detection:16.1.7`, bundled, accurate mode, faces from 5 % of the
+  picture) beside `TextReader`; `sketch-core` `CameraFeatures.proposals` turns each face into a blur rectangle grown by
+  20 % and clipped, never twice over an existing one. The rectangles are only **proposed** (dashed red over the photo,
+  *✓ Elmosás* / *✕*); flagging a photo 👤 searches by itself, *☺ Arcok keresése* on a tap. Both switchable (D-90).
+  The APK grows by about 14 MB more (two ARM architectures).
+- **D-57 · Kamera 2: GPS is stripped from exported copies by default (M46), 2026-11-20.** Taken in fork F3. Every
+  photo that leaves the phone (the package's purpose photos and Fotópont photos, variant-request photos) has its EXIF
+  position removed; when the rewrite fails the copy is re-encoded without EXIF rather than sent with it. Per photo
+  *⌖ GPS a kiadott képen marad* keeps it (the survey file keeps the position either way, it is the Founder's own
+  record). A photo flagged **Személyes adat** never keeps it. A photo with a blur mark leaves the phone **only blurred**
+  (the original stays on the phone); personal photos, videos and signatures are never offered for a variant request
+  (which ends up in Git). Rejected: keeping GPS by default (a photo forwarded from the PC to a supplier or a client
+  carries the client's address in its metadata). **Answered 2026-11-21: A** (stripped by default, kept per photo); the
+  strip itself is a switch too (D-90: *GPS törlése kiadáskor*); a variant request is always stripped (it goes to Git).
+- **D-58 · Kamera 2: before / after is a pair by reference, compared with a slider (M46), 2026-11-20.** Taken in fork F3.
+  The after-photo names its before (`phase` utana + `pair`); one after per before (a new one replaces the old). The
+  candidates are earlier photos of the same purpose, the same room first, then the same shot item, the newest first.
+  The phone's camera app gives no live ghost overlay (TakePicture intent, M29), so the comparison is in the viewer: a
+  slider revealing the after over the before, or side by side. A live overlay needs an own camera (CameraX): later.
+- **D-59 · Kamera 2: the client's signature is a PNG under a fixed statement (M46), 2026-11-20.** Taken in fork F3. Three
+  statements (átvétel / hozzájárulás a fotózáshoz / mindkettő), the signer's name and the time written into the PNG
+  under the strokes and stored on the capture (purpose *dokumentum*, kind *signature*); exported as `…_alairas.png`.
+  It is a record of consent on site, **not** a qualified electronic signature. It fills no shot-list item (otherwise it
+  would tick *A régi dokumentáció*); the Kotlin and JS engines both skip it, the fixture checks it. The statement texts
+  are to be confirmed by the Founder (question 2 of the F3 report). **Answered 2026-11-21: A** (the texts stay; the
+  Founder refines them later).
+- **D-60 · Kamera 2: the walk video goes through the camera app, limited and warned (M46), 2026-11-20.** Taken in fork F3.
+  CaptureVideo with `EXTRA_DURATION_LIMIT` 90 s and `EXTRA_SIZE_LIMIT` 150 MB (most camera apps honour them); a warning
+  over 80 MB or a long video; no re-compression on the phone (no extra library). Purpose *Nyomvonal* unless chosen
+  otherwise. Exported as `…_<cél>.mp4` with the package.
+- **D-61 · Kamera 2: faster purpose switching (M46), 2026-11-20.** Taken in fork F3. The ◉ hold menu starts with the next
+  four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
+  three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
+  (not during Sorozat, which already returns to the camera).
+- **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
+  (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
+  own screen; the map leaves its answer in `files/sketch/handoff/<id>.site.json` and opens
+  `vrg://sketch?open=<id>&front=helyszin`; the Sketcher applies it when it opens the survey. Why: drawing corners and
+  dragging a plan need the whole screen, and a map inside the scrolled Helyszín column fights the scroll; the Sketcher
+  stays the only writer of the survey file (no two writers), and an answer survives the app being killed. Rejected:
+  **B** the map embedded in Helyszín (a second copy of M43's request handling in feature-sketch, cramped gestures);
+  **C** the map writing the survey file itself (overwritten by the open editor).
+- **D-63 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Asked (2026-11-21): **A** keyless Esri now, a free ArcGIS key later / **B** the Hungarian state orthophoto / **C** no satellite; the Founder chose **A**. Chosen: Esri's World
+  Imagery tiles (`server.arcgisonline.com`, keyless), added only when 🛰 is tapped, attribution shown, not written to the
+  phone's tile cache (the WebView runs `LOAD_NO_CACHE`; the phone lets only GET to that host out). Terms checked: Esri's
+  terms summary requires attribution and allows offline use only through Esri's own content packages, and an ArcGIS
+  account for use outside Esri software; so nothing is cached, and the keyless use is internal, low-volume, interactive.
+  A free ArcGIS Location Platform key stays the later step for full compliance (not now, per the Founder).
+  Rejected: Sentinel-2 cloudless (10 m pixels: no building to trace); Google / Bing / Mapbox imagery (a key and stricter
+  terms); the Hungarian state orthophoto (registration; a candidate later).
+- **D-64 · How the outline and the placement are stored (M48), 2026-11-20.** `site.outline` = the corners as
+  `[lat, lon]` (absolute, so a corrected outline does not move a placement); `site.place` = `{lat, lon, rot, auto, at}`,
+  the plan's oriented-box centre on the map and its clockwise turn (absolute too; the offset from the building is derived
+  each time, never stored); `site.footprint` stays as before and is measured again from the outline, its `src` = `osm`,
+  `rajz` (drawn) or `muhold` (traced over the satellite). All optional; the file stays v2.
+- **D-65 · The fit and the mismatch report (M48), 2026-11-20.** The first placement turns the plan's long axis onto the
+  building's and centres the two boxes; of the four quarter-turn candidates the one whose walls stick out least wins, the
+  smaller turn on a tie. The report: the turn between the walls folded to ±45° (walls parallel or not, whichever side is
+  long), the box-centre offset with its compass direction, and each wall whose **middle 80 %** is more than **0,25 m**
+  outside the outline (a wall that is only too long shows as the walls at its ends). Verdicts in order: *kilóg*,
+  *elforgatva* (> 3°), *eltolva* (> 1 m), *rendben*. Same numbers on the phone, the map and the Desktop (one fixture).
+- **D-66 · Every lib file the map page loads is one the phone serves (M48), 2026-11-20.** Found: `Map/vrg-terkep.html`
+  imports `/lib/weather-layer.js` (the W layer, after M43), which the phone did not fetch, so the page's module failed and
+  the map did not start on the phone. Chosen: the phone fetches and serves it (and the two site-layer files), a test
+  reads the page and fails when it loads a `/lib` file the phone does not serve, and the page loads optional layers
+  without a static import, so a missing one never stops the map. Details: `WP/M48.md`.
+
+- **D-67 · Takeoff: one engine twice, its rules as data, 2026-11-20** (fork F2, taken for the Founder, rule 5). The takeoff
+  is `Sketcher/lib/takeoff.js` (Desktop, CLI) and `sketch-core/Takeoff.kt` (phone), kept equal by
+  `Sketcher/test/fixtures/takeoff.json` (document and summary), the M26 pattern; what counts as what lives in
+  `Sketcher/catalog/takeoff.json`, bundled with the field kit. Rejected: the phone sending the sketch to the PC to be
+  counted there (no lap on site, offline). Details: `WP/M47.md`, `../sketcher/TAKEOFF.md`.
+- **D-68 · Igények against the drawing: the larger number, marked ≈, 2026-11-20** (F2). A wanted count (Dugalj 4) and the
+  drawn points (1) give `max` = 4, ≈ with *Munkakör: 4, vázlat: 1*, so neither the client's word nor the half-finished
+  drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
+  line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
+- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit
+  (since D-79 only with its toggle on), a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+  the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
+  them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
+  counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
+- **D-70 · The intake lives on the Planner's building, shown by an action, 2026-11-20** (F2). `B.survey` (the job's
+  facts; every save carries it, no new data collection, nothing drawn so the goldens stay); ⌘K *Felmérés: munkakör
+  lap*. An older package keeps its raw intake by ids. Rejected: notes on the plan (they would clutter the drawing),
+  the Igénylista (per room; the intake is per job).
+- **D-71 · Csere and Bontás by tag; no prices; decisions from a fixed list, 2026-11-20** (F2). Replacement is a tag named
+  *Csere* (or preset `replace`), demolition the *Bontás* preset; the *Tervezett* / *Meglévő* state stays as it is. The
+  export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
+  file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
+  Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
+- **D-72 · F4: the client's wants by room keep the job total in `scope` (M49), 2026-11-21.** Taken in fork F4. A
+  countable want (an *igény* with a quantity) can belong to a room: a new optional `roomScope {room → {want → qty}}`
+  holds the rooms' part, `scope` stays the job total, the rest is *Általános* (derived, never stored). Every reader of
+  `scope` (the conditions, the scope card, F2's takeoff, the Planner's raw intake) stays right without knowing about
+  rooms. The Munkakör's + / − go to the room chosen under *Hová* (the room in focus when the front opens); a total
+  lowered below the rooms takes back from the last room first; a deleted room's entry stays in the file and counts as
+  Általános (an undo brings the room back with its wants). Rejected: a per-room list of separate *igény* records with
+  categories (the research's wording): it duplicates the scope toggles and breaks every reader of the totals.
+- **D-73 · F4: the Sketcher's variants on its long press start a new survey (M49), 2026-11-21.** Taken in fork F4. On the
+  home tile (hero card, grid icon, Kompakt) and the Asztal dock's Sketcher dial, the RCO lists *Új felmérés: <variant>*
+  for each variant, *Új felmérés: eredeti*, ⟳ *Variánsok frissítése* and ＋ *Új variáns kérése* (opened without a
+  survey: the request carries the premise and toggles, its counts are zero). From outside the Sketcher a variant line
+  means "I am starting this kind of job"; switching the survey already open is the editor's corner toggle, whose long
+  press has the same list for that survey (a tap still toggles; with no variant chosen a faint ◐ opens the list).
+  Rejected: reopening the last survey with the variant (it silently reshapes a survey the user may be in the middle of).
+- **D-74 · F4: a variant tunes five drawing behaviours, nothing else (M49), 2026-11-21.** Taken in fork F4. The optional
+  `draw` block: `snapAngle` (0 / 15 / 30 / 45 / 90°, the Vonal tool's step; 0 = the original 12° axis lock),
+  `snapGrid` (m, corners of Szoba, Sablon, Vonal and corner moves; a neighbour's corner line still wins), `defaultRoom`
+  `{w, d}` (m, a tap on paper with Szoba lays one), `measureFirst` (a new room opens its size dialog), `pointSnap`
+  `wall` / `free`. Metres become sketch units through the sketch's current scale (the Solver's mm per unit), so the
+  grid stays real after the first measure. The phone ignores a bad value (falls back to the original); the variant
+  check rejects it. Left out: `wallThickness` (the sketch has no walls; the Planner builds them, and its wall tool is
+  not this fork's) and `lineClose` (closing on the first point already works; an "ask" mode adds a dialog to every room).
+- **D-75 · F4: the kit's égett detector skips kiégett (M49), 2026-11-21.** Taken in fork F4. `(?<!ki)eget|…` in
+  `fieldkit.json`: a burnt-out lamp (*kiégett izzó*) no longer suggests a fault, *megégett*, *égett szag* still do. Java
+  and JS regexes both take the lookbehind (FieldKitTest parses the kit; the fixture has the three cases). The
+  ipari-telephely override is gone.
+- **D-76 · F4 sweep: the deadline gets a date field; no audio fallback yet (M49), 2026-11-21.** Taken in fork F4. *Mikorra
+  kell elkészülni?* has a `num` field (unit *dátum*) like the budget (*Ft*): budget and deadline are now both an option
+  plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
+  fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
+  entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
+- **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
+  preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
+  device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner
+  fixture `sketch-field.json` was refreshed for it. Rejected: **B** only a user-made tag. Details: `WP/M47.md`.
+- **D-78 · Cable reserve per end: 300 mm, 2026-11-21.** Asked: the Founder chose **A**. `cable.endReserveMm` stays 300
+  (`--reserve` on the CLI for one job). Rejected: **B** 500 mm, **C** another value.
+- **D-79 · Implied dedicated circuits: none by default, a general toggle, 2026-11-21.** Asked: the Founder chose **C**
+  ("should be toggle option to add these generally"). The takeoff assumes no dedicated circuit for the big machines and
+  systems (`impliedDedicated: false` in the rules); a check line says how many they may need. One toggle switches the
+  assumption on for every survey: on the phone the Munkakör lap's *◉ Dedikált kör a nagy gépeknek* (kept in the app's
+  settings), on the Desktop the same button (kept in the browser), on the CLI `--implied-dedicated`; the export records
+  it in `config.impliedDedicated`. On, they count as before (≈ with the reason). Rejected: **A** always on, **B** only
+  the hob, the oven and CEE.
+- **D-80 · F5: the built-in Csere tag reaches older surveys too (M50), 2026-11-21.** Taken in fork F5, extending D-77
+  (the Founder's A; F5 had built the same `T-csere` preset in parallel, the merge kept one). A survey made before has a
+  stored tag list without it: the phone adds it when it opens one that has neither a `replace` preset nor a tag named
+  Csere, so the user's own *Csere* is not doubled and still counts by name. Rejected: adding it
+  while reading every file (it would change the read of shared fixtures and round trips), a third point state (D-71). **Answered 2026-11-21: A** (on open, switchable).
+- **D-81 · F5: the Felmérési jegyzőkönyv is the Desktop page's, built at run time, the browser paginates (M50),
+  2026-11-21.** Taken in fork F5. One document from the open survey (`Sketcher/lib/report.js`), opened in a window and
+  printed to PDF by the browser; never stored, so no client data reaches Git. Varler Papír tokens, but not its fixed
+  `.lap` sheets (D11 of the style study): a survey's length is unknown, so the page flows with `@page` margins and no
+  fixed footer that could overlap, sections and photos kept whole. Not on the phone: it needs the solved plan, the photos
+  and the takeoff together, and a Kotlin renderer would be a third engine to keep equal; the package to the PC and one
+  button is enough. Rejected: a generated PDF (a library, fonts embedded), the Workflow Kit's offer generator (that is the
+  quote, not the survey). **Answered 2026-11-21: A for now**, and **B planned**: the phone's own report is planned out in `WP/M50.md`
+  (*Planned: the jegyzőkönyv from the phone*) for a later round.
+- **D-82 · F5: the client's contact is personal: kept on the phone, stripped on export unless kept (M50), 2026-11-21.**
+  Taken in fork F5, D-57's rule for GPS. Name, phone, e-mail (the address is the site's) in an optional `client` object;
+  every copy that leaves the phone (the Rendezés package and its takeoff) drops it unless *A kiadott csomagban marad* is on;
+  a variant request never reads it; no fixture carries it. The Desktop page and the Planner show it from the user's own
+  file. Rejected: a client record across jobs (the Workflow Kit owns clients), always exporting it (a package forwarded
+  to a colleague would carry a private person's phone number). **Answered 2026-11-21: A** (stripped unless kept).
+- **D-83 · F5: lineClose auto / ask; no wallThickness (M50), 2026-11-21.** Taken in fork F5 (M49 left both out). `auto`:
+  the Vonal tool's Kész with 3+ corners makes a room, and closing on the first corner reaches twice as far; `ask`: Kész
+  asks once (room or open line). Only Kész asks, so drawing a room by tapping its first corner never gets a dialog
+  (D-74's worry). `wallThickness` stays out: the sketch's rooms are inner faces and the Planner imports floors, not walls,
+  so nothing would read it; the variant check keeps rejecting it.
+- **D-84 · F5: no recogniser, a sound note (M50), 2026-11-21.** Taken in fork F5 (reverses the "not yet" of D-76). The app
+  records itself (MediaRecorder, AAC `.m4a`, at most 3 minutes) instead of asking a recorder app, which many phones lack;
+  RECORD_AUDIO is asked on the first tap only. A capture of kind `audio`, purpose `hang` (not a photo purpose, so no shot
+  list item and no takeoff photo; both engines skip it, pinned by the shared fixture). Shown only when the phone has no
+  recogniser (the manifest's `<queries>` lets Android 11+ say so) or a dictation launch failed. Rejected: always showing it
+  (two microphones side by side), transcribing on the phone (no offline Hungarian model without a paid SDK).
+
+- **D-85 … D-89 · not used.** Reserved for fork F5, which needed D-80 … D-84.
+- **D-90 · Features are built in, on by default, and each one switchable (the Founder's general rule), 2026-11-21.**
+  The Founder, answering F3's question 3: *"my general approach towards features modularity: … I would default to have
+  upcoming features and programs be integrated so we have them, but everything generally should be modular in its core
+  design (with settings behind features to tinker with them, toggle each or all features as it pleases for high level
+  customizations and user preference first design)."* **Rule for every WP from now on:** when a feature is optional,
+  build it rather than leave it out; give it a switch (and a switch for the whole group) in the place the user tunes
+  that tool; default on; a feature that needs another goes off with it; the stored setting lists only what is OFF, so
+  a feature added later arrives on. First applied: Kamera 2 (M46), `sketch-core` `CameraFeatures` (12 switches: szöveg
+  kiolvasása, címkefotó magától, elmosás, arckeresés, arckeresés személyes fotón, személyes adat, GPS törlése,
+  előtte / utána, aláírás, séta videó, hiányzók elöl, „+ még”), one setting per phone in ⚙ → *Kamera funkciók* (and the
+  Kamera front's ⚙ Funkciók tile).
+
+- **D-91 · One feature registry for the whole Sketcher (M51), 2026-11-21.** Taken in fork F6. Every user-facing feature
+  is one entry `{id, front, sym, label, requires, default, locked}` in `Sketcher/catalog/features.json`, grouped by the
+  seven fronts plus *Variánsok* and *Rendezés / export* (73 today). The phone's engine is `sketch-core` `Features.kt`
+  with the list in code (FeaturesTest checks it against the JSON), the Desktop's `Sketcher/lib/features.js`; the shared
+  fixture `Sketcher/test/fixtures/features.json` keeps them equal. F3's `CameraFeatures` and F5's `SketchFeatures` stay
+  as they are (their code still asks them) and appear as the `kamera.*` entries and four more (D-96). Rejected: one list
+  per front or per fork (the Founder asked for *each or all*, in one place).
+- **D-92 · The switches belong to the phone (the browser), not to the survey (M51), 2026-11-21.** Taken in fork F6.
+  One setting per phone and one per browser, for every survey; the phone and the Desktop do not share them (each is the
+  user's own tool there). **Answered 2026-11-21: A** (they stay separate; the package never carries them). The survey *plugins* (alaprajz, villany, fotopont) stay per survey and are a separate thing:
+  a plugin decides what one survey uses, a switch what the user ever wants to see. A plugin whose every tool is switched
+  off is not offered.
+- **D-93 · Off leaves no trace, deletes nothing and never changes a file's meaning (M51), 2026-11-21.** Taken in fork
+  F6. A switched-off feature's tools, wheel items, chips, cards, badges, loose ends, fronts and buttons go; the data it
+  made stays in the survey and comes back with the switch. The exported package (`.vsketch.json`) is the same whatever
+  is switched off; the switches decide only the files beside it (photos, marked copies, the `.takeoff` files) and the
+  Desktop's buttons (⇩ Takeoff, Jegyzőkönyv). Privacy on export never follows a UI switch: a personal photo still leaves
+  only blurred and without GPS, and *GPS törlése kiadáskor* has no prerequisite (it sits under Rendezés / export).
+  The Planner and the Workflow Kit read the file as it is.
+- **D-94 · Prerequisites grey, Mind switches, Mozgat stays (M51), 2026-11-21.** Taken in fork F6. A feature whose
+  prerequisite is off is off and shown greyed with „előbb: …”; its own switch is kept, so it returns with the
+  prerequisite. *Mind* per group and for everything: Mind ki switches every feature off, **Mind be** switches every
+  default-on feature on and leaves the default-off option (D-79's implied dedicated circuits) as it was, so „all on”
+  never changes a quantity behind the user's back. *Mozgat* is locked on: the canvas always has a tool, Vázlat always
+  stays on the front bar. Rejected: Mind be = everything incl. the options. **Answered 2026-11-21: A** (Mind be leaves the
+  option as it was).
+- **D-95 · A variant cannot switch on what the user switched off (M51), 2026-11-21.** Taken in fork F6. User
+  preference first: everything a variant brings passes through the registry after it — its rail order and plugins
+  (`Features.rail`), its drawing tune (`Features.draw`: *Rajz-hangolás* off = the original tools), the hold wheel
+  (`Features.wheel`), its extra chips, questions and shots (gone with their feature). A variant has no way to switch a
+  feature on; if one ever needs to switch one *off*, it can be added as an optional key later.
+- **D-96 · The settings stay where they were saved (M51), 2026-11-21.** Taken in fork F6. Four stores, read as one and
+  written back split: F3's `sketcher-camera` / `off` (CameraFeatures ids), D-79's `sketcher` / `takeoff.impliedDedicated`,
+  F5's `sketcher-features` / `off` (SketchFeatures ids) and the new `sketcher-features` / `flipped` (every other id that
+  differs from its default). A phone that had switched camera features off keeps them bit for bit (tested), the Munkakör
+  lap's toggle and ⚙ Funkciók are the same switch, and an older app still reads its own store. Ids the app does not
+  know are kept (a newer app's switch). On the Desktop: `vrg-sketcher-features` + D-79's `vrg-sketcher-implied-dedicated`.
+- **D-97 · A front with nothing on leaves the front bar (M51), 2026-11-21.** Taken in fork F6. When every feature of a
+  front is off, its symbol leaves the front bar (the Desktop's rail), its loose ends leave Nyitott, and an open front
+  falls back to Vázlat (Áttekintés on the Desktop). The Kamera front needs *Fotó céllal*; its other features depend on it.
+- **D-98 · Without the hold wheel there is no wheel (M51), 2026-11-21.** Taken in fork F6. *Tartásra kerék* off: a hold
+  on the canvas does nothing; the point type is still chosen on the Pont tool's row, ↶ still undoes, but Törlés lives on
+  the wheel (question 2 of the F6 report; **answered 2026-11-21: A**, no separate Törlés, the wheel can be switched back on). Other switched-off features leave their wheel sectors empty, so the
+  directions the hand knows do not move.
+- **D-99 · The map's site panel follows the Sketcher's switches (M51), 2026-11-21.** Taken in fork F6. The phone's map
+  page gets `hide` in `/__phone/site.json` (from the general store; the map only reads it), the Desktop sends it with the
+  survey; `Map/lib/site-layer.js` leaves out ▱ Körvonal, 🛰 Műhold or ◫ Vázlat and opens in the mode that is left.
+- **D-100 · The in-app camera is CameraX 1.4.1, the version QR párosítás already ships (M52), 2026-11-21** (fork F7, taken
+  for the Founder, rule 5). `androidx.camera:camera-camera2 / camera-lifecycle / camera-view` 1.4.1, **Apache-2.0**, min SDK
+  21 (ours is 28). `feature-pair` already puts the same three artifacts in the APK, so `feature-sketch` naming them adds
+  only its own code (estimated under 0.1 MB; no new native code). Preview + ImageCapture bound to the editor's
+  lifecycle, the same `AndroidView { PreviewView }` pattern as the QR scanner. Rejected: Camera2 by hand (several times
+  the code for the same preview / capture / torch / zoom / focus), a third-party camera library (a new licence and size
+  for nothing CameraX lacks). Details: `WP/M52.md`.
+- **D-101 · The camera app stays the fallback (M52), 2026-11-21.** ⚙ → Kamera funkciók → *◉ Saját kamera* off = the
+  phone's camera app exactly as before (M29 / M46). With it on, a CameraX bind or capture failure falls back to the
+  camera app for the rest of the app's run (a note says so) and the next start tries CameraX again. The walk video and
+  the signature are unchanged (the camera app's video mode, the pad).
+- **D-102 · An in-app photo lands where a camera-app photo lands (M52), 2026-11-21.** The file is written straight into
+  `files/sketch/photos/<id>/` under the same name scheme (`C-<base36 time>.jpg`, Fotópont `<F id>-…`), then goes
+  through the same `captureTaken` / `photoTaken` path: same Capture record, GPS read back from the file's own EXIF, the
+  type-plate reader and the face hooks, D-57 stripping on export. GPS: CameraX writes the phone's last known position
+  into the EXIF only when the location permission was **already** granted (Helyszín asks for it; the camera never
+  asks) and *⌖ Helyadat a fotón* is on. Nothing new in the survey file, so the Desktop page and an older phone see an
+  ordinary photo.
+- **D-103 · The viewfinder's purpose strip (M52), 2026-11-21.** Symbols and colours, little text. The current purpose is
+  a coloured badge (symbol + short label); a tap opens the strip: the shot list's next four missing items first (marked
+  with a dot, room items left out: they are Fotópont's), then the current purpose, the three used last, then the
+  catalog's order; *Szoba* never (Fotópont). With *Hiányzók elöl* (QUICK) off the missing items are left out. The room
+  in focus is a chip (a tap cycles the rooms and *—*); the count is the photos of that purpose (and item).
+- **D-104 · Series in the camera (M52), 2026-11-21.** With *⟳ Sorozat a kamerában* on, the camera stays open after each
+  shot until **✓** (or Back); off, it closes after a shot unless the M29 *⟳ Sorozat* is on. After a shot for a
+  shot-list item that is now complete, the next shot goes to the next missing item of the same purpose, else to the
+  purpose without an item. The last thumbnail with **↶** deletes that shot (an ordinary edit: the editor's undo can
+  bring it back). Fotópont photos always close after one shot, for the direction swipe.
+- **D-105 · The ghost overlay (M52), 2026-11-21.** For an after-photo (◑ Utána, `pairOf`) the before-photo lies over the
+  preview, cropped the way the preview is (fill-centre), at 40 % by default, slider 0–80 %, a ◐ button hides it. On the
+  viewfinder a ◐ chip also lists the befores of the current purpose still waiting (same room first): picking one pairs
+  the next shot with it. After the after-photo the pair is done and the ghost goes. Needs *◐ Előtte / utána* too.
+- **D-106 · Level and grid (M52), 2026-11-21.** The gravity sensor (the accelerometer where there is none), low-pass 0.15:
+  a line across the preview turned by the roll against the nearest quarter turn, green within 1°, the degrees beside it;
+  lying nearly flat (pointing at the floor or the ceiling) it becomes a bubble. The grid is the rule of thirds, shown
+  while *▦ Rács* is on, with a viewfinder button to hide it for that session.
+- **D-107 · Torch, focus, zoom (M52), 2026-11-21.** The torch button (only when the camera has a flash unit) starts off
+  every time the camera opens. A tap on the preview focuses and meters there (3 s, then back to auto) with a ring;
+  pinch zooms within the camera's range, the factor shown while it is not 1×. Focus and zoom are the camera's basic
+  behaviour and have no switch of their own; everything else does (D-108).
+- **D-108 · Seven new switches (M52), 2026-11-21.** In `CameraFeatures` (until F6's registry takes them over, M51):
+  *◉ Saját kamera* and, each needing it, *⌖ Helyadat a fotón*, *⟳ Sorozat a kamerában*, *◐ Szellemkép* (also needs
+  *Előtte / utána*: a new `also` list of prerequisites), *⊖ Vízszintező*, *▦ Rács*, *ϟ Lámpa*. All on by default; a
+  phone that stored Kamera 2's switched-off list gets them on.
+- **D-109 · The capture moment (M52), 2026-11-21.** The shutter takes the picture with `CAPTURE_MODE_MINIMIZE_LATENCY`,
+  rotated by the phone's real orientation (the screen may stay portrait), a short white flash on the preview, the shot's
+  thumbnail in the corner. A capture error leaves the camera open with a note; a second one in a row falls back (D-101).
+- **D-110 · F8: the end-to-end fixtures are written by the phone's code, and everyone else must match them (M53),
+  2026-11-21.** Taken in fork F8. Three realistic surveys are built in the JVM with the phone's own edit operations
+  (sketch-core `E2eTest`: a flat renovation with everything F1–F5 added, a new house with an EV charger and the implied
+  dedicated circuits on, a conversation with nothing drawn), exported as the Rendezés export does and committed under
+  `Sketcher/test/fixtures/e2e/`. `Sketcher/test/e2e.test.js` (in `run.js`) opens them with the JS engines, the Desktop
+  page and the Planner and compares with what the phone showed; a stale fixture fails the JVM run
+  (`VRG_SKETCH_FIXTURE=update` rewrites it). An M24 v1 file and an M29-era v2 survey sit beside them and must open
+  unchanged. Rejected: fixtures written from JS (the phone is where surveys are made), Playwright (jsdom is what the
+  Sketcher and Planner tests already use, no browser needed in CI).
+- **D-111 · F8: the Desktop page counts implied dedicated circuits as the phone did (M53), 2026-11-21.** Taken in fork
+  F8, refining D-79. A package carries its takeoff and, in `config.impliedDedicated`, the phone's setting. Opening such
+  a package, the page uses that setting (the toggle shows it, „a telefon beállítása szerint”) until the toggle is
+  touched; then the browser's own setting rules again. Found by the e2e test: with the phone's toggle on, the Desktop
+  showed one dedicated circuit fewer than the phone. Rejected: always the browser's setting (the two screens disagree on
+  the same file), storing the phone's setting in the browser (one survey would change every other).
+- **D-112 · F8: the takeoff names a video and a signature by their export names (M53), 2026-11-21.** Taken in fork F8.
+  The takeoff's photo list (Kotlin and JS) used `<stem>_<id>_<purpose>.jpg` for every capture, so the Planner's survey
+  panel named a walk video and a signature by files that never exist. It now uses the export's name
+  (`Intake.exportName`: `.mp4`, `_alairas.png`); they still count with their purpose (a video under its purpose, a
+  signature under Dokumentum), a sound note not at all (F5, D-84).
+- **D-113 · F8: F5's D-80 kept over F8's file marker for the Csere preset (M53), 2026-11-21.** F8 had first added a
+  `presetsV` key so an old survey gets *Csere* once and a deleted *Csere* stays deleted; F5 landed the same fix as
+  D-80 (on open, switchable, answered A by the Founder). The merge keeps D-80 only. Asked: under D-80 a *Csere* the
+  user deleted comes back the next time the survey opens (while *Csere címke régi felmérésben* is on). **Answered
+  2026-11-21: A** — it stays that way; the switch turns it off. Rejected: **B** a file marker so it is added only once.
+- **D-114 · F8: what CI covers for the Sketcher (M53), 2026-11-21.** Taken in fork F8. *VRG Mobile (Android)* now also
+  starts on `Map/lib/site-math.js` (inlined into the Desktop page, replayed by the JVM), the Planner's sketch import and
+  survey sources and fixtures, and runs the Planner's spec-111 / spec-112 after building it from source, so the e2e test
+  opens the Planner as it is. The release workflow starts on everything the APK takes from outside `Mobile/android`
+  (`feature-sketch/build.gradle.kts`): `Sketcher/catalog`, `Sketcher/variants` and, since F9 bundles the report,
+  `Sketcher/lib`; the map page comes from `main` at run time (M43).
+- **D-115 · F8: the exported package keeps every photo's position and the signer's name (M53), 2026-11-21.** Asked in
+  fork F8 (audit 8): the photo FILES leave without GPS (D-57), but the package's survey copy keeps each capture's
+  lat/lon, a personal photo's too, and the signature's signer. **Answered 2026-11-21: A** — the package is the
+  Founder's own record (as D-57 says of the survey file), so it keeps them. Rejected: **B** stripping them from the
+  package for personal photos.
+- **D-116 · F8: a switched-off sound note stays out of the package, the one exception to D-93 (M53), 2026-11-21.**
+  Asked in fork F8 (audit 18): F5's D-84 drops the sound notes from the package while *Hangjegyzet* is off; F6's D-93
+  says the package never changes with the switches. **Answered 2026-11-21: A** — D-84 stands, by the Founder's D-90
+  (a feature switched off leaves no trace in the exports either); D-93 holds for every other switch, and
+  `E2eTest.everythingOffKeepsThePackage` pins exactly this. Rejected: **B** always the same package.
+- **D-117 … D-119 · not used.** Reserved for fork F8, which needed D-110 … D-116.
+- **D-120 · F9: the phone's jegyzőkönyv is the Desktop's renderer in a hidden WebView (M54), 2026-11-21.** Taken in fork F9,
+  following the Founder's D-81 B and M50's plan. `report.js` + `fieldkit.js` run through `report-phone.js`; the phone
+  only puts the input together (`Jegyzokonyv.kt`). Rejected: a Kotlin copy of the document (a third engine to keep equal).
+- **D-121 · F9: the renderer is copied from `Sketcher/lib` at build time, checked byte for byte (M54), 2026-11-21.** As the
+  catalog and the variants already are; the Gradle task fails on a differing copy, `report-phone.test.js` checks the
+  list. Rejected: copies committed under `Mobile/` (they would drift, and a check would only report it).
+- **D-122 · F9: PlanSvg / SiteSvg draw from the package plan, numbers as JavaScript prints them (M54), 2026-11-21.** The
+  drawing is the one the Desktop shows when it opens the phone's package (`PlannerExport`'s floors and devices, not the
+  editor's canvas); `JsNum` prints `4000`, not `4000.0`. The fixture is made from `app.js`'s own functions
+  (`make-report-fixture.js`), so a Desktop change makes it stale; the JVM test allows a few ulps per number (Java's
+  and V8's sin / cos may differ in the last bit), never a different text.
+- **D-123 · F9: the report follows the export rules, stricter on photos (M54), 2026-11-21.** `SketchFeatures.forExport`
+  (client only when kept, D-82; no sound notes when off); every photo re-encoded (no EXIF at all, so no GPS even where
+  the package keeps it, D-57), the blur burned in and nothing else; a *Személyes adat* photo only blurred, otherwise
+  named as withheld. Rejected: the package's photo files (full size, GPS where kept, markup copies).
+- **D-124 · F9: *Az ügyfélnek* drops the Tisztázandó notes and the Ellenőrizni lines only (M54), 2026-11-21.** Kept: the
+  Döntésre vár list and the open questions (the client is the one who answers them). A switch in the dialog, off each
+  time it opens (a report for the client is a deliberate choice). Rejected: remembering it per phone. **Answered 2026-11-21: A**:
+  the client's name stays under D-82 in this mode too (in the report only when *A kiadott csomagban marad* is on). Rejected:
+  **B** always in the client's report.
+- **D-125 · F9: photos at 1200 px, JPEG 80, in the export cache (M54), 2026-11-21.** Sharp at a third of A4 and about
+  150 KB each (40 photos ≈ 6 MB of HTML); signatures as PNG; `cache/sketch/report/` is emptied at the next report.
+- **D-126 · F9: PDF through the system print dialog; over 15 MB Átadás warns and offers it (M54), 2026-11-21.**
+  `PrintManager` + the WebView's print adapter (A4): *PDF mentése* writes the file wherever the user picks, no PDF
+  library. Átadás over 15 MB shows the size with *🖨 Inkább PDF* and *Mégis küldöm*. Rejected: a hard block.
+- **D-127 · F9: the switch *📄 Jegyzőkönyv a telefonon* is the registry's `export.report_phone`, requiring `export.report` (M54), 2026-11-21.**
+  In F6's registry (M51, `Features.kt` = `Sketcher/catalog/features.json`), front *Rendezés / export*, on by default.
+  It requires F6's `export.report` (the Desktop's Jegyzőkönyv), so switching the jegyzőkönyv off anywhere takes the
+  phone's button with it (shown greyed with its reason). Off: no button, nothing made; like every M51 switch, it never
+  changes the package or what a file means (D-93). Built first in F5's `SketchFeatures`, moved when F6 landed.
+- **D-128 · F9: Rendezés → 📄 Jegyzőkönyv, a dialog (M54), 2026-11-21.** Next to the two export buttons (the row now
+  wraps on narrow phones); the dialog has *Az ügyfélnek*, *🖨 Nyomtatás / PDF*, *⇪ Átadás (.html)*, the privacy line and
+  the result's name and size. Rejected: putting it into the Küldés share (the package is what the PC reads).
+
+- **D-129 · VRG Térkép navigation, N2: our own offline road network (M55 line), 2026-11-21.** Asked by the Founder
+  with the Térkép-feed ("Waze type … intelligent pathfinding"), answered **A**: the PC turns the Hungary OSM extract the
+  map already has into a compact road network, the phone keeps a copy, and routes are computed in the map page
+  (offline, nothing leaves the phone, the same on the PC and the phone). Not built yet (N2). Replaces D-49 C's "no route
+  planning of our own"; the hand-off to a navigation app stays as the fallback. Rejected: **B** an online routing
+  service (internet, the position and destination sent out, usage limits); **C** a native navigation kit (Ferrostar +
+  Valhalla: a second map stack beside the page, against D-48).
+- **D-130 · Traffic: none at first, a traffic service later as an opt-in (N3), 2026-11-21.** Answered **A, then B**:
+  ETAs from road types and speed limits; later a keyed provider (e.g. TomTom, terms to verify) asked only for the
+  chosen route and only on a tap. No free open live-traffic source exists for Hungary. Rejected: **C** no traffic ever.
+- **D-131 · The feed's points come from OpenStreetMap, kept on the phone; own pins never leave it (M55), 2026-11-21.**
+  Answered **A**: `Map/tools/build-pois.js` extracts all of Hungary from the OSM extract into `Map/data/pois.json`; VRG
+  Mobile keeps the copy it reads through the relay (public ODbL data, like the address index). Otthon and the user's own
+  Daniella / szerelvénybolt pins live in the page's storage on the device (D-31). The "Korean type" store is the
+  Chinese/Asian variety store (`shop=variety_store`), confirmed by the Founder; missing Daniella branches are added as
+  own pins, confirmed. Rejected: **B** online lookups (Overpass: the position sent with every search); **C** own list only.
+- **D-132 · Public transport: the nearest stops now, BKK live departures later (M55), 2026-11-21.** Answered **A now as
+  the future fallback, B later**: stops from OSM (offline, all of Hungary); BKK FUTÁR departures for Budapest in a later
+  WP (a free developer key, internet). Taken as defaults in the session (the Founder did not answer the feed-rules
+  question): six cards by default (Otthon, Daniella, szerelvény/barkács, élelmiszerbolt, étkezés, kórház/orvos; Kínai
+  bolt, WC, Megálló switchable, at most six on), one per category in that order; the list follows the user after 25 m or
+  30 s; a selected place stays the target; tap frames, hold (RCO, right-click on the PC) selects.
 
 ## Open (to ask when the WP that needs them starts)
 
