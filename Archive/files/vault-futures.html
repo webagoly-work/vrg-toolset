@@ -1,0 +1,441 @@
+<title>Vault Futures</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the Mélyvíz long-read shared with "Software for One": masthead, a sticky contents rail on wide screens,
+   one column on a phone. The layer map is a stack of strata (stable seam left, swappable organ right); the six paths
+   are cards in build order. Dark first, a paper variant for light. */
+:root {
+  --bg: #0a141c; --bg-2: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .15); --line-strong: rgba(232, 240, 246, .34);
+  --fg: #e8f0f6; --dim: #a6afb7; --faint: #7b848b;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13); --glow: rgba(147, 211, 230, .45);
+  --warm: #e8a873; --warm-soft: rgba(232, 168, 115, .14);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d; --on-accent: #0a141c;
+  --voice: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --cut: 6px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+    --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+    --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+    --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+    --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+    --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c; --on-accent: #ffffff;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+  --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+  --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+  --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+  --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+  --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c; --on-accent: #ffffff;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: radial-gradient(120% 60% at 50% 0%, var(--bg-2), var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; overflow-wrap: anywhere; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: .86em; background: var(--accent-soft); padding: .05em .35em; border-radius: 3px; overflow-wrap: anywhere; }
+h1, h2, h3, h4 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; line-height: 1.12; margin: 0; }
+p { margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.muted { color: var(--dim); }
+
+/* Masthead */
+.mast { padding-block: 56px 36px; border-bottom: 1px solid var(--line); display: grid; gap: 18px; }
+.mast h1 { font-size: clamp(44px, 8vw, 88px); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; line-height: .95; }
+.mast h1 span { color: var(--accent); text-shadow: 0 0 22px var(--glow); }
+.mast .lede { font-size: 19px; color: var(--dim); max-width: 64ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.meta span { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+/* Body grid */
+.body { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-top: 40px; }
+@media (max-width: 860px) { .body { grid-template-columns: minmax(0, 1fr); gap: 24px; } .rail { display: none; } }
+.rail nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); display: grid; gap: 2px; }
+.rail a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 6px 8px; color: var(--dim); text-decoration: none; font-size: 14px; border-left: 2px solid transparent; }
+.rail a span { font-family: var(--mono); font-size: 11px; color: var(--faint); padding-top: 2px; }
+.rail a:hover { color: var(--fg); border-left-color: var(--accent); background: var(--accent-soft); }
+article { display: grid; gap: 64px; min-width: 0; }
+section { display: grid; gap: 20px; min-width: 0; scroll-margin-top: 24px; }
+section > h2 { font-size: clamp(30px, 4vw, 40px); display: flex; gap: 14px; align-items: baseline; }
+section > h2 .n { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .1em; font-weight: 500; }
+.prose { display: grid; gap: 14px; max-width: 68ch; }
+.prose ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+
+.trust { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--panel); padding: 14px 18px; max-width: 72ch; font-size: 14.5px; color: var(--dim); border-radius: 0 var(--cut) var(--cut) 0; }
+.trust b { color: var(--fg); font-weight: 600; }
+
+/* Findings */
+.findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 640px) { .findings { grid-template-columns: minmax(0, 1fr); } }
+.finding { background: var(--panel); padding: 22px; display: grid; gap: 10px; align-content: start; }
+.finding h3 { font-size: 24px; }
+.finding p { color: var(--dim); font-size: 15px; }
+.finding.key { background: linear-gradient(160deg, var(--accent-soft), transparent 70%), var(--panel); }
+.finding.key h3 { color: var(--accent); }
+
+/* Layer map: strata */
+.strata { display: grid; gap: 0; border: 1px solid var(--line); background: var(--panel); }
+.stratum { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); gap: 0; border-bottom: 1px solid var(--line); }
+.stratum:last-child { border-bottom: 0; }
+.stratum > div { padding: 14px 16px; min-width: 0; }
+.stratum .name { background: var(--raised); border-right: 1px solid var(--line); display: grid; gap: 2px; align-content: center; }
+.stratum .name b { font-family: var(--voice); font-size: 22px; font-weight: 600; letter-spacing: .03em; }
+.stratum .name span { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+.stratum .seam { border-right: 1px dashed var(--line-strong); }
+.stratum .seam, .stratum .organ { font-size: 14.5px; color: var(--dim); display: grid; gap: 4px; align-content: start; }
+.stratum .seam .label { color: var(--accent); }
+.stratum .organ .label { color: var(--warm); }
+.strata-head { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); border-bottom: 1px solid var(--line-strong); }
+.strata-head div { padding: 10px 16px; }
+@media (max-width: 680px) {
+  .stratum, .strata-head { grid-template-columns: minmax(0, 1fr); }
+  .strata-head { display: none; }
+  .stratum .name { border-right: 0; border-bottom: 1px solid var(--line); }
+  .stratum .seam { border-right: 0; border-bottom: 1px dashed var(--line-strong); }
+}
+
+/* Paths */
+.paths { display: grid; gap: 18px; }
+.path { border: 1px solid var(--line); background: var(--panel); display: grid; grid-template-columns: 64px minmax(0, 1fr); }
+.path .step { border-right: 1px solid var(--line); display: grid; justify-items: center; align-content: start; padding: 18px 0; gap: 4px; background: var(--raised); }
+.path .step b { font-family: var(--voice); font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1; }
+.path .step span { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--faint); text-transform: uppercase; }
+.path .main { padding: 18px 20px 20px; display: grid; gap: 14px; min-width: 0; }
+.path .top { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between; }
+.path h3 { font-size: 27px; }
+.path .lead { color: var(--fg); max-width: 70ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.cost { color: var(--accent); }
+.chip.ok { color: var(--ok); } .chip.part { color: var(--warn); } .chip.gap { color: var(--crit); }
+.path .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+@media (max-width: 720px) { .path { grid-template-columns: minmax(0, 1fr); } .path .step { border-right: 0; border-bottom: 1px solid var(--line); grid-auto-flow: column; justify-content: start; padding: 10px 16px; gap: 10px; align-items: baseline; } .path .grid { grid-template-columns: minmax(0, 1fr); } }
+.path .cell { display: grid; gap: 4px; min-width: 0; }
+.path .cell p, .path .cell li { color: var(--dim); font-size: 14.5px; }
+.path .cell ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+.path .cell .label { color: var(--faint); }
+.path .risk { border-left: 3px solid var(--crit); padding: 6px 12px; background: var(--raised); font-size: 14.5px; color: var(--dim); }
+.path .risk b { color: var(--fg); font-weight: 600; }
+pre.snip { margin: 0; overflow-x: auto; background: var(--bg); border: 1px solid var(--line); padding: 10px 12px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--fg); }
+
+/* Tables */
+.tbl { overflow-x: auto; border: 1px solid var(--line); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 500; background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--fg); font-weight: 500; }
+td { color: var(--dim); }
+
+/* Sequence */
+.order { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); border: 1px solid var(--line); counter-reset: o; }
+.order li { counter-increment: o; padding: 16px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 6px; align-content: start; background: var(--panel); }
+.order li::before { content: "Step " counter(o); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.order li b { font-family: var(--voice); font-size: 20px; font-weight: 600; }
+.order li span { font-size: 14px; color: var(--dim); }
+
+/* Questions */
+.qs { display: grid; gap: 14px; }
+.q { border: 1px solid var(--line); background: var(--panel); padding: 18px 20px; display: grid; gap: 12px; }
+.q-h { display: flex; gap: 12px; align-items: baseline; }
+.q-h .id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.q-h h3 { font-size: 22px; }
+.opts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.opts li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; font-size: 15px; color: var(--dim); padding: 8px 10px; border-radius: 6px; }
+.opts li .k { font-family: var(--mono); font-size: 12px; width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--fg); }
+.opts li.r { background: var(--accent-soft); color: var(--fg); }
+.opts li.r .k { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.opts li.r .tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-left: 6px; }
+
+/* Reading list */
+.reading { list-style: none; padding: 0; margin: 0; display: grid; counter-reset: r; }
+.reading li { counter-increment: r; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.reading li::before { content: counter(r, decimal-leading-zero); font-family: var(--mono); font-size: 13px; color: var(--faint); padding-top: 3px; }
+.reading a { font-weight: 500; }
+.reading span { display: block; color: var(--dim); font-size: 14px; }
+.reading .grp { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); padding: 18px 0 4px; border-bottom: 1px solid var(--line-strong); grid-template-columns: 1fr; }
+.reading .grp::before { content: none; }
+footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+footer p { font-size: 13.5px; color: var(--faint); max-width: 84ch; }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="label">VRG research report · round 2 · 2026-11-21</div>
+    <h1>Vault <span>futures</span></h1>
+    <p class="lede">What to build on the Data Vault so that it still works in 2036: six paths, in build order. The rule behind all of them: keep the seams boring and standard, and let the clever parts plug in behind them, where they can be swapped out.</p>
+    <div class="meta"><span>4 scouts, about 45 sources, read 2026-11-21</span><span>Builds on: Software for One · Personal App v1</span><span>Repo: data-vault/docs/research</span></div>
+  </header>
+
+  <div class="body">
+    <aside class="rail" aria-label="Contents">
+      <nav>
+        <a href="#short"><span>01</span>The short answer</a>
+        <a href="#layers"><span>02</span>The layer map</a>
+        <a href="#paths"><span>03</span>Six paths</a>
+        <a href="#watch"><span>04</span>Watch, don't adopt</a>
+        <a href="#order"><span>05</span>Build order</a>
+        <a href="#questions"><span>06</span>Your decisions</a>
+        <a href="#read"><span>07</span>Sources</a>
+      </nav>
+    </aside>
+
+    <article>
+      <div class="trust"><b>How far to trust it.</b> The cloud sandbox could not open most primary pages (modelcontextprotocol.io, sqlite.org, loc.gov, slsa.dev, docs.github.com, inkandswitch.com and others are blocked). Versions, dates and licences of libraries come from the npm registry, which is primary. Most other points come from search summaries of the cited pages. Three claims everything rests on were re-checked against the official pages' search entries: the MCP 2026-07-28 revision, Android developer verification in 2027, and WASI 0.3.0. Points marked <i>unconfirmed</i> need a second look before a work package depends on them.</div>
+
+      <section id="short">
+        <h2><span class="n">01</span>The short answer</h2>
+        <div class="findings">
+          <div class="finding key">
+            <div class="label">The rule</div>
+            <h3>Stable seams, swappable organs.</h3>
+            <p>What lasts ten years is boring: JSON files in git, ES modules, custom elements, JSON-RPC messages, SHA-256 and SSH signatures. The new things (CRDTs, WebAssembly components, generated screens, on-device models) are worth using, but only behind those seams, as optional tiers you can remove.</p>
+          </div>
+          <div class="finding key">
+            <div class="label">The biggest opening</div>
+            <h3>The agent standards have settled.</h3>
+            <p>MCP and AGENTS.md went to the Linux Foundation's Agentic AI Foundation on 2025-12-09. Agent Skills (<code>SKILL.md</code>) became an open standard the same month. The vault should speak these, so that any agent, not only Claude, can search it, read a cell and assemble a recipe.</p>
+          </div>
+          <div class="finding">
+            <div class="label">Ownership</div>
+            <h3>Proving it is yours is cheap.</h3>
+            <p>SSH-signed commits and tags, an offline root key that vouches for each phone's key, and a signed SHA-256 manifest. In 2046 all of it still checks with <code>git</code> and <code>sha256sum</code>, without GitHub. The vendor routes (GitHub attestations, Sigstore) need Enterprise Cloud or an online log.</p>
+          </div>
+          <div class="finding">
+            <div class="label">What to skip</div>
+            <h3>No sync server, no framework.</h3>
+            <p>Electric, Zero and PowerSync sync through a Postgres server; Jazz 2.0 is still alpha. For one owner and about 20 devices, the canonical store stays plain JSON in git with a small merge of our own. SQLite is a derived index, and a CRDT is used only for the few long texts edited on two devices.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="layers">
+        <h2><span class="n">02</span>The layer map</h2>
+        <p class="muted" style="max-width:68ch">Each layer of the vault has a seam to keep stable (left), and an organ that may be swapped later (right). The six paths below each work on one or two layers.</p>
+        <div class="strata" role="table" aria-label="Layers of the Data Vault">
+          <div class="strata-head" role="row"><div class="label" role="columnheader">Layer</div><div class="label" role="columnheader">Keep stable: the seam</div><div class="label" role="columnheader">Swap in later: the organ</div></div>
+          <div class="stratum" role="row">
+            <div class="name" role="cell"><b>Agents</b><span>paths 1, 4</span></div>
+            <div class="seam" role="cell"><span class="label">seam</span>A <code>SKILL.md</code> and a read-only MCP server over the catalogue; every new cell passes <code>check.js</code> and its own test.</div>
+            <div class="organ" role="cell"><span class="label">organ</span>Whichever model or agent does the work; generated screens; any agent-to-agent protocol (A2A) if other people's agents ever join.</div>
+          </div>
+          <div class="stratum" role="row">
+            <div class="name" role="cell"><b>Screens</b><span>path 4</span></div>
+            <div class="seam" role="cell"><span class="label">seam</span>Custom elements (tag, attributes, events) and our own JSON screen schema, checked against a component catalogue.</div>
+            <div class="organ" role="cell"><span class="label">organ</span>The renderer: a WebView, a desktop page, later something native. Borrow ideas from A2UI or json-render, both still pre-1.0.</div>
+          </div>
+          <div class="stratum" role="row">
+            <div class="name" role="cell"><b>Plugins</b><span>path 3</span></div>
+            <div class="seam" role="cell"><span class="label">seam</span><code>plugin.json</code> with a deny-by-default <code>needs</code> map; JSON-RPC 2.0 messages to the host; an <code>api</code> version range.</div>
+            <div class="organ" role="cell"><span class="label">organ</span>The sandbox: a module Worker with SES today, a sandboxed iframe for UI, WebAssembly components once WASI 1.0 and an Android host exist.</div>
+          </div>
+          <div class="stratum" role="row">
+            <div class="name" role="cell"><b>Data</b><span>paths 5, 6</span></div>
+            <div class="seam" role="cell"><span class="label">seam</span>One JSON file per cell in git, with <code>schemaVersion</code> and tested migrations, plus a per-device append-only inbox.</div>
+            <div class="organ" role="cell"><span class="label">organ</span>SQLite as a derived index, a CRDT for long texts, precomputed embeddings for search: all rebuildable from the JSON.</div>
+          </div>
+          <div class="stratum" role="row">
+            <div class="name" role="cell"><b>Trust</b><span>path 2</span></div>
+            <div class="seam" role="cell"><span class="label">seam</span>SSH signatures, an offline root key, a signed SHA-256 manifest, <code>git bundle</code> archives.</div>
+            <div class="organ" role="cell"><span class="label">organ</span>Where it is hosted: GitHub today, a mirror tomorrow, "something bigger" later. The Keystore keys of each phone.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="paths">
+        <h2><span class="n">03</span>Six paths, in build order</h2>
+        <p class="muted" style="max-width:68ch">Cost: S = one session, M = a few sessions, L = a work package of its own. Every first step is something a session can start in <code>data-vault</code> today.</p>
+        <div class="paths">
+
+          <div class="path" id="p1">
+            <div class="step"><b>1</b><span>Agents</span></div>
+            <div class="main">
+              <div class="top"><h3>The vault speaks to agents</h3><div class="chips"><span class="chip cost">cost S</span><span class="chip ok">standards settled</span></div></div>
+              <p class="lead">Turn the catalogue into a tool any agent can use: first a skill, then a small MCP server once the skill feels clumsy.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">First step</span><ul><li><code>.claude/skills/data-vault/SKILL.md</code>: how to search cells, read one, assemble a recipe and run the checks.</li><li>Later <code>tools/mcp.js</code>: read-only, stateless, zero dependencies, over stdio. Tools: <code>search_cells</code>, <code>get_cell</code>, <code>list_recipes</code>, <code>assemble_recipe</code>.</li><li><code>propose_cell</code> writes only to a drafts branch. Client cells are never returned.</li></ul></div>
+                <div class="cell"><span class="label">Why it lasts</span><ul><li>MCP and AGENTS.md belong to the Linux Foundation's AAIF since 2025-12-09. Skills is an open standard (Dec 2025) used by Claude Code, Cursor, VS Code, GitHub and others.</li><li>The MCP 2026-07-28 revision dropped the initialize handshake and session ids and added <code>server/discover</code>, so a thin stateless server is the direction the spec itself took.</li></ul></div>
+              </div>
+              <div class="risk"><b>Risk:</b> the spec still moves (the next revision may rename things). Keep the server thin, with no SDK, so a change is an afternoon's work.</div>
+            </div>
+          </div>
+
+          <div class="path" id="p2">
+            <div class="step"><b>2</b><span>Trust</span></div>
+            <div class="main">
+              <div class="top"><h3>Signed, mirrored, restorable</h3><div class="chips"><span class="chip cost">cost S–M</span><span class="chip ok">mature tools</span></div></div>
+              <p class="lead">Make every cell provably yours and the whole vault restorable without any vendor, before more of our work flows into it.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">First step</span><ul><li>SSH-sign commits and tags on the PC (<code>gpg.format=ssh</code>) and commit an <code>allowed_signers</code> file.</li><li>An offline Ed25519 root key, on paper in two places (a 2-of-3 Shamir split is optional). It signs <code>trust/devices.json</code>, so each phone's Keystore key is vouched for by the root.</li><li><code>tools/manifest.js</code>: a sorted <code>path → sha256</code> manifest per release, signed.</li></ul></div>
+                <div class="cell"><span class="label">Then</span><ul><li>Each year an archive set on an offline drive: <code>git bundle --all</code>, the dependency tarballs, the Node binary, the Android build kit and the APK key, plus a "read this with nothing" note.</li><li>One restore drill a year on a clean machine.</li><li>A second git home (the Backup bare repo, or a self-hosted Forgejo) and decisions kept in the repo, not only in issues.</li></ul></div>
+              </div>
+              <div class="risk"><b>Risk:</b> a lost or leaked root key. The only defence is a rehearsed recovery, plus a rotation note signed with the old key. Not worth it now: git's SHA-256 object format (GitHub does not support it), GitHub attestations (Enterprise Cloud for private repos), Sigstore (needs its online log).</div>
+            </div>
+          </div>
+
+          <div class="path" id="p3">
+            <div class="step"><b>3</b><span>Plugins</span></div>
+            <div class="main">
+              <div class="top"><h3>A host with a permission broker</h3><div class="chips"><span class="chip cost">cost M</span><span class="chip ok">web-standard</span><span class="chip part">WebView details unconfirmed</span></div></div>
+              <p class="lead">Let cells run inside any host safely: the plugin asks for what it needs, and the host grants only that.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">The shape</span><ul><li>Plugins stay plain ES modules. The host runs each in a module Worker, with an SES Compartment (Hardened JavaScript) around anything an agent wrote.</li><li>Host and plugin talk JSON-RPC 2.0 over <code>postMessage</code>. The same broker works in a browser, in Node (<code>worker_threads</code>) and in the Android WebView.</li><li>UI is a custom element; untrusted UI renders in a sandboxed iframe with CSP <code>connect-src 'none'</code>.</li></ul></div>
+                <div class="cell"><span class="label"><code>needs</code> becomes a contract</span>
+<pre class="snip">"api": "^1.0",
+"needs": {
+  "storage": "own",
+  "net": ["api.open-meteo.com"],
+  "ui": "sandbox"
+}</pre>
+                <p>A missing key means denied; a pure function needs <code>{}</code>. The host enforces it, so the manifest is what you review when an agent writes a plugin. The model is taken from MV3 extensions, Deno, WASI and Tauri.</p></div>
+              </div>
+              <div class="risk"><b>Risk:</b> language-level isolation is weaker than WebAssembly (a runaway loop, engine bugs). Use Worker timeouts, and iframes for UI. On Android, keep plugins as data run by the WebView, never as downloaded DEX or <code>.so</code>: that keeps the app clear of the developer-verification and dynamic-code rules.</div>
+            </div>
+          </div>
+
+          <div class="path" id="p4">
+            <div class="step"><b>4</b><span>Agents, screens</span></div>
+            <div class="main">
+              <div class="top"><h3>The request loop, with screens as data</h3><div class="chips"><span class="chip cost">cost M–L</span><span class="chip part">schemas pre-1.0</span></div></div>
+              <p class="lead">You ask on the phone; an agent answers with a new cell. Either a plugin with its test, or a screen written as JSON that only uses components from our catalogue.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">How it works</span><ul><li>A <em>Kérés</em> note in a fixed shape (GO VARIANT, widened from Sketcher variants to anything).</li><li>The agent writes a screen spec that must validate against <code>genome/screens.schema.json</code>, a list of the shell's own components. The shell renders it.</li><li>An accepted spec is committed as a cell, so it is data from then on and doesn't change between runs.</li><li><code>origin</code> records who made it: you, or which agent, model and session.</li></ul></div>
+                <div class="cell"><span class="label">Why constrain it</span><ul><li>Generated UI is good: in Google's study it came close to expert-made pages. Free-form HTML is where the danger is: in Veracode's Spring 2026 data about 44% of AI coding tasks introduced a flaw, and only about 15% of XSS cases were handled safely.</li><li>A catalogue-constrained spec cannot inject script, and keeps the Mélyvíz look. It also fixes the drift problem named in round 1.</li></ul></div>
+              </div>
+              <div class="risk"><b>Risk:</b> A2UI (v0.9) and json-render are young, so borrow the idea and own the schema. Weak tests give false confidence: an agent may never edit the test of the cell it is changing.</div>
+            </div>
+          </div>
+
+          <div class="path" id="p5">
+            <div class="step"><b>5</b><span>Data</span></div>
+            <div class="main">
+              <div class="top"><h3>Local-first sync without a server</h3><div class="chips"><span class="chip cost">cost M</span><span class="chip ok">libraries active</span><span class="chip part">OPFS in WebView unconfirmed</span></div></div>
+              <p class="lead">Once phones edit cells offline, give every device its own copy and a small merge of our own, with GitHub as the meeting place.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">The shape</span><ul><li>JSON in git stays the truth. Each device keeps a local copy and an append-only inbox (JSON Lines) of its edits, pushed when online.</li><li>Merge per field, last writer wins, per cell. One file per cell keeps conflicts rare.</li><li>Each cell gets a <code>schemaVersion</code>, migrations <code>vN → vN+1</code> are tested against stored samples, and unknown fields are kept.</li></ul></div>
+                <div class="cell"><span class="label">Around it</span><ul><li>SQLite as a derived index and a <code>.sqlite</code> archive export: the official <code>@sqlite.org/sqlite-wasm</code> 3.54.1 (2026-10-19) in the browser, the platform SQLite in Kotlin.</li><li>A CRDT only for long texts edited on two devices: Automerge 3.5.0 (2026-09-16) or Loro 1.18.0 (2026-11-16), both MIT, with a JSON copy beside the binary.</li></ul></div>
+              </div>
+              <div class="risk"><b>Risk:</b> the merge is our own code, so the bugs are ours too. OPFS and SharedArrayBuffer in Android WebView are unconfirmed: test on the real phones first (the IndexedDB fallback is slower but works). No Kotlin binding is confirmed for Automerge 3 or Loro.</div>
+            </div>
+          </div>
+
+          <div class="path" id="p6">
+            <div class="step"><b>6</b><span>Data, agents</span></div>
+            <div class="main">
+              <div class="top"><h3>Search by meaning, AI on the device</h3><div class="chips"><span class="chip cost">cost S–M</span><span class="chip part">phone models early</span></div></div>
+              <p class="lead">Find a cell by what it does, not by its name, and let the phone tidy notes without sending client words anywhere.</p>
+              <div class="grid">
+                <div class="cell"><span class="label">Search</span><ul><li><code>harvest.js</code> writes an embedding for every cell into one vector file; search is a plain cosine loop.</li><li>A few thousand records need no vector database. sqlite-vec is awkward in WASM, because extensions can't be loaded at run time.</li><li>EmbeddingGemma runs in the browser through Transformers.js. It is the one optional dependency, kept outside the zero-dependency core.</li></ul></div>
+                <div class="cell"><span class="label">On the phone</span><ul><li>The ML Kit GenAI Prompt API (Gemini Nano, alpha since Oct 2025) is a native Android API: VRG Mobile can call it, a web page cannot.</li><li>Chrome's built-in Prompt API (Chrome 148) and Summarizer (138) are desktop only, with no Android support found.</li><li>Uses: tidy dictated notes, caption site photos, draft a Kérés.</li></ul></div>
+              </div>
+              <div class="risk"><b>Risk:</b> the model download and its dependency. Keep it optional, and keep the vectors rebuildable from the cells.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="watch">
+        <h2><span class="n">04</span>Watch, don't adopt yet</h2>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Technology</th><th>Where it stands, Nov 2026</th><th>Ready for us when</th></tr></thead>
+            <tbody>
+              <tr><td>WebAssembly Component Model, WASI</td><td>WASI 0.3.0 released 2026-06-11 (async, streams); 1.0 is a target for late 2026 or early 2027. Browsers need jco to run components. The JVM successor runtime, Endive, lists the Component Model as a goal only.</td><td>WASI 1.0 is out and there is an Android or JVM component host. Until then a core-wasm tier (Extism style) is the option for heavy or risky plugins.</td></tr>
+              <tr><td>ShadowRealm</td><td>TC39 Stage 2.7 since Feb 2025; no change found in 2026.</td><td>It ships in Chromium stable and the Android WebView.</td></tr>
+              <tr><td>Sync frameworks</td><td>Jazz 2.0 is alpha (alpha.70, 2026-11-21). Evolu (MIT, stateless relay) is the closest fit but is mid-rewrite with no Kotlin client. Triplit has been quiet since Jul 2025.</td><td>One of them reaches a stable release with a Kotlin client and a relay we can run without a database.</td></tr>
+              <tr><td>A2A</td><td>1.0 in March 2026, joined AAIF 2026-08-17.</td><td>Agents of other people (a supplier, a client) need to talk to ours.</td></tr>
+              <tr><td>DIDs, AT Protocol, Solid</td><td>did:plc depends on the PLC directory; its move to a Swiss association is not confirmed complete. Nothing current found on Solid. A personal data server is a server to run.</td><td>The vault needs a public identity other people check. The SSH root key covers our own needs.</td></tr>
+              <tr><td>git SHA-256 repositories</td><td>Opt-in; the default only in Git 3.0, which has no date. GitHub does not support them.</td><td>The host supports them. Our signed SHA-256 manifest gives the same guarantee meanwhile.</td></tr>
+              <tr><td>Nix, Guix</td><td>Reproducible, but they need WSL on Windows and a lot of learning.</td><td>The Android build breaks often enough to justify it. Archiving the toolchain zips is cheaper.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="order">
+        <h2><span class="n">05</span>Build order</h2>
+        <ol class="order">
+          <li><b>The skill</b><span>One file. Every later session, and any agent, uses the vault the same way.</span></li>
+          <li><b>Signing and manifest</b><span>Done before more content flows in. Needs your PC once, for the key.</span></li>
+          <li><b>The broker host</b><span>Makes the three plugins, and every later one, runnable in a page and in the WebView.</span></li>
+          <li><b>The request loop</b><span>Kérés → a cell. Screens as catalogue-checked JSON. This is where malleable starts.</span></li>
+          <li><b>Sync</b><span>When phones begin to edit cells offline, not before.</span></li>
+          <li><b>Search and on-device AI</b><span>When the catalogue passes about a thousand cells, or the phone needs it.</span></li>
+        </ol>
+        <p class="muted" style="max-width:68ch">Alongside all six: lift one <em>plugin</em>-potency cell a week into <code>plugins/</code>, with its test. The recipes name which cells matter most: the Console widgets first, then the VRG Mobile kit modules.</p>
+      </section>
+
+      <section id="questions">
+        <h2><span class="n">06</span>Your decisions</h2>
+        <p class="muted" style="max-width:68ch">Each question lists options with my recommendation first. The answers set the first work packages.</p>
+        <div class="qs">
+          <div class="q"><div class="q-h"><span class="id">R2-Q1</span><h3>How do we sign?</h3></div>
+            <ul class="opts"><li class="r"><span class="k">A</span><span>An SSH Ed25519 key on the PC for commits, plus a separate offline root key on paper for releases and devices.<span class="tag">recommended</span></span></li><li><span class="k">B</span><span>One key for everything.</span></li><li><span class="k">C</span><span>No signing yet.</span></li></ul></div>
+          <div class="q"><div class="q-h"><span class="id">R2-Q2</span><h3>Skill or MCP server first?</h3></div>
+            <ul class="opts"><li class="r"><span class="k">A</span><span>The skill now, the MCP server when a second agent or the phone needs it.<span class="tag">recommended</span></span></li><li><span class="k">B</span><span>Both now.</span></li></ul></div>
+          <div class="q"><div class="q-h"><span class="id">R2-Q3</span><h3>A second home for the repository</h3></div>
+            <ul class="opts"><li class="r"><span class="k">A</span><span>Yearly <code>git bundle</code> on an offline drive, plus the existing Backup bare repo. No new account.<span class="tag">recommended</span></span></li><li><span class="k">B</span><span>A self-hosted Forgejo on the VRG laptop server.</span></li><li><span class="k">C</span><span>A hosted mirror (check its terms for private repositories first).</span></li></ul></div>
+          <div class="q"><div class="q-h"><span class="id">R2-Q4</span><h3>Which host runs plugins first?</h3></div>
+            <ul class="opts"><li class="r"><span class="k">A</span><span>A small Data Vault web shell, grown from the archived Proton Vault shell. It runs in a browser and in a WebView, and the easter egg lives there.<span class="tag">recommended</span></span></li><li><span class="k">B</span><span>VRG Mobile's Alkalmazások (M21).</span></li><li><span class="k">C</span><span>The VRG Desktop.</span></li></ul></div>
+          <div class="q"><div class="q-h"><span class="id">R2-Q5</span><h3>What may the request loop produce?</h3></div>
+            <ul class="opts"><li class="r"><span class="k">A</span><span>Screens as catalogue-checked JSON freely; code plugins only with a test and your merge.<span class="tag">recommended</span></span></li><li><span class="k">B</span><span>Code plugins only.</span></li><li><span class="k">C</span><span>Anything, reviewed afterwards.</span></li></ul></div>
+        </div>
+      </section>
+
+      <section id="read">
+        <h2><span class="n">07</span>Sources</h2>
+        <ol class="reading">
+          <li class="grp">Agents and standards</li>
+          <li><div><a href="https://linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation">Linux Foundation: the Agentic AI Foundation (2025-12-09)</a><span>MCP, AGENTS.md and goose under one foundation.</span></div></li>
+          <li><div><a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog">MCP specification 2026-07-28, changelog</a><span>Stateless core, <code>server/discover</code>, deprecations.</span></div></li>
+          <li><div><a href="https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/">MCP Apps announcement (2025-11-21)</a><span><code>ui://</code> resources rendered by the host.</span></div></li>
+          <li><div><a href="https://agentskills.io/">Agent Skills</a><span>The <code>SKILL.md</code> open standard.</span></div></li>
+          <li><div><a href="https://github.com/google/A2UI">A2UI</a> and <a href="https://github.com/vercel-labs/json-render">json-render</a><span>Catalogue-constrained UI as JSON.</span></div></li>
+          <li><div><a href="https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/">Google Research: Generative UI</a><span>Generated pages rated close to expert-made ones.</span></div></li>
+          <li><div><a href="https://www.veracode.com/blog/spring-2026-genai-code-security">Veracode: Spring 2026 GenAI code security</a><span>About 44% of tasks with a flaw; XSS the weak spot. A vendor report.</span></div></li>
+          <li><div><a href="https://www.inkandswitch.com/essay/malleable-software/">Ink &amp; Switch: Malleable software (2025)</a><span>Shared with round 1.</span></div></li>
+          <li class="grp">Plugins and runtimes</li>
+          <li><div><a href="https://bytecodealliance.org/articles/WASI-0.3">Bytecode Alliance: WASI 0.3</a> · <a href="https://wasi.dev/releases">wasi.dev releases</a><span>0.3.0 on 2026-06-11; 1.0 pending.</span></div></li>
+          <li><div><a href="https://bytecodealliance.org/articles/endive-and-the-next-chapter-of-webassembly-on-the-jvm">Endive: WebAssembly on the JVM</a><span>Component Model on the JVM is still a goal.</span></div></li>
+          <li><div><a href="https://github.com/endojs/endo">Endo / SES (Hardened JavaScript)</a><span>Compartments for untrusted code.</span></div></li>
+          <li><div><a href="https://tc39.es/proposal-shadowrealm">TC39 ShadowRealm</a><span>Stage 2.7.</span></div></li>
+          <li><div><a href="https://developer.android.com/developer-verification/guides">Android developer verification</a> · <a href="https://support.google.com/android-developer-console/answer/16561738">its FAQ</a><span>Global in 2027; ADB and a free 20-device account stay.</span></div></li>
+          <li class="grp">Data and sync</li>
+          <li><div><a href="https://www.npmjs.com/package/@automerge/automerge">Automerge</a> · <a href="https://www.npmjs.com/package/loro-crdt">Loro</a> · <a href="https://www.npmjs.com/package/yjs">Yjs</a><span>Versions and licences from the npm registry.</span></div></li>
+          <li><div><a href="https://www.npmjs.com/package/@sqlite.org/sqlite-wasm">Official SQLite WASM</a> · <a href="https://powersync.com/blog/sqlite-persistence-on-the-web">PowerSync: SQLite persistence on the web</a><span>OPFS and its fallbacks.</span></div></li>
+          <li><div><a href="https://github.com/evoluhq/evolu">Evolu</a> · <a href="https://jazz.tools/docs/getting-started/server-setup">Jazz server setup</a><span>The two closest frameworks, both not yet ready for us.</span></div></li>
+          <li class="grp">Trust and longevity</li>
+          <li><div><a href="https://docs.github.com/en/actions/concepts/security/artifact-attestations">GitHub artifact attestations</a><span>SLSA Build L2; private repos need Enterprise Cloud.</span></div></li>
+          <li><div><a href="https://git-scm.com/docs/BreakingChanges.html">Git: breaking changes for 3.0</a><span>SHA-256 as the future default.</span></div></li>
+          <li><div><a href="https://docs.softwareheritage.org/user/faq/">Software Heritage FAQ</a><span>Archives public code; not for the private vault.</span></div></li>
+          <li><div><a href="https://atproto.com/blog/plc-directory-org">AT Protocol: the PLC directory organisation</a><span>Why did:plc is not yet a long-term bet.</span></div></li>
+          <li><div><a href="https://loc.gov/preservation/resources/rfs/">Library of Congress Recommended Formats</a><span>The preservation baseline for data formats.</span></div></li>
+        </ol>
+      </section>
+
+      <footer>
+        <p>VRG research, round 2, 2026-11-21. The scouts' full notes, with a dated source or an <i>unconfirmed</i> mark for every claim, are in <code>data-vault/docs/research/2026-11-21_vault-futures/</code>. The six paths are seed cells <code>dv.path.*</code> in the Data Vault catalogue, under Core platform, Identity, Data and Agents.</p>
+      </footer>
+    </article>
+  </div>
+</div>
