@@ -662,6 +662,53 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   előtte / utána, aláírás, séta videó, hiányzók elöl, „+ még”), one setting per phone in ⚙ → *Kamera funkciók* (and the
   Kamera front's ⚙ Funkciók tile).
 
+- **D-91 · One feature registry for the whole Sketcher (M51), 2026-11-21.** Taken in fork F6. Every user-facing feature
+  is one entry `{id, front, sym, label, requires, default, locked}` in `Sketcher/catalog/features.json`, grouped by the
+  seven fronts plus *Variánsok* and *Rendezés / export* (66 today). The phone's engine is `sketch-core` `Features.kt`
+  with the list in code (FeaturesTest checks it against the JSON), the Desktop's `Sketcher/lib/features.js`; the shared
+  fixture `Sketcher/test/fixtures/features.json` keeps them equal. F3's `CameraFeatures` and F5's `SketchFeatures` stay
+  as they are (their code still asks them) and appear as the `kamera.*` entries and four more (D-96). Rejected: one list
+  per front or per fork (the Founder asked for *each or all*, in one place).
+- **D-92 · The switches belong to the phone (the browser), not to the survey (M51), 2026-11-21.** Taken in fork F6.
+  One setting per phone and one per browser, for every survey; the phone and the Desktop do not share them (each is the
+  user's own tool there). The survey *plugins* (alaprajz, villany, fotopont) stay per survey and are a separate thing:
+  a plugin decides what one survey uses, a switch what the user ever wants to see. A plugin whose every tool is switched
+  off is not offered.
+- **D-93 · Off leaves no trace, deletes nothing and never changes a file's meaning (M51), 2026-11-21.** Taken in fork
+  F6. A switched-off feature's tools, wheel items, chips, cards, badges, loose ends, fronts and buttons go; the data it
+  made stays in the survey and comes back with the switch. The exported package (`.vsketch.json`) is the same whatever
+  is switched off; the switches decide only the files beside it (photos, marked copies, the `.takeoff` files) and the
+  Desktop's buttons (⇩ Takeoff, Jegyzőkönyv). Privacy on export never follows a UI switch: a personal photo still leaves
+  only blurred and without GPS, and *GPS törlése kiadáskor* has no prerequisite (it sits under Rendezés / export).
+  The Planner and the Workflow Kit read the file as it is.
+- **D-94 · Prerequisites grey, Mind switches, Mozgat stays (M51), 2026-11-21.** Taken in fork F6. A feature whose
+  prerequisite is off is off and shown greyed with „előbb: …”; its own switch is kept, so it returns with the
+  prerequisite. *Mind* per group and for everything: Mind ki switches every feature off, **Mind be** switches every
+  default-on feature on and leaves the default-off option (D-79's implied dedicated circuits) as it was, so „all on”
+  never changes a quantity behind the user's back. *Mozgat* is locked on: the canvas always has a tool, Vázlat always
+  stays on the front bar. Rejected: Mind be = everything incl. the options.
+- **D-95 · A variant cannot switch on what the user switched off (M51), 2026-11-21.** Taken in fork F6. User
+  preference first: everything a variant brings passes through the registry after it — its rail order and plugins
+  (`Features.rail`), its drawing tune (`Features.draw`: *Rajz-hangolás* off = the original tools), the hold wheel
+  (`Features.wheel`), its extra chips, questions and shots (gone with their feature). A variant has no way to switch a
+  feature on; if one ever needs to switch one *off*, it can be added as an optional key later.
+- **D-96 · The settings stay where they were saved (M51), 2026-11-21.** Taken in fork F6. Four stores, read as one and
+  written back split: F3's `sketcher-camera` / `off` (CameraFeatures ids), D-79's `sketcher` / `takeoff.impliedDedicated`,
+  F5's `sketcher-features` / `off` (SketchFeatures ids) and the new `sketcher-features` / `flipped` (every other id that
+  differs from its default). A phone that had switched camera features off keeps them bit for bit (tested), the Munkakör
+  lap's toggle and ⚙ Funkciók are the same switch, and an older app still reads its own store. Ids the app does not
+  know are kept (a newer app's switch). On the Desktop: `vrg-sketcher-features` + D-79's `vrg-sketcher-implied-dedicated`.
+- **D-97 · A front with nothing on leaves the front bar (M51), 2026-11-21.** Taken in fork F6. When every feature of a
+  front is off, its symbol leaves the front bar (the Desktop's rail), its loose ends leave Nyitott, and an open front
+  falls back to Vázlat (Áttekintés on the Desktop). The Kamera front needs *Fotó céllal*; its other features depend on it.
+- **D-98 · Without the hold wheel there is no wheel (M51), 2026-11-21.** Taken in fork F6. *Tartásra kerék* off: a hold
+  on the canvas does nothing; the point type is still chosen on the Pont tool's row, ↶ still undoes, but Törlés lives on
+  the wheel (question 2 of the F6 report). Other switched-off features leave their wheel sectors empty, so the
+  directions the hand knows do not move.
+- **D-99 · The map's site panel follows the Sketcher's switches (M51), 2026-11-21.** Taken in fork F6. The phone's map
+  page gets `hide` in `/__phone/site.json` (from the general store; the map only reads it), the Desktop sends it with the
+  survey; `Map/lib/site-layer.js` leaves out ▱ Körvonal, 🛰 Műhold or ◫ Vázlat and opens in the mode that is left.
+
 - **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
   preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
   device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner

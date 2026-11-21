@@ -163,3 +163,19 @@ Fork F5 (`docs/mobile/WP/M50.md`): the Planner's survey panel shows the **wants 
 (`ClientInfo.kt`, personal, D-82); a variant's `draw.lineClose` (`auto` / `ask`) says what the Vonal tool's Kész does;
 a phone without a speech recogniser records a **sound note** (capture kind `audio`, `.m4a`, `AudioNotes.kt`).
 
+## 11. Feature switches (M51)
+
+Fork F6 (`docs/mobile/WP/M51.md`, D-91 … D-99), the Founder's rule D-90 for the whole Sketcher: **every feature has a
+switch, each group and everything has a Mind switch, everything is on by default** (except D-79's implied dedicated
+circuits), and the setting lists only what differs, so a new feature arrives on. The list is
+`Sketcher/catalog/features.json` (66 features in 9 groups: the 7 fronts, Variánsok, Rendezés / export); `sketch-core`
+`Features.kt` and `Sketcher/lib/features.js` switch it the same way (fixture `test/fixtures/features.json`).
+
+- Per phone (⚙ → ⚙ Funkciók ›, or the Kamera front's ⚙ Funkciók tile) and per browser (the Desktop's ⚙ Funkciók front),
+  never per survey; survey plugins stay per survey.
+- Off = no trace in the UI (rail, wheels, chips, fronts, cards, badges, Nyitott, the map's site panel, the files beside
+  the package); the survey's data stays, the package file is the same, privacy on export is unchanged.
+- A feature that needs another is greyed while that one is off; a front with nothing on leaves the front bar; a variant
+  never brings back what the user switched off.
+- The camera's switches (F3) and F5's four are part of the list; their settings stay where they were saved.
+
