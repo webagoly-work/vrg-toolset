@@ -65,3 +65,7 @@ tells the Founder when a fork can be archived.
   „Telefonon ellenőrizni” list (A: rajz és beszélgetés, B: kamera és helyszín, X: közös). Re-run it after a WP's list
   changes (`--check` exits 1 when stale). The shared checklist page (live ticks from both phones, the Hibák list) is
   https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre (Archive: Kéttelefonos teszt).
+
+- **2026-11-21 02:10 — all ten forks merged** (main fdb8b2d + the archive refresh): F1 M48, F2 M47, F3 M46 (+ D-90), F4 M49,
+  F5 M50, F6 M51, F7 M52, F8 M53, F9 M54, F10 `docs/brief/`. Every session is archivable. Next: the release, then the
+  two-phone test (`TEST-2PHONES.md`: A 83, B 77, közös 7; the shared checklist page in the Archive).
