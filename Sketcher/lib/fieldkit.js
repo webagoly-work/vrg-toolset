@@ -100,7 +100,7 @@
     Object.entries(s.answers || {}).forEach(([q, a]) => { if ((a.state || 'answered') === 'answered') answers.set(q, new Set(a.options || [])); });
     const site = s.site || null;
     return {
-      scope: new Set(Object.entries(s.scope || {}).filter(([, v]) => v > 0).map(([k]) => k)), answers, rooms,
+      scope: new Set(Object.keys(s.scope || {}).concat(...Object.values(s.roomScope || {}).map(m => Object.keys(m || {}))).filter(k => wantTotal(s, k) > 0)), answers, rooms,   // F4: a room's want counts
       points: new Set((s.points || []).map(p => p.type || 'pont')), tags: new Set((s.tagUses || []).map(u => u.tag)),
       kw: new Set(hits(kit, s).keys()), chips: new Set((s.entries || []).flatMap(e => e.chips || [])), photos,
       site: !!(site && ((site.address || '').trim() || site.lat != null)), variant: s.variantOn ? (s.variant || null) : null,
@@ -190,6 +190,57 @@
     return out;
   }
 
+  // ---- the client's wants by room (F4, WP M49; Kotlin: sketch-core Wants.kt) ---------------------------------------
+  // scope = the job's total; roomScope {room → {scope id → qty}} = the part a room holds; the rest is Általános.
+  // total = max(scope, the live rooms' sum); a deleted room's entry stays in the file and counts as Általános.
+  const liveRooms = s => (s.rooms || []).map(r => r.id);
+  const rsOf = (s, r, id) => ((s.roomScope || {})[r] || {})[id] || 0;
+  function wantRoomSum(s, id) { return liveRooms(s).reduce((n, r) => n + rsOf(s, r, id), 0); }
+  function wantTotal(s, id) { return Math.max((s.scope || {})[id] || 0, wantRoomSum(s, id)); }
+  function wants(kit, s) {
+    return kit.scope.filter(k => k.qty).map(k => {
+      const total = wantTotal(s, k.id);
+      if (total <= 0) return null;
+      return { id: k.id, total, general: total - wantRoomSum(s, k.id), rooms: liveRooms(s).map(r => [r, rsOf(s, r, k.id)]).filter(x => x[1] > 0) };
+    }).filter(Boolean);
+  }
+  function rsPut(rs, r, id, n) {
+    const o = Object.assign({}, rs), m = Object.assign({}, o[r] || {});
+    if (n > 0) m[id] = n; else delete m[id];
+    if (Object.keys(m).length) o[r] = m; else delete o[r];
+    return o;
+  }
+  function withTotal(s, id, t) { const sc = Object.assign({}, s.scope || {}); if (t > 0) sc[id] = t; else delete sc[id]; return Object.assign({}, s, { scope: sc }); }
+  const isRoom = (s, r) => r != null && (s.rooms || []).some(x => x.id === r);
+  // one more / fewer of id in room (null or a gone room = Általános); the total follows
+  function addWant(s, id, room, delta) {
+    const t = wantTotal(s, id);
+    if (!isRoom(s, room)) { const d = Math.max(delta, -(t - wantRoomSum(s, id))); return d ? withTotal(s, id, t + d) : s; }
+    const cur = rsOf(s, room, id), next = Math.max(0, cur + delta);
+    if (next === cur) return s;
+    return withTotal(Object.assign({}, s, { roomScope: rsPut(s.roomScope || {}, room, id, next) }), id, t + next - cur);
+  }
+  function moveWant(s, id, from, to, n) {
+    n = n == null ? 1 : n;
+    const f = isRoom(s, from) ? from : null, d = isRoom(s, to) ? to : null;
+    if (f === d || n <= 0) return s;
+    const t = wantTotal(s, id), have = f == null ? t - wantRoomSum(s, id) : rsOf(s, f, id), m = Math.min(n, have);
+    if (m <= 0) return s;
+    let rs = s.roomScope || {};
+    if (f != null) rs = rsPut(rs, f, id, have - m);
+    if (d != null) rs = rsPut(rs, d, id, (((rs[d] || {})[id]) || 0) + m);
+    return withTotal(Object.assign({}, s, { roomScope: rs }), id, t);
+  }
+  // the total set to qty: below the rooms' sum the rooms give back, the last room first; 0 clears it everywhere
+  function trimWant(s, id, qty) {
+    const sc = Object.assign({}, s.scope || {}); if (qty > 0) sc[id] = qty; else delete sc[id];
+    let rs = s.roomScope || {};
+    if (qty <= 0) { rs = Object.keys(rs).reduce((o, r) => rsPut(o, r, id, 0), rs); return Object.assign({}, s, { scope: sc, roomScope: rs }); }
+    let over = wantRoomSum(s, id) - qty;
+    for (const r of liveRooms(s).slice().reverse()) { if (over <= 0) break; const n = rsOf(s, r, id), take = Math.min(n, over); if (take > 0) { rs = rsPut(rs, r, id, n - take); over -= take; } }
+    return Object.assign({}, s, { scope: sc, roomScope: rs });
+  }
+
   // ---- validation (the variant protocol's gate) -----------------------------------------------------------------
   function checkLists(o, where, errs, known) {
     const seen = {};
@@ -250,5 +301,6 @@
   }
 
   return { KIND, VARIANT_KIND, SKETCH_KIND, FRESH_MS, fold, parseCond, evalCond, parseKit, withVariant, facts, hits, questions, unseen,
-    suggestions, applied, apply, shots, open, tagsOf, validateKit, validateVariant, RAIL_TOOLS, POINT_TYPES, ROOM_KINDS };
+    suggestions, applied, apply, shots, open, tagsOf, validateKit, validateVariant, RAIL_TOOLS, POINT_TYPES, ROOM_KINDS,
+    wants, wantTotal, addWant, moveWant, trimWant };
 });

@@ -460,8 +460,8 @@ object Intake {
     fun linkEntry(s: Sketch, id: String, room: String?, target: String?) = s.copy(entries = s.entries.map { if (it.id == id) it.copy(room = room, target = target) else it })
     fun deleteEntry(s: Sketch, id: String) = s.copy(entries = s.entries.filter { it.id != id })
 
-    /** A munkakör toggle: qty 0 removes it. */
-    fun setScope(s: Sketch, id: String, qty: Int) = s.copy(scope = if (qty <= 0) s.scope - id else s.scope + (id to qty))
+    /** A munkakör toggle: qty 0 removes it. A total below what the rooms hold takes it back from them (Wants.trim, F4). */
+    fun setScope(s: Sketch, id: String, qty: Int) = Wants.trim(s.copy(scope = if (qty <= 0) s.scope - id else s.scope + (id to qty)), id, qty)
 
     /** An answer to [q]: options (one, or several for a multi question), free text, and its state. */
     fun answer(kit: Kit, s: Sketch, q: String, options: List<String>, text: String, state: AnswerState, now: Long): Sketch {

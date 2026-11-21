@@ -490,6 +490,15 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun linkEntry(id: String, room: String?) = edit(Intake.linkEntry(sketch, id, room, sketch.entry(id)?.target))
     fun deleteEntry(id: String) = edit(Intake.deleteEntry(sketch, id))
     fun setScope(id: String, qty: Int) = edit(Intake.setScope(sketch, id, qty))
+    // F4 (WP M49): the client's wants by room. [wantRoom] = where the Igények' + / − go (null = Általános); the
+    // Munkakör sets it to the room in focus each time it opens. Fewer in Általános than it holds takes the total down.
+    var wantRoom by mutableStateOf<String?>(null)
+    fun addWant(id: String, delta: Int) {
+        val r = wantRoom?.takeIf { sketch.room(it) != null }
+        val next = hu.vrg.mobile.sketch.Wants.add(sketch, id, r, delta)
+        edit(if (next == sketch && r == null && delta < 0) Intake.setScope(sketch, id, hu.vrg.mobile.sketch.Wants.total(sketch, id) + delta) else next)
+    }
+    fun moveWant(id: String, from: String?, to: String?, n: Int = 1) = edit(hu.vrg.mobile.sketch.Wants.move(sketch, id, from, to, n))
     fun answer(q: String, options: List<String>, text: String, state: AnswerState) = edit(Intake.answer(kit, sketch, q, options, text, state, now))
     fun clearAnswer(q: String) = edit(Intake.clearAnswer(sketch, q))
     fun accept(e: Effect) = edit(FieldKit.apply(kit, e, sketch, now))

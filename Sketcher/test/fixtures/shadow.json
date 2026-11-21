@@ -140,6 +140,7 @@
      "helyszin|site|site|Nincs cím"
     ],
     "afterScope": {},
+    "wants": [],
     "afterAnswers": {}
    }
   },
@@ -326,6 +327,7 @@
      "fozolap": 1,
      "konyha": 1
     },
+    "wants": [],
     "afterAnswers": {
      "fazis": [
       [
@@ -494,6 +496,7 @@
      "helyszin|site|site|Nincs cím"
     ],
     "afterScope": {},
+    "wants": [],
     "afterAnswers": {
      "fazis": [
       [
@@ -859,6 +862,7 @@
     "afterScope": {
      "ev": 1
     },
+    "wants": [],
     "afterAnswers": {
      "ingatlan": [
       [
@@ -1159,6 +1163,7 @@
     "afterScope": {
      "felujitas": 1
     },
+    "wants": [],
     "afterAnswers": {
      "foto": [
       [],
@@ -1552,6 +1557,7 @@
     "afterScope": {
      "felujitas": 1
     },
+    "wants": [],
     "afterAnswers": {}
    }
   },
@@ -1763,6 +1769,7 @@
     "afterScope": {
      "hiba": 1
     },
+    "wants": [],
     "afterAnswers": {}
    }
   },
@@ -2010,6 +2017,7 @@
      "vazlat|circuit|K4|Nincs bekötve: K1"
     ],
     "afterScope": {},
+    "wants": [],
     "afterAnswers": {}
    }
   },
@@ -2389,6 +2397,624 @@
     "afterScope": {
      "ev": 1
     },
+    "wants": [],
+    "afterAnswers": {}
+   }
+  },
+  {
+   "name": "wants by room: two rooms, a general part, a deleted room counts as general",
+   "sketch": {
+    "kind": "vrg-vazlat",
+    "v": 2,
+    "id": "FX",
+    "name": "Fixture",
+    "seq": 50,
+    "rooms": [
+     {
+      "id": "R1",
+      "poly": [
+       [
+        0,
+        0
+       ],
+       [
+        100,
+        0
+       ],
+       [
+        100,
+        80
+       ],
+       [
+        0,
+        80
+       ]
+      ],
+      "name": "Konyha",
+      "kinds": [
+       "konyha"
+      ]
+     },
+     {
+      "id": "R2",
+      "poly": [
+       [
+        100,
+        0
+       ],
+       [
+        180,
+        0
+       ],
+       [
+        180,
+        80
+       ],
+       [
+        100,
+        80
+       ]
+      ],
+      "name": "",
+      "kinds": [
+       "furdo"
+      ]
+     }
+    ],
+    "lines": [],
+    "points": [],
+    "measures": [],
+    "circuits": [],
+    "routes": [],
+    "memos": [],
+    "tags": [
+     {
+      "id": "T-furdo",
+      "name": "Fürdő",
+      "col": 4280978651,
+      "preset": "kind:furdo"
+     }
+    ],
+    "tagUses": [],
+    "photos": [],
+    "entries": [
+     {
+      "id": "E1",
+      "at": 1763460000000,
+      "text": "A pult fölé két dugalj",
+      "chips": [
+       "kivansag"
+      ],
+      "room": "R1"
+     }
+    ],
+    "scope": {
+     "dugalj": 5,
+     "lampa": 2,
+     "felujitas": 1
+    },
+    "answers": {},
+    "captures": [],
+    "dismissed": [],
+    "seen": {},
+    "roomScope": {
+     "R1": {
+      "dugalj": 2,
+      "lampa": 1
+     },
+     "R2": {
+      "dugalj": 1
+     },
+     "R9": {
+      "lampa": 1
+     }
+    }
+   },
+   "now": 1763460000000,
+   "variant": null,
+   "expect": {
+    "facts": {
+     "scope": [
+      "dugalj",
+      "felujitas",
+      "lampa"
+     ],
+     "answers": {},
+     "rooms": [
+      "furdo",
+      "konyha"
+     ],
+     "points": [],
+     "tags": [],
+     "kw": [],
+     "chips": [
+      "kivansag"
+     ],
+     "photos": [],
+     "site": false,
+     "variant": null
+    },
+    "questions": [
+     [
+      "lenyeg",
+      true,
+      false,
+      false
+     ],
+     [
+      "ingatlan",
+      true,
+      false,
+      false
+     ],
+     [
+      "hozzaferes",
+      true,
+      false,
+      false
+     ],
+     [
+      "hatarido",
+      true,
+      false,
+      false
+     ],
+     [
+      "keret",
+      true,
+      false,
+      false
+     ],
+     [
+      "lakott",
+      true,
+      false,
+      false
+     ],
+     [
+      "foto",
+      true,
+      false,
+      false
+     ],
+     [
+      "kor",
+      true,
+      false,
+      false
+     ],
+     [
+      "anyag",
+      true,
+      false,
+      false
+     ],
+     [
+      "fi",
+      true,
+      false,
+      false
+     ],
+     [
+      "biztositek",
+      true,
+      false,
+      false
+     ],
+     [
+      "szabad_hely",
+      true,
+      false,
+      false
+     ],
+     [
+      "foldeles",
+      true,
+      false,
+      false
+     ],
+     [
+      "furdo_mit",
+      true,
+      false,
+      false
+     ],
+     [
+      "gepek",
+      true,
+      false,
+      false
+     ],
+     [
+      "doksi",
+      true,
+      false,
+      false
+     ],
+     [
+      "dontes",
+      true,
+      false,
+      false
+     ],
+     [
+      "vizsgalat",
+      true,
+      false,
+      false
+     ],
+     [
+      "uj_fogyaszto",
+      true,
+      false,
+      false
+     ],
+     [
+      "felirat",
+      true,
+      false,
+      false
+     ],
+     [
+      "uj_eloszto",
+      true,
+      false,
+      false
+     ],
+     [
+      "csempe",
+      true,
+      false,
+      false
+     ],
+     [
+      "bekotes_hely",
+      true,
+      false,
+      false
+     ]
+    ],
+    "unseen": [
+     "lenyeg",
+     "ingatlan",
+     "hozzaferes",
+     "hatarido",
+     "keret",
+     "lakott",
+     "foto",
+     "doksi",
+     "dontes",
+     "kor",
+     "anyag",
+     "fi",
+     "biztositek",
+     "vizsgalat",
+     "uj_fogyaszto",
+     "szabad_hely",
+     "felirat",
+     "foldeles",
+     "uj_eloszto",
+     "furdo_mit",
+     "gepek",
+     "csempe",
+     "bekotes_hely"
+    ],
+    "suggestions": [],
+    "shots": [
+     [
+      "epulet_eleje",
+      0,
+      false
+     ],
+     [
+      "merohely_zart",
+      0,
+      false
+     ],
+     [
+      "merohely_nyitott",
+      0,
+      false
+     ],
+     [
+      "eloszto_zart",
+      0,
+      false
+     ],
+     [
+      "eloszto_nyitott",
+      0,
+      false
+     ],
+     [
+      "fi_tabla",
+      0,
+      false
+     ],
+     [
+      "furdo_szoba",
+      0,
+      false
+     ],
+     [
+      "konyha_szoba",
+      0,
+      false
+     ],
+     [
+      "konyha_bekotes",
+      0,
+      false
+     ],
+     [
+      "meglevo_szerelveny",
+      0,
+      false
+     ],
+     [
+      "hozzaferes",
+      0,
+      false
+     ],
+     [
+      "eloszto_felirat",
+      0,
+      false
+     ],
+     [
+      "foldeles",
+      0,
+      false
+     ],
+     [
+      "meglevo_vezetek",
+      0,
+      false
+     ]
+    ],
+    "open": [
+     "kerdes|question|lenyeg|Mi a kérés lényege?",
+     "kerdes|question|ingatlan|Milyen ingatlan?",
+     "kerdes|question|hozzaferes|Ki fér hozzá az ingatlanhoz?",
+     "kerdes|question|hatarido|Mikorra kell elkészülni?",
+     "kerdes|question|keret|Van költségkeret?",
+     "kerdes|question|lakott|Lakott lesz közben az ingatlan?",
+     "kerdes|question|foto|Fényképezhetünk?",
+     "kerdes|question|kor|Mikor készült a hálózat?",
+     "kerdes|question|anyag|Vezeték anyaga?",
+     "kerdes|question|fi|Van FI-relé (életvédelmi)?",
+     "kerdes|question|biztositek|Biztosítékok típusa?",
+     "kerdes|question|szabad_hely|Van szabad hely az elosztóban?",
+     "kerdes|question|foldeles|Földelés?",
+     "kerdes|question|furdo_mit|Mit szeretne a fürdőben?",
+     "kerdes|question|gepek|Milyen gépek lesznek a konyhában?",
+     "kamera|shot|epulet_eleje|Fotó: Épület / bejárat eleje",
+     "kamera|shot|merohely_zart|Fotó: Mérőszekrény zárva, környezettel",
+     "kamera|shot|merohely_nyitott|Fotó: Mérőszekrény nyitva: mérő, főbiztosíték",
+     "kamera|shot|eloszto_zart|Fotó: Elosztó zárva, a helyiséggel",
+     "kamera|shot|eloszto_nyitott|Fotó: Elosztó nyitva, olvasható címkékkel",
+     "kamera|shot|fi_tabla|Fotó: FI-relé címkéje (30 mA?)",
+     "kamera|shot|furdo_szoba|Fotó: Fürdő: Fotópont, 4 irány (0/4)",
+     "kamera|shot|konyha_szoba|Fotó: Konyha: Fotópont, 4 irány (0/4)",
+     "kamera|shot|konyha_bekotes|Fotó: Meglévő konyhai aljzatok, gépbekötések",
+     "kamera|shot|meglevo_szerelveny|Fotó: Jellemző aljzat / kapcsoló szobánként",
+     "helyszin|site|site|Nincs cím"
+    ],
+    "afterScope": {
+     "dugalj": 5,
+     "felujitas": 1,
+     "lampa": 2
+    },
+    "wants": [
+     [
+      "dugalj",
+      5,
+      2,
+      [
+       "R1:2",
+       "R2:1"
+      ]
+     ],
+     [
+      "lampa",
+      2,
+      1,
+      [
+       "R1:1"
+      ]
+     ]
+    ],
+    "afterAnswers": {}
+   }
+  },
+  {
+   "name": "wants only in a room, no other scope: the room makes the want a fact",
+   "sketch": {
+    "kind": "vrg-vazlat",
+    "v": 2,
+    "id": "FX",
+    "name": "Fixture",
+    "seq": 50,
+    "rooms": [
+     {
+      "id": "R1",
+      "poly": [
+       [
+        0,
+        0
+       ],
+       [
+        100,
+        0
+       ],
+       [
+        100,
+        80
+       ],
+       [
+        0,
+        80
+       ]
+      ],
+      "name": "",
+      "kinds": [
+       "nappali"
+      ]
+     }
+    ],
+    "lines": [],
+    "points": [],
+    "measures": [],
+    "circuits": [],
+    "routes": [],
+    "memos": [],
+    "tags": [
+     {
+      "id": "T-furdo",
+      "name": "Fürdő",
+      "col": 4280978651,
+      "preset": "kind:furdo"
+     }
+    ],
+    "tagUses": [],
+    "photos": [],
+    "entries": [],
+    "scope": {
+     "dugalj": 3
+    },
+    "answers": {},
+    "captures": [],
+    "dismissed": [],
+    "seen": {},
+    "roomScope": {
+     "R1": {
+      "dugalj": 3
+     }
+    }
+   },
+   "now": 1763460000000,
+   "variant": null,
+   "expect": {
+    "facts": {
+     "scope": [
+      "dugalj"
+     ],
+     "answers": {},
+     "rooms": [
+      "nappali"
+     ],
+     "points": [],
+     "tags": [],
+     "kw": [],
+     "chips": [],
+     "photos": [],
+     "site": false,
+     "variant": null
+    },
+    "questions": [
+     [
+      "lenyeg",
+      true,
+      false,
+      false
+     ],
+     [
+      "ingatlan",
+      true,
+      false,
+      false
+     ],
+     [
+      "hozzaferes",
+      true,
+      false,
+      false
+     ],
+     [
+      "hatarido",
+      true,
+      false,
+      false
+     ],
+     [
+      "keret",
+      true,
+      false,
+      false
+     ],
+     [
+      "lakott",
+      true,
+      false,
+      false
+     ],
+     [
+      "foto",
+      true,
+      false,
+      false
+     ],
+     [
+      "doksi",
+      true,
+      false,
+      false
+     ],
+     [
+      "dontes",
+      true,
+      false,
+      false
+     ]
+    ],
+    "unseen": [
+     "lenyeg",
+     "ingatlan",
+     "hozzaferes",
+     "hatarido",
+     "keret",
+     "lakott",
+     "foto",
+     "doksi",
+     "dontes"
+    ],
+    "suggestions": [],
+    "shots": [
+     [
+      "epulet_eleje",
+      0,
+      false
+     ],
+     [
+      "hozzaferes",
+      0,
+      false
+     ]
+    ],
+    "open": [
+     "kerdes|question|lenyeg|Mi a kérés lényege?",
+     "kerdes|question|ingatlan|Milyen ingatlan?",
+     "kerdes|question|hozzaferes|Ki fér hozzá az ingatlanhoz?",
+     "kerdes|question|hatarido|Mikorra kell elkészülni?",
+     "kerdes|question|keret|Van költségkeret?",
+     "kerdes|question|lakott|Lakott lesz közben az ingatlan?",
+     "kerdes|question|foto|Fényképezhetünk?",
+     "kamera|shot|epulet_eleje|Fotó: Épület / bejárat eleje",
+     "helyszin|site|site|Nincs cím"
+    ],
+    "afterScope": {
+     "dugalj": 3
+    },
+    "wants": [
+     [
+      "dugalj",
+      3,
+      0,
+      [
+       "R1:3"
+      ]
+     ]
+    ],
     "afterAnswers": {}
    }
   },
@@ -2627,6 +3253,7 @@
      "bojler": 1,
      "furdo": 1
     },
+    "wants": [],
     "afterAnswers": {
      "hozzaferes": [
       [

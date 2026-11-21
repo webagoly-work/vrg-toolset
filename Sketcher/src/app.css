@@ -114,3 +114,7 @@ code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; bord
 .tag.ok { color: var(--ok); }
 .tag.dim { opacity: .5; text-decoration: line-through; }
 .ocr { margin-top: 3px; }
+/* F4 (WP M49): the client's wants by room */
+.stepper .here { color: var(--c); font-size: 10px; }
+.card.wants { margin-top: 6px; } .card.wants .wrow { margin-top: 5px; } .card.wants .wrow b { margin-right: 6px; }
+.card.wants .pill .x { margin-left: 4px; }
