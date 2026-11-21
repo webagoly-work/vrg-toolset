@@ -8,7 +8,7 @@
 // survey file (kind vrg-vazlat: no plan, lengths at the default scale, all ≈). Output next to the input (or in --out):
 // the vrg-sketch-takeoff v1 document and its Hungarian summary (docs/sketcher/TAKEOFF.md is the contract). --stdout
 // prints the JSON instead (--md: the summary). --reserve / --loose override the cable allowance per end (mm);
-// --implied-dedicated counts the dedicated circuits the big machines and systems imply (off by default, D-74).
+// --implied-dedicated counts the dedicated circuits the big machines and systems imply (off by default, D-79).
 // The engine is Sketcher/lib/takeoff.js, the same one the Desktop page runs; the phone runs its Kotlin twin.
 // No prices: the Varler Workflow Kit prices it (its takeoff.js → price.js → offer.js, on the PC).
 'use strict';

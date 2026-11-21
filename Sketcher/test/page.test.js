@@ -257,6 +257,41 @@ ok(/1 személyes adatot mutató fotón nincs elmosás/.test(mainText()), 'unblur
 ok(card('C95').querySelector('[data-ocr="aram"].ok') && /✓ 3×25 A/.test(card('C95').textContent) && card('C95').querySelector('[data-ocr="mero_szam"]'), 'type-plate readings, used one ticked');
 ok(JSON.parse(sk.save()).captures.find(c => c.id === 'C94').pair === 'C93', 'Kamera 2 fields survive the Desktop save');
 
+// F4 (WP M49): the client's wants by room on the Munkakör
+{
+  sk.load(pkgObj);
+  const rooms = sk.state().rooms.map(r => r.id);
+  ok(rooms.length >= 2, 'the field package has rooms');
+  click(rail('munkakor'));
+  const sel = $('#wroom');
+  ok(sel && sel.options.length === rooms.length + 1, 'Hová: Általános and every room');
+  sel.value = rooms[0]; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+  click($('[data-scope="dugalj"] [data-act="sinc"]')); click($('[data-scope="dugalj"] [data-act="sinc"]'));
+  eq(sk.state().roomScope[rooms[0]].dugalj, 2, 'two sockets in the chosen room');
+  eq(sk.state().scope.dugalj, 2, 'the job total follows');
+  ok(/\(2 itt\)/.test($('[data-scope="dugalj"]').textContent), 'the stepper says how many are here');
+  const s2 = $('#wroom'); s2.value = ''; s2.dispatchEvent(new w.Event('change', { bubbles: true }));
+  click($('[data-scope="dugalj"] [data-act="sinc"]'));
+  eq([sk.state().scope.dugalj, sk.state().roomScope[rooms[0]].dugalj], [3, 2], 'one more for the job: total 3, the room keeps 2');
+  ok($('.card.wants') && /Általános/.test($('.card.wants').textContent), 'Szobánként card with the room and Általános');
+  click($('.card.wants [data-act="wmove"][data-from="' + rooms[0] + '"]'));
+  eq([sk.state().scope.dugalj, sk.state().roomScope[rooms[0]].dugalj], [3, 1], '⇠ re-links one to Általános, the total stays');
+  click($('[data-scope="dugalj"] [data-act="sdec"]')); click($('[data-scope="dugalj"] [data-act="sdec"]')); click($('[data-scope="dugalj"] [data-act="sdec"]'));
+  ok(sk.state().scope.dugalj === undefined && !(sk.state().roomScope || {})[rooms[0]], '− from Általános down to 0 takes the room\'s too');
+  click($('[data-scope="lampa"] [data-act="sinc"]'));
+  const sv0 = JSON.parse(sk.save()), sv = sv0.sketch || sv0;
+  ok(sv.scope.lampa === 1 && !sv.roomScope?.[rooms[0]], 'saved: a general want has no room');
+}
+
+// F4: the drawing tune is shown on the Variánsok cards and validated
+click(rail('variansok'));
+ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '') && /30 × 20 m/.test($('[data-draw="ipari-telephely"]').textContent), 'ipari-telephely shows its drawing tune');
+{
+  const base = { kind: FK.VARIANT_KIND, id: 'proba', name: 'Próba', premise: 'Egy próbaváltozat a rajzhangolás ellenőrzéséhez.' };
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 90, snapGrid: 0.5, defaultRoom: { w: 4, d: 3 }, measureFirst: true, pointSnap: 'free' } })), [], 'a good draw block passes');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 37, snapGrid: -1, defaultRoom: { w: 0 }, measureFirst: 'yes', pointSnap: 'x', wallThickness: 30 } })).length, 6, 'every bad draw key is reported');
+}
+
 let bad = null; try { sk.load({ kind: 'nope' }); } catch (e) { bad = e; }
 ok(!!bad, 'unknown file is rejected');
 ok(errors.length === 0, 'no script errors: ' + errors.join('; '));

@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,8 @@ import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Level
@@ -237,13 +240,20 @@ private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
             st.sketch.name.ifBlank { "Névtelen felmérés" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).clickable { st.ask = Ask.SketchName },
         )
-        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original
-        SketcherKit.variant(st.sketch.variant)?.let { v ->
-            val on = st.sketch.variantOn
-            Text(if (on) v.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(v.color) else Melyviz.faint),
-                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(v.color) else Melyviz.line, RoundedCornerShape(50))
-                    .clickable { st.toggleVariant() }.padding(horizontal = 8.dp, vertical = 2.dp)
-                    .semantics { contentDescription = (if (on) v.name else "Eredeti") + ": váltás" })
+        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original.
+        // F4 (WP M49): a long press (RCO) lists the variants, the original, ⟳ refresh and ＋ a new request; with no
+        // variant chosen yet a faint ◐ stands there and a tap opens the same list
+        val allVariants by SketcherKit.variants.collectAsState()
+        val cur = SketcherKit.variant(st.sketch.variant)
+        if (cur != null || allVariants.isNotEmpty()) Box {
+            var vmenu by remember { mutableStateOf(false) }
+            val on = st.sketch.variantOn && cur != null
+            Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.faint),
+                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
+                    .rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { vmenu = true }, longLabel = "variánsok")
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                    .semantics { contentDescription = (if (on) cur!!.name else "Eredeti") + ": váltás" })
+            RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })
         }
         VrgChip(st.sketch.level.label) { st.setLevel(Level.entries[(st.sketch.level.ordinal + 1) % Level.entries.size]) }
         Text("↶", style = Melyviz.title.copy(color = if (st.canUndo) Melyviz.ink else Melyviz.faint),

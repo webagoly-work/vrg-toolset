@@ -44,6 +44,7 @@ import hu.vrg.mobile.sketch.KScope
 import hu.vrg.mobile.sketch.Kit
 import hu.vrg.mobile.sketch.PointType
 import hu.vrg.mobile.sketch.Tools
+import hu.vrg.mobile.sketch.Wants
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -144,6 +145,7 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
 @Composable
 internal fun ScopeFront(st: EditorState) = FrontPage(st, "munkakor") {
     val col = st.frontColor("munkakor")
+    LaunchedEffect(Unit) { st.wantRoom = st.focusRoom }   // F4: wants go to the room in focus, re-choosable under Hová
     val sum = remember(st.sketch, st.kit, st.norm) { FieldKit.summary(st.kit, st.sketch, st.norm) }
     Card(col) {
         Text("A munka eddig", style = Melyviz.small.copy(color = Melyviz.faint))
@@ -162,23 +164,27 @@ internal fun ScopeFront(st: EditorState) = FrontPage(st, "munkakor") {
         val items = st.kit.scope.filter { it.group == g }
         if (items.isEmpty()) return@forEach
         Text(label, style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        if (g == "igeny") WantWhere(st, col)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             items.forEach { s -> ScopePill(st, s, col) }
         }
+        if (g == "igeny") WantsByRoom(st, col)
     }
 }
 
 @Composable
 private fun ScopePill(st: EditorState, s: KScope, col: Color) {
-    val n = st.sketch.scope[s.id] ?: 0
+    val n = if (s.qty) Wants.total(st.sketch, s.id) else st.sketch.scope[s.id] ?: 0
     if (!s.qty) { Pill(s.sym + " " + s.label, col, n > 0) { st.setScope(s.id, if (n > 0) 0 else 1) }; return }
+    // F4: + / − go to the room chosen under Hová; the pill shows the job total and how many are in that room
+    val here = st.wantRoom?.takeIf { st.sketch.room(it) != null }?.let { Wants.inRoom(st.sketch, it, s.id) } ?: 0
     Row(Modifier.clip(RoundedCornerShape(50)).background(if (n > 0) col else Melyviz.surface).border(1.dp, if (n > 0) col else Melyviz.line, RoundedCornerShape(50)),
         verticalAlignment = Alignment.CenterVertically) {
         val ink = if (n > 0) Color.Black else Melyviz.ink
-        if (n > 0) Text(" − ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.setScope(s.id, n - 1) }.padding(horizontal = 6.dp, vertical = 6.dp))
-        Text(s.sym + " " + s.label + if (n > 0) " $n" else "", style = Melyviz.small.copy(fontSize = 12.sp, color = ink),
-            modifier = Modifier.clickable { st.setScope(s.id, n + 1) }.padding(horizontal = 8.dp, vertical = 6.dp))
-        if (n > 0) Text(" + ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.setScope(s.id, n + 1) }.padding(horizontal = 6.dp, vertical = 6.dp))
+        if (n > 0) Text(" − ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.addWant(s.id, -1) }.padding(horizontal = 6.dp, vertical = 6.dp))
+        Text(s.sym + " " + s.label + (if (n > 0) " $n" else "") + (if (here > 0) " ($here itt)" else ""), style = Melyviz.small.copy(fontSize = 12.sp, color = ink),
+            modifier = Modifier.clickable { st.addWant(s.id, +1) }.padding(horizontal = 8.dp, vertical = 6.dp))
+        if (n > 0) Text(" + ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.addWant(s.id, +1) }.padding(horizontal = 6.dp, vertical = 6.dp))
     }
 }
 

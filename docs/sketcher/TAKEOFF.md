@@ -1,6 +1,6 @@
 # VRG Sketcher — the takeoff (Munkakör lap) and its export contract
 
-*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M47 (`../mobile/WP/M47.md`), decisions D-67 … D-74.*
+*Fork F2 "Felmérés → árajánlat", 2026-11-20, WP M47 (`../mobile/WP/M47.md`), decisions D-67 … D-71, D-77 … D-79.*
 
 The Founder: *"Some combination of selectable toggles can express the nature of the job but also can add concrete wants
 and needs to the order — the point is that these create the natural categorizations that **outline the scope and
@@ -38,7 +38,7 @@ with `sk.id` and their nodes). Or a **bare survey** (kind `vrg-vazlat`): no solv
 ## 3. The rules (what each number means)
 
 - **Points** by type and **action**: a *Bontás* tag (preset `remove`, or a tag named *bontás*) → bontás; the *Csere* tag
-  (preset `replace`, built in since D-72; an older survey's own tag named *csere* counts too) → csere; otherwise *Tervezett* →
+  (preset `replace`, built in since D-77; an older survey's own tag named *csere* counts too) → csere; otherwise *Tervezett* →
   új, *Meglévő* → meglévő marad (listed, `work: false`). A point without a type is ≈.
 - **The Igények reconcile with the drawing**: *Dugalj*, *Kültéri aljzat* → socket; *Kapcsoló* → switch; *Lámpa* →
   light; *LAN-pont*, *TV-pont*, *IP kamera* → data. The new count is `max(drawn, wanted)`; when more is wanted than
@@ -48,7 +48,7 @@ with `sk.id` and their nodes). Or a **bare survey** (kind `vrg-vazlat`): no solv
   (*Ellenőrizni*).
 - **Circuits**: drawn circuits with members, *általános* and *dedikált* (the circuit's own flag, a *Dedikált* tag on it
   or on a member). The machines and systems marked `dedicated` imply one each (a Klíma per indoor unit). **By default
-  nothing is assumed** (D-74, `impliedDedicated: false`): the dedicated count is what is drawn, and a check line says how
+  nothing is assumed** (D-79, `impliedDedicated: false`): the dedicated count is what is drawn, and a check line says how
   many the machines may need. With the general toggle on (phone: the Munkakör lap's *◉ Dedikált kör a nagy gépeknek*;
   Desktop: the same button; CLI: `--implied-dedicated`) the count is `max(drawn, implied)`, ≈ when the implied number
   is larger.

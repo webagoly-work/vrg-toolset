@@ -34,7 +34,7 @@ object SketcherKit {
     @Volatile var rules: TakeoffRules? = null; private set
 
     /**
-     * D-74 (the Founder, 2026-11-21): count the dedicated circuits the machines and systems imply. Off by default (the
+     * D-79 (the Founder, 2026-11-21): count the dedicated circuits the machines and systems imply. Off by default (the
      * takeoff assumes nothing); a general toggle on the Munkakör lap, kept for every survey on this phone.
      */
     private const val PREFS = "sketcher"

@@ -132,3 +132,7 @@ svg.siteplace text { fill: var(--muted, #888); }
 .tk-item.est .q { color: #e8641c; }
 .tk-item.keep { opacity: .6; border-left-color: #a6afb7; }
 .tk-dec { margin: 4px 0; }
+/* F4 (WP M49): the client's wants by room */
+.stepper .here { color: var(--c); font-size: 10px; }
+.card.wants { margin-top: 6px; } .card.wants .wrow { margin-top: 5px; } .card.wants .wrow b { margin-right: 6px; }
+.card.wants .pill .x { margin-left: 4px; }

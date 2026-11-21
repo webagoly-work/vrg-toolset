@@ -93,6 +93,7 @@ object SketchJson {
             a.put(j)
         } })
         o.put("scope", JSONObject().also { j -> s.scope.toSortedMap().forEach { (k, v) -> j.put(k, v) } })
+        Wants.write(s, o)
         o.put("answers", JSONObject().also { j -> s.answers.toSortedMap().forEach { (k, v) ->
             j.put(k, JSONObject().put("options", strs(v.options)).put("text", v.text).put("at", v.at).put("state", v.state.id))
         } })
@@ -152,7 +153,7 @@ object SketchJson {
             variant = o.str("variant"),
             variantOn = o.optBoolean("variantOn"),
             draft = o.optString("draft"),
-        )
+        ).let { Wants.read(o, it) }
     }
 
     // WP M46 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)

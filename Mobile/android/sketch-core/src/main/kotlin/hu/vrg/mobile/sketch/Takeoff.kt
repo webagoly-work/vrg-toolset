@@ -179,7 +179,9 @@ object Takeoff {
     data class Question(val q: String, val label: String, val who: String, val state: String, val options: List<String>, val text: String)
     data class Note(val id: String, val text: String, val chips: List<String>, val room: String, val open: Boolean)
     data class PhotoGroup(val purpose: String, val label: String, val sym: String, val n: Int, val files: List<String>)
-    data class RoomRow(val id: String, val name: String, val kinds: List<String>, val areaM2: Double, val est: Boolean)
+    data class RoomRow(val id: String, val name: String, val kinds: List<String>, val areaM2: Double, val est: Boolean,
+                       /** F4 (WP M49): the client's wants this room holds (roomScope), kit order. */
+                       val wants: List<Pair<KScope, Int>> = emptyList())
 
     /** The whole takeoff. Kept as JSON (the export contract) and as the rows the phone's Munkakör lap draws. */
     class Result(
@@ -206,7 +208,7 @@ object Takeoff {
               endReserveMm: Int? = null, looseEndMm: Int? = null, impliedDedicated: Boolean? = null): Result {
         val plan = plan0 ?: PlanView.raw(s, rules)
         val reserve = endReserveMm ?: rules.endReserveMm
-        // D-74: the dedicated circuits the machines and systems imply are counted only when asked (a general toggle)
+        // D-79: the dedicated circuits the machines and systems imply are counted only when asked (a general toggle)
         val impliedOn = impliedDedicated ?: rules.impliedDedicated
         val loose = looseEndMm ?: rules.looseEndMm
         val ceil = rules.levelH(s.level.id)
@@ -368,7 +370,8 @@ object Takeoff {
             val k = kit.purpose(id)
             PhotoGroup(id, k?.label ?: id, k?.sym ?: "◉", n, list.map { "${stem}_${it.id}_${it.purpose}.jpg" })
         }
-        val rooms = plan.rooms.map { RoomRow(it.id, roomTitle(it), it.kinds, a1(area(it.poly)), it.est) }
+        val rooms = plan.rooms.map { RoomRow(it.id, roomTitle(it), it.kinds, a1(area(it.poly)), it.est,
+            kit.scope.filter { k -> k.qty && (s.roomScope[it.id]?.get(k.id) ?: 0) > 0 }.map { k -> k to s.roomScope[it.id]!![k.id]!! }) }
         val scopeGroups = FieldKit.SCOPE_GROUPS.map { (g, label) -> g to label }.mapNotNull { (g, label) ->
             val its = kit.scope.filter { it.group == g && scopeQ(s, it.id) > 0 }
             if (its.isEmpty()) null else Triple(g, label, its)
@@ -401,7 +404,8 @@ object Takeoff {
         j.put("notes", JSONArray(notes.map { JSONObject().put("id", it.id).put("text", it.text).put("chips", jstrs(it.chips)).put("room", it.room).put("open", it.open) }))
         j.put("memos", JSONArray(s.memos.map { JSONObject().put("id", it.id).put("text", it.text) }))
         j.put("photos", JSONArray(photos.map { JSONObject().put("purpose", it.purpose).put("label", it.label).put("sym", it.sym).put("n", it.n).put("files", jstrs(it.files)) }))
-        j.put("rooms", JSONArray(rooms.map { JSONObject().put("id", it.id).put("name", it.name).put("kinds", jstrs(it.kinds)).put("areaM2", it.areaM2).put("est", it.est) }))
+        j.put("rooms", JSONArray(rooms.map { r -> JSONObject().put("id", r.id).put("name", r.name).put("kinds", jstrs(r.kinds)).put("areaM2", r.areaM2).put("est", r.est)
+            .also { o -> if (r.wants.isNotEmpty()) o.put("wants", JSONArray(r.wants.map { (k, n) -> JSONObject().put("id", k.id).put("label", k.label).put("sym", k.sym).put("qty", n) })) } }))
         return Result(j, items, decisions, checks, questions, notes, photos, rooms)
     }
 
@@ -463,7 +467,8 @@ object Takeoff {
         val photos = objs(t.optJSONArray("photos"))
         if (photos.isNotEmpty()) { L += ""; L += "## Fotók"; L += ""; photos.forEach { L += "- " + it.getString("sym") + " " + it.getString("label") + ": " + it.getInt("n") } }
         val rooms = objs(t.optJSONArray("rooms"))
-        if (rooms.isNotEmpty()) { L += ""; L += "## Helyiségek"; L += ""; rooms.forEach { L += "- " + it.getString("name") + ": " + (if (it.getBoolean("est")) "≈ " else "") + fmt(it.getDouble("areaM2")) + " m²" } }
+        if (rooms.isNotEmpty()) { L += ""; L += "## Helyiségek"; L += ""; rooms.forEach { L += "- " + it.getString("name") + ": " + (if (it.getBoolean("est")) "≈ " else "") + fmt(it.getDouble("areaM2")) + " m²" +
+            (it.optJSONArray("wants")?.let { w -> " — " + objs(w).joinToString(", ") { x -> x.getString("label") + " ×" + x.getInt("qty") } } ?: "") } }
         return L.joinToString("\n") + "\n"
     }
 

@@ -525,6 +525,38 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
   three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
   (not during Sorozat, which already returns to the camera).
+- **D-72 · F4: the client's wants by room keep the job total in `scope` (M49), 2026-11-21.** Taken in fork F4. A
+  countable want (an *igény* with a quantity) can belong to a room: a new optional `roomScope {room → {want → qty}}`
+  holds the rooms' part, `scope` stays the job total, the rest is *Általános* (derived, never stored). Every reader of
+  `scope` (the conditions, the scope card, F2's takeoff, the Planner's raw intake) stays right without knowing about
+  rooms. The Munkakör's + / − go to the room chosen under *Hová* (the room in focus when the front opens); a total
+  lowered below the rooms takes back from the last room first; a deleted room's entry stays in the file and counts as
+  Általános (an undo brings the room back with its wants). Rejected: a per-room list of separate *igény* records with
+  categories (the research's wording): it duplicates the scope toggles and breaks every reader of the totals.
+- **D-73 · F4: the Sketcher's variants on its long press start a new survey (M49), 2026-11-21.** Taken in fork F4. On the
+  home tile (hero card, grid icon, Kompakt) and the Asztal dock's Sketcher dial, the RCO lists *Új felmérés: <variant>*
+  for each variant, *Új felmérés: eredeti*, ⟳ *Variánsok frissítése* and ＋ *Új variáns kérése* (opened without a
+  survey: the request carries the premise and toggles, its counts are zero). From outside the Sketcher a variant line
+  means "I am starting this kind of job"; switching the survey already open is the editor's corner toggle, whose long
+  press has the same list for that survey (a tap still toggles; with no variant chosen a faint ◐ opens the list).
+  Rejected: reopening the last survey with the variant (it silently reshapes a survey the user may be in the middle of).
+- **D-74 · F4: a variant tunes five drawing behaviours, nothing else (M49), 2026-11-21.** Taken in fork F4. The optional
+  `draw` block: `snapAngle` (0 / 15 / 30 / 45 / 90°, the Vonal tool's step; 0 = the original 12° axis lock),
+  `snapGrid` (m, corners of Szoba, Sablon, Vonal and corner moves; a neighbour's corner line still wins), `defaultRoom`
+  `{w, d}` (m, a tap on paper with Szoba lays one), `measureFirst` (a new room opens its size dialog), `pointSnap`
+  `wall` / `free`. Metres become sketch units through the sketch's current scale (the Solver's mm per unit), so the
+  grid stays real after the first measure. The phone ignores a bad value (falls back to the original); the variant
+  check rejects it. Left out: `wallThickness` (the sketch has no walls; the Planner builds them, and its wall tool is
+  not this fork's) and `lineClose` (closing on the first point already works; an "ask" mode adds a dialog to every room).
+- **D-75 · F4: the kit's égett detector skips kiégett (M49), 2026-11-21.** Taken in fork F4. `(?<!ki)eget|…` in
+  `fieldkit.json`: a burnt-out lamp (*kiégett izzó*) no longer suggests a fault, *megégett*, *égett szag* still do. Java
+  and JS regexes both take the lookbehind (FieldKitTest parses the kit; the fixture has the three cases). The
+  ipari-telephely override is gone.
+- **D-76 · F4 sweep: the deadline gets a date field; no audio fallback yet (M49), 2026-11-21.** Taken in fork F4. *Mikorra
+  kell elkészülni?* has a `num` field (unit *dátum*) like the budget (*Ft*): budget and deadline are now both an option
+  plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
+  fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
+  entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
 
 - **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
   (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
@@ -569,7 +601,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
   line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
 - **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit
-  (since D-74 only with its toggle on), a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+  (since D-79 only with its toggle on), a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
   the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
   them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
   counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
@@ -583,13 +615,13 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
   Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
 
-- **D-72 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
+- **D-77 · A built-in Csere tag, 2026-11-21.** Asked: the Founder chose **A**. The tag presets get *Csere* (`T-csere`,
   preset `replace`, next to Bontás); the takeoff counts an existing point with it as csere, the Planner package marks the
   device `sk.replace`. Old surveys keep their own tag list (a user-made „Csere” tag still works by name); the Planner
   fixture `sketch-field.json` was refreshed for it. Rejected: **B** only a user-made tag. Details: `WP/M47.md`.
-- **D-73 · Cable reserve per end: 300 mm, 2026-11-21.** Asked: the Founder chose **A**. `cable.endReserveMm` stays 300
+- **D-78 · Cable reserve per end: 300 mm, 2026-11-21.** Asked: the Founder chose **A**. `cable.endReserveMm` stays 300
   (`--reserve` on the CLI for one job). Rejected: **B** 500 mm, **C** another value.
-- **D-74 · Implied dedicated circuits: none by default, a general toggle, 2026-11-21.** Asked: the Founder chose **C**
+- **D-79 · Implied dedicated circuits: none by default, a general toggle, 2026-11-21.** Asked: the Founder chose **C**
   ("should be toggle option to add these generally"). The takeoff assumes no dedicated circuit for the big machines and
   systems (`impliedDedicated: false` in the rules); a check line says how many they may need. One toggle switches the
   assumption on for every survey: on the phone the Munkakör lap's *◉ Dedikált kör a nagy gépeknek* (kept in the app's

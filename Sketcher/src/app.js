@@ -14,6 +14,7 @@
   let S = null, pkg = null, cur = 'attekintes', msg = null, fileName = '';
   let files = new Map();                       // photo file name -> object URL (memory only, never saved)
   let note = { text: '', chips: new Set(), open: false, room: '' };
+  let wantRoom = '';   // F4 (WP M49): where the Munkakör's + / − put a want: '' = Általános, else a room id
   let starter = '';
 
   const $ = id => document.getElementById(id);
@@ -61,7 +62,7 @@
     return S;
   }
   // the takeoff (Munkakör lap, docs/sketcher/TAKEOFF.md): from the package's solved plan, or the raw sketch (all ≈)
-  // D-74: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
+  // D-79: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
   const IMPLIED_KEY = 'vrg-sketcher-implied-dedicated';
   let implied = (() => { try { return localStorage.getItem(IMPLIED_KEY) === '1'; } catch (e) { return !!RULES.impliedDedicated; } })();
   function setImplied(on) { implied = !!on; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } }
@@ -249,13 +250,34 @@
   }
 
   function vMunkakor(d) {
-    const sc = S.scope || {}, col = frontOf('munkakor').color;
-    return takeoffCard() + GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
-      const n = sc[x.id] || 0;
+    const sc = S.scope || {}, col = frontOf('munkakor').color, rooms = S.rooms || [];
+    if (wantRoom && !rooms.some(r => r.id === wantRoom)) wantRoom = '';
+    const here = (id) => wantRoom ? (((S.roomScope || {})[wantRoom] || {})[id] || 0) : null;
+    return takeoffCard() + GROUPS.map(([g, label]) => '<h3>' + label + '</h3>' + (g === 'igeny' ? wantWhere(rooms) : '') + '<div>' + d.k.scope.filter(x => x.group === g).map(x => {
+      const n = x.qty ? FK.wantTotal(S, x.id) : sc[x.id] || 0, h = x.qty ? here(x.id) : null;
       if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
-        '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
+        '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + (h ? '<small class="here"> (' + h + ' itt)</small>' : '') + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
       return '<button class="pill ' + (n ? 'sel' : 'off') + '" data-act="stoggle" data-id="' + esc(x.id) + '" data-scope="' + esc(x.id) + '" style="--c:' + col + '"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</button>';
-    }).join('') + '</div>').join('');
+    }).join('') + '</div>' + (g === 'igeny' ? wantsByRoom(d.k) : '')).join('');
+  }
+  // F4: where + / − go, and the wants per room (a room's own, then the job's); ⇠ / → re-link one
+  function wantWhere(rooms) {
+    return '<div class="row small"><span class="muted">Hová:</span><select id="wroom" style="width:auto"><option value="">Általános (a munka egésze)</option>' +
+      rooms.map(r => '<option value="' + esc(r.id) + '"' + (wantRoom === r.id ? ' selected' : '') + '>' + esc(roomName(r.id)) + '</option>').join('') + '</select></div>';
+  }
+  function wantsByRoom(k) {
+    const ws = FK.wants(k, S);
+    if (!ws.some(w => w.rooms.length)) return '';
+    const lab = id => { const x = k.scope.find(s => s.id === id) || {}; return (x.sym ? x.sym + ' ' : '') + (x.label || id); };
+    const notes = r => (S.entries || []).filter(e => e.room === r).length;
+    const rows = (S.rooms || []).map(r => [r.id, ws.map(w => [w.id, (w.rooms.find(x => x[0] === r.id) || [0, 0])[1]]).filter(x => x[1] > 0)]).filter(x => x[1].length);
+    const gen = ws.filter(w => w.general > 0).map(w => [w.id, w.general]);
+    const btn = (act, id, from, title, glyph) => '<button class="x" data-act="' + act + '" data-id="' + esc(id) + '" data-from="' + esc(from) + '" title="' + esc(title) + '">' + glyph + '</button>';
+    return '<div class="card wants"><div class="small muted">Szobánként (összesen: ' + ws.map(w => esc(lab(w.id)) + ' ×' + w.total).join(', ') + ')</div>' +
+      rows.map(([r, items]) => '<div class="wrow"><b>⌂ ' + esc(roomName(r)) + '</b> ' + items.map(([id, n]) => '<span class="pill sel" style="--c:#3dae5a">' + esc(lab(id)) + ' ×' + n +
+        btn('wmove', id, r, 'egyet az Általánosba', '⇠') + '</span>').join('') + (notes(r) ? ' <span class="small muted">✎ ' + notes(r) + ' jegyzet</span>' : '') + '</div>').join('') +
+      (gen.length ? '<div class="wrow"><b>Általános</b> ' + gen.map(([id, n]) => '<span class="pill" style="--c:#3dae5a">' + esc(lab(id)) + ' ×' + n +
+        (wantRoom ? btn('wmove', id, '', 'egyet ide: ' + roomName(wantRoom), '→') : '') + '</span>').join('') + '</div>' : '') + '</div>';
   }
 
   function qCard(x) {
@@ -423,9 +445,20 @@
       return '<h3 style="color:' + esc(f.color) + '">' + esc(f.sym) + ' ' + esc(f.label) + ' (' + l.length + ')</h3>' + l.map(leHtml).join(''); }).join('');
   }
 
+  // F4 (WP M49): what the variant tunes in the phone's drawing tools (sketch-core DrawTune.describe, same words)
+  function drawLine(v) {
+    const d = v.draw; if (!d) return '';
+    const n = x => String(x).replace('.', ','), out = [];
+    if (d.snapAngle > 0) out.push('Vonal: ' + d.snapAngle + '°-os lépés');
+    if (d.snapGrid > 0) out.push('Rács: ' + n(d.snapGrid) + ' m');
+    if (d.defaultRoom) out.push('Koppintás = ' + n(d.defaultRoom.w) + ' × ' + n(d.defaultRoom.d) + ' m szoba');
+    if (d.measureFirst) out.push('Új szoba: rögtön a méret');
+    if (d.pointSnap === 'free') out.push('Pont: nem ugrik a falra');
+    return out.length ? '<div class="small draw" data-draw="' + esc(v.id) + '">✎ ' + out.map(esc).join(' · ') + '</div>' : '';
+  }
   function vVariansok() {
     return '<div class="grid">' + VARIANTS.map(v => '<div class="card" style="border-left:3px solid ' + esc(v.color) + '"><div style="font-size:18px;color:' + esc(v.color) + '">' + esc(v.sym) + ' <b>' + esc(v.name) + '</b>' +
-      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' +
+      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' + drawLine(v) +
       '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="vpick" data-id="' + esc(v.id) + '">Használat ebben a felmérésben</button></div></div>').join('') + '</div>' +
       '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
       '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>';
@@ -505,9 +538,10 @@
       case 'eopen': commit(() => { S.entries = S.entries.map(e => e.id === id ? Object.assign({}, e, { open: !e.open }) : e); }); break;
       case 'sugok': { const g = FK.suggestions(k(), S).find(x => x.id === id); if (g) commit(() => { S = FK.apply(k(), g.effect, S, stamp()); }); break; }
       case 'sugno': commit(() => { S.dismissed = (S.dismissed || []).concat([id]); }); break;
-      case 'stoggle': commit(() => { S.scope = Object.assign({}, S.scope); if (S.scope[id] > 0) delete S.scope[id]; else S.scope[id] = 1; }); break;
-      case 'sinc': commit(() => { S.scope = Object.assign({}, S.scope); S.scope[id] = (S.scope[id] || 0) + 1; }); break;
-      case 'sdec': commit(() => { S.scope = Object.assign({}, S.scope); if ((S.scope[id] || 0) <= 1) delete S.scope[id]; else S.scope[id] -= 1; }); break;
+      case 'stoggle': commit(() => { if (S.scope && S.scope[id] > 0) S = FK.trimWant(S, id, 0); else { S.scope = Object.assign({}, S.scope); S.scope[id] = 1; } }); break;
+      case 'sinc': commit(() => { S = FK.addWant(S, id, wantRoom || null, +1); }); break;   // F4: into the room chosen under Hová
+      case 'sdec': commit(() => { const r = wantRoom || null, n = FK.addWant(S, id, r, -1); S = n === S && !r ? FK.trimWant(S, id, FK.wantTotal(S, id) - 1) : n; }); break;
+      case 'wmove': commit(() => { const from = t.dataset.from || null; S = FK.moveWant(S, id, from, from ? null : wantRoom || null, 1); }); break;
       case 'qopt': commit(() => chooseOption(q, t.dataset.o)); break;
       case 'qlater': case 'qskip': commit(() => { const old = answerOf(q); setAnswer(q, { options: old ? old.options : [], text: old ? old.text || '' : '', at: stamp(), state: a === 'qlater' ? 'later' : 'skip' }); }); break;
       case 'qclear': commit(() => setAnswer(q, null)); break;
@@ -532,6 +566,7 @@
     const t = ev.target;
     if (t.id === 'fopen') { openFiles(t.files); t.value = ''; return; }
     if (t.id === 'fphotos') { if (S) attach(t.files); t.value = ''; return; }
+    if (t.id === 'wroom') { wantRoom = t.value; render(); return; }
     if (!S) return;
     if (t.dataset.qtext) {                           // store silently, so a following click is not eaten by a re-render
       const q = t.dataset.qtext, old = answerOf(q), text = t.value;

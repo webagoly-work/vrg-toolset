@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import hu.vrg.mobile.sketch.AnswerState
+import hu.vrg.mobile.sketch.Draw
+import hu.vrg.mobile.sketch.DrawTune
 import hu.vrg.mobile.sketch.Effect
 import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.Geo
@@ -240,7 +242,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 if (t == null) { note = "Válassz címkét lent, vagy húzd a lapra."; return }
                 dropTag(t, o)
             }
-            Tools.ROOM.id -> note = "Húzz egy téglalapot: az lesz a szoba."
+            Tools.ROOM.id -> if (h == null) tapRoom(p) else note = "Húzz egy téglalapot: az lesz a szoba."   // F4: a tap on paper only
             Tools.TEMPLATE.id -> note = "Húzd a sablont a szoba méretére" + (template?.let { ": " + it.label } ?: "; az alakot lent választod.")
             Tools.LINE.id -> lineTap(p)
             Tools.MEASURE.id -> when {
@@ -252,7 +254,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 else placePoint(p)
             Tools.CIRCUIT.id -> if (h?.kind == Hit.Kind.POINT) circuitTap(h!!.id) else note = "Koppints pontokra, vagy húzz keretet."
             Tools.BOARD.id -> if (h?.kind == Hit.Kind.POINT) note = "Itt már van pont."
-                else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, tol))?.let { note = "Elosztó lerakva. Bekötés: lent." }
+                else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, Draw.pointTol(draw, tol)))?.let { note = "Elosztó lerakva. Bekötés: lent." }
             Tools.ROUTE.id -> note = "Húzd végig az ujjad, merre megy a kábel."
             Tools.PHOTO.id -> if (h?.kind == Hit.Kind.PHOTO) camera = CameraReq(h!!.id, null)
                 else commit(PhotoOps.add(sketch, p, tol))?.let { note = "Fotópont. Koppints rá: kamera; utána húzz arra, amerre a kép néz." }
@@ -291,11 +293,11 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Move.PAN -> pan += delta
             Move.RECT, Move.FRAME -> dragRect = dragFrom to p
             Move.STROKE -> stroke = stroke + p
-            Move.POINT -> if (id != null) edit(Ops.movePoint(sketch, id, p, tol), record = false)
+            Move.POINT -> if (id != null) edit(Ops.movePoint(sketch, id, p, Draw.pointTol(draw, tol)), record = false)
             Move.MEMO -> if (id != null) edit(Ops.moveMemo(sketch, id, p), record = false)
             Move.TAG -> if (id != null) edit(Ops.moveTagUse(sketch, id, null, p), record = false)
             Move.ROOM -> if (id != null) edit(Ops.moveRoom(sketch, id, p - lastSketchPt), record = false)
-            Move.VERTEX -> if (id != null) edit(Ops.moveVertex(sketch, id, moveVertex, p, tol / 2), record = false)
+            Move.VERTEX -> if (id != null) edit(Ops.moveVertex(sketch, id, moveVertex, corner(p, id), tol / 2), record = false)
             Move.PHOTO -> if (id != null) edit(PhotoOps.move(sketch, id, p), record = false)
             Move.SHOT, Move.NONE -> {}
         }
@@ -307,9 +309,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         when (move) {
             Move.RECT -> {
                 val shape = if (tool.id == Tools.TEMPLATE.id) (template ?: kit.templates.firstOrNull()) else null
-                val made = if (shape != null) commit(Ops.addTemplateRoom(sketch, shape.poly, dragFrom, p, tol / 2)) else commit(Ops.addRectRoom(sketch, dragFrom, p, tol / 2))
+                val a = corner(dragFrom); val b = corner(p)   // F4: a variant's grid (DrawTune)
+                val made = if (shape != null) commit(Ops.addTemplateRoom(sketch, shape.poly, a, b, tol / 2)) else commit(Ops.addRectRoom(sketch, a, b, tol / 2))
                 if (made == null) note = "Túl kicsi: húzz nagyobbat."
-                else { focusRoom = made; note = (shape?.label?.let { "$it kész." } ?: "Szoba kész.") + " Tartsd lenyomva: név, típus, méret." }
+                else roomMade(made, (shape?.label?.let { "$it kész." } ?: "Szoba kész.") + " Tartsd lenyomva: név, típus, méret.")
             }
             Move.STROKE -> if (commit(Ops.addRoute(sketch, stroke + p, tol)) == null) note = "Túl rövid nyomvonal."
             Move.SHOT -> {
@@ -450,7 +453,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     /** A point with the brush: the variant preset's type and tags, else the plain type. */
     private fun placePoint(p: Pt) {
         val pr = preset
-        val (s1, id) = Ops.addPoint(sketch, p, pr?.type ?: pointType, pointState, tol)
+        val (s1, id) = Ops.addPoint(sketch, p, pr?.type ?: pointType, pointState, Draw.pointTol(draw, tol))
         var s = s1
         pr?.tags?.forEach { t -> if (s.tag(t) != null) Ops.placeTag(s, t, id, null)?.let { s = it.first } }
         edit(s)
@@ -490,6 +493,15 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun linkEntry(id: String, room: String?) = edit(Intake.linkEntry(sketch, id, room, sketch.entry(id)?.target))
     fun deleteEntry(id: String) = edit(Intake.deleteEntry(sketch, id))
     fun setScope(id: String, qty: Int) = edit(Intake.setScope(sketch, id, qty))
+    // F4 (WP M49): the client's wants by room. [wantRoom] = where the Igények' + / − go (null = Általános); the
+    // Munkakör sets it to the room in focus each time it opens. Fewer in Általános than it holds takes the total down.
+    var wantRoom by mutableStateOf<String?>(null)
+    fun addWant(id: String, delta: Int) {
+        val r = wantRoom?.takeIf { sketch.room(it) != null }
+        val next = hu.vrg.mobile.sketch.Wants.add(sketch, id, r, delta)
+        edit(if (next == sketch && r == null && delta < 0) Intake.setScope(sketch, id, hu.vrg.mobile.sketch.Wants.total(sketch, id) + delta) else next)
+    }
+    fun moveWant(id: String, from: String?, to: String?, n: Int = 1) = edit(hu.vrg.mobile.sketch.Wants.move(sketch, id, from, to, n))
     fun answer(q: String, options: List<String>, text: String, state: AnswerState) = edit(Intake.answer(kit, sketch, q, options, text, state, now))
     fun clearAnswer(q: String) = edit(Intake.clearAnswer(sketch, q))
     fun accept(e: Effect) = edit(FieldKit.apply(kit, e, sketch, now))
@@ -598,11 +610,11 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     private fun lineTap(raw: Pt) {
         val d = lineDraft
         if (d.size >= 3 && raw.dist(d.first()) <= tol) {
-            if (commit(Ops.addPolyRoom(sketch, d)) == null) note = "A vonal keresztezi magát: nem lett szoba."
-            else note = "Szoba kész."
+            val made = commit(Ops.addPolyRoom(sketch, d))
+            if (made == null) note = "A vonal keresztezi magát: nem lett szoba." else roomMade(made, "Szoba kész.")
             lineDraft = emptyList(); lineCursor = null; return
         }
-        val p = if (d.isEmpty()) Ops.snapAxes(sketch, raw, tol / 2) else Geo.axisLock(d.last(), Ops.snapAxes(sketch, raw, tol / 2))
+        val p = if (d.isEmpty()) corner(raw) else Draw.lock(d.last(), corner(raw), draw)   // F4: the variant's angle step and grid
         lineDraft = d + p; lineCursor = null
         note = if (lineDraft.size >= 3) "Az első pontra koppintva szoba lesz." else null
     }
@@ -644,6 +656,24 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     fun setMeasure(room: String, kind: MeasureKind, mm: Int, edge: Int = -1) = edit(Ops.setMeasure(sketch, room, kind, mm, edge))
+
+    // ---- F4 (WP M49): a variant's drawing tune (sketch-core DrawTune.kt); the original when none --------------------
+    val draw: DrawTune get() = variant?.draw ?: DrawTune()
+    /** A corner onto a neighbour's wall line, else onto the variant's grid (in the sketch's current scale). */
+    private fun corner(p: Pt, skip: String? = null) = Draw.corner(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY, skip)
+    private fun roomMade(id: String, msg: String) {
+        focusRoom = id; note = msg
+        if (draw.measureFirst) ask = Ask.MeasureRoom(id)
+    }
+    /** A tap with the Szoba tool: the variant's default room there, or how to draw one. */
+    private fun tapRoom(p: Pt) {
+        val box = Draw.tapRoom(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY)
+        if (box == null) { note = "Húzz egy téglalapot: az lesz a szoba."; return }
+        val made = commit(Ops.addRectRoom(sketch, box.first, box.second, tol / 2))
+        if (made == null) note = "Húzz egy téglalapot: az lesz a szoba."
+        else draw.defaultRoom?.let { (w, d) -> roomMade(made, "Szoba ${fmtM(w)} × ${fmtM(d)} m. Húzással más méret.") }
+    }
+    private fun fmtM(v: Double) = if (v == Math.floor(v)) v.toLong().toString() else v.toString().replace('.', ',')
 }
 
 fun roomTitle(name: String, kinds: List<String>) =

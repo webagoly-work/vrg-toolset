@@ -71,6 +71,7 @@ object PlannerExport {
                 .put("der", JSONArray(r.edges.indices.filter { r.edges[it] == SizeStatus.DERIVED }))
                 .put("mea", JSONArray(r.edges.indices.filter { r.edges[it] == SizeStatus.MEASURED }))
             if (tags.isNotEmpty()) sk.put("tags", JSONArray(tags.map { it.name }))
+            Wants.ofRoom(s, r.id)?.let { sk.put("wants", it) }   // F4: the client's wants in this room
             o.put("sk", sk)
             floors.put(o)
         }
@@ -177,6 +178,7 @@ object PlannerExport {
                 .put("center", center)
                 .put("photos", photos)
                 .put("report", report)
+                .also { pl -> Wants.packageList(s).takeIf { it.length() > 0 }?.let { pl.put("wants", it) } }   // F4: only when a want has a room
                 .put("data", JSONObject()
                     .put("v", 2).put("seq", seq)
                     .put("floors", floors).put("devices", devices).put("circuits", circuits)

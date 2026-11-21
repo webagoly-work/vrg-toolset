@@ -81,14 +81,14 @@ class TakeoffTest {
             SketchPoint("P5", Pt(30.0, 0.0), PointType.SOCKET, PointState.EXISTING)),
             tagUses = listOf(TagUse("U4", "T-bontas", "P3"), TagUse("U6", "T-csere", "P5")))
         val t0 = Takeoff.build(kit, rules, s0, null, 1L)
-        // the built-in Csere tag (D-72) makes an existing point a replacement
+        // the built-in Csere tag (D-77) makes an existing point a replacement
         assertEquals(listOf("pont.socket.uj", "pont.socket.csere", "pont.socket.bontas", "pont.socket.marad"), t0.items.map { it.id })
         assertTrue(t0.items.none { it.est }, "drawn, nothing wanted: no guess")
         // the client wants four: the drawn one is not enough, the rest is a guess until drawn
         val s1 = Intake.setScope(s0, "dugalj", 4)
         val uj = Takeoff.build(kit, rules, s1, null, 1L).items.first { it.id == "pont.socket.uj" }
         assertEquals(4.0, uj.qty); assertTrue(uj.est); assertEquals("Munkakör: 4, vázlat: 1", uj.note)
-        // a dedicated machine implies a dedicated circuit only with the toggle on (D-74); off, it is a check line
+        // a dedicated machine implies a dedicated circuit only with the toggle on (D-79); off, it is a check line
         val s2 = Intake.setScope(Intake.setScope(s1, "konyha", 1), "fozolap", 1)
         val off = Takeoff.build(kit, rules, s2, null, 1L)
         assertTrue(off.items.none { it.id == "aramkor.dedikalt" })
