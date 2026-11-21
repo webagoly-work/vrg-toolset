@@ -1,4 +1,4 @@
-// traffic.js — the optional traffic check of the VRG Térkép (WP M57, N3, D-130 B): one TomTom Routing request
+// traffic.js — the optional traffic check of the VRG Térkép (WP M58, N3, D-130 B): one TomTom Routing request
 // for the chosen car route, on the user's tap, with the user's own key. Shared by the page and the tests.
 //
 //   const T = require('./traffic.js')        // Node
@@ -12,7 +12,7 @@
 // What leaves the device, and only then: the position and the destination as coordinates, and the key, to
 // api.tomtom.com. Never on its own, never for walking, never for the list of places. The key lives in the
 // browser's storage on that device (on the phone: the phone). TomTom's Freemium plan has 2 500 such requests a
-// day; their docs disagree on whether the v1 endpoint is in it, so the first real use is the check (WP M57).
+// day; their docs disagree on whether the v1 endpoint is in it, so the first real use is the check (WP M58).
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.VRGTraffic = factory();

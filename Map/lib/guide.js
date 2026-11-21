@@ -1,4 +1,4 @@
-// guide.js — turn-by-turn guidance for a route of lib/route.js (WP M57, N3): the maneuvers, their Hungarian
+// guide.js — turn-by-turn guidance for a route of lib/route.js (WP M58, N3): the maneuvers, their Hungarian
 // text, what to say when, and where on the route the user is. Shared by the page (lib/nav-layer.js) and the
 // tests. Dependency-free; no network.
 //

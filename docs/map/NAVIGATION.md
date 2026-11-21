@@ -1,6 +1,6 @@
 # VRG Térkép — turn-by-turn guidance and the optional traffic check (N3)
 
-*WP M57, built 2026-11-21: N3 of the navigation line (feed N1 → own routing N2 → guidance and traffic N3).
+*WP M58, built 2026-11-21: N3 of the navigation line (feed N1 → own routing N2 → guidance and traffic N3).
 D-130: no traffic by default; TomTom as an opt-in on a tap, with the user's own key.*
 
 ## Guidance

@@ -580,7 +580,7 @@ object MapFeature : VrgFeature {
             }
             "sketch" -> host.open(Catalogue.SKETCH.id)
             "site" -> siteDone(host, q.getQueryParameter("d"))
-            // N3 guidance (WP M57): the page's voice prompts through Android's text-to-speech, and the screen kept on
+            // N3 guidance (WP M58): the page's voice prompts through Android's text-to-speech, and the screen kept on
             "say" -> q.getQueryParameter("text")?.take(300)?.let { speak(it) }
             "keepon" -> host.keepScreenOn(q.getQueryParameter("on") == "1")
         }

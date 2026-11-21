@@ -1,4 +1,4 @@
-// nav-layer.js — turn-by-turn guidance in the VRG Térkép (WP M57, N3): the banner with the next maneuver, the
+// nav-layer.js — turn-by-turn guidance in the VRG Térkép (WP M58, N3): the banner with the next maneuver, the
 // arrival bar, the camera following the user along the route, and the voice. Started from the Térkép-feed's
 // held place (lib/feed-layer.js, "▶ Indulás"); the steps come from lib/guide.js (window.VRGGuide).
 //
