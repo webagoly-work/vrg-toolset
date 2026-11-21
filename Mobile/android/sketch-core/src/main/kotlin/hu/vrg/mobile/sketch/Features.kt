@@ -51,12 +51,15 @@ object Features {
         F("vazlat.photo", "vazlat", "◉", "Fotópont"),
         F("vazlat.wheels", "vazlat", "◎", "Tartásra kerék"),
         F("vazlat.drawtune", "vazlat", "⚙", "Rajz-hangolás"),
+        F("vazlat.line_close", "vazlat", "⌇", "Vonal: Kész zár", listOf("vazlat.line", "vazlat.drawtune")),
+        F("vazlat.csere_old", "vazlat", "↻", "Csere címke pótlása"),
         F("jegyzet.quick", "jegyzet", "✎", "Gyors jegyzet"),
         F("jegyzet.chips", "jegyzet", "◆", "Gyors chipek", listOf("jegyzet.quick")),
         F("jegyzet.dictation", "jegyzet", "🎤", "Diktálás"),
         F("jegyzet.unclear", "jegyzet", "⚑", "Tisztázandó"),
         F("jegyzet.keywords", "jegyzet", "✦", "Kulcsszó-javaslat"),
         F("jegyzet.log", "jegyzet", "☰", "Jegyzetnapló"),
+        F("jegyzet.audio", "jegyzet", "🎙", "Hangjegyzet"),
         F("munkakor.scope", "munkakor", "☰", "Munkakör kapcsolók"),
         F("munkakor.summary", "munkakor", "▤", "Összesítő"),
         F("munkakor.wants", "munkakor", "★", "Igények szobánként", listOf("munkakor.scope")),
@@ -89,6 +92,7 @@ object Features {
         F("helyszin.satellite", "helyszin", "🛰", "Műhold", listOf("helyszin.map")),
         F("helyszin.place", "helyszin", "◫", "Vázlat az épületen"),
         F("helyszin.footprint", "helyszin", "⇔", "Méret-összevetés"),
+        F("helyszin.client", "helyszin", "👤", "Ügyféladatok"),
         F("nyitott.list", "nyitott", "⚑", "Nyitott lista"),
         F("variansok.use", "variansok", "◐", "Variánsok"),
         F("variansok.longpress", "variansok", "☰", "Hosszú nyomásra", listOf("variansok.use")),
@@ -97,6 +101,7 @@ object Features {
         F("export.photos", "export", "◉", "Fotók a csomagban"),
         F("export.burned", "export", "✎", "Jelölt másolatok", listOf("export.photos")),
         F("export.takeoff", "export", "▦", "Munkakör lap fájl", listOf("munkakor.takeoff")),
+        F("export.report", "export", "▤", "Jegyzőkönyv"),
         F("kamera.gps_strip", "export", "⌖", "GPS törlése kiadáskor"),
     )
 
@@ -202,22 +207,28 @@ object Features {
     fun write(flipped: Set<String>) = flipped.sorted().joinToString(",")
     fun read(s: String?): Set<String> = s.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
 
-    /** Where the state is kept: F3's camera set (unprefixed ids), D-79's boolean, and the new general set. */
-    data class Stores(val cameraOff: Set<String>, val implied: Boolean, val general: Set<String>)
+    /**
+     * Where the state is kept: F3's camera set (unprefixed ids), D-79's boolean, the new general set, and F5's
+     * Felmérés funkciók set (SketchFeatures ids, "sketcher-features" / off).
+     */
+    data class Stores(val cameraOff: Set<String>, val implied: Boolean, val general: Set<String>, val sketchOff: Set<String> = emptySet())
 
     private val cameraIds = CameraFeatures.ALL.map { it.id }.toSet()
+    /** F5's SketchFeatures ids → the registry's. */
+    val SKETCH_IDS = linkedMapOf("client" to "helyszin.client", "audio" to "jegyzet.audio", "csere_old" to "vazlat.csere_old", "line_close" to "vazlat.line_close")
+    private val sketchBack = SKETCH_IDS.entries.associate { (k, v) -> v to k }
+    private fun inOther(id: String) = id == "munkakor.implied" || id in sketchBack || (id.startsWith("kamera.") && id.removePrefix("kamera.") in cameraIds)
 
     /** Reads the three stores into one flipped set. Nothing moves: a phone that had settings keeps them bit for bit. */
     fun fromStores(s: Stores): Set<String> {
         val cam = s.cameraOff.map { camera(it) }
         val implied = if (s.implied) setOf("munkakor.implied") else emptySet()
-        return s.general.filter { it != "munkakor.implied" && !(it.startsWith("kamera.") && it.removePrefix("kamera.") in cameraIds) }.toSet() + cam + implied
+        return s.general.filter { !inOther(it) }.toSet() + cam + implied + s.sketchOff.mapNotNull { SKETCH_IDS[it] }
     }
 
     fun toStores(flipped: Set<String>): Stores {
         val cam = flipped.filter { it.startsWith("kamera.") && it.removePrefix("kamera.") in cameraIds }.map { it.removePrefix("kamera.") }.toSet()
-        return Stores(cam, "munkakor.implied" in flipped,
-            flipped.filter { it != "munkakor.implied" && !(it.startsWith("kamera.") && it.removePrefix("kamera.") in cameraIds) }.toSet())
+        return Stores(cam, "munkakor.implied" in flipped, flipped.filter { !inOther(it) }.toSet(), flipped.mapNotNull { sketchBack[it] }.toSet())
     }
 
     /** [flipped] with its camera switches replaced by F3's [camOff] (what the old Kamera funkciók list writes). */

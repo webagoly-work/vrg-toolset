@@ -31,9 +31,9 @@ import hu.vrg.mobile.sketch.Features
 import hu.vrg.mobile.sketch.Tools
 
 // WP M51 (D-91…D-99): the Sketcher's feature switches on the phone. One setting per phone, never per survey. The state
-// lives in three stores so nothing an earlier app saved moves (D-96): F3's camera set ("sketcher-camera" / off, the
-// CameraFeatures ids), D-79's boolean (SketcherKit, "sketcher" / takeoff.impliedDedicated) and the new general set
-// ("sketcher-features" / flipped). The registry itself is pure (sketch-core Features.kt); this file only keeps the
+// lives in four stores so nothing an earlier app saved moves (D-96): F3's camera set ("sketcher-camera" / off, the
+// CameraFeatures ids), D-79's boolean (SketcherKit, "sketcher" / takeoff.impliedDedicated), F5's set ("sketcher-features"
+// / off, the SketchFeatures ids) and the new general set ("sketcher-features" / flipped). The registry itself is pure (sketch-core Features.kt); this file only keeps the
 // state, follows it in the editor (FeatureSync) and draws ⚙ → Funkciók (FeatureSheet).
 
 internal object FeaturePrefs {
@@ -42,26 +42,29 @@ internal object FeaturePrefs {
     private var ctx: Context? = null
     private var general by mutableStateOf<Set<String>>(emptySet())
     private var camOff by mutableStateOf<Set<String>>(emptySet())
+    private var sketchOff by mutableStateOf<Set<String>>(emptySet())   // F5's Felmérés funkciók (SketchFeaturePrefs)
 
     /** The ids that differ from their default, read live from the three stores (the D-79 toggle included). */
-    val flipped: Set<String> get() = Features.fromStores(Features.Stores(camOff, SketcherKit.impliedDedicated, general))
+    val flipped: Set<String> get() = Features.fromStores(Features.Stores(camOff, SketcherKit.impliedDedicated, general, sketchOff))
 
     fun init(c: Context) {
         val app = c.applicationContext
         ctx = app
         general = Features.read(app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, ""))
         camOff = CameraPrefs.off(app)
+        sketchOff = SketchFeaturePrefs.off(app)
     }
 
     fun on(id: String) = Features.on(flipped, id)
 
     fun apply(next: Set<String>) {
         val s = Features.toStores(next)
-        general = s.general; camOff = s.cameraOff
+        general = s.general; camOff = s.cameraOff; sketchOff = s.sketchOff
         if (s.implied != SketcherKit.impliedDedicated) SketcherKit.switchImpliedDedicated(s.implied)
         ctx?.let { c ->
             c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, Features.write(s.general)).apply()
             CameraPrefs.save(c, s.cameraOff)
+            SketchFeaturePrefs.save(c, s.sketchOff)
         }
     }
 }
@@ -78,6 +81,7 @@ internal fun FeatureSync(st: EditorState) {
     val fl = FeaturePrefs.flipped
     LaunchedEffect(fl) {
         st.cam2.off = Features.cameraOff(fl)
+        st.featOff = Features.toStores(fl).sketchOff          // F5's switches, as F5's code reads them
         st.cam2.saveOff = { o -> FeaturePrefs.apply(Features.withCameraOff(FeaturePrefs.flipped, o)) }
         if (st.shownFronts().none { it.id == st.front }) st.front = "vazlat"
         if (st.tool !in st.rail) st.pick(Tools.SELECT)

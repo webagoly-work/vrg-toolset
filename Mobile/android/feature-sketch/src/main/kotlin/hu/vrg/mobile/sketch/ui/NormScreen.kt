@@ -46,6 +46,7 @@ import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.sketch.SketchFeatures
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
@@ -77,9 +78,10 @@ private const val MIME = "application/json"
  * The package, and (WP M25, D-25 = A) every photo as its own file under the name the package gives it, ready to
  * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
  */
-private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+    val s = SketchFeatures.forExport(SketchFeaturePrefs.off(ctx), s0)   // F5 (D-82, D-84, D-90): the client only when kept, no sound notes when off
     val out = FileStore.cacheDir(ctx, "sketch")
-    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png")) it.delete() }   // the last export's copies
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png") || it.name.endsWith(".m4a")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
     val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
     // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit

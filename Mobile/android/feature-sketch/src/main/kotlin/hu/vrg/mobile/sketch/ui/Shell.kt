@@ -166,6 +166,11 @@ internal fun QuickNote(st: EditorState) {
     var open by remember { mutableStateOf(false) }
     var voice by remember { mutableStateOf(false) }
     var room by remember { mutableStateOf(st.focusRoom) }
+    // F5 (WP M50, D-84): no recogniser → a sound note instead
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val audioOn = SketchFeaturePrefs.on(ctx, hu.vrg.mobile.sketch.SketchFeatures.AUDIO)   // D-90 switch
+    var noRecognizer by remember { mutableStateOf(!hasRecognizer(ctx)) }
+    var recording by remember { mutableStateOf(false) }
     LaunchedEffect(text) { delay(700); st.setDraft(text) }
     val dictate = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val said = r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
@@ -180,8 +185,10 @@ internal fun QuickNote(st: EditorState) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
+                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER; noRecognizer = true }
                     }.padding(vertical = 6.dp))
+                    if (noRecognizer && audioOn) Text("⏺ Hangjegyzet", style = Melyviz.label.copy(color = Color(0xFFD64545)),
+                        modifier = Modifier.clickable { recording = true }.padding(vertical = 6.dp))
                     if (feat("jegyzet.unclear")) Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
                         modifier = Modifier.clickable { open = !open }.padding(vertical = 6.dp))
                 }
@@ -203,4 +210,5 @@ internal fun QuickNote(st: EditorState) {
         },
         dismissButton = { TextButton(close) { Text("Később", color = Melyviz.muted) } },
     )
+    if (recording) AudioRecorder(st, room) { recording = false }   // F5: over the note
 }

@@ -23,6 +23,7 @@ const STATES = [
   ['kérdések egész front ki', F.all([], false, 'kerdes')],
   ['minden ki', F.all([], false)],
   ['ismeretlen id marad', ['jovobeli.valami', 'kamera.jovo']],
+  ['F5 ügyfél és vonalzár ki', ['helyszin.client', 'vazlat.line_close']],
   ['nyitott és helyszín ki', F.all(F.all([], false, 'nyitott'), false, 'helyszin')],
 ];
 
@@ -43,7 +44,7 @@ function snap(flipped) {
   };
 }
 
-const out = { kind: 'vrg-sketcher-features-fixture', v: 1, cameraIds: F.CAMERA_IDS, rail: RAIL,
+const out = { kind: 'vrg-sketcher-features-fixture', v: 1, cameraIds: F.CAMERA_IDS, sketchIds: Object.keys(F.SKETCH_IDS), rail: RAIL,
   cases: STATES.map(([name, flipped]) => Object.assign({ name }, snap(F.read(F.write(flipped))))) };
 const text = JSON.stringify(out, null, 1) + '\n';
 if (process.argv.includes('--check')) {

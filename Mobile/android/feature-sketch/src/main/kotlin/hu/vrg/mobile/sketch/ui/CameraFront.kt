@@ -120,6 +120,7 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
             }
         }
         Camera2Section(st)
+        AudioList(st)   // F5 (WP M50): the sound notes
         if (feat("kamera.shotlist")) Text("Képlista", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
         if (sh.shots.isEmpty() && feat("kamera.shotlist")) Text("A munkakör alakulásával jelennek meg a kötelező képek.", style = Melyviz.small)
         sh.shots.forEach { s -> key(s.item.id) {
@@ -196,6 +197,7 @@ private val MARK_COLORS = listOf(0xFFE8641C, 0xFFD64545, 0xFFE0B020, 0xFF27C2B0,
 internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
     val c = st.sketch.capture(id) ?: return close()
     val dir = st.photoDir ?: return close()
+    if (c.kind == hu.vrg.mobile.sketch.CaptureKind.AUDIO) { AudioViewer(st, c, close); return }   // F5: a sound note
     if (c.kind != hu.vrg.mobile.sketch.CaptureKind.PHOTO) { MediaViewer(st, c, close); return }    // Kamera 2
     val bmp = remember(c.file) { loadPhoto(File(dir, c.file), 1600)?.asImageBitmap() }
     var marking by remember { mutableStateOf(false) }

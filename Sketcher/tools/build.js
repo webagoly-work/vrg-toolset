@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/features.js + ../Map/lib/site-math.js + catalog + variants.
+// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/report.js + lib/features.js + ../Map/lib/site-math.js + catalog + variants.
 //
 //   node Sketcher/tools/build.js          write the dist page
 //   node Sketcher/tools/build.js --check  exit 1 when the committed dist is stale
@@ -23,6 +23,8 @@ function build() {
   const data = '<script>window.VRG_FIELDKIT = ' + lit(kit) + ';\nwindow.VRG_VARIANTS = ' + lit(variants) + ';\nwindow.VRG_TAKEOFF_RULES = ' + lit(rules) + ';\nwindow.VRG_FEATURES = ' + lit(features) + ';</script>\n' +
     '<script>\n' + script(rd('lib', 'features.js')) + '\n</script>\n' +
     '<script>\n' + script(rd('lib', 'fieldkit.js')) + '\n</script>\n<script>\n' + script(rd('lib', 'takeoff.js')) + '\n</script>\n' +
+    // F5: the Felmérési jegyzőkönyv
+    '<script>\n' + script(rd('lib', 'report.js')) + '\n</script>\n' +
     // F1: the sketch on the building, the same maths as the map page and the phone
     '<script>\n' + script(fs.readFileSync(path.join(ROOT, '..', 'Map', 'lib', 'site-math.js'), 'utf8')) + '\n</script>\n<script>\n' + script(js) + '\n</script>';
   const page = rd('src', 'page.html');

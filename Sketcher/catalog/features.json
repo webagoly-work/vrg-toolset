@@ -28,12 +28,15 @@
   {"id":"vazlat.photo","front":"vazlat","sym":"◉","label":"Fotópont"},
   {"id":"vazlat.wheels","front":"vazlat","sym":"◎","label":"Tartásra kerék"},
   {"id":"vazlat.drawtune","front":"vazlat","sym":"⚙","label":"Rajz-hangolás"},
+  {"id":"vazlat.line_close","front":"vazlat","sym":"⌇","label":"Vonal: Kész zár","requires":["vazlat.line","vazlat.drawtune"]},
+  {"id":"vazlat.csere_old","front":"vazlat","sym":"↻","label":"Csere címke pótlása"},
   {"id":"jegyzet.quick","front":"jegyzet","sym":"✎","label":"Gyors jegyzet"},
   {"id":"jegyzet.chips","front":"jegyzet","sym":"◆","label":"Gyors chipek","requires":["jegyzet.quick"]},
   {"id":"jegyzet.dictation","front":"jegyzet","sym":"🎤","label":"Diktálás"},
   {"id":"jegyzet.unclear","front":"jegyzet","sym":"⚑","label":"Tisztázandó"},
   {"id":"jegyzet.keywords","front":"jegyzet","sym":"✦","label":"Kulcsszó-javaslat"},
   {"id":"jegyzet.log","front":"jegyzet","sym":"☰","label":"Jegyzetnapló"},
+  {"id":"jegyzet.audio","front":"jegyzet","sym":"🎙","label":"Hangjegyzet"},
   {"id":"munkakor.scope","front":"munkakor","sym":"☰","label":"Munkakör kapcsolók"},
   {"id":"munkakor.summary","front":"munkakor","sym":"▤","label":"Összesítő"},
   {"id":"munkakor.wants","front":"munkakor","sym":"★","label":"Igények szobánként","requires":["munkakor.scope"]},
@@ -66,6 +69,7 @@
   {"id":"helyszin.satellite","front":"helyszin","sym":"🛰","label":"Műhold","requires":["helyszin.map"]},
   {"id":"helyszin.place","front":"helyszin","sym":"◫","label":"Vázlat az épületen"},
   {"id":"helyszin.footprint","front":"helyszin","sym":"⇔","label":"Méret-összevetés"},
+  {"id":"helyszin.client","front":"helyszin","sym":"👤","label":"Ügyféladatok"},
   {"id":"nyitott.list","front":"nyitott","sym":"⚑","label":"Nyitott lista"},
   {"id":"variansok.use","front":"variansok","sym":"◐","label":"Variánsok"},
   {"id":"variansok.longpress","front":"variansok","sym":"☰","label":"Hosszú nyomásra","requires":["variansok.use"]},
@@ -74,6 +78,7 @@
   {"id":"export.photos","front":"export","sym":"◉","label":"Fotók a csomagban"},
   {"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos"]},
   {"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]},
+  {"id":"export.report","front":"export","sym":"▤","label":"Jegyzőkönyv"},
   {"id":"kamera.gps_strip","front":"export","sym":"⌖","label":"GPS törlése kiadáskor"}
  ]
 }

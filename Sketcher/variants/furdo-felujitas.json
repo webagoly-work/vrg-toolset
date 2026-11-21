@@ -16,6 +16,7 @@
  "author": "Claude (GO VARIANT protocol, reference example)",
  "created": "2026-11-18",
  "draw": {
+  "lineClose": "auto",
   "snapAngle": 90,
   "snapGrid": 0.1,
   "defaultRoom": {

@@ -14,6 +14,8 @@ tells the Founder when a fork can be archived.
 | F5 Maradékok | `sketcher/f5-maradek` | what F1–F4 left out: wants per room in the Planner, the survey report, client fields, draw extras, the audio note (WP M50, D-80…D-89) |
 | F6 Kapcsolók | `sketcher/f6-kapcsolok` | the Founder's rule D-90 for every Sketcher feature: one registry, a switch for each and for all, phone ⚙ + Desktop (WP M51, D-91…D-99) |
 | F7 Saját kamera | `sketcher/f7-kamera` | an in-app camera (CameraX): ghost overlay for after-photos, purpose bar and next shots on the viewfinder, series, torch, level; the camera app stays the fallback (WP M52, D-100…D-109) |
+| F8 Összefésülés | `sketcher/f8-osszefesules` | the seams between the forks merged in parallel: end-to-end tests phone → package → Desktop → Planner, a cross-fork audit and its fixes, the docs and decision index made whole (WP M53, D-110…D-119) |
+| F9 Jegyzőkönyv a telefonon | `sketcher/f9-jegyzokonyv` | the survey report printed and shared from the phone (D-81 B, the plan in WP M50): `report.js` as an asset in a WebView, PlanSvg / SiteSvg, PrintManager PDF + Átadás HTML, the export privacy rules, *Az ügyfélnek* mode, a D-90 switch (WP M54, D-120…D-129) |
 
 ## Rules every fork follows
 
@@ -56,6 +58,7 @@ tells the Founder when a fork can be archived.
 ## Status (coordinator)
 
 - F1 → WP M48 (D-62…D-66), F2 → M47 (D-67…D-71), F3 → M46 (D-55…D-61), F4 → M49 (D-72…D-76): all on `main` (ec6b90b), the sessions archivable.
+- Up to four forks run at once (the Founder, 2026-11-21); finished sessions are archived by the Founder later.
 - F5 Maradékok (`sketcher/f5-maradek`, WP M50, D-80…D-89) builds what the forks left out. F2's answers took D-77…D-79 (the Csere tag, the 300 mm reserve, implied dedicated circuits behind a toggle); F3's second round (the Founder's answers, face detection, every camera feature switchable) took D-90.
 - **The two-phone test:** `node Sketcher/tools/test-plan.js` writes `TEST-2PHONES.md` + `test-2phones.json` from every WP's
   „Telefonon ellenőrizni” list (A: rajz és beszélgetés, B: kamera és helyszín, X: közös). Re-run it after a WP's list

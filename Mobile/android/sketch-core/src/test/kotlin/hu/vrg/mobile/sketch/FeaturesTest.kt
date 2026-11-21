@@ -42,6 +42,9 @@ class FeaturesTest {
         Features.ALL.forEach { f -> assertNotNull(Features.front(f.front), f.id); f.requires.forEach { assertNotNull(Features.of(it), "${f.id} → $it") } }
         Tools.ALL.forEach { assertNotNull(Features.of(Features.tool(it.id)), it.id) }
         CameraFeatures.ALL.forEach { assertNotNull(Features.of(Features.camera(it.id)), it.id) }
+        assertEquals(SketchFeatures.ALL.map { it.id }, Features.SKETCH_IDS.keys.toList())          // F5's list, every one folded in
+        Features.SKETCH_IDS.values.forEach { assertNotNull(Features.of(it), it) }
+        assertEquals(SketchFeatures.ALL.map { it.id }, strs(fixture.getJSONArray("sketchIds")))
         assertEquals(CameraFeatures.ALL.map { it.id }, strs(fixture.getJSONArray("cameraIds")))
         // the front bar's fronts are the field kit's fronts, in its order
         val kit = FieldKit.parse(File(repo, "Sketcher/catalog/fieldkit.json").readText())
@@ -68,7 +71,7 @@ class FeaturesTest {
             val fb = c.getJSONObject("frontBe")
             Features.FRONTS.forEach { assertEquals(set(fb.getJSONArray(it.id)), Features.all(fl, true, it.id), "$n ${it.id}") }
             val st = c.getJSONObject("stores")
-            assertEquals(Features.Stores(set(st.getJSONArray("cameraOff")), st.getBoolean("implied"), set(st.getJSONArray("general"))), Features.toStores(fl), n)
+            assertEquals(Features.Stores(set(st.getJSONArray("cameraOff")), st.getBoolean("implied"), set(st.getJSONArray("general")), set(st.getJSONArray("sketchOff"))), Features.toStores(fl), n)
             assertEquals(set(c.getJSONArray("cameraOff")), Features.cameraOff(fl), n)
             assertEquals(strs(c.getJSONArray("rail")), Features.rail(rail, fl).map { it.id }, n)
             assertEquals(strs(c.getJSONArray("mapHide")), Features.mapHide(fl), n)
@@ -101,6 +104,11 @@ class FeaturesTest {
         // a fresh phone: everything on except the options that are off by default
         assertEquals(Features.ALL.filter { it.default }.map { it.id }.toSet(), Features.ALL.filter { Features.on(emptySet(), it.id) }.map { it.id }.toSet())
         assertFalse(Features.on(emptySet(), "munkakor.implied"))
+        // F5's Felmérés funkciók setting ("client,line_close") reads and writes back unchanged
+        val f5 = Features.fromStores(Features.Stores(emptySet(), false, emptySet(), SketchFeatures.read("client,line_close")))
+        assertEquals(setOf("helyszin.client", "vazlat.line_close"), f5)
+        assertEquals("client,line_close", SketchFeatures.write(Features.toStores(f5).sketchOff))
+        SketchFeatures.ALL.forEach { assertEquals(it.id !in setOf("client", "line_close"), Features.own(f5, Features.SKETCH_IDS[it.id]!!), it.id) }
         // the old Kamera funkciók list writing its set replaces only the camera switches
         assertEquals(setOf("vazlat.memo", "kamera.video"), Features.withCameraOff(setOf("vazlat.memo", "kamera.ocr"), setOf("video")))
     }

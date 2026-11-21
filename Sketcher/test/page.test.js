@@ -290,6 +290,64 @@ ok(/Rács: 1 m/.test(($('[data-draw="ipari-telephely"]') || {}).textContent || '
   const base = { kind: FK.VARIANT_KIND, id: 'proba', name: 'Próba', premise: 'Egy próbaváltozat a rajzhangolás ellenőrzéséhez.' };
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 90, snapGrid: 0.5, defaultRoom: { w: 4, d: 3 }, measureFirst: true, pointSnap: 'free' } })), [], 'a good draw block passes');
   eq(FK.validateVariant(Object.assign({}, base, { draw: { snapAngle: 37, snapGrid: -1, defaultRoom: { w: 0 }, measureFirst: 'yes', pointSnap: 'x', wallThickness: 30 } })).length, 6, 'every bad draw key is reported');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { lineClose: 'auto' } })), [], 'F5: lineClose auto passes');
+  eq(FK.validateVariant(Object.assign({}, base, { draw: { lineClose: 'maybe' } })).length, 1, 'F5: a bad lineClose is reported');
+  ok(/Kész = szoba/.test(($('[data-draw="furdo-felujitas"]') || {}).textContent || ''), 'F5: the bathroom variant shows its lineClose');
+}
+
+// F5 (WP M50): the Felmérési jegyzőkönyv, from the open survey
+{
+  sk.load(JSON.parse(JSON.stringify(pkgObj)));
+  const s = sk.state();
+  s.scope = { felujitas: 1, dugalj: 3 }; s.roomScope = { [s.rooms[0].id]: { dugalj: 2 } };
+  s.answers = { lenyeg: { options: ['csere'], text: '', at: 1763460000000, state: 'answered' }, kor: { options: [], text: '', at: 1763460000000, state: 'later' } };
+  s.entries = [{ id: 'E90', at: 1763460000000, text: 'A <b>konyhában</b> indukció', chips: ['kivansag'] }, { id: 'E91', at: 1763460001000, text: 'garázs?', chips: [], open: true }];
+  s.captures = [{ id: 'C92', file: 'x.jpg', purpose: 'eloszto', at: 1763460002000, note: 'fedél nélkül' },
+    { id: 'C93', file: 's.png', purpose: 'dokumentum', kind: 'signature', signer: 'Minta Ügyfél', at: 1763460003000, note: 'átvettem' }];
+  s.site = { address: 'Kossuth u. 12', lat: 47.5, lon: 19.04, source: 'kezi' };
+  const r = sk.reportHtml(), rd = new JSDOM(r).window.document, q = x => rd.querySelector(x), qa = x => Array.from(rd.querySelectorAll(x));
+  ok(/^<!doctype html>/.test(r) && /Felmérési jegyzőkönyv/.test(q('h1').textContent), 'the report is a whole document with its title');
+  ok(/@page\{size:A4/.test(r) && /window\.print\(\)/.test(r), 'printable: A4 page and a print button');
+  ok(qa('#munkakor tr').length >= 2 && /Felújítás/.test(q('#munkakor').textContent), 'the job scope');
+  ok(qa('#tetelek tr.tetel').length === sk.takeoff().items.length, 'one row per takeoff item');
+  ok(/Mi a kérés lényege/.test(q('#valaszok').textContent) && /Mikor készült/.test(q('#nyitott').textContent), 'answered and open questions');
+  ok(/A <b>konyhában<\/b> indukció/.test(q('#jegyzetek').textContent) && !q('#jegyzetek b') && /⚑ Tisztázandó: garázs\?/.test(q('#jegyzetek').textContent), 'notes escaped, chips, Tisztázandó');
+  ok(q('#jegyzetek .chip') && /Kívánság|kivansag/i.test(q('#jegyzetek .chip').textContent), 'a note\'s chip as its label');
+  ok(/Dugalj ×2/.test(q('#helyisegek').textContent), 'the rooms with their wants');
+  ok(q('#rajz svg'), 'the drawing');
+  ok(q('figure[data-cap="C92"]') && /fedél nélkül/.test(q('figure[data-cap="C92"]').textContent) && /nincs csatolva/.test(q('figure[data-cap="C92"]').textContent), 'a photo by purpose, its caption, not attached');
+  ok(/Minta Ügyfél/.test(q('.alairas').textContent) && !q('.fotok figure[data-cap="C93"]'), 'the signature in its own section, not among the photos');
+  ok(/47\.50000, 19\.04000/.test(r) && /Kossuth u\. 12/.test(q('.meta').textContent), 'the site');
+  ok(!q('#ugyfel'), 'no client contact: no client row');
+  // F5: the client's contact on Helyszín, into the report
+  click(rail('helyszin'));
+  const cn = $('#client [data-client="name"]'); cn.value = 'Minta Ügyfél'; cn.dispatchEvent(new w.Event('change', { bubbles: true }));
+  const cp = $('#client [data-client="phone"]'); cp.value = ' +36 30 000 0000 '; cp.dispatchEvent(new w.Event('change', { bubbles: true }));
+  eq(sk.state().client, { name: 'Minta Ügyfél', phone: '+36 30 000 0000', email: '' }, 'the contact is on the survey');
+  ok(/Minta Ügyfél/.test(new JSDOM(sk.reportHtml()).window.document.querySelector('#ugyfel').textContent), 'the report has the client row');
+  const ck = $('#client [data-client="keep"]'); ck.checked = true; ck.dispatchEvent(new w.Event('change', { bubbles: true }));
+  ok(sk.state().client.keep === true, 'keep is stored');
+  ['name', 'phone'].forEach(k => { const x = $('#client [data-client="' + k + '"]'); x.value = ''; x.dispatchEvent(new w.Event('change', { bubbles: true })); });
+  ok(!('client' in sk.state()), 'all blank removes it');
+  // through the header button: a new window, or a download when popups are blocked
+  let wrote = '';
+  w.open = () => ({ document: { open() {}, write(x) { wrote += x; }, close() {} } });
+  click($('#breport'));
+  ok(wrote === sk.reportHtml() || wrote.length > 1000, 'Jegyzőkönyv opens the report in a window');
+  { const o = JSON.stringify(sk.output()); ok(!/Felmérési jegyzőkönyv|<!doctype/i.test(o), 'nothing of the report is stored in the survey'); }
+}
+
+// F5 (WP M50): a sound note (kind audio) on Kamera, in the report, not among the photos
+{
+  const s = sk.state();
+  s.captures = (s.captures || []).concat([{ id: 'C95', file: 'hang_1.m4a', purpose: 'hang', kind: 'audio', at: 1763460009000, note: 'a csempe alatt?', durationMs: 42000, bytes: 300000 }]);
+  click(rail('kamera'));
+  const card = $('.cap-card[data-cap="C95"]');
+  ok($('#hangok') && card && /0:42/.test(card.textContent) && /🎙 hang/.test(card.textContent), 'Kamera lists the sound note under Hangjegyzetek');
+  ok(/_C95_hang\.m4a/.test(card.textContent), 'its PC file name is .m4a');
+  const rd = new JSDOM(sk.reportHtml()).window.document;
+  ok(/0:42/.test(rd.querySelector('#hang').textContent) && !rd.querySelector('figure[data-cap="C95"]'), 'the report lists it, not as a photo');
+  ok(!sk.takeoff().photos.some(p => p.purpose === 'hang'), 'the takeoff does not count it as a photo');
 }
 
 // M51: ⚙ Funkciók — one row per feature, switches leave no trace, data and the saved file stay the same

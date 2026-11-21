@@ -77,16 +77,20 @@
   // F3's CameraFeatures ids (sketch-core CameraFeatures.kt); FeaturesTest checks the list against it
   const CAMERA_IDS = ['ocr', 'ocr_auto', 'blur', 'faces', 'faces_auto', 'privacy', 'gps_strip', 'pairs', 'signature', 'video', 'quick', 'again'];
   const isCam = id => id.startsWith('kamera.') && CAMERA_IDS.indexOf(id.slice(7)) >= 0;
+  // F5's SketchFeatures ids (sketch-core SketchFeatures.kt, the phone's "sketcher-features" / off) → the registry's
+  const SKETCH_IDS = { client: 'helyszin.client', audio: 'jegyzet.audio', csere_old: 'vazlat.csere_old', line_close: 'vazlat.line_close' };
+  const SKETCH_BACK = Object.fromEntries(Object.entries(SKETCH_IDS).map(([k, v]) => [v, k]));
+  const inOther = id => id === 'munkakor.implied' || isCam(id) || id in SKETCH_BACK;
   function fromStores(s) {
-    const g = (s.general || []).filter(id => id !== 'munkakor.implied' && !isCam(id));
-    return norm(g.concat((s.cameraOff || []).map(camera)).concat(s.implied ? ['munkakor.implied'] : []));
+    const g = (s.general || []).filter(id => !inOther(id));
+    return norm(g.concat((s.cameraOff || []).map(camera)).concat(s.implied ? ['munkakor.implied'] : []).concat((s.sketchOff || []).map(k => SKETCH_IDS[k]).filter(Boolean)));
   }
   function toStores(flipped) {
     return { cameraOff: norm(flipped.filter(isCam).map(id => id.slice(7))), implied: has(flipped, 'munkakor.implied'),
-      general: norm(flipped.filter(id => id !== 'munkakor.implied' && !isCam(id))) };
+      general: norm(flipped.filter(id => !inOther(id))), sketchOff: norm(flipped.filter(id => id in SKETCH_BACK).map(id => SKETCH_BACK[id])) };
   }
   const cameraOff = flipped => CAMERA_IDS.filter(id => !on(flipped, camera(id)));
 
-  return { DATA, FRONTS, ALL, CAMERA_IDS, of, inFront, tool, camera, own, on: (f, id) => on(f, id, 0), blockedBy, set, toggle,
+  return { DATA, FRONTS, ALL, CAMERA_IDS, SKETCH_IDS, of, inFront, tool, camera, own, on: (f, id) => on(f, id, 0), blockedBy, set, toggle,
     all, allOn, visibleFronts, rail, draw, mapHide, openFeature, openShown, OPEN_KINDS: Object.keys(OPEN), write, read, fromStores, toStores, cameraOff };
 });

@@ -71,6 +71,7 @@ a v1 file opens with empty intake.
 | `seen` | `{id → time}` | when a shadow question first appeared (new ones are marked) |
 | `variant`, `variantOn` | id, bool | the active variant and the corner toggle |
 | `draft` | text | the note being typed |
+| `client` | `{name, phone, email, keep?}` | M50: the client's contact; personal: stripped from what leaves the phone unless `keep` (D-82) |
 
 ## 4. The shared catalog (`Sketcher/catalog/fieldkit.json`)
 
@@ -112,7 +113,7 @@ Sketcher's home tile and its Asztal dock dial (M49, D-73).
 A variant can also **tune the drawing tools** (M49, D-74): an optional `draw` block with `snapAngle` (the Vonal tool's
 step: 0 / 15 / 30 / 45 / 90°), `snapGrid` (m: corners land on the grid unless a neighbour's corner line is near),
 `defaultRoom {w, d}` (m: a tap on paper with Szoba lays a room of that size), `measureFirst` (a new room opens its size
-dialog) and `pointSnap` (`wall` / `free`). Metres follow the sketch's current scale. `sketch-core` `DrawTune.kt` is the
+dialog), `pointSnap` (`wall` / `free`) and, since M50, `lineClose` (`auto` / `ask`: what the Vonal tool's Kész does with 3+ corners, D-83). Metres follow the sketch's current scale. `sketch-core` `DrawTune.kt` is the
 logic; a bad value falls back to the original on the phone and fails `variant-check`.
 
 ## 6. Where things run
@@ -125,7 +126,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 | the takeoff (Munkakör lap, M47) | live on the Munkakör front; `.takeoff.json` + `.md` with the Rendezés export | the Munkakör front, ⇩ Takeoff; `node tools/sketch-takeoff.js`; in the Planner ⌘K → Felmérés: munkakör lap |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61 and D-90 (every feature built in, on by default, switchable); survey to quote (M47): D-67 … D-71, D-77 … D-79; the site placement (M48): D-62 … D-66; the small gaps (M49): D-72 … D-76; the leftovers (M50): D-80 … D-84.
 
 ## 7. Kamera 2 (M46)
 
@@ -153,3 +154,12 @@ long press re-links one; `sketch-core` `Wants.kt` = `fieldkit.js` `wants`, pinne
 package carries `sk.wants` per room and `plan.wants`); the **variants on the long press** of the Sketcher's tile, dock
 dial and corner toggle (`SketchLaunch.kt`); variants that **tune the drawing tools** (§5, `DrawTune.kt`); the kit's
 *égett* detector skips *kiégett*; the deadline question has a date field.
+
+## 10. The leftovers (M50)
+
+Fork F5 (`docs/mobile/WP/M50.md`): the Planner's survey panel shows the **wants by room**; **Csere** is a built-in tag
+(preset `replace`, the takeoff's *csere*); the Desktop page's **Jegyzőkönyv** button prints the *Felmérési jegyzőkönyv*
+(`Sketcher/lib/report.js`, Varler Papír, built from the open file, never stored); Helyszín holds the **client's contact**
+(`ClientInfo.kt`, personal, D-82); a variant's `draw.lineClose` (`auto` / `ask`) says what the Vonal tool's Kész does;
+a phone without a speech recogniser records a **sound note** (capture kind `audio`, `.m4a`, `AudioNotes.kt`).
+
