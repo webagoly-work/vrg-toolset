@@ -39,7 +39,9 @@ object MapPhone {
         // the shadows (S, docs/map/SHADOWS.md)
         "Map/lib/sun.js", "Map/lib/shadow-layer.js",
         // the Térkép-feed (F, WP M55)
-        "Map/lib/feed.js", "Map/lib/feed-layer.js")
+        "Map/lib/feed.js", "Map/lib/feed-layer.js",
+        // our own offline routing (N2, WP M56)
+        "Map/lib/route.js", "Map/lib/route-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
@@ -100,9 +102,9 @@ sealed interface MapReq {
 
 object MapRoute {
     private val SAFE = Regex("[A-Za-z0-9._~%+@-]+")
-    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json", "pois.json")
+    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json", "pois.json", "roads.bin")
     /** Public data read whole that the phone keeps for offline use (OSM, ODbL): the address index, the feed's points. */
-    private val KEEP = setOf("addresses.json", "manifest.json", "pois.json")
+    private val KEEP = setOf("addresses.json", "manifest.json", "pois.json", "roads.bin")
     private val FONT = Regex("fonts/[A-Za-z0-9 %+._-]+/[0-9]+-[0-9]+\\.pbf")
     private val SPRITE = Regex("sprites/[A-Za-z0-9_-]+(@2x)?\\.(json|png)")
 
