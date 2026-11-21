@@ -26,21 +26,41 @@ const rows = {
 const POIS = { v: 1, built: '2026-11-21', s: ['', 'Daniella Teszt', 'electrical', 'Daniella Messze', 'Próba Vasbolt', 'hardware',
   'Közeli Aldi', 'supermarket', 'Messzi Spar', 'Próba Büfé', 'fast_food', 'Próba Kórház', 'hospital', 'WC', 'toilets'], cats: rows };
 
+// a tiny road network (tools/build-roads.js on a .pbf from pbf-writer.js): from HERE east to a corner, then south to the
+// Aldi, and south-west to the büfé. The vasbolt (450 m away, no road near it) stays a straight-line estimate.
+function roads() {
+  const os = require('os');
+  const { writePbf } = require('./pbf-writer.js');
+  const { buildRoads } = require('../tools/build-roads.js');
+  const at = (dx, dy) => ({ lon: HERE[0] + dx, lat: HERE[1] + dy });
+  const nodes = [{ id: 1, ...at(0, 0) }, { id: 2, ...at(0.002, 0) }, { id: 3, ...at(0.002, -0.001) }, { id: 4, ...at(-0.001, -0.002) }];
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-feed-roads-')), file = path.join(dir, 'r.osm.pbf');
+  writePbf(file, { nodes, ways: [{ id: 10, refs: [1, 2, 3], tags: { highway: 'residential' } }, { id: 11, refs: [1, 4], tags: { highway: 'residential' } }] });
+  const bin = buildRoads(file);
+  fs.rmSync(dir, { recursive: true, force: true });
+  return bin;
+}
+const ROADS = roads();
+const CORNER = [HERE[0] + 0.002, HERE[1]];
+
 const HARNESS = `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="/vendor/maplibre-gl/maplibre-gl.css">
 <style>html,body{margin:0;height:100%} #map{position:absolute;inset:0} #feed-panel{position:absolute;left:8px;top:8px;width:340px;background:#fff;font:12px sans-serif;z-index:5}
 .fd-mk{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--c);display:grid;place-items:center}</style>
 </head><body><div id="map"></div><button id="b-feed"></button><section id="feed-panel" hidden></section><div id="toast"></div>
 <script src="/lib/feed.js"></script>
+<script src="/lib/route.js"></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initFeed } from '/lib/feed-layer.js';
+import { initRoute } from '/lib/route-layer.js';
 const map = new maplibregl.Map({ container: 'map', style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#eee' } }] },
   center: [${HERE[0]}, ${HERE[1]}], zoom: 14 });
 const mem = {};
 const store = { get: (k, v) => (k in mem ? mem[k] : v), set: (k, v) => { mem[k] = v; } };
 window.toasts = [];
-map.once('load', () => { window.feed = initFeed({ map, maplibregl, params: new URLSearchParams('feed=1'), store, toast: t => window.toasts.push(t) }); window.ready = true; });
+map.once('load', () => { const router = initRoute({ map });
+  window.feed = initFeed({ map, maplibregl, params: new URLSearchParams('feed=1'), store, toast: t => window.toasts.push(t), router }); window.ready = true; });
 window.map = map;
 window.lines = () => (window.feed ? window.feed.lines() : []);
 </script></body></html>`;
@@ -51,6 +71,7 @@ function serve() {
     const u = decodeURIComponent(req.url.split('?')[0]);
     if (u === '/h.html') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(HARNESS); }
     if (u === '/data/pois.json') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(POIS)); }
+    if (u === '/data/roads.bin') { res.writeHead(200, { 'Content-Type': 'application/octet-stream' }); return res.end(ROADS); }
     const f = u.startsWith('/vendor/maplibre-gl/') ? path.join(ML, path.basename(u)) : u.startsWith('/lib/') ? path.join(MAP, 'lib', path.basename(u)) : null;
     if (!f || !fs.existsSync(f)) { res.writeHead(404).end(); return; }
     res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' });
@@ -89,6 +110,14 @@ module.exports = async t => {
       assert.ok(/a helyedtől/.test(await page.textContent('#fd-src')), 'the GPS position is used');
     });
 
+    await t('N2: the cards get road distances where a road leads there; else the straight line', async () => {
+      await page.waitForFunction(() => /úton/.test(document.querySelector('.fd-card[data-cat=bolt]').textContent), null, { timeout: 15000 });
+      const bolt = await page.textContent('.fd-card[data-cat=bolt]');
+      assert.ok(/2[5-7]0 m úton/.test(bolt), 'along the corner: 150 m east + 111 m south, not the 220 m straight line: ' + bolt);
+      assert.ok(/légvonal/.test(await page.textContent('.fd-card[data-cat=szereles]')), 'no road near the vasbolt');
+      assert.ok(/úton/.test(await page.textContent('.fd-card[data-cat=etkezes]')));
+    });
+
     await t('Otthon set to the map centre; it is kept only in this browser\'s storage', async () => {
       await page.evaluate(() => window.map.jumpTo({ center: [19.06, 47.51] }));
       await page.click('#fd-gear');
@@ -110,15 +139,26 @@ module.exports = async t => {
       await page.click('#fd-gear');
     });
 
-    await t('holding a card selects it: the others hide, a solid spider line, Navigáció and Vissza', async () => {
+    await t('holding a card selects it: the others hide, the route drawn, Navigáció and Vissza', async () => {
       const box = await (await page.$('.fd-card[data-cat=bolt]')).boundingBox();
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.waitForTimeout(800); await page.mouse.up();
       await page.waitForTimeout(300);
       assert.strictEqual(await page.evaluate(() => window.feed.selected()), 'bolt');
       assert.deepStrictEqual(await cards(), ['bolt']);
       assert.deepStrictEqual(await markers(), ['bolt']);
-      assert.deepStrictEqual((await page.evaluate(() => window.lines())).filter(k => k !== 'you'), ['spider']);
       assert.ok(await page.$('[data-nav]') && await page.$('[data-back]'));
+      // N2: the route on our road network replaces the straight spider line
+      await page.waitForFunction(() => window.feed.route(), null, { timeout: 10000 });
+      const rt = await page.evaluate(() => window.feed.route());
+      assert.ok(rt.coords.some(c => Math.abs(c[0] - CORNER[0]) < 1e-5 && Math.abs(c[1] - CORNER[1]) < 1e-5), 'round the corner');
+      assert.deepStrictEqual((await page.evaluate(() => window.lines())).filter(k => k !== 'you'), [], 'no straight line under the route');
+      assert.ok(/saját úthálózaton/.test(await page.textContent('.fd-sel')));
+      // walking along it: the card counts down
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), CORNER);
+      await page.waitForTimeout(150);
+      const left = await page.textContent('.fd-sel .fd-d');
+      assert.ok(/1\d0 m úton/.test(left), 'from the corner about 110 m are left: ' + left);
+      await page.evaluate(([x, y]) => window.feed.setPosition(x, y), HERE);
       await page.click('[data-back]');
       await page.waitForTimeout(200);
       assert.strictEqual(await page.evaluate(() => window.feed.selected()), null);

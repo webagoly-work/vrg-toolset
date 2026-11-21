@@ -112,6 +112,9 @@ What changes locally compared with the cloud:
   food, doctor … in the Térkép (key F) with distance, ETA, ghost lines and hold-to-select. `docs/mobile/WP/M55.md` →
   "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,pois`). N2 (own routing, D-129) and N3
   (traffic, D-130) are next in that line.
+- **M56** Saját útvonaltervezés (N2) built 2026-11-21 (cloud session, D-129 A), **BETA**: our own offline road network
+  and router in the Térkép; the feed's road times, a held place routed and drawn. `docs/mobile/WP/M56.md` →
+  "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,roads`). N3 (guidance, traffic) is next.
 
 ## 3. What the user asked for, mapped to WPs
 

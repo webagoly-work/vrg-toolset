@@ -21,6 +21,7 @@ first time **M** is picked. `--refresh` fetches a newer OSM week, `--only=basema
 | osm | `src/hungary-latest.osm.pbf` (~0.33 GB) | Geofabrik | ODbL |
 | addresses | `addresses.json` | built from the .pbf by `tools/build-addresses.js` | ODbL |
 | pois | `pois.json` | the Térkép-feed's points, built from the .pbf by `tools/build-pois.js` | ODbL |
+| roads | `roads.bin` | the road network for offline routing, built from the .pbf by `tools/build-roads.js` | ODbL |
 | fonts, sprites | `fonts/`, `sprites/` | protomaps/basemaps-assets | OFL / see repo |
 
 `Map/data/manifest.json` records source, date, licence and size of every part. The pmtiles CLI goes
@@ -36,6 +37,8 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/feed.js`, `lib/feed-layer.js` — the **F** Térkép-feed: the nearest home, Daniella, shop, food,
   doctor … with distance, ETA and ghost lines (`docs/map/FEED.md`); its points from `tools/build-pois.js`
   (`tools/osm-pbf.js` is the shared .pbf reader).
+- `lib/route.js`, `lib/route-layer.js` — **our own offline routing** (N2): the feed's road times and the
+  route to a held place, on `data/roads.bin` from `tools/build-roads.js` (`docs/map/ROUTING.md`).
 - `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).

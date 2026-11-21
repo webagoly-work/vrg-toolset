@@ -16,20 +16,22 @@ const HOLD_MS = 550;
 const MOVE_M = 25, EVERY_MS = 30000;       // refresh the list after 25 m or 30 s of movement
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function initFeed({ map, maplibregl, params, store, toast }) {
+export function initFeed({ map, maplibregl, params, store, toast, router }) {
   const $ = s => document.querySelector(s);
   const btn = $('#b-feed'), panel = $('#feed-panel');
   if (!btn || !panel || !F()) return null;
   const cat = id => F().CATEGORIES.find(c => c.id === id);
 
   let drawn = [];
+  let rt = null, planning = false, reAt = 0, gen = 0;      // N2: the selected place's route (lib/route-layer.js)
+  const REROUTE_M = 45, REROUTE_MS = 8000, ROAD_MAX_M = 60000;
   let on = false, idx = null, loading = null, watch = null, pos = null, last = null, items = [], sel = null, gear = false;
   let cats = store.get('feedCats', null) || F().defaults();
   let pins = store.get('feedPins', []) || [];
   let mode = store.get('feedMode', 'auto');
   const markers = new Map();
   const api = { isOn: () => on, items: () => items, selected: () => sel, toggle, select, clear, pins: () => pins.slice(),
-    setPosition: (lon, lat) => setPos(lon, lat, 'gps', 5), lines: () => drawn.map(f => f.properties.k) };
+    setPosition: (lon, lat) => setPos(lon, lat, 'gps', 5), lines: () => drawn.map(f => f.properties.k), route: () => rt };
   window.vrgFeed = api;
 
   panel.innerHTML = `
@@ -57,6 +59,7 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
       loading = null;
       refresh(true);
     })();
+    if (router) router.load().then(() => roadEtas());
     return loading;
   }
   function note(t) { $('#fd-note').textContent = t || ''; }
@@ -65,7 +68,7 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
     pos = { lon, lat, src, acc };
     $('#fd-src').textContent = src === 'gps' ? ' · a helyedtől' + (acc ? ` (±${Math.round(acc)} m)` : '') : ' · a térkép közepétől';
     const moved = !last || F().distance(last.lon, last.lat, lon, lat) > MOVE_M || Date.now() - last.t > EVERY_MS;
-    if (sel) { refreshSelected(); drawLines(); return; }
+    if (sel) { refreshSelected(); drawLines(); followRoute(); return; }
     if (moved) refresh(true); else drawLines();
   }
   function fromCenter() { if (!pos || pos.src !== 'gps') { const c = map.getCenter(); setPos(c.lng, c.lat, 'center'); } }
@@ -84,12 +87,27 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
     if (!on || !pos || !idx) return;
     if (full) { items = F().items(idx, pins, cats, pos.lon, pos.lat, mode); last = { lon: pos.lon, lat: pos.lat, t: Date.now() }; }
     renderList(); renderMarkers(); drawLines();
+    if (full) roadEtas();
   }
+  /** N2: the cards' times and distances along the roads, one route after the other (straight-line until then). */
+  async function roadEtas() {
+    if (!router || router.state() !== 'ready' || !pos || sel) return;
+    const my = ++gen, from = { lon: pos.lon, lat: pos.lat }, list = items;
+    for (const it of list) {
+      if (it.missing || it.dist > ROAD_MAX_M) continue;
+      const r = await router.plan(from, it, mode);
+      if (my !== gen || list !== items || sel) return;
+      if (r) { it.road = { meters: r.meters, seconds: r.seconds }; renderList(); }
+    }
+  }
+  const shownDist = it => (it.road ? it.road.meters : it.dist);
+  const shownEta = it => (it.road ? it.road.seconds / 60 : it.eta);
   function refreshSelected() {
     const it = items.find(i => i.cat === sel);
     if (!it || it.missing) return;
     it.dist = F().distance(pos.lon, pos.lat, it.lon, it.lat);
     it.eta = F().eta(it.dist, mode);
+    if (rt) { const a = router.along(rt, pos.lon, pos.lat); it.road = { meters: a.left, seconds: a.leftSeconds }; }
     renderList();
   }
   function card(it) {
@@ -104,9 +122,9 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
         title="Koppintás: megmutatja · Nyomva tartva (jobb klikk): kiválasztja">
       <span class="fd-i">${c.icon}</span>
       <span class="fd-t"><b>${esc(it.name || c.hu)}</b><small>${esc(c.hu)}${it.kind && it.kind !== c.hu ? ' · ' + esc(it.kind) : ''}${it.own ? ' · saját' : ''}</small></span>
-      <span class="fd-d"><b>${F().fmtEta(it.eta)}</b><small>${F().fmtDist(it.dist)}</small></span>
-      ${big ? `<span class="fd-act"><button type="button" class="lg-chip" data-nav>Navigáció</button><button type="button" class="lg-chip" data-back>✕ Vissza</button>
-        <small class="m">Becslés légvonalban; a saját útvonaltervezés (N2) később jön.</small></span>` : ''}
+      <span class="fd-d"><b>${F().fmtEta(shownEta(it))}</b><small>${F().fmtDist(shownDist(it))}${it.road ? ' úton' : ' légvonal'}</small></span>
+      ${big ? `<span class="fd-act"><button type="button" class="lg-chip" data-nav>Navigáció appban</button><button type="button" class="lg-chip" data-back>✕ Vissza</button>
+        <small class="m">${routeNote()}</small></span>` : ''}
     </div>`;
   }
   function renderList() {
@@ -165,13 +183,21 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
     map.addLayer({ id: 'vrg-feed-you', type: 'circle', source: SRC, filter: ['==', ['get', 'k'], 'you'],
       paint: { 'circle-radius': 7, 'circle-color': '#1a73e8', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 3 } });
   }
+  function routeNote() {
+    const st = router ? router.state() : 'none';
+    if (planning) return 'Útvonal tervezése…';
+    if (rt) return `Útvonal a saját úthálózaton (${mode === 'gyalog' ? 'gyalog' : 'autóval'}, forgalom nélkül); letérésnél újratervez.`;
+    if (st === 'loading') return 'Az úthálózat betöltése…';
+    if (st === 'missing' || st === 'error' || st === 'none') return 'Nincs úthálózat ezen a gépen: légvonalbeli becslés. A PC-n: node Map/tools/fetch-data.js --only=osm,roads.';
+    return 'Ide nem található útvonal: légvonalbeli becslés.';
+  }
   function drawLines() {
     const s = map.getSource(SRC);
     if (!s) return;
     const f = [];
     if (on && pos) {
       for (const it of items) {
-        if (it.missing || (sel && it.cat !== sel)) continue;
+        if (it.missing || (sel && it.cat !== sel) || (sel && rt)) continue;
         f.push({ type: 'Feature', properties: { k: sel ? 'spider' : 'ghost', color: cat(it.cat).color },
           geometry: { type: 'LineString', coordinates: [[pos.lon, pos.lat], [it.lon, it.lat]] } });
       }
@@ -194,10 +220,36 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
     if (!it || it.missing || !pos) return;
     sel = id; panel.classList.add('fd-spider');
     renderList(); renderMarkers(); drawLines(); frame(it);
+    plan();
+  }
+  /** N2: the route to the selected place along our own road network, drawn in its colour. */
+  async function plan() {
+    if (!router || !sel || !pos) return;
+    const it = items.find(i => i.cat === sel);
+    if (!it) return;
+    const my = ++gen;
+    planning = true; reAt = Date.now(); renderList();
+    const r = await router.plan({ lon: pos.lon, lat: pos.lat }, it, mode);
+    if (my !== gen || sel !== it.cat) return;
+    planning = false; rt = r;
+    if (rt) {
+      router.draw(rt, cat(it.cat).color);
+      it.road = { meters: rt.meters, seconds: rt.seconds };
+      const b = rt.coords.reduce((bb, c) => bb.extend(c), new maplibregl.LngLatBounds(rt.coords[0], rt.coords[0])).extend([pos.lon, pos.lat]).extend([it.lon, it.lat]);
+      const narrow = matchMedia('(max-width:640px)').matches;
+      map.fitBounds(b, { padding: narrow ? { top: 140, bottom: Math.round(innerHeight * 0.42), left: 50, right: 50 } : { top: 80, bottom: 80, left: 420, right: 90 }, maxZoom: 17, duration: 600 });
+    } else router.clear();
+    renderList(); drawLines();
+  }
+  function followRoute() {
+    if (!rt || planning) return;
+    const a = router.along(rt, pos.lon, pos.lat);
+    if (a.off > REROUTE_M && Date.now() - reAt > REROUTE_MS) plan();
   }
   function clear() {
     if (!sel) return;
-    sel = null; panel.classList.remove('fd-spider');
+    sel = null; rt = null; planning = false; gen++; panel.classList.remove('fd-spider');
+    if (router) router.clear();
     refresh(true);
   }
   function navigate() {
@@ -248,7 +300,10 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
 
   $('#fd-gear').onclick = () => { gear = !gear; renderSettings(); };
   $('#fd-x').onclick = () => toggle(false);
-  $('#fd-mode').onclick = () => { mode = mode === 'auto' ? 'gyalog' : 'auto'; store.set('feedMode', mode); refresh(true); };
+  $('#fd-mode').onclick = () => {
+    mode = mode === 'auto' ? 'gyalog' : 'auto'; store.set('feedMode', mode);
+    if (sel) { rt = null; plan(); renderList(); } else refresh(true);
+  };
 
   // ---------------------------------------------------------------- on / off
   const onMove = () => { if (pos && pos.src === 'center') fromCenter(); };
@@ -264,7 +319,8 @@ export function initFeed({ map, maplibregl, params, store, toast }) {
       startWatch(); load();
     } else {
       stopWatch(); map.off('moveend', onMove);
-      sel = null; panel.classList.remove('fd-spider'); items = []; pos = null; last = null;
+      sel = null; rt = null; gen++; panel.classList.remove('fd-spider'); items = []; pos = null; last = null;
+      if (router) router.clear();
       for (const m of markers.values()) m.remove();
       drawLines();
     }

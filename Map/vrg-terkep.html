@@ -14,7 +14,8 @@
         ?embed=1                        slim UI for embedding in Kapu / Planner
         ?job=BK2                        the job layer on, fly to that job (internal; docs/map/JOBS-MAP.md)
         ?arnyek=1 | ?arnyek=2026-12-21T15:30   the building shadows now / at that local time
-        ?feed=1                         the Térkép-feed on (the nearest places by category; docs/map/FEED.md)
+        ?feed=1                         the Térkép-feed on (the nearest places by category; docs/map/FEED.md);
+                                        a held place is routed on our own road network (docs/map/ROUTING.md)
         ?wx=1 / ?wx=0                   the weather layer on at load / hidden (docs/map/WEATHER-MAP.md)
   Keys: /  search   3  3D buildings   T  terrain   S  shadows   F  feed   J  jobs   W  weather   G  Google 3D view   N  north   Esc  close
         with W on: P play/pause   [ ]  step   M  forecast / measured
@@ -311,6 +312,7 @@ if (location.protocol === 'file:') {
 <script src="/lib/site-layer.js" defer></script>
 <script src="/lib/sun.js"></script>
 <script src="/lib/feed.js"></script>
+<script src="/lib/route.js"></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initJobs } from '/lib/jobs-layer.js';
@@ -318,6 +320,7 @@ import { initJobs } from '/lib/jobs-layer.js';
 const { initWeather } = await import('/lib/weather-layer.js').catch(() => ({ initWeather: () => null }));
 const { initShadows } = await import('/lib/shadow-layer.js').catch(() => ({ initShadows: () => null }));
 const { initFeed } = await import('/lib/feed-layer.js').catch(() => ({ initFeed: () => null }));
+const { initRoute } = await import('/lib/route-layer.js').catch(() => ({ initRoute: () => null }));
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -621,13 +624,14 @@ const shadows = initShadows({ map, params, store, toast });
 if (!shadows) $('#b-sun')?.remove();
 
 // ---------------------------------------------------------------- F: the Térkép-feed (lib/feed-layer.js)
-const feed = initFeed({ map, maplibregl, params, store, toast });
+const router = initRoute({ map });            // N2: our own offline routing (lib/route.js, /data/roads.bin)
+const feed = initFeed({ map, maplibregl, params, store, toast, router });
 if (!feed) $('#b-feed')?.remove();
 
 // ---------------------------------------------------------------- W: the weather (lib/weather-layer.js; VRG Időjárás data)
 const weather = initWeather({ map, maplibregl, params, store, toast });
 
-window.vrgMap = { map, maplibregl, searchOffline, camera, jobs, weather, shadows, feed };   // for tests, the console and the phone (VRG Mobile M43)
+window.vrgMap = { map, maplibregl, searchOffline, camera, jobs, weather, shadows, feed, router };   // for tests, the console and the phone (VRG Mobile M43)
 </script>
 </body>
 </html>

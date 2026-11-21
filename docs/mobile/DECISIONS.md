@@ -853,7 +853,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (offline, nothing leaves the phone, the same on the PC and the phone). Not built yet (N2). Replaces D-49 C's "no route
   planning of our own"; the hand-off to a navigation app stays as the fallback. Rejected: **B** an online routing
   service (internet, the position and destination sent out, usage limits); **C** a native navigation kit (Ferrostar +
-  Valhalla: a second map stack beside the page, against D-48).
+  Valhalla: a second map stack beside the page, against D-48). **Built 2026-11-21 as WP M56** (`docs/map/ROUTING.md`): junctions-only
+  graph, car speeds from `maxspeed` or the road class, A* by time in the page, no turn restrictions yet.
 - **D-130 · Traffic: none at first, a traffic service later as an opt-in (N3), 2026-11-21.** Answered **A, then B**:
   ETAs from road types and speed limits; later a keyed provider (e.g. TomTom, terms to verify) asked only for the
   chosen route and only on a tap. No free open live-traffic source exists for Hungary. Rejected: **C** no traffic ever.

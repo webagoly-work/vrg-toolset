@@ -46,8 +46,9 @@ reader. Relations (multipolygons) are not read.
 
 ## Limits
 
-- **ETAs are straight-line estimates.** Distance × 1.35 at 28 km/h by car (+1 min), × 1.25 at 4.8 km/h on
-  foot. Real routing is N2 (D-129 A: our own offline road network). No traffic until N3 (D-130).
+- **ETAs:** along the roads where `roads.bin` is on the device and a road leads there ("úton", N2,
+  `docs/map/ROUTING.md`). Otherwise a straight-line estimate ("légvonal"): distance × 1.35 at 28 km/h by
+  car (+1 min), × 1.25 at 4.8 km/h on foot. No traffic until N3 (D-130).
 - OSM's coverage decides what is found: not every Daniella or toilet is mapped (add your own pins).
 - On the PC the position is the browser's (often Wi-Fi based, or none: then the map's centre is used, and
   the header says "a térkép közepétől").
