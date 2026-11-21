@@ -31,6 +31,7 @@ abstract class SketcherAssets : DefaultTask() {
         o.deleteRecursively()
         File(o, "sketcher/variants").mkdirs()
         catalog.get().file("fieldkit.json").asFile.copyTo(File(o, "sketcher/fieldkit.json"), true)
+        catalog.get().file("takeoff.json").asFile.copyTo(File(o, "sketcher/takeoff.json"), true)
         variants.get().asFile.listFiles { f -> f.name.endsWith(".json") }?.forEach { it.copyTo(File(o, "sketcher/variants/" + it.name), true) }
     }
 }

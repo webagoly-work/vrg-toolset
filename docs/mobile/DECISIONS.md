@@ -558,6 +558,63 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the
   entry in both engines, the export and the Desktop player, and many phones have no app answering the recorder intent.
 
+- **D-62 · Helyszín opens the phone's own map, full screen, with a return path (M48, fork F1), 2026-11-20.** Not asked
+  (fork rule 5: the recommended option, written down). Chosen: Helyszín opens VRG Térkép (`vrg://map?site=<id>`) on its
+  own screen; the map leaves its answer in `files/sketch/handoff/<id>.site.json` and opens
+  `vrg://sketch?open=<id>&front=helyszin`; the Sketcher applies it when it opens the survey. Why: drawing corners and
+  dragging a plan need the whole screen, and a map inside the scrolled Helyszín column fights the scroll; the Sketcher
+  stays the only writer of the survey file (no two writers), and an answer survives the app being killed. Rejected:
+  **B** the map embedded in Helyszín (a second copy of M43's request handling in feature-sketch, cramped gestures);
+  **C** the map writing the survey file itself (overwritten by the open editor).
+- **D-63 · The satellite layer: Esri World Imagery, on a tap, never stored (M48), 2026-11-20.** Chosen: Esri's World
+  Imagery tiles (`server.arcgisonline.com`, keyless), added only when 🛰 is tapped, attribution shown, not written to the
+  phone's tile cache (the WebView runs `LOAD_NO_CACHE`; the phone lets only GET to that host out). Terms checked: Esri's
+  terms summary requires attribution and allows offline use only through Esri's own content packages, and an ArcGIS
+  account for use outside Esri software; so nothing is cached, and the keyless use is internal, low-volume, interactive.
+  For full compliance a free ArcGIS Location Platform key would be the next step (question 1 of the F1 report).
+  Rejected: Sentinel-2 cloudless (10 m pixels: no building to trace); Google / Bing / Mapbox imagery (a key and stricter
+  terms); the Hungarian state orthophoto (registration; a candidate later).
+- **D-64 · How the outline and the placement are stored (M48), 2026-11-20.** `site.outline` = the corners as
+  `[lat, lon]` (absolute, so a corrected outline does not move a placement); `site.place` = `{lat, lon, rot, auto, at}`,
+  the plan's oriented-box centre on the map and its clockwise turn (absolute too; the offset from the building is derived
+  each time, never stored); `site.footprint` stays as before and is measured again from the outline, its `src` = `osm`,
+  `rajz` (drawn) or `muhold` (traced over the satellite). All optional; the file stays v2.
+- **D-65 · The fit and the mismatch report (M48), 2026-11-20.** The first placement turns the plan's long axis onto the
+  building's and centres the two boxes; of the four quarter-turn candidates the one whose walls stick out least wins, the
+  smaller turn on a tie. The report: the turn between the walls folded to ±45° (walls parallel or not, whichever side is
+  long), the box-centre offset with its compass direction, and each wall whose **middle 80 %** is more than **0,25 m**
+  outside the outline (a wall that is only too long shows as the walls at its ends). Verdicts in order: *kilóg*,
+  *elforgatva* (> 3°), *eltolva* (> 1 m), *rendben*. Same numbers on the phone, the map and the Desktop (one fixture).
+- **D-66 · Every lib file the map page loads is one the phone serves (M48), 2026-11-20.** Found: `Map/vrg-terkep.html`
+  imports `/lib/weather-layer.js` (the W layer, after M43), which the phone did not fetch, so the page's module failed and
+  the map did not start on the phone. Chosen: the phone fetches and serves it (and the two site-layer files), a test
+  reads the page and fails when it loads a `/lib` file the phone does not serve, and the page loads optional layers
+  without a static import, so a missing one never stops the map. Details: `WP/M48.md`.
+
+- **D-67 · Takeoff: one engine twice, its rules as data, 2026-11-20** (fork F2, taken for the Founder, rule 5). The takeoff
+  is `Sketcher/lib/takeoff.js` (Desktop, CLI) and `sketch-core/Takeoff.kt` (phone), kept equal by
+  `Sketcher/test/fixtures/takeoff.json` (document and summary), the M26 pattern; what counts as what lives in
+  `Sketcher/catalog/takeoff.json`, bundled with the field kit. Rejected: the phone sending the sketch to the PC to be
+  counted there (no lap on site, offline). Details: `WP/M47.md`, `../sketcher/TAKEOFF.md`.
+- **D-68 · Igények against the drawing: the larger number, marked ≈, 2026-11-20** (F2). A wanted count (Dugalj 4) and the
+  drawn points (1) give `max` = 4, ≈ with *Munkakör: 4, vázlat: 1*, so neither the client's word nor the half-finished
+  drawing is lost. Machines (gépbekötés) stay their own lines; a mismatch with the drawn Fix bekötés points is a check
+  line, not a merge. Rejected: the drawing only (wants not drawn yet vanish), adding both (double counting).
+- **D-69 · Implied work is shown, as a guess, 2026-11-20** (F2). A dedicated machine or system implies a dedicated circuit,
+  a second board is taken for an alelosztó, a circuit without a drawn route gets a right-angled home run to its board,
+  the EV cable comes from the distance answer, and *Elosztó csere* without a drawn board still gives one; every one of
+  them is ≈ and says why. Cable = solved length + per tied end (ceiling − height) + 300 mm (`--reserve`). Rejected:
+  counting only what is drawn (the lap would say 0 m cable for a job everyone knows needs it).
+- **D-70 · The intake lives on the Planner's building, shown by an action, 2026-11-20** (F2). `B.survey` (the job's
+  facts; every save carries it, no new data collection, nothing drawn so the goldens stay); ⌘K *Felmérés: munkakör
+  lap*. An older package keeps its raw intake by ids. Rejected: notes on the plan (they would clutter the drawing),
+  the Igénylista (per room; the intake is per job).
+- **D-71 · Csere and Bontás by tag; no prices; decisions from a fixed list, 2026-11-20** (F2). Replacement is a tag named
+  *Csere* (or preset `replace`), demolition the *Bontás* preset; the *Tervezett* / *Meglévő* state stays as it is. The
+  export carries no money; the decisions that change a quantity are a list of the field kit's own questions in the rules
+  file, invented questions none (the Workflow Kit's funnel is mapped on the PC, `../sketcher/TAKEOFF.md` §5).
+  Rejected: a third point state (it would change the v2 file), guessing funnel ids from here.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

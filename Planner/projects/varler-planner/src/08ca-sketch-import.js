@@ -32,6 +32,7 @@ function skiIs(o){return !!(o&&o.kind==='vrg-sketch'&&o.plan&&o.plan.data&&typeo
 // the package → a sessionObj-shaped payload (what applyProjectData loads)
 function skiPayload(o){
   const b=blankBuilding();b.name=o.name||'Vázlat';
+  if(typeof svyFromPackage==='function'){const sv=svyFromPackage(o);if(sv)b.survey=sv;}   // the intake + takeoff (08cb)
   const c=o.plan.center;if(Array.isArray(c)&&c.length>=2&&isFinite(c[0])&&isFinite(c[1]))b.center=[+c[0],+c[1]];
   const d=JSON.parse(JSON.stringify(o.plan.data));
   UKEYS.forEach(k=>{if(!Array.isArray(d[k]))d[k]=[];});
@@ -58,7 +59,7 @@ function skiSummary(o){const d=o.plan.data,r=o.plan.report||{};
 
 function skiImport(o){const payload=skiPayload(o);
   const id=saveProject((o.name||'Vázlat')+' (vázlat)');const ix=loadProjIndex();ix[id].data=payload;saveProjIndex(ix);
-  loadProject(id);$('hud').textContent=skiSummary(o);return id;}
+  loadProject(id);$('hud').textContent=skiSummary(o)+(typeof svySummary==='function'?svySummary(svySurvey()):'');return id;}
 
 // ---- the mark ---------------------------------------------------------------------------------------------------------
 function skiEst(fl){return fl&&fl.sk&&Array.isArray(fl.sk.est)&&fl.sk.est.length&&fl.poly&&fl.poly.length>=3?fl.sk.est:null;}

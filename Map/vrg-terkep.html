@@ -257,10 +257,14 @@ if (location.protocol === 'file:') {
 </script>
 <script src="/vendor/pmtiles/pmtiles.js"></script>
 <script src="/lib/geocode.js"></script>
+<!-- VRG Sketcher Helyszín (F1): the sketch on the building. Plain scripts, so a phone app that does not serve them still opens the map. -->
+<script src="/lib/site-math.js"></script>
+<script src="/lib/site-layer.js" defer></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initJobs } from '/lib/jobs-layer.js';
-import { initWeather } from '/lib/weather-layer.js';
+// loaded, not imported: a missing optional layer (an older VRG Mobile does not serve it) must not stop the whole map
+const { initWeather } = await import('/lib/weather-layer.js').catch(() => ({ initWeather: () => null }));
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);

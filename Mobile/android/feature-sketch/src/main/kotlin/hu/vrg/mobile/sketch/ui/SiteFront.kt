@@ -3,6 +3,8 @@ package hu.vrg.mobile.sketch.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -48,6 +50,8 @@ import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.Osm
 import hu.vrg.mobile.sketch.SiteMath
+import hu.vrg.mobile.sketch.SitePlace
+import hu.vrg.mobile.core.Catalogue
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -151,6 +155,21 @@ internal fun SiteFront(st: EditorState) {
         site?.let { s0 -> s0.lat?.let { la -> Text("⌖ %.6f, %.6f · %s".format(la, s0.lon ?: 0.0, when (s0.source) { "gps" -> "a telefon helye"; "terkep" -> "VRG Térkép"; "osm" -> "OSM keresés"; else -> "kézi" }),
             style = Melyviz.readout, modifier = Modifier.padding(vertical = 6.dp)) } }
 
+        // F1: the phone's own VRG Térkép (M43), PC or not: the outline drawn / corrected (🛰 on a tap), the sketch placed on it,
+        // the job's place taken from the map's centre. The map leaves its answer for this survey and comes back here.
+        Text("VRG Térkép a telefonon", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Pill("🗺 Körvonal és vázlat a térképen", col, true) {
+                SketchFeature.store.save(st.sketch)          // the map reads the file
+                try {
+                    ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("vrg://${Catalogue.MAP.id}?site=${st.sketch.id}"))
+                        .setPackage(ctx.packageName).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP))
+                } catch (e: Exception) { st.note = "A térkép nem nyitható meg." }
+            }
+        }
+        Text("Ott: ▱ sarkok koppintással, húzással javítás, 🛰 műholdkép (csak koppintásra, nem tárolódik); ◫ a vázlat húzva és forgatva; ⇣ a munka helye a térkép közepe; ✓ Kész ide hozza.",
+            style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
+
         Text("VRG Térkép (a PC offline térképe)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pill(if (map == null) "🗺 Megnyitás" else "🗺 Bezárás", col, map != null) {
@@ -192,7 +211,7 @@ internal fun SiteFront(st: EditorState) {
                     busy = null
                     val outline = json?.let { Osm.pickBuilding(it, la, lo) }
                     if (outline == null) st.note = "Itt nincs épület az OSM-ben (vagy nincs internet)."
-                    else st.setSite { it.copy(footprint = SiteMath.footprint(outline, "osm", System.currentTimeMillis())) }
+                    else st.setSite { it.copy(outline = outline, footprint = SiteMath.footprint(outline, "osm", System.currentTimeMillis())) }
                 }
             }
         }
@@ -207,10 +226,35 @@ internal fun SiteFront(st: EditorState) {
             Text("Az épület és a vázlat", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
             val cmp = SiteMath.compare(st.norm, fp)
             val m = { v: Double -> "%.1f".format(v).replace('.', ',') }
-            Text("Épület: ${m(fp.w)} × ${m(fp.d)} m, ${m(fp.area)} m² (${if (fp.src == "osm") "OSM" else fp.src})", style = Melyviz.label.copy(fontSize = 13.sp))
+            Text("Épület: ${m(fp.w)} × ${m(fp.d)} m, ${m(fp.area)} m² (${when (fp.src) { "osm" -> "OSM"; "rajz" -> "rajzolt"; "muhold" -> "műholdról rajzolt"; else -> fp.src }})", style = Melyviz.label.copy(fontSize = 13.sp))
             if (cmp == null) Text("A vázlaton még nincs szoba.", style = Melyviz.small)
             else Text(cmp.text, style = Melyviz.label.copy(fontSize = 13.sp, color = when (cmp.verdict) {
                 "egyezik" -> Melyviz.glow; "kisebb" -> Melyviz.sand; else -> Color(0xFFD64545) }))
         }
+        SitePlacement(st, col)
+    }
+}
+
+/** F1: where the sketch sits on the building: the placement's report, ⤢ fit without the map, ✕ clear. */
+@Composable
+private fun SitePlacement(st: EditorState, col: Color) {
+    val site = st.sketch.site ?: return
+    if (site.outline.size < 3) return
+    val rooms = SitePlace.rooms(st.norm)
+    Text("A vázlat az épületen", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+    if (rooms.isEmpty()) { Text("A vázlaton még nincs szoba.", style = Melyviz.small); return }
+    val rep = SitePlace.report(rooms, site.outline, site.place)
+    if (rep == null) Text("Még nincs elhelyezve: ⤢ Illesztés, vagy a térképen ◫.", style = Melyviz.small)
+    else SitePlace.lines(rep).forEachIndexed { i, l ->
+        Text(l, style = Melyviz.label.copy(fontSize = 13.sp, color = if (i > 0) Melyviz.label.color else when (rep.verdict) {
+            "rendben" -> Melyviz.glow; "eltolva" -> Melyviz.sand; else -> Color(0xFFD64545) }))
+    }
+    site.place?.let { p -> Text("Elforgatás ${"%.1f".format(p.rot).replace('.', ',')}°" + if (p.auto) " (automatikus)" else " (kézzel igazítva)", style = Melyviz.small) }
+    Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Pill("⤢ Illesztés", col, site.place == null) {
+            val p = SitePlace.autoFit(rooms, site.outline, System.currentTimeMillis())
+            if (p == null) st.note = "Nem illeszthető." else st.setSite { it.copy(place = p) }
+        }
+        if (site.place != null) Pill("✕ Elhelyezés", col, false) { st.setSite { it.copy(place = null) } }
     }
 }

@@ -9,6 +9,7 @@ import hu.vrg.mobile.kit.github.Gh
 import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.Kit
 import hu.vrg.mobile.sketch.Sketch
+import hu.vrg.mobile.sketch.TakeoffRules
 import hu.vrg.mobile.sketch.Variant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,8 @@ object SketcherKit {
     private const val DIR = "Sketcher/variants"
 
     @Volatile private var base: Kit = Kit()
+    /** The takeoff rules (Sketcher/catalog/takeoff.json, bundled); null when the asset could not be read. */
+    @Volatile var rules: TakeoffRules? = null; private set
     private val _variants = MutableStateFlow<List<Variant>>(emptyList())
     val variants: StateFlow<List<Variant>> = _variants
     @Volatile private var loaded = false
@@ -37,6 +40,9 @@ object SketcherKit {
         loaded = true
         base = try { FieldKit.parse(ctx.assets.open("sketcher/fieldkit.json").bufferedReader().readText()) }
                catch (e: Exception) { VrgLog.w("sketch", "A field kit nem olvasható: ${e.message}"); Kit() }
+        // the takeoff rules (Munkakör lap, docs/sketcher/TAKEOFF.md); without them the lap and its export are left out
+        rules = try { TakeoffRules.parse(ctx.assets.open("sketcher/takeoff.json").bufferedReader().readText()) }
+                catch (e: Exception) { VrgLog.w("sketch", "A takeoff szabályok nem olvashatók: ${e.message}"); null }
         reload(ctx)
     }
 
