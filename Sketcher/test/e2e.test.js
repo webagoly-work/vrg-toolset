@@ -13,7 +13,7 @@ let JSDOM;
 try { ({ JSDOM } = require(path.join(ROOT, 'Planner/projects/varler-planner/node_modules/jsdom'))); }
 catch (e) { console.log('SKIP e2e.test: jsdom not installed (Planner/projects/varler-planner/node_modules/jsdom)'); process.exit(0); }
 const FK = require(path.join(ROOT, 'Sketcher/lib/fieldkit.js')), TK = require(path.join(ROOT, 'Sketcher/lib/takeoff.js'));
-const SM = require(path.join(ROOT, 'Map/lib/site-math.js'));
+const SM = require(path.join(ROOT, 'Map/lib/site-math.js')), RP = require(path.join(ROOT, 'Sketcher/lib/report.js'));
 const read = f => JSON.parse(fs.readFileSync(f, 'utf8'));
 const KIT = FK.parseKit(read(path.join(ROOT, 'Sketcher/catalog/fieldkit.json')));
 const RULES = TK.parseRules(read(path.join(ROOT, 'Sketcher/catalog/takeoff.json')));
@@ -57,6 +57,14 @@ for (const sc of scenarios) {
   // every file the takeoff lists is one the export sends
   const files = new Set(sc.phone.files);
   ok(t.photos.every(g => g.files.every(f => files.has(f))), id + ': the takeoff names only files the export writes');
+  // F5's Felmérési jegyzőkönyv (report.js) from the package: the takeoff's items with their quantities, the site
+  // report, the signatures and sound notes in their own sections, no client contact (the package has none: D-82)
+  const m = RP.model(kitOf(s), s, t0, { now: sc.now, siteLines: sc.phone.site.lines }), doc = RP.html(m);
+  ok(t0.items.every(x => doc.includes(x.label) && doc.includes(TK.fmt(x.qty))), id + ': the report lists every item with its quantity');
+  eq(m.signatures.length, (s.captures || []).filter(c => c.kind === 'signature').length, id + ': the report\'s signatures');
+  ok(m.photos.every(g => g.items.every(c => c.kind !== 'audio' && c.kind !== 'signature')), id + ': no sound note or signature among the report\'s photos');
+  ok(!m.client && !/id="ugyfel"/.test(doc), id + ': no client contact in a report of the package');
+  ok(sc.phone.site.lines.every(l => doc.includes(l.replace(/&/g, '&amp;'))), id + ': the site report in it');
 }
 
 // ---- 2. the Desktop page ----------------------------------------------------------------------------------------------
