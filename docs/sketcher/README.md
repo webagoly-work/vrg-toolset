@@ -107,9 +107,9 @@ crucial questions back, writes and validates the variant, commits it to `main`. 
 (and from its bundled assets after the next release). In a sketch, ⚙ lists the variants; the chosen one shows as a
 toggle in the top corner, switching between the original and the variant at any moment. Its long press (RCO) lists the variants,
 the original, ⟳ refresh and ＋ request; the same list (each variant starting a new survey) is on the long press of the
-Sketcher's home tile and its Asztal dock dial (M49, D-71).
+Sketcher's home tile and its Asztal dock dial (M49, D-73).
 
-A variant can also **tune the drawing tools** (M49, D-72): an optional `draw` block with `snapAngle` (the Vonal tool's
+A variant can also **tune the drawing tools** (M49, D-74): an optional `draw` block with `snapAngle` (the Vonal tool's
 step: 0 / 15 / 30 / 45 / 90°), `snapGrid` (m: corners land on the grid unless a neighbour's corner line is near),
 `defaultRoom {w, d}` (m: a tap on paper with Szoba lays a room of that size), `measureFirst` (a new room opens its size
 dialog) and `pointSnap` (`wall` / `free`). Metres follow the sketch's current scale. `sketch-core` `DrawTune.kt` is the
@@ -124,7 +124,7 @@ logic; a bad value falls back to the original on the phone and fails `variant-ch
 | VRG Térkép | embedded through the relay's port proxy (M8) when paired; GPS and OSM otherwise | embedded `localhost:8802/?embed=1` |
 | the Planner | the package (M24) | Planner → Terv betöltése fájlból |
 
-Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61; the small gaps (M49): D-70 … D-74.
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`; Kamera 2 (M46): D-55 … D-61; the small gaps (M49): D-72 … D-76.
 
 ## 7. Kamera 2 (M46)
 

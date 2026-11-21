@@ -525,7 +525,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   four missing shot-list items (room items go to Fotópont, so they are left out), then 🎥 video, ✍ signature and the
   three purposes used last, then the full grid. After a photo a **＋ (symbol) még** pill stays nine seconds beside ◉
   (not during Sorozat, which already returns to the camera).
-- **D-70 · F4: the client's wants by room keep the job total in `scope` (M49), 2026-11-21.** Taken in fork F4. A
+- **D-72 · F4: the client's wants by room keep the job total in `scope` (M49), 2026-11-21.** Taken in fork F4. A
   countable want (an *igény* with a quantity) can belong to a room: a new optional `roomScope {room → {want → qty}}`
   holds the rooms' part, `scope` stays the job total, the rest is *Általános* (derived, never stored). Every reader of
   `scope` (the conditions, the scope card, F2's takeoff, the Planner's raw intake) stays right without knowing about
@@ -533,14 +533,14 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   lowered below the rooms takes back from the last room first; a deleted room's entry stays in the file and counts as
   Általános (an undo brings the room back with its wants). Rejected: a per-room list of separate *igény* records with
   categories (the research's wording): it duplicates the scope toggles and breaks every reader of the totals.
-- **D-71 · F4: the Sketcher's variants on its long press start a new survey (M49), 2026-11-21.** Taken in fork F4. On the
+- **D-73 · F4: the Sketcher's variants on its long press start a new survey (M49), 2026-11-21.** Taken in fork F4. On the
   home tile (hero card, grid icon, Kompakt) and the Asztal dock's Sketcher dial, the RCO lists *Új felmérés: <variant>*
   for each variant, *Új felmérés: eredeti*, ⟳ *Variánsok frissítése* and ＋ *Új variáns kérése* (opened without a
   survey: the request carries the premise and toggles, its counts are zero). From outside the Sketcher a variant line
   means "I am starting this kind of job"; switching the survey already open is the editor's corner toggle, whose long
   press has the same list for that survey (a tap still toggles; with no variant chosen a faint ◐ opens the list).
   Rejected: reopening the last survey with the variant (it silently reshapes a survey the user may be in the middle of).
-- **D-72 · F4: a variant tunes five drawing behaviours, nothing else (M49), 2026-11-21.** Taken in fork F4. The optional
+- **D-74 · F4: a variant tunes five drawing behaviours, nothing else (M49), 2026-11-21.** Taken in fork F4. The optional
   `draw` block: `snapAngle` (0 / 15 / 30 / 45 / 90°, the Vonal tool's step; 0 = the original 12° axis lock),
   `snapGrid` (m, corners of Szoba, Sablon, Vonal and corner moves; a neighbour's corner line still wins), `defaultRoom`
   `{w, d}` (m, a tap on paper with Szoba lays one), `measureFirst` (a new room opens its size dialog), `pointSnap`
@@ -548,11 +548,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   grid stays real after the first measure. The phone ignores a bad value (falls back to the original); the variant
   check rejects it. Left out: `wallThickness` (the sketch has no walls; the Planner builds them, and its wall tool is
   not this fork's) and `lineClose` (closing on the first point already works; an "ask" mode adds a dialog to every room).
-- **D-73 · F4: the kit's égett detector skips kiégett (M49), 2026-11-21.** Taken in fork F4. `(?<!ki)eget|…` in
+- **D-75 · F4: the kit's égett detector skips kiégett (M49), 2026-11-21.** Taken in fork F4. `(?<!ki)eget|…` in
   `fieldkit.json`: a burnt-out lamp (*kiégett izzó*) no longer suggests a fault, *megégett*, *égett szag* still do. Java
   and JS regexes both take the lookbehind (FieldKitTest parses the kit; the fixture has the three cases). The
   ipari-telephely override is gone.
-- **D-74 · F4 sweep: the deadline gets a date field; no audio fallback yet (M49), 2026-11-21.** Taken in fork F4. *Mikorra
+- **D-76 · F4 sweep: the deadline gets a date field; no audio fallback yet (M49), 2026-11-21.** Taken in fork F4. *Mikorra
   kell elkészülni?* has a `num` field (unit *dátum*) like the budget (*Ft*): budget and deadline are now both an option
   plus a typed value. A phone without a speech recogniser now says the keyboard's 🎤 still dictates. The audio-file
   fallback (record a sound file when there is no recogniser) is **not built**: it needs a new record field on the

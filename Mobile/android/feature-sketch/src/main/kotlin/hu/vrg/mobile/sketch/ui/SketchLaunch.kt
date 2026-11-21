@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 // the options (or RCO) of the original version". The home tile and the Asztal dock's Sketcher dial (app module) put
 // these lines under their own Megnyitás; the editor's corner toggle has the same list for the open survey.
 //
-// From outside the Sketcher a variant line starts a NEW survey in that variant (D-70): the long press is the "I am
+// From outside the Sketcher a variant line starts a NEW survey in that variant (D-72): the long press is the "I am
 // starting this kind of job" gesture; switching the survey already open is the corner toggle's job.
 object SketchLaunch {
     sealed class Req {
