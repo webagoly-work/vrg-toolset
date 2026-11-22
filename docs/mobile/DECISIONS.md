@@ -931,6 +931,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     centre (Budapest within 12 km). The PC Map's job sites stay on the PC. Rejected: **A** no GPS; **C** automatic
     GPS on every open.
 
+- **D-145 … D-149 · Síkmérés (M60, dev line skcam K3), 2026-11-22.** Taken for the Founder while building ("start K3");
+  each can be revisited.
+  - **D-145 · One screen for the phone and the Desktop.** Chosen **A**: `Sketcher/lib/plane-ui.js` on the Desktop page
+    and in a WebView on the phone (as D-137). Rejected: **B** a native Compose measuring screen (a second copy of the
+    geometry and the gestures to keep equal).
+  - **D-146 · The reference.** Chosen **A**: a rectangle of known size (presets or a typed size), its corners tapped by
+    hand in any order, a landscape sheet read the right way round with ⇄ to override. Rejected: **B** a printed ArUco /
+    ChArUco card found automatically (needs a detector; it stays a later step); **C** one known length (not enough to
+    undo perspective).
+  - **D-147 · Heights.** Chosen **A**: a floor line tapped on the floor–wall edge, heights measured square to it on the
+    plane. Rejected: **B** the camera-height method (needs a level camera and a known height, both easy to get wrong).
+  - **D-148 · Where the results live.** Chosen **A**: an optional survey key `planes` by photo (a capture id or a
+    Fotópont shot), the millimetres stored computed, the phone keeping it (`Planes.kt`). Rejected: **B** inside the
+    capture's marks (Fotópont shots have no marks); **C** a side file.
+  - **D-149 · Accuracy.** Chosen **A**: a reach grade beside every value (jó ≤ 2×, közepes ≤ 5×, távoli beyond, in
+    reference sizes) and the advice to measure with the 1× lens; no lens-distortion correction yet. Rejected: **B** a
+    calibration step before the first measurement (later, with the marker card).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

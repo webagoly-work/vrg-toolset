@@ -226,4 +226,6 @@ page, Vázlat → ⬚ Szobadoboz (3D) raises the plan's rooms to their ceiling h
 the walls (offline WebGL, no AI; `lib/roombox.js` + `lib/roombox-gl.js`). It has a dollhouse view, a view standing at
 the photo point, and per-photo fine-tuning saved in the survey's `box` key. **K1b is built (WP M59, BETA):** the same
 box on the phone (Rendezés → ⬚ Szobadoboz, a WebView with `lib/roombox-phone.js` as the touch UI). The phone keeps the
-`box` key, and the in-app camera opens Fotópont at the widest zoom and stores each shot's lens.
+`box` key, and the in-app camera opens Fotópont at the widest zoom and stores each shot's lens. **K3 is built (WP M60, BETA):**
+📏 Mérés on any photo (phone and Desktop, one screen: `lib/plane.js` + `lib/plane-ui.js`). Four corners of a known
+rectangle on the wall give true distances and heights above a floor line; the results go into the survey's `planes` key.
