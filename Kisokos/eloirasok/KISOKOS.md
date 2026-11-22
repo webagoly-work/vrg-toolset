@@ -11,6 +11,22 @@
 | MSZ EN 62034 · Automatikus tesztrendszerek | Az akkumulátoros biztonsági világítás automatikus próbájának (önteszt, központi tesztrendszer) követelményei. | MSZ EN 62034 (a hatályos kiadás) |
 | MSZ EN ISO 7010 · Biztonsági jelek | A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó ember, ajtó, nyíl) is. | MSZ EN ISO 7010 (a hatályos kiadás) |
 | OTSZ és TvMI · Hol kell biztonsági világítás | A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI ennek egy elfogadott teljesítési módját írja le a szabványokra hivatkozva. | OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szövege); a biztonsági világításról szóló Tűzvédelmi Műszaki Irányelv (TvMI) |
+| MSZ EN 60598 · Lámpatestek | A lámpatestek biztonsági termékszabványa: az 1 | MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) |
+| MSZ EN 60570 · Világítási sínrendszerek | A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei. | MSZ EN 60570 (a hatályos kiadás) |
+| MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek | A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai. | MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek) |
+| MSZ EN 12464-1 · Munkahelyek világítása (beltér) | Beltéri munkahelyek világítási követelményei tevékenységenként: megvilágítás, egyenletesség, káprázáskorlátozás, színvisszaadás. | MSZ EN 12464-1 (a hatályos kiadás) |
+| MSZ EN 13201 · Közúti világítás | Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követelmények, számítási és mérési módszerek. | MSZ EN 13201 (a részek hatályos kiadásai) |
+| MSZ EN 62471 · Fotobiológiai biztonság | A lámpák és lámpatestek sugárzásának hatása a szemre és a bőrre (UV, kékfény, infravörös), és a kockázati csoportok. | MSZ EN 62471 (a hatályos kiadás) |
+| MSZ EN 60079 és ATEX · Robbanásveszélyes terek | Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szánt villamos berendezések, köztük a lámpatestek követelményei. | MSZ EN 60079 sorozat; 2014/34/EU (termékek) és 1999/92/EK (munkahelyek) irányelv és a hazai átültetésük |
+| MSZ EN 60335 · Háztartási készülékek | A háztartási és hasonló villamos készülékek biztonsága (sütő, hűtő, mosógép, bojler, szauna-kályha, medenceszivattyú …); a beépített világításuk is a készülék része. | MSZ EN 60335-1 és a 60335-2-x részek (a hatályos kiadások) |
+| MSZ EN 60204-1 · Gépek villamos szerkezetei | Gépek villamos berendezésének általános követelményei: vészleállítás, vezérlés, kezelőszervek és jelzőfények színei. | MSZ EN 60204-1 (a hatályos kiadás) |
+| MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok | A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei. | MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok) |
+| MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések | A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa | MSZ HD 60364 (a részek hatályos kiadásai) |
+| MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek | Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet. | MSZ HD 60364-7-701 (a hatályos kiadás) |
+| MSZ HD 60364-7-702 · Úszómedencék és szökőkutak | Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés. | MSZ HD 60364-7-702 (a hatályos kiadás) |
+| MSZ HD 60364-7-703 · Szaunák | Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága. | MSZ HD 60364-7-703 (a hatályos kiadás) |
+| MSZ HD 60364-7-714 · Kültéri világítási berendezések | Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok. | MSZ HD 60364-7-714 (a hatályos kiadás) |
+| MSZ HD 60364-7-710 · Orvosi helyiségek | Rendelők, kezelők, műtők villamos berendezése: a helyiségek csoportba sorolása, a betegbiztonság, a biztonsági áramellátás és a műtőlámpák átkapcsolási ideje. | MSZ HD 60364-7-710; a lámpákra MSZ EN 60601-2-41 (a hatályos kiadások) |
 
 ## MSZ EN 1838 · Vészvilágítás: alkalmazás
 
@@ -131,6 +147,7 @@ Az akkumulátoros biztonsági világítás automatikus próbájának (önteszt, 
 
 - **Hol érvényes:** Önálló akkumulátoros lámpatestek önteszttel, címezhető (DALI) vészvilágítási rendszerek.
 - **Forrás:** szabvány: MSZ EN 62034 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Süllyesztett biztonsági spot
 - **Kapcsolódó előírások:** MSZ EN 50172 · Biztonsági világítási rendszerek
 - **Keresőszavak:** HU: öntesztes vészvilágító lámpatest · DALI vészvilágítás — EN: self-test emergency luminaire · DALI emergency lighting — DE: Selbsttest Notleuchte · DALI Notbeleuchtung
 
@@ -178,3 +195,366 @@ A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiség
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Nagy terek biztonsági lámpateste (nyílt terület)
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek, MSZ EN 50171 · Központi tápellátó rendszerek
 - **Keresőszavak:** HU: OTSZ biztonsági világítás · TvMI biztonsági világítás — EN: Hungarian fire safety code emergency lighting — DE: ungarische Brandschutzvorschrift Sicherheitsbeleuchtung
+
+## MSZ EN 60598 · Lámpatestek
+
+*Más néven:* EN 60598, lámpatest-szabvány, 60598-1 és a 2-es részek
+
+A lámpatestek biztonsági termékszabványa: az 1. rész az általános követelmények (szerkezet, érintésvédelem, melegedés, jelölés), a 2-es részek egy-egy lámpatestfajta kiegészítő szabályai.
+
+**Lényeg (saját összefoglaló):**
+
+- Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok (LED-szalag is); 2-22 biztonsági világítás.
+- A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, a megvilágított tárgytól tartandó legkisebb távolságot, és hogy a test hőszigeteléssel takarható-e.
+- A villanyszerelő oldaláról: a jelölésnek megfelelő helyre és módon kell beépíteni (pl. süllyesztett lámpatestet hőszigetelés alá csak arra minősítve).
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A jelölések és a távolságok lámpatestenként a termék címkéjén és adatlapján.
+
+- **Hol érvényes:** Minden lámpatest és fényszalag.
+- **Forrás:** szabványcsalád: MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Áramszünet-jelző éjszakai fény, Állólámpa, Asztali és íróasztali lámpa, Éjjeli lámpa, Irodai lámpatest, Fénysor-rendszer (trunking), Csarnokvilágító (high bay), LED-fénycső és armatúra, Polcvilágító (kereskedelmi), Parkolóházi és garázslámpatest, Utcai lámpatest (közvilágítás), Növénynevelő lámpa, Akváriumi lámpa, Színpadi és mozgófejes lámpa, Száloptikás csillagos mennyezet, Napfénycső (fénycsatorna), Mennyezeti lámpa (plafonlámpa), LED-korong lámpa („ufó”), Búrás mennyezeti lámpa, Csillár, Függeszték, LED-panel, Süllyesztett downlight, Beépíthető spot, Felületre szerelt spot, Mágneses sín 48 V, Világító mennyezet, Falikar, Fali-mennyezeti búra, Fel-le világító fali lámpa, Olvasó falikar, Képvilágító, Falba süllyesztett lépcső- és orientációs fény, Fali fényvető (wall washer), Fürdőszobai mennyezeti lámpa, Fürdőszobai beépíthető spot, Tükörvilágítás, Páramentes lámpatest, Hajólámpa, Szaunavilágítás, LED-szalag (12 / 24 V), Hálózati feszültségű LED-szalag (230 V), Alumínium profil LED-szalaghoz, LED neon flex, Rejtett (indirekt) világítás párkányban, Keret nélküli (trimless) beépítés, Árnyékfuga- és lábazatvilágítás, Konyhai pult alatti világítás, Szekrény- és gardróbvilágítás, Polc- és vitrinvilágítás, Bútorspot, Ágy alatti orientációs fény, Lépcsőfokba épített világítás, Kültéri falikar, Földbe süllyesztett lámpa (uplight), Napelemes kerti lámpa, Kültéri fényfüzér, Előtető- és teraszmennyezeti lámpa
+- **Kapcsolódó előírások:** MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek, MSZ EN 62471 · Fotobiológiai biztonság, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 60570 · Világítási sínrendszerek
+- **Keresőszavak:** HU: MSZ EN 60598 lámpatest · lámpatest jelölés hőszigetelés — EN: EN 60598 luminaires · luminaire marking — DE: EN 60598 Leuchten · Leuchtenkennzeichnung
+
+## MSZ EN 60570 · Világítási sínrendszerek
+
+*Más néven:* EN 60570, áramsín szabvány
+
+A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei.
+
+**Lényeg (saját összefoglaló):**
+
+- A sín, a betápláló, a csatlakozók és az adapterek egy rendszert alkotnak: csak az egy rendszerbe tartozó elemek használhatók együtt.
+- A sín terhelhetőségét (A) a jelölés adja.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A terhelhetőség és a megengedett adapterterhelés a gyártói adatlapon.
+
+- **Hol érvényes:** 230 V-os egy- és háromáramkörös sínrendszerek.
+- **Forrás:** szabvány: MSZ EN 60570 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Sínrendszer 230 V
+- **Kapcsolódó előírások:** MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: áramsín szabvány — EN: EN 60570 lighting track — DE: EN 60570 Stromschienensysteme
+
+## MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek
+
+*Más néven:* LED tápegység szabvány, LED meghajtó, LED fénycső szabvány
+
+A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai.
+
+**Lényeg (saját összefoglaló):**
+
+- A meghajtó jelölése: kimenő feszültség vagy áram, teljesítmény, SELV-e, beépíthető vagy önálló.
+- A LED-cső szabványa azt célozza, hogy a régi armatúrába tett cső ne okozzon áramütést a csere közben; a csőnek a meglévő armatúra kapcsolásához kell illenie.
+- Az armatúra átalakítása (az előtét kiiktatása) után az átalakító felel a megfelelőségért: az armatúrát jelölni kell.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A tápegység teljesítményét jellemzően 20–30 % tartalékkal választják a terheléshez (gyakorlati szabály, nem szabványérték).
+
+- **Hol érvényes:** LED-szalagok tápegységei, lámpatest-meghajtók, vészvilágítási modulok, LED-fénycsövek.
+- **Forrás:** szabványok: MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Vészvilágítási modul (konverziós készlet), LED-fénycső és armatúra, Mágneses sín 48 V, LED-szalag (12 / 24 V)
+- **Kapcsolódó előírások:** MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: LED tápegység SELV · LED fénycső T8 szabvány — EN: LED driver EN 61347 · LED tube EN 62776 — DE: LED Betriebsgerät EN 61347 · LED Röhre EN 62776
+
+## MSZ EN 12464-1 · Munkahelyek világítása (beltér)
+
+*Más néven:* EN 12464-1, munkahelyi világítás, 500 lux iroda
+
+Beltéri munkahelyek világítási követelményei tevékenységenként: megvilágítás, egyenletesség, káprázáskorlátozás, színvisszaadás.
+
+**Lényeg (saját összefoglaló):**
+
+- Minden tevékenységhez táblázat adja a karbantartott megvilágítást (Em), az egyenletességet (Uo), a káprázási határt (UGR) és a színvisszaadást (Ra).
+- A követelmény a munkafelületre és a környezetére vonatkozik; a terv fotometriai számítással igazolja.
+- Lakásra nem kötelező, de az otthoni dolgozószoba tervezésénél jó viszonyítás.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Irodai írás, olvasás, adatfeldolgozás: kb. 500 lx, UGR ≤ 19, Ra ≥ 80.
+- Folyosók, közlekedők: kb. 100 lx.
+- Precíz műhelymunka: 750–1000 lx vagy több (tevékenység szerint).
+
+- **Hol érvényes:** Irodák, iskolák, üzletek, műhelyek, raktárak, egészségügy és minden beltéri munkahely.
+- **Forrás:** szabvány: MSZ EN 12464-1 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Irodai lámpatest, Fénysor-rendszer (trunking), Csarnokvilágító (high bay), Polcvilágító (kereskedelmi), Parkolóházi és garázslámpatest, HCL: emberközpontú világítás (hangolható fehér), LED-panel
+- **Kapcsolódó előírások:** MSZ EN 60598 · Lámpatestek, MSZ EN 62471 · Fotobiológiai biztonság
+- **Keresőszavak:** HU: MSZ EN 12464-1 megvilágítás · UGR 19 iroda 500 lux — EN: EN 12464-1 lighting of work places — DE: DIN EN 12464-1 Beleuchtung Arbeitsstätten
+
+## MSZ EN 13201 · Közúti világítás
+
+*Más néven:* EN 13201, útvilágítás szabvány
+
+Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követelmények, számítási és mérési módszerek.
+
+**Lényeg (saját összefoglaló):**
+
+- Világítási osztályok: M (gépjárműforgalom, fénysűrűség alapján), C (konfliktuszónák, csomópontok), P (gyalogos és lassú forgalom, lakóutak).
+- Az osztályt a forgalmi helyzet és a környezet alapján választják ki; lakóparkok belső útjaihoz jellemzően P osztály.
+- A fény ne jusson az égre és a lakások ablakába (fényszennyezés).
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Az osztályonkénti megvilágítási és fénysűrűségi értékeket a szabvány táblázatai adják.
+
+- **Hol érvényes:** Közvilágítás, lakópark- és telephelyi utak, parkolók.
+- **Forrás:** szabványsorozat: MSZ EN 13201 (a részek hatályos kiadásai) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Utcai lámpatest (közvilágítás)
+- **Kapcsolódó előírások:** MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: MSZ EN 13201 közvilágítás osztály — EN: EN 13201 road lighting classes — DE: DIN EN 13201 Straßenbeleuchtung
+
+## MSZ EN 62471 · Fotobiológiai biztonság
+
+*Más néven:* EN 62471, kékfény-veszély, kockázati csoport RG
+
+A lámpák és lámpatestek sugárzásának hatása a szemre és a bőrre (UV, kékfény, infravörös), és a kockázati csoportok.
+
+**Lényeg (saját összefoglaló):**
+
+- Kockázati csoportok: RG0 (mentes), RG1 (kis), RG2 (közepes: nem szabad hosszan belenézni), RG3 (nagy: rövid ideig is veszélyes).
+- Az általános világítási LED-ek többsége RG0 vagy RG1; a nagy fényerejű, keskeny nyalábú fényvetők és a speciális lámpák (UV-C) magasabb csoportban lehetnek.
+- A csoport jelölése és a figyelmeztetés a terméken: a szerelés helyét ehhez kell igazítani.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A csoportba sorolás a termék adatlapján.
+
+- **Hol érvényes:** Minden fényforrás és lámpatest, kiemelten a fényvetők, a színpadi és az UV-lámpák.
+- **Forrás:** szabvány: MSZ EN 62471 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Növénynevelő lámpa, UV-C fertőtlenítő lámpa, Világító mennyezet
+- **Kapcsolódó előírások:** MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: fotobiológiai biztonság RG1 · kékfény veszély LED — EN: EN 62471 photobiological safety · blue light hazard — DE: EN 62471 photobiologische Sicherheit · Blaulichtgefährdung
+
+## MSZ EN 60079 és ATEX · Robbanásveszélyes terek
+
+*Más néven:* Ex szabvány, ATEX, robbanásvédelem
+
+Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szánt villamos berendezések, köztük a lámpatestek követelményei.
+
+**Lényeg (saját összefoglaló):**
+
+- Zónák gázra: 0 (folyamatosan robbanóképes), 1 (normál üzemben előfordul), 2 (ritkán, rövid ideig). Porra: 20, 21, 22 ugyanígy.
+- A berendezés Ex-jelölése megmondja, mely zónába, gázcsoportba és hőmérsékleti osztályba való.
+- A zónabesorolás a robbanásvédelmi dokumentum része; tervezés és szerelés csak erre jogosult szakemberrel.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Zóna, gázcsoport, hőmérsékleti osztály: a robbanásvédelmi dokumentum és a termék Ex-jelölése szerint.
+
+- **Hol érvényes:** Benzinkutak, festőüzemek, akkumulátortöltők, malmok, vegyi raktárak, gázfogadók.
+- **Forrás:** szabványsorozat + uniós irányelvek: MSZ EN 60079 sorozat; 2014/34/EU (termékek) és 1999/92/EK (munkahelyek) irányelv és a hazai átültetésük — MSZT szabványbolt; EUR-Lex
+- **Erre hivatkozó típusok:** Robbanásbiztos (Ex) lámpatest
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: Ex zóna 1 2 · ATEX lámpatest — EN: ATEX zone 1 2 · Ex equipment marking — DE: Ex Zone 1 2 · ATEX Kennzeichnung
+
+## MSZ EN 60335 · Háztartási készülékek
+
+*Más néven:* EN 60335, háztartási gép biztonság
+
+A háztartási és hasonló villamos készülékek biztonsága (sütő, hűtő, mosógép, bojler, szauna-kályha, medenceszivattyú …); a beépített világításuk is a készülék része.
+
+**Lényeg (saját összefoglaló):**
+
+- A villanyszerelő oldaláról: a készülék bekötési módja (fix bekötés vagy aljzat), a szükséges áramkör és védelem a telepítési útmutatóban.
+- A beépített lámpa cseréje a készülék gyártójának alkatrésze szerint.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Az áramköri követelmény (keresztmetszet, kismegszakító, áram-védőkapcsoló) a készülék telepítési útmutatójában.
+
+- **Hol érvényes:** Háztartási gépek bekötése és javítása.
+- **Forrás:** szabványsorozat: MSZ EN 60335-1 és a 60335-2-x részek (a hatályos kiadások) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Sütő- és hűtővilágítás
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+- **Keresőszavak:** HU: MSZ EN 60335 háztartási készülék — EN: EN 60335 household appliances — DE: EN 60335 Haushaltsgeräte
+
+## MSZ EN 60204-1 · Gépek villamos szerkezetei
+
+*Más néven:* EN 60204-1, gépek villamos berendezése, jelzőfény színek
+
+Gépek villamos berendezésének általános követelményei: vészleállítás, vezérlés, kezelőszervek és jelzőfények színei.
+
+**Lényeg (saját összefoglaló):**
+
+- Jelzőfények színei: piros = vészhelyzet, sürgős beavatkozás; sárga = rendellenes állapot, figyelmeztetés; zöld = normál üzem; kék = kötelező tennivaló; fehér = semleges.
+- A gépre szerelt jelzőtorony színeit ehhez kell igazítani.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Színek és jelentésük a szabvány táblázata szerint.
+
+- **Hol érvényes:** Gépek, gépsorok, kapuautomatikák vezérlése és jelzései.
+- **Forrás:** szabvány: MSZ EN 60204-1 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Jelzőtorony és jelzőfény
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+- **Keresőszavak:** HU: MSZ EN 60204-1 jelzőfény színek — EN: EN 60204-1 indicator light colours — DE: EN 60204-1 Meldeleuchten Farben
+
+## MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok
+
+*Más néven:* kapcsoló szabvány, aljzat szabvány, szerelvények
+
+A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei.
+
+**Lényeg (saját összefoglaló):**
+
+- A kapcsoló jelölése adja a névleges áramot és a terhelés fajtáját; LED-terheléshez a gyártó megadja a kapcsolható LED-teljesítményt (a bekapcsolási áramlökés miatt).
+- Dimmernél a terhelés típusa (fázishasításos élvezérelt vagy fázisvégi, LED-kompatibilitás) a jelölésen.
+- Kapcsolt aljzatnál a jelölés és a háromerű bekötés a telepítés része.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Névleges áram és LED-terhelhetőség a termék adatlapján.
+
+- **Hol érvényes:** Minden fali kapcsoló, dimmer és dugaszolóaljzat.
+- **Forrás:** szabványok: MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Kapcsolt aljzat (a dugaszolós lámpák köre)
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+- **Keresőszavak:** HU: MSZ EN 60669 kapcsoló · LED dimmer kompatibilitás — EN: EN 60669 switches · LED dimmer compatibility — DE: EN 60669 Schalter · LED Dimmer kompatibel
+
+## MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+
+*Más néven:* HD 60364, IEC 60364, a szerelési szabvány
+
+A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa. Részekből áll; a 7-es részek a különleges helyiségeket és berendezéseket szabályozzák.
+
+**Lényeg (saját összefoglaló):**
+
+- Felépítés: 1. rész alapelvek; 4-41 áramütés elleni védelem; 4-42 hőhatások elleni védelem; 4-43 túláramvédelem; 5-52 kábel- és vezetékrendszerek; 5-54 földelés és védővezetők; 6. rész ellenőrzés (első és időszakos); 7-xx különleges helyek.
+- A 7-es rész egy-egy helyre (fürdő, medence, szauna, kültéri világítás, orvosi helyiség …) az általános részeken FELÜL ad szabályt; a kettőt együtt kell alkalmazni.
+- Az átadás előtt az első ellenőrzés (szemrevételezés, mérések) és a jegyzőkönyv kötelező; az időszakos felülvizsgálat gyakoriságát a magyar előírás adja.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Kiegészítő védelem 30 mA-es áram-védőkapcsolóval: a laikusok által használt, legfeljebb 32 A-es aljzatkörökre, kültéri hordozható készülékek köreire, és az újabb kiadás szerint a lakások világítási áramköreire is.
+- A különleges helyek (fürdő, medence, szauna) minden áramköre 30 mA-es áram-védőkapcsolóval (a 7-es részek szerint, kivételekkel).
+
+- **Hol érvényes:** Minden kisfeszültségű épületvillamossági munka: lakás, ház, társasház, iroda, ipar.
+- **Forrás:** szabványsorozat: MSZ HD 60364 (a részek hatályos kiadásai) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Kapcsolt aljzat (a dugaszolós lámpák köre)
+- **Kapcsolódó előírások:** MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-703 · Szaunák, MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ HD 60364-7-710 · Orvosi helyiségek
+- **Keresőszavak:** HU: MSZ HD 60364 · áram-védőkapcsoló 30 mA kötelező — EN: HD 60364 low-voltage installations · 30 mA RCD additional protection — DE: DIN VDE 0100 · FI-Schutzschalter 30 mA Pflicht
+
+## MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
+
+*Más néven:* fürdőszobai zónák, 7-701, zóna 0 1 2
+
+Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet.
+
+**Lényeg (saját összefoglaló):**
+
+- Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a vízkifolyó körül). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig.
+- Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, a táplálás a zónákon kívül.
+- Zóna 1-be csak oda szánt, helyhez kötött berendezés (pl. vízmelegítő, szellőző, törölközőszárító, lámpatest a gyártói minősítéssel); törpefeszültségű táplálás esetén a forrás a zóna 0 és 1 kívül.
+- Dugaszolóaljzat a zóna 1 határától számított 3 m-en belül nem lehet, kivéve a törpefeszültségű aljzatot és a borotva-csatlakozót (leválasztó transzformátoros egység).
+- Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Zóna 0: legalább IPX7. Zóna 1 és 2: legalább IPX4; ahol tisztításkor vízsugár éri, IPX5.
+- Zóna 1 és 2 magassága: 2,25 m a padló fölött (vagy a zuhanyfej magassága, ha magasabb).
+- Zóna 2 szélessége: 0,6 m a zóna 1 határától.
+
+- **Hol érvényes:** Lakások és közösségi épületek fürdőszobái és zuhanyzói.
+- **Forrás:** szabvány: MSZ HD 60364-7-701 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Fürdőszobai mennyezeti lámpa, Fürdőszobai beépíthető spot, Tükörvilágítás
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-703 · Szaunák
+- **Keresőszavak:** HU: fürdőszoba zónák MSZ HD 60364-7-701 · IP44 fürdőszoba — EN: bathroom zones 0 1 2 · HD 60364-7-701 — DE: Badezimmer Schutzbereiche 0 1 2 · DIN VDE 0100-701
+
+## MSZ HD 60364-7-702 · Úszómedencék és szökőkutak
+
+*Más néven:* medence zónák, 7-702
+
+Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés.
+
+**Lényeg (saját összefoglaló):**
+
+- Zóna 0: a medence és a szökőkút medencéjének belseje. Zóna 1: a medence szélétől vízszintesen 2 m-ig, és 2,5 m magasságig. Zóna 2: a zóna 1-en túl további 1,5 m (ahol a kiadás ezt előírja).
+- Zóna 0-ban és 1-ben csak erre szánt berendezés; a víz alatti lámpatestek törpefeszültségről (SELV), a biztonsági transzformátor a zónákon kívül.
+- A medence fémszerkezeteit, a betonacélt és a csöveket helyi egyenpotenciálú összekötéssel kell egymáshoz és a védővezetőhöz kötni.
+- Az áramkörök 30 mA-es áram-védőkapcsolóval (a törpefeszültségű körök kivételével).
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- Zóna 0: legalább IPX8. Zóna 1: legalább IPX4 (vízsugaras tisztításnál IPX5). Zóna 2: legalább IPX2 beltérben, IPX4 kültéren (a kiadás szerint).
+- Víz alatti lámpatest törpefeszültsége: legfeljebb 12 V váltakozó vagy 30 V egyenfeszültség.
+
+- **Hol érvényes:** Kerti és beltéri medencék, jakuzzik (ahol nem önálló készülék), szökőkutak.
+- **Forrás:** szabvány: MSZ HD 60364-7-702 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Medencevilágítás
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
+- **Keresőszavak:** HU: medence villamos szerelés zónák · medence egyenpotenciálú összekötés — EN: swimming pool zones electrical · pool equipotential bonding — DE: Schwimmbad Schutzbereiche · Potentialausgleich Pool
+
+## MSZ HD 60364-7-703 · Szaunák
+
+*Más néven:* szauna zónák, 7-703
+
+Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága.
+
+**Lényeg (saját összefoglaló):**
+
+- Zóna 1: a kályha és közvetlen környezete: ide csak a kályhához tartozó szerkezet kerül.
+- Zóna 2: a zóna 1-en kívüli tér: nincs külön hőállósági követelmény a szerkezetekre.
+- Zóna 3: a kabin felső része, a mennyezet alatti sáv: az ide kerülő szerkezeteknek és vezetékeknek magas hőmérsékletet kell bírniuk.
+- A kapcsolókészülékek (a kályha vezérlőjén kívül) a kabinon kívül; a vezetékek lehetőleg a kabin hideg oldalán.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A kabinban a szerkezetek legalább IPX4 (vízsugaras tisztításnál IPX5).
+- Zóna 3-ban a szerkezetek kb. 125 °C-ot, a vezetékek kb. 170 °C-ot bírjanak (a hatályos kiadás szerint ellenőrizendő).
+- Az áramkörök 30 mA-es áram-védőkapcsolóval, a kályha a gyártó előírása szerint.
+
+- **Hol érvényes:** Lakások és wellness-részlegek szaunái (a kész kabin gyártói utasításával együtt).
+- **Forrás:** szabvány: MSZ HD 60364-7-703 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Szaunavilágítás
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
+- **Keresőszavak:** HU: szauna villamos szerelés · szauna hőálló kábel — EN: sauna electrical installation zones · sauna heat resistant cable — DE: Sauna Elektroinstallation · Saunakabel hitzebeständig
+
+## MSZ HD 60364-7-714 · Kültéri világítási berendezések
+
+*Más néven:* kültéri világítás szabvány, 7-714
+
+Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok.
+
+**Lényeg (saját összefoglaló):**
+
+- A szerkezetek a kültéri hatásoknak (víz, por, ütés, UV) megfelelő védettségűek legyenek; a szabvány minimális védettséget ír elő.
+- A lámpaoszlop vagy a kandeláber 2,5 m alatti ajtaja, a kötődoboz csak szerszámmal vagy kulccsal legyen nyitható.
+- A földkábeleket mechanikai sérülés ellen védeni kell (fektetési mélység, homokágy, védőcső, jelzőszalag).
+- Az elérhető helyen lévő lámpatestek köreire (pl. kerti világítás, ahol emberek hozzáférnek) kiegészítő védelem 30 mA-es áram-védőkapcsolóval.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A minimális IP-védettséget és a kábelfektetés részleteit a hatályos kiadás és a kábelfektetési szabályok adják.
+
+- **Hol érvényes:** Kerti és homlokzati világítás, lakópark- és telephelyi útvilágítás, díszvilágítás.
+- **Forrás:** szabvány: MSZ HD 60364-7-714 (a hatályos kiadás) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Kültéri falikar, Mozgásérzékelős reflektor, Kerti oszloplámpa (bollard), Leszúrható kerti spot, Földbe süllyesztett lámpa (uplight), Homlokzat-megvilágító, Kapuoszlop- és pillérlámpa, Előtető- és teraszmennyezeti lámpa
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 13201 · Közúti világítás, MSZ EN 60598 · Lámpatestek
+- **Keresőszavak:** HU: kültéri világítás szerelés · földkábel fektetés kerti világítás — EN: outdoor lighting installation HD 60364-7-714 — DE: Außenbeleuchtung Errichtung VDE 0100-714
+
+## MSZ HD 60364-7-710 · Orvosi helyiségek
+
+*Más néven:* orvosi helyiségek villamos szerelése, 7-710, orvosi IT hálózat
+
+Rendelők, kezelők, műtők villamos berendezése: a helyiségek csoportba sorolása, a betegbiztonság, a biztonsági áramellátás és a műtőlámpák átkapcsolási ideje.
+
+**Lényeg (saját összefoglaló):**
+
+- Csoport 0: nincs gyógyászati villamos készülék a betegen. Csoport 1: van, de a test külső felületén. Csoport 2: életfontos vagy szívközeli beavatkozás (műtő, intenzív).
+- Csoport 2-ben orvosi IT hálózat szigetelésfigyelővel, hogy egy első hiba ne kapcsolja le az életfenntartó készülékeket.
+- Kiegészítő egyenpotenciálú összekötés a betegkörnyezetben.
+- A műtő- és vizsgálólámpa orvostechnikai eszköz (MSZ EN 60601-2-41): saját követelményekkel.
+
+**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
+
+- A műtőlámpák biztonsági tápellátása rövid (kb. 0,5 s-on belüli) átkapcsolással, más fontos fogyasztóké hosszabbal; a pontos idők a hatályos kiadás szerint.
+
+- **Hol érvényes:** Egészségügyi intézmények, rendelők, fogorvosi és kozmetikai rendelők (csoportbesorolás szerint).
+- **Forrás:** szabvány: MSZ HD 60364-7-710; a lámpákra MSZ EN 60601-2-41 (a hatályos kiadások) — MSZT szabványbolt
+- **Erre hivatkozó típusok:** Vizsgáló- és műtőlámpa
+- **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+- **Keresőszavak:** HU: orvosi helyiség villamos szerelés · orvosi IT hálózat szigetelésfigyelő — EN: medical locations IEC 60364-7-710 · medical IT system — DE: medizinisch genutzte Bereiche VDE 0100-710 · IT-System Medizin

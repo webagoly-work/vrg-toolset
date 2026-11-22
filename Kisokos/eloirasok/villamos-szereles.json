@@ -1,0 +1,110 @@
+{
+  "about": "VRG Kisokos · Előírások · villamos szerelés (MSZ HD 60364 sorozat és különleges helyek). Egy kártya = egy szabvány vagy szabványrész SAJÁT összefoglalóval és hivatkozással; a szöveg szerzői jogvédett, a teljes szöveg a megvásárolt példányban. A számok tájékoztatók: munka előtt a hatályos kiadással kell egyeztetni. Vázlat: reviewed = null.",
+  "kind": "eloiras",
+  "added": "2026-11-22",
+  "cards": [
+    { "id": "msz-hd-60364", "title": "MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések", "aka": ["HD 60364", "IEC 60364", "a szerelési szabvány"],
+      "place": { "core": "6A" }, "source": { "kind": "szabványsorozat", "ref": "MSZ HD 60364 (a részek hatályos kiadásai)", "from": "MSZT szabványbolt" },
+      "scope": "A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa. Részekből áll; a 7-es részek a különleges helyiségeket és berendezéseket szabályozzák.",
+      "points": [
+        "Felépítés: 1. rész alapelvek; 4-41 áramütés elleni védelem; 4-42 hőhatások elleni védelem; 4-43 túláramvédelem; 5-52 kábel- és vezetékrendszerek; 5-54 földelés és védővezetők; 6. rész ellenőrzés (első és időszakos); 7-xx különleges helyek.",
+        "A 7-es rész egy-egy helyre (fürdő, medence, szauna, kültéri világítás, orvosi helyiség …) az általános részeken FELÜL ad szabályt; a kettőt együtt kell alkalmazni.",
+        "Az átadás előtt az első ellenőrzés (szemrevételezés, mérések) és a jegyzőkönyv kötelező; az időszakos felülvizsgálat gyakoriságát a magyar előírás adja."
+      ],
+      "values": [
+        "Kiegészítő védelem 30 mA-es áram-védőkapcsolóval: a laikusok által használt, legfeljebb 32 A-es aljzatkörökre, kültéri hordozható készülékek köreire, és az újabb kiadás szerint a lakások világítási áramköreire is.",
+        "A különleges helyek (fürdő, medence, szauna) minden áramköre 30 mA-es áram-védőkapcsolóval (a 7-es részek szerint, kivételekkel)."
+      ],
+      "applies": "Minden kisfeszültségű épületvillamossági munka: lakás, ház, társasház, iroda, ipar.",
+      "related": ["msz-hd-60364-7-701", "msz-hd-60364-7-702", "msz-hd-60364-7-703", "msz-hd-60364-7-714", "msz-hd-60364-7-710"],
+      "terms": { "hu": ["MSZ HD 60364", "áram-védőkapcsoló 30 mA kötelező"], "en": ["HD 60364 low-voltage installations", "30 mA RCD additional protection"], "de": ["DIN VDE 0100", "FI-Schutzschalter 30 mA Pflicht"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-hd-60364-7-701", "title": "MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek", "aka": ["fürdőszobai zónák", "7-701", "zóna 0 1 2"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-701 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet.",
+      "points": [
+        "Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a vízkifolyó körül). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig.",
+        "Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, a táplálás a zónákon kívül.",
+        "Zóna 1-be csak oda szánt, helyhez kötött berendezés (pl. vízmelegítő, szellőző, törölközőszárító, lámpatest a gyártói minősítéssel); törpefeszültségű táplálás esetén a forrás a zóna 0 és 1 kívül.",
+        "Dugaszolóaljzat a zóna 1 határától számított 3 m-en belül nem lehet, kivéve a törpefeszültségű aljzatot és a borotva-csatlakozót (leválasztó transzformátoros egység).",
+        "Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval."
+      ],
+      "values": [
+        "Zóna 0: legalább IPX7. Zóna 1 és 2: legalább IPX4; ahol tisztításkor vízsugár éri, IPX5.",
+        "Zóna 1 és 2 magassága: 2,25 m a padló fölött (vagy a zuhanyfej magassága, ha magasabb).",
+        "Zóna 2 szélessége: 0,6 m a zóna 1 határától."
+      ],
+      "applies": "Lakások és közösségi épületek fürdőszobái és zuhanyzói.",
+      "related": ["msz-hd-60364", "msz-hd-60364-7-702", "msz-hd-60364-7-703"],
+      "terms": { "hu": ["fürdőszoba zónák MSZ HD 60364-7-701", "IP44 fürdőszoba"], "en": ["bathroom zones 0 1 2", "HD 60364-7-701"], "de": ["Badezimmer Schutzbereiche 0 1 2", "DIN VDE 0100-701"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-hd-60364-7-702", "title": "MSZ HD 60364-7-702 · Úszómedencék és szökőkutak", "aka": ["medence zónák", "7-702"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-702 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés.",
+      "points": [
+        "Zóna 0: a medence és a szökőkút medencéjének belseje. Zóna 1: a medence szélétől vízszintesen 2 m-ig, és 2,5 m magasságig. Zóna 2: a zóna 1-en túl további 1,5 m (ahol a kiadás ezt előírja).",
+        "Zóna 0-ban és 1-ben csak erre szánt berendezés; a víz alatti lámpatestek törpefeszültségről (SELV), a biztonsági transzformátor a zónákon kívül.",
+        "A medence fémszerkezeteit, a betonacélt és a csöveket helyi egyenpotenciálú összekötéssel kell egymáshoz és a védővezetőhöz kötni.",
+        "Az áramkörök 30 mA-es áram-védőkapcsolóval (a törpefeszültségű körök kivételével)."
+      ],
+      "values": [
+        "Zóna 0: legalább IPX8. Zóna 1: legalább IPX4 (vízsugaras tisztításnál IPX5). Zóna 2: legalább IPX2 beltérben, IPX4 kültéren (a kiadás szerint).",
+        "Víz alatti lámpatest törpefeszültsége: legfeljebb 12 V váltakozó vagy 30 V egyenfeszültség."
+      ],
+      "applies": "Kerti és beltéri medencék, jakuzzik (ahol nem önálló készülék), szökőkutak.",
+      "related": ["msz-hd-60364", "msz-hd-60364-7-701"],
+      "terms": { "hu": ["medence villamos szerelés zónák", "medence egyenpotenciálú összekötés"], "en": ["swimming pool zones electrical", "pool equipotential bonding"], "de": ["Schwimmbad Schutzbereiche", "Potentialausgleich Pool"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-hd-60364-7-703", "title": "MSZ HD 60364-7-703 · Szaunák", "aka": ["szauna zónák", "7-703"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-703 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága.",
+      "points": [
+        "Zóna 1: a kályha és közvetlen környezete: ide csak a kályhához tartozó szerkezet kerül.",
+        "Zóna 2: a zóna 1-en kívüli tér: nincs külön hőállósági követelmény a szerkezetekre.",
+        "Zóna 3: a kabin felső része, a mennyezet alatti sáv: az ide kerülő szerkezeteknek és vezetékeknek magas hőmérsékletet kell bírniuk.",
+        "A kapcsolókészülékek (a kályha vezérlőjén kívül) a kabinon kívül; a vezetékek lehetőleg a kabin hideg oldalán."
+      ],
+      "values": [
+        "A kabinban a szerkezetek legalább IPX4 (vízsugaras tisztításnál IPX5).",
+        "Zóna 3-ban a szerkezetek kb. 125 °C-ot, a vezetékek kb. 170 °C-ot bírjanak (a hatályos kiadás szerint ellenőrizendő).",
+        "Az áramkörök 30 mA-es áram-védőkapcsolóval, a kályha a gyártó előírása szerint."
+      ],
+      "applies": "Lakások és wellness-részlegek szaunái (a kész kabin gyártói utasításával együtt).",
+      "related": ["msz-hd-60364", "msz-hd-60364-7-701"],
+      "terms": { "hu": ["szauna villamos szerelés", "szauna hőálló kábel"], "en": ["sauna electrical installation zones", "sauna heat resistant cable"], "de": ["Sauna Elektroinstallation", "Saunakabel hitzebeständig"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-hd-60364-7-714", "title": "MSZ HD 60364-7-714 · Kültéri világítási berendezések", "aka": ["kültéri világítás szabvány", "7-714"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-714 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok.",
+      "points": [
+        "A szerkezetek a kültéri hatásoknak (víz, por, ütés, UV) megfelelő védettségűek legyenek; a szabvány minimális védettséget ír elő.",
+        "A lámpaoszlop vagy a kandeláber 2,5 m alatti ajtaja, a kötődoboz csak szerszámmal vagy kulccsal legyen nyitható.",
+        "A földkábeleket mechanikai sérülés ellen védeni kell (fektetési mélység, homokágy, védőcső, jelzőszalag).",
+        "Az elérhető helyen lévő lámpatestek köreire (pl. kerti világítás, ahol emberek hozzáférnek) kiegészítő védelem 30 mA-es áram-védőkapcsolóval."
+      ],
+      "values": ["A minimális IP-védettséget és a kábelfektetés részleteit a hatályos kiadás és a kábelfektetési szabályok adják."],
+      "applies": "Kerti és homlokzati világítás, lakópark- és telephelyi útvilágítás, díszvilágítás.",
+      "related": ["msz-hd-60364", "msz-en-13201", "msz-en-60598"],
+      "terms": { "hu": ["kültéri világítás szerelés", "földkábel fektetés kerti világítás"], "en": ["outdoor lighting installation HD 60364-7-714"], "de": ["Außenbeleuchtung Errichtung VDE 0100-714"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-hd-60364-7-710", "title": "MSZ HD 60364-7-710 · Orvosi helyiségek", "aka": ["orvosi helyiségek villamos szerelése", "7-710", "orvosi IT hálózat"],
+      "place": { "term": "5A1", "overlap": 0.3 }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-710; a lámpákra MSZ EN 60601-2-41 (a hatályos kiadások)", "from": "MSZT szabványbolt" },
+      "scope": "Rendelők, kezelők, műtők villamos berendezése: a helyiségek csoportba sorolása, a betegbiztonság, a biztonsági áramellátás és a műtőlámpák átkapcsolási ideje.",
+      "points": [
+        "Csoport 0: nincs gyógyászati villamos készülék a betegen. Csoport 1: van, de a test külső felületén. Csoport 2: életfontos vagy szívközeli beavatkozás (műtő, intenzív).",
+        "Csoport 2-ben orvosi IT hálózat szigetelésfigyelővel, hogy egy első hiba ne kapcsolja le az életfenntartó készülékeket.",
+        "Kiegészítő egyenpotenciálú összekötés a betegkörnyezetben.",
+        "A műtő- és vizsgálólámpa orvostechnikai eszköz (MSZ EN 60601-2-41): saját követelményekkel."
+      ],
+      "values": ["A műtőlámpák biztonsági tápellátása rövid (kb. 0,5 s-on belüli) átkapcsolással, más fontos fogyasztóké hosszabbal; a pontos idők a hatályos kiadás szerint."],
+      "applies": "Egészségügyi intézmények, rendelők, fogorvosi és kozmetikai rendelők (csoportbesorolás szerint).",
+      "related": ["msz-hd-60364"],
+      "terms": { "hu": ["orvosi helyiség villamos szerelés", "orvosi IT hálózat szigetelésfigyelő"], "en": ["medical locations IEC 60364-7-710", "medical IT system"], "de": ["medizinisch genutzte Bereiche VDE 0100-710", "IT-System Medizin"] },
+      "shop": "MSZT szabványbolt." }
+  ]
+}

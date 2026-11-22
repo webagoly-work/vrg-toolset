@@ -148,6 +148,7 @@ and "what goes wrong if not".
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.
 - **Világítótestek (vt)**: all ten families drafted (79 type cards), waiting for review; product cards from Inventory next (`vilagitotestek.md`).
-- **Előírások (el)**: started with the 7 emergency lighting rules (own summaries + references); the other rules the
-  cards cite (fürdő 7-701, medence 7-702, szauna 7-703, kültér 7-714, MSZ EN 60598-1) are still text on the cards.
+- **Előírások (el)**: 23 cards (own summaries + references): emergency lighting, MSZ HD 60364 with its special
+  locations, and the product and lighting standards the lamp cards cite. Every lamp type links its rules through `norms`.
+  The numbers on these cards are from memory and marked as guidance: check them against the current editions.
   Its DevLog line is written out there, ready to paste into `notes/devlog/lines.js` on H:.

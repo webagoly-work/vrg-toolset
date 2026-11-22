@@ -106,7 +106,7 @@ A legalapvetőbb lámpatest: közvetlenül a mennyezetre szerelt test, opál vag
   - A test súlyához illő rögzítés: két vagy több csavar a mennyezet anyagához választott dübellel.
   - A burkolat cseréjéhez és a tisztításhoz hozzáférés maradjon.
 - **Rögzítés:** Beton, Üreges födémpanel, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-1, MSZ EN 60598-2-1 (rögzített lámpatestek)
+- **Előírás:** MSZ EN 60598-1, MSZ EN 60598-2-1 (rögzített lámpatestek) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** szoba, előszoba, folyosó, konyha általános világítása
 - **Buktatók:**
@@ -133,7 +133,7 @@ Lapos, kerek, integrált LED-es lámpatest opál burkolattal. Gyakran IP44-es, �
   - Mozgásérzékelős kivitelnél az érzékelő látószöge és hatótávolsága határozza meg a helyet.
   - Érzékelős lámpát nem célszerű a falikapcsolóval is kapcsolni: lekapcsolt állapotban nem érzékel.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Becsavarható gipszkarton dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** előszoba, folyosó, lépcsőház, kamra, pince, fürdő (IP44-es kivitel)
 - **Buktatók:**
@@ -159,7 +159,7 @@ Foglalatos lámpatest üveg vagy műanyag búrával; a búra minden irányba sz�
   - A búra súlya és rögzítése (csavaros, rugós) a cserét is meghatározza.
   - A foglalat hőterhelése: a megadott legnagyobb fényforrás-teljesítményt nem szabad túllépni.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** előszoba, kamra, lépcső, régi lakások általános világítása
 - **Buktatók:**
@@ -186,7 +186,7 @@ Díszítő, többkarú vagy függesztett lámpatest, sokszor több foglalattal. 
   - Csillárkapcsolóhoz háromerű kiállás (két fázisvezető + nulla) és a védővezető.
   - A fém testet a védővezetőhöz kell kötni.
 - **Rögzítés:** Beütős horgony, Billenő dübel, Vegyi dübel, Üreges födémpanel, Gipszkarton
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** nappali, étkező, előtér, magas belmagasságú terek
 - **Buktatók:**
@@ -214,7 +214,7 @@ Egy vagy több, kábelen lógó lámpatest; az ernyő formája adja a fényt: z�
   - Étkezőasztal fölött jellemzően 60–80 cm-rel az asztallap fölött; a kiállást az asztal tervezett helyéhez kell igazítani.
   - Több függesztékhez sor- vagy kör-rozetta, vagy külön kiállások.
 - **Rögzítés:** Beton, Gipszkarton, Fém üreges fali dübel, Billenő dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** étkező, konyhasziget, pult, lépcsőház (hosszú függeszték)
 - **Buktatók:**
@@ -241,7 +241,7 @@ Lapos, négyszögletes lámpatest egyenletes, nagy felületű fénnyel; a 600 ×
   - A meghajtót (drivert) a panel mögött, hozzáférhetően és szellőzve kell elhelyezni.
   - Felületre szerelő keretnél a mennyezet anyagához illő dübel; álmennyezetben a raszter terhelhetősége számít.
 - **Rögzítés:** Gipszkarton, Fém üreges fali dübel, Beton
-- **Előírás:** MSZ EN 60598-2-2 (süllyesztett lámpatestek), MSZ EN 12464-1 (munkahelyi világítás)
+- **Előírás:** MSZ EN 60598-2-2 (süllyesztett lámpatestek), MSZ EN 12464-1 (munkahelyi világítás) (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.panel` (Rajztár)
 - **Hova:** iroda, dolgozószoba, rendelő, nagy konyha, garázs
 - **Buktatók:**
@@ -269,7 +269,7 @@ Az álmennyezetbe süllyesztett, lefelé világító lámpatest; a fényforrás 
   - Hőszigetelés alá vagy közé csak arra minősített lámpatest kerülhet; a meghajtónak hely és szellőzés kell.
   - Kiosztás: egyenletes rács a helyiségben, a faltól nagyjából a lámpák közti távolság felére.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** nappali, konyha, folyosó, fürdő (IP44 alulról)
 - **Buktatók:**
@@ -296,7 +296,7 @@ Keret cserélhető fényforrással (GU10 230 V-on, vagy GU5.3 / MR16 12 V-os tá
   - A kivágás általában 68–75 mm; a keret mögött a foglalat és a vezeték hely kér.
   - 12 V-os rendszernél a tápegység teljesítménye és a vezetékhossz (feszültségesés) számít.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** konyha, folyosó, nappali kiemelő világítása, fürdő (IP-s kivitel)
 - **Buktatók:**
@@ -323,7 +323,7 @@ Egy vagy több forgatható, billenthető spot alapon vagy rúdon; ott, ahol ninc
   - Egy kiállásról több spot: a rúd vagy a talp takarja a kiállást.
   - A forgatható fej kábelét ne törje meg a forgatás.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** konyha, folyosó, régi lakás betonmennyezete
 - **Buktatók:**
@@ -350,7 +350,7 @@ Fém sín, amelyben a hálózati vezetők futnak; a spotok adapterrel bárhová 
   - Egy gyártó sínjei, adapterei és spotjai: a rendszerek nem keverhetők.
   - A sín terhelhetőségét (A) és a spotok összteljesítményét össze kell vetni.
 - **Rögzítés:** Beton, Gipszkarton, Fém üreges fali dübel, Beütős horgony
-- **Előírás:** MSZ EN 60570 (sínrendszerek)
+- **Előírás:** MSZ EN 60570 (sínrendszerek) (kártyák: MSZ EN 60570 · Világítási sínrendszerek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** nappali, galéria, konyha, üzlet, bemutatótér
 - **Buktatók:**
@@ -378,7 +378,7 @@ Keskeny, törpefeszültségű (48 V DC) sín, amelybe a lámpamodulok mágnessel
   - Hosszabb sínszakaszon a feszültségesés miatt több betáplálás kellhet.
   - A süllyesztett, keret nélküli kivitelt a gipszkarton glettelése előtt kell beépíteni.
 - **Rögzítés:** Gipszkarton, Fém üreges fali dübel, Beton
-- **Előírás:** MSZ EN 60598-1, a tápegységre MSZ EN 61347
+- **Előírás:** MSZ EN 60598-1, a tápegységre MSZ EN 61347 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** nappali, konyha, folyosó, modern belsőépítészet
 - **Buktatók:**
@@ -406,7 +406,7 @@ Keskeny, törpefeszültségű (48 V DC) sín, amelybe a lámpamodulok mágnessel
   - A tápegységek és a csatlakozások szervizelhetősége: bontható szakasz vagy revíziós nyílás.
   - A feszített mennyezet szerelőjével együtt kell tervezni.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-1, MSZ EN 62471 (fotobiológiai biztonság)
+- **Előírás:** MSZ EN 60598-1, MSZ EN 62471 (fotobiológiai biztonság) (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 62471 · Fotobiológiai biztonság)
 - **Rajzjel:** `lum.panel` (Rajztár)
 - **Hova:** fürdő, ablak nélküli helyiség, konyha, belsőépítészeti hangsúly
 - **Buktatók:**
@@ -435,7 +435,7 @@ Falra szerelt lámpa ernyővel vagy búrával; hangulat- és kiegészítő vilá
   - A fali kiállás magassága jellemzően 1,6–1,9 m, ágy fölött a fejtámlához igazítva.
   - A kiállás a lámpatest talpa alá essen: a pontos helyet a választott lámpa adja.
 - **Rögzítés:** Tömör tégla, Üreges kerámia falazóblokk, Gipszkarton, Nylon terpesztődübel, Univerzális dübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** hálószoba, nappali, folyosó, lépcső
 - **Buktatók:**
@@ -460,7 +460,7 @@ Kis, búrás vagy opál burkolatú lámpatest, falra és mennyezetre is szerelhe
 - **Beépítés:**
   - Falra szerelve a magasság a helyiség funkciójához igazodik; lépcsőn a lépcsőfokokat ne a szembe világítsa.
 - **Rögzítés:** Tömör tégla, Üreges kerámia falazóblokk, Beton, Nylon terpesztődübel, Univerzális dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** folyosó, lépcső, kamra, mosókonyha
 - **Buktatók:**
@@ -486,7 +486,7 @@ Henger vagy hasáb alakú fali lámpa, amely egy keskeny nyalábot felfelé, egy
   - Pontos, egyenes felszerelés: a ferde lámpa ferde fénycsíkot rajzol.
   - Több lámpánál egyforma magasság és köz.
 - **Rögzítés:** Tömör tégla, Üreges kerámia falazóblokk, Gipszkarton, Nylon terpesztődübel, Univerzális dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** folyosó, nappali hangulatfény, bejárat (kültéri kivitel)
 - **Buktatók:**
@@ -512,7 +512,7 @@ Irányítható karú vagy hajlítható nyakú fali lámpa keskeny nyalábbal, ol
   - Ágy mellett a fejtámla fölött, a fekvő és ülő olvasáshoz igazítva; a kiállás a talp alá kerüljön.
   - Ha a lámpán kapcsoló van, a kiállás folyamatos fázist kaphat, vagy kapcsolt kört a falikapcsolóval.
 - **Rögzítés:** Tömör tégla, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** hálószoba, olvasósarok, szálloda
 - **Buktatók:**
@@ -537,7 +537,7 @@ A kép fölé szerelt, előre hajló karú lámpa, amely ferdén a képre világ
 - **Beépítés:**
   - A kiállás a kép fölött, a lámpa talpa alá; a kép helye és mérete előre egyeztetendő.
 - **Rögzítés:** Tömör tégla, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** nappali, folyosó, galéria
 - **Buktatók:**
@@ -564,7 +564,7 @@ Alacsonyan, a falba süllyesztett kis lámpa, amely lefelé, a padlóra és a l�
   - Lépcsőnél jellemzően a fokok fölött 20–40 cm-rel; minden fokhoz vagy minden másodikhoz.
   - 12–24 V-os kivitelnél a tápegység helye és hozzáférhetősége.
 - **Rögzítés:** Dobozfúró korona, Üreges kerámia falazóblokk, Gipszkarton, Gipszkarton körkivágó
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** lépcső, folyosó, hálószoba éjszakai fénye, terasz
 - **Buktatók:**
@@ -590,7 +590,7 @@ A falfelületet egyenletesen „mosó” vagy súrolófényben kirajzoló, aszim
   - A faltól mért távolság határozza meg az egyenletességet: a gyártói távolságot kell tartani.
   - Súrolófénynél (közel a falhoz) minden falhiba látszik: előtte a fal síkja.
 - **Rögzítés:** Beton, Gipszkarton, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** nappali, előtér, lépcsőház, homlokzat (kültéri kivitel)
 - **Buktatók:**
@@ -620,7 +620,7 @@ Hajlékony nyomtatott áramkör, rajta sűrűn LED-ek; törpefeszültségű táp
   - A tápegység teljesítménye a szalag teljesítményénél 20–30 %-kal nagyobb legyen; hozzáférhető, szellőző helyre.
   - Csak a jelölt vágási pontokon vágható; a csatlakozás forrasztva vagy gyári csatlakozóval.
 - **Rögzítés:** Forgácslapcsavar, Gipszkarton csavar, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-21 (LED-szalag mint lámpatest), a tápegységre MSZ EN 61347
+- **Előírás:** MSZ EN 60598-2-21 (LED-szalag mint lámpatest), a tápegységre MSZ EN 61347 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** konyha, nappali rejtett fénye, lépcső, bútor, polc, tükör, kert (IP-s kivitel)
 - **Buktatók:**
@@ -649,7 +649,7 @@ Tápegység nélkül, közvetlenül 230 V-ról működő szalag; hosszú szakasz
   - Hálózati áramkör áram-védőkapcsolóval.
   - Nem vágható tetszőlegesen: csak a jelölt egységhatáron.
 - **Rögzítés:** Nylon terpesztődübel, Forgácslapcsavar, Beton
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** kültéri kontúr, eresz, hosszú korlát, csarnok
 - **Buktatók:**
@@ -677,7 +677,7 @@ Alumínium sín búrával (opál, félig áttetsző vagy víztiszta), amely tart
   - Süllyesztett profilnál a horony a profil méretére, a glettelés előtt.
   - A vezeték bevezetése a profil végén vagy hátulján: a végzáró és a kábelfurat előre.
 - **Rögzítés:** Gipszkarton, Gipszkarton csavar, Forgácslapcsavar, OSB és forgácslap, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** konyhapult, lépcső, bútor, fal- és mennyezeti fénycsík
 - **Buktatók:**
@@ -703,7 +703,7 @@ Tömör, szilikon testű, hajlítható LED-szalag, amely folytonos, neoncsőszer
   - A legkisebb hajlítási sugarat és a hajlítás irányát (oldalra vagy felfelé) a típus adja meg.
   - A vágási pontok ritkábbak; a végeket szilikonnal és gyári sapkával kell zárni.
 - **Rögzítés:** Nylon terpesztődübel, Forgácslapcsavar, Beton
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** díszvilágítás, felirat, lépcső élfénye, kert, medence széle
 - **Buktatók:**
@@ -730,7 +730,7 @@ A LED-szalag a mennyezet széle mentén egy párkány vagy léc mögé kerül, �
   - A szalag ne látsszon a helyiség egyik pontjáról se; a fény ne vágjon éles csíkot a mennyezetre.
   - A tápegységnek hozzáférhető hely: revíziós nyílás vagy a párkány bontható része.
 - **Rögzítés:** Gipszkarton, Gipszkarton csavar, Forgácslapcsavar
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** nappali, hálószoba, előtér
 - **Buktatók:**
@@ -758,7 +758,7 @@ A spot vagy a profil pereme a gipszkarton vagy a vakolat alá kerül, és a fel�
   - A betétnek cserélhetőnek kell maradnia alulról.
   - A pontos kivágás a gyártói sablonnal.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó, Gipszkarton csavar
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** nappali, galéria, igényes belsőépítészet
 - **Buktatók:**
@@ -785,7 +785,7 @@ A padló menti fugában vagy szegélylécben futó LED-szalag lefelé, a padlór
   - A profilt a burkolással és a falszerkezettel együtt kell tervezni.
   - A padlófelmosás vize ne érje a szalagot: tömített kivitel.
 - **Rögzítés:** Gipszkarton, Forgácslapcsavar, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** folyosó, hálószoba, fürdő, lépcső
 - **Buktatók:**
@@ -814,7 +814,7 @@ A munkalapot a felső szekrények aljából megvilágító vonali fény: profilo
   - A tápegység a felső szekrény fölé vagy mögé, hozzáférhetően; a kiállás helye a konyhatervből.
   - A vezetékeket a konyhabútor szerelése előtt kell kivezetni.
 - **Rögzítés:** OSB és forgácslap, Forgácslapcsavar
-- **Előírás:** MSZ EN 60598-2-21 / -2-1
+- **Előírás:** MSZ EN 60598-2-21 / -2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** konyha, kamra, mosókonyha
 - **Buktatók:**
@@ -841,7 +841,7 @@ A szekrény belsejét az ajtó nyitásakor bekapcsoló fény: profilos LED-szala
   - A tápegység a szekrény tetején vagy mögötte; a kiállást a gardróbtervhez kell igazítani.
   - A szalag ne melegítse a ruhát: profilban.
 - **Rögzítés:** OSB és forgácslap, Forgácslapcsavar
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** gardrób, beépített szekrény, kamra
 - **Buktatók:**
@@ -867,7 +867,7 @@ A polcon vagy a vitrinben lévő tárgyakat kiemelő fény: keskeny LED-profil, 
   - A vezetékeket a bútor gyártása közben kell elvezetni; utólag csak kábelcsatornával.
   - Üvegpolcnál a fény az él felől jut be: a polc tartóiba épített LED-del.
 - **Rögzítés:** Forgácslapcsavar, OSB és forgácslap
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** nappali, könyvtár, bemutatótér
 - **Buktatók:**
@@ -893,7 +893,7 @@ Kis, kerek LED-spot (12 / 24 V) bútorlapba süllyesztve, pult, polc, vitrin vag
   - Az elosztó és a csatlakozók egy gyártói rendszerből; a polaritás számít.
   - A furat mélysége a bútorlap vastagságához: a forgácslap ne repedjen.
 - **Rögzítés:** Forgácslapcsavar, OSB és forgácslap
-- **Előírás:** MSZ EN 60598-2-2
+- **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** konyha, fürdő mosdópultja, vitrin, ágy feletti polc
 - **Buktatók:**
@@ -918,7 +918,7 @@ Az ágy aljára szerelt LED-szalag, amely felkeléskor mozgásérzékelőre halv
 - **Beépítés:**
   - A tápegység a fali aljzatról; a kábel ne essen a lábak útjába.
 - **Rögzítés:** Fa, Forgácslapcsavar
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** hálószoba, gyerekszoba, idősek otthona
 - **Buktatók:**
@@ -944,7 +944,7 @@ Minden fok alá vagy élébe épített LED-profil, amelyet egy lépcsővezérlő
   - Fokonként külön vezeték a vezérlőig: a lépcső építése vagy burkolása előtt kell behúzni.
   - A vezérlő és a tápegység hozzáférhető helyre (lépcső alatti tér, revíziós nyílás).
 - **Rögzítés:** Fa, Beton, Forgácslapcsavar, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-21
+- **Előírás:** MSZ EN 60598-2-21 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.strip` (Rajztár)
 - **Hova:** belső lépcső, pincelépcső, kültéri lépcső (IP-s kivitel)
 - **Buktatók:**
@@ -970,7 +970,7 @@ Padlón álló, dugaszolós lámpa: felfelé világító (uplighter) a mennyezet
 - **Vezérlés:** zsinórkapcsoló, talpkapcsoló, érintőkapcsoló, kapcsolt aljzat, okos aljzat vagy okos fényforrás (vonalak: 2,4 GHz sáv, Hálózati 50 Hz)
 - **Beépítés:**
   - Nincs bekötés: a villanyszerelő feladata a jól elhelyezett aljzat, ideálisan kapcsolt aljzat a bejárati kapcsolóról.
-- **Előírás:** MSZ EN 60598-2-4 (hordozható, általános célú lámpatestek)
+- **Előírás:** MSZ EN 60598-2-4 (hordozható, általános célú lámpatestek) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `inst.socket-switched` (Rajztár)
 - **Hova:** nappali, olvasósarok, hálószoba
 - **Buktatók:**
@@ -994,7 +994,7 @@ Dugaszolós asztali lámpa: hangulatlámpa ernyővel, vagy állítható karú mu
 - **Vezérlés:** lámpán lévő kapcsoló vagy érintő dimmer; USB-töltős kivitel (vonalak: Hálózati 50 Hz)
 - **Beépítés:**
   - Az íróasztal mellé elegendő aljzat (lámpa, számítógép, töltők), lehetőleg asztalmagasságban vagy padlódobozban.
-- **Előírás:** MSZ EN 60598-2-4
+- **Előírás:** MSZ EN 60598-2-4 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `inst.socket-pe` (Rajztár)
 - **Hova:** dolgozószoba, gyerekszoba, hálószoba
 - **Buktatók:**
@@ -1018,7 +1018,7 @@ Kis, meleg fényű lámpa az ágy mellé: olvasáshoz, elalváshoz, éjszakai t�
 - **Vezérlés:** érintőkapcsoló, dimmer, időzítő (vonalak: 2,4 GHz sáv)
 - **Beépítés:**
   - Az ágy két oldalán aljzat (és USB-töltő), a fejtámla magasságához igazítva.
-- **Előírás:** MSZ EN 60598-2-4
+- **Előírás:** MSZ EN 60598-2-4 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `inst.socket-usb` (Rajztár)
 - **Hova:** hálószoba, gyerekszoba
 - **Buktatók:**
@@ -1045,7 +1045,7 @@ Nem lámpatest, hanem a dugaszolós lámpák „bekötése”: olyan aljzat, ame
   - Egy kapcsolt aljzat mellé egy nem kapcsolt is kerüljön.
   - A kapcsoló doboza és az aljzat közé háromerű kábel kell (kapcsolt fázis).
 - **Rögzítés:** Dobozfúró korona, Gipszkarton körkivágó
-- **Előírás:** MSZ HD 60364 sorozat (a fogyasztói áramkör), a szerelvényre MSZ EN 60669 / MSZ HD 60884
+- **Előírás:** MSZ HD 60364 sorozat (a fogyasztói áramkör), a szerelvényre MSZ EN 60669 / MSZ HD 60884 (kártyák: MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok)
 - **Rajzjel:** `inst.socket-switched` (Rajztár)
 - **Hova:** nappali, hálószoba, dolgozószoba
 - **Buktatók:**
@@ -1074,7 +1074,7 @@ A fürdő általános világítása párától és fröccsenő víztől védett 
   - A fürdő áramköreit áram-védőkapcsoló védje.
   - Pára: a lámpatest tömítése és a kábelbevezetés tömszelencéje.
 - **Rögzítés:** Beton, Gipszkarton, Csempe, járólap, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-701 (fürdő- és zuhanyhelyiségek), MSZ EN 60598-2-1
+- **Előírás:** MSZ HD 60364-7-701 (fürdő- és zuhanyhelyiségek), MSZ EN 60598-2-1 (kártyák: MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** fürdőszoba, zuhanyzó, mosdó
 - **Buktatók:**
@@ -1101,7 +1101,7 @@ Alulról vízálló (IP44 – IP65) beépíthető spot vagy downlight a fürdő 
   - Zóna 1-ben (a zuhany vagy a kád fölött) a szabvány szerinti védettség és táplálás; a tápegység a zónákon kívül.
   - A tömítés a kerettel és az üveggel együtt alulról számít: a keret mögött pára gyűlhet, ezért szellőzés és tömszelence.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
-- **Előírás:** MSZ HD 60364-7-701, MSZ EN 60598-2-2
+- **Előírás:** MSZ HD 60364-7-701, MSZ EN 60598-2-2 (kártyák: MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** fürdő, zuhanyzó, szauna előtere
 - **Buktatók:**
@@ -1127,7 +1127,7 @@ A tükör előtt álló arcát világítja meg; a legjobb, ha két oldalról vag
   - A kiállás helye a tükör vagy a tükrös szekrény méretéhez; világító tükörnél a tükör mögött.
   - A mosdó a zónákon kívül esik, de a fröccsenő víz miatt IP44 ajánlott.
 - **Rögzítés:** Csempe, járólap, Tömör tégla, Üreges kerámia falazóblokk, Gipszkarton, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-701, MSZ EN 60598-2-1
+- **Előírás:** MSZ HD 60364-7-701, MSZ EN 60598-2-1 (kártyák: MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.wall` (Rajztár)
 - **Hova:** fürdő, mosdó, öltözőasztal
 - **Buktatók:**
@@ -1154,7 +1154,7 @@ Hosszúkás, tömített (IP65) lámpatest műanyag házzal és búrával; garáz
   - A kábelt tömszelencén át kell bevezetni, és a tömítést visszazárni.
   - Sorolható kivitelnél a lámpák egymásról kapnak tápot: a betáplálás és az átkötés a lámpában.
 - **Rögzítés:** Beton, Tömör tégla, Nylon terpesztődübel, Beütős dübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** garázs, pince, műhely, mosókonyha, kazánház
 - **Buktatók:**
@@ -1180,7 +1180,7 @@ Kis, tömített, ütésálló lámpatest búrával, sokszor védőráccsal; pinc
 - **Beépítés:**
   - Kültéren a kábelbevezetés alulról, tömszelencével, hogy a víz ne folyjon be.
 - **Rögzítés:** Tömör tégla, Beton, Hőszigetelt homlokzat, Nylon terpesztődübel, Rögzítő hőszigetelt homlokzathoz
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** pince, kamra, kazánház, garázs, bejárat
 - **Buktatók:**
@@ -1206,7 +1206,7 @@ A szauna hőmérsékletére minősített, magas hőállóságú, nedvességáll�
   - A szauna-helyiség szabályai: hőmérsékleti zónák, a kályha körüli tilos terület, a vezetékek hőállósága.
   - A tápegység és a kapcsoló a kabinon kívül.
 - **Rögzítés:** Fa
-- **Előírás:** MSZ HD 60364-7-703 (szaunák), MSZ EN 60598-2-1
+- **Előírás:** MSZ HD 60364-7-703 (szaunák), MSZ EN 60598-2-1 (kártyák: MSZ HD 60364-7-703 · Szaunák, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** szauna, gőzkabin (külön minősítéssel)
 - **Buktatók:**
@@ -1236,7 +1236,7 @@ Az időjárásnak ellenálló, legalább IP44-es fali lámpatest a bejárat, a t
   - A kábel bevezetése alulról, tömszelencével; a falon átvezetett kábel mögött tömítés.
   - A kültéri áramkört áram-védőkapcsoló védje.
 - **Rögzítés:** Hőszigetelt homlokzat, Rögzítő hőszigetelt homlokzathoz, Tömör tégla, Üreges kerámia falazóblokk, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-714 (kültéri világítás), MSZ EN 60598-2-1
+- **Előírás:** MSZ HD 60364-7-714 (kültéri világítás), MSZ EN 60598-2-1 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** bejárat, terasz, garázskapu, homlokzat
 - **Buktatók:**
@@ -1264,7 +1264,7 @@ Nagy fényerejű LED-fényvető széles nyalábbal, udvarok, kocsibeállók, ker
   - A fényvetőt lefelé kell dönteni: vízszintesen vakít és a szomszédba világít.
   - Hőszigetelt homlokzaton távtartó rögzítő.
 - **Rögzítés:** Rögzítő hőszigetelt homlokzathoz, Tömör tégla, Beton, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-714
+- **Előírás:** MSZ HD 60364-7-714 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések)
 - **Rajzjel:** `lum.flood` (Rajztár)
 - **Hova:** udvar, kocsibeálló, kert, raktár
 - **Buktatók:**
@@ -1292,7 +1292,7 @@ Alacsony, oszlop formájú kültéri lámpa, amely a járdát, az utat és a ker
   - A talp betonalapba vagy gyári rögzítőtüskére; a kábelvég a talpban hozzáférhetően.
   - Kerti áramkör áram-védőkapcsolóval.
 - **Rögzítés:** Beton, Csavaros terpesztő horgony, Betoncsavar
-- **Előírás:** MSZ HD 60364-7-714
+- **Előírás:** MSZ HD 60364-7-714 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** kerti út, kocsibeálló széle, bejárati járda
 - **Buktatók:**
@@ -1318,7 +1318,7 @@ Tüskére szerelt, irányítható kis fényvető fák, bokrok, szobrok, homlokza
   - Törpefeszültségű rendszernél a transzformátor beltérben vagy védett helyen; a kábel feszültségesése hosszú vonalon számít.
   - 230 V-os spotnál földkábel és földbe szánt kötődoboz kell.
 - **Rögzítés:** Beton
-- **Előírás:** MSZ HD 60364-7-714
+- **Előírás:** MSZ HD 60364-7-714 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** kert, fák, sövény, homlokzati elemek
 - **Buktatók:**
@@ -1345,7 +1345,7 @@ A talajba süllyesztett, felfelé világító lámpatest fák, oszlopok, homlokz
   - A tömszelencés kábelbevezetés gyári; a kötés földbe szánt kötőkészlettel.
   - A fedőlap felülete forró lehet: ahol mezítláb járnak, arra minősített kivitel.
 - **Rögzítés:** Beton
-- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-13 (talajba süllyesztett lámpatestek)
+- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-13 (talajba süllyesztett lámpatestek) (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** terasz, kerti út, fák tövében, homlokzat előtt
 - **Buktatók:**
@@ -1372,7 +1372,7 @@ A homlokzatot vagy egy épületrészt egyenletesen, vagy súrolófénnyel megvil
   - A faltól mért távolság és a dőlésszög adja az egyenletességet: a gyártói ajánlás szerint.
   - A felfelé világító fényt árnyékolóval kell az égbolttól elzárni.
 - **Rögzítés:** Rögzítő hőszigetelt homlokzathoz, Beton, Tömör tégla, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-714
+- **Előírás:** MSZ HD 60364-7-714 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések)
 - **Rajzjel:** `lum.flood` (Rajztár)
 - **Hova:** homlokzat, kerítés, kapu, támfal
 - **Buktatók:**
@@ -1399,7 +1399,7 @@ A víz alatt dolgozó, teljesen vízmentes lámpatest a medence falában; törpe
   - A lámpa fészke és a kábelcső a medence építésekor kerül a falba: a medenceépítővel együtt kell tervezni.
   - Egyenpotenciálú összekötés a medence fémrészeivel.
 - **Rögzítés:** Beton
-- **Előírás:** MSZ HD 60364-7-702 (úszómedencék)
+- **Előírás:** MSZ HD 60364-7-702 (úszómedencék) (kártyák: MSZ HD 60364-7-702 · Úszómedencék és szökőkutak)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** kerti medence, beltéri medence, jakuzzi
 - **Buktatók:**
@@ -1424,7 +1424,7 @@ Saját napelemmel és akkumulátorral működő kis kerti lámpa; nem kell vezet
 - **Beépítés:**
   - Napos helyre, ahol a napelemet nem árnyékolja növény vagy épület; télen kevesebbet világít.
 - **Rögzítés:** Beton, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** kert, ágyásszegély, kerti út
 - **Buktatók:**
@@ -1450,7 +1450,7 @@ A kapuoszlop vagy a pillér tetejére szerelt lámpatest; a bejáratot jelöli �
   - A kábelt a pillér építésekor védőcsőben kell felvezetni.
   - A pillér fedlapjába rögzítve; a kábelvég tömszelencén át.
 - **Rögzítés:** Beton, Zsalukő, Betoncsavar, Nylon terpesztődübel
-- **Előírás:** MSZ HD 60364-7-714
+- **Előírás:** MSZ HD 60364-7-714 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** kapu, kerítés, kocsibejáró
 - **Buktatók:**
@@ -1476,7 +1476,7 @@ Sorba kötött foglalatok vagy LED-ek egy kábelen, teraszok és kerti terek han
   - Tartós felszerelésnél acélsodronyra függesztve, hogy a kábel ne viselje a terhet.
   - A kültéri aljzat legalább IP44-es, fedeles, áram-védőkapcsolóval védett körön.
 - **Rögzítés:** Fa, Tömör tégla, Nylon terpesztődübel, Menetes szár, metrikus csavar
-- **Előírás:** MSZ EN 60598-2-20 (fényfüzérek)
+- **Előírás:** MSZ EN 60598-2-20 (fényfüzérek) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** terasz, pergola, kert, rendezvénytér
 - **Buktatók:**
@@ -1502,7 +1502,7 @@ Fedett kültéri mennyezetbe (előtető, terasz, loggia, eresz alja) szerelt, le
   - Fa mennyezetbe (lambéria) a lámpa hőjét és a tűzvédelmet figyelembe véve.
   - A pára a mennyezet mögött is lecsapódhat: tömített kivitel.
 - **Rögzítés:** Fa, OSB és forgácslap, Gipszkarton körkivágó, Beton
-- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-2
+- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-2 (kártyák: MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** terasz, előtető, loggia, kocsibeálló teteje
 - **Buktatók:**
@@ -1531,7 +1531,7 @@ Saját akkumulátorral és töltővel működő biztonsági lámpatest: hálóza
   - Az akkumulátor a bekötés után töltődik: a teljes idejű próba csak a teljes feltöltés után.
   - Helye a terv szerint: kijáratok, lépcsők, irányváltások, tűzoltó eszközök fölött.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
-- **Előírás:** MSZ EN 60598-2-22, MSZ EN 1838, MSZ EN 50172; a kötelezettség: OTSZ (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek, OTSZ és TvMI · Hol kell biztonsági világítás)
+- **Előírás:** MSZ EN 60598-2-22, MSZ EN 1838, MSZ EN 50172; a kötelezettség: OTSZ (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek, OTSZ és TvMI · Hol kell biztonsági világítás, MSZ EN 62034 · Automatikus tesztrendszerek)
 - **Rajzjel:** `lum.emergency` (Rajztár)
 - **Hova:** lépcsőház, folyosó, közösségi terek, munkahelyek, társasház közös terei
 - **Buktatók:**
@@ -1612,7 +1612,7 @@ Kis méretű, álmennyezetbe süllyesztett biztonsági lámpatest cserélhető o
   - A kiosztás a fotometriai számításból jön: a lámpatestek közti legnagyobb távolságot a gyártó táblázata adja az optikához és a szerelési magassághoz.
   - Az akkumulátoros egység a kivágás mellett az álmennyezet fölé kerül: a cseréhez hozzáférés.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
-- **Előírás:** MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 50172 · Biztonsági világítási rendszerek)
+- **Előírás:** MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 50172 · Biztonsági világítási rendszerek, MSZ EN 62034 · Automatikus tesztrendszerek)
 - **Rajzjel:** `lum.emergency` (Rajztár)
 - **Hova:** irodák, folyosók, üzletek, rendelők álmennyezete
 - **Buktatók:**
@@ -1664,7 +1664,7 @@ Akkumulátorból, töltőből és átkapcsolóból (inverterből) álló egység
   - A modulnak kompatibilisnek kell lennie a lámpatest LED-meghajtójával és a LED-modul feszültségével (a gyártói lista szerint).
   - Az átalakított lámpatest megfelelőségéért az átalakító felel: a gyártói átalakítás vagy előre gyártott vészvilágítási kivitel biztonságosabb.
   - A vészüzemi fényáramot a lámpatest helyén is ellenőrizni kell (számítás).
-- **Előírás:** MSZ EN 61347-2-7 (a modul), MSZ EN 60598-2-22 (az átalakított lámpatest) (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás)
+- **Előírás:** MSZ EN 61347-2-7 (a modul), MSZ EN 60598-2-22 (az átalakított lámpatest) (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek)
 - **Rajzjel:** `lum.emergency` (Rajztár)
 - **Hova:** ahol a normál lámpatest a biztonsági világítás része: irodák, folyosók, üzletek
 - **Buktatók:**
@@ -1689,7 +1689,7 @@ Lakásba való, konnektorba dugott kis lámpa: éjszakai tájékozódó fény, �
 - **Vezérlés:** alkonykapcsoló, automatikus bekapcsolás áramszünetkor (vonalak: Hálózati 50 Hz)
 - **Beépítés:**
   - Folyosó, lépcső, hálószoba ajtaja mellé, egy elérhető aljzatba.
-- **Előírás:** MSZ EN 60598-2-12 (aljzatba dugható éjszakai fények)
+- **Előírás:** MSZ EN 60598-2-12 (aljzatba dugható éjszakai fények) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** folyosó, gyerekszoba, lépcső, idősek lakása
 - **Buktatók:**
@@ -1743,7 +1743,7 @@ Képernyős munkahelyekre tervezett lámpatest, amely a munkafelületen elegend�
   - A munkahelyi megvilágítás tervét számítással kell igazolni (a munkafelületen jellemzően 500 lx irodai munkára).
   - Függesztésnél a menetes szár vagy a sodrony a födémbe, a terhelés szerint.
 - **Rögzítés:** Beton, Beütős horgony, Menetes szár, metrikus csavar, Gipszkarton
-- **Előírás:** MSZ EN 12464-1 (munkahelyek világítása), MSZ EN 60598-2-1 / -2-2
+- **Előírás:** MSZ EN 12464-1 (munkahelyek világítása), MSZ EN 60598-2-1 / -2-2 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.panel` (Rajztár)
 - **Hova:** iroda, tárgyaló, tanterem, otthoni dolgozószoba
 - **Buktatók:**
@@ -1769,7 +1769,7 @@ Hosszú tartósín, amelyben a betápláló vezetékek futnak, és amelybe a lá
   - A sín 5–11 vezetős lehet: a betétek fázisonként és a biztonsági áramkörre is köthetők.
   - Függesztés a sín terhelése és a födém szerint.
 - **Rögzítés:** Beton, Trapézlemez, acéllemez, Acélszerkezet, Beütős horgony, Menetes szár, metrikus csavar
-- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** üzlet, raktár, csarnok, műhely
 - **Buktatók:**
@@ -1795,7 +1795,7 @@ Nagy belmagasságú terek (csarnok, raktár, sportterem) nagy fényáramú lámp
   - A függesztést biztosító sodronnyal kell kiegészíteni.
   - A karbantartás emelőgépet kíván: a meghajtó élettartama és cserélhetősége számít.
 - **Rögzítés:** Acélszerkezet, Beton, Beütős horgony, Menetes szár, metrikus csavar
-- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.flood` (Rajztár)
 - **Hova:** csarnok, raktár, műhely, sportterem, mezőgazdasági épület
 - **Buktatók:**
@@ -1823,7 +1823,7 @@ A régi T8 fénycső helyére tervezett LED-cső (G13 foglalat) vagy LED-csöves
   - Közvetlen bekötésnél az armatúrát átalakítottként fel kell címkézni, hogy ne kerüljön bele régi fénycső.
   - Az egyoldalas és kétoldalas betáplálású csövek nem cserélhetők fel.
 - **Rögzítés:** Beton, Nylon terpesztődübel, Beütős dübel
-- **Előírás:** MSZ EN 62776 (kétvégű LED-csövek), MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 62776 (kétvégű LED-csövek), MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek)
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** garázs, pince, műhely, iroda, lépcsőház
 - **Buktatók:**
@@ -1849,7 +1849,7 @@ Az áru függőleges felületét egyenletesen megvilágító, aszimmetrikus lám
 - **Beépítés:**
   - A polcrendszer gyártójának tápellátó sínjével vagy csatlakozóival.
 - **Rögzítés:** Önfúró lemezcsavar, Forgácslapcsavar
-- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** üzlet, bemutatóterem, kamra nagy polcrendszerrel
 - **Buktatók:**
@@ -1875,7 +1875,7 @@ Por- és vízálló, ütésálló vonali lámpatest garázsokba és parkolóház
   - A rámpák és a bejáratok megvilágítása a szem alkalmazkodása miatt nappal erősebb lehet.
   - A kipufogógáz és a só miatt korrózióálló kivitel.
 - **Rögzítés:** Beton, Beütős dübel, Üreges födémpanel
-- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.linear` (Rajztár)
 - **Hova:** mélygarázs, parkolóház, társasházi garázs
 - **Buktatók:**
@@ -1901,7 +1901,7 @@ Utak, járdák, terek megvilágítására szolgáló lámpafej útvilágítási 
   - Magánterületen a kandeláber alapja, földkábel, oszlopon belüli kötődoboz és biztosító a terv szerint.
   - Közterületen csak az üzemeltető megbízásából.
 - **Rögzítés:** Beton, Csavaros terpesztő horgony, Vegyi dübel
-- **Előírás:** MSZ EN 13201 (közúti világítás), MSZ EN 60598-2-3
+- **Előírás:** MSZ EN 13201 (közúti világítás), MSZ EN 60598-2-3 (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 13201 · Közúti világítás)
 - **Rajzjel:** `lum.outdoor` (Rajztár)
 - **Hova:** lakópark útjai, telephely, parkoló
 - **Buktatók:**
@@ -1929,7 +1929,7 @@ A növények fotoszintéziséhez illesztett spektrumú LED-lámpa (sok kék és 
   - Párás környezetben IP-s kivitel és áram-védőkapcsoló.
   - A tartós, nagy teljesítményű terheléshez méretezett áramkör.
 - **Rögzítés:** Menetes szár, metrikus csavar, Fa, Beton
-- **Előírás:** MSZ EN 60598-1, MSZ EN 62471 (fotobiológiai biztonság)
+- **Előírás:** MSZ EN 60598-1, MSZ EN 62471 (fotobiológiai biztonság) (kártyák: MSZ EN 60598 · Lámpatestek, MSZ EN 62471 · Fotobiológiai biztonság)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** beltéri kert, üvegház, pince
 - **Buktatók:**
@@ -1953,7 +1953,7 @@ Az akvárium fölötti, nedvességálló lámpa a halak és a vízinövények ig
 - **Vezérlés:** időzítő, napfelkelte–napnyugta program, alkalmazás (vonalak: 2,4 GHz sáv)
 - **Beépítés:**
   - A tápegység a víztől távol, a vízcseppek útján kívül; áram-védőkapcsolós aljzat.
-- **Előírás:** MSZ EN 60598-2-11 (akváriumlámpák)
+- **Előírás:** MSZ EN 60598-2-11 (akváriumlámpák) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** nappali, akváriumszoba
 - **Buktatók:**
@@ -1979,7 +1979,7 @@ A 200–280 nm-es UV-C sugárzással a mikroorganizmusokat inaktiváló lámpa: 
   - Nyitott besugárzó csak üres helyiségben működhet: jelenlét-érzékelővel és ajtókapcsolóval reteszelni kell, figyelmeztető jelzéssel.
   - A zárt, keringtetős készülék emberek jelenlétében is használható.
 - **Rögzítés:** Beton, Nylon terpesztődübel
-- **Előírás:** MSZ EN 62471 (fotobiológiai biztonság), a készülékre a gyártói megfelelőség
+- **Előírás:** MSZ EN 62471 (fotobiológiai biztonság), a készülékre a gyártói megfelelőség (kártyák: MSZ EN 62471 · Fotobiológiai biztonság)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** rendelő, labor, öltöző, légtechnika
 - **Buktatók:**
@@ -2006,7 +2006,7 @@ Gáz- vagy porrobbanás-veszélyes térbe (benzinkút, festőüzem, malom, gázk
   - A zónabesorolás (pl. 1., 2., 21., 22.) a robbanásvédelmi dokumentációból jön; a lámpatest, a kábelbevezetés és a kötés is erre minősített legyen.
   - Csak erre jogosult szakember tervezhet és szerelhet; a szerelés után ellenőrzés.
 - **Rögzítés:** Beton, Acélszerkezet, Csavaros terpesztő horgony
-- **Előírás:** MSZ EN 60079 sorozat (robbanóképes közegek), ATEX irányelv
+- **Előírás:** MSZ EN 60079 sorozat (robbanóképes közegek), ATEX irányelv (kártyák: MSZ EN 60079 és ATEX · Robbanásveszélyes terek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** benzinkút, festőüzem, akkumulátortöltő helyiség, malom, vegyi raktár
 - **Buktatók:**
@@ -2032,7 +2032,7 @@ Rendezvények és színpadok lámpái: színes PAR-lámpák, profilos spotok, mo
   - Minden függesztett lámpatesthez biztosító kötél (safety) a fő rögzítés mellett.
   - A DMX-lánc végét lezárással kell ellátni, mint egy RS-485 buszt.
 - **Rögzítés:** Acélszerkezet, Menetes szár, metrikus csavar
-- **Előírás:** MSZ EN 60598-2-17 (színpadi és stúdió lámpatestek)
+- **Előírás:** MSZ EN 60598-2-17 (színpadi és stúdió lámpatestek) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** színpad, rendezvényterem, klub, templom, stúdió
 - **Buktatók:**
@@ -2058,7 +2058,7 @@ Egyetlen fényforrás (projektor) fényét sok optikai szál vezeti a mennyezet 
   - A projektor hozzáférhető helyre (revíziós nyílás), a szálak hossza ehhez igazítva.
   - A szálakat a gipszkarton lapozása előtt vagy a lap átfúrásával fűzik; a végeket síkba vágják.
 - **Rögzítés:** Gipszkarton, Fa
-- **Előírás:** MSZ EN 60598-1 (a projektor)
+- **Előírás:** MSZ EN 60598-1 (a projektor) (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** hálószoba, gyerekszoba, házimozi, szauna
 - **Buktatók:**
@@ -2084,7 +2084,7 @@ A tetőn lévő kupola napfényt gyűjt, a belül tükröző cső levezeti, és 
   - A tetőátvezetést a tetőfedővel együtt kell beépíteni; a cső hossza és a kanyarok száma a fényt csökkenti.
   - Hőszigetelt padláson a cső szigetelése a páralecsapódás ellen.
 - **Rögzítés:** Fa, Gipszkarton
-- **Előírás:** a gyártó beépítési útmutatója; a LED-kiegészítőre MSZ EN 60598-1
+- **Előírás:** a gyártó beépítési útmutatója; a LED-kiegészítőre MSZ EN 60598-1 (kártyák: MSZ EN 60598 · Lámpatestek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** ablaktalan fürdő, folyosó, kamra, belső helyiség
 - **Buktatók:**
@@ -2109,7 +2109,7 @@ A színhőmérsékletet és a fényerőt a napszakhoz igazító világítás: re
 - **Beépítés:**
   - Egy helyiségben azonos vezérlési rendszer és egymáshoz hangolt lámpatestek kellenek, különben eltérő színek.
   - A két csatorna (meleg és hideg) bekötése a meghajtó szerint.
-- **Előírás:** MSZ EN 12464-1; a nem vizuális hatásokra CIE S 026 (tájékoztató)
+- **Előírás:** MSZ EN 12464-1; a nem vizuális hatásokra CIE S 026 (tájékoztató) (kártyák: MSZ EN 12464-1 · Munkahelyek világítása (beltér))
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** iroda, iskola, idősotthon, otthoni dolgozószoba és hálószoba
 - **Buktatók:**
@@ -2133,7 +2133,7 @@ A háztartási gépek belső világítása: a sütőben hőálló (jellemzően 3
 - **Vezérlés:** ajtókapcsoló, a gép vezérlése
 - **Beépítés:**
   - Csere előtt a gépet feszültségmentesíteni kell; a búra tömítését vissza kell tenni.
-- **Előírás:** a gépre MSZ EN 60335 sorozat; a fényforrásra a gyártói jelölés
+- **Előírás:** a gépre MSZ EN 60335 sorozat; a fényforrásra a gyártói jelölés (kártyák: MSZ EN 60335 · Háztartási készülékek)
 - **Rajzjel:** `lum.general` (Rajztár)
 - **Hova:** konyha
 - **Buktatók:**
@@ -2158,7 +2158,7 @@ Egészségügyi és kozmetikai célú, nagy megvilágítású, árnyékmentes é
 - **Beépítés:**
   - Mennyezeti karnál a födém teherbírása és a rögzítőlap a gyártó szerint; a helyiség orvosi villamos előírásai (csoportok, potenciálkiegyenlítés).
 - **Rögzítés:** Beton, Vegyi dübel, Menetes szár, metrikus csavar
-- **Előírás:** MSZ EN 60601-2-41 (műtő- és vizsgálólámpák), MSZ HD 60364-7-710 (orvosi helyiségek)
+- **Előírás:** MSZ EN 60601-2-41 (műtő- és vizsgálólámpák), MSZ HD 60364-7-710 (orvosi helyiségek) (kártyák: MSZ HD 60364-7-710 · Orvosi helyiségek)
 - **Rajzjel:** `lum.spot` (Rajztár)
 - **Hova:** rendelő, kozmetika, fogorvosi rendelő, műtő
 - **Buktatók:**
@@ -2184,7 +2184,7 @@ Színes jelzőfények egymásra épített sora vagy egyetlen villogó: gépálla
   - A színek jelentése a gép vagy a rendszer dokumentációja szerint egységes legyen.
   - Kapunyitónál a villogó a mozgás előtt kezdjen jelezni.
 - **Rögzítés:** Önfúró lemezcsavar, Nylon terpesztődübel
-- **Előírás:** MSZ EN 60204-1 (gépek villamos szerkezetei, a jelzőfények színei)
+- **Előírás:** MSZ EN 60204-1 (gépek villamos szerkezetei, a jelzőfények színei) (kártyák: MSZ EN 60204-1 · Gépek villamos szerkezetei)
 - **Rajzjel:** `meas.lamp` (Rajztár)
 - **Hova:** műhely, gépsor, kapu, garázskapu, vezérlőszekrény
 - **Buktatók:**
