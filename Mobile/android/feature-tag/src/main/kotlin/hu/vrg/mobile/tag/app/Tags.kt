@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.tag.FindMy
+import hu.vrg.mobile.tag.Itag
 import hu.vrg.mobile.tag.LeftBehind
 import hu.vrg.mobile.tag.Mine
 import hu.vrg.mobile.tag.PhoneFinder
@@ -51,6 +52,8 @@ object Tags {
     /** Telefonkereső: the iTag's button rings the phone. */
     val finder = PhoneFinder()
     private var link: ItagLink? = null
+    /** Paired devices (a watch): their connection, the paired list. Alive while the screen or the service wants Tags. */
+    private var paired: PairedLink? = null
     private var ringtone: Ringtone? = null
 
     /** Raw RSSI of mine collected during the 1 m calibration, else null. */
@@ -128,6 +131,8 @@ object Tags {
         load(ctx)
         syncLink(ctx)
         val want = wantScreen || wantWatch
+        if (want && allowed(ctx)) { if (paired == null) paired = PairedLink(ctx.applicationContext).also { it.start() } }
+        else { paired?.stop(); paired = null }
         val low = !wantScreen
         if (!want) { stopScan(ctx); radio.value = Radio.OFF; bump(); return }
         if (!allowed(ctx)) { stopScan(ctx); radio.value = Radio.NO_PERMISSION; bump(); return }
@@ -168,7 +173,11 @@ object Tags {
         val now = System.currentTimeMillis()
         val address = r.device?.address ?: return
         val before = book.mine?.address
-        book.heard(address, raw, r.rssi, now) ?: return
+        if (book.heard(address, raw, r.rssi, now) == null) {
+            // not a tag: perhaps the BLE side of mine, a paired watch advertising under its own name (distance)
+            if (book.heardByName(Itag.localName(raw), r.rssi, now)) bump()
+            return
+        }
         val ctx = appCtx
         if (address == before) {
             calibrating?.add(r.rssi)
@@ -192,8 +201,9 @@ object Tags {
         val m = book.mine
         val want = wantWatch && m != null && m.type == TagType.ITAG && allowed(ctx)
         if (want && link?.address == m!!.address) return
+        val had = link != null
         link?.close(); link = null
-        if (linkUp.value) { linkUp.value = false; bump() }
+        if (had && linkUp.value) { linkUp.value = false; bump() }      // a watch's linkUp belongs to pollPaired
         if (!want) return
         val address = m!!.address
         val app = ctx.applicationContext
@@ -213,7 +223,23 @@ object Tags {
     /** Ring mine over the held link; false = no link, ring it with a fresh connection (TagGatt). */
     fun ringOverLink(address: String, on: Boolean): Boolean = link?.takeIf { it.address == address }?.ring(on) == true
 
-    fun linkedTo(address: String): Boolean = linkUp.value && link?.address == address
+    fun linkedTo(address: String): Boolean =
+        linkUp.value && (link?.address == address || (book.mine?.type == TagType.WATCH && book.mine?.address == address))
+
+    // ---- a paired device (the Q71 watch): its connection is its presence ------------------------------------
+
+    /** Called every ~2 s (service) or ~0.5 s (screen): a connected paired device that is mine counts as heard. */
+    fun pollPaired() {
+        val m = book.mine ?: return
+        if (m.type != TagType.WATCH) return
+        val up = paired?.connected(m.address) == true
+        if (up) book.heardLinked(m.address, null, System.currentTimeMillis())
+        if (linkUp.value != up) { linkUp.value = up; bump() }
+    }
+
+    fun pairedList(): List<PairedDevice> = paired?.paired().orEmpty()
+    fun pairedConnected(address: String): Boolean = paired?.connected(address) == true
+    fun callAudio(address: String): Boolean = paired?.callAudio(address) == true
 
     private fun pressed(ctx: Context) {
         when (finder.press(System.currentTimeMillis())) {

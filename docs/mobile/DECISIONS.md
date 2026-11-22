@@ -964,6 +964,12 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (one tag book, one screen, one left-behind service), not a feature of its own. Its connection is held only while
   *Kapcsolat tartása és ottfelejtés* is on, because a link opened with the screen would make the tag slow-beep every
   time the screen closes. Telefonkereső (its button rings the phone) works only on that held link. Details: `WP/M61.md`.
+- **D-153 · Tárgykereső: a paired device, the Q71 watch (M61), 2026-11-22.** Taken while building on the Founder's
+  "repeat the process with this device as a third type of item", may be revisited. The Q71 is a FunDo-app calling watch
+  whose protocol is not public, so it is **not** reverse-engineered or guessed: it is followed through what Android
+  offers for any paired device — the connection as presence (Ottfelejtés, last place), a tone over hands-free audio
+  (SCO) as Csipogtatás, and its BLE side by name for the distance. Chosen from the phone's paired list. Works the same
+  for earbuds or a speaker. Rejected: sending guessed FunDo bytes to the watch. Details: `WP/M61.md`.
 
 ## Open (to ask when the WP that needs them starts)
 

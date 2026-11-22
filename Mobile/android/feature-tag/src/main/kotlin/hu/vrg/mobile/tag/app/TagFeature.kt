@@ -96,7 +96,7 @@ object TagFeature : VrgFeature {
             Tags.wantForScreen(ctx, true)
             onDispose { Tags.wantForScreen(ctx, false) }
         }
-        LaunchedEffect(Unit) { while (true) { now = System.currentTimeMillis(); delay(500) } }
+        LaunchedEffect(Unit) { while (true) { Tags.pollPaired(); now = System.currentTimeMillis(); delay(500) } }
         LaunchedEffect(radio, watching) {
             _activity.value = if (watching || radio == Tags.Radio.ON) MiniStatus.running() else MiniStatus.IDLE
         }
@@ -222,7 +222,11 @@ object TagFeature : VrgFeature {
         }
 
         // the big readout
-        Text(if (heardNow || d != null) Proximity.label(d) else "nincs jel",
+        Text(when {
+                d == null && heardNow && mine.type == TagType.WATCH -> "a közelben"
+                heardNow || d != null -> Proximity.label(d)
+                else -> "nincs jel"
+            },
             style = Melyviz.title.copy(fontSize = 44.sp, color = if (heardNow) Melyviz.glow else Melyviz.faint),
             modifier = Modifier.padding(top = 8.dp))
         if (seen != null && heardNow) {
@@ -232,8 +236,9 @@ object TagFeature : VrgFeature {
         }
 
         if (mine.type == TagType.ITAG) ItagPanel(mine.address, mine.batteryPct, watching)
+        if (mine.type == TagType.WATCH) WatchPanel(mine.address, mine.btName)
 
-        if (seen != null) RingControls(seen)
+        if (seen != null && mine.type != TagType.WATCH) RingControls(seen)
         Row(Modifier.padding(top = 6.dp)) {
             VrgChip(if (finder) "Keresés ki" else "Keresés (hangjelzés)", selected = finder) { finder = !finder }
             Spacer(Modifier.width(6.dp))
@@ -286,7 +291,11 @@ object TagFeature : VrgFeature {
 
         // left behind
         VrgSectionTitle("Ottfelejtés")
-        VrgToggle(if (mine.type == TagType.ITAG) "Kapcsolat tartása és ottfelejtés" else "Szóljon, ha lemarad", watching) { on ->
+        VrgToggle(when (mine.type) {
+            TagType.ITAG -> "Kapcsolat tartása és ottfelejtés"
+            TagType.WATCH -> "Szóljon, ha a kapcsolata megszakad"
+            else -> "Szóljon, ha lemarad"
+        }, watching) { on ->
             if (on) {
                 if (VrgNotify.needsPermission(ctx) && Build.VERSION.SDK_INT >= 33) askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
                 TagService.start(ctx)
@@ -342,6 +351,7 @@ object TagFeature : VrgFeature {
             Spacer(Modifier.width(6.dp))
             VrgChip("Környék") { toAround() }
         }
+        PairedPick(name)
     }
 
     // ---- Környék ---------------------------------------------------------------------------------------------
@@ -408,6 +418,14 @@ object TagFeature : VrgFeature {
             "Ha egy iPhone-nal párosítod, a címke a gazdájától távol is rendesen hirdet, és ez az app úgy is látja. " +
                 "Ilyenkor egy idő után az Android ismeretlen nyomkövetőt jelezhet: ez a saját címkéd.",
         ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
+        VrgSectionTitle("Párosított óra (például Q71) vagy fülhallgató")
+        listOf(
+            "A telefon Bluetooth-beállításaiban párosított eszköz. Az Ez az enyém lapon a párosítottak listájából választod.",
+            "Ottfelejtés: amíg kapcsolódva van, a közelben van. Ha a kapcsolat a megadott ideig nincs meg, szól, és a telefon megjegyzi, hol volt.",
+            "Csipogtatás: egy hívó óra kihangosítóként kapcsolódik, így a telefon rövid hangot játszik az óra hangszóróján.",
+            "Távolság csak akkor látszik, ha az óra Bluetooth LE-n is hirdet ugyanazon a néven.",
+            "A gyártó saját funkciói (telefonkereső, értesítések) a saját appjával működnek. A Q71 FunDo protokollja nem nyilvános.",
+        ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
         VrgSectionTitle("iTag (csepp alakú, egy gombos kulcstartó)")
         listOf(
             "Ez nem Find My címke: egyszerű Bluetooth eszköz, a telefon közvetlenül csatlakozik hozzá, fiók és hálózat nélkül.",
@@ -420,6 +438,65 @@ object TagFeature : VrgFeature {
         Text("Az ISYTag (IMTRON / MediaMarkt, IIT 1000) viselkedését még nem ellenőriztük telefonon: ez a WP M61 " +
             "„Telefonon ellenőrizni” listája, és az iTagé is. A Napló („tag”) minden csipogtatási és kapcsolati lépést rögzít.",
             style = Melyviz.small)
+    }
+
+    // ---- a paired device (the Q71 watch): chosen from the paired list, its connection, a tone on its speaker ----
+
+    @Composable
+    private fun PairedPick(typed: String) {
+        val ctx = LocalContext.current
+        val list = Tags.pairedList()
+        VrgSectionTitle("Vagy egy párosított eszköz (óra, fülhallgató)")
+        Text("Ami már párosítva van a telefon Bluetooth-beállításaiban, például a Q71 óra. Nem kell a telefonhoz tartani: " +
+            "a párosítás már mutatja, hogy a tiéd.", style = Melyviz.small)
+        if (list.isEmpty()) Text("Nincs párosított eszköz, vagy nincs Bluetooth engedély.", style = Melyviz.small.copy(color = Melyviz.faint))
+        list.forEach { p ->
+            val up = Tags.pairedConnected(p.address)
+            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(p.name ?: p.address, style = Melyviz.label)
+                    Text("${hu.vrg.mobile.tag.Bonded.kindLabel(p.majorClass)} · ${if (up) "kapcsolódva" else "nincs kapcsolat"}",
+                        style = Melyviz.readout.copy(color = if (up) Melyviz.kelp else Melyviz.muted))
+                }
+                VrgChip("Ez az enyém") {
+                    val n = if (typed == "ISYTag") "" else typed
+                    Tags.book.bindBonded(p.address, p.name, n, System.currentTimeMillis(), up)
+                    Tags.saveMine(ctx); Tags.bump()
+                }
+            }
+        }
+    }
+
+    private var watchRinger: WatchRinger? = null
+    private val watchRinging = MutableStateFlow(false)
+
+    @Composable
+    private fun WatchPanel(address: String, btName: String?) {
+        val ctx = LocalContext.current
+        val up by Tags.linkUp.collectAsStateWithLifecycle()
+        val ringing by watchRinging.collectAsStateWithLifecycle()
+        val text by Tags.ringText.collectAsStateWithLifecycle()
+        val audio = up && Tags.callAudio(address)
+        Text(when {
+            audio -> "Kapcsolódva, hívás-hangként is (a csipogtatás az óra hangszóróján szól)"
+            up -> "Kapcsolódva, de most nem hívás-hangként: csipogtatás nincs (a telefon Bluetooth-beállításában a Hívások legyen bekapcsolva)"
+            else -> "Nincs kapcsolat" + (btName?.let { ". Ha az óra hirdet „$it” néven, a távolság akkor is látszik." } ?: "")
+        }, style = Melyviz.small.copy(color = if (up) Melyviz.kelp else Melyviz.sand), modifier = Modifier.padding(top = 4.dp))
+        Row(Modifier.padding(top = 6.dp)) {
+            if (ringing) VrgChip("■ Állj", selected = true) { watchRinger?.stop() }
+            else VrgChip("🔔 Csipogtatás az órán") {
+                val r = watchRinger ?: WatchRinger(ctx.applicationContext) { res ->
+                    Tags.ringText.value = res.hu
+                    watchRinging.value = res == RingResult.STARTED
+                    Tags.bump()
+                }.also { watchRinger = it }
+                Tags.ringText.value = "Hang az órára…"
+                r.ring(address)
+            }
+        }
+        text?.let { Text(it, style = Melyviz.small) }
+        Text("A Q71 saját „telefonkeresője” csak a FunDo appal működik: a protokollja nem nyilvános, ezért innen nem " +
+            "érhető el. Az óra lemaradását a kapcsolat megszakadása jelzi.", style = Melyviz.small.copy(color = Melyviz.faint))
     }
 
     // ---- iTag: the held link, battery, Telefonkereső ---------------------------------------------------------

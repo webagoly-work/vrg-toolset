@@ -77,4 +77,5 @@ enum class RingResult(val hu: String) {
     REFUSED("A címke elutasította. A DULT szabvány szerint csak akkor szól, ha a gazdájától távol van."),
     NO_CONNECTION("Nem sikerült csatlakozni: menj közelebb, vagy várj, amíg újra hirdet."),
     TIMEOUT("Nem válaszolt időben."),
+    NO_AUDIO("Az eszköz most nem kapcsolódik hívás-hangként (kihangosító / HFP), így nem tudok rajta hangot játszani."),
 }
