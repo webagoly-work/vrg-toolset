@@ -687,41 +687,8 @@
     },
     {
      "n": 62,
-     "title": "M62 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image",
-     "items": [
-      {
-       "id": "M62.1",
-       "text": "⚙ Funkciók → Vázlat: **Szobadoboz (3D)** és **Körkép (360°)** be."
-      },
-      {
-       "id": "M62.2",
-       "text": "Egy szobában Fotópont, mind a négy irány 0,5× objektívvel (a saját kamera magától így nyit)."
-      },
-      {
-       "id": "M62.3",
-       "text": "Rendezés → ⬚ Szobadoboz → a lap alján **⟳ Körkép · F…** → **⟲ Igazítás**: megjelenik, mennyit fordított a képeken."
-      },
-      {
-       "id": "M62.4",
-       "text": "A pontból nézve a képek határa simább legyen, mint előtte."
-      },
-      {
-       "id": "M62.5",
-       "text": "**⇩ 360° kép**: a fájl a Képek / VRG Vázlat mappába kerül; Google Fotókban megnyitva körbe lehessen nézni."
-      },
-      {
-       "id": "M62.6",
-       "text": "✓ Kész, majd újranyitva az igazítás megmarad (a javítások között)."
-      },
-      {
-       "id": "M62.7",
-       "text": "1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz."
-      },
-      {
-       "id": "M62.8",
-       "text": "⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek."
-      }
-     ]
+     "title": "",
+     "items": []
     },
     {
      "n": 30,
@@ -892,7 +859,7 @@
      ]
     }
    ],
-   "count": 105
+   "count": 97
   }
  },
  "cross": [

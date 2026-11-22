@@ -75,6 +75,7 @@
   {"id":"helyszin.gps","front":"helyszin","sym":"⌖","label":"Itt vagyok (GPS)"},
   {"id":"helyszin.search","front":"helyszin","sym":"🔎","label":"Keresés a neten"},
   {"id":"helyszin.map","front":"helyszin","sym":"🗺","label":"Térkép"},
+  {"id":"helyszin.house3d","front":"helyszin","sym":"🏠","label":"Ház 3D (pontfelhő)"},
   {"id":"helyszin.outline","front":"helyszin","sym":"▱","label":"Körvonal rajzolása","requires":["helyszin.map"]},
   {"id":"helyszin.satellite","front":"helyszin","sym":"🛰","label":"Műhold","requires":["helyszin.map"]},
   {"id":"helyszin.place","front":"helyszin","sym":"◫","label":"Vázlat az épületen"},

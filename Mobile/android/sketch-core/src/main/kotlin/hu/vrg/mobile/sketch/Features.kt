@@ -98,6 +98,7 @@ object Features {
         F("helyszin.gps", "helyszin", "⌖", "Itt vagyok (GPS)"),
         F("helyszin.search", "helyszin", "🔎", "Keresés a neten"),
         F("helyszin.map", "helyszin", "🗺", "Térkép"),
+        F("helyszin.house3d", "helyszin", "🏠", "Ház 3D (pontfelhő)"),   // skcam K5: the Desktop page opens it; the phone has the switch only
         F("helyszin.outline", "helyszin", "▱", "Körvonal rajzolása", listOf("helyszin.map")),
         F("helyszin.satellite", "helyszin", "🛰", "Műhold", listOf("helyszin.map")),
         F("helyszin.place", "helyszin", "◫", "Vázlat az épületen"),
