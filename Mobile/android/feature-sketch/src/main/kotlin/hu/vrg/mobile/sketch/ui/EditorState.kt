@@ -66,6 +66,8 @@ sealed class Ask {
     data class CaptureView(val id: String) : Ask()
     data class EntryEdit(val id: String) : Ask()
     object Purposes : Ask()
+    /** skcam K6: the AR meter (Google AR csomag); from a wall's Méret, [room] / [edge] get the length. */
+    data class Ar(val room: String? = null, val edge: Int? = null) : Ask()
     // Kamera 2: the client's signature pad, a before / after comparison, choosing the before of an after
     object Signature : Ask()
     data class Compare(val before: String, val after: String) : Ask()
