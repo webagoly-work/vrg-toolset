@@ -1347,9 +1347,12 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
       pts.forEach(p => (p.shots || []).forEach(s => {
         if (shots.length >= MAX_SHOTS) return;
         const k = keyOf(p.id, s.deg), fix = (B.shots || {})[k] || {}, m = meta && meta(s.file) || null;
-        const f35 = fix.f35 > 0 ? fix.f35 : m && m.f35 > 0 ? m.f35 : DEFAULTS.f35;
+        // the field of view: typed here (kezi) > the lens the phone's in-app camera stored with the shot (lencse, K1b) >
+        // the photo's EXIF (exif) > a phone's main lens (alap)
+        const lens = +s.f35 > 0 ? +s.f35 : 0;
+        const f35 = fix.f35 > 0 ? fix.f35 : lens || (m && m.f35 > 0 ? m.f35 : DEFAULTS.f35);
         const fv = fov(f35, m && m.w, m && m.h), yaw = s.deg + (+fix.yaw || 0), pitch = +fix.pitch || 0;
-        shots.push({ key: k, point: p.id, deg: s.deg, side: s.side || '', file: s.file, f35, f35src: fix.f35 > 0 ? 'kezi' : m && m.f35 > 0 ? 'exif' : 'alap',
+        shots.push({ key: k, point: p.id, deg: s.deg, side: s.side || '', file: s.file, f35, f35src: fix.f35 > 0 ? 'kezi' : lens ? 'lencse' : m && m.f35 > 0 ? 'exif' : 'alap',
           yaw, pitch, fix: { yaw: +fix.yaw || 0, pitch, f35: fix.f35 > 0 ? fix.f35 : 0 }, pos: [p.x, eye, p.y], basis: basis(yaw, pitch), tanH: fv.tanH, tanV: fv.tanV, fovH: fv.h, fovV: fv.v,
           plan: [p.x, p.y] });
       }));
@@ -2355,7 +2358,7 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     if (!room.shots.length) h += '<p class="small muted">Ebben a helyiségben nincs fotópont: a doboz kép nélkül, a méretekből áll.</p>';
     else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
     room.shots.forEach((x, i) => {
-      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', alap: 'alapérték' }[x.f35src];
+      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', lencse: 'a kamerától', alap: 'alapérték' }[x.f35src];
       h += '<div class="bx-shot' + (ui.hi === i ? ' hi' : '') + '" data-key="' + esc(x.key) + '"><div class="row"><button class="btn sm" data-bact="hi" data-i="' + i + '" title="Kiemelés a 3D nézetben">' + esc(x.side || x.deg + '°') + '</button>' +
         '<span class="small ' + (img ? '' : 'muted') + '">' + esc(base(x.file)) + (img ? '' : ' (nincs csatolva)') + '</span>' +
         '<button class="btn sm" data-bact="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" title="Nézd innen">👁</button></div>' +

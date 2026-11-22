@@ -125,7 +125,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
-## B telefon — kamera és helyszín (77 lépés)
+## B telefon — kamera és helyszín (87 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -181,6 +181,19 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M52.11** ⚙ → **Kamera funkciók**: *Saját kamera* ki → a ◉ megint a telefon kamera-appját nyitja (M29 ⟳ Sorozat úgy működik, mint eddig). Vissza be; egyenként *Lámpa*, *Rács*, *Vízszintező*, *Szellemkép* ki: a gombjuk / vonaluk eltűnik. *Előtte / utána* ki: a *Szellemkép* is kikapcsol. *Sorozat a kamerában* ki: fotó után a kamera bezár.
 - [ ] **M52.12** Fotópont (Vázlat → szoba közepe → pont): a saját kamera egy fotó után bezár, és a húzással megadod az irányt, mint eddig.
 - [ ] **M52.13** Két telefonnal: a saját kamerás felmérés Átadással a PC-re / a másik telefonra — a Desktop oldal Kamera nézetében a képek ugyanúgy látszanak, semmi új vagy hibás jel nincs rajtuk.
+
+### M59 · Szobadoboz a telefonon (in `sketch`): the room box on the phone, the lens per Fotópont shot
+
+- [ ] **M59.1** ⚙ Funkciók → Vázlat: a **Szobadoboz (3D)** legyen bekapcsolva; a ⚙ Kamera funkciók között a Saját kamera is.
+- [ ] **M59.2** Egy szobában tegyél le egy Fotópontot, koppints rá: a kamera a legszélesebb látószöggel nyíljon (ha van 0,5×, a kijelzőn 0,5× látszik).
+- [ ] **M59.3** Készítsd el mind a négy irányt (É, K, D, Ny).
+- [ ] **M59.4** Rendezés: a sor végén a **⬚ Szobadoboz** gomb; koppints rá.
+- [ ] **M59.5** Felülről: egy ujjal forgasd, két ujjal nagyíts; a falakon a fotóid legyenek, a fotópont kék jellel.
+- [ ] **M59.6** A pontból (vagy egy kép 👁 gombja): nézz körbe egy ujjal; a képek illeszkedjenek a falakhoz.
+- [ ] **M59.7** Egy képnél a Látószög forrása „a kamerától” legyen (a Saját kamerával készült fotónál).
+- [ ] **M59.8** Írd át a belmagasságot, állíts az Irány csúszkán, majd ✓ Kész: a felmérés elmentődik; újranyitva a javítások megvannak.
+- [ ] **M59.9** A felmérést küldd a PC-re (Rendezés → Küldés a Plannerbe), nyisd meg az Asztal Sketcher oldalán: a Szobadoboz ugyanazokat a javításokat mutassa.
+- [ ] **M59.10** ⚙ Funkciók → Szobadoboz (3D) ki: a Rendezés gomb eltűnik, és a Fotópont 1×-es nagyítással nyílik.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

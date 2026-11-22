@@ -132,6 +132,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
     val rep = n.report
     var done by remember { mutableStateOf<String?>(null) }
     var report by remember { mutableStateOf(false) }   // F9 (WP M54): the Jegyzőkönyv dialog
+    var roomBox by remember { mutableStateOf(false) }  // skcam K1b (WP M59): the Szobadoboz
     val tm = rememberTextMeasurer()
     val c = pal()
 
@@ -187,6 +188,8 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 }
                 // F9 (WP M54, D-127, D-128): the Felmérési jegyzőkönyv from the phone, behind its registry switch (M51)
                 if (FeaturePrefs.on("export.report_phone")) VrgChip("📄 Jegyzőkönyv") { report = true }
+                // skcam K1b (WP M59): the room in 3D with its Fotópont photos, behind the registry switch (D-90)
+                if (FeaturePrefs.on(hu.vrg.mobile.sketch.RoomBox.FEATURE) && hu.vrg.mobile.sketch.RoomBox.ready(n)) VrgChip("⬚ Szobadoboz") { roomBox = true }
             }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
             if (shots > 0 && feat("export.photos")) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
@@ -196,6 +199,7 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
         }
     }
     if (report) ReportDialog(st) { report = false }
+    if (roomBox) RoomBoxDialog(st) { roomBox = false }
 }
 
 private fun DrawScope.text(tm: TextMeasurer, s: String, at: Offset, color: Color, size: TextUnit, bold: Boolean = false, bg: Color? = null) {

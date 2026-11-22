@@ -224,4 +224,6 @@ Opened 2026-11-20: `CAMERA-LINE.md` (stages K1–K7, open questions Q1–Q4), re
 `docs/research/2026-11-20_room-capture-and-measurement.md`. **K1 Szobadoboz is built (WP M57, BETA):** on the Desktop
 page, Vázlat → ⬚ Szobadoboz (3D) raises the plan's rooms to their ceiling height and projects the Fotópont photos onto
 the walls (offline WebGL, no AI; `lib/roombox.js` + `lib/roombox-gl.js`). It has a dollhouse view, a view standing at
-the photo point, and per-photo fine-tuning saved in the survey's `box` key. Next: K1b (the phone).
+the photo point, and per-photo fine-tuning saved in the survey's `box` key. **K1b is built (WP M59, BETA):** the same
+box on the phone (Rendezés → ⬚ Szobadoboz, a WebView with `lib/roombox-phone.js` as the touch UI). The phone keeps the
+`box` key, and the in-app camera opens Fotópont at the widest zoom and stores each shot's lens.
