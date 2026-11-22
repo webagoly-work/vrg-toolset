@@ -520,8 +520,16 @@ function showItem(i) {
     h += row('Vezérlés', esc(c.control) + (c.lines && c.lines.length ? '<br>' + xrefs(c.lines) : ''));
     if (c.install && c.install.length) h += row('Beépítés', '<ul>' + c.install.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
     if (c.fixing && c.fixing.length) h += row('Rögzítés', xrefs(c.fixing));
-    h += row('Előírás', esc(c.rules)) + row('Rajzjel', c.symbol ? `<span style="font:11px var(--mono)">${esc(c.symbol)}</span> (Rajztár)` : '') + row('Hova', esc(c.rooms));
+    h += row('Előírás', esc(c.rules) + (c.norms && c.norms.length ? '<br>' + xrefs(c.norms) : '')) + row('Rajzjel', c.symbol ? `<span style="font:11px var(--mono)">${esc(c.symbol)}</span> (Rajztár)` : '') + row('Hova', esc(c.rooms));
     if (c.related && c.related.length) h += row('Rokon típusok', refs(it.vol, c.related));
+  } else if (it.kind === 'eloiras') {
+    h += row('Mire vonatkozik', esc(c.scope));
+    h += row('Lényeg (saját összefoglaló)', '<ul>' + c.points.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Számok (tájékoztató)', '<ul>' + c.values.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Hol érvényes', esc(c.applies)) + row('Forrás', esc(c.source.kind + ': ' + c.source.ref + (c.source.from ? ' — ' + c.source.from : '')));
+    const users = items.filter(x => x.card && (x.card.norms || []).includes(it.id.replace(/^card\./, '')));
+    if (users.length) h += row('Erre hivatkozik', users.map(x => `<button class="ref" data-ref="${esc(x.id)}">${esc(x.title)}</button>`).join(', '));
+    if (c.related && c.related.length) h += row('Kapcsolódó előírások', refs(it.vol, c.related));
   } else if (it.kind === 'vonal') {
     h += `<div class="svgbox">${it.svg || ''}</div>`;
     h += row('Hogyan működik', esc(c.how)) + row('Közeg', esc(c.medium)) + row('Jel', esc(c.signal)) + row('Topológia', esc(c.topology)) + row('Táplálás', esc(c.power));

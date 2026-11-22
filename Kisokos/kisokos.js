@@ -26,9 +26,9 @@ const path = require('path');
 const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const LANGS = ['hu', 'en', 'de'];
-const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'], lampa: ['related'] };
-const XREFS = { lampa: ['fixing', 'lines'] };   // links into other volumes, written '<volume>.<id>'
-const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal', lampa: 'Lámpatest-típus' };
+const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'], lampa: ['related'], eloiras: ['related'] };
+const XREFS = { lampa: ['fixing', 'lines', 'norms'] };   // links into other volumes, written '<volume>.<id>'
+const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal', lampa: 'Lámpatest-típus', eloiras: 'Előírás' };
 const VS = require('./lib/vonal-svg');
 const LS = require('./lib/lampa-svg');
 
@@ -118,6 +118,11 @@ function check(K = load()) {
       if (c.symbol && K.symbols && !K.symbols.has(c.symbol)) P.push(`${who}: symbol "${c.symbol}" is not in shared/rajztar/data/symbols.json`);
       for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
     }
+    if (c.kind === 'eloiras') {
+      if (!c.source || !c.source.ref || !c.source.kind) P.push(`${who}: source needs kind and ref (a summary always names what it summarises)`);
+      for (const f of ['scope', 'applies']) if (!c[f]) P.push(`${who}: no ${f}`);
+      for (const f of ['points', 'values']) if (!Array.isArray(c[f]) || !c[f].length) P.push(`${who}: ${f} must be a non-empty list`);
+    }
     if (c.kind === 'vonal') {
       for (const f of ['how', 'medium', 'signal', 'rate', 'distance', 'topology', 'home']) if (!c[f]) P.push(`${who}: no ${f}`);
       if (!VS.KCOL[c.waveform]) P.push(`${who}: waveform must be one of ${Object.keys(VS.KCOL).join(', ')}`);
@@ -137,7 +142,36 @@ function md(K = load()) {
   if (K.cards.some(c => c.vol === 'rg')) out.push(mdRg(K));
   if (K.cards.some(c => c.vol === 'kv')) out.push(mdKv(K));
   if (K.cards.some(c => c.vol === 'vt')) out.push(mdVt(K));
+  if (K.cards.some(c => c.vol === 'el')) out.push(mdEl(K));
   return out.join('\n');
+}
+
+function mdEl(K) {
+  const vol = K.map.volumes.find(v => v.id === 'el');
+  const dir = path.join(K.root, vol.dir);
+  const cs = K.cards.filter(c => c.vol === 'el');
+  const users = id => K.cards.filter(c => (c.norms || []).includes('el.' + id)).map(c => c.title);
+  const L = ['# Előírások — a Kisokos', '',
+    '*Generálva a kártyákból (`node Kisokos/kisokos.js md`); ne szerkeszd kézzel. Minden kártya SAJÁT összefoglaló és hivatkozás, ' +
+    'nem a szabvány vagy a jogszabály szövege: az a megvásárolt példányban, illetve a Nemzeti Jogszabálytárban van. ' +
+    'A számok tájékoztatók; munka előtt a hatályos kiadással kell egyeztetni. Vázlat: minden kártya ellenőrzésre vár.*', '',
+    '| Előírás | Mire | Forrás |', '|---|---|---|'];
+  for (const c of cs) L.push(`| ${c.title} | ${String(c.scope).split('. ')[0].replace(/\|/g, '/')} | ${c.source.ref} |`);
+  L.push('');
+  for (const c of cs) {
+    L.push(`## ${c.title}`, '');
+    if (c.aka && c.aka.length) L.push(`*Más néven:* ${c.aka.join(', ')}`, '');
+    L.push(c.scope, '', '**Lényeg (saját összefoglaló):**', '');
+    for (const p of c.points) L.push(`- ${p}`);
+    L.push('', '**Számok (tájékoztató, a hatályos kiadással egyeztetendő):**', '');
+    for (const v of c.values) L.push(`- ${v}`);
+    L.push('', `- **Hol érvényes:** ${c.applies}`, `- **Forrás:** ${c.source.kind}: ${c.source.ref} — ${c.source.from || ''}`);
+    const u = users(c.id); if (u.length) L.push(`- **Erre hivatkozó típusok:** ${u.join(', ')}`);
+    if (c.related && c.related.length) L.push(`- **Kapcsolódó előírások:** ${c.related.map(r => name(K, 'el', r)).join(', ')}`);
+    L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`, '');
+  }
+  fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
+  return `wrote ${path.relative(K.repo, path.join(dir, 'KISOKOS.md'))} (${cs.length} cards)`;
 }
 
 function mdVt(K) {
@@ -170,7 +204,7 @@ function mdVt(K) {
       row('Vezérlés', c.control + (c.lines && c.lines.length ? ` (vonalak: ${c.lines.map(any).join(', ')})` : ''));
       if (c.install && c.install.length) { L.push('- **Beépítés:**'); for (const t of c.install) L.push(`  - ${t}`); }
       if (c.fixing && c.fixing.length) row('Rögzítés', c.fixing.map(any).join(', '));
-      row('Előírás', c.rules); row('Rajzjel', c.symbol ? '`' + c.symbol + '` (Rajztár)' : ''); row('Hova', c.rooms);
+      row('Előírás', c.rules + (c.norms && c.norms.length ? ` (kártyák: ${c.norms.map(any).join(', ')})` : '')); row('Rajzjel', c.symbol ? '`' + c.symbol + '` (Rajztár)' : ''); row('Hova', c.rooms);
       if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
       if (c.related && c.related.length) row('Rokon típusok', c.related.map(r => name(K, 'vt', r)).join(', '));
       L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);

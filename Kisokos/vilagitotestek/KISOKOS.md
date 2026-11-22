@@ -55,6 +55,14 @@
 | Kapuoszlop- és pillérlámpa | Kültéri | a kapuoszlop vagy a kerítéspillér tetejére | IP44 – IP65 | minden irányba | `lum.outdoor` |
 | Kültéri fényfüzér | Kültéri | kifeszítve teraszon, pergolán, fák között; acélsodronyra függesztve | IP44 – IP65 | minden irányba | `lum.outdoor` |
 | Előtető- és teraszmennyezeti lámpa | Kültéri | az előtető, az eresz vagy a terasz mennyezetébe süllyesztve vagy felületre | IP44 – IP65 | széles nyaláb 80° | `lum.spot` |
+| Önálló akkumulátoros biztonsági lámpatest | Biztonsági és jelző | mennyezetre vagy falra, felületre szerelve vagy süllyesztve | IP20 – IP65 | denevérszárny (batwing) | `lum.emergency` |
+| Központi akkumulátoros rendszer lámpateste | Biztonsági és jelző | mennyezetre vagy falra, a központi rendszer áramköreire kötve | IP20 – IP65 | denevérszárny (batwing) | `lum.emergency-central` |
+| Menekülési útirány- és kijáratjelző | Biztonsági és jelző | ajtó fölé, falra, mennyezetre függesztve vagy zászlósan | IP20 – IP65 | minden irányba | `lum.exit` |
+| Süllyesztett biztonsági spot | Biztonsági és jelző | álmennyezetbe süllyesztve, kis kivágással | IP20 – IP65 (alulról) | denevérszárny (batwing) | `lum.emergency` |
+| Nagy terek biztonsági lámpateste (nyílt terület) | Biztonsági és jelző | nagy belmagasságú mennyezetre vagy falra | IP40 – IP65 | széles nyaláb 120° | `lum.emergency` |
+| Vészvilágítási modul (konverziós készlet) | Biztonsági és jelző | egy normál lámpatestbe vagy mellé építve | a lámpatesté | diffúz, lefelé | `lum.emergency` |
+| Áramszünet-jelző éjszakai fény | Biztonsági és jelző | dugaszolós, a fali aljzatba | IP20 | minden irányba | `lum.general` |
+| Utánvilágító (fotolumineszcens) jel és csík | Biztonsági és jelző | falra, padlóra, lépcsőélre ragasztva vagy csavarozva | nem villamos termék | diffúz, lefelé | `` |
 
 ## 1. Mennyezeti
 
@@ -1379,3 +1387,216 @@ Fedett kültéri mennyezetbe (előtető, terasz, loggia, eresz alja) szerelt, le
 - **Rokon típusok:** Süllyesztett downlight, Kültéri falikar
 - **Keresőszavak:** HU: kültéri beépíthető spot IP65 · eresz alatti LED lámpa — EN: outdoor soffit downlight IP65 — DE: Außen Einbaustrahler IP65 · Dachüberstand Leuchte
 - **Hol kapható:** Villamossági nagykereskedés, lámpaszaküzlet.
+
+## 8. Biztonsági és jelző
+
+### Önálló akkumulátoros biztonsági lámpatest
+
+*Más néven:* vészvilágító lámpatest, akkus vészvilágítás, self-contained emergency luminaire
+
+![Önálló akkumulátoros biztonsági lámpatest](svg/onallo-biztonsagi.svg)
+
+Saját akkumulátorral és töltővel működő biztonsági lámpatest: hálózatkimaradáskor magától bekapcsol, és a névleges ideig (jellemzően 1 vagy 3 óra) világít. Készenléti (csak kimaradáskor), állandó üzemű (mindig) vagy kombinált kivitelben.
+
+- **Szerelés:** mennyezetre vagy falra, felületre szerelve vagy süllyesztve
+- **Fényforrás:** integrált LED, NiCd / NiMH / LiFePO4 akkumulátor
+- **Védettség:** IP20 – IP65 · II. érintésvédelmi osztály (gyakran)
+- **Fény:** vészüzemben 100–400 lm · 4000–6500 K · Ra ≥ 70 · menekülési útvonal- vagy nyílt területi optikával
+- **Vezérlés:** töltésjelző LED, próbagomb; öntesztes vagy DALI-címezhető kivitel (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - Állandó (nem kapcsolt) fázist kap a helyiség világítási áramköréről, hogy annak a kiesésére is bekapcsoljon; a kapcsolt fázis csak állandó üzemű kivitelnél, a gyártó szerint.
+  - Az akkumulátor a bekötés után töltődik: a teljes idejű próba csak a teljes feltöltés után.
+  - Helye a terv szerint: kijáratok, lépcsők, irányváltások, tűzoltó eszközök fölött.
+- **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
+- **Előírás:** MSZ EN 60598-2-22, MSZ EN 1838, MSZ EN 50172; a kötelezettség: OTSZ (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek, OTSZ és TvMI · Hol kell biztonsági világítás)
+- **Rajzjel:** `lum.emergency` (Rajztár)
+- **Hova:** lépcsőház, folyosó, közösségi terek, munkahelyek, társasház közös terei
+- **Buktatók:**
+  - Az akkumulátor néhány év alatt elöregszik: az évenkénti teljes próba mutatja meg.
+  - A kapcsolt fázisra kötött készenléti lámpatest lekapcsoláskor akkuról világít és lemerül.
+- **Rokon típusok:** Központi akkumulátoros rendszer lámpateste, Menekülési útirány- és kijáratjelző, Vészvilágítási modul (konverziós készlet)
+- **Keresőszavak:** HU: önálló akkus vészvilágító lámpatest 3 óra · öntesztes vészvilágítás — EN: self-contained emergency light 3h · self-test emergency luminaire — DE: Einzelbatterieleuchte 3h · Notleuchte Selbsttest
+- **Hol kapható:** Villamossági nagykereskedés, biztonságtechnikai szaküzlet.
+
+### Központi akkumulátoros rendszer lámpateste
+
+*Más néven:* központi vészvilágítás, CB rendszer, central battery luminaire
+
+![Központi akkumulátoros rendszer lámpateste](svg/kozponti-akkus.svg)
+
+Saját akkumulátor nélküli biztonsági lámpatest, amelyet egy központi akkumulátoros egység táplál funkciómegtartó kábelhálózaton. Nagyobb épületekben: egy helyen karbantartható, felügyelhető.
+
+- **Szerelés:** mennyezetre vagy falra, a központi rendszer áramköreire kötve
+- **Fényforrás:** integrált LED
+- **Védettség:** IP20 – IP65 · a gyártó szerint
+- **Fény:** vészüzemben 100–1000 lm · 4000–6500 K · Ra ≥ 70 · menekülési útvonal- vagy nyílt területi optikával
+- **Vezérlés:** a központ felügyeli és teszteli (címezhető lámpatestek) (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - A kábelezés funkciómegtartó (tűzálló) rendszerrel, a terv szerinti időtartamra; a rögzítőelemek is a rendszer részei.
+  - A lámpatest és a központ egy gyártói rendszer (címzés, felügyelet).
+- **Rögzítés:** Beton, Beütős dübel, Csavaros terpesztő horgony
+- **Előírás:** MSZ EN 50171, MSZ EN 60598-2-22, MSZ EN 1838, MSZ EN 50172 (kártyák: MSZ EN 50171 · Központi tápellátó rendszerek, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek)
+- **Rajzjel:** `lum.emergency-central` (Rajztár)
+- **Hova:** irodaház, csarnok, iskola, nagy társasház, mélygarázs
+- **Buktatók:**
+  - A nem funkciómegtartó rögzítés (műanyag bilincs) tűzben leszakad: a kábelrendszer elemeit egyben kell minősíteni.
+- **Rokon típusok:** Önálló akkumulátoros biztonsági lámpatest, Menekülési útirány- és kijáratjelző
+- **Keresőszavak:** HU: központi akkumulátoros vészvilágítás · funkciómegtartó kábel E90 — EN: central battery emergency lighting — DE: Zentralbatterie Notbeleuchtung · Funktionserhalt E90
+- **Hol kapható:** Biztonságtechnikai szakkereskedés, a rendszer gyártója.
+
+### Menekülési útirány- és kijáratjelző
+
+*Más néven:* kijáratjelző lámpa, EXIT lámpa, zöld futó emberes lámpa
+
+![Menekülési útirány- és kijáratjelző](svg/utiranyjelzo.svg)
+
+Belülről megvilágított biztonsági jel szabványos piktogrammal (zöld alapon fehér futó ember, ajtó, nyíl). A kijáratot és a menekülés irányát mutatja, hálózatkimaradáskor is világít.
+
+- **Szerelés:** ajtó fölé, falra, mennyezetre függesztve vagy zászlósan
+- **Fényforrás:** integrált LED, saját vagy központi akkumulátor
+- **Védettség:** IP20 – IP65 · II. érintésvédelmi osztály (gyakran)
+- **Fény:** a jel fénysűrűsége a lényeg, nem a fényáram · a zöld jelszín · — · a jel síkjára merőlegesen
+- **Vezérlés:** állandó üzemű; öntesztes vagy címezhető kivitel (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - A piktogram iránya és a nyíl a menekülés valódi irányát mutassa: a terv és a helyszín együtt.
+  - A jel méretét a felismerési távolság adja (belső megvilágítású jelnél kb. 200 × a piktogram magassága).
+  - Állandó üzemű: nem kapcsolt fázist kap.
+- **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
+- **Előírás:** MSZ EN ISO 7010, MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN ISO 7010 · Biztonsági jelek, MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz)
+- **Rajzjel:** `lum.exit` (Rajztár)
+- **Hova:** kijáratok, folyosók, lépcsőházak, közösségi terek
+- **Buktatók:**
+  - Régi, szöveges (KIJÁRAT) vagy nem szabványos piktogramú jel: cserélni kell.
+  - A matricával cserélhető irányú jelnél a beszerelés után ellenőrizni kell a nyilat.
+- **Rokon típusok:** Önálló akkumulátoros biztonsági lámpatest, Utánvilágító (fotolumineszcens) jel és csík
+- **Keresőszavak:** HU: menekülési útirányjelző lámpa ISO 7010 · kijáratjelző akkus — EN: emergency exit sign light ISO 7010 — DE: Rettungszeichenleuchte ISO 7010
+- **Hol kapható:** Villamossági nagykereskedés, biztonságtechnikai szaküzlet.
+
+### Süllyesztett biztonsági spot
+
+*Más néven:* álmennyezeti vészvilágító spot, beépíthető vészvilágítás
+
+![Süllyesztett biztonsági spot](svg/sullyesztett-biztonsagi-spot.svg)
+
+Kis méretű, álmennyezetbe süllyesztett biztonsági lámpatest cserélhető optikával: hosszú, keskeny eloszlás folyosóra (menekülési útvonal), kerek, széles eloszlás nagy térre (nyílt terület). Szinte láthatatlan, amíg nem kell.
+
+- **Szerelés:** álmennyezetbe süllyesztve, kis kivágással
+- **Fényforrás:** integrált LED, saját vagy központi akkumulátor
+- **Védettség:** IP20 – IP65 (alulról) · II. érintésvédelmi osztály (gyakran)
+- **Fény:** vészüzemben 150–600 lm · 5000–6500 K · Ra ≥ 70 · folyosóoptika (hosszú, keskeny) vagy nyílt területi optika (kerek, széles)
+- **Vezérlés:** készenléti üzemű; öntesztes vagy DALI-címezhető kivitel (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - A kiosztás a fotometriai számításból jön: a lámpatestek közti legnagyobb távolságot a gyártó táblázata adja az optikához és a szerelési magassághoz.
+  - Az akkumulátoros egység a kivágás mellett az álmennyezet fölé kerül: a cseréhez hozzáférés.
+- **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
+- **Előírás:** MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 50172 · Biztonsági világítási rendszerek)
+- **Rajzjel:** `lum.emergency` (Rajztár)
+- **Hova:** irodák, folyosók, üzletek, rendelők álmennyezete
+- **Buktatók:**
+  - A rossz optika (folyosóoptika nagy térben) foltos, a követelményt nem teljesítő megvilágítást ad.
+- **Rokon típusok:** Önálló akkumulátoros biztonsági lámpatest, Nagy terek biztonsági lámpateste (nyílt terület)
+- **Keresőszavak:** HU: beépíthető vészvilágító spot folyosó optika — EN: recessed emergency downlight corridor lens — DE: Einbau Sicherheitsleuchte Rettungswegoptik
+- **Hol kapható:** Biztonságtechnikai szakkereskedés, villamossági nagykereskedés.
+
+### Nagy terek biztonsági lámpateste (nyílt terület)
+
+*Más néven:* pánikellenes világítás, csarnok vészvilágítás, anti-panic lighting
+
+![Nagy terek biztonsági lámpateste (nyílt terület)](svg/nyilt-teruleti.svg)
+
+Nagy terekhez (csarnok, sportterem, raktár, közösségi tér) méretezett biztonsági lámpatest nagyobb fényárammal és széles, egyenletes eloszlással, hogy áramszünetben ne törjön ki pánik, és mindenki elérje a menekülési útvonalat.
+
+- **Szerelés:** nagy belmagasságú mennyezetre vagy falra
+- **Fényforrás:** integrált LED, saját vagy központi akkumulátor
+- **Védettség:** IP40 – IP65 · IK08 vagy jobb (sportcsarnokban labdaálló) · a gyártó szerint
+- **Fény:** vészüzemben 500–3000 lm · 4000–6500 K · Ra ≥ 70 · széles, nyílt területi
+- **Vezérlés:** készenléti vagy állandó üzemű; öntesztes vagy központi felügyelettel (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - Nyílt területre a padlón legalább 0,5 lx (a szélső 0,5 m nélkül): a kiosztást számítással kell igazolni.
+  - Nagy magasságban a karbantartás (akkucsere) gépet kíván: központi rendszer lehet jobb.
+- **Rögzítés:** Beton, Acélszerkezet, Csavaros terpesztő horgony
+- **Előírás:** MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, OTSZ és TvMI · Hol kell biztonsági világítás)
+- **Rajzjel:** `lum.emergency` (Rajztár)
+- **Hova:** csarnok, sportterem, raktár, mélygarázs, rendezvényterem
+- **Buktatók:**
+  - Sportcsarnokban labdaálló kivitel és védőrács kell.
+- **Rokon típusok:** Süllyesztett biztonsági spot, Központi akkumulátoros rendszer lámpateste
+- **Keresőszavak:** HU: csarnok vészvilágítás IP65 · nyílt területi vészvilágítás — EN: high bay emergency lighting · open area emergency lighting — DE: Hallen Sicherheitsleuchte · Antipanikbeleuchtung
+- **Hol kapható:** Biztonságtechnikai szakkereskedés.
+
+### Vészvilágítási modul (konverziós készlet)
+
+*Más néven:* vészvilágító modul, emergency kit, inverter modul LED-hez
+
+![Vészvilágítási modul (konverziós készlet)](svg/vesz-modul.svg)
+
+Akkumulátorból, töltőből és átkapcsolóból (inverterből) álló egység, amely egy hagyományos lámpatestet biztonsági lámpatestté alakít: kimaradáskor csökkentett fényerővel a saját akkumulátoráról táplálja a LED-et.
+
+- **Szerelés:** egy normál lámpatestbe vagy mellé építve
+- **Fényforrás:** a normál lámpatest LED-je a modulról
+- **Védettség:** a lámpatesté · a lámpatesté
+- **Fény:** vészüzemben a normál fényáram töredéke (a modul vészüzemi fényáram-tényezője szerint) · a lámpatesté · a lámpatesté · a lámpatesté
+- **Vezérlés:** töltésjelző, próbagomb, önteszt (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - A modulnak kompatibilisnek kell lennie a lámpatest LED-meghajtójával és a LED-modul feszültségével (a gyártói lista szerint).
+  - Az átalakított lámpatest megfelelőségéért az átalakító felel: a gyártói átalakítás vagy előre gyártott vészvilágítási kivitel biztonságosabb.
+  - A vészüzemi fényáramot a lámpatest helyén is ellenőrizni kell (számítás).
+- **Előírás:** MSZ EN 61347-2-7 (a modul), MSZ EN 60598-2-22 (az átalakított lámpatest) (kártyák: MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 1838 · Vészvilágítás: alkalmazás)
+- **Rajzjel:** `lum.emergency` (Rajztár)
+- **Hova:** ahol a normál lámpatest a biztonsági világítás része: irodák, folyosók, üzletek
+- **Buktatók:**
+  - Nem kompatibilis meghajtóval a modul nem kapcsol át, vagy tönkreteszi a LED-et.
+  - A vészüzemi fényáram sokkal kisebb, mint a normál: a terv ezzel számoljon.
+- **Rokon típusok:** Önálló akkumulátoros biztonsági lámpatest, LED-panel, Páramentes lámpatest
+- **Keresőszavak:** HU: vészvilágító modul LED-hez 3 óra · inverter modul vészvilágítás — EN: LED emergency conversion kit 3h — DE: Notlichtumschaltmodul LED 3h · Notlichtbaustein
+- **Hol kapható:** Villamossági nagykereskedés, biztonságtechnikai szaküzlet.
+
+### Áramszünet-jelző éjszakai fény
+
+*Más néven:* konnektoros vészfény, kivehető zseblámpás éjszakai fény, power failure light
+
+![Áramszünet-jelző éjszakai fény](svg/aramszunet-feny.svg)
+
+Lakásba való, konnektorba dugott kis lámpa: éjszakai tájékozódó fény, áramszünetkor magától bekapcsol, és sokszor kivehető zseblámpaként is használható. Nem a szabványos biztonsági világítás része, de lakásban hasznos.
+
+- **Szerelés:** dugaszolós, a fali aljzatba
+- **Fényforrás:** integrált LED, akkumulátor
+- **Védettség:** IP20 · II. érintésvédelmi osztály
+- **Fény:** 5–100 lm · 2700–4000 K · jellemzően nem megadott · szórt
+- **Vezérlés:** alkonykapcsoló, automatikus bekapcsolás áramszünetkor (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - Folyosó, lépcső, hálószoba ajtaja mellé, egy elérhető aljzatba.
+- **Előírás:** MSZ EN 60598-2-12 (aljzatba dugható éjszakai fények)
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** folyosó, gyerekszoba, lépcső, idősek lakása
+- **Buktatók:**
+  - Nem helyettesíti a kötelező biztonsági világítást ott, ahol az előírás azt kéri.
+- **Rokon típusok:** Ágy alatti orientációs fény, Falba süllyesztett lépcső- és orientációs fény
+- **Keresőszavak:** HU: áramszünet lámpa konnektorba · vészfény zseblámpával — EN: plug-in power failure night light — DE: Notlicht Steckdose mit Taschenlampe
+- **Hol kapható:** Barkácsáruház, műszaki áruház.
+
+### Utánvilágító (fotolumineszcens) jel és csík
+
+*Más néven:* fluoreszkáló menekülési jel, foszforeszkáló csík, photoluminescent sign
+
+![Utánvilágító (fotolumineszcens) jel és csík](svg/utanvilagito-jel.svg)
+
+Áram nélkül működő jel vagy csík, amely a környező fényből töltődik fel, és sötétben egy ideig magától világít. Kiegészíti a biztonsági világítást (lépcsőél, padló menti útvonal, jelek), de nem helyettesíti.
+
+- **Szerelés:** falra, padlóra, lépcsőélre ragasztva vagy csavarozva
+- **Fényforrás:** nincs: fotolumineszcens anyag
+- **Védettség:** nem villamos termék · —
+- **Fény:** nincs fényáram; az utánvilágítás fénysűrűsége (mcd/m²) a jellemző · sárgászöld · — · a felületről szórt
+- **Vezérlés:** nincs: a normál világítás tölti fel
+- **Beépítés:**
+  - Csak ott működik, ahol a normál világítás rendszeresen feltölti.
+  - A jel piktogramja szabványos legyen; méretét a felismerési távolság adja.
+- **Rögzítés:** Nylon terpesztődübel, Csempe, járólap
+- **Előírás:** MSZ EN ISO 7010, ISO 16069 (utánvilágító menekülési jelrendszerek) (kártyák: MSZ EN ISO 7010 · Biztonsági jelek)
+- **Hova:** lépcsőház, menekülési útvonal, hajó, alagút, mélygarázs
+- **Buktatók:**
+  - Sötét helyen, ahol nincs feltöltő fény, nem világít.
+  - Idővel halványul: cserélni kell.
+- **Rokon típusok:** Menekülési útirány- és kijáratjelző
+- **Keresőszavak:** HU: utánvilágító menekülési jel · fotolumineszcens csík lépcsőre — EN: photoluminescent exit sign · glow in the dark stair strip — DE: langnachleuchtendes Rettungszeichen · nachleuchtende Treppenmarkierung
+- **Hol kapható:** Biztonságtechnikai szaküzlet, munkavédelmi bolt.

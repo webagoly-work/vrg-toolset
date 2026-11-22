@@ -147,5 +147,7 @@ and "what goes wrong if not".
 - Every Rögzítéstechnika and Kommunikációs vonalak card waits for the Founder's review.
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.
-- **Világítótestek (vt)**: families 1–4, 6, 7 drafted (49 cards); families 5, 8, 9, 10 to come (`vilagitotestek.md`).
+- **Világítótestek (vt)**: families 1–4, 6–8 drafted (57 cards); families 5, 9, 10 to come (`vilagitotestek.md`).
+- **Előírások (el)**: started with the 7 emergency lighting rules (own summaries + references); the other rules the
+  cards cite (fürdő 7-701, medence 7-702, szauna 7-703, kültér 7-714, MSZ EN 60598-1) are still text on the cards.
   Its DevLog line is written out there, ready to paste into `notes/devlog/lines.js` on H:.
