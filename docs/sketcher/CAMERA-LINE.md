@@ -9,7 +9,7 @@ Research: `docs/research/2026-11-20_room-capture-and-measurement.md` (sources, l
 Grows out of: M24 Vázlat, M25 Fotópont, M29 Kamera, M30 Helyszín, M52 Saját kamera (`docs/mobile/WP/`). Builds on
 decisions D-24…D-26, D-31, D-90 and D-100…D-109 (`docs/mobile/DECISIONS.md`).
 
-**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-158…D-161). Fork **DV1** (Data Vault) turns the line's
+**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-158…D-161), **K6 built** (WP M64, BETA, D-162…D-165). Fork **DV1** (Data Vault) turns the line's
 written and collected features into Data Vault cells (§6).
 
 **Since the line opened:** fork F7 (WP M52, D-100…D-109) gave the Sketcher an **in-app CameraX camera**, with the
@@ -42,7 +42,7 @@ cheaper: its viewfinder exists, only the ARCore session is new.
 | **K4** ✓ M62 | Körkép (360) | Eight shots at 45°, or four at 0.5×: stitched into a 360 panorama (OpenCV `Stitcher`, Apache-2.0, on the PC), viewed in Pannellum (MIT); optional HorizonNet (MIT) outline check against the drawn room | PC + viewer anywhere | M | K1 |
 | **K5** ✓ M63 | Ház 3D | A capture mode for walking around a house or along a room's walls (M29 *Sorozat* with an overlap hint and a "two markers at a known distance" step) → COLMAP/GLOMAP (or MapAnything Apache) on the PC → mesh/points scaled by K2 or the markers → a viewer with a measuring tool; optional Gaussian splat view (Brush, Apache-2.0) | PC (GPU for dense) | L | K2 or K3; **Q4** |
 | **K1b** ✓ M59 | Szobadoboz a telefonon | The same `roombox.js` in a WebView (as M54's jegyzőkönyv); `SketchJson` keeps the `box` key; the F7 camera stores the lens / zoom / field of view with each Fotópont shot and offers 0.5× for Fotópont | phone | M | K1 |
-| **K6** | AR mérő (optional) | ARCore on top of F7's own viewfinder: live two-point distance, Raw Depth points, Recording API (camera + depth + IMU to MP4 for the PC) | phone | L | **Q2** (Google's AR runtime) |
+| **K6** ✓ M64 | AR mérő: Google AR csomag | One opt-in switch for the whole ARCore pack: a live two-point distance (onto a wall from its Méret), a room scan written as a to-scale Ház 3D file, the Recording API (camera + depth + IMU to MP4 for the PC). ARCore runs its own camera session, so it does not use F7's viewfinder | phone | L | Q2 answered: ARCore, as an option |
 | **K7** | Mélységbecslés (optional) | Depth Anything V2 **Small** (Apache-2.0; the larger models are non-commercial) metric-indoor: "this typed size looks wrong" warnings on the Nyitott front | phone or PC | M | licence check of the metric checkpoint |
 
 **Not used** (licence): DUSt3R / MASt3R (CC BY-NC-SA), π³ weights (CC BY-NC), Depth Pro (commercial use unclear),
@@ -55,7 +55,9 @@ K1 and K1b are built (WP M57 on the Desktop, WP M59 on the phone; their *Telefon
 K3, K4 and K5 are built too (WP M60: measuring on a plane in one photo; WP M62: the photo point aligned and its 360°
 image; WP M63: a house as a measurable point cloud, COLMAP on the PC). **Next:** COLMAP installed on the PC
 (`docs/handoff/2026-11-22_colmap-house3d-H.md`) and a first real house; the phone check with real photos and a tape
-measure; then **K2** (the laser) as soon as Q1 (which laser meter) is answered, or **K6** (AR) once Q2 is answered.
+measure (M57, M59, M60, M62, and M64 on a phone with ARCore); then **K2** (the laser) as soon as Q1 (which laser meter)
+is answered. Beside the line: the open-data terrain and building layer for VRG Térkép (the Founder, 2026-11-22: "both,
+start with the ARCore pack"). **K6 built** (WP M64: the Google AR csomag, one switch).
 Corner snapping (drag a corner line onto the box corner) is the K1 polish left open.
 
 ## 4. Open questions for the user
@@ -63,8 +65,8 @@ Corner snapping (drag a corner line onto the box corner) is the K1 polish left o
 - **Q1 · Laser meter.** Do you have a Bluetooth laser distance meter, or will you buy one? Which model? Bosch GLM 50 C /
   50-27 CG / 100 C have community re-implementations of their protocol; Leica DISTO has an SDK but no public protocol.
   The model decides which protocol K2 implements.
-- **Q2 · ARCore.** Is Google's AR runtime (Google Play Services for AR, runs on the phone) acceptable for an optional
-  live measuring mode? Since F7 the viewfinder is ours, so only the runtime itself is the question.
+- **Q2 · ARCore.** *Answered 2026-11-22:* the recommended option, ARCore as an option, as one pack switched on as a
+  whole (D-162, D-163). A Google-independent tracker (open visual-inertial SLAM) stays a later spike.
 - **Q3 · Your phone.** Which phone is it, and does it have a 0.5× ultrawide? If yes, K1b makes the in-app camera pick
   it for Fotópont, so four shots cover the corners. If no, Fotópont offers eight sides (45°).
 - **Q4 · The PC.** Is there an NVIDIA GPU on the work PC (COLMAP dense, MapAnything, splats)? Without one, K5 uses the
@@ -89,17 +91,18 @@ fields `Stack/lib/layers.js` reads:
                ['11-22', 'K1b Szobadoboz on the phone (WP M59, D-137…D-141): WebView viewer, box key kept, lens per Fotópont shot; DV1 merged (data-vault#12)'],
                ['11-22', 'K3 Síkmérés (WP M60, D-145…D-149): distances and heights on a wall from one photo and a known rectangle, phone and Desktop'],
                ['11-22', 'K4 Körkép (WP M62, D-153…D-156): neighbour alignment into the box key, the 360° GPano JPEG, phone and Desktop'],
-               ['11-22', 'K5 Ház 3D (WP M63, D-158…D-161): COLMAP on the PC (START P → 3), the point cloud scaled and measured in the Sketcher']],
+               ['11-22', 'K5 Ház 3D (WP M63, D-158…D-161): COLMAP on the PC (START P → 3), the point cloud scaled and measured in the Sketcher'],
+               ['11-22', 'K6 Google AR csomag (WP M64, D-162…D-165): one switch; ARCore live distance, a to-scale room scan for Ház 3D, the Recording API']],
   remaining: [
     'K1 polish: corner snapping instead of the direction slider',
     'K2 Lézer: BLE laser meter → wall size (needs Q1: which meter)',
     'K3 follow-ups: the marker card read automatically, lens calibration, measured values into the sketch and the jegyzőkönyv',
     'K4 follow-ups: eight 45° shots for phones without 0.5×; the outline checked against the panorama',
     'K5 follow-ups: a walk-round guide on the phone, a mesh / splat view, the scale from K2 or the map',
-    'K6 AR mérő (optional, Q2, reopens D-32)',
+    'K6 follow-ups: a Google-independent tracker (open VIO spike), the scan as a room outline, playback of a recording',
     'K7 Mélységbecslés (optional, Depth Anything V2 Small)',
   ],
-  nextStep: 'COLMAP on the PC (docs/handoff/2026-11-22_colmap-house3d-H.md) and a first real house; phone check of M57, M59, M60, M62; then K2 (laser) once Q1 is answered, or K6 (AR, needs Q2).',
+  nextStep: 'COLMAP on the PC (docs/handoff/2026-11-22_colmap-house3d-H.md) and a first real house; phone check of M57, M59, M60, M62; phone check of M64 (ARCore); then K2 (laser) once Q1 is answered.',
   notes: ['4 photos from one point carry no depth: the geometry comes from the sketch, the photos give the look.'],
 }
 ```
