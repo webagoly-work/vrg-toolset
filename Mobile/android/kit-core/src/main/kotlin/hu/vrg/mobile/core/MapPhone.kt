@@ -43,7 +43,9 @@ object MapPhone {
         // our own offline routing (N2, WP M56)
         "Map/lib/route.js", "Map/lib/route-layer.js",
         // turn-by-turn guidance and the optional traffic check (N3, WP M58)
-        "Map/lib/guide.js", "Map/lib/traffic.js", "Map/lib/nav-layer.js")
+        "Map/lib/guide.js", "Map/lib/traffic.js", "Map/lib/nav-layer.js",
+        // measuring the relief (R), the hills' shadow (⛰ in S) and measured building heights (B), docs/map/RELIEF.md
+        "Map/lib/relief.js", "Map/lib/dem.js", "Map/lib/relief-layer.js", "Map/lib/heights.js", "Map/lib/heights-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"

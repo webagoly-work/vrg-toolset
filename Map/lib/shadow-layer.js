@@ -7,10 +7,14 @@
 // It is one fill-extrusion layer a few centimetres tall, because a fill-extrusion's opacity applies to
 // the whole layer: overlapping shadows do not darken twice. The 3D buildings are lit from the same
 // sun (map light). Off by default; ?arnyek=1 opens it now, ?arnyek=2026-12-21T15:30 at that time.
-// Hills cast no shadow here and a shadow on a slope has its flat-ground length (docs/map/SHADOWS.md).
+// The hills' own shadow (the ⛰ chip, on when the Domborzat mérése layer has terrain heights, lib/relief-layer.js): a
+// ray from every few pixels of the view towards the sun over the terrain tiles (lib/relief.js shadowView), drawn as one
+// image under the building shadows, from zoom 11. A building's shadow still has its flat-ground length on a slope
+// (docs/map/SHADOWS.md).
 
 const S = () => window.VRGSun;
-const SRC = 'vrg-shadows', LAYER = 'vrg-shadows';
+const SRC = 'vrg-shadows', LAYER = 'vrg-shadows', TSRC = 'vrg-terrain-shadow';
+const T_MIN_ZOOM = 11, T_REACH_M = 6000, T_PX = 4;   // the hills' shadow: from zoom 11, hills up to 6 km away, a ray per 4 px
 const MIN_ZOOM = 14;           // below this a shadow is a pixel or two and the tiles hold too many buildings
 const MAX_BUILDINGS = 25000;   // more than this in view: ask to zoom in instead of stalling the phone
 const BUILDING_KINDS = ['building', 'building_part'];
@@ -18,20 +22,22 @@ const pad = n => String(n).padStart(2, '0');
 const hm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
 const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 
-export function initShadows({ map, params, store, toast }) {
+export function initShadows({ map, params, store, toast, relief }) {
   const $ = s => document.querySelector(s);
   const btn = $('#b-sun'), panel = $('#sun-panel');
-  const api = { on: false, at: null, sun: null, count: 0, toggle, set: setTime, isOn: () => on };
+  const api = { on: false, at: null, sun: null, count: 0, toggle, set: setTime, isOn: () => on, refresh: () => { features = gather(); schedule(false); } };
   window.vrgShadows = api;
   if (!btn || !panel || !S()) return null;     // the page then removes the S button
 
-  let on = false, at = new Date(), times = null, light = null, features = [], timer = 0, frame = 0, playing = 0;
+  let on = false, at = new Date(), times = null, light = null, features = [], timer = 0, frame = 0, playing = 0, terrainN = 0;
+  let terrainOn = !!relief && store.get('sunTerrain', true);
   panel.innerHTML = `
     <div class="lg-h"><b>Árnyékok</b><span id="sun-read" class="m"></span><button type="button" class="lg-x" id="sun-x" aria-label="Bezárás">✕</button></div>
     <div class="lg-row">
       <input type="date" id="sun-date" aria-label="Nap">
       <button type="button" class="lg-chip" id="sun-now">Most</button>
       <button type="button" class="lg-chip" id="sun-play" aria-pressed="false">▶ Napnyugtáig</button>
+      ${relief ? '<button type="button" class="lg-chip" id="sun-terrain" aria-pressed="' + terrainOn + '" title="A dombok árnyéka a terepadatból">⛰ Domborzat</button>' : ''}
     </div>
     <div class="lg-time sun-time"><span id="sun-rise" class="m"></span><input type="range" id="sun-t" step="5" aria-label="Időpont"><span id="sun-set" class="m"></span><output id="sun-clock"></output></div>
     <div class="m sun-note">Sík terepen számolva. Épületmagasság az OpenStreetMapből; ahol nincs megadva, 7 m.</div>`;
@@ -76,6 +82,11 @@ export function initShadows({ map, params, store, toast }) {
   $('#sun-now').onclick = () => { stop(); setTime(new Date(), { recalcDay: true }); };
   $('#sun-play').onclick = () => (playing ? stop() : play());
   $('#sun-x').onclick = () => toggle(false);
+  if (relief) $('#sun-terrain').onclick = () => {
+    terrainOn = !terrainOn; store.set('sunTerrain', terrainOn);
+    $('#sun-terrain').setAttribute('aria-pressed', terrainOn ? 'true' : 'false');
+    terrain();
+  };
 
   // ▶: from the current time to sunset in about eight seconds, five minutes a step
   function play() {
@@ -125,6 +136,10 @@ export function initShadows({ map, params, store, toast }) {
     const reach = S().offset({ azimuth: 0, altitude: 1 }, 200, c.lat);   // how far a tall building's evening shadow reaches
     const pad = Math.abs(reach ? reach[1] : 0.003);
     const W = b.getWest() - pad * 1.6, E = b.getEast() + pad * 1.6, So = b.getSouth() - pad, N = b.getNorth() + pad;
+    // B on and the view in its area: the measured buildings cast the shadows (lib/heights-layer.js)
+    const hv = window.vrgHeights, ext = hv && hv.isOn() && hv.extent();
+    if (ext && c.lng >= ext.west && c.lng <= ext.east && c.lat >= ext.south && c.lat <= ext.north) { api.measured = true; return hv.buildings({ west: W, east: E, south: So, north: N }).slice(0, MAX_BUILDINGS + 1); }
+    api.measured = false;
     const raw = map.querySourceFeatures('protomaps', { sourceLayer: 'buildings', filter: ['in', ['get', 'kind'], ['literal', BUILDING_KINDS]] });
     const seen = new Set(), out = [];
     for (const f of raw) {
@@ -159,16 +174,58 @@ export function initShadows({ map, params, store, toast }) {
     setData({ type: 'FeatureCollection', features: fc });
     note('');
   }
-  function note(t) { const n = panel.querySelector('.sun-note'); n.dataset.warn = t ? '1' : ''; n.textContent = t || 'Sík terepen számolva. Épületmagasság az OpenStreetMapből; ahol nincs megadva, 7 m.'; }
+  /** The hills' shadow over the view, for the current sun: a coarse mask laid on the map as an image. */
+  async function terrain() {
+    const n = ++terrainN;
+    const sun = api.sun;
+    const off = () => { if (map.getLayer(TSRC)) map.removeLayer(TSRC); if (map.getSource(TSRC)) map.removeSource(TSRC); api.terrain = null; };
+    if (!on || !relief || !terrainOn || map.getZoom() < T_MIN_ZOOM || !sun) { off(); return; }
+    const bb = map.getBounds(), lat = center().lat;
+    const view = { west: bb.getWest(), east: bb.getEast(), south: bb.getSouth(), north: bb.getNorth() };
+    const cv = map.getCanvas(), w = Math.max(40, Math.round(cv.clientWidth / T_PX)), h = Math.max(30, Math.round(cv.clientHeight / T_PX));
+    let mask;
+    if (sun.altitude <= 0) mask = new Uint8Array(w * h).fill(1);
+    else {
+      // the grid reaches past the view towards the sun: a hill outside it can shade what is in it
+      const dLat = T_REACH_M / 111132, dLon = T_REACH_M / (111319 * Math.cos(lat * Math.PI / 180));
+      const ext = { west: view.west - dLon, east: view.east + dLon, south: view.south - dLat, north: view.north + dLat };
+      const gw = Math.min(700, Math.max(120, Math.round((ext.east - ext.west) * 111319 * Math.cos(lat * Math.PI / 180) / 40)));
+      const gh = Math.min(700, Math.max(90, Math.round((ext.north - ext.south) * 111132 / 40)));
+      let g;
+      try { g = await relief.viewGrid(ext, gw, gh); } catch (e) { off(); return; }
+      if (n !== terrainN) return;
+      mask = window.VRGRelief.shadowView(g, Object.assign({ w, h }, view), sun, { maxM: T_REACH_M });
+    }
+    if (n !== terrainN || !on) return;
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'), img = ctx.createImageData(w, h);
+    let dark = 0;
+    for (let k = 0; k < mask.length; k++) if (mask[k]) { dark++; img.data[4 * k] = 43; img.data[4 * k + 1] = 42; img.data[4 * k + 2] = 58; img.data[4 * k + 3] = 110; }
+    ctx.putImageData(img, 0, 0);
+    const coords = [[view.west, view.north], [view.east, view.north], [view.east, view.south], [view.west, view.south]], url = c.toDataURL();
+    const s = map.getSource(TSRC);
+    if (s) s.updateImage({ url, coordinates: coords });
+    else {
+      map.addSource(TSRC, { type: 'image', url, coordinates: coords });
+      map.addLayer({ id: TSRC, type: 'raster', source: TSRC, paint: { 'raster-opacity': 1, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, map.getLayer(LAYER) ? LAYER : (map.getLayer('buildings-3d') ? 'buildings-3d' : undefined));
+    }
+    api.terrain = { share: dark / mask.length, w, h };
+  }
+
+  function note(t) {
+    const n = panel.querySelector('.sun-note'); n.dataset.warn = t ? '1' : '';
+    n.textContent = t || ('Az épületek árnyéka sík terepen számolva. Épületmagasság ' + (api.measured ? 'mérésből (B)' : 'az OpenStreetMapből; ahol nincs megadva, 7 m') + '.' + (relief && terrainOn ? ' ⛰: a dombok árnyéka a terepadatból.' : ''));
+  }
 
   /** Re-gather the buildings (the view or the tiles changed) or only redraw (the time changed). */
   function schedule(regather) {
     if (!on) return;
     if (regather) { clearTimeout(timer); timer = setTimeout(() => { features = gather(); if (!frame) frame = requestAnimationFrame(draw); }, 220); return; }
     if (!frame) frame = requestAnimationFrame(draw);
+    clearTimeout(schedule.tt); schedule.tt = setTimeout(terrain, 120);      // the hills' shadow follows the time
   }
 
-  const onMove = () => schedule(true);
+  const onMove = () => { schedule(true); clearTimeout(schedule.tt); schedule.tt = setTimeout(terrain, 260); };   // and the view
   const onData = e => { if (e.sourceId === 'protomaps' && e.isSourceLoaded) schedule(true); };
   const onDay = () => { if (on) { dayChanged(); readout(); } };
 
@@ -187,7 +244,7 @@ export function initShadows({ map, params, store, toast }) {
       stop();
       map.off('moveend', onMove); map.off('sourcedata', onData); map.off('moveend', onDay);
       setData({ type: 'FeatureCollection', features: [] });
-      restoreLight();
+      restoreLight(); terrainN++; if (map.getLayer(TSRC)) map.removeLayer(TSRC); if (map.getSource(TSRC)) map.removeSource(TSRC);
     }
     api.on = on;
   }
