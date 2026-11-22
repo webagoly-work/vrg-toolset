@@ -61,6 +61,8 @@ data class Mine(
     val lastAccM: Float? = null,
     /** An iTag's battery, read over GATT (0..100 %). */
     val batteryPct: Int? = null,
+    /** A paired device's Bluetooth name ("Q71"): its BLE advertisements are credited to mine by this name. */
+    val btName: String? = null,
 ) {
     val rotates: Boolean get() = kind == AdKind.SEPARATED || kind == AdKind.NEAR_OWNER
 
@@ -71,7 +73,7 @@ data class Mine(
         "battery=${battery.name}", sound?.let { "sound=${it.name}" },
         pastAddresses.takeIf { it.isNotEmpty() }?.let { "past=" + it.joinToString(",") },
         "guessed=$guessed", "lastSeenAt=$lastSeenAt",
-        lastLat?.let { "lat=$it" }, lastLon?.let { "lon=$it" }, lastAccM?.let { "acc=$it" }, batteryPct?.let { "pct=$it" },
+        lastLat?.let { "lat=$it" }, lastLon?.let { "lon=$it" }, lastAccM?.let { "acc=$it" }, batteryPct?.let { "pct=$it" }, btName?.let { "bt=" + it.replace('\n', ' ') },
     ).joinToString("\n")
 
     companion object {
@@ -95,6 +97,7 @@ data class Mine(
                 lastLon = m["lon"]?.toDoubleOrNull(),
                 lastAccM = m["acc"]?.toFloatOrNull(),
                 batteryPct = m["pct"]?.toIntOrNull()?.takeIf { it in 0..100 },
+                btName = m["bt"]?.ifBlank { null },
             )
         }
     }
@@ -175,7 +178,9 @@ class TagBook {
      * (every RSSI poll). Keeps mine "heard" for Ottfelejtés and the distance readout. [batteryPct] when just read.
      */
     fun heardLinked(address: String, rssi: Int?, now: Long, batteryPct: Int? = null): Seen {
-        val s = seen.getOrPut(address) { Seen(address, FindMyAd(AdKind.ITAG, TagType.ITAG, Battery.UNKNOWN, null, null, null), now) }
+        val stand = if (mine?.address == address && mine?.type == TagType.WATCH) Bonded.AD
+            else FindMyAd(AdKind.ITAG, TagType.ITAG, Battery.UNKNOWN, null, null, null)
+        val s = seen.getOrPut(address) { Seen(address, stand, now) }
         s.linked(rssi, now)
         val m = mine
         if (m != null && m.address == address) {
@@ -183,6 +188,26 @@ class TagBook {
                 battery = batteryPct?.let { Itag.level(it) } ?: m.battery)
         }
         return s
+    }
+
+    /** Takes a device paired in Android's settings as mine (chosen from the paired list, D-157). */
+    fun bindBonded(address: String, btName: String?, name: String, now: Long, connected: Boolean): Mine {
+        background.clear()
+        val m = Mine(name.trim().ifBlank { btName?.trim()?.ifBlank { null } ?: "Óra" }, address, TagType.WATCH, AdKind.BONDED, now,
+            btName = btName?.trim()?.ifBlank { null }, lastSeenAt = if (connected) now else 0)
+        mine = m; lastRelink = null
+        return m
+    }
+
+    /**
+     * A scan result that is not a tag: is it mine's BLE side, by name? Then it counts as hearing mine, with its RSSI.
+     * Returns true when credited.
+     */
+    fun heardByName(advertisedName: String?, rssi: Int, now: Long): Boolean {
+        val m = mine ?: return false
+        if (m.type != TagType.WATCH || !Bonded.sameDevice(m.btName, advertisedName)) return false
+        heardLinked(m.address, rssi, now)
+        return true
     }
 
     fun forget() { mine = null; background.clear(); lastRelink = null }

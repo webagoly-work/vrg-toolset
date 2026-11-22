@@ -77,6 +77,7 @@ class TagService : Service() {
                     null -> {}
                 }
                 Tags.syncLink(this@TagService)                    // an iTag: keep the connection (ItagLink)
+                Tags.pollPaired()                                 // a paired watch: its connection is its presence
                 if (Tags.finder.tick(now)) Tags.stopPhone(this@TagService)
                 Tags.book.prune(now)
                 refresh()
@@ -96,7 +97,11 @@ class TagService : Service() {
     private fun ongoingText(): String {
         val m = Tags.book.mine ?: return ""
         val heard = if (m.lastSeenAt > 0) TagText.ago(System.currentTimeMillis() - m.lastSeenAt) else "még nem"
-        val link = if (m.type == hu.vrg.mobile.tag.TagType.ITAG) (if (Tags.linkUp.value) " · kapcsolat él" else " · kapcsolódás…") else ""
+        val link = when (m.type) {
+            hu.vrg.mobile.tag.TagType.ITAG -> if (Tags.linkUp.value) " · kapcsolat él" else " · kapcsolódás…"
+            hu.vrg.mobile.tag.TagType.WATCH -> if (Tags.linkUp.value) " · kapcsolódva" else " · nincs kapcsolat"
+            else -> ""
+        }
         return "${Tags.watch.state.hu} · hallottam: $heard$link"
     }
 
