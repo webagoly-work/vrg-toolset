@@ -90,4 +90,7 @@ dependencies {
     implementation("androidx.camera:camera-camera2:$camerax")
     implementation("androidx.camera:camera-lifecycle:$camerax")
     implementation("androidx.camera:camera-view:$camerax")
+    // Google AR csomag (skcam K6, WP M64, D-164): ARCore's client library. The runtime (Google Play Services for AR) is
+    // only asked for when the user switches the pack on and opens the meter; the manifest marks AR optional.
+    implementation("com.google.ar:core:1.47.0")
 }

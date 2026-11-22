@@ -100,7 +100,11 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
             Text("◉", style = Melyviz.glyph.copy(fontSize = 20.sp, color = col))
             Text("  KAMERA", style = Melyviz.title.copy(fontSize = 15.sp))
             Spacer(Modifier.weight(1f))
+            if (feat(hu.vrg.mobile.sketch.Ar.FEATURE)) Pill("📐 AR mérő", col, false) { st.ask = Ask.Ar() }   // skcam K6: the Google AR csomag
             if (feat("kamera.series")) Pill(if (st.series) "⟳ Sorozat: be" else "⟳ Sorozat", col, st.series) { st.series = !st.series }
+        }
+        if (feat(hu.vrg.mobile.sketch.Ar.FEATURE)) hu.vrg.mobile.sketch.Ar.summary(st.sketch).takeIf { it.isNotEmpty() }?.let {
+            Text("📐 " + it.joinToString(" · "), style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 2.dp))
         }
         st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
         Text("Koppints a célra: a kamera nyílik, a fotó a célt, a szobát (" +

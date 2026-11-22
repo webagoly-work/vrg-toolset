@@ -232,4 +232,7 @@ rectangle on the wall give true distances and heights above a floor line; the re
 built (WP M62, BETA):** in the Szobadoboz, per photo point, ⟲ Igazítás matches the 0.5× neighbours and fixes their
 turns and tilts; ⇩ 360° kép makes a GPano JPEG any 360° viewer opens (`lib/pano.js`). **K5 is built (WP M63,
 BETA):** a walk round a house → START P → 3 (COLMAP on the PC) → `<név>.house3d.json` → Helyszín → 🏠 Ház 3D: the point
-cloud, a scale from one true distance, then measurements (`tools/house3d.js`, `lib/house3d.js`, `lib/house3d-ui.js`).
+cloud, a scale from one true distance, then measurements (`tools/house3d.js`, `lib/house3d.js`, `lib/house3d-ui.js`). **K6 is
+built (WP M64, BETA):** the Google AR csomag, one opt-in switch on the phone (`kamera.ar`): ARCore's live two-point
+distance (into the survey's `ar` key, or onto a wall), a room scan saved as a `.house3d.json` already to scale (it opens
+in the same 🏠 Ház 3D viewer with no scale step, `test/ar-scan.test.js`) and the Recording API's MP4.

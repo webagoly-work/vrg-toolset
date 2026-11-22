@@ -71,6 +71,7 @@
   {"id":"kamera.live_level","front":"kamera","sym":"⊖","label":"Vízszintező","requires":["kamera.capture","kamera.live"]},
   {"id":"kamera.live_grid","front":"kamera","sym":"▦","label":"Rács","requires":["kamera.capture","kamera.live"]},
   {"id":"kamera.live_torch","front":"kamera","sym":"ϟ","label":"Lámpa","requires":["kamera.capture","kamera.live"]},
+  {"id":"kamera.ar","front":"kamera","sym":"📐","label":"Google AR csomag","requires":["kamera.capture"],"default":false},
   {"id":"helyszin.address","front":"helyszin","sym":"⌂","label":"Cím"},
   {"id":"helyszin.gps","front":"helyszin","sym":"⌖","label":"Itt vagyok (GPS)"},
   {"id":"helyszin.search","front":"helyszin","sym":"🔎","label":"Keresés a neten"},

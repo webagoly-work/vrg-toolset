@@ -94,6 +94,7 @@ object Features {
         F("kamera.live_level", "kamera", "⊖", "Vízszintező", listOf("kamera.capture", "kamera.live")),
         F("kamera.live_grid", "kamera", "▦", "Rács", listOf("kamera.capture", "kamera.live")),
         F("kamera.live_torch", "kamera", "ϟ", "Lámpa", listOf("kamera.capture", "kamera.live")),
+        F("kamera.ar", "kamera", "📐", "Google AR csomag", listOf("kamera.capture"), default = false),   // skcam K6: the whole ARCore pack, one switch
         F("helyszin.address", "helyszin", "⌂", "Cím"),
         F("helyszin.gps", "helyszin", "⌖", "Itt vagyok (GPS)"),
         F("helyszin.search", "helyszin", "🔎", "Keresés a neten"),

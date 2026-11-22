@@ -397,9 +397,55 @@
        "text": "Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et."
       }
      ]
+    },
+    {
+     "n": 64,
+     "title": "M64 · Google AR csomag (`sketch`): live measuring, a room scan and an AR recording with ARCore, behind one switch",
+     "items": [
+      {
+       "id": "M64.1",
+       "text": "⚙ Funkciók → Kamera: a **📐 Google AR csomag** alapból ki van kapcsolva; ki állásban a Kamera lapon nincs 📐 AR mérő, és a fal Méret ablakában nincs 📐 AR gomb."
+      },
+      {
+       "id": "M64.2",
+       "text": "Kapcsold be: a Kamera lap fejlécében megjelenik a **📐 AR mérő**. Első nyitáskor a telefon kéri a kamera engedélyt, és ha kell, a Play Áruházból a Google Play Services for AR-t; telepítés után térj vissza, a mérő elindul."
+      },
+      {
+       "id": "M64.3",
+       "text": "Mozgasd lassan a telefont, amíg a kör zöld nem lesz egy falon vagy a padlón. **＋ 1. pont** egy fal sarkánál, majd célozz a másik sarokra: a távolság élőben fut mm-ben, alatta a ↕ és ↔ része."
+      },
+      {
+       "id": "M64.4",
+       "text": "**＋ 2. pont**, írj feliratot (pl. „Hosszú fal”), **✓ Mentés**: a Kamera lapon a 📐 sorban megjelenik. Mérőszalaggal vesd össze: néhány cm eltérés várható."
+      },
+      {
+       "id": "M64.5",
+       "text": "A vázlaton egy falra **Méret** → **📐 AR**: mérd le a falat, ✓ Mentés: a mérő bezárul, és a fal hossza a mért érték."
+      },
+      {
+       "id": "M64.6",
+       "text": "**⬚ Pásztázás** → **▶ Gyűjtés**, járd körbe lassan a szobát: a pontok zöld pöttyökként gyűlnek, a szám nő. **⇩ Mentés**: a fájl a Letöltések / VRG Vázlat mappába kerül."
+      },
+      {
+       "id": "M64.7",
+       "text": "A PC-n: Sketcher (START P → S) → Helyszín → 🏠 Ház 3D megnyitása → az előző fájl: a szoba alakja látszik, és lépték nélkül mérhető (↔ Mérés)."
+      },
+      {
+       "id": "M64.8",
+       "text": "**⏺ Felvétel** néhány másodpercig, majd **⏹ Felvétel leáll**: egy MP4 kerül a Letöltések / VRG Vázlat mappába."
+      },
+      {
+       "id": "M64.9",
+       "text": "Egy AR-t nem támogató telefonon a mérő azt írja, hogy a telefon nem támogatja; a 📏 Mérés a fotón ott is működik."
+      },
+      {
+       "id": "M64.10",
+       "text": "Kapcsold ki a csomagot: a 📐 elemek eltűnnek, a mentett távolságok a felmérésben maradnak."
+      }
+     ]
     }
    ],
-   "count": 83
+   "count": 93
   },
   "B": {
    "name": "B telefon — kamera és helyszín",

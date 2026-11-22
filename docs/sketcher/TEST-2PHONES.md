@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (83 lépés)
+## A telefon — rajz és beszélgetés (93 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -124,6 +124,19 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.8** Egy jegyzet ⚑ Tisztázandó jelöléssel: a jegyzőkönyvben ott van. **Az ügyfélnek** bekapcsolva: se a Tisztázandó jegyzet, se az *Ellenőrizni* lista nincs benne; a többi jegyzet és a nyitott kérdések igen.
 - [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
+
+### M64 · Google AR csomag (`sketch`): live measuring, a room scan and an AR recording with ARCore, behind one switch
+
+- [ ] **M64.1** ⚙ Funkciók → Kamera: a **📐 Google AR csomag** alapból ki van kapcsolva; ki állásban a Kamera lapon nincs 📐 AR mérő, és a fal Méret ablakában nincs 📐 AR gomb.
+- [ ] **M64.2** Kapcsold be: a Kamera lap fejlécében megjelenik a **📐 AR mérő**. Első nyitáskor a telefon kéri a kamera engedélyt, és ha kell, a Play Áruházból a Google Play Services for AR-t; telepítés után térj vissza, a mérő elindul.
+- [ ] **M64.3** Mozgasd lassan a telefont, amíg a kör zöld nem lesz egy falon vagy a padlón. **＋ 1. pont** egy fal sarkánál, majd célozz a másik sarokra: a távolság élőben fut mm-ben, alatta a ↕ és ↔ része.
+- [ ] **M64.4** **＋ 2. pont**, írj feliratot (pl. „Hosszú fal”), **✓ Mentés**: a Kamera lapon a 📐 sorban megjelenik. Mérőszalaggal vesd össze: néhány cm eltérés várható.
+- [ ] **M64.5** A vázlaton egy falra **Méret** → **📐 AR**: mérd le a falat, ✓ Mentés: a mérő bezárul, és a fal hossza a mért érték.
+- [ ] **M64.6** **⬚ Pásztázás** → **▶ Gyűjtés**, járd körbe lassan a szobát: a pontok zöld pöttyökként gyűlnek, a szám nő. **⇩ Mentés**: a fájl a Letöltések / VRG Vázlat mappába kerül.
+- [ ] **M64.7** A PC-n: Sketcher (START P → S) → Helyszín → 🏠 Ház 3D megnyitása → az előző fájl: a szoba alakja látszik, és lépték nélkül mérhető (↔ Mérés).
+- [ ] **M64.8** **⏺ Felvétel** néhány másodpercig, majd **⏹ Felvétel leáll**: egy MP4 kerül a Letöltések / VRG Vázlat mappába.
+- [ ] **M64.9** Egy AR-t nem támogató telefonon a mérő azt írja, hogy a telefon nem támogatja; a 📏 Mérés a fotón ott is működik.
+- [ ] **M64.10** Kapcsold ki a csomagot: a 📐 elemek eltűnnek, a mentett távolságok a felmérésben maradnak.
 
 ## B telefon — kamera és helyszín (105 lépés)
 
