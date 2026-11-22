@@ -9,6 +9,7 @@
 //   VRGBox.input()      → the input JSON (text)
 //   VRGBox.save(json)   ← the corrections ({h, eye, shots}), the same `box` key the Desktop writes
 //   VRGBox.close()      ← leave without saving
+//   VRGBox.pano(name, base64) ← a 360° image to keep (skcam K4, when the bridge has it)
 //
 // One finger: rotate (Felülről) or look around (A fotópontból); two fingers: zoom / field of view.
 (function (root, factory) {
@@ -43,11 +44,12 @@
   const SRC = { kezi: 'kézi', lencse: 'a kamerától', exif: 'EXIF', alap: 'alapérték' };
 
   function start(input, opts) {
-    const o = opts || {}, RB = o.RB || root.VRGRoomBox, GL = o.GL || root.VRGRoomBoxGL, io = o.io || root.VRGBox || null, doc = o.document || root.document;
+    const o = opts || {}, RB = o.RB || root.VRGRoomBox, GL = o.GL || root.VRGRoomBoxGL, PA = o.PA || root.VRGPano, io = o.io || root.VRGBox || null, doc = o.document || root.document;
     const inp = typeof input === 'string' ? JSON.parse(input) : input || (io ? JSON.parse(io.input()) : {});
     let box = JSON.parse(JSON.stringify(inp.box || {}));
     const images = inp.images || {}, meta = {}, canv = {};
-    const ui = { room: '', mode: 'orbit', az: 30, el: 55, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null, open: true, dirty: false };
+    const ui = { room: '', mode: 'orbit', az: 30, el: 55, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null, open: true, dirty: false, panoMsg: {}, lastPano: null };
+    const panoOn = !!PA && inp.pano !== false;
     const st = doc.createElement('style'); st.textContent = CSS; doc.head.appendChild(st);
     doc.body.innerHTML = '<div id="rb"><div id="rbtop"><select id="rbroom"></select><button data-a="mode" data-m="orbit">Felülről</button><button data-a="mode" data-m="stand">A pontból</button>' +
       '<button data-a="close" aria-label="Bezár">✕</button><button class="ok" data-a="save">✓ Kész</button></div>' +
@@ -105,7 +107,44 @@
           '<label>Látószög ' + Math.round(x.fovH) + '° · ' + f1(x.f35) + ' mm (' + (SRC[x.f35src] || x.f35src) + ') <input type="number" inputmode="decimal" min="8" max="80" step="0.5" data-b="f35" data-key="' +
           esc(x.key) + '" placeholder="auto" value="' + (x.fix.f35 || '') + '"></label></div>';
       });
+      // skcam K4 (Körkép): per photo point, align the neighbours where they overlap, and the 360° image
+      if (panoOn) [...new Set(r.shots.map(x => x.point))].forEach(pt => {
+        h += '<div class="shot"><div class="row"><b>⟳ Körkép · ' + esc(pt) + '</b></div><div class="row" style="margin-top:6px"><button data-a="align" data-p="' + esc(pt) + '">⟲ Igazítás</button>' +
+          '<button data-a="pano" data-p="' + esc(pt) + '">⇩ 360° kép</button></div>' + (ui.panoMsg[pt] ? '<p class="note">' + esc(ui.panoMsg[pt]) + '</p>' : '') + '</div>';
+      });
       $('rbbody').innerHTML = h;
+    }
+    const SIDE = { 0: 'É', 90: 'K', 180: 'D', 270: 'Ny' };
+    const pixelsOf = cv => ({ w: cv.width, h: cv.height, data: cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data });
+    function panoShots(point) {
+      const r = room(), shots = r ? r.shots.filter(x => x.point === point) : [], imgs = {};
+      shots.forEach(x => { const c = canv[String(x.file).split(/[\\/]/).pop()]; if (c) imgs[x.file] = pixelsOf(c); });
+      return { shots, imgs };
+    }
+    function align(point) {
+      const { shots, imgs } = panoShots(point), al = PA.align(shots, imgs);
+      ui.panoMsg[point] = PA.report(al, k => SIDE[+k.split('/')[1]] || k);
+      if (al.pairs.some(p => p.ok)) { box = PA.applyFixes(box, al.fixes); ui.dirty = true; }
+      draw(true);
+      return al;
+    }
+    function pano(point, done) {
+      const { shots, imgs } = panoShots(point);
+      if (!Object.keys(imgs).length) { ui.panoMsg[point] = 'Ehhez a ponthoz nincs fotó.'; draw(true); return; }
+      ui.panoMsg[point] = 'Készül a 360° kép…'; draw(true);
+      setTimeout(() => {
+        const W = 3072, H = 1536, p = PA.equirect(shots, imgs, W, H), cv = doc.createElement('canvas');
+        cv.width = W; cv.height = H; const g = cv.getContext('2d'), im = g.createImageData(W, H); im.data.set(p.data); g.putImageData(im, 0, 0);
+        const b64 = cv.toDataURL('image/jpeg', 0.88).split(',')[1], bin = root.atob(b64), bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const out = PA.withXmp(bytes, PA.xmp(W, H, 0));
+        let s2 = ''; for (let i = 0; i < out.length; i += 0x8000) s2 += String.fromCharCode.apply(null, out.subarray(i, i + 0x8000));
+        const name = String(inp.name || 'vazlat').replace(/[^\wÀ-ž-]+/g, '-').slice(0, 40) + '_' + point + '_360.jpg';
+        ui.lastPano = { name, bytes: out.length, covered: p.covered };
+        if (io && io.pano) io.pano(name, root.btoa(s2));
+        ui.panoMsg[point] = '360° kép: ' + name + ' (' + Math.round(out.length / 1024) + ' kB, a gömb ' + Math.round(p.covered * 100) + ' %-a képpel)' + (io && io.pano ? ', a Képek / VRG Vázlat mappába.' : '.');
+        draw(true); if (done) done(ui.lastPano);
+      }, 30);
     }
 
     function set(fn, live) {
@@ -139,6 +178,8 @@
       else if (a === 'hi') { const i = +t.dataset.i; ui.hi = ui.hi === i ? null : i; draw(true); }
       else if (a === 'save') { if (io && io.save) io.save(JSON.stringify(box)); ui.open = false; }
       else if (a === 'close') { if (io && io.close) io.close(); ui.open = false; }
+      else if (a === 'align') align(t.dataset.p);
+      else if (a === 'pano') pano(t.dataset.p);
     }
 
     // touch: one finger rotates / looks, two fingers zoom / change the field of view (pointer events cover mouse and pen)
@@ -169,7 +210,7 @@
     const rooms = scene();
     ui.room = (rooms.find(r => r.shots.length) || rooms[0] || {}).id || '';
     draw(true);
-    return { ui, box: () => box, scene, draw, images: name => canv[name] || null };
+    return { ui, box: () => box, scene, draw, images: name => canv[name] || null, align, pano };
   }
 
   /** In the WebView: reads the input from the bridge and starts; an error goes to VRGBox.fail when the bridge has it. */

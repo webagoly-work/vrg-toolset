@@ -27,6 +27,7 @@
   {"id":"vazlat.route","front":"vazlat","sym":"〰","label":"Nyomvonal"},
   {"id":"vazlat.photo","front":"vazlat","sym":"◉","label":"Fotópont"},
   {"id":"vazlat.roombox","front":"vazlat","sym":"⬚","label":"Szobadoboz (3D)"},
+  {"id":"vazlat.pano","front":"vazlat","sym":"⟳","label":"Körkép (360°)","requires":["vazlat.roombox"]},
   {"id":"vazlat.wheels","front":"vazlat","sym":"◎","label":"Tartásra kerék"},
   {"id":"vazlat.drawtune","front":"vazlat","sym":"⚙","label":"Rajz-hangolás"},
   {"id":"vazlat.line_close","front":"vazlat","sym":"⌇","label":"Vonal: Kész zár","requires":["vazlat.line","vazlat.drawtune"]},

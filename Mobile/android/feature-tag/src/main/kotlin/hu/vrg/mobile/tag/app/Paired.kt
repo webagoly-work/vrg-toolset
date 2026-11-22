@@ -20,7 +20,7 @@ import androidx.core.content.IntentCompat
 import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.tag.RingResult
 
-// The third kind of item (WP M61, D-153): a device paired in Android's Bluetooth settings — the Founder's Q71 calling
+// The third kind of item (WP M61, D-157): a device paired in Android's Bluetooth settings — the Founder's Q71 calling
 // watch (FunDo app, protocol undocumented), or earbuds, a speaker. Only what Android offers for any paired device:
 //  - [PairedLink]: is it connected now? ACL connected / disconnected broadcasts, the hands-free (HEADSET) and media
 //    (A2DP) profiles and GATT, OR-ed; the paired list for choosing it;

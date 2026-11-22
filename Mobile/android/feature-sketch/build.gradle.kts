@@ -26,7 +26,7 @@ android {
 val REPORT_ASSETS = listOf("fieldkit.js", "report.js", "report-phone.js")
 // skcam K1b (WP M59): the Szobadoboz, the Desktop's own maths and renderer plus the phone's touch UI, into assets
 // sketcher/roombox/. Sketcher/test/roombox-phone.test.js checks this list (and that RoomBoxUi.kt loads the same files).
-val ROOMBOX_ASSETS = listOf("roombox.js", "roombox-gl.js", "roombox-phone.js")
+val ROOMBOX_ASSETS = listOf("roombox.js", "roombox-gl.js", "pano.js", "roombox-phone.js")   // K4: pano.js (Körkép)
 // skcam K3 (WP M60): the Síkmérés, the Desktop's maths and screen, into assets sketcher/plane/ (checked by
 // Sketcher/test/plane.test.js, with PlaneUi.kt).
 val PLANE_ASSETS = listOf("plane.js", "plane-ui.js")

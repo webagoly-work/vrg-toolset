@@ -8,6 +8,7 @@
    "id": "upper",
    "heightMm": 2700
   },
+  "pano": true,
   "now": 1763700000000,
   "name": "Petőfi u. 7. 2/5",
   "box": {"h": {"R1": 2650}},

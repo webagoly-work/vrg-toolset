@@ -190,7 +190,7 @@ class TagBook {
         return s
     }
 
-    /** Takes a device paired in Android's settings as mine (chosen from the paired list, D-153). */
+    /** Takes a device paired in Android's settings as mine (chosen from the paired list, D-157). */
     fun bindBonded(address: String, btName: String?, name: String, now: Long, connected: Boolean): Mine {
         background.clear()
         val m = Mine(name.trim().ifBlank { btName?.trim()?.ifBlank { null } ?: "Óra" }, address, TagType.WATCH, AdKind.BONDED, now,

@@ -125,7 +125,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
-## B telefon — kamera és helyszín (97 lépés)
+## B telefon — kamera és helyszín (105 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -207,6 +207,17 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M60.8** Egy Fotópont fotón ugyanez: a fotópont kép párbeszédében a **📏 Mérés**.
 - [ ] **M60.9** Küldd a felmérést a PC-re: az Asztal Sketcher oldalán a Kamera nézetben a kártyán ugyanazok az értékek.
 - [ ] **M60.10** ⚙ Funkciók → Kamera → **Mérés a fotón** ki: a gomb és a sor eltűnik.
+
+### M62 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image
+
+- [ ] **M62.1** ⚙ Funkciók → Vázlat: **Szobadoboz (3D)** és **Körkép (360°)** be.
+- [ ] **M62.2** Egy szobában Fotópont, mind a négy irány 0,5× objektívvel (a saját kamera magától így nyit).
+- [ ] **M62.3** Rendezés → ⬚ Szobadoboz → a lap alján **⟳ Körkép · F…** → **⟲ Igazítás**: megjelenik, mennyit fordított a képeken.
+- [ ] **M62.4** A pontból nézve a képek határa simább legyen, mint előtte.
+- [ ] **M62.5** **⇩ 360° kép**: a fájl a Képek / VRG Vázlat mappába kerül; Google Fotókban megnyitva körbe lehessen nézni.
+- [ ] **M62.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
+- [ ] **M62.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
+- [ ] **M62.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 
