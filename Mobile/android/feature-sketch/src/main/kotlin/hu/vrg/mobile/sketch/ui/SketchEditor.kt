@@ -196,8 +196,8 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
 
     live?.let { r ->
         LiveCamera(st, r, dir,
-            onShot = { q, name ->
-                if (q.photo != null) { st.photoTaken(q, name); null }
+            onShot = { q, name, lens ->
+                if (q.photo != null) { st.photoTaken(q, name, lens); null }
                 else {
                     val ll = exifLatLon(File(dir, name))
                     st.captureTaken(q, name, ll?.first, ll?.second)

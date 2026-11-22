@@ -536,9 +536,16 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- Fotópont (M25) --------------------------------------------------------------------------------------------
     private var shotFrom = Offset.Zero
 
-    /** The camera came back with a photo. A side asked for in advance saves it; otherwise it waits for the swipe. */
-    fun photoTaken(req: CameraReq, file: String) {
+    /** skcam K1b: the lens of the photo waiting for its direction (its file → the 35 mm equivalent the camera reported). */
+    private var pendingLens: Pair<String, Double>? = null
+
+    /**
+     * The camera came back with a photo ([f35]: its lens, when the in-app camera knew it). A side asked for in advance
+     * saves it; otherwise it waits for the swipe.
+     */
+    fun photoTaken(req: CameraReq, file: String, f35: Double? = null) {
         val f = req.photo ?: return
+        pendingLens = f35?.let { file to it }
         if (req.deg != null) saveShot(f, req.deg, file)
         else { pendingShot = f to file; note = "Húzz arra, amerre a kép néz (É, K, D, Ny)." }
     }
@@ -546,7 +553,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun cancelShot() { pendingShot?.let { dropFile(it.second) }; pendingShot = null; note = "A fotó elvetve." }
 
     private fun saveShot(photo: String, deg: Int, file: String) {
-        val (s, old) = PhotoOps.addShot(sketch, photo, deg, file, System.currentTimeMillis())
+        val lens = pendingLens?.takeIf { it.first == file }?.second
+        pendingLens = null
+        val (s, old) = PhotoOps.addShot(sketch, photo, deg, file, System.currentTimeMillis(), lens)
         edit(s); old?.let(dropFile)
         pendingShot = null
         val pp = sketch.photos.firstOrNull { it.id == photo }
