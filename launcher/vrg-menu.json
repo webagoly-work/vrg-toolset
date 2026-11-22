@@ -194,6 +194,7 @@
             { "key": "R", "name": "Rajztár build + teszt", "hint": "adatellenőrzés, studio.html, e2e", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["shared\\rajztar\\build.js"] }, { "exe": "{node}", "args": ["shared\\rajztar\\test\\studio-e2e.js"] } ] },
             { "key": "S", "name": "VRG Sketcher", "hint": "helyszíni felmérés: vázlat, jegyzet, kérdések, fotók", "path": "{repo}\\Sketcher\\dist\\vrg-sketcher.html" },
             { "key": "H", "name": "Sketcher build + teszt", "hint": "dist, ellenőrzések, oldal-teszt", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["Sketcher\\tools\\build.js"] }, { "exe": "{node}", "args": ["Sketcher\\test\\run.js"] } ] },
+            { "key": "3", "name": "Ház 3D feldolgozás", "hint": "inbox\\haz3d\\<ház> fotóiból pontfelhő (COLMAP); a Sketcher Helyszín → 🏠 nyitja", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["Sketcher\\tools\\house3d.js"] } ] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{planner}" }
           ] } },
       { "key": "I", "name": "Készlet", "hint": "build · szerver · ár", "was": "I N S P", "menu": {

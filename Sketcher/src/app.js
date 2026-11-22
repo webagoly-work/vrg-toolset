@@ -138,7 +138,8 @@
   async function openFiles(list) {
     const arr = Array.from(list || []), js = arr.filter(f => /\.json$/i.test(f.name) || f.type === 'application/json'), ph = arr.filter(f => !js.includes(f));
     try {
-      if (js.length) load(await readFile(js[0]), js[0].name);
+      if (js.length) { const txt = await readFile(js[0]), o = (() => { try { return JSON.parse(txt); } catch (e) { return null; } })();
+        if (H3 && H3.is(o)) houseOpen(o, js[0].name); else load(txt, js[0].name); }   // skcam K5: a .house3d.json opens the Ház 3D viewer
       if (ph.length) attach(ph);
     } catch (e) { flash(String(e.message || e), 'err'); render(); }
   }
@@ -431,6 +432,9 @@
       '<b></b><label class="small"><input type="checkbox" data-client="keep"' + (cl.keep ? ' checked' : '') + '> a telefon kiadott csomagjában is marad</label></div>' +
       '<div class="small muted">Személyes adat: a felmérés fájljában és a jegyzőkönyvben van; variáns-kérésbe soha nem kerül, Gitbe sem.</div></div>';
     if (on('helyszin.place')) h += sitePlaceCard();
+    // skcam K5 (Ház 3D): a walk round the house, reconstructed on the PC (Sketcher/tools/house3d.js), opened here
+    if (on('helyszin.house3d')) h += '<h3>🏠 Ház 3D</h3><div class="card"><label class="btn sm">🏠 Ház 3D megnyitása (.house3d.json)<input type="file" id="fhouse" accept=".json,application/json" hidden></label>' +
+      '<div class="small muted">A ház körbefotózva (Kamera → Épület kívülről, ⟳ Sorozat, 1–2 lépésenként), a fotók a PC-re; START P → Ház 3D feldolgozás. A pontfelhőn két ismert távolságú pont adja a léptéket, utána bármi mérhető.</div></div>';
     if (!on('helyszin.map')) return h;
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
@@ -564,6 +568,17 @@
     });
     return h;
   }
+  // ---- Ház 3D (dev line skcam, stage K5): the point cloud of a walk round the house ----------------------------------
+  const H3 = window.VRGHouse3d, H3UI = window.VRGHouse3dUI;
+  function houseOpen(house, name) {
+    if (!H3UI) return null;
+    const stemOf = String(name || house.name || 'haz').replace(/\.house3d\.json$|\.json$/i, '');
+    return H3UI.open(document.getElementById('root'), { house, name: stemOf, onSave: h => {
+      const text = JSON.stringify(h); download(text, stemOf + '.house3d.json', 'application/json');
+      flash('Ház 3D mentve: ' + stemOf + '.house3d.json (' + (h.measures || []).length + ' mérés' + (h.scale ? ', léptékkel' : ', lépték nélkül') + ').', 'ok'); render();
+    } });
+  }
+
   // ---- Síkmérés (dev line skcam, stage K3): measuring on a plane in one photo --------------------------------------
   // lib/plane.js does the maths, lib/plane-ui.js is the screen (the phone runs the same one in a WebView). The results
   // go into the survey's optional `planes` key, by photo: a capture id or a Fotópont shot ("F25/0").
@@ -839,6 +854,7 @@
     const t = ev.target;
     if (t.id === 'fopen') { openFiles(t.files); t.value = ''; return; }
     if (t.id === 'fphotos') { if (S) attach(t.files); t.value = ''; return; }
+    if (t.id === 'fhouse') { openFiles(t.files); t.value = ''; return; }
     if (t.id === 'wroom') { wantRoom = t.value; render(); return; }
     if (!S) return;
     if (t.dataset.qtext) {                           // store silently, so a following click is not eaten by a re-render
@@ -892,6 +908,6 @@
   }
   window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
     box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null },
-    plane: { open: planeOpen } };
+    plane: { open: planeOpen }, house: { open: houseOpen } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
