@@ -56,6 +56,7 @@ import hu.vrg.mobile.tag.RingResult
 import hu.vrg.mobile.tag.Seen
 import hu.vrg.mobile.tag.SoundProtocol
 import hu.vrg.mobile.tag.TagText
+import hu.vrg.mobile.tag.TagType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -143,7 +144,16 @@ object TagFeature : VrgFeature {
     private var gatt: TagGatt? = null
     private val ringing = MutableStateFlow<String?>(null)     // the address being rung
 
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+
     private fun ring(ctx: android.content.Context, s: Seen) {
+        // an iTag held connected (Ottfelejtés on): ring over that link, a second connection is not needed
+        if (Tags.ringOverLink(s.address, true)) {
+            ringing.value = s.address
+            Tags.ringText.value = RingResult.STARTED.hu + " (a kapcsolaton át)"
+            main.postDelayed({ if (ringing.value == s.address) stopRing(s.address) }, TagGatt.PLAY_MS)
+            return
+        }
         val g = gatt ?: TagGatt(ctx.applicationContext) { r, p ->
             Tags.ringText.value = r.hu + (p?.let { " (${it.hu})" } ?: "")
             if (r == RingResult.STARTED && p != null && Tags.book.mine?.address == ringing.value) {
@@ -160,16 +170,26 @@ object TagFeature : VrgFeature {
         g.ring(s.address, SoundProtocol.order(s.ad.type, s.uuids, last))
     }
 
+    private fun stopRing(address: String) {
+        if (Tags.ringOverLink(address, false)) {
+            ringing.value = null
+            Tags.ringText.value = RingResult.DONE.hu
+            Tags.bump()
+        } else gatt?.stop()
+    }
+
     @Composable
     private fun RingControls(s: Seen) {
         val ctx = LocalContext.current
         val who by ringing.collectAsStateWithLifecycle()
         val text by Tags.ringText.collectAsStateWithLifecycle()
         Row(Modifier.padding(top = 6.dp)) {
-            if (who == s.address) VrgChip("■ Állj", selected = true) { gatt?.stop() }
+            if (who == s.address) VrgChip("■ Állj", selected = true) { stopRing(s.address) }
             else VrgChip("🔔 Csipogtatás") { ring(ctx, s) }
         }
         if (text != null && (who == s.address || who == null)) Text(text!!, style = Melyviz.small)
+        if (s.ad.type == TagType.ITAG && !Tags.linkedTo(s.address)) Text("iTag: a csipogtatás után bontott kapcsolatot " +
+            "elhagyásnak veheti, és lassan csipogni kezd. A gombja némítja.", style = Melyviz.small.copy(color = Melyviz.faint))
     }
 
     // ---- Saját címke -----------------------------------------------------------------------------------------
@@ -210,6 +230,8 @@ object TagFeature : VrgFeature {
             Text("${Proximity.zone(d, seen.age(now)).hu} · ${t.arrow} ${t.hu} · ${seen.rssi.value?.toInt() ?: "—"} dBm",
                 style = Melyviz.readout)
         }
+
+        if (mine.type == TagType.ITAG) ItagPanel(mine.address, mine.batteryPct, watching)
 
         if (seen != null) RingControls(seen)
         Row(Modifier.padding(top = 6.dp)) {
@@ -264,7 +286,7 @@ object TagFeature : VrgFeature {
 
         // left behind
         VrgSectionTitle("Ottfelejtés")
-        VrgToggle("Szóljon, ha lemarad", watching) { on ->
+        VrgToggle(if (mine.type == TagType.ITAG) "Kapcsolat tartása és ottfelejtés" else "Szóljon, ha lemarad", watching) { on ->
             if (on) {
                 if (VrgNotify.needsPermission(ctx) && Build.VERSION.SDK_INT >= 33) askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
                 TagService.start(ctx)
@@ -296,8 +318,9 @@ object TagFeature : VrgFeature {
         var name by rememberSaveable { mutableStateOf("ISYTag") }
         val pick = Tags.book.bindPick(now)
         VrgSectionTitle("Ez az enyém")
-        Text("Tartsd a címkét a telefon hátához. Ha még soha nem volt párosítva, nyomd meg a gombját, vagy vedd ki és " +
-            "tedd vissza az elemét: párosítási módban is hallom.", style = Melyviz.small)
+        Text("Tartsd a címkét a telefon hátához. Find My címke (ISYTag): ha még soha nem volt párosítva, nyomd meg a " +
+            "gombját, vagy vedd ki és tedd vissza az elemét, mert párosítási módban is hallom. iTag: ha néma, tartsd nyomva " +
+            "a gombját, amíg kettőt csipog (bekapcsol). Ha egy másik app csatlakozik hozzá, nem hirdet.", style = Melyviz.small)
         Text(TagText.bindHint(pick), style = Melyviz.label.copy(color = if (pick is BindPick.Ok) Melyviz.glow else Melyviz.sand),
             modifier = Modifier.padding(vertical = 6.dp))
         OutlinedTextField(
@@ -311,7 +334,10 @@ object TagFeature : VrgFeature {
         )
         Row(Modifier.padding(top = 8.dp)) {
             VrgChip("Ez az enyém", selected = pick is BindPick.Ok) {
-                if (pick is BindPick.Ok) { Tags.book.bind(pick.seen, name, System.currentTimeMillis()); Tags.saveMine(ctx); Tags.bump() }
+                if (pick is BindPick.Ok) {
+                    val n = if (name == "ISYTag" && pick.seen.ad.type == TagType.ITAG) "iTag" else name
+                    Tags.book.bind(pick.seen, n, System.currentTimeMillis()); Tags.saveMine(ctx); Tags.bump()
+                }
             }
             Spacer(Modifier.width(6.dp))
             VrgChip("Környék") { toAround() }
@@ -325,9 +351,9 @@ object TagFeature : VrgFeature {
         val ctx = LocalContext.current
         var open by remember { mutableStateOf<String?>(null) }
         val list = Tags.book.around(now)
-        VrgSectionTitle("Find My címkék a közelben")
-        if (list.isEmpty()) Text("Még egy sem. Egy gazdájától távoli címke 2 mp-enként hirdet; egy párosítatlan csak " +
-            "pár percig a bekapcsolása után.", style = Melyviz.small)
+        VrgSectionTitle("Címkék a közelben")
+        if (list.isEmpty()) Text("Még egy sem. Egy gazdájától távoli Find My címke 2 mp-enként hirdet; egy párosítatlan csak " +
+            "pár percig a bekapcsolása után. Egy iTag addig hirdet, amíg nem csatlakozik hozzá semmi.", style = Melyviz.small)
         val mineAddr = Tags.book.mine?.address
         list.forEach { s ->
             val heard = s.age(now) <= HEARD_MS
@@ -346,7 +372,11 @@ object TagFeature : VrgFeature {
                     RingControls(s)
                     if (s.address != mineAddr) Row(Modifier.padding(top = 4.dp)) {
                         VrgChip("Ez az enyém") {
-                            Tags.book.bind(s, Tags.book.mine?.name ?: (if (s.ad.kind == AdKind.PAIRING) "ISYTag" else "Címke"), System.currentTimeMillis())
+                            Tags.book.bind(s, Tags.book.mine?.name ?: when {
+                                s.ad.type == TagType.ITAG -> "iTag"
+                                s.ad.kind == AdKind.PAIRING -> "ISYTag"
+                                else -> "Címke"
+                            }, System.currentTimeMillis())
                             Tags.saveMine(ctx); Tags.bump()
                         }
                     }
@@ -378,8 +408,34 @@ object TagFeature : VrgFeature {
             "Ha egy iPhone-nal párosítod, a címke a gazdájától távol is rendesen hirdet, és ez az app úgy is látja. " +
                 "Ilyenkor egy idő után az Android ismeretlen nyomkövetőt jelezhet: ez a saját címkéd.",
         ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
+        VrgSectionTitle("iTag (csepp alakú, egy gombos kulcstartó)")
+        listOf(
+            "Ez nem Find My címke: egyszerű Bluetooth eszköz, a telefon közvetlenül csatlakozik hozzá, fiók és hálózat nélkül.",
+            "Csipogtatás: bármikor. Ha a Kapcsolat tartása be van kapcsolva, a már élő kapcsolaton át szól.",
+            "Telefonkereső: amíg a kapcsolat él, a címke gombja megcsörgeti a telefont, némítás mellett is. A gomb újra vagy a Megvan leállítja.",
+            "Ha a kapcsolat megszakad (elhagytad, vagy kikapcsoltad a figyelést), maga a címke kezd lassan csipogni. A gombja némítja.",
+            "Távoli hely nincs: az iTag semmilyen hálózatnak nem jelent, csak a telefon hallja, kb. 10–30 m-ig.",
+        ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
         VrgSectionTitle("Kísérleti")
         Text("Az ISYTag (IMTRON / MediaMarkt, IIT 1000) viselkedését még nem ellenőriztük telefonon: ez a WP M61 " +
-            "„Telefonon ellenőrizni” listája. A Napló („tag”) minden csipogtatási lépést rögzít.", style = Melyviz.small)
+            "„Telefonon ellenőrizni” listája, és az iTagé is. A Napló („tag”) minden csipogtatási és kapcsolati lépést rögzít.",
+            style = Melyviz.small)
+    }
+
+    // ---- iTag: the held link, battery, Telefonkereső ---------------------------------------------------------
+
+    @Composable
+    private fun ItagPanel(address: String, batteryPct: Int?, watching: Boolean) {
+        val ctx = LocalContext.current
+        val up by Tags.linkUp.collectAsStateWithLifecycle()
+        val linked = up && Tags.linkedTo(address)
+        Text(when {
+            linked -> "Kapcsolat: él" + (batteryPct?.let { " · elem: $it%" } ?: "")
+            watching -> "Kapcsolódás… (ha a címke a közelben van és be van kapcsolva)"
+            else -> "Kapcsolat: nincs. A Kapcsolat tartása lent: a telefon csatlakozva marad, és a címke gombja megcsörgeti."
+        }, style = Melyviz.small.copy(color = if (linked) Melyviz.kelp else Melyviz.sand), modifier = Modifier.padding(top = 4.dp))
+        if (Tags.finder.ringing) Row(Modifier.padding(top = 6.dp)) {
+            VrgChip("Megvan, csend", selected = true) { Tags.stopPhone(ctx) }
+        }
     }
 }

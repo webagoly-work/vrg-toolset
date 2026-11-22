@@ -149,9 +149,10 @@ object Catalogue {
         "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
     )
 
-    // WP M61 (experimental, 2026-11-20): Apple Find My tags (the ISYTag, AirTags) used from Android over plain BLE.
+    // WP M61 (experimental, 2026-11-20): Apple Find My tags (the ISYTag, AirTags) used from Android over plain BLE;
+    // since 2026-11-22 also the iTag (the teardrop anti-lost key tag: connected, ring, button = find the phone).
     val TAG = FeatureInfo(
-        "tag", "Tárgykereső", "Kísérleti: Apple Find My címke (ISYTag, AirTag) Androidról: milyen messze van, csipogtatás, ottfelejtés-riasztás és az utolsó hely, ahol a telefon hallotta.",
+        "tag", "Tárgykereső", "Kísérleti: Apple Find My címke (ISYTag, AirTag) és iTag kulcstartó Androidról: milyen messze van, csipogtatás, ottfelejtés-riasztás, az utolsó hely, ahol a telefon hallotta, és iTaggel telefonkereső.",
         "🏷", Group.LINK, Stage.BETA, "M61", setOf(Need.BLUETOOTH),
     )
 

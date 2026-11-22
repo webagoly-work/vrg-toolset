@@ -27,6 +27,8 @@ enum class AdKind(val hu: String) {
     PAIRING("párosításra vár"),
     /** A DULT (IETF unwanted-tracker) advertisement. */
     DULT("DULT hirdetés"),
+    /** Not a Find My tag: an iTag (Itag.kt), a plain BLE tag the phone connects to. Fixed address. */
+    ITAG("csatlakoztatható"),
 }
 
 /** Bits 4-5 of the status byte. */
@@ -35,6 +37,7 @@ enum class TagType(val hu: String) {
     AIRTAG("AirTag"),
     ACCESSORY("Find My kiegészítő"),
     OTHER("egyéb Apple"),
+    ITAG("iTag"),
     UNKNOWN("ismeretlen");
 
     companion object {

@@ -15,7 +15,7 @@ package hu.vrg.mobile.tag
 
 enum class SoundProtocol(
     val hu: String,
-    /** The service: a full 128-bit UUID, or for FINDMY the 16-bit one, matched inside a 128-bit UUID. */
+    /** The service: a full 128-bit UUID, or a 16-bit SIG one (FINDMY, ITAG), matched inside a 128-bit UUID. */
     val service: String,
     val characteristic: String,
     val start: ByteArray,
@@ -32,7 +32,11 @@ enum class SoundProtocol(
         byteArrayOf(0x01, 0x00, 0x03), byteArrayOf(0x01, 0x01, 0x03), notify = true),
     AIRTAG("AirTag",
         "7DFC9000-7D1C-4951-86AA-8D9728F8D66C", "7DFC9001-7D1C-4951-86AA-8D9728F8D66C",
-        byteArrayOf(0xAF.toByte()), null, notify = false);
+        byteArrayOf(0xAF.toByte()), null, notify = false),
+    /** The iTag (Itag.kt): the standard Immediate Alert service, any non-zero level beeps, 0x00 stops. */
+    ITAG("iTag (Immediate Alert)",
+        "1802", "00002A06-0000-1000-8000-00805F9B34FB",
+        byteArrayOf(0x01), byteArrayOf(0x00), notify = false);
 
     /** Does a discovered service's UUID ("0000fd44-0000-1000-8000-00805f9b34fb") belong to this protocol? */
     fun matchesService(uuid: String): Boolean {
@@ -51,6 +55,7 @@ enum class SoundProtocol(
          * protocol whose service the tag advertises goes first; [lastWorked] (remembered per tag) goes before all.
          */
         fun order(type: TagType, advertised16: Set<Int>, lastWorked: SoundProtocol? = null): List<SoundProtocol> {
+            if (type == TagType.ITAG) return listOf(ITAG)
             val base = if (type == TagType.AIRTAG) FOR_AIRTAG else DEFAULT
             val hinted = if (FindMy.UUID16_FINDMY in advertised16) listOf(FINDMY) else emptyList()
             return (listOfNotNull(lastWorked) + hinted + base).distinct()

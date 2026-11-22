@@ -32,6 +32,12 @@ class Seen(val address: String, var ad: FindMyAd, val firstAt: Long) {
         this.rssi.add(rssi, now)
     }
 
+    /** Heard over a held connection (an iTag stops advertising while connected): [rssi] from readRemoteRssi. */
+    fun linked(rssi: Int?, now: Long) {
+        lastAt = now; count++
+        if (rssi != null) this.rssi.add(rssi, now)
+    }
+
     fun age(now: Long): Long = now - lastAt
     fun distance(tx1m: Int, clutter: Clutter = Clutter.SITE): Double? = rssi.value?.let { Proximity.distance(it, tx1m, clutter) }
 }
@@ -53,6 +59,8 @@ data class Mine(
     val lastLat: Double? = null,
     val lastLon: Double? = null,
     val lastAccM: Float? = null,
+    /** An iTag's battery, read over GATT (0..100 %). */
+    val batteryPct: Int? = null,
 ) {
     val rotates: Boolean get() = kind == AdKind.SEPARATED || kind == AdKind.NEAR_OWNER
 
@@ -63,7 +71,7 @@ data class Mine(
         "battery=${battery.name}", sound?.let { "sound=${it.name}" },
         pastAddresses.takeIf { it.isNotEmpty() }?.let { "past=" + it.joinToString(",") },
         "guessed=$guessed", "lastSeenAt=$lastSeenAt",
-        lastLat?.let { "lat=$it" }, lastLon?.let { "lon=$it" }, lastAccM?.let { "acc=$it" },
+        lastLat?.let { "lat=$it" }, lastLon?.let { "lon=$it" }, lastAccM?.let { "acc=$it" }, batteryPct?.let { "pct=$it" },
     ).joinToString("\n")
 
     companion object {
@@ -86,6 +94,7 @@ data class Mine(
                 lastLat = m["lat"]?.toDoubleOrNull(),
                 lastLon = m["lon"]?.toDoubleOrNull(),
                 lastAccM = m["acc"]?.toFloatOrNull(),
+                batteryPct = m["pct"]?.toIntOrNull()?.takeIf { it in 0..100 },
             )
         }
     }
@@ -116,7 +125,7 @@ class TagBook {
 
     /** One advertisement. Returns what it was, or null if it is not a Find My tag. */
     fun heard(address: String, raw: ByteArray, rssi: Int, now: Long): Seen? {
-        val ad = FindMy.parse(raw, address) ?: return null
+        val ad = FindMy.parse(raw, address) ?: Itag.parse(raw) ?: return null
         val uuids = FindMy.uuid16s(raw)
         val s = seen.getOrPut(address) { Seen(address, ad, now) }
         s.heard(ad, uuids, rssi, now)
@@ -159,6 +168,21 @@ class TagBook {
             battery = s.ad.battery, lastSeenAt = s.lastAt)
         mine = m; lastRelink = null
         return m
+    }
+
+    /**
+     * Heard over a held connection: an iTag stops advertising while it is connected, so the link reports in instead
+     * (every RSSI poll). Keeps mine "heard" for Ottfelejtés and the distance readout. [batteryPct] when just read.
+     */
+    fun heardLinked(address: String, rssi: Int?, now: Long, batteryPct: Int? = null): Seen {
+        val s = seen.getOrPut(address) { Seen(address, FindMyAd(AdKind.ITAG, TagType.ITAG, Battery.UNKNOWN, null, null, null), now) }
+        s.linked(rssi, now)
+        val m = mine
+        if (m != null && m.address == address) {
+            mine = m.copy(lastSeenAt = now, batteryPct = batteryPct ?: m.batteryPct,
+                battery = batteryPct?.let { Itag.level(it) } ?: m.battery)
+        }
+        return s
     }
 
     fun forget() { mine = null; background.clear(); lastRelink = null }
@@ -248,7 +272,7 @@ object TagText {
     }
 
     fun bindHint(p: BindPick, tx1m: Int = TAG_TX1M): String = when (p) {
-        BindPick.None -> "Nem hallok Find My címkét. Nyomd meg a címke gombját, vagy várj fél percet."
+        BindPick.None -> "Nem hallok címkét. Nyomd meg a címke gombját, vagy várj fél percet."
         is BindPick.TooFar -> "A legközelebbi ${Proximity.label(p.best.distance(tx1m))}: tartsd a címkét a telefon hátához."
         is BindPick.Ambiguous -> "Két címke is ugyanolyan közel van: vidd távolabb a másikat."
         is BindPick.Ok -> "Megvan: ${p.seen.ad.type.hu}, ${p.seen.ad.kind.hu}."

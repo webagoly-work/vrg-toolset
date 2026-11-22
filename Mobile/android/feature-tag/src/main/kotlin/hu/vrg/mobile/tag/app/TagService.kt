@@ -48,6 +48,11 @@ class TagService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) { Tags.setWatchWanted(this, false); shutdown(); return START_NOT_STICKY }
+        if (intent?.action == ACTION_FOUND) {
+            Tags.stopPhone(this)
+            if (loop == null) stopSelf()          // Megvan never starts the watch by itself
+            return START_NOT_STICKY
+        }
         val n = ongoing()
         if (Build.VERSION.SDK_INT >= 29) startForeground(ID_RUN, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE) else startForeground(ID_RUN, n)
         if (!Tags.allowed(this) || Tags.book.mine == null) { shutdown(); return START_NOT_STICKY }
@@ -71,6 +76,8 @@ class TagService : Service() {
                     LeftBehind.Event.BACK -> alert(left = false)
                     null -> {}
                 }
+                Tags.syncLink(this@TagService)                    // an iTag: keep the connection (ItagLink)
+                if (Tags.finder.tick(now)) Tags.stopPhone(this@TagService)
                 Tags.book.prune(now)
                 refresh()
                 delay(2_000)
@@ -89,7 +96,8 @@ class TagService : Service() {
     private fun ongoingText(): String {
         val m = Tags.book.mine ?: return ""
         val heard = if (m.lastSeenAt > 0) TagText.ago(System.currentTimeMillis() - m.lastSeenAt) else "még nem"
-        return "${Tags.watch.state.hu} · hallottam: $heard"
+        val link = if (m.type == hu.vrg.mobile.tag.TagType.ITAG) (if (Tags.linkUp.value) " · kapcsolat él" else " · kapcsolódás…") else ""
+        return "${Tags.watch.state.hu} · hallottam: $heard$link"
     }
 
     private fun ongoing(): Notification {
@@ -139,6 +147,7 @@ class TagService : Service() {
 
     private fun shutdown() {
         loop?.cancel(); loop = null
+        Tags.stopPhone(this)
         Tags.watch.disarm()
         Tags.wantForWatch(this, false)
         running.value = false
@@ -159,6 +168,7 @@ class TagService : Service() {
         const val CH_RUN = "tag-run"
         const val CH_ALERT = "tag-alert"
         const val ACTION_STOP = "hu.vrg.mobile.tag.STOP"
+        const val ACTION_FOUND = "hu.vrg.mobile.tag.FOUND"
 
         val running = kotlinx.coroutines.flow.MutableStateFlow(false)
 

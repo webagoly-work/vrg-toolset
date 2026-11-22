@@ -55,7 +55,7 @@
   {"id":"openmct","name":"Open MCT console","area":"BRIDGE smart home","thread":"openmct","words":["open mct","openmct"],"paths":[],"ids":[]},
   {"id":"rl","name":"RL-CYD + RL Field","area":"Hardware","thread":"rl","words":["rl-cyd","rl field"],"paths":["H:/Personal/RL-CYD"],"ids":[]},
   {"id":"pager","name":"Site Pager + S3 projects","area":"Hardware","thread":"pager","words":["site pager","csipogó"],"paths":["Mobile/android/pager-core","Mobile/android/feature-pager","docs/mobile/WP/M33.md"],"ids":[]},
-  {"id":"findtag","name":"Tárgykereső (Find My tag on Android)","area":"Hardware","thread":"","words":["tárgykereső","isytag"],"paths":["Mobile/android/tag-core","Mobile/android/feature-tag","docs/mobile/WP/M61.md"],"ids":[]},
+  {"id":"findtag","name":"Tárgykereső (Find My tag on Android)","area":"Hardware","thread":"","words":["tárgykereső","isytag","itag"],"paths":["Mobile/android/tag-core","Mobile/android/feature-tag","docs/mobile/WP/M61.md"],"ids":[]},
   {"id":"openwrt","name":"OpenWrt router","area":"Seeing the work, network","thread":"openwrt","status":"out","words":["openwrt"],"paths":["GO-OPENWRT.md"],"ids":[]},
   {"id":"remote","name":"Own remote access","area":"Seeing the work, network","thread":"remote","words":["remote access"],"paths":[],"ids":[]}
  ]
