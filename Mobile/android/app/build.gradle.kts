@@ -80,4 +80,5 @@ dependencies {
     implementation(project(":feature-vault"))
     implementation(project(":feature-workflow"))
     implementation(project(":feature-map"))
+    implementation(project(":feature-weather"))   // WP M44 VRG Időjárás
 }

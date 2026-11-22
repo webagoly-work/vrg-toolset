@@ -911,6 +911,25 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - **D-141 · Where the box opens.** Chosen **A**: Rendezés → ⬚ Szobadoboz, where the plan is solved in mm. Rejected:
     **B** the Fotópont wheel (the plan may not be solved there); **C** a front of its own (the fronts are the survey's
     capture places).
+- **D-142 … D-144 · VRG Időjárás on the phone (M44), 2026-11-22.** Asked as A/B/C in the session; answered "1A 2A 3B"
+  (the recommendations), relayed from the Founder's coordinating session.
+  - **D-142 · The form: a native screen.** Chosen **A**: "can we work outside today" per activity, with the reasons and
+    the longest calm window, the official warnings, the fused 72 hours with their spread, a home-card line, and the
+    PC's page one tap away through the relay. The fusion and the rules are ported to a pure-Kotlin `weather-core`,
+    and `Weather/config` is bundled as exact copies under a test. Rejected: **B** the PC page only (it needs
+    `serve.js` and its database, so it is useless on a site away from the PC); **C** a notification only (no screen;
+    it can come later on top of A).
+  - **D-143 · Sources the phone calls itself: keyless and free for a company.** Chosen **A**: MET Norway, DWD MOSMIX
+    (nearest station within 45 km) and MeteoAlarm. Open-Meteo stays on the PC: a company may use it only with a paid
+    key, which would be a secret on the phone. MET Norway's terms want a contact in the User-Agent. It is a field
+    under ⚙ ("Kapcsolat (MET Norway)") kept on the phone only, and the source waits until it is filled in. Nothing is
+    committed. Rejected: **B** adding the HungaroMet 10-minute measurements (a zipped CSV every 10 minutes on mobile
+    data); **C** MET Norway and MeteoAlarm only (one forecast, so the confidence always reads "egy").
+  - **D-144 · Location: named places and "Itt" on a tap.** Chosen **B**: the towns of `places.json`, saved places,
+    and ◎ Itt. Itt reads one position on the tap, rounds it to two decimals (~1 km) and uses it only as the forecast
+    query's coordinates, in the D-31 spirit. The county for the warnings is taken from the nearest approximate county
+    centre (Budapest within 12 km). The PC Map's job sites stay on the PC. Rejected: **A** no GPS; **C** automatic
+    GPS on every open.
 
 ## Open (to ask when the WP that needs them starts)
 

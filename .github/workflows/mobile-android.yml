@@ -6,10 +6,10 @@ name: VRG Mobile (Android)
 on:
   push:
     paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
-      'Map/lib/site-math.js', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
+      'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   pull_request:
     paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
-      'Map/lib/site-math.js', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
+      'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   workflow_dispatch:
 
 permissions:
@@ -55,7 +55,7 @@ jobs:
         working-directory: .
         run: node Sketcher/test/run.js
       - name: Tests (pure Kotlin)
-        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :weather-core:test
       - name: Debug APK
         run: ./gradlew --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
