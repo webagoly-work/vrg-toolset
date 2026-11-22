@@ -987,18 +987,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     (⟲ Igazítás, ⇩ 360° kép), behind `vazlat.pano`. Rejected: **B** on the Fotópont wheel (no solved plan there for
     the 3D check); **C** automatic alignment on every open (it changes the survey; the user should see it happen).
 
-- **D-157 … D-160 · Ház 3D (M63, dev line skcam K5), 2026-11-22.** Taken for the Founder while building ("start K5");
+- **D-158 … D-161 · Ház 3D (M63, dev line skcam K5), 2026-11-22.** Taken for the Founder while building ("start K5");
   each can be revisited. Q4 (the PC's graphics card) left open: the sparse cloud works without it.
-  - **D-157 · What reconstructs.** Chosen **A**: COLMAP (BSD) run by `Sketcher/tools/house3d.js` as a separate program
+  - **D-158 · What reconstructs.** Chosen **A**: COLMAP (BSD) run by `Sketcher/tools/house3d.js` as a separate program
     on the PC; sparse on any CPU, dense only with CUDA. Rejected: **B** a learned model (MapAnything / VGGT: a GPU
     and a large download for the first step); **C** pycolmap in Python (a Python on H: to keep).
-  - **D-158 · Where the size comes from.** Chosen **A**: two points of the cloud and their true distance, typed in the
+  - **D-159 · Where the size comes from.** Chosen **A**: two points of the cloud and their true distance, typed in the
     viewer (a tape, the K2 laser, the building's width). Rejected: **B** the camera height (a phone is held at about,
     not exactly, the same height); **C** printed markers found automatically (later).
-  - **D-159 · Where the result lives.** Chosen **A**: `<név>.house3d.json` next to the photos (points, colours, cameras,
+  - **D-160 · Where the result lives.** Chosen **A**: `<név>.house3d.json` next to the photos (points, colours, cameras,
     scale, measurements), opened in the Sketcher by its Megnyitás or the Helyszín card. Rejected: **B** inside the
     survey (a cloud is megabytes; the survey travels to the phone).
-  - **D-160 · Where it is shown.** Chosen **A**: the Desktop Sketcher page, an overlay of its own (WebGL points, no
+  - **D-161 · Where it is shown.** Chosen **A**: the Desktop Sketcher page, an overlay of its own (WebGL points, no
     library); the processing is START P → 3 on a drop folder (`inbox\haz3d\<ház>`). Rejected: **B** a separate tool
     page (one more page to register for one view); **C** the phone (the reconstruction runs on the PC anyway).
 

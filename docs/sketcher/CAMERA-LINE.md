@@ -9,7 +9,7 @@ Research: `docs/research/2026-11-20_room-capture-and-measurement.md` (sources, l
 Grows out of: M24 Vázlat, M25 Fotópont, M29 Kamera, M30 Helyszín, M52 Saját kamera (`docs/mobile/WP/`). Builds on
 decisions D-24…D-26, D-31, D-90 and D-100…D-109 (`docs/mobile/DECISIONS.md`).
 
-**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-157…D-160). Fork **DV1** (Data Vault) turns the line's
+**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-158…D-161). Fork **DV1** (Data Vault) turns the line's
 written and collected features into Data Vault cells (§6).
 
 **Since the line opened:** fork F7 (WP M52, D-100…D-109) gave the Sketcher an **in-app CameraX camera**, with the
@@ -89,7 +89,7 @@ fields `Stack/lib/layers.js` reads:
                ['11-22', 'K1b Szobadoboz on the phone (WP M59, D-137…D-141): WebView viewer, box key kept, lens per Fotópont shot; DV1 merged (data-vault#12)'],
                ['11-22', 'K3 Síkmérés (WP M60, D-145…D-149): distances and heights on a wall from one photo and a known rectangle, phone and Desktop'],
                ['11-22', 'K4 Körkép (WP M62, D-153…D-156): neighbour alignment into the box key, the 360° GPano JPEG, phone and Desktop'],
-               ['11-22', 'K5 Ház 3D (WP M63, D-157…D-160): COLMAP on the PC (START P → 3), the point cloud scaled and measured in the Sketcher']],
+               ['11-22', 'K5 Ház 3D (WP M63, D-158…D-161): COLMAP on the PC (START P → 3), the point cloud scaled and measured in the Sketcher']],
   remaining: [
     'K1 polish: corner snapping instead of the direction slider',
     'K2 Lézer: BLE laser meter → wall size (needs Q1: which meter)',
