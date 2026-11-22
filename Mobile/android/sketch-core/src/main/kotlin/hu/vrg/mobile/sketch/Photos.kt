@@ -65,11 +65,11 @@ object PhotoOps {
     })
 
     /** A photo facing [deg]. One per side: a new one replaces the old, whose file is returned to delete. */
-    fun addShot(s: Sketch, id: String, deg: Int, file: String, taken: Long): Pair<Sketch, String?> {
+    fun addShot(s: Sketch, id: String, deg: Int, file: String, taken: Long, f35: Double? = null): Pair<Sketch, String?> {
         val p = s.photos.firstOrNull { it.id == id } ?: return s to file
         val d = Photos.norm(deg)
         val old = Photos.shot(p, d)
-        val shots = (p.shots.filter { Photos.norm(it.deg) != d } + Shot(d, file, taken)).sortedBy { it.deg }
+        val shots = (p.shots.filter { Photos.norm(it.deg) != d } + Shot(d, file, taken, f35)).sortedBy { it.deg }
         return s.copy(photos = s.photos.map { if (it.id == id) it.copy(shots = shots) else it }) to old?.file?.takeIf { it != file }
     }
 
@@ -88,6 +88,6 @@ object PhotoOps {
         val shots = p.shots.map {
             when (it) { a -> it.copy(deg = Photos.norm(to)); b -> it.copy(deg = Photos.norm(from)); else -> it }
         }.sortedBy { it.deg }
-        return s.copy(photos = s.photos.map { if (it.id == id) it.copy(shots = shots) else it })
+        return Planes.turn(s.copy(photos = s.photos.map { if (it.id == id) it.copy(shots = shots) else it }), id, from, to)   // K3: the measurements go along
     }
 }

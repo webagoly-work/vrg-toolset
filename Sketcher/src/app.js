@@ -2,17 +2,24 @@
 // The engine (window.VRGFieldKit), the catalog (window.VRG_FIELDKIT) and the variants (window.VRG_VARIANTS) are inlined by tools/build.js.
 (function () {
   'use strict';
-  const FK = window.VRGFieldKit;
+  const FK = window.VRGFieldKit, TK = window.VRGTakeoff;
+  const RULES = TK.parseRules(window.VRG_TAKEOFF_RULES);
   const BASE = FK.parseKit(window.VRG_FIELDKIT);
   const VARIANTS = window.VRG_VARIANTS || [];
   const GROUPS = [['jelleg', 'Jelleg'], ['terulet', 'Terület'], ['rendszer', 'Rendszer'], ['igeny', 'Igény']];
   const TYPES = { socket: 'Dugalj', switch: 'Kapcsoló', light: 'Lámpa', junction: 'Kötődoboz', data: 'Adat', fixed: 'Fix bekötés', sensor: 'Érzékelő', board: 'Elosztó', pont: 'Típustalan' };
   const EXTRA = { attekintes: { id: 'attekintes', label: 'Áttekintés', sym: '▤', color: '#93d3e6' }, variansok: { id: 'variansok', label: 'Variánsok', sym: '◐', color: '#b08ad8' } };
   const LAST_KEY = 'vrg-sketcher-last';
+  // WP M51 (D-91…D-99): every feature on its own switch, kept per browser (lib/features.js, catalog/features.json).
+  // The stored list is what differs from the default; D-79's own key keeps the implied-dedicated toggle.
+  const FE = window.VRGFeatures, FEAT_KEY = 'vrg-sketcher-features';
+  EXTRA.funkciok = { id: 'funkciok', label: 'Funkciók', sym: '⚙', color: '#a6afb7' };
 
   let S = null, pkg = null, cur = 'attekintes', msg = null, fileName = '';
   let files = new Map();                       // photo file name -> object URL (memory only, never saved)
+  const boxMeta = new Map(), boxImg = new Map();   // skcam K1: file name -> {f35, w, h} from EXIF, and an upright canvas (memory only)
   let note = { text: '', chips: new Set(), open: false, room: '' };
+  let wantRoom = '';   // F4 (WP M49): where the Munkakör's + / − put a want: '' = Általános, else a room id
   let starter = '';
 
   const $ = id => document.getElementById(id);
@@ -51,24 +58,81 @@
     if (typeof obj === 'string') obj = JSON.parse(obj);
     if (!obj || typeof obj !== 'object') throw new Error('Nem felmérés fájl.');
     obj = clone(obj);
-    if (obj.kind === 'vrg-sketch' && obj.sketch && obj.sketch.kind === 'vrg-vazlat') { pkg = obj; S = obj.sketch; delete pkg.sketch; }
+    pkgImplied = null;
+    if (obj.kind === 'vrg-sketch' && obj.sketch && obj.sketch.kind === 'vrg-vazlat') {
+      pkg = obj; S = obj.sketch; delete pkg.sketch;
+      const cf = pkg.takeoff && pkg.takeoff.config;
+      if (cf && typeof cf.impliedDedicated === 'boolean') pkgImplied = cf.impliedDedicated;
+    }
     else if (obj.kind === 'vrg-vazlat') { pkg = null; S = obj; }
     else throw new Error('Ismeretlen fájl (kind: ' + obj.kind + ') — vrg-sketch vagy vrg-vazlat kell.');
     files.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
-    files = new Map(); fileName = name || ''; note = { text: '', chips: new Set(), open: false, room: '' };
+    files = new Map(); boxMeta.clear(); boxImg.clear(); if (typeof boxClose === 'function' && ui.open) { ui.open = false; if (boxEl) boxEl.hidden = true; }
+    fileName = name || ''; note = { text: '', chips: new Set(), open: false, room: '' };
     flash(null); persist(); render();
     return S;
   }
-  function output() { return pkg ? Object.assign({}, pkg, { sketch: S }) : S; }
+  // the takeoff (Munkakör lap, docs/sketcher/TAKEOFF.md): from the package's solved plan, or the raw sketch (all ≈)
+  // D-79: the dedicated circuits the big machines imply, only when switched on (a general setting of this browser)
+  const IMPLIED_KEY = 'vrg-sketcher-implied-dedicated';
+  let implied = (() => { try { return localStorage.getItem(IMPLIED_KEY) === '1'; } catch (e) { return !!RULES.impliedDedicated; } })();
+  // F8 (WP M53, D-111): a package the phone exported carries its takeoff; until the toggle is touched here, the page counts
+  // as the phone did (its ⚙ setting is in takeoff.config), so the Desktop shows the phone's numbers
+  let pkgImplied = null;
+  const impliedNow = () => pkgImplied == null ? implied : pkgImplied;
+  function setImplied(on) { implied = !!on; pkgImplied = null; try { localStorage.setItem(IMPLIED_KEY, implied ? '1' : '0'); } catch (e) { /* no storage: this page only */ } FL = FE.fromStores(Object.assign(FE.toStores(FL), { implied })); }
+  let FL = (() => { let g = []; try { g = FE.read(localStorage.getItem(FEAT_KEY)); } catch (e) { /* no storage */ } return FE.fromStores({ cameraOff: [], implied, general: g }); })();
+  const on = id => FE.on(FL, id);
+  function setFeatures(next) {
+    const st = FE.toStores(next); FL = FE.read(FE.write(next));
+    try { localStorage.setItem(FEAT_KEY, FE.write(st.general)); } catch (e) { /* no storage: this page only */ }
+    if (st.implied !== implied) setImplied(st.implied);
+    if (cur !== 'funkciok' && !viewShown(cur)) cur = 'attekintes';
+  }
+  const viewShown = id => id === 'attekintes' || id === 'funkciok' || (id === 'variansok' ? on('variansok.use') : FE.visibleFronts(FL, [id]).length > 0);
+  function takeoff() { return TK.build(kit(), RULES, S, pkg ? TK.planFromPackage(pkg) : null, { now: stamp(), impliedDedicated: impliedNow() }); }
+  // a package carries its takeoff (the Planner keeps it with the job); a bare survey file stays as it is
+  function output() { return pkg ? Object.assign({}, pkg, { sketch: S, takeoff: takeoff() }) : S; }
+  function download(text, name, type) {
+    try {
+      const url = URL.createObjectURL(new Blob([text], { type }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+  }
   function save() {
     if (!S) return null;
     const text = JSON.stringify(output(), null, 1);
-    try {
-      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-      const a = document.createElement('a'); a.href = url; a.download = stem() + '.vsketch.json';
-      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
-    } catch (e) { /* no download in this environment (tests); the text is still returned */ }
+    download(text, stem() + '.vsketch.json', 'application/json');
     return text;
+  }
+  // the intake / takeoff export for the Varler Workflow Kit: <stem>.takeoff.json + <stem>.takeoff.md
+  function exportTakeoff() {
+    if (!S) return null;
+    const t = takeoff(), json = JSON.stringify(t, null, 1) + '\n', md = TK.markdown(t);
+    download(json, stem() + '.takeoff.json', 'application/json');
+    download(md, stem() + '.takeoff.md', 'text/markdown');
+    return { json, md, takeoff: t };
+  }
+  // F5 (WP M50): the Felmérési jegyzőkönyv (Sketcher/lib/report.js), built now from the open survey; never stored
+  const RP = window.VRGReport;
+  function reportHtml() {
+    if (!S || !RP) return '';
+    const si = S.site || {}, out = si.outline || [];
+    let siteSvg = '', siteLines = [];
+    if (SM && out.length >= 3) {
+      const rooms = siteRooms(), rep = si.place && rooms.length ? SM.report(rooms, out, si.place) : null;
+      siteSvg = sitePlaceSvg(out, rooms, si.place && rooms.length ? si.place : null, rep); siteLines = rep ? SM.reportLines(rep) : [];
+    }
+    return RP.html(RP.model(kit(), S, takeoff(), { now: stamp(), roomName, photoUrl: thumbFor, planSvg: svgPlan(), siteSvg, siteLines }));
+  }
+  function openReport() {
+    const h = reportHtml(); if (!h) return '';
+    let w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    if (w && w.document) { w.document.open(); w.document.write(h); w.document.close(); flash('Jegyzőkönyv: új ablakban (Nyomtatás / PDF).', 'ok'); }
+    else { download(h, stem() + '.jegyzokonyv.html', 'text/html'); flash('Jegyzőkönyv letöltve: ' + stem() + '.jegyzokonyv.html (a felugró ablak tiltva).', 'ok'); }
+    return h;
   }
   function readFile(f) { return f.text ? f.text() : new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsText(f); }); }
   async function openFiles(list) {
@@ -80,8 +144,10 @@
   }
 
   // ---- photos in memory ------------------------------------------------------------------------------------------
+  // Kamera 2: a video is .mp4, a signature .png named "alairas" (sketch-core Intake.exportName)
+  const capExt = c => c.kind === 'video' ? 'mp4' : c.kind === 'signature' ? 'png' : c.kind === 'audio' ? 'm4a' : 'jpg';   // F5: a sound note is .m4a
   function captureNames(c) {
-    const n = [base(c.file), stem() + '_' + c.id + '_' + (c.purpose || 'egyeb') + '.jpg'];
+    const n = [base(c.file), stem() + '_' + c.id + '_' + (c.kind === 'signature' ? 'alairas' : (c.purpose || 'egyeb')) + '.' + capExt(c)];
     return n.filter(Boolean);
   }
   function attach(list) {
@@ -90,7 +156,7 @@
     (S.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
 (pkg && pkg.plan && pkg.plan.photos || []).forEach(p => (p.shots || []).forEach(x => want.add(base(x.file))));
     let n = 0;
-    Array.from(list).forEach(f => { if (want.has(f.name)) { if (files.has(f.name)) URL.revokeObjectURL(files.get(f.name)); files.set(f.name, URL.createObjectURL(f)); n++; } });
+    Array.from(list).forEach(f => { if (want.has(f.name)) { if (files.has(f.name)) URL.revokeObjectURL(files.get(f.name)); files.set(f.name, URL.createObjectURL(f)); boxPrep(f); n++; } });
     flash(n + ' / ' + list.length + ' fotó párosítva (csak a memóriában, a mentett fájlba nem kerül).', n ? 'ok' : '');
     render();
   }
@@ -152,12 +218,14 @@
   // ---- fronts ----------------------------------------------------------------------------------------------------
   function derived() {
     const k = kit(), f = FK.facts(k, S), now = stamp();
-    return { k, f, qs: FK.questions(k, S, f, now), shots: FK.shots(k, S, f), open: FK.open(k, S, norm(), f), sug: FK.suggestions(k, S) };
+    // M51 (D-93): a feature switched off leaves no trace: its cards, badges and loose ends go; the data stays
+    return { k, f, qs: on('kerdes.questions') ? FK.questions(k, S, f, now) : [], shots: on('kamera.shotlist') ? FK.shots(k, S, f) : [],
+      open: FK.open(k, S, norm(), f).filter(o => FE.openShown(FL, o)), sug: on('jegyzet.keywords') ? FK.suggestions(k, S) : [] };
   }
 
   function vAttekintes(d) {
     const sc = S.scope || {}, fl = floors();
-    let h = '<div class="grid"><div class="card"><h3 style="margin-top:0">Munkakör</h3>';
+    let h = '<div class="grid">' + (on('munkakor.summary') ? '<div class="card"><h3 style="margin-top:0">Munkakör</h3>' : '<div hidden>');
     let any = false;
     GROUPS.forEach(([g, label]) => {
       const sel = d.k.scope.filter(x => x.group === g && sc[x.id] > 0);
@@ -185,15 +253,15 @@
   function vVazlat() {
     return '<div class="svgwrap">' + svgPlan() + '</div><div class="legend"><span><i style="background:#d9a441"></i>meglévő</span><span><i style="background:#27c2b0"></i>tervezett</span>' +
       '<span><i style="background:#e8641c"></i>≈ becsült él</span><span><i style="background:#2a8cdb"></i>fotópont (kitöltött = van kép)</span>' +
-      '<span>' + (floors().length ? 'Terv: mm-ben (Planner adat)' : 'Csak vázlat: rajzegységben') + '</span></div>';
+      '<span>' + (floors().length ? 'Terv: mm-ben (Planner adat)' : 'Csak vázlat: rajzegységben') + '</span></div>' + boxCard();
   }
 
   function vJegyzet(d) {
     const k = d.k, rooms = norm().rooms;
-    let h = '<div class="card"><textarea id="ntext" placeholder="Jegyzet: amit az ügyfél mondott…">' + esc(note.text) + '</textarea><div style="margin-top:6px">' +
-      k.chips.map(c => '<button class="pill ' + (note.chips.has(c.id) ? 'sel' : '') + '" data-act="nchip" data-id="' + esc(c.id) + '" style="--c:' + esc(c.color) + '"><i>' + esc(c.sym) + '</i>' + esc(c.label) + '</button>').join('') +
+    let h = !on('jegyzet.quick') ? '' : '<div class="card"><textarea id="ntext" placeholder="Jegyzet: amit az ügyfél mondott…">' + esc(note.text) + '</textarea><div style="margin-top:6px">' +
+      (on('jegyzet.chips') ? k.chips : []).map(c => '<button class="pill ' + (note.chips.has(c.id) ? 'sel' : '') + '" data-act="nchip" data-id="' + esc(c.id) + '" style="--c:' + esc(c.color) + '"><i>' + esc(c.sym) + '</i>' + esc(c.label) + '</button>').join('') +
       '</div><div class="row"><select id="nroom" style="width:auto"><option value="">(helyiség nélkül)</option>' + rooms.map(r => '<option value="' + esc(r.id) + '"' + (note.room === r.id ? ' selected' : '') + '>' + esc(r.name || r.id) + '</option>').join('') + '</select>' +
-      '<label class="small"><input type="checkbox" id="nopen"' + (note.open ? ' checked' : '') + '> ⚑ Tisztázandó</label><span class="grow"></span><button class="btn primary" id="nadd" data-act="nadd">Hozzáad</button></div></div>';
+      (on('jegyzet.unclear') ? '<label class="small"><input type="checkbox" id="nopen"' + (note.open ? ' checked' : '') + '> ⚑ Tisztázandó</label>' : '') + '<span class="grow"></span><button class="btn primary" id="nadd" data-act="nadd">Hozzáad</button></div></div>';
     if (d.sug.length) {
       h += '<h3>Javaslatok a jegyzetekből</h3><div>' + d.sug.map(g => {
         const e = g.effect, parts = e.scope.map(s => (k.scope.find(x => x.id === s) || { label: s }).label);
@@ -203,31 +271,69 @@
       }).join('') + '</div>';
     }
     const ents = (S.entries || []).slice().reverse();
-    h += '<h3>Napló</h3>' + (ents.length ? '<div class="tl">' + ents.map(e => '<div class="ent' + (e.open ? ' open' : '') + '" data-ent="' + esc(e.id) + '"><div class="meta"><span>' + esc(fmtTime(e.at)) + '</span>' +
+    if (on('jegyzet.log')) h += '<h3>Napló</h3>' + (ents.length ? '<div class="tl">' + ents.map(e => '<div class="ent' + (e.open ? ' open' : '') + '" data-ent="' + esc(e.id) + '"><div class="meta"><span>' + esc(fmtTime(e.at)) + '</span>' +
       (e.room ? '<span>⌂ ' + esc(roomName(e.room)) + '</span>' : '') + (e.voice ? '<span>🎙</span>' : '') +
-      '<button class="flag ' + (e.open ? 'on' : '') + '" data-act="eopen" data-id="' + esc(e.id) + '" title="Tisztázandó">⚑</button></div>' +
+      (on('jegyzet.unclear') ? '<button class="flag ' + (e.open ? 'on' : '') + '" data-act="eopen" data-id="' + esc(e.id) + '" title="Tisztázandó">⚑</button>' : '') + '</div>' +
       (e.text ? '<div class="txt">' + esc(e.text) + '</div>' : '') + '<div>' + (e.chips || []).map(chipPill).join('') + '</div></div>').join('') + '</div>' : '<div class="empty">Még nincs jegyzet.</div>');
     return h;
   }
 
+  // the Munkakör lap: the takeoff live, symbols and colours, ≈ guessed, ⚑ an open decision changes it
+  function takeoffCard() {
+    const t = takeoff(), c = t.counts;
+    const row = it => '<div class="tk-item' + (it.work ? '' : ' keep') + (it.est ? ' est' : '') + (it.open.length ? ' open' : '') + '" data-item="' + esc(it.id) + '" title="' + esc(it.note) + '">' +
+      '<span class="sym">' + esc(it.sym) + '</span><span class="lb">' + esc(it.label) + '</span><span class="q">' + (it.est ? '≈' : '') + esc(TK.fmt(it.qty)) + ' ' + esc(it.unit) + '</span>' +
+      '<span class="fl">' + (it.open.length ? '⚑' : '') + '</span></div>';
+    return '<div class="card tk" id="takeoff"><div class="row"><h3 style="margin:0">☰ Munkakör lap</h3><span class="grow"></span>' +
+      '<span class="small muted">' + c.items + ' tétel · ≈ ' + c.est + ' · ⚑ ' + c.decisions + (c.tisztazando ? ' · Tisztázandó ' + c.tisztazando : '') + '</span>' +
+      (on('export.takeoff') ? '<button class="btn sm" data-act="tkexport" title="vrg-sketch-takeoff JSON + összefoglaló .md a Workflow Kitnek">⇩ Takeoff</button>' : '') + '</div>' +
+      (t.items.length ? '<div class="tk-list">' + t.items.map(row).join('') + '</div>' : '<div class="empty">Még nincs tétel: kapcsold be, mi a munka, vagy rajzolj pontokat.</div>') +
+      (t.decisions.length ? '<div class="tk-dec">' + t.decisions.map(x => '<button class="pill" data-act="jump" data-front="kerdes" style="--c:#d64545"><i>⚑</i>' + esc(x.label) + '</button>').join('') + '</div>' : '') +
+      '<div class="row"><button class="pill ' + (impliedNow() ? 'sel' : 'off') + '" id="tkimplied" data-act="tkimplied" style="--c:#3dae5a" title="Minden felmérésre ebben a böngészőben">' +
+      '<i>◉</i>Dedikált kör a nagy gépeknek (≈)</button>' + (pkgImplied != null ? '<span class="small faint" id="tkfromphone">a telefon beállítása szerint</span>' : '') + '</div>' +
+      (t.checks.length ? '<div class="small" style="color:#e0b020">' + t.checks.map(esc).join('<br>') + '</div>' : '') +
+      '<div class="small faint">' + (pkg ? 'Hosszak a megoldott tervből (mm).' : 'Nincs megoldott terv: a hosszak a vázlat léptékéből, mind ≈.') + ' Árat nem tartalmaz (Workflow Kit).</div></div>';
+  }
+
   function vMunkakor(d) {
-    const sc = S.scope || {}, col = frontOf('munkakor').color;
-    return GROUPS.map(([g, label]) => '<h3>' + label + '</h3><div>' + d.k.scope.filter(x => x.group === g).map(x => {
-      const n = sc[x.id] || 0;
+    const sc = S.scope || {}, col = frontOf('munkakor').color, rooms = S.rooms || [];
+    if (wantRoom && !rooms.some(r => r.id === wantRoom)) wantRoom = '';
+    const here = (id) => wantRoom ? (((S.roomScope || {})[wantRoom] || {})[id] || 0) : null;
+    return (on('munkakor.takeoff') ? takeoffCard() : '') + (on('munkakor.scope') ? GROUPS : []).map(([g, label]) => '<h3>' + label + '</h3>' + (g === 'igeny' && on('munkakor.wants') ? wantWhere(rooms) : '') + '<div>' + d.k.scope.filter(x => x.group === g).map(x => {
+      const n = x.qty ? FK.wantTotal(S, x.id) : sc[x.id] || 0, h = x.qty ? here(x.id) : null;
       if (x.qty) return '<span class="stepper" data-scope="' + esc(x.id) + '" style="--c:' + (n ? col : '#a6afb7') + '"><span class="nm"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</span>' +
-        '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
+        '<button data-act="sdec" data-id="' + esc(x.id) + '" aria-label="kevesebb">−</button><span class="q">' + n + (h ? '<small class="here"> (' + h + ' itt)</small>' : '') + '</span><button data-act="sinc" data-id="' + esc(x.id) + '" aria-label="több">+</button></span>';
       return '<button class="pill ' + (n ? 'sel' : 'off') + '" data-act="stoggle" data-id="' + esc(x.id) + '" data-scope="' + esc(x.id) + '" style="--c:' + col + '"><i>' + esc(x.sym) + '</i>' + esc(x.label) + '</button>';
-    }).join('') + '</div>').join('');
+    }).join('') + '</div>' + (g === 'igeny' && on('munkakor.wants') ? wantsByRoom(d.k) : '')).join('');
+  }
+  // F4: where + / − go, and the wants per room (a room's own, then the job's); ⇠ / → re-link one
+  function wantWhere(rooms) {
+    return '<div class="row small"><span class="muted">Hová:</span><select id="wroom" style="width:auto"><option value="">Általános (a munka egésze)</option>' +
+      rooms.map(r => '<option value="' + esc(r.id) + '"' + (wantRoom === r.id ? ' selected' : '') + '>' + esc(roomName(r.id)) + '</option>').join('') + '</select></div>';
+  }
+  function wantsByRoom(k) {
+    const ws = FK.wants(k, S);
+    if (!ws.some(w => w.rooms.length)) return '';
+    const lab = id => { const x = k.scope.find(s => s.id === id) || {}; return (x.sym ? x.sym + ' ' : '') + (x.label || id); };
+    const notes = r => (S.entries || []).filter(e => e.room === r).length;
+    const rows = (S.rooms || []).map(r => [r.id, ws.map(w => [w.id, (w.rooms.find(x => x[0] === r.id) || [0, 0])[1]]).filter(x => x[1] > 0)]).filter(x => x[1].length);
+    const gen = ws.filter(w => w.general > 0).map(w => [w.id, w.general]);
+    const btn = (act, id, from, title, glyph) => '<button class="x" data-act="' + act + '" data-id="' + esc(id) + '" data-from="' + esc(from) + '" title="' + esc(title) + '">' + glyph + '</button>';
+    return '<div class="card wants"><div class="small muted">Szobánként (összesen: ' + ws.map(w => esc(lab(w.id)) + ' ×' + w.total).join(', ') + ')</div>' +
+      rows.map(([r, items]) => '<div class="wrow"><b>⌂ ' + esc(roomName(r)) + '</b> ' + items.map(([id, n]) => '<span class="pill sel" style="--c:#3dae5a">' + esc(lab(id)) + ' ×' + n +
+        btn('wmove', id, r, 'egyet az Általánosba', '⇠') + '</span>').join('') + (notes(r) ? ' <span class="small muted">✎ ' + notes(r) + ' jegyzet</span>' : '') + '</div>').join('') +
+      (gen.length ? '<div class="wrow"><b>Általános</b> ' + gen.map(([id, n]) => '<span class="pill" style="--c:#3dae5a">' + esc(lab(id)) + ' ×' + n +
+        (wantRoom ? btn('wmove', id, '', 'egyet ide: ' + roomName(wantRoom), '→') : '') + '</span>').join('') + '</div>' : '') + '</div>';
   }
 
   function qCard(x) {
     const q = x.q, a = x.answer, chosen = new Set(a && a.options || []), c = frontOf('kerdes').color;
-    return '<div class="card qcard' + (x.fresh ? ' fresh' : '') + (x.later ? ' later' : '') + '" data-q="' + esc(q.id) + '" style="--c:' + c + '"><div class="qt">' + esc(q.q) +
-      (x.fresh ? '<span class="tag new">új</span>' : '') + (x.later ? '<span class="tag">később</span>' : '') + (q.multi ? '<span class="tag">több is</span>' : '') + '</div><div>' +
+    return '<div class="card qcard' + (x.fresh && on('kerdes.fresh') ? ' fresh' : '') + (x.later ? ' later' : '') + '" data-q="' + esc(q.id) + '" style="--c:' + c + '"><div class="qt">' + esc(q.q) +
+      (x.fresh && on('kerdes.fresh') ? '<span class="tag new">új</span>' : '') + (x.later ? '<span class="tag">később</span>' : '') + (q.multi ? '<span class="tag">több is</span>' : '') + '</div><div>' +
       q.options.map(o => '<button class="pill ' + (chosen.has(o.id) ? 'sel' : '') + '" data-act="qopt" data-q="' + esc(q.id) + '" data-o="' + esc(o.id) + '">' + esc(o.label) + '</button>').join('') + '</div>' +
       (q.num ? '<div class="row"><input type="text" data-qtext="' + esc(q.id) + '" value="' + esc(a && a.text) + '" placeholder="Érték"><span class="muted">' + esc(q.num.unit) + '</span></div>'
         : '<textarea data-qtext="' + esc(q.id) + '" placeholder="Megjegyzés (szabad szöveg)">' + esc(a && a.text) + '</textarea>') +
-      '<div class="acts"><button class="btn sm" data-act="qlater" data-q="' + esc(q.id) + '">Később</button><button class="btn sm" data-act="qskip" data-q="' + esc(q.id) + '">Nem releváns</button>' +
+      '<div class="acts">' + (on('kerdes.later') ? '<button class="btn sm" data-act="qlater" data-q="' + esc(q.id) + '">Később</button><button class="btn sm" data-act="qskip" data-q="' + esc(q.id) + '">Nem releváns</button>' : '') +
       (a ? '<button class="btn sm dim" data-act="qclear" data-q="' + esc(q.id) + '">Törlés</button>' : '') + '</div></div>';
   }
   function vKerdes(d) {
@@ -240,8 +346,8 @@
 
   function vKamera(d) {
     const caps = S.captures || [], purposes = BASE.purposes.concat(kit().purposes.filter(p => !BASE.purposes.some(b => b.id === p.id)));
-    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
-    h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
+    let h = '<div class="row"><label class="btn">Fotók csatolása<input type="file" id="fphotos" accept="image/*,video/mp4,audio/mp4,.m4a" multiple hidden></label><span class="small muted">A fájlok név szerint párosodnak; csak a memóriában maradnak.</span></div>';
+    if (on('kamera.shotlist')) h += '<h3>Fotólista</h3>' + (d.shots.length ? d.shots.map(s => '<div class="shotrow ' + (s.done ? 'done' : '') + '"><span class="ck">' + (s.done ? '✓' : '○') + '</span><span><b>' + esc(s.item.label) + '</b> <span class="mono small">' + s.have + '/' + s.item.need + '</span>' +
       (s.item.hint ? '<div class="small muted">' + esc(s.item.hint) + '</div>' : '') + '</span></div>').join('') : '<div class="empty">Nincs fotólista.</div>');
     h += '<h3>Célfotók</h3>';
     const used = new Set();
@@ -249,56 +355,182 @@
       const list = caps.filter(c => (c.purpose || 'egyeb') === p.id); if (!list.length) return; used.add(p.id);
       h += '<div class="small" style="color:' + esc(p.color) + '">' + esc(p.sym) + ' ' + esc(p.label) + ' (' + list.length + ')</div>' + list.map(capCard).join('');
     });
-    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb')); if (rest.length) h += rest.map(capCard).join('');
+    const rest = caps.filter(c => !used.has(c.purpose || 'egyeb') && c.kind !== 'audio'); if (rest.length) h += rest.map(capCard).join('');
+    // F5 (WP M50, D-84): the sound notes (the dictation fallback), played once their .m4a is attached
+    const auds = caps.filter(c => c.kind === 'audio'); if (auds.length && on('jegyzet.audio')) h += '<h3 id="hangok">🎙 Hangjegyzetek (' + auds.length + ')</h3>' + auds.map(capCard).join('');
     if (!caps.length) h += '<div class="empty">Még nincs célfotó.</div>';
+    h += vCamera2(caps);
     const pp = (S.photos || []);
     if (pp.length) h += '<h3>Fotópontok</h3>' + pp.map(p => '<div class="card"><b>' + esc(p.id) + '</b> ' + esc(roomName(p.room)) + ' ' + (p.shots || []).map(x => {
       const u = files.get(base(x.file)); return u ? '<img class="thumb" src="' + esc(u) + '" alt="' + esc(x.file) + '">' : '<span class="tag">' + esc(base(x.file)) + '</span>';
-    }).join('') + '</div>').join('');
+    }).join('') + (p.shots || []).map(x => planeBits(PL.keyOf(p.id, x.deg), shotImage(p.id, x), roomName(p.room) + ' · ' + sideLabel(x.deg))).join('') + '</div>').join('');
     return h;
   }
   function capCard(c) {
     const u = thumbFor(c);
-    return '<div class="card cap-card" data-cap="' + esc(c.id) + '">' + (u ? '<img class="thumb" src="' + esc(u) + '" alt="">' : '<div class="thumb">nincs kép</div>') +
-      '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + '</div>' +
-      (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+    const media = !u ? '<div class="thumb">' + (c.kind === 'video' ? '▶ videó' : c.kind === 'signature' ? '✍ aláírás' : c.kind === 'audio' ? '🎙 hang' : 'nincs kép') + '</div>'
+      : c.kind === 'audio' ? '<audio class="aud" src="' + esc(u) + '" controls preload="metadata"></audio>'
+      : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
+    return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
+      '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
+      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + planeBits(c.id, c.kind === 'photo' || !c.kind ? captureNames(c).find(n => boxImg.has(n)) : null, (BASE.purposes.find(p => p.id === c.purpose) || {}).label || c.id) +
+      '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+  }
+  // ---- Kamera 2: video, signature, personal data, type-plate readings, before / after ---------------------------
+  const mb = b => b > 0 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : '?';   // as Camera2.mb
+  const dur = ms => { const t = Math.round((ms || 0) / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+  function capBadges(c) {
+    const b = [];
+    if (c.kind === 'video') b.push('<span class="tag" data-b="video">▶ ' + esc(dur(c.durationMs)) + ' · ' + esc(mb(c.bytes)) + '</span>');
+    if (c.kind === 'signature') b.push('<span class="tag" data-b="signature">✍ aláírás</span>');
+    if (c.kind === 'audio') b.push('<span class="tag" data-b="audio">🎙 ' + esc(dur(c.durationMs)) + '</span>');   // F5 (WP M50)
+    if (c.privacy) b.push('<span class="tag warn" data-b="privacy">👤 személyes adat</span>');
+    if ((c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset')) b.push('<span class="tag" data-b="blur">▦ elmosva</span>');
+    if (c.phase === 'elotte') b.push('<span class="tag" data-b="before">◐ előtte</span>');
+    if (c.phase === 'utana') b.push('<span class="tag" data-b="after">◑ utána: ' + esc(c.pair || '') + '</span>');
+    if (c.keepGps) b.push('<span class="tag" data-b="gps">⌖ GPS marad</span>');
+    return b.length ? ' ' + b.join(' ') : '';
+  }
+  function capExtra(c) {
+    let h = '';
+    if (c.kind === 'signature') h += '<div class="sig"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) + '</div>';
+    const hits = c.ocr || [];
+    if (hits.length) h += '<div class="ocr small">▤ ' + hits.map(x => '<span class="tag ' + (x.used ? 'ok' : x.dropped ? 'dim' : '') + '" data-ocr="' + esc(x.kind) + '">' +
+      (x.used ? '✓ ' : '') + esc(x.value) + '</span>').join(' ') + '</div>';
+    return h;
+  }
+  function vCamera2(caps) {
+    let h = '';
+    const pairs = caps.filter(c => c.phase === 'utana' && c.pair).map(a => [caps.find(b => b.id === a.pair), a]).filter(p => p[0]);
+    if (pairs.length && on('kamera.pairs')) h += '<h3>Előtte / utána</h3>' + pairs.map(([b, a]) => {
+      const one = (c, l) => { const u = thumbFor(c); return '<figure><figcaption class="small">' + l + ' · ' + esc(fmtTime(c.at)) + '</figcaption>' +
+        (u ? '<img class="pairimg" src="' + esc(u) + '" alt="">' : '<div class="thumb">' + esc(c.id) + '</div>') + '</figure>'; };
+      return '<div class="card pair" data-pair="' + esc(b.id + '-' + a.id) + '">' + one(b, 'Előtte') + one(a, 'Utána') + '</div>';
+    }).join('');
+    const sigs = caps.filter(c => c.kind === 'signature');
+    if (sigs.length && on('kamera.signature')) h += '<h3>Aláírás</h3>' + sigs.map(c => '<div class="card"><b>' + esc(c.signer || '—') + '</b> · ' + esc(fmtTime(c.at)) +
+      '<div class="small">' + esc(c.note) + '</div>' + (thumbFor(c) ? '<img class="sigimg" src="' + esc(thumbFor(c)) + '" alt="aláírás">' : '<div class="small faint mono">' + esc(captureNames(c)[1]) + '</div>') + '</div>').join('');
+    const priv = caps.filter(c => c.privacy && !(c.marks || []).some(m => m.kind === 'elmos' || m.kind === 'elmos_ecset'));
+    if (priv.length && on('kamera.privacy')) h += '<p class="small warn">👤 ' + priv.length + ' személyes adatot mutató fotón nincs elmosás (a telefonon: ✎ Jelölés → ▦ / ▒).</p>';
+    return h;
   }
 
   function vHelyszin() {
     const si = S.site || {}, fl = floors();
-    let h = '<div class="card"><div class="kv"><b>Cím</b><input type="text" data-site="address" value="' + esc(si.address) + '">' +
+    let h = !on('helyszin.address') ? '' : '<div class="card"><div class="kv"><b>Cím</b><input type="text" data-site="address" value="' + esc(si.address) + '">' +
       '<b>Szélesség</b><input type="text" data-site="lat" value="' + esc(si.lat) + '"><b>Hosszúság</b><input type="text" data-site="lon" value="' + esc(si.lon) + '">' +
       '<b>Forrás</b><span>' + esc(si.source || '—') + '</span></div></div>';
     const fp = si.footprint;
     let size = '';
     if (fl.length) { const b = bbox([].concat(...fl.map(f => f.poly || []))); size = f1((b[2] - b[0]) / 1000) + ' × ' + f1((b[3] - b[1]) / 1000) + ' m'; }
-    if (fp || size) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    if ((fp || size) && on('helyszin.footprint')) h += '<div class="card"><div class="kv">' + (fp ? '<b>Épület (térkép)</b><span>' + f1(fp.w) + ' × ' + f1(fp.d) + ' m · ' + f1(fp.area) + ' m²</span>' : '') + (size ? '<b>Terv teljes mérete</b><span>' + size + '</span>' : '') + '</div></div>';
+    // F5 (WP M50, D-82): the client's contact; the address is the site's. Personal: it stays in this file and the report
+    const cl = S.client || {};
+    if (on('helyszin.client')) h += '<h3>👤 Ügyfél</h3><div class="card" id="client"><div class="kv"><b>Név</b><input type="text" data-client="name" value="' + esc(cl.name) + '">' +
+      '<b>Telefon</b><input type="text" data-client="phone" value="' + esc(cl.phone) + '"><b>E-mail</b><input type="text" data-client="email" value="' + esc(cl.email) + '">' +
+      '<b></b><label class="small"><input type="checkbox" data-client="keep"' + (cl.keep ? ' checked' : '') + '> a telefon kiadott csomagjában is marad</label></div>' +
+      '<div class="small muted">Személyes adat: a felmérés fájljában és a jegyzőkönyvben van; variáns-kérésbe soha nem kerül, Gitbe sem.</div></div>';
+    if (on('helyszin.place')) h += sitePlaceCard();
+    if (!on('helyszin.map')) return h;
     const q = si.lat != null && si.lon != null && si.lat !== '' ? '#18/' + si.lat + '/' + si.lon + '/0/50' : '';
     const url = 'http://localhost:8802/vrg-terkep.html?embed=1' + (q ? q : '&q=' + encodeURIComponent(si.address || ''));
-    return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
+    return h + '<p class="small muted">A térképhez a START <b>H</b> szervere (VRG Térkép) kell, hogy fusson. A <b>🗺 Szerkesztés a térképen</b> a körvonalat és a vázlatot a lenti térképre teszi; ott ✓ Kész hozza vissza.</p><iframe class="map" id="mapframe" src="' + esc(url) + '" title="VRG Térkép"></iframe>';
   }
+
+  // ---- F1: the sketch on the building (Map/lib/site-math.js, the same maths as the phone and the map page) --------
+  const SM = window.VrgSiteMath;
+  const siteRooms = () => SM ? SM.roomsFromMm(floors()) : [];
+  function sitePlaceCard() {
+    const si = S.site || {}, out = si.outline || [], rooms = siteRooms();
+    let h = '<h3>A vázlat az épületen</h3><div class="card" id="siteplace">';
+    if (!SM) return h + '<p class="small muted">(a helyszín számítása hiányzik a lapból)</p></div>';
+    const acts = '<div class="acts" style="margin-top:6px">' + (on('helyszin.map') ? '<button class="btn sm" data-act="sitemap">🗺 Szerkesztés a térképen</button>' : '') +
+      (out.length >= 3 && rooms.length ? '<button class="btn sm" data-act="sitefit">⤢ Illesztés</button>' : '') +
+      (si.place ? '<button class="btn sm" data-act="siteclear">✕ Elhelyezés</button>' : '') + '</div>';
+    if (out.length < 3) return h + '<p class="small muted">Még nincs körvonal: a telefon Helyszínén (OSM vagy rajz a térképen), vagy itt a térképen rajzolva.</p>' + acts + '</div>';
+    if (!rooms.length) return h + '<p class="small muted">A csomagban nincs megoldott terv (a telefon Rendezés → csomag): a vázlat nem helyezhető el.</p>' + acts + '</div>';
+    const rep = si.place ? SM.report(rooms, out, si.place) : null;
+    h += sitePlaceSvg(out, rooms, si.place, rep);
+    h += rep ? SM.reportLines(rep).map((l, i) => '<div class="' + (i === 0 ? (rep.verdict === 'rendben' ? 'ok' : 'bad') : 'small') + '">' + esc(l) + '</div>').join('')
+      : '<p class="small muted">Még nincs elhelyezve: ⤢ Illesztés, vagy a térképen.</p>';
+    if (si.place) h += '<div class="small muted">Elforgatás ' + f1(si.place.rot) + '°' + (si.place.auto ? ' (automatikus)' : ' (kézzel igazítva)') + '</div>';
+    return h + acts + '</div>';
+  }
+  function sitePlaceSvg(out, rooms, place, rep) {
+    const lat0 = out.reduce((a, p) => a + p[0], 0) / out.length, lon0 = out.reduce((a, p) => a + p[1], 0) / out.length;
+    const poly = out.map(p => SM.local(lat0, lon0, p[0], p[1])), pr = place ? SM.placed(rooms, place, lat0, lon0) : [];
+    const pts = poly.concat(...pr.map(r => r.poly)); let b = bbox(pts); const ext = Math.max(b[2] - b[0], b[3] - b[1], 1), pad = ext * 0.1;
+    b = [b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad];
+    const P = p => p.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' '), sw = ext / 150;
+    let svg = '<svg class="siteplace" viewBox="' + b[0] + ' ' + b[1] + ' ' + (b[2] - b[0]) + ' ' + (b[3] - b[1]) + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<polygon class="so" points="' + P(poly) + '" stroke-width="' + sw * 2 + '"/>';
+    pr.forEach(r => { svg += '<polygon class="sp" points="' + P(r.poly) + '" stroke-width="' + sw + '"/>'; });
+    (rep ? rep.walls : []).forEach(w => { const r = pr[w.room].poly, a = r[w.edge], c = r[(w.edge + 1) % r.length];
+      svg += '<line class="sb" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + c[0] + '" y2="' + c[1] + '" stroke-width="' + sw * 3 + '"/>'; });
+    return svg + '<text x="' + (b[0] + pad * 0.3) + '" y="' + (b[1] + pad * 0.8) + '" font-size="' + ext * 0.05 + '">É ↑</text></svg>';
+  }
+  function siteApply(r) {
+    if (!r || r.kind !== 'vrg-site-result' || r.cancelled || !S) return;
+    commit(() => {
+      const si = Object.assign({ address: '', source: 'kezi' }, S.site), now = stamp();
+      if (Array.isArray(r.center) && r.center.length === 2) { si.lat = r.center[0]; si.lon = r.center[1]; si.source = 'terkep'; }
+      if (Array.isArray(r.outline)) {
+        if (r.outline.length >= 3) {
+          const fp = SM.footprint(r.outline), src = ['osm', 'rajz', 'muhold'].includes(r.outlineSrc) ? r.outlineSrc : 'rajz';
+          si.outline = r.outline; si.footprint = { w: fp.w, d: fp.d, area: fp.area, angle: Math.round((fp.axis % 90) * 10) / 10, src, at: now };
+          if (si.lat == null) { si.lat = r.outline.reduce((a, p) => a + p[0], 0) / r.outline.length; si.lon = r.outline.reduce((a, p) => a + p[1], 0) / r.outline.length; si.source = 'terkep'; }
+        } else { delete si.outline; delete si.footprint; }
+      }
+      if (r.place) si.place = { lat: r.place.lat, lon: r.place.lon, rot: r.place.rot, auto: !!r.place.auto, at: now }; else if (r.place === null) delete si.place;
+      S.site = si;
+    });
+    flash('A térkép változásai átvéve (Mentés: a frissített fájl).', 'ok'); render();
+  }
+  function siteSend() {
+    const f = $('mapframe'); if (!f || !f.contentWindow) { flash('Nincs térkép a lapon.', 'warn'); render(); return; }
+    const si = S.site || {};
+    f.contentWindow.postMessage({ kind: 'vrg-site', v: 1, id: S.id || 'asztal', name: S.name || '', lat: typeof si.lat === 'number' ? si.lat : undefined,
+      lon: typeof si.lon === 'number' ? si.lon : undefined, outline: si.outline || [], outlineSrc: si.footprint && si.footprint.src || '', place: si.place || null, rooms: siteRooms(), hide: FE.mapHide(FL) }, 'http://localhost:8802');
+  }
+  window.addEventListener('message', e => {
+    const f = $('mapframe'); if (!f || e.source !== f.contentWindow || !e.data) return;
+    if (e.data.kind === 'vrg-site-result') siteApply(e.data);
+  });
 
   function vNyitott(d) {
     if (!d.open.length) return '<div class="empty">Nincs nyitott szál — minden rendben.</div>';
-    return BASE.fronts.map(f => { const l = d.open.filter(o => o.front === f.id); if (!l.length) return '';
+    return BASE.fronts.filter(f => viewShown(f.id)).map(f => { const l = d.open.filter(o => o.front === f.id); if (!l.length) return '';
       return '<h3 style="color:' + esc(f.color) + '">' + esc(f.sym) + ' ' + esc(f.label) + ' (' + l.length + ')</h3>' + l.map(leHtml).join(''); }).join('');
   }
 
+  // F4 (WP M49): what the variant tunes in the phone's drawing tools (sketch-core DrawTune.describe, same words)
+  function drawLine(v) {
+    const d = v.draw; if (!d) return '';
+    const n = x => String(x).replace('.', ','), out = [];
+    if (d.snapAngle > 0) out.push('Vonal: ' + d.snapAngle + '°-os lépés');
+    if (d.snapGrid > 0) out.push('Rács: ' + n(d.snapGrid) + ' m');
+    if (d.defaultRoom) out.push('Koppintás = ' + n(d.defaultRoom.w) + ' × ' + n(d.defaultRoom.d) + ' m szoba');
+    if (d.measureFirst) out.push('Új szoba: rögtön a méret');
+    if (d.pointSnap === 'free') out.push('Pont: nem ugrik a falra');
+    if (d.lineClose === 'auto') out.push('Vonal: Kész = szoba'); else if (d.lineClose === 'ask') out.push('Vonal: Kész → szoba vagy vonal?');   // F5
+    return out.length ? '<div class="small draw" data-draw="' + esc(v.id) + '">✎ ' + out.map(esc).join(' · ') + '</div>' : '';
+  }
   function vVariansok() {
     return '<div class="grid">' + VARIANTS.map(v => '<div class="card" style="border-left:3px solid ' + esc(v.color) + '"><div style="font-size:18px;color:' + esc(v.color) + '">' + esc(v.sym) + ' <b>' + esc(v.name) + '</b>' +
-      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' +
+      (S.variant === v.id ? ' <span class="tag">aktív</span>' : '') + '</div><div class="small">' + esc(v.premise) + '</div><div class="small muted">' + (v.topics || []).map(esc).join(' · ') + '</div>' + (on('vazlat.drawtune') ? drawLine(v) : '') +
       '<div class="acts" style="margin-top:6px"><button class="btn sm" data-act="vpick" data-id="' + esc(v.id) + '">Használat ebben a felmérésben</button></div></div>').join('') + '</div>' +
-      '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
-      '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>';
+      (!on('variansok.request') ? '' : '<h3>Új variáns</h3><div class="card"><p class="small">Új variáns kérése: kodszó <code>GO VARIANT</code>, a menet a <code>Sketcher/variants/PROTOCOL.md</code>-ben van. Írd le egy-három mondatban, milyen munkához kell:</p>' +
+      '<textarea id="vprem" placeholder="pl. társasházi felszálló csere, lépcsőházi mérőhelyek">' + esc(starter) + '</textarea><div class="acts" style="margin-top:6px"><button class="btn" data-act="vcopy">Másolás</button><span class="small muted" id="vprev">GO VARIANT — ' + esc(starter || '…') + '</span></div></div>');
   }
 
   // ---- rendering -------------------------------------------------------------------------------------------------
   function renderHeader() {
     const h = $('hinfo'); if (!h) return;
+    const rb = $('breport'); if (rb) rb.hidden = !on('export.report');   // M51
     if (!S) { h.innerHTML = '<span class="muted">Nincs megnyitott felmérés</span>'; return; }
     const v = VARIANTS.find(x => x.id === S.variant);
     h.innerHTML = '<span class="nm">' + esc(S.name || fileName || 'Névtelen felmérés') + '</span><span class="ad">' + esc(S.site && S.site.address || '') + '</span>' +
-      (S.variant ? '<button class="btn sm ' + (S.variantOn ? 'on' : 'dim') + '" id="vtoggle" data-act="vtoggle" style="--c:' + esc(v ? v.color : '#93d3e6') + '" title="Variáns: ' + esc(v ? v.name : S.variant) + '">◐ ' + esc(v ? v.name : S.variant) + '</button>' : '');
+      (S.variant && on('variansok.use') ? '<button class="btn sm ' + (S.variantOn ? 'on' : 'dim') + '" id="vtoggle" data-act="vtoggle" style="--c:' + esc(v ? v.color : '#93d3e6') + '" title="Variáns: ' + esc(v ? v.name : S.variant) + '">◐ ' + esc(v ? v.name : S.variant) + '</button>' : '');
   }
   function railItem(f, badge, isNew) {
     return '<button class="rb' + (cur === f.id ? ' act' : '') + '" data-act="front" data-front="' + f.id + '" title="' + esc(f.label) + '" style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span><span class="cap">' + esc(f.label) + '</span>' +
@@ -312,19 +544,189 @@
   function renderRail() {
     const r = $('rail'); if (!r) return;
     const b = S ? badges(derived()) : {}, one = f => railItem(f, b[f.id] && b[f.id][0], b[f.id] && b[f.id][1]);
-    r.innerHTML = one(EXTRA.attekintes) + '<div class="sep"></div>' + BASE.fronts.map(one).join('') + '<div class="sep"></div>' + one(EXTRA.variansok);
+    r.innerHTML = one(EXTRA.attekintes) + '<div class="sep"></div>' + BASE.fronts.filter(f => viewShown(f.id)).map(one).join('') + '<div class="sep"></div>' +
+      (on('variansok.use') ? one(EXTRA.variansok) : '') + one(EXTRA.funkciok);   // M51: a front whose features are all off is not on the rail
   }
-  const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok };
+  // ⚙ Funkciók (M51): every feature by front, Mind per front and for everything; the same list as the phone's
+  function vFunkciok() {
+    const sw = (act, attrs, val, dis) => '<button class="sw' + (val ? ' on' : '') + '" role="switch" aria-checked="' + val + '" data-act="' + act + '"' + attrs + (dis ? ' disabled' : '') + '><i></i></button>';
+    let h = '<p class="small muted">Ebben a böngészőben, minden felmérésre. Ami ki van kapcsolva, eltűnik a lapról; az adat megmarad, a mentett fájl ugyanaz.</p>' +
+      '<div class="frow all"><span class="fs">✱</span><b class="fl">Mind</b>' + sw('featall', '', FE.allOn(FL)) + '</div>';
+    FE.FRONTS.forEach(fr => {
+      h += '<div class="fgrp" data-group="' + esc(fr.id) + '" style="--c:' + esc(fr.color) + '"><div class="frow head"><span class="fs">' + esc(fr.sym) + '</span><b class="fl">' + esc(fr.label) + '</b>' +
+        sw('featfront', ' data-front="' + esc(fr.id) + '"', FE.allOn(FL, fr.id)) + '</div>';
+      FE.inFront(fr.id).forEach(f => {
+        const b = FE.blockedBy(FL, f.id);
+        h += '<div class="frow' + (b ? ' dim' : '') + '" data-feature="' + esc(f.id) + '"><span class="fs">' + esc(f.sym) + '</span><span class="fl">' + esc(f.label) + (b ? ' <small>· előbb: ' + esc(b.label) + '</small>' : '') + '</span>' +
+          sw('feat', ' data-id="' + esc(f.id) + '"', FE.on(FL, f.id), f.locked || !!b) + '</div>';
+      });
+      h += '</div>';
+    });
+    return h;
+  }
+  // ---- Síkmérés (dev line skcam, stage K3): measuring on a plane in one photo --------------------------------------
+  // lib/plane.js does the maths, lib/plane-ui.js is the screen (the phone runs the same one in a WebView). The results
+  // go into the survey's optional `planes` key, by photo: a capture id or a Fotópont shot ("F25/0").
+  const PL = window.VRGPlane, PLUI = window.VRGPlaneUI;
+  const sideLabel = deg => ({ 0: 'É', 90: 'K', 180: 'D', 270: 'Ny' })[((deg % 360) + 360) % 360] || deg + '°';
+  // a Fotópont photo attached on the PC carries its board name (the package's plan.photos), the survey the phone's
+  const shotImage = (pid, x) => {
+    const pp = (pkg && pkg.plan && pkg.plan.photos || []).find(q => q.id === pid), b = pp && (pp.shots || []).find(q => q.deg === x.deg);
+    return [base(x.file), b && base(b.file)].find(n => n && boxImg.has(n)) || null;
+  };
+  function planeBits(key, file, title) {
+    if (!PL || !on('kamera.measure')) return '';
+    const rec = (S.planes || {})[key], lines = rec ? PL.summary(rec) : [];
+    return '<div class="plane-bits">' + (file ? '<button class="btn sm" data-pact="open" data-key="' + esc(key) + '" data-file="' + esc(file) + '" data-title="' + esc(title) + '">📏 Mérés</button> ' : '') +
+      (lines.length ? '<span class="small">' + lines.map(esc).join(' · ') + '</span>' : '') + '</div>';
+  }
+  function planeOpen(key, file, title) {
+    const im = boxImg.get(file); if (!im || !PLUI) return;
+    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null,
+      onSave: rec => commit(() => {
+        const pl = Object.assign({}, S.planes || {});
+        if (rec) pl[key] = rec; else delete pl[key];
+        if (Object.keys(pl).length) S.planes = pl; else delete S.planes;
+      }) });
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('#main [data-pact="open"]'); if (t && S) planeOpen(t.dataset.key, t.dataset.file, t.dataset.title); });
+
+  // ---- Szobadoboz (dev line skcam, stage K1): the room in 3D with its Fotópont photos ------------------------------
+  // lib/roombox.js does the maths, lib/roombox-gl.js draws; the overlay lives outside #main, so a re-render of the
+  // page does not drop the WebGL canvas. Corrections go into the survey's optional `box` key (see lib/roombox.js).
+  const RB = window.VRGRoomBox, RBGL = window.VRGRoomBoxGL;
+  const ui = { open: false, room: '', mode: 'orbit', az: 30, el: 50, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null };
+  let gl3 = null, boxEl = null;
+  function boxPrep(f) {
+    if (!RB) return;
+    const name = f.name;
+    if (/\.jpe?g$/i.test(name) && f.slice) f.slice(0, 262144).arrayBuffer().then(b => { boxMeta.set(name, RB.exif(b)); boxRedraw(true); }).catch(() => {});
+    if (!/^image\//.test(f.type || '') && !/\.(jpe?g|png|webp)$/i.test(name)) return;
+    const img = new Image();
+    img.onload = () => {                         // drawn onto a canvas: the browser applies the EXIF orientation, and big photos shrink
+      const k = Math.min(1, 2048 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const m = Object.assign({}, boxMeta.get(name)); m.w = img.naturalWidth; m.h = img.naturalHeight; boxMeta.set(name, m);
+      boxImg.set(name, c);
+      if (ui.open) boxRedraw(true); else if (cur === 'vazlat' || cur === 'kamera') render();   // the cards count / measure the attached photos
+    };
+    img.src = files.get(name);
+  }
+  const boxLevel = () => { const id = pkg && pkg.level || S && S.level; return { heightMm: id === 'basement' ? 2500 : 2700 }; };
+  const boxMetaOf = file => { const m = boxMeta.get(base(file)); return m && (m.w || m.f35) ? m : null; };
+  function boxScene() { return pkg && pkg.plan && RB ? RB.scene(pkg.plan, S && S.box, boxMetaOf, boxLevel()) : []; }
+  function boxCard() {
+    if (!on('vazlat.roombox')) return '';
+    if (!floors().length) return '<div class="card box-card"><b>⬚ Szobadoboz (3D)</b> <span class="small muted">A 3D szobához méretek kellenek: nyisd meg a telefon Planner-csomagját (Rendezés → Küldés a Plannerbe), nem csak a vázlatot.</span></div>';
+    const rooms = boxScene(), shots = rooms.reduce((a, r) => a + r.shots.length, 0), withImg = rooms.reduce((a, r) => a + r.shots.filter(x => boxImg.has(base(x.file))).length, 0);
+    return '<div class="card box-card"><button class="btn" data-bact="open">⬚ Szobadoboz (3D)</button> <span class="small muted">' + rooms.length + ' helyiség · ' + shots + ' fotópont-kép' +
+      (shots ? ' · ' + withImg + ' csatolva' + (withImg < shots ? ' (a többit a Kamera nézetben: Fotók csatolása)' : '') : '') + '</span></div>';
+  }
+  function boxOpen() {
+    if (!RB || !RBGL) return;
+    if (!boxEl) {
+      boxEl = document.createElement('div'); boxEl.id = 'box3d'; boxEl.className = 'box3d';
+      boxEl.innerHTML = '<div class="bx-top"><b>⬚ Szobadoboz</b><select id="bxroom" data-b="room"></select><span class="seg"><button class="btn sm" data-bact="mode" data-m="orbit">Felülről</button><button class="btn sm" data-bact="mode" data-m="stand">A fotópontból</button></span><span class="grow"></span>' +
+        '<span class="small muted" id="bxhint"></span><button class="btn sm" data-bact="close" title="Bezárás (Esc)">✕</button></div><div class="bx-body"><canvas id="bxc"></canvas><aside id="bxside"></aside></div>';
+      document.getElementById('root').appendChild(boxEl);
+      boxEl.addEventListener('click', boxClick); boxEl.addEventListener('input', e => boxInput(e, false)); boxEl.addEventListener('change', e => boxInput(e, true));
+      const c = boxEl.querySelector('#bxc');
+      let drag = null;
+      c.addEventListener('pointerdown', e => { drag = [e.clientX, e.clientY]; c.setPointerCapture(e.pointerId); });
+      c.addEventListener('pointermove', e => {
+        if (!drag) return; const dx = e.clientX - drag[0], dy = e.clientY - drag[1]; drag = [e.clientX, e.clientY];
+        if (ui.mode === 'orbit') { ui.az -= dx * 0.4; ui.el = Math.max(8, Math.min(89, ui.el + dy * 0.3)); } else { ui.yaw -= dx * 0.2; ui.pitch = Math.max(-80, Math.min(80, ui.pitch + dy * 0.2)); }
+        boxRedraw();
+      });
+      c.addEventListener('pointerup', () => { drag = null; });
+      c.addEventListener('wheel', e => { e.preventDefault(); if (ui.mode === 'orbit') ui.zoom = Math.max(1.1, Math.min(8, ui.zoom * (e.deltaY > 0 ? 1.1 : 0.9))); else ui.fov = Math.max(30, Math.min(110, ui.fov + (e.deltaY > 0 ? 4 : -4))); boxRedraw(); }, { passive: false });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.open) boxClose(); });
+      window.addEventListener('resize', () => boxRedraw());
+      try { gl3 = RBGL.create(c); } catch (e) { gl3 = null; }
+    }
+    const rooms = boxScene();
+    if (!rooms.find(r => r.id === ui.room)) ui.room = (rooms.find(r => r.shots.length) || rooms[0] || {}).id || '';
+    ui.open = true; boxEl.hidden = false; boxRedraw(true);
+  }
+  function boxClose() { ui.open = false; if (boxEl) boxEl.hidden = true; render(); }
+  const boxRoom = () => boxScene().find(r => r.id === ui.room) || null;
+  function boxRedraw(side) {
+    if (!ui.open || !boxEl) return;
+    const room = boxRoom(), hint = boxEl.querySelector('#bxhint');
+    boxEl.querySelectorAll('[data-bact="mode"]').forEach(b => b.classList.toggle('on', b.dataset.m === ui.mode));
+    if (side) boxSide(room);
+    if (!gl3) { hint.textContent = 'Ez a böngésző nem tud WebGL-t: a 3D nézet nem rajzolható.'; return; }
+    const r = gl3.draw(room, f => boxImg.get(base(f)) || null, { mode: ui.mode, az: ui.az, el: ui.el, zoom: ui.zoom, yaw: ui.yaw, pitch: ui.pitch, fov: ui.fov, point: ui.point }, { hi: ui.hi });
+    hint.textContent = !room ? '' : ui.mode === 'orbit' ? 'Húzás: forgatás · görgő: nagyítás' : 'Húzás: körülnézés · görgő: látószög ' + Math.round(ui.fov) + '°';
+    boxEl.dataset.drawn = r ? String(r.textured) : '0';
+  }
+  const num = v => { const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) ? x : null; };
+  function boxSide(room) {
+    const sel = boxEl.querySelector('#bxroom'), rooms = boxScene();
+    sel.innerHTML = rooms.map(r => '<option value="' + esc(r.id) + '"' + (r.id === ui.room ? ' selected' : '') + '>' + esc(r.name) + (r.shots.length ? ' · ' + r.shots.length + ' kép' : '') + '</option>').join('');
+    const side = boxEl.querySelector('#bxside');
+    if (!room) { side.innerHTML = '<p class="muted">Nincs helyiség a tervben.</p>'; return; }
+    const B = S.box || {}, covered = room.cover.filter(Boolean).length;
+    let h = '<div class="kv"><b>Alapterület</b><span>' + f1(room.area) + ' m²</span><b>Kerület</b><span>' + f1(room.perimeter) + ' m</span><b>Falak képpel</b><span>' + covered + ' / ' + room.walls.length + '</span></div>' +
+      '<label class="bx-f">Belmagasság (cm) <input type="number" min="180" max="600" step="1" data-b="h" value="' + Math.round(room.h / 10) + '"></label>' +
+      '<label class="bx-f">Szemmagasság a fotónál (cm) <input type="number" min="60" max="220" step="1" data-b="eye" value="' + Math.round(room.eye / 10) + '"></label>';
+    if (!room.shots.length) h += '<p class="small muted">Ebben a helyiségben nincs fotópont: a doboz kép nélkül, a méretekből áll.</p>';
+    else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
+    room.shots.forEach((x, i) => {
+      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', lencse: 'a kamerától', alap: 'alapérték' }[x.f35src];
+      h += '<div class="bx-shot' + (ui.hi === i ? ' hi' : '') + '" data-key="' + esc(x.key) + '"><div class="row"><button class="btn sm" data-bact="hi" data-i="' + i + '" title="Kiemelés a 3D nézetben">' + esc(x.side || x.deg + '°') + '</button>' +
+        '<span class="small ' + (img ? '' : 'muted') + '">' + esc(base(x.file)) + (img ? '' : ' (nincs csatolva)') + '</span>' +
+        '<button class="btn sm" data-bact="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" title="Nézd innen">👁</button></div>' +
+        '<label>Irány ' + (x.fix.yaw >= 0 ? '+' : '') + f1(x.fix.yaw) + '°<input type="range" min="-30" max="30" step="0.5" data-b="yaw" data-key="' + esc(x.key) + '" value="' + x.fix.yaw + '"></label>' +
+        '<label>Dőlés ' + (x.pitch >= 0 ? '+' : '') + f1(x.pitch) + '°<input type="range" min="-25" max="25" step="0.5" data-b="pitch" data-key="' + esc(x.key) + '" value="' + x.pitch + '"></label>' +
+        '<label>Látószög ' + Math.round(x.fovH) + '° · ' + f1(x.f35) + ' mm (' + src + ')<input type="number" min="8" max="80" step="0.5" data-b="f35" data-key="' + esc(x.key) + '" placeholder="auto" value="' + (x.fix.f35 || '') + '"></label></div>';
+    });
+    if (room.shots.length) h += '<div class="acts"><button class="btn sm dim" data-bact="reset">Javítások törlése ebben a helyiségben</button></div>';
+    side.innerHTML = h;
+  }
+  function boxSet(fn, live) {
+    const b = clone(S.box || {}); fn(b);
+    ['h', 'shots'].forEach(k => { if (b[k] && !Object.keys(b[k]).length) delete b[k]; });
+    commit(() => { if (Object.keys(b).length) S.box = b; else delete S.box; }, false);
+    boxRedraw(!live);
+  }
+  function boxInput(e, done) {
+    const t = e.target, k = t.dataset.b; if (!k || !S) return;
+    if (k === 'room') { if (done) { ui.room = t.value; ui.hi = null; boxRedraw(true); } return; }
+    const v = num(t.value), room = boxRoom();
+    if (k === 'h') { if (!done || !room) return; boxSet(b => { b.h = b.h || {}; if (v > 0) b.h[room.id] = Math.round(v * 10); else delete b.h[room.id]; }); return; }
+    if (k === 'eye') { if (!done) return; boxSet(b => { if (v > 0) b.eye = Math.round(v * 10); else delete b.eye; }); return; }
+    const key = t.dataset.key;
+    boxSet(b => {
+      b.shots = b.shots || {}; const o = Object.assign({}, b.shots[key]);
+      if (k === 'f35') { if (v > 0) o.f35 = v; else delete o.f35; } else if (v) o[k] = v; else delete o[k];
+      if (Object.keys(o).length) b.shots[key] = o; else delete b.shots[key];
+    }, !done);
+    if (!done) { const lab = t.closest('label'); if (lab && k !== 'f35') lab.firstChild.textContent = (k === 'yaw' ? 'Irány ' : 'Dőlés ') + (v >= 0 ? '+' : '') + f1(v || 0) + '°'; }
+  }
+  function boxClick(e) {
+    const t = e.target.closest('[data-bact]'); if (!t) return;
+    const a = t.dataset.bact;
+    if (a === 'close') boxClose();
+    else if (a === 'mode') { ui.mode = t.dataset.m; if (ui.mode === 'stand' && !ui.point) { const r = boxRoom(); if (r && r.shots[0]) { ui.point = r.shots[0].point; ui.yaw = r.shots[0].yaw; ui.pitch = 0; } } boxRedraw(); }
+    else if (a === 'stand') { ui.mode = 'stand'; ui.point = t.dataset.p; ui.yaw = +t.dataset.deg; ui.pitch = 0; boxRedraw(); }
+    else if (a === 'hi') { const i = +t.dataset.i; ui.hi = ui.hi === i ? null : i; boxRedraw(true); }
+    else if (a === 'reset') { const r = boxRoom(); if (r) boxSet(b => { if (b.h) delete b.h[r.id]; if (b.shots) r.shots.forEach(x => delete b.shots[x.key]); }); }
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('#main [data-bact="open"]'); if (t && S) boxOpen(); });
+
+  const VIEWS = { attekintes: vAttekintes, vazlat: vVazlat, jegyzet: vJegyzet, munkakor: vMunkakor, kerdes: vKerdes, kamera: vKamera, helyszin: vHelyszin, nyitott: vNyitott, variansok: vVariansok, funkciok: vFunkciok };
 
   function render() {
     renderHeader(); renderRail();
     const m = $('main'); if (!m) return;
-    if (!S) { m.innerHTML = '<div class="empty">Nyiss meg egy felmérést (Megnyitás vagy húzd ide a .vsketch.json fájlt).</div>'; return; }
+    if (!S && cur !== 'funkciok') { m.innerHTML = '<div class="empty">Nyiss meg egy felmérést (Megnyitás vagy húzd ide a .vsketch.json fájlt).</div>'; return; }
     const f = frontOf(cur) || EXTRA.attekintes;
     let body;
     try {
-      const d = derived();
-      if (cur === 'kerdes') {                        // first appearance of each shadow question
+      const d = S ? derived() : null;
+      if (cur === 'kerdes' && d) {                        // first appearance of each shadow question
         const un = FK.unseen(d.k, S, d.f);
         if (un.length) { const t = stamp(); S.seen = Object.assign({}, S.seen || {}); un.forEach(id => { S.seen[id] = t; }); persist(); }
       }
@@ -333,7 +735,7 @@
     m.innerHTML = '<h2 style="--c:' + esc(f.color) + '"><span class="sym">' + esc(f.sym) + '</span>' + esc(f.label) + '</h2>' +
       (msg ? '<div class="msg ' + msg.cls + '">' + esc(msg.text) + '</div>' : '') + '<div id="view" data-front="' + cur + '">' + body + '</div>';
   }
-  function front(id) { if (!VIEWS[id]) return false; cur = id; render(); return true; }
+  function front(id) { if (!VIEWS[id] || !viewShown(id)) return false; cur = id; render(); return true; }
 
   // ---- actions ---------------------------------------------------------------------------------------------------
   const setAnswer = (q, a) => { S.answers = Object.assign({}, S.answers || {}); if (a) S.answers[q] = a; else delete S.answers[q]; };
@@ -347,11 +749,20 @@
     if (!on) { const o = q.options.find(x => x.id === oid); if (o && o.sets) S = FK.apply(k, o.sets, S, now); }
   }
   function onClick(ev) {
-    const t = ev.target.closest('[data-act]'); if (!t || !S && t.dataset.act !== 'save') return;
+    const t = ev.target.closest('[data-act]'); if (!t || !S && !['save', 'front', 'feat', 'featfront', 'featall'].includes(t.dataset.act)) return;
     const a = t.dataset.act, id = t.dataset.id, q = t.dataset.q, k = () => kit();
     switch (a) {
       case 'front': front(t.dataset.front); break;
+      case 'feat': setFeatures(FE.toggle(FL, id)); render(); break;
+      case 'featfront': setFeatures(FE.all(FL, !FE.allOn(FL, t.dataset.front), t.dataset.front)); render(); break;
+      case 'featall': setFeatures(FE.all(FL, !FE.allOn(FL))); render(); break;
+      case 'sitemap': siteSend(); break;
+      case 'sitefit': { const p = SM.autoFit(siteRooms(), S.site.outline); if (p) commit(() => { S.site = Object.assign({}, S.site, { place: Object.assign(p, { at: stamp() }) }); }); break; }
+      case 'siteclear': commit(() => { const si = Object.assign({}, S.site); delete si.place; S.site = si; }); break;
       case 'jump': front(t.dataset.front); break;
+      case 'tkimplied': setImplied(!impliedNow()); render(); break;
+      case 'tkexport': { const r = exportTakeoff(); if (r) { flash('Takeoff: ' + stem() + '.takeoff.json + .md (' + r.takeoff.counts.items + ' tétel)', 'ok'); render(); } break; }
+      case 'report': { if (S && on('export.report')) { openReport(); render(); } break; }
       case 'save': { if (S) { const txt = save(); flash('Mentve: ' + stem() + '.vsketch.json (' + txt.length + ' bájt)', 'ok'); render(); } break; }
       case 'vtoggle': commit(s => { S.variantOn = !S.variantOn; }); break;
       case 'vpick': commit(() => { S.variant = id; S.variantOn = true; }); break;
@@ -361,9 +772,10 @@
       case 'eopen': commit(() => { S.entries = S.entries.map(e => e.id === id ? Object.assign({}, e, { open: !e.open }) : e); }); break;
       case 'sugok': { const g = FK.suggestions(k(), S).find(x => x.id === id); if (g) commit(() => { S = FK.apply(k(), g.effect, S, stamp()); }); break; }
       case 'sugno': commit(() => { S.dismissed = (S.dismissed || []).concat([id]); }); break;
-      case 'stoggle': commit(() => { S.scope = Object.assign({}, S.scope); if (S.scope[id] > 0) delete S.scope[id]; else S.scope[id] = 1; }); break;
-      case 'sinc': commit(() => { S.scope = Object.assign({}, S.scope); S.scope[id] = (S.scope[id] || 0) + 1; }); break;
-      case 'sdec': commit(() => { S.scope = Object.assign({}, S.scope); if ((S.scope[id] || 0) <= 1) delete S.scope[id]; else S.scope[id] -= 1; }); break;
+      case 'stoggle': commit(() => { if (S.scope && S.scope[id] > 0) S = FK.trimWant(S, id, 0); else { S.scope = Object.assign({}, S.scope); S.scope[id] = 1; } }); break;
+      case 'sinc': commit(() => { S = FK.addWant(S, id, wantRoom || null, +1); }); break;   // F4: into the room chosen under Hová
+      case 'sdec': commit(() => { const r = wantRoom || null, n = FK.addWant(S, id, r, -1); S = n === S && !r ? FK.trimWant(S, id, FK.wantTotal(S, id) - 1) : n; }); break;
+      case 'wmove': commit(() => { const from = t.dataset.from || null; S = FK.moveWant(S, id, from, from ? null : wantRoom || null, 1); }); break;
       case 'qopt': commit(() => chooseOption(q, t.dataset.o)); break;
       case 'qlater': case 'qskip': commit(() => { const old = answerOf(q); setAnswer(q, { options: old ? old.options : [], text: old ? old.text || '' : '', at: stamp(), state: a === 'qlater' ? 'later' : 'skip' }); }); break;
       case 'qclear': commit(() => setAnswer(q, null)); break;
@@ -388,6 +800,7 @@
     const t = ev.target;
     if (t.id === 'fopen') { openFiles(t.files); t.value = ''; return; }
     if (t.id === 'fphotos') { if (S) attach(t.files); t.value = ''; return; }
+    if (t.id === 'wroom') { wantRoom = t.value; render(); return; }
     if (!S) return;
     if (t.dataset.qtext) {                           // store silently, so a following click is not eaten by a re-render
       const q = t.dataset.qtext, old = answerOf(q), text = t.value;
@@ -398,6 +811,14 @@
         if (key === 'address') si.address = t.value;
         else if (t.value.trim() === '') delete si[key]; else if (!isNaN(parseFloat(t.value.replace(',', '.')))) si[key] = parseFloat(t.value.replace(',', '.'));
         S.site = si;
+      }, false);
+      if (cur === 'helyszin') render();
+    } else if (t.dataset.client) {                    // F5 (WP M50, D-82): the client's contact, personal (sketch-core ClientInfo)
+      commit(() => {
+        const c = Object.assign({ name: '', phone: '', email: '' }, S.client), key = t.dataset.client;
+        if (key === 'keep') c.keep = t.checked; else c[key] = t.value.trim();
+        if (!c.keep) delete c.keep;
+        if (!c.name && !c.phone && !c.email) delete S.client; else S.client = c;
       }, false);
       if (cur === 'helyszin') render();
     } else if (t.id === 'ntext' || t.id === 'nopen' || t.id === 'nroom') syncNote();
@@ -430,6 +851,8 @@
     if (last) { try { load(JSON.parse(last), 'utolsó'); return; } catch (e) { /* stale: ignore */ } }
     render();
   }
-  window.__sketcher = { load, state: () => S, save, front, output, render };
+  window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
+    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null },
+    plane: { open: planeOpen } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

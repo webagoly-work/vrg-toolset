@@ -237,6 +237,13 @@ internal fun SketchDialogs(st: EditorState) {
                                 VrgChip(Photos.label(d), selected = d == a.deg) { if (d != a.deg) { st.turnShot(a.id, a.deg, d); st.ask = Ask.PhotoView(a.id, d) } }
                             }
                         }
+                        // skcam K3 (WP M60): the Síkmérés on this Fotópont photo, and what was measured on it
+                        if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) {
+                            val pk = hu.vrg.mobile.sketch.Planes.shotKey(a.id, a.deg)
+                            hu.vrg.mobile.sketch.Planes.summary(hu.vrg.mobile.sketch.Planes.of(s, pk)).takeIf { it.isNotEmpty() }
+                                ?.let { Text("📏 " + it.joinToString(" · "), style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp)) }
+                            VrgChip("📏 Mérés") { st.ask = Ask.Measure(pk, shot.file, "$room · ${Photos.label(a.deg)}", Ask.PhotoView(a.id, a.deg)) }
+                        }
                     }
                 },
                 confirmButton = { TextButton({ close(); st.camera = CameraReq(a.id, a.deg) }) { Text("Újra", color = Melyviz.glow) } },
@@ -248,7 +255,18 @@ internal fun SketchDialogs(st: EditorState) {
         }
         is Ask.Purposes -> PurposePicker(st, close)
         is Ask.CaptureView -> CaptureViewer(st, a.id, close)
-        is Ask.VariantRequest -> VariantRequestDialog(st, close)
+        is Ask.Measure -> PlaneDialog(st, a.key, a.file, a.title) { st.ask = a.back }   // skcam K3: back to the photo
+        is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
+        is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
+        is Ask.PairPick -> PairPickDialog(st, a.id, close)
+        is Ask.VariantRequest -> VariantRequestDialog(st, close = close)
+        is Ask.LineClose -> AlertDialog(                              // F5 (WP M50): the variant's lineClose = ask
+            onDismissRequest = close, containerColor = Melyviz.raised,
+            title = { Text("Kész: ${st.lineDraft.size} sarok", style = Melyviz.label) },
+            text = { Text("Legyen belőle szoba, vagy maradjon nyitott vonal?", style = Melyviz.small) },
+            confirmButton = { TextButton({ close(); st.lineClose() }) { Text("Szoba", color = Melyviz.glow) } },
+            dismissButton = { TextButton({ close(); st.lineOpen() }) { Text("Nyitott vonal", color = Melyviz.muted) } },
+        )
         is Ask.EntryEdit -> {
             val e = s.entry(a.id) ?: return close()
             var text by remember(a) { mutableStateOf(e.text) }
@@ -279,18 +297,21 @@ internal fun SketchDialogs(st: EditorState) {
                 dismissButton = { TextButton({ st.deleteEntry(a.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
             )
         }
+        is Ask.FeatureSheet -> FeatureSheet(st, a.front, close)
         is Ask.PluginSheet -> AlertDialog(
             onDismissRequest = close, containerColor = Melyviz.raised,
             title = { Text("Bővítmények", style = Melyviz.label) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text("A Vázlat jegyzetfüzet; a bővítmények adják az eszközeit. Ami ki van kapcsolva, nem foglal helyet a sávban.", style = Melyviz.small)
-                    Plugins.ALL.forEach { p ->
+                    Plugins.ALL.filter { hu.vrg.mobile.sketch.Features.pluginShown(it, FeaturePrefs.flipped) }.forEach { p ->
                         val label = p.label + if (!p.built) " (${p.wp}, tervben)" else ""
                         if (p.id == Plugins.NOTE.id || !p.built) Text("· $label: ${p.blurb}", style = Melyviz.small.copy(color = if (p.built) Melyviz.ink else Melyviz.faint), modifier = Modifier.padding(vertical = 6.dp))
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
-                    VariantSection(st)
+                    if (feat("variansok.use")) VariantSection(st)
+                    // M51: every feature on its own switch (the camera's D-90 list is part of it)
+                    Text("⚙ Funkciók ›", style = Melyviz.label.copy(color = Melyviz.glow), modifier = Modifier.clickable { st.ask = Ask.FeatureSheet() }.padding(top = 14.dp, bottom = 6.dp))
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

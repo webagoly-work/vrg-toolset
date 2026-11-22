@@ -100,11 +100,31 @@ What changes locally compared with the cloud:
   phone key (`node tools/workflow-seal.js trust <ID> <CODE>`, then `seal`), only ciphertext on the `workflow-sealed`
   branch. `docs/mobile/WP/M42.md` → "Telefonon ellenőrizni" (13 steps, two on the PC).
 - **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
-  "Telefonon ellenőrizni" (11 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
+  "Telefonon ellenőrizni" (12 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
   `kit-core/MapPhone.kt`.
-- **M46** Tárgykereső built 2026-11-20 (cloud session, **experimental**, D-55 taken, D-56 = A: local only), **BETA**: the
+- **M44** VRG Időjárás built 2026-11-22 (cloud session, D-142 = A, D-143 = A, D-144 = B, answered for the Founder),
+  **BETA**: `docs/mobile/WP/M44.md` → "Telefonon ellenőrizni" (14 steps). `feature-weather` + `weather-core` (the fusion
+  and the field rules ported from `Weather/lib`; `Weather/config/*.json` bundled, a test fails when they drift: copy
+  them over after changing a limit). MET Norway waits until ⚙ → Kapcsolat is filled in.
+- **M46–M54** the VRG Sketcher forks (`docs/sketcher/FORKS.md`), 2026-11-20/21, cloud sessions, each **BETA**: M46
+  Kamera 2 (F3, D-55 … D-61, D-90), M47 Munkakör lap + takeoff (F2, D-67 … D-71, D-77 … D-79), M48 Helyszín ↔ Térkép
+  (F1, D-62 … D-66), M49 Apró hiányok (F4, D-72 … D-76), M50 Maradékok (F5, D-80 … D-84), M51 Kapcsolók (F6, D-91 … D-99),
+  M52 Saját kamera (F7, D-100 … D-109), M53 Összefésülés (F8, D-110 … D-116: the forks tested together end to end), M54 Jegyzőkönyv a telefonon (F9,
+  D-120 … D-128). Their
+  phone lists make one two-phone plan: `docs/sketcher/TEST-2PHONES.md` (`node Sketcher/tools/test-plan.js`).
+- **M55** Térkép-feed built 2026-11-21 (cloud session, D-129 … D-132), **BETA**: the nearest Otthon, Daniella, shops,
+  food, doctor … in the Térkép (key F) with distance, ETA, ghost lines and hold-to-select. `docs/mobile/WP/M55.md` →
+  "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,pois`). N2 (own routing, D-129) and N3
+  (traffic, D-130) are next in that line.
+- **M56** Saját útvonaltervezés (N2) built 2026-11-21 (cloud session, D-129 A), **BETA**: our own offline road network
+  and router in the Térkép; the feed's road times, a held place routed and drawn. `docs/mobile/WP/M56.md` →
+  "Telefonon ellenőrizni" (step 0 on the PC: `fetch-data.js --only=osm,roads`). N3 (guidance, traffic) is next.
+- **M58** Vezetés + forgalom (N3) built 2026-11-21 (cloud session, D-130), **BETA**: ▶ Indulás on a routed place:
+  banner, voice (Android TTS on the phone), camera follow, roundabouts, re-planning; 🚦 TomTom traffic with the
+  user's own key on a tap. `docs/mobile/WP/M58.md` → "Telefonon ellenőrizni" (step 0: rebuild `roads.bin`, format 2).
+- **M61** Tárgykereső built 2026-11-20 (cloud session, **experimental**, D-150 taken, D-151 = A: local only), **BETA**: the
   Founder's ISYTag (Apple Find My only) used from Android over plain BLE: distance, "Ez az enyém", relink, Keresés,
-  Csipogtatás, Ottfelejtés, last place; no remote location (Apple's network). `docs/mobile/WP/M46.md` → "Telefonon
+  Csipogtatás, Ottfelejtés, last place; no remote location (Apple's network). `docs/mobile/WP/M61.md` → "Telefonon
   ellenőrizni" (10 steps, the 9th needs an iPhone). `tag-core` tests in `mobile.cmd test` and Actions; `feature-tag`
   not yet compiled (the first Actions run is its check).
 

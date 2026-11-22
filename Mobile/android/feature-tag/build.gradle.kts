@@ -1,4 +1,4 @@
-// Tárgykereső (WP M46, experimental) as a VRG Mobile feature module: Apple Find My tags from Android over plain BLE.
+// Tárgykereső (WP M61, experimental) as a VRG Mobile feature module: Apple Find My tags from Android over plain BLE.
 // tag-core holds every rule (the advertisement, the key, the sound bytes, the tag book, relink, left-behind); this
 // module is the Android shell: the filtered scanner, the GATT ring, the left-behind foreground service, the screen.
 plugins {

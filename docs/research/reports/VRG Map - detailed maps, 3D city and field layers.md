@@ -291,7 +291,7 @@ we must not scrape or copy it. The legal routes, best first:
 | Wind speed/direction climatology, wind roses | Global Wind Atlas (CC BY 4.0), ERA5 | free | `open` |
 | Solar radiation, typical year | PVGIS (EU JRC) | free | `open` |
 | **Sun path over a location** | Computed, no data needed: SunCalc (BSD-2) or the NOAA algorithm gives azimuth/elevation per minute, sunrise/sunset, the day's arc and the yearly analemma | own code | `open` |
-| **Shadow casting by date and hour** | Computed: sun vector + building heights + DEM in a three.js / MapLibre shadow pass; date and hour sliders; a "sun hours per day" heatmap | own code on open data | `open` |
+| **Shadow casting by date and hour** | Computed: sun vector + building heights + DEM in a three.js / MapLibre shadow pass; date and hour sliders; a "sun hours per day" heatmap. **Built 2026-11-21 (flat-ground building shadows, S): `docs/map/SHADOWS.md`**; the DEM trace and sun hours are open | own code on open data | `open` |
 | Lightning density (Ng) for MSZ EN 62305 | HungaroMet if published; else the standard's own map | **[verify]** | `open` |
 
 The shadow and sun-hours layers are directly useful for PV roof shading and site planning, and

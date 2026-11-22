@@ -65,9 +65,9 @@ Mobile/
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
-    tag-core/           Tárgykereső's pure Kotlin (WP M46, experimental): the Find My advertisement and key, the sound
+    tag-core/           Tárgykereső's pure Kotlin (WP M61, experimental): the Find My advertisement and key, the sound
                         protocols' bytes, the tag book (mine, relink across address rotations), Ottfelejtés + tests
-    feature-tag/        Tárgykereső (WP M46): Apple Find My tags (ISYTag, AirTag) on Android: scan, GATT ring, the
+    feature-tag/        Tárgykereső (WP M61): Apple Find My tags (ISYTag, AirTag) on Android: scan, GATT ring, the
                         left-behind service (connectedDevice), Saját címke · Környék · Tudnivalók
     sketch-core/        Vázlat's pure Kotlin (WP M24): the sketch model + file, tool plugins, edits and hit tests, the
                         hold wheels, the measurement solver (wall lines, least squares, measured / derived / guessed),

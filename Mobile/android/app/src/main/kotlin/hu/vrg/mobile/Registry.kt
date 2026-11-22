@@ -31,6 +31,7 @@ import hu.vrg.mobile.stack.StackFeature
 import hu.vrg.mobile.tag.app.TagFeature
 import hu.vrg.mobile.update.UpdateFeature
 import hu.vrg.mobile.workflow.WorkflowFeature
+import hu.vrg.mobile.weather.app.WeatherFeature
 import hu.vrg.mobile.core.HomeLayout
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
@@ -67,6 +68,7 @@ object Registry {
         VaultFeature,
         WorkflowFeature,
         MapFeature,
+        WeatherFeature,
         TagFeature,
     )
 

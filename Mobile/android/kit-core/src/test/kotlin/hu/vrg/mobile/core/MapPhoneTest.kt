@@ -29,6 +29,20 @@ class MapPhoneTest {
         assertTrue(html.contains("window.vrgMap = {") && html.contains("maplibregl"), "window.vrgMap exposes the map and maplibregl")
         MapVendor.FILES.filter { !it.served.endsWith("worker.mjs") }.forEach { assertTrue(html.contains(it.served), it.served) }
         assertTrue(html.contains("/remote/build.protomaps.com/") && html.contains("remote') === '1'"))
+        // every /lib file the page loads is one the phone fetches and serves: a missing module stops the whole map
+        Regex("['\"]/lib/([A-Za-z0-9_-]+\\.js)['\"]").findAll(html).map { it.groupValues[1] }.toSet().forEach { f ->
+            assertTrue("Map/lib/$f" in MapPhone.PAGE_FILES, "the page loads /lib/$f but the phone does not fetch it")
+            assertEquals(MapReq.Page("Map/lib/$f"), MapRoute.decide("GET", "/lib/$f"))
+        }
+    }
+
+    @Test fun everyScriptThePageLoadsIsKept() {
+        // a new lib file the page loads must be in PAGE_FILES, or the phone serves the page without it (the shadows, 2026-11-21)
+        val html = File(repo, MapPhone.APP.page).readText()
+        val refs = Regex("""(?:src="|from '|import\('|fetch\(')/((?:lib|style)/[A-Za-z0-9._-]+)""").findAll(html).map { "Map/" + it.groupValues[1] }.toSet()
+        assertTrue("Map/lib/sun.js" in refs && "Map/lib/shadow-layer.js" in refs && "Map/lib/feed-layer.js" in refs && "Map/lib/route-layer.js" in refs && "Map/lib/nav-layer.js" in refs, refs.toString())
+        refs.forEach { assertTrue(it in MapPhone.PAGE_FILES, "$it is loaded by the page but not kept on the phone") }
+        refs.forEach { assertEquals(MapReq.Page(it), MapRoute.decide("GET", "/" + it.removePrefix("Map/"))) }
     }
 
     @Test fun theCatalogueEntryIsBeta() {
@@ -52,15 +66,23 @@ class MapPhoneTest {
         assertEquals(MapReq.Page("Map/vrg-terkep.html"), MapRoute.decide("GET", "/"))
         assertEquals(MapReq.Page("Map/vrg-terkep.html"), MapRoute.decide("GET", "/vrg-terkep.html"))
         assertEquals(MapReq.Page("Map/lib/jobs-layer.js"), MapRoute.decide("GET", "/lib/jobs-layer.js"))
+        assertEquals(MapReq.Page("Map/lib/sun.js"), MapRoute.decide("GET", "/lib/sun.js"))
+        assertIs<MapReq.Refused>(MapRoute.decide("GET", "/lib/other.js"))
         assertEquals(MapReq.Page("Map/style/terep.json"), MapRoute.decide("GET", "/style/terep.json"))
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/serve.js"))
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/tools/build-jobs.js"))
         assertEquals(MapReq.Phone(MapPhone.PHONE_JS), MapRoute.decide("GET", MapPhone.PHONE_JS))
+        assertEquals(MapReq.Phone(MapPhone.SITE), MapRoute.decide("GET", MapPhone.SITE))
+        assertEquals(MapReq.Page("Map/lib/site-layer.js"), MapRoute.decide("GET", "/lib/site-layer.js"))
+        assertIs<MapReq.Refused>(MapRoute.decide("GET", "/lib/other.js"))
+        assertIs<MapReq.Refused>(MapRoute.decide("POST", MapPhone.SITE))
         val lib = MapRoute.decide("GET", "/vendor/maplibre-gl/maplibre-gl-worker.mjs")
         assertIs<MapReq.Lib>(lib); assertEquals("maplibre-gl-6.16.0/maplibre-gl-worker.mjs", lib.file.local)
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/vendor/maplibre-gl/package.json"))
         assertEquals(MapReq.Data("hungary.pmtiles", false), MapRoute.decide("HEAD", "/data/hungary.pmtiles"))
         assertEquals(MapReq.Data("addresses.json", true), MapRoute.decide("GET", "/data/addresses.json"))
+        assertEquals(MapReq.Data("pois.json", true), MapRoute.decide("GET", "/data/pois.json"))
+        assertEquals(MapReq.Data("roads.bin", true), MapRoute.decide("GET", "/data/roads.bin"))
         assertEquals(MapReq.Data("fonts/Noto%20Sans%20Regular/0-255.pbf", true), MapRoute.decide("GET", "/data/fonts/Noto%20Sans%20Regular/0-255.pbf"))
         assertEquals(MapReq.Data("sprites/light@2x.png", true), MapRoute.decide("GET", "/data/sprites/light@2x.png"))
         assertIs<MapReq.Refused>(MapRoute.decide("GET", "/data/src/hungary-latest.osm.pbf"))
@@ -80,6 +102,10 @@ class MapPhoneTest {
         assertTrue(MapRoute.mayGoOut("https", "maps.google.com", "GET"))
         assertTrue(MapRoute.mayGoOut("https", "tile.googleapis.com", "GET"))
         assertTrue(MapRoute.mayGoOut("https", "cdn.jsdelivr.net", "GET"))
+        assertTrue(MapRoute.mayGoOut("https", "api.tomtom.com", "GET"))
+        assertFalse(MapRoute.mayGoOut("https", "api.tomtom.com", "POST"))
+        assertTrue(MapRoute.mayGoOut("https", "server.arcgisonline.com", "GET"))   // the site layer's 🛰, on the tap only
+        assertFalse(MapRoute.mayGoOut("https", "server.arcgisonline.com", "POST"))
         assertFalse(MapRoute.mayGoOut("http", "maps.google.com", "GET"))
         assertFalse(MapRoute.mayGoOut("https", "nominatim.openstreetmap.org", "POST"))
         assertFalse(MapRoute.mayGoOut("https", "evilgoogle.com", "GET"))
@@ -94,6 +120,8 @@ class MapPhoneTest {
         assertEquals("https://map.appassets.androidplatform.net/vrg-terkep.html?remote=1&build=${MapPhone.DEFAULT_BUILD}&job=BK2",
             MapPhone.pageUrl(MapPhone.Mode.INTERNET, "bad", job = "BK2", hash = "#<script>"))
         assertEquals("https://map.appassets.androidplatform.net/vrg-terkep.html", MapPhone.pageUrl(MapPhone.Mode.PC, "", job = "a&b=1"))
+        assertEquals("https://map.appassets.androidplatform.net/vrg-terkep.html?site=v1abc", MapPhone.pageUrl(MapPhone.Mode.PC, "", site = "v1abc"))
+        assertEquals("https://map.appassets.androidplatform.net/vrg-terkep.html", MapPhone.pageUrl(MapPhone.Mode.PC, "", site = "../x"))
         val html = MapPhone.inject("<html><body><p>x</p></body></html>")
         assertTrue(html.contains("<script src=\"/__phone/phone.js\" defer></script>\n</body>"))
         val real = MapPhone.inject(File(repo, MapPhone.APP.page).readText())

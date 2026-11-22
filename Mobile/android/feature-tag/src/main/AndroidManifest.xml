@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tárgykereső's part of the app manifest (WP M46). docs/mobile/WP/M46.md says why each is here. -->
+<!-- Tárgykereső's part of the app manifest (WP M61). docs/mobile/WP/M61.md says why each is here. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- BLE: hearing the tags (scan, with RSSI for the distance) and ringing one (a GATT connection). No advertising.
          No neverForLocation on SCAN: Android would then drop the tags' advertisements, and the RSSI is the distance.

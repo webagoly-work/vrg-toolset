@@ -20,6 +20,8 @@ first time **M** is picked. `--refresh` fetches a newer OSM week, `--only=basema
 | terrain | `terrain.pmtiles` (~0.35 GB, z0-12) | Mapterhorn planet (Copernicus GLO-30 …) | per mapterhorn.com/attribution |
 | osm | `src/hungary-latest.osm.pbf` (~0.33 GB) | Geofabrik | ODbL |
 | addresses | `addresses.json` | built from the .pbf by `tools/build-addresses.js` | ODbL |
+| pois | `pois.json` | the Térkép-feed's points, built from the .pbf by `tools/build-pois.js` | ODbL |
+| roads | `roads.bin` | the road network for offline routing, built from the .pbf by `tools/build-roads.js` | ODbL |
 | fonts, sprites | `fonts/`, `sprites/` | protomaps/basemaps-assets | OFL / see repo |
 
 `Map/data/manifest.json` records source, date, licence and size of every part. The pmtiles CLI goes
@@ -31,6 +33,14 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/geocode.js` — the offline geocoder (index, query parsing, search, job addresses), shared by the
   page, `tools/build-jobs.js` and the tests.
 - `lib/jobs-layer.js` — the **J** layer: the jobs on the map (client data, see below).
+- `lib/sun.js`, `lib/shadow-layer.js` — the **S** layer: the sun's position and the buildings' shadows.
+- `lib/feed.js`, `lib/feed-layer.js` — the **F** Térkép-feed: the nearest home, Daniella, shop, food,
+  doctor … with distance, ETA and ghost lines (`docs/map/FEED.md`); its points from `tools/build-pois.js`
+  (`tools/osm-pbf.js` is the shared .pbf reader).
+- `lib/route.js`, `lib/route-layer.js` — **our own offline routing** (N2): the feed's road times and the
+  route to a held place, on `data/roads.bin` from `tools/build-roads.js` (`docs/map/ROUTING.md`).
+- `lib/guide.js`, `lib/nav-layer.js`, `lib/traffic.js` — **turn-by-turn guidance** with voice (N3) and the
+  optional TomTom traffic check with your own key (`docs/map/NAVIGATION.md`).
 - `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).
@@ -47,9 +57,12 @@ to `H:\VRG\Full\tools\pmtiles`.
   Accents and abbreviations (u., krt., sgt., rkp., ltp.) are optional. Offline first; the
   "Keresés az interneten" row asks OSM Nominatim (online, one request a second).
 - Picking a result flies there tilted and turned, so terrain and building heights read at once.
-- Keys: `/` search · `3` 3D buildings · `T` terrain · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
+- Keys: `/` search · `3` 3D buildings · `T` terrain · `S` shadows · `F` feed · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
+- **S Árnyék**: the buildings' shadows on any day and hour, a time slider from sunrise to sunset and
+  ▶ to sunset (`lib/sun.js`, `lib/shadow-layer.js`; flat ground, OSM heights). `docs/map/SHADOWS.md`.
   With the jobs on: `D` density · `I` timeline · `,` / `.` previous / next job · job codes in the search box.
-- URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?q=…` searches on load; `?embed=1` is the slim
+- URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?arnyek=2026-12-21T15:30` opens the shadows at that
+  time; `?q=…` searches on load; `?embed=1` is the slim
   UI for embedding in Kapu or the Planner; `?job=BK2` opens the job layer at that job.
 
 ## Google view (optional, online)

@@ -60,7 +60,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-// Tárgykereső (WP M46, experimental): an Apple Find My tag — the ISYTag from MediaMarkt / Saturn, an AirTag, any
+// Tárgykereső (WP M61, experimental): an Apple Find My tag — the ISYTag from MediaMarkt / Saturn, an AirTag, any
 // "Works with Apple Find My" tag — used from Android. Android cannot join Apple's network, so this is everything the
 // tag itself says over Bluetooth: which tags are around and how near, "this one is mine" (held to the phone), a finder
 // with a sonar tick, ringing it where the tag allows, a left-behind alarm, and the phone's place when it last heard
@@ -379,7 +379,7 @@ object TagFeature : VrgFeature {
                 "Ilyenkor egy idő után az Android ismeretlen nyomkövetőt jelezhet: ez a saját címkéd.",
         ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
         VrgSectionTitle("Kísérleti")
-        Text("Az ISYTag (IMTRON / MediaMarkt, IIT 1000) viselkedését még nem ellenőriztük telefonon: ez a WP M46 " +
+        Text("Az ISYTag (IMTRON / MediaMarkt, IIT 1000) viselkedését még nem ellenőriztük telefonon: ez a WP M61 " +
             "„Telefonon ellenőrizni” listája. A Napló („tag”) minden csipogtatási lépést rögzít.", style = Melyviz.small)
     }
 }

@@ -44,6 +44,7 @@ import hu.vrg.mobile.sketch.KScope
 import hu.vrg.mobile.sketch.Kit
 import hu.vrg.mobile.sketch.PointType
 import hu.vrg.mobile.sketch.Tools
+import hu.vrg.mobile.sketch.Wants
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -100,7 +101,7 @@ internal fun describe(kit: Kit, e: Effect): String {
 @Composable
 internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") {
     val col = st.frontColor("jegyzet")
-    Pill("✎ Új jegyzet" + (if (st.sketch.draft.isNotBlank()) " (félbehagyott)" else ""), col, true) { st.noteOpen = true }
+    if (feat("jegyzet.quick")) Pill("✎ Új jegyzet" + (if (st.sketch.draft.isNotBlank()) " (félbehagyott)" else ""), col, true) { st.noteOpen = true }
     if (sh.suggestions.isNotEmpty()) {
         Text("A jegyzetekből", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         sh.suggestions.forEach { g ->
@@ -114,15 +115,15 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
             }
         }
     }
-    Text("Napló (${st.sketch.entries.size})", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-    if (st.sketch.entries.isEmpty()) Text("Még nincs jegyzet. A ✎ gomb minden nézetből elér.", style = Melyviz.small)
-    st.sketch.entries.sortedByDescending { it.at }.forEach { e -> key(e.id) {
+    if (feat("jegyzet.log")) Text("Napló (${st.sketch.entries.size})", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+    if (feat("jegyzet.log") && st.sketch.entries.isEmpty()) Text("Még nincs jegyzet. A ✎ gomb minden nézetből elér.", style = Melyviz.small)
+    if (feat("jegyzet.log")) st.sketch.entries.sortedByDescending { it.at }.forEach { e -> key(e.id) {
         Card(if (e.open) Color(0xFFD64545) else col) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(HM.format(Date(e.at)) + (if (e.voice) " 🎤" else ""), style = Melyviz.readout)
                 Spacer(Modifier.weight(1f))
                 st.sketch.room(e.room)?.let { Text(roomTitle(it.name, it.kinds), style = Melyviz.small.copy(color = st.frontColor("vazlat"))) }
-                Text(if (e.open) "  ⚑" else "  ⚐", style = Melyviz.label.copy(color = if (e.open) Color(0xFFD64545) else Melyviz.faint),
+                if (feat("jegyzet.unclear")) Text(if (e.open) "  ⚑" else "  ⚐", style = Melyviz.label.copy(color = if (e.open) Color(0xFFD64545) else Melyviz.faint),
                     modifier = Modifier.clickable { st.setOpen(e.id, !e.open) })
             }
             if (e.chips.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 4.dp)) {
@@ -144,8 +145,9 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
 @Composable
 internal fun ScopeFront(st: EditorState) = FrontPage(st, "munkakor") {
     val col = st.frontColor("munkakor")
+    LaunchedEffect(Unit) { st.wantRoom = st.focusRoom }   // F4: wants go to the room in focus, re-choosable under Hová
     val sum = remember(st.sketch, st.kit, st.norm) { FieldKit.summary(st.kit, st.sketch, st.norm) }
-    Card(col) {
+    if (feat("munkakor.summary")) Card(col) {
         Text("A munka eddig", style = Melyviz.small.copy(color = Melyviz.faint))
         val area = "%.1f".format(sum.areaM2).replace('.', ',')
         Text("${sum.rooms} szoba · $area m²" + (if (sum.guessedRooms > 0) " (${sum.guessedRooms} becsült)" else "") +
@@ -157,27 +159,32 @@ internal fun ScopeFront(st: EditorState) = FrontPage(st, "munkakor") {
             Text(label + ": " + items.joinToString(", ") { (s, n) -> s.label + if (s.qty && n > 1) " ×$n" else "" }, style = Melyviz.small.copy(color = col))
         }
     }
-    FieldKit.SCOPE_GROUPS.forEach { (g, label) ->
+    if (feat("munkakor.takeoff")) TakeoffCard(st)   // the Munkakör lap (WP M47, TakeoffUi.kt)
+    if (feat("munkakor.scope")) FieldKit.SCOPE_GROUPS.forEach { (g, label) ->
         val items = st.kit.scope.filter { it.group == g }
         if (items.isEmpty()) return@forEach
         Text(label, style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        if (g == "igeny" && feat("munkakor.wants")) WantWhere(st, col)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             items.forEach { s -> ScopePill(st, s, col) }
         }
+        if (g == "igeny" && feat("munkakor.wants")) WantsByRoom(st, col)
     }
 }
 
 @Composable
 private fun ScopePill(st: EditorState, s: KScope, col: Color) {
-    val n = st.sketch.scope[s.id] ?: 0
+    val n = if (s.qty) Wants.total(st.sketch, s.id) else st.sketch.scope[s.id] ?: 0
     if (!s.qty) { Pill(s.sym + " " + s.label, col, n > 0) { st.setScope(s.id, if (n > 0) 0 else 1) }; return }
+    // F4: + / − go to the room chosen under Hová; the pill shows the job total and how many are in that room
+    val here = st.wantRoom?.takeIf { st.sketch.room(it) != null }?.let { Wants.inRoom(st.sketch, it, s.id) } ?: 0
     Row(Modifier.clip(RoundedCornerShape(50)).background(if (n > 0) col else Melyviz.surface).border(1.dp, if (n > 0) col else Melyviz.line, RoundedCornerShape(50)),
         verticalAlignment = Alignment.CenterVertically) {
         val ink = if (n > 0) Color.Black else Melyviz.ink
-        if (n > 0) Text(" − ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.setScope(s.id, n - 1) }.padding(horizontal = 6.dp, vertical = 6.dp))
-        Text(s.sym + " " + s.label + if (n > 0) " $n" else "", style = Melyviz.small.copy(fontSize = 12.sp, color = ink),
-            modifier = Modifier.clickable { st.setScope(s.id, n + 1) }.padding(horizontal = 8.dp, vertical = 6.dp))
-        if (n > 0) Text(" + ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.setScope(s.id, n + 1) }.padding(horizontal = 6.dp, vertical = 6.dp))
+        if (n > 0) Text(" − ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.addWant(s.id, -1) }.padding(horizontal = 6.dp, vertical = 6.dp))
+        Text(s.sym + " " + s.label + (if (n > 0) " $n" else "") + (if (here > 0) " ($here itt)" else ""), style = Melyviz.small.copy(fontSize = 12.sp, color = ink),
+            modifier = Modifier.clickable { st.addWant(s.id, +1) }.padding(horizontal = 8.dp, vertical = 6.dp))
+        if (n > 0) Text(" + ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.addWant(s.id, +1) }.padding(horizontal = 6.dp, vertical = 6.dp))
     }
 }
 
@@ -192,12 +199,12 @@ internal fun QuestionsFront(st: EditorState, sh: Shadow) = FrontPage(st, "kerdes
     // the shadow's arrival times: what appears now is "new" for ten minutes
     val unseen = remember(st.sketch, st.kit) { FieldKit.unseen(st.kit, st.sketch, sh.facts) }
     LaunchedEffect(unseen) { st.markSeen(unseen) }
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    if (feat("kerdes.filter")) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Pill("Mind", col, who == "") { who = "" }
         Pill("☺ Ügyfél", col, who == "ugyfel") { who = "ugyfel" }
         Pill("◎ Szemle", col, who == "szemle") { who = "szemle" }
     }
-    val qs = sh.questions.filter { who == "" || it.q.who == who }
+    val qs = sh.questions.filter { who == "" || it.q.who == who || !feat("kerdes.filter") }
     val open = qs.filter { !it.done }
     if (open.isEmpty()) Text("Most nincs nyitott kérdés. Ahogy a munkakör, a jegyzet vagy a vázlat alakul, újak jönnek.", style = Melyviz.small, modifier = Modifier.padding(top = 10.dp))
     open.forEach { qs1 -> key(qs1.q.id) { QuestionCard(st, qs1, col) } }
@@ -218,8 +225,8 @@ private fun QuestionCard(st: EditorState, s: FieldKit.QState, col: Color) {
     var text by remember(a?.text) { mutableStateOf(a?.text ?: "") }
     Card(if (s.later) Melyviz.faint else col) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (s.fresh) Box(Modifier.size(8.dp).clip(CircleShape).background(col))
-            Text((if (s.fresh) " " else "") + q.q, style = Melyviz.label.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
+            if (s.fresh && feat("kerdes.fresh")) Box(Modifier.size(8.dp).clip(CircleShape).background(col))
+            Text((if (s.fresh && feat("kerdes.fresh")) " " else "") + q.q, style = Melyviz.label.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
             Text(if (q.who == "szemle") "◎" else "☺", style = Melyviz.small.copy(color = Melyviz.faint))
         }
         q.hint?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.faint)) }
@@ -235,8 +242,8 @@ private fun QuestionCard(st: EditorState, s: FieldKit.QState, col: Color) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             if (text != (a?.text ?: "")) Text("✓ Mentés", style = Melyviz.label.copy(color = col),
                 modifier = Modifier.clickable { st.answer(q.id, chosen, text, AnswerState.ANSWERED) }.padding(vertical = 4.dp))
-            if (!s.done && !s.later) Text("⏱ Később", style = Melyviz.small, modifier = Modifier.clickable { st.answer(q.id, chosen, text, AnswerState.LATER) }.padding(vertical = 4.dp))
-            Text("⊘ Nem releváns", style = Melyviz.small, modifier = Modifier.clickable { st.answer(q.id, chosen, text, AnswerState.SKIP) }.padding(vertical = 4.dp))
+            if (!s.done && !s.later && feat("kerdes.later")) Text("⏱ Később", style = Melyviz.small, modifier = Modifier.clickable { st.answer(q.id, chosen, text, AnswerState.LATER) }.padding(vertical = 4.dp))
+            if (feat("kerdes.later")) Text("⊘ Nem releváns", style = Melyviz.small, modifier = Modifier.clickable { st.answer(q.id, chosen, text, AnswerState.SKIP) }.padding(vertical = 4.dp))
             if (a != null) Text("↺", style = Melyviz.small, modifier = Modifier.clickable { st.clearAnswer(q.id) }.padding(vertical = 4.dp))
         }
     }
@@ -248,7 +255,7 @@ private fun QuestionCard(st: EditorState, s: FieldKit.QState, col: Color) {
 internal fun OpenFront(st: EditorState, sh: Shadow) = FrontPage(st, "nyitott") {
     if (sh.open.isEmpty()) Text("Minden szál elvarrva.", style = Melyviz.label)
     Text("Ami még hiányzik vagy félbemaradt. Koppintva odaugrik; semmit nem kell sorrendben lezárni.", style = Melyviz.small)
-    st.fronts().forEach { f ->
+    st.shownFronts().forEach { f ->
         val items = sh.open.filter { it.front == f.id }
         if (items.isEmpty()) return@forEach
         Row(Modifier.padding(top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {

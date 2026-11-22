@@ -1,0 +1,166 @@
+{
+ "input": {
+  "images": {
+   "petofi-u-7-2-5_F25_del.jpg": "data:image/jpeg;base64,AAAA",
+   "petofi-u-7-2-5_F25_eszak.jpg": "data:image/jpeg;base64,AAAA"
+  },
+  "level": {
+   "id": "upper",
+   "heightMm": 2700
+  },
+  "now": 1763700000000,
+  "name": "Petőfi u. 7. 2/5",
+  "box": {"h": {"R1": 2650}},
+  "plan": {
+   "data": {"floors": [
+    {
+     "stage": "outline",
+     "level": "upper",
+     "nameAuto": true,
+     "kind": "konyha",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       3600,
+       0
+      ],
+      [
+       3600,
+       3000
+      ],
+      [
+       0,
+       3000
+      ]
+     ],
+     "clear": true,
+     "name": "Konyha",
+     "sk": {
+      "der": [],
+      "src": "vazlat",
+      "est": [],
+      "mea": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "wants": {"dugalj": 3},
+      "id": "R1"
+     },
+     "kinds": ["konyha"],
+     "id": "F1",
+     "fill": "#e9e5da"
+    },
+    {
+     "stage": "outline",
+     "level": "upper",
+     "nameAuto": true,
+     "kind": "furdo",
+     "poly": [
+      [
+       3600,
+       0
+      ],
+      [
+       5400,
+       0
+      ],
+      [
+       5400,
+       3000
+      ],
+      [
+       3600,
+       3000
+      ]
+     ],
+     "clear": true,
+     "name": "Fürdő",
+     "sk": {
+      "der": [
+       1,
+       3
+      ],
+      "src": "vazlat",
+      "est": [],
+      "mea": [
+       0,
+       2
+      ],
+      "wants": {"lampa": 1},
+      "id": "R2"
+     },
+     "kinds": ["furdo"],
+     "id": "F2",
+     "fill": "#e9e5da"
+    },
+    {
+     "stage": "outline",
+     "level": "upper",
+     "poly": [
+      [
+       0,
+       3000
+      ],
+      [
+       5400,
+       3000
+      ],
+      [
+       5400,
+       4200
+      ],
+      [
+       0,
+       4200
+      ]
+     ],
+     "clear": true,
+     "name": "Előszoba",
+     "sk": {
+      "der": [
+       0,
+       2
+      ],
+      "src": "vazlat",
+      "est": [],
+      "mea": [
+       1,
+       3
+      ],
+      "wants": {"dugalj": 1},
+      "id": "R3"
+     },
+     "id": "F3",
+     "fill": "#e9e5da"
+    }
+   ]},
+   "photos": [{
+    "x": 1800,
+    "y": 1800,
+    "id": "F25",
+    "shots": [
+     {
+      "side": "É",
+      "file": "petofi-u-7-2-5_F25_eszak.jpg",
+      "deg": 0,
+      "taken": 1763699991000,
+      "f35": 13
+     },
+     {
+      "side": "D",
+      "file": "petofi-u-7-2-5_F25_del.jpg",
+      "deg": 180,
+      "taken": 1763699991100
+     }
+    ],
+    "room": "Konyha"
+   }]
+  }
+ },
+ "about": "skcam K1b (WP M59): the input the phone hands roombox-phone.js, written by sketch-core RoomBoxTest (VRG_SKETCH_FIXTURE=update); read by Sketcher/test/roombox-phone.test.js. Do not edit."
+}

@@ -4,7 +4,7 @@ package hu.vrg.mobile.tag
 // no key of the tag and no Apple account), but the tag's own Bluetooth advertisements are public by design: that is
 // how every passing iPhone relays them, and how Android's and AirGuard's unknown-tracker detection sees them.
 //
-// Sources (docs/mobile/WP/M46.md "Where the facts come from"):
+// Sources (docs/mobile/WP/M61.md "Where the facts come from"):
 //  - Offline finding advertisement: manufacturer data under Apple's company id 0x004C, type 0x12. The full form
 //    (length 0x19 = 25) is sent when the tag is away from its owner ("separated"); a 2-byte form when the owner's
 //    iPhone is near. Layout of the full form, after the company id:

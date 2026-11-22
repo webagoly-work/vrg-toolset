@@ -3,8 +3,9 @@
 'use strict';
 const { spawnSync } = require('child_process'), path = require('path');
 const R = path.join(__dirname, '..');
-const steps = [['make-fixture --check', ['tools/make-fixture.js', '--check']], ['variant-check', ['tools/variant-check.js']],
-  ['build --check', ['tools/build.js', '--check']], ['page.test', ['test/page.test.js']]];
+const steps = [['make-fixture --check', ['tools/make-fixture.js', '--check']], ['make-site-fixture --check', ['tools/make-site-fixture.js', '--check']], ['make-takeoff-fixture --check', ['tools/make-takeoff-fixture.js', '--check']], ['make-report-fixture --check', ['tools/make-report-fixture.js', '--check']], ['make-features-fixture --check', ['tools/make-features-fixture.js', '--check']], ['features.test', ['test/features.test.js']], ['roombox.test (skcam K1)', ['test/roombox.test.js']], ['roombox-browser.test (skcam K1, Playwright)', ['test/roombox-browser.test.js']], ['roombox-phone.test (skcam K1b)', ['test/roombox-phone.test.js']], ['plane.test (skcam K3)', ['test/plane.test.js']], ['plane-browser.test (skcam K3, Playwright)', ['test/plane-browser.test.js']], ['variant-check', ['tools/variant-check.js']],
+  ['build --check', ['tools/build.js', '--check']], ['page.test', ['test/page.test.js']], ['report-phone.test', ['test/report-phone.test.js']],
+  ['e2e.test (F8: phone → package → Desktop → Planner)', ['test/e2e.test.js']]];
 let n = 0, failed = 0;
 for (const [name, args] of steps) {
   const r = spawnSync(process.execPath, args, { cwd: R, encoding: 'utf8' });

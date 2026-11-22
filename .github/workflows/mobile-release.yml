@@ -6,7 +6,7 @@ name: VRG Mobile release
 on:
   push:
     branches: [main]
-    paths: ['Mobile/android/**', 'Mobile/access.json', 'Sketcher/catalog/**', 'Sketcher/variants/**', '.github/workflows/mobile-release.yml']
+    paths: ['Mobile/android/**', 'Mobile/access.json', 'Sketcher/catalog/**', 'Sketcher/variants/**', 'Sketcher/lib/**', '.github/workflows/mobile-release.yml']
   workflow_dispatch:
 
 permissions:

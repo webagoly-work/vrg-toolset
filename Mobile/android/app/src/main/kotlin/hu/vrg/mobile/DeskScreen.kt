@@ -127,7 +127,13 @@ fun DeskScreen(
                 Dial("◣", "Menü") { menu = !menu; kommand = false }
                 // VRG Sketcher, one tap from every sheet too (D-35); the Desktop's dock has its `sketcher` unit (D-34)
                 Spacer(Modifier.width(6.dp))
-                Dial(Catalogue.SKETCH.glyph, Catalogue.SKETCH.title) { act.open(Catalogue.SKETCH.id) }
+                Box {   // F4 (WP M49): a long press lists the Sketcher's variants (SketchLaunch.kt)
+                    var sketchMenu by remember { mutableStateOf(false) }
+                    Dial(Catalogue.SKETCH.glyph, Catalogue.SKETCH.title, onLong = { sketchMenu = true }) { act.open(Catalogue.SKETCH.id) }
+                    RcoMenu(sketchMenu, { sketchMenu = false }, Catalogue.SKETCH.title,
+                        listOf(RcoItem(Catalogue.SKETCH.glyph, "Megnyitás") { act.open(Catalogue.SKETCH.id) }) +
+                            hu.vrg.mobile.sketch.ui.sketcherRcoItems(open = { act.open(Catalogue.SKETCH.id) }))
+                }
                 Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (windows.isEmpty()) Text("nincs nyitott ablak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(8.dp))
@@ -168,10 +174,10 @@ private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun Dial(glyph: String, label: String, onClick: () -> Unit) {
+private fun Dial(glyph: String, label: String, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     Box(
         Modifier.size(44.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).border(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick).semantics { contentDescription = label },
+            .then(if (onLong != null) Modifier.rco(onClick = onClick, onLong = onLong) else Modifier.clickable(onClick = onClick)).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
 }

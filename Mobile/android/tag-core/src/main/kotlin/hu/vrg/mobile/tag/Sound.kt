@@ -11,7 +11,7 @@ package hu.vrg.mobile.tag
 //  - AIRTAG: the first-generation AirTag's own service: one byte 0xAF, the AirTag hangs up when it has played.
 //
 // The UUIDs and bytes were cross-checked against AirGuard (seemoo-lab/AirGuard, Apache-2.0,
-// .../device/types/AppleFindMy.kt); this file is our own code. docs/mobile/WP/M46.md says what the ISYTag should show.
+// .../device/types/AppleFindMy.kt); this file is our own code. docs/mobile/WP/M61.md says what the ISYTag should show.
 
 enum class SoundProtocol(
     val hu: String,
