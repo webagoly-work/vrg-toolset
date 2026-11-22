@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/report.js + lib/features.js + lib/roombox.js + lib/roombox-gl.js + ../Map/lib/site-math.js + catalog + variants.
+// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/report.js + lib/features.js + lib/roombox.js + lib/roombox-gl.js + lib/plane.js + lib/plane-ui.js + ../Map/lib/site-math.js + catalog + variants.
 //
 //   node Sketcher/tools/build.js          write the dist page
 //   node Sketcher/tools/build.js --check  exit 1 when the committed dist is stale
@@ -27,6 +27,8 @@ function build() {
     '<script>\n' + script(rd('lib', 'report.js')) + '\n</script>\n' +
     // skcam K1: the Szobadoboz (the room in 3D with its Fotópont photos)
     '<script>\n' + script(rd('lib', 'roombox.js')) + '\n</script>\n<script>\n' + script(rd('lib', 'roombox-gl.js')) + '\n</script>\n' +
+    // skcam K3: the Síkmérés (measuring on a plane in one photo)
+    '<script>\n' + script(rd('lib', 'plane.js')) + '\n</script>\n<script>\n' + script(rd('lib', 'plane-ui.js')) + '\n</script>\n' +
     // F1: the sketch on the building, the same maths as the map page and the phone
     '<script>\n' + script(fs.readFileSync(path.join(ROOT, '..', 'Map', 'lib', 'site-math.js'), 'utf8')) + '\n</script>\n<script>\n' + script(js) + '\n</script>';
   const page = rd('src', 'page.html');

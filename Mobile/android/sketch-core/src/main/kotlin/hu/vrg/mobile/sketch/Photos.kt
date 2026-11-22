@@ -88,6 +88,6 @@ object PhotoOps {
         val shots = p.shots.map {
             when (it) { a -> it.copy(deg = Photos.norm(to)); b -> it.copy(deg = Photos.norm(from)); else -> it }
         }.sortedBy { it.deg }
-        return s.copy(photos = s.photos.map { if (it.id == id) it.copy(shots = shots) else it })
+        return Planes.turn(s.copy(photos = s.photos.map { if (it.id == id) it.copy(shots = shots) else it }), id, from, to)   // K3: the measurements go along
     }
 }

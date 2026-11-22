@@ -74,6 +74,7 @@ object Features {
         F("kamera.shotlist", "kamera", "☑", "Képlista", listOf("kamera.capture")),
         F("kamera.series", "kamera", "⟳", "Sorozat", listOf("kamera.capture")),
         F("kamera.markup", "kamera", "✎", "Jelölés", listOf("kamera.capture")),
+        F("kamera.measure", "kamera", "📏", "Mérés a fotón", listOf("kamera.capture")),   // skcam K3: Síkmérés on a capture or a Fotópont photo
         F("kamera.ocr", "kamera", "▤", "Szöveg kiolvasása", listOf("kamera.capture")),
         F("kamera.ocr_auto", "kamera", "▤", "Címkefotó magától", listOf("kamera.capture", "kamera.ocr")),
         F("kamera.blur", "kamera", "▦", "Elmosás", listOf("kamera.capture", "kamera.markup")),

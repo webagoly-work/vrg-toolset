@@ -116,6 +116,7 @@ object SketchJson {
         if (s.draft.isNotEmpty()) o.put("draft", s.draft)
         ClientInfo.write(s, o)   // F5: personal, only when filled in
         RoomBox.write(s, o)      // skcam K1b: the Szobadoboz corrections, only when there are any
+        Planes.write(s, o)       // skcam K3: the Síkmérés records of the photos that still exist
     }
 
     private fun readPtRaw(a: JSONArray?) = if (a == null || a.length() < 2) null else Pt(a.optDouble(0), a.optDouble(1))
@@ -155,7 +156,7 @@ object SketchJson {
             variant = o.str("variant"),
             variantOn = o.optBoolean("variantOn"),
             draft = o.optString("draft"),
-        ).let { Wants.read(o, it) }.let { ClientInfo.read(o, it) }.let { RoomBox.read(o, it) }
+        ).let { Wants.read(o, it) }.let { ClientInfo.read(o, it) }.let { RoomBox.read(o, it) }.let { Planes.read(o, it) }
     }
 
     // WP M46 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)

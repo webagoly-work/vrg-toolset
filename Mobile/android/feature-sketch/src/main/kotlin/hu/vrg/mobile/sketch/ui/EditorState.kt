@@ -77,6 +77,8 @@ sealed class Ask {
     data class FeatureSheet(val front: String? = null) : Ask()
     /** F5: the variant's lineClose = ask: Kész with 3+ corners asks room or open line. */
     object LineClose : Ask()
+    /** skcam K3 (WP M60): the Síkmérés on one photo ([key] = capture id or "F25/0"); [back] = the dialog to return to. */
+    data class Measure(val key: String, val file: String, val title: String, val back: Ask? = null) : Ask()
 }
 
 /**
