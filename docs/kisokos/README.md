@@ -147,5 +147,5 @@ and "what goes wrong if not".
 - Every Rögzítéstechnika and Kommunikációs vonalak card waits for the Founder's review.
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.
-- **Világítótestek (vt)**: families 1, 2, 6 drafted (25 cards); families 3–5 and 7–10 to come (`vilagitotestek.md`).
+- **Világítótestek (vt)**: families 1–4, 6, 7 drafted (49 cards); families 5, 8, 9, 10 to come (`vilagitotestek.md`).
   Its DevLog line is written out there, ready to paste into `notes/devlog/lines.js` on H:.

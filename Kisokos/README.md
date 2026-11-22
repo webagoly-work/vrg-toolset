@@ -22,8 +22,9 @@ Kisokos/
                               connector, standard, where in a flat, installation rules, traps, terms, shop
     svg/                      GENERATED: one one-pager per line + spektrum.svg (all lines on one scale)
     KISOKOS.md                GENERATED cheat sheet with the drawings
-  vilagitotestek/             volume vt, Világítótestek (families 1, 2, 6 so far; scope: docs/kisokos/vilagitotestek.md)
-    lampak.json               25 fixture types: mounting, light source, protection, photometry, distribution,
+  vilagitotestek/             volume vt, Világítótestek (families 1–4, 6, 7 so far; scope: docs/kisokos/vilagitotestek.md)
+    rejtett-butor-kulteri.json 24 fixture types of families 3, 4, 7 (hidden and linear, furniture, outdoor)
+    lampak.json               25 fixture types of families 1, 2, 6: mounting, light source, protection, photometry, distribution,
                               control (+ lines), install (+ fixing), rules, Rajztár symbol, rooms, traps, terms, shop
     svg/                      GENERATED: one light-distribution drawing per type
     KISOKOS.md                GENERATED cheat sheet with the drawings

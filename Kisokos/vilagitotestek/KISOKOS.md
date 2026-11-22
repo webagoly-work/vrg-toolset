@@ -25,12 +25,36 @@
 | Képvilágító | Fali | falra, a kép fölé, karral előrehajolva | IP20 | aszimmetrikus | `lum.wall` |
 | Falba süllyesztett lépcső- és orientációs fény | Fali | falba süllyesztve, szerelvénydobozba vagy saját beépítő dobozba | IP20 beltérben, IP44 – IP65 kültéren | aszimmetrikus | `lum.wall` |
 | Fali fényvető (wall washer) | Fali | a fal elé, mennyezetre, padlóba vagy a fal tövébe | IP20 – IP67 (padlóba és kültérre) | aszimmetrikus | `lum.linear` |
+| LED-szalag (12 / 24 V) | Rejtett és vonali | alumínium profilba ragasztva, vagy közvetlenül felületre | IP20 beltérben, IP54 – IP67 szilikonbevonattal | széles nyaláb 120° | `lum.strip` |
+| Hálózati feszültségű LED-szalag (230 V) | Rejtett és vonali | felületre, klipszekkel vagy profilban | IP65 – IP67 | széles nyaláb 120° | `lum.strip` |
+| Alumínium profil LED-szalaghoz | Rejtett és vonali | felületre, süllyesztve (falba, bútorba, gipszkartonba), sarokba vagy függesztve | IP20 (tömítéssel IP44 – IP65) | diffúz, lefelé | `lum.linear` |
+| LED neon flex | Rejtett és vonali | rögzítőklipszekkel vagy profilban, hajlítva | IP65 – IP68 | széles nyaláb 120° | `lum.strip` |
+| Rejtett (indirekt) világítás párkányban | Rejtett és vonali | gipszkarton párkány, koronaléc vagy kazetta mögé rejtve | IP20 | aszimmetrikus | `lum.strip` |
+| Keret nélküli (trimless) beépítés | Rejtett és vonali | gipszkartonba vagy vakolatba beépítve és a felülettel egy síkba glettelve | IP20 | keskeny nyaláb 36° | `lum.spot` |
+| Árnyékfuga- és lábazatvilágítás | Rejtett és vonali | a padló és a fal találkozásánál, árnyékfugába vagy szegélyprofilba | IP20 – IP44 | aszimmetrikus | `lum.strip` |
+| Konyhai pult alatti világítás | Bútor és beépített | a felső konyhaszekrények alá, a fal közelébe | IP20 – IP44 | diffúz, lefelé | `lum.linear` |
+| Szekrény- és gardróbvilágítás | Bútor és beépített | a szekrény belső tetejére, oldalára vagy a ruharúdba | IP20 | diffúz, lefelé | `lum.strip` |
+| Polc- és vitrinvilágítás | Bútor és beépített | polc elejébe vagy aljába, üvegpolc élébe, vitrin tetejébe | IP20 | keskeny nyaláb 40° | `lum.strip` |
+| Bútorspot | Bútor és beépített | bútorba süllyesztve vagy felületre szerelve | IP20 – IP44 | keskeny nyaláb 45° | `lum.spot` |
+| Ágy alatti orientációs fény | Bútor és beépített | az ágy keretének aljára | IP20 | aszimmetrikus | `lum.strip` |
+| Lépcsőfokba épített világítás | Bútor és beépített | minden lépcsőfok élébe vagy alá profilban | IP20 – IP44 | aszimmetrikus | `lum.strip` |
 | Fürdőszobai mennyezeti lámpa | Nedves helyiség | mennyezetre, felületre szerelve | legalább IP44 (zónától függően több) | diffúz, lefelé | `lum.general` |
 | Fürdőszobai beépíthető spot | Nedves helyiség | álmennyezetbe süllyesztve | IP44 – IP65 alulról | széles nyaláb 60° | `lum.spot` |
 | Tükörvilágítás | Nedves helyiség | tükör fölé vagy mellé, falra; vagy a tükörbe építve | legalább IP44 | aszimmetrikus | `lum.wall` |
 | Páramentes lámpatest | Nedves helyiség | mennyezetre vagy falra, felületre szerelve, csatokkal zárt burkolattal | IP65 | diffúz, lefelé | `lum.linear` |
 | Hajólámpa | Nedves helyiség | falra vagy mennyezetre, felületre szerelve | IP54 – IP65 | minden irányba | `lum.outdoor` |
 | Szaunavilágítás | Nedves helyiség | a szauna falára vagy mennyezetére, sokszor fa takarás mögé | IP44 vagy több | diffúz, lefelé | `lum.general` |
+| Kültéri falikar | Kültéri | homlokzatra, a bejárat, terasz, garázs mellé | IP44 – IP65 | főleg le, részben fel | `lum.outdoor` |
+| Mozgásérzékelős reflektor | Kültéri | homlokzatra, eresz alá, oszlopra | IP65 | széles nyaláb 100° | `lum.flood` |
+| Kerti oszloplámpa (bollard) | Kültéri | talajba betonozott alapra vagy rögzítőtüskére, 30–100 cm magasan | IP44 – IP65 | minden irányba | `lum.outdoor` |
+| Leszúrható kerti spot | Kültéri | a földbe szúrt tüskére, irányítható fejjel | IP65 – IP67 | keskeny nyaláb 36° | `lum.outdoor` |
+| Földbe süllyesztett lámpa (uplight) | Kültéri | a talajba, burkolatba vagy teraszba süllyesztve, a fedőlap a felülettel egy síkban | IP67 – IP68 | felfelé (uplight) 30° | `lum.outdoor` |
+| Homlokzat-megvilágító | Kültéri | a homlokzat előtt a talajra, a homlokzat aljára vagy tetejére | IP65 – IP67 | aszimmetrikus | `lum.flood` |
+| Medencevilágítás | Kültéri | a medence falába beépítve vagy a falra szerelve, víz alatt | IP68 | széles nyaláb 90° | `lum.outdoor` |
+| Napelemes kerti lámpa | Kültéri | leszúrva vagy felcsavarozva, vezeték nélkül | IP44 – IP65 | minden irányba | `lum.outdoor` |
+| Kapuoszlop- és pillérlámpa | Kültéri | a kapuoszlop vagy a kerítéspillér tetejére | IP44 – IP65 | minden irányba | `lum.outdoor` |
+| Kültéri fényfüzér | Kültéri | kifeszítve teraszon, pergolán, fák között; acélsodronyra függesztve | IP44 – IP65 | minden irányba | `lum.outdoor` |
+| Előtető- és teraszmennyezeti lámpa | Kültéri | az előtető, az eresz vagy a terasz mennyezetébe süllyesztve vagy felületre | IP44 – IP65 | széles nyaláb 80° | `lum.spot` |
 
 ## 1. Mennyezeti
 
@@ -545,6 +569,360 @@ A falfelületet egyenletesen „mosó” vagy súrolófényben kirajzoló, aszim
 - **Keresőszavak:** HU: wall washer LED · falmosó lámpatest — EN: LED wall washer · wall grazer — DE: Wandfluter LED
 - **Hol kapható:** Világítástechnikai szaküzlet.
 
+## 3. Rejtett és vonali
+
+### LED-szalag (12 / 24 V)
+
+*Más néven:* LED szalag, LED strip, COB szalag, SMD szalag
+
+![LED-szalag (12 / 24 V)](svg/led-szalag.svg)
+
+Hajlékony nyomtatott áramkör, rajta sűrűn LED-ek; törpefeszültségű tápegységről működik, méterenként vágható. A COB-szalagon a LED-ek pontjai nem látszanak, folytonos fénycsíkot ad. Szinte minden rejtett és vonali világítás alapja.
+
+- **Szerelés:** alumínium profilba ragasztva, vagy közvetlenül felületre
+- **Fényforrás:** SMD vagy COB LED-ek a szalagon; egyszínű, hangolható fehér (CCT), RGB, RGBW
+- **Védettség:** IP20 beltérben, IP54 – IP67 szilikonbevonattal · III. érintésvédelmi osztály (SELV), a tápegység II.
+- **Fény:** méterenként 300–2000 lm · 2700–6500 K vagy hangolható · Ra ≥ 90 ajánlott (olcsó szalagnál 80 alatti is van) · kb. 120°
+- **Vezérlés:** PWM-vezérlő a tápegység után: nyomógomb, rádiós (Zigbee, Wi-Fi), DALI vagy 1–10 V bemenetű vezérlő (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - A szalag melegszik: alumínium profilba ragasztva marad tartós; a profil hűtőborda is.
+  - Feszültségesés: 24 V-os szalagot nagyjából 5 m-enként érdemes táplálni (12 V-osat sűrűbben), hosszú szakaszt két végéről vagy középről.
+  - A tápegység teljesítménye a szalag teljesítményénél 20–30 %-kal nagyobb legyen; hozzáférhető, szellőző helyre.
+  - Csak a jelölt vágási pontokon vágható; a csatlakozás forrasztva vagy gyári csatlakozóval.
+- **Rögzítés:** Forgácslapcsavar, Gipszkarton csavar, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60598-2-21 (LED-szalag mint lámpatest), a tápegységre MSZ EN 61347
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** konyha, nappali rejtett fénye, lépcső, bútor, polc, tükör, kert (IP-s kivitel)
+- **Buktatók:**
+  - Profil nélkül a ragasztó elenged és a LED-ek hamar öregednek.
+  - Az egy ponton táplált hosszú szalag vége halványabb és sárgább.
+  - Az olcsó szalag színe tételenként eltér: egy helyiségbe egy tételből.
+- **Rokon típusok:** Alumínium profil LED-szalaghoz, LED neon flex, Hálózati feszültségű LED-szalag (230 V), Rejtett (indirekt) világítás párkányban
+- **Keresőszavak:** HU: LED szalag 24V CRI90 · COB LED szalag · LED tápegység 24V — EN: 24V LED strip CRI 90 · COB LED strip · 24V LED driver — DE: LED Streifen 24V CRI90 · COB LED Streifen · LED Netzteil 24V
+- **Hol kapható:** Villamossági nagykereskedés, LED-szaküzlet.
+
+### Hálózati feszültségű LED-szalag (230 V)
+
+*Más néven:* 230V LED szalag, high voltage LED strip
+
+![Hálózati feszültségű LED-szalag (230 V)](svg/led-szalag-230v.svg)
+
+Tápegység nélkül, közvetlenül 230 V-ról működő szalag; hosszú szakaszok (akár 50 m) táplálhatók egy pontról, de csak nagyobb, 0,5–1 m-es egységekben vágható, és a feszültség miatt másképp kell kezelni.
+
+- **Szerelés:** felületre, klipszekkel vagy profilban
+- **Fényforrás:** LED-ek egyenirányítóval, szilikonbevonatban
+- **Védettség:** IP65 – IP67 · II. érintésvédelmi osztály a gyártó szerint
+- **Fény:** méterenként 500–1500 lm · 2700–6500 K · Ra ≥ 80 · kb. 120°
+- **Vezérlés:** kapcsolt; dimmelhető kivitel fázishasításos dimmerrel (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - Csak a gyártó saját betápláló kábelével és végzáró sapkájával: a szalag érintésre veszélyes feszültségen van.
+  - Hálózati áramkör áram-védőkapcsolóval.
+  - Nem vágható tetszőlegesen: csak a jelölt egységhatáron.
+- **Rögzítés:** Nylon terpesztődübel, Forgácslapcsavar, Beton
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** kültéri kontúr, eresz, hosszú korlát, csarnok
+- **Buktatók:**
+  - Sérült szigetelésű vagy rosszul lezárt végű szalag áramütésveszélyes.
+  - Az egyenirányító miatt villódzhat (100 Hz).
+- **Rokon típusok:** LED-szalag (12 / 24 V), LED neon flex
+- **Keresőszavak:** HU: 230V LED szalag · hálózati LED szalag betápláló — EN: 230V LED strip · high voltage LED strip — DE: 230V LED Streifen · Hochvolt LED Band
+- **Hol kapható:** LED-szaküzlet, villamossági nagykereskedés.
+
+### Alumínium profil LED-szalaghoz
+
+*Más néven:* LED profil, LED alu profil, sarokprofil, süllyesztett profil
+
+![Alumínium profil LED-szalaghoz](svg/led-profil.svg)
+
+Alumínium sín búrával (opál, félig áttetsző vagy víztiszta), amely tartja és hűti a LED-szalagot, és a fényét egyenletes csíkká szórja. A szalagból így vonali lámpatest lesz.
+
+- **Szerelés:** felületre, süllyesztve (falba, bútorba, gipszkartonba), sarokba vagy függesztve
+- **Fényforrás:** LED-szalag (12 / 24 V)
+- **Védettség:** IP20 (tömítéssel IP44 – IP65) · III. érintésvédelmi osztály (SELV)
+- **Fény:** a szalagtól függ; az opál búra 10–30 %-ot elnyel · a szalagtól függ · a szalagtól függ · opál búrával szórt, víztisztával a szalagé
+- **Vezérlés:** mint a LED-szalagé (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - Egyenletes fénycsíkhoz a szalag és az opál búra közti távolság számít: mélyebb profil vagy COB-szalag kell, ha nem lehet pöttyös.
+  - Süllyesztett profilnál a horony a profil méretére, a glettelés előtt.
+  - A vezeték bevezetése a profil végén vagy hátulján: a végzáró és a kábelfurat előre.
+- **Rögzítés:** Gipszkarton, Gipszkarton csavar, Forgácslapcsavar, OSB és forgácslap, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** konyhapult, lépcső, bútor, fal- és mennyezeti fénycsík
+- **Buktatók:**
+  - A víztiszta búrán át a LED-pontok tükröződnek a fényes felületeken.
+- **Rokon típusok:** LED-szalag (12 / 24 V), Keret nélküli (trimless) beépítés, Konyhai pult alatti világítás
+- **Keresőszavak:** HU: LED alu profil opál búrával · süllyesztett LED profil · sarok LED profil — EN: aluminium LED profile with diffuser · recessed LED profile · corner LED profile — DE: LED Aluprofil mit Abdeckung · Einbauprofil LED · Eckprofil LED
+- **Hol kapható:** LED-szaküzlet, villamossági nagykereskedés.
+
+### LED neon flex
+
+*Más néven:* neon flex, szilikon LED cső, LED neon
+
+![LED neon flex](svg/neon-flex.svg)
+
+Tömör, szilikon testű, hajlítható LED-szalag, amely folytonos, neoncsőszerű fénycsíkot ad. Íveket, betűket, kontúrokat lehet vele rajzolni; kültérre is jó.
+
+- **Szerelés:** rögzítőklipszekkel vagy profilban, hajlítva
+- **Fényforrás:** LED-ek szilikontestben (12 / 24 V, ritkán 230 V)
+- **Védettség:** IP65 – IP68 · III. érintésvédelmi osztály (törpefeszültségű kivitel)
+- **Fény:** méterenként 100–800 lm · 2700–6500 K vagy színes · Ra ≥ 80 · felülnéző vagy oldalnéző, egyes típusok 360°
+- **Vezérlés:** mint a LED-szalagé (vonalak: 2,4 GHz sáv, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A legkisebb hajlítási sugarat és a hajlítás irányát (oldalra vagy felfelé) a típus adja meg.
+  - A vágási pontok ritkábbak; a végeket szilikonnal és gyári sapkával kell zárni.
+- **Rögzítés:** Nylon terpesztődübel, Forgácslapcsavar, Beton
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** díszvilágítás, felirat, lépcső élfénye, kert, medence széle
+- **Buktatók:**
+  - A rosszul lezárt vég beázik.
+- **Rokon típusok:** LED-szalag (12 / 24 V), Hálózati feszültségű LED-szalag (230 V)
+- **Keresőszavak:** HU: LED neon flex 24V · szilikon LED szalag — EN: LED neon flex 24V · silicone LED neon — DE: LED Neon Flex 24V · Silikon LED Schlauch
+- **Hol kapható:** LED-szaküzlet.
+
+### Rejtett (indirekt) világítás párkányban
+
+*Más néven:* indirekt világítás, koronaléc világítás, gipszkarton párkány fény, kazettás fény
+
+![Rejtett (indirekt) világítás párkányban](svg/rejtett-parkany.svg)
+
+A LED-szalag a mennyezet széle mentén egy párkány vagy léc mögé kerül, és a fényt a mennyezetre és a falra veti; a fényforrás nem látszik, csak a megvilágított felület. Lágy hangulat- és alapfény.
+
+- **Szerelés:** gipszkarton párkány, koronaléc vagy kazetta mögé rejtve
+- **Fényforrás:** LED-szalag profilban
+- **Védettség:** IP20 · III. érintésvédelmi osztály (SELV)
+- **Fény:** méterenként 600–1500 lm a kívánt fényerőtől függően · 2700–3000 K · Ra ≥ 90 · aszimmetrikus, a mennyezet felé
+- **Vezérlés:** dimmelt: DALI, 1–10 V, rádiós vezérlő (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - A párkány méreteit (magasság, kinyúlás) a szalaggal együtt kell tervezni a szárazépítővel.
+  - A szalag ne látsszon a helyiség egyik pontjáról se; a fény ne vágjon éles csíkot a mennyezetre.
+  - A tápegységnek hozzáférhető hely: revíziós nyílás vagy a párkány bontható része.
+- **Rögzítés:** Gipszkarton, Gipszkarton csavar, Forgácslapcsavar
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** nappali, hálószoba, előtér
+- **Buktatók:**
+  - Egyenetlen mennyezeten a súroló fény minden hibát kiemel.
+  - Túl közel a mennyezethez forró, foltos csík lesz.
+- **Rokon típusok:** LED-szalag (12 / 24 V), Alumínium profil LED-szalaghoz, Világító mennyezet
+- **Keresőszavak:** HU: indirekt világítás gipszkarton párkány · rejtett LED világítás — EN: cove lighting · indirect LED lighting — DE: Lichtvoute · indirekte Beleuchtung LED
+- **Hol kapható:** LED-szaküzlet, szárazépítő anyagkereskedés.
+
+### Keret nélküli (trimless) beépítés
+
+*Más néven:* trimless spot, bevakolható profil, keret nélküli downlight
+
+![Keret nélküli (trimless) beépítés](svg/trimless.svg)
+
+A spot vagy a profil pereme a gipszkarton vagy a vakolat alá kerül, és a felülettel egy síkba glettelik; a mennyezeten csak a fénynyílás látszik, keret nem.
+
+- **Szerelés:** gipszkartonba vagy vakolatba beépítve és a felülettel egy síkba glettelve
+- **Fényforrás:** integrált LED vagy cserélhető modul (GU10, MR16) a beépítő házban
+- **Védettség:** IP20 · a lámpatesttől függően
+- **Fény:** a betéttől függ · 2700–4000 K · Ra ≥ 90 · a betéttől függ
+- **Vezérlés:** a betéttől függ; gyakran DALI vagy fázishasításos dimmelés (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - A beépítő házat a gipszkarton szerelése közben kell elhelyezni, a glettelés és a festés előtt: ezt a szárazépítővel és a festővel egyeztetni kell.
+  - A betétnek cserélhetőnek kell maradnia alulról.
+  - A pontos kivágás a gyártói sablonnal.
+- **Rögzítés:** Gipszkarton, Gipszkarton körkivágó, Gipszkarton csavar
+- **Előírás:** MSZ EN 60598-2-2
+- **Rajzjel:** `lum.spot` (Rajztár)
+- **Hova:** nappali, galéria, igényes belsőépítészet
+- **Buktatók:**
+  - Utólag nem lehet trimless-re cserélni: a glettelés előtt dől el.
+  - A ház mögötti tér nem lehet szigeteléssel betöltve, ha a lámpa nem arra minősített.
+- **Rokon típusok:** Süllyesztett downlight, Alumínium profil LED-szalaghoz, Mágneses sín 48 V
+- **Keresőszavak:** HU: trimless spot gipszkartonba · bevakolható LED profil — EN: trimless downlight plaster-in · plaster-in LED profile — DE: Trimless Einbaustrahler · Einputzprofil LED
+- **Hol kapható:** Világítástechnikai szaküzlet.
+
+### Árnyékfuga- és lábazatvilágítás
+
+*Más néven:* padlószegély fény, lebegő hatás, árnyékfuga LED
+
+![Árnyékfuga- és lábazatvilágítás](svg/arnyekfuga.svg)
+
+A padló menti fugában vagy szegélylécben futó LED-szalag lefelé, a padlóra világít; a fal „lebeg”, és éjszakai tájékozódó fényként is szolgál.
+
+- **Szerelés:** a padló és a fal találkozásánál, árnyékfugába vagy szegélyprofilba
+- **Fényforrás:** LED-szalag profilban
+- **Védettség:** IP20 – IP44 · III. érintésvédelmi osztály (SELV)
+- **Fény:** méterenként 100–400 lm · 2700–3000 K · Ra ≥ 80 · aszimmetrikus, a padló felé
+- **Vezérlés:** kapcsolt, mozgásérzékelővel vagy okos vezérléssel; éjszakai fokozat (vonalak: 2,4 GHz sáv, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A profilt a burkolással és a falszerkezettel együtt kell tervezni.
+  - A padlófelmosás vize ne érje a szalagot: tömített kivitel.
+- **Rögzítés:** Gipszkarton, Forgácslapcsavar, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** folyosó, hálószoba, fürdő, lépcső
+- **Buktatók:**
+  - A fényes padló tükrözi a szalagot.
+- **Rokon típusok:** LED-szalag (12 / 24 V), Falba süllyesztett lépcső- és orientációs fény, Ágy alatti orientációs fény
+- **Keresőszavak:** HU: LED szegélyprofil · árnyékfuga világítás — EN: LED skirting light · shadow gap lighting — DE: LED Sockelleiste · Schattenfuge Beleuchtung
+- **Hol kapható:** LED-szaküzlet, burkolóanyag-kereskedés.
+
+## 4. Bútor és beépített
+
+### Konyhai pult alatti világítás
+
+*Más néven:* pultvilágítás, felső szekrény alatti lámpa, konyhai munkafény
+
+![Konyhai pult alatti világítás](svg/pult-alatti.svg)
+
+A munkalapot a felső szekrények aljából megvilágító vonali fény: profilos LED-szalag vagy lapos LED-lámpatest. A mennyezeti lámpától a munkavégző test árnyékot vet; ez a fény azt szünteti meg.
+
+- **Szerelés:** a felső konyhaszekrények alá, a fal közelébe
+- **Fényforrás:** LED-szalag profilban vagy integrált LED-es pultvilágító
+- **Védettség:** IP20 – IP44 · III. érintésvédelmi osztály (SELV) vagy II.
+- **Fény:** méterenként 400–1200 lm · 3000–4000 K · Ra ≥ 90 (az étel színe) · lefelé, a munkalapra
+- **Vezérlés:** falikapcsoló, a profilba épített kézlegyintéses vagy érintő kapcsoló, okos vezérlés (vonalak: 2,4 GHz sáv, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A fényt a szekrény elülső széléhez közel, a fal felé irányítva: így a fényes csempe nem tükröz.
+  - A tápegység a felső szekrény fölé vagy mögé, hozzáférhetően; a kiállás helye a konyhatervből.
+  - A vezetékeket a konyhabútor szerelése előtt kell kivezetni.
+- **Rögzítés:** OSB és forgácslap, Forgácslapcsavar
+- **Előírás:** MSZ EN 60598-2-21 / -2-1
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** konyha, kamra, mosókonyha
+- **Buktatók:**
+  - A fényes csempén és a munkalapon a LED-pontok tükröződnek: opál búra.
+  - A kézlegyintéses kapcsoló a pára és a gőz miatt tévesen is kapcsolhat.
+- **Rokon típusok:** Alumínium profil LED-szalaghoz, LED-szalag (12 / 24 V), Polc- és vitrinvilágítás
+- **Keresőszavak:** HU: pult alatti LED világítás · LED profil konyhába érintőkapcsolós — EN: under cabinet LED lighting · kitchen LED profile with touch switch — DE: Unterbauleuchte LED Küche · LED Profil mit Sensor
+- **Hol kapható:** LED-szaküzlet, konyhabútor-szerelő.
+
+### Szekrény- és gardróbvilágítás
+
+*Más néven:* gardróbvilágítás, ajtókapcsolós szekrényfény, akkus szekrénylámpa
+
+![Szekrény- és gardróbvilágítás](svg/szekreny-vilagitas.svg)
+
+A szekrény belsejét az ajtó nyitásakor bekapcsoló fény: profilos LED-szalag, LED-es ruharúd vagy kis lámpatest, ajtókapcsolóval vagy mozgásérzékelővel; vezeték nélküli helyen akkus kivitelben.
+
+- **Szerelés:** a szekrény belső tetejére, oldalára vagy a ruharúdba
+- **Fényforrás:** LED-szalag, LED-es ruharúd, akkus LED-lámpa
+- **Védettség:** IP20 · III. érintésvédelmi osztály (SELV)
+- **Fény:** 100–600 lm · 3000–4000 K · Ra ≥ 90 (a ruha színe) · lefelé, a polcokra
+- **Vezérlés:** ajtókapcsoló, mozgásérzékelő (vonalak: Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A tápegység a szekrény tetején vagy mögötte; a kiállást a gardróbtervhez kell igazítani.
+  - A szalag ne melegítse a ruhát: profilban.
+- **Rögzítés:** OSB és forgácslap, Forgácslapcsavar
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** gardrób, beépített szekrény, kamra
+- **Buktatók:**
+  - Az akkus lámpa kényelmes, de rendszeres töltést kér.
+- **Rokon típusok:** Konyhai pult alatti világítás, Alumínium profil LED-szalaghoz
+- **Keresőszavak:** HU: szekrényvilágítás mozgásérzékelős · LED ruharúd · ajtókapcsoló LED-hez — EN: wardrobe light with sensor · LED wardrobe rail · door switch for LED — DE: Schrankbeleuchtung mit Sensor · LED Kleiderstange · Türkontaktschalter LED
+- **Hol kapható:** Bútorvasalat-kereskedés, LED-szaküzlet.
+
+### Polc- és vitrinvilágítás
+
+*Más néven:* vitrinvilágítás, üvegpolc világítás, könyvespolc fény
+
+![Polc- és vitrinvilágítás](svg/polc-vitrin.svg)
+
+A polcon vagy a vitrinben lévő tárgyakat kiemelő fény: keskeny LED-profil, az üvegpolc élét megvilágító fény vagy mini spot. Kis fényerő, jó színvisszaadás.
+
+- **Szerelés:** polc elejébe vagy aljába, üvegpolc élébe, vitrin tetejébe
+- **Fényforrás:** LED-szalag profilban, bútorspot
+- **Védettség:** IP20 · III. érintésvédelmi osztály (SELV)
+- **Fény:** méterenként 100–500 lm · 2700–3000 K · Ra ≥ 90 · keskeny vagy szórt
+- **Vezérlés:** kapcsolt, dimmelt; a vitrin érintőkapcsolója (vonalak: Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - A vezetékeket a bútor gyártása közben kell elvezetni; utólag csak kábelcsatornával.
+  - Üvegpolcnál a fény az él felől jut be: a polc tartóiba épített LED-del.
+- **Rögzítés:** Forgácslapcsavar, OSB és forgácslap
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** nappali, könyvtár, bemutatótér
+- **Buktatók:**
+  - Tükröződés az üvegen: a fény irányát a nézőponthoz kell igazítani.
+- **Rokon típusok:** Bútorspot, Konyhai pult alatti világítás
+- **Keresőszavak:** HU: vitrin LED világítás · üvegpolc LED — EN: cabinet display lighting · glass shelf LED — DE: Vitrinenbeleuchtung LED · Glaskantenbeleuchtung
+- **Hol kapható:** Bútorvasalat-kereskedés, LED-szaküzlet.
+
+### Bútorspot
+
+*Más néven:* mini spot 12 V, bútorba süllyesztett spot, puck light
+
+![Bútorspot](svg/butorspot.svg)
+
+Kis, kerek LED-spot (12 / 24 V) bútorlapba süllyesztve, pult, polc, vitrin vagy mosdópult fölé.
+
+- **Szerelés:** bútorba süllyesztve vagy felületre szerelve
+- **Fényforrás:** integrált LED
+- **Védettség:** IP20 – IP44 · III. érintésvédelmi osztály (SELV)
+- **Fény:** 50–250 lm · 2700–4000 K · Ra ≥ 90 · 30–60°
+- **Vezérlés:** kapcsolt, dimmelt; elosztóval több spot egy tápegységről (vonalak: Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - Az elosztó és a csatlakozók egy gyártói rendszerből; a polaritás számít.
+  - A furat mélysége a bútorlap vastagságához: a forgácslap ne repedjen.
+- **Rögzítés:** Forgácslapcsavar, OSB és forgácslap
+- **Előírás:** MSZ EN 60598-2-2
+- **Rajzjel:** `lum.spot` (Rajztár)
+- **Hova:** konyha, fürdő mosdópultja, vitrin, ágy feletti polc
+- **Buktatók:**
+  - Sok kis spot sok kábel: a tápegység és az elosztó helye előre.
+- **Rokon típusok:** Polc- és vitrinvilágítás, Konyhai pult alatti világítás
+- **Keresőszavak:** HU: bútorspot 12V · LED mini spot bútorba — EN: 12V cabinet puck light · furniture spotlight — DE: Möbeleinbaustrahler 12V · LED Möbelspot
+- **Hol kapható:** Bútorvasalat-kereskedés, LED-szaküzlet.
+
+### Ágy alatti orientációs fény
+
+*Más néven:* ágyvilágítás mozgásérzékelővel, éjszakai ágyfény
+
+![Ágy alatti orientációs fény](svg/agy-alatti.svg)
+
+Az ágy aljára szerelt LED-szalag, amely felkeléskor mozgásérzékelőre halványan a padlóra világít; éjszakai tájékozódás anélkül, hogy a többi alvót felébresztené.
+
+- **Szerelés:** az ágy keretének aljára
+- **Fényforrás:** LED-szalag
+- **Védettség:** IP20 · III. érintésvédelmi osztály (SELV)
+- **Fény:** méterenként 50–200 lm · 2200–2700 K · Ra ≥ 80 · aszimmetrikus, lefelé
+- **Vezérlés:** mozgásérzékelő időzítéssel, alkonykapcsolóval (vonalak: 2,4 GHz sáv)
+- **Beépítés:**
+  - A tápegység a fali aljzatról; a kábel ne essen a lábak útjába.
+- **Rögzítés:** Fa, Forgácslapcsavar
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** hálószoba, gyerekszoba, idősek otthona
+- **Buktatók:**
+  - A túl erős vagy hideg fény felébreszt.
+- **Rokon típusok:** Árnyékfuga- és lábazatvilágítás, Falba süllyesztett lépcső- és orientációs fény
+- **Keresőszavak:** HU: ágyvilágítás mozgásérzékelős LED — EN: under bed motion sensor light — DE: Bettbeleuchtung mit Bewegungsmelder
+- **Hol kapható:** LED-szaküzlet, lakberendezési áruház.
+
+### Lépcsőfokba épített világítás
+
+*Más néven:* lépcsővezérlő LED, futófényes lépcső, lépcsőfok LED-profil
+
+![Lépcsőfokba épített világítás](svg/lepcsofok-vilagitas.svg)
+
+Minden fok alá vagy élébe épített LED-profil, amelyet egy lépcsővezérlő a lépcső aljára és tetejére tett érzékelőkre fokonként, „futva” kapcsol fel és le.
+
+- **Szerelés:** minden lépcsőfok élébe vagy alá profilban
+- **Fényforrás:** LED-szalag profilban, fokonként
+- **Védettség:** IP20 – IP44 · III. érintésvédelmi osztály (SELV)
+- **Fény:** fokonként 50–200 lm · 2700–3000 K · Ra ≥ 80 · aszimmetrikus, a fokra
+- **Vezérlés:** lépcsővezérlő mozgásérzékelőkkel (alul, felül), éjszakai alapfényerővel (vonalak: Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, 2,4 GHz sáv)
+- **Beépítés:**
+  - Fokonként külön vezeték a vezérlőig: a lépcső építése vagy burkolása előtt kell behúzni.
+  - A vezérlő és a tápegység hozzáférhető helyre (lépcső alatti tér, revíziós nyílás).
+- **Rögzítés:** Fa, Beton, Forgácslapcsavar, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60598-2-21
+- **Rajzjel:** `lum.strip` (Rajztár)
+- **Hova:** belső lépcső, pincelépcső, kültéri lépcső (IP-s kivitel)
+- **Buktatók:**
+  - A fokonkénti vezetékezés utólag szinte lehetetlen.
+- **Rokon típusok:** Falba süllyesztett lépcső- és orientációs fény, Alumínium profil LED-szalaghoz
+- **Keresőszavak:** HU: lépcsővezérlő LED · lépcső világítás futófény — EN: LED stair light controller · stair lighting sequential — DE: Treppenlichtsteuerung LED · Lauflicht Treppe
+- **Hol kapható:** LED-szaküzlet.
+
 ## 6. Nedves helyiség
 
 ### Fürdőszobai mennyezeti lámpa
@@ -706,3 +1084,298 @@ A szauna hőmérsékletére minősített, magas hőállóságú, nedvességáll�
 - **Rokon típusok:** Fürdőszobai mennyezeti lámpa
 - **Keresőszavak:** HU: szauna lámpa hőálló · szauna LED világítás — EN: sauna light heat resistant · sauna LED lighting — DE: Saunaleuchte · Sauna LED Beleuchtung
 - **Hol kapható:** Szaunaszaküzlet, wellness-forgalmazó.
+
+## 7. Kültéri
+
+### Kültéri falikar
+
+*Más néven:* homlokzati lámpa, bejárati lámpa, kültéri fali lámpa
+
+![Kültéri falikar](svg/kulteri-falikar.svg)
+
+Az időjárásnak ellenálló, legalább IP44-es fali lámpatest a bejárat, a terasz és a homlokzat világítására; sokszor mozgásérzékelővel vagy alkonykapcsolóval.
+
+- **Szerelés:** homlokzatra, a bejárat, terasz, garázs mellé
+- **Fényforrás:** E27 foglalat vagy integrált LED
+- **Védettség:** IP44 – IP65 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 300–1200 lm · 2700–3000 K · Ra ≥ 80 · kivitel szerint lefelé, fel-le vagy minden irányba
+- **Vezérlés:** kapcsolt, mozgásérzékelő, alkonykapcsoló, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Hőszigetelt homlokzaton távtartó rögzítő vagy a szigeteléskor beépített szerelőelem kell.
+  - A kábel bevezetése alulról, tömszelencével; a falon átvezetett kábel mögött tömítés.
+  - A kültéri áramkört áram-védőkapcsoló védje.
+- **Rögzítés:** Hőszigetelt homlokzat, Rögzítő hőszigetelt homlokzathoz, Tömör tégla, Üreges kerámia falazóblokk, Nylon terpesztődübel
+- **Előírás:** MSZ HD 60364-7-714 (kültéri világítás), MSZ EN 60598-2-1
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** bejárat, terasz, garázskapu, homlokzat
+- **Buktatók:**
+  - A szomszéd ablakába vagy az utcára vakító lámpa zavar; lefelé irányított, árnyékolt fény jobb.
+  - Fekete fémház napon nagyon felmelegszik.
+- **Rokon típusok:** Mozgásérzékelős reflektor, Előtető- és teraszmennyezeti lámpa, Hajólámpa
+- **Keresőszavak:** HU: kültéri falilámpa IP54 mozgásérzékelős · homlokzati lámpa — EN: outdoor wall light IP54 with sensor — DE: Außenwandleuchte IP54 mit Bewegungsmelder
+- **Hol kapható:** Villamossági nagykereskedés, barkácsáruház, lámpaszaküzlet.
+
+### Mozgásérzékelős reflektor
+
+*Más néven:* LED fényvető, kültéri reflektor, projektor lámpa
+
+![Mozgásérzékelős reflektor](svg/reflektor.svg)
+
+Nagy fényerejű LED-fényvető széles nyalábbal, udvarok, kocsibeállók, kertek megvilágítására; gyakran beépített vagy külön mozgásérzékelővel.
+
+- **Szerelés:** homlokzatra, eresz alá, oszlopra
+- **Fényforrás:** integrált LED
+- **Védettség:** IP65 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 1000–10 000 lm · 3000–5000 K · Ra ≥ 70 – 80 · 90–120°
+- **Vezérlés:** mozgásérzékelő (PIR), alkonykapcsoló, időzítés, kamera-rendszerhez kötve (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Az érzékelőt az elhaladás irányára keresztben érdemes tájolni, mert úgy érzékel legjobban.
+  - A fényvetőt lefelé kell dönteni: vízszintesen vakít és a szomszédba világít.
+  - Hőszigetelt homlokzaton távtartó rögzítő.
+- **Rögzítés:** Rögzítő hőszigetelt homlokzathoz, Tömör tégla, Beton, Nylon terpesztődübel
+- **Előírás:** MSZ HD 60364-7-714
+- **Rajzjel:** `lum.flood` (Rajztár)
+- **Hova:** udvar, kocsibeálló, kert, raktár
+- **Buktatók:**
+  - A fák, az autók és a meleg levegő mozgása téves kapcsolást okozhat.
+  - A túl erős fényvető fényszennyezés.
+- **Rokon típusok:** Kültéri falikar, Homlokzat-megvilágító
+- **Keresőszavak:** HU: LED reflektor mozgásérzékelős 30W — EN: LED floodlight with PIR sensor — DE: LED Strahler mit Bewegungsmelder
+- **Hol kapható:** Villamossági nagykereskedés, barkácsáruház.
+
+### Kerti oszloplámpa (bollard)
+
+*Más néven:* állólámpa kertbe, kerti oszlop, útszéli lámpa
+
+![Kerti oszloplámpa (bollard)](svg/bollard.svg)
+
+Alacsony, oszlop formájú kültéri lámpa, amely a járdát, az utat és a kert szegélyét világítja meg alacsony fénypontból, kevés vakítással.
+
+- **Szerelés:** talajba betonozott alapra vagy rögzítőtüskére, 30–100 cm magasan
+- **Fényforrás:** E27 foglalat vagy integrált LED
+- **Védettség:** IP44 – IP65 · IK08 – IK10 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 200–1000 lm · 2700–3000 K · Ra ≥ 80 · kivitel szerint oldalra és lefelé, vagy minden irányba
+- **Vezérlés:** alkonykapcsoló, időzítés, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Földkábelt (pl. NYY-J) védőcsőben vagy homokágyban, jelzőszalaggal; a fektetési mélységet az előírás adja.
+  - A talp betonalapba vagy gyári rögzítőtüskére; a kábelvég a talpban hozzáférhetően.
+  - Kerti áramkör áram-védőkapcsolóval.
+- **Rögzítés:** Beton, Csavaros terpesztő horgony, Betoncsavar
+- **Előírás:** MSZ HD 60364-7-714
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** kerti út, kocsibeálló széle, bejárati járda
+- **Buktatók:**
+  - A fűnyíró és a hó eltolás megüti: ütésálló kivitel és jól látható hely.
+- **Rokon típusok:** Leszúrható kerti spot, Napelemes kerti lámpa, Kapuoszlop- és pillérlámpa
+- **Keresőszavak:** HU: kerti oszloplámpa LED · földkábel NYY-J — EN: garden bollard light · underground cable — DE: Pollerleuchte · Erdkabel NYY-J
+- **Hol kapható:** Villamossági nagykereskedés, kerti világítás szaküzlet.
+
+### Leszúrható kerti spot
+
+*Más néven:* kerti spot, tüskés spot, fa megvilágító
+
+![Leszúrható kerti spot](svg/kerti-spot.svg)
+
+Tüskére szerelt, irányítható kis fényvető fák, bokrok, szobrok, homlokzati elemek megvilágítására; sokszor törpefeszültségű (12 / 24 V) rendszer, amelyet a kertben szabadon át lehet rendezni.
+
+- **Szerelés:** a földbe szúrt tüskére, irányítható fejjel
+- **Fényforrás:** GU10, MR16 vagy integrált LED
+- **Védettség:** IP65 – IP67 · III. (törpefeszültségű) vagy I. érintésvédelmi osztály
+- **Fény:** 100–600 lm · 2700–3000 K · Ra ≥ 80 · 15–60°
+- **Vezérlés:** alkonykapcsoló, időzítés, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Törpefeszültségű rendszernél a transzformátor beltérben vagy védett helyen; a kábel feszültségesése hosszú vonalon számít.
+  - 230 V-os spotnál földkábel és földbe szánt kötődoboz kell.
+- **Rögzítés:** Beton
+- **Előírás:** MSZ HD 60364-7-714
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** kert, fák, sövény, homlokzati elemek
+- **Buktatók:**
+  - A felfelé irányított fény a szomszédot és az eget is világítja: pontos irányítás és árnyékoló.
+- **Rokon típusok:** Földbe süllyesztett lámpa (uplight), Kerti oszloplámpa (bollard)
+- **Keresőszavak:** HU: leszúrható kerti spot 12V · kerti világítás szett — EN: garden spike light 12V — DE: Erdspießstrahler 12V · Gartenbeleuchtung Set
+- **Hol kapható:** Kerti világítás szaküzlet, barkácsáruház.
+
+### Földbe süllyesztett lámpa (uplight)
+
+*Más néven:* inground lámpa, talajba süllyesztett spot, járható lámpa
+
+![Földbe süllyesztett lámpa (uplight)](svg/foldbe-sullyesztett.svg)
+
+A talajba süllyesztett, felfelé világító lámpatest fák, oszlopok, homlokzatok megvilágítására vagy irányfényként; járható, egyes típusok autóval is terhelhetők.
+
+- **Szerelés:** a talajba, burkolatba vagy teraszba süllyesztve, a fedőlap a felülettel egy síkban
+- **Fényforrás:** integrált LED
+- **Védettség:** IP67 – IP68 · IK08 – IK10 · III. vagy I. érintésvédelmi osztály
+- **Fény:** 100–1500 lm · 2700–3000 K · Ra ≥ 80 · 15–60° felfelé, vagy szórt irányfény
+- **Vezérlés:** alkonykapcsoló, időzítés, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Az aljzat alá vízelvezető kavicsréteg, hogy a lámpa ne álljon vízben.
+  - A tömszelencés kábelbevezetés gyári; a kötés földbe szánt kötőkészlettel.
+  - A fedőlap felülete forró lehet: ahol mezítláb járnak, arra minősített kivitel.
+- **Rögzítés:** Beton
+- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-13 (talajba süllyesztett lámpatestek)
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** terasz, kerti út, fák tövében, homlokzat előtt
+- **Buktatók:**
+  - Lefolyás nélküli helyen a lámpa megtelik vízzel.
+  - A felfelé világító fény könnyen vakít, ha a lámpa mellett járnak.
+- **Rokon típusok:** Leszúrható kerti spot, Homlokzat-megvilágító
+- **Keresőszavak:** HU: földbe süllyeszthető LED lámpa járható · inground spot IP67 — EN: inground uplight IP67 · walk-over light — DE: Bodeneinbaustrahler IP67 · befahrbar
+- **Hol kapható:** Kerti világítás szaküzlet, világítástechnikai szaküzlet.
+
+### Homlokzat-megvilágító
+
+*Más néven:* homlokzati fényvető, kültéri wall washer, díszvilágítás
+
+![Homlokzat-megvilágító](svg/homlokzat-fenyveto.svg)
+
+A homlokzatot vagy egy épületrészt egyenletesen, vagy súrolófénnyel megvilágító kültéri lámpatest; az épület formáját rajzolja ki éjszaka.
+
+- **Szerelés:** a homlokzat előtt a talajra, a homlokzat aljára vagy tetejére
+- **Fényforrás:** integrált LED
+- **Védettség:** IP65 – IP67 · I., II. vagy III. érintésvédelmi osztály
+- **Fény:** 500–5000 lm · 2700–4000 K · Ra ≥ 80 · aszimmetrikus, a fal felé
+- **Vezérlés:** alkonykapcsoló, időzítés, DALI vagy okos vezérlés (vonalak: DALI, 2,4 GHz sáv)
+- **Beépítés:**
+  - A faltól mért távolság és a dőlésszög adja az egyenletességet: a gyártói ajánlás szerint.
+  - A felfelé világító fényt árnyékolóval kell az égbolttól elzárni.
+- **Rögzítés:** Rögzítő hőszigetelt homlokzathoz, Beton, Tömör tégla, Nylon terpesztődübel
+- **Előírás:** MSZ HD 60364-7-714
+- **Rajzjel:** `lum.flood` (Rajztár)
+- **Hova:** homlokzat, kerítés, kapu, támfal
+- **Buktatók:**
+  - Fényszennyezés: a fény ne lépje túl a megvilágítandó felületet.
+- **Rokon típusok:** Fali fényvető (wall washer), Mozgásérzékelős reflektor, Földbe süllyesztett lámpa (uplight)
+- **Keresőszavak:** HU: homlokzat megvilágító LED · kültéri wall washer — EN: facade lighting LED · outdoor wall washer — DE: Fassadenbeleuchtung LED · Außen Wandfluter
+- **Hol kapható:** Világítástechnikai szaküzlet.
+
+### Medencevilágítás
+
+*Más néven:* medence lámpa, víz alatti lámpa, pool light
+
+![Medencevilágítás](svg/medence.svg)
+
+A víz alatt dolgozó, teljesen vízmentes lámpatest a medence falában; törpefeszültségű, és a táplálását a medence zónáin kívül elhelyezett biztonsági transzformátor adja.
+
+- **Szerelés:** a medence falába beépítve vagy a falra szerelve, víz alatt
+- **Fényforrás:** integrált LED
+- **Védettség:** IP68 · III. érintésvédelmi osztály (SELV)
+- **Fény:** 500–3000 lm · fehér vagy RGB · Ra ≥ 70 · széles
+- **Vezérlés:** kapcsolt, RGB-vezérlő, a medencegépészet vezérlője (vonalak: 2,4 GHz sáv, 433 MHz sáv)
+- **Beépítés:**
+  - A medence zónáira (0, 1, 2) vonatkozó szabályok határozzák meg a feszültséget, a védettséget és a transzformátor helyét.
+  - A lámpa fészke és a kábelcső a medence építésekor kerül a falba: a medenceépítővel együtt kell tervezni.
+  - Egyenpotenciálú összekötés a medence fémrészeivel.
+- **Rögzítés:** Beton
+- **Előírás:** MSZ HD 60364-7-702 (úszómedencék)
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** kerti medence, beltéri medence, jakuzzi
+- **Buktatók:**
+  - A lámpacseréhez a lámpát a vízből ki kell tudni emelni: a kábelhossz tartalékot a fészekben kell hagyni.
+- **Rokon típusok:** LED neon flex, Földbe süllyesztett lámpa (uplight)
+- **Keresőszavak:** HU: medence lámpa 12V LED · medence transzformátor — EN: 12V LED pool light · pool light transformer — DE: Poolscheinwerfer 12V LED · Pool Trafo
+- **Hol kapható:** Medencetechnikai szaküzlet.
+
+### Napelemes kerti lámpa
+
+*Más néven:* szolár lámpa, napelemes leszúrható lámpa
+
+![Napelemes kerti lámpa](svg/napelemes.svg)
+
+Saját napelemmel és akkumulátorral működő kis kerti lámpa; nem kell vezeték, alkonykor magától kapcsol. Irányfénynek és díszítésnek jó, általános világításnak kevés.
+
+- **Szerelés:** leszúrva vagy felcsavarozva, vezeték nélkül
+- **Fényforrás:** integrált LED, akkumulátor, napelem
+- **Védettség:** IP44 – IP65 · III. (saját akkumulátor)
+- **Fény:** 5–300 lm · 2700–6000 K · jellemzően nem megadott · kivitel szerint
+- **Vezérlés:** beépített alkony- és mozgásérzékelő
+- **Beépítés:**
+  - Napos helyre, ahol a napelemet nem árnyékolja növény vagy épület; télen kevesebbet világít.
+- **Rögzítés:** Beton, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60598-2-1
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** kert, ágyásszegély, kerti út
+- **Buktatók:**
+  - Az akkumulátor néhány év után cserére szorul; az olcsó típusok télen alig világítanak.
+- **Rokon típusok:** Kerti oszloplámpa (bollard), Leszúrható kerti spot
+- **Keresőszavak:** HU: napelemes kerti lámpa — EN: solar garden light — DE: Solar Gartenleuchte
+- **Hol kapható:** Barkácsáruház, kertészeti áruház.
+
+### Kapuoszlop- és pillérlámpa
+
+*Más néven:* oszlopfej lámpa, pillérlámpa, kerítéslámpa
+
+![Kapuoszlop- és pillérlámpa](svg/kapuoszlop.svg)
+
+A kapuoszlop vagy a pillér tetejére szerelt lámpatest; a bejáratot jelöli és a házszámot, a kaput világítja meg.
+
+- **Szerelés:** a kapuoszlop vagy a kerítéspillér tetejére
+- **Fényforrás:** E27 foglalat vagy integrált LED
+- **Védettség:** IP44 – IP65 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 300–1000 lm · 2700–3000 K · Ra ≥ 80 · minden irányba
+- **Vezérlés:** alkonykapcsoló, időzítés, a kaputelefonnal vagy a kapunyitóval összekötve (vonalak: Hálózati 50 Hz, 433 MHz sáv)
+- **Beépítés:**
+  - A kábelt a pillér építésekor védőcsőben kell felvezetni.
+  - A pillér fedlapjába rögzítve; a kábelvég tömszelencén át.
+- **Rögzítés:** Beton, Zsalukő, Betoncsavar, Nylon terpesztődübel
+- **Előírás:** MSZ HD 60364-7-714
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** kapu, kerítés, kocsibejáró
+- **Buktatók:**
+  - Utólag a pilléren belül nehéz kábelt vezetni.
+- **Rokon típusok:** Kerti oszloplámpa (bollard), Kültéri falikar
+- **Keresőszavak:** HU: oszlopfej lámpa kapura · pillér lámpa — EN: gate pillar light · post top light — DE: Pfeilerleuchte · Mastaufsatzleuchte
+- **Hol kapható:** Lámpaszaküzlet, barkácsáruház.
+
+### Kültéri fényfüzér
+
+*Más néven:* kerti fényfüzér, party füzér, festoon lánc
+
+![Kültéri fényfüzér](svg/fenyfuzer.svg)
+
+Sorba kötött foglalatok vagy LED-ek egy kábelen, teraszok és kerti terek hangulatvilágítására; dugaszolós, ideiglenes és tartós kivitelben.
+
+- **Szerelés:** kifeszítve teraszon, pergolán, fák között; acélsodronyra függesztve
+- **Fényforrás:** E27 foglalatok vagy integrált LED
+- **Védettség:** IP44 – IP65 · II. vagy III. érintésvédelmi osztály
+- **Fény:** foglalatonként 50–300 lm · 2200–2700 K · Ra ≥ 80 · minden irányba
+- **Vezérlés:** kapcsolt kültéri aljzatról, időzítővel vagy okos aljzattal (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Tartós felszerelésnél acélsodronyra függesztve, hogy a kábel ne viselje a terhet.
+  - A kültéri aljzat legalább IP44-es, fedeles, áram-védőkapcsolóval védett körön.
+- **Rögzítés:** Fa, Tömör tégla, Nylon terpesztődübel, Menetes szár, metrikus csavar
+- **Előírás:** MSZ EN 60598-2-20 (fényfüzérek)
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** terasz, pergola, kert, rendezvénytér
+- **Buktatók:**
+  - Beltéri füzért kültérre tenni: tilos.
+- **Rokon típusok:** Napelemes kerti lámpa, Kültéri falikar
+- **Keresőszavak:** HU: kültéri fényfüzér E27 IP65 — EN: outdoor festoon lights IP65 — DE: Außen Lichterkette E27 IP65
+- **Hol kapható:** Barkácsáruház, lámpaszaküzlet.
+
+### Előtető- és teraszmennyezeti lámpa
+
+*Más néven:* kültéri downlight, eresz alatti lámpa, előtető lámpa
+
+![Előtető- és teraszmennyezeti lámpa](svg/terasz-mennyezeti.svg)
+
+Fedett kültéri mennyezetbe (előtető, terasz, loggia, eresz alja) szerelt, lefelé világító lámpatest; nedvesség és pára ellen védett kivitelben.
+
+- **Szerelés:** az előtető, az eresz vagy a terasz mennyezetébe süllyesztve vagy felületre
+- **Fényforrás:** integrált LED vagy GU10
+- **Védettség:** IP44 – IP65 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 300–1200 lm · 2700–3000 K · Ra ≥ 80 · 60–100°
+- **Vezérlés:** kapcsolt, mozgásérzékelő, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
+- **Beépítés:**
+  - Fa mennyezetbe (lambéria) a lámpa hőjét és a tűzvédelmet figyelembe véve.
+  - A pára a mennyezet mögött is lecsapódhat: tömített kivitel.
+- **Rögzítés:** Fa, OSB és forgácslap, Gipszkarton körkivágó, Beton
+- **Előírás:** MSZ HD 60364-7-714, MSZ EN 60598-2-2
+- **Rajzjel:** `lum.spot` (Rajztár)
+- **Hova:** terasz, előtető, loggia, kocsibeálló teteje
+- **Buktatók:**
+  - A rovarok a lámpa köré gyűlnek: melegebb színhőmérséklet kevésbé vonzza őket.
+- **Rokon típusok:** Süllyesztett downlight, Kültéri falikar
+- **Keresőszavak:** HU: kültéri beépíthető spot IP65 · eresz alatti LED lámpa — EN: outdoor soffit downlight IP65 — DE: Außen Einbaustrahler IP65 · Dachüberstand Leuchte
+- **Hol kapható:** Villamossági nagykereskedés, lámpaszaküzlet.

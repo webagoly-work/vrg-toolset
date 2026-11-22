@@ -6,16 +6,17 @@
 //             (fényáram, színhőmérséklet, színvisszaadás, sugárzási szög, védettség, foglalat).
 // The curve is GENERIC per distribution type (decision VT3), not a measured LDT / IES file of a product:
 //   lambert   diffuse downward (opal cover, panel)          wide · narrow   rotationally symmetric beam of `angle`°
+//   up        a beam of `angle`° straight up (in-ground uplight, facade uplight)
 //   general   all round (bare lamp, globe, chandelier)      updown          a narrow beam up and one down
 //   direct-indirect  mostly down, some up (pendant, sconce) asym            one side only (wall washer, picture light)
-//   batwing   peak off-axis, low glare below (office panel)
+//   batwing   peak off-axis, low glare below (office panel)   asym + upward: true = the one-sided lobe goes up (cove, facade uplight)
 // The beam angle is where the intensity falls to half (FWHM). Plain functions: Node and browser (window.KisokosLampaSvg).
 (function (root) {
   'use strict';
   const BG = '#0a141c', PANEL = '#121c24', LINE = 'rgba(232,240,246,.16)', TEXT = '#e8f0f6', DIM = '#a6afb7', FAINT = '#6f7880';
   const CURVE = '#f2dc8c', UP = '#93d3e6';
   const MONO = 'Cascadia Mono, Consolas, ui-monospace, monospace', SANS = 'Segoe UI, system-ui, sans-serif';
-  const TYPES = { lambert: 'diffúz, lefelé', wide: 'széles nyaláb', narrow: 'keskeny nyaláb', general: 'minden irányba', updown: 'fel és le', 'direct-indirect': 'főleg le, részben fel', asym: 'aszimmetrikus', batwing: 'denevérszárny (batwing)' };
+  const TYPES = { lambert: 'diffúz, lefelé', wide: 'széles nyaláb', narrow: 'keskeny nyaláb', general: 'minden irányba', updown: 'fel és le', up: 'felfelé (uplight)', 'direct-indirect': 'főleg le, részben fel', asym: 'aszimmetrikus', batwing: 'denevérszárny (batwing)' };
   const FAM = { 1: 'Mennyezeti', 2: 'Fali', 3: 'Rejtett és vonali', 4: 'Bútor és beépített', 5: 'Dugaszolós', 6: 'Nedves helyiség', 7: 'Kültéri', 8: 'Biztonsági és jelző', 9: 'Kereskedelmi és ipari', 10: 'Niche' };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const R = Math.PI / 180;
@@ -23,12 +24,14 @@
 
   // intensity (0..1) at angle t from nadir (0 = down, 180 = up), on the left (s = -1) or right (s = +1) side
   function intensity(d, t, s) {
+    if (d.type === 'asym' && d.upward && !d._f) return intensity({ ...d, _f: true }, 180 - t, s);   // asym, toward the ceiling
     const a = d.angle || 90;
     switch (d.type) {
       case 'lambert': return t < 90 ? Math.cos(t * R) : 0;
       case 'wide': case 'narrow': return beam(t, a);
       case 'general': return (0.72 + 0.28 * Math.cos(t * R)) * (t > 160 ? Math.max(0.25, 1 - (t - 160) / 26) : 1);
       case 'updown': return Math.max(beam(t, a), beam(180 - t, a));
+      case 'up': return beam(180 - t, a);
       case 'direct-indirect': return Math.max(t < 90 ? Math.pow(Math.cos(t * R), 1.4) : 0, t > 90 ? (d.up || 0.35) * Math.pow(Math.cos((180 - t) * R), 1.4) : 0);
       case 'batwing': return t < 90 ? Math.pow(Math.sin(2 * t * R), 0.9) * 0.75 + Math.cos(t * R) * 0.35 : 0;
       case 'asym': return s > 0 ? (t < 95 ? Math.pow(Math.max(0, Math.sin((t + 12) * R)), 1.6) * (t < 80 ? 1 : (95 - t) / 15) : 0) : (t < 40 ? 0.18 * Math.cos(t * 2 * R) : 0);
@@ -53,8 +56,8 @@
     const dstr = all.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ') + ' Z';
     o += `<path d="${dstr}" fill="${CURVE}" fill-opacity=".13" stroke="${CURVE}" stroke-width="2" stroke-linejoin="round"/>`;
     // the half-intensity beam edges for beam types
-    if ((d.type === 'wide' || d.type === 'narrow') && d.angle) for (const s of [-1, 1]) {
-      const g = d.angle / 2, x = cx + s * Math.sin(g * R) * rad, y = cy + Math.cos(g * R) * rad;
+    if ((d.type === 'wide' || d.type === 'narrow' || d.type === 'up') && d.angle) for (const s of [-1, 1]) {
+      const g = d.type === 'up' ? 180 - d.angle / 2 : d.angle / 2, x = cx + s * Math.sin(g * R) * rad, y = cy + Math.cos(g * R) * rad;
       o += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${UP}" stroke-dasharray="3 3" opacity=".7"/>`;
     }
     o += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="${TEXT}"/>`;
@@ -74,7 +77,7 @@
     const top = 64, gh = 270;
     o += `<rect x="24" y="${top}" width="290" height="${gh}" fill="${PANEL}" stroke="${LINE}"/>`;
     o += polar(d, 169, top + 120, 92);
-    o += `<text x="36" y="${top + gh - 10}" font-family="${MONO}" font-size="10.5" fill="${FAINT}">fényeloszlás: ${esc(TYPES[d.type] || d.type)}${d.angle ? ' · ' + d.angle + '°' : ''} · sematikus</text>`;
+    o += `<text x="36" y="${top + gh - 10}" font-family="${MONO}" font-size="10.5" fill="${FAINT}">fényeloszlás: ${esc(TYPES[d.type] || d.type)}${d.upward ? ', felfelé' : ''}${d.angle ? ' · ' + d.angle + '°' : ''} · sematikus</text>`;
     const rows = [['FÉNYÁRAM', ph.lm], ['SZÍNHŐMÉRSÉKLET', ph.cct], ['SZÍNVISSZAADÁS', ph.cri], ['SUGÁRZÁSI SZÖG', ph.beam],
       ['VÉDETTSÉG', [pr.ip, pr.ik, pr.class].filter(Boolean).join(' · ')], ['FÉNYFORRÁS', c.sources]].filter(r => r[1]);
     let ry = top + 12;

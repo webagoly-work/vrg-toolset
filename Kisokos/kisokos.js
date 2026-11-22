@@ -114,7 +114,7 @@ function check(K = load()) {
       if (!(Number.isInteger(c.family) && LS.FAM[c.family])) P.push(`${who}: family must be 1..10`);
       if (!c.protection || !c.protection.ip) P.push(`${who}: no protection.ip`);
       if (!c.distribution || !LS.TYPES[c.distribution.type]) P.push(`${who}: distribution.type must be one of ${Object.keys(LS.TYPES).join(', ')}`);
-      else if (['wide', 'narrow', 'updown'].includes(c.distribution.type) && !(c.distribution.angle > 0 && c.distribution.angle < 180)) P.push(`${who}: distribution.angle (beam, degrees) is needed for ${c.distribution.type}`);
+      else if (['wide', 'narrow', 'updown', 'up'].includes(c.distribution.type) && !(c.distribution.angle > 0 && c.distribution.angle < 180)) P.push(`${who}: distribution.angle (beam, degrees) is needed for ${c.distribution.type}`);
       if (c.symbol && K.symbols && !K.symbols.has(c.symbol)) P.push(`${who}: symbol "${c.symbol}" is not in shared/rajztar/data/symbols.json`);
       for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
     }

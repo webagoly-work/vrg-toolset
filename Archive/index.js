@@ -45,7 +45,8 @@ window.VRG_ARCHIVE = {
     "Built together with the first Rögzítéstechnika volume (53 cards) and the Stack layer K",
     "Rebuild: node Stack/stack.js kisokos --standalone <file>",
     "2026-11-22: the Kommunikációs vonalak volume added (27 lines, one shared SVG one-pager each)",
-    "2026-11-22: the Világítótestek volume started (families 1, 2, 6: 25 lamp types, each with a generic light-distribution drawing)"
+    "2026-11-22: the Világítótestek volume started (families 1, 2, 6: 25 lamp types, each with a generic light-distribution drawing)",
+    "2026-11-22: Világítótestek families 3, 4, 7 added (49 lamp types in all)"
    ],
    "tags": [
     "kisokos",
