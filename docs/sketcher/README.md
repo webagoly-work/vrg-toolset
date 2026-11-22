@@ -228,4 +228,6 @@ the photo point, and per-photo fine-tuning saved in the survey's `box` key. **K1
 box on the phone (Rendezés → ⬚ Szobadoboz, a WebView with `lib/roombox-phone.js` as the touch UI). The phone keeps the
 `box` key, and the in-app camera opens Fotópont at the widest zoom and stores each shot's lens. **K3 is built (WP M60, BETA):**
 📏 Mérés on any photo (phone and Desktop, one screen: `lib/plane.js` + `lib/plane-ui.js`). Four corners of a known
-rectangle on the wall give true distances and heights above a floor line; the results go into the survey's `planes` key.
+rectangle on the wall give true distances and heights above a floor line; the results go into the survey's `planes` key. **K4 is
+built (WP M61, BETA):** in the Szobadoboz, per photo point, ⟲ Igazítás matches the 0.5× neighbours and fixes their
+turns and tilts; ⇩ 360° kép makes a GPano JPEG any 360° viewer opens (`lib/pano.js`).
