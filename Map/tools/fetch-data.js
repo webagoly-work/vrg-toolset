@@ -20,6 +20,9 @@
 //   addresses build-addresses.js: the offline search index from the .pbf
 //   pois      build-pois.js: the Térkép-feed points (shops, food, doctors, stops), all of Hungary
 //   roads     build-roads.js: the road network for offline routing (car and foot), all of Hungary
+//   heights   build-bp-heights.js: measured building heights for the B layer, from a footprint GeoJSON put in
+//             data/src/bp-epuletmagassag.geojson by hand (the Budapest Open Data Atlas "Epuletmagassag"; not
+//             downloaded here: its address and licence are checked on the PC first). Skipped without the file.
 //
 // Every part is recorded in Map/data/manifest.json: source, date, licence, size.
 // Console output stays ASCII (the START console garbles accents).
@@ -197,6 +200,15 @@ function partRoads() {
     licence: 'ODbL - (c) OpenStreetMap contributors', bytes: fs.statSync(file).size });
 }
 
+function partHeights() {
+  const src = path.join(DATA, 'src', 'bp-epuletmagassag.geojson'), file = path.join(DATA, 'bp-heights.bin');
+  if (!fs.existsSync(src)) { if (only && only.has('heights')) console.log('- heights: skipped, put the footprints in ' + src); return; }
+  if (have(file) && fs.statSync(file).mtimeMs > fs.statSync(src).mtimeMs) return;
+  console.log('- heights: measured building heights from ' + path.basename(src));
+  const lic = process.env.VRG_HEIGHTS_LICENCE || 'check before sharing (see Map/README.md, B layer)';
+  run(process.execPath, ['--max-old-space-size=8192', path.join(__dirname, 'build-bp-heights.js'), src, '--out', file, '--source', 'Budapest Open Data Atlas - Epuletmagassag', '--licence', lic]);
+}
+
 (async () => {
   fs.mkdirSync(DATA, { recursive: true });
   if (want('vendor')) partVendor();
@@ -209,5 +221,6 @@ function partRoads() {
   if (want('addresses')) partAddresses();
   if (want('pois')) partPois();
   if (want('roads')) partRoads();
+  if (want('heights')) partHeights();
   console.log('Map data ready: ' + DATA);
 })().catch(e => { console.error('FAILED: ' + e.message); process.exitCode = 1; });

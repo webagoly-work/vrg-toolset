@@ -34,11 +34,14 @@ was a ShadeMap-like view; ShadeMap's MapLibre plugin (`mapbox-gl-shadow-simulato
 
 ## Limits (say so when the answer matters)
 
-- **Flat ground.** Hills cast no shadow, and on a slope a shadow has its flat-ground length. Option 2 of
-  the study (a height-map trace, also "sun hours per day") would fix both.
-- **Heights are OSM's.** Many Hungarian buildings have no height or level count and are drawn as 7 m.
-  Better heights: the Budapest Open Data Atlas layer (T3 in the research report), or a Lechner surface
-  model for one job's street. Trees are not in it.
+- **The hills' shadow (⛰, 2026-11-22).** With the terrain tiles, the panel's **⛰ Domborzat** chip (on by default)
+  traces a ray towards the sun from every fourth pixel of the view over the terrain (lib/relief.js
+  `shadowView`, hills up to 6 km away, from zoom 11) and lays the result under the building shadows. A building's
+  own shadow still has its flat-ground length on a slope. `Map/test/relief-page.test.js` checks it on an invented
+  ridge. "Sun hours per day" is still open.
+- **Heights are OSM's, unless B is on.** Many Hungarian buildings have no height or level count and are drawn as
+  7 m. With **B** (measured heights, `docs/map/RELIEF.md`) the measured buildings cast the shadows inside the
+  measured file's area. Trees are not in it.
 - Shadows fall on the ground, not on other buildings' walls and roofs (a roof in a neighbour's shadow is
   not darkened). For a PV roof question, read the ground shadow next to the roof edge, or wait for option 2.
 - The clock is the device's (the PC and the phones are in Hungary).
