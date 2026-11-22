@@ -47,7 +47,8 @@ window.VRG_ARCHIVE = {
     "2026-11-22: the Kommunikációs vonalak volume added (27 lines, one shared SVG one-pager each)",
     "2026-11-22: the Világítótestek volume started (families 1, 2, 6: 25 lamp types, each with a generic light-distribution drawing)",
     "2026-11-22: Világítótestek families 3, 4, 7 added (49 lamp types in all)",
-    "2026-11-22: Világítótestek family 8 (emergency lighting, 8 types) and the first Előírások cards (7, emergency lighting rules)"
+    "2026-11-22: Világítótestek family 8 (emergency lighting, 8 types) and the first Előírások cards (7, emergency lighting rules)",
+    "2026-11-22: Világítótestek families 5, 9, 10 added: all ten families drafted, 79 lamp types"
    ],
    "tags": [
     "kisokos",

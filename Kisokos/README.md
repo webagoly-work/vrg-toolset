@@ -25,9 +25,10 @@ Kisokos/
   eloirasok/                  volume el, Előírások: our own summary + reference per standard or law, never the text
     biztonsagi-vilagitas.json 7 cards: MSZ EN 1838, 50172, 60598-2-22, 50171, 62034, ISO 7010, OTSZ/TvMI
     KISOKOS.md                GENERATED summary sheet
-  vilagitotestek/             volume vt, Világítótestek (families 1–4, 6–8 so far; scope: docs/kisokos/vilagitotestek.md)
+  vilagitotestek/             volume vt, Világítótestek (all ten families, 79 types; scope: docs/kisokos/vilagitotestek.md)
     rejtett-butor-kulteri.json 24 fixture types of families 3, 4, 7 (hidden and linear, furniture, outdoor)
     biztonsagi.json           8 emergency lighting types (family 8), linked to their rules by `norms`
+    dugaszolos-ipari-niche.json 22 types of families 5, 9, 10 (plug-in, commercial and industrial, niche)
     lampak.json               25 fixture types of families 1, 2, 6: mounting, light source, protection, photometry, distribution,
                               control (+ lines), install (+ fixing), rules, Rajztár symbol, rooms, traps, terms, shop
     svg/                      GENERATED: one light-distribution drawing per type

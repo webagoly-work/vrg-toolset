@@ -38,6 +38,10 @@
 | Bútorspot | Bútor és beépített | bútorba süllyesztve vagy felületre szerelve | IP20 – IP44 | keskeny nyaláb 45° | `lum.spot` |
 | Ágy alatti orientációs fény | Bútor és beépített | az ágy keretének aljára | IP20 | aszimmetrikus | `lum.strip` |
 | Lépcsőfokba épített világítás | Bútor és beépített | minden lépcsőfok élébe vagy alá profilban | IP20 – IP44 | aszimmetrikus | `lum.strip` |
+| Állólámpa | Dugaszolós | a padlón, dugaszolós | IP20 | főleg le, részben fel | `inst.socket-switched` |
+| Asztali és íróasztali lámpa | Dugaszolós | az asztalon, dugaszolós, sokszor csiptetős vagy karos | IP20 | széles nyaláb 90° | `inst.socket-pe` |
+| Éjjeli lámpa | Dugaszolós | éjjeliszekrényen, dugaszolós vagy akkus | IP20 | minden irányba | `inst.socket-usb` |
+| Kapcsolt aljzat (a dugaszolós lámpák köre) | Dugaszolós | falba süllyesztett aljzat, falikapcsolóról kapcsolva | IP20 (nedves helyen IP44) | minden irányba | `inst.socket-switched` |
 | Fürdőszobai mennyezeti lámpa | Nedves helyiség | mennyezetre, felületre szerelve | legalább IP44 (zónától függően több) | diffúz, lefelé | `lum.general` |
 | Fürdőszobai beépíthető spot | Nedves helyiség | álmennyezetbe süllyesztve | IP44 – IP65 alulról | széles nyaláb 60° | `lum.spot` |
 | Tükörvilágítás | Nedves helyiség | tükör fölé vagy mellé, falra; vagy a tükörbe építve | legalább IP44 | aszimmetrikus | `lum.wall` |
@@ -63,6 +67,24 @@
 | Vészvilágítási modul (konverziós készlet) | Biztonsági és jelző | egy normál lámpatestbe vagy mellé építve | a lámpatesté | diffúz, lefelé | `lum.emergency` |
 | Áramszünet-jelző éjszakai fény | Biztonsági és jelző | dugaszolós, a fali aljzatba | IP20 | minden irányba | `lum.general` |
 | Utánvilágító (fotolumineszcens) jel és csík | Biztonsági és jelző | falra, padlóra, lépcsőélre ragasztva vagy csavarozva | nem villamos termék | diffúz, lefelé | `` |
+| Irodai lámpatest | Kereskedelmi és ipari | álmennyezetbe, felületre vagy függesztve | IP20 – IP40 | denevérszárny (batwing) | `lum.panel` |
+| Fénysor-rendszer (trunking) | Kereskedelmi és ipari | mennyezetre függesztve vagy felületre, folytonos sorban | IP20 – IP54 | denevérszárny (batwing) | `lum.linear` |
+| Csarnokvilágító (high bay) | Kereskedelmi és ipari | 6–20 m magasan, kampóra, láncra vagy konzolra függesztve | IP65 | széles nyaláb 90° | `lum.flood` |
+| LED-fénycső és armatúra | Kereskedelmi és ipari | armatúrába, mennyezetre vagy falra | az armatúrától függ (IP20 – IP65) | széles nyaláb 150° | `lum.linear` |
+| Polcvilágító (kereskedelmi) | Kereskedelmi és ipari | a polc elejébe, a polcsor fölé vagy a fénysorba | IP20 | aszimmetrikus | `lum.linear` |
+| Parkolóházi és garázslámpatest | Kereskedelmi és ipari | mennyezetre, felületre | IP65 | széles nyaláb 120° | `lum.linear` |
+| Utcai lámpatest (közvilágítás) | Kereskedelmi és ipari | kandeláberre vagy villanyoszlopra, karra | IP66 | aszimmetrikus | `lum.outdoor` |
+| Növénynevelő lámpa | Niche | a növények fölé függesztve vagy polcra szerelve | IP20 – IP65 | széles nyaláb 120° | `lum.general` |
+| Akváriumi lámpa | Niche | az akvárium fedelébe vagy fölé | IP65 – IP67 | széles nyaláb 120° | `lum.general` |
+| UV-C fertőtlenítő lámpa | Niche | mennyezetre, falra, légcsatornába vagy zárt készülékbe | IP20 – IP65 | széles nyaláb 120° | `lum.general` |
+| Robbanásbiztos (Ex) lámpatest | Niche | robbanásveszélyes zónába, felületre vagy függesztve | IP66 vagy több | minden irányba | `lum.general` |
+| Színpadi és mozgófejes lámpa | Niche | színpadi tartószerkezetre (truss), bilinccsel, biztosító kötéllel | IP20 (kültéri IP65) | keskeny nyaláb 15° | `lum.spot` |
+| Száloptikás csillagos mennyezet | Niche | a mennyezetbe fűzött optikai szálak, a fényforrás a mennyezet fölött | a szálvégeken nincs villamos rész | széles nyaláb 60° | `lum.general` |
+| Napfénycső (fénycsatorna) | Niche | a tetőn át a mennyezetig, belül tükrös csővel | a tetőátvezetés vízzáró szerkezet | diffúz, lefelé | `lum.general` |
+| HCL: emberközpontú világítás (hangolható fehér) | Niche | bármely lámpatest-forma hangolható fehér kivitelben | a lámpatesté | diffúz, lefelé | `lum.general` |
+| Sütő- és hűtővilágítás | Niche | a háztartási gépben, gyári foglalatban | a gépé | minden irányba | `lum.general` |
+| Vizsgáló- és műtőlámpa | Niche | mennyezetre, falra vagy gurulós állványra, karral | IP20 – IP54 | keskeny nyaláb 20° | `lum.spot` |
+| Jelzőtorony és jelzőfény | Niche | gépre, vezérlőszekrényre, kapura vagy falra | IP54 – IP66 | minden irányba | `meas.lamp` |
 
 ## 1. Mennyezeti
 
@@ -931,6 +953,107 @@ Minden fok alá vagy élébe épített LED-profil, amelyet egy lépcsővezérlő
 - **Keresőszavak:** HU: lépcsővezérlő LED · lépcső világítás futófény — EN: LED stair light controller · stair lighting sequential — DE: Treppenlichtsteuerung LED · Lauflicht Treppe
 - **Hol kapható:** LED-szaküzlet.
 
+## 5. Dugaszolós
+
+### Állólámpa
+
+*Más néven:* olvasó állólámpa, uplighter, ívlámpa
+
+![Állólámpa](svg/allolampa.svg)
+
+Padlón álló, dugaszolós lámpa: felfelé világító (uplighter) a mennyezetre, olvasó karral, vagy íves karral az ülőhely fölé. Szabadon mozgatható kiegészítő és hangulatvilágítás.
+
+- **Szerelés:** a padlón, dugaszolós
+- **Fényforrás:** E27 foglalat vagy integrált LED
+- **Védettség:** IP20 · II. érintésvédelmi osztály (gyakran)
+- **Fény:** 500–4000 lm (uplighter a felső) · 2700–3000 K, gyakran hangolható · Ra ≥ 80, olvasáshoz ≥ 90 · uplighternél főleg fel, olvasónál keskeny le
+- **Vezérlés:** zsinórkapcsoló, talpkapcsoló, érintőkapcsoló, kapcsolt aljzat, okos aljzat vagy okos fényforrás (vonalak: 2,4 GHz sáv, Hálózati 50 Hz)
+- **Beépítés:**
+  - Nincs bekötés: a villanyszerelő feladata a jól elhelyezett aljzat, ideálisan kapcsolt aljzat a bejárati kapcsolóról.
+- **Előírás:** MSZ EN 60598-2-4 (hordozható, általános célú lámpatestek)
+- **Rajzjel:** `inst.socket-switched` (Rajztár)
+- **Hova:** nappali, olvasósarok, hálószoba
+- **Buktatók:**
+  - A padlón futó zsinór botlásveszély: az aljzat helye a bútortervhez igazodjon.
+- **Rokon típusok:** Kapcsolt aljzat (a dugaszolós lámpák köre), Asztali és íróasztali lámpa, Olvasó falikar
+- **Keresőszavak:** HU: állólámpa LED olvasókarral · uplighter állólámpa — EN: floor lamp with reading light · uplighter floor lamp — DE: Stehleuchte mit Leselicht · Deckenfluter
+- **Hol kapható:** Lámpaszaküzlet, lakberendezési áruház.
+
+### Asztali és íróasztali lámpa
+
+*Más néven:* íróasztali lámpa, munkalámpa, asztali hangulatlámpa
+
+![Asztali és íróasztali lámpa](svg/asztali-lampa.svg)
+
+Dugaszolós asztali lámpa: hangulatlámpa ernyővel, vagy állítható karú munkalámpa, amely a munkafelületre irányítja a fényt.
+
+- **Szerelés:** az asztalon, dugaszolós, sokszor csiptetős vagy karos
+- **Fényforrás:** E14 / E27 foglalat vagy integrált LED
+- **Védettség:** IP20 · II. vagy III. érintésvédelmi osztály
+- **Fény:** 250–1000 lm · 2700–4000 K, munkalámpánál hangolható · Ra ≥ 90 munkához · munkalámpánál irányított, hangulatlámpánál szórt
+- **Vezérlés:** lámpán lévő kapcsoló vagy érintő dimmer; USB-töltős kivitel (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - Az íróasztal mellé elegendő aljzat (lámpa, számítógép, töltők), lehetőleg asztalmagasságban vagy padlódobozban.
+- **Előírás:** MSZ EN 60598-2-4
+- **Rajzjel:** `inst.socket-pe` (Rajztár)
+- **Hova:** dolgozószoba, gyerekszoba, hálószoba
+- **Buktatók:**
+  - A villódzó olcsó LED és a vakító, árnyékolatlan fényforrás hosszú munkánál fárasztó.
+- **Rokon típusok:** Állólámpa, Éjjeli lámpa
+- **Keresőszavak:** HU: íróasztali lámpa LED dimmelhető · asztali lámpa — EN: LED desk lamp dimmable · table lamp — DE: LED Schreibtischleuchte dimmbar · Tischleuchte
+- **Hol kapható:** Lámpaszaküzlet, műszaki áruház.
+
+### Éjjeli lámpa
+
+*Más néven:* éjjeliszekrény lámpa, gyerek éjjeli fény, hangulatlámpa
+
+![Éjjeli lámpa](svg/ejjeli-lampa.svg)
+
+Kis, meleg fényű lámpa az ágy mellé: olvasáshoz, elalváshoz, éjszakai tájékozódáshoz; sokszor akkus vagy érintéssel dimmelhető.
+
+- **Szerelés:** éjjeliszekrényen, dugaszolós vagy akkus
+- **Fényforrás:** E14 foglalat vagy integrált LED, akkumulátor
+- **Védettség:** IP20 · II. vagy III. érintésvédelmi osztály
+- **Fény:** 20–400 lm · 2200–2700 K · Ra ≥ 80 · szórt
+- **Vezérlés:** érintőkapcsoló, dimmer, időzítő (vonalak: 2,4 GHz sáv)
+- **Beépítés:**
+  - Az ágy két oldalán aljzat (és USB-töltő), a fejtámla magasságához igazítva.
+- **Előírás:** MSZ EN 60598-2-4
+- **Rajzjel:** `inst.socket-usb` (Rajztár)
+- **Hova:** hálószoba, gyerekszoba
+- **Buktatók:**
+  - Hideg, kék fény este rontja az elalvást.
+- **Rokon típusok:** Asztali és íróasztali lámpa, Olvasó falikar, Áramszünet-jelző éjszakai fény
+- **Keresőszavak:** HU: éjjeli lámpa érintős dimmelhető — EN: bedside lamp touch dimmable — DE: Nachttischlampe Touch dimmbar
+- **Hol kapható:** Lámpaszaküzlet, lakberendezési áruház.
+
+### Kapcsolt aljzat (a dugaszolós lámpák köre)
+
+*Más néven:* kapcsolt dugaszolóaljzat, lámpaaljzat, switched socket
+
+![Kapcsolt aljzat (a dugaszolós lámpák köre)](svg/kapcsolt-aljzat.svg)
+
+Nem lámpatest, hanem a dugaszolós lámpák „bekötése”: olyan aljzat, amelyet a helyiség bejáratánál lévő kapcsoló kapcsol, így az állólámpák és asztali lámpák a falikapcsolóról gyújthatók, mint a mennyezeti lámpa.
+
+- **Szerelés:** falba süllyesztett aljzat, falikapcsolóról kapcsolva
+- **Fényforrás:** bármely dugaszolós lámpa
+- **Védettség:** IP20 (nedves helyen IP44) · —
+- **Fény:** a csatlakoztatott lámpáé · — · — · —
+- **Vezérlés:** falikapcsoló, vagy okos aljzat / okos relé a dobozban (vonalak: Hálózati 50 Hz, 2,4 GHz sáv, KNX TP)
+- **Beépítés:**
+  - A kapcsolt aljzatot jól láthatóan jelölni kell (pl. eltérő szín vagy jelölés), hogy ne dugjanak bele folyamatos tápot igénylő eszközt.
+  - Egy kapcsolt aljzat mellé egy nem kapcsolt is kerüljön.
+  - A kapcsoló doboza és az aljzat közé háromerű kábel kell (kapcsolt fázis).
+- **Rögzítés:** Dobozfúró korona, Gipszkarton körkivágó
+- **Előírás:** MSZ HD 60364 sorozat (a fogyasztói áramkör), a szerelvényre MSZ EN 60669 / MSZ HD 60884
+- **Rajzjel:** `inst.socket-switched` (Rajztár)
+- **Hova:** nappali, hálószoba, dolgozószoba
+- **Buktatók:**
+  - Jelölés nélkül a kapcsolt aljzatba dugott hűtő vagy router kikapcsol.
+- **Rokon típusok:** Állólámpa, Asztali és íróasztali lámpa
+- **Keresőszavak:** HU: kapcsolt dugaszolóaljzat · okos relé dobozba — EN: switched socket outlet · in-wall smart relay — DE: geschaltete Steckdose · Unterputz Aktor
+- **Hol kapható:** Villamossági nagykereskedés.
+
 ## 6. Nedves helyiség
 
 ### Fürdőszobai mennyezeti lámpa
@@ -1600,3 +1723,472 @@ Lakásba való, konnektorba dugott kis lámpa: éjszakai tájékozódó fény, �
 - **Rokon típusok:** Menekülési útirány- és kijáratjelző
 - **Keresőszavak:** HU: utánvilágító menekülési jel · fotolumineszcens csík lépcsőre — EN: photoluminescent exit sign · glow in the dark stair strip — DE: langnachleuchtendes Rettungszeichen · nachleuchtende Treppenmarkierung
 - **Hol kapható:** Biztonságtechnikai szaküzlet, munkavédelmi bolt.
+
+## 9. Kereskedelmi és ipari
+
+### Irodai lámpatest
+
+*Más néven:* alacsony káprázású lámpatest, UGR19 lámpatest, irodai függesztett lámpa
+
+![Irodai lámpatest](svg/irodai-lampatest.svg)
+
+Képernyős munkahelyekre tervezett lámpatest, amely a munkafelületen elegendő, egyenletes fényt ad, és a képernyőn nem tükröződik; káprázáskorlátozó optikával (mikroprizma, raszter).
+
+- **Szerelés:** álmennyezetbe, felületre vagy függesztve
+- **Fényforrás:** integrált LED
+- **Védettség:** IP20 – IP40 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 3000–6000 lm · 3000–4000 K · Ra ≥ 80 (≥ 90 igényes helyen) · denevérszárny, alacsony káprázás (UGR < 19)
+- **Vezérlés:** DALI, jelenlét- és fényérzékelővel, napfényfüggő szabályozás (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, KNX TP)
+- **Beépítés:**
+  - A munkahelyi megvilágítás tervét számítással kell igazolni (a munkafelületen jellemzően 500 lx irodai munkára).
+  - Függesztésnél a menetes szár vagy a sodrony a födémbe, a terhelés szerint.
+- **Rögzítés:** Beton, Beütős horgony, Menetes szár, metrikus csavar, Gipszkarton
+- **Előírás:** MSZ EN 12464-1 (munkahelyek világítása), MSZ EN 60598-2-1 / -2-2
+- **Rajzjel:** `lum.panel` (Rajztár)
+- **Hova:** iroda, tárgyaló, tanterem, otthoni dolgozószoba
+- **Buktatók:**
+  - A „UGR < 19” csak a megadott elrendezésre igaz: a terv számít.
+- **Rokon típusok:** LED-panel, Fénysor-rendszer (trunking), LED-fénycső és armatúra
+- **Keresőszavak:** HU: irodai lámpatest UGR19 · függesztett irodai LED lámpa — EN: office luminaire UGR<19 · suspended office light — DE: Büroleuchte UGR19 · Pendelleuchte Büro
+- **Hol kapható:** Villamossági nagykereskedés, világítástechnikai szakkereskedés.
+
+### Fénysor-rendszer (trunking)
+
+*Más néven:* folytonos fénysor, trunking rendszer, sínes fénysor
+
+![Fénysor-rendszer (trunking)](svg/fenysor.svg)
+
+Hosszú tartósín, amelyben a betápláló vezetékek futnak, és amelybe a lámpabetétek bárhol bepattinthatók: üzletek, raktárak, csarnokok folytonos fénysorai.
+
+- **Szerelés:** mennyezetre függesztve vagy felületre, folytonos sorban
+- **Fényforrás:** LED-betétek (cserélhető optikával)
+- **Védettség:** IP20 – IP54 · I. érintésvédelmi osztály
+- **Fény:** betétenként 3000–10 000 lm · 4000–5000 K · Ra ≥ 80 · keskeny, széles, aszimmetrikus (polc) optikák
+- **Vezérlés:** több áramkör a sínben (pl. biztonsági világítás külön), DALI (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - A sín 5–11 vezetős lehet: a betétek fázisonként és a biztonsági áramkörre is köthetők.
+  - Függesztés a sín terhelése és a födém szerint.
+- **Rögzítés:** Beton, Trapézlemez, acéllemez, Acélszerkezet, Beütős horgony, Menetes szár, metrikus csavar
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** üzlet, raktár, csarnok, műhely
+- **Buktatók:**
+  - A gyártók sínei és betétei nem cserélhetők fel.
+- **Rokon típusok:** Irodai lámpatest, Csarnokvilágító (high bay), Polcvilágító (kereskedelmi)
+- **Keresőszavak:** HU: fénysor rendszer LED · trunking LED — EN: LED trunking system — DE: Lichtbandsystem LED
+- **Hol kapható:** Világítástechnikai szakkereskedés.
+
+### Csarnokvilágító (high bay)
+
+*Más néven:* high bay, UFO csarnoklámpa, ipari csarnokvilágító
+
+![Csarnokvilágító (high bay)](svg/csarnokvilagito.svg)
+
+Nagy belmagasságú terek (csarnok, raktár, sportterem) nagy fényáramú lámpateste; az optika a szerelési magassághoz és a polcsorokhoz választható.
+
+- **Szerelés:** 6–20 m magasan, kampóra, láncra vagy konzolra függesztve
+- **Fényforrás:** integrált LED, külön vagy beépített meghajtóval
+- **Védettség:** IP65 · IK08 vagy jobb · I. érintésvédelmi osztály
+- **Fény:** 10 000–40 000 lm · 4000–5000 K · Ra ≥ 80 · 60°, 90°, 120° vagy folyosó (polc) optika
+- **Vezérlés:** DALI, 1–10 V, jelenlét-érzékelő a nagy magassághoz (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A függesztést biztosító sodronnyal kell kiegészíteni.
+  - A karbantartás emelőgépet kíván: a meghajtó élettartama és cserélhetősége számít.
+- **Rögzítés:** Acélszerkezet, Beton, Beütős horgony, Menetes szár, metrikus csavar
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Rajzjel:** `lum.flood` (Rajztár)
+- **Hova:** csarnok, raktár, műhely, sportterem, mezőgazdasági épület
+- **Buktatók:**
+  - Sportteremben labdaálló kivitel.
+  - Túl széles optika magas polcsorok között a polcok tetejét világítja, nem a folyosót.
+- **Rokon típusok:** Fénysor-rendszer (trunking), Nagy terek biztonsági lámpateste (nyílt terület), Páramentes lámpatest
+- **Keresőszavak:** HU: LED csarnokvilágító 150W · high bay lámpa — EN: LED high bay 150W — DE: LED Hallenstrahler 150W
+- **Hol kapható:** Villamossági nagykereskedés, világítástechnikai szakkereskedés.
+
+### LED-fénycső és armatúra
+
+*Más néven:* T8 LED cső, fénycsöves armatúra, LED retrofit cső
+
+![LED-fénycső és armatúra](svg/led-fenycso.svg)
+
+A régi T8 fénycső helyére tervezett LED-cső (G13 foglalat) vagy LED-csöves armatúra. A meglévő fénycsöves lámpatestek korszerűsítésének gyakori módja.
+
+- **Szerelés:** armatúrába, mennyezetre vagy falra
+- **Fényforrás:** T8 LED-cső (60, 120, 150 cm), G13 foglalat
+- **Védettség:** az armatúrától függ (IP20 – IP65) · I. érintésvédelmi osztály (armatúra)
+- **Fény:** csövenként 900–3000 lm · 4000–6500 K · Ra ≥ 80 · kb. 160°
+- **Vezérlés:** kapcsolt (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - A LED-cső típusa dönti el az átalakítást: elektronikus előtétes armatúrába, hagyományos (induktív) előtéteshez gyújtócserével, vagy közvetlen hálózati bekötéssel (az előtét kiiktatásával).
+  - Közvetlen bekötésnél az armatúrát átalakítottként fel kell címkézni, hogy ne kerüljön bele régi fénycső.
+  - Az egyoldalas és kétoldalas betáplálású csövek nem cserélhetők fel.
+- **Rögzítés:** Beton, Nylon terpesztődübel, Beütős dübel
+- **Előírás:** MSZ EN 62776 (kétvégű LED-csövek), MSZ EN 60598-2-1
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** garázs, pince, műhely, iroda, lépcsőház
+- **Buktatók:**
+  - A rossz típusú LED-cső a régi armatúrában zárlatot vagy áramütésveszélyt okozhat.
+  - Átalakított armatúra jelölés nélkül: a következő fénycsőcserénél baleset.
+- **Rokon típusok:** Páramentes lámpatest, Irodai lámpatest
+- **Keresőszavak:** HU: T8 LED fénycső 120 cm · LED fénycső gyújtó — EN: T8 LED tube 120 cm · LED tube starter — DE: T8 LED Röhre 120 cm · LED Starter
+- **Hol kapható:** Villamossági nagykereskedés, barkácsáruház.
+
+### Polcvilágító (kereskedelmi)
+
+*Más néven:* bolti polcvilágítás, retail polcfény
+
+![Polcvilágító (kereskedelmi)](svg/polcvilagito.svg)
+
+Az áru függőleges felületét egyenletesen megvilágító, aszimmetrikus lámpatest: üzletekben a polcokat világítja, nem a folyosót.
+
+- **Szerelés:** a polc elejébe, a polcsor fölé vagy a fénysorba
+- **Fényforrás:** integrált LED
+- **Védettség:** IP20 · II. vagy III. érintésvédelmi osztály
+- **Fény:** méterenként 500–2000 lm · 3000–4000 K (élelmiszernél speciális spektrum is) · Ra ≥ 90 · aszimmetrikus, a polc felé
+- **Vezérlés:** kapcsolt, DALI (vonalak: DALI)
+- **Beépítés:**
+  - A polcrendszer gyártójának tápellátó sínjével vagy csatlakozóival.
+- **Rögzítés:** Önfúró lemezcsavar, Forgácslapcsavar
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** üzlet, bemutatóterem, kamra nagy polcrendszerrel
+- **Buktatók:**
+  - Élelmiszernél a színhőmérséklet és a spektrum az áru megjelenését is befolyásolja.
+- **Rokon típusok:** Fénysor-rendszer (trunking), Polc- és vitrinvilágítás
+- **Keresőszavak:** HU: polcvilágító LED bolt — EN: retail shelf lighting LED — DE: Regalbeleuchtung LED Laden
+- **Hol kapható:** Világítástechnikai szakkereskedés, üzletberendező.
+
+### Parkolóházi és garázslámpatest
+
+*Más néven:* mélygarázs lámpa, parkolóház világítás
+
+![Parkolóházi és garázslámpatest](svg/parkolohazi.svg)
+
+Por- és vízálló, ütésálló vonali lámpatest garázsokba és parkolóházakba, gyakran mozgásérzékelővel, alapfényerőre visszakapcsolva.
+
+- **Szerelés:** mennyezetre, felületre
+- **Fényforrás:** integrált LED
+- **Védettség:** IP65 · IK08 – IK10 · I. vagy II. érintésvédelmi osztály
+- **Fény:** 3000–8000 lm · 4000–5000 K · Ra ≥ 80 · széles, a parkolóhelyek és a közlekedőút felé
+- **Vezérlés:** mozgásérzékelő alapfényerővel, DALI, egyes típusokban vészvilágítási modullal (vonalak: DALI, Hálózati 50 Hz)
+- **Beépítés:**
+  - A rámpák és a bejáratok megvilágítása a szem alkalmazkodása miatt nappal erősebb lehet.
+  - A kipufogógáz és a só miatt korrózióálló kivitel.
+- **Rögzítés:** Beton, Beütős dübel, Üreges födémpanel
+- **Előírás:** MSZ EN 12464-1, MSZ EN 60598-2-1
+- **Rajzjel:** `lum.linear` (Rajztár)
+- **Hova:** mélygarázs, parkolóház, társasházi garázs
+- **Buktatók:**
+  - Feszített födémpanelbe fúrni csak a feszítőhuzalok elkerülésével.
+- **Rokon típusok:** Páramentes lámpatest, Vészvilágítási modul (konverziós készlet), Csarnokvilágító (high bay)
+- **Keresőszavak:** HU: mélygarázs LED lámpa IP65 mozgásérzékelős — EN: car park LED luminaire with sensor — DE: Tiefgaragenleuchte LED Sensor
+- **Hol kapható:** Villamossági nagykereskedés.
+
+### Utcai lámpatest (közvilágítás)
+
+*Más néven:* közvilágítási lámpatest, útvilágító, kandeláber lámpafej
+
+![Utcai lámpatest (közvilágítás)](svg/utcai-lampatest.svg)
+
+Utak, járdák, terek megvilágítására szolgáló lámpafej útvilágítási optikával, amely a fényt hosszan az útra teríti, és nem világít az égre. A közvilágítás a hálózat üzemeltetőjéé vagy az önkormányzaté; magánterületen (lakópark, telephely) a tulajdonosé.
+
+- **Szerelés:** kandeláberre vagy villanyoszlopra, karra
+- **Fényforrás:** integrált LED
+- **Védettség:** IP66 · IK08 vagy jobb · I. vagy II. érintésvédelmi osztály
+- **Fény:** 2000–20 000 lm · 2700–4000 K (lakott területen inkább meleg) · Ra ≥ 70 · útvilágítási, aszimmetrikus
+- **Vezérlés:** alkonykapcsoló, éjszakai csökkentés, távfelügyelet (vonalak: Hálózati 50 Hz, 868 MHz sáv)
+- **Beépítés:**
+  - Magánterületen a kandeláber alapja, földkábel, oszlopon belüli kötődoboz és biztosító a terv szerint.
+  - Közterületen csak az üzemeltető megbízásából.
+- **Rögzítés:** Beton, Csavaros terpesztő horgony, Vegyi dübel
+- **Előírás:** MSZ EN 13201 (közúti világítás), MSZ EN 60598-2-3
+- **Rajzjel:** `lum.outdoor` (Rajztár)
+- **Hova:** lakópark útjai, telephely, parkoló
+- **Buktatók:**
+  - A felfelé szórt fény fényszennyezés és pazarlás.
+- **Rokon típusok:** Kerti oszloplámpa (bollard), Mozgásérzékelős reflektor
+- **Keresőszavak:** HU: LED utcai lámpatest · kandeláber — EN: LED street light · lighting column — DE: LED Straßenleuchte · Lichtmast
+- **Hol kapható:** Világítástechnikai szakkereskedés, közvilágítási forgalmazó.
+
+## 10. Niche
+
+### Növénynevelő lámpa
+
+*Más néven:* grow light, növénylámpa, full spectrum grow LED
+
+![Növénynevelő lámpa](svg/novenynevelo.svg)
+
+A növények fotoszintéziséhez illesztett spektrumú LED-lámpa (sok kék és vörös, vagy teljes spektrum); a hatékonyságát nem lumenben, hanem a fotoszintetikusan aktív sugárzásban mérik.
+
+- **Szerelés:** a növények fölé függesztve vagy polcra szerelve
+- **Fényforrás:** integrált LED, speciális spektrum
+- **Védettség:** IP20 – IP65 · a gyártó szerint
+- **Fény:** a lumen itt félrevezető: a PPF (µmol/s) és a PPFD (µmol/m²s) a jellemző · teljes spektrum vagy rózsaszínes (kék + vörös) · — · széles, a növényállományra
+- **Vezérlés:** időzítő (napszak), dimmer, okos vezérlés (vonalak: 2,4 GHz sáv, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - Párás környezetben IP-s kivitel és áram-védőkapcsoló.
+  - A tartós, nagy teljesítményű terheléshez méretezett áramkör.
+- **Rögzítés:** Menetes szár, metrikus csavar, Fa, Beton
+- **Előírás:** MSZ EN 60598-1, MSZ EN 62471 (fotobiológiai biztonság)
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** beltéri kert, üvegház, pince
+- **Buktatók:**
+  - A rózsaszínes fény a szemnek kellemetlen és torzítja a színeket.
+- **Rokon típusok:** Akváriumi lámpa
+- **Keresőszavak:** HU: növénynevelő LED lámpa teljes spektrum — EN: full spectrum LED grow light — DE: Pflanzenlampe LED Vollspektrum
+- **Hol kapható:** Kertészeti szaküzlet, hidrokultúra-bolt.
+
+### Akváriumi lámpa
+
+*Más néven:* akvárium világítás, terrárium lámpa
+
+![Akváriumi lámpa](svg/akvariumi.svg)
+
+Az akvárium fölötti, nedvességálló lámpa a halak és a vízinövények igényeihez illesztett spektrummal, gyakran napszakot utánzó vezérléssel.
+
+- **Szerelés:** az akvárium fedelébe vagy fölé
+- **Fényforrás:** integrált LED
+- **Védettség:** IP65 – IP67 · III. érintésvédelmi osztály (törpefeszültség, gyakran)
+- **Fény:** 500–5000 lm · 6500–10 000 K, kék csatornával · — · széles
+- **Vezérlés:** időzítő, napfelkelte–napnyugta program, alkalmazás (vonalak: 2,4 GHz sáv)
+- **Beépítés:**
+  - A tápegység a víztől távol, a vízcseppek útján kívül; áram-védőkapcsolós aljzat.
+- **Előírás:** MSZ EN 60598-2-11 (akváriumlámpák)
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** nappali, akváriumszoba
+- **Buktatók:**
+  - A pára és a kicsapódó víz a nem tömített csatlakozót tönkreteszi.
+- **Rokon típusok:** Növénynevelő lámpa
+- **Keresőszavak:** HU: akvárium LED világítás — EN: aquarium LED light — DE: Aquarium LED Beleuchtung
+- **Hol kapható:** Akvarisztikai szaküzlet.
+
+### UV-C fertőtlenítő lámpa
+
+*Más néven:* UV-C lámpa, germicid lámpa, fertőtlenítő sugárzó
+
+![UV-C fertőtlenítő lámpa](svg/uvc.svg)
+
+A 200–280 nm-es UV-C sugárzással a mikroorganizmusokat inaktiváló lámpa: zárt (keringtetős) készülékben vagy üres helyiség besugárzására. Az emberi szemre és bőrre veszélyes.
+
+- **Szerelés:** mennyezetre, falra, légcsatornába vagy zárt készülékbe
+- **Fényforrás:** UV-C fénycső vagy UV-C LED
+- **Védettség:** IP20 – IP65 · a gyártó szerint
+- **Fény:** nincs: a sugárzott UV-C teljesítmény (W) és a dózis a jellemző · — · — · a besugárzandó felületre
+- **Vezérlés:** időzítő, jelenlét-érzékelős biztonsági lekapcsolás, ajtókapcsoló (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - Nyitott besugárzó csak üres helyiségben működhet: jelenlét-érzékelővel és ajtókapcsolóval reteszelni kell, figyelmeztető jelzéssel.
+  - A zárt, keringtetős készülék emberek jelenlétében is használható.
+- **Rögzítés:** Beton, Nylon terpesztődübel
+- **Előírás:** MSZ EN 62471 (fotobiológiai biztonság), a készülékre a gyártói megfelelőség
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** rendelő, labor, öltöző, légtechnika
+- **Buktatók:**
+  - Közvetlen UV-C sugárzás néhány perc alatt szem- és bőrkárosodást okoz.
+  - Az ózont termelő lámpa után szellőztetni kell.
+- **Rokon típusok:** Vizsgáló- és műtőlámpa
+- **Keresőszavak:** HU: UV-C fertőtlenítő lámpa reteszeléssel · UV-C légtisztító — EN: UV-C germicidal lamp · UV-C air purifier — DE: UV-C Entkeimungslampe · UV-C Luftreiniger
+- **Hol kapható:** Egészségügyi és laborfelszerelés-forgalmazó.
+
+### Robbanásbiztos (Ex) lámpatest
+
+*Más néven:* Ex lámpatest, ATEX lámpa, robbanásveszélyes térbe
+
+![Robbanásbiztos (Ex) lámpatest](svg/robbanasbiztos.svg)
+
+Gáz- vagy porrobbanás-veszélyes térbe (benzinkút, festőüzem, malom, gázkazánház egy része) minősített lámpatest, amely nem gyújthatja be a környező légteret.
+
+- **Szerelés:** robbanásveszélyes zónába, felületre vagy függesztve
+- **Fényforrás:** integrált LED
+- **Védettség:** IP66 vagy több · IK08 vagy jobb · Ex-jelölés a zóna és a gázcsoport szerint
+- **Fény:** 1000–20 000 lm · 4000–5000 K · Ra ≥ 70 · széles
+- **Vezérlés:** kapcsolt, Ex-minősített kapcsolóval vagy a zónán kívülről (vonalak: Hálózati 50 Hz)
+- **Beépítés:**
+  - A zónabesorolás (pl. 1., 2., 21., 22.) a robbanásvédelmi dokumentációból jön; a lámpatest, a kábelbevezetés és a kötés is erre minősített legyen.
+  - Csak erre jogosult szakember tervezhet és szerelhet; a szerelés után ellenőrzés.
+- **Rögzítés:** Beton, Acélszerkezet, Csavaros terpesztő horgony
+- **Előírás:** MSZ EN 60079 sorozat (robbanóképes közegek), ATEX irányelv
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** benzinkút, festőüzem, akkumulátortöltő helyiség, malom, vegyi raktár
+- **Buktatók:**
+  - Nem minősített tömszelence vagy kötés az egész lámpatest minősítését érvényteleníti.
+- **Rokon típusok:** Csarnokvilágító (high bay), Páramentes lámpatest
+- **Keresőszavak:** HU: Ex lámpatest zóna 1 · ATEX LED lámpa — EN: ATEX LED luminaire zone 1 · explosion proof light — DE: Ex Leuchte Zone 1 · ATEX LED Leuchte
+- **Hol kapható:** Robbanásbiztos berendezések szakkereskedése.
+
+### Színpadi és mozgófejes lámpa
+
+*Más néven:* mozgófej, PAR lámpa, színpadi spot, DMX lámpa
+
+![Színpadi és mozgófejes lámpa](svg/szinpadi.svg)
+
+Rendezvények és színpadok lámpái: színes PAR-lámpák, profilos spotok, motoros mozgófejek. DMX-vezérléssel (RS-485 alapú busz) egy pultról programozhatók.
+
+- **Szerelés:** színpadi tartószerkezetre (truss), bilinccsel, biztosító kötéllel
+- **Fényforrás:** LED, kisülőlámpa (régebben)
+- **Védettség:** IP20 (kültéri IP65) · I. érintésvédelmi osztály
+- **Fény:** 1000–50 000 lm · RGBW, változtatható fehér · Ra ≥ 80 – 95 · 2–60°, zoomos
+- **Vezérlés:** DMX512 (RS-485 fizikai réteg), Art-Net / sACN Etherneten (vonalak: RS-485 · Modbus RTU, Ethernet csavart érpár)
+- **Beépítés:**
+  - Minden függesztett lámpatesthez biztosító kötél (safety) a fő rögzítés mellett.
+  - A DMX-lánc végét lezárással kell ellátni, mint egy RS-485 buszt.
+- **Rögzítés:** Acélszerkezet, Menetes szár, metrikus csavar
+- **Előírás:** MSZ EN 60598-2-17 (színpadi és stúdió lámpatestek)
+- **Rajzjel:** `lum.spot` (Rajztár)
+- **Hova:** színpad, rendezvényterem, klub, templom, stúdió
+- **Buktatók:**
+  - Biztosító kötél nélkül a leeső lámpa életveszélyes.
+- **Rokon típusok:** Sínrendszer 230 V, HCL: emberközpontú világítás (hangolható fehér)
+- **Keresőszavak:** HU: DMX mozgófej · LED PAR lámpa — EN: DMX moving head · LED PAR can — DE: DMX Moving Head · LED PAR Scheinwerfer
+- **Hol kapható:** Színpadtechnikai szaküzlet.
+
+### Száloptikás csillagos mennyezet
+
+*Más néven:* csillagos égbolt mennyezet, fiber optic star ceiling
+
+![Száloptikás csillagos mennyezet](svg/csillagos-mennyezet.svg)
+
+Egyetlen fényforrás (projektor) fényét sok optikai szál vezeti a mennyezet apró furataiba: csillagos égbolt hatás, villódzó, színváltó változatban is. A furatokban nincs elektromosság.
+
+- **Szerelés:** a mennyezetbe fűzött optikai szálak, a fényforrás a mennyezet fölött
+- **Fényforrás:** LED-projektor optikai szálköteggel
+- **Védettség:** a szálvégeken nincs villamos rész · a projektoré
+- **Fény:** nagyon kevés: díszítő fény · meleg vagy hideg fehér, RGB · — · pontszerű csillagok
+- **Vezérlés:** a projektor távirányítója, okos vezérlés (vonalak: 2,4 GHz sáv)
+- **Beépítés:**
+  - A projektor hozzáférhető helyre (revíziós nyílás), a szálak hossza ehhez igazítva.
+  - A szálakat a gipszkarton lapozása előtt vagy a lap átfúrásával fűzik; a végeket síkba vágják.
+- **Rögzítés:** Gipszkarton, Fa
+- **Előírás:** MSZ EN 60598-1 (a projektor)
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** hálószoba, gyerekszoba, házimozi, szauna
+- **Buktatók:**
+  - A projektor ventilátora zajos lehet: hálószobában a helye számít.
+- **Rokon típusok:** Világító mennyezet, Szaunavilágítás
+- **Keresőszavak:** HU: száloptikás csillagos mennyezet készlet — EN: fiber optic star ceiling kit — DE: Sternenhimmel Glasfaser Set
+- **Hol kapható:** Világítástechnikai szaküzlet, szaunaszaküzlet.
+
+### Napfénycső (fénycsatorna)
+
+*Más néven:* tubular daylight device, fénycső tetőre, Solatube-típusú
+
+![Napfénycső (fénycsatorna)](svg/napfenycso.svg)
+
+A tetőn lévő kupola napfényt gyűjt, a belül tükröző cső levezeti, és a mennyezeti szórólap szétszórja: elektromosság nélküli „lámpa” ablaktalan helyiségekbe. Kiegészítőként beépített LED-del vagy szellőzővel is kapható.
+
+- **Szerelés:** a tetőn át a mennyezetig, belül tükrös csővel
+- **Fényforrás:** napfény (kiegészítő LED-modul)
+- **Védettség:** a tetőátvezetés vízzáró szerkezet · a LED-kiegészítőé
+- **Fény:** a nappali fénytől függ: derült időben egy erős lámpa fényárama · a nappali fényé · a nappali fényé · szórt
+- **Vezérlés:** nincs (a kiegészítő LED kapcsolható)
+- **Beépítés:**
+  - A tetőátvezetést a tetőfedővel együtt kell beépíteni; a cső hossza és a kanyarok száma a fényt csökkenti.
+  - Hőszigetelt padláson a cső szigetelése a páralecsapódás ellen.
+- **Rögzítés:** Fa, Gipszkarton
+- **Előírás:** a gyártó beépítési útmutatója; a LED-kiegészítőre MSZ EN 60598-1
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** ablaktalan fürdő, folyosó, kamra, belső helyiség
+- **Buktatók:**
+  - Éjszaka nem ad fényt: a helyiségben más világítás is kell.
+- **Rokon típusok:** Világító mennyezet, HCL: emberközpontú világítás (hangolható fehér)
+- **Keresőszavak:** HU: napfénycső tetőre · fénycsatorna — EN: tubular skylight · sun tunnel — DE: Tageslichtspot · Lichtröhre Dach
+- **Hol kapható:** Tetőablak-forgalmazó, tetőfedő anyagkereskedés.
+
+### HCL: emberközpontú világítás (hangolható fehér)
+
+*Más néven:* human centric lighting, tunable white, biodinamikus világítás
+
+![HCL: emberközpontú világítás (hangolható fehér)](svg/hcl.svg)
+
+A színhőmérsékletet és a fényerőt a napszakhoz igazító világítás: reggel és napközben hidegebb, erősebb, este melegebb, halványabb fény, a napi ritmus támogatására. Nem egy lámpa, hanem lámpák és vezérlés rendszere.
+
+- **Szerelés:** bármely lámpatest-forma hangolható fehér kivitelben
+- **Fényforrás:** hangolható fehér (CCT) LED, két csatornával
+- **Védettség:** a lámpatesté · a lámpatesté
+- **Fény:** a lámpatesté · jellemzően 2700–6500 K között változtatható · Ra ≥ 90 · a lámpatesté
+- **Vezérlés:** DALI DT8, Zigbee, Thread / Matter, KNX: időprogrammal vagy napkövetéssel (vonalak: DALI, 2,4 GHz sáv, KNX TP)
+- **Beépítés:**
+  - Egy helyiségben azonos vezérlési rendszer és egymáshoz hangolt lámpatestek kellenek, különben eltérő színek.
+  - A két csatorna (meleg és hideg) bekötése a meghajtó szerint.
+- **Előírás:** MSZ EN 12464-1; a nem vizuális hatásokra CIE S 026 (tájékoztató)
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** iroda, iskola, idősotthon, otthoni dolgozószoba és hálószoba
+- **Buktatók:**
+  - Különböző gyártók hangolható fehér lámpái ugyanazon a beállításon eltérő színt adhatnak.
+- **Rokon típusok:** Világító mennyezet, LED-panel, Napfénycső (fénycsatorna)
+- **Keresőszavak:** HU: hangolható fehér LED DALI DT8 · human centric lighting — EN: tunable white LED DALI DT8 · human centric lighting — DE: Tunable White LED DALI DT8 · Human Centric Lighting
+- **Hol kapható:** Világítástechnikai szakkereskedés.
+
+### Sütő- és hűtővilágítás
+
+*Más néven:* sütőlámpa, hűtőlámpa, hőálló izzó
+
+![Sütő- és hűtővilágítás](svg/sutovilagitas.svg)
+
+A háztartási gépek belső világítása: a sütőben hőálló (jellemzően 300 °C-ig) izzó vagy LED, a hűtőben hidegben is működő LED. A gép része, cseréje az alkatrész szerint.
+
+- **Szerelés:** a háztartási gépben, gyári foglalatban
+- **Fényforrás:** hőálló E14 / G9 izzó, vagy gyári LED-modul
+- **Védettség:** a gépé · a gépé
+- **Fény:** kevés: belső megvilágítás · meleg vagy semleges fehér · — · szórt
+- **Vezérlés:** ajtókapcsoló, a gép vezérlése
+- **Beépítés:**
+  - Csere előtt a gépet feszültségmentesíteni kell; a búra tömítését vissza kell tenni.
+- **Előírás:** a gépre MSZ EN 60335 sorozat; a fényforrásra a gyártói jelölés
+- **Rajzjel:** `lum.general` (Rajztár)
+- **Hova:** konyha
+- **Buktatók:**
+  - Sütőbe csak sütőbe minősített fényforrás való: a közönséges izzó vagy LED elolvad vagy szétreped.
+- **Rokon típusok:** Konyhai pult alatti világítás
+- **Keresőszavak:** HU: sütő izzó 300 fok · hűtőgép LED izzó — EN: oven lamp 300°C · fridge LED bulb — DE: Backofenlampe 300°C · Kühlschranklampe LED
+- **Hol kapható:** Háztartásigép-alkatrész bolt, műszaki áruház.
+
+### Vizsgáló- és műtőlámpa
+
+*Más néven:* orvosi vizsgálólámpa, műtőlámpa, nagyítós lámpa
+
+![Vizsgáló- és műtőlámpa](svg/vizsgalolampa.svg)
+
+Egészségügyi és kozmetikai célú, nagy megvilágítású, árnyékmentes és kiváló színvisszaadású lámpa; a műtőlámpa orvostechnikai eszköz, külön szabályozással.
+
+- **Szerelés:** mennyezetre, falra vagy gurulós állványra, karral
+- **Fényforrás:** integrált LED
+- **Védettség:** IP20 – IP54 · a gyártó szerint, orvosi minősítéssel
+- **Fény:** a jellemző a megvilágítás a munkamezőben (több tízezer lux) · 4000–5000 K · Ra ≥ 90 – 95 · keskeny, fókuszálható
+- **Vezérlés:** a lámpán: fényerő, fókusz, steril fogantyú
+- **Beépítés:**
+  - Mennyezeti karnál a födém teherbírása és a rögzítőlap a gyártó szerint; a helyiség orvosi villamos előírásai (csoportok, potenciálkiegyenlítés).
+- **Rögzítés:** Beton, Vegyi dübel, Menetes szár, metrikus csavar
+- **Előírás:** MSZ EN 60601-2-41 (műtő- és vizsgálólámpák), MSZ HD 60364-7-710 (orvosi helyiségek)
+- **Rajzjel:** `lum.spot` (Rajztár)
+- **Hova:** rendelő, kozmetika, fogorvosi rendelő, műtő
+- **Buktatók:**
+  - Orvosi helyiségben a villamos szerelésnek külön szabályai vannak.
+- **Rokon típusok:** UV-C fertőtlenítő lámpa
+- **Keresőszavak:** HU: LED vizsgálólámpa · kozmetikai nagyítós lámpa — EN: LED examination light · magnifying lamp — DE: LED Untersuchungsleuchte · Lupenleuchte
+- **Hol kapható:** Orvostechnikai forgalmazó, kozmetikai nagyker.
+
+### Jelzőtorony és jelzőfény
+
+*Más néven:* toronyfény, jelzőoszlop, villogó, stack light
+
+![Jelzőtorony és jelzőfény](svg/toronyfeny.svg)
+
+Színes jelzőfények egymásra épített sora vagy egyetlen villogó: gépállapotot (piros hiba, sárga figyelmeztetés, zöld üzem), kapumozgást vagy riasztást jelez, gyakran hangjelzővel együtt.
+
+- **Szerelés:** gépre, vezérlőszekrényre, kapura vagy falra
+- **Fényforrás:** integrált LED
+- **Védettség:** IP54 – IP66 · a gyártó szerint (24 V vagy 230 V)
+- **Fény:** a láthatóság a lényeg: folyamatos, villogó vagy forgó fény · piros, sárga, zöld, kék, fehér · — · minden irányba
+- **Vezérlés:** a gép vezérlése (PLC kimenet), a kapunyitó vezérlése, IO-Link (vonalak: RS-485 · Modbus RTU, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA)
+- **Beépítés:**
+  - A színek jelentése a gép vagy a rendszer dokumentációja szerint egységes legyen.
+  - Kapunyitónál a villogó a mozgás előtt kezdjen jelezni.
+- **Rögzítés:** Önfúró lemezcsavar, Nylon terpesztődübel
+- **Előírás:** MSZ EN 60204-1 (gépek villamos szerkezetei, a jelzőfények színei)
+- **Rajzjel:** `meas.lamp` (Rajztár)
+- **Hova:** műhely, gépsor, kapu, garázskapu, vezérlőszekrény
+- **Buktatók:**
+  - Túl sok villogó jel csökkenti a figyelmet a valódi riasztásra.
+- **Rokon típusok:** Kapuoszlop- és pillérlámpa
+- **Keresőszavak:** HU: jelzőtorony LED 24V · villogó lámpa kapunyitóhoz — EN: LED stack light 24V · warning beacon gate — DE: Signalsäule LED 24V · Warnleuchte Tor
+- **Hol kapható:** Ipari automatizálási kereskedés, kapunyitó-forgalmazó.
