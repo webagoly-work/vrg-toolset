@@ -104,7 +104,7 @@ import kotlin.math.roundToInt
 //    ⇩ Mentés writes a vrg-house3d file to the shared "VRG Vázlat" folder, which the Desktop's 🏠 Ház 3D opens to scale.
 //  - ⏺ Felvétel: ARCore's Recording API writes the camera, the depth and the motion sensors into one MP4 for the PC.
 //
-// The whole pack is the one switch Ar.FEATURE (default off, D-163). Nothing here runs, and ARCore is never asked about,
+// The whole pack is the one switch Ar.FEATURE (default off, D-165). Nothing here runs, and ARCore is never asked about,
 // until the user switches it on and opens the meter; the APK says AR is optional (AndroidManifest.xml), so it installs
 // and works on phones without ARCore. All the maths that can be is in sketch-core Ar.kt, tested on the JVM.
 

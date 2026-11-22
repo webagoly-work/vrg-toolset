@@ -1014,26 +1014,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     library); the processing is START P → 3 on a drop folder (`inbox\haz3d\<ház>`). Rejected: **B** a separate tool
     page (one more page to register for one view); **C** the phone (the reconstruction runs on the PC anyway).
 
-- **D-162 … D-165 · Google AR csomag (M64, dev line skcam K6), 2026-11-22.** Q2 was answered by the Founder: the
+- **D-164 … D-167 · Google AR csomag (M64, dev line skcam K6), 2026-11-22.** Q2 was answered by the Founder: the
   recommended option, ARCore as an option, and *"a pack that can be activated (not just feature-by-feature)"*. The
   rest was taken for the Founder while building ("both, start with the ARCore pack"); each can be revisited.
-  - **D-162 · Whose AR.** Chosen **A**: Google's ARCore (`com.google.ar:core`, the client library in the APK; the
+  - **D-164 · Whose AR.** Chosen **A**: Google's ARCore (`com.google.ar:core`, the client library in the APK; the
     runtime, Google Play Services for AR, from the Play Store when the meter first opens). The manifest marks AR
     *optional*, so the app installs and works without it. Rejected: **B** an open visual-inertial SLAM (Basalt BSD-3,
     OpenVIO MIT; OpenVINS and ORB-SLAM3 are GPL-3). These are research code with no Android build, and each phone
     would need its camera and sensors calibrated: a later spike, not K6. **C** Huawei AR Engine (closed, one brand
     only).
-  - **D-163 · One switch.** Chosen **A**: the whole pack is `kamera.ar` (*Google AR csomag*), off by default. On, it
+  - **D-165 · One switch.** Chosen **A**: the whole pack is `kamera.ar` (*Google AR csomag*), off by default. On, it
     brings the meter, the scan and the recording together; off, nothing of it shows and ARCore is never asked about.
     Rejected: **B** a switch per AR feature (the Founder's own "not just feature-by-feature"); **C** on by default
     (Google's runtime only by choice).
-  - **D-164 · Where the results go.** Chosen **A**:
+  - **D-166 · Where the results go.** Chosen **A**:
     - a distance goes into the survey's `ar` key (mm, label, room, wall), and onto the wall when opened from its Méret;
     - a scan is a `vrg-house3d` file already to scale (the K5 viewer opens and measures it);
     - a recording is ARCore's MP4.
     The files go to the phone's shared VRG Vázlat folder, and the survey lists them by name only. Rejected: **B** the
     cloud inside the survey (megabytes on every Átadás); **C** a format of its own for the scan (one more viewer).
-  - **D-165 · What the circle measures to.** Chosen **A**: ARCore's hit test at the screen's middle, accepting a
+  - **D-167 · What the circle measures to.** Chosen **A**: ARCore's hit test at the screen's middle, accepting a
     tracked plane inside its outline, a depth point, or a feature point with a surface normal. The two ends are
     anchors, so they follow ARCore's corrections. Rejected: **B** tapping anywhere on the screen (the finger hides the
     spot); **C** planes only (no corners, no furniture).
