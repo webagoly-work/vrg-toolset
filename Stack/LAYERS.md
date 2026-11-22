@@ -112,8 +112,8 @@ Every layer should have **one interactive page** where a person sees that layer 
 - **Source:** `Solomon/data/signals.json` (its docs list) and the documents themselves.
 - **Rule:** the Solomon ladder applies: the script finds, Caleb judges, the Founder rules. Nothing writes to a document.
 
-### K · Kisokos (Handbook): 269 nodes (2026-11-22)
-- **Is:** the work knowledge itself, not the dev work: the Villanyszerelés core, 8 axes with 4 term nodes per pole, the 9 volumes, every Kisokos card (Rögzítéstechnika: 53, Kommunikációs vonalak: 27, Világítótestek: 79, Előírások: 23), and the knowledge bases outside the Kisokos (Rajztár, Készlet, CoreRef, Modulshop) placed by how much of them overlaps the core.
+### K · Kisokos (Handbook): 279 nodes (2026-11-22)
+- **Is:** the work knowledge itself, not the dev work: the Villanyszerelés core, 8 axes with 4 term nodes per pole, the 9 volumes, every Kisokos card (Rögzítéstechnika: 53, Kommunikációs vonalak: 27, Világítótestek: 79, Előírások: 23, Tankönyv: 10), and the knowledge bases outside the Kisokos (Rajztár, Készlet, CoreRef, Modulshop) placed by how much of them overlaps the core.
 - **Order:** space. The core is a sphere; each axis runs through it with its two poles opposite; a term node's ring is its distance from daily work (1 = needed tomorrow … 4 = the horizon).
 - **Node kinds:** core · axis · term · volume · card/<kind> · knowledge base.
 - **Edges:** `on-axis` (term → axis → core), `gravitates` (card or base → the core or its term node), `holds` (volume → card), `uses` (material → its bits, anchors, screws; a lamp type → its fixings, control lines and rules in other volumes), `rokon` (a line → its related lines), `keszletben` (a card → the Készlet knowledge base, weighted by its stocked products, from `Kisokos/keszlet.json`).

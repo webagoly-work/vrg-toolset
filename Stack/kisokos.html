@@ -529,6 +529,17 @@ function showItem(i) {
     if (c.fixing && c.fixing.length) h += row('Rögzítés', xrefs(c.fixing));
     h += row('Előírás', esc(c.rules) + (c.norms && c.norms.length ? '<br>' + xrefs(c.norms) : '')) + row('Rajzjel', c.symbol ? `<span style="font:11px var(--mono)">${esc(c.symbol)}</span> (Rajztár)` : '') + row('Hova', esc(c.rooms));
     if (c.related && c.related.length) h += row('Rokon típusok', refs(it.vol, c.related));
+  } else if (it.kind === 'lecke') {
+    const LV = { 1: 'Kezdő', 2: 'Szakmunkás', 3: 'Mester, tervező' };
+    h += row('Szint', `${c.level}. ${esc(LV[c.level] || '')} · ${c.chapter}. lecke`);
+    if (c.prereq && c.prereq.length) h += row('Előtte', refs(it.vol, c.prereq));
+    h += row('Célok', '<ul>' + c.goals.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Magyarázat', c.body.map(p => `<p style="margin:0 0 6px">${esc(p)}</p>`).join(''));
+    if (c.formulas && c.formulas.length) h += row('Képletek', c.formulas.map(f => `<div><code>${esc(f.f)}</code> <span class="hint">${esc(f.mean)}</span></div>`).join(''));
+    h += row('Kidolgozott példa', `<div>${esc(c.example.task)}</div><ol style="margin:4px 0;padding-left:18px">${c.example.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol><div>→ ${esc(c.example.result)}</div>`);
+    h += row('Gyakorló feladatok', c.exercises.map((e, i) => `<details style="margin:3px 0"><summary>${i + 1}. ${esc(e.q)}</summary><div class="hint">${esc(e.a)}</div></details>`).join(''));
+    h += row('Biztonság', '<ul>' + c.safety.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    if (c.links && c.links.length) h += row('Kapcsolódó kártyák', xrefs(c.links));
   } else if (it.kind === 'eloiras') {
     h += row('Mire vonatkozik', esc(c.scope));
     h += row('Lényeg (saját összefoglaló)', '<ul>' + c.points.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');

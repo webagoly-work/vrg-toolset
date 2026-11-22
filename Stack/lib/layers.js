@@ -318,7 +318,7 @@ function kisokos() {
   const toPlace = (id, pl) => pl.core ? { a: id, b: 'K:core', rel: 'gravitates', w: 1 } : { a: id, b: 'K:term.' + pl.term, rel: 'gravitates', w: 1 };
   for (const c of K.cards) {
     const id = 'K:card.' + c.gid;
-    nodes.push(node('K', 'card.' + c.gid, { kind: 'card/' + c.kind, title: c.title, brief: clip(c.recognise || c.holds || c.what || c.how || c.scope || c.mode || c.thread || '', 260),   // what / how: lamp and line cards
+    nodes.push(node('K', 'card.' + c.gid, { kind: 'card/' + c.kind, title: c.title, brief: clip(c.recognise || c.holds || c.what || c.how || c.scope || (c.body && c.body[0]) || c.mode || c.thread || '', 260),   // what / how: lamp and line cards
       t: c.added, state: c.reviewed ? 'reviewed' : 'draft', lane: c.place.core || c.place.term,
       text: [c.title, (c.aka || []).join(', '), flat(c), c.file].join(' \n'), extra: { file: c.file, vol: c.vol, cubes: c.cubes } }));
     edges.push({ a: 'K:vol.' + c.vol, b: id, rel: 'holds' }, toPlace(id, c.place));

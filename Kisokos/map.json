@@ -10,7 +10,7 @@
   ],
   "cubeBytes": 1024,
   "volumes": [
-    { "id": "tk", "hu": "Tankönyv", "color": "#93d3e6" },
+    { "id": "tk", "hu": "Tankönyv", "color": "#93d3e6", "dir": "tankonyv" },
     { "id": "al", "hu": "Alapok és kutatás", "color": "#b9a6e6" },
     { "id": "sz", "hu": "Szakmatérkép", "color": "#e8a873" },
     { "id": "ez", "hu": "Eszköztár", "color": "#8bcca1" },

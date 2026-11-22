@@ -28,9 +28,9 @@ const path = require('path');
 const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const LANGS = ['hu', 'en', 'de'];
-const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'], lampa: ['related'], eloiras: ['related'] };
-const XREFS = { lampa: ['fixing', 'lines', 'norms'] };   // links into other volumes, written '<volume>.<id>'
-const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal', lampa: 'Lámpatest-típus', eloiras: 'Előírás' };
+const REFS = { anyag: ['bits', 'anchors', 'screws'], dubel: ['for'], furoszar: ['for'], csavar: ['for', 'with'], szerszam: ['for'], vonal: ['related'], lampa: ['related'], eloiras: ['related'], lecke: ['prereq'] };
+const XREFS = { lampa: ['fixing', 'lines', 'norms'], lecke: ['links'] };   // links into other volumes, written '<volume>.<id>'
+const KIND_HU = { anyag: 'Anyag', dubel: 'Dübel, horgony', furoszar: 'Fúrószár', csavar: 'Csavar', szerszam: 'Szerszám', vonal: 'Vonal', lampa: 'Lámpatest-típus', eloiras: 'Előírás', lecke: 'Lecke' };
 const VS = require('./lib/vonal-svg');
 const LS = require('./lib/lampa-svg');
 
@@ -103,7 +103,7 @@ function check(K = load()) {
     if (!c.title) P.push(`${who}: no title`);
     placeOk(who, c.place);
     for (const l of LANGS) if (!c.terms || !Array.isArray(c.terms[l]) || !c.terms[l].length) P.push(`${who}: no ${l} search terms`);
-    if (!c.shop) P.push(`${who}: no shop`);
+    if (!c.shop && c.kind !== 'lecke') P.push(`${who}: no shop`);
     const ids = byVol[c.vol];
     for (const field of REFS[c.kind] || []) {
       let v = c[field]; if (field === 'bits' || field === 'note') v = c.drill && c.drill.bits;
@@ -127,6 +127,14 @@ function check(K = load()) {
       else if (['wide', 'narrow', 'updown', 'up'].includes(c.distribution.type) && !(c.distribution.angle > 0 && c.distribution.angle < 180)) P.push(`${who}: distribution.angle (beam, degrees) is needed for ${c.distribution.type}`);
       if (c.symbol && K.symbols && !K.symbols.has(c.symbol)) P.push(`${who}: symbol "${c.symbol}" is not in shared/rajztar/data/symbols.json`);
       for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
+    }
+    if (c.kind === 'lecke') {
+      if (![1, 2, 3].includes(c.level)) P.push(`${who}: level must be 1, 2 or 3`);
+      if (!Number.isInteger(c.chapter)) P.push(`${who}: chapter must be a number`);
+      for (const f of ['goals', 'body', 'exercises', 'safety']) if (!Array.isArray(c[f]) || !c[f].length) P.push(`${who}: ${f} must be a non-empty list`);
+      if (!c.example || !c.example.task || !Array.isArray(c.example.steps) || !c.example.result) P.push(`${who}: example needs task, steps and result`);
+      for (const e of c.exercises || []) if (!e.q || !e.a) P.push(`${who}: every exercise needs q and a (the answer)`);
+      for (const f of c.formulas || []) if (!f.f || !f.mean) P.push(`${who}: every formula needs f and mean`);
     }
     if (c.kind === 'eloiras') {
       if (!c.source || !c.source.ref || !c.source.kind) P.push(`${who}: source needs kind and ref (a summary always names what it summarises)`);
@@ -161,6 +169,7 @@ function md(K = load()) {
   if (K.cards.some(c => c.vol === 'kv')) out.push(mdKv(K));
   if (K.cards.some(c => c.vol === 'vt')) out.push(mdVt(K));
   if (K.cards.some(c => c.vol === 'el')) out.push(mdEl(K));
+  if (K.cards.some(c => c.vol === 'tk')) out.push(mdTk(K));
   return out.join('\n');
 }
 
@@ -205,6 +214,36 @@ function keszletReport(K, add) {
     L.push(`added ${sugg.length} suggested links to keszlet.json (marked "javaslat"); review them`);
   }
   return L.join('\n');
+}
+
+const LEVEL_HU = { 1: 'Kezdő', 2: 'Szakmunkás', 3: 'Mester, tervező' };
+function mdTk(K) {
+  const vol = K.map.volumes.find(v => v.id === 'tk');
+  const dir = path.join(K.root, vol.dir);
+  const cs = K.cards.filter(c => c.vol === 'tk').sort((a, b) => a.level - b.level || a.chapter - b.chapter);
+  const any = r => { const m = /^([a-z]+)\.(.+)$/.exec(r); return m ? name(K, m[1], m[2]) : r; };
+  const L = ['# Tankönyv — a Kisokos', '',
+    '*Generálva a lecke-kártyákból (`node Kisokos/kisokos.js md`); ne szerkeszd kézzel. Saját írás; a számpéldák kerekítettek. ' +
+    'Vázlat: minden lecke ellenőrzésre vár. A tanterv: `docs/kisokos/tankonyv.md`.*', ''];
+  for (const lv of [...new Set(cs.map(c => c.level))]) {
+    L.push(`## ${lv}. szint: ${LEVEL_HU[lv]}`, '');
+    for (const c of cs.filter(x => x.level === lv)) L.push(`- [${c.title}](#${c.id})`);
+    L.push('');
+    for (const c of cs.filter(x => x.level === lv)) {
+      L.push(`<a id="${c.id}"></a>`, '', `### ${c.title}`, '');
+      if (c.prereq && c.prereq.length) L.push(`*Előtte:* ${c.prereq.map(r => name(K, 'tk', r)).join(', ')}`, '');
+      L.push('**Célok**', '', ...c.goals.map(g => `- ${g}`), '');
+      L.push(...c.body.flatMap(p => [p, '']));
+      if (c.formulas && c.formulas.length) { L.push('**Képletek**', ''); for (const f of c.formulas) L.push(`- \`${f.f}\` — ${f.mean}`); L.push(''); }
+      L.push('**Kidolgozott példa**', '', c.example.task, '', ...c.example.steps.map((s, i) => `${i + 1}. ${s}`), '', `→ ${c.example.result}`, '');
+      L.push('**Gyakorló feladatok**', '');
+      c.exercises.forEach((e, i) => L.push(`${i + 1}. ${e.q}`, `   <details><summary>Megoldás</summary>${e.a}</details>`));
+      L.push('', '**Biztonság**', '', ...c.safety.map(s => `- ${s}`), '');
+      if (c.links && c.links.length) L.push(`*Kapcsolódó kártyák:* ${c.links.map(any).join(', ')}`, '');
+    }
+  }
+  fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
+  return `wrote ${path.relative(K.repo, path.join(dir, 'KISOKOS.md'))} (${cs.length} lessons)`;
 }
 
 function mdEl(K) {
