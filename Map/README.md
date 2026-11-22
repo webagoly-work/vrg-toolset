@@ -22,6 +22,7 @@ first time **M** is picked. `--refresh` fetches a newer OSM week, `--only=basema
 | addresses | `addresses.json` | built from the .pbf by `tools/build-addresses.js` | ODbL |
 | pois | `pois.json` | the Térkép-feed's points, built from the .pbf by `tools/build-pois.js` | ODbL |
 | roads | `roads.bin` | the road network for offline routing, built from the .pbf by `tools/build-roads.js` | ODbL |
+| heights | `bp-heights.bin` | measured building heights (B layer), built by `tools/build-bp-heights.js` from `src/bp-epuletmagassag.geojson`, which you put there by hand (the Budapest Open Data Atlas *Épületmagasság*; check its licence first) | the source's |
 | fonts, sprites | `fonts/`, `sprites/` | protomaps/basemaps-assets | OFL / see repo |
 
 `Map/data/manifest.json` records source, date, licence and size of every part. The pmtiles CLI goes
@@ -33,7 +34,13 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/geocode.js` — the offline geocoder (index, query parsing, search, job addresses), shared by the
   page, `tools/build-jobs.js` and the tests.
 - `lib/jobs-layer.js` — the **J** layer: the jobs on the map (client data, see below).
-- `lib/sun.js`, `lib/shadow-layer.js` — the **S** layer: the sun's position and the buildings' shadows.
+- `lib/sun.js`, `lib/shadow-layer.js` — the **S** layer: the sun's position and the buildings' shadows; with the
+  terrain, the hills' own shadow too (⛰).
+- `lib/relief.js`, `lib/dem.js`, `lib/relief-layer.js` — the **R** layer: measuring the relief (height, slope and aspect
+  under the pointer, contours, slope classes, the profile between two clicks) on the terrain tiles
+  (`docs/map/RELIEF.md`). `relief.js` is also the Data Vault's Térkép page's maths.
+- `lib/heights.js`, `lib/heights-layer.js`, `tools/build-bp-heights.js` — the **B** layer: measured building heights
+  (Budapest) in 3D, and the shadows from them.
 - `lib/feed.js`, `lib/feed-layer.js` — the **F** Térkép-feed: the nearest home, Daniella, shop, food,
   doctor … with distance, ETA and ghost lines (`docs/map/FEED.md`); its points from `tools/build-pois.js`
   (`tools/osm-pbf.js` is the shared .pbf reader).
@@ -57,7 +64,7 @@ to `H:\VRG\Full\tools\pmtiles`.
   Accents and abbreviations (u., krt., sgt., rkp., ltp.) are optional. Offline first; the
   "Keresés az interneten" row asks OSM Nominatim (online, one request a second).
 - Picking a result flies there tilted and turned, so terrain and building heights read at once.
-- Keys: `/` search · `3` 3D buildings · `T` terrain · `S` shadows · `F` feed · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
+- Keys: `/` search · `3` 3D buildings · `T` terrain · `R` relief measuring · `B` measured building heights · `S` shadows · `F` feed · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
 - **S Árnyék**: the buildings' shadows on any day and hour, a time slider from sunrise to sunset and
   ▶ to sunset (`lib/sun.js`, `lib/shadow-layer.js`; flat ground, OSM heights). `docs/map/SHADOWS.md`.
   With the jobs on: `D` density · `I` timeline · `,` / `.` previous / next job · job codes in the search box.
