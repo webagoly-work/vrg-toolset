@@ -230,4 +230,6 @@ box on the phone (Rendezés → ⬚ Szobadoboz, a WebView with `lib/roombox-phon
 📏 Mérés on any photo (phone and Desktop, one screen: `lib/plane.js` + `lib/plane-ui.js`). Four corners of a known
 rectangle on the wall give true distances and heights above a floor line; the results go into the survey's `planes` key. **K4 is
 built (WP M62, BETA):** in the Szobadoboz, per photo point, ⟲ Igazítás matches the 0.5× neighbours and fixes their
-turns and tilts; ⇩ 360° kép makes a GPano JPEG any 360° viewer opens (`lib/pano.js`).
+turns and tilts; ⇩ 360° kép makes a GPano JPEG any 360° viewer opens (`lib/pano.js`). **K5 is built (WP M63,
+BETA):** a walk round a house → START P → 3 (COLMAP on the PC) → `<név>.house3d.json` → Helyszín → 🏠 Ház 3D: the point
+cloud, a scale from one true distance, then measurements (`tools/house3d.js`, `lib/house3d.js`, `lib/house3d-ui.js`).
