@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Óra's part of the app manifest (WP M65). docs/mobile/WP/M65.md says why each is here. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- BLE: finding Q71_LE once (scan), the LE link to it, and the phone's own GATT server that the watch uses for
+         find phone and the time. No advertising: the watch reaches the server over the link the phone opened.
+         The same declarations as feature-pager and feature-tag, or the manifest merge fails. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- The link lives in a foreground service while the user wants it (the watch rings the phone with the screen off). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
+    <application>
+        <service
+            android:name=".WatchService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+</manifest>
