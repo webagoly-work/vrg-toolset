@@ -959,6 +959,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   through the PC (pair once with an iPhone / Mac, export the key, a PC helper with an Apple ID fetching reports for the
   phone: unofficial, against Apple's terms, fragile, needs a Mac); **C** a Google Find Hub tag beside it (not ruled out
   as a purchase, just not part of this WP). Details: `WP/M61.md`.
+- **D-152 · Tárgykereső: the iTag joins it (M61), 2026-11-22.** Taken while building on the Founder's "in the same
+  fashion, add this device as well", may be revisited. The teardrop iTag is a second kind of tag in the same feature
+  (one tag book, one screen, one left-behind service), not a feature of its own. Its connection is held only while
+  *Kapcsolat tartása és ottfelejtés* is on, because a link opened with the screen would make the tag slow-beep every
+  time the screen closes. Telefonkereső (its button rings the phone) works only on that held link. Details: `WP/M61.md`.
 
 - **D-152 … D-155 · Körkép (M62, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
   each can be revisited.
