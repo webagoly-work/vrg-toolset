@@ -165,6 +165,10 @@ rem Atadas (WP M12): Node only, port 47396, a temporary board folder and clipboa
 "%NODE_EXE%" "Mobile\tests\relay-board.js"
 rem Kepernyo (WP M13): Node only, ports 47397-47399, plays test frames, captures nothing
 "%NODE_EXE%" "Mobile\tests\relay-screen.js"
+rem Playwright: portable in Full\tools\playwright, its Chromium in .\browsers (no node_modules in the repo)
+set "PW_DIR=%REPO%\..\tools\playwright"
+if exist "%PW_DIR%\node_modules\playwright" set "NODE_PATH=%PW_DIR%\node_modules"
+if exist "%PW_DIR%\browsers" if not defined PLAYWRIGHT_BROWSERS_PATH set "PLAYWRIGHT_BROWSERS_PATH=%PW_DIR%\browsers"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"
@@ -173,8 +177,8 @@ goto DONE_PAUSE
 :NO_PLAYWRIGHT
 popd
 echo.
-echo   A Playwright nincs telepitve. A repo gyokereben egyszer:
-echo     npm install --no-save playwright  es  npx playwright install chromium
+echo   A Playwright nincs telepitve. Hordozhatoan, a Full\tools\playwright mappaba:
+echo     docs\research\tools-installed-2026-11.md - ott a parancs es a verzio
 goto DONE_PAUSE
 
 :DO_STUDIO
