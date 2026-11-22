@@ -414,6 +414,8 @@ A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóalj
 - **Erre hivatkozó típusok:** Kapcsolt aljzat (a dugaszolós lámpák köre)
 - **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
 - **Keresőszavak:** HU: MSZ EN 60669 kapcsoló · LED dimmer kompatibilitás — EN: EN 60669 switches · LED dimmer compatibility — DE: EN 60669 Schalter · LED Dimmer kompatibel
+- **A Készletben:**
+  - `VRG-0020` SMR-M 230V kapcsoló alá szerelhető, Elko Ep, 4377 ; LED izzók és energiatakarékos fénycsövek fényerőszabályzására! · 27 173 Ft — *szabvány*: kapcsoló alá szerelhető LED-dimmer: a kapcsolók és dimmerek szabványa alá tartozik
 
 ## MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
 

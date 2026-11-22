@@ -216,6 +216,12 @@
   - Dupla lapnál hosszabb dübel kell; a dübelt a lapvastagsághoz kell választani.
 - **Keresőszavak:** HU: üreges fali dübel · billenő dübel · gipszkarton dübel · üreges fali doboz 68 — EN: hollow wall anchor · toggle bolt · drywall anchor · drywall box 68 mm — DE: Hohlraumdübel · Kippdübel · Gipskartondübel · Hohlwanddose 68
 - **Hol kapható:** Barkácsáruház; a dobozok villamossági nagykereskedésben.
+- **A Készletben:**
+  - `VRG-0065` Gipszkarton doboz 2-es, 49mm mély, sárga, légtömített KPL 64-50/2LD NA Kopos · 1 113 Ft — *alkatrész*: gipszkarton doboz 2-es, légtömített
+  - `VRG-0066` Gipszkarton doboz 3-as, 49mm mély, sárga, légtömített KPL 64-50/3LD NA Kopos · 1 574 Ft — *alkatrész*: gipszkarton doboz 3-as, légtömített
+  - `VRG-0067` Gipszkarton doboz 5-ös, 50mm mély, sárga, légtömített KPL 64-50/5LD NA Kopos · 2 359 Ft — *alkatrész*: gipszkarton doboz 5-ös, légtömített
+  - `VRG-0068` Gipszkarton doboz 1-es, d68mm, 50mm mély, sárga, légtömített KPL 64-50/LD NA Kopos · 519 Ft — *alkatrész*: gipszkarton doboz 1-es, 68 mm, légtömített
+  - `VRG-0162` Gipszkarton doboz 1-es, d68mm, 47mm mély, narancssárga (E-115 18345 helyett) Stilo · 206 Ft — *alkatrész*: gipszkarton doboz 1-es, 68 mm
 
 ### Gipszrost lap
 
@@ -660,6 +666,9 @@
   - A profil mögött nem szabad dobozt tervezni: előtte meg kell keresni.
 - **Keresőszavak:** HU: gipszkarton körkivágó 68 — EN: drywall hole saw 68 mm — DE: Gipskarton Dosenbohrer 68
 - **Hol kapható:** Villamossági nagykereskedés, barkácsáruház.
+- **A Készletben:**
+  - `VRG-0068` Gipszkarton doboz 1-es, d68mm, 50mm mély, sárga, légtömített KPL 64-50/LD NA Kopos · 519 Ft — *használja*: a 68 mm-es doboz helyét 68 mm-es körkivágóval kell kivágni
+  - `VRG-0162` Gipszkarton doboz 1-es, d68mm, 47mm mély, narancssárga (E-115 18345 helyett) Stilo · 206 Ft — *használja*: 68 mm-es körkivágó kell hozzá
 
 ### Lépcsős fúró és bimetál körkivágó
 

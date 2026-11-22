@@ -165,7 +165,7 @@
       "cable": "Cat6A F/UTP vagy U/UTP fali kábel, tömör erű", "connector": "RJ45, keystone modul, patch panel", "standard": "IEEE 802.3, ISO/IEC 11801, EN 50173 / EN 50174",
       "home": "Strukturált lakáshálózat: minden szobába, a TV mögé, a mennyezeti Wi-Fi ponthoz, a kamerákhoz, a médiadobozba.",
       "install": ["Az erősáramú kábeltől elválasztva vezetni (EN 50174-2): távolság vagy elválasztó, keresztezés derékszögben.", "Hajlítási sugár legalább a kábel átmérőjének négyszerese; ne törd meg, ne húzd túl, ne szorítsd kábelkötegelővel.", "Egy rendszeren belül egyféle bekötési szín-sorrend (T568A vagy T568B).", "Csillagpontba (médiadoboz) tápaljzat és szellőzés."],
-      "traps": ["A sodrott erű patch kábel nem fali kábel.", "A párokat a csatlakozóig csavarva kell hagyni; a hosszan kibontott pár áthallást okoz.", "Telepítés után mérés (legalább folytonosság és pár-sorrend)."],
+      "traps": ["A sodrott erű patch kábel nem fali kábel.", "CCA (rézbevonatú alumínium) kábel olcsóbb, de nem felel meg a szabványnak: nagyobb az ellenállása, PoE-nál melegszik, a csatlakozásai lazulnak. Tömör rézérrel kell szerelni.", "A párokat a csatlakozóig csavarva kell hagyni; a hosszan kibontott pár áthallást okoz.", "Telepítés után mérés (legalább folytonosság és pár-sorrend)."],
       "related": ["poe", "optika-egymodusu", "wifi-5ghz", "hdmi"],
       "terms": { "hu": ["Cat6A fali kábel", "keystone modul RJ45", "patch panel", "médiadoboz"], "en": ["Cat6A installation cable", "RJ45 keystone jack", "patch panel"], "de": ["Cat.7 Verlegekabel", "Cat6A Keystone Modul", "Patchpanel", "Multimediaverteiler"] },
       "shop": "Villamossági nagykereskedés, hálózati szakkereskedés." },

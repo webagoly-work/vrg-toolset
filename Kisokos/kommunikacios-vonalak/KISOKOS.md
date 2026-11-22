@@ -65,6 +65,38 @@ Nem adatvonal: ez a skála viszonyítási pontja. A váltakozó feszültség má
 - **Rokon vonalak:** PLC szűksávú, PLC szélessávú, DALI
 - **Keresőszavak:** HU: 230 V váltakozó feszültség · hálózati frekvencia 50 Hz — EN: mains frequency 50 Hz · 230 V AC — DE: Netzfrequenz 50 Hz · Netzspannung 230 V
 - **Hol kapható:** Villamossági nagykereskedés.
+- **A Készletben:**
+  - `VRG-0205` NYM-J 3x 1,5 (50) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 331 Ft — *termék*: NYM-J 3 × 1,5 installációs kábel
+  - `VRG-0206` NYM-J 3x 1,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 331 Ft — *termék*: NYM-J 3 × 1,5 installációs kábel
+  - `VRG-0207` NYM-J 3x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 352 Ft — *termék*: NYM-J 3 × 1,5 installációs kábel
+  - `VRG-0208` NYM-J 3x 2,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 504 Ft — *termék*: NYM-J 3 × 2,5 installációs kábel
+  - `VRG-0209` NYM-J 3x 2,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 548 Ft — *termék*: NYM-J 3 × 2,5 installációs kábel
+  - `VRG-0210` NYM-J 5x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu) · 557 Ft — *termék*: NYM-J 5 × 1,5 installációs kábel (pl. csillárkapcsolóhoz, DALI-hoz)
+  - `VRG-0196` H07V-U 1x 1,5 barna (100) · 101 Ft — *termék*: H07V-U 1 × 1,5 tömör vezeték (védőcsőbe)
+  - `VRG-0197` H07V-U 1x 1,5 fekete (100) · 101 Ft — *termék*: H07V-U 1 × 1,5 tömör vezeték
+  - `VRG-0198` H07V-U 1x 1,5 kék (100) · 101 Ft — *termék*: H07V-U 1 × 1,5 tömör vezeték, kék (nulla)
+  - `VRG-0199` H07V-U 1x 1,5 z/s (100) · 101 Ft — *termék*: H07V-U 1 × 1,5 tömör vezeték, zöld-sárga (védővezető)
+  - `VRG-0200` H07V-U 1x 2,5 fekete (100) · 164 Ft — *termék*: H07V-U 1 × 2,5 tömör vezeték
+  - `VRG-0201` H07V-U 1x 2,5 kék (100) · 164 Ft — *termék*: H07V-U 1 × 2,5 tömör vezeték, kék
+  - `VRG-0202` H07V-U 1x 2,5 z/s (100) · 164 Ft — *termék*: H07V-U 1 × 2,5 tömör vezeték, zöld-sárga
+  - `VRG-0185` H07V-K 1x 1,5 fekete (100) · 100 Ft — *termék*: H07V-K 1 × 1,5 sodrott vezeték (elosztóba)
+  - `VRG-0057` NYY-J 3x 1,5 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel · 431 Ft — *termék*: NYY-J 3 × 1,5 erőátviteli kábel (földbe, kültérre)
+  - `VRG-0058` NYY-J 3x 4 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel · 971 Ft — *termék*: NYY-J 3 × 4 erőátviteli kábel
+  - `VRG-0056` EAYY-J 5x 16 /NAYY-J/ RE (0) földkábel 5x16 — *termék*: NAYY-J 5 × 16 alumínium földkábel (betáplálás)
+  - `VRG-0203` H05VV-F 3x 1,5 (0) · 379 Ft — *termék*: H05VV-F 3 × 1,5 hajlékony kábel (készülékbekötés)
+  - `VRG-0059` H05RR-F 3x1,5 (100) (GT) · 456 Ft — *termék*: H05RR-F 3x1,5 (100) (GT)
+  - `VRG-0060` H05RR-F 3x1,5 fekete (0) 300/500V gumikábel (GT) · 446 Ft — *termék*: H05RR-F 3x1,5 fekete (0) 300/500V gumikábel (GT)
+  - `VRG-0186` H07V-K 1x 4 fekete (0) · 283 Ft — *termék*: H07V-K 1x 4 fekete (0)
+  - `VRG-0187` H07V-K 1x 4 kék (0) · 283 Ft — *termék*: H07V-K 1x 4 kék (0)
+  - `VRG-0188` H07V-K 1x 4 z/s (0) · 283 Ft — *termék*: H07V-K 1x 4 z/s (0)
+  - `VRG-0189` 10 mkh (H07V-K 1x10) — *termék*: 10 mkh (H07V-K 1x10)
+  - `VRG-0190` H07V-K 1x 10 fekete (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh) · 720 Ft — *termék*: H07V-K 1x 10 fekete (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+  - `VRG-0191` 10 mkh (H07V-K 1x10) — *termék*: 10 mkh (H07V-K 1x10)
+  - `VRG-0192` H07V-K 1x 10 kék (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh) · 721 Ft — *termék*: H07V-K 1x 10 kék (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+  - `VRG-0193` 10 mkh (H07V-K 1x10) — *termék*: 10 mkh (H07V-K 1x10)
+  - `VRG-0194` H07V-K 1x 10 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh) · 728 Ft — *termék*: H07V-K 1x 10 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+  - `VRG-0195` H07V-K 1x 16 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh) · 1 125 Ft — *termék*: H07V-K 1x 16 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+  - `VRG-0204` H05VV-F 5x 1,5 (0) · 560 Ft — *termék*: H05VV-F 5x 1,5 (0)
 
 ## Vezetékes jelszint
 
@@ -336,11 +368,24 @@ Négy csavart érpár; mindegyiken differenciális, többszintű jel utazik, min
   - Csillagpontba (médiadoboz) tápaljzat és szellőzés.
 - **Buktatók:**
   - A sodrott erű patch kábel nem fali kábel.
+  - CCA (rézbevonatú alumínium) kábel olcsóbb, de nem felel meg a szabványnak: nagyobb az ellenállása, PoE-nál melegszik, a csatlakozásai lazulnak. Tömör rézérrel kell szerelni.
   - A párokat a csatlakozóig csavarva kell hagyni; a hosszan kibontott pár áthallást okoz.
   - Telepítés után mérés (legalább folytonosság és pár-sorrend).
 - **Rokon vonalak:** PoE: táplálás Ethernet-kábelen, Optika: egymódusú, Wi-Fi 5 GHz, HDMI
 - **Keresőszavak:** HU: Cat6A fali kábel · keystone modul RJ45 · patch panel · médiadoboz — EN: Cat6A installation cable · RJ45 keystone jack · patch panel — DE: Cat.7 Verlegekabel · Cat6A Keystone Modul · Patchpanel · Multimediaverteiler
 - **Hol kapható:** Villamossági nagykereskedés, hálózati szakkereskedés.
+- **A Készletben:**
+  - `VRG-0003` Számítógép vezeték CAT5E UTP Belden 1583E — *termék*: Cat5e U/UTP fali kábel
+  - `VRG-0004` (939081 ) Számítógép vezeték CAT5 E - UTP fali réz PVC (0) BELDEN 1583e · 205 Ft — *termék*: Cat5e U/UTP fali kábel, réz
+  - `VRG-0182` Számítógép vezeték CAT5 E - UTP fali CCA!! (0) · 155 Ft — *termék*: Cat5e UTP, de CCA (rézbevonatú alumínium): nem szabványos, PoE-nál melegszik, új szerelésbe nem ajánlott
+  - `VRG-0183` Számítógép vezeték CAT6 UTP — *termék*: Cat6 U/UTP fali kábel
+  - `VRG-0184` (989689 ) Számítógép vezeték CAT6 - UTP fali réz PVC (0) BITNER · 216 Ft — *termék*: Cat6 U/UTP fali kábel, réz
+  - `VRG-0073` LEGRAND 413102 OH kalapsínre szerelhető RJ45 port Cat6 árnyékolt (FTP) 250MHz - 1 Gigabit/s · 2 827 Ft — *alkatrész*: kalapsínre szerelhető RJ45 port Cat6 (FTP): médiadobozba, elosztóba
+  - `VRG-0081` Legrand 753142 Valena Life 1xRJ45 UTP Cat6 aljzat, fehér · 6 212 Ft — *alkatrész*: RJ45 Cat6 fali aljzat
+  - `VRG-0122` ASFORA fehér 1xRJ45 Cat5e UTP aljzat, kerettel EPH4300121 · 3 640 Ft — *alkatrész*: RJ45 Cat5e fali aljzat kerettel
+  - `VRG-0123` ASFORA fehér 1xRJ45 Cat6 UTP aljzat, kerettel EPH4700121 · 5 094 Ft — *alkatrész*: RJ45 Cat6 fali aljzat kerettel
+  - `VRG-0159` Telefon Moduláris dugó 8P8C árnyékolt Cat 5-hoz (FTP) · 131 Ft — *alkatrész*: 8P8C (RJ45) dugó, árnyékolt
+  - `VRG-0161` Telefon Moduláris dugó 8P8C-hez törésgátló TS 52/WH fehér · 61 Ft — *alkatrész*: törésgátló a 8P8C dugóhoz
 
 ### PoE: táplálás Ethernet-kábelen
 
@@ -492,6 +537,9 @@ Egy belső ér és a köré tekert árnyékolás alkot egy 75 Ω-os hullámvezet
 - **Rokon vonalak:** Koax: műholdas középfrekvencia, Mobilhálózat (4G, 5G), HDMI
 - **Keresőszavak:** HU: koax kábel 75 ohm · F csatlakozó · antennaelosztó · TV aljzat — EN: 75 ohm coaxial cable · F connector · TV splitter — DE: Koaxialkabel 75 Ohm · F-Stecker · Antennenverteiler · Antennendose
 - **Hol kapható:** Villamossági nagykereskedés, antennaszaküzlet.
+- **A Készletben:**
+  - `VRG-0121` ASFORA fehér TV aljzat végzáró 1 dB kerettel EPH3200121 · 2 317 Ft — *alkatrész*: TV-aljzat végzáró (a lánc utolsó aljzata)
+  - `VRG-0160` F-csatlakozó FF 1 · 67 Ft — *alkatrész*: F-csatlakozó a koaxkábelhez
 
 ### Koax: műholdas középfrekvencia
 
@@ -610,6 +658,8 @@ A 2400–2483,5 MHz-es, világszerte szabad sávon osztozik a Wi-Fi, a Zigbee, a
 - **Rokon vonalak:** Wi-Fi 5 GHz, 868 MHz sáv, Ethernet csavart érpár
 - **Keresőszavak:** HU: Zigbee koordinátor · Thread border router · Matter okos kapcsoló — EN: Zigbee coordinator · Thread border router · Matter smart switch — DE: Zigbee Koordinator · Thread Border Router · Matter Schalter
 - **Hol kapható:** Okosotthon-szaküzlet, műszaki áruház.
+- **A Készletben:**
+  - `VRG-0167` Wi-Fi okos dugalj (2P+F), 1x16A, fehér Stilo · 4 358 Ft — *használja*: Wi-Fi-s okos dugalj: a 2,4 GHz-es sávon kommunikál
 
 ### Wi-Fi 5 GHz
 

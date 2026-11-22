@@ -25,12 +25,14 @@ function build(graph) {
   const vols = K.map.volumes.map(v => ({ id: v.id, hu: v.hu, color: v.color, n: K.cards.filter(c => c.vol === v.id).length }));
   const items = [];
   for (const c of K.cards) {
-    const { vol, kind, gid, file, bytes, cubes, place, title, aka, added, ...rest } = c;   // rest = the card's own fields
+    const { vol, kind, gid, file, bytes, cubes, place, title, aka, added, stock: _s, ...rest } = c;   // rest = the card's own fields
     delete rest.id;
     items.push({ id: 'card.' + gid, type: 'card', vol, kind, title, aka: aka || [], place, cubes, bytes, added, file, card: rest,
+      stock: (c.stock || []).map(s => [s.vrg, s.name, s.rel, s.price, s.why]),
       ...(kind === 'vonal' ? { svg: VS.onePager(c, lines) } : kind === 'lampa' ? { svg: KM.LS.card(c) } : {}) });   // lines and lamp types carry their drawing
   }
-  for (const s of K.sources) items.push({ id: 'src.' + s.id, type: 'source', vol: s.volume, color: s.color, kind: 'tudásbázis', title: s.title, aka: [], place: s.place,
+  const stockCards = K.cards.filter(c => c.stock && c.stock.length).map(c => ['card.' + c.gid, c.stock.length]);
+  for (const s of K.sources) items.push({ ...(s.id === 'keszlet' ? { stockCards } : {}), id: 'src.' + s.id, type: 'source', vol: s.volume, color: s.color, kind: 'tudásbázis', title: s.title, aka: [], place: s.place,
     cubes: s.cubes, bytes: s.bytes, added: '', file: s.paths.join(' · '), src: { sub: s.sub, why: s.why, paths: s.paths, files: s.files } });
   // vertical neighbours of each K node (what the rest of the stack says about it)
   const links = {};

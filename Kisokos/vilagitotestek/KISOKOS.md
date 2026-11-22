@@ -1053,6 +1053,8 @@ Nem lámpatest, hanem a dugaszolós lámpák „bekötése”: olyan aljzat, ame
 - **Rokon típusok:** Állólámpa, Asztali és íróasztali lámpa
 - **Keresőszavak:** HU: kapcsolt dugaszolóaljzat · okos relé dobozba — EN: switched socket outlet · in-wall smart relay — DE: geschaltete Steckdose · Unterputz Aktor
 - **Hol kapható:** Villamossági nagykereskedés.
+- **A Készletben:**
+  - `VRG-0167` Wi-Fi okos dugalj (2P+F), 1x16A, fehér Stilo · 4 358 Ft — *kiváltja*: okos dugaljjal egy dugaszolós lámpa utólag kapcsolható, kapcsolt aljzat nélkül
 
 ## 6. Nedves helyiség
 
@@ -1273,6 +1275,10 @@ Nagy fényerejű LED-fényvető széles nyalábbal, udvarok, kocsibeállók, ker
 - **Rokon típusok:** Kültéri falikar, Homlokzat-megvilágító
 - **Keresőszavak:** HU: LED reflektor mozgásérzékelős 30W — EN: LED floodlight with PIR sensor — DE: LED Strahler mit Bewegungsmelder
 - **Hol kapható:** Villamossági nagykereskedés, barkácsáruház.
+- **A Készletben:**
+  - `VRG-0011` LED reflektor 20W 1600lm, 120 fokos mozgásérzékelővel, 4000K, 30x SMD2835 LED, lapos, fekete deLux · 7 088 Ft — *termék*: LED-reflektor beépített mozgásérzékelővel
+  - `VRG-0012` LED reflektor 30W mozgásérzékelős, sorkapoccsal, tömszelencével 4000K 2400lm IP65 120 fok SMD, lapos, fekete delux · 9 600 Ft — *termék*: LED-reflektor mozgásérzékelővel, IP65, tömszelencével
+  - `VRG-0010` Ha. ceruza 120W 118mm. R7s deLux · 501 Ft — *fényforrás*: R7s halogén ceruzaizzó a régi halogénreflektorokhoz; LED-re váltásnál az egész reflektort érdemes cserélni
 
 ### Kerti oszloplámpa (bollard)
 

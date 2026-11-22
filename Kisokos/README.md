@@ -8,7 +8,9 @@ page, the cheat sheets) is generated from it.
 Kisokos/
   map.json                    the core, 8 axes × 2 poles × 4 rings of term nodes, the 9 volumes,
                               and the knowledge bases outside the Kisokos with their place
-  kisokos.js                  the loader + checker (check · md · stats); the Stack reads through it
+  kisokos.js                  the loader + checker (check · md · stats · keszlet); the Stack reads through it
+  keszlet.json                Készlet product (vrg_id) → Kisokos card links, with a relation (termék, alkatrész,
+                              fényforrás, használja, kiváltja, szabvány); lives here because the Inventory regenerates
   rogzitestechnika/           volume rg, Rögzítéstechnika
     anyagok.json              22 materials: recognise, drilling, anchor by load, screw, traps, terms, shop
     dubelek.json              13 anchor kinds: how it holds, what it goes into, drilling, screw, sizes
@@ -74,6 +76,9 @@ node Kisokos/kisokos.js md
 ```bash
 node Stack/stack.js kisokos
 ```
+
+`node Kisokos/kisokos.js keszlet` reports how many Készlet products are linked and suggests cards for the
+unlinked ones by name; `--add` writes the suggestions into `keszlet.json` marked "javaslat" for review.
 
 `check` exits 1 on any problem. `md` rewrites every volume's cheat sheet (and the line drawings); run it
 after every card change and commit the generated files with the cards.

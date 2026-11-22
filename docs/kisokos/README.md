@@ -148,6 +148,9 @@ and "what goes wrong if not".
 - `Stack/layers.html` (the exploded layer planes) does not draw K yet.
 - The other volumes have term nodes but no cards.
 - **Világítótestek (vt)**: all ten families drafted (79 type cards), waiting for review; product cards from Inventory next (`vilagitotestek.md`).
+- **Készlet links** (`Kisokos/keszlet.json`, 2026-11-22): 54 of the 221 Készlet products linked to 9 cards (wires to
+  Hálózati 50 Hz, data cables and RJ45 parts to Ethernet, drywall boxes, coax parts, the floodlights). Only 3 Készlet
+  items are lighting today, so most lamp types have no product yet; new items get suggestions from `kisokos.js keszlet`.
 - **Előírások (el)**: 23 cards (own summaries + references): emergency lighting, MSZ HD 60364 with its special
   locations, and the product and lighting standards the lamp cards cite. Every lamp type links its rules through `norms`.
   The numbers on these cards are from memory and marked as guidance: check them against the current editions.

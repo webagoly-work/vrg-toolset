@@ -327,6 +327,8 @@ function kisokos() {
     for (const r of c.related || []) if (K.cards.some(x => x.vol === c.vol && x.id === r)) edges.push({ a: id, b: `K:card.${c.vol}.${r}`, rel: 'rokon' });
     for (const f of (KL.XREFS || {})[c.kind] || []) for (const r of c[f] || []) if (K.cards.some(x => x.gid === r)) edges.push({ a: id, b: 'K:card.' + r, rel: 'uses' });   // into another volume
   }
+  // Készlet links (Kisokos/keszlet.json): a card with stocked products points at the Készlet knowledge base, weighted by count
+  if (K.sources.some(s => s.id === 'keszlet')) for (const c of K.cards) if (c.stock && c.stock.length) edges.push({ a: 'K:card.' + c.gid, b: 'K:src.keszlet', rel: 'keszletben', w: c.stock.length });
   for (const s of K.sources) {
     const id = 'K:src.' + s.id;
     nodes.push(node('K', 'src.' + s.id, { kind: 'knowledge base', title: s.title, brief: s.sub + ' — ' + s.why, state: `overlap ${s.place.overlap || 0}`,

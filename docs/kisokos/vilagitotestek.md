@@ -103,9 +103,10 @@ Kisokos itself has no line yet, add that first and keep `from` pointing at it.
                ['11-22', 'families 3, 4, 7: 24 more type cards (49 in all); uplight and upward-asymmetric distributions'],
                ['11-22', 'family 8: 8 emergency types (57 in all) + the first 7 Előírások cards, linked by norms'],
                ['11-22', 'families 5, 9, 10: 22 more types; all ten families drafted, 79 type cards'],
-               ['11-22', 'Előírások to 23 cards; every lamp type links its rules (norms)']],
-  remaining: ['Founder review of the 79 type cards and the 7 Előírások cards', 'product cards from Inventory pointing at their type (VT2)', 'Founder check of the 23 Előírások cards against the current editions'],
-  nextStep: 'Founder review of the catalogue; then link Inventory products to their type cards.',
+               ['11-22', 'Előírások to 23 cards; every lamp type links its rules (norms)'],
+               ['11-22', 'VT2: Készlet products linked to their cards in Kisokos/keszlet.json (57 links); only 3 Készlet items are lighting so far']],
+  remaining: ['Founder review of the 79 type cards and the 7 Előírások cards', 'Founder check of the 23 Előírások cards against the current editions'],
+  nextStep: 'Founder review of the catalogue and the rules; new lighting products in Készlet get linked through kisokos.js keszlet.',
   notes: ['Types, not products; products come from Inventory and point at their type.'],
   feeds: [['kisokos']] },
 ```

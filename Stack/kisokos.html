@@ -397,6 +397,13 @@ function buildLines(ts) {
   }
   // the selected item: a line from each of its cubes' centre to where it gravitates
   if (selItem >= 0) { const it = items[selItem]; if (it.T) seg(it.cen, it.T, [1, 1, 1], 0.6); }
+  // Készlet links: a selected card reaches to the Készlet form; the selected Készlet reaches to every card it stocks
+  const kz = items.find(x => x.id === 'src.keszlet');
+  if (kz && selItem >= 0) {
+    const it = items[selItem], warm = hex('#e8a873');
+    if (it.stock && it.stock.length) seg(it.cen, kz.cen, warm, 0.75);
+    if (it === kz) for (const [id] of it.stockCards || []) { const x = items.find(y => y.id === id); if (x) seg(kz.cen, x.cen, warm, 0.4); }
+  }
   const pts = [];  // x y z r g b size
   for (const t of terms) {
     const on = t.axis === selAxis, isSel = selTerm && selTerm.id === t.id;
@@ -551,6 +558,10 @@ function showItem(i) {
   if (c.traps && c.traps.length) h += row('Buktatók', '<ul>' + c.traps.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
   if (c.terms) h += row('Keresőszavak', ['hu', 'en', 'de'].map(l => `<div class="terms"><span style="background:none;color:var(--faint)">${l.toUpperCase()}</span>${c.terms[l].map(t => `<span>${esc(t)}</span>`).join('')}</div>`).join(''));
   if (c.shop) h += row('Hol kapható', esc(c.shop));
+  const RELHU = { termek: 'termék', alkatresz: 'alkatrész', fenyforras: 'fényforrás', hasznalja: 'használja', kivaltja: 'kiváltja', szabvany: 'szabvány' };
+  const ft = n => n == null ? '' : ` <span class="hint">${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Ft</span>`;
+  if (it.stock && it.stock.length) h += row(`A Készletben (${it.stock.length})`, it.stock.map(s => `<div class="nb" title="${esc(s[4])}"><b>${esc(s[0])}</b> ${esc(s[1])}${ft(s[3])} <span class="hint">· ${esc(RELHU[s[2]] || s[2])}</span></div>`).join(''));
+  if (it.stockCards && it.stockCards.length) h += row(`Kisokos-kártyákhoz kötve (${it.stockCards.reduce((a, x) => a + x[1], 0)} kapcsolat)`, it.stockCards.map(([id, n]) => { const x = items.find(y => y.id === id); return x ? `<button class="ref" data-ref="${esc(id)}">${esc(x.title)}</button> <span class="hint">${n}</span>` : ''; }).join(' · '));
   h += row('Hol van', esc(whereText(it)));
   h += row('Méret', `${it.cubes} kocka · ${(it.bytes / 1024).toFixed(1).replace('.', ',')} KB${it.type === 'card' ? (c.reviewed ? ' · ellenőrizve' : ' · vázlat, ellenőrzésre vár') : ''}`);
   h += row('Fájl', `<span style="font:11px var(--mono)">${esc(it.file)}</span>`);

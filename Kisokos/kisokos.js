@@ -8,6 +8,8 @@
 //                                     svg/<id>.svg one-pagers + svg/spektrum.svg through lib/vonal-svg.js;
 //                                     for the fixtures svg/<id>.svg through lib/lampa-svg.js)
 //   node Kisokos/kisokos.js stats     cards, bytes and cubes per volume and per knowledge base
+//   node Kisokos/kisokos.js keszlet [--add]   Készlet products linked to cards (keszlet.json); suggestions for the
+//                                     unlinked ones by name and category; --add writes the suggestions in, for review
 //
 // Used by Stack/lib/layers.js (layer K) and Stack/lib/kisokos.js (the 3D page's data) through load().
 //
@@ -68,9 +70,17 @@ function load(root = ROOT) {
   });
   let symbols = null;
   try { const sj = readJson(path.join(REPO, 'shared', 'rajztar', 'data', 'symbols.json')); symbols = new Set((sj.items || sj.symbols || []).map(s => s.id)); } catch { symbols = null; }
+  // Készlet links (keszlet.json): product (vrg_id, stable) → card; the Inventory is read for names and prices only
+  let keszlet = { relations: {}, links: [] }, inventory = new Map();
+  try { keszlet = readJson(path.join(root, 'keszlet.json')); } catch { /* no links yet */ }
+  try { for (const it of readJson(path.join(REPO, keszlet.source || 'Inventory/data/vrg-inventory.json')).items || []) inventory.set(it.vrg_id, it); } catch { inventory = null; }
+  for (const l of keszlet.links || []) {
+    const c = cards.find(x => x.gid === l.card), it = inventory && inventory.get(l.vrg);
+    if (c) (c.stock = c.stock || []).push({ vrg: l.vrg, rel: l.rel, why: l.why || '', name: it ? it.megnevezes : '', price: it && it.becsult_ar ? it.becsult_ar.brutto_huf : null });
+  }
   const cube = map.cubeBytes || 1024;
   for (const x of [...cards, ...sources]) x.cubes = Math.max(1, Math.round(x.bytes / cube));
-  return { map, terms, termIds, cards, sources, problems, symbols, root, repo: REPO };
+  return { map, terms, termIds, cards, sources, problems, symbols, keszlet, inventory, root, repo: REPO };
 }
 
 function check(K = load()) {
@@ -132,6 +142,14 @@ function check(K = load()) {
       for (const f of ['install', 'traps']) if (!Array.isArray(c[f])) P.push(`${who}: ${f} must be a list`);
     }
   }
+  const pairs = new Set();
+  for (const l of (K.keszlet && K.keszlet.links) || []) {
+    const who = `keszlet.json ${l.vrg} → ${l.card}`;
+    if (K.inventory && !K.inventory.has(l.vrg)) P.push(`${who}: ${l.vrg} is not in the Inventory`);
+    if (!K.cards.some(c => c.gid === l.card)) P.push(`${who}: ${l.card} is not a card`);
+    if (!(K.keszlet.relations || {})[l.rel]) P.push(`${who}: relation "${l.rel}" is not one of ${Object.keys(K.keszlet.relations || {}).join(', ')}`);
+    const k = l.vrg + '|' + l.card; if (pairs.has(k)) P.push(`${who}: listed twice`); pairs.add(k);
+  }
   for (const s of K.sources) { placeOk(`source ${s.id}`, s.place); if (s.missing.length) P.push(`source ${s.id}: missing ${s.missing.join(', ')}`); }
   return P;
 }
@@ -144,6 +162,49 @@ function md(K = load()) {
   if (K.cards.some(c => c.vol === 'vt')) out.push(mdVt(K));
   if (K.cards.some(c => c.vol === 'el')) out.push(mdEl(K));
   return out.join('\n');
+}
+
+const REL_HU = { termek: 'termék', alkatresz: 'alkatrész', fenyforras: 'fényforrás', hasznalja: 'használja', kivaltja: 'kiváltja', szabvany: 'szabvány' };
+const huf = n => n == null ? '' : ' · ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Ft';
+function stockRows(L, c) {
+  if (!c.stock || !c.stock.length) return;
+  L.push('- **A Készletben:**');
+  for (const s of c.stock) L.push(`  - \`${s.vrg}\` ${s.name}${huf(s.price)} — *${REL_HU[s.rel] || s.rel}*${s.why ? ': ' + s.why : ''}`);
+}
+
+// suggestions for unlinked Készlet products: name and category patterns → card and relation
+const SUGGEST = [
+  [/NYM-J|H07V-[UK]|NYY-J|N?A?YY-J|EAYY|H05VV-F|H05RR-F|\d+\s*mkh/i, 'kv.halozat-50hz', 'termek'],
+  [/CAT ?5|CAT ?6|UTP|FTP|számítógép vezeték/i, 'kv.ethernet', 'termek'],
+  [/RJ45|8P8C|keystone/i, 'kv.ethernet', 'alkatresz'],
+  [/TV aljzat|F-csatlakozó|koax|SAT /i, 'kv.koax-tv', 'alkatresz'],
+  [/gipszkarton doboz/i, 'rg.gipszkarton', 'alkatresz'],
+  [/reflektor/i, 'vt.reflektor', 'termek'],
+  [/\bWi-?Fi\b|\bZigbee\b|\bokos (dugalj|kapcsoló|relé|izzó)/i, 'kv.ism-24', 'hasznalja'],
+  [/dimmer|fényerőszab/i, 'el.szerelvenyek', 'szabvany'],
+];
+function keszletReport(K, add) {
+  if (!K.inventory) return 'Inventory/data/vrg-inventory.json could not be read';
+  const linked = new Set(K.keszlet.links.map(l => l.vrg));
+  const sugg = [];
+  for (const [vrg, it] of K.inventory) {
+    if (linked.has(vrg)) continue;
+    const text = it.megnevezes;   // the name only: category names ("Okos eszközök és csengők") are too broad
+    const hit = SUGGEST.find(([re, card]) => re.test(text) && K.cards.some(c => c.gid === card));
+    if (hit) sugg.push({ vrg, card: hit[1], rel: hit[2], why: 'javaslat (ellenőrizendő): ' + it.megnevezes.slice(0, 90) });
+  }
+  const byCard = {}; for (const l of K.keszlet.links) byCard[l.card] = (byCard[l.card] || 0) + 1;
+  const L = [`${K.keszlet.links.length} links, ${linked.size} of ${K.inventory.size} Készlet products linked to ${Object.keys(byCard).length} cards`,
+    ...Object.entries(byCard).sort((a, b) => b[1] - a[1]).map(([c, n]) => `  ${String(n).padStart(3)}  ${c}`),
+    `${sugg.length} suggestions for unlinked products:`, ...sugg.map(s => `  ${s.vrg} → ${s.card} (${s.rel})  ${s.why.replace(/^javaslat \(ellenőrizendő\): /, '')}`)];
+  if (add && sugg.length) {
+    const f = path.join(K.root, 'keszlet.json'); let s = fs.readFileSync(f, 'utf8');
+    const lines = sugg.map(x => '    ' + JSON.stringify({ vrg: x.vrg, card: x.card, rel: x.rel, why: x.why }).replace(/":/g, '": ').replace(/,"/g, ', "').replace(/^\{/, '{ ').replace(/\}$/, ' }'));
+    s = s.replace(/\n  \]\n\}\s*$/, ',\n\n' + lines.join(',\n') + '\n  ]\n}\n');
+    JSON.parse(s); fs.writeFileSync(f, s);
+    L.push(`added ${sugg.length} suggested links to keszlet.json (marked "javaslat"); review them`);
+  }
+  return L.join('\n');
 }
 
 function mdEl(K) {
@@ -168,7 +229,8 @@ function mdEl(K) {
     L.push('', `- **Hol érvényes:** ${c.applies}`, `- **Forrás:** ${c.source.kind}: ${c.source.ref} — ${c.source.from || ''}`);
     const u = users(c.id); if (u.length) L.push(`- **Erre hivatkozó típusok:** ${u.join(', ')}`);
     if (c.related && c.related.length) L.push(`- **Kapcsolódó előírások:** ${c.related.map(r => name(K, 'el', r)).join(', ')}`);
-    L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`, '');
+    L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
+    stockRows(L, c); L.push('');
   }
   fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
   return `wrote ${path.relative(K.repo, path.join(dir, 'KISOKOS.md'))} (${cs.length} cards)`;
@@ -208,7 +270,7 @@ function mdVt(K) {
       if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
       if (c.related && c.related.length) row('Rokon típusok', c.related.map(r => name(K, 'vt', r)).join(', '));
       L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
-      row('Hol kapható', c.shop); L.push('');
+      row('Hol kapható', c.shop); stockRows(L, c); L.push('');
     }
   }
   fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
@@ -249,7 +311,7 @@ function mdKv(K) {
       if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
       if (c.related && c.related.length) row('Rokon vonalak', c.related.map(nm).join(', '));
       L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
-      row('Hol kapható', c.shop); L.push('');
+      row('Hol kapható', c.shop); stockRows(L, c); L.push('');
     }
   }
   fs.writeFileSync(path.join(dir, 'KISOKOS.md'), L.join('\n'));
@@ -284,7 +346,7 @@ function mdRg(K) {
       }
       if (c.traps && c.traps.length) { L.push('- **Buktatók:**'); for (const t of c.traps) L.push(`  - ${t}`); }
       L.push(`- **Keresőszavak:** HU: ${c.terms.hu.join(' · ')} — EN: ${c.terms.en.join(' · ')} — DE: ${c.terms.de.join(' · ')}`);
-      row('Hol kapható', c.shop); L.push('');
+      row('Hol kapható', c.shop); stockRows(L, c); L.push('');
     }
   }
   const out = path.join(K.root, vol.dir, 'KISOKOS.md');
@@ -311,5 +373,6 @@ if (require.main === module) {
     if (P.length) process.exitCode = 1;
   } else if (cmd === 'md') console.log(md(K));
   else if (cmd === 'stats') console.log(stats(K));
+  else if (cmd === 'keszlet') console.log(keszletReport(K, process.argv.includes('--add')));
   else console.log(fs.readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 8).map(l => l.slice(3)).join('\n'));
 }
