@@ -21,6 +21,8 @@ Mobile/
   tests/relay-board.js  Átadás (WP M12): names and paths, tickets, Host / Origin, size and checksum, _removed, the clipboard
   tests/relay-screen.js Képernyő (WP M13): tickets, the /screen upgrade, frames in order, one viewer, limits, unpairing, a slow phone
   tests/relay-phone-link.js  the phone relay's PC side (WP M7): the pairing block in Kódváros + Planner, WebCrypto keys and signatures
+  tests/app-archive.js  the app archive (WP M61, D-163) against a fake adb: parsers, split APKs, the shared manifest, verify
+  tools/app-archive.js  an installed app (APK + manifest) from the USB phone into Backup\installers\android (START L -> P)
   tests/archive-phone.js  Archívum (WP M18): Archive/vrg-archive.html at 375 px with touch, served as the WebView serves it; Back, all saved pages
   catalogue/ports.json  port -> tool for Localhost, generated from START's servers by catalogue/ports-gen.js
   catalogue/launch.json Indítópult's allow-list: which START servers and extras a paired phone may start

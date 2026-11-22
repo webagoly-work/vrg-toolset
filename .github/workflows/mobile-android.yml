@@ -43,6 +43,7 @@ jobs:
           node Mobile/tests/relay-pair.js
           node Mobile/catalogue/icon-gen.js --check
           node Mobile/tests/workflow-seal.js
+          node Mobile/tests/app-archive.js
       # F8 (WP M53): the Planner end of the survey (its sketch import and survey panel), built from source so the
       # Sketcher's end-to-end test below opens the Planner as it is now
       - name: Planner sketch import (spec-111, spec-112)

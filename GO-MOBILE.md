@@ -126,7 +126,9 @@ What changes locally compared with the cloud:
   Founder's ISYTag (Apple Find My only) used from Android over plain BLE: distance, "Ez az enyém", relink, Keresés,
   Csipogtatás, Ottfelejtés, last place; no remote location (Apple's network). Since 2026-11-22 (D-152) also the
   teardrop iTag: held link, Telefonkereső (its button rings the phone), phone steps 11–17; and (D-157) a paired device,
-  the Q71 watch: connection = presence, Csipogtatás over hands-free audio, phone steps 18–23. `docs/mobile/WP/M61.md` → "Telefonon
+  the Q71 watch: connection = presence, Csipogtatás over hands-free audio, phone steps 18–23; then (D-162, D-163) the
+  read-only 🔍 Diagnosztika and the app archive (START L → P, `Mobile/tools/app-archive.js`; the personal twins are in
+  the Data Vault), phone steps 24–28. Next for the Q71: an HCI snoop capture → its protocol → our own companion. `docs/mobile/WP/M61.md` → "Telefonon
   ellenőrizni" (10 steps, the 9th needs an iPhone). `tag-core` tests in `mobile.cmd test` and Actions; `feature-tag`
   not yet compiled (the first Actions run is its check).
 
