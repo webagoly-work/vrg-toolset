@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tárgykereső's part of the app manifest (WP M61). docs/mobile/WP/M61.md says why each is here. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- BLE: hearing the tags (scan, with RSSI for the distance) and ringing one (a GATT connection). No advertising.
+         No neverForLocation on SCAN: Android would then drop the tags' advertisements, and the RSSI is the distance.
+         The same declarations as feature-pager, or the manifest merge fails. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Location: Android 9-11 scan only with it; on every version it is what "Utolsó hely" stores. Declared without
+         a max version by feature-map and feature-sketch already, so not repeated here (a second form breaks the merge). -->
+    <!-- Ottfelejtés keeps listening with the screen off. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
+    <application>
+        <service
+            android:name=".TagService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+</manifest>

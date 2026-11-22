@@ -122,6 +122,11 @@ What changes locally compared with the cloud:
 - **M58** Vezetés + forgalom (N3) built 2026-11-21 (cloud session, D-130), **BETA**: ▶ Indulás on a routed place:
   banner, voice (Android TTS on the phone), camera follow, roundabouts, re-planning; 🚦 TomTom traffic with the
   user's own key on a tap. `docs/mobile/WP/M58.md` → "Telefonon ellenőrizni" (step 0: rebuild `roads.bin`, format 2).
+- **M61** Tárgykereső built 2026-11-20 (cloud session, **experimental**, D-150 taken, D-151 = A: local only), **BETA**: the
+  Founder's ISYTag (Apple Find My only) used from Android over plain BLE: distance, "Ez az enyém", relink, Keresés,
+  Csipogtatás, Ottfelejtés, last place; no remote location (Apple's network). `docs/mobile/WP/M61.md` → "Telefonon
+  ellenőrizni" (10 steps, the 9th needs an iPhone). `tag-core` tests in `mobile.cmd test` and Actions; `feature-tag`
+  not yet compiled (the first Actions run is its check).
 
 ## 3. What the user asked for, mapped to WPs
 

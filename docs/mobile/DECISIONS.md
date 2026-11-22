@@ -948,20 +948,31 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - **D-149 · Accuracy.** Chosen **A**: a reach grade beside every value (jó ≤ 2×, közepes ≤ 5×, távoli beyond, in
     reference sizes) and the advice to measure with the 1× lens; no lens-distortion correction yet. Rejected: **B** a
     calibration step before the first measurement (later, with the marker card).
+- **D-150 · Tárgykereső: which state of the tag to build for (M61, experimental), 2026-11-20.** Taken while building, the
+  Founder may revisit. Chosen: **both** — a never-paired tag (pairing mode, `FD44`) and one paired to someone's Apple ID
+  (the separated advertisement with its rotating key) — with **no Apple account anywhere in VRG Mobile**. The phone
+  works only with what the tag says over Bluetooth: distance, ring, left-behind, the phone's last place. Rejected for
+  now: signing in to Apple from the phone (an Apple ID password in VRG Mobile, against Apple's terms, and still no key
+  to decrypt with). Details: `WP/M61.md`.
+- **D-151 · Tárgykereső: no remote location (M61), 2026-11-22.** Asked: the Founder chose **A**. The tag stays local, as
+  built: distance, ring, left-behind and the phone's last place, nothing more to set up. Rejected: **B** the Apple way
+  through the PC (pair once with an iPhone / Mac, export the key, a PC helper with an Apple ID fetching reports for the
+  phone: unofficial, against Apple's terms, fragile, needs a Mac); **C** a Google Find Hub tag beside it (not ruled out
+  as a purchase, just not part of this WP). Details: `WP/M61.md`.
 
-- **D-150 … D-153 · Körkép (M61, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
+- **D-152 … D-155 · Körkép (M62, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
   each can be revisited.
-  - **D-150 · How the photos are put together.** Chosen **A**: from the poses the survey knows (one spot, direction,
+  - **D-152 · How the photos are put together.** Chosen **A**: from the poses the survey knows (one spot, direction,
     tilt, lens), refined by matching neighbours where they overlap (normalised cross-correlation, our own code).
     Rejected: **B** OpenCV's Stitcher on the PC (a native library, feature matching that the known poses make
     unnecessary, and no phone version); **C** a learned model.
-  - **D-151 · Where the alignment goes.** Chosen **A**: into the survey's `box` key as the shots' yaw / pitch
+  - **D-153 · Where the alignment goes.** Chosen **A**: into the survey's `box` key as the shots' yaw / pitch
     corrections, the same ones the Szobadoboz sliders write, so the 3D view improves with it. Rejected: **B** a separate
     panorama record (two sets of corrections for the same photos).
-  - **D-152 · The 360° file.** Chosen **A**: an equirectangular JPEG with the GPano XMP, which Google Photos and other
+  - **D-154 · The 360° file.** Chosen **A**: an equirectangular JPEG with the GPano XMP, which Google Photos and other
     viewers show as a sphere. Rejected: **B** a viewer of our own (the Szobadoboz's *A pontból* view already looks
     around); **C** cube faces (fewer viewers read them).
-  - **D-153 · Where the buttons are.** Chosen **A**: in the Szobadoboz panel, one Körkép row per photo point
+  - **D-155 · Where the buttons are.** Chosen **A**: in the Szobadoboz panel, one Körkép row per photo point
     (⟲ Igazítás, ⇩ 360° kép), behind `vazlat.pano`. Rejected: **B** on the Fotópont wheel (no solved plan there for
     the 3D check); **C** automatic alignment on every open (it changes the survey; the user should see it happen).
 

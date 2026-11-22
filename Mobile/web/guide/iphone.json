@@ -12,7 +12,7 @@
       "steps": [
         "Kell hozzá az iPhone (iOS 16.4 vagy újabb ajánlott) a Safari böngészővel, és a tulajdonos Android telefonja, rajta a VRG Mobile alkalmazással, belépve a GitHub fiókba.",
         "Mindkét telefonon legyen internet (mobilnet vagy WiFi). A két telefonnak nem kell ugyanazon a hálózaton lennie.",
-        "Az iPhone-on ezek működnek: Eszköz (jóváhagyás), Haladás, Frissítés, Megjelenés. Ezek csak Androidon: Csipogó, Légegér, Képernyő, Átadás, Hálózat (Bluetooth vagy a PC reléje kell hozzájuk, amit egy iPhone böngésző nem ér el).",
+        "Az iPhone-on ezek működnek: Eszköz (jóváhagyás), Haladás, Frissítés, Megjelenés. Ezek csak Androidon: Csipogó, Tárgykereső, Légegér, Képernyő, Átadás, Hálózat (Bluetooth vagy a PC reléje kell hozzájuk, amit egy iPhone böngésző nem ér el).",
         "Ne privát (inkognitó) lapon csináld: a privát lap bezárásakor az iPhone elfelejti a kulcsát, és újra kell kérni a hozzáférést."
       ]
     },

@@ -208,16 +208,16 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M60.9** Küldd a felmérést a PC-re: az Asztal Sketcher oldalán a Kamera nézetben a kártyán ugyanazok az értékek.
 - [ ] **M60.10** ⚙ Funkciók → Kamera → **Mérés a fotón** ki: a gomb és a sor eltűnik.
 
-### M61 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image
+### M62 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image
 
-- [ ] **M61.1** ⚙ Funkciók → Vázlat: **Szobadoboz (3D)** és **Körkép (360°)** be.
-- [ ] **M61.2** Egy szobában Fotópont, mind a négy irány 0,5× objektívvel (a saját kamera magától így nyit).
-- [ ] **M61.3** Rendezés → ⬚ Szobadoboz → a lap alján **⟳ Körkép · F…** → **⟲ Igazítás**: megjelenik, mennyit fordított a képeken.
-- [ ] **M61.4** A pontból nézve a képek határa simább legyen, mint előtte.
-- [ ] **M61.5** **⇩ 360° kép**: a fájl a Képek / VRG Vázlat mappába kerül; Google Fotókban megnyitva körbe lehessen nézni.
-- [ ] **M61.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
-- [ ] **M61.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
-- [ ] **M61.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
+- [ ] **M62.1** ⚙ Funkciók → Vázlat: **Szobadoboz (3D)** és **Körkép (360°)** be.
+- [ ] **M62.2** Egy szobában Fotópont, mind a négy irány 0,5× objektívvel (a saját kamera magától így nyit).
+- [ ] **M62.3** Rendezés → ⬚ Szobadoboz → a lap alján **⟳ Körkép · F…** → **⟲ Igazítás**: megjelenik, mennyit fordított a képeken.
+- [ ] **M62.4** A pontból nézve a képek határa simább legyen, mint előtte.
+- [ ] **M62.5** **⇩ 360° kép**: a fájl a Képek / VRG Vázlat mappába kerül; Google Fotókban megnyitva körbe lehessen nézni.
+- [ ] **M62.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
+- [ ] **M62.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
+- [ ] **M62.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 
