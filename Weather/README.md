@@ -126,3 +126,7 @@ and `export` writes them without coordinates.
 `config/rules.json` carries each limit's basis: legal, standard, datasheet, practice, public-health or
 official. The person responsible for work safety should confirm the limits. The MEWP's data plate and the
 cable's datasheet always win.
+
+VRG Mobile's Időjárás (WP M44) bundles `config/rules.json`, `places.json`, `sources.json` and `settings.json` in
+`Mobile/android/weather-core/src/main/resources/weather/`. After changing one, copy it there; `gradlew :weather-core:test`
+fails until the copies match.

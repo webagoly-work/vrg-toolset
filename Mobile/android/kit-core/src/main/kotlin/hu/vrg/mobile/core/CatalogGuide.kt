@@ -147,15 +147,15 @@ object CatalogGuide {
         ),
         GuidePage(
             id = "weather", title = "VRG Időjárás", glyph = "⛅", side = GuideSide.BOTH,
-            what = "Több hivatalos és nyílt forrás időjárása egy saját adatbázisban, egyesítve, a bizonytalansággal együtt. Ebből munkaablakot és riasztást ad munkahelyenként és tevékenységenként.",
+            what = "Lehet-e ma kint dolgozni? A telefon a MET Norway és a DWD előrejelzését egyesíti a szórásukkal együtt, hozzáveszi a hivatalos (HungaroMet) figyelmeztetéseket, és a PC terepi szabályaival tevékenységenként mond zöldet, sárgát vagy pirosat, munkaablakkal.",
             how = listOf(
-                "A telefonon még tervben van; addig a PC-n használható.",
-                "A PC-n: START → W → I → 1 (localhost:8808), az ütemezővel együtt.",
-                "Riaszt villámra, emelőkosárnál erős széllökésre, PVC kábelhez túl hideg időre, esőre, hőségre és hivatalos figyelmeztetésre.",
-                "Reggel elkészül a napi munkabrief, este a holnapi.",
-                "A határértékek óvatos alapértékek. A gép adattáblája és a kábel adatlapja mindig erősebb.",
+                "Először ⚙ → Kapcsolat (MET Norway): egy e-mail cím vagy honlap. Amíg üres, csak a DWD és a figyelmeztetések jönnek.",
+                "Válassz várost, vagy ◎ Itt: a telefon egyszer, a gombra kérdezi meg a helyet, ~1 km-re kerekítve; a ⚙ alatt elmenthető helyként.",
+                "Fent a mai (munkaidő után a következő munkanapi) ítélet: kültéri szerelés, létra / emelőkosár, kábelfektetés, tető / napelem, az okokkal.",
+                "Alatta a 72 óra: ég, hőmérséklet ± a források szórása, széllökés, csapadék, biztonság; a keret színe a legrosszabb tevékenységé.",
+                "A határértékek óvatos alapértékek; a gép adattáblája és a kábel adatlapja erősebb. Villám nincs a telefonon: Radar ↗. PC nézet ›: a PC teljes oldala a relén át.",
             ),
-            needs = "internet",
+            needs = "internet; a PC nézethez párosított PC",
             pair = "Asztal: VRG Időjárás (START W → I)",
         ),
         GuidePage(

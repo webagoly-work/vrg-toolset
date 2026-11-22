@@ -170,7 +170,7 @@ private fun FeatureCard(f: FeatureInfo, act: HomeActions, modifier: Modifier) {
     var pick by remember { mutableStateOf(false) }
     val sketch = f.id == Catalogue.SKETCH.id
     val count = if (sketch) sketchCount() else null
-    val countLabel = HomeLayout.sketchCountLabel(count)
+    val countLabel = HomeLayout.sketchCountLabel(count) ?: if (f.id == Catalogue.WEATHER.id) weatherLine() else null   // WP M44
     // a tile with several apps (Kalkulátorok, Készlet) offers them; any other opens its feature
     val tap: () -> Unit = { if (apps.size > 1) pick = true else act.open(f.id) }
     FeatureRco(f, act, modifier, onTap = tap) { inner ->
@@ -207,6 +207,19 @@ private fun FeatureCard(f: FeatureInfo, act: HomeActions, modifier: Modifier) {
             })
         }
     }
+}
+
+/** VRG Időjárás's last summary (WP M44), read from its file each time the home is shown; off the main thread. */
+@Composable
+private fun weatherLine(): String? {
+    val ctx = LocalContext.current
+    val line by produceState<String?>(null) {
+        value = withContext(Dispatchers.IO) {
+            try { HomeLayout.weatherLine(File(ctx.filesDir, HomeLayout.WEATHER_SUMMARY).takeIf { it.exists() }?.readText(), System.currentTimeMillis()) }
+            catch (e: Exception) { null }
+        }
+    }
+    return line
 }
 
 /** The Sketcher's surveys on the phone, counted from its folder each time the home is shown; off the main thread. */

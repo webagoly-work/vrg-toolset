@@ -179,8 +179,8 @@ object Catalogue {
         "🗺", Group.WORK, Stage.BETA, "M43", setOf(Need.INTERNET),
     )
     val WEATHER = FeatureInfo(
-        "weather", "VRG Időjárás", "Hivatalos és globális források egyesítve, terepi szabályokkal: lehet-e ma kint dolgozni.",
-        "⛅", Group.WORK, Stage.PLANNED, "M44", setOf(Need.INTERNET),
+        "weather", "VRG Időjárás", "Lehet-e ma kint dolgozni: MET Norway, DWD és a hivatalos figyelmeztetések egyesítve, terepi szabályokkal, tevékenységenként.",
+        "⛅", Group.WORK, Stage.BETA, "M44", setOf(Need.INTERNET),
     )
     val VAULT = FeatureInfo(
         "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",

@@ -70,4 +70,21 @@ object HomeLayout {
         count <= 0 -> "Még nincs felmérés a telefonon"
         else -> "$count felmérés a telefonon"
     }
+
+    /**
+     * VRG Időjárás's home card line (WP M44): feature-weather writes `<epoch ms>\n<line>` to `filesDir/[WEATHER_SUMMARY]`
+     * after each refresh; the card shows it while it is younger than [WEATHER_MAX_AGE_MS], with its age.
+     */
+    const val WEATHER_SUMMARY = "weather/summary.txt"
+    const val WEATHER_MAX_AGE_MS = 12 * 3600_000L
+
+    fun weatherLine(file: String?, nowMs: Long): String? {
+        val lines = file?.lines() ?: return null
+        val at = lines.firstOrNull()?.trim()?.toLongOrNull() ?: return null
+        val line = lines.getOrNull(1)?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val age = nowMs - at
+        if (age < 0 || age > WEATHER_MAX_AGE_MS) return null
+        val min = age / 60_000
+        return "$line · " + if (min < 60) "$min perce" else "${min / 60} órája"
+    }
 }
