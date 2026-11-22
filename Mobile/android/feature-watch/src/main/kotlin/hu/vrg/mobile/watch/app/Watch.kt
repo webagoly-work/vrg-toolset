@@ -48,6 +48,10 @@ object Watch {
         Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT,
     ) else arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
 
+    /** Off battery optimisation: Android (and MIUI / HyperOS) then leaves the link service running in the background. */
+    fun backgroundFree(ctx: Context): Boolean =
+        ctx.getSystemService(android.os.PowerManager::class.java)?.isIgnoringBatteryOptimizations(ctx.packageName) == true
+
     fun allowed(ctx: Context) = permissions().all { ctx.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
     fun clearDevice() {

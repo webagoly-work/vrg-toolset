@@ -42,10 +42,17 @@ class WatchService : Service() {
             ACTION_FOUND -> { PhoneRing.stop(this); if (!running) stopSelf(); return START_NOT_STICKY }
         }
         val n = ongoing()
-        if (Build.VERSION.SDK_INT >= 29) startForeground(ID_RUN, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE) else startForeground(ID_RUN, n)
+        try {
+            if (Build.VERSION.SDK_INT >= 29) startForeground(ID_RUN, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE) else startForeground(ID_RUN, n)
+        } catch (e: RuntimeException) {       // Android 12+: a start from the background that is not allowed
+            VrgLog.w(Watch.LOG, "foreground refused: ${e.message}")
+            running = false; stopSelf(); return START_NOT_STICKY
+        }
         if (!Watch.allowed(this)) { Watch.link.value = Watch.Link.NO_PERMISSION; shutdown(); return START_NOT_STICKY }
         if (!running) begin()
-        return START_NOT_STICKY
+        // Sticky: if Android (or the Xiaomi battery saver) kills the link, it restarts it, so the watch can still ring
+        // the phone with the app closed. Kapcsolat off (ACTION_STOP) is the only way it stays down.
+        return START_STICKY
     }
 
     private fun begin() {
