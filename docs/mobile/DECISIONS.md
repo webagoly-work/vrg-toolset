@@ -735,6 +735,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   phone's camera app exactly as before (M29 / M46). With it on, a CameraX bind or capture failure falls back to the
   camera app for the rest of the app's run (a note says so) and the next start tries CameraX again. The walk video and
   the signature are unchanged (the camera app's video mode, the pad).
+  Asked (F7, 2026-11-21): should the in-app camera record video too? **A** no, the walk video stays with the camera
+  app's video mode (D-60) / **B** yes, in a later round. The Founder chose **A** (2026-11-22).
 - **D-102 · An in-app photo lands where a camera-app photo lands (M52), 2026-11-21.** The file is written straight into
   `files/sketch/photos/<id>/` under the same name scheme (`C-<base36 time>.jpg`, Fotópont `<F id>-…`), then goes
   through the same `captureTaken` / `photoTaken` path: same Capture record, GPS read back from the file's own EXIF, the
