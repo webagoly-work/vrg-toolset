@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,9 +27,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.RoomBox
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -44,7 +47,7 @@ import kotlin.math.roundToInt
 
 internal object RoomBoxPhone {
     /** The bundled files, in load order (= ROOMBOX_ASSETS in build.gradle.kts; Sketcher/test/roombox-phone.test.js checks both). */
-    val ASSETS = listOf("roombox.js", "roombox-gl.js", "roombox-phone.js")
+    val ASSETS = listOf("roombox.js", "roombox-gl.js", "pano.js", "roombox-phone.js")
 
     /** The page: the three files inlined (no file access needed), then run(), which reads the bridge. */
     suspend fun page(ctx: android.content.Context): String = withContext(Dispatchers.IO) {
@@ -63,7 +66,7 @@ internal object RoomBoxPhone {
             fit(b).compress(Bitmap.CompressFormat.JPEG, RoomBox.JPEG_Q, out)
             images[board] = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
         }
-        RoomBox.input(st.sketch, st.norm, images).toString()
+        RoomBox.input(st.sketch, st.norm, images, pano = FeaturePrefs.on("vazlat.pano")).toString()
     }
 
     private fun fit(b: Bitmap): Bitmap {
@@ -74,9 +77,15 @@ internal object RoomBoxPhone {
     }
 
     /** What roombox-phone.js talks to (VRGBox.input / save / close / fail); the answers come back on the main thread. */
-    class Bridge(private val input: String, private val onSave: (String) -> Unit, private val onClose: () -> Unit, private val onFail: (String) -> Unit) {
+    class Bridge(private val input: String, private val onSave: (String) -> Unit, private val onClose: () -> Unit, private val onFail: (String) -> Unit,
+                 private val onPano: (String, ByteArray) -> Unit = { _, _ -> }) {
         private val main = Handler(Looper.getMainLooper())
         @JavascriptInterface fun input(): String = input
+        /** skcam K4: a 360° image (equirectangular JPEG with its GPano XMP) to keep. */
+        @JavascriptInterface fun pano(name: String, b64: String) {
+            val bytes = runCatching { Base64.decode(b64, Base64.DEFAULT) }.getOrNull() ?: return
+            main.post { onPano(name, bytes) }
+        }
         @JavascriptInterface fun save(json: String) { main.post { onSave(json) } }
         @JavascriptInterface fun close() { main.post { onClose() } }
         @JavascriptInterface fun fail(msg: String) { main.post { onFail(msg) } }
@@ -88,6 +97,7 @@ internal object RoomBoxPhone {
 @Composable
 internal fun RoomBoxDialog(st: EditorState, onDismiss: () -> Unit) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
     var page by remember { mutableStateOf<Pair<String, String>?>(null) }      // the page and its input
     var err by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
@@ -110,7 +120,13 @@ internal fun RoomBoxDialog(st: EditorState, onDismiss: () -> Unit) {
                                 onDismiss()
                             },
                             onClose = onDismiss,
-                            onFail = { m -> VrgLog.w("sketch", "Szobadoboz: $m"); err = "A Szobadoboz hibára futott: " + (m.lineSequence().firstOrNull() ?: m) }), "VRGBox")
+                            onFail = { m -> VrgLog.w("sketch", "Szobadoboz: $m"); err = "A Szobadoboz hibára futott: " + (m.lineSequence().firstOrNull() ?: m) },
+                            onPano = { name, bytes -> scope.launch {
+                                // skcam K4: the 360° image into Képek / VRG Vázlat, as the sketch's photos are saved
+                                val f = withContext(Dispatchers.IO) { File(FileStore.cacheDir(c, "sketch"), name.replace(Regex("[^\\w.-]+"), "-")).also { it.writeBytes(bytes) } }
+                                val at = FileStore.saveShared(c, f, f.name, "image/jpeg", "VRG Vázlat")
+                                st.note = if (at != null) "360° kép mentve: $at" else "A 360° kép mentése nem sikerült."
+                            } }), "VRGBox")
                         loadDataWithBaseURL(null, p.first, "text/html", "utf-8", null)
                     }
                 }, onRelease = { it.destroy() })

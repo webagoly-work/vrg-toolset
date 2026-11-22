@@ -170,3 +170,6 @@ svg.siteplace text { fill: var(--muted, #888); }
 @media (max-width: 700px) { .bx-body { flex-direction: column; } #bxside { width: auto; max-width: none; max-height: 42vh; border-left: 0; border-top: 1px solid var(--line); } }
 /* skcam K3: Síkmérés, the photo cards' measure row (the screen itself styles itself, lib/plane-ui.js) */
 .plane-bits { margin: 4px 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* skcam K4: Körkép, per photo point in the Szobadoboz panel */
+.bx-pano { border: 1px solid var(--line); padding: 6px 8px; margin: 8px 0; }
+.bx-pano .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0; }

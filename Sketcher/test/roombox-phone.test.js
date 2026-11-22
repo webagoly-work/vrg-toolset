@@ -13,7 +13,7 @@ const ROOT = path.join(__dirname, '..');
 const RB = require(path.join(ROOT, 'lib', 'roombox.js'));
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log('FAIL: ' + m); } };
-const ASSETS = ['roombox.js', 'roombox-gl.js', 'roombox-phone.js'];
+const ASSETS = ['roombox.js', 'roombox-gl.js', 'pano.js', 'roombox-phone.js'];   // K4 added pano.js
 
 // ---- 1. the asset list in the Gradle build
 {

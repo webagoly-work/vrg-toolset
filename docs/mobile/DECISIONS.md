@@ -965,6 +965,22 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   *Kapcsolat tartása és ottfelejtés* is on, because a link opened with the screen would make the tag slow-beep every
   time the screen closes. Telefonkereső (its button rings the phone) works only on that held link. Details: `WP/M61.md`.
 
+- **D-153 … D-156 · Körkép (M62, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
+  each can be revisited.
+  - **D-153 · How the photos are put together.** Chosen **A**: from the poses the survey knows (one spot, direction,
+    tilt, lens), refined by matching neighbours where they overlap (normalised cross-correlation, our own code).
+    Rejected: **B** OpenCV's Stitcher on the PC (a native library, feature matching that the known poses make
+    unnecessary, and no phone version); **C** a learned model.
+  - **D-154 · Where the alignment goes.** Chosen **A**: into the survey's `box` key as the shots' yaw / pitch
+    corrections, the same ones the Szobadoboz sliders write, so the 3D view improves with it. Rejected: **B** a separate
+    panorama record (two sets of corrections for the same photos).
+  - **D-155 · The 360° file.** Chosen **A**: an equirectangular JPEG with the GPano XMP, which Google Photos and other
+    viewers show as a sphere. Rejected: **B** a viewer of our own (the Szobadoboz's *A pontból* view already looks
+    around); **C** cube faces (fewer viewers read them).
+  - **D-156 · Where the buttons are.** Chosen **A**: in the Szobadoboz panel, one Körkép row per photo point
+    (⟲ Igazítás, ⇩ 360° kép), behind `vazlat.pano`. Rejected: **B** on the Fotópont wheel (no solved plan there for
+    the 3D check); **C** automatic alignment on every open (it changes the survey; the user should see it happen).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
