@@ -247,6 +247,10 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
             } else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (feat("kamera.markup")) Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
+                // skcam K3 (WP M60): the Síkmérés on this photo; back here when done
+                if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) Pill("📏 Mérés", Melyviz.current, false) {
+                    st.ask = Ask.Measure(hu.vrg.mobile.sketch.Planes.captureKey(c.id), c.file, (st.kit.purpose(c.purpose)?.label ?: c.purpose) + " · " + c.id, Ask.CaptureView(c.id))
+                }
                 if (marking) {
                     (listOf(MarkKind.ARROW to "➚", MarkKind.CIRCLE to "◯", MarkKind.LINE to "╱", MarkKind.FREE to "〰", MarkKind.TEXT to "T") +
                         if (st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.BLUR)) listOf(MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒") else emptyList()).forEach { (k, sym) ->
@@ -258,6 +262,8 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                 }
             }
             if (marking && kind.blur) Text("▦ / ▒ elmosás: a kiadott képen kockásítva, az eredeti a telefonon marad.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
+            if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) hu.vrg.mobile.sketch.Planes.summary(hu.vrg.mobile.sketch.Planes.of(st.sketch, hu.vrg.mobile.sketch.Planes.captureKey(c.id)))
+                .takeIf { it.isNotEmpty() }?.let { Text("📏 " + it.joinToString(" · "), style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
             PhotoExtras(st, c)       // Kamera 2: reading, privacy, before / after
             Text("Cél", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

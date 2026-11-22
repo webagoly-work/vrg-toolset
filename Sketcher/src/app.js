@@ -363,7 +363,7 @@
     const pp = (S.photos || []);
     if (pp.length) h += '<h3>Fotópontok</h3>' + pp.map(p => '<div class="card"><b>' + esc(p.id) + '</b> ' + esc(roomName(p.room)) + ' ' + (p.shots || []).map(x => {
       const u = files.get(base(x.file)); return u ? '<img class="thumb" src="' + esc(u) + '" alt="' + esc(x.file) + '">' : '<span class="tag">' + esc(base(x.file)) + '</span>';
-    }).join('') + '</div>').join('');
+    }).join('') + (p.shots || []).map(x => planeBits(PL.keyOf(p.id, x.deg), shotImage(p.id, x), roomName(p.room) + ' · ' + sideLabel(x.deg))).join('') + '</div>').join('');
     return h;
   }
   function capCard(c) {
@@ -373,7 +373,8 @@
       : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
     return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
       '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
-      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + planeBits(c.id, c.kind === 'photo' || !c.kind ? captureNames(c).find(n => boxImg.has(n)) : null, (BASE.purposes.find(p => p.id === c.purpose) || {}).label || c.id) +
+      '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
   }
   // ---- Kamera 2: video, signature, personal data, type-plate readings, before / after ---------------------------
   const mb = b => b > 0 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : '?';   // as Camera2.mb
@@ -563,6 +564,33 @@
     });
     return h;
   }
+  // ---- Síkmérés (dev line skcam, stage K3): measuring on a plane in one photo --------------------------------------
+  // lib/plane.js does the maths, lib/plane-ui.js is the screen (the phone runs the same one in a WebView). The results
+  // go into the survey's optional `planes` key, by photo: a capture id or a Fotópont shot ("F25/0").
+  const PL = window.VRGPlane, PLUI = window.VRGPlaneUI;
+  const sideLabel = deg => ({ 0: 'É', 90: 'K', 180: 'D', 270: 'Ny' })[((deg % 360) + 360) % 360] || deg + '°';
+  // a Fotópont photo attached on the PC carries its board name (the package's plan.photos), the survey the phone's
+  const shotImage = (pid, x) => {
+    const pp = (pkg && pkg.plan && pkg.plan.photos || []).find(q => q.id === pid), b = pp && (pp.shots || []).find(q => q.deg === x.deg);
+    return [base(x.file), b && base(b.file)].find(n => n && boxImg.has(n)) || null;
+  };
+  function planeBits(key, file, title) {
+    if (!PL || !on('kamera.measure')) return '';
+    const rec = (S.planes || {})[key], lines = rec ? PL.summary(rec) : [];
+    return '<div class="plane-bits">' + (file ? '<button class="btn sm" data-pact="open" data-key="' + esc(key) + '" data-file="' + esc(file) + '" data-title="' + esc(title) + '">📏 Mérés</button> ' : '') +
+      (lines.length ? '<span class="small">' + lines.map(esc).join(' · ') + '</span>' : '') + '</div>';
+  }
+  function planeOpen(key, file, title) {
+    const im = boxImg.get(file); if (!im || !PLUI) return;
+    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null,
+      onSave: rec => commit(() => {
+        const pl = Object.assign({}, S.planes || {});
+        if (rec) pl[key] = rec; else delete pl[key];
+        if (Object.keys(pl).length) S.planes = pl; else delete S.planes;
+      }) });
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('#main [data-pact="open"]'); if (t && S) planeOpen(t.dataset.key, t.dataset.file, t.dataset.title); });
+
   // ---- Szobadoboz (dev line skcam, stage K1): the room in 3D with its Fotópont photos ------------------------------
   // lib/roombox.js does the maths, lib/roombox-gl.js draws; the overlay lives outside #main, so a re-render of the
   // page does not drop the WebGL canvas. Corrections go into the survey's optional `box` key (see lib/roombox.js).
@@ -581,7 +609,7 @@
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       const m = Object.assign({}, boxMeta.get(name)); m.w = img.naturalWidth; m.h = img.naturalHeight; boxMeta.set(name, m);
       boxImg.set(name, c);
-      if (ui.open) boxRedraw(true); else if (cur === 'vazlat') render();   // the card counts the attached photos
+      if (ui.open) boxRedraw(true); else if (cur === 'vazlat' || cur === 'kamera') render();   // the cards count / measure the attached photos
     };
     img.src = files.get(name);
   }
@@ -824,6 +852,7 @@
     render();
   }
   window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
-    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null } };
+    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null },
+    plane: { open: planeOpen } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

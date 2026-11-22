@@ -175,6 +175,8 @@ svg.siteplace text { fill: var(--muted, #888); }
 .bx-shot label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .bx-shot input[type=range] { width: 100%; accent-color: #2a8cdb; }
 @media (max-width: 700px) { .bx-body { flex-direction: column; } #bxside { width: auto; max-width: none; max-height: 42vh; border-left: 0; border-top: 1px solid var(--line); } }
+/* skcam K3: Síkmérés, the photo cards' measure row (the screen itself styles itself, lib/plane-ui.js) */
+.plane-bits { margin: 4px 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
 </style>
 </head>
@@ -197,7 +199,7 @@ svg.siteplace text { fill: var(--muted, #888); }
 <script>window.VRG_FIELDKIT = {"kind":"vrg-fieldkit","v":1,"about":"VRG Sketcher field kit: the catalog both the phone (VRG Mobile, feature-sketch assets) and the Desktop page read. Data only. Conditions and effects: docs/sketcher/README.md section 4. Validate: node Sketcher/tools/variant-check.js --kit","fronts":[{"id":"vazlat","label":"Vázlat","sym":"◫","color":"#27c2b0"},{"id":"jegyzet","label":"Jegyzet","sym":"✎","color":"#e0b020"},{"id":"munkakor","label":"Munkakör","sym":"☰","color":"#3dae5a"},{"id":"kerdes","label":"Kérdések","sym":"?","color":"#e8641c"},{"id":"kamera","label":"Kamera","sym":"◉","color":"#2a8cdb"},{"id":"helyszin","label":"Helyszín","sym":"⌖","color":"#8a5cd6"},{"id":"nyitott","label":"Nyitott","sym":"⚑","color":"#d64545"}],"purposes":[{"id":"epulet","label":"Épület kívülről","sym":"⌂","color":"#8a5cd6"},{"id":"kornyek","label":"Környék, utca","sym":"⛬","color":"#6e8b3d"},{"id":"bejarat","label":"Hozzáférés","sym":"⇥","color":"#5470b0"},{"id":"merohely","label":"Mérőhely","sym":"⌁","color":"#e0b020"},{"id":"eloszto","label":"Elosztó","sym":"▣","color":"#e8641c"},{"id":"meglevo","label":"Meglévő szerelvény","sym":"○","color":"#9aa3ad"},{"id":"hely","label":"Tervezett hely","sym":"✚","color":"#3dae5a"},{"id":"hiba","label":"Hiba, veszély","sym":"⚠","color":"#d64545"},{"id":"tabla","label":"Típustábla, címke","sym":"▤","color":"#c03fa8"},{"id":"nyomvonal","label":"Nyomvonal, fal","sym":"〰","color":"#20a8a0"},{"id":"szoba","label":"Szoba (Fotópont)","sym":"◎","color":"#2a8cdb"},{"id":"dokumentum","label":"Dokumentum","sym":"▧","color":"#b07a2a"},{"id":"egyeb","label":"Egyéb","sym":"•","color":"#7d8590"}],"chips":[{"id":"kivansag","label":"Kívánság","sym":"★","color":"#3dae5a","group":"ugyfel"},{"id":"problema","label":"Probléma","sym":"⚠","color":"#d64545","group":"ugyfel"},{"id":"fontos","label":"Fontos","sym":"!","color":"#e8641c","group":"ugyfel"},{"id":"hatarido","label":"Határidő","sym":"⏱","color":"#5470b0","group":"ugyfel"},{"id":"keret","label":"Keret","sym":"Ft","color":"#b07a2a","group":"ugyfel"},{"id":"visszakerdez","label":"Visszakérdezni","sym":"?","color":"#e8641c","group":"ugyfel","open":true},{"id":"tisztazando","label":"Tisztázandó","sym":"⚑","color":"#d64545","group":"ugyfel","open":true},{"id":"lakott","label":"Lakott","sym":"⌂","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"lakott","opt":"igen"}}},{"id":"tulaj","label":"Tulaj jelen","sym":"☺","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"tulaj"}}},{"id":"berlo","label":"Bérlő","sym":"☻","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"berlo"}}},{"id":"kulcs","label":"Kulcs külön","sym":"⚿","color":"#8a5cd6","group":"helyzet","sets":{"answer":{"q":"hozzaferes","opt":"kulcs"}}},{"id":"haziallat","label":"Háziállat","sym":"🐾","color":"#8a5cd6","group":"helyzet"},{"id":"parkolas","label":"Parkolás nehéz","sym":"P","color":"#8a5cd6","group":"helyzet"},{"id":"hetvege","label":"Csak hétvégén","sym":"7","color":"#8a5cd6","group":"helyzet"},{"id":"por","label":"Pormentesen","sym":"≋","color":"#8a5cd6","group":"helyzet"}],"scope":[{"id":"uj","label":"Új kiépítés","sym":"✚","group":"jelleg"},{"id":"felujitas","label":"Felújítás, csere","sym":"↻","group":"jelleg"},{"id":"bovites","label":"Bővítés","sym":"⊕","group":"jelleg"},{"id":"hiba","label":"Hibaelhárítás","sym":"⚠","group":"jelleg"},{"id":"felulvizsgalat","label":"Felülvizsgálat","sym":"✓","group":"jelleg"},{"id":"merohely","label":"Mérőhely, teljesítmény","sym":"⌁","group":"jelleg"},{"id":"eloszto","label":"Elosztó csere","sym":"▣","group":"jelleg"},{"id":"felmeres","label":"Csak felmérés, ajánlat","sym":"◫","group":"jelleg"},{"id":"egesz","label":"Egész lakás / ház","sym":"⌂","group":"terulet"},{"id":"konyha","label":"Konyha","sym":"🍳","group":"terulet"},{"id":"furdo","label":"Fürdő","sym":"🛁","group":"terulet"},{"id":"szoba","label":"Szoba(k)","sym":"▭","group":"terulet"},{"id":"kulter","label":"Kert, kültér","sym":"🌿","group":"terulet"},{"id":"garazs","label":"Garázs, műhely","sym":"⚙","group":"terulet"},{"id":"kozos","label":"Közös rész, lépcsőház","sym":"⇅","group":"terulet"},{"id":"ev","label":"E-autó töltő","sym":"⚡","group":"rendszer"},{"id":"napelem","label":"Napelem / HMKE","sym":"☀","group":"rendszer"},{"id":"okos","label":"Okosotthon","sym":"◈","group":"rendszer"},{"id":"gyenge","label":"Gyengeáram (LAN, TV)","sym":"⋈","group":"rendszer"},{"id":"riaszto","label":"Riasztó, kamera","sym":"◉","group":"rendszer"},{"id":"kaputelefon","label":"Kaputelefon","sym":"☎","group":"rendszer"},{"id":"klima","label":"Klíma","sym":"❄","group":"rendszer"},{"id":"hoszivattyu","label":"Hőszivattyú","sym":"♨","group":"rendszer"},{"id":"padlofutes","label":"Padlófűtés","sym":"▦","group":"rendszer"},{"id":"vilagitas","label":"Világítás, LED","sym":"✱","group":"rendszer"},{"id":"dugalj","label":"Dugalj","sym":"⊙","group":"igeny","qty":true},{"id":"kapcsolo","label":"Kapcsoló","sym":"⊘","group":"igeny","qty":true},{"id":"lampa","label":"Lámpa","sym":"✱","group":"igeny","qty":true},{"id":"ledszalag","label":"LED-szalag","sym":"═","group":"igeny","qty":true},{"id":"fozolap","label":"Főzőlap","sym":"⊞","group":"igeny","qty":true},{"id":"suto","label":"Sütő","sym":"▢","group":"igeny","qty":true},{"id":"mosogep","label":"Mosógép","sym":"◍","group":"igeny","qty":true},{"id":"mosogatogep","label":"Mosogatógép","sym":"◌","group":"igeny","qty":true},{"id":"szarito","label":"Szárítógép","sym":"◎","group":"igeny","qty":true},{"id":"bojler","label":"Bojler","sym":"♒","group":"igeny","qty":true},{"id":"torolkozo","label":"Törölközőszárító","sym":"♨","group":"igeny","qty":true},{"id":"szellozo","label":"Szellőző","sym":"✣","group":"igeny","qty":true},{"id":"tvpont","label":"TV-pont","sym":"▭","group":"igeny","qty":true},{"id":"lanpont","label":"LAN-pont","sym":"⋈","group":"igeny","qty":true},{"id":"kulteri","label":"Kültéri aljzat","sym":"⊙","group":"igeny","qty":true},{"id":"cee","label":"CEE aljzat (ipari)","sym":"⏻","group":"igeny","qty":true},{"id":"ipkamera","label":"IP kamera","sym":"◉","group":"igeny","qty":true}],"keywords":[{"id":"bojler","re":"bojler|vizmelegit","suggest":{"scope":["bojler"]}},{"id":"fozolap","re":"indukc|fozolap|fozo lap","suggest":{"scope":["fozolap"]}},{"id":"suto","re":"\\bsuto","suggest":{"scope":["suto"]}},{"id":"mosogatogep","re":"mosogatogep","suggest":{"scope":["mosogatogep"]}},{"id":"mosogep","re":"\\bmosogep","suggest":{"scope":["mosogep"]}},{"id":"szarito","re":"szaritogep","suggest":{"scope":["szarito"]}},{"id":"ev","re":"e-?auto|villanyauto|elektromos auto|\\btolto|wallbox|tesla","suggest":{"scope":["ev"]}},{"id":"napelem","re":"napelem|inverter|hmke","suggest":{"scope":["napelem"]}},{"id":"okos","re":"okos|smart|zigbee|knx|shelly|google home|alexa","suggest":{"scope":["okos"]}},{"id":"gyenge","re":"\\blan\\b|internet|wifi|ethernet|\\butp\\b|antenna","suggest":{"scope":["gyenge"]}},{"id":"riaszto","re":"riaszto|biztonsagi kamera|kamerarendszer","suggest":{"scope":["riaszto"]}},{"id":"klima","re":"klima|legkondi","suggest":{"scope":["klima"]}},{"id":"hoszivattyu","re":"hoszivattyu","suggest":{"scope":["hoszivattyu"]}},{"id":"padlofutes","re":"padlofutes","suggest":{"scope":["padlofutes"]}},{"id":"konyha","re":"konyha","suggest":{"scope":["konyha"]}},{"id":"furdo","re":"furdo|zuhany|kad\\b","suggest":{"scope":["furdo"]}},{"id":"ledszalag","re":"led ?-?szalag|szalagvilagit","suggest":{"scope":["ledszalag"]}},{"id":"alu","re":"aluminium|\\balu\\b","suggest":{"answer":{"q":"anyag","opt":"alu"}}},{"id":"fi","re":"fi-?rele|fi rele|eletvedelmi"},{"id":"leold","re":"leold|lecsap|kiver|lever a","suggest":{"scope":["hiba"]}},{"id":"egett","re":"(?\u003c!ki)eget|ego szag|egett szag|szikraz|meleged|felforrosod","suggest":{"scope":["hiba"]}},{"id":"penz","re":"(\\d[\\d .]*\\d|\\d)\\s*(millio|ezer|e|m)?\\s*(ft|forint)\\b","suggest":{"answer":{"q":"keret","opt":"max","text":"$0"}}},{"id":"fazis3","re":"(\\b3|harom)\\s*-?\\s*fazis","suggest":{"answer":{"q":"fazis","opt":"3f"}}},{"id":"fazis1","re":"(\\b1|egy)\\s*-?\\s*fazis","suggest":{"answer":{"q":"fazis","opt":"1f"}}},{"id":"surgos","re":"surgos|azonnal|holnap|jovo het","suggest":{"answer":{"q":"hatarido","opt":"surgos"}}},{"id":"tarsashaz","re":"tarsashaz|kozos kepvisel|lepcsohaz|panel","suggest":{"answer":{"q":"ingatlan","opt":"tarsashaz"}}},{"id":"berlo","re":"berlo|alberlet|kiado","suggest":{"answer":{"q":"hozzaferes","opt":"berlo"}}}],"questions":[{"id":"lenyeg","q":"Mi a kérés lényege?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"uj","label":"Új kiépítés","sets":{"scope":["uj"]}},{"id":"csere","label":"Csere, felújítás","sets":{"scope":["felujitas"]}},{"id":"bovites","label":"Bővítés","sets":{"scope":["bovites"]}},{"id":"javitas","label":"Javítás, hibakeresés","sets":{"scope":["hiba"]}},{"id":"felulvizsgalat","label":"Felülvizsgálat","sets":{"scope":["felulvizsgalat"]}}],"multi":true},{"id":"ingatlan","q":"Milyen ingatlan?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"csaladi","label":"Családi ház"},{"id":"tarsashaz","label":"Társasházi lakás"},{"id":"iroda","label":"Iroda"},{"id":"uzlet","label":"Üzlet, vendéglátó"},{"id":"egyeb","label":"Egyéb"}]},{"id":"hozzaferes","q":"Ki fér hozzá az ingatlanhoz?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"tulaj","label":"Tulajdonos"},{"id":"berlo","label":"Bérlő"},{"id":"kozos","label":"Közös képviselő"},{"id":"kulcs","label":"Kulcs külön egyeztetve"}]},{"id":"hatarido","q":"Mikorra kell elkészülni?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"surgos","label":"Sürgős (napokon belül)"},{"id":"honap","label":"Egy hónapon belül"},{"id":"rugalmas","label":"Rugalmas"},{"id":"datum","label":"Konkrét dátum"}],"num":{"unit":"dátum"}},{"id":"keret","q":"Van költségkeret?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"nincs","label":"Nincs"},{"id":"max","label":"Van, legfeljebb …"},{"id":"ajanlat","label":"Árajánlat után döntünk"}],"num":{"unit":"Ft"}},{"id":"lakott","q":"Lakott lesz közben az ingatlan?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"nem","label":"Nem"},{"id":"reszben","label":"Részben"}]},{"id":"foto","q":"Fényképezhetünk?","group":"alap","prio":1,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"villamos","label":"Csak a villamos részt"},{"id":"nem","label":"Nem"}]},{"id":"doksi","q":"Van régi dokumentáció (terv, jegyzőkönyv)?","group":"alap","prio":2,"who":"ugyfel","when":true,"options":[{"id":"igen","label":"Igen"},{"id":"nincs","label":"Nincs"},{"id":"keresik","label":"Megkeresik"}]},{"id":"dontes","q":"Ki dönt a megrendelésről?","group":"alap","prio":2,"who":"ugyfel","when":true,"options":[{"id":"o","label":"Ő maga"},{"id":"tobben","label":"Többen együtt"},{"id":"mas","label":"Valaki más"}]},{"id":"kor","q":"Mikor készült a hálózat?","group":"meglevo","prio":1,"who":"ugyfel","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"70elott","label":"1970 előtt"},{"id":"70-90","label":"1970–1990"},{"id":"90-10","label":"1990–2010"},{"id":"10utan","label":"2010 után"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"anyag","q":"Vezeték anyaga?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},{"kw":"alu"}]},"options":[{"id":"alu","label":"Alumínium"},{"id":"rez","label":"Réz"},{"id":"vegyes","label":"Vegyes"},{"id":"nemtudni","label":"Nem tudni"}]},{"id":"fi","q":"Van FI-relé (életvédelmi)?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},{"kw":"fi"}]},"options":[{"id":"van","label":"Van"},{"id":"nincs","label":"Nincs"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"biztositek","q":"Biztosítékok típusa?","group":"meglevo","prio":1,"who":"szemle","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"olvado","label":"Olvadóbetétes"},{"id":"kismegszakito","label":"Kismegszakító"},{"id":"vegyes","label":"Vegyes"}]},{"id":"gond","q":"Milyen gond volt már?","group":"meglevo","prio":1,"who":"ugyfel","when":{"any":[{"scope":"hiba"},{"kw":["leold","egett"]}]},"options":[{"id":"leold","label":"Leold a FI / biztosíték"},{"id":"eg","label":"Szikrázik, égett szag"},{"id":"meleg","label":"Melegedő aljzat"},{"id":"nincs","label":"Nincs"}],"multi":true},{"id":"vizsgalat","q":"Mikor volt utoljára érintésvédelmi felülvizsgálat?","group":"meglevo","prio":2,"who":"ugyfel","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"options":[{"id":"ev","label":"Éven belül"},{"id":"1-5","label":"1–5 éve"},{"id":"5+","label":"5+ éve"},{"id":"soha","label":"Soha / nem tudja"}]},{"id":"fazis","q":"Hány fázis a bekötés most?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"1f","label":"1 fázis"},{"id":"3f","label":"3 fázis"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"fobizt","q":"Főbiztosíték?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"1x25","label":"1×25 A"},{"id":"1x32","label":"1×32 A"},{"id":"3x16","label":"3×16 A"},{"id":"3x25","label":"3×25 A"},{"id":"mas","label":"Más (A)"}]},{"id":"mero_hely","q":"Hol van a mérő?","group":"merohely","prio":1,"who":"ugyfel","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"bent","label":"Épületen belül"},{"id":"kerites","label":"Kerítésnél"},{"id":"oszlop","label":"Tartóoszlopon"},{"id":"lepcsohaz","label":"Lépcsőházban"}]},{"id":"bekotes","q":"Hogyan jön be a hálózat?","group":"merohely","prio":1,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"leg","label":"Légvezeték"},{"id":"fold","label":"Földkábel"},{"id":"nemlatszik","label":"Nem látszik"}]},{"id":"uj_fogyaszto","q":"Lesz új nagy fogyasztó?","group":"merohely","prio":2,"who":"ugyfel","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]},"options":[{"id":"ev","label":"Töltő","sets":{"scope":["ev"]}},{"id":"hsz","label":"Hőszivattyú","sets":{"scope":["hoszivattyu"]}},{"id":"pv","label":"Napelem","sets":{"scope":["napelem"]}},{"id":"indukcio","label":"Indukciós főzőlap","sets":{"scope":["fozolap"]}},{"id":"klima","label":"Klíma","sets":{"scope":["klima"]}},{"id":"nincs","label":"Nincs"}],"multi":true},{"id":"mero_allapot","q":"Mérőszekrény állapota?","group":"merohely","prio":2,"who":"szemle","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},"options":[{"id":"rendben","label":"Rendben"},{"id":"torott","label":"Törött, rozsdás"},{"id":"nincshely","label":"Nincs hely"},{"id":"plomba","label":"Plombált, nem hozzáférhető"}]},{"id":"szabad_hely","q":"Van szabad hely az elosztóban?","group":"eloszto","prio":1,"who":"szemle","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"van","label":"Van"},{"id":"tele","label":"Tele van"},{"id":"nemtudja","label":"Nem tudni"}]},{"id":"felirat","q":"Van áramköri felirat / lista?","group":"eloszto","prio":2,"who":"szemle","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"naprakesz","label":"Van, naprakész"},{"id":"hianyos","label":"Van, hiányos"},{"id":"nincs","label":"Nincs"}]},{"id":"foldeles","q":"Földelés?","group":"eloszto","prio":1,"who":"szemle","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"scope":"ev"}]},"options":[{"id":"tncs","label":"TN-C-S"},{"id":"tt","label":"TT"},{"id":"nemtudja","label":"Nem tudni"}]},{"id":"uj_eloszto","q":"Kell új elosztó?","group":"eloszto","prio":2,"who":"ugyfel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"options":[{"id":"igen","label":"Igen","sets":{"scope":["eloszto"]}},{"id":"bovites","label":"Csak bővítés"},{"id":"javasolj","label":"Szerelő javasoljon"}]},{"id":"furdo_mit","q":"Mit szeretne a fürdőben?","group":"furdo","prio":1,"who":"ugyfel","when":{"any":[{"scope":"furdo"},{"room":"furdo"}]},"options":[{"id":"lampa","label":"Új lámpák","sets":{"scope":["lampa"]}},{"id":"aljzat","label":"Új aljzatok","sets":{"scope":["dugalj"]}},{"id":"torolkozo","label":"Törölközőszárító","sets":{"scope":["torolkozo"]}},{"id":"padlofutes","label":"Padlófűtés","sets":{"scope":["padlofutes"]}},{"id":"szellozo","label":"Szellőző","sets":{"scope":["szellozo"]}}],"multi":true},{"id":"gepek","q":"Milyen gépek lesznek a konyhában?","group":"konyha","prio":1,"who":"ugyfel","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"options":[{"id":"mosogatogep","label":"Mosogatógép","sets":{"scope":["mosogatogep"]}},{"id":"suto","label":"Sütő","sets":{"scope":["suto"]}},{"id":"fozolap","label":"Főzőlap","sets":{"scope":["fozolap"]}},{"id":"mosogep","label":"Mosógép","sets":{"scope":["mosogep"]}},{"id":"bojler","label":"Bojler","sets":{"scope":["bojler"]}}],"multi":true},{"id":"fozolap_tipus","q":"Milyen főzőlap?","group":"konyha","prio":1,"who":"ugyfel","when":{"any":[{"scope":"fozolap"},{"answer":"gepek","is":"fozolap"}]},"options":[{"id":"gaz","label":"Gáz"},{"id":"villany","label":"Villany"},{"id":"indukcio","label":"Indukció"},{"id":"nemdont","label":"Még nincs döntés"}]},{"id":"csempe","q":"Kész a csempézés?","group":"konyha","prio":2,"who":"ugyfel","when":{"any":[{"scope":["furdo","konyha"]},{"room":["furdo","konyha"]}]},"options":[{"id":"kesz","label":"Kész"},{"id":"meg","label":"Még nem"},{"id":"nemlesz","label":"Nem lesz"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"bekotes_hely","q":"Ki jelöli ki a gépek bekötési helyét?","group":"konyha","prio":2,"who":"ugyfel","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"options":[{"id":"megvan","label":"Már megvan"},{"id":"szerelo","label":"A szerelő"},{"id":"tervezo","label":"A konyhatervező"}]},{"id":"auto_kw","q":"Az autó töltési teljesítménye (AC)?","group":"ev","prio":1,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"3.7","label":"3,7 kW"},{"id":"7.4","label":"7,4 kW (1 fázis)"},{"id":"11","label":"11 kW (3 fázis)"},{"id":"22","label":"22 kW"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"parkolo","q":"Hol parkol az autó?","group":"ev","prio":1,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"garazs","label":"Garázs"},{"id":"beallo","label":"Kocsibeálló"},{"id":"utca","label":"Utcafront"},{"id":"melygarazs","label":"Társasházi mélygarázs"}]},{"id":"tavolsag","q":"Milyen messze van az elosztótól?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"5","label":"\u003c 5 m"},{"id":"15","label":"5–15 m"},{"id":"30","label":"15–30 m"},{"id":"30+","label":"30 m felett"}]},{"id":"okos_tolto","q":"Okos funkció a töltőn?","group":"ev","prio":2,"who":"ugyfel","when":{"scope":"ev"},"options":[{"id":"alap","label":"Alap"},{"id":"pv","label":"Napelemes vezérlés"},{"id":"terheles","label":"Terheléskezelés"},{"id":"nem","label":"Nem érdekli"}]},{"id":"hozzajarulas","q":"Megvan a tulajdonosi / közös képviselői hozzájárulás?","group":"ev","prio":1,"who":"ugyfel","when":{"any":[{"all":[{"scope":"ev"},{"answer":"ingatlan","is":"tarsashaz"}]},{"all":[{"scope":"napelem"},{"answer":"ingatlan","is":"tarsashaz"}]}]},"options":[{"id":"igen","label":"Igen"},{"id":"kell","label":"Kell kérni"},{"id":"nemkell","label":"Nem szükséges"}]},{"id":"wifi_park","q":"Van WiFi a töltő helyén?","group":"ev","prio":2,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"jo","label":"Jó"},{"id":"gyenge","label":"Gyenge"},{"id":"nincs","label":"Nincs"}]},{"id":"fogyasztas","q":"Éves fogyasztás?","group":"napelem","prio":1,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"2500","label":"\u003c 2 500 kWh"},{"id":"5000","label":"2 500–5 000"},{"id":"8000","label":"5 000–8 000"},{"id":"8000+","label":"8 000 felett"}]},{"id":"teto","q":"Milyen a tető?","group":"napelem","prio":1,"who":"szemle","when":{"scope":"napelem"},"options":[{"id":"cserep","label":"Cserép"},{"id":"lemez","label":"Lemez"},{"id":"lapos","label":"Lapostető"},{"id":"egyeb","label":"Egyéb"}]},{"id":"tajolas","q":"Tájolás?","group":"napelem","prio":1,"who":"szemle","when":{"scope":"napelem"},"options":[{"id":"del","label":"Dél"},{"id":"kny","label":"Kelet–nyugat"},{"id":"egyeb","label":"Egyéb"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"akku","q":"Akkumulátor?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"igen","label":"Igen"},{"id":"kesobb","label":"Később"},{"id":"nem","label":"Nem"}]},{"id":"meglevo_pv","q":"Van már napelem?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"nincs","label":"Nincs"},{"id":"bovit","label":"Van, bővítené"},{"id":"hibas","label":"Van, hibás"}]},{"id":"ugyintezes","q":"Kell hálózati ügyintézés?","group":"napelem","prio":2,"who":"ugyfel","when":{"scope":"napelem"},"options":[{"id":"igen","label":"Igen, kérem"},{"id":"folyamatban","label":"Már elindult"},{"id":"maga","label":"Maga intézi"}]},{"id":"okos_rendszer","q":"Milyen okosotthon rendszer?","group":"okos","prio":1,"who":"ugyfel","when":{"scope":"okos"},"options":[{"id":"knx","label":"KNX (vezetékes)"},{"id":"zigbee","label":"Zigbee / Thread"},{"id":"wifi","label":"WiFi (pl. Shelly)"},{"id":"nemdont","label":"Még nincs döntés"}]},{"id":"okos_mit","q":"Mit vezéreljen?","group":"okos","prio":1,"who":"ugyfel","when":{"scope":"okos"},"options":[{"id":"vilagitas","label":"Világítás"},{"id":"redony","label":"Redőny"},{"id":"futes","label":"Fűtés"},{"id":"kapu","label":"Kapu"},{"id":"meres","label":"Fogyasztásmérés"}],"multi":true},{"id":"gyenge_mit","q":"Milyen gyengeáram kell?","group":"gyenge","prio":1,"who":"ugyfel","when":{"scope":"gyenge"},"options":[{"id":"lan","label":"LAN","sets":{"scope":["lanpont"]}},{"id":"tv","label":"TV","sets":{"scope":["tvpont"]}},{"id":"wifi","label":"WiFi lefedettség"},{"id":"kamera","label":"Kamera","sets":{"scope":["ipkamera"]}},{"id":"kaputelefon","label":"Kaputelefon","sets":{"scope":["kaputelefon"]}}],"multi":true},{"id":"router_hely","q":"Hol lesz a router / rack?","group":"gyenge","prio":2,"who":"ugyfel","when":{"scope":"gyenge"},"options":[{"id":"eloszto","label":"Elosztó mellett"},{"id":"nappali","label":"Nappaliban"},{"id":"mas","label":"Máshol"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"klima_db","q":"Hány beltéri egység lesz?","group":"klima","prio":1,"who":"ugyfel","when":{"scope":"klima"},"options":[{"id":"1","label":"1"},{"id":"2","label":"2"},{"id":"3","label":"3"},{"id":"4+","label":"4 vagy több"}]},{"id":"kulteri_egyseg","q":"Hol lesz a kültéri egység?","group":"klima","prio":1,"who":"szemle","when":{"any":[{"scope":["klima","hoszivattyu"]}]},"options":[{"id":"homlokzat","label":"Homlokzaton"},{"id":"erkely","label":"Erkélyen"},{"id":"kert","label":"Kertben"},{"id":"teto","label":"Tetőn"}]}],"shotlist":[{"id":"epulet_eleje","purpose":"epulet","label":"Épület / bejárat eleje","hint":"A ház és a bejárat; vigyázz a házszámra és az arcokra.","when":true},{"id":"hozzaferes","purpose":"bejarat","label":"Hozzáférés: padlás, pince, felszálló","hint":"Ahol a kábel menne, és ami akadály.","when":true,"prio":2},{"id":"merohely_zart","purpose":"merohely","label":"Mérőszekrény zárva, környezettel","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]}},{"id":"merohely_nyitott","purpose":"merohely","label":"Mérőszekrény nyitva: mérő, főbiztosíték","when":{"any":[{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]},{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}]}},{"id":"mero_tabla","purpose":"tabla","label":"Mérő címkéje: gyári szám, típus","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]}},{"id":"fobizt_tabla","purpose":"tabla","label":"Főbiztosíték értéke","when":{"any":[{"scope":["merohely","ev","napelem","hoszivattyu","fozolap","klima"]},{"answer":"lenyeg","is":["bovites"]},{"answer":"uj_fogyaszto"}]}},{"id":"eloszto_zart","purpose":"eloszto","label":"Elosztó zárva, a helyiséggel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]}},{"id":"eloszto_nyitott","purpose":"eloszto","label":"Elosztó nyitva, olvasható címkékkel","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]}},{"id":"eloszto_felirat","purpose":"tabla","label":"Áramköri lista / felirat","when":{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},"prio":2},{"id":"fi_tabla","purpose":"tabla","label":"FI-relé címkéje (30 mA?)","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"kw":"fi"}]}},{"id":"foldeles","purpose":"eloszto","label":"Földelés, EPH kötések","when":{"any":[{"any":[{"scope":["eloszto","felujitas","bovites","ev","napelem","felulvizsgalat","hiba","uj"]},{"point":"board"}]},{"scope":"ev"}]},"prio":2},{"id":"szabad_hely","purpose":"eloszto","label":"Szabad DIN-hely","when":{"any":[{"scope":["ev","napelem","bovites"]}]}},{"id":"hiba_nyom","purpose":"hiba","label":"A hiba nyoma (égés, melegedés)","when":{"any":[{"scope":"hiba"},{"kw":"egett"}]}},{"id":"furdo_szoba","purpose":"szoba","room":"furdo","label":"Fürdő: Fotópont, 4 irány","when":{"any":[{"scope":"furdo"},{"room":"furdo"}]},"need":4},{"id":"konyha_szoba","purpose":"szoba","room":"konyha","label":"Konyha: Fotópont, 4 irány","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]},"need":4},{"id":"konyha_bekotes","purpose":"meglevo","label":"Meglévő konyhai aljzatok, gépbekötések","when":{"any":[{"scope":"konyha"},{"room":"konyha"}]}},{"id":"ev_hely","purpose":"hely","label":"A töltő tervezett helye","when":{"scope":"ev"}},{"id":"ev_parkolo","purpose":"kornyek","label":"A parkolóhely, a töltőcsatlakozó oldala","when":{"scope":"ev"}},{"id":"ev_utvonal","purpose":"nyomvonal","label":"Kábelút az elosztótól a töltőig","when":{"scope":"ev"},"need":2},{"id":"pv_teto","purpose":"epulet","label":"Tető minden oldala","when":{"scope":"napelem"},"need":2},{"id":"pv_arnyek","purpose":"kornyek","label":"Árnyékolók: fák, kémény, szomszéd","when":{"scope":"napelem"}},{"id":"pv_inverter","purpose":"hely","label":"Inverter / akku helye","when":{"scope":"napelem"}},{"id":"pv_szamla","purpose":"dokumentum","label":"Villanyszámla (csak az éves kWh; név takarva)","when":{"scope":"napelem"},"prio":2},{"id":"meglevo_szerelveny","purpose":"meglevo","label":"Jellemző aljzat / kapcsoló szobánként","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]}},{"id":"meglevo_vezetek","purpose":"meglevo","label":"Látható vezeték, kötődoboz","when":{"any":[{"scope":["felujitas","bovites","hiba","felulvizsgalat","eloszto"]},{"answer":"lenyeg","is":["csere","bovites","javitas","felulvizsgalat"]}]},"prio":2},{"id":"doksi","purpose":"dokumentum","label":"A régi dokumentáció","when":{"answer":"doksi","is":"igen"}},{"id":"kulteri_hely","purpose":"hely","label":"Kültéri egység helye","when":{"scope":["klima","hoszivattyu"]}}],"templates":[{"id":"l","label":"L alak","sym":"⌐","poly":[[0,0],[1,0],[1,0.55],[0.55,0.55],[0.55,1],[0,1]]},{"id":"u","label":"U alak","sym":"⊔","poly":[[0,0],[0.3,0],[0.3,0.65],[0.7,0.65],[0.7,0],[1,0],[1,1],[0,1]]},{"id":"t","label":"T alak","sym":"⊤","poly":[[0,0],[1,0],[1,0.4],[0.68,0.4],[0.68,1],[0.32,1],[0.32,0.4],[0,0.4]]},{"id":"ferde","label":"Ferde sarok","sym":"◸","poly":[[0.3,0],[1,0],[1,1],[0,1],[0,0.3]]},{"id":"fulke","label":"Fülkés","sym":"⊓","poly":[[0,0],[1,0],[1,1],[0.62,1],[0.62,0.8],[0.38,0.8],[0.38,1],[0,1]]}]};
 window.VRG_VARIANTS = [{"kind":"vrg-sketcher-variant","v":1,"id":"ev-tolto","name":"E-autó töltő telepítés","sym":"⚡","color":"#e0b020","premise":"Egy otthoni AC töltő (wallbox) felszerelése: a mérőhely és a főbiztosíték, az elosztó szabad helye és földelése, a töltő helye a parkolónál, a kábelút hossza és útja. Az alaprajz itt másodlagos, a nyomvonal és a fotók a lényeg.","topics":["e-auto","wallbox","tolto","kabelut","merohely"],"author":"Claude (GO VARIANT protocol, reference example)","created":"2026-11-18","draw":{"snapGrid":0.5,"defaultRoom":{"w":3.5,"d":6}},"plugins":{"on":["fotopont"],"off":[]},"rail":["route","board","point","measure","photo","memo","tag","room","select","line","circuit","template"],"pointRing":["fixed","socket","junction","board","data","switch","light","pont"],"pointPresets":[{"label":"Töltő (wallbox)","glyph":"⚡","type":"fixed","tags":["T-ded"]},{"label":"Kültéri aljzat","glyph":"⊙","type":"socket","tags":["T-ip44"]},{"label":"Kötődoboz","glyph":"◇","type":"junction","tags":[]},{"label":"Fali átvezetés","glyph":"⊘","type":"pont","tags":[]}],"roomRing":["gepeszet","kulter","eloszoba","kozlekedo","egyeb","nappali","konyha"],"templates":[{"id":"garazs-beallo","label":"Garázs + beálló","sym":"⊏","poly":[[0,0],[0.55,0],[0.55,0.6],[1,0.6],[1,1],[0,1]]}],"tags":[{"id":"T-falat","name":"Falátvezetés","color":"#b07a2a"},{"id":"T-arok","name":"Árok","color":"#6e8b3d"}],"scopePreset":{"ev":1,"merohely":1},"questions":[{"id":"ev_kabelut","q":"Merre menjen a kábel?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"falon","label":"Falon kívül, csatornában"},{"id":"falban","label":"Falban, vésve"},{"id":"foldben","label":"Földben, árokban"},{"id":"padlas","label":"Padláson át"}]},{"id":"ev_kabel_hossz","q":"Becsült kábelhossz?","group":"ev","prio":1,"who":"szemle","when":{"scope":"ev"},"options":[{"id":"10","label":"\u003c 10 m"},{"id":"25","label":"10–25 m"},{"id":"50","label":"25–50 m"},{"id":"50+","label":"50 m felett"}],"num":{"unit":"m"}}],"shotlist":[{"id":"ev_falatvezetes","purpose":"nyomvonal","label":"Fal- és födémátvezetések","when":{"scope":"ev"}}],"hints":{"route":"Rajzold a kábelutat az elosztótól a töltőig; a hossza a Rendezésben látszik.","photo":"A töltő helye, a parkoló és a kábelút: a Képlista végigvezet."}},{"kind":"vrg-sketcher-variant","v":1,"id":"furdo-felujitas","name":"Fürdőszoba felújítás","sym":"🛁","color":"#2a8cdb","premise":"Egy fürdőszoba (és gyakran a mellette lévő WC) villamos felújítása: új lámpák, aljzatok a zónákon kívül, törölközőszárító, szellőző, padlófűtés, a kör FI-védelme. Kicsi, zsúfolt alaprajz fülkékkel és ferde sarkokkal.","topics":["furdo","felujitas","vizes helyiseg","zona","fi-rele"],"author":"Claude (GO VARIANT protocol, reference example)","created":"2026-11-18","draw":{"lineClose":"auto","snapAngle":90,"snapGrid":0.1,"defaultRoom":{"w":2.4,"d":1.8},"measureFirst":true},"plugins":{"on":["fotopont"]},"rail":["room","template","measure","point","photo","memo","tag","route","circuit","select","line","board"],"pointRing":["light","socket","fixed","switch","junction","sensor","data","pont"],"pointPresets":[{"label":"Tükörvilágítás","glyph":"✱","type":"light","tags":[]},{"label":"Aljzat IP44","glyph":"⊙","type":"socket","tags":["T-ip44"]},{"label":"Törölközőszárító","glyph":"♨","type":"fixed","tags":["T-ded"]},{"label":"Szellőző","glyph":"✣","type":"fixed","tags":[]},{"label":"Padlófűtés termosztát","glyph":"▦","type":"sensor","tags":[]},{"label":"Mosógép","glyph":"◍","type":"socket","tags":["T-ded","T-ip44"]}],"roomRing":["furdo","wc","mosokonyha","kozlekedo","halo","konyha","egyeb"],"templates":[{"id":"furdo-kadfulke","label":"Kádfülkés fürdő","sym":"⊓","poly":[[0,0],[1,0],[1,0.38],[0.72,0.38],[0.72,1],[0,1]]},{"id":"furdo-wc","label":"Fürdő + WC","sym":"⊞","poly":[[0,0],[0.68,0],[0.68,0.45],[1,0.45],[1,1],[0,1]]}],"tags":[{"id":"T-zona1","name":"Zóna 1","color":"#20a8a0"},{"id":"T-zona2","name":"Zóna 2","color":"#5470b0"}],"scopePreset":{"felujitas":1,"furdo":1},"chips":[{"id":"csempe_kesz","label":"Csempe kész","sym":"▦","color":"#20a8a0","group":"helyzet"}],"questions":[{"id":"furdo_zona","q":"Hol lesz a kád / zuhany (a zónák miatt)?","group":"furdo","prio":1,"who":"szemle","when":{"scope":"furdo"},"options":[{"id":"marad","label":"Marad a helyén"},{"id":"atkerul","label":"Átkerül"},{"id":"zuhany","label":"Kád helyett zuhany"},{"id":"nemtudja","label":"Még nem tudja"}]},{"id":"furdo_fi","q":"Külön FI-relé védje a fürdő körét?","group":"furdo","prio":1,"who":"ugyfel","when":{"scope":"furdo"},"options":[{"id":"igen","label":"Igen"},{"id":"meglevo","label":"A meglévő elég"},{"id":"javasolj","label":"Szerelő javasoljon"}]},{"id":"furdo_tukor","q":"Tükörvilágítás és tükör melletti aljzat kell?","group":"furdo","prio":2,"who":"ugyfel","when":{"scope":"furdo"},"options":[{"id":"mindketto","label":"Mindkettő"},{"id":"vilagitas","label":"Csak világítás"},{"id":"aljzat","label":"Csak aljzat"},{"id":"egyik","label":"Egyik sem"}]}],"shotlist":[{"id":"furdo_vizes","purpose":"nyomvonal","label":"Vizes falak, csőnyomvonalak","when":{"scope":"furdo"}},{"id":"furdo_eph","purpose":"meglevo","label":"EPH (egyenpotenciál) kötés a csöveken","when":{"scope":"furdo"},"prio":2}],"hints":{"room":"Húzd a fürdő téglalapját, a fülkét a Sablon eszköz adja.","point":"A tükör melletti aljzat IP44, a zóna 2-n kívül.","photo":"A Fotópont a fürdő közepén: négy irány, a vizes fal is."}},{"kind":"vrg-sketcher-variant","v":1,"id":"ipari-telephely","name":"Ipari telephely: kör, lámpa, csere","sym":"▤","color":"#5470b0","premise":"Kis ipari telephely (csarnok, raktár, iroda) villamos munkái: új áramkör és a nyomvonala, új lámpatestek, meglévő fényforrások cseréje. A lámpák helye és magassága, a táplálás útja és a hozzáférés a lényeg; az alaprajz csak a tájékozódáshoz kell.","topics":["ipari","csarnok","raktar","aramkor","nyomvonal","lampa","fenyforras","kabeltalca"],"author":"Claude (GO VARIANT protocol)","created":"2026-11-18","draw":{"snapAngle":90,"snapGrid":1,"defaultRoom":{"w":30,"d":20},"measureFirst":true,"pointSnap":"free"},"plugins":{"on":["fotopont"],"off":[]},"rail":["point","board","route","circuit","measure","photo","memo","tag","room","template","line","select"],"pointRing":["light","junction","fixed","socket","board","switch","sensor","pont"],"pointPresets":[{"label":"Csarnoklámpa","glyph":"✺","type":"light","tags":[]},{"label":"LED panel","glyph":"▦","type":"light","tags":[]},{"label":"Fényforrás-csere","glyph":"◐","type":"light","tags":["T-fenycsere"]},{"label":"Vészvilágító","glyph":"⚑","type":"light","tags":["T-vesz"]},{"label":"CEE 16 A","glyph":"⊛","type":"socket","tags":["T-cee"]},{"label":"CEE 32 A","glyph":"⊛","type":"socket","tags":["T-cee","T-ded"]},{"label":"Gépbekötés","glyph":"⚙","type":"fixed","tags":["T-ded"]},{"label":"Kötődoboz IP65","glyph":"◇","type":"junction","tags":["T-ip65"]},{"label":"Alelosztó","glyph":"▣","type":"board","tags":[]},{"label":"Mozgásérzékelő","glyph":"◎","type":"sensor","tags":[]}],"roomRing":["egyeb","dolgozo","kamra","gepeszet","kozlekedo","wc","kulter"],"templates":[{"id":"csarnok-irodasarok","label":"Csarnok, irodasarokkal","sym":"⌐","poly":[[0,0],[1,0],[1,1],[0.3,1],[0.3,0.7],[0,0.7]]},{"id":"csarnok-rakodo","label":"Csarnok + rakodó","sym":"⊓","poly":[[0,0],[1,0],[1,0.85],[0.62,0.85],[0.62,1],[0.38,1],[0.38,0.85],[0,0.85]]}],"tags":[{"id":"T-fenycsere","name":"Fényforrás-csere","color":"#e0b020"},{"id":"T-vesz","name":"Vészvilágítás","color":"#3dae5a"},{"id":"T-cee","name":"CEE","color":"#2a8cdb"},{"id":"T-ip65","name":"IP65","color":"#20a8a0"},{"id":"T-talca","name":"Kábeltálca","color":"#b07a2a"},{"id":"T-magas","name":"Magasban","color":"#c03fa8"}],"scopePreset":{"ipari":1,"bovites":1,"vilagitas":1,"fenycsere":1},"scope":[{"id":"fenycsere","label":"Fényforrás-csere","sym":"◐","group":"jelleg"},{"id":"ipari","label":"Csarnok, telephely","sym":"▤","group":"terulet"},{"id":"talca","label":"Kábeltálca","sym":"≡","group":"rendszer"},{"id":"veszvil","label":"Vészvilágítás","sym":"⚑","group":"rendszer"},{"id":"csarnoklampa","label":"Csarnoklámpa","sym":"✺","group":"igeny","qty":true},{"id":"cee","label":"CEE aljzat","sym":"⊛","group":"igeny","qty":true},{"id":"gepbekotes","label":"Gépbekötés","sym":"⚙","group":"igeny","qty":true}],"chips":[{"id":"uzem_kozben","label":"Üzem közben","sym":"⚙","color":"#8a5cd6","group":"helyzet"},{"id":"targonca","label":"Targonca","sym":"⇄","color":"#8a5cd6","group":"helyzet"},{"id":"porta","label":"Porta, belépés","sym":"⚿","color":"#8a5cd6","group":"helyzet"},{"id":"emelo_kell","label":"Emelő kell","sym":"⇡","color":"#e8641c","group":"helyzet","sets":{"answer":{"q":"ip_emelo","opt":"berel"}}},{"id":"aramtalanitas","label":"Áramtalanítás?","sym":"⏻","color":"#d64545","group":"ugyfel","open":true}],"keywords":[{"id":"ip_csarnok","re":"csarnok|high ?bay|raktar|uzemcsarnok","suggest":{"scope":["ipari"]}},{"id":"ip_fenycsere","re":"fenyforras|izzocsere|izzo csere|csocsere|fenycso|kiegett|nem vilagit","suggest":{"scope":["fenycsere"]}},{"id":"ip_veszvil","re":"veszvil|menekul|iranyfeny|exit","suggest":{"scope":["veszvil"]}},{"id":"ip_cee","re":"\\bcee\\b|ipari (dugalj|aljzat)|harom ?fazisu aljzat|3 ?fazisu aljzat","suggest":{"scope":["cee"]}},{"id":"ip_gep","re":"gep(et|ek|hez)? ?bekot|kompresszor|szerszamgep|\\bcnc\\b|\\bprese?\\b","suggest":{"scope":["gepbekotes"]}},{"id":"ip_talca","re":"talca|kabellet|kabel ?letra","suggest":{"scope":["talca"]}}],"questions":[{"id":"ip_aramkor","q":"Mit táplál az új kör?","group":"ipari","prio":1,"who":"ugyfel","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},"multi":true,"options":[{"id":"lampak","label":"Új lámpákat","sets":{"scope":["csarnoklampa"]}},{"id":"gep","label":"Gépet, berendezést","sets":{"scope":["gepbekotes"]}},{"id":"cee","label":"CEE aljzatokat","sets":{"scope":["cee"]}},{"id":"iroda","label":"Irodát, szociális részt"},{"id":"egyeb","label":"Mást"}]},{"id":"ip_terheles","q":"Mekkora az új terhelés?","group":"ipari","prio":1,"who":"ugyfel","when":{"any":[{"answer":"ip_aramkor","is":["gep","cee"]},{"scope":["gepbekotes","cee"]}]},"options":[{"id":"1f16","label":"1 fázis, 16 A-ig"},{"id":"3f16","label":"3 fázis, 16 A"},{"id":"3f32","label":"3 fázis, 32 A"},{"id":"nagyobb","label":"Nagyobb: méretezni kell"},{"id":"nemtudja","label":"Nem tudja"}]},{"id":"ip_tapforras","q":"Honnan kap táplálást?","group":"ipari","prio":1,"who":"szemle","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},"options":[{"id":"alelosz","label":"Csarnok alelosztójából"},{"id":"fo","label":"A főelosztóból"},{"id":"uj","label":"Új alelosztó kell"},{"id":"nemderult","label":"Nem derült ki"}]},{"id":"ip_nyomvonal","q":"Merre megy a nyomvonal?","group":"ipari","prio":1,"who":"szemle","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},"multi":true,"options":[{"id":"talca","label":"Meglévő kábeltálcán","sets":{"scope":["talca"]}},{"id":"ujtalca","label":"Új tálcán, létrán","sets":{"scope":["talca"]}},{"id":"cso","label":"Védőcsőben, falon"},{"id":"padlo","label":"Padlóban, födémben"},{"id":"kozott","label":"Épületek között, földben"}]},{"id":"ip_magassag","q":"Milyen magasan vannak a lámpák?","group":"ipari","prio":1,"who":"szemle","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["fenycsere","csarnoklampa","vilagitas"]}]},"num":{"unit":"m"},"options":[{"id":"4","label":"4 m alatt, létráról"},{"id":"6","label":"4–6 m"},{"id":"10","label":"6–10 m"},{"id":"10+","label":"10 m felett"}]},{"id":"ip_emelo","q":"Lesz emelő?","group":"ipari","prio":1,"who":"ugyfel","when":{"any":[{"answer":"ip_magassag","is":["6","10","10+"]},{"chip":"emelo_kell"}]},"options":[{"id":"helyben","label":"Van a helyszínen (személyemelő)"},{"id":"berel","label":"Bérelni kell"},{"id":"allvany","label":"Állvány is elég"},{"id":"nemtudja","label":"Még nem tudni"}]},{"id":"ip_lampa_most","q":"Milyen most a világítás?","group":"ipari","prio":1,"who":"szemle","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["fenycsere","csarnoklampa","vilagitas"]}]},"multi":true,"options":[{"id":"fenycso","label":"Fénycsöves armatúra"},{"id":"fh","label":"Fémhalogén, higanygőz"},{"id":"ledhb","label":"LED csarnoklámpa"},{"id":"panel","label":"LED panel, raszter"},{"id":"vegyes","label":"Vegyes"}]},{"id":"ip_csere_mod","q":"Mi legyen a cserével?","group":"ipari","prio":1,"who":"ugyfel","when":{"scope":["fenycsere"]},"options":[{"id":"fenyforras","label":"Csak a fényforrás"},{"id":"lampatest","label":"Az egész lámpatest"},{"id":"retrofit","label":"LED-retrofit (előtét kiiktatva)"},{"id":"nemtudja","label":"Ajánlatot kér rá"}]},{"id":"ip_kapcsolas","q":"Hogyan kapcsolják a világítást?","group":"ipari","prio":2,"who":"szemle","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["fenycsere","csarnoklampa","vilagitas"]}]},"options":[{"id":"eloszto","label":"Elosztóból, kismegszakítóval"},{"id":"fali","label":"Falikapcsolóval"},{"id":"magnes","label":"Mágnes- vagy időkapcsolóval"},{"id":"erzekelo","label":"Érzékelővel, DALI-val"},{"id":"nemderult","label":"Nem derült ki"}]},{"id":"ip_veszvil","q":"Van vészvilágítás?","group":"ipari","prio":2,"who":"szemle","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["veszvil"]}]},"options":[{"id":"beepitett","label":"Igen, beépített akkus"},{"id":"kozponti","label":"Igen, központi akkus"},{"id":"nincs","label":"Nincs"},{"id":"nemderult","label":"Nem derült ki"}]},{"id":"ip_munkaido","q":"Mikor lehet dolgozni?","group":"ipari","prio":2,"who":"ugyfel","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},"options":[{"id":"kozben","label":"Üzem közben"},{"id":"utan","label":"Műszak után"},{"id":"hetvege","label":"Hétvégén"},{"id":"leallas","label":"Tervezett leálláskor"}]}],"shotlist":[{"id":"ip_csarnok","purpose":"szoba","label":"Csarnok áttekintő, mennyezettel","hint":"Sarokból, hogy a lámpasorok és a tálcák látsszanak.","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]}},{"id":"ip_lampatest","purpose":"meglevo","label":"Lámpatest közelről + adattábla","hint":"Típus, teljesítmény, foglalat; ha elérhető, a fényforrás felirata.","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["fenycsere","csarnoklampa","vilagitas"]}]}},{"id":"ip_magassag_foto","purpose":"hely","label":"Szerelési magasság","hint":"Lézer vagy mérőszalag a képen; mellé ember vagy ajtó a léptékhez.","when":{"any":[{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]},{"scope":["fenycsere","csarnoklampa","vilagitas"]}]},"prio":2},{"id":"ip_alelosz","purpose":"eloszto","label":"Alelosztó nyitva","hint":"Szabad hely, feliratok, a betáp kábele.","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]}},{"id":"ip_talca","purpose":"nyomvonal","label":"Tálca, átvezetések","hint":"Tálcák, falátvezetések, tűzszakasz-határok az új kör útján.","when":{"any":[{"variant":"ipari-telephely"},{"scope":["ipari"]}]}},{"id":"ip_gep","purpose":"hely","label":"Gép adattáblája, bekötési pont","when":{"any":[{"scope":["gepbekotes"]},{"answer":"ip_aramkor","is":["gep"]}]}},{"id":"ip_veszvil_foto","purpose":"meglevo","label":"Vészvilágító, irányfény","when":{"scope":["veszvil"]},"prio":2}],"hints":{"point":"Lámpánként egy pont, a magasság a kérdésbe kerül. A meglévő lámpa szürke, a tervezett színes.","route":"Húzd végig az elosztótól, a tálca vagy a cső útján; a hossz a Rendezésben látszik.","circuit":"Jelöld ki a lámpákat vagy aljzatokat, és fűzd egy körre; a gép dedikált kört kap.","board":"Az alelosztó helye: az új kör innen indul. Ha új alelosztó kell, a betáp útját is húzd meg.","measure":"Csarnokban a szerelési magasság számít: írd a kérdésbe vagy egy memóba.","photo":"A Képlista végigvezet: csarnok, lámpatest, adattábla, elosztó, tálca.","tag":"Csere: a Fényforrás-csere címke a meglévő (szürke) lámpára kerül, nem új pontra."}}];
 window.VRG_TAKEOFF_RULES = {"kind":"vrg-takeoff-rules","v":1,"about":"The takeoff rules of the VRG Sketcher (docs/sketcher/TAKEOFF.md): how a survey becomes work items and quantities. Data only, read by Sketcher/lib/takeoff.js and sketch-core Takeoff.kt. No prices: pricing belongs to the Varler Workflow Kit. Every list is ordered (the export keeps this order).","cable":{"endReserveMm":300,"looseEndMm":0,"rawScaleMm":25,"evCableQ":"tavolsag","evCableM":[["5",5],["15",15],["30",30],["30+",40]]},"levels":[["basement",2500],["ground",2700],["upper",2700]],"points":[{"id":"socket","label":"Dugalj","sym":"⊙","h":300},{"id":"switch","label":"Kapcsoló","sym":"⊘","h":1100},{"id":"light","label":"Lámpa","sym":"✱","h":2000,"ceiling":true},{"id":"junction","label":"Kötődoboz","sym":"◇","h":2200,"ceiling":true},{"id":"data","label":"Gyengeáram","sym":"◈","h":300},{"id":"fixed","label":"Fix bekötés","sym":"⊗","h":600},{"id":"sensor","label":"Érzékelő","sym":"◎","h":2200},{"id":"pont","label":"Típus nélküli pont","sym":"•","h":300},{"id":"board","label":"Elosztó","sym":"▣","h":1600}],"actions":[{"id":"uj","label":"új","sym":"✚"},{"id":"csere","label":"csere","sym":"↻"},{"id":"bontas","label":"bontás","sym":"✕"},{"id":"marad","label":"meglévő marad","sym":"="}],"replaceTags":{"presets":["replace"],"names":["csere"]},"removeTags":{"presets":["remove"],"names":["bontas"]},"dedicatedTags":{"presets":["dedicated"],"names":["dedikalt"]},"scopePoints":[["dugalj","socket"],["kulteri","socket"],["kapcsolo","switch"],["lampa","light"],["lanpont","data"],["tvpont","data"],["ipkamera","data"]],"machines":[{"id":"fozolap","dedicated":1},{"id":"suto","dedicated":1},{"id":"mosogep","dedicated":1},{"id":"mosogatogep","dedicated":1},{"id":"szarito","dedicated":1},{"id":"bojler","dedicated":1},{"id":"cee","dedicated":1},{"id":"torolkozo","dedicated":0},{"id":"szellozo","dedicated":0}],"systems":[{"id":"ev","dedicated":1},{"id":"napelem","dedicated":1},{"id":"hoszivattyu","dedicated":1},{"id":"klima","dedicated":1,"qtyQ":"klima_db","qtyMap":[["1",1],["2",2],["3",3],["4+",4]],"qtyEst":["4+"]},{"id":"padlofutes","dedicated":1},{"id":"okos","dedicated":0},{"id":"gyenge","dedicated":0},{"id":"riaszto","dedicated":0},{"id":"kaputelefon","dedicated":0},{"id":"vilagitas","dedicated":0}],"impliedDedicated":false,"boardScope":"eloszto","newBoardQ":"uj_eloszto","newBoardOpt":"igen","decisions":[{"q":"lenyeg","affects":["pont","aramkor","eloszto"]},{"q":"kor","affects":["pont","kabel"]},{"q":"anyag","affects":["kabel"]},{"q":"uj_eloszto","affects":["eloszto"]},{"q":"szabad_hely","affects":["eloszto","aleloszto"]},{"q":"uj_fogyaszto","affects":["gep","rendszer","aramkor.dedikalt"]},{"q":"gepek","affects":["gep"]},{"q":"fozolap_tipus","affects":["gep.fozolap","aramkor.dedikalt"]},{"q":"furdo_mit","affects":["pont","gep"]},{"q":"gyenge_mit","affects":["pont.data","rendszer.gyenge"]},{"q":"okos_mit","affects":["rendszer.okos"]},{"q":"klima_db","affects":["rendszer.klima","aramkor.dedikalt"]},{"q":"auto_kw","affects":["rendszer.ev"]},{"q":"tavolsag","affects":["kabel.ev"]},{"q":"fazis","affects":["rendszer","aramkor.dedikalt"]}]};
-window.VRG_FEATURES = {"kind":"vrg-sketcher-features","v":1,"about":"VRG Sketcher feature registry (WP M51, D-91…D-99). One switch per feature, per phone / per browser; the stored value lists what differs from default. Kept equal to sketch-core Features.kt by FeaturesTest.","fronts":[{"id":"vazlat","label":"Vázlat","sym":"◫","color":"#27c2b0","bar":true},{"id":"jegyzet","label":"Jegyzet","sym":"✎","color":"#e0b020","bar":true},{"id":"munkakor","label":"Munkakör","sym":"☰","color":"#3dae5a","bar":true},{"id":"kerdes","label":"Kérdések","sym":"?","color":"#e8641c","bar":true},{"id":"kamera","label":"Kamera","sym":"◉","color":"#2a8cdb","bar":true},{"id":"helyszin","label":"Helyszín","sym":"⌖","color":"#8a5cd6","bar":true},{"id":"nyitott","label":"Nyitott","sym":"⚑","color":"#d64545","bar":true},{"id":"variansok","label":"Variánsok","sym":"◐","color":"#b07ad6","bar":false},{"id":"export","label":"Rendezés / export","sym":"⇪","color":"#7d8590","bar":false}],"features":[{"id":"vazlat.select","front":"vazlat","sym":"✥","label":"Mozgat","locked":true},{"id":"vazlat.memo","front":"vazlat","sym":"✎","label":"Memó"},{"id":"vazlat.tag","front":"vazlat","sym":"#","label":"Címkék"},{"id":"vazlat.room","front":"vazlat","sym":"▭","label":"Szoba"},{"id":"vazlat.template","front":"vazlat","sym":"⌗","label":"Sablon"},{"id":"vazlat.line","front":"vazlat","sym":"⌇","label":"Vonal"},{"id":"vazlat.measure","front":"vazlat","sym":"↔","label":"Méret"},{"id":"vazlat.point","front":"vazlat","sym":"•","label":"Pont"},{"id":"vazlat.circuit","front":"vazlat","sym":"◌","label":"Áramkör","requires":["vazlat.point"]},{"id":"vazlat.board","front":"vazlat","sym":"▣","label":"Elosztó"},{"id":"vazlat.route","front":"vazlat","sym":"〰","label":"Nyomvonal"},{"id":"vazlat.photo","front":"vazlat","sym":"◉","label":"Fotópont"},{"id":"vazlat.roombox","front":"vazlat","sym":"⬚","label":"Szobadoboz (3D)"},{"id":"vazlat.wheels","front":"vazlat","sym":"◎","label":"Tartásra kerék"},{"id":"vazlat.drawtune","front":"vazlat","sym":"⚙","label":"Rajz-hangolás"},{"id":"vazlat.line_close","front":"vazlat","sym":"⌇","label":"Vonal: Kész zár","requires":["vazlat.line","vazlat.drawtune"]},{"id":"vazlat.csere_old","front":"vazlat","sym":"↻","label":"Csere címke pótlása"},{"id":"jegyzet.quick","front":"jegyzet","sym":"✎","label":"Gyors jegyzet"},{"id":"jegyzet.chips","front":"jegyzet","sym":"◆","label":"Gyors chipek","requires":["jegyzet.quick"]},{"id":"jegyzet.dictation","front":"jegyzet","sym":"🎤","label":"Diktálás"},{"id":"jegyzet.unclear","front":"jegyzet","sym":"⚑","label":"Tisztázandó"},{"id":"jegyzet.keywords","front":"jegyzet","sym":"✦","label":"Kulcsszó-javaslat"},{"id":"jegyzet.log","front":"jegyzet","sym":"☰","label":"Jegyzetnapló"},{"id":"jegyzet.audio","front":"jegyzet","sym":"🎙","label":"Hangjegyzet"},{"id":"munkakor.scope","front":"munkakor","sym":"☰","label":"Munkakör kapcsolók"},{"id":"munkakor.summary","front":"munkakor","sym":"▤","label":"Összesítő"},{"id":"munkakor.wants","front":"munkakor","sym":"★","label":"Igények szobánként","requires":["munkakor.scope"]},{"id":"munkakor.takeoff","front":"munkakor","sym":"▦","label":"Munkakör lap"},{"id":"munkakor.implied","front":"munkakor","sym":"◉","label":"Dedikált kör nagy gépnek","requires":["munkakor.takeoff"],"default":false},{"id":"kerdes.questions","front":"kerdes","sym":"?","label":"Kérdőív"},{"id":"kerdes.later","front":"kerdes","sym":"⏱","label":"Később / Nem releváns","requires":["kerdes.questions"]},{"id":"kerdes.filter","front":"kerdes","sym":"☺","label":"Ügyfél / Szemle szűrő","requires":["kerdes.questions"]},{"id":"kerdes.fresh","front":"kerdes","sym":"●","label":"Új kérdés jelzése","requires":["kerdes.questions"]},{"id":"kamera.capture","front":"kamera","sym":"◉","label":"Fotó céllal"},{"id":"kamera.shotlist","front":"kamera","sym":"☑","label":"Képlista","requires":["kamera.capture"]},{"id":"kamera.series","front":"kamera","sym":"⟳","label":"Sorozat","requires":["kamera.capture"]},{"id":"kamera.markup","front":"kamera","sym":"✎","label":"Jelölés","requires":["kamera.capture"]},{"id":"kamera.ocr","front":"kamera","sym":"▤","label":"Szöveg kiolvasása","requires":["kamera.capture"]},{"id":"kamera.ocr_auto","front":"kamera","sym":"▤","label":"Címkefotó magától","requires":["kamera.capture","kamera.ocr"]},{"id":"kamera.blur","front":"kamera","sym":"▦","label":"Elmosás","requires":["kamera.capture","kamera.markup"]},{"id":"kamera.faces","front":"kamera","sym":"☺","label":"Arckeresés","requires":["kamera.capture","kamera.blur"]},{"id":"kamera.faces_auto","front":"kamera","sym":"☺","label":"Arckeresés személyes fotón","requires":["kamera.capture","kamera.faces"]},{"id":"kamera.privacy","front":"kamera","sym":"👤","label":"Személyes adat jelölés","requires":["kamera.capture"]},{"id":"kamera.pairs","front":"kamera","sym":"◐","label":"Előtte / utána","requires":["kamera.capture"]},{"id":"kamera.signature","front":"kamera","sym":"✍","label":"Aláírás","requires":["kamera.capture"]},{"id":"kamera.video","front":"kamera","sym":"🎥","label":"Séta videó","requires":["kamera.capture"]},{"id":"kamera.quick","front":"kamera","sym":"◉","label":"Hiányzók elöl","requires":["kamera.capture"]},{"id":"kamera.again","front":"kamera","sym":"＋","label":"„+ még” gomb","requires":["kamera.capture"]},{"id":"kamera.live","front":"kamera","sym":"◉","label":"Saját kamera","requires":["kamera.capture"]},{"id":"kamera.live_gps","front":"kamera","sym":"⌖","label":"Helyadat a fotón","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_series","front":"kamera","sym":"⟳","label":"Sorozat a kamerában","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_ghost","front":"kamera","sym":"◐","label":"Szellemkép","requires":["kamera.capture","kamera.live","kamera.pairs"]},{"id":"kamera.live_level","front":"kamera","sym":"⊖","label":"Vízszintező","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_grid","front":"kamera","sym":"▦","label":"Rács","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_torch","front":"kamera","sym":"ϟ","label":"Lámpa","requires":["kamera.capture","kamera.live"]},{"id":"helyszin.address","front":"helyszin","sym":"⌂","label":"Cím"},{"id":"helyszin.gps","front":"helyszin","sym":"⌖","label":"Itt vagyok (GPS)"},{"id":"helyszin.search","front":"helyszin","sym":"🔎","label":"Keresés a neten"},{"id":"helyszin.map","front":"helyszin","sym":"🗺","label":"Térkép"},{"id":"helyszin.outline","front":"helyszin","sym":"▱","label":"Körvonal rajzolása","requires":["helyszin.map"]},{"id":"helyszin.satellite","front":"helyszin","sym":"🛰","label":"Műhold","requires":["helyszin.map"]},{"id":"helyszin.place","front":"helyszin","sym":"◫","label":"Vázlat az épületen"},{"id":"helyszin.footprint","front":"helyszin","sym":"⇔","label":"Méret-összevetés"},{"id":"helyszin.client","front":"helyszin","sym":"👤","label":"Ügyféladatok"},{"id":"nyitott.list","front":"nyitott","sym":"⚑","label":"Nyitott lista"},{"id":"variansok.use","front":"variansok","sym":"◐","label":"Variánsok"},{"id":"variansok.longpress","front":"variansok","sym":"☰","label":"Hosszú nyomásra","requires":["variansok.use"]},{"id":"variansok.refresh","front":"variansok","sym":"⟳","label":"Frissítés a main ágról","requires":["variansok.use"]},{"id":"variansok.request","front":"variansok","sym":"＋","label":"Új variáns kérése"},{"id":"export.photos","front":"export","sym":"◉","label":"Fotók a csomagban"},{"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos"]},{"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]},{"id":"export.report","front":"export","sym":"▤","label":"Jegyzőkönyv"},{"id":"export.report_phone","front":"export","sym":"📄","label":"Jegyzőkönyv a telefonon","requires":["export.report"]},{"id":"kamera.gps_strip","front":"export","sym":"⌖","label":"GPS törlése kiadáskor"}]};</script>
+window.VRG_FEATURES = {"kind":"vrg-sketcher-features","v":1,"about":"VRG Sketcher feature registry (WP M51, D-91…D-99). One switch per feature, per phone / per browser; the stored value lists what differs from default. Kept equal to sketch-core Features.kt by FeaturesTest.","fronts":[{"id":"vazlat","label":"Vázlat","sym":"◫","color":"#27c2b0","bar":true},{"id":"jegyzet","label":"Jegyzet","sym":"✎","color":"#e0b020","bar":true},{"id":"munkakor","label":"Munkakör","sym":"☰","color":"#3dae5a","bar":true},{"id":"kerdes","label":"Kérdések","sym":"?","color":"#e8641c","bar":true},{"id":"kamera","label":"Kamera","sym":"◉","color":"#2a8cdb","bar":true},{"id":"helyszin","label":"Helyszín","sym":"⌖","color":"#8a5cd6","bar":true},{"id":"nyitott","label":"Nyitott","sym":"⚑","color":"#d64545","bar":true},{"id":"variansok","label":"Variánsok","sym":"◐","color":"#b07ad6","bar":false},{"id":"export","label":"Rendezés / export","sym":"⇪","color":"#7d8590","bar":false}],"features":[{"id":"vazlat.select","front":"vazlat","sym":"✥","label":"Mozgat","locked":true},{"id":"vazlat.memo","front":"vazlat","sym":"✎","label":"Memó"},{"id":"vazlat.tag","front":"vazlat","sym":"#","label":"Címkék"},{"id":"vazlat.room","front":"vazlat","sym":"▭","label":"Szoba"},{"id":"vazlat.template","front":"vazlat","sym":"⌗","label":"Sablon"},{"id":"vazlat.line","front":"vazlat","sym":"⌇","label":"Vonal"},{"id":"vazlat.measure","front":"vazlat","sym":"↔","label":"Méret"},{"id":"vazlat.point","front":"vazlat","sym":"•","label":"Pont"},{"id":"vazlat.circuit","front":"vazlat","sym":"◌","label":"Áramkör","requires":["vazlat.point"]},{"id":"vazlat.board","front":"vazlat","sym":"▣","label":"Elosztó"},{"id":"vazlat.route","front":"vazlat","sym":"〰","label":"Nyomvonal"},{"id":"vazlat.photo","front":"vazlat","sym":"◉","label":"Fotópont"},{"id":"vazlat.roombox","front":"vazlat","sym":"⬚","label":"Szobadoboz (3D)"},{"id":"vazlat.wheels","front":"vazlat","sym":"◎","label":"Tartásra kerék"},{"id":"vazlat.drawtune","front":"vazlat","sym":"⚙","label":"Rajz-hangolás"},{"id":"vazlat.line_close","front":"vazlat","sym":"⌇","label":"Vonal: Kész zár","requires":["vazlat.line","vazlat.drawtune"]},{"id":"vazlat.csere_old","front":"vazlat","sym":"↻","label":"Csere címke pótlása"},{"id":"jegyzet.quick","front":"jegyzet","sym":"✎","label":"Gyors jegyzet"},{"id":"jegyzet.chips","front":"jegyzet","sym":"◆","label":"Gyors chipek","requires":["jegyzet.quick"]},{"id":"jegyzet.dictation","front":"jegyzet","sym":"🎤","label":"Diktálás"},{"id":"jegyzet.unclear","front":"jegyzet","sym":"⚑","label":"Tisztázandó"},{"id":"jegyzet.keywords","front":"jegyzet","sym":"✦","label":"Kulcsszó-javaslat"},{"id":"jegyzet.log","front":"jegyzet","sym":"☰","label":"Jegyzetnapló"},{"id":"jegyzet.audio","front":"jegyzet","sym":"🎙","label":"Hangjegyzet"},{"id":"munkakor.scope","front":"munkakor","sym":"☰","label":"Munkakör kapcsolók"},{"id":"munkakor.summary","front":"munkakor","sym":"▤","label":"Összesítő"},{"id":"munkakor.wants","front":"munkakor","sym":"★","label":"Igények szobánként","requires":["munkakor.scope"]},{"id":"munkakor.takeoff","front":"munkakor","sym":"▦","label":"Munkakör lap"},{"id":"munkakor.implied","front":"munkakor","sym":"◉","label":"Dedikált kör nagy gépnek","requires":["munkakor.takeoff"],"default":false},{"id":"kerdes.questions","front":"kerdes","sym":"?","label":"Kérdőív"},{"id":"kerdes.later","front":"kerdes","sym":"⏱","label":"Később / Nem releváns","requires":["kerdes.questions"]},{"id":"kerdes.filter","front":"kerdes","sym":"☺","label":"Ügyfél / Szemle szűrő","requires":["kerdes.questions"]},{"id":"kerdes.fresh","front":"kerdes","sym":"●","label":"Új kérdés jelzése","requires":["kerdes.questions"]},{"id":"kamera.capture","front":"kamera","sym":"◉","label":"Fotó céllal"},{"id":"kamera.shotlist","front":"kamera","sym":"☑","label":"Képlista","requires":["kamera.capture"]},{"id":"kamera.series","front":"kamera","sym":"⟳","label":"Sorozat","requires":["kamera.capture"]},{"id":"kamera.markup","front":"kamera","sym":"✎","label":"Jelölés","requires":["kamera.capture"]},{"id":"kamera.measure","front":"kamera","sym":"📏","label":"Mérés a fotón","requires":["kamera.capture"]},{"id":"kamera.ocr","front":"kamera","sym":"▤","label":"Szöveg kiolvasása","requires":["kamera.capture"]},{"id":"kamera.ocr_auto","front":"kamera","sym":"▤","label":"Címkefotó magától","requires":["kamera.capture","kamera.ocr"]},{"id":"kamera.blur","front":"kamera","sym":"▦","label":"Elmosás","requires":["kamera.capture","kamera.markup"]},{"id":"kamera.faces","front":"kamera","sym":"☺","label":"Arckeresés","requires":["kamera.capture","kamera.blur"]},{"id":"kamera.faces_auto","front":"kamera","sym":"☺","label":"Arckeresés személyes fotón","requires":["kamera.capture","kamera.faces"]},{"id":"kamera.privacy","front":"kamera","sym":"👤","label":"Személyes adat jelölés","requires":["kamera.capture"]},{"id":"kamera.pairs","front":"kamera","sym":"◐","label":"Előtte / utána","requires":["kamera.capture"]},{"id":"kamera.signature","front":"kamera","sym":"✍","label":"Aláírás","requires":["kamera.capture"]},{"id":"kamera.video","front":"kamera","sym":"🎥","label":"Séta videó","requires":["kamera.capture"]},{"id":"kamera.quick","front":"kamera","sym":"◉","label":"Hiányzók elöl","requires":["kamera.capture"]},{"id":"kamera.again","front":"kamera","sym":"＋","label":"„+ még” gomb","requires":["kamera.capture"]},{"id":"kamera.live","front":"kamera","sym":"◉","label":"Saját kamera","requires":["kamera.capture"]},{"id":"kamera.live_gps","front":"kamera","sym":"⌖","label":"Helyadat a fotón","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_series","front":"kamera","sym":"⟳","label":"Sorozat a kamerában","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_ghost","front":"kamera","sym":"◐","label":"Szellemkép","requires":["kamera.capture","kamera.live","kamera.pairs"]},{"id":"kamera.live_level","front":"kamera","sym":"⊖","label":"Vízszintező","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_grid","front":"kamera","sym":"▦","label":"Rács","requires":["kamera.capture","kamera.live"]},{"id":"kamera.live_torch","front":"kamera","sym":"ϟ","label":"Lámpa","requires":["kamera.capture","kamera.live"]},{"id":"helyszin.address","front":"helyszin","sym":"⌂","label":"Cím"},{"id":"helyszin.gps","front":"helyszin","sym":"⌖","label":"Itt vagyok (GPS)"},{"id":"helyszin.search","front":"helyszin","sym":"🔎","label":"Keresés a neten"},{"id":"helyszin.map","front":"helyszin","sym":"🗺","label":"Térkép"},{"id":"helyszin.outline","front":"helyszin","sym":"▱","label":"Körvonal rajzolása","requires":["helyszin.map"]},{"id":"helyszin.satellite","front":"helyszin","sym":"🛰","label":"Műhold","requires":["helyszin.map"]},{"id":"helyszin.place","front":"helyszin","sym":"◫","label":"Vázlat az épületen"},{"id":"helyszin.footprint","front":"helyszin","sym":"⇔","label":"Méret-összevetés"},{"id":"helyszin.client","front":"helyszin","sym":"👤","label":"Ügyféladatok"},{"id":"nyitott.list","front":"nyitott","sym":"⚑","label":"Nyitott lista"},{"id":"variansok.use","front":"variansok","sym":"◐","label":"Variánsok"},{"id":"variansok.longpress","front":"variansok","sym":"☰","label":"Hosszú nyomásra","requires":["variansok.use"]},{"id":"variansok.refresh","front":"variansok","sym":"⟳","label":"Frissítés a main ágról","requires":["variansok.use"]},{"id":"variansok.request","front":"variansok","sym":"＋","label":"Új variáns kérése"},{"id":"export.photos","front":"export","sym":"◉","label":"Fotók a csomagban"},{"id":"export.burned","front":"export","sym":"✎","label":"Jelölt másolatok","requires":["export.photos"]},{"id":"export.takeoff","front":"export","sym":"▦","label":"Munkakör lap fájl","requires":["munkakor.takeoff"]},{"id":"export.report","front":"export","sym":"▤","label":"Jegyzőkönyv"},{"id":"export.report_phone","front":"export","sym":"📄","label":"Jegyzőkönyv a telefonon","requires":["export.report"]},{"id":"kamera.gps_strip","front":"export","sym":"⌖","label":"GPS törlése kiadáskor"}]};</script>
 <script>
 // Sketcher/lib/features.js — the VRG Sketcher feature registry (WP M51, D-91…D-99; the Founder's rule D-90).
 //
@@ -1526,6 +1528,483 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
 
 </script>
 <script>
+// Sketcher/lib/plane.js — Síkmérés (dev line skcam, stage K3): measuring on a plane in one photo. Pure maths, no DOM.
+//
+// A wall, a door or a facade is a plane. Four image points of a rectangle of known size on that plane (an A4 sheet, a
+// switch frame, a door, a printed card) fix the homography H between the photo and the plane in millimetres. Any two
+// taps on the same plane then give a true distance, and a floor line gives heights (a socket 30 cm up). The method is
+// single-view metrology (Criminisi, Reid, Zisserman); see docs/research/2026-11-20_room-capture-and-measurement.md §3,
+// row 2. Accuracy falls with the distance from the reference ("extrapolation") and off the plane: plane.quality says so.
+//
+// Photo coordinates are 0…1 of the upright photo (u to the right, v down), as the photo markup (M29) keeps them; the
+// photo's aspect (w / h) turns them into a square-pixel frame before any geometry.
+//
+// The survey keeps the results in an optional key `planes` (v2 stays v2): { "<photo key>": record }, the key a capture
+// id ("C12") or a Fotópont shot ("F25/0"); record = { ref: {kind, w, h, pts: [[u,v] ×4]}, floor?: [[u,v],[u,v]],
+// lines: [{a, b, mm, label?}], marks: [{p, mm}], aspect, at }. The millimetres are stored, so a reader needs no maths.
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api; else root.VRGPlane = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  /** Known rectangles: w × h in mm as they usually hang (w across, h up). The user can type any size. */
+  const REFS = [
+    { id: 'a4', label: 'A4 lap', w: 210, h: 297 },
+    { id: 'a5', label: 'A5 lap', w: 148, h: 210 },
+    { id: 'keret', label: 'Kapcsoló / dugalj keret', w: 80, h: 80 },
+    { id: 'ajto', label: 'Ajtó (tok belső)', w: 900, h: 2000 },
+    { id: 'csempe', label: 'Csempe', w: 300, h: 600 },
+    { id: 'egyeni', label: 'Egyéni méret', w: 1000, h: 1000 },
+  ];
+  const ref = id => REFS.find(r => r.id === id) || null;
+
+  // ---- linear algebra ----------------------------------------------------------------------------------------------
+  /** Solves A x = b (n × n) by Gaussian elimination with partial pivoting; null when singular. */
+  function solve(A, b) {
+    const n = b.length, M = A.map((r, i) => r.concat([b[i]]));
+    for (let c = 0; c < n; c++) {
+      let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      if (Math.abs(M[p][c]) < 1e-12) return null;
+      [M[c], M[p]] = [M[p], M[c]];
+      for (let r = 0; r < n; r++) {
+        if (r === c) continue;
+        const k = M[r][c] / M[c][c]; if (!k) continue;
+        for (let j = c; j <= n; j++) M[r][j] -= k * M[c][j];
+      }
+    }
+    return M.map((r, i) => r[n] / r[i]);
+  }
+
+  /** The 3 × 3 homography (row-major, h33 = 1) taking the four [src] points to the four [dst] points; null if degenerate. */
+  function homography(src, dst) {
+    if (!src || !dst || src.length !== 4 || dst.length !== 4) return null;
+    const A = [], b = [];
+    for (let i = 0; i < 4; i++) {
+      const [x, y] = src[i], [X, Y] = dst[i];
+      A.push([x, y, 1, 0, 0, 0, -x * X, -y * X]); b.push(X);
+      A.push([0, 0, 0, x, y, 1, -x * Y, -y * Y]); b.push(Y);
+    }
+    const h = solve(A, b);
+    return h ? [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1] : null;
+  }
+  function apply(H, p) {
+    const w = H[6] * p[0] + H[7] * p[1] + H[8];
+    if (Math.abs(w) < 1e-12) return null;
+    return [(H[0] * p[0] + H[1] * p[1] + H[2]) / w, (H[3] * p[0] + H[4] * p[1] + H[5]) / w];
+  }
+  /** Is the point on the camera's side of the plane's horizon (a mapping across the vanishing line flips sign)? */
+  const sameSide = (H, p, q) => Math.sign(H[6] * p[0] + H[7] * p[1] + H[8]) === Math.sign(H[6] * q[0] + H[7] * q[1] + H[8]);
+
+  // ---- the reference -----------------------------------------------------------------------------------------------
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  /** Four points in the order top-left, top-right, bottom-right, bottom-left (v down), whatever order they were tapped in. */
+  function order(pts) {
+    if (!pts || pts.length !== 4) return null;
+    const c = [pts.reduce((s, p) => s + p[0], 0) / 4, pts.reduce((s, p) => s + p[1], 0) / 4];
+    const ring = pts.slice().sort((a, b) => Math.atan2(a[1] - c[1], a[0] - c[0]) - Math.atan2(b[1] - c[1], b[0] - c[0]));  // clockwise on screen
+    let tl = 0; ring.forEach((p, i) => { if (p[0] + p[1] < ring[tl][0] + ring[tl][1]) tl = i; });
+    const out = [0, 1, 2, 3].map(k => ring[(tl + k) % 4]);
+    return convex(out) ? out : null;
+  }
+  function convex(q) {
+    const s = [0, 1, 2, 3].map(i => Math.sign(cross(q[i], q[(i + 1) % 4], q[(i + 2) % 4])));
+    return s.every(v => v === s[0] && v !== 0);
+  }
+  const len = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  /** Photo (0…1) to the square-pixel frame: u × aspect, v. */
+  const sq = (p, aspect) => [p[0] * aspect, p[1]];
+
+  /**
+   * The measuring frame of a record: H (photo square frame → plane mm), the reference as used (w × h after a swap,
+   * when the tapped rectangle is clearly turned the other way), and its corners in order. Null when the four points
+   * do not make a rectangle's picture.
+   */
+  function frame(rec) {
+    const r = rec && rec.ref; if (!r || !r.pts || r.pts.length !== 4 || !(r.w > 0) || !(r.h > 0)) return null;
+    const a = rec.aspect > 0 ? rec.aspect : 4 / 3;
+    const q = order(r.pts.map(p => sq(p, a))); if (!q) return null;
+    let w = r.w, h = r.h;
+    // which way round: the picture's long pair of edges goes with the rectangle's long side (unless the user fixed it)
+    if (r.turn == null && w !== h) {
+      const across = (len(q[0], q[1]) + len(q[3], q[2])) / 2, up = (len(q[0], q[3]) + len(q[1], q[2])) / 2;
+      if ((across > up) !== (w > h)) { const t = w; w = h; h = t; }
+    } else if (r.turn) { const t = w; w = h; h = t; }
+    const H = homography(q, [[0, 0], [w, 0], [w, h], [0, h]]);
+    return H ? { H, w, h, q, aspect: a } : null;
+  }
+
+  /** The plane point (mm, x across, y DOWN from the reference's top-left) of a photo point. */
+  function toPlane(f, p) { return f && p ? apply(f.H, sq(p, f.aspect)) : null; }
+
+  /** The true distance (mm) between two photo points on the reference's plane; null when one is past the horizon. */
+  function distance(f, a, b) {
+    if (!f) return null;
+    const A = sq(a, f.aspect), B = sq(b, f.aspect);
+    if (!sameSide(f.H, A, f.q[0]) || !sameSide(f.H, B, f.q[0])) return null;
+    const P = apply(f.H, A), Q = apply(f.H, B);
+    return P && Q ? Math.hypot(P[0] - Q[0], P[1] - Q[1]) : null;
+  }
+
+  /** The height (mm) of a photo point above the floor line [fl] (two photo points on the floor–wall edge), on the plane. */
+  function height(f, fl, p) {
+    if (!f || !fl || fl.length !== 2) return null;
+    const A = toPlane(f, fl[0]), B = toPlane(f, fl[1]), P = toPlane(f, p);
+    if (!A || !B || !P) return null;
+    const L = Math.hypot(B[0] - A[0], B[1] - A[1]); if (L < 1e-9) return null;
+    // signed distance from the line, positive above it (the plane's y runs down)
+    const d = ((B[0] - A[0]) * (P[1] - A[1]) - (B[1] - A[1]) * (P[0] - A[0])) / L;
+    return (B[0] >= A[0] ? -d : d);
+  }
+
+  /**
+   * How far a measurement reaches beyond the reference: the farthest of its points from the reference's middle, in
+   * reference sizes. ≤ 2 jó, ≤ 5 közepes, more: távoli (the error grows with the reach: put the reference nearer).
+   */
+  function quality(f, pts) {
+    if (!f) return { reach: Infinity, grade: 'nincs' };
+    const c = [f.w / 2, f.h / 2], size = Math.max(f.w, f.h);
+    let reach = 0;
+    pts.forEach(p => { const P = toPlane(f, p); if (P) reach = Math.max(reach, Math.hypot(P[0] - c[0], P[1] - c[1]) / size); else reach = Infinity; });
+    return { reach, grade: reach <= 2 ? 'jo' : reach <= 5 ? 'kozepes' : 'tavoli' };
+  }
+  const GRADES = { jo: 'jó', kozepes: 'közepes', tavoli: 'távoli: a referencia legyen közelebb', nincs: 'nincs referencia' };
+
+  /** Recomputes every stored millimetre of a record from its points (after the reference or a point moved). */
+  function measure(rec) {
+    const f = frame(rec), out = Object.assign({}, rec);
+    out.lines = (rec.lines || []).map(l => { const mm = distance(f, l.a, l.b); return Object.assign({}, l, { mm: mm == null ? null : Math.round(mm) }); });
+    out.marks = (rec.marks || []).map(m => { const mm = height(f, rec.floor, m.p); return Object.assign({}, m, { mm: mm == null ? null : Math.round(mm) }); });
+    return out;
+  }
+
+  // ---- the stored record -------------------------------------------------------------------------------------------
+  const pt = p => Array.isArray(p) && p.length >= 2 && isFinite(p[0]) && isFinite(p[1]) && p[0] >= -0.5 && p[0] <= 1.5 && p[1] >= -0.5 && p[1] <= 1.5
+    ? [Math.round(p[0] * 1e5) / 1e5, Math.round(p[1] * 1e5) / 1e5] : null;
+  /** A record as stored: only known keys, points rounded, millimetres recomputed; null when it holds nothing. */
+  function clean(rec) {
+    if (!rec || typeof rec !== 'object') return null;
+    const o = { aspect: rec.aspect > 0 ? Math.round(rec.aspect * 1e4) / 1e4 : 4 / 3 };
+    const r = rec.ref;
+    if (r && Array.isArray(r.pts) && r.pts.length === 4 && r.pts.every(pt) && r.w > 0 && r.h > 0) {
+      o.ref = { kind: ref(r.kind) ? r.kind : 'egyeni', w: Math.round(r.w), h: Math.round(r.h), pts: r.pts.map(pt) };
+      if (r.turn === true || r.turn === false) o.ref.turn = r.turn;
+    }
+    if (Array.isArray(rec.floor) && rec.floor.length === 2 && rec.floor.every(pt)) o.floor = rec.floor.map(pt);
+    o.lines = (rec.lines || []).filter(l => l && pt(l.a) && pt(l.b)).map(l => Object.assign({ a: pt(l.a), b: pt(l.b) }, l.label ? { label: String(l.label).slice(0, 60) } : {}));
+    o.marks = (rec.marks || []).filter(m => m && pt(m.p)).map(m => Object.assign({ p: pt(m.p) }, m.label ? { label: String(m.label).slice(0, 60) } : {}));
+    if (!o.ref && !o.floor && !o.lines.length && !o.marks.length) return null;
+    if (rec.at > 0) o.at = rec.at;
+    return measure(o);
+  }
+  /** The photo key of a capture or a Fotópont shot. */
+  const keyOf = (pointOrCapture, deg) => deg == null ? String(pointOrCapture) : pointOrCapture + '/' + (((deg % 360) + 360) % 360);
+  /** One readable line per measurement, for lists and the jegyzőkönyv. */
+  function summary(rec) {
+    const out = [];
+    (rec && rec.lines || []).forEach((l, i) => out.push((l.label || 'Távolság ' + (i + 1)) + ': ' + (l.mm == null ? '—' : fmt(l.mm))));
+    (rec && rec.marks || []).forEach((m, i) => out.push((m.label || 'Magasság ' + (i + 1)) + ': ' + (m.mm == null ? '—' : fmt(m.mm))));
+    return out;
+  }
+  const fmt = mm => mm >= 1000 ? (Math.round(mm / 10) / 100).toString().replace('.', ',') + ' m' : Math.round(mm) + ' mm';
+
+  return { REFS, ref, solve, homography, apply, order, frame, toPlane, distance, height, quality, GRADES, measure, clean, keyOf, summary, fmt };
+});
+
+</script>
+<script>
+// Sketcher/lib/plane-ui.js — Síkmérés screen (dev line skcam, stage K3): measuring on a plane in one photo.
+// The same screen runs on the Desktop page (an overlay over the Kamera front) and on the phone (a WebView, as the
+// Szobadoboz does, through run() and the VRGPlaneIO bridge). The maths is lib/plane.js.
+//
+//   VRGPlaneUI.open(host, { image, title, record, onSave(record|null), onClose() }) → handle
+//     image: a canvas or a decoded <img> (upright); record: the stored `planes` record of this photo, or null.
+//   VRGPlaneUI.run()   in the phone's WebView: VRGPlaneIO.input() → {image (data: URL), title, record};
+//                      ✓ Mentés → VRGPlaneIO.save(json), ✕ → VRGPlaneIO.close(), an error → VRGPlaneIO.fail(msg).
+//
+// Steps: ① Referencia (the 4 corners of a known rectangle on the wall), ② Padló (two points on the floor line, for
+// heights), ③ Távolság (two taps = one distance), ④ Magasság (one tap = the height above the floor line). Every point
+// can be dragged (a loupe shows the pixels under the finger); the view zooms with the wheel / two fingers and pans with
+// one finger on empty photo.
+(function (root, factory) {
+  const api = factory(root);
+  if (typeof module === 'object' && module.exports) module.exports = api; else root.VRGPlaneUI = api;
+})(typeof self !== 'undefined' ? self : this, function (root) {
+  'use strict';
+  const CSS = [
+    '.pl{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;background:#0a141c;color:#e8f0f6;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}',
+    '.pl-top{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#121c24;border-bottom:1px solid rgba(232,240,246,.15);flex-wrap:wrap}',
+    '.pl-top b{flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    '.pl button{font:inherit;color:#e8f0f6;background:#17232c;border:1px solid #6c7880;padding:6px 10px;border-radius:0;cursor:pointer}',
+    '.pl button.on{border-color:#e0b020;color:#e0b020}.pl button.ok{background:#93d3e6;color:#071318;border-color:#93d3e6}',
+    '.pl-steps{display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;background:#0f1920}',
+    '.pl-c{flex:1;min-height:0;width:100%;display:block;touch-action:none;cursor:crosshair;background:#05090c}',
+    '.pl-sheet{background:#121c24;border-top:1px solid rgba(232,240,246,.15);max-height:40%;overflow-y:auto;padding:6px 10px 10px}',
+    '.pl-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0}',
+    '.pl select,.pl input{background:#17232c;color:#e8f0f6;border:1px solid rgba(232,240,246,.34);padding:5px;font:inherit}',
+    '.pl input[type=number]{width:78px}.pl input.lbl{flex:1;min-width:80px}',
+    '.pl-hint{font-size:12.5px;color:#a6afb7;margin:4px 0}.pl-warn{color:#e3be7b}.pl-err{color:#e4877d}',
+    '.pl-m{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:13.5px}.pl-m .v{font-weight:600;min-width:72px}.pl-m .q{font-size:11.5px;color:#a6afb7}',
+    '.pl-m .q.kozepes{color:#e3be7b}.pl-m .q.tavoli{color:#e4877d}',
+  ].join('\n');
+  const STEPS = [['ref', '① Referencia'], ['floor', '② Padló'], ['dist', '③ Távolság'], ['height', '④ Magasság']];
+  const COL = { ref: '#27c2b0', floor: '#e8641c', dist: '#e0b020', height: '#3dae5a', pend: '#93d3e6' };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function open(host, opts) {
+    const P = opts.P || root.VRGPlane, doc = host.ownerDocument || root.document, img = opts.image;
+    const W = img.naturalWidth || img.width, Hh = img.naturalHeight || img.height;
+    if (!doc.getElementById('pl-css')) { const st = doc.createElement('style'); st.id = 'pl-css'; st.textContent = CSS; doc.head.appendChild(st); }
+    // the working record: points in 0…1 of the photo
+    const r0 = opts.record || {};
+    let rec = { aspect: W / Hh, ref: r0.ref ? JSON.parse(JSON.stringify(r0.ref)) : { kind: 'a4', w: 210, h: 297, pts: [] },
+      floor: r0.floor ? r0.floor.slice() : [], lines: (r0.lines || []).map(l => Object.assign({}, l)), marks: (r0.marks || []).map(m => Object.assign({}, m)), at: r0.at };
+    const ui = { step: rec.ref.pts.length === 4 ? (rec.floor.length === 2 ? 'height' : 'dist') : 'ref', pend: null, scale: 1, ox: 0, oy: 0, drag: null, loupe: null };
+
+    const el = doc.createElement('div'); el.className = 'pl';
+    el.innerHTML = '<div class="pl-top"><b>📏 ' + esc(opts.title || 'Mérés a fotón') + '</b><button data-p="close" aria-label="Bezár">✕</button><button class="ok" data-p="save">✓ Mentés</button></div>' +
+      '<div class="pl-steps">' + STEPS.map(([k, l]) => '<button data-p="step" data-s="' + k + '">' + l + '</button>').join('') + '<button data-p="undo" title="Utolsó visszavonása">↶</button></div>' +
+      '<canvas class="pl-c"></canvas><div class="pl-sheet"></div>';
+    host.appendChild(el);
+    const cv = el.querySelector('.pl-c'), sheet = el.querySelector('.pl-sheet'), g = cv.getContext('2d');
+
+    // ---- geometry helpers -----------------------------------------------------------------------------------------
+    const dpr = () => Math.min(2, root.devicePixelRatio || 1);
+    function fit() {
+      const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+      ui.scale = Math.min(w / W, h / Hh) * 0.98; ui.ox = (w - W * ui.scale) / 2; ui.oy = (h - Hh * ui.scale) / 2;
+    }
+    const toScreen = p => [ui.ox + p[0] * W * ui.scale, ui.oy + p[1] * Hh * ui.scale];
+    const toPhoto = (x, y) => [(x - ui.ox) / (W * ui.scale), (y - ui.oy) / (Hh * ui.scale)];
+    const frame = () => P.frame(rec.ref.pts.length === 4 ? rec : null);
+    function handles() {      // every draggable point: [list, index or key, point]
+      const out = [];
+      rec.ref.pts.forEach((p, i) => out.push({ get: () => rec.ref.pts[i], set: q => { rec.ref.pts[i] = q; } }));
+      rec.floor.forEach((p, i) => out.push({ get: () => rec.floor[i], set: q => { rec.floor[i] = q; } }));
+      rec.lines.forEach(l => { out.push({ get: () => l.a, set: q => { l.a = q; } }); out.push({ get: () => l.b, set: q => { l.b = q; } }); });
+      rec.marks.forEach(m => out.push({ get: () => m.p, set: q => { m.p = q; } }));
+      return out;
+    }
+    function nearest(x, y, r) {
+      let best = null, bd = r;
+      handles().forEach(h => { const s = toScreen(h.get()), d = Math.hypot(s[0] - x, s[1] - y); if (d < bd) { bd = d; best = h; } });
+      return best;
+    }
+    // the millimetres in place: a drag holds on to the very point objects, so they must stay the same objects
+    function recompute() { const m = P.measure(rec); rec.lines.forEach((l, i) => { l.mm = m.lines[i].mm; }); rec.marks.forEach((x, i) => { x.mm = m.marks[i].mm; }); }
+
+    // ---- drawing ------------------------------------------------------------------------------------------------
+    function draw() {
+      const w = cv.clientWidth, h = cv.clientHeight, k = dpr();
+      if (cv.width !== Math.round(w * k) || cv.height !== Math.round(h * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
+      g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, w, h);
+      g.imageSmoothingEnabled = ui.scale < 2;
+      g.drawImage(img, ui.ox, ui.oy, W * ui.scale, Hh * ui.scale);
+      const f = frame();
+      // reference
+      const rp = rec.ref.pts.map(toScreen), ring = rp.length === 4 ? (P.order(rec.ref.pts) || rec.ref.pts).map(toScreen) : rp;
+      if (rp.length) {
+        g.strokeStyle = COL.ref; g.lineWidth = 2; g.beginPath(); ring.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+        if (rp.length === 4) g.closePath(); g.stroke();
+        rp.forEach((p, i) => dot(p, COL.ref, String(i + 1)));
+      }
+      // floor line, drawn across the photo
+      if (rec.floor.length) {
+        const a = toScreen(rec.floor[0]);
+        if (rec.floor.length === 2) {
+          const b = toScreen(rec.floor[1]), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+          g.strokeStyle = COL.floor; g.setLineDash([8, 6]); g.lineWidth = 2; g.beginPath();
+          g.moveTo(a[0] - dx / L * 4000, a[1] - dy / L * 4000); g.lineTo(a[0] + dx / L * 4000, a[1] + dy / L * 4000); g.stroke(); g.setLineDash([]);
+          dot(b, COL.floor);
+        }
+        dot(a, COL.floor);
+      }
+      // distances
+      rec.lines.forEach((l, i) => {
+        const a = toScreen(l.a), b = toScreen(l.b);
+        g.strokeStyle = COL.dist; g.lineWidth = 2.5; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+        dot(a, COL.dist); dot(b, COL.dist);
+        label([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], (i + 1) + ': ' + (l.mm == null ? '—' : P.fmt(l.mm)), COL.dist);
+      });
+      // heights: a tick down to the floor line along the plane's vertical
+      rec.marks.forEach((m, i) => {
+        const p = toScreen(m.p);
+        let foot = null;
+        if (f && rec.floor.length === 2 && m.mm != null) {
+          const Pp = P.toPlane(f, m.p), A = P.toPlane(f, rec.floor[0]), B = P.toPlane(f, rec.floor[1]);
+          if (Pp && A && B) {         // the foot of the perpendicular on the plane, back into the photo
+            const dx = B[0] - A[0], dy = B[1] - A[1], t = ((Pp[0] - A[0]) * dx + (Pp[1] - A[1]) * dy) / (dx * dx + dy * dy);
+            foot = planeToPhoto(f, [A[0] + dx * t, A[1] + dy * t]);
+          }
+        }
+        if (foot) { const q = toScreen(foot); g.strokeStyle = COL.height; g.lineWidth = 2; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); }
+        dot(p, COL.height); label([p[0] + 10, p[1] - 12], 'M' + (i + 1) + ': ' + (m.mm == null ? '—' : P.fmt(m.mm)), COL.height);
+      });
+      if (ui.pend) dot(toScreen(ui.pend), COL.pend);
+      if (ui.loupe) loupe(ui.loupe);
+    }
+    function planeToPhoto(f, q) {
+      const inv = invert(f.H); if (!inv) return null;
+      const s = P.apply(inv, q); return s ? [s[0] / f.aspect, s[1]] : null;
+    }
+    function invert(m) {
+      const [a, b, c, d, e, f2, gg, h, i] = m, A = e * i - f2 * h, B = -(d * i - f2 * gg), C = d * h - e * gg, det = a * A + b * B + c * C;
+      if (Math.abs(det) < 1e-15) return null;
+      return [A / det, -(b * i - c * h) / det, (b * f2 - c * e) / det, B / det, (a * i - c * gg) / det, -(a * f2 - c * d) / det, C / det, -(a * h - b * gg) / det, (a * e - b * d) / det];
+    }
+    function dot(p, c, t) {
+      g.fillStyle = c; g.strokeStyle = '#000'; g.lineWidth = 1.5; g.beginPath(); g.arc(p[0], p[1], 6, 0, 6.2832); g.fill(); g.stroke();
+      if (t) { g.font = '600 12px system-ui,sans-serif'; g.fillStyle = '#000'; g.fillText(t, p[0] - 3.5, p[1] + 4); }
+    }
+    function label(p, t, c) {
+      g.font = '600 13px system-ui,sans-serif'; const w = g.measureText(t).width + 10;
+      g.fillStyle = 'rgba(5,9,12,.82)'; g.fillRect(p[0] - w / 2, p[1] - 11, w, 20); g.fillStyle = c; g.fillText(t, p[0] - w / 2 + 5, p[1] + 4);
+    }
+    function loupe(p) {         // 3× around the dragged point, in the corner away from the finger
+      const R = 56, s = toScreen(p), cx = s[0] < cv.clientWidth / 2 ? cv.clientWidth - R - 10 : R + 10, cy = R + 10, z = 3;
+      g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 6.2832); g.clip();
+      g.fillStyle = '#000'; g.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+      const sx = p[0] * W, sy = p[1] * Hh, half = R / (ui.scale * z);
+      g.drawImage(img, sx - half, sy - half, half * 2, half * 2, cx - R, cy - R, 2 * R, 2 * R);
+      g.restore();
+      g.strokeStyle = '#93d3e6'; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, R, 0, 6.2832); g.stroke();
+      g.beginPath(); g.moveTo(cx - 10, cy); g.lineTo(cx + 10, cy); g.moveTo(cx, cy - 10); g.lineTo(cx, cy + 10); g.stroke();
+    }
+
+    // ---- the sheet ----------------------------------------------------------------------------------------------
+    function panel() {
+      el.querySelectorAll('[data-p="step"]').forEach(b => b.classList.toggle('on', b.dataset.s === ui.step));
+      const f = frame(), r = rec.ref;
+      let h = '';
+      if (ui.step === 'ref') {
+        h += '<div class="pl-row"><select data-q="kind">' + P.REFS.map(x => '<option value="' + x.id + '"' + (x.id === r.kind ? ' selected' : '') + '>' + esc(x.label) + '</option>').join('') + '</select>' +
+          '<input type="number" inputmode="numeric" data-q="w" value="' + r.w + '" aria-label="szélesség mm"> × <input type="number" inputmode="numeric" data-q="h" value="' + r.h + '" aria-label="magasság mm"> mm' +
+          '<button data-p="turn" title="Fektetve / állítva">⇄</button></div>';
+        h += '<div class="pl-hint">' + (r.pts.length < 4 ? 'Koppints a ' + esc((P.ref(r.kind) || {}).label || 'téglalap') + ' négy sarkára (' + r.pts.length + '/4), bármilyen sorrendben. A pontok húzhatók.'
+          : f ? 'Referencia kész: ' + f.w + ' × ' + f.h + ' mm. Ugyanazon a falon (síkon) mérj vele.' : '<span class="pl-err">A négy pont nem téglalap képe: húzd a sarkokat a helyükre.</span>') + '</div>';
+      } else if (ui.step === 'floor') {
+        h += '<div class="pl-hint">Koppints két pontra a padló és a fal találkozásán (a magassághoz). ' + (rec.floor.length === 2 ? 'Kész.' : rec.floor.length + '/2') + '</div>';
+      } else if (ui.step === 'dist') {
+        h += '<div class="pl-hint">' + (f ? 'Két koppintás = egy távolság a referencia síkján.' : '<span class="pl-warn">Előbb a referencia (①).</span>') + '</div>';
+      } else {
+        h += '<div class="pl-hint">' + (!f ? '<span class="pl-warn">Előbb a referencia (①).</span>' : rec.floor.length < 2 ? '<span class="pl-warn">Előbb a padlóvonal (②).</span>' : 'Koppints egy pontra: a magassága a padlótól.') + '</div>';
+      }
+      rec.lines.forEach((l, i) => h += row('l', i, (i + 1) + '.', l.mm, l.label, f ? P.quality(f, [l.a, l.b]) : null));
+      rec.marks.forEach((m, i) => h += row('m', i, 'M' + (i + 1), m.mm, m.label, f ? P.quality(f, [m.p]) : null));
+      if (f && (rec.lines.length || rec.marks.length)) h += '<div class="pl-hint">Pontosság: a referenciától távolodva csökken (jó ≤ 2×, közepes ≤ 5× a referencia mérete). Csak a referencia síkján mér: a falon, nem a bútoron.</div>';
+      sheet.innerHTML = h;
+    }
+    function row(t, i, n, mm, lbl, q) {
+      return '<div class="pl-m"><span>' + n + '</span><span class="v">' + (mm == null ? '—' : P.fmt(mm)) + '</span>' +
+        (q ? '<span class="q ' + q.grade + '">' + esc(P.GRADES[q.grade]) + '</span>' : '') +
+        '<input class="lbl" data-q="label" data-t="' + t + '" data-i="' + i + '" placeholder="Felirat (pl. dugalj)" value="' + esc(lbl || '') + '">' +
+        '<button data-p="del" data-t="' + t + '" data-i="' + i + '" aria-label="Törlés">✕</button></div>';
+    }
+    const redraw = side => { recompute(); draw(); if (side) panel(); };
+
+    // ---- input --------------------------------------------------------------------------------------------------
+    const ptrs = new Map(); let gesture = null;
+    function tap(x, y) {
+      const p = toPhoto(x, y); if (p[0] < 0 || p[0] > 1 || p[1] < 0 || p[1] > 1) return;
+      if (ui.step === 'ref') { if (rec.ref.pts.length < 4) rec.ref.pts.push(p); }
+      else if (ui.step === 'floor') { if (rec.floor.length < 2) rec.floor.push(p); else rec.floor[1] = p; }
+      else if (ui.step === 'dist') { if (!frame()) return; if (!ui.pend) ui.pend = p; else { rec.lines.push({ a: ui.pend, b: p }); ui.pend = null; } }
+      else if (ui.step === 'height') { if (!frame() || rec.floor.length < 2) return; rec.marks.push({ p }); }
+      redraw(true);
+    }
+    cv.addEventListener('pointerdown', e => {
+      const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      ptrs.set(e.pointerId, [x, y]); try { cv.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+      if (ptrs.size === 2) { gesture = { kind: 'pinch', d: spread(), mid: mid() }; ui.loupe = null; return; }
+      const h = nearest(x, y, 20);
+      gesture = h ? { kind: 'handle', h, x, y, moved: false } : { kind: 'pan', x, y, sx: x, sy: y, t: Date.now(), moved: false };
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!ptrs.has(e.pointerId) || !gesture) return;
+      const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; ptrs.set(e.pointerId, [x, y]);
+      if (gesture.kind === 'pinch' && ptrs.size >= 2) {
+        const d = spread(), m = mid(); if (!gesture.d) { gesture.d = d; return; }
+        zoomAt(m[0], m[1], d / gesture.d); ui.ox += m[0] - gesture.mid[0]; ui.oy += m[1] - gesture.mid[1]; gesture.d = d; gesture.mid = m; draw(); return;
+      }
+      if (gesture.kind === 'handle') {
+        if (Math.hypot(x - gesture.x, y - gesture.y) > 3) gesture.moved = true;
+        if (gesture.moved) { const p = toPhoto(x, y).map(v => Math.max(0, Math.min(1, v))); gesture.h.set(p); ui.loupe = p; redraw(false); }
+        return;
+      }
+      if (gesture.kind === 'pan') {
+        if (Math.hypot(x - gesture.sx, y - gesture.sy) > 6) gesture.moved = true;
+        if (gesture.moved) { ui.ox += x - gesture.x; ui.oy += y - gesture.y; gesture.x = x; gesture.y = y; draw(); }
+      }
+    });
+    const up = e => {
+      const had = gesture; ptrs.delete(e.pointerId);
+      if (ptrs.size === 0) {
+        gesture = null; ui.loupe = null;
+        if (had && had.kind === 'pan' && !had.moved) tap(had.sx, had.sy);
+        else if (had && had.kind === 'handle' && !had.moved) tap(had.x, had.y);
+        else redraw(true);
+      }
+    };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    cv.addEventListener('wheel', e => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY > 0 ? 0.87 : 1.15); draw(); }, { passive: false });
+    function zoomAt(x, y, k) {
+      const s = Math.max(0.05, Math.min(40, ui.scale * k)); k = s / ui.scale;
+      ui.ox = x - (x - ui.ox) * k; ui.oy = y - (y - ui.oy) * k; ui.scale = s;
+    }
+    function spread() { const v = Array.from(ptrs.values()); return v.length < 2 ? 0 : Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]); }
+    function mid() { const v = Array.from(ptrs.values()); return v.length < 2 ? v[0] : [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2]; }
+
+    el.addEventListener('click', e => {
+      const t = e.target.closest('[data-p]'); if (!t) return;
+      const a = t.dataset.p;
+      if (a === 'step') { ui.step = t.dataset.s; ui.pend = null; redraw(true); }
+      else if (a === 'turn') { const r = rec.ref, f = frame(); r.turn = f ? !(f.w !== r.w) : !r.turn; redraw(true); }
+      else if (a === 'del') { (t.dataset.t === 'l' ? rec.lines : rec.marks).splice(+t.dataset.i, 1); redraw(true); }
+      else if (a === 'undo') {
+        if (ui.pend) ui.pend = null;
+        else if (ui.step === 'height' && rec.marks.length) rec.marks.pop();
+        else if (ui.step === 'dist' && rec.lines.length) rec.lines.pop();
+        else if (ui.step === 'floor' && rec.floor.length) rec.floor.pop();
+        else if (ui.step === 'ref' && rec.ref.pts.length) rec.ref.pts.pop();
+        redraw(true);
+      }
+      else if (a === 'save') { const out = P.clean(Object.assign({}, rec, { at: Date.now() })); close(); if (opts.onSave) opts.onSave(out); }
+      else if (a === 'close') { close(); if (opts.onClose) opts.onClose(); }
+    });
+    el.addEventListener('change', e => {
+      const t = e.target, q = t.dataset.q; if (!q) return;
+      if (q === 'kind') { const x = P.ref(t.value); rec.ref.kind = t.value; if (x) { rec.ref.w = x.w; rec.ref.h = x.h; } delete rec.ref.turn; redraw(true); }
+      else if (q === 'w' || q === 'h') { const v = parseFloat(String(t.value).replace(',', '.')); if (v > 0) { rec.ref[q] = v; delete rec.ref.turn; } redraw(true); }
+      else if (q === 'label') { const list = t.dataset.t === 'l' ? rec.lines : rec.marks, it = list[+t.dataset.i]; if (it) it.label = t.value.trim(); }
+    });
+    const onResize = () => { fit(); draw(); };
+    root.addEventListener && root.addEventListener('resize', onResize);
+    function close() { root.removeEventListener && root.removeEventListener('resize', onResize); el.remove(); }
+
+    fit(); redraw(true);
+    return { el, ui, record: () => rec, frame, tapAt: (u, v) => { const s = toScreen([u, v]); tap(s[0], s[1]); }, toScreen, redraw, close };
+  }
+
+  /** The phone: the photo and the record from the bridge, the result back through it. */
+  function run() {
+    const io = root.VRGPlaneIO;
+    try {
+      const inp = JSON.parse(io.input()), im = new root.Image();
+      im.onload = () => {
+        try {
+          root.__plane = open(root.document.body, { image: im, title: inp.title, record: inp.record,
+            onSave: r => io.save(JSON.stringify(r)), onClose: () => io.close() });
+        } catch (e) { io.fail(String(e && e.stack || e)); }
+      };
+      im.onerror = () => io.fail('A fotó nem tölthető be.');
+      im.src = inp.image;
+    } catch (e) { if (io && io.fail) io.fail(String(e && e.stack || e)); else throw e; }
+  }
+  return { open, run };
+});
+
+</script>
+<script>
 // Map/lib/site-math.js — the sketch on the building (VRG Sketcher Helyszín ↔ Térkép, WP M48): pure maths, no DOM.
 // The same rules as the phone's sketch-core SitePlace.kt; Sketcher/test/fixtures/site.json is written from this file
 // (node Sketcher/tools/make-fixture.js) and replayed by the JVM test, so the two cannot drift.
@@ -2075,7 +2554,7 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     const pp = (S.photos || []);
     if (pp.length) h += '<h3>Fotópontok</h3>' + pp.map(p => '<div class="card"><b>' + esc(p.id) + '</b> ' + esc(roomName(p.room)) + ' ' + (p.shots || []).map(x => {
       const u = files.get(base(x.file)); return u ? '<img class="thumb" src="' + esc(u) + '" alt="' + esc(x.file) + '">' : '<span class="tag">' + esc(base(x.file)) + '</span>';
-    }).join('') + '</div>').join('');
+    }).join('') + (p.shots || []).map(x => planeBits(PL.keyOf(p.id, x.deg), shotImage(p.id, x), roomName(p.room) + ' · ' + sideLabel(x.deg))).join('') + '</div>').join('');
     return h;
   }
   function capCard(c) {
@@ -2085,7 +2564,8 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
       : c.kind === 'video' ? '<video class="thumb" src="' + esc(u) + '" controls preload="metadata"></video>' : '<img class="thumb" src="' + esc(u) + '" alt="">';
     return '<div class="card cap-card" data-cap="' + esc(c.id) + '" data-kind="' + esc(c.kind || 'photo') + '">' + media +
       '<div><div class="mono small">' + esc(c.id) + ' · ' + esc(fmtTime(c.at)) + (c.room ? ' · ' + esc(roomName(c.room)) : '') + capBadges(c) + '</div>' +
-      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
+      capExtra(c) + (c.note ? '<div>' + esc(c.note) + '</div>' : '') + planeBits(c.id, c.kind === 'photo' || !c.kind ? captureNames(c).find(n => boxImg.has(n)) : null, (BASE.purposes.find(p => p.id === c.purpose) || {}).label || c.id) +
+      '<div class="small faint mono">' + esc(captureNames(c)[captureNames(c).length - 1]) + '</div></div></div>';
   }
   // ---- Kamera 2: video, signature, personal data, type-plate readings, before / after ---------------------------
   const mb = b => b > 0 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : '?';   // as Camera2.mb
@@ -2275,6 +2755,33 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     });
     return h;
   }
+  // ---- Síkmérés (dev line skcam, stage K3): measuring on a plane in one photo --------------------------------------
+  // lib/plane.js does the maths, lib/plane-ui.js is the screen (the phone runs the same one in a WebView). The results
+  // go into the survey's optional `planes` key, by photo: a capture id or a Fotópont shot ("F25/0").
+  const PL = window.VRGPlane, PLUI = window.VRGPlaneUI;
+  const sideLabel = deg => ({ 0: 'É', 90: 'K', 180: 'D', 270: 'Ny' })[((deg % 360) + 360) % 360] || deg + '°';
+  // a Fotópont photo attached on the PC carries its board name (the package's plan.photos), the survey the phone's
+  const shotImage = (pid, x) => {
+    const pp = (pkg && pkg.plan && pkg.plan.photos || []).find(q => q.id === pid), b = pp && (pp.shots || []).find(q => q.deg === x.deg);
+    return [base(x.file), b && base(b.file)].find(n => n && boxImg.has(n)) || null;
+  };
+  function planeBits(key, file, title) {
+    if (!PL || !on('kamera.measure')) return '';
+    const rec = (S.planes || {})[key], lines = rec ? PL.summary(rec) : [];
+    return '<div class="plane-bits">' + (file ? '<button class="btn sm" data-pact="open" data-key="' + esc(key) + '" data-file="' + esc(file) + '" data-title="' + esc(title) + '">📏 Mérés</button> ' : '') +
+      (lines.length ? '<span class="small">' + lines.map(esc).join(' · ') + '</span>' : '') + '</div>';
+  }
+  function planeOpen(key, file, title) {
+    const im = boxImg.get(file); if (!im || !PLUI) return;
+    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null,
+      onSave: rec => commit(() => {
+        const pl = Object.assign({}, S.planes || {});
+        if (rec) pl[key] = rec; else delete pl[key];
+        if (Object.keys(pl).length) S.planes = pl; else delete S.planes;
+      }) });
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('#main [data-pact="open"]'); if (t && S) planeOpen(t.dataset.key, t.dataset.file, t.dataset.title); });
+
   // ---- Szobadoboz (dev line skcam, stage K1): the room in 3D with its Fotópont photos ------------------------------
   // lib/roombox.js does the maths, lib/roombox-gl.js draws; the overlay lives outside #main, so a re-render of the
   // page does not drop the WebGL canvas. Corrections go into the survey's optional `box` key (see lib/roombox.js).
@@ -2293,7 +2800,7 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       const m = Object.assign({}, boxMeta.get(name)); m.w = img.naturalWidth; m.h = img.naturalHeight; boxMeta.set(name, m);
       boxImg.set(name, c);
-      if (ui.open) boxRedraw(true); else if (cur === 'vazlat') render();   // the card counts the attached photos
+      if (ui.open) boxRedraw(true); else if (cur === 'vazlat' || cur === 'kamera') render();   // the cards count / measure the attached photos
     };
     img.src = files.get(name);
   }
@@ -2536,7 +3043,8 @@ figcaption{margin-top:1mm;font-size:7.6pt;color:var(--ink-2)}
     render();
   }
   window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
-    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null } };
+    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null },
+    plane: { open: planeOpen } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
 

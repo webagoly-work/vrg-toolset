@@ -125,7 +125,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
-## B telefon — kamera és helyszín (87 lépés)
+## B telefon — kamera és helyszín (97 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -194,6 +194,19 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M59.8** Írd át a belmagasságot, állíts az Irány csúszkán, majd ✓ Kész: a felmérés elmentődik; újranyitva a javítások megvannak.
 - [ ] **M59.9** A felmérést küldd a PC-re (Rendezés → Küldés a Plannerbe), nyisd meg az Asztal Sketcher oldalán: a Szobadoboz ugyanazokat a javításokat mutassa.
 - [ ] **M59.10** ⚙ Funkciók → Szobadoboz (3D) ki: a Rendezés gomb eltűnik, és a Fotópont 1×-es nagyítással nyílik.
+
+### M60 · Síkmérés (in `sketch`, phone and Desktop): measuring on a plane in one photo
+
+- [ ] **M60.1** Ragassz fel egy A4-es lapot a falra (állítva), a mérendő dugalj és kapcsoló közelébe.
+- [ ] **M60.2** Kamera: fotózd le a falat (1× nagyítással), úgy, hogy a lap, a dugalj, a kapcsoló és a padló vonala is látsszon.
+- [ ] **M60.3** Nyisd meg a fotót: a ✎ Jelölés mellett ott a **📏 Mérés**; koppints rá.
+- [ ] **M60.4** ① Referencia: A4; koppints a lap négy sarkára. Két ujjal nagyíts rá, a pontokat húzással igazítsd (a nagyító mutatja a pixelt).
+- [ ] **M60.5** ② Padló: két koppintás a padló és a fal találkozásán.
+- [ ] **M60.6** ④ Magasság: koppints a dugalj közepére, majd a kapcsolóéra; vesd össze mérőszalaggal (±1–2 cm várható).
+- [ ] **M60.7** ③ Távolság: két koppintás; a felirat mezőbe írd be, mi az. ✓ Mentés: a fotó alatt megjelenik a „📏 …” sor.
+- [ ] **M60.8** Egy Fotópont fotón ugyanez: a fotópont kép párbeszédében a **📏 Mérés**.
+- [ ] **M60.9** Küldd a felmérést a PC-re: az Asztal Sketcher oldalán a Kamera nézetben a kártyán ugyanazok az értékek.
+- [ ] **M60.10** ⚙ Funkciók → Kamera → **Mérés a fotón** ki: a gomb és a sor eltűnik.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

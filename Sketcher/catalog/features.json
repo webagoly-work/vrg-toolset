@@ -51,6 +51,7 @@
   {"id":"kamera.shotlist","front":"kamera","sym":"☑","label":"Képlista","requires":["kamera.capture"]},
   {"id":"kamera.series","front":"kamera","sym":"⟳","label":"Sorozat","requires":["kamera.capture"]},
   {"id":"kamera.markup","front":"kamera","sym":"✎","label":"Jelölés","requires":["kamera.capture"]},
+  {"id":"kamera.measure","front":"kamera","sym":"📏","label":"Mérés a fotón","requires":["kamera.capture"]},
   {"id":"kamera.ocr","front":"kamera","sym":"▤","label":"Szöveg kiolvasása","requires":["kamera.capture"]},
   {"id":"kamera.ocr_auto","front":"kamera","sym":"▤","label":"Címkefotó magától","requires":["kamera.capture","kamera.ocr"]},
   {"id":"kamera.blur","front":"kamera","sym":"▦","label":"Elmosás","requires":["kamera.capture","kamera.markup"]},

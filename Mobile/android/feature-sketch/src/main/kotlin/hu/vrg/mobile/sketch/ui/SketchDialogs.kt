@@ -237,6 +237,13 @@ internal fun SketchDialogs(st: EditorState) {
                                 VrgChip(Photos.label(d), selected = d == a.deg) { if (d != a.deg) { st.turnShot(a.id, a.deg, d); st.ask = Ask.PhotoView(a.id, d) } }
                             }
                         }
+                        // skcam K3 (WP M60): the Síkmérés on this Fotópont photo, and what was measured on it
+                        if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) {
+                            val pk = hu.vrg.mobile.sketch.Planes.shotKey(a.id, a.deg)
+                            hu.vrg.mobile.sketch.Planes.summary(hu.vrg.mobile.sketch.Planes.of(s, pk)).takeIf { it.isNotEmpty() }
+                                ?.let { Text("📏 " + it.joinToString(" · "), style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp)) }
+                            VrgChip("📏 Mérés") { st.ask = Ask.Measure(pk, shot.file, "$room · ${Photos.label(a.deg)}", Ask.PhotoView(a.id, a.deg)) }
+                        }
                     }
                 },
                 confirmButton = { TextButton({ close(); st.camera = CameraReq(a.id, a.deg) }) { Text("Újra", color = Melyviz.glow) } },
@@ -248,6 +255,7 @@ internal fun SketchDialogs(st: EditorState) {
         }
         is Ask.Purposes -> PurposePicker(st, close)
         is Ask.CaptureView -> CaptureViewer(st, a.id, close)
+        is Ask.Measure -> PlaneDialog(st, a.key, a.file, a.title) { st.ask = a.back }   // skcam K3: back to the photo
         is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
         is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
         is Ask.PairPick -> PairPickDialog(st, a.id, close)
