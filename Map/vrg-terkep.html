@@ -227,6 +227,22 @@
   .fd-mk{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:#fffaf0;border:3px solid var(--c);
     box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
   .fd-mk.fd-mk-sel{width:44px;height:44px;font-size:23px;border-width:4px}
+  .fd-card .fd-go{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  .fd-card .fd-traffic{flex-basis:100%;color:var(--ink);font-weight:600}
+  #fd-tt{flex:1;min-width:140px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:12px ui-monospace,Consolas,monospace;background:var(--field);color:var(--ink)}
+  /* N3: turn-by-turn guidance (lib/nav-layer.js) */
+  #nav-banner{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;width:min(520px,calc(100vw - 24px));box-sizing:border-box;
+    display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:#1f1d1a;color:#fff;border-left:8px solid var(--c);box-shadow:var(--shadow)}
+  #nav-banner[hidden],#nav-foot[hidden],#nav-foot [hidden]{display:none}
+  #nav-banner .nv-i{font-size:40px;line-height:1;min-width:44px;text-align:center}
+  #nav-banner .nv-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+  #nav-banner .nv-t b{font-size:24px;letter-spacing:.01em}
+  #nav-banner .nv-t span{font-size:16px;line-height:1.25}
+  #nav-banner .nv-t small{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nav-foot{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:9;width:min(520px,calc(100vw - 24px));box-sizing:border-box;
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--paper);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--shadow)}
+  #nav-sum{flex:1 1 100%;font-size:14px} #nav-sum b{font-size:18px;color:var(--ink)}
+  body.nav-on #feed-panel,body.nav-on .panel,body.nav-on .tools,body.nav-on #sun-panel,body.nav-on #wx-panel,body.nav-on #jobs-legend{display:none}
   /* R10: the phone (also through the VRG Mobile relay) */
   @media (max-width:640px){
     .panel{top:8px;left:8px;width:calc(100vw - 16px)}
@@ -249,6 +265,8 @@
     body.sun-on.wx-on #wx-panel{bottom:132px}
     #feed-panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:42vh;border-radius:14px 14px 0 0;padding:8px 12px 12px;z-index:8}
     #feed-panel.fd-spider{max-height:none}
+    #nav-banner{top:8px;width:calc(100vw - 16px)}
+    #nav-foot{bottom:0;width:100vw;border-radius:14px 14px 0 0}
   }
 </style>
 </head>
@@ -313,6 +331,8 @@ if (location.protocol === 'file:') {
 <script src="/lib/sun.js"></script>
 <script src="/lib/feed.js"></script>
 <script src="/lib/route.js"></script>
+<script src="/lib/guide.js"></script>
+<script src="/lib/traffic.js"></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initJobs } from '/lib/jobs-layer.js';
@@ -321,6 +341,7 @@ const { initWeather } = await import('/lib/weather-layer.js').catch(() => ({ ini
 const { initShadows } = await import('/lib/shadow-layer.js').catch(() => ({ initShadows: () => null }));
 const { initFeed } = await import('/lib/feed-layer.js').catch(() => ({ initFeed: () => null }));
 const { initRoute } = await import('/lib/route-layer.js').catch(() => ({ initRoute: () => null }));
+const { initNav } = await import('/lib/nav-layer.js').catch(() => ({ initNav: () => null }));
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -625,13 +646,14 @@ if (!shadows) $('#b-sun')?.remove();
 
 // ---------------------------------------------------------------- F: the Térkép-feed (lib/feed-layer.js)
 const router = initRoute({ map });            // N2: our own offline routing (lib/route.js, /data/roads.bin)
-const feed = initFeed({ map, maplibregl, params, store, toast, router });
+const nav = initNav({ map, store, toast });    // N3: turn-by-turn guidance (lib/guide.js, lib/nav-layer.js)
+const feed = initFeed({ map, maplibregl, params, store, toast, router, nav });
 if (!feed) $('#b-feed')?.remove();
 
 // ---------------------------------------------------------------- W: the weather (lib/weather-layer.js; VRG Időjárás data)
 const weather = initWeather({ map, maplibregl, params, store, toast });
 
-window.vrgMap = { map, maplibregl, searchOffline, camera, jobs, weather, shadows, feed, router };   // for tests, the console and the phone (VRG Mobile M43)
+window.vrgMap = { map, maplibregl, searchOffline, camera, jobs, weather, shadows, feed, router, nav };   // for tests, the console and the phone (VRG Mobile M43)
 </script>
 </body>
 </html>

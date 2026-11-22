@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -103,6 +104,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 // VRG Térkép (WP M43, D-48 = A, D-49 = A + B + C). The PC's own page, Map/vrg-terkep.html, from GitHub main on its own origin
@@ -578,8 +580,38 @@ object MapFeature : VrgFeature {
             }
             "sketch" -> host.open(Catalogue.SKETCH.id)
             "site" -> siteDone(host, q.getQueryParameter("d"))
+            // N3 guidance (WP M58): the page's voice prompts through Android's text-to-speech, and the screen kept on
+            "say" -> q.getQueryParameter("text")?.take(300)?.let { speak(it) }
+            "keepon" -> host.keepScreenOn(q.getQueryParameter("on") == "1")
         }
         return true
+    }
+
+    // ---- the voice of the guidance (N3) -------------------------------------------------------------------------
+
+    @Volatile private var tts: TextToSpeech? = null
+    @Volatile private var ttsReady = false
+    private var ttsPending: String? = null
+
+    /** Hungarian if the phone has it, else the phone's default voice; the newest prompt replaces an unfinished one. */
+    private fun speak(text: String) {
+        val t = tts
+        if (t == null) {
+            ttsPending = text
+            tts = TextToSpeech(appCtx) { status ->
+                ttsReady = status == TextToSpeech.SUCCESS
+                val e = tts ?: return@TextToSpeech
+                if (ttsReady) {
+                    val hu = Locale("hu", "HU")
+                    if (e.isLanguageAvailable(hu) >= TextToSpeech.LANG_AVAILABLE) e.setLanguage(hu)
+                    else VrgLog.w(TAG, "nincs magyar hang a telefonon; az alapértelmezett szól")
+                    ttsPending?.let { e.speak(it, TextToSpeech.QUEUE_FLUSH, null, "vrg-nav") }
+                } else VrgLog.w(TAG, "a szövegfelolvasó nem indult ($status)")
+                ttsPending = null
+            }
+            return
+        }
+        if (ttsReady) t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "vrg-nav") else ttsPending = text
     }
 
     @SuppressLint("SetJavaScriptEnabled")

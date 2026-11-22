@@ -39,6 +39,8 @@ to `H:\VRG\Full\tools\pmtiles`.
   (`tools/osm-pbf.js` is the shared .pbf reader).
 - `lib/route.js`, `lib/route-layer.js` — **our own offline routing** (N2): the feed's road times and the
   route to a held place, on `data/roads.bin` from `tools/build-roads.js` (`docs/map/ROUTING.md`).
+- `lib/guide.js`, `lib/nav-layer.js`, `lib/traffic.js` — **turn-by-turn guidance** with voice (N3) and the
+  optional TomTom traffic check with your own key (`docs/map/NAVIGATION.md`).
 - `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).

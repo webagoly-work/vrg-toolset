@@ -14,10 +14,12 @@
 // Car speed: 85 % of `maxspeed` (HU:urban 50, HU:rural 90, HU:motorway 130), else a typical speed for the
 // road class (lib/route.js SPEED). On foot everything is walked at 4.8 km/h, steps at 2.5.
 //
-// Output (lib/route.js decode() reads it): "VRGR" 1 <varint headerLen> <header JSON> <deflate(payload)>.
-// The payload is varints: nodes (delta lon/lat in 1e-5°, spatially sorted), then edges sorted by their
-// first node (delta first node, zigzag delta second node, flags, speed, length in dm, shape point count,
-// shape points as zigzag deltas from the first node). Public data (ODbL).
+// Output (lib/route.js decode() reads it): "VRGR" 2 <varint headerLen> <header JSON> <deflate(payload)>.
+// The payload is varints: nodes (delta lon/lat in 1e-5°, spatially sorted), the street names (count, then
+// length + UTF-8 each; 0 is "no name"), then edges sorted by their first node (delta first node, zigzag
+// delta second node, flags, speed, length in dm, name, shape point count, shape points as zigzag deltas
+// from the first node). Flags: car forward / backward, foot, steps, roundabout, link, motorway or trunk.
+// Version 1 (no names) is still read. Public data (ODbL).
 // ---------------------------------------------------------------------------
 'use strict';
 const fs = require('fs');
@@ -58,8 +60,10 @@ function wayInfo(t) {
   }
   const ms = maxspeed(t.maxspeed);
   const speed = car ? Math.max(5, Math.round(ms ? Math.min(ms * 0.85, (R.SPEED[hw] || 30) * 1.6) : (R.SPEED[hw] || 30))) : 0;
-  const flags = (fwd ? R.CAR_FWD : 0) | (back ? R.CAR_BACK : 0) | (foot ? R.FOOT : 0) | (hw === 'steps' ? R.STEPS : 0);
-  return { cls: hw, flags, speed };
+  const flags = (fwd ? R.CAR_FWD : 0) | (back ? R.CAR_BACK : 0) | (foot ? R.FOOT : 0) | (hw === 'steps' ? R.STEPS : 0) |
+    (t.junction === 'roundabout' || t.junction === 'circular' ? R.ROUNDABOUT : 0) | (/_link$/.test(hw) ? R.LINK : 0) |
+    (hw === 'motorway' || hw === 'trunk' ? R.FAST : 0);
+  return { cls: hw, flags, speed, name: t.name || t.ref || '' };
 }
 
 // ---- varints ---------------------------------------------------------------
@@ -133,7 +137,9 @@ function buildRoads(file, log = () => {}) {
   const gIdx = new Int32Array(nU).fill(-1);
   let nG = 0;
   const gOf = j => (gIdx[j] < 0 ? (gIdx[j] = nG++) : gIdx[j]);
-  const edges = [];                                 // [a, b, flags, speed, dm, shape]
+  const edges = [];                                 // [a, b, flags, speed, dm, shape, name]
+  const names = [''], nameIdx = new Map([['', 0]]);  // street names for the guidance (N3); 0 = none
+  const nameId = n => { let i = nameIdx.get(n); if (i === undefined) { i = names.length; names.push(n); nameIdx.set(n, i); } return i; };
   const segLen = (j1, j2) => R.distance(lon[j1] / 1e5, lat[j1] / 1e5, lon[j2] / 1e5, lat[j2] / 1e5);
   for (const w of ways) {
     const js = w.refs.map(find);
@@ -147,7 +153,7 @@ function buildRoads(file, log = () => {}) {
       if (!junction) { mid.push(j); continue; }
       if (j !== start) {                            // a way closing on itself with no junction between is skipped
         const pts = [[lon[start], lat[start]]].concat(mid.map(q => [lon[q], lat[q]]), [[lon[j], lat[j]]]);
-        edges.push([gOf(start), gOf(j), w.flags, w.speed, Math.max(1, Math.round(len * 10)), simplify(pts, 4)]);
+        edges.push([gOf(start), gOf(j), w.flags, w.speed, Math.max(1, Math.round(len * 10)), simplify(pts, 4), nameId(w.name)]);
       }
       start = j; len = 0; mid = [];
     }
@@ -165,20 +171,22 @@ function buildRoads(file, log = () => {}) {
   o.v(nG);
   let pl = 0, pa = 0;
   for (const g of order) { o.z(gl[g] - pl); o.z(ga[g] - pa); pl = gl[g]; pa = ga[g]; }
+  o.v(names.length);
+  for (const n of names) { const nb = Buffer.from(n, 'utf8'); o.v(nb.length); o.room(nb.length); nb.copy(o.b, o.i); o.i += nb.length; }
   o.v(edges.length);
   let prevA = 0, nShape = 0;
-  for (const [a, b, flags, speed, dm, shape] of edges) {
+  for (const [a, b, flags, speed, dm, shape, name] of edges) {
     o.v(a - prevA); prevA = a;
-    o.z(b - a); o.v(flags); o.v(speed); o.v(dm); o.v(shape.length);
+    o.z(b - a); o.v(flags); o.v(speed); o.v(dm); o.v(name); o.v(shape.length);
     let x = gl[order[a]], y = ga[order[a]];
     for (const [sx, sy] of shape) { o.z(sx - x); o.z(sy - y); x = sx; y = sy; }
     nShape += shape.length;
   }
   const payload = zlib.deflateRawSync(o.done(), { level: 9 });
-  const header = Buffer.from(JSON.stringify({ v: 1, built: new Date().toISOString().slice(0, 10), source: 'OpenStreetMap (ODbL) via ' + path.basename(file),
-    nodes: nG, edges: edges.length, shape: nShape, speeds: R.SPEED }));
+  const header = Buffer.from(JSON.stringify({ v: 2, built: new Date().toISOString().slice(0, 10), source: 'OpenStreetMap (ODbL) via ' + path.basename(file),
+    nodes: nG, edges: edges.length, names: names.length - 1, shape: nShape, speeds: R.SPEED }));
   const hl = new Out(); hl.v(header.length);
-  const out = Buffer.concat([Buffer.from('VRGR'), Buffer.from([1]), hl.done(), header, payload]);
+  const out = Buffer.concat([Buffer.from('VRGR'), Buffer.from([2]), hl.done(), header, payload]);
   log('  ' + ways.length + ' ways, ' + nG + ' junctions, ' + edges.length + ' edges, ' + nShape + ' shape points, ' +
     (out.length / 1e6).toFixed(1) + ' MB, in ' + ((Date.now() - t0) / 1000).toFixed(0) + ' s');
   return out;

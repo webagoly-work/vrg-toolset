@@ -139,7 +139,7 @@ object CatalogGuide {
                 "Első megnyitáskor a telefon letölti az oldalt (GitHub belépés kell) és a térképmotort; utána offline is nyílik.",
                 "Párosított PC-vel (START → M fut) a „PC adat” jelzés látszik: a PC térképe és a Munkák gomb a relén át. A munkák adata nem marad a telefonon.",
                 "PC nélkül az „Internet” jelzés: a térkép az internetről jön, és amit egyszer megnéztél, a helyszínen offline is megjelenik.",
-                "◎ a saját helyed, lila pötty a Vázlat helyszíne. Árnyék: az épületek árnyéka bármikor. Feed: a legközelebbi otthon, bolt, étkezés, orvos… idővel; nyomva tartva kiválasztod.",
+                "◎ a saját helyed, lila pötty a Vázlat helyszíne. Árnyék: az épületek árnyéka bármikor. Feed: a legközelebbi otthon, bolt, étkezés, orvos… idővel; nyomva tartva útvonalat tervez, ▶ Indulás: hangos vezetés.",
                 "Munka vagy helyszín kártyáján a Navigáció a navigációs alkalmazásnak csak a koordinátát és a kódot adja át, a címet nem.",
             ),
             needs = "internet az első letöltéshez; a munkákhoz a PC reléje (párosítva)",
