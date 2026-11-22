@@ -9,7 +9,7 @@ Research: `docs/research/2026-11-20_room-capture-and-measurement.md` (sources, l
 Grows out of: M24 Vázlat, M25 Fotópont, M29 Kamera, M30 Helyszín, M52 Saját kamera (`docs/mobile/WP/`). Builds on
 decisions D-24…D-26, D-31, D-90 and D-100…D-109 (`docs/mobile/DECISIONS.md`).
 
-**State, 2026-11-21:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136). Fork **DV1** (Data Vault) turns the line's
+**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141). Fork **DV1** (Data Vault) turns the line's
 written and collected features into Data Vault cells (§6).
 
 **Since the line opened:** fork F7 (WP M52, D-100…D-109) gave the Sketcher an **in-app CameraX camera**, with the
@@ -41,7 +41,7 @@ cheaper: its viewfinder exists, only the ARCore session is new.
 | **K3** | Síkmérés (plane measuring) | In the photo viewer (M29): mark a known rectangle on a wall plane (a printed ArUco/ChArUco card, an A4 sheet, an 80×80 switch frame, a door) → homography → tap two points and read the distance on that plane; heights from the floor line. The same maths rectifies a **facade** from one photo + one width. Optional one-time lens calibration per phone (ChArUco) | phone + Desktop | M | K2 helps (trusted length) |
 | **K4** | Körkép (360) | Eight shots at 45°, or four at 0.5×: stitched into a 360 panorama (OpenCV `Stitcher`, Apache-2.0, on the PC), viewed in Pannellum (MIT); optional HorizonNet (MIT) outline check against the drawn room | PC + viewer anywhere | M | K1 |
 | **K5** | Ház 3D | A capture mode for walking around a house or along a room's walls (M29 *Sorozat* with an overlap hint and a "two markers at a known distance" step) → COLMAP/GLOMAP (or MapAnything Apache) on the PC → mesh/points scaled by K2 or the markers → a viewer with a measuring tool; optional Gaussian splat view (Brush, Apache-2.0) | PC (GPU for dense) | L | K2 or K3; **Q4** |
-| **K1b** | Szobadoboz a telefonon | The same `roombox.js` in a WebView (as M54's jegyzőkönyv); `SketchJson` keeps the `box` key; the F7 camera stores the lens / zoom / field of view with each Fotópont shot and offers 0.5× for Fotópont | phone | M | K1 |
+| **K1b** ✓ M59 | Szobadoboz a telefonon | The same `roombox.js` in a WebView (as M54's jegyzőkönyv); `SketchJson` keeps the `box` key; the F7 camera stores the lens / zoom / field of view with each Fotópont shot and offers 0.5× for Fotópont | phone | M | K1 |
 | **K6** | AR mérő (optional) | ARCore on top of F7's own viewfinder: live two-point distance, Raw Depth points, Recording API (camera + depth + IMU to MP4 for the PC) | phone | L | **Q2** (Google's AR runtime) |
 | **K7** | Mélységbecslés (optional) | Depth Anything V2 **Small** (Apache-2.0; the larger models are non-commercial) metric-indoor: "this typed size looks wrong" warnings on the Nyitott front | phone or PC | M | licence check of the metric checkpoint |
 
@@ -51,9 +51,10 @@ and only after its licence is confirmed.
 
 ## 3. Next step
 
-K1 is built (WP M57; its *Telefonon ellenőrizni* list is the check). **Next: K1b** (the box on the phone, the `box`
-key kept by the phone, the lens stored with each shot), then **K2** as soon as Q1 (which laser meter) is answered.
-Corner snapping (drag a corner line onto the box corner) is the K1 polish left open.
+K1 and K1b are built (WP M57 on the Desktop, WP M59 on the phone; their *Telefonon ellenőrizni* lists are the check).
+**Next:** the phone check with real photos, then **K2** (the laser) as soon as Q1 (which laser meter) is answered, or
+**K3** (measuring on a plane in a photo), which needs no answer. Corner snapping (drag a corner line onto the box
+corner) is the K1 polish left open.
 
 ## 4. Open questions for the user
 
@@ -82,9 +83,10 @@ fields `Stack/lib/layers.js` reads:
   from: ['<the Sketcher / M25 line id>', 'Fotópont photos → a room render and measuring'],
   brief: 'Offline camera features for the Sketcher: the 4 Fotópont photos projected onto the sketched room (room box), a BLE laser meter, measuring on a plane in a photo, a 360 view, house 3D by PC photogrammetry. No AI session per capture.',
   milestones: [['11-20', 'K0 research: docs/research/2026-11-20_room-capture-and-measurement.md; line brief docs/sketcher/CAMERA-LINE.md'],
-               ['11-21', 'K1 Szobadoboz built on the Desktop page (WP M57, D-133…D-136); fork DV1 opened (Data Vault feature cells)']],
+               ['11-21', 'K1 Szobadoboz built on the Desktop page (WP M57, D-133…D-136); fork DV1 opened (Data Vault feature cells)'],
+               ['11-22', 'K1b Szobadoboz on the phone (WP M59, D-137…D-141): WebView viewer, box key kept, lens per Fotópont shot; DV1 merged (data-vault#12)']],
   remaining: [
-    'K1b Szobadoboz on the phone; the phone keeps the box key; lens stored per shot',
+    'K1 polish: corner snapping instead of the direction slider',
     'K2 Lézer: BLE laser meter → wall size (needs Q1: which meter)',
     'K3 Síkmérés: homography measuring on a wall / facade in the photo viewer',
     'K4 Körkép: 8×45° or 4×0.5× → 360 panorama + HorizonNet check',
@@ -92,7 +94,7 @@ fields `Stack/lib/layers.js` reads:
     'K6 AR mérő (optional, Q2, reopens D-32)',
     'K7 Mélységbecslés (optional, Depth Anything V2 Small)',
   ],
-  nextStep: 'K1b (the box on the phone); ask Q1–Q4 (docs/sketcher/CAMERA-LINE.md §4); merge DV1 in the Data Vault.',
+  nextStep: 'Phone check of M57 + M59; then K2 (laser) once Q1 is answered, or K3 (plane measuring).',
   notes: ['4 photos from one point carry no depth: the geometry comes from the sketch, the photos give the look.'],
 }
 ```

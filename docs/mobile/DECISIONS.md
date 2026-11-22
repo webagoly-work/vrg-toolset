@@ -892,6 +892,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     ignores unknown keys, so a survey re-saved on the phone drops `box` until K1b keeps it. Rejected: **B** a separate
     side file (one more file to carry); **C** browser storage only (lost with the browser, not in the survey).
 
+- **D-137 … D-141 · Szobadoboz a telefonon (M59, dev line skcam K1b), 2026-11-22.** Taken for the Founder while
+  building ("start K1b, the room box on the phone"); each can be revisited.
+  - **D-137 · How the phone draws the box.** Chosen **A**: the Desktop's own `roombox.js` + `roombox-gl.js` in a WebView,
+    with a touch UI file of its own (`roombox-phone.js`), as the jegyzőkönyv runs `report.js` (D-120). Rejected: **B** a
+    native OpenGL / Compose renderer (a second copy of the projection to keep equal); **C** the box on the PC only.
+  - **D-138 · The `box` key on the phone.** Chosen **A**: kept as the cleaned JSON object the viewer writes
+    (`RoomBox.clean`), read and written by `SketchJson`, so the Desktop's and the phone's corrections are one key.
+    Closes D-136's known gap. Rejected: **B** a typed Kotlin model (more code for data only the viewer edits); **C**
+    dropping it on the phone (as before).
+  - **D-139 · The lens per Fotópont shot.** Chosen **A**: the in-app camera stores a 35 mm equivalent on each Fotópont
+    shot (Camera2 focal length and sensor size × the zoom ratio); `roombox.js` uses it after a typed value and before
+    EXIF. Rejected: **B** EXIF only (CameraX writes the real focal length, not the equivalent, and the camera app may
+    write neither); **C** the user picks the lens by hand.
+  - **D-140 · Fotópont opens wide.** Chosen **A**: with `vazlat.roombox` on, a Fotópont shot opens at the camera's
+    widest zoom (0.5× with an ultrawide), so four shots reach the corners; pinch still changes it. Rejected: **B** its
+    own registry switch (one more switch for one behaviour of the box); **C** always 1× (the corner gap, research §1.1).
+  - **D-141 · Where the box opens.** Chosen **A**: Rendezés → ⬚ Szobadoboz, where the plan is solved in mm. Rejected:
+    **B** the Fotópont wheel (the plan may not be solved there); **C** a front of its own (the fronts are the survey's
+    capture places).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
