@@ -595,7 +595,7 @@
   // lib/roombox.js does the maths, lib/roombox-gl.js draws; the overlay lives outside #main, so a re-render of the
   // page does not drop the WebGL canvas. Corrections go into the survey's optional `box` key (see lib/roombox.js).
   const RB = window.VRGRoomBox, RBGL = window.VRGRoomBoxGL;
-  const ui = { open: false, room: '', mode: 'orbit', az: 30, el: 50, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null };
+  const ui = { open: false, room: '', mode: 'orbit', az: 30, el: 50, zoom: 2.6, yaw: 0, pitch: 0, fov: 75, point: '', hi: null, panoMsg: {} };
   let gl3 = null, boxEl = null;
   function boxPrep(f) {
     if (!RB) return;
@@ -682,6 +682,12 @@
         '<label>Dőlés ' + (x.pitch >= 0 ? '+' : '') + f1(x.pitch) + '°<input type="range" min="-25" max="25" step="0.5" data-b="pitch" data-key="' + esc(x.key) + '" value="' + x.pitch + '"></label>' +
         '<label>Látószög ' + Math.round(x.fovH) + '° · ' + f1(x.f35) + ' mm (' + src + ')<input type="number" min="8" max="80" step="0.5" data-b="f35" data-key="' + esc(x.key) + '" placeholder="auto" value="' + (x.fix.f35 || '') + '"></label></div>';
     });
+    // skcam K4 (Körkép): per photo point, align the neighbours where they overlap, and the 360° image
+    if (PA && on('vazlat.pano')) [...new Set(room.shots.map(x => x.point))].forEach(pt => {
+      h += '<div class="bx-pano"><b>⟳ Körkép · ' + esc(pt) + '</b><div class="row"><button class="btn sm" data-bact="align" data-p="' + esc(pt) + '" title="A szomszédos képek egymáshoz igazítása, ahol átfednek">⟲ Igazítás</button>' +
+        '<button class="btn sm" data-bact="pano" data-p="' + esc(pt) + '" title="360°-os kép (equirectangular JPEG, GPano), bármely 360° nézőben">⇩ 360° kép</button></div>' +
+        (ui.panoMsg[pt] ? '<div class="small muted">' + esc(ui.panoMsg[pt]) + '</div>' : '') + '</div>';
+    });
     if (room.shots.length) h += '<div class="acts"><button class="btn sm dim" data-bact="reset">Javítások törlése ebben a helyiségben</button></div>';
     side.innerHTML = h;
   }
@@ -713,6 +719,39 @@
     else if (a === 'stand') { ui.mode = 'stand'; ui.point = t.dataset.p; ui.yaw = +t.dataset.deg; ui.pitch = 0; boxRedraw(); }
     else if (a === 'hi') { const i = +t.dataset.i; ui.hi = ui.hi === i ? null : i; boxRedraw(true); }
     else if (a === 'reset') { const r = boxRoom(); if (r) boxSet(b => { if (b.h) delete b.h[r.id]; if (b.shots) r.shots.forEach(x => delete b.shots[x.key]); }); }
+    else if (a === 'align') boxAlign(t.dataset.p);
+    else if (a === 'pano') boxPano(t.dataset.p);
+  }
+  // ---- Körkép (dev line skcam, stage K4): lib/pano.js on the attached Fotópont photos ------------------------------
+  const PA = window.VRGPano;
+  const pixelsOf = cv => ({ w: cv.width, h: cv.height, data: cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data });
+  function panoShots(point) {
+    const r = boxRoom(), shots = r ? r.shots.filter(x => x.point === point) : [], imgs = {};
+    shots.forEach(x => { const c = boxImg.get(base(x.file)); if (c) imgs[x.file] = pixelsOf(c); });
+    return { shots, imgs };
+  }
+  function boxAlign(point) {
+    const { shots, imgs } = panoShots(point);
+    const al = PA.align(shots, imgs);
+    ui.panoMsg[point] = PA.report(al, k => sideLabel(+k.split('/')[1]));
+    if (al.pairs.some(p => p.ok)) boxSet(b => { const nb = PA.applyFixes(b, al.fixes); Object.keys(b).forEach(k => delete b[k]); Object.assign(b, nb); });
+    else boxRedraw(true);
+  }
+  function boxPano(point) {
+    const { shots, imgs } = panoShots(point);
+    if (!Object.keys(imgs).length) { ui.panoMsg[point] = 'Ehhez a ponthoz nincs csatolt fotó.'; boxRedraw(true); return; }
+    ui.panoMsg[point] = 'Készül a 360° kép…'; boxRedraw(true);
+    setTimeout(() => {
+      const W = 4096, H = 2048, p = PA.equirect(shots, imgs, W, H), c = document.createElement('canvas');
+      c.width = W; c.height = H; const g = c.getContext('2d'), im = g.createImageData(W, H); im.data.set(p.data); g.putImageData(im, 0, 0);
+      c.toBlob(b => b.arrayBuffer().then(buf => {
+        const out = new Blob([PA.withXmp(new Uint8Array(buf), PA.xmp(W, H, 0))], { type: 'image/jpeg' }), name = stem() + '_' + point + '_360.jpg';
+        try { const u = URL.createObjectURL(out), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); } catch (e) { /* tests */ }
+        ui.lastPano = { name, bytes: out.size, covered: p.covered };
+        ui.panoMsg[point] = '360° kép: ' + name + ' (' + Math.round(out.size / 1024) + ' kB, a gömb ' + Math.round(p.covered * 100) + ' %-a képpel).';
+        boxRedraw(true);
+      }), 'image/jpeg', 0.9);
+    }, 30);
   }
   document.addEventListener('click', e => { const t = e.target.closest('#main [data-bact="open"]'); if (t && S) boxOpen(); });
 

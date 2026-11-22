@@ -91,7 +91,7 @@ object RoomBox {
      * The input of roombox-phone.js: the plan in mm (floors and photo points as the Planner package has them), the
      * corrections, the level's height, the photos as data: URLs under their board names ([images]), and the time.
      */
-    fun input(s: Sketch, n: Norm, images: Map<String, String>, now: Long = System.currentTimeMillis()): JSONObject {
+    fun input(s: Sketch, n: Norm, images: Map<String, String>, now: Long = System.currentTimeMillis(), pano: Boolean = true): JSONObject {
         val plan = PlannerExport.build(s, n, now).getJSONObject("plan")
         return JSONObject()
             .put("name", s.name.ifBlank { "Vázlat" })
@@ -102,5 +102,6 @@ object RoomBox {
             .put("level", JSONObject().put("id", s.level.id).put("heightMm", s.level.heightMm))
             .put("images", JSONObject().also { j -> images.toSortedMap().forEach { (k, v) -> j.put(k, v) } })
             .put("now", now)
+            .put("pano", pano)          // skcam K4: the Körkép buttons, behind vazlat.pano
     }
 }
