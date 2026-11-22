@@ -892,21 +892,40 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     ignores unknown keys, so a survey re-saved on the phone drops `box` until K1b keeps it. Rejected: **B** a separate
     side file (one more file to carry); **C** browser storage only (lost with the browser, not in the survey).
 
-- **D-137 … D-139 · VRG Időjárás on the phone (M44), 2026-11-22.** Asked as A/B/C in the session; answered "1A 2A 3B"
+- **D-137 … D-141 · Szobadoboz a telefonon (M59, dev line skcam K1b), 2026-11-22.** Taken for the Founder while
+  building ("start K1b, the room box on the phone"); each can be revisited.
+  - **D-137 · How the phone draws the box.** Chosen **A**: the Desktop's own `roombox.js` + `roombox-gl.js` in a WebView,
+    with a touch UI file of its own (`roombox-phone.js`), as the jegyzőkönyv runs `report.js` (D-120). Rejected: **B** a
+    native OpenGL / Compose renderer (a second copy of the projection to keep equal); **C** the box on the PC only.
+  - **D-138 · The `box` key on the phone.** Chosen **A**: kept as the cleaned JSON object the viewer writes
+    (`RoomBox.clean`), read and written by `SketchJson`, so the Desktop's and the phone's corrections are one key.
+    Closes D-136's known gap. Rejected: **B** a typed Kotlin model (more code for data only the viewer edits); **C**
+    dropping it on the phone (as before).
+  - **D-139 · The lens per Fotópont shot.** Chosen **A**: the in-app camera stores a 35 mm equivalent on each Fotópont
+    shot (Camera2 focal length and sensor size × the zoom ratio); `roombox.js` uses it after a typed value and before
+    EXIF. Rejected: **B** EXIF only (CameraX writes the real focal length, not the equivalent, and the camera app may
+    write neither); **C** the user picks the lens by hand.
+  - **D-140 · Fotópont opens wide.** Chosen **A**: with `vazlat.roombox` on, a Fotópont shot opens at the camera's
+    widest zoom (0.5× with an ultrawide), so four shots reach the corners; pinch still changes it. Rejected: **B** its
+    own registry switch (one more switch for one behaviour of the box); **C** always 1× (the corner gap, research §1.1).
+  - **D-141 · Where the box opens.** Chosen **A**: Rendezés → ⬚ Szobadoboz, where the plan is solved in mm. Rejected:
+    **B** the Fotópont wheel (the plan may not be solved there); **C** a front of its own (the fronts are the survey's
+    capture places).
+- **D-142 … D-144 · VRG Időjárás on the phone (M44), 2026-11-22.** Asked as A/B/C in the session; answered "1A 2A 3B"
   (the recommendations), relayed from the Founder's coordinating session.
-  - **D-137 · The form: a native screen.** Chosen **A**: "can we work outside today" per activity, with the reasons and
+  - **D-142 · The form: a native screen.** Chosen **A**: "can we work outside today" per activity, with the reasons and
     the longest calm window, the official warnings, the fused 72 hours with their spread, a home-card line, and the
     PC's page one tap away through the relay. The fusion and the rules are ported to a pure-Kotlin `weather-core`,
     and `Weather/config` is bundled as exact copies under a test. Rejected: **B** the PC page only (it needs
     `serve.js` and its database, so it is useless on a site away from the PC); **C** a notification only (no screen;
     it can come later on top of A).
-  - **D-138 · Sources the phone calls itself: keyless and free for a company.** Chosen **A**: MET Norway, DWD MOSMIX
+  - **D-143 · Sources the phone calls itself: keyless and free for a company.** Chosen **A**: MET Norway, DWD MOSMIX
     (nearest station within 45 km) and MeteoAlarm. Open-Meteo stays on the PC: a company may use it only with a paid
     key, which would be a secret on the phone. MET Norway's terms want a contact in the User-Agent. It is a field
     under ⚙ ("Kapcsolat (MET Norway)") kept on the phone only, and the source waits until it is filled in. Nothing is
     committed. Rejected: **B** adding the HungaroMet 10-minute measurements (a zipped CSV every 10 minutes on mobile
     data); **C** MET Norway and MeteoAlarm only (one forecast, so the confidence always reads "egy").
-  - **D-139 · Location: named places and "Itt" on a tap.** Chosen **B**: the towns of `places.json`, saved places,
+  - **D-144 · Location: named places and "Itt" on a tap.** Chosen **B**: the towns of `places.json`, saved places,
     and ◎ Itt. Itt reads one position on the tap, rounds it to two decimals (~1 km) and uses it only as the forecast
     query's coordinates, in the D-31 spirit. The county for the warnings is taken from the nearest approximate county
     centre (Budapest within 12 km). The PC Map's job sites stay on the PC. Rejected: **A** no GPS; **C** automatic

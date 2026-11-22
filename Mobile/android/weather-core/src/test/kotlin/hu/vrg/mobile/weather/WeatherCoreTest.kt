@@ -38,7 +38,7 @@ class WeatherCoreTest {
         assertEquals(1.5, Config.settings.tolerance["t2m"])
         assertTrue(Config.places.size >= 7)
         assertTrue(Config.source("dwd-mosmix").stations.any { it.id == "12843" })
-        for (id in Config.PHONE_SOURCES) assertEquals("yes", Config.source(id).commercial, "$id must be free for a company (D-138)")
+        for (id in Config.PHONE_SOURCES) assertEquals("yes", Config.source(id).commercial, "$id must be free for a company (D-143)")
         // every rule kind is one the phone evaluates or knowingly skips
         for (r in Config.rules.rules) assertTrue(r.kind in setOf("hourly", "warning", "heatwave") + Rules.SKIPPED_KINDS, r.id)
         // every variable a rule tests is a canonical one

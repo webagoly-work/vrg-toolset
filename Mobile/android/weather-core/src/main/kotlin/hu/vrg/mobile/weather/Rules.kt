@@ -140,7 +140,7 @@ object Rules {
     // ------------------------------------------------------------ evaluate
     /**
      * Every rule over the fused hours of [place] (from the next hour to the horizon) and its warnings, for all four
-     * activities (D-137: the phone answers for every kind of work). Findings of one rule, activity and local start day
+     * activities (D-142: the phone answers for every kind of work). Findings of one rule, activity and local start day
      * are one, as the PC's alert fingerprint makes them.
      */
     fun evaluate(place: Place, hours: List<Hour>, warnings: List<Warning>, set: RuleSet = Config.rules, s: Settings = Config.settings,

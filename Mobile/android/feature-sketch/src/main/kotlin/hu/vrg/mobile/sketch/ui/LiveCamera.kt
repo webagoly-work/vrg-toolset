@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -14,6 +15,8 @@ import android.os.Build
 import android.view.OrientationEventListener
 import android.view.Surface
 import androidx.activity.compose.BackHandler
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -72,6 +75,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.CameraFeatures
 import hu.vrg.mobile.sketch.CameraLive
+import hu.vrg.mobile.sketch.RoomBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -97,12 +101,13 @@ internal object LiveFallback {
 
 /**
  * The in-app camera over the editor. [onShot] files a photo that is in [dir] (and returns its capture id, null for a
- * Fotópont photo), [onFail] hands the request to the camera app, [onClose] closes the camera with the number taken.
+ * Fotópont photo) with the lens it was taken with (a 35 mm equivalent, for a Fotópont photo, skcam K1b), [onFail] hands
+ * the request to the camera app, [onClose] closes the camera with the number taken.
  */
 @Composable
 internal fun LiveCamera(
     st: EditorState, req: CameraReq, dir: File,
-    onShot: (CameraReq, String) -> String?,
+    onShot: (CameraReq, String, Double?) -> String?,
     onFail: (CameraReq, String) -> Unit,
     onClose: (Int) -> Unit,
 ) {
@@ -188,6 +193,22 @@ internal fun LiveCamera(
     // GPS into the EXIF only with the permission already granted (D-102)
     val gpsOn = cam.on(CameraFeatures.LIVE_GPS)
     LaunchedEffect(gpsOn) { location = if (gpsOn) lastLocation(ctx) else null }
+    // skcam K1b (WP M59): with the Szobadoboz on, Fotópont opens at the widest zoom (0.5× on a phone with an ultrawide),
+    // so four shots reach the room's corners; zoomState arrives a moment after binding
+    val boxOn = FeaturePrefs.on(RoomBox.FEATURE)
+    LaunchedEffect(camera) {
+        val c = camera ?: return@LaunchedEffect
+        if (!photoPoint || !boxOn) return@LaunchedEffect
+        repeat(20) {
+            val zs = c.cameraInfo.zoomState.value
+            if (zs != null) {
+                val z = RoomBox.fotopontZoom(zs.minZoomRatio, true)
+                if (z != zoom) { zoom = z; runCatching { c.cameraControl.setZoomRatio(z) } }
+                return@LaunchedEffect
+            }
+            delay(100)
+        }
+    }
     val torchOn = cam.on(CameraFeatures.TORCH)
     LaunchedEffect(torch, camera) { camera?.let { c -> if (c.cameraInfo.hasFlashUnit()) c.cameraControl.enableTorch(torch && torchOn) } }
     LaunchedEffect(flashAt) { if (flashAt > 0) { flashing = true; delay(90); flashing = false } }
@@ -203,13 +224,14 @@ internal fun LiveCamera(
         val meta = ImageCapture.Metadata()
         if (gpsOn) location?.let { meta.location = it }
         val opts = ImageCapture.OutputFileOptions.Builder(f).setMetadata(meta).build()
+        val lens = if (photoPoint) camera?.let { c -> lensF35(c, c.cameraInfo.zoomState.value?.zoomRatio ?: zoom) } else null
         flashAt = System.currentTimeMillis()
         capture.takePicture(opts, ContextCompat.getMainExecutor(ctx), object : ImageCapture.OnImageSavedCallback {
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                 busy = false
                 if (f.length() <= 0) { f.delete(); st.note = "A fotó üres lett, próbáld újra."; return }
                 errors = 0
-                val id = onShot(r, name)
+                val id = onShot(r, name, lens)
                 if (photoPoint) { onClose(1); return }
                 if (id != null) series = CameraLive.took(st.kit, st.sketch, series, id)
                 if (!CameraLive.staysOpen(cam.on(CameraFeatures.SERIES), st.series, photoPoint)) close()
@@ -317,7 +339,7 @@ internal fun LiveCamera(
                     Text(if (item != null) "$n/${item.need}" else "$n", style = Melyviz.readout.copy(color = Color.White))
                 }
                 Spacer(Modifier.weight(1f))
-                if (zoom > 1.01f) Text("%.1f×".format(zoom), style = Melyviz.readout.copy(color = Color.White))
+                if (zoom > 1.01f || zoom < 0.99f) Text("%.1f×".format(zoom), style = Melyviz.readout.copy(color = Color.White))
                 if (torchOn && camera?.cameraInfo?.hasFlashUnit() == true)
                     RoundKey("ϟ", if (torch) Color(0xFFFFD54F) else Color.White, torch) { torch = !torch }
                 if (cam.on(CameraFeatures.GRID)) RoundKey("▦", Color.White, gridShown) { gridShown = !gridShown }
@@ -412,3 +434,15 @@ private suspend fun lastLocation(ctx: Context): Location? = withContext(Dispatch
             .maxByOrNull { it.time }
     } catch (e: Exception) { null }
 }
+
+/**
+ * The lens of the bound camera as a 35 mm-equivalent focal length at [zoom] (skcam K1b): Camera2's focal length and
+ * sensor size through CameraX's interop, the maths in sketch-core RoomBox.f35. Null when the camera does not say.
+ */
+@androidx.annotation.OptIn(markerClass = [ExperimentalCamera2Interop::class])
+private fun lensF35(c: Camera, zoom: Float): Double? = runCatching {
+    val info = Camera2CameraInfo.from(c.cameraInfo)
+    val focal = info.getCameraCharacteristic(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)?.firstOrNull()
+    val sensor = info.getCameraCharacteristic(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)
+    RoomBox.f35(focal, sensor?.width, sensor?.height, zoom)
+}.getOrNull()

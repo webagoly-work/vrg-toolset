@@ -51,7 +51,7 @@ data class Rule(
 data class RuleSet(val reviewedOn: String, val activities: List<Activity>, val rules: List<Rule>)
 
 object Config {
-    /** The phone's sources: keyless and allowed for a company (D-138); Open-Meteo stays on the PC (it needs a paid key). */
+    /** The phone's sources: keyless and allowed for a company (D-143); Open-Meteo stays on the PC (it needs a paid key). */
     val PHONE_SOURCES = listOf("met-no", "dwd-mosmix", "meteoalarm")
 
     fun text(name: String): String =
@@ -149,7 +149,7 @@ object Geo {
         Triple("Tolna", 46.50, 18.55), Triple("Vas", 47.10, 16.75), Triple("Veszprém", 47.10, 17.60), Triple("Zala", 46.75, 16.90),
     )
 
-    /** GPS rounded to two decimals (about 1 km) before it is used anywhere (D-139). */
+    /** GPS rounded to two decimals (about 1 km) before it is used anywhere (D-144). */
     fun round2(x: Double): Double = Math.round(x * 100) / 100.0
 }
 

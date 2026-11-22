@@ -58,7 +58,7 @@ internal class WeatherData(private val ctx: Context) {
         get() = prefs.getString("place", "budapest") ?: "budapest"
         set(v) { prefs.edit().putString("place", v).apply() }
 
-    /** The last "Itt" position, already rounded (D-139), or null. */
+    /** The last "Itt" position, already rounded (D-144), or null. */
     var here: Place?
         get() = prefs.getString("here", null)?.let { runCatching { placeOf(JSONObject(it)) }.getOrNull() }
         set(p) { prefs.edit().putString("here", p?.let { json(it).toString() }).apply() }
@@ -149,7 +149,7 @@ internal class WeatherData(private val ctx: Context) {
         val issues = ArrayList<Issue>(); val states = ArrayList<SourceState>()
         var warnings: List<Warning> = emptyList()
 
-        // MET Norway: waits until the contact is set (its terms; D-138)
+        // MET Norway: waits until the contact is set (its terms; D-143)
         val met = Config.source("met-no")
         val ua = MetNo.userAgent(contact)
         if (ua == null) states += SourceState(met.id, met.name, met.attribution, "vár: add meg a Kapcsolatot (⚙)", false)

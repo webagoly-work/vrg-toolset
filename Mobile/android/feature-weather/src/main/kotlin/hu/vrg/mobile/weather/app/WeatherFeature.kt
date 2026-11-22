@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.format.DateTimeFormatter
 
-// VRG Időjárás (WP M44, D-137 … D-139): "can we work outside today" per activity, the fused 72 hours with their spread,
+// VRG Időjárás (WP M44, D-142 … D-144): "can we work outside today" per activity, the fused 72 hours with their spread,
 // the official warnings of the place's county, the sources with their attribution; the PC's full page through the relay.
 
 object WeatherFeature : VrgFeature {
@@ -288,7 +288,7 @@ object WeatherFeature : VrgFeature {
             modifier = Modifier.padding(top = 6.dp))
     }
 
-    // ------------------------------------------------------------ the phone's position, once, on a tap (D-139)
+    // ------------------------------------------------------------ the phone's position, once, on a tap (D-144)
     @SuppressLint("MissingPermission")
     private fun locateHere(ctx: Context, host: FeatureHost, done: () -> Unit) {
         val lm = ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager

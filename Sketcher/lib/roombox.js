@@ -179,9 +179,12 @@
       pts.forEach(p => (p.shots || []).forEach(s => {
         if (shots.length >= MAX_SHOTS) return;
         const k = keyOf(p.id, s.deg), fix = (B.shots || {})[k] || {}, m = meta && meta(s.file) || null;
-        const f35 = fix.f35 > 0 ? fix.f35 : m && m.f35 > 0 ? m.f35 : DEFAULTS.f35;
+        // the field of view: typed here (kezi) > the lens the phone's in-app camera stored with the shot (lencse, K1b) >
+        // the photo's EXIF (exif) > a phone's main lens (alap)
+        const lens = +s.f35 > 0 ? +s.f35 : 0;
+        const f35 = fix.f35 > 0 ? fix.f35 : lens || (m && m.f35 > 0 ? m.f35 : DEFAULTS.f35);
         const fv = fov(f35, m && m.w, m && m.h), yaw = s.deg + (+fix.yaw || 0), pitch = +fix.pitch || 0;
-        shots.push({ key: k, point: p.id, deg: s.deg, side: s.side || '', file: s.file, f35, f35src: fix.f35 > 0 ? 'kezi' : m && m.f35 > 0 ? 'exif' : 'alap',
+        shots.push({ key: k, point: p.id, deg: s.deg, side: s.side || '', file: s.file, f35, f35src: fix.f35 > 0 ? 'kezi' : lens ? 'lencse' : m && m.f35 > 0 ? 'exif' : 'alap',
           yaw, pitch, fix: { yaw: +fix.yaw || 0, pitch, f35: fix.f35 > 0 ? fix.f35 : 0 }, pos: [p.x, eye, p.y], basis: basis(yaw, pitch), tanH: fv.tanH, tanV: fv.tanV, fovH: fv.h, fovV: fv.v,
           plan: [p.x, p.y] });
       }));

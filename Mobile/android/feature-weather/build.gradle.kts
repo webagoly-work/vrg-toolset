@@ -1,5 +1,5 @@
-// VRG Időjárás (WP M44) as a VRG Mobile feature module: a native screen over weather-core (D-137). The phone calls
-// MET Norway, DWD MOSMIX and MeteoAlarm itself (D-138); "Itt" reads the GPS once on a tap, rounded to ~1 km (D-139).
+// VRG Időjárás (WP M44) as a VRG Mobile feature module: a native screen over weather-core (D-142). The phone calls
+// MET Norway, DWD MOSMIX and MeteoAlarm itself (D-143); "Itt" reads the GPS once on a tap, rounded to ~1 km (D-144).
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")

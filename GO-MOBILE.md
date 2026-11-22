@@ -102,7 +102,7 @@ What changes locally compared with the cloud:
 - **M43** VRG Térkép built 2026-11-20 (cloud session, D-48 = A, D-49 = A + B + C), **BETA**: `docs/mobile/WP/M43.md` →
   "Telefonon ellenőrizni" (12 steps; 6–8 need START M and the relay with `--ports`). `feature-map`, rules in
   `kit-core/MapPhone.kt`.
-- **M44** VRG Időjárás built 2026-11-22 (cloud session, D-137 = A, D-138 = A, D-139 = B, answered for the Founder),
+- **M44** VRG Időjárás built 2026-11-22 (cloud session, D-142 = A, D-143 = A, D-144 = B, answered for the Founder),
   **BETA**: `docs/mobile/WP/M44.md` → "Telefonon ellenőrizni" (14 steps). `feature-weather` + `weather-core` (the fusion
   and the field rules ported from `Weather/lib`; `Weather/config/*.json` bundled, a test fails when they drift: copy
   them over after changing a limit). MET Norway waits until ⚙ → Kapcsolat is filled in.

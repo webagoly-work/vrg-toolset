@@ -594,6 +594,52 @@
      ]
     },
     {
+     "n": 59,
+     "title": "M59 · Szobadoboz a telefonon (in `sketch`): the room box on the phone, the lens per Fotópont shot",
+     "items": [
+      {
+       "id": "M59.1",
+       "text": "⚙ Funkciók → Vázlat: a **Szobadoboz (3D)** legyen bekapcsolva; a ⚙ Kamera funkciók között a Saját kamera is."
+      },
+      {
+       "id": "M59.2",
+       "text": "Egy szobában tegyél le egy Fotópontot, koppints rá: a kamera a legszélesebb látószöggel nyíljon (ha van 0,5×, a kijelzőn 0,5× látszik)."
+      },
+      {
+       "id": "M59.3",
+       "text": "Készítsd el mind a négy irányt (É, K, D, Ny)."
+      },
+      {
+       "id": "M59.4",
+       "text": "Rendezés: a sor végén a **⬚ Szobadoboz** gomb; koppints rá."
+      },
+      {
+       "id": "M59.5",
+       "text": "Felülről: egy ujjal forgasd, két ujjal nagyíts; a falakon a fotóid legyenek, a fotópont kék jellel."
+      },
+      {
+       "id": "M59.6",
+       "text": "A pontból (vagy egy kép 👁 gombja): nézz körbe egy ujjal; a képek illeszkedjenek a falakhoz."
+      },
+      {
+       "id": "M59.7",
+       "text": "Egy képnél a Látószög forrása „a kamerától” legyen (a Saját kamerával készült fotónál)."
+      },
+      {
+       "id": "M59.8",
+       "text": "Írd át a belmagasságot, állíts az Irány csúszkán, majd ✓ Kész: a felmérés elmentődik; újranyitva a javítások megvannak."
+      },
+      {
+       "id": "M59.9",
+       "text": "A felmérést küldd a PC-re (Rendezés → Küldés a Plannerbe), nyisd meg az Asztal Sketcher oldalán: a Szobadoboz ugyanazokat a javításokat mutassa."
+      },
+      {
+       "id": "M59.10",
+       "text": "⚙ Funkciók → Szobadoboz (3D) ki: a Rendezés gomb eltűnik, és a Fotópont 1×-es nagyítással nyílik."
+      }
+     ]
+    },
+    {
      "n": 30,
      "title": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
      "items": [
@@ -762,7 +808,7 @@
      ]
     }
    ],
-   "count": 77
+   "count": 87
   }
  },
  "cross": [

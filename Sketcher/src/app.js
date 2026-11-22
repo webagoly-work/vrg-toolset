@@ -646,7 +646,7 @@
     if (!room.shots.length) h += '<p class="small muted">Ebben a helyiségben nincs fotópont: a doboz kép nélkül, a méretekből áll.</p>';
     else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
     room.shots.forEach((x, i) => {
-      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', alap: 'alapérték' }[x.f35src];
+      const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', lencse: 'a kamerától', alap: 'alapérték' }[x.f35src];
       h += '<div class="bx-shot' + (ui.hi === i ? ' hi' : '') + '" data-key="' + esc(x.key) + '"><div class="row"><button class="btn sm" data-bact="hi" data-i="' + i + '" title="Kiemelés a 3D nézetben">' + esc(x.side || x.deg + '°') + '</button>' +
         '<span class="small ' + (img ? '' : 'muted') + '">' + esc(base(x.file)) + (img ? '' : ' (nincs csatolva)') + '</span>' +
         '<button class="btn sm" data-bact="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" title="Nézd innen">👁</button></div>' +
