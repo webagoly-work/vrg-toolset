@@ -50,6 +50,7 @@ import hu.vrg.mobile.kit.ui.VrgToggle
 import hu.vrg.mobile.pager.Proximity
 import hu.vrg.mobile.tag.AdKind
 import hu.vrg.mobile.tag.BindPick
+import hu.vrg.mobile.tag.DiagDevice
 import hu.vrg.mobile.tag.HEARD_MS
 import hu.vrg.mobile.tag.LeftBehind
 import hu.vrg.mobile.tag.RingResult
@@ -310,6 +311,11 @@ object TagFeature : VrgFeature {
             }
         }
 
+        VrgSectionTitle("Diagnosztika")
+        Text("Csak olvas: a szolgáltatások listája, a gyártó, a modell, a firmware, az elem és a valószínű chip. " +
+            "Semmit nem ír az eszközre.", style = Melyviz.small)
+        DiagControls(DiagDevice(mine.btName ?: mine.name, mine.address, mine.type == TagType.WATCH, diagType(mine.type)))
+
         VrgSectionTitle("Részletek")
         Text("cím: ${mine.address}" + (if (mine.pastAddresses.isNotEmpty()) " · korábbi: ${mine.pastAddresses.size}" else ""), style = Melyviz.readout)
         Text("1 m-es szint: ${mine.tx1m} dBm · hang: ${mine.sound?.hu ?: "még nem szólt"}", style = Melyviz.readout)
@@ -380,6 +386,7 @@ object TagFeature : VrgFeature {
                     style = Melyviz.readout)
                 if (open == s.address) {
                     RingControls(s)
+                    DiagControls(DiagDevice(null, s.address, false, diagType(s.ad.type)))
                     if (s.address != mineAddr) Row(Modifier.padding(top = 4.dp)) {
                         VrgChip("Ez az enyém") {
                             Tags.book.bind(s, Tags.book.mine?.name ?: when {
@@ -464,6 +471,7 @@ object TagFeature : VrgFeature {
                     Tags.saveMine(ctx); Tags.bump()
                 }
             }
+            DiagControls(DiagDevice(p.name, p.address, true, if (p.majorClass == 0x0700) "watch" else "other", p.majorClass))
         }
     }
 
@@ -497,6 +505,50 @@ object TagFeature : VrgFeature {
         text?.let { Text(it, style = Melyviz.small) }
         Text("A Q71 saját „telefonkeresője” csak a FunDo appal működik: a protokollja nem nyilvános, ezért innen nem " +
             "érhető el. Az óra lemaradását a kapcsolat megszakadása jelzi.", style = Melyviz.small.copy(color = Melyviz.faint))
+    }
+
+    // ---- Diagnosztika (D-162): read-only GATT inventory, shared as a vrg.device-diag report ---------------------
+
+    private fun diagType(t: TagType): String = when (t) {
+        TagType.ITAG -> "itag"
+        TagType.WATCH -> "watch"
+        TagType.UNKNOWN -> "other"
+        else -> "findmy"
+    }
+
+    @Composable
+    private fun DiagControls(dev: DiagDevice) {
+        val ctx = LocalContext.current
+        val st by DiagScan.state.collectAsStateWithLifecycle()
+        val mineHere = when (val x = st) {
+            is DiagScan.State.Running -> x.address == dev.address
+            is DiagScan.State.Done -> x.address == dev.address
+            is DiagScan.State.Failed -> x.address == dev.address
+            DiagScan.State.Idle -> false
+        }
+        Row(Modifier.padding(top = 4.dp)) {
+            VrgChip(if (mineHere && st is DiagScan.State.Running) "🔍 …" else "🔍 Diagnosztika", selected = mineHere) {
+                if (Tags.allowed(ctx)) DiagScan.run(ctx, dev)
+            }
+        }
+        if (!mineHere) return
+        when (val x = st) {
+            is DiagScan.State.Running -> Text(x.step, style = Melyviz.small)
+            is DiagScan.State.Failed -> Text(x.why, style = Melyviz.small.copy(color = Melyviz.coral))
+            is DiagScan.State.Done -> Column {
+                Text(x.summary, style = Melyviz.label.copy(color = Melyviz.glow))
+                Text("A teljes lista a Naplóban (tag). A Megosztás a jelentést küldi (a Data Vault Eszközeim lapja beilleszti).",
+                    style = Melyviz.small)
+                Row(Modifier.padding(top = 4.dp)) {
+                    VrgChip("Megosztás", selected = true) { DiagScan.share(ctx, x.json, dev.name) }
+                    Spacer(Modifier.width(6.dp))
+                    VrgChip("Bezár") { DiagScan.reset() }
+                }
+            }
+            DiagScan.State.Idle -> {}
+        }
+        if (dev.type == "itag") Text("iTag: a diagnosztika utáni bontást elhagyásnak veheti és csipoghat; a gombja némítja.",
+            style = Melyviz.small.copy(color = Melyviz.faint))
     }
 
     // ---- iTag: the held link, battery, Telefonkereső ---------------------------------------------------------

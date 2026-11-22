@@ -13,4 +13,10 @@
     <queries>
         <intent><action android:name="android.speech.RecognitionService" /></intent>
     </queries>
+    <!-- skcam K6 (WP M64): the Google AR csomag. "optional": the app installs and runs on every phone; Google Play
+         Services for AR is asked for only when the user switches the pack on and opens the AR meter. -->
+    <uses-feature android:name="android.hardware.camera.ar" android:required="false" />
+    <application>
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+    </application>
 </manifest>

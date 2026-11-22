@@ -264,6 +264,8 @@ data class Sketch(
     val box: String? = null,
     /** skcam K3 (WP M60): the Síkmérés records by photo, as the JSON object text plane.js writes (Planes.kt). */
     val planes: String? = null,
+    /** skcam K6 (WP M64): the Google AR csomag's distances and its saved scans / recordings (Ar.kt). */
+    val ar: String? = null,
 ) {
     /** The next id with [prefix], and the sketch with its counter moved on. */
     fun nextId(prefix: String): Pair<String, Sketch> = (prefix + (seq + 1)) to copy(seq = seq + 1)

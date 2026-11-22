@@ -63,7 +63,7 @@ internal fun Field(value: String, onChange: (String) -> Unit, label: String, num
 @Composable
 internal fun TextDialog(
     title: String, label: String, initial: String, onDismiss: () -> Unit,
-    number: Boolean = false, lines: Int = 1, onDelete: (() -> Unit)? = null, onOk: (String) -> Unit,
+    number: Boolean = false, lines: Int = 1, onDelete: (() -> Unit)? = null, extra: Pair<String, () -> Unit>? = null, onOk: (String) -> Unit,
 ) {
     var v by remember { mutableStateOf(initial) }
     AlertDialog(
@@ -72,6 +72,7 @@ internal fun TextDialog(
         text = { Field(v, { v = it }, label, number, lines) },
         confirmButton = { TextButton({ onOk(v) }) { Text("Rendben", color = Melyviz.glow) } },
         dismissButton = {
+            if (extra != null) TextButton(extra.second) { Text(extra.first, color = Melyviz.current) }
             if (onDelete != null) TextButton(onDelete) { Text("Törlés", color = Melyviz.coral) }
             TextButton(onDismiss) { Text("Mégse", color = Melyviz.muted) }
         },
@@ -118,7 +119,8 @@ internal fun SketchDialogs(st: EditorState) {
             val nr = st.norm.room(a.room)
             val guess = nr?.takeIf { it.poly.size == r.poly.size }?.let { val (p, q) = Geo.edge(it.poly, a.edge); "≈ " + fmt(p.dist(q)) + " mm" } ?: ""
             TextDialog("${roomTitle(r.name, r.kinds)} · fal hossza (mm)", if (guess.isEmpty()) "mm" else "most: $guess", old?.mm?.toString() ?: "", close,
-                number = true, onDelete = old?.let { { st.setMeasure(a.room, MeasureKind.EDGE, 0, a.edge); close() } }) { v ->
+                number = true, onDelete = old?.let { { st.setMeasure(a.room, MeasureKind.EDGE, 0, a.edge); close() } },
+                extra = if (feat(hu.vrg.mobile.sketch.Ar.FEATURE)) ("📐 AR" to { st.ask = Ask.Ar(a.room, a.edge) }) else null) { v ->   // skcam K6
                 st.setMeasure(a.room, MeasureKind.EDGE, v.toIntOrNull() ?: 0, a.edge); close()
             }
         }
@@ -256,6 +258,7 @@ internal fun SketchDialogs(st: EditorState) {
         is Ask.Purposes -> PurposePicker(st, close)
         is Ask.CaptureView -> CaptureViewer(st, a.id, close)
         is Ask.Measure -> PlaneDialog(st, a.key, a.file, a.title) { st.ask = a.back }   // skcam K3: back to the photo
+        is Ask.Ar -> ArDialog(st, a.room, a.edge, close)                               // skcam K6: the Google AR csomag
         is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
         is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
         is Ask.PairPick -> PairPickDialog(st, a.id, close)
