@@ -49,6 +49,7 @@ object Features {
         F("vazlat.board", "vazlat", "▣", "Elosztó"),
         F("vazlat.route", "vazlat", "〰", "Nyomvonal"),
         F("vazlat.photo", "vazlat", "◉", "Fotópont"),
+        F("vazlat.roombox", "vazlat", "⬚", "Szobadoboz (3D)"),   // skcam K1: the Desktop page draws it; the phone has the switch only
         F("vazlat.wheels", "vazlat", "◎", "Tartásra kerék"),
         F("vazlat.drawtune", "vazlat", "⚙", "Rajz-hangolás"),
         F("vazlat.line_close", "vazlat", "⌇", "Vonal: Kész zár", listOf("vazlat.line", "vazlat.drawtune")),
