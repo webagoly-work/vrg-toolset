@@ -16,6 +16,7 @@ kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarg
 dependencies {
     api(project(":pager-core"))
     testImplementation(kotlin("test"))
+    testImplementation("org.json:json:20240303")   // DiagTest parses the report it writes
 }
 
 tasks.test { useJUnitPlatform() }

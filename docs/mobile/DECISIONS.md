@@ -970,6 +970,18 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   offers for any paired device — the connection as presence (Ottfelejtés, last place), a tone over hands-free audio
   (SCO) as Csipogtatás, and its BLE side by name for the distance. Chosen from the phone's paired list. Works the same
   for earbuds or a speaker. Rejected: sending guessed FunDo bytes to the watch. Details: `WP/M61.md`.
+- **D-162 · Tárgykereső: Diagnosztika is read-only (M61), 2026-11-22.** The Founder asked to debug the Q71 and update its
+  firmware. Not flashing a closed firmware (a wrong image bricks the watch; the update channel is FunDo's). Built
+  instead, as step 1 of a plan the Founder approved ("start steps 1 and 2"): a read-only GATT inventory — every service
+  and characteristic listed, only standard ones read (names, Device Information, battery; never a vendor characteristic
+  or a serial number), a chip guess from the maker's update service — shared as `vrg.device-diag` v1, which the Data
+  Vault's Eszközeim keeps (the Founder's "two parallel versions": work here, personal in the vault). Details: `WP/M61.md`.
+- **D-163 · App archive in two versions, one manifest (M61), 2026-11-22.** Step 2 of the same plan: an exact copy of an
+  installed app (first FunDo Pro) for legacy compatibility. Work: `Mobile/tools/app-archive.js` (START L → P) into
+  `{vrg}\Backup\installers\android`, never git. Personal: the Data Vault's `tools/apps.js`, manifest in git, APKs on the
+  PC. One format, `vrg.app-archive` v1. Only apps the Founder installed, pulled from the Founder's own phone; never a
+  mirror-site download, never redistributed, FunDo's code never decompiled (a companion of our own comes from a capture
+  of the watch's traffic, clean-room). Details: `WP/M61.md`.
 
 - **D-153 … D-156 · Körkép (M62, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
   each can be revisited.
