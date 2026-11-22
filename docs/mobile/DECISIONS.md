@@ -1038,6 +1038,19 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     anchors, so they follow ARCore's corrections. Rejected: **B** tapping anywhere on the screen (the finger hides the
     spot); **C** planes only (no corners, no furniture).
 
+- **D-168 … D-171 · Óra (M65), 2026-11-22.** Answered by the Founder, each the recommended option (the other options
+  were not written down). The background: the Q71's protocol was decoded from Bluetooth captures and FunDo's
+  `libCommand.so` (`notes/q71-watch`, outside git), and the watch turned out **not bonded**: FunDo keeps an unbonded
+  LE link to `Q71_LE`.
+  - **D-168 · FunDo.** Chosen **A**: VRG Mobile takes the watch over while it is linked; FunDo is stopped or
+    uninstalled. Both at once would steal each other's 2AA0 reads after the doorbell.
+  - **D-169 · Home.** Chosen **B**: a new tile **Óra** (`watch`, page 7 next to Tárgykereső). Tárgykereső's
+    paired-device section links to it for the Q71.
+  - **D-170 · First round.** Chosen **A**: **Q0–Q3**: the kct-core codec, the link, the basics (time, info, find watch,
+    steps) and find phone (a GATT server on the phone). Q8 (the Diagnosztika gap) may ride along; it did not in round 1.
+  - **D-171 · Watch faces.** Chosen **C**: made on the PC first (`dial-bin.js` gets a writer and a START entry), the
+    phone only uploads; the in-app Számlapszerkesztő (Q7) comes later.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

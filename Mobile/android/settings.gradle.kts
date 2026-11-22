@@ -23,6 +23,7 @@ rootProject.name = "VRG-Mobile"
 
 // The pure Kotlin modules: build and test on any JDK, no Android SDK.
 include(":kit-core", ":airdeck-core", ":relay-core", ":sketch-core", ":pager-core", ":tag-core")
+include(":kct-core")                       // WP M65 Óra: the Q71 watch codec (RC4 frames, KCT commands)
 include(":weather-core")                    // WP M44 VRG Időjárás: fusion + field rules
 if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":feature-notes", ":feature-update", ":feature-pulse", ":feature-sphere", ":feature-ports", ":feature-launch", ":feature-drop", ":feature-screen", ":feature-city", ":feature-inbox", ":feature-net", ":app")
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
@@ -39,3 +40,4 @@ if (!jvmOnly) include(":feature-map")     // WP M43 VRG Térkép
 if (!jvmOnly) include(":feature-weather") // WP M44 VRG Időjárás
 if (!jvmOnly) include(":sketch-vision")   // Kamera 2: on-device text recognition (ML Kit, bundled)
 if (!jvmOnly) include(":feature-tag")     // WP M61 Tárgykereső (experimental)
+if (!jvmOnly) include(":feature-watch")   // WP M65 Óra (the Q71 watch, experimental)

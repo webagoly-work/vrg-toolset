@@ -157,6 +157,12 @@ object Catalogue {
         "🏷", Group.LINK, Stage.BETA, "M61", setOf(Need.BLUETOOTH),
     )
 
+    // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
+    val WATCH = FeatureInfo(
+        "watch", "Óra", "Kísérleti: a Q71 okosóra a FunDo nélkül: kapcsolat, pontos idő, lépések, az óra adatai, az óra csipogtatása és az óráról a telefon megcsörgetése.",
+        "⌚", Group.LINK, Stage.BETA, "M65", setOf(Need.BLUETOOTH),
+    )
+
     // WP M35: Proton Vault's device approval for VRG Mobile: one account, the phones differ, approved by QR.
     val DEVICES = FeatureInfo(
         "devices", "Eszközök", "Ez a telefon és a megbízható eszközök: hozzáférés kérése QR-kóddal, jóváhagyás a tulajdonos telefonján, a frissítések zárolása a listára.",
@@ -202,7 +208,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, TAG, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

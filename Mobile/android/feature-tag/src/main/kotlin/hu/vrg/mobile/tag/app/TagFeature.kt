@@ -199,7 +199,7 @@ object TagFeature : VrgFeature {
     private fun MineTab(host: FeatureHost, now: Long, watching: Boolean, toAround: () -> Unit) {
         val ctx = LocalContext.current
         val mine = Tags.book.mine
-        if (mine == null) { BindPanel(now, toAround); return }
+        if (mine == null) { BindPanel(host, now, toAround); return }
         val seen = Tags.book.mineSeen()
         val heardNow = seen != null && seen.age(now) <= HEARD_MS
         val d = seen?.takeIf { it.age(now) <= 15_000 }?.distance(mine.tx1m)
@@ -237,7 +237,7 @@ object TagFeature : VrgFeature {
         }
 
         if (mine.type == TagType.ITAG) ItagPanel(mine.address, mine.batteryPct, watching)
-        if (mine.type == TagType.WATCH) WatchPanel(mine.address, mine.btName)
+        if (mine.type == TagType.WATCH) WatchPanel(host, mine.address, mine.btName)
 
         if (seen != null && mine.type != TagType.WATCH) RingControls(seen)
         Row(Modifier.padding(top = 6.dp)) {
@@ -328,7 +328,7 @@ object TagFeature : VrgFeature {
     }
 
     @Composable
-    private fun BindPanel(now: Long, toAround: () -> Unit) {
+    private fun BindPanel(host: FeatureHost, now: Long, toAround: () -> Unit) {
         val ctx = LocalContext.current
         var name by rememberSaveable { mutableStateOf("ISYTag") }
         val pick = Tags.book.bindPick(now)
@@ -357,7 +357,7 @@ object TagFeature : VrgFeature {
             Spacer(Modifier.width(6.dp))
             VrgChip("Környék") { toAround() }
         }
-        PairedPick(name)
+        PairedPick(host, name)
     }
 
     // ---- Környék ---------------------------------------------------------------------------------------------
@@ -450,12 +450,13 @@ object TagFeature : VrgFeature {
     // ---- a paired device (the Q71 watch): chosen from the paired list, its connection, a tone on its speaker ----
 
     @Composable
-    private fun PairedPick(typed: String) {
+    private fun PairedPick(host: FeatureHost, typed: String) {
         val ctx = LocalContext.current
         val list = Tags.pairedList()
         VrgSectionTitle("Vagy egy párosított eszköz (óra, fülhallgató)")
         Text("Ami már párosítva van a telefon Bluetooth-beállításaiban, például a Q71 óra. Nem kell a telefonhoz tartani: " +
             "a párosítás már mutatja, hogy a tiéd.", style = Melyviz.small)
+        WatchLinkChip(host)
         if (list.isEmpty()) Text("Nincs párosított eszköz, vagy nincs Bluetooth engedély.", style = Melyviz.small.copy(color = Melyviz.faint))
         list.forEach { p ->
             val up = Tags.pairedConnected(p.address)
@@ -479,7 +480,7 @@ object TagFeature : VrgFeature {
     private val watchRinging = MutableStateFlow(false)
 
     @Composable
-    private fun WatchPanel(address: String, btName: String?) {
+    private fun WatchPanel(host: FeatureHost, address: String, btName: String?) {
         val ctx = LocalContext.current
         val up by Tags.linkUp.collectAsStateWithLifecycle()
         val ringing by watchRinging.collectAsStateWithLifecycle()
@@ -503,8 +504,17 @@ object TagFeature : VrgFeature {
             }
         }
         text?.let { Text(it, style = Melyviz.small) }
-        Text("A Q71 saját „telefonkeresője” csak a FunDo appal működik: a protokollja nem nyilvános, ezért innen nem " +
-            "érhető el. Az óra lemaradását a kapcsolat megszakadása jelzi.", style = Melyviz.small.copy(color = Melyviz.faint))
+        Text("Az óra lemaradását a kapcsolat megszakadása jelzi.", style = Melyviz.small.copy(color = Melyviz.faint))
+        WatchLinkChip(host)
+    }
+
+    /** D-169: the Q71 has a tile of its own (Óra, WP M65): the FunDo-free link, find watch, find phone, time, steps. */
+    @Composable
+    private fun WatchLinkChip(host: FeatureHost) {
+        Text("Q71 óra: a saját kapcsolata (FunDo nélkül), az óra csipogtatása, a telefonkeresés az óráról, az idő és a " +
+            "lépések az Óra lapon vannak. A Q71 nincs párosítva a telefonnal, ezért ebben a listában nem is látszik.",
+            style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
+        VrgChip("⌚ Óra megnyitása") { host.open(Catalogue.WATCH.id) }
     }
 
     // ---- Diagnosztika (D-162): read-only GATT inventory, shared as a vrg.device-diag report ---------------------

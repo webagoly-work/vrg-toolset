@@ -406,6 +406,17 @@ object CatalogGuide {
             needs = "Bluetooth (a hely megjegyzéséhez helymeghatározás)",
         ),
         GuidePage(
+            id = "watch", title = "Óra", glyph = "⌚", side = GuideSide.PHONE,
+            what = "Kísérleti. A Q71 okosóra a VRG Mobile-lal, a FunDo app nélkül: az óra saját nyelvét fejtettük meg, és ezen beszél vele. Amíg itt a Kapcsolat be van kapcsolva, a FunDo ne fusson.",
+            how = listOf(
+                "Kapcsolat: bekapcsolva megkeresi a Q71_LE órát, és csatlakozva tartja. Párosítani nem kell.",
+                "Minden kapcsolódáskor beállítja az óra idejét; az Óra adatai a firmware-t és a kijelzőt mutatja, a Ma a lépéseket.",
+                "Óra keresése: megcsipogtatja az órát. Telefonkeresés: az óra menüjéből ezt a telefont csörgeti meg, némítás mellett is.",
+            ),
+            needs = "Bluetooth",
+            pair = "Tárgykereső: a párosított óra innen nyitja",
+        ),
+        GuidePage(
             id = "desk", title = "Asztal", glyph = "◧", side = GuideSide.PHONE,
             what = "Maga a kezdőlap: a VRG Asztal egyszerűsített változata a telefonon. Számozott lapok oldalra lapozva, felül a sáv, alul a dokk.",
             how = listOf(
