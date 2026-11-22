@@ -75,13 +75,22 @@ class WatchLink(
         close()
         val adapter = ctx.getSystemService(BluetoothManager::class.java)?.adapter ?: return onDown("nincs Bluetooth")
         if (!adapter.isEnabled) return onDown("a Bluetooth ki van kapcsolva")
+        // A watch the phone already holds an LE link to does not advertise, so a scan never hears it (seen on the
+        // Xiaomi 2026-11-22: Android re-links Q71_LE by itself when Bluetooth comes on). Join that link instead.
+        alreadyLinked()?.let { d ->
+            VrgLog.i(Watch.LOG, "already linked by the phone: ${d.address}")
+            Watch.remember(ctx, d.address)
+            connect(d); return
+        }
         if (address != null) { connect(adapter.getRemoteDevice(address)); return }
         val scanner = adapter.bluetoothLeScanner ?: return onDown("nincs BLE kereső")
         Watch.link.value = Watch.Link.SEARCHING
         scanning = true
         VrgLog.i(Watch.LOG, "scan for ${Watch.NAME}")
+        // No name filter: the Q71 may carry its name only in the scan response, and some phones filter on the
+        // advertisement alone. The name is checked in the callback.
         runCatching {
-            scanner.startScan(listOf(ScanFilter.Builder().setDeviceName(Watch.NAME).build()),
+            scanner.startScan(emptyList<ScanFilter>(),
                 ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build(), scanCb)
         }.onFailure { scanning = false; return onDown("a keresés nem indult: ${it.message}") }
         main.postDelayed(scanTimeout, SCAN_MS)
@@ -91,6 +100,8 @@ class WatchLink(
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             main.post {
                 if (!scanning) return@post
+                val name = result.scanRecord?.deviceName ?: runCatching { result.device.name }.getOrNull()
+                if (!isWatch(name)) return@post
                 stopScan()
                 VrgLog.i(Watch.LOG, "found ${result.device.address} rssi ${result.rssi}")
                 Watch.remember(ctx, result.device.address)
@@ -100,8 +111,16 @@ class WatchLink(
         override fun onScanFailed(errorCode: Int) { main.post { stopScan(); onDown("a keresés hibát adott ($errorCode)") } }
     }
 
+    private fun isWatch(name: String?) = name != null && (name == Watch.NAME || name.startsWith("Q71"))
+
+    /** The Q71 if the phone already has an LE (GATT) link to it: Android's own, or one another app left open. */
+    private fun alreadyLinked(): BluetoothDevice? = runCatching {
+        ctx.getSystemService(BluetoothManager::class.java)?.getConnectedDevices(BluetoothProfile.GATT)
+            ?.firstOrNull { d -> isWatch(runCatching { d.name }.getOrNull()) || d.address == Watch.address(ctx) }
+    }.getOrNull()
+
     private val scanTimeout = Runnable {
-        if (scanning) { stopScan(); onDown("nem hallom a(z) ${Watch.NAME} órát (a FunDo fut? az óra Bluetooth-a be van kapcsolva?)") }
+        if (scanning) { stopScan(); onDown("nem hallom a(z) ${Watch.NAME} órát (a FunDo fut? az óra Bluetooth-a be van kapcsolva? kapcsold ki és be a telefon Bluetooth-át, majd azonnal a Kapcsolatot)") }
     }
 
     private fun stopScan() {
