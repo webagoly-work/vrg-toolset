@@ -88,7 +88,8 @@ object WatchFeature : VrgFeature {
         val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
         val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             canScan = Watch.canScan(ctx)
-            if (canScan) WatchService.reconnect()
+            // refused without a dialog ("don't ask again", or a capped manifest): the app's settings page instead
+            if (canScan) WatchService.reconnect() else BackgroundSettings.openAppDetails(ctx)
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
