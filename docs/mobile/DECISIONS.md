@@ -1051,6 +1051,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - **D-171 · Watch faces.** Chosen **C**: made on the PC first (`dial-bin.js` gets a writer and a START entry), the
     phone only uploads; the in-app Számlapszerkesztő (Q7) comes later.
 
+- **D-172 · DevLap: a Lap for picking the dev work up, on both sides, 2026-11-23.** The Founder asked for one custom Lap
+  (sheet preset) that opens the trackers, viewers, roadmaps and Claude session access already built, so a session can
+  find where the work stands and pick another dev line up. Chosen in the session: **two versions, each made for its
+  grid**, not one fitted to the other. Desktop (`Dashboard/config/sheets.json`, Dev level, 4 × 4): L · Vonaltérkép 2×2;
+  a browser 2×2 whose tabs are the Claude sessions (claude.ai/code), GO-MAIN, Actions, branches, commits on main,
+  releases, the Mobile roadmap and the Rétegverem pages A · Vezérlőterem, U · Futásnapló, Q · Döntésnapló,
+  I · Ötletfolyam, R · Commit-pixel and search; the Thread Board 2×1; a Claude Code terminal 2×2 that gets the keyboard;
+  git; Divergencia. The L window is a Rétegverem page, so opening the Lap starts that server before the browser restores
+  its 127.0.0.1 tabs. Phone (`PhoneSheets.OWN`, 2 × 4, after the Desktop's User-level presets in Lapok → +): Haladás
+  2×2, Claude, Értesítések, Gyorsjegyzet, Archívum. The phone does not show the Desktop DevLap: its windows are PC
+  tools (terminal, git, the Thread Board). Rejected: windows for every tracker (16 cells hold six readable ones; the
+  rest are tabs or one tap away in the + picker); a new home tile (Lapok → + already opens it in two taps).
+  Telefonon ellenőrizni: (1) Lapok → + lists **DevLap** with "5 ablak"; (2) it opens Haladás on top across both
+  columns, Claude and Értesítések below, Gyorsjegyzet and Archívum at the bottom; (3) a double tap on a window's header
+  makes it full and back. On the PC (Szint: Dev): (4) + → DevLap opens six windows filling the grid; (5) the
+  Vonaltérkép and the browser's Rétegverem tabs load (the stack server starts by itself); (6) the Claude Code terminal
+  has the keyboard; (7) claude.ai/code and the GitHub tabs show you signed in.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

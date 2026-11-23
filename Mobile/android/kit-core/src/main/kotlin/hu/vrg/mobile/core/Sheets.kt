@@ -564,7 +564,7 @@ object PhoneSheets {
     }
 
     /**
-     * The phone's own presets, made for its 2 × 4 grid (D-48). DevLap: where the dev work stands and where to pick it up — Haladás
+     * The phone's own presets, made for its 2 × 4 grid (D-172). DevLap: where the dev work stands and where to pick it up — Haladás
      * (main, open work, CI) on top, then the Claude sessions, Értesítések, Gyorsjegyzet (the chat log) and the Archívum. The Desktop
      * has its own DevLap (Dashboard/config/sheets.json, Dev level), which the phone does not fit: its windows are PC tools.
      */

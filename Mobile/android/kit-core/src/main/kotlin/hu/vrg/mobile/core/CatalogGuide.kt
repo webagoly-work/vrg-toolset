@@ -390,6 +390,7 @@ object CatalogGuide {
                 "Dupla koppintás az ablak fejlécén: teljes méret ⇄ egy cella.",
                 "Hosszan nyomva a szélét húzod: átméretezés. A fejlécét húzod: mozgatás vagy csere.",
                 "Kész elrendezések is vannak, például Iroda és Áttekintés.",
+                "DevLap: a fejlesztés állása egy lapon (Haladás, Claude, Értesítések, Gyorsjegyzet, Archívum). A PC-n a saját DevLapja van.",
             ),
             pair = "Asztal: Munkaterek és lapok",
         ),

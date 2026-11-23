@@ -269,7 +269,7 @@ class SheetsTest {
         assertEquals("feat:pcwin", d.sheets[0].wins[1].open)
     }
 
-    /** DevLap (D-48): the phone's own dev sheet. Every window opens (none is dropped as planned or unknown) and the grid is full. */
+    /** DevLap (D-172): the phone's own dev sheet. Every window opens (none is dropped as planned or unknown) and the grid is full. */
     @Test fun devLap() {
         val p = PhoneSheets.OWN.single { it.id == "devlap" }
         assertEquals("DevLap", p.name)
