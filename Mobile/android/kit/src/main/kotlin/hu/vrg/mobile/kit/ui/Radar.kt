@@ -252,8 +252,9 @@ fun radarDescribe(p: Placed, layerTitle: String?): String = buildString {
     append(p.blip.label)
     layerTitle?.let { append(" · ").append(it) }
     append(" · ").append(RadarText.distance(p.distanceM))
-    if (p.bearingSrc != BearingSource.NONE && p.bearingDeg != null) {
-        append(" · ").append(RadarText.relative(p.angleDeg)).append(" (").append(RadarText.compass(p.bearingDeg))
+    val bearing = p.bearingDeg                  // a local copy: no smart cast across modules
+    if (p.bearingSrc != BearingSource.NONE && bearing != null) {
+        append(" · ").append(RadarText.relative(p.angleDeg)).append(" (").append(RadarText.compass(bearing))
             .append(", ").append(p.bearingSrc.hu).append(')')
     } else append(" · irány nélkül")
     p.blip.detail?.let { append(" · ").append(it) }
