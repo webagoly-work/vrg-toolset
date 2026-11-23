@@ -19,7 +19,7 @@ object HomeLayout {
         HomePage(2, "Munka: pár perc", "Munka", listOf(Catalogue.PLANNER, Catalogue.CALC, Catalogue.INVENTORY)),
         HomePage(3, "Workflow Kit", "Workflow", listOf(Catalogue.WORKFLOW)),
         HomePage(4, "Térkép · Időjárás · Vault", "Térkép", listOf(Catalogue.MAP, Catalogue.WEATHER, Catalogue.VAULT)),
-        HomePage(5, "Archívum · Claude", "Archívum", listOf(Catalogue.ARCHIVE, Catalogue.CLAUDE)),
+        HomePage(5, "Archívum · Claude · DevLap", "Archívum", listOf(Catalogue.ARCHIVE, Catalogue.CLAUDE, Catalogue.DEVLAP)),
         HomePage(6, "Kapcsolat a PC-vel", "Kapcsolat", listOf(
             Catalogue.PAIR, Catalogue.NET, Catalogue.AIRDECK, Catalogue.SCREEN,
             Catalogue.DROP, Catalogue.PCWIN, Catalogue.LAUNCH, Catalogue.PORTS,

@@ -129,6 +129,10 @@ object Catalogue {
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
         "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
+    val DEVLAP = FeatureInfo(
+        "devlap", "DevLap", "A fejlesztés állása egy lapon: Haladás, Claude, Értesítések, Gyorsjegyzet és Archívum, hogy egy munkát gyorsan folytathass.",
+        "⧉", Group.WORK, Stage.BETA, "M66", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val PCWIN = FeatureInfo(
         "pcwin", "PC ablakok", "A PC munkamappái (Repó, VRG Full, Közös) csak olvasva: böngészés, szöveg és kép előnézete, másolat az Átadáson át.",
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
@@ -208,7 +212,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE, DEVLAP,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

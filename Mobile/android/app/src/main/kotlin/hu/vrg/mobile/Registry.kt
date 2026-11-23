@@ -80,7 +80,7 @@ object Registry {
      * Catalogue entries that are the shell itself, not a feature module: the Asztal is the home (WP M19), Lapok lives in
      * it, the Katalógus is a shell screen and the home's Planner / Kalkulátorok / Készlet tiles open web apps (WP M38).
      */
-    val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id) + HomeLayout.SHORTCUTS.keys
+    val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id, Catalogue.DEVLAP.id) + HomeLayout.SHORTCUTS.keys
 
     fun isBuilt(info: FeatureInfo): Boolean = feature(info.id) != null || info.id in shellParts
 }

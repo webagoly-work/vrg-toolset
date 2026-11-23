@@ -535,7 +535,7 @@ object PhoneSheets {
     private val PANES = mapOf("note" to Catalogue.NOTES.id, "stack" to Catalogue.STACK.id, "chat" to Catalogue.CLAUDE.id, "files" to Catalogue.PCWIN.id)
 
     /** Shell parts, not windows: the Asztal, Lapok, the Katalógus and the home shortcuts to the web apps (WP M38). */
-    private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id) + HomeLayout.SHORTCUTS.keys
+    private val FRAME = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id, Catalogue.DEVLAP.id) + HomeLayout.SHORTCUTS.keys
 
     /** A phone feature that can be a window: known, not only planned, not the frame. */
     fun isWindow(featureId: String): Boolean {
@@ -585,6 +585,20 @@ object PhoneSheets {
      */
     val PRESETS: List<SheetPreset> by lazy {
         OWN + DeskSheets.PRESETS.map { Sheets.phone.fitPreset(it, SheetRules.DESKTOP) { w -> resolve(w.open, w.state) != null } }
+    }
+
+    /**
+     * The home's DevLap tile (M66): the DevLap sheet made active — the one already open (by its name, "DevLap"), else a new
+     * one from the preset with its focus. Returns the same doc when there is no room for a new sheet.
+     */
+    fun openDevLap(doc: SheetsDoc): SheetsDoc {
+        val p = OWN.first { it.id == "devlap" }
+        doc.sheets.firstOrNull { it.name == p.name }?.let { return Sheets.phone.activate(doc, it.id) }
+        if (doc.sheets.size >= Sheets.MAX_SHEETS) return doc
+        val wins = windows(doc, p)
+        val n = Sheets.phone.addSheet(doc, p.name, wins)
+        val f = Sheets.phone.presetFocus(p, wins)
+        return if (f.isNotEmpty()) Sheets.phone.focusWin(n, f) else n
     }
 
     /** A preset's windows ready for a new sheet. */

@@ -288,6 +288,23 @@ class SheetsTest {
         assertTrue(p.wins.all { PhoneSheets.isWindow(it.open.removePrefix("feat:")) })
     }
 
+    /** M66: the home's DevLap tile makes a DevLap sheet once, then goes back to it. */
+    @Test fun devLapTile() {
+        var d = PhoneSheets.openDevLap(P.empty())
+        assertEquals(listOf("DevLap"), d.sheets.map { it.name })
+        assertEquals(d.sheets[0].id, d.active)
+        assertEquals(5, d.sheets[0].wins.size)
+        d = P.activate(P.addSheet(d, "Lap"), d.sheets[0].id).let { P.addSheet(it, "Másik") }
+        assertTrue(d.active != d.sheets[0].id)
+        val again = PhoneSheets.openDevLap(d)
+        assertEquals(3, again.sheets.size, "no second DevLap")
+        assertEquals(again.sheets.first { it.name == "DevLap" }.id, again.active)
+        var full = P.empty()
+        repeat(Sheets.MAX_SHEETS) { full = P.addSheet(full, "L$it") }
+        assertSame(full, PhoneSheets.openDevLap(full), "no room: unchanged")
+        assertTrue(!PhoneSheets.isWindow(Catalogue.DEVLAP.id), "the tile is the shell, not a window")
+    }
+
     @Test fun codecRoundTrip() {
         var d = P.addSheet(P.empty(), "Iroda", listOf(SheetWin("w-feat-1", "feat", "feat:notes", """{"a":[1,"b"]}""", 0, 0, 2, 2, false)))
         d = P.openWin(d, "s1", "w-home-1", "home", "pane:home")

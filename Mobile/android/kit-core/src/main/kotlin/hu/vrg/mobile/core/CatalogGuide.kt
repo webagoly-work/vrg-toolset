@@ -197,6 +197,18 @@ object CatalogGuide {
             needs = "a PC reléje (párosítva) a munkamenetekhez",
             pair = "PC: a Claude Code Remote Control munkamenetei, a relén át",
         ),
+        GuidePage(
+            id = "devlap", title = "DevLap", glyph = "⧉", side = GuideSide.BOTH,
+            what = "Egy kész lap a fejlesztés folytatásához: hol tart a munka, mi történt, és hol lehet egy munkát továbbvinni.",
+            how = listOf(
+                "A kezdőlap DevLap kártyája megnyitja a lapot; ha már nyitva van, oda ugrik.",
+                "Fent a Haladás (main, nyitott munkák, CI), alatta Claude és Értesítések, lent Gyorsjegyzet és Archívum.",
+                "Dupla koppintás egy ablak fejlécén: teljes méret ⇄ egy cella.",
+                "Lapok → + listájában is az első.",
+            ),
+            needs = "internet, GitHub belépés; a Claude munkamenetekhez a PC reléje",
+            pair = "Asztal: DevLap (Dev szint) a Vonaltérképpel, a követők füleivel és egy Claude Code terminállal",
+        ),
 
         // 6 · Kapcsolat a PC-vel
         GuidePage(

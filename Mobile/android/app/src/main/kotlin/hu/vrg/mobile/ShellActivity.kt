@@ -40,6 +40,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Cell
+import hu.vrg.mobile.core.PhoneSheets
 import hu.vrg.mobile.core.Sheets
 import hu.vrg.mobile.core.SheetsDoc
 import hu.vrg.mobile.core.DeskUnit
@@ -297,6 +298,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         if (featureId == Catalogue.CATALOG.id) { home(); catalogAt = ""; return }   // WP M38: a shell screen over the home
         HomeLayout.SHORTCUTS[featureId]?.let { apps ->   // WP M38: a home tile for web apps of Alkalmazások
             if (apps.size == 1) openRoute(Route(Catalogue.APPS.id, apps[0])) else openRoute(Route(Catalogue.APPS.id))
+            return
+        }
+        if (featureId == Catalogue.DEVLAP.id) {   // M66: the home's DevLap tile shows the DevLap sheet (the open one, or a new one)
+            open(Catalogue.DESK.id)
+            val d = SheetsStore.value
+            if (d.sheets.none { it.name == Catalogue.DEVLAP.title } && d.sheets.size >= Sheets.MAX_SHEETS)
+                note("Nincs hely új lapnak (legfeljebb ${Sheets.MAX_SHEETS}). Zárj be egy lapot.")
+            else SheetsStore.update { PhoneSheets.openDevLap(it) }
             return
         }
         if (featureId == Catalogue.SHEETS.id) {   // Lapok lives in the Asztal: show a sheet (the first one, or a new blank one)
