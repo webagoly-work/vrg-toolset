@@ -1,6 +1,6 @@
 {
- "generated": "2026-11-16",
- "commit": "686e19e",
+ "generated": "2026-11-23",
+ "commit": "367aa56d",
  "sections": [
   {
    "id": "bridge-std",
@@ -27,8 +27,8 @@
    "id": "planner",
    "n": "Planner",
    "docs": 157,
-   "reviewed": null,
-   "summary": null
+   "reviewed": "2026-11-23",
+   "summary": "Judged the one candidate (portal box size vs portal graph) as a wrong match and dismissed it. Read the three most cited docs (WORKSHOP-001, NEXT-CLA-ADD-001, IDEA-001). They agree on the 10x10 portal box and the switch heights. One known tension is open: NEXT-CLA-ADD-001 #6 (floor zones that forbid floor routing) against WORKSHOP route type F, which the NEXT file itself marks as a conflict. No new clash reported."
   },
   {
    "id": "inventory",
@@ -54,7 +54,7 @@
   {
    "id": "hub",
    "n": "Kapu, indítók",
-   "docs": 69,
+   "docs": 70,
    "reviewed": null,
    "summary": null
   },
@@ -68,14 +68,14 @@
   {
    "id": "mobile",
    "n": "Mobil",
-   "docs": 33,
+   "docs": 75,
    "reviewed": null,
    "summary": null
   },
   {
    "id": "docs",
    "n": "Kutatás, egyéb",
-   "docs": 34,
+   "docs": 67,
    "reviewed": null,
    "summary": null
   }
@@ -218,7 +218,7 @@
    "p": "BRIDGE/01_architecture/CLA_BRIDGE_Inline_Architecture.md",
    "s": "bridge-arch",
    "t": "CLA — BRIDGE Inline Network Architecture",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
@@ -331,7 +331,7 @@
    "s": "bridge-std",
    "t": "BRIDGE-STD-005 — Network and RF",
    "d": "2026-10-05",
-   "i": 17
+   "i": 18
   },
   {
    "p": "BRIDGE/05_standards/BRIDGE-STD-006_Arbitration-Failure-Security.md",
@@ -492,7 +492,7 @@
    "s": "bridge-arch",
    "t": "BRIDGE — Session Handover Primer",
    "d": "2026-10-06",
-   "i": 2
+   "i": 3
   },
   {
    "p": "BRIDGE/README.md",
@@ -505,7 +505,7 @@
    "p": "CLAUDE.md",
    "s": "hub",
    "t": "VRG toolset — working rules",
-   "d": "2026-11-11",
+   "d": "2026-11-21",
    "i": 0
   },
   {
@@ -575,7 +575,7 @@
    "p": "GO-CLA.md",
    "s": "hub",
    "t": "GO CLA — the CLA job thread (base layer, data layer, v1 + v2 budget plans)",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
@@ -596,14 +596,14 @@
    "p": "GO-MAIN.md",
    "s": "hub",
    "t": "GO MAIN — the overall entry point",
-   "d": "2026-11-02",
+   "d": "2026-11-20",
    "i": 0
   },
   {
    "p": "GO-MOBILE.md",
    "s": "hub",
    "t": "GO MOBILE — build VRG Mobile, the companion app, one work package at a time",
-   "d": "2026-11-12",
+   "d": "2026-11-22",
    "i": 1
   },
   {
@@ -617,14 +617,21 @@
    "p": "GO-PLANNER.md",
    "s": "hub",
    "t": "GO PLANNER — the open Planner work (everything except wiring)",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "GO-ROUTE.md",
    "s": "hub",
    "t": "GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model",
-   "d": "2026-10-29",
+   "d": "2026-11-17",
+   "i": 0
+  },
+  {
+   "p": "GO-VARIANT.md",
+   "s": "hub",
+   "t": "GO VARIANT — make a Variant Sketcher for one kind of job",
+   "d": "2026-11-21",
    "i": 0
   },
   {
@@ -659,7 +666,7 @@
    "p": "Mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile: the companion app",
-   "d": "2026-11-11",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -862,14 +869,14 @@
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001-SF_smartframe-brief.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001 · SF: the SmartFrame (BSF), a second BRIDGE box type at every portal",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 1
   },
   {
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001_cla-extras.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001: CLA extras to add to the layer stack (after round 2026-10-10)",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 8
   },
   {
@@ -1804,6 +1811,55 @@
    "i": 1
   },
   {
+   "p": "docs/brief/BRIEF-A.md",
+   "s": "docs",
+   "t": "Design brief — KESTREL desktop + mobile (version A)",
+   "d": "2026-11-23",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/BRIEF-B.md",
+   "s": "docs",
+   "t": "Design brief — HALCYON desktop + mobile (version B)",
+   "d": "2026-11-23",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/PACK-A.md",
+   "s": "docs",
+   "t": "Design brief — KESTREL desktop + mobile (version A)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/PACK-B.md",
+   "s": "docs",
+   "t": "Design brief — HALCYON desktop + mobile (version B)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/README.md",
+   "s": "docs",
+   "t": "docs/brief — the anonymous system briefs (fork F10, 2026-11-21)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/SYSTEM-A.md",
+   "s": "docs",
+   "t": "KESTREL — system overview (version A)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/brief/SYSTEM-B.md",
+   "s": "docs",
+   "t": "HALCYON — system overview (version B)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
    "p": "docs/city/HOMELAND-BRIEF.md",
    "s": "city",
    "t": "HOMELAND-BRIEF.md",
@@ -2185,7 +2241,7 @@
    "p": "docs/desktop/CLASSIFICATION.md",
    "s": "docs",
    "t": "VRG classification",
-   "d": "2026-11-15",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -2206,7 +2262,7 @@
    "p": "docs/desktop/INVENTORY.md",
    "s": "docs",
    "t": "VRG inventory",
-   "d": "2026-11-15",
+   "d": "2026-11-20",
    "i": 0
   },
   {
@@ -2221,6 +2277,34 @@
    "s": "docs",
    "t": "VRG Desktop (VRG Asztal) — report, 2026-11-10",
    "d": "2026-11-10",
+   "i": 0
+  },
+  {
+   "p": "docs/handoff/2026-11-20_camera-devline-H.md",
+   "s": "docs",
+   "t": "Prompt for the local H: session: file the Sketcher Kamera+ dev line",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/handoff/2026-11-20_kapu-restore-H.md",
+   "s": "docs",
+   "t": "Prompt for the local H: session: VRG Kapu file check and restore",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/handoff/2026-11-22_bp-heights-H.md",
+   "s": "docs",
+   "t": "Prompt for the local H: session: Budapest building heights for the VRG Térkép's B layer",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/handoff/2026-11-22_colmap-house3d-H.md",
+   "s": "docs",
+   "t": "Prompt for the local H: session: install COLMAP for Ház 3D (skcam K5)",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -2542,7 +2626,7 @@
    "p": "docs/hub/agents/workflow-kit.md",
    "s": "hub",
    "t": "Varler Workflow Kit — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-20",
    "i": 0
   },
   {
@@ -2651,6 +2735,62 @@
    "i": 0
   },
   {
+   "p": "docs/map/FEED.md",
+   "s": "docs",
+   "t": "VRG Térkép — Térkép-feed (F): the nearest useful places around you",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/map/JOBS-MAP.md",
+   "s": "docs",
+   "t": "VRG Térkép — the jobs on the map",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/map/NAVIGATION.md",
+   "s": "docs",
+   "t": "VRG Térkép — turn-by-turn guidance and the optional traffic check (N3)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/map/REFINE.md",
+   "s": "docs",
+   "t": "VRG Térkép J layer — refinement pass",
+   "d": "2026-11-16",
+   "i": 0
+  },
+  {
+   "p": "docs/map/RELIEF.md",
+   "s": "docs",
+   "t": "VRG Térkép: relief measuring (R), the hills' shadow (⛰) and measured building heights (B)",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/map/ROUTING.md",
+   "s": "docs",
+   "t": "VRG Térkép — our own offline routing (N2)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/map/SHADOWS.md",
+   "s": "docs",
+   "t": "VRG Térkép — Árnyék (S): the buildings' shadows at any date and time",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/map/WEATHER-MAP.md",
+   "s": "docs",
+   "t": "VRG Térkép: the weather layer (W)",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
    "p": "docs/mobile/CLOUD.md",
    "s": "mobile",
    "t": "VRG Mobile in a cloud session: what works there and what does not",
@@ -2661,7 +2801,7 @@
    "p": "docs/mobile/DECISIONS.md",
    "s": "mobile",
    "t": "VRG Mobile: decisions",
-   "d": "2026-11-12",
+   "d": "2026-11-22",
    "i": 2
   },
   {
@@ -2689,14 +2829,14 @@
    "p": "docs/mobile/PARITY.md",
    "s": "mobile",
    "t": "PARITY — the VRG Desktop, unit by unit, on VRG Mobile",
-   "d": "2026-11-15",
+   "d": "2026-11-20",
    "i": 2
   },
   {
    "p": "docs/mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile build pack",
-   "d": "2026-11-12",
+   "d": "2026-11-22",
    "i": 1
   },
   {
@@ -2724,7 +2864,7 @@
    "p": "docs/mobile/WP/M11.md",
    "s": "mobile",
    "t": "M11 · Indítópult (`launch`): START.cmd from the phone",
-   "d": "2026-11-11",
+   "d": "2026-11-19",
    "i": 0
   },
   {
@@ -2812,10 +2952,122 @@
    "i": 0
   },
   {
+   "p": "docs/mobile/WP/M24.md",
+   "s": "mobile",
+   "t": "M24 · Vázlat (`sketch`): the field sketch, the Planner's quick build for the site",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M25.md",
+   "s": "mobile",
+   "t": "M25 · Fotópont (`photo`): photos of every room, taken from a point on the sketch, with their direction",
+   "d": "2026-11-17",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M26.md",
+   "s": "mobile",
+   "t": "M26 · VRG Sketcher (`sketch`): the field instrument, its frame and the loose ends",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M27.md",
+   "s": "mobile",
+   "t": "M27 · Jegyzet: the conversation, quick chips and the background behind the notes",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M28.md",
+   "s": "mobile",
+   "t": "M28 · Munkakör and Kérdések: the job's shape, and the questionnaire as a digital shadow",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M29.md",
+   "s": "mobile",
+   "t": "M29 · Kamera: photos with a purpose, the shot list and markup",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
    "p": "docs/mobile/WP/M3.md",
    "s": "mobile",
    "t": "M3 · GitHub fiók (`account`): sign in, and the shared GitHub client",
    "d": "2026-11-02",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M30.md",
+   "s": "mobile",
+   "t": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M31.md",
+   "s": "mobile",
+   "t": "M31 · Variánsok: a Variant Sketcher for one kind of job, made by an agent",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M32.md",
+   "s": "mobile",
+   "t": "M32 · Kezdőlap: the home screen's layout (both homes)",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M33.md",
+   "s": "mobile",
+   "t": "M33 · Csipogó (`pager`): the Site Pager on the crew's phones",
+   "d": "2026-11-23",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M34.md",
+   "s": "mobile",
+   "t": "M34 · Ikon: the Varler mark as the app icon, in the user's palette, and behind the home",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M35.md",
+   "s": "mobile",
+   "t": "M35 · Eszközök (`devices`): phones let in by QR, the Proton Vault way",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M36.md",
+   "s": "mobile",
+   "t": "M36 · iPhone: VRG Mobile as a web app (the online part), approved like any phone",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M37.md",
+   "s": "mobile",
+   "t": "M37 · RCO: the long-press menu across the app",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M38.md",
+   "s": "mobile",
+   "t": "M38 · Kezdőlap lapok + Katalógus: the home in numbered pages, and a guide to everything",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M39.md",
+   "s": "mobile",
+   "t": "M39 · Varler Planner tile (`planner`)",
+   "d": "2026-11-19",
    "i": 0
   },
   {
@@ -2826,10 +3078,150 @@
    "i": 0
   },
   {
+   "p": "docs/mobile/WP/M40.md",
+   "s": "mobile",
+   "t": "M40 · Kalkulátorok tile (`calc`)",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M41.md",
+   "s": "mobile",
+   "t": "M41 · Készlet tile (`inventory`)",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M42.md",
+   "s": "mobile",
+   "t": "M42 · Varler Workflow Kit (`workflow`): the PC's quote jobs, sealed to the owner's phone",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M43.md",
+   "s": "mobile",
+   "t": "M43 · VRG Térkép (`map`): the PC's map on the phone, with or without the PC",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M44.md",
+   "s": "mobile",
+   "t": "M44 · VRG Időjárás (`weather`): can we work outside today?",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M45.md",
+   "s": "mobile",
+   "t": "M45 · Vault (`vault`): the Proton Vault's own web app inside VRG Mobile",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M46.md",
+   "s": "mobile",
+   "t": "M46 · Kamera 2: type-plate reading, privacy on export, before / after, signature, walk video, faster purposes",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M47.md",
+   "s": "mobile",
+   "t": "M47 · Munkakör lap: the survey's takeoff, into the Planner and out to the Workflow Kit",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M48.md",
+   "s": "mobile",
+   "t": "M48 · Helyszín ↔ Térkép: the outline drawn on the phone's own map, the sketch placed on the building",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M49.md",
+   "s": "mobile",
+   "t": "M49 · Apró hiányok: wants per room, variants on the long press, variants that tune the drawing tools",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
    "p": "docs/mobile/WP/M5.md",
    "s": "mobile",
    "t": "M5 · Kódváros online (`city`): the repo's city from GitHub",
-   "d": "2026-11-06",
+   "d": "2026-11-19",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M50.md",
+   "s": "mobile",
+   "t": "M50 · Maradékok: wants in the Planner, the Csere tag, the survey report, the client's contact, lineClose, the sound note",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M51.md",
+   "s": "mobile",
+   "t": "M51 · Kapcsolók: every Sketcher feature on its own switch (the Founder's rule D-90)",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M52.md",
+   "s": "mobile",
+   "t": "M52 · Saját kamera: the in-app camera (ghost overlay, purpose on the viewfinder, series, torch, level)",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M53.md",
+   "s": "mobile",
+   "t": "M53 · Összefésülés: the Sketcher forks tested together, end to end, and their seams",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M54.md",
+   "s": "mobile",
+   "t": "M54 · Jegyzőkönyv a telefonon: the Felmérési jegyzőkönyv printed and shared from the phone",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M55.md",
+   "s": "mobile",
+   "t": "M55 · Térkép-feed (in `map`): the nearest useful places around you",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M56.md",
+   "s": "mobile",
+   "t": "M56 · Saját útvonaltervezés (in `map`, N2): our own offline routing",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M57.md",
+   "s": "mobile",
+   "t": "M57 · Szobadoboz (in `sketch`, Desktop first): the room in 3D with its Fotópont photos",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M58.md",
+   "s": "mobile",
+   "t": "M58 · Vezetés + forgalom (in `map`, N3): turn-by-turn guidance and the optional traffic check",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M59.md",
+   "s": "mobile",
+   "t": "M59 · Szobadoboz a telefonon (in `sketch`): the room box on the phone, the lens per Fotópont shot",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -2837,6 +3229,48 @@
    "s": "mobile",
    "t": "M6 · Gyorsjegyzet (`notes`): notes into the chat-log branch",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M60.md",
+   "s": "mobile",
+   "t": "M60 · Síkmérés (in `sketch`, phone and Desktop): measuring on a plane in one photo",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M61.md",
+   "s": "mobile",
+   "t": "M61 · Tárgykereső (`tag`): an Apple Find My tag used from Android",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M62.md",
+   "s": "mobile",
+   "t": "M62 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M63.md",
+   "s": "mobile",
+   "t": "M63 · Ház 3D (PC + Desktop Sketcher): a house as a measurable point cloud from a walk round it",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M64.md",
+   "s": "mobile",
+   "t": "M64 · Google AR csomag (`sketch`): live measuring, a room scan and an AR recording with ARCore, behind one switch",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M65.md",
+   "s": "mobile",
+   "t": "M65 · Óra (`watch`): a Q71 okosóra a FunDo nélkül / the Q71 watch without FunDo",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -2973,59 +3407,115 @@
    "i": 0
   },
   {
+   "p": "docs/research/2026-11-18_field-survey-camera-notes.md",
+   "s": "docs",
+   "t": "Field survey: camera and note/intake features (scout notes)",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/research/2026-11-20_room-capture-and-measurement.md",
+   "s": "docs",
+   "t": "Room capture, rough 3D and measuring from photos: what is possible offline (research note)",
+   "d": "2026-11-20",
+   "i": 0
+  },
+  {
+   "p": "docs/research/konnektom-labor/README.md",
+   "s": "docs",
+   "t": "Konnektóm-labor: sources",
+   "d": "2026-11-14",
+   "i": 0
+  },
+  {
    "p": "docs/research/reports/Kódváros live workspace and GitWorld.md",
    "s": "docs",
    "t": "Wire Kódváros into a living GitWorld",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/reports/VRG Map - detailed maps, 3D city and field layers.md",
    "s": "docs",
    "t": "VRG Map — detailed maps, a 3D city and field layers (research)",
-   "d": "2026-11-09",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/research/reports/VRG Weather - sources, fusion and field rules.md",
+   "s": "docs",
+   "t": "VRG Időjárás (VRG Weather): sources, fusion and field rules (research and decision)",
+   "d": "2026-11-20",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/01_our_assets.md",
    "s": "docs",
    "t": "Our assets on this computer for a live Kódváros workspace / GitWorld",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/02_workspace_architecture.md",
    "s": "docs",
    "t": "Kódváros as a live local workspace: architectures and building blocks",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/03_windows_live_telemetry.md",
    "s": "docs",
    "t": "03 · Windows live telemetry for the Land (Kódváros live workspace)",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/04_overlay_os_layer.md",
    "s": "docs",
    "t": "04 — The overlay \"OS\" layer on Windows 10 Pro",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/05_gitworld_map_and_repos.md",
    "s": "docs",
    "t": "05 — GitWorld map, implementation methods for §7.1/§7.2, and the repo map",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/06_media_rea_candidates.md",
    "s": "docs",
    "t": "06 — Media REA candidates for the Kódváros live workspace / overlay OS",
-   "d": "2026-11-16",
+   "d": "2026-11-23",
+   "i": 0
+  },
+  {
+   "p": "docs/research/research_notes/weather/01_official-hu-eu-sources.md",
+   "s": "docs",
+   "t": "VRG Weather - official HU/EU data sources (research notes 01)",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/research/research_notes/weather/02_global-free-apis.md",
+   "s": "docs",
+   "t": "02 - Global free / keyless weather APIs for VRG Weather",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/research/research_notes/weather/03_architecture-and-field-thresholds.md",
+   "s": "docs",
+   "t": "VRG Weather - architecture patterns and field thresholds",
+   "d": "2026-11-18",
+   "i": 0
+  },
+  {
+   "p": "docs/research/tools-installed-2026-11.md",
+   "s": "docs",
+   "t": "Portable dev tools installed 2026-11 (Playwright, JDK 21, Ghidra, JADX)",
+   "d": "2026-11-22",
    "i": 0
   },
   {
@@ -3033,6 +3523,48 @@
    "s": "docs",
    "t": "Services — server builds, and what running them actually costs",
    "d": "2026-09-20",
+   "i": 0
+  },
+  {
+   "p": "docs/sketcher/CAMERA-LINE.md",
+   "s": "docs",
+   "t": "Dev line: Sketcher Kamera+ — room box, measuring, house 3D (`skcam`)",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/sketcher/FORKS.md",
+   "s": "docs",
+   "t": "VRG Sketcher — the fork worklines (2026-11-20)",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/sketcher/README.md",
+   "s": "docs",
+   "t": "VRG Sketcher — the field instrument",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/sketcher/TAKEOFF.md",
+   "s": "docs",
+   "t": "VRG Sketcher — the takeoff (Munkakör lap) and its export contract",
+   "d": "2026-11-21",
+   "i": 0
+  },
+  {
+   "p": "docs/sketcher/TEST-2PHONES.md",
+   "s": "docs",
+   "t": "VRG Sketcher — kéttelefonos teszt",
+   "d": "2026-11-22",
+   "i": 0
+  },
+  {
+   "p": "docs/visual/README.md",
+   "s": "docs",
+   "t": "VRG Látótér: the visual layer, sorted and placed",
+   "d": "2026-11-20",
    "i": 0
   }
  ],
@@ -3080,7 +3612,7 @@
   {
    "id": "14d08c78",
    "type": "contradiction",
-   "stage": "candidate",
+   "stage": "dismissed",
    "sec": "planner",
    "title": "Portal: 116mm vagy 500mm?",
    "a": {
@@ -3093,8 +3625,9 @@
     "line": 59,
     "text": "| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — f40abfe |"
    },
-   "ai": 160,
-   "bi": 163
+   "note": "Wrong match: IDEA-002 line 252 asks about the portal box (wall junction box size, 107/116 mm); README line 59 is the portal graph in movement traces (line of sight, 500 mm encoding). Different subjects.",
+   "ai": 161,
+   "bi": 164
   },
   {
    "id": "3565ec2f",
@@ -3142,7 +3675,7 @@
     "line": 142,
     "text": "- Still open: the Cloudflare outer ring CITY-D29–D33 and CITY-D21 option D (report §8, prompt CF-01)."
    },
-   "ai": 249
+   "ai": 257
   },
   {
    "id": "df4ea238",
@@ -3156,7 +3689,7 @@
     "line": 68,
     "text": "finished things only: a User item that is still `dev` or `planned` appears from Dev on (DESKU-Q21). Only things you can open have a"
    },
-   "ai": 299
+   "ai": 307
   },
   {
    "id": "1b07c391",
@@ -3170,7 +3703,7 @@
     "line": 62,
     "text": "## DESKU-Q08 — How HTML apps open inside the shell"
    },
-   "ai": 301
+   "ai": 309
   },
   {
    "id": "61b74b07",
@@ -3184,7 +3717,7 @@
     "line": 143,
     "text": "## DESKU-Q20 — Only things you can open have a level"
    },
-   "ai": 301
+   "ai": 309
   },
   {
    "id": "df586a1f",
@@ -3198,7 +3731,7 @@
     "line": 225,
     "text": "## 9. Open MCT — inside or beside? (HUB-Q12)"
    },
-   "ai": 309
+   "ai": 321
   },
   {
    "id": "e7e24076",
@@ -3212,7 +3745,7 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 353
+   "ai": 365
   },
   {
    "id": "0ceab8cf",
@@ -3226,7 +3759,21 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 353
+   "ai": 365
+  },
+  {
+   "id": "d6687794",
+   "type": "dark",
+   "kind": "kérdés",
+   "stage": "candidate",
+   "sec": "mobile",
+   "title": "Nyitott kérdés: PV-D12",
+   "a": {
+    "p": "docs/mobile/DECISIONS.md",
+    "line": 479,
+    "text": "page keeps its own device key and its own QR approval (PV-D11 / PV-D12); an Eszközök approval does not open the vault"
+   },
+   "ai": 388
   },
   {
    "id": "09c7a64b",
@@ -3240,7 +3787,21 @@
     "line": 347,
     "text": "- **OMCT-Q5 · Dictionary delivery.** A: Planner exports `vrg-bridge-dict.json` **and** an Open MCT"
    },
-   "ai": 405
+   "ai": 467
+  },
+  {
+   "id": "79ce533a",
+   "type": "dark",
+   "kind": "kérdés",
+   "stage": "candidate",
+   "sec": "docs",
+   "title": "Nyitott kérdés: ICON-D2",
+   "a": {
+    "p": "docs/research/reports/VRG Weather - sources, fusion and field rules.md",
+    "line": 70,
+    "text": "| **Open-Meteo** (ICON-D2, ICON-EU, ECMWF IFS, GFS) | forecast | **key only** (free tier is non-commercial) | core *with key* | four models in one call, lightning potential, CAPE; ICON-D2 ends around 20.3° E |"
+   },
+   "ai": 480
   },
   {
    "id": "bff38ee9",
@@ -3419,7 +3980,7 @@
    "a": {
     "p": "tools/brief-state.js",
     "line": 1,
-    "text": "12 problem(s). Run node tools/brief-state.js for stale state."
+    "text": "30 problem(s). Run node tools/brief-state.js for stale state."
    }
   },
   {
@@ -3427,270 +3988,90 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "57 napja érintetlen: VRG Inventory — core item database",
+   "title": "64 napja érintetlen: VRG Inventory — core item database",
    "a": {
     "p": "Inventory/README.md",
     "line": 1,
     "text": "VRG Inventory — core item database"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 78
+   "ai": 79
   },
   {
    "id": "6f4b14ff",
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "57 napja érintetlen: AI-CONTEXT — vrg-inventory",
+   "title": "64 napja érintetlen: AI-CONTEXT — vrg-inventory",
    "a": {
     "p": "Inventory/docs/AI-CONTEXT.md",
     "line": 1,
     "text": "AI-CONTEXT — vrg-inventory"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 79
+   "ai": 80
   },
   {
    "id": "0164e04d",
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "57 napja érintetlen: VRG Inventory — development plan",
+   "title": "64 napja érintetlen: VRG Inventory — development plan",
    "a": {
     "p": "Inventory/docs/DEV-PLAN.md",
     "line": 1,
     "text": "VRG Inventory — development plan"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 80
+   "ai": 81
   },
   {
    "id": "0aae7997",
    "type": "frozen",
    "kind": "alvó",
    "sec": "inventory",
-   "title": "57 napja érintetlen: Sources and extraction rules",
+   "title": "64 napja érintetlen: Sources and extraction rules",
    "a": {
     "p": "Inventory/docs/SOURCES.md",
     "line": 1,
     "text": "Sources and extraction rules"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 81
-  },
-  {
-   "id": "81c3aabf",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: VARLER — hordozható munkakörnyezet",
-   "a": {
-    "p": "Planner/README.md",
-    "line": 1,
-    "text": "VARLER — hordozható munkakörnyezet"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 84
-  },
-  {
-   "id": "ab275c7a",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: VARLER — setup from zero",
-   "a": {
-    "p": "Planner/SETUP.md",
-    "line": 1,
-    "text": "VARLER — setup from zero"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 85
-  },
-  {
-   "id": "af3a3f71",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: Varler Planner — State of the Project",
-   "a": {
-    "p": "Planner/STATE.md",
-    "line": 1,
-    "text": "Varler Planner — State of the Project"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 86
-  },
-  {
-   "id": "ea6fca65",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: Varler Planner",
-   "a": {
-    "p": "Planner/projects/varler-planner/README.md",
-    "line": 1,
-    "text": "Varler Planner"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 90
-  },
-  {
-   "id": "8dfd1eb5",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "51 napja érintetlen: 1.1 backlog — triaged",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/1.1_backlog.md",
-    "line": 1,
-    "text": "1.1 backlog — triaged"
-   },
-   "age": 51,
-   "keystone": false,
-   "ai": 91
-  },
-  {
-   "id": "397b83c4",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/2_0_architecture.md",
-    "line": 1,
-    "text": "Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 92
-  },
-  {
-   "id": "2b0a9cd3",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: Varler pendrive — állapot",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/MANIFEST.md",
-    "line": 1,
-    "text": "Varler pendrive — állapot"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 95
-  },
-  {
-   "id": "a99f2ef1",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "51 napja érintetlen: Browser verification checklist — everything jsdom could not confirm",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/browser_verification_checklist.md",
-    "line": 1,
-    "text": "Browser verification checklist — everything jsdom could not confirm"
-   },
-   "age": 51,
-   "keystone": false,
-   "ai": 97
-  },
-  {
-   "id": "92744015",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "57 napja érintetlen: Library scouting — candidates, triaged",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/library-scouting.md",
-    "line": 1,
-    "text": "Library scouting — candidates, triaged"
-   },
-   "age": 57,
-   "keystone": false,
-   "ai": 98
-  },
-  {
-   "id": "6640e10a",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/planner_1.0_review.md",
-    "line": 1,
-    "text": "Domoszló Planner — architecture, UI and workflow review"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 107
-  },
-  {
-   "id": "adda9d58",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "60 napja érintetlen: QR subsystem — design, integration, verification",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/qr-subsystem.md",
-    "line": 1,
-    "text": "QR subsystem — design, integration, verification"
-   },
-   "age": 60,
-   "keystone": false,
-   "ai": 108
-  },
-  {
-   "id": "7ac1a7dc",
-   "type": "frozen",
-   "kind": "alvó",
-   "sec": "planner",
-   "title": "53 napja érintetlen: Wiring pipeline — design",
-   "a": {
-    "p": "Planner/projects/varler-planner/docs/wiring_pipeline.md",
-    "line": 1,
-    "text": "Wiring pipeline — design"
-   },
-   "age": 53,
-   "keystone": false,
-   "ai": 213
+   "ai": 82
   },
   {
    "id": "2477e910",
    "type": "frozen",
    "kind": "alvó",
    "sec": "docs",
-   "title": "57 napja érintetlen: Components — single-file / offline, and local tooling",
+   "title": "64 napja érintetlen: Components — single-file / offline, and local tooling",
    "a": {
     "p": "docs/components-offline.md",
     "line": 1,
     "text": "Components — single-file / offline, and local tooling"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 278
+   "ai": 286
   },
   {
    "id": "6e2b6d09",
    "type": "frozen",
    "kind": "alvó",
    "sec": "docs",
-   "title": "57 napja érintetlen: Services — server builds, and what running them actually costs",
+   "title": "64 napja érintetlen: Services — server builds, and what running them actually costs",
    "a": {
     "p": "docs/services-server.md",
     "line": 1,
     "text": "Services — server builds, and what running them actually costs"
    },
-   "age": 57,
+   "age": 64,
    "keystone": false,
-   "ai": 421
+   "ai": 491
   },
   {
    "id": "963f0125",
