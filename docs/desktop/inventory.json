@@ -3,7 +3,7 @@
  "counts": {
   "vrg-menu": 167,
   "features": 105,
-  "dashboard": 92,
+  "dashboard": 93,
   "console": 51,
   "mobile": 47,
   "stack": 23,
@@ -12,10 +12,10 @@
   "agents": 17,
   "firmware": 4,
   "shared": 5,
-  "docs": 27,
+  "docs": 28,
   "folders": 29
  },
- "total": 594,
+ "total": 596,
  "errors": [],
  "rows": [
   {
@@ -2836,6 +2836,15 @@
    "note": "acts.js — act ids → registry items (the allow-list) and what an act does."
   },
   {
+   "id": "dashlib:applinks",
+   "name": "lib/applinks.js",
+   "where": "Dashboard/shell/lib/applinks.js",
+   "source": "dashboard",
+   "kind": "module",
+   "group": "shell/lib",
+   "note": "applinks.js — the VRG Böngésző's one door into the Asztal (T1, BRW-Q01): vrg-app://browser/__vrg/links. The browser app"
+  },
+  {
    "id": "dashlib:appscheme",
    "name": "lib/appscheme.js",
    "where": "Dashboard/shell/lib/appscheme.js",
@@ -4859,6 +4868,15 @@
    "kind": "library",
    "group": "shared",
    "note": "VRG UI Kit v1.1 — \"Mérőpult\""
+  },
+  {
+   "id": "doc:browser",
+   "name": "docs/browser",
+   "where": "docs/browser",
+   "source": "docs",
+   "kind": "docs pack",
+   "group": "docs",
+   "note": ""
   },
   {
    "id": "doc:city",

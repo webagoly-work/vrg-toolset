@@ -7,7 +7,7 @@
 |---|---:|
 | START registry (launcher/vrg-menu.json) | 167 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 92 |
+| VRG Irányítópult (Dashboard/) | 93 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 47 |
 | VRG Stack | 23 |
@@ -16,9 +16,9 @@
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
 | Shared libraries | 5 |
-| Docs packs + GO phrases | 27 |
+| Docs packs + GO phrases | 28 |
 | Top-level folders + launcher parts | 29 |
-| **Total** | **594** |
+| **Total** | **596** |
 
 ## START registry (launcher/vrg-menu.json) (167)
 
@@ -302,7 +302,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (92)
+## VRG Irányítópult (Dashboard/) (93)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -347,6 +347,7 @@
 | `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 8 entries |
 | `dashcfg:web` | Registry web.json | Dashboard/config/web.json | config registry | config | 3 entries |
 | `dashlib:acts` | lib/acts.js | Dashboard/shell/lib/acts.js | module | shell/lib | acts.js — act ids → registry items (the allow-list) and what an act does. |
+| `dashlib:applinks` | lib/applinks.js | Dashboard/shell/lib/applinks.js | module | shell/lib | applinks.js — the VRG Böngésző's one door into the Asztal (T1, BRW-Q01): vrg-app://browser/__vrg/links. The browser app |
 | `dashlib:appscheme` | lib/appscheme.js | Dashboard/shell/lib/appscheme.js | module | shell/lib | appscheme.js — the vrg-app:// scheme of the VRG Asztal (WP-43, DESKU-Q08): an in-shell HTML app gets a real origin, so its |
 | `dashlib:audit` | lib/audit.js | Dashboard/shell/lib/audit.js | module | shell/lib | audit.js — append-only JSON lines in <logs>/audit-YYYY-MM-DD.jsonl (CONTRACT §4.1, API.md). |
 | `dashlib:bookmarks` | lib/bookmarks.js | Dashboard/shell/lib/bookmarks.js | module | shell/lib | bookmarks.js — bookmarks and browsing history in <userDir>/web.json (WP-18). Only { url, title, at }: no page content is stored. |
@@ -613,10 +614,11 @@
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
 | `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1.1 — "Mérőpult" |
 
-## Docs packs + GO phrases (27)
+## Docs packs + GO phrases (28)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `doc:browser` | docs/browser | docs/browser | docs pack | docs |  |
 | `doc:city` | docs/city | docs/city | docs pack | docs |  |
 | `doc:client-look` | docs/client-look | docs/client-look | docs pack | docs |  |
 | `doc:components-offline` | docs/components-offline.md | docs/components-offline.md | doc | docs |  |

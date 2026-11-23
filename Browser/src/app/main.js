@@ -43,6 +43,8 @@
     const kind = VB.host.detect(root.location);
     const data = root.VB_DATA || {};
     const ctx = VB.context.create({ store: st, data, kind });
+    // T1: the master links (the Asztal's web.json) where this host can reach them; elsewhere the links stay on this device
+    const sync = ctx.sync = VB.sync.create({ store: st, kind }).start();
     document.documentElement.dataset.vbHost = kind;
 
     const omniEl = h('div.vb-omni');
@@ -75,11 +77,21 @@
         h('span', null, h('span.vk-lamp', { 'data-tone': st.ok ? 'ok' : 'warn' }), ctx.caps.name),
         h('span.vb-status__wide', null, 'kereső: ' + (ctx.engine() ? ctx.engine().hu : '—')),
         h('span.vb-status__wide', null, ctx.ix.size() + ' tétel a saját indexben'),
-        ctx.caps.api === null ? null : h('span', null, h('span.vk-lamp', { 'data-tone': s === null ? 'off' : s ? 'ok' : 'off' }), s ? 'helyi szerver fut' : s === false ? 'helyi szerver nem fut' : 'helyi szerver …'),
+        ctx.caps.api === null ? null : h('span.vb-status__wide', null, h('span.vk-lamp', { 'data-tone': s === null ? 'off' : s ? 'ok' : 'off' }), s ? 'helyi szerver fut' : s === false ? 'helyi szerver nem fut' : 'helyi szerver …'),
+        linksLamp(),
         st.isFull() ? h('span', null, h('span.vk-lamp', { 'data-tone': 'crit' }), 'a tároló megtelt') : null]);
     }
-    function render() {
+    function linksLamp() {
+      const y = sync.status();
+      const tone = y.mode === 'local' ? 'off' : y.ok === null ? 'run' : y.ok ? 'ok' : 'warn';
+      const pending = st.outbox().length;
+      return h('span', { title: 'Könyvjelzők és előzmények: ' + y.hu }, h('span.vk-lamp', { 'data-tone': tone }),
+        y.mode === 'local' ? 'könyvjelzők: ezen az eszközön' : 'könyvjelzők: Asztal' + (pending ? ' · ' + pending + ' vár' : ''));
+    }
+    sync.onChange(() => drawStatus());
+    function render(keep) {
       const r = parse(root.location.hash);
+      const y = keep === true ? main.scrollTop : 0;
       const n = NAV.find(x => x.id === r.page) || NAV[0];
       drawNav(n.id);
       main.textContent = '';
@@ -87,17 +99,19 @@
       try { view = VB.views[n.view](ctx, r.params, go, r.rest); }
       catch (e) { console.error(e); view = h('div.vb-view', null, h('div.vb-warn', { 'data-level': 'crit' }, 'Hiba a nézetben: ' + e.message)); }
       main.appendChild(view);
-      main.scrollTop = 0;
+      main.scrollTop = y;
       document.title = (n.id ? n.hu + ' · ' : '') + 'VRG Böngésző';
       if (n.id === 'kereses' && r.params.q) omni.set(r.params.q);
     }
-    root.addEventListener('hashchange', render);
+    root.addEventListener('hashchange', () => render());
     // a list re-draws when its data changes; the reader and the search page keep what they show
-    st.on(() => {
+    st.on(w => {
       const r = parse(root.location.hash);
       drawNav(r.page); drawStatus();
+      if (w === 'outbox') return;
       const list = ['', 'konyvjelzok', 'elozmenyek'].includes(r.page) || (r.page === 'olvaso' && !r.rest && !r.params.url && !r.params.doc);
-      if (list) render();
+      // a data change redraws the list where it stands; typing in a filter or a form on that page is not interrupted
+      if (list && !(document.activeElement && main.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))) render(true);
     });
     ctx.onChange(w => { if (w === 'server' || w === 'index') drawStatus(); });
     if (root.matchMedia) root.matchMedia('(max-width: 720px)').addEventListener('change', () => { applyLook(ctx); render(); });

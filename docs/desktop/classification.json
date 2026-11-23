@@ -3758,6 +3758,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:applinks",
+   "name": "lib/applinks.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:appscheme",
    "name": "lib/appscheme.js",
    "source": "dashboard",
@@ -6456,6 +6468,18 @@
    "parent": "dev:look",
    "unit": "uikit",
    "reason": "is the catalog item `uikit`"
+  },
+  {
+   "id": "doc:browser",
+   "name": "docs/browser",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
   },
   {
    "id": "doc:city",

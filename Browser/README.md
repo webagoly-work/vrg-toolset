@@ -36,13 +36,42 @@ Every module can be switched off in **Beállítások → Modulok**. "Host" says 
 | **Gyorsválasz** (quick answers) | `src/core/answers.js`: a safe calculator (no `eval`); P / I / U for one and three phases with cos φ; voltage drop (Cu γ 56, Al γ 35, with the MSZ HD 60364-5-52 G.52.1 guide values 3 % / 5 %); Ohm's law; AWG ↔ mm²; length, power (kW ↔ LE), energy and temperature. Indicative only: the design follows the standard and the datasheet. | all |
 | **Tiszta link** | strips tracking parameters (`utm_*`, `fbclid`, `gclid`, `msclkid` …) and Google's `/url?q=` wrapper before a link is opened or saved | all |
 | **Linkellenőr** | warns about credentials in a URL, punycode domains, plain http, raw IPs; asks before opening a critical one | all |
-| **Könyvjelzők** | tags, a job code (`VRG-ÉÉHH-NN`), a note, pin to the start page, export / import (`vrg-bongeszo/1` JSON) | all |
-| **Előzmények** | what was opened through the app (the host's browser keeps its own), by day, deletable | all |
+| **Könyvjelzők** | `vrg.web-links` v1 rows; tags, a job code (`VRG-ÉÉHH-NN`) and a note beside each; pin to the start page; export / import one v1 file | all |
+| **Előzmények** | one row per visit, shown per URL by day; in the Asztal it includes the Böngésző pane's own browsing (T1) | all |
 | **Olvasó nézet** | `lib/reader.js` through `/api/reader`: a page's text without menus, ads or scripts; **Mentés offline** keeps the text on the device, readable and full-text searchable without a network (on the phone too, once saved) | Asztal, :8812 |
 | **Helyi dokumentumok** | `lib/docs.js`: the repo's Markdown (527 files) in the same engine; opens in the reader | Asztal, :8812 |
 | **Helyi VRG szerverek** | the START servers with a running lamp; User-level ones first (from the catalog), the dev ones on request | Asztal, :8812, file |
 | **Telefonra** | a QR of a URL (the Inventory / Planner encoder, Project Nayuki, MIT) to open it on the phone | not on the phone |
 | **Webes javaslatok** | suggestions from Google, DuckDuckGo or Wikipedia while typing, through the server, without cookies. **Off by default:** every keystroke would leave the PC. | Asztal, :8812 |
+
+## Links: one format, one master (T1)
+
+Bookmarks and history are **`vrg.web-links` v1** (`src/core/links.js`), the format the VRG Asztal's `<userDir>/web.json` has
+always had (the two arrays) and the Data Vault's browser-kit reads (DV-Q22): `{ format, v: 1, bookmarks: [{ url, title, at }],
+history: [{ url, title, at }] }`. The work line's extra fields travel in the same file under `x-bongeszo` (tags, job, note per
+URL; the reading list; the pins); the other readers ignore it. `test/links.test.js` repeats the DV kit's contract cases.
+
+**The master is the Asztal's `web.json`** (BRW-Q01). Each copy keeps the links locally and, once a master has answered,
+records every change as an op (`bookmark`, `unbookmark`, `visit`, `forget`, `clear`; idempotent) in an outbox that
+`src/core/sync.js` sends; each answer replaces the local links with *master + the ops it has not seen*. The very first
+contact uploads what the master lacks; after that the master's deletions win.
+
+| Host | The master is reached through | Notes |
+|---|---|---|
+| VRG Asztal | `vrg-app://browser/__vrg/links` (main, `Dashboard/shell/lib/applinks.js`) | the browser app's origin only; GET / POST ops; the pane's own visits show up here |
+| `serve.js` | `/api/links` | GET reads `web.json` (+ the waiting inbox); POST writes **`web.json.inbox`**, never `web.json` itself (the running Asztal owns it and absorbs the inbox every 30 s) |
+| VRG Mobile, from disk | — | the links stay on the device; move them with **Mentés fájlba / Betöltés fájlból** (a v1 file) until T7 |
+
+The status line says where the links are ("könyvjelzők: Asztal · 3 vár" = three changes waiting for the master).
+
+## The Desktop pane gets the brain (T2)
+
+The pure core also runs inside the VRG Asztal itself:
+
+- the **Böngésző pane's omnibox** (`Dashboard/shell/lib/search.js decide()`): `!bang`s from `config/engines.json`, Tiszta link on
+  URLs, a link with a user name or password refused;
+- the **Ctrl+K palette**: Gyorsválasz above the command rows (`230V 16A`, `2,5mm2 30m 16A`, `= 2*(3+4)`), a click or Ctrl+Enter
+  copies the result.
 
 ## How the hosts open pages
 
@@ -74,7 +103,8 @@ Browser/
   serve.js                the local server (:8812)          build.js   src → dist (deterministic, --check)
   config/engines.json     engines, bangs, groups            config/quicklinks.json   the start page's default tiles
   src/index.html          template + the UI Kit region (inline.js --sync-app)       src/app.css
-  src/core/               engine · url · answers · store · host          (pure, also loaded by node tests)
+  src/core/               engine · url · answers · links · store · sync · host   (pure; links / url / answers are also
+                          loaded by the VRG Asztal's shell: Dashboard/shell/lib/bookmarks.js, search.js, the palette)
   src/vendor/qr.js        the QR encoder, copied unchanged (MIT notice inside)
   src/app/                ui · context · omnibox · views · main
   lib/                    netguard · reader · docs · suggest
@@ -90,7 +120,11 @@ use behind `ctx.on('<id>')`.
 
 ## Data
 
-Everything stays on the device, in the app origin's `localStorage` (`vrg-bongeszo:v1:*`): up to 2000 bookmarks, 600
-history entries and 300 reading-list items (200 kB of text each). Each host has its own origin, and therefore its
-own data. **Mentés fájlba / Betöltés fájlból** moves the data between them (on the phone, Mentés copies the JSON
-to the clipboard).
+On the device, in the app origin's `localStorage` (`vrg-bongeszo:v1:` `links`, `meta`, `reading`, `settings`, `outbox`,
+`master`): up to 2000 bookmarks, 20 000 history rows (the Asztal's limits) and 300 reading-list items (200 kB of text each).
+In the Asztal and from `serve.js` the bookmarks and the history are a copy of the master (above); the reading list, tags,
+job codes and pins stay per device and travel in the export. The first release's keys are migrated once. **Mentés fájlba /
+Betöltés fájlból** is one `vrg.web-links` v1 file; it also loads the Asztal's `web.json` and the first release's
+`vrg-bongeszo/1` backups (on the phone, Mentés copies the JSON to the clipboard).
+
+**The default search engine** is asked once on the start page (BRW-Q02); the Data Vault's personal line keeps none.

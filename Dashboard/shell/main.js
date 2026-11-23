@@ -445,6 +445,10 @@ app.on('certificate-error', webHost.certError);
 const search = require('./lib/search.js');
 const { createBookmarks } = require('./lib/bookmarks.js');
 const webBm = createBookmarks({ file: () => path.join(paths.userDir(), 'web.json'), days: () => settings.get('web.history.days') });
+// the VRG Böngésző's door to these links (T1, BRW-Q01): vrg-app://browser/__vrg/links, answered in the vrg-app handler below;
+// the inbox Browser/serve.js leaves beside web.json is absorbed there and every 30 s while the Asztal runs
+const appLinks = require('./lib/applinks.js').createAppLinks({ bookmarks: webBm });
+setInterval(() => { try { webBm.absorb(); } catch (e) { log('links inbox', e.message); } }, 30000).unref();
 const readJsonList = f => { try { const j = JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', f), 'utf8')); return Array.isArray(j) ? j : []; } catch (e) { return []; } };
 const webServers = () => (R.C && R.C.menu && R.C.menu.servers) || [];
 const NO_TARGET = { ok: false, err: 'not-found', hu: 'Nincs ilyen cél.' };
@@ -456,12 +460,15 @@ function targetUrl(target) {
   if ((m = /^srv:([a-z0-9_-]+)$/i.exec(target))) { const s = R.server(m[1]); return s ? R.serverUrl(s) : ''; }
   if ((m = /^web:([a-z0-9_-]+)$/i.exec(target))) { const p = readJsonList('web.json').find(x => x && x.id === m[1]); return p && types.url(p.url) ? p.url : ''; }
   if ((m = /^srch:([a-z0-9_-]+):([\s\S]*)$/i.exec(target))) return search.providerUrl(m[1], m[2]);
-  if (target.startsWith('omni:')) return search.toUrl(target.slice(5), { servers: webServers() });
+  if (target.startsWith('omni:')) return search.decide(target.slice(5), { servers: webServers() }).url;
   return '';
 }
 const webOps = {
   open: target => { const url = targetUrl(target); return url ? webHost.open({ url }) : { ...NO_TARGET }; },
-  go: (view, input) => { const url = search.toUrl(input, { servers: webServers() }); return url ? webHost.go(view, url) : { ok: false, err: 'bad-request', hu: 'Üres cím.' }; },
+  go: (view, input) => {                                                   // T2: bangs, Tiszta link, Linkellenőr (search.decide)
+    const d = search.decide(input, { servers: webServers() });
+    return d.url ? webHost.go(view, d.url) : { ok: false, err: 'bad-request', hu: d.hu || 'Üres cím.' };
+  },
   find: (view, q, dir) => webHost.find(view, q, dir),
   zoom: (view, z) => webHost.zoom(view, z),
   external: view => webHost.external(view, u => shell.openExternal(u)),
@@ -935,6 +942,11 @@ app.whenReady().then(async () => {
   build.write(); R.load();                                             // the page always starts on fresh data
   catalog.load();
   session.fromPartition('persist:vrg-app').protocol.handle('vrg-app', async req => {    // WP-43: only the app's folder + shared/
+    if (require('./lib/applinks.js').isLinksRequest(req.url)) {                          // T1: the browser app's links, nothing else
+      const body = req.method === 'POST' ? await req.text() : '';
+      const r = appLinks.handle({ method: req.method, url: req.url, origin: req.headers.get('origin') || '', body });
+      return new Response(JSON.stringify(r.json), { status: r.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+    }
     const d = appScheme.decide(req.url);
     if (!d.ok) return new Response(d.why, { status: d.status, headers: { 'content-type': 'text/plain; charset=utf-8' } });
     const r = await net.fetch(require('url').pathToFileURL(d.file).href);

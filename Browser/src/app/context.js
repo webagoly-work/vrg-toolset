@@ -38,7 +38,7 @@
       for (const b of st.bookmarks()) ix.add({ id: 'bm:' + b.id, kind: 'bm', title: b.title, url: b.url, tags: b.tags.concat(b.job ? [b.job] : []), text: b.note, boost: 1.4, ref: b });
       for (const r of st.reading()) ix.add({ id: 'rd:' + r.id, kind: 'rd', title: r.title, url: r.url, tags: r.tags.concat(r.job ? [r.job] : []), text: [r.note, r.excerpt, (r.text || '').replace(/^(#{1,3} |• )/gm, '')].join(' '), boost: 1.2, ref: r });
       const seen = new Set(st.bookmarks().map(b => st.key(b.url)));
-      for (const hv of st.history()) if (!seen.has(st.key(hv.url))) ix.add({ id: 'hi:' + st.key(hv.url), kind: 'hi', title: hv.title || VB.url.display(hv.url), url: hv.url, tags: [], text: '', boost: 0.6 + Math.min(0.6, hv.count / 20), ref: hv });
+      for (const hv of st.history('', 3000)) if (!seen.has(st.key(hv.url))) ix.add({ id: 'hi:' + st.key(hv.url), kind: 'hi', title: hv.title || VB.url.display(hv.url), url: hv.url, tags: [], text: '', boost: 0.6 + Math.min(0.6, hv.count / 20), ref: hv });
       if (on('servers')) for (const s of data.servers || []) ix.add({ id: 'srv:' + s.id, kind: 'srv', title: s.name, url: 'http://localhost:' + s.port + '/', tags: ['vrg', 'szerver', 'helyi', String(s.port)], text: s.hint || '', boost: 1.1, ref: s });
       for (const q of data.quicklinks || []) ix.add({ id: 'ql:' + q.url, kind: 'ql', title: q.hu, url: q.url, tags: [], text: '', boost: 0.9, ref: q });
       for (const e of engines) ix.add({ id: 'eng:' + e.id, kind: 'eng', title: e.hu, url: '', tags: (e.bangs || []).map(b => '!' + b).concat(e.bangs || []), text: (data.groups || {})[e.group] || '', boost: 0.8, ref: e });

@@ -9,9 +9,12 @@
 //   /api/docs?q=&limit=    Helyi dokumentumok: the repo's Markdown in the search engine (lib/docs.js)
 //   /api/doc?path=         one indexed document as reader blocks (only paths in the index)
 //   /api/suggest?src=&q=   web suggestions (lib/suggest.js), only when the page has them turned on
+//   /api/links             T1 (BRW-Q01): GET the master bookmarks and history (the Asztal's web.json + the waiting inbox) as
+//                          vrg.web-links v1; POST { ops } adds them to web.json.inbox, which the Asztal absorbs (it holds
+//                          web.json in memory, so this server never writes the master itself). POST: own page, JSON only.
 //
 // Every request must name this server in its Host header (a DNS-rebinding page cannot); an Origin, when sent, must be
-// this server or the VRG Asztal's app origin (vrg-app://browser). Nothing is written to disk; the reader keeps no copy.
+// this server or the VRG Asztal's app origin (vrg-app://browser). The only write is the links inbox; the reader keeps no copy.
 //
 //   --port N       (default 8812, or VRG_BROWSER_PORT)
 //   --no-open      do not open the browser (START opens it itself)
@@ -26,10 +29,15 @@ const { createGuard, explain } = require('./lib/netguard');
 const { createDocs } = require('./lib/docs');
 const { createSuggest } = require('./lib/suggest');
 const reader = require('./lib/reader');
+const links = require('./src/core/links');
 
 const VERSION = '1.0.0';
 const DIST = path.join(__dirname, 'dist', 'vrg-bongeszo.html');
 const REPO = path.resolve(__dirname, '..');
+// the master links (T1, BRW-Q01): the VRG Asztal's <userDir>/web.json (Dashboard/shell/lib/paths.js, never created from here)
+function deskLinksFile() {
+  try { const p = require('../Dashboard/shell/lib/paths.js'); return path.join(p.home(), p.user(), 'web.json'); } catch (e) { return ''; }
+}
 
 function createServer(opts) {
   const o = opts || {};
@@ -38,6 +46,27 @@ function createServer(opts) {
   const docs = o.docs || createDocs({ repo: o.repo || REPO });
   const suggest = o.suggest || createSuggest({ guard });
   const page = o.page || DIST;
+  const linksFile = o.linksFile === undefined ? deskLinksFile() : o.linksFile;
+  // the master as the Asztal will see it: web.json plus the ops still waiting in the inbox (the Asztal absorbs it, lib/bookmarks.js)
+  function masterLinks() {
+    if (!linksFile || !fs.existsSync(path.dirname(linksFile))) return null;
+    let base = links.empty(), pending = [];
+    try { base = links.read(fs.readFileSync(linksFile, 'utf8')); } catch (e) { /* no web.json yet: the Asztal has not browsed */ }
+    try { pending = JSON.parse(fs.readFileSync(linksFile + '.inbox', 'utf8')).ops || []; } catch (e) {}
+    return links.apply(base, pending);
+  }
+  function toInbox(ops) {
+    const clean = links.cleanOps(ops);
+    if (!clean.length) return 0;
+    let cur = [];
+    try { cur = JSON.parse(fs.readFileSync(linksFile + '.inbox', 'utf8')).ops || []; } catch (e) {}
+    const all = cur.concat(clean).slice(-5000);
+    const tmpf = linksFile + '.inbox.tmp';
+    fs.writeFileSync(tmpf, JSON.stringify({ ops: all }));
+    fs.renameSync(tmpf, linksFile + '.inbox');
+    return clean.length;
+  }
+  const body = req => new Promise((res, rej) => { let b = ''; req.on('data', c => { b += c; if (b.length > 1024 * 1024) { rej(new Error('too large')); req.destroy(); } }); req.on('end', () => res(b)); req.on('error', rej); });
   const HOSTS = new Set(['127.0.0.1:' + port, 'localhost:' + port]);
   const ORIGINS = new Set(['http://127.0.0.1:' + port, 'http://localhost:' + port, 'vrg-app://browser'].concat(o.origins || []));
   let busy = 0;
@@ -70,8 +99,20 @@ function createServer(opts) {
     if (!HOSTS.has(String(req.headers.host || '').toLowerCase())) return send(res, 421, { ok: false, hu: 'Ismeretlen Host.' });
     if (origin && !ORIGINS.has(origin)) return send(res, 403, { ok: false, hu: 'Idegen oldalnak nem válaszolok.' });
     if (req.method === 'OPTIONS') return send(res, 204, '', 'text/plain', origin);
-    if (req.method !== 'GET') return send(res, 405, { ok: false, hu: 'Csak olvasás.' }, null, origin);
     const u = new URL(req.url, 'http://127.0.0.1');
+    if (u.pathname === '/api/links') {
+      const m = masterLinks();
+      if (!m) return send(res, 200, { ok: false, code: 'no-master', hu: 'Ezen a gépen nincs VRG Asztal adatmappa (web.json).' }, null, origin);
+      if (req.method === 'GET') return send(res, 200, Object.assign({ ok: true, format: links.FORMAT, v: links.VERSION }, m), null, origin);
+      if (req.method !== 'POST') return send(res, 405, { ok: false, hu: 'GET vagy POST.' }, null, origin);
+      // a write needs this server's own page: a named origin and a JSON body (a form from another page cannot send either)
+      if (!origin || !/^application\/json/.test(String(req.headers['content-type'] || ''))) return send(res, 403, { ok: false, hu: 'Írni csak a VRG Böngésző írhat.' }, null, origin);
+      let j;
+      try { j = JSON.parse(await body(req)); } catch (e) { return send(res, 400, { ok: false, hu: 'Nem JSON, vagy túl nagy.' }, null, origin); }
+      const applied = toInbox(j && j.ops);
+      return send(res, 200, Object.assign({ ok: true, format: links.FORMAT, v: links.VERSION, applied }, masterLinks()), null, origin);
+    }
+    if (req.method !== 'GET') return send(res, 405, { ok: false, hu: 'Csak olvasás.' }, null, origin);
     const q = k => String(u.searchParams.get(k) || '');
     try {
       if (u.pathname === '/' || u.pathname === '/index.html' || u.pathname === '/vrg-bongeszo.html') {

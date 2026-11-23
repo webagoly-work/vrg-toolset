@@ -21,11 +21,11 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
 | open · user | 122 | 38 |
-| open · dev | 297 | 58 |
+| open · dev | 298 | 58 |
 | open · all | 24 | 1 |
-| internal | 77 | 0 |
+| internal | 78 | 0 |
 | roadmap | 74 | 5 |
-| **total** | **594** | **102** |
+| **total** | **596** | **102** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -176,7 +176,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feature module` | Feature module · Funkciómodul | unit | 46 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 52 |
+| `module` | Module · Modul | unit | 53 |
 | `library` | Library · Könyvtár | unit | 2 |
 | `command` | Command · Parancs | unit | 101 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
@@ -185,7 +185,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 10 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 11 |
-| `document set` | Document set · Dokumentumcsomag | unit | 20 |
+| `document set` | Document set · Dokumentumcsomag | unit | 21 |
 | `runbook` | Runbook · Forgatókönyv | unit | 11 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
 | `ai coding assistant` | AI coding assistant · MI kódsegéd | unit | 3 |
@@ -543,6 +543,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashcfg:sheets` | Registry sheets.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashcfg:web` | Registry web.json | registry · config file | internal |  | `desktop` | settings data behind the VRG Asztal; edited through Beállítások, not opened |
 | `dashlib:acts` | lib/acts.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:applinks` | lib/applinks.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:appscheme` | lib/appscheme.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:audit` | lib/audit.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:bookmarks` | lib/bookmarks.js | module | internal |  | `desktop` | internal code unit |
@@ -768,6 +769,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `lib:varler-doc` | varler-doc | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:varler-logo` | varler-logo | asset · brand | open | dev | `dev:look` | is the catalog item `logo` |
 | `lib:vrg-ui-kit` | vrg-ui-kit | ui component library · with a gallery | open | dev | `dev:look` | is the catalog item `uikit` |
+| `doc:browser` | docs/browser | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:city` | docs/city | document set · pack | open | dev | `codecity` | design, decisions and briefs |
 | `doc:client-look` | docs/client-look | document set · pack | open | dev | `bridge` | design, decisions and briefs |
 | `doc:components-offline` | docs/components-offline.md | document set · pack | open | dev | `vendor` | design, decisions and briefs |

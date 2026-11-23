@@ -36,6 +36,14 @@
     }
     else if (!st.ok) out.appendChild(h('div.vb-warn', { 'data-level': 'warn' }, icon('warning'), 'A tároló nem írható (privát ablak?): a könyvjelzők és az előzmények csak a lap bezárásáig maradnak meg.'));
 
+    // BRW-Q02: the work line keeps a default search engine, but the user picks it once
+    if (!s.engineChosen) {
+      const pick = ['google', 'ddg', 'startpage', 'bing'].map(id => ctx.engines.find(e => e.id === id)).filter(Boolean);
+      out.appendChild(sec('Melyik kereső legyen az alapértelmezett?', 'egyszer kérdezem · Beállításokban bármikor átállítható', null,
+        h('p.vb-note', null, 'A címsor ezzel keres, ha nem adsz meg !bang-et. A DuckDuckGo és a Startpage nem követ.'),
+        h('div.vb-actions', null, pick.map(e => btn(e.hu + (e.private ? ' · nem követ' : ''), { variant: e.id === s.engine ? 'primary' : null, click: () => { st.set('engine', e.id); st.set('engineChosen', true); toast('ok', 'Alapértelmezett kereső', e.hu); go('#/'); } })),
+          btn('Más…', { click: () => go('#/beallitasok') }))));
+    }
     // tiles: pinned bookmarks, then the quick links
     const pins = (s.pinned || []).map(id => st.bookmarks().find(b => b.id === id)).filter(Boolean);
     const tiles = pins.map(b => tile(b.title, VB.url.hostOf(b.url), ico(b.title), () => ctx.open(b.url, { title: b.title, via: 'tile' })))
@@ -217,7 +225,7 @@
     } } });
     return h('div.vb-actions', null, file,
       btn('Mentés fájlba', { icon: 'download', small: true, click: async () => {
-        const how = await giveFile('vrg-bongeszo-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(ctx.st.exportAll(), null, 1), ctx.kind);
+        const how = await giveFile('vrg-web-links-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(ctx.st.exportAll(), null, 1), ctx.kind);
         toast(how === 'failed' ? 'warn' : 'ok', 'Mentés', how === 'download' ? 'Letöltve.' : how === 'clipboard' ? 'A mentés a vágólapon van (a telefon nem tölt le fájlt).' : 'Nem sikerült.');
       } }),
       btn('Betöltés fájlból', { icon: 'upload', small: true, click: () => file.click() }));
@@ -232,20 +240,20 @@
     const draw = () => {
       list.textContent = '';
       const f = VB.engine.fold(filt.value.trim());
-      const all = st.history().filter(v => !f || VB.engine.fold(v.title + ' ' + v.url).includes(f));
+      const all = st.history('', 1500).filter(v => !f || VB.engine.fold(v.title + ' ' + v.url).includes(f)).slice(0, 400);
       if (!all.length) { list.appendChild(empty(st.settings().history ? 'Nincs előzmény.' : 'Az előzmények mentése ki van kapcsolva (Beállítások).')); return; }
       let day = '', box = null;
       for (const v of all) {
         const d = dayLabel(v.at);
         if (d !== day) { day = d; box = h('div.vb-list'); list.append(h('span.vk-label', null, d), box); }
-        box.appendChild(row(v.title || VB.url.display(v.url), v.url, [h('span.vb-tag', null, when(v.at)), v.count > 1 ? h('span.vb-tag', null, v.count + '×') : null, v.via && /^search:/.test(v.via) ? h('span.vb-tag.vb-tag--kind', null, 'keresés') : null],
+        box.appendChild(row(v.title || VB.url.display(v.url), v.url, [h('span.vb-tag', null, when(v.at)), v.count > 1 ? h('span.vb-tag', null, v.count + '×') : null],
           () => ctx.open(v.url, { title: v.title, via: 'history' }),
           [btn('Könyvjelző', { iconOnly: true, icon: 'star', small: true, pressed: !!st.bookmark(v.url), click: () => { if (st.addBookmark({ url: v.url, title: v.title || VB.url.hostOf(v.url) })) toast('ok', 'Könyvjelző mentve', v.title || v.url); } }),
             btn('Törlés az előzményekből', { iconOnly: true, icon: 'close', small: true, click: () => st.removeVisit(v.url) })]));
       }
     };
     filt.addEventListener('input', draw);
-    out.append(sec('Előzmények', st.history().length + ' oldal · csak ami a VRG Böngészőből nyílt', h('div.vb-actions', null,
+    out.append(sec('Előzmények', st.history().length + ' oldal · ' + (ctx.sync && ctx.sync.status().mode === 'master' ? 'az Asztal Böngésző paneljével együtt' : 'ami innen nyílt'), h('div.vb-actions', null,
       btn('Utolsó óra törlése', { small: true, click: () => st.clearHistory(Date.now() - 3600000) }),
       btn('Mind törlése', { small: true, variant: 'danger', click: async () => { if (await confirmDel('Az összes előzmény')) st.clearHistory(); } })),
     h('div.vb-row', { style: { padding: 0 } }, filt), list));
@@ -375,7 +383,7 @@
     const select = (value, options, change, label) => { const el = h('select.vb-select', { 'aria-label': label, on: { change: () => change(el.value) } }, options.map(([v, l]) => h('option', { value: v, selected: v === value }, l))); return el; };
     const groups = {};
     for (const e of ctx.engines) (groups[e.group] = groups[e.group] || []).push(e);
-    const engSel = h('select.vb-select', { 'aria-label': 'Alapértelmezett kereső', on: { change: () => { st.set('engine', engSel.value); toast('ok', 'Alapértelmezett kereső', ctx.engine().hu); } } },
+    const engSel = h('select.vb-select', { 'aria-label': 'Alapértelmezett kereső', on: { change: () => { st.set('engine', engSel.value); st.set('engineChosen', true); toast('ok', 'Alapértelmezett kereső', ctx.engine().hu); } } },
       Object.entries(groups).map(([g, list]) => h('optgroup', { label: (ctx.data.groups || {})[g] || g }, list.map(e => h('option', { value: e.id, selected: e.id === ctx.engine().id }, e.hu + '  !' + (e.bangs || [])[0])))));
     out.append(sec('Beállítások', 'ezen az eszközön, ' + ctx.caps.name, null, h('div.vb-settings', null,
       set('Alapértelmezett kereső', 'A címsor ezzel keres, ha nincs !bang.', engSel),
@@ -398,8 +406,10 @@
     out.append(sec('Adatok', null, null, h('div.vb-settings', null,
       set('Tároló', st.ok ? 'localStorage, ezen az eszközön · ' + Math.round(used / 1024) + ' kB' : 'Nem írható: a lap bezárásakor minden elvész.', h('span.vk-lamp', { 'data-tone': st.ok ? 'ok' : 'warn' })),
       set('Helyi szerver (:8812)', 'Olvasó nézet, dokumentumkereső, webes javaslatok.', status),
-      set('Mentés és betöltés', 'Könyvjelzők, olvasólista (a mentett szöveggel), előzmények egy JSON fájlban (vrg-bongeszo/1).', libraryButtons(ctx)),
-      set('Minden adat törlése', 'Könyvjelzők, előzmények, olvasólista és beállítások ezen az eszközön.', btn('Törlés', { variant: 'danger', icon: 'trash', click: async () => { if (await confirmDel('Minden VRG Böngésző adat ezen az eszközön')) { st.wipe(); toast('ok', 'Minden adat törölve', ''); go('#/'); } } })))));
+      set('Könyvjelzők és előzmények', ctx.sync && ctx.sync.status().mode === 'master' ? 'Az Asztal web.json-ja a fő példány (BRW-Q01): ami itt változik, oda megy, és az Asztal Böngésző paneljének előzményei itt is látszanak. ' + ctx.sync.status().hu + '.' : 'Ezen az eszközön; az Asztallal fájlban cserélhető (vrg.web-links v1).',
+        h('span.vk-lamp', { 'data-tone': ctx.sync && ctx.sync.status().mode === 'master' ? (ctx.sync.status().ok ? 'ok' : 'warn') : 'off' })),
+      set('Mentés és betöltés', 'Egy vrg.web-links v1 fájl: könyvjelzők és előzmények (az Asztal és a Data Vault is olvassa), mellette a címkék, munkaszámok, az olvasólista és a kitűzések. Az Asztal web.json-ja és a régi VRG Böngésző mentés is betölthető.', libraryButtons(ctx)),
+      set('Minden adat törlése', ctx.sync && ctx.sync.status().mode === 'master' ? 'Ezen az eszközön; az Asztal könyvjelzői és előzményei megmaradnak, és a következő egyeztetéskor visszajönnek.' : 'Könyvjelzők, előzmények, olvasólista és beállítások ezen az eszközön.', btn('Törlés', { variant: 'danger', icon: 'trash', click: async () => { if (await confirmDel('Minden VRG Böngésző adat ezen az eszközön')) { st.wipe(); toast('ok', 'Minden adat törölve', ''); go('#/'); } } })))));
     return out;
   }
   function serverInput(ctx) {

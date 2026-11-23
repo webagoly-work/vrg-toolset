@@ -166,3 +166,45 @@ test('serve: documents and suggestions', () => withServer(async get => {
   assert.equal((await get('/api/doc?path=secret.txt')).status, 404);
   assert.deepEqual((await get('/api/suggest?src=google&q=kab')).json.list, ['kab 1', 'kab 2']);
 }));
+
+test('serve: /api/links reads the Asztal web.json and writes only the inbox', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vb-links-'));
+  const file = path.join(dir, 'web.json');
+  fs.writeFileSync(file, JSON.stringify({ bookmarks: [{ url: 'https://github.com/', title: 'GitHub', at: 1 }], history: [{ url: 'https://pane.hu/', title: 'P', at: 2 }] }));
+  const { server } = createServer({ port: 18815, guard: { check: () => ({ ok: false }), get: async () => { throw new Error('x'); } }, docs: createDocs({ repo: tmpRepo() }), linksFile: file, suggest: { get: async () => [], sources: () => [] } });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const port = server.address().port;
+  const req = (method, headers, body) => new Promise((res, rej) => {
+    const r = http.request({ host: '127.0.0.1', port, path: '/api/links', method, headers: Object.assign({ host: '127.0.0.1:18815' }, headers) }, rr => {
+      let b = ''; rr.on('data', c => (b += c)); rr.on('end', () => res({ status: rr.statusCode, json: JSON.parse(b) }));
+    });
+    r.on('error', rej); if (body) r.write(body); r.end();
+  });
+  try {
+    const g = await req('GET', {});
+    assert.equal(g.json.format, 'vrg.web-links');
+    assert.deepEqual(g.json.bookmarks.map(b => b.url), ['https://github.com/']);
+    const own = { origin: 'http://127.0.0.1:18815', 'content-type': 'application/json' };
+    assert.equal((await req('POST', { 'content-type': 'application/json' }, '{"ops":[]}')).status, 403, 'no origin: not our page');
+    assert.equal((await req('POST', { origin: 'http://127.0.0.1:18815', 'content-type': 'application/x-www-form-urlencoded' }, 'ops=1')).status, 403, 'a form cannot write');
+    assert.equal((await req('POST', { origin: 'https://evil.example', 'content-type': 'application/json' }, '{"ops":[]}')).status, 403);
+    const before = fs.readFileSync(file, 'utf8');
+    const p = await req('POST', own, JSON.stringify({ ops: [{ op: 'bookmark', url: 'https://new.hu/', title: 'N', at: 9 }, { op: 'visit', url: 'file:///x', at: 1 }] }));
+    assert.equal(p.status, 200);
+    assert.equal(p.json.applied, 1);
+    assert.deepEqual(p.json.bookmarks.map(b => b.url), ['https://github.com/', 'https://new.hu/'], 'the answer shows the master as the Asztal will see it');
+    assert.equal(fs.readFileSync(file, 'utf8'), before, 'web.json itself is untouched: the running Asztal owns it');
+    assert.equal(JSON.parse(fs.readFileSync(file + '.inbox', 'utf8')).ops.length, 1);
+    // the Asztal absorbs the inbox (Dashboard/shell/lib/bookmarks.js)
+    const { createBookmarks } = require('../../Dashboard/shell/lib/bookmarks.js');
+    const bm = createBookmarks({ file, now: () => 10, timers: false });
+    assert.equal(bm.absorb(), 1);
+    assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')).bookmarks.map(b => b.url), ['https://github.com/', 'https://new.hu/']);
+    assert.ok(!fs.existsSync(file + '.inbox'));
+  } finally { server.close(); }
+  const { server: s2 } = createServer({ port: 18816, linksFile: path.join(os.tmpdir(), 'no-such-dir-' + process.pid, 'web.json'), guard: { check: () => ({ ok: false }) }, docs: createDocs({ repo: tmpRepo() }) });
+  await new Promise(r => s2.listen(0, '127.0.0.1', r));
+  const j = await new Promise(res => http.get({ host: '127.0.0.1', port: s2.address().port, path: '/api/links', headers: { host: '127.0.0.1:18816' } }, rr => { let b = ''; rr.on('data', c => (b += c)); rr.on('end', () => res(JSON.parse(b))); }));
+  assert.equal(j.code, 'no-master');
+  s2.close();
+});

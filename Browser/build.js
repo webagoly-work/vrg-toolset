@@ -20,7 +20,7 @@ const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const OUT = path.join(ROOT, 'dist', 'vrg-bongeszo.html');
 const VERSION = '1.0.0';
-const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/store.js', 'core/host.js', 'vendor/qr.js',
+const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/links.js', 'core/store.js', 'core/sync.js', 'core/host.js', 'vendor/qr.js',
   'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/main.js'];
 const OWN_SERVER = 'bongeszo';
 

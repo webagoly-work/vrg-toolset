@@ -256,3 +256,20 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `wp-49.test.js` 15 (+4: grades / formats, the netstat / netsh parsers in English and Hungarian, the sampler on fakes, the
   download QR); probe: the corner row's values, grades and computed colours, the menu (10), switching metrics on and saving them,
   Esc, ◉; the download QR with a throwaway relay; wp-35 channel pin 112 → 114; `relay-ports.js` 102 (+13).
+
+## WP-50 — the VRG Böngésző joins the Asztal: one links format, the pane gets the brain (2026-11-23)
+
+T1 and T2 of `docs/browser/TRAJECTORIES.md` (BRW-Q01 … Q04 = A).
+
+- **One links format (T1, BRW-Q01 A).** `<userDir>/web.json` is the master of `vrg.web-links` v1 (the Data Vault's browser-kit
+  format, DV-Q22). `lib/bookmarks.js` gains `snapshot()`, `applyOps(ops)` (the rules of `Browser/src/core/links.js`: http(s) only,
+  the limits, idempotent) and `absorb()` (the inbox `Browser/serve.js` leaves as `web.json.inbox`; taken by rename, every 30 s and on
+  each request). `lib/applinks.js` answers `vrg-app://browser/__vrg/links` inside the `vrg-app` handler, to the browser app's origin
+  only: GET the links, POST ops. No preload, no IPC channel (DESKU-Q08 kept). The pane's own history is now the app's history too.
+- **The pane gets the brain (T2).** `lib/search.js decide()`: a `!bang` picks an engine of `Browser/config/engines.json`, a URL
+  loses its tracking parameters, one with a user name or password is refused with a Hungarian reason; `toUrl()` keeps its answer.
+  `web.go` and `omni:` targets use it. The Ctrl+K palette shows Gyorsválasz (`Browser/src/core/answers.js`, loaded by the frame
+  page) above the rows; a click or Ctrl+Enter copies the result.
+- Tests: `wp-50.test.js` 5 (ops idempotent and written as the two arrays, the inbox absorbed once, the door's origin / method / size
+  rules, `decide()`, the frame page's scripts); `wp-18` 9 unchanged. The Electron probe was not run (no Electron in the cloud
+  session); `wp-08`, `wp-20`, `wp-35` (2), `wp-41`, `wp-43` fail here as before the change (they read `H:\VRG\Full`).

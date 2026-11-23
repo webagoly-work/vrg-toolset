@@ -12,6 +12,7 @@ Run of 2026-11-06, tests only: `node Dashboard/test/run.js WP-35` (unit test `te
 | Main process | files, processes, network, `secrets.bin` | allow-list of act ids and registries, `execFile`/`spawn` with argument arrays | accept anything that came up from the page as a path |
 | Local files under `home\desktop` | read by main only | per-user folder, `secrets.bin` is DPAPI-encrypted | hold a token in plain bytes |
 | The network | OAuth loopback (127.0.0.1), the user's web tabs, Gmail API (read-only scope) | OAuth PKCE, system browser for consent, certificate errors never overridden | carry credentials of ours in a URL |
+| The VRG Böngésző app (`vrg-app://browser`, WP-50) | one path on its own origin: `vrg-app://browser/__vrg/links` (GET the master links, POST ops) | `shell/lib/applinks.js`: only that host and path; a POST must carry the app's own Origin, JSON, ≤ 1 MB; ops re-checked by `Browser/src/core/links.js` (http(s) only, the limits, idempotent); web tabs have no `vrg-app` handler at all | reach any other path, file or IPC channel; write anything but bookmarks and history rows |
 
 ## CONTRACT §3/§4 rule → the test that proves it
 

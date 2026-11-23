@@ -128,7 +128,7 @@ test('answers: AWG and conversions', () => {
   assert.equal(answers.fmt(-1234.5), '−1\u00a0234,5');
 });
 
-// ------------------------------------------------------------------ store
+// ------------------------------------------------------------------ store (vrg.web-links v1 since T1)
 function mem() { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; }
 test('store: refused storage falls back to memory and says so', () => {
   const s = store.create({ getItem() { throw new Error('no'); }, setItem() { throw new Error('no'); }, removeItem() {} });
@@ -136,52 +136,90 @@ test('store: refused storage falls back to memory and says so', () => {
   assert.ok(s.addBookmark({ url: 'https://a.hu/', title: 'A' }));
   assert.equal(s.bookmarks().length, 1);
 });
-test('store: bookmarks, job codes, tags, only http(s)', () => {
+test('store: bookmarks are v1 rows, tags / job / note beside them, only http(s)', () => {
   const ls = mem();
   const s = store.create(ls);
-  assert.equal(s.ok, true);
   const b = s.addBookmark({ url: 'https://tme.eu/hu/', title: 'TME', tags: 'beszerzés, alkatrész', job: 'vrg-2611-03' });
+  assert.equal(b.id, 'https://tme.eu/hu/', 'the id is the URL, as in web.json');
   assert.equal(b.job, 'VRG-2611-03');
   assert.deepEqual(b.tags, ['beszerzés', 'alkatrész']);
   assert.equal(s.addBookmark({ url: 'javascript:alert(1)', title: 'x' }), null);
   assert.equal(s.addBookmark({ url: 'https://x.hu/', job: 'ügyfél neve' }).job, '', 'a job code must be VRG-ÉÉHH-NN');
   assert.equal(s.addBookmark({ url: 'https://tme.eu/hu', title: 'TME 2' }).id, b.id, 'same URL (trailing slash) = same bookmark');
   s.updateBookmark(b.id, { title: 'TME Hungary' });
+  const raw = JSON.parse(ls.m.get('vrg-bongeszo:v1:links'));
+  assert.deepEqual(Object.keys(raw.bookmarks[0]).sort(), ['at', 'title', 'url'], 'the rows carry only url, title, at');
   const again = store.create(ls);
   assert.equal(again.bookmark('https://tme.eu/hu/').title, 'TME Hungary', 'kept across a reload');
   assert.deepEqual(again.jobs(), [['VRG-2611-03', 1]]);
   again.removeBookmark(b.id);
   assert.equal(again.bookmark('https://tme.eu/hu/'), null);
 });
-test('store: history de-duplicates, counts, honours the switch and its cap', () => {
+test('store: history is one row per visit, grouped for the views, honours the switch', () => {
   const s = store.create(mem());
   s.visit({ url: 'https://a.hu/', title: 'A' });
   s.visit({ url: 'https://b.hu/', title: 'B' });
-  s.visit({ url: 'https://a.hu/#x', title: '' });
-  assert.deepEqual(s.history().map(h => [h.url, h.count, h.title]), [['https://a.hu/#x', 2, 'A'], ['https://b.hu/', 1, 'B']]);
+  s.visit({ url: 'https://a.hu/', title: '' });
+  assert.equal(s.historyRows().length, 3);
+  assert.deepEqual(s.history().map(h => [h.url, h.count]), [['https://a.hu/', 2], ['https://b.hu/', 1]]);
   s.set('history', false);
   assert.equal(s.visit({ url: 'https://c.hu/' }), null);
   s.set('history', true);
-  for (let i = 0; i < 700; i++) s.visit({ url: 'https://h' + i + '.hu/' });
-  assert.equal(s.history().length, s.LIMITS.history);
+  s.removeVisit('https://a.hu/');
+  assert.deepEqual(s.history().map(h => h.url), ['https://b.hu/']);
   s.clearHistory();
   assert.equal(s.history().length, 0);
 });
-test('store: the reading list keeps saved text; export / import round trip', () => {
+test('store: export is vrg.web-links v1 with the work line extension; import takes v1, web.json and the old format', () => {
   const s = store.create(mem());
-  const r = s.addReading({ url: 'https://cikk.hu/1', title: 'Cikk', text: '# Cím\nElső bekezdés.' });
-  assert.ok(r.saved > 0);
+  s.addReading({ url: 'https://cikk.hu/1', title: 'Cikk', text: '# Cím\nElső bekezdés.' });
   s.addBookmark({ url: 'https://a.hu/', title: 'A', job: 'VRG-2611-03' });
+  s.set('pinned', ['https://a.hu/']);
+  s.visit({ url: 'https://a.hu/', title: 'A' });
   const doc = JSON.parse(JSON.stringify(s.exportAll()));
-  assert.equal(doc.format, 'vrg-bongeszo/1');
+  assert.equal(doc.format, 'vrg.web-links'); assert.equal(doc.v, 1);
+  assert.deepEqual(doc['x-bongeszo'].meta['https://a.hu/'].job, 'VRG-2611-03');
+  assert.equal(doc['x-bongeszo'].reading[0].text, '# Cím\nElső bekezdés.');
   const t = store.create(mem());
   assert.equal(t.importAll({ format: 'mas' }).ok, false);
   const res = t.importAll(doc);
-  assert.deepEqual(res.added, { bookmarks: 1, reading: 1, history: 0 });
-  assert.equal(t.reading()[0].text, '# Cím\nElső bekezdés.');
+  assert.deepEqual(res.added, { bookmarks: 1, reading: 1, history: 1 });
+  assert.equal(t.bookmark('https://a.hu/').job, 'VRG-2611-03');
+  assert.deepEqual(t.settings().pinned, ['https://a.hu/']);
   assert.equal(t.importAll(doc).added.bookmarks, 0, 'importing twice adds nothing');
+  const u = store.create(mem());
+  assert.equal(u.importAll({ bookmarks: [{ url: 'https://gh.com/', title: 'GH', at: 1 }], history: [] }).added.bookmarks, 1, "the Asztal's own web.json");
+  const old = { format: 'vrg-bongeszo/1', bookmarks: [{ id: 'x', url: 'https://o.hu/', title: 'O', tags: ['régi'], added: 5 }], reading: [], history: [{ url: 'https://o.hu/', title: 'O', at: 6, count: 3 }] };
+  assert.equal(u.importAll(old).ok, true);
+  assert.deepEqual(u.bookmark('https://o.hu/').tags, ['régi']);
   t.wipe();
   assert.equal(t.bookmarks().length + t.reading().length, 0);
+});
+test('store: the first release\'s keys migrate once', () => {
+  const ls = mem();
+  ls.setItem('vrg-bongeszo:v1:bookmarks', JSON.stringify([{ id: 'k1', url: 'https://m.hu/', title: 'M', tags: ['x'], job: 'VRG-2611-03', added: 7 }]));
+  ls.setItem('vrg-bongeszo:v1:history', JSON.stringify([{ url: 'https://m.hu/', title: 'M', at: 8, count: 2 }]));
+  ls.setItem('vrg-bongeszo:v1:settings', JSON.stringify({ pinned: ['k1'] }));
+  const s = store.create(ls);
+  assert.equal(s.bookmark('https://m.hu/').job, 'VRG-2611-03');
+  assert.deepEqual(s.settings().pinned, ['https://m.hu/'], 'pins follow the bookmark to its URL id');
+  assert.equal(s.historyRows().length, 1);
+  assert.equal(ls.getItem('vrg-bongeszo:v1:bookmarks'), null);
+});
+test('store: with a master, changes become ops; the first contact uploads what the master lacks, later its deletions win', () => {
+  const s = store.create(mem());
+  s.addBookmark({ url: 'https://mine.hu/', title: 'Mine' });
+  assert.deepEqual(s.outbox(), [], 'no master yet: no outbox');
+  s.adoptMaster({ bookmarks: [{ url: 'https://desk.hu/', title: 'Desk', at: 1 }], history: [] }, 0);
+  assert.deepEqual(s.outbox().map(o => o.op + ' ' + o.url), ['bookmark https://mine.hu/'], 'the first contact loses nothing');
+  assert.deepEqual(s.bookmarks().map(b => b.url).sort(), ['https://desk.hu/', 'https://mine.hu/']);
+  s.adoptMaster({ bookmarks: [{ url: 'https://desk.hu/', title: 'Desk', at: 1 }, { url: 'https://mine.hu/', title: 'Mine', at: 2 }], history: [] }, 1);
+  assert.deepEqual(s.outbox(), []);
+  s.removeBookmark('https://desk.hu/');
+  assert.deepEqual(s.outbox().map(o => o.op), ['unbookmark']);
+  s.adoptMaster({ bookmarks: [{ url: 'https://desk.hu/', title: 'Desk', at: 1 }, { url: 'https://mine.hu/', title: 'Mine', at: 2 }], history: [] }, 0);
+  assert.deepEqual(s.bookmarks().map(b => b.url), ['https://mine.hu/'], 'a pending op stays applied on top of the master');
+  assert.equal(s.adoptMaster({ bookmarks: [{ url: 'https://mine.hu/', title: 'Mine', at: 2 }], history: [] }, 1), false, 'nothing new: no redraw');
 });
 test('store: a full storage does not half-keep a reading item', () => {
   let full = false;
@@ -191,6 +229,51 @@ test('store: a full storage does not half-keep a reading item', () => {
   assert.equal(s.addReading({ url: 'https://x.hu/', title: 'x', text: 'y' }), null);
   assert.equal(s.reading().length, 0);
   assert.equal(s.isFull(), true);
+});
+
+// ------------------------------------------------------------------ sync (a fake master)
+const sync = require('../src/core/sync.js');
+const linksLib = require('../src/core/links.js');
+function fakeMaster(initial) {
+  let master = linksLib.read(initial || { bookmarks: [], history: [] });
+  const calls = [];
+  const fetch = async (url, init) => {
+    calls.push([init.method, url]);
+    if (init.method === 'POST') master = linksLib.apply(master, JSON.parse(init.body).ops);
+    return { ok: true, status: 200, json: async () => Object.assign({ format: 'vrg.web-links', v: 1 }, master) };
+  };
+  return { fetch, calls, get: () => master };
+}
+const noTimers = { set: (f) => { setImmediate(f); return 1; }, clear() {}, every() {} };
+test('sync: no master on the phone or from a file', async () => {
+  for (const kind of ['mobile', 'file', 'web']) assert.equal(sync.create({ store: store.create(mem()), kind, fetch: async () => { throw new Error('never'); } }).endpoint, null, kind);
+});
+test('sync: the desktop app pulls the pane\'s links and pushes its own changes', async () => {
+  const m = fakeMaster({ bookmarks: [{ url: 'https://github.com/', title: 'GitHub', at: 1 }], history: [{ url: 'https://seen-in-pane.hu/', title: 'Pane', at: 5 }] });
+  const s = store.create(mem());
+  s.addBookmark({ url: 'https://offline-made.hu/', title: 'Before the first contact' });
+  const y = sync.create({ store: s, kind: 'desktop', fetch: m.fetch, timers: noTimers, visible: () => true });
+  assert.equal(y.endpoint, '/__vrg/links');
+  await y.run();
+  await new Promise(r => setTimeout(r, 30));
+  await y.run();
+  assert.deepEqual(m.get().bookmarks.map(b => b.url).sort(), ['https://github.com/', 'https://offline-made.hu/']);
+  assert.deepEqual(s.history().map(h => h.url), ['https://seen-in-pane.hu/'], 'the pane history is visible in the app');
+  s.visit({ url: 'https://index.hu/', title: 'Index' });
+  await y.run();
+  assert.ok(m.get().history.some(h => h.url === 'https://index.hu/'), 'a visit from the app reaches the master');
+  assert.equal(s.outbox().length, 0);
+  assert.equal(y.status().ok, true);
+});
+test('sync: an unreachable master keeps the changes waiting', async () => {
+  const s = store.create(mem());
+  const ok = fakeMaster();
+  await sync.create({ store: s, kind: 'served', fetch: ok.fetch, timers: noTimers }).run();
+  s.addBookmark({ url: 'https://wait.hu/', title: 'W' });
+  const y = sync.create({ store: s, kind: 'served', fetch: async () => { throw new Error('down'); }, timers: noTimers });
+  await y.run();
+  assert.equal(y.status().ok, false);
+  assert.equal(s.outbox().length, 1, 'kept for the next try');
 });
 
 // ------------------------------------------------------------------ host

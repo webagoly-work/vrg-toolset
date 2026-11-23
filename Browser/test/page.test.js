@@ -92,7 +92,11 @@ test('page served by serve.js (documents, reader, new tab)', { skip, timeout: 60
   const { createServer } = require('../serve.js');
   const PORT = 18814;
   const guard = { check: () => ({ ok: false, code: 'address', hu: 'teszt' }), get: async () => { throw new Error('no network in the test'); } };
-  const { server, docs } = createServer({ port: PORT, guard });
+  // T1: a stand-in for the Asztal's <userDir>/web.json, the master of the links
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'vb-page-links-'));
+  const linksFile = path.join(dir, 'web.json');
+  fs.writeFileSync(linksFile, JSON.stringify({ bookmarks: [{ url: 'https://github.com/webagoly-work/vrg-toolset', title: 'A pane bookmark', at: 1 }], history: [] }));
+  const { server, docs } = createServer({ port: PORT, guard, linksFile });
   docs.build();
   await new Promise(r => server.listen(PORT, '127.0.0.1', r));
   const browser = await chromium.launch();
@@ -117,6 +121,17 @@ test('page served by serve.js (documents, reader, new tab)', { skip, timeout: 60
     await page.keyboard.press('Enter');
     await page.waitForTimeout(500);
     assert.ok(popups.some(u => u.startsWith('https://hu.wikipedia.org/')), 'a new tab: ' + popups.join(' '));
+    // T1: the Asztal's bookmark is here, and one made here goes to the master's inbox
+    await page.goto('http://127.0.0.1:' + PORT + '/#/konyvjelzok');
+    await page.waitForSelector('text=A pane bookmark');
+    await page.click('button[aria-label="Könyvjelző a legutóbb megnyitott oldalra"]');
+    await page.locator('.vb-dialog input').nth(0).fill('https://www.tme.eu/hu/');
+    await page.locator('.vb-dialog input').nth(1).fill('TME');
+    await page.locator('.vb-dialog button', { hasText: 'Könyvjelző' }).click();
+    await page.waitForFunction(() => /könyvjelzők: Asztal(?! ·)/.test(document.querySelector('.vb-status').textContent), null, { timeout: 5000 });
+    const inbox = JSON.parse(fs.readFileSync(linksFile + '.inbox', 'utf8')).ops;
+    assert.ok(inbox.some(o => o.op === 'bookmark' && o.url === 'https://www.tme.eu/hu/'), JSON.stringify(inbox));
+    assert.ok(inbox.some(o => o.op === 'visit' && o.url === 'https://hu.wikipedia.org/'), 'the visit before goes up too');
     assert.deepEqual(errors, []);
   } finally { await browser.close(); server.close(); }
 });
