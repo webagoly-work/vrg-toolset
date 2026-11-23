@@ -5,7 +5,7 @@ import hu.vrg.mobile.core.RadarLayer
 import hu.vrg.mobile.core.RadarSource
 import hu.vrg.mobile.core.RadarTone
 
-// The Óra on the radar (WP M66): the Q71 while its link is up. A held BLE link means "within Bluetooth range", not a
+// The Óra on the radar (WP M67): the Q71 while its link is up. A held BLE link means "within Bluetooth range", not a
 // distance, so the blip sits on the unknown-distance band, linked; its card opens the Óra.
 
 object WatchRadar : RadarSource {

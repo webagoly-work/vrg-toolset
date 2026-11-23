@@ -11,7 +11,7 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// Radar (WP M66, D-173): one display for everything that is "somewhere around": the Tárgykereső's tags and paired
+// Radar (WP M67, D-173): one display for everything that is "somewhere around": the Tárgykereső's tags and paired
 // devices, the Csipogó crew's phones, the Óra, and whatever a later program adds. Any program feeds it through a
 // source (kit RadarHub) that gives blips on its own layer; the radar draws them together, each layer in its tone.
 //

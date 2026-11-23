@@ -131,9 +131,9 @@ What changes locally compared with the cloud:
   the Data Vault), phone steps 24–28. Next for the Q71: an HCI snoop capture → its protocol → our own companion. `docs/mobile/WP/M61.md` → "Telefonon
   ellenőrizni" (10 steps, the 9th needs an iPhone). `tag-core` tests in `mobile.cmd test` and Actions; `feature-tag`
   not yet compiled (the first Actions run is its check).
-- **M66** Radar built 2026-11-23 (cloud session, D-173 … D-175), **BETA**: the universal locator / proximity / connection
+- **M67** Radar built 2026-11-23 (cloud session, D-173 … D-175), **BETA**: the universal locator / proximity / connection
   display. Programs plug in through kit-core `RadarHub` (`RadarSource`); first layers Tárgykereső, Csipogó, Óra; the
-  Desktop twin is the VRG UI Kit's `radar`. Spec `docs/radar/README.md`; `docs/mobile/WP/M66.md` → "Telefonon ellenőrizni".
+  Desktop twin is the VRG UI Kit's `radar`. Spec `docs/radar/README.md`; `docs/mobile/WP/M67.md` → "Telefonon ellenőrizni".
 
 ## 3. What the user asked for, mapped to WPs
 

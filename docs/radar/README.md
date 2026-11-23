@@ -1,4 +1,4 @@
-# Radar — the universal locator, proximity and connection display (WP M66)
+# Radar — the universal locator, proximity and connection display (WP M67)
 
 One radar for everything that is "somewhere around": the Tárgykereső's tags and paired devices, the Csipogó crew's
 phones, the Óra, and whatever a later program adds. The Founder (2026-11-23): *"a universal locator / tracker /

@@ -11,9 +11,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +90,9 @@ object ClaudeFeature : VrgFeature {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     val list = MutableStateFlow<ClaudeList?>(null)
     val busy = MutableStateFlow(false)
+    /** The last list request got no answer in time (the relay runs without --claude, or an older relay). */
+    val unanswered = MutableStateFlow(false)
+    private const val NO_ANSWER = "A relé nem válaszolt; --claude kapcsolóval fut?"
     /** The folder key a start is waiting on (the relay waits up to 20 s for the link). */
     val starting = MutableStateFlow<String?>(null)
     private val notes = MutableSharedFlow<String>(extraBufferCapacity = 4)
@@ -97,7 +105,7 @@ object ClaudeFeature : VrgFeature {
 
     private fun onMessage(raw: String) {
         when (val n = ClaudeMsgs.parse(raw) ?: return) {
-            is ClaudeNote.Listed -> { timeout?.cancel(); busy.value = false; list.value = n.list }
+            is ClaudeNote.Listed -> { timeout?.cancel(); busy.value = false; unanswered.value = false; list.value = n.list }
             is ClaudeNote.Started -> {
                 starting.value = null
                 val r = n.result
@@ -120,9 +128,14 @@ object ClaudeFeature : VrgFeature {
     fun refresh() {
         if (Relay.trust.value != Trust.TRUSTED) return
         busy.value = true
+        unanswered.value = false
         if (!Relay.send(ClaudeMsgs.list())) { busy.value = false; return }
         timeout?.cancel()
-        timeout = scope.launch { delay(10_000); busy.value = false }
+        // no silent timeout (UI-CHECKLIST 5.4): a note and a flag, so the card can say why and offer a retry
+        timeout = scope.launch {
+            delay(10_000)
+            if (busy.value) { busy.value = false; unanswered.value = true; notes.tryEmit(NO_ANSWER) }
+        }
     }
 
     private fun start(folder: String, account: String): String? {
@@ -168,6 +181,7 @@ object ClaudeFeature : VrgFeature {
         val ctx = LocalContext.current
         val now by list.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
+        val silent by unanswered.collectAsStateWithLifecycle()
         val link by Relay.state.collectAsStateWithLifecycle()
         val trust by Relay.trust.collectAsStateWithLifecycle()
         val pc by Relay.pc.collectAsStateWithLifecycle()
@@ -178,7 +192,9 @@ object ClaudeFeature : VrgFeature {
         LaunchedEffect(trust, now?.on == true) { while (trust == Trust.TRUSTED && list.value?.on == true) { delay(REFRESH_MS); Relay.send(ClaudeMsgs.list()) } }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+            // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
             Text("CLAUDE", style = Melyviz.title.copy(fontSize = 18.sp))
 
             // ---- the app
@@ -204,10 +220,15 @@ object ClaudeFeature : VrgFeature {
                     else -> {
                         val l = now
                         when {
-                            l == null -> Text(if (loading) "Olvasás…" else "—", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                            l == null && loading -> Text("Olvasás…", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                            l == null -> {
+                                // no answer yet, or none in time: a reason and a retry, never a bare "—" (UI-CHECKLIST 5.4, 5.5)
+                                Text(if (silent) NO_ANSWER else "Még nincs lista.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
+                                Row(Modifier.padding(vertical = 6.dp)) { VrgChip("⟳ Újra") { refresh() } }
+                            }
                             !l.ok -> {
                                 Text(l.reason ?: "A relé elutasította.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
-                                Row(Modifier.padding(vertical = 6.dp)) { VrgChip("⟳") { refresh() } }
+                                Row(Modifier.padding(vertical = 6.dp)) { VrgChip("⟳ Frissítés") { refresh() } }
                             }
                             else -> Sessions(l, host)
                         }
@@ -258,6 +279,7 @@ object ClaudeFeature : VrgFeature {
         if (l.folders.isEmpty()) Text("A PC nem kínál mappát (Mobile/catalogue/claude.json).", style = Melyviz.small)
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun SessionRow(s: ClaudeSession, l: ClaudeList, host: FeatureHost, ctx: Context) {
         // RCO (long press): the session's link copied or shared (to finish it on another device), next to the chips
@@ -279,7 +301,8 @@ object ClaudeFeature : VrgFeature {
                 }
                 Text("${l.folderName(s.folder)} · ${s.account} fiók · ${TIME.format(Date(s.started))}" + if (!s.alive) " · leállt" else "",
                     style = Melyviz.small.copy(fontSize = 10.sp), modifier = Modifier.padding(start = 16.dp))
-                Row(Modifier.padding(start = 16.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // wraps at large font sizes instead of squeezing Leállítás (UI-CHECKLIST 4.5)
+                FlowRow(Modifier.padding(start = 16.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (s.url != null) VrgChip("✶ Megnyitás a Claude-ban") { openClaude(ctx, s.url)?.let(host::note) }
                     else if (s.alive) Text("a link még nem jött meg…", style = Melyviz.small.copy(color = Melyviz.muted))
                     if (s.alive) VrgChip("■ Leállítás") { ClaudeMsgs.stop(s.id)?.let { if (!Relay.send(it)) host.note("Nincs relé kapcsolat.") } }

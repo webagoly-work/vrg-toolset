@@ -67,7 +67,7 @@ Mobile/
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
-    feature-radar/      Radar (WP M66): every RadarHub layer on one radar (kit-core Radar.kt + RadarHub.kt, kit/ui/Radar.kt,
+    feature-radar/      Radar (WP M67): every RadarHub layer on one radar (kit-core Radar.kt + RadarHub.kt, kit/ui/Radar.kt,
                         kit/Compass.kt); spec docs/radar/README.md
     tag-core/           Tárgykereső's pure Kotlin (WP M61, experimental): the Find My advertisement and key, the sound
                         protocols' bytes, the tag book (mine, relink across address rotations), Ottfelejtés + tests

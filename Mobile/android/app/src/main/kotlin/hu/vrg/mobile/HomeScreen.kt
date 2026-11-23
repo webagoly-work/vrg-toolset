@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +13,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +32,7 @@ import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
+import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.update.UpdateFeature
 
 // Parts shared by the home and the shell: the update mark, the stage badge and the PlannedScreen of a planned feature
@@ -37,8 +43,11 @@ import hu.vrg.mobile.update.UpdateFeature
 internal fun UpdateMark(onOpen: () -> Unit) {
     val state by UpdateFeature.state.collectAsStateWithLifecycle()
     if (state.waiting) {
-        Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand),
-            modifier = Modifier.clickable(onClick = onOpen).padding(8.dp))
+        // a 48 dp tall button in the top strip (UI audit 1.1: it was ~32 dp of text)
+        Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Frissítés megnyitása", onClick = onOpen).padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center) {
+            Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand))
+        }
     }
 }
 
@@ -57,8 +66,9 @@ fun StageBadge(s: Stage) {
 
 @Composable
 fun PlannedScreen(f: FeatureInfo, onBack: () -> Unit) {
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
-        Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(vertical = 8.dp))
+    // scrolls: lying down the blurb and "Kell hozzá" were cut off (UI audit 4.1)
+    Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
+        VrgBack(onBack)
         Spacer(Modifier.height(24.dp))
         Text(f.glyph, style = Melyviz.glyph.copy(fontSize = 44.sp, color = Melyviz.glowDim))
         Spacer(Modifier.height(10.dp))

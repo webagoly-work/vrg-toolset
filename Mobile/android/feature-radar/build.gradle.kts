@@ -1,4 +1,4 @@
-// Radar (WP M66) as a VRG Mobile feature module: the full-screen radar over every registered source (kit-core RadarHub),
+// Radar (WP M67) as a VRG Mobile feature module: the full-screen radar over every registered source (kit-core RadarHub),
 // with layers, Irány fel / Észak fel, Irány keresése (the turn-round direction sweep) and the blip card. The radar part
 // itself (kit/ui/Radar.kt) and the layout (kit-core Radar.kt) are shared: features embed the same radar for their layer.
 plugins {

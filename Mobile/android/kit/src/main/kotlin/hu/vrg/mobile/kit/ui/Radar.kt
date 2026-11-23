@@ -64,7 +64,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-// VrgRadar (WP M66): the radar as one Compose part, for the Radar feature and for any feature that wants its own layer
+// VrgRadar (WP M67): the radar as one Compose part, for the Radar feature and for any feature that wants its own layer
 // on a radar (Tárgykereső's Környék, Csipogó's Közelség). The layout is kit-core Radar.layout — the same rule as the UI
 // Kit's components/radar.js on the Desktop — so a frame looks the same on the phone and on the PC. Drawing only here.
 //

@@ -2,7 +2,7 @@ package hu.vrg.mobile.core
 
 import java.util.concurrent.CopyOnWriteArrayList
 
-// RadarHub (WP M66, D-174): where programs plug into the radar. A feature registers a RadarSource in its init() — the
+// RadarHub (WP M67, D-174): where programs plug into the radar. A feature registers a RadarSource in its init() — the
 // Tárgykereső its tags and paired devices, the Csipogó the crew, the Óra the watch, a later program its own thing — and
 // every radar on screen (the Radar feature, the radar inside Tárgykereső or Csipogó) asks the hub for one frame.
 // Features never talk to each other: they talk to the hub (architecture rule 2).

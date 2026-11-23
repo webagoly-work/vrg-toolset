@@ -14,7 +14,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-// Compass (WP M66): the way the phone faces, for the radar's "Irány fel" and for Irány keresése. The rotation-vector
+// Compass (WP M67): the way the phone faces, for the radar's "Irány fel" and for Irány keresése. The rotation-vector
 // sensor (gyro + accelerometer + magnetometer fused by Android), remapped for the screen's rotation, smoothed on the
 // circle so 359° → 1° does not swing through 180°. Shared, reference-counted: every radar on screen calls start /
 // stop; the sensor runs only while one is visible. Null when the phone has no such sensor (the radar then shows north up).

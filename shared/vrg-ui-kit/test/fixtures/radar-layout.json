@@ -1,5 +1,5 @@
 {
- "about": "Radar layout fixture (WP M66): written by shared/vrg-ui-kit/test/radar.js --write from components/radar.js; kit-core RadarTest must reproduce every placement within 1e-5.",
+ "about": "Radar layout fixture (WP M67): written by shared/vrg-ui-kit/test/radar.js --write from components/radar.js; kit-core RadarTest must reproduce every placement within 1e-5.",
  "cases": [
   {
    "name": "mixed layers, heading-up, GPS, sweep, no direction",

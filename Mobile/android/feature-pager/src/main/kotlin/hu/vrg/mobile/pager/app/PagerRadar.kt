@@ -6,7 +6,7 @@ import hu.vrg.mobile.core.RadarSource
 import hu.vrg.mobile.core.RadarTone
 import hu.vrg.mobile.pager.Trend
 
-// The Csipogó crew on the radar (WP M66): every phone heard (or linked) in the last minute, with its distance, trend,
+// The Csipogó crew on the radar (WP M67): every phone heard (or linked) in the last minute, with its distance, trend,
 // battery and live RSSI (so Irány keresése can find a person too); an alarm or an armed guard pulses. Reads only: the
 // radar never starts the pager's radio, that stays the user's tap in Csipogó.
 

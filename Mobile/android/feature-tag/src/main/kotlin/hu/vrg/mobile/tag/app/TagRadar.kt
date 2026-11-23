@@ -12,7 +12,7 @@ import hu.vrg.mobile.tag.Seen
 import hu.vrg.mobile.tag.TAG_TX1M
 import hu.vrg.mobile.tag.TagType
 
-// The Tárgykereső on the radar (WP M66): two layers in kit-core RadarHub. "Saját címke" is mine (the ISYTag, the
+// The Tárgykereső on the radar (WP M67): two layers in kit-core RadarHub. "Saját címke" is mine (the ISYTag, the
 // iTag or the paired Q71): live with its distance, trend and RSSI (so Irány keresése works on it), or — when not heard
 // for a minute — its last place, which the radar turns into a GPS bearing. "Címkék a közelben" is every other tag heard.
 

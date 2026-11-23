@@ -56,7 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-// Radar (WP M66, D-173 … D-175): the universal locator, proximity and connection display. Everything any program has
+// Radar (WP M67, D-173 … D-175): the universal locator, proximity and connection display. Everything any program has
 // registered in RadarHub on one radar, each layer in its tone: the Tárgykereső's tags and paired devices, the Csipogó
 // crew, the Óra, and whatever comes later. Bluetooth gives distances; directions come from places (GPS) and from
 // Irány keresése — hold the phone in front of you and turn round once, slowly: your body shadows the signal, so the

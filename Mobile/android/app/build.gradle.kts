@@ -83,5 +83,5 @@ dependencies {
     implementation(project(":feature-weather"))   // WP M44 VRG Időjárás
     implementation(project(":feature-tag"))       // WP M61 Tárgykereső
     implementation(project(":feature-watch"))     // WP M65 Óra
-    implementation(project(":feature-radar"))     // WP M66 Radar
+    implementation(project(":feature-radar"))     // WP M67 Radar
 }

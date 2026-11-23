@@ -1,4 +1,4 @@
-/* VRG UI Kit — components/radar.js — the universal locator / proximity / connection radar (WP M66, D-173).
+/* VRG UI Kit — components/radar.js — the universal locator / proximity / connection radar (WP M67, D-173).
      var r = VK.radar.mount(el, {label, mode:'heading-up'|'north-up', hidden:[layerIds], sweeps:{id:bearing}})
        → { update(frame), select(id), setHidden(ids), setMode(m), layout(), destroy(), on(type, fn) }
      VK.radar.layout(frame, {hidden, sweeps}) → { rangeM, rings:[[m, r]], placed:[…], rotationDeg }   (pure, no DOM)

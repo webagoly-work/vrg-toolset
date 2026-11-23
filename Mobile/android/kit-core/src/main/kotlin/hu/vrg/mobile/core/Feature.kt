@@ -129,6 +129,10 @@ object Catalogue {
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
         "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
+    val DEVLAP = FeatureInfo(
+        "devlap", "DevLap", "A fejlesztés állása egy lapon: Haladás, Claude, Értesítések, Gyorsjegyzet és Archívum, hogy egy munkát gyorsan folytathass.",
+        "⧉", Group.WORK, Stage.BETA, "M66", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val PCWIN = FeatureInfo(
         "pcwin", "PC ablakok", "A PC munkamappái (Repó, VRG Full, Közös) csak olvasva: böngészés, szöveg és kép előnézete, másolat az Átadáson át.",
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
@@ -158,10 +162,10 @@ object Catalogue {
     )
 
     // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
-    // WP M66 (2026-11-23): one radar for everything around: any program's blips on its own layer (RadarHub).
+    // WP M67 (2026-11-23): one radar for everything around: any program's blips on its own layer (RadarHub).
     val RADAR = FeatureInfo(
         "radar", "Radar", "Minden, ami körülötted van, egy radaron: címkék, párosított eszközök, a Csipogó brigád, az óra és ami később jön. Távolság, irány (GPS, iránytű, körbefordulás) és kapcsolat rétegenként.",
-        "◎", Group.LINK, Stage.BETA, "M66", setOf(Need.BLUETOOTH),
+        "◎", Group.LINK, Stage.BETA, "M67", setOf(Need.BLUETOOTH),
     )
 
     val WATCH = FeatureInfo(
@@ -214,7 +218,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE, DEVLAP,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

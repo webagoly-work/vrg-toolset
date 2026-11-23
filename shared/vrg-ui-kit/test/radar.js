@@ -60,7 +60,7 @@ function expectOf(c) {
 
 if (process.argv.includes('--write')) {
   fs.mkdirSync(path.dirname(FIX), { recursive: true });
-  const out = { about: 'Radar layout fixture (WP M66): written by shared/vrg-ui-kit/test/radar.js --write from components/radar.js; ' +
+  const out = { about: 'Radar layout fixture (WP M67): written by shared/vrg-ui-kit/test/radar.js --write from components/radar.js; ' +
     'kit-core RadarTest must reproduce every placement within 1e-5.', cases: cases.map(c => Object.assign({}, c, { expect: expectOf(c) })) };
   fs.writeFileSync(FIX, JSON.stringify(out, null, 1) + '\n');
   console.log('wrote ' + path.relative(process.cwd(), FIX));

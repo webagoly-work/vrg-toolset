@@ -1034,7 +1034,7 @@
         "--vk-text-muted",
         "--vk-tracking-label"
       ],
-      "summary": "Universal locator / proximity / connection radar (WP M66): any program's blips on layers (tags, paired devices, crew phones, a watch, places), log-scale distance rings, compass bearings turned by the heading (heading-up or north-up), GPS bearings from places, sweep bearings; a blip without a direction is hollow on its ring. Legend chips toggle layers; ←/→ step nearest first, Enter opens. The layout is shared with VRG Mobile's kit-core Radar.kt (test/fixtures/radar-layout.json).",
+      "summary": "Universal locator / proximity / connection radar (WP M67): any program's blips on layers (tags, paired devices, crew phones, a watch, places), log-scale distance rings, compass bearings turned by the heading (heading-up or north-up), GPS bearings from places, sweep bearings; a blip without a direction is hollow on its ring. Legend chips toggle layers; ←/→ step nearest first, Enter opens. The layout is shared with VRG Mobile's kit-core Radar.kt (test/fixtures/radar-layout.json).",
       "api": "VK.radar.mount(el, {label, mode, hidden, sweeps}) → {update(frame), select, setHidden, setMode, setSweeps, layout, on, destroy} · VK.radar.layout(frame, {hidden, sweeps}) (pure)"
     },
     {

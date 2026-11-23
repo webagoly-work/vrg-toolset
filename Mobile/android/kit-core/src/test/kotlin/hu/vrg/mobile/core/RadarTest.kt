@@ -13,7 +13,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The radar (WP M66): the shared layout fixture the UI Kit's radar.js writes, the sweep, the geodesy, the texts. */
+/** The radar (WP M67): the shared layout fixture the UI Kit's radar.js writes, the sweep, the geodesy, the texts. */
 class RadarTest {
     private val repo = File(System.getProperty("vrg.repo") ?: "../..")
     private val fixture = JSONObject(File(repo, "shared/vrg-ui-kit/test/fixtures/radar-layout.json").readText())

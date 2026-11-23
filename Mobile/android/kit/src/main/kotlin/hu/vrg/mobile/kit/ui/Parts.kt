@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Slider
@@ -24,9 +25,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palette
@@ -45,19 +49,24 @@ fun VrgSectionTitle(text: String) {
  * ("Küldés — fut"); without one, or idle, it is the chip it always was.
  */
 @Composable
-fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null, onClick: () -> Unit) {
+fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null, enabled: Boolean = true, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
-    val style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp)
-    val base = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
-        .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-        .clickable(onClick = onClick)
+    // [enabled] false (audit 6.3): an outline chip in muted text that does nothing and says so to TalkBack
+    val lit = selected && enabled
+    val style = Melyviz.label.copy(color = if (lit) Melyviz.onGlow else if (enabled) Melyviz.ink else Melyviz.muted, fontSize = 11.sp)
+    // a button for TalkBack (with its selected state), and taller than it was (25 → ~33 dp; Compose widens the touch area
+    // to 48 dp where there is room): UI-CHECKLIST 1, 6, 8. Selected is a filled chip, unselected an outline: not colour alone.
+    val base = Modifier.clip(shape).background(if (lit) Melyviz.glow else Melyviz.surface)
+        .border(1.dp, if (lit) Melyviz.glow else Melyviz.line, shape)
+        .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+        .semantics { this.selected = selected }
     if (status == null || !status.busy) {
-        Text(text, style = style, modifier = base.padding(horizontal = 10.dp, vertical = 5.dp))
+        Text(text, style = style, modifier = base.padding(horizontal = 12.dp, vertical = 9.dp))
         return
     }
     Row(
-        base.clearAndSetSemantics { contentDescription = status.describe(text); role = Role.Button }
-            .padding(start = 7.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+        base.clearAndSetSemantics { contentDescription = status.describe(text); role = Role.Button; if (!enabled) disabled() }
+            .padding(start = 9.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Mini(null, text, status, size = MiniSize.XS, modifier = Modifier.padding(end = 5.dp))
@@ -67,9 +76,11 @@ fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null,
 
 @Composable
 fun VrgToggle(label: String, value: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    // the whole row toggles (label included) and is one TalkBack stop: UI-CHECKLIST 1.3
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = value, role = Role.Switch, onValueChange = onChange).padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = Melyviz.label, modifier = Modifier.weight(1f))
-        Switch(value, onChange, colors = SwitchDefaults.colors(
+        Switch(value, onCheckedChange = null, colors = SwitchDefaults.colors(
             checkedThumbColor = Melyviz.onGlow, checkedTrackColor = Melyviz.glow,
             uncheckedThumbColor = Melyviz.muted, uncheckedTrackColor = Melyviz.surface, uncheckedBorderColor = Melyviz.line,
         ))
@@ -85,7 +96,7 @@ fun VrgSlider(label: String, value: Float, range: ClosedFloatingPointRange<Float
         }
         Slider(value, onChange, valueRange = range, colors = SliderDefaults.colors(
             thumbColor = Melyviz.glow, activeTrackColor = Melyviz.glow, inactiveTrackColor = Melyviz.line,
-        ), modifier = Modifier.height(32.dp))
+        ))   // no fixed height: it clipped the slider's 48 dp touch area
     }
 }
 
@@ -94,10 +105,10 @@ fun VrgSlider(label: String, value: Float, range: ClosedFloatingPointRange<Float
 fun PaletteRow(p: Palette, selected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(Melyviz.radiusSmall)
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(shape)
+        Modifier.fillMaxWidth().padding(vertical = 3.dp).heightIn(min = 48.dp).clip(shape)
             .background(p.surface)
             .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-            .clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 9.dp),
+            .clickable(role = Role.RadioButton, onClick = onClick).semantics { this.selected = selected }.padding(horizontal = 12.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(p.name, style = Melyviz.label.copy(color = p.ink, fontSize = 12.sp), modifier = Modifier.weight(1f))
@@ -105,5 +116,14 @@ fun PaletteRow(p: Palette, selected: Boolean, onClick: () -> Unit) {
             Box(Modifier.padding(start = 4.dp).size(14.dp).clip(CircleShape).background(c).border(1.dp, p.line, CircleShape))
         }
         if (selected) Text("  ✓", style = Melyviz.label.copy(color = p.glow))
+    }
+}
+
+/** "‹ Vissza" at the top of a page: a 48 dp target that TalkBack reads as a button (UI audit; it was ~32 dp of text). */
+@Composable
+fun VrgBack(onClick: () -> Unit) {
+    Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Vissza", onClick = onClick)
+        .semantics { contentDescription = "Vissza" }.padding(end = 12.dp), contentAlignment = Alignment.CenterStart) {
+        Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
     }
 }

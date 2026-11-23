@@ -1,4 +1,4 @@
-/* VRG UI Kit — components/radar.css — the universal radar (radar.js, WP M66).
+/* VRG UI Kit — components/radar.css — the universal radar (radar.js, WP M67).
    Tones map onto the layer palette: glow = bus teal, current = data blue, sand = lighting yellow, coral = crit,
    kelp = earth green, muted = text-muted. "You" (the centre) is the ice accent; the sweep is warm activity.
    A blip without a direction is hollow (data-dir="none"); mine has a ring; an alert pulses. */

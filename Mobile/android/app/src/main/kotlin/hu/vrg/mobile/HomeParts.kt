@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -37,10 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,18 +114,27 @@ private fun PagedHome(act: HomeActions, cols: Int, landscape: Boolean) {
     val pager = rememberPagerState(initialPage = lastPage.coerceIn(0, pages.lastIndex)) { pages.size }
     val scope = rememberCoroutineScope()
     LaunchedEffect(pager.currentPage) { lastPage = pager.currentPage }
+    // the strip follows the pager: after a swipe to page 6-8 the lit chip was off-screen (UI audit 3.7)
+    val chips = remember(pages.size) { List(pages.size) { BringIntoViewRequester() } }
+    LaunchedEffect(pager.currentPage) { chips.getOrNull(pager.currentPage)?.bringIntoView() }
     Column(Modifier.fillMaxSize()) {
-        // the page strip: every page's number and short name; the current one lit, a tap jumps there
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // the page strip: every page's number and short name; the current one lit and bold, a tap jumps there.
+        // Each pill keeps its 32 dp look inside a 48 dp touch slot (UI audit 1.1).
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             pages.forEachIndexed { i, p ->
                 val on = i == pager.currentPage
-                Text("${p.n} ${p.short}", style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Melyviz.glow else Melyviz.muted), maxLines = 1,
-                    modifier = Modifier.heightIn(min = 32.dp).background(if (on) Melyviz.raised else Melyviz.surface.copy(alpha = .6f), RoundedCornerShape(16.dp))
-                        .border(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(16.dp))
-                        .clickable { scope.launch { pager.animateScrollToPage(i) } }
-                        .semantics { selected = on; contentDescription = "${p.n}. oldal: ${p.title}" }
-                        .padding(horizontal = 10.dp, vertical = 7.dp))
+                Box(Modifier.bringIntoViewRequester(chips[i]).heightIn(min = 48.dp)
+                    .clickable(role = Role.Tab) { scope.launch { pager.animateScrollToPage(i) } }
+                    .semantics { selected = on; contentDescription = "${p.n}. oldal: ${p.title}" },
+                    contentAlignment = Alignment.Center) {
+                    Text("${p.n} ${p.short}", style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Melyviz.glow else Melyviz.muted,
+                        fontWeight = if (on) FontWeight.Bold else FontWeight.Normal), maxLines = 1,
+                        modifier = Modifier.heightIn(min = 32.dp).background(if (on) Melyviz.raised else Melyviz.surface.copy(alpha = .6f), RoundedCornerShape(16.dp))
+                            .border(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(16.dp))
+                            .clearAndSetSemantics { }
+                            .padding(horizontal = 10.dp, vertical = 7.dp))
+                }
             }
         }
         HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), key = { pages[it].n }) { i ->

@@ -32,7 +32,11 @@ import java.util.concurrent.TimeUnit
 // stays in this app's own storage: filesDir/weather/ and the "weather" preferences.
 
 /** One source's state for the screen. */
-data class SourceState(val id: String, val name: String, val attribution: String, val text: String, val ok: Boolean)
+/** [fetchedAt] = when its data was downloaded (0 = none); [failed] = this refresh could not reach it (no copy, or an older one). */
+data class SourceState(
+    val id: String, val name: String, val attribution: String, val text: String, val ok: Boolean,
+    val fetchedAt: Long = 0L, val failed: Boolean = false,
+)
 
 data class WeatherResult(
     val place: Place,
@@ -184,10 +188,11 @@ internal class WeatherData(private val ctx: Context) {
     }
 
     private fun parse(id: String, name: String, attribution: String, g: Got, use: (ByteArray) -> Unit): SourceState {
-        val b = g.bytes ?: return SourceState(id, name, attribution, "nincs adat (${g.note ?: "hiba"})", false)
+        val b = g.bytes ?: return SourceState(id, name, attribution, "nincs adat (${g.note ?: "hiba"})", false, failed = g.note != null)
         return try {
             use(b)
-            SourceState(id, name, attribution, "frissítve ${ago(g.fetched)}" + (g.note?.let { " · tárolt másolat ($it)" } ?: ""), true)
+            SourceState(id, name, attribution, "frissítve ${ago(g.fetched)}" + (g.note?.let { " · tárolt másolat ($it)" } ?: ""), true,
+                fetchedAt = g.fetched, failed = g.note != null)
         } catch (e: Exception) {
             VrgLog.w(TAG, "$id parse: ${e.message}")
             SourceState(id, name, attribution, "nem olvasható válasz", false)

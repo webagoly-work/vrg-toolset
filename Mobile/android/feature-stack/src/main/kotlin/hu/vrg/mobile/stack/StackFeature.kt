@@ -23,10 +23,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -35,6 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -274,6 +284,26 @@ object StackFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
+    /** The bare "‹": a 48 dp button that TalkBack reads as "Vissza" (UI-CHECKLIST 1.1, 8.1). */
+    @Composable
+    private fun BackGlyph(onClick: () -> Unit) {
+        Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = "Vissza" },
+            contentAlignment = Alignment.Center) {
+            Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
+        }
+    }
+
+    /** A glyph-only chip in a fixed 48 dp slot, read by TalkBack as its [description] (UI-CHECKLIST 1.1, 3.4, 8.1). */
+    @Composable
+    private fun IconChip(glyph: String, description: String, action: () -> Unit) {
+        Box(Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+            .clearAndSetSemantics { contentDescription = description; role = Role.Button; onClick { action(); true } },
+            contentAlignment = Alignment.Center) {
+            VrgChip(glyph, onClick = action)
+        }
+    }
+
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Screen(host: FeatureHost) {
         val account by GitHub.account.collectAsStateWithLifecycle()
@@ -301,15 +331,18 @@ object StackFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().then(if (isFull) Modifier.background(Melyviz.abyss) else Modifier)) {
             if (!isFull) Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
-                // one row: back, the title, the two pages, refresh, full screen; nothing wraps or overlaps
+                // row 1: back, the title, refresh, full screen (fixed 48 dp slots, so a large font cannot squeeze them out);
+                // row 2: the pages, wrapping when they do not fit (UI-CHECKLIST 4.5, 3.5)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                        modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    BackGlyph { host.home() }
                     Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f))
+                    IconChip(if (loading) "…" else "⟳", "Frissítés") { refresh() }
+                    if (meta != null) IconChip("⛶", "Teljes képernyő") { full.value = true }
+                }
+                FlowRow(Modifier.fillMaxWidth().padding(bottom = 2.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     StackPages.PAGES.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
-                    VrgChip(if (loading) "…" else "⟳") { refresh() }
-                    if (meta != null) VrgChip("⛶") { full.value = true }
                 }
                 val m = meta
                 if (m != null) {
@@ -321,7 +354,7 @@ object StackFeature : VrgFeature {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
                 }
-                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
+                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
             }
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val m = meta
