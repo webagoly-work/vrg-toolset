@@ -563,9 +563,24 @@ object PhoneSheets {
         else -> null
     }
 
-    /** The Desktop's User-level presets on the phone's grid: what the phone cannot show takes no room, then fitPreset (D-16). */
+    /**
+     * The phone's own presets, made for its 2 × 4 grid (D-48). DevLap: where the dev work stands and where to pick it up — Haladás
+     * (main, open work, CI) on top, then the Claude sessions, Értesítések, Gyorsjegyzet (the chat log) and the Archívum. The Desktop
+     * has its own DevLap (Dashboard/config/sheets.json, Dev level), which the phone does not fit: its windows are PC tools.
+     */
+    val OWN: List<SheetPreset> = listOf(
+        SheetPreset("devlap", "DevLap", listOf(
+            PresetWin("feat:${Catalogue.PULSE.id}", "{}", 0, 0, 2, 2),
+            PresetWin("feat:${Catalogue.CLAUDE.id}", "{}", 0, 2, 1, 1),
+            PresetWin("feat:${Catalogue.INBOX.id}", "{}", 1, 2, 1, 1),
+            PresetWin("feat:${Catalogue.NOTES.id}", "{}", 0, 3, 1, 1),
+            PresetWin("feat:${Catalogue.ARCHIVE.id}", "{}", 1, 3, 1, 1),
+        ), focus = 0),
+    )
+
+    /** The Desktop's User-level presets on the phone's grid (what the phone cannot show takes no room, then fitPreset, D-16), then [OWN]. */
     val PRESETS: List<SheetPreset> by lazy {
-        DeskSheets.PRESETS.map { Sheets.phone.fitPreset(it, SheetRules.DESKTOP) { w -> resolve(w.open, w.state) != null } }
+        DeskSheets.PRESETS.map { Sheets.phone.fitPreset(it, SheetRules.DESKTOP) { w -> resolve(w.open, w.state) != null } } + OWN
     }
 
     /** A preset's windows ready for a new sheet. */

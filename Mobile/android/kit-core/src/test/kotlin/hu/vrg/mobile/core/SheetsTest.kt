@@ -245,7 +245,7 @@ class SheetsTest {
 
     @Test fun phonePresetsFitTheGrid() {
         val ps = PhoneSheets.PRESETS
-        assertEquals(DeskSheets.PRESETS.map { it.id }, ps.map { it.id })
+        assertEquals(DeskSheets.PRESETS.map { it.id } + PhoneSheets.OWN.map { it.id }, ps.map { it.id })
         for (p in ps) assertEquals("", P.validPreset(p), p.id)
         val over = ps.first { it.id == "attekintes" }
         assertEquals(listOf("pane:home", "pane:files"), over.wins.map { it.open }, "the feed stays on the PC (D-18); files = PC ablakok (M23)")
@@ -267,6 +267,24 @@ class SheetsTest {
         assertTrue(P.validate(d).ok)
         assertEquals(listOf("home", "feat"), d.sheets[0].wins.map { it.kind })
         assertEquals("feat:pcwin", d.sheets[0].wins[1].open)
+    }
+
+    /** DevLap (D-48): the phone's own dev sheet. Every window opens (none is dropped as planned or unknown) and the grid is full. */
+    @Test fun devLap() {
+        val p = PhoneSheets.OWN.single { it.id == "devlap" }
+        assertEquals("DevLap", p.name)
+        assertEquals("", P.validPreset(p))
+        assertEquals(listOf("feat:pulse", "feat:claude", "feat:inbox", "feat:notes", "feat:archive"), p.wins.map { it.open })
+        assertEquals(T(0, 0, 2, 2), p.wins[0].tile, "Haladás on top, both columns")
+        assertEquals(8, p.wins.sumOf { it.w * it.h }, "every cell used")
+        assertEquals(0, p.focus)
+        var d = P.empty()
+        val wins = PhoneSheets.windows(d, p)
+        assertEquals(p.wins.size, wins.size, "every DevLap window opens on the phone")
+        d = P.addSheet(d, p.name, wins)
+        assertTrue(P.validate(d).ok)
+        assertEquals("DevLap", d.sheets[0].name)
+        assertTrue(p.wins.all { PhoneSheets.isWindow(it.open.removePrefix("feat:")) })
     }
 
     @Test fun codecRoundTrip() {
