@@ -17,7 +17,7 @@
   --vk-border-control: #6c7880;
   --vk-text: #e8f0f6;
   --vk-text-muted: #a6afb7;
-  --vk-text-faint: #646d74;
+  --vk-text-faint: #818a91;       /* kit-owned: --mv-faint blended toward --mv-dim to reach AA 4.5:1 */
   --vk-text-on-accent: #071318;
   --vk-text-on-solid: #0a141c;
   --vk-accent: #93d3e6;

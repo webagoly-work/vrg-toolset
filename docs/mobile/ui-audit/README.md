@@ -11,8 +11,10 @@ and each report has a "Fixed" section saying what was fixed and what was skipped
   marked sketch-owned: another session owns feature-sketch; they are reported, not fixed).
 
 Also changed: every palette's `faint` text colour is at 4.5:1 (it was 2.4–3.5), and the light palette's accent too.
-Still open: the four kit-* palettes come from the VRG UI Kit tokens (`shared/vrg-ui-kit`, shared with the Desktop):
-their `faint` is 2.7–3.7:1 in kit-ej, kit-papír and kit-mélyvíz and needs fixing there.
+Closed 2026-11-23: the kit-* palettes come from the VRG UI Kit tokens (`shared/vrg-ui-kit`, shared with the Desktop);
+their `faint` was raised there by blending toward muted — kit-ej #6C757D → #7B848C (3.69 → 4.55:1), kit-papír
+#8D969D → #657079 (2.70 → 4.55:1), kit-mélyvíz #646D74 → #818A91 (3.03 → 4.55:1; kit-owned, `--mv-faint` unchanged);
+kit-kontraszt already passed (9.8:1). Min over deep/surface/raised.
 
 ## Telefonon ellenőrizni
 
