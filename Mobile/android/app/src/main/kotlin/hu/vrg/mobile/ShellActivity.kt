@@ -170,7 +170,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 windows, desk, list,
                 sheetArea = if (Sheets.phone.sheetOf(sheets, sheets.active) == null) null
                 else { m -> SheetArea(m, sheets, sheetsHost) { c -> pickAt = c; picking = true } },
-                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView) },
+                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView, modifier = Modifier.weight(1f, fill = false)) },
             )
             if (picking) SheetPicker(pickAt) { picking = false }
             if (adding) NewSheetPanel(sheets) { adding = false }

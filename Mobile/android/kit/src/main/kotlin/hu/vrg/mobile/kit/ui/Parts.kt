@@ -27,6 +27,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palette
@@ -48,16 +50,19 @@ fun VrgSectionTitle(text: String) {
 fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     val style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp)
+    // a button for TalkBack (with its selected state), and taller than it was (25 → ~33 dp; Compose widens the touch area
+    // to 48 dp where there is room): UI-CHECKLIST 1, 6, 8. Selected is a filled chip, unselected an outline: not colour alone.
     val base = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
         .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-        .clickable(onClick = onClick)
+        .clickable(role = Role.Button, onClick = onClick)
+        .semantics { this.selected = selected }
     if (status == null || !status.busy) {
-        Text(text, style = style, modifier = base.padding(horizontal = 10.dp, vertical = 5.dp))
+        Text(text, style = style, modifier = base.padding(horizontal = 12.dp, vertical = 9.dp))
         return
     }
     Row(
         base.clearAndSetSemantics { contentDescription = status.describe(text); role = Role.Button }
-            .padding(start = 7.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+            .padding(start = 9.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Mini(null, text, status, size = MiniSize.XS, modifier = Modifier.padding(end = 5.dp))

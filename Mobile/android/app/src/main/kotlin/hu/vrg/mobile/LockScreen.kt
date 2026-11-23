@@ -1,5 +1,9 @@
 package hu.vrg.mobile
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,11 +37,13 @@ import hu.vrg.mobile.kit.ui.VrgChip
 /** The features a locked phone may still open: to sign in and to fetch the release that lets it in. */
 val LOCK_OPEN = setOf(Catalogue.UPDATE.id, Catalogue.ACCOUNT.id, Catalogue.DEVICES.id)   // Eszközök: ask for access by QR (WP M35)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LockScreen(onOpen: (String) -> Unit) {
     val clipboard = LocalClipboardManager.current
     val shape = RoundedCornerShape(Melyviz.radius)
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 16.dp, vertical = 24.dp)) {
+    // scrolls: lying down at a large font the exit chips were below the edge (UI audit)
+    Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 24.dp)) {
         Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
         Text("Ez a telefon nincs a megbízható eszközök között.", style = Melyviz.label.copy(color = Melyviz.sand))
         Spacer(Modifier.height(18.dp))
@@ -51,7 +57,8 @@ fun LockScreen(onOpen: (String) -> Unit) {
             Text("Kérj hozzáférést: az Eszközök QR-kódját a tulajdonos telefonja olvassa be és hagyja jóvá. Utána ez a telefon új kiadás nélkül megnyílik.",
                 style = Melyviz.small)
         }
-        Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // wraps: four chips need ~440 dp, a phone has ~328, and "GitHub fiók" was drawn at 0 width (UI audit)
+        FlowRow(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             VrgChip("Hozzáférés kérése ›", true) { onOpen(Catalogue.DEVICES.id) }
             VrgChip("Kód másolása") { clipboard.setText(AnnotatedString(Access.code)) }
             VrgChip("Frissítés ›") { onOpen(Catalogue.UPDATE.id) }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -123,12 +124,16 @@ private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
 // ------------------------------------------------------------------ the tabs in the top strip
 
 @Composable
-fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null) {
-    // + stays in view: the sheet tabs scroll sideways between ⌂ and it (with a few sheets open it used to scroll out of sight)
-    Row(Modifier.padding(end = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null, modifier: Modifier = Modifier) {
+    // + stays in view: the sheet tabs scroll sideways between ⌂ and it (with a few sheets open it used to scroll out of sight);
+    // the row as a whole takes only what the top bar's buttons leave ([modifier] = weight(1f, fill = false) from the strip)
+    val scroll = rememberScrollState()
+    // a new sheet's tab is the last one: bring it into view
+    LaunchedEffect(doc.sheets.size) { scroll.animateScrollTo(scroll.maxValue) }
+    Row(modifier.padding(end = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
         // ⌂: the home; a long press switches it between the swiped pages and one long page (WP M38)
         Tab("⌂", doc.active.isEmpty(), "Munkapad", { SheetsStore.update { P.activate(it, "") } }, onHomeLong)
-        if (doc.sheets.isNotEmpty()) Row(Modifier.widthIn(max = 150.dp).horizontalScroll(rememberScrollState()),
+        if (doc.sheets.isNotEmpty()) Row(Modifier.weight(1f, fill = false).horizontalScroll(scroll),
             horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             doc.sheets.forEach { s -> Tab(s.name, doc.active == s.id, "Lap: ${s.name}", { SheetsStore.update { P.activate(it, s.id) } }) { onMenu(s.id) } }
         }
@@ -434,8 +439,9 @@ private fun MenuRow(glyph: String, label: String, onClick: () -> Unit) {
 @Composable
 private fun Panel(title: String, onClose: () -> Unit, body: @Composable () -> Unit) {
     Box(Modifier.fillMaxSize().background(Melyviz.abyss.copy(alpha = 0.85f)).clickable(onClick = onClose), contentAlignment = Alignment.Center) {
-        Column(Modifier.padding(16.dp).widthIn(max = 420.dp).fillMaxWidth().background(Melyviz.deep, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.padding(14.dp)) {
+        // the panel scrolls and keeps above the keyboard: lying down the sheet menu was taller than the screen (Lap bezárása cut off)
+        Column(Modifier.imePadding().padding(16.dp).widthIn(max = 420.dp).fillMaxWidth().background(Melyviz.deep, RoundedCornerShape(Melyviz.radius))
+            .border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.verticalScroll(rememberScrollState()).padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = Melyviz.title.copy(fontSize = 12.sp), modifier = Modifier.weight(1f))
                 Text("✕", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clickable(onClick = onClose).padding(8.dp))

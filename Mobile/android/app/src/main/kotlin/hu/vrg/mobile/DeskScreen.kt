@@ -17,6 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -89,7 +95,8 @@ fun DeskScreen(
     /** The home as one long page (the old Kompakt) instead of the swiped pages (WP M38). */
     list: Boolean = false,
     sheetArea: (@Composable (Modifier) -> Unit)? = null,
-    tabs: (@Composable () -> Unit)? = null,
+    /** The sheet tabs; given RowScope so they take only the width the buttons leave (the audit: they squeezed Kommand to 0 dp). */
+    tabs: (@Composable RowScope.() -> Unit)? = null,
 ) {
     var menu by remember { mutableStateOf(false) }
     var kommand by remember { mutableStateOf(false) }
@@ -99,22 +106,40 @@ fun DeskScreen(
     Box(Modifier.fillMaxSize().systemBarsPadding()) {
         Column(Modifier.fillMaxSize()) {
             // ---- top strip ----------------------------------------------------------------------
-            Row(Modifier.fillMaxWidth().background(Melyviz.abyss.copy(alpha = 0.6f)).padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                if (tabs != null) tabs() else Text("ASZTAL", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.padding(end = 8.dp))
-                Row(
-                    Modifier.weight(1f).heightIn(min = 36.dp).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                        .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
-                        .clickable { kommand = true }.padding(horizontal = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) { Text("⌕  Kommand…", style = Melyviz.label.copy(color = Melyviz.muted)) }
-                // WP M38: the top bar is "page 0" with the dock, on every page: the update mark, the QR scanner, the
-                // Katalógus, the orientation (its glyph only, for room) and the settings
-                UpdateMark { act.open(Catalogue.UPDATE.id) }
-                StripButton("▦", "QR beolvasás", act.scan)
-                StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) }
-                StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", act.cycleOrientation)
-                StripButton(Catalogue.SETTINGS.glyph, Catalogue.SETTINGS.title) { act.open(Catalogue.SETTINGS.id) }
+            // WP M38: the top bar is "page 0" with the dock, on every page. Its buttons have fixed 48 dp targets and are
+            // measured first; the sheet tabs get what is left and scroll inside it (UI-CHECKLIST: no primary action can be
+            // squeezed out). On a phone Kommand is a ⌕ button; from 600 dp it is the search bar. Katalógus and the orientation
+            // are in ⋮ (on a 360 dp phone with three sheets they pushed Kommand and ⚙ to zero width).
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val wide = maxWidth >= 600.dp
+                var more by remember { mutableStateOf(false) }
+                Row(Modifier.fillMaxWidth().background(Melyviz.abyss.copy(alpha = 0.6f)).padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    if (tabs != null) tabs() else Text("ASZTAL", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f, fill = false).padding(end = 8.dp))
+                    if (wide) Row(
+                        Modifier.weight(1f).heightIn(min = 44.dp).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
+                            .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
+                            .clickable(role = Role.Button, onClickLabel = "Kommand megnyitása") { kommand = true }.padding(horizontal = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) { Text("⌕  Kommand…", style = Melyviz.label.copy(color = Melyviz.muted), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                    else {
+                        Spacer(Modifier.weight(1f))
+                        StripButton("⌕", "Kommand: keresés") { kommand = true }
+                    }
+                    UpdateMark { act.open(Catalogue.UPDATE.id) }
+                    StripButton("▦", "QR beolvasás", act.scan)
+                    if (wide) {
+                        StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) }
+                        StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", act.cycleOrientation)
+                    } else Box {
+                        StripButton("⋮", "Több: Katalógus, tájolás") { more = true }
+                        RcoMenu(more, { more = false }, "Több", listOf(
+                            RcoItem(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) },
+                            RcoItem(look.orientation.glyph, "Tájolás: ${look.orientation.label} → következő") { act.cycleOrientation() },
+                        ))
+                    }
+                    StripButton(Catalogue.SETTINGS.glyph, Catalogue.SETTINGS.title) { act.open(Catalogue.SETTINGS.id) }
+                }
             }
 
             // ---- the sheet area (M20) or the home window ------------------------------------------
@@ -165,10 +190,10 @@ private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
     }
 }
 
-/** A top bar button: a glyph with a 44 dp target and its name for TalkBack. */
+/** A top bar button: a glyph with a 48 dp target and its name for TalkBack. */
 @Composable
 private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
-    Box(Modifier.size(40.dp).clickable(onClick = onClick).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
+    Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.muted, fontSize = 17.sp))
     }
 }
@@ -224,7 +249,8 @@ private fun KommandPanel(windows: List<String>, onClose: () -> Unit, onRun: (Str
     val url = Kommand.asUrl(q)
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
-    Column(Modifier.fillMaxSize().background(Melyviz.abyss.copy(alpha = 0.94f)).padding(12.dp)) {
+    // the overlay takes every touch (taps went through to the home and the dock under it) and stays above the keyboard
+    Column(Modifier.fillMaxSize().background(Melyviz.abyss.copy(alpha = 0.94f)).pointerInput(Unit) { detectTapGestures { } }.imePadding().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(
                 q, { q = it }, singleLine = true,
@@ -235,7 +261,9 @@ private fun KommandPanel(windows: List<String>, onClose: () -> Unit, onRun: (Str
                     .border(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
                 decorationBox = { inner -> if (q.isEmpty()) Text("Keresés: eszköz, funkció, ablak, webcím…", style = Melyviz.label.copy(color = Melyviz.faint)); inner() },
             )
-            Text("✕", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clickable(onClick = onClose).padding(12.dp))
+            Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Kommand bezárása" }, contentAlignment = Alignment.Center) {
+                Text("✕", style = Melyviz.glyph.copy(color = Melyviz.muted))
+            }
         }
         Spacer(Modifier.height(8.dp))
         LazyColumn(Modifier.fillMaxWidth()) {
