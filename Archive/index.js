@@ -4,6 +4,78 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "acti9-eloszto-rendeles",
+   "title": "Acti9 elosztó rendelés",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "tool",
+   "summary": "Rendelési lista (A: 2 ÁVK, B: 3 ÁVK) és 4 × 18 modulos kiosztási rajz mindkét változathoz, másolható szöveges listával.",
+   "purpose": "Anyagrendelés egy ABB falon kívüli, Acti9 tartalmú elosztó telepítéséhez.",
+   "url": "https://claude.ai/artifact/CjBM5zHEui52RDx5KwLSB4"
+  },
+  {
+   "id": "eloszto-elotte-utana-a",
+   "title": "Előtte-utána 2 ÁVK",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "study",
+   "summary": "A jelenlegi elosztó a fotók alapján és a 2 ÁVK-s A változat várható állapota, körönkénti változással és kioldási csoportokkal.",
+   "purpose": "A két változat közti döntés előkészítése.",
+   "url": "https://claude.ai/artifact/F5f2zSS2eYQyUBpcPe46cR"
+  },
+  {
+   "id": "eloszto-elotte-utana-b",
+   "title": "Előtte-utána 3 ÁVK",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "study",
+   "summary": "A jelenlegi elosztó a fotók alapján és a 3 ÁVK-s B változat várható állapota, körönkénti változással és kioldási csoportokkal.",
+   "purpose": "A két változat közti döntés előkészítése.",
+   "url": "https://claude.ai/artifact/SdZQXAHCp84DxSzEGqy5dL"
+  },
+  {
    "id": "kettelefonos-teszt",
    "title": "Kéttelefonos teszt",
    "created": "2026-11-21",
