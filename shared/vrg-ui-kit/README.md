@@ -174,7 +174,7 @@ Every token, its default value, and the value in each theme (`·` means the them
 | colour: lines | `--vk-border-control` | `#69737c` | `#7a858e` | `#ffffff` | `#6c7880` | control boundaries: ≥3:1 on every surface |
 | colour: text | `--vk-text` | `#eef2f5` | `#11181d` | `#ffffff` | `#e8f0f6` |  |
 | colour: text | `--vk-text-muted` | `#a5aeb6` | `#4b5761` | `#e2e2e2` | `#a6afb7` | secondary text: ≥4.5:1 on surface-3 |
-| colour: text | `--vk-text-faint` | `#6c757d` | `#8d969d` | `#b8b8b8` | `#646d74` | disabled and decorative only — never information |
+| colour: text | `--vk-text-faint` | `#7b848c` | `#657079` | `#b8b8b8` | `#818a91` | disabled and decorative only — never information |
 | colour: text | `--vk-text-on-accent` | `#061418` | `#ffffff` | `#000000` | `#071318` |  |
 | colour: text | `--vk-text-on-solid` | `#0b0d0f` | `#ffffff` | `#000000` | `#0a141c` | text on a filled status colour |
 | colour: the two temperatures | `--vk-accent` | `#9fd8ea` | `#1b6682` | `#5ce1ff` | `#93d3e6` | ice: selection, focus, playhead, "you are here" |
