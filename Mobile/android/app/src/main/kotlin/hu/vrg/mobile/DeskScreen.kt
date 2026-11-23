@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -164,10 +165,22 @@ fun DeskScreen(
                     if (windows.isEmpty()) Text("nincs nyitott ablak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(8.dp))
                     windows.mapNotNull { Catalogue.byId(it) }.forEach { f -> WindowChip(f, windows.size, act) }
                 }
+                // closing windows was long-press only (UI audit 3.1): ⋯ lists them with Bezárás and Mind bezárása
+                if (windows.isNotEmpty()) Box {
+                    var winMenu by remember { mutableStateOf(false) }
+                    StripButton("⋯", "Ablakok bezárása") { winMenu = true }
+                    RcoMenu(winMenu, { winMenu = false }, "Ablakok", windows.mapNotNull { Catalogue.byId(it) }.map { f ->
+                        RcoItem("✕", "${f.title} bezárása", danger = true) { act.closeWindow(f.id) }
+                    } + listOfNotNull(if (windows.size > 1) RcoItem("⊠", "Mind bezárása", danger = true) { act.closeOthers(null) } else null))
+                }
                 Dial("◢", "Rétegverem") { act.open(Catalogue.STACK.id) }
             }
         }
-        if (menu) MenuPanel(Modifier.align(Alignment.BottomStart)) { u -> menu = false; act.openUnit(u) }
+        if (menu) {
+            // a tap beside the menu closes it instead of reaching the home under it (UI audit 6.1)
+            Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { menu = false } })
+            MenuPanel(Modifier.align(Alignment.BottomStart)) { u -> menu = false; act.openUnit(u) }
+        }
         if (kommand) KommandPanel(windows, onClose = { kommand = false }) { id -> kommand = false; act.runKommand(id) }
     }
 }
@@ -177,10 +190,13 @@ fun DeskScreen(
 private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
     var menu by remember { mutableStateOf(false) }
     Box {
-        Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
-            modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
-                .rco(onClick = { act.open(f.id) }, onLong = { menu = true }, longLabel = "ablak műveletei")
-                .padding(horizontal = 10.dp, vertical = 8.dp))
+        // the drawn chip keeps its size inside a 48 dp tall touch slot (UI audit 1.1)
+        Box(Modifier.heightIn(min = 48.dp).rco(onClick = { act.open(f.id) }, onLong = { menu = true }, longLabel = "ablak műveletei")
+            .semantics { role = Role.Button }, contentAlignment = Alignment.Center) {
+            Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
+                modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 10.dp, vertical = 8.dp))
+        }
         RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
             RcoItem("▣", "Megnyitás") { act.open(f.id) },
             RcoItem("✕", "Bezárás", danger = true) { act.closeWindow(f.id) },
@@ -201,8 +217,9 @@ private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
 @Composable
 private fun Dial(glyph: String, label: String, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     Box(
-        Modifier.size(44.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).border(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
-            .then(if (onLong != null) Modifier.rco(onClick = onClick, onLong = onLong) else Modifier.clickable(onClick = onClick)).semantics { contentDescription = label },
+        Modifier.size(48.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).border(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
+            .then(if (onLong != null) Modifier.rco(onClick = onClick, onLong = onLong) else Modifier.clickable(role = Role.Button, onClick = onClick))
+            .semantics { contentDescription = label; role = Role.Button },
         contentAlignment = Alignment.Center,
     ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
 }
@@ -218,7 +235,7 @@ private fun reachTag(u: DeskUnit): String = when (u.reach) {
 @Composable
 private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
     Column(
-        modifier.padding(start = 6.dp, bottom = 62.dp).widthIn(max = 340.dp).fillMaxWidth(0.92f).heightIn(max = 460.dp)
+        modifier.padding(start = 6.dp, bottom = 66.dp).widthIn(max = 340.dp).fillMaxWidth(0.92f).heightIn(max = 460.dp)
             .background(Melyviz.deep, RoundedCornerShape(Melyviz.radius)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius))
             .verticalScroll(rememberScrollState()).padding(12.dp),
     ) {
@@ -229,7 +246,7 @@ private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
             Text(name.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.4.sp, color = Melyviz.glowDim), modifier = Modifier.padding(top = 10.dp, bottom = 2.dp))
             units.forEach { u ->
                 val off = u.reach == Reach.NONE
-                Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).clickable { onUnit(u) }.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { onUnit(u) }.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(u.icon.ifEmpty { "·" }, style = Melyviz.readout.copy(color = if (off) Melyviz.faint else Melyviz.glow), modifier = Modifier.width(30.dp))
                     Text(u.hu, style = Melyviz.label.copy(color = if (off) Melyviz.faint else Melyviz.ink), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(reachTag(u), style = Melyviz.small.copy(fontSize = 9.sp, color = Melyviz.muted))

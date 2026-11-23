@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,8 +54,14 @@ fun LockScreen(onOpen: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text("Eszközkód", style = Melyviz.small)
-            Text(Access.code, style = Melyviz.title.copy(fontSize = 30.sp, fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp, color = Melyviz.glow, fontFamily = Melyviz.mono))
+            // one line, never broken inside the code (the owner copies it by eye): the size shrinks to fit (UI audit 4.6).
+            // A mono glyph is ~0.62 em wide plus the 3 sp letter spacing; both grow with the font scale.
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val fontScale = LocalDensity.current.fontScale
+                val fit = (maxWidth.value / Access.code.length.coerceAtLeast(1) / fontScale - 3f) / 0.62f
+                Text(Access.code, maxLines = 1, softWrap = false, style = Melyviz.title.copy(fontSize = fit.coerceIn(14f, 30f).sp, fontWeight = FontWeight.Bold,
+                    letterSpacing = 3.sp, color = Melyviz.glow, fontFamily = Melyviz.mono))
+            }
             Text("Kérj hozzáférést: az Eszközök QR-kódját a tulajdonos telefonja olvassa be és hagyja jóvá. Utána ez a telefon új kiadás nélkül megnyílik.",
                 style = Melyviz.small)
         }
