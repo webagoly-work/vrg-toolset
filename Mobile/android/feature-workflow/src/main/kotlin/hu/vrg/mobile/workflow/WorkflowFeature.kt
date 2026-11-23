@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,9 +29,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -86,6 +92,8 @@ object WorkflowFeature : VrgFeature {
         val scope = rememberCoroutineScope()
         val clipboard = LocalClipboardManager.current
         var note by remember { mutableStateOf<String?>(null) }
+        var keyNote by remember { mutableStateOf<String?>(null) }   // the result of the buttons below, shown under them
+        var sureDelete by remember { mutableStateOf(false) }
         var busy by remember { mutableStateOf(false) }
         var isPublished by remember { mutableStateOf(published) }
         var sealed by remember { mutableStateOf(WkSealed.parse(sealedFile().takeIf { it.isFile }?.readText())) }
@@ -108,6 +116,9 @@ object WorkflowFeature : VrgFeature {
             if (pack == null && note == null) note = "A csomag formátuma ismeretlen."
         }
         BackHandler(job != null) { if (doc != null) doc = null else job = null }
+        // one scroll serves the list, a job and a text: each opens at its top, not at the last one's offset
+        val scroll = rememberScrollState()
+        LaunchedEffect(job, doc) { scroll.scrollTo(0) }
 
         fun refresh() = scope.launch {
             busy = true
@@ -116,13 +127,15 @@ object WorkflowFeature : VrgFeature {
             if (s != null) { sealed = s; note = "Letöltve: ${s.jobs} munka, ${s.made.take(16).replace('T', ' ')}." } else note = problem
         }
 
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Row {
+        Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("‹ " + if (job != null) "Munkák" else "Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { if (doc != null) doc = null else if (job != null) job = null else host.home() }.padding(vertical = 8.dp))
+                    modifier = Modifier.heightIn(min = 48.dp).clickable { if (doc != null) doc = null else if (job != null) job = null else host.home() }
+                        .wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
                 Spacer(Modifier.weight(1f))
                 if (job == null) Text(if (busy) "…" else "⟳", style = Melyviz.title.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable(enabled = !busy) { refresh() }.padding(8.dp))
+                    modifier = Modifier.minimumInteractiveComponentSize().clickable(enabled = !busy, onClickLabel = "Frissítés") { refresh() }
+                        .semantics { contentDescription = if (busy) "Letöltés folyamatban" else "Csomag letöltése" }.padding(8.dp))
             }
             Text("WORKFLOW KIT", style = Melyviz.title.copy(fontSize = 18.sp))
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
@@ -157,19 +170,22 @@ object WorkflowFeature : VrgFeature {
                         val problem = publish()
                         busy = false
                         isPublished = published
-                        note = problem ?: "Kulcs közzétéve. A PC-n: trust, aztán seal; utána ⟳."
+                        keyNote = problem ?: "Kulcs közzétéve. A PC-n: trust, aztán seal; utána ⟳."
                     }
                 }
                 Spacer(Modifier.width(6.dp))
-                VrgChip("Parancs másolása") { clipboard.setText(AnnotatedString(cmd)); note = "Másolva." }
+                VrgChip("Parancs másolása") { clipboard.setText(AnnotatedString(cmd)); keyNote = "Másolva." }
             }
             Row(Modifier.padding(vertical = 2.dp)) {
                 VrgChip("PC ablakok ›") { host.open("pcwin") }
                 Spacer(Modifier.width(6.dp))
-                if (sealed != null) VrgChip("Törlés a telefonról") {
-                    sealedFile().delete(); sealed = null; pack = null; note = "A csomag törölve erről a telefonról."
+                // a 2-tap delete: fetching the pack again needs GitHub access
+                if (sealed != null) VrgChip(if (sureDelete) "Biztosan törlöm" else "Törlés a telefonról", selected = sureDelete) {
+                    if (!sureDelete) sureDelete = true
+                    else { sureDelete = false; sealedFile().delete(); sealed = null; pack = null; note = null; keyNote = "A csomag törölve erről a telefonról." }
                 }
             }
+            keyNote?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
             Text("A PDF-ek nincsenek a csomagban: a PC ablakokban olvashatók (◣ menü → Workflow Kit), párosított PC-vel.",
                 style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 4.dp))
             Spacer(Modifier.height(24.dp))
@@ -219,7 +235,10 @@ object WorkflowFeature : VrgFeature {
 
         if (j.docs.isNotEmpty()) {
             VrgSectionTitle("Szövegek")
-            j.docs.forEach { x -> Text("▸ " + x.name, style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { onDoc(x.name) }.padding(vertical = 4.dp)) }
+            j.docs.forEach { x ->
+                Text("▸ " + x.name, style = Melyviz.label.copy(color = Melyviz.current),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { onDoc(x.name) }.wrapContentHeight(Alignment.CenterVertically))
+            }
         }
         if (j.files.isNotEmpty()) {
             VrgSectionTitle("Fájlok a PC-n (${j.files.size})")

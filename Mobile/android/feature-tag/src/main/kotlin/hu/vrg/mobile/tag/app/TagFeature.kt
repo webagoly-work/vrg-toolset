@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package hu.vrg.mobile.tag.app
 
 import android.Manifest
@@ -11,14 +13,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
@@ -32,8 +39,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -106,7 +116,7 @@ object TagFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
             Text("TÁRGYKERESŐ", style = Melyviz.title.copy(fontSize = 18.sp))
             Text("Kísérleti · Apple Find My címkék Androidon · rádió: ${radio.hu}", style = Melyviz.readout)
             when (radio) {
@@ -284,6 +294,7 @@ object TagFeature : VrgFeature {
             VrgChip("Megnyitás térképen") {
                 val q = "${mine.lastLat},${mine.lastLon}"
                 runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:$q?q=$q(${Uri.encode(mine.name)})"))) }
+                    .onFailure { host.note("Nincs térképalkalmazás a megnyitáshoz.") }
             }
         } else Text("Még nincs megjegyzett hely.", style = Melyviz.small)
         if (!Tags.placeAllowed(ctx)) VrgChip("Hely megjegyzése: engedély") {
@@ -303,11 +314,10 @@ object TagFeature : VrgFeature {
             } else TagService.stop(ctx)
         }
         Text("Állapot: ${Tags.watch.state.hu}. A képernyő kikapcsolva is figyel; ehhez állandó értesítést mutat.", style = Melyviz.small)
-        Row(Modifier.padding(top = 4.dp).horizontalScroll(rememberScrollState())) {
+        FlowRow(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             val cur = (Tags.watch.afterMs / 1000).toInt()
             LeftBehind.CHOICES.forEach { s ->
                 VrgChip(if (s < 60) "$s mp" else "${s / 60} perc", selected = s == cur) { Tags.setWatchSecs(ctx, s) }
-                Spacer(Modifier.width(4.dp))
             }
         }
 
@@ -378,13 +388,15 @@ object TagFeature : VrgFeature {
                 Tags.book.isBackground(s.address) -> "· "
                 else -> ""
             }
-            Column(Modifier.fillMaxWidth().clickable { open = if (open == s.address) null else s.address }.padding(vertical = 6.dp)) {
-                Text("$tag${s.ad.type.hu} · ${s.ad.kind.hu}" + (if (s.ad.battery.name != "UNKNOWN") " · elem: ${s.ad.battery.hu}" else ""),
+            val isOpen = open == s.address
+            Column(Modifier.fillMaxWidth().clickable { open = if (isOpen) null else s.address }
+                .semantics { stateDescription = if (isOpen) "kinyitva" else "becsukva" }.padding(vertical = 6.dp)) {
+                Text((if (isOpen) "▾ " else "▸ ") + "$tag${s.ad.type.hu} · ${s.ad.kind.hu}" + (if (s.ad.battery.name != "UNKNOWN") " · elem: ${s.ad.battery.hu}" else ""),
                     style = Melyviz.label.copy(color = if (heard) Melyviz.ink else Melyviz.faint))
                 Text("${if (heard) Proximity.label(s.distance(Tags.book.mine?.takeIf { it.address == s.address }?.tx1m ?: -62)) else "nincs jel"} · " +
                     "${s.rssi.value?.toInt() ?: "—"} dBm · ${TagText.ago(s.age(now))}" + (s.ad.keyTag?.let { " · kulcs $it…" } ?: ""),
                     style = Melyviz.readout)
-                if (open == s.address) {
+                if (isOpen) {
                     RingControls(s)
                     DiagControls(DiagDevice(null, s.address, false, diagType(s.ad.type)))
                     if (s.address != mineAddr) Row(Modifier.padding(top = 4.dp)) {
@@ -530,6 +542,9 @@ object TagFeature : VrgFeature {
     private fun DiagControls(dev: DiagDevice) {
         val ctx = LocalContext.current
         val st by DiagScan.state.collectAsStateWithLifecycle()
+        val askBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
+            if (r.values.all { it }) { Tags.refresh(ctx); DiagScan.run(ctx, dev) }
+        }
         val mineHere = when (val x = st) {
             is DiagScan.State.Running -> x.address == dev.address
             is DiagScan.State.Done -> x.address == dev.address
@@ -538,7 +553,7 @@ object TagFeature : VrgFeature {
         }
         Row(Modifier.padding(top = 4.dp)) {
             VrgChip(if (mineHere && st is DiagScan.State.Running) "🔍 …" else "🔍 Diagnosztika", selected = mineHere) {
-                if (Tags.allowed(ctx)) DiagScan.run(ctx, dev)
+                if (Tags.allowed(ctx)) DiagScan.run(ctx, dev) else askBt.launch(Tags.permissions())
             }
         }
         if (!mineHere) return

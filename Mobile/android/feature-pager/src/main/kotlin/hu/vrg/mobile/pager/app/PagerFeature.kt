@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package hu.vrg.mobile.pager.app
 
 import android.Manifest
@@ -7,15 +9,19 @@ import android.view.KeyEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -26,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -92,7 +99,7 @@ object PagerFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
             Row {
                 Column(Modifier.weight(1f)) {
                     Text("CSIPOGÓ", style = Melyviz.title.copy(fontSize = 18.sp))
@@ -111,11 +118,9 @@ object PagerFeature : VrgFeature {
 
             Pager.pendingCrew.collectAsStateWithLifecycle().value?.let { code -> CrewInvite(code) }
 
-            Row(Modifier.padding(vertical = 8.dp).horizontalScroll(rememberScrollState())) {
-                Tab.entries.forEach { t ->
-                    VrgChip(t.hu + badge(t), selected = t == tab) { tab = t }
-                    Spacer(Modifier.width(4.dp))
-                }
+            // a wrapping strip: on a phone the six tabs take two lines, so Beállítás is never scrolled out of sight
+            FlowRow(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Tab.entries.forEach { t -> VrgChip(t.hu + badge(t), selected = t == tab) { tab = t } }
             }
 
             when (tab) {

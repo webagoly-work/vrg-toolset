@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -21,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -82,6 +85,8 @@ object WatchFeature : VrgFeature {
         var sureForget by remember { mutableStateOf(false) }
         val on = link != Watch.Link.OFF && link != Watch.Link.NO_PERMISSION
         val ready = link == Watch.Link.READY
+        // the actions that need the live link say so when tapped without it, instead of doing nothing
+        val needLink = { host.note("Csak élő kapcsolattal (most: ${link.hu}).") }
 
         LaunchedEffect(link) { _activity.value = if (ready) MiniStatus.running() else MiniStatus.IDLE }
         val askBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { allowed = Watch.allowed(ctx) }
@@ -93,7 +98,7 @@ object WatchFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
             Text("ÓRA", style = Melyviz.title.copy(fontSize = 18.sp))
             Text("Q71 a FunDo nélkül · kapcsolat: ${link.hu}", style = Melyviz.readout)
 
@@ -124,7 +129,7 @@ object WatchFeature : VrgFeature {
             VrgSectionTitle("Óra keresése")
             Row(Modifier.padding(top = 4.dp)) {
                 if (watchRinging) VrgChip("■ Állj", selected = true) { WatchService.findWatch(false) }
-                else VrgChip("🔔 Óra keresése", selected = false) { if (ready) WatchService.findWatch(true) }
+                else VrgChip("🔔 Óra keresése", selected = false) { if (ready) WatchService.findWatch(true) else needLink() }
             }
             if (!ready) Text("Csak élő kapcsolattal.", style = Melyviz.small.copy(color = Melyviz.faint))
 
@@ -168,13 +173,13 @@ object WatchFeature : VrgFeature {
             VrgSectionTitle("Idő")
             Text(if (synced > 0) "Beállítva: ${clock(synced)} (minden kapcsolódáskor magától)" else "Kapcsolódáskor magától beállítom.",
                 style = Melyviz.small)
-            VrgChip("Idő beállítása most") { if (ready) WatchService.timeSync() }
+            VrgChip("Idő beállítása most") { if (ready) WatchService.timeSync() else needLink() }
 
             VrgSectionTitle("Ma")
             Text(steps?.let { "${it.steps} lépés" } ?: "—", style = Melyviz.title.copy(fontSize = 36.sp,
                 color = if (steps != null) Melyviz.glow else Melyviz.faint))
             steps?.let { s -> info?.stepGoal?.let { g -> Text("cél: $g · ${s.day}", style = Melyviz.readout) } }
-            VrgChip("Frissítés") { if (ready) WatchService.readAll() }
+            VrgChip("Frissítés") { if (ready) WatchService.readAll() else needLink() }
 
             VrgSectionTitle("Óra adatai")
             if (info == null && version == null) Text("Kapcsolódás után látszik.", style = Melyviz.small.copy(color = Melyviz.faint))
