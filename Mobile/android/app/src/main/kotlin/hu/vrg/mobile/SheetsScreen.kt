@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -123,11 +124,14 @@ private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
 
 @Composable
 fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null) {
-    Row(Modifier.widthIn(max = 200.dp).horizontalScroll(rememberScrollState()).padding(end = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+    // + stays in view: the sheet tabs scroll sideways between ⌂ and it (with a few sheets open it used to scroll out of sight)
+    Row(Modifier.padding(end = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
         // ⌂: the home; a long press switches it between the swiped pages and one long page (WP M38)
         Tab("⌂", doc.active.isEmpty(), "Munkapad", { SheetsStore.update { P.activate(it, "") } }, onHomeLong)
-        doc.sheets.forEach { s -> Tab(s.name, doc.active == s.id, "Lap: ${s.name}", { SheetsStore.update { P.activate(it, s.id) } }) { onMenu(s.id) } }
+        if (doc.sheets.isNotEmpty()) Row(Modifier.widthIn(max = 150.dp).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            doc.sheets.forEach { s -> Tab(s.name, doc.active == s.id, "Lap: ${s.name}", { SheetsStore.update { P.activate(it, s.id) } }) { onMenu(s.id) } }
+        }
         if (doc.sheets.size < Sheets.MAX_SHEETS) Tab("+", false, "Új lap", onAdd, null)
     }
 }
@@ -366,7 +370,7 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
     }
 }
 
-/** "+": a new sheet, blank or from a preset (the Desktop's User-level ones fitted to the phone, then the user's own). */
+/** "+": a new sheet, blank or from a preset (the phone's own — DevLap — then the Desktop's User-level ones fitted to the phone, then the user's own). */
 @Composable
 fun NewSheetPanel(doc: SheetsDoc, onClose: () -> Unit) {
     BackHandler(onBack = onClose)
@@ -380,12 +384,15 @@ fun NewSheetPanel(doc: SheetsDoc, onClose: () -> Unit) {
         onClose()
     }
     Panel("ÚJ LAP", onClose) {
-        (PhoneSheets.PRESETS + doc.mine).forEach { p ->
-            val n = PhoneSheets.windows(doc, p).size
-            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { add(p) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (p in doc.mine) "★" else "▦", style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
-                Text(p.name, style = Melyviz.label, modifier = Modifier.weight(1f))
-                Text(if (n == 0) "üres" else "$n ablak", style = Melyviz.small.copy(color = Melyviz.muted))
+        // the list scrolls (lying down, or with presets of your own, it is taller than the screen); DevLap is first
+        Column(Modifier.fillMaxWidth().heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+            (PhoneSheets.PRESETS + doc.mine).forEach { p ->
+                val n = PhoneSheets.windows(doc, p).size
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { add(p) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (p in doc.mine) "★" else "▦", style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
+                    Text(p.name, style = Melyviz.label, modifier = Modifier.weight(1f))
+                    Text(if (n == 0) "üres" else "$n ablak", style = Melyviz.small.copy(color = Melyviz.muted))
+                }
             }
         }
         Text("A Desktop sablonjaiból azok az ablakok jönnek át, amelyeket a telefon meg tud nyitni.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint),

@@ -1063,7 +1063,10 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   2×2, Claude, Értesítések, Gyorsjegyzet, Archívum. The phone does not show the Desktop DevLap: its windows are PC
   tools (terminal, git, the Thread Board). Rejected: windows for every tracker (16 cells hold six readable ones; the
   rest are tabs or one tap away in the + picker); a new home tile (Lapok → + already opens it in two taps).
-  Telefonon ellenőrizni: (1) Lapok → + lists **DevLap** with "5 ablak"; (2) it opens Haladás on top across both
+  Fixed the same day (0.9.735 hid it): **+** is pinned after the tabs (it used to scroll out of the 200 dp tab row once a
+  few sheets were open) and the + list scrolls with DevLap at its top (it was last, below the panel lying down).
+  Telefonon ellenőrizni: (1) the sheet bar's **+** is in view with several sheets open, and its list starts with
+  **DevLap** "5 ablak"; (2) it opens Haladás on top across both
   columns, Claude and Értesítések below, Gyorsjegyzet and Archívum at the bottom; (3) a double tap on a window's header
   makes it full and back. On the PC (Szint: Dev): (4) + → DevLap opens six windows filling the grid; (5) the
   Vonaltérkép and the browser's Rétegverem tabs load (the stack server starts by itself); (6) the Claude Code terminal

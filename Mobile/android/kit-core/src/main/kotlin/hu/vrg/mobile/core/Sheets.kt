@@ -578,9 +578,13 @@ object PhoneSheets {
         ), focus = 0),
     )
 
-    /** The Desktop's User-level presets on the phone's grid (what the phone cannot show takes no room, then fitPreset, D-16), then [OWN]. */
+    /**
+     * What Lapok → + offers: the phone's own presets first ([OWN]: DevLap is at the top of the list, where it is seen without
+     * scrolling), then the Desktop's User-level presets on the phone's grid (what the phone cannot show takes no room, then
+     * fitPreset, D-16).
+     */
     val PRESETS: List<SheetPreset> by lazy {
-        DeskSheets.PRESETS.map { Sheets.phone.fitPreset(it, SheetRules.DESKTOP) { w -> resolve(w.open, w.state) != null } } + OWN
+        OWN + DeskSheets.PRESETS.map { Sheets.phone.fitPreset(it, SheetRules.DESKTOP) { w -> resolve(w.open, w.state) != null } }
     }
 
     /** A preset's windows ready for a new sheet. */

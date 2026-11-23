@@ -245,7 +245,8 @@ class SheetsTest {
 
     @Test fun phonePresetsFitTheGrid() {
         val ps = PhoneSheets.PRESETS
-        assertEquals(DeskSheets.PRESETS.map { it.id } + PhoneSheets.OWN.map { it.id }, ps.map { it.id })
+        assertEquals(PhoneSheets.OWN.map { it.id } + DeskSheets.PRESETS.map { it.id }, ps.map { it.id }, "the phone's own (DevLap) first")
+        assertEquals("devlap", ps.first().id)
         for (p in ps) assertEquals("", P.validPreset(p), p.id)
         val over = ps.first { it.id == "attekintes" }
         assertEquals(listOf("pane:home", "pane:files"), over.wins.map { it.open }, "the feed stays on the PC (D-18); files = PC ablakok (M23)")
