@@ -31,6 +31,7 @@ import hu.vrg.mobile.stack.StackFeature
 import hu.vrg.mobile.tag.app.TagFeature
 import hu.vrg.mobile.update.UpdateFeature
 import hu.vrg.mobile.watch.app.WatchFeature
+import hu.vrg.mobile.radar.RadarFeature
 import hu.vrg.mobile.workflow.WorkflowFeature
 import hu.vrg.mobile.weather.app.WeatherFeature
 import hu.vrg.mobile.core.HomeLayout
@@ -72,6 +73,7 @@ object Registry {
         WeatherFeature,
         TagFeature,
         WatchFeature,
+        RadarFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

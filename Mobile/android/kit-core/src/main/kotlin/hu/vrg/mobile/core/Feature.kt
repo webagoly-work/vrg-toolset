@@ -158,6 +158,12 @@ object Catalogue {
     )
 
     // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
+    // WP M66 (2026-11-23): one radar for everything around: any program's blips on its own layer (RadarHub).
+    val RADAR = FeatureInfo(
+        "radar", "Radar", "Minden, ami körülötted van, egy radaron: címkék, párosított eszközök, a Csipogó brigád, az óra és ami később jön. Távolság, irány (GPS, iránytű, körbefordulás) és kapcsolat rétegenként.",
+        "◎", Group.LINK, Stage.BETA, "M66", setOf(Need.BLUETOOTH),
+    )
+
     val WATCH = FeatureInfo(
         "watch", "Óra", "Kísérleti: a Q71 okosóra a FunDo nélkül: kapcsolat, pontos idő, lépések, az óra adatai, az óra csipogtatása és az óráról a telefon megcsörgetése.",
         "⌚", Group.LINK, Stage.BETA, "M65", setOf(Need.BLUETOOTH),
@@ -208,7 +214,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

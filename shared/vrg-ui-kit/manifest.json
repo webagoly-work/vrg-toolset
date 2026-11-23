@@ -993,6 +993,51 @@
       "api": "VK.minimap.mount(el, graphInstance, {label}) → {update, destroy}"
     },
     {
+      "name": "radar",
+      "files": [
+        "components/radar.css",
+        "components/radar.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        3
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-xs",
+        "--vk-layer-2",
+        "--vk-layer-3",
+        "--vk-layer-5",
+        "--vk-layer-6",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-surface-1",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Universal locator / proximity / connection radar (WP M66): any program's blips on layers (tags, paired devices, crew phones, a watch, places), log-scale distance rings, compass bearings turned by the heading (heading-up or north-up), GPS bearings from places, sweep bearings; a blip without a direction is hollow on its ring. Legend chips toggle layers; ←/→ step nearest first, Enter opens. The layout is shared with VRG Mobile's kit-core Radar.kt (test/fixtures/radar-layout.json).",
+      "api": "VK.radar.mount(el, {label, mode, hidden, sweeps}) → {update(frame), select, setHidden, setMode, setSweeps, layout, on, destroy} · VK.radar.layout(frame, {hidden, sweeps}) (pure)"
+    },
+    {
       "name": "layerstack",
       "files": [
         "components/layerstack.css",

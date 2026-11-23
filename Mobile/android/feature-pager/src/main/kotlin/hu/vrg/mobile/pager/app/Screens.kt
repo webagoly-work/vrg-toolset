@@ -275,6 +275,9 @@ fun NearTab() {
     val f = finding?.let { u -> peers.firstOrNull { it.unit == u } }
     if (f != null) Finder(f) { finding = null }
 
+    // the crew on the radar (WP M66): the same layer the Radar feature shows with the others
+    if (peers.isNotEmpty()) hu.vrg.mobile.kit.ui.VrgHubRadar(setOf("pager"), Modifier.fillMaxWidth().padding(vertical = 6.dp))
+
     if (peers.isEmpty()) Text("Senki a közelben. A többieknek is be kell kapcsolniuk a Csipogót, ugyanazzal a csapatkóddal (${engine.me.crew.code}).",
         style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(vertical = 8.dp))
     peers.forEach { p ->

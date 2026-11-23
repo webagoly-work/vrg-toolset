@@ -53,6 +53,7 @@ object WatchFeature : VrgFeature {
     override val activity: StateFlow<MiniStatus> get() = _activity
 
     override fun init(app: Application) {
+        hu.vrg.mobile.core.RadarHub.register(WatchRadar)      // the watch on the radar (WP M66)
         WatchService.channels(app)
         // Kapcsolat stays on across app restarts only by the user's choice; the service itself is not sticky
         if (Watch.wanted(app) && Watch.allowed(app)) runCatching { WatchService.start(app) }

@@ -1072,6 +1072,22 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Vonaltérkép and the browser's Rétegverem tabs load (the stack server starts by itself); (6) the Claude Code terminal
   has the keyboard; (7) claude.ai/code and the GitHub tabs show you signed in.
 
+- **D-173 · Radar: one radar for every program, one layout in two languages (M66), 2026-11-23.** Taken while building on
+  the Founder's request for a universal locator / proximity / connection display usable as a plugin. One frame contract
+  (layers + blips, `docs/radar/README.md`), one layout rule implemented twice — kit-core `Radar.kt` for the phone, the VRG
+  UI Kit's `components/radar.js` for the Desktop's HTML programs — held together by a shared fixture both test suites
+  reproduce. Rejected: a phone-only radar (the Desktop and the Data Vault would redo it), one implementation in a WebView
+  on the phone (no compass, no Compose look, worse on a CYD-size screen).
+- **D-174 · Radar: programs plug in through RadarHub (M66), 2026-11-23.** A feature registers a `RadarSource` (its layer,
+  its blips, a wake / calm hook) in its `init`; every radar — the Radar tile, the radar inside Tárgykereső and Csipogó —
+  asks the hub. Features never talk to each other (architecture rule 2); a broken source is skipped, never blanks the
+  radar. First sources: Saját címke + Címkék a közelben (Tárgykereső), Csipogó, Óra.
+- **D-175 · Radar: directions only when known (M66), 2026-11-23.** Bluetooth RSSI gives a distance, never a direction, so
+  a blip is drawn with a direction only from a place (GPS bearing), from **Irány keresése** (turn round once; the body
+  shadows the signal; kept on the compass for ten minutes in RadarHub) or from a source that knows it. Everything else is
+  hollow and dashed on its distance ring, and the caption counts them. Rejected: guessing a direction from RSSI changes
+  while walking (looks precise, is not).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

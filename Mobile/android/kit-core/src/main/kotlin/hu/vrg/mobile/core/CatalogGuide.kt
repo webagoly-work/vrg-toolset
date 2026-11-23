@@ -418,6 +418,18 @@ object CatalogGuide {
             pair = "Tárgykereső: a párosított óra innen nyitja",
         ),
         GuidePage(
+            id = "radar", title = "Radar", glyph = "◎", side = GuideSide.PHONE,
+            what = "Egy radar mindenre, ami körülötted van: a Tárgykereső címkéi és párosított eszközei, a Csipogó brigád, az óra. Minden program a saját rétegén, a saját színével.",
+            how = listOf(
+                "A körök a távolságot mutatják. Telt pont: ismert irány. Üres pont: csak a távolsága ismert.",
+                "Irány keresése: koppints egy pontra, tartsd magad előtt a telefont és fordulj lassan körbe. A legerősebb jel felé van.",
+                "Irány fel: a radar veled fordul. Észak fel: a térképhez hasonlóan áll. A helyek (például egy címke utolsó helye) GPS-szel kapnak irányt.",
+                "Lent a rétegeket ki-be kapcsolod; a pont kártyájáról a saját programja nyílik.",
+            ),
+            needs = "Bluetooth (GPS-irányhoz helymeghatározás)",
+            pair = "Asztal: a VRG UI Kit radar része (Gráf és topológia), ugyanaz az elrendezés",
+        ),
+        GuidePage(
             id = "desk", title = "Asztal", glyph = "◧", side = GuideSide.PHONE,
             what = "Maga a kezdőlap: a VRG Asztal egyszerűsített változata a telefonon. Számozott lapok oldalra lapozva, felül a sáv, alul a dokk.",
             how = listOf(

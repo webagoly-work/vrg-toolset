@@ -56,6 +56,7 @@ object PagerFeature : VrgFeature {
     enum class Tab(val hu: String) { PANEL("Csipogó"), NEAR("Közelség"), CHAT("Csevegés"), TALK("Adóvevő"), SAFE("Őrzés"), SETUP("Beállítás") }
 
     override fun init(app: Application) {
+        hu.vrg.mobile.core.RadarHub.register(PagerRadar)      // the crew on the radar (WP M66)
         Pager.applySettings(app)
         Pager.guardPrefs(app)
         keysOn = Pager.settings(app).volumeKeys

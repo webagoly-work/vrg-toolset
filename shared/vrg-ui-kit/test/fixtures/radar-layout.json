@@ -1,0 +1,627 @@
+{
+ "about": "Radar layout fixture (WP M66): written by shared/vrg-ui-kit/test/radar.js --write from components/radar.js; kit-core RadarTest must reproduce every placement within 1e-5.",
+ "cases": [
+  {
+   "name": "mixed layers, heading-up, GPS, sweep, no direction",
+   "sweeps": {
+    "pager:3": 200
+   },
+   "hidden": [],
+   "frame": {
+    "headingDeg": 30,
+    "here": {
+     "lat": 47.4979,
+     "lon": 19.0402
+    },
+    "mode": "heading-up",
+    "layers": [],
+    "blips": [
+     {
+      "id": "tag:mine",
+      "layer": "tag",
+      "label": "ISYTag",
+      "distanceM": 4.2,
+      "mine": true,
+      "trend": 1
+     },
+     {
+      "id": "tag:AA",
+      "layer": "tags",
+      "label": "AirTag",
+      "distanceM": 12
+     },
+     {
+      "id": "tag:BB",
+      "layer": "tags",
+      "label": "iTag",
+      "distanceM": 12.5
+     },
+     {
+      "id": "tag:CC",
+      "layer": "tags",
+      "label": "Find My",
+      "distanceM": 11.8
+     },
+     {
+      "id": "watch:q71",
+      "layer": "watch",
+      "label": "Q71",
+      "distanceM": null,
+      "linked": true
+     },
+     {
+      "id": "pager:3",
+      "layer": "pager",
+      "label": "Béla",
+      "distanceM": 25
+     },
+     {
+      "id": "pager:4",
+      "layer": "pager",
+      "label": "Ödön",
+      "distanceM": 2,
+      "bearingDeg": 90
+     },
+     {
+      "id": "site:k1",
+      "layer": "sites",
+      "label": "Kötőelem raktár",
+      "place": {
+       "lat": 47.5,
+       "lon": 19.045
+      }
+     },
+     {
+      "id": "tag:last",
+      "layer": "tag",
+      "label": "utoljára",
+      "distanceM": 40,
+      "place": {
+       "lat": 47.4975,
+       "lon": 19.039
+      }
+     }
+    ]
+   },
+   "expect": {
+    "rangeM": 30,
+    "rotationDeg": 30,
+    "rings": [
+     [
+      1,
+      0.17359
+     ],
+     [
+      3,
+      0.34718
+     ],
+     [
+      10,
+      0.600523
+     ],
+     [
+      30,
+      0.86
+     ]
+    ],
+    "placed": [
+     {
+      "id": "pager:3",
+      "x": 0.141688,
+      "y": 0.803554,
+      "r": 0.81595,
+      "angleDeg": 170,
+      "bearingDeg": 200,
+      "bearingSrc": "sweep",
+      "distanceM": 25,
+      "alpha": 1
+     },
+     {
+      "id": "pager:4",
+      "x": 0.238273,
+      "y": -0.137567,
+      "r": 0.275134,
+      "angleDeg": 60,
+      "bearingDeg": 90,
+      "bearingSrc": "source",
+      "distanceM": 2,
+      "alpha": 1
+     },
+     {
+      "id": "site:k1",
+      "x": 0.409604,
+      "y": -0.801389,
+      "r": 0.9,
+      "angleDeg": 27.07239,
+      "bearingDeg": 57.07239,
+      "bearingSrc": "gps",
+      "distanceM": 429.598655,
+      "alpha": 1
+     },
+     {
+      "id": "tag:last",
+      "x": -0.499881,
+      "y": 0.748411,
+      "r": 0.9,
+      "angleDeg": 213.739903,
+      "bearingDeg": 243.739903,
+      "bearingSrc": "gps",
+      "distanceM": 40,
+      "alpha": 1
+     },
+     {
+      "id": "tag:AA",
+      "x": 0.239592,
+      "y": 0.596005,
+      "r": 0.64236,
+      "angleDeg": 158.1,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 12,
+      "alpha": 1
+     },
+     {
+      "id": "tag:BB",
+      "x": 0.504398,
+      "y": -0.412845,
+      "r": 0.651812,
+      "angleDeg": 50.7,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 12.5,
+      "alpha": 1
+     },
+     {
+      "id": "tag:CC",
+      "x": -0.337396,
+      "y": -0.542049,
+      "r": 0.638477,
+      "angleDeg": 328.1,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 11.8,
+      "alpha": 1
+     },
+     {
+      "id": "tag:mine",
+      "x": 0.005765,
+      "y": -0.412846,
+      "r": 0.412886,
+      "angleDeg": 0.8,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 4.2,
+      "alpha": 1
+     },
+     {
+      "id": "watch:q71",
+      "x": -0.938562,
+      "y": -0.146975,
+      "r": 0.95,
+      "angleDeg": 278.9,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": null,
+      "alpha": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "north-up ignores the heading; hidden layer gone; fixed range",
+   "sweeps": {},
+   "hidden": [
+    "tags"
+   ],
+   "frame": {
+    "headingDeg": 123,
+    "here": null,
+    "mode": "north-up",
+    "rangeM": 30,
+    "layers": [],
+    "blips": [
+     {
+      "id": "a",
+      "layer": "x",
+      "label": "A",
+      "distanceM": 0.2,
+      "bearingDeg": -45
+     },
+     {
+      "id": "b",
+      "layer": "tags",
+      "label": "B",
+      "distanceM": 5
+     },
+     {
+      "id": "c",
+      "layer": "x",
+      "label": "C",
+      "distanceM": 500,
+      "bearingDeg": 730
+     },
+     {
+      "id": "d",
+      "layer": "x",
+      "label": "D",
+      "distanceM": 3,
+      "ageMs": 30000
+     },
+     {
+      "id": "e",
+      "layer": "x",
+      "label": "E",
+      "distanceM": 3,
+      "ageMs": 90000
+     },
+     {
+      "id": "f",
+      "layer": "x",
+      "label": "F",
+      "distanceM": 3
+     },
+     {
+      "id": "Ű-ő",
+      "layer": "x",
+      "label": "Ű",
+      "distanceM": 3
+     }
+    ]
+   },
+   "expect": {
+    "rangeM": 30,
+    "rotationDeg": 0,
+    "rings": [
+     [
+      1,
+      0.17359
+     ],
+     [
+      3,
+      0.34718
+     ],
+     [
+      10,
+      0.600523
+     ],
+     [
+      30,
+      0.86
+     ]
+    ],
+    "placed": [
+     {
+      "id": "a",
+      "x": -0.032287,
+      "y": -0.032287,
+      "r": 0.04566,
+      "angleDeg": 315,
+      "bearingDeg": 315,
+      "bearingSrc": "source",
+      "distanceM": 0.2,
+      "alpha": 1
+     },
+     {
+      "id": "c",
+      "x": 0.156283,
+      "y": -0.886327,
+      "r": 0.9,
+      "angleDeg": 10,
+      "bearingDeg": 10,
+      "bearingSrc": "source",
+      "distanceM": 500,
+      "alpha": 1
+     },
+     {
+      "id": "d",
+      "x": 0.097442,
+      "y": -0.333226,
+      "r": 0.34718,
+      "angleDeg": 16.3,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 3,
+      "alpha": 0.704545
+     },
+     {
+      "id": "e",
+      "x": -0.196145,
+      "y": 0.286463,
+      "r": 0.34718,
+      "angleDeg": 214.4,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 3,
+      "alpha": 0.35
+     },
+     {
+      "id": "f",
+      "x": -0.118173,
+      "y": -0.32645,
+      "r": 0.34718,
+      "angleDeg": 340.1,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 3,
+      "alpha": 1
+     },
+     {
+      "id": "Ű-ő",
+      "x": 0.324338,
+      "y": 0.123852,
+      "r": 0.34718,
+      "angleDeg": 110.9,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 3,
+      "alpha": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "crowded ring: twelve blips without direction at the same distance",
+   "sweeps": {},
+   "hidden": [],
+   "frame": {
+    "mode": "heading-up",
+    "headingDeg": null,
+    "layers": [],
+    "blips": [
+     {
+      "id": "n0",
+      "layer": "pager",
+      "label": "U0",
+      "distanceM": 6
+     },
+     {
+      "id": "n1",
+      "layer": "pager",
+      "label": "U1",
+      "distanceM": 6
+     },
+     {
+      "id": "n2",
+      "layer": "pager",
+      "label": "U2",
+      "distanceM": 6
+     },
+     {
+      "id": "n3",
+      "layer": "pager",
+      "label": "U3",
+      "distanceM": 6
+     },
+     {
+      "id": "n4",
+      "layer": "pager",
+      "label": "U4",
+      "distanceM": 6
+     },
+     {
+      "id": "n5",
+      "layer": "pager",
+      "label": "U5",
+      "distanceM": 6
+     },
+     {
+      "id": "n6",
+      "layer": "pager",
+      "label": "U6",
+      "distanceM": 6
+     },
+     {
+      "id": "n7",
+      "layer": "pager",
+      "label": "U7",
+      "distanceM": 6
+     },
+     {
+      "id": "n8",
+      "layer": "pager",
+      "label": "U8",
+      "distanceM": 6
+     },
+     {
+      "id": "n9",
+      "layer": "pager",
+      "label": "U9",
+      "distanceM": 6
+     },
+     {
+      "id": "n10",
+      "layer": "pager",
+      "label": "U10",
+      "distanceM": 6
+     },
+     {
+      "id": "n11",
+      "layer": "pager",
+      "label": "U11",
+      "distanceM": 6
+     }
+    ]
+   },
+   "expect": {
+    "rangeM": 10,
+    "rotationDeg": 0,
+    "rings": [
+     [
+      1,
+      0.248596
+     ],
+     [
+      3,
+      0.497192
+     ],
+     [
+      10,
+      0.86
+     ]
+    ],
+    "placed": [
+     {
+      "id": "n0",
+      "x": 0.684841,
+      "y": 0.13436,
+      "r": 0.697897,
+      "angleDeg": 101.1,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n1",
+      "x": -0.609209,
+      "y": -0.340476,
+      "r": 0.697897,
+      "angleDeg": 299.2,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n10",
+      "x": -0.660663,
+      "y": 0.224908,
+      "r": 0.697897,
+      "angleDeg": 251.2,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n11",
+      "x": 0.558097,
+      "y": -0.419031,
+      "r": 0.697897,
+      "angleDeg": 53.1,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n2",
+      "x": 0.631993,
+      "y": -0.296047,
+      "r": 0.697897,
+      "angleDeg": 64.9,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n3",
+      "x": -0.692694,
+      "y": 0.085052,
+      "r": 0.697897,
+      "angleDeg": 263,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n4",
+      "x": 0.335146,
+      "y": -0.612157,
+      "r": 0.697897,
+      "angleDeg": 28.7,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n5",
+      "x": -0.508745,
+      "y": 0.477743,
+      "r": 0.697897,
+      "angleDeg": 226.8,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n6",
+      "x": -0.091094,
+      "y": -0.691926,
+      "r": 0.697897,
+      "angleDeg": 352.5,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n7",
+      "x": -0.128379,
+      "y": 0.685987,
+      "r": 0.697897,
+      "angleDeg": 190.6,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n8",
+      "x": -0.482164,
+      "y": -0.504556,
+      "r": 0.697897,
+      "angleDeg": 316.3,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     },
+     {
+      "id": "n9",
+      "x": 0.301551,
+      "y": 0.629386,
+      "r": 0.697897,
+      "angleDeg": 154.4,
+      "bearingDeg": null,
+      "bearingSrc": "none",
+      "distanceM": 6,
+      "alpha": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "empty frame",
+   "sweeps": {},
+   "hidden": [],
+   "frame": {
+    "layers": [],
+    "blips": []
+   },
+   "expect": {
+    "rangeM": 10,
+    "rotationDeg": 0,
+    "rings": [
+     [
+      1,
+      0.248596
+     ],
+     [
+      3,
+      0.497192
+     ],
+     [
+      10,
+      0.86
+     ]
+    ],
+    "placed": []
+   }
+  }
+ ]
+}

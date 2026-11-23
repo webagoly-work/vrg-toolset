@@ -75,7 +75,12 @@ object TagFeature : VrgFeature {
 
     enum class Tab(val hu: String) { MINE("Saját címke"), AROUND("Környék"), ABOUT("Tudnivalók") }
 
-    override fun init(app: Application) { Tags.load(app) }
+    override fun init(app: Application) {
+        Tags.load(app)
+        // the radar (WP M66): mine and the tags around, as two layers anyone's radar can show
+        hu.vrg.mobile.core.RadarHub.register(MineLayer)
+        hu.vrg.mobile.core.RadarHub.register(AroundLayer)
+    }
 
     /** vrg://tag (the service's notifications open it). */
     override fun open(route: Route): Boolean = true
@@ -133,7 +138,7 @@ object TagFeature : VrgFeature {
 
             when (tab) {
                 Tab.MINE -> MineTab(host, now, watching) { tab = Tab.AROUND }
-                Tab.AROUND -> AroundTab(now)
+                Tab.AROUND -> AroundTab(now, host)
                 Tab.ABOUT -> AboutTab()
             }
             Spacer(Modifier.height(24.dp))
@@ -363,11 +368,14 @@ object TagFeature : VrgFeature {
     // ---- Környék ---------------------------------------------------------------------------------------------
 
     @Composable
-    private fun AroundTab(now: Long) {
+    private fun AroundTab(now: Long, host: FeatureHost) {
         val ctx = LocalContext.current
         var open by remember { mutableStateOf<String?>(null) }
         val list = Tags.book.around(now)
         VrgSectionTitle("Címkék a közelben")
+        // the radar (WP M66): mine and the tags around, the same layers the Radar feature shows with the others
+        if (list.isNotEmpty() || Tags.book.mine != null) hu.vrg.mobile.kit.ui.VrgHubRadar(setOf("tag", "tags"),
+            Modifier.fillMaxWidth().padding(vertical = 6.dp), onFull = { host.open("radar") })
         if (list.isEmpty()) Text("Még egy sem. Egy gazdájától távoli Find My címke 2 mp-enként hirdet; egy párosítatlan csak " +
             "pár percig a bekapcsolása után. Egy iTag addig hirdet, amíg nem csatlakozik hozzá semmi.", style = Melyviz.small)
         val mineAddr = Tags.book.mine?.address
