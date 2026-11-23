@@ -24,6 +24,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -697,7 +698,10 @@ internal fun MediaViewer(st: EditorState, c: Capture, close: () -> Unit) {
             }
             Row(Modifier.padding(top = 8.dp)) {
                 Spacer(Modifier.weight(1f))
-                Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clickable { st.deleteCapture(c.id); close() }.padding(vertical = 8.dp))
+                // UI audit 5.6: 48 dp, and the delete is undoable (st.deleteCapture says "↶ visszahozza")
+                Box(Modifier.heightIn(min = 48.dp).clickable(role = androidx.compose.ui.semantics.Role.Button) { st.deleteCapture(c.id); close() }, contentAlignment = Alignment.Center) {
+                    Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral))
+                }
             }
             Text("Fájlnév a PC-n: " + Intake.exportName(st.sketch, c), style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
         }

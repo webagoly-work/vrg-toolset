@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +60,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -194,6 +200,7 @@ internal fun PurposePicker(st: EditorState, close: () -> Unit) = AlertDialog(
 )
 
 private val MARK_COLORS = listOf(0xFFE8641C, 0xFFD64545, 0xFFE0B020, 0xFF27C2B0, 0xFFFFFFFF)
+private val MARK_COLOR_NAMES = listOf("narancs", "piros", "sárga", "türkiz", "fehér")
 
 /** One photo: the picture with its markup, purpose, room, caption (typed or dictated), delete. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -249,8 +256,10 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                     }
                 }
             } else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            // UI audit 3.5: the toolbar wraps (it was a ~470 dp scroller) and ↶ stands right after Jelölés, always in view
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (feat("kamera.markup")) Pill(if (marking) "✎ Jelölés: be" else "✎ Jelölés", Color(color), marking) { marking = !marking }
+                if (marking && c.marks.isNotEmpty()) Pill("↶ Jelölés vissza", Melyviz.faint, false) { st.editCapture(id) { it.copy(marks = it.marks.dropLast(1)) } }
                 // skcam K3 (WP M60): the Síkmérés on this photo; back here when done
                 if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) Pill("📏 Mérés", Melyviz.current, false) {
                     st.ask = Ask.Measure(hu.vrg.mobile.sketch.Planes.captureKey(c.id), c.file, (st.kit.purpose(c.purpose)?.label ?: c.purpose) + " · " + c.id, Ask.CaptureView(c.id))
@@ -260,9 +269,14 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                         if (st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.BLUR)) listOf(MarkKind.BLUR to "▦", MarkKind.BLUR_BRUSH to "▒") else emptyList()).forEach { (k, sym) ->
                         Pill(sym, Color(color), kind == k) { kind = k }
                     }
-                    MARK_COLORS.forEach { mc -> Box(Modifier.size(24.dp).clip(RoundedCornerShape(50)).background(Color(mc))
-                        .border(2.dp, if (mc == color) Melyviz.ink else Color.Transparent, RoundedCornerShape(50)).clickable { color = mc }) }
-                    if (c.marks.isNotEmpty()) Pill("↶", Melyviz.faint, false) { st.editCapture(id) { it.copy(marks = it.marks.dropLast(1)) } }
+                    // the dots stay 24 dp to look at, 48 dp to touch, and are named for TalkBack (UI audit 1.1, 8.1)
+                    MARK_COLORS.forEachIndexed { i, mc ->
+                        Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.RadioButton, onClickLabel = "szín") { color = mc }
+                            .semantics { contentDescription = MARK_COLOR_NAMES[i]; selected = mc == color }, contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(24.dp).clip(RoundedCornerShape(50)).background(Color(mc))
+                                .border(2.dp, if (mc == color) Melyviz.ink else Color.Transparent, RoundedCornerShape(50)))
+                        }
+                    }
                 }
             }
             if (marking && kind.blur) Text("▦ / ▒ elmosás: a kiadott képen kockásítva, az eredeti a telefonon marad.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
@@ -286,7 +300,10 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                 }.padding(vertical = 8.dp))
                 if (c.lat != null && c.lon != null) Text("⌖ %.5f, %.5f".format(c.lat, c.lon), style = Melyviz.readout, modifier = Modifier.padding(vertical = 8.dp))
                 Spacer(Modifier.weight(1f))
-                Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clickable { st.deleteCapture(id); close() }.padding(vertical = 8.dp))
+                // UI audit 5.6: 48 dp, and the delete is undoable (st.deleteCapture says "↶ visszahozza")
+                Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { st.deleteCapture(id); close() }, contentAlignment = Alignment.Center) {
+                    Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral))
+                }
             }
             Text("Fájlnév a PC-n: " + hu.vrg.mobile.sketch.Intake.exportName(st.sketch, c), style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
         }

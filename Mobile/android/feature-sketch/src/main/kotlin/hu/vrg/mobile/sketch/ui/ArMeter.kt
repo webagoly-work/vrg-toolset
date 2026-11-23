@@ -1,5 +1,11 @@
 package hu.vrg.mobile.sketch.ui
 
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import hu.vrg.mobile.kit.ui.VrgChip
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -232,9 +238,11 @@ internal fun ArDialog(st: EditorState, room: String?, edge: Int?, onDone: () -> 
             @Suppress("UNUSED_VARIABLE") val t = tick
             val s = session
             when {
-                !granted -> Msg("A méréshez kell a kamera engedélye.")
-                problem != null -> Msg(problem!!)
-                s == null -> Msg(if (installAsked) "Telepítsd a Google Play Services for AR-t, majd térj vissza ide." else "Indul a Google AR…")
+                // UI audit 5.3: every state that is not the running view says what happened and offers a way on or out
+                !granted -> Msg("A méréshez kell a kamera engedélye.", close, "Engedélyezés" to { ask.launch(Manifest.permission.CAMERA) })
+                problem != null -> Msg(problem!!, close, "Újra" to { problem = null; open() })
+                s == null -> Msg(if (installAsked) "Telepítsd a Google Play Services for AR-t, majd térj vissza ide." else "Indul a Google AR…", close,
+                    if (installAsked) "Újra" to { open() } else null)
                 else -> {
                     AndroidView(modifier = Modifier.fillMaxSize(), factory = { c ->
                         GLSurfaceView(c).apply {
@@ -257,7 +265,11 @@ internal fun ArDialog(st: EditorState, room: String?, edge: Int?, onDone: () -> 
                             Text("📐 AR mérő", style = Melyviz.title.copy(fontSize = 15.sp))
                             Spacer(Modifier.weight(1f))
                             Text(if (state.depth) "mélység: van" else "mélység: nincs", style = Melyviz.small.copy(color = Melyviz.faint))
-                            Text("   ✕", style = Melyviz.title.copy(fontSize = 18.sp, color = Melyviz.muted), modifier = Modifier.padding(start = 8.dp).clickable { close() })
+                            // UI audit 1.1, 8.1: 48 dp and named (it was ~24 dp, padding on one side only)
+                            Box(Modifier.padding(start = 8.dp).minimumInteractiveComponentSize().clickable(role = Role.Button) { close() }
+                                .semantics { contentDescription = "Bezárás" }, contentAlignment = Alignment.Center) {
+                                Text("✕", style = Melyviz.title.copy(fontSize = 18.sp, color = Melyviz.muted), modifier = Modifier.clearAndSetSemantics { })
+                            }
                         }
                         Text(state.hint, style = Melyviz.small.copy(color = Melyviz.sand))
                         if (mode == ArMode.MEASURE) {
@@ -364,8 +376,14 @@ internal fun ArDialog(st: EditorState, room: String?, edge: Int?, onDone: () -> 
 }
 
 @Composable
-private fun Msg(text: String) = Box(Modifier.fillMaxSize().background(Melyviz.abyss).padding(24.dp)) {
-    Text(text, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.align(Alignment.Center))
+private fun Msg(text: String, close: () -> Unit, action: Pair<String, () -> Unit>? = null) = Box(Modifier.fillMaxSize().background(Melyviz.abyss).padding(24.dp)) {
+    Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text, style = Melyviz.small.copy(color = Melyviz.sand))
+        Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            action?.let { (label, go) -> VrgChip(label, selected = true, onClick = go) }
+            VrgChip("Bezár", onClick = close)
+        }
+    }
 }
 
 /** The GL side: the camera picture, the cross's hit test, the two points and their line, the scan's points. */

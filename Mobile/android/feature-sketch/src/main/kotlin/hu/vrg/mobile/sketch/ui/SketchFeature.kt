@@ -1,5 +1,12 @@
 package hu.vrg.mobile.sketch.ui
 
+import hu.vrg.mobile.kit.ui.VrgBack
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.layout.Box
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -109,7 +116,7 @@ object PhotoFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         Column(Modifier.fillMaxSize().background(Melyviz.water).padding(Melyviz.gutter)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
+                VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
                 Text("FOTÓPONT", style = Melyviz.title.copy(fontSize = 18.sp))
             }
             Text(
@@ -178,7 +185,7 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
 
     Column(Modifier.fillMaxSize().background(Melyviz.water).verticalScroll(rememberScrollState()).padding(Melyviz.gutter)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
+            VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
             Text("VRG SKETCHER", style = Melyviz.title.copy(fontSize = 18.sp))
         }
         Text(
@@ -204,7 +211,11 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
                     Text("${stamp(e.updated)} · ${e.rooms} szoba · ${e.points} pont · ${e.measures} méret", style = Melyviz.small)
                 }
                 Spacer(Modifier.width(8.dp))
-                Text("✕", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clickable { deleting = e }.padding(8.dp))
+                // UI audit 1.1, 8.1: 48 dp and named (the named confirm follows)
+                Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button) { deleting = e }
+                    .semantics { contentDescription = "Törlés: " + e.name.ifBlank { "Névtelen vázlat" } }, contentAlignment = Alignment.Center) {
+                    Text("✕", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clearAndSetSemantics { })
+                }
             }
         }
     }
