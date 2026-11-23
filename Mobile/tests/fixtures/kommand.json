@@ -62,6 +62,11 @@
    "en": "VRG Sketcher"
   },
   {
+   "id": "cat:sketcher.house3d",
+   "hu": "Ház 3D feldolgozás",
+   "en": "House 3D processing"
+  },
+  {
    "id": "cat:client-preview",
    "hu": "Ügyfélnézet",
    "en": "Client preview"
@@ -162,6 +167,16 @@
    "en": "Varler Console"
   },
   {
+   "id": "cat:weather",
+   "hu": "VRG Időjárás",
+   "en": "VRG Weather"
+  },
+  {
+   "id": "cat:browser",
+   "hu": "VRG Böngésző",
+   "en": "VRG Browser"
+  },
+  {
    "id": "cat:mobile",
    "hu": "VRG Mobile",
    "en": "VRG Mobile"
@@ -214,6 +229,7 @@
     "cat:planner",
     "cat:rajztar",
     "cat:sketcher",
+    "cat:sketcher.house3d",
     "cat:client-preview",
     "cat:workflow-kit",
     "cat:calc-panel",
@@ -232,6 +248,8 @@
     "cat:feed",
     "cat:map",
     "cat:console",
+    "cat:weather",
+    "cat:browser",
     "cat:mobile",
     "cat:servicekit",
     "cat:stack.search",
@@ -339,6 +357,8 @@
     "cat:buildtree",
     "cat:mindmap",
     "cat:map",
+    "cat:weather",
+    "cat:browser",
     "cat:mobile"
    ]
   },

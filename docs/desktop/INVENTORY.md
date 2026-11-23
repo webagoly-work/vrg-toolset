@@ -5,7 +5,7 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 165 |
+| START registry (launcher/vrg-menu.json) | 167 |
 | Features map (notes/features, outside git) | 105 |
 | VRG Irányítópult (Dashboard/) | 92 |
 | Varler Console pages | 51 |
@@ -17,10 +17,10 @@
 | Firmware | 4 |
 | Shared libraries | 5 |
 | Docs packs + GO phrases | 27 |
-| Top-level folders + launcher parts | 28 |
-| **Total** | **591** |
+| Top-level folders + launcher parts | 29 |
+| **Total** | **594** |
 
-## START registry (launcher/vrg-menu.json) (165)
+## START registry (launcher/vrg-menu.json) (167)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -101,13 +101,14 @@
 | `menu:proj:L/A` | VRG Mobile · Android Studio | START L A · {repo}\Mobile\mobile.cmd | start.action | projects/L | a projekt megnyitása |
 | `menu:proj:L/R` | VRG Mobile · Leírás | START L R · {repo}\Mobile\mobile.cmd | start.action | projects/L | README.md |
 | `menu:proj:L/O` | VRG Mobile · Mappa megnyitása | START L O · | start.action | projects/L |  |
-| `menu:proj:W` | Varler Console | START W (submenu) | start.project | projects | terepi konzol, :8133 · I időjárás |
+| `menu:proj:W` | Varler Console | START W (submenu) | start.project | projects | terepi konzol, :8133 · I időjárás · B böngésző |
 | `menu:proj:W/S` | Varler Console · Indítás | START W S · server console | start.action | projects/W | :8133 |
 | `menu:proj:W/R` | Varler Console · Ügynöknyom közvetítő | START W R · server trace-relay | start.action | projects/W | :8134 |
 | `menu:proj:W/T` | Varler Console · Teszt | START W T · {npm} test | start.action | projects/W | npm test |
 | `menu:proj:W/V` | Varler Console · VS Code | START W V · {code} | start.action | projects/W |  |
 | `menu:proj:W/O` | Varler Console · Mappa megnyitása | START W O · | start.action | projects/W |  |
 | `menu:proj:W/I` | Varler Console · VRG Időjárás | START W I · | start.action | projects/W | többforrású előrejelzés, munkaablak, riasztás |
+| `menu:proj:W/B` | Varler Console · VRG Böngésző | START W B · {repo}\Browser\dist\vrg-bongeszo.html | start.action | projects/W | kezdőlap, kereső, könyvjelzők, olvasó · :8812 |
 | `menu:proj:V` | Vendor | START V (submenu) | start.project | projects | lista · letöltés |
 | `menu:proj:V/L` | Vendor · Komponensek listája | START V L · {node} tools\fetch-vendor.js --list | start.action | projects/V |  |
 | `menu:proj:V/D` | Vendor · Komponensek letöltése | START V D · {node} tools\fetch-vendor.js --all ; {node} tools\fetch-vendor.js --sync-page | start.action | projects/V | hálózat kell, külön ablak |
@@ -161,6 +162,7 @@
 | `srv:terkep` | VRG Térkép · offline térkép | :8802 · {repo}\Map\serve.js | server | servers |  |
 | `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | :8808 · {repo}\Weather\serve.js | server | servers |  |
 | `srv:stack` | Rétegverem · Konnektóm | :8806 · {stack}\serve.js | server | servers |  |
+| `srv:bongeszo` | VRG Böngésző · olvasó, dokumentumkereső, javaslatok | :8812 · {repo}\Browser\serve.js | server | servers |  |
 | `menu:prog:1` | Chrome | {full}\tools\chrome\chrome.exe | program | programs |  |
 | `menu:prog:2` | Opera GX | {full}\programs\opera-gx\opera.exe | program | programs | optional |
 | `menu:prog:3` | Zen | {zen} | program | programs | optional |
@@ -643,12 +645,13 @@
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 | `go:variant` | GO VARIANT | GO-VARIANT.md | codephrase brief | GO | GO VARIANT — make a Variant Sketcher for one kind of job |
 
-## Top-level folders + launcher parts (28)
+## Top-level folders + launcher parts (29)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
 | `dir:Archive` | Archive | Archive/ | top-level folder | repo |  |
 | `dir:BRIDGE` | BRIDGE | BRIDGE/ | top-level folder | repo | BRIDGE Smart Home System — forrásfájl-gyűjtő mappa |
+| `dir:Browser` | Browser | Browser/ | top-level folder | repo | VRG Böngésző (VRG Browser) |
 | `dir:Calculator` | Calculator | Calculator/ | top-level folder | repo |  |
 | `dir:CodeCity` | CodeCity | CodeCity/ | top-level folder | repo |  |
 | `dir:Console` | Console | Console/ | top-level folder | repo | Varler Console |

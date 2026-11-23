@@ -51,12 +51,15 @@ const REACH = {
   'files': ['pc', 'pcwin'],
   'archive': ['native', 'archive'],
   'sketcher': ['native', 'sketch'],               // VRG Sketcher: the phone is where it captures (WP M24-M31)
+  'sketcher.house3d': ['native', 'sketch'],       // Ház 3D (M63): the phone's part is the Sketcher's walk-round capture; COLMAP runs on the PC
   'mindmap': ['webapp', 'mindmap'],
   'web': ['native', 'browser'],
+  'browser': ['webapp', 'browser'],            // VRG Böngésző (Browser/): the same app as on the Desktop; pages open in the phone's browser
   'mail': ['none', 'a PC levelezése a PC saját Gmail-belépésén fut; a telefonon a saját levelezője nyílik'],
   'search': ['none', 'a belső keresés a PC Asztalának indexén fut; egy későbbi munkacsomag'],
   'feed': ['none', 'a hírfolyam az Asztalban fut a PC-n, gyorsítótárral; a telefonon nem (D-18)'],
   'map': ['pc', 'port:8802'],
+  'weather': ['native', 'weather'],               // VRG Időjárás (M44): the phone's own small version of the hub, with the same field rules
   'console': ['pc', 'port:8133'],
   'mobile': ['none', 'ez maga a telefon'],
   'servicekit': ['none', 'eszköz a padon, egy későbbi munkacsomag'],

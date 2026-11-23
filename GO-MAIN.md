@@ -42,6 +42,7 @@ note, so it works from any Claude account on this PC. Written 2026-10-30 at the 
 | Varler logo (animated v1, divergence ring) | `shared/varler-logo` | v1 + ring built 2026-11-02; toggle and Mobile home next | LOGO |
 | OpenWrt | `GO-OPENWRT.md` | P0 not started | OPENWRT |
 | VRG Időjárás (weather) | `Weather/`, `docs/research/reports/VRG Weather - sources, fusion and field rules.md` | built 2026-11-18, beta: 52 tests green on invented data; parsers not yet checked live (`doctor --live`, W1-W8 in the report); START W → I, server O → W :8808. **Térkép W layer** (2026-11-20, `docs/map/WEATHER-MAP.md`): animated fields, wind, rain, lightning, stations, warnings, job risk; 13 Map tests | — |
+| VRG Böngésző (browser) | `Browser/` | built 2026-11-23, beta: one standalone HTML app (start page, own search engine + 26 engines with bangs, Gyorsválasz for P / I / voltage drop / AWG, bookmarks with job codes, history, reading list with offline text, reader, repo-document search, QR to phone); in the VRG Asztal (catalog `browser`, in-shell) and VRG Mobile (M21 Alkalmazások), pages open in the host's own browser; START W → B (every top-level key is taken: the Founder may move it), server O → B :8812; 37 tests (`node Browser/test/run.js`); not yet checked in the real Desktop exe and on the phone | — |
 
 ## 4. What can run now
 

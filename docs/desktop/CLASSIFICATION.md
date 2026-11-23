@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 120 | 37 |
-| open · dev | 296 | 58 |
+| open · user | 122 | 38 |
+| open · dev | 297 | 58 |
 | open · all | 24 | 1 |
 | internal | 77 | 0 |
 | roadmap | 74 | 5 |
-| **total** | **591** | **101** |
+| **total** | **594** | **102** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -69,6 +69,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `map` | VRG Térkép · *VRG Map* | application |  | alkalmazasok / terep | live |
 | `console` | Varler Console · *Varler Console* | companion app · field PWA |  | alkalmazasok / terep | beta |
 | `weather` | VRG Időjárás · *VRG Weather* | application · multi-source weather feed, work windows, alerts |  | alkalmazasok / terep | beta |
+| `browser` | VRG Böngésző · *VRG Browser* | application · start page, search engine, library, reader |  | alkalmazasok / iroda | beta |
 | `mobile` | VRG Mobile · *VRG Mobile* | companion app · Android |  | alkalmazasok / terep | beta |
 | `stack.search` | Keresés · *Search* | view · search | `stack` | fejlesztes | live |
 | `layer.i` | I · Ötletfolyam · *I · Ideas* | view · stack layer | `stack` | fejlesztes | live |
@@ -168,7 +169,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 
 | type | EN · HU | kind | rows |
 |---|---|---|---:|
-| `application` | Application · Alkalmazás | unit | 30 |
+| `application` | Application · Alkalmazás | unit | 32 |
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
@@ -180,7 +181,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `command` | Command · Parancs | unit | 101 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
 | `cli tool` | CLI tool · Parancssori eszköz | unit | 14 |
-| `service` | Service · Szolgáltatás | unit | 19 |
+| `service` | Service · Szolgáltatás | unit | 20 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 10 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 11 |
@@ -313,6 +314,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:W/V` | Varler Console · VS Code | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
 | `menu:proj:W/O` | Varler Console · Mappa megnyitása | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
 | `menu:proj:W/I` | Varler Console · VRG Időjárás | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
+| `menu:proj:W/B` | Varler Console · VRG Böngésző | application · start page, search engine, library, reader | open | user |  | is the catalog item `browser` |
 | `menu:proj:V` | Vendor | utility · vendored-component browser | open | dev | `dev:infra` | is the catalog item `vendor` |
 | `menu:proj:V/L` | Vendor · Komponensek listája | command | open | dev | `vendor` | a build / test / serve action of START V, drawn behind vendor |
 | `menu:proj:V/D` | Vendor · Komponensek letöltése | command | open | dev | `vendor` | a build / test / serve action of START V, drawn behind vendor |
@@ -366,6 +368,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `srv:terkep` | VRG Térkép · offline térkép | service · local server | open | dev | `map` | background process with a port: Dev, behind map |
 | `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | service · local server | open | dev | `weather` | background process with a port: Dev, behind weather |
 | `srv:stack` | Rétegverem · Konnektóm | service · local server | open | dev | `stack` | background process with a port: Dev, behind stack |
+| `srv:bongeszo` | VRG Böngésző · olvasó, dokumentumkereső, javaslatok | service · local server | open | dev | `browser` | background process with a port: Dev, behind browser |
 | `menu:prog:1` | Chrome | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
 | `menu:prog:2` | Opera GX | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
 | `menu:prog:3` | Zen | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
@@ -794,6 +797,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `go:variant` | GO VARIANT | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `dir:Archive` | Archive | knowledge base · artifact archive | open | user |  | is the catalog item `archive` |
 | `dir:BRIDGE` | BRIDGE | document set · standards | open | user |  | is the catalog item `bridge` |
+| `dir:Browser` | Browser | application · start page, search engine, library, reader | open | user |  | is the catalog item `browser` |
 | `dir:Calculator` | Calculator | utility · calculator | open | user |  | is the catalog item `calc-led` |
 | `dir:CodeCity` | CodeCity | application · code visualization | open | dev | `dev:knowledge` | is the catalog item `codecity` |
 | `dir:Console` | Console | companion app · field PWA | open | user |  | is the catalog item `console` |

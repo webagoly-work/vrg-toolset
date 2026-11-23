@@ -1010,6 +1010,18 @@
    "reason": "a build / test / serve action of START W, drawn behind console"
   },
   {
+   "id": "menu:proj:W/B",
+   "name": "Varler Console · VRG Böngésző",
+   "source": "vrg-menu",
+   "type": "application",
+   "qualifier": "start page, search engine, library, reader",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "browser",
+   "reason": "is the catalog item `browser`"
+  },
+  {
    "id": "menu:proj:V",
    "name": "Vendor",
    "source": "vrg-menu",
@@ -1644,6 +1656,18 @@
    "parent": "stack",
    "unit": "",
    "reason": "background process with a port: Dev, behind stack"
+  },
+  {
+   "id": "srv:bongeszo",
+   "name": "VRG Böngésző · olvasó, dokumentumkereső, javaslatok",
+   "source": "vrg-menu",
+   "type": "service",
+   "qualifier": "local server",
+   "scope": "open",
+   "level": "dev",
+   "parent": "browser",
+   "unit": "",
+   "reason": "background process with a port: Dev, behind browser"
   },
   {
    "id": "menu:prog:1",
@@ -6780,6 +6804,18 @@
    "parent": "",
    "unit": "bridge",
    "reason": "is the catalog item `bridge`"
+  },
+  {
+   "id": "dir:Browser",
+   "name": "Browser",
+   "source": "folders",
+   "type": "application",
+   "qualifier": "start page, search engine, library, reader",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "browser",
+   "reason": "is the catalog item `browser`"
   },
   {
    "id": "dir:Calculator",
