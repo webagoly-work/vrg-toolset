@@ -2,10 +2,7 @@ package hu.vrg.mobile.watch.app
 
 import android.Manifest
 import android.app.Application
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -79,6 +76,7 @@ object WatchFeature : VrgFeature {
         val note by Watch.note.collectAsStateWithLifecycle()
         var allowed by remember { mutableStateOf(Watch.allowed(ctx)) }
         var bgFree by remember { mutableStateOf(Watch.backgroundFree(ctx)) }
+        var autostart by remember { mutableStateOf(BackgroundSettings.autostart(ctx)) }
         var sureForget by remember { mutableStateOf(false) }
         val on = link != Watch.Link.OFF && link != Watch.Link.NO_PERMISSION
         val ready = link == Watch.Link.READY
@@ -126,18 +124,34 @@ object WatchFeature : VrgFeature {
             VrgSectionTitle("Háttérfutás")
             Text("Hogy az óra akkor is megcsörgethesse a telefont, ha a VRG Mobile nincs megnyitva, a kapcsolat a " +
                 "háttérben fut, és újraindul a telefon újraindítása és az app frissítése után is.", style = Melyviz.small)
-            Text(if (bgFree) "Akkumulátor-optimalizálás: kikapcsolva (jó)" else "Akkumulátor-optimalizálás: bekapcsolva, a telefon leállíthatja",
-                style = Melyviz.readout.copy(color = if (bgFree) Melyviz.kelp else Melyviz.coral))
-            Row(Modifier.padding(top = 4.dp)) {
-                if (!bgFree) VrgChip("Háttérfutás engedélyezése", selected = true) {
-                    runCatching { ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx.packageName))) }
-                }
-                VrgChip("App beállításai") {
-                    runCatching { ctx.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + ctx.packageName))) }
-                }
+            Text("Mindhárom beállítás egy gombnyomásra nyílik; a beállítás után gyere vissza ide.", style = Melyviz.small)
+
+            // 1 · Android battery optimisation (every phone)
+            Text(if (bgFree) "1 · Akkumulátor-optimalizálás: kikapcsolva (jó)" else "1 · Akkumulátor-optimalizálás: bekapcsolva, a telefon leállíthatja",
+                style = Melyviz.readout.copy(color = if (bgFree) Melyviz.kelp else Melyviz.coral), modifier = Modifier.padding(top = 6.dp))
+            VrgChip(if (bgFree) "Akkumulátor-optimalizálás megnyitása" else "Háttérfutás engedélyezése", selected = !bgFree) {
+                BackgroundSettings.openBatteryOptimisation(ctx)
             }
-            Text("Xiaomin az App beállításaiban kapcsold be az Automatikus indítást is, az Akkumulátorkímélőt pedig állítsd " +
-                "Nincs korlátozásra.", style = Melyviz.small.copy(color = Melyviz.faint))
+
+            if (BackgroundSettings.isXiaomi) {
+                // 2 · Xiaomi autostart (also what lets the boot / update restart run)
+                Text(when (autostart) {
+                    true -> "2 · Automatikus indítás: bekapcsolva (jó)"
+                    false -> "2 · Automatikus indítás: kikapcsolva, újraindítás után nem indul el"
+                    null -> "2 · Automatikus indítás: a telefon nem mondja meg, nézd meg"
+                }, style = Melyviz.readout.copy(color = when (autostart) { true -> Melyviz.kelp; false -> Melyviz.coral; null -> Melyviz.sand }),
+                    modifier = Modifier.padding(top = 8.dp))
+                VrgChip("Automatikus indítás", selected = autostart == false) { BackgroundSettings.openAutostart(ctx) }
+
+                // 3 · Xiaomi battery saver for this app (not readable from an app)
+                Text("3 · Akkumulátorkímélő: állítsd „Nincs korlátozás”-ra (az app nem tudja kiolvasni)",
+                    style = Melyviz.readout.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
+                VrgChip("Akkumulátorkímélő") { BackgroundSettings.openBatterySaver(ctx) }
+            }
+
+            Row(Modifier.padding(top = 8.dp)) {
+                VrgChip("App beállításai") { BackgroundSettings.openAppDetails(ctx) }
+            }
 
             VrgSectionTitle("Idő")
             Text(if (synced > 0) "Beállítva: ${clock(synced)} (minden kapcsolódáskor magától)" else "Kapcsolódáskor magától beállítom.",
@@ -177,7 +191,7 @@ object WatchFeature : VrgFeature {
             ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
             Spacer(Modifier.height(24.dp))
         }
-        LaunchedEffect(Unit) { while (true) { allowed = Watch.allowed(ctx); bgFree = Watch.backgroundFree(ctx); delay(2_000) } }
+        LaunchedEffect(Unit) { while (true) { allowed = Watch.allowed(ctx); bgFree = Watch.backgroundFree(ctx); autostart = BackgroundSettings.autostart(ctx); delay(2_000) } }
     }
 
     private fun clock(ms: Long) = SimpleDateFormat("HH:mm:ss", Locale("hu")).format(Date(ms))
