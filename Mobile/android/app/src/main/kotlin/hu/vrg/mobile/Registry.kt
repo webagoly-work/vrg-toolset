@@ -9,10 +9,12 @@ import hu.vrg.mobile.pcwin.PcWinFeature
 import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.devices.DevicesFeature
+import hu.vrg.mobile.vault.VaultFeature
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.inbox.InboxFeature
 import hu.vrg.mobile.launch.LaunchFeature
+import hu.vrg.mobile.map.MapFeature
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.net.NetFeature
 import hu.vrg.mobile.notes.NotesFeature
@@ -26,7 +28,11 @@ import hu.vrg.mobile.sketch.ui.PhotoFeature
 import hu.vrg.mobile.sketch.ui.SketchFeature
 import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.stack.StackFeature
+import hu.vrg.mobile.tag.app.TagFeature
 import hu.vrg.mobile.update.UpdateFeature
+import hu.vrg.mobile.watch.app.WatchFeature
+import hu.vrg.mobile.workflow.WorkflowFeature
+import hu.vrg.mobile.weather.app.WeatherFeature
 import hu.vrg.mobile.core.HomeLayout
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
@@ -60,6 +66,12 @@ object Registry {
         NetFeature,
         PagerFeature,
         DevicesFeature,
+        VaultFeature,
+        WorkflowFeature,
+        MapFeature,
+        WeatherFeature,
+        TagFeature,
+        WatchFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

@@ -98,6 +98,8 @@ data class Variant(
     val hints: Map<String, String> = emptyMap(),
     /** The catalog additions (chips, scope, keywords, questions, shotlist, purposes, templates) as a kit to merge. */
     val adds: Kit = Kit(),
+    /** F4 (WP M49): how the drawing tools behave in this variant (DrawTune.kt). */
+    val draw: DrawTune = DrawTune(),
 )
 
 data class Kit(
@@ -196,6 +198,7 @@ object FieldKit {
             scopePreset = sc?.let { j -> j.keys().asSequence().associateWith { j.optInt(it, 1) } } ?: emptyMap(),
             hints = o.optJSONObject("hints")?.let { j -> j.keys().asSequence().associateWith { j.optString(it) } } ?: emptyMap(),
             adds = parseLists(o),
+            draw = Draw.parse(o.optJSONObject("draw")),
         )
     }
 
@@ -341,7 +344,7 @@ object FieldKit {
         val items = kit.shotlist.filter { f.eval(it.cond) }
         val have = items.associate { it.id to 0 }.toMutableMap()
         s.captures.filter { it.shot != null }.forEach { c -> if (c.shot in have) have[c.shot!!] = have[c.shot]!! + 1 }
-        s.captures.filter { it.shot == null || it.shot !in have }.forEach { c ->
+        s.captures.filter { (it.shot == null || it.shot !in have) && it.kind != CaptureKind.SIGNATURE }.forEach { c ->   // a signature fills no item (M46)
             val it2 = items.firstOrNull { it.purpose == c.purpose && it.room == null && have[it.id]!! < it.need } ?: return@forEach
             have[it2.id] = have[it2.id]!! + 1
         }
@@ -460,8 +463,8 @@ object Intake {
     fun linkEntry(s: Sketch, id: String, room: String?, target: String?) = s.copy(entries = s.entries.map { if (it.id == id) it.copy(room = room, target = target) else it })
     fun deleteEntry(s: Sketch, id: String) = s.copy(entries = s.entries.filter { it.id != id })
 
-    /** A munkakör toggle: qty 0 removes it. */
-    fun setScope(s: Sketch, id: String, qty: Int) = s.copy(scope = if (qty <= 0) s.scope - id else s.scope + (id to qty))
+    /** A munkakör toggle: qty 0 removes it. A total below what the rooms hold takes it back from them (Wants.trim, F4). */
+    fun setScope(s: Sketch, id: String, qty: Int) = Wants.trim(s.copy(scope = if (qty <= 0) s.scope - id else s.scope + (id to qty)), id, qty)
 
     /** An answer to [q]: options (one, or several for a multi question), free text, and its state. */
     fun answer(kit: Kit, s: Sketch, q: String, options: List<String>, text: String, state: AnswerState, now: Long): Sketch {
@@ -493,7 +496,7 @@ object Intake {
     fun setSite(s: Sketch, f: (Site) -> Site) = s.copy(site = f(s.site ?: Site()))
 
     /** The capture's board file name: `<sketch>_<capture id>_<purpose>.jpg` (WP M29, as M25's photos). */
-    fun exportName(s: Sketch, c: Capture) = "${SketchJson.fileStem(s)}_${c.id}_${c.purpose}.jpg"
+    fun exportName(s: Sketch, c: Capture) = "${SketchJson.fileStem(s)}_${c.id}_${if (c.kind == CaptureKind.SIGNATURE) "alairas" else c.purpose}.${CaptureKind.ext(c.kind)}"   // M46: .mp4 / .png
 
     /** Every photo file the survey keeps (captures + photo points), for clean-up. */
     fun files(s: Sketch) = Photos.files(s) + s.captures.map { it.file }

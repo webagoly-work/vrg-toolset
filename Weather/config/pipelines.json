@@ -1,17 +1,81 @@
 {
   "_about": "VRG Időjárás command pipelines: named lists of vrg-weather commands. `node Weather/vrg-weather.js run <name>` runs one; `daemon` (or `serve.js --daemon`) runs them on the schedule below, in Europe/Budapest time. A failed step is logged and the pipeline goes on, so one dead source never stops the warnings.",
   "pipelines": {
-    "gyors":  { "hu": "Gyors kör: figyelmeztetések, mérések, villámok, riasztások", "steps": ["fetch meteoalarm hungaromet-obs hungaromet-lightning", "alerts"] },
-    "modell": { "hu": "Modellfrissítés: előrejelzések, konszenzus, riasztások", "steps": ["fetch met-no dwd-mosmix open-meteo open-meteo-aq", "fuse", "alerts"] },
-    "reggel": { "hu": "Reggeli eligazítás: minden forrás, ellenőrzés, mai brief", "steps": ["sync-jobs", "fetch", "fuse", "verify", "alerts", "brief --day today --save", "export"] },
-    "este":   { "hu": "Esti kör: holnapi brief, karbantartás", "steps": ["fetch", "fuse", "verify", "alerts", "brief --day tomorrow --save", "export", "prune"] },
-    "pv":     { "hu": "PV hozam frissítése minden helyre (havonta elég)", "steps": ["fetch pvgis --force"] }
+    "gyors": {
+      "hu": "Gyors kör: figyelmeztetések, mérések, villámok, riasztások",
+      "steps": [
+        "fetch meteoalarm hungaromet-obs hungaromet-lightning hungaromet-radar",
+        "alerts"
+      ]
+    },
+    "modell": {
+      "hu": "Modellfrissítés: előrejelzések, konszenzus, riasztások",
+      "steps": [
+        "fetch met-no dwd-mosmix open-meteo open-meteo-aq open-meteo-grid met-no-grid",
+        "fuse",
+        "alerts"
+      ]
+    },
+    "reggel": {
+      "hu": "Reggeli eligazítás: minden forrás, ellenőrzés, mai brief",
+      "steps": [
+        "sync-jobs",
+        "fetch",
+        "fuse",
+        "verify",
+        "alerts",
+        "brief --day today --save",
+        "export"
+      ]
+    },
+    "este": {
+      "hu": "Esti kör: holnapi brief, karbantartás",
+      "steps": [
+        "fetch",
+        "fuse",
+        "verify",
+        "alerts",
+        "brief --day tomorrow --save",
+        "export",
+        "prune"
+      ]
+    },
+    "pv": {
+      "hu": "PV hozam frissítése minden helyre (havonta elég)",
+      "steps": [
+        "fetch pvgis --force"
+      ]
+    },
+    "terkep": {
+      "hu": "Térkép-rétegek: mezők, mérések, villámok, radar (a VRG Térkép Frissítés gombja ezt futtatja)",
+      "steps": [
+        "fetch open-meteo-grid met-no-grid meteoalarm hungaromet-obs hungaromet-lightning hungaromet-radar",
+        "alerts"
+      ]
+    }
   },
   "schedule": [
-    { "every": 15, "run": "gyors" },
-    { "every": 60, "run": "modell", "offset": 7 },
-    { "at": "05:40", "run": "reggel" },
-    { "at": "18:10", "run": "este" },
-    { "at": "03:20", "run": "pv", "day": 1 }
+    {
+      "every": 15,
+      "run": "gyors"
+    },
+    {
+      "every": 60,
+      "run": "modell",
+      "offset": 7
+    },
+    {
+      "at": "05:40",
+      "run": "reggel"
+    },
+    {
+      "at": "18:10",
+      "run": "este"
+    },
+    {
+      "at": "03:20",
+      "run": "pv",
+      "day": 1
+    }
   ]
 }

@@ -20,6 +20,9 @@ first time **M** is picked. `--refresh` fetches a newer OSM week, `--only=basema
 | terrain | `terrain.pmtiles` (~0.35 GB, z0-12) | Mapterhorn planet (Copernicus GLO-30 …) | per mapterhorn.com/attribution |
 | osm | `src/hungary-latest.osm.pbf` (~0.33 GB) | Geofabrik | ODbL |
 | addresses | `addresses.json` | built from the .pbf by `tools/build-addresses.js` | ODbL |
+| pois | `pois.json` | the Térkép-feed's points, built from the .pbf by `tools/build-pois.js` | ODbL |
+| roads | `roads.bin` | the road network for offline routing, built from the .pbf by `tools/build-roads.js` | ODbL |
+| heights | `bp-heights.bin` | measured building heights (B layer), built by `tools/build-bp-heights.js` from `src/bp-epuletmagassag.geojson`, which you put there by hand (the Budapest Open Data Atlas *Épületmagasság*; check its licence first) | the source's |
 | fonts, sprites | `fonts/`, `sprites/` | protomaps/basemaps-assets | OFL / see repo |
 
 `Map/data/manifest.json` records source, date, licence and size of every part. The pmtiles CLI goes
@@ -31,6 +34,21 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/geocode.js` — the offline geocoder (index, query parsing, search, job addresses), shared by the
   page, `tools/build-jobs.js` and the tests.
 - `lib/jobs-layer.js` — the **J** layer: the jobs on the map (client data, see below).
+- `lib/sun.js`, `lib/shadow-layer.js` — the **S** layer: the sun's position and the buildings' shadows; with the
+  terrain, the hills' own shadow too (⛰).
+- `lib/relief.js`, `lib/dem.js`, `lib/relief-layer.js` — the **R** layer: measuring the relief (height, slope and aspect
+  under the pointer, contours, slope classes, the profile between two clicks) on the terrain tiles
+  (`docs/map/RELIEF.md`). `relief.js` is also the Data Vault's Térkép page's maths.
+- `lib/heights.js`, `lib/heights-layer.js`, `tools/build-bp-heights.js` — the **B** layer: measured building heights
+  (Budapest) in 3D, and the shadows from them.
+- `lib/feed.js`, `lib/feed-layer.js` — the **F** Térkép-feed: the nearest home, Daniella, shop, food,
+  doctor … with distance, ETA and ghost lines (`docs/map/FEED.md`); its points from `tools/build-pois.js`
+  (`tools/osm-pbf.js` is the shared .pbf reader).
+- `lib/route.js`, `lib/route-layer.js` — **our own offline routing** (N2): the feed's road times and the
+  route to a held place, on `data/roads.bin` from `tools/build-roads.js` (`docs/map/ROUTING.md`).
+- `lib/guide.js`, `lib/nav-layer.js`, `lib/traffic.js` — **turn-by-turn guidance** with voice (N3) and the
+  optional TomTom traffic check with your own key (`docs/map/NAVIGATION.md`).
+- `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).
 - `serve.js` — static server with HTTP Range (a `.pmtiles` file is read in pieces, no tile server), plus
@@ -46,9 +64,12 @@ to `H:\VRG\Full\tools\pmtiles`.
   Accents and abbreviations (u., krt., sgt., rkp., ltp.) are optional. Offline first; the
   "Keresés az interneten" row asks OSM Nominatim (online, one request a second).
 - Picking a result flies there tilted and turned, so terrain and building heights read at once.
-- Keys: `/` search · `3` 3D buildings · `T` terrain · `J` jobs · `N` north · `G` Google view · `Esc` close.
+- Keys: `/` search · `3` 3D buildings · `T` terrain · `R` relief measuring · `B` measured building heights · `S` shadows · `F` feed · `J` jobs · `W` weather · `N` north · `G` Google view · `Esc` close.
+- **S Árnyék**: the buildings' shadows on any day and hour, a time slider from sunrise to sunset and
+  ▶ to sunset (`lib/sun.js`, `lib/shadow-layer.js`; flat ground, OSM heights). `docs/map/SHADOWS.md`.
   With the jobs on: `D` density · `I` timeline · `,` / `.` previous / next job · job codes in the search box.
-- URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?q=…` searches on load; `?embed=1` is the slim
+- URL: `#zoom/lat/lon/bearing/pitch` is the camera; `?arnyek=2026-12-21T15:30` opens the shadows at that
+  time; `?q=…` searches on load; `?embed=1` is the slim
   UI for embedding in Kapu or the Planner; `?job=BK2` opens the job layer at that job.
 
 ## Google view (optional, online)
@@ -71,7 +92,29 @@ the drafted `jobs\_elozmenyek\helyszinek.json` with the offline index (never onl
 `jobs\_elozmenyek\helyek.json`. Ways in: `?job=CODE`, the 📍 in the VRG Asztal's Munkák, the phone
 through the VRG Mobile relay.
 
+## On the phone (VRG Mobile, WP M43)
+
+VRG Mobile's **VRG Térkép** shows this same page, fetched from `main`, with the paired PC's data and the J layer
+through the relay (`/p/8802/`), or without the PC in the `?remote=1` mode with a tile cache on the phone. It adds the
+phone's position, the Vázlat sites and Navigáció. It relies on `window.vrgMap` carrying `map` and `maplibregl`, on the
+`?remote=1` / `build=` parameters and on the `/vendor/…` paths: `Mobile/android/kit-core/.../MapPhone.kt` and its test
+check them. Details: `docs/mobile/WP/M43.md`.
+
 Controls: no-store, an access log (`helyek-log.jsonl`, local vs relay), a kill switch (the flag file
 `jobs\_elozmenyek\TERKEP-KI` or `"jobsLayer": false` on START's M entry), never in Kapu guest mode, OTG
 or `?embed=1` (unless `&jobs=1`), and an "ÜGYFÉLADAT" badge while on. Decisions MAP-D1…D4, the data flow and
 how to confirm the drafted addresses: `docs/map/JOBS-MAP.md`.
+
+## The weather (W layer)
+
+**W** draws what VRG Időjárás (`Weather/`) fetched from online sources, animated on a 48-hour timeline (or the last
+3 hours of measurements). Every layer has its own toggle and they overlay each other:
+
+- temperature, cloud, the gust bands at the alert limits, precipitation;
+- radar, warnings, job weather risk, lightning, wind particles, station readings.
+
+serve.js reads `Weather/data/weather.sqlite` read-only under `/weather/*`. The **Frissítés** button runs
+Weather's `terkep` pipeline. The job weather is client data and follows the J layer's switches and log. START's M
+entry `"weatherLayer": false` turns W off. Design, data flow and open items: `docs/map/WEATHER-MAP.md`.
+`node Map/test/run.js weather` runs its tests; the page test runs on a stub basemap, without the download.
+

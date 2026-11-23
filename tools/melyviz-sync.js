@@ -44,6 +44,7 @@ const TARGETS = [
   'toolbox.html',
   'Archive/vrg-archive.html',
   'Weather/vrg-idojaras.html',
+  'SessionCanvas/vrg-munkavaszon.html',
   'Hub/src/css/00-themes.css',             // built: node tools/build-hub.js
   'Inventory/src/ui/theme.css',            // built: npm run build carries it into dist
   'BRIDGE/_tuner/bridge-tuner.html',

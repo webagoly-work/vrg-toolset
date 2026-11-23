@@ -149,6 +149,20 @@ object Catalogue {
         "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
     )
 
+    // WP M61 (experimental, 2026-11-20): Apple Find My tags (the ISYTag, AirTags) used from Android over plain BLE;
+    // since 2026-11-22 also the iTag (the teardrop anti-lost key tag: connected, ring, button = find the phone) and a
+    // device paired in Android's settings (the Q71 watch: its connection is its presence, a tone over hands-free audio).
+    val TAG = FeatureInfo(
+        "tag", "Tárgykereső", "Kísérleti: Apple Find My címke (ISYTag, AirTag), iTag kulcstartó és párosított óra (Q71) Androidról: milyen messze van, csipogtatás, ottfelejtés-riasztás, az utolsó hely, ahol a telefon hallotta, és iTaggel telefonkereső.",
+        "🏷", Group.LINK, Stage.BETA, "M61", setOf(Need.BLUETOOTH),
+    )
+
+    // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
+    val WATCH = FeatureInfo(
+        "watch", "Óra", "Kísérleti: a Q71 okosóra a FunDo nélkül: kapcsolat, pontos idő, lépések, az óra adatai, az óra csipogtatása és az óráról a telefon megcsörgetése.",
+        "⌚", Group.LINK, Stage.BETA, "M65", setOf(Need.BLUETOOTH),
+    )
+
     // WP M35: Proton Vault's device approval for VRG Mobile: one account, the phones differ, approved by QR.
     val DEVICES = FeatureInfo(
         "devices", "Eszközök", "Ez a telefon és a megbízható eszközök: hozzáférés kérése QR-kóddal, jóváhagyás a tulajdonos telefonján, a frissítések zárolása a listára.",
@@ -171,20 +185,20 @@ object Catalogue {
         "📦", Group.WORK, Stage.BETA, "M41", setOf(Need.INTERNET, Need.GITHUB),
     )
     val WORKFLOW = FeatureInfo(
-        "workflow", "Varler Workflow Kit", "Az irodai út a telefonon: költségvetési tervezet, árajánlat, munkalap a Planner, a kalkulátorok és a Készlet adataiból.",
-        "⚒", Group.WORK, Stage.PLANNED, "M42",
+        "workflow", "Varler Workflow Kit", "A PC munkái titkosítva ezen a telefonon: hol tart a kérdéssor, az árazás, az ajánlat; a Költségvetési Tervezet és az Árajánlat összegei.",
+        "⚒", Group.WORK, Stage.BETA, "M42", setOf(Need.INTERNET, Need.GITHUB),
     )
     val MAP = FeatureInfo(
-        "map", "VRG Térkép", "Részletes térkép, 3D város és terepi rétegek: munkák, címek, útvonalak a telefonon.",
-        "🗺", Group.WORK, Stage.PLANNED, "M43", setOf(Need.INTERNET),
+        "map", "VRG Térkép", "Magyarország térképe 3D épületekkel és domborzattal: saját hely, a Vázlatok helyszínei, a munkák (PC-vel) és navigáció.",
+        "🗺", Group.WORK, Stage.BETA, "M43", setOf(Need.INTERNET),
     )
     val WEATHER = FeatureInfo(
-        "weather", "VRG Időjárás", "Hivatalos és globális források egyesítve, terepi szabályokkal: lehet-e ma kint dolgozni.",
-        "⛅", Group.WORK, Stage.PLANNED, "M44", setOf(Need.INTERNET),
+        "weather", "VRG Időjárás", "Lehet-e ma kint dolgozni: MET Norway, DWD és a hivatalos figyelmeztetések egyesítve, terepi szabályokkal, tevékenységenként.",
+        "⛅", Group.WORK, Stage.BETA, "M44", setOf(Need.INTERNET),
     )
     val VAULT = FeatureInfo(
-        "vault", "Vault", "Titkosított személyes adattár, telefonok jóváhagyása QR-kóddal (a Proton Vault útja).",
-        "🔒", Group.APP, Stage.PLANNED, "M45", setOf(Need.INTERNET, Need.GITHUB),
+        "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",
+        "🔒", Group.APP, Stage.BETA, "M45", setOf(Need.INTERNET),
     )
     val CATALOG = FeatureInfo(
         "catalog", "Katalógus", "Minden program, funkció és eszköz egy-egy lapon, a telefonon és az Asztalon: új felhasználóknak.",
@@ -194,7 +208,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

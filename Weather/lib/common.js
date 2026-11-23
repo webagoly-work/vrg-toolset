@@ -46,6 +46,15 @@ const ascii = s => (process.env.VRG_UTF8 === '1' ? String(s) : String(s).normali
   .replace(/[²]/g, '2').replace(/[³]/g, '3').replace(/µ/g, 'u').replace(/₂/g, '2').replace(/≥/g, '>=').replace(/≤/g, '<=')
   .replace(/[^\x00-\x7F]/g, '?'));
 
+// does a warning area ("Pest vármegye", "Budapest") name this place area ("Pest")? Whole words only, so "Pest" is
+// not found inside "Budapest"
+function areaMatch(area, name) {
+  const w = s => fold(s).split(/[^a-z0-9]+/).filter(Boolean);
+  const a = w(area), n = w(name);
+  if (!a.length || !n.length) return false;
+  return n.every(x => a.includes(x)) || a.every(x => n.includes(x));
+}
+
 function km(a, b) {
   const R = 6371, rad = d => d * Math.PI / 180;
   const dLat = rad(b.lat - a.lat), dLon = rad(b.lon - a.lon);
@@ -91,4 +100,4 @@ function splitCmd(s) {
   return out;
 }
 
-module.exports = { ROOT, REPO, DATA, CONFIG, readJson, isFile, isDir, merge, config, dbFile, now, fold, ascii, km, nearest, local, addH, hourFloor, parseArgs, splitCmd };
+module.exports = { ROOT, REPO, DATA, CONFIG, areaMatch, readJson, isFile, isDir, merge, config, dbFile, now, fold, ascii, km, nearest, local, addH, hourFloor, parseArgs, splitCmd };

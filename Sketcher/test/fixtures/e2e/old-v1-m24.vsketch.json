@@ -1,0 +1,267 @@
+{
+ "kind": "vrg-vazlat",
+ "v": 1,
+ "id": "V17",
+ "name": "Régi vázlat (M24)",
+ "level": "ground",
+ "created": 1763300000000,
+ "updated": 1763303600000,
+ "seq": 15,
+ "rooms": [
+  {
+   "id": "R1",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     100,
+     0
+    ],
+    [
+     100,
+     80
+    ],
+    [
+     0,
+     80
+    ]
+   ],
+   "name": "",
+   "kinds": [
+    "nappali"
+   ]
+  },
+  {
+   "id": "R2",
+   "poly": [
+    [
+     100,
+     0
+    ],
+    [
+     150,
+     0
+    ],
+    [
+     150,
+     80
+    ],
+    [
+     100,
+     80
+    ]
+   ],
+   "name": "Konyha",
+   "kinds": [
+    "konyha"
+   ]
+  },
+  {
+   "id": "R3",
+   "poly": [
+    [
+     0,
+     80
+    ],
+    [
+     150,
+     80
+    ],
+    [
+     150,
+     110
+    ],
+    [
+     0,
+     110
+    ]
+   ],
+   "name": "Előszoba",
+   "kinds": []
+  }
+ ],
+ "lines": [
+  {
+   "id": "L4",
+   "pts": [
+    [
+     0,
+     120
+    ],
+    [
+     60,
+     120
+    ]
+   ]
+  }
+ ],
+ "points": [
+  {
+   "id": "P5",
+   "at": [
+    50,
+    0
+   ],
+   "type": "socket",
+   "st": "meglevo",
+   "room": "R1",
+   "edge": 0,
+   "t": 0.5
+  },
+  {
+   "id": "P6",
+   "at": [
+    100,
+    40
+   ],
+   "type": "switch",
+   "st": "tervezett",
+   "room": "R1",
+   "edge": 1,
+   "t": 0.5
+  },
+  {
+   "id": "P7",
+   "at": [
+    50,
+    40
+   ],
+   "type": "light",
+   "st": "tervezett"
+  },
+  {
+   "id": "P8",
+   "at": [
+    150,
+    95
+   ],
+   "type": "board",
+   "st": "meglevo",
+   "room": "R3",
+   "edge": 1,
+   "t": 0.5
+  },
+  {
+   "id": "P9",
+   "at": [
+    125,
+    0
+   ],
+   "type": "fixed",
+   "st": "tervezett",
+   "room": "R2",
+   "edge": 0,
+   "t": 0.5
+  }
+ ],
+ "measures": [
+  {
+   "id": "M10",
+   "room": "R1",
+   "kind": "szel",
+   "mm": 4000,
+   "edge": -1
+  },
+  {
+   "id": "M11",
+   "room": "R1",
+   "kind": "mely",
+   "mm": 3200,
+   "edge": -1
+  }
+ ],
+ "circuits": [
+  {
+   "id": "K12",
+   "name": "Nappali",
+   "col": 4293420060,
+   "members": [
+    "P5",
+    "P6",
+    "P7"
+   ],
+   "ded": false,
+   "board": "P8"
+  }
+ ],
+ "routes": [
+  {
+   "id": "N13",
+   "pts": [
+    [
+     100,
+     40
+    ],
+    [
+     70,
+     40
+    ],
+    [
+     50,
+     40
+    ]
+   ],
+   "a": "P6",
+   "b": "P7",
+   "circuit": "K12"
+  }
+ ],
+ "memos": [
+  {
+   "id": "J14",
+   "at": [
+    55,
+    5
+   ],
+   "text": "régi, bontandó",
+   "target": "P5"
+  }
+ ],
+ "tags": [
+  {
+   "id": "T-furdo",
+   "name": "Fürdő",
+   "col": 4280978651,
+   "preset": "kind:furdo"
+  },
+  {
+   "id": "T-konyha",
+   "name": "Konyha",
+   "col": 4292915232,
+   "preset": "kind:konyha"
+  },
+  {
+   "id": "T-nedves",
+   "name": "Nedves",
+   "col": 4280330400,
+   "preset": "wet"
+  },
+  {
+   "id": "T-ip44",
+   "name": "IP44",
+   "col": 4282232922,
+   "preset": "ip44"
+  },
+  {
+   "id": "T-ded",
+   "name": "Dedikált",
+   "col": 4292232517,
+   "preset": "dedicated"
+  },
+  {
+   "id": "T-bontas",
+   "name": "Bontás",
+   "col": 4287257814,
+   "preset": "remove"
+  }
+ ],
+ "tagUses": [
+  {
+   "id": "U15",
+   "tag": "T-ip44",
+   "target": "P9"
+  }
+ ]
+}

@@ -110,7 +110,8 @@ data class Tag(val id: String, val name: String, val color: Long, val preset: St
 data class TagUse(val id: String, val tag: String, val target: String? = null, val at: Pt? = null)
 
 /** WP M25 (Fotópont): a spot in a room with photos, each taken facing [Shot.deg] (0 = up on the sketch, clockwise). */
-data class Shot(val deg: Int, val file: String, val taken: Long = 0)
+/** A Fotópont photo. [f35] = its lens as a 35 mm-equivalent focal length (skcam K1b), when the in-app camera knew it. */
+data class Shot(val deg: Int, val file: String, val taken: Long = 0, val f35: Double? = null)
 data class PhotoPoint(val id: String, val at: Pt, val room: String? = null, val shots: List<Shot> = emptyList())
 
 // ---- the intake (VRG Sketcher, WP M26-M30): docs/sketcher/README.md section 3 --------------------------------------
@@ -137,12 +138,15 @@ enum class AnswerState(val id: String) {
 data class Answer(val q: String, val options: List<String> = emptyList(), val text: String = "", val at: Long = 0, val state: AnswerState = AnswerState.ANSWERED)
 
 enum class MarkKind(val id: String) {
-    ARROW("nyil"), CIRCLE("kor"), LINE("vonal"), FREE("szabad"), TEXT("szoveg");
+    ARROW("nyil"), CIRCLE("kor"), LINE("vonal"), FREE("szabad"), TEXT("szoveg"),
+    /** WP M46 (Kamera 2): a blurred rectangle (2 points: corners) and a blurred brush stroke ([Mark.w] wide). */
+    BLUR("elmos"), BLUR_BRUSH("elmos_ecset");
+    val blur get() = this == BLUR || this == BLUR_BRUSH
     companion object { fun of(id: String?) = entries.firstOrNull { it.id == id } ?: FREE }
 }
 
 /** Markup over a photo: points in 0..1 of the photo's width and height (upright), so it fits any size. */
-data class Mark(val kind: MarkKind, val pts: List<Pt>, val text: String = "", val color: Long = 0xFFE8641C)
+data class Mark(val kind: MarkKind, val pts: List<Pt>, val text: String = "", val color: Long = 0xFFE8641C, val w: Double = 0.0)
 
 /** A photo taken for a purpose (Kamera, WP M29): what it shows, where, which shot-list item it fulfils. */
 data class Capture(
@@ -157,13 +161,56 @@ data class Capture(
     val lat: Double? = null,
     val lon: Double? = null,
     val marks: List<Mark> = emptyList(),
+    // WP M46 (Kamera 2), every field optional: an M29 file reads with these defaults
+    /** "photo" (jpg), "video" (mp4, the walk video), "signature" (png, the client's signature). */
+    val kind: String = CaptureKind.PHOTO,
+    /** Before / after: "elotte" or "utana" (null = neither); an after photo names its before in [pair]. */
+    val phase: String? = null,
+    val pair: String? = null,
+    /** Személyes adat: the photo shows a person, a house number, a name; it leaves the phone only blurred, never with GPS. */
+    val privacy: Boolean = false,
+    /** The exported copy keeps the GPS position (default: stripped, D-57). */
+    val keepGps: Boolean = false,
+    /** Type-plate reading (TypePlate.kt): when it ran (0 = never) and what it found. */
+    val ocrAt: Long = 0,
+    val ocr: List<OcrHit> = emptyList(),
+    /** A video's length and size; a signature's signer. */
+    val durationMs: Long = 0,
+    val bytes: Long = 0,
+    val signer: String = "",
 )
+
+object CaptureKind {
+    const val PHOTO = "photo"
+    const val VIDEO = "video"
+    const val SIGNATURE = "signature"
+    /** F5 (WP M50): a sound note, the dictation fallback (AudioNotes.kt). */
+    const val AUDIO = "audio"
+    fun ext(kind: String) = when (kind) { VIDEO -> "mp4"; SIGNATURE -> "png"; AUDIO -> "m4a"; else -> "jpg" }
+}
+
+/**
+ * One thing the type-plate reader found on a photo: [kind] (TypePlate.Kinds), the value as it should be written
+ * ("3×25 A", "30 mA", "12345678"), the text it was read from, and whether the user applied it ([used]) or swiped it
+ * away ([dropped]). Nothing is applied without a tap.
+ */
+data class OcrHit(val kind: String, val value: String, val raw: String = "", val used: Boolean = false, val dropped: Boolean = false)
 
 /** The building's outline as the map knows it (WP M30): its oriented size in metres. */
 data class Footprint(val w: Double, val d: Double, val area: Double, val angle: Double, val src: String, val at: Long = 0)
 
-/** Where the job is (WP M30). [source]: "kezi" typed, "gps" the phone's position, "terkep" VRG Térkép, "osm" Nominatim. */
-data class Site(val address: String = "", val lat: Double? = null, val lon: Double? = null, val source: String = "kezi", val footprint: Footprint? = null)
+/**
+ * Where the solved sketch sits on the map (F1): its box centre at [lat]/[lon], turned [rot] degrees clockwise.
+ * [auto] = still the first fit (SitePlace.autoFit), false once the user moved or turned it.
+ */
+data class Placement(val lat: Double, val lon: Double, val rot: Double, val auto: Boolean = true, val at: Long = 0)
+
+/**
+ * Where the job is (WP M30). [source]: "kezi" typed, "gps" the phone's position, "terkep" VRG Térkép, "osm" Nominatim.
+ * F1: [outline] = the building's corners (lat, lon), from OSM or drawn on the map; [place] = the sketch on it.
+ */
+data class Site(val address: String = "", val lat: Double? = null, val lon: Double? = null, val source: String = "kezi", val footprint: Footprint? = null,
+                val outline: List<Pair<Double, Double>> = emptyList(), val place: Placement? = null)
 
 /** Which level of the building the sketch is: the Planner's level ids. */
 enum class Level(val id: String, val label: String, val heightMm: Int) {
@@ -206,6 +253,19 @@ data class Sketch(
     val variant: String? = null,
     val variantOn: Boolean = false,
     val draft: String = "",
+    /** F4 (WP M49): the client's wants by room, {room id → {scope id → qty}}; [scope] stays the job's total (Wants.kt). */
+    val roomScope: Map<String, Map<String, Int>> = emptyMap(),
+    /** F5 (WP M50): the client's contact, personal, stripped on export unless kept (ClientInfo.kt). */
+    val client: Client? = null,
+    /**
+     * skcam K1 / K1b (WP M57, M59): the Szobadoboz corrections, kept as the JSON object text the viewer writes
+     * ({h: {room id: mm}, eye: mm, shots: {"<point>/<deg>": {yaw, pitch, f35}}}); RoomBox.kt reads and cleans it.
+     */
+    val box: String? = null,
+    /** skcam K3 (WP M60): the Síkmérés records by photo, as the JSON object text plane.js writes (Planes.kt). */
+    val planes: String? = null,
+    /** skcam K6 (WP M64): the Google AR csomag's distances and its saved scans / recordings (Ar.kt). */
+    val ar: String? = null,
 ) {
     /** The next id with [prefix], and the sketch with its counter moved on. */
     fun nextId(prefix: String): Pair<String, Sketch> = (prefix + (seq + 1)) to copy(seq = seq + 1)

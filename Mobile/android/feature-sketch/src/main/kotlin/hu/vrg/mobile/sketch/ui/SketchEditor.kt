@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,8 @@ import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.RcoMenu
+import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Level
@@ -108,6 +111,8 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     val store = SketchFeature.store
     val ctx = LocalContext.current
     val st = remember(initial.id) { EditorState(initial) {} }
+    LaunchedEffect(initial.id) { SketchFeature.takeFront(initial.id)?.let { st.front = it } }
+    LaunchedEffect(initial.id) { st.featOff = SketchFeaturePrefs.off(ctx) }   // F5 (D-90): this phone's switches   // F1: back from the map on Helyszín
     var showNorm by remember { mutableStateOf(false) }
 
     // the photos (Fotópont M25, captures M29) live with the survey (files/sketch/photos/<id>/); the camera app takes them
@@ -128,8 +133,26 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
             }
         } else { f.delete(); st.note = if (st.series && req.photo == null) "Sorozat vége." else "Nem készült fotó." }
     }
+    // Kamera 2: the walk video, through the camera app's video mode with a length / size limit
+    var filming by remember { mutableStateOf<Pair<CameraReq, String>?>(null) }
+    val film = rememberLauncherForActivityResult(CaptureWalkVideo()) { ok ->
+        val (req, name) = filming ?: return@rememberLauncherForActivityResult
+        filming = null
+        val f = File(dir, name)
+        if (ok && f.length() > 0) st.videoTaken(req, name, videoDuration(f), f.length())
+        else { f.delete(); st.note = "Nem készült videó." }
+    }
+    // Saját kamera (WP M52): the in-app CameraX camera for photos, the camera app when it is off or failed (D-101)
+    var live by remember { mutableStateOf<CameraReq?>(null) }
     fun startCamera(req: CameraReq) {
         dir.mkdirs()
+        if (!req.video && st.cam2.on(hu.vrg.mobile.sketch.CameraFeatures.LIVE) && !LiveFallback.failed) { live = req; return }
+        if (req.video) {
+            val vname = "V-" + System.currentTimeMillis().toString(36) + ".mp4"
+            filming = req to vname
+            try { film.launch(FileStore.uri(ctx, File(dir, vname))) } catch (e: Exception) { filming = null; host.note("Nincs videó rögzítő alkalmazás.") }
+            return
+        }
         val name = (req.photo ?: "C") + "-" + System.currentTimeMillis().toString(36) + ".jpg"
         shooting = req to name
         try { shoot.launch(FileStore.uri(ctx, File(dir, name))) } catch (e: Exception) { shooting = null; host.note("Nincs kamera alkalmazás.") }
@@ -154,7 +177,7 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
             // files no longer in the survey (retaken, deleted, a shot never given a direction) go when leaving it:
             // undo can still bring one back while the survey is open
             val keep = Intake.files(st.sketch)
-            dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second) it.delete() }
+            dir.listFiles()?.forEach { if (it.name !in keep && it.name != shooting?.second && it.name != filming?.second) it.delete() }
         }
     }
     LaunchedEffect(st.note) { if (st.note != null) { delay(4500); st.note = null } }
@@ -171,6 +194,21 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
         }
     }
 
+    live?.let { r ->
+        LiveCamera(st, r, dir,
+            onShot = { q, name, lens ->
+                if (q.photo != null) { st.photoTaken(q, name, lens); null }
+                else {
+                    val ll = exifLatLon(File(dir, name))
+                    st.captureTaken(q, name, ll?.first, ll?.second)
+                    st.sketch.captures.lastOrNull { it.file == name }?.id
+                }
+            },
+            onFail = { q, why -> LiveFallback.failed = true; live = null; host.note(why); startCamera(q) },
+            onClose = { n -> live = null; if (r.photo == null && n > 1) st.note = "◉ Sorozat vége · $n fotó" },
+        )
+        return
+    }
     if (showNorm) { NormScreen(st, host) { showNorm = false }; SketchDialogs(st); return }
 
     val sh = remember(st.sketch, st.kit, st.norm) { Shadow(st) }
@@ -194,11 +232,14 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
                 }
             }
             CaptureButtons(st, Modifier.align(Alignment.BottomEnd))
+            AgainPill(st, Modifier.align(Alignment.BottomEnd).padding(end = 80.dp, bottom = 22.dp))   // Kamera 2: "+ még"
         }
         if (st.front == "vazlat") { ToolOptions(st); ToolRail(st) }
     }
     if (st.noteOpen) QuickNote(st)
     SketchDialogs(st)
+    OcrRunner(st)            // Kamera 2: type-plate reading in the background
+    FeatureSync(st)          // M51: the feature switches (FeaturesUi.kt)
 }
 
 /** The photo's own position (camera apps write it when location tagging is on); null when it has none. */
@@ -219,13 +260,20 @@ private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
             st.sketch.name.ifBlank { "Névtelen felmérés" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).clickable { st.ask = Ask.SketchName },
         )
-        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original
-        SketcherKit.variant(st.sketch.variant)?.let { v ->
-            val on = st.sketch.variantOn
-            Text(if (on) v.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(v.color) else Melyviz.faint),
-                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(v.color) else Melyviz.line, RoundedCornerShape(50))
-                    .clickable { st.toggleVariant() }.padding(horizontal = 8.dp, vertical = 2.dp)
-                    .semantics { contentDescription = (if (on) v.name else "Eredeti") + ": váltás" })
+        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original.
+        // F4 (WP M49): a long press (RCO) lists the variants, the original, ⟳ refresh and ＋ a new request; with no
+        // variant chosen yet a faint ◐ stands there and a tap opens the same list
+        val allVariants by SketcherKit.variants.collectAsState()
+        val cur = SketcherKit.variant(st.sketch.variant)
+        if ((cur != null || allVariants.isNotEmpty()) && feat("variansok.use")) Box {
+            var vmenu by remember { mutableStateOf(false) }
+            val on = st.sketch.variantOn && cur != null
+            Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.faint),
+                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
+                    .rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { if (feat("variansok.longpress") || cur == null) vmenu = true }, longLabel = "variánsok")
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                    .semantics { contentDescription = (if (on) cur!!.name else "Eredeti") + ": váltás" })
+            RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })
         }
         VrgChip(st.sketch.level.label) { st.setLevel(Level.entries[(st.sketch.level.ordinal + 1) % Level.entries.size]) }
         Text("↶", style = Melyviz.title.copy(color = if (st.canUndo) Melyviz.ink else Melyviz.faint),

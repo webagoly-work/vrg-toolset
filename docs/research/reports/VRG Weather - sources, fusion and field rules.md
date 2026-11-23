@@ -162,3 +162,16 @@ this session.
 | W6 | The safety officer's review of `rules.json` | set `reviewed_on`, adjust limits |
 | W7 | HungaroMet's "do not alter the data" | we store converted units and keep the raw file; ask odp@met.hu before customer-facing reuse |
 | W8 | DWD ICON on native grids from 2026-11-30 | re-run `doctor --live` after that date (affects Open-Meteo's ICON members) |
+
+## 8. Addendum 2026-11-20: the fields for the VRG Térkép
+
+The Térkép's W layer needs whole-country fields, not points. Field sources, by the same licence rules:
+
+| Field source | Grid | Company use | Why |
+|---|---|---|---|
+| Open-Meteo multi-point | 0.25°, ~380 points, 4 requests | key only | detailed, one call per chunk |
+| MET Norway per point | 0.5°, 105 points, ≤ 4 req/s, each with its own Expires | yes | the company-safe fallback, well inside MET's 20 req/s terms |
+| HungaroMet stations, IDW | 0.1°, every 10 min, last 3 h | yes | what really happened, for the measured mode |
+
+ECMWF/DWD GRIB fields stay parked (W5). Design and open items: `docs/map/WEATHER-MAP.md` (WM1–WM5).
+

@@ -26,6 +26,7 @@ What it can reshape (all optional; schema by example: `furdo-felujitas.json`, `e
 | `scopePreset` | munkakör toggles switched on when the variant is first chosen | `{scope id: qty}` from the kit |
 | `chips`, `scope`, `keywords`, `questions`, `shotlist`, `purposes` | extra quick chips, toggles, detectors, questions, shot-list items, photo purposes | the kit's shapes; a same `id` replaces the kit's entry |
 | `hints` | one line per tool shown while it is active | `{tool id: text}` |
+| `draw` | how the drawing tools behave (M49) | `{snapAngle: 0/15/30/45/90 (deg, the Vonal step), snapGrid: m (0-10), defaultRoom: {w, d} m (a tap lays it), measureFirst: bool, pointSnap: wall/free, lineClose: auto/ask (M50: what the Vonal's Kész does with 3+ corners)}`; all optional; there is no wall thickness (D-83); use it when the job's shape is regular (halls: 90°, a coarse grid, a big tap room) |
 
 The condition language for `when` and the effects for `sets` are in `docs/sketcher/README.md` §4. Questions follow
 the house decision style: **2–5 short options, the likely one first, free text always possible**; `prio` 1 = ask
@@ -52,7 +53,8 @@ words are the premise.
 3. **Plan the first version without asking** (in your head or a scratch file, not the repo): for each reshapeable part,
    what this job needs first and what it never needs. Typical moves: the rail starts with the tools this job lives in;
    point presets name the job's own devices; the room ring starts with the rooms it happens in; a template for the
-   shape the job usually has (a bathroom with a bath niche, a garage with a driveway); questions only this job needs,
+   shape the job usually has (a bathroom with a bath niche, a garage with a driveway); a `draw` block when the
+   places are regular (a hall: 90° lines, a 1 m grid, a tap lays a 30 × 20 m room; a bathroom: a 10 cm grid); questions only this job needs,
    with `when` tied to its scope so they stay silent elsewhere; a shot list of what must be photographed for it.
 4. **Ask the crucial questions back**, as numbered decisions with options and your recommendation first, at most
    five: what the focus is (drawing, client talk, photos, routing), what shape the places usually have, what must

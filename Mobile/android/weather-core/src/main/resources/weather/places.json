@@ -1,0 +1,12 @@
+{
+  "_about": "Named places with public coordinates (town centres). Job sites are not listed here: `sync-jobs` reads them from the Map's jobs\\_elozmenyek\\helyek.json into the database only, never into Git. warn_areas are matched (accent-free, contains) against MeteoAlarm areaDesc.",
+  "places": [
+    { "id": "budapest", "name": "Budapest (belváros)", "lat": 47.4979, "lon": 19.0402, "elev": 110, "warn_areas": ["Budapest"], "activities": ["kulteri", "magasban", "kabel", "tetoPV"] },
+    { "id": "budaors", "name": "Budaörs", "lat": 47.4621, "lon": 18.9580, "elev": 140, "warn_areas": ["Pest", "Budaörs"], "activities": ["kulteri", "magasban", "kabel"] },
+    { "id": "erd", "name": "Érd", "lat": 47.3919, "lon": 18.9044, "elev": 130, "warn_areas": ["Pest", "Érd"], "activities": ["kulteri", "magasban", "kabel"] },
+    { "id": "szentendre", "name": "Szentendre", "lat": 47.6694, "lon": 19.0756, "elev": 110, "warn_areas": ["Pest", "Szentendre"], "activities": ["kulteri", "magasban", "kabel"] },
+    { "id": "vac", "name": "Vác", "lat": 47.7759, "lon": 19.1360, "elev": 110, "warn_areas": ["Pest", "Vác"], "activities": ["kulteri", "magasban", "kabel"] },
+    { "id": "godollo", "name": "Gödöllő", "lat": 47.5961, "lon": 19.3552, "elev": 230, "warn_areas": ["Pest", "Gödöllő"], "activities": ["kulteri", "magasban", "kabel"] },
+    { "id": "cegled", "name": "Cegléd", "lat": 47.1726, "lon": 19.7998, "elev": 100, "warn_areas": ["Pest", "Cegléd"], "activities": ["kulteri", "magasban", "kabel"] }
+  ]
+}

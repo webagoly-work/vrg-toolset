@@ -1,0 +1,109 @@
+{
+  "about": "How to connect an iPhone to VRG Mobile, step by step. ONE source: the iPhone web app shows it (Eszköz, Útmutató) and the Android app bundles it (Eszközök → iPhone csatlakoztatása; kit's assets). kit-core IphoneGuideTest checks its shape. Hungarian, like every phone screen.",
+  "version": 1,
+  "url": "https://webagoly-work.github.io/vrg-toolset/mobile/",
+  "title": "iPhone csatlakoztatása",
+  "intro": "Az iPhone nem tudja telepíteni az Android alkalmazást, ezért a VRG Mobile egy weboldalként fut rajta (webapp). Ugyanúgy jóvá kell hagyni, mint egy új Android telefont: az iPhone megmutat egy QR-kódot, a tulajdonos Android telefonja beolvassa, és az iPhone magától feloldódik. Az egész kb. 3 perc.",
+  "sections": [
+    {
+      "id": "need",
+      "title": "Mielőtt elkezded",
+      "who": "both",
+      "steps": [
+        "Kell hozzá az iPhone (iOS 16.4 vagy újabb ajánlott) a Safari böngészővel, és a tulajdonos Android telefonja, rajta a VRG Mobile alkalmazással, belépve a GitHub fiókba.",
+        "Mindkét telefonon legyen internet (mobilnet vagy WiFi). A két telefonnak nem kell ugyanazon a hálózaton lennie.",
+        "Az iPhone-on ezek működnek: Eszköz (jóváhagyás), Haladás, Frissítés, Megjelenés. Ezek csak Androidon: Csipogó, Tárgykereső, Légegér, Képernyő, Átadás, Hálózat (Bluetooth vagy a PC reléje kell hozzájuk, amit egy iPhone böngésző nem ér el).",
+        "Ne privát (inkognitó) lapon csináld: a privát lap bezárásakor az iPhone elfelejti a kulcsát, és újra kell kérni a hozzáférést."
+      ]
+    },
+    {
+      "id": "open",
+      "title": "1. Nyisd meg a webappot az iPhone-on",
+      "who": "iphone",
+      "steps": [
+        "A legegyszerűbb: a tulajdonos Android telefonján Eszközök → iPhone csatlakoztatása → Webapp QR. Az iPhone Kamera alkalmazásával nézz rá a QR-kódra, majd koppints a megjelenő sárga „Safari” feliratra.",
+        "Vagy írd be kézzel a Safari címsorába: webagoly-work.github.io/vrg-toolset/mobile",
+        "Megnyílik a VRG Mobile kezdőlapja (Eszköz, Haladás, Frissítés, Megjelenés csempék, középen halványan a Varler logó)."
+      ]
+    },
+    {
+      "id": "where",
+      "title": "2. Safari vagy kezdőképernyő? Döntsd el most",
+      "who": "iphone",
+      "steps": [
+        "Az iPhone a kezdőképernyőre tett webappot külön tárolóval futtatja, mint a Safarit. A hozzáférés ahhoz a változathoz tartozik, amelyikben kérted, ezért előbb döntsd el, melyiket fogod használni.",
+        "Ha csak néha kell: maradj a Safariban, és ott folytasd a 3. lépéssel.",
+        "Ha ikont szeretnél a kezdőképernyőn (ajánlott): a webappban Megjelenés → válaszd ki a palettát (az ikon ennek a színét kapja), majd a Safari alján a Megosztás gomb (négyzet felfelé mutató nyíllal) → „Főképernyőhöz adás” → Hozzáadás. Zárd be a Safarit, nyisd meg a VRG Mobile ikont a kezdőképernyőn, és onnan folytasd a 3. lépéssel.",
+        "A választást később is megváltoztathatod, de akkor a másik változatban újra kérni kell a hozzáférést."
+      ]
+    },
+    {
+      "id": "request",
+      "title": "3. Kérj hozzáférést",
+      "who": "iphone",
+      "steps": [
+        "Koppints az Eszköz csempére.",
+        "„A telefon neve a listán” mezőbe írj egy felismerhető nevet (pl. „Anna iPhone 15”). Ez fog látszani a tulajdonos listáján.",
+        "Koppints a „Kérés QR-kódja” gombra. Megjelenik egy QR-kód és alatta egy 6 karakteres ellenőrző kód (pl. 3F9A2C).",
+        "Tartsd a képernyőt a tulajdonos felé, és hagyd nyitva ezt az oldalt. Ne zárd be, és ne kérj új kódot."
+      ]
+    },
+    {
+      "id": "approve",
+      "title": "4. A tulajdonos jóváhagyja (Android telefonon)",
+      "who": "owner",
+      "steps": [
+        "Nyisd meg a VRG Mobile-t, és koppints fent a QR beolvasása gombra (vagy Eszközök → QR beolvasása).",
+        "Olvasd be az iPhone képernyőjén látható QR-kódot. A saját szkennerrel beolvasott kérést a telefonod azonnal jóváhagyja, és felírja a megbízható eszközök listájára.",
+        "Ha a kérést üzenetben kaptad (nem beolvastad): másold ki az egész üzenetet → Eszközök → Kérés beillesztése. Ilyenkor megjelenik egy kártya a 6 karakteres kóddal: csak akkor koppints a Jóváhagyásra, ha pontosan ugyanez a kód látszik az iPhone-on.",
+        "A jóváhagyás után az Eszközök megmutat egy engedély QR-kódot. Erre csak akkor van szükség, ha írási jogot is adsz (lásd lent), vagy ha az iPhone nem akar magától feloldódni."
+      ]
+    },
+    {
+      "id": "unlock",
+      "title": "5. Az iPhone magától feloldódik",
+      "who": "iphone",
+      "steps": [
+        "Maradj az Eszköz oldalon: a webapp 10 másodpercenként megnézi a listát, és amint rajta vagy, kiírja: „Jóváhagyott eszköz”.",
+        "A lista a GitHubról jön, ami pár percig is tárolhatja a régi változatot: néha 1–5 perc, mire megjelenik. Addig nem kell semmit tenned.",
+        "Ha nem akarsz várni: kérd meg a tulajdonost, hogy mutassa az engedély QR-kódját, és olvasd be az iPhone Kamera alkalmazásával (Safari esetén), vagy kérd el üzenetben, és illeszd be (kezdőképernyős app esetén, lásd a 2. lépést)."
+      ]
+    },
+    {
+      "id": "token",
+      "title": "Ha az iPhone-nak írási jog is kell",
+      "who": "both",
+      "steps": [
+        "Alapból a jóváhagyott iPhone olvas (Haladás, frissítés), de nem ír a GitHubra.",
+        "Írási jogot a tulajdonos adhat: a beillesztett kérés kártyáján bekapcsolja „A GitHub tokenem is” kapcsolót, jóváhagy, és megmutatja az engedély QR-kódját. Az iPhone ezt beolvassa (vagy beilleszti), és onnantól a tulajdonos nevében ír.",
+        "Figyelem: a token a tulajdonos ÖSSZES GitHub repójához ad írási jogot, és az iPhone böngészőjében tárolódik. Csak a saját vagy teljesen megbízható iPhone-nak add meg."
+      ]
+    },
+    {
+      "id": "check",
+      "title": "6. Ellenőrzés",
+      "who": "iphone",
+      "steps": [
+        "Eszköz: zöld „Jóváhagyott eszköz” felirat.",
+        "Haladás: megjelennek a main ág commitjai és a CI futások.",
+        "Frissítés: „Ez a legfrissebb verzió”, vagy egy új verzió „Frissítés most” gombbal. Jóváhagyás nélkül itt azt írja, hogy a kiadások zárolva vannak.",
+        "Kész. A tulajdonos a listán (Eszközök → Megbízható eszközök) bármikor eltávolíthatja az iPhone-t."
+      ]
+    },
+    {
+      "id": "trouble",
+      "title": "Ha valami nem megy",
+      "who": "both",
+      "faq": [
+        { "q": "A tulajdonos telefonja nem olvassa be a QR-kódot.", "a": "Növeld az iPhone fényerejét, tartsd 20–30 cm-re, és ne tükröződjön rajta a lámpa. Ha így sem megy: az iPhone-on Megosztás (üzenetben), a tulajdonos pedig Eszközök → Kérés beillesztése." },
+        { "q": "A két telefonon nem ugyanaz a 6 karakteres kód.", "a": "Ne hagyd jóvá! Az üzenet sérült, vagy nem attól az iPhone-tól jött. Kérj új kódot az iPhone-on, és olvassátok be közvetlenül a képernyőről." },
+        { "q": "„Ez az engedély egy másik eszköznek szól”", "a": "Az engedélyt a Safariban nyitottad meg, de a kérést a kezdőképernyős appban adtad (vagy fordítva). Másold ki az engedély üzenetet, és illeszd be abban a változatban, ahol a kérést adtad: Eszköz → Engedély beillesztése." },
+        { "q": "„A lista nem olvasható”", "a": "Nincs internet az iPhone-on, vagy a GitHub éppen nem érhető el. Kapcsold be a mobilnetet vagy a WiFit, és nyisd meg újra az Eszköz oldalt." },
+        { "q": "Jóváhagyták, de 5 perc után sem oldódik fel.", "a": "Nézd meg, hogy a tulajdonos listáján szerepel-e az iPhone (Eszközök → Megbízható eszközök). Ha igen, kérd el az engedély QR-kódját vagy üzenetét, az azonnal feloldja." },
+        { "q": "Előzményeket töröltem a Safariban, és újra „Nincs a megbízható eszközök között”.", "a": "Az előzmények törlése a kulcsot is törli, így az iPhone új eszköznek számít. Kérj újra hozzáférést (3. lépés); a tulajdonos a régi bejegyzést eltávolíthatja." },
+        { "q": "A Haladás azt írja, hogy a GitHub korlátozza a kéréseket.", "a": "Belépés nélkül óránként 60 kérés jut egy hálózatra. Várj egy órát, vagy kérj írási joggal járó engedélyt (lásd fent)." },
+        { "q": "Az ikon színe nem az, amit választottam.", "a": "Az iPhone a kezdőképernyőre tétel pillanatában menti el az ikont, utána nem változik. Új színhez: töröld az ikont, a Safariban válaszd ki a palettát a Megjelenésben, és add hozzá újra. Vigyázz: a törölt kezdőképernyős app a jóváhagyását is elveszti, az új ikonban újra kell kérni a hozzáférést (3–5. lépés)." }
+      ]
+    }
+  ]
+}

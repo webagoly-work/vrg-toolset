@@ -210,6 +210,7 @@ export async function initJobs({ map, maplibregl, params, store, toast }) {
         <dt>Forrás</dt><dd>${esc(SOURCE[j.source] || j.source || '—')}</dd>
         ${rel ? `<dt>Kapcsolódó</dt><dd>${rel}</dd>` : ''}
       </dl>
+      ${window.vrgWeather && window.vrgWeather.jobCard ? window.vrgWeather.jobCard(j.code) : ''}
       <div class="jact"><button type="button" class="jb" data-near="${esc(j.code)}" title="Közelebb, döntve, körbefordulva">Közelebb</button><button type="button" class="jb" data-link="${esc(j.code)}" title="A ?job= link másolása (belső)">Link</button></div>
     </section>`;
   }
@@ -376,6 +377,7 @@ export async function initJobs({ map, maplibregl, params, store, toast }) {
     show(on);
     if (!on) { closeCard(); stopPlay(); }
     store.set('jobs', on);
+    dispatchEvent(new CustomEvent('vrg:jobs', { detail: { on } }));   // the W layer's job weather follows
   }
   btn.onclick = () => toggle();
   addEventListener('keydown', e => {

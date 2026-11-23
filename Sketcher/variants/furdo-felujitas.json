@@ -15,6 +15,16 @@
  ],
  "author": "Claude (GO VARIANT protocol, reference example)",
  "created": "2026-11-18",
+ "draw": {
+  "lineClose": "auto",
+  "snapAngle": 90,
+  "snapGrid": 0.1,
+  "defaultRoom": {
+   "w": 2.4,
+   "d": 1.8
+  },
+  "measureFirst": true
+ },
  "plugins": {
   "on": [
    "fotopont"

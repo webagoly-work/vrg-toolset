@@ -10,6 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,10 +48,12 @@ import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.sketch.SketchFeatures
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
 import hu.vrg.mobile.sketch.Photos
+import hu.vrg.mobile.sketch.PlanView
 import hu.vrg.mobile.sketch.PlannerExport
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -57,6 +61,7 @@ import hu.vrg.mobile.sketch.Pt
 import hu.vrg.mobile.sketch.SizeStatus
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.Takeoff
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -75,24 +80,37 @@ private const val MIME = "application/json"
  * The package, and (WP M25, D-25 = A) every photo as its own file under the name the package gives it, ready to
  * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
  */
-private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+    val s = SketchFeatures.forExport(SketchFeaturePrefs.off(ctx), s0)   // F5 (D-82, D-84, D-90): the client only when kept, no sound notes when off
     val out = FileStore.cacheDir(ctx, "sketch")
-    out.listFiles()?.forEach { if (it.name.endsWith(".jpg")) it.delete() }        // the last export's copies
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png") || it.name.endsWith(".m4a")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
-    pkg.writeText(PlannerExport.build(s, n).toString(1))
+    val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
+    // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
+    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
+    val pj = PlannerExport.build(s, n)
+    tk?.let { pj.put("takeoff", it.json) }
+    pkg.writeText(pj.toString(1))
+    // M51: the switches decide which files go BESIDE the package; the package itself never changes (D-93)
+    val tkFiles = if (tk == null || !feat("export.takeoff")) emptyList() else Takeoff.fileNames(s).let { (jn, mn) ->
+        listOf(File(out, jn).also { it.writeText(tk.json.toString(1) + "\n") } to MIME, File(out, mn).also { it.writeText(Takeoff.markdown(tk.json)) } to "text/markdown")
+    }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else File(out, name).also { src.copyTo(it, overwrite = true) }
+        if (!src.exists()) null else if (!strip) File(out, name).also { src.copyTo(it, overwrite = true) }
+        else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
-        val src = File(SketchFeature.store.photoDir(s.id), c.file)
-        if (!src.exists()) return@flatMap emptyList<File>()
-        val name = Intake.exportName(s, c)
-        val f = File(out, name).also { src.copyTo(it, overwrite = true) }
-        listOfNotNull(f, if (c.marks.isEmpty()) null else burnMarks(src, c.marks, File(out, name.removeSuffix(".jpg") + "_jel.jpg")))
+        // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
+        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out, strip)
     }
-    listOf(pkg to MIME) + (photos + caps).map { it to "image/jpeg" }
+    val sent = (photos + caps).filter { f ->
+        if (mimeOf(f) != "image/jpeg") true                                    // videos and signatures go as before
+        else feat("export.photos") && (feat("export.burned") || !f.name.endsWith("_jel.jpg"))
+    }
+    (photos + caps).filter { it !in sent }.forEach { it.delete() }
+    listOf(pkg to MIME) + tkFiles + sent.map { it to mimeOf(it) }
 }
 
 internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
@@ -105,6 +123,7 @@ internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
     ctx.startActivity(Intent.createChooser(send, "Vázlat küldése").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) {
     val ctx = LocalContext.current
@@ -112,6 +131,8 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
     val n = st.norm
     val rep = n.report
     var done by remember { mutableStateOf<String?>(null) }
+    var report by remember { mutableStateOf(false) }   // F9 (WP M54): the Jegyzőkönyv dialog
+    var roomBox by remember { mutableStateOf(false) }  // skcam K1b (WP M59): the Szobadoboz
     val tm = rememberTextMeasurer()
     val c = pal()
 
@@ -144,13 +165,14 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
             else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
         }
         Column(Modifier.fillMaxWidth().background(Melyviz.surface).padding(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("⇪ Küldés a Plannerbe", selected = true) {
                     scope.launch {
                         try {
                             val files = writeExport(ctx, st.sketch, n)
                             shareAll(ctx, files)
-                            done = "Megosztva: ${files[0].first.name}" + if (files.size > 1) " és ${files.size - 1} fotó" else ""
+                            val ph = files.count { it.second == "image/jpeg" }
+                            done = "Megosztva: ${files[0].first.name}" + (if (files.size > ph + 1) " + munkakör lap" else "") + if (ph > 0) " és $ph fotó" else ""
                         } catch (e: Exception) {
                             VrgLog.w("sketch", "Megosztás sikertelen: ${e.message}"); host.note("A megosztás nem sikerült.")
                         }
@@ -160,17 +182,24 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                     scope.launch {
                         val files = writeExport(ctx, st.sketch, n)
                         val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
-                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + if (files.size > 1) " · ${files.size - 1} fotó: Képek / VRG Vázlat" else ""
+                        val ph = files.count { it.second == "image/jpeg" }
+                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
                     }
                 }
+                // F9 (WP M54, D-127, D-128): the Felmérési jegyzőkönyv from the phone, behind its registry switch (M51)
+                if (FeaturePrefs.on("export.report_phone")) VrgChip("📄 Jegyzőkönyv") { report = true }
+                // skcam K1b (WP M59): the room in 3D with its Fotópont photos, behind the registry switch (D-90)
+                if (FeaturePrefs.on(hu.vrg.mobile.sketch.RoomBox.FEATURE) && hu.vrg.mobile.sketch.RoomBox.ready(n)) VrgChip("⬚ Szobadoboz") { roomBox = true }
             }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
-            if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
-            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json; a fotók: ⌘K → Vázlat: fotók. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
+            if (shots > 0 && feat("export.photos")) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
+            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
                 style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
             done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
         }
     }
+    if (report) ReportDialog(st) { report = false }
+    if (roomBox) RoomBoxDialog(st) { roomBox = false }
 }
 
 private fun DrawScope.text(tm: TextMeasurer, s: String, at: Offset, color: Color, size: TextUnit, bold: Boolean = false, bg: Color? = null) {
