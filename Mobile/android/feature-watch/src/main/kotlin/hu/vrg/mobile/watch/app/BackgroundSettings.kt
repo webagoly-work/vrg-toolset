@@ -55,10 +55,19 @@ object BackgroundSettings {
         openAppDetails(ctx)
     }
 
+    /**
+     * MIUI's own per-app battery saver page; HyperOS (Android 15, checked on the Xiaomi 2026-11-23) dropped it, and its
+     * Security app's App info page carries the Akkumulátor row instead.
+     */
     fun openBatterySaver(ctx: Context) {
-        val i = Intent().setComponent(ComponentName("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity"))
-            .putExtra("package_name", ctx.packageName).putExtra("package_label", label(ctx))
-        if (start(ctx, i)) return
+        val tries = listOf(
+            ComponentName("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity"),
+            ComponentName("com.miui.securitycenter", "com.miui.appmanager.ApplicationsDetailsActivity"),
+        )
+        for (c in tries) {
+            val i = Intent().setComponent(c).putExtra("package_name", ctx.packageName).putExtra("package_label", label(ctx))
+            if (start(ctx, i)) return
+        }
         openAppDetails(ctx)
     }
 

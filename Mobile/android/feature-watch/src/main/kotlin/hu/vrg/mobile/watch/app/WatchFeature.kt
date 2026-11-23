@@ -144,7 +144,7 @@ object WatchFeature : VrgFeature {
                 VrgChip("Automatikus indítás", selected = autostart == false) { BackgroundSettings.openAutostart(ctx) }
 
                 // 3 · Xiaomi battery saver for this app (not readable from an app)
-                Text("3 · Akkumulátorkímélő: állítsd „Nincs korlátozás”-ra (az app nem tudja kiolvasni)",
+                Text("3 · Akkumulátorkímélő: állítsd „Nincs korlátozás”-ra (HyperOS-en: Akkumulátor sor; az app nem tudja kiolvasni)",
                     style = Melyviz.readout.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
                 VrgChip("Akkumulátorkímélő") { BackgroundSettings.openBatterySaver(ctx) }
             }
