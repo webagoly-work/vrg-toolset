@@ -21,7 +21,7 @@ Mobile-on és böngészőben. A weboldalakat mindig a gazda saját böngészője
 ```bash
 node Browser/serve.js            # http://127.0.0.1:8812 (--port, --no-open, --allow-lan)
 node Browser/build.js            # src/ → dist/vrg-bongeszo.html  (--check: exit 1 when dist/ is stale)
-node Browser/test/run.js         # unit, server and page tests (no network; the page test uses the pre-installed Chromium)
+node Browser/test/run.js         # 55 tests: core, links, server, jobs, build, page (no network; pages in headless Chromium)
 ```
 
 ## Modules
@@ -40,6 +40,9 @@ Every module can be switched off in **Beállítások → Modulok**. "Host" says 
 | **Előzmények** | one row per visit, shown per URL by day; in the Asztal it includes the Böngésző pane's own browsing (T1) | all |
 | **Olvasó nézet** | `lib/reader.js` through `/api/reader`: a page's text without menus, ads or scripts; **Mentés offline** keeps the text on the device, readable and full-text searchable without a network (on the phone too, once saved) | Asztal, :8812 |
 | **Helyi dokumentumok** | `lib/docs.js`: the repo's Markdown (527 files) in the same engine; opens in the reader | Asztal, :8812 |
+| **Munkák** (T3) | per job code (the toolset's `AB12` shape): its links, saved pages and datasheets; **Exportálás a munka mappájába** (links.json in v1, INDEX.md, the saved pages as Markdown, the datasheet PDFs) through `serve.js`; **Térképen** (the Map's `?job=`); **QR-címkék** to print; Mentés fájlba (that job only). The PC's job codes come from `/api/jobs`, codes and status only | all (export: Asztal, :8812) |
+| **Alkatrészek** (T4) | the Inventory's catalogue (221 parts, baked by `build.js` from `Inventory/data/vrg-inventory.json`, **no prices**): search by name, brand, part number, VRG id or GTIN; a part's card opens its manufacturer datasheet, reads and saves it offline **with the part id and a job code**, lists the vendor product pages and searches TME / Mouser / Farnell / Árukereső / datasheet PDFs for its part number, prints its QR label | all |
+| **PDF adatlap az Olvasóban** (T4) | a datasheet PDF reads like a page (`lib/pdftext.js`, pdf.js from `Vendor/`, text only, per page); saved offline it is full-text searchable on every device | Asztal, :8812 |
 | **Helyi VRG szerverek** | the START servers with a running lamp; User-level ones first (from the catalog), the dev ones on request | Asztal, :8812, file |
 | **Telefonra** | a QR of a URL (the Inventory / Planner encoder, Project Nayuki, MIT) to open it on the phone | not on the phone |
 | **Webes javaslatok** | suggestions from Google, DuckDuckGo or Wikipedia while typing, through the server, without cookies. **Off by default:** every keystroke would leave the PC. | Asztal, :8812 |
@@ -72,6 +75,22 @@ The pure core also runs inside the VRG Asztal itself:
   URLs, a link with a user name or password refused;
 - the **Ctrl+K palette**: Gyorsválasz above the command rows (`230V 16A`, `2,5mm2 30m 16A`, `= 2*(3+4)`), a click or Ctrl+Enter
   copies the result.
+
+## The work context and datasheets (T3, T4)
+
+- **Job codes** are the toolset's own (`^[A-Z]{1,3}\d{1,3}$`, as `Map/tools/build-jobs.js` and the Asztal's `desktop.mapJob`);
+  the first release's sample shape `VRG-ÉÉHH-NN` is still read. Typing a code in the omnibox offers the job (first only when
+  this device knows it: `M8` is also a bolt size).
+- **`/api/jobs`** (`lib/jobs.js`) lists the PC's jobs from `jobs\<CODE>_*`, `jobs\_elozmenyek\<CODE>` and the Map's
+  `helyek.json`: **code, status and period only**, never a folder name, label or address; each read of `helyek.json` leaves a
+  line in `helyek-log.jsonl`, as the Map's access rule asks.
+- **`POST /api/jobs/<CODE>/export`** writes into that job's existing folder, under `web\`: `links.json` (v1 + extension),
+  `INDEX.md`, `olvaso\*.md` (the saved texts with their source and date) and, when asked, `adatlapok\*.pdf` (downloaded
+  through `lib/netguard.js`, 25 MB each). The reply names the code, never the folder. Same write rules as `/api/links`
+  (own page or the Asztal's app origin, JSON). A code without a folder is refused, nothing is created elsewhere.
+- **PDF**: `node tools/fetch-vendor.js pdfjs` once on the PC (Vendor/ is not in git); without it the reader says so.
+- **QR labels** (`#/munkak/<CODE>/cimkek`, a part's QR-címke): A4 sheets of 3 × 8, 2 × 4 or 4 × 10 labels; printing shows the
+  sheet only.
 
 ## How the hosts open pages
 
@@ -106,8 +125,8 @@ Browser/
   src/core/               engine · url · answers · links · store · sync · host   (pure; links / url / answers are also
                           loaded by the VRG Asztal's shell: Dashboard/shell/lib/bookmarks.js, search.js, the palette)
   src/vendor/qr.js        the QR encoder, copied unchanged (MIT notice inside)
-  src/app/                ui · context · omnibox · views · main
-  lib/                    netguard · reader · docs · suggest
+  src/app/                ui · context · omnibox · views · work (Munkák, Alkatrészek, labels) · main
+  lib/                    netguard · reader · pdftext · docs · suggest · jobs
   test/                   run.js + *.test.js
   dist/vrg-bongeszo.html  the built app (committed: VRG Mobile fetches it from main)
 ```

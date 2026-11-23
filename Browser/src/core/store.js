@@ -15,7 +15,9 @@
   const PREFIX = 'vrg-bongeszo:v1:';
   const OLD_FORMAT = 'vrg-bongeszo/1';                       // the first release's own export (2026-11-23 morning): still imported
   const LIMITS = { bookmarks: L.MAX_BOOKMARKS, history: L.MAX_HISTORY, reading: 300, text: 200000, tags: 12, tag: 40, title: 300, note: 2000, url: 2000, outbox: 2000 };
-  const JOB_RE = /^VRG-\d{4}-\d{2}$/;
+  // the job code: the toolset's own (Map/tools/build-jobs.js, Dashboard desktop.mapJob, the jobs\<CODE>_* folders: AB12);
+  // the UI kit's sample shape VRG-ÉÉHH-NN of the first release is still read so nothing saved with it is lost
+  const JOB_RE = /^([A-Z]{1,3}\d{1,3}|VRG-\d{4}-\d{2})$/;
   const DEFAULTS = {
     engine: 'google', engineChosen: false, suggest: false, clean: true, theme: 'melyviz', density: 'auto', history: true,
     readerServer: 'http://127.0.0.1:8812', modules: {}, pinned: [],
@@ -39,7 +41,8 @@
     if (!r || !isWeb(r.url)) return null;
     return { id: str(r.id, 40) || uid(), url: str(r.url, LIMITS.url), title: str(r.title, LIMITS.title) || str(r.url, 80), note: str(r.note, LIMITS.note),
       job: normJob(r.job), tags: normTags(r.tags), added: +r.added || now(), read: !!r.read,
-      text: typeof r.text === 'string' ? r.text.slice(0, LIMITS.text) : '', excerpt: str(r.excerpt, 400), site: str(r.site, 120), saved: +r.saved || 0 };
+      text: typeof r.text === 'string' ? r.text.slice(0, LIMITS.text) : '', excerpt: str(r.excerpt, 400), site: str(r.site, 120), saved: +r.saved || 0,
+      kind: r.kind === 'pdf' ? 'pdf' : '', part: /^VRG-\d{4}$/.test(String(r.part || '')) ? r.part : '' };
   }
 
   function memory() { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; }
@@ -138,6 +141,8 @@
         saveLinks(); return true;
       },
       tags() { const m = new Map(); for (const x of Object.values(meta).concat(reading)) for (const t of x.tags || []) m.set(t, (m.get(t) || 0) + 1); return [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'hu')); },
+      forJob(code) { const c = normJob(code); if (!c) return { bookmarks: [], reading: [] }; return { bookmarks: api.bookmarks().filter(b => b.job === c), reading: reading.filter(r => r.job === c) }; },
+      forPart(id) { return reading.filter(r => r.part === id); },
       jobs() { const m = new Map(); for (const x of Object.values(meta).concat(reading)) if (x.job) m.set(x.job, (m.get(x.job) || 0) + 1); return [...m].sort((a, b) => b[0].localeCompare(a[0])); },
 
       // ---- history: v1 rows (one per visit); history() groups them per URL, newest first
@@ -161,7 +166,7 @@
         const c = cleanReading(r);
         if (!c) return null;
         const old = reading.find(x => key(x.url) === key(c.url));
-        if (old) { Object.assign(old, { title: c.title || old.title, note: c.note || old.note, job: c.job || old.job, tags: c.tags.length ? c.tags : old.tags }); if (c.text) Object.assign(old, { text: c.text, excerpt: c.excerpt, site: c.site, saved: now() }); return saveR() ? old : null; }
+        if (old) { Object.assign(old, { title: c.title || old.title, note: c.note || old.note, job: c.job || old.job, tags: c.tags.length ? c.tags : old.tags, part: c.part || old.part }); if (c.text) Object.assign(old, { text: c.text, excerpt: c.excerpt, site: c.site, kind: c.kind || old.kind, saved: now() }); return saveR() ? old : null; }
         if (reading.length >= LIMITS.reading) return null;
         if (c.text && !c.saved) c.saved = now();
         reading.unshift(c);

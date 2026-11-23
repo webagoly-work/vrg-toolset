@@ -264,7 +264,7 @@
   // ------------------------------------------------------------------ Olvasó: the reading list and the reader
   function reader(ctx, p, go, rest) {
     if (rest) return readItem(ctx, ctx.st.readingItem(rest), go);
-    if (p.url) return readUrl(ctx, p.url, go);
+    if (p.url) return readUrl(ctx, p.url, go, null, { part: p.part || '', job: p.job || '' });
     if (p.doc) return readDoc(ctx, p.doc, go);
     const st = ctx.st;
     const out = h('div.vb-view');
@@ -278,12 +278,12 @@
       if (ctx.on('reader')) go('#/olvaso?url=' + encodeURIComponent(clean));
       else { st.addReading({ url: clean, title: VB.url.hostOf(clean) }); url.value = ''; }
     } } }, url, btn(ctx.on('reader') ? 'Olvasás' : 'Listára', { variant: 'primary', icon: ctx.on('reader') ? 'eye' : 'plus', on: { click: () => form.requestSubmit() } }));
-    const items = st.reading().filter(r => show === 'all' || (show === 'read' ? r.read : !r.read));
+    const items = st.reading().filter(r => show === 'all' || (show === 'pdf' ? r.kind === 'pdf' || !!r.part : show === 'read' ? r.read : !r.read));
     out.append(sec('Olvasólista', st.reading().length + ' db · ' + st.reading().filter(r => r.text).length + ' offline mentve', libraryButtons(ctx),
       h('div.vb-stack', null, form,
         ctx.on('reader') ? null : h('p.vb-note', null, ctx.kind === 'mobile' ? 'A telefonon az Olvasó nézet a mentett szöveget mutatja; új oldalt a PC tud letölteni (helyi szerver).' : 'Az Olvasó nézethez a helyi szerver kell (START → W → B).'),
-        h('div.vb-chips', null, [['unread', 'Olvasatlan'], ['read', 'Elolvasott'], ['all', 'Mind']].map(([k, l]) => btn(l, { pressed: show === k, click: () => go('#/olvaso?show=' + k) }))),
-        items.length ? h('div.vb-list', null, items.map(r => row(r.title, r.url, [r.text ? h('span.vb-tag.vb-tag--kind', null, 'offline · ' + Math.max(1, Math.round(r.text.split(/\s+/).length / 200)) + ' perc') : null, ...tagEls(r), h('span.vb-tag', null, when(r.added))],
+        h('div.vb-chips', null, [['unread', 'Olvasatlan'], ['read', 'Elolvasott'], ['pdf', 'Adatlapok'], ['all', 'Mind']].map(([k, l]) => btn(l, { pressed: show === k, click: () => go('#/olvaso?show=' + k) }))),
+        items.length ? h('div.vb-list', null, items.map(r => row(r.title, r.url, [r.kind === 'pdf' ? h('span.vb-tag.vb-tag--kind', null, 'PDF') : null, r.part ? h('span.vb-tag', null, r.part) : null, r.text ? h('span.vb-tag.vb-tag--kind', null, 'offline · ' + Math.max(1, Math.round(r.text.split(/\s+/).length / 200)) + ' perc') : null, ...tagEls(r), h('span.vb-tag', null, when(r.added))],
           () => go('#/olvaso/' + r.id),
           [btn(r.read ? 'Olvasatlannak jelöl' : 'Elolvasottnak jelöl', { iconOnly: true, icon: 'ok', small: true, pressed: r.read, click: () => st.updateReading(r.id, { read: !r.read }) }),
             btn('Eredeti oldal', { iconOnly: true, icon: 'external', small: true, click: () => ctx.open(r.url, { title: r.title, via: 'reading' }) }),
@@ -296,13 +296,13 @@
     if (r.text) {
       const blocks = r.text.split('\n').filter(Boolean).map(line => { const m = /^(#{1,3}) (.*)$/.exec(line); return m ? { t: 'h' + (m[1].length + 1), text: m[2] } : /^• /.test(line) ? { t: 'li', text: line.slice(2) } : { t: 'p', text: line }; });
       if (!r.read) setTimeout(() => ctx.st.updateReading(r.id, { read: true }), 1500);
-      return article(ctx, { title: r.title, url: r.url, site: r.site, blocks, saved: r.saved }, go, r);
+      return article(ctx, { title: r.title, url: r.url, site: r.site, blocks, saved: r.saved, kind: r.kind }, go, r);
     }
     if (ctx.on('reader')) return readUrl(ctx, r.url, go, r);
     return h('div.vb-view', null, sec(r.title, VB.url.display(r.url), null, h('p.vb-note', null, 'Ennek az oldalnak nincs mentett szövege, és itt nincs helyi szerver a letöltéshez.'),
       h('div.vb-actions', null, btn('Eredeti oldal', { variant: 'primary', icon: 'external', click: () => ctx.open(r.url, { title: r.title, via: 'reading' }) }), btn('Vissza', { click: () => go('#/olvaso') }))));
   }
-  function readUrl(ctx, url, go, item) {
+  function readUrl(ctx, url, go, item, link) {
     const box = h('div.vb-view', null, h('div.vb-hero', null, h('span.vk-label', null, 'OLVASÓ NÉZET'), h('h1', null, 'Betöltés…'), h('p', null, VB.url.display(url))));
     ctx.api('/api/reader', { url }, 20000).then(j => {
       box.textContent = '';
@@ -311,7 +311,7 @@
           h('div.vb-actions', null, btn('Eredeti oldal', { variant: 'primary', icon: 'external', click: () => ctx.open(url, { via: 'reader' }) }), btn('Vissza', { click: () => (root.history.length > 1 ? root.history.back() : go('#/olvaso')) }))));
         return;
       }
-      box.append(article(ctx, j, go, item));
+      box.append(article(ctx, Object.assign(j, link || {}), go, item));
     });
     return box;
   }
@@ -335,7 +335,7 @@
       btn('Vissza', { icon: 'arrow-left', small: true, click: () => go('#/olvaso') }),
       a.url ? btn('Eredeti oldal', { icon: 'external', small: true, click: () => ctx.open(a.url, { title: a.title, via: 'reader' }) }) : null,
       a.url && !a.doc ? btn(item && item.text ? 'Mentve offline' : 'Mentés offline', { icon: 'save', small: true, pressed: !!(item && item.text), click: () => {
-        const r = st.addReading({ url: a.url, title: a.title, site: a.site, excerpt: a.excerpt, text: saveText() });
+        const r = st.addReading({ url: a.url, title: a.title, site: a.site, excerpt: a.excerpt, text: saveText(), kind: a.kind, part: a.part || (item && item.part) || '', job: a.job || (item && item.job) || '' });
         toast(r ? 'ok' : 'warn', r ? 'Mentve offline' : 'Nem fér el', r ? 'Az olvasólistán, internet nélkül is olvasható, és a keresőben teljes szövegben.' : 'A tároló megtelt: törölj régi mentett oldalakat.');
       } }) : null,
       a.url ? btn('Könyvjelző', { icon: 'star', small: true, pressed: !!st.bookmark(a.url), click: () => { if (st.addBookmark({ url: a.url, title: a.title })) toast('ok', 'Könyvjelző mentve', a.title); } }) : null,
@@ -345,7 +345,7 @@
       btn('Kisebb betű', { iconOnly: true, icon: 'zoom-out', small: true, click: () => setScale(-0.1) }),
       btn('Nagyobb betű', { iconOnly: true, icon: 'zoom-in', small: true, click: () => setScale(0.1) }));
     body.append(h('h1', null, a.title || VB.url.display(a.url)),
-      h('div.vb-reader__meta', null, a.site ? h('span', null, a.site) : null, a.url ? h('span', null, VB.url.hostOf(a.url)) : null, a.byline ? h('span', null, a.byline) : null, h('span', null, '≈ ' + minutes + ' perc olvasás'),
+      h('div.vb-reader__meta', null, a.site ? h('span', null, a.site) : null, a.url ? h('span', null, VB.url.hostOf(a.url)) : null, a.byline ? h('span', null, a.byline) : null, a.kind === 'pdf' ? h('span', null, 'PDF' + (a.pages ? ' · ' + a.pages + ' oldal' : '')) : null, a.part ? h('a', { href: '#/alkatreszek/' + a.part }, a.part) : null, h('span', null, '≈ ' + minutes + ' perc olvasás'),
         a.saved ? h('span', null, 'mentve ' + when(a.saved)) : null));
     for (const b of a.blocks) {
       const tag = b.t === 'quote' ? 'blockquote' : b.t === 'li' ? 'div' : b.t;
@@ -453,5 +453,6 @@
     return out;
   }
 
-  VB.views = { home, search, bookmarks, history, reader, settings, help, qr, ping };
+  VB.views = { home, search, bookmarks, history, reader, settings, help, qr, ping,
+    kit: { sec, empty, tagEls, row, tile, bookmarkRow, editItem, libraryButtons, confirmDel, readUrl } };
 })(typeof window !== 'undefined' ? window : globalThis);

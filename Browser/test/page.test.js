@@ -135,3 +135,52 @@ test('page served by serve.js (documents, reader, new tab)', { skip, timeout: 60
     assert.deepEqual(errors, []);
   } finally { await browser.close(); server.close(); }
 });
+
+test('page: Phase 2 — a part, its datasheet read and saved for a job, the job exported, a label sheet', { skip, timeout: 90000 }, async () => {
+  const { createServer } = require('../serve.js');
+  const os = require('os');
+  const { makePdf } = require('./make-pdf.js');
+  const PORT = 18818;
+  const jobsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vb-page-jobs-'));
+  fs.mkdirSync(path.join(jobsDir, 'T07_Kitalalt'), { recursive: true });
+  fs.mkdirSync(path.join(jobsDir, '_elozmenyek'), { recursive: true });
+  const pdf = makePdf([['KITALALT adatlap a teszthez', 'Nevleges aram 63 A'], ['Masodik oldal']], { title: 'Kitalalt adatlap' });
+  const guard = { check: u => ({ ok: /^https:\/\//.test(u) }), get: async u => ({ status: 200, url: u, type: 'application/pdf', charset: '', body: pdf }) };
+  const { server } = createServer({ port: PORT, guard, jobsDir, linksFile: '' });
+  await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  const browser = await chromium.launch();
+  try {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    await ctx.route(/^http:\/\/127\.0\.0\.1:(?!18818)\d+\//, r => r.abort());
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto('http://127.0.0.1:' + PORT + '/#/alkatreszek');
+    await page.fill('input[aria-label="Alkatrész keresése"]', 'mistral');
+    await page.locator('.vb-row__title', { hasText: 'Mistral41W' }).first().click();
+    await page.waitForSelector('text=ALKATRÉSZ · VRG-0001');
+    await page.fill('input[aria-label="Munkaszám"]', 't07');
+    await page.click('button:has-text("Olvasás és mentés")');
+    await page.waitForSelector('.vb-reader h1');
+    assert.match(await page.textContent('.vb-reader__meta'), /PDF · 2 oldal/);
+    await page.click('button:has-text("Mentés offline")');
+    const saved = await page.evaluate(() => VB.app.ctx.st.reading()[0]);
+    assert.equal(saved.part, 'VRG-0001'); assert.equal(saved.job, 'T07'); assert.equal(saved.kind, 'pdf');
+    assert.match(saved.text, /KITALALT adatlap/);
+    await page.goto('http://127.0.0.1:' + PORT + '/#/munkak');
+    await page.waitForSelector('.vb-row__title:has-text("T07")');
+    await page.goto('http://127.0.0.1:' + PORT + '/#/munkak/T07');
+    await page.waitForSelector('text=Adatlapok');
+    assert.equal(await page.locator('.vb-row__title', { hasText: 'Kitalalt adatlap' }).count(), 1);
+    await page.click('button:has-text("Exportálás")');
+    await page.waitForFunction(() => /Kiírva/.test(document.body.textContent), null, { timeout: 10000 });
+    const web = path.join(jobsDir, 'T07_Kitalalt', 'web');
+    assert.ok(fs.existsSync(path.join(web, 'INDEX.md')));
+    assert.equal(fs.readdirSync(path.join(web, 'adatlapok')).length, 1, 'the datasheet PDF itself');
+    await page.goto('http://127.0.0.1:' + PORT + '/#/munkak/T07/cimkek');
+    await page.waitForSelector('.vb-label');
+    assert.equal(await page.locator('.vb-label svg path').count(), 1, 'one label, with its QR');
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  } finally { await browser.close(); server.close(); }
+});

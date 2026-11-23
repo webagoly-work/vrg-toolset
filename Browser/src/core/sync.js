@@ -43,9 +43,11 @@
           st.adoptMaster(j, out.length);
           // the first contact may have queued what the master lacked: send it now
           if (st.outbox().length && !again) again = true;
-          set({ ok: true, at: Date.now(), hu: o.kind === 'desktop' ? 'az Asztal könyvjelzőivel együtt' : 'az Asztal könyvjelzőivel együtt (a helyi szerveren át)' });
+          set({ mode: 'master', ok: true, at: Date.now(), hu: o.kind === 'desktop' ? 'az Asztal könyvjelzőivel együtt' : 'az Asztal könyvjelzőivel együtt (a helyi szerveren át)' });
         } catch (e) {
-          set({ ok: false, at: Date.now(), hu: e.code === 'no-master' ? 'ezen a gépen nincs VRG Asztal adat' : 'az Asztal nem érhető el; a változások várnak' });
+          // no Asztal data on this PC at all: the links simply live here (nothing waits for a master that does not exist)
+          if (e.code === 'no-master') set({ mode: 'local', ok: null, at: Date.now(), hu: 'ezen a gépen nincs VRG Asztal adat; a linkek ezen az eszközön vannak' });
+          else set({ ok: false, at: Date.now(), hu: 'az Asztal nem érhető el; a változások várnak' });
         } finally {
           busy = null;
           if (again) { again = false; T.set(run, 50); }

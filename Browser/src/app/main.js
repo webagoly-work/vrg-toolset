@@ -10,8 +10,10 @@
     { id: '', hu: 'Kezdőlap', icon: 'home', view: 'home' },
     { id: 'kereses', hu: 'Keresés', icon: 'search', view: 'search' },
     { id: 'konyvjelzok', hu: 'Könyvjelzők', short: 'Jelzők', icon: 'star', view: 'bookmarks', count: c => c.st.bookmarks().length },
-    { id: 'elozmenyek', hu: 'Előzmények', icon: 'history', view: 'history', count: c => c.st.history().length },
+    { id: 'elozmenyek', hu: 'Előzmények', icon: 'history', view: 'history', wide: true, count: c => c.st.history().length },
     { id: 'olvaso', hu: 'Olvasó', icon: 'list', view: 'reader', count: c => c.st.reading().filter(r => !r.read).length },
+    { id: 'munkak', hu: 'Munkák', icon: 'folder', view: 'jobs', module: 'jobs', count: c => c.st.jobs().length },
+    { id: 'alkatreszek', hu: 'Alkatrészek', short: 'Alkatrész', icon: 'socket', view: 'parts', module: 'parts' },
     { id: 'beallitasok', hu: 'Beállítások', icon: 'settings', view: 'settings' },
     { id: 'sugo', hu: 'Súgó', icon: 'question', view: 'help', wide: true },
   ];
@@ -22,7 +24,7 @@
     const parts = p.split('/').filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch (e) { return x; } });
     const params = {};
     for (const [k, v] of new URLSearchParams(qs || '')) params[k] = v;
-    return { page: parts[0] || '', rest: parts[1] || '', params };
+    return { page: parts[0] || '', rest: parts[1] || '', more: parts[2] || '', params };
   }
 
   function applyLook(ctx) {
@@ -66,6 +68,7 @@
       for (const n of NAV) {
         const narrow = app.classList.contains('vb--narrow');
         if (n.wide && narrow) continue;
+        if (n.module && !ctx.on(n.module)) continue;
         const cnt = n.count ? n.count(ctx) : 0;
         nav.appendChild(h('a', { href: '#/' + n.id, 'aria-current': cur === n.id ? 'page' : null, title: n.hu }, icon(n.icon), h('span', null, narrow && n.short ? n.short : n.hu), cnt ? h('span.vb-count', null, String(cnt)) : null));
       }
@@ -96,7 +99,7 @@
       drawNav(n.id);
       main.textContent = '';
       let view;
-      try { view = VB.views[n.view](ctx, r.params, go, r.rest); }
+      try { view = VB.views[n.view](ctx, r.params, go, r.rest, r.more); }
       catch (e) { console.error(e); view = h('div.vb-view', null, h('div.vb-warn', { 'data-level': 'crit' }, 'Hiba a nézetben: ' + e.message)); }
       main.appendChild(view);
       main.scrollTop = y;

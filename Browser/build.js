@@ -5,7 +5,8 @@
 //   src/index.html            the template; its UI Kit region is kept by shared/vrg-ui-kit/inline.js --sync-app
 //   src/app.css               → <!--@css-->
 //   VB_DATA                   → <!--@data-->: config/engines.json (+ Dashboard/config/search.json's engines),
-//                               config/quicklinks.json, the PC's servers from launcher/vrg-menu.json
+//                               config/quicklinks.json, the PC's servers from launcher/vrg-menu.json, the parts index
+//                               from Inventory/data/vrg-inventory.json (no prices)
 //   src/core/*.js, src/vendor/qr.js, src/app/*.js   → <!--@js-->, in ORDER
 //
 //   node Browser/build.js           write dist/vrg-bongeszo.html
@@ -21,7 +22,7 @@ const REPO = path.resolve(ROOT, '..');
 const OUT = path.join(ROOT, 'dist', 'vrg-bongeszo.html');
 const VERSION = '1.0.0';
 const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/links.js', 'core/store.js', 'core/sync.js', 'core/host.js', 'vendor/qr.js',
-  'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/main.js'];
+  'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/work.js', 'app/main.js'];
 const OWN_SERVER = 'bongeszo';
 
 const read = p => fs.readFileSync(p, 'utf8');
@@ -58,7 +59,22 @@ function data() {
     return { id: s.id, key: s.key, name: twin && rest.length ? name + ' · ' + rest[0] : name, hint: rest.join(' · '), port: s.port, level: userSrv.has(s.id) ? 'user' : 'dev' };
   });
   const quicklinks = json(path.join(ROOT, 'config', 'quicklinks.json')).links;
-  return { version: VERSION, engines, groups: cfg.groups, quicklinks, servers };
+  return { version: VERSION, engines, groups: cfg.groups, quicklinks, servers, parts: parts() };
+}
+
+// T4: the Inventory's catalogue (Inventory/data/vrg-inventory.json, committed product data) as a parts index: what a part is
+// and where its datasheet and product pages are. Never a price (the negotiated prices stay in the Inventory).
+const webOrEmpty = u => (typeof u === 'string' && /^https?:\/\//.test(u) && u.length <= 2000 ? u : '');
+function parts() {
+  let inv;
+  try { inv = json(path.join(REPO, 'Inventory', 'data', 'vrg-inventory.json')); } catch (e) { return []; }
+  return (inv.items || []).filter(i => i && /^VRG-\d{4}$/.test(i.vrg_id)).map(i => {
+    const vendors = Object.entries(i.vendors || {}).map(([v, x]) => ({ v, pn: String((x && x.cikkszam) || '').slice(0, 60), url: webOrEmpty(x && x.termek_link) })).filter(x => x.url);
+    const cat = i.kategoria_javaslat || i.kategoria || {};
+    return { id: i.vrg_id, name: String(i.megnevezes || '').slice(0, 200), brand: String(i.marka_gyarto || '').slice(0, 60),
+      pn: String(i.gyartoi_cikkszam || '').slice(0, 60), gtin: String(i.gtin || '').slice(0, 20), cat: [cat.fo, cat.al].filter(Boolean).join(' / ').slice(0, 120),
+      sheet: webOrEmpty(i.gyartoi_termek_link), vendors };
+  });
 }
 
 function qrModule(src) {

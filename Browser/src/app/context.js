@@ -15,6 +15,8 @@
     { id: 'servers', hu: 'Helyi VRG szerverek', desc: 'A PC szerverei (START → O) a kezdőlapon, futásjelzővel, és a keresőben.', on: true, hosts: ['desktop', 'served', 'file'] },
     { id: 'docs', hu: 'Helyi dokumentumok', desc: 'A repó Markdown dokumentumai a keresőben (a helyi szerveren át, :8812).', on: true, hosts: ['desktop', 'served'] },
     { id: 'reader', hu: 'Olvasó nézet', desc: 'Egy oldal szövege reklám és menü nélkül, offline mentéssel (a helyi szerveren át).', on: true, hosts: ['desktop', 'served'] },
+    { id: 'jobs', hu: 'Munkák', desc: 'Munkánként a linkek, mentett oldalak és adatlapok; exportálás a munka mappájába (helyi szerver), QR-címkék nyomtatása.', on: true },
+    { id: 'parts', hu: 'Alkatrészek', desc: 'A Készlet katalógusa (' + 'cikkszám, gyártó, adatlap): keresés, adatlap az Olvasóban, mentés a cikkhez és a munkához.', on: true },
     { id: 'qr', hu: 'Telefonra', desc: 'QR-kód a címről: a telefon kamerájával beolvasva ott nyílik meg.', on: true, hosts: ['desktop', 'served', 'file', 'web'] },
     { id: 'suggest', hu: 'Webes javaslatok', desc: 'Javaslatok gépelés közben a választott keresőtől. Minden leütés elmegy a keresőhöz, ezért alapból ki van kapcsolva.', on: false, hosts: ['desktop', 'served'] },
   ];
@@ -41,6 +43,7 @@
       for (const hv of st.history('', 3000)) if (!seen.has(st.key(hv.url))) ix.add({ id: 'hi:' + st.key(hv.url), kind: 'hi', title: hv.title || VB.url.display(hv.url), url: hv.url, tags: [], text: '', boost: 0.6 + Math.min(0.6, hv.count / 20), ref: hv });
       if (on('servers')) for (const s of data.servers || []) ix.add({ id: 'srv:' + s.id, kind: 'srv', title: s.name, url: 'http://localhost:' + s.port + '/', tags: ['vrg', 'szerver', 'helyi', String(s.port)], text: s.hint || '', boost: 1.1, ref: s });
       for (const q of data.quicklinks || []) ix.add({ id: 'ql:' + q.url, kind: 'ql', title: q.hu, url: q.url, tags: [], text: '', boost: 0.9, ref: q });
+      if (on('parts')) for (const pt of data.parts || []) ix.add({ id: 'part:' + pt.id, kind: 'part', title: pt.name, url: pt.sheet || '', tags: [pt.id, pt.brand, pt.pn, pt.gtin].filter(Boolean), text: pt.cat, boost: 0.9, ref: pt });
       for (const e of engines) ix.add({ id: 'eng:' + e.id, kind: 'eng', title: e.hu, url: '', tags: (e.bangs || []).map(b => '!' + b).concat(e.bangs || []), text: (data.groups || {})[e.group] || '', boost: 0.8, ref: e });
     }
     st.on(() => { clearTimeout(timer); timer = setTimeout(() => { rebuild(); emit('index'); }, 60); });
@@ -64,6 +67,16 @@
         if (path === '/api/health') serverOk = false;
         return { ok: false, code: 'offline', hu: 'A helyi szerver nem fut (START → O → B, vagy node Browser/serve.js).' };
       } finally { if (t) clearTimeout(t); }
+    }
+    async function post(path, body, ms) {
+      if (caps.api === null) return { ok: false, code: 'host', hu: 'Ezen az eszközön nincs helyi szerver.' };
+      const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const t = ctl ? setTimeout(() => ctl.abort(), ms || 120000) : null;
+      try {
+        const r = await fetch((caps.api || '') + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}), signal: ctl && ctl.signal, credentials: 'omit', cache: 'no-store' });
+        return await r.json();
+      } catch (e) { return { ok: false, code: 'offline', hu: 'A helyi szerver nem fut (START → W → B → S, vagy node Browser/serve.js).' }; }
+      finally { if (t) clearTimeout(t); }
     }
     async function health() { const j = await api('/api/health', null, 2500); emit('server'); return j; }
 
@@ -99,7 +112,7 @@
     }
 
     return {
-      st, data, kind, caps, engines, MODULES, ix, on, available, engine, api, health, open, search, rebuild,
+      st, data, kind, caps, engines, MODULES, ix, on, available, engine, api, post, health, open, search, rebuild,
       serverOk: () => serverOk,
       onChange(f) { listeners.add(f); return () => listeners.delete(f); },
       emit,

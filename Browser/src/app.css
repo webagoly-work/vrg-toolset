@@ -176,3 +176,29 @@ mark { background: var(--vk-accent-soft); color: inherit; border-radius: 2px; }
 .vb-add > summary { cursor: pointer; color: var(--vk-accent); min-height: var(--vk-target-min); display: flex; align-items: center; }
 .vb-add[open] > summary { margin-bottom: var(--vk-space-3); }
 .vb-add > summary:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 2px; }
+
+/* ---- QR labels (Phase 2): a sheet of labels on A4; printing shows the sheet only */
+.vb-labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; background: #ffffff; color: #000000; border: var(--vk-border-w) solid var(--vk-line); }
+.vb-labels[data-size="l"] { grid-template-columns: repeat(2, 1fr); }
+.vb-labels[data-size="s"] { grid-template-columns: repeat(4, 1fr); }
+.vb-label { display: flex; gap: 2mm; align-items: center; height: 37mm; padding: 2mm 3mm; border: 0.2mm dashed #b0b0b0; overflow: hidden; break-inside: avoid; }
+.vb-labels[data-size="l"] .vb-label { height: 74mm; flex-direction: column; justify-content: center; text-align: center; }
+.vb-labels[data-size="s"] .vb-label { height: 29.7mm; gap: 1.5mm; padding: 1.5mm 2mm; }
+.vb-label__qr { flex: none; width: 31mm; height: 31mm; }
+.vb-labels[data-size="l"] .vb-label__qr { width: 48mm; height: 48mm; }
+.vb-labels[data-size="s"] .vb-label__qr { width: 25mm; height: 25mm; }
+.vb-label__qr svg { width: 100%; height: 100%; display: block; }
+.vb-label__txt { display: flex; flex-direction: column; gap: 1mm; min-width: 0; font-family: var(--vk-font-sans); }
+.vb-label__txt b { font-size: 9pt; line-height: 1.2; font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.vb-label__txt span { font-family: var(--vk-font-mono); font-size: 8pt; }
+.vb-label__txt small { font-family: var(--vk-font-mono); font-size: 6.5pt; color: #444444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vb-labels[data-size="s"] .vb-label__txt b { font-size: 7pt; -webkit-line-clamp: 2; }
+@media print {
+  @page { size: A4; margin: 10mm 0; }
+  html, body { background: #ffffff; height: auto; }
+  .vb { display: block; height: auto; }
+  .vb-top, .vb-nav, .vb-status, .vb-noprint, .vk-toast-stack { display: none !important; }
+  .vb-main { overflow: visible; padding: 0; }
+  .vb-view { max-width: none; gap: 0; }
+  .vb-labels { border: 0; width: 210mm; }
+}

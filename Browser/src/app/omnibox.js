@@ -8,7 +8,7 @@
   const VB = root.VB = root.VB || {};
   if (VB.omnibox) return;
   const { h, icon, highlight } = VB.ui;
-  const KIND = { bm: ['star', 'Könyvjelző'], rd: ['list', 'Olvasólista'], hi: ['history', 'Előzmény'], srv: ['server', 'Helyi szerver'], ql: ['link', 'Gyorslink'], eng: ['search', 'Kereső'] };
+  const KIND = { bm: ['star', 'Könyvjelző'], rd: ['list', 'Olvasólista'], hi: ['history', 'Előzmény'], srv: ['server', 'Helyi szerver'], ql: ['link', 'Gyorslink'], eng: ['search', 'Kereső'], part: ['socket', 'Alkatrész'] };
 
   function mount(ctx, el, go) {
     const input = h('input', { type: 'text', id: 'vb-q', role: 'combobox', 'aria-expanded': 'false', 'aria-controls': 'vb-drop', 'aria-autocomplete': 'list',
@@ -93,6 +93,12 @@
         first.push({ icon: 'copy', label: 'Eredmény másolása', hint: answer && answer.copy, run: () => copy(answer && answer.copy) });
       }
       if (answer && answer.copy && c.kind !== 'answer') first.push({ icon: 'copy', label: 'Gyorsválasz másolása: ' + answer.copy, run: () => copy(answer.copy) });
+      // a job code (AB12): the job's page first
+      // first only when this device knows the job (M8 is also a bolt size: Enter must still search for it)
+      if (ctx.on('jobs') && VB.work && VB.work.CODE_RE.test(q.toUpperCase()) && q.length <= 6) {
+        const item = { icon: 'folder', label: 'Munka: ' + q.toUpperCase(), hint: 'linkek, adatlapok, export a munka mappájába', run: () => go('#/munkak/' + q.toUpperCase()) };
+        if (ctx.st.jobs().some(([c]) => c === q.toUpperCase())) first.unshift(item); else first.push(item);
+      }
       groups.push({ label: c.kind === 'url' ? 'Cím' : 'Keresés', items: first });
       if (ctx.on('local') && c.kind !== 'blocked') {
         const hits = ctx.ix.search(c.kind === 'search' && c.bang ? c.q : q, { limit: 7 });
@@ -103,6 +109,7 @@
     function hitItem(d, q) {
       const [ic, what] = KIND[d.kind] || ['link', ''];
       if (d.kind === 'eng') return { icon: ic, label: d.title, mark: q, hint: what + ' · !' + ((d.ref.bangs || [])[0] || '') + ' · Tab: a bang a sor elejére', engine: d.ref, run: () => { input.value = '!' + (d.ref.bangs || [])[0] + ' '; onInput(); input.focus(); } };
+      if (d.kind === 'part') return { icon: ic, label: d.title, mark: q, hint: what + ' · ' + d.ref.id + (d.ref.brand ? ' · ' + d.ref.brand : '') + (d.ref.pn ? ' · ' + d.ref.pn : '') + (d.ref.sheet ? ' · adatlap' : ''), run: () => go('#/alkatreszek/' + d.ref.id) };
       if (d.kind === 'rd') return { icon: ic, label: d.title, mark: q, hint: what + (d.ref.text ? ' · mentve, offline is' : '') + ' · ' + VB.url.display(d.url), run: () => go('#/olvaso/' + d.ref.id) };
       return { icon: ic, label: d.title, mark: q, hint: what + ' · ' + VB.url.display(d.url), run: () => ctx.open(d.url, { title: d.title, via: 'omni:' + d.kind }) };
     }

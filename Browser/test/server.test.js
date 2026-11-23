@@ -122,7 +122,8 @@ async function withServer(fn) {
     check: u => (/^https:\/\/ok\.example\//.test(u) || /^https:\/\/(pdf|empty)\.example\//.test(u) ? { ok: true } : { ok: false, code: 'address', hu: 'Helyi cím.' }),
     get: async u => {
       calls.push(u);
-      if (u.startsWith('https://pdf.')) return { status: 200, url: u, type: 'application/pdf', charset: '', body: Buffer.from('%PDF') };
+      if (u.startsWith('https://pdf.example/broken')) return { status: 200, url: u, type: 'application/pdf', charset: '', body: Buffer.from('%PDF-1.4 broken') };
+      if (u.startsWith('https://pdf.')) return { status: 200, url: u, type: 'application/octet-stream', charset: '', body: require('./make-pdf.js').makePdf([['KITALALT adatlap T-01', 'Nevleges aram 63 A'], ['Meretek 250 x 300 mm']], { title: 'T-01 adatlap' }) };
       if (u.startsWith('https://empty.')) return { status: 200, url: u, type: 'text/html', charset: 'utf-8', body: Buffer.from('<script>x</script>') };
       return { status: 200, url: u, type: 'text/html', charset: 'iso-8859-2', body: Buffer.from('<title>Teszt</title><p>' + 'Hosszú magyar szöveg itt. '.repeat(3) + String.fromCharCode(0xf5) + '</p>', 'latin1') };
     },
@@ -154,9 +155,17 @@ test('serve: the reader through the guard', () => withServer(async (get, calls) 
   assert.equal(r.json.title, 'Teszt');
   assert.match(r.json.blocks[0].text, /ő$/, 'the page charset is honoured');
   assert.equal((await get('/api/reader?url=' + encodeURIComponent('http://127.0.0.1:22/'))).json.code, 'address');
-  assert.equal((await get('/api/reader?url=' + encodeURIComponent('https://pdf.example/a.pdf'))).json.code, 'pdf');
+  const pdf = await get('/api/reader?url=' + encodeURIComponent('https://pdf.example/a.pdf'));
+  if (require('../lib/pdftext.js').available()) {
+    assert.equal(pdf.json.ok, true, JSON.stringify(pdf.json));
+    assert.equal(pdf.json.kind, 'pdf', 'recognised by its bytes even as octet-stream');
+    assert.equal(pdf.json.title, 'T-01 adatlap');
+    assert.equal(pdf.json.pages, 2);
+    assert.deepEqual(pdf.json.blocks.map(b => b.t + ':' + b.text), ['h3:1. oldal', 'p:KITALALT adatlap T-01 Nevleges aram 63 A', 'h3:2. oldal', 'p:Meretek 250 x 300 mm']);
+    assert.equal((await get('/api/reader?url=' + encodeURIComponent('https://pdf.example/broken.pdf'))).json.code, 'pdf-bad');
+  } else assert.equal(pdf.json.code, 'pdf-lib', 'without Vendor/pdfjs the reader says how to fetch it');
   assert.equal((await get('/api/reader?url=' + encodeURIComponent('https://empty.example/'))).json.code, 'empty');
-  assert.deepEqual(calls, ['https://ok.example/cikk', 'https://pdf.example/a.pdf', 'https://empty.example/'], 'a refused URL is never fetched');
+  assert.ok(!calls.some(u => u.startsWith('http://127.0.0.1')), 'a refused URL is never fetched');
 }));
 test('serve: documents and suggestions', () => withServer(async get => {
   const d = await get('/api/docs?q=' + encodeURIComponent('feszültségesés'));

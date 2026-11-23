@@ -44,8 +44,8 @@ half-read. `Browser/src/core/links.js` implements it; `Browser/test/links.test.j
 |---|---|---|
 | **T1** | **One links format.** The app's store keeps `vrg.web-links` v1; the Desktop's `web.json` is the master: in the Asztal the app reads and writes it through main (`vrg-app://browser/__vrg/links`, the browser app's origin only), from `serve.js` through an inbox the Desktop absorbs; the phone syncs by file. Export / import is the v1 file. | **1** |
 | **T2** | **The Desktop pane gets the brain.** The app's pure core (`url.js`, `answers.js`) inside the Böngésző pane's omnibox (`shell/lib/search.js`: bangs from `Browser/config/engines.json`, Tiszta link, a link with credentials refused) and Gyorsválasz in the Ctrl+K palette. | **1** |
-| T3 | **Work-context browsing.** A per-job view (links, saved datasheets, quotes, research by job code), exported into `jobs\<code>\web\`, the Workflow Kit and the Map / Weather job layers. Job codes only. | 2 |
-| T4 | **Datasheets and parts.** PDF in the reader (`Vendor/pdfjs`, legacy build), saved offline, attached to Inventory items; a cabinet label's QR opens the datasheet on the phone; supplier pages feed Inventory's price check. | 2 |
+| **T3** | **Work-context browsing.** A per-job view (links, saved datasheets, quotes, research by job code), exported into `jobs\<code>\web\`, the Workflow Kit and the Map / Weather job layers. Job codes only. | 2 |
+| **T4** | **Datasheets and parts.** PDF in the reader (`Vendor/pdfjs`, legacy build), saved offline, attached to Inventory items; a cabinet label's QR opens the datasheet on the phone; supplier pages feed Inventory's price check. | 2 |
 | T5 | **Knowledge and AI.** Saved pages as VRG Stack nodes; "Küldés Claude-nak" (the kit's `context-tray`) to the Desktop chat pane; a research mode writing sourced notes; the docs index as a source of Belső keresés. | 3 |
 | T6 | **Watching the web.** Page-change watches (NJT, MEKH, standards, prices) as Feed pane presets (WP-29), alerts to Mobile M10. | 3 |
 | T7 | **Real browsing on the phone** (BRW-Q04). The confined WebView `web` window of PARITY row 23 / M20, keeping the contract and writing `vrg.web-links`. | 4 |
@@ -79,9 +79,40 @@ own bookmark and visit land in the inbox); `Dashboard/test/wp-50.test.js` 5; `wp
 4. Ctrl+K → `230V 16A` shows 3,68 kW above the rows; Ctrl+Enter copies it.
 5. START W → B → S, then the app at :8812 with the Asztal running: a bookmark added there reaches the pane within 30 s.
 
-**⏸ Next: Phase 2 (T3 work context, T4 datasheets and parts).**
+## Phase 2 (T3 + T4) — built 2026-11-23
+
+**T3 · work context.** The job code is the toolset's own (`AB12`, `^[A-Z]{1,3}\d{1,3}$`; the first release had used the UI
+kit's sample shape, still read). New pages: **Munkák** (the codes of this device's links plus the PC's jobs from
+`/api/jobs`, codes and status only) and one job's page (its links, datasheets, saved pages; Térképen; Mentés fájlba for that
+job; QR-címkék; **Exportálás a munka mappájába**: `<job folder>\web\` gets `links.json`, `INDEX.md`, `olvaso\*.md` and,
+when asked, `adatlapok\*.pdf`). `Browser/lib/jobs.js`: the folder is `jobs\<CODE>_*` or `jobs\_elozmenyek\<CODE>`; a code
+without a folder is refused; the reply never names the folder; reading the Map's `helyek.json` is logged as its rule asks.
+
+**T4 · datasheets and parts.** `build.js` bakes the Inventory's 221 parts (`Inventory/data/vrg-inventory.json`: id, name,
+brand, part number, GTIN, category, the manufacturer link (164, 117 of them a PDF) and the vendor product pages; no
+prices). **Alkatrészek**: search and categories; a part's card reads its datasheet in the Olvasó and saves it offline with
+the part id and a job code; vendor pages; supplier searches for its part number; its QR label. The reader reads **PDF**
+(`Browser/lib/pdftext.js`, pdf.js legacy build from `Vendor/`, text only, by page; up to 20 MB). Labels: A4 sheets,
+3 × 8 / 2 × 4 / 4 × 10, print shows the sheet only. The Inventory app itself is not changed: the link lives on the browser's
+side (a reading item's `part`), the Inventory can read it later from the export.
+
+Tests: `node Browser/test/run.js` 55 (+ `jobs.test.js`: codes only, the log line, the folder rule, the export's files, the
+routes' write rules and the Asztal origin's preflight; the reader reads an invented PDF; the page test walks part →
+datasheet read and saved for T07 → job → export with the PDF → label sheet). `Mobile/tests/apps-phone.js` 38 ok.
+
+**Check on the PC** (not reproducible in the cloud session):
+
+1. Once: `node tools/fetch-vendor.js pdfjs`. Then START W → B → S, Alkatrészek → a part with an ABB or Schneider datasheet →
+   Olvasás és mentés: the PDF's text, by page.
+2. Munkák: the PC's job codes appear (and nothing but codes and status); one job → Exportálás (with PDFs): the job's folder
+   has `web\INDEX.md`, `links.json`, `olvaso\`, `adatlapok\`; `_elozmenyek\helyek-log.jsonl` has a `"via":"bongeszo"` line.
+3. QR-címkék → Nyomtatás on a 3 × 8 label sheet; the phone's camera opens the datasheet from a printed label.
+4. In the Asztal (with :8812 running) the same export works from the in-shell app.
+
+**⏸ Next: Phase 3 (T5 knowledge and AI, T6 watching the web).**
 
 ## LOG
 
 - 2026-11-23 — review, BRW-Q01…Q04 = A, Phase 1 started.
 - 2026-11-23 — Phase 1 built (T1 + T2); ⏸ before Phase 2.
+- 2026-11-23 — Phase 2 built (T3 + T4); ⏸ before Phase 3.
