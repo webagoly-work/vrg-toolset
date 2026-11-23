@@ -61,7 +61,7 @@ class WatchService : Service() {
         server = PhoneServer(this) { on -> if (on) PhoneRing.ring(this) else PhoneRing.stop(this) }.also {
             if (!it.open()) VrgLog.w(Watch.LOG, "phone GATT server did not open")
         }
-        link = WatchLink(this, ::ready, ::frame, ::down)
+        link = WatchLink(this, ::ready, ::frame, ::down, ::waiting)
         connect()
     }
 
@@ -112,6 +112,17 @@ class WatchService : Service() {
 
     private val retry = Runnable { connect() }
 
+    /** Android holds a background connect for the remembered watch: no retry timer (it would stop in deep sleep anyway). */
+    private fun waiting(why: String) {
+        Watch.clearDevice()
+        if (!running) return
+        main.removeCallbacks(retry)
+        backoff = FIRST_BACKOFF
+        Watch.note.value = "$why · háttérben várom: amint az óra elérhető, magától kapcsolódik"
+        Watch.link.value = Watch.Link.WAITING
+        refresh()
+    }
+
     // ---- what the screen asks for --------------------------------------------------------------------------------
 
     private fun timeSync() {
@@ -119,6 +130,13 @@ class WatchService : Service() {
         session.timeSync().forEach { l.send(it) }
         server?.notifyTime()
         Watch.lastTimeSync.value = System.currentTimeMillis()
+    }
+
+    private fun reconnectNow() {
+        if (!running || link?.isReady == true) return
+        main.removeCallbacks(retry)
+        backoff = FIRST_BACKOFF
+        connect()
     }
 
     private fun readAll() { link?.takeIf { it.isReady }?.let { l -> session.refresh().forEach { l.send(it) } } }
@@ -186,6 +204,8 @@ class WatchService : Service() {
         fun timeSync() { self?.timeSync() }
         fun readAll() { self?.readAll() }
         fun findWatch(on: Boolean) { self?.findWatch(on) }
+        /** Try now (after a permission was granted or the watch was forgotten), resetting the back-off. */
+        fun reconnect() { self?.reconnectNow() }
 
         fun openIntent(ctx: Context): PendingIntent = PendingIntent.getActivity(ctx, 0,
             Intent(Intent.ACTION_VIEW, Uri.parse("vrg://watch")).setPackage(ctx.packageName)

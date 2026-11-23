@@ -35,6 +35,8 @@ class WatchLink(
     private val onReady: () -> Unit,
     private val onFrame: (Decoded) -> Unit,
     private val onDown: (String) -> Unit,
+    /** The link is down but Android keeps a background connect open for the remembered watch (no timer needed). */
+    private val onWaiting: (String) -> Unit = onDown,
 ) {
     companion object {
         fun uuid16(x: Int): UUID = UUID.fromString("0000%04x-0000-1000-8000-00805f9b34fb".format(x))
@@ -57,6 +59,7 @@ class WatchLink(
     private var mtu = 23
     private var ready = false
     private var scanning = false
+    private var background = false
     private val reasm = Reassembler()
 
     private sealed class Op {
@@ -82,7 +85,10 @@ class WatchLink(
             Watch.remember(ctx, d.address)
             connect(d); return
         }
-        if (address != null) { connect(adapter.getRemoteDevice(address)); return }
+        if (address != null) { connect(leDevice(adapter, address)); return }
+        // Without location permission Android hands this app's scans no results at all (BLUETOOTH_SCAN is declared
+        // without neverForLocation for Tárgykereső and Csipogó; seen on the Xiaomi 2026-11-23: 0 results in 10 scans).
+        if (!Watch.canScan(ctx)) return onDown(Watch.NEED_LOCATION)
         val scanner = adapter.bluetoothLeScanner ?: return onDown("nincs BLE kereső")
         Watch.link.value = Watch.Link.SEARCHING
         scanning = true
@@ -129,17 +135,51 @@ class WatchLink(
         runCatching { ctx.getSystemService(BluetoothManager::class.java)?.adapter?.bluetoothLeScanner?.stopScan(scanCb) }
     }
 
+    /**
+     * The remembered address as an LE device of the right address type. After a phone restart Android no longer knows
+     * that the Q71's CB:… is a random static address; getRemoteDevice() then takes it for a public one and the connect
+     * never lands (seen 2026-11-23: every connect timed out with the watch beside the phone).
+     */
+    private fun leDevice(adapter: android.bluetooth.BluetoothAdapter, address: String): BluetoothDevice {
+        val randomStatic = runCatching { (address.substring(0, 2).toInt(16) and 0xC0) == 0xC0 }.getOrDefault(false)
+        return if (Build.VERSION.SDK_INT >= 33 && randomStatic)
+            runCatching { adapter.getRemoteLeDevice(address, BluetoothDevice.ADDRESS_TYPE_RANDOM) }.getOrNull() ?: adapter.getRemoteDevice(address)
+        else adapter.getRemoteDevice(address)
+    }
+
     private fun connect(d: BluetoothDevice) {
         Watch.link.value = Watch.Link.CONNECTING
+        background = false
         VrgLog.i(Watch.LOG, "connect ${d.address} (LE, no bond)")
         gatt = runCatching { d.connectGatt(ctx, false, callback, BluetoothDevice.TRANSPORT_LE) }.getOrNull()
             ?: return onDown("a kapcsolódás nem indult")
         main.postDelayed(connectTimeout, CONNECT_MS)
     }
 
-    private val connectTimeout = Runnable { if (!ready) fail("nem válaszolt időben") }
+    /**
+     * Hand the remembered watch to Android's background connect (autoConnect): the Bluetooth chip links it whenever it
+     * shows up, also while the phone sleeps, with no scan, no location and no timer in this app.
+     */
+    private fun waitInBackground(d: BluetoothDevice, why: String) {
+        main.removeCallbacks(connectTimeout)
+        gatt?.let { runCatching { it.disconnect() }; runCatching { it.close() } }
+        ready = false; queue.clear(); busy = null; readQueued = false; reasm.reset()
+        rx = null; tx = null; alert = null
+        background = true
+        VrgLog.i(Watch.LOG, "wait in background for ${d.address}: $why")
+        gatt = runCatching { d.connectGatt(ctx, true, callback, BluetoothDevice.TRANSPORT_LE) }.getOrNull()
+        if (gatt == null) { background = false; return fail("a háttér-kapcsolódás nem indult") }
+        onWaiting(why)
+    }
+
+    private val connectTimeout = Runnable {
+        if (ready) return@Runnable
+        val d = gatt?.device
+        if (d != null && Watch.address(ctx) != null) waitInBackground(d, "nem válaszolt időben") else fail("nem válaszolt időben")
+    }
 
     fun close() {
+        background = false
         stopScan()
         main.removeCallbacks(connectTimeout)
         ready = false
@@ -203,7 +243,12 @@ class WatchLink(
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     VrgLog.i(Watch.LOG, "connected, status $status")
                     if (!g.requestMtu(MTU)) g.discoverServices()
-                } else fail("a kapcsolat megszakadt (status $status)")
+                } else {
+                    val d = g.device
+                    val why = "a kapcsolat megszakadt (status $status)"
+                    // a dropped link to the remembered watch goes straight back to the background connect
+                    if (!background && Watch.address(ctx) != null) waitInBackground(d, why) else fail(why)
+                }
             }
         }
 

@@ -75,6 +75,8 @@ object WatchFeature : VrgFeature {
         val synced by Watch.lastTimeSync.collectAsStateWithLifecycle()
         val note by Watch.note.collectAsStateWithLifecycle()
         var allowed by remember { mutableStateOf(Watch.allowed(ctx)) }
+        var canScan by remember { mutableStateOf(Watch.canScan(ctx)) }
+        val remembered = Watch.address(ctx)
         var bgFree by remember { mutableStateOf(Watch.backgroundFree(ctx)) }
         var autostart by remember { mutableStateOf(BackgroundSettings.autostart(ctx)) }
         var sureForget by remember { mutableStateOf(false) }
@@ -84,6 +86,10 @@ object WatchFeature : VrgFeature {
         LaunchedEffect(link) { _activity.value = if (ready) MiniStatus.running() else MiniStatus.IDLE }
         val askBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { allowed = Watch.allowed(ctx) }
         val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            canScan = Watch.canScan(ctx)
+            if (canScan) WatchService.reconnect()
+        }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
@@ -95,6 +101,11 @@ object WatchFeature : VrgFeature {
                 Text("Az órához Bluetooth engedély kell (Android 9–11-en helymeghatározás).", style = Melyviz.small.copy(color = Melyviz.coral))
                 VrgChip("Engedélyezés", selected = true) { askBt.launch(Watch.permissions()) }
             }
+            if (remembered == null && !canScan) Column(Modifier.padding(top = 6.dp)) {
+                Text("Az óra első megkereséséhez helymeghatározási engedély is kell (csak a kereséshez; a megjegyzett órához " +
+                    "nélküle is visszakapcsolódik).", style = Melyviz.small.copy(color = Melyviz.coral))
+                VrgChip("Helymeghatározás engedélyezése", selected = true) { askLocation.launch(Watch.locationPermissions) }
+            }
 
             VrgSectionTitle("Kapcsolat")
             VrgToggle("Kapcsolat az órával", on) { want ->
@@ -103,8 +114,9 @@ object WatchFeature : VrgFeature {
                     if (Watch.allowed(ctx)) WatchService.start(ctx) else askBt.launch(Watch.permissions())
                 } else WatchService.stop(ctx)
             }
-            Text("Előtte állítsd le a FunDo appot (Beállítások → Alkalmazások → FunDo → Kényszerített leállítás), mert ketten " +
-                "elveszik egymás elől az óra üzeneteit. Párosítani nem kell: a FunDo sem párosítja.", style = Melyviz.small)
+            Text("Előtte kapcsold ki a FunDo-t (Beállítások → Alkalmazások → FunDo → Letiltás, vagy vedd el az értesítés-" +
+                "hozzáférését): a kényszerített leállítás nem elég, az Android azonnal újraindítja, és ketten elveszik egymás " +
+                "elől az óra üzeneteit. Párosítani nem kell: a FunDo sem párosítja.", style = Melyviz.small)
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
             if (on) Text("A telefon saját szervere (telefonkereséshez): ${if (serverUp) "fut" else "nem indult"}",
                 style = Melyviz.readout.copy(color = if (serverUp) Melyviz.kelp else Melyviz.coral))
@@ -178,7 +190,7 @@ object WatchFeature : VrgFeature {
             Watch.address(ctx)?.let { addr ->
                 Text("megjegyzett óra: $addr", style = Melyviz.readout)
                 VrgChip(if (sureForget) "Biztosan elfelejtem" else "Elfelejtés (újrakeresés)", selected = sureForget) {
-                    if (!sureForget) sureForget = true else { Watch.remember(ctx, null); sureForget = false }
+                    if (!sureForget) sureForget = true else { Watch.remember(ctx, null); sureForget = false; WatchService.reconnect() }
                 }
             }
 
@@ -191,7 +203,7 @@ object WatchFeature : VrgFeature {
             ).forEach { Text("• $it", style = Melyviz.small, modifier = Modifier.padding(vertical = 2.dp)) }
             Spacer(Modifier.height(24.dp))
         }
-        LaunchedEffect(Unit) { while (true) { allowed = Watch.allowed(ctx); bgFree = Watch.backgroundFree(ctx); autostart = BackgroundSettings.autostart(ctx); delay(2_000) } }
+        LaunchedEffect(Unit) { while (true) { allowed = Watch.allowed(ctx); canScan = Watch.canScan(ctx); bgFree = Watch.backgroundFree(ctx); autostart = BackgroundSettings.autostart(ctx); delay(2_000) } }
     }
 
     private fun clock(ms: Long) = SimpleDateFormat("HH:mm:ss", Locale("hu")).format(Date(ms))

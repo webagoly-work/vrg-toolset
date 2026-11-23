@@ -54,6 +54,17 @@ object Watch {
 
     fun allowed(ctx: Context) = permissions().all { ctx.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
+    /**
+     * The first search needs location too: the app's BLUETOOTH_SCAN carries no neverForLocation (Tárgykereső and
+     * Csipogó need the signal strength), and Android then gives an app without location no scan results at all.
+     * Only the search needs it; a remembered watch reconnects without it.
+     */
+    val locationPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+
+    fun canScan(ctx: Context) = ctx.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+    const val NEED_LOCATION = "az óra kereséséhez helymeghatározási engedély kell (Óra → Helymeghatározás engedélyezése)"
+
     fun clearDevice() {
         version.value = null; info.value = null; steps.value = null; addresses.value = null
         watchRinging.value = false
