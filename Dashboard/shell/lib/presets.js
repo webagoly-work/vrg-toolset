@@ -9,8 +9,8 @@
 const fs = require('fs'), path = require('path');
 const { textify, title: pageTitle, decode } = require('./textify.js');
 
-const KINDS = ['stack-drift', 'git-status', 'ports', 'devlog-waiting', 'mail-query', 'rss', 'atom', 'page-text', 'search'];
-const NETWORK = ['rss', 'atom', 'page-text'];
+const KINDS = ['stack-drift', 'git-status', 'ports', 'devlog-waiting', 'mail-query', 'rss', 'atom', 'page-text', 'page-watch', 'search'];
+const NETWORK = ['rss', 'atom', 'page-text', 'page-watch'];
 const ID_RE = /^[a-z0-9_-]{1,40}$/i;
 const MIN_EVERY = 15, MAX_FEED_ITEMS = 20, PAGE_CHARS = 2000, MAX_ITEMS = 200, BODY_MAX = 1024 * 1024, FETCH_MS = 15000;
 const NOT_ALLOWED = host => 'A gazdagép nincs engedélyezve: ' + host;
@@ -36,6 +36,24 @@ function validate(p) {
   if (Array.isArray(p.sections)) o.sections = p.sections.filter(n => Number.isInteger(n) && n >= 1 && n <= 99).slice(0, 20);
   if (NETWORK.includes(o.kind) && !isHttp(o.url)) return { err: 'bad url' };
   return o;
+}
+
+// page-watch (T6 of the VRG Böngésző, docs/browser/TRAJECTORIES.md): a page's readable text as lines, compared with the last run.
+// lines(text) → the normalised lines (≤ 600, each ≤ 240 chars); compare(prev, next) → { added, removed } (the lines only one side has)
+function watchLines(text) {
+  const out = [], seen = new Set();
+  for (const raw of String(text || '').split(/\n+/)) {
+    const l = raw.replace(/\s+/g, ' ').trim().slice(0, 240);
+    // dates, times and counters change on every load without the page changing: lines that are only that are left out
+    if (l.length < 3 || /^[\d\s.:/,-]+$/.test(l) || seen.has(l)) continue;
+    seen.add(l); out.push(l);
+    if (out.length >= 600) break;
+  }
+  return out;
+}
+function watchCompare(prev, next) {
+  const a = new Set(prev || []), b = new Set(next || []);
+  return { added: (next || []).filter(l => !a.has(l)), removed: (prev || []).filter(l => !b.has(l)) };
 }
 
 // the `##` sections of DRIFT.md, first `max` bullets (or table rows) each
@@ -171,6 +189,24 @@ function createPresets({ jobs, sources = {}, fetch = globalThis.fetch, execFile 
       const html = await get(p.url, allow);
       return [{ hu: pageTitle(html) || new URL(p.url).hostname, detail: textify(html).slice(0, PAGE_CHARS) }];
     },
+    // the page's readable text (Browser/lib/reader.js) against the last run's; a change rings the phone through sources.notify
+    'page-watch': async (p, allow, prev) => {
+      const html = await get(p.url, allow);
+      let title = pageTitle(html) || new URL(p.url).hostname, text = '';
+      try { const R = require(path.join(__dirname, '..', '..', '..', 'Browser', 'lib', 'reader.js')); const x = R.extract(html, p.url, { minPara: 3 }); text = x.text; title = x.title || title; } catch (e) { text = textify(html); }
+      const lines = watchLines(text);
+      const before = prev && prev.state && Array.isArray(prev.state.lines) ? prev.state.lines : null;
+      const at = now();
+      if (!before) return { items: [{ hu: 'Figyelés indult: ' + title, detail: lines.length + ' sor rögzítve; a következő futás ehhez hasonlít.', link: p.url, open: 'url:@' }], state: { lines, since: at, changedAt: 0 } };
+      const d = watchCompare(before, lines);
+      if (!d.added.length && !d.removed.length) {
+        const ch = prev.state.changedAt;
+        return { items: [{ hu: 'Nem változott: ' + title, detail: ch ? 'Utolsó változás: ' + new Date(ch).toISOString().slice(0, 16).replace('T', ' ') : 'Nem változott, amióta figyelem.', link: p.url, open: 'url:@' }], state: Object.assign({}, prev.state, { lines }) };
+      }
+      const detail = [d.added.length ? '+ ' + d.added.length + ' új sor: ' + d.added.slice(0, 3).join(' · ') : '', d.removed.length ? '− ' + d.removed.length + ' eltűnt: ' + d.removed.slice(0, 2).join(' · ') : ''].filter(Boolean).join('\n');
+      if (sources.notify) { try { sources.notify({ title: 'Változott: ' + title, text: detail.slice(0, 480), link: p.url, level: 'info' }); } catch (e) {} }
+      return { items: [{ hu: 'Változott: ' + title, detail, link: p.url, open: 'url:@' }], state: { lines, since: prev.state.since, changedAt: at } };
+    },
     'search': async p => [{ hu: clip(p.q || p.hu, 200), open: 'srch:' + (p.provider || 'google') + ':' + (p.q || '') }],
   };
   KIND.atom = KIND.rss;                                           // parseFeed reads both <item> and <entry>
@@ -184,7 +220,8 @@ function createPresets({ jobs, sources = {}, fetch = globalThis.fetch, execFile 
     busy.add(id);
     const rec = { pre: id, at: now(), items: [] };
     try {
-      const items = await KIND[p.kind](p, load().allowHosts);
+      let items = await KIND[p.kind](p, load().allowHosts, cache.get(id));
+      if (items && !Array.isArray(items)) { if (items.state) rec.state = items.state; items = items.items || []; }   // a kind that keeps state between runs
       rec.items = items.slice(0, MAX_ITEMS).map((it, i) => {
         const o = { hu: clip(it.hu, 300) };
         if (it.detail) o.detail = clip(it.detail, 2100);
@@ -192,7 +229,11 @@ function createPresets({ jobs, sources = {}, fetch = globalThis.fetch, execFile 
         if (it.open) o.open = it.open === 'url:@' ? 'url:' + i : String(it.open);
         return o;
       });
-    } catch (e) { rec.error = e && e.hu ? e.hu : 'A lekérés nem sikerült.'; log('preset failed', id); }
+    } catch (e) {
+      rec.error = e && e.hu ? e.hu : 'A lekérés nem sikerült.'; log('preset failed', id);
+      const old = cache.get(id);
+      if (old && old.state) rec.state = old.state;                // a failed run keeps what the watch had seen
+    }
     busy.delete(id);
     cache.set(id, rec);
     writeCache();
@@ -251,4 +292,4 @@ async function runPalette(id) {
   return r.ok ? { ok: true, hu: 'Frissítés elindítva', en: 'refresh started' } : { ok: false, hu: r.hu, en: r.err };
 }
 
-module.exports = { createPresets, validate, driftItems, parsePorcelain, parseFeed, bind, paletteItems, run: runPalette, KINDS, MIN_EVERY };
+module.exports = { watchLines, watchCompare, createPresets, validate, driftItems, parsePorcelain, parseFeed, bind, paletteItems, run: runPalette, KINDS, MIN_EVERY };

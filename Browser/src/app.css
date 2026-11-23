@@ -202,3 +202,12 @@ mark { background: var(--vk-accent-soft); color: inherit; border-radius: 2px; }
   .vb-view { max-width: none; gap: 0; }
   .vb-labels { border: 0; width: 210mm; }
 }
+
+/* ---- Kutatás (Phase 3) */
+.vb-quote-btn { position: fixed; z-index: var(--vk-z-popover); right: var(--vk-space-6); bottom: calc(var(--vk-space-6) + 40px); box-shadow: var(--vk-shadow-overlay); }
+.vb-quote-btn[hidden] { display: none; }
+.vb--narrow .vb-quote-btn { right: var(--vk-space-3); bottom: 96px; }
+.vb-quote { margin: 0; padding-left: var(--vk-space-4); border-left: 3px solid var(--vk-accent-line); white-space: pre-wrap; }
+.vb-md { margin: 0; padding: var(--vk-space-4); max-height: 420px; overflow: auto; font-family: var(--vk-font-mono); font-size: var(--vk-fs-sm); white-space: pre-wrap;
+  background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); }
+button.vb-tag { background: none; cursor: pointer; font: inherit; font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); }

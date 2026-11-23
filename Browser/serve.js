@@ -13,6 +13,9 @@
 //   /api/jobs              T3: the job codes with status and period (lib/jobs.js; never a folder name or an address)
 //   /api/jobs/<CODE>/export  POST { bookmarks, reading, pdfs } → <the job's folder>\web: links.json, INDEX.md, olvaso\*.md,
 //                          adatlapok\*.pdf (own page or the Asztal's app origin, JSON only)
+//   /api/watch             T6: GET the page watches (with their last result); POST { url, hu, every } adds one, { remove: id }
+//                          drops one — in the Asztal's <userDir>/presets.json (lib/watch.js); the Asztal runs them
+//   /api/research          T5: POST { title, md, job? } → docs/research/web/<date>_<title>.md (or the job's web\kutatas\)
 //   /api/links             T1 (BRW-Q01): GET the master bookmarks and history (the Asztal's web.json + the waiting inbox) as
 //                          vrg.web-links v1; POST { ops } adds them to web.json.inbox, which the Asztal absorbs (it holds
 //                          web.json in memory, so this server never writes the master itself). POST: own page, JSON only.
@@ -35,15 +38,17 @@ const { createSuggest } = require('./lib/suggest');
 const reader = require('./lib/reader');
 const { pdfText } = require('./lib/pdftext');
 const links = require('./src/core/links');
-const { createJobs } = require('./lib/jobs');
+const { createJobs, slug: jobSlug } = require('./lib/jobs');
+const { createWatch } = require('./lib/watch');
 
 const VERSION = '1.0.0';
 const DIST = path.join(__dirname, 'dist', 'vrg-bongeszo.html');
 const REPO = path.resolve(__dirname, '..');
 // the master links (T1, BRW-Q01): the VRG Asztal's <userDir>/web.json (Dashboard/shell/lib/paths.js, never created from here)
-function deskLinksFile() {
-  try { const p = require('../Dashboard/shell/lib/paths.js'); return path.join(p.home(), p.user(), 'web.json'); } catch (e) { return ''; }
+function deskUserDir() {
+  try { const p = require('../Dashboard/shell/lib/paths.js'); return path.join(p.home(), p.user()); } catch (e) { return ''; }
 }
+function deskLinksFile() { const d = deskUserDir(); return d ? path.join(d, 'web.json') : ''; }
 
 function createServer(opts) {
   const o = opts || {};
@@ -54,6 +59,36 @@ function createServer(opts) {
   const page = o.page || DIST;
   const linksFile = o.linksFile === undefined ? deskLinksFile() : o.linksFile;
   const jobs = o.jobs || createJobs({ dir: o.jobsDir, guard });
+  const watch = o.watch || createWatch({ dir: o.deskDir === undefined ? deskUserDir() : o.deskDir, check: u => guard.check(u) });
+  const repo = o.repo || REPO;
+  // T5: a research note (Kutatás) — a general one into the repo's docs/research/web/ (it becomes searchable here at once and
+  // part of the VRG Stack once committed), a job's one into that job's folder (web\kutatas\), never into git
+  function writeResearch(j) {
+    const title = String((j && j.title) || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 200);
+    const md = String((j && j.md) || '');
+    if (!title || !md.trim() || md.length > 400000) return { ok: false, code: 'bad', hu: 'Üres vagy túl hosszú jegyzet.' };
+    const day = new Date().toISOString().slice(0, 10);
+    const base = day + '_' + jobSlug(title, title).replace(/-[0-9a-f]{6}$/, '');
+    let dir, shown;
+    if (j.job) {
+      const home = jobs.folderOf(String(j.job));
+      if (!home) return { ok: false, code: 'no-folder', hu: 'A ' + String(j.job).slice(0, 8) + ' munkának nincs mappája.' };
+      dir = path.join(home, 'web', 'kutatas'); shown = String(j.job) + '\\web\\kutatas\\';
+    } else {
+      // the repo goes to GitHub: a note that names one of this PC's jobs belongs in that job's folder (job codes are client data)
+      const known = (() => { const l = jobs.list(); return l.ok ? l.jobs.map(x => x.code) : []; })();
+      const hit = known.find(c => new RegExp('(^|[^A-Za-z0-9])' + c + '(?![0-9])').test(md + ' ' + title));
+      if (hit) return { ok: false, code: 'job-code', job: hit, hu: 'A jegyzetben munkaszám szerepel (' + hit + '): munkához kötött jegyzet a munka mappájába kerül, nem a repóba. Add meg a munkaszámot a kutatásnál.' };
+      dir = path.join(repo, 'docs', 'research', 'web'); shown = 'docs/research/web/';
+    }
+    fs.mkdirSync(dir, { recursive: true });
+    let name = base + '.md';
+    for (let n = 2; fs.existsSync(path.join(dir, name)) && fs.readFileSync(path.join(dir, name), 'utf8') !== md && n < 50; n++) name = base + '-' + n + '.md';
+    const t = path.join(dir, name + '.tmp');
+    fs.writeFileSync(t, md); fs.renameSync(t, path.join(dir, name));
+    if (!j.job) { try { docs.build(); } catch (e) {} }
+    return { ok: true, where: shown + name, hu: 'Mentve: ' + shown + name + (j.job ? '' : ' — a repóban; commit után a Rétegverem része.') };
+  }
   // the master as the Asztal will see it: web.json plus the ops still waiting in the inbox (the Asztal absorbs it, lib/bookmarks.js)
   function masterLinks() {
     if (!linksFile || !fs.existsSync(path.dirname(linksFile))) return null;
@@ -126,6 +161,16 @@ function createServer(opts) {
       let j;
       try { j = JSON.parse(await body(req, 24 * 1024 * 1024)); } catch (e) { return send(res, 400, { ok: false, hu: 'Nem JSON, vagy túl nagy.' }, null, origin); }
       return send(res, 200, await jobs.exportTo(jm[1], j), null, origin);
+    }
+    // T6: page watches in the Asztal's feed registry; T5: research notes
+    if (u.pathname === '/api/watch' || u.pathname === '/api/research') {
+      if (u.pathname === '/api/watch' && req.method === 'GET') return send(res, 200, watch.list(), null, origin);
+      if (req.method !== 'POST') return send(res, 405, { ok: false, hu: 'GET vagy POST.' }, null, origin);
+      if (!origin || !/^application\/json/.test(String(req.headers['content-type'] || ''))) return send(res, 403, { ok: false, hu: 'Írni csak a VRG Böngésző írhat.' }, null, origin);
+      let j;
+      try { j = JSON.parse(await body(req)); } catch (e) { return send(res, 400, { ok: false, hu: 'Nem JSON, vagy túl nagy.' }, null, origin); }
+      if (u.pathname === '/api/research') return send(res, 200, writeResearch(j || {}), null, origin);
+      return send(res, 200, j && j.remove ? watch.remove(String(j.remove)) : watch.add(j || {}), null, origin);
     }
     if (u.pathname === '/api/links') {
       const m = masterLinks();

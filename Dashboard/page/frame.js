@@ -166,6 +166,8 @@
     document.addEventListener('vrg-note', e => { if (e.detail) openNote(e.detail); });
     window.VRGFrame.openUrl = url => (typeof url === 'string' && /^https?:\/\//i.test(url) ? openWeb(url.slice(0, 4000)) : false);
     window.addEventListener('vrg-ctx-attach', e => { if (e.detail && typeof e.detail.packId === 'string') openChat({ kind: 'pack', packId: e.detail.packId }); });
+    // the VRG Böngésző's Küldés Claude-nak (T5): main made the pack; the chat opens with it attached, nothing is sent yet
+    if (vrg && vrg.on) vrg.on('browser', 'claude', m => { if (m && typeof m.packId === 'string' && /^p[0-9a-f]{16}$/.test(m.packId)) openChat({ kind: 'pack', packId: m.packId }); });
     document.addEventListener('vrg-chat-attach', e => { if (e.detail) openChat(e.detail); });
     document.body.dataset.ready = '1';
   }

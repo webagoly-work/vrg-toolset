@@ -46,8 +46,8 @@ half-read. `Browser/src/core/links.js` implements it; `Browser/test/links.test.j
 | **T2** | **The Desktop pane gets the brain.** The app's pure core (`url.js`, `answers.js`) inside the Böngésző pane's omnibox (`shell/lib/search.js`: bangs from `Browser/config/engines.json`, Tiszta link, a link with credentials refused) and Gyorsválasz in the Ctrl+K palette. | **1** |
 | **T3** | **Work-context browsing.** A per-job view (links, saved datasheets, quotes, research by job code), exported into `jobs\<code>\web\`, the Workflow Kit and the Map / Weather job layers. Job codes only. | 2 |
 | **T4** | **Datasheets and parts.** PDF in the reader (`Vendor/pdfjs`, legacy build), saved offline, attached to Inventory items; a cabinet label's QR opens the datasheet on the phone; supplier pages feed Inventory's price check. | 2 |
-| T5 | **Knowledge and AI.** Saved pages as VRG Stack nodes; "Küldés Claude-nak" (the kit's `context-tray`) to the Desktop chat pane; a research mode writing sourced notes; the docs index as a source of Belső keresés. | 3 |
-| T6 | **Watching the web.** Page-change watches (NJT, MEKH, standards, prices) as Feed pane presets (WP-29), alerts to Mobile M10. | 3 |
+| **T5** | **Knowledge and AI.** Saved pages as VRG Stack nodes; "Küldés Claude-nak" (the kit's `context-tray`) to the Desktop chat pane; a research mode writing sourced notes; the docs index as a source of Belső keresés. | 3 |
+| **T6** | **Watching the web.** Page-change watches (NJT, MEKH, standards, prices) as Feed pane presets (WP-29), alerts to Mobile M10. | 3 |
 | T7 | **Real browsing on the phone** (BRW-Q04). The confined WebView `web` window of PARITY row 23 / M20, keeping the contract and writing `vrg.web-links`. | 4 |
 | T8 | **Parts as plugins** (from DV). The module list becomes manifests (id, needs `net` / `web` / `storage`, hosts); page modules become swappable, matching DV's cells and its `web` need (DV-Q22 Q4). | 4 |
 | T9 | **Sharing.** A guest-safe link page in the Kapu; shared reading lists through the shared OneDrive folder. | after T1 |
@@ -109,10 +109,46 @@ datasheet read and saved for T07 → job → export with the PDF → label sheet
 3. QR-címkék → Nyomtatás on a 3 × 8 label sheet; the phone's camera opens the datasheet from a printed label.
 4. In the Asztal (with :8812 running) the same export works from the in-shell app.
 
-**⏸ Next: Phase 3 (T5 knowledge and AI, T6 watching the web).**
+## Phase 3 (T5 + T6) — built 2026-11-23
+
+**T5 · knowledge and AI.**
+- **Kutatás** notebooks in the app (`src/core/research.js`, `src/app/knowledge.js`): quotes taken from the Olvasó by selecting a
+  passage, the page as a source, own notes; one sourced Markdown note with numbered references and the sources list.
+- **Saved pages into the VRG Stack** by the repo's own convention: the note goes to `docs/research/web/<date>_<title>.md`
+  (`/api/research`), searchable at once in Helyi dokumentumok and Belső keresés, and part of the Stack once committed (the layers
+  read the repo's tracked files). No new Stack source and no charter change were needed. A job's note goes to the job's
+  folder instead, and the server refuses a repo note that names one of the PC's job codes.
+- **Küldés Claude-nak**: in the Asztal the door's `/__vrg/claude` makes a context pack (`ctx.packText`) and the frame opens
+  the chat pane with it attached; nothing is sent until the user asks. Elsewhere: clipboard + claude.ai.
+- **The docs index joins Belső keresés** as its third half, Dokumentumok, opened in the same viewer as a code hit.
+- Not built: an automatic research agent. The research mode is the notebook; Claude reads it through the chat pane, where
+  the user decides what to ask (an agent that browses on its own is a later step, and would need its own decision).
+
+**T6 · watching the web.** A `page-watch` kind in the Feed pane's presets (`Dashboard/shell/lib/presets.js`, WP-29): the
+page's readable text against the last run; *Változott* with the new and the vanished lines in Hírek, and a notice to the
+phone through the relay (`/notify`, M10). Added from the Olvasó or the Figyelés page through `serve.js /api/watch`, which
+writes `<userDir>\presets.json` (the Asztal only reads it); the host joins `allowHosts` and leaves with its last watch.
+The reader keeps short lines for watches (a date or a price is a change; found by a test).
+
+Tests: `node Browser/test/run.js` 60 (+ `knowledge.test.js`; a page walk: a quote selected in the Olvasó → a notebook → the
+note into a temp repo → the Claude fallback → a watch added); `Dashboard/test/wp-50.test.js` 8 (+ page-watch baseline /
+unchanged / changed / the phone rung once / a failed run keeps state / the host rule; the Claude door; Belső keresés's
+documents); `wp-29` 17 unchanged; `Mobile/tests/apps-phone.js` 38 ok.
+
+**Check on the PC** (not reproducible in the cloud session):
+
+1. In the Asztal: VRG Böngésző → Olvasó → a page → select a paragraph → Idézet a kutatásba → Kutatás → Küldés Claude-nak: the
+   chat pane opens with the pack attached; a question answers from it.
+2. Kutatás → Mentés a repóba: the note is in `docs/research/web/`; START shows it as a change; Belső keresés finds it under
+   Dokumentumok. With a job code in the text it is refused.
+3. Olvasó → Figyelés (naponta) on an NJT page: `presets.json` has the watch; the Hírek pane shows *Figyelés indult*; after a
+   change on the page *Változott*, and with the relay running (START O → 7) the phone's Értesítések ring.
+
+**⏸ Next: Phase 4 (T7 real browsing on the phone, T8 parts as plugins).**
 
 ## LOG
 
 - 2026-11-23 — review, BRW-Q01…Q04 = A, Phase 1 started.
 - 2026-11-23 — Phase 1 built (T1 + T2); ⏸ before Phase 2.
 - 2026-11-23 — Phase 2 built (T3 + T4); ⏸ before Phase 3.
+- 2026-11-23 — Phase 3 built (T5 + T6); ⏸ before Phase 4.

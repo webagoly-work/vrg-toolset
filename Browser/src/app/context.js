@@ -17,6 +17,8 @@
     { id: 'reader', hu: 'Olvasó nézet', desc: 'Egy oldal szövege reklám és menü nélkül, offline mentéssel (a helyi szerveren át).', on: true, hosts: ['desktop', 'served'] },
     { id: 'jobs', hu: 'Munkák', desc: 'Munkánként a linkek, mentett oldalak és adatlapok; exportálás a munka mappájába (helyi szerver), QR-címkék nyomtatása.', on: true },
     { id: 'parts', hu: 'Alkatrészek', desc: 'A Készlet katalógusa (' + 'cikkszám, gyártó, adatlap): keresés, adatlap az Olvasóban, mentés a cikkhez és a munkához.', on: true },
+    { id: 'research', hu: 'Kutatás', desc: 'Idézetek az Olvasóból a forrásukkal, saját jegyzetek; forrásmegjelöléses Markdown jegyzet a repóba (Rétegverem), egy munka mappájába vagy Claude-nak.', on: true },
+    { id: 'watch', hu: 'Figyelés', desc: 'Oldalak változásának figyelése: a VRG Asztal futtatja (Hírek panel), a változást a telefonra is jelzi.', on: true, hosts: ['desktop', 'served'] },
     { id: 'qr', hu: 'Telefonra', desc: 'QR-kód a címről: a telefon kamerájával beolvasva ott nyílik meg.', on: true, hosts: ['desktop', 'served', 'file', 'web'] },
     { id: 'suggest', hu: 'Webes javaslatok', desc: 'Javaslatok gépelés közben a választott keresőtől. Minden leütés elmegy a keresőhöz, ezért alapból ki van kapcsolva.', on: false, hosts: ['desktop', 'served'] },
   ];

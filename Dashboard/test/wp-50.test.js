@@ -88,3 +88,78 @@ test('palette: the frame page loads Gyorsválasz from the Browser core, and ever
   assert.equal(A.answer('230V 16A').value, '3,68 kW');
   assert.equal(A.answer('Varler Planner'), null, 'a command name stays a command search');
 });
+
+// ---- T5 / T6 (Phase 3): page watches in the feed, Küldés Claude-nak, the documents in Belső keresés
+const presetsMod = require('../shell/lib/presets.js');
+test('page-watch: a baseline, then "nem változott", then the change with its lines, and the phone rung once', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50w-'));
+  let html = '<html><head><title>Teszt jogszabály</title></head><body><article><h1>Teszt jogszabály</h1><p>' + 'Első bekezdés, elég hosszú ahhoz, hogy a felolvasó megtartsa. '.repeat(2) + '</p><p>Hatály: 2026. január 1.</p></article></body></html>';
+  const fetch = async () => ({ status: 200, ok: true, text: async () => html });
+  const rung = [];
+  let t = 1000;
+  const pre = presetsMod.createPresets({ jobs: { create: () => 'j' }, fetch, now: () => t, cacheFile: path.join(dir, 'cache.json'),
+    configFile: null, userFile: () => ({ allowHosts: ['pelda.example'], presets: [{ id: 'watch-1', hu: 'Jogszabály', kind: 'page-watch', url: 'https://pelda.example/jog', every: 60 }, { id: 'watch-2', hu: 'Más', kind: 'page-watch', url: 'https://mas.example/', every: 60 }] }),
+    sources: { notify: n => rung.push(n) } });
+  let r = await pre.exec('watch-1');
+  assert.match(r.items[0].hu, /^Figyelés indult: Teszt jogszabály/);
+  t = 2000; r = await pre.exec('watch-1');
+  assert.match(r.items[0].hu, /^Nem változott/);
+  html = html.replace('Hatály: 2026. január 1.', 'Hatály: 2026. július 1. (módosítva)');
+  t = 3000; r = await pre.exec('watch-1');
+  assert.match(r.items[0].hu, /^Változott: Teszt jogszabály/);
+  assert.match(r.items[0].detail, /\+ 1 új sor: Hatály: 2026\. július 1\. \(módosítva\)/);
+  assert.match(r.items[0].detail, /− 1 eltűnt: Hatály: 2026\. január 1\./);
+  assert.equal(rung.length, 1); assert.match(rung[0].title, /^Változott/); assert.equal(rung[0].link, 'https://pelda.example/jog');
+  assert.equal(r.state.changedAt, 3000);
+  const view = pre.results().results.find(x => x.pre === 'watch-1');
+  assert.equal(view.state, undefined, 'the stored lines never go to the page');
+  const fail = await pre.exec('watch-2');
+  assert.match(fail.error, /nincs engedélyezve/, 'a host outside allowHosts is refused before any request');
+  html = '';
+  const keep = presetsMod.createPresets({ jobs: { create: () => 'j' }, fetch: async () => { throw Object.assign(new Error('x'), { hu: 'Hálózati hiba.' }); }, now: () => 4000, cacheFile: path.join(dir, 'cache.json'),
+    configFile: null, userFile: () => ({ allowHosts: ['pelda.example'], presets: [{ id: 'watch-1', kind: 'page-watch', url: 'https://pelda.example/jog' }] }) });
+  const e = await keep.exec('watch-1');
+  assert.ok(e.error && e.state && e.state.lines.length, 'a failed run keeps what the watch had seen');
+  assert.deepEqual(presetsMod.watchCompare(['a', 'b'], ['b', 'c']), { added: ['c'], removed: ['a'] });
+  assert.deepEqual(presetsMod.watchLines('12:30\n2026. 11. 23.\nValódi sor\nValódi sor\n  x  '), ['Valódi sor'], 'bare dates, times and repeats are not lines');
+});
+test('Küldés Claude-nak: the door makes a pack for the browser app only, and the pack reads like any other', () => {
+  const made = [];
+  const al = createAppLinks({ bookmarks: createBookmarks({ file: tmp(), timers: false }), toClaude: (title, text) => { made.push({ title, text }); return { ok: true, packId: 'p0123456789abcdef' }; } });
+  const U = 'vrg-app://browser/__vrg/claude';
+  assert.ok(isLinksRequest(U));
+  assert.equal(al.handle({ method: 'GET', url: U, origin: 'vrg-app://browser' }).status, 405);
+  assert.equal(al.handle({ method: 'POST', url: U, origin: '', body: '{"text":"x"}' }).status, 403, 'a write names its origin');
+  assert.equal(al.handle({ method: 'POST', url: U, origin: 'vrg-app://planner', body: '{"text":"x"}' }).status, 403);
+  assert.equal(al.handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: '{"text":"  "}' }).status, 400);
+  const ok = al.handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: JSON.stringify({ title: 'Cikk\u0007', text: 'Szöveg\u0000 itt' }) });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(made, [{ title: 'Cikk', text: 'Szöveg itt' }], 'control characters out');
+  assert.equal(createAppLinks({ bookmarks: createBookmarks({ file: tmp(), timers: false }) }).handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: '{"text":"x"}' }).status, 503);
+  const { createCtx } = require('../shell/lib/ctx.js');
+  const packs = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50p-'));
+  const ctx = createCtx({ execFile: () => {}, paths: { packs: () => packs, userDir: () => packs }, now: () => new Date(Date.UTC(2026, 10, 23, 10, 0)) });
+  const p = ctx.packText('Kutatás: túlfeszültség', '# Jegyzet\nidézet [1]');
+  assert.match(p.packId, /^p[0-9a-f]{16}$/);
+  const text = fs.readFileSync(ctx.packFile(p.packId), 'utf8');
+  assert.match(text, /^# Kutatás: túlfeszültség\n\n\*A VRG Böngészőből küldve \(2026-11-23 10:00\)\.\*\n\n# Jegyzet\nidézet \[1\]\n$/);
+  assert.equal(ctx.sendToClaude(p.packId, 'chat').ok, true, 'the chat pane takes it as a pack');
+  assert.equal(ctx.packText('x', '   ').ok, false);
+});
+test('Belső keresés: the documents half, and a document hit opens in the viewer', async () => {
+  const { createInnerSearch } = require('../shell/lib/innersearch.js');
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50r-'));
+  fs.mkdirSync(path.join(repo, 'docs'));
+  fs.writeFileSync(path.join(repo, 'docs', 'kabel.md'), '# Kábelméretezés\n\nA feszültségesés határa 4 %.');
+  const docs = require('../../Browser/lib/docs.js').createDocs({ repo });
+  const execFile = (n, a, o, cb) => cb(new Error('no stack here'), '', '');
+  const is = createInnerSearch({ execFile, full: repo, repo, docs, issue: abs => 'h:' + Buffer.from(abs).toString('base64').slice(0, 22) });
+  const r = await is.inner({ q: 'feszultsegeses' });
+  assert.deepEqual(r.docs.map(d => d.path), ['docs/kabel.md']);
+  assert.equal(r.docs[0].title, 'Kábelméretezés');
+  assert.match(r.docs[0].snippet, /feszültségesés/);
+  const o = is.openHit(0, 'doc');
+  assert.equal(o.ok, true); assert.equal(o.name, 'kabel.md'); assert.equal(o.line, 1);
+  assert.equal(is.openHit(5, 'doc').ok, false);
+  assert.deepEqual((await is.inner({ q: 'feszultsegeses', only: 'code' })).docs, [], 'only code: no documents');
+});

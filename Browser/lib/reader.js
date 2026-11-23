@@ -73,7 +73,8 @@ function region(html) {
   return b ? b[1] : html;
 }
 
-function blocksOf(html, base) {
+function blocksOf(html, base, minPara) {
+  const MIN = Number.isInteger(minPara) ? minPara : 25;
   const blocks = [], links = [];
   const stack = [];                 // open elements: { tag, drop, block }
   let cur = null;                   // the block being filled: { t, text, link }
@@ -83,7 +84,7 @@ function blocksOf(html, base) {
       if (cur.t === 'row') { cur.t = 'p'; cur.text = cur.text.replace(/^\s*·\s*/, ''); cur.row = true; }
       const text = squash(cur.t === 'pre' ? cur.raw : cur.text);
       const linkShare = text ? squash(cur.link).length / text.length : 0;
-      const keep = cur.t === 'pre' ? text.length > 0 : cur.t[0] === 'h' ? text.length >= 2 : text.length >= (cur.t === 'li' || cur.row ? 3 : 25) && linkShare < 0.6;
+      const keep = cur.t === 'pre' ? text.length > 0 : cur.t[0] === 'h' ? text.length >= 2 : text.length >= (cur.t === 'li' || cur.row ? 3 : MIN) && linkShare < 0.6;
       if (keep) blocks.push({ t: cur.t, text: cur.t === 'pre' ? cur.raw.replace(/^\n+|\s+$/g, '').slice(0, 8000) : text.slice(0, 6000) });
     }
     cur = null;
@@ -130,7 +131,8 @@ function blocksOf(html, base) {
   return { blocks: blocks.filter((b, i) => !(i && b.text === blocks[i - 1].text)), links };
 }
 
-function extract(html, url) {
+// opts.minPara: the shortest paragraph kept (25; a page watch keeps short lines too: a date or a price is a change)
+function extract(html, url, opts) {
   const src = String(html || '');
   const head = (/<head\b[^>]*>([\s\S]*?)<\/head>/i.exec(src) || [, src.slice(0, 20000)])[1];
   const ogTitle = meta(head, /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i) || meta(head, /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
@@ -139,7 +141,7 @@ function extract(html, url) {
   const byline = squash(meta(head, /<meta[^>]+name=["']author["'][^>]+content=["']([^"']+)/i));
   const desc = squash(meta(head, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i) || meta(head, /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)/i));
   const lang = (/<html[^>]+lang=["']?([a-zA-Z-]{2,10})/i.exec(src) || [, ''])[1].toLowerCase();
-  const { blocks, links } = blocksOf(region(src), url);
+  const { blocks, links } = blocksOf(region(src), url, opts && opts.minPara);
   // the page title often repeats as the first heading
   if (blocks[0] && blocks[0].t[0] === 'h' && title && squash(blocks[0].text) === title) blocks.shift();
   const text = blocks.map(b => b.text).join('\n');

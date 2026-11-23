@@ -184,3 +184,61 @@ test('page: Phase 2 — a part, its datasheet read and saved for a job, the job 
     await ctx.close();
   } finally { await browser.close(); server.close(); }
 });
+
+test('page: Phase 3 — a quote from the reader into a notebook, the note into the repo, a page watch', { skip, timeout: 90000 }, async () => {
+  const { createServer } = require('../serve.js');
+  const { createDocs } = require('../lib/docs.js');
+  const os = require('os');
+  const PORT = 18821;
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'vb-p3-repo-'));
+  fs.mkdirSync(path.join(repo, 'docs'));
+  const deskDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vb-p3-desk-'));
+  const html = '<html><head><title>Túlfeszültség-védelem</title></head><body><article><h1>Túlfeszültség-védelem</h1><p>Külső villámvédelem esetén a főelosztóba T1+T2 kombinált levezető kerül, egyébként a T2 elegendő.</p><p>Második bekezdés, szintén elég hosszú szöveggel a teszthez.</p></article></body></html>';
+  const guard = { check: u => ({ ok: /^https:\/\//.test(u) }), get: async u => ({ status: 200, url: u, type: 'text/html', charset: 'utf-8', body: Buffer.from(html) }) };
+  const { server } = createServer({ port: PORT, guard, repo, docs: createDocs({ repo }), deskDir, linksFile: '', jobsDir: '' });
+  await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  const browser = await chromium.launch();
+  try {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    await ctx.route(/^http:\/\/127\.0\.0\.1:(?!18821)\d+\//, r => r.abort());
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto('http://127.0.0.1:' + PORT + '/#/olvaso?url=' + encodeURIComponent('https://cikk.example/tulfesz'));
+    await page.waitForSelector('.vb-reader p');
+    // select the first paragraph as a user would, then let go of the mouse
+    await page.evaluate(() => { const p = document.querySelector('.vb-reader p'); const r = document.createRange(); r.selectNodeContents(p); const s = getSelection(); s.removeAllRanges(); s.addRange(r); p.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); });
+    await page.waitForSelector('.vb-quote-btn:not([hidden])');
+    await page.click('.vb-quote-btn');
+    await page.fill('.vb-dialog input[aria-label="Új kutatás címe"]', 'Túlfeszültség-védelem');
+    await page.click('.vb-dialog button:has-text("Hozzáadás")');
+    const nb = await page.evaluate(() => VB.app.ctx.st.notebooks()[0]);
+    assert.equal(nb.items[0].kind, 'quote');
+    assert.match(nb.items[0].text, /^Külső villámvédelem esetén/);
+    assert.equal(nb.items[0].url, 'https://cikk.example/tulfesz');
+    await page.goto('http://127.0.0.1:' + PORT + '/#/kutatas/' + nb.id);
+    await page.waitForSelector('pre.vb-md');
+    assert.match(await page.textContent('pre.vb-md'), /\[1\]\(https:\/\/cikk\.example\/tulfesz\)|cikk\.example\/tulfesz/);
+    await page.click('button:has-text("Mentés a repóba")');
+    await page.click('.vb-dialog button:has-text("Mentés a repóba")');
+    await page.waitForFunction(() => /Mentve/.test(document.body.textContent), null, { timeout: 10000 });
+    const notes = fs.readdirSync(path.join(repo, 'docs', 'research', 'web'));
+    assert.equal(notes.length, 1);
+    assert.match(fs.readFileSync(path.join(repo, 'docs', 'research', 'web', notes[0]), 'utf8'), /^# Túlfeszültség-védelem[\s\S]*> Külső villámvédelem[\s\S]*## Források\n\n1\. \[Túlfeszültség-védelem\]\(https:\/\/cikk\.example\/tulfesz\)/);
+    // outside the Asztal, Claude gets the text by the clipboard and a dialog says so
+    await page.click('button:has-text("Küldés Claude-nak")');
+    await page.waitForSelector('.vb-dialog h2:has-text("Küldés Claude-nak")');
+    await page.click('.vb-dialog button:has-text("Bezárás")');
+    // a watch, added from Figyelés, lands in the Asztal's registry
+    await page.goto('http://127.0.0.1:' + PORT + '/#/figyeles');
+    await page.fill('input[aria-label="Figyelendő oldal"]', 'https://njt.example/jogszabaly');
+    await page.click('button:has-text("Figyelés…")');
+    await page.click('.vb-dialog button:has-text("Figyelés")');
+    await page.waitForSelector('.vb-row__title:has-text("njt.example")');
+    const reg = JSON.parse(fs.readFileSync(path.join(deskDir, 'presets.json'), 'utf8'));
+    assert.equal(reg.presets[0].kind, 'page-watch');
+    assert.deepEqual(reg.allowHosts, ['njt.example']);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  } finally { await browser.close(); server.close(); }
+});

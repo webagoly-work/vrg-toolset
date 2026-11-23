@@ -273,3 +273,19 @@ T1 and T2 of `docs/browser/TRAJECTORIES.md` (BRW-Q01 … Q04 = A).
 - Tests: `wp-50.test.js` 5 (ops idempotent and written as the two arrays, the inbox absorbed once, the door's origin / method / size
   rules, `decide()`, the frame page's scripts); `wp-18` 9 unchanged. The Electron probe was not run (no Electron in the cloud
   session); `wp-08`, `wp-20`, `wp-35` (2), `wp-41`, `wp-43` fail here as before the change (they read `H:\VRG\Full`).
+
+## WP-50b — the VRG Böngésző's knowledge and watches reach the Asztal (2026-11-23)
+
+Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
+
+- **Küldés Claude-nak.** `lib/applinks.js` answers `vrg-app://browser/__vrg/claude` (the browser app's origin, POST, JSON, ≤ 200 000
+  characters); `lib/ctx.js packText(title, text)` writes the pack file as `pack()` does; main emits `browser/claude { packId }` and
+  `page/frame.js` opens the chat pane with the pack attached (`openChat`). Nothing goes to Claude until the user asks.
+- **Belső keresés: Dokumentumok.** `lib/innersearch.js` takes the repo's Markdown index (`Browser/lib/docs.js`, built on the first
+  search) as a third half; `search.openHit` takes `kind: 'doc'`; `page/panes/search.js` draws the section and opens a hit in the viewer.
+- **Figyelés.** `lib/presets.js` gains the network kind `page-watch` (allowed hosts, no redirects, as `page-text`): the page's
+  readable text (`Browser/lib/reader.js`, short lines kept) against the last run's lines, kept in the cache record's `state` (never
+  sent to the page; a failed run keeps it); a change → a *Változott* item and `sources.notify`, which main sends to the relay's
+  `/notify` on this PC (VRG Mobile Értesítések). Watches are added by the browser through `Browser/serve.js /api/watch` into
+  `<userDir>/presets.json`, with their host in `allowHosts`.
+- Tests: `wp-50.test.js` 8 (+3); `wp-20` 12 / 1 and `wp-29` 17 as before the change.

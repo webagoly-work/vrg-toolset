@@ -19,7 +19,7 @@
   // the UI kit's sample shape VRG-ÉÉHH-NN of the first release is still read so nothing saved with it is lost
   const JOB_RE = /^([A-Z]{1,3}\d{1,3}|VRG-\d{4}-\d{2})$/;
   const DEFAULTS = {
-    engine: 'google', engineChosen: false, suggest: false, clean: true, theme: 'melyviz', density: 'auto', history: true,
+    engine: 'google', engineChosen: false, suggest: false, clean: true, theme: 'melyviz', density: 'auto', history: true, notebook: '',
     readerServer: 'http://127.0.0.1:8812', modules: {}, pinned: [],
   };
 
@@ -45,6 +45,22 @@
       kind: r.kind === 'pdf' ? 'pdf' : '', part: /^VRG-\d{4}$/.test(String(r.part || '')) ? r.part : '' };
   }
 
+  // Kutatás (T5): a notebook = { id, title, question, job, items: [{ kind: 'quote' | 'note' | 'source', text, url, title, at }] }
+  const NB = { notebooks: 50, items: 300, text: 4000 };
+  function cleanItem(it) {
+    if (!it || !['quote', 'note', 'source'].includes(it.kind)) return null;
+    const url = isWeb(it.url) ? str(it.url, LIMITS.url) : '';
+    const text = typeof it.text === 'string' ? it.text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, NB.text) : '';
+    if (!text && it.kind !== 'source') return null;
+    if (it.kind === 'source' && !url) return null;
+    return { kind: it.kind, text, url, title: str(it.title, LIMITS.title), at: +it.at || now() };
+  }
+  function cleanNotebook(n) {
+    if (!n || !str(n.title, 200)) return null;
+    return { id: str(n.id, 40) || uid(), title: str(n.title, 200), question: str(n.question, 1000), job: normJob(n.job),
+      items: (Array.isArray(n.items) ? n.items : []).map(cleanItem).filter(Boolean).slice(0, NB.items), created: +n.created || now(), updated: +n.updated || now() };
+  }
+
   function memory() { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; }
   function probe(ls) {
     try { if (!ls) return false; ls.setItem(PREFIX + 'probe', '1'); const ok = ls.getItem(PREFIX + 'probe') === '1'; ls.removeItem(PREFIX + 'probe'); return ok; } catch (e) { return false; }
@@ -63,6 +79,8 @@
     let links = (() => { try { return L.read(read('links', L.empty())); } catch (e) { return L.empty(); } })();
     let meta = read('meta', {}) || {};
     let reading = (read('reading', []) || []).map(cleanReading).filter(Boolean);
+    let research = (read('research', []) || []).map(cleanNotebook).filter(Boolean);
+    const saveN = () => { const w = write('research', research); emit('research'); return w; };
     let settings = Object.assign({}, DEFAULTS, read('settings', {}));
     let outbox = L.cleanOps(read('outbox', []));
     // once a master has answered on this origin (ever), every change is also an op in the outbox, from the first moment of
@@ -182,6 +200,34 @@
       },
       removeReading(id) { const n = reading.length; reading = reading.filter(r => r.id !== id); if (n !== reading.length) saveR(); },
 
+      // ---- Kutatás notebooks (the work line's; travel in the export's x-bongeszo)
+      notebooks: () => research.slice().sort((a, b) => b.updated - a.updated),
+      notebook: id => research.find(n => n.id === id) || null,
+      addNotebook(n) {
+        const c = cleanNotebook(n);
+        if (!c || research.length >= NB.notebooks) return null;
+        research.push(c); saveN(); api.set('notebook', c.id); return c;
+      },
+      updateNotebook(id, patch) {
+        const n = research.find(x => x.id === id);
+        if (!n) return null;
+        const c = cleanNotebook(Object.assign({}, n, patch, { id: n.id, created: n.created, items: n.items }));
+        if (!c) return null;
+        Object.assign(n, c, { updated: now() }); saveN(); return n;
+      },
+      addToNotebook(id, item) {
+        const n = research.find(x => x.id === id);
+        const c = cleanItem(item);
+        if (!n || !c || n.items.length >= NB.items) return null;
+        n.items.push(c); n.updated = now();
+        if (!saveN()) { n.items.pop(); return null; }
+        api.set('notebook', n.id);
+        return c;
+      },
+      removeFromNotebook(id, i) { const n = research.find(x => x.id === id); if (!n || !n.items[i]) return false; n.items.splice(i, 1); n.updated = now(); saveN(); return true; },
+      moveInNotebook(id, i, d) { const n = research.find(x => x.id === id); const j = i + d; if (!n || !n.items[i] || !n.items[j]) return false; [n.items[i], n.items[j]] = [n.items[j], n.items[i]]; saveN(); return true; },
+      removeNotebook(id) { const k = research.length; research = research.filter(n => n.id !== id); if (k !== research.length) saveN(); },
+
       // ---- settings
       settings: () => Object.assign({}, settings),
       set(k, v) { if (!(k in DEFAULTS)) return false; settings[k] = v; write('settings', settings); emit('settings'); return true; },
@@ -214,7 +260,7 @@
 
       // ---- export / import / wipe
       exportAll() {
-        return JSON.parse(L.write(links, { exported: new Date().toISOString(), ext: { meta, reading, pinned: settings.pinned || [] } }));
+        return JSON.parse(L.write(links, { exported: new Date().toISOString(), ext: { meta, reading, research, pinned: settings.pinned || [] } }));
       },
       importAll(doc, mode) {
         let incoming, ext = {};
@@ -231,7 +277,7 @@
           }
         } catch (e) { return { ok: false, hu: 'Ez nem könyvjelzőfájl (vrg.web-links v1, az Asztal web.json-ja vagy egy régi VRG Böngésző mentés).' }; }
         const before = { b: links.bookmarks.length, h: links.history.length, r: reading.length };
-        if (mode === 'replace') { links = L.empty(); meta = {}; reading = []; }
+        if (mode === 'replace') { links = L.empty(); meta = {}; reading = []; research = []; }
         const merged = L.merge(links, incoming);
         if (synced) {
           const have = new Set(links.bookmarks.map(b => b.url)), seen = new Set(links.history.map(h => h.at + ' ' + h.url));
@@ -241,18 +287,20 @@
         links = merged;
         for (const [u, m] of Object.entries(ext.meta || {})) { const c = isWeb(u) && cleanMeta(m); if (c && !meta[u]) meta[u] = c; }
         for (const r of (ext.reading || []).slice(0, LIMITS.reading)) { const c = cleanReading(r); if (c && !reading.some(x => key(x.url) === key(c.url)) && reading.length < LIMITS.reading) reading.push(c); }
+        for (const nb of (ext.research || []).slice(0, NB.notebooks)) { const c = cleanNotebook(nb); if (c && !research.some(x => x.id === c.id) && research.length < NB.notebooks) research.push(c); }
+        write('research', research);
         if (Array.isArray(ext.pinned)) api.set('pinned', [...new Set((settings.pinned || []).concat(ext.pinned.filter(isWeb)))].slice(-24));
         saveMeta(); write('reading', reading); saveLinks(); emit('reading');
         const added = { bookmarks: links.bookmarks.length - (mode === 'replace' ? 0 : before.b), history: links.history.length - (mode === 'replace' ? 0 : before.h), reading: reading.length - (mode === 'replace' ? 0 : before.r) };
         return { ok: true, added, hu: 'Betöltve: ' + added.bookmarks + ' könyvjelző, ' + added.reading + ' olvasnivaló, ' + added.history + ' előzménysor.' };
       },
       wipe() {
-        links = L.empty(); meta = {}; reading = []; outbox = []; settings = Object.assign({}, DEFAULTS);
-        for (const n of ['links', 'meta', 'reading', 'settings', 'outbox', 'master']) { try { ls.removeItem(PREFIX + n); } catch (e) {} }
+        links = L.empty(); meta = {}; reading = []; research = []; outbox = []; settings = Object.assign({}, DEFAULTS);
+        for (const n of ['links', 'meta', 'reading', 'research', 'settings', 'outbox', 'master']) { try { ls.removeItem(PREFIX + n); } catch (e) {} }
         synced = false;
         emit('links'); emit('reading'); emit('settings');
       },
-      usage() { let n = 0; for (const k of ['links', 'meta', 'reading', 'settings', 'outbox']) { const v = ls.getItem(PREFIX + k); n += v ? v.length * 2 : 0; } return n; },
+      usage() { let n = 0; for (const k of ['links', 'meta', 'reading', 'research', 'settings', 'outbox']) { const v = ls.getItem(PREFIX + k); n += v ? v.length * 2 : 0; } return n; },
     };
     return api;
   }

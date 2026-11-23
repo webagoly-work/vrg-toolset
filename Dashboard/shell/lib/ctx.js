@@ -80,6 +80,20 @@ function createCtx({ execFile, node = 'node', stackDir, paths, claudeterm, repo,
     return { ok: true, text, tokens: tok(text), packId };
   }
 
+  // a pack from plain text (the VRG Böngésző's Küldés Claude-nak, T5): the same file and packId as pack(), so the chat pane and
+  // the terminals read it the same way; the text is the page's or the research note's, a source line first
+  function packText(title, text) {
+    const t = String(title == null ? '' : title).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || 'VRG Böngésző';
+    const body = String(text == null ? '' : text).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').slice(0, 200000);
+    if (!body.trim()) return bad('Üres szöveg.');
+    const out = '# ' + t + '\n\n*A VRG Böngészőből küldve (' + now().toISOString().slice(0, 16).replace('T', ' ') + ').*\n\n' + body.replace(/\s+$/, '') + '\n';
+    const file = path.join(paths.packs(), stamp(now()) + '-web-' + slug(t) + '.md');
+    try { fs.writeFileSync(file, out, 'utf8'); } catch (e) { return { ok: false, err: 'error', hu: 'A csomag nem menthető.' }; }
+    const packId = 'p' + crypto.randomBytes(8).toString('hex');
+    packs.set(packId, file);
+    return { ok: true, packId, tokens: tok(out) };
+  }
+
   // saved clusters: [{ id, name, ids, at }] in <userDir>/clusters.json
   const clusterFile = () => path.join(paths.userDir(), 'clusters.json');
   function readClusters() {
@@ -126,7 +140,7 @@ function createCtx({ execFile, node = 'node', stackDir, paths, claudeterm, repo,
     return { ok: true, term: r.term };
   }
 
-  return { expand, pack, clusters, saveCluster, deleteCluster, sendToClaude, packFile: id => packs.get(id) || null };   // packFile: main-side only (WP-24)
+  return { expand, pack, packText, clusters, saveCluster, deleteCluster, sendToClaude, packFile: id => packs.get(id) || null };   // packFile: main-side only (WP-24)
 }
 
 module.exports = { createCtx, validId, validIds, ID_RE, NOTE_MAX };

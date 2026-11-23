@@ -21,8 +21,8 @@ const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const OUT = path.join(ROOT, 'dist', 'vrg-bongeszo.html');
 const VERSION = '1.0.0';
-const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/links.js', 'core/store.js', 'core/sync.js', 'core/host.js', 'vendor/qr.js',
-  'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/work.js', 'app/main.js'];
+const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/links.js', 'core/research.js', 'core/store.js', 'core/sync.js', 'core/host.js', 'vendor/qr.js',
+  'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/work.js', 'app/knowledge.js', 'app/main.js'];
 const OWN_SERVER = 'bongeszo';
 
 const read = p => fs.readFileSync(p, 'utf8');

@@ -6,6 +6,6 @@
 'use strict';
 const { spawnSync } = require('child_process');
 const path = require('path');
-const files = ['core', 'links', 'server', 'jobs', 'build', 'page'].map(n => path.join(__dirname, n + '.test.js'));
+const files = ['core', 'links', 'server', 'jobs', 'knowledge', 'build', 'page'].map(n => path.join(__dirname, n + '.test.js'));
 const r = spawnSync(process.execPath, ['--test', '--test-reporter=spec', ...files], { stdio: 'inherit' });
 process.exit(r.status === null ? 1 : r.status);

@@ -14,6 +14,8 @@
     { id: 'olvaso', hu: 'Olvasó', icon: 'list', view: 'reader', count: c => c.st.reading().filter(r => !r.read).length },
     { id: 'munkak', hu: 'Munkák', icon: 'folder', view: 'jobs', module: 'jobs', count: c => c.st.jobs().length },
     { id: 'alkatreszek', hu: 'Alkatrészek', short: 'Alkatrész', icon: 'socket', view: 'parts', module: 'parts' },
+    { id: 'kutatas', hu: 'Kutatás', icon: 'bulb', view: 'research', module: 'research', wide: true, count: c => c.st.notebooks().length },
+    { id: 'figyeles', hu: 'Figyelés', icon: 'bell', view: 'watches', module: 'watch', wide: true },
     { id: 'beallitasok', hu: 'Beállítások', icon: 'settings', view: 'settings' },
     { id: 'sugo', hu: 'Súgó', icon: 'question', view: 'help', wide: true },
   ];

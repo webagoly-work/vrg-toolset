@@ -447,7 +447,12 @@ const { createBookmarks } = require('./lib/bookmarks.js');
 const webBm = createBookmarks({ file: () => path.join(paths.userDir(), 'web.json'), days: () => settings.get('web.history.days') });
 // the VRG Böngésző's door to these links (T1, BRW-Q01): vrg-app://browser/__vrg/links, answered in the vrg-app handler below;
 // the inbox Browser/serve.js leaves beside web.json is absorbed there and every 30 s while the Asztal runs
-const appLinks = require('./lib/applinks.js').createAppLinks({ bookmarks: webBm });
+// T5: /__vrg/claude makes a context pack of the app's text and the frame opens the chat pane with it (ctxLib is made further down)
+const appLinks = require('./lib/applinks.js').createAppLinks({ bookmarks: webBm, toClaude: (title, text) => {
+  const r = ctxLib.packText(title, text);
+  if (r.ok && win && !win.isDestroyed()) { ipc.emit(win, 'browser', 'claude', { packId: r.packId }); if (win.isMinimized()) win.restore(); win.focus(); }
+  return r;
+} });
 setInterval(() => { try { webBm.absorb(); } catch (e) { log('links inbox', e.message); } }, 30000).unref();
 const readJsonList = f => { try { const j = JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', f), 'utf8')); return Array.isArray(j) ? j : []; } catch (e) { return []; } };
 const webServers = () => (R.C && R.C.menu && R.C.menu.servers) || [];
@@ -529,7 +534,7 @@ ipc.register('search', 'quick', { input: types.text(500) }, async ({ input }) =>
   }
   return out;
 });
-ipc.register('search', 'openHit', { kind: types.enum('code'), i: types.int(0, 199) }, async ({ i }) => innerSearch.openHit(i));
+ipc.register('search', 'openHit', { kind: types.enum('code', 'doc'), i: types.int(0, 199) }, async ({ kind, i }) => innerSearch.openHit(i, kind));
 ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerSearch.node(id));
 
 // context packs (WP-22): stack-json.js writes the pack, main keeps packId → file, "send to Claude" opens an embedded Claude terminal (WP-16)
@@ -689,6 +694,17 @@ const presetsLib = presetsMod.createPresets({
     ports: () => webServers().map(s => ({ id: s.id, name: s.name, port: s.port, up: !!ports.ports[s.port] })),
     lines: () => (R.C && R.C.data && R.C.data.lines) || [],
     mail: { accounts: () => mailLib.accounts(), list: (acc, q) => mailLib.list(acc, q) },
+    // a page-watch that saw a change rings the phone (VRG Mobile Értesítések, M10) through the relay on this PC, as relay-notify.js
+    // does; no relay running = no notice, the Hírek item stays. Never in a selftest.
+    notify: n => {
+      if (SELFTEST) return;
+      const srv = ((R.C && R.C.menu && R.C.menu.servers) || []).find(x => x && x.id === 'gyro');
+      const port = srv && Number.isInteger(srv.port) ? srv.port : 47291;
+      const body = JSON.stringify({ title: String(n.title || '').slice(0, 120), text: String(n.text || '').slice(0, 500), level: n.level || 'info', link: n.link || null, from: 'VRG Böngésző' });
+      const r = require('http').request({ host: '127.0.0.1', port, path: '/notify', method: 'POST', timeout: 3000,
+        headers: { Host: 'localhost:' + port, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, res => res.resume());
+      r.on('error', () => {}); r.on('timeout', () => r.destroy()); r.end(body);
+    },
   },
 });
 presetsMod.bind(presetsLib);                                                      // the palette's pre:<id> items run through it

@@ -341,6 +341,9 @@
       a.url ? btn('Könyvjelző', { icon: 'star', small: true, pressed: !!st.bookmark(a.url), click: () => { if (st.addBookmark({ url: a.url, title: a.title })) toast('ok', 'Könyvjelző mentve', a.title); } }) : null,
       item ? btn('Szerkesztés', { icon: 'edit', small: true, click: () => editItem(ctx, item, 'reading') }) : null,
       ctx.on('qr') && a.url ? btn('Telefonra', { icon: 'phone', small: true, click: () => qr(ctx, a.url, a.title) }) : null,
+      ctx.on('research') && a.url ? btn('Kutatáshoz', { icon: 'bulb', small: true, click: () => VB.knowledge.addSource(ctx, { url: a.url, title: a.title, excerpt: a.excerpt }) }) : null,
+      btn('Claude-nak', { icon: 'send', small: true, click: () => VB.knowledge.toClaude(ctx, a.title || 'Oldal', (a.url ? 'Forrás: ' + a.url + '\n\n' : '') + saveText()) }),
+      ctx.on('watch') && a.url && !a.doc ? btn('Figyelés', { icon: 'bell', small: true, click: () => VB.knowledge.watchPage(ctx, a.url, a.title) }) : null,
       h('span.vb-grow'),
       btn('Kisebb betű', { iconOnly: true, icon: 'zoom-out', small: true, click: () => setScale(-0.1) }),
       btn('Nagyobb betű', { iconOnly: true, icon: 'zoom-in', small: true, click: () => setScale(0.1) }));
@@ -352,7 +355,8 @@
       body.appendChild(h(/^(h1|h2|h3|p|pre|blockquote|div)$/.test(tag) ? tag : 'p', { role: b.t === 'li' ? 'listitem' : null, class: b.t === 'li' ? 'vb-li' : null }, b.text));
     }
     if (a.links && a.links.length) body.append(h('h3', null, 'Hivatkozások'), h('div.vb-list', null, a.links.slice(0, 30).map(l => row(l.text || VB.url.display(l.url), l.url, null, () => ctx.open(l.url, { title: l.text, via: 'reader-link' })))));
-    return h('div.vb-view', null, bar, body);
+    const quote = ctx.on('research') && a.url ? VB.knowledge.quoteOnSelect(ctx, body, a) : null;
+    return h('div.vb-view', null, bar, body, quote);
   }
   function sessionStorageGet(k) { try { return root.sessionStorage.getItem(k); } catch (e) { return null; } }
   function sessionStorageSet(k, v) { try { root.sessionStorage.setItem(k, v); } catch (e) {} }
@@ -385,6 +389,8 @@
     for (const e of ctx.engines) (groups[e.group] = groups[e.group] || []).push(e);
     const engSel = h('select.vb-select', { 'aria-label': 'Alapértelmezett kereső', on: { change: () => { st.set('engine', engSel.value); st.set('engineChosen', true); toast('ok', 'Alapértelmezett kereső', ctx.engine().hu); } } },
       Object.entries(groups).map(([g, list]) => h('optgroup', { label: (ctx.data.groups || {})[g] || g }, list.map(e => h('option', { value: e.id, selected: e.id === ctx.engine().id }, e.hu + '  !' + (e.bangs || [])[0])))));
+    out.append(h('div.vb-actions', null, [['elozmenyek', 'Előzmények', 'history'], ['kutatas', 'Kutatás', 'bulb', 'research'], ['figyeles', 'Figyelés', 'bell', 'watch'], ['sugo', 'Súgó', 'question']]
+      .filter(x => !x[3] || ctx.on(x[3])).map(([id, l, ic]) => btn(l, { icon: ic, small: true, click: () => go('#/' + id) }))));
     out.append(sec('Beállítások', 'ezen az eszközön, ' + ctx.caps.name, null, h('div.vb-settings', null,
       set('Alapértelmezett kereső', 'A címsor ezzel keres, ha nincs !bang.', engSel),
       set('Előzmények mentése', 'Ami a VRG Böngészőből nyílik, megjegyzi (legfeljebb ' + st.LIMITS.history + ').', toggle(s.history, v => st.set('history', v), 'Előzmények mentése')),
