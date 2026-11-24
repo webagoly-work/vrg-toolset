@@ -225,7 +225,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 "desk" -> { compactPeek = false; note("Ez az Asztal.") }
                 "kompakt" -> compactPeek = true
                 "kommand" -> note("A Kommand a felső sávban van.")
-                "browser" -> browse("https://www.google.com/")
+                "browser" -> open(Catalogue.WEB.id)
                 else -> open(u.target)
             }
             Reach.WEBAPP -> openRoute(Route(Catalogue.APPS.id, u.target))
@@ -249,12 +249,18 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         }
     }
 
-    private fun openRoute(r: Route) {
-        open(r.feature)
-        Registry.feature(r.feature)?.open(r)
+    override fun openRoute(route: Route) {
+        open(route.feature)
+        Registry.feature(route.feature)?.open(route)
     }
 
+    /** A web address (the Kommand's URLs): the Böngésző (WP M66) opens http / https in the app; anything else the phone's browser. */
     private fun browse(url: String) {
+        if (hu.vrg.mobile.core.WebRules.isWebUrl(url) && Registry.feature(Catalogue.WEB.id) != null) {
+            val r = Route(Catalogue.WEB.id, "", mapOf("u" to url))
+            open(r.feature)
+            if (Registry.feature(r.feature)?.open(r) == true) return
+        }
         try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (e: Exception) { note("Nincs böngésző a telefonon.") }
     }
 

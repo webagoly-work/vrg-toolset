@@ -89,3 +89,30 @@ test('grouped history: one line per URL, newest first, with the visit count', ()
   assert.deepEqual(g.map(x => [x.url, x.count, x.title]), [['https://a.hu/', 2, 'A2'], ['https://b.hu/', 1, 'B']]);
   assert.deepEqual(L.grouped({ history: g.map(() => null).filter(Boolean) }), []);
 });
+
+// the shared contract fixture: the phone's Kotlin port (Mobile kit-core WebTest.kt) replays the same file
+test('contract fixture: links, ops, strip and the address bar agree with VRG Mobile', () => {
+  const fx = require('./fixtures/links-contract.json');
+  const U = require('../src/core/url.js');
+  const engines = require('../config/engines.json').engines;
+  const rows = l => l.map(r => [r.url, r.title, r.at]);
+  for (const c of fx.read) {
+    if (c.error) { assert.throws(() => L.read(c.in), new RegExp({ newer: 'newer', format: 'not a links file', empty: 'no bookmarks' }[c.error])); continue; }
+    const r = L.read(c.in);
+    assert.deepEqual(rows(r.bookmarks), c.bookmarks); assert.deepEqual(rows(r.history), c.history);
+  }
+  for (const c of fx.merge) { const m = L.merge(c.a, c.b); assert.deepEqual(rows(m.bookmarks), c.bookmarks); assert.deepEqual(rows(m.history), c.history); }
+  let v = L.empty();
+  for (const [u, t, at] of fx.visits.steps) v = L.visit(v, u, t, at);
+  assert.deepEqual(rows(v.history), fx.visits.history);
+  const o = L.apply(fx.ops.base, fx.ops.ops);
+  assert.deepEqual(rows(o.bookmarks), fx.ops.bookmarks); assert.deepEqual(rows(o.history), fx.ops.history);
+  assert.equal(L.cleanOps(fx.ops.ops).length, fx.ops.clean);
+  for (const [a, b] of fx.strip) assert.equal(U.clean(a).url, b, a);
+  for (const [t, kind, url] of fx.address) {
+    const c = U.classify(t, { engines, engine: 'google' });
+    assert.equal(c.kind, kind, t);
+    if (kind === 'url') assert.equal(c.url, url, t);
+    if (kind === 'search') assert.equal(U.searchUrl(c.engine, c.q), url, t);
+  }
+});

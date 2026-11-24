@@ -41,7 +41,7 @@ object DeskCatalog {
         DeskUnit("archive", "Archívum", "Artifact archive", "fajlok", "AR", Reach.NATIVE, "archive"),
         DeskUnit("konnektom-labor", "Konnektóm-labor", "Connectome lab", "alkalmazasok", "KL", Reach.NATIVE, "stack"),
         DeskUnit("mindmap", "VRG MindMap", "VRG MindMap", "alkalmazasok", "MM", Reach.WEBAPP, "mindmap"),
-        DeskUnit("web", "Böngésző", "Browser", "alkalmazasok", "WE", Reach.NATIVE, "browser"),
+        DeskUnit("web", "Böngésző", "Browser", "alkalmazasok", "WE", Reach.NATIVE, "web"),
         DeskUnit("mail", "Posta", "Mail", "alkalmazasok", "PO", Reach.NONE, "a PC levelezése a PC saját Gmail-belépésén fut; a telefonon a saját levelezője nyílik"),
         DeskUnit("search", "Belső keresés", "Internal search", "alkalmazasok", "KE", Reach.NONE, "a belső keresés a PC Asztalának indexén fut; egy későbbi munkacsomag"),
         DeskUnit("feed", "Hírfolyam", "Feeds", "alkalmazasok", "HF", Reach.NONE, "a hírfolyam az Asztalban fut a PC-n, gyorsítótárral; a telefonon nem (D-18)"),

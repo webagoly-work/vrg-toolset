@@ -3,7 +3,7 @@
 //   desktop  vrg-app://browser/…  (VRG Asztal, WP-43): a top-level navigation is caught by main and opened in the
 //            Böngésző pane (views.js createApp → onLink): tabs, find, zoom, the persist:vrg-web partition.
 //   mobile   https://browser.appassets.androidplatform.net/ (VRG Mobile, M21): the WebView hands a main-frame
-//            http(s) navigation to the phone's browser (AppsFeature shouldOverrideUrlLoading → ACTION_VIEW).
+//            http(s) navigation to VRG Mobile's Böngésző (WP M66: AppsFeature → vrg://web?u=…, a confined WebView).
 //   served   http://127.0.0.1:8812/ (Browser/serve.js, or its --port): a new browser tab; the reader and the document search work.
 //   file     opened from disk: a new tab; nothing is kept (localStorage refuses a null origin), the page says so.
 //   web      any other origin (a published copy): a new tab.
@@ -15,7 +15,7 @@
 
   const NAMES = {
     desktop: { hu: 'VRG Asztal', how: 'az Asztal Böngésző paneljén nyílik meg' },
-    mobile: { hu: 'VRG Mobile', how: 'a telefon böngészőjében nyílik meg' },
+    mobile: { hu: 'VRG Mobile', how: 'a VRG Mobile Böngészőjében nyílik meg' },
     served: { hu: 'Helyi szerver (:8812)', how: 'új böngészőlapon nyílik meg' },
     file: { hu: 'Fájlból megnyitva', how: 'új böngészőlapon nyílik meg' },
     web: { hu: 'Böngésző', how: 'új böngészőlapon nyílik meg' },
