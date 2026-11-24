@@ -119,8 +119,8 @@ object WebFeature : VrgFeature {
     private val reloads = MutableStateFlow(0)
     /** The page on screen now (its URL), for the address bar and the ★. */
     private val shown = MutableStateFlow("")
-    private val title = MutableStateFlow("")
-    private val progress = MutableStateFlow(100)
+    private val pageTitleFlow = MutableStateFlow("")
+    private val loadProgress = MutableStateFlow(100)
 
     private fun file() = File(File(app.filesDir, DIR), FILE)
 
@@ -263,8 +263,8 @@ object WebFeature : VrgFeature {
             }
         }
         webChromeClient = object : WebChromeClient() {
-            override fun onProgressChanged(view: WebView, p: Int) { progress.value = p }
-            override fun onReceivedTitle(view: WebView, t: String?) { title.value = t.orEmpty(); visited(view.url, t) }
+            override fun onProgressChanged(view: WebView, p: Int) { loadProgress.value = p }
+            override fun onReceivedTitle(view: WebView, t: String?) { pageTitleFlow.value = t.orEmpty(); visited(view.url, t) }
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.deny()
                 VrgLog.i(TAG, "engedélykérés elutasítva: ${WebRules.forLog(request.origin.toString())}")
@@ -343,8 +343,8 @@ object WebFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         val reload by reloads.collectAsStateWithLifecycle()
         val url by shown.collectAsStateWithLifecycle()
-        val pageTitle by title.collectAsStateWithLifecycle()
-        val loading by progress.collectAsStateWithLifecycle()
+        val pageTitle by pageTitleFlow.collectAsStateWithLifecycle()
+        val loading by loadProgress.collectAsStateWithLifecycle()
         val l by links.collectAsStateWithLifecycle()
         val eng by engine.collectAsStateWithLifecycle()
         var panel by remember { mutableStateOf(if (pending.value == null && prefs().getString(KEY_LAST, null) == null) Panel.START else Panel.NONE) }
