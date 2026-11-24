@@ -97,7 +97,9 @@ test('resume: --resume in the session folder; fork, remote; live refused unless 
   const rec = recorder();
   const s = createSessions({ roots: [{ account: 'A', dir: fx.a }, { account: 'B', dir: fx.b }], claudeterm: rec.claudeterm, now: () => NOW });
   assert.strictEqual(s.resume({ account: 'A', session: ID1 }).term, 't7');
-  assert.deepStrictEqual(rec.calls[0], { account: 'A', cwd: fx.work, extraArgs: ['--resume', ID1] });
+  assert.deepStrictEqual(rec.calls[0], { account: 'A', cwd: fx.work, extraArgs: ['--resume', ID1],
+    deco: { origin: 'local', account: 'A', session: ID1, title: 'GO MOBILE then build the APK' } });   // WP-51: the board labels ride along
+  assert.ok(require('../shell/lib/sheets.js').validDeco(rec.calls[0].deco));
   s.resume({ account: 'A', session: ID1, fork: true });
   assert.deepStrictEqual(rec.calls[1].extraArgs, ['--resume', ID1, '--fork-session']);
   s.resume({ account: 'A', session: ID1, remote: true });
@@ -126,7 +128,7 @@ test('teleport in the repo, canvas through the server callback', async () => {
   const s = createSessions({ roots: [{ account: 'A', dir: fx.a }, { account: 'B', dir: fx.b }], claudeterm: rec.claudeterm, repo: fx.work, now: () => NOW,
     server: async (id, p) => { asked.push([id, p]); return { do: 'web', url: 'http://127.0.0.1:8810' + p, server: id }; } });
   assert.strictEqual(s.teleport({ account: 'B' }).term, 't7');
-  assert.deepStrictEqual(rec.calls[0], { account: 'B', cwd: fx.work, extraArgs: ['--teleport'] });
+  assert.deepStrictEqual(rec.calls[0], { account: 'B', cwd: fx.work, extraArgs: ['--teleport'], deco: { origin: 'local', account: 'B', title: 'Áthozva a felhőből' } });
   assert.strictEqual(s.teleport({ account: 'X' }).err, 'bad-request');
   assert.strictEqual(createSessions({ claudeterm: rec.claudeterm }).teleport({ account: 'A' }).err, 'error');   // no repo
   const c = await s.canvas({ account: 'B', session: ID3 });

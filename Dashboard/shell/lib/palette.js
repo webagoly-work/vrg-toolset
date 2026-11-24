@@ -12,7 +12,7 @@
   const MAX_RECENT = 30;
   const PANES = { home: ['Kezdőlap', 'Home'], empty: ['Üres panel', 'Empty pane'], files: ['Fájlok', 'Files'], term: ['Terminál', 'Terminal'],
     web: ['Böngésző', 'Browser'], mail: ['Posta', 'Mail'], stack: ['Folyamatok', 'Stack'], chat: ['Chat', 'Chat'], note: ['Jegyzet', 'Note'],
-    git: ['Git: állapot, ágak, commit, push', 'Git panel'], feed: ['Hírek', 'Feeds'], sessions: ['Munkamenetek: Claude Code A / B, felhő', 'Claude sessions'],
+    git: ['Git: állapot, ágak, commit, push', 'Git panel'], feed: ['Hírek', 'Feeds'], sessions: ['Munkamenetek: Claude Code A / B, felhő', 'Claude sessions'], controller: ['Vezérlő: új munkamenet az Előszűrőn át', 'Prompt controller'],
     workspaces: ['Munkaterek', 'Saved workspaces'] };                 // not a layout kind: the frame opens its panel (DESK-Q93, WP-35a)
   const OWNERS = { 'prof:': 'profiles', 'root:': 'roots', 'pre:': 'presets', 'web:': 'web', 'desk:': 'deskcmds' };   // desk: the VRG Asztal's views and levels (WP-41), passed in by main
   const KIND = { 's:': 'start', 'cont:': 'start', 'go:': 'start', 'pane:': 'pane', 'prof:': 'term', 'root:': 'root', 'pre:': 'preset', 'web:': 'web', 'desk:': 'desk' };

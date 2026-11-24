@@ -164,6 +164,14 @@ contextBridge.exposeInMainWorld('vrg', {
     teleport: account => call('sessions', 'teleport', { account }),
     canvas: (account, session) => call('sessions', 'canvas', { account, session }),
   },
+  gate: {                                                                        // WP-52 Vezérlő: prompt → Előszűrő → a new session; attachment ids, never paths
+    analyze: (text, attach, mode) => call('gate', 'analyze', { text, ...(Array.isArray(attach) && attach.length ? { attach } : {}), ...(mode ? { mode } : {}) }),
+    send: o => call('gate', 'send', o && typeof o === 'object' ? o : {}),
+    pick: (kind, root) => call('gate', 'pick', root ? { kind, root } : { kind }),
+    recent: () => call('gate', 'recent', {}),
+    folders: () => call('gate', 'folders', {}),
+    photo: data => call('gate', 'photo', { data: String(data || '') }),
+  },
   archive: {                                                                     // WP-47 Archívum: the Artifact Archive (Archive/index.json)
     list: () => call('archive', 'list', {}),
     show: (id, run) => call('archive', 'show', run ? { id, run: true } : { id }),

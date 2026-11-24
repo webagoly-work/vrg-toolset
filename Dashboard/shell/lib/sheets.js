@@ -5,6 +5,9 @@
 //   sheet = { id, name, wins:[win], focus }                            bar = where the sheet tabs sit: 'top' | 'bottom'
 //   win   = { id, kind, open, state, c, r, w, h, max }                 id = a pane id, unique over all sheets; open = how it was opened
 //   preset= { id, name, wins:[{ open, state, c, r, w, h }] }           open = 'pane:<kind>' | 'cat:<catalog id>'
+//   Board labels (WP-51, optional keys): sheet.board = { kind?:'sessions', show:{ origin, color, title, note } } turns the labels on for a
+//   sheet; win.deco = { origin?, machine?, account?, session?, title?, note?, color?, show?:{ origin?, color?, title?, note? } } holds a
+//   window's own values and overrides (absent = automatic / the board's switch). label() merges them with what the pane reports.
 // validate() → { ok:true } | { ok:false, err }. Every op returns a new valid doc, or the SAME doc object when it cannot apply.
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -12,7 +15,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const N = 4;                                                       // 4 × 4 cells
-  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed', 'app', 'sessions'];   // = layout.js KINDS
+  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed', 'app', 'sessions', 'controller'];   // = layout.js KINDS
   const MAX_SHEETS = 12, MAX_PRESETS = 24, MAX_STATE = 8192, MAX_NAME = 40;
   const SHEET_ID = /^s[0-9]{1,4}$/, PANE_ID = /^[a-z0-9-]{1,40}$/, PRESET_ID = /^[a-z0-9-]{1,24}$/;
   const OPEN = /^(pane:[a-z]{1,10}|cat:[a-z0-9:_./-]{1,80})$/;
@@ -49,9 +52,33 @@
     return i < 0 ? null : { c: i % N, r: Math.floor(i / N) };
   }
 
+  // ------------------------------------------------------------ board labels (WP-51)
+  const INFOS = ['origin', 'color', 'title', 'note'];                 // the four kinds of label a board shows or hides
+  const ORIGINS = ['local', 'cloud', 'machine'];                       // H: here · a cloud session · another machine (Remote Control)
+  const COLORS = ['ice', 'warm', 'violet', 'ok', 'warn', 'crit', 'grey'];
+  const ORIGIN_COLOR = { local: 'ice', cloud: 'violet', machine: 'warm' };
+  const ORIGIN_HU = { local: 'Helyi', cloud: 'Felhő', machine: 'Gép' };
+  const DECO_TEXT = { machine: 40, title: 80, note: 200, session: 60 };
+  const okText = (v, n) => typeof v === 'string' && v.length <= n && !/[\u0000-\u001f]/.test(v);
+  const okShow = (o, allowAbsent) => plain(o) && Object.keys(o).every(k => INFOS.includes(k) && typeof o[k] === 'boolean') && (allowAbsent || INFOS.every(k => has(o, k)));
+  function validDeco(d) {
+    if (!plain(d)) return false;
+    for (const k of Object.keys(d)) {
+      if (k === 'origin') { if (!ORIGINS.includes(d.origin)) return false; }
+      else if (k === 'color') { if (!COLORS.includes(d.color)) return false; }
+      else if (k === 'account') { if (d.account !== 'A' && d.account !== 'B') return false; }
+      else if (k === 'show') { if (!okShow(d.show, true)) return false; }
+      else if (has(DECO_TEXT, k)) { if (!okText(d[k], DECO_TEXT[k])) return false; }
+      else return false;
+    }
+    return true;
+  }
+  const validBoard = b => plain(b) && Object.keys(b).every(k => k === 'show' || k === 'kind') && okShow(b.show, false) && (!has(b, 'kind') || b.kind === 'sessions');
+
   // ------------------------------------------------------------ validation
   function validWin(w, ids) {
-    if (!plain(w) || !sameKeys(w, ['id', 'kind', 'open', 'state', 'c', 'r', 'w', 'h', 'max'])) return 'win-keys';
+    if (!plain(w) || !(sameKeys(w, ['id', 'kind', 'open', 'state', 'c', 'r', 'w', 'h', 'max']) || sameKeys(w, ['id', 'kind', 'open', 'state', 'c', 'r', 'w', 'h', 'max', 'deco']))) return 'win-keys';
+    if (has(w, 'deco') && !validDeco(w.deco)) return 'deco';
     if (typeof w.id !== 'string' || !PANE_ID.test(w.id)) return 'win-id';
     if (ids.has(w.id)) return 'duplicate-id';
     ids.add(w.id);
@@ -83,7 +110,8 @@
     if (!Array.isArray(doc.mine) || doc.mine.length > MAX_PRESETS) return bad('mine');
     const sids = new Set(), ids = new Set();
     for (const s of doc.sheets) {
-      if (!plain(s) || !sameKeys(s, ['id', 'name', 'wins', 'focus'])) return bad('sheet-keys');
+      if (!plain(s) || !(sameKeys(s, ['id', 'name', 'wins', 'focus']) || sameKeys(s, ['id', 'name', 'wins', 'focus', 'board']))) return bad('sheet-keys');
+      if (has(s, 'board') && !validBoard(s.board)) return bad('board');
       if (typeof s.id !== 'string' || !SHEET_ID.test(s.id) || sids.has(s.id)) return bad('sheet-id');
       sids.add(s.id);
       if (!okName(s.name)) return bad('name');
@@ -268,6 +296,56 @@
     return sheet.wins.map(w => ({ id: w.id, rect: w.max ? { ...FULL } : tileOf(w), max: w.max, covered: !!top && top.id !== w.id }));
   }
 
+  // ------------------------------------------------------------ board labels: ops and the merge
+  // patch the window's deco: a key set to null (or '' for a text) goes back to automatic; an empty deco is removed
+  function setDeco(doc, wid, patch) {
+    if (!plain(patch)) return doc;
+    return editWin(doc, wid, w => {
+      const d = plain(w.deco) ? clone(w.deco) : {};
+      for (const k of Object.keys(patch)) {
+        const v = patch[k];
+        if (k === 'show' && plain(v)) {
+          const sh = plain(d.show) ? d.show : {};
+          for (const i of Object.keys(v)) { if (v[i] === null) delete sh[i]; else sh[i] = v[i]; }
+          if (Object.keys(sh).length) d.show = sh; else delete d.show;
+        } else if (v === null || v === '') delete d[k];
+        else d[k] = typeof v === 'string' ? v.trim() : v;
+      }
+      if (Object.keys(d).length) w.deco = d; else if (has(w, 'deco')) delete w.deco; else return false;
+    });
+  }
+  // the sheet's board: { show } on, null off; a missing show key keeps the old switch (all on for a new board)
+  function setBoard(doc, sid, board) {
+    return edit(doc, sid, s => {
+      if (board === null) { if (!has(s, 'board')) return false; delete s.board; return; }
+      if (!plain(board)) return false;
+      const old = plain(s.board) ? s.board : { show: { origin: true, color: true, title: true, note: true } };
+      const nb = { ...clone(old), ...(has(board, 'kind') ? { kind: board.kind } : {}), show: { ...old.show, ...(plain(board.show) ? board.show : {}) } };
+      s.board = nb;
+    });
+  }
+  const boardOf = (doc, kind) => doc.sheets.find(s => s.board && s.board.kind === kind) || null;
+  // what a window's labels say: sheet.board + win.deco + `auto` (what the pane reports: { origin?, account?, title?, url? })
+  //   → { on, show:{ origin, color, title, note }, origin, originText, color, title, note }   (on = false: no board on this sheet)
+  function label(sheet, win, auto) {
+    const b = sheet && plain(sheet.board) ? sheet.board : null;
+    const d = win && plain(win.deco) ? win.deco : {};
+    const a = plain(auto) ? auto : {};
+    const origin = d.origin || (ORIGINS.includes(a.origin) ? a.origin : '');
+    const account = d.account || (a.account === 'A' || a.account === 'B' ? a.account : '');
+    const machine = d.machine || '';
+    const originText = !origin ? '' : origin === 'machine' ? 'Gép' + (machine ? ': ' + machine : '') : ORIGIN_HU[origin] + (origin === 'local' && account ? ' · ' + account : '');
+    const color = d.color || ORIGIN_COLOR[origin] || 'grey';
+    const title = d.title || (typeof a.title === 'string' ? a.title.slice(0, DECO_TEXT.title) : '');
+    const note = d.note || '';
+    const show = {};
+    for (const i of INFOS) show[i] = !!b && (plain(d.show) && typeof d.show[i] === 'boolean' ? d.show[i] : !!b.show[i]);
+    if (!originText) show.origin = false;
+    if (!title) show.title = false;
+    if (!note) show.note = false;
+    return { on: !!b, show, origin, originText, color, title, note };
+  }
+
   // ------------------------------------------------------------ presets
   // a preset's windows as they are, with fresh pane ids; `resolve(open)` → { kind, open, state } | null (a cat: item the page could not
   // turn into a window is left out). The page resolves cat: items first (it asks main), so this stays pure.
@@ -310,5 +388,6 @@
     openWin, closeWin, focusWin, maximize, restore, minimize, toggleMax, setState, setKind,
     resizeTarget, resize, moveTarget, move, moveToSheet, view,
     fromPreset, presetFocus, savePreset, removePreset,
+    INFOS, ORIGINS, COLORS, ORIGIN_COLOR, validDeco, validBoard, setDeco, setBoard, boardOf, label,
   };
 });

@@ -21,11 +21,11 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
 | open · user | 149 | 38 |
-| open · dev | 288 | 60 |
+| open · dev | 288 | 61 |
 | open · all | 18 | 1 |
 | internal | 77 | 0 |
 | roadmap | 59 | 5 |
-| **total** | **591** | **104** |
+| **total** | **591** | **105** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -104,6 +104,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `go` | GO kódszavak · *GO codephrases* | runbook · session entry point | `dev:ai` | fejlesztes | live |
 | `trace` | Ügynöknyom · *Agent trace* | view · observability | `console` | fejlesztes | beta |
 | `sessions` | Munkamenetek · *Claude sessions* | panel · session manager | `dev:ai` | fejlesztes | beta |
+| `controller` | Vezérlő · *Prompt controller* | panel · prompt router | `dev:ai` | fejlesztes | beta |
 | `munkavaszon` | Munkavászon · *Session Canvas* | view · observability | `dev:ai` | fejlesztes | beta |
 | `stack` | VRG Rétegverem · *VRG Stack* | knowledge base · graph | `dev:knowledge` | fejlesztes | live |
 | `stack.connectome` | Konnektóm · *Connectome* | view · graph visualization | `stack` | fejlesztes | live |

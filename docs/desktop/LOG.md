@@ -296,3 +296,55 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   a throwaway config folder of 85 sessions. **Not run:** the Electron probe `shell/selftest/wp-50.js`, check-start /
   check-catalog against H:, inventory.js (needs the anonymise map), the real `claude` flags. All in
   `docs/handoff/2026-11-24_munkamenetek-H.md`.
+
+## WP-51 — Munkamenet-tábla: board labels on a Lap (2026-11-24, cloud session)
+
+- Asked for: besides the list, a board like the Desktop's 4 × 4 Lap; around every window its origin (local / cloud / another
+  machine) as text and as a colour frame, the session's title above, a note below; each of the four shown or hidden on the board,
+  and overridable per window by right-click. Approach B of `docs/research/2026-11-24_elosszuro-roadmap.md` §1: a Desktop Lap
+  with labels, not a second grid. DESKU-Q26.
+- `shell/lib/sheets.js`: optional `sheet.board = { kind?:'sessions', show:{ origin, color, title, note } }` and
+  `win.deco = { origin?, machine?, account?, session?, title?, note?, color?, show? }`, strictly validated (no other key, texts
+  ≤ 80 / 200 / 40, no control characters); `setBoard`, `setDeco` (null / '' = back to automatic, an emptied deco is removed),
+  `boardOf`, `label(sheet, win, auto)` (the board's switches, the window's overrides, then what the pane reports).
+- `page/sheets.js`: every window has a label bar above (origin chip + title) and a note bar below; the frame takes the colour
+  (`data-deco`: ice local, violet cloud, warm machine, or the window's own). Automatic: a `claude-a/b` terminal = Helyi · A/B with
+  the title Claude Code sets (term.title events); a browser on claude.ai/code = Felhő with the page title. Right-click on the bars
+  or Címkék… in the window menu: Cím…, Megjegyzés…, Eredet (Automatikus / Helyi / Felhő / Másik gép…), Szín, Ennél az ablaknál
+  (each of the four: tábla szerint → mindig → soha), reset, the board switches. Double-click the title / note to edit. Sheet tab →
+  Tábla-címkék… turns labels on for ANY Lap. `VRGSheets.sessionBoard()` makes the Munkamenetek board once (Vezérlő 4 × 1 on top,
+  Munkamenetek 1 × 3 on the left) and switches to it; `decorate(id, deco)`, `labelOf(id)`, `onBoard()`.
+- Main hands its labels over: `claudeterm.open({ deco })` → `layout.open { …, deco }` → `frame.adoptTerm` → `VRGSheets.decorate`;
+  a resumed session = local, its account, its id and title; Áthozás = local, "Áthozva a felhőből".
+- Munkamenetek: **Tábla ⇄ Lista** button; **Gyors elérés** right panel (`shared/sidepanel`, folded to its icon rail when the
+  pane is narrower than 560 px): Munkavászon, Ügynöknyom, Napló, Divergencia, Rétegverem, Vonaltérkép (Egyszerű) + Futásnapló,
+  Vezérlőterem, Döntésnapló, Thread Board, Kontextuscsomag, Claude oldalchat, GO kódszavak, Promptok (Részletes), via `VRGDesk.open`.
+- `shared/sidepanel/` (new, a fork of this work): the Planner's side panel (`Planner/projects/varler-planner/src/05db-layout.js`,
+  `shell.html` `.side`/`.grp`) as a plug-in for any page: modules with controls, simple / detailed mode, icon rail, resize grip,
+  per-key saved state; built-ins links / toggles / notes / status; `README.md` lists six more hosts. Loaded by `vrg-desktop.html`.
+- Tests: `wp-51.test.js` 5; `shared/sidepanel/test` 7 (one in Chromium). A Chromium render of a mock board with the real CSS:
+  frames ice / violet / warm from computed styles, no page errors.
+
+## WP-52 — Vezérlő + Előszűrő: one prompt box, filtered into a new session (2026-11-24, cloud session)
+
+- Asked for: a central controller above the board. Section 1 = one prompt box; Egyszerű: ＋ (attach) and Küldés; Részletes: a
+  row of buttons (Tallózás, Legutóbbiak, Mappa, Galéria, Fotó, QR, Küldés). A prompt is never sent as typed: an offline filter decides
+  whether it is a new independent request or one that depends on VRG work and context, and dresses it with a harness (sources,
+  rules, output form, model) for consistent and cheaper sessions. Section 2 is the Founder's next part (a placeholder).
+- `Prefilter/` (new, a fork of this work): `prefilter.js` (`buildIndex` / `loadIndex` with a gitignored cache, `analyze`, `dress`),
+  `rules.json` (thresholds 0.55 / 0.3, weights, intent and continuation words, the three Hungarian templates), `common-words.json`,
+  `cli.js`, `README.md`, tests 7. Index here: 445 entities, ~0.1 s; 6–10 ms per prompt.
+- `shell/lib/gate.js`: attachments as ids (main's dialog, the recent list in setting `gate.recent`, a roots.json folder, a camera
+  photo saved to `Full\inbox\vezerlo`), paths only inside main's prompt; `analyze` (verdict, anchors, the dressing, where it would
+  start) and `send`: always dressed; independent → `Full\home\claude-free` (no CLAUDE.md: no VRG context loaded), context /
+  unsure → the repo; `--model` from the verdict or the user; window labels (title = first line, note = the route + model).
+  `claudeterm.open` takes `maxPrompt` up to 12 000 for a dressed prompt.
+- IPC `gate.analyze / send / pick / recent / folders / photo` (wp-35 pin 119 → 125); preload `vrg.gate`; pane kind `controller`
+  (`page/panes/controller.js`, panes.css), catalog item `controller` (Dev, under `dev:ai`, beta). QR uses Chromium's
+  BarcodeDetector where the platform has one (not on Windows desktop: the pane says so and points to VRG Mobile).
+- The frame page's session has no permission handler (Electron allows by default), so the camera works; that default is itself a
+  finding for the local session (handoff), not changed blind.
+- Research: `docs/research/2026-11-24_prompt-prefilter-research.md` (sourced notes) and `2026-11-24_elosszuro-roadmap.md`
+  (the board choice, the pipeline of five stages, 11 vectors).
+- Tests: `wp-52.test.js` 6 (a fake Előszűrő, then the real one on this repo); the full Dashboard suite: 320 pass, the same 68
+  environment failures as before WP-50. Not run: Electron, the camera, the real `claude --model`.

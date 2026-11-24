@@ -4,7 +4,7 @@
 
 ---
 
-A cloud session built **WP-50 Munkamenetek** (Sessions) for the VRG Asztal on branch `claude/charming-goodall-dc1ol8`:
+A cloud session built **WP-50 Munkamenetek** (Sessions), then WP-51 / WP-52 (below, step 5), for the VRG Asztal on branch `claude/charming-goodall-dc1ol8`:
 a pane that lists the local Claude Code sessions of account A and B and opens them in an embedded terminal
 (continue, fork, with Remote Control), opens the Munkavászon on one, pulls a cloud session down (`--teleport`) and
 opens claude.ai/code in the browser pane. It wrote and ran the unit tests on Linux, but it had no Electron, no real
@@ -47,7 +47,20 @@ push or merge:
      the pane asked.
    Take one screenshot of the window and save it in `Full\_share`.
 
-5. **Then report:** what passed, what you fixed and what is still open. Make no commit or push unless I ask; when I do,
+5. **The board, the Vezérlő and the Előszűrő (WP-51, WP-52, same branch).** Read `docs/desktop/LOG.md` § WP-51 / WP-52.
+   - `node --test Prefilter/test/prefilter.test.js shared/sidepanel/test/sidepanel.test.js` and `node Dashboard/test/run.js WP-51`,
+     `WP-52`. Rebuild the Előszűrő index here (`node Prefilter/cli.js --rebuild "GO MOBILE folytasd"`): with the Stack, jobs and
+     features it is much bigger than in the cloud. Run the 15 sample prompts of its test plus 10 of my real first prompts from
+     the Munkamenetek list, and show me the verdicts; propose threshold changes, do not make them.
+   - In the app: Munkamenetek → Tábla. The Vezérlő is across the top. Send "írj egy verset a télről" (it must start in
+     `Full\home\claude-free` with `--model haiku`) and "GO MOBILE hol tartunk?" (the repo, sonnet); check the windows' labels
+     (Helyi · A, the title, the note with the route), the right-click label menu, the sheet tab's Tábla-címkék, and Másik gép….
+   - Camera: Fotó must ask nothing and work (the frame page has no permission handler; Electron allows by default). Tell me
+     whether that default also lets the frame page use the microphone or other permissions, and propose a handler that allows
+     only video for the Vezérlő. Do not change it without asking. QR: say whether BarcodeDetector exists in this Electron.
+   - `claude --model haiku "…"`: confirm that the model flag and a positional first prompt of ~2 000 characters work on Windows.
+
+6. **Then report:** what passed, what you fixed and what is still open. Make no commit or push unless I ask; when I do,
    first run `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` (the cloud could not refresh the
    inventory: no anonymise map), then commit on the branch above and add the results to `docs/desktop/LOG.md` § WP-50.
    START did not change, so the Kapu needs no rebuild.

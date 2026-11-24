@@ -7,7 +7,7 @@
   'use strict';
   const lib = window.VRGLayoutLib;
   const LABEL = { home: 'Kezdőlap', empty: 'Üres panel', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta',
-    stack: 'Folyamatok', chat: 'Chat', note: 'Jegyzet', git: 'Git', feed: 'Hírek', sessions: 'Munkamenetek' };
+    stack: 'Folyamatok', chat: 'Chat', note: 'Jegyzet', git: 'Git', feed: 'Hírek', sessions: 'Munkamenetek', controller: 'Vezérlő' };
   const el = (tag, attrs, ...kids) => {
     const e = document.createElement(tag);
     for (const k of Object.keys(attrs || {})) { if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); }

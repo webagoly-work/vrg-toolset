@@ -138,7 +138,8 @@ function createSessions({ roots = [], claudeterm, server, repo, fs = nodeFs, now
     if (!claudeterm || !claudeterm.open) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
     const extraArgs = ['--resume', session, ...(fork === true ? ['--fork-session'] : [])];
     log('sessions', 'resume', account, session, fork === true ? 'fork' : '', remote === true ? 'remote' : '');
-    return claudeterm.open({ account, cwd, extraArgs, ...(remote === true ? { firstPrompt: REMOTE_PROMPT } : {}) });
+    const deco = { origin: 'local', account, session: session.slice(0, 60), ...(f.info.title ? { title: f.info.title.slice(0, 80) } : {}) };   // WP-51 board labels
+    return claudeterm.open({ account, cwd, extraArgs, deco, ...(remote === true ? { firstPrompt: REMOTE_PROMPT } : {}) });
   }
 
   function teleport({ account } = {}) {
@@ -146,7 +147,7 @@ function createSessions({ roots = [], claudeterm, server, repo, fs = nodeFs, now
     if (typeof repo !== 'string' || !path.isAbsolute(repo)) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
     if (!claudeterm || !claudeterm.open) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
     log('sessions', 'teleport', account);
-    return claudeterm.open({ account, cwd: repo, extraArgs: ['--teleport'] });
+    return claudeterm.open({ account, cwd: repo, extraArgs: ['--teleport'], deco: { origin: 'local', account, title: 'Áthozva a felhőből' } });
   }
 
   async function canvas({ account, session } = {}) {

@@ -31,7 +31,8 @@ const KEYS = {
   'ws.openWithLine':   { type: v => typeof v === 'boolean', def: true },            // WP-34, DESK-Q91 A (WP-35a): a DevLog line opens its saved workspace
   'srv.inside':        { type: v => typeof v === 'boolean', def: true },            // WP-48: registry servers run hidden inside the shell (console pane)
   'web.inner':         { type: v => typeof v === 'boolean', def: true },            // WP-48: URLs and app pages open in an inner window, not the outside browser
-  'phone.auto':        { type: v => typeof v === 'boolean', def: false },           // WP-49: a wireless link up → the Telefon panel starts every server by itself
+  'phone.auto':        { type: v => typeof v === 'boolean', def: false },
+  'gate.recent':       { type: v => Array.isArray(v) && v.length <= 20 && v.every(p => typeof p === 'string' && p.length <= 1024 && require('path').isAbsolute(p)), def: [] },   // WP-52: the Vezérlő's recent attachments (main only)           // WP-49: a wireless link up → the Telefon panel starts every server by itself
   'net.show':          { type: v => typeof v === 'boolean', def: true },            // WP-49b: the title bar's corner metrics shown
   'net.metrics':       { type: netgrade.validList, def: netgrade.DEFAULT },          // WP-49b: which metrics, in the user's order
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },

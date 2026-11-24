@@ -598,6 +598,33 @@ ipc.register('sessions', 'resume', { account: sessAcc, session: sessId, fork: ty
 ipc.register('sessions', 'teleport', { account: sessAcc }, async p => { const r = sessionsLib.teleport(p); return r && r.term ? { term: r.term } : r; });
 ipc.register('sessions', 'canvas', { account: sessAcc, session: sessId }, async p => sessionsLib.canvas(p));
 
+// Vezérlő (WP-52): one prompt box → the Előszűrő (Prefilter/, offline) → a new Claude Code session with the dressed prompt. The page names
+// attachment ids ('a<n>') that main issued from its own dialog, the recent list, a preset folder or a camera photo; never a path.
+// An independent request starts in Full/home/claude-free (no CLAUDE.md there: no VRG context is loaded), a context request in the repo.
+const gateLib = require('./lib/gate.js').createGate({
+  prefilter: () => { try { return require(path.join(path.resolve(REPO_DIR), 'Prefilter', 'prefilter.js')); } catch (e) { return null; } },
+  claudeterm: claudeTermLazy, repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR), git: () => { try { return gitExe(); } catch (e) { return ''; } },
+  freeDir: path.join(path.resolve(FULL_DIR), 'home', 'claude-free'), inboxDir: path.join(path.resolve(FULL_DIR), 'inbox', 'vezerlo'),
+  pictures: (() => { try { return app.getPath('pictures'); } catch (e) { return undefined; } })(),
+  folders: () => { try { return fsRoots.list().filter(r => r.abs).map(r => ({ id: r.id, hu: r.hu, abs: r.abs })); } catch (e) { return []; } },
+  dialog: async opts => {
+    if (SELFTEST) return [];
+    const r = await require('electron').dialog.showOpenDialog(win, opts);
+    return r.canceled ? [] : r.filePaths;
+  },
+  recentStore: { get: () => onSetting('gate.recent', []), set: v => settings.set('gate.recent', v) },
+  log,
+});
+const gateIds = v => Array.isArray(v) && v.length <= 10 && v.every(x => typeof x === 'string' && /^a[0-9]{1,6}$/.test(x));
+const gateMode = types.enum('auto', 'context', 'independent');
+ipc.register('gate', 'analyze', { text: types.text(8000), attach: gateIds, mode: gateMode }, async p => gateLib.analyze(p), { optional: ['attach', 'mode'] });
+ipc.register('gate', 'send', { text: types.text(8000), attach: gateIds, mode: gateMode, account: types.enum('A', 'B'), model: types.enum('haiku', 'sonnet', 'opus') },
+  async p => { const r = gateLib.send(p); return r && r.term ? { term: r.term } : r; }, { optional: ['attach', 'mode', 'model'] });
+ipc.register('gate', 'pick', { kind: types.enum('browse', 'gallery', 'folder'), root: types.id }, async p => gateLib.pick(p), { optional: ['root'] });
+ipc.register('gate', 'recent', {}, async () => gateLib.recent());
+ipc.register('gate', 'folders', {}, async () => gateLib.folders());
+ipc.register('gate', 'photo', { data: types.text(12 * 1024 * 1024) }, async p => gateLib.photo(p));
+
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
 const notesLib = createNotes({ execFile: require('child_process').execFile, node: nodeExe(), repo: path.resolve(REPO_DIR) });

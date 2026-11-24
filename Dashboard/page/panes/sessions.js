@@ -3,6 +3,9 @@
 //   untouched; the only way while the session is live in another window) · Távvezérlés (resumed with /remote-control, so it shows on
 //   claude.ai/code too) · Vászon (the Munkavászon on this session). The bar: Felhő (claude.ai/code in a browser pane), Áthozás (a Claude
 //   terminal with --teleport: the cloud picker), Frissítés. The list refreshes every 20 s while the pane is shown.
+// WP-51: Tábla ⇄ Lista — the Munkamenetek board is a Lap of the Desktop (4 × 4) with board labels on, the Vezérlő across the top; the
+// button opens it (made once) or goes back to the Munkapad. Gyors elérés: a right-side panel (shared/sidepanel, the Planner's side panel
+// as a plug-in) with the related tools as catalog ids, opened through VRGDesk.open (simple mode: 6, detailed: all).
 // VRGPanes.sessions = { mount(el, state, api), unmount(), state() }. The page names an account and a session id; main does the rest
 // (shell/lib/sessions.js). State { account: 'all'|'A'|'B', q } is kept; the list itself is not.
 (function () {
@@ -47,8 +50,26 @@
   const actionsFor = r => (r && r.live ? ['fork', 'canvas'] : ['resume', 'fork', 'remote', 'canvas']);
   // the account the bar's Áthozás uses: the filter's, else A
   const teleportAccount = f => (cleanState(f).account === 'B' ? 'B' : 'A');
+  // Gyors elérés: the tools around a Claude session, as catalog ids (launcher/vrg-catalog.json); simple mode shows the first six
+  const QUICK = [
+    ['munkavaszon', 'Munkavászon', 'MV', 'The session drawn live (Session Canvas)'],
+    ['trace', 'Ügynöknyom', 'ÜN', 'Agent trace (Varler Console)'],
+    ['gitlog', 'Napló', 'NA', 'Git log of the work lines'],
+    ['divergence', 'Divergencia', 'DV', 'Divergence board: what drifted'],
+    ['stack', 'Rétegverem', 'RV', 'VRG Stack search'],
+    ['layer.l', 'Vonaltérkép', 'VT', 'Dev lines map'],
+    ['layer.u', 'Futásnapló', 'FN', 'Runs (agent and session runs)'],
+    ['layer.a', 'Vezérlőterem', 'VZ', 'Control room'],
+    ['layer.q', 'Döntésnapló', 'DN', 'Decision log'],
+    ['threadboard', 'Thread Board', 'TB', 'Thread Board'],
+    ['context', 'Kontextuscsomag', 'KC', 'Build a context pack for a session'],
+    ['chat', 'Claude oldalchat', 'CH', 'Claude side chat'],
+    ['go', 'GO kódszavak', 'GO', 'Codephrases and work lines'],
+    ['prompts', 'Promptok', 'PR', 'Prompt library'],
+  ];
+  const quickItems = () => QUICK.map(([id, label, icon, title], i) => ({ id, label, icon, title, level: i < 6 ? 'simple' : 'detailed' }));
 
-  const helpers = { ago, sizeText, cleanState, filterRows, actionsFor, teleportAccount, REFRESH_MS };
+  const helpers = { ago, sizeText, cleanState, filterRows, actionsFor, teleportAccount, quickItems, REFRESH_MS };
   if (typeof module !== 'undefined' && module.exports) module.exports = helpers;
   if (typeof document === 'undefined') return;
 
@@ -70,6 +91,7 @@
       root.innerHTML = '';
       root.dataset.role = 'sessions';
       root.title = 'Claude sessions';
+      const main = this.mainEl = el('div', 'sess-main');
       const bar = el('div', 'bar');
       this.acc = el('select', 'account', null, 'Account');
       for (const [v, t] of [['all', 'Mind'], ['A', 'A fiók'], ['B', 'B fiók']]) { const o = el('option', null, t); o.value = v; this.acc.append(o); }
@@ -81,14 +103,36 @@
       bar.append(el('h3', 'title', 'Munkamenetek', 'Claude sessions'), this.acc, this.q,
         btn('cloud', 'Felhő', 'claude.ai/code in a browser pane: the cloud sessions and every Remote Control session', () => this.openCloud()),
         btn('teleport', 'Áthozás', 'Pull a cloud session down into a Claude terminal here (claude --teleport)', () => this.teleport()),
+        this.boardBtn = btn('board', 'Tábla', 'Munkamenet-tábla: a Lap 4 × 4-es rácsán, címkékkel / the session board', () => this.toggleBoard()),
         btn('refresh', 'Frissítés', 'Refresh', () => this.load()));
       this.msg = el('p', 'msg'); this.msg.hidden = true;
       this.list = el('div', 'rows');
-      root.append(bar, this.msg, this.list);
+      main.append(bar, this.msg, this.list);
+      root.append(main);
+      this.side = null;
+      if (W.VRGSidePanel && W.VRGSidePanel.create) {
+        try {
+          const D = () => W.VRGDesk;
+          // a narrow pane (the board's left column) starts with the panel folded to its icon rail, so the list keeps its width
+          this.side = W.VRGSidePanel.create(root, { side: 'right', title: 'Gyors elérés', titleEn: 'Quick access', width: 220, persistKey: 'sessions', mode: 'simple',
+            collapsed: (root.clientWidth || 0) > 0 && root.clientWidth < 560,
+            modules: [W.VRGSidePanel.modules.links(quickItems().map(q => ({ ...q, run: () => { if (D() && D().open) D().open(q.id); else this.say('A VRG Asztal nem érhető el.', true); } })), { id: 'gyors', title: 'Kapcsolódó eszközök', icon: 'GY' })] });
+        } catch (e) { this.side = null; }
+      }
+      this.paintBoard();
       this.timer = setInterval(() => { if (this.root && this.root.isConnected && !document.hidden) this.load(); }, REFRESH_MS);
       this.load();
     },
-    unmount() { clearInterval(this.timer); if (this.root) this.root.innerHTML = ''; this.root = null; this.gone = true; },
+    unmount() { clearInterval(this.timer); if (this.side) { try { this.side.destroy(); } catch (e) {} this.side = null; } if (this.root) this.root.innerHTML = ''; this.root = null; this.gone = true; },
+    // on the session board the button goes back to the Munkapad, elsewhere it opens the board
+    onBoardNow() { const S = W.VRGSheets; if (!S || !S.doc) return false; const d = S.doc(); const s = d.sheets.find(x => x.id === d.active); return !!(s && s.board && s.board.kind === 'sessions'); },
+    paintBoard() { if (this.boardBtn) { const on = this.onBoardNow(); this.boardBtn.textContent = on ? 'Lista' : 'Tábla'; this.boardBtn.dataset.on = on ? '1' : ''; } },
+    async toggleBoard() {
+      const S = W.VRGSheets;
+      if (!S || !S.sessionBoard) { this.say('A Lapok nem érhetők el ebben a nézetben.', true); return; }
+      if (this.onBoardNow()) S.showTree(); else await S.sessionBoard();
+      this.paintBoard();
+    },
     state() { return { ...this.f }; },
 
     say(text, bad) { if (!this.msg) return; this.msg.hidden = !text; this.msg.textContent = text || ''; this.msg.dataset.bad = bad ? '1' : ''; },
@@ -130,6 +174,7 @@
 
     draw() {
       if (!this.root) return;
+      this.paintBoard();
       const now = Date.now();
       const rows = filterRows(this.rows, this.f);
       this.list.replaceChildren();

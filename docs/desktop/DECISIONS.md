@@ -197,3 +197,19 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   names an account and an id.
 - B: embed the Claude desktop app's window (SetParent on a foreign window: fragile, breaks on its updates, no focus or DPI
   handling). C: a section of the Dashboard view instead of a pane (cannot sit beside the terminal it opens on a Lap).
+
+## DESKU-Q26 — The session board is a Lap with labels (WP-51, 2026-11-24)
+
+- **A (taken):** board labels (origin, colour frame, title above, note below) are optional data on a Lap's windows and a switch set on
+  the sheet; any Lap can turn them on; the Munkamenetek board is one such Lap made once. Terminals, browser views and every tile op
+  stay as they are.
+- B: a separate grid inside the Munkamenetek pane that only looks like the Lap (a second layout, nested native views). C: labels as a
+  floating overlay outside the tiles (covers neighbours; native views paint above it).
+
+## DESKU-Q27 — Every Vezérlő prompt goes through the Előszűrő; the verdict also picks the folder (WP-52, 2026-11-24)
+
+- **A (taken):** the gate always analyzes and dresses; an independent request starts in a folder without CLAUDE.md so no VRG context
+  loads at all, a context or unsure one in the repo; the user can force the route and the model in Részletes mode. Thresholds lean
+  towards context (a wrong "independent" costs a failed turn, a wrong "context" only tokens).
+- B: dress only, always in the repo (CLAUDE.md is still read: no real saving). C: send untouched unless the user asks (the filter
+  becomes optional and is forgotten).
