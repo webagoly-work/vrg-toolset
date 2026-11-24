@@ -2,7 +2,6 @@ package hu.vrg.mobile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +29,7 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.theme.vrgBorder
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.kit.ui.VrgBack
@@ -60,7 +60,7 @@ fun StageBadge(s: Stage) {
     }
     Text(
         s.label, style = Melyviz.small.copy(fontSize = 9.sp, color = c),
-        modifier = Modifier.border(BorderStroke(1.dp, c), RoundedCornerShape(6.dp)).padding(horizontal = 5.dp, vertical = 1.dp),
+        modifier = Modifier.vrgBorder(BorderStroke(1.dp, c), RoundedCornerShape(6.dp)).padding(horizontal = 5.dp, vertical = 1.dp),
     )
 }
 

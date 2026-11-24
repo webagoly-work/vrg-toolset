@@ -337,6 +337,12 @@ details.kp-wiz ol{margin:var(--vk-space-2) 0 0;padding-left:var(--vk-space-6);di
   --vk-wire-signal: var(--vk-layer-7);
   --vk-wire-other: var(--vk-layer-8);
 
+  /* ---------- dot matrix (components/dotmatrix.css; theme Grafit draws its frames with it) ---------- */
+  --vk-frame: line;               /* line | dots: how the theme draws panel and card frames */
+  --vk-dot-pitch: 4px;            /* centre-to-centre distance of the matrix */
+  --vk-dot-r: .85px;              /* dot radius */
+  --vk-dot: color-mix(in srgb, var(--vk-text) 30%, transparent);   /* an unlit dot */
+  --vk-dot-lit: var(--vk-accent);                                    /* a lit dot */
   /* ---------- type ---------- */
   --vk-font-sans: "VK Inter", "Inter", "Segoe UI", system-ui, sans-serif;
   --vk-font-voice: "VK Barlow Condensed", "Barlow Condensed", Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
@@ -3190,7 +3196,7 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
 <script type="application/json" id="kpTools">[{"n":1,"key":"1","name":"Varler Planner","path":"../vrg-toolset\\Planner\\projects\\varler-planner\\dist\\varler_planner.html","dir":".."},{"n":2,"key":"2","name":"Panel anyagár kalkulátor","path":"../vrg-toolset\\Calculator\\panel_anyagar_kalkulator.html","dir":".."},{"n":3,"key":"3","name":"Általános kalkulátor","path":"../vrg-toolset\\Calculator\\Altalanos_Villanyszerelui_Kalkulator.html","dir":".."},{"n":4,"key":"4","name":"VRG MindMap","path":"../vrg-toolset\\MindMap\\vrg_mindmap.html","dir":".."},{"n":5,"key":"5","name":"Valena választó","path":"../vrg-toolset\\Toolbox\\valena-life-szerelvenytervezo.html","dir":".."},{"n":6,"key":"6","name":"Készlet / Inventory","path":"../vrg-toolset\\Inventory\\dist\\vrg-inventory.html","dir":".."},{"n":7,"key":"7","name":"Toolbox","path":"../vrg-toolset\\toolbox.html","dir":".."},{"n":8,"key":"8","name":"LED árkalkulátor","path":"../vrg-toolset\\Calculator\\led_arkalkulator.html","dir":".."},{"n":9,"key":"9","name":"VRG BuildTree","path":"../vrg-toolset\\Modder\\vrg-buildtree.html","dir":".."},{"n":10,"key":"0","name":"VRG Vendor","path":"../vrg-toolset\\vrg-vendor.html","dir":".."},{"n":11,"key":"T","name":"Solomon Gömb","path":"../vrg-toolset\\Solomon\\dist\\vrg-solomon.html","dir":".."},{"n":12,"key":"B","name":"VRG UI Kit galéria","path":"../vrg-toolset\\shared\\vrg-ui-kit\\gallery.html","dir":".."},{"n":13,"key":"K","name":"VRG Kódváros","path":"../vrg-toolset\\CodeCity\\dist\\vrg-codecity.html","dir":".."},{"n":14,"key":"M","name":"VRG Térkép","path":"../vrg-toolset\\Map\\vrg-terkep.html","dir":"..","url":"http://localhost:8802/"}]</script>
 <script>
 "use strict";
-const KP_BUILD = "94f0103fd5da";
+const KP_BUILD = "5886182d1e33";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 

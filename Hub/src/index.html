@@ -172,6 +172,12 @@
   --vk-wire-signal: var(--vk-layer-7);
   --vk-wire-other: var(--vk-layer-8);
 
+  /* ---------- dot matrix (components/dotmatrix.css; theme Grafit draws its frames with it) ---------- */
+  --vk-frame: line;               /* line | dots: how the theme draws panel and card frames */
+  --vk-dot-pitch: 4px;            /* centre-to-centre distance of the matrix */
+  --vk-dot-r: .85px;              /* dot radius */
+  --vk-dot: color-mix(in srgb, var(--vk-text) 30%, transparent);   /* an unlit dot */
+  --vk-dot-lit: var(--vk-accent);                                    /* a lit dot */
   /* ---------- type ---------- */
   --vk-font-sans: "VK Inter", "Inter", "Segoe UI", system-ui, sans-serif;
   --vk-font-voice: "VK Barlow Condensed", "Barlow Condensed", Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;

@@ -270,6 +270,31 @@
     "shallows": "#0A141C",
     "activity": "#E8A873"
    }
+  },
+  {
+   "id": "kit-grafit",
+   "name": "Grafit",
+   "light": false,
+   "colors": {
+    "abyss": "#0F0F0F",
+    "deep": "#161616",
+    "surface": "#1B1B1B",
+    "raised": "#212121",
+    "line": "#3B3B3B",
+    "lineSoft": "#272727",
+    "ink": "#E6E6E3",
+    "muted": "#A3A3A0",
+    "faint": "#7A7A77",
+    "glow": "#F2F2EF",
+    "glowDim": "#727271",
+    "current": "#A9BAD3",
+    "sand": "#D6C28F",
+    "coral": "#E39D93",
+    "kelp": "#9FC8A6",
+    "onGlow": "#121212",
+    "shallows": "#161616",
+    "activity": "#D4B48F"
+   }
   }
  ]
 }
