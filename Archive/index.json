@@ -1142,6 +1142,29 @@
       ],
       "dateApprox": true,
       "file": "files/omnicomm-spectrum.html"
+    },
+    {
+      "id": "domoszlo-betap",
+      "title": "Domoszló ideiglenes betáp",
+      "created": "2026-11-24",
+      "updated": "2026-11-24",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "Order page for job VG-2026-DM1-04: copyable material lists for variants A/B/C (optional part numbers and DIN switch), the order list by location, and drawings of the two sub-distribution boards, the new devices in the garage board and the industrial socket box.",
+      "purpose": "To order the materials of the Domoszló temporary supply job by copy-paste, in the same form as the Acti9 board order page.",
+      "context": [
+        "Client job VG-2026-DM1-04 (cost estimate 2026-11-06)",
+        "Follows the Acti9 board order page"
+      ],
+      "tags": [
+        "job",
+        "material-list",
+        "distribution-board",
+        "client"
+      ],
+      "url": "https://claude.ai/artifact/AfanRSKVM69i2KNt2pQKzP"
     }
   ]
 }
