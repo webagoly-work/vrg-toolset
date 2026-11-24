@@ -46,6 +46,14 @@ data class Palette(
     val radiusSmall: Dp = 10.dp,
     /** The VRG UI Kit faces (Barlow Condensed titles, Inter body, JetBrains Mono readouts); the six keep the system ones. */
     val kitFaces: Boolean = false,
+    /**
+     * The terminal look (kit theme Grafit, `--vk-frame: dots`): frames and indicators drawn as a fine dot matrix
+     * (theme/Dots.kt: vrgBorder, dotArc, dotLine) and titles in the mono face. Off for every other palette.
+     */
+    val terminal: Boolean = false,
+    /** The dot matrix's geometry (`--vk-dot-pitch`, `--vk-dot-r`): centre-to-centre distance and dot radius. */
+    val dotPitch: Dp = DotDefaults.pitch,
+    val dotRadius: Dp = DotDefaults.radius,
 )
 
 object Palettes {
@@ -128,7 +136,7 @@ object Palettes {
 
     /**
      * Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against (KitTokensTest
-     * reads this file). The app's own six first, then the four VRG UI Kit themes generated into KitTokens.kt (WP M16).
+     * reads this file). The app's own seven first, then the five VRG UI Kit themes generated into KitTokens.kt (WP M16; Grafit added later).
      */
     val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI) + KitTokens.ALL
 
@@ -162,6 +170,9 @@ object Melyviz {
     val radiusSmall get() = palette.radiusSmall
     val gutter = 12.dp
 
+    /** The terminal look is on (Grafit): dot-matrix frames and indicators, mono titles. */
+    val terminal get() = palette.terminal
+
     /** Readouts (IP, port, time): JetBrains Mono on a kit palette, the system monospace on the six. */
     val mono get() = if (palette.kitFaces) KitFaces.mono else FontFamily.Monospace
     private val sans get() = if (palette.kitFaces) KitFaces.sans else FontFamily.Default
@@ -170,7 +181,9 @@ object Melyviz {
     val water get() = Brush.verticalGradient(listOf(palette.shallows, deep, abyss))
 
     // A kit palette switches the faces only; the sizes stay, so a screen keeps its layout on all ten.
-    val title get() = if (palette.kitFaces)
+    val title get() = if (palette.terminal)
+        TextStyle(fontSize = 14.sp, fontFamily = KitFaces.mono, fontWeight = FontWeight.Normal, letterSpacing = 0.08.em, color = ink)
+    else if (palette.kitFaces)
         TextStyle(fontSize = 15.sp, fontFamily = KitFaces.voice, fontWeight = FontWeight.SemiBold, letterSpacing = 0.06.em, color = ink)
     else TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.4.sp, color = ink)
     val label get() = if (palette.kitFaces)

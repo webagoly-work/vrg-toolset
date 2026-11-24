@@ -279,7 +279,9 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
 // desk: the VRG Asztal's views and levels as palette commands (WP-41); main only forwards them to the frame, a level is also saved here
 const DESK_CMDS = [['desk:toggle', 'Nézetváltás: Irányítópult ⇄ Asztal', 'Toggle Dashboard / Desktop view'], ['desk:view:dashboard', 'Irányítópult nézet', 'Dashboard view'],
   ['desk:view:desktop', 'Asztal nézet', 'Desktop view'], ['desk:level:user', 'Szint: Felhasználó', 'Level: User'], ['desk:level:dev', 'Szint: Fejlesztő', 'Level: Dev'],
-  ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip']];
+  ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip'],
+  ['desk:look:grafit', 'Megjelenés: Grafit (sötétszürke, pontmátrix)', 'Look: Grafit (graphite, dot matrix)'], ['desk:look:melyviz', 'Megjelenés: Mélyvíz', 'Look: Mélyvíz'],
+  ['desk:look:toggle', 'Megjelenés váltása: Mélyvíz ⇄ Grafit', 'Toggle look: Mélyvíz / Grafit']];
 const deskCmds = {
   paletteItems: () => DESK_CMDS.map(([id, hu, en]) => ({ id, hu, en })),
   run: id => {
@@ -287,6 +289,7 @@ const deskCmds = {
     if (!c) return { ok: false, hu: 'Ismeretlen parancs.', en: 'Unknown command.' };
     const cmd = id.slice(5);
     if (cmd.startsWith('level:')) { try { settings.set('desk.level', cmd.slice(6)); } catch (e) {} }
+    if (cmd === 'look:grafit' || cmd === 'look:melyviz') { try { settings.set('ui.look', cmd.slice(5)); } catch (e) {} }   // the page saves a toggle itself
     ipc.emit(win, 'desktop', 'cmd', { cmd });
     return { ok: true, hu: c[1], en: c[2] };
   },
@@ -715,7 +718,7 @@ ipc.register('desktop', 'catalog', { level: types.enum('user', 'dev', 'all') }, 
 }, { optional: ['level'] });
 ipc.register('desktop', 'state', {}, async () => ({
   level: deskSetting('desk.level', 'user'), view: deskSetting('desk.view', 'dashboard'), top: deskSetting('desk.top', null), dock: deskSetting('desk.dock', null),
-  auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START,
+  auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START, look: deskSetting('ui.look', 'melyviz'),
 }));
 // Programok (WP-45): third-party programs from launcher/programs.json + the ServiceKit catalog, installed into Full\programs as jobs
 // (kind 'program'). The page names program ids only; the level that gates an install is the saved desk.level, never the page's word.

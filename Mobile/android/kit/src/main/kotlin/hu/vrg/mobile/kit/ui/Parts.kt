@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.selected
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palette
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Mélyvíz building blocks shared by the features' screens (the shell's settings first). They match
 // the ones Légegér's sheets were drawn with, so a setting looks the same wherever it sits.
@@ -57,7 +58,7 @@ fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null,
     // a button for TalkBack (with its selected state), and taller than it was (25 → ~33 dp; Compose widens the touch area
     // to 48 dp where there is room): UI-CHECKLIST 1, 6, 8. Selected is a filled chip, unselected an outline: not colour alone.
     val base = Modifier.clip(shape).background(if (lit) Melyviz.glow else Melyviz.surface)
-        .border(1.dp, if (lit) Melyviz.glow else Melyviz.line, shape)
+        .vrgBorder(1.dp, if (lit) Melyviz.glow else Melyviz.line, shape)
         .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
         .semantics { this.selected = selected }
     if (status == null || !status.busy) {
@@ -107,7 +108,7 @@ fun PaletteRow(p: Palette, selected: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(vertical = 3.dp).heightIn(min = 48.dp).clip(shape)
             .background(p.surface)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+            .vrgBorder(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
             .clickable(role = Role.RadioButton, onClick = onClick).semantics { this.selected = selected }.padding(horizontal = 12.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

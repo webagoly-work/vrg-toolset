@@ -3,7 +3,6 @@ package hu.vrg.mobile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +59,7 @@ import hu.vrg.mobile.core.PhoneSheets
 import hu.vrg.mobile.core.Sheets
 import hu.vrg.mobile.kit.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.theme.vrgBorder
 import hu.vrg.mobile.kit.ui.InstallQrPanel
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
@@ -131,7 +131,7 @@ private fun PagedHome(act: HomeActions, cols: Int, landscape: Boolean) {
                     Text("${p.n} ${p.short}", style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Melyviz.glow else Melyviz.muted,
                         fontWeight = if (on) FontWeight.Bold else FontWeight.Normal), maxLines = 1,
                         modifier = Modifier.heightIn(min = 32.dp).background(if (on) Melyviz.raised else Melyviz.surface.copy(alpha = .6f), RoundedCornerShape(16.dp))
-                            .border(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(16.dp))
+                            .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(16.dp))
                             .clearAndSetSemantics { }
                             .padding(horizontal = 10.dp, vertical = 7.dp))
                 }
@@ -191,7 +191,7 @@ private fun FeatureCard(f: FeatureInfo, act: HomeActions, modifier: Modifier) {
             Column(
                 inner.heightIn(min = 96.dp)
                     .background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = .7f), shape)
-                    .border(BorderStroke(if (sketch) 1.5.dp else 1.dp, if (built) (if (sketch) Melyviz.glow else Melyviz.glowDim) else Melyviz.lineSoft), shape)
+                    .vrgBorder(BorderStroke(if (sketch) 1.5.dp else 1.dp, if (built) (if (sketch) Melyviz.glow else Melyviz.glowDim) else Melyviz.lineSoft), shape)
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -252,7 +252,7 @@ private fun sketchCount(): Int? {
 private fun PluginChip(f: FeatureInfo, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.heightIn(min = 40.dp).background(Melyviz.surface, shape).border(1.dp, Melyviz.glowDim, shape)
+        Modifier.heightIn(min = 40.dp).background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.glowDim, shape)
             .clickable(onClick = onClick).semantics { role = Role.Button; contentDescription = f.title }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -269,7 +269,7 @@ private fun HomeIcon(f: FeatureInfo, modifier: Modifier) {
     val built = Registry.isBuilt(f)
     Column(modifier.padding(vertical = 8.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.size(50.dp).background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+            .vrgBorder(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
             Mini(f.glyph, f.title, ringOf(f), size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
         }
         Text(f.title, style = Melyviz.small.copy(fontSize = 10.sp, color = if (built) Melyviz.ink else Melyviz.muted), maxLines = 1,
@@ -336,7 +336,7 @@ internal fun OwnerInstallButton(modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(Melyviz.radiusSmall)
     Row(
-        modifier.fillMaxWidth().heightIn(min = 48.dp).background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape)
+        modifier.fillMaxWidth().heightIn(min = 48.dp).background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape)
             .clickable { open = true }.semantics { role = Role.Button; contentDescription = "Telepítő QR másik telefonra" }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +352,7 @@ internal fun OwnerInstallButton(modifier: Modifier = Modifier) {
     if (open) Dialog(onDismissRequest = { open = false }) {
         val dshape = RoundedCornerShape(Melyviz.radius)
         Column(
-            Modifier.fillMaxWidth().background(Melyviz.deep, dshape).border(1.dp, Melyviz.glowDim, dshape)
+            Modifier.fillMaxWidth().background(Melyviz.deep, dshape).vrgBorder(1.dp, Melyviz.glowDim, dshape)
                 .verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
             Text("TELEPÍTŐ QR", style = Melyviz.title.copy(fontSize = 15.sp))

@@ -1,0 +1,90 @@
+<section class="g-sec" id="f12" data-vk-hop aria-labelledby="f12-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">12</span>
+    <h2 id="f12-h" class="vk-title">Pontmátrix</h2>
+    <p class="g-sec__lead">Keretek, elválasztók, jelzőfények és kijelzők finom, kerek pontokból: a modern fekete-fehér terminál fele a <b>Grafit</b> témának. Minden témában használható; Grafitban a panel, a kártya és a csempe magától ezt a keretet viseli, jelölés nélkül. <code>components/dotmatrix.css</code></p>
+  </header>
+
+  <style>
+    .f12-grid { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-items: start; }
+    .f12-box { padding: var(--vk-space-4); background: var(--vk-surface-1); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius); min-height: 64px; }
+    .f12-box small { display: block; margin-top: var(--vk-space-1); color: var(--vk-text-muted); font-size: var(--vk-fs-xs); }
+    .f12-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-4); }
+    .f12-row > span { display: inline-flex; align-items: center; gap: var(--vk-space-2); font-size: var(--vk-fs-sm); }
+    .f12-meter { display: grid; grid-template-columns: 7em auto 3.5em; gap: var(--vk-space-2) var(--vk-space-3); align-items: center; font-size: var(--vk-fs-sm); }
+    .f12-meter code { font-family: var(--vk-font-mono); color: var(--vk-text-muted); text-align: right; }
+    .f12-field { height: 96px; border-radius: var(--vk-radius); display: grid; place-items: center; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+    .f12-term { display: grid; grid-template-rows: auto 1fr auto; min-height: 220px; background: var(--vk-bg-sunken); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius-lg); overflow: hidden; }
+    .f12-term__bar { display: flex; align-items: center; gap: var(--vk-space-3); padding: var(--vk-space-2) var(--vk-space-4); font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); }
+    .f12-term__bar .sp { flex: 1; }
+    .f12-term__body { padding: var(--vk-space-3) var(--vk-space-4); font: var(--vk-fs-sm)/1.6 var(--vk-font-mono); color: var(--vk-term-text); }
+    .f12-term__body .m { color: var(--vk-term-muted); } .f12-term__body .ok { color: var(--vk-term-ok); } .f12-term__body .w { color: var(--vk-term-warn); }
+    .f12-term__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--vk-space-4); padding: var(--vk-space-3) var(--vk-space-4); }
+    .f12-term__foot small { display: block; color: var(--vk-text-muted); font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; margin-bottom: var(--vk-space-1); }
+  </style>
+
+  <article class="g-demo" id="f12-frame" data-vk-hop>
+    <h3 class="g-demo__title">Keret <code>.vk-dots</code></h3>
+    <p class="g-demo__note">Egy pontsor a doboz szélén; a <code>round</code> ismétlés miatt minden él egész pontra fut ki. A saját szegély legyen átlátszó. <code>data-dots</code> színezi: <code>lit</code> = te / kijelölés, <code>run</code> = fut, <code>ok</code> · <code>warn</code> · <code>crit</code>.</p>
+    <div class="f12-grid">
+      <div class="f12-box vk-dots">Alap<small>nyugvó keret</small></div>
+      <div class="f12-box vk-dots" data-dots="lit">Kijelölve<small>data-dots="lit"</small></div>
+      <div class="f12-box vk-dots" data-dots="run">Fut<small>data-dots="run"</small></div>
+      <div class="f12-box vk-dots" data-dots="crit">Hiba<small>data-dots="crit"</small></div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f12-led" data-vk-hop>
+    <h3 class="g-demo__title">Jelzőfény <code>.vk-dotled</code></h3>
+    <p class="g-demo__note">3×3 pontos lámpa. A kialudt pontok is látszanak, így a kikapcsolt állapot is lámpának olvasható. <code>data-state="active"</code> lassan villog (csökkentett mozgásnál áll). A szín itt sem az egyetlen jel: mellette mindig ott a felirat.</p>
+    <p class="f12-row">
+      <span><i class="vk-dotled" data-tone="off"></i> kikapcsolva</span>
+      <span><i class="vk-dotled" data-tone="lit"></i> kész</span>
+      <span><i class="vk-dotled" data-tone="ok"></i> rendben</span>
+      <span><i class="vk-dotled" data-tone="warn"></i> figyelem</span>
+      <span><i class="vk-dotled" data-tone="crit"></i> hiba</span>
+      <span><i class="vk-dotled" data-tone="run" data-state="active"></i> fut</span>
+    </p>
+  </article>
+
+  <article class="g-demo" id="f12-bar" data-vk-hop>
+    <h3 class="g-demo__title">Mérő <code>.vk-dotbar</code></h3>
+    <p class="g-demo__note">Pontsor, balról világít a <code>--vk-dotbar-v</code> értékéig (0…1), egész pontra kerekítve. A számot mindig írd ki mellé.</p>
+    <div class="f12-meter">
+      <span>Lemez</span><span class="vk-dotbar" style="--vk-dotbar-v:.62"></span><code>62%</code>
+      <span>Processzor</span><span class="vk-dotbar" data-tone="run" style="--vk-dotbar-v:.31"></span><code>31%</code>
+      <span>Memória</span><span class="vk-dotbar" data-tone="warn" style="--vk-dotbar-v:.86"></span><code>86%</code>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f12-rule" data-vk-hop>
+    <h3 class="g-demo__title">Elválasztó és alap <code>.vk-dotrule</code> · <code>.vk-dotfield</code></h3>
+    <p class="g-demo__note">A pontozott vonal a hajszálvonal helyére kerül; a pontozott alap üres állapotokhoz, vásznakhoz, kutakhoz való, halványabb, mint a keret.</p>
+    <hr class="vk-dotrule">
+    <div class="vk-dotfield f12-field">Üres munkaterület</div>
+  </article>
+
+  <article class="g-demo" id="f12-text" data-vk-hop>
+    <h3 class="g-demo__title">Kijelző <code>.vk-dottext</code></h3>
+    <p class="g-demo__note">Nagy kiolvasások (óra, számláló) pontokkal kitöltve. Csak kijelzőméretben (<code>--vk-fs-2xl</code> felett): kis szöveg pontokból nehezen olvasható.</p>
+    <p class="f12-row"><b class="vk-dottext" style="font-size:calc(var(--vk-fs-3xl) * 1.5)">12:48</b> <b class="vk-dottext">0451</b></p>
+  </article>
+
+  <article class="g-demo" id="f12-shell" data-vk-hop>
+    <h3 class="g-demo__title">Összerakva: terminálhéj</h3>
+    <p class="g-demo__note">Grafitban így áll össze: szürke rétegek, fehér foszfor a figyelemnek, a héj és a jelzők pontmátrixból.</p>
+    <div class="f12-term vk-dots">
+      <div class="f12-term__bar vk-dots"><i class="vk-dotled" data-tone="ok"></i> vrg · asztal <span class="sp"></span> <i class="vk-dotled" data-tone="run" data-state="active"></i> fut</div>
+      <div class="f12-term__body">
+        <div><span class="m">$</span> node tools/check-start.js</div>
+        <div class="ok">✓ 64 bejegyzés, 0 hiba</div>
+        <div><span class="m">$</span> node shared/vrg-ui-kit/inline.js --check</div>
+        <div class="w">! 1 figyelmeztetés</div>
+      </div>
+      <div class="f12-term__foot">
+        <div><small>Szinkron</small><span class="vk-dotbar" style="--vk-dotbar-v:.72"></span></div>
+        <span class="vk-dottext">72%</span>
+      </div>
+    </div>
+  </article>
+</section>
