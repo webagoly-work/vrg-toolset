@@ -158,6 +158,12 @@ contextBridge.exposeInMainWorld('vrg', {
     page: id => call('programs', 'page', { id }),
     folder: id => call('programs', 'folder', { id }),
   },
+  sessions: {                                                                    // WP-50 Munkamenetek: an account + a session id, never a path
+    list: () => call('sessions', 'list', {}),
+    resume: (account, session, o) => call('sessions', 'resume', { account, session, ...(o && o.fork === true ? { fork: true } : {}), ...(o && o.remote === true ? { remote: true } : {}) }),
+    teleport: account => call('sessions', 'teleport', { account }),
+    canvas: (account, session) => call('sessions', 'canvas', { account, session }),
+  },
   archive: {                                                                     // WP-47 Archívum: the Artifact Archive (Archive/index.json)
     list: () => call('archive', 'list', {}),
     show: (id, run) => call('archive', 'show', run ? { id, run: true } : { id }),

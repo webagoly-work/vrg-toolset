@@ -188,3 +188,12 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   publishes from now on is added with `node Archive/archive.js add` in the same session (CLAUDE.md). A page that needs files
   beside it, or shows a real client's or a private house, keeps a `localPath` instead of a copy. START key: R → A.
 - B: keep the copies outside the repo (`Full\artifacts`) and add that folder to BACKUP. C: links only, no copies.
+
+## DESKU-Q25 — Claude sessions in the Desktop: a pane over the transcripts (WP-50, 2026-11-24)
+
+- **A (taken):** a `sessions` pane lists the local transcripts of both accounts and opens one in the existing embedded Claude
+  terminal (WP-16) with `--resume`; cloud and Remote Control sessions open as claude.ai/code in the Böngésző pane; a session
+  written in the last 2 minutes counts as live and can only be forked. Main reads the folder from the transcript; the page
+  names an account and an id.
+- B: embed the Claude desktop app's window (SetParent on a foreign window: fragile, breaks on its updates, no focus or DPI
+  handling). C: a section of the Dashboard view instead of a pane (cannot sit beside the terminal it opens on a Lap).

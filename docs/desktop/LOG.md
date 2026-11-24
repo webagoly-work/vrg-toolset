@@ -267,3 +267,32 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   `desktop.open`), so the browser's 127.0.0.1:8806 tabs load. The phone has its own DevLap (VRG Mobile D-172).
 - Tests: `wp-46.test.js` +1 (tiles, focus, every tab restorable, the local tabs on the stack server's port and real
   Stack pages, the GitHub file tabs exist in the repo).
+
+## WP-50 — Munkamenetek: Claude Code sessions inside the VRG Asztal (2026-11-24, cloud session)
+
+- Asked for: an embedded window with one of the cloud sessions of vrg-toolset or one of the local H: sessions, as the Claude
+  app shows them, and terminal views too. What exists and what does not: a cloud session already opens in a Böngésző pane
+  (claude.ai/code, the DevLap's first tab); the Claude app's own native window cannot be embedded; a local session reaches the
+  same web view only through Remote Control; a cloud session has no terminal to embed, only `claude --teleport` brings it down.
+- New pane kind **`sessions`** (Munkamenetek; catalog item `sessions`, Dev, under `dev:ai`, beta; dock + Ügynökök section):
+  the local sessions of A (`~/.claude`) and B (`Full\home\claude-account-b`), newest 120, each with account, age, ÉLŐ, title
+  (the first real prompt, else the summary), project folder name, branch and size; filter by account and words. Buttons:
+  **Folytatás** (`--resume <id>` in the transcript's own `cwd`), **Másolat** (`+ --fork-session`), **Távvezérlés**
+  (`/remote-control` as the first prompt: unverified, see the handoff), **Vászon** (the Munkavászon at `#s=<id>`); bar:
+  **Felhő** (claude.ai/code in a Böngésző pane), **Áthozás** (a Claude terminal in the repo with `--teleport`), **Frissítés**
+  (also every 20 s while shown). DESKU-Q25.
+- `shell/lib/sessions.js` (list / resume / teleport / canvas / find): the page names an account and a lowercase UUID; main finds
+  `<root>/projects/*/<id>.jsonl` and reads the folder from it. Replies carry no path (the folder's last name only). Live =
+  written in the last 2 minutes: Folytatás is refused (two processes on one transcript), Másolat works. A vanished folder is
+  refused by name. `VRG_SESSIONS_ROOTS="A=<dir>;B=<dir>"` replaces the roots (tests only, CONTRACT §4.9).
+- IPC `sessions.list / resume / teleport / canvas`; preload `vrg.sessions`; the kind added to `shell/lib/layout.js` and
+  `sheets.js` KINDS, `page/layout.js`, `page/sheets.js` (picker MM), `panes/empty.js`, `shell/lib/palette.js`, `desk.js`
+  (one instance, focused); `panes.css` (A edge accent, B edge warm, ÉLŐ in ok-green).
+- SessionCanvas: `/api/sessions?s=<uuid>` adds that session when it is older than the newest 80; the page opens `#s=<uuid>` and
+  switches *mindig a legújabb* off.
+- Tests: `wp-50.test.js` 7 (fixtures in a temp folder); wp-35 channel pin 115 → 119 and the `sessions` namespace; the full
+  `Dashboard/test` suite on Linux: 309 pass, the same 68 environment failures as before the change (no H:, no Electron). A
+  Chromium render of the pane with a stubbed `vrg`: rows, computed edge colours, every button's call. The Munkavászon's `#s=` on
+  a throwaway config folder of 85 sessions. **Not run:** the Electron probe `shell/selftest/wp-50.js`, check-start /
+  check-catalog against H:, inventory.js (needs the anonymise map), the real `claude` flags. All in
+  `docs/handoff/2026-11-24_munkamenetek-H.md`.

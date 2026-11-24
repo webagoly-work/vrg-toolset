@@ -6,7 +6,8 @@
    Config dirs: --dir, VRG_CLAUDE_DIRS (path-list), CLAUDE_CONFIG_DIR, ~/.claude, and the second account
    at <full>/home/claude-account-b (GO-MAIN). Loopback only, and the Host header must be this port's, so a
    web page cannot read transcripts through a rebound DNS name; no CORS headers, so no other origin can either.
-   GET /api/sessions             the newest 80 sessions across the config dirs
+   GET /api/sessions[?s=<uuid>]  the newest 80 sessions across the config dirs (+ that session when it is older: the VRG Asztal's
+                                 Munkamenetek opens the page at #s=<uuid>)
    GET /api/stream?f=<id>        SSE: hello, the file's lines in batches, ready, then every appended line
    GET /api/img?f=<id>&p=<path>  an image file a tool saved or sent (screenshots, SendUserFile): only a png / jpg /
                                  gif / webp / bmp whose exact path is written in that session's transcript or one of
@@ -94,7 +95,7 @@ function titleOf(file) {
   return { title, cwd };
 }
 
-function sessions() {
+function sessions(want) {
   const out = [];
   ROOTS.forEach((r, ri) => {
     const projects = path.join(r.dir, 'projects');
@@ -110,7 +111,9 @@ function sessions() {
     });
   });
   out.sort((a, b) => b.mtime - a.mtime);
-  return out.slice(0, 80).map((s) => {
+  const pick = out.slice(0, 80);
+  if (want && !pick.some((s) => s.id === want)) { const hit = out.find((s) => s.id === want); if (hit) pick.push(hit); }
+  return pick.map((s) => {
     const t = titleOf(s.full);
     const project = t.cwd ? t.cwd.split(/[\\/]/).filter(Boolean).slice(-1)[0] : s.dir.replace(/^-+/, '').split('-').slice(-2).join('-');
     return { file: s.file, id: s.id, mtime: s.mtime, size: s.size, account: s.account, project, title: t.title };
@@ -171,7 +174,8 @@ const server = http.createServer((req, res) => {
   }
   if (u.pathname === '/api/sessions') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-    res.end(JSON.stringify({ roots: ROOTS.map((r) => r.account || path.basename(r.dir)), sessions: sessions() }));
+    const want = /^[0-9a-f-]{36}$/.test(u.searchParams.get('s') || '') ? u.searchParams.get('s') : '';
+    res.end(JSON.stringify({ roots: ROOTS.map((r) => r.account || path.basename(r.dir)), sessions: sessions(want) }));
     return;
   }
   if (u.pathname === '/api/img') {

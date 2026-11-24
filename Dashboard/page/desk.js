@@ -116,7 +116,7 @@
     }
     setView('desktop');
     showWindows(true);
-    if (r.do === 'pane' && F) { const ex = F.panes().find(p => (F.kindOf ? F.kindOf(p) : '') === r.kind); if (ex && F.focus && ['files', 'git', 'mail', 'feed', 'chat'].includes(r.kind)) F.focus(ex); else F.open(r.kind, {}); return true; }
+    if (r.do === 'pane' && F) { const ex = F.panes().find(p => (F.kindOf ? F.kindOf(p) : '') === r.kind); if (ex && F.focus && ['files', 'git', 'mail', 'feed', 'chat', 'sessions'].includes(r.kind)) F.focus(ex); else F.open(r.kind, {}); return true; }
     if (r.do === 'web' && F) return F.openUrl(r.url);
     if (r.do === 'app' && F) {
       const ex = F.panes().find(p => F.kindOf && F.kindOf(p) === 'app' && (F.stateOf(p) || {}).id === r.id);

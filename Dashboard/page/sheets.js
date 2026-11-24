@@ -31,9 +31,10 @@
     ['files', 'Fájlok', 'Files', 'fs', 'FÁ'], ['term', 'Terminál', 'Terminal', 'term', '>_'], ['web', 'Böngésző', 'Browser', 'web', 'WW'],
     ['mail', 'Posta', 'Mail', 'mail', '@'], ['chat', 'Claude chat', 'Chat', 'chat', 'CL'], ['git', 'Git', 'Git', 'git', 'GI'],
     ['feed', 'Hírfolyam', 'Feeds', 'feed', 'HÍ'], ['stack', 'Kontextuscsomag', 'Context pack', null, 'KC'], ['home', 'Kezdőlap', 'Home', null, 'KE'],
+    ['sessions', 'Munkamenetek', 'Claude sessions', 'sessions', 'MM'],
   ];
   const LABEL = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag',
-    chat: 'Claude chat', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás' };
+    chat: 'Claude chat', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás', sessions: 'Munkamenetek' };
   const URLISH = /^(https?:\/\/\S+|www\.\S+|[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?)$/i;
 
   const S = {

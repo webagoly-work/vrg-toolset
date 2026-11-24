@@ -583,6 +583,21 @@ ipc.register('chat', 'toTerminal', { chat: types.id }, async ({ chat }) => {
 });
 app.on('before-quit', () => chatLib.killAll());
 
+// Munkamenetek (WP-50): the local Claude Code sessions of A (~/.claude) and B (<full>/home/claude-account-b), opened in an embedded Claude
+// terminal (resume / fork / with Remote Control), the cloud picker (--teleport), the Munkavászon on one. The page names an account and a
+// session id; main finds the transcript and its folder (lib/sessions.js).
+const sessionsLib = require('./lib/sessions.js').createSessions({
+  roots: () => require('./lib/sessions.js').rootsFrom(process.env, [{ account: 'A', dir: path.join(os.homedir(), '.claude') }, { account: 'B', dir: path.join(path.resolve(FULL_DIR), 'home', 'claude-account-b') }]),
+  claudeterm: claudeTermLazy, server: (id, p) => deskServer(id, p), repo: path.resolve(REPO_DIR), log,
+});
+const sessAcc = types.enum('A', 'B');
+const sessId = v => typeof v === 'string' && require('./lib/sessions.js').SESSION_RE.test(v);
+ipc.register('sessions', 'list', {}, async () => sessionsLib.list());
+ipc.register('sessions', 'resume', { account: sessAcc, session: sessId, fork: types.bool, remote: types.bool },
+  async p => { const r = sessionsLib.resume(p); return r && r.term ? { term: r.term } : r; }, { optional: ['fork', 'remote'] });
+ipc.register('sessions', 'teleport', { account: sessAcc }, async p => { const r = sessionsLib.teleport(p); return r && r.term ? { term: r.term } : r; });
+ipc.register('sessions', 'canvas', { account: sessAcc, session: sessId }, async p => sessionsLib.canvas(p));
+
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
 const notesLib = createNotes({ execFile: require('child_process').execFile, node: nodeExe(), repo: path.resolve(REPO_DIR) });

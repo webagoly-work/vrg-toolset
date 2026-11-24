@@ -361,36 +361,36 @@
 
 /* ================================================================ the rest: Rétegverem, chat, Hírek, the empty pane, the search
    panel, the viewer, the terminal bar, the app box. Same control look as above. */
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="empty"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="empty"],
     [data-pane][data-kind="search"], [data-pane][data-kind="term"], [data-role="viewer"]) [hidden] { display: none !important; }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="search"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="search"],
     [data-pane][data-kind="term"], [data-role="viewer"]) :is(input[type="text"], input[type="search"], input[type="number"], input:not([type]), textarea) {
   background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); border-radius: 0;
   font: 13px/1.35 var(--mv-sans); padding: 5px 8px; box-sizing: border-box; min-width: 0; outline: none; color-scheme: dark;
 }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="search"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="search"],
     [data-pane][data-kind="term"], [data-role="viewer"]) :is(input, textarea):focus {
   border-color: var(--mv-accent); box-shadow: 0 0 0 1px var(--mv-accent-soft), 0 0 var(--mv-glow) var(--mv-accent-glow);
 }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="search"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="search"],
     [data-pane][data-kind="term"], [data-role="viewer"]) :is(input, textarea)::placeholder { color: var(--mv-faint); }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="empty"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="empty"],
     [data-pane][data-kind="search"], [data-pane][data-kind="term"], [data-role="viewer"]) button {
   background: none; color: var(--mv-dim); border: 1px solid var(--mv-line); border-radius: 0;
   font: 12px/1 var(--mv-sans); padding: 6px 10px; cursor: pointer; white-space: nowrap;
 }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="empty"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="empty"],
     [data-pane][data-kind="search"], [data-pane][data-kind="term"], [data-role="viewer"]) button:hover:not(:disabled) { color: var(--mv-text); background: var(--mv-raised); }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="empty"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="empty"],
     [data-pane][data-kind="search"], [data-pane][data-kind="term"], [data-role="viewer"]) button:focus-visible { outline: 1px solid var(--mv-accent); outline-offset: -1px; }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="empty"],
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="chat"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"], [data-pane][data-kind="empty"],
     [data-pane][data-kind="search"], [data-pane][data-kind="term"], [data-role="viewer"]) button:disabled { color: var(--mv-faint); border-color: rgba(232, 240, 246, .07); cursor: default; }
 :is([data-pane][data-kind="stack"], [data-pane][data-kind="search"]) input[type="checkbox"] { accent-color: var(--mv-accent); margin: 0 3px 0 0; vertical-align: -2px; }
 /* the section heading voice, shared */
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="search"], [data-pane][data-kind="feed"]) :is(h3, h4) {
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="search"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"]) :is(h3, h4) {
   font: 600 11px/1 var(--mv-voice); letter-spacing: .1em; text-transform: uppercase; color: var(--mv-dim); margin: 0 0 8px;
 }
-:is([data-pane][data-kind="stack"], [data-pane][data-kind="search"], [data-pane][data-kind="feed"]) [data-role="none"] { color: var(--mv-faint); font-size: 12px; margin: 4px 0; }
+:is([data-pane][data-kind="stack"], [data-pane][data-kind="search"], [data-pane][data-kind="feed"], [data-pane][data-kind="sessions"]) [data-role="none"] { color: var(--mv-faint); font-size: 12px; margin: 4px 0; }
 
 /* ---------------------------------------------------------------- Rétegverem (stack: search + the context-pack cluster) */
 [data-pane][data-kind="stack"] {
@@ -489,6 +489,32 @@
 [data-pane][data-kind="chat"] [data-role="stop"]:not(:disabled) { color: var(--mv-crit); border-color: var(--mv-crit); }
 [data-pane][data-kind="chat"] > [data-role="status"] { padding: 0 10px 8px; font: 11px var(--mv-mono); color: var(--mv-dim); }
 [data-pane][data-kind="chat"] > [data-role="status"]:empty { display: none; }
+
+/* ---------------------------------------------------------------- Munkamenetek (WP-50): Claude Code sessions */
+[data-pane][data-kind="sessions"] { height: 100%; overflow: auto; box-sizing: border-box; background: var(--mv-panel-solid); color: var(--mv-text); font: 12.5px var(--mv-sans); }
+[data-pane][data-kind="sessions"] > [data-role="bar"] {
+  position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 7px 12px; background: var(--mv-bg); border-bottom: 1px solid var(--mv-line);
+}
+[data-pane][data-kind="sessions"] > [data-role="bar"] > [data-role="title"] { flex: 1 1 auto; margin: 0; color: var(--mv-warm); font-size: 12px; letter-spacing: .14em; }
+[data-pane][data-kind="sessions"] [data-role="account"] {
+  background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); border-radius: 0; font: 12px var(--mv-sans); padding: 4px 6px; color-scheme: dark;
+}
+[data-pane][data-kind="sessions"] [data-role="filter"] { width: 150px; padding: 4px 8px; font-size: 12px; }
+[data-pane][data-kind="sessions"] > [data-role="bar"] button { padding: 4px 9px; font-size: 11px; }
+[data-pane][data-kind="sessions"] [data-role="msg"] { margin: 8px 12px 0; font-size: 12px; color: var(--mv-dim); }
+[data-pane][data-kind="sessions"] [data-role="msg"][data-bad="1"] { color: var(--mv-crit); }
+[data-pane][data-kind="sessions"] [data-role="rows"] { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+[data-pane][data-kind="sessions"] [data-role="row"] { border: 1px solid var(--mv-line); border-left: 2px solid var(--mv-accent); padding: 6px 9px; background: rgba(10, 20, 28, .35); }
+[data-pane][data-kind="sessions"] [data-role="row"][data-account="B"] { border-left-color: var(--mv-warm); }
+[data-pane][data-kind="sessions"] [data-role="head"] { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+[data-pane][data-kind="sessions"] [data-role="acc"] { font: 600 10.5px/1 var(--mv-mono); color: var(--mv-accent); }
+[data-pane][data-kind="sessions"] [data-role="row"][data-account="B"] [data-role="acc"] { color: var(--mv-warm); }
+[data-pane][data-kind="sessions"] [data-role="when"] { font: 10.5px var(--mv-mono); color: var(--mv-faint); white-space: nowrap; }
+[data-pane][data-kind="sessions"] [data-role="live"] { font: 600 9.5px/1 var(--mv-mono); letter-spacing: .08em; color: var(--mv-ok); border: 1px solid var(--mv-ok); padding: 2px 4px; }
+[data-pane][data-kind="sessions"] [data-role="name"] { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mv-text); }
+[data-pane][data-kind="sessions"] [data-role="meta"] { display: block; margin-top: 3px; font: 10.5px var(--mv-mono); color: var(--mv-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-pane][data-kind="sessions"] [data-role="acts"] { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+[data-pane][data-kind="sessions"] [data-role="acts"] button { padding: 3px 8px; font-size: 11px; }
 
 /* ---------------------------------------------------------------- Hírek (feeds) */
 [data-pane][data-kind="feed"] { height: 100%; overflow: auto; box-sizing: border-box; background: var(--mv-panel-solid); color: var(--mv-text); font: 12.5px var(--mv-sans); }

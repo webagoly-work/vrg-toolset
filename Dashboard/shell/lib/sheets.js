@@ -12,7 +12,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const N = 4;                                                       // 4 × 4 cells
-  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed', 'app'];   // = layout.js KINDS
+  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed', 'app', 'sessions'];   // = layout.js KINDS
   const MAX_SHEETS = 12, MAX_PRESETS = 24, MAX_STATE = 8192, MAX_NAME = 40;
   const SHEET_ID = /^s[0-9]{1,4}$/, PANE_ID = /^[a-z0-9-]{1,40}$/, PRESET_ID = /^[a-z0-9-]{1,24}$/;
   const OPEN = /^(pane:[a-z]{1,10}|cat:[a-z0-9:_./-]{1,80})$/;
