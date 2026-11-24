@@ -6,22 +6,10 @@
   const VB = root.VB = root.VB || {};
   if (VB.context) return;
 
-  // the modules a user can switch off in Beállítások; `hosts` = where the module can work at all
-  const MODULES = [
-    { id: 'answers', hu: 'Gyorsválasz', desc: 'Számológép, villamos képletek (P, I, feszültségesés, Ohm), AWG ↔ mm², átváltások a címsorban.', on: true },
-    { id: 'clean', hu: 'Tiszta link', desc: 'A követőparaméterek (utm_*, fbclid, gclid …) lekerülnek a linkről megnyitás és mentés előtt.', on: true },
-    { id: 'linkcheck', hu: 'Linkellenőr', desc: 'Figyelmeztet a gyanús címekre: jelszó a címben, punycode domain, titkosítatlan kapcsolat, nyers IP.', on: true },
-    { id: 'local', hu: 'Saját kereső', desc: 'A könyvjelzők, előzmények, olvasólista és mentett oldalak teljes szövegű keresése a címsorban és a Keresés lapon.', on: true },
-    { id: 'servers', hu: 'Helyi VRG szerverek', desc: 'A PC szerverei (START → O) a kezdőlapon, futásjelzővel, és a keresőben.', on: true, hosts: ['desktop', 'served', 'file'] },
-    { id: 'docs', hu: 'Helyi dokumentumok', desc: 'A repó Markdown dokumentumai a keresőben (a helyi szerveren át, :8812).', on: true, hosts: ['desktop', 'served'] },
-    { id: 'reader', hu: 'Olvasó nézet', desc: 'Egy oldal szövege reklám és menü nélkül, offline mentéssel (a helyi szerveren át).', on: true, hosts: ['desktop', 'served'] },
-    { id: 'jobs', hu: 'Munkák', desc: 'Munkánként a linkek, mentett oldalak és adatlapok; exportálás a munka mappájába (helyi szerver), QR-címkék nyomtatása.', on: true },
-    { id: 'parts', hu: 'Alkatrészek', desc: 'A Készlet katalógusa (' + 'cikkszám, gyártó, adatlap): keresés, adatlap az Olvasóban, mentés a cikkhez és a munkához.', on: true },
-    { id: 'research', hu: 'Kutatás', desc: 'Idézetek az Olvasóból a forrásukkal, saját jegyzetek; forrásmegjelöléses Markdown jegyzet a repóba (Rétegverem), egy munka mappájába vagy Claude-nak.', on: true },
-    { id: 'watch', hu: 'Figyelés', desc: 'Oldalak változásának figyelése: a VRG Asztal futtatja (Hírek panel), a változást a telefonra is jelzi.', on: true, hosts: ['desktop', 'served'] },
-    { id: 'qr', hu: 'Telefonra', desc: 'QR-kód a címről: a telefon kamerájával beolvasva ott nyílik meg.', on: true, hosts: ['desktop', 'served', 'file', 'web'] },
-    { id: 'suggest', hu: 'Webes javaslatok', desc: 'Javaslatok gépelés közben a választott keresőtől. Minden leütés elmegy a keresőhöz, ezért alapból ki van kapcsolva.', on: false, hosts: ['desktop', 'served'] },
-  ];
+  // the modules a user can switch off in Beállítások come from Browser/modules.json (T8), baked in as VB_DATA.mods.switches:
+  // { id, part, hu, desc, on, runs } — runs = the hosts where the module can work at all (all when null). A part left out of
+  // the build (build.js --without) brings none of its switches, nav entries or routes.
+  const route = (api, path) => Object.keys(api).find(r => path === r || path.startsWith(r + '/') || path.startsWith(r + '?'));
 
   function create(o) {
     const st = o.store, data = o.data || {}, kind = o.kind;
@@ -31,7 +19,9 @@
     const listeners = new Set();
     let serverOk = null;                                         // null = not asked yet, true / false = /api/health answered
 
-    const available = id => { const m = MODULES.find(x => x.id === id); return !!m && (!m.hosts || m.hosts.includes(kind)); };
+    const mods = data.mods || { parts: [], switches: [], nav: [], api: null };
+    const MODULES = mods.switches;
+    const available = id => { const m = MODULES.find(x => x.id === id); return !!m && (!m.runs || m.runs.includes(kind)); };
     const on = id => { const m = MODULES.find(x => x.id === id); return !!m && available(id) && st.moduleOn(id, m.on); };
     const engine = id => engines.find(e => e.id === (id || st.settings().engine)) || engines.find(e => e.default) || engines[0];
 
@@ -54,8 +44,18 @@
     const emit = what => { for (const f of listeners) { try { f(what); } catch (e) { console.error(e); } } };
 
     // ---- the server (serve.js): reader, documents, suggestions
+    // a route no built part declares is refused, and so is one whose module is switched off (modules.json `api`)
+    function refused(path) {
+      if (!mods.api) return null;
+      const r = route(mods.api, path);
+      if (r === undefined) return { ok: false, code: 'module', hu: 'Ezt a kérést egyik rész sem jelentette be (modules.json).' };
+      if (mods.api[r] && !on(mods.api[r])) return { ok: false, code: 'off', hu: 'A modul ki van kapcsolva (Beállítások → Modulok).' };
+      return null;
+    }
     async function api(path, params, ms) {
       if (caps.api === null) return { ok: false, code: 'host', hu: 'Ezen az eszközön nincs helyi szerver.' };
+      const no = refused(path);
+      if (no) return no;
       const base = caps.api || '';
       const q = new URLSearchParams(params || {}).toString();
       const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -72,6 +72,8 @@
     }
     async function post(path, body, ms) {
       if (caps.api === null) return { ok: false, code: 'host', hu: 'Ezen az eszközön nincs helyi szerver.' };
+      const no = refused(path);
+      if (no) return no;
       const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const t = ctl ? setTimeout(() => ctl.abort(), ms || 120000) : null;
       try {
@@ -114,12 +116,13 @@
     }
 
     return {
-      st, data, kind, caps, engines, MODULES, ix, on, available, engine, api, post, health, open, search, rebuild,
+      st, data, kind, caps, engines, MODULES, mods, ix, on, available, engine, api, post, health, open, search, rebuild, refused,
+      built: id => mods.parts.some(p => p.id === id),
       serverOk: () => serverOk,
       onChange(f) { listeners.add(f); return () => listeners.delete(f); },
       emit,
     };
   }
 
-  VB.context = { create, MODULES };
+  VB.context = { create, route };
 })(typeof window !== 'undefined' ? window : globalThis);

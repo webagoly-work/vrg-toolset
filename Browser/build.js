@@ -7,10 +7,12 @@
 //   VB_DATA                   → <!--@data-->: config/engines.json (+ Dashboard/config/search.json's engines),
 //                               config/quicklinks.json, the PC's servers from launcher/vrg-menu.json, the parts index
 //                               from Inventory/data/vrg-inventory.json (no prices)
-//   src/core/*.js, src/vendor/qr.js, src/app/*.js   → <!--@js-->, in ORDER
+//   src/core/*.js, src/vendor/qr.js, src/app/*.js   → <!--@js-->, in the order of modules.json (T8: the parts, checked by
+//                               lib/modules.js), and VB_DATA.mods: the parts built, their switches, the nav, the routes
 //
 //   node Browser/build.js           write dist/vrg-bongeszo.html
 //   node Browser/build.js --check   exit 1 when dist/ is not what the sources build (the tests run it)
+//   node Browser/build.js --without work,knowledge --out <file>   a build without those plugins (dist/ is always the full one)
 // The output is deterministic: the build id is a hash of the inputs, not a clock.
 'use strict';
 const fs = require('fs');
@@ -21,8 +23,8 @@ const ROOT = __dirname;
 const REPO = path.resolve(ROOT, '..');
 const OUT = path.join(ROOT, 'dist', 'vrg-bongeszo.html');
 const VERSION = '1.0.0';
-const ORDER = ['core/engine.js', 'core/url.js', 'core/answers.js', 'core/links.js', 'core/research.js', 'core/store.js', 'core/sync.js', 'core/host.js', 'vendor/qr.js',
-  'app/ui.js', 'app/context.js', 'app/omnibox.js', 'app/views.js', 'app/work.js', 'app/knowledge.js', 'app/main.js'];
+const MODS = require('./lib/modules.js');
+const ORDER = MODS.resolve(MODS.load()).order;
 const OWN_SERVER = 'bongeszo';
 
 const read = p => fs.readFileSync(p, 'utf8');
@@ -82,16 +84,19 @@ function qrModule(src) {
   return '(function (root) {\n' + body + '\n(root.VB = root.VB || {}).qr = { qrEncode, qrSvg, qrBytes, QRCAP, QRECC };\n})(typeof window !== \'undefined\' ? window : globalThis);\n';
 }
 
-function build() {
+function build(opts) {
+  const o = opts || {};
+  const r = MODS.resolve(MODS.load(), o.without);
   const tpl = read(path.join(ROOT, 'src', 'index.html'));
   for (const mark of ['<!--@css-->', '<!--@data-->', '<!--@js-->']) if (!tpl.includes(mark)) throw new Error('build: src/index.html lacks ' + mark);
   const css = read(path.join(ROOT, 'src', 'app.css'));
-  const js = ORDER.map(f => {
+  const js = r.order.map(f => {
     let s = read(path.join(ROOT, 'src', f));
     if (f === 'vendor/qr.js') s = qrModule(s);
     return '/* ---- src/' + f + ' */\n' + s.replace(/<\/script/gi, '<\\/script');
   }).join('\n');
   const d = data();
+  d.mods = r.mods;
   const id = crypto.createHash('sha256').update(tpl + css + js + JSON.stringify(d)).digest('hex').slice(0, 10);
   d.built = id;
   const dataJs = 'window.VB_DATA = ' + JSON.stringify(d).replace(/</g, '\\u003c') + ';';
@@ -104,14 +109,26 @@ function build() {
 module.exports = { build, data, ORDER, OUT };
 
 if (require.main === module) {
-  const out = build();
-  if (process.argv.includes('--check')) {
-    const cur = fs.existsSync(OUT) ? read(OUT) : '';
-    if (cur !== out) { console.log('DRIFT  Browser/dist/vrg-bongeszo.html — run: node Browser/build.js'); process.exit(1); }
-    console.log('ok     Browser/dist/vrg-bongeszo.html');
+  const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
+  const without = (arg('--without') || '').split(',').map(x => x.trim()).filter(Boolean);
+  if (without.length) {
+    // a variant: never dist/ (VRG Mobile and the Asztal load the full page from there)
+    const to = arg('--out');
+    if (!to || path.resolve(to) === OUT) { console.log('build: --without needs --out <file> (not dist/vrg-bongeszo.html)'); process.exit(2); }
+    const out = build({ without });
+    fs.mkdirSync(path.dirname(path.resolve(to)), { recursive: true });
+    fs.writeFileSync(to, out);
+    console.log('wrote  ' + to + '  without ' + without.join(', ') + '  (' + Math.round(out.length / 1024) + ' kB)');
   } else {
-    fs.mkdirSync(path.dirname(OUT), { recursive: true });
-    fs.writeFileSync(OUT, out);
-    console.log('wrote  Browser/dist/vrg-bongeszo.html  (' + Math.round(out.length / 1024) + ' kB)');
+    const out = build();
+    if (process.argv.includes('--check')) {
+      const cur = fs.existsSync(OUT) ? read(OUT) : '';
+      if (cur !== out) { console.log('DRIFT  Browser/dist/vrg-bongeszo.html — run: node Browser/build.js'); process.exit(1); }
+      console.log('ok     Browser/dist/vrg-bongeszo.html');
+    } else {
+      fs.mkdirSync(path.dirname(OUT), { recursive: true });
+      fs.writeFileSync(OUT, out);
+      console.log('wrote  Browser/dist/vrg-bongeszo.html  (' + Math.round(out.length / 1024) + ' kB)');
+    }
   }
 }

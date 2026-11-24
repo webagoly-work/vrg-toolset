@@ -242,3 +242,36 @@ test('page: Phase 3 — a quote from the reader into a notebook, the note into t
     await ctx.close();
   } finally { await browser.close(); server.close(); }
 });
+
+// T8: a build without its four plugins boots, its rail and settings show what is left, and nothing errs
+test('page: a build without the plugins (build.js --without) still works', { skip, timeout: 60000 }, async () => {
+  const B = require('../build.js');
+  const html = B.build({ without: ['answers', 'qr', 'work', 'knowledge'] });
+  const browser = await chromium.launch();
+  try {
+    const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, locale: 'hu-HU' });
+    const errors = [];
+    await ctx.route('**/*', route => {
+      const u = route.request().url();
+      if (u.startsWith(ORIGIN + '/')) return new URL(u).pathname === '/v.html' ? route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }) : route.fulfill({ status: 403, body: '' });
+      return route.request().isNavigationRequest() ? route.fulfill({ status: 204, body: '' }) : route.abort();
+    });
+    const page = await ctx.newPage();
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto(ORIGIN + '/v.html');
+    await page.waitForSelector('.vb-hero');
+    const rail = await page.$$eval('.vb-nav a', a => a.map(x => x.getAttribute('href')));
+    assert.ok(rail.includes('#/konyvjelzok') && !rail.includes('#/munkak') && !rail.includes('#/kutatas'), rail.join(' '));
+    await page.fill('#vb-q', '230V 16A');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('.vb-answer__value').count(), 0, 'no Gyorsválasz without its part');
+    await page.goto(ORIGIN + '/v.html#/beallitasok');
+    await page.waitForSelector('text=Részek');
+    assert.ok(await page.locator('text=Kihagyva ebből a változatból').count());
+    assert.equal(await page.locator('.vb-set span:text-is("Munkák")').count(), 0, 'no switch of a part that is not built');
+    await page.goto(ORIGIN + '/v.html#/munkak');
+    await page.waitForSelector('.vb-hero');                // an unknown route falls back to the home
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  } finally { await browser.close(); }
+});

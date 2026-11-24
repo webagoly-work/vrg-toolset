@@ -144,7 +144,48 @@ documents); `wp-29` 17 unchanged; `Mobile/tests/apps-phone.js` 38 ok.
 3. Olvasó → Figyelés (naponta) on an NJT page: `presets.json` has the watch; the Hírek pane shows *Figyelés indult*; after a
    change on the page *Változott*, and with the relay running (START O → 7) the phone's Értesítések ring.
 
-**⏸ Next: Phase 4 (T7 real browsing on the phone, T8 parts as plugins).**
+## Phase 4 (T7 + T8) — built 2026-11-24
+
+**T7 · real browsing on the phone** (BRW-Q04 = A: work pages in VRG Mobile). WP **M66 Böngésző** (`docs/mobile/WP/M66.md`),
+a native feature `web` with a confined WebView that keeps the Asztal's contract: http / https only, no bridge into the app,
+file / content access off, no mixed content, no third-party cookies, every permission and geolocation request denied,
+certificate errors never overridden, one view (no pop-ups), a download handed to the phone's browser after a yes, only an
+origin in the log.
+- The rules are a Kotlin port of the PC's (`kit-core` `WebRules`: the address bar, `!bangs` of the bundled
+  `Browser/config/engines.json`, Tiszta link; `WebLinks`: `vrg.web-links` v1). **One fixture, two languages:**
+  `Browser/test/fixtures/links-contract.json` (reads, merge, visits, ops, strip, 15 address-bar cases) is replayed by
+  `links.test.js` and by `WebTest.kt`; `WebTest` also keeps the bundled engines equal to the PC's file.
+- Bookmarks and history are `filesDir/web/links.json` in v1; ⚙ → Export / Import exchanges them with the PC (the VRG Böngésző
+  loads the file; opened in the Asztal, the rows go on to its `web.json`) and the Data Vault's browser-kit.
+- The shell sends web addresses here: the Kommand's URLs, the Asztal's Böngésző unit (desk-gen `web` → native `web`), and the
+  VRG Böngésző web app's pages (AppsFeature → `vrg://web?u=…`, through the new `FeatureHost.openRoute`). Other web apps'
+  outside links still go to the phone's browser.
+- Home: page 7 (Egyéb), because the test pins the Founder's pages 1–5; moving it is one line in `HomeLayout`. The Katalógus
+  page `web` (BOTH) replaces the Desktop-only `desk:web` page.
+- Not built: syncing with the Asztal over the relay (it is by file now), the reader on the phone, per-site settings.
+
+**T8 · parts as plugins.** `Browser/modules.json` (`vrg.browser-modules` v1) is the module list as manifests: 16 parts, one
+per source file in load order, 4 of them plugins (`answers`, `qr`, `work`, `knowledge`). Each declares needs (`net`, `web`,
+`storage`), hosts, the routes it calls, its switches and nav entries. `lib/modules.js` checks the manifest against the
+code (fetch → net, opening pages → web, localStorage → storage, every route named in a file declared); `build.js` takes its
+order from it and builds a variant with `--without <plugins>`; the app reads its switches and its rail from it, and
+`ctx.api` / `ctx.post` refuse an undeclared route or a switched-off module's before sending. Beállítások → Részek lists
+each part and what it may reach.
+- **DV's cells:** the need words are the vault plugins' (`net`, `storage`) plus `web` limited to named hosts, which is
+  DV-Q22 Q4's first option. Each plugin part is the unit a DV cell would point at (`dv.browser`'s stages B1–B6: links, the
+  reader, research). The vault repo is not readable from this session, so the cell entries themselves are not written;
+  that is one step on the vault side once Q4 is answered. If it is answered otherwise, `NEEDS` in `lib/modules.js` follows.
+
+Tests: `node Browser/test/run.js` 66 (+ `modules.test.js` 4: the manifest against the code, every rule catching its mistake,
+a plugin leaving with its files / switches / nav / routes, the run-time route gate in a VM; + a page walk of a build without
+all four plugins); the shared fixture in `links.test.js`; `:kit-core:test` 277 (+ `WebTest` 7; `HomeLayoutTest`,
+`CatalogGuideTest`, `KommandTest` with the new feature); `Mobile/tests/apps-phone.js` 38 ok. The APK is built by CI.
+
+**Check on the phone and the PC** (not reproducible in the cloud session): `docs/mobile/WP/M66.md` § Phone check (10 steps),
+and on the PC: `node Browser/build.js --without work --out %TEMP%\vb.html`, open it from `node Browser/serve.js`: no Munkák
+in the rail, Beállítások → Részek says what was left out.
+
+**⏸ Phase 4 is the last phase of the T line. T9 (sharing) is open, after T1.**
 
 ## LOG
 
@@ -152,3 +193,4 @@ documents); `wp-29` 17 unchanged; `Mobile/tests/apps-phone.js` 38 ok.
 - 2026-11-23 — Phase 1 built (T1 + T2); ⏸ before Phase 2.
 - 2026-11-23 — Phase 2 built (T3 + T4); ⏸ before Phase 3.
 - 2026-11-23 — Phase 3 built (T5 + T6); ⏸ before Phase 4.
+- 2026-11-24 — Phase 4 built (T7: VRG Mobile M66 Böngésző; T8: modules.json); ⏸.

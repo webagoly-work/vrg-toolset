@@ -207,7 +207,7 @@
     return sheet(ctx, x.id + ' — QR-címke', items, go, '#/alkatreszek/' + id);
   }
 
-  // the router's entry points (main.js NAV): #/munkak[/<CODE>[/cimkek]] and #/alkatreszek[/<id>[/cimke]]
+  // the router's entry points (modules.json nav, part "work"): #/munkak[/<CODE>[/cimkek]] and #/alkatreszek[/<id>[/cimke]]
   function jobsRoute(ctx, p, go, rest, more) {
     if (!rest) return jobs(ctx, p, go);
     const code = String(rest).toUpperCase();

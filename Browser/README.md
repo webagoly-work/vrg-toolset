@@ -26,7 +26,8 @@ node Browser/test/run.js         # 60 tests: core, links, server, jobs, knowledg
 
 ## Modules
 
-Every module can be switched off in **Beállítások → Modulok**. "Host" says where a module can work at all.
+Every module can be switched off in **Beállítások → Modulok**. "Host" says where a module can work at all. Since T8 the
+modules, the parts they live in and what each part may reach are one manifest, `modules.json` (see *Parts as plugins*).
 
 | Module | What it does | Host |
 |---|---|---|
@@ -148,7 +149,8 @@ Browser/
   src/vendor/qr.js        the QR encoder, copied unchanged (MIT notice inside)
   src/app/                ui · context · omnibox · views · work (Munkák, Alkatrészek, labels) · knowledge (Kutatás, Figyelés,
                           Claude) · main
-  lib/                    netguard · reader · pdftext · docs · suggest · jobs · watch
+  modules.json            the parts: files, needs, hosts, routes, switches, nav (T8; checked by lib/modules.js)
+  lib/                    modules · netguard · reader · pdftext · docs · suggest · jobs · watch
   test/                   run.js + *.test.js
   dist/vrg-bongeszo.html  the built app (committed: VRG Mobile fetches it from main)
 ```
@@ -156,8 +158,42 @@ Browser/
 **Adding a search engine:** one line in `config/engines.json` (`id`, `hu`, `group`, `bangs`, `url` with `{q}`), then
 `node Browser/build.js`. A bang may belong to one engine only (the build fails otherwise).
 
-**Adding a module:** an entry in `MODULES` (`src/app/context.js`), with `hosts` when it needs the server, plus its
-use behind `ctx.on('<id>')`.
+**Adding a module:** a switch on its part in `modules.json` (`id`, `hu`, `desc`, `on`, `runs` when it needs the server,
+`api` for the serve.js routes it calls), plus its use behind `ctx.on('<id>')`; then `node Browser/build.js`.
+
+## Parts as plugins (T8)
+
+`modules.json` (`vrg.browser-modules` v1) lists the app's **parts** in load order: one per source file, `core` (always built)
+or `plugin` (can be left out). Each part says what it **needs** — `net` (it calls a server), `web` (it opens or reads web
+pages), `storage` (it keeps data on this device) — and its **hosts** (`self` = its own host: the Asztal's door or serve.js;
+`127.0.0.1:8812`; `127.0.0.1:*` = the PC's servers' lamps; `*` = any page the user asks for, only `core.host` has it), the
+**routes** it calls (`api`), its **switches** (the modules of Beállítások) and its **nav** entries (the view rail, by `at`).
+
+| Part | Kind | Needs | Hosts |
+|---|---|---|---|
+| `answers` Gyorsválasz | plugin | — | — |
+| `qr` QR-kód | plugin | — | — |
+| `work` Munkák és alkatrészek | plugin | net, storage | :8812 |
+| `knowledge` Kutatás és figyelés | plugin | net, storage | self, :8812 |
+| `core.store`, `app.main` | core | storage | — |
+| `core.sync` | core | net | self (`/__vrg/links`, `/api/links`) |
+| `core.host` | core | web | `*` |
+| `app.context`, `app.omnibox` | core | net | :8812 |
+| `app.views` | core | net, web | :8812, the PC's servers |
+| the rest (engine, url, links, research, ui) | core | — | — |
+
+`lib/modules.js` checks the manifest **against the code** at every build: a file that calls `fetch(` must be in a part that
+needs `net`, one that opens pages (`location.assign`, `window.open`) needs `web`, one that reaches `.localStorage` needs
+`storage`, and every `/api/…` or `/__vrg/…` route a file names must be declared by its part, a core part or a part it requires.
+Every source file must be in exactly one part. At run time `ctx.api` / `ctx.post` refuse a route no built part declares, and
+one whose switch is off, before anything is sent.
+
+**Swapping:** `node Browser/build.js --without work,knowledge --out <file>` builds a page without those plugins: their files,
+switches, nav entries and routes leave together, and the page says what was left out (Beállítások → Részek). `dist/` is always
+the full build. **Beállítások → Részek** shows each part of the running build and what it may reach.
+
+The need words are the Data Vault plugins' (`net`, `storage`) plus the `web` need the Data Vault's DV-Q22 Q4 proposes for
+plugins that act on a page, limited to named hosts; if the vault answers Q4 differently, `NEEDS` in `lib/modules.js` follows it.
 
 ## Data
 

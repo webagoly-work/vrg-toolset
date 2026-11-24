@@ -342,7 +342,7 @@
       item ? btn('Szerkesztés', { icon: 'edit', small: true, click: () => editItem(ctx, item, 'reading') }) : null,
       ctx.on('qr') && a.url ? btn('Telefonra', { icon: 'phone', small: true, click: () => qr(ctx, a.url, a.title) }) : null,
       ctx.on('research') && a.url ? btn('Kutatáshoz', { icon: 'bulb', small: true, click: () => VB.knowledge.addSource(ctx, { url: a.url, title: a.title, excerpt: a.excerpt }) }) : null,
-      btn('Claude-nak', { icon: 'send', small: true, click: () => VB.knowledge.toClaude(ctx, a.title || 'Oldal', (a.url ? 'Forrás: ' + a.url + '\n\n' : '') + saveText()) }),
+      VB.knowledge ? btn('Claude-nak', { icon: 'send', small: true, click: () => VB.knowledge.toClaude(ctx, a.title || 'Oldal', (a.url ? 'Forrás: ' + a.url + '\n\n' : '') + saveText()) }) : null,
       ctx.on('watch') && a.url && !a.doc ? btn('Figyelés', { icon: 'bell', small: true, click: () => VB.knowledge.watchPage(ctx, a.url, a.title) }) : null,
       h('span.vb-grow'),
       btn('Kisebb betű', { iconOnly: true, icon: 'zoom-out', small: true, click: () => setScale(-0.1) }),
@@ -379,6 +379,22 @@
       local ? h('div.vb-warn', { 'data-level': 'warn' }, 'Helyi cím: a telefon csak ugyanazon a hálózaton, a PC címével éri el (VRG Mobile → Localhost).') : h('p.vb-note', null, 'Olvasd be a telefon kamerájával, vagy a VRG Mobile QR beolvasójával.')));
   }
 
+  // ------------------------------------------------------------------ Részek (T8): what each part of this build may do
+  const NEED_HU = { net: 'hálózat', web: 'weboldalak', storage: 'tárhely ezen az eszközön' };
+  const hostHu = x => (x === '*' ? 'bármely oldal, amit megnyitsz' : x === 'self' ? 'a saját gazdája (Asztal / helyi szerver)' : x === '127.0.0.1:*' ? 'a PC helyi szerverei' : x === '127.0.0.1:8812' ? 'a helyi szerver (:8812)' : x);
+  function parts(ctx, set) {
+    const list = (ctx.mods && ctx.mods.parts) || [];
+    const plugins = list.filter(x => x.kind === 'plugin');
+    const core = list.filter(x => x.kind === 'core');
+    const needs = x => (x.needs.length ? x.needs.map(n => NEED_HU[n] || n).join(', ') + (x.hosts.length ? ' — ' + x.hosts.map(hostHu).join(', ') : '') : 'semmi: helyben számol');
+    const coreNeeds = { needs: [...new Set(core.flatMap(x => x.needs))], hosts: [...new Set(core.flatMap(x => x.hosts))] };
+    const left = (ctx.mods && ctx.mods.without) || [];
+    return sec('Részek', 'modules.json · ' + list.length + ' rész', null, h('div.vb-settings', null,
+      set('Alap (' + core.length + ' rész)', 'Mindig benne van. Mit használ: ' + needs(coreNeeds) + '.', h('span.vk-lamp', { 'data-tone': 'ok' })),
+      plugins.map(x => set(x.hu, x.desc + ' Mit használ: ' + needs(x) + '.', h('span.vk-lamp', { 'data-tone': 'ok' }))),
+      left.length ? set('Kihagyva ebből a változatból', left.join(', '), h('span.vk-lamp', { 'data-tone': 'off' })) : null));
+  }
+
   // ------------------------------------------------------------------ Beállítások
   function settings(ctx, p, go) {
     const st = ctx.st, s = st.settings();
@@ -404,6 +420,7 @@
       if (!avail) t.disabled = true;
       return set(m.hu, m.desc + (avail ? '' : ' — ezen az eszközön nem érhető el.'), t);
     }))));
+    out.append(parts(ctx, set));
 
     const used = st.usage();
     const status = h('span', null, '…');

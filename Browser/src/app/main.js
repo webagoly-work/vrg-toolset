@@ -1,24 +1,24 @@
 // main.js — boots the VRG Böngésző: the store, the host, the context; the frame (top bar with the omnibox, the view
-// rail, the view, the status line); hash routing; the look (theme, density, narrow layout).
+// rail from the parts' nav entries, the view, the status line); hash routing; the look (theme, density, narrow layout).
 (function (root) {
   'use strict';
   const VB = root.VB = root.VB || {};
   if (VB.main) return;
   const { h, icon, btn, toast, dialog } = VB.ui;
 
-  const NAV = [
-    { id: '', hu: 'Kezdőlap', icon: 'home', view: 'home' },
-    { id: 'kereses', hu: 'Keresés', icon: 'search', view: 'search' },
-    { id: 'konyvjelzok', hu: 'Könyvjelzők', short: 'Jelzők', icon: 'star', view: 'bookmarks', count: c => c.st.bookmarks().length },
-    { id: 'elozmenyek', hu: 'Előzmények', icon: 'history', view: 'history', wide: true, count: c => c.st.history().length },
-    { id: 'olvaso', hu: 'Olvasó', icon: 'list', view: 'reader', count: c => c.st.reading().filter(r => !r.read).length },
-    { id: 'munkak', hu: 'Munkák', icon: 'folder', view: 'jobs', module: 'jobs', count: c => c.st.jobs().length },
-    { id: 'alkatreszek', hu: 'Alkatrészek', short: 'Alkatrész', icon: 'socket', view: 'parts', module: 'parts' },
-    { id: 'kutatas', hu: 'Kutatás', icon: 'bulb', view: 'research', module: 'research', wide: true, count: c => c.st.notebooks().length },
-    { id: 'figyeles', hu: 'Figyelés', icon: 'bell', view: 'watches', module: 'watch', wide: true },
-    { id: 'beallitasok', hu: 'Beállítások', icon: 'settings', view: 'settings' },
-    { id: 'sugo', hu: 'Súgó', icon: 'question', view: 'help', wide: true },
-  ];
+  // the view rail comes from Browser/modules.json (T8): each part brings its nav entries (VB_DATA.mods.nav, ordered by `at`);
+  // a count names one of these
+  const COUNTS = {
+    bookmarks: c => c.st.bookmarks().length,
+    history: c => c.st.history().length,
+    unread: c => c.st.reading().filter(r => !r.read).length,
+    jobs: c => c.st.jobs().length,
+    notebooks: c => c.st.notebooks().length,
+  };
+  const HOME = { route: '', hu: 'Kezdőlap', icon: 'home', view: 'home' };
+  const navOf = mods => ((mods && mods.nav && mods.nav.length) ? mods.nav : [HOME])
+    .filter(n => VB.views && typeof VB.views[n.view] === 'function')
+    .map(n => ({ id: n.route, hu: n.hu, short: n.short, icon: n.icon, view: n.view, module: n.module, wide: !!n.wide, count: COUNTS[n.count] }));
 
   function parse(hash) {
     const s = String(hash || '').replace(/^#\/?/, '');
@@ -49,6 +49,7 @@
     const ctx = VB.context.create({ store: st, data, kind });
     // T1: the master links (the Asztal's web.json) where this host can reach them; elsewhere the links stay on this device
     const sync = ctx.sync = VB.sync.create({ store: st, kind }).start();
+    const NAV = navOf(ctx.mods);
     document.documentElement.dataset.vbHost = kind;
 
     const omniEl = h('div.vb-omni');
@@ -149,7 +150,7 @@
     if (r && job.value.trim() && !r.job) toast('warn', 'Munkaszám', 'Nem VRG-ÉÉHH-NN alakú, ezért nem mentettem.');
   }
 
-  VB.main = { boot, parse, applyLook, NAV };
+  VB.main = { boot, parse, applyLook, navOf, COUNTS };
   if (typeof document !== 'undefined' && !root.VB_NO_BOOT) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   }
