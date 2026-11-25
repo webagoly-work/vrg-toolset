@@ -64,6 +64,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Localhost (WP M8, D-10 = C): the PC's local servers that are running now. "🖥 A PC-n" asks the relay
 // to open one in its own window on the PC; "📱 Itt" opens it on the phone through the relay's
@@ -147,13 +148,9 @@ object PortsFeature : VrgFeature {
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                // a visible refresh next to the title: pull-to-refresh alone is out of reach for TalkBack/Switch (9.1)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("LOCALHOST", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
-                    if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh beside the title: pull-to-refresh alone is out of
+                // reach for TalkBack/Switch (9.1)
+                FeatureTop(host, info) { if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {

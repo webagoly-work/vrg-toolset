@@ -78,6 +78,7 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // VRG Jegyzetek's screens (WP M69): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
 // What shows is decided by the modules the chosen version switches on (Notes.enabled(), kit-core NotesKit.enabled):
@@ -159,10 +160,8 @@ private fun NoteList(host: FeatureHost, onOpen: (String) -> Unit, onSettings: ()
 
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         item {
-            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight().padding(end = 12.dp))
-                Text("JEGYZETEK", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
+            // the header on one row (Fényjel R3: kit FeatureTop)
+            FeatureTop(host, Catalogue.NOTES, Modifier.padding(top = 8.dp), title = "Jegyzetek", inline = true) {
                 VrgChip(profile.sym + " " + profile.name) { onSettings() }
                 Spacer(Modifier.width(6.dp))
                 VrgChip("⚙", status = sync) { onSettings() }

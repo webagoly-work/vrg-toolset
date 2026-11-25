@@ -90,6 +90,7 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import java.util.concurrent.TimeUnit
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Képernyő (WP M13): the PC's screen, live. A trusted link asks the relay for a one-connection ticket,
 // then frames come on their own WebSocket (/screen), so they never hold up the app's relay link. The
@@ -261,13 +262,8 @@ object ScreenFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight().padding(horizontal = 4.dp))
-                Text("KÉPERNYŐ", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.padding(start = 8.dp).weight(1f))
-                if (running) VrgChip("■ Leállítás") { stop(ScreenStop.LEFT) }
-            }
+            // the header on one row (Fényjel R3: kit FeatureTop)
+            FeatureTop(host, info, inline = true) { if (running) VrgChip("■ Leállítás") { stop(ScreenStop.LEFT) } }
             pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
             when {

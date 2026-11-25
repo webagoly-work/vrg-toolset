@@ -68,6 +68,7 @@ import hu.vrg.mobile.relay.PairCodes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Hálózat (WP M7, D-9 = A): every way the phone links to the PC and the internet, each with its honest state and,
 // where an app cannot switch it, a one-tap link to the settings page plus the one tap left to the person
@@ -94,9 +95,7 @@ object NetFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-            Text("HÁLÓZAT", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)   // Fényjel R3: kit FeatureTop
             Text(listOfNotNull(if (snap.wifi) "WiFi" else null, if (snap.mobile) "mobilnet" else null).joinToString(" + ")
                 .ifEmpty { "nincs internet" }, style = Melyviz.readout)
 
