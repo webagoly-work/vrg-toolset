@@ -16,7 +16,7 @@ object FeatureIcons {
         "launch" to "launch", "apps" to "apps", "ports" to "ports", "city" to "city", "pulse" to "pulse",
         "desk" to "desk", "sheets" to "sheets", "devlap" to "devlap",
         // Tudás (know)
-        "notes" to "notes", "stack" to "stack", "archive" to "archive", "sphere" to "sphere", "claude" to "claude",
+        "notes" to "notes", "notebook" to "fuzet", "stack" to "stack", "archive" to "archive", "sphere" to "sphere", "claude" to "claude",
         "catalog" to "catalog", "web" to "web",
         // Tervezés (plan)
         "planner" to "planner", "sketch" to "sketch", "photo" to "photo", "map" to "map",

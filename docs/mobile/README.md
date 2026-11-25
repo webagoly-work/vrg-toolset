@@ -85,6 +85,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M67** | Radar (`radar`) | **BETA** (built 2026-11-23, D-173 … D-175, waiting for the phone check): one radar for everything around — every program registers a layer in RadarHub (Tárgykereső: mine + the tags around; Csipogó: the crew; Óra: the Q71); log-scale distance rings, Irány fel / Észak fel by the compass, GPS bearings from places, Irány keresése (turn round once: the body shadows the signal), hollow blips where the direction is unknown; the same radar inside Tárgykereső and Csipogó; the Desktop's twin is the VRG UI Kit's `radar` (one layout, a shared fixture). Spec: `docs/radar/README.md` | — | high (`Radar.kt` + fixture) |
 | **M68** | Böngésző (`web`) | **BETA** (built 2026-11-24, T7 of `docs/browser/TRAJECTORIES.md`, BRW-Q04 = A, waiting for the phone check): real browsing for work pages inside VRG Mobile, a confined WebView by the Asztal's web contract (http / https only, no bridge into the app, permissions denied, certificate errors never overridden, downloads handed to the phone's browser after a yes); the PC's address bar rules, engines and !bangs (`WebRules`), Tiszta link, bookmarks and history in `vrg.web-links` v1 (`WebLinks`, export / import with the PC). The Kommand's URLs and the VRG Böngésző web app's pages open here. The shared cases: `Browser/test/fixtures/links-contract.json` | Internet | medium (`kit-core` WebRules, WebLinks) |
 | **M69** | Jegyzetek (`notes`) | **BETA** (built 2026-11-20, D-177, D-178, D-179, waiting for the phone check): the central Notes app: versions (Egyszerű, Terepi, Iroda, Fejlesztő, Teljes) of one modular app, a hub every feature writes into with its origin on the note, the Sketcher's Jegyzet as a linked mirror, sync to the private `vrg-notes` branch (`Notes/`, `kit-core/NoteHub.kt`) | — (GitHub to sync) | high (`NoteHub` tests) |
+| **M70** | VRG Füzet (`notebook`) | **BETA** (built 2026-11-21 in a cloud session, D-181 … D-185 as defaults, the APK built by Actions, waiting for the phone check): the malleable notebook forked from the Sketcher's engine: one store of entries, applications as kits (`Mobile/notebook/kits`: Alap, Munka, Otthon, Kutya), views (timeline, list, checklist, tally), derived open items, one search, export / import; new kits by agents from a Kérés (`Mobile/notebook/PROTOCOL.md`) | — | high (core) |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
@@ -94,6 +95,10 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 - After M9, every later build reaches the phone by itself, with no cable or adb.
 
 ### Later, not yet WPs (extrapolated)
+
+- **Personal App v1** (2026-11-20): the code we own sorted into a General and a Founder edition, editions as a
+  catalogue filter; open questions Q1–Q6. [PERSONAL-APP.md](PERSONAL-APP.md), background in
+  `docs/research/reports/Personal apps - software for one.md`.
 
 - **Vault native reader** (the Founder's reminder, 2026-11-20, D-53 B): a Kotlin reader of `webagoly-work/data-vault` beside or
   instead of M45's WebView. First attach the data-vault repo, read its format and crypto, check M45's guesses (address,

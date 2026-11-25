@@ -63,6 +63,17 @@ object CatalogGuide {
             pair = "Asztal: a Planner kirajzolja a pontokat és a látószögeket, és hozzárendeli a fotókat",
         ),
         GuidePage(
+            id = "notebook", title = "VRG Füzet", glyph = "📓", side = GuideSide.PHONE,
+            what = "Egy füzet mindenre, ami a nap közben jön: jegyzet, teendő, mérés, anyag, mérőóra, séta. Az alkalmazásokat kitek adják (Munka, Otthon, Kutya…), a bejegyzések mégis egy helyen vannak: egy keresés megtalálja, egy fájlba kimenthető.",
+            how = listOf(
+                "A ✎ mindig ott van: írd vagy mondd be, a típust és a kitet később is megadhatod.",
+                "Fent a kitek, alattuk a kit nézetei: napló, lista, pipálható lista, összesítő (pl. heti munkaidő, anyag).",
+                "A ⚑ Nyitott mutatja, mi hiányzik, mi esedékes, melyik mérés lóg ki a határértékből, és mit javasol a jegyzet szövege.",
+                "⚙ Kitek: ki-be kapcsolod őket, új kitet töltesz be fájlból, és ott van az Export / Import az egész füzetre.",
+                "Új kit kell? Írj egy Kérés bejegyzést, és oszd meg: egy Claude munkamenet megírja a kitet (Mobile/notebook/kits/PROTOCOL.md).",
+            ),
+        ),
+        GuidePage(
             id = "pager", title = "Csipogó", glyph = "📟", side = GuideSide.PHONE,
             what = "Terepi személyhívó a brigád telefonjain, Bluetooth-on, internet és PC nélkül. Hívás, gyors üzenetek visszaigazolással, csevegés és adóvevő.",
             how = listOf(

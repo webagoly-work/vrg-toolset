@@ -1127,6 +1127,31 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   pushed unsealed stays in the branch's history (only recreating the branch removes it); a dropped device keeps
   reading the versions sealed to it before. Details: `WP/M69.md` → Lezárás.
 
+- **D-181 · VRG Füzet: what "the Note app" is, and what the fork is (M70), 2026-11-21. Taken as a default while
+  building.** The Founder asked for a fork of "the Note app" with its array of modules. Read as the VRG Sketcher (the
+  note taker with fronts, a data catalog and agent-made variants), not Gyorsjegyzet (M6, a single text box to a
+  branch). The fork is a new feature (`notebook`, `notebook-core` + `feature-notebook`) that takes the Sketcher's engine
+  ideas, not its code; the Sketcher stays as it is. Revisit if Gyorsjegyzet was meant: it could then become the Alap
+  kit's sender.
+- **D-182 · One store, applications as kits (M70), 2026-11-21. Default.** Every kit's entries in one JSON file, so one
+  search and one export cover everything (the Keep and Find directions). Kits are data only, bundled from
+  `Mobile/notebook/kits` and loadable from a file. Rejected: a file per kit (search and links across kits get hard);
+  kits as code modules (no agent-made or imported kits).
+- **D-183 · The store lives on the phone first (M70), 2026-11-21. Default, = Personal App Q2 A.** `filesDir`, plain JSON,
+  export / import through the system file picker with a merge. No GitHub sync yet; a sealed sync (the M42 mechanism)
+  is a later step.
+- **D-184 · The bundled kits and what is on at first (M70), 2026-11-21. Default.** Alap (always on), Munka and Otthon
+  on, Kutya off until Personal App Q4 is answered. The two measurement limits in Munka are the standard values (insulation
+  ≥ 1 MΩ at 500 V; RCD trip ≤ 300 ms at IΔn); the electrician confirms them.
+- **D-185 · The Füzet on the home (M70), 2026-11-21. Default.** Page 1, between the Sketcher and the Csipogó: quick
+  capture belongs with what is needed at once. Later: the Sketcher's survey as a kit, and the PC's Desktop page for
+  the store.
+  Details: `WP/M70.md`.
+- **D-186 · VRG Füzet and Jegyzetek both stay, for now (M70, M69), 2026-11-25.** Asked: the two were built in parallel
+  and overlap (Jegyzetek's versions of modules, the Füzet's kits): **A** keep both, **B** fold the Füzet's kits into
+  Jegyzetek, **C** fold Jegyzetek into the Füzet. The Founder chose **A**: Jegyzetek is the notes hub other features
+  write into, the Füzet holds the structured entries (measurements, readings, totals, limits). Revisit B once both have
+  been used on the phone.
 
 ## Open (to ask when the WP that needs them starts)
 

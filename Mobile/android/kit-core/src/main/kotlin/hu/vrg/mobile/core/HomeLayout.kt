@@ -15,7 +15,7 @@ data class HomePage(val n: Int, val title: String, val short: String, val items:
 
 object HomeLayout {
     val PAGES: List<HomePage> = listOf(
-        HomePage(1, "Terep: azonnal kell", "Terep", listOf(Catalogue.SKETCH, Catalogue.PAGER)),
+        HomePage(1, "Terep: azonnal kell", "Terep", listOf(Catalogue.SKETCH, Catalogue.NOTEBOOK, Catalogue.PAGER)),
         HomePage(2, "Munka: pár perc", "Munka", listOf(Catalogue.PLANNER, Catalogue.CALC, Catalogue.INVENTORY)),
         HomePage(3, "Workflow Kit", "Workflow", listOf(Catalogue.WORKFLOW)),
         HomePage(4, "Térkép · Időjárás · Vault", "Térkép", listOf(Catalogue.MAP, Catalogue.WEATHER, Catalogue.VAULT)),

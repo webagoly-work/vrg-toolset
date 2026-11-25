@@ -3,6 +3,66 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "vrg-fuzet",
+      "title": "VRG Füzet",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "VRG Füzet (VRG Mobile WP M70), the malleable notebook forked from the Sketcher's engine: a working browser demo running the bundled kits and the notebook-core rules on example entries, with the fork, the kits, how kits are requested and the build status.",
+      "purpose": "Show the Founder the Füzet working before the phone check, and explain how it is built and grows.",
+      "context": [
+        "VRG Füzet built in this session (M70), Actions run 173 green",
+        "follows the Personal App v1 and Software for One pages",
+        "example entries only, kept in the viewer's browser"
+      ],
+      "tags": [],
+      "file": "files/vrg-fuzet.html",
+      "url": "https://claude.ai/artifact/HQYGhRbBqLckqek6Hv653D"
+    },
+    {
+      "id": "personal-app-v1",
+      "title": "Personal App v1",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "board",
+      "summary": "The code VRG already owns sorted into a first personal app: a General default edition and a Founder edition as home pages of tiles, the inventory with a status filter, and questions Q1-Q6.",
+      "purpose": "Choose the features of the Founder's first personal app from what is already built.",
+      "context": [
+        "follow-up to the Software for One research page",
+        "source docs/mobile/PERSONAL-APP.md",
+        "nothing built or decided yet"
+      ],
+      "tags": [],
+      "file": "files/personal-app-v1.html",
+      "url": "https://claude.ai/artifact/XaMwQR7cDRJpYfPNqA88np"
+    },
+    {
+      "id": "software-for-one",
+      "title": "Software for One",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "explainer",
+      "summary": "Research report on personal apps (software for one person): the lineage from situated software to vibe coding, the 2026 landscape, Android developer verification for a self-built APK, critiques, and where VRG Mobile stands.",
+      "purpose": "Get the Founder informed about personal apps and omniapps before choosing the first personal app's features.",
+      "context": [
+        "the Founder asked about personal apps and omniapps",
+        "feature selection in docs/mobile/PERSONAL-APP.md",
+        "source report docs/research/reports/Personal apps - software for one.md"
+      ],
+      "tags": [],
+      "file": "files/software-for-one.html",
+      "url": "https://claude.ai/artifact/KbY4FkcVqsrNG5qYw2Mh7j"
+    },
+    {
       "id": "fenyjel-board",
       "title": "Fényjel",
       "created": "2026-11-25",
