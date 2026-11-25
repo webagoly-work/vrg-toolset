@@ -87,5 +87,22 @@ t('handles id->project map', VBACKUP.projects().length===2);
 store.clear();
 t('empty store safe', VBACKUP.projects().length===0 && VBACKUP.build().counts.projects===0);
 
+// one project as a .vplan.json: the Projektek panel's envelope, which the Inventory's plannerimport.js accepts
+store.clear();
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'p1', name:'Teszt terv', ts:Date.UTC(2026,10,25), data:{building:{name:'Teszt'}, data:{devices:[]}}}]));
+const pf = VBACKUP.planFile(VBACKUP.projects()[0]);
+t('planFile: format key', pf.format==='varler-planner' && pf.version===1);
+t('planFile: name, saved, project', pf.name==='Teszt terv' && pf.saved==='2026-11-25T00:00:00.000Z' && pf.project.building.name==='Teszt');
+t('planFile: an odd entry is kept whole', VBACKUP.planFile({name:'X', raw:{building:{}}}).project.building!==undefined);
+const inv = require('path').join(__dirname,'..','..','..','..','Inventory','src','core','plannerimport.js');
+const done = import(require('url').pathToFileURL(inv).href).then(m => {
+  let ok = true; try { m.parsePlan(pf); } catch (e) { ok = false; }
+  t('planFile: the Inventory accepts it', ok);
+  let refused = false; try { m.parsePlan(VBACKUP.projects()[0].raw); } catch (e) { refused = true; }
+  t('a bare library entry (the old file) is refused', refused);
+});
+
+done.then(() => {
 console.log(A.join('\n'));
 console.log('\n'+A.filter(x=>x[0]==='P').length+'/'+A.length+' passed');
+});

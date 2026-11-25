@@ -171,12 +171,21 @@ const VBACKUP = (function () {
     return { projects: b.counts.projects, bytes: text.length };
   }
 
+  // One project as a .vplan.json: the same envelope as the Projektek panel's download (downloadProject, 12-boot.js),
+  // { format: 'varler-planner', version: 1, name, saved, project }, so the Planner's own import and the Inventory's
+  // plannerimport.js read it. A library entry is { name, ts, data } (12-boot.js); an odd one is kept whole.
+  function planFile(p) {
+    const r = (p && p.raw) || {};
+    const ts = typeof r.ts === 'number' ? r.ts : Date.parse(p && p.date) || now().getTime();
+    return { format: 'varler-planner', version: 1, name: p.name, saved: new Date(ts).toISOString(), project: r.data !== undefined ? r.data : r };
+  }
+
   // Secondary path: one .vplan.json per project, for cherry-picking later.
   function exportEach(onProgress) {
     const list = currentProjects();
     list.forEach((p, i) => {
       setTimeout(() => {
-        download(safeName(p.name) + '.vplan.json', JSON.stringify(p.raw, null, 1));
+        download(safeName(p.name) + '.vplan.json', JSON.stringify(planFile(p), null, 1));
         if (onProgress) onProgress(i + 1, list.length);
       }, i * 350);
     });
@@ -542,7 +551,7 @@ const VBACKUP = (function () {
 
   const api = {
     open: open, close: close,
-    exportAll: exportAll, exportEach: exportEach,
+    exportAll: exportAll, exportEach: exportEach, planFile: planFile,
     build: build, parse: parse, apply: apply,
     projects: currentProjects, storeKeys: storeKeys, hash: hash,
     FORMAT: FORMAT, BUNDLE_VERSION: BUNDLE_VERSION, PROJECT_KEY: PROJECT_KEY
