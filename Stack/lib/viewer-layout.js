@@ -10,7 +10,7 @@
 //   aggregate(src, ranges, k, cls?) → {data, starts}   k bytes → one particle: its dominant class, shown by the first
 //                                                   byte of that class (cls: src already holds class codes)
 //
-// The natural order (§6.2): F tier rows × lane blocks · I L U R lane rows, time running left to right · Q namespace
+// The natural order (§6.2): F tier rows × lane blocks · T thread bands · I L U R lane rows, time running left to right · Q namespace
 // columns · A kind bands · C G a squarified treemap of the folders, area ∝ bytes · anything else in id order.
 // Inside a group, cells are an ordered strip treemap (Bederson): reading order is kept and cells stay squarish.
 (function (root, factory) {
@@ -138,6 +138,8 @@
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items.slice().sort(byTime), pad(q), 'cols');
     } else if (layer === 'Q') {
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
+    } else if (layer === 'T') {   // thread groups (§6.2): one band per thread or line, its items in the board's order
+      for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
     } else if (layer === 'A') {
       for (const [g, q] of bands(group(items, it => it.kind || ''), R, 'y')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else leaf(items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), R, 'rows');

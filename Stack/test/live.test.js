@@ -25,6 +25,7 @@ function layersV1() {
   return {
     F: { nodes: [N('F:planner', 'feature', 'Planner wiring', [], { tier: 1 })], edges: [] },
     I: { nodes: [N('I:lens', 'built', 'the stack lens', [])], edges: [] },
+    T: { nodes: [], edges: [], built: [] },
     Q: { nodes: [N('Q:file.v', 'decision file', 'docs/visual/DECISIONS.md', ['p:docs/visual/DECISIONS.md'], { extra: { path: 'docs/visual/DECISIONS.md' } }),
       N('Q:VIS-Q5', 'decision', 'VIS-Q5 Holo', ['q:VIS-Q5'], { state: 'open≈' })], edges: [{ a: 'Q:file.v', b: 'Q:VIS-Q5', rel: 'holds' }] },
     L: { nodes: [N('L:route', 'line', 'Wiring line', [])], edges: [] },
@@ -41,8 +42,10 @@ test('source map: each hand-kept source to its layer; code, our own output and n
   const S = { notes: 'H:/VRG/Full/notes', repo: 'H:/VRG/Full/Planner_VRG_U100', memory: 'C:/Users/x/.claude/projects/H--/memory' };
   const f = SM.rules(S, ['H:/VRG/Full/Varler_Workflow_Kit/DECISIONS_L1-L18.md']);
   const at = p => f(p.replace(/\\/g, '/').toLowerCase());
-  assert.deepEqual(at('H:\\VRG\\Full\\notes\\devlog\\lines.js'), ['L']);
-  assert.deepEqual(at('H:/VRG/Full/notes/devlog/threads.js'), ['E']);
+  assert.deepEqual(at('H:\\VRG\\Full\\notes\\devlog\\lines.js'), ['L', 'T']);
+  assert.deepEqual(at('H:/VRG/Full/notes/devlog/threads.js'), ['E', 'T']);
+  assert.deepEqual(at('H:/VRG/Full/notes/devlog/sessions.json'), ['L']);
+  assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/Stack/ROADMAP.md'), ['T']);
   assert.deepEqual(at('H:/VRG/Full/notes/features/features.json'), ['F']);
   assert.deepEqual(at('H:/VRG/Full/notes/idea-timeline/data.js'), ['I']);
   assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/docs/visual/DECISIONS.md'), ['Q']);

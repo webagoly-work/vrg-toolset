@@ -324,3 +324,18 @@ DECISIONS file, whatever that file's own format; the threads, lines, features an
 | STK-P97 | When a page reports a selection | **A** only after the user has touched the page (a key or a pointer) | a page opened with `#sel=` in its link must not take over the other pages' highlight |
 | STK-P98 | The lint (§3.1 ①) | **A** `test/pages.test.js`: data only from the generated file, which carries `build` and `schema`; no literal node id in the page; no long literal record list; `lib/live.js` loaded, the contract signed with the right layer, `StackLive.selected` called | the checks a new layer page must also pass |
 
+## T · Teendők S3 (builder's choices), 2026-11-25
+
+Built from research/STRINGS-PLAN.md §2.2 and §5 (`lib/todo.js`, the adapter `layers.todo`). Checked on the archived
+Thread Board's data (47 threads, 152 not-yet items → 147 T nodes) and a sandbox build: the stale "Döntésnapló" item on
+the mindmap thread is flagged with its evidence (the stack thread's built list and the F row).
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P99 | The sources | A everything the plan lists · **B the board's `t`, `lines.js remaining`, ROADMAP ✗ rows; not PROPOSALS, not open Q** | PROPOSALS are the stack's own suggestions, recomputed each build: as nodes they would feed the build its own output. An open decision is already a Q node; a T item that names it links to it through the join |
+| STK-P100 | The same item from two places | **A** equal telling words, or 80 % shared when there are two or more; with one telling word only the same text, within one thread or a ROADMAP / line item repeating the board | "Code imports" (board) = "imports in Code" (ROADMAP); "Export" on two threads stays two items. Telling words keep short codes (OTG, CYD, P7, T1): they are what tells items apart |
+| STK-P101 | What "looks done" needs | **A** a thread's built list naming the same item, or an F row in tier 1–2 holding every telling word (at least half its own), or two commits holding every telling word of an item of two or more such words | each loosening was tried on the real board and produced false flags ("OTG menu" by "One menu", "Packaging" by a Vázlat *package*). On the archived board only the Döntésnapló item passes, plus "Desktop dashboard" in the sandbox's history |
+| STK-P102 | Where it shows | **A** the node's state "looks done", its evidence on the node and as `looks-done` links (v 1), DRIFT.md §9 with where it is still listed | the Füzértábla (S4) shows it with a mark-done through the gateway; until then the drift report is the list |
+| STK-P103 | Status drift (STK-Q20 narrow A) | **A** F tier (the best of the pillar's F rows) or the pillar's hand status against the string's class, on idea · out · low · mid · high · op; Orphan and Loose say nothing about maturity and make no card | DRIFT.md §10; a proposal (the tier or status to consider), never applied |
+| STK-P104 | The reach mask | **A** T after I: `F I T Q L A U R C G Z` (eleven slots) | open work sits between the ideas and the decisions; every page that shows a mask prints it as it comes |
+

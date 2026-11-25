@@ -11,10 +11,10 @@ const { fold } = C;
 
 const asObj = x => Array.isArray(x) ? { id: x[0], name: x[1], words: x[2], paths: x[3], ids: x[4], area: '', thread: '' } : x;
 
-function pillars(nodes, edges, list, { threadLines = null } = {}) {
+function pillars(nodes, edges, list, { threadLines = null, threadIds = null } = {}) {
   const entities = list.map(asObj).map(({ id, name, words, paths, ids, area = '', thread = '', status = '' }) => {
     const lines = thread && threadLines && threadLines[thread] ? threadLines[thread].map(l => 'L:' + l) : [];
-    ids = [...(ids || []), ...lines];
+    ids = [...(ids || []), ...lines, ...((thread && threadIds && threadIds[thread]) || [])];   // its open work (T)
     const rx = words.map(w => new RegExp('(^|[^a-z0-9])' + fold(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])'));
     const under = paths.map(p => C.normPath(p));
     const members = [];

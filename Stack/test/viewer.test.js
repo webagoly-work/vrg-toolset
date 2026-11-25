@@ -67,6 +67,8 @@ test('layout: each layer in its natural order, area follows bytes', () => {
   const q = check('Q', [{ id: 'Q:VIS-Q1', n: 90 }, { id: 'Q:VIS-Q2', n: 90 }, { id: 'Q:STK-Q1', n: 90 }, { id: 'Q:file.docs/DECISIONS.md', n: 300 }]);
   assert.ok(Math.abs(q.get('Q:VIS-Q1').x - q.get('Q:VIS-Q2').x) < Math.abs(q.get('Q:VIS-Q1').x - q.get('Q:STK-Q1').x) + 1e-9, 'Q: one namespace, one column');
   check('A', [{ id: 'A:a', n: 100, kind: 'agent' }, { id: 'A:b', n: 50, kind: 'skill' }, { id: 'A:c', n: 70, kind: 'agent' }]);
+  const t = check('T', [{ id: 'T:a', n: 60, lane: 'stack' }, { id: 'T:b', n: 40, lane: 'mindmap' }, { id: 'T:c', n: 50, lane: 'stack' }]);
+  assert.ok(Math.abs(t.get('T:a').y - t.get('T:c').y) < 0.5 && Math.abs(t.get('T:a').y - t.get('T:b').y) > 0, 'T: one band per thread');
   check('C', [{ id: 'C:Stack', path: 'Stack', n: 400 }, { id: 'C:Stack/lib', path: 'Stack/lib', n: 900 }, { id: 'C:Mobile', path: 'Mobile', n: 300 }]);
 });
 

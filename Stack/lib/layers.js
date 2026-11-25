@@ -341,4 +341,13 @@ function globe(facts) {
   return { nodes, edges, generated: sig.generated, commit: sig.commit };
 }
 
-module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+/* ============================================================ T · Teendők (open work; S3, lib/todo.js) */
+function todo(facts) {
+  const T = require('./todo');
+  const opt = f => { try { return fresh(f); } catch { return null; } };   // a missing source leaves its items out, not the layer
+  const roadmaps = facts.files.filter(f => /(^|\/)ROADMAP[^/]*\.md$/i.test(f)).map(f => ({ file: f, text: read(REPO + '/' + f) }));
+  const c = T.collect({ threads: opt(NOTES + '/devlog/threads.js'), lines: opt(NOTES + '/devlog/lines.js'), roadmaps });
+  return T.layer(c.raw, c.built);
+}
+
+module.exports = { featured, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

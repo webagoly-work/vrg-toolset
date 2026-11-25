@@ -26,8 +26,9 @@ function rules(S = CFG.sources, extra) {
       const r = f.slice(notes.length + 1);
       if (r.startsWith('features/')) return ['F'];
       if (r.startsWith('idea-timeline/')) return ['I'];
-      if (r === 'devlog/threads.js') return ['E'];
-      if (r === 'devlog/lines.js' || r === 'devlog/sessions.json') return ['L'];
+      if (r === 'devlog/threads.js') return ['E', 'T'];
+      if (r === 'devlog/lines.js') return ['L', 'T'];
+      if (r === 'devlog/sessions.json') return ['L'];
       if (r === 'devrep/notes.js') return ['R'];
       return [];
     }
@@ -35,6 +36,7 @@ function rules(S = CFG.sources, extra) {
     if (extras.includes(f)) return ['Q'];
     const r = inRepo(f); if (r == null) return [];
     if (r === 'stack/entities.json') return ['E'];
+    if (/(^|\/)roadmap[^/]*\.md$/.test(r)) return ['T'];
     if (/decisions/.test(r) && r.endsWith(".md")) return ["Q"];
     if (/^\.claude\/agents\/[^/]+\.md$|^docs\/hub\/agents\/[^/]+\.md$|^go-[a-z0-9]+\.md$|^docs\/go-archive\/go-[a-z0-9-]+\.md$|(^|\/)claude\.md$|^docs\/council\/[^/]+\.md$|^docs\/workflow\/[^/]+\.md$|^\.claude\/(skills|commands)\//.test(r)) return ['A'];
     return [];

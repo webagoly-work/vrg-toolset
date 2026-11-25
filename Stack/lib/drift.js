@@ -76,5 +76,20 @@ module.exports = function drift(graph, full, ctx) {
   /* 8. joins that failed */
   out.push(`## 8. Joins that failed`, ``, `- ${ctx.unresolved} mentions pointed at a key no node owns (mostly folders outside every layer).`,
     `- ${ctx.dangling.length} source links point at a node that does not exist` + (ctx.dangling.length ? ': ' + ctx.dangling.slice(0, 12).map(e => `${e.a}→${e.b} (${e.rel})`).join(', ') : '') + '.', ``);
+
+  /* 9. open work that looks done (S3, lib/todo.js check) */
+  const done = graph.nodes.filter(n => n.layer === 'T' && n.state === 'looks done');
+  const nT = graph.nodes.filter(n => n.layer === "T").length;
+  out.push(`## 9. Open work that looks done (késznek tűnik)`, ``,
+    `${done.length} of ${nT} not-yet items have evidence that they are built. Each names where it is still listed; take it off there (the Füzértábla's "mark done" will do it with approval, S4). Nothing here changes a file.`, ``,
+    ...(done.length ? done.map(t => `- **${t.title}** (\`${t.id}\`) — still listed in ${(t.from || []).join(', ') || '?'}. Evidence: ${(t.evidence || []).map(e => e.text + (e.id ? ` \`${e.id}\`` : '')).join('; ')}`) : ['none']), ``);
+
+  /* 10. status drift (STK-Q20 narrow A): the hand value against the string, two or more steps apart */
+  let cards = [];
+  try { cards = require('./todo').drift(graph, require('./strings'), require('../config').strings || {}); } catch (e) { cards = null; out.push(`## 10. Status drift`, ``, `not computed: ${e.message}`, ``); }
+  if (cards) out.push(`## 10. Status drift: the hand value against the evidence`, ``,
+    `A pillar's hand value (its F tier, or the hand status of a pillar with no F row) two or more steps from what its string shows, on the board's scale idea · out · low · mid · high · op. A proposal, never applied.`, ``,
+    ...(cards.length ? [`| Pillar | Hand value | The string says | Reach | Proposal |`, `|---|---|---|---|---|`,
+      ...cards.map(c => `| ${c.name} (\`E:${c.pillar}\`) | ${c.hand}: ${c.what} | ${c.evidence} (class ${c.cls}${c.pulse ? ', last move ' + c.pulse : ''}) | \`${c.mask}\` | ${c.propose} |`)] : ['none']), ``);
   return out.join('\n');
 };
