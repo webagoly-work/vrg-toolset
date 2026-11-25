@@ -57,6 +57,7 @@ const HIST = JOBS && path.join(JOBS, '_elozmenyek');
 const ROUTES = [
   ['/lib/', path.join(MAP, 'lib')],
   ['/style/', path.join(MAP, 'style')],
+  ['/kocka/', path.join(MAP, 'kocka')],        // VRG Kocka, the holo cube (its own line of work until it merges, Map/kocka/README.md)
   ['/data/', DATA],
   ['/vendor/maplibre-gl/', path.join(VENDOR, 'maplibre-gl', 'dist')],
   ['/vendor/pmtiles/', path.join(VENDOR, 'pmtiles', 'dist')],

@@ -49,6 +49,8 @@ to `H:\VRG\Full\tools\pmtiles`.
 - `lib/guide.js`, `lib/nav-layer.js`, `lib/traffic.js` — **turn-by-turn guidance** with voice (N3) and the
   optional TomTom traffic check with your own key (`docs/map/NAVIGATION.md`).
 - `lib/weather-layer.js`, `lib/weather-fields.js` — the **W** layer: weather from VRG Időjárás, animated (see below).
+- `kocka/` — **VRG Kocka**, its own line of work until it merges (`kocka/README.md`): a 200 m cube around a picked
+  point as a holo point cloud; served here at `/kocka/vrg-kocka.html`.
 - `tools/build-jobs.js` — builds the job layer's `jobs\_elozmenyek\helyek.json`, offline only.
 - `test/run.js` — the tests (invented data only).
 - `serve.js` — static server with HTTP Range (a `.pmtiles` file is read in pieces, no tile server), plus

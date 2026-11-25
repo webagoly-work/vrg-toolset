@@ -27,6 +27,25 @@ window.VRG_ARCHIVE = {
    "url": "https://claude.ai/artifact/XExAfGxpf4b91mWLkmru87"
   },
   {
+   "id": "vrg-kocka",
+   "title": "VRG Kocka",
+   "created": "2026-11-25",
+   "updated": "2026-11-25",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "A 200 m map cube around a picked point as a holographic point cloud; start point Budapest-Újlak.",
+   "purpose": "K0 of the VRG Kocka line: the independent first page before it merges into the Térkép.",
+   "context": [
+    "the Founder opened a new Térkép workline: pick a point, get a 200 m cube, ground 20 m above its floor, Jarvis-style holo",
+    "data from Overture Maps and AWS terrain tiles because the cloud session has no Map/data"
+   ],
+   "tags": [],
+   "file": "files/vrg-kocka.html",
+   "url": "https://claude.ai/artifact/Jki4qrp8m4mz7Z5aKzboqv"
+  },
+  {
    "id": "domoszlo-betap",
    "title": "Domoszló ideiglenes betáp",
    "created": "2026-11-24",

@@ -266,7 +266,7 @@
             { "key": "P", "name": "Alkalmazás archiválása", "hint": "a telefon appja (APK + manifest) a Backup\\installers\\android mappába", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["apps"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Mobile" }
           ] } },
-      { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133 · I időjárás · B böngésző", "menu": {
+      { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133 · I időjárás · B böngésző · K kocka", "menu": {
           "title": "VARLER CONSOLE", "subtitle": "{repo}\\Console",
           "items": [
             { "key": "S", "name": "Indítás", "hint": ":8133", "server": "console" },
@@ -300,7 +300,18 @@
                   "server": "bongeszo", "serverArgs": ["--no-open"] },
                 { "key": "B", "name": "Újraépítés", "hint": "node Browser\\build.js", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Browser\\build.js"] }] },
                 { "key": "T", "name": "Teszt", "hint": "node Browser\\test\\run.js", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Browser\\test\\run.js"] }] }
-              ] }
+              ] },
+            { "key": "K", "name": "VRG Kocka", "hint": "200 m-es térkép-kocka holo pontfelhőként (Térkép-ág, K0)", "menu": {
+                "title": "VRG KOCKA", "subtitle": "{repo}\\Map\\kocka",
+                "note": "Új kocka: python Map\\kocka\\tools\\fetch-chunk.py <lat> <lon> --id <nev> (halozat kell), utana a lapra huzhato.",
+                "items": [
+                  { "key": "S", "name": "Szerverről", "hint": "a Térkép szervere, :8802/kocka/", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8802/kocka/vrg-kocka.html"],
+                    "server": "terkep", "serverArgs": ["--no-open"] },
+                  { "key": "L", "name": "Offline lap", "hint": "egy fájl, a kezdőpont beágyazva", "path": "{repo}\\Map\\kocka\\dist\\vrg-kocka-start-ujlak.html" },
+                  { "key": "B", "name": "Újraépítés", "hint": "node Map\\kocka\\tools\\build-artifact.js", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Map\\kocka\\tools\\build-artifact.js"] }] },
+                  { "key": "T", "name": "Teszt", "hint": "node Map\\kocka\\test\\run.js", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Map\\kocka\\test\\run.js"] }] },
+                  { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Map\\kocka" }
+                ] } }
           ] } },
       { "key": "V", "name": "Vendor", "hint": "lista · letöltés", "was": "L D", "menu": {
           "title": "VENDOR KOMPONENSEK", "subtitle": "vendor-manifest.json · Vendor\\",
