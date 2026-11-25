@@ -5,22 +5,22 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 165 |
+| START registry (launcher/vrg-menu.json) | 168 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 92 |
+| VRG Irányítópult (Dashboard/) | 96 |
 | Varler Console pages | 51 |
-| VRG Mobile features | 47 |
+| VRG Mobile features | 69 |
 | VRG Stack | 23 |
-| CLI tools | 19 |
+| CLI tools | 23 |
 | Prompt library | 8 |
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
-| Shared libraries | 5 |
-| Docs packs + GO phrases | 27 |
-| Top-level folders + launcher parts | 28 |
-| **Total** | **591** |
+| Shared libraries | 7 |
+| Docs packs + GO phrases | 30 |
+| Top-level folders + launcher parts | 30 |
+| **Total** | **631** |
 
-## START registry (launcher/vrg-menu.json) (165)
+## START registry (launcher/vrg-menu.json) (168)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -37,7 +37,7 @@
 | `menu:tool:T` | Solomon Gömb | START T · {repo}\Solomon\dist\vrg-solomon.html | start.tool | tools | a tudás három jelzése |
 | `menu:tool:B` | VRG UI Kit galéria | START B · {repo}\shared\vrg-ui-kit\gallery.html | start.tool | tools | komponensek, témák, sűrűség |
 | `menu:tool:K` | VRG Kódváros | START K · {repo}\CodeCity\dist\vrg-codecity.html | start.tool | tools | a kód 3D városként |
-| `menu:tool:M` | VRG Térkép | START M · C:\Windows\System32\rundll32.exe | start.tool | tools | Magyarország offline · 3D · címkereső · munkák (J) |
+| `menu:tool:M` | VRG Térkép | START M · C:\Windows\System32\rundll32.exe | start.tool | tools | Magyarország offline · 3D · címkereső · munkák (J) · időjárás (W) |
 | `menu:proj:P` | Planner | START P (submenu) | start.project | projects | build · teszt · gyro |
 | `menu:proj:P/B` | Planner · Build | START P B · {npm} run build | start.action | projects/P | npm run build |
 | `menu:proj:P/W` | Planner · Build + megnyitás | START P W · {npm} run build | start.action | projects/P | utána a böngészőválasztó |
@@ -51,6 +51,7 @@
 | `menu:proj:P/R` | Planner · Rajztár build + teszt | START P R · {node} shared\rajztar\build.js ; {node} shared\rajztar\test\studio-e2e.js | start.action | projects/P | adatellenőrzés, studio.html, e2e |
 | `menu:proj:P/S` | Planner · VRG Sketcher | START P S · {repo}\Sketcher\dist\vrg-sketcher.html | start.action | projects/P | helyszíni felmérés: vázlat, jegyzet, kérdések, fotók |
 | `menu:proj:P/H` | Planner · Sketcher build + teszt | START P H · {node} Sketcher\tools\build.js ; {node} Sketcher\test\run.js | start.action | projects/P | dist, ellenőrzések, oldal-teszt |
+| `menu:proj:P/3` | Planner · Ház 3D feldolgozás | START P 3 · {node} Sketcher\tools\house3d.js | start.action | projects/P | inbox\haz3d\<ház> fotóiból pontfelhő (COLMAP); a Sketcher Helyszín → 🏠 nyitja |
 | `menu:proj:P/O` | Planner · Mappa megnyitása | START P O · | start.action | projects/P |  |
 | `menu:proj:I` | Készlet | START I (submenu) | start.project | projects | build · szerver · ár |
 | `menu:proj:I/B` | Készlet · Build | START I B · {npm} run build | start.action | projects/I | dist\vrg-inventory.html |
@@ -100,6 +101,7 @@
 | `menu:proj:L/W` | VRG Mobile · Relay e2e teszt | START L W · {repo}\Mobile\mobile.cmd | start.action | projects/L | Node + Playwright |
 | `menu:proj:L/A` | VRG Mobile · Android Studio | START L A · {repo}\Mobile\mobile.cmd | start.action | projects/L | a projekt megnyitása |
 | `menu:proj:L/R` | VRG Mobile · Leírás | START L R · {repo}\Mobile\mobile.cmd | start.action | projects/L | README.md |
+| `menu:proj:L/P` | VRG Mobile · Alkalmazás archiválása | START L P · {repo}\Mobile\mobile.cmd | start.action | projects/L | a telefon appja (APK + manifest) a Backup\installers\android mappába |
 | `menu:proj:L/O` | VRG Mobile · Mappa megnyitása | START L O · | start.action | projects/L |  |
 | `menu:proj:W` | Varler Console | START W (submenu) | start.project | projects | terepi konzol, :8133 · I időjárás |
 | `menu:proj:W/S` | Varler Console · Indítás | START W S · server console | start.action | projects/W | :8133 |
@@ -161,6 +163,7 @@
 | `srv:terkep` | VRG Térkép · offline térkép | :8802 · {repo}\Map\serve.js | server | servers |  |
 | `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | :8808 · {repo}\Weather\serve.js | server | servers |  |
 | `srv:stack` | Rétegverem · Konnektóm | :8806 · {stack}\serve.js | server | servers |  |
+| `srv:munkavaszon` | Munkavászon · Claude munkamenet élőben | :8810 · {repo}\SessionCanvas\serve.js | server | servers |  |
 | `menu:prog:1` | Chrome | {full}\tools\chrome\chrome.exe | program | programs |  |
 | `menu:prog:2` | Opera GX | {full}\programs\opera-gx\opera.exe | program | programs | optional |
 | `menu:prog:3` | Zen | {zen} | program | programs | optional |
@@ -300,7 +303,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (92)
+## VRG Irányítópult (Dashboard/) (96)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -316,6 +319,8 @@
 | `pane:git` | Git | Dashboard/page/panes/git.js | pane | panes |  |
 | `pane:feed` | Hírfolyam (presetek) | Dashboard/page/panes/feed.js | pane | panes |  |
 | `pane:app` | app | Dashboard/page/panes/app.js | pane | panes |  |
+| `pane:sessions` | sessions | Dashboard/page/panes/sessions.js | pane | panes |  |
+| `pane:controller` | controller | Dashboard/page/panes/controller.js | pane | panes |  |
 | `pane:search` | Belső keresés | Dashboard/page/panes/search.js (Ctrl+Shift+F) | overlay panel | panes |  |
 | `pane:viewer` | Fájlnézegető | Dashboard/page/panes/viewer.js | pane part | panes |  |
 | `dash:palette` | Parancspaletta | Dashboard/page/palette.js (Ctrl+K) | command palette | frame |  |
@@ -342,7 +347,7 @@
 | `dashcfg:profiles` | Registry profiles.json | Dashboard/config/profiles.json | config registry | config | 8 entries |
 | `dashcfg:roots` | Registry roots.json | Dashboard/config/roots.json | config registry | config | 7 entries |
 | `dashcfg:search` | Registry search.json | Dashboard/config/search.json | config registry | config | 4 entries |
-| `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 8 entries |
+| `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 9 entries |
 | `dashcfg:web` | Registry web.json | Dashboard/config/web.json | config registry | config | 3 entries |
 | `dashlib:acts` | lib/acts.js | Dashboard/shell/lib/acts.js | module | shell/lib | acts.js — act ids → registry items (the allow-list) and what an act does. |
 | `dashlib:appscheme` | lib/appscheme.js | Dashboard/shell/lib/appscheme.js | module | shell/lib | appscheme.js — the vrg-app:// scheme of the VRG Asztal (WP-43, DESKU-Q08): an in-shell HTML app gets a real origin, so its |
@@ -356,6 +361,7 @@
 | `dashlib:desk` | lib/desk.js | Dashboard/shell/lib/desk.js | module | shell/lib | desk.js — the VRG Asztal's two primary views, as pure functions shared by main (CommonJS) and the frame page (window.VRGDeskLib). |
 | `dashlib:fsops` | lib/fsops.js | Dashboard/shell/lib/fsops.js | module | shell/lib | fsops.js — file operations as jobs (WP-12): copy, move, rename, mkdir, trash. Everything goes through handles and roots. |
 | `dashlib:fsview` | lib/fsview.js | Dashboard/shell/lib/fsview.js | module | shell/lib | fsview.js — look at a file and hand it to a program (WP-13): read, open, reveal, edit, copyPath. Handles in, display strings out. |
+| `dashlib:gate` | lib/gate.js | Dashboard/shell/lib/gate.js | module | shell/lib | gate.js — the Vezérlő's engine (WP-52): attachments, the Előszűrő (Prefilter/) verdict, and a new Claude Code session with the dressed prompt. |
 | `dashlib:git` | lib/git.js | Dashboard/shell/lib/git.js | module | shell/lib | git.js — the Git panel's engine (WP-31, DESK-Q11 A): status, branches, worktrees, log, diff, a branch, a commit and a guarded push. |
 | `dashlib:gmail` | lib/gmail.js | Dashboard/shell/lib/gmail.js | module | shell/lib | gmail.js — read-only Gmail API client (WP-27). Tokens come from lib/oauth.js; nothing here stores or logs one. |
 | `dashlib:handles` | lib/handles.js | Dashboard/shell/lib/handles.js | module | shell/lib | handles.js — opaque file handles. The page only ever holds `h:` + 22 base64url chars issued here for this run. |
@@ -386,6 +392,7 @@
 | `dashlib:secrets` | lib/secrets.js | Dashboard/shell/lib/secrets.js | module | shell/lib | secrets.js — OAuth tokens and the like, encrypted with Electron safeStorage (Windows DPAPI) in <userDir>/secrets.bin. |
 | `dashlib:selftest` | lib/selftest.js | Dashboard/shell/lib/selftest.js | module | shell/lib | selftest.js — `--selftest`: load the page, plan every act without running it, write the result, quit. |
 | `dashlib:selmenu` | lib/selmenu.js | Dashboard/shell/lib/selmenu.js | module | shell/lib | selmenu.js — the selection menu (WP-19): select text anywhere, right-click, get Másolás · Belső keresés · Google · AI keresés · Claude oldalchat · ... |
+| `dashlib:sessions` | lib/sessions.js | Dashboard/shell/lib/sessions.js | module | shell/lib | sessions.js — Munkamenetek (WP-50): the local Claude Code sessions of account A and B, and the ways to open one inside the VRG Asztal. |
 | `dashlib:settings` | lib/settings.js | Dashboard/shell/lib/settings.js | module | shell/lib | settings.js — per-user settings in <userDir>/settings.json, whitelisted keys only, written atomically (.tmp, rename). |
 | `dashlib:sheets` | lib/sheets.js | Dashboard/shell/lib/sheets.js | module | shell/lib | sheets.js — the Lapok (Sheets) of the VRG Asztal's workspace (WP-46): pure functions, shared by main (CommonJS) and the frame page |
 | `dashlib:srvhost` | lib/srvhost.js | Dashboard/shell/lib/srvhost.js | module | shell/lib | srvhost.js — registry servers run inside the VRG Asztal (WP-48): no console window. Each server is a hidden pty session owned by |
@@ -453,7 +460,7 @@
 | `console:trace` | Ügynöknyom (agent trace) | Console/www/js/trace + relay :8134 | feature | dev |  |
 | `console:ring` | Varler SUI gyűrű (HUD) | Console/www/js/ring.js + Console/design/tokens.json | design component | look |  |
 
-## VRG Mobile features (47)
+## VRG Mobile features (69)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -500,8 +507,30 @@
 | `mobile:M41` | Készlet tile | docs/mobile/WP/M41.md · feature-inventory | phone feature | VRG Mobile |  |
 | `mobile:M42` | Varler Workflow Kit | docs/mobile/WP/M42.md · feature-workflow | phone feature | VRG Mobile | the PC's quote jobs, sealed to the owner's phone |
 | `mobile:M43` | VRG Térkép | docs/mobile/WP/M43.md · feature-map | phone feature | VRG Mobile | the PC's map on the phone, with or without the PC |
-| `mobile:M44` | VRG Időjárás | docs/mobile/WP/M44.md · feature-weather | phone feature | VRG Mobile |  |
+| `mobile:M44` | VRG Időjárás | docs/mobile/WP/M44.md · feature-weather | phone feature | VRG Mobile | can we work outside today? |
 | `mobile:M45` | Vault | docs/mobile/WP/M45.md · feature-vault | phone feature | VRG Mobile | the Proton Vault's own web app inside VRG Mobile |
+| `mobile:M46` | Kamera 2 | docs/mobile/WP/M46.md | phone feature | VRG Mobile | type-plate reading, privacy on export, before / after, signature, walk video, faster purposes |
+| `mobile:M47` | Munkakör lap | docs/mobile/WP/M47.md | phone feature | VRG Mobile | the survey's takeoff, into the Planner and out to the Workflow Kit |
+| `mobile:M48` | Helyszín ↔ Térkép | docs/mobile/WP/M48.md | phone feature | VRG Mobile | the outline drawn on the phone's own map, the sketch placed on the building |
+| `mobile:M49` | Apró hiányok | docs/mobile/WP/M49.md | phone feature | VRG Mobile | wants per room, variants on the long press, variants that tune the drawing tools |
+| `mobile:M50` | Maradékok | docs/mobile/WP/M50.md | phone feature | VRG Mobile | wants in the Planner, the Csere tag, the survey report, the client's contact, lineClose, the sound note |
+| `mobile:M51` | Kapcsolók | docs/mobile/WP/M51.md | phone feature | VRG Mobile | every Sketcher feature on its own switch (the Founder's rule D-90) |
+| `mobile:M52` | Saját kamera | docs/mobile/WP/M52.md | phone feature | VRG Mobile | the in-app camera (ghost overlay, purpose on the viewfinder, series, torch, level) |
+| `mobile:M53` | Összefésülés | docs/mobile/WP/M53.md | phone feature | VRG Mobile | the Sketcher forks tested together, end to end, and their seams |
+| `mobile:M54` | Jegyzőkönyv a telefonon | docs/mobile/WP/M54.md | phone feature | VRG Mobile | the Felmérési jegyzőkönyv printed and shared from the phone |
+| `mobile:M55` | Térkép-feed (in `map`) | docs/mobile/WP/M55.md | phone feature | VRG Mobile | the nearest useful places around you |
+| `mobile:M56` | Saját útvonaltervezés (in `map`, N2) | docs/mobile/WP/M56.md | phone feature | VRG Mobile | our own offline routing |
+| `mobile:M57` | Szobadoboz (in `sketch`, Desktop first) | docs/mobile/WP/M57.md | phone feature | VRG Mobile | the room in 3D with its Fotópont photos |
+| `mobile:M58` | Vezetés + forgalom (in `map`, N3) | docs/mobile/WP/M58.md | phone feature | VRG Mobile | turn-by-turn guidance and the optional traffic check |
+| `mobile:M59` | Szobadoboz a telefonon (in `sketch`) | docs/mobile/WP/M59.md | phone feature | VRG Mobile | the room box on the phone, the lens per Fotópont shot |
+| `mobile:M60` | Síkmérés (in `sketch`, phone and Desktop) | docs/mobile/WP/M60.md | phone feature | VRG Mobile | measuring on a plane in one photo |
+| `mobile:M61` | Tárgykereső | docs/mobile/WP/M61.md · feature-tag | phone feature | VRG Mobile | an Apple Find My tag used from Android |
+| `mobile:M62` | Körkép (in `sketch`, phone and Desktop) | docs/mobile/WP/M62.md | phone feature | VRG Mobile | aligning a Fotópont's photos, and the 360° image |
+| `mobile:M63` | Ház 3D (PC + Desktop Sketcher) | docs/mobile/WP/M63.md | phone feature | VRG Mobile | a house as a measurable point cloud from a walk round it |
+| `mobile:M64` | Google AR csomag | docs/mobile/WP/M64.md · feature-sketch | phone feature | VRG Mobile | live measuring, a room scan and an AR recording with ARCore, behind one switch |
+| `mobile:M65` | Óra | docs/mobile/WP/M65.md · feature-watch | phone feature | VRG Mobile | a Q71 okosóra a FunDo nélkül / the Q71 watch without FunDo |
+| `mobile:M66` | DevLap on the home | docs/mobile/WP/M66.md | phone feature | VRG Mobile |  |
+| `mobile:M67` | Radar | docs/mobile/WP/M67.md · feature-radar | phone feature | VRG Mobile | one display for everything around |
 | `mobile:M15` | Logó kezdőlap | GO-LOGO.md (planned) | phone feature · planned | VRG Mobile | the two-state Varler logo home page |
 | `mobile:catalogue` | Mobile eszközkatalógus | Mobile/catalogue/tools.json | registry | VRG Mobile | 24 tools listed for the phone |
 
@@ -533,12 +562,14 @@
 | `layer:G` | Réteg G · Data Globe | Gömb (Solomon/dist/vrg-solomon.html, START T) | stack layer | layers | its page, per Stack/LAYERS.md |
 | `layer:Z` | Réteg Z · Codec | — | stack layer | layers | its page, per Stack/LAYERS.md |
 
-## CLI tools (19)
+## CLI tools (23)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `tool:anon-check` | tools/anon-check.js | tools/anon-check.js | cli script | tools | tools/anon-check.js — the sanitiser check for the anonymous system briefs |
 | `tool:anonymise` | tools/anonymise.js | tools/anonymise.js | cli script | tools | anonymise.js — swap client job codes for neutral ones in the tracked tree. |
 | `tool:bootleg` | tools/bootleg.js | tools/bootleg.js | cli script | tools | bootleg.js — wraps a self-contained HTML page into one self-extracting .cmd file, so it can be sent or downloaded |
+| `tool:brief-pack` | tools/brief-pack.js | tools/brief-pack.js | cli script | tools | tools/brief-pack.js — rebuild docs/brief/PACK-A.md and PACK-B.md from their sources (fork F10, 2026-11-21). |
 | `tool:brief-state` | tools/brief-state.js | tools/brief-state.js | cli script | tools | brief-state.js — keeps the agent briefs in docs/hub/agents honest. They went |
 | `tool:build-hub` | tools/build-hub.js | tools/build-hub.js | cli script | tools | build-hub.js — VRG Kapu source -> one self-contained file. |
 | `tool:build-mobile-tools` | tools/build-mobile-tools.js | tools/build-mobile-tools.js | cli script | tools | tools/build-mobile-tools.js — writes Mobile/catalogue/tools.json, which tool owns which paths, for |
@@ -551,6 +582,8 @@
 | `tool:fetch-vendor` | tools/fetch-vendor.js | tools/fetch-vendor.js | cli script | tools | fetch-vendor.js — pull the third-party components listed in |
 | `tool:hub-sign` | tools/hub-sign.js | tools/hub-sign.js | cli script | tools | hub-sign.js — the owner's signature on the VRG Kapu allowed list. |
 | `tool:melyviz-sync` | tools/melyviz-sync.js | tools/melyviz-sync.js | cli script | tools | melyviz-sync.js — keep every app's copy of the Mélyvíz style in step. |
+| `tool:progress-svg` | tools/progress-svg.js | tools/progress-svg.js | cli script | tools | tools/progress-svg.js — one line of nodes showing how far a line of work has got (done coloured, the current one |
+| `tool:sketch-takeoff` | tools/sketch-takeoff.js | tools/sketch-takeoff.js | cli script | tools | tools/sketch-takeoff.js — a VRG Sketcher survey → its takeoff (Munkakör lap): <stem>.takeoff.json + <stem>.takeoff.md. |
 | `tool:solomon` | tools/solomon.js | tools/solomon.js | cli script | tools | Solomon: our three-signal check over the VRG knowledge base. Rules: docs/solomon/README.md. |
 | `tool:standin` | tools/standin.js | tools/standin.js | cli script | tools | standin.js — DNA v2, the extracted half of a stand-in: what a model needs to |
 | `tool:vrg-ctx` | tools/vrg-ctx.js | tools/vrg-ctx.js | cli script | tools | vrg-ctx.js — local context search: a BM25 index of the repo for work sessions. |
@@ -601,20 +634,23 @@
 | `fw:planner-cyd` | planner-cyd | Firmware/planner-cyd | firmware | firmware | Planner CYD: desk dashboard and remote for the Varler Planner |
 | `fw:servicekit-cyd` | ServiceKit CYD | ServiceKitCYD/ | firmware | firmware | ServiceKit CYD |
 
-## Shared libraries (5)
+## Shared libraries (7)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `lib:grafit` | grafit.css | shared/grafit.css | stylesheet | shared |  |
 | `lib:melyviz` | melyviz.css | shared/melyviz.css | stylesheet | shared |  |
 | `lib:rajztar` | rajztar | shared/rajztar | library | shared | Rajztár: the drawing and document data store |
+| `lib:sidepanel` | sidepanel | shared/sidepanel | library | shared | VRG Oldalpanel (Side panel) — `shared/sidepanel/` |
 | `lib:varler-doc` | varler-doc | shared/varler-doc | library | shared |  |
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
 | `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1.1 — "Mérőpult" |
 
-## Docs packs + GO phrases (27)
+## Docs packs + GO phrases (30)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `doc:brief` | docs/brief | docs/brief | docs pack | docs |  |
 | `doc:city` | docs/city | docs/city | docs pack | docs |  |
 | `doc:client-look` | docs/client-look | docs/client-look | docs pack | docs |  |
 | `doc:components-offline` | docs/components-offline.md | docs/components-offline.md | doc | docs |  |
@@ -627,10 +663,12 @@
 | `doc:map` | docs/map | docs/map | docs pack | docs |  |
 | `doc:mobile` | docs/mobile | docs/mobile | docs pack | docs |  |
 | `doc:notes` | docs/notes | docs/notes | docs pack | docs |  |
+| `doc:radar` | docs/radar | docs/radar | docs pack | docs |  |
 | `doc:research` | docs/research | docs/research | docs pack | docs |  |
 | `doc:services-server` | docs/services-server.md | docs/services-server.md | doc | docs |  |
 | `doc:sketcher` | docs/sketcher | docs/sketcher | docs pack | docs |  |
 | `doc:solomon` | docs/solomon | docs/solomon | docs pack | docs |  |
+| `doc:visual` | docs/visual | docs/visual | docs pack | docs |  |
 | `doc:workflow` | docs/workflow | docs/workflow | docs pack | docs |  |
 | `go:city` | GO CITY | GO-CITY.md | codephrase brief | GO | GO CITY — VRG Kódváros (the codebase as a city, the live workspace) |
 | `go:cla` | GO CLA | GO-CLA.md | codephrase brief | GO | GO CLA — the CLA job thread (base layer, data layer, v1 + v2 budget plans) |
@@ -643,7 +681,7 @@
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 | `go:variant` | GO VARIANT | GO-VARIANT.md | codephrase brief | GO | GO VARIANT — make a Variant Sketcher for one kind of job |
 
-## Top-level folders + launcher parts (28)
+## Top-level folders + launcher parts (30)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -662,9 +700,11 @@
 | `dir:Mobile` | Mobile | Mobile/ | top-level folder | repo | VRG Mobile: the companion app |
 | `dir:Modder` | Modder | Modder/ | top-level folder | repo |  |
 | `dir:Planner` | Planner | Planner/ | top-level folder | repo | VARLER — hordozható munkakörnyezet |
+| `dir:Prefilter` | Prefilter | Prefilter/ | top-level folder | repo | VRG Előszűrő (Prefilter) |
 | `dir:ServiceKit` | ServiceKit | ServiceKit/ | top-level folder | repo | ServiceKit |
 | `dir:ServiceKitCYD` | ServiceKitCYD | ServiceKitCYD/ | top-level folder | repo | ServiceKit CYD |
 | `dir:ServiceKitPhone` | ServiceKitPhone | ServiceKitPhone/ | top-level folder | repo | ServiceKit Phone |
+| `dir:SessionCanvas` | SessionCanvas | SessionCanvas/ | top-level folder | repo | VRG Munkavászon (Session Canvas) |
 | `dir:Sketcher` | Sketcher | Sketcher/ | top-level folder | repo |  |
 | `dir:Solomon` | Solomon | Solomon/ | top-level folder | repo |  |
 | `dir:Stack` | Stack | Stack/ | top-level folder | repo | VRG Stack (Rétegverem): read this first |
