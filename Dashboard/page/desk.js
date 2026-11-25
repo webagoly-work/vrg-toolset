@@ -641,7 +641,7 @@
   }
 
   window.VRGDesk = {
-    view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
+    view: () => S.view, setView, level: () => S.level, items: () => S.items, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
     get sui() { return S.sui; }, get stack() { return S.stack; },
     state: () => ({ look: S.look, view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
     openSettings, openCustomize, advance, apply: applyOpen, drawDock,

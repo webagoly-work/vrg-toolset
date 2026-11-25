@@ -581,3 +581,31 @@ Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
     a server switch calling `serverStart`, live gauges, no horizontal scroll.
 - **Not run:** inside Electron (no Electron here); the real sampler on Windows (its own tests ran with the phone's R2).
 - **Next, R5:** the shell chrome (title bar, dock, windows) in Fényjel.
+
+## WP-59 Fényjel chrome — rollout R5 of the Fényjel design system (2026-11-25, cloud session)
+
+- **`page/fenyjel-chrome.css`** restyles the shell under `html[data-look="fenyjel"]`; every rule is scoped, as wp-59 checks:
+  - **The ground and the bars:**
+    - the workspace ground is lit from the top, with a faint dot screen;
+    - the title bar and the top strip are void and deck planes, with 3×3 LED status dots.
+  - **The dock:** a shelf of glyph sockets in their family colours. A running program has a lit dot row under it, and the focused window is lit in its family.
+  - **Windows:** lit planes with HUD corner brackets and a VT323 title. On focus, the edge, the brackets and a soft glow take the window's family colour; WP-51 decorations still show as the edge.
+  - **Also restyled:** the tiled frame's groups and tabs, the split handles, the palette and quick bar (dark glass, pixel input), sheets, ask, toasts (a LED edge), jobs, scrollbars, and the corner dials (dark glass).
+- **`page/fenyjel-chrome.js`** swaps the monograms for pixel glyphs while the look is on:
+  - dock programs show their catalog glyph; open windows show the glyph of what they hold;
+  - window heads show the window's catalog item glyph, else its pane kind's (`KIND_GLYPH`, all 14 kinds), and set `data-fj-family`;
+  - the title bar gets a lit glyph in front of its name.
+  - It watches only the dock and the sheet layer (childList), never inside the panes. Off the look, everything gets its text back.
+- **Hooks:**
+  - `sheets.js` puts `data-cat` on a window (its catalog id);
+  - `VRGDesk.items()`;
+  - the look button's title names all three looks.
+- **Tests:**
+  - `wp-59`: 4 pass.
+  - The full Dashboard suite: 357 pass, with the same 68 environment failures.
+  - Chromium (the real page, the bridge and sheets stubbed: a sheet with Planner, Terminál, Git and Claude chat) at 1400 and 1100 px:
+    - windows and dock glyphed, with the families right;
+    - the palette open;
+    - Fényjel → Mélyvíz → Fényjel at runtime: Mélyvíz has every monogram back and no glyph or family left.
+  - The top strip's overflow at 1100 px already happens in Mélyvíz; it is not new here.
+- **Not run:** inside Electron (no Electron here).
