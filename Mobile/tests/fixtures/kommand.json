@@ -67,6 +67,11 @@
    "en": "House 3D processing"
   },
   {
+   "id": "cat:kisokos",
+   "hu": "VRG Kisokos",
+   "en": "VRG Handbook"
+  },
+  {
    "id": "cat:client-preview",
    "hu": "Ügyfélnézet",
    "en": "Client preview"
@@ -205,6 +210,11 @@
    "id": "cat:layer.q",
    "hu": "Q · Döntésnapló",
    "en": "Q · Decisions"
+  },
+  {
+   "id": "cat:layer.k",
+   "hu": "K · Kisokos 3D",
+   "en": "K · Handbook 3D"
   }
  ],
  "recent": [
@@ -230,6 +240,7 @@
     "cat:rajztar",
     "cat:sketcher",
     "cat:sketcher.house3d",
+    "cat:kisokos",
     "cat:client-preview",
     "cat:workflow-kit",
     "cat:calc-panel",
@@ -255,7 +266,8 @@
     "cat:stack.search",
     "cat:layer.i",
     "cat:layer.f",
-    "cat:layer.q"
+    "cat:layer.q",
+    "cat:layer.k"
    ]
   },
   {
@@ -354,6 +366,7 @@
    "ids": [
     "cat:desktop",
     "cat:sketcher",
+    "cat:kisokos",
     "cat:buildtree",
     "cat:mindmap",
     "cat:map",
