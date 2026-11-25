@@ -24,7 +24,7 @@ Mobile/
   tests/app-archive.js  the app archive (WP M61, D-163) against a fake adb: parsers, split APKs, the shared manifest, verify
   tools/app-archive.js  an installed app (APK + manifest) from the USB phone into Backup\installers\android (START L -> P)
   tests/archive-phone.js  Archívum (WP M18): Archive/vrg-archive.html at 375 px with touch, served as the WebView serves it; Back, all saved pages
-  notebook/kits/        VRG Füzet's bundled kits (WP M68); notebook/PROTOCOL.md = the kit format, for agents
+  notebook/kits/        VRG Füzet's bundled kits (WP M69); notebook/PROTOCOL.md = the kit format, for agents
   catalogue/ports.json  port -> tool for Localhost, generated from START's servers by catalogue/ports-gen.js
   catalogue/launch.json Indítópult's allow-list: which START servers and extras a paired phone may start
   android/
@@ -67,7 +67,7 @@ Mobile/
                         the phone relay in NetService (connectedDevice foreground service)
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
-    notebook-core/      VRG Füzet's pure Kotlin (WP M68): kits (Kit.kt), the one store (Store.kt), search, views,
+    notebook-core/      VRG Füzet's pure Kotlin (WP M69): kits (Kit.kt), the one store (Store.kt), search, views,
                         open items, suggestions (Engine.kt), export / import merge (Transfer.kt) + tests
     feature-notebook/   VRG Füzet: home (search, kits, views, capture), editor, Nyitott, Kitek (load, request, export)
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros

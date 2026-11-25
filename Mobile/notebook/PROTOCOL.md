@@ -1,6 +1,6 @@
 # VRG Füzet kits: the format, and how an agent writes one
 
-*VRG Füzet (WP M68, `docs/mobile/WP/M68.md`) is the malleable notebook of VRG Mobile. A **kit** is one application of
+*VRG Füzet (WP M69, `docs/mobile/WP/M69.md`) is the malleable notebook of VRG Mobile. A **kit** is one application of
 it as plain data: one JSON file here, `Mobile/notebook/kits/<id>.json`. The APK bundles every file in that folder, and the
 phone can also load a kit from a file (⚙ Kitek → Kit betöltése fájlból). No code ships with a kit.*
 
