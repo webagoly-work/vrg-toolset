@@ -194,6 +194,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_grafit"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_grafit"
+            android:roundIcon="@mipmap/ic_launcher_kit_grafit">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <!-- launcher-aliases:end -->
 
         <!-- "Megosztás → PC-re" from any app (Átadás, WP M12): files and pictures go onto the PC's board,

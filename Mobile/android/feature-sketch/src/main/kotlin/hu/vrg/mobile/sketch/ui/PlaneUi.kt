@@ -101,6 +101,8 @@ internal fun PlaneDialog(st: EditorState, key: String, file: String, title: Stri
                 p == null -> Text("Készül a mérés…", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.align(Alignment.Center))
                 else -> AndroidView(modifier = Modifier.fillMaxSize(), factory = { c ->
                     WebView(c).apply {
+                        // MATCH_PARENT, as in MapFeature.makeWebView: with WRAP_CONTENT a page sized by 100% / vh is 0 px tall
+                        layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
                         settings.javaScriptEnabled = true
                         addJavascriptInterface(PlanePhone.Bridge(p.second,
                             onSave = { json ->

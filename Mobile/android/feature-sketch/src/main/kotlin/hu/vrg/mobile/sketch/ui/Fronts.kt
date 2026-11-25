@@ -1,5 +1,10 @@
 package hu.vrg.mobile.sketch.ui
 
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -111,7 +116,11 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
                     Text(describe(st.kit, g.effect), style = Melyviz.label.copy(fontSize = 12.sp))
                     Text("„${g.match}”", style = Melyviz.small.copy(color = Melyviz.faint))
                 }
-                Text("✕", style = Melyviz.label.copy(color = Melyviz.faint), modifier = Modifier.clickable { st.dismiss(g.id) }.padding(10.dp))
+                // UI audit 1.1, 8.1: 48 dp and named
+                Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button) { st.dismiss(g.id) }
+                    .semantics { contentDescription = "Javaslat elvetése" }, contentAlignment = Alignment.Center) {
+                    Text("✕", style = Melyviz.label.copy(color = Melyviz.muted), modifier = Modifier.clearAndSetSemantics { })
+                }
             }
         }
     }

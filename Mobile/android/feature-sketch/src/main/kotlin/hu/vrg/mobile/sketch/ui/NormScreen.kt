@@ -3,6 +3,7 @@ package hu.vrg.mobile.sketch.ui
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -13,6 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,7 +39,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -135,11 +142,19 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
     var roomBox by remember { mutableStateOf(false) }  // skcam K1b (WP M59): the Szobadoboz
     val tm = rememberTextMeasurer()
     val c = pal()
+    // UI audit 4.1 / 4.5: lying down (~336 dp tall) the header, warnings and actions left the plan ~0 dp. Now the plan
+    // has the left side at full height and the rest scrolls beside it; standing, the action panel has a height cap
+    // and scrolls; the long PC instructions sit behind a toggle either way.
+    val screenH = LocalConfiguration.current.screenHeightDp
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    var howTo by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(Melyviz.abyss)) {
         Column(Modifier.fillMaxWidth().background(Melyviz.deep).padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vázlat", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(end = 12.dp))
+                Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onBack).padding(end = 12.dp), contentAlignment = Alignment.CenterStart) {
+                    Text("‹ Vázlat", style = Melyviz.label.copy(color = Melyviz.current))
+                }
                 Text("RENDEZÉS", style = Melyviz.title.copy(fontSize = 18.sp))
             }
             Text("${rep.measured} mért · ${rep.derived} számolt · ${rep.inferred} becsült fal · lépték ${rep.scaleX.roundToInt()} mm / egység",
@@ -150,21 +165,22 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 Text("┅ ≈ becsült", style = Melyviz.small.copy(color = Melyviz.coral))
             }
         }
-        if (rep.conflicts.isNotEmpty() || rep.warnings.isNotEmpty()) {
-            Column(Modifier.fillMaxWidth().heightIn(max = 110.dp).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                rep.conflicts.forEach { k ->
-                    val m = st.sketch.measure(k.measure)
-                    val where = m?.let { st.sketch.room(it.room) }?.let { roomTitle(it.name, it.kinds) + " · " + m.kind.label.lowercase() } ?: k.measure
-                    Text("Ellentmondás: $where ${k.mm} mm, a többi méret szerint ${k.solved} mm.", style = Melyviz.small.copy(color = Melyviz.coral))
-                }
-                rep.warnings.forEach { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
+        val hasWarn = rep.conflicts.isNotEmpty() || rep.warnings.isNotEmpty()
+        val warnings: @Composable () -> Unit = {
+            rep.conflicts.forEach { k ->
+                val m = st.sketch.measure(k.measure)
+                val where = m?.let { st.sketch.room(it.room) }?.let { roomTitle(it.name, it.kinds) + " · " + m.kind.label.lowercase() } ?: k.measure
+                Text("Ellentmondás: $where ${k.mm} mm, a többi méret szerint ${k.solved} mm.", style = Melyviz.small.copy(color = Melyviz.coral))
+            }
+            rep.warnings.forEach { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
+        }
+        val planBox: @Composable (Modifier) -> Unit = { mod ->
+            Box(mod.padding(8.dp)) {
+                if (n.rooms.isEmpty()) Text("Még nincs szoba a vázlaton.", style = Melyviz.small, modifier = Modifier.align(Alignment.Center))
+                else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
             }
         }
-        Box(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
-            if (n.rooms.isEmpty()) Text("Még nincs szoba a vázlaton.", style = Melyviz.small, modifier = Modifier.align(Alignment.Center))
-            else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
-        }
-        Column(Modifier.fillMaxWidth().background(Melyviz.surface).padding(12.dp)) {
+        val actions: @Composable () -> Unit = {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("⇪ Küldés a Plannerbe", selected = true) {
                     scope.launch {
@@ -180,10 +196,14 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 }
                 VrgChip("⤓ Mentés a telefonra") {
                     scope.launch {
-                        val files = writeExport(ctx, st.sketch, n)
-                        val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
-                        val ph = files.count { it.second == "image/jpeg" }
-                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
+                        done = try {
+                            val files = writeExport(ctx, st.sketch, n)
+                            val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
+                            val ph = files.count { it.second == "image/jpeg" }
+                            if (at.any { it == null }) "A mentés nem sikerült (a telefon tárhelye?): próbáld újra." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
+                        } catch (e: Exception) {
+                            VrgLog.w("sketch", "Mentés sikertelen: ${e.message}"); "A mentés nem sikerült: ${e.message ?: "ismeretlen hiba"}. Próbáld újra."
+                        }
                     }
                 }
                 // F9 (WP M54, D-127, D-128): the Felmérési jegyzőkönyv from the phone, behind its registry switch (M51)
@@ -191,11 +211,28 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 // skcam K1b (WP M59): the room in 3D with its Fotópont photos, behind the registry switch (D-90)
                 if (FeaturePrefs.on(hu.vrg.mobile.sketch.RoomBox.FEATURE) && hu.vrg.mobile.sketch.RoomBox.ready(n)) VrgChip("⬚ Szobadoboz") { roomBox = true }
             }
+            // the result first, right under the chips that made it (it was the panel's clipped last line)
+            done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp)) }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
             if (shots > 0 && feat("export.photos")) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
-            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
-                style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
-            done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
+            Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { howTo = !howTo }, contentAlignment = Alignment.CenterStart) {
+                Text((if (howTo) "▾" else "▸") + " Mi a teendő a PC-n?", style = Melyviz.label.copy(color = Melyviz.current))
+            }
+            if (howTo) Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
+                style = Melyviz.small)
+        }
+        if (landscape) Row(Modifier.weight(1f).fillMaxWidth()) {
+            // lying down: the plan on the left at full height, warnings and actions in one scrolling column beside it
+            planBox(Modifier.weight(1f).fillMaxHeight())
+            Column(Modifier.width(300.dp).fillMaxHeight().background(Melyviz.surface).verticalScroll(rememberScrollState()).padding(12.dp)) {
+                if (hasWarn) { warnings(); Spacer(Modifier.height(8.dp)) }
+                actions()
+            }
+        } else {
+            if (hasWarn) Column(Modifier.fillMaxWidth().heightIn(max = 110.dp).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)) { warnings() }
+            planBox(Modifier.weight(1f).fillMaxWidth())
+            Column(Modifier.fillMaxWidth().heightIn(max = (screenH * 0.4f).dp.coerceAtLeast(160.dp)).background(Melyviz.surface)
+                .verticalScroll(rememberScrollState()).padding(12.dp)) { actions() }
         }
     }
     if (report) ReportDialog(st) { report = false }

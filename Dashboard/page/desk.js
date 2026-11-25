@@ -24,13 +24,26 @@
   const LV_EN = { user: 'User', dev: 'Dev', all: 'All' };
   const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás' };
 
-  const S = { level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
+  const S = { look: 'melyviz', level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
   const byId = id => S.items.find(i => i.id === id) || null;
   const data = () => window.VRG_DASH || {};
   const toast = (ok, hu, en) => { if (window.VRGToasts) window.VRGToasts.toast({ ok, hu, en: en || hu }); };
   const call = (fn, p) => (vrg && vrg.call ? vrg.call('desktop', fn, p || {}) : Promise.resolve({ ok: false }));
   const setting = (k, v) => (vrg && vrg.call ? vrg.call('app', 'setting', v === undefined ? { k } : { k, v }) : Promise.resolve({}));
-  const relayout = () => window.dispatchEvent(new Event('resize'));          // the frame re-reports the view rects (hidden ancestors → 0)
+  const relayout = () => window.dispatchEvent(new Event('resize'));
+
+  // ------------------------------------------------------------ the look: Mélyvíz (default) or Grafit (shared/grafit.css + grafit.css)
+  const LOOKS = ['melyviz', 'grafit'];
+  function applyLook(v) {
+    const lk = LOOKS.includes(v) ? v : 'melyviz';
+    if (lk === 'grafit') document.documentElement.dataset.look = 'grafit'; else delete document.documentElement.dataset.look;
+    S.look = lk;
+    const b = $('[data-role="look-toggle"]');
+    if (b) { b.setAttribute('aria-pressed', String(lk === 'grafit')); b.title = lk === 'grafit' ? 'Megjelenés: Grafit → Mélyvíz / Look' : 'Megjelenés: Mélyvíz → Grafit / Look'; }
+    document.dispatchEvent(new Event('vrg:look'));                  // open terminals recolour (panes/term.js)
+    return lk;
+  }
+  async function setLook(v) { applyLook(v === 'toggle' ? (S.look === 'grafit' ? 'melyviz' : 'grafit') : v); await setting('ui.look', S.look); return S.look; }          // the frame re-reports the view rects (hidden ancestors → 0)
 
   // ------------------------------------------------------------ the DOM the frame page provides (vrg-desktop.html)
   const stage = $('#stage'), dash = $('[data-role="dashboard"]'), desk = $('[data-role="desktop"]'), ws = $('[data-role="workspace"]');
@@ -527,10 +540,12 @@
         const c = m && m.cmd;
         if (c === 'toggle') toggle(); else if (c === 'view:dashboard') setView('dashboard'); else if (c === 'view:desktop') setView('desktop');
         else if (typeof c === 'string' && c.startsWith('level:')) setLevel(c.slice(6)); else if (c === 'settings') openSettings(); else if (c === 'customize') openCustomize();
+        else if (typeof c === 'string' && c.startsWith('look:')) setLook(c.slice(5));
       });
     }
     if (vrg && vrg.onPorts) vrg.onPorts(p => { S.ports = p || {}; if (S.ready) { drawTop(); if (S.view === 'dashboard') renderDashboard(); } });
     const tg = $('[data-role="view-toggle"]'); if (tg) tg.addEventListener('click', toggle);
+    const lt = $('[data-role="look-toggle"]'); if (lt) lt.addEventListener('click', e => { e.stopPropagation(); setLook('toggle'); });
     // double-click / double-tap on empty background: the Desktop ground, or the Dashboard's page margin
     ws.addEventListener('dblclick', e => { if (!S.wsShown || e.target === ws) toggle(); });
     dash.addEventListener('dblclick', e => { if (e.target === dash || e.target.classList.contains('dash-in') || e.target.classList.contains('dash-sec')) toggle(); });
@@ -592,6 +607,7 @@
       S.top = Array.isArray(st.top) ? st.top : null;
       S.dock = Array.isArray(st.dock) ? st.dock : null;
       S.auth = st.auth === true;
+      applyLook(st.look);
       if (st.toggle) S.toggle = st.toggle;
       S.start = st.start === 'windows' ? 'windows' : '';
       if (S.start) S.view = 'desktop';
@@ -607,9 +623,9 @@
   }
 
   window.VRGDesk = {
-    view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows,
+    view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
     get sui() { return S.sui; }, get stack() { return S.stack; },
-    state: () => ({ view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
+    state: () => ({ look: S.look, view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
     openSettings, openCustomize, advance, apply: applyOpen, drawDock,
   };
   if (stage && dash && desk) boot();

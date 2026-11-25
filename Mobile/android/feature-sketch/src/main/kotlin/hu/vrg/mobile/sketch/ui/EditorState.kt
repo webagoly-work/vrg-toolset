@@ -138,6 +138,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     var wheel by mutableStateOf<WheelUi?>(null); private set
     var ask by mutableStateOf<Ask?>(null)
     var note by mutableStateOf<String?>(null)
+    /** The item the last Kijelölés tap hit and where (screen px): the "⋯ Műveletek" chip opens its wheel (UI audit 3.1). */
+    var picked by mutableStateOf<Pair<Hit, Offset>?>(null); private set
     /** A tag being dragged in from the tray: its id and where the finger is, in canvas px. */
     var tagDrag by mutableStateOf<Pair<String, Offset>?>(null)
     // Fotópont (M25): the camera to open, the shot waiting for its direction swipe (photo point id, file), the folder
@@ -229,6 +231,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- the gestures --------------------------------------------------------------------------------------------
     fun onTap(o: Offset) {
         wheel?.let { w -> if (w.sticky) { tapWheel(w, o); return } }
+        picked = null
         if (pendingShot != null) { shotToward(o); return }
         if (photoTap(o)) return
         val p = toSketch(o)
@@ -238,7 +241,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Tools.SELECT.id -> when (h?.kind) {
                 Hit.Kind.MEMO -> ask = Ask.MemoEdit(h!!.id)
                 null -> note = null
-                else -> note = describe(h!!) + " · tartsd lenyomva a kerékhez"
+                else -> { note = describe(h!!) + " · tartsd lenyomva, vagy ⋯ Műveletek"; picked = h!! to o }
             }
             Tools.MEMO.id -> when {
                 h?.kind == Hit.Kind.MEMO -> ask = Ask.MemoEdit(h!!.id)
@@ -247,7 +250,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             }
             Tools.TAG.id -> {
                 val t = activeTag
-                if (t == null) { note = "Válassz címkét lent, vagy húzd a lapra."; return }
+                if (t == null) { note = "Válassz címkét lent, vagy tartsd és húzd a lapra."; return }
                 dropTag(t, o)
             }
             Tools.ROOM.id -> if (h == null) tapRoom(p) else note = "Húzz egy téglalapot: az lesz a szoba."   // F4: a tap on paper only
@@ -258,7 +261,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 h?.kind == Hit.Kind.ROOM || h?.kind == Hit.Kind.ROOM_EDGE -> ask = Ask.MeasureRoom(h!!.id)
                 else -> note = "Koppints egy falra vagy egy szoba belsejébe."
             }
-            Tools.POINT.id -> if (h?.kind == Hit.Kind.POINT) note = "Tartsd lenyomva a pontot: kerék a típushoz."
+            Tools.POINT.id -> if (h?.kind == Hit.Kind.POINT) { note = "Tartsd lenyomva a pontot, vagy ⋯ Műveletek: típus, állapot."; picked = h!! to o }
                 else placePoint(p)
             Tools.CIRCUIT.id -> if (h?.kind == Hit.Kind.POINT) circuitTap(h!!.id) else note = "Koppints pontokra, vagy húzz keretet."
             Tools.BOARD.id -> if (h?.kind == Hit.Kind.POINT) note = "Itt már van pont."
@@ -270,6 +273,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     fun onDragStart(o: Offset) {
+        picked = null
         wheel = null
         val p = toSketch(o); dragFrom = p; lastSketchPt = p
         if (pendingShot != null) { move = Move.SHOT; shotFrom = o; return }
@@ -368,9 +372,46 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- hold: the wheel -------------------------------------------------------------------------------------------
     fun onHold(o: Offset, canvasW: Float, canvasH: Float, radius: Float) {
         cancelDraft()
+        picked = null
         if (!FeaturePrefs.on("vazlat.wheels")) return   // M51: Tartásra kerék switched off
         val h = hitAt(o)
         focusOn(h, toSketch(o))
+        wheel = wheelFor(h, o, canvasW, canvasH, radius, sticky = false)
+    }
+
+    /**
+     * The visible way to the hold-wheel (UI audit 3.1, 8.4): the wheel of the picked item opens and stays for a tap.
+     * It opens even with Tartásra kerék switched off, since that switch is about the hold, and it is the only way to a
+     * room's name and size otherwise.
+     */
+    fun openPicked() {
+        val (h, o) = picked ?: return
+        picked = null
+        if (!exists(h)) return
+        wheel = wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true)
+    }
+
+    /** TalkBack's way (UI audit 8.2): the picked item's first-ring items, chosen without the wheel being drawn. */
+    fun pickedItems(): List<WheelItem> {
+        val (h, o) = picked ?: return emptyList()
+        if (!exists(h)) return emptyList()
+        return wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true).wheel.rings.firstOrNull().orEmpty().filterNotNull()
+    }
+
+    fun choosePicked(item: WheelItem) {
+        val (h, o) = picked ?: return
+        picked = null
+        choose(wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true), item)
+    }
+
+    private fun exists(h: Hit): Boolean = when (h.kind) {
+        Hit.Kind.POINT -> sketch.point(h.id) != null
+        Hit.Kind.ROOM, Hit.Kind.ROOM_EDGE -> sketch.room(h.id) != null
+        Hit.Kind.PHOTO -> sketch.photos.any { it.id == h.id }
+        else -> true
+    }
+
+    private fun wheelFor(h: Hit?, o: Offset, canvasW: Float, canvasH: Float, radius: Float, sticky: Boolean): WheelUi {
         val v = variant
         val w = when (h?.kind) {
             Hit.Kind.POINT -> sketch.point(h!!.id)?.let { Wheels.forPoint(it, v?.pointRing) }
@@ -384,7 +425,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             null -> Wheels.forPaper()
         } ?: Wheels.forPaper()
         val c = Offset(o.x.coerceIn(radius, max(radius, canvasW - radius)), o.y.coerceIn(radius, max(radius, canvasH - radius)))
-        wheel = WheelUi(hu.vrg.mobile.sketch.Features.wheel(w, FeaturePrefs.flipped), c, 0, null, toSketch(o), h, sticky = false)   // M51
+        return WheelUi(hu.vrg.mobile.sketch.Features.wheel(w, FeaturePrefs.flipped), c, 0, null, toSketch(o), h, sticky = sticky)   // M51
     }
 
     fun onHoldMove(o: Offset, hub: Float) {
@@ -529,7 +570,18 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     fun editCapture(id: String, f: (hu.vrg.mobile.sketch.Capture) -> hu.vrg.mobile.sketch.Capture) = edit(Intake.editCapture(sketch, id, f))
-    fun deleteCapture(id: String) { val (s, file) = Intake.deleteCapture(sketch, id); edit(s); file?.let(dropFile) }
+    /**
+     * UI audit 5.6: a delete is undoable. The file stays on disk while the survey is open (the editor's close sweeps
+     * every file the survey no longer names), so ↶ brings the photo or sound note back whole.
+     */
+    fun deleteCapture(id: String) {
+        val what = when (sketch.captures.firstOrNull { it.id == id }?.kind) {
+            hu.vrg.mobile.sketch.CaptureKind.AUDIO -> "Hangjegyzet"; hu.vrg.mobile.sketch.CaptureKind.VIDEO -> "Videó"
+            hu.vrg.mobile.sketch.CaptureKind.SIGNATURE -> "Aláírás"; else -> "Fotó"
+        }
+        edit(Intake.deleteCapture(sketch, id).first)
+        note = "$what törölve · ↶ visszahozza."
+    }
 
     /** The camera for a purpose (and a shot-list item), from the ◉ button, the Kamera front or a record's wheel. */
     fun shoot(purpose: String, shot: String? = null, target: String? = null) {
@@ -587,9 +639,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         return false
     }
 
+    /** Undoable as [deleteCapture]: the file goes with the close sweep. */
     fun removeShot(photo: String, deg: Int) {
-        val (s, old) = PhotoOps.removeShot(sketch, photo, deg)
-        edit(s); old?.let(dropFile)
+        edit(PhotoOps.removeShot(sketch, photo, deg).first)
+        note = "Fotó törölve · ↶ visszahozza."
     }
 
     fun turnShot(photo: String, from: Int, to: Int) = edit(PhotoOps.turnShot(sketch, photo, from, to))

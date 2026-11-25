@@ -12,7 +12,8 @@
     "8": "Agent / AI surfaces",
     "9": "Small screens",
     "10": "Program identity (emblem, city map, micrographics, textures)",
-    "11": "Marks (stage, line state, lamps, levels, steps, monograms, quiet, counts)"
+    "11": "Marks (stage, line state, lamps, levels, steps, monograms, quiet, counts)",
+    "12": "Dot matrix (frames, rules, LEDs, meter, display text; theme Grafit)"
   },
   "tokens": [
     "tokens/base.css",
@@ -20,6 +21,7 @@
     "tokens/theme-light.css",
     "tokens/theme-contrast.css",
     "tokens/theme-melyviz.css",
+    "tokens/theme-grafit.css",
     "tokens/density.css"
   ],
   "fonts": "fonts/fonts.css",
@@ -3129,6 +3131,38 @@
       ],
       "summary": "Texture pack from token colours (gradients only, background-color untouched): hatch, crosshatch, dots, grid, blueprint, windows (warm lit), water, road-glow, sand.",
       "api": "CSS .vk-tex-hatch|crosshatch|dots|grid|blueprint|windows|water|road-glow|sand; knobs --vk-tex-ink, --vk-tex-gap, --vk-tex-warm"
+    },
+    {
+      "name": "dotmatrix",
+      "files": [
+        "components/dotmatrix.css"
+      ],
+      "deps": [
+        "base"
+      ],
+      "families": [
+        12
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-crit",
+        "--vk-dot",
+        "--vk-dot-lit",
+        "--vk-dot-pitch",
+        "--vk-dot-r",
+        "--vk-dotbar-v",
+        "--vk-font-mono",
+        "--vk-fs-2xl",
+        "--vk-ok",
+        "--vk-space-3",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-warn"
+      ],
+      "summary": "The dot matrix: a ring of dots for any positioned box (.vk-dots, tinted lit/ok/warn/crit/run), dotted rule and ground, a 3×3 dot LED lamp, a dot meter lit from the left, and display text filled with dots. Theme Grafit puts the ring on .vk-panel, .vk-card and .vk-tile and a dotted rule under their heads (opt out: .vk-nodots).",
+      "api": "<div class=\"vk-dots\" data-dots=\"lit|ok|warn|crit|run\">, <hr class=\"vk-dotrule\">, <div class=\"vk-dotfield\">, <span class=\"vk-dotled\" data-tone=\"ok|warn|crit|run|lit|off\" data-state=\"active\">, <span class=\"vk-dotbar\" style=\"--vk-dotbar-v:.6\" data-tone>, <span class=\"vk-dottext\">; CSS only"
     }
   ]
 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -98,7 +99,7 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(f.sym, style = Melyviz.glyph.copy(fontSize = 19.sp, color = if (on) col else col.copy(alpha = 0.55f)))
-                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1)
+                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (on) Box(Modifier.align(Alignment.BottomCenter).width(30.dp).height(3.dp).background(col, RoundedCornerShape(2.dp)))
                 if (badge > 0) {
@@ -183,7 +184,8 @@ internal fun QuickNote(st: EditorState) {
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                // UI audit 4.5: wraps (a Row squeezed ⚐ Tisztázandó to 0 dp at font 1.5 when ⏺ Hangjegyzet shows)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
                         try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER; noRecognizer = true }
                     }.padding(vertical = 6.dp))

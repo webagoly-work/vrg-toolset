@@ -1,5 +1,12 @@
 package hu.vrg.mobile.sketch.ui
 
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextOverflow
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -319,30 +326,37 @@ internal fun LiveCamera(
 
         // ---- the top: purpose, room, count, torch, grid -------------------------------------------------------------------
         Column(Modifier.align(Alignment.TopStart).fillMaxWidth().background(Color(0x66000000)).padding(horizontal = 8.dp, vertical = 6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("‹", style = Melyviz.title.copy(color = Color.White), modifier = Modifier.clickable { close() }.padding(horizontal = 6.dp))
+            // UI audit 4.5: the left group takes what the fixed keys leave, and its two pills ellipsize inside it, so a long
+            // shot label or room name (or font 1.5) can no longer squeeze ϟ and ▦ to 0 dp
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button, onClickLabel = "Vissza") { close() }
+                    .semantics { contentDescription = "Vissza" }, contentAlignment = Alignment.Center) {
+                    Text("‹", style = Melyviz.title.copy(color = Color.White), modifier = Modifier.clearAndSetSemantics { })
+                }
                 if (photoPoint) Text("◉ Fotópont", style = Melyviz.label.copy(color = Color.White))
                 else {
-                    Row(Modifier.clip(RoundedCornerShape(50)).background(col.copy(alpha = 0.85f)).clickable { strip = !strip }
+                    Row(Modifier.weight(1f, fill = false).clip(RoundedCornerShape(50)).background(col.copy(alpha = 0.85f)).clickable { strip = !strip }
                         .padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(p?.sym ?: "•", style = Melyviz.glyph.copy(fontSize = 18.sp, color = Color.White))
-                        Text(" " + (item?.label ?: p?.label ?: series.purpose), style = Melyviz.small.copy(color = Color.White), maxLines = 1)
+                        Text(" " + (item?.label ?: p?.label ?: series.purpose), style = Melyviz.small.copy(color = Color.White), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     val rooms = listOf<String?>(null) + st.sketch.rooms.map { it.id }
                     val room = st.sketch.room(series.room)
                     Text("⌂ " + (room?.let { roomTitle(it.name, it.kinds) } ?: "—"), style = Melyviz.small.copy(color = Color.White), maxLines = 1,
-                        modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50)).clickable {
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false).clip(RoundedCornerShape(50)).border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50)).clickable {
                             val i = rooms.indexOf(series.room)
                             series = series.copy(room = rooms[(i + 1) % rooms.size])
                         }.padding(horizontal = 8.dp, vertical = 4.dp))
                     val n = CameraLive.count(st.sketch, series.purpose, series.shot)
-                    Text(if (item != null) "$n/${item.need}" else "$n", style = Melyviz.readout.copy(color = Color.White))
+                    Text(if (item != null) "$n/${item.need}" else "$n", style = Melyviz.readout.copy(color = Color.White), maxLines = 1)
                 }
-                Spacer(Modifier.weight(1f))
+              }
                 if (zoom > 1.01f || zoom < 0.99f) Text("%.1f×".format(zoom), style = Melyviz.readout.copy(color = Color.White))
                 if (torchOn && camera?.cameraInfo?.hasFlashUnit() == true)
-                    RoundKey("ϟ", if (torch) Color(0xFFFFD54F) else Color.White, torch) { torch = !torch }
-                if (cam.on(CameraFeatures.GRID)) RoundKey("▦", Color.White, gridShown) { gridShown = !gridShown }
+                    RoundKey("ϟ", "Lámpa", if (torch) Color(0xFFFFD54F) else Color.White, torch) { torch = !torch }
+                if (cam.on(CameraFeatures.GRID)) RoundKey("▦", "Rács", Color.White, gridShown) { gridShown = !gridShown }
             }
             lv?.let { if (!it.flat) Text("%+.1f°".format(it.roll), style = Melyviz.readout.copy(fontSize = 11.sp, color = if (it.level()) Color(0xFF3DDC84) else Color.White)) }
             st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 2) }
@@ -351,9 +365,12 @@ internal fun LiveCamera(
         // ---- the bottom: ghost, purpose strip, thumbnail + ↶, shutter, ✓ ---------------------------------------------
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(Color(0x66000000)).padding(horizontal = 10.dp, vertical = 10.dp)) {
             if (ghost != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RoundKey("◐", Color.White, ghostShown) { ghostShown = !ghostShown }
+                RoundKey("◐", "Előtte-kép", Color.White, ghostShown) { ghostShown = !ghostShown }
                 Slider(ghostA, { ghostA = CameraLive.ghostAlpha(it) }, valueRange = 0f..CameraLive.GHOST_MAX, modifier = Modifier.weight(1f))
-                Text("✕", style = Melyviz.label.copy(color = Color.White), modifier = Modifier.clickable { series = series.copy(pairOf = null) }.padding(6.dp))
+                Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button) { series = series.copy(pairOf = null) }
+                    .semantics { contentDescription = "Előtte-kép elvetése" }, contentAlignment = Alignment.Center) {
+                    Text("✕", style = Melyviz.label.copy(color = Color.White), modifier = Modifier.clearAndSetSemantics { })
+                }
             } else if (!photoPoint && cam.on(CameraFeatures.GHOST)) {
                 val cands = CameraLive.ghostCandidates(st.sketch, series.purpose, series.room)
                 if (cands.isNotEmpty()) Text("◐ Előtte-kép (${cands.size})", style = Melyviz.small.copy(color = Color.White),
@@ -385,12 +402,15 @@ internal fun LiveCamera(
                     if (lastImg != null) {
                         Image(lastImg, contentDescription = "utolsó fotó", contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)).border(1.dp, Color.White, RoundedCornerShape(8.dp)))
-                        Text("↶", style = Melyviz.label.copy(color = Color.White), modifier = Modifier.align(Alignment.TopEnd).clip(CircleShape)
-                            .background(Color(0xAA000000)).clickable {
+                        // a 48 dp target over the thumbnail's corner, the ↶ drawn small in it (UI audit 1.1, 8.1)
+                        Box(Modifier.align(Alignment.TopEnd).size(48.dp).clickable(role = Role.Button) {
                                 val (back, gone) = CameraLive.undo(series)
                                 gone?.let { st.deleteCapture(it); st.note = "↶ Az utolsó fotó törölve." }
                                 series = back
-                            }.padding(horizontal = 6.dp, vertical = 2.dp))
+                            }.semantics { contentDescription = "Az utolsó fotó visszavonása" }, contentAlignment = Alignment.TopEnd) {
+                            Text("↶", style = Melyviz.label.copy(color = Color.White), modifier = Modifier.clip(CircleShape)
+                                .background(Color(0xAA000000)).padding(horizontal = 6.dp, vertical = 2.dp).clearAndSetSemantics { })
+                        }
                     }
                 }
                 Spacer(Modifier.weight(1f))
@@ -409,12 +429,15 @@ internal fun LiveCamera(
     }
 }
 
-/** A round viewfinder key. */
+/** A round viewfinder key: 38 dp to look at, 48 dp to touch, a named switch for TalkBack (UI audit 1.1, 8.1). */
 @Composable
-private fun RoundKey(sym: String, color: Color, on: Boolean, onClick: () -> Unit) {
-    Box(Modifier.size(38.dp).clip(CircleShape).background(if (on) color.copy(alpha = 0.3f) else Color(0x44000000))
-        .border(1.dp, color.copy(alpha = if (on) 1f else 0.6f), CircleShape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        Text(sym, style = Melyviz.glyph.copy(fontSize = 18.sp, color = color))
+private fun RoundKey(sym: String, label: String, color: Color, on: Boolean, onClick: () -> Unit) {
+    Box(Modifier.minimumInteractiveComponentSize().toggleable(value = on, role = Role.Switch, onValueChange = { onClick() })
+        .semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(38.dp).clip(CircleShape).background(if (on) color.copy(alpha = 0.3f) else Color(0x44000000))
+            .border(1.dp, color.copy(alpha = if (on) 1f else 0.6f), CircleShape), contentAlignment = Alignment.Center) {
+            Text(sym, style = Melyviz.glyph.copy(fontSize = 18.sp, color = color), modifier = Modifier.clearAndSetSemantics { })
+        }
     }
 }
 
