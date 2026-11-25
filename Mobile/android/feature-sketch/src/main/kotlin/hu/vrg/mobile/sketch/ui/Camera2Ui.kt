@@ -18,12 +18,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -99,6 +99,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.max
 import kotlin.math.min
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Kamera 2 (the camera's second round): the screens and the Android half of sketch-core's Camera2 / TypePlate.
 // Type-plate reading (sketch-vision's TextReader, on the phone), blur kept as a vector and burned in on export, the
@@ -384,7 +385,7 @@ internal fun AgainPill(st: EditorState, modifier: Modifier) {
     if (st.series || !st.cam2.on(CameraFeatures.AGAIN)) return
     val p = st.kit.purpose(r.purpose)
     val col = Color(p?.color ?: 0xFF2A8CDB)
-    Row(modifier.clip(RoundedCornerShape(50)).background(Melyviz.raised).border(1.dp, col, RoundedCornerShape(50))
+    Row(modifier.clip(RoundedCornerShape(50)).background(Melyviz.raised).vrgBorder(1.dp, col, RoundedCornerShape(50))
         .clickable { st.cam2.again = null; st.camera = r }.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("＋ ", style = Melyviz.label.copy(color = col))
         Text(p?.sym ?: "•", style = Melyviz.glyph.copy(fontSize = 16.sp, color = col))
@@ -420,7 +421,7 @@ internal fun QuickRow(st: EditorState, close: () -> Unit) {
 
 @Composable
 private fun BigTile(sym: String, label: String, c: Color, onClick: () -> Unit) {
-    Column(Modifier.width(66.dp).clip(RoundedCornerShape(12.dp)).border(1.dp, c, RoundedCornerShape(12.dp)).clickable(onClick = onClick).padding(vertical = 7.dp),
+    Column(Modifier.width(66.dp).clip(RoundedCornerShape(12.dp)).vrgBorder(1.dp, c, RoundedCornerShape(12.dp)).clickable(onClick = onClick).padding(vertical = 7.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text(sym, style = Melyviz.glyph.copy(fontSize = 20.sp, color = c))
         Text(label, style = Melyviz.small.copy(fontSize = 9.sp), maxLines = 2)
@@ -482,7 +483,7 @@ internal fun Camera2Section(st: EditorState) {
         Text("◐ Előtte / utána", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             pairs.forEach { (b, a) -> key(b.id + a.id) {
-                Row(Modifier.clip(RoundedCornerShape(10.dp)).border(1.dp, Melyviz.line, RoundedCornerShape(10.dp)).padding(3.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(Modifier.clip(RoundedCornerShape(10.dp)).vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(10.dp)).padding(3.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     MiniThumb(st, b, 60) { st.ask = Ask.Compare(b.id, a.id) }
                     MiniThumb(st, a, 60) { st.ask = Ask.Compare(b.id, a.id) }
                 }
@@ -697,7 +698,10 @@ internal fun MediaViewer(st: EditorState, c: Capture, close: () -> Unit) {
             }
             Row(Modifier.padding(top = 8.dp)) {
                 Spacer(Modifier.weight(1f))
-                Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clickable { st.deleteCapture(c.id); close() }.padding(vertical = 8.dp))
+                // UI audit 5.6: 48 dp, and the delete is undoable (st.deleteCapture says "↶ visszahozza")
+                Box(Modifier.heightIn(min = 48.dp).clickable(role = androidx.compose.ui.semantics.Role.Button) { st.deleteCapture(c.id); close() }, contentAlignment = Alignment.Center) {
+                    Text("Törlés", style = Melyviz.label.copy(color = Melyviz.coral))
+                }
             }
             Text("Fájlnév a PC-n: " + Intake.exportName(st.sketch, c), style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint))
         }

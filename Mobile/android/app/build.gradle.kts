@@ -80,4 +80,10 @@ dependencies {
     implementation(project(":feature-vault"))
     implementation(project(":feature-workflow"))
     implementation(project(":feature-map"))
+    implementation(project(":feature-weather"))   // WP M44 VRG Időjárás
+    implementation(project(":feature-tag"))       // WP M61 Tárgykereső
+    implementation(project(":feature-watch"))     // WP M65 Óra
+    implementation(project(":feature-radar"))     // WP M67 Radar
+    implementation(project(":feature-web"))       // WP M68 Böngésző
+    implementation(project(":feature-notebook"))  // WP M70 VRG Füzet
 }

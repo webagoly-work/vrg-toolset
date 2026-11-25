@@ -22,7 +22,10 @@ dependencyResolutionManagement {
 rootProject.name = "VRG-Mobile"
 
 // The pure Kotlin modules: build and test on any JDK, no Android SDK.
-include(":kit-core", ":airdeck-core", ":relay-core", ":sketch-core", ":pager-core")
+include(":kit-core", ":airdeck-core", ":relay-core", ":sketch-core", ":pager-core", ":tag-core")
+include(":kct-core")                       // WP M65 Óra: the Q71 watch codec (RC4 frames, KCT commands)
+include(":weather-core")                    // WP M44 VRG Időjárás: fusion + field rules
+include(":notebook-core")                   // WP M70 VRG Füzet: kits, store, search, views, open items
 if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":feature-notes", ":feature-update", ":feature-pulse", ":feature-sphere", ":feature-ports", ":feature-launch", ":feature-drop", ":feature-screen", ":feature-city", ":feature-inbox", ":feature-net", ":app")
 if (!jvmOnly) include(":feature-stack")   // WP M17 Rétegverem
 if (!jvmOnly) include(":feature-archive") // WP M18 Archívum
@@ -35,4 +38,10 @@ if (!jvmOnly) include(":feature-devices") // WP M35 Eszközök
 if (!jvmOnly) include(":feature-vault")   // WP M45 Vault
 if (!jvmOnly) include(":feature-workflow") // WP M42 Varler Workflow Kit
 if (!jvmOnly) include(":feature-map")     // WP M43 VRG Térkép
+if (!jvmOnly) include(":feature-weather") // WP M44 VRG Időjárás
 if (!jvmOnly) include(":sketch-vision")   // Kamera 2: on-device text recognition (ML Kit, bundled)
+if (!jvmOnly) include(":feature-tag")     // WP M61 Tárgykereső (experimental)
+if (!jvmOnly) include(":feature-watch")   // WP M65 Óra (the Q71 watch, experimental)
+if (!jvmOnly) include(":feature-radar")   // WP M67 Radar
+if (!jvmOnly) include(":feature-web")     // WP M68 Böngésző
+if (!jvmOnly) include(":feature-notebook") // WP M70 VRG Füzet

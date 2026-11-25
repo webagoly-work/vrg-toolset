@@ -1,0 +1,72 @@
+{
+  "_comment": "WP-57 Hang: how Voice/tts/speakable() turns a terse answer into text a voice can say. Extend freely: `words` are whole tokens matched case-sensitively first, then case-insensitively; a capitalised word also matches with a Hungarian ending (Plannert, Plannerben → plennert, plennerben); `phrases` are matched before words (longest first); `letters` spell an all-caps acronym that is not in `words`; `symbols` replace single characters. Hungarian numbers are spelled out by code (0 … 999 999); English keeps digits (the English voice reads them).",
+  "hu": {
+    "phrases": {
+      "GO MOBILE": "gó mobil",
+      "GO PLANNER": "gó plenner",
+      "GO ROUTE": "gó rút",
+      "GO CLA": "gó cé-el-á",
+      "GO HUB": "gó hab",
+      "GO CITY": "gó szití",
+      "GO LOGO": "gó logó",
+      "GO MAIN": "gó méjn",
+      "GO VARIANT": "gó varient",
+      "GO OPENWRT": "gó open-vé-er-té",
+      "VRG Mobile": "vé-er-gé mobil",
+      "VRG Asztal": "vé-er-gé asztal",
+      "VRG Kapu": "vé-er-gé kapu",
+      "Claude Code": "klód kód",
+      "pull request": "pull rikveszt"
+    },
+    "words": {
+      "VRG": "vé-er-gé",
+      "PR": "pí-ár",
+      "GO": "gó",
+      "APK": "á-pé-ká",
+      "CLA": "cé-el-á",
+      "CYD": "cé-ipszilon-dé",
+      "ESP": "e-es-pé",
+      "PDF": "pé-dé-ef",
+      "URL": "u-er-el",
+      "USB": "u-es-bé",
+      "AI": "á-í",
+      "OK": "oké",
+      "Planner": "plenner",
+      "Claude": "klód",
+      "Sketcher": "szkecser",
+      "Board": "bórd",
+      "Console": "konzol",
+      "Thread": "szred",
+      "Workflow": "vörkflóu",
+      "Kit": "kit",
+      "Varler": "varler",
+      "build": "bild",
+      "commit": "kommit",
+      "push": "pus",
+      "branch": "brencs",
+      "main": "méjn",
+      "opus": "ópusz",
+      "sonnet": "szonet",
+      "haiku": "hájku"
+    },
+    "letters": { "A": "á", "B": "bé", "C": "cé", "D": "dé", "E": "é", "F": "ef", "G": "gé", "H": "há", "I": "í", "J": "jé", "K": "ká", "L": "el", "M": "em", "N": "en", "O": "ó", "P": "pé", "Q": "kú", "R": "er", "S": "es", "T": "té", "U": "ú", "V": "vé", "W": "dupla vé", "X": "iksz", "Y": "ipszilon", "Z": "zé" },
+    "symbols": { "%": " százalék", "&": " és ", "+": " plusz ", "=": " egyenlő ", "°": " fok", "→": ", ", "←": ", ", "·": ", ", "•": ", ", "|": ", ", "×": " szor ", "~": " kb. " }
+  },
+  "en": {
+    "phrases": {
+      "GO MOBILE": "go mobile",
+      "VRG Asztal": "V R G desktop",
+      "Claude Code": "Claude Code"
+    },
+    "words": {
+      "VRG": "V R G",
+      "PR": "P R",
+      "APK": "A P K",
+      "OK": "okay",
+      "Kapu": "Kapoo",
+      "Asztal": "Ostal"
+    },
+    "letters": { "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "F": "F", "G": "G", "H": "H", "I": "I", "J": "J", "K": "K", "L": "L", "M": "M", "N": "N", "O": "O", "P": "P", "Q": "Q", "R": "R", "S": "S", "T": "T", "U": "U", "V": "V", "W": "W", "X": "X", "Y": "Y", "Z": "Z" },
+    "symbols": { "%": " percent", "&": " and ", "+": " plus ", "=": " equals ", "°": " degrees", "→": ", ", "←": ", ", "·": ", ", "•": ", ", "|": ", ", "×": " times ", "~": " about " }
+  }
+}

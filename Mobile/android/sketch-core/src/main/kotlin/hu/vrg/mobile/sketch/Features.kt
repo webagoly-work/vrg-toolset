@@ -49,6 +49,8 @@ object Features {
         F("vazlat.board", "vazlat", "▣", "Elosztó"),
         F("vazlat.route", "vazlat", "〰", "Nyomvonal"),
         F("vazlat.photo", "vazlat", "◉", "Fotópont"),
+        F("vazlat.roombox", "vazlat", "⬚", "Szobadoboz (3D)"),   // skcam K1 / K1b: the room box (Desktop page, phone Rendezés)
+        F("vazlat.pano", "vazlat", "⟳", "Körkép (360°)", listOf("vazlat.roombox")),   // skcam K4: aligning a photo point, the 360° image
         F("vazlat.wheels", "vazlat", "◎", "Tartásra kerék"),
         F("vazlat.drawtune", "vazlat", "⚙", "Rajz-hangolás"),
         F("vazlat.line_close", "vazlat", "⌇", "Vonal: Kész zár", listOf("vazlat.line", "vazlat.drawtune")),
@@ -73,6 +75,7 @@ object Features {
         F("kamera.shotlist", "kamera", "☑", "Képlista", listOf("kamera.capture")),
         F("kamera.series", "kamera", "⟳", "Sorozat", listOf("kamera.capture")),
         F("kamera.markup", "kamera", "✎", "Jelölés", listOf("kamera.capture")),
+        F("kamera.measure", "kamera", "📏", "Mérés a fotón", listOf("kamera.capture")),   // skcam K3: Síkmérés on a capture or a Fotópont photo
         F("kamera.ocr", "kamera", "▤", "Szöveg kiolvasása", listOf("kamera.capture")),
         F("kamera.ocr_auto", "kamera", "▤", "Címkefotó magától", listOf("kamera.capture", "kamera.ocr")),
         F("kamera.blur", "kamera", "▦", "Elmosás", listOf("kamera.capture", "kamera.markup")),
@@ -91,10 +94,12 @@ object Features {
         F("kamera.live_level", "kamera", "⊖", "Vízszintező", listOf("kamera.capture", "kamera.live")),
         F("kamera.live_grid", "kamera", "▦", "Rács", listOf("kamera.capture", "kamera.live")),
         F("kamera.live_torch", "kamera", "ϟ", "Lámpa", listOf("kamera.capture", "kamera.live")),
+        F("kamera.ar", "kamera", "📐", "Google AR csomag", listOf("kamera.capture"), default = false),   // skcam K6: the whole ARCore pack, one switch
         F("helyszin.address", "helyszin", "⌂", "Cím"),
         F("helyszin.gps", "helyszin", "⌖", "Itt vagyok (GPS)"),
         F("helyszin.search", "helyszin", "🔎", "Keresés a neten"),
         F("helyszin.map", "helyszin", "🗺", "Térkép"),
+        F("helyszin.house3d", "helyszin", "🏠", "Ház 3D (pontfelhő)"),   // skcam K5: the Desktop page opens it; the phone has the switch only
         F("helyszin.outline", "helyszin", "▱", "Körvonal rajzolása", listOf("helyszin.map")),
         F("helyszin.satellite", "helyszin", "🛰", "Műhold", listOf("helyszin.map")),
         F("helyszin.place", "helyszin", "◫", "Vázlat az épületen"),

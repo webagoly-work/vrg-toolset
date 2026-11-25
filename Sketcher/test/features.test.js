@@ -13,7 +13,7 @@ t('ids unique, prerequisites and fronts exist', () => {
   assert.deepStrictEqual(F.FRONTS.filter(f => f.bar).map(f => f.id), kit.fronts.map(f => f.id));
 });
 t('everything on by default but the options; an unknown id arrives on', () => {
-  assert.deepStrictEqual(F.ALL.filter(f => !F.on([], f.id)).map(f => f.id), ['munkakor.implied']);
+  assert.deepStrictEqual(F.ALL.filter(f => !F.on([], f.id)).map(f => f.id), ['munkakor.implied', 'kamera.ar']);   // kamera.ar: the Google AR csomag (skcam K6), opt-in
   assert.ok(F.on(['x'], 'uj.funkcio'));
 });
 t('a prerequisite off greys its dependents, which come back with it', () => {

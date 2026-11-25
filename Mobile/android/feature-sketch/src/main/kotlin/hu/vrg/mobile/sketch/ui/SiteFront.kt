@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -187,10 +188,14 @@ internal fun SiteFront(st: EditorState) {
             }
         }
         map?.let { u ->
+            // UI audit: MATCH_PARENT (WRAP_CONTENT can leave the map 0 px tall), and at most 60 % of the screen height,
+            // so in landscape the front can still be scrolled past the map to Cím keresése and the outline
+            val mapH = minOf(360.dp, (LocalConfiguration.current.screenHeightDp * 0.6f).dp)
             AndroidView(factory = { c -> WebView(c).apply {
+                layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
                 settings.javaScriptEnabled = true; settings.domStorageEnabled = true
                 webViewClient = WebViewClient(); loadUrl(u); web = this
-            } }, modifier = Modifier.fillMaxWidth().height(360.dp).padding(vertical = 6.dp))
+            } }, modifier = Modifier.fillMaxWidth().height(mapH).padding(vertical = 6.dp))
         }
 
         if (feat("helyszin.search")) Text("Az interneten (OpenStreetMap)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))

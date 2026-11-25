@@ -5,6 +5,7 @@
   {"id":"planner","name":"Planner","area":"Planner","thread":"planner","words":["planner","varler planner"],"paths":["Planner"],"ids":["L:pcore","L:views","L:pwf"]},
   {"id":"mindmap","name":"MindMap","area":"Seeing the work, network","thread":"mindmap","words":["mindmap"],"paths":["MindMap"],"ids":[]},
   {"id":"inventory","name":"Inventory · Készlet","area":"Money path and data","thread":"inventory","words":["inventory","keszlet"],"paths":["Inventory"],"ids":[]},
+  {"id":"kisokos","name":"VRG Kisokos","area":"Wiring and jobs","thread":"","words":["kisokos","rögzítéstechnika","rogzitestechnika"],"paths":["Kisokos","docs/kisokos","Stack/kisokos.html"],"ids":["K:core","K:vol.rg"]},
   {"id":"buildtree","name":"BuildTree · Modulshop","area":"Money path and data","thread":"buildtree","words":["buildtree","modulshop","modder"],"paths":["Modder"],"ids":[]},
   {"id":"calculator","name":"Calculators","area":"Money path and data","thread":"calc","words":["calculator","kalkulator"],"paths":["Calculator"],"ids":[]},
   {"id":"toolbox","name":"Toolbox","area":"Money path and data","thread":"tools","words":["toolbox"],"paths":["Toolbox","toolbox.html"],"ids":[]},
@@ -55,6 +56,8 @@
   {"id":"openmct","name":"Open MCT console","area":"BRIDGE smart home","thread":"openmct","words":["open mct","openmct"],"paths":[],"ids":[]},
   {"id":"rl","name":"RL-CYD + RL Field","area":"Hardware","thread":"rl","words":["rl-cyd","rl field"],"paths":["H:/Personal/RL-CYD"],"ids":[]},
   {"id":"pager","name":"Site Pager + S3 projects","area":"Hardware","thread":"pager","words":["site pager","csipogó"],"paths":["Mobile/android/pager-core","Mobile/android/feature-pager","docs/mobile/WP/M33.md"],"ids":[]},
+  {"id":"findtag","name":"Tárgykereső (Find My tag on Android)","area":"Hardware","thread":"","words":["tárgykereső","isytag","itag","q71"],"paths":["Mobile/android/tag-core","Mobile/android/feature-tag","docs/mobile/WP/M61.md"],"ids":[]},
+  {"id":"radar","name":"Radar (universal locator / proximity display)","area":"Hardware","thread":"","words":["radar","rádar"],"paths":["Mobile/android/feature-radar","Mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/Radar.kt","shared/vrg-ui-kit/components/radar.js","docs/radar/README.md","docs/mobile/WP/M67.md"],"ids":[]},
   {"id":"openwrt","name":"OpenWrt router","area":"Seeing the work, network","thread":"openwrt","status":"out","words":["openwrt"],"paths":["GO-OPENWRT.md"],"ids":[]},
   {"id":"remote","name":"Own remote access","area":"Seeing the work, network","thread":"remote","words":["remote access"],"paths":[],"ids":[]}
  ]

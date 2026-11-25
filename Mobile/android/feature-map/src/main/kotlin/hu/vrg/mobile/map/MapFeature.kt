@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -29,12 +30,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,6 +111,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 // VRG Térkép (WP M43, D-48 = A, D-49 = A + B + C). The PC's own page, Map/vrg-terkep.html, from GitHub main on its own origin
@@ -578,8 +587,38 @@ object MapFeature : VrgFeature {
             }
             "sketch" -> host.open(Catalogue.SKETCH.id)
             "site" -> siteDone(host, q.getQueryParameter("d"))
+            // N3 guidance (WP M58): the page's voice prompts through Android's text-to-speech, and the screen kept on
+            "say" -> q.getQueryParameter("text")?.take(300)?.let { speak(it) }
+            "keepon" -> host.keepScreenOn(q.getQueryParameter("on") == "1")
         }
         return true
+    }
+
+    // ---- the voice of the guidance (N3) -------------------------------------------------------------------------
+
+    @Volatile private var tts: TextToSpeech? = null
+    @Volatile private var ttsReady = false
+    private var ttsPending: String? = null
+
+    /** Hungarian if the phone has it, else the phone's default voice; the newest prompt replaces an unfinished one. */
+    private fun speak(text: String) {
+        val t = tts
+        if (t == null) {
+            ttsPending = text
+            tts = TextToSpeech(appCtx) { status ->
+                ttsReady = status == TextToSpeech.SUCCESS
+                val e = tts ?: return@TextToSpeech
+                if (ttsReady) {
+                    val hu = Locale("hu", "HU")
+                    if (e.isLanguageAvailable(hu) >= TextToSpeech.LANG_AVAILABLE) e.setLanguage(hu)
+                    else VrgLog.w(TAG, "nincs magyar hang a telefonon; az alapértelmezett szól")
+                    ttsPending?.let { e.speak(it, TextToSpeech.QUEUE_FLUSH, null, "vrg-nav") }
+                } else VrgLog.w(TAG, "a szövegfelolvasó nem indult ($status)")
+                ttsPending = null
+            }
+            return
+        }
+        if (ttsReady) t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "vrg-nav") else ttsPending = text
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -640,11 +679,13 @@ object MapFeature : VrgFeature {
         // F1: from a survey's Helyszín, ‹ and Back go back to it (nothing saved: ✓ Kész saves)
         val leave = { keepHash(web[0]); activeSite?.let { siteDone(host, JSONObject().put("id", it).toString()) } ?: host.home() }
         BackHandler { leave() }
+        val reload: () -> Unit = { keepHash(web[0]); state.update { it.copy(url = null) }; prepare() }
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                    modifier = Modifier.clickable { leave() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    modifier = Modifier.minimumInteractiveComponentSize().clickable(onClickLabel = "Vissza") { leave() }
+                        .semantics { contentDescription = "Vissza" }.padding(horizontal = 4.dp))
                 Text("VRG TÉRKÉP", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, modifier = Modifier.weight(1f))
                 when (s.mode) {
                     Mode.PC -> VrgChip("PC adat", selected = true) { host.note("A térkép és a munkák a PC-ről jönnek, a relén át.") }
@@ -652,16 +693,24 @@ object MapFeature : VrgFeature {
                     Mode.OFFLINE -> VrgChip("Offline") { host.note("Nincs internet és PC: a telefonon tárolt térképrészek látszanak.") }
                     null -> {}
                 }
-                VrgChip("⟳") { keepHash(web[0]); state.update { it.copy(url = null) }; prepare() }
+                // the glyph-only reload: TalkBack reads its name, and the touch area is at least 48 dp
+                Box(Modifier.minimumInteractiveComponentSize().clearAndSetSemantics {
+                    contentDescription = "Újratöltés"; role = Role.Button; onClick { reload(); true }
+                }, contentAlignment = Alignment.Center) { VrgChip("⟳", onClick = reload) }
             }
             if (s.busy || s.problem != null) Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
                 if (s.busy) Text(s.step ?: "Előkészítés…", style = Melyviz.small)
-                s.problem?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 3, overflow = TextOverflow.Ellipsis) }
+                // over a showing map the reason is kept short; with no map it is shown in full
+                s.problem?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = if (s.url != null) 3 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis) }
                 if (!GitHub.signedIn && s.url == null && !s.busy) Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
             }
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val url = s.url
-                if (url == null) Text(if (s.busy) "Betöltés…" else "A térkép itt nyílik meg.", style = Melyviz.small)
+                if (url == null && !s.busy && s.problem != null) Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("A térkép nem nyílt meg (az ok fent).", style = Melyviz.small)
+                    Box(Modifier.padding(top = 8.dp)) { VrgChip("Újra", selected = true, onClick = reload) }
+                }
+                else if (url == null) Text(if (s.busy) "Betöltés…" else "A térkép itt nyílik meg.", style = Melyviz.small)
                 else AndroidView(
                     factory = { ctx -> makeWebView(ctx, host) },
                     modifier = Modifier.fillMaxSize(),

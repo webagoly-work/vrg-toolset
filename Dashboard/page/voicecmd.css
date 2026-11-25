@@ -1,0 +1,31 @@
+/* voicecmd.css — WP-55 Parancs-héj: the voice command HUD. It sits over the top strip (DOM chrome, never under a native view);
+   while it asks for a confirmation, takes typed input or shows its history the shell hides the native views (desktop.cover). */
+[data-role="vcmd"] { position: fixed; z-index: 140; top: 6px; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 32px));
+  box-sizing: border-box; padding: 7px 12px 8px; background: var(--mv-panel-solid, #10181f); color: var(--mv-text, #e8f0f6);
+  border: 1px solid var(--mv-line-strong, rgba(232, 240, 246, .22)); border-left: 3px solid var(--mv-accent, #93d3e6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .5), 0 0 var(--mv-glow, 12px) var(--mv-accent-glow, rgba(147, 211, 230, .25));
+  font: 13px/1.35 var(--mv-sans, system-ui, sans-serif); }
+[data-role="vcmd"][hidden], [data-role="vcmd"] [hidden] { display: none !important; }
+[data-role="vcmd"][data-state="confirm"] { border-left-color: var(--mv-warn, #e6c35c); }
+[data-role="vcmd"][data-state="error"] { border-left-color: var(--mv-crit, #e5736b); }
+[data-role="vcmd-row"] { display: flex; align-items: center; gap: 9px; min-width: 0; }
+[data-role="vcmd-dot"] { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--mv-accent, #93d3e6); }
+[data-role="vcmd"][data-state="listening"] [data-role="vcmd-dot"] { background: var(--mv-crit, #e5736b); animation: vcmd-pulse 1s ease-in-out infinite; }
+[data-role="vcmd"][data-state="confirm"] [data-role="vcmd-dot"] { background: var(--mv-warn, #e6c35c); }
+[data-role="vcmd"][data-state="error"] [data-role="vcmd-dot"] { background: var(--mv-crit, #e5736b); }
+@keyframes vcmd-pulse { 50% { opacity: .35; } }
+[data-role="vcmd-say"] { flex: 1 1 auto; min-width: 0; font: 600 14px/1.3 var(--mv-sans, system-ui, sans-serif); letter-spacing: .01em; color: var(--mv-text, #e8f0f6);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-role="vcmd"][data-state="listening"] [data-role="vcmd-say"] { font-weight: 400; color: var(--mv-dim, #9fb0bd); font-style: italic; white-space: normal; }
+[data-role="vcmd-detail"] { margin: 3px 0 0 17px; font-size: 12px; color: var(--mv-dim, #9fb0bd); }
+[data-role="vcmd-confirm"] { display: flex; gap: 6px; margin: 7px 0 0 17px; }
+[data-role="vcmd-confirm"] button { background: none; color: var(--mv-dim, #9fb0bd); border: 1px solid var(--mv-line, rgba(232, 240, 246, .12)); border-radius: 0;
+  font: 12px/1 var(--mv-sans, system-ui, sans-serif); padding: 6px 12px; cursor: pointer; }
+[data-role="vcmd-confirm"] [data-role="vcmd-yes"] { color: var(--mv-bg, #0b1116); background: var(--mv-warn, #e6c35c); border-color: var(--mv-warn, #e6c35c); font-weight: 600; }
+[data-role="vcmd-confirm"] button:hover { filter: brightness(1.15); }
+[data-role="vcmd-input"] { display: block; width: 100%; box-sizing: border-box; margin-top: 7px; background: var(--mv-bg, #0b1116); color: var(--mv-text, #e8f0f6);
+  border: 1px solid var(--mv-accent, #93d3e6); border-radius: 0; padding: 6px 9px; font: 13px var(--mv-sans, system-ui, sans-serif); outline: none; color-scheme: dark; }
+[data-role="vcmd-hist"] { display: none; list-style: none; margin: 8px 0 0; padding: 6px 0 0 17px; border-top: 1px dashed var(--mv-line, rgba(232, 240, 246, .12));
+  font: 11px/1.5 var(--mv-mono, ui-monospace, monospace); color: var(--mv-faint, #6d7d89); }
+[data-role="vcmd"]:hover [data-role="vcmd-hist"]:not(:empty) { display: block; }
+[data-role="vcmd-hist"] b { font-weight: 400; color: var(--mv-dim, #9fb0bd); }

@@ -22,7 +22,7 @@ const pushU = (arr, f) => { if (!arr.includes(f)) arr.push(f); };
 man.components.forEach(c => (c.files || []).forEach(f => pushU(f.endsWith('.css') ? orderedCss : orderedJs, f)));
 compFiles.sort().forEach(f => pushU(f.endsWith('.css') ? orderedCss : f.endsWith('.js') ? orderedJs : [], 'components/' + f));
 
-const tokens = ['fonts/fonts.css', 'tokens/base.css', 'tokens/theme-dark.css', 'tokens/theme-light.css', 'tokens/theme-contrast.css', 'tokens/theme-melyviz.css', 'tokens/density.css'];
+const tokens = ['fonts/fonts.css', 'tokens/base.css', 'tokens/theme-dark.css', 'tokens/theme-light.css', 'tokens/theme-contrast.css', 'tokens/theme-melyviz.css', 'tokens/theme-grafit.css', 'tokens/density.css'];
 const outFile = outArg ? path.resolve(outArg) : path.join(KIT, 'gallery.html');
 const relFromOut = (f) => path.relative(path.dirname(outFile), path.join(KIT, f)).split(path.sep).join('/');
 

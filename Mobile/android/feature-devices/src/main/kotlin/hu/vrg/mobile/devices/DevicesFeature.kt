@@ -2,16 +2,16 @@ package hu.vrg.mobile.devices
 
 import android.content.Intent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +48,7 @@ import hu.vrg.mobile.kit.ui.InstallQrPanel
 import hu.vrg.mobile.kit.ui.IphoneGuideView
 import hu.vrg.mobile.kit.ui.IphoneGuides
 import hu.vrg.mobile.kit.ui.QrCode
+import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.kit.ui.VrgToggle
@@ -55,6 +56,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.ScannedLinks
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Eszközök (WP M35): Proton Vault's way in, for VRG Mobile. One account (the owner's GitHub); the phones are what
 // differ. A phone that is not on the list shows its request as a QR; the owner's phone reads it (the home's QR
@@ -86,6 +88,7 @@ object DevicesFeature : VrgFeature {
         return true
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Screen(host: FeatureHost) {
         val ctx = LocalContext.current
@@ -114,6 +117,9 @@ object DevicesFeature : VrgFeature {
         val full = Trust.isOwner || owner
         val listed = list?.has(Trust.id) == true
         LaunchedEffect(Unit) { note = Trust.refresh() }
+        // the note line sits at the top of a long page: a result of a tap further down also goes to the shell's bottom
+        // message, so it is seen where the tap was (UI audit 6.6)
+        LaunchedEffect(note) { note?.let { host.note(it) } }
 
         // a grant for this phone: open it at once; a request scanned on the admin phone: approve it at once
         // keyed on the arrival too (the same QR scanned twice) and on admin (signed in since the request came: a request
@@ -151,7 +157,7 @@ object DevicesFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+            VrgBack { host.home() }
             Text("ESZKÖZÖK", style = Melyviz.title.copy(fontSize = 18.sp))
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
 
@@ -168,9 +174,8 @@ object DevicesFeature : VrgFeature {
                     QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A hozzáférés-kérés QR-kódja")
                     Text("Kód: ${req.code}", style = Melyviz.title.copy(fontSize = 20.sp, fontFamily = Melyviz.mono))
                     Text("Jóváhagyásra vár… a telefon magától feloldódik.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp))
-                    Row(Modifier.padding(vertical = 8.dp)) {
+                    FlowRow(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         VrgChip("Megosztás") { share(ctx, "VRG Mobile hozzáférés-kérés (${req.name}, kód ${req.code}):\n$link") }
-                        Spacer(Modifier.width(6.dp))
                         VrgChip("Engedély beillesztése") { clipboard.getText()?.text?.let { incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
                     }
                 }
@@ -182,6 +187,26 @@ object DevicesFeature : VrgFeature {
 
             // ---- the full page (the owner)
             Text("Egy fiók (a tulajdonosé), a telefonok különböznek: mindegyiket QR-kóddal hagyja jóvá a tulajdonos telefonja.", style = Melyviz.small)
+            // a request that arrived (pasted, a link) and the grant QR come first: further down they appeared screens below
+            // the visible area, so "Kérés beillesztése" seemed to do nothing (UI audit 6.6)
+            (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
+            (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->
+                if (!owner) NeedsSignIn(r, host, ownerPhone = Trust.isOwner)
+                else if (busy && admin) Text("Jóváhagyás…", style = Melyviz.small)
+                else Approve(r, busy, onDone = { link -> grantLink = link to r; incoming.value = null }, onBusy = { busy = it }, onNote = { note = it },
+                    onCancel = { incoming.value = null })
+            }
+            grantLink?.let { (link, r) ->
+                VrgSectionTitle("Engedély: ${r.name}")
+                QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "Az engedély QR-kódja")
+                Text(if (r.back != null) "iPhone: magától feloldódik, ha az Eszköz oldal nyitva marad (legfeljebb néhány perc). Azonnalihoz vagy tokennel: Safariban a Kamerájával olvassa be ezt; kezdőképernyős appban a megosztott üzenetet illessze be (Eszköz → Engedély beillesztése)."
+                    else "Nem kötelező: a másik telefon magától feloldódik (legfeljebb egy perc). Ha azonnal kell, a kamerájával olvassa be.",
+                    style = Melyviz.small)
+                FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    VrgChip("Megosztás") { share(ctx, "VRG Mobile engedély ide: ${r.name}\n$link") }
+                    VrgChip("Kész") { grantLink = null }
+                }
+            }
 
             // ---- this phone
             VrgSectionTitle("Ez a telefon")
@@ -202,8 +227,8 @@ object DevicesFeature : VrgFeature {
             if (list?.gated == true) Text(if (Trust.updatesAllowed()) "Frissítést kaphat." else "Frissítést csak jóváhagyás után kap (a kiadások zárolva).", style = Melyviz.small)
             OutlinedTextField(name, { name = it.take(40) }, Modifier.fillMaxWidth().padding(top = 6.dp), singleLine = true,
                 label = { Text("A telefon neve a listán", style = Melyviz.small) }, colors = fieldColors())
-            Row(Modifier.padding(vertical = 6.dp)) {
-                if (name != Trust.name) { VrgChip("Név mentése", true) { Trust.name = name; note = "Mentve." }; Spacer(Modifier.width(6.dp)) }
+            FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (name != Trust.name) VrgChip("Név mentése", true) { Trust.name = name; note = "Mentve." }
                 VrgChip("Lista frissítése") { scope.launch { busy = true; note = Trust.refresh() ?: "A lista friss."; busy = false } }
             }
 
@@ -215,9 +240,8 @@ object DevicesFeature : VrgFeature {
                     val link = DeviceTrust.requestLink(req)
                     QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "A hozzáférés-kérés QR-kódja")
                     Text("Ellenőrző kód: ${req.code}", style = Melyviz.title.copy(fontSize = 20.sp, fontFamily = Melyviz.mono))
-                    Row(Modifier.padding(vertical = 6.dp)) {
+                    FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         VrgChip("Megosztás") { share(ctx, "VRG Mobile hozzáférés-kérés (${req.name}, kód ${req.code}):\n$link") }
-                        Spacer(Modifier.width(6.dp))
                         if (listed) VrgChip("Elrejtés") { showRequest = false }
                     }
                 }
@@ -231,9 +255,8 @@ object DevicesFeature : VrgFeature {
                 VrgSectionTitle("Jóváhagyás (tulajdonos)")
                 Text(if (admin) "Olvasd be a másik telefon kérés-QR-ját (kezdőlap: QR beolvasás): azonnal jóváhagyja, a másik telefon magától feloldódik. Messengeren kapott kérést illessz be (ott a kódot ellenőrizd)."
                     else "Egy kérés QR-kódját a kezdőlap QR beolvasásával vagy a kamerával olvasd be; messengeren kapott kérést illessz be.", style = Melyviz.small)
-                Row(Modifier.padding(vertical = 6.dp)) {
+                FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     VrgChip("QR beolvasása ›") { host.open(Catalogue.PAIR.id) }
-                    Spacer(Modifier.width(6.dp))
                     VrgChip("Kérés beillesztése") { clipboard.getText()?.text?.let { scanned.value = false; incoming.value = DeviceTrust.read(it) } ?: run { note = "A vágólap üres." } }
                 }
             }
@@ -282,9 +305,8 @@ object DevicesFeature : VrgFeature {
             Text("Az iPhone nem telepítheti az Android alkalmazást: a VRG Mobile webappot használja, és ugyanígy, QR-kóddal hagyod jóvá. " +
                 "1. az iPhone Kamerájával beolvassa a Webapp QR-t, 2. ott Eszköz → Kérés QR-kódja, 3. te QR beolvasása, 4. az iPhone magától feloldódik.",
                 style = Melyviz.small)
-            Row(Modifier.padding(vertical = 6.dp)) {
+            FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip(if (showWebQr) "Webapp QR elrejtése" else "Webapp QR", !showWebQr) { showWebQr = !showWebQr }
-                Spacer(Modifier.width(6.dp))
                 VrgChip(if (showGuide) "Útmutató elrejtése" else "Részletes útmutató") { showGuide = !showGuide }
             }
             if (showWebQr) {
@@ -295,25 +317,6 @@ object DevicesFeature : VrgFeature {
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Link megosztása") { share(ctx, "VRG Mobile iPhone-ra (webapp):\n$url") } }
             }
             if (showGuide) IphoneGuideView(Modifier.padding(vertical = 6.dp))
-            (inc as? DeviceTrust.Parsed.Bad)?.let { Text(it.why, style = Melyviz.small.copy(color = Melyviz.coral)) }
-            (inc as? DeviceTrust.Parsed.Req)?.r?.let { r ->
-                if (!owner) NeedsSignIn(r, host, ownerPhone = Trust.isOwner)
-                else if (busy && admin) Text("Jóváhagyás…", style = Melyviz.small)
-                else Approve(r, busy, onDone = { link -> grantLink = link to r; incoming.value = null }, onBusy = { busy = it }, onNote = { note = it },
-                    onCancel = { incoming.value = null })
-            }
-            grantLink?.let { (link, r) ->
-                VrgSectionTitle("Engedély: ${r.name}")
-                QrCode(link, Modifier.widthIn(max = 300.dp).fillMaxWidth().padding(vertical = 8.dp), "Az engedély QR-kódja")
-                Text(if (r.back != null) "iPhone: magától feloldódik, ha az Eszköz oldal nyitva marad (legfeljebb néhány perc). Azonnalihoz vagy tokennel: Safariban a Kamerájával olvassa be ezt; kezdőképernyős appban a megosztott üzenetet illessze be (Eszköz → Engedély beillesztése)."
-                    else "Nem kötelező: a másik telefon magától feloldódik (legfeljebb egy perc). Ha azonnal kell, a kamerájával olvassa be.",
-                    style = Melyviz.small)
-                Row(Modifier.padding(vertical = 6.dp)) {
-                    VrgChip("Megosztás") { share(ctx, "VRG Mobile engedély ide: ${r.name}\n$link") }
-                    Spacer(Modifier.width(6.dp))
-                    VrgChip("Kész") { grantLink = null }
-                }
-            }
 
             // ---- the list
             VrgSectionTitle("Megbízható eszközök")
@@ -325,12 +328,21 @@ object DevicesFeature : VrgFeature {
                 }
                 if (owner && l.gated) Text("A repó nyilvános: a letöltési link ettől még nyitott, a zár az alkalmazáson belüli frissítést szűri.", style = Melyviz.small.copy(color = Melyviz.faint))
                 l.devices.forEach { d ->
+                    // removing locks that phone out (it writes the list on GitHub): asked once more (UI audit 5.6)
+                    var sure by remember(d.id) { mutableStateOf(false) }
                     Column(Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(Melyviz.radiusSmall)).background(Melyviz.surface).padding(10.dp)) {
                         Text(d.name.ifBlank { d.model } + (if (d.owner) " · tulajdonos" else "") + (if (DeviceTrust.sameId(d.id, Trust.id)) " · ez a telefon" else ""), style = Melyviz.label)
                         Text("${d.model} · ${d.os} · ${d.id}", style = Melyviz.readout)
                         Text("jóváhagyva ${d.approved.take(10)}" + (if (d.by.isNotBlank()) " · ${d.by}" else ""), style = Melyviz.readout.copy(fontSize = 10.sp))
-                        if (owner && !d.owner) Row(Modifier.padding(top = 4.dp)) {
-                            VrgChip("Eltávolítás") { scope.launch { busy = true; note = Trust.remove(d.id) ?: "Eltávolítva: ${d.name}"; busy = false } }
+                        if (owner && !d.owner) Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (!sure) VrgChip("Eltávolítás…") { sure = true }
+                            else {
+                                VrgChip("Igen, eltávolítás", true) {
+                                    sure = false
+                                    scope.launch { busy = true; note = Trust.remove(d.id) ?: "Eltávolítva: ${d.name}"; busy = false }
+                                }
+                                VrgChip("Mégse") { sure = false }
+                            }
                         }
                     }
                 }
@@ -341,30 +353,31 @@ object DevicesFeature : VrgFeature {
 
     /** A request arrived on a phone without a GitHub token: show it (with its code) and the way to sign in. It stays here;
      *  back from GitHub fiók with a token, a scanned one is approved at once, a pasted one gets the Jóváhagyás card. */
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun NeedsSignIn(r: DeviceRequest, host: FeatureHost, ownerPhone: Boolean) {
         val shape = RoundedCornerShape(Melyviz.radius)
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.sand, shape).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.sand, shape).padding(14.dp)) {
             Text("KÉRÉS: ${r.name}", style = Melyviz.title)
             Text(r.code, style = Melyviz.title.copy(fontSize = 34.sp, letterSpacing = 4.sp, color = Melyviz.glow, fontFamily = Melyviz.mono), modifier = Modifier.padding(vertical = 6.dp))
             Text(if (ownerPhone) "Ez a te telefonod, de a jóváhagyáshoz GitHub-írás kell. Lépj be eszközkóddal (GitHub fiók → Belépés), " +
                     "majd gyere vissza ide: a kérés megvárja, és beolvasott kérésnél azonnal jóváhagyja."
                 else "Jóváhagyni a tulajdonos telefonja tud, tokenes GitHub belépéssel. Ha ez a tulajdonos telefonja, lépj be, majd gyere vissza ide: a kérés megvárja.",
                 style = Melyviz.small)
-            Row(Modifier.padding(top = 8.dp)) {
+            FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("GitHub belépés ›", true) { host.open(Catalogue.ACCOUNT.id) }
-                Spacer(Modifier.width(6.dp))
                 VrgChip("Elvetés") { incoming.value = null; scanned.value = false }
             }
         }
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun Approve(r: DeviceRequest, busy: Boolean, onDone: (String) -> Unit, onBusy: (Boolean) -> Unit, onNote: (String?) -> Unit, onCancel: () -> Unit) {
         val scope = rememberCoroutineScope()
         var withToken by remember { mutableStateOf(false) }
         val shape = RoundedCornerShape(Melyviz.radius)
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.glow, shape).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.glow, shape).padding(14.dp)) {
             Text("KÉRÉS: ${r.name}", style = Melyviz.title)
             Text("${r.model} · ${r.os} · app ${r.app}", style = Melyviz.readout)
             Text("azonosító ${r.id}", style = Melyviz.readout)
@@ -373,7 +386,7 @@ object DevicesFeature : VrgFeature {
             VrgToggle("A GitHub tokenem is (írás a fiókommal)", withToken) { withToken = it }
             if (withToken) Text("A token az ÖSSZES repódhoz ad írási jogot, nem csak ehhez. Csak saját vagy teljesen megbízható telefonnak.",
                 style = Melyviz.small.copy(color = Melyviz.coral))
-            Row(Modifier.padding(top = 8.dp)) {
+            FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip(if (busy) "Írás…" else "Jóváhagyás", true) {
                     if (busy) return@VrgChip
                     scope.launch {
@@ -383,7 +396,6 @@ object DevicesFeature : VrgFeature {
                         if (link != null) { onNote("Jóváhagyva: ${r.name}. Mutasd meg neki az engedély QR-kódját."); onDone(link) } else onNote(problem)
                     }
                 }
-                Spacer(Modifier.width(6.dp))
                 VrgChip("Elutasítás") { onCancel() }
             }
         }

@@ -7,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -42,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -49,6 +49,7 @@ import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.KChip
 import hu.vrg.mobile.sketch.KFront
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Sketcher's frame (WP M26): the fronts as symbols in their colour (no rows of text buttons), each with its count;
 // the two capture buttons that are on every front (✎ note, ◉ photo), so whatever the user was doing, a fact or a
@@ -98,7 +99,7 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(f.sym, style = Melyviz.glyph.copy(fontSize = 19.sp, color = if (on) col else col.copy(alpha = 0.55f)))
-                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1)
+                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (on) Box(Modifier.align(Alignment.BottomCenter).width(30.dp).height(3.dp).background(col, RoundedCornerShape(2.dp)))
                 if (badge > 0) {
@@ -139,7 +140,7 @@ internal fun CaptureButtons(st: EditorState, modifier: Modifier) {
 @Composable
 internal fun ChipPill(c: KChip, on: Boolean, onClick: () -> Unit) {
     val col = Color(c.color)
-    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).border(1.dp, col, RoundedCornerShape(50))
+    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).vrgBorder(1.dp, col, RoundedCornerShape(50))
         .clickable(onClick = onClick).padding(horizontal = 9.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(c.sym, style = Melyviz.label.copy(fontSize = 12.sp, color = if (on) Color.Black else col))
         Text(" " + c.label, style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Color.Black else Melyviz.ink))
@@ -183,7 +184,8 @@ internal fun QuickNote(st: EditorState) {
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                // UI audit 4.5: wraps (a Row squeezed ⚐ Tisztázandó to 0 dp at font 1.5 when ⏺ Hangjegyzet shows)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
                         try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER; noRecognizer = true }
                     }.padding(vertical = 6.dp))

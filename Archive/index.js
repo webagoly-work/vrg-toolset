@@ -4,6 +4,124 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "fenyjel-board",
+   "title": "Fényjel",
+   "created": "2026-11-25",
+   "updated": "2026-11-25",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG style",
+   "kind": "design",
+   "summary": "The Fényjel design system board: proposed phone home, phone controller and desktop home, eight function colour families, 46 pixel icons, LED numerals, depth planes and parts.",
+   "purpose": "Show the new look for review before the Mobile and Asztal shells are rebuilt in it.",
+   "context": [
+    "the Founder found the dark themes flat, monochrome and wordy, with generic emoji icons",
+    "asked for 8-bit dot-matrix pixel icons, function colour coding and a Fallout-terminal feel"
+   ],
+   "tags": [
+    "fenyjel",
+    "design-system",
+    "icons"
+   ],
+   "file": "files/fenyjel-board.html",
+   "url": "https://claude.ai/artifact/XExAfGxpf4b91mWLkmru87"
+  },
+  {
+   "id": "domoszlo-betap",
+   "title": "Domoszló ideiglenes betáp",
+   "created": "2026-11-24",
+   "updated": "2026-11-24",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "Order page for job VG-2026-DM1-04: copyable material lists for variants A/B/C (optional part numbers and DIN switch), the order list by location, and drawings of the two sub-distribution boards, the new devices in the garage board and the industrial socket box.",
+   "purpose": "To order the materials of the Domoszló temporary supply job by copy-paste, in the same form as the Acti9 board order page.",
+   "context": [
+    "Client job VG-2026-DM1-04 (cost estimate 2026-11-06)",
+    "Follows the Acti9 board order page"
+   ],
+   "tags": [
+    "job",
+    "material-list",
+    "distribution-board",
+    "client"
+   ],
+   "url": "https://claude.ai/artifact/AfanRSKVM69i2KNt2pQKzP"
+  },
+  {
+   "id": "acti9-eloszto-rendeles",
+   "title": "Acti9 elosztó rendelés",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "tool",
+   "summary": "Rendelési lista (A: 2 ÁVK, B: 3 ÁVK) és 4 × 18 modulos kiosztási rajz mindkét változathoz, másolható szöveges listával.",
+   "purpose": "Anyagrendelés egy ABB falon kívüli, Acti9 tartalmú elosztó telepítéséhez.",
+   "url": "https://claude.ai/artifact/CjBM5zHEui52RDx5KwLSB4"
+  },
+  {
+   "id": "eloszto-elotte-utana-a",
+   "title": "Előtte-utána 2 ÁVK",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "study",
+   "summary": "A jelenlegi elosztó a fotók alapján és a 2 ÁVK-s A változat várható állapota, körönkénti változással és kioldási csoportokkal.",
+   "purpose": "A két változat közti döntés előkészítése.",
+   "url": "https://claude.ai/artifact/F5f2zSS2eYQyUBpcPe46cR"
+  },
+  {
+   "id": "eloszto-elotte-utana-b",
+   "title": "Előtte-utána 3 ÁVK",
+   "created": "2026-11-23",
+   "updated": "2026-11-23",
+   "lang": "hu",
+   "vrg": true,
+   "group": "Field work",
+   "context": [
+    "Elosztócsere egy magánháznál: a régi Legrand/Tracon/Schneider szekrény cseréje ABB szekrényre Acti9 tartalommal",
+    "A jelenlegi betétek felmérése két fotó alapján"
+   ],
+   "tags": [
+    "elosztó",
+    "acti9",
+    "ávk",
+    "rendelés",
+    "private"
+   ],
+   "kind": "study",
+   "summary": "A jelenlegi elosztó a fotók alapján és a 3 ÁVK-s B változat várható állapota, körönkénti változással és kioldási csoportokkal.",
+   "purpose": "A két változat közti döntés előkészítése.",
+   "url": "https://claude.ai/artifact/SdZQXAHCp84DxSzEGqy5dL"
+  },
+  {
    "id": "kettelefonos-teszt",
    "title": "Kéttelefonos teszt",
    "created": "2026-11-21",
@@ -21,6 +139,46 @@ window.VRG_ARCHIVE = {
    "tags": [],
    "file": "files/kettelefonos-teszt.html",
    "url": "https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre"
+  },
+  {
+   "id": "personal-app-v1",
+   "title": "Personal App v1",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "board",
+   "summary": "The code VRG already owns sorted into a first personal app: a General default edition and a Founder edition as home pages of tiles, the inventory with a status filter, and questions Q1-Q6.",
+   "purpose": "Choose the features of the Founder's first personal app from what is already built.",
+   "context": [
+    "follow-up to the Software for One research page",
+    "source docs/mobile/PERSONAL-APP.md",
+    "nothing built or decided yet"
+   ],
+   "tags": [],
+   "file": "files/personal-app-v1.html",
+   "url": "https://claude.ai/artifact/XaMwQR7cDRJpYfPNqA88np"
+  },
+  {
+   "id": "software-for-one",
+   "title": "Software for One",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "explainer",
+   "summary": "Research report on personal apps (software for one person): the lineage from situated software to vibe coding, the 2026 landscape, Android developer verification for a self-built APK, critiques, and where VRG Mobile stands.",
+   "purpose": "Get the Founder informed about personal apps and omniapps before choosing the first personal app's features.",
+   "context": [
+    "the Founder asked about personal apps and omniapps",
+    "feature selection in docs/mobile/PERSONAL-APP.md",
+    "source report docs/research/reports/Personal apps - software for one.md"
+   ],
+   "tags": [],
+   "file": "files/software-for-one.html",
+   "url": "https://claude.ai/artifact/KbY4FkcVqsrNG5qYw2Mh7j"
   },
   {
    "id": "vault-futures",
@@ -44,6 +202,87 @@ window.VRG_ARCHIVE = {
    ],
    "file": "files/vault-futures.html",
    "url": "https://claude.ai/artifact/SYvumponvSi33YR4FNiu2H"
+  },
+  {
+   "id": "vrg-fuzet",
+   "title": "VRG Füzet",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "VRG Füzet (VRG Mobile WP M70), the malleable notebook forked from the Sketcher's engine: a working browser demo running the bundled kits and the notebook-core rules on example entries, with the fork, the kits, how kits are requested and the build status.",
+   "purpose": "Show the Founder the Füzet working before the phone check, and explain how it is built and grows.",
+   "context": [
+    "VRG Füzet built in this session (M70), Actions run 173 green",
+    "follows the Personal App v1 and Software for One pages",
+    "example entries only, kept in the viewer's browser"
+   ],
+   "tags": [],
+   "file": "files/vrg-fuzet.html",
+   "url": "https://claude.ai/artifact/HQYGhRbBqLckqek6Hv653D"
+  },
+  {
+   "id": "vrg-kisokos",
+   "title": "VRG Kisokos",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "board",
+   "summary": "Scope map of the offline work handbook: 8 axes and 4 rings around residential electrical work, 8 volumes, and sample pages for fixing technique, communication lines and the trades on site.",
+   "purpose": "To map out what the Kisokos knowledge base covers and which formats its cards use.",
+   "context": [
+    "New idea from the Founder: a Kisokos encyclopaedia for offline use",
+    "Fills the empty Atlas slot of the TUD group in the Kapu topology"
+   ],
+   "tags": [
+    "kisokos",
+    "knowledge-base",
+    "rogzitestechnika",
+    "protocols",
+    "trades",
+    "map"
+   ],
+   "file": "files/vrg-kisokos.html",
+   "url": "https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3"
+  },
+  {
+   "id": "vrg-kisokos-3d",
+   "title": "VRG Kisokos 3D",
+   "created": "2026-11-21",
+   "updated": "2026-11-22",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "The Stack's K layer in 3D: the Villanyszerelés core as a sphere, 8 axes with term nodes by ring, and every Kisokos card (Rögzítéstechnika, Kommunikációs vonalak, Világítótestek) and outside knowledge base as data cubes (1 cube = 1 KB); line and lamp cards show their generated drawing.",
+   "purpose": "To see how the Kisokos knowledge sits around the core and grows; a standalone snapshot of Stack/kisokos.html.",
+   "context": [
+    "Fork of the 2D Kisokos map (vrg-kisokos), which stays as it is",
+    "Built together with the first Rögzítéstechnika volume (53 cards) and the Stack layer K",
+    "Rebuild: node Stack/stack.js kisokos --standalone <file>",
+    "2026-11-22: the Kommunikációs vonalak volume added (27 lines, one shared SVG one-pager each)",
+    "2026-11-22: the Világítótestek volume started (families 1, 2, 6: 25 lamp types, each with a generic light-distribution drawing)",
+    "2026-11-22: Világítótestek families 3, 4, 7 added (49 lamp types in all)",
+    "2026-11-22: Világítótestek family 8 (emergency lighting, 8 types) and the first Előírások cards (7, emergency lighting rules)",
+    "2026-11-22: Világítótestek families 5, 9, 10 added: all ten families drafted, 79 lamp types",
+    "2026-11-22: Előírások grows to 23 cards (MSZ HD 60364 and its special locations, the product and lighting standards); every lamp type links its rules",
+    "2026-11-22: Készlet products linked to their Kisokos cards (57 links, 54 products); a card lists its stocked products and reaches to the Készlet form",
+    "2026-11-22: the Tankönyv volume started: curriculum for three levels, level 1 written (10 lessons)"
+   ],
+   "tags": [
+    "kisokos",
+    "stack",
+    "3d",
+    "holo",
+    "webgl",
+    "rogzitestechnika"
+   ],
+   "file": "files/vrg-kisokos-3d.html",
+   "url": "https://claude.ai/artifact/8M4RwBmJkLAaUvQwjmtgGL"
   },
   {
    "id": "vrg-latoter",

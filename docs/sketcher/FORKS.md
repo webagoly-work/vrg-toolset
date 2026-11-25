@@ -69,3 +69,4 @@ tells the Founder when a fork can be archived.
 - **2026-11-21 02:10 — all ten forks merged** (main fdb8b2d + the archive refresh): F1 M48, F2 M47, F3 M46 (+ D-90), F4 M49,
   F5 M50, F6 M51, F7 M52, F8 M53, F9 M54, F10 `docs/brief/`. Every session is archivable. Next: the release, then the
   two-phone test (`TEST-2PHONES.md`: A 83, B 77, közös 7; the shared checklist page in the Archive).
+- **2026-11-22 — every question answered, every fork session archived.** The Founder's answers: F2 (D-77…79), F3 (D-56/57/59, D-90), F5 (D-80…82), F6 (D-92/94/98), F7 (D-101: no video in the in-app camera), F8 (D-113, D-115, D-116), F9 (D-124), F10 (`docs/brief/README.md`: B stays). Release 0.9.660 (`mobile-v660`) carries all ten forks; next is the two-phone test.

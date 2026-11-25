@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kisokos 3D</title>
+<!-- The K layer's own page (Stack/LAYERS.md, K · Kisokos): a digital shadow of Kisokos/ in the Holo look.
+     The Villanyszerelés core is a sphere; 8 axes run through it, each with 4 term nodes per pole by ring (distance from
+     daily work). Knowledge is cubes: 1 cube = 1 KB of source. Core cards grow inside the sphere from the entry point of
+     the pole they lean to; knowledge with its own identity grows around its term node outside, and the share of it
+     that overlaps the core (place.overlap) grows inside, so a base like Modulshop straddles the sphere wall.
+     Data: out/kisokos-data.js (stack.js kisokos or stack.js build). Plain WebGL2, works from file://. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<style>
+  :root { --bg: var(--mv-bg, #0a141c); --panel: var(--mv-panel-solid, #121c24); --line: var(--mv-line, rgba(232,240,246,.15)); --text: var(--mv-text, #e8f0f6);
+    --dim: #c6ced4; --faint: #95a0a8; --acc: var(--mv-accent, #93d3e6); --warm: var(--mv-warm, #e8a873);
+    --mono: var(--mv-mono, Consolas, ui-monospace, monospace); --sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--mv-voice, Bahnschrift, sans-serif); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 var(--sans); overflow: hidden; display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  h1 { font: 600 16px var(--voice); font-stretch: 75%; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+  #stat { font: 12px var(--mono); color: var(--dim); }
+  .sp { flex: 1; }
+  button { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; border-radius: 0; }
+  button.on, button:hover { color: var(--text); border-color: var(--acc); }
+  button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 350px; min-height: 0; }
+  @media (max-width: 820px) { body { overflow: auto; } main { grid-template-columns: minmax(0, 1fr); grid-template-rows: 62vh auto; } aside { border-left: 0; border-top: 1px solid var(--line); } }
+  #stage { position: relative; min-height: 0; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+  canvas.drag { cursor: grabbing; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .lb { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 11px var(--mono); color: var(--faint); text-shadow: 0 0 4px #000, 0 0 8px #000; }
+  .lb.pole { font: 600 12.5px var(--voice); font-stretch: 80%; letter-spacing: .08em; text-transform: uppercase; color: #b9c4cb; }
+  .lb.pole.on { color: var(--acc); font-size: 14px; }
+  .lb.term { color: #dfeaf1; font: 12px var(--sans); }
+  .lb.term small { font: 10px var(--mono); color: var(--faint); margin-left: 4px; }
+  .lb.core { font: 600 15px var(--voice); font-stretch: 80%; letter-spacing: .05em; color: var(--warm); text-align: center; }
+  .lb.core small { display: block; font: 10.5px var(--mono); color: var(--faint); letter-spacing: 0; }
+  .lb.src { font: 600 12px var(--sans); color: #e4ecf1; }
+  .lb.src small { display: block; font: 10px var(--mono); color: var(--faint); font-weight: 400; }
+  #tip { position: absolute; pointer-events: none; background: rgba(14,24,32,.96); color: #eef4f8; border: 1px solid var(--line); padding: 5px 8px; max-width: 320px; font-size: 12px; display: none; z-index: 3; }
+  #tip .m { font: 11px var(--mono); color: var(--faint); display: block; }
+  #lg { position: absolute; left: 12px; bottom: 12px; background: rgba(10,20,28,.93); border: 1px solid var(--line); padding: 6px 10px; font-size: 12px; max-width: 300px; z-index: 2; }
+  #lg summary { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); cursor: pointer; }
+  #lg[open] summary { margin-bottom: 6px; }
+  #lg .k { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 7px; align-items: center; padding: 1px 0; color: #dfe7ec; }
+  .sw { width: 10px; height: 10px; display: inline-block; border: 1px solid rgba(255,255,255,.35); }
+  aside { border-left: 1px solid var(--line); padding: 10px 14px 18px; overflow: auto; min-height: 0; }
+  h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin: 14px 0 5px; font-weight: 400; }
+  aside > h3:first-child { margin-top: 2px; }
+  .ax { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 6px; width: 100%; text-align: left; padding: 3px 6px; border: 1px solid transparent; background: none; font: 12.5px var(--sans); color: var(--dim); }
+  .ax b { font: 11px var(--mono); color: var(--faint); font-weight: 400; padding-top: 1px; }
+  .ax span small { display: block; font: 11px var(--mono); color: var(--faint); }
+  .ax.on { border-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .grp { font: 11px var(--mono); color: var(--faint); margin: 8px 0 2px; }
+  .it { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; gap: 7px; align-items: center; width: 100%; text-align: left; padding: 2px 6px; background: none; border: 0; border-left: 2px solid transparent; font: 12.5px var(--sans); color: var(--dim); }
+  .it:hover { color: var(--text); } .it.on { border-left-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .it .n { font: 11px var(--mono); color: var(--faint); }
+  .it .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #card { display: grid; gap: 8px; }
+  #card .title { font: 600 20px var(--voice); font-stretch: 80%; letter-spacing: .03em; }
+  #card .kick { font: 11px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+  #card .row { display: grid; gap: 2px; }
+  #card .row > span:first-child { font: 10.5px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .1em; }
+  #card ul { margin: 0; padding-left: 16px; }
+  #card .ref { background: none; border: 0; padding: 0; font: inherit; color: var(--acc); cursor: pointer; text-decoration: underline dotted; }
+  #card .terms { display: flex; flex-wrap: wrap; gap: 4px; }
+  #card .terms span { font: 11.5px var(--mono); background: rgba(255,255,255,.06); padding: 1px 6px; }
+  .pill { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 6px; }
+  .pill.yes { color: var(--mv-ok, #8bcca1); border-color: currentColor; } .pill.no { color: var(--mv-crit, #e4877d); border-color: currentColor; } .pill.mid { color: var(--mv-warn, #e3be7b); border-color: currentColor; }
+  .hint { color: var(--faint); font-size: 12px; }
+  .nb { font: 12px var(--sans); color: var(--dim); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nb b { font: 11px var(--mono); color: var(--faint); font-weight: 400; }
+  .svgbox svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
+  #empty { position: absolute; inset: 0; display: none; place-items: center; text-align: center; color: var(--dim); font: 13px var(--mono); padding: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>VRG Kisokos <i>K réteg · a tudás 3D árnyéka</i></h1>
+  <span id="stat"></span>
+  <span class="sp"></span>
+  <button id="bGrow" title="A kockák újra felépülnek a forrás sorrendjében">Növekedés</button>
+  <button id="bSpin" class="on" title="Lassú forgás">Forgás</button>
+  <button id="bLab" class="on" title="Címkék">Címkék</button>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="labels"></div>
+    <div id="tip"></div>
+    <div id="empty">Nincs adat. Futtasd a Stack mappában:<br><br>node stack.js kisokos</div>
+    <details id="lg" open>
+      <summary>Jelmagyarázat</summary>
+      <div class="k"><span class="sw" style="background:rgba(232,168,115,.35);border-radius:50%"></span><span>A mag: a lakossági villanyszerelés tudása</span></div>
+      <div class="k"><span class="sw" style="background:none;border-color:#93d3e6"></span><span>1 kocka = 1 KB forrás; minden kártya és tudásbázis a méretével nő</span></div>
+      <div class="k"><span class="sw" style="background:#93d3e6;border-radius:50%;width:6px;height:6px;margin-left:2px"></span><span>Fogalom-csomópont a tengelyen; minél messzebb, annál kevesebb köze a maghoz</span></div>
+      <div id="lgVol"></div>
+      <div class="hint" style="margin-top:4px">Húzás: forgatás · görgő: nagyítás · dupla katt: alaphelyzet</div>
+    </details>
+  </div>
+  <aside>
+    <h3>Tengelyek</h3>
+    <div id="axes"></div>
+    <h3>Kiválasztva</h3>
+    <div id="card"><div class="hint">Kattints egy tengelyre, egy kockára vagy a listában egy elemre.</div></div>
+    <h3>Tudás</h3>
+    <div id="items"></div>
+  </aside>
+</main>
+<script src="touch.js"></script>
+<script src="out/kisokos-data.js"></script>
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const D = window.KISOKOS;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================= vectors */
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const len = a => Math.hypot(a[0], a[1], a[2]), norm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+const hashStr = str => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+/* ================= the space: core, axes, rings */
+const R = 1, S = 0.068;                         // core radius, cube edge (= grid step)
+const RING = [1.5, 2.05, 2.65, 3.3];            // term node distance per ring
+const FAR = 3.3 + 0.38;                          // axis end (label just past ring 4)
+const AXN = D ? D.axes.length : 8;
+// 8 axis directions spread evenly with their antipodes (deterministic repulsion), axis 1 pinned straight up
+function axisDirs(n) {
+  const r = rng(7), d = [[0, 1, 0]];
+  for (let i = 1; i < n; i++) d.push(norm([r() - .5, (r() - .5) * .6, r() - .5]));
+  for (let it = 0; it < 900; it++) {
+    const f = d.map(() => [0, 0, 0]);
+    for (let i = 1; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) for (const s of [1, -1]) {
+      const v = sub(d[i], mul(d[j], s)), l = len(v) + 1e-6; f[i] = add(f[i], mul(v, 1 / (l * l * l)));
+    }
+    for (let i = 1; i < n; i++) { const t = sub(f[i], mul(d[i], dot(f[i], d[i]))); d[i] = norm(add(d[i], mul(t, 0.01))); }
+  }
+  return d;
+}
+const DIR = axisDirs(AXN);
+const poleDir = (axis, pole) => pole === 'A' ? DIR[axis - 1] : mul(DIR[axis - 1], -1);
+const termPos = t => mul(poleDir(t.axis, t.pole), RING[t.ring - 1]);
+
+/* ================= cube forms: accretion on one shared grid */
+const occ = new Map();             // "i,j,k" -> cube index
+const cubes = [];                  // { p, item, order, inside }
+const key = (i, j, k) => i + ',' + j + ',' + k;
+const toW = g => [g[0] * S, g[1] * S, g[2] * S];
+const toG = p => [Math.round(p[0] / S), Math.round(p[1] / S), Math.round(p[2] / S)];
+const N6 = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+// grow n cubes from seed; cost(p) is the gravity (lower = preferred), ok(p) the allowed region
+function grow(seed, n, cost, ok, rnd) {
+  const out = [], fr = [], inF = new Set();
+  let g = toG(seed);
+  if (occ.has(key(...g)) || !ok(toW(g))) {   // seed taken: start from the nearest free allowed cell
+    let best = null, bd = 1e9;
+    for (let a = -6; a <= 6; a++) for (let b = -6; b <= 6; b++) for (let c = -6; c <= 6; c++) {
+      const q = [g[0] + a, g[1] + b, g[2] + c], w = toW(q);
+      if (!occ.has(key(...q)) && ok(w)) { const dd = a * a + b * b + c * c; if (dd < bd) { bd = dd; best = q; } }
+    }
+    if (!best) return out; g = best;
+  }
+  const push = q => { const k = key(...q); if (!inF.has(k) && !occ.has(k) && ok(toW(q))) { inF.add(k); fr.push(q); } };
+  const take = q => { occ.set(key(...q), cubes.length); out.push(q); for (const d of N6) push([q[0] + d[0], q[1] + d[1], q[2] + d[2]]); };
+  take(g);
+  // a cube can also join the side of a neighbouring form (the grid is shared), so forms touch but never overlap
+  while (out.length < n && fr.length) {
+    let bi = -1, bc = 1e9;
+    for (let s = 0; s < 18 && fr.length; s++) {
+      const i = (rnd() * fr.length) | 0, q = fr[i];
+      if (occ.has(key(...q))) { fr[i] = fr[fr.length - 1]; fr.pop(); s--; continue; }
+      const c = cost(toW(q)) + rnd() * S * 0.9;
+      if (c < bc) { bc = c; bi = i; }
+    }
+    if (bi < 0) break;
+    const q = fr[bi]; fr[bi] = fr[fr.length - 1]; fr.pop();
+    take(q);
+  }
+  return out;
+}
+const segDist = (p, a, b) => { const ab = sub(b, a), t = Math.max(0, Math.min(1, dot(sub(p, a), ab) / dot(ab, ab))); return len(sub(p, add(a, mul(ab, t)))); };
+
+let items = [], forms = [], terms = [];
+function layout() {
+  if (!D) return;
+  terms = D.terms.map(t => ({ ...t, p: termPos(t) }));
+  items = D.items.map((it, i) => ({ ...it, i, col: hex(it.color || (D.volumes.find(v => v.id === it.vol) || {}).color || '#93d3e6'), cubesIdx: [] }));
+  const sortKey = it => (it.added || '9999') + (it.type === 'card' ? '0' : '1') + it.id;
+  // groups: one form per core pole (core cards) and one per term node (cards or knowledge bases with their own identity)
+  const groups = new Map();
+  for (const it of items) {
+    const g = it.place.core ? 'core:' + it.place.core : 'term:' + it.place.term + (it.type === 'source' ? ':' + it.id : '');
+    (groups.get(g) || groups.set(g, []).get(g)).push(it);
+  }
+  const inside = p => len(p) <= R - S * 0.55, outside = p => len(p) >= R + S * 0.55;
+  // core forms first: they fill the sphere from the entry point inward
+  const order = [...groups.keys()].sort((a, b) => (a.startsWith('core') ? 0 : 1) - (b.startsWith('core') ? 0 : 1) || a.localeCompare(b));
+  for (const g of order) {
+    const list = groups.get(g).sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1);
+    const rnd = rng(hashStr(g));
+    const total = list.reduce((s, it) => s + it.cubes, 0);
+    let cellsIn = [], cellsOut = [], E, T = null;
+    if (g.startsWith('core')) {
+      const pl = list[0].place.core, dir = poleDir(+pl.slice(0, -1), pl.slice(-1));
+      E = mul(dir, R - S);
+      cellsIn = grow(E, total, p => len(sub(p, E)) + 0.25 * Math.max(0, len(p) - (R - S * 2)), inside, rnd);
+    } else {
+      const t = terms.find(x => x.id === list[0].place.term), dir = poleDir(t.axis, t.pole);
+      T = t.p; E = mul(dir, R);
+      const ov = list.reduce((s, it) => s + (it.place.overlap || 0) * it.cubes, 0) / total;
+      const nIn = Math.round(ov * total), nOut = total - nIn, hang = list[0].place.hang || 0;
+      if (nIn) cellsIn = grow(mul(dir, R - S), nIn, p => len(sub(p, E)), inside, rnd);
+      if (nOut) {
+        if (ov > 0) {   // a limb from the sphere wall out along the axis toward its node
+          const A0 = mul(dir, R + S);
+          cellsOut = grow(A0, nOut, p => 1.15 * segDist(p, A0, T) + 0.28 * len(sub(p, T)), outside, rnd);
+        } else {        // its own thing: a blob around the node (or hanging past it), never touching the core
+          const C = add(T, mul(dir, hang * 0.55));
+          cellsOut = grow(C, nOut, p => len(sub(p, C)), p => len(p) >= R + S * 3, rnd);
+        }
+      }
+    }
+    // hand the cells to the items in order: the cards most tied to the core take the inside cells first
+    const byIn = list.slice().sort((a, b) => ((b.place.overlap || (b.place.core ? 1 : 0)) - (a.place.overlap || (a.place.core ? 1 : 0))) || (sortKey(a) < sortKey(b) ? -1 : 1));
+    const queue = [...cellsIn.map(c => [c, true]), ...cellsOut.map(c => [c, false])];
+    let qi = 0;
+    for (const it of byIn) for (let k = 0; k < it.cubes && qi < queue.length; k++) {
+      const [c, ins] = queue[qi++], idx = cubes.length;
+      occ.set(key(...c), idx);
+      cubes.push({ p: toW(c), item: it.i, inside: ins, order: 0 });
+      it.cubesIdx.push(idx);
+    }
+    const all = queue.slice(0, qi).map(q => toW(q[0]));
+    const cen = all.length ? mul(all.reduce((s, p) => add(s, p), [0, 0, 0]), 1 / all.length) : E;
+    forms.push({ g, items: list.map(x => x.i), cen, T, E, ext: all.length ? Math.max(...all.map(p => len(sub(p, cen)))) : 0 });
+    for (const it of list) { const ps = it.cubesIdx.map(i => cubes[i].p); it.cen = ps.length ? mul(ps.reduce((s, p) => add(s, p), [0, 0, 0]), 1 / ps.length) : cen; it.T = T; }
+  }
+  // growth order for the animation: by date, then card before base, then the form's own order
+  const seq = items.slice().sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1);
+  let o = 0; for (const it of seq) for (const ci of it.cubesIdx) cubes[ci].order = o++;
+}
+
+/* ================= GL */
+let gl, progC, progL, progP, progS, buf = {}, cubeCount = 0, sphereN = 0;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); gl.attachShader(p, s); }
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+function attr(p, name, b, n, stride = 0, off = 0, div = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, n, gl.FLOAT, false, stride, off); gl.vertexAttribDivisor(l, div); }
+function unattr(p, names) { for (const n of names) { const l = gl.getAttribLocation(p, n); if (l >= 0) { gl.disableVertexAttribArray(l); gl.vertexAttribDivisor(l, 0); } } }
+const U = (p, n) => gl.getUniformLocation(p, n);
+
+const VS_CUBE = `#version 300 es
+in vec3 aV; in vec3 aPos; in vec3 aCol; in float aOrd; in float aSt;
+uniform mat4 uM; uniform float uGrow; uniform float uS;
+out vec3 vL; out vec3 vC; out float vA; out float vSt;
+void main() {
+  float t = clamp((uGrow - aOrd) / 6.0, 0.0, 1.0);
+  float e = 1.0 - pow(1.0 - t, 3.0);
+  vL = aV; vC = aCol; vA = e; vSt = aSt;
+  gl_Position = uM * vec4(aPos + aV * uS * 0.8 * e, 1.0);
+}`;
+const FS_CUBE = `#version 300 es
+precision highp float;
+in vec3 vL; in vec3 vC; in float vA; in float vSt; out vec4 o;
+void main() {
+  vec3 a = abs(vL);
+  float mx = max(a.x, max(a.y, a.z)), mn = min(a.x, min(a.y, a.z));
+  float mid = a.x + a.y + a.z - mx - mn;             // second largest: near 0.5 only on an edge
+  float edge = smoothstep(0.41, 0.49, mid);
+  float b = vSt > 1.5 ? 1.9 : vSt > 0.5 ? 0.62 : 0.16; // selected · normal · dimmed (additive: dense forms must not burn white)
+  vec3 c = vC * (0.035 + 0.75 * edge) * b;
+  o = vec4(c * vA, 1.0);
+}`;
+const VS_LINE = `#version 300 es
+in vec3 aPos; in vec4 aCol; in float aT;
+uniform mat4 uM; out vec4 vC; out float vT; out float vD;
+void main() { vC = aCol; vT = aT; vD = length(aPos); gl_Position = uM * vec4(aPos, 1.0); }`;
+const FS_LINE = `#version 300 es
+precision highp float;
+in vec4 vC; in float vT; in float vD; uniform float uTime; uniform float uFar; out vec4 o;
+void main() {
+  float a = vC.a;
+  if (vT > 0.5) {   // the selected axis: pulses flow outward, and past the ends it fades toward infinity
+    float flow = 0.72 + 0.28 * sin(vD * 9.0 - uTime * 3.2);
+    float fade = vD > uFar ? 0.25 + 0.75 * exp(-(vD - uFar) / 14.0) : 1.0;
+    a *= flow * fade;
+  }
+  o = vec4(vC.rgb * a, 1.0);
+}`;
+const VS_PT = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aSz; uniform mat4 uM; uniform float uPx; out vec3 vC;
+void main() { vC = aCol; gl_Position = uM * vec4(aPos, 1.0); gl_PointSize = uPx * aSz / max(0.6, gl_Position.w * 0.35); }`;
+const FS_PT = `#version 300 es
+precision highp float;
+in vec3 vC; out vec4 o;
+void main() { vec2 q = gl_PointCoord * 2.0 - 1.0; float r = dot(q, q); if (r > 1.0) discard;
+  float core = smoothstep(0.35, 0.0, r), halo = exp(-r * 3.2) * 0.45; o = vec4(vC * (core + halo), 1.0); }`;
+const VS_SPH = `#version 300 es
+in vec3 aPos; uniform mat4 uM; uniform vec3 uEye; out vec3 vN; out vec3 vV; out vec3 vP;
+void main() { vN = aPos; vP = aPos; vV = normalize(uEye - aPos); gl_Position = uM * vec4(aPos, 1.0); }`;
+const FS_SPH = `#version 300 es
+precision highp float;
+in vec3 vN; in vec3 vV; in vec3 vP; uniform vec3 uC; uniform float uTime; uniform float uFill; out vec4 o;
+void main() {
+  vec3 n = normalize(vN);
+  float f = pow(1.0 - abs(dot(n, normalize(vV))), 2.6);
+  float lat = asin(clamp(n.y, -1.0, 1.0)), lon = atan(n.z, n.x);
+  float g = max(smoothstep(0.035, 0.0, abs(fract(lat * 3.8197) - 0.5) - 0.465), smoothstep(0.035, 0.0, abs(fract(lon * 1.9099) - 0.5) - 0.465));
+  float scan = 0.5 + 0.5 * sin(vP.y * 14.0 - uTime * 1.4);
+  float a = 0.018 + f * 0.42 + g * (0.05 + 0.04 * scan) * (0.4 + f);
+  o = vec4(uC * a, 1.0);
+}`;
+
+function initGL() {
+  const cv = $('cv');
+  gl = cv.getContext('webgl2', { antialias: true, premultipliedAlpha: false });
+  if (!gl) { $('empty').style.display = 'grid'; $('empty').textContent = 'Ehhez a nézethez WebGL2 kell.'; return false; }
+  progC = prog(VS_CUBE, FS_CUBE); progL = prog(VS_LINE, FS_LINE); progP = prog(VS_PT, FS_PT); progS = prog(VS_SPH, FS_SPH);
+  // unit cube, 36 vertices, local coords in [-0.5, 0.5]
+  const F = [[[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[-1, 0, 0], [0, 0, 1], [0, 1, 0]], [[0, 1, 0], [0, 0, 1], [1, 0, 0]], [[0, -1, 0], [1, 0, 0], [0, 0, 1]], [[0, 0, 1], [1, 0, 0], [0, 1, 0]], [[0, 0, -1], [0, 1, 0], [1, 0, 0]]];
+  const cv36 = [];
+  for (const [nn, u, v] of F) { const c = mul(nn, .5), P = (a, b) => add(c, add(mul(u, a * .5), mul(v, b * .5))); for (const q of [P(-1, -1), P(1, -1), P(1, 1), P(-1, -1), P(1, 1), P(-1, 1)]) cv36.push(...q); }
+  buf.cube = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf.cube); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cv36), gl.STATIC_DRAW);
+  // sphere (lat-long triangles)
+  const sv = [], LA = 36, LO = 64;
+  const sp = (i, j) => { const th = Math.PI * i / LA, ph = 2 * Math.PI * j / LO; return [Math.sin(th) * Math.cos(ph) * R, Math.cos(th) * R, Math.sin(th) * Math.sin(ph) * R]; };
+  for (let i = 0; i < LA; i++) for (let j = 0; j < LO; j++) sv.push(...sp(i, j), ...sp(i + 1, j), ...sp(i + 1, j + 1), ...sp(i, j), ...sp(i + 1, j + 1), ...sp(i, j + 1));
+  sphereN = sv.length / 3;
+  buf.sph = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf.sph); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sv), gl.STATIC_DRAW);
+  // cube instances
+  cubeCount = cubes.length;
+  const pos = new Float32Array(cubeCount * 3), col = new Float32Array(cubeCount * 3), ord = new Float32Array(cubeCount);
+  cubes.forEach((c, i) => { pos.set(c.p, i * 3); const k = c.inside ? 1.12 : 1; col.set(mul(items[c.item].col, k), i * 3); ord[i] = c.order; });
+  for (const [n, a] of [['ipos', pos], ['icol', col], ['iord', ord]]) { buf[n] = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf[n]); gl.bufferData(gl.ARRAY_BUFFER, a, gl.STATIC_DRAW); }
+  buf.ist = gl.createBuffer(); stBuf = new Float32Array(cubeCount).fill(1); gl.bindBuffer(gl.ARRAY_BUFFER, buf.ist); gl.bufferData(gl.ARRAY_BUFFER, stBuf, gl.DYNAMIC_DRAW);
+  buf.lines = gl.createBuffer(); buf.pts = gl.createBuffer();
+  return true;
+}
+let stBuf;
+
+/* ================= camera */
+let cam = { yaw: 0.55, pitch: 0.28, dist: 8.2 }, spin = !RM, labelsOn = true;
+const CAM0 = () => ({ yaw: 0.55, pitch: 0.28, dist: innerWidth < 820 ? 12 : 8.2 });
+function eyeOf() { const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch); return [cam.dist * cp * sy, cam.dist * sp, cam.dist * cp * cy]; }
+function mat() {
+  const cv = $('cv'), asp = cv.width / cv.height, f = 1 / Math.tan(0.42), n = 0.05, fa = 400;
+  const P = [f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+  const eye = eyeOf(), zA = norm(eye), xA = norm(cross([0, 1, 0], zA)), yA = cross(zA, xA);
+  const V = [xA[0], yA[0], zA[0], 0, xA[1], yA[1], zA[1], 0, xA[2], yA[2], zA[2], 0, -dot(xA, eye), -dot(yA, eye), -dot(zA, eye), 1];
+  const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c * 4 + r] += P[k * 4 + r] * V[c * 4 + k];
+  return o;
+}
+function project(M, p) { const x = M[0] * p[0] + M[4] * p[1] + M[8] * p[2] + M[12], y = M[1] * p[0] + M[5] * p[1] + M[9] * p[2] + M[13], w = M[3] * p[0] + M[7] * p[1] + M[11] * p[2] + M[15]; return [x / w, y / w, w]; }
+function toScreen(M, p) { const cv = $('cv'), q = project(M, p); return [(q[0] * .5 + .5) * cv.clientWidth, (1 - (q[1] * .5 + .5)) * cv.clientHeight, q[2]]; }
+
+/* ================= state */
+let selAxis = 0, selItem = -1, selTerm = null, hoverItem = -1, volFilter = null, growT0 = 0, curM = null;
+const itemOnAxis = (it, n) => it.place.core ? +it.place.core.slice(0, -1) === n : +String(it.place.term).slice(0, -2) === n;
+
+function buildLines(ts) {
+  const L = [];   // x y z r g b a t
+  const seg = (a, b, c, al, t = 0) => L.push(...a, ...c, al, t, ...b, ...c, al, t);
+  const ice = [0.58, 0.83, 0.9], warm = hex('#e8a873');
+  for (let a = 1; a <= AXN; a++) {
+    const d = DIR[a - 1], on = a === selAxis;
+    if (on) {
+      const far = 220;
+      // three strands a hair apart read as one bright line; it runs from end to end and on out of both ends, into infinity
+      const o1 = mul(norm(cross(d, Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), 0.007), o2 = mul(norm(cross(d, o1)), 0.007);
+      for (const o of [[0, 0, 0], o1, o2]) {
+        seg(add(mul(d, -far), o), add(mul(d, -R), o), ice, 1.0, 1); seg(add(mul(d, R), o), add(mul(d, far), o), ice, 1.0, 1);
+      }
+      seg(mul(d, -R), mul(d, R), ice, 0.4, 0);
+    } else {
+      seg(mul(d, -FAR), mul(d, -R), ice, 0.16); seg(mul(d, R), mul(d, FAR), ice, 0.16);
+      seg(mul(d, -R), mul(d, R), ice, 0.035);
+    }
+  }
+  // tethers: a form with its own identity is tied to its term node
+  for (const f of forms) if (f.T) {
+    const its = f.items.map(i => items[i]), on = its.some(it => it.i === selItem) || its.some(it => itemOnAxis(it, selAxis));
+    seg(f.cen, f.T, its[0].col, on ? 0.45 : 0.16);
+  }
+  // the selected item: a line from each of its cubes' centre to where it gravitates
+  if (selItem >= 0) { const it = items[selItem]; if (it.T) seg(it.cen, it.T, [1, 1, 1], 0.6); }
+  // Készlet links: a selected card reaches to the Készlet form; the selected Készlet reaches to every card it stocks
+  const kz = items.find(x => x.id === 'src.keszlet');
+  if (kz && selItem >= 0) {
+    const it = items[selItem], warm = hex('#e8a873');
+    if (it.stock && it.stock.length) seg(it.cen, kz.cen, warm, 0.75);
+    if (it === kz) for (const [id] of it.stockCards || []) { const x = items.find(y => y.id === id); if (x) seg(kz.cen, x.cen, warm, 0.4); }
+  }
+  const pts = [];  // x y z r g b size
+  for (const t of terms) {
+    const on = t.axis === selAxis, isSel = selTerm && selTerm.id === t.id;
+    const vc = hex((D.volumes.find(v => v.id === t.vols[0]) || {}).color || '#93d3e6');
+    const c = isSel ? [1, 1, 1] : on ? add(mul(ice, 0.75), mul(vc, 0.35)) : mul(add(mul(ice, 0.5), mul(vc, 0.3)), 0.6);
+    pts.push(...t.p, ...c, isSel ? 2.3 : on ? 1.55 : 0.95);
+  }
+  for (let a = 1; a <= AXN; a++) for (const s of [1, -1]) {   // entry points on the sphere wall
+    const on = a === selAxis; pts.push(...mul(DIR[a - 1], R * s), ...mul(warm, on ? 0.9 : 0.35), on ? 1.4 : 0.8);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.lines); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(L), gl.STREAM_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pts); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pts), gl.STREAM_DRAW);
+  return [L.length / 8, pts.length / 7];
+}
+function updateStates() {
+  for (const it of items) {
+    let s = 1;
+    if (volFilter && it.vol !== volFilter) s = 0;
+    else if (selItem >= 0) s = it.i === selItem ? 2 : 0.6;
+    else if (selAxis && !itemOnAxis(it, selAxis)) s = 0.6;
+    if (hoverItem === it.i && s < 2) s = Math.max(s, 1.6);
+    for (const ci of it.cubesIdx) stBuf[ci] = s >= 1.6 ? 2 : s >= 1 ? 1 : 0;
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.ist); gl.bufferSubData(gl.ARRAY_BUFFER, 0, stBuf);
+}
+
+/* ================= labels */
+const labelEls = [];
+function labelPool(n) { const box = $('labels'); while (labelEls.length < n) { const d = document.createElement('div'); box.appendChild(d); labelEls.push(d); } }
+function drawLabels(M) {
+  const L = [];
+  L.push({ p: [0, 0, 0], cls: 'lb core', html: `${esc(D.core.title)}<small>${esc(D.core.sub)}</small>` });
+  if (labelsOn) {
+    for (let a = 1; a <= AXN; a++) for (const pole of ['A', 'B']) {
+      const ax = D.axes[a - 1], on = a === selAxis;
+      L.push({ p: mul(poleDir(a, pole), FAR + 0.22), cls: 'lb pole' + (on ? ' on' : ''), html: esc(ax[pole]) });
+    }
+    for (const t of terms) if (t.axis === selAxis || (selTerm && selTerm.id === t.id)) L.push({ p: t.p, cls: 'lb term', html: `${esc(t.title)}<small>${t.ring}</small>`, off: 14 });
+    for (const it of items) if (it.type === 'source') { const out = it.cubesIdx.map(i => cubes[i].p).filter(p => len(p) > R), tip = out.length ? out.reduce((a, p) => len(p) > len(a) ? p : a) : it.cen;
+      L.push({ p: add(tip, mul(norm(tip), 0.22)), cls: 'lb src', html: `${esc(it.title)}<small>${it.cubes} kocka · ${Math.round((it.place.overlap || 0) * 100)} % a magban</small>` }); }
+  }
+  labelPool(L.length);
+  const cv = $('cv');
+  labelEls.forEach((el, i) => {
+    const l = L[i];
+    if (!l) { el.style.display = 'none'; return; }
+    const s = toScreen(M, l.p);
+    if (s[2] <= 0 || s[0] < -60 || s[1] < -30 || s[0] > cv.clientWidth + 60 || s[1] > cv.clientHeight + 30) { el.style.display = 'none'; return; }
+    el.style.display = ''; el.className = l.cls; if (el._h !== l.html) { el.innerHTML = l.html; el._h = l.html; }
+    el.style.left = (s[0] + (l.off || 0)) + 'px'; el.style.top = (s[1] + (l.dy || 0)) + 'px';
+    el.style.transform = l.off ? 'translate(0, -50%)' : 'translate(-50%, -50%)';
+  });
+}
+
+/* ================= frame */
+let last = 0, dragging = false;
+function frame(ts) {
+  const dt = Math.min(100, ts - last); last = ts;
+  if (spin && !dragging) cam.yaw += dt * 0.00005;
+  const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = cv.clientWidth * dpr | 0, H = cv.clientHeight * dpr | 0;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  gl.viewport(0, 0, W, H); gl.clearColor(0.031, 0.063, 0.09, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  const M = mat(); curM = M;
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.disable(gl.DEPTH_TEST);
+  // the core sphere
+  gl.useProgram(progS);
+  gl.uniformMatrix4fv(U(progS, 'uM'), false, M); gl.uniform3fv(U(progS, 'uEye'), eyeOf()); gl.uniform3fv(U(progS, 'uC'), hex('#e8a873'));
+  gl.uniform1f(U(progS, 'uTime'), ts / 1000);
+  attr(progS, 'aPos', buf.sph, 3); gl.drawArrays(gl.TRIANGLES, 0, sphereN); unattr(progS, ['aPos']);
+  // axes, tethers, term nodes
+  const [nl, np] = buildLines(ts);
+  gl.useProgram(progL); gl.uniformMatrix4fv(U(progL, 'uM'), false, M); gl.uniform1f(U(progL, 'uTime'), ts / 1000); gl.uniform1f(U(progL, 'uFar'), FAR);
+  attr(progL, 'aPos', buf.lines, 3, 32, 0); attr(progL, 'aCol', buf.lines, 4, 32, 12); attr(progL, 'aT', buf.lines, 1, 32, 28);
+  gl.drawArrays(gl.LINES, 0, nl); unattr(progL, ['aPos', 'aCol', 'aT']);
+  gl.useProgram(progP); gl.uniformMatrix4fv(U(progP, 'uM'), false, M); gl.uniform1f(U(progP, 'uPx'), 13 * dpr);
+  attr(progP, 'aPos', buf.pts, 3, 28, 0); attr(progP, 'aCol', buf.pts, 3, 28, 12); attr(progP, 'aSz', buf.pts, 1, 28, 24);
+  gl.drawArrays(gl.POINTS, 0, np); unattr(progP, ['aPos', 'aCol', 'aSz']);
+  // the cubes
+  const grown = RM ? 1e9 : (ts - growT0) / 1000 * Math.max(60, cubeCount / 5.5);   // the whole growth takes about 6 s
+  gl.useProgram(progC); gl.uniformMatrix4fv(U(progC, 'uM'), false, M); gl.uniform1f(U(progC, 'uGrow'), grown); gl.uniform1f(U(progC, 'uS'), S);
+  attr(progC, 'aV', buf.cube, 3); attr(progC, 'aPos', buf.ipos, 3, 0, 0, 1); attr(progC, 'aCol', buf.icol, 3, 0, 0, 1); attr(progC, 'aOrd', buf.iord, 1, 0, 0, 1); attr(progC, 'aSt', buf.ist, 1, 0, 0, 1);
+  gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, cubeCount); unattr(progC, ['aV', 'aPos', 'aCol', 'aOrd', 'aSt']);
+  drawLabels(M);
+  requestAnimationFrame(frame);
+}
+
+/* ================= picking */
+function pick(x, y) {
+  if (!curM) return null;
+  let best = null, bd = 14 * 14;
+  for (let i = 0; i < cubes.length; i++) { const s = toScreen(curM, cubes[i].p); if (s[2] <= 0) continue; const d = (s[0] - x) ** 2 + (s[1] - y) ** 2; if (d < bd) { bd = d; best = { item: cubes[i].item }; } }
+  for (const t of terms) { const s = toScreen(curM, t.p); if (s[2] <= 0) continue; const d = (s[0] - x) ** 2 + (s[1] - y) ** 2; if (d < bd * 0.9) { bd = d; best = { term: t }; } }
+  return best;
+}
+
+/* ================= panel */
+const VOL = id => (D.volumes.find(v => v.id === id) || { hu: id, color: '#93d3e6' });
+const cardName = (vol, id) => { const it = items.find(x => x.type === 'card' && x.vol === vol && x.id === `card.${vol}.${id}`); return it ? it.title : id; };
+const refs = (vol, ids) => (ids || []).length ? ids.map(r => `<button class="ref" data-ref="card.${esc(vol)}.${esc(r)}">${esc(cardName(vol, r))}</button>`).join(', ') : '—';
+const xrefs = ids => (ids || []).map(r => { const [v, ...rest] = r.split('.'); return `<button class="ref" data-ref="card.${esc(r)}">${esc(cardName(v, rest.join('.')))}</button>`; }).join(', ');
+const HAMMER = { igen: ['yes', 'ütve fúrható'], nem: ['no', 'ütés nélkül'], 'óvatosan': ['mid', 'óvatosan, ütés nélkül kezdve'] };
+function whereText(it) {
+  if (it.place.core) { const a = D.axes[+it.place.core.slice(0, -1) - 1], pole = it.place.core.slice(-1); return `A magban, a(z) ${a.hu} tengely „${a[pole]}” belépési pontjánál`; }
+  const t = terms.find(x => x.id === it.place.term), a = D.axes[t.axis - 1];
+  return `${t.title} csomópont (${a.hu} · ${a[t.pole]}, ${t.ring}. gyűrű) · ${Math.round((it.place.overlap || 0) * 100)} % a magban`;
+}
+function row(k, v) { return v ? `<div class="row"><span>${esc(k)}</span><div>${v}</div></div>` : ''; }
+function showItem(i) {
+  selItem = i; selTerm = null; const it = items[i], c = it.card || {};
+  const v = VOL(it.vol);
+  let h = `<div class="kick"><span class="sw" style="background:${esc(it.color || v.color)};margin-right:6px"></span>${esc(v.hu)} · ${esc(it.kind)}</div><div class="title">${esc(it.title)}</div>`;
+  if (it.aka && it.aka.length) h += `<div class="hint">más néven: ${esc(it.aka.join(', '))}</div>`;
+  if (it.type === 'source') {
+    h += row('Mi ez', esc(it.src.sub)) + row('Miért itt', esc(it.src.why)) + row('Forrás', esc(it.src.paths.join(' · ')) + ` <span class="hint">(${it.src.files} fájl)</span>`);
+  } else if (it.kind === 'lampa') {
+    const ph = c.photometry || {}, pr = c.protection || {};
+    h += `<div class="svgbox">${it.svg || ''}</div>`;
+    h += row('Mi ez', esc(c.what)) + row('Szerelés', esc(c.mounting)) + row('Fényforrás', esc(c.sources));
+    h += row('Védettség', esc([pr.ip, pr.ik, pr.class].filter(Boolean).join(' · '))) + row('Fény', esc([ph.lm, ph.cct, ph.cri, ph.beam].filter(Boolean).join(' · ')));
+    h += row('Vezérlés', esc(c.control) + (c.lines && c.lines.length ? '<br>' + xrefs(c.lines) : ''));
+    if (c.install && c.install.length) h += row('Beépítés', '<ul>' + c.install.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    if (c.fixing && c.fixing.length) h += row('Rögzítés', xrefs(c.fixing));
+    h += row('Előírás', esc(c.rules) + (c.norms && c.norms.length ? '<br>' + xrefs(c.norms) : '')) + row('Rajzjel', c.symbol ? `<span style="font:11px var(--mono)">${esc(c.symbol)}</span> (Rajztár)` : '') + row('Hova', esc(c.rooms));
+    if (c.related && c.related.length) h += row('Rokon típusok', refs(it.vol, c.related));
+  } else if (it.kind === 'lecke') {
+    const LV = { 1: 'Kezdő', 2: 'Szakmunkás', 3: 'Mester, tervező' };
+    h += row('Szint', `${c.level}. ${esc(LV[c.level] || '')} · ${c.chapter}. lecke`);
+    if (c.prereq && c.prereq.length) h += row('Előtte', refs(it.vol, c.prereq));
+    h += row('Célok', '<ul>' + c.goals.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Magyarázat', c.body.map(p => `<p style="margin:0 0 6px">${esc(p)}</p>`).join(''));
+    if (c.formulas && c.formulas.length) h += row('Képletek', c.formulas.map(f => `<div><code>${esc(f.f)}</code> <span class="hint">${esc(f.mean)}</span></div>`).join(''));
+    h += row('Kidolgozott példa', `<div>${esc(c.example.task)}</div><ol style="margin:4px 0;padding-left:18px">${c.example.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol><div>→ ${esc(c.example.result)}</div>`);
+    h += row('Gyakorló feladatok', c.exercises.map((e, i) => `<details style="margin:3px 0"><summary>${i + 1}. ${esc(e.q)}</summary><div class="hint">${esc(e.a)}</div></details>`).join(''));
+    h += row('Biztonság', '<ul>' + c.safety.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    if (c.links && c.links.length) h += row('Kapcsolódó kártyák', xrefs(c.links));
+  } else if (it.kind === 'eloiras') {
+    h += row('Mire vonatkozik', esc(c.scope));
+    h += row('Lényeg (saját összefoglaló)', '<ul>' + c.points.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Számok (tájékoztató)', '<ul>' + c.values.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    h += row('Hol érvényes', esc(c.applies)) + row('Forrás', esc(c.source.kind + ': ' + c.source.ref + (c.source.from ? ' — ' + c.source.from : '')));
+    const users = items.filter(x => x.card && (x.card.norms || []).includes(it.id.replace(/^card\./, '')));
+    if (users.length) h += row('Erre hivatkozik', users.map(x => `<button class="ref" data-ref="${esc(x.id)}">${esc(x.title)}</button>`).join(', '));
+    if (c.related && c.related.length) h += row('Kapcsolódó előírások', refs(it.vol, c.related));
+  } else if (it.kind === 'vonal') {
+    h += `<div class="svgbox">${it.svg || ''}</div>`;
+    h += row('Hogyan működik', esc(c.how)) + row('Közeg', esc(c.medium)) + row('Jel', esc(c.signal)) + row('Topológia', esc(c.topology)) + row('Táplálás', esc(c.power));
+    h += row('Kábel', esc(c.cable)) + row('Csatlakozó', esc(c.connector)) + row('Szabvány', esc(c.standard)) + row('A lakásban', esc(c.home));
+    if (c.install && c.install.length) h += row('Szerelés', '<ul>' + c.install.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+    if (c.related && c.related.length) h += row('Rokon vonalak', refs(it.vol, c.related));
+  } else if (it.kind === 'anyag') {
+    const hm = HAMMER[c.drill.hammer] || ['', c.drill.hammer];
+    h += row('Felismerés', esc(c.recognise));
+    h += row('Fúrás', `<span class="pill ${hm[0]}">${esc(hm[1])}</span> ${refs(it.vol, c.drill.bits)}<div class="hint">${esc(c.drill.note || '')}</div>`);
+    h += row('Dübel terhelés szerint', `könnyű: ${refs(it.vol, c.anchors.light)}<br>közepes: ${refs(it.vol, c.anchors.medium)}<br>nehéz: ${refs(it.vol, c.anchors.heavy)}<div class="hint">${esc(c.anchors.note || '')}</div>`);
+    h += row('Csavar', refs(it.vol, c.screws));
+  } else {
+    h += row('Hogyan tart', esc(c.holds)) + row('Befogás', esc(c.shank)) + row('Üzemmód', esc(c.mode)) + row('Mi ez', esc(c.what)) + row('Menet', esc(c.thread)) + row('Fej', esc(c.head));
+    if (c.for) h += row('Mibe', refs(it.vol, c.for));
+    if (c.with && c.with.length) h += row('Dübelhez', refs(it.vol, c.with));
+    h += row('Fúrás', esc(c.drill)) + row('Csavar', esc(c.screw)) + row('Méretek', esc(c.sizes)) + row('Használat', esc(c.use));
+  }
+  if (c.traps && c.traps.length) h += row('Buktatók', '<ul>' + c.traps.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>');
+  if (c.terms) h += row('Keresőszavak', ['hu', 'en', 'de'].map(l => `<div class="terms"><span style="background:none;color:var(--faint)">${l.toUpperCase()}</span>${c.terms[l].map(t => `<span>${esc(t)}</span>`).join('')}</div>`).join(''));
+  if (c.shop) h += row('Hol kapható', esc(c.shop));
+  const RELHU = { termek: 'termék', alkatresz: 'alkatrész', fenyforras: 'fényforrás', hasznalja: 'használja', kivaltja: 'kiváltja', szabvany: 'szabvány' };
+  const ft = n => n == null ? '' : ` <span class="hint">${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Ft</span>`;
+  if (it.stock && it.stock.length) h += row(`A Készletben (${it.stock.length})`, it.stock.map(s => `<div class="nb" title="${esc(s[4])}"><b>${esc(s[0])}</b> ${esc(s[1])}${ft(s[3])} <span class="hint">· ${esc(RELHU[s[2]] || s[2])}</span></div>`).join(''));
+  if (it.stockCards && it.stockCards.length) h += row(`Kisokos-kártyákhoz kötve (${it.stockCards.reduce((a, x) => a + x[1], 0)} kapcsolat)`, it.stockCards.map(([id, n]) => { const x = items.find(y => y.id === id); return x ? `<button class="ref" data-ref="${esc(id)}">${esc(x.title)}</button> <span class="hint">${n}</span>` : ''; }).join(' · '));
+  h += row('Hol van', esc(whereText(it)));
+  h += row('Méret', `${it.cubes} kocka · ${(it.bytes / 1024).toFixed(1).replace('.', ',')} KB${it.type === 'card' ? (c.reviewed ? ' · ellenőrizve' : ' · vázlat, ellenőrzésre vár') : ''}`);
+  h += row('Fájl', `<span style="font:11px var(--mono)">${esc(it.file)}</span>`);
+  const ln = (D.links || {})[it.id];
+  if (ln && ln.length) h += row('A Stackben', ln.map(l => `<span class="nb"><b>${esc(l[2])}</b> ${esc(l[1])}</span>`).join(''));
+  $('card').innerHTML = h;
+  $('card').querySelectorAll('[data-ref]').forEach(b => b.addEventListener('click', () => { const j = items.findIndex(x => x.id === b.dataset.ref); if (j >= 0) select({ item: j }); }));
+  renderLists();
+}
+function showTerm(t) {
+  selTerm = t; selItem = -1;
+  const a = D.axes[t.axis - 1], near = items.filter(it => it.place.term === t.id);
+  $('card').innerHTML = `<div class="kick">${esc(a.hu)} · ${esc(a[t.pole])} · ${t.ring}. gyűrű</div><div class="title">${esc(t.title)}</div>` +
+    row('Mi ez', esc(t.desc)) + row('Kötet', t.vols.map(v => `<span class="sw" style="background:${VOL(v).color};margin-right:4px"></span>${esc(VOL(v).hu)}`).join(' · ')) +
+    row('Gyűrű', esc((D.rings[t.ring - 1] || {}).hu)) +
+    row('Ide gravitál', near.length ? near.map(it => `<button class="ref" data-i="${it.i}">${esc(it.title)}</button>`).join(', ') : '<span class="hint">még semmi: ennek a fogalomnak nincs kártyája</span>');
+  $('card').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => select({ item: +b.dataset.i })));
+  renderLists();
+}
+function showAxis(n) {
+  const a = D.axes[n - 1], ts = terms.filter(t => t.axis === n), its = items.filter(it => itemOnAxis(it, n));
+  const lad = p => ts.filter(t => t.pole === p).sort((x, y) => p === 'A' ? y.ring - x.ring : x.ring - y.ring).map(t => `<button class="ref" data-t="${t.id}">${esc(t.title)}</button>`).join(' · ');
+  $('card').innerHTML = `<div class="kick">Tengely ${n} / ${AXN}</div><div class="title">${esc(a.hu)}</div><div class="hint">${esc(a.q)}</div>` +
+    row('↑ ' + a.A, lad('A')) + row('↓ ' + a.B, lad('B')) +
+    row('Kocka ezen a tengelyen', `${its.reduce((s, it) => s + it.cubes, 0)} kocka · ${its.length} elem`);
+  $('card').querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => select({ term: terms.find(t => t.id === b.dataset.t) })));
+}
+function select(s) {
+  if (s.item !== undefined) showItem(s.item);
+  else if (s.term) { selAxis = s.term.axis; showTerm(s.term); }
+  updateStates(); renderAxes();
+}
+function renderAxes() {
+  $('axes').innerHTML = D.axes.map(a => `<button class="ax${a.n === selAxis ? ' on' : ''}" data-ax="${a.n}"><b>${a.n}</b><span>${esc(a.hu)}<small>${esc(a.A)} ↔ ${esc(a.B)}</small></span></button>`).join('');
+  $('axes').querySelectorAll('[data-ax]').forEach(b => b.addEventListener('click', () => {
+    const n = +b.dataset.ax; selAxis = selAxis === n ? 0 : n; selItem = -1; selTerm = null;
+    if (selAxis) showAxis(selAxis); else $('card').innerHTML = '<div class="hint">Kattints egy tengelyre, egy kockára vagy a listában egy elemre.</div>';
+    updateStates(); renderAxes(); renderLists();
+  }));
+}
+function renderLists() {
+  const core = items.filter(it => it.place.core), out = items.filter(it => it.type === 'card' && !it.place.core), src = items.filter(it => it.type === 'source');
+  const li = it => `<button class="it${it.i === selItem ? ' on' : ''}" data-i="${it.i}"><span class="sw" style="background:${esc(it.color || VOL(it.vol).color)}"></span><span class="t">${esc(it.title)}</span><span class="n">${it.cubes}</span></button>`;
+  const byPole = {};
+  for (const it of core) (byPole[it.place.core] = byPole[it.place.core] || []).push(it);
+  let h = '';
+  for (const [p, list] of Object.entries(byPole)) { const a = D.axes[+p.slice(0, -1) - 1]; h += `<div class="grp">A mag · ${esc(a.hu)} → ${esc(a[p.slice(-1)])} (${list.reduce((s, x) => s + x.cubes, 0)} kocka)</div>` + list.map(li).join(''); }
+  if (out.length) h += `<div class="grp">Kifelé, saját csomópontnál</div>` + out.map(li).join('');
+  if (src.length) h += `<div class="grp">Tudásbázisok a Kisokoson kívül</div>` + src.map(li).join('');
+  $('items').innerHTML = h;
+  $('items').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => select({ item: +b.dataset.i })));
+}
+
+/* ================= start */
+function start() {
+  if (!D) { $('empty').style.display = 'grid'; return; }
+  layout();
+  if (!initGL()) return;
+  const coreCubes = cubes.filter(c => c.inside).length, cap = Math.round((4 / 3) * Math.PI * R ** 3 / S ** 3);
+  $('stat').textContent = `${D.stats.cards} kártya · ${D.items.length - D.stats.cards} tudásbázis · ${cubes.length} kocka · a mag ${coreCubes} / ~${cap} kockával telt (${(coreCubes / cap * 100).toFixed(1).replace('.', ',')} %)`;
+  $('lgVol').innerHTML = D.volumes.filter(v => items.some(it => it.vol === v.id && it.type === 'card')).map(v => `<div class="k" style="cursor:pointer" data-v="${v.id}"><span class="sw" style="background:${v.color}"></span><span>${esc(v.hu)} (${v.n} kártya)</span></div>`).join('') +
+    items.filter(it => it.type === 'source').map(it => `<div class="k"><span class="sw" style="background:${esc(it.color)}"></span><span>${esc(it.title)}</span></div>`).join('');
+  $('lgVol').querySelectorAll('[data-v]').forEach(el => el.addEventListener('click', () => { volFilter = volFilter === el.dataset.v ? null : el.dataset.v; updateStates(); }));
+  cam = CAM0(); selAxis = 0;
+  if (innerWidth < 820) $('lg').open = false;   // on a phone the legend would cover the scene
+  renderAxes(); renderLists(); updateStates();
+  growT0 = performance.now();
+  const cv = $('cv');
+  let down = null;
+  cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; down = { x: e.clientX, y: e.clientY, moved: false }; dragging = true; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    if (down) {
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) down.moved = true;
+      cam.yaw -= dx * 0.006; cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch + dy * 0.006)); down.x = e.clientX; down.y = e.clientY; return;
+    }
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, p = pick(x, y), tip = $('tip');
+    const hi = p && p.item !== undefined ? p.item : -1;
+    if (hi !== hoverItem) { hoverItem = hi; updateStates(); }
+    if (!p) { tip.style.display = 'none'; return; }
+    if (p.item !== undefined) { const it = items[p.item]; tip.innerHTML = `<b>${esc(it.title)}</b><span class="m">${esc(VOL(it.vol).hu)} · ${it.cubes} kocka · ${esc(whereText(it))}</span>`; }
+    else { const a = D.axes[p.term.axis - 1]; tip.innerHTML = `<b>${esc(p.term.title)}</b><span class="m">${esc(a.hu)} · ${esc(a[p.term.pole])} · ${p.term.ring}. gyűrű</span>`; }
+    tip.style.display = 'block'; tip.style.left = Math.min(x + 14, cv.clientWidth - 330) + 'px'; tip.style.top = (y + 14) + 'px';
+  });
+  const up = e => {
+    if (e.pointerType === 'touch' || !down) return;
+    const wasClick = !down.moved; down = null; dragging = false; cv.classList.remove('drag');
+    if (wasClick) { const r = cv.getBoundingClientRect(), p = pick(e.clientX - r.left, e.clientY - r.top); if (p) select(p); }
+  };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('pointerleave', () => { $('tip').style.display = 'none'; if (hoverItem >= 0) { hoverItem = -1; updateStates(); } });
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(2.2, Math.min(30, cam.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam = CAM0(); });
+  if (window.StackTouch) window.StackTouch.attach(cv, {
+    orbit: (dx, dy) => { cam.yaw -= dx * 0.006; cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch + dy * 0.006)); },
+    zoom: f => { cam.dist = Math.max(2.2, Math.min(30, cam.dist / f)); },
+    tap: (x, y) => { const p = pick(x, y); if (p) select(p); }, long: (x, y) => { const p = pick(x, y); if (p) select(p); },
+    dbl: () => { cam = CAM0(); }, dragging: on => { dragging = on; },
+  });
+  $('bSpin').classList.toggle('on', spin);
+  $('bSpin').addEventListener('click', () => { spin = !spin; $('bSpin').classList.toggle('on', spin); });
+  $('bLab').addEventListener('click', () => { labelsOn = !labelsOn; $('bLab').classList.toggle('on', labelsOn); });
+  $('bGrow').addEventListener('click', () => { growT0 = performance.now(); });
+  requestAnimationFrame(frame);
+}
+start();
+})();
+</script>
+</body>
+</html>

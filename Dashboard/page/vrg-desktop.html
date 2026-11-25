@@ -5,9 +5,14 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'">
 <title>VRG Asztal</title>
 <link rel="stylesheet" href="../../shared/melyviz.css">
+<link rel="stylesheet" href="../../shared/grafit.css">
 <link rel="stylesheet" href="../../../tools/js-libs/xterm/css/xterm.css">
 <link rel="stylesheet" href="desk.css">
 <link rel="stylesheet" href="panes.css">
+<link rel="stylesheet" href="grafit.css">
+<link rel="stylesheet" href="../../shared/sidepanel/sidepanel.css">
+<link rel="stylesheet" href="voice.css">
+<link rel="stylesheet" href="voicecmd.css">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--mv-bg); color: var(--mv-text); }
   body { display: flex; flex-direction: column; font: 13px var(--mv-sans, sans-serif); }
@@ -50,6 +55,10 @@
   [data-role="palette-list"] li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px; cursor: pointer; }
   [data-role="palette-list"] li[data-sel="1"] { background: var(--mv-raised); }
   [data-role="palette-list"] .k { color: var(--mv-dim); }
+  [data-role="palette-answer"] { margin: 6px 12px; padding: 8px 12px; border-left: 3px solid var(--mv-accent); background: var(--mv-raised); cursor: copy; }
+  [data-role="palette-answer"][hidden] { display: none; }
+  [data-role="palette-answer"] .v { font-family: "Cascadia Mono", Consolas, monospace; font-size: 20px; color: var(--mv-accent); }
+  [data-role="palette-answer"] .t, [data-role="palette-answer"] .l { color: var(--mv-dim); font-size: 12px; display: block; }
   [data-role="quick"] { position: fixed; inset: 0; z-index: 110; display: flex; flex-direction: column; align-items: center; padding-top: 12vh; background: rgba(0, 0, 0, .45); }
   [data-role="quick"][hidden] { display: none; }
   [data-role="quick"] > * { width: min(640px, 90vw); box-sizing: border-box; background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); }
@@ -74,6 +83,7 @@
 <header data-role="wbar" id="wbar">
   <div class="wt">VRG Asztal</div>
   <div class="sp"></div>
+  <button type="button" data-role="look-toggle" title="Megjelenés: Mélyvíz ⇄ Grafit / Look">&#9680;</button>
   <button data-w="min" title="Kis méret / Minimize">&#8211;</button>
   <button data-w="max" title="Nagy méret / Maximize">&#9633;</button>
   <button data-w="close" class="x" title="Bezár / Close">&#10005;</button>
@@ -94,6 +104,7 @@
 <script src="../shell/lib/layout.js"></script>
 <script src="panes/empty.js"></script>
 <script src="../shell/lib/palette.js"></script>
+<script src="../../Browser/src/core/answers.js"></script>
 <script src="layout.js"></script>
 <script src="palette.js"></script>
 <script src="../shell/lib/quick.js"></script>
@@ -110,5 +121,11 @@
 <script src="../shell/lib/netgrade.js"></script>
 <script src="netbar.js"></script>
 <script src="desk.js"></script>
+<script src="../../shared/sidepanel/sidepanel.js"></script>
+<script src="voice-worklet.js"></script>
+<script src="voice.js"></script>
+<script src="../../Voice/command/commands.js"></script>
+<script src="../../Voice/command/parse.js"></script>
+<script src="voicecmd.js"></script>
 </body>
 </html>

@@ -245,7 +245,8 @@ class SheetsTest {
 
     @Test fun phonePresetsFitTheGrid() {
         val ps = PhoneSheets.PRESETS
-        assertEquals(DeskSheets.PRESETS.map { it.id }, ps.map { it.id })
+        assertEquals(PhoneSheets.OWN.map { it.id } + DeskSheets.PRESETS.map { it.id }, ps.map { it.id }, "the phone's own (DevLap) first")
+        assertEquals("devlap", ps.first().id)
         for (p in ps) assertEquals("", P.validPreset(p), p.id)
         val over = ps.first { it.id == "attekintes" }
         assertEquals(listOf("pane:home", "pane:files"), over.wins.map { it.open }, "the feed stays on the PC (D-18); files = PC ablakok (M23)")
@@ -267,6 +268,41 @@ class SheetsTest {
         assertTrue(P.validate(d).ok)
         assertEquals(listOf("home", "feat"), d.sheets[0].wins.map { it.kind })
         assertEquals("feat:pcwin", d.sheets[0].wins[1].open)
+    }
+
+    /** DevLap (D-172): the phone's own dev sheet. Every window opens (none is dropped as planned or unknown) and the grid is full. */
+    @Test fun devLap() {
+        val p = PhoneSheets.OWN.single { it.id == "devlap" }
+        assertEquals("DevLap", p.name)
+        assertEquals("", P.validPreset(p))
+        assertEquals(listOf("feat:pulse", "feat:claude", "feat:inbox", "feat:notes", "feat:archive"), p.wins.map { it.open })
+        assertEquals(T(0, 0, 2, 2), p.wins[0].tile, "Haladás on top, both columns")
+        assertEquals(8, p.wins.sumOf { it.w * it.h }, "every cell used")
+        assertEquals(0, p.focus)
+        var d = P.empty()
+        val wins = PhoneSheets.windows(d, p)
+        assertEquals(p.wins.size, wins.size, "every DevLap window opens on the phone")
+        d = P.addSheet(d, p.name, wins)
+        assertTrue(P.validate(d).ok)
+        assertEquals("DevLap", d.sheets[0].name)
+        assertTrue(p.wins.all { PhoneSheets.isWindow(it.open.removePrefix("feat:")) })
+    }
+
+    /** M66: the home's DevLap tile makes a DevLap sheet once, then goes back to it. */
+    @Test fun devLapTile() {
+        var d = PhoneSheets.openDevLap(P.empty())
+        assertEquals(listOf("DevLap"), d.sheets.map { it.name })
+        assertEquals(d.sheets[0].id, d.active)
+        assertEquals(5, d.sheets[0].wins.size)
+        d = P.activate(P.addSheet(d, "Lap"), d.sheets[0].id).let { P.addSheet(it, "Másik") }
+        assertTrue(d.active != d.sheets[0].id)
+        val again = PhoneSheets.openDevLap(d)
+        assertEquals(3, again.sheets.size, "no second DevLap")
+        assertEquals(again.sheets.first { it.name == "DevLap" }.id, again.active)
+        var full = P.empty()
+        repeat(Sheets.MAX_SHEETS) { full = P.addSheet(full, "L$it") }
+        assertSame(full, PhoneSheets.openDevLap(full), "no room: unchanged")
+        assertTrue(!PhoneSheets.isWindow(Catalogue.DEVLAP.id), "the tile is the shell, not a window")
     }
 
     @Test fun codecRoundTrip() {

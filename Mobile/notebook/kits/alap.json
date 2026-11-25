@@ -1,0 +1,29 @@
+{
+  "kind": "vrg-fuzet-kit", "v": 1,
+  "id": "alap", "name": "Alap", "sym": "✎", "color": "#93d3e6",
+  "about": "Ami mindig kell: jegyzet, teendő és kérés egy új kitre vagy funkcióra. Nem kapcsolható ki.",
+  "types": [
+    { "id": "jegyzet", "label": "Jegyzet", "sym": "✎", "fields": [] },
+    { "id": "teendo", "label": "Teendő", "sym": "☐", "checkable": true, "fields": [
+      { "id": "hatarido", "label": "Határidő", "kind": "date", "due": true }
+    ] },
+    { "id": "keres", "label": "Kérés", "sym": "✦", "color": "#b08ad8", "fields": [
+      { "id": "mit", "label": "Mit kérsz (kit, nézet, mező, szabály)?", "kind": "text", "required": true },
+      { "id": "miert", "label": "Mire kell?", "kind": "text" }
+    ] }
+  ],
+  "chips": [
+    { "id": "tisztazando", "label": "Tisztázandó", "sym": "⚑", "open": true },
+    { "id": "otlet", "label": "Ötlet", "sym": "★", "tag": "ötlet" },
+    { "id": "fontos", "label": "Fontos", "sym": "!", "tag": "fontos" }
+  ],
+  "views": [
+    { "id": "minden", "label": "Napló", "sym": "▤", "kind": "timeline" },
+    { "id": "teendok", "label": "Teendők", "sym": "☐", "kind": "checklist", "types": ["teendo"] },
+    { "id": "keresek", "label": "Kérések", "sym": "✦", "kind": "list", "types": ["keres"] }
+  ],
+  "rules": [],
+  "keywords": [
+    { "id": "holnap", "re": "\\bholnap|\\bmajd\\b|\\bel kell\\b|\\bne felejtsd", "suggest": { "type": "teendo" } }
+  ]
+}

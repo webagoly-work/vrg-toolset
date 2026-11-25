@@ -188,3 +188,46 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   publishes from now on is added with `node Archive/archive.js add` in the same session (CLAUDE.md). A page that needs files
   beside it, or shows a real client's or a private house, keeps a `localPath` instead of a copy. START key: R → A.
 - B: keep the copies outside the repo (`Full\artifacts`) and add that folder to BACKUP. C: links only, no copies.
+
+## DESKU-Q25 — Claude sessions in the Desktop: a pane over the transcripts (WP-50, 2026-11-24)
+
+- **A (taken):** a `sessions` pane lists the local transcripts of both accounts and opens one in the existing embedded Claude
+  terminal (WP-16) with `--resume`; cloud and Remote Control sessions open as claude.ai/code in the Böngésző pane; a session
+  written in the last 2 minutes counts as live and can only be forked. Main reads the folder from the transcript; the page
+  names an account and an id.
+- B: embed the Claude desktop app's window (SetParent on a foreign window: fragile, breaks on its updates, no focus or DPI
+  handling). C: a section of the Dashboard view instead of a pane (cannot sit beside the terminal it opens on a Lap).
+
+## DESKU-Q26 — The session board is a Lap with labels (WP-51, 2026-11-24)
+
+- **A (taken):** board labels (origin, colour frame, title above, note below) are optional data on a Lap's windows and a switch set on
+  the sheet; any Lap can turn them on; the Munkamenetek board is one such Lap made once. Terminals, browser views and every tile op
+  stay as they are.
+- B: a separate grid inside the Munkamenetek pane that only looks like the Lap (a second layout, nested native views). C: labels as a
+  floating overlay outside the tiles (covers neighbours; native views paint above it).
+
+## DESKU-Q27 — Every Vezérlő prompt goes through the Előszűrő; the verdict also picks the folder (WP-52, 2026-11-24)
+
+- **A (taken):** the gate always analyzes and dresses; an independent request starts in a folder without CLAUDE.md so no VRG context
+  loads at all, a context or unsure one in the repo; the user can force the route and the model in Részletes mode. Thresholds lean
+  towards context (a wrong "independent" costs a failed turn, a wrong "context" only tokens).
+- B: dress only, always in the repo (CLAUDE.md is still read: no real saving). C: send untouched unless the user asks (the filter
+  becomes optional and is forgotten).
+
+## DESKU-Q28 — Offline dictation: whisper-server, our own text fields only (WP-54, 2026-11-25)
+
+- **A (taken):** whisper.cpp `whisper-server` (MIT) runs locally with the model loaded once. The page keeps the microphone warm with
+  a 300 ms pre-roll, so recording starts at key-down. Live words come from re-decoding the growing buffer, biased by a prompt built
+  from our vocabulary. Dictation goes only into the Desktop page's own text fields: never a browser tab, an app view, a password field
+  or another program. Speaking never sends; the Vezérlő's text still passes the Előszűrő. Audio stays in memory and transcripts are
+  not logged.
+- B: sherpa-onnx streaming (true streaming, but hotwords only for transducer models, and no Hungarian one found). C: Vosk (no Hungarian
+  model found). D: the OS dictation (types into any program, and is online).
+
+## DESKU-Q29 — The voice command overlay acts through the page APIs only (WP-55, 2026-11-25)
+
+- **A (taken):** spoken or typed commands are parsed against a data registry and executed only through `VRGDesk`, `VRGSheets` and
+  `VRGFrame`. Closing a window and sending a prompt always ask first. The level switch needs a phrase, which the overlay names as a
+  phrase gate and not an identity check. "What is on screen" is answered from the Desktop's own state; phase 3 adds providers.
+- B: OS-level input injection now (phase 4, behind risk classes and an allowlist). C: a cloud model to parse commands (online,
+  slower, and an injection surface).

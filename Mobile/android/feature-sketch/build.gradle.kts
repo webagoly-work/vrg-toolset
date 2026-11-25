@@ -24,12 +24,20 @@ android {
 // F9 (WP M54, D-121): the Felmérési jegyzőkönyv's renderer, the Desktop's own files from Sketcher/lib, into
 // assets sketcher/report/. Sketcher/test/report-phone.test.js checks this list; the task checks every copy byte for byte.
 val REPORT_ASSETS = listOf("fieldkit.js", "report.js", "report-phone.js")
+// skcam K1b (WP M59): the Szobadoboz, the Desktop's own maths and renderer plus the phone's touch UI, into assets
+// sketcher/roombox/. Sketcher/test/roombox-phone.test.js checks this list (and that RoomBoxUi.kt loads the same files).
+val ROOMBOX_ASSETS = listOf("roombox.js", "roombox-gl.js", "pano.js", "roombox-phone.js")   // K4: pano.js (Körkép)
+// skcam K3 (WP M60): the Síkmérés, the Desktop's maths and screen, into assets sketcher/plane/ (checked by
+// Sketcher/test/plane.test.js, with PlaneUi.kt).
+val PLANE_ASSETS = listOf("plane.js", "plane-ui.js")
 
 abstract class SketcherAssets : DefaultTask() {
     @get:InputDirectory abstract val catalog: DirectoryProperty
     @get:InputDirectory abstract val variants: DirectoryProperty
     @get:InputDirectory abstract val lib: DirectoryProperty
     @get:Input abstract val report: ListProperty<String>
+    @get:Input abstract val roombox: ListProperty<String>
+    @get:Input abstract val plane: ListProperty<String>
     @get:OutputDirectory abstract val out: DirectoryProperty
 
     @TaskAction fun copy() {
@@ -45,6 +53,18 @@ abstract class SketcherAssets : DefaultTask() {
             val dst = src.copyTo(File(o, "sketcher/report/" + n), true)
             check(dst.readBytes().contentEquals(src.readBytes())) { "sketcher/report/" + n + " differs from Sketcher/lib/" + n }
         }
+        File(o, "sketcher/roombox").mkdirs()
+        roombox.get().forEach { n ->
+            val src = lib.get().file(n).asFile
+            val dst = src.copyTo(File(o, "sketcher/roombox/" + n), true)
+            check(dst.readBytes().contentEquals(src.readBytes())) { "sketcher/roombox/" + n + " differs from Sketcher/lib/" + n }
+        }
+        File(o, "sketcher/plane").mkdirs()
+        plane.get().forEach { n ->
+            val src = lib.get().file(n).asFile
+            val dst = src.copyTo(File(o, "sketcher/plane/" + n), true)
+            check(dst.readBytes().contentEquals(src.readBytes())) { "sketcher/plane/" + n + " differs from Sketcher/lib/" + n }
+        }
     }
 }
 
@@ -53,6 +73,8 @@ val sketcherAssets = tasks.register<SketcherAssets>("sketcherAssets") {
     variants.set(rootProject.file("../../Sketcher/variants"))
     lib.set(rootProject.file("../../Sketcher/lib"))
     report.set(REPORT_ASSETS)
+    roombox.set(ROOMBOX_ASSETS)
+    plane.set(PLANE_ASSETS)
     out.set(layout.buildDirectory.dir("generated/sketcher-assets"))
 }
 androidComponents {
@@ -68,4 +90,7 @@ dependencies {
     implementation("androidx.camera:camera-camera2:$camerax")
     implementation("androidx.camera:camera-lifecycle:$camerax")
     implementation("androidx.camera:camera-view:$camerax")
+    // Google AR csomag (skcam K6, WP M64, D-164): ARCore's client library. The runtime (Google Play Services for AR) is
+    // only asked for when the user switches the pack on and opens the meter; the manifest marks AR optional.
+    implementation("com.google.ar:core:1.47.0")
 }

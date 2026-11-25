@@ -11,7 +11,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 3. A PC-n START fut; a relay `--ports`-szal (`Mobile\mobile.cmd relay`), a VRG Térkép szerver (START → H) és az Asztal Sketcher oldala (START P → S) elérhető.
 4. Mindkét telefonon új felmérés „Teszt A” / „Teszt B” néven — ügyféladat nélkül.
 
-## A telefon — rajz és beszélgetés (83 lépés)
+## A telefon — rajz és beszélgetés (93 lépés)
 
 *a tulajdonos telefonja (párosított PC, Átadás)*
 
@@ -125,7 +125,20 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M54.9** ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* ki: a Rendezésen nincs Jegyzőkönyv gomb. Vissza be, majd a *▤ Jegyzőkönyv* ki: a telefonos kapcsoló szürke, a gomb megint eltűnik. *Mind be* mindkettőt visszakapcsolja.
 - [ ] **M54.10** Sok fotóval (40+) a jegyzőkönyv mérete a gomb alatt látszik; 15 MB fölött az Átadás figyelmeztet, és felajánlja a PDF-et.
 
-## B telefon — kamera és helyszín (77 lépés)
+### M64 · Google AR csomag (`sketch`): live measuring, a room scan and an AR recording with ARCore, behind one switch
+
+- [ ] **M64.1** ⚙ Funkciók → Kamera: a **📐 Google AR csomag** alapból ki van kapcsolva; ki állásban a Kamera lapon nincs 📐 AR mérő, és a fal Méret ablakában nincs 📐 AR gomb.
+- [ ] **M64.2** Kapcsold be: a Kamera lap fejlécében megjelenik a **📐 AR mérő**. Első nyitáskor a telefon kéri a kamera engedélyt, és ha kell, a Play Áruházból a Google Play Services for AR-t; telepítés után térj vissza, a mérő elindul.
+- [ ] **M64.3** Mozgasd lassan a telefont, amíg a kör zöld nem lesz egy falon vagy a padlón. **＋ 1. pont** egy fal sarkánál, majd célozz a másik sarokra: a távolság élőben fut mm-ben, alatta a ↕ és ↔ része.
+- [ ] **M64.4** **＋ 2. pont**, írj feliratot (pl. „Hosszú fal”), **✓ Mentés**: a Kamera lapon a 📐 sorban megjelenik. Mérőszalaggal vesd össze: néhány cm eltérés várható.
+- [ ] **M64.5** A vázlaton egy falra **Méret** → **📐 AR**: mérd le a falat, ✓ Mentés: a mérő bezárul, és a fal hossza a mért érték.
+- [ ] **M64.6** **⬚ Pásztázás** → **▶ Gyűjtés**, járd körbe lassan a szobát: a pontok zöld pöttyökként gyűlnek, a szám nő. **⇩ Mentés**: a fájl a Letöltések / VRG Vázlat mappába kerül.
+- [ ] **M64.7** A PC-n: Sketcher (START P → S) → Helyszín → 🏠 Ház 3D megnyitása → az előző fájl: a szoba alakja látszik, és lépték nélkül mérhető (↔ Mérés).
+- [ ] **M64.8** **⏺ Felvétel** néhány másodpercig, majd **⏹ Felvétel leáll**: egy MP4 kerül a Letöltések / VRG Vázlat mappába.
+- [ ] **M64.9** Egy AR-t nem támogató telefonon a mérő azt írja, hogy a telefon nem támogatja; a 📏 Mérés a fotón ott is működik.
+- [ ] **M64.10** Kapcsold ki a csomagot: a 📐 elemek eltűnnek, a mentett távolságok a felmérésben maradnak.
+
+## B telefon — kamera és helyszín (105 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -181,6 +194,43 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M52.11** ⚙ → **Kamera funkciók**: *Saját kamera* ki → a ◉ megint a telefon kamera-appját nyitja (M29 ⟳ Sorozat úgy működik, mint eddig). Vissza be; egyenként *Lámpa*, *Rács*, *Vízszintező*, *Szellemkép* ki: a gombjuk / vonaluk eltűnik. *Előtte / utána* ki: a *Szellemkép* is kikapcsol. *Sorozat a kamerában* ki: fotó után a kamera bezár.
 - [ ] **M52.12** Fotópont (Vázlat → szoba közepe → pont): a saját kamera egy fotó után bezár, és a húzással megadod az irányt, mint eddig.
 - [ ] **M52.13** Két telefonnal: a saját kamerás felmérés Átadással a PC-re / a másik telefonra — a Desktop oldal Kamera nézetében a képek ugyanúgy látszanak, semmi új vagy hibás jel nincs rajtuk.
+
+### M59 · Szobadoboz a telefonon (in `sketch`): the room box on the phone, the lens per Fotópont shot
+
+- [ ] **M59.1** ⚙ Funkciók → Vázlat: a **Szobadoboz (3D)** legyen bekapcsolva; a ⚙ Kamera funkciók között a Saját kamera is.
+- [ ] **M59.2** Egy szobában tegyél le egy Fotópontot, koppints rá: a kamera a legszélesebb látószöggel nyíljon (ha van 0,5×, a kijelzőn 0,5× látszik).
+- [ ] **M59.3** Készítsd el mind a négy irányt (É, K, D, Ny).
+- [ ] **M59.4** Rendezés: a sor végén a **⬚ Szobadoboz** gomb; koppints rá.
+- [ ] **M59.5** Felülről: egy ujjal forgasd, két ujjal nagyíts; a falakon a fotóid legyenek, a fotópont kék jellel.
+- [ ] **M59.6** A pontból (vagy egy kép 👁 gombja): nézz körbe egy ujjal; a képek illeszkedjenek a falakhoz.
+- [ ] **M59.7** Egy képnél a Látószög forrása „a kamerától” legyen (a Saját kamerával készült fotónál).
+- [ ] **M59.8** Írd át a belmagasságot, állíts az Irány csúszkán, majd ✓ Kész: a felmérés elmentődik; újranyitva a javítások megvannak.
+- [ ] **M59.9** A felmérést küldd a PC-re (Rendezés → Küldés a Plannerbe), nyisd meg az Asztal Sketcher oldalán: a Szobadoboz ugyanazokat a javításokat mutassa.
+- [ ] **M59.10** ⚙ Funkciók → Szobadoboz (3D) ki: a Rendezés gomb eltűnik, és a Fotópont 1×-es nagyítással nyílik.
+
+### M60 · Síkmérés (in `sketch`, phone and Desktop): measuring on a plane in one photo
+
+- [ ] **M60.1** Ragassz fel egy A4-es lapot a falra (állítva), a mérendő dugalj és kapcsoló közelébe.
+- [ ] **M60.2** Kamera: fotózd le a falat (1× nagyítással), úgy, hogy a lap, a dugalj, a kapcsoló és a padló vonala is látsszon.
+- [ ] **M60.3** Nyisd meg a fotót: a ✎ Jelölés mellett ott a **📏 Mérés**; koppints rá.
+- [ ] **M60.4** ① Referencia: A4; koppints a lap négy sarkára. Két ujjal nagyíts rá, a pontokat húzással igazítsd (a nagyító mutatja a pixelt).
+- [ ] **M60.5** ② Padló: két koppintás a padló és a fal találkozásán.
+- [ ] **M60.6** ④ Magasság: koppints a dugalj közepére, majd a kapcsolóéra; vesd össze mérőszalaggal (±1–2 cm várható).
+- [ ] **M60.7** ③ Távolság: két koppintás; a felirat mezőbe írd be, mi az. ✓ Mentés: a fotó alatt megjelenik a „📏 …” sor.
+- [ ] **M60.8** Egy Fotópont fotón ugyanez: a fotópont kép párbeszédében a **📏 Mérés**.
+- [ ] **M60.9** Küldd a felmérést a PC-re: az Asztal Sketcher oldalán a Kamera nézetben a kártyán ugyanazok az értékek.
+- [ ] **M60.10** ⚙ Funkciók → Kamera → **Mérés a fotón** ki: a gomb és a sor eltűnik.
+
+### M62 · Körkép (in `sketch`, phone and Desktop): aligning a Fotópont's photos, and the 360° image
+
+- [ ] **M62.1** ⚙ Funkciók → Vázlat: **Szobadoboz (3D)** és **Körkép (360°)** be.
+- [ ] **M62.2** Egy szobában Fotópont, mind a négy irány 0,5× objektívvel (a saját kamera magától így nyit).
+- [ ] **M62.3** Rendezés → ⬚ Szobadoboz → a lap alján **⟳ Körkép · F…** → **⟲ Igazítás**: megjelenik, mennyit fordított a képeken.
+- [ ] **M62.4** A pontból nézve a képek határa simább legyen, mint előtte.
+- [ ] **M62.5** **⇩ 360° kép**: a fájl a Képek / VRG Vázlat mappába kerül; Google Fotókban megnyitva körbe lehessen nézni.
+- [ ] **M62.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
+- [ ] **M62.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
+- [ ] **M62.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

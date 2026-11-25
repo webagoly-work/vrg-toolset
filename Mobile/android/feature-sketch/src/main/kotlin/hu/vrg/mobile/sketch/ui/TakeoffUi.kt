@@ -1,7 +1,6 @@
 package hu.vrg.mobile.sketch.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.sketch.PlanView
 import hu.vrg.mobile.sketch.Takeoff
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // The Munkakör lap (WP M47, docs/sketcher/TAKEOFF.md): the takeoff of the survey, live, at the top of the Munkakör front.
 // Symbols and colours, little text: one chip per work item (its symbol and quantity), coral and ≈ while it is a guess,
@@ -47,7 +47,7 @@ internal fun TakeoffCard(st: EditorState) {
     val open = Color(0xFFD64545)
     Column(
         Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(Melyviz.radiusSmall)).background(Melyviz.surface)
-            .border(1.dp, col, RoundedCornerShape(Melyviz.radiusSmall)).padding(10.dp),
+            .vrgBorder(1.dp, col, RoundedCornerShape(Melyviz.radiusSmall)).padding(10.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("☰ Munkakör lap", style = Melyviz.label.copy(fontSize = 13.sp, color = col), modifier = Modifier.weight(1f))
@@ -73,7 +73,7 @@ internal fun TakeoffCard(st: EditorState) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(top = 8.dp)) {
                 tk.decisions.forEach { d ->
                     Text((if (d.state == "later") "⏱ " else "⚑ ") + d.label, style = Melyviz.small.copy(fontSize = 11.sp, color = open),
-                        modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, open, RoundedCornerShape(50))
+                        modifier = Modifier.clip(RoundedCornerShape(50)).vrgBorder(1.dp, open, RoundedCornerShape(50))
                             .clickable { st.front = "kerdes" }.padding(horizontal = 8.dp, vertical = 4.dp))
                 }
             }
@@ -81,7 +81,7 @@ internal fun TakeoffCard(st: EditorState) {
         // D-79: the general toggle: dedicated circuits for the big machines and systems, counted as ≈ (off = assume nothing)
         Text((if (implied) "◉ ✓ " else "◉ ○ ") + "Dedikált kör a nagy gépeknek (≈, minden felmérésre)",
             style = Melyviz.small.copy(fontSize = 11.sp, color = if (implied) col else Melyviz.faint),
-            modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(50)).border(1.dp, if (implied) col else Melyviz.line, RoundedCornerShape(50))
+            modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(50)).vrgBorder(1.dp, if (implied) col else Melyviz.line, RoundedCornerShape(50))
                 .clickable { SketcherKit.switchImpliedDedicated(!implied) }.padding(horizontal = 8.dp, vertical = 4.dp))
         if (tk.checks.isNotEmpty()) tk.checks.forEach { Text("! $it", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
     }
@@ -92,7 +92,7 @@ private fun ItemChip(it2: Takeoff.Item, on: Boolean, col: Color, open: Color, on
     val edge = if (it2.est) Melyviz.coral else if (it2.work) col else Melyviz.line
     val ink = if (on) Color.Black else if (it2.work) Melyviz.ink else Melyviz.faint
     Row(
-        Modifier.clip(RoundedCornerShape(50)).background(if (on) edge else Melyviz.abyss).border(1.dp, edge, RoundedCornerShape(50))
+        Modifier.clip(RoundedCornerShape(50)).background(if (on) edge else Melyviz.abyss).vrgBorder(1.dp, edge, RoundedCornerShape(50))
             .clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

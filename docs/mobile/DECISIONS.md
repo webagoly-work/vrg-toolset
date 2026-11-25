@@ -735,6 +735,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   phone's camera app exactly as before (M29 / M46). With it on, a CameraX bind or capture failure falls back to the
   camera app for the rest of the app's run (a note says so) and the next start tries CameraX again. The walk video and
   the signature are unchanged (the camera app's video mode, the pad).
+  Asked (F7, 2026-11-21): should the in-app camera record video too? **A** no, the walk video stays with the camera
+  app's video mode (D-60) / **B** yes, in a later round. The Founder chose **A** (2026-11-22).
 - **D-102 · An in-app photo lands where a camera-app photo lands (M52), 2026-11-21.** The file is written straight into
   `files/sketch/photos/<id>/` under the same name scheme (`C-<base36 time>.jpg`, Fotópont `<F id>-…`), then goes
   through the same `captureTaken` / `photoTaken` path: same Capture record, GPS read back from the file's own EXIF, the
@@ -846,6 +848,310 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-128 · F9: Rendezés → 📄 Jegyzőkönyv, a dialog (M54), 2026-11-21.** Next to the two export buttons (the row now
   wraps on narrow phones); the dialog has *Az ügyfélnek*, *🖨 Nyomtatás / PDF*, *⇪ Átadás (.html)*, the privacy line and
   the result's name and size. Rejected: putting it into the Küldés share (the package is what the PC reads).
+
+- **D-129 · VRG Térkép navigation, N2: our own offline road network (M55 line), 2026-11-21.** Asked by the Founder
+  with the Térkép-feed ("Waze type … intelligent pathfinding"), answered **A**: the PC turns the Hungary OSM extract the
+  map already has into a compact road network, the phone keeps a copy, and routes are computed in the map page
+  (offline, nothing leaves the phone, the same on the PC and the phone). Not built yet (N2). Replaces D-49 C's "no route
+  planning of our own"; the hand-off to a navigation app stays as the fallback. Rejected: **B** an online routing
+  service (internet, the position and destination sent out, usage limits); **C** a native navigation kit (Ferrostar +
+  Valhalla: a second map stack beside the page, against D-48). **Built 2026-11-21 as WP M56** (`docs/map/ROUTING.md`): junctions-only
+  graph, car speeds from `maxspeed` or the road class, A* by time in the page, no turn restrictions yet.
+- **D-130 · Traffic: none at first, a traffic service later as an opt-in (N3), 2026-11-21.** Answered **A, then B**:
+  ETAs from road types and speed limits; later a keyed provider (e.g. TomTom, terms to verify) asked only for the
+  chosen route and only on a tap. No free open live-traffic source exists for Hungary. Rejected: **C** no traffic ever.
+  **Built 2026-11-21 as WP M58** with the guidance (`docs/map/NAVIGATION.md`): TomTom Routing v1 with the user's own key
+  kept on the device, car routes only, one request per tap; the shown time changes, the route does not.
+- **D-131 · The feed's points come from OpenStreetMap, kept on the phone; own pins never leave it (M55), 2026-11-21.**
+  Answered **A**: `Map/tools/build-pois.js` extracts all of Hungary from the OSM extract into `Map/data/pois.json`; VRG
+  Mobile keeps the copy it reads through the relay (public ODbL data, like the address index). Otthon and the user's own
+  Daniella / szerelvénybolt pins live in the page's storage on the device (D-31). The "Korean type" store is the
+  Chinese/Asian variety store (`shop=variety_store`), confirmed by the Founder; missing Daniella branches are added as
+  own pins, confirmed. Rejected: **B** online lookups (Overpass: the position sent with every search); **C** own list only.
+- **D-132 · Public transport: the nearest stops now, BKK live departures later (M55), 2026-11-21.** Answered **A now as
+  the future fallback, B later**: stops from OSM (offline, all of Hungary); BKK FUTÁR departures for Budapest in a later
+  WP (a free developer key, internet). Taken as defaults in the session (the Founder did not answer the feed-rules
+  question): six cards by default (Otthon, Daniella, szerelvény/barkács, élelmiszerbolt, étkezés, kórház/orvos; Kínai
+  bolt, WC, Megálló switchable, at most six on), one per category in that order; the list follows the user after 25 m or
+  30 s; a selected place stays the target; tap frames, hold (RCO, right-click on the PC) selects.
+
+- **D-133 … D-136 · Szobadoboz (M57, dev line skcam K1), 2026-11-21.** Taken for the Founder while building ("proceed
+  with the outlined dev work"); each can be revisited.
+  - **D-133 · Where the room's shape comes from.** Chosen **A**: from the sketch (the plan's outline in mm, the photo
+    point, the side), with the photos projected onto it. Rejected: **B** photogrammetry from the four photos (turning on
+    one spot gives no parallax, so there is no depth to recover); **C** a learned depth model (not offline-light, and its
+    sizes are guesses).
+  - **D-134 · Where it shows first.** Chosen **A**: the Desktop Sketcher page, an overlay opened from the Vázlat front
+    (the photos and the package are already there; the PC has the screen for it). Rejected: **B** the phone first (the
+    WebView route of M54 is K1b); **C** the Planner (a large app; it can reuse `roombox.js` later).
+  - **D-135 · How it is drawn.** Chosen **A**: our own WebGL 1 (one shader, ~150 lines), offline from `file://`.
+    Rejected: **B** three.js (≈600 KB inlined into the page, or a CDN, against the offline rule); **C** a 2D canvas
+    unwrap of the walls (no "standing in the room" view).
+  - **D-136 · Where the corrections live.** Chosen **A**: an optional survey key `box` written by the Desktop (room
+    heights, camera height, per-photo direction / tilt / field of view); the survey stays v2. Known gap: the phone
+    ignores unknown keys, so a survey re-saved on the phone drops `box` until K1b keeps it. Rejected: **B** a separate
+    side file (one more file to carry); **C** browser storage only (lost with the browser, not in the survey).
+
+- **D-137 … D-141 · Szobadoboz a telefonon (M59, dev line skcam K1b), 2026-11-22.** Taken for the Founder while
+  building ("start K1b, the room box on the phone"); each can be revisited.
+  - **D-137 · How the phone draws the box.** Chosen **A**: the Desktop's own `roombox.js` + `roombox-gl.js` in a WebView,
+    with a touch UI file of its own (`roombox-phone.js`), as the jegyzőkönyv runs `report.js` (D-120). Rejected: **B** a
+    native OpenGL / Compose renderer (a second copy of the projection to keep equal); **C** the box on the PC only.
+  - **D-138 · The `box` key on the phone.** Chosen **A**: kept as the cleaned JSON object the viewer writes
+    (`RoomBox.clean`), read and written by `SketchJson`, so the Desktop's and the phone's corrections are one key.
+    Closes D-136's known gap. Rejected: **B** a typed Kotlin model (more code for data only the viewer edits); **C**
+    dropping it on the phone (as before).
+  - **D-139 · The lens per Fotópont shot.** Chosen **A**: the in-app camera stores a 35 mm equivalent on each Fotópont
+    shot (Camera2 focal length and sensor size × the zoom ratio); `roombox.js` uses it after a typed value and before
+    EXIF. Rejected: **B** EXIF only (CameraX writes the real focal length, not the equivalent, and the camera app may
+    write neither); **C** the user picks the lens by hand.
+  - **D-140 · Fotópont opens wide.** Chosen **A**: with `vazlat.roombox` on, a Fotópont shot opens at the camera's
+    widest zoom (0.5× with an ultrawide), so four shots reach the corners; pinch still changes it. Rejected: **B** its
+    own registry switch (one more switch for one behaviour of the box); **C** always 1× (the corner gap, research §1.1).
+  - **D-141 · Where the box opens.** Chosen **A**: Rendezés → ⬚ Szobadoboz, where the plan is solved in mm. Rejected:
+    **B** the Fotópont wheel (the plan may not be solved there); **C** a front of its own (the fronts are the survey's
+    capture places).
+- **D-142 … D-144 · VRG Időjárás on the phone (M44), 2026-11-22.** Asked as A/B/C in the session; answered "1A 2A 3B"
+  (the recommendations), relayed from the Founder's coordinating session.
+  - **D-142 · The form: a native screen.** Chosen **A**: "can we work outside today" per activity, with the reasons and
+    the longest calm window, the official warnings, the fused 72 hours with their spread, a home-card line, and the
+    PC's page one tap away through the relay. The fusion and the rules are ported to a pure-Kotlin `weather-core`,
+    and `Weather/config` is bundled as exact copies under a test. Rejected: **B** the PC page only (it needs
+    `serve.js` and its database, so it is useless on a site away from the PC); **C** a notification only (no screen;
+    it can come later on top of A).
+  - **D-143 · Sources the phone calls itself: keyless and free for a company.** Chosen **A**: MET Norway, DWD MOSMIX
+    (nearest station within 45 km) and MeteoAlarm. Open-Meteo stays on the PC: a company may use it only with a paid
+    key, which would be a secret on the phone. MET Norway's terms want a contact in the User-Agent. It is a field
+    under ⚙ ("Kapcsolat (MET Norway)") kept on the phone only, and the source waits until it is filled in. Nothing is
+    committed. Rejected: **B** adding the HungaroMet 10-minute measurements (a zipped CSV every 10 minutes on mobile
+    data); **C** MET Norway and MeteoAlarm only (one forecast, so the confidence always reads "egy").
+  - **D-144 · Location: named places and "Itt" on a tap.** Chosen **B**: the towns of `places.json`, saved places,
+    and ◎ Itt. Itt reads one position on the tap, rounds it to two decimals (~1 km) and uses it only as the forecast
+    query's coordinates, in the D-31 spirit. The county for the warnings is taken from the nearest approximate county
+    centre (Budapest within 12 km). The PC Map's job sites stay on the PC. Rejected: **A** no GPS; **C** automatic
+    GPS on every open.
+
+- **D-145 … D-149 · Síkmérés (M60, dev line skcam K3), 2026-11-22.** Taken for the Founder while building ("start K3");
+  each can be revisited.
+  - **D-145 · One screen for the phone and the Desktop.** Chosen **A**: `Sketcher/lib/plane-ui.js` on the Desktop page
+    and in a WebView on the phone (as D-137). Rejected: **B** a native Compose measuring screen (a second copy of the
+    geometry and the gestures to keep equal).
+  - **D-146 · The reference.** Chosen **A**: a rectangle of known size (presets or a typed size), its corners tapped by
+    hand in any order, a landscape sheet read the right way round with ⇄ to override. Rejected: **B** a printed ArUco /
+    ChArUco card found automatically (needs a detector; it stays a later step); **C** one known length (not enough to
+    undo perspective).
+  - **D-147 · Heights.** Chosen **A**: a floor line tapped on the floor–wall edge, heights measured square to it on the
+    plane. Rejected: **B** the camera-height method (needs a level camera and a known height, both easy to get wrong).
+  - **D-148 · Where the results live.** Chosen **A**: an optional survey key `planes` by photo (a capture id or a
+    Fotópont shot), the millimetres stored computed, the phone keeping it (`Planes.kt`). Rejected: **B** inside the
+    capture's marks (Fotópont shots have no marks); **C** a side file.
+  - **D-149 · Accuracy.** Chosen **A**: a reach grade beside every value (jó ≤ 2×, közepes ≤ 5×, távoli beyond, in
+    reference sizes) and the advice to measure with the 1× lens; no lens-distortion correction yet. Rejected: **B** a
+    calibration step before the first measurement (later, with the marker card).
+- **D-150 · Tárgykereső: which state of the tag to build for (M61, experimental), 2026-11-20.** Taken while building, the
+  Founder may revisit. Chosen: **both** — a never-paired tag (pairing mode, `FD44`) and one paired to someone's Apple ID
+  (the separated advertisement with its rotating key) — with **no Apple account anywhere in VRG Mobile**. The phone
+  works only with what the tag says over Bluetooth: distance, ring, left-behind, the phone's last place. Rejected for
+  now: signing in to Apple from the phone (an Apple ID password in VRG Mobile, against Apple's terms, and still no key
+  to decrypt with). Details: `WP/M61.md`.
+- **D-151 · Tárgykereső: no remote location (M61), 2026-11-22.** Asked: the Founder chose **A**. The tag stays local, as
+  built: distance, ring, left-behind and the phone's last place, nothing more to set up. Rejected: **B** the Apple way
+  through the PC (pair once with an iPhone / Mac, export the key, a PC helper with an Apple ID fetching reports for the
+  phone: unofficial, against Apple's terms, fragile, needs a Mac); **C** a Google Find Hub tag beside it (not ruled out
+  as a purchase, just not part of this WP). Details: `WP/M61.md`.
+- **D-152 · Tárgykereső: the iTag joins it (M61), 2026-11-22.** Taken while building on the Founder's "in the same
+  fashion, add this device as well", may be revisited. The teardrop iTag is a second kind of tag in the same feature
+  (one tag book, one screen, one left-behind service), not a feature of its own. Its connection is held only while
+  *Kapcsolat tartása és ottfelejtés* is on, because a link opened with the screen would make the tag slow-beep every
+  time the screen closes. Telefonkereső (its button rings the phone) works only on that held link. Details: `WP/M61.md`.
+- **D-157 · Tárgykereső: a paired device, the Q71 watch (M61), 2026-11-22.** Taken while building on the Founder's
+  "repeat the process with this device as a third type of item", may be revisited. The Q71 is a FunDo-app calling watch
+  whose protocol is not public, so it is **not** reverse-engineered or guessed: it is followed through what Android
+  offers for any paired device — the connection as presence (Ottfelejtés, last place), a tone over hands-free audio
+  (SCO) as Csipogtatás, and its BLE side by name for the distance. Chosen from the phone's paired list. Works the same
+  for earbuds or a speaker. Rejected: sending guessed FunDo bytes to the watch. Details: `WP/M61.md`.
+- **D-162 · Tárgykereső: Diagnosztika is read-only (M61), 2026-11-22.** The Founder asked to debug the Q71 and update its
+  firmware. Not flashing a closed firmware (a wrong image bricks the watch; the update channel is FunDo's). Built
+  instead, as step 1 of a plan the Founder approved ("start steps 1 and 2"): a read-only GATT inventory — every service
+  and characteristic listed, only standard ones read (names, Device Information, battery; never a vendor characteristic
+  or a serial number), a chip guess from the maker's update service — shared as `vrg.device-diag` v1, which the Data
+  Vault's Eszközeim keeps (the Founder's "two parallel versions": work here, personal in the vault). Details: `WP/M61.md`.
+- **D-163 · App archive in two versions, one manifest (M61), 2026-11-22.** Step 2 of the same plan: an exact copy of an
+  installed app (first FunDo Pro) for legacy compatibility. Work: `Mobile/tools/app-archive.js` (START L → P) into
+  `{vrg}\Backup\installers\android`, never git. Personal: the Data Vault's `tools/apps.js`, manifest in git, APKs on the
+  PC. One format, `vrg.app-archive` v1. Only apps the Founder installed, pulled from the Founder's own phone; never a
+  mirror-site download, never redistributed, FunDo's code never decompiled (a companion of our own comes from a capture
+  of the watch's traffic, clean-room). Details: `WP/M61.md`.
+
+- **D-153 … D-156 · Körkép (M62, dev line skcam K4), 2026-11-22.** Taken for the Founder while building ("start K4");
+  each can be revisited.
+  - **D-153 · How the photos are put together.** Chosen **A**: from the poses the survey knows (one spot, direction,
+    tilt, lens), refined by matching neighbours where they overlap (normalised cross-correlation, our own code).
+    Rejected: **B** OpenCV's Stitcher on the PC (a native library, feature matching that the known poses make
+    unnecessary, and no phone version); **C** a learned model.
+  - **D-154 · Where the alignment goes.** Chosen **A**: into the survey's `box` key as the shots' yaw / pitch
+    corrections, the same ones the Szobadoboz sliders write, so the 3D view improves with it. Rejected: **B** a separate
+    panorama record (two sets of corrections for the same photos).
+  - **D-155 · The 360° file.** Chosen **A**: an equirectangular JPEG with the GPano XMP, which Google Photos and other
+    viewers show as a sphere. Rejected: **B** a viewer of our own (the Szobadoboz's *A pontból* view already looks
+    around); **C** cube faces (fewer viewers read them).
+  - **D-156 · Where the buttons are.** Chosen **A**: in the Szobadoboz panel, one Körkép row per photo point
+    (⟲ Igazítás, ⇩ 360° kép), behind `vazlat.pano`. Rejected: **B** on the Fotópont wheel (no solved plan there for
+    the 3D check); **C** automatic alignment on every open (it changes the survey; the user should see it happen).
+
+- **D-158 … D-161 · Ház 3D (M63, dev line skcam K5), 2026-11-22.** Taken for the Founder while building ("start K5");
+  each can be revisited. Q4 (the PC's graphics card) left open: the sparse cloud works without it.
+  - **D-158 · What reconstructs.** Chosen **A**: COLMAP (BSD) run by `Sketcher/tools/house3d.js` as a separate program
+    on the PC; sparse on any CPU, dense only with CUDA. Rejected: **B** a learned model (MapAnything / VGGT: a GPU
+    and a large download for the first step); **C** pycolmap in Python (a Python on H: to keep).
+  - **D-159 · Where the size comes from.** Chosen **A**: two points of the cloud and their true distance, typed in the
+    viewer (a tape, the K2 laser, the building's width). Rejected: **B** the camera height (a phone is held at about,
+    not exactly, the same height); **C** printed markers found automatically (later).
+  - **D-160 · Where the result lives.** Chosen **A**: `<név>.house3d.json` next to the photos (points, colours, cameras,
+    scale, measurements), opened in the Sketcher by its Megnyitás or the Helyszín card. Rejected: **B** inside the
+    survey (a cloud is megabytes; the survey travels to the phone).
+  - **D-161 · Where it is shown.** Chosen **A**: the Desktop Sketcher page, an overlay of its own (WebGL points, no
+    library); the processing is START P → 3 on a drop folder (`inbox\haz3d\<ház>`). Rejected: **B** a separate tool
+    page (one more page to register for one view); **C** the phone (the reconstruction runs on the PC anyway).
+
+- **D-164 … D-167 · Google AR csomag (M64, dev line skcam K6), 2026-11-22.** Q2 was answered by the Founder: the
+  recommended option, ARCore as an option, and *"a pack that can be activated (not just feature-by-feature)"*. The
+  rest was taken for the Founder while building ("both, start with the ARCore pack"); each can be revisited.
+  - **D-164 · Whose AR.** Chosen **A**: Google's ARCore (`com.google.ar:core`, the client library in the APK; the
+    runtime, Google Play Services for AR, from the Play Store when the meter first opens). The manifest marks AR
+    *optional*, so the app installs and works without it. Rejected: **B** an open visual-inertial SLAM (Basalt BSD-3,
+    OpenVIO MIT; OpenVINS and ORB-SLAM3 are GPL-3). These are research code with no Android build, and each phone
+    would need its camera and sensors calibrated: a later spike, not K6. **C** Huawei AR Engine (closed, one brand
+    only).
+  - **D-165 · One switch.** Chosen **A**: the whole pack is `kamera.ar` (*Google AR csomag*), off by default. On, it
+    brings the meter, the scan and the recording together; off, nothing of it shows and ARCore is never asked about.
+    Rejected: **B** a switch per AR feature (the Founder's own "not just feature-by-feature"); **C** on by default
+    (Google's runtime only by choice).
+  - **D-166 · Where the results go.** Chosen **A**:
+    - a distance goes into the survey's `ar` key (mm, label, room, wall), and onto the wall when opened from its Méret;
+    - a scan is a `vrg-house3d` file already to scale (the K5 viewer opens and measures it);
+    - a recording is ARCore's MP4.
+    The files go to the phone's shared VRG Vázlat folder, and the survey lists them by name only. Rejected: **B** the
+    cloud inside the survey (megabytes on every Átadás); **C** a format of its own for the scan (one more viewer).
+  - **D-167 · What the circle measures to.** Chosen **A**: ARCore's hit test at the screen's middle, accepting a
+    tracked plane inside its outline, a depth point, or a feature point with a surface normal. The two ends are
+    anchors, so they follow ARCore's corrections. Rejected: **B** tapping anywhere on the screen (the finger hides the
+    spot); **C** planes only (no corners, no furniture).
+
+- **D-168 … D-171 · Óra (M65), 2026-11-22.** Answered by the Founder, each the recommended option (the other options
+  were not written down). The background: the Q71's protocol was decoded from Bluetooth captures and FunDo's
+  `libCommand.so` (`notes/q71-watch`, outside git), and the watch turned out **not bonded**: FunDo keeps an unbonded
+  LE link to `Q71_LE`.
+  - **D-168 · FunDo.** Chosen **A**: VRG Mobile takes the watch over while it is linked; FunDo is stopped or
+    uninstalled. Both at once would steal each other's 2AA0 reads after the doorbell.
+  - **D-169 · Home.** Chosen **B**: a new tile **Óra** (`watch`, page 7 next to Tárgykereső). Tárgykereső's
+    paired-device section links to it for the Q71.
+  - **D-170 · First round.** Chosen **A**: **Q0–Q3**: the kct-core codec, the link, the basics (time, info, find watch,
+    steps) and find phone (a GATT server on the phone). Q8 (the Diagnosztika gap) may ride along; it did not in round 1.
+  - **D-171 · Watch faces.** Chosen **C**: made on the PC first (`dial-bin.js` gets a writer and a START entry), the
+    phone only uploads; the in-app Számlapszerkesztő (Q7) comes later.
+
+- **D-172 · DevLap: a Lap for picking the dev work up, on both sides, 2026-11-23.** The Founder asked for one custom Lap
+  (sheet preset) that opens the trackers, viewers, roadmaps and Claude session access already built, so a session can
+  find where the work stands and pick another dev line up. Chosen in the session: **two versions, each made for its
+  grid**, not one fitted to the other. Desktop (`Dashboard/config/sheets.json`, Dev level, 4 × 4): L · Vonaltérkép 2×2;
+  a browser 2×2 whose tabs are the Claude sessions (claude.ai/code), GO-MAIN, Actions, branches, commits on main,
+  releases, the Mobile roadmap and the Rétegverem pages A · Vezérlőterem, U · Futásnapló, Q · Döntésnapló,
+  I · Ötletfolyam, R · Commit-pixel and search; the Thread Board 2×1; a Claude Code terminal 2×2 that gets the keyboard;
+  git; Divergencia. The L window is a Rétegverem page, so opening the Lap starts that server before the browser restores
+  its 127.0.0.1 tabs. Phone (`PhoneSheets.OWN`, 2 × 4, after the Desktop's User-level presets in Lapok → +): Haladás
+  2×2, Claude, Értesítések, Gyorsjegyzet, Archívum. The phone does not show the Desktop DevLap: its windows are PC
+  tools (terminal, git, the Thread Board). Rejected: windows for every tracker (16 cells hold six readable ones; the
+  rest are tabs or one tap away in the + picker); a new home tile (Lapok → + already opens it in two taps).
+  Fixed the same day (0.9.735 hid it): **+** is pinned after the tabs (it used to scroll out of the 200 dp tab row once a
+  few sheets were open) and the + list scrolls with DevLap at its top (it was last, below the panel lying down).
+  Telefonon ellenőrizni: (1) the sheet bar's **+** is in view with several sheets open, and its list starts with
+  **DevLap** "5 ablak"; (2) it opens Haladás on top across both
+  columns, Claude and Értesítések below, Gyorsjegyzet and Archívum at the bottom; (3) a double tap on a window's header
+  makes it full and back. On the PC (Szint: Dev): (4) + → DevLap opens six windows filling the grid; (5) the
+  Vonaltérkép and the browser's Rétegverem tabs load (the stack server starts by itself); (6) the Claude Code terminal
+  has the keyboard; (7) claude.ai/code and the GitHub tabs show you signed in.
+
+- **D-173 · Radar: one radar for every program, one layout in two languages (M67), 2026-11-23.** Taken while building on
+  the Founder's request for a universal locator / proximity / connection display usable as a plugin. One frame contract
+  (layers + blips, `docs/radar/README.md`), one layout rule implemented twice — kit-core `Radar.kt` for the phone, the VRG
+  UI Kit's `components/radar.js` for the Desktop's HTML programs — held together by a shared fixture both test suites
+  reproduce. Rejected: a phone-only radar (the Desktop and the Data Vault would redo it), one implementation in a WebView
+  on the phone (no compass, no Compose look, worse on a CYD-size screen).
+- **D-174 · Radar: programs plug in through RadarHub (M67), 2026-11-23.** A feature registers a `RadarSource` (its layer,
+  its blips, a wake / calm hook) in its `init`; every radar — the Radar tile, the radar inside Tárgykereső and Csipogó —
+  asks the hub. Features never talk to each other (architecture rule 2); a broken source is skipped, never blanks the
+  radar. First sources: Saját címke + Címkék a közelben (Tárgykereső), Csipogó, Óra.
+- **D-175 · Radar: directions only when known (M67), 2026-11-23.** Bluetooth RSSI gives a distance, never a direction, so
+  a blip is drawn with a direction only from a place (GPS bearing), from **Irány keresése** (turn round once; the body
+  shadows the signal; kept on the compass for ten minutes in RadarHub) or from a source that knows it. Everything else is
+  hollow and dashed on its distance ring, and the caption counts them. Rejected: guessing a direction from RSSI changes
+  while walking (looks precise, is not).
+
+- **D-176 · Radar: snapshots go to the Data Vault as text (M67), 2026-11-25.** The Founder asked for the Data Vault
+  radar page too. The vault's plugins have no network and no Bluetooth (sandbox@1), so the phone's Radar shares a
+  snapshot (`vrg.radar-frame` v1, swept directions written in, live RSSI and hidden layers left out) through Android's
+  share sheet, as the Diagnosztika report does; the vault's Radarom keeps the snapshots and the Founder's own places (GPS
+  bearings from "itt vagyok"). Its layout is a copy of the shared rule, proven by a copy of the shared fixture. Rejected:
+  a live link phone → vault (the vault app has no network, DV-Q20; a live view stays VRG Mobile's).
+- **D-177 · Jegyzetek: one central Notes app, phone first (M69), 2026-11-20.** Asked: the Founder wants one central
+  Notes app users mainly use, with selectable versions (module sets) and a hub other features write into, tagged by
+  origin. Asked which platform first: the Founder chose **A**, the phone (VRG Mobile, replacing Gyorsjegyzet M6);
+  the Desktop page follows on the same files (`Notes/catalog/noteskit.json`, the `vrg-note` format). Rejected for
+  now: **B** desktop first (a self-contained page needs a local server to share storage between tools); **C** both
+  at once (slower to a usable first version).
+- **D-178 · Jegyzetek: where the notes live (M69), 2026-11-20.** Asked, with the warning that Sketcher notes carry
+  client details: **A** each device + the PC over the relay (client data never on GitHub), **B** a private git
+  branch, **C** the OneDrive Shared folder. The Founder chose **B**: the branch `vrg-notes`, one JSON file per note
+  (`notes/<id>.json`), sha-guarded writes, conflicts kept as a separate note tagged `ütközés`, a tombstone for an
+  emptied trash. This bends "client data never enters Git" knowingly and **unsealed** (unlike D-52); sealing the
+  notes of `client` origins to the devices' keys is the follow-up to offer.
+- **D-179 · Jegyzetek: who owns a feature's note (M69), 2026-11-20.** Asked: **A** a linked mirror, **B** the hub owns
+  it, **C** a one-way copy. The Founder chose **A**: the feature keeps its record (the Sketcher's Entry stays in the
+  survey and goes to the Planner with it) and the hub holds the same note with a fixed id; the base of the three-way
+  merge is the source's text when the two last agreed (`origin.seen`). Source changed → the note follows; note
+  changed → the source takes it when it next opens; both → the note keeps both texts and the source takes that; a
+  trashed note is never revived; a deleted record marks the note `gone`. Details: `WP/M69.md`, `Notes/README.md`.
+- **D-180 · Jegyzetek: client notes sealed on the branch, the Workflow Kit's way (M69), 2026-11-25.** Asked by the
+  Founder ("seal the client notes like the Workflow Kit"), closing the gap D-178 left open. A note of a `client` origin
+  (the Sketcher; the Planner when it comes), a conflict copy made from one, a note from a template marked `seal`
+  (Helyszíni bejárás, Ügyfélhívás) and any note locked by hand (🔒) goes to `vrg-notes` as `vrg-note-sealed`: the
+  note's JSON gzipped under a fresh AES-256-GCM key, that key wrapped per recipient with P-256 ECDH (a fresh key pair
+  each, the raw secret as the key, D-52's shape), additional data binding the content to the note id and each wrapped
+  key to the note id and the device. Readable: the note id and the recipients' device ids; the commit message names
+  the id only (for every note). Recipients: this device (its Eszközök key, kit Trust) and the devices whose code the
+  owner typed on this one (⚙ → Lezárás, pinned in the app's prefs, never in Git); each device publishes its public key
+  as `keys/<ID>.json` on the branch. Trusting or dropping a device seals every sealed note again. Without a device
+  key a sealed note waits on the phone, never falls back to plain; a plain client file left by the earlier build is
+  rewritten sealed at the next round. A client note cannot be unlocked by hand. Not undone: what the earlier build
+  pushed unsealed stays in the branch's history (only recreating the branch removes it); a dropped device keeps
+  reading the versions sealed to it before. Details: `WP/M69.md` → Lezárás.
+
+- **D-181 · VRG Füzet: what "the Note app" is, and what the fork is (M70), 2026-11-21. Taken as a default while
+  building.** The Founder asked for a fork of "the Note app" with its array of modules. Read as the VRG Sketcher (the
+  note taker with fronts, a data catalog and agent-made variants), not Gyorsjegyzet (M6, a single text box to a
+  branch). The fork is a new feature (`notebook`, `notebook-core` + `feature-notebook`) that takes the Sketcher's engine
+  ideas, not its code; the Sketcher stays as it is. Revisit if Gyorsjegyzet was meant: it could then become the Alap
+  kit's sender.
+- **D-182 · One store, applications as kits (M70), 2026-11-21. Default.** Every kit's entries in one JSON file, so one
+  search and one export cover everything (the Keep and Find directions). Kits are data only, bundled from
+  `Mobile/notebook/kits` and loadable from a file. Rejected: a file per kit (search and links across kits get hard);
+  kits as code modules (no agent-made or imported kits).
+- **D-183 · The store lives on the phone first (M70), 2026-11-21. Default, = Personal App Q2 A.** `filesDir`, plain JSON,
+  export / import through the system file picker with a merge. No GitHub sync yet; a sealed sync (the M42 mechanism)
+  is a later step.
+- **D-184 · The bundled kits and what is on at first (M70), 2026-11-21. Default.** Alap (always on), Munka and Otthon
+  on, Kutya off until Personal App Q4 is answered. The two measurement limits in Munka are the standard values (insulation
+  ≥ 1 MΩ at 500 V; RCD trip ≤ 300 ms at IΔn); the electrician confirms them.
+- **D-185 · The Füzet on the home (M70), 2026-11-21. Default.** Page 1, between the Sketcher and the Csipogó: quick
+  capture belongs with what is needed at once. Later: the Sketcher's survey as a kit, and the PC's Desktop page for
+  the store.
+  Details: `WP/M70.md`.
+- **D-186 · VRG Füzet and Jegyzetek both stay, for now (M70, M69), 2026-11-25.** Asked: the two were built in parallel
+  and overlap (Jegyzetek's versions of modules, the Füzet's kits): **A** keep both, **B** fold the Füzet's kits into
+  Jegyzetek, **C** fold Jegyzetek into the Füzet. The Founder chose **A**: Jegyzetek is the notes hub other features
+  write into, the Füzet holds the structured entries (measurements, readings, totals, limits). Revisit B once both have
+  been used on the phone.
 
 ## Open (to ask when the WP that needs them starts)
 

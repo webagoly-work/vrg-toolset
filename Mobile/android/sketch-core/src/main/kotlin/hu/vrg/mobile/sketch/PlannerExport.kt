@@ -151,6 +151,7 @@ object PlannerExport {
             val pp = s.photos.firstOrNull { it.id == f.id } ?: return@forEach
             val shots = JSONArray(f.shots.sortedBy { it.deg }.map { sh ->
                 JSONObject().put("deg", sh.deg).put("side", Photos.label(sh.deg)).put("file", Photos.exportName(s, pp, sh.deg)).put("taken", sh.taken)
+                    .also { j -> sh.f35?.let { j.put("f35", it) } }   // skcam K1b: the lens, for the Szobadoboz
             })
             val room = s.room(f.room)?.let { roomTitleOf(it) } ?: ""
             notes.put(JSONObject().put("id", id("N")).put("level", lvl).put("x", i(f.at.x)).put("y", i(f.at.y))

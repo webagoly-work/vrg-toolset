@@ -15,6 +15,8 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -206,7 +208,8 @@ internal fun ReportDialog(st: EditorState, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss, containerColor = Melyviz.raised,
         title = { Text("📄 Felmérési jegyzőkönyv", style = Melyviz.label) },
         text = {
-            Column {
+            // UI audit 4.1: the body scrolls (landscape, font 1.5 with the "too big" block cut off the two actions)
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text("Ugyanaz a dokumentum, mint az Asztal Sketcher oldalán: munkakör, tételek, kérdések, jegyzetek, helyiségek, vázlat, fotók, helyszín, aláírás.",
                     style = Melyviz.small)
                 VrgToggle("Az ügyfélnek (a Tisztázandó jegyzetek és az Ellenőrizni sorok nélkül)", forClient) { forClient = it }

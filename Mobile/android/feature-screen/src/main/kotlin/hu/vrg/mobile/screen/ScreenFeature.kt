@@ -4,22 +4,23 @@ import android.app.Application
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -87,6 +89,8 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
 import java.util.concurrent.TimeUnit
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Képernyő (WP M13): the PC's screen, live. A trusted link asks the relay for a one-connection ticket,
 // then frames come on their own WebSocket (/screen), so they never hold up the app's relay link. The
@@ -258,12 +262,8 @@ object ScreenFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp, horizontal = 4.dp))
-                Text("KÉPERNYŐ", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.padding(start = 8.dp).weight(1f))
-                if (running) VrgChip("■ Leállítás") { stop(ScreenStop.LEFT) }
-            }
+            // the header on one row (Fényjel R3: kit FeatureTop)
+            FeatureTop(host, info, inline = true) { if (running) VrgChip("■ Leállítás") { stop(ScreenStop.LEFT) } }
             pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
             when {
@@ -281,6 +281,7 @@ object ScreenFeature : VrgFeature {
         Row(Modifier.padding(vertical = 6.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun ColumnScope.Body(st: ScreenState, host: FeatureHost) {
         val img by image.collectAsStateWithLifecycle()
@@ -293,7 +294,7 @@ object ScreenFeature : VrgFeature {
         var offset by remember { mutableStateOf(Offset.Zero) }
         Box(
             Modifier.fillMaxWidth().weight(1f).padding(vertical = 6.dp).clip(RoundedCornerShape(10.dp)).background(Melyviz.abyss)
-                .border(1.dp, if (st is ScreenState.Live) Melyviz.glow else Melyviz.line, RoundedCornerShape(10.dp))
+                .vrgBorder(1.dp, if (st is ScreenState.Live) Melyviz.glow else Melyviz.line, RoundedCornerShape(10.dp))
                 .pointerInput(Unit) {
                     detectTransformGestures { _, pan, zoom, _ ->
                         scale = (scale * zoom).coerceIn(1f, 6f)
@@ -330,15 +331,19 @@ object ScreenFeature : VrgFeature {
                 if (scale > 1f) "×${"%.1f".format(scale)}" else null).joinToString(" · "),
                 style = Melyviz.readout, modifier = Modifier.weight(1f))
             if (scale > 1f) Text("1:1", style = Melyviz.small.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { scale = 1f; offset = Offset.Zero }.padding(6.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Nagyítás vissza") { scale = 1f; offset = Offset.Zero }
+                    .wrapContentHeight().padding(horizontal = 10.dp))
         }
 
-        // what to show: a monitor or the active window; the quality
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // what to show: a monitor or the active window (wraps, so no chip hides past the edge: UI-CHECKLIST 3.5);
+        // the quality on its own row
+        FlowRow(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             for (m in mons) VrgChip(m.label, selected = set.mode == ScreenMode.SCREEN && set.monitor == m.index) {
                 change(set.copy(mode = ScreenMode.SCREEN, monitor = m.index))
             }
             VrgChip(ScreenMode.WINDOW.label, selected = set.mode == ScreenMode.WINDOW) { change(set.copy(mode = ScreenMode.WINDOW)) }
+        }
+        Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             for (q in ScreenQuality.entries) VrgChip(q.label, selected = set.quality == q) { change(set.copy(quality = q)) }
         }
 
@@ -361,7 +366,7 @@ object ScreenFeature : VrgFeature {
             Box(
                 Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(12.dp))
                     .background(if (held) Melyviz.raised else Melyviz.surface)
-                    .border(1.dp, if (held) Melyviz.glow else Melyviz.line, RoundedCornerShape(12.dp))
+                    .vrgBorder(1.dp, if (held) Melyviz.glow else Melyviz.line, RoundedCornerShape(12.dp))
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             awaitFirstDown(requireUnconsumed = false)
@@ -387,10 +392,10 @@ object ScreenFeature : VrgFeature {
                 Text(if (held) "Mozgatás…" else "✋ Tartsd: a telefon mozgatja az egeret", style = Melyviz.small.copy(color = if (held) Melyviz.glow else Melyviz.muted))
             }
             Box(Modifier.fillMaxSize().weight(0.32f).clip(RoundedCornerShape(12.dp)).background(Melyviz.surface)
-                .border(1.dp, Melyviz.line, RoundedCornerShape(12.dp)).clickable { Pointer.sink?.click(false) }
+                .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(12.dp)).clickable { Pointer.sink?.click(false) }
                 .semantics { contentDescription = "Bal klikk" }, contentAlignment = Alignment.Center) { Text("Bal", style = Melyviz.label) }
             Box(Modifier.fillMaxSize().weight(0.32f).clip(RoundedCornerShape(12.dp)).background(Melyviz.surface)
-                .border(1.dp, Melyviz.line, RoundedCornerShape(12.dp)).clickable { Pointer.sink?.click(true) }
+                .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(12.dp)).clickable { Pointer.sink?.click(true) }
                 .semantics { contentDescription = "Jobb klikk" }, contentAlignment = Alignment.Center) { Text("Jobb", style = Melyviz.label) }
         }
     }

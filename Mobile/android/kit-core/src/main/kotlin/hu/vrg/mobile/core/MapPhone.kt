@@ -35,7 +35,17 @@ object MapPhone {
     val APP = DeskApp(ID, "VRG Térkép", "Map/vrg-terkep.html", listOf("Map/lib", "Map/style"))
     val PAGE_FILES = listOf("Map/vrg-terkep.html", "Map/lib/geocode.js", "Map/lib/jobs-layer.js", "Map/style/terep.json",
         // the weather layer (loaded by the page since its W layer) and the Sketcher's site layer (F1)
-        "Map/lib/weather-layer.js", "Map/lib/site-math.js", "Map/lib/site-layer.js")
+        "Map/lib/weather-layer.js", "Map/lib/site-math.js", "Map/lib/site-layer.js",
+        // the shadows (S, docs/map/SHADOWS.md)
+        "Map/lib/sun.js", "Map/lib/shadow-layer.js",
+        // the Térkép-feed (F, WP M55)
+        "Map/lib/feed.js", "Map/lib/feed-layer.js",
+        // our own offline routing (N2, WP M56)
+        "Map/lib/route.js", "Map/lib/route-layer.js",
+        // turn-by-turn guidance and the optional traffic check (N3, WP M58)
+        "Map/lib/guide.js", "Map/lib/traffic.js", "Map/lib/nav-layer.js",
+        // measuring the relief (R), the hills' shadow (⛰ in S) and measured building heights (B), docs/map/RELIEF.md
+        "Map/lib/relief.js", "Map/lib/dem.js", "Map/lib/relief-layer.js", "Map/lib/heights.js", "Map/lib/heights-layer.js")
 
     /** The script the phone adds to the page (GPS, the Vázlat sites, Navigáció); served from the APK. */
     const val PHONE_JS = "/__phone/phone.js"
@@ -96,7 +106,9 @@ sealed interface MapReq {
 
 object MapRoute {
     private val SAFE = Regex("[A-Za-z0-9._~%+@-]+")
-    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json")
+    private val DATA_FILES = setOf("hungary.pmtiles", "terrain.pmtiles", "addresses.json", "manifest.json", "pois.json", "roads.bin")
+    /** Public data read whole that the phone keeps for offline use (OSM, ODbL): the address index, the feed's points. */
+    private val KEEP = setOf("addresses.json", "manifest.json", "pois.json", "roads.bin")
     private val FONT = Regex("fonts/[A-Za-z0-9 %+._-]+/[0-9]+-[0-9]+\\.pbf")
     private val SPRITE = Regex("sprites/[A-Za-z0-9_-]+(@2x)?\\.(json|png)")
 
@@ -120,7 +132,7 @@ object MapRoute {
             val rel = segs.drop(1).joinToString("/")
             val decoded = java.net.URLDecoder.decode(rel.replace("+", "%2B"), "UTF-8")
             return when {
-                rel in DATA_FILES -> MapReq.Data(rel, keep = rel == "addresses.json" || rel == "manifest.json")
+                rel in DATA_FILES -> MapReq.Data(rel, keep = rel in KEEP)
                 FONT.matches(decoded) || SPRITE.matches(rel) -> MapReq.Data(rel, keep = true)
                 else -> MapReq.Refused(404, "not map data")
             }
@@ -139,7 +151,8 @@ object MapRoute {
      * the Sketcher site layer's satellite image (🛰: Esri World Imagery; the WebView does not cache it, the tile cache never sees it).
      * Everything else is refused, so nothing the page holds leaves the phone by itself.
      */
-    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net", "server.arcgisonline.com")
+    // api.tomtom.com: the optional traffic check (WP M58, D-130 B), one request on the user's tap with the user's own key
+    private val OUT_HOSTS = setOf("nominatim.openstreetmap.org", "cdn.jsdelivr.net", "server.arcgisonline.com", "api.tomtom.com")
     private val OUT_SUFFIXES = listOf("google.com", "gstatic.com", "googleapis.com", "ggpht.com", "googleusercontent.com")
     fun mayGoOut(scheme: String?, host: String?, method: String?): Boolean {
         if (scheme != "https" || host == null || method == null || !method.equals("GET", true)) return false

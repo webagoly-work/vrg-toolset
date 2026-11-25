@@ -8,8 +8,10 @@
     <color name="launcher_bg_moszat">#FF05110B</color>   <!-- Moszaterdő -->
     <color name="launcher_bg_sekely">#FFE4F2F5</color>   <!-- Sekély víz (világos) -->
     <color name="launcher_bg_sui">#FF0D141A</color>   <!-- Varler SUI -->
+    <color name="launcher_bg_fenyjel">#FF04070A</color>   <!-- Fényjel -->
     <color name="launcher_bg_kit_ej">#FF070809</color>   <!-- Éj -->
     <color name="launcher_bg_kit_papir">#FFE8EAE7</color>   <!-- Papír -->
     <color name="launcher_bg_kit_kontraszt">#FF000000</color>   <!-- Kontraszt -->
     <color name="launcher_bg_kit_melyviz">#FF071017</color>   <!-- Mélyvíz (kit) -->
+    <color name="launcher_bg_kit_grafit">#FF0F0F0F</color>   <!-- Grafit -->
 </resources>

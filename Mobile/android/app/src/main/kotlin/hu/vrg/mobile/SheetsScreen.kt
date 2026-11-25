@@ -2,9 +2,10 @@ package hu.vrg.mobile
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,6 +28,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -46,7 +49,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -73,11 +84,18 @@ import hu.vrg.mobile.core.Tile
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
+import hu.vrg.mobile.kit.ui.RcoItem
+import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.floor
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.PixelGlyph
+import hu.vrg.mobile.core.PixelGlyphs
+import hu.vrg.mobile.kit.ui.PixelIcon
 
 // Lapok (WP M20): the Desktop's sheets in the Asztal's sheet area. The model is kit-core's Sheets (a port of the Desktop's sheets.js) on
 // the phone's 2 × 4 grid; lying down the same sheet is drawn transposed, 4 × 2 (D-16). This file draws and turns gestures into model
@@ -111,6 +129,14 @@ object SheetsStore {
     }
 }
 
+/** A window's pixel glyph (Fényjel R1), from what it shows; null = only the text glyph of [titleOf]. */
+private fun pixelOf(w: SheetWin): PixelGlyph? = when (w.kind) {
+    "home" -> PixelGlyphs.byName("home")
+    "feat" -> FeatureIcons.of(w.open.removePrefix("feat:"))
+    "app" -> FeatureIcons.of(Catalogue.APPS)
+    else -> null
+}
+
 /** A window's title and glyph, from what it shows. */
 private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
     "home" -> "⌂" to "Kezdőlap"
@@ -122,24 +148,50 @@ private fun titleOf(w: SheetWin): Pair<String, String> = when (w.kind) {
 // ------------------------------------------------------------------ the tabs in the top strip
 
 @Composable
-fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null) {
-    Row(Modifier.widthIn(max = 200.dp).horizontalScroll(rememberScrollState()).padding(end = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+fun SheetTabs(doc: SheetsDoc, onAdd: () -> Unit, onMenu: (String) -> Unit, onHomeLong: (() -> Unit)? = null, modifier: Modifier = Modifier) {
+    // + stays in view: the sheet tabs scroll sideways between ⌂ and it (with a few sheets open it used to scroll out of sight);
+    // the row as a whole takes only what the top bar's buttons leave ([modifier] = weight(1f, fill = false) from the strip)
+    val scroll = rememberScrollState()
+    // a new sheet's tab is the last one: bring it into view
+    LaunchedEffect(doc.sheets.size) { scroll.animateScrollTo(scroll.maxValue) }
+    Row(modifier.padding(end = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
         // ⌂: the home; a long press switches it between the swiped pages and one long page (WP M38)
         Tab("⌂", doc.active.isEmpty(), "Munkapad", { SheetsStore.update { P.activate(it, "") } }, onHomeLong)
-        doc.sheets.forEach { s -> Tab(s.name, doc.active == s.id, "Lap: ${s.name}", { SheetsStore.update { P.activate(it, s.id) } }) { onMenu(s.id) } }
-        if (doc.sheets.size < Sheets.MAX_SHEETS) Tab("+", false, "Új lap", onAdd, null)
+        if (doc.sheets.isNotEmpty()) Row(Modifier.weight(1f, fill = false).horizontalScroll(scroll),
+            horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            // the sheet's menu was long-press only (UI audit 3.1): a tap on the active tab (marked ▾) opens it too
+            doc.sheets.forEach { s ->
+                val on = doc.active == s.id
+                Tab(s.name, on, "Lap: ${s.name}", { if (on) onMenu(s.id) else SheetsStore.update { P.activate(it, s.id) } }, { onMenu(s.id) }, menuHint = on)
+            }
+        }
+        if (doc.sheets.size < Sheets.MAX_SHEETS) Tab("+", false, "Új lap", onAdd, null, role = Role.Button)
     }
 }
 
+/** A tab: the drawn pill stays 36 dp inside a 48 dp touch slot; a real tab for TalkBack (role, selected, the long press named). */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Tab(text: String, on: Boolean, label: String, onTap: () -> Unit, onLong: (() -> Unit)?) {
-    Text(text, style = Melyviz.small.copy(color = if (on) Melyviz.glow else Melyviz.muted, fontSize = 12.sp), maxLines = 1,
-        modifier = Modifier.heightIn(min = 36.dp).background(if (on) Melyviz.raised else Melyviz.surface, RoundedCornerShape(8.dp))
-            .border(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(8.dp))
-            .pointerInput(onLong) { detectTapGestures(onTap = { onTap() }, onLongPress = onLong?.let { l -> { _ -> l() } }) }
-            .semantics { contentDescription = label + if (on) ", kijelölve" else "" }
-            .padding(horizontal = 10.dp, vertical = 9.dp))
+private fun Tab(text: String, on: Boolean, label: String, onTap: () -> Unit, onLong: (() -> Unit)?, menuHint: Boolean = false, role: Role = Role.Tab) {
+    val haptic = LocalHapticFeedback.current
+    Box(Modifier.heightIn(min = 48.dp)
+        .combinedClickable(
+            role = role,
+            onClickLabel = if (menuHint) "lap műveletei" else null,
+            onLongClickLabel = if (onLong != null) "lap műveletei" else null,
+            onLongClick = onLong?.let { l -> { haptic.performHapticFeedback(HapticFeedbackType.LongPress); l() } },
+            onClick = onTap,
+        )
+        .semantics { contentDescription = label; selected = on },
+        contentAlignment = Alignment.Center) {
+        // selected is bold and outlined in glow, not only another colour (UI-CHECKLIST 2.4)
+        Text(if (menuHint) "$text ▾" else text, style = Melyviz.small.copy(color = if (on) Melyviz.glow else Melyviz.muted, fontSize = 12.sp,
+            fontWeight = if (on) FontWeight.Bold else FontWeight.Normal), maxLines = 1,
+            modifier = Modifier.heightIn(min = 36.dp).background(if (on) Melyviz.raised else Melyviz.surface, RoundedCornerShape(8.dp))
+                .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(8.dp))
+                .clearAndSetSemantics { }
+                .padding(horizontal = 10.dp, vertical = 9.dp))
+    }
 }
 
 // ------------------------------------------------------------------ the sheet area
@@ -155,6 +207,7 @@ class SheetsHost(
 
 private data class Drag(val wid: String, val edge: String?, val grab: Cell, val start: Offset, val now: Offset)
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?) -> Unit) {
     val sheet = P.sheetOf(doc, doc.active) ?: return
@@ -172,24 +225,26 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
         val cwPx = with(dens) { cw.toPx() }
         val chPx = with(dens) { ch.toPx() }
         val edgePx = with(dens) { 28.dp.toPx() }
-        val headPx = with(dens) { 34.dp.toPx() }
+        val headPx = with(dens) { 48.dp.toPx() }   // the header's height (48 dp controls, UI audit 1.1)
         // screen ⇄ model (D-16)
         fun toModel(c: Cell) = if (lying) c.transposed() else c
         fun toScreen(t: Tile) = if (lying) t.transposed() else t
         fun cellAt(o: Offset) = Cell(floor(o.x / cwPx).toInt().coerceIn(0, cols - 1), floor(o.y / chPx).toInt().coerceIn(0, rows - 1))
         var drag by remember { mutableStateOf<Drag?>(null) }
 
-        // free cells: a long press opens the picker there; an empty sheet says how
+        // free cells: a tap (or a long press) opens the picker there; each shows a faint + (it was long-press only once a
+        // sheet had a window: UI audit 3.1)
         val occ = P.occupancy(sheet)
         for (sr in 0 until rows) for (sc in 0 until cols) {
             val m = toModel(Cell(sc, sr))
             if (occ[m.r * P.g.cols + m.c].isNotEmpty()) continue
             Box(Modifier.offset(cw * sc, ch * sr).size(cw, ch).padding(3.dp)
-                .border(1.dp, Melyviz.lineSoft.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                .pointerInput(m) { detectTapGestures(onLongPress = { onPick(m) }, onTap = { if (sheet.wins.isEmpty()) onPick(m) }) }
-                .semantics { contentDescription = "Üres cella, hosszan nyomva új ablak" },
+                .vrgBorder(1.dp, Melyviz.lineSoft.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                .combinedClickable(onClickLabel = "új ablak", onLongClick = { onPick(m) }, onClick = { onPick(m) })
+                .semantics { contentDescription = "Üres cella, koppintásra új ablak" },
                 contentAlignment = Alignment.Center) {
                 if (sheet.wins.isEmpty() && sr == 0 && sc == 0) Text("Koppints:\núj ablak", style = Melyviz.small.copy(color = Melyviz.faint), textAlign = TextAlign.Center)
+                else Text("+", style = Melyviz.glyph.copy(color = Melyviz.faint, fontSize = 18.sp))
             }
         }
 
@@ -201,7 +256,7 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
             if (t != null) {
                 val s = toScreen(t)
                 Box(Modifier.offset(cw * s.c, ch * s.r).size(cw * s.w, ch * s.h).padding(2.dp)
-                    .background(Melyviz.glow.copy(alpha = 0.12f), RoundedCornerShape(12.dp)).border(2.dp, Melyviz.glow, RoundedCornerShape(12.dp)))
+                    .background(Melyviz.glow.copy(alpha = 0.12f), RoundedCornerShape(12.dp)).vrgBorder(2.dp, Melyviz.glow, RoundedCornerShape(12.dp)))
             }
         }
 
@@ -209,6 +264,25 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
             val w = sheet.wins.first { it.id == v.id }
             val r = v.rect
             val dragging = drag?.wid == w.id
+            // the same moves and resizes as the drags, from the header's ⋯ and TalkBack (UI audit 3.1, 9.5), in screen terms
+            fun moveBy(dc: Int, dr: Int, glyph: String, label: String): RcoItem {
+                val to = toModel(Cell(r.c + dc, r.r + dr))
+                val t = P.moveTarget(sheet, w.id, to)
+                return RcoItem(glyph, label, enabled = t != null && (t.tile != w.tile || t.swap.isNotEmpty())) { SheetsStore.update { P.move(it, w.id, to) } }
+            }
+            fun sizeBy(edge: String, at: Cell, glyph: String, label: String): RcoItem {
+                val e = if (lying) Sheets.transposeEdge(edge) else edge
+                val to = toModel(at)
+                val t = P.resizeTarget(sheet, w.id, e, to)
+                return RcoItem(glyph, label, enabled = t != null && t != w.tile) { SheetsStore.update { P.resize(it, w.id, e, to) } }
+            }
+            val actions = listOf(
+                RcoItem("▣", "Teljes méret") { SheetsStore.update { P.maximize(it, w.id) } },
+                moveBy(-1, 0, "◀", "Balra"), moveBy(1, 0, "▶", "Jobbra"), moveBy(0, -1, "▲", "Fel"), moveBy(0, 1, "▼", "Le"),
+                sizeBy("e", Cell(r.c + r.w, r.r), "+↔", "Szélesebb"), sizeBy("e", Cell(r.c + r.w - 2, r.r), "−↔", "Keskenyebb"),
+                sizeBy("s", Cell(r.c, r.r + r.h), "+↕", "Magasabb"), sizeBy("s", Cell(r.c, r.r + r.h - 2), "−↕", "Alacsonyabb"),
+                RcoItem("✕", "Bezárás", danger = true) { SheetsStore.update { P.closeWin(it, w.id) } },
+            )
             Box(Modifier.offset(cw * r.c, ch * r.r).size(cw * r.w, ch * r.h).padding(3.dp)
                 .pointerInput(w.id, w.c, w.r, w.w, w.h, lying) {
                     detectDragGesturesAfterLongPress(
@@ -238,33 +312,40 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
                         onDragCancel = { drag = null },
                     )
                 }) {
-                WindowCard(w, sheet.focus == w.id, dragging, small = r.w * r.h == 1)
+                WindowCard(w, sheet.focus == w.id, dragging, small = r.w * r.h == 1, actions)
             }
         }
     }
 }
 
 @Composable
-private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: Boolean) {
+private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: Boolean, actions: List<RcoItem>) {
     val (glyph, title) = titleOf(w)
     val f = Registry.feature(w.open.removePrefix("feat:"))
     val status by (f?.activity ?: remember { MutableStateFlow(MiniStatus.IDLE) }).collectAsState()
+    var menu by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(if (dragging) Melyviz.surface.copy(alpha = 0.6f) else Melyviz.raised, RoundedCornerShape(12.dp))
-        .border(if (focused) 2.dp else 1.dp, if (focused) Melyviz.glow else Melyviz.glowDim, RoundedCornerShape(12.dp))) {
-        Row(Modifier.fillMaxWidth().height(34.dp).background(Melyviz.abyss.copy(alpha = 0.5f), RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+        .vrgBorder(if (focused) 2.dp else 1.dp, if (focused) Melyviz.glow else Melyviz.glowDim, RoundedCornerShape(12.dp))
+        .semantics { customActions = actions.filter { it.enabled }.map { a -> CustomAccessibilityAction("$title: ${a.label}") { a.onClick(); true } } }) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).background(Melyviz.abyss.copy(alpha = 0.5f), RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             .pointerInput(w.id) { detectTapGestures(onDoubleTap = { SheetsStore.update { P.toggleMax(it, w.id) } }, onTap = { SheetsStore.update { P.focusWin(it, w.id) } }) }
             .semantics { contentDescription = "$title ablak, dupla koppintás: teljes vagy egy cella" }
             .padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(glyph, style = Melyviz.small.copy(color = Melyviz.glow))
+            val px = pixelOf(w)
+            if (px != null) PixelIcon(px, 14.dp) else Text(glyph, style = Melyviz.small.copy(color = Melyviz.glow))
             Text(title, style = Melyviz.small.copy(color = Melyviz.ink, fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).padding(horizontal = 6.dp))
-            Text("✕", style = Melyviz.small.copy(color = Melyviz.muted), modifier = Modifier.clickable { SheetsStore.update { P.closeWin(it, w.id) } }
-                .padding(horizontal = 10.dp, vertical = 8.dp).semantics { contentDescription = "$title bezárása" })
+            Box {
+                HeadButton("⋯", "$title: mozgatás, méret") { menu = true }
+                RcoMenu(menu, { menu = false }, title, actions)
+            }
+            HeadButton("✕", "$title bezárása") { SheetsStore.update { P.closeWin(it, w.id) } }
         }
         // the face: the window's compact self; a tap opens it full
         Column(Modifier.weight(1f).fillMaxWidth().clickable { SheetsStore.update { P.maximize(it, w.id) } }.padding(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Mini(glyph, title, status, size = if (small) MiniSize.SM else MiniSize.MD, tint = Melyviz.glow, quietIdle = true)
+            val face = pixelOf(w)
+            Mini(glyph, title, status, size = if (small) MiniSize.SM else MiniSize.MD, tint = if (face != null) null else Melyviz.glow, quietIdle = true, pixel = face)
             if (!small) {
                 val blurb = when (w.kind) {
                     "home" -> "A telefon funkciói ikonokként."
@@ -295,14 +376,14 @@ private fun FullWindow(modifier: Modifier, w: SheetWin, sh: SheetsHost) {
         }
     }
     Column(modifier) {
-        Row(Modifier.fillMaxWidth().height(32.dp).background(Melyviz.abyss.copy(alpha = 0.5f))
+        Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).background(Melyviz.abyss.copy(alpha = 0.5f))
             .pointerInput(w.id) { detectTapGestures(onDoubleTap = { SheetsStore.update { P.toggleMax(it, w.id) } }) }
             .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("$glyph  $title", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.weight(1f), maxLines = 1)
-            Text("⧉", style = Melyviz.small.copy(color = Melyviz.muted), modifier = Modifier.clickable { SheetsStore.update { P.restore(it, w.id) } }
-                .padding(horizontal = 12.dp, vertical = 6.dp).semantics { contentDescription = "Vissza a lapra" })
-            Text("✕", style = Melyviz.small.copy(color = Melyviz.muted), modifier = Modifier.clickable { SheetsStore.update { P.closeWin(it, w.id) } }
-                .padding(horizontal = 12.dp, vertical = 6.dp).semantics { contentDescription = "$title bezárása" })
+            val px = pixelOf(w)
+            if (px != null) { PixelIcon(px, 14.dp); Spacer(Modifier.width(8.dp)) }
+            Text(if (px != null) title else "$glyph  $title", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.weight(1f), maxLines = 1)
+            HeadButton("⧉", "Vissza a lapra") { SheetsStore.update { P.restore(it, w.id) } }
+            HeadButton("✕", "$title bezárása") { SheetsStore.update { P.closeWin(it, w.id) } }
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when {
@@ -315,6 +396,14 @@ private fun FullWindow(modifier: Modifier, w: SheetWin, sh: SheetsHost) {
                 else -> Text("$title: ez az ablak ezen a telefonon nem nyílik meg.", style = Melyviz.small, modifier = Modifier.padding(16.dp))
             }
         }
+    }
+}
+
+/** A window header's control: the small glyph in a 48 dp target, named for TalkBack (UI audit 1.1: they were ~30 dp). */
+@Composable
+private fun HeadButton(glyph: String, label: String, onClick: () -> Unit) {
+    Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
+        Text(glyph, style = Melyviz.small.copy(color = Melyviz.muted))
     }
 }
 
@@ -350,14 +439,15 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
         BasicTextField(q, { q = it }, singleLine = true, textStyle = Melyviz.label.copy(fontSize = 15.sp), cursorBrush = SolidColor(Melyviz.glow),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go), keyboardActions = KeyboardActions(onGo = { hits.firstOrNull()?.let { pick(it.second) } }),
             modifier = Modifier.fillMaxWidth().focusRequester(focus).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                .border(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
+                .vrgBorder(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
             decorationBox = { inner -> if (q.isEmpty()) Text("Keresés…", style = Melyviz.label.copy(color = Melyviz.faint)); inner() })
         Spacer(Modifier.height(6.dp))
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
             items(hits, key = { it.first.id }) { (item, r) ->
                 val glyph = when (r.kind) { "home" -> "⌂"; "app" -> Catalogue.APPS.glyph; else -> Catalogue.byId(r.open!!.removePrefix("feat:"))?.glyph ?: "·" }
+                val px = when (r.kind) { "home" -> PixelGlyphs.byName("home"); "app" -> FeatureIcons.of(Catalogue.APPS); else -> FeatureIcons.of(r.open!!.removePrefix("feat:")) }
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { pick(r) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
+                    Box(Modifier.width(34.dp)) { if (px != null) PixelIcon(px, 20.dp) else Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow)) }
                     Text(item.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
@@ -366,7 +456,7 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
     }
 }
 
-/** "+": a new sheet, blank or from a preset (the Desktop's User-level ones fitted to the phone, then the user's own). */
+/** "+": a new sheet, blank or from a preset (the phone's own — DevLap — then the Desktop's User-level ones fitted to the phone, then the user's own). */
 @Composable
 fun NewSheetPanel(doc: SheetsDoc, onClose: () -> Unit) {
     BackHandler(onBack = onClose)
@@ -380,12 +470,15 @@ fun NewSheetPanel(doc: SheetsDoc, onClose: () -> Unit) {
         onClose()
     }
     Panel("ÚJ LAP", onClose) {
-        (PhoneSheets.PRESETS + doc.mine).forEach { p ->
-            val n = PhoneSheets.windows(doc, p).size
-            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { add(p) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (p in doc.mine) "★" else "▦", style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
-                Text(p.name, style = Melyviz.label, modifier = Modifier.weight(1f))
-                Text(if (n == 0) "üres" else "$n ablak", style = Melyviz.small.copy(color = Melyviz.muted))
+        // the list scrolls (lying down, or with presets of your own, it is taller than the screen); DevLap is first
+        Column(Modifier.fillMaxWidth().heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+            (PhoneSheets.PRESETS + doc.mine).forEach { p ->
+                val n = PhoneSheets.windows(doc, p).size
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { add(p) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (p in doc.mine) "★" else "▦", style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
+                    Text(p.name, style = Melyviz.label, modifier = Modifier.weight(1f))
+                    Text(if (n == 0) "üres" else "$n ablak", style = Melyviz.small.copy(color = Melyviz.muted))
+                }
             }
         }
         Text("A Desktop sablonjaiból azok az ablakok jönnek át, amelyeket a telefon meg tud nyitni.", style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.faint),
@@ -398,13 +491,14 @@ fun NewSheetPanel(doc: SheetsDoc, onClose: () -> Unit) {
 fun SheetMenu(doc: SheetsDoc, sid: String, onClose: () -> Unit) {
     val s: Sheet = P.sheetOf(doc, sid) ?: run { onClose(); return }
     var name by remember(sid) { mutableStateOf(s.name) }
+    var sure by remember(sid) { mutableStateOf(false) }   // closing drops the sheet and its windows: asked once more
     BackHandler(onBack = onClose)
     Panel("LAP · ${s.name}", onClose) {
         BasicTextField(name, { name = it.take(Sheets.MAX_NAME) }, singleLine = true, textStyle = Melyviz.label.copy(fontSize = 15.sp), cursorBrush = SolidColor(Melyviz.glow),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { SheetsStore.update { P.renameSheet(it, sid, name) }; onClose() }),
             modifier = Modifier.fillMaxWidth().background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp))
+                .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp))
         MenuRow("✓", "Átnevezés") { SheetsStore.update { P.renameSheet(it, sid, name) }; onClose() }
         MenuRow("◀", "Előrébb") { SheetsStore.update { P.moveSheet(it, sid, -1) } }
         MenuRow("▶", "Hátrébb") { SheetsStore.update { P.moveSheet(it, sid, 1) } }
@@ -412,26 +506,34 @@ fun SheetMenu(doc: SheetsDoc, sid: String, onClose: () -> Unit) {
             val id = "m-" + Kommand.words(s.name).joinToString("-").filter { it in 'a'..'z' || it in '0'..'9' || it == '-' }.take(20).ifEmpty { "lap" }
             SheetsStore.update { P.savePreset(it, sid, id, s.name) }; onClose()
         }
-        MenuRow("✕", "Lap bezárása") { SheetsStore.update { P.removeSheet(it, sid) }; onClose() }
+        if (!sure) MenuRow("✕", "Lap bezárása…", danger = true) { sure = true }
+        else {
+            MenuRow("✕", "Igen, bezárás" + if (s.wins.isEmpty()) "" else " (${s.wins.size} ablakkal)", danger = true) {
+                SheetsStore.update { P.removeSheet(it, sid) }; onClose()
+            }
+            MenuRow("↩", "Mégse") { sure = false }
+        }
     }
 }
 
 @Composable
-private fun MenuRow(glyph: String, label: String, onClick: () -> Unit) {
+private fun MenuRow(glyph: String, label: String, danger: Boolean = false, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onClick).padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
-        Text(label, style = Melyviz.label)
+        Text(glyph, style = Melyviz.readout.copy(color = if (danger) Melyviz.coral else Melyviz.glow), modifier = Modifier.width(34.dp))
+        Text(label, style = Melyviz.label.copy(color = if (danger) Melyviz.coral else Melyviz.ink))
     }
 }
 
 @Composable
 private fun Panel(title: String, onClose: () -> Unit, body: @Composable () -> Unit) {
     Box(Modifier.fillMaxSize().background(Melyviz.abyss.copy(alpha = 0.85f)).clickable(onClick = onClose), contentAlignment = Alignment.Center) {
-        Column(Modifier.padding(16.dp).widthIn(max = 420.dp).fillMaxWidth().background(Melyviz.deep, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.padding(14.dp)) {
+        // the panel scrolls and keeps above the keyboard: lying down the sheet menu was taller than the screen (Lap bezárása cut off)
+        Column(Modifier.imePadding().padding(16.dp).widthIn(max = 420.dp).fillMaxWidth().background(Melyviz.deep, RoundedCornerShape(Melyviz.radius))
+            .vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.verticalScroll(rememberScrollState()).padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = Melyviz.title.copy(fontSize = 12.sp), modifier = Modifier.weight(1f))
-                Text("✕", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clickable(onClick = onClose).padding(8.dp))
+                Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Bezárás" },
+                    contentAlignment = Alignment.Center) { Text("✕", style = Melyviz.glyph.copy(color = Melyviz.muted)) }
             }
             Spacer(Modifier.height(8.dp))
             body()

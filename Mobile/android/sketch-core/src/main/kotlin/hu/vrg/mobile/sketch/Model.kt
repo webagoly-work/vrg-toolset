@@ -110,7 +110,8 @@ data class Tag(val id: String, val name: String, val color: Long, val preset: St
 data class TagUse(val id: String, val tag: String, val target: String? = null, val at: Pt? = null)
 
 /** WP M25 (Fotópont): a spot in a room with photos, each taken facing [Shot.deg] (0 = up on the sketch, clockwise). */
-data class Shot(val deg: Int, val file: String, val taken: Long = 0)
+/** A Fotópont photo. [f35] = its lens as a 35 mm-equivalent focal length (skcam K1b), when the in-app camera knew it. */
+data class Shot(val deg: Int, val file: String, val taken: Long = 0, val f35: Double? = null)
 data class PhotoPoint(val id: String, val at: Pt, val room: String? = null, val shots: List<Shot> = emptyList())
 
 // ---- the intake (VRG Sketcher, WP M26-M30): docs/sketcher/README.md section 3 --------------------------------------
@@ -256,6 +257,15 @@ data class Sketch(
     val roomScope: Map<String, Map<String, Int>> = emptyMap(),
     /** F5 (WP M50): the client's contact, personal, stripped on export unless kept (ClientInfo.kt). */
     val client: Client? = null,
+    /**
+     * skcam K1 / K1b (WP M57, M59): the Szobadoboz corrections, kept as the JSON object text the viewer writes
+     * ({h: {room id: mm}, eye: mm, shots: {"<point>/<deg>": {yaw, pitch, f35}}}); RoomBox.kt reads and cleans it.
+     */
+    val box: String? = null,
+    /** skcam K3 (WP M60): the Síkmérés records by photo, as the JSON object text plane.js writes (Planes.kt). */
+    val planes: String? = null,
+    /** skcam K6 (WP M64): the Google AR csomag's distances and its saved scans / recordings (Ar.kt). */
+    val ar: String? = null,
 ) {
     /** The next id with [prefix], and the sketch with its counter moved on. */
     fun nextId(prefix: String): Pair<String, Sketch> = (prefix + (seq + 1)) to copy(seq = seq + 1)

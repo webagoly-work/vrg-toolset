@@ -8,18 +8,25 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +36,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +46,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +63,12 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalDensity
@@ -87,8 +101,11 @@ import hu.vrg.mobile.sketch.Tools
 import hu.vrg.mobile.sketch.Wheels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 /** The palette the canvas draws with, read once per composition (DrawScope is not composable). */
 internal data class Pal(
@@ -170,10 +187,12 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     }
 
     // saved half a second after the last edit, and once more on the way out
-    LaunchedEffect(st.sketch) { delay(500); withContext(Dispatchers.IO) { store.save(st.sketch) } }
+    // the Jegyzet front's entries also go to VRG Jegyzetek (WP M46), tagged by their origin
+    LaunchedEffect(st.sketch) { delay(500); withContext(Dispatchers.IO) { store.save(st.sketch); SketchNotes.push(st.sketch, st.kit) } }
     DisposableEffect(initial.id) {
         onDispose {
             store.save(st.sketch)
+            SketchNotes.push(st.sketch, st.kit)
             // files no longer in the survey (retaken, deleted, a shot never given a direction) go when leaving it:
             // undo can still bring one back while the survey is open
             val keep = Intake.files(st.sketch)
@@ -196,8 +215,8 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
 
     live?.let { r ->
         LiveCamera(st, r, dir,
-            onShot = { q, name ->
-                if (q.photo != null) { st.photoTaken(q, name); null }
+            onShot = { q, name, lens ->
+                if (q.photo != null) { st.photoTaken(q, name, lens); null }
                 else {
                     val ll = exifLatLon(File(dir, name))
                     st.captureTaken(q, name, ll?.first, ll?.second)
@@ -251,37 +270,69 @@ private fun exifLatLon(f: File): Pair<Double, Double>? = try {
 
 @Composable
 private fun TopBar(st: EditorState, onClose: () -> Unit, onNorm: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().background(Melyviz.deep).padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Text("‹", style = Melyviz.title.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onClose).padding(horizontal = 6.dp))
-        Text(
-            st.sketch.name.ifBlank { "Névtelen felmérés" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).clickable { st.ask = Ask.SketchName },
-        )
-        // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original.
-        // F4 (WP M49): a long press (RCO) lists the variants, the original, ⟳ refresh and ＋ a new request; with no
-        // variant chosen yet a faint ◐ stands there and a tap opens the same list
-        val allVariants by SketcherKit.variants.collectAsState()
-        val cur = SketcherKit.variant(st.sketch.variant)
-        if ((cur != null || allVariants.isNotEmpty()) && feat("variansok.use")) Box {
-            var vmenu by remember { mutableStateOf(false) }
-            val on = st.sketch.variantOn && cur != null
-            Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.faint),
-                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
-                    .rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { if (feat("variansok.longpress") || cur == null) vmenu = true }, longLabel = "variánsok")
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                    .semantics { contentDescription = (if (on) cur!!.name else "Eredeti") + ": váltás" })
-            RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })
+    // UI audit 3.5 / 4.5: at font 1.5 one row left the survey name (the only way to rename) 0 dp wide. On a phone the
+    // bar is two rows: back, name and Rendezés on top, the tools below; one row only where about 480 dp fits.
+    val cfg = LocalConfiguration.current
+    val oneRow = cfg.screenWidthDp / LocalDensity.current.fontScale >= 480f
+    Column(Modifier.fillMaxWidth().background(Melyviz.deep).padding(horizontal = 4.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            BarKey("‹", "Vissza", color = Melyviz.current, onClick = onClose)
+            Box(
+                Modifier.weight(1f).widthIn(min = 64.dp).heightIn(min = 48.dp)
+                    .clickable(onClickLabel = "Átnevezés") { st.ask = Ask.SketchName },
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(st.sketch.name.ifBlank { "Névtelen felmérés" }, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            if (oneRow) BarTools(st, fill = false)
+            VrgChip("Rendezés ›", selected = true, onClick = onNorm)
         }
-        VrgChip(st.sketch.level.label) { st.setLevel(Level.entries[(st.sketch.level.ordinal + 1) % Level.entries.size]) }
-        Text("↶", style = Melyviz.title.copy(color = if (st.canUndo) Melyviz.ink else Melyviz.faint),
-            modifier = Modifier.clickable(enabled = st.canUndo) { st.undo() }.padding(horizontal = 4.dp))
-        Text("↷", style = Melyviz.title.copy(color = if (st.canRedo) Melyviz.ink else Melyviz.faint),
-            modifier = Modifier.clickable(enabled = st.canRedo) { st.redo() }.padding(horizontal = 4.dp))
-        Text("⚙", style = Melyviz.title, modifier = Modifier.clickable { st.ask = Ask.PluginSheet }.padding(horizontal = 4.dp))
-        VrgChip("Rendezés ›", selected = true, onClick = onNorm)
+        if (!oneRow) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            BarTools(st, fill = true)
+        }
+    }
+}
+
+/** The variant toggle, the level and ↶ ↷ ⚙; [fill] pushes the three keys to the right edge (the second row). */
+@Composable
+private fun RowScope.BarTools(st: EditorState, fill: Boolean) {
+    // the variant toggle in the corner (WP M31): its symbol in its colour while on, grey for the original.
+    // F4 (WP M49): a long press (RCO) lists the variants, the original, ⟳ refresh and ＋ a new request; with no
+    // variant chosen yet a faint ◐ stands there and a tap opens the same list. UI audit 3.1: with the long press
+    // switched off (variansok.longpress), the ⚙ sheet's Variánsok section is the visible way to the list.
+    val allVariants by SketcherKit.variants.collectAsState()
+    val cur = SketcherKit.variant(st.sketch.variant)
+    if ((cur != null || allVariants.isNotEmpty()) && feat("variansok.use")) Box {
+        var vmenu by remember { mutableStateOf(false) }
+        val on = st.sketch.variantOn && cur != null
+        Box(
+            Modifier.heightIn(min = 48.dp).rco(onClick = { if (cur != null) st.toggleVariant() else vmenu = true }, onLong = { if (feat("variansok.longpress") || cur == null) vmenu = true }, longLabel = "variánsok")
+                .semantics { contentDescription = (if (on) cur!!.name else "Eredeti") + ": váltás" },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.muted),
+                modifier = Modifier.clip(RoundedCornerShape(50)).vrgBorder(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
+                    .padding(horizontal = 8.dp, vertical = 2.dp))
+        }
+        RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })
+    }
+    VrgChip(st.sketch.level.label) { st.setLevel(Level.entries[(st.sketch.level.ordinal + 1) % Level.entries.size]) }
+    if (fill) Spacer(Modifier.weight(1f))
+    BarKey("↶", "Visszavonás", enabled = st.canUndo) { st.undo() }
+    BarKey("↷", "Újra", enabled = st.canRedo) { st.redo() }
+    BarKey("⚙", "Bővítmények") { st.ask = Ask.PluginSheet }
+}
+
+/** A glyph key of the top bar: 48 dp to touch, named for TalkBack (UI audit 1.1, 8.1). */
+@Composable
+private fun BarKey(glyph: String, label: String, enabled: Boolean = true, color: Color = Melyviz.ink, onClick: () -> Unit) {
+    Box(
+        Modifier.minimumInteractiveComponentSize()
+            .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(glyph, style = Melyviz.title.copy(color = if (enabled) color else Melyviz.faint), modifier = Modifier.clearAndSetSemantics { })
     }
 }
 
@@ -293,8 +344,14 @@ private fun SketchCanvas(st: EditorState) {
     val c = pal()
     st.density = LocalDensity.current.density
     var fitted by remember { mutableStateOf(false) }
+    // UI audit 8.2: TalkBack gets the picked item's wheel as custom actions (the canvas itself has no other semantics)
+    val acts = st.picked?.let { st.pickedItems() }.orEmpty()
     Canvas(
         Modifier.fillMaxSize()
+            .semantics {
+                contentDescription = "Vázlat" + (st.picked?.let { ": " + st.describe(it.first) } ?: "")
+                if (acts.isNotEmpty()) customActions = acts.map { item -> CustomAccessibilityAction(item.label) { st.choosePicked(item); true } }
+            }
             .onGloballyPositioned {
                 st.canvasOrigin = it.positionInRoot()
                 st.canvasSize = Size(it.size.width.toFloat(), it.size.height.toFloat())
@@ -547,7 +604,7 @@ private fun ToolRail(st: EditorState) {
             Column(
                 Modifier.width(58.dp).height(54.dp).clip(RoundedCornerShape(Melyviz.radiusSmall))
                     .background(if (on) Melyviz.glow else Melyviz.surface)
-                    .border(1.dp, if (on) Melyviz.glow else Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
+                    .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
                     .clickable { st.pick(t) },
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
             ) {
@@ -558,12 +615,44 @@ private fun ToolRail(st: EditorState) {
     }
 }
 
+/**
+ * A tool's option row: [content] scrolls sideways, [trailing] (the row's actions) stays fixed at the right edge, so
+ * an action is never scrolled off screen behind a long list (UI audit 3.5).
+ */
 @Composable
-private fun OptionRow(content: @Composable () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().background(Melyviz.surface).horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+private fun OptionRow(
+    scroll: ScrollState = rememberScrollState(),
+    trailing: (@Composable RowScope.() -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(Modifier.fillMaxWidth().background(Melyviz.surface).padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.weight(1f).horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { content() }
+        if (trailing != null) Row(Modifier.padding(start = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { trailing() }
+    }
+}
+
+/** A short option row that wraps instead of scrolling (every chip stays in view at any font size). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun OptionFlow(content: @Composable () -> Unit) {
+    FlowRow(
+        Modifier.fillMaxWidth().background(Melyviz.surface).padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp),
     ) { content() }
+}
+
+/** Scrolls [scroll] to its end once [count] grows (a new chip was added at the end), not on the first show. */
+@Composable
+private fun ScrollToEndOnGrow(scroll: ScrollState, count: Int) {
+    var seen by remember { mutableStateOf(count) }
+    LaunchedEffect(count) {
+        if (count > seen) {
+            val before = scroll.maxValue
+            withTimeoutOrNull(500) { snapshotFlow { scroll.maxValue }.first { it != before } }
+            scroll.animateScrollTo(scroll.maxValue)
+        }
+        seen = count
+    }
 }
 
 @Composable
@@ -584,27 +673,32 @@ private fun ToolOptions(st: EditorState) {
             if (shapes.isEmpty()) Text("Nincs sablon.", style = Melyviz.small)
             shapes.forEach { t -> VrgChip(t.sym + " " + t.label, selected = (st.template ?: shapes.first()) == t) { st.template = t } }
         }
-        Tools.BOARD.id -> OptionRow {
+        Tools.BOARD.id -> OptionRow(trailing = { VrgChip("⚡ Bekötés", selected = true) { st.connect() } }) {
             PointState.entries.forEach { s -> VrgChip(s.label, selected = st.pointState == s) { st.pointState = s } }
-            VrgChip("⚡ Bekötés", selected = true) { st.connect() }
             Text("${st.sketch.boards.size} Elosztó · ${st.sketch.circuits.count { it.board != null }}/${st.sketch.circuits.size} kör bekötve", style = Melyviz.small)
         }
-        Tools.CIRCUIT.id -> OptionRow {
-            st.sketch.circuits.forEach { k ->
-                val on = k.id == st.activeCircuit
-                Row(
-                    Modifier.clip(RoundedCornerShape(50)).background(if (on) Color(k.color) else Melyviz.raised)
-                        .border(2.dp, Color(k.color), RoundedCornerShape(50))
-                        .clickable { if (on) st.ask = Ask.CircuitEdit(k.id) else st.activeCircuit = k.id }
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                ) {
-                    Text("${k.name} · ${k.members.size}" + (if (k.board != null) " ⚡" else ""), style = Melyviz.label.copy(fontSize = 11.sp, color = if (on) Color.White else Melyviz.ink))
+        Tools.CIRCUIT.id -> {
+            val scroll = rememberScrollState()
+            ScrollToEndOnGrow(scroll, st.sketch.circuits.size)   // a new circuit comes into view
+            OptionRow(scroll, trailing = {
+                VrgChip("＋ Új kör") { st.newCircuit() }
+                VrgChip("⚡ Bekötés") { st.connect() }
+            }) {
+                st.sketch.circuits.forEach { k ->
+                    val on = k.id == st.activeCircuit
+                    Row(
+                        Modifier.clip(RoundedCornerShape(50)).background(if (on) Color(k.color) else Melyviz.raised)
+                            .vrgBorder(2.dp, Color(k.color), RoundedCornerShape(50))
+                            .clickable(onClickLabel = if (on) "kör szerkesztése" else "kör választása") { if (on) st.ask = Ask.CircuitEdit(k.id) else st.activeCircuit = k.id }
+                            .heightIn(min = 36.dp).padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("${k.name} · ${k.members.size}" + (if (k.board != null) " ⚡" else ""), style = Melyviz.label.copy(fontSize = 11.sp, color = if (on) Color.White else Melyviz.ink))
+                    }
                 }
             }
-            VrgChip("＋ Új kör") { st.newCircuit() }
-            VrgChip("⚡ Bekötés") { st.connect() }
         }
-        Tools.LINE.id -> OptionRow {
+        Tools.LINE.id -> OptionFlow {
             Text("${st.lineDraft.size} pont", style = Melyviz.small)
             VrgChip("↶ Pont") { st.lineBack() }
             VrgChip("Kész: nyitott vonal") { st.lineDone() }
@@ -617,16 +711,31 @@ private fun ToolOptions(st: EditorState) {
         }
         else -> {}
     }
-    if (st.pendingShot != null) OptionRow {
-        Text("A fotó iránya: húzz a pontból É / K / D / Ny felé.", style = Melyviz.small.copy(color = Melyviz.sand))
+    // UI audit 3.1: the picked item's wheel (name, size, type, delete …) behind a visible chip, not the hold alone
+    st.picked?.let { (h, _) ->
+        if (st.tool.id == Tools.SELECT.id || st.tool.id == Tools.POINT.id) OptionRow(trailing = { VrgChip("⋯ Műveletek") { st.openPicked() } }) {
+            Text(st.describe(h), style = Melyviz.small, maxLines = 1)
+        }
+    }
+    // UI audit 3.5: Elvet first and the hint wraps beside it (it pushed Elvet off screen in a scroller)
+    if (st.pendingShot != null) Row(
+        Modifier.fillMaxWidth().background(Melyviz.surface).padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+    ) {
         VrgChip("Elvet") { st.cancelShot() }
+        Text("A fotó iránya: húzz a pontból É / K / D / Ny felé.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.weight(1f))
     }
 }
 
-/** The tag tray: tap a tag to make it the brush, or drag it straight onto the sketch. */
+/**
+ * The tag tray: tap a tag to make it the brush, or hold it and drag it onto the sketch. The drag starts after a long
+ * press so a plain sideways swipe scrolls the tray, and ＋ Új címke stays fixed outside it (UI audit 3.5, 8.4).
+ */
 @Composable
 private fun TagTray(st: EditorState) {
-    OptionRow {
+    val scroll = rememberScrollState()
+    ScrollToEndOnGrow(scroll, st.sketch.tags.size)
+    OptionRow(scroll, trailing = { VrgChip("＋ Új címke") { st.ask = Ask.TagPick(null, null) } }) {
         st.sketch.tags.forEach { t -> key(t.id) {
             var origin by remember { mutableStateOf(Offset.Zero) }
             var at by remember { mutableStateOf(Offset.Zero) }
@@ -637,7 +746,7 @@ private fun TagTray(st: EditorState) {
                 modifier = Modifier
                     .onGloballyPositioned { origin = it.positionInRoot() }
                     .pointerInput(t.id) {
-                        detectDragGestures(
+                        detectDragGesturesAfterLongPress(
                             onDragStart = { off -> at = origin + off - st.canvasOrigin; st.tagDrag = t.id to at },
                             onDrag = { ch, d -> ch.consume(); at += d; st.tagDrag = t.id to at },
                             onDragEnd = {
@@ -648,11 +757,10 @@ private fun TagTray(st: EditorState) {
                         )
                     }
                     .clip(RoundedCornerShape(50)).background(Color(t.color))
-                    .border(if (on) 2.dp else 0.dp, if (on) Melyviz.ink else Color(t.color), RoundedCornerShape(50))
-                    .clickable { st.activeTag = if (on) null else t.id }
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                    .vrgBorder(if (on) 2.dp else 0.dp, if (on) Melyviz.ink else Color(t.color), RoundedCornerShape(50))
+                    .clickable(onClickLabel = if (on) "ecset ki" else "ecsetnek") { st.activeTag = if (on) null else t.id }
+                    .heightIn(min = 36.dp).wrapContentHeight().padding(horizontal = 10.dp, vertical = 5.dp),
             )
         } }
-        VrgChip("＋ Új címke") { st.ask = Ask.TagPick(null, null) }
     }
 }

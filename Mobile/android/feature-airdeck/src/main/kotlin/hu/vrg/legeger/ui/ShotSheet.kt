@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +42,7 @@ import java.io.File
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // 📸 — the screenshot that just arrived from the PC, ready to keep: save to the gallery, share to any
 // app, take another, or pick an earlier one from the strip.
@@ -65,7 +65,7 @@ fun ShotSheet(file: File?, onPick: (File) -> Unit, onClose: () -> Unit) {
         val bmp by produceState<ImageBitmap?>(null, file) { value = withContext(Dispatchers.IO) { decode(file, 1600) } }
         Box(
             Modifier.fillMaxWidth().padding(top = 10.dp).heightIn(min = 120.dp, max = 420.dp)
-                .clip(RoundedCornerShape(Melyviz.radius)).background(Melyviz.abyss).border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radius)),
+                .clip(RoundedCornerShape(Melyviz.radius)).background(Melyviz.abyss).vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radius)),
             contentAlignment = Alignment.Center,
         ) {
             bmp?.let { Image(it, contentDescription = file.name, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth()) }
@@ -119,7 +119,7 @@ private fun Thumb(f: File, selected: Boolean, onClick: () -> Unit, menu: List<Rc
     Box {
         Box(
             Modifier.size(96.dp, 64.dp).clip(shape).background(Melyviz.abyss)
-                .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+                .vrgBorder(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
                 .rco(onClick = onClick, onLong = { open = true }),
             contentAlignment = Alignment.Center,
         ) { bmp?.let { Image(it, contentDescription = f.name, contentScale = ContentScale.Crop, modifier = Modifier.size(96.dp, 64.dp)) } }

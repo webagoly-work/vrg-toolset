@@ -215,3 +215,24 @@ WebView; the drawing and the site from `PlanSvg.kt` / `SiteSvg.kt` (= `app.js` `
 **Átadás** (`<név>.jegyzokonyv.html`, photos inside). The export rules apply (client only when kept, no GPS, blur burned
 in, personal photos only blurred); *Az ügyfélnek* also drops the Tisztázandó notes and the Ellenőrizni lines. Switch:
 ⚙ → Funkciók → *📄 Jegyzőkönyv a telefonon* (registry `export.report_phone`, requires `export.report`).
+
+Decisions taken while building: D-27 … D-34 in `docs/mobile/DECISIONS.md`.
+
+## 15. Open dev line: Kamera+ (room box, measuring, house 3D)
+
+Opened 2026-11-20: `CAMERA-LINE.md` (stages K1–K7, open questions Q1–Q4), research in
+`docs/research/2026-11-20_room-capture-and-measurement.md`. **K1 Szobadoboz is built (WP M57, BETA):** on the Desktop
+page, Vázlat → ⬚ Szobadoboz (3D) raises the plan's rooms to their ceiling height and projects the Fotópont photos onto
+the walls (offline WebGL, no AI; `lib/roombox.js` + `lib/roombox-gl.js`). It has a dollhouse view, a view standing at
+the photo point, and per-photo fine-tuning saved in the survey's `box` key. **K1b is built (WP M59, BETA):** the same
+box on the phone (Rendezés → ⬚ Szobadoboz, a WebView with `lib/roombox-phone.js` as the touch UI). The phone keeps the
+`box` key, and the in-app camera opens Fotópont at the widest zoom and stores each shot's lens. **K3 is built (WP M60, BETA):**
+📏 Mérés on any photo (phone and Desktop, one screen: `lib/plane.js` + `lib/plane-ui.js`). Four corners of a known
+rectangle on the wall give true distances and heights above a floor line; the results go into the survey's `planes` key. **K4 is
+built (WP M62, BETA):** in the Szobadoboz, per photo point, ⟲ Igazítás matches the 0.5× neighbours and fixes their
+turns and tilts; ⇩ 360° kép makes a GPano JPEG any 360° viewer opens (`lib/pano.js`). **K5 is built (WP M63,
+BETA):** a walk round a house → START P → 3 (COLMAP on the PC) → `<név>.house3d.json` → Helyszín → 🏠 Ház 3D: the point
+cloud, a scale from one true distance, then measurements (`tools/house3d.js`, `lib/house3d.js`, `lib/house3d-ui.js`). **K6 is
+built (WP M64, BETA):** the Google AR csomag, one opt-in switch on the phone (`kamera.ar`): ARCore's live two-point
+distance (into the survey's `ar` key, or onto a wall), a room scan saved as a `.house3d.json` already to scale (it opens
+in the same 🏠 Ház 3D viewer with no scale step, `test/ar-scan.test.js`) and the Recording API's MP4.

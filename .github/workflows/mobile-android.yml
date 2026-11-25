@@ -5,11 +5,11 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
-      'Map/lib/site-math.js', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', 'shared/fenyjel/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
+      'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   pull_request:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
-      'Map/lib/site-math.js', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', 'shared/fenyjel/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
+      'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   workflow_dispatch:
 
 permissions:
@@ -41,8 +41,12 @@ jobs:
         run: |
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
+          node Mobile/tests/relay-sys.js
           node Mobile/catalogue/icon-gen.js --check
+          node shared/fenyjel/tools/kotlin-icons.js --check
           node Mobile/tests/workflow-seal.js
+          node Mobile/tests/app-archive.js
+          node shared/vrg-ui-kit/test/radar.js
       # F8 (WP M53): the Planner end of the survey (its sketch import and survey panel), built from source so the
       # Sketcher's end-to-end test below opens the Planner as it is now
       - name: Planner sketch import (spec-111, spec-112)
@@ -55,7 +59,7 @@ jobs:
         working-directory: .
         run: node Sketcher/test/run.js
       - name: Tests (pure Kotlin)
-        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :weather-core:test :tag-core:test :notebook-core:test
       - name: Debug APK
         run: ./gradlew --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4

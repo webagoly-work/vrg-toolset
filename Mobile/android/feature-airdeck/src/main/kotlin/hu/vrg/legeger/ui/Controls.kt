@@ -1,7 +1,6 @@
 package hu.vrg.legeger.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -39,6 +38,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -51,6 +56,7 @@ import hu.vrg.legeger.core.PadMode
 import hu.vrg.legeger.core.WheelAccumulator
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlin.math.hypot
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 /** A tile of the deck. `active` lights it in the accent colour. */
 @Composable
@@ -69,7 +75,7 @@ fun DeckTile(
             .heightIn(min = minHeight)
             .clip(shape)
             .background(if (active) accent else Melyviz.surface)
-            .border(1.dp, if (active) accent else Melyviz.line, shape)
+            .vrgBorder(1.dp, if (active) accent else Melyviz.line, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,12 +88,19 @@ fun DeckTile(
     }
 }
 
-/** A button that reports press and release separately: the clutch, the mouse buttons, the scrub. */
+/**
+ * A button that reports press and release separately: the clutch, the mouse buttons, the scrub.
+ *
+ * The finger gesture is the pointer input alone; TalkBack and Switch Access get a button named [label] whose click is
+ * [onAccessClick] (by default a press and a release, i.e. one click) — UI-CHECKLIST 8.2, 8.4.
+ */
 @Composable
 fun HoldTile(
     modifier: Modifier = Modifier,
     held: Boolean,
     accent: Color = Melyviz.glow,
+    label: String? = null,
+    onAccessClick: (() -> Unit)? = null,
     onPress: () -> Unit,
     onRelease: () -> Unit,
     content: @Composable () -> Unit,
@@ -97,7 +110,12 @@ fun HoldTile(
         modifier
             .clip(shape)
             .background(if (held) accent.copy(alpha = 0.9f) else Melyviz.raised)
-            .border(1.dp, if (held) accent else Melyviz.line, shape)
+            .vrgBorder(1.dp, if (held) accent else Melyviz.line, shape)
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                if (label != null) contentDescription = label
+                onClick { if (onAccessClick != null) onAccessClick() else { onPress(); onRelease() }; true }
+            }
             .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
@@ -116,10 +134,10 @@ fun StatusDot(color: Color, size: Dp = 9.dp) {
 }
 
 @Composable
-fun StatusPill(label: String, color: Color, onClick: () -> Unit) {
+fun StatusPill(label: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.clip(shape).background(Melyviz.surface).border(1.dp, Melyviz.lineSoft, shape)
+        modifier.clip(shape).background(Melyviz.surface).vrgBorder(1.dp, Melyviz.lineSoft, shape)
             .clickable(onClick = onClick).padding(horizontal = 9.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -129,15 +147,24 @@ fun StatusPill(label: String, color: Color, onClick: () -> Unit) {
     }
 }
 
+/**
+ * A chip, as the kit's VrgChip: a button for TalkBack with its selected state, and ~33 dp tall (UI-CHECKLIST 1.1, 6.2, 8.1).
+ * [description] names a glyph-only chip ("✕", "✎") for TalkBack.
+ */
 @Composable
-fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
+fun Chip(text: String, selected: Boolean, description: String? = null, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Text(
         text,
         style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp),
         modifier = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
-            .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-            .clickable(onClick = onClick).padding(horizontal = 10.dp, vertical = 5.dp),
+            .vrgBorder(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics {
+                this.selected = selected
+                if (description != null) contentDescription = description
+            }
+            .padding(horizontal = 10.dp, vertical = 9.dp),
     )
 }
 

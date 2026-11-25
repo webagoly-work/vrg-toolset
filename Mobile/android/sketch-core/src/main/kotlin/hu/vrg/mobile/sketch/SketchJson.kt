@@ -68,7 +68,7 @@ object SketchJson {
         .put("photos", JSONArray().also { a -> s.photos.forEach { f ->
             val o = JSONObject().put("id", f.id).put("at", pt(f.at))
             f.room?.let { o.put("room", it) }
-            o.put("shots", JSONArray().also { sa -> f.shots.forEach { sh -> sa.put(JSONObject().put("deg", sh.deg).put("file", sh.file).put("taken", sh.taken)) } })
+            o.put("shots", JSONArray().also { sa -> f.shots.forEach { sh -> sa.put(JSONObject().put("deg", sh.deg).put("file", sh.file).put("taken", sh.taken).also { j -> sh.f35?.let { j.put("f35", it) } }) } })
             a.put(o)
         } })
         .also { o -> writeIntake(s, o) }
@@ -115,6 +115,9 @@ object SketchJson {
         if (s.variantOn) o.put("variantOn", true)
         if (s.draft.isNotEmpty()) o.put("draft", s.draft)
         ClientInfo.write(s, o)   // F5: personal, only when filled in
+        RoomBox.write(s, o)      // skcam K1b: the Szobadoboz corrections, only when there are any
+        Planes.write(s, o)       // skcam K3: the Síkmérés records of the photos that still exist
+        Ar.write(s, o)           // skcam K6: the AR distances, scans and recordings
     }
 
     private fun readPtRaw(a: JSONArray?) = if (a == null || a.length() < 2) null else Pt(a.optDouble(0), a.optDouble(1))
@@ -154,7 +157,7 @@ object SketchJson {
             variant = o.str("variant"),
             variantOn = o.optBoolean("variantOn"),
             draft = o.optString("draft"),
-        ).let { Wants.read(o, it) }.let { ClientInfo.read(o, it) }
+        ).let { Wants.read(o, it) }.let { ClientInfo.read(o, it) }.let { RoomBox.read(o, it) }.let { Planes.read(o, it) }.let { Ar.read(o, it) }
     }
 
     // WP M46 (Kamera 2): the capture's optional keys, written only when not the default (an M29 file stays as it was)
@@ -224,7 +227,7 @@ object SketchJson {
             },
             photos = list(o.optJSONArray("photos")) { f ->
                 PhotoPoint(f.str("id") ?: return@list null, readPt(f.optJSONArray("at")) ?: return@list null, f.str("room"),
-                    list(f.optJSONArray("shots")) { sh -> Shot(sh.optInt("deg"), sh.optString("file"), sh.optLong("taken")) })
+                    list(f.optJSONArray("shots")) { sh -> Shot(sh.optInt("deg"), sh.optString("file"), sh.optLong("taken"), dbl(sh, "f35")?.takeIf { it > 0 }) })
             },
         ))
     }

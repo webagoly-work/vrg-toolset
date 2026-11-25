@@ -19,7 +19,7 @@ const args = process.argv.slice(2);
 const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',').filter(Boolean) : [];
 const shots = args.includes('--shots') ? args[args.indexOf('--shots') + 1] : null;
 const want = (k) => !only.length || only.includes(k);
-const THEMES = ['dark', 'light', 'contrast', 'melyviz'];
+const THEMES = ['dark', 'light', 'contrast', 'melyviz', 'grafit'];
 let fails = 0;
 const fail = (m) => { fails++; console.log('✗ ' + m); };
 const ok = (m) => console.log('✓ ' + m);

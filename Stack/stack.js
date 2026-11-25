@@ -19,6 +19,8 @@
 //   node stack.js decisions                                                     rewrite out/decisions-data.js (decisions.html, Döntésnapló)
 //   node stack.js metro                                                         rewrite out/metro-data.js (metro.html, Vonaltérkép)
 //   node stack.js runs                                                          rewrite out/runs-data.js (runs.html, Futásnapló)
+//   node stack.js kisokos [--standalone <file.html>]                            rewrite out/kisokos-data.js (kisokos.html, Kisokos 3D);
+//                                                                               --standalone also writes one self-contained page
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
 //   node stack.js mcp                                                          run the MCP server on stdio
 //
@@ -77,9 +79,10 @@ async function main() {
     case 'decisions': return require('./lib/decisions').write().msg;
     case 'metro': return require('./lib/metro').write().msg;
     case 'runs': return require('./lib/runs').write().msg;
+    case 'kisokos': { const standalone = opt('--standalone', ''); return require('./lib/kisokos').write({ standalone }).msg; }
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
-    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 25).map(l => l.slice(3)).join('\n');
+    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 27).map(l => l.slice(3)).join('\n');
   }
 }
 

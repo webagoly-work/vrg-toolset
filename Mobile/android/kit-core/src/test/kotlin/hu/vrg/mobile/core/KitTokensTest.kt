@@ -25,13 +25,13 @@ class KitTokensTest {
     }
 
     @Test fun theTenIdsMatchLookPalettes() {
-        assertEquals(11, Look.PALETTES.size)
+        assertEquals(13, Look.PALETTES.size)
         assertEquals(Look.PALETTES.size, Look.PALETTES.toSet().size)
         assertEquals("melyviz", Look.DEFAULT_PALETTE, "the default stays the app's own")
-        assertEquals(KitTokens.IDS, Look.PALETTES.takeLast(4))
+        assertEquals(KitTokens.IDS, Look.PALETTES.takeLast(5))
         val six = kotlinPalettes(File(theme, "Melyviz.kt").readText()).keys.toList()
-        assertEquals(Look.PALETTES, six + kotlinPalettes(generated).keys.toList(), "Palettes.ALL = the seven + KitTokens.ALL, in this order")
-        assertTrue(Regex("ALL = listOf\\(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI\\) \\+ KitTokens.ALL").containsMatchIn(File(theme, "Melyviz.kt").readText()))
+        assertEquals(Look.PALETTES, six + kotlinPalettes(generated).keys.toList(), "Palettes.ALL = the eight + KitTokens.ALL, in this order")
+        assertTrue(Regex("ALL = listOf\\(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI, FENYJEL\\) \\+ KitTokens.ALL").containsMatchIn(File(theme, "Melyviz.kt").readText()))
     }
 
     @Test fun everyKitColourEqualsItsToken() {
@@ -52,10 +52,14 @@ class KitTokensTest {
         // --vk-accent-line = color-mix(in srgb, --vk-accent 55%, transparent) over the ground
         assertEquals(KitTokens.colour("#9fd8ea").copy(a = .55).over(KitTokens.colour("#0b0d0f")).rgb, ej.colours["glowDim"])
         assertTrue(kit.first { it.id == "kit-papir" }.light)
-        assertEquals(listOf(false, true, false, false), kit.map { it.light })
+        assertEquals(listOf(false, true, false, false, false), kit.map { it.light })
         assertEquals(0f, kit.first { it.id == "kit-melyviz" }.radius, "Mélyvíz (kit) is square")
         assertEquals(5f, ej.radius)
         assertTrue(Regex("\"kit-melyviz\"[\\s\\S]*?radius = 0\\.dp, radiusSmall = 0\\.dp").containsMatchIn(generated))
+        // Grafit: --vk-frame: dots → the terminal look (dot-matrix frames, mono titles) with the token's dot geometry
+        assertEquals(0x161616, kit.first { it.id == "kit-grafit" }.colours["deep"])
+        assertTrue(Regex("\"kit-grafit\"[\\s\\S]*?terminal = true, dotPitch = 3\\.dp, dotRadius = 0\\.75\\.dp").containsMatchIn(generated))
+        assertEquals(1, Regex("terminal = true").findAll(generated).count(), "only Grafit wears the dot matrix")
         assertTrue("val targetMin = 40.dp" in generated && "val fsMd = 15.sp" in generated, "the touch density sizes")
     }
 

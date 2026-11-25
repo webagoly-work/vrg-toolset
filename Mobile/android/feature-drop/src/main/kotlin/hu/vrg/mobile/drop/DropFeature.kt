@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,9 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -88,6 +92,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Átadás (WP M12): the relay's file board on the phone. Files and photos go to the PC (onto the board,
 // or for the Planner / the Inventory), the board's files come down into Letöltések (Képek for a
@@ -370,9 +375,10 @@ object DropFeature : VrgFeature {
 
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-                Text("ÁTADÁS", style = Melyviz.title.copy(fontSize = 18.sp))
+                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh beside the title: pull-to-refresh alone is out of
+                // reach for TalkBack/Switch (9.1)
+                FeatureTop(host, info) { if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {
@@ -451,7 +457,7 @@ object DropFeature : VrgFeature {
 
         VrgSectionTitle("A táblán")
         when {
-            l == null -> Text(if (loading) "A tábla olvasása…" else "Húzd le a frissítéshez.", style = Melyviz.small)
+            l == null -> Text(if (loading) "A tábla olvasása…" else "Húzd le, vagy ⟳ Frissítés.", style = Melyviz.small)
             !l.ok -> {
                 Text(l.reason ?: "A relé elutasította.", style = Melyviz.small.copy(color = Melyviz.sand))
                 if (!l.trusted) Row(Modifier.padding(vertical = 6.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }

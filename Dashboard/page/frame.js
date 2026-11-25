@@ -166,6 +166,8 @@
     document.addEventListener('vrg-note', e => { if (e.detail) openNote(e.detail); });
     window.VRGFrame.openUrl = url => (typeof url === 'string' && /^https?:\/\//i.test(url) ? openWeb(url.slice(0, 4000)) : false);
     window.addEventListener('vrg-ctx-attach', e => { if (e.detail && typeof e.detail.packId === 'string') openChat({ kind: 'pack', packId: e.detail.packId }); });
+    // the VRG Böngésző's Küldés Claude-nak (T5): main made the pack; the chat opens with it attached, nothing is sent yet
+    if (vrg && vrg.on) vrg.on('browser', 'claude', m => { if (m && typeof m.packId === 'string' && /^p[0-9a-f]{16}$/.test(m.packId)) openChat({ kind: 'pack', packId: m.packId }); });
     document.addEventListener('vrg-chat-attach', e => { if (e.detail) openChat(e.detail); });
     document.body.dataset.ready = '1';
   }
@@ -445,6 +447,8 @@
     const drop = () => { if (typeof m.server !== 'string') { try { vrg.term.kill(m.term); } catch (e) {} } };
     const id = openKind('term', {});                           // no prof: the pane stays idle (its profile menu is hidden below)
     if (!id) { drop(); return ''; }
+    // WP-51: the labels main knows (a resumed session: local, account, its title and id) go onto the window when it sits on a Lap
+    if (m.deco && typeof m.deco === 'object' && window.VRGSheets && window.VRGSheets.decorate) { try { window.VRGSheets.decorate(id, m.deco); } catch (e) {} }
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.root && inst.host); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
     if (!inst || !inst.root) { drop(); return id; }
