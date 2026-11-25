@@ -555,3 +555,29 @@ Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
   - The answer window rendered.
 - **Not run:** the PowerShell helpers (no Windows here), the addon inside Electron, the global key, a Hungarian SAPI voice, and Avast's
   reaction to the helpers' first start.
+
+## WP-58 Fényjel home — rollout R4 of the Fényjel design system (2026-11-25, cloud session)
+
+- **A third look:**
+  - `ui.look` now takes `fenyjel` next to `melyviz` and `grafit`.
+  - The palette has *Megjelenés: Fényjel*, and the toggle cycles Mélyvíz → Grafit → Fényjel.
+  - The frame loads `shared/fenyjel/` (fonts, `fenyjel.css`, `icons.js`).
+  - `page/fenyjel-home.css` maps the Mélyvíz tokens onto Fényjel, so the panes and dialogs follow.
+- **The Irányítópult under Fényjel is the `shared/fenyjel/DESIGN.md` §7.3 home** (`page/fenyjel-home.js`; desk.js hands the view over):
+  - **The family rail:** home plus the eight families; each one filters the grid.
+  - **The top row:** the LED clock and date, a search field that opens the palette, and the level switch.
+  - **Continue cards, three at most:** open jobs with their step meter, then the DevLog lines waiting on you.
+  - **The grid:** every openable catalog item outside Rendszer, as a pixel-glyph tile with one word, in family order.
+    `GLYPHS` covers the whole catalog; an unknown item falls back to its group's family and a monogram.
+  - **The console column:**
+    - This PC: the new `desktop.sys`, the same `relay-sys.js` sampler the phone's Vezérlőpult reads, polled every 3 s.
+    - START's servers with switches: the new `desktop.serverStart`, which is dry in the selftest, and the existing stop.
+    - The toasts, shown as a console log.
+- **IPC:** `desktop.serverStart`, `desktop.sys` (wp-35 pin 137 → 139).
+- **Tests:**
+  - `wp-58` 6.
+  - The full Dashboard suite: 353 pass, the same 68 environment failures as the clean checkout (347 pass there).
+  - Chromium (the real page, the bridge stubbed with the real catalog), at user level 1400 px and dev level 1000 px: the rail filter,
+    a server switch calling `serverStart`, live gauges, no horizontal scroll.
+- **Not run:** inside Electron (no Electron here); the real sampler on Windows (its own tests ran with the phone's R2).
+- **Next, R5:** the shell chrome (title bar, dock, windows) in Fényjel.
