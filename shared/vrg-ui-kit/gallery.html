@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="tokens/theme-light.css">
 <link rel="stylesheet" href="tokens/theme-contrast.css">
 <link rel="stylesheet" href="tokens/theme-melyviz.css">
+<link rel="stylesheet" href="tokens/theme-grafit.css">
 <link rel="stylesheet" href="tokens/density.css">
 <link rel="stylesheet" href="components/base.css">
 <link rel="stylesheet" href="components/button.css">
@@ -28,6 +29,7 @@
 <link rel="stylesheet" href="components/toolbar.css">
 <link rel="stylesheet" href="components/graph.css">
 <link rel="stylesheet" href="components/minimap.css">
+<link rel="stylesheet" href="components/radar.css">
 <link rel="stylesheet" href="components/layerstack.css">
 <link rel="stylesheet" href="components/timeline.css">
 <link rel="stylesheet" href="components/eventrail.css">
@@ -65,6 +67,7 @@
 <link rel="stylesheet" href="components/citymap.css">
 <link rel="stylesheet" href="components/micro.css">
 <link rel="stylesheet" href="components/textures.css">
+<link rel="stylesheet" href="components/dotmatrix.css">
 <link rel="stylesheet" href="gallery/gallery.css">
 </head>
 <body>
@@ -81,6 +84,7 @@
       <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="light">Papír</button>
       <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="contrast">Kontraszt</button>
       <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="melyviz">Mélyvíz</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="grafit">Grafit</button>
     </div>
     <span class="vk-label" id="g-dens-l">Sűrűség</span>
     <div class="vk-btn-group" role="radiogroup" aria-labelledby="g-dens-l" id="g-density">
@@ -95,7 +99,7 @@
 </header>
 <div class="g-body">
   <nav class="g-nav" aria-label="Családok" data-vk-hop>
-    <ol id="g-toc"><li><a href="#f01"><span class="vk-num">01</span> Munkafelület és keret</a></li><li><a href="#f02"><span class="vk-num">02</span> Parancsréteg</a></li><li><a href="#f03"><span class="vk-num">03</span> Gráf és topológia</a></li><li><a href="#f04"><span class="vk-num">04</span> Idő nézetek</a></li><li><a href="#f05"><span class="vk-num">05</span> Adatnézetek</a></li><li><a href="#f06"><span class="vk-num">06</span> Állapot és jelzések</a></li><li><a href="#f07"><span class="vk-num">07</span> Döntések és bevitel</a></li><li><a href="#f08"><span class="vk-num">08</span> Ügynök és MI felületek</a></li><li><a href="#f09"><span class="vk-num">09</span> Kis képernyők</a></li><li><a href="#f10"><span class="vk-num">10</span> Programarculat és városkép</a></li><li><a href="#f11"><span class="vk-num">11</span> Jelölések</a></li></ol>
+    <ol id="g-toc"><li><a href="#f01"><span class="vk-num">01</span> Munkafelület és keret</a></li><li><a href="#f02"><span class="vk-num">02</span> Parancsréteg</a></li><li><a href="#f03"><span class="vk-num">03</span> Gráf és topológia</a></li><li><a href="#f04"><span class="vk-num">04</span> Idő nézetek</a></li><li><a href="#f05"><span class="vk-num">05</span> Adatnézetek</a></li><li><a href="#f06"><span class="vk-num">06</span> Állapot és jelzések</a></li><li><a href="#f07"><span class="vk-num">07</span> Döntések és bevitel</a></li><li><a href="#f08"><span class="vk-num">08</span> Ügynök és MI felületek</a></li><li><a href="#f09"><span class="vk-num">09</span> Kis képernyők</a></li><li><a href="#f10"><span class="vk-num">10</span> Programarculat és városkép</a></li><li><a href="#f11"><span class="vk-num">11</span> Jelölések</a></li><li><a href="#f12"><span class="vk-num">12</span> Pontmátrix</a></li></ol>
     <p class="g-nav__hint vk-label">Shift + nyilak: ugrás a régiók között</p>
   </nav>
   <main id="g-main" class="g-main" tabindex="-1">
@@ -602,7 +606,18 @@
       Rámutatás vagy fókusz kiemeli a pillért és az entitás minden síkbeli pontját (jég). Itt az „Átjáró GW-01” ki van emelve.</p>
     <div id="f03-ls"></div>
   </article>
+  <article class="g-demo" id="f03-radar" data-vk-hop>
+    <h3 class="g-demo__title">Radar: helymeghatározás, közelség, kapcsolatok <code>radar</code></h3>
+    <p class="g-demo__note">Minden program a saját rétegén ad pontokat (címkék, párosított eszközök, a Csipogó brigád, az óra, helyszínek). Telt pont = ismert irány (iránytű, GPS, irány keresése); üres = csak távolság. ←/→ lépked, Enter megnyit, a jelmagyarázat rétegeket kapcsol.</p>
+    <div class="g-row" style="gap:var(--vk-space-3);align-items:center;flex-wrap:wrap">
+      <label class="vk-label" for="f03-radar-heading">Irány</label>
+      <input id="f03-radar-heading" type="range" min="0" max="359" value="30" style="width:12rem">
+      <button type="button" class="vk-btn" id="f03-radar-mode" aria-pressed="false">Észak fel</button>
+    </div>
+    <div id="f03-radar-host"></div>
+  </article>
 </section>
+
 
 
 
@@ -1544,6 +1559,98 @@
 </section>
 
 
+<!-- ===== 12-dots.html ===== -->
+<section class="g-sec" id="f12" data-vk-hop aria-labelledby="f12-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">12</span>
+    <h2 id="f12-h" class="vk-title">Pontmátrix</h2>
+    <p class="g-sec__lead">Keretek, elválasztók, jelzőfények és kijelzők finom, kerek pontokból: a modern fekete-fehér terminál fele a <b>Grafit</b> témának. Minden témában használható; Grafitban a panel, a kártya és a csempe magától ezt a keretet viseli, jelölés nélkül. <code>components/dotmatrix.css</code></p>
+  </header>
+
+  <style>
+    .f12-grid { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-items: start; }
+    .f12-box { padding: var(--vk-space-4); background: var(--vk-surface-1); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius); min-height: 64px; }
+    .f12-box small { display: block; margin-top: var(--vk-space-1); color: var(--vk-text-muted); font-size: var(--vk-fs-xs); }
+    .f12-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-4); }
+    .f12-row > span { display: inline-flex; align-items: center; gap: var(--vk-space-2); font-size: var(--vk-fs-sm); }
+    .f12-meter { display: grid; grid-template-columns: 7em auto 3.5em; gap: var(--vk-space-2) var(--vk-space-3); align-items: center; font-size: var(--vk-fs-sm); }
+    .f12-meter code { font-family: var(--vk-font-mono); color: var(--vk-text-muted); text-align: right; }
+    .f12-field { height: 96px; border-radius: var(--vk-radius); display: grid; place-items: center; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+    .f12-term { display: grid; grid-template-rows: auto 1fr auto; min-height: 220px; background: var(--vk-bg-sunken); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius-lg); overflow: hidden; }
+    .f12-term__bar { display: flex; align-items: center; gap: var(--vk-space-3); padding: var(--vk-space-2) var(--vk-space-4); font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); }
+    .f12-term__bar .sp { flex: 1; }
+    .f12-term__body { padding: var(--vk-space-3) var(--vk-space-4); font: var(--vk-fs-sm)/1.6 var(--vk-font-mono); color: var(--vk-term-text); }
+    .f12-term__body .m { color: var(--vk-term-muted); } .f12-term__body .ok { color: var(--vk-term-ok); } .f12-term__body .w { color: var(--vk-term-warn); }
+    .f12-term__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--vk-space-4); padding: var(--vk-space-3) var(--vk-space-4); }
+    .f12-term__foot small { display: block; color: var(--vk-text-muted); font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; margin-bottom: var(--vk-space-1); }
+  </style>
+
+  <article class="g-demo" id="f12-frame" data-vk-hop>
+    <h3 class="g-demo__title">Keret <code>.vk-dots</code></h3>
+    <p class="g-demo__note">Egy pontsor a doboz szélén; a <code>round</code> ismétlés miatt minden él egész pontra fut ki. A saját szegély legyen átlátszó. <code>data-dots</code> színezi: <code>lit</code> = te / kijelölés, <code>run</code> = fut, <code>ok</code> · <code>warn</code> · <code>crit</code>.</p>
+    <div class="f12-grid">
+      <div class="f12-box vk-dots">Alap<small>nyugvó keret</small></div>
+      <div class="f12-box vk-dots" data-dots="lit">Kijelölve<small>data-dots="lit"</small></div>
+      <div class="f12-box vk-dots" data-dots="run">Fut<small>data-dots="run"</small></div>
+      <div class="f12-box vk-dots" data-dots="crit">Hiba<small>data-dots="crit"</small></div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f12-led" data-vk-hop>
+    <h3 class="g-demo__title">Jelzőfény <code>.vk-dotled</code></h3>
+    <p class="g-demo__note">3×3 pontos lámpa. A kialudt pontok is látszanak, így a kikapcsolt állapot is lámpának olvasható. <code>data-state="active"</code> lassan villog (csökkentett mozgásnál áll). A szín itt sem az egyetlen jel: mellette mindig ott a felirat.</p>
+    <p class="f12-row">
+      <span><i class="vk-dotled" data-tone="off"></i> kikapcsolva</span>
+      <span><i class="vk-dotled" data-tone="lit"></i> kész</span>
+      <span><i class="vk-dotled" data-tone="ok"></i> rendben</span>
+      <span><i class="vk-dotled" data-tone="warn"></i> figyelem</span>
+      <span><i class="vk-dotled" data-tone="crit"></i> hiba</span>
+      <span><i class="vk-dotled" data-tone="run" data-state="active"></i> fut</span>
+    </p>
+  </article>
+
+  <article class="g-demo" id="f12-bar" data-vk-hop>
+    <h3 class="g-demo__title">Mérő <code>.vk-dotbar</code></h3>
+    <p class="g-demo__note">Pontsor, balról világít a <code>--vk-dotbar-v</code> értékéig (0…1), egész pontra kerekítve. A számot mindig írd ki mellé.</p>
+    <div class="f12-meter">
+      <span>Lemez</span><span class="vk-dotbar" style="--vk-dotbar-v:.62"></span><code>62%</code>
+      <span>Processzor</span><span class="vk-dotbar" data-tone="run" style="--vk-dotbar-v:.31"></span><code>31%</code>
+      <span>Memória</span><span class="vk-dotbar" data-tone="warn" style="--vk-dotbar-v:.86"></span><code>86%</code>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f12-rule" data-vk-hop>
+    <h3 class="g-demo__title">Elválasztó és alap <code>.vk-dotrule</code> · <code>.vk-dotfield</code></h3>
+    <p class="g-demo__note">A pontozott vonal a hajszálvonal helyére kerül; a pontozott alap üres állapotokhoz, vásznakhoz, kutakhoz való, halványabb, mint a keret.</p>
+    <hr class="vk-dotrule">
+    <div class="vk-dotfield f12-field">Üres munkaterület</div>
+  </article>
+
+  <article class="g-demo" id="f12-text" data-vk-hop>
+    <h3 class="g-demo__title">Kijelző <code>.vk-dottext</code></h3>
+    <p class="g-demo__note">Nagy kiolvasások (óra, számláló) pontokkal kitöltve. Csak kijelzőméretben (<code>--vk-fs-2xl</code> felett): kis szöveg pontokból nehezen olvasható.</p>
+    <p class="f12-row"><b class="vk-dottext" style="font-size:calc(var(--vk-fs-3xl) * 1.5)">12:48</b> <b class="vk-dottext">0451</b></p>
+  </article>
+
+  <article class="g-demo" id="f12-shell" data-vk-hop>
+    <h3 class="g-demo__title">Összerakva: terminálhéj</h3>
+    <p class="g-demo__note">Grafitban így áll össze: szürke rétegek, fehér foszfor a figyelemnek, a héj és a jelzők pontmátrixból.</p>
+    <div class="f12-term vk-dots">
+      <div class="f12-term__bar vk-dots"><i class="vk-dotled" data-tone="ok"></i> vrg · asztal <span class="sp"></span> <i class="vk-dotled" data-tone="run" data-state="active"></i> fut</div>
+      <div class="f12-term__body">
+        <div><span class="m">$</span> node tools/check-start.js</div>
+        <div class="ok">✓ 64 bejegyzés, 0 hiba</div>
+        <div><span class="m">$</span> node shared/vrg-ui-kit/inline.js --check</div>
+        <div class="w">! 1 figyelmeztetés</div>
+      </div>
+      <div class="f12-term__foot">
+        <div><small>Szinkron</small><span class="vk-dotbar" style="--vk-dotbar-v:.72"></span></div>
+        <span class="vk-dottext">72%</span>
+      </div>
+    </div>
+  </article>
+</section>
+
   </main>
 </div>
 <script src="icons/sprite.js"></script>
@@ -1564,6 +1671,7 @@
 <script src="components/toolbar.js"></script>
 <script src="components/graph.js"></script>
 <script src="components/minimap.js"></script>
+<script src="components/radar.js"></script>
 <script src="components/layerstack.js"></script>
 <script src="components/timeline.js"></script>
 <script src="components/eventrail.js"></script>
@@ -2365,6 +2473,53 @@
     ]
   });
   ls.highlight('gw');
+
+}catch(e){console.error("[gallery 03-graph.html]",e);}})();
+</script>
+<script>
+/* 03-graph.html */
+(function(){try{
+
+  (function () {
+    var host = document.getElementById('f03-radar-host');
+    var here = { lat: 47.4979, lon: 19.0402 };
+    var frame = {
+      headingDeg: 30, here: here, mode: 'heading-up',
+      layers: [
+        { id: 'tag', title: 'Saját címke', glyph: '🏷', tone: 'sand', feature: 'tag' },
+        { id: 'tags', title: 'Címkék a közelben', glyph: '·', tone: 'muted', feature: 'tag' },
+        { id: 'paired', title: 'Párosított', glyph: '⌁', tone: 'kelp', feature: 'tag' },
+        { id: 'watch', title: 'Óra', glyph: '⌚', tone: 'glow', feature: 'watch' },
+        { id: 'pager', title: 'Csipogó', glyph: '📟', tone: 'current', feature: 'pager' },
+        { id: 'sites', title: 'Helyszínek', glyph: '⌂', tone: 'coral', feature: 'map' }
+      ],
+      blips: [
+        { id: 'tag:isy', layer: 'tag', label: 'ISYTag (kulcs)', distanceM: 4.2, mine: true, trend: 1, detail: 'elem: tele' },
+        { id: 'tag:itag', layer: 'tag', label: 'iTag', distanceM: 1.3, linked: true, bearingDeg: 75, bearingSrc: 'sweep' },
+        { id: 'tags:a', layer: 'tags', label: 'AirTag', distanceM: 14, ageMs: 20000 },
+        { id: 'tags:b', layer: 'tags', label: 'Find My', distanceM: 18, ageMs: 50000 },
+        { id: 'paired:jbl', layer: 'paired', label: 'Hangszóró', distanceM: 7 },
+        { id: 'watch:q71', layer: 'watch', label: 'Q71', distanceM: 2.4, linked: true, detail: 'kapcsolódva · 87%' },
+        { id: 'pager:2', layer: 'pager', label: 'Ödön', distanceM: 9, trend: -1 },
+        { id: 'pager:3', layer: 'pager', label: 'Béla (Őrzés)', distanceM: 22, alert: true, detail: 'RIASZTÁS: mozgás' },
+        { id: 'sites:k1', layer: 'sites', label: 'Kötőelem raktár', place: { lat: 47.5004, lon: 19.0440 } }
+      ]
+    };
+    var r = VK.radar.mount(host, { label: 'Radar minta: a nyilak lépnek a pontok között, az Enter megnyitja' });
+    r.update(frame);
+    var heading = document.getElementById('f03-radar-heading');
+    heading.addEventListener('input', function () { frame.headingDeg = Number(heading.value); r.update(frame); });
+    var mode = document.getElementById('f03-radar-mode');
+    mode.addEventListener('click', function () {
+      var north = mode.getAttribute('aria-pressed') !== 'true';
+      mode.setAttribute('aria-pressed', north ? 'true' : 'false');
+      frame.mode = north ? 'north-up' : 'heading-up';
+      r.update(frame);
+    });
+    r.on('open', function (e) {
+      if (VK.toast) VK.toast.show({ kind: 'info', title: 'Megnyitás', text: e.blip.label + (e.layer && e.layer.feature ? ' → ' + e.layer.feature : ''), source: 'RADAR' });
+    });
+  })();
 
 }catch(e){console.error("[gallery 03-graph.html]",e);}})();
 </script>

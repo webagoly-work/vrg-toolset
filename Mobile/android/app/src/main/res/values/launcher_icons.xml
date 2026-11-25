@@ -12,4 +12,5 @@
     <color name="launcher_bg_kit_papir">#FFE8EAE7</color>   <!-- Papír -->
     <color name="launcher_bg_kit_kontraszt">#FF000000</color>   <!-- Kontraszt -->
     <color name="launcher_bg_kit_melyviz">#FF071017</color>   <!-- Mélyvíz (kit) -->
+    <color name="launcher_bg_kit_grafit">#FF0F0F0F</color>   <!-- Grafit -->
 </resources>

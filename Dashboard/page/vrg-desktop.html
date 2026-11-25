@@ -5,9 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'">
 <title>VRG Asztal</title>
 <link rel="stylesheet" href="../../shared/melyviz.css">
+<link rel="stylesheet" href="../../shared/grafit.css">
 <link rel="stylesheet" href="../../../tools/js-libs/xterm/css/xterm.css">
 <link rel="stylesheet" href="desk.css">
 <link rel="stylesheet" href="panes.css">
+<link rel="stylesheet" href="grafit.css">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--mv-bg); color: var(--mv-text); }
   body { display: flex; flex-direction: column; font: 13px var(--mv-sans, sans-serif); }
@@ -78,6 +80,7 @@
 <header data-role="wbar" id="wbar">
   <div class="wt">VRG Asztal</div>
   <div class="sp"></div>
+  <button type="button" data-role="look-toggle" title="Megjelenés: Mélyvíz ⇄ Grafit / Look">&#9680;</button>
   <button data-w="min" title="Kis méret / Minimize">&#8211;</button>
   <button data-w="max" title="Nagy méret / Maximize">&#9633;</button>
   <button data-w="close" class="x" title="Bezár / Close">&#10005;</button>

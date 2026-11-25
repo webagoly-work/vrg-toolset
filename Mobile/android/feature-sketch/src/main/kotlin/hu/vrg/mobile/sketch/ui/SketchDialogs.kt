@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.input.KeyboardType
@@ -136,7 +137,7 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("${roomTitle(r.name, r.kinds)} · méret (mm)", style = Melyviz.label) },
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {   // UI audit 4.1: landscape + keyboard clipped the second field
                         Field(w, { w = it }, "Szélesség ↔", number = true, placeholder = box?.let { "most ≈ " + fmt(it.second.x - it.first.x) } ?: "")
                         Field(d, { d = it }, "Mélység ↕", number = true, placeholder = box?.let { "most ≈ " + fmt(it.second.y - it.first.y) } ?: "")
                         Text("Üresen hagyva a Rendezés számolja vagy becsüli. Egy falat a Méret eszközzel a falra koppintva mérhetsz.", style = Melyviz.small)
@@ -164,7 +165,9 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text(if (a.target == null && a.at == null) "Új címke" else "Címkék" + (a.target?.let { " · " + st.describeId(it) } ?: " a lapra"), style = Melyviz.label) },
                 text = {
-                    Column {
+                    // UI audit 4.1: scrolls, and the new-tag field comes first (many tags, landscape or the keyboard cut it off)
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Field(fresh, { fresh = it }, "Új címke neve", placeholder = "pl. Padlófűtés")
                         if (a.target != null || a.at != null) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             s.tags.forEach { t ->
                                 VrgChip("#" + t.name, selected = t.id in on) {
@@ -179,8 +182,7 @@ internal fun SketchDialogs(st: EditorState) {
                                 }
                             }
                         }
-                        Field(fresh, { fresh = it }, "Új címke neve", placeholder = "pl. Padlófűtés")
-                        Text("A Fürdő és Konyha címke a szoba típusa lesz a Plannerben; az IP44, Dedikált és Bontás a pont vagy kör jelzője.", style = Melyviz.small)
+                        Text("A Fürdő és Konyha címke a szoba típusa lesz a Plannerben; az IP44, Dedikált és Bontás a pont vagy kör jelzője.", style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
                     }
                 },
                 confirmButton = {
@@ -206,7 +208,7 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("Áramkör", style = Melyviz.label) },
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {   // UI audit 4.1
                         Field(name, { name = it }, "Név")
                         VrgToggle("Dedikált (egy fogyasztó, egyenesen az Elosztóból)", k.dedicated) { st.edit(Ops.setDedicated(st.sketch, a.id, it)) }
                         Text("${k.members.size} pont · " + (s.point(k.board)?.let { "Elosztó: bekötve" } ?: "még nincs Elosztón"), style = Melyviz.small)
@@ -215,7 +217,8 @@ internal fun SketchDialogs(st: EditorState) {
                 },
                 confirmButton = { TextButton({ st.edit(Ops.renameCircuit(st.sketch, a.id, name)); close() }) { Text("Rendben", color = Melyviz.glow) } },
                 dismissButton = {
-                    TextButton({ st.edit(Ops.delete(st.sketch, a.id)); close() }) { Text("Kör törlése", color = Melyviz.coral) }
+                    // UI audit 5.7: undoable, and now it says so
+                    TextButton({ st.edit(Ops.delete(st.sketch, a.id)); st.note = "Kör törölve · ↶ visszahozza."; close() }) { Text("Kör törlése", color = Melyviz.coral) }
                 },
             )
         }
@@ -229,12 +232,15 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("$room · ${Photos.label(a.deg)} felé (${pp.shots.size}/4)", style = Melyviz.label) },
                 text = {
-                    Column {
+                    // UI audit 4.1: scrolls, and the photo takes at most 45 % of the screen height, so the direction chips
+                    // and 📏 Mérés stay reachable in landscape and at font 1.5
+                    val maxImg = (LocalConfiguration.current.screenHeightDp * 0.45f).dp
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
                         if (bmp != null) Image(bmp.asImageBitmap(), contentDescription = "$room, ${Photos.label(a.deg)} felé",
-                            contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp))
+                            contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = minOf(420.dp, maxImg)))
                         else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
                         Text("Más irányba nézett?", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Photos.DIRS.forEach { d ->
                                 VrgChip(Photos.label(d), selected = d == a.deg) { if (d != a.deg) { st.turnShot(a.id, a.deg, d); st.ask = Ask.PhotoView(a.id, d) } }
                             }

@@ -5,7 +5,7 @@
   var html = document.documentElement;
   var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private mode */ } } };
-  var THEMES = { dark: 'Éj', light: 'Papír', contrast: 'Kontraszt', melyviz: 'Mélyvíz' };
+  var THEMES = { dark: 'Éj', light: 'Papír', contrast: 'Kontraszt', melyviz: 'Mélyvíz', grafit: 'Grafit' };
   var DENS = { comfortable: 'Kényelmes', compact: 'Tömör', touch: 'Érintés' };
 
   function setGroup(id, v) {

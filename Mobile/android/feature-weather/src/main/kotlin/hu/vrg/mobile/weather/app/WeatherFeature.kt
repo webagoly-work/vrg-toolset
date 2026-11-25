@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package hu.vrg.mobile.weather.app
 
 import android.Manifest
@@ -9,6 +11,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -16,14 +19,19 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +39,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +51,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +102,8 @@ object WeatherFeature : VrgFeature {
     private lateinit var data: WeatherData
     private val result = MutableStateFlow<WeatherResult?>(null)
     private val busy = MutableStateFlow(false)
+    /** Why the last load failed (null = it worked), so the screen can say it and offer a retry. */
+    private val lastError = MutableStateFlow<String?>(null)
     private val ring = MutableStateFlow(MiniStatus.IDLE)
     override val activity: StateFlow<MiniStatus> get() = ring
 
@@ -97,9 +114,11 @@ object WeatherFeature : VrgFeature {
         busy.value = true; ring.value = MiniStatus(MiniState.RUNNING)
         try {
             result.value = data.load(force)
+            lastError.value = null
             ring.value = MiniStatus.IDLE
         } catch (e: Exception) {
             VrgLog.w(WeatherData.TAG, "load: ${e.message}")
+            lastError.value = e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
             ring.value = MiniStatus(MiniState.ERROR)
         } finally { busy.value = false }
     }
@@ -108,11 +127,14 @@ object WeatherFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         val r by result.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
+        val failed by lastError.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
         val ctx = LocalContext.current
         var settings by remember { mutableStateOf(false) }
         var tick by remember { mutableStateOf(0) }   // re-reads the places after a change
         LaunchedEffect(tick) { refresh(force = false) }
+        BackHandler(settings) { settings = false }
+        val retry = { scope.launch { refresh(force = true) }; Unit }
 
         val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
             if (granted.values.any { it }) locateHere(ctx, host) { tick++ } else host.note("Helyhozzáférés nélkül az „Itt” nem működik.")
@@ -120,40 +142,54 @@ object WeatherFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
+                    modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
                 Spacer(Modifier.weight(1f))
-                VrgChip(if (loading) "Frissítés…" else "⟳") { scope.launch { refresh(force = true) } }
+                IconChip(if (loading) "Frissítés…" else "⟳", "Frissítés") { retry() }
                 Spacer(Modifier.width(6.dp))
-                VrgChip("⚙", selected = settings) { settings = !settings }
+                IconChip("⚙", "Beállítások", selected = settings) { settings = !settings }
             }
             Text("VRG IDŐJÁRÁS", style = Melyviz.title.copy(fontSize = 18.sp))
 
-            // places: the named towns, saved places, "Itt"
-            Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            // places: "Itt", the user's saved places, the named towns; wrapping, so the chosen one is always in view
+            FlowRow(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("◎ Itt", selected = data.placeId == WeatherData.HERE) {
                     val perm = listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
                     if (perm.any { ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED }) locateHere(ctx, host) { tick++ }
                     else askLocation.launch(perm.toTypedArray())
                 }
-                for (p in Config.places + data.saved) VrgChip(p.name, selected = data.placeId == p.id) { data.placeId = p.id; tick++ }
+                for (p in data.saved + Config.places) VrgChip(p.name, selected = data.placeId == p.id) { data.placeId = p.id; tick++ }
             }
 
             if (settings) Settings(host) { tick++ }
 
             val res = r
             when {
+                res == null && !loading && failed != null -> Column(Modifier.padding(top = 8.dp)) {
+                    Text("Nem sikerült letölteni az előrejelzést (nincs internet?): $failed", style = Melyviz.small.copy(color = Melyviz.sand))
+                    Row(Modifier.padding(top = 6.dp)) { VrgChip("Újra") { retry() } }
+                }
                 res == null -> Text(if (loading) "Adatok letöltése…" else "Nincs adat még.", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
-                else -> Body(res, host)
+                else -> Body(res, host, if (loading) null else failed, retry)
             }
             Spacer(Modifier.height(24.dp))
         }
     }
 
     @Composable
-    private fun Body(r: WeatherResult, host: FeatureHost) {
+    private fun Body(r: WeatherResult, host: FeatureHost, failed: String?, retry: () -> Unit) {
         val scope = rememberCoroutineScope()
         val ctx = LocalContext.current
         Text("${r.place.name} · figyelmeztetési terület: ${r.place.warnAreas.joinToString(", ").ifEmpty { "–" }}", style = Melyviz.readout)
+        // how old the data is, and whether this refresh reached the sources (offline, the cached copy shows)
+        val newest = r.sources.filter { it.ok }.maxOfOrNull { it.fetchedAt } ?: 0L
+        if (newest > 0) Text("adat: ${fmtTime(java.time.Instant.ofEpochMilli(newest))}", style = Melyviz.readout)
+        if (failed != null || r.sources.any { it.failed }) Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(if (newest > 0) "A frissítés nem sikerült (nincs internet?): a tárolt adat látszik." else "A frissítés nem sikerült (nincs internet?).",
+                style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.weight(1f))
+            Spacer(Modifier.width(6.dp))
+            VrgChip("Újra") { retry() }
+        }
 
         if (r.hours.isEmpty()) {
             Text("Nincs előrejelzés: egyik forrás sem adott adatot ehhez a helyhez (lásd a Forrásokat lent).",
@@ -193,7 +229,7 @@ object WeatherFeature : VrgFeature {
 
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             VrgChip("PC nézet ›") { scope.launch { pcView(ctx)?.let { host.note(it) } } }
-            VrgChip("Radar ↗") { openUrl(ctx, Config.source("hungaromet-radar").url) }
+            VrgChip("Radar ↗") { if (!openUrl(ctx, Config.source("hungaromet-radar").url)) host.note("Nincs böngésző a megnyitáshoz.") }
         }
     }
 
@@ -258,10 +294,20 @@ object WeatherFeature : VrgFeature {
     private val TIME = DateTimeFormatter.ofPattern("MM.dd. HH:mm")
     private fun fmtTime(t: java.time.Instant) = t.atZone(Config.settings.zone).format(TIME)
 
+    /** A glyph-only chip (⟳, ⚙): TalkBack reads [label], and the touch area is at least 48 dp. */
+    @Composable
+    private fun IconChip(glyph: String, label: String, selected: Boolean = false, action: () -> Unit) {
+        Box(Modifier.minimumInteractiveComponentSize().clearAndSetSemantics {
+            contentDescription = label; role = Role.Button; this.selected = selected
+            onClick { action(); true }
+        }, contentAlignment = Alignment.Center) { VrgChip(glyph, selected = selected, onClick = action) }
+    }
+
     @Composable
     private fun Settings(host: FeatureHost, changed: () -> Unit) {
         var contact by remember { mutableStateOf(data.contact) }
         var name by remember { mutableStateOf("") }
+        var sureForget by remember { mutableStateOf<String?>(null) }   // a 2-tap delete, as Tárgykereső's Elfelejtés
         val colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Melyviz.glow, unfocusedBorderColor = Melyviz.line,
             focusedTextColor = Melyviz.ink, unfocusedTextColor = Melyviz.ink, cursorColor = Melyviz.glow)
         VrgSectionTitle("Kapcsolat (MET Norway)")
@@ -282,7 +328,9 @@ object WeatherFeature : VrgFeature {
         } else Text("Az „◎ Itt” gombbal a mostani helyed menthető.", style = Melyviz.small)
         for (p in data.saved) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
             Text(p.name, style = Melyviz.label.copy(color = Melyviz.ink), modifier = Modifier.weight(1f))
-            VrgChip("Törlés") { data.forget(p.id); changed() }
+            VrgChip(if (sureForget == p.id) "Biztosan törlöm" else "Törlés", selected = sureForget == p.id) {
+                if (sureForget != p.id) sureForget = p.id else { sureForget = null; data.forget(p.id); changed() }
+            }
         }
         Text("A helyek csak ezen a telefonon vannak; a koordináta csak az előrejelzés lekérésébe kerül.", style = Melyviz.small.copy(fontSize = 10.sp),
             modifier = Modifier.padding(top = 6.dp))
@@ -325,9 +373,8 @@ object WeatherFeature : VrgFeature {
         return null
     }
 
-    private fun openUrl(ctx: Context, url: String) {
-        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-    }
+    private fun openUrl(ctx: Context, url: String): Boolean =
+        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
 
     private const val PC_PORT = 8808
 }

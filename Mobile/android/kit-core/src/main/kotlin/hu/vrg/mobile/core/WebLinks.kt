@@ -3,7 +3,7 @@ package hu.vrg.mobile.core
 import org.json.JSONArray
 import org.json.JSONObject
 
-// Böngésző (WP M66, T7 of docs/browser/TRAJECTORIES.md): `vrg.web-links` v1, the one bookmark-and-history format of the VRG
+// Böngésző (WP M68, T7 of docs/browser/TRAJECTORIES.md): `vrg.web-links` v1, the one bookmark-and-history format of the VRG
 // Asztal (<userDir>/web.json), the VRG Böngésző (Browser/src/core/links.js) and the Data Vault's browser-kit (DV-Q22). A Kotlin
 // port of links.js, rule for rule; Browser/test/fixtures/links-contract.json holds the cases both sides replay (WebTest).
 //

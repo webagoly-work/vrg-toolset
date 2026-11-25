@@ -79,7 +79,7 @@ import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
-// Böngésző (WP M66, T7 of docs/browser/TRAJECTORIES.md, BRW-Q04 = A): real browsing on the phone for work pages — a
+// Böngésző (WP M68, T7 of docs/browser/TRAJECTORIES.md, BRW-Q04 = A): real browsing on the phone for work pages — a
 // datasheet, a supplier's catalogue, a standard, the LAN admin page of a router on site — inside VRG Mobile.
 //
 // The WebView keeps the VRG Asztal's web contract (kit-core WebRules.CONTRACT, the same lines as the Asztal's Böngésző pane

@@ -1051,6 +1051,43 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - **D-171 · Watch faces.** Chosen **C**: made on the PC first (`dial-bin.js` gets a writer and a START entry), the
     phone only uploads; the in-app Számlapszerkesztő (Q7) comes later.
 
+- **D-172 · DevLap: a Lap for picking the dev work up, on both sides, 2026-11-23.** The Founder asked for one custom Lap
+  (sheet preset) that opens the trackers, viewers, roadmaps and Claude session access already built, so a session can
+  find where the work stands and pick another dev line up. Chosen in the session: **two versions, each made for its
+  grid**, not one fitted to the other. Desktop (`Dashboard/config/sheets.json`, Dev level, 4 × 4): L · Vonaltérkép 2×2;
+  a browser 2×2 whose tabs are the Claude sessions (claude.ai/code), GO-MAIN, Actions, branches, commits on main,
+  releases, the Mobile roadmap and the Rétegverem pages A · Vezérlőterem, U · Futásnapló, Q · Döntésnapló,
+  I · Ötletfolyam, R · Commit-pixel and search; the Thread Board 2×1; a Claude Code terminal 2×2 that gets the keyboard;
+  git; Divergencia. The L window is a Rétegverem page, so opening the Lap starts that server before the browser restores
+  its 127.0.0.1 tabs. Phone (`PhoneSheets.OWN`, 2 × 4, after the Desktop's User-level presets in Lapok → +): Haladás
+  2×2, Claude, Értesítések, Gyorsjegyzet, Archívum. The phone does not show the Desktop DevLap: its windows are PC
+  tools (terminal, git, the Thread Board). Rejected: windows for every tracker (16 cells hold six readable ones; the
+  rest are tabs or one tap away in the + picker); a new home tile (Lapok → + already opens it in two taps).
+  Fixed the same day (0.9.735 hid it): **+** is pinned after the tabs (it used to scroll out of the 200 dp tab row once a
+  few sheets were open) and the + list scrolls with DevLap at its top (it was last, below the panel lying down).
+  Telefonon ellenőrizni: (1) the sheet bar's **+** is in view with several sheets open, and its list starts with
+  **DevLap** "5 ablak"; (2) it opens Haladás on top across both
+  columns, Claude and Értesítések below, Gyorsjegyzet and Archívum at the bottom; (3) a double tap on a window's header
+  makes it full and back. On the PC (Szint: Dev): (4) + → DevLap opens six windows filling the grid; (5) the
+  Vonaltérkép and the browser's Rétegverem tabs load (the stack server starts by itself); (6) the Claude Code terminal
+  has the keyboard; (7) claude.ai/code and the GitHub tabs show you signed in.
+
+- **D-173 · Radar: one radar for every program, one layout in two languages (M67), 2026-11-23.** Taken while building on
+  the Founder's request for a universal locator / proximity / connection display usable as a plugin. One frame contract
+  (layers + blips, `docs/radar/README.md`), one layout rule implemented twice — kit-core `Radar.kt` for the phone, the VRG
+  UI Kit's `components/radar.js` for the Desktop's HTML programs — held together by a shared fixture both test suites
+  reproduce. Rejected: a phone-only radar (the Desktop and the Data Vault would redo it), one implementation in a WebView
+  on the phone (no compass, no Compose look, worse on a CYD-size screen).
+- **D-174 · Radar: programs plug in through RadarHub (M67), 2026-11-23.** A feature registers a `RadarSource` (its layer,
+  its blips, a wake / calm hook) in its `init`; every radar — the Radar tile, the radar inside Tárgykereső and Csipogó —
+  asks the hub. Features never talk to each other (architecture rule 2); a broken source is skipped, never blanks the
+  radar. First sources: Saját címke + Címkék a közelben (Tárgykereső), Csipogó, Óra.
+- **D-175 · Radar: directions only when known (M67), 2026-11-23.** Bluetooth RSSI gives a distance, never a direction, so
+  a blip is drawn with a direction only from a place (GPS bearing), from **Irány keresése** (turn round once; the body
+  shadows the signal; kept on the compass for ten minutes in RadarHub) or from a source that knows it. Everything else is
+  hollow and dashed on its distance ring, and the caption counts them. Rejected: guessing a direction from RSSI changes
+  while walking (looks precise, is not).
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

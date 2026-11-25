@@ -38,6 +38,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -106,7 +110,7 @@ import android.view.ViewGroup
 object AppsFeature : VrgFeature {
     override val info = Catalogue.APPS
     private const val TAG = "apps"
-    /** The VRG Böngésző (DeskApps "browser"): its pages go to the Böngésző feature (WP M66). */
+    /** The VRG Böngésző (DeskApps "browser"): its pages go to the Böngésző feature (WP M68). */
     private const val BROWSER_APP = "browser"
     private const val LOCAL = "apps"
     private const val MANIFEST = "manifest.json"
@@ -325,7 +329,7 @@ object AppsFeature : VrgFeature {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val u = request.url
                 if (AppScheme.sameApp(app.id, u.toString())) return false
-                // the VRG Böngésző's pages open in the phone's work browser (WP M66), the other apps' links in the phone's browser
+                // the VRG Böngésző's pages open in the phone's work browser (WP M68), the other apps' links in the phone's browser
                 if (request.isForMainFrame && app.id == BROWSER_APP && (u.scheme == "https" || u.scheme == "http")) {
                     host.openRoute(Route(Catalogue.WEB.id, "", mapOf("u" to u.toString())))
                     return true
@@ -397,16 +401,24 @@ object AppsFeature : VrgFeature {
             Column(Modifier.fillMaxSize()) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                        modifier = Modifier.clickable { showing.value = null }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    BackGlyph { showing.value = null }
                     Text(cur.hu.uppercase(Locale.ROOT), style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                    VrgChip("⟳") { refresh(cur.id) }
+                    VrgChip("⟳ Frissítés") { refresh(cur.id) }
                 }
                 AppView(cur.id, host, Modifier.fillMaxWidth().weight(1f)) { showing.value = null }
             }
             return
         }
         AppList(host)
+    }
+
+    /** The bare "‹": a 48 dp button that TalkBack reads as "Vissza" (UI-CHECKLIST 1.1, 8.1). */
+    @Composable
+    private fun BackGlyph(onClick: () -> Unit) {
+        Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = "Vissza" },
+            contentAlignment = Alignment.Center) {
+            Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
+        }
     }
 
     @Composable
@@ -416,7 +428,7 @@ object AppsFeature : VrgFeature {
         BackHandler { host.home() }
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                BackGlyph { host.home() }
                 Text("ALKALMAZÁSOK", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
                 VrgChip("⟳ mind") { refreshAll() }
             }
@@ -448,7 +460,7 @@ object AppsFeature : VrgFeature {
                             Column(Modifier.weight(1f).padding(start = 10.dp)) {
                                 Text(a.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(state, style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1)
-                                s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                                s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 4, overflow = TextOverflow.Ellipsis) }
                             }
                             Text("›", style = Melyviz.title.copy(color = Melyviz.muted))
                         }

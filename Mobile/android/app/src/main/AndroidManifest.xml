@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Location on every Android version: the Óra's first watch search, Térkép, Időjárás and Vázlat need it on 13+ too.
+         feature-net and feature-pager cap it at 32, and a capped permission is refused without a dialog on 13+
+         (2026-11-23: "Helymeghatározás engedélyezése" did nothing). The app manifest decides the merge. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:remove="android:maxSdkVersion" />
+
     <application
         android:name=".MobileApp"
         android:allowBackup="false"
@@ -183,6 +189,18 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_kit_melyviz"
             android:roundIcon="@mipmap/ic_launcher_kit_melyviz">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Launcher_kit_grafit"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_kit_grafit"
+            android:roundIcon="@mipmap/ic_launcher_kit_grafit">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

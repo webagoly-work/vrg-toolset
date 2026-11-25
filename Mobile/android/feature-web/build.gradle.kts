@@ -1,4 +1,4 @@
-// Böngésző (WP M66, T7 of docs/browser/TRAJECTORIES.md): the phone's work browser, a confined WebView that keeps the VRG
+// Böngésző (WP M68, T7 of docs/browser/TRAJECTORIES.md): the phone's work browser, a confined WebView that keeps the VRG
 // Böngésző's rules (kit-core WebRules) and its bookmarks and history in vrg.web-links v1 (kit-core WebLinks).
 plugins {
     id("com.android.library")

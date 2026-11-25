@@ -56,7 +56,7 @@ interface FeatureHost {
     /** Open another feature, e.g. Légegér's ⚙ jumping to QR párosítás. */
     fun open(featureId: String)
 
-    /** Open a feature with a link's route (vrg://<feature>/<path>?k=v), e.g. a page of a web app to the Böngésző (WP M66). */
+    /** Open a feature with a link's route (vrg://<feature>/<path>?k=v), e.g. a page of a web app to the Böngésző (WP M68). */
     fun openRoute(route: Route) { open(route.feature) }
 
     /** A short message at the bottom of the shell. */

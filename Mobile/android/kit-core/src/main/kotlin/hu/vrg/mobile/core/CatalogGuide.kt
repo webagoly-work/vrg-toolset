@@ -197,6 +197,18 @@ object CatalogGuide {
             needs = "a PC reléje (párosítva) a munkamenetekhez",
             pair = "PC: a Claude Code Remote Control munkamenetei, a relén át",
         ),
+        GuidePage(
+            id = "devlap", title = "DevLap", glyph = "⧉", side = GuideSide.BOTH,
+            what = "Egy kész lap a fejlesztés folytatásához: hol tart a munka, mi történt, és hol lehet egy munkát továbbvinni.",
+            how = listOf(
+                "A kezdőlap DevLap kártyája megnyitja a lapot; ha már nyitva van, oda ugrik.",
+                "Fent a Haladás (main, nyitott munkák, CI), alatta Claude és Értesítések, lent Gyorsjegyzet és Archívum.",
+                "Dupla koppintás egy ablak fejlécén: teljes méret ⇄ egy cella.",
+                "Lapok → + listájában is az első.",
+            ),
+            needs = "internet, GitHub belépés; a Claude munkamenetekhez a PC reléje",
+            pair = "Asztal: DevLap (Dev szint) a Vonaltérképpel, a követők füleivel és egy Claude Code terminállal",
+        ),
 
         // 6 · Kapcsolat a PC-vel
         GuidePage(
@@ -390,6 +402,7 @@ object CatalogGuide {
                 "Dupla koppintás az ablak fejlécén: teljes méret ⇄ egy cella.",
                 "Hosszan nyomva a szélét húzod: átméretezés. A fejlécét húzod: mozgatás vagy csere.",
                 "Kész elrendezések is vannak, például Iroda és Áttekintés.",
+                "DevLap: a fejlesztés állása egy lapon (Haladás, Claude, Értesítések, Gyorsjegyzet, Archívum). A PC-n a saját DevLapja van.",
             ),
             pair = "Asztal: Munkaterek és lapok",
         ),
@@ -415,6 +428,18 @@ object CatalogGuide {
             ),
             needs = "Bluetooth",
             pair = "Tárgykereső: a párosított óra innen nyitja",
+        ),
+        GuidePage(
+            id = "radar", title = "Radar", glyph = "◎", side = GuideSide.PHONE,
+            what = "Egy radar mindenre, ami körülötted van: a Tárgykereső címkéi és párosított eszközei, a Csipogó brigád, az óra. Minden program a saját rétegén, a saját színével.",
+            how = listOf(
+                "A körök a távolságot mutatják. Telt pont: ismert irány. Üres pont: csak a távolsága ismert.",
+                "Irány keresése: koppints egy pontra, tartsd magad előtt a telefont és fordulj lassan körbe. A legerősebb jel felé van.",
+                "Irány fel: a radar veled fordul. Észak fel: a térképhez hasonlóan áll. A helyek (például egy címke utolsó helye) GPS-szel kapnak irányt.",
+                "Lent a rétegeket ki-be kapcsolod; a pont kártyájáról a saját programja nyílik.",
+            ),
+            needs = "Bluetooth (GPS-irányhoz helymeghatározás)",
+            pair = "Asztal: a VRG UI Kit radar része (Gráf és topológia), ugyanaz az elrendezés",
         ),
         GuidePage(
             id = "web", title = "Böngésző", glyph = "🌐", side = GuideSide.BOTH,

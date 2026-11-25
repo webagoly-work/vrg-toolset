@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Radar (WP M67): no permission of its own. The compass needs none; GPS bearings use the location permission that
+     feature-map and feature-sketch already declare (asked here in context, only when the user taps for it). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

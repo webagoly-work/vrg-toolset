@@ -5,7 +5,7 @@ import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
 
-// Böngésző (WP M66, T7): the rules of the phone's work browser, ported from the VRG Böngésző (Browser/src/core/url.js) and kept
+// Böngésző (WP M68, T7): the rules of the phone's work browser, ported from the VRG Böngésző (Browser/src/core/url.js) and kept
 // to the VRG Asztal's web contract (Dashboard CONTRACT §3 / §4.3, the Data Vault browser-kit's RULES):
 //   http / https only; no bridge from a page into the app (no addJavascriptInterface); certificate errors never overridden;
 //   permissions denied (a page asks, the answer is no); downloads only after a yes (handed to the phone's browser);

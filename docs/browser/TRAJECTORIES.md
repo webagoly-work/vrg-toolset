@@ -154,7 +154,7 @@ documents); `wp-29` 17 unchanged; `Mobile/tests/apps-phone.js` 38 ok.
 
 ## Phase 4 (T7 + T8) — built 2026-11-24
 
-**T7 · real browsing on the phone** (BRW-Q04 = A: work pages in VRG Mobile). WP **M66 Böngésző** (`docs/mobile/WP/M66.md`),
+**T7 · real browsing on the phone** (BRW-Q04 = A: work pages in VRG Mobile). WP **M68 Böngésző** (`docs/mobile/WP/M68.md`),
 a native feature `web` with a confined WebView that keeps the Asztal's contract: http / https only, no bridge into the app,
 file / content access off, no mixed content, no third-party cookies, every permission and geolocation request denied,
 certificate errors never overridden, one view (no pop-ups), a download handed to the phone's browser after a yes, only an
@@ -189,7 +189,7 @@ a plugin leaving with its files / switches / nav / routes, the run-time route ga
 all four plugins); the shared fixture in `links.test.js`; `:kit-core:test` 277 (+ `WebTest` 7; `HomeLayoutTest`,
 `CatalogGuideTest`, `KommandTest` with the new feature); `Mobile/tests/apps-phone.js` 38 ok. The APK is built by CI.
 
-**Check on the phone and the PC** (not reproducible in the cloud session): `docs/mobile/WP/M66.md` § Phone check (10 steps),
+**Check on the phone and the PC** (not reproducible in the cloud session): `docs/mobile/WP/M68.md` § Phone check (10 steps),
 and on the PC: `node Browser/build.js --without work --out %TEMP%\vb.html`, open it from `node Browser/serve.js`: no Munkák
 in the rail, Beállítások → Részek says what was left out.
 
@@ -237,5 +237,5 @@ OneDrive copy keeping an existing page; the one failure is the registry's Window
 - 2026-11-23 — Phase 1 built (T1 + T2); ⏸ before Phase 2.
 - 2026-11-23 — Phase 2 built (T3 + T4); ⏸ before Phase 3.
 - 2026-11-23 — Phase 3 built (T5 + T6); ⏸ before Phase 4.
-- 2026-11-24 — Phase 4 built (T7: VRG Mobile M66 Böngésző; T8: modules.json); ⏸.
+- 2026-11-24 — Phase 4 built (T7: VRG Mobile M68 Böngésző; T8: modules.json); ⏸.
 - 2026-11-25 — BRW-Q05 A, Q06 B, Q07 C; Phase 5 built (T9: Megosztás, 60_Linkek, the guest page and the Kapu's Linkek (vendég)); ⏸.

@@ -129,6 +129,10 @@ object Catalogue {
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
         "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
+    val DEVLAP = FeatureInfo(
+        "devlap", "DevLap", "A fejlesztés állása egy lapon: Haladás, Claude, Értesítések, Gyorsjegyzet és Archívum, hogy egy munkát gyorsan folytathass.",
+        "⧉", Group.WORK, Stage.BETA, "M66", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val PCWIN = FeatureInfo(
         "pcwin", "PC ablakok", "A PC munkamappái (Repó, VRG Full, Közös) csak olvasva: böngészés, szöveg és kép előnézete, másolat az Átadáson át.",
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
@@ -158,6 +162,12 @@ object Catalogue {
     )
 
     // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
+    // WP M67 (2026-11-23): one radar for everything around: any program's blips on its own layer (RadarHub).
+    val RADAR = FeatureInfo(
+        "radar", "Radar", "Minden, ami körülötted van, egy radaron: címkék, párosított eszközök, a Csipogó brigád, az óra és ami később jön. Távolság, irány (GPS, iránytű, körbefordulás) és kapcsolat rétegenként.",
+        "◎", Group.LINK, Stage.BETA, "M67", setOf(Need.BLUETOOTH),
+    )
+
     val WATCH = FeatureInfo(
         "watch", "Óra", "Kísérleti: a Q71 okosóra a FunDo nélkül: kapcsolat, pontos idő, lépések, az óra adatai, az óra csipogtatása és az óráról a telefon megcsörgetése.",
         "⌚", Group.LINK, Stage.BETA, "M65", setOf(Need.BLUETOOTH),
@@ -196,10 +206,10 @@ object Catalogue {
         "weather", "VRG Időjárás", "Lehet-e ma kint dolgozni: MET Norway, DWD és a hivatalos figyelmeztetések egyesítve, terepi szabályokkal, tevékenységenként.",
         "⛅", Group.WORK, Stage.BETA, "M44", setOf(Need.INTERNET),
     )
-    // WP M66 (2026-11-24, T7 of docs/browser/TRAJECTORIES.md): real browsing on the phone for work pages, by the VRG Böngésző's rules.
+    // WP M68 (2026-11-24, T7 of docs/browser/TRAJECTORIES.md): real browsing on the phone for work pages, by the VRG Böngésző's rules.
     val WEB = FeatureInfo(
         "web", "Böngésző", "Munkához böngészés a telefonon: adatlap, katalógus, szabvány, a helyszíni router oldala. A PC keresői és !jelei, tiszta linkek, könyvjelzők és előzmények az Asztallal közös fájlban.",
-        "🌐", Group.WORK, Stage.BETA, "M66", setOf(Need.INTERNET),
+        "🌐", Group.WORK, Stage.BETA, "M68", setOf(Need.INTERNET),
     )
     val VAULT = FeatureInfo(
         "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",
@@ -213,7 +223,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE, DEVLAP,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER, WEB,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

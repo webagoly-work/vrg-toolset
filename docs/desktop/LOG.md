@@ -257,6 +257,17 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   download QR); probe: the corner row's values, grades and computed colours, the menu (10), switching metrics on and saving them,
   Esc, ◉; the download QR with a throwaway relay; wp-35 channel pin 112 → 114; `relay-ports.js` 102 (+13).
 
+## DevLap — a Lap for picking the dev work up (2026-11-23)
+
+- The Founder asked for one sheet that opens the trackers already built, to find where the work stands and pick a dev
+  line up. Preset `devlap` in `config/sheets.json` (Dev level, the whole 4 × 4 grid, focus on the terminal):
+  L · Vonaltérkép 2×2 · a browser 2×2 with 13 tabs (claude.ai/code, GO-MAIN, Actions, branches, commits, releases, the
+  Mobile roadmap, Rétegverem control / runs / decisions / lineage / commits / search) · Thread Board 2×1 · Claude Code
+  (A) 2×2 · git 1×1 · Divergencia 1×1. The L window starts the stack server before the panes open (newSheet awaits
+  `desktop.open`), so the browser's 127.0.0.1:8806 tabs load. The phone has its own DevLap (VRG Mobile D-172).
+- Tests: `wp-46.test.js` +1 (tiles, focus, every tab restorable, the local tabs on the stack server's port and real
+  Stack pages, the GitHub file tabs exist in the repo).
+
 ## WP-50 — the VRG Böngésző joins the Asztal: one links format, the pane gets the brain (2026-11-23)
 
 T1 and T2 of `docs/browser/TRAJECTORIES.md` (BRW-Q01 … Q04 = A).

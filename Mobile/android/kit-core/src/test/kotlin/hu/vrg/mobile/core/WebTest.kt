@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// WP M66 (T7): the phone's work browser keeps the VRG Böngésző's rules. The cases are the shared fixture the PC's tests replay
+// WP M68 (T7): the phone's work browser keeps the VRG Böngésző's rules. The cases are the shared fixture the PC's tests replay
 // too (Browser/test/fixtures/links-contract.json: vrg.web-links v1 with the Data Vault kit's cases, the ops, Tiszta link, the
 // address bar), plus the engines bundled from Browser/config/engines.json.
 class WebTest {

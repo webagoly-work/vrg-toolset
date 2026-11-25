@@ -40,6 +40,7 @@ import hu.vrg.mobile.core.MiniState
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.theme.KitSize
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.theme.dotArc
 
 // The MINI (WP M16, decision 4A): the VRG UI Kit's small icon that is also a button and a progress indicator,
 // drawn for the phone. The web original is shared/vrg-ui-kit/components/mini.css + mini.js; the rules are the
@@ -129,7 +130,10 @@ private fun DrawScope.drawMini(s: MiniStatus, size: MiniSize, meter: MiniMeter, 
     val topLeft = Offset(center.x - d / 2, center.y - d / 2)
     val box = Size(d, d)
     val stroke = Stroke(w, cap = StrokeCap.Butt)
-    fun arc(c: Color, from: Float, sweep: Float) = drawArc(c, from - 90f, sweep, false, topLeft, box, style = stroke)
+    // Grafit (terminal palette): the same ring as a circle of dots, like a dot-matrix display
+    fun arc(c: Color, from: Float, sweep: Float) =
+        if (p.terminal) dotArc(c, center, d / 2, from - 90f, sweep, w)
+        else drawArc(c, from - 90f, sweep, false, topLeft, box, style = stroke)
     /** [n] segments of [on]° every [every]°, starting at [from]. */
     fun segments(c: Color, n: Int, on: Float, every: Float, from: Float = 0f) { for (i in 0 until n) arc(c, from + i * every, on) }
     fun track(c: Color) = if (meter == MiniMeter.TICKS) segments(c, 12, 24f, 30f) else arc(c, 0f, 360f)

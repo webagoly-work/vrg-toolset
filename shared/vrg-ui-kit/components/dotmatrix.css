@@ -1,0 +1,95 @@
+/* VRG UI Kit — components/dotmatrix.css — the dot matrix: frames, rules, fields, indicator LEDs, a meter and
+   display text drawn as a fine grid of round dots (the terminal half of theme Grafit; usable in every theme).
+   <section class="vk-dots">…</section>                any positioned box: its frame becomes a ring of dots
+     data-dots="lit|ok|warn|crit|run" tints the ring; the element's own border should be transparent
+   <hr class="vk-dotrule">                             a dotted divider, one row
+   <div class="vk-dotfield">…</div>                    a dotted ground (wells, empty states, canvases)
+   <span class="vk-dotled" data-tone="ok|warn|crit|run|lit|off" [data-state="active"]>  a 3×3 dot lamp
+   <span class="vk-dotbar" style="--vk-dotbar-v:.6" [data-tone]>  a dot meter, lit from the left (0…1)
+   <span class="vk-dottext">12:48</span>               big readouts drawn in dots (display sizes only, ≥ --vk-fs-2xl)
+   Theme Grafit (--vk-frame: dots) puts the ring on .vk-panel, .vk-card and .vk-tile, and a dotted rule under their
+   heads, so apps need no markup change. Opt one element out with .vk-nodots.
+   Tokens: --vk-dot-pitch (centre to centre), --vk-dot-r (radius), --vk-dot (unlit), --vk-dot-lit (lit).
+   Component-local: --vk-dotbar-v (meter value 0…1). Depends on: tokens, base. */
+.vk-dots, .vk-dotrule, .vk-dotfield, .vk-dotled, .vk-dotbar {
+  --_dot: var(--vk-dot);
+  --_dots: radial-gradient(circle at center, var(--_dot) var(--vk-dot-r), transparent calc(var(--vk-dot-r) + .55px));
+}
+.vk-dots[data-dots="lit"], .vk-dotled[data-tone="lit"], .vk-dotbar { --_lit: var(--vk-dot-lit); }
+:is(.vk-dots, .vk-dotled, .vk-dotbar)[data-dots="ok"], :is(.vk-dotled, .vk-dotbar)[data-tone="ok"] { --_lit: var(--vk-ok); }
+:is(.vk-dots, .vk-dotled, .vk-dotbar)[data-dots="warn"], :is(.vk-dotled, .vk-dotbar)[data-tone="warn"] { --_lit: var(--vk-warn); }
+:is(.vk-dots, .vk-dotled, .vk-dotbar)[data-dots="crit"], :is(.vk-dotled, .vk-dotbar)[data-tone="crit"] { --_lit: var(--vk-crit); }
+:is(.vk-dots, .vk-dotled, .vk-dotbar)[data-dots="run"], :is(.vk-dotled, .vk-dotbar)[data-tone="run"] { --_lit: var(--vk-activity); }
+.vk-dots[data-dots] { --_dot: var(--_lit, var(--vk-dot)); }
+
+/* ---------- frame: a ring one pitch wide, masked out of a dot field; `round` keeps every edge whole ---------- */
+:where(.vk-dots) { position: relative; }
+.vk-dots::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit;
+  padding: var(--vk-dot-pitch);
+  background: var(--_dots) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch) round;
+  /* the mask keeps the padding band only (any opaque colour works; a token keeps lint happy) */
+  -webkit-mask: linear-gradient(var(--vk-text) 0 0) content-box, linear-gradient(var(--vk-text) 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+
+/* ---------- rule and field ---------- */
+.vk-dotrule { display: block; height: var(--vk-dot-pitch); margin: var(--vk-space-3) 0; border: 0;
+  background: var(--_dots) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch); background-repeat: round no-repeat; }
+.vk-dotfield { --_dot: color-mix(in srgb, var(--vk-dot) 55%, transparent);
+  background-image: var(--_dots); background-size: calc(var(--vk-dot-pitch) * 3) calc(var(--vk-dot-pitch) * 3); background-position: center; }
+
+/* ---------- LED: a 3×3 dot lamp. Unlit dots stay visible, so "off" still reads as a lamp ---------- */
+.vk-dotled { --_s: calc(var(--vk-dot-pitch) * 3); display: inline-block; flex: none; vertical-align: middle;
+  width: var(--_s); height: var(--_s); border-radius: 1px;
+  background: var(--_dots) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch); }
+.vk-dotled[data-tone]:not([data-tone="off"]) { --_dot: var(--_lit); filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--_lit) 55%, transparent)); }
+.vk-dotled[data-state="active"] { animation: vk-dotled-blink 1.2s steps(2, jump-none) infinite; }
+@keyframes vk-dotled-blink { 0% { opacity: 1; } 100% { opacity: .35; } }
+
+/* ---------- meter: unlit row with a lit row on top, clipped to the value (same grid, so the dots line up) ---------- */
+.vk-dotbar { --vk-dotbar-v: 0; position: relative; display: inline-block; vertical-align: middle;
+  width: calc(var(--vk-dot-pitch) * 24); height: calc(var(--vk-dot-pitch) * 2);
+  background: var(--_dots) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch); }
+.vk-dotbar::after { content: ""; position: absolute; inset: 0 auto 0 0;
+  width: calc(round(down, calc(var(--vk-dotbar-v) * 100%), var(--vk-dot-pitch)));
+  background: radial-gradient(circle at center, var(--_lit) var(--vk-dot-r), transparent calc(var(--vk-dot-r) + .55px)) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch); }
+@supports not (width: round(down, 10px, 3px)) { .vk-dotbar::after { width: calc(var(--vk-dotbar-v) * 100%); } }
+
+/* ---------- display text: the glyphs filled with lit dots. Big sizes only: small text in dots is hard to read ---------- */
+.vk-dottext { font-family: var(--vk-font-mono); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: .04em;
+  font-size: max(1em, var(--vk-fs-2xl)); line-height: 1;
+  color: transparent; -webkit-text-fill-color: transparent;
+  background: radial-gradient(circle at center, var(--vk-dot-lit) 55%, transparent 66%) 0 0 / 2px 2px;
+  -webkit-background-clip: text; background-clip: text; }
+
+/* ---------- reduced motion, forced colours ---------- */
+@media (prefers-reduced-motion: reduce) { .vk-dotled[data-state="active"] { animation: none; } }
+@media (forced-colors: active) {
+  .vk-dots::before, .vk-dotrule, .vk-dotfield { background: none; }
+  .vk-dots { border: 1px dotted CanvasText; }
+  .vk-dotled, .vk-dotbar, .vk-dotbar::after { background: CanvasText; forced-color-adjust: none; }
+  .vk-dottext { color: CanvasText; -webkit-text-fill-color: CanvasText; background: none; }
+}
+
+/* ---------- theme Grafit: the kit's shells wear the matrix (no markup change) ---------- */
+[data-vk-theme="grafit"] :is(.vk-panel, .vk-card, .vk-tile):not(.vk-nodots) {
+  --_dot: var(--vk-dot);
+  --_dots: radial-gradient(circle at center, var(--_dot) var(--vk-dot-r), transparent calc(var(--vk-dot-r) + .55px));
+  border-color: transparent; }
+[data-vk-theme="grafit"] :is(.vk-panel, .vk-card, .vk-tile):not(.vk-nodots)::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit;
+  padding: var(--vk-dot-pitch);
+  background: var(--_dots) 0 0 / var(--vk-dot-pitch) var(--vk-dot-pitch) round;
+  -webkit-mask: linear-gradient(var(--vk-text) 0 0) content-box, linear-gradient(var(--vk-text) 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; }
+/* the frame lights where the solid border used to: selection, focus window, floating, error */
+[data-vk-theme="grafit"] .vk-tile[aria-selected="true"]:not(.vk-nodots),
+[data-vk-theme="grafit"] .vk-panel[data-floating]:not(.vk-nodots) { --_dot: var(--vk-dot-lit); }
+[data-vk-theme="grafit"] .vk-tile:hover:not([aria-disabled="true"]):not([aria-selected="true"]):not(.vk-nodots) { --_dot: var(--vk-text-muted); }
+[data-vk-theme="grafit"] .vk-panel[data-state="error"]:not(.vk-nodots) { --_dot: var(--vk-crit); }
+/* heads: a dotted rule replaces the hairline under the title row */
+[data-vk-theme="grafit"] :is(.vk-panel__head, .vk-card__head) {
+  border-bottom-color: transparent;
+  background-image: radial-gradient(circle at center, var(--vk-dot) var(--vk-dot-r), transparent calc(var(--vk-dot-r) + .55px));
+  background-size: var(--vk-dot-pitch) var(--vk-dot-pitch); background-repeat: round no-repeat; background-position: 0 100%; }

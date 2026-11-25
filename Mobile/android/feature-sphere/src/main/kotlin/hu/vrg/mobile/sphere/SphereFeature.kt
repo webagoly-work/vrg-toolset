@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -45,6 +47,10 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -167,8 +173,9 @@ object SphereFeature : VrgFeature {
             Column(Modifier.fillMaxSize()) {
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
                         Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                            modifier = Modifier.clickable(onClick = back).padding(vertical = 8.dp))
+                            modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = back).wrapContentHeight())
                         Spacer(Modifier.weight(1f))
                         VrgChip(if (loading) "Frissítés…" else "Frissítés", status = if (loading) MiniStatus.running() else null) { refresh(force = true) }
                     }
@@ -207,7 +214,8 @@ object SphereFeature : VrgFeature {
                 val on = i == tab
                 val line = Melyviz.glow
                 Text(n.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.2.sp, color = if (on) Melyviz.glow else Melyviz.faint),
-                    modifier = Modifier.weight(1f).clickable { onTab(i) }
+                    // a tab for TalkBack, with its selected state (UI-CHECKLIST 8.2, 8.5)
+                    modifier = Modifier.weight(1f).selectable(selected = on, role = Role.Tab) { onTab(i) }
                         .drawBehind { if (on) drawLine(line, Offset.Zero, Offset(size.width, 0f), 2.dp.toPx()) }
                         .padding(vertical = 12.dp).padding(horizontal = 6.dp))
             }
@@ -307,7 +315,11 @@ object SphereFeature : VrgFeature {
             .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row {
                 Text(d.title, style = Melyviz.title.copy(fontSize = 14.sp, letterSpacing = 0.sp), modifier = Modifier.weight(1f))
-                Text("×", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clickable(onClick = onClose).padding(horizontal = 8.dp))
+                // a 48 dp close button that TalkBack reads as "Bezárás" (UI-CHECKLIST 1.1, 8.1)
+                Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Bezárás" },
+                    contentAlignment = Alignment.Center) {
+                    Text("×", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clearAndSetSemantics { })
+                }
             }
             Text(listOfNotNull(d.path, d.date, d.cited.takeIf { it > 0 }?.let { "$it hivatkozás" }).joinToString(" · "),
                 style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 3.dp))

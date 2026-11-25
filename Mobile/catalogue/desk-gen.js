@@ -53,8 +53,8 @@ const REACH = {
   'sketcher': ['native', 'sketch'],               // VRG Sketcher: the phone is where it captures (WP M24-M31)
   'sketcher.house3d': ['native', 'sketch'],       // Ház 3D (M63): the phone's part is the Sketcher's walk-round capture; COLMAP runs on the PC
   'mindmap': ['webapp', 'mindmap'],
-  'web': ['native', 'web'],                    // the Asztal's Böngésző pane = the phone's Böngésző (WP M66)
-  'browser': ['webapp', 'browser'],            // VRG Böngésző (Browser/): the same app as on the Desktop; its pages open in the phone's Böngésző (M66)
+  'web': ['native', 'web'],                    // the Asztal's Böngésző pane = the phone's Böngésző (WP M68)
+  'browser': ['webapp', 'browser'],            // VRG Böngésző (Browser/): the same app as on the Desktop; its pages open in the phone's Böngésző (M68)
   'mail': ['none', 'a PC levelezése a PC saját Gmail-belépésén fut; a telefonon a saját levelezője nyílik'],
   'search': ['none', 'a belső keresés a PC Asztalának indexén fut; egy későbbi munkacsomag'],
   'feed': ['none', 'a hírfolyam az Asztalban fut a PC-n, gyorsítótárral; a telefonon nem (D-18)'],
