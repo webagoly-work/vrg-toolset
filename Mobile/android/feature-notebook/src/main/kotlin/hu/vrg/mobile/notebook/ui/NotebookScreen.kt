@@ -8,7 +8,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -69,6 +68,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Füzet's screens. Four places inside the feature: the home (search, kits, the kit's views, capture), the editor,
 // the open items and the kits. Back walks out of them before it leaves the feature.
@@ -459,7 +459,7 @@ private fun OpenRow(item: OpenItem, lib: Library, onEntry: (String) -> Unit) {
         OpenKind.STALE -> Melyviz.ink
         OpenKind.SUGGEST -> Melyviz.glow
     }
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).border(1.dp, Melyviz.line, RoundedCornerShape(10.dp))
+    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(10.dp))
         .background(Melyviz.surface, RoundedCornerShape(10.dp)).padding(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("${item.kind.sym} ${item.kind.label}", style = Melyviz.small.copy(color = tone), modifier = Modifier.weight(1f))
@@ -515,7 +515,7 @@ private fun KitsPlace(host: FeatureHost, store: Store, lib: Library, onBack: () 
         lib.all.forEach { k ->
             val src = sources.firstOrNull { it.id == k.id && it.errors.isEmpty() }
             val count = store.entries.count { it.kit == k.id }
-            Column(Modifier.fillMaxWidth().padding(top = 10.dp).border(1.dp, Melyviz.line, RoundedCornerShape(10.dp)).padding(10.dp)) {
+            Column(Modifier.fillMaxWidth().padding(top = 10.dp).vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(10.dp)).padding(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(k.sym, style = Melyviz.glyph.copy(color = kitColor(k)), modifier = Modifier.width(32.dp))
                     Column(Modifier.weight(1f)) {

@@ -76,6 +76,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Indítópult (WP M11): START's tools as a grid with their START keys. A tap starts one on the PC (the
 // relay opens its page, starting its server first when needed); a long-press selects it and shows
@@ -194,13 +195,9 @@ object LaunchFeature : VrgFeature {
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                // a visible refresh next to the title: pull-to-refresh alone is out of reach for TalkBack/Switch (9.1)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("INDÍTÓPULT", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
-                    if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh beside the title: pull-to-refresh alone is out of
+                // reach for TalkBack/Switch (9.1)
+                FeatureTop(host, info) { if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {

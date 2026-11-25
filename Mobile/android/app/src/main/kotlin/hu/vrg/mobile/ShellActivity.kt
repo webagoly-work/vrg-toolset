@@ -104,7 +104,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
 
         setContent {
             val look by ShellSettings.flow.collectAsStateWithLifecycle()
-            LaunchedEffect(look.palette) { Melyviz.palette = Palettes.byId(look.palette) }
+            // Fényjel R3: an open feature wears its family colour (Palettes.forFeature leaves every other palette alone)
+            LaunchedEffect(look.palette, current) { Melyviz.palette = Palettes.forFeature(Palettes.byId(look.palette), current) }
             LaunchedEffect(look.orientation) { applyOrientation(look.orientation) }
             // UI size: every screen scales together, text included
             val d = LocalDensity.current

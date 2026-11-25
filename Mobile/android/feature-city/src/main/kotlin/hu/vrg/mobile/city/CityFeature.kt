@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Kódváros online (WP M5, D-7 = A): the repo's city as GitHub has it. Actions scans every pushed branch and
 // publishes it on `city-pages` (.github/workflows/mobile-city.yml, Mobile/city/publish-city.js); this screen
@@ -323,14 +324,8 @@ object CityFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                    Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                        modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                    Text("KÓDVÁROS ONLINE", style = Melyviz.title.copy(fontSize = 16.sp),
-                        modifier = Modifier.weight(1f).padding(start = 12.dp))
-                    VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
+                // the header on one row (Fényjel R3: kit FeatureTop)
+                FeatureTop(host, info, inline = true) { VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 val choices = (list + branch).distinct()
                 // the chosen branch is scrolled into view, so a remembered one late in the list shows as chosen (UI-CHECKLIST 3.7)
                 val branchRow = rememberLazyListState()

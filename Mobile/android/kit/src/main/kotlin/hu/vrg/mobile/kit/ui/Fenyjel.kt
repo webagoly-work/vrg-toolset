@@ -5,6 +5,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.FeatureInfo
+import hu.vrg.mobile.kit.FeatureHost
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.padding
@@ -196,4 +211,89 @@ fun FjSwitch(checked: Boolean, label: String, hue: Color, modifier: Modifier = M
             drawRect(if (checked) (if (enabled) hue else hue.copy(alpha = 0.5f)) else p.faint, Offset(x, 4.dp.toPx()), Size(k, k))
         }
     }
+}
+
+// ---- R3: a feature page's top, and the i sheet --------------------------------------------------------------
+
+/**
+ * A feature page's top (DESIGN.md §7.4). On any palette but Fényjel it draws what the features drew themselves: a
+ * "‹ Vissza" link and the upper-case title row ([inline] puts them on one row), with [trailing] after the title. On
+ * Fényjel it is one header: a back glyph, the feature's socket in its family colour, the title in the terminal face,
+ * [trailing], and the i that opens the description sheet (the page itself carries no description). [onBack] defaults to
+ * the home.
+ */
+@Composable
+fun FeatureTop(
+    host: FeatureHost,
+    info: FeatureInfo,
+    modifier: Modifier = Modifier,
+    title: String = info.title,
+    inline: Boolean = false,
+    onBack: () -> Unit = { host.home() },
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
+    if (!Melyviz.palette.fenyjel) {
+        val back: @Composable () -> Unit = {
+            androidx.compose.material3.Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onBack).wrapContentHeight().padding(end = 12.dp))
+        }
+        if (inline) Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            back()
+            androidx.compose.material3.Text(title.uppercase(), style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
+            trailing()
+        } else Column(modifier.fillMaxWidth()) {
+            back()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.Text(title.uppercase(), style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
+                trailing()
+            }
+        }
+        return
+    }
+    var sheet by remember { mutableStateOf(false) }
+    val glyph = FeatureIcons.of(info)
+    val backGlyph = PixelGlyphs.byName("back")
+    Column(modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).clickable(role = Role.Button, onClick = onBack).semantics { contentDescription = "Vissza" },
+                contentAlignment = Alignment.Center) {
+                if (backGlyph != null) PixelIcon(backGlyph, 18.dp, color = Melyviz.muted)
+            }
+            if (glyph != null) { Socket(glyph, 40.dp); Spacer(Modifier.width(10.dp)) }
+            androidx.compose.material3.Text(title, style = FjType.title.copy(fontSize = 25.sp), maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            trailing()
+            InfoButton("${info.title}: leírás") { sheet = true }
+        }
+        // the family's hairline under the header
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Melyviz.glow.copy(alpha = 0.35f)))
+    }
+    if (sheet) InfoSheet(info) { sheet = false }
+}
+
+/** The i sheet: what the feature is, its stage and what it needs: the words that used to sit on the page. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InfoSheet(info: FeatureInfo, onDismiss: () -> Unit) {
+    val p = Melyviz.palette
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = p.surface, contentColor = p.ink) {
+        Column(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FeatureIcons.of(info)?.let { Socket(it, 48.dp); Spacer(Modifier.width(12.dp)) }
+                Column {
+                    androidx.compose.material3.Text(info.title, style = FjType.title)
+                    androidx.compose.material3.Text(listOfNotNull(FeatureIcons.familyName(info.id), info.stage.label).joinToString(" · "), style = FjType.sub)
+                }
+            }
+            androidx.compose.material3.Text(info.blurb, style = FjType.sub.copy(fontSize = 15.sp, color = p.ink))
+            if (info.needs.isNotEmpty()) androidx.compose.material3.Text("Kell hozzá: " + info.needs.joinToString(" · ") { it.label }, style = FjType.mono)
+        }
+    }
+}
+
+/** A description paragraph on a feature page: shown on the other palettes, behind the i on Fényjel (DESIGN.md §7.5). */
+@Composable
+fun FjBlurb(text: String, modifier: Modifier = Modifier) {
+    if (Melyviz.palette.fenyjel) return
+    androidx.compose.material3.Text(text, style = Melyviz.small, modifier = modifier)
 }

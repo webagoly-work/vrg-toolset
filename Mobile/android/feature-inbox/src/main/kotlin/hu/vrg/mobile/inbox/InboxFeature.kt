@@ -105,6 +105,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.shareText
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Értesítések (WP M10, D-11 = C): what happened, in one list grouped by day, with phone notifications for
 // what matters. GitHub is polled every 15 minutes by WorkManager (and once whenever the app comes on
@@ -361,9 +362,7 @@ object InboxFeature : VrgFeature {
             onRefresh = { scope.launch { poll(manual = true) } }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                Text("ÉRTESÍTÉSEK", style = Melyviz.title.copy(fontSize = 18.sp))
+                FeatureTop(host, info)   // Fényjel R3: kit FeatureTop
                 Text(status(s), style = Melyviz.readout)
                 why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
 

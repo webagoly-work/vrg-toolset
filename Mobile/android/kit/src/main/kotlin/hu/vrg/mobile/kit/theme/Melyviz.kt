@@ -17,6 +17,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.lerp
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.PixelGlyphs
 import hu.vrg.mobile.kit.R
 
 // VRG Mélyvíz — "deep water", and its variants. Every colour, radius and type size of the app lives
@@ -163,6 +166,26 @@ object Palettes {
     val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI, FENYJEL) + KitTokens.ALL
 
     fun byId(id: String?): Palette = ALL.firstOrNull { it.id == id } ?: MELYVIZ
+
+    /**
+     * Fényjel R3 (shared/fenyjel/DESIGN.md §7.4): a feature page wears its family colour. On a Fényjel palette the accent
+     * (glow, glowDim) becomes the open feature's family hue and the ground picks up a trace of it, so every chip, switch,
+     * slider, MINI ring and frame on the page follows without the feature knowing. Any other palette, or a feature without
+     * a glyph, is returned unchanged.
+     */
+    fun forFeature(base: Palette, featureId: String?): Palette {
+        if (!base.fenyjel || featureId == null) return base
+        val family = FeatureIcons.familyOf(featureId) ?: return base
+        if (family == "ui") return base
+        val rgb = PixelGlyphs.FAMILY_COLOURS[family] ?: return base
+        val hue = Color(0xFF000000.toInt() or rgb)
+        return base.copy(
+            glow = hue,
+            glowDim = lerp(hue, base.deep, 0.45f),
+            shallows = lerp(base.shallows, hue, 0.08f),
+            onGlow = base.abyss,
+        )
+    }
 }
 
 object Melyviz {

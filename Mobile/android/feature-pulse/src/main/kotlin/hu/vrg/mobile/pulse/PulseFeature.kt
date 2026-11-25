@@ -73,6 +73,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.shareText
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Haladás (WP M4, D-8 = A): one screen for "where does the work stand?". Everything lands on main, so
 // main comes first: its commits, its CI and the tools it changed this week. A branch shows only while it
@@ -202,13 +203,9 @@ object PulseFeature : VrgFeature {
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                // a visible refresh (also the retry after an error): pull-to-refresh alone is out of reach for TalkBack/Switch (9.1, 5.5)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("HALADÁS", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
-                    if (account is Account.SignedIn) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh (also the retry after an error): pull-to-refresh
+                // alone is out of reach for TalkBack/Switch (9.1, 5.5)
+                FeatureTop(host, info) { if (account is Account.SignedIn) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
 
                 if (account !is Account.SignedIn) {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
