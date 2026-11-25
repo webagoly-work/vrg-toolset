@@ -59,6 +59,51 @@ const NS_BY_FILE = [ // a local "Q01" in these files belongs to this namespace
   [/docs\/city\//, 'CITY'], [/views\//, 'D-V'], [/round-2026-10-18/, 'R1018'], [/round-2026-10-22-villany/, 'R1022'],
   [/docs\/mcp\//, 'MCP'], [/BRIDGE/, 'BRIDGE'], [/Workflow_Kit/, 'KIT'], [/varler-planner\/docs\/DECISIONS/, 'PLN'],
 ];
+// One decision file, parsed: shared by the Q adapter below and the write gateway (lib/edit.js), so a written answer is
+// read back by exactly the rules that will read it on the next build.
+const LEAD = /^[\s|>#*\-]+/;
+function decisionIdOf(rest, ns) {
+  let m;
+  if ((m = /^([A-Z][A-Z0-9]{0,11}(?:-[A-Z0-9]{1,8}){0,2})-Q-?(\d{1,3})([a-z]?)\b/.exec(rest))) return { id: C.qid(m[1], m[2], m[3]), raw: m[0] };
+  if ((m = /^D-V(\d+[a-z]?)-(\d+[a-z]?)\b/.exec(rest))) return { id: `D-V${m[1]}-${m[2]}`, raw: m[0] };
+  if ((m = /^Q-?([A-Z]{0,2})(\d{1,3})([a-z]?)\b/.exec(rest))) return { id: `${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`, raw: m[0] };
+  if (ns === 'KIT' && (m = /^L-(\d{1,2})\b/.exec(rest))) return { id: `KIT-L${m[1]}`, raw: m[0] };
+  return null;
+}
+function parseDecisionFile(txt, rel) {
+  const ns = (NS_BY_FILE.find(([rx]) => rx.test(rel)) || [, 'X'])[1];
+  const items = new Map();
+  const lines = txt.split(/\r?\n/);
+  const idOf = rest => { const r = decisionIdOf(rest, ns); return r ? r.id : null; };
+  let section = ''; // "## Answered …" / "## Open …" headings decide for the items under them
+  lines.forEach((l, i) => {
+    const h = /^#{1,3}\s+(.*)$/.exec(l);
+    if (h && !idOf(h[1].replace(/^\*\*/, ''))) { section = /answer|válasz|decided|döntött/i.test(h[1]) ? 'answered' : /\bopen\b|nyitott|held open|waiting/i.test(h[1]) ? 'open' : section; return; }
+    const id = idOf(l.replace(LEAD, '')); if (!id) return;
+    // the item's own text: up to the next item or heading, at most 8 lines
+    let end = i + 1; while (end < lines.length && end < i + 8 && !/^#{1,3}\s/.test(lines[end]) && !idOf(lines[end].replace(LEAD, ''))) end++;
+    const block = lines.slice(i, end).join('\n');
+    const own = /=\s*\**[A-F]\b|answered|válasz|döntés:|~~|\bchose\b|\bdecided\b|\|\s*\*\*[A-F]\b|^\|[^|]+\|\s*[A-F]\b/i.test(l + '\n' + block);
+    const answered = section === 'open' ? /answered|=\s*\**[A-F]\b/i.test(l) : own || section === 'answered';
+    const prev = items.get(id);
+    const title = clip(l.replace(LEAD, '').replace(/\*\*/g, '').replace(/^\|/, '').replace(/\s*\|\s*/g, ' · '), 120);
+    if (!prev) items.set(id, { id, line: i + 1, title, answered, block });
+    else if (answered) prev.answered = true;
+  });
+  // answer tables: "| S1 | **B** | …" under an Answers heading answers Q-S1 / Q01 / Q-02
+  section = '';
+  lines.forEach(l => {
+    const h = /^#{1,3}\s+(.*)$/.exec(l); if (h) { section = /answer|válasz/i.test(h[1]) ? 'answered' : ''; return; }
+    if (section !== 'answered') return;
+    const m = /^\|\s*\**(?:Q-?)?([A-Z]{0,2})-?(\d{1,3})([a-z]?)\**\s*\|\s*\**([A-F])\b/.exec(l); if (!m) return;
+    const it = items.get(`${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`); if (it) it.answered = true;
+  });
+  // a file-wide default ("Unanswered = A", "took every open question at its recommended answer")
+  const byDefault = /unanswered\s*=\s*\**A|every open question at its recommended/i.test(txt);
+  for (const it of items.values()) if (!it.answered && byDefault) it.byDefault = true;
+  return { ns, items, lines };
+}
+
 function decisions(facts) {
   const files = facts.files.filter(f => /decisions/i.test(f) && /\.md$/.test(f)).concat(DECISION_FILES_EXTRA.filter(exists));
   const nodes = [], edges = [];
@@ -67,44 +112,7 @@ function decisions(facts) {
     const rel = normPath(f);
     const txt = read(abs);
     const fileId = 'file.' + rel.replace(/[^\w]+/g, '_').slice(-60);
-    const ns = (NS_BY_FILE.find(([rx]) => rx.test(rel)) || [, 'X'])[1];
-    const items = new Map();
-    const lines = txt.split(/\r?\n/);
-    const LEAD = /^[\s|>#*\-]+/;
-    const idOf = rest => {
-      let m;
-      if ((m = /^([A-Z][A-Z0-9]{0,11}(?:-[A-Z0-9]{1,8}){0,2})-Q-?(\d{1,3})([a-z]?)\b/.exec(rest))) return C.qid(m[1], m[2], m[3]);
-      if ((m = /^D-V(\d+[a-z]?)-(\d+[a-z]?)\b/.exec(rest))) return `D-V${m[1]}-${m[2]}`;
-      if ((m = /^Q-?([A-Z]{0,2})(\d{1,3})([a-z]?)\b/.exec(rest))) return `${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`;
-      if (ns === 'KIT' && (m = /^L-(\d{1,2})\b/.exec(rest))) return `KIT-L${m[1]}`;
-      return null;
-    };
-    let section = ''; // "## Answered …" / "## Open …" headings decide for the items under them
-    lines.forEach((l, i) => {
-      const h = /^#{1,3}\s+(.*)$/.exec(l);
-      if (h && !idOf(h[1].replace(/^\*\*/, ''))) { section = /answer|válasz|decided|döntött/i.test(h[1]) ? 'answered' : /\bopen\b|nyitott|held open|waiting/i.test(h[1]) ? 'open' : section; return; }
-      const id = idOf(l.replace(LEAD, '')); if (!id) return;
-      // the item's own text: up to the next item or heading, at most 8 lines
-      let end = i + 1; while (end < lines.length && end < i + 8 && !/^#{1,3}\s/.test(lines[end]) && !idOf(lines[end].replace(LEAD, ''))) end++;
-      const block = lines.slice(i, end).join('\n');
-      const own = /=\s*\**[A-F]\b|answered|válasz|döntés:|~~|\bchose\b|\bdecided\b|\|\s*\*\*[A-F]\b|^\|[^|]+\|\s*[A-F]\b/i.test(l + '\n' + block);
-      const answered = section === 'open' ? /answered|=\s*\**[A-F]\b/i.test(l) : own || section === 'answered';
-      const prev = items.get(id);
-      const title = clip(l.replace(LEAD, '').replace(/\*\*/g, '').replace(/^\|/, '').replace(/\s*\|\s*/g, ' · '), 120);
-      if (!prev) items.set(id, { id, line: i + 1, title, answered, block });
-      else if (answered) prev.answered = true;
-    });
-    // answer tables: "| S1 | **B** | …" under an Answers heading answers Q-S1 / Q01 / Q-02
-    section = '';
-    lines.forEach(l => {
-      const h = /^#{1,3}\s+(.*)$/.exec(l); if (h) { section = /answer|válasz/i.test(h[1]) ? 'answered' : ''; return; }
-      if (section !== 'answered') return;
-      const m = /^\|\s*\**(?:Q-?)?([A-Z]{0,2})-?(\d{1,3})([a-z]?)\**\s*\|\s*\**([A-F])\b/.exec(l); if (!m) return;
-      const it = items.get(`${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`); if (it) it.answered = true;
-    });
-    // a file-wide default ("Unanswered = A", "took every open question at its recommended answer")
-    const byDefault = /unanswered\s*=\s*\**A|every open question at its recommended/i.test(txt);
-    for (const it of items.values()) if (!it.answered && byDefault) it.byDefault = true;
+    const { ns, items } = parseDecisionFile(txt, rel);
     nodes.push(node('Q', fileId, {
       kind: 'decision-file', title: heading(txt, path.basename(rel)), brief: `${items.size} decisions in ${rel}`,
       own: ['p:' + rel], t: '', text: txt.slice(0, 1500), extra: { path: rel, ns },
@@ -333,4 +341,4 @@ function globe(facts) {
   return { nodes, edges, generated: sig.generated, commit: sig.commit };
 }
 
-module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe };
+module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

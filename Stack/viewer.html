@@ -139,6 +139,7 @@
 <script src="touch.js"></script>
 <script src="lib/strings.js"></script>
 <script src="lib/viewer-layout.js"></script>
+<script src="lib/editdialog.js"></script>
 <script>
 'use strict';
 (function () {
@@ -703,6 +704,32 @@ function copy(text, note) {
   window.__lastCopy = text;
 }
 
+/* ================= the write gateway (S6): answer an open decision from its card, through the diff dialog */
+let DEC = null;
+async function decisionOf(c) {
+  if (!DEC && !window.STACK_BUNDLE) { await script('out/decisions-data.js?t=' + Date.now()); DEC = window.DECISIONS || false; }
+  const D = DEC || null, q = D && (D.q || []).find(x => 'Q:' + x.id === c.id), f = q && q.f >= 0 && D.files ? D.files[q.f] : null;
+  return { q, file: f ? f.rel : (c.node.path || '') };
+}
+function answerBox(c) {
+  const st = c.node.state || '';
+  if (st === 'answered') return `<div class="hint">Megválaszolt (a fájl szerint, ≈). <i>Answered, as the file reads.</i></div>`;
+  if (!window.StackEdit || !StackEdit.available()) return `<div class="hint">Válasz beírása a szerverrel (<code>node serve.js</code>) vagy a Döntésnaplóban promptként. <i>Answering needs the server; or copy the prompt in the Döntésnapló.</i></div>`;
+  return `<h3>Válasz <i>· answer it: one dated line under the question, after you see the diff</i></h3><div class="acts" id="ansOpts"><span class="hint">…</span></div>
+    <div class="acts"><input id="ansOwn" placeholder="Saját válasz · in my words" style="flex:1;min-width:0"><button id="ansOwnGo">✎ Beírás</button></div>`;
+}
+async function wireAnswer(c) {
+  const box = $('ansOpts'); if (!box) return;
+  const { q, file } = await decisionOf(c);
+  if (!file) { box.innerHTML = '<span class="hint">A fájlja nem ismert · its file is unknown</span>'; return; }
+  const open = extra => StackEdit.answer(Object.assign({ file, id: c.id.slice(2), page: 'viewer' }, extra), { onDone: () => {} });
+  const opts = q && q.opts ? q.opts : [];
+  box.innerHTML = opts.length ? opts.map((o, i) => `<button data-ans="${i}" title="${esc(String(o[1]).replace(/\*\*/g, ''))}"${o[2] ? ' class="on"' : ''}>✎ ${esc(o[0])}</button>`).join('')
+    : '<span class="hint">A/B/C sort nem talált a parser; írd be saját szavaiddal · no options found, use your own words</span>';
+  box.querySelectorAll('button[data-ans]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.ans]; open({ choice: o[0], text: String(o[1]).replace(/\*\*/g, '').replace(/`/g, '') }); });
+  $('ansOwnGo').onclick = () => { const t = $('ansOwn').value.trim(); if (!t) { $('ansOwn').focus(); return; } open({ own: t }); };
+}
+
 /* ================= selection: the string and the pillar spine */
 let bus = null;
 function select(ids, quiet) {
@@ -738,7 +765,7 @@ function select(ids, quiet) {
     ${s ? `<span>füzér <i>string</i></span><span>${esc(s.mask)} · ${esc(s.cls || '')}</span>` : ''}${changed.has(c.id) ? '<span>változott <i>changed</i></span><span>az előző build óta · since the last build</span>' : ''}</div>
     <div class="acts"><button id="cFly">⌖ Berepülés</button>${code}${page}<a class="btn" href="${window.STACK_BUNDLE ? 'erintesnyom.html' : 'erintesnyom.html" target="_blank'}">✦ Érintésnyom ↗</a>
       <button id="cStr" title="A füzér szövegként, vágólapra · the string as text">⧉ Füzér</button><button id="cPrompt" title="Egy munkamenet nyitó kérése erre a csomópontra · an opening prompt for a session on this node">⧉ Prompt</button></div>
-    <div class="hint">${c.L === 'Q' ? 'Válasz a Döntésnaplóban (Q oldal): ott az A/B/C prompt. ' : ''}A forrásba írás jóváhagyott diffel az S6 írókapuval jön; addig prompt. <i>Writing into the source comes with the S6 gateway; until then, a prompt.</i></div>
+    ${c.L === 'Q' && n.kind === 'decision' ? answerBox(c) : `<div class="hint">Ebbe a rétegbe az írókapu nem ír (csak döntésre válaszol); itt prompt segít. <i>The gateway writes decisions only; here a prompt helps.</i></div>`}
     ${files}
     ${text ? `<h3>Szöveg <i>· the bytes it is made of</i></h3><pre>${text}</pre>` : ''}
     ${s ? `<h3>Füzér rétegenként <i>· its string, layer by layer</i></h3>` + ORDER.filter(L => by[L]).map(L => `<div class="hint" style="color:${LAYER[L].col};margin-top:4px">${L} · ${LAYER[L].hu} (${by[L].length})</div>` +
@@ -747,6 +774,7 @@ function select(ids, quiet) {
   if ($('cCode')) $('cCode').onclick = () => codeBytes(c);
   $('cStr').onclick = () => copy(stringText(c, s), 'füzér a vágólapon · string copied');
   $('cPrompt').onclick = () => copy(promptText(c, s), 'prompt a vágólapon · prompt copied');
+  wireAnswer(c);
   card.querySelectorAll('.nb').forEach(el => el.onclick = () => { select([el.dataset.id]); const t = cellById.get(el.dataset.id); if (t) flyTo(t); });
 }
 

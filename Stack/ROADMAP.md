@@ -33,7 +33,7 @@
 | 2.4 Futás layer | ✅ layer U |
 | 2.5 session hooks | ✅ 2026-11-10 `hook.js`: SessionStart prints the stamp + L0; Stop appends each turn's touched nodes to `data/live` (shown in the Futásnapló). Registered in the main checkout's `.claude/settings.local.json` |
 | 2.6 semantic search | ◐ hybrid search + RRF built; bge-m3 off until Ollama is installed |
-| 2.7 write-back with approval | ✗ next (Döntésnapló) |
+| 2.7 write-back with approval | ✅ 2026-11-25: Döntésnapló + Rétegverem card, `lib/edit.js` (S6, decisions only) |
 | 2.8 imports in Code | ✗ |
 | 2.9 more layers | ✗ |
 | 2.10 observability | ✅ HEALTH.md + doctor |

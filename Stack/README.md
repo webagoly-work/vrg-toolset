@@ -76,6 +76,11 @@ Never load `out/stack.json` whole. Ids look like:
   files into the cell, every byte a dot, the file name under the pointer (`GET /api/bytes`, needs `node serve.js`);
   **● élő**: with the server, a finished build reloads the changed layers and pulses the changed nodes
   (`GET /api/events`); the card opens the layer's own page with the node selected and copies the string or a prompt.
+- **The write gateway** (S6, 2026-11-25; decisions only): with `node serve.js`, the Döntésnapló's **✎ beírása** buttons and
+  the Rétegverem card of an open decision write its answer into its DECISIONS file: one fixed dated line under the
+  question (`> **VIS-Q5** answered 2026-11-25: **B** — … · _(Döntésnapló)_`), only after the diff is shown and approved,
+  refused if the file changed meanwhile, then a rebuild. `lib/edit.js` (tested on throwaway copies, `test/edit.test.js`),
+  `lib/editdialog.js`, `POST /api/edit/preview` · `/apply` (local pages only). Never commits; R, U, A, C, G are never written.
 - **Layers page, the graph view (régi Rétegek):** `layers.html` (2026-11-07; since 2026-11-25 behind the Viewer's ⚙ Nézet). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
 - **Phone (VRG Mobile, WP M17):** both pages have touch gestures (`touch.js`: one finger orbits, pinch zooms, twist turns, two fingers up / down tilt, tap picks, double tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space toggles the Őrség lock). `Planner_VRG_U100/Mobile/stack/publish-stack.js --push` (START → R → T) bundles them into self-contained pages on the `stack-pages` branch, where the app's **Rétegverem** feature reads them. Re-run it after a rebuild to update the phone.
 - **Rebuild** after any change: `..\..\tools\node\node.exe stack.js build`. It takes about 6 s when little changed, and about 30 s the first time or after `--rerecord`. `build.js` still works too.
@@ -110,9 +115,10 @@ Never load `out/stack.json` whole. Ids look like:
 | `mcp/server.js` | MCP server, stdio, no dependencies |
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
+| `lib/edit.js` · `lib/editdialog.js` | the write gateway (S6): the decisions editor and its diff dialog |
 | `lib/layertext.js` · `lib/viewer-layout.js` · `lib/bytes.js` | the Viewer's layer text + timeline (build stage), layout, and the read-only folder bytes for `serve.js` `GET /api/bytes` |
 | `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js` |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 

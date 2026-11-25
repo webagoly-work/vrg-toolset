@@ -286,3 +286,18 @@ research/STRINGS-PLAN.md §6. Each can be changed in those files.
 | STK-P78 | Card actions before the write gateway | **A** the layer's page with the node selected (`#sel=`, `#run=`), the string as text, an opening prompt for a session; Q points to the Döntésnapló's A/B/C prompts | §3.1 ④ keeps copy-prompt buttons as the offline fallback; the diff-approved write actions are S6 |
 | STK-P79 | S10 on the phone | **A** the time scrubber yes (ids and day numbers only); the code stream and the live channel no | both need serve.js on the PC; the phone bundle stays text-free |
 
+## The write gateway S6, 2026-11-25
+
+The Founder, 2026-11-25: **build S6, one fixed answer line, decisions only.** So the gateway (`lib/edit.js`, `serve.js`
+`POST /api/edit/preview` · `/apply`, the dialog `lib/editdialog.js`) has one editor, and it writes the same line in every
+DECISIONS file, whatever that file's own format; the threads, lines, features and ideas editors of §4 wait.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P80 | The line | **A** `> **<id as the file spells it>** answered <date>: **B** — <option text> · <note> · _(Döntésnapló)_`; an own answer in “quotes” | a blockquote is its own block under a table, a list item or a paragraph without breaking it; it starts with the id and says "answered", which the Q parser reads as an answer in any section, Open included |
+| STK-P81 | Where it goes | **A** under a heading item: below the heading · a table row: after the table · otherwise after the item's own lines; blank lines around it | a line inside a table would break the table; the answer stays next to its question |
+| STK-P82 | Proof before writing | **A** the build's own parser (`parseDecisionFile`, factored out of the Q adapter, output identical on all 187 Q nodes) reads the new text: that question answered on the same line, no other question's state changed; else nothing is written | the next build reads the file by the same rules, so what the dialog promises is what the Döntésnapló will show |
+| STK-P83 | Bytes | **A** a splice into the bytes as they are: line endings (CRLF, mixed) and every other byte unchanged | "a hand edit" leaves no trace beyond its own line |
+| STK-P84 | Who may post | **A** only this server's own pages: JSON body, Host and Origin = localhost / 127.0.0.1 on its port | another site open in the same browser cannot post to the gateway (CSRF, DNS rebinding); a refused request writes nothing |
+| STK-P85 | After the write | **A** an `edit` event in `data/events.jsonl` (who: the page; the diff's hash), then `POST /api/build` from the dialog | the time scrubber shows the edit; the Döntésnapló reloads, Rétegverem glows the answered node over `/api/events`. Never a commit (START S or a session commits) |
+

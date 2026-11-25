@@ -9,12 +9,29 @@
 //   GET /api/events                  server-sent events: `changed` {generated, layers} whenever a build finishes
 //                                    (any build: START R → B, POST /api/build, a session's stack.js build); the pages
 //                                    refetch only those layers and glow what differs. S5's incremental build is not here
+// The write gateway (S6, lib/edit.js; decisions only): nothing is written without the shown diff being approved
+//   POST /api/edit/preview {op}         → { diff, hash, answer, line }   writes nothing
+//   POST /api/edit/apply   {op, hash}   → writes the one answer line, refused if the file changed since; logs an edit
+//   Only from this server's own pages: JSON body, Host and Origin must be localhost / 127.0.0.1 on this port, so another
+//   site open in the browser cannot post here (CSRF, DNS rebinding). Never commits.
 'use strict';
 const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = __dirname, PORT = +process.argv[2] || 8806;
 const TYPE = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.css': 'text/css', '.md': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 let busy = null;
 const BYTES = require('./lib/bytes');
+const EDIT = require('./lib/edit');
+const LOCAL = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
+function ownPage(req) {
+  if (!LOCAL.has(String(req.headers.host || ''))) return false;
+  const o = req.headers.origin; if (o && !LOCAL.has(o.replace(/^https?:\/\//, ''))) return false;
+  return /^application\/json\b/i.test(String(req.headers['content-type'] || ''));
+}
+function body(req, max = 16384) {
+  return new Promise((ok, no) => { let n = 0; const parts = [];
+    req.on('data', c => { n += c.length; if (n > max) { no(Object.assign(new Error('body too large'), { code: 413 })); req.destroy(); } else parts.push(c); });
+    req.on('end', () => { try { ok(JSON.parse(Buffer.concat(parts).toString('utf8') || '{}')); } catch (e) { no(Object.assign(new Error('bad JSON'), { code: 400 })); } }); });
+}
 
 /* ---- the live channel: out/layertext/index.js is written last by every build */
 const LT_DIR = path.join(ROOT, 'out', 'layertext'), clients = new Set();
@@ -58,6 +75,15 @@ http.createServer((req, res) => {
       const q = new URL(req.url, 'http://x').searchParams, r = BYTES.folderBytes(path.join(ROOT, '..'), q.get('path'));
       return json(res, 200, { ok: true, path: r.path, files: r.files, total: r.total, truncated: r.truncated, b64: r.buf.toString('base64') });
     } catch (e) { return json(res, e.code >= 400 ? e.code : 500, { ok: false, msg: String(e.message || e) }); }
+  }
+  if (p === '/api/edit/preview' || p === '/api/edit/apply') {
+    if (req.method !== 'POST') return json(res, 405, { ok: false, msg: 'POST only' });
+    if (!ownPage(req)) return json(res, 403, { ok: false, msg: 'only from this server\'s own pages (JSON, localhost)' });
+    if (busy) return json(res, 409, { ok: false, msg: 'busy: ' + busy + ', try again when it is done' });
+    return body(req).then(b => {
+      const ctx = { repo: path.join(ROOT, '..'), log: path.join(ROOT, 'data', 'events.jsonl') };
+      return json(res, 200, p.endsWith('preview') ? EDIT.preview(b.op, ctx) : EDIT.apply(b.op, b.hash, ctx));
+    }).catch(e => json(res, e.code >= 400 && e.code < 600 ? e.code : 500, { ok: false, msg: String(e.message || e) }));
   }
   if (p === '/api/connectome' || p === '/api/build') {
     if (req.method !== 'POST') return json(res, 405, { ok: false, msg: 'POST only' });
