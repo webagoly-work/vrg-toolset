@@ -10,7 +10,7 @@ Interactive map and samples: <https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3>
 
 Status: **started** (2026-11-21). The sources live in `Kisokos/` (see its README); the Stack has a
 dedicated layer for them, **K · Kisokos**, shown in 3D by `Stack/kisokos.html` (START R → S). The first
-volume, Rögzítéstechnika, has 53 draft cards; the second, Kommunikációs vonalak (2026-11-22), has 27
+volume, Rögzítéstechnika, has 54 draft cards; the second, Kommunikációs vonalak (2026-11-22), has 27
 draft line cards, each with the same generated one-pager drawing (`Kisokos/kommunikacios-vonalak/svg/`).
 
 ## 1. The topology: 8 axes, 4 rings

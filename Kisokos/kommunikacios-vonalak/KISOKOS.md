@@ -31,7 +31,7 @@
 | Wi-Fi 6 GHz | rádió | 5,945 GHz – 6,425 GHz | Gbit/s nagyságrend | nagyjából egy helyiség | Nagy sávszélességet kérő eszközök (VR, nagy fájlok) a pont közelében. |
 | DECT | rádió | 1,88 GHz – 1,9 GHz | beszédcsatornák; ULE: kis adatforgalom | beltéren néhány tíz méter, ismétlővel több | Vezeték nélküli telefonok a routerhez kötött bázissal, egyes okosotthon-eszközök (ULE). |
 | Mobilhálózat (4G, 5G) | rádió | 703 MHz – 960 MHz · 1,71 GHz – 2,69 GHz · 3,4 GHz – 3,8 GHz | néhány Mbit/s-tól Gbit/s-ig, a lefedettségtől függően | kilométerek; beltéren a falak és a fém nyílászárók rontják | Mobilinternet-router, okos mérők és riasztók mobil kommunikációja, beltéri lefedettség. |
-| RFID és NFC | rádió | 125 kHz · 13,56 MHz | néhány kbit/s (125 kHz) – néhány száz kbit/s (13,56 MHz) | néhány centiméter | Beléptetés: kapu, lépcsőház, garázs, kaputelefonba épített olvasó. |
+| RFID és NFC | rádió | 125 kHz · 13,56 MHz | néhány kbit/s (125 kHz) – néhány száz kbit/s (13,56 MHz) | néhány centiméter (125 kHz, ISO 14443); az ISO 15693 kártyák akár kb. 1 m-ről | Beléptetés: kapu, lépcsőház, garázs, kaputelefonba épített olvasó. |
 | Infravörös távirányító | fény | 319 THz | néhány száz bit/s | néhány méter, rálátással | TV, klíma, hangsáv; okosotthonból IR-adóval vezérelhető. |
 | Optika: egymódusú | fény | 190 THz – 194 THz · 201 THz – 201 THz · 229 THz – 229 THz · 236 THz – 236 THz | GPON: 2,5 Gbit/s le, 1,25 Gbit/s fel · XGS-PON: 10 Gbit/s | kilométerek, akár tíz kilométerek | A szolgáltató optikája a lakás optikai végpontjáig (ONT); onnan Ethernet. Új építésnél: védőcső a csatlakozási ponttól a médiadobozig. |
 | Optika: multimódusú | fény | 353 THz | 1–10 Gbit/s és felette | néhány száz méter | Lakásban ritka; irodaházban, nagy családi háznál két épület között. |
@@ -364,7 +364,7 @@ Négy csavart érpár; mindegyiken differenciális, többszintű jel utazik, min
 - **A lakásban:** Strukturált lakáshálózat: minden szobába, a TV mögé, a mennyezeti Wi-Fi ponthoz, a kamerákhoz, a médiadobozba.
 - **Szerelés:**
   - Az erősáramú kábeltől elválasztva vezetni (EN 50174-2): távolság vagy elválasztó, keresztezés derékszögben.
-  - Hajlítási sugár legalább a kábel átmérőjének négyszerese; ne törd meg, ne húzd túl, ne szorítsd kábelkötegelővel.
+  - Hajlítási sugár legalább a kábel átmérőjének négyszerese (U/UTP, húzás nélkül; árnyékolt kábelnél és húzás közben nyolcszoros), vagy amit a kábel adatlapja előír; ne törd meg, ne húzd túl, ne szorítsd kábelkötegelővel.
   - Egy rendszeren belül egyféle bekötési szín-sorrend (T568A vagy T568B).
   - Csillagpontba (médiadoboz) tápaljzat és szellőzés.
 - **Buktatók:**
@@ -436,7 +436,7 @@ Kép és hang tömörítetlenül, több nagy sebességű differenciális érpár
 - **Táplálás:** csak kis segédtáp (5 V)
 - **Kábel:** HDMI kábel (Premium High Speed, Ultra High Speed), optikai HDMI (AOC), HDBaseT-hez Cat6A
 - **Csatlakozó:** HDMI A
-- **Szabvány:** HDMI Specification, HDBaseT (IEEE 1911)
+- **Szabvány:** HDMI Specification (HDMI Forum), HDBaseT (HDBaseT Alliance)
 - **A lakásban:** TV a falon, projektor a mennyezeten, a forrás a szekrényben: a falban vezetett kép.
 - **Szerelés:**
   - Falba ne HDMI-kábelt, hanem elegendően nagy védőcsövet: a kábel cserélhető marad, és a csatlakozó átfér.
@@ -516,7 +516,7 @@ A konnektorba dugott adapterek a lakás erősáramú vezetékén, a 2–86 MHz-e
 
 ![Koax: antenna és kábel-TV](svg/koax-tv.svg)
 
-Egy belső ér és a köré tekert árnyékolás alkot egy 75 Ω-os hullámvezetőt; rajta egymás mellett sok modulált rádiófrekvenciás csatorna utazik. A kábeltévés hálózaton ugyanezen a kábelen jön az internet is (DOCSIS).
+Egy belső ér és a köré tekert árnyékolás alkot egy 75 Ω-os hullámvezetőt; rajta egymás mellett sok modulált rádiófrekvenciás csatorna utazik. A kábeltévés hálózaton ugyanezen a kábelen jön az internet is (DOCSIS). Földfelszíni digitális TV Magyarországon a 470–694 MHz-es sávban.
 
 - **Közeg:** 75 Ω-os koaxiális kábel
 - **Jel:** Modulált rádiófrekvenciás csatornák (modulált vivő)
@@ -580,7 +580,7 @@ A parabola fejében lévő LNB a 10,7–12,75 GHz-es műholdas jelet 950–2150 
 
 ![433 MHz sáv](svg/radio-433.svg)
 
-Szabadon használható keskeny sáv (433,05–434,79 MHz) egyszerű, olcsó rádiós eszközöknek: a jel többnyire csak be-ki kapcsolt vivő vagy frekvenciaváltás, sokszor protokoll és titkosítás nélkül.
+Szabadon használható sáv (433,05–434,79 MHz, legfeljebb 10 mW, többnyire 10 % adási idővel) egyszerű, olcsó rádiós eszközöknek: a jel többnyire csak be-ki kapcsolt vivő vagy frekvenciaváltás, sokszor protokoll és titkosítás nélkül.
 
 - **Közeg:** rádió
 - **Jel:** Egyszerű be-ki (OOK) vagy frekvenciabillentyűzéses moduláció (modulált vivő)
@@ -608,7 +608,7 @@ Szabadon használható keskeny sáv (433,05–434,79 MHz) egyszerű, olcsó rád
 
 ![868 MHz sáv](svg/radio-868.svg)
 
-Az Európában szabadon használható 863–870 MHz-es sávban keskeny sávú rádiók dolgoznak, szigorú adási időkorláttal. A Z-Wave hálót alkot (az eszközök továbbadják egymás üzenetét), a LoRa nagyon lassan, de kilométerekre ad, a wM-Bus mérőórákat olvas le.
+Az Európában szabadon használható 863–870 MHz-es sávban keskeny sávú rádiók dolgoznak, sávrészenként más adási időkorláttal (jellemzően 0,1 %, 1 % vagy 10 %). A Z-Wave hálót alkot (az eszközök továbbadják egymás üzenetét), a LoRa nagyon lassan, de kilométerekre ad, a wM-Bus mérőórákat olvas le.
 
 - **Közeg:** rádió
 - **Jel:** Keskeny sávú moduláció (FSK, a LoRánál chirp-spektrumszórás) (modulált vivő)
@@ -627,6 +627,7 @@ Az Európában szabadon használható 863–870 MHz-es sávban keskeny sávú r�
 - **Buktatók:**
   - Az amerikai Z-Wave eszköz más frekvencián dolgozik: csak európai változat jó.
   - Az adási időkorlát miatt nem való folyamatos adatfolyamra.
+  - Az adási időkorlát sávrészenként eltér: 865–868,6 MHz-en 1 %, 868,7–869,2 MHz-en 0,1 %, 869,4–869,65 MHz-en 10 %.
 - **Rokon vonalak:** 433 MHz sáv, 2,4 GHz sáv, M-Bus
 - **Keresőszavak:** HU: Z-Wave modul EU · LoRa szenzor · 868 MHz — EN: Z-Wave EU · LoRaWAN sensor · 868 MHz — DE: Z-Wave EU · LoRaWAN Sensor · 868 MHz Funk
 - **Hol kapható:** Okosotthon-szaküzlet, elektronikai kereskedés.
@@ -637,7 +638,7 @@ Az Európában szabadon használható 863–870 MHz-es sávban keskeny sávú r�
 
 ![2,4 GHz sáv](svg/ism-24.svg)
 
-A 2400–2483,5 MHz-es, világszerte szabad sávon osztozik a Wi-Fi, a Zigbee, a Thread és a Bluetooth. A Zigbee és a Thread kis fogyasztású hálót alkot (a hálózati eszközök továbbítanak); a Thread IP-alapú, rá épül a Matter. A sáv zsúfolt, a csatornák kiosztása számít.
+A 2400–2483,5 MHz-es, világszerte szabad sávon (általános eszközöknek 10 mW EIRP) osztozik a Wi-Fi, a Zigbee, a Thread és a Bluetooth. A Zigbee és a Thread kis fogyasztású hálót alkot (a hálózati eszközök továbbítanak); a Thread IP-alapú, rá épül a Matter. A sáv zsúfolt, a csatornák kiosztása számít.
 
 - **Közeg:** rádió
 - **Jel:** Wi-Fi: OFDM; Zigbee és Thread: DSSS (IEEE 802.15.4); Bluetooth: frekvenciaugratás, GFSK (sokvivős (OFDM))
@@ -790,7 +791,7 @@ Az olvasó tekercse mágneses mezőt kelt, a kártya vagy kulcstartó ebből kap
 - **Sáv:** 125 kHz · 13,56 MHz
 - **Hullámhossz:** 2,4 km · 22,1 m
 - **Sebesség:** néhány kbit/s (125 kHz) – néhány száz kbit/s (13,56 MHz)
-- **Távolság:** néhány centiméter
+- **Távolság:** néhány centiméter (125 kHz, ISO 14443); az ISO 15693 kártyák akár kb. 1 m-ről
 - **Topológia:** pont-pont az olvasó és a kártya között
 - **Táplálás:** a kártya passzív, az olvasó mezőjéből táplálkozik
 - **Kábel:** az olvasótól a vezérlőig: gyártó szerint (Wiegand, RS-485, OSDP)
@@ -800,7 +801,7 @@ Az olvasó tekercse mágneses mezőt kelt, a kártya vagy kulcstartó ebből kap
 - **Szerelés:**
   - Fém felületre szerelve az olvasási távolság csökken: távtartó vagy fémre szánt olvasó kell.
 - **Buktatók:**
-  - A 125 kHz-es kártyák egyszerűen másolhatók: biztonságra a titkosított 13,56 MHz-es rendszer való.
+  - A 125 kHz-es kártyák egyszerűen másolhatók: biztonságra titkosított 13,56 MHz-es rendszer való (a régi, azonosítót nyíltan küldő 13,56 MHz-es kártyák sem biztonságosak).
 - **Rokon vonalak:** RS-485 · Modbus RTU, Ethernet csavart érpár
 - **Keresőszavak:** HU: RFID kártyaolvasó 13,56 MHz · Mifare kulcstartó · Wiegand olvasó — EN: 13.56 MHz RFID reader · Mifare key fob · Wiegand reader — DE: RFID Leser 13,56 MHz · Mifare Schlüsselanhänger
 - **Hol kapható:** Biztonságtechnikai szakkereskedés.
@@ -856,7 +857,7 @@ A kb. 9 µm-es üvegmagban a fény egyetlen módusban halad, így alig torzul, �
 - **Szabvány:** ITU-T G.652 / G.657 (szál), G.984 (GPON), G.9807 (XGS-PON)
 - **A lakásban:** A szolgáltató optikája a lakás optikai végpontjáig (ONT); onnan Ethernet. Új építésnél: védőcső a csatlakozási ponttól a médiadobozig.
 - **Szerelés:**
-  - Hajlítási sugár: a szál típusa szerint; a G.657.A2 szál kisebb sugarat is tűr.
+  - Hajlítási sugár: a szál típusa szerint; a G.657.A2 szál kisebb sugarat is tűr (tervezési sugár 7,5 mm, az A1-é 10 mm).
   - A csatlakozó végét védősapkával kell tartani; a por csillapítást okoz.
   - Az optikába nem szabad belenézni: a lézerfény láthatatlan, és károsíthatja a szemet.
 - **Buktatók:**
