@@ -282,7 +282,7 @@
       "photometry": { "lm": "100–1500 lm", "cct": "2700–3000 K", "cri": "Ra ≥ 80", "beam": "15–60° felfelé, vagy szórt irányfény" },
       "distribution": { "type": "up", "angle": 30 },
       "control": "alkonykapcsoló, időzítés, okos vezérlés", "lines": ["kv.halozat-50hz", "kv.ism-24"],
-      "install": ["Az aljzat alá vízelvezető kavicsréteg, hogy a lámpa ne álljon vízben.", "A tömszelencés kábelbevezetés gyári; a kötés földbe szánt kötőkészlettel.", "A fedőlap felülete forró lehet: ahol mezítláb járnak, arra minősített kivitel."],
+      "install": ["Az aljzat alá vízelvezető kavicsréteg (gyártótól függően 10–30 cm, IP67-nél a vastagabb), hogy a lámpa ne álljon vízben; próba: a beöntött víz fél órán belül elszivárog. Az IP68 tartós, tiszta vízbe merülésre való, nem váltja ki a kavicságyat.", "A tömszelencés kábelbevezetés gyári; a kötés földbe szánt kötőkészlettel.", "A fedőlap felülete forró lehet: ahol mezítláb járnak, arra minősített kivitel."],
       "fixing": ["rg.beton"],
       "rules": "MSZ HD 60364-7-714, MSZ EN 60598-2-13 (talajba süllyesztett lámpatestek)", "norms": ["el.msz-hd-60364-7-714", "el.msz-en-60598"], "symbol": "lum.outdoor",
       "rooms": "terasz, kerti út, fák tövében, homlokzat előtt",

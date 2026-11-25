@@ -9,7 +9,7 @@
       "mode": "Ütve fúrás (fúrókalapács); üreges anyagban fúró üzemmódban is használható.",
       "for": ["beton", "vasbeton", "ureges-fodempanel", "tomor-tegla", "meszhomoktegla", "termesko", "zsaluko", "salakblokk", "vegyes-falazat", "ureges-tegla", "etics"],
       "sizes": "4–26 mm, hossz 110–1000 mm; két- és négyélű (vasbetonhoz a négyélű)",
-      "traps": ["A tompa fúró melegszik és lassú: cserélni kell.", "Pontos dübelfurathoz minőségi fúró, mert a kopott fúró szűk furatot ad."],
+      "traps": ["A tompa fúró melegszik és lassú: cserélni kell.", "Pontos dübelfurathoz minőségi fúró, mert a kopott fúró szűk furatot ad.", "Vasalást átvágó (Rebar Cutter) fúró ütés nélkül használandó, és statikus jóváhagyás kell."],
       "terms": { "hu": ["SDS-plus fúrószár 8x160", "négyélű SDS fúró"], "en": ["SDS-plus drill bit", "4-cutter SDS-plus"], "de": ["SDS-plus Hammerbohrer", "4-Schneider"] },
       "shop": "Barkácsáruház, szerszámbolt, szakkereskedés." },
 

@@ -7,8 +7,8 @@
       "place": { "core": "6A" }, "source": { "kind": "szabványcsalád", "ref": "MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások)", "from": "MSZT szabványbolt" },
       "scope": "A lámpatestek biztonsági termékszabványa: az 1. rész az általános követelmények (szerkezet, érintésvédelem, melegedés, jelölés), a 2-es részek egy-egy lámpatestfajta kiegészítő szabályai.",
       "points": [
-        "Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok (LED-szalag is); 2-22 biztonsági világítás.",
-        "A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, a megvilágított tárgytól tartandó legkisebb távolságot, és hogy a test hőszigeteléssel takarható-e.",
+        "Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok és LED-szalag lámpatestek (nem cserélhető fényforrással); 2-22 biztonsági világítás.",
+        "A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, ahol a lámpatest a megvilágított tárgyat túlmelegítheti, a tőle tartandó legkisebb távolság jelét, és azt, hogy a test hőszigeteléssel takarható-e (a jelölés fajtája lámpatestenként más).",
         "A villanyszerelő oldaláról: a jelölésnek megfelelő helyre és módon kell beépíteni (pl. süllyesztett lámpatestet hőszigetelés alá csak arra minősítve)."
       ],
       "values": ["A jelölések és a távolságok lámpatestenként a termék címkéjén és adatlapján."],
@@ -28,7 +28,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-en-61347", "title": "MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek", "aka": ["LED tápegység szabvány", "LED meghajtó", "LED fénycső szabvány"],
-      "place": { "core": "6A" }, "source": { "kind": "szabványok", "ref": "MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabványok", "ref": "MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők; a 2024-es kiadás címe már „LED-fényforrások elektronikus működtetői”, vészvilágítási melléklettel); MSZ EN 62776 (kétvégű LED-csövek)", "from": "MSZT szabványbolt" },
       "scope": "A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai.",
       "points": [
         "A meghajtó jelölése: kimenő feszültség vagy áram, teljesítmény, SELV-e, beépíthető vagy önálló.",
@@ -50,8 +50,8 @@
         "Lakásra nem kötelező, de az otthoni dolgozószoba tervezésénél jó viszonyítás."
       ],
       "values": [
-        "Irodai írás, olvasás, adatfeldolgozás: kb. 500 lx, UGR ≤ 19, Ra ≥ 80.",
-        "Folyosók, közlekedők: kb. 100 lx.",
+        "Irodai írás, olvasás, adatfeldolgozás: 500 lx karbantartott érték, UGR ≤ 19, Ra ≥ 80 (a 2021-es kiadás módosított, magasabb értéket is ad, és indokolt esetben egy lépéssel emelni vagy csökkenteni lehet).",
+        "Folyosók, közlekedők: 100 lx (jellemzően UGR 28, Ra 40; a szabvány táblázatával egyeztetni).",
         "Precíz műhelymunka: 750–1000 lx vagy több (tevékenység szerint)."
       ],
       "applies": "Irodák, iskolák, üzletek, műhelyek, raktárak, egészségügy és minden beltéri munkahely.",
@@ -64,7 +64,7 @@
       "scope": "Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követelmények, számítási és mérési módszerek.",
       "points": [
         "Világítási osztályok: M (gépjárműforgalom, fénysűrűség alapján), C (konfliktuszónák, csomópontok), P (gyalogos és lassú forgalom, lakóutak).",
-        "Az osztályt a forgalmi helyzet és a környezet alapján választják ki; lakóparkok belső útjaihoz jellemzően P osztály.",
+        "Az osztályt a forgalmi helyzet és a környezet alapján választják ki (a választás útmutatója a CEN/TR 13201-1, az osztályokat az EN 13201-2 adja); lakóparkok belső útjaihoz jellemzően P osztály.",
         "A fény ne jusson az égre és a lakások ablakába (fényszennyezés)."
       ],
       "values": ["Az osztályonkénti megvilágítási és fénysűrűségi értékeket a szabvány táblázatai adják."],
@@ -91,7 +91,7 @@
       "place": { "term": "5A1", "overlap": 0.15 }, "source": { "kind": "szabványsorozat + uniós irányelvek", "ref": "MSZ EN 60079 sorozat; 2014/34/EU (termékek) és 1999/92/EK (munkahelyek) irányelv és a hazai átültetésük", "from": "MSZT szabványbolt; EUR-Lex" },
       "scope": "Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szánt villamos berendezések, köztük a lámpatestek követelményei.",
       "points": [
-        "Zónák gázra: 0 (folyamatosan robbanóképes), 1 (normál üzemben előfordul), 2 (ritkán, rövid ideig). Porra: 20, 21, 22 ugyanígy.",
+        "Zónák gázra: 0 (folyamatosan, hosszú ideig vagy gyakran van robbanóképes elegy), 1 (normál üzemben olykor előfordul), 2 (normál üzemben nem várható, és ha mégis, csak rövid ideig áll fenn). Porra: 20, 21, 22 ugyanígy.",
         "A berendezés Ex-jelölése megmondja, mely zónába, gázcsoportba és hőmérsékleti osztályba való.",
         "A zónabesorolás a robbanásvédelmi dokumentum része; tervezés és szerelés csak erre jogosult szakemberrel."
       ],
@@ -129,7 +129,7 @@
 
     { "id": "szerelvenyek", "title": "MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok", "aka": ["kapcsoló szabvány", "aljzat szabvány", "szerelvények"],
       "place": { "core": "6A" }, "source": { "kind": "szabványok", "ref": "MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok)", "from": "MSZT szabványbolt" },
-      "scope": "A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei.",
+      "scope": "A fali kapcsolók (mechanikus: MSZ EN 60669-1; elektronikus és dimmerek: MSZ EN 60669-2-1, csak váltakozó áram, legfeljebb 250 V és 16 A) és a dugaszolóaljzatok termékkövetelményei.",
       "points": [
         "A kapcsoló jelölése adja a névleges áramot és a terhelés fajtáját; LED-terheléshez a gyártó megadja a kapcsolható LED-teljesítményt (a bekapcsolási áramlökés miatt).",
         "Dimmernél a terhelés típusa (fázishasításos élvezérelt vagy fázisvégi, LED-kompatibilitás) a jelölésen.",

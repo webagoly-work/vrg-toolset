@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|
 | Beton | igen | SDS-plus kőzetfúró, Hengeres szárú kőzetfúró | Nylon terpesztődübel, Beütős dübel | Nylon terpesztődübel, Betoncsavar | Csavaros terpesztő horgony, Beütős horgony, Vegyi dübel |
 | Vasbeton | igen | SDS-plus kőzetfúró, SDS-max fúró, Gyémánt fúró és korona | Nylon terpesztődübel | Betoncsavar, Nylon terpesztődübel | Csavaros terpesztő horgony, Beütős horgony, Vegyi dübel |
-| Üreges födémpanel | igen | SDS-plus kőzetfúró | Billenő dübel, Fém üreges fali dübel, Univerzális dübel | Billenő dübel, Vegyi dübel | Vegyi dübel |
+| Üreges födémpanel | igen | SDS-plus kőzetfúró | Billenő dübel, Fém üreges fali dübel, Univerzális dübel | Billenő dübel, Üreges födém horgony | Üreges födém horgony |
 | Tömör tégla | igen | SDS-plus kőzetfúró, Hengeres szárú kőzetfúró | Nylon terpesztődübel | Nylon terpesztődübel, Keretdübel | Vegyi dübel, Keretdübel |
 | Üreges kerámia falazóblokk | nem | Hengeres szárú kőzetfúró, SDS-plus kőzetfúró, Dobozfúró korona | Univerzális dübel | Keretdübel, Univerzális dübel | Vegyi dübel |
 | Pórusbeton | nem | Hengeres szárú kőzetfúró, Fafúró | Pórusbeton dübel | Pórusbeton dübel, Keretdübel | Vegyi dübel |
@@ -67,10 +67,11 @@
 
 - **Felismerés:** Panelházban és sok családi házban: a födémen fúrva 2–5 cm után a fúró hirtelen beszakad egy hosszanti üregbe.
 - **Fúrás:** ütve · SDS-plus kőzetfúró. Ütve fúrható, de az alsó héj vékony. Érdemes egy próbafurattal megkeresni, hol fut üreg és hol a borda.
-- **Dübel:** könnyű: Billenő dübel, Fém üreges fali dübel, Univerzális dübel · közepes: Billenő dübel, Vegyi dübel · nehéz: Vegyi dübel. A sima terpesztődübel az üregben nem fog. Üreges födémhez gyártott födémdübel vagy szitahüvelyes vegyi dübel kell. Bordába fúrva betonként viselkedik.
+- **Dübel:** könnyű: Billenő dübel, Fém üreges fali dübel, Univerzális dübel · közepes: Billenő dübel, Üreges födém horgony · nehéz: Üreges födém horgony. A sima terpesztődübel az üregben nem fog. Üreges födémbe nehéz terhet csak a födémhez engedélyezett horgonnyal (pl. fischer FHY, Z-21.1-1711) és statikus jóváhagyással; szitahüvelyes vegyi dübelre üreges födémhez nem találtunk engedélyt. Bordába fúrva betonként viselkedik.
 - **Csavar:** Menetes szár, metrikus csavar, Forgácslapcsavar
 - **Buktatók:**
   - Feszített (előfeszített) panelban a feszítőhuzalt megsérteni tilos: a panel tönkremehet.
+  - Fúrás előtt fémdetektorral meg kell keresni a feszítőszálakat, és az alsó oldalon jelölni.
   - Lámpa, csillár: a súly és a rögzítés pontja a panel üregéhez igazodjon; nehéz tárgyhoz szakember vagy statikus.
   - A régi panelban a födém üregeiben gyakran futnak régi vezetékek.
 - **Keresőszavak:** HU: födémdübel üreges födémbe · billenő dübel · szitahüvely vegyi dübel — EN: hollow core slab anchor · toggle bolt · mesh sleeve chemical anchor — DE: Hohldeckendübel · Kippdübel · Siebhülse Injektionsmörtel
@@ -110,7 +111,7 @@
 *Más néven:* gázbeton, Ytong-típusú falazóelem, Hebel
 
 - **Felismerés:** Fehér vagy világosszürke, könnyű és puha; a fúró szinte magától megy, lisztszerű fehér por. Körömmel is karcolható.
-- **Fúrás:** ütés nélkül · Hengeres szárú kőzetfúró, Fafúró. Ütés nélkül. A dübel adatlapja gyakran kisebb fúróátmérőt ír elő, hogy a dübel feszüljön.
+- **Fúrás:** ütés nélkül · Hengeres szárú kőzetfúró, Fafúró. Ütés nélkül, forgó fúrással. A fúróátmérőt a dübel adatlapja adja.
 - **Dübel:** könnyű: Pórusbeton dübel · közepes: Pórusbeton dübel, Keretdübel · nehéz: Vegyi dübel. Pórusbetonhoz gyártott dübel (spirálbordás műanyag vagy fém). Nehézhez pórusbetonra minősített vegyi rendszer.
 - **Csavar:** Forgácslapcsavar
 - **Buktatók:**
@@ -316,7 +317,7 @@
 - **Csavar:** Forgácslapcsavar
 - **Buktatók:**
   - Greslapot ütve fúrni szinte biztos repedés.
-  - A fugába fúrni könnyebb, de a dobozok és szerelvények helyét a csempeosztáshoz kell igazítani.
+  - A fugába ne fúrj: a fuga kitörik, és a dübel rosszul tart; a csempe közepébe fúrj. A dobozok és szerelvények helyét a csempeosztáshoz kell igazítani.
   - Fürdőszobai zónák: mit szabad hova szerelni (MSZ HD 60364-7-701).
 - **Keresőszavak:** HU: csempefúró · gyémánt fúró greslaphoz — EN: tile drill bit · diamond tile drill — DE: Fliesenbohrer · Diamant Fliesenbohrer
 - **Hol kapható:** Barkácsáruház, burkolóanyag-kereskedés.
@@ -357,7 +358,7 @@
 
 - **Hogyan tart:** Terpesztés: a becsavart csavar szétfeszíti a dübelt a furat falának.
 - **Mibe:** Beton, Vasbeton, Tömör tégla, Mészhomoktégla, Terméskő fal, Zsalukő, Csempe, járólap
-- **Fúrás:** A fúró átmérője = a dübel átmérője. A furat legyen legalább a dübel hosszánál mélyebb.
+- **Fúrás:** A fúró átmérője = a dübel átmérője. A furat legyen a dübel hosszánál 10–15 mm-rel mélyebb.
 - **Csavar:** Forgácslapcsavar. Irány: 6 mm-es dübelhez 4–5 mm-es, 8 mm-eshez 5–6 mm-es, 10 mm-eshez 6–8 mm-es csavar. Csavarhossz ≈ dübelhossz + a rögzített tárgy vastagsága + egy csavarátmérő.
 - **Méretek:** 5, 6, 8, 10, 12, 14 mm
 - **Buktatók:**
@@ -447,11 +448,12 @@
 
 - **Hogyan tart:** Széles spirálborda vagy bordázat, amely a puha anyagba vágja magát; becsavarva vagy beütve.
 - **Mibe:** Pórusbeton, Vályog
-- **Fúrás:** A gyártó szerint; gyakran a dübel átmérőjénél kisebb fúróval, ütés nélkül.
-- **Csavar:** Forgácslapcsavar a dübelhez megadott méretben.
+- **Fúrás:** A gyártó szerint, ütés nélkül (forgó fúrás). A fischer GB dübelnél a fúró a dübel névleges mérete; más típusnál (pl. FTP, FPX) a táblázat eltérhet.
+- **Csavar:** A gyártó biztonsági csavarja (pl. fischer GB: Sicherheitsschraube); kültérben és nedves helyiségben A4 rozsdamentes. A teljes teherbírás csak ezzel a csavarral érhető el.
 - **Méretek:** 6–14 mm
 - **Buktatók:**
   - A túl nagy furat nem javítható ugyanezzel a dübellel.
+  - A fischer GB csak vakolatlan pórusbetonban használható; vakolt falba másik rendszer (pl. FTP, vegyi) való.
 - **Keresőszavak:** HU: gázbeton dübel · pórusbeton dübel — EN: aircrete anchor — DE: Porenbetondübel
 - **Hol kapható:** Barkácsáruház, szakkereskedés.
 
@@ -461,12 +463,12 @@
 
 - **Hogyan tart:** Edzett, vágó menetű csavar, amely dübel nélkül, közvetlenül a betonba vágja a menetét.
 - **Mibe:** Beton, Vasbeton, Zsalukő, Mészhomoktégla
-- **Fúrás:** Az adatlap szerinti fúróátmérővel és mélységgel; a furatot ki kell tisztítani.
+- **Fúrás:** Az adatlap szerinti fúróátmérővel és mélységgel. A furat tisztítását az ETA/gyártó írja elő (egyes típusoknál, pl. fischer FBS II, függőleges mennyezeti/padlóbeli furatnál nem kell, falban igen).
 - **Csavar:** Maga a csavar a rögzítőelem.
 - **Méretek:** 5–16 mm, sok hosszban és fejformával
 - **Buktatók:**
   - Rossz fúróátmérővel vagy nem kitisztított furattal nem húzható be vagy nem tart.
-  - Az újrafelhasználhatóságot a gyártó adja meg.
+  - Tartós rögzítéshez egyszer használd; újrahasználat csak ideiglenes rögzítésnél és a gyártó szerint (pl. menetkopás-ellenőrzés).
 - **Keresőszavak:** HU: betoncsavar 7,5 · betoncsavar hatlapfejű — EN: concrete screw anchor — DE: Betonschraube
 - **Hol kapható:** Szakkereskedés; egyszerűbb kivitel barkácsáruházban.
 
@@ -499,6 +501,21 @@
   - Kábeltálca, csőfüggesztés: a terhelés irányát a gyártó adja meg.
 - **Keresőszavak:** HU: beütős horgony M8 · beütőszerszám — EN: drop-in anchor · setting tool — DE: Einschlaganker · Setzwerkzeug
 - **Hol kapható:** Szakkereskedés, villamossági nagykereskedés (tálcarendszerhez).
+
+### Üreges födém horgony
+
+*Más néven:* födémhorgony üreges födémbe, Hohldeckenanker, FHY-típusú horgony
+
+- **Hogyan tart:** Az üreges (feszített) födémpanel alsó héjába való, belső menetes acélhorgony; az üregben szétnyílik vagy a héj mögé feszül. Csak a födémhez kiadott engedély szerint (pl. fischer FHY, Z-21.1-1711).
+- **Mibe:** Üreges födémpanel
+- **Fúrás:** A gyártó szerinti átmérővel és mélységgel; előtte fémdetektorral megkeresni a feszítőszálakat, és az alsó oldalon jelölni.
+- **Csavar:** Menetes szár vagy metrikus csavar a belső menethez.
+- **Méretek:** M6–M10 belső menet (típusonként)
+- **Buktatók:**
+  - Feszítőszálat megfúrni tilos.
+  - A terhelhetőség a héj vastagságától függ; nehéz terhet statikus jóváhagyással.
+- **Keresőszavak:** HU: üreges födém horgony · födémhorgony feszített panelhez — EN: hollow core slab anchor · hollow ceiling anchor — DE: Hohldeckenanker · Hohldeckendübel
+- **Hol kapható:** Szakkereskedés, rögzítéstechnikai nagykereskedés.
 
 ### Beütős dübel
 
@@ -558,6 +575,7 @@
 - **Buktatók:**
   - A tompa fúró melegszik és lassú: cserélni kell.
   - Pontos dübelfurathoz minőségi fúró, mert a kopott fúró szűk furatot ad.
+  - Vasalást átvágó (Rebar Cutter) fúró ütés nélkül használandó, és statikus jóváhagyás kell.
 - **Keresőszavak:** HU: SDS-plus fúrószár 8x160 · négyélű SDS fúró — EN: SDS-plus drill bit · 4-cutter SDS-plus — DE: SDS-plus Hammerbohrer · 4-Schneider
 - **Hol kapható:** Barkácsáruház, szerszámbolt, szakkereskedés.
 

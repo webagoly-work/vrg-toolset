@@ -63,8 +63,8 @@
         "Szelektivitás: hiba esetén csak a hibához legközelebbi védelem kapcsoljon le, ne a főbiztosító. Ehhez a felsőbb szintű védelem nagyobb és lassabb legyen; a pontos összehangolás a gyártói táblázatokból jön (3. szint)."
       ],
       "formulas": [{ "f": "Ib ≤ In ≤ Iz", "mean": "terhelőáram ≤ a kismegszakító névleges árama ≤ a vezeték terhelhetősége" }],
-      "example": { "task": "Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a szerelési módtól függően kb. 19–24 A) milyen kismegszakító kerül, és miért B?",
-        "steps": ["Ib: aljzatkörre jellemzően 16 A-es terhelést tervezünk.", "In = 16 A: 16 ≤ Iz (kb. 19–24 A), a feltétel teljesül.", "Karakterisztika: az aljzatokra kötött háztartási készülékek bekapcsolási árama kicsi, a B old ki a legkisebb hibaáramnál, így a hurokimpedancia-feltétel (2. lecke) könnyebben teljesül."],
+      "example": { "task": "Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a szerelési módtól függően kb. 18–27 A; falban, védőcsőben kb. 23–24 A) milyen kismegszakító kerül, és miért B?",
+        "steps": ["Ib: aljzatkörre jellemzően 16 A-es terhelést tervezünk.", "In = 16 A: 16 ≤ Iz (kb. 23 A falban, védőcsőben), a feltétel teljesül.", "Karakterisztika: az aljzatokra kötött háztartási készülékek bekapcsolási árama kicsi, a B old ki a legkisebb hibaáramnál, így a hurokimpedancia-feltétel (2. lecke) könnyebben teljesül."],
         "result": "B16. C16 csak indokolt esetben (nagy bekapcsolási áramú fogyasztó), mert annál kisebb hurokimpedancia kell az időben való lekapcsoláshoz." },
       "exercises": [
         { "q": "Mi ellen véd a kismegszakító hőkioldója, és mi ellen a mágneses?", "a": "A hőkioldó a túlterhelés ellen (késleltetve), a mágneses a zárlat ellen (azonnal)." },
@@ -80,6 +80,7 @@
       "goals": ["Megérteni, mitől függ egy vezeték terhelhetősége.", "Kiszámolni egy áramkör feszültségesését egy- és háromfázisú esetben.", "Eldönteni, mikor kell a következő keresztmetszetet választani."],
       "body": [
         "A vezeték terhelhetősége (Iz) az a tartós áram, amelynél a szigetelés még nem melegszik túl. Függ a keresztmetszettől, az anyagtól, a szigeteléstől, és erősen a szerelési módtól: falban csőben, falon kívül, hőszigetelésben, kötegben, földben. Több, egymás mellett futó terhelt kör vagy magas környezeti hőmérséklet csökkenti (csökkentő tényezők).",
+        "Tájékoztató értékek (réz, PVC, 30 °C, két terhelt ér; DIN VDE 0298-4 / HD 60364-5-52): 1,5 mm² kb. 15,5–19,5 A, 2,5 mm² kb. 18,5–27 A a szerelési módtól függően; három terhelt érnél (háromfázisú kör) 1,5 mm² kb. 13–17,5 A, 2,5 mm² kb. 17,5–24 A. Mindig a szerelési móddal együtt add meg.",
         "A feszültségesés a vezeték ellenállásán keletkezik (1. szint, 1. lecke). Ha túl nagy, a fogyasztó kevesebb feszültséget kap, a motorok nehezebben indulnak, a hosszú vezeték melegszik, és a hurokimpedancia is nő.",
         "Tájékoztató határ közcélú hálózatról táplált berendezésben (MSZ HD 60364-5-52 tájékoztató melléklete): a betáplálási ponttól világításnál kb. 3 %, egyéb fogyasztóknál kb. 5 %. A teljes esést kell nézni: a fővezetéken és a végáramkörön együtt.",
         "Ha a feszültségesés vagy a hurokimpedancia nem fér bele, a következő keresztmetszetet kell választani, vagy rövidíteni a vezetéket (pl. alelosztóval közelebb vinni a táplálást)."

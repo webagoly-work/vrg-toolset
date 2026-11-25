@@ -38,7 +38,7 @@ A vezeték maga is ellenállás: minél hosszabb és minél vékonyabb, annál n
 **Képletek**
 
 - `U = R · I` — feszültség (V) = ellenállás (Ω) × áram (A); átrendezve I = U / R és R = U / I
-- `R = ρ · l / A` — vezeték ellenállása: fajlagos ellenállás × hossz (m) / keresztmetszet (mm²); rézre ρ ≈ 0,0178 Ω·mm²/m
+- `R = ρ · l / A` — vezeték ellenállása: fajlagos ellenállás × hossz (m) / keresztmetszet (mm²); rézre ρ ≈ 0,0178 Ω·mm²/m (a régi 1/56 tankönyvi érték; 20 °C-on 0,0172, üzemi 70 °C-on kb. 0,021)
 
 **Kidolgozott példa**
 
@@ -276,9 +276,9 @@ Mekkora teljesítményt tud egy 3 × 16 A-es háromfázisú bekötés (ohmos ter
 
 Az áramütés veszélyét a testen átfolyó áram adja, nem a feszültség maga: nagysága, útja (kéz–kéz, kéz–láb a szíven át) és ideje. Már néhány tíz milliamper néhány tized másodperc alatt szívkamraremegést okozhat.
 
-Tájékoztató értékek (váltakozó áram, kéz–láb út): kb. 0,5 mA érezhető; kb. 10 mA felett a kéz már nem tudja elengedni a vezetőt; néhány tíz mA felett, rövid idő alatt életveszély. Ezért old ki az áram-védőkapcsoló 30 mA-nél, gyorsan.
+Tájékoztató értékek (váltakozó áram, kéz–láb út): kb. 0,5 mA érezhető; néhány mA-től (átlagosan kb. 10 mA-nél) sokan már nem tudják elengedni a vezetőt, a határ személyenként és az érintkezési felülettől függ; néhány tíz mA felett, rövid idő alatt életveszély. Ezért old ki az áram-védőkapcsoló 30 mA-nél, gyorsan.
 
-Az emberi test ellenállása (kéz–kéz) nagyjából 1000–2000 Ω, nedves bőrrel kevesebb: 230 V-on ez 100–200 mA, ami halálos lehet.
+Az emberi test ellenállása (kéz–kéz) nagyjából 1000–2000 Ω (a feszültségtől és az érintkezési felülettől is függ), nedves bőrrel kevesebb: 230 V-on ez százas nagyságrendű mA (kb. 115–230 mA), ami halálos lehet.
 
 Az öt biztonsági szabály (MSZ EN 50110-1), ebben a sorrendben: 1. leválasztás minden pólusán; 2. biztosítás visszakapcsolás ellen (lezárás, tábla); 3. a feszültségmentesség megállapítása kétpólusú feszültségvizsgálóval; 4. földelés és rövidrezárás, ahol szükséges; 5. a szomszédos, feszültség alatt maradó részek letakarása vagy elkerítése.
 
@@ -372,7 +372,7 @@ Egy aljzat „nem megy”. Hogyan mérjük meg biztonságosan, és mit jelentene
 
 Vezeték: egy vagy több szigetelt ér; kábel: több ér közös köpenyben, nagyobb mechanikai védelemmel. A köznyelv a kettőt keveri.
 
-A harmonizált jelölés egy példán, H07V-U: H = harmonizált; 07 = 450/750 V névleges feszültség; V = PVC szigetelés; U = tömör, kör keresztmetszetű ér (R = tömör sodrott, K = hajlékony, finoman sodrott). A régi magyar nevek (MCu, MKH, MBCu) ma is élnek a nagykereskedésekben.
+A harmonizált jelölés egy példán, H07V-U: H = harmonizált; 07 = 450/750 V névleges feszültség; V = PVC szigetelés; U = tömör, kör keresztmetszetű ér (R = sodrott, merev, kör keresztmetszetű; K = finoman sodrott, hajlékony, fix szereléshez). A régi magyar nevek (MCu, MKH, MBCu) ma is élnek a nagykereskedésekben.
 
 NYM-J: PVC köpenyes installációs kábel, a J azt jelenti, hogy van benne zöld-sárga védővezető. NYY-J: erőátviteli kábel, földbe és kültérre is. A darabszám × keresztmetszet: pl. 3 × 1,5 = három 1,5 mm²-es ér.
 
@@ -423,7 +423,7 @@ Rugós (karos vagy dugaszolós) kötőelem: gyors, egyenletes szorítóerő; a g
 
 Csavaros sorkapocs: a gyártói meghúzási nyomatékkal kell meghúzni, a túl laza és a túl szoros (az eret elnyíró) kötés is hibás. Sodrott ért érvéghüvellyel kell bekötni.
 
-Sodrott eret ónnal bemártva csavaros kötésbe kötni nem szabad: az ón idővel „folyik”, a kötés meglazul.
+Sodrott eret ónnal bemártva csavaros kötésbe kötni nem ajánlott, kerülendő: az ón idővel „folyik”, a kötés meglazul.
 
 Kötni csak dobozban (kötődoboz, szerelvénydoboz), hozzáférhető helyen lehet; vakolat alá rejtett kötés tilos.
 
@@ -646,10 +646,10 @@ Szelektivitás: hiba esetén csak a hibához legközelebbi védelem kapcsoljon l
 
 **Kidolgozott példa**
 
-Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a szerelési módtól függően kb. 19–24 A) milyen kismegszakító kerül, és miért B?
+Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a szerelési módtól függően kb. 18–27 A; falban, védőcsőben kb. 23–24 A) milyen kismegszakító kerül, és miért B?
 
 1. Ib: aljzatkörre jellemzően 16 A-es terhelést tervezünk.
-2. In = 16 A: 16 ≤ Iz (kb. 19–24 A), a feltétel teljesül.
+2. In = 16 A: 16 ≤ Iz (kb. 23 A falban, védőcsőben), a feltétel teljesül.
 3. Karakterisztika: az aljzatokra kötött háztartási készülékek bekapcsolási árama kicsi, a B old ki a legkisebb hibaáramnál, így a hurokimpedancia-feltétel (2. lecke) könnyebben teljesül.
 
 → B16. C16 csak indokolt esetben (nagy bekapcsolási áramú fogyasztó), mert annál kisebb hurokimpedancia kell az időben való lekapcsoláshoz.
@@ -683,6 +683,8 @@ Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a sze
 - Eldönteni, mikor kell a következő keresztmetszetet választani.
 
 A vezeték terhelhetősége (Iz) az a tartós áram, amelynél a szigetelés még nem melegszik túl. Függ a keresztmetszettől, az anyagtól, a szigeteléstől, és erősen a szerelési módtól: falban csőben, falon kívül, hőszigetelésben, kötegben, földben. Több, egymás mellett futó terhelt kör vagy magas környezeti hőmérséklet csökkenti (csökkentő tényezők).
+
+Tájékoztató értékek (réz, PVC, 30 °C, két terhelt ér; DIN VDE 0298-4 / HD 60364-5-52): 1,5 mm² kb. 15,5–19,5 A, 2,5 mm² kb. 18,5–27 A a szerelési módtól függően; három terhelt érnél (háromfázisú kör) 1,5 mm² kb. 13–17,5 A, 2,5 mm² kb. 17,5–24 A. Mindig a szerelési móddal együtt add meg.
 
 A feszültségesés a vezeték ellenállásán keletkezik (1. szint, 1. lecke). Ha túl nagy, a fogyasztó kevesebb feszültséget kap, a motorok nehezebben indulnak, a hosszú vezeték melegszik, és a hurokimpedancia is nő.
 

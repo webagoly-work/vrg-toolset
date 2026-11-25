@@ -13,14 +13,14 @@
 | OTSZ és TvMI · Hol kell biztonsági világítás | A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI 7.7 12 | OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szöveg, a Nemzeti Jogszabálytárban 2025.IX.23-i hatállyal olvasva 2026-11-25-én); Tűzvédelmi Műszaki Irányelv: TvMI 7.7:2026.02.01., „Villamos berendezések, villámvédelem és elektrosztatikus feltöltődés elleni védelem”, 12. fejezet „Biztonsági célú világítások” (érvényes 2026. február 1-től, a TvMI 7.6:2024.02.01.-et váltja; BM OKF, katasztrofavedelem.hu) |
 | MSZ EN 60598 · Lámpatestek | A lámpatestek biztonsági termékszabványa: az 1 | MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) |
 | MSZ EN 60570 · Világítási sínrendszerek | A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei. | MSZ EN 60570 (a hatályos kiadás) |
-| MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek | A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai. | MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek) |
+| MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek | A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai. | MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők; a 2024-es kiadás címe már „LED-fényforrások elektronikus működtetői”, vészvilágítási melléklettel); MSZ EN 62776 (kétvégű LED-csövek) |
 | MSZ EN 12464-1 · Munkahelyek világítása (beltér) | Beltéri munkahelyek világítási követelményei tevékenységenként: megvilágítás, egyenletesség, káprázáskorlátozás, színvisszaadás. | MSZ EN 12464-1 (a hatályos kiadás) |
 | MSZ EN 13201 · Közúti világítás | Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követelmények, számítási és mérési módszerek. | MSZ EN 13201 (a részek hatályos kiadásai) |
 | MSZ EN 62471 · Fotobiológiai biztonság | A lámpák és lámpatestek sugárzásának hatása a szemre és a bőrre (UV, kékfény, infravörös), és a kockázati csoportok. | MSZ EN 62471 (a hatályos kiadás) |
 | MSZ EN 60079 és ATEX · Robbanásveszélyes terek | Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szánt villamos berendezések, köztük a lámpatestek követelményei. | MSZ EN 60079 sorozat; 2014/34/EU (termékek) és 1999/92/EK (munkahelyek) irányelv és a hazai átültetésük |
 | MSZ EN 60335 · Háztartási készülékek | A háztartási és hasonló villamos készülékek biztonsága (sütő, hűtő, mosógép, bojler, szauna-kályha, medenceszivattyú …); a beépített világításuk is a készülék része. | MSZ EN 60335-1 és a 60335-2-x részek (a hatályos kiadások) |
 | MSZ EN 60204-1 · Gépek villamos szerkezetei | Gépek villamos berendezésének általános követelményei: vészleállítás, vezérlés, kezelőszervek és jelzőfények színei. | MSZ EN 60204-1 (a hatályos kiadás) |
-| MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok | A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei. | MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok) |
+| MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok | A fali kapcsolók (mechanikus: MSZ EN 60669-1; elektronikus és dimmerek: MSZ EN 60669-2-1, csak váltakozó áram, legfeljebb 250 V és 16 A) és a dugaszolóaljzatok termékkövetelményei. | MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok) |
 | MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések | A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa | MSZ HD 60364 (a részek hatályos kiadásai) |
 | MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek | Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet. | MSZ HD 60364-7-701 (a hatályos kiadás) |
 | MSZ HD 60364-7-702 · Úszómedencék és szökőkutak | Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés. | MSZ HD 60364-7-702 (a hatályos kiadás) |
@@ -207,8 +207,8 @@ A lámpatestek biztonsági termékszabványa: az 1. rész az általános követe
 
 **Lényeg (saját összefoglaló):**
 
-- Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok (LED-szalag is); 2-22 biztonsági világítás.
-- A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, a megvilágított tárgytól tartandó legkisebb távolságot, és hogy a test hőszigeteléssel takarható-e.
+- Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok és LED-szalag lámpatestek (nem cserélhető fényforrással); 2-22 biztonsági világítás.
+- A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, ahol a lámpatest a megvilágított tárgyat túlmelegítheti, a tőle tartandó legkisebb távolság jelét, és azt, hogy a test hőszigeteléssel takarható-e (a jelölés fajtája lámpatestenként más).
 - A villanyszerelő oldaláról: a jelölésnek megfelelő helyre és módon kell beépíteni (pl. süllyesztett lámpatestet hőszigetelés alá csak arra minősítve).
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
@@ -259,7 +259,7 @@ A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági köve
 - A tápegység teljesítményét jellemzően 20–30 % tartalékkal választják a terheléshez (gyakorlati szabály, nem szabványérték).
 
 - **Hol érvényes:** LED-szalagok tápegységei, lámpatest-meghajtók, vészvilágítási modulok, LED-fénycsövek.
-- **Forrás:** szabványok: MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek) — MSZT szabványbolt
+- **Forrás:** szabványok: MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők; a 2024-es kiadás címe már „LED-fényforrások elektronikus működtetői”, vészvilágítási melléklettel); MSZ EN 62776 (kétvégű LED-csövek) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Vészvilágítási modul (konverziós készlet), LED-fénycső és armatúra, Mágneses sín 48 V, LED-szalag (12 / 24 V)
 - **Kapcsolódó előírások:** MSZ EN 60598 · Lámpatestek
 - **Keresőszavak:** HU: LED tápegység SELV · LED fénycső T8 szabvány — EN: LED driver EN 61347 · LED tube EN 62776 — DE: LED Betriebsgerät EN 61347 · LED Röhre EN 62776
@@ -278,8 +278,8 @@ Beltéri munkahelyek világítási követelményei tevékenységenként: megvil�
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Irodai írás, olvasás, adatfeldolgozás: kb. 500 lx, UGR ≤ 19, Ra ≥ 80.
-- Folyosók, közlekedők: kb. 100 lx.
+- Irodai írás, olvasás, adatfeldolgozás: 500 lx karbantartott érték, UGR ≤ 19, Ra ≥ 80 (a 2021-es kiadás módosított, magasabb értéket is ad, és indokolt esetben egy lépéssel emelni vagy csökkenteni lehet).
+- Folyosók, közlekedők: 100 lx (jellemzően UGR 28, Ra 40; a szabvány táblázatával egyeztetni).
 - Precíz műhelymunka: 750–1000 lx vagy több (tevékenység szerint).
 
 - **Hol érvényes:** Irodák, iskolák, üzletek, műhelyek, raktárak, egészségügy és minden beltéri munkahely.
@@ -297,7 +297,7 @@ Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követel
 **Lényeg (saját összefoglaló):**
 
 - Világítási osztályok: M (gépjárműforgalom, fénysűrűség alapján), C (konfliktuszónák, csomópontok), P (gyalogos és lassú forgalom, lakóutak).
-- Az osztályt a forgalmi helyzet és a környezet alapján választják ki; lakóparkok belső útjaihoz jellemzően P osztály.
+- Az osztályt a forgalmi helyzet és a környezet alapján választják ki (a választás útmutatója a CEN/TR 13201-1, az osztályokat az EN 13201-2 adja); lakóparkok belső útjaihoz jellemzően P osztály.
 - A fény ne jusson az égre és a lakások ablakába (fényszennyezés).
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
@@ -340,7 +340,7 @@ Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szá
 
 **Lényeg (saját összefoglaló):**
 
-- Zónák gázra: 0 (folyamatosan robbanóképes), 1 (normál üzemben előfordul), 2 (ritkán, rövid ideig). Porra: 20, 21, 22 ugyanígy.
+- Zónák gázra: 0 (folyamatosan, hosszú ideig vagy gyakran van robbanóképes elegy), 1 (normál üzemben olykor előfordul), 2 (normál üzemben nem várható, és ha mégis, csak rövid ideig áll fenn). Porra: 20, 21, 22 ugyanígy.
 - A berendezés Ex-jelölése megmondja, mely zónába, gázcsoportba és hőmérsékleti osztályba való.
 - A zónabesorolás a robbanásvédelmi dokumentum része; tervezés és szerelés csak erre jogosult szakemberrel.
 
@@ -400,7 +400,7 @@ Gépek villamos berendezésének általános követelményei: vészleállítás,
 
 *Más néven:* kapcsoló szabvány, aljzat szabvány, szerelvények
 
-A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei.
+A fali kapcsolók (mechanikus: MSZ EN 60669-1; elektronikus és dimmerek: MSZ EN 60669-2-1, csak váltakozó áram, legfeljebb 250 V és 16 A) és a dugaszolóaljzatok termékkövetelményei.
 
 **Lényeg (saját összefoglaló):**
 

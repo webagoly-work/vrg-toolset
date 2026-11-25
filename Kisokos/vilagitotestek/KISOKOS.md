@@ -211,7 +211,7 @@ Egy vagy több, kábelen lógó lámpatest; az ernyő formája adja a fényt: z�
 - **Vezérlés:** kapcsolt vagy dimmelt; okos fényforrással (vonalak: Hálózati 50 Hz, 2,4 GHz sáv, DALI)
 - **Beépítés:**
   - A rozetta (mennyezeti takaró) takarja a kiállást és tartja a súlyt.
-  - Étkezőasztal fölött jellemzően 60–80 cm-rel az asztallap fölött; a kiállást az asztal tervezett helyéhez kell igazítani.
+  - Étkezőasztal fölött a lámpa alsó széle jellemzően 60–85 cm-rel az asztallap fölött (nagyobb belmagasságnál feljebb; ökölszabály, nem előírás); a kiállást az asztal tervezett helyéhez kell igazítani.
   - Több függesztékhez sor- vagy kör-rozetta, vagy külön kiállások.
 - **Rögzítés:** Beton, Gipszkarton, Fém üreges fali dübel, Billenő dübel
 - **Előírás:** MSZ EN 60598-2-1 (kártyák: MSZ EN 60598 · Lámpatestek)
@@ -266,7 +266,7 @@ Az álmennyezetbe süllyesztett, lefelé világító lámpatest; a fényforrás 
 - **Vezérlés:** kapcsolt; fázishasításos, 1–10 V vagy DALI dimmelés a meghajtótól függően (vonalak: DALI, Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA, Hálózati 50 Hz)
 - **Beépítés:**
   - A kivágás átmérője és a beépítési mélység az adatlapon; a gipszkarton mögött a profil és a vezeték helye előre ellenőrizendő.
-  - Hőszigetelés alá vagy közé csak arra minősített lámpatest kerülhet; a meghajtónak hely és szellőzés kell.
+  - Hőszigetelés alá vagy közé csak arra minősített lámpatest kerülhet (a lámpán jelölve; gyakran csak LED-fényforrással és legfeljebb 7–10 W-tal, a gyártó szerinti szigetelésvastagságig); a meghajtónak hely és szellőzés kell.
   - Kiosztás: egyenletes rács a helyiségben, a faltól nagyjából a lámpák közti távolság felére.
 - **Rögzítés:** Gipszkarton, Gipszkarton körkivágó
 - **Előírás:** MSZ EN 60598-2-2 (kártyák: MSZ EN 60598 · Lámpatestek)
@@ -1161,7 +1161,7 @@ Hosszúkás, tömített (IP65) lámpatest műanyag házzal és búrával; garáz
 - **Hova:** garázs, pince, műhely, mosókonyha, kazánház
 - **Buktatók:**
   - A nyitva hagyott vagy rosszul visszazárt tömszelence után a lámpa nem IP65.
-  - Fénycsöves régi armatúra LED-csőre cserélésénél a gyújtó és az előtét kezelése a LED-cső típusától függ.
+  - Fénycsöves régi armatúra LED-csőre cserélésénél a gyújtó és az előtét kezelése a LED-cső típusától függ (elektronikus előtéttel kompatibilis cső; elektromágneses előtétnél LED-gyújtóra cserélt gyújtó; vagy közvetlen hálózati cső az előtét kiiktatásával). Az átalakított armatúrára a típustábla mellé figyelmeztető címke kell („csak LED-csővel használható, fénycsővel nem”), a hálózati átkötést szakember végezze.
 - **Rokon típusok:** Hajólámpa, LED-panel
 - **Keresőszavak:** HU: páramentes lámpatest LED IP65 120 cm — EN: LED vapour-tight batten IP65 — DE: LED Feuchtraumleuchte IP65
 - **Hol kapható:** Villamossági nagykereskedés, barkácsáruház.
@@ -1347,7 +1347,7 @@ A talajba süllyesztett, felfelé világító lámpatest fák, oszlopok, homlokz
 - **Fény:** 100–1500 lm · 2700–3000 K · Ra ≥ 80 · 15–60° felfelé, vagy szórt irányfény
 - **Vezérlés:** alkonykapcsoló, időzítés, okos vezérlés (vonalak: Hálózati 50 Hz, 2,4 GHz sáv)
 - **Beépítés:**
-  - Az aljzat alá vízelvezető kavicsréteg, hogy a lámpa ne álljon vízben.
+  - Az aljzat alá vízelvezető kavicsréteg (gyártótól függően 10–30 cm, IP67-nél a vastagabb), hogy a lámpa ne álljon vízben; próba: a beöntött víz fél órán belül elszivárog. Az IP68 tartós, tiszta vízbe merülésre való, nem váltja ki a kavicságyat.
   - A tömszelencés kábelbevezetés gyári; a kötés földbe szánt kötőkészlettel.
   - A fedőlap felülete forró lehet: ahol mezítláb járnak, arra minősített kivitel.
 - **Rögzítés:** Beton
