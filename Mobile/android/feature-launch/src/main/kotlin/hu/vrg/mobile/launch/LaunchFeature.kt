@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,6 +75,7 @@ import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Indítópult (WP M11): START's tools as a grid with their START keys. A tap starts one on the PC (the
 // relay opens its page, starting its server first when needed); a long-press selects it and shows
@@ -141,6 +141,18 @@ object LaunchFeature : VrgFeature {
             if (busy.value) { busy.value = false; notes.tryEmit("A relé nem válaszolt a listára.") }
         }
     }
+
+    /** Fényjel R2: the Vezérlőpult starts a server exactly as this screen does; returns what to tell the user. */
+    fun start(e: LaunchEntry): String? = run(e)
+
+    /** Stops a server this relay started (the only kind the relay stops); null when the request went out. */
+    fun stop(e: LaunchEntry): String? {
+        val msg = LaunchMsgs.stop(e.id) ?: return "Hibás azonosító."
+        return if (Relay.send(msg)) null else "Nincs relé kapcsolat."
+    }
+
+    /** Asks what runs now (the Vezérlőpult polls this while it is on screen). */
+    fun askStatus() { Relay.send(LaunchMsgs.status()) }
 
     private fun run(e: LaunchEntry): String? {
         if (e.id in starting.value) return "Már indul: ${e.name}"
@@ -266,7 +278,7 @@ object LaunchFeature : VrgFeature {
         Box(
             Modifier.fillMaxWidth().heightIn(min = 76.dp).clip(shape)
                 .background(if (picked) Melyviz.raised else Melyviz.surface)
-                .border(1.dp, if (picked) Melyviz.glow else Melyviz.line, shape)
+                .vrgBorder(1.dp, if (picked) Melyviz.glow else Melyviz.line, shape)
                 .alpha(if (e.exists) 1f else 0.45f)
                 .rco(onClick = onTap, onLong = { open = true }, longLabel = "indítás és napló")
                 .semantics { contentDescription = listOfNotNull(e.key, e.name, state, if (!e.exists) "nincs a PC-n" else null).joinToString(", ") }

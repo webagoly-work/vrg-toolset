@@ -7,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -50,6 +49,7 @@ import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.KChip
 import hu.vrg.mobile.sketch.KFront
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Sketcher's frame (WP M26): the fronts as symbols in their colour (no rows of text buttons), each with its count;
 // the two capture buttons that are on every front (✎ note, ◉ photo), so whatever the user was doing, a fact or a
@@ -140,7 +140,7 @@ internal fun CaptureButtons(st: EditorState, modifier: Modifier) {
 @Composable
 internal fun ChipPill(c: KChip, on: Boolean, onClick: () -> Unit) {
     val col = Color(c.color)
-    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).border(1.dp, col, RoundedCornerShape(50))
+    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).vrgBorder(1.dp, col, RoundedCornerShape(50))
         .clickable(onClick = onClick).padding(horizontal = 9.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(c.sym, style = Melyviz.label.copy(fontSize = 12.sp, color = if (on) Color.Black else col))
         Text(" " + c.label, style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Color.Black else Melyviz.ink))

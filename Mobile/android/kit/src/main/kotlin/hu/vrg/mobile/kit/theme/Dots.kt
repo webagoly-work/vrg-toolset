@@ -32,12 +32,12 @@ import kotlin.math.sin
  * the chain never cuts them; spacing is rounded so each closed outline gets a whole number of dots.
  */
 fun Modifier.vrgBorder(width: Dp, color: Color, shape: Shape = RectangleShape): Modifier =
-    if (!Melyviz.palette.terminal) this.border(width, color, shape) else this.dotBorder(width, color, shape)
+    if (!Melyviz.palette.terminal || width.value <= 0f) this.border(width, color, shape) else this.dotBorder(width, color, shape)
 
 /** The [BorderStroke] form of [vrgBorder]. A gradient stroke stays solid: dots take one colour. */
 fun Modifier.vrgBorder(border: BorderStroke, shape: Shape = RectangleShape): Modifier {
     val solid = border.brush as? SolidColor
-    return if (!Melyviz.palette.terminal || solid == null) this.border(border, shape) else this.dotBorder(border.width, solid.value, shape)
+    return if (!Melyviz.palette.terminal || solid == null || border.width.value <= 0f) this.border(border, shape) else this.dotBorder(border.width, solid.value, shape)
 }
 
 private fun Modifier.dotBorder(width: Dp, color: Color, shape: Shape): Modifier = drawWithCache {

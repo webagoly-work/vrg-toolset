@@ -7,7 +7,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,6 +77,7 @@ import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Jegyzetek's screens (WP M69): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
 // What shows is decided by the modules the chosen version switches on (Notes.enabled(), kit-core NotesKit.enabled):
@@ -272,7 +272,7 @@ private fun OriginBadge(n: VNote) {
     val shape = RoundedCornerShape(50)
     Text((src?.sym ?: "•") + " " + (src?.label ?: g.app) + (if (g.label.isNotBlank()) " · " + g.label else "") + (if (g.gone) " · törölve a forrásban" else ""),
         style = Melyviz.small.copy(color = c, fontSize = 10.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.clip(shape).border(1.dp, c, shape).padding(horizontal = 7.dp, vertical = 2.dp))
+        modifier = Modifier.clip(shape).vrgBorder(1.dp, c, shape).padding(horizontal = 7.dp, vertical = 2.dp))
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -281,7 +281,7 @@ private fun NoteRow(n: VNote, cards: Boolean, showTasks: Boolean, onClick: () ->
     val shape = RoundedCornerShape(Melyviz.radiusSmall)
     Column(
         Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(shape).background(Melyviz.surface)
-            .border(1.dp, if (n.unread) Melyviz.glow else Melyviz.line, shape).clickable(onClick = onClick)
+            .vrgBorder(1.dp, if (n.unread) Melyviz.glow else Melyviz.line, shape).clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = if (cards) 10.dp else 7.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -520,7 +520,7 @@ private fun NotesSettings(host: FeatureHost, onBack: () -> Unit) {
             val shape = RoundedCornerShape(Melyviz.radiusSmall)
             Column(
                 Modifier.fillMaxWidth().padding(top = 6.dp).clip(shape).background(Melyviz.surface)
-                    .border(if (sel) 2.dp else 1.dp, if (sel) c else Melyviz.line, shape)
+                    .vrgBorder(if (sel) 2.dp else 1.dp, if (sel) c else Melyviz.line, shape)
                     .clickable { Notes.setProfile(p.id) }.padding(horizontal = 12.dp, vertical = 9.dp),
             ) {
                 Text(p.sym + "  " + p.name + if (sel) "  ✓" else "", style = Melyviz.label.copy(color = c, fontWeight = FontWeight.SemiBold))

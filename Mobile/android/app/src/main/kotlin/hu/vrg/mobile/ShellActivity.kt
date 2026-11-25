@@ -159,7 +159,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             else Box(Modifier.fillMaxSize()) {
                 VarlerWatermark()        // the Varler mark, faint, in the palette's glow, behind both homes
                 BackHandler(compactPeek) { compactPeek = false }
-                Desk(sheets, list)
+                // Fényjel (R2): its own home, Vezérlőpult and dock; a sheet that is up keeps the Asztal around it
+                if (Melyviz.palette.fenyjel && !onSheet) FenyjelShell(windows, desk, ::note) else Desk(sheets, list)
             }
         }
     }

@@ -5,10 +5,10 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', 'shared/fenyjel/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
       'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   pull_request:
-    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', 'shared/fenyjel/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js', 'tools/workflow-seal.js',
       'Map/lib/site-math.js', 'Weather/config/*.json', 'Planner/projects/varler-planner/src/08c*-sketch-*.js', 'Planner/projects/varler-planner/tests/sketch-*.json', 'Planner/projects/varler-planner/tests/spec-11[12]-sketch-*.js']
   workflow_dispatch:
 
@@ -41,7 +41,9 @@ jobs:
         run: |
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
+          node Mobile/tests/relay-sys.js
           node Mobile/catalogue/icon-gen.js --check
+          node shared/fenyjel/tools/kotlin-icons.js --check
           node Mobile/tests/workflow-seal.js
           node Mobile/tests/app-archive.js
           node shared/vrg-ui-kit/test/radar.js

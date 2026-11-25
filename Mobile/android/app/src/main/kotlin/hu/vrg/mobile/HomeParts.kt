@@ -71,6 +71,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.kit.ui.PixelIcon
+import androidx.compose.ui.graphics.Color
 
 // The home (WP M38, D-47): HomeLayout's numbered pages, swiped sideways under a strip of their names, or all of them
 // on one long page (a long press on ⌂ switches). The top bar and the dock around it are the Asztal's (DeskScreen) and
@@ -195,7 +198,7 @@ private fun FeatureCard(f: FeatureInfo, act: HomeActions, modifier: Modifier) {
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Mini(f.glyph, f.title, ringOf(f), size = MiniSize.MD, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
+                    Mini(f.glyph, f.title, ringOf(f), size = MiniSize.MD, tint = glyphTint(f, built), quietIdle = true, pixel = FeatureIcons.of(f))
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(f.title.uppercase(), style = Melyviz.title.copy(fontSize = 15.sp, color = if (built) Melyviz.ink else Melyviz.muted, letterSpacing = 1.sp),
@@ -257,10 +260,21 @@ private fun PluginChip(f: FeatureInfo, onClick: () -> Unit) {
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(f.glyph, style = Melyviz.glyph.copy(fontSize = 15.sp, color = Melyviz.glow))
+        val px = FeatureIcons.of(f)
+        if (px != null) PixelIcon(px, 18.dp) else Text(f.glyph, style = Melyviz.glyph.copy(fontSize = 15.sp, color = Melyviz.glow))
         Spacer(Modifier.width(6.dp))
         Text(f.title, style = Melyviz.label.copy(fontSize = 12.sp, color = Melyviz.ink), maxLines = 1)
     }
+}
+
+/**
+ * The colour of a feature's glyph on the home (Fényjel R1): a built feature with a pixel glyph wears its family colour
+ * (null = the glyph's own), a text glyph keeps the palette's glow, and a planned feature stays grey either way.
+ */
+internal fun glyphTint(f: FeatureInfo, built: Boolean): Color? = when {
+    !built -> Melyviz.faint
+    FeatureIcons.of(f) != null -> null
+    else -> Melyviz.glow
 }
 
 /** A grid page's icon (the tap and the RCO come in with [modifier]). */
@@ -270,7 +284,7 @@ private fun HomeIcon(f: FeatureInfo, modifier: Modifier) {
     Column(modifier.padding(vertical = 8.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.size(50.dp).background(if (built) Melyviz.raised else Melyviz.surface.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
             .vrgBorder(BorderStroke(1.dp, if (built) Melyviz.glowDim else Melyviz.lineSoft), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-            Mini(f.glyph, f.title, ringOf(f), size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
+            Mini(f.glyph, f.title, ringOf(f), size = MiniSize.SM, tint = glyphTint(f, built), quietIdle = true, pixel = FeatureIcons.of(f))
         }
         Text(f.title, style = Melyviz.small.copy(fontSize = 10.sp, color = if (built) Melyviz.ink else Melyviz.muted), maxLines = 1,
             overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
@@ -312,7 +326,7 @@ internal fun FeatureRco(f: FeatureInfo, act: HomeActions, modifier: Modifier, on
             // F4 (WP M49): the Sketcher's variants sit under its own Megnyitás (a new survey in one, ⟳, ＋ request)
             val extra = if (f.id == Catalogue.SKETCH.id) hu.vrg.mobile.sketch.ui.sketcherRcoItems(open = { act.open(f.id) }, say = { said = it }) else emptyList()
             RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
-                RcoItem(f.glyph, "Megnyitás") { onTap() },
+                RcoItem(f.glyph, "Megnyitás", pixel = FeatureIcons.of(f)) { onTap() },
                 act.describe?.let { d -> RcoItem("📖", "Leírás") { d(f.id) } },
                 if (Registry.isBuilt(f) && PhoneSheets.isWindow(f.id)) RcoItem("▦", "Megnyitás lapon") { said = openOnSheet(f) } else null,
             ) + extra)

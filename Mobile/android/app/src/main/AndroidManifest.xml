@@ -147,6 +147,18 @@
             </intent-filter>
         </activity-alias>
         <activity-alias
+            android:name=".Launcher_fenyjel"
+            android:targetActivity=".ShellActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_fenyjel"
+            android:roundIcon="@mipmap/ic_launcher_fenyjel">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
             android:name=".Launcher_kit_ej"
             android:targetActivity=".ShellActivity"
             android:enabled="false"

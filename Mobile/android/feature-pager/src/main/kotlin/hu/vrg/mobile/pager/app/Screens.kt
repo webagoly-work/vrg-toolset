@@ -7,7 +7,6 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -77,6 +76,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // The screens of Csipogó. The Panel is drawn after the B2 belt pager (thumb keys CALL and SEEN on the left, three
 // finger keys on the right, LINK on top, the OLED line and the RGB lamp), at glove size. The other tabs are what
@@ -113,7 +113,7 @@ fun PadKey(
     Box(
         modifier.heightIn(min = height).clip(shape)
             .background(if (down) tint else Melyviz.raised)
-            .border(2.dp, tint, shape)
+            .vrgBorder(2.dp, tint, shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
@@ -208,7 +208,7 @@ fun PanelTab(on: Boolean) {
     }
 
     val shape = RoundedCornerShape(Melyviz.radius)
-    Column(Modifier.fillMaxWidth().clip(shape).background(Melyviz.surface).border(1.dp, Melyviz.line, shape).padding(12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(shape).background(Melyviz.surface).vrgBorder(1.dp, Melyviz.line, shape).padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).clip(RoundedCornerShape(6.dp)).background(Color.Black).padding(horizontal = 10.dp, vertical = 8.dp)) {
                 Text(l1, style = Melyviz.readout.copy(fontSize = 15.sp, color = Melyviz.glow), maxLines = 1)
@@ -367,7 +367,7 @@ fun NearTab() {
 @Composable
 private fun Finder(p: PeerView, close: () -> Unit) {
     val shape = RoundedCornerShape(Melyviz.radius)
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.glow, shape).padding(14.dp),
+    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.glow, shape).padding(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text("KERESÉS: ${p.name}", style = Melyviz.title)
         Text(if (p.zone == Zone.OUT) "nincs jel" else Proximity.label(p.distanceM), style = Melyviz.title.copy(fontSize = 44.sp, color = Melyviz.glow))
@@ -407,7 +407,7 @@ fun ChatTab() {
         list.forEach { c ->
             val shape = RoundedCornerShape(Melyviz.radiusSmall)
             Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = if (c.mine) Arrangement.End else Arrangement.Start) {
-                Column(Modifier.clip(shape).background(if (c.mine) Melyviz.raised else Melyviz.surface).border(1.dp, if (c.mine) Melyviz.glowDim else Melyviz.line, shape).padding(8.dp)) {
+                Column(Modifier.clip(shape).background(if (c.mine) Melyviz.raised else Melyviz.surface).vrgBorder(1.dp, if (c.mine) Melyviz.glowDim else Melyviz.line, shape).padding(8.dp)) {
                     Text((if (c.mine) "én" else engine.who(c.src)) + (if (c.dst != BROADCAST) " → ${engine.who(c.dst)}" else "") + " · ${time(c.at)}",
                         style = Melyviz.readout.copy(fontSize = 10.sp))
                     Text(c.text, style = Melyviz.label.copy(fontSize = 14.sp))
