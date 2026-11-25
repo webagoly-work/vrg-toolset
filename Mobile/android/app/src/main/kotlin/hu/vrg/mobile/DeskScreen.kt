@@ -131,10 +131,10 @@ fun DeskScreen(
                         StripButton("⌕", "Kommand: keresés") { kommand = true }
                     }
                     UpdateMark { act.open(Catalogue.UPDATE.id) }
-                    StripButton("▦", "QR beolvasás", act.scan)
+                    StripButton("▦", "QR beolvasás", onClick = act.scan)
                     if (wide) {
                         StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title, pixel = FeatureIcons.of(Catalogue.CATALOG)) { act.open(Catalogue.CATALOG.id) }
-                        StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", act.cycleOrientation)
+                        StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", onClick = act.cycleOrientation)
                     } else Box {
                         StripButton("⋮", "Több: Katalógus, tájolás") { more = true }
                         RcoMenu(more, { more = false }, "Több", listOf(
