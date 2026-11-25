@@ -61,12 +61,13 @@ crimped joints, tightening torque and basic metalwork.
 14. Épületautomatizálás alapjai: KNX, DALI, okos szerelvények bekötése és élesztése (TK1: the largest official block,
     moved from level 3; the design side stays in level 3).
 15. Fotovoltaikus rendszer telepítői szemmel: string, inverter, DC- és AC-oldali védelem, leválasztás (TK1: the exam
-    tests it).
+    tests it; since KKK v4, 2024-08-29, the PV competence is worded after EU 2018/2001 (RED II) Annex IV 6 d).
 16. Ideiglenes építési elosztó: áram-védőkapcsoló, IP, kábelek, a felvonulási terület (TK1: missing).
 17. Gyengeáram a lakásban: strukturált hálózat, TV, kaputelefon (a Kommunikációs vonalakra építve).
 18. Világítástechnika a gyakorlatban: lux, lumen, színhőmérséklet, kiosztás (a Világítótestekre építve).
-19. Feszültségmentesítés és munkavégzés lépésről lépésre: az öt szabály egy teljes munkán végigvezetve (TK1: the
-    exam's safety part weighs 40 %, and an error in shock protection fails the exam).
+19. Feszültségmentesítés, bontás és munkavégzés lépésről lépésre: az öt szabály egy teljes munkán végigvezetve, és a
+    bontás, rekonstrukció, megszüntetés sorrendje és kockázata (TK1: the exam's safety part weighs 40 %, and an error
+    in shock protection fails the exam; dismantling is a KKK requirement since 2023-11-21).
 20. Hibakeresés módszeresen: a tünettől a hibahelyig.
 
 ### Level 3 · Mester, tervező (planned)
@@ -82,6 +83,12 @@ crimped joints, tightening torque and basic metalwork.
 9. Árajánlat és vállalkozás: költségvetés, anyaglista, ütemezés (a Workflow Kittel).
 10. Átadás és üzemeltetés: dokumentáció, ügyfél betanítása, időszakos felülvizsgálat.
 
+Level 3 extras from the Erősáramú elektrotechnikus KKK (5 0713 04 04; TK1 follow-up), kept to the depth an installer
+needs, the technikum goes deeper: Transzformátor és mérőváltó · Fázisjavítás (meddőkompenzálás) · Középfeszültség és
+trafóállomás alapjai (KIF/KÖF) · Kapcsolókészülék-választás zárlati áramra (with lesson 2) · Üzemeltetés és
+feszültségmentesítés (MSZ 1585) · Hálózati védelmek és automatikák. EV charging and building-automation design have no
+official hours: they stay our own extras, not exam topics.
+
 ## 3. Order
 
 1. ✅ Level 1 (10 lessons, 2026-11-22).
@@ -94,8 +101,11 @@ crimped joints, tightening torque and basic metalwork.
 
 - **TK1** ✅ checked 2026-11-25 against the KKK in force from 2023-11-21 and the 2020 PTT
   (`docs/research/2026-11-25_kisokos-tk1-villanyszerelo-kkk.md`); the curriculum above now includes the gaps it found.
-  Still for the H: session: the newest PTT and the KKK amendment effective 2024-08-29 (from the ágazat 04 page on
-  ikk.hu), the Szakmajegyzék text, and the Erősáramú elektrotechnikus (5 0713 04 04) KKK.
+  ✅ Follow-up 2026-11-25 (`docs/research/2026-11-25_kisokos-tk1-followup.md`): the 2020-06-22 PTT is still the only
+  one (hours unchanged, 2100 + 140); KKK v4 from 2024-08-29 changes only the PV wording (RED II); the dismantling
+  competence dates from the 2023-11-21 KKK, not 2024; the Szakmajegyzék is still annex 1 of 12/2020 (II. 7.) Korm.
+  rendelet (Villanyszerelő level 4, 3 years; Erősáramú elektrotechnikus level 5, technikum). Open: the Erősáramú KKK
+  6.3 table was only partly readable.
 - **TK2** Circuit drawings (váltókapcsolás, elosztó, hálózati rendszerek): proposal: generate them from the
   Rajztár symbols, like the line and lamp drawings, starting with lesson 1/10.
 - **TK3** A quiz view of the exercises (on the phone, VRG Mobile): later, once level 2 exists. With TK1: map the quiz to the four parts of the interactive exam (alkatrész, technológia, számítás, villamos
@@ -110,8 +120,9 @@ crimped joints, tightening torque and basic metalwork.
   milestones: [['11-22', 'curriculum planned (docs/kisokos/tankonyv.md); level 1 written: 10 lessons'],
                ['11-25', 'level 2 lessons 1–5 written: networks, protection, overcurrent, cross-section, distribution board'],
                ['11-25', 'level 2 lessons 6–10 written: circuit layout, metering, earthing and bonding, special rooms, test measurements'],
-               ['11-25', 'TK1: curriculum checked against the official KKK/PTT (Villanyszerelő 4 0713 04 07); gaps added, building automation and PV moved to level 2']],
-  remaining: ['Founder review of level 1 and level 2 lessons 1–10', 'TK1 follow-up on H: (newest PTT, 2024 KKK amendment)', 'level 1 lessons 11–12 and extensions of 6, 9', 'level 2 lessons 11–20', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
+               ['11-25', 'TK1: curriculum checked against the official KKK/PTT (Villanyszerelő 4 0713 04 07); gaps added, building automation and PV moved to level 2'],
+               ['11-25', 'TK1 follow-up: PTT 2020 still current, KKK v4 (2024-08-29) changes only the PV wording; dismantling in lesson 19; Erősáramú extras for level 3']],
+  remaining: ['Founder review of level 1 and level 2 lessons 1–10', 'level 1 lessons 11–12 and extensions of 6, 9', 'level 2 lessons 11–20', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
   nextStep: 'Review level 2, 1–10; then level 2 lessons 11–15 (cables, surge and lightning, motors, building automation basics, PV).',
   feeds: [['kisokos']] },
 ```
