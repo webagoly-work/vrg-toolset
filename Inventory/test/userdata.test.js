@@ -258,11 +258,11 @@ test('user notes are searchable, favourites are filterable', () => {
   const ud = createUserData();
   store.setUserData(ud);
   const id = store.items[5].vrg_id;
-  ud.set(id, 'megjegyzes', 'Hetényi projekthez kell');
+  ud.set(id, 'megjegyzes', 'Mintanév projekthez kell');
   ud.set(id, 'kedvenc', true);
   store.remerge(id);
 
-  assert.deepEqual(store.query({ text: 'hetenyi' }).map(i => i.vrg_id), [id], 'accent-insensitive note search');
+  assert.deepEqual(store.query({ text: 'mintanev' }).map(i => i.vrg_id), [id], 'accent-insensitive note search');
   assert.deepEqual(store.query({ kedvenc: true }).map(i => i.vrg_id), [id]);
   assert.deepEqual(store.query({ megjegyzessel: true }).map(i => i.vrg_id), [id]);
 });

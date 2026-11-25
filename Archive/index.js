@@ -181,6 +181,29 @@ window.VRG_ARCHIVE = {
    "url": "https://claude.ai/artifact/KbY4FkcVqsrNG5qYw2Mh7j"
   },
   {
+   "id": "vault-futures",
+   "title": "Vault Futures",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "en",
+   "vrg": true,
+   "group": "Research",
+   "kind": "study",
+   "summary": "Research round 2: six future-proof paths to build out the Data Vault, in build order, what to watch but not adopt, and decisions R2-Q1 to R2-Q5.",
+   "purpose": "Shows what to build on the Data Vault so it still works in ten years: stable seams (JSON in git, ES modules, custom elements, JSON-RPC, signatures) with new technology behind them as optional tiers.",
+   "context": [
+    "the Data Vault was just merged into webagoly-work/data-vault (500 cells, Proton Vault archived)",
+    "the Founder asked for a second research round on future-proof methods to build from the foundation"
+   ],
+   "tags": [
+    "data-vault",
+    "research",
+    "future-proof"
+   ],
+   "file": "files/vault-futures.html",
+   "url": "https://claude.ai/artifact/SYvumponvSi33YR4FNiu2H"
+  },
+  {
    "id": "vrg-fuzet",
    "title": "VRG Füzet",
    "created": "2026-11-21",

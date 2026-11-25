@@ -209,7 +209,7 @@ test('importing the real plan, then autofilling, drives the counters to zero', (
 test('a project and its plan survive an export/import round-trip', () => {
   const { userdata, lists, projects, store } = setup();
   const plan = pi.parsePlan(planJson());
-  const p = projects.create({ nev: 'CLA', cim: 'Peterdy 33', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek } });
+  const p = projects.create({ nev: 'CLA', cim: 'Minta utca 1', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek } });
   const l = projects.ensureList(p.id);
   lists.setQty(store.items[0].vrg_id, 3, l.id);
 
@@ -224,7 +224,7 @@ test('a project and its plan survive an export/import round-trip', () => {
 
   const p2 = projects2.all()[0];
   assert.equal(p2.nev, 'CLA');
-  assert.equal(p2.cim, 'Peterdy 33');
+  assert.equal(p2.cim, 'Minta utca 1');
   assert.equal(p2.terv.igenyek.length, plan.igenyek.length);
   assert.equal(p2.listaId, l.id, 'the project still points at its list');
   assert.equal(lists2.qty(store.items[0].vrg_id, p2.listaId), 3);

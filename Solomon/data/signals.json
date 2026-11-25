@@ -833,7 +833,7 @@
   {
    "p": "Planner/projects/varler-planner/docs/planner_1.0_review.md",
    "s": "planner",
-   "t": "Domoszló Planner — architecture, UI and workflow review",
+   "t": "Mintafalu Planner — architecture, UI and workflow review",
    "d": "2026-09-17",
    "i": 0
   },
@@ -3622,11 +3622,11 @@
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "60 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
+   "title": "60 napja érintetlen: Mintafalu Planner — architecture, UI and workflow review",
    "a": {
     "p": "Planner/projects/varler-planner/docs/planner_1.0_review.md",
     "line": 1,
-    "text": "Domoszló Planner — architecture, UI and workflow review"
+    "text": "Mintafalu Planner — architecture, UI and workflow review"
    },
    "age": 60,
    "keystone": false,

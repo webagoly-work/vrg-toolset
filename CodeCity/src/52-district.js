@@ -1,5 +1,5 @@
 // 52-district.js — K2-04: what makes the districts visible beyond their streets (02-grow.js lays them out, 51-grammar
-// turns each building to its district's style). Here: the Vár — the Domoszló castle at the head of the first track
+// turns each building to its district's style). Here: the Vár — the Mintafalu castle at the head of the first track
 // (CITY-D55 A: the founding story, named; other jobs later), the villas' garden pools (lit, they are the suburb's
 // signature at night), and each district's name over its middle. All of it belongs to the grown plan's group.
 
@@ -36,7 +36,7 @@ function districtMeshes(gw, PL) {
     add(new THREE.CylinderGeometry(0.07, 0.07, 4, 6).translate(0, 2, 0), dark, kx, PL + 11, kz);          // the flag
     const flag = add(new THREE.PlaneGeometry(2.2, 1.3).translate(1.1, 0, 0), new THREE.MeshLambertMaterial({ color: 0xb8323a, side: THREE.DoubleSide }), kx + 0.05, PL + 14.3, kz);
     flag.name = 'flag';
-    g.add(districtLabel('Domoszló', '#e9d9b0', cx, PL + 19, cz, 0.9));
+    g.add(districtLabel('Mintafalu', '#e9d9b0', cx, PL + 19, cz, 0.9));
   }
   // ---- the villas' pools: lit water in the gardens
   if (gw.pools && gw.pools.length) {

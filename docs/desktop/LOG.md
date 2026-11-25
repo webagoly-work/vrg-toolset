@@ -196,7 +196,7 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   (generated, so the page also works from file://), `files/<id>.html` (the saved copies), `archive.js` (list / check / build / add),
   `vrg-archive.html` (the viewer: VRG first, scope + group + search, a timeline, the detail card, the page run in a viewer).
 - First fill: 38 entries (19 VRG, 19 other), 28 saved copies. Docs / Design / Design System artifacts and the shared Mélyvíz stay
-  link-only (their content lives in the type's store); Finom lap (needs files beside it) and the Domoszló viewer (a real house)
+  link-only (their content lives in the type's store); Finom lap (needs files beside it) and the Mintafalu viewer (a real house)
   stay where they are (`localPath`). The two empty Untitled canvases are left out. DESKU-Q24.
 - START: R (Rétegverem) → A Archívum (the main screen has no free letter). Catalog item `archive` (User, knowledge base ·
   artifact archive, in-shell on vrg-app://archive/), section `archivum` (User).

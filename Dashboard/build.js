@@ -28,12 +28,20 @@ const OPENABLE = /\.(html?|md|txt|json|pdf|svg|png|css|js)$/i;     // documents;
 const fileUrl = p => 'file:///' + encodeURI(p.replace(/\\/g, '/')).replace(/#/g, '%23');
 const readJson = f => JSON.parse(fs.readFileSync(f, 'utf8').replace(/^\uFEFF/, ''));
 
-function collect() {
-  const FEAT = readJson(SRC.features);
+// localOptional: the notes/ files live only on the Founder's PC (H:\VRG\Full\notes). A check that runs on the repository
+// alone (tools/check-catalog.js in a cloud session or CI) passes true: a missing one is then read as empty and named in
+// `localMissing`, so the caller can say what it could not check. The Dashboard build itself stays strict.
+function collect({ localOptional = false } = {}) {
+  const localMissing = [];
+  const local = (name, file, read, empty) => {
+    if (!localOptional || fs.existsSync(file)) return read(file);
+    localMissing.push(name); return empty;
+  };
+  const FEAT = local('features', SRC.features, readJson, { features: [], tiers: [], lanes: [], generated: '' });
   const MENU = readJson(SRC.menu);
-  delete require.cache[require.resolve(SRC.lines)];                // the shell's Frissítés re-reads it
-  const { LANES: DL_LANES, LINES } = require(SRC.lines);
-  const BOARD = fs.readFileSync(SRC.board, 'utf8');
+  const { LANES: DL_LANES, LINES } = local('lines', SRC.lines, f => { delete require.cache[require.resolve(f)]; return require(f); },   // the shell's Frissítés re-reads it
+    { LANES: [], LINES: [] });
+  const BOARD = local('board', SRC.board, f => fs.readFileSync(f, 'utf8'), '');
 
   // ---------------------------------------------------------------- registry paths
   const P = { repo: REPO, full: FULL, vrg: VRG };
@@ -171,7 +179,7 @@ function collect() {
       subs: i.menu ? (i.menu.items || []).map(m => ({ key: m.key, name: m.name, hint: m.hint || '', act: startActs['s:' + i.key + '/' + m.key] ? 's:' + i.key + '/' + m.key : null })) : [] })),
     programs: MENU.programs.map(p => ({ key: p.key, name: p.name, act: startActs['s:A/' + p.key] ? 's:A/' + p.key : null })),
   };
-  return { data, menu: MENU, startActs, claude, expand, jobsPriv: J.priv, paths: { FULL, REPO, VRG } };
+  return { data, menu: MENU, startActs, claude, expand, jobsPriv: J.priv, paths: { FULL, REPO, VRG }, localMissing };
 }
 
 // ---------------------------------------------------------------- D3: stats + metrics (all local, read only)

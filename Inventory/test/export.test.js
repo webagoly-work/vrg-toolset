@@ -100,7 +100,7 @@ test('number parsing copes with both Hungarian and standard notation', () => {
 test('three profiles produce three different spreadsheets from one list', () => {
   const { store, lists, profiles, ctx } = setup();
   const items = store.query({ hasPrice: true, limit: 12 });
-  lists.create('Hetényi');
+  lists.create('Mintanév');
   items.forEach((it, i) => lists.setQty(it.vrg_id, i + 1));
 
   const base = profiles.forTarget('lista')[0];

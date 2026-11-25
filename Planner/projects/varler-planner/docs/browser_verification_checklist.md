@@ -10,7 +10,7 @@ P1 A · P2 C · P4 B (only the second wall) · K3 D — Alt opened the Chrome me
 
 **Priority key:** ★ blocking (a refactor decision depends on it) · ○ good to know.
 
-**Before you start:** open the shipped file, load the Domoszló project, and note browser + OS + zoom level (e.g. "Chrome 127, Win 11, 100%"). If you test on the phone too, do group **T** there.
+**Before you start:** open the shipped file, load the Mintafalu project, and note browser + OS + zoom level (e.g. "Chrome 127, Win 11, 100%"). If you test on the phone too, do group **T** there.
 
 ---
 

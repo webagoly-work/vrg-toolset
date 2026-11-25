@@ -253,8 +253,8 @@ discarded). Writes are debounced and flushed on `beforeunload` and
 ```jsonc
 "lists": {
   "l<id>": {
-    "id": "l<id>", "nev": "Hetényi",
-    "created": "…", "updated": "…", "megjegyzes": "Peterdy 33",
+    "id": "l<id>", "nev": "Mintanév",
+    "created": "…", "updated": "…", "megjegyzes": "Minta utca 1",
     "sorok": { "VRG-0098": { "mennyiseg": 7, "megjegyzes": "sürgős" } }
   }
 },

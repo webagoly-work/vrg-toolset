@@ -66,7 +66,7 @@ test('stronger error correction means less room', () => {
 test('a list round-trips through the compact payload exactly', () => {
   const { store, lists } = setup();
   const items = store.query({ limit: 20 });
-  const l = lists.create('Hetényi');
+  const l = lists.create('Mintanév');
   items.forEach((it, i) => lists.setQty(it.vrg_id, i + 1));
 
   const text = pay.encodeList({
@@ -75,7 +75,7 @@ test('a list round-trips through the compact payload exactly', () => {
   });
   const back = pay.decodeList(text, { knownId: id => !!store.get(id) });
 
-  assert.equal(back.nev, 'Hetényi');
+  assert.equal(back.nev, 'Mintanév');
   assert.deepEqual(back.warnings, []);
   assert.equal(back.sorok.length, 20);
   for (const row of back.sorok) {
@@ -151,14 +151,14 @@ test('short and long ids convert both ways', () => {
 test('the readable list names the item and the quantity', () => {
   const { store, lists } = setup();
   const it = store.query({ limit: 1 })[0];
-  lists.create('Hetényi');
+  lists.create('Mintanév');
   lists.setQty(it.vrg_id, 4);
 
   const text = pay.listText({
-    nev: 'Hetényi', rows: lists.rows(), totals: lists.totals(),
+    nev: 'Mintanév', rows: lists.rows(), totals: lists.totals(),
     vendor: null, vendorCode: () => null
   });
-  assert.match(text, /VRG rendelés — Hetényi/);
+  assert.match(text, /VRG rendelés — Mintanév/);
   assert.ok(text.includes(it.megnevezes));
   assert.match(text, /^4 /m);
 });
@@ -180,9 +180,9 @@ test('the readable list uses the vendor article number once a vendor is selected
 
 test('a readable list of a realistic size still fits in a code', () => {
   const { store, lists } = setup();
-  lists.create('Hetényi');
+  lists.create('Mintanév');
   store.query({ limit: 30 }).forEach(it => lists.setQty(it.vrg_id, 2));
-  const text = pay.listText({ nev: 'Hetényi', rows: lists.rows(), totals: lists.totals(), vendorCode: () => null });
+  const text = pay.listText({ nev: 'Mintanév', rows: lists.rows(), totals: lists.totals(), vendorCode: () => null });
   assert.equal(qrEncode(text, { ecc: 'L' }).ok, true, '30 readable lines fit');
 });
 
