@@ -1,0 +1,44 @@
+{"id": "seed-01", "text": "GO MOBILE folytasd az M16-ot", "label": "context", "note": "codephrase + work package"}
+{"id": "seed-02", "text": "GO PLANNER: hol tart a C6 tollérzet?", "label": "context", "note": "codephrase"}
+{"id": "seed-03", "text": "GO ROUTE", "label": "context", "note": "codephrase alone"}
+{"id": "seed-04", "text": "WIRE: a router megint átlóst húz", "label": "context", "note": "old alias"}
+{"id": "seed-05", "text": "nézd át a Planner routert", "label": "context", "note": "catalog name"}
+{"id": "seed-06", "text": "javítsd a Kapu belépést, nem tölt be a vendégoldal", "label": "context", "note": "catalog name"}
+{"id": "seed-07", "text": "a Munkavászon nem mutatja a subagent sávokat", "label": "context", "note": "catalog name"}
+{"id": "seed-08", "text": "tervezd meg a Sketcher variáns protokollt", "label": "context", "note": "catalog + doc"}
+{"id": "seed-09", "text": "a Rétegverem keresője üres eredményt ad a döntésekre", "label": "context", "note": "stack"}
+{"id": "seed-10", "text": "Dashboard/shell/lib/sessions.js-ben rossz a live jelzés", "label": "context", "note": "repo path"}
+{"id": "seed-11", "text": "miért piros a check-start a vrg-menu.json-ban?", "label": "context", "note": "tool + file"}
+{"id": "seed-12", "text": "a START menüben a P almenü nem nyílik meg", "label": "context", "note": "START"}
+{"id": "seed-13", "text": "frissítsd a VRG Mobile APK buildet és telepítsd", "label": "context", "note": "product"}
+{"id": "seed-14", "text": "a Kódváros lassú a nagy repón", "label": "context", "note": "catalog"}
+{"id": "seed-15", "text": "a Divergencia jelzőtábla mit mutat most?", "label": "context", "note": "catalog"}
+{"id": "seed-16", "text": "a Költségvetési Tervezet export rossz ÁFA-t számol", "label": "context", "note": "office tool"}
+{"id": "seed-17", "text": "Thread Board: adj hozzá egy szálat a mobilos teszthez", "label": "context", "note": "catalog"}
+{"id": "seed-18", "text": "a BACKUP integritás ellenőrzés hibát ad a manifestre", "label": "context", "note": "launcher backup"}
+{"id": "seed-19", "text": "a Munkamenetek ablakban a Tábla gomb nem vált", "label": "context", "note": "new pane"}
+{"id": "seed-20", "text": "Planner-ben a Topology View rossz színeket mutat", "label": "context", "note": "catalog + view"}
+{"id": "seed-21", "text": "continue the Planner router work from yesterday", "label": "context", "note": "english + catalog"}
+{"id": "seed-22", "text": "review GO-HUB.md and tell me what is left", "label": "context", "note": "file"}
+{"id": "seed-23", "text": "ahol abbahagytuk: a Kapu vendég mód", "label": "context", "note": "continuation + catalog"}
+{"id": "seed-24", "text": "a Vezérlő Előszűrő túl sok anchort tesz be", "label": "context", "note": "new tool"}
+{"id": "seed-25", "text": "what's the capital of Peru", "label": "independent", "note": "general knowledge"}
+{"id": "seed-26", "text": "írj egy verset a télről", "label": "independent", "note": "writing"}
+{"id": "seed-27", "text": "mi a különbség a TCP és UDP között", "label": "independent", "note": "general tech"}
+{"id": "seed-28", "text": "what is a router and how does it work", "label": "independent", "note": "general tech, VRG word"}
+{"id": "seed-29", "text": "best practices for React state management", "label": "independent", "note": "general programming"}
+{"id": "seed-30", "text": "hogyan működik a napelem inverter", "label": "independent", "note": "domain knowledge, not VRG work"}
+{"id": "seed-31", "text": "írj egy Python scriptet, ami dátum szerint átnevezi a fényképeket", "label": "independent", "note": "generic script"}
+{"id": "seed-32", "text": "explain the difference between a mutex and a semaphore", "label": "independent", "note": "general CS"}
+{"id": "seed-33", "text": "fordítsd le angolra: holnap reggel nyolckor találkozunk", "label": "independent", "note": "translation"}
+{"id": "seed-34", "text": "mennyi az áramerősség 2300 W-on 230 V-on", "label": "independent", "note": "electrical math"}
+{"id": "seed-35", "text": "summarise the plot of Dune in five sentences", "label": "independent", "note": "general"}
+{"id": "seed-36", "text": "ne a Plannerről, hanem általában: mi az a Dijkstra algoritmus?", "label": "independent", "note": "negated anchor"}
+{"id": "seed-37", "text": "adj tippeket egy jó álláshirdetés megírásához villanyszerelőknek", "label": "independent", "note": "business writing"}
+{"id": "seed-38", "text": "what's a good way to structure a SQL schema for invoices", "label": "independent", "note": "generic design"}
+{"id": "seed-39", "text": "hány fokos legyen a hűtő ideálisan", "label": "independent", "note": "everyday"}
+{"id": "seed-40", "text": "magyarázd el a Kubernetes podok és deploymentek közti különbséget", "label": "independent", "note": "general devops"}
+{"id": "seed-41", "text": "write a regex that matches Hungarian phone numbers", "label": "independent", "note": "generic code"}
+{"id": "seed-42", "text": "milyen keresztmetszetű kábel kell 32 A-es biztosítóhoz", "label": "independent", "note": "electrician knowledge, generic"}
+{"id": "seed-43", "text": "recommend three books about software architecture", "label": "independent", "note": "general"}
+{"id": "seed-44", "text": "hogyan kell kiszámolni egy hitel törlesztőrészletét", "label": "independent", "note": "general finance"}

@@ -1,0 +1,28 @@
+# Hand-written words for the speech model's bias list, one per line (# = comment). The highest-value names first.
+# They complete what the Előszűrő index already knows (catalog, START, codephrases, Stack titles).
+VRG
+VRG Asztal
+Vezérlő
+Előszűrő
+Munkamenetek
+Munkamenet-tábla
+Rétegverem
+Kódváros
+Munkavászon
+Ügynöknyom
+Divergencia
+Vonaltérkép
+Varler
+Varler Planner
+Sketcher
+Kapu
+Lap
+Claude
+Claude Code
+Kontextuscsomag
+Költségvetési Tervezet
+Árajánlat
+villanyszerelés
+elosztószekrény
+kismegszakító
+áramvédő kapcsoló

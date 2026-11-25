@@ -291,4 +291,51 @@ function globe(facts) {
   return { nodes, edges, generated: sig.generated, commit: sig.commit };
 }
 
-module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe };
+/* ============================================================ K · Kisokos (the work knowledge: core, axes, cards) */
+// Reads Kisokos/ through its own loader (Kisokos/kisokos.js), so the Stack and the Kisokos checker agree on
+// ids, places and sizes. The core is one node; every axis, term node, volume, card and outside knowledge base
+// is one node. A card's place is its gravity: 'gravitates' to the core (with the pole it leans to) or to a term.
+function kisokos() {
+  const KL = fresh(path.join(__dirname, '..', '..', 'Kisokos', 'kisokos.js'));   // the Stack lives in the repo
+  const K = KL.load();
+  const nodes = [], edges = [];
+  const flat = o => Object.values(o || {}).map(v => Array.isArray(v) ? v.join(' ') : v && typeof v === 'object' ? flat(v) : String(v || '')).join(' \n');
+  nodes.push(node('K', 'core', { kind: 'core', title: K.map.core.title, brief: K.map.core.sub, state: 'core', text: K.map.core.title + ' ' + K.map.core.sub }));
+  for (const ax of K.map.axes) {
+    nodes.push(node('K', 'axis.' + ax.n, { kind: 'axis', title: `${ax.hu}: ${ax.A} ↔ ${ax.B}`, brief: ax.q, text: [ax.hu, ax.q, ax.A, ax.B].join(' ') }));
+    edges.push({ a: 'K:axis.' + ax.n, b: 'K:core', rel: 'on-axis' });
+  }
+  for (const t of K.terms) {
+    nodes.push(node('K', 'term.' + t.id, { kind: 'term', title: t.title, brief: t.desc, state: `ring ${t.ring}`, lane: `${t.axis}${t.pole}`,
+      text: [t.title, t.desc, t.axisName, t.poleName].join(' \n'), extra: { axis: t.axis, pole: t.pole, ring: t.ring, vols: t.vols } }));
+    edges.push({ a: 'K:term.' + t.id, b: 'K:axis.' + t.axis, rel: 'on-axis' });
+  }
+  for (const v of K.map.volumes) {
+    const n = K.cards.filter(c => c.vol === v.id).length;
+    nodes.push(node('K', 'vol.' + v.id, { kind: 'volume', title: v.hu, brief: n ? `${n} cards` : 'no cards yet', state: n ? 'started' : 'planned',
+      own: v.dir ? ['p:Kisokos/' + v.dir] : [], text: v.hu }));
+  }
+  const toPlace = (id, pl) => pl.core ? { a: id, b: 'K:core', rel: 'gravitates', w: 1 } : { a: id, b: 'K:term.' + pl.term, rel: 'gravitates', w: 1 };
+  for (const c of K.cards) {
+    const id = 'K:card.' + c.gid;
+    nodes.push(node('K', 'card.' + c.gid, { kind: 'card/' + c.kind, title: c.title, brief: clip(c.recognise || c.holds || c.what || c.how || c.scope || (c.body && c.body[0]) || c.mode || c.thread || '', 260),   // what / how: lamp and line cards
+      t: c.added, state: c.reviewed ? 'reviewed' : 'draft', lane: c.place.core || c.place.term,
+      text: [c.title, (c.aka || []).join(', '), flat(c), c.file].join(' \n'), extra: { file: c.file, vol: c.vol, cubes: c.cubes } }));
+    edges.push({ a: 'K:vol.' + c.vol, b: id, rel: 'holds' }, toPlace(id, c.place));
+    const refs = new Set([...(c.drill && c.drill.bits || []), ...Object.values(c.anchors || {}).filter(Array.isArray).flat(), ...(c.screws || []), ...(c.with || [])]);
+    for (const r of refs) if (K.cards.some(x => x.vol === c.vol && x.id === r)) edges.push({ a: id, b: `K:card.${c.vol}.${r}`, rel: 'uses' });
+    for (const r of c.related || []) if (K.cards.some(x => x.vol === c.vol && x.id === r)) edges.push({ a: id, b: `K:card.${c.vol}.${r}`, rel: 'rokon' });
+    for (const f of (KL.XREFS || {})[c.kind] || []) for (const r of c[f] || []) if (K.cards.some(x => x.gid === r)) edges.push({ a: id, b: 'K:card.' + r, rel: 'uses' });   // into another volume
+  }
+  // Készlet links (Kisokos/keszlet.json): a card with stocked products points at the Készlet knowledge base, weighted by count
+  if (K.sources.some(s => s.id === 'keszlet')) for (const c of K.cards) if (c.stock && c.stock.length) edges.push({ a: 'K:card.' + c.gid, b: 'K:src.keszlet', rel: 'keszletben', w: c.stock.length });
+  for (const s of K.sources) {
+    const id = 'K:src.' + s.id;
+    nodes.push(node('K', 'src.' + s.id, { kind: 'knowledge base', title: s.title, brief: s.sub + ' — ' + s.why, state: `overlap ${s.place.overlap || 0}`,
+      lane: s.place.term || s.place.core, text: [s.title, s.sub, s.why, s.paths.join(' ')].join(' \n'), extra: { paths: s.paths, cubes: s.cubes } }));
+    edges.push(toPlace(id, s.place));
+  }
+  return { nodes, edges };
+}
+
+module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe, kisokos };

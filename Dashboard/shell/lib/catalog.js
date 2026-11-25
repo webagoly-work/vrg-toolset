@@ -13,7 +13,7 @@ const STATUS = ['live', 'beta', 'dev', 'planned', 'idea', 'retire'];
 const FRAMES = ['palette', 'quick', 'search', 'workspaces', 'note', 'settings', 'phone'];
 const VIEWS = ['dashboard', 'desktop'];
 const ID_RE = /^[a-z0-9][a-z0-9.:-]{0,59}$/;
-const STACK = ['F', 'I', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'Z', 'page', '*', ''];
+const STACK = ['F', 'I', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'Z', 'K', 'page', '*', ''];
 // the default layout shows finished things only: a user item that is still dev / planned / … appears from the Dev level on
 const USER_STATUS = ['live', 'beta'];
 const effectiveLevel = it => (it.level === 'user' && !USER_STATUS.includes(it.status) ? 'dev' : it.level);

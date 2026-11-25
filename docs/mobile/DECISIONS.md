@@ -1088,6 +1088,12 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   hollow and dashed on its distance ring, and the caption counts them. Rejected: guessing a direction from RSSI changes
   while walking (looks precise, is not).
 
+- **D-176 · Radar: snapshots go to the Data Vault as text (M67), 2026-11-25.** The Founder asked for the Data Vault
+  radar page too. The vault's plugins have no network and no Bluetooth (sandbox@1), so the phone's Radar shares a
+  snapshot (`vrg.radar-frame` v1, swept directions written in, live RSSI and hidden layers left out) through Android's
+  share sheet, as the Diagnosztika report does; the vault's Radarom keeps the snapshots and the Founder's own places (GPS
+  bearings from "itt vagyok"). Its layout is a copy of the shared rule, proven by a copy of the shared fixture. Rejected:
+  a live link phone → vault (the vault app has no network, DV-Q20; a live view stays VRG Mobile's).
 - **D-177 · VRG Füzet: what "the Note app" is, and what the fork is (M69), 2026-11-21. Taken as a default while
   building.** The Founder asked for a fork of "the Note app" with its array of modules. Read as the VRG Sketcher (the
   note taker with fronts, a data catalog and agent-made variants), not Gyorsjegyzet (M6, a single text box to a

@@ -69,7 +69,7 @@ const S = window.STACK;
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const ORDER = 'FIQLARCGE'.split('');
+const ORDER = 'FIQLARCGKE'.split('');
 const LN = Object.fromEntries(S.layers.map(m => [m.code, m])); LN.E = { code: 'E', hu: 'Oszlop', en: 'Pillar' };
 const byId = new Map(S.nodes.map(n => [n.id, n]));
 for (const e of S.entities) byId.set('E:' + e.id, { id: 'E:' + e.id, layer: 'E', kind: 'pillar', title: e.name, brief: 'Ugyanaz a dolog minden rétegben: ' + Object.entries(e.per).map(([l, c]) => l + ' ' + c).join(', '), state: e.members.length + ' csomópont', t: '', deg: {} });

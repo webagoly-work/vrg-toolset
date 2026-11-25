@@ -281,3 +281,55 @@ object RadarText {
         else -> "Irány: ${compass(result.bearingDeg)} (${result.bearingDeg.toInt()}°), biztosság ${(result.confidence * 100).toInt()}%."
     }
 }
+
+/**
+ * A radar snapshot for sharing (WP M67): the frame as JSON, kind "vrg.radar-frame" v 1 — what the Data Vault's Radarom
+ * keeps (plugins/sandbox-radar parses exactly these keys). Directions found by Irány keresése are written into the blips
+ * (bearingSrc "sweep"), so the snapshot stands on its own; live RSSI is left out. Hand-written JSON (no library in the pure
+ * modules), the same string escaping as the Diagnosztika report.
+ */
+object RadarSnapshot {
+    private fun q(s: String?): String {
+        if (s == null) return "null"
+        val b = StringBuilder("\"")
+        for (ch in s) when {
+            ch == '"' -> b.append("\\\"")
+            ch == '\\' -> b.append("\\\\")
+            ch == '\n' -> b.append("\\n")
+            ch == '\r' -> b.append("\\r")
+            ch == '\t' -> b.append("\\t")
+            ch < ' ' || ch == ' ' || ch == ' ' -> b.append("\\u%04x".format(ch.code))
+            else -> b.append(ch)
+        }
+        return b.append('"').toString()
+    }
+
+    private fun n(d: Double?): String = if (d == null || d.isNaN() || d.isInfinite()) "null" else d.toString()
+
+    private fun place(p: LatLon?): String = if (p == null) "null" else "{\"lat\":${n(p.lat)},\"lon\":${n(p.lon)}}"
+
+    fun encode(frame: RadarFrame, sweeps: Map<String, Double>, atIso: String, app: String, hidden: Set<String> = emptySet()): String {
+        val layers = frame.layers.filter { it.id !in hidden }
+        val ids = layers.map { it.id }.toSet()
+        val sb = StringBuilder()
+        sb.append("{\"kind\":\"vrg.radar-frame\",\"v\":1,\"at\":").append(q(atIso)).append(",\"app\":").append(q(app))
+        sb.append(",\"headingDeg\":").append(n(frame.headingDeg)).append(",\"here\":").append(place(frame.here))
+        sb.append(",\"mode\":").append(q(if (frame.mode == RadarMode.NORTH_UP) "north-up" else "heading-up"))
+        sb.append(",\"layers\":[").append(layers.joinToString(",") { l ->
+            "{\"id\":${q(l.id)},\"title\":${q(l.title)},\"glyph\":${q(l.glyph)},\"tone\":${q(l.tone.name.lowercase())},\"feature\":${q(l.feature)}}"
+        }).append(']')
+        sb.append(",\"blips\":[").append(frame.blips.filter { it.layer in ids }.joinToString(",") { b ->
+            val sw = if (b.bearingDeg == null) sweeps[b.id] else null
+            val bearing = b.bearingDeg ?: sw
+            val src = when { b.bearingDeg != null -> b.bearingSrc.name.lowercase(); sw != null -> "sweep"; else -> "none" }
+            buildString {
+                append("{\"id\":").append(q(b.id)).append(",\"layer\":").append(q(b.layer)).append(",\"label\":").append(q(b.label))
+                append(",\"distanceM\":").append(n(b.distanceM)).append(",\"bearingDeg\":").append(n(bearing))
+                append(",\"bearingSrc\":").append(q(src)).append(",\"trend\":").append(b.trend).append(",\"ageMs\":").append(b.ageMs)
+                append(",\"linked\":").append(b.linked).append(",\"mine\":").append(b.mine).append(",\"alert\":").append(b.alert)
+                append(",\"detail\":").append(q(b.detail)).append(",\"place\":").append(place(b.place)).append('}')
+            }
+        }).append(']')
+        return sb.append('}').toString()
+    }
+}

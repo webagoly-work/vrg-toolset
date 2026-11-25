@@ -1,0 +1,50 @@
+{
+  "about": "The VRG Böngésző's shared contract cases (T7): vrg.web-links v1, the ops, tracking-parameter stripping and the address bar. Replayed by Browser/test/links.test.js (src/core/links.js, src/core/url.js) and by VRG Mobile's kit-core WebTest.kt (WebLinks.kt, WebRules.kt), so the PC and the phone cannot drift. The read / merge cases are the Data Vault browser-kit's (DV-Q22 B0). INVENTED addresses only.",
+  "read": [
+    { "in": { "bookmarks": [{ "url": "https://github.com/", "title": "GitHub", "at": 5 }, { "url": "file:///x", "title": "bad", "at": 1 }, { "url": "https://github.com/", "title": "dup", "at": 9 }, { "url": "https://nat.hu/", "title": "no at" }],
+              "history": [{ "url": "https://b.hu/", "title": "B", "at": 20 }, { "url": "https://a.hu/", "title": "A", "at": 10 }, { "url": "https://c.hu/", "title": "no at" }] },
+      "bookmarks": [["https://github.com/", "GitHub", 5], ["https://nat.hu/", "no at", 0]], "history": [["https://a.hu/", "A", 10], ["https://b.hu/", "B", 20]] },
+    { "in": { "format": "vrg.web-links", "v": 1, "bookmarks": [{ "url": "javascript:alert(1)", "title": "x", "at": 1 }], "history": [{ "url": "https://x.hu/", "title": "X", "at": 3 }], "x-bongeszo": { "meta": {} } },
+      "bookmarks": [], "history": [["https://x.hu/", "X", 3]] },
+    { "in": { "format": "vrg.web-links", "v": 2, "bookmarks": [] }, "error": "newer" },
+    { "in": { "format": "vrg.app-archive", "v": 1, "bookmarks": [] }, "error": "format" },
+    { "in": { "rows": [] }, "error": "empty" }
+  ],
+  "merge": [
+    { "a": { "bookmarks": [{ "url": "https://github.com/", "title": "GitHub", "at": 5 }, { "url": "https://nat.hu/", "title": "N", "at": 0 }], "history": [{ "url": "https://a.hu/", "title": "A", "at": 10 }, { "url": "https://b.hu/", "title": "B", "at": 20 }] },
+      "b": { "bookmarks": [{ "url": "https://github.com/", "title": "GitHub — the longer title", "at": 3 }, { "url": "https://m.hu/", "title": "M", "at": 4 }], "history": [{ "url": "https://a.hu/", "title": "A", "at": 10 }, { "url": "https://p.hu/", "title": "P", "at": 15 }] },
+      "bookmarks": [["https://github.com/", "GitHub — the longer title", 3], ["https://nat.hu/", "N", 0], ["https://m.hu/", "M", 4]],
+      "history": [["https://a.hu/", "A", 10], ["https://p.hu/", "P", 15], ["https://b.hu/", "B", 20]] }
+  ],
+  "visits": { "steps": [["https://a.hu/", "A", 100], ["https://a.hu/", "A, title arrived late", 200], ["https://b.hu/", "B", 300], ["javascript:x", "no", 400]],
+              "history": [["https://a.hu/", "A, title arrived late", 200], ["https://b.hu/", "B", 300]] },
+  "ops": {
+    "base": { "bookmarks": [{ "url": "https://b.hu/", "title": "B", "at": 1 }], "history": [{ "url": "https://old.hu/", "title": "O", "at": 2 }, { "url": "https://keep.hu/", "title": "K", "at": 9 }] },
+    "ops": [{ "op": "bookmark", "url": "https://a.hu/", "title": "A", "at": 5 }, { "op": "visit", "url": "https://a.hu/", "title": "A", "at": 6 }, { "op": "visit", "url": "javascript:alert(1)", "at": 7 },
+            { "op": "drop-table", "url": "https://x.hu/" }, { "op": "unbookmark", "url": "https://b.hu/" }, { "op": "forget", "url": "https://old.hu/" }, { "op": "clear", "at": 8 }],
+    "bookmarks": [["https://a.hu/", "A", 5]], "history": [["https://a.hu/", "A", 6]], "clean": 5
+  },
+  "strip": [
+    ["https://x.hu/a?utm_source=fb&id=7&fbclid=Z&gclid=Q#top", "https://x.hu/a?id=7#top"],
+    ["https://x.hu/?q=1", "https://x.hu/?q=1"],
+    ["https://x.hu/p?UTM_Campaign=1&msclkid=2", "https://x.hu/p"],
+    ["file:///x?utm_source=1", "file:///x?utm_source=1"]
+  ],
+  "address": [
+    ["index.hu", "url", "https://index.hu/"],
+    ["tme.eu/hu/katalog", "url", "https://tme.eu/hu/katalog"],
+    ["localhost:8808", "url", "http://localhost:8808/"],
+    ["192.168.1.1/admin", "url", "http://192.168.1.1/admin"],
+    ["https://hu.wikipedia.org/wiki/Ohm", "url", "https://hu.wikipedia.org/wiki/Ohm"],
+    ["hu.wikipedia.org/wiki/Ohm-törvény", "url", "https://hu.wikipedia.org/wiki/Ohm-t%C3%B6rv%C3%A9ny"],
+    ["ajanlat.pdf", "search", "https://www.google.com/search?q=ajanlat.pdf"],
+    ["3.5", "search", "https://www.google.com/search?q=3.5"],
+    ["kábel méretezés", "search", "https://www.google.com/search?q=k%C3%A1bel%20m%C3%A9retez%C3%A9s"],
+    ["!w Ohm-törvény", "search", "https://hu.wikipedia.org/w/index.php?search=Ohm-t%C3%B6rv%C3%A9ny"],
+    ["NYM-J 3x2,5 !tme", "search", "https://www.tme.eu/hu/katalog/?queryPhrase=NYM-J%203x2%2C5"],
+    ["a&b (x)!", "search", "https://www.google.com/search?q=a%26b%20(x)!"],
+    ["javascript:alert(1)", "blocked", ""],
+    ["file:///C:/x", "blocked", ""],
+    ["   ", "empty", ""]
+  ]
+}

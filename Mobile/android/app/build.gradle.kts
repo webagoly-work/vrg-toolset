@@ -84,5 +84,6 @@ dependencies {
     implementation(project(":feature-tag"))       // WP M61 Tárgykereső
     implementation(project(":feature-watch"))     // WP M65 Óra
     implementation(project(":feature-radar"))     // WP M67 Radar
+    implementation(project(":feature-web"))       // WP M68 Böngésző
     implementation(project(":feature-notebook"))  // WP M69 VRG Füzet
 }

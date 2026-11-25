@@ -60,6 +60,7 @@
       this.status.textContent = this.only === 'code' ? 'Csak a kódindex (k)' : r.updated ? 'Rétegverem frissítve: ' + r.updated : '';
       if (this.only !== 'code') this.drawStack(r.stack || []);
       if (this.only !== 'stack') this.drawCode(r.code || [], r);
+      if (!this.only && Array.isArray(r.docs) && r.docs.length) this.drawDocs(r.docs);
     },
 
     // "Csomaghoz adás" (DESK-Q57 A): the hit goes to the context pack through the frame's vrg-ctx-add event (a node id, or the code line as text)
@@ -118,9 +119,23 @@
       this.out.append(sec);
     },
 
+    // the repo's documents (T5 of the VRG Böngésző): title, path, the matching words; opens in the same viewer as a code hit
+    drawDocs(hits) {
+      const sec = el('section', 'doc-hits'); sec.append(el('h3', null, 'Dokumentumok'));
+      hits.forEach((h, i) => {
+        const g = el('div', 'file-group');
+        const b = el('button', 'code', h.title || h.path); b.type = 'button'; b.title = h.path;
+        b.addEventListener('click', () => this.openCode(i, 'doc'));
+        g.append(b, el('h4', null, h.path), this.addBtn(h.path + (h.snippet ? '\n' + h.snippet : '')));
+        if (h.snippet) g.append(el('div', 'snippet', h.snippet));
+        sec.append(g);
+      });
+      this.out.append(sec);
+    },
+
     // a code hit opens the viewer (WP-13) over this panel, at the line
-    async openCode(i) {
-      const r = await this.vrg.search.openHit('code', i);
+    async openCode(i, kind) {
+      const r = await this.vrg.search.openHit(kind === 'doc' ? 'doc' : 'code', i);
       if (this.gone) return;
       if (!r || r.ok === false) { this.status.textContent = (r && r.hu) || 'A fájl nem nyitható meg.'; return; }
       if (!P.viewer) await new Promise(res => { const sc = document.createElement('script'); sc.src = 'panes/viewer.js'; sc.onload = () => res(); sc.onerror = () => res(); document.head.append(sc); });

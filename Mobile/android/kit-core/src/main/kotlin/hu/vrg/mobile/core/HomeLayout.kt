@@ -26,7 +26,7 @@ object HomeLayout {
         )),
         HomePage(7, "Egyéb", "Egyéb", listOf(
             Catalogue.NOTES, Catalogue.INBOX, Catalogue.PULSE, Catalogue.CITY,
-            Catalogue.SPHERE, Catalogue.STACK, Catalogue.APPS, Catalogue.SHEETS, Catalogue.TAG, Catalogue.WATCH, Catalogue.RADAR,
+            Catalogue.SPHERE, Catalogue.STACK, Catalogue.APPS, Catalogue.SHEETS, Catalogue.TAG, Catalogue.WATCH, Catalogue.RADAR, Catalogue.WEB,
         )),
         HomePage(8, "Fiók és beállítások", "Fiók", listOf(Catalogue.ACCOUNT, Catalogue.DEVICES, Catalogue.UPDATE, Catalogue.SETTINGS)),
     )

@@ -69,6 +69,15 @@ Bluetooth signal strength is a distance estimate, never a direction. A blip has 
 Otherwise the blip is drawn **hollow and dashed** on its distance ring, at an angle that only keeps it apart from the
 others, and the caption says how many have no direction.
 
+## Snapshots (`vrg.radar-frame` v1) and the Data Vault
+
+The Radar screen's **Megosztás** shares the current frame as one JSON (kit-core `RadarSnapshot.encode`): the frame above
+without the live `rssi`, hidden layers left out, and directions found by Irány keresése written into the blips
+(`bearingSrc: "sweep"`), so it stands on its own. Top level: `kind: "vrg.radar-frame"`, `v: 1`, `at` (ISO time), `app`,
+`headingDeg`, `here`, `mode`, `layers`, `blips`. The Founder's **Data Vault** keeps these in **Radarom**
+(`plugins/sandbox-radar`, the personal twin): the snapshots by date, and the Founder's own places with real GPS bearings
+from the one marked "itt vagyok"; its copy of the layout is proven by a copy of the shared fixture.
+
 ## Adding a layer (any program, now or later)
 
 Phone: implement `RadarSource` (`layer`, `blips(now)`, optionally `watch(on)` to wake a scanner while a radar is on

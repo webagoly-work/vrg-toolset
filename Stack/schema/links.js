@@ -43,6 +43,11 @@ const LINKS = {
   ran: R('lefuttatta', 'ran as', 'futása', 'v'),
   touched: R('hozzányúlt', 'touched', 'hozzányúlt ez', 'v'),
   'on-day': R('ezen a napon', 'ran on day', 'futott aznap'),
+  // K · Kisokos
+  'on-axis': R('a tengelyen van', 'lies on axis', 'tengelyén van'),
+  gravitates: R('ide gravitál', 'gravitates to', 'ide gravitál ez'),
+  rokon: R('rokona', 'is related to', 'rokona'),
+  keszletben: R('a Készletben van', 'is stocked in', 'termékei'),
   // vertical joins (build: lib/join.js)
   'ref:p': R('útvonalra hivatkozik', 'names the path of', 'útvonalát említi', 'v'),
   'ref:c': R('commitra hivatkozik', 'names commit', 'commitját említi', 'v'),

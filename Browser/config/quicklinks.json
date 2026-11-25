@@ -1,0 +1,13 @@
+{
+  "about": "VRG Böngésző — the start page's default tiles (public pages only; no client data). The user's pinned bookmarks come first. The PC's local VRG servers are added by build.js from launcher/vrg-menu.json.",
+  "links": [
+    { "hu": "Wikipédia", "url": "https://hu.wikipedia.org/", "icon": "WP" },
+    { "hu": "Nemzeti Jogszabálytár", "url": "https://njt.hu/", "icon": "NJ" },
+    { "hu": "MEKH", "url": "https://www.mekh.hu/", "icon": "MK" },
+    { "hu": "HungaroMet", "url": "https://www.met.hu/", "icon": "HM" },
+    { "hu": "MAVIR", "url": "https://www.mavir.hu/", "icon": "MV" },
+    { "hu": "TME", "url": "https://www.tme.eu/hu/", "icon": "TM" },
+    { "hu": "GitHub (vrg-toolset)", "url": "https://github.com/webagoly-work/vrg-toolset", "icon": "GH" },
+    { "hu": "Claude", "url": "https://claude.ai/", "icon": "CL" }
+  ]
+}

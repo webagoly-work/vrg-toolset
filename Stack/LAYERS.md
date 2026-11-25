@@ -13,6 +13,7 @@
   R  ──── │ DevRepo · Repó             what was committed │
   C  ──── │ Code · Kód                 where it lives     │
   G  ──── │ Data Globe · Adatgömb      the raw text       │
+  K  ──── │ Kisokos · Handbook         the work knowledge │   (2026-11-21: not dev work)
   Z  ──── │ Codec · Tömörített réteg   the stack, folded  │
           └──────────────────────────────────────────────┘
 ```
@@ -36,6 +37,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **R DevRepo** | Commit-pixel, `Stack/commits.html` (2026-11-09; the MindMap view of `VRG_devrep.mindmap.json` stays) | ✅ | — (the mirrored git grid: one pixel per day, colour = commits in four steps, merge days marked, branch lanes with forks and merges on the same time axis, filter by pillar / area / branch, a click opens that day's commits and the lines, sessions, runs and files they belong to) |
 | **C Code** | Kódváros (CodeCity) | ✅ | — |
 | **G Data Globe** | Gömb (`Solomon/dist/vrg-solomon.html`, START T) | ✅ | — |
+| **K Kisokos** | Kisokos 3D, `Stack/kisokos.html` (2026-11-21, START R → S) | ✅ | — (the Villanyszerelés core as a sphere, 8 axes through it with term nodes by ring, every card and outside knowledge base as cubes, 1 cube = 1 KB; a selected axis runs out of both ends into infinity) |
 | **Z Codec** | — | n/a | machine layer; `stack.js` reads it |
 | **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows; Rétegek, `Stack/layers.html` (START R → 7): exploded isometric planes, one per layer (2026-11-07) | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. **Rétegek has the planes; missing (checked 2026-11-10 against ROADMAP 3.1):** ① each plane is a force layout, not the layer's own natural order (time for I/L/U/R, hierarchy for F, tree for C/G); ② every vertical link is drawn by default (≈ 12 000, the "Kötők" toggle is on), not only the selection's; ③ the selection's pillar is not drawn as a vertical line through the planes (E is one more plane). A click already narrows the links to the selected node's own. Later the neural view: activation during agent sessions |
 
@@ -109,6 +111,15 @@ Every layer should have **one interactive page** where a person sees that layer 
 - **Order:** sections (islands). Documents cite each other (`ref:p`).
 - **Source:** `Solomon/data/signals.json` (its docs list) and the documents themselves.
 - **Rule:** the Solomon ladder applies: the script finds, Caleb judges, the Founder rules. Nothing writes to a document.
+
+### K · Kisokos (Handbook): 279 nodes (2026-11-22)
+- **Is:** the work knowledge itself, not the dev work: the Villanyszerelés core, 8 axes with 4 term nodes per pole, the 9 volumes, every Kisokos card (Rögzítéstechnika: 53, Kommunikációs vonalak: 27, Világítótestek: 79, Előírások: 23, Tankönyv: 10), and the knowledge bases outside the Kisokos (Rajztár, Készlet, CoreRef, Modulshop) placed by how much of them overlaps the core.
+- **Order:** space. The core is a sphere; each axis runs through it with its two poles opposite; a term node's ring is its distance from daily work (1 = needed tomorrow … 4 = the horizon).
+- **Node kinds:** core · axis · term · volume · card/<kind> · knowledge base.
+- **Edges:** `on-axis` (term → axis → core), `gravitates` (card or base → the core or its term node), `holds` (volume → card), `uses` (material → its bits, anchors, screws; a lamp type → its fixings, control lines and rules in other volumes), `rokon` (a line → its related lines), `keszletben` (a card → the Készlet knowledge base, weighted by its stocked products, from `Kisokos/keszlet.json`).
+- **Source:** `Kisokos/map.json` + `Kisokos/<volume>/*.json`, read through `Kisokos/kisokos.js` (the same loader its checker uses).
+- **Rule:** a card's place is set by hand: `{ core: '<axis><pole>' }` for core knowledge (it grows inside the sphere from that pole's entry point) or `{ term, overlap }` for knowledge with its own identity (the overlap share grows inside the core). Size is never set by hand: 1 cube = 1 KB of the card or base.
+- **Page:** `kisokos.html`, data `out/kisokos-data.js` (every build, or `stack.js kisokos`; `--standalone <file>` writes one self-contained page).
 
 ### Z · Codec (Tömörített réteg): 10 packs + codebook
 - **Is:** the whole stack folded for agents: L0 (one screen), L1 (pillars), L2 (one line per node, per layer), with L3 node cards and L4 source lines on demand.

@@ -1,0 +1,246 @@
+{
+  "about": "VRG Kisokos · Tankönyv · 1. szint: Kezdő. Egy kártya = egy lecke: célok, magyarázat, képletek, kidolgozott példa, gyakorló feladatok megoldással, biztonság, és hivatkozás a többi kötet kártyáira ('<kötet>.<id>'). Saját írás; a számpéldák kerekítettek. Vázlat: reviewed = null, amíg a Founder át nem nézi.",
+  "kind": "lecke",
+  "added": "2026-11-22",
+  "cards": [
+    { "id": "k01-alapfogalmak", "title": "1. Feszültség, áram, ellenállás", "aka": ["Ohm törvénye", "U = R · I"], "level": 1, "chapter": 1,
+      "place": { "core": "2B" },
+      "goals": ["Megérteni, mi a feszültség, az áram és az ellenállás, és mi a mértékegységük.", "Ohm törvényével kiszámolni bármelyiket a másik kettőből.", "Kiszámolni egy rézvezeték ellenállását a hossza és a keresztmetszete alapján."],
+      "body": [
+        "A feszültség (U, volt, V) az a „nyomás”, amely a töltéseket mozgatja: két pont közötti különbség. Egy aljzat fázisa és nullája között kb. 230 V van.",
+        "Az áram (I, amper, A) a vezetőn átfolyó töltés mennyisége másodpercenként. Az áram csak zárt körben folyik: a forrástól a fogyasztón át vissza a forrásig.",
+        "Az ellenállás (R, ohm, Ω) azt mutatja meg, mennyire akadályozza egy anyag vagy alkatrész az áramot. A réz jól vezet (kicsi az ellenállása), a műanyag szigetel (nagyon nagy).",
+        "A hármat Ohm törvénye köti össze: adott feszültségnél minél nagyobb az ellenállás, annál kisebb az áram.",
+        "A vezeték maga is ellenállás: minél hosszabb és minél vékonyabb, annál nagyobb. Ezért melegszik a túl vékony vagy túl hosszú vezeték, és ezért esik rajta feszültség."
+      ],
+      "formulas": [
+        { "f": "U = R · I", "mean": "feszültség (V) = ellenállás (Ω) × áram (A); átrendezve I = U / R és R = U / I" },
+        { "f": "R = ρ · l / A", "mean": "vezeték ellenállása: fajlagos ellenállás × hossz (m) / keresztmetszet (mm²); rézre ρ ≈ 0,0178 Ω·mm²/m" }
+      ],
+      "example": { "task": "Mekkora egy 20 m hosszú, 1,5 mm²-es rézér ellenállása, és mennyi feszültség esik egy 20 m-es áramkör oda-vissza vezetékén 10 A-nél?",
+        "steps": ["Egy ér: R = 0,0178 × 20 / 1,5 ≈ 0,237 Ω.", "Az áram a fázisvezetőn megy oda és a nullán jön vissza: a hurok kb. 2 × 0,237 = 0,475 Ω.", "Feszültségesés: U = R · I = 0,475 × 10 ≈ 4,7 V."],
+        "result": "Kb. 4,7 V esik a vezetéken, ez a 230 V kb. 2 %-a. Hosszabb vagy vékonyabb vezetéknél ez gyorsan nő; ezért méretezni kell (2. szint)." },
+      "exercises": [
+        { "q": "Egy 230 V-os fűtőszál ellenállása 26,5 Ω. Mekkora áram folyik rajta?", "a": "I = 230 / 26,5 ≈ 8,7 A." },
+        { "q": "Mekkora a 2,5 mm²-es, 30 m-es rézér ellenállása?", "a": "R = 0,0178 × 30 / 2,5 ≈ 0,21 Ω." },
+        { "q": "Egy lámpán 230 V mellett 0,05 A folyik. Mekkora az ellenállása működés közben?", "a": "R = 230 / 0,05 = 4600 Ω." }
+      ],
+      "safety": ["A 230 V halálos lehet: minden mérést és szerelést feszültségmentes állapotban kell kezdeni (lásd a 6. leckét)."],
+      "links": ["kv.halozat-50hz"], "prereq": [],
+      "terms": { "hu": ["feszültség volt", "áramerősség amper", "ellenállás ohm", "Ohm törvénye"], "en": ["voltage", "current", "resistance", "Ohm's law"], "de": ["Spannung", "Stromstärke", "Widerstand", "ohmsches Gesetz"] } },
+
+    { "id": "k02-teljesitmeny", "title": "2. Teljesítmény, energia, melegedés", "aka": ["P = U · I", "kWh", "Joule-hő"], "level": 1, "chapter": 2,
+      "place": { "core": "2B" },
+      "goals": ["Kiszámolni egy fogyasztó teljesítményét és áramát.", "Megérteni a kWh-t és a villanyszámlát.", "Megérteni, miért ég le egy rossz kötés."],
+      "body": [
+        "A teljesítmény (P, watt, W) azt mutatja meg, mennyi energiát alakít át egy fogyasztó másodpercenként. Ohmos (fűtő) fogyasztónál P = U · I.",
+        "Az energia (W, kilowattóra, kWh) a teljesítmény és az idő szorzata: 1 kW teljesítmény 1 órán át 1 kWh. A villanyszámla ezt méri.",
+        "Az áram minden ellenálláson hőt termel: P = I² · R. A hő a négyzetes összefüggés miatt kétszeres áramnál négyszeres. Ezért kell az áramhoz méretezni a vezetéket, és ezért veszélyes a laza kötés: az átmeneti ellenállása kicsi, de 16 A-nél sok hőt termel egy pontban."
+      ],
+      "formulas": [
+        { "f": "P = U · I", "mean": "teljesítmény (W) = feszültség (V) × áram (A), ohmos fogyasztónál; átrendezve I = P / U" },
+        { "f": "P = I² · R", "mean": "egy ellenálláson (vezeték, kötés) termelt hő" },
+        { "f": "W = P · t", "mean": "energia (kWh) = teljesítmény (kW) × idő (h)" }
+      ],
+      "example": { "task": "Egy laza kötés átmeneti ellenállása 0,1 Ω. Mennyi hőt termel 16 A-nél? És mennyi áramot vesz fel egy 2000 W-os vízforraló, és mennyi energiát használ 3 perc alatt?",
+        "steps": ["Kötés: P = 16² × 0,1 = 25,6 W: egy pontban, a dobozban, mint egy kis forrasztópáka.", "Vízforraló árama: I = 2000 / 230 ≈ 8,7 A.", "Energia: 2 kW × 0,05 h (3 perc) = 0,1 kWh."],
+        "result": "A laza kötés kb. 26 W hőt termel egy pontban: ettől olvad meg a szigetelés és a doboz. A vízforraló 8,7 A-t vesz fel, és 3 perc alatt 0,1 kWh-t használ." },
+      "exercises": [
+        { "q": "Mekkora áramot vesz fel egy 3,5 kW-os villanybojler 230 V-on?", "a": "I = 3500 / 230 ≈ 15,2 A: egy 16 A-es körre éppen ráfér, mást ne kössünk mellé." },
+        { "q": "Egy 10 W-os LED-lámpa napi 5 órát ég. Mennyi energiát használ egy év alatt?", "a": "10 W × 5 h × 365 = 18 250 Wh ≈ 18,3 kWh." },
+        { "q": "Hányszorosára nő egy vezeték melegedése, ha az áram 10 A-ről 20 A-re nő?", "a": "Négyszeresére, mert P = I² · R." }
+      ],
+      "safety": ["A melegedő, elszíneződött kötés, a meglazult aljzat és a „büdös” elosztó tűzveszélyes: azonnal feszültségmentesíteni és javítani kell."],
+      "links": ["kv.halozat-50hz"], "prereq": ["k01-alapfogalmak"],
+      "terms": { "hu": ["teljesítmény watt", "kilowattóra", "átmeneti ellenállás"], "en": ["power watt", "kilowatt-hour", "contact resistance"], "de": ["Leistung Watt", "Kilowattstunde", "Übergangswiderstand"] } },
+
+    { "id": "k03-soros-parhuzamos", "title": "3. Soros és párhuzamos kapcsolás", "aka": ["Kirchhoff törvényei", "eredő ellenállás"], "level": 1, "chapter": 3,
+      "place": { "core": "2B" },
+      "goals": ["Felismerni a soros és a párhuzamos kapcsolást.", "Kiszámolni az eredő ellenállást.", "Megérteni, miért párhuzamosan vannak kötve a lakás fogyasztói, és miért sorosan a kapcsoló."],
+      "body": [
+        "Soros kapcsolásban az áram egyetlen úton halad át minden elemen: az áram mindenhol ugyanaz, a feszültség megoszlik. Ha egy elem megszakad, az egész kör leáll. A kapcsoló ezért sorosan van a lámpával: megszakítja a kört.",
+        "Párhuzamos kapcsolásban minden elem ugyanazt a feszültséget kapja, az áramok összeadódnak. A lakás minden fogyasztója párhuzamosan kapja a 230 V-ot: ezért működik egymástól függetlenül, és ezért adódik össze az áramuk az áramkör vezetékén.",
+        "Kirchhoff csomóponti törvénye: egy csomópontba befolyó áramok összege egyenlő a kifolyókéval. Huroktörvénye: egy zárt hurokban a feszültségek összege nulla."
+      ],
+      "formulas": [
+        { "f": "R = R1 + R2 + …", "mean": "soros eredő ellenállás" },
+        { "f": "1 / R = 1 / R1 + 1 / R2 + …", "mean": "párhuzamos eredő ellenállás (két elemre R = R1 · R2 / (R1 + R2))" },
+        { "f": "I = I1 + I2 + …", "mean": "párhuzamos ágak áramai összeadódnak (Kirchhoff csomóponti törvénye)" }
+      ],
+      "example": { "task": "Egy 16 A-es konyhai aljzatkörön egyszerre megy egy 2000 W-os vízforraló, egy 1200 W-os mikró és egy 800 W-os kávéfőző. Elég-e a kör?",
+        "steps": ["Áramok: 2000/230 ≈ 8,7 A; 1200/230 ≈ 5,2 A; 800/230 ≈ 3,5 A.", "Párhuzamosan kötve összeadódnak: 8,7 + 5,2 + 3,5 = 17,4 A."],
+        "result": "17,4 A több, mint 16 A: a kismegszakító egy idő után kiold. A konyhában ezért több aljzatkör kell (lásd a 2. szint áramkör-kiosztását)." },
+      "exercises": [
+        { "q": "Két 100 Ω-os ellenállás sorosan, majd párhuzamosan. Mekkora az eredő?", "a": "Sorosan 200 Ω, párhuzamosan 50 Ω." },
+        { "q": "Miért nem kötjük a lámpákat sorba egy helyiségben?", "a": "Mert akkor egy kiégett lámpa az egész sort lekapcsolná, és a feszültség megoszlana közöttük: egyik sem kapná a 230 V-ot." },
+        { "q": "Egy csomópontba 10 A folyik be, egyik kimenő ágon 4 A megy ki. Mennyi a másikon?", "a": "6 A (Kirchhoff csomóponti törvénye)." }
+      ],
+      "safety": ["A párhuzamos fogyasztók árama összeadódik: hosszabbítóra, elosztóra nem szabad a névleges áramánál többet kötni."],
+      "links": ["vt.kapcsolt-aljzat"], "prereq": ["k01-alapfogalmak", "k02-teljesitmeny"],
+      "terms": { "hu": ["soros kapcsolás", "párhuzamos kapcsolás", "eredő ellenállás"], "en": ["series circuit", "parallel circuit", "equivalent resistance"], "de": ["Reihenschaltung", "Parallelschaltung", "Ersatzwiderstand"] } },
+
+    { "id": "k04-valtakozo-aram", "title": "4. Váltakozó áram, fázis, nulla, védővezető", "aka": ["50 Hz", "effektív érték", "L N PE"], "level": 1, "chapter": 4,
+      "place": { "core": "2B" },
+      "goals": ["Megérteni, mit jelent az 50 Hz és a 230 V effektív érték.", "Tudni a fázisvezető, a nullavezető és a védővezető szerepét.", "Megérteni, miért nem „biztonságos” a nullavezető."],
+      "body": [
+        "A hálózati feszültség szinuszosan váltakozik, másodpercenként 50-szer (50 Hz, a periódusidő 20 ms). A 230 V az effektív érték: az az egyenfeszültség, amely ugyanannyi hőt termelne. A csúcsérték ennél nagyobb, kb. 325 V.",
+        "Fázisvezető (L): a feszültség alatt lévő vezető. Nullavezető (N): az áram visszavezetője; a szolgáltatónál földelt, ezért normál esetben közel földpotenciálon van. Védővezető (PE, zöld-sárga): normál üzemben nem visz áramot; a fém készüléktesteket köti a földhöz, hogy hiba esetén a védelem lekapcsoljon.",
+        "A nullavezető nem érinthető veszélytelenül: megszakadt nulla esetén a fogyasztón át a fázisfeszültség jelenhet meg rajta, és terhelt körben is lehet rajta feszültség. Mindig feszültség alatt lévőnek kell tekinteni.",
+        "Induktív (motor, régi előtét) és kapacitív (LED-tápegység) fogyasztóknál az áram és a feszültség nincs fázisban: a hasznos teljesítmény ilyenkor P = U · I · cos φ."
+      ],
+      "formulas": [
+        { "f": "Ucsúcs = U · √2", "mean": "csúcsérték: 230 × 1,414 ≈ 325 V" },
+        { "f": "T = 1 / f", "mean": "periódusidő: 1 / 50 Hz = 20 ms" },
+        { "f": "P = U · I · cos φ", "mean": "hasznos (hatásos) teljesítmény váltakozó áramnál" }
+      ],
+      "example": { "task": "Egy motor 230 V-on 5 A-t vesz fel, a teljesítménytényezője cos φ = 0,8. Mekkora a hasznos teljesítménye?",
+        "steps": ["P = 230 × 5 × 0,8 = 920 W."],
+        "result": "920 W hasznos teljesítmény, pedig a vezetéken 5 A folyik (ami ohmos fogyasztónál 1150 W lenne): a vezetéket az áramra kell méretezni, nem a wattra." },
+      "exercises": [
+        { "q": "Mekkora a 400 V-os vonali feszültség csúcsértéke?", "a": "400 × 1,414 ≈ 566 V." },
+        { "q": "Milyen színű a védővezető, és visz-e áramot normál üzemben?", "a": "Zöld-sárga; normál üzemben nem visz áramot." },
+        { "q": "Szabad-e a nullavezetőt kapcsolni a lámpa helyett a fázis helyett?", "a": "Nem: akkor kikapcsolt állapotban is fázis lenne a lámpafoglalaton (lásd a 10. leckét)." }
+      ],
+      "safety": ["A nullavezetőt is feszültség alatt lévőnek kell tekinteni.", "A zöld-sárga vezetőt kizárólag védővezetőként szabad használni."],
+      "links": ["kv.halozat-50hz", "el.msz-hd-60364"], "prereq": ["k02-teljesitmeny"],
+      "terms": { "hu": ["fázisvezető", "nullavezető", "védővezető", "effektív érték"], "en": ["line conductor", "neutral conductor", "protective earth", "RMS value"], "de": ["Außenleiter", "Neutralleiter", "Schutzleiter", "Effektivwert"] } },
+
+    { "id": "k05-haromfazis", "title": "5. A háromfázisú rendszer", "aka": ["400 V", "L1 L2 L3", "csillagkapcsolás"], "level": 1, "chapter": 5,
+      "place": { "core": "2B" },
+      "goals": ["Megérteni, honnan jön a 230 V és a 400 V.", "Kiszámolni egy háromfázisú fogyasztó áramát.", "Megismerni a vezetők színjelölését."],
+      "body": [
+        "A közcélú hálózat háromfázisú: három fázisvezető (L1, L2, L3), mindegyiken 230 V a nullához képest, egymáshoz képest egy periódus harmadával (120°-kal) eltolva. Két fázis között ezért nem 460 V, hanem 400 V van.",
+        "A lakások egy része egyfázisú (egy fázis és nulla), nagyobb fogyasztóknál (főzőlap, hőszivattyú, autótöltő, műhely) háromfázisú a bekötés.",
+        "Ha a három fázis egyformán terhelt (szimmetrikus terhelés), a nullavezetőn nem folyik áram; aszimmetrikus terhelésnél a különbség folyik rajta. Ezért kell a lakás köreit a fázisok között elosztani.",
+        "Színjelölés: fázisvezetők barna, fekete, szürke; nullavezető kék; védővezető zöld-sárga."
+      ],
+      "formulas": [
+        { "f": "Uv = Uf · √3", "mean": "vonali feszültség = fázisfeszültség × 1,732: 230 × 1,732 ≈ 400 V" },
+        { "f": "P = √3 · Uv · I · cos φ", "mean": "háromfázisú teljesítmény" }
+      ],
+      "example": { "task": "Mekkora teljesítményt tud egy 3 × 16 A-es háromfázisú bekötés (ohmos terhelésnél)? És mekkora áramot vesz fel fázisonként egy 11 kW-os autótöltő?",
+        "steps": ["P = 1,732 × 400 × 16 ≈ 11 085 W ≈ 11 kW.", "Fordítva: I = 11 000 / (1,732 × 400) ≈ 15,9 A fázisonként."],
+        "result": "A 3 × 16 A kb. 11 kW-ot ad: egy 11 kW-os töltő egyedül kihasználja a bekötést." },
+      "exercises": [
+        { "q": "Mekkora feszültség van két fázisvezető között?", "a": "Kb. 400 V." },
+        { "q": "Egy háromfázisú 7,5 kW-os hőszivattyú (cos φ ≈ 0,9) mekkora áramot vesz fel?", "a": "I = 7500 / (1,732 × 400 × 0,9) ≈ 12 A fázisonként." },
+        { "q": "Miért kell a lakás áramköreit a fázisok között elosztani?", "a": "Hogy a fázisok terhelése közel egyforma legyen: így kisebb a nulla árama és nem terhelődik túl egy fázis." }
+      ],
+      "safety": ["Háromfázisú körben két fázis között 400 V van: az áramütés még veszélyesebb.", "Fázissorrend: motoroknál a forgásirányt határozza meg."],
+      "links": ["kv.halozat-50hz", "vt.csillar"], "prereq": ["k04-valtakozo-aram"],
+      "terms": { "hu": ["háromfázisú hálózat", "vonali feszültség 400 V", "szimmetrikus terhelés"], "en": ["three-phase system", "line-to-line voltage", "balanced load"], "de": ["Drehstrom", "Außenleiterspannung", "symmetrische Last"] } },
+
+    { "id": "k06-aramutes-biztonsag", "title": "6. Áramütés és az öt biztonsági szabály", "aka": ["feszültségmentesítés", "MSZ EN 50110-1", "munkavédelem"], "level": 1, "chapter": 6,
+      "place": { "core": "2B" },
+      "goals": ["Megérteni, mitől veszélyes az áramütés.", "Megtanulni a feszültségmentesítés öt lépését, sorrendben.", "Megérteni, miért 30 mA az áram-védőkapcsoló érzékenysége."],
+      "body": [
+        "Az áramütés veszélyét a testen átfolyó áram adja, nem a feszültség maga: nagysága, útja (kéz–kéz, kéz–láb a szíven át) és ideje. Már néhány tíz milliamper néhány tized másodperc alatt szívkamraremegést okozhat.",
+        "Tájékoztató értékek (váltakozó áram, kéz–láb út): kb. 0,5 mA érezhető; kb. 10 mA felett a kéz már nem tudja elengedni a vezetőt; néhány tíz mA felett, rövid idő alatt életveszély. Ezért old ki az áram-védőkapcsoló 30 mA-nél, gyorsan.",
+        "Az emberi test ellenállása (kéz–kéz) nagyjából 1000–2000 Ω, nedves bőrrel kevesebb: 230 V-on ez 100–200 mA, ami halálos lehet.",
+        "Az öt biztonsági szabály (MSZ EN 50110-1), ebben a sorrendben: 1. leválasztás minden pólusán; 2. biztosítás visszakapcsolás ellen (lezárás, tábla); 3. a feszültségmentesség megállapítása kétpólusú feszültségvizsgálóval; 4. földelés és rövidrezárás, ahol szükséges; 5. a szomszédos, feszültség alatt maradó részek letakarása vagy elkerítése."
+      ],
+      "formulas": [{ "f": "I = U / Rtest", "mean": "a testen átfolyó áram: 230 V / 1000 Ω ≈ 0,23 A = 230 mA" }],
+      "example": { "task": "Valaki egy lámpát cserél; a falikapcsoló ki van kapcsolva. Biztonságos-e?",
+        "steps": ["A falikapcsoló csak egy pólust szakít meg; ha rosszul kötötték (a nullát kapcsolja), a foglalaton fázis van.", "Az öt szabály szerint: kismegszakító le (leválasztás), lezárni vagy táblát kitenni, kétpólusú feszültségvizsgálóval ellenőrizni a foglalatot."],
+        "result": "A kikapcsolt falikapcsoló nem feszültségmentesítés. A biztos állapot: kismegszakító lekapcsolva, biztosítva, mérve." },
+      "exercises": [
+        { "q": "Mi a harmadik biztonsági szabály, és mivel végezzük?", "a": "A feszültségmentesség megállapítása, kétpólusú feszültségvizsgálóval (nem fázisceruzával)." },
+        { "q": "Miért 30 mA az áram-védőkapcsoló érzékenysége a személyvédelemben?", "a": "Mert e fölött, rövid idő alatt, már életveszélyes szívritmuszavar léphet fel; a 30 mA-es készülék ennél előbb lekapcsol." },
+        { "q": "Mitől függ az áramütés veszélye?", "a": "Az áram nagyságától, útjától a testen át és az idejétől." }
+      ],
+      "safety": ["Feszültség alatti munkát csak erre kiképzett és felhatalmazott személy végezhet, külön előírások szerint.", "Áramütés után orvosi vizsgálat kell akkor is, ha a sérült jól érzi magát."],
+      "links": ["el.msz-hd-60364", "rg.vezetekkereso"], "prereq": ["k04-valtakozo-aram"],
+      "terms": { "hu": ["öt biztonsági szabály", "feszültségmentesítés", "áramütés"], "en": ["five safety rules", "isolation", "electric shock"], "de": ["fünf Sicherheitsregeln", "Freischalten", "Stromschlag"] } },
+
+    { "id": "k07-muszerek", "title": "7. Szerszámok és mérőműszerek", "aka": ["kétpólusú feszültségvizsgáló", "multiméter", "lakatfogó", "CAT kategória"], "level": 1, "chapter": 7,
+      "place": { "core": "2B" },
+      "goals": ["Kiválasztani a megfelelő műszert a feszültség, az áram és az ellenállás méréséhez.", "Megérteni, miért nem megbízható a fázisceruza.", "Ismerni a mérési kategóriákat (CAT II–IV)."],
+      "body": [
+        "Kétpólusú feszültségvizsgáló: a feszültségmentesség megállapításának eszköze. Mindkét pontot érinteni kell vele (pl. fázis–nulla, fázis–PE, nulla–PE), és használat előtt és után egy ismert feszültségen ellenőrizni.",
+        "Fázisceruza (csavarhúzós): a test ellenállásán át jelez, a cipőtől, a padlótól és a fénytől függően; nem jelez megbízhatóan, ezért feszültségmentesség megállapítására nem való.",
+        "Multiméter: feszültség (párhuzamosan a mérendő ponttal), ellenállás és folytonosság (csak feszültségmentes körben!), áram (sorba kötve, a ritkábban használt bemenettel). Lakatfogóval az áram a vezeték körülfogásával, bontás nélkül mérhető (egy eret kell körülfogni).",
+        "Mérési kategória: a műszer a jelölt kategóriájú helyen használható. CAT II: aljzatba dugott készülékek; CAT III: épületen belüli szerelés, elosztó; CAT IV: a betáplálás, a mérőhely és a földkábel oldala. A feszültség mellett a kategória is számít."
+      ],
+      "formulas": [],
+      "example": { "task": "Egy aljzat „nem megy”. Hogyan mérjük meg biztonságosan, és mit jelentenek az eredmények?",
+        "steps": ["Kétpólusú vizsgálóval: L–N, L–PE és N–PE.", "L–N 230 V és L–PE 230 V: az aljzat rendben, a hiba a készülékben.", "L–N 0 V, de L–PE 230 V: a nulla szakadt meg (a doboznál vagy feljebb).", "Mindenhol 0 V: a kör ki van kapcsolva vagy a fázis szakadt meg: az elosztóban kell kezdeni."],
+        "result": "Három méréssel eldönthető, melyik vezető hiányzik; a javítás az öt biztonsági szabály szerint, feszültségmentesen." },
+      "exercises": [
+        { "q": "Mivel állapítjuk meg a feszültségmentességet?", "a": "Kétpólusú feszültségvizsgálóval, amelyet használat előtt és után ellenőrzünk." },
+        { "q": "Szabad-e ellenállást mérni egy feszültség alatt lévő körben?", "a": "Nem: a műszer tönkremehet és az eredmény hamis; ellenállást és folytonosságot csak feszültségmentesen." },
+        { "q": "Milyen kategóriájú műszer kell a mérőhelyen való méréshez?", "a": "CAT IV." }
+      ],
+      "safety": ["A multiméter mérőzsinórja és bemenete is a kategóriának megfelelő legyen.", "Árammérő állásban hagyott műszerrel feszültséget mérni zárlatot okoz."],
+      "links": ["rg.vezetekkereso", "rg.furokalapacs"], "prereq": ["k06-aramutes-biztonsag"],
+      "terms": { "hu": ["kétpólusú feszültségvizsgáló", "multiméter CAT III", "lakatfogó"], "en": ["two-pole voltage tester", "multimeter CAT III", "clamp meter"], "de": ["zweipoliger Spannungsprüfer", "Multimeter CAT III", "Stromzange"] } },
+
+    { "id": "k08-vezetekek", "title": "8. Vezetékek és kábelek", "aka": ["NYM-J", "H07V-U", "keresztmetszet", "MBCu"], "level": 1, "chapter": 8,
+      "place": { "core": "2B" },
+      "goals": ["Felismerni a lakásban használt vezeték- és kábeltípusokat a jelölésükről.", "Tudni, milyen keresztmetszet jellemző a világításhoz és az aljzatokhoz.", "Megérteni a tömör és a sodrott ér különbségét."],
+      "body": [
+        "Vezeték: egy vagy több szigetelt ér; kábel: több ér közös köpenyben, nagyobb mechanikai védelemmel. A köznyelv a kettőt keveri.",
+        "A harmonizált jelölés egy példán, H07V-U: H = harmonizált; 07 = 450/750 V névleges feszültség; V = PVC szigetelés; U = tömör, kör keresztmetszetű ér (R = tömör sodrott, K = hajlékony, finoman sodrott). A régi magyar nevek (MCu, MKH, MBCu) ma is élnek a nagykereskedésekben.",
+        "NYM-J: PVC köpenyes installációs kábel, a J azt jelenti, hogy van benne zöld-sárga védővezető. NYY-J: erőátviteli kábel, földbe és kültérre is. A darabszám × keresztmetszet: pl. 3 × 1,5 = három 1,5 mm²-es ér.",
+        "Jellemző lakossági gyakorlat: világításhoz 1,5 mm², aljzatkörökhöz 2,5 mm², nagyobb fogyasztóhoz (főzőlap, bojler) a terhelés szerint. A pontos választás a terheléstől, a szerelési módtól, a hossztól és a védelemtől függ (méretezés: 2. szint).",
+        "Tömör ér: falba, védőcsőbe, csavaros kötésbe. Sodrott (hajlékony) ér: mozgó részekhez, elosztóba; csavaros kötésbe érvéghüvellyel."
+      ],
+      "formulas": [],
+      "example": { "task": "Mit jelent: NYM-J 5 × 1,5 mm²? Mire jó?",
+        "steps": ["NYM: PVC köpenyes installációs kábel; J: van benne zöld-sárga védővezető.", "5 ér: pl. három fázis (vagy két kapcsolt fázis), nulla és védővezető, egyenként 1,5 mm²."],
+        "result": "Csillárkapcsolós lámpához, két kapcsolt körhöz, DALI-hoz (két ér a vezérlésnek) vagy egy háromfázisú kisebb fogyasztóhoz jó." },
+      "exercises": [
+        { "q": "Mit jelent a K betű a H07V-K jelölésben?", "a": "Hajlékony, finoman sodrott ér." },
+        { "q": "Mi a különbség az NYM-J és az NYY-J között?", "a": "Az NYM-J beltéri installációs kábel, az NYY-J erőátviteli kábel, földbe és kültérre is fektethető." },
+        { "q": "Szabad-e alumíniumvezetéket rézzel közvetlenül összecsavarni?", "a": "Nem: a két fém közti korrózió és az alumínium folyása miatt a kötés meglazul és melegszik; erre minősített kötőelem kell." }
+      ],
+      "safety": ["Csak a köpeny és a szigetelés sértetlen kábelt szabad beépíteni.", "Régi lakásokban alumíniumvezeték lehet: kezelése külön figyelmet kér."],
+      "links": ["kv.halozat-50hz", "vt.paramentes"], "prereq": ["k02-teljesitmeny"],
+      "terms": { "hu": ["NYM-J 3x1,5", "H07V-U", "érvéghüvely"], "en": ["installation cable", "solid conductor", "ferrule"], "de": ["Mantelleitung NYM-J", "H07V-U Aderleitung", "Aderendhülse"] } },
+
+    { "id": "k09-kotestechnika", "title": "9. Kötéstechnika", "aka": ["sorkapocs", "rugós kötőelem", "érvéghüvely", "meghúzási nyomaték"], "level": 1, "chapter": 9,
+      "place": { "core": "2B" },
+      "goals": ["Kiválasztani a megfelelő kötőelemet a vezetékhez.", "Jó minőségű, tartós kötést készíteni.", "Felismerni a hibás kötést."],
+      "body": [
+        "A kötés a villanyszerelés leggyakoribb hibahelye: a rossz kötés melegszik (lásd a 2. leckét), és tüzet okozhat. A jó kötés kis átmeneti ellenállású, mechanikailag tartós, és ellenőrizhető.",
+        "Rugós (karos vagy dugaszolós) kötőelem: gyors, egyenletes szorítóerő; a gyártó megadja, milyen ért (tömör, sodrott) és milyen keresztmetszetet fogad. A csupaszítási hosszt a kötőelemen jelzett érték szerint kell tartani.",
+        "Csavaros sorkapocs: a gyártói meghúzási nyomatékkal kell meghúzni, a túl laza és a túl szoros (az eret elnyíró) kötés is hibás. Sodrott ért érvéghüvellyel kell bekötni.",
+        "Sodrott eret ónnal bemártva csavaros kötésbe kötni nem szabad: az ón idővel „folyik”, a kötés meglazul.",
+        "Kötni csak dobozban (kötődoboz, szerelvénydoboz), hozzáférhető helyen lehet; vakolat alá rejtett kötés tilos."
+      ],
+      "formulas": [],
+      "example": { "task": "Egy doboz kötéseit kell elkészíteni: 2 × NYM-J 3 × 1,5 (tömör) és egy lámpa sodrott vezetéke találkozik. Mit használjunk?",
+        "steps": ["A három fázisér, a három nullaér és a három védővezető egy-egy háromvezetékes rugós kötőelembe kerül, ha az a tömör és a sodrott eret is fogadja.", "A csupaszítás a kötőelem jelölése szerint; a szigetelés a kötőelem pereméig érjen.", "A védővezetőket mindig kötni kell, akkor is, ha a lámpa II. osztályú (a továbbmenő kör miatt)."],
+        "result": "Háromszor három ér, három rugós kötőelem, egyenként ellenőrizve (meghúzással), a dobozban rendezetten." },
+      "exercises": [
+        { "q": "Mi a teendő sodrott érrel csavaros kötés előtt?", "a": "Érvéghüvelyt kell rápréselni." },
+        { "q": "Miért hibás a túl hosszú csupaszítás?", "a": "Mert a kötőelemen kívül csupasz rész marad, ami érintésveszélyes és zárlatot okozhat." },
+        { "q": "Hol szabad kötést készíteni?", "a": "Csak hozzáférhető dobozban; vakolat alatt vagy dobozon kívül nem." }
+      ],
+      "safety": ["A kötések elkészülte után minden eret meghúzással ellenőrizni kell.", "Elszíneződött, olvadt kötést nem javítani, hanem kicserélni kell, a sérült érvéget levágva."],
+      "links": ["rg.gipszkarton", "kv.halozat-50hz"], "prereq": ["k08-vezetekek"],
+      "terms": { "hu": ["rugós kötőelem", "csavaros sorkapocs", "érvéghüvely préselés"], "en": ["lever connector", "screw terminal", "ferrule crimping"], "de": ["Hebelklemme", "Schraubklemme", "Aderendhülse crimpen"] } },
+
+    { "id": "k10-elso-aramkorok", "title": "10. Az első áramkörök: kapcsolások", "aka": ["egypólusú kapcsoló", "csillárkapcsoló", "váltókapcsolás", "keresztkapcsolás", "impulzusrelé"], "level": 1, "chapter": 10,
+      "place": { "core": "2B" },
+      "goals": ["Bekötni egy lámpát egy kapcsolóval.", "Megérteni a csillár-, a váltó- és a keresztkapcsolást.", "Tudni, mikor jobb az impulzusrelé."],
+      "body": [
+        "Egypólusú kapcsolás: a kapcsoló a fázisvezetőt szakítja meg, a nulla közvetlenül a lámpára megy. Ha a nullát kapcsolnánk, kikapcsolt lámpánál is feszültség lenne a foglalaton.",
+        "Csillárkapcsolás: két kapcsolóbetét egy kereten, két külön kapcsolt fázis (két lámpacsoport), közös nulla. A lámpához két kapcsolt fázisér, a nulla és a védővezető megy (pl. NYM-J 4 × 1,5); a kapcsolóhoz a betápláló fázis és a két kapcsolt fázis.",
+        "Váltókapcsolás: két helyről kapcsolható lámpa (folyosó, lépcső). Két váltókapcsoló; köztük két „összekötő” ér fut. Az egyik kapcsoló közös pontjára jön a fázis, a másik közös pontjáról megy a kapcsolt fázis a lámpára.",
+        "Keresztkapcsolás: három vagy több helyről. A két szélső váltókapcsoló közé, az összekötő erekbe kerül egy vagy több keresztkapcsoló.",
+        "Impulzusrelé (lépcsőházi automatika vagy impulzuskapcsoló): sok helyről nyomógombokkal, párhuzamosan kötve. Egyszerűbb vezetékezés, időzítés is lehet; a relé az elosztóban vagy dobozban."
+      ],
+      "formulas": [],
+      "example": { "task": "Egy folyosót két végéről kell kapcsolni. Milyen vezetékek kellenek a kapcsolók és a lámpa között?",
+        "steps": ["Betáplálás a lámpadobozba: fázis, nulla, védővezető.", "Az 1. kapcsolóhoz: a fázis (oda) és két összekötő ér a 2. kapcsoló felé.", "A 2. kapcsolótól: a kapcsolt fázis vissza a lámpához.", "A nulla és a védővezető a lámpadobozból közvetlenül a lámpára."],
+        "result": "A két kapcsoló között háromerű kapcsolt vezeték helyett két összekötő ér fut; a lámpánál a kapcsolt fázis, a nulla és a védővezető találkozik." },
+      "exercises": [
+        { "q": "Melyik vezetőt kapcsolja az egypólusú kapcsoló?", "a": "A fázisvezetőt." },
+        { "q": "Hány helyről kapcsolható egy lámpa két váltó- és két keresztkapcsolóval?", "a": "Négy helyről." },
+        { "q": "Mikor jobb impulzusrelé a keresztkapcsolásnál?", "a": "Sok kapcsolóhelynél (pl. lépcsőház): a nyomógombok párhuzamosan köthetők, a vezetékezés egyszerűbb, és időzítés is adható." }
+      ],
+      "safety": ["Minden szerelés feszültségmentesen, az öt biztonsági szabály szerint.", "Bekapcsolás előtt ellenőrizni: nincs zárlat, a védővezető bekötve, és a kapcsoló a fázist kapcsolja."],
+      "links": ["vt.plafonlampa", "vt.csillar", "vt.kapcsolt-aljzat", "el.szerelvenyek", "kv.knx-tp"], "prereq": ["k04-valtakozo-aram", "k09-kotestechnika"],
+      "terms": { "hu": ["váltókapcsolás bekötése", "keresztkapcsoló", "impulzusrelé"], "en": ["two-way switching", "intermediate switch", "impulse relay"], "de": ["Wechselschaltung", "Kreuzschaltung", "Stromstoßschalter"] } }
+  ]
+}

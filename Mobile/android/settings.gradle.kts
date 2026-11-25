@@ -43,4 +43,5 @@ if (!jvmOnly) include(":sketch-vision")   // Kamera 2: on-device text recognitio
 if (!jvmOnly) include(":feature-tag")     // WP M61 Tárgykereső (experimental)
 if (!jvmOnly) include(":feature-watch")   // WP M65 Óra (the Q71 watch, experimental)
 if (!jvmOnly) include(":feature-radar")   // WP M67 Radar
+if (!jvmOnly) include(":feature-web")     // WP M68 Böngésző
 if (!jvmOnly) include(":feature-notebook") // WP M69 VRG Füzet
