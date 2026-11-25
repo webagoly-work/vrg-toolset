@@ -1,0 +1,78 @@
+{
+ "kind": "vrg-takeoff-rules",
+ "v": 1,
+ "about": "The takeoff rules of the VRG Sketcher (docs/sketcher/TAKEOFF.md): how a survey becomes work items and quantities. Data only, read by Sketcher/lib/takeoff.js and sketch-core Takeoff.kt. No prices: pricing belongs to the Varler Workflow Kit. Every list is ordered (the export keeps this order).",
+ "cable": {
+  "endReserveMm": 300,
+  "looseEndMm": 0,
+  "rawScaleMm": 25,
+  "evCableQ": "tavolsag",
+  "evCableM": [["5", 5], ["15", 15], ["30", 30], ["30+", 40]]
+ },
+ "levels": [["basement", 2500], ["ground", 2700], ["upper", 2700]],
+ "points": [
+  {"id": "socket", "label": "Dugalj", "sym": "⊙", "h": 300},
+  {"id": "switch", "label": "Kapcsoló", "sym": "⊘", "h": 1100},
+  {"id": "light", "label": "Lámpa", "sym": "✱", "h": 2000, "ceiling": true},
+  {"id": "junction", "label": "Kötődoboz", "sym": "◇", "h": 2200, "ceiling": true},
+  {"id": "data", "label": "Gyengeáram", "sym": "◈", "h": 300},
+  {"id": "fixed", "label": "Fix bekötés", "sym": "⊗", "h": 600},
+  {"id": "sensor", "label": "Érzékelő", "sym": "◎", "h": 2200},
+  {"id": "pont", "label": "Típus nélküli pont", "sym": "•", "h": 300},
+  {"id": "board", "label": "Elosztó", "sym": "▣", "h": 1600}
+ ],
+ "actions": [
+  {"id": "uj", "label": "új", "sym": "✚"},
+  {"id": "csere", "label": "csere", "sym": "↻"},
+  {"id": "bontas", "label": "bontás", "sym": "✕"},
+  {"id": "marad", "label": "meglévő marad", "sym": "="}
+ ],
+ "replaceTags": {"presets": ["replace"], "names": ["csere"]},
+ "removeTags": {"presets": ["remove"], "names": ["bontas"]},
+ "dedicatedTags": {"presets": ["dedicated"], "names": ["dedikalt"]},
+ "scopePoints": [["dugalj", "socket"], ["kulteri", "socket"], ["kapcsolo", "switch"], ["lampa", "light"], ["lanpont", "data"], ["tvpont", "data"], ["ipkamera", "data"]],
+ "machines": [
+  {"id": "fozolap", "dedicated": 1},
+  {"id": "suto", "dedicated": 1},
+  {"id": "mosogep", "dedicated": 1},
+  {"id": "mosogatogep", "dedicated": 1},
+  {"id": "szarito", "dedicated": 1},
+  {"id": "bojler", "dedicated": 1},
+  {"id": "cee", "dedicated": 1},
+  {"id": "torolkozo", "dedicated": 0},
+  {"id": "szellozo", "dedicated": 0}
+ ],
+ "systems": [
+  {"id": "ev", "dedicated": 1},
+  {"id": "napelem", "dedicated": 1},
+  {"id": "hoszivattyu", "dedicated": 1},
+  {"id": "klima", "dedicated": 1, "qtyQ": "klima_db", "qtyMap": [["1", 1], ["2", 2], ["3", 3], ["4+", 4]], "qtyEst": ["4+"]},
+  {"id": "padlofutes", "dedicated": 1},
+  {"id": "okos", "dedicated": 0},
+  {"id": "gyenge", "dedicated": 0},
+  {"id": "riaszto", "dedicated": 0},
+  {"id": "kaputelefon", "dedicated": 0},
+  {"id": "vilagitas", "dedicated": 0}
+ ],
+ "impliedDedicated": false,
+ "boardScope": "eloszto",
+ "newBoardQ": "uj_eloszto",
+ "newBoardOpt": "igen",
+ "decisions": [
+  {"q": "lenyeg", "affects": ["pont", "aramkor", "eloszto"]},
+  {"q": "kor", "affects": ["pont", "kabel"]},
+  {"q": "anyag", "affects": ["kabel"]},
+  {"q": "uj_eloszto", "affects": ["eloszto"]},
+  {"q": "szabad_hely", "affects": ["eloszto", "aleloszto"]},
+  {"q": "uj_fogyaszto", "affects": ["gep", "rendszer", "aramkor.dedikalt"]},
+  {"q": "gepek", "affects": ["gep"]},
+  {"q": "fozolap_tipus", "affects": ["gep.fozolap", "aramkor.dedikalt"]},
+  {"q": "furdo_mit", "affects": ["pont", "gep"]},
+  {"q": "gyenge_mit", "affects": ["pont.data", "rendszer.gyenge"]},
+  {"q": "okos_mit", "affects": ["rendszer.okos"]},
+  {"q": "klima_db", "affects": ["rendszer.klima", "aramkor.dedikalt"]},
+  {"q": "auto_kw", "affects": ["rendszer.ev"]},
+  {"q": "tavolsag", "affects": ["kabel.ev"]},
+  {"q": "fazis", "affects": ["rendszer", "aramkor.dedikalt"]}
+ ]
+}

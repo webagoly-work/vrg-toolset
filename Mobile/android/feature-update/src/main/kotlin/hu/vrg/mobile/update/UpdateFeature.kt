@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +37,7 @@ import hu.vrg.mobile.kit.github.Gh
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.problem
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
@@ -225,8 +225,7 @@ object UpdateFeature : VrgFeature {
         val pi = app.packageManager.getPackageInfo(app.packageName, 0)
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+            VrgBack { host.home() }
             Text("FRISSÍTÉS", style = Melyviz.title.copy(fontSize = 18.sp))
             Text("Most: ${pi.versionName}", style = Melyviz.small)
             Spacer(Modifier.height(10.dp))
@@ -247,11 +246,12 @@ object UpdateFeature : VrgFeature {
                 }
                 is UpdateState.Downloading -> {
                     Text("Letöltés: ${s.info.name} · ${s.percent} %", style = Melyviz.readout)
-                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                    // disabled while it runs (it did nothing but looked ready); the ring shows the progress (UI audit 6.3)
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring, enabled = false) {} }
                 }
                 is UpdateState.Installing -> {
                     Text("A telepítő indul: ${s.info.name}", style = Melyviz.readout)
-                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring, enabled = false) {} }
                 }
             }
             why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
@@ -267,10 +267,7 @@ object UpdateFeature : VrgFeature {
     private fun Offer(u: UpdateInfo, host: FeatureHost, blocked: Boolean) {
         Text("Új verzió: ${u.name}", style = Melyviz.title)
         Text("${u.size / (1024 * 1024)} MB", style = Melyviz.small)
-        if (u.notes.isNotBlank()) {
-            VrgSectionTitle("Mi változott")
-            Text(u.notes, style = Melyviz.small)
-        }
+        // the action before the notes: long notes pushed it below the visible area (UI audit 5.1)
         Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             VrgChip("Letöltés és telepítés", true) { install() }
         }
@@ -278,6 +275,10 @@ object UpdateFeature : VrgFeature {
             Text("Az Androidnak engedélyeznie kell, hogy ez az app telepíthessen. Engedélyezd, majd gyere vissza.",
                 style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
             Row(Modifier.padding(top = 6.dp)) { VrgChip("Engedély megnyitása") { openInstallSetting(host) } }
+        }
+        if (u.notes.isNotBlank()) {
+            VrgSectionTitle("Mi változott")
+            Text(u.notes, style = Melyviz.small)
         }
     }
 }

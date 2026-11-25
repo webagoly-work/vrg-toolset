@@ -71,6 +71,7 @@ object PlannerExport {
                 .put("der", JSONArray(r.edges.indices.filter { r.edges[it] == SizeStatus.DERIVED }))
                 .put("mea", JSONArray(r.edges.indices.filter { r.edges[it] == SizeStatus.MEASURED }))
             if (tags.isNotEmpty()) sk.put("tags", JSONArray(tags.map { it.name }))
+            Wants.ofRoom(s, r.id)?.let { sk.put("wants", it) }   // F4: the client's wants in this room
             o.put("sk", sk)
             floors.put(o)
         }
@@ -91,6 +92,7 @@ object PlannerExport {
             if (tags.isNotEmpty()) sk.put("tags", JSONArray(tags.map { it.name }))
             if (tags.any { it.preset == "ip44" }) sk.put("ip44", true)
             if (tags.any { it.preset == "remove" }) sk.put("remove", true)
+            if (tags.any { it.preset == "replace" }) sk.put("replace", true)
             o.put("sk", sk)
             devices.put(o); devObj[did] = o
         }
@@ -149,6 +151,7 @@ object PlannerExport {
             val pp = s.photos.firstOrNull { it.id == f.id } ?: return@forEach
             val shots = JSONArray(f.shots.sortedBy { it.deg }.map { sh ->
                 JSONObject().put("deg", sh.deg).put("side", Photos.label(sh.deg)).put("file", Photos.exportName(s, pp, sh.deg)).put("taken", sh.taken)
+                    .also { j -> sh.f35?.let { j.put("f35", it) } }   // skcam K1b: the lens, for the Szobadoboz
             })
             val room = s.room(f.room)?.let { roomTitleOf(it) } ?: ""
             notes.put(JSONObject().put("id", id("N")).put("level", lvl).put("x", i(f.at.x)).put("y", i(f.at.y))
@@ -176,6 +179,7 @@ object PlannerExport {
                 .put("center", center)
                 .put("photos", photos)
                 .put("report", report)
+                .also { pl -> Wants.packageList(s).takeIf { it.length() > 0 }?.let { pl.put("wants", it) } }   // F4: only when a want has a room
                 .put("data", JSONObject()
                     .put("v", 2).put("seq", seq)
                     .put("floors", floors).put("devices", devices).put("circuits", circuits)

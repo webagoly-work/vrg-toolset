@@ -2,8 +2,9 @@
 // https://map.appassets.androidplatform.net/. Three things the PC page does not have:
 //   - the phone's position (MapLibre's GeolocateControl; the position stays in this page, nothing is sent anywhere),
 //   - the Vázlat sites (the Sketcher's Helyszín points, from the phone's own files via /__phone/sites.json),
-//   - Navigáció on a job card and a site: hands only the coordinates and the code / name to the phone's navigation app (D-49 C).
-// No network request here leaves the phone's origin.
+//   - Navigáció on a job card and a site: hands only the coordinates and the code / name to the phone's navigation app (D-49 C),
+//   - with ?site=<id> (F1): the Sketcher's Helyszín on the site layer, the answer back through vrg-map:site.
+// No network request here leaves the phone's origin (the site layer's 🛰 satellite tiles do, on its tap only).
 (() => {
   'use strict';
   document.documentElement.classList.add('vrg-phone');
@@ -39,6 +40,8 @@
     }), 'top-right');
     const ready = map.loaded() ? Promise.resolve() : new Promise(r => map.once('load', r));
     ready.then(() => sites(map, ml));
+    const siteId = new URLSearchParams(location.search).get('site');
+    if (siteId) ready.then(() => site(siteId));
     // Navigáció on the job card: the bottom sheet on a narrow screen, the popup on a wide one
     const add = root => root.querySelectorAll('.jcard').forEach(card => {
       const act = card.querySelector('.jact');
@@ -54,6 +57,19 @@
     const sheet = document.getElementById('jobs-sheet');
     if (sheet) new MutationObserver(() => add(sheet)).observe(sheet, { childList: true });
     new MutationObserver(() => add(map.getContainer())).observe(map.getContainer(), { childList: true, subtree: true });
+  }
+
+  // F1: the Sketcher's Helyszín on this map: the survey from the phone's file, the site layer (Map/lib/site-layer.js) to draw the
+  // outline and place the sketch; ✓ Kész / ✕ hand the answer to the app (vrg-map:site), which gives it to the Sketcher.
+  async function site(id) {
+    const back = r => { location.href = 'vrg-map:site?d=' + encodeURIComponent(JSON.stringify(r)); };
+    let data = null;
+    try { const r = await fetch('/__phone/site.json?id=' + encodeURIComponent(id), { cache: 'no-store' }); if (r.ok) data = await r.json(); } catch { /* below */ }
+    let tries = 0;
+    const t = setInterval(() => {
+      if (window.vrgSite && data) { clearInterval(t); window.vrgSite.open(data, { done: back, cancel: () => back({ kind: 'vrg-site-result', v: 1, id, cancelled: true }), canCenter: true }); }
+      else if (!data || ++tries > 100) { clearInterval(t); back({ kind: 'vrg-site-result', v: 1, id, cancelled: true, problem: data ? 'nincs site-layer' : 'nincs vázlat' }); }
+    }, 150);
   }
 
   async function sites(map, ml) {

@@ -15,7 +15,7 @@ class HomeLayoutTest {
         assertEquals(listOf("planner", "calc", "inventory"), HomeLayout.PAGES[1].items.map { it.id })
         assertEquals(listOf("workflow"), HomeLayout.PAGES[2].items.map { it.id })
         assertEquals(listOf("map", "weather", "vault"), HomeLayout.PAGES[3].items.map { it.id })
-        assertEquals(listOf("archive", "claude"), HomeLayout.PAGES[4].items.map { it.id })
+        assertEquals(listOf("archive", "claude", "devlap"), HomeLayout.PAGES[4].items.map { it.id })
         assertEquals(listOf("account", "devices", "update", "settings"), HomeLayout.PAGES.last().items.map { it.id }, "account and settings last")
         assertEquals(listOf("photo"), HomeLayout.PLUGINS["sketch"]?.map { it.id })
     }

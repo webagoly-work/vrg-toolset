@@ -5,12 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -143,12 +143,12 @@ fun KeysSheet(target: Target, onDictate: () -> Unit, onClose: () -> Unit) {
                 if (clip.isEmpty()) Deck.notes.tryEmit("A vágólap üres.") else Deck.typeText(clip)
             }
         }
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Gépelési kiosztás (a fogadó gépé):", style = Melyviz.small)
-            Spacer(Modifier.width(8.dp))
+        // the label on its own line: at a large font it measured first and left the chips no room (UI-CHECKLIST 4.5)
+        Text("Gépelési kiosztás (a fogadó gépé):", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+        FlowRow(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Layouts.ALL.forEach { l ->
                 Chip(l.id, s.layout == l.id) { Deck.settings.update { it.copy(layout = l.id) } }
-                Spacer(Modifier.width(6.dp))
             }
         }
 
@@ -168,13 +168,20 @@ fun KeysSheet(target: Target, onDictate: () -> Unit, onClose: () -> Unit) {
             OutlinedTextField(
                 value = appKey, onValueChange = { appKey = it }, modifier = Modifier.fillMaxWidth(),
                 label = { Text("pl. g, Escape, Delete") }, colors = deepFieldColors(), singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false,
+                    imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = {
+                    val k = appKey.trim()
+                    if (k.isNotEmpty()) Deck.perform(Send.AppKey(k, ctrl, shift, alt))
+                }),
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // the modifiers wrap, and "Küld" has its own row, so a large font cannot squeeze it (UI-CHECKLIST 4.5)
+            FlowRow(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 ModBox("Ctrl", ctrl) { ctrl = it }
                 ModBox("Shift", shift) { shift = it }
                 ModBox("Alt", alt) { alt = it }
-                Spacer(Modifier.weight(1f))
+            }
+            Row(Modifier.padding(top = 4.dp)) {
                 Chip("Küld", true) {
                     val k = appKey.trim()
                     if (k.isNotEmpty()) Deck.perform(Send.AppKey(k, ctrl, shift, alt))
@@ -186,8 +193,10 @@ fun KeysSheet(target: Target, onDictate: () -> Unit, onClose: () -> Unit) {
 
 @Composable
 private fun ModBox(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked, onChange, colors = CheckboxDefaults.colors(checkedColor = Melyviz.glow, uncheckedColor = Melyviz.line, checkmarkColor = Melyviz.onGlow))
+    // the label is part of the target too (UI-CHECKLIST 1.3)
+    Row(Modifier.toggleable(value = checked, role = Role.Checkbox, onValueChange = onChange).padding(end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked, null, colors = CheckboxDefaults.colors(checkedColor = Melyviz.glow, uncheckedColor = Melyviz.line, checkmarkColor = Melyviz.onGlow))
         Text(label, style = Melyviz.small)
     }
 }

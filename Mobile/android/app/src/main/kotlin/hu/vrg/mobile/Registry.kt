@@ -29,8 +29,12 @@ import hu.vrg.mobile.sketch.ui.PhotoFeature
 import hu.vrg.mobile.sketch.ui.SketchFeature
 import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.stack.StackFeature
+import hu.vrg.mobile.tag.app.TagFeature
 import hu.vrg.mobile.update.UpdateFeature
+import hu.vrg.mobile.watch.app.WatchFeature
+import hu.vrg.mobile.radar.RadarFeature
 import hu.vrg.mobile.workflow.WorkflowFeature
+import hu.vrg.mobile.weather.app.WeatherFeature
 import hu.vrg.mobile.core.HomeLayout
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
@@ -67,6 +71,10 @@ object Registry {
         VaultFeature,
         WorkflowFeature,
         MapFeature,
+        WeatherFeature,
+        TagFeature,
+        WatchFeature,
+        RadarFeature,
         NotebookFeature,
     )
 
@@ -76,7 +84,7 @@ object Registry {
      * Catalogue entries that are the shell itself, not a feature module: the Asztal is the home (WP M19), Lapok lives in
      * it, the Katalógus is a shell screen and the home's Planner / Kalkulátorok / Készlet tiles open web apps (WP M38).
      */
-    val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id) + HomeLayout.SHORTCUTS.keys
+    val shellParts = setOf(Catalogue.DESK.id, Catalogue.SHEETS.id, Catalogue.CATALOG.id, Catalogue.DEVLAP.id) + HomeLayout.SHORTCUTS.keys
 
     fun isBuilt(info: FeatureInfo): Boolean = feature(info.id) != null || info.id in shellParts
 }

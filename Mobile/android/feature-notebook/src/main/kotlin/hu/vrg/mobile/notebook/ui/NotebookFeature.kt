@@ -26,7 +26,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
-// VRG Füzet (WP M46): the malleable notebook. The store (every entry of every kit) is one plain JSON file in
+// VRG Füzet (WP M68): the malleable notebook. The store (every entry of every kit) is one plain JSON file in
 // filesDir/notebook/store.json, written whole after each change (tmp + rename). The kits are the bundled ones from
 // assets/notebook/kits plus the ones the owner imported into filesDir/notebook/kits. All the rules are notebook-core.
 

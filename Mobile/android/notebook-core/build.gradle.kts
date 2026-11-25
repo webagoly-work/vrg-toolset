@@ -1,4 +1,4 @@
-// VRG Füzet (WP M46): the malleable notebook's pure Kotlin. Kits (applications as JSON), the one store of entries,
+// VRG Füzet (WP M68): the malleable notebook's pure Kotlin. Kits (applications as JSON), the one store of entries,
 // the derived open items, search, views and the export / import merge. A fork of the VRG Sketcher's engine ideas
 // (docs/sketcher/README.md, the six rules) without the survey. No Android here: `gradlew :notebook-core:test`.
 plugins {

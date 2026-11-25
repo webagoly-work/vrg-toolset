@@ -12,19 +12,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,8 +93,9 @@ object NetFeature : VrgFeature {
         LaunchedEffect(relay.running) { _activity.value = if (relay.running) MiniStatus.running() else MiniStatus.IDLE }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
+            // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
             Text("HÁLÓZAT", style = Melyviz.title.copy(fontSize = 18.sp))
             Text(listOfNotNull(if (snap.wifi) "WiFi" else null, if (snap.mobile) "mobilnet" else null).joinToString(" + ")
                 .ifEmpty { "nincs internet" }, style = Melyviz.readout)
@@ -102,6 +111,7 @@ object NetFeature : VrgFeature {
 
     // ---- the phone relay -----------------------------------------------------------------------------
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun RelaySection(ctx: Context, host: FeatureHost, snap: NetSnapshot) {
         val st by PhoneRelayHost.state.collectAsStateWithLifecycle()
@@ -144,9 +154,8 @@ object NetFeature : VrgFeature {
                 Text(PairCodes.pretty(c.code), style = Melyviz.title.copy(fontSize = 28.sp, color = Melyviz.glow), modifier = Modifier.padding(top = 8.dp))
                 Text("Párosító kód, még ${(c.expires - now) / 1000} mp, egyszer használható.", style = Melyviz.small)
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("Mégse") { PhoneRelayHost.cancelCode() } }
-            } else Row(Modifier.padding(vertical = 6.dp)) {
+            } else FlowRow(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("Új párosító kód") { PhoneRelayHost.newCode() }
-                Spacer(Modifier.width(8.dp))
                 VrgChip("Légegér erre a relére") { Relay.connect("ws://127.0.0.1:${st.port}"); host.note("Légegér a telefon reléjén") }
             }
 
@@ -160,12 +169,27 @@ object NetFeature : VrgFeature {
             }
         }
         if (devices.isNotEmpty()) Text("Párosított PC-k", style = Melyviz.label, modifier = Modifier.padding(top = 6.dp))
+        // removing a pairing asks first: getting it back needs a new code typed on the PC (UI-CHECKLIST 5.6)
+        var forgetting by remember { mutableStateOf<String?>(null) }
         devices.forEach { d ->
             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(d.device, style = Melyviz.small, modifier = Modifier.weight(1f))
-                VrgChip("Törlés") { if (st.running) PhoneRelayHost.forget(d.id) else PhoneRelayHost.forgetOffline(ctx, d.id) }
+                VrgChip("Törlés") { forgetting = d.id }
             }
         }
+        val gone = devices.firstOrNull { it.id == forgetting }
+        if (gone != null) AlertDialog(
+            onDismissRequest = { forgetting = null }, containerColor = Melyviz.raised,
+            title = { Text("${gone.device} párosításának törlése?", style = Melyviz.label) },
+            text = { Text("Újra párosítani csak új kóddal lehet, a PC-n beírva.", style = Melyviz.small) },
+            confirmButton = {
+                TextButton({
+                    forgetting = null
+                    if (st.running) PhoneRelayHost.forget(gone.id) else PhoneRelayHost.forgetOffline(ctx, gone.id)
+                }) { Text("Törlés", color = Melyviz.coral) }
+            },
+            dismissButton = { TextButton({ forgetting = null }) { Text("Mégse", color = Melyviz.muted) } },
+        )
     }
 
     // ---- tethering ---------------------------------------------------------------------------------------

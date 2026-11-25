@@ -4,6 +4,25 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "kettelefonos-teszt",
+   "title": "Kéttelefonos teszt",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "A VRG Sketcher telefonos ellenőrzései két telefonra osztva, közös élő pipálással és Hibák listával.",
+   "purpose": "A két telefon egyszerre teszteli az M24–M31 és M46–M49 munkacsomagokat; a hibák megjegyzéssel visszaolvashatók.",
+   "context": [
+    "F1–F4 fork összevonva a main ágra",
+    "a Founder kéttelefonos tesztet kért a végére"
+   ],
+   "tags": [],
+   "file": "files/kettelefonos-teszt.html",
+   "url": "https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre"
+  },
+  {
    "id": "personal-app-v1",
    "title": "Personal App v1",
    "created": "2026-11-21",
@@ -52,10 +71,10 @@ window.VRG_ARCHIVE = {
    "vrg": true,
    "group": "VRG core",
    "kind": "tool",
-   "summary": "VRG Füzet (VRG Mobile WP M46), the malleable notebook forked from the Sketcher's engine: a working browser demo running the bundled kits and the notebook-core rules on example entries, with the fork, the kits, how kits are requested and the build status.",
+   "summary": "VRG Füzet (VRG Mobile WP M68), the malleable notebook forked from the Sketcher's engine: a working browser demo running the bundled kits and the notebook-core rules on example entries, with the fork, the kits, how kits are requested and the build status.",
    "purpose": "Show the Founder the Füzet working before the phone check, and explain how it is built and grows.",
    "context": [
-    "VRG Füzet built in this session (M46), Actions run 173 green",
+    "VRG Füzet built in this session (M68), Actions run 173 green",
     "follows the Personal App v1 and Software for One pages",
     "example entries only, kept in the viewer's browser"
    ],

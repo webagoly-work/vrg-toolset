@@ -21,8 +21,10 @@ Mobile/
   tests/relay-board.js  Átadás (WP M12): names and paths, tickets, Host / Origin, size and checksum, _removed, the clipboard
   tests/relay-screen.js Képernyő (WP M13): tickets, the /screen upgrade, frames in order, one viewer, limits, unpairing, a slow phone
   tests/relay-phone-link.js  the phone relay's PC side (WP M7): the pairing block in Kódváros + Planner, WebCrypto keys and signatures
+  tests/app-archive.js  the app archive (WP M61, D-163) against a fake adb: parsers, split APKs, the shared manifest, verify
+  tools/app-archive.js  an installed app (APK + manifest) from the USB phone into Backup\installers\android (START L -> P)
   tests/archive-phone.js  Archívum (WP M18): Archive/vrg-archive.html at 375 px with touch, served as the WebView serves it; Back, all saved pages
-  notebook/kits/        VRG Füzet's bundled kits (WP M46); notebook/PROTOCOL.md = the kit format, for agents
+  notebook/kits/        VRG Füzet's bundled kits (WP M68); notebook/PROTOCOL.md = the kit format, for agents
   catalogue/ports.json  port -> tool for Localhost, generated from START's servers by catalogue/ports-gen.js
   catalogue/launch.json Indítópult's allow-list: which START servers and extras a paired phone may start
   android/
@@ -65,10 +67,16 @@ Mobile/
                         the phone relay in NetService (connectedDevice foreground service)
     feature-archive/    Archívum (WP M18): the repo's Archive/ (Desktop WP-47) read from main, changed files only, the PC's own
                         viewer in a confined WebView (artifact CDNs allowed), Back through viewer -> entry -> list
-    notebook-core/      VRG Füzet's pure Kotlin (WP M46): kits (Kit.kt), the one store (Store.kt), search, views,
+    notebook-core/      VRG Füzet's pure Kotlin (WP M68): kits (Kit.kt), the one store (Store.kt), search, views,
                         open items, suggestions (Engine.kt), export / import merge (Transfer.kt) + tests
     feature-notebook/   VRG Füzet: home (search, kits, views, capture), editor, Nyitott, Kitek (load, request, export)
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
+    feature-radar/      Radar (WP M67): every RadarHub layer on one radar (kit-core Radar.kt + RadarHub.kt, kit/ui/Radar.kt,
+                        kit/Compass.kt); spec docs/radar/README.md
+    tag-core/           Tárgykereső's pure Kotlin (WP M61, experimental): the Find My advertisement and key, the sound
+                        protocols' bytes, the tag book (mine, relink across address rotations), Ottfelejtés + tests
+    feature-tag/        Tárgykereső (WP M61): Apple Find My tags (ISYTag, AirTag) the iTag and paired devices (Q71) on Android: scan, GATT ring, ItagLink, Paired, the
+                        left-behind service (connectedDevice), Saját címke · Környék · Tudnivalók
     sketch-core/        Vázlat's pure Kotlin (WP M24): the sketch model + file, tool plugins, edits and hit tests, the
                         hold wheels, the measurement solver (wall lines, least squares, measured / derived / guessed),
                         the package the Planner imports (its fixture: Planner/.../tests/sketch-field.json); VRG Sketcher:

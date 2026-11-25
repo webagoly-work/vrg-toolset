@@ -241,9 +241,9 @@ Asked as numbered options, recommendation first. Answers go into `docs/mobile/DE
 
 ## 6. Built so far
 
-- **M46 VRG Füzet** (2026-11-21, BETA): the entry / view / action / rule model as a feature, forked from the Sketcher's
+- **M68 VRG Füzet** (2026-11-21, BETA): the entry / view / action / rule model as a feature, forked from the Sketcher's
   engine. It covers steps 2 and 5 below in part: the notes, to-dos and open items of a "Ma" page, plus export and
-  import. `docs/mobile/WP/M46.md`.
+  import. `docs/mobile/WP/M68.md`.
 
 ## 7. Suggested order once answered
 

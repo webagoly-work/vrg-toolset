@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,7 +64,7 @@ internal fun Field(value: String, onChange: (String) -> Unit, label: String, num
 @Composable
 internal fun TextDialog(
     title: String, label: String, initial: String, onDismiss: () -> Unit,
-    number: Boolean = false, lines: Int = 1, onDelete: (() -> Unit)? = null, onOk: (String) -> Unit,
+    number: Boolean = false, lines: Int = 1, onDelete: (() -> Unit)? = null, extra: Pair<String, () -> Unit>? = null, onOk: (String) -> Unit,
 ) {
     var v by remember { mutableStateOf(initial) }
     AlertDialog(
@@ -72,6 +73,7 @@ internal fun TextDialog(
         text = { Field(v, { v = it }, label, number, lines) },
         confirmButton = { TextButton({ onOk(v) }) { Text("Rendben", color = Melyviz.glow) } },
         dismissButton = {
+            if (extra != null) TextButton(extra.second) { Text(extra.first, color = Melyviz.current) }
             if (onDelete != null) TextButton(onDelete) { Text("Törlés", color = Melyviz.coral) }
             TextButton(onDismiss) { Text("Mégse", color = Melyviz.muted) }
         },
@@ -118,7 +120,8 @@ internal fun SketchDialogs(st: EditorState) {
             val nr = st.norm.room(a.room)
             val guess = nr?.takeIf { it.poly.size == r.poly.size }?.let { val (p, q) = Geo.edge(it.poly, a.edge); "≈ " + fmt(p.dist(q)) + " mm" } ?: ""
             TextDialog("${roomTitle(r.name, r.kinds)} · fal hossza (mm)", if (guess.isEmpty()) "mm" else "most: $guess", old?.mm?.toString() ?: "", close,
-                number = true, onDelete = old?.let { { st.setMeasure(a.room, MeasureKind.EDGE, 0, a.edge); close() } }) { v ->
+                number = true, onDelete = old?.let { { st.setMeasure(a.room, MeasureKind.EDGE, 0, a.edge); close() } },
+                extra = if (feat(hu.vrg.mobile.sketch.Ar.FEATURE)) ("📐 AR" to { st.ask = Ask.Ar(a.room, a.edge) }) else null) { v ->   // skcam K6
                 st.setMeasure(a.room, MeasureKind.EDGE, v.toIntOrNull() ?: 0, a.edge); close()
             }
         }
@@ -134,7 +137,7 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("${roomTitle(r.name, r.kinds)} · méret (mm)", style = Melyviz.label) },
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {   // UI audit 4.1: landscape + keyboard clipped the second field
                         Field(w, { w = it }, "Szélesség ↔", number = true, placeholder = box?.let { "most ≈ " + fmt(it.second.x - it.first.x) } ?: "")
                         Field(d, { d = it }, "Mélység ↕", number = true, placeholder = box?.let { "most ≈ " + fmt(it.second.y - it.first.y) } ?: "")
                         Text("Üresen hagyva a Rendezés számolja vagy becsüli. Egy falat a Méret eszközzel a falra koppintva mérhetsz.", style = Melyviz.small)
@@ -162,7 +165,9 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text(if (a.target == null && a.at == null) "Új címke" else "Címkék" + (a.target?.let { " · " + st.describeId(it) } ?: " a lapra"), style = Melyviz.label) },
                 text = {
-                    Column {
+                    // UI audit 4.1: scrolls, and the new-tag field comes first (many tags, landscape or the keyboard cut it off)
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Field(fresh, { fresh = it }, "Új címke neve", placeholder = "pl. Padlófűtés")
                         if (a.target != null || a.at != null) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             s.tags.forEach { t ->
                                 VrgChip("#" + t.name, selected = t.id in on) {
@@ -177,8 +182,7 @@ internal fun SketchDialogs(st: EditorState) {
                                 }
                             }
                         }
-                        Field(fresh, { fresh = it }, "Új címke neve", placeholder = "pl. Padlófűtés")
-                        Text("A Fürdő és Konyha címke a szoba típusa lesz a Plannerben; az IP44, Dedikált és Bontás a pont vagy kör jelzője.", style = Melyviz.small)
+                        Text("A Fürdő és Konyha címke a szoba típusa lesz a Plannerben; az IP44, Dedikált és Bontás a pont vagy kör jelzője.", style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
                     }
                 },
                 confirmButton = {
@@ -204,7 +208,7 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("Áramkör", style = Melyviz.label) },
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {   // UI audit 4.1
                         Field(name, { name = it }, "Név")
                         VrgToggle("Dedikált (egy fogyasztó, egyenesen az Elosztóból)", k.dedicated) { st.edit(Ops.setDedicated(st.sketch, a.id, it)) }
                         Text("${k.members.size} pont · " + (s.point(k.board)?.let { "Elosztó: bekötve" } ?: "még nincs Elosztón"), style = Melyviz.small)
@@ -213,7 +217,8 @@ internal fun SketchDialogs(st: EditorState) {
                 },
                 confirmButton = { TextButton({ st.edit(Ops.renameCircuit(st.sketch, a.id, name)); close() }) { Text("Rendben", color = Melyviz.glow) } },
                 dismissButton = {
-                    TextButton({ st.edit(Ops.delete(st.sketch, a.id)); close() }) { Text("Kör törlése", color = Melyviz.coral) }
+                    // UI audit 5.7: undoable, and now it says so
+                    TextButton({ st.edit(Ops.delete(st.sketch, a.id)); st.note = "Kör törölve · ↶ visszahozza."; close() }) { Text("Kör törlése", color = Melyviz.coral) }
                 },
             )
         }
@@ -227,15 +232,25 @@ internal fun SketchDialogs(st: EditorState) {
                 onDismissRequest = close, containerColor = Melyviz.raised,
                 title = { Text("$room · ${Photos.label(a.deg)} felé (${pp.shots.size}/4)", style = Melyviz.label) },
                 text = {
-                    Column {
+                    // UI audit 4.1: scrolls, and the photo takes at most 45 % of the screen height, so the direction chips
+                    // and 📏 Mérés stay reachable in landscape and at font 1.5
+                    val maxImg = (LocalConfiguration.current.screenHeightDp * 0.45f).dp
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
                         if (bmp != null) Image(bmp.asImageBitmap(), contentDescription = "$room, ${Photos.label(a.deg)} felé",
-                            contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp))
+                            contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = minOf(420.dp, maxImg)))
                         else Text("A fotó nem olvasható.", style = Melyviz.small.copy(color = Melyviz.coral))
                         Text("Más irányba nézett?", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Photos.DIRS.forEach { d ->
                                 VrgChip(Photos.label(d), selected = d == a.deg) { if (d != a.deg) { st.turnShot(a.id, a.deg, d); st.ask = Ask.PhotoView(a.id, d) } }
                             }
+                        }
+                        // skcam K3 (WP M60): the Síkmérés on this Fotópont photo, and what was measured on it
+                        if (feat(hu.vrg.mobile.sketch.Planes.FEATURE)) {
+                            val pk = hu.vrg.mobile.sketch.Planes.shotKey(a.id, a.deg)
+                            hu.vrg.mobile.sketch.Planes.summary(hu.vrg.mobile.sketch.Planes.of(s, pk)).takeIf { it.isNotEmpty() }
+                                ?.let { Text("📏 " + it.joinToString(" · "), style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp)) }
+                            VrgChip("📏 Mérés") { st.ask = Ask.Measure(pk, shot.file, "$room · ${Photos.label(a.deg)}", Ask.PhotoView(a.id, a.deg)) }
                         }
                     }
                 },
@@ -248,7 +263,19 @@ internal fun SketchDialogs(st: EditorState) {
         }
         is Ask.Purposes -> PurposePicker(st, close)
         is Ask.CaptureView -> CaptureViewer(st, a.id, close)
-        is Ask.VariantRequest -> VariantRequestDialog(st, close)
+        is Ask.Measure -> PlaneDialog(st, a.key, a.file, a.title) { st.ask = a.back }   // skcam K3: back to the photo
+        is Ask.Ar -> ArDialog(st, a.room, a.edge, close)                               // skcam K6: the Google AR csomag
+        is Ask.Signature -> SignaturePad(st, close)                 // Kamera 2
+        is Ask.Compare -> CompareDialog(st, a.before, a.after, close)
+        is Ask.PairPick -> PairPickDialog(st, a.id, close)
+        is Ask.VariantRequest -> VariantRequestDialog(st, close = close)
+        is Ask.LineClose -> AlertDialog(                              // F5 (WP M50): the variant's lineClose = ask
+            onDismissRequest = close, containerColor = Melyviz.raised,
+            title = { Text("Kész: ${st.lineDraft.size} sarok", style = Melyviz.label) },
+            text = { Text("Legyen belőle szoba, vagy maradjon nyitott vonal?", style = Melyviz.small) },
+            confirmButton = { TextButton({ close(); st.lineClose() }) { Text("Szoba", color = Melyviz.glow) } },
+            dismissButton = { TextButton({ close(); st.lineOpen() }) { Text("Nyitott vonal", color = Melyviz.muted) } },
+        )
         is Ask.EntryEdit -> {
             val e = s.entry(a.id) ?: return close()
             var text by remember(a) { mutableStateOf(e.text) }
@@ -279,18 +306,21 @@ internal fun SketchDialogs(st: EditorState) {
                 dismissButton = { TextButton({ st.deleteEntry(a.id); close() }) { Text("Törlés", color = Melyviz.coral) } },
             )
         }
+        is Ask.FeatureSheet -> FeatureSheet(st, a.front, close)
         is Ask.PluginSheet -> AlertDialog(
             onDismissRequest = close, containerColor = Melyviz.raised,
             title = { Text("Bővítmények", style = Melyviz.label) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text("A Vázlat jegyzetfüzet; a bővítmények adják az eszközeit. Ami ki van kapcsolva, nem foglal helyet a sávban.", style = Melyviz.small)
-                    Plugins.ALL.forEach { p ->
+                    Plugins.ALL.filter { hu.vrg.mobile.sketch.Features.pluginShown(it, FeaturePrefs.flipped) }.forEach { p ->
                         val label = p.label + if (!p.built) " (${p.wp}, tervben)" else ""
                         if (p.id == Plugins.NOTE.id || !p.built) Text("· $label: ${p.blurb}", style = Melyviz.small.copy(color = if (p.built) Melyviz.ink else Melyviz.faint), modifier = Modifier.padding(vertical = 6.dp))
                         else VrgToggle("$label: ${p.blurb}", p.id in st.sketch.plugins) { st.togglePlugin(p.id) }
                     }
-                    VariantSection(st)
+                    if (feat("variansok.use")) VariantSection(st)
+                    // M51: every feature on its own switch (the camera's D-90 list is part of it)
+                    Text("⚙ Funkciók ›", style = Melyviz.label.copy(color = Melyviz.glow), modifier = Modifier.clickable { st.ask = Ask.FeatureSheet() }.padding(top = 14.dp, bottom = 6.dp))
                 }
             },
             confirmButton = { TextButton(close) { Text("Kész", color = Melyviz.glow) } },

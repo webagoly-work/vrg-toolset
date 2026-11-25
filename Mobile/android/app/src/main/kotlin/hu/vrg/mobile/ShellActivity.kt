@@ -11,8 +11,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,6 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.content.IntentCompat
@@ -40,6 +45,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Cell
+import hu.vrg.mobile.core.PhoneSheets
 import hu.vrg.mobile.core.Sheets
 import hu.vrg.mobile.core.SheetsDoc
 import hu.vrg.mobile.core.DeskUnit
@@ -112,7 +118,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                     } else if (feature != null) {
                         BackHandler { home() }
                         DisposableEffect(id) { onDispose { keepScreenOn(false) } }
-                        Box(Modifier.fillMaxSize().systemBarsPadding()) { feature.Screen(this@ShellActivity) }
+                        // imePadding: edge-to-edge (targetSdk 35) no longer resizes the window for the keyboard (UI audit 4.4)
+                        Box(Modifier.fillMaxSize().systemBarsPadding().imePadding()) { feature.Screen(this@ShellActivity) }
                     } else {
                         val planned = Catalogue.byId(id)
                         val at = catalogAt
@@ -169,7 +176,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 windows, desk, list,
                 sheetArea = if (Sheets.phone.sheetOf(sheets, sheets.active) == null) null
                 else { m -> SheetArea(m, sheets, sheetsHost) { c -> pickAt = c; picking = true } },
-                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView) },
+                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView, modifier = Modifier.weight(1f, fill = false)) },
             )
             if (picking) SheetPicker(pickAt) { picking = false }
             if (adding) NewSheetPanel(sheets) { adding = false }
@@ -182,11 +189,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     @Composable
     private fun Note(text: String?, modifier: Modifier) {
         if (text == null) return
-        LaunchedEffect(text) { delay(3500); if (message == text) message = null }
+        // read out by TalkBack, above the dock, a little longer, and a tap puts it away (UI audit 6.5, 8.5)
+        LaunchedEffect(text) { delay(6000); if (message == text) message = null }
         Text(
             text, style = Melyviz.label,
-            modifier = modifier.systemBarsPadding().padding(16.dp)
+            modifier = modifier.systemBarsPadding().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 72.dp)
                 .background(Melyviz.raised, RoundedCornerShape(Melyviz.radiusSmall))
+                .clickable(onClickLabel = "elrejtés") { if (message == text) message = null }
+                .semantics { liveRegion = LiveRegionMode.Polite }
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         )
     }
@@ -297,6 +307,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         if (featureId == Catalogue.CATALOG.id) { home(); catalogAt = ""; return }   // WP M38: a shell screen over the home
         HomeLayout.SHORTCUTS[featureId]?.let { apps ->   // WP M38: a home tile for web apps of Alkalmazások
             if (apps.size == 1) openRoute(Route(Catalogue.APPS.id, apps[0])) else openRoute(Route(Catalogue.APPS.id))
+            return
+        }
+        if (featureId == Catalogue.DEVLAP.id) {   // M66: the home's DevLap tile shows the DevLap sheet (the open one, or a new one)
+            open(Catalogue.DESK.id)
+            val d = SheetsStore.value
+            if (d.sheets.none { it.name == Catalogue.DEVLAP.title } && d.sheets.size >= Sheets.MAX_SHEETS)
+                note("Nincs hely új lapnak (legfeljebb ${Sheets.MAX_SHEETS}). Zárj be egy lapot.")
+            else SheetsStore.update { PhoneSheets.openDevLap(it) }
             return
         }
         if (featureId == Catalogue.SHEETS.id) {   // Lapok lives in the Asztal: show a sheet (the first one, or a new blank one)

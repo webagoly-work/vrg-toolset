@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import android.webkit.PermissionRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -38,14 +40,23 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -162,7 +173,7 @@ object VaultFeature : VrgFeature {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun makeWebView(ctx: Context, host: FeatureHost, onProblem: (String) -> Unit): WebView = WebView(ctx).apply {
+    private fun makeWebView(ctx: Context, host: FeatureHost, onProblem: (String) -> Unit, onLoading: (Boolean) -> Unit): WebView = WebView(ctx).apply {
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -189,6 +200,19 @@ object VaultFeature : VrgFeature {
                 if (request.isForMainFrame && (u.scheme == "https" || u.scheme == "mailto"))
                     runCatching { view.context.startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 return true
+            }
+
+            // a loading line while the page comes, and a plain reason when it cannot (offline, the Vault host down)
+            override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) { onLoading(true) }
+
+            override fun onPageFinished(view: WebView, url: String?) { onLoading(false) }
+
+            override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+                if (request.isForMainFrame) onProblem("A Vault nem érhető el (nincs internet?).")
+            }
+
+            override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
+                if (request.isForMainFrame) onProblem("A Vault nem érhető el (HTTP ${response.statusCode}).")
             }
 
             override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
@@ -226,6 +250,7 @@ object VaultFeature : VrgFeature {
         val reload by reloads.collectAsStateWithLifecycle()
         var tools by remember { mutableStateOf(false) }
         var problem by remember { mutableStateOf<String?>(null) }
+        var loading by remember { mutableStateOf(false) }
         val web = remember { arrayOfNulls<WebView>(1) }
 
         // no screenshots, recents thumbnail or screen cast of the Vault; undone when it leaves
@@ -233,6 +258,8 @@ object VaultFeature : VrgFeature {
             host.activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             onDispose { host.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
         }
+        val reloadPage = { problem = null; pending.value = null; reloads.value++; Unit }
+        LaunchedEffect(url, reload) { problem = null }   // a new load starts without the last one's reason
         BackHandler {
             val w = web[0]
             when {
@@ -246,16 +273,23 @@ object VaultFeature : VrgFeature {
             Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    modifier = Modifier.minimumInteractiveComponentSize().clickable(onClickLabel = "Vissza") { host.home() }
+                        .semantics { contentDescription = "Vissza" }.padding(horizontal = 4.dp))
                 Text("VAULT", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
-                VrgChip("⟳") { problem = null; pending.value = null; reloads.value++ }
-                VrgChip("⚙", selected = tools) { tools = !tools }
+                IconChip("⟳", "Újratöltés") { reloadPage() }
+                IconChip("⚙", "Beállítások", selected = tools) { tools = !tools }
             }
-            problem?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(horizontal = 12.dp)) }
+            if (loading && problem == null && !tools) Text("Betöltés…", style = Melyviz.small, modifier = Modifier.padding(horizontal = 12.dp))
+            problem?.let {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.weight(1f))
+                    VrgChip("⟳ Újra") { reloadPage() }
+                }
+            }
             // the WebView stays composed under the tools, so the wipe can run in the page
             Box(Modifier.fillMaxWidth().weight(1f)) {
                 AndroidView(
-                    factory = { ctx -> makeWebView(ctx, host) { problem = it } },
+                    factory = { ctx -> makeWebView(ctx, host, onProblem = { problem = it }, onLoading = { loading = it }) },
                     modifier = Modifier.fillMaxSize(),
                     update = { wv ->
                         web[0] = wv
@@ -280,7 +314,9 @@ object VaultFeature : VrgFeature {
         var edit by remember(url) { mutableStateOf(url) }
         var link by remember { mutableStateOf("") }
         var confirm by remember { mutableStateOf(false) }
-        var note by remember { mutableStateOf<String?>(null) }
+        // each section's result shows under its own row, not at the bottom of the panel
+        var addrNote by remember { mutableStateOf<String?>(null) }
+        var linkNote by remember { mutableStateOf<String?>(null) }
         val colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Melyviz.glow, unfocusedBorderColor = Melyviz.line,
             focusedTextColor = Melyviz.ink, unfocusedTextColor = Melyviz.ink, cursorColor = Melyviz.glow,
@@ -295,10 +331,11 @@ object VaultFeature : VrgFeature {
                 label = { Text("https://…", style = Melyviz.small) }, colors = colors)
             Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (edit.trim() != url) VrgChip("Mentés", true) {
-                    note = if (setAddress(edit)) { close(); null } else "Csak https:// cím lehet, felhasználónév nélkül."
+                    addrNote = if (setAddress(edit)) { close(); null } else "Csak https:// cím lehet, felhasználónév nélkül."
                 }
                 if (url != VaultWeb.DEFAULT_URL) VrgChip("Alapérték") { setAddress(VaultWeb.DEFAULT_URL); edit = VaultWeb.DEFAULT_URL }
             }
+            addrNote?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
             Text("Másik cím másik eszközt jelent a Vault szemében: ott újra jóvá kell hagyni.", style = Melyviz.small.copy(fontSize = 10.sp))
 
             VrgSectionTitle("Vault-link megnyitása")
@@ -308,25 +345,35 @@ object VaultFeature : VrgFeature {
             Row(Modifier.padding(vertical = 6.dp)) {
                 VrgChip("Megnyitás", link.isNotBlank()) {
                     val ok = VaultWeb.openable(url, VaultWeb.findLink(link))
-                    if (ok == null) note = "Ez nem a Vault címén lévő link."
+                    if (ok == null) linkNote = "Ez nem a Vault címén lévő link."
                     else { pending.value = ok; reloads.value++; link = ""; close() }
                 }
             }
+            linkNote?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
 
             VrgSectionTitle("A Vault adatai a telefonról")
             Text("Törli a Vault oldalának adatait ebben az alkalmazásban, az eszközkulcsával együtt. Utána ez a telefon új, jóvá nem hagyott eszköz a Vaultban.",
                 style = Melyviz.small)
-            Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            // the destructive confirm is not drawn as the default (selected) chip, and sits apart from Mégse
+            Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (!confirm) VrgChip("Törlés…") { confirm = true }
                 else {
-                    VrgChip("Igen, törlés", true) {
+                    VrgChip("Igen, törlés") {
                         confirm = false
                         wipe(web()) { pending.value = null; reloads.value++; host.note("A Vault adatai törölve erről a telefonról."); close() }
                     }
                     VrgChip("Mégse") { confirm = false }
                 }
             }
-            note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
         }
+    }
+
+    /** A glyph-only chip (⟳, ⚙): TalkBack reads [label], and the touch area is at least 48 dp. */
+    @Composable
+    private fun IconChip(glyph: String, label: String, selected: Boolean = false, action: () -> Unit) {
+        Box(Modifier.minimumInteractiveComponentSize().clearAndSetSemantics {
+            contentDescription = label; role = Role.Button; this.selected = selected
+            onClick { action(); true }
+        }, contentAlignment = Alignment.Center) { VrgChip(glyph, selected = selected, onClick = action) }
     }
 }

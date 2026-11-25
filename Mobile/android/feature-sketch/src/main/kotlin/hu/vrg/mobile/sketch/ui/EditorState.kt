@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import hu.vrg.mobile.sketch.AnswerState
+import hu.vrg.mobile.sketch.Draw
+import hu.vrg.mobile.sketch.DrawTune
 import hu.vrg.mobile.sketch.Effect
 import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.Geo
@@ -47,6 +49,8 @@ data class WheelUi(val wheel: Wheel, val center: Offset, val ring: Int, val sel:
 data class CameraReq(
     val photo: String?, val deg: Int?, val purpose: String? = null, val shot: String? = null,
     val target: String? = null, val room: String? = null,
+    /** Kamera 2: the photo is the after of this before-photo; [video] = the walk video (CaptureVideo). */
+    val pairOf: String? = null, val video: Boolean = false,
 )
 
 /** What a dialog is asked for. */
@@ -62,9 +66,21 @@ sealed class Ask {
     data class CaptureView(val id: String) : Ask()
     data class EntryEdit(val id: String) : Ask()
     object Purposes : Ask()
+    /** skcam K6: the AR meter (Google AR csomag); from a wall's Méret, [room] / [edge] get the length. */
+    data class Ar(val room: String? = null, val edge: Int? = null) : Ask()
+    // Kamera 2: the client's signature pad, a before / after comparison, choosing the before of an after
+    object Signature : Ask()
+    data class Compare(val before: String, val after: String) : Ask()
+    data class PairPick(val id: String) : Ask()
     object VariantRequest : Ask()
     object SketchName : Ask()
     object PluginSheet : Ask()
+    /** WP M51: ⚙ → Funkciók, [front]'s switches first (the Kamera front's ⚙ Funkciók tile). */
+    data class FeatureSheet(val front: String? = null) : Ask()
+    /** F5: the variant's lineClose = ask: Kész with 3+ corners asks room or open line. */
+    object LineClose : Ask()
+    /** skcam K3 (WP M60): the Síkmérés on one photo ([key] = capture id or "F25/0"); [back] = the dialog to return to. */
+    data class Measure(val key: String, val file: String, val title: String, val back: Ask? = null) : Ask()
 }
 
 /**
@@ -122,6 +138,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     var wheel by mutableStateOf<WheelUi?>(null); private set
     var ask by mutableStateOf<Ask?>(null)
     var note by mutableStateOf<String?>(null)
+    /** The item the last Kijelölés tap hit and where (screen px): the "⋯ Műveletek" chip opens its wheel (UI audit 3.1). */
+    var picked by mutableStateOf<Pair<Hit, Offset>?>(null); private set
     /** A tag being dragged in from the tray: its id and where the finger is, in canvas px. */
     var tagDrag by mutableStateOf<Pair<String, Offset>?>(null)
     // Fotópont (M25): the camera to open, the shot waiting for its direction swipe (photo point id, file), the folder
@@ -130,6 +148,8 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     var pendingShot by mutableStateOf<Pair<String, String>?>(null); private set
     var photoDir: java.io.File? = null
     var dropFile: (String) -> Unit = {}
+    /** Kamera 2: "+ ugyanez még", the type-plate reader's queue (Camera2Ui.kt). */
+    val cam2 = Cam2State()
 
     /** Where the canvas is on screen and its size (px), for tags dragged in from the tray. */
     var canvasOrigin = Offset.Zero
@@ -186,7 +206,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     private fun <T> commit(r: Pair<Sketch, T>?): T? { if (r == null) return null; edit(r.first); return r.second }
 
     // ---- tools ---------------------------------------------------------------------------------------------------
-    val rail get() = Plugins.rail(VariantOps.plugins(sketch, variant), variant?.rail)
+    val rail get() = hu.vrg.mobile.sketch.Features.rail(Plugins.rail(VariantOps.plugins(sketch, variant), variant?.rail), FeaturePrefs.flipped)   // M51: a tool switched off stays out, whatever the variant says
 
     /** The tool's line on the canvas: the variant's own hint while it is on. */
     fun hint(t: Tool) = variant?.hints?.get(t.id) ?: t.hint
@@ -211,6 +231,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- the gestures --------------------------------------------------------------------------------------------
     fun onTap(o: Offset) {
         wheel?.let { w -> if (w.sticky) { tapWheel(w, o); return } }
+        picked = null
         if (pendingShot != null) { shotToward(o); return }
         if (photoTap(o)) return
         val p = toSketch(o)
@@ -220,7 +241,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Tools.SELECT.id -> when (h?.kind) {
                 Hit.Kind.MEMO -> ask = Ask.MemoEdit(h!!.id)
                 null -> note = null
-                else -> note = describe(h!!) + " · tartsd lenyomva a kerékhez"
+                else -> { note = describe(h!!) + " · tartsd lenyomva, vagy ⋯ Műveletek"; picked = h!! to o }
             }
             Tools.MEMO.id -> when {
                 h?.kind == Hit.Kind.MEMO -> ask = Ask.MemoEdit(h!!.id)
@@ -229,10 +250,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             }
             Tools.TAG.id -> {
                 val t = activeTag
-                if (t == null) { note = "Válassz címkét lent, vagy húzd a lapra."; return }
+                if (t == null) { note = "Válassz címkét lent, vagy tartsd és húzd a lapra."; return }
                 dropTag(t, o)
             }
-            Tools.ROOM.id -> note = "Húzz egy téglalapot: az lesz a szoba."
+            Tools.ROOM.id -> if (h == null) tapRoom(p) else note = "Húzz egy téglalapot: az lesz a szoba."   // F4: a tap on paper only
             Tools.TEMPLATE.id -> note = "Húzd a sablont a szoba méretére" + (template?.let { ": " + it.label } ?: "; az alakot lent választod.")
             Tools.LINE.id -> lineTap(p)
             Tools.MEASURE.id -> when {
@@ -240,11 +261,11 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
                 h?.kind == Hit.Kind.ROOM || h?.kind == Hit.Kind.ROOM_EDGE -> ask = Ask.MeasureRoom(h!!.id)
                 else -> note = "Koppints egy falra vagy egy szoba belsejébe."
             }
-            Tools.POINT.id -> if (h?.kind == Hit.Kind.POINT) note = "Tartsd lenyomva a pontot: kerék a típushoz."
+            Tools.POINT.id -> if (h?.kind == Hit.Kind.POINT) { note = "Tartsd lenyomva a pontot, vagy ⋯ Műveletek: típus, állapot."; picked = h!! to o }
                 else placePoint(p)
             Tools.CIRCUIT.id -> if (h?.kind == Hit.Kind.POINT) circuitTap(h!!.id) else note = "Koppints pontokra, vagy húzz keretet."
             Tools.BOARD.id -> if (h?.kind == Hit.Kind.POINT) note = "Itt már van pont."
-                else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, tol))?.let { note = "Elosztó lerakva. Bekötés: lent." }
+                else commit(Ops.addPoint(sketch, p, PointType.BOARD, pointState, Draw.pointTol(draw, tol)))?.let { note = "Elosztó lerakva. Bekötés: lent." }
             Tools.ROUTE.id -> note = "Húzd végig az ujjad, merre megy a kábel."
             Tools.PHOTO.id -> if (h?.kind == Hit.Kind.PHOTO) camera = CameraReq(h!!.id, null)
                 else commit(PhotoOps.add(sketch, p, tol))?.let { note = "Fotópont. Koppints rá: kamera; utána húzz arra, amerre a kép néz." }
@@ -252,6 +273,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     fun onDragStart(o: Offset) {
+        picked = null
         wheel = null
         val p = toSketch(o); dragFrom = p; lastSketchPt = p
         if (pendingShot != null) { move = Move.SHOT; shotFrom = o; return }
@@ -283,11 +305,11 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             Move.PAN -> pan += delta
             Move.RECT, Move.FRAME -> dragRect = dragFrom to p
             Move.STROKE -> stroke = stroke + p
-            Move.POINT -> if (id != null) edit(Ops.movePoint(sketch, id, p, tol), record = false)
+            Move.POINT -> if (id != null) edit(Ops.movePoint(sketch, id, p, Draw.pointTol(draw, tol)), record = false)
             Move.MEMO -> if (id != null) edit(Ops.moveMemo(sketch, id, p), record = false)
             Move.TAG -> if (id != null) edit(Ops.moveTagUse(sketch, id, null, p), record = false)
             Move.ROOM -> if (id != null) edit(Ops.moveRoom(sketch, id, p - lastSketchPt), record = false)
-            Move.VERTEX -> if (id != null) edit(Ops.moveVertex(sketch, id, moveVertex, p, tol / 2), record = false)
+            Move.VERTEX -> if (id != null) edit(Ops.moveVertex(sketch, id, moveVertex, corner(p, id), tol / 2), record = false)
             Move.PHOTO -> if (id != null) edit(PhotoOps.move(sketch, id, p), record = false)
             Move.SHOT, Move.NONE -> {}
         }
@@ -299,9 +321,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         when (move) {
             Move.RECT -> {
                 val shape = if (tool.id == Tools.TEMPLATE.id) (template ?: kit.templates.firstOrNull()) else null
-                val made = if (shape != null) commit(Ops.addTemplateRoom(sketch, shape.poly, dragFrom, p, tol / 2)) else commit(Ops.addRectRoom(sketch, dragFrom, p, tol / 2))
+                val a = corner(dragFrom); val b = corner(p)   // F4: a variant's grid (DrawTune)
+                val made = if (shape != null) commit(Ops.addTemplateRoom(sketch, shape.poly, a, b, tol / 2)) else commit(Ops.addRectRoom(sketch, a, b, tol / 2))
                 if (made == null) note = "Túl kicsi: húzz nagyobbat."
-                else { focusRoom = made; note = (shape?.label?.let { "$it kész." } ?: "Szoba kész.") + " Tartsd lenyomva: név, típus, méret." }
+                else roomMade(made, (shape?.label?.let { "$it kész." } ?: "Szoba kész.") + " Tartsd lenyomva: név, típus, méret.")
             }
             Move.STROKE -> if (commit(Ops.addRoute(sketch, stroke + p, tol)) == null) note = "Túl rövid nyomvonal."
             Move.SHOT -> {
@@ -349,8 +372,46 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- hold: the wheel -------------------------------------------------------------------------------------------
     fun onHold(o: Offset, canvasW: Float, canvasH: Float, radius: Float) {
         cancelDraft()
+        picked = null
+        if (!FeaturePrefs.on("vazlat.wheels")) return   // M51: Tartásra kerék switched off
         val h = hitAt(o)
         focusOn(h, toSketch(o))
+        wheel = wheelFor(h, o, canvasW, canvasH, radius, sticky = false)
+    }
+
+    /**
+     * The visible way to the hold-wheel (UI audit 3.1, 8.4): the wheel of the picked item opens and stays for a tap.
+     * It opens even with Tartásra kerék switched off, since that switch is about the hold, and it is the only way to a
+     * room's name and size otherwise.
+     */
+    fun openPicked() {
+        val (h, o) = picked ?: return
+        picked = null
+        if (!exists(h)) return
+        wheel = wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true)
+    }
+
+    /** TalkBack's way (UI audit 8.2): the picked item's first-ring items, chosen without the wheel being drawn. */
+    fun pickedItems(): List<WheelItem> {
+        val (h, o) = picked ?: return emptyList()
+        if (!exists(h)) return emptyList()
+        return wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true).wheel.rings.firstOrNull().orEmpty().filterNotNull()
+    }
+
+    fun choosePicked(item: WheelItem) {
+        val (h, o) = picked ?: return
+        picked = null
+        choose(wheelFor(h, o, canvasSize.width, canvasSize.height, 112f * density, sticky = true), item)
+    }
+
+    private fun exists(h: Hit): Boolean = when (h.kind) {
+        Hit.Kind.POINT -> sketch.point(h.id) != null
+        Hit.Kind.ROOM, Hit.Kind.ROOM_EDGE -> sketch.room(h.id) != null
+        Hit.Kind.PHOTO -> sketch.photos.any { it.id == h.id }
+        else -> true
+    }
+
+    private fun wheelFor(h: Hit?, o: Offset, canvasW: Float, canvasH: Float, radius: Float, sticky: Boolean): WheelUi {
         val v = variant
         val w = when (h?.kind) {
             Hit.Kind.POINT -> sketch.point(h!!.id)?.let { Wheels.forPoint(it, v?.pointRing) }
@@ -364,7 +425,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             null -> Wheels.forPaper()
         } ?: Wheels.forPaper()
         val c = Offset(o.x.coerceIn(radius, max(radius, canvasW - radius)), o.y.coerceIn(radius, max(radius, canvasH - radius)))
-        wheel = WheelUi(w, c, 0, null, toSketch(o), h, sticky = false)
+        return WheelUi(hu.vrg.mobile.sketch.Features.wheel(w, FeaturePrefs.flipped), c, 0, null, toSketch(o), h, sticky = sticky)   // M51
     }
 
     fun onHoldMove(o: Offset, hub: Float) {
@@ -405,7 +466,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id.startsWith("type:") -> id?.let { edit(Ops.setType(sketch, it, PointType.of(item.id.removePrefix("type:")))) }
             item.id.startsWith("kind:") -> id?.let {
                 edit(Ops.toggleKind(sketch, it, item.id.removePrefix("kind:")))
-                wheel = w.copy(wheel = Wheels.forRoom(sketch.room(it)!!, variant?.roomRing), sel = null, sticky = true)   // several kinds in a row
+                wheel = w.copy(wheel = hu.vrg.mobile.sketch.Features.wheel(Wheels.forRoom(sketch.room(it)!!, variant?.roomRing), FeaturePrefs.flipped), sel = null, sticky = true)   // several kinds in a row
             }
             item.id == "state" -> id?.let { pid -> sketch.point(pid)?.let { edit(Ops.setState(sketch, pid, it.state.other())) } }
             item.id == "memo" -> ask = if (h == null) Ask.MemoNew(w.at, null) else Ask.MemoNew(beside(h), targetOf(h))
@@ -418,7 +479,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
             item.id == "measure-edge" -> if (h != null && h.edge >= 0) ask = Ask.MeasureEdge(h.id, h.edge)
             item.id == "point-here" -> placePoint(w.at)
             item.id == "board-here" -> commit(Ops.addPoint(sketch, w.at, PointType.BOARD, pointState, tol))
-            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = Wheels.forRoom(it, variant?.roomRing), ring = 0, sel = null, sticky = true) } }
+            item.id == "room" -> id?.let { rid -> sketch.room(rid)?.let { wheel = w.copy(wheel = hu.vrg.mobile.sketch.Features.wheel(Wheels.forRoom(it, variant?.roomRing), FeaturePrefs.flipped), ring = 0, sel = null, sticky = true) } }
             item.id == "points" -> id?.let { rid ->
                 val ids = sketch.points.filter { it.room == rid && it.type != PointType.BOARD }.map { it.id }
                 if (ids.isEmpty()) note = "A szobában még nincs pont."
@@ -442,7 +503,7 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     /** A point with the brush: the variant preset's type and tags, else the plain type. */
     private fun placePoint(p: Pt) {
         val pr = preset
-        val (s1, id) = Ops.addPoint(sketch, p, pr?.type ?: pointType, pointState, tol)
+        val (s1, id) = Ops.addPoint(sketch, p, pr?.type ?: pointType, pointState, Draw.pointTol(draw, tol))
         var s = s1
         pr?.tags?.forEach { t -> if (s.tag(t) != null) Ops.placeTag(s, t, id, null)?.let { s = it.first } }
         edit(s)
@@ -482,6 +543,15 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun linkEntry(id: String, room: String?) = edit(Intake.linkEntry(sketch, id, room, sketch.entry(id)?.target))
     fun deleteEntry(id: String) = edit(Intake.deleteEntry(sketch, id))
     fun setScope(id: String, qty: Int) = edit(Intake.setScope(sketch, id, qty))
+    // F4 (WP M49): the client's wants by room. [wantRoom] = where the Igények' + / − go (null = Általános); the
+    // Munkakör sets it to the room in focus each time it opens. Fewer in Általános than it holds takes the total down.
+    var wantRoom by mutableStateOf<String?>(null)
+    fun addWant(id: String, delta: Int) {
+        val r = wantRoom?.takeIf { sketch.room(it) != null }
+        val next = hu.vrg.mobile.sketch.Wants.add(sketch, id, r, delta)
+        edit(if (next == sketch && r == null && delta < 0) Intake.setScope(sketch, id, hu.vrg.mobile.sketch.Wants.total(sketch, id) + delta) else next)
+    }
+    fun moveWant(id: String, from: String?, to: String?, n: Int = 1) = edit(hu.vrg.mobile.sketch.Wants.move(sketch, id, from, to, n))
     fun answer(q: String, options: List<String>, text: String, state: AnswerState) = edit(Intake.answer(kit, sketch, q, options, text, state, now))
     fun clearAnswer(q: String) = edit(Intake.clearAnswer(sketch, q))
     fun accept(e: Effect) = edit(FieldKit.apply(kit, e, sketch, now))
@@ -493,13 +563,25 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     /** A purpose photo is back from the camera. */
     fun captureTaken(req: CameraReq, file: String, lat: Double?, lon: Double?) {
         val purpose = req.purpose ?: this.purpose
-        val (s, _) = Intake.addCapture(sketch, file, purpose, req.room ?: focusRoom, req.target, req.shot, now, lat, lon)
-        edit(s)
+        val (s, id) = Intake.addCapture(sketch, file, purpose, req.room ?: focusRoom, req.target, req.shot, now, lat, lon)
+        edit(if (req.pairOf != null) hu.vrg.mobile.sketch.Camera2.pair(s, id, req.pairOf) else s)
+        cam2.taken(this, req, id)
         note = "◉ " + (kit.purpose(purpose)?.label ?: purpose) + " mentve" + (if (series) " · sorozat: a kamera visszajön" else "")
     }
 
     fun editCapture(id: String, f: (hu.vrg.mobile.sketch.Capture) -> hu.vrg.mobile.sketch.Capture) = edit(Intake.editCapture(sketch, id, f))
-    fun deleteCapture(id: String) { val (s, file) = Intake.deleteCapture(sketch, id); edit(s); file?.let(dropFile) }
+    /**
+     * UI audit 5.6: a delete is undoable. The file stays on disk while the survey is open (the editor's close sweeps
+     * every file the survey no longer names), so ↶ brings the photo or sound note back whole.
+     */
+    fun deleteCapture(id: String) {
+        val what = when (sketch.captures.firstOrNull { it.id == id }?.kind) {
+            hu.vrg.mobile.sketch.CaptureKind.AUDIO -> "Hangjegyzet"; hu.vrg.mobile.sketch.CaptureKind.VIDEO -> "Videó"
+            hu.vrg.mobile.sketch.CaptureKind.SIGNATURE -> "Aláírás"; else -> "Fotó"
+        }
+        edit(Intake.deleteCapture(sketch, id).first)
+        note = "$what törölve · ↶ visszahozza."
+    }
 
     /** The camera for a purpose (and a shot-list item), from the ◉ button, the Kamera front or a record's wheel. */
     fun shoot(purpose: String, shot: String? = null, target: String? = null) {
@@ -510,9 +592,16 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     // ---- Fotópont (M25) --------------------------------------------------------------------------------------------
     private var shotFrom = Offset.Zero
 
-    /** The camera came back with a photo. A side asked for in advance saves it; otherwise it waits for the swipe. */
-    fun photoTaken(req: CameraReq, file: String) {
+    /** skcam K1b: the lens of the photo waiting for its direction (its file → the 35 mm equivalent the camera reported). */
+    private var pendingLens: Pair<String, Double>? = null
+
+    /**
+     * The camera came back with a photo ([f35]: its lens, when the in-app camera knew it). A side asked for in advance
+     * saves it; otherwise it waits for the swipe.
+     */
+    fun photoTaken(req: CameraReq, file: String, f35: Double? = null) {
         val f = req.photo ?: return
+        pendingLens = f35?.let { file to it }
         if (req.deg != null) saveShot(f, req.deg, file)
         else { pendingShot = f to file; note = "Húzz arra, amerre a kép néz (É, K, D, Ny)." }
     }
@@ -520,7 +609,9 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     fun cancelShot() { pendingShot?.let { dropFile(it.second) }; pendingShot = null; note = "A fotó elvetve." }
 
     private fun saveShot(photo: String, deg: Int, file: String) {
-        val (s, old) = PhotoOps.addShot(sketch, photo, deg, file, System.currentTimeMillis())
+        val lens = pendingLens?.takeIf { it.first == file }?.second
+        pendingLens = null
+        val (s, old) = PhotoOps.addShot(sketch, photo, deg, file, System.currentTimeMillis(), lens)
         edit(s); old?.let(dropFile)
         pendingShot = null
         val pp = sketch.photos.firstOrNull { it.id == photo }
@@ -548,9 +639,10 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
         return false
     }
 
+    /** Undoable as [deleteCapture]: the file goes with the close sweep. */
     fun removeShot(photo: String, deg: Int) {
-        val (s, old) = PhotoOps.removeShot(sketch, photo, deg)
-        edit(s); old?.let(dropFile)
+        edit(PhotoOps.removeShot(sketch, photo, deg).first)
+        note = "Fotó törölve · ↶ visszahozza."
     }
 
     fun turnShot(photo: String, from: Int, to: Int) = edit(PhotoOps.turnShot(sketch, photo, from, to))
@@ -588,19 +680,33 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
 
     private fun lineTap(raw: Pt) {
         val d = lineDraft
-        if (d.size >= 3 && raw.dist(d.first()) <= tol) {
-            if (commit(Ops.addPolyRoom(sketch, d)) == null) note = "A vonal keresztezi magát: nem lett szoba."
-            else note = "Szoba kész."
-            lineDraft = emptyList(); lineCursor = null; return
-        }
-        val p = if (d.isEmpty()) Ops.snapAxes(sketch, raw, tol / 2) else Geo.axisLock(d.last(), Ops.snapAxes(sketch, raw, tol / 2))
+        if (d.size >= 3 && raw.dist(d.first()) <= Draw.closeTol(draw, tol)) { lineClose(); return }   // F5: auto reaches further
+        val p = if (d.isEmpty()) corner(raw) else Draw.lock(d.last(), corner(raw), draw)   // F4: the variant's angle step and grid
         lineDraft = d + p; lineCursor = null
         note = if (lineDraft.size >= 3) "Az első pontra koppintva szoba lesz." else null
     }
 
     fun lineBack() { lineDraft = lineDraft.dropLast(1) }
     fun lineDone() {
+        // F5 (WP M50, D-83): a variant's lineClose decides what Kész does with 3+ corners
+        when (Draw.lineDone(draw, lineDraft.size)) {
+            Draw.LineDone.ROOM -> { lineClose(); return }
+            Draw.LineDone.ASK -> { ask = Ask.LineClose; return }
+            Draw.LineDone.LINE -> {}
+        }
+        lineOpen()
+    }
+    /** The drawn corners as an open line (the original Kész). */
+    fun lineOpen() {
         if (lineDraft.size >= 2) commit(Ops.addLine(sketch, lineDraft))
+        lineDraft = emptyList(); lineCursor = null
+    }
+    /** The drawn corners closed into a room. */
+    fun lineClose() {
+        val d = lineDraft
+        if (d.size < 3) { lineOpen(); return }
+        val made = commit(Ops.addPolyRoom(sketch, d))
+        if (made == null) note = "A vonal keresztezi magát: nem lett szoba." else roomMade(made, "Szoba kész.")
         lineDraft = emptyList(); lineCursor = null
     }
     fun lineDrop() { lineDraft = emptyList(); lineCursor = null }
@@ -635,6 +741,27 @@ class EditorState(initial: Sketch, private val onChange: (Sketch) -> Unit) {
     }
 
     fun setMeasure(room: String, kind: MeasureKind, mm: Int, edge: Int = -1) = edit(Ops.setMeasure(sketch, room, kind, mm, edge))
+
+    // ---- F4 (WP M49): a variant's drawing tune (sketch-core DrawTune.kt); the original when none --------------------
+    /** F5 (D-90): the Felmérés funkciók switched off on this phone (SketchFeaturePrefs), set when the editor opens. */
+    var featOff by mutableStateOf<Set<String>>(emptySet())
+    // M51: Rajz-hangolás off = the original; F5's Vonal: Kész zár on top of it
+    val draw: DrawTune get() = hu.vrg.mobile.sketch.Features.draw(hu.vrg.mobile.sketch.SketchFeatures.tune(featOff, variant?.draw ?: DrawTune()), FeaturePrefs.flipped)
+    /** A corner onto a neighbour's wall line, else onto the variant's grid (in the sketch's current scale). */
+    private fun corner(p: Pt, skip: String? = null) = Draw.corner(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY, skip)
+    private fun roomMade(id: String, msg: String) {
+        focusRoom = id; note = msg
+        if (draw.measureFirst) ask = Ask.MeasureRoom(id)
+    }
+    /** A tap with the Szoba tool: the variant's default room there, or how to draw one. */
+    private fun tapRoom(p: Pt) {
+        val box = Draw.tapRoom(sketch, p, tol / 2, draw, norm.report.scaleX, norm.report.scaleY)
+        if (box == null) { note = "Húzz egy téglalapot: az lesz a szoba."; return }
+        val made = commit(Ops.addRectRoom(sketch, box.first, box.second, tol / 2))
+        if (made == null) note = "Húzz egy téglalapot: az lesz a szoba."
+        else draw.defaultRoom?.let { (w, d) -> roomMade(made, "Szoba ${fmtM(w)} × ${fmtM(d)} m. Húzással más méret.") }
+    }
+    private fun fmtM(v: Double) = if (v == Math.floor(v)) v.toLong().toString() else v.toString().replace('.', ',')
 }
 
 fun roomTitle(name: String, kinds: List<String>) =

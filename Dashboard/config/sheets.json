@@ -37,6 +37,14 @@
       { "open": "pane:term", "state": { "prof": "claude-a" }, "c": 0, "r": 0, "w": 3, "h": 4 },
       { "open": "pane:stack", "state": {}, "c": 3, "r": 0, "w": 1, "h": 2 },
       { "open": "pane:files", "state": {}, "c": 3, "r": 2, "w": 1, "h": 2 }
+    ] },
+    { "id": "devlap", "hu": "DevLap", "en": "DevLap", "level": "dev", "focus": 3, "wins": [
+      { "open": "cat:layer.l", "state": {}, "c": 0, "r": 0, "w": 2, "h": 2 },
+      { "open": "pane:web", "state": { "tabs": ["https://claude.ai/code", "https://github.com/webagoly-work/vrg-toolset/blob/main/GO-MAIN.md", "https://github.com/webagoly-work/vrg-toolset/actions", "https://github.com/webagoly-work/vrg-toolset/branches", "https://github.com/webagoly-work/vrg-toolset/commits/main", "https://github.com/webagoly-work/vrg-toolset/releases", "https://github.com/webagoly-work/vrg-toolset/blob/main/docs/mobile/README.md", "http://127.0.0.1:8806/control.html", "http://127.0.0.1:8806/runs.html", "http://127.0.0.1:8806/decisions.html", "http://127.0.0.1:8806/lineage.html", "http://127.0.0.1:8806/commits.html", "http://127.0.0.1:8806/stack-search.html"], "active": 0 }, "c": 2, "r": 0, "w": 2, "h": 2 },
+      { "open": "cat:threadboard", "state": {}, "c": 0, "r": 2, "w": 2, "h": 1 },
+      { "open": "pane:term", "state": { "prof": "claude-a" }, "c": 2, "r": 2, "w": 2, "h": 2 },
+      { "open": "pane:git", "state": {}, "c": 0, "r": 3, "w": 1, "h": 1 },
+      { "open": "cat:divergence", "state": {}, "c": 1, "r": 3, "w": 1, "h": 1 }
     ] }
   ]
 }

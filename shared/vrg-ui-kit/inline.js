@@ -12,7 +12,8 @@
    node inline.js --all --page gallery.html --out g.html   → inline every local <link>/<script src>/font url of a
                                                          page into one self-contained file (the published gallery)
    options:
-     --themes dark,light,contrast,melyviz   which theme files (default: all four; dark is always in base)
+     --themes dark,light,contrast,melyviz   which theme files (default: these four; dark is always in base).
+                                           grafit is opt-in: --themes dark,grafit, with the dotmatrix component
      --density / --no-density               include tokens/density.css (default on)
      --no-fonts                             leave the vendored fonts out (default: inlined as data: URIs, ~130 kB;
                                             decision 6B — every app carries the kit's type)
@@ -97,7 +98,7 @@ function check(man) {
     names.add(c.name);
     (c.files || []).forEach(f => { if (!exists(f)) errs.push(c.name + ': missing file ' + f); });
     (c.deps || []).forEach(d => { if (!man.components.some(x => x.name === d)) errs.push(c.name + ': unknown dep ' + d); });
-    (c.families || []).forEach(f => { if (!(f >= 1 && f <= 10)) errs.push(c.name + ': bad family ' + f); });
+    (c.families || []).forEach(f => { if (!Object.prototype.hasOwnProperty.call(man.families || {}, String(f))) errs.push(c.name + ': bad family ' + f); });
   });
   try { resolve(man.components.map(c => c.name), man); } catch (e) { errs.push(e.message); }
   const icons = iconNames();
