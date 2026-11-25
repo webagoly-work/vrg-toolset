@@ -1,0 +1,40 @@
+{
+  "about": "VRG Böngésző — the search engines and their bangs. {q} is the query, URL-encoded. group: web | tudas | terkep | adatlap | beszerzes | szabvany | fejlesztes. The first engine with default: true is the default until the user picks one (Beállítások). Dashboard/config/search.json's engines are merged in by build.js (same id = this file wins). suggest names a suggestion source serve.js knows (lib/suggest.js); suggestions are off until the user turns them on.",
+  "engines": [
+    { "id": "google", "hu": "Google", "group": "web", "bangs": ["g", "google"], "url": "https://www.google.com/search?q={q}", "home": "https://www.google.com/", "default": true, "suggest": "google" },
+    { "id": "ddg", "hu": "DuckDuckGo", "group": "web", "bangs": ["d", "ddg"], "url": "https://duckduckgo.com/?q={q}", "home": "https://duckduckgo.com/", "suggest": "ddg", "private": true },
+    { "id": "bing", "hu": "Bing", "group": "web", "bangs": ["b", "bing"], "url": "https://www.bing.com/search?q={q}" },
+    { "id": "startpage", "hu": "Startpage", "group": "web", "bangs": ["sp"], "url": "https://www.startpage.com/do/search?q={q}", "private": true },
+    { "id": "ai", "hu": "AI keresés (Google AI Mode)", "group": "web", "bangs": ["ai"], "url": "https://www.google.com/search?udm=50&q={q}" },
+    { "id": "wiki-hu", "hu": "Wikipédia (magyar)", "group": "tudas", "bangs": ["w", "wiki"], "url": "https://hu.wikipedia.org/w/index.php?search={q}", "suggest": "wiki-hu" },
+    { "id": "wiki-en", "hu": "Wikipedia (English)", "group": "tudas", "bangs": ["we", "wen"], "url": "https://en.wikipedia.org/w/index.php?search={q}", "suggest": "wiki-en" },
+    { "id": "translate", "hu": "Google Fordító", "group": "tudas", "bangs": ["t", "fordit"], "url": "https://translate.google.com/?sl=auto&tl=hu&text={q}" },
+    { "id": "maps", "hu": "Google Térkép", "group": "terkep", "bangs": ["m", "maps", "terkep"], "url": "https://www.google.com/maps/search/{q}" },
+    { "id": "osm", "hu": "OpenStreetMap", "group": "terkep", "bangs": ["osm"], "url": "https://www.openstreetmap.org/search?query={q}" },
+    { "id": "youtube", "hu": "YouTube", "group": "web", "bangs": ["yt", "youtube"], "url": "https://www.youtube.com/results?search_query={q}" },
+    { "id": "datasheet", "hu": "Adatlap (PDF keresés)", "group": "adatlap", "bangs": ["ds", "adatlap"], "url": "https://www.google.com/search?q={q}+datasheet+filetype%3Apdf" },
+    { "id": "alldatasheet", "hu": "ALLDATASHEET", "group": "adatlap", "bangs": ["ads"], "url": "https://www.alldatasheet.com/view.jsp?Searchword={q}" },
+    { "id": "tme", "hu": "TME", "group": "beszerzes", "bangs": ["tme"], "url": "https://www.tme.eu/hu/katalog/?queryPhrase={q}" },
+    { "id": "mouser", "hu": "Mouser", "group": "beszerzes", "bangs": ["mouser", "mo"], "url": "https://www.mouser.hu/c/?q={q}" },
+    { "id": "farnell", "hu": "Farnell", "group": "beszerzes", "bangs": ["farnell", "fa"], "url": "https://hu.farnell.com/search?st={q}" },
+    { "id": "conrad", "hu": "Conrad", "group": "beszerzes", "bangs": ["conrad", "co"], "url": "https://www.conrad.hu/hu/search.html?search={q}" },
+    { "id": "arukereso", "hu": "Árukereső", "group": "beszerzes", "bangs": ["ar", "arukereso"], "url": "https://www.arukereso.hu/CategorySearch.php?st={q}" },
+    { "id": "schneider", "hu": "Schneider Electric", "group": "adatlap", "bangs": ["se", "schneider"], "url": "https://www.se.com/hu/hu/search/?q={q}" },
+    { "id": "hager", "hu": "Hager", "group": "adatlap", "bangs": ["hager"], "url": "https://hager.com/hu/kereses?q={q}" },
+    { "id": "abb", "hu": "ABB", "group": "adatlap", "bangs": ["abb"], "url": "https://new.abb.com/search/results#query={q}" },
+    { "id": "legrand", "hu": "Legrand", "group": "adatlap", "bangs": ["legrand"], "url": "https://www.legrand.hu/kereses?search_api_fulltext={q}" },
+    { "id": "jogtar", "hu": "Nemzeti Jogszabálytár", "group": "szabvany", "bangs": ["njt", "jog"], "url": "https://njt.hu/search/-:-:-:-:-:-:-:-:-:1:50/{q}" },
+    { "id": "mszt", "hu": "MSZT szabványkereső", "group": "szabvany", "bangs": ["msz", "mszt"], "url": "https://www.mszt.hu/web/guest/webaruhaz?p_p_id=webshop_WAR_mszt&_webshop_WAR_mszt_keyword={q}" },
+    { "id": "github", "hu": "GitHub", "group": "fejlesztes", "bangs": ["gh", "github"], "url": "https://github.com/search?q={q}&type=code" },
+    { "id": "mdn", "hu": "MDN Web Docs", "group": "fejlesztes", "bangs": ["mdn"], "url": "https://developer.mozilla.org/hu/search?q={q}" }
+  ],
+  "groups": {
+    "web": "Web",
+    "tudas": "Tudás és nyelv",
+    "terkep": "Térkép",
+    "adatlap": "Gyártók és adatlapok",
+    "beszerzes": "Beszerzés és árak",
+    "szabvany": "Jogszabály és szabvány",
+    "fejlesztes": "Fejlesztés"
+  }
+}

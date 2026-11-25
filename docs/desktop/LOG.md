@@ -267,3 +267,36 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   `desktop.open`), so the browser's 127.0.0.1:8806 tabs load. The phone has its own DevLap (VRG Mobile D-172).
 - Tests: `wp-46.test.js` +1 (tiles, focus, every tab restorable, the local tabs on the stack server's port and real
   Stack pages, the GitHub file tabs exist in the repo).
+
+## WP-50 — the VRG Böngésző joins the Asztal: one links format, the pane gets the brain (2026-11-23)
+
+T1 and T2 of `docs/browser/TRAJECTORIES.md` (BRW-Q01 … Q04 = A).
+
+- **One links format (T1, BRW-Q01 A).** `<userDir>/web.json` is the master of `vrg.web-links` v1 (the Data Vault's browser-kit
+  format, DV-Q22). `lib/bookmarks.js` gains `snapshot()`, `applyOps(ops)` (the rules of `Browser/src/core/links.js`: http(s) only,
+  the limits, idempotent) and `absorb()` (the inbox `Browser/serve.js` leaves as `web.json.inbox`; taken by rename, every 30 s and on
+  each request). `lib/applinks.js` answers `vrg-app://browser/__vrg/links` inside the `vrg-app` handler, to the browser app's origin
+  only: GET the links, POST ops. No preload, no IPC channel (DESKU-Q08 kept). The pane's own history is now the app's history too.
+- **The pane gets the brain (T2).** `lib/search.js decide()`: a `!bang` picks an engine of `Browser/config/engines.json`, a URL
+  loses its tracking parameters, one with a user name or password is refused with a Hungarian reason; `toUrl()` keeps its answer.
+  `web.go` and `omni:` targets use it. The Ctrl+K palette shows Gyorsválasz (`Browser/src/core/answers.js`, loaded by the frame
+  page) above the rows; a click or Ctrl+Enter copies the result.
+- Tests: `wp-50.test.js` 5 (ops idempotent and written as the two arrays, the inbox absorbed once, the door's origin / method / size
+  rules, `decide()`, the frame page's scripts); `wp-18` 9 unchanged. The Electron probe was not run (no Electron in the cloud
+  session); `wp-08`, `wp-20`, `wp-35` (2), `wp-41`, `wp-43` fail here as before the change (they read `H:\VRG\Full`).
+
+## WP-50b — the VRG Böngésző's knowledge and watches reach the Asztal (2026-11-23)
+
+Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
+
+- **Küldés Claude-nak.** `lib/applinks.js` answers `vrg-app://browser/__vrg/claude` (the browser app's origin, POST, JSON, ≤ 200 000
+  characters); `lib/ctx.js packText(title, text)` writes the pack file as `pack()` does; main emits `browser/claude { packId }` and
+  `page/frame.js` opens the chat pane with the pack attached (`openChat`). Nothing goes to Claude until the user asks.
+- **Belső keresés: Dokumentumok.** `lib/innersearch.js` takes the repo's Markdown index (`Browser/lib/docs.js`, built on the first
+  search) as a third half; `search.openHit` takes `kind: 'doc'`; `page/panes/search.js` draws the section and opens a hit in the viewer.
+- **Figyelés.** `lib/presets.js` gains the network kind `page-watch` (allowed hosts, no redirects, as `page-text`): the page's
+  readable text (`Browser/lib/reader.js`, short lines kept) against the last run's lines, kept in the cache record's `state` (never
+  sent to the page; a failed run keeps it); a change → a *Változott* item and `sources.notify`, which main sends to the relay's
+  `/notify` on this PC (VRG Mobile Értesítések). Watches are added by the browser through `Browser/serve.js /api/watch` into
+  `<userDir>/presets.json`, with their host in `allowHosts`.
+- Tests: `wp-50.test.js` 8 (+3); `wp-20` 12 / 1 and `wp-29` 17 as before the change.
