@@ -6,7 +6,8 @@ book is generated into `Kisokos/tankonyv/KISOKOS.md` (`node Kisokos/kisokos.js m
 shows each lesson in full. Every lesson links into the other volumes, so the theory points at the materials,
 lines, fixtures and rules it uses.
 
-Status: **level 1 written** (10 lessons, drafts waiting for review). Levels 2 and 3 are planned below.
+Status: **level 1 written** (10 lessons) and **level 2 lessons 1–5** (the safety core, 2026-11-25); all drafts waiting
+for review. The rest of level 2 and level 3 are planned below.
 
 ## 1. The lesson card
 
@@ -32,13 +33,13 @@ volumes, `<volume>.<id>`) · `prereq[]` (earlier lessons) · `terms` HU / EN / D
 | 9 | Kötéstechnika (rugós és csavaros kötés, érvéghüvely, dobozban kötni) | Gipszkarton |
 | 10 | Az első áramkörök (egypólusú, csillár-, váltó-, keresztkapcsolás, impulzusrelé) | Plafonlámpa, Csillár, Kapcsolt aljzat, szerelvények |
 
-### Level 2 · Szakmunkás (planned)
+### Level 2 · Szakmunkás (lessons 1–5 written, 6–15 planned)
 
-1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT, és hogy mit jelent a lakásnak.
-2. Érintésvédelem: önműködő lekapcsolás, áram-védőkapcsoló, kettős szigetelés, törpefeszültség.
-3. Túláramvédelem: kismegszakító-karakterisztikák (B, C), olvadóbiztosító, szelektivitás alapjai.
-4. Keresztmetszet és feszültségesés: terhelhetőség szerelési mód szerint, a 3 %-os gyakorlat.
-5. A lakáselosztó: felépítés, sorrend, sínek, feliratozás, tartalékhely.
+1. ✅ Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT; a PEN szétválasztása; a régi „nullázás” veszélye.
+2. ✅ Érintésvédelem: alap-, hiba-, kiegészítő védelem; lekapcsolási idők; Zs · Ia ≤ U0 (B16: ≈ 2,9 Ω); AC, A, F, B típus.
+3. ✅ Túláramvédelem: hő- és mágneses kioldó, B / C / D, megszakítóképesség, Ib ≤ In ≤ Iz, szelektivitás alapjai.
+4. ✅ Keresztmetszet és feszültségesés: terhelhetőség szerelési mód szerint, 3 % / 5 %, egy- és háromfázisú képlet.
+5. ✅ A lakáselosztó: sorrend, áram-védőkapcsoló csoportok, csoportonkénti nullasín, feliratozás, tartalékhely.
 6. Áramkörök kiosztása egy lakásban: világítás, aljzatkörök, konyha, fürdő, nagy fogyasztók.
 7. Mérőhely és betáplálás: a szolgáltató felé, a fogyasztásmérő, a főelosztó.
 8. Földelés és egyenpotenciálú összekötés (EPH): alapföldelő, földelő, fő- és helyi EPH.
@@ -66,7 +67,7 @@ volumes, `<volume>.<id>`) · `prereq[]` (earlier lessons) · `terms` HU / EN / D
 ## 3. Order
 
 1. ✅ Level 1 (10 lessons, 2026-11-22).
-2. Level 2, lessons 1–5 (the safety core: networks, protection, cross-section, the distribution board).
+2. ✅ Level 2, lessons 1–5 (the safety core: networks, protection, cross-section, the distribution board), 2026-11-25.
 3. Level 2, lessons 6–15.
 4. Level 3.
 5. Circuit drawings for the lessons (TK2).
@@ -86,8 +87,9 @@ volumes, `<volume>.<id>`) · `prereq[]` (earlier lessons) · `terms` HU / EN / D
 { id: 'kisokos-tankonyv', name: 'Kisokos · Tankönyv', lane: '<the Kisokos lane>',
   status: 'active', from: ['kisokos'],
   brief: 'The electrician textbook in the Kisokos: three levels (kezdő, szakmunkás, mester/tervező), one card per lesson with goals, explanation, formulas, a worked example, exercises with answers, safety and links into the other volumes.',
-  milestones: [['11-22', 'curriculum planned (docs/kisokos/tankonyv.md); level 1 written: 10 lessons']],
-  remaining: ['Founder review of level 1', 'TK1 check against the official requirements', 'level 2 (15 lessons)', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
-  nextStep: 'Review level 1; then level 2 lessons 1–5 (networks, protection, cross-section, distribution board).',
+  milestones: [['11-22', 'curriculum planned (docs/kisokos/tankonyv.md); level 1 written: 10 lessons'],
+               ['11-25', 'level 2 lessons 1–5 written: networks, protection, overcurrent, cross-section, distribution board']],
+  remaining: ['Founder review of level 1 and level 2 lessons 1–5 (the numbers against the current MSZ HD 60364)', 'TK1 check against the official requirements', 'level 2 lessons 6–15', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
+  nextStep: 'Review the safety core (level 2, 1–5); then level 2 lessons 6–10 (circuit layout, metering, earthing, special rooms, test measurements).',
   feeds: [['kisokos']] },
 ```

@@ -501,3 +501,266 @@ Egy folyosót két végéről kell kapcsolni. Milyen vezetékek kellenek a kapcs
 - Bekapcsolás előtt ellenőrizni: nincs zárlat, a védővezető bekötve, és a kapcsoló a fázist kapcsolja.
 
 *Kapcsolódó kártyák:* Mennyezeti lámpa (plafonlámpa), Csillár, Kapcsolt aljzat (a dugaszolós lámpák köre), MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, KNX TP
+
+## 2. szint: Szakmunkás
+
+- [1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT](#s01-halozati-rendszerek)
+- [2. Érintésvédelem: alap-, hiba- és kiegészítő védelem](#s02-erintesvedelem)
+- [3. Túláramvédelem: kismegszakító és biztosító](#s03-tularamvedelem)
+- [4. Keresztmetszet és feszültségesés](#s04-keresztmetszet)
+- [5. A lakáselosztó](#s05-lakaseloszto)
+
+<a id="s01-halozati-rendszerek"></a>
+
+### 1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT
+
+*Előtte:* 4. Váltakozó áram, fázis, nulla, védővezető, 5. A háromfázisú rendszer
+
+**Célok**
+
+- Kiolvasni a hálózati rendszer betűjeléséből, hogyan van földelve a táppont és a fogyasztó.
+- Megtalálni egy épületben, hol válik szét a PEN vezető N-re és PE-re.
+- Megérteni, miért veszélyes a régi lakások „nullázása”.
+
+Az első betű a táppont (transzformátor) kapcsolata a földdel: T = közvetlenül földelt, I = a földtől elszigetelt vagy nagy impedancián át földelt. A második betű a fogyasztói fém testeké: T = helyben földelt (saját földelő), N = védővezetőn át a táppont földelt pontjára kötött.
+
+TN-C: a nulla- és a védővezető egy közös vezető (PEN) a teljes hálózatban. TN-S: a nulla (N) és a védővezető (PE) végig külön fut. TN-C-S: a hálózat egy részén közös (PEN), egy ponton szétválik, és onnan külön fut. Magyarországon a közcélú kisfeszültségű hálózat jellemzően PEN-nel jut el az épületig, és a fogyasztói berendezés TN-C-S: a PEN a mérőhelynél vagy a főelosztóban válik szét.
+
+A szétválasztás után az N és a PE nem köthető össze újra. Ha összekötnénk, az üzemi áram egy része a védővezetőn és a fémszerkezeteken folyna vissza, és az áram-védőkapcsoló kioldana.
+
+TT: a fogyasztónak saját földelője van, a fém testek ehhez kapcsolódnak. A hibaáram a földön át jut vissza, ezért kicsi lehet; ilyenkor a lekapcsolást áram-védőkapcsoló végzi. IT: a táppont nincs (közvetlenül) földelve; egy első testzárlat nem okoz lekapcsolást, ezért ott használják, ahol a folyamatos táplálás fontos (orvosi helyiségek csoport 2, ipar), szigetelésfigyelővel.
+
+Régi lakásokban gyakori a „nullázás”: kétvezetékes hálózat, ahol az aljzat védőérintkezőjét a nullavezetőhöz kötötték (TN-C a lakásban). Ha a PEN megszakad, a fogyasztón keresztül a fázisfeszültség megjelenik minden így bekötött készülék házán. Felújításnál ezt meg kell szüntetni.
+
+**Képletek**
+
+- `RA · IΔn ≤ 50 V` — TT rendszerben az érintési feszültség feltétele: földelési ellenállás (Ω) × az áram-védőkapcsoló kioldóárama (A)
+
+**Kidolgozott példa**
+
+Egy TT rendszerű kerti házban 30 mA-es áram-védőkapcsoló védi a köröket. Legfeljebb mekkora lehet a földelési ellenállás a feltétel szerint?
+
+1. RA ≤ 50 V / 0,03 A.
+2. RA ≤ 1667 Ω.
+
+→ A feltétel kb. 1667 Ω-ig teljesül, vagyis az áram-védőkapcsoló gyenge földelés mellett is véd. A gyakorlatban ennél jóval kisebb, stabil földelési ellenállásra kell törekedni, mert a talaj kiszárad vagy átfagy, és a túlfeszültség-védelemnek is jó földelés kell.
+
+**Gyakorló feladatok**
+
+1. Mit jelent a TN-C-S, és hol van a „C” és az „S” rész egy családi házban?
+   <details><summary>Megoldás</summary>A hálózat egy részén közös a nulla- és védővezető (PEN, C), majd egy ponton szétválik (S). A közcélú hálózat és a csatlakozás a PEN-es rész; a mérőhelytől vagy a főelosztótól a ház belső hálózata külön N és PE.</details>
+2. Miért nem szabad a szétválasztás után az N-t és a PE-t újra összekötni?
+   <details><summary>Megoldás</summary>Mert az üzemi áram egy része a védővezetőn és a fémszerkezeteken folyna, a fémrészek feszültség alá kerülhetnek, és az áram-védőkapcsoló kioldana.</details>
+3. Mi a veszélye a régi „nullázott” aljzatnak?
+   <details><summary>Megoldás</summary>Ha a PEN megszakad, a fogyasztón át a fázisfeszültség megjelenik a nullázott készülékházakon.</details>
+
+**Biztonság**
+
+- Régi lakásban nem szabad feltételezni, hogy van védővezető: mérni kell.
+- A PEN vezetőt soha nem szabad megszakítani vagy kapcsolni.
+
+*Kapcsolódó kártyák:* Hálózati 50 Hz, MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-710 · Orvosi helyiségek
+
+<a id="s02-erintesvedelem"></a>
+
+### 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem
+
+*Előtte:* 1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT, 6. Áramütés és az öt biztonsági szabály
+
+**Célok**
+
+- Megkülönböztetni az alapvédelmet, a hibavédelmet és a kiegészítő védelmet.
+- Kiszámolni, legfeljebb mekkora hurokimpedancia mellett kapcsol le időben egy kismegszakító.
+- Kiválasztani az áram-védőkapcsoló típusát (AC, A, F, B) a fogyasztóhoz.
+
+Alapvédelem: megakadályozza, hogy normál üzemben feszültség alatti részt érinthessünk (szigetelés, burkolat, elhelyezés). Hibavédelem: ha az alapvédelem meghibásodik (testzárlat), az érintés ne legyen veszélyes. Kiegészítő védelem: további biztonság arra az esetre, ha mindkettő elégtelen vagy a felhasználó gondatlan (30 mA-es áram-védőkapcsoló, kiegészítő egyenpotenciálú összekötés).
+
+A hibavédelem leggyakoribb módja az önműködő lekapcsolás: testzárlatkor a hibaáram a védővezetőn folyik vissza, és a túláramvédelem vagy az áram-védőkapcsoló adott időn belül lekapcsol. Ehhez a hibahurok impedanciájának elég kicsinek kell lennie, hogy a hibaáram elég nagy legyen.
+
+Lekapcsolási idők (tájékoztató, 230 V, legfeljebb 32 A-es végáramkörök): TN rendszerben 0,4 s, TT rendszerben 0,2 s; elosztó áramkörökben TN-ben 5 s, TT-ben 1 s.
+
+További hibavédelmi módok: kettős vagy megerősített szigetelés (II. érintésvédelmi osztály, ezért nincs védővezető-csatlakozása), törpefeszültség (SELV, PELV), villamos elválasztás (leválasztó transzformátor).
+
+Az áram-védőkapcsoló típusa azt mondja meg, milyen alakú hibaáramot érzékel: AC: csak szinuszos (ma lakásba már kevés); A: szinuszos és lüktető egyen (a legtöbb elektronikus készülékhez); F: mint az A, plusz a frekvenciaváltós egyfázisú gépek vegyes frekvenciás hibaárama (inverteres mosógép, hőszivattyú); B: sima egyenáramú hibaáramot is (háromfázisú inverterek, autótöltő, ha a töltő maga nem tartalmaz egyenáram-érzékelést).
+
+**Képletek**
+
+- `Zs · Ia ≤ U0` — TN rendszer: hurokimpedancia (Ω) × a védelem előírt időn belüli kioldóárama (A) ≤ fázisfeszültség (230 V)
+- `Ia (B) ≈ 5 · In · Ia (C) ≈ 10 · In` — a kismegszakító azonnali kioldásának felső határa B és C karakterisztikánál
+
+**Kidolgozott példa**
+
+Egy aljzatkört B16-os kismegszakító véd TN-C-S rendszerben. Legfeljebb mekkora lehet a hurokimpedancia, hogy testzárlatkor 0,4 s-on belül lekapcsoljon?
+
+1. B karakterisztikánál az azonnali kioldás biztosan bekövetkezik 5 × In-nél: Ia = 5 × 16 = 80 A.
+2. Zs ≤ U0 / Ia = 230 / 80 ≈ 2,9 Ω.
+
+→ A hurokimpedancia legfeljebb kb. 2,9 Ω lehet (a mért értéket a vezeték melegedése miatt tartalékkal kell értékelni). Ha a mért érték nagyobb, a kismegszakító nem kapcsol le időben: rövidebb vagy vastagabb vezeték kell, vagy áram-védőkapcsoló.
+
+**Gyakorló feladatok**
+
+1. Mekkora a megengedett hurokimpedancia C16-os kismegszakítónál ugyanebben a körben?
+   <details><summary>Megoldás</summary>Ia = 10 × 16 = 160 A, Zs ≤ 230 / 160 ≈ 1,44 Ω.</details>
+2. Miért nincs védővezető-csatlakozása egy II. osztályú készüléknek?
+   <details><summary>Megoldás</summary>Mert a hibavédelmet a kettős vagy megerősített szigetelése adja, nem a lekapcsolás.</details>
+3. Milyen típusú áram-védőkapcsoló való egy inverteres hőszivattyú egyfázisú köréhez?
+   <details><summary>Megoldás</summary>Legalább F típusú (vagy a gyártó előírása szerint B).</details>
+
+**Biztonság**
+
+- Az áram-védőkapcsolót a próbagombjával rendszeresen ki kell próbálni; a próbagomb csak a mechanikát ellenőrzi, a kioldási időt és áramot mérni kell.
+- Az áram-védőkapcsoló nem véd a fázis–nulla közötti áramütés ellen, ha nem folyik áram a föld felé.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, Páramentes lámpatest
+
+<a id="s03-tularamvedelem"></a>
+
+### 3. Túláramvédelem: kismegszakító és biztosító
+
+*Előtte:* 2. Teljesítmény, energia, melegedés, 8. Vezetékek és kábelek
+
+**Célok**
+
+- Megérteni a túlterhelés és a zárlat különbségét, és hogy melyik ellen mi véd.
+- Kiválasztani a kismegszakító névleges áramát és karakterisztikáját.
+- Megérteni a szelektivitás alapjait.
+
+Túlterhelés: a kör tartósan több áramot visz, mint amire a vezeték méretezve van (sok fogyasztó). Zárlat: a fázis közvetlenül a nullával, a védővezetővel vagy egy másik fázissal érintkezik; az áram ezerszeres is lehet. Mindkettő a vezeték melegedését okozza, a zárlat egy pillanat alatt.
+
+A kismegszakítóban két kioldó dolgozik: a hőkioldó (bimetall) a túlterhelésre lassan, a mágneses kioldó a zárlatra azonnal. A karakterisztika azt mondja meg, a névleges áram hányszorosánál old ki azonnal: B: 3–5 × In (lakás, világítás, aljzat), C: 5–10 × In (motorok, nagyobb bekapcsolási áramú fogyasztók), D: 10–20 × In (nagy indítóáramú gépek, transzformátorok).
+
+A zárlati megszakítóképesség (pl. 6 kA vagy 10 kA) az a legnagyobb zárlati áram, amelyet a kismegszakító biztonságosan megszakít; a beépítés helyén várható zárlati áramnál nagyobbnak kell lennie.
+
+A vezeték védelmének feltétele: a terhelés árama ≤ a védelem névleges árama ≤ a vezeték terhelhetősége (Ib ≤ In ≤ Iz). A vezeték terhelhetősége a keresztmetszettől és a szerelési módtól függ (4. lecke).
+
+Szelektivitás: hiba esetén csak a hibához legközelebbi védelem kapcsoljon le, ne a főbiztosító. Ehhez a felsőbb szintű védelem nagyobb és lassabb legyen; a pontos összehangolás a gyártói táblázatokból jön (3. szint).
+
+**Képletek**
+
+- `Ib ≤ In ≤ Iz` — terhelőáram ≤ a kismegszakító névleges árama ≤ a vezeték terhelhetősége
+
+**Kidolgozott példa**
+
+Egy 2,5 mm²-es, falban védőcsőben futó aljzatkörre (terhelhetősége a szerelési módtól függően kb. 19–24 A) milyen kismegszakító kerül, és miért B?
+
+1. Ib: aljzatkörre jellemzően 16 A-es terhelést tervezünk.
+2. In = 16 A: 16 ≤ Iz (kb. 19–24 A), a feltétel teljesül.
+3. Karakterisztika: az aljzatokra kötött háztartási készülékek bekapcsolási árama kicsi, a B old ki a legkisebb hibaáramnál, így a hurokimpedancia-feltétel (2. lecke) könnyebben teljesül.
+
+→ B16. C16 csak indokolt esetben (nagy bekapcsolási áramú fogyasztó), mert annál kisebb hurokimpedancia kell az időben való lekapcsoláshoz.
+
+**Gyakorló feladatok**
+
+1. Mi ellen véd a kismegszakító hőkioldója, és mi ellen a mágneses?
+   <details><summary>Megoldás</summary>A hőkioldó a túlterhelés ellen (késleltetve), a mágneses a zárlat ellen (azonnal).</details>
+2. Miért nem szabad egy 1,5 mm²-es világítási kört B20-as kismegszakítóval védeni?
+   <details><summary>Megoldás</summary>Mert a 20 A meghaladhatja az 1,5 mm²-es vezeték terhelhetőségét (In ≤ Iz nem teljesül): túlterheléskor a vezeték túlmelegedne, mielőtt a védelem lekapcsol.</details>
+3. Mi a szelektivitás?
+   <details><summary>Megoldás</summary>Az, hogy hiba esetén csak a hibához legközelebbi védelem kapcsoljon le, a felsőbb szintű (pl. főbiztosító) ne.</details>
+
+**Biztonság**
+
+- Kioldott kismegszakítót visszakapcsolni csak a kiváltó ok ismeretében szabad; ismételt kioldásnál a kört ki kell vizsgálni.
+- Nagyobb kismegszakító beépítése a „gyakran old” panaszra tilos: a vezeték védtelenné válik.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, Hálózati 50 Hz
+
+<a id="s04-keresztmetszet"></a>
+
+### 4. Keresztmetszet és feszültségesés
+
+*Előtte:* 1. Feszültség, áram, ellenállás, 3. Túláramvédelem: kismegszakító és biztosító
+
+**Célok**
+
+- Megérteni, mitől függ egy vezeték terhelhetősége.
+- Kiszámolni egy áramkör feszültségesését egy- és háromfázisú esetben.
+- Eldönteni, mikor kell a következő keresztmetszetet választani.
+
+A vezeték terhelhetősége (Iz) az a tartós áram, amelynél a szigetelés még nem melegszik túl. Függ a keresztmetszettől, az anyagtól, a szigeteléstől, és erősen a szerelési módtól: falban csőben, falon kívül, hőszigetelésben, kötegben, földben. Több, egymás mellett futó terhelt kör vagy magas környezeti hőmérséklet csökkenti (csökkentő tényezők).
+
+A feszültségesés a vezeték ellenállásán keletkezik (1. szint, 1. lecke). Ha túl nagy, a fogyasztó kevesebb feszültséget kap, a motorok nehezebben indulnak, a hosszú vezeték melegszik, és a hurokimpedancia is nő.
+
+Tájékoztató határ közcélú hálózatról táplált berendezésben (MSZ HD 60364-5-52 tájékoztató melléklete): a betáplálási ponttól világításnál kb. 3 %, egyéb fogyasztóknál kb. 5 %. A teljes esést kell nézni: a fővezetéken és a végáramkörön együtt.
+
+Ha a feszültségesés vagy a hurokimpedancia nem fér bele, a következő keresztmetszetet kell választani, vagy rövidíteni a vezetéket (pl. alelosztóval közelebb vinni a táplálást).
+
+**Képletek**
+
+- `ΔU = 2 · l · I · ρ / A` — egyfázisú kör feszültségesése (oda-vissza), ohmos közelítéssel; l a kör hossza (m)
+- `ΔU = √3 · l · I · ρ / A` — háromfázisú kör vonali feszültségesése, ohmos közelítéssel
+- `ε = ΔU / U · 100 %` — feszültségesés százalékban (egyfázisnál 230 V-hoz, háromfázisnál 400 V-hoz)
+
+**Kidolgozott példa**
+
+Egy 25 m-es, 2,5 mm²-es aljzatkör 16 A-rel terhelve, és egy 30 m-es, 6 mm²-es háromfázisú autótöltő-kör 32 A-rel. Mekkora a feszültségesés?
+
+1. Aljzatkör: ΔU = 2 × 25 × 16 × 0,0178 / 2,5 ≈ 5,7 V; 5,7 / 230 ≈ 2,5 %.
+2. Töltőkör: ΔU = 1,732 × 30 × 32 × 0,0178 / 6 ≈ 4,9 V; 4,9 / 400 ≈ 1,2 %.
+
+→ Az aljzatkör 2,5 %-a egymagában rendben van, de a fővezeték esésével együtt a 5 %-ot kell tartani. A töltőkör 1,2 %-kal bőven belefér; a keresztmetszetet itt a terhelhetőség és a hurokimpedancia is meghatározza.
+
+**Gyakorló feladatok**
+
+1. Mekkora a feszültségesés egy 40 m-es, 1,5 mm²-es világítási körön 6 A-nél?
+   <details><summary>Megoldás</summary>ΔU = 2 × 40 × 6 × 0,0178 / 1,5 ≈ 5,7 V ≈ 2,5 %.</details>
+2. Miért csökken egy vezeték terhelhetősége hőszigetelésben?
+   <details><summary>Megoldás</summary>Mert a hőszigetelés nem engedi elvezetni a vezeték hőjét, így kisebb áramnál éri el a szigetelés megengedett hőmérsékletét.</details>
+3. Mi a teendő, ha egy hosszú kör feszültségesése túl nagy?
+   <details><summary>Megoldás</summary>Nagyobb keresztmetszet, vagy rövidebb vezeték (pl. alelosztó a fogyasztók közelében).</details>
+
+**Biztonság**
+
+- A terhelhetőséget mindig a tényleges szerelési módra kell venni: a falon kívüli értéket nem szabad hőszigetelésben futó kábelre alkalmazni.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, Hálózati 50 Hz, LED-szalag (12 / 24 V)
+
+<a id="s05-lakaseloszto"></a>
+
+### 5. A lakáselosztó
+
+*Előtte:* 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem, 3. Túláramvédelem: kismegszakító és biztosító, 4. Keresztmetszet és feszültségesés
+
+**Célok**
+
+- Megismerni a lakáselosztó elemeit és sorrendjüket.
+- Áram-védőkapcsoló csoportokat tervezni úgy, hogy egy hiba ne sötétítse el az egész lakást.
+- Rendezett, feliratozott, bővíthető elosztót építeni.
+
+A tipikus sorrend a betáplálástól: főkapcsoló (leválasztó), túlfeszültség-levezető (2. típusú), áram-védőkapcsolók csoportonként, alattuk a csoport kismegszakítói. A nagy fogyasztók (főzőlap, bojler) és a túlfeszültség-levezető a csoportokon kívül is kaphat helyet a tervező döntése szerint.
+
+Áram-védőkapcsoló csoportok: ha egyetlen áram-védőkapcsoló véd mindent, egy hibás készülék az egész lakást lekapcsolja. Jobb két-három csoport (pl. világítás és aljzatok külön ágon keverve, hogy egy kioldásnál maradjon fény), vagy körönként kombinált készülék (kismegszakító + áram-védőkapcsoló egyben).
+
+Minden áram-védőkapcsoló csoportnak saját nullasínje van: egy kör nullája csak a saját csoportja áram-védőkapcsolóján át mehet. Ha két csoport nullája keveredik, az áram-védőkapcsolók kioldanak.
+
+A PE-sín az összes védővezetőt fogadja, az N-sínektől külön (TN-C-S rendszerben a szétválasztás után).
+
+Feliratozás és dokumentáció: minden készülék alatt a kör neve, az ajtón az áramköri tábla. Tartalékhely: legalább 20–30 % szabad modulhely a későbbi bővítésre (töltő, napelem, okos eszközök).
+
+**Kidolgozott példa**
+
+Tervezzünk egy egyfázisú, háromszobás lakás elosztóját.
+
+1. Főkapcsoló 40 A, túlfeszültség-levezető (2. típus).
+2. 1. csoport, 40 A / 30 mA A típus: világítás 1 (B10), aljzatok nappali és hálók (B16, B16), fürdő aljzat (B16).
+3. 2. csoport, 40 A / 30 mA A típus: világítás 2 (B10), konyhai aljzatok (B16, B16), mosógép (B16, vagy F típusú csoport, ha inverteres).
+4. Bojler és főzőlap a gyártói előírás szerinti saját körön és védelemmel.
+5. Számolás: 2 csoport × (2 + 4 modul) + főkapcsoló és levezető + a nagy fogyasztók ≈ 20–24 modul; 30 % tartalékkal egy 2 × 18 vagy 3 × 12 modulos elosztó.
+
+→ Két csoport úgy osztva, hogy bármelyik kioldásakor maradjon világítás és aljzat; a nullák csoportonként külön sínen; a tartalékkal a töltő vagy a napelem később elfér.
+
+**Gyakorló feladatok**
+
+1. Mi történik, ha az egyik csoport körének nulláját a másik csoport nullasínjére kötik?
+   <details><summary>Megoldás</summary>Az áram-védőkapcsolók kioldanak, mert az egyiken befolyó áram a másikon jön vissza, és mindkettő különbségi áramot érzékel.</details>
+2. Miért érdemes a világítási köröket két különböző áram-védőkapcsoló csoportra tenni?
+   <details><summary>Megoldás</summary>Hogy egy hiba miatti kioldáskor ne legyen teljes sötétség a lakásban.</details>
+3. Mennyi tartalékhelyet érdemes hagyni?
+   <details><summary>Megoldás</summary>Legalább 20–30 % szabad modulhelyet.</details>
+
+**Biztonság**
+
+- Az elosztóban munka előtt a főkapcsolót le kell kapcsolni, de a főkapcsoló bemenő oldala feszültség alatt marad: azt letakarni vagy a mérőhely előtti leválasztást használni.
+- A feliratozás nélküli elosztó veszélyes: a hibás kör nem azonosítható gyorsan.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek

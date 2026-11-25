@@ -26,6 +26,7 @@ Kisokos/
     KISOKOS.md                GENERATED cheat sheet with the drawings
   tankonyv/                   volume tk, Tankönyv (curriculum: docs/kisokos/tankonyv.md)
     1-kezdo.json              level 1, 10 lessons: goals, explanation, formulas, worked example, exercises with answers
+    2-szakmunkas.json         level 2, lessons 1–5 so far (networks, protection, overcurrent, cross-section, the board)
     KISOKOS.md                GENERATED: the readable book (answers folded)
   eloirasok/                  volume el, Előírások (23 cards): our own summary + reference per standard or law, never the text
     biztonsagi-vilagitas.json 7 cards: MSZ EN 1838, 50172, 60598-2-22, 50171, 62034, ISO 7010, OTSZ/TvMI
