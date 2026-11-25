@@ -55,7 +55,8 @@ window.VRG_ARCHIVE = {
     "2026-11-25: Tankönyv level 2 lessons 1–5 (the safety core)",
     "2026-11-25: Tankönyv level 2 lessons 6–10; the 7-701 socket rule corrected to the HD wording",
     "2026-11-25: rule cards and lessons corrected after a source check (protection values, special locations; notes in docs/research/2026-11-25_kisokos-*)",
-    "2026-11-25: emergency-lighting rule cards updated to EN 1838:2024, EN 50172:2024, OTSZ 18. melléklet and TvMI 7.7"
+    "2026-11-25: emergency-lighting rule cards updated to EN 1838:2024, EN 50172:2024, OTSZ 18. melléklet and TvMI 7.7",
+    "2026-11-25: second source check applied (fixing technique, product standards, protection values, lamp types, lines); new hollow-core slab anchor card, 203 cards"
    ],
    "tags": [
     "kisokos",
