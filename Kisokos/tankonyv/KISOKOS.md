@@ -280,7 +280,7 @@ Tájékoztató értékek (váltakozó áram, kéz–láb út): kb. 0,5 mA érezh
 
 Az emberi test ellenállása (kéz–kéz) nagyjából 1000–2000 Ω (a feszültségtől és az érintkezési felülettől is függ), nedves bőrrel kevesebb: 230 V-on ez százas nagyságrendű mA (kb. 115–230 mA), ami halálos lehet.
 
-Az öt biztonsági szabály (MSZ EN 50110-1), ebben a sorrendben: 1. leválasztás minden pólusán; 2. biztosítás visszakapcsolás ellen (lezárás, tábla); 3. a feszültségmentesség megállapítása kétpólusú feszültségvizsgálóval; 4. földelés és rövidrezárás, ahol szükséges; 5. a szomszédos, feszültség alatt maradó részek letakarása vagy elkerítése.
+Az öt biztonsági szabály (MSZ EN 50110-1:2023), ebben a sorrendben: 1. leválasztás minden pólusán; 2. biztosítás visszakapcsolás ellen (lezárás, tábla); 3. a feszültségmentesség megállapítása kétpólusú feszültségvizsgálóval; 4. földelés és rövidrezárás, ahol szükséges; 5. a szomszédos, feszültség alatt maradó részek letakarása vagy elkerítése.
 
 **Képletek**
 

@@ -4,7 +4,7 @@
   "added": "2026-11-22",
   "cards": [
     { "id": "msz-en-1838", "title": "MSZ EN 1838 · Vészvilágítás: alkalmazás", "aka": ["EN 1838", "vészvilágítási szabvány", "emergency lighting application"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 1838 (az EN 1838:2024 magyar kiadása; a 2013-as kiadást váltja, az ütköző nemzeti szabványokat 2027 júniusáig vissza kell vonni; a magyar kiadás jelölése: ellenőrizendő az MSZT-nél)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 1838:2025 (az EN 1838:2024 magyar kiadása, magyar és angol nyelven; érvényes 2025-06-01-től; az MSZ EN 1838:2014 2027-06-18-ig párhuzamosan érvényes)", "from": "MSZT szabványbolt" },
       "scope": "Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek. Megmondja a „mit”; azt, hogy hol kötelező, a tűzvédelmi előírás (OTSZ) dönti el.",
       "points": [
         "A vészvilágítás két ága: a biztonsági világítás (embereknek: menekülés, pánik elkerülése, veszélyes munka leállítása) és a tartalékvilágítás (a tevékenység folytatására).",
@@ -27,7 +27,7 @@
       "shop": "MSZT szabványbolt (a szabvány megvásárolható példánya)." },
 
     { "id": "msz-en-50172", "title": "MSZ EN 50172 · Biztonsági világítási rendszerek", "aka": ["EN 50172", "vészvilágítás telepítése és ellenőrzése"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 50172 (az EN 50172:2024 magyar kiadása; a 2004-es kiadást váltja)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 50172:2024 (magyar és angol nyelven; érvényes 2024-12-01-től; az MSZ EN 50172:2005 2027-05-27-ig párhuzamosan érvényes)", "from": "MSZT szabványbolt" },
       "scope": "A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai.",
       "points": [
         "A rendszerről terv és dokumentáció kell: a lámpatestek helye és fajtája, az áramkörök, az akkumulátoros egységek, a működési idő.",
@@ -47,7 +47,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-en-60598-2-22", "title": "MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz", "aka": ["EN 60598-2-22", "vészvilágító lámpatest szabvány"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN IEC 60598-2-22 (2022; az IEC 60598-2-22 5. kiadása, 2021)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN IEC 60598-2-22:2022 (IEC 60598-2-22:2021, 5. kiadás; angol nyelvű, magyar címoldallal; érvényes 2022-11-01-től)", "from": "MSZT szabványbolt" },
       "scope": "A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat.",
       "points": [
         "Üzemmódok: készenléti (non-maintained; csak hálózatkimaradáskor világít) és állandó üzemű (maintained; mindig világít). A kombinált lámpatest nem harmadik üzemmód, hanem kivitel: két vagy több fényforrást tartalmaz, az egyik vészvilágítási, a többi normál táplálású, és az egész állandó vagy készenléti üzemű.",

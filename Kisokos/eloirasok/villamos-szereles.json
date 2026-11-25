@@ -4,7 +4,7 @@
   "added": "2026-11-22",
   "cards": [
     { "id": "msz-hd-60364", "title": "MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések", "aka": ["HD 60364", "IEC 60364", "a szerelési szabvány"],
-      "place": { "core": "6A" }, "source": { "kind": "szabványsorozat", "ref": "MSZ HD 60364 (a részek hatályos kiadásai)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabványsorozat", "ref": "MSZ HD 60364 sorozat; a részek hatályos kiadásai az MSZT webáruházában (2026-11-25-i állapot: 4-41: MSZ HD 60364-4-41:2018 + A11:2018 + A12:2019; 5-52: MSZ HD 60364-5-52:2025 EV; 5-54: MSZ HD 60364-5-54:2012 + A11:2018 + A1:2023; 6: MSZ HD 60364-6:2017 + A12:2018)", "from": "MSZT szabványbolt" },
       "scope": "A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa. Részekből áll; a 7-es részek a különleges helyiségeket és berendezéseket szabályozzák.",
       "points": [
         "Felépítés: 1. rész alapelvek; 4-41 áramütés elleni védelem; 4-42 hőhatások elleni védelem; 4-43 túláramvédelem; 5-52 kábel- és vezetékrendszerek; 5-54 földelés és védővezetők; 6. rész ellenőrzés (első és időszakos); 7-xx különleges helyek.",
@@ -21,7 +21,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-hd-60364-7-701", "title": "MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek", "aka": ["fürdőszobai zónák", "7-701", "zóna 0 1 2"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-701 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-701:2026 EV (IEC 60364-7-701:2019 + A11:2024, magyar nyelvű egyesített változat; az angol nyelvű MSZ HD 60364-7-701:2025 2025-05-01-től érvényes). A 2007-es kiadás (+ A11:2012 + A12:2018) 2027-12-06-ig párhuzamosan érvényben marad.", "from": "MSZT szabványbolt" },
       "scope": "Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet.",
       "points": [
         "Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a zuhanyfej vagy vízkifolyó közepétől 1,2 m sugarú függőleges felületig, a vizet visszatartó szilárd falakig; a zuhanyfüggöny nem határol). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig. Kiadásfüggő: a 2019-es IEC / MSZ HD 60364-7-701:2024 szerint zuhanynál nincs 2. zóna, és a zuhany 0. zónája a padlótól 10 cm magasságig tart; ez a kártya a 2007-es kiadást veszi alapul.",
@@ -41,7 +41,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-hd-60364-7-702", "title": "MSZ HD 60364-7-702 · Úszómedencék és szökőkutak", "aka": ["medence zónák", "7-702"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-702 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-702:2011 (angol nyelvű, magyar címoldallal; IEC 60364-7-702:2010, módosítva)", "from": "MSZT szabványbolt" },
       "scope": "Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés.",
       "points": [
         "Zóna 0: a medence és a szökőkút medencéjének belseje. Zóna 1: a medence szélétől vízszintesen 2 m-ig, és 2,5 m magasságig. Zóna 2: a zóna 1-en túl további 1,5 m. Ugrótorony, rajtkő, csúszda és hasonló létesítmények körül az 1. zóna ezek körül további 1,5 m-ig terjed. Szökőkútnál nincs 2. zóna.",
@@ -59,7 +59,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-hd-60364-7-703", "title": "MSZ HD 60364-7-703 · Szaunák", "aka": ["szauna zónák", "7-703"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-703 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-703:2006 (magyar nyelvű)", "from": "MSZT szabványbolt" },
       "scope": "Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága.",
       "points": [
         "Zóna 1: a kályha körül, a kályha felületétől 0,5 m-es függőleges felületig, padlótól mennyezetig: ide csak a kályhához tartozó szerkezet kerül.",
@@ -78,7 +78,7 @@
       "shop": "MSZT szabványbolt." },
 
     { "id": "msz-hd-60364-7-714", "title": "MSZ HD 60364-7-714 · Kültéri világítási berendezések", "aka": ["kültéri világítás szabvány", "7-714"],
-      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-714 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ HD 60364-7-714:2013 (magyar nyelvű; IEC 60364-7-714:2011)", "from": "MSZT szabványbolt" },
       "scope": "Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok.",
       "points": [
         "A szerkezetek a kültéri hatásoknak (víz, por, ütés, UV) megfelelő védettségűek legyenek; a szabvány minimális védettséget ír elő.",

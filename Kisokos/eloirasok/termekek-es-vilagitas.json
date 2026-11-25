@@ -4,7 +4,7 @@
   "added": "2026-11-22",
   "cards": [
     { "id": "msz-en-60598", "title": "MSZ EN 60598 · Lámpatestek", "aka": ["EN 60598", "lámpatest-szabvány", "60598-1 és a 2-es részek"],
-      "place": { "core": "6A" }, "source": { "kind": "szabványcsalád", "ref": "MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások)", "from": "MSZT szabványbolt" },
+      "place": { "core": "6A" }, "source": { "kind": "szabványcsalád", "ref": "MSZ EN IEC 60598-1:2025 (IEC 60598-1:2024; angol nyelvű, magyar címoldallal; az MSZ EN IEC 60598-1:2021 2027-12-31-ig párhuzamosan érvényes) és a 60598-2-x részek hatályos kiadásai", "from": "MSZT szabványbolt" },
       "scope": "A lámpatestek biztonsági termékszabványa: az 1. rész az általános követelmények (szerkezet, érintésvédelem, melegedés, jelölés), a 2-es részek egy-egy lámpatestfajta kiegészítő szabályai.",
       "points": [
         "Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok és LED-szalag lámpatestek (nem cserélhető fényforrással); 2-22 biztonsági világítás.",

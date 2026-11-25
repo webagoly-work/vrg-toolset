@@ -154,10 +154,15 @@ and "what goes wrong if not".
   items are lighting today, so most lamp types have no product yet; new items get suggestions from `kisokos.js keszlet`.
 - **Source check (2026-11-25)**: the rule cards and the level 2 lessons were checked against public sources (standard
   previews, manufacturer and test guides, German and Hungarian trade sources, the OTSZ and TvMI 7.7); notes and every
-  correction in `docs/research/2026-11-25_kisokos-{protection-values,special-locations,emergency-lighting}.md`, the
-  curriculum against the official requirements in `…-tk1-villanyszerelo-kkk.md`. Open decision: the cards keep the
-  2007 edition of MSZ HD 60364-7-701 as the baseline and mark where the 2024 edition differs; both may be valid
-  until 2027-12-06. Not yet checked: cable capacity tables, the RCD type table, IEC 60479-1, EN 50110-1 wording.
+  correction in `docs/research/2026-11-25_kisokos-*.md` (protection values 1–2, special locations, emergency
+  lighting, lines 1–2, product standards, fixing technique, lamp types), the curriculum against the official
+  requirements in `…-tk1-villanyszerelo-kkk.md` and `…-tk1-followup.md`, and the Hungarian editions in force (MSZT
+  webshop, 2026-11-25) in `…-hungarian-editions.md`; the rule cards now name their editions. Open decision: the cards
+  keep the 2007 edition of MSZ HD 60364-7-701 as the baseline and mark where the 2024 edition differs. In Hungary the
+  Hungarian-language MSZ HD 60364-7-701:2026 EV (= IEC 2019 + A11:2024) is valid from 2026-11-01, and the 2007 edition
+  runs in parallel until 2027-12-06; the note recommends teaching the 2024 text with a short „2007 szerint” note.
+  Still unconfirmed: the primary texts of IEC 60479-1, the HD 60364-5-52 tables, EN 50110-1 and HD 361 (checked only
+  through previews and maker reproductions).
 - **Előírások (el)**: 23 cards (own summaries + references): emergency lighting, MSZ HD 60364 with its special
   locations, and the product and lighting standards the lamp cards cite. Every lamp type links its rules through `norms`.
   The numbers on these cards are from memory and marked as guidance: check them against the current editions.

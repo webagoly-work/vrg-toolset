@@ -4,14 +4,14 @@
 
 | Előírás | Mire | Forrás |
 |---|---|---|
-| MSZ EN 1838 · Vészvilágítás: alkalmazás | Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek | MSZ EN 1838 (az EN 1838:2024 magyar kiadása; a 2013-as kiadást váltja, az ütköző nemzeti szabványokat 2027 júniusáig vissza kell vonni; a magyar kiadás jelölése: ellenőrizendő az MSZT-nél) |
-| MSZ EN 50172 · Biztonsági világítási rendszerek | A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai. | MSZ EN 50172 (az EN 50172:2024 magyar kiadása; a 2004-es kiadást váltja) |
-| MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz | A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat. | MSZ EN IEC 60598-2-22 (2022; az IEC 60598-2-22 5. kiadása, 2021) |
+| MSZ EN 1838 · Vészvilágítás: alkalmazás | Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek | MSZ EN 1838:2025 (az EN 1838:2024 magyar kiadása, magyar és angol nyelven; érvényes 2025-06-01-től; az MSZ EN 1838:2014 2027-06-18-ig párhuzamosan érvényes) |
+| MSZ EN 50172 · Biztonsági világítási rendszerek | A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai. | MSZ EN 50172:2024 (magyar és angol nyelven; érvényes 2024-12-01-től; az MSZ EN 50172:2005 2027-05-27-ig párhuzamosan érvényes) |
+| MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz | A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat. | MSZ EN IEC 60598-2-22:2022 (IEC 60598-2-22:2021, 5. kiadás; angol nyelvű, magyar címoldallal; érvényes 2022-11-01-től) |
 | MSZ EN 50171 · Központi tápellátó rendszerek | A biztonsági berendezéseket (köztük a biztonsági világítást) tápláló központi akkumulátoros rendszerek követelményei. | MSZ EN 50171 (a hatályos kiadás) |
 | MSZ EN 62034 · Automatikus tesztrendszerek | Az akkumulátoros biztonsági világítás automatikus próbájának (önteszt, központi tesztrendszer) követelményei. | MSZ EN 62034 (a hatályos kiadás) |
 | MSZ EN ISO 7010 · Biztonsági jelek | A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó ember, ajtó, nyíl) is. | MSZ EN ISO 7010 (a hatályos kiadás) |
 | OTSZ és TvMI · Hol kell biztonsági világítás | A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI 7.7 12 | OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szöveg, a Nemzeti Jogszabálytárban 2025.IX.23-i hatállyal olvasva 2026-11-25-én); Tűzvédelmi Műszaki Irányelv: TvMI 7.7:2026.02.01., „Villamos berendezések, villámvédelem és elektrosztatikus feltöltődés elleni védelem”, 12. fejezet „Biztonsági célú világítások” (érvényes 2026. február 1-től, a TvMI 7.6:2024.02.01.-et váltja; BM OKF, katasztrofavedelem.hu) |
-| MSZ EN 60598 · Lámpatestek | A lámpatestek biztonsági termékszabványa: az 1 | MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) |
+| MSZ EN 60598 · Lámpatestek | A lámpatestek biztonsági termékszabványa: az 1 | MSZ EN IEC 60598-1:2025 (IEC 60598-1:2024; angol nyelvű, magyar címoldallal; az MSZ EN IEC 60598-1:2021 2027-12-31-ig párhuzamosan érvényes) és a 60598-2-x részek hatályos kiadásai |
 | MSZ EN 60570 · Világítási sínrendszerek | A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei. | MSZ EN 60570 (a hatályos kiadás) |
 | MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek | A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai. | MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők; a 2024-es kiadás címe már „LED-fényforrások elektronikus működtetői”, vészvilágítási melléklettel); MSZ EN 62776 (kétvégű LED-csövek) |
 | MSZ EN 12464-1 · Munkahelyek világítása (beltér) | Beltéri munkahelyek világítási követelményei tevékenységenként: megvilágítás, egyenletesség, káprázáskorlátozás, színvisszaadás. | MSZ EN 12464-1 (a hatályos kiadás) |
@@ -21,11 +21,11 @@
 | MSZ EN 60335 · Háztartási készülékek | A háztartási és hasonló villamos készülékek biztonsága (sütő, hűtő, mosógép, bojler, szauna-kályha, medenceszivattyú …); a beépített világításuk is a készülék része. | MSZ EN 60335-1 és a 60335-2-x részek (a hatályos kiadások) |
 | MSZ EN 60204-1 · Gépek villamos szerkezetei | Gépek villamos berendezésének általános követelményei: vészleállítás, vezérlés, kezelőszervek és jelzőfények színei. | MSZ EN 60204-1 (a hatályos kiadás) |
 | MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok | A fali kapcsolók (mechanikus: MSZ EN 60669-1; elektronikus és dimmerek: MSZ EN 60669-2-1, csak váltakozó áram, legfeljebb 250 V és 16 A) és a dugaszolóaljzatok termékkövetelményei. | MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok) |
-| MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések | A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa | MSZ HD 60364 (a részek hatályos kiadásai) |
-| MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek | Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet. | MSZ HD 60364-7-701 (a hatályos kiadás) |
-| MSZ HD 60364-7-702 · Úszómedencék és szökőkutak | Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés. | MSZ HD 60364-7-702 (a hatályos kiadás) |
-| MSZ HD 60364-7-703 · Szaunák | Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága. | MSZ HD 60364-7-703 (a hatályos kiadás) |
-| MSZ HD 60364-7-714 · Kültéri világítási berendezések | Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok. | MSZ HD 60364-7-714 (a hatályos kiadás) |
+| MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések | A kisfeszültségű villamos berendezések (épületek villamos hálózata) tervezésének, szerelésének és ellenőrzésének alapszabványa | MSZ HD 60364 sorozat; a részek hatályos kiadásai az MSZT webáruházában (2026-11-25-i állapot: 4-41: MSZ HD 60364-4-41:2018 + A11:2018 + A12:2019; 5-52: MSZ HD 60364-5-52:2025 EV; 5-54: MSZ HD 60364-5-54:2012 + A11:2018 + A1:2023; 6: MSZ HD 60364-6:2017 + A12:2018) |
+| MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek | Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zuhany körüli zónák, és hogy melyik zónába milyen villamos szerkezet, milyen védettséggel kerülhet. | MSZ HD 60364-7-701:2026 EV (IEC 60364-7-701:2019 + A11:2024, magyar nyelvű egyesített változat; az angol nyelvű MSZ HD 60364-7-701:2025 2025-05-01-től érvényes). A 2007-es kiadás (+ A11:2012 + A12:2018) 2027-12-06-ig párhuzamosan érvényben marad. |
+| MSZ HD 60364-7-702 · Úszómedencék és szökőkutak | Úszómedencék, szökőkutak és környezetük villamos berendezése: a medence körüli zónák, a víz alatti lámpatestek és szivattyúk táplálása, az egyenpotenciálú összekötés. | MSZ HD 60364-7-702:2011 (angol nyelvű, magyar címoldallal; IEC 60364-7-702:2010, módosítva) |
+| MSZ HD 60364-7-703 · Szaunák | Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zónák, a kályha, a lámpatestek és a vezetékek hőállósága. | MSZ HD 60364-7-703:2006 (magyar nyelvű) |
+| MSZ HD 60364-7-714 · Kültéri világítási berendezések | Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, díszvilágítás, és a hozzájuk tartozó kábelek, oszlopok, kötődobozok. | MSZ HD 60364-7-714:2013 (magyar nyelvű; IEC 60364-7-714:2011) |
 | MSZ HD 60364-7-710 · Orvosi helyiségek | Rendelők, kezelők, műtők villamos berendezése: a helyiségek csoportba sorolása, a betegbiztonság, a biztonsági áramellátás és a műtőlámpák átkapcsolási ideje. | MSZ HD 60364-7-710; a lámpákra MSZ EN 60601-2-41 (a hatályos kiadások) |
 
 ## MSZ EN 1838 · Vészvilágítás: alkalmazás
@@ -53,7 +53,7 @@ Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogya
 - Biztonsági jel felismerési távolsága: belső megvilágítású jelnél kb. 200 × a jel piktogramjának magassága, külső megvilágításúnál kb. 100 ×.
 
 - **Hol érvényes:** Közösségi és munkahelyi épületek, társasházak közös terei, ahol az OTSZ vagy a tűzvédelmi terv biztonsági világítást ír elő. Lakáson belül nem kötelező.
-- **Forrás:** szabvány: MSZ EN 1838 (az EN 1838:2024 magyar kiadása; a 2013-as kiadást váltja, az ütköző nemzeti szabványokat 2027 júniusáig vissza kell vonni; a magyar kiadás jelölése: ellenőrizendő az MSZT-nél) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN 1838:2025 (az EN 1838:2024 magyar kiadása, magyar és angol nyelven; érvényes 2025-06-01-től; az MSZ EN 1838:2014 2027-06-18-ig párhuzamosan érvényes) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Menekülési útirány- és kijáratjelző, Süllyesztett biztonsági spot, Nagy terek biztonsági lámpateste (nyílt terület), Vészvilágítási modul (konverziós készlet)
 - **Kapcsolódó előírások:** MSZ EN 50172 · Biztonsági világítási rendszerek, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN ISO 7010 · Biztonsági jelek, OTSZ és TvMI · Hol kell biztonsági világítás
 - **Keresőszavak:** HU: MSZ EN 1838 vészvilágítás · menekülési útvonal megvilágítás 1 lux — EN: EN 1838 emergency lighting · escape route 1 lux — DE: DIN EN 1838 Notbeleuchtung · Rettungsweg 1 Lux
@@ -80,7 +80,7 @@ A biztonsági világítási rendszer tervezésének, telepítésének, dokument�
 - Magyarországon az OTSZ 18. melléklet 1. táblázata (12. sor) szerint a biztonsági világítás és a megvilágított menekülési jelek üzemeltetői ellenőrzése legfeljebb 3 havonta, időszakos felülvizsgálata legfeljebb 12 havonta (+1 hónap) esedékes, a karbantartás az időszakos felülvizsgálattal egyidejűleg; mindegyiket a tűzvédelmi üzemeltetési naplóban kell dokumentálni (OTSZ 248. §). A szabvány szerinti havi próba ettől független, szigorúbb.
 
 - **Hol érvényes:** Minden épület, amelyben biztonsági világítás van: tervezés, kivitelezés, átadás, üzemeltetés.
-- **Forrás:** szabvány: MSZ EN 50172 (az EN 50172:2024 magyar kiadása; a 2004-es kiadást váltja) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN 50172:2024 (magyar és angol nyelven; érvényes 2024-12-01-től; az MSZ EN 50172:2005 2027-05-27-ig párhuzamosan érvényes) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Süllyesztett biztonsági spot
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 62034 · Automatikus tesztrendszerek, MSZ EN 50171 · Központi tápellátó rendszerek, OTSZ és TvMI · Hol kell biztonsági világítás
 - **Keresőszavak:** HU: MSZ EN 50172 biztonsági világítás ellenőrzés · vészvilágítás üzemnapló — EN: EN 50172 emergency lighting testing · emergency lighting log book — DE: EN 50172 Sicherheitsbeleuchtung Prüfung · Prüfbuch Notbeleuchtung
@@ -104,7 +104,7 @@ A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és k
 - Az akkumulátor teljes feltöltése a gyártó által megadott időn belül; az EN 50172:2024 szerint az önálló akkumulátoros lámpatest jellemzően 24 órán belül töltődik fel (a 24 óra magában az EN 60598-2-22-ben: ellenőrizendő).
 
 - **Hol érvényes:** A biztonsági világítás minden lámpateste és jele.
-- **Forrás:** szabvány: MSZ EN IEC 60598-2-22 (2022; az IEC 60598-2-22 5. kiadása, 2021) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN IEC 60598-2-22:2022 (IEC 60598-2-22:2021, 5. kiadás; angol nyelvű, magyar címoldallal; érvényes 2022-11-01-től) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Menekülési útirány- és kijáratjelző, Süllyesztett biztonsági spot, Nagy terek biztonsági lámpateste (nyílt terület), Vészvilágítási modul (konverziós készlet)
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek
 - **Keresőszavak:** HU: MSZ EN 60598-2-22 vészvilágító lámpatest — EN: EN 60598-2-22 emergency luminaire — DE: EN 60598-2-22 Notleuchte
@@ -216,7 +216,7 @@ A lámpatestek biztonsági termékszabványa: az 1. rész az általános követe
 - A jelölések és a távolságok lámpatestenként a termék címkéjén és adatlapján.
 
 - **Hol érvényes:** Minden lámpatest és fényszalag.
-- **Forrás:** szabványcsalád: MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) — MSZT szabványbolt
+- **Forrás:** szabványcsalád: MSZ EN IEC 60598-1:2025 (IEC 60598-1:2024; angol nyelvű, magyar címoldallal; az MSZ EN IEC 60598-1:2021 2027-12-31-ig párhuzamosan érvényes) és a 60598-2-x részek hatályos kiadásai — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Áramszünet-jelző éjszakai fény, Állólámpa, Asztali és íróasztali lámpa, Éjjeli lámpa, Irodai lámpatest, Fénysor-rendszer (trunking), Csarnokvilágító (high bay), LED-fénycső és armatúra, Polcvilágító (kereskedelmi), Parkolóházi és garázslámpatest, Utcai lámpatest (közvilágítás), Növénynevelő lámpa, Akváriumi lámpa, Színpadi és mozgófejes lámpa, Száloptikás csillagos mennyezet, Napfénycső (fénycsatorna), Mennyezeti lámpa (plafonlámpa), LED-korong lámpa („ufó”), Búrás mennyezeti lámpa, Csillár, Függeszték, LED-panel, Süllyesztett downlight, Beépíthető spot, Felületre szerelt spot, Mágneses sín 48 V, Világító mennyezet, Falikar, Fali-mennyezeti búra, Fel-le világító fali lámpa, Olvasó falikar, Képvilágító, Falba süllyesztett lépcső- és orientációs fény, Fali fényvető (wall washer), Fürdőszobai mennyezeti lámpa, Fürdőszobai beépíthető spot, Tükörvilágítás, Páramentes lámpatest, Hajólámpa, Szaunavilágítás, LED-szalag (12 / 24 V), Hálózati feszültségű LED-szalag (230 V), Alumínium profil LED-szalaghoz, LED neon flex, Rejtett (indirekt) világítás párkányban, Keret nélküli (trimless) beépítés, Árnyékfuga- és lábazatvilágítás, Konyhai pult alatti világítás, Szekrény- és gardróbvilágítás, Polc- és vitrinvilágítás, Bútorspot, Ágy alatti orientációs fény, Lépcsőfokba épített világítás, Kültéri falikar, Földbe süllyesztett lámpa (uplight), Napelemes kerti lámpa, Kültéri fényfüzér, Előtető- és teraszmennyezeti lámpa
 - **Kapcsolódó előírások:** MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek, MSZ EN 62471 · Fotobiológiai biztonság, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN 60570 · Világítási sínrendszerek
 - **Keresőszavak:** HU: MSZ EN 60598 lámpatest · lámpatest jelölés hőszigetelés — EN: EN 60598 luminaires · luminaire marking — DE: EN 60598 Leuchten · Leuchtenkennzeichnung
@@ -438,7 +438,7 @@ A kisfeszültségű villamos berendezések (épületek villamos hálózata) terv
 - A különleges helyek (fürdő, medence, szauna) minden áramköre 30 mA-es áram-védőkapcsolóval (a 7-es részek szerint, kivételekkel).
 
 - **Hol érvényes:** Minden kisfeszültségű épületvillamossági munka: lakás, ház, társasház, iroda, ipar.
-- **Forrás:** szabványsorozat: MSZ HD 60364 (a részek hatályos kiadásai) — MSZT szabványbolt
+- **Forrás:** szabványsorozat: MSZ HD 60364 sorozat; a részek hatályos kiadásai az MSZT webáruházában (2026-11-25-i állapot: 4-41: MSZ HD 60364-4-41:2018 + A11:2018 + A12:2019; 5-52: MSZ HD 60364-5-52:2025 EV; 5-54: MSZ HD 60364-5-54:2012 + A11:2018 + A1:2023; 6: MSZ HD 60364-6:2017 + A12:2018) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Kapcsolt aljzat (a dugaszolós lámpák köre)
 - **Kapcsolódó előírások:** MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-703 · Szaunák, MSZ HD 60364-7-714 · Kültéri világítási berendezések, MSZ HD 60364-7-710 · Orvosi helyiségek
 - **Keresőszavak:** HU: MSZ HD 60364 · áram-védőkapcsoló 30 mA kötelező — EN: HD 60364 low-voltage installations · 30 mA RCD additional protection — DE: DIN VDE 0100 · FI-Schutzschalter 30 mA Pflicht
@@ -464,7 +464,7 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 - Zóna 2 szélessége: 0,6 m a zóna 1 határától.
 
 - **Hol érvényes:** Lakások és közösségi épületek fürdőszobái és zuhanyzói.
-- **Forrás:** szabvány: MSZ HD 60364-7-701 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ HD 60364-7-701:2026 EV (IEC 60364-7-701:2019 + A11:2024, magyar nyelvű egyesített változat; az angol nyelvű MSZ HD 60364-7-701:2025 2025-05-01-től érvényes). A 2007-es kiadás (+ A11:2012 + A12:2018) 2027-12-06-ig párhuzamosan érvényben marad. — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Fürdőszobai mennyezeti lámpa, Fürdőszobai beépíthető spot, Tükörvilágítás
 - **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-703 · Szaunák
 - **Keresőszavak:** HU: fürdőszoba zónák MSZ HD 60364-7-701 · IP44 fürdőszoba — EN: bathroom zones 0 1 2 · HD 60364-7-701 — DE: Badezimmer Schutzbereiche 0 1 2 · DIN VDE 0100-701
@@ -488,7 +488,7 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 - Víz alatti lámpatest törpefeszültsége: legfeljebb 12 V váltakozó vagy 30 V egyenfeszültség.
 
 - **Hol érvényes:** Kerti és beltéri medencék, jakuzzik (ahol nem önálló készülék), szökőkutak.
-- **Forrás:** szabvány: MSZ HD 60364-7-702 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ HD 60364-7-702:2011 (angol nyelvű, magyar címoldallal; IEC 60364-7-702:2010, módosítva) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Medencevilágítás
 - **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
 - **Keresőszavak:** HU: medence villamos szerelés zónák · medence egyenpotenciálú összekötés — EN: swimming pool zones electrical · pool equipotential bonding — DE: Schwimmbad Schutzbereiche · Potentialausgleich Pool
@@ -513,7 +513,7 @@ Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zón�
 - A kabinon belüli áramkörök 30 mA-es áram-védőkapcsolóval, kivéve a SELV/PELV köröket és a szaunakályha körét. A kabinban dugaszolóaljzat általában nem szerelhető.
 
 - **Hol érvényes:** Lakások és wellness-részlegek szaunái (a kész kabin gyártói utasításával együtt).
-- **Forrás:** szabvány: MSZ HD 60364-7-703 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ HD 60364-7-703:2006 (magyar nyelvű) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Szaunavilágítás
 - **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
 - **Keresőszavak:** HU: szauna villamos szerelés · szauna hőálló kábel — EN: sauna electrical installation zones · sauna heat resistant cable — DE: Sauna Elektroinstallation · Saunakabel hitzebeständig
@@ -536,7 +536,7 @@ Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, d
 - Legalább IP33 (a víz elleni védettség permetezés, a szilárd test elleni 2,5 mm-nél nagyobb tárgyak). Ahol az üzemeltetés vagy tisztítás ezt kívánja, magasabb védettség kell (a hazai kiadásban ellenőrizendő). A kábelfektetés részletei a kábelfektetési szabályokban vannak.
 
 - **Hol érvényes:** Kerti és homlokzati világítás, lakópark- és telephelyi útvilágítás, díszvilágítás.
-- **Forrás:** szabvány: MSZ HD 60364-7-714 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ HD 60364-7-714:2013 (magyar nyelvű; IEC 60364-7-714:2011) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Kültéri falikar, Mozgásérzékelős reflektor, Kerti oszloplámpa (bollard), Leszúrható kerti spot, Földbe süllyesztett lámpa (uplight), Homlokzat-megvilágító, Kapuoszlop- és pillérlámpa, Előtető- és teraszmennyezeti lámpa
 - **Kapcsolódó előírások:** MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 13201 · Közúti világítás, MSZ EN 60598 · Lámpatestek
 - **Keresőszavak:** HU: kültéri világítás szerelés · földkábel fektetés kerti világítás — EN: outdoor lighting installation HD 60364-7-714 — DE: Außenbeleuchtung Errichtung VDE 0100-714
