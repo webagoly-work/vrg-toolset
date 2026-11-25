@@ -187,10 +187,12 @@ fun SketchEditor(initial: Sketch, host: FeatureHost, onClose: () -> Unit) {
     }
 
     // saved half a second after the last edit, and once more on the way out
-    LaunchedEffect(st.sketch) { delay(500); withContext(Dispatchers.IO) { store.save(st.sketch) } }
+    // the Jegyzet front's entries also go to VRG Jegyzetek (WP M46), tagged by their origin
+    LaunchedEffect(st.sketch) { delay(500); withContext(Dispatchers.IO) { store.save(st.sketch); SketchNotes.push(st.sketch, st.kit) } }
     DisposableEffect(initial.id) {
         onDispose {
             store.save(st.sketch)
+            SketchNotes.push(st.sketch, st.kit)
             // files no longer in the survey (retaken, deleted, a shot never given a direction) go when leaving it:
             // undo can still bring one back while the survey is open
             val keep = Intake.files(st.sketch)

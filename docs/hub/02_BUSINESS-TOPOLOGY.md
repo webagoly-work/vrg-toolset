@@ -212,6 +212,9 @@ DIN-rail board builder slot and takes drawings from *Forge*.
 - every product, standard note, reference and internal doc in one offline searchable catalogue
 - import / export documents; links back to Inventory, CoreRef, BRIDGE catalogue
 - works with no internet on site
+- **2026-11-21: shaped as the VRG Kisokos** — an offline handbook with Villanyszerelés at the centre and
+  8 axes around it; volumes for Rögzítéstechnika, Kommunikációs vonalak, Társszakmák and more. See
+  `docs/kisokos/README.md`.
 
 **◇ Forge — skill library for agents** *(from: skill bases)*
 - reusable generators so agents do not redraw from scratch (fewer tokens, same look every time):

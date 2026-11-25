@@ -64,7 +64,7 @@ family colour reaches at least 7.3:1 there and 6.5:1 on the raised plane, so all
 | Tervezés (Plan) | `--fj-f-plan` | `#5cc8f5` | VRG Sketcher `sketch`, Fotópont `photo`, Varler Planner `planner`, VRG Térkép `map` · Topológia, Mérés |
 | Anyag és pénz (Stock) | `--fj-f-stock` | `#f5b94a` | Készlet `inventory`, Kalkulátorok `calc`, Varler Workflow Kit `workflow` · árajánlat, BuildTree |
 | Kapcsolat (Link) | `--fj-f-link` | `#b393ff` | Légegér `airdeck`, Párosítás `pair`, Képernyő `screen`, Átadás `drop`, Hálózat `net`, Eszközök `devices`, PC ablakok `pcwin`, Óra `watch` |
-| Tudás (Know) | `--fj-f-know` | `#5ee6c0` | Gyorsjegyzet `notes`, Rétegverem `stack`, Archívum `archive`, Gömb `sphere`, Claude `claude`, Katalógus `catalog` · MindMap, CoreRef, BRIDGE |
+| Tudás (Know) | `--fj-f-know` | `#5ee6c0` | Gyorsjegyzet `notes`, Rétegverem `stack`, Archívum `archive`, Gömb `sphere`, Claude `claude`, Katalógus `catalog`, Böngésző `web` · MindMap, CoreRef, BRIDGE |
 | Futtatás (Run) | `--fj-f-run` | `#c3ea5c` | Indítópult `launch`, Alkalmazások `apps`, Localhost `ports`, Kódváros `city`, Haladás `pulse`, Asztal `desk`, Lapok `sheets`, DevLap `devlap` · terminál, Git, START |
 | Jelzés (Alert) | `--fj-f-alert` | `#ff7a9a` | Értesítések `inbox`, Csipogó `pager`, Radar `radar`, Tárgykereső `tag` |
 | Környezet (Ambient) | `--fj-f-env` | `#7ea2ff` | Időjárás `weather` · idő, helyszín |
@@ -109,8 +109,8 @@ captions of decoration, never information).
 - **The socket:** a glyph sits in a lit well (`.fj-socket`) that glows in its family colour behind the glyph. Sizes:
   96 (focus card), 64 (phone tile), 68–72 (desktop tile), 56 (action row), 40–44 (rail, card head).
 - **No emoji.** The current Mobile catalogue's emoji glyphs (📟, 📈, 🗁 …) are replaced one for one.
-- **46 glyphs today:** home, control, search, info, back · planner, sketch, map, measure, photo · inventory, calc,
-  quote · mouse, pair, screen, drop, net, devices, pcwin, watch · notes, stack, archive, sphere, claude, catalog ·
+- **47 glyphs today:** home, control, search, info, back · planner, sketch, map, measure, photo · inventory, calc,
+  quote · mouse, pair, screen, drop, net, devices, pcwin, watch · notes, stack, archive, sphere, claude, catalog, web ·
   desk, sheets, devlap, apps, launch, ports, terminal, city, git, pulse · pager, inbox, radar, tag · weather ·
   settings, account, update, vault.
 

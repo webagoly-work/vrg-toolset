@@ -33,7 +33,7 @@ object CatalogGuide {
      * every level-"user" unit of launcher/vrg-catalog.json that no phone page covers. Units folded into a phone page:
      * the Desktop's frame parts (views, palette, quick bar, Munkaterek, Értesítések, Beállítások, Telefon kapcsolat, F ·
      * Kiemelt) go to desk:desktop, sheets, inbox, settings, pair; Ügyfélnézet to planner; Fájlok and Munkák to pcwin;
-     * the Rétegverem layers (Keresés, I, Q) and the Konnektóm-labor to stack; VRG Mobile is the phone itself.
+     * the Rétegverem layers (Keresés, I, Q) and the Konnektóm-labor to stack; the Böngésző pane to web; VRG Mobile is the phone itself.
      */
     val PAGES: List<GuidePage> = listOf(
         // 1 · Terep: azonnal kell
@@ -310,16 +310,17 @@ object CatalogGuide {
 
         // 7 · Egyéb
         GuidePage(
-            id = "notes", title = "Gyorsjegyzet", glyph = "✎", side = GuideSide.PHONE,
-            what = "Rövid jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként működik. Bárhonnan olvasható, a munkamenetek is látják.",
+            id = "notes", title = "Jegyzetek", glyph = "✎", side = GuideSide.PHONE,
+            what = "A központi jegyzet app: minden jegyzet egy helyen. A Sketcher Jegyzet frontja és a többi funkció is ide ír, a jegyzeten színes jelvény mutatja, honnan jött.",
             how = listOf(
-                "Írd be vagy diktáld (🎤), válassz címkét (melyik eszközről szól), és küldd el.",
-                "Internet nélkül is írhatsz: a jegyzet sorba áll, és magától elmegy, amikor lesz net.",
+                "⚙ → Változat: Egyszerű, Terepi, Iroda, Fejlesztő vagy Teljes. A változat dönti el, mely modulok látszanak; a modulok egyenként is ki-be kapcsolhatók.",
+                "Új jegyzet, mai jegyzet, sablonból (bejárás, ügyfélhívás, anyaglista…), vagy a gyors mezőből; diktálva is (🎤).",
+                "Keresés ékezet nélkül is; szűrés forrásra, címkére, füzetre; kitűzés, archívum, kuka.",
+                "A Sketcher jegyzete összekötött: itt javítod, a felmérésbe is átmegy, és onnan „Megnyitás: Sketcher” visz vissza.",
                 "Más appból „Megosztás → VRG Mobile”: a szövegből jegyzet lesz.",
-                "Alul a mai nap jegyzetei olvashatók vissza.",
             ),
-            needs = "internet, GitHub belépés",
-            pair = "A repó mobile-log branche, naponta egy fájllal",
+            needs = "semmi; a szinkronhoz internet és GitHub belépés",
+            pair = "A repó privát vrg-notes branche, jegyzetenként egy fájl (notes/)",
         ),
         GuidePage(
             id = "inbox", title = "Értesítések", glyph = "🔔", side = GuideSide.PHONE,
@@ -442,6 +443,18 @@ object CatalogGuide {
             pair = "Asztal: a VRG UI Kit radar része (Gráf és topológia), ugyanaz az elrendezés",
         ),
         GuidePage(
+            id = "web", title = "Böngésző", glyph = "🌐", side = GuideSide.BOTH,
+            what = "Munkához böngészés a telefonon, a VRG Mobile-on belül: adatlap, nagyker katalógus, szabvány, a helyszíni router oldala. Ugyanazok a keresők és !jelek, mint a PC-n, és a könyvjelzők az Asztallal közös fájlban vannak.",
+            how = listOf(
+                "A felső sávba címet vagy keresőszót írsz; a !jel más keresőt választ: „NYM-J 3x2,5 !tme”, „!w Ohm-törvény”. A Kommandba írt cím is itt nyílik meg.",
+                "A ☆ könyvjelzőbe teszi az oldalt; a ☰ alatt a Könyvjelzők, az Előzmények, a telefon böngészője ↗ és a megosztás.",
+                "⚙: a kereső (egyszer választod), az előzmények mentése, Export / Import: a fájlt a PC-n a VRG Böngésző (Betöltés) az Asztalba viszi, és a Data Vault is beolvassa.",
+                "Az oldal nem kap engedélyt (kamera, hely), hibás tanúsítványú oldal nem nyílik meg, letöltést kérdés után a telefon böngészője végez.",
+            ),
+            needs = "internet",
+            pair = "Asztal: a Böngésző panel és a VRG Böngésző (START W → B)",
+        ),
+        GuidePage(
             id = "desk", title = "Asztal", glyph = "◧", side = GuideSide.PHONE,
             what = "Maga a kezdőlap: a VRG Asztal egyszerűsített változata a telefonon. Számozott lapok oldalra lapozva, felül a sáv, alul a dokk.",
             how = listOf(
@@ -456,7 +469,7 @@ object CatalogGuide {
         // 8 · Fiók és beállítások
         GuidePage(
             id = "account", title = "GitHub fiók", glyph = "⎔", side = GuideSide.PHONE,
-            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Gyorsjegyzet, Archívum, Frissítés és a többi) ezt a fiókot használja.",
+            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Jegyzetek, Archívum, Frissítés és a többi) ezt a fiókot használja.",
             how = listOf(
                 "Belépés: a telefon egy nagy kódot mutat, és megnyitja a github.com/login/device oldalt.",
                 "Írd be ott a kódot. A telefon magától észreveszi, hogy beléptél.",
@@ -554,16 +567,6 @@ object CatalogGuide {
                 "A telefonon az Alkalmazások között is megvan.",
             ),
             pair = "Telefon: Alkalmazások → VRG MindMap",
-        ),
-        GuidePage(
-            id = "desk:web", title = "Böngésző", glyph = "🌐", side = GuideSide.DESKTOP,
-            what = "Beépített böngésző az Asztalon, a többi ablak mellett: fülek, címsor, könyvjelzők, előzmények és a helyi szerverek.",
-            how = listOf(
-                "Ablakként nyílik az Asztalon, lapra is tehető.",
-                "Ctrl+L a címsor, Ctrl+T új fül, Ctrl+F keresés az oldalon.",
-                "A helyi szerverek (Térkép, MindMap és a többi) innen is megnyithatók.",
-            ),
-            pair = "Telefon: a telefon saját böngészője; a Kommandba írt cím abban nyílik meg",
         ),
         GuidePage(
             id = "desk:mail", title = "Posta", glyph = "✉", side = GuideSide.DESKTOP,

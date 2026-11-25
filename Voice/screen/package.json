@@ -1,0 +1,9 @@
+{
+  "name": "vrg-voice-screen",
+  "private": true,
+  "description": "WP-56 Szem: the OCR fallback of the screen reader (tesseract.js, offline once the traineddata is local). Install with `npm ci --ignore-scripts` in this folder; node_modules is gitignored.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "tesseract.js": "7.0.0"
+  }
+}

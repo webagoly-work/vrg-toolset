@@ -326,6 +326,18 @@
    "reason": "a build / test / serve action of START P, drawn behind planner"
   },
   {
+   "id": "menu:proj:P/3",
+   "name": "Planner · Ház 3D feldolgozás",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
    "id": "menu:proj:P/O",
    "name": "Planner · Mappa megnyitása",
    "source": "vrg-menu",
@@ -758,6 +770,18 @@
    "reason": "is the catalog item `konnektom-labor`"
   },
   {
+   "id": "menu:proj:R/S",
+   "name": "Rétegverem · Kisokos 3D",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "stack",
+   "unit": "",
+   "reason": "a build / test / serve action of START R, drawn behind stack"
+  },
+  {
    "id": "menu:proj:R/E",
    "name": "Rétegverem · Konnektóm-labor .cmd",
    "source": "vrg-menu",
@@ -914,6 +938,18 @@
    "reason": "a build / test / serve action of START L, drawn behind mobile"
   },
   {
+   "id": "menu:proj:L/P",
+   "name": "VRG Mobile · Alkalmazás archiválása",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "a build / test / serve action of START L, drawn behind mobile"
+  },
+  {
    "id": "menu:proj:L/O",
    "name": "VRG Mobile · Mappa megnyitása",
    "source": "vrg-menu",
@@ -1008,6 +1044,18 @@
    "parent": "console",
    "unit": "",
    "reason": "a build / test / serve action of START W, drawn behind console"
+  },
+  {
+   "id": "menu:proj:W/B",
+   "name": "Varler Console · VRG Böngésző",
+   "source": "vrg-menu",
+   "type": "application",
+   "qualifier": "start page, search engine, library, reader",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "browser",
+   "reason": "is the catalog item `browser`"
   },
   {
    "id": "menu:proj:V",
@@ -1644,6 +1692,30 @@
    "parent": "stack",
    "unit": "",
    "reason": "background process with a port: Dev, behind stack"
+  },
+  {
+   "id": "srv:munkavaszon",
+   "name": "Munkavászon · Claude munkamenet élőben",
+   "source": "vrg-menu",
+   "type": "service",
+   "qualifier": "local server",
+   "scope": "open",
+   "level": "dev",
+   "parent": "munkavaszon",
+   "unit": "",
+   "reason": "background process with a port: Dev, behind munkavaszon"
+  },
+  {
+   "id": "srv:bongeszo",
+   "name": "VRG Böngésző · olvasó, dokumentumkereső, javaslatok",
+   "source": "vrg-menu",
+   "type": "service",
+   "qualifier": "local server",
+   "scope": "open",
+   "level": "dev",
+   "parent": "browser",
+   "unit": "",
+   "reason": "background process with a port: Dev, behind browser"
   },
   {
    "id": "menu:prog:1",
@@ -3386,6 +3458,30 @@
    "reason": "hosts a catalog HTML app on vrg-app://; the user opens the app, not the host"
   },
   {
+   "id": "pane:sessions",
+   "name": "sessions",
+   "source": "dashboard",
+   "type": "panel",
+   "qualifier": "session manager",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "sessions",
+   "reason": "is the catalog item `sessions`"
+  },
+  {
+   "id": "pane:controller",
+   "name": "controller",
+   "source": "dashboard",
+   "type": "panel",
+   "qualifier": "prompt router",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "controller",
+   "reason": "is the catalog item `controller`"
+  },
+  {
    "id": "pane:search",
    "name": "Belső keresés",
    "source": "dashboard",
@@ -3734,6 +3830,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:applinks",
+   "name": "lib/applinks.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:appscheme",
    "name": "lib/appscheme.js",
    "source": "dashboard",
@@ -3842,6 +3950,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:eyes",
+   "name": "lib/eyes.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:fsops",
    "name": "lib/fsops.js",
    "source": "dashboard",
@@ -3856,6 +3976,18 @@
   {
    "id": "dashlib:fsview",
    "name": "lib/fsview.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:gate",
+   "name": "lib/gate.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -3892,6 +4024,18 @@
   {
    "id": "dashlib:handles",
    "name": "lib/handles.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:hudwin",
+   "name": "lib/hudwin.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -4226,6 +4370,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:sessions",
+   "name": "lib/sessions.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:settings",
    "name": "lib/settings.js",
    "source": "dashboard",
@@ -4240,6 +4396,18 @@
   {
    "id": "dashlib:sheets",
    "name": "lib/sheets.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:speak",
+   "name": "lib/speak.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -4288,6 +4456,18 @@
   {
    "id": "dashlib:views",
    "name": "lib/views.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:voice",
+   "name": "lib/voice.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -5498,6 +5678,282 @@
    "reason": "planned"
   },
   {
+   "id": "mobile:M46",
+   "name": "Kamera 2",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M47",
+   "name": "Munkakör lap",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M48",
+   "name": "Helyszín ↔ Térkép",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M49",
+   "name": "Apró hiányok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M50",
+   "name": "Maradékok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M51",
+   "name": "Kapcsolók",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M52",
+   "name": "Saját kamera",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M53",
+   "name": "Összefésülés",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M54",
+   "name": "Jegyzőkönyv a telefonon",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M55",
+   "name": "Térkép-feed (in `map`)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M56",
+   "name": "Saját útvonaltervezés (in `map`, N2)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M57",
+   "name": "Szobadoboz (in `sketch`, Desktop first)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M58",
+   "name": "Vezetés + forgalom (in `map`, N3)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M59",
+   "name": "Szobadoboz a telefonon (in `sketch`)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M60",
+   "name": "Síkmérés (in `sketch`, phone and Desktop)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M61",
+   "name": "Tárgykereső",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M62",
+   "name": "Körkép (in `sketch`, phone and Desktop)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M63",
+   "name": "Ház 3D (PC + Desktop Sketcher)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M64",
+   "name": "Google AR csomag",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M65",
+   "name": "Óra",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M66",
+   "name": "DevLap on the home",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M67",
+   "name": "Radar",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M68",
+   "name": "Böngésző",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "source": "mobile",
@@ -5568,6 +6024,18 @@
    "parent": "stack",
    "unit": "layer.q",
    "reason": "is the catalog item `layer.q`"
+  },
+  {
+   "id": "stack:kisokos",
+   "name": "VRG Kisokos 3D",
+   "source": "stack",
+   "type": "view",
+   "qualifier": "stack layer",
+   "scope": "open",
+   "level": "user",
+   "parent": "stack",
+   "unit": "layer.k",
+   "reason": "is the catalog item `layer.k`"
   },
   {
    "id": "stack:layers",
@@ -5798,6 +6266,18 @@
    "reason": "is the catalog item `layer.z`"
   },
   {
+   "id": "tool:anon-check",
+   "name": "tools/anon-check.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
    "id": "tool:anonymise",
    "name": "tools/anonymise.js",
    "source": "tools",
@@ -5812,6 +6292,18 @@
   {
    "id": "tool:bootleg",
    "name": "tools/bootleg.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
+   "id": "tool:brief-pack",
+   "name": "tools/brief-pack.js",
    "source": "tools",
    "type": "cli tool",
    "qualifier": "",
@@ -5964,6 +6456,30 @@
    "parent": "dev:look",
    "unit": "melyviz",
    "reason": "is the catalog item `melyviz`"
+  },
+  {
+   "id": "tool:progress-svg",
+   "name": "tools/progress-svg.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
+   "id": "tool:sketch-takeoff",
+   "name": "tools/sketch-takeoff.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
   },
   {
    "id": "tool:solomon",
@@ -6374,6 +6890,18 @@
    "reason": "is the catalog item `servicekit-cyd` (planned)"
   },
   {
+   "id": "lib:grafit",
+   "name": "grafit.css",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
+  },
+  {
    "id": "lib:melyviz",
    "name": "melyviz.css",
    "source": "shared",
@@ -6388,6 +6916,18 @@
   {
    "id": "lib:rajztar",
    "name": "rajztar",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
+  },
+  {
+   "id": "lib:sidepanel",
+   "name": "sidepanel",
    "source": "shared",
    "type": "library",
    "qualifier": "",
@@ -6432,6 +6972,30 @@
    "parent": "dev:look",
    "unit": "uikit",
    "reason": "is the catalog item `uikit`"
+  },
+  {
+   "id": "doc:brief",
+   "name": "docs/brief",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:browser",
+   "name": "docs/browser",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
   },
   {
    "id": "doc:city",
@@ -6542,6 +7106,18 @@
    "reason": "design, decisions and briefs"
   },
   {
+   "id": "doc:kisokos",
+   "name": "docs/kisokos",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
    "id": "doc:map",
    "name": "docs/map",
    "source": "docs",
@@ -6568,6 +7144,18 @@
   {
    "id": "doc:notes",
    "name": "docs/notes",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:radar",
+   "name": "docs/radar",
    "source": "docs",
    "type": "document set",
    "qualifier": "pack",
@@ -6622,6 +7210,18 @@
    "scope": "open",
    "level": "dev",
    "parent": "solomon",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:visual",
+   "name": "docs/visual",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
    "unit": "",
    "reason": "design, decisions and briefs"
   },
@@ -6782,6 +7382,18 @@
    "reason": "is the catalog item `bridge`"
   },
   {
+   "id": "dir:Browser",
+   "name": "Browser",
+   "source": "folders",
+   "type": "application",
+   "qualifier": "start page, search engine, library, reader",
+   "scope": "open",
+   "level": "user",
+   "parent": "",
+   "unit": "browser",
+   "reason": "is the catalog item `browser`"
+  },
+  {
    "id": "dir:Calculator",
    "name": "Calculator",
    "source": "folders",
@@ -6878,6 +7490,18 @@
    "reason": "is the catalog item `inventory`"
   },
   {
+   "id": "dir:Kisokos",
+   "name": "Kisokos",
+   "source": "folders",
+   "type": "knowledge base",
+   "qualifier": "offline work handbook: Rögzítéstechnika first",
+   "scope": "open",
+   "level": "dev",
+   "parent": "",
+   "unit": "kisokos",
+   "reason": "is the catalog item `kisokos` (dev: shown from dev)"
+  },
+  {
    "id": "dir:Map",
    "name": "Map",
    "source": "folders",
@@ -6938,6 +7562,18 @@
    "reason": "is the catalog item `planner`"
   },
   {
+   "id": "dir:Prefilter",
+   "name": "Prefilter",
+   "source": "folders",
+   "type": "folder",
+   "qualifier": "source",
+   "scope": "internal",
+   "level": "",
+   "parent": "",
+   "unit": "",
+   "reason": "a top-level folder; what it holds is classified by its own rows"
+  },
+  {
    "id": "dir:ServiceKit",
    "name": "ServiceKit",
    "source": "folders",
@@ -6972,6 +7608,18 @@
    "parent": "servicekit",
    "unit": "servicekit-phone",
    "reason": "is the catalog item `servicekit-phone` (planned)"
+  },
+  {
+   "id": "dir:SessionCanvas",
+   "name": "SessionCanvas",
+   "source": "folders",
+   "type": "view",
+   "qualifier": "observability",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "munkavaszon",
+   "reason": "is the catalog item `munkavaszon`"
   },
   {
    "id": "dir:Sketcher",
@@ -7020,6 +7668,18 @@
    "parent": "dev:infra",
    "unit": "toolbox",
    "reason": "is the catalog item `toolbox`"
+  },
+  {
+   "id": "dir:Voice",
+   "name": "Voice",
+   "source": "folders",
+   "type": "folder",
+   "qualifier": "source",
+   "scope": "internal",
+   "level": "",
+   "parent": "",
+   "unit": "",
+   "reason": "a top-level folder; what it holds is classified by its own rows"
   },
   {
    "id": "dir:Weather",

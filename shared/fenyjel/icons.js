@@ -23,7 +23,7 @@
     plan:  { hu: 'Tervezés',      en: 'Plan',    note: 'drawing, measuring, placing: Planner, Vázlat, Térkép' },
     stock: { hu: 'Anyag és pénz', en: 'Stock',   note: 'parts, prices, quotes: Készlet, kalkulátorok, árajánlat' },
     link:  { hu: 'Kapcsolat',     en: 'Link',    note: 'phone ⇄ PC and devices: Légegér, párosítás, képernyő, átadás, PC ablakok, hálózat' },
-    know:  { hu: 'Tudás',         en: 'Know',    note: 'notes, memory, reference: Jegyzet, Rétegverem, Archívum, Gömb, Claude' },
+    know:  { hu: 'Tudás',         en: 'Know',    note: 'notes, memory, reference: Jegyzet, Rétegverem, Archívum, Gömb, Claude, Böngésző' },
     run:   { hu: 'Futtatás',      en: 'Run',     note: 'starting and building things: Indítópult, Alkalmazások, Localhost, terminál, Kódváros, Git, Haladás' },
     alert: { hu: 'Jelzés',        en: 'Alert',   note: 'what wants attention: Értesítések, Csipogó, Radar, Tárgykereső' },
     env:   { hu: 'Környezet',     en: 'Ambient', note: 'the world around the job: időjárás, idő, helyszín' },
@@ -383,6 +383,19 @@
       '.....##.....',
       '.....##.....'] },
 
+    web: { family: 'know', hu: 'Böngésző', rows: [
+      '############',
+      '#+#+#+.....#',
+      '############',
+      '#..........#',
+      '#...####...#',
+      '#..#.##.#..#',
+      '#.#..##..#.#',
+      '#.########.#',
+      '#.#..##..#.#',
+      '#..#.##.#..#',
+      '#...####...#',
+      '############'] },
     catalog: { family: 'know', hu: 'Katalógus', rows: [
       '..#########.',
       '.#+.......#.',

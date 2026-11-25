@@ -10,6 +10,7 @@ import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.devices.DevicesFeature
 import hu.vrg.mobile.vault.VaultFeature
+import hu.vrg.mobile.web.WebFeature
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.inbox.InboxFeature
@@ -74,6 +75,7 @@ object Registry {
         TagFeature,
         WatchFeature,
         RadarFeature,
+        WebFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

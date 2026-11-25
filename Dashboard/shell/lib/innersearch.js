@@ -1,4 +1,5 @@
-// innersearch.js — "Belső keresés" (WP-20): the VRG Stack (stack.js q) and the code index (tools/vrg-ctx.js q) in one answer.
+// innersearch.js — "Belső keresés" (WP-20): the VRG Stack (stack.js q), the code index (tools/vrg-ctx.js q) and, since T5 of the VRG
+// Böngésző, the repo's Markdown documents (Browser/lib/docs.js: BM25, accent-free, the research notes included) in one answer.
 //   const is = createInnerSearch({ execFile, node, full, repo, issue, statusFile });
 //   is.inner({ q, layers, budget, only? }) → (only 'code' | 'stack' skips the other half, DESK-Q84 C) { stack:[hit], code:[hit], codeErr?, updated? }     is.node(id) → { text }     is.openHit(i) → { handle, name, line }
 // The stack dir comes from {full}\notes\stack, never from the page. The query is always ONE argv item (no shell); `index` is never run here.
@@ -68,7 +69,14 @@ function repoFile(repo, rel) {
   return abs.toLowerCase().startsWith(base) ? abs : null;
 }
 
-function createInnerSearch({ execFile, node = 'node', full, repo, issue = () => null, statusFile = '' }) {
+function createInnerSearch({ execFile, node = 'node', full, repo, issue = () => null, statusFile = '', docs = null }) {
+  let lastDocs = [];
+  let docIndex = docs;                                         // made on the first search (about a second for the repo's ~500 files)
+  const docsIndex = () => {
+    if (docIndex) return docIndex;
+    try { docIndex = require(path.join(repo, 'Browser', 'lib', 'docs.js')).createDocs({ repo }); } catch (e) { docIndex = false; }
+    return docIndex;
+  };
   const stackDir = path.join(full, 'notes', 'stack');
   const stackJs = path.join(stackDir, 'stack.js');
   const ctxJs = path.join(repo, 'tools', 'vrg-ctx.js');
@@ -107,7 +115,9 @@ function createInnerSearch({ execFile, node = 'node', full, repo, issue = () => 
     if (only != null && only !== 'code' && only !== 'stack') return bad('Érvénytelen keresési rész.');
     const [s, c] = await Promise.all([only === 'code' ? SKIPPED : stack(query, { layers: l, budget }), only === 'stack' ? SKIPPED : code(query, {})]);
     lastCode = c.ok ? c.hits : [];
-    const out = { stack: s.ok ? s.hits : [], code: lastCode, updated: '' };
+    lastDocs = [];
+    if (!only) { const d = docsIndex(); if (d) { try { lastDocs = d.search(query, 8).map(h => ({ path: h.path, title: h.title, snippet: h.snippet ? h.snippet.text : '' })); } catch (e) {} } }
+    const out = { stack: s.ok ? s.hits : [], code: lastCode, docs: lastDocs, updated: '' };
     if (only) out.only = only;
     if (!s.ok) out.stackErr = s.err;
     if (!c.ok) { out.codeErr = c.err; out.codeHu = c.hu; }
@@ -124,8 +134,8 @@ function createInnerSearch({ execFile, node = 'node', full, repo, issue = () => 
   }
 
   // code hit i of the last reply → a handle for the viewer; main maps the repo-relative path, the page only names the index
-  function openHit(i) {
-    const h = Number.isInteger(i) ? lastCode[i] : null;
+  function openHit(i, kind) {
+    const h = Number.isInteger(i) ? (kind === 'doc' ? lastDocs[i] && { path: lastDocs[i].path, line: 1 } : lastCode[i]) : null;
     if (!h) return { ok: false, err: 'not-found', hu: 'Nincs ilyen találat.' };
     const abs = repoFile(repo, h.path);
     const handle = abs && issue(abs);

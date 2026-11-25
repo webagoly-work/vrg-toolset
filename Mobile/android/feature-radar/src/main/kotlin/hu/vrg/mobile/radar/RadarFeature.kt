@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -41,6 +42,7 @@ import hu.vrg.mobile.core.Radar
 import hu.vrg.mobile.core.RadarFrame
 import hu.vrg.mobile.core.RadarHub
 import hu.vrg.mobile.core.RadarMode
+import hu.vrg.mobile.core.RadarSnapshot
 import hu.vrg.mobile.core.RadarText
 import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.Compass
@@ -91,6 +93,16 @@ object RadarFeature : VrgFeature {
         val lm = ctx.getSystemService(LocationManager::class.java) ?: return null
         val l = runCatching { lm.getProviders(true).mapNotNull { lm.getLastKnownLocation(it) }.maxByOrNull { it.time } }.getOrNull() ?: return null
         return if (System.currentTimeMillis() - l.time > 10 * 60_000L) null else LatLon(l.latitude, l.longitude)
+    }
+
+    /** Megosztás: the frame as a vrg.radar-frame snapshot through Android's share sheet (the Data Vault's Radarom keeps it). */
+    private fun share(ctx: Context, frame: RadarFrame, sweeps: Map<String, Double>, hidden: Set<String>) {
+        val app = "VRG Mobile " + (runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "?")
+        val json = RadarSnapshot.encode(frame, sweeps, java.time.Instant.now().toString(), app, hidden)
+        val send = Intent(Intent.ACTION_SEND).setType("text/plain")
+            .putExtra(Intent.EXTRA_SUBJECT, "Radar pillanatkép")
+            .putExtra(Intent.EXTRA_TEXT, json)
+        runCatching { ctx.startActivity(Intent.createChooser(send, "Radar megosztása").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
 
     @Composable
@@ -156,6 +168,8 @@ object RadarFeature : VrgFeature {
                 VrgChip(if (mode == RadarMode.HEADING_UP) "Irány fel" else "Észak fel", selected = true) {
                     mode = if (mode == RadarMode.HEADING_UP) RadarMode.NORTH_UP else RadarMode.HEADING_UP
                 }
+                Spacer(Modifier.width(6.dp))
+                VrgChip("Megosztás") { share(ctx, frame.copy(mode = mode), sweeps, hidden) }
                 Spacer(Modifier.width(6.dp))
                 if (here == null) VrgChip(if (placeAllowed(ctx)) "Nincs friss hely" else "Hely a GPS-irányokhoz") {
                     if (!placeAllowed(ctx)) askPlace.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))

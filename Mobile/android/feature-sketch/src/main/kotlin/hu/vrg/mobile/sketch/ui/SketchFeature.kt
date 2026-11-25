@@ -42,6 +42,7 @@ import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.notes.Notes
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
@@ -64,7 +65,15 @@ object SketchFeature : VrgFeature {
     private lateinit var app: Application
     internal val store by lazy { SketchStore(File(app.filesDir, "sketch")) }
 
-    override fun init(app: Application) { this.app = app; SketcherKit.init(app); FeaturePrefs.init(app) }   // M51: the feature switches after the kit (D-79's toggle)
+    override fun init(app: Application) {
+        this.app = app; SketcherKit.init(app); FeaturePrefs.init(app)   // M51: the feature switches after the kit (D-79's toggle)
+        // VRG Jegyzetek (WP M69): the Jegyzet front's entries are notes of the central app too; its "open in the
+        // source" lands here with "<sketch id>/<entry id>" and opens the survey on its Jegyzet front
+        Notes.init(app)
+        Notes.onOpen(SketchNotes.ORIGIN) { ref ->
+            ref.substringBefore('/').takeIf { SiteHandoff.SAFE_ID.matches(it) }?.let { pendingOpen = it to "jegyzet" }
+        }
+    }
 
     // F1: vrg://sketch?open=<id>&front=helyszin opens a survey on a front (the phone's map hands the Helyszín back this way)
     private var pendingOpen by mutableStateOf<Pair<String, String?>?>(null)
@@ -95,8 +104,11 @@ object SketchFeature : VrgFeature {
             return
         }
         val fctx = androidx.compose.ui.platform.LocalContext.current
+        // texts edited in VRG Jegyzetek come into the survey first (the linked mirror, D-179 = A); then
         // F5 (D-80, D-90): an older survey gets the built-in Csere tag, unless that feature is switched off
-        val sketch = remember(id) { store.load(id)?.let { SketchFeatures.onOpen(SketchFeaturePrefs.off(fctx), it) }?.let { SiteHandoff.take(store, it) } }
+        val sketch = remember(id) {
+            store.load(id)?.let(SketchNotes::pull)?.let { SketchFeatures.onOpen(SketchFeaturePrefs.off(fctx), it) }?.let { SiteHandoff.take(store, it) }
+        }
         if (sketch == null) {
             LaunchedEffect(id) { host.note("A vázlat nem nyitható meg."); openId = null }
             return
@@ -236,7 +248,7 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
             containerColor = Melyviz.raised,
             title = { Text("Törlöd: ${e.name.ifBlank { "Névtelen vázlat" }}?", style = Melyviz.label) },
             text = { Text("A telefonról törlődik; ami már a PC-n van, az megmarad.", style = Melyviz.small) },
-            confirmButton = { TextButton({ store.delete(e.id); deleting = null; tick++ }) { Text("Törlés", color = Melyviz.coral) } },
+            confirmButton = { TextButton({ store.delete(e.id); SketchNotes.deleted(e.id); deleting = null; tick++ }) { Text("Törlés", color = Melyviz.coral) } },
             dismissButton = { TextButton({ deleting = null }) { Text("Mégse", color = Melyviz.muted) } },
         )
     }

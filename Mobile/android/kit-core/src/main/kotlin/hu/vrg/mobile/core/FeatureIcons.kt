@@ -17,7 +17,7 @@ object FeatureIcons {
         "desk" to "desk", "sheets" to "sheets", "devlap" to "devlap",
         // Tudás (know)
         "notes" to "notes", "stack" to "stack", "archive" to "archive", "sphere" to "sphere", "claude" to "claude",
-        "catalog" to "catalog",
+        "catalog" to "catalog", "web" to "web",
         // Tervezés (plan)
         "planner" to "planner", "sketch" to "sketch", "photo" to "photo", "map" to "map",
         // Anyag és pénz (stock)

@@ -110,6 +110,8 @@ import hu.vrg.mobile.kit.theme.vrgBorder
 object AppsFeature : VrgFeature {
     override val info = Catalogue.APPS
     private const val TAG = "apps"
+    /** The VRG Böngésző (DeskApps "browser"): its pages go to the Böngésző feature (WP M68). */
+    private const val BROWSER_APP = "browser"
     private const val LOCAL = "apps"
     private const val MANIFEST = "manifest.json"
     private const val RAW = "application/vnd.github.raw"
@@ -327,6 +329,11 @@ object AppsFeature : VrgFeature {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val u = request.url
                 if (AppScheme.sameApp(app.id, u.toString())) return false
+                // the VRG Böngésző's pages open in the phone's work browser (WP M68), the other apps' links in the phone's browser
+                if (request.isForMainFrame && app.id == BROWSER_APP && (u.scheme == "https" || u.scheme == "http")) {
+                    host.openRoute(Route(Catalogue.WEB.id, "", mapOf("u" to u.toString())))
+                    return true
+                }
                 if (request.isForMainFrame && (u.scheme == "https" || u.scheme == "http" || u.scheme == "mailto" || u.scheme == "tel"))
                     runCatching { view.context.startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 return true
