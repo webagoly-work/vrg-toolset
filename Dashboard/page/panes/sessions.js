@@ -47,7 +47,7 @@
     });
   }
   // which buttons a row has: a live session cannot be continued here (two processes on one transcript), only copied
-  const actionsFor = r => (r && r.live ? ['fork', 'canvas'] : ['resume', 'fork', 'remote', 'canvas']);
+  const actionsFor = r => (r && r.live ? ['fork', 'canvas'] : ['resume', 'stronger', 'fork', 'remote', 'canvas']);
   // the account the bar's Áthozás uses: the filter's, else A
   const teleportAccount = f => (cleanState(f).account === 'B' ? 'B' : 'A');
   // Gyors elérés: the tools around a Claude session, as catalog ids (launcher/vrg-catalog.json); simple mode shows the first six
@@ -79,6 +79,7 @@
   const ACT = {
     resume: ['Folytatás', 'Continue here: claude --resume, in the session\'s folder'],
     fork: ['Másolat', 'Continue a copy: claude --resume --fork-session (a new session id)'],
+    stronger: ['Erősebb modellel', 'Continue here on opus (claude --resume --model opus): when a cheaper model got stuck'],
     remote: ['Távvezérlés', 'Continue here with /remote-control, so it also shows on claude.ai/code'],
     canvas: ['Vászon', 'Open the Munkavászon on this session'],
   };
@@ -154,7 +155,7 @@
       this.busy = row.account + ':' + row.session + ':' + kind; this.draw();
       let r;
       if (kind === 'canvas') r = await v.sessions.canvas(row.account, row.session);
-      else r = await v.sessions.resume(row.account, row.session, { fork: kind === 'fork', remote: kind === 'remote' });
+      else r = await v.sessions.resume(row.account, row.session, { fork: kind === 'fork', remote: kind === 'remote', stronger: kind === 'stronger' });
       if (this.gone) return;
       this.busy = '';
       if (r && r.ok === false) this.say(r.hu || 'Nem sikerült.', true);

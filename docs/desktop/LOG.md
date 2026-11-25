@@ -348,3 +348,23 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   (the board choice, the pipeline of five stages, 11 vectors).
 - Tests: `wp-52.test.js` 6 (a fake Előszűrő, then the real one on this repo); the full Dashboard suite: 320 pass, the same 68
   environment failures as before WP-50. Not run: Electron, the camera, the real `claude --model`.
+
+## WP-53 — Előszűrő next steps: hook, negation, work-line memory, evaluation, the stronger-model step (2026-11-25, cloud session)
+
+- The roadmap's first vectors (`docs/research/2026-11-24_elosszuro-roadmap.md` §3: 1, 3, 4, 7 and negation).
+- `Prefilter/hook.js`: the Előszűrő as a Claude Code `UserPromptSubmit` hook. The first prompt of any session gets its dressing as
+  `additionalContext`; later prompts stay quiet unless a new named thing appears or an independent session turns to VRG (a two-line
+  "új horgony" note with one Stack search). Skips Vezérlő-dressed prompts, slash commands, `VRG_PREFILTER_OFF=1`; never blocks, never
+  logs the text. `--install [--user] [--dry]` writes the settings entry with absolute node and script paths. **Not installed**: it
+  would run in every session of the repo; the Founder decides (handoff step 6).
+- `prefilter.js`: negation (`rules.negation`: a window after ne / nem / not / without …, before nélkül → weight × 0.1, no anchor) and the
+  prior (`analyze(…, { prior })`, `rules.prior`): a bare continuation word takes the previous session's anchors.
+- `Prefilter/eval.js` + `eval/seed.jsonl` (44 made-up prompts, hu + en): run / fit (weighted cost: context judged independent = 3)
+  / extract (the first prompt of every local session) / label (c / i / s / q). Labels and candidates stay in the gitignored cache.
+  Seed set: accuracy 0.886, no context → independent mistake; the fit's suggestion (context ≥ 0.35) is not applied.
+- Vezérlő (`gate.js`): the prior is the most recent local session's first prompt (shown in the preview's reasons); a route forced
+  against the verdict is recorded as an evaluation label.
+- Munkamenetek: **Erősebb modellel** on an idle session = `--resume <id> --model opus` (the cascade step; IPC `sessions.resume`
+  gets `stronger`).
+- Tests: `Prefilter/test/next.test.js` 4 (on the real repo index), wp-50 / wp-52 extended; the full Dashboard suite: 321 pass, the
+  same 68 environment failures.

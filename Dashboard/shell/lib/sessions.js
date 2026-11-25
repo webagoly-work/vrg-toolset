@@ -1,7 +1,7 @@
 // sessions.js — Munkamenetek (WP-50): the local Claude Code sessions of account A and B, and the ways to open one inside the VRG Asztal.
 //   const s = createSessions({ roots: [{ account:'A', dir }, { account:'B', dir }] | () => [...], claudeterm, server, repo, fs?, now?, log? });
 //   s.list()                                       → { ok, sessions: [{ account, session, title, project, branch, mtime, size, live }], cloud, roots }
-//   s.resume({ account, session, fork?, remote? }) → claudeterm's { term, … } | { ok:false, err, hu }
+//   s.resume({ account, session, fork?, remote?, stronger? })   stronger: + --model opus (the cascade step: a session that stalled on a cheaper model) → claudeterm's { term, … } | { ok:false, err, hu }
 //   s.teleport({ account })                        → claudeterm's reply (a Claude terminal in the repo with --teleport: the cloud picker)
 //   s.canvas({ account, session })                 → the server reply { do:'web', url } of the Munkavászon, opened on that session
 // Where the data is: Claude Code writes every session to <config>/projects/<project folder>/<session id>.jsonl. A = ~/.claude (the
@@ -21,6 +21,7 @@ const HEAD_BYTES = 256 * 1024;                                   // the title, f
 const LIVE_MS = 2 * 60 * 1000;
 const CLOUD_URL = 'https://claude.ai/code';
 const REMOTE_PROMPT = '/remote-control';
+const STRONGER_MODEL = 'opus';
 
 const NOT_FOUND = { ok: false, err: 'not-found', hu: 'Nincs ilyen munkamenet.' };
 const BAD = { ok: false, err: 'bad-request', hu: 'Érvénytelen munkamenet.' };
@@ -129,15 +130,15 @@ function createSessions({ roots = [], claudeterm, server, repo, fs = nodeFs, now
     return { ok: true, sessions, cloud: CLOUD_URL, roots: rootsNow().map(r => r.account), liveMs: LIVE_MS };
   }
 
-  function resume({ account, session, fork, remote } = {}) {
+  function resume({ account, session, fork, remote, stronger } = {}) {
     const f = find(account, session);
     if (f.ok === false) return f;
     if (!fork && isLive(f.mtime)) return { ok: false, err: 'live', hu: 'Ez a munkamenet most is fut egy másik ablakban. Nyiss róla másolatot, vagy zárd be a másikat.' };
     const cwd = f.info.cwd;
     if (!cwd || !path.isAbsolute(cwd) || !isDir(cwd)) return { ok: false, err: 'not-found', hu: 'A munkamenet mappája már nincs meg' + (cwd ? ': ' + folderName(cwd) : '.') };
     if (!claudeterm || !claudeterm.open) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
-    const extraArgs = ['--resume', session, ...(fork === true ? ['--fork-session'] : [])];
-    log('sessions', 'resume', account, session, fork === true ? 'fork' : '', remote === true ? 'remote' : '');
+    const extraArgs = ['--resume', session, ...(fork === true ? ['--fork-session'] : []), ...(stronger === true ? ['--model', STRONGER_MODEL] : [])];
+    log('sessions', 'resume', account, session, fork === true ? 'fork' : '', remote === true ? 'remote' : '', stronger === true ? 'stronger' : '');
     const deco = { origin: 'local', account, session: session.slice(0, 60), ...(f.info.title ? { title: f.info.title.slice(0, 80) } : {}) };   // WP-51 board labels
     return claudeterm.open({ account, cwd, extraArgs, deco, ...(remote === true ? { firstPrompt: REMOTE_PROMPT } : {}) });
   }
@@ -160,4 +161,4 @@ function createSessions({ roots = [], claudeterm, server, repo, fs = nodeFs, now
   return { list, resume, teleport, canvas, find };
 }
 
-module.exports = { createSessions, rootsFrom, headInfo, folderName, SESSION_RE, LIVE_MS, CLOUD_URL, REMOTE_PROMPT, ACCOUNTS };
+module.exports = { STRONGER_MODEL, createSessions, rootsFrom, headInfo, folderName, SESSION_RE, LIVE_MS, CLOUD_URL, REMOTE_PROMPT, ACCOUNTS };

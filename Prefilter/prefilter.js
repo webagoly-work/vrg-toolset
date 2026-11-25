@@ -2,7 +2,7 @@
 //   const pf = require('<repo>/Prefilter/prefilter.js');
 //   const index = pf.buildIndex({ repo, full })                    // reads the local sources; a missing `full` (cloud) is fine
 //   const index = pf.loadIndex({ repo, full, cacheDir?, rebuild? }) // the same, cached in Prefilter/.cache/ (gitignored: job codes)
-//   const a = pf.analyze(text, { index, attachments: [{ name, ext, size? }], now?, rules? })
+//   const a = pf.analyze(text, { index, attachments: [{ name, ext, size? }], prior?: { text?, title?, anchors? }, now?, rules? })
 //     → { verdict: 'context'|'independent'|'unsure', score, threshold, intent, signals, anchors, model, reasons, ms }
 //   const d = pf.dress(text, a, { mode: 'auto'|'context'|'independent'|'unsure', rules? })
 //     → { prompt, parts: { before, user, after }, length, overhead, verdict }
@@ -11,6 +11,10 @@
 // noisy-or 1 − Π(1 − w). ≥ thresholds.context → context, < thresholds.independent → independent, between → unsure.
 // Words are compared accent-folded and lightly stemmed (Hungarian case and plural endings, an English plural), so "Plannerben",
 // "Planner-t" and "planner" are one word. Nothing here touches the network or writes outside cacheDir.
+// Negation (rules.negation): a name right after "ne / nem / not / without …" (or right before "nélkül") is kept as a signal, damped
+// (factor), and is never an anchor: "ne a Plannerről" no longer points at the Planner.
+// Work-line memory (`prior`, rules.prior): a prompt that only says "folytasd" (a continuation word, no VRG anchor of its own) takes the
+// anchors of the previous session (its first prompt / title, or its anchors): the caller knows which session that is.
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 
@@ -322,7 +326,18 @@ function prep(index) {
   return p;
 }
 
-function analyze(text, { index, attachments = [], rules, now } = {}) {
+// the character ranges a negation word covers: `window` tokens after a "before" word, two tokens before an "after" word
+function negationRanges(toks, N) {
+  if (!N) return [];
+  const before = new Set((N.before || []).map(fold)), after = new Set((N.after || []).map(fold)), win = N.window || 3, out = [];
+  toks.forEach((t, i) => {
+    if (before.has(t.norm) && toks[i + 1]) { const last = toks[Math.min(toks.length - 1, i + win)]; out.push([toks[i + 1].at, last.at + last.raw.length]); }
+    if (after.has(t.norm) && i > 0) out.push([toks[Math.max(0, i - 2)].at, t.at]);
+  });
+  return out;
+}
+
+function analyze(text, { index, attachments = [], rules, now, prior } = {}) {
   const t0 = Date.now();
   const R = rules || loadRules(), W = R.weights;
   const idx = index || { names: {}, body: {}, refs: {}, entities: [], files: [], codephrases: [], aliases: [], branches: [], jobs: [] };
@@ -428,6 +443,28 @@ function analyze(text, { index, attachments = [], rules, now } = {}) {
   }
   if (intent !== 'other') add('intent', intent, W.intent);
 
+  // negation: a signal whose text sits in a negated stretch is damped and gives no anchor
+  const negR = negationRanges(toks, R.negation);
+  const negated = new Set();
+  if (negR.length) {
+    for (const s of signals) {
+      if (s.kind === 'intent' || s.kind === 'deictic' || s.kind === 'file' && /^attach:/.test(s.ref || '')) continue;
+      const at = folded.indexOf(fold(s.text));
+      if (at >= 0 && negR.some(([a, b]) => at >= a && at < b)) { s.weight = Math.round(s.weight * (R.negation.factor ?? 0.1) * 1000) / 1000; s.negated = true; negated.add(fold(s.text)); }
+    }
+  }
+  // work-line memory: only a continuation word and nothing of its own → the previous session's anchors
+  let priorAnchors = [], priorTitle = '';
+  const P0 = R.prior || {};
+  const own = signals.filter(s => !['deictic', 'intent'].includes(s.kind) && !s.negated && s.weight >= (P0.ownMin ?? 0.3));
+  if (prior && typeof prior === 'object' && signals.some(s => s.kind === 'deictic') && !own.length) {
+    let pa = Array.isArray(prior.anchors) ? prior.anchors : null;
+    if (!pa && typeof prior.text === 'string' && prior.text.trim()) pa = analyze(prior.text.slice(0, 2000), { index: idx, rules: R }).anchors;
+    priorAnchors = (pa || []).filter(a => a && a.id && a.title).slice(0, P0.maxAnchors || 3);
+    priorTitle = String(prior.title || (typeof prior.text === 'string' ? prior.text : '') || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (priorAnchors.length) add('prior', priorTitle || priorAnchors.map(a => a.title).join(', '), W.prior ?? 0.5, priorAnchors[0].id);
+  }
+
   // the score: noisy-or of every signal
   const score = Math.round((1 - signals.reduce((p, s) => p * (1 - Math.min(0.99, s.weight)), 1)) * 1000) / 1000;
   const T = R.thresholds;
@@ -438,15 +475,18 @@ function analyze(text, { index, attachments = [], rules, now } = {}) {
   if (verdict === 'context') reasons.push((strong.length ? 'erős VRG-jelek: ' : 'több gyenge VRG-jel együtt: ') + top.join(', '));
   else if (verdict === 'unsure') reasons.push('kevés vagy gyenge VRG-jel: ' + (top.join(', ') || '—'));
   else reasons.push('nincs VRG-horgony a szövegben');
+  if (negated.size) reasons.push('tagadva (nem horgony): ' + [...new Set(signals.filter(s => s.negated).map(s => s.text))].join(', '));
+  if (priorAnchors.length) reasons.push('folytatás → az előző munkamenet: ' + (priorTitle || priorAnchors.map(a => a.title).join(', ')));
 
   // anchors: entities and codephrases first, then the sources of the strongest corpus words, then paths
   const anchors = [], seenA = new Set();
-  const pushA = a => { const k2 = 't:' + fold(a && a.title); if (a && a.id && !seenA.has(a.id) && !seenA.has(k2)) { seenA.add(a.id); seenA.add(k2); anchors.push(a); } };
-  for (const s of signals.filter(s => s.kind === 'codephrase')) pushA({ id: s.ref, title: s.text, kind: 'codephrase', source: s.ref });
+  const pushA = a => { const k2 = 't:' + fold(a && a.title); if (a && a.id && !seenA.has(a.id) && !seenA.has(k2) && !negated.has(fold(a.title))) { seenA.add(a.id); seenA.add(k2); anchors.push(a); } };
+  for (const s of signals.filter(s => s.kind === 'codephrase' && !s.negated)) pushA({ id: s.ref, title: s.text, kind: 'codephrase', source: s.ref });
   for (const s of signals.filter(s => s.kind === 'job')) pushA({ id: s.ref, title: s.text, kind: 'job', source: 'jobs' });
-  for (const x of ents) pushA({ id: x.e.id, title: x.e.title, kind: x.e.kind, source: x.e.source });
-  for (const s of signals.filter(s => (s.kind === 'path' || s.kind === 'file' || s.kind === 'branch') && s.ref)) pushA({ id: s.ref, title: s.text, kind: s.kind, source: s.kind === 'branch' ? 'git' : /^attach:/.test(s.ref) ? 'melléklet' : s.ref });
-  for (const s of signals.filter(s => s.kind === 'term' && s.ref)) pushA({ id: s.ref, title: s.text, kind: 'term', source: s.ref.replace(/^(catalog|stack):.*/, '$1') === s.ref ? s.ref : s.ref.split(':')[0] });
+  for (const x of ents) if (!negated.has(fold(x.txt))) pushA({ id: x.e.id, title: x.e.title, kind: x.e.kind, source: x.e.source });
+  for (const s of signals.filter(s => (s.kind === 'path' || s.kind === 'file' || s.kind === 'branch') && s.ref && !s.negated)) pushA({ id: s.ref, title: s.text, kind: s.kind, source: s.kind === 'branch' ? 'git' : /^attach:/.test(s.ref) ? 'melléklet' : s.ref });
+  for (const a of priorAnchors) pushA({ id: a.id, title: a.title, kind: a.kind || 'prior', source: a.source || 'előző munkamenet' });
+  for (const s of signals.filter(s => s.kind === 'term' && s.ref && !s.negated)) pushA({ id: s.ref, title: s.text, kind: 'term', source: s.ref.replace(/^(catalog|stack):.*/, '$1') === s.ref ? s.ref : s.ref.split(':')[0] });
 
   // the model: by intent, cheaper for a plain question, one step up for a long prompt
   const M = R.models || {};
@@ -471,7 +511,7 @@ function dress(text, analysis, { mode = 'auto', rules } = {}) {
   const intentHu = ((R.intents || []).find(i => i.id === a.intent) || { hu: 'egyéb' }).hu;
   const anchors = (a.anchors || []).slice(0, D.maxAnchors || 5);
   const words = [];
-  for (const s of a.signals || []) if (['codephrase', 'job', 'catalog', 'tool', 'feature', 'stack', 'term', 'goTopic', 'doc'].includes(s.kind) && !words.includes(s.text)) words.push(s.text);
+  for (const s of a.signals || []) if (!s.negated && ['codephrase', 'job', 'catalog', 'tool', 'feature', 'stack', 'term', 'goTopic', 'doc'].includes(s.kind) && !words.includes(s.text)) words.push(s.text);
   const stackQuery = words.slice(0, 4).join(' ').replace(/"/g, '') || String(text).slice(0, 40).replace(/["\s]+/g, ' ').trim();
   const goFiles = [...new Set(anchors.map(x => x.source).filter(s => /^GO-.*\.md$/.test(s)))];
   const vars = {
@@ -494,4 +534,4 @@ function dress(text, analysis, { mode = 'auto', rules } = {}) {
   return { prompt, parts: { before, user, after }, length: prompt.length, overhead: prompt.length - user.length, verdict };
 }
 
-module.exports = { buildIndex, loadIndex, analyze, dress, tokenize, stem, fold, stems, loadRules, signature, INDEX_VERSION };
+module.exports = { buildIndex, loadIndex, analyze, dress, tokenize, stem, fold, stems, loadRules, signature, negationRanges, INDEX_VERSION };

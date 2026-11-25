@@ -52,7 +52,7 @@ module.exports = async function probe({ win }) {
     if (rows.map(r => r.s).join() !== [ID2, ID1, ID3].join()) errors.push('order: ' + rows.map(r => r.s).join());
     if (!rows[0].live || rows[1].live) errors.push('live flags: ' + JSON.stringify(rows.map(r => r.live)));
     if (rows[0].acts !== 'fork,canvas') errors.push('live row buttons: ' + rows[0].acts);
-    if (rows[1].acts !== 'resume,fork,remote,canvas') errors.push('idle row buttons: ' + rows[1].acts);
+    if (rows[1].acts !== 'resume,stronger,fork,remote,canvas') errors.push('idle row buttons: ' + rows[1].acts);
     if (rows[1].name !== 'probe idle session') errors.push('title: ' + rows[1].name);
     const tok = await js(`(() => { const p = document.createElement('i'); document.body.append(p); const out = {};
       for (const k of ['accent', 'warm']) { p.style.color = 'var(--mv-' + k + ')'; out[k] = getComputedStyle(p).color; } p.remove(); return out; })()`);

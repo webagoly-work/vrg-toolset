@@ -132,6 +132,27 @@ test('the real Előszűrő on this repo: a codephrase prompt goes to the repo dr
   assert.deepStrictEqual(calls[1].extraArgs, ['--model', 'haiku']);
 });
 
+test('prior and override labels: "folytasd" follows the latest session; a forced route is recorded, an agreeing one is not', () => {
+  const REPO = path.resolve(DASH, '..');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-wp52p-'));
+  const calls = [], labels = [];
+  let latest = { text: 'GO MOBILE folytasd az M16-ot', title: 'GO MOBILE folytasd az M16-ot' };
+  const g = createGate({ prefilter: () => require('../../Prefilter/prefilter.js'), prior: () => latest, record: r => labels.push(r),
+    repo: REPO, full: path.join(tmp, 'no-full'), freeDir: path.join(tmp, 'free'), claudeterm: { open: o => { calls.push(o); return { term: 't1' }; } } });
+  const a = g.analyze({ text: 'folytasd' });
+  assert.strictEqual(a.verdict, 'context');
+  assert.ok(a.anchors.some(x => x.title === 'GO MOBILE'), JSON.stringify(a.anchors));
+  assert.ok(a.reasons.some(r => /előző munkamenet/.test(r)));
+  latest = null;
+  assert.strictEqual(g.analyze({ text: 'folytasd' }).verdict, 'unsure');
+  latest = 42;                                                                  // not a prior object: ignored, not an error
+  g.send({ text: "what's the capital of Peru", account: 'A', mode: 'context' });
+  g.send({ text: "what's the capital of Peru", account: 'A', mode: 'independent' });
+  g.send({ text: 'GO PLANNER', account: 'A' });
+  assert.deepStrictEqual(labels, [{ text: "what's the capital of Peru", label: 'context', source: 'override', verdict: 'independent' }]);
+  assert.strictEqual(calls.length, 3);
+});
+
 test('wiring: kinds, catalog item, IPC namespace, frame page loads the side panel', () => {
   assert.ok(require('../shell/lib/layout.js').KINDS.includes('controller'));
   assert.ok(require('../shell/lib/sheets.js').KINDS.includes('controller'));

@@ -60,7 +60,17 @@ push or merge:
      only video for the Vezérlő. Do not change it without asking. QR: say whether BarcodeDetector exists in this Electron.
    - `claude --model haiku "…"`: confirm that the model flag and a positional first prompt of ~2 000 characters work on Windows.
 
-6. **Then report:** what passed, what you fixed and what is still open. Make no commit or push unless I ask; when I do,
+6. **The Előszűrő hook and your own labels (WP-53).**
+   - `node --test Prefilter/test/next.test.js` and `node Prefilter/hook.js --test "GO MOBILE hol tartunk?"` (from this folder and
+     from `Full\home\claude-free`).
+   - `node Prefilter/eval.js extract`, then `node Prefilter/eval.js run --set mine` is empty until I label: start
+     `node Prefilter/eval.js label` for me in a terminal and leave it to me; afterwards run `fit --set all` and show me the
+     suggestion. Do not `--write` it.
+   - Show me `node Prefilter/hook.js --install --dry`. Install it (repo or `--user`) only when I say so; then send one prompt in a
+     new session and check that the added context arrived (`Prefilter/.cache/log.jsonl`) and that a prompt still goes through
+     with `VRG_PREFILTER_OFF=1`.
+
+7. **Then report:** what passed, what you fixed and what is still open. Make no commit or push unless I ask; when I do,
    first run `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` (the cloud could not refresh the
    inventory: no anonymise map), then commit on the branch above and add the results to `docs/desktop/LOG.md` § WP-50.
    START did not change, so the Kapu needs no rebuild.

@@ -104,6 +104,10 @@ test('resume: --resume in the session folder; fork, remote; live refused unless 
   assert.deepStrictEqual(rec.calls[1].extraArgs, ['--resume', ID1, '--fork-session']);
   s.resume({ account: 'A', session: ID1, remote: true });
   assert.deepStrictEqual([rec.calls[2].extraArgs, rec.calls[2].firstPrompt], [['--resume', ID1], REMOTE_PROMPT]);
+  // the cascade step: the same session on opus
+  s.resume({ account: 'A', session: ID1, stronger: true });
+  assert.deepStrictEqual(rec.calls[rec.calls.length - 1].extraArgs, ['--resume', ID1, '--model', 'opus']);
+  rec.calls.pop();
   // live: refused without fork, a copy is fine
   assert.strictEqual(s.resume({ account: 'A', session: ID2 }).err, 'live');
   assert.strictEqual(rec.calls.length, 3);
@@ -159,7 +163,7 @@ test('pane helpers: ago, filter, actions, state', () => {
   assert.deepStrictEqual(h.filterRows(rows, { q: 'mobile kapu' }), []);
   assert.deepStrictEqual(h.filterRows(null, {}), []);
   assert.deepStrictEqual(h.actionsFor({ live: true }), ['fork', 'canvas']);
-  assert.deepStrictEqual(h.actionsFor({ live: false }), ['resume', 'fork', 'remote', 'canvas']);
+  assert.deepStrictEqual(h.actionsFor({ live: false }), ['resume', 'stronger', 'fork', 'remote', 'canvas']);
   assert.strictEqual(h.teleportAccount({ account: 'B' }), 'B'); assert.strictEqual(h.teleportAccount({ account: 'all' }), 'A');
 });
 

@@ -28,7 +28,8 @@
     "attachVrgExt": 0.4,
     "attachOther": 0.12,
     "termHeading": 0.14,
-    "capitalBoost": 1.25
+    "capitalBoost": 1.25,
+    "prior": 0.5
   },
   "corpusDfCut": 0.35,
   "vrgExts": [
@@ -417,5 +418,33 @@
     "gate"
   ],
   "_genericTech": "Tokens that are VRG ids or titles but also everyday tech words: alone they never count as anchors (only inside a longer phrase).",
-  "_weights": "termName: a word of the VRG lexicon (catalog, START, codephrases, Stack titles, top folders); termHeading: a word only in doc headings; termBody: a word only in GO / CLAUDE.md text; capitalBoost: a capitalised word inside a sentence."
+  "_weights": "termName: a word of the VRG lexicon (catalog, START, codephrases, Stack titles, top folders); termHeading: a word only in doc headings; termBody: a word only in GO / CLAUDE.md text; capitalBoost: a capitalised word inside a sentence.",
+  "_negation": "A name right after a \"before\" word (within `window` tokens) or right before an \"after\" word is negated: its weight × factor, and it is never an anchor. Accent-folded.",
+  "negation": {
+    "before": [
+      "ne",
+      "nem",
+      "sem",
+      "se",
+      "nincs",
+      "not",
+      "no",
+      "without",
+      "except",
+      "never",
+      "dont",
+      "kiveve",
+      "kiveteleve"
+    ],
+    "after": [
+      "nelkul"
+    ],
+    "window": 3,
+    "factor": 0.1
+  },
+  "_prior": "Work-line memory: a prompt with a continuation word and no own signal of weight >= ownMin takes up to maxAnchors anchors of the previous session (weights.prior).",
+  "prior": {
+    "ownMin": 0.3,
+    "maxAnchors": 3
+  }
 }

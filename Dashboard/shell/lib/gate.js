@@ -25,7 +25,7 @@ function attachLines(files) {
   return '\n\nCsatolt fájlok (olvasd be, ha a kéréshez kell):\n' + files.map(f => '- ' + f.abs).join('\n');
 }
 
-function createGate({ prefilter, claudeterm, repo, full, git, freeDir, inboxDir, dialog, pictures, folders = () => [], recentStore, fs = nodeFs, now = () => Date.now(), log = () => {} } = {}) {
+function createGate({ prefilter, prior, record, claudeterm, repo, full, git, freeDir, inboxDir, dialog, pictures, folders = () => [], recentStore, fs = nodeFs, now = () => Date.now(), log = () => {} } = {}) {
   const table = new Map();                                     // 'a<n>' → { abs, name, ext, size }
   let seq = 0, idx = null, idxAt = 0;
   const pf = () => { try { return typeof prefilter === 'function' ? prefilter() : prefilter; } catch (e) { return null; } };
@@ -74,7 +74,9 @@ function createGate({ prefilter, claudeterm, repo, full, git, freeDir, inboxDir,
     if (!P || !I) return NO_PF;
     let a, d;
     try {
-      a = P.analyze(text, { index: I, attachments: c.files.map(f => ({ name: f.name, ext: f.ext, size: f.size })), now: now() });
+      // work-line memory: the most recent local session (main's callback) — used by the Előszűrő only when the prompt says "folytasd" and no more
+      let pr = null; try { pr = typeof prior === 'function' ? prior() : null; } catch (e) { pr = null; }
+      a = P.analyze(text, { index: I, attachments: c.files.map(f => ({ name: f.name, ext: f.ext, size: f.size })), now: now(), ...(pr && (pr.text || pr.anchors) ? { prior: pr } : {}) });
       d = P.dress(text, a, { mode: mode || 'auto' });
     } catch (e) { log('gate', 'analyze failed', e && e.message); return { ok: false, err: 'error', hu: 'Az Előszűrő hibára futott: ' + String(e && e.message || e).slice(0, 120) }; }
     const effective = mode && mode !== 'auto' ? mode : a.verdict;
@@ -110,6 +112,10 @@ function createGate({ prefilter, claudeterm, repo, full, git, freeDir, inboxDir,
     if (typeof cwd !== 'string' || !path.isAbsolute(cwd)) return { ok: false, err: 'error', hu: 'Nincs munkamappa.' };
     if (!claudeterm || !claudeterm.open) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
     log('gate', 'send', p.account, r.a.verdict, r.effective, model, prompt.length);
+    // a route forced against the verdict is a label for the Előszűrő's evaluation (Prefilter/eval.js; stays in its gitignored cache)
+    if (typeof record === 'function' && (p.mode === 'context' || p.mode === 'independent') && p.mode !== r.a.verdict) {
+      try { record({ text: p.text, label: p.mode, source: 'override', verdict: r.a.verdict }); } catch (e) {}
+    }
     const deco = { origin: 'local', account: p.account, title: titleFrom(p.text) || 'Új munkamenet', note: 'Előszűrő: ' + ({ context: 'VRG-kontextus', independent: 'önálló', unsure: 'bizonytalan' }[r.effective] || r.effective) + (model ? ' · ' + model : '') };
     return claudeterm.open({ account: p.account, cwd, firstPrompt: prompt, extraArgs: model ? ['--model', model] : [], deco, maxPrompt: 12000 });
   }

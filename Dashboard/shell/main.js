@@ -593,8 +593,8 @@ const sessionsLib = require('./lib/sessions.js').createSessions({
 const sessAcc = types.enum('A', 'B');
 const sessId = v => typeof v === 'string' && require('./lib/sessions.js').SESSION_RE.test(v);
 ipc.register('sessions', 'list', {}, async () => sessionsLib.list());
-ipc.register('sessions', 'resume', { account: sessAcc, session: sessId, fork: types.bool, remote: types.bool },
-  async p => { const r = sessionsLib.resume(p); return r && r.term ? { term: r.term } : r; }, { optional: ['fork', 'remote'] });
+ipc.register('sessions', 'resume', { account: sessAcc, session: sessId, fork: types.bool, remote: types.bool, stronger: types.bool },
+  async p => { const r = sessionsLib.resume(p); return r && r.term ? { term: r.term } : r; }, { optional: ['fork', 'remote', 'stronger'] });
 ipc.register('sessions', 'teleport', { account: sessAcc }, async p => { const r = sessionsLib.teleport(p); return r && r.term ? { term: r.term } : r; });
 ipc.register('sessions', 'canvas', { account: sessAcc, session: sessId }, async p => sessionsLib.canvas(p));
 
@@ -603,6 +603,9 @@ ipc.register('sessions', 'canvas', { account: sessAcc, session: sessId }, async 
 // An independent request starts in Full/home/claude-free (no CLAUDE.md there: no VRG context is loaded), a context request in the repo.
 const gateLib = require('./lib/gate.js').createGate({
   prefilter: () => { try { return require(path.join(path.resolve(REPO_DIR), 'Prefilter', 'prefilter.js')); } catch (e) { return null; } },
+  // "folytasd" = the most recent local session (its first prompt); a forced route = an evaluation label (Prefilter/.cache/eval)
+  prior: () => { const s = sessionsLib.list().sessions[0]; return s && s.title ? { text: s.title, title: s.title } : null; },
+  record: rec => { try { require(path.join(path.resolve(REPO_DIR), 'Prefilter', 'eval.js')).appendLabel(rec); } catch (e) {} },
   claudeterm: claudeTermLazy, repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR), git: () => { try { return gitExe(); } catch (e) { return ''; } },
   freeDir: path.join(path.resolve(FULL_DIR), 'home', 'claude-free'), inboxDir: path.join(path.resolve(FULL_DIR), 'inbox', 'vezerlo'),
   pictures: (() => { try { return app.getPath('pictures'); } catch (e) { return undefined; } })(),

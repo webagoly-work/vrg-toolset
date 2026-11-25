@@ -27,7 +27,7 @@ node Prefilter/cli.js --stats --rebuild
 node --test Prefilter/test/prefilter.test.js
 ```
 
-### `analyze(text, { index, attachments?, rules?, now? })`
+### `analyze(text, { index, attachments?, prior?, rules?, now? })`
 
 ```
 { verdict: 'context' | 'independent' | 'unsure', score: 0..1, threshold: { context, independent },
@@ -88,11 +88,50 @@ and `after` (≤ `dress.maxOverhead`, 1500 characters).
 All template text is Hungarian and lives in `rules.json`; `{intent_hu} {model} {stack_query} {go_line} {anchor_lines}
 {anchor_list}` are filled in. Tune weights, thresholds, word lists and templates there; no code change needed. Run the tests after.
 
+## Negation and work-line memory (2026-11-25)
+
+- **Negation** (`rules.json → negation`): a name within `window` tokens after *ne, nem, sem, nincs, not, no, without, except, never,
+  kivéve…*, or just before *nélkül*, stays a signal at `factor` × its weight and is never an anchor. "ne a Plannerről, hanem a napelem
+  inverterről" → independent.
+- **Prior** (`analyze(text, { prior: { text?, title?, anchors? } })`, `rules.json → prior`): a prompt with a continuation word and no
+  signal of its own (≥ `ownMin`) takes up to `maxAnchors` anchors of the previous session as one `prior` signal (`weights.prior`). The
+  Vezérlő passes the most recent local session's first prompt; the hook passes the anchors the session has collected so far.
+
+## The hook: every session, not only the Vezérlő's (`hook.js`)
+
+A Claude Code `UserPromptSubmit` hook. The first prompt of a session gets its verdict's dressing as `additionalContext` (the prompt
+itself is never changed or blocked); later prompts are quiet unless they bring a new named thing (catalog, codephrase, job, path,
+branch; the prompt judged context) or turn an independent session towards VRG: then a two-line "új horgony" note with one Stack search.
+Skipped: prompts the Vezérlő already dressed, slash commands, `VRG_PREFILTER_OFF=1`. State: `.cache/hook/<session>.json`; log:
+`.cache/log.jsonl` (metadata and a hash, never the text). Any error → no output, exit 0.
+
+```bash
+node Prefilter/hook.js --test "GO MOBILE hol tartunk?"      # what the hook would add
+node Prefilter/hook.js --install --dry                      # the settings entry (absolute node + script paths)
+node Prefilter/hook.js --install                            # into this repo's .claude/settings.json (--user: ~/.claude/settings.json)
+```
+
+Installed in the repo's settings it runs for every session started in this repo; `--user` makes it run everywhere. Not installed yet:
+the Founder decides (handoff `docs/handoff/2026-11-24_munkamenetek-H.md`).
+
+## Evaluation (`eval.js`)
+
+```bash
+node Prefilter/eval.js run --set seed --misses   # the committed, made-up set (eval/seed.jsonl, 44 prompts)
+node Prefilter/eval.js extract                   # the first prompt of every local session → .cache/eval/candidates.jsonl
+node Prefilter/eval.js label                     # label them: c / i / s / q → .cache/eval/labels.jsonl
+node Prefilter/eval.js fit --set all             # the thresholds with the lowest weighted cost (--write to save them)
+```
+
+Weighted cost: a context prompt judged independent costs 3 (a failed first turn without the rules), the reverse 1 (tokens), unsure
+0.3 / 0.7. A route forced in the Vezérlő against the verdict is saved as a label too. Your own prompts stay in the gitignored cache.
+Seed set today: 0.886 accuracy, no context → independent mistake; `fit` on it alone suggests context ≥ 0.35, which is NOT applied:
+44 made-up prompts are too few to move a threshold; fit on your own labels.
+
 ## Known limits
 
-- Bag of words plus phrases: no syntax, no negation ("*ne* a Plannerről szóljon" still anchors on Planner).
+- Negation is a window rule, not syntax: "nem csak a Plannerről" (not only about the Planner) is read as a negation too.
 - The stemmer is a single suffix strip; irregular stems (`lépés` / `lépését`) and compounds (`routertervező`) can miss.
 - A file name that exists in several folders points at the first (`sessions.js`).
-- Continuation words alone ("folytasd") cannot know *which* line: unsure, by design; the controller should pass the last
-  session's anchors when it has them.
+- The prior is the most recent session, which may not be the line you mean; the Vezérlő's preview shows which one it took.
 - Without the Stack DB and the H: sources (the cloud), the vocabulary is the repo's documents only.

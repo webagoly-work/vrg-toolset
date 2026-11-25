@@ -57,6 +57,9 @@ The gate is stage 1 of five. Each later stage reuses the same index and rules:
 
 ### Vectors, by value over effort
 
+*Status 2026-11-25 (WP-53): 1 built, not installed (`Prefilter/hook.js`); 2 kept as the rule; 3 built (`prior`); 4 the tooling and a
+44-prompt seed set built, the Founder's own labels still to come; 7 built (Munkamenetek → Erősebb modellel); negation built.*
+
 1. **The hook (stage 2).** This brings the economy to every session, not only to the ones started from the Vezérlő. Ship the hook in a disabled state and turn it on per account. *Effort: small. `cli.js` already prints the dressing.*
 2. **Pointers, not content.** Keep dressing with ids and paths, never pasted Stack text. Pasted text arrives with system-reminder authority, which makes it an injection risk, and it leaks client data online. *Rule now; the templates already follow it.*
 3. **Workline memory for "folytasd".** A lone continuation word is the weakest case. Pass the last session's anchors (Munkamenetek knows them: its title, branch and folder) as a prior, so "folytasd" resolves to that line. *Small: one field in `analyze()`.*

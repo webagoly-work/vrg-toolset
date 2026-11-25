@@ -160,7 +160,7 @@ contextBridge.exposeInMainWorld('vrg', {
   },
   sessions: {                                                                    // WP-50 Munkamenetek: an account + a session id, never a path
     list: () => call('sessions', 'list', {}),
-    resume: (account, session, o) => call('sessions', 'resume', { account, session, ...(o && o.fork === true ? { fork: true } : {}), ...(o && o.remote === true ? { remote: true } : {}) }),
+    resume: (account, session, o) => call('sessions', 'resume', { account, session, ...(o && o.fork === true ? { fork: true } : {}), ...(o && o.remote === true ? { remote: true } : {}), ...(o && o.stronger === true ? { stronger: true } : {}) }),
     teleport: account => call('sessions', 'teleport', { account }),
     canvas: (account, session) => call('sessions', 'canvas', { account, session }),
   },
