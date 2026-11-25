@@ -631,9 +631,12 @@ window.VRGVoiceCommands = {
     "megse",
     "hagyd",
     "hagyd abba",
+    "allj",
+    "allj meg",
     "cancel",
     "never mind",
-    "stop"
+    "stop",
+    "halt"
    ]
   },
   {
@@ -764,6 +767,148 @@ window.VRGVoiceCommands = {
     "mute",
     "silent mode",
     "text only"
+   ]
+  },
+  {
+   "id": "hands.invoke",
+   "act": "hands.invoke",
+   "slots": {
+    "target": "text"
+   },
+   "say": [
+    "kattints {target}",
+    "kattints ra {target}",
+    "nyomd meg {target}",
+    "nyomj ra {target}",
+    "klikk {target}",
+    "click {target}",
+    "press {target}",
+    "click on {target}"
+   ]
+  },
+  {
+   "id": "hands.toggle",
+   "act": "hands.toggle",
+   "slots": {
+    "target": "text"
+   },
+   "say": [
+    "pipald be {target}",
+    "jelold be {target}",
+    "kapcsold be {target}",
+    "kapcsold ki {target}",
+    "vedd ki a pipat {target}",
+    "check {target}",
+    "uncheck {target}",
+    "toggle {target}"
+   ]
+  },
+  {
+   "id": "hands.select",
+   "act": "hands.select",
+   "slots": {
+    "target": "text"
+   },
+   "say": [
+    "valaszd {target}",
+    "valaszd ki {target}",
+    "menj a fulre {target}",
+    "select {target}",
+    "choose {target}",
+    "go to tab {target}"
+   ]
+  },
+  {
+   "id": "hands.scroll",
+   "act": "hands.scroll",
+   "slots": {
+    "dir": "text"
+   },
+   "say": [
+    "gorgess {dir}",
+    "gorgesd {dir}",
+    "lapozz {dir}",
+    "ugorj {dir}",
+    "scroll {dir}",
+    "page {dir}"
+   ]
+  },
+  {
+   "id": "hands.focus",
+   "act": "hands.focus",
+   "slots": {
+    "target": "text"
+   },
+   "say": [
+    "valts at {target}",
+    "hozd elore {target}",
+    "menj at {target}",
+    "switch over to {target}",
+    "bring {target} to front"
+   ]
+  },
+  {
+   "id": "hands.log",
+   "act": "hands.log",
+   "slots": {},
+   "say": [
+    "mit csinaltal",
+    "mit csinaltal eddig",
+    "mik voltak a muveletek",
+    "what did you do",
+    "show the action log"
+   ]
+  },
+  {
+   "id": "claude.handoff",
+   "act": "claude.handoff",
+   "slots": {
+    "text": "text"
+   },
+   "say": [
+    "add at claudenak {text}",
+    "add at claude nak {text}",
+    "kerd meg claudeot {text}",
+    "kerd meg claudeot hogy {text}",
+    "claude csinalja meg {text}",
+    "ask claude to {text}",
+    "hand over to claude {text}"
+   ]
+  },
+  {
+   "id": "id.enroll",
+   "act": "id.enroll",
+   "slots": {},
+   "say": [
+    "tanuld meg a hangomat",
+    "jegyezd meg a hangomat",
+    "hangazonositas beallitasa",
+    "learn my voice",
+    "enroll my voice"
+   ]
+  },
+  {
+   "id": "id.verify",
+   "act": "id.verify",
+   "slots": {},
+   "say": [
+    "ki beszel",
+    "felismersz",
+    "ismersz",
+    "who is speaking",
+    "do you recognise me",
+    "verify my voice"
+   ]
+  },
+  {
+   "id": "id.reset",
+   "act": "id.reset",
+   "slots": {},
+   "say": [
+    "felejtsd el a hangomat",
+    "torold a hangomat",
+    "forget my voice",
+    "delete my voice"
    ]
   }
  ],
@@ -905,6 +1050,27 @@ window.VRGVoiceCommands = {
   "read this",
   "be quiet",
   "mute",
-  "speak"
+  "speak",
+  "állj",
+  "állj meg",
+  "kattints",
+  "nyomd meg",
+  "pipáld be",
+  "válaszd ki",
+  "válts át",
+  "görgess le",
+  "görgess fel",
+  "válts",
+  "mit csináltál",
+  "add át Claude-nak",
+  "kérd meg Claude-ot",
+  "tanuld meg a hangomat",
+  "felejtsd el a hangomat",
+  "ki beszél",
+  "click",
+  "scroll down",
+  "switch to",
+  "ask Claude to",
+  "learn my voice"
  ]
 };

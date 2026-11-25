@@ -13,6 +13,8 @@
   #hud[data-state="error"] { border-left-color: var(--mv-crit, #e27b6f); }
   #hud[data-state="speak"] { border-left-color: var(--mv-ok, #7fd4a0); }
   #hud[data-state="listen"] { border-left-color: var(--mv-warm, #e8a873); }
+  #hud[data-state="acting"] { border: 2px solid var(--mv-crit, #e27b6f); }   /* WP-58: an action runs in another program */
+  #hud[data-state="acting"] #dot { color: var(--mv-crit, #e27b6f); }
   #row { display: flex; align-items: center; gap: 8px; }
   #dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; color: var(--mv-accent, #93d3e6); flex: 0 0 auto; }
   #hud[data-state="listen"] #dot { color: var(--mv-warm, #e8a873); }

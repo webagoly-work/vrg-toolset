@@ -41,6 +41,8 @@ const KEYS = {
   'screen.allow':      { type: v => Array.isArray(v) && v.length <= 60 && v.every(x => typeof x === 'string' && /^[\w .-]{1,60}$/.test(x)), def: [] },   // process names; empty = all but the denied
   'screen.deny':       { type: v => Array.isArray(v) && v.length <= 60 && v.every(x => typeof x === 'string' && /^[\w .-]{1,60}$/.test(x)), def: ['keepass', 'keepassxc', '1password', 'bitwarden', 'lastpass', 'credentialuibroker', 'consent'] },
   'screen.denyTitles': { type: v => Array.isArray(v) && v.length <= 60 && v.every(x => typeof x === 'string' && x.length <= 120), def: ['jelsz', 'password', 'bank', 'netbank', 'otp', 'számlakivonat', 'ügyfélkapu', 'privát', 'private', 'incognito', 'inprivate'] },
+  'hands.enabled':     { type: v => typeof v === 'boolean', def: false },           // WP-58 Kéz: actions in other programs (Dev level and above)
+  'identity.enabled':  { type: v => typeof v === 'boolean', def: false },           // WP-59: a matched voice replaces the spoken "igen" at the Dev level
   'speak.enabled':     { type: v => typeof v === 'boolean', def: false },           // WP-57 Hang: say the overlay's short answers aloud
   'speak.engine':      { type: v => ['sherpa', 'sapi', 'web', 'none'].includes(v), def: 'sherpa' },
   'speak.voice':       { type: v => typeof v === 'string' && /^[\w.-]{0,60}$/.test(v), def: '' },

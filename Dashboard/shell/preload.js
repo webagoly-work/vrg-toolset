@@ -172,6 +172,18 @@ contextBridge.exposeInMainWorld('vrg', {
     folders: () => call('gate', 'folders', {}),
     photo: data => call('gate', 'photo', { data: String(data || '') }),
   },
+  hands: {                                                                       // WP-58 Kéz: plan → (confirm) → act in another program; never text entry
+    plan: o => call('hands', 'plan', o && typeof o === 'object' ? o : {}),
+    act: id => call('hands', 'act', { id }),
+    stop: () => call('hands', 'stop', {}),
+    log: () => call('hands', 'log', {}),
+  },
+  identity: {                                                                    // WP-59: main checks the last command's audio itself
+    status: () => call('identity', 'status', {}),
+    enroll: () => call('identity', 'enroll', {}),
+    verify: () => call('identity', 'verify', {}),
+    reset: () => call('identity', 'reset', {}),
+  },
   screen: {                                                                      // WP-56 Szem: read-only, redacted text of the window in front
     describe: what => call('screen', 'describe', { what }),
     status: () => call('screen', 'status', {}),

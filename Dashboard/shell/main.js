@@ -687,7 +687,7 @@ const speakLib = require('./lib/speak.js').createSpeak({
   log,
 });
 const hudWin = require('./lib/hudwin.js').createHudWin({ BrowserWindow, screen, file: path.join(__dirname, '..', 'page', 'hud.html'), preload: path.join(__dirname, 'hud-preload.js'), log });
-const HUD_STATES = ['listen', 'busy', 'result', 'error', 'speak'];
+const HUD_STATES = ['listen', 'busy', 'result', 'error', 'speak', 'acting'];
 ipc.register('screen', 'describe', { what: types.enum('focused', 'windows', 'error', 'read') }, async p => eyesLib.describe(p));
 ipc.register('screen', 'status', {}, async () => eyesLib.status());
 ipc.register('speak', 'say', { text: types.text(600), lang: types.enum('auto', 'hu', 'en') }, async p => speakLib.say(p), { optional: ['lang'] });
@@ -698,8 +698,77 @@ ipc.register('hud', 'show', { state: types.enum(...HUD_STATES), say: types.text(
   if (SELFTEST || (win && !win.isDestroyed() && win.isFocused() && win.isVisible())) { hudWin.hide(); return { ok: true, shown: false }; }
   return { ok: true, shown: await hudWin.show(p) };
 }, { optional: ['detail'] });
+// Kéz (WP-58): controlled actions in OTHER programs through UI Automation (Voice/hands: click / toggle / select / expand / scroll / switch
+// window / window state) — never text entry into another program (the Founder's rule), never the Asztal's own windows, never elevated or
+// denied windows. Dev level and above only (checked here, not in the page); every plan has a risk class from Voice/hands/rules.json; the
+// page asks "igen" for confirm-class plans; blocked plans are refused. Kill switch: the global voice key while an action runs, or "állj".
+// Hangazonosítás (WP-59): the speaker check over the last command's audio (main keeps it in memory: voiceLib.takeAudio); the voiceprint is
+// encrypted with safeStorage (lib/secrets.js). A match only replaces the spoken "igen" for confirm-class actions at the Dev level.
+const handsMod = () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'hands', 'hands.js'));
+let handsInst = null;
+const handsLib = () => {
+  if (handsInst) return handsInst;
+  try {
+    handsInst = handsMod().createHands({
+      spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }), powershell: POWERSHELL, log,
+      policy: () => ({ allow: onSetting('screen.allow', []), deny: onSetting('screen.deny', []), denyTitles: onSetting('screen.denyTitles', []) }),
+      ownPids: () => { try { return app.getAppMetrics().map(m => m.pid).concat(process.pid); } catch (e) { return [process.pid]; } },
+      now: () => Date.now(),
+    });
+  } catch (e) { log('hands', 'load failed', e && e.message); handsInst = null; }
+  return handsInst;
+};
+const HANDS_OFF = { ok: false, err: 'disabled', hu: 'A műveletek ki vannak kapcsolva (Beállítás: hands.enabled).' };
+const handsGate = () => {
+  if (SELFTEST || onSetting('hands.enabled', false) !== true) return HANDS_OFF;
+  if (!['dev', 'all'].includes(onSetting('desk.level', 'user'))) return { ok: false, err: 'level', hu: 'Ehhez fejlesztői szint kell.' };
+  return handsLib() ? null : { ok: false, err: 'unavailable', hu: 'A művelet-modul nem érhető el (Voice/hands).' };
+};
+let handsBusy = false;
+ipc.register('hands', 'plan', {
+  verb: types.enum('invoke', 'toggle', 'select', 'expand', 'collapse', 'scroll', 'focus-window', 'window'), target: types.text(80),
+  role: types.enum('button', 'checkbox', 'tab', 'menuitem', 'link', 'listitem', 'window'), arg: types.enum('down', 'up', 'page-down', 'page-up', 'top', 'bottom', 'minimize', 'maximize', 'restore', 'close'), window: types.text(80),
+}, async p => { const g = handsGate(); return g || handsLib().plan(p); }, { optional: ['target', 'role', 'arg', 'window'] });
+ipc.register('hands', 'act', { id: types.id }, async ({ id }) => {
+  const g = handsGate(); if (g) return g;
+  handsBusy = true;
+  try { return await handsLib().act(id); } finally { handsBusy = false; }
+});
+ipc.register('hands', 'stop', {}, async () => { if (handsInst) handsInst.stop(); handsBusy = false; return { ok: true }; });
+ipc.register('hands', 'log', {}, async () => ({ ok: true, log: handsInst ? handsInst.log() : [] }));
+const identityLib = (() => {
+  let inst = null;
+  return () => {
+    if (inst) return inst;
+    try {
+      const dirs = { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node') };
+      const T = require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js'));
+      const I = require(path.join(path.resolve(REPO_DIR), 'Voice', 'identity', 'identity.js'));
+      const dir = voiceToolDir('identity');
+      let model = '';
+      try { model = require('fs').readdirSync(dir).filter(f => /\.onnx$/i.test(f)).map(f => path.join(dir, f))[0] || ''; } catch (e) {}
+      inst = I.createIdentity({
+        loadAddon: T.addonLoader(dirs), modelPath: model, log,
+        store: { get: () => { const v = secrets.get('voice.identity'); return v ? Buffer.from(v, 'base64') : null; }, set: b => { if (b) secrets.put('voice.identity', Buffer.from(b).toString('base64')); else secrets.del('voice.identity'); } },
+      });
+    } catch (e) { log('identity', 'load failed', e && e.message); inst = null; }
+    return inst;
+  };
+})();
+const ID_NONE = { ok: false, err: 'unavailable', hu: 'A hangazonosítás nem érhető el (Voice/identity).' };
+const NO_AUDIO = { ok: false, err: 'no-audio', hu: 'Nincs friss hangfelvétel: mondd újra a gomb nyomva tartásával.' };
+ipc.register('identity', 'status', {}, async () => { const I = identityLib(); return I ? { ...(await I.status()), enabled: onSetting('identity.enabled', false) === true } : ID_NONE; });
+ipc.register('identity', 'enroll', {}, async () => { const I = identityLib(); if (!I) return ID_NONE; const a = voiceLib.takeAudio(); return a ? I.enroll(a) : NO_AUDIO; });
+ipc.register('identity', 'verify', {}, async () => {
+  if (onSetting('identity.enabled', false) !== true) return { ok: false, err: 'disabled', hu: 'A hangazonosítás ki van kapcsolva (Beállítás: identity.enabled).' };
+  const I = identityLib(); if (!I) return ID_NONE;
+  const a = voiceLib.takeAudio(); return a ? I.verify(a) : NO_AUDIO;
+});
+ipc.register('identity', 'reset', {}, async () => { const I = identityLib(); if (!I) return ID_NONE; I.reset(); return { ok: true }; });
+
 let globalVoice = { on: false, timer: null };
 function globalVoiceKey() {
+  if (handsBusy && handsInst) { handsInst.stop(); handsBusy = false; ipc.emit(win, 'hands', 'stopped', {}); hudWin.show({ state: 'error', say: 'Leállítva.' }); return; }   // WP-58: the kill switch
   if (globalVoice.on) {                                                   // the second press: stop
     clearTimeout(globalVoice.timer); globalVoice.on = false;
     ipc.emit(win, 'voice', 'global', { phase: 'stop' });

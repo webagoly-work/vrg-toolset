@@ -14,6 +14,7 @@ const SESSION_RE = /^v[0-9]{1,6}$/;
 const MAX_CHUNK = 64 * 1024;
 
 function createVoice({ repo, full, settings, emit = () => {}, spawn, log = () => {}, env = process.env } = {}) {
+  let tap = null, last = null;                                       // WP-59: see takeAudio()
   const V = name => require(path.join(repo, 'Voice', ...name.split('/')));
   const get = (k, d) => { try { return settings.get(k); } catch (e) { return d; } };
   let host = null, adapter = null, seq = 0, current = '', vocab = null, loadState = { ok: false, hu: 'Nincs betöltve.' };
@@ -73,29 +74,35 @@ function createVoice({ repo, full, settings, emit = () => {}, spawn, log = () =>
     const lg = lang === 'hu' || lang === 'en' ? lang : get('voice.lang', 'auto');
     h.start(id, { mode: mode === 'command' ? 'command' : 'dictate', lang: lg, prompt: vocabPrompt() });
     current = id;
+    tap = mode === 'command' ? { id, bufs: [], bytes: 0 } : null;          // WP-59: a command's audio, kept in memory for the speaker check only
     return { id };
   }
   function chunk({ id, data } = {}) {
     if (!host || id !== current) return { ok: false, err: 'not-found', hu: 'Nincs ilyen felvétel.' };
     const buf = Buffer.from(String(data || ''), 'base64');
     if (!buf.length || buf.length > MAX_CHUNK || buf.length % 2) return { ok: false, err: 'bad-request', hu: 'Érvénytelen hangdarab.' };
+    if (tap && tap.id === id && tap.bytes + buf.length <= MAX_TAP) { tap.bufs.push(Buffer.from(buf)); tap.bytes += buf.length; }
     return host.push(id, buf) ? {} : { ok: false, err: 'full', hu: 'A felvétel túl hosszú.' };
   }
   async function stop({ id } = {}) {
     if (!host || id !== current) return { ok: false, err: 'not-found', hu: 'Nincs ilyen felvétel.' };
     current = '';
+    if (tap && tap.id === id) { last = { id, buf: Buffer.concat(tap.bufs), at: Date.now() }; tap = null; }
     const r = await host.stop(id);
     if (r && r.ok !== false) emit('final', { id, mode: r.mode, text: r.text, lang: r.lang, ms: r.ms });
     return r && r.ok === false ? r : { id, text: r.text, lang: r.lang, ms: r.ms, audioMs: r.audioMs, firstPartialMs: r.firstPartialMs };
   }
   function cancel({ id } = {}) {
     if (!host || id !== current) return { ok: false, err: 'not-found', hu: 'Nincs ilyen felvétel.' };
-    current = ''; host.cancel(id);
+    current = ''; host.cancel(id); tap = null;
     return {};
   }
   async function close() { if (host) await host.close(); host = null; adapter = null; }
 
-  return { status, enable, warm, start, chunk, stop, cancel, close, rebuildVocab: () => { vocab = null; return vocabPrompt().length; } };
+  // the last command's audio (16 kHz PCM16), once, within TAP_MS of its end; never written anywhere, dropped when taken or stale
+  function takeAudio() { const l = last; last = null; return l && Date.now() - l.at < TAP_MS && l.buf.length ? l.buf : null; }
+  return { takeAudio, status, enable, warm, start, chunk, stop, cancel, close, rebuildVocab: () => { vocab = null; return vocabPrompt().length; } };
 }
 
-module.exports = { createVoice, SESSION_RE, MAX_CHUNK };
+const MAX_TAP = 12 * 16000 * 2, TAP_MS = 30000;                   // ≤ 12 s of a command's audio, for ≤ 30 s
+module.exports = { createVoice, SESSION_RE, MAX_CHUNK, MAX_TAP, TAP_MS };
