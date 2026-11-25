@@ -368,3 +368,48 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   gets `stronger`).
 - Tests: `Prefilter/test/next.test.js` 4 (on the real repo index), wp-50 / wp-52 extended; the full Dashboard suite: 321 pass, the
   same 68 environment failures.
+
+## WP-55 — Parancs-héj: the voice command overlay (phase 2 of the voice work, 2026-11-25, cloud session, a fork)
+
+- Asked for: short spoken commands and questions on top of the whole Desktop (push-to-talk, like the control-assist shell of
+  Westworld S1E5), the answer in as few words as possible, while it drives the Desktop and knows what is on screen. Phase 1
+  (WP-54, the offline dictation) delivers the words; this layer understands and acts on the `command`-mode ones.
+- `Voice/command/commands.json`: the registry as data, 34 commands with Hungarian and English ways to say them. It covers:
+  - open a catalog item, go to a Lap (next / previous), the Munkapad, the board / list, the Dashboard or Desktop view;
+  - focus / maximise / restore / shrink / **close** a window;
+  - Munkamenetek: resume the latest, on opus, open the canvas;
+  - the Vezérlő: fill (never sends), **send**, clear;
+  - window labels: note, title, machine, origin, colour;
+  - the level with an authorisation phrase;
+  - questions: screen, window, sessions, live, Vezérlő;
+  - mégse, ismételd, súgó.
+
+  Plus the wake word, the fillers, yes / no, the auth phrases, colours, origins, machines, pane-kind names, and `phrases` (the words
+  phase 1 biases the recogniser towards). `build.js` writes `commands.js` (`window.VRGVoiceCommands`) for the frame page, whose CSP
+  cannot fetch JSON.
+- `Voice/command/parse.js` (UMD): fold and stem exactly as `Prefilter/prefilter.js` does, then a phonetic layer (double letters,
+  ly→j, w→v …) with an edit distance that grows with the word, so recogniser slips land ("planert", "bögésző"). Patterns with
+  `{slot}` / `{slot?}`, fillers dropped, up to two unknown words skipped. Slots resolve against the catalog, the Lapok, the visible
+  windows ("ez / this" = the focused one), colours, origins, machines, levels, the auth phrase and free text (kept as spoken).
+  Two close candidates give a ≤ 5-word ask-back ("Melyik: X vagy Y?"), answered by name or "az első / a második"; confidence
+  < 0.6 asks "Úgy érted: …?".
+- `Dashboard/page/voicecmd.js` + `voicecmd.css`: the HUD over the top strip (DOM chrome, never under a native view; the shell's
+  `desktop.cover` hides the native views only while it asks, takes typed input or shows its history). It shows the live words
+  while listening, then a ≤ 6-word answer with a dim detail line and a hover history (last 5).
+  - It acts only through the page APIs: VRGDesk, VRGSheets (activate, showTree, sessionBoard, decorate, labelOf), VRGFrame, the
+    Vezérlő pane instance, `vrg.sessions`. Maximise / shrink click the Lap window's own header buttons.
+  - Closing a window and sending a prompt wait for "igen" (spoken, typed, Enter or the button, 12 s); mégse or Esc cancels.
+  - "írd a vezérlőbe: …" only fills the box.
+  - dev / all levels need the phrase ("VRG, fejlesztői szint. Jogosult vagyok."), and the answer says that speaker verification
+    comes in a later phase.
+  - "Mi van a képernyőn?" is built by `providers` from the Desktop's own state: the view, the Lap, its windows with their labels,
+    the focused one, the live sessions. Phase 3 pushes a screen-reading provider there.
+  - Typed fallback: Ctrl+Shift+Space. It attaches to `window.VRGVoice` (WP-54) when it appears and ignores `dictate` events.
+    `window.VRGVoiceCmd = { run, parse, state, vocabulary, providers, describe, openInput }`.
+- Tests:
+  - `Voice/command/test/parse.test.js`: 6 tests, 71 utterances in Hungarian and English, with slips, slots, confirmations, auth, ask-back and unknown input.
+  - `Dashboard/test/wp-55.test.js`: 5 tests (the registry, every act has an executor, confirm on close / send, phrases cover the commands, commands.js in step, the helpers).
+  - A Chromium run with stub VRGDesk / VRGSheets / VRGFrame / vrg / VRGVoice: 19 checks (open, the confirm flow by voice, Esc and button, fill never sends, the level gate, the screen summary, max, note, resume, canvas, ask-back, voice final, dictate ignored, unknown, typed fallback, colours from the tokens), no page errors.
+  - The full Dashboard suite: 326 pass, the same 68 environment failures. Not run: the real Electron frame, a real microphone.
+- Wiring (the main session): `voicecmd.css` after `panes.css`, then the scripts `../../Voice/command/commands.js`,
+  `../../Voice/command/parse.js`, `voicecmd.js` after `desk.js` / `sheets.js` (their order relative to WP-54's `voice.js` does not matter).
