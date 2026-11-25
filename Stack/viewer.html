@@ -140,6 +140,7 @@
 <script src="lib/strings.js"></script>
 <script src="lib/viewer-layout.js"></script>
 <script src="lib/editdialog.js"></script>
+<script src="lib/live.js"></script>
 <script>
 'use strict';
 (function () {
@@ -244,12 +245,13 @@ async function load(note) {
 
 /* ================= live: a build finished (serve.js /api/events) → refetch those layers, glow what differs */
 let es = null;
+// the server connection is shared by every Stack tab of this browser (lib/live.js): a browser allows six per server
 function live() {
-  if (window.STACK_BUNDLE || !/^https?:/.test(location.protocol) || typeof EventSource !== 'function') { $('live').textContent = ''; return; }
-  es = new EventSource('/api/events');
-  es.onopen = () => { $('live').textContent = '● élő'; $('live').className = 'pc on'; $('live').title = 'A szerver szól, ha egy build elkészült: a változott rétegek újratöltődnek, a változott csomópontok lüktetnek · live: a finished build reloads the changed layers'; };
-  es.onerror = () => { $('live').textContent = '○ élő'; $('live').className = 'pc'; $('live').title = 'Nincs kapcsolat a szerverrel (node serve.js) · no server'; };
-  es.addEventListener('changed', ev => { let d = null; try { d = JSON.parse(ev.data); } catch (e) { d = null; } if (d) refresh(d); });
+  if (window.STACK_BUNDLE || !window.StackLive || !StackLive.served) { $('live').textContent = ''; return; }
+  es = { readyState: 0 };
+  StackLive.on('status', ok => { es.readyState = ok ? 1 : 0; $('live').textContent = ok ? '● élő' : '○ élő'; $('live').className = ok ? 'pc on' : 'pc';
+    $('live').title = ok ? 'A szerver szól, ha egy build elkészült: a változott rétegek újratöltődnek, a változott csomópontok lüktetnek · live' : 'Nincs kapcsolat a szerverrel (node serve.js) · no server'; });
+  StackLive.on('changed', d => { if (d) refresh(d); });
 }
 let refreshing = null;
 async function refresh(d) {
@@ -676,7 +678,8 @@ function showTip(h, x, y) {
 function pageOf(c) {
   const id = c.id, k = id.slice(2), P = PAGE[c.L]; if (!P) return '';
   if (c.L === 'Q' || c.L === 'L') return P + '#sel=' + encodeURIComponent(k);
-  if (c.L === 'I' || c.L === 'A') return P + '#sel=' + encodeURIComponent(id);
+  if (c.L === 'I') return P + '#sel=' + encodeURIComponent(k);
+  if (c.L === 'A') { const m = /^(agent|brief|mem|sched)\.(.+)$/.exec(k), g = /^go\.GO-(.+)$/.exec(k); return P + (m ? '#sel=' + m[1] + ':' + encodeURIComponent(m[2]) : g ? '#sel=go:' + encodeURIComponent(g[1]) : ''); }
   if (c.L === 'U' && /^U:run\./.test(id)) return P + '#run=' + encodeURIComponent(id.slice(6));
   return P;
 }
@@ -750,7 +753,12 @@ function select(ids, quiet) {
     if (pts.length >= 2) spines.push(pts);
   }
   lightDirty = true; lineDirty = true; frameDirty = true;
-  if (bus && !quiet) try { bus.postMessage({ type: 'select', from: 'viewer', ids: sel }); } catch (e) {}
+  if (bus && !quiet) try {
+    // the page contract's bus (S7): the selection, then its string, so the layer pages light it without computing it
+    const seq = 'viewer:' + Date.now();
+    bus.postMessage({ type: 'select', from: 'viewer', ids: sel, seq, at: Date.now() });
+    if (strMembers.size) bus.postMessage({ type: 'string', from: 'viewer', seed: sel, members: [...strMembers].map(([id, sc]) => [id, Math.round(sc * 1000) / 1000]), title: (cellById.get(sel[0]).node.title || sel[0]).slice(0, 40), seq, at: Date.now() });
+  } catch (e) {}
   const c = cellById.get(sel[sel.length - 1]), n = c.node, s = strs[strs.length - 1], T = LT[c.L];
   const by = {}; if (s) for (const m of s.members) if (m.id !== c.id) (by[m.layer] = by[m.layer] || []).push(m);
   const text = !T.cls && dec ? esc(dec.decode(T.src.subarray(c.s, Math.min(c.e, c.s + 900)))) + (c.e - c.s > 900 ? '…' : '') : '';

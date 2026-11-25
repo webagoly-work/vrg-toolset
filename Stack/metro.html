@@ -685,7 +685,14 @@
     const wr = sel && sel.kind === 'run' ? [sel.r.sid] : sel && sel.kind === 'runs' ? sel.rs.map(r => r.sid) : [];
     for (const el of svg.querySelectorAll('.run')) el.classList.toggle('sel', wr.length > 0 && el.dataset.r.split(',').some(i => wr.includes(i)));
   }
+  // the selection as stack node ids, for the other pages (S7)
+  function selIds(s) {
+    const x = parseSel(s); if (!x) return [];
+    return x.kind === 'line' ? ['L:' + x.l.id] : x.kind === 'st' ? ['L:s' + x.s.sid] : x.kind === 'grp' ? x.xs.map(t => 'L:s' + t.sid)
+      : x.kind === 'run' ? ['U:run.' + x.r.sid] : x.kind === 'runs' ? x.rs.map(r => 'U:run.' + r.sid) : [];
+  }
   function select(s, scroll) {
+    if ((s || '') !== F.sel && window.StackLive) StackLive.selected(selIds(s || ''));
     F.sel = s || ''; toHash(); paintSel(); renderPanel();
     document.body.classList.toggle('sheet', !!F.sel);
     if (scroll && F.sel) {
@@ -866,6 +873,20 @@
   fromHash(); fillQ(); $('#fS').value = F.s; $('#fL').value = F.ln;
   render(); renderPanel();
   if (F.sel) { document.body.classList.toggle('sheet', true); select(F.sel, true); }
+
+  // the page contract (S7, lib/live.js): tracks, labels, stations and runs light up for a string selected elsewhere
+  if (window.StackLive) StackLive.contract({
+    layer: 'L', data: M,
+    items: () => {
+      const out = [];
+      for (const el of document.querySelectorAll('#msvg [data-l], #map .lab[data-l]')) if (!el.classList.contains('stn')) out.push([el, el.getAttribute('data-l').split(' ').map(x => 'L:' + x)]);
+      for (const el of document.querySelectorAll('#msvg .stn')) out.push([el, el.dataset.s.split(',').map(i => ST[+i]).filter(Boolean).map(x => 'L:s' + x.sid)]);
+      for (const el of document.querySelectorAll('#msvg .run')) out.push([el, el.dataset.r.split(',').map(x => 'U:run.' + x)]);
+      return out;
+    },
+    select: id => { id = String(id || ''); const m = /^L:s([0-9a-f]{8})$/.exec(id), st = m && ST.find(x => x.sid === m[1]); select(st ? `s:${st.sid}@${st.line}` : /^U:run\./.test(id) ? 'run:' + id.slice(6) : id.replace(/^L:/, ''), true); },
+    getSelection: () => selIds(F.sel),
+  });
 })();
 </script>
 </body>

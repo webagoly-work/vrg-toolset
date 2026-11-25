@@ -581,6 +581,7 @@
   const canWrite = q => !!(window.StackEdit && StackEdit.available() && fileOf(q));
   const reloadAfter = () => location.reload();
   function select(id, scroll) {
+    if ((id || '') !== F.sel && window.StackLive) StackLive.selected(id ? ['Q:' + id] : []);
     F.sel = id || '';
     const q = Q.find(x => x.id === id), x = !q && NF.find(y => y.id === id);
     const P = $('#panel');
@@ -632,6 +633,14 @@
   addEventListener('hashchange', () => { fromHash(); render(); select(F.sel, true); });
 
   fromHash(); render(); select(F.sel, true);
+
+  // the page contract (S7, lib/live.js): this page's Q nodes light up for a string selected on any other page
+  if (window.StackLive) StackLive.contract({
+    layer: 'Q', data: D,
+    items: () => [...document.querySelectorAll('[data-q], [data-n]')].map(el => [el, ['Q:' + (el.dataset.q || el.dataset.n)]]),
+    select: id => select(String(id || '').replace(/^Q:/, ''), true),
+    getSelection: () => F.sel ? ['Q:' + F.sel] : [],
+  });
 })();
 </script>
 </body>

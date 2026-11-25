@@ -83,6 +83,11 @@ Never load `out/stack.json` whole. Ids look like:
   pages reload with their selection (`lib/live.js`, badge ● élő), Rétegverem pulses the changed nodes. `GET /api/live`
   says what it is doing; `node serve.js --no-live` turns it off. Code, documents, commits and recordings follow the next
   full build.
+- **The page contract** (S7, 2026-11-25): the six layer pages (Ötletfolyam, Döntésnapló, Vonaltérkép, Vezérlőterem,
+  Futásnapló, Commit-pixel) talk to each other. Select something in one and the other open ones light its Stack String
+  in their own way (ice glow, the rest greyed; the corner badge names it, ✕ clears). The badge carries the build stamp
+  (`#N HH:MM`), amber when a newer build exists. `window.STACK_PAGE` is each page's API; `test/pages.test.js` lints the
+  contract. One server connection serves every Stack tab of the browser.
 - **The write gateway** (S6, 2026-11-25; decisions only): with `node serve.js`, the Döntésnapló's **✎ beírása** buttons and
   the Rétegverem card of an open decision write its answer into its DECISIONS file: one fixed dated line under the
   question (`> **VIS-Q5** answered 2026-11-25: **B** — … · _(Döntésnapló)_`), only after the diff is shown and approved,
@@ -126,7 +131,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `lib/edit.js` · `lib/editdialog.js` | the write gateway (S6): the decisions editor and its diff dialog |
 | `lib/layertext.js` · `lib/viewer-layout.js` · `lib/bytes.js` | the Viewer's layer text + timeline (build stage), layout, and the read-only folder bytes for `serve.js` `GET /api/bytes` |
 | `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js` |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js test/pages.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 

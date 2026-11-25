@@ -49,7 +49,8 @@ function changedEvent() {
   if (!ix) return;
   const b = ix.build || { kind: 'full' };
   const layers = b.kind === 'incremental' ? b.layers : Object.keys(ix.layers || {}).filter(L => { const d = (ix.diff || {})[L]; return !d || d.changed.length || d.added.length || d.removed.length; });
-  send('changed', { generated: ix.generated, layers, build: b });
+  let no = 0; try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(ROOT, 'out', 'build-stamp.js'), 'utf8'), box); no = (box.window.STACK_BUILD || {}).no || 0; } catch { no = 0; }
+  send('changed', { generated: ix.generated, layers, build: b, no });
 }
 function send(event, data) { const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`; for (const res of clients) res.write(msg); }
 

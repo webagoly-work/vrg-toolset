@@ -392,7 +392,9 @@
     }
   }
   function select(id, { scroll = false } = {}) {
-    sel = id && N.has(id) ? id : null;
+    const next = id && N.has(id) ? id : null;
+    if (next !== sel && window.StackLive) StackLive.selected(next ? ['I:' + next] : []);
+    sel = next;
     applyFocus(); renderCard();
     const h = new URLSearchParams(location.hash.slice(1));
     if (sel) h.set('sel', sel); else h.delete('sel');
@@ -522,6 +524,14 @@
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const p = fitPpd(); if (Math.abs(p - ppd) > 0.5 && !phone()) { ppd = p; draw(); } }, 200); });
   select(hash.get('sel'), { scroll: !!hash.get('sel') });
   if (!hash.get('sel') && cut < tEnd) follow();
+
+  // the page contract (S7, lib/live.js): the string's ideas light up, the rest of the river greys
+  if (window.StackLive) StackLive.contract({
+    layer: 'I', data: D,
+    items: () => [...N.values()].filter(n => n.el).map(n => [n.el, ['I:' + n.id]]),
+    select: id => select(String(id || '').replace(/^I:/, ''), { scroll: true }),
+    getSelection: () => sel ? ['I:' + sel] : [],
+  });
 })();
 </script>
 </body>

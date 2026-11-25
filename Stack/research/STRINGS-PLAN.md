@@ -166,6 +166,13 @@ source file changes (hand edit, a session, the gateway)
 - **file:// fallback:** the existing 60 s re-read of the data file stays. Live updates, the bus and edits need `node serve.js`, and the pages say so.
 - **The MCP server stays read-only.** It never builds and never edits.
 
+- **Built (S7, 2026-11-25):** the six layer pages sign the contract through `lib/live.js` (`StackLive.contract`):
+  `window.STACK_PAGE`, the bus (`select`, then `string` with the members, computed by the selecting page from
+  `out/stack-data.js`; `changed`), the build stamp (`graph.build.no`, in every page data file and `out/build-stamp.js`)
+  in the corner badge, amber when a newer build is known. `test/pages.test.js` is the lint. One server connection per
+  browser: the tab holding the Web Lock `vrg-stack-sse` keeps `/api/events` and relays it on the bus (six pages with a
+  stream each had used up the browser's six connections to the server and nothing else could load).
+
 ### 3.3 Cross-page highlight, in practice
 
 Each page maps a string onto its own vocabulary:
@@ -338,7 +345,7 @@ Each work package (WP) is one commit (or a few), with its tests. **S** is under 
 | **S4** | **Füzértábla** `board.html` + `lib/board.js` → `out/board-data.js`; reach squares, class, pulse, "looks done"; anonymised export; START F repointed; `notes/devlog/board.js` forwards | S1–S3 | L | parity test vs. BOARD.html passes; `check-start` clean on main; Kapu rebuilt |
 | **S5** ✅ 11-25 (measured in a sandbox; to measure on the PC) | Live bus: `serve.js` fs.watch + source map + **incremental per-layer build** + SSE `/api/events`; `live.js` shared by every page; `BroadcastChannel` selection | — (parallel to S1–S4) | L | a hand edit of `lines.js` reaches an open metro page in under 2 s |
 | **S6** ◐ 11-25 (decisions only, by the Founder's choice) | Write gateway `lib/edit.js` ✅ + preview/apply endpoints ✅ + diff dialog component ✅ (`lib/editdialog.js`); editors: `decisions` ✅ (one fixed answer line, = ROADMAP 2.7); `threads`, `lines`, `features`, `ideas` not built | S4, S5 | L | round-trip tests on throwaway copies; hash-conflict refusal tested; nothing commits |
-| **S7** | Page contract retrofit: build stamp, `STACK_PAGE`, bus, lint test, for the six Stack pages | S5 | M | selecting Planner in one page highlights it in the other five |
+| **S7** ✅ 11-25 | Page contract retrofit: build stamp, `STACK_PAGE`, bus, lint test, for the six Stack pages | S5 | M | selecting Planner in one page highlights it in the other five |
 | **S8** ✅ 11-25 | Layer text stage: `out/layertext/<L>.bin` + `.idx`, deterministic, with a diff between builds | — (parallel) | M | the same build gives identical bytes; a one-node change differs only in that range |
 | **S9** ✅ 11-25 (perf to measure here) | **Viewer v1**: natural-order cells, Hilbert-in-shader particles, presets + Auto, GPU picking with the words tooltip, strings drawn, pillar spine | S1, S8 | L | 60 fps at Fine here; the phone usable at Normál; LAYERS §1 "The stack itself" row ✅ |
 | **S10** ✅ 11-25 (the gateway parts wait for S6) | Viewer v2: zoom LOD ✅, C byte stream ✅ (`GET /api/bytes`), time scrubber ✅ (`out/layertext/time.js`), live diff glow ✅ (SSE `/api/events` after any finished build; S5's incremental build still open), actions from the card ✅ for decisions (answer through the S6 diff dialog), ◐ elsewhere (layer page with the node selected, the string, a session prompt) | S5, S6, S9 | L | an edit on the board glows its bytes in the Viewer |

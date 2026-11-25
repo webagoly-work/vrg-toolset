@@ -651,6 +651,7 @@
     toHash(); render(); renderPanel();
   }
   function select(sid) {
+    if ((sid || '') !== F.run && window.StackLive) StackLive.selected(sid ? ['U:run.' + sid] : []);
     F.run = sid || '';
     if (F.run && !BY.get(F.run).perDay[F.d]) F.d = runDays(BY.get(F.run))[0];
     toHash(); render(); renderPanel();
@@ -696,6 +697,14 @@
   addEventListener('hashchange', () => { fromHash(); $('#fS').value = F.q; $('#fG').value = F.g; toHash(); render(); renderPanel(); });
   fromHash(); $('#fS').value = F.q; $('#fS').classList.toggle('on', !!F.q); $('#fG').value = F.g;
   renderLive(); toHash(); render(); renderPanel();
+
+  // the page contract (S7, lib/live.js): the string's runs light up as bars and list rows
+  if (window.StackLive) StackLive.contract({
+    layer: 'U', data: R,
+    items: () => [...document.querySelectorAll('[data-sid]')].filter(el => BY.has(el.dataset.sid)).map(el => [el, ['U:run.' + el.dataset.sid]]),
+    select: id => { const s = String(id || '').replace(/^U:run\./, ''); if (BY.has(s)) select(s); },
+    getSelection: () => F.run ? ['U:run.' + F.run] : [],
+  });
 })();
 </script>
 </body>

@@ -313,3 +313,14 @@ DECISIONS file, whatever that file's own format; the threads, lines, features an
 | STK-P91 | How a page refreshes | **A** `lib/live.js` reloads the page (its #hash, so its selection, kept) when a build changed its layer; it waits while a dialog is open or text is being typed, and offers the reload on its badge | every layer page already restores its state from the hash; a reload is the one refresh that cannot go stale. Rétegverem and Érintésnyom refetch in place |
 | STK-P92 | The gateway's rebuild | **A** with the live build on, the dialog waits for the server's `changed` instead of starting a full build | one build, not two; the answer is on the pages in about a second |
 
+## The page contract S7 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P93 | Who computes the string | A every page, from the graph · **B the page where the user selected; the bus carries `string` with the members** | one page loads `out/stack-data.js` (on the first selection), the others only light members; a page that got a `select` without a `string` (an old page) computes it itself after 2.5 s |
+| STK-P94 | How each page lights a string | **A** one highlighter in `lib/live.js` (ice glow on members, the rest at a quarter), each page gives `items()`: its elements and the node ids they stand for | §3.3's vocabularies come out of the elements each page already draws (river ideas, metro tracks and stations, agent and GO cards, run bars, commit day cells and rows, decision cards); a MutationObserver puts it back after the page re-renders |
+| STK-P95 | The build stamp | **A** a number that only grows (`graph.build.no`, full or incremental) and its time, in every page data file; the badge shows `#N HH:MM` and turns amber when the server (or `out/build-stamp.js` every 60 s from file://) knows a newer one | one stamp for every page; amber means "this page is older than the stack", a click reloads it |
+| STK-P96 | The six-connection limit | **A** one `/api/events` per browser, held by the tab with the Web Lock `vrg-stack-sse`, relayed on the bus; the Viewer and the gateway dialog use it too | found in the six-page test: each page's own stream took one of the browser's six connections to the server, and the sixth left none for `lib/strings.js` |
+| STK-P97 | When a page reports a selection | **A** only after the user has touched the page (a key or a pointer) | a page opened with `#sel=` in its link must not take over the other pages' highlight |
+| STK-P98 | The lint (§3.1 ①) | **A** `test/pages.test.js`: data only from the generated file, which carries `build` and `schema`; no literal node id in the page; no long literal record list; `lib/live.js` loaded, the contract signed with the right layer, `StackLive.selected` called | the checks a new layer page must also pass |
+

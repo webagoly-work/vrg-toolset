@@ -38,6 +38,14 @@
   // the next `changed` (a build finished) or a failed live build on /api/events, at most `ms` long
   function liveDone(ms) {
     return new Promise(ok => {
+      // the shared server connection when the page has it (lib/live.js), else one of its own for this wait
+      if (root.StackLive && StackLive.served) {
+        const offs = []; const done = r => { offs.forEach(f => f()); clearTimeout(t2); ok(r); };
+        const t2 = setTimeout(() => done({ ok: false, msg: 'nem jött jelzés (START R → B) · no signal' }), ms);
+        offs.push(StackLive.on('changed', d => done({ ok: true, kind: (d && d.build && d.build.kind) || 'build' })));
+        offs.push(StackLive.on('live', d => { if (d && d.state === 'error') done({ ok: false, msg: d.msg || 'hiba' }); }));
+        return;
+      }
       let es = null; const end = r => { try { es && es.close(); } catch (e) {} clearTimeout(t); ok(r); };
       const t = setTimeout(() => end({ ok: false, msg: 'nem jött jelzés (START R → B) · no signal' }), ms);
       try { es = new EventSource('/api/events'); } catch (e) { end({ ok: false, msg: 'no EventSource' }); return; }
