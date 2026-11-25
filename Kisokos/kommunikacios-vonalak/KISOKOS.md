@@ -10,16 +10,16 @@
 |---|---|---|---|---|---|
 | Hálózati 50 Hz | viszonyítás | 50 Hz | — | — | Minden áramkör. A gyengeáramú vonalak szerelésénél ettől kell elválasztani őket. |
 | Analóg jelszint: 0–10 V, 1–10 V, 4–20 mA | vezetékes jelszint | egyenáram (DC) | folyamatos érték, nem bitfolyam | 4–20 mA: több száz méter; 0–10 V: néhány tíz méter, a feszültségesés miatt | LED-tápegységek és lámpatestek fényerő-vezérlése, hőszivattyúk és szellőzők bemenetei, szenzorok. |
-| DALI | vezetékes busz | 300 Hz – 2,4 kHz | 1200 bit/s | legfeljebb 300 m (a keresztmetszettől függ) | Világításvezérlés nagyobb lakásban, irodában: lámpatestenként szabályozott fényerő, jelenetek, színhőmérséklet. |
-| KNX TP | vezetékes busz | 2 kHz – 20 kHz | 9600 bit/s | vonalszegmensenként legfeljebb 1000 m kábel | Kapcsolás, dimmelés, redőny, fűtés, jelenetek, jelenlét-érzékelés egy közös buszon; okosotthon-központ felé átjáróval. |
+| DALI | vezetékes busz | 300 Hz – 2,4 kHz | 1200 bit/s | két eszköz között legfeljebb 300 m 1,5 mm²-es vezetéken (a feszültségesés legfeljebb 2 V); az összes kábel ennél hosszabb is lehet | Világításvezérlés nagyobb lakásban, irodában: lámpatestenként szabályozott fényerő, jelenetek, színhőmérséklet. |
+| KNX TP | vezetékes busz | 2 kHz – 20 kHz | 9600 bit/s | vonalszegmensenként legfeljebb 1000 m kábel; a busztáptól legfeljebb 350 m-re lehet eszköz, két eszköz között legfeljebb 700 m | Kapcsolás, dimmelés, redőny, fűtés, jelenetek, jelenlét-érzékelés egy közös buszon; okosotthon-központ felé átjáróval. |
 | RS-485 · Modbus RTU | vezetékes busz | 5 kHz – 120 kHz | jellemzően 9,6–115,2 kbit/s | legfeljebb kb. 1200 m kis sebességen | Fogyasztásmérők az elosztóban, napelemes inverter, akkumulátor, hőszivattyú, töltő: ezek összekötése egy vezérlővel vagy okosotthon-központtal. |
 | M-Bus | vezetékes busz | 150 Hz – 10 kHz | 300–9600 bit/s, jellemzően 2400 | a mérők számától és a sebességtől függően néhány száz métertől 1–2 km-ig | Társasházi hő-, víz- és gázmérők távleolvasása; lakáson belüli almérők. |
-| 1-Wire | vezetékes busz | 5 kHz – 150 kHz | 15,4 kbit/s (overdrive módban 125 kbit/s) | jó topológiával néhány tíz méter, legfeljebb kb. 100 m | Hőmérők (DS18B20) fűtéshez, puffertartályhoz, szobákhoz; saját építésű ESPHome-rendszerek. |
+| 1-Wire | vezetékes busz | 5 kHz – 150 kHz | kb. 15–16 kbit/s (overdrive módban 125 kbit/s, csak nagyon rövid vezetéken) | jó topológiával néhány tíz méter, legfeljebb kb. 100 m | Hőmérők (DS18B20) fűtéshez, puffertartályhoz, szobákhoz; saját építésű ESPHome-rendszerek. |
 | Analóg telefonvonal | vezetékes hálózat | 300 Hz – 3,4 kHz | egy hangcsatorna | kilométerek | Régi lakások telefonvezetékei; riasztók, liftek tárcsázója; ma sokszor csak az xDSL hordozója. |
-| VDSL2 | vezetékes hálózat | 25 kHz – 35 MHz | rövid vonalon több száz Mbit/s (35b profil), hosszabbon jóval kevesebb | néhány száz méter fölött jelentősen lassul | Vezetékes internet a régi telefonhálózaton; a modemtől a lakás felé már Ethernet és Wi-Fi. |
+| VDSL2 | vezetékes hálózat | 25 kHz – 35,33 MHz | rövid vonalon több száz Mbit/s (35b profil), hosszabbon jóval kevesebb | néhány száz méter fölött jelentősen lassul | Vezetékes internet a régi telefonhálózaton; a modemtől a lakás felé már Ethernet és Wi-Fi. |
 | PLC szűksávú | erősáramú vonal | 3 kHz – 95 kHz | néhány kbit/s-tól néhány tíz kbit/s-ig | a transzformátorig, ismétlőkkel | Egyes okos fogyasztásmérők kommunikációja a szolgáltató felé. |
 | PLC szélessávú | erősáramú vonal | 2 MHz – 86 MHz | névlegesen több száz Mbit/s, a valóságban jóval kevesebb | egy mérőn belül | Hálózat ott, ahol nincs adatkábel és a Wi-Fi gyenge (pince, melléképület egy mérőn). |
-| Ethernet csavart érpár | vezetékes hálózat | 1 MHz – 500 MHz | 1 Gbit/s (Cat5e, 100 MHz) · 10 Gbit/s rövidebb távon (Cat6, 250 MHz) · 10 Gbit/s 100 m-en (Cat6A, 500 MHz) | 100 m csatorna (90 m fix szakasz + 10 m patch kábel) | Strukturált lakáshálózat: minden szobába, a TV mögé, a mennyezeti Wi-Fi ponthoz, a kamerákhoz, a médiadobozba. |
+| Ethernet csavart érpár | vezetékes hálózat | 1 MHz – 500 MHz | 1 Gbit/s (Cat5e, 100 MHz) · 10 Gbit/s rövidebb távon (Cat6, 250 MHz; kb. 55 m, zsúfolt kötegben kb. 37 m) · 10 Gbit/s 100 m-en (Cat6A, 500 MHz) | 100 m csatorna (90 m fix szakasz + 10 m patch kábel) | Strukturált lakáshálózat: minden szobába, a TV mögé, a mennyezeti Wi-Fi ponthoz, a kamerákhoz, a médiadobozba. |
 | PoE: táplálás Ethernet-kábelen | vezetékes hálózat | egyenáram (DC) | a teljesítmény a fontos: 802.3af 15,4 W · 802.3at 30 W · 802.3bt 60 W és 90 W (a forrás oldalán) | 100 m, mint az Etherneté | IP-kamerák, mennyezeti Wi-Fi pontok, IP-kaputelefon, érzékelők, kisebb kijelzők. |
 | HDMI | vezetékes hálózat | 25 MHz – 6 GHz | HDMI 2.0: 18 Gbit/s · HDMI 2.1: 48 Gbit/s | passzív kábelen néhány méter (2.1-nél rövidebb), optikai kábellel több tíz méter, HDBaseT-vel 100 m | TV a falon, projektor a mennyezeten, a forrás a szekrényben: a falban vezetett kép. |
 | Koax: antenna és kábel-TV | koax | 47 MHz – 862 MHz | csatornánként néhány tíz Mbit/s; DOCSIS 3.1-gyel Gbit/s nagyságrend | a csillapítástól függ; erősítővel hosszabb | TV-aljzatok, antennahálózat, kábeltelevízió és kábelinternet, társasházi elosztás. |
@@ -27,7 +27,7 @@
 | 433 MHz sáv | rádió | 433,1 MHz – 434,8 MHz | néhány kbit/s | falakon át is néhány tíz méter | Kapunyitó- és redőnytávirányítók, időjárásállomások, régebbi vezeték nélküli riasztóérzékelők és csengők. |
 | 868 MHz sáv | rádió | 863 MHz – 870 MHz | Z-Wave legfeljebb 100 kbit/s; LoRa néhány kbit/s vagy kevesebb | jól átjut a falakon; LoRa akár kilométerekre | Z-Wave okosotthon-eszközök, vezeték nélküli riasztóérzékelők, LoRa szenzorok (kert, pince), rádiós mérőleolvasás. |
 | 2,4 GHz sáv | rádió | 2,4 GHz – 2,483 GHz | Zigbee és Thread 250 kbit/s · BLE 1–2 Mbit/s · Wi-Fi több száz Mbit/s | lakáson belül; falak és födém sokat csillapítanak | A legtöbb okos eszköz: kapcsolók, érzékelők, izzók, termosztátok; régebbi és olcsóbb Wi-Fi eszközök. |
-| Wi-Fi 5 GHz | rádió | 5,15 GHz – 5,725 GHz | Gbit/s nagyságrend | egy-két szoba, falanként jelentős csillapítás | Gyors lakáson belüli Wi-Fi: laptop, telefon, TV. |
+| Wi-Fi 5 GHz | rádió | 5,15 GHz – 5,35 GHz · 5,47 GHz – 5,725 GHz | Gbit/s nagyságrend | egy-két szoba, falanként jelentős csillapítás | Gyors lakáson belüli Wi-Fi: laptop, telefon, TV. |
 | Wi-Fi 6 GHz | rádió | 5,945 GHz – 6,425 GHz | Gbit/s nagyságrend | nagyjából egy helyiség | Nagy sávszélességet kérő eszközök (VR, nagy fájlok) a pont közelében. |
 | DECT | rádió | 1,88 GHz – 1,9 GHz | beszédcsatornák; ULE: kis adatforgalom | beltéren néhány tíz méter, ismétlővel több | Vezeték nélküli telefonok a routerhez kötött bázissal, egyes okosotthon-eszközök (ULE). |
 | Mobilhálózat (4G, 5G) | rádió | 703 MHz – 960 MHz · 1,71 GHz – 2,69 GHz · 3,4 GHz – 3,8 GHz | néhány Mbit/s-tól Gbit/s-ig, a lefedettségtől függően | kilométerek; beltéren a falak és a fém nyílászárók rontják | Mobilinternet-router, okos mérők és riasztók mobil kommunikációja, beltéri lefedettség. |
@@ -145,7 +145,7 @@ Digitális világításvezérlő busz. Egy buszra legfeljebb 64 címezhető eszk
 - **Sáv:** 300 Hz – 2,4 kHz
 - **Hullámhossz:** 125 km – 999 km
 - **Sebesség:** 1200 bit/s
-- **Távolság:** legfeljebb 300 m (a keresztmetszettől függ)
+- **Távolság:** két eszköz között legfeljebb 300 m 1,5 mm²-es vezetéken (a feszültségesés legfeljebb 2 V); az összes kábel ennél hosszabb is lehet
 - **Topológia:** szabad: busz, csillag, fa (gyűrű nélkül)
 - **Táplálás:** a busztáp adja a buszfeszültséget (legfeljebb 250 mA)
 - **Kábel:** a tápkábel két ere (pl. NYM-J 5 × 1,5 mm²) vagy külön 2 × 1,5 mm²
@@ -175,7 +175,7 @@ Digitális világításvezérlő busz. Egy buszra legfeljebb 64 címezhető eszk
 - **Sáv:** 2 kHz – 20 kHz
 - **Hullámhossz:** 15 km – 150 km
 - **Sebesség:** 9600 bit/s
-- **Távolság:** vonalszegmensenként legfeljebb 1000 m kábel
+- **Távolság:** vonalszegmensenként legfeljebb 1000 m kábel; a busztáptól legfeljebb 350 m-re lehet eszköz, két eszköz között legfeljebb 700 m
 - **Topológia:** szabad: busz, csillag, fa (gyűrű nélkül); vonalak és területek csatolókkal
 - **Táplálás:** a busztáp tápláléja az eszközöket (SELV)
 - **Kábel:** KNX buszkábel J-Y(St)Y 2 × 2 × 0,8 mm, zöld köpennyel
@@ -188,6 +188,7 @@ Digitális világításvezérlő busz. Egy buszra legfeljebb 64 címezhető eszk
   - Buszkábelt minden kapcsolóhelyre és aktorhelyre: utólag nehéz pótolni.
 - **Buktatók:**
   - Gyűrű a buszon: tilos.
+  - A 350 m-es és a 700 m-es korlát gyakran előbb elfogy, mint az 1000 m: a busztápot a vonal közepére érdemes tenni.
   - Az eszközök programozásához ETS szoftver és licenc kell.
 - **Rokon vonalak:** DALI, RS-485 · Modbus RTU, Ethernet csavart érpár
 - **Keresőszavak:** HU: KNX buszkábel · KNX busztáp · KNX kapcsolóaktor — EN: KNX bus cable · KNX power supply · KNX switch actuator — DE: KNX Busleitung · KNX Spannungsversorgung · KNX Schaltaktor
@@ -265,7 +266,7 @@ Egy adatvezeték és egy föld köti a mestert (mikrovezérlő) az érzékelőkh
 - **Jel:** Időrésekkel kódolt alapsávú jel, felhúzó ellenállással (alapsávú)
 - **Sáv:** 5 kHz – 150 kHz
 - **Hullámhossz:** 2 km – 60 km
-- **Sebesség:** 15,4 kbit/s (overdrive módban 125 kbit/s)
+- **Sebesség:** kb. 15–16 kbit/s (overdrive módban 125 kbit/s, csak nagyon rövid vezetéken)
 - **Távolság:** jó topológiával néhány tíz méter, legfeljebb kb. 100 m
 - **Topológia:** lánc a legjobb; csillag rövid ágakkal
 - **Táplálás:** külön tápér vagy parazita táplálás
@@ -323,8 +324,8 @@ A telefon érpáron a hangsáv fölött sok ezer keskeny vivő (DMT) visz adatot
 
 - **Közeg:** Csavart réz érpár (telefonvonal)
 - **Jel:** Sokvivős (DMT) moduláció (sokvivős (OFDM))
-- **Sáv:** 25 kHz – 35 MHz
-- **Hullámhossz:** 8,57 m – 12 km
+- **Sáv:** 25 kHz – 35,33 MHz
+- **Hullámhossz:** 8,49 m – 12 km
 - **Sebesség:** rövid vonalon több száz Mbit/s (35b profil), hosszabbon jóval kevesebb
 - **Távolság:** néhány száz méter fölött jelentősen lassul
 - **Topológia:** pont-pont a szolgáltató szekrényéig
@@ -353,7 +354,7 @@ Négy csavart érpár; mindegyiken differenciális, többszintű jel utazik, min
 - **Jel:** Differenciális, többszintű kódolás mind a négy páron (differenciális)
 - **Sáv:** 1 MHz – 500 MHz
 - **Hullámhossz:** 60 cm – 300 m
-- **Sebesség:** 1 Gbit/s (Cat5e, 100 MHz) · 10 Gbit/s rövidebb távon (Cat6, 250 MHz) · 10 Gbit/s 100 m-en (Cat6A, 500 MHz)
+- **Sebesség:** 1 Gbit/s (Cat5e, 100 MHz) · 10 Gbit/s rövidebb távon (Cat6, 250 MHz; kb. 55 m, zsúfolt kötegben kb. 37 m) · 10 Gbit/s 100 m-en (Cat6A, 500 MHz)
 - **Távolság:** 100 m csatorna (90 m fix szakasz + 10 m patch kábel)
 - **Topológia:** csillag a rack vagy a médiadoboz switchétől
 - **Táplálás:** PoE-vel táplálni is tud (lásd PoE)
@@ -501,6 +502,7 @@ A konnektorba dugott adapterek a lakás erősáramú vezetékén, a 2–86 MHz-e
   - Más fázison vagy áram-védőkapcsolón túl gyengébb lehet.
 - **Buktatók:**
   - Ideiglenes megoldásnak jó; tartósan Ethernet-kábel a megbízható.
+  - A HomePlug AV2 előírásban 86 MHz a felső határ, a kapható lapkák gyakran csak 68 MHz-ig mennek; az IEEE 1901 alapsávja 2–30 MHz.
   - Rádiófrekvenciás zavart kelthet a rövidhullámú sávban.
 - **Rokon vonalak:** Ethernet csavart érpár, PLC szűksávú, Wi-Fi 5 GHz
 - **Keresőszavak:** HU: powerline adapter · HomePlug AV2 adapter — EN: powerline adapter · HomePlug AV2 — DE: Powerline Adapter · dLAN
@@ -671,8 +673,8 @@ Széles csatornákon, sok vivővel (OFDM) gyors adatátvitel a hozzáférési po
 
 - **Közeg:** rádió
 - **Jel:** OFDM / OFDMA, széles (40–160 MHz-es) csatornák (sokvivős (OFDM))
-- **Sáv:** 5,15 GHz – 5,725 GHz
-- **Hullámhossz:** 5,24 cm – 5,82 cm
+- **Sáv:** 5,15 GHz – 5,35 GHz · 5,47 GHz – 5,725 GHz
+- **Hullámhossz:** 5,6 cm – 5,82 cm · 5,24 cm – 5,48 cm
 - **Sebesség:** Gbit/s nagyságrend
 - **Távolság:** egy-két szoba, falanként jelentős csillapítás
 - **Topológia:** csillag a hozzáférési ponttól; több pont Ethernet-gerinccel vagy hálóban
@@ -684,7 +686,7 @@ Széles csatornákon, sok vivővel (OFDM) gyors adatátvitel a hozzáférési po
 - **Szerelés:**
   - A hozzáférési pontokat Ethernet-kábellel (PoE-vel) érdemes bekötni, mennyezetre, a lefedendő terület közepére.
 - **Buktatók:**
-  - A felső csatornákon radarvédelmi szabály (DFS) van: a pont ideiglenesen csatornát válthat.
+  - 5250 MHz fölött (az 52–64. és a 100–140. csatornán) radarvédelmi szabály (DFS) van: a pont ideiglenesen csatornát válthat.
 - **Rokon vonalak:** 2,4 GHz sáv, Wi-Fi 6 GHz, Ethernet csavart érpár, PoE: táplálás Ethernet-kábelen
 - **Keresőszavak:** HU: mennyezeti Wi-Fi hozzáférési pont · Wi-Fi 6 access point PoE — EN: ceiling Wi-Fi access point · Wi-Fi 6 PoE access point — DE: Deckenaccesspoint · WLAN Access Point PoE
 - **Hol kapható:** Hálózati szakkereskedés, informatikai bolt.
