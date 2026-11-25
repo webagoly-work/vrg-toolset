@@ -1147,6 +1147,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   capture belongs with what is needed at once. Later: the Sketcher's survey as a kit, and the PC's Desktop page for
   the store.
   Details: `WP/M70.md`.
+- **D-186 · VRG Füzet and Jegyzetek both stay, for now (M70, M69), 2026-11-25.** Asked: the two were built in parallel
+  and overlap (Jegyzetek's versions of modules, the Füzet's kits): **A** keep both, **B** fold the Füzet's kits into
+  Jegyzetek, **C** fold Jegyzetek into the Füzet. The Founder chose **A**: Jegyzetek is the notes hub other features
+  write into, the Füzet holds the structured entries (measurements, readings, totals, limits). Revisit B once both have
+  been used on the phone.
 
 ## Open (to ask when the WP that needs them starts)
 
