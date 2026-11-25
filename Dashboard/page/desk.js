@@ -22,7 +22,7 @@
   };
   const LV_HU = { user: 'Felhasználó', dev: 'Fejlesztő', all: 'Minden' };
   const LV_EN = { user: 'User', dev: 'Dev', all: 'All' };
-  const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás' };
+  const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás', sessions: 'Munkamenetek', controller: 'Vezérlő' };
 
   const S = { look: 'melyviz', level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
   const byId = id => S.items.find(i => i.id === id) || null;

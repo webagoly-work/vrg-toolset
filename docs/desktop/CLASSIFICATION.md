@@ -20,12 +20,12 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
-| open · user | 149 | 38 |
-| open · dev | 288 | 61 |
-| open · all | 18 | 1 |
-| internal | 77 | 0 |
-| roadmap | 59 | 5 |
-| **total** | **591** | **105** |
+| open · user | 120 | 38 |
+| open · dev | 309 | 61 |
+| open · all | 24 | 1 |
+| internal | 82 | 0 |
+| roadmap | 96 | 5 |
+| **total** | **631** | **105** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -172,23 +172,23 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 
 | type | EN · HU | kind | rows |
 |---|---|---|---:|
-| `application` | Application · Alkalmazás | unit | 29 |
+| `application` | Application · Alkalmazás | unit | 30 |
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
-| `feature` | Feature · Funkció | unit | 49 |
-| `feature module` | Feature module · Funkciómodul | unit | 46 |
+| `feature` | Feature · Funkció | unit | 19 |
+| `feature module` | Feature module · Funkciómodul | unit | 68 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 52 |
-| `library` | Library · Könyvtár | unit | 2 |
-| `command` | Command · Parancs | unit | 101 |
+| `module` | Module · Modul | unit | 54 |
+| `library` | Library · Könyvtár | unit | 4 |
+| `command` | Command · Parancs | unit | 103 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
-| `cli tool` | CLI tool · Parancssori eszköz | unit | 14 |
-| `service` | Service · Szolgáltatás | unit | 19 |
+| `cli tool` | CLI tool · Parancssori eszköz | unit | 18 |
+| `service` | Service · Szolgáltatás | unit | 20 |
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 10 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 11 |
-| `document set` | Document set · Dokumentumcsomag | unit | 20 |
+| `document set` | Document set · Dokumentumcsomag | unit | 23 |
 | `runbook` | Runbook · Forgatókönyv | unit | 11 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
 | `ai coding assistant` | AI coding assistant · MI kódsegéd | unit | 3 |
@@ -197,16 +197,16 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `prompt template` | Prompt template · Promptsablon | unit | 10 |
 | `design system` | Design system · Dizájnrendszer | unit | 5 |
 | `ui component library` | UI component library · UI-komponenskönyvtár | unit | 2 |
-| `asset` | Asset · Erőforrás | unit | 2 |
-| `folder` | Folder · Mappa | unit | 5 |
+| `asset` | Asset · Erőforrás | unit | 10 |
+| `folder` | Folder · Mappa | unit | 6 |
 | `firmware` | Firmware · Firmware | unit | 11 |
 | `device` | Device · Eszköz (hardver) | unit | 2 |
 | `build pipeline` | Build pipeline · Építési folyamat | unit | 1 |
-| `third-party application` | Third-party application · Külső alkalmazás | unit | 14 |
+| `third-party application` | Third-party application · Külső alkalmazás | unit | 20 |
 | `runtime` | Runtime · Futtatókörnyezet | unit | 1 |
 | `spike` | Spike · Kísérlet | unit | 1 |
-| `work package` | Work package · Munkacsomag | unit |  |
-| `idea` | Idea · Ötlet | unit |  |
+| `work package` | Work package · Munkacsomag | unit | 9 |
+| `idea` | Idea · Ötlet | unit | 6 |
 | `shell` | Shell · Munkafelület | container | 3 |
 | `launcher` | Launcher · Indító | container | 7 |
 | `gate` | Gate · Kapu (belépés) | container | 5 |
@@ -218,8 +218,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `corner dial` | Corner dial · Sarokvezérlő | container |  |
 | `command palette` | Command palette · Parancspaletta | container | 1 |
 | `launcher bar` | Launcher bar · Gyorskereső | container | 1 |
-| `panel` | Panel · Panel | container | 15 |
-| `view` | View · Nézet | container | 28 |
+| `panel` | Panel · Panel | container | 17 |
+| `view` | View · Nézet | container | 29 |
 | `window` | Window · Ablak | container |  |
 | `dialog` | Dialog · Párbeszédablak | container | 5 |
 | `toast` | Notification · Értesítés | container |  |
@@ -260,6 +260,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:P/R` | Planner · Rajztár build + teszt | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/S` | Planner · VRG Sketcher | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/H` | Planner · Sketcher build + teszt | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
+| `menu:proj:P/3` | Planner · Ház 3D feldolgozás | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:P/O` | Planner · Mappa megnyitása | command | open | dev | `planner` | a build / test / serve action of START P, drawn behind planner |
 | `menu:proj:I` | Készlet | application | open | user |  | is the catalog item `inventory` |
 | `menu:proj:I/B` | Készlet · Build | command | open | dev | `inventory` | a build / test / serve action of START I, drawn behind inventory |
@@ -309,6 +310,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `menu:proj:L/W` | VRG Mobile · Relay e2e teszt | command | open | dev | `mobile` | a build / test / serve action of START L, drawn behind mobile |
 | `menu:proj:L/A` | VRG Mobile · Android Studio | command | open | dev | `mobile` | a build / test / serve action of START L, drawn behind mobile |
 | `menu:proj:L/R` | VRG Mobile · Leírás | command | open | dev | `mobile` | a build / test / serve action of START L, drawn behind mobile |
+| `menu:proj:L/P` | VRG Mobile · Alkalmazás archiválása | command | open | dev | `mobile` | a build / test / serve action of START L, drawn behind mobile |
 | `menu:proj:L/O` | VRG Mobile · Mappa megnyitása | command | open | dev | `mobile` | a build / test / serve action of START L, drawn behind mobile |
 | `menu:proj:W` | Varler Console | companion app · field PWA | open | user |  | is the catalog item `console` |
 | `menu:proj:W/S` | Varler Console · Indítás | command | open | dev | `console` | a build / test / serve action of START W, drawn behind console |
@@ -370,6 +372,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `srv:terkep` | VRG Térkép · offline térkép | service · local server | open | dev | `map` | background process with a port: Dev, behind map |
 | `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | service · local server | open | dev | `weather` | background process with a port: Dev, behind weather |
 | `srv:stack` | Rétegverem · Konnektóm | service · local server | open | dev | `stack` | background process with a port: Dev, behind stack |
+| `srv:munkavaszon` | Munkavászon · Claude munkamenet élőben | service · local server | open | dev | `munkavaszon` | background process with a port: Dev, behind munkavaszon |
 | `menu:prog:1` | Chrome | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
 | `menu:prog:2` | Opera GX | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
 | `menu:prog:3` | Zen | third-party application | open | all | `programs` | third-party program: All (the Desktop has its own browser, files and terminal) |
@@ -408,58 +411,58 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feat:f8` | VRG Kapu | gate · sign-in + guest launcher page | open | dev | `dev:infra` | is the catalog item `kapu` |
 | `feat:f9` | Kapu admin | gate · sign-in + guest launcher page | open | dev | `dev:infra` | is the catalog item `kapu` |
 | `feat:f10` | OTG menu | build pipeline · portable build | roadmap |  | `dev:infra` | is the catalog item `otg` (planned) |
-| `feat:f11` | run.exe | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:f11` | run.exe | work package | roadmap |  | `dev:infra` | tier 4 plan in lane f: planned or an idea, not available yet |
 | `feat:f12` | VRG Desktop Dashboard | shell · workbench | open | user |  | is the catalog item `desktop` |
-| `feat:f13` | Own remote access | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:f13` | Own remote access | idea | roadmap |  | `dev:infra` | tier 5 idea in lane f: planned or an idea, not available yet |
 | `feat:p1` | Varler Planner | application | open | user |  | is the catalog item `planner` |
-| `feat:p2` | Rooms + numbering | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p3` | Planner build + test | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p4` | Wiring pipeline | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p5` | Wireway rebuild | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p6` | BRIDGE Stack routing | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p7` | SmartFrame / Portals | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p8` | Gyro + Xbox control | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p9` | Views: flat / 2.5D / exploded | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p10` | Workflow round (F/O/R/E) | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p11` | Födém / Igénylista / Mozi | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p12` | Round 2026-10-10 | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p13` | Simplified UI (SUI) | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p14` | Erősáram baseline + Adat/PoE | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p15` | Véset (chase) quantities | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p16` | Endpoints + room auto-snap | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p17` | Villany Stack round | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p18` | Planner MCP + DXF | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:p19` | Chase sweep-cut 3D | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:p2` | Rooms + numbering | feature | open | user | `planner` | tier 1 feature in lane p: part of the work |
+| `feat:p3` | Planner build + test | feature | open | dev | `planner` | tier 1 feature in lane p: build, test or a dev round |
+| `feat:p4` | Wiring pipeline | feature | open | user | `planner` | tier 2 feature in lane p: part of the work |
+| `feat:p5` | Wireway rebuild | feature | open | user | `planner` | tier 2 feature in lane p: part of the work |
+| `feat:p6` | BRIDGE Stack routing | feature | open | user | `planner` | tier 2 feature in lane p: part of the work |
+| `feat:p7` | SmartFrame / Portals | feature | open | user | `planner` | tier 2 feature in lane p: part of the work |
+| `feat:p8` | Gyro + Xbox control | feature | open | user | `planner` | tier 2 feature in lane p: part of the work |
+| `feat:p9` | Views: flat / 2.5D / exploded | feature | open | user | `planner` | tier 3 feature in lane p: part of the work |
+| `feat:p10` | Workflow round (F/O/R/E) | feature | open | dev | `planner` | tier 3 feature in lane p: build, test or a dev round |
+| `feat:p11` | Födém / Igénylista / Mozi | feature | open | user | `planner` | tier 3 feature in lane p: part of the work |
+| `feat:p12` | Round 2026-10-10 | feature | open | dev | `planner` | tier 3 feature in lane p: build, test or a dev round |
+| `feat:p13` | Simplified UI (SUI) | feature | open | user | `planner` | tier 3 feature in lane p: part of the work |
+| `feat:p14` | Erősáram baseline + Adat/PoE | feature | open | user | `planner` | tier 3 feature in lane p: part of the work |
+| `feat:p15` | Véset (chase) quantities | feature | open | user | `planner` | tier 3 feature in lane p: part of the work |
+| `feat:p16` | Endpoints + room auto-snap | work package | roadmap |  | `planner` | tier 4 plan in lane p: planned or an idea, not available yet |
+| `feat:p17` | Villany Stack round | work package | roadmap |  | `planner` | tier 4 plan in lane p: planned or an idea, not available yet |
+| `feat:p18` | Planner MCP + DXF | work package | roadmap |  | `planner` | tier 4 plan in lane p: planned or an idea, not available yet |
+| `feat:p19` | Chase sweep-cut 3D | idea | roadmap |  | `planner` | tier 5 idea in lane p: planned or an idea, not available yet |
 | `feat:m1` | Panel anyagár kalkulátor | utility · calculator | open | user |  | is the catalog item `calc-panel` |
 | `feat:m2` | Általános kalkulátor | utility · calculator | open | user |  | is the catalog item `calc-general` |
 | `feat:m3` | Költségvetési Tervezet jobs | folder · job records | open | user |  | is the catalog item `jobs` |
 | `feat:m4` | LED árkalkulátor | utility · calculator | open | user |  | is the catalog item `calc-led` |
 | `feat:m5` | Varler Workflow Kit | document set · workflow kit | open | user |  | is the catalog item `workflow-kit` |
-| `feat:m6` | Price lists | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:m7` | Kit Session 2: agents | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:m8` | TNT job data | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:m9` | One-pass intake | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:m6` | Price lists | asset | open | user | `workflow-kit` | tier 2 asset in lane m: part of the work |
+| `feat:m7` | Kit Session 2: agents | work package | roadmap |  | `workflow-kit` | tier 3 plan in lane m: planned or an idea, not available yet |
+| `feat:m8` | TNT job data | feature | open | user | `workflow-kit` | tier 3 feature in lane m: part of the work |
+| `feat:m9` | One-pass intake | work package | roadmap |  | `workflow-kit` | tier 4 plan in lane m: planned or an idea, not available yet |
 | `feat:d1` | VRG Inventory | application | open | user |  | is the catalog item `inventory` |
 | `feat:d2` | VRG BuildTree | application | open | user |  | is the catalog item `buildtree` |
 | `feat:d3` | Valena választó | utility · product configurator | open | user |  | is the catalog item `valena` |
 | `feat:d4` | VRG Vendor | utility · vendored-component browser | open | dev | `dev:infra` | is the catalog item `vendor` |
 | `feat:d5` | Toolbox | launcher · legacy page | open | dev | `dev:infra` | is the catalog item `toolbox` |
-| `feat:d6` | Smart-home catalogue | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:d6` | Smart-home catalogue | asset | open | user | `inventory` | tier 3 asset in lane d: part of the work |
 | `feat:d7` | CoreRef | knowledge base · reference dataset | open | dev | `dev:knowledge` | is the catalog item `coreref` |
-| `feat:d8` | Elosztó DIN-rail builder | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:d8` | Elosztó DIN-rail builder | idea | roadmap |  | `inventory` | tier 5 idea in lane d: planned or an idea, not available yet |
 | `feat:b1` | BRIDGE document set | document set · standards | open | user |  | is the catalog item `bridge` |
-| `feat:b2` | CLA BRIDGE plan | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:b3` | BRIDGE standards | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:b2` | CLA BRIDGE plan | asset | open | user | `bridge` | tier 2 asset in lane b: part of the work |
+| `feat:b3` | BRIDGE standards | asset | open | user | `bridge` | tier 3 asset in lane b: part of the work |
 | `feat:b4` | Client preview (WebGL) | feature | open | dev | `planner` | is the catalog item `client-preview` (dev: shown from dev) |
-| `feat:b5` | BRIDGE brochure | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:b6` | Media Wall | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:b7` | Feature round K34–K43 | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:b5` | BRIDGE brochure | asset | open | user | `bridge` | tier 3 asset in lane b: part of the work |
+| `feat:b6` | Media Wall | work package | roadmap |  | `bridge` | tier 4 plan in lane b: planned or an idea, not available yet |
+| `feat:b7` | Feature round K34–K43 | work package | roadmap |  | `bridge` | tier 4 plan in lane b: planned or an idea, not available yet |
 | `feat:b8` | Open MCT installer console | spike | roadmap |  | `dev:infra` | is the catalog item `openmct` (planned) |
-| `feat:b9` | CLA open questions | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:b9` | CLA open questions | idea | roadmap |  | `bridge` | tier 5 idea in lane b: planned or an idea, not available yet |
 | `feat:h1` | VRG Mobile | companion app · Android | open | user |  | is the catalog item `mobile` |
 | `feat:h2` | Légegér | companion app · Android | open | user |  | is the catalog item `mobile` |
 | `feat:h3` | Varler Console | companion app · field PWA | open | user |  | is the catalog item `console` |
-| `feat:h4` | Solomon on the phone | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:h4` | Solomon on the phone | feature | open | user | `mobile` | tier 3 feature in lane h: part of the work |
 | `feat:h5` | ServiceKit | device · portable field kit | open | dev |  | is the catalog item `servicekit` (dev: shown from dev) |
 | `feat:h6` | ServiceKit Phone | companion app | roadmap |  | `servicekit` | is the catalog item `servicekit-phone` (planned) |
 | `feat:e1` | Planner CYD | firmware · companion device | open | dev | `planner` | is the catalog item `planner-cyd` |
@@ -467,9 +470,9 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feat:e3` | ESP lab + CYD collection | folder · hardware lab | open | dev | `dev:hw` | is the catalog item `esp-lab` |
 | `feat:e4` | Board Console | firmware · with a device web UI | open | dev | `dev:hw` | is the catalog item `board-console` |
 | `feat:e5` | VRG Knob Pad | firmware · input device | open | dev | `dev:hw` | is the catalog item `knobpad` |
-| `feat:e6` | RL-CYD + RL Field | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:e6` | RL-CYD + RL Field | application | open | dev | `dev:hw` | tier 3 app in lane e: development, knowledge, devices or look |
 | `feat:e7` | ServiceKit CYD | firmware | roadmap |  | `dev:hw` | is the catalog item `servicekit-cyd` (planned) |
-| `feat:e8` | Site Pager + S3 projects | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:e8` | Site Pager + S3 projects | idea | roadmap |  | `dev:hw` | tier 5 idea in lane e: planned or an idea, not available yet |
 | `feat:k1` | VRG MindMap | application | open | user |  | is the catalog item `mindmap` |
 | `feat:k2` | Claude Code entry points | ai coding assistant · embedded terminal | open | dev | `dev:ai` | is the catalog item `claude-code` |
 | `feat:k3` | DevLog board + Thread Board | view · dev threads | open | dev | `stack` | is the catalog item `threadboard` |
@@ -483,26 +486,26 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feat:k10` | VRG Council | ai agent · team | open | dev | `dev:ai` | is the catalog item `council` |
 | `feat:k11` | Divergence board | application · signal board | open | dev | `dev:knowledge` | is the catalog item `divergence` |
 | `feat:k12` | Research spikes | document set · research notes | roadmap |  | `dev:knowledge` | is the catalog item `research` (planned) |
-| `feat:k13` | GO TNT · DNA capsule | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:k13` | GO TNT · DNA capsule | work package | roadmap |  | `dev:knowledge` | tier 4 plan in lane k: planned or an idea, not available yet |
 | `feat:l1` | Mélyvíz style | design system · tokens stylesheet | open | dev | `dev:look` | is the catalog item `melyviz` |
-| `feat:l2` | VRG Visual Base | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:l3` | VRG Title Card | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:l2` | VRG Visual Base | asset | open | dev | `dev:look` | tier 2 asset in lane l: development, knowledge, devices or look |
+| `feat:l3` | VRG Title Card | asset | open | dev | `dev:look` | tier 2 asset in lane l: development, knowledge, devices or look |
 | `feat:l4` | Varler SUI design system | design system · HUD | open | dev | `dev:look` | is the catalog item `varler-sui` |
 | `feat:l5` | Varler logo + ring | asset · brand | open | dev | `dev:look` | is the catalog item `logo` |
-| `feat:l6` | Mélyvíz rollout | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:l7` | Object line-art kit | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:l8` | Text on the animated logo | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:l6` | Mélyvíz rollout | feature | open | dev | `dev:look` | tier 3 feature in lane l: development, knowledge, devices or look |
+| `feat:l7` | Object line-art kit | asset | open | dev | `dev:look` | tier 3 asset in lane l: development, knowledge, devices or look |
+| `feat:l8` | Text on the animated logo | idea | roadmap |  | `dev:look` | tier 5 idea in lane l: planned or an idea, not available yet |
 | `feat:x1` | Browsers | menu · third-party programs | open | all |  | is the catalog item `programs` |
 | `feat:x2` | Node + Claude Code CLI | ai coding assistant · embedded terminal | open | dev | `dev:ai` | is the catalog item `claude-code` |
 | `feat:x3` | VS Code + Git | third-party application · IDE | open | dev | `dev:repo` | is the catalog item `vscode` |
 | `feat:x4` | GitHub + cloud sessions | web service | open | dev | `dev:repo` | is the catalog item `github` |
 | `feat:x5` | PC utilities | menu · third-party programs | open | all |  | is the catalog item `programs` |
-| `feat:x6` | Electron | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:x7` | arduino-cli | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:x8` | ChromeDriver + headless | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:x9` | wifi-heatmapper | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:x10` | FlyBrainLab | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
-| `feat:x11` | Android toolchain | feature | open | user |  | tier undefined undefined in lane undefined: part of the work |
+| `feat:x6` | Electron | third-party application | open | all | `programs` | tier 2 program in lane x: third-party, All |
+| `feat:x7` | arduino-cli | third-party application | open | all | `programs` | tier 2 program in lane x: third-party, All |
+| `feat:x8` | ChromeDriver + headless | third-party application | open | all | `programs` | tier 2 program in lane x: third-party, All |
+| `feat:x9` | wifi-heatmapper | third-party application | open | all | `programs` | tier 2 program in lane x: third-party, All |
+| `feat:x10` | FlyBrainLab | third-party application | open | all | `programs` | tier 2 program in lane x: third-party, All |
+| `feat:x11` | Android toolchain | third-party application | open | all | `programs` | tier 3 program in lane x: third-party, All |
 | `pane:home` | Kezdőlap | dashboard · primary view | open | user | `desktop` | is the catalog item `view-dashboard` |
 | `pane:empty` | Üres panel | panel · placeholder | open | all | `desktop` | the empty tab a new group starts with |
 | `pane:files` | Fájlok | panel · file manager | open | user |  | is the catalog item `files` |
@@ -515,6 +518,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `pane:git` | Git | panel · version control | open | dev | `dev:repo` | is the catalog item `git` |
 | `pane:feed` | Hírfolyam (presetek) | panel · saved-query feed | open | user |  | is the catalog item `feed` |
 | `pane:app` | app | panel · in-shell app host | internal |  | `desktop` | hosts a catalog HTML app on vrg-app://; the user opens the app, not the host |
+| `pane:sessions` | sessions | panel · session manager | open | dev | `dev:ai` | is the catalog item `sessions` |
+| `pane:controller` | controller | panel · prompt router | open | dev | `dev:ai` | is the catalog item `controller` |
 | `pane:search` | Belső keresés | panel · search overlay | open | user |  | is the catalog item `search` |
 | `pane:viewer` | Fájlnézegető | panel · file manager | open | user |  | is the catalog item `files` |
 | `dash:palette` | Parancspaletta | command palette | open | user | `desktop` | is the catalog item `palette` |
@@ -555,6 +560,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:desk` | lib/desk.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:fsops` | lib/fsops.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:fsview` | lib/fsview.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:gate` | lib/gate.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:git` | lib/git.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:gmail` | lib/gmail.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:handles` | lib/handles.js | module | internal |  | `desktop` | internal code unit |
@@ -585,6 +591,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:secrets` | lib/secrets.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:selftest` | lib/selftest.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:selmenu` | lib/selmenu.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:sessions` | lib/sessions.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:settings` | lib/settings.js | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
 | `dashlib:sheets` | lib/sheets.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:srvhost` | lib/srvhost.js | module | internal |  | `desktop` | internal code unit |
@@ -691,6 +698,28 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `mobile:M43` | VRG Térkép | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M44` | VRG Időjárás | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M45` | Vault | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M46` | Kamera 2 | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M47` | Munkakör lap | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M48` | Helyszín ↔ Térkép | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M49` | Apró hiányok | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M50` | Maradékok | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M51` | Kapcsolók | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M52` | Saját kamera | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M53` | Összefésülés | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M54` | Jegyzőkönyv a telefonon | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M55` | Térkép-feed (in `map`) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M56` | Saját útvonaltervezés (in `map`, N2) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M57` | Szobadoboz (in `sketch`, Desktop first) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M58` | Vezetés + forgalom (in `map`, N3) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M59` | Szobadoboz a telefonon (in `sketch`) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M60` | Síkmérés (in `sketch`, phone and Desktop) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M61` | Tárgykereső | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M62` | Körkép (in `sketch`, phone and Desktop) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M63` | Ház 3D (PC + Desktop Sketcher) | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M64` | Google AR csomag | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M65` | Óra | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M66` | DevLap on the home | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M67` | Radar | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M15` | Logó kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry · generated tool list | internal |  | `mobile` | the phone's tool list, generated |
 | `stack:commits` | VRG Commit-pixel | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |
@@ -716,8 +745,10 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `layer:C` | Réteg C · Code | view · stack layer | open | dev | `stack` | is the catalog item `layer.c` |
 | `layer:G` | Réteg G · Data Globe | view · stack layer | open | dev | `stack` | is the catalog item `layer.g` |
 | `layer:Z` | Réteg Z · Codec | view · stack layer, machine only | open | dev | `stack` | is the catalog item `layer.z` |
+| `tool:anon-check` | tools/anon-check.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:anonymise` | tools/anonymise.js | cli tool | open | dev | `dev:repo` | command-line script, run by START, a build, an agent or a developer |
 | `tool:bootleg` | tools/bootleg.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
+| `tool:brief-pack` | tools/brief-pack.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:brief-state` | tools/brief-state.js | cli tool | open | dev | `council` | command-line script, run by START, a build, an agent or a developer |
 | `tool:build-hub` | tools/build-hub.js | cli tool | open | dev | `kapu` | command-line script, run by START, a build, an agent or a developer |
 | `tool:build-mobile-tools` | tools/build-mobile-tools.js | cli tool | open | dev | `mobile` | command-line script, run by START, a build, an agent or a developer |
@@ -730,6 +761,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `tool:fetch-vendor` | tools/fetch-vendor.js | utility · vendored-component browser | open | dev | `dev:infra` | is the catalog item `vendor` |
 | `tool:hub-sign` | tools/hub-sign.js | cli tool | open | dev | `kapu` | command-line script, run by START, a build, an agent or a developer |
 | `tool:melyviz-sync` | tools/melyviz-sync.js | design system · tokens stylesheet | open | dev | `dev:look` | is the catalog item `melyviz` |
+| `tool:progress-svg` | tools/progress-svg.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
+| `tool:sketch-takeoff` | tools/sketch-takeoff.js | cli tool | open | dev | `dev:infra` | command-line script, run by START, a build, an agent or a developer |
 | `tool:solomon` | tools/solomon.js | cli tool | open | dev | `solomon` | command-line script, run by START, a build, an agent or a developer |
 | `tool:standin` | tools/standin.js | cli tool | open | dev | `council` | command-line script, run by START, a build, an agent or a developer |
 | `tool:vrg-ctx` | tools/vrg-ctx.js | cli tool | open | dev | `context` | command-line script, run by START, a build, an agent or a developer |
@@ -764,11 +797,14 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `fw:knobpad` | knobpad | firmware · input device | open | dev | `dev:hw` | is the catalog item `knobpad` |
 | `fw:planner-cyd` | planner-cyd | firmware · companion device | open | dev | `planner` | is the catalog item `planner-cyd` |
 | `fw:servicekit-cyd` | ServiceKit CYD | firmware | roadmap |  | `dev:hw` | is the catalog item `servicekit-cyd` (planned) |
+| `lib:grafit` | grafit.css | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:melyviz` | melyviz.css | design system · tokens stylesheet | open | dev | `dev:look` | is the catalog item `melyviz` |
 | `lib:rajztar` | rajztar | library | internal |  | `dev:look` | shared code or assets other pages load |
+| `lib:sidepanel` | sidepanel | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:varler-doc` | varler-doc | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:varler-logo` | varler-logo | asset · brand | open | dev | `dev:look` | is the catalog item `logo` |
 | `lib:vrg-ui-kit` | vrg-ui-kit | ui component library · with a gallery | open | dev | `dev:look` | is the catalog item `uikit` |
+| `doc:brief` | docs/brief | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:city` | docs/city | document set · pack | open | dev | `codecity` | design, decisions and briefs |
 | `doc:client-look` | docs/client-look | document set · pack | open | dev | `bridge` | design, decisions and briefs |
 | `doc:components-offline` | docs/components-offline.md | document set · pack | open | dev | `vendor` | design, decisions and briefs |
@@ -781,10 +817,12 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `doc:map` | docs/map | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:mobile` | docs/mobile | document set · pack | open | dev | `mobile` | design, decisions and briefs |
 | `doc:notes` | docs/notes | document set · pack | open | dev | `docs` | design, decisions and briefs |
+| `doc:radar` | docs/radar | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:research` | docs/research | document set · research notes | roadmap |  | `dev:knowledge` | is the catalog item `research` (planned) |
 | `doc:services-server` | docs/services-server.md | document set · pack | open | dev | `servers` | design, decisions and briefs |
 | `doc:sketcher` | docs/sketcher | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:solomon` | docs/solomon | document set · pack | open | dev | `solomon` | design, decisions and briefs |
+| `doc:visual` | docs/visual | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:workflow` | docs/workflow | document set · pack | open | dev | `workflow-kit` | design, decisions and briefs |
 | `go:city` | GO CITY | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
 | `go:cla` | GO CLA | runbook · session entry point | open | dev | `go` | a GO codephrase file a session reads |
@@ -811,9 +849,11 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dir:Mobile` | Mobile | companion app · Android | open | user |  | is the catalog item `mobile` |
 | `dir:Modder` | Modder | application | open | user |  | is the catalog item `buildtree` |
 | `dir:Planner` | Planner | application | open | user |  | is the catalog item `planner` |
+| `dir:Prefilter` | Prefilter | folder · source | internal |  |  | a top-level folder; what it holds is classified by its own rows |
 | `dir:ServiceKit` | ServiceKit | device · portable field kit | open | dev |  | is the catalog item `servicekit` (dev: shown from dev) |
 | `dir:ServiceKitCYD` | ServiceKitCYD | folder · source | internal |  | `servicekit-cyd` | a top-level folder; what it holds is classified by its own rows |
 | `dir:ServiceKitPhone` | ServiceKitPhone | companion app | roadmap |  | `servicekit` | is the catalog item `servicekit-phone` (planned) |
+| `dir:SessionCanvas` | SessionCanvas | view · observability | open | dev | `dev:ai` | is the catalog item `munkavaszon` |
 | `dir:Sketcher` | Sketcher | application · field survey: sketch, notes, scope, questions, photos, site | open | user |  | is the catalog item `sketcher` |
 | `dir:Solomon` | Solomon | application · knowledge visualization | open | dev | `dev:knowledge` | is the catalog item `solomon` |
 | `dir:Stack` | Stack | knowledge base · graph | open | dev | `dev:knowledge` | is the catalog item `stack` |

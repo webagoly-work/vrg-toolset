@@ -296,6 +296,17 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   a throwaway config folder of 85 sessions. **Not run:** the Electron probe `shell/selftest/wp-50.js`, check-start /
   check-catalog against H:, inventory.js (needs the anonymise map), the real `claude` flags. All in
   `docs/handoff/2026-11-24_munkamenetek-H.md`.
+- **Local check (2026-11-25, H:, a worktree of the branch):** WP-50, 51, 52, 35, 46, 24 green; the Electron probe
+  `selftest/wp-50.js` green on its first run, unchanged. `--all`: 468 pass and the same 4 failures as `main` before the branch
+  (449 pass), all from the catalog entry `sketcher.house3d`, which also makes check-catalog exit 1 on `main`. check-start exits
+  0 from the main checkout (a worktree cannot find START.cmd). The probe listed 120 sessions (A 118, B 2), newest first.
+  inventory.js + classify.js refreshed: 631 rows. Real `claude` on account A: `--resume` returns the history, `--fork-session`
+  makes a new id and leaves the old transcript byte-identical, `--resume --model opus` continues on opus, `--teleport` lists
+  the cloud sessions (none pulled: the clean-tree / branch needs are untested). `/remote-control` as the first prompt runs as a
+  command but opens an Enable / Never mind menu that needs one keypress. Account B's sign-in had expired: its checks did not
+  run. **Live marker:** Claude Code writes `~/.claude/sessions/<pid>.json` (sessionId, cwd, procStart = the process start,
+  status busy / idle / waiting); the 2-minute file-age guess missed a live session whose transcript was 18 minutes old.
+  Proposed: use these files + a pid check; not changed.
 
 ## WP-51 — Munkamenet-tábla: board labels on a Lap (2026-11-24, cloud session)
 
@@ -324,6 +335,12 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   per-key saved state; built-ins links / toggles / notes / status; `README.md` lists six more hosts. Loaded by `vrg-desktop.html`.
 - Tests: `wp-51.test.js` 5; `shared/sidepanel/test` 7 (one in Chromium). A Chromium render of a mock board with the real CSS:
   frames ice / violet / warm from computed styles, no page errors.
+- **Local check (2026-11-25, H:):** WP-51 green. An Electron probe with a fake `claude`: Tábla opens the Munkamenetek Lap
+  (Vezérlő 4 × 1 on top, the list 1 × 3 on the left) and the button turns to Lista; a resumed session lands with HELYI · A, its
+  title and an ice frame; origin Laptop gives GÉP: LAPTOP and a warm frame; Gyors elérés starts folded at 395 px. Fixed: the dock
+  showed the raw kinds `sessions` / `controller` (`PANE_HU` in `page/desk.js` lacked them). Screenshot:
+  `Full\_share\munkamenet-tabla-2026-11-25.png`. Not done by hand: the right-click menu, Tábla-címkék…, a violet cloud window, the
+  native-view shift under a label bar.
 
 ## WP-52 — Vezérlő + Előszűrő: one prompt box, filtered into a new session (2026-11-24, cloud session)
 
@@ -348,6 +365,14 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   (the board choice, the pipeline of five stages, 11 vectors).
 - Tests: `wp-52.test.js` 6 (a fake Előszűrő, then the real one on this repo); the full Dashboard suite: 320 pass, the same 68
   environment failures as before WP-50. Not run: Electron, the camera, the real `claude --model`.
+- **Local check (2026-11-25, H:):** WP-52 green under Electron 44.7.1. `node:sqlite` works in Node 24 and in Electron, so the
+  index takes the Stack: 1 243 entities (with `VRG_FULL` set and the Stack database present). A dressed 1 978-character accented
+  prompt arrives intact as one argument of `claude.exe` on Windows. Vezérlő probe: "írj egy verset a télről" → independent,
+  `claude-free`, but **sonnet** ("írj egy" is the build intent; only an independent question drops to haiku; open); "GO MOBILE hol
+  tartunk?" → the repo, sonnet; "folytasd" → the reason names the earlier session; a forced Önálló wrote an `override` label.
+  The frame page grants camera, microphone (a stream opened), notifications, geolocation, clipboard-read and MIDI without asking;
+  proposed: a handler allowing video only, one-shot after Fotó (not applied). No `BarcodeDetector`: the pane points to VRG Mobile.
+  Not done: Fotó with a real camera, the attach dialogs by hand.
 
 ## WP-53 — Előszűrő next steps: hook, negation, work-line memory, evaluation, the stronger-model step (2026-11-25, cloud session)
 
@@ -368,6 +393,14 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   gets `stronger`).
 - Tests: `Prefilter/test/next.test.js` 4 (on the real repo index), wp-50 / wp-52 extended; the full Dashboard suite: 321 pass, the
   same 68 environment failures.
+- **Local check (2026-11-25, H:, a worktree of the branch):** the Prefilter + sidepanel tests 17 pass, 0 fail, 1 skipped (18). The
+  hook: `--test` from the repo and from `Full\home\claude-free` gives the full dressing; the `--session t1` sequence behaves as
+  specified (full dressing → nothing for "folytasd" → the two-line "új horgony · Kapu" note → nothing). `--install --dry` writes
+  the absolute path of the copy it runs from, so install it from the main checkout after the merge; **not installed**. `eval
+  extract`: 182 first prompts; labelling left to the Founder. With the Stack the seed accuracy drops to 0.864 (0.932 without it):
+  the 2 288 Stack titles add common words as anchors (all 10 real first prompts came out as context). Proposal, not applied:
+  keep only multi-word Stack titles or down-weight them. `fit --set all` suggests independent < 0.55 (no unsure band); not
+  written.
 
 ## WP-55 — Parancs-héj: the voice command overlay (phase 2 of the voice work, 2026-11-25, cloud session, a fork)
 

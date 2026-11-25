@@ -326,6 +326,18 @@
    "reason": "a build / test / serve action of START P, drawn behind planner"
   },
   {
+   "id": "menu:proj:P/3",
+   "name": "Planner · Ház 3D feldolgozás",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "planner",
+   "unit": "",
+   "reason": "a build / test / serve action of START P, drawn behind planner"
+  },
+  {
    "id": "menu:proj:P/O",
    "name": "Planner · Mappa megnyitása",
    "source": "vrg-menu",
@@ -904,6 +916,18 @@
   {
    "id": "menu:proj:L/R",
    "name": "VRG Mobile · Leírás",
+   "source": "vrg-menu",
+   "type": "command",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "a build / test / serve action of START L, drawn behind mobile"
+  },
+  {
+   "id": "menu:proj:L/P",
+   "name": "VRG Mobile · Alkalmazás archiválása",
    "source": "vrg-menu",
    "type": "command",
    "qualifier": "",
@@ -1646,6 +1670,18 @@
    "reason": "background process with a port: Dev, behind stack"
   },
   {
+   "id": "srv:munkavaszon",
+   "name": "Munkavászon · Claude munkamenet élőben",
+   "source": "vrg-menu",
+   "type": "service",
+   "qualifier": "local server",
+   "scope": "open",
+   "level": "dev",
+   "parent": "munkavaszon",
+   "unit": "",
+   "reason": "background process with a port: Dev, behind munkavaszon"
+  },
+  {
    "id": "menu:prog:1",
    "name": "Chrome",
    "source": "vrg-menu",
@@ -2105,13 +2141,13 @@
    "id": "feat:f11",
    "name": "run.exe",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "dev:infra",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane f: planned or an idea, not available yet"
   },
   {
    "id": "feat:f12",
@@ -2129,13 +2165,13 @@
    "id": "feat:f13",
    "name": "Own remote access",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "dev:infra",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane f: planned or an idea, not available yet"
   },
   {
    "id": "feat:p1",
@@ -2157,9 +2193,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 1 feature in lane p: part of the work"
   },
   {
    "id": "feat:p3",
@@ -2168,10 +2204,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 1 feature in lane p: build, test or a dev round"
   },
   {
    "id": "feat:p4",
@@ -2181,9 +2217,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 feature in lane p: part of the work"
   },
   {
    "id": "feat:p5",
@@ -2193,9 +2229,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 feature in lane p: part of the work"
   },
   {
    "id": "feat:p6",
@@ -2205,9 +2241,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 feature in lane p: part of the work"
   },
   {
    "id": "feat:p7",
@@ -2217,9 +2253,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 feature in lane p: part of the work"
   },
   {
    "id": "feat:p8",
@@ -2229,9 +2265,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 feature in lane p: part of the work"
   },
   {
    "id": "feat:p9",
@@ -2241,9 +2277,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: part of the work"
   },
   {
    "id": "feat:p10",
@@ -2252,10 +2288,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: build, test or a dev round"
   },
   {
    "id": "feat:p11",
@@ -2265,9 +2301,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: part of the work"
   },
   {
    "id": "feat:p12",
@@ -2276,10 +2312,10 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: build, test or a dev round"
   },
   {
    "id": "feat:p13",
@@ -2289,9 +2325,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: part of the work"
   },
   {
    "id": "feat:p14",
@@ -2301,9 +2337,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: part of the work"
   },
   {
    "id": "feat:p15",
@@ -2313,57 +2349,57 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane p: part of the work"
   },
   {
    "id": "feat:p16",
    "name": "Endpoints + room auto-snap",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
   },
   {
    "id": "feat:p17",
    "name": "Villany Stack round",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
   },
   {
    "id": "feat:p18",
    "name": "Planner MCP + DXF",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane p: planned or an idea, not available yet"
   },
   {
    "id": "feat:p19",
    "name": "Chase sweep-cut 3D",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "planner",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane p: planned or an idea, not available yet"
   },
   {
    "id": "feat:m1",
@@ -2429,25 +2465,25 @@
    "id": "feat:m6",
    "name": "Price lists",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "workflow-kit",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 asset in lane m: part of the work"
   },
   {
    "id": "feat:m7",
    "name": "Kit Session 2: agents",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "workflow-kit",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 plan in lane m: planned or an idea, not available yet"
   },
   {
    "id": "feat:m8",
@@ -2457,21 +2493,21 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "workflow-kit",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane m: part of the work"
   },
   {
    "id": "feat:m9",
    "name": "One-pass intake",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "workflow-kit",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane m: planned or an idea, not available yet"
   },
   {
    "id": "feat:d1",
@@ -2537,13 +2573,13 @@
    "id": "feat:d6",
    "name": "Smart-home catalogue",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "inventory",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 asset in lane d: part of the work"
   },
   {
    "id": "feat:d7",
@@ -2561,13 +2597,13 @@
    "id": "feat:d8",
    "name": "Elosztó DIN-rail builder",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "inventory",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane d: planned or an idea, not available yet"
   },
   {
    "id": "feat:b1",
@@ -2585,25 +2621,25 @@
    "id": "feat:b2",
    "name": "CLA BRIDGE plan",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 asset in lane b: part of the work"
   },
   {
    "id": "feat:b3",
    "name": "BRIDGE standards",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 asset in lane b: part of the work"
   },
   {
    "id": "feat:b4",
@@ -2621,37 +2657,37 @@
    "id": "feat:b5",
    "name": "BRIDGE brochure",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 asset in lane b: part of the work"
   },
   {
    "id": "feat:b6",
    "name": "Media Wall",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane b: planned or an idea, not available yet"
   },
   {
    "id": "feat:b7",
    "name": "Feature round K34–K43",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane b: planned or an idea, not available yet"
   },
   {
    "id": "feat:b8",
@@ -2669,13 +2705,13 @@
    "id": "feat:b9",
    "name": "CLA open questions",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "bridge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane b: planned or an idea, not available yet"
   },
   {
    "id": "feat:h1",
@@ -2721,9 +2757,9 @@
    "qualifier": "",
    "scope": "open",
    "level": "user",
-   "parent": "",
+   "parent": "mobile",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane h: part of the work"
   },
   {
    "id": "feat:h5",
@@ -2813,13 +2849,13 @@
    "id": "feat:e6",
    "name": "RL-CYD + RL Field",
    "source": "features",
-   "type": "feature",
+   "type": "application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "dev:hw",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 app in lane e: development, knowledge, devices or look"
   },
   {
    "id": "feat:e7",
@@ -2837,13 +2873,13 @@
    "id": "feat:e8",
    "name": "Site Pager + S3 projects",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "dev:hw",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane e: planned or an idea, not available yet"
   },
   {
    "id": "feat:k1",
@@ -3005,13 +3041,13 @@
    "id": "feat:k13",
    "name": "GO TNT · DNA capsule",
    "source": "features",
-   "type": "feature",
+   "type": "work package",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "dev:knowledge",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 4 plan in lane k: planned or an idea, not available yet"
   },
   {
    "id": "feat:l1",
@@ -3029,25 +3065,25 @@
    "id": "feat:l2",
    "name": "VRG Visual Base",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "dev:look",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 asset in lane l: development, knowledge, devices or look"
   },
   {
    "id": "feat:l3",
    "name": "VRG Title Card",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "dev:look",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 asset in lane l: development, knowledge, devices or look"
   },
   {
    "id": "feat:l4",
@@ -3080,34 +3116,34 @@
    "type": "feature",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "dev:look",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 feature in lane l: development, knowledge, devices or look"
   },
   {
    "id": "feat:l7",
    "name": "Object line-art kit",
    "source": "features",
-   "type": "feature",
+   "type": "asset",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "dev",
+   "parent": "dev:look",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 asset in lane l: development, knowledge, devices or look"
   },
   {
    "id": "feat:l8",
    "name": "Text on the animated logo",
    "source": "features",
-   "type": "feature",
+   "type": "idea",
    "qualifier": "",
-   "scope": "open",
-   "level": "user",
-   "parent": "",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "dev:look",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 5 idea in lane l: planned or an idea, not available yet"
   },
   {
    "id": "feat:x1",
@@ -3173,73 +3209,73 @@
    "id": "feat:x6",
    "name": "Electron",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 program in lane x: third-party, All"
   },
   {
    "id": "feat:x7",
    "name": "arduino-cli",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 program in lane x: third-party, All"
   },
   {
    "id": "feat:x8",
    "name": "ChromeDriver + headless",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 program in lane x: third-party, All"
   },
   {
    "id": "feat:x9",
    "name": "wifi-heatmapper",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 program in lane x: third-party, All"
   },
   {
    "id": "feat:x10",
    "name": "FlyBrainLab",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 2 program in lane x: third-party, All"
   },
   {
    "id": "feat:x11",
    "name": "Android toolchain",
    "source": "features",
-   "type": "feature",
+   "type": "third-party application",
    "qualifier": "",
    "scope": "open",
-   "level": "user",
-   "parent": "",
+   "level": "all",
+   "parent": "programs",
    "unit": "",
-   "reason": "tier undefined undefined in lane undefined: part of the work"
+   "reason": "tier 3 program in lane x: third-party, All"
   },
   {
    "id": "pane:home",
@@ -3384,6 +3420,30 @@
    "parent": "desktop",
    "unit": "",
    "reason": "hosts a catalog HTML app on vrg-app://; the user opens the app, not the host"
+  },
+  {
+   "id": "pane:sessions",
+   "name": "sessions",
+   "source": "dashboard",
+   "type": "panel",
+   "qualifier": "session manager",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "sessions",
+   "reason": "is the catalog item `sessions`"
+  },
+  {
+   "id": "pane:controller",
+   "name": "controller",
+   "source": "dashboard",
+   "type": "panel",
+   "qualifier": "prompt router",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "controller",
+   "reason": "is the catalog item `controller`"
   },
   {
    "id": "pane:search",
@@ -3866,6 +3926,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:gate",
+   "name": "lib/gate.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:git",
    "name": "lib/git.js",
    "source": "dashboard",
@@ -4216,6 +4288,18 @@
   {
    "id": "dashlib:selmenu",
    "name": "lib/selmenu.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:sessions",
+   "name": "lib/sessions.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -5498,6 +5582,270 @@
    "reason": "planned"
   },
   {
+   "id": "mobile:M46",
+   "name": "Kamera 2",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M47",
+   "name": "Munkakör lap",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M48",
+   "name": "Helyszín ↔ Térkép",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M49",
+   "name": "Apró hiányok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M50",
+   "name": "Maradékok",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M51",
+   "name": "Kapcsolók",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M52",
+   "name": "Saját kamera",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M53",
+   "name": "Összefésülés",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M54",
+   "name": "Jegyzőkönyv a telefonon",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M55",
+   "name": "Térkép-feed (in `map`)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M56",
+   "name": "Saját útvonaltervezés (in `map`, N2)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M57",
+   "name": "Szobadoboz (in `sketch`, Desktop first)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M58",
+   "name": "Vezetés + forgalom (in `map`, N3)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M59",
+   "name": "Szobadoboz a telefonon (in `sketch`)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M60",
+   "name": "Síkmérés (in `sketch`, phone and Desktop)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M61",
+   "name": "Tárgykereső",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M62",
+   "name": "Körkép (in `sketch`, phone and Desktop)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M63",
+   "name": "Ház 3D (PC + Desktop Sketcher)",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M64",
+   "name": "Google AR csomag",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M65",
+   "name": "Óra",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M66",
+   "name": "DevLap on the home",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M67",
+   "name": "Radar",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "source": "mobile",
@@ -5798,6 +6146,18 @@
    "reason": "is the catalog item `layer.z`"
   },
   {
+   "id": "tool:anon-check",
+   "name": "tools/anon-check.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
    "id": "tool:anonymise",
    "name": "tools/anonymise.js",
    "source": "tools",
@@ -5812,6 +6172,18 @@
   {
    "id": "tool:bootleg",
    "name": "tools/bootleg.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
+   "id": "tool:brief-pack",
+   "name": "tools/brief-pack.js",
    "source": "tools",
    "type": "cli tool",
    "qualifier": "",
@@ -5964,6 +6336,30 @@
    "parent": "dev:look",
    "unit": "melyviz",
    "reason": "is the catalog item `melyviz`"
+  },
+  {
+   "id": "tool:progress-svg",
+   "name": "tools/progress-svg.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
+  },
+  {
+   "id": "tool:sketch-takeoff",
+   "name": "tools/sketch-takeoff.js",
+   "source": "tools",
+   "type": "cli tool",
+   "qualifier": "",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:infra",
+   "unit": "",
+   "reason": "command-line script, run by START, a build, an agent or a developer"
   },
   {
    "id": "tool:solomon",
@@ -6374,6 +6770,18 @@
    "reason": "is the catalog item `servicekit-cyd` (planned)"
   },
   {
+   "id": "lib:grafit",
+   "name": "grafit.css",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
+  },
+  {
    "id": "lib:melyviz",
    "name": "melyviz.css",
    "source": "shared",
@@ -6388,6 +6796,18 @@
   {
    "id": "lib:rajztar",
    "name": "rajztar",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
+  },
+  {
+   "id": "lib:sidepanel",
+   "name": "sidepanel",
    "source": "shared",
    "type": "library",
    "qualifier": "",
@@ -6432,6 +6852,18 @@
    "parent": "dev:look",
    "unit": "uikit",
    "reason": "is the catalog item `uikit`"
+  },
+  {
+   "id": "doc:brief",
+   "name": "docs/brief",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
   },
   {
    "id": "doc:city",
@@ -6578,6 +7010,18 @@
    "reason": "design, decisions and briefs"
   },
   {
+   "id": "doc:radar",
+   "name": "docs/radar",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
    "id": "doc:research",
    "name": "docs/research",
    "source": "docs",
@@ -6622,6 +7066,18 @@
    "scope": "open",
    "level": "dev",
    "parent": "solomon",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:visual",
+   "name": "docs/visual",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
    "unit": "",
    "reason": "design, decisions and briefs"
   },
@@ -6938,6 +7394,18 @@
    "reason": "is the catalog item `planner`"
   },
   {
+   "id": "dir:Prefilter",
+   "name": "Prefilter",
+   "source": "folders",
+   "type": "folder",
+   "qualifier": "source",
+   "scope": "internal",
+   "level": "",
+   "parent": "",
+   "unit": "",
+   "reason": "a top-level folder; what it holds is classified by its own rows"
+  },
+  {
    "id": "dir:ServiceKit",
    "name": "ServiceKit",
    "source": "folders",
@@ -6972,6 +7440,18 @@
    "parent": "servicekit",
    "unit": "servicekit-phone",
    "reason": "is the catalog item `servicekit-phone` (planned)"
+  },
+  {
+   "id": "dir:SessionCanvas",
+   "name": "SessionCanvas",
+   "source": "folders",
+   "type": "view",
+   "qualifier": "observability",
+   "scope": "open",
+   "level": "dev",
+   "parent": "dev:ai",
+   "unit": "munkavaszon",
+   "reason": "is the catalog item `munkavaszon`"
   },
   {
    "id": "dir:Sketcher",
