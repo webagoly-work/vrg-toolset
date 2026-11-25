@@ -24,7 +24,7 @@ const c = T.collect({ threads });
 const tl = T.layer(c.raw, c.built);
 const graph = {
   generated: '2026-11-25T12:00:00Z', schema: 2, build: { no: 7, kind: 'full', generated: '2026-11-25T12:00:00Z' },
-  nodes: tl.nodes.map(n => ({ id: n.id, layer: 'T', kind: 'todo', title: n.title, brief: n.brief, state: n.state, from: n.extra.sources, own: [] }))
+  nodes: tl.nodes.map(n => ({ id: n.id, layer: 'T', kind: 'todo', title: n.title, brief: n.brief, state: n.state, from: n.extra.sources, labels: n.extra.labels, own: [] }))
     .concat(ENT.map(e => ({ id: 'E:' + e.id, layer: 'E', kind: 'pillar', title: e.name, own: [] }))),
   edges: [], entities: ENT.map(e => ({ ...e, members: [], per: {} })),
 };
@@ -55,6 +55,8 @@ test('parity: every item of every thread is on its row', () => {
     assert.equal(row.note, r.note || ''); assert.deepEqual(row.read, r.read || []); assert.equal(row.go, r.go || '');
   }
   assert.ok(n > 400, n + ' items checked');
+  // each row knows its thread's own wording of a merged item (the gateway edits by it)
+  for (const r of OLD.areas.flatMap(a => a.rows)) for (const t of r.t || []) assert.ok(byId.get(r.id).t.some(x => x.orig === t.l), `${r.id}: "${t.l}" as threads.js writes it`);
   // a merged item (the same open work on two threads) is on both rows
   const dd = rows.filter(r => r.t.some(t => /^desktop dashboard$/i.test(t.l)));
   assert.deepEqual(dd.map(r => r.id).sort(), ['mindmap', 'stack']);

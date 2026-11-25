@@ -10,7 +10,9 @@
      class and pulse of the pillar's string, the status from its F tier, the drift between the two, the DevLog lines'
      states, the built F rows, the open work as T nodes with "looks done" and its evidence. A row is a pillar: selecting it
      lights its string on every other open Stack page (lib/live.js). Data: out/board-data.js (lib/board.js, every build).
-     Works from file:// and serve.js; `node stack.js board --public` writes the anonymised copy for claude.ai. -->
+     With serve.js, ✓ Kész takes an item off its thread's list onto the built list through the write gateway (S6, the
+     threads editor), after the diff is approved. Works from file:// and serve.js; `node stack.js board --public` writes
+     the anonymised copy for claude.ai. -->
 <link rel="stylesheet" href="../shared/melyviz.css">
 <link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
 <link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
@@ -98,6 +100,7 @@
 <main id="main"><div class="wrap" id="wrap"></div></main>
 <div id="toast"></div>
 <script src="out/board-data.js"></script>
+<script src="lib/editdialog.js"></script>
 <script src="lib/live.js"></script>
 <script>
 'use strict';
@@ -112,6 +115,8 @@
   const F = { q: '', area: '', done: false, drift: false, sel: '' };
   const rows = D.areas.flatMap(a => a.rows);
   const byId = new Map(rows.map(r => [r.id, r]));
+  // mark done through the write gateway (S6, lib/edit-threads.js): only with serve.js, never in the public copy
+  const canWrite = !!(window.StackEdit && StackEdit.available() && !window.BOARD_PUBLIC);
 
   function squares(r) {
     return `<span class="sq" title="Füzér · string: ${esc(r.mask || 'nincs pillér · no pillar')}">` + D.layers.map(L => {
@@ -144,7 +149,9 @@
     return `<div><span class="lbl">Teendők</span><ul class="todo">` + r.t.map((t, i) => {
       const done = t.state === 'looks done';
       return `<li class="${done ? 'done' : ''}" data-t="${esc(t.id)}">${esc(t.l)}${t.h ? ` <span class="h">— ${md(t.h)}</span>` : ''}${t.also.length ? ` <span class="faint">(${esc(t.also.join(', '))} is)</span>` : ''}` +
-        (done ? `<span class="ld">✓ késznek tűnik</span><details><summary>bizonyíték · evidence</summary> ${t.evidence.map(e => esc(e.text)).join('; ')}</details><button data-off="${esc(r.id)}|${i}" title="Prompt: vedd le a listáról · a prompt to take it off the list">⧉ levétel</button>` : '') + '</li>';
+        (done ? `<span class="ld">✓ késznek tűnik</span><details><summary>bizonyíték · evidence</summary> ${t.evidence.map(e => esc(e.text)).join('; ')}</details>` : '') +
+        (canWrite ? `<button data-done="${esc(r.id)}|${i}" title="Kész: le a teendők közül, fel a kész listára (threads.js), a diff jóváhagyása után · mark done, after you see the diff">✓ Kész</button>`
+          : done ? `<button data-off="${esc(r.id)}|${i}" title="Prompt: vedd le a listáról · a prompt to take it off the list">⧉ levétel</button>` : '') + '</li>';
     }).join('') + '</ul></div>';
   }
   function card(r) {
@@ -210,6 +217,9 @@
   wrap.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (b && b.dataset.prompt) { copy(promptOf(byId.get(b.dataset.prompt)), 'prompt a vágólapon · prompt copied'); return; }
+    if (b && b.dataset.done) { const [rid, i] = b.dataset.done.split('|'), r = byId.get(rid), t = r.t[+i];
+      // the original label as threads.js has it: a merged item's node keeps the first wording, so ask for this thread's own
+      StackEdit.markDone({ thread: r.id, item: t.orig || t.l, page: 'board' }, { onDone: () => location.reload() }); return; }
     if (b && b.dataset.off) { const [rid, i] = b.dataset.off.split('|'), r = byId.get(rid); copy(offPrompt(r, r.t[+i]), 'levétel prompt a vágólapon · copied'); return; }
     if (b && b.dataset.f) { const f = b.dataset.f; F.done = f === 'done'; F.drift = f === 'drift'; $('#fDone').setAttribute('aria-pressed', F.done); $('#fDrift').setAttribute('aria-pressed', F.drift);
       render(); if (f === 'dupes') { const d = $('#dupes'); if (d) d.scrollIntoView(); } return; }

@@ -95,7 +95,7 @@ test('refused: a changed file, a wrong path, a non-decisions file, an unknown id
   assert.throws(() => E.apply(op, '', ctx), e => e.code === 409);
   const bad = [
     [{ ...op, file: '../outside/DECISIONS.md' }, 400], [{ ...op, file: 'docs/visual/README.md' }, 403], [{ ...op, file: 'H:/elsewhere/DECISIONS.md' }, 403],
-    [{ ...op, file: 'docs/none/DECISIONS.md' }, 404], [{ ...op, id: 'VIS-Q99' }, 404], [{ ...op, editor: 'threads' }, 400], [{ ...op, choice: 'Z' }, 400],
+    [{ ...op, file: 'docs/none/DECISIONS.md' }, 404], [{ ...op, id: 'VIS-Q99' }, 404], [{ ...op, editor: 'lines' }, 400], [{ ...op, choice: 'Z' }, 400],
   ];
   for (const [o, code] of bad) assert.throws(() => E.preview(o, ctx), e => e.code === code, JSON.stringify(o) + ' → ' + code);
 });

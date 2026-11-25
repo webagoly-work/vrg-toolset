@@ -355,3 +355,16 @@ other lines; in the browser every one of them is on the page.
 | STK-P109 | A row is a pillar | **A** the page signs the contract as layer E: a row selected lights the pillar's string on every other open Stack page; a string selected elsewhere lights rows, open-work items, lines and built F chips here | the board is the E layer's page (§2.2) |
 | STK-P110 | HEALTH.md showed only eight check kinds | **A** every kind a stage reports, the eight first | the pillar, T and board notes reached only health.json |
 
+## The gateway's threads editor, mark done (builder's choices), 2026-11-25
+
+The Founder, 2026-11-25: **build the S6 threads editor for mark done.** `lib/edit-threads.js`, behind the same gateway
+(`POST /api/edit/preview` · `/apply`, the diff dialog), from the Füzértábla's ✓ Kész.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P111 | threads.js is JavaScript kept by hand (plan §9) | A migrate it to JSON first · **B edit well-delimited literals only, and prove the result** | it is on H:, out of this session's reach, and the Founder edits it by hand; a tokenizer (strings, comments, brackets) finds the row by its `id` literal and the item's own element; the old and the new file are both run, and the new one must equal the old with exactly that change (keys compared sorted), else nothing is written. A computed item (a constant, not a literal) is refused, not guessed |
+| STK-P112 | What "mark done" changes | **A** the item off the thread's `t` (with its comma, and its line and the comment after it when it stood alone); its label onto the end of `d` in the file's own quotes and layout (a new `d: [...]` before `t:` when the row has none); "onto built" can be unticked | the board's built list is where a done item belongs; nothing else moves |
+| STK-P113 | A merged item (one T node, two threads' wordings) | **A** the gateway edits by the thread's own wording (`labels` on the T node) | "M15 logo home" is "M15 home" in the logo thread's list; matching by the node's title would refuse |
+| STK-P114 | Which items get the button | **A** every open item, when the page is served by serve.js; the looks-done ones keep their evidence next to it; from file:// the copy-prompt stays | the Founder knows more than the evidence; the evidence only points |
+| STK-P115 | The diff | **A** a line diff inside the change (the old line before the new), removed lines struck through | the threads edit changes two places at once; unchanged lines between them stay context |
+

@@ -77,7 +77,8 @@ function layer(raw, built = []) {
     // near-equal words make the same item, but codes must be the same codes: "Q1–Q4" ≠ "E6-Q1–Q4" ≠ "FNM-Q1–Q4"
     const cs = codesOf(r.label);
     if (!g && w.length >= 2) g = groups.find(x => { const inter = x.w.filter(s => w.includes(s)).length; return x.codes === cs && 2 * inter / (x.w.length + w.length) >= 0.8; });
-    if (!g) { g = { key, base, w, codes: cs, label: r.label, hints: [], from: [], threads: new Set(), lines: new Set() }; groups.push(g); }
+    if (!g) { g = { key, base, w, codes: cs, label: r.label, hints: [], from: [], threads: new Set(), lines: new Set(), labels: {} }; groups.push(g); }
+    if (r.from.src === 'thread' && !(r.from.id in g.labels)) g.labels[r.from.id] = r.label;   // each thread's own wording (the gateway edits by it)
     if (r.hint && !g.hints.includes(r.hint)) g.hints.push(r.hint);
     g.from.push(r.from); r.threads.forEach(t => g.threads.add(t)); r.lines.forEach(l => g.lines.add(l));
   }
@@ -87,7 +88,7 @@ function layer(raw, built = []) {
     const src = g.from.map(f => f.src === 'thread' ? 'thread ' + f.id : f.src === 'line' ? 'line ' + f.id : `${f.file}:${f.line}`);
     nodes.push({ id, layer: 'T', kind: 'todo', title: g.label, brief: C.clip(g.hints.join(' · '), 300), state: 'open', t: '', tier: '',
       lane: [...g.threads][0] || [...g.lines][0] || 'roadmap', own: [], text: [g.label, ...g.hints, ...g.from.filter(f => f.file).map(f => f.file)].join('\n'),
-      extra: { from: g.from, sources: src, threads: [...g.threads], lines: [...g.lines] } });
+      extra: { from: g.from, sources: src, threads: [...g.threads], lines: [...g.lines], labels: g.labels } });
     for (const l of g.lines) edges.push({ a: id, b: 'L:' + l, rel: 'todo-of' });
   }
   return { nodes, edges, built };
@@ -149,4 +150,4 @@ function drift(graph, S, opts = {}) {
   return cards.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap) || a.pillar.localeCompare(b.pillar));
 }
 
-module.exports = { collect, layer, check, drift, item, telling, SCALE };
+module.exports = { collect, layer, check, drift, item, telling, slug, SCALE };

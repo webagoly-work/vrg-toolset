@@ -4,7 +4,8 @@
 //   preview(op, ctx) → { ok, file, id, line, at, answer, diff, hash, before, after }      nothing is written
 //   apply(op, hash, ctx) → { ok, file, id, line, ... }                                     writes, logs an `edit` event
 //
-// One editor so far (the Founder's choice, 2026-11-25: decisions only, one fixed answer line):
+// Two editors (the Founder's choices, 2026-11-25): decisions, one fixed answer line; threads, "mark done" for the
+// Füzértábla (lib/edit-threads.js: an item off a thread's not-yet list, onto its built list, in notes/devlog/threads.js).
 //
 //   op = { editor: 'decisions', file: 'docs/visual/README.md', id: 'VIS-Q5', choice: 'B', text: 'option text',
 //          own: 'an answer in my words' (instead of choice), note: 'optional', page: 'viewer' | 'decisions' }
@@ -32,6 +33,7 @@ const oneLine = (s, max) => String(s == null ? '' : s).replace(/[\r\n\t]+/g, ' '
 function ctxOf(ctx = {}) {
   const L = ctx.layers || require('./layers');
   return { repo: path.resolve(ctx.repo || require('./common').REPO), log: ctx.log || null, layers: L,
+    threadsFile: ctx.threadsFile || (require('../config').sources.notes + '/devlog/threads.js'),
     extra: (ctx.extra || L.DECISION_FILES_EXTRA || []).map(f => f.replace(/\\/g, '/')), now: ctx.now || (() => new Date()) };
 }
 
@@ -83,7 +85,30 @@ function unified(rel, lines, at, add) {
   return out.join('\n') + '\n';
 }
 
+// any change as one hunk: the lines before and after it that did not change, three of each around it
+function unifiedChange(rel, a, b) {
+  const A = a.split(/\r?\n/), B = b.split(/\r?\n/);
+  let p = 0; while (p < A.length && p < B.length && A[p] === B[p]) p++;
+  let q = 0; while (q < A.length - p && q < B.length - p && A[A.length - 1 - q] === B[B.length - 1 - q]) q++;
+  const c0 = Math.max(0, p - 3), aEnd = A.length - q, bEnd = B.length - q, c1a = Math.min(A.length, aEnd + 3), c1b = Math.min(B.length, bEnd + 3);
+  const out = [`--- a/${rel}`, `+++ b/${rel}`, `@@ -${c0 + 1},${c1a - c0} +${c0 + 1},${c1b - c0} @@`];
+  for (let k = c0; k < p; k++) out.push(' ' + A[k]);
+  // inside the change, a line diff (longest common subsequence): an unchanged line in the middle stays a context line
+  const a1 = A.slice(p, aEnd), b1 = B.slice(p, bEnd), L = a1.map(() => new Array(b1.length + 1).fill(0));
+  L.push(new Array(b1.length + 1).fill(0));
+  for (let i = a1.length - 1; i >= 0; i--) for (let j = b1.length - 1; j >= 0; j--) L[i][j] = a1[i] === b1[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  let i = 0, j = 0;
+  while (i < a1.length || j < b1.length) {
+    if (i < a1.length && j < b1.length && a1[i] === b1[j]) { out.push(' ' + a1[i]); i++; j++; }
+    else if (i < a1.length && (j >= b1.length || L[i + 1][j] >= L[i][j + 1])) out.push('-' + a1[i++]);   // the old line first
+    else out.push('+' + b1[j++]);
+  }
+  for (let k = aEnd; k < c1a; k++) out.push(' ' + A[k]);
+  return out.join('\n') + '\n';
+}
+
 function plan(op, c) {
+  if (op && op.editor === 'threads') { const p = require('./edit-threads').plan(op, c); return { ...p, diff: unifiedChange(p.rel, p.txt, p.next) }; }
   if (!op || op.editor !== 'decisions') throw new Refused(400, 'unknown editor: ' + (op && op.editor));
   const { abs, rel } = locate(op.file, c);
   let buf; try { buf = fs.readFileSync(abs); } catch { throw new Refused(404, 'file not found: ' + rel); }
@@ -116,6 +141,7 @@ function plan(op, c) {
 
 function preview(op, ctx) {
   const c = ctxOf(ctx), p = plan(op, c);
+  if (p.info) return { ok: true, file: p.rel, ...p.info, diff: p.diff, hash: sha(p.buf) };
   return { ok: true, file: p.rel, id: p.it.id, line: p.it.line, at: p.at + 1, answer: p.line, diff: p.diff, hash: sha(p.buf) };
 }
 
@@ -125,10 +151,16 @@ function apply(op, hash, ctx) {
   const tmp = p.abs + '.tmp' + process.pid;
   fs.writeFileSync(tmp, p.next); fs.renameSync(tmp, p.abs);
   const now = c.now().toISOString();
+  if (p.info) {   // threads: the open-work item's T node pulses on the time scrubber
+    const ev = { op: 'edit', id: 'T:' + require('./todo').slug(p.info.item), layer: 'T', editor: 'threads', file: p.rel, thread: p.info.thread, item: p.info.item,
+      toBuilt: p.info.toBuilt, page: oneLine(op.page, 40) || '', diff: sha(p.diff).slice(0, 16), valid: today(), seen: now };
+    if (c.log) { fs.mkdirSync(path.dirname(c.log), { recursive: true }); fs.appendFileSync(c.log, JSON.stringify(ev) + '\n'); }
+    return { ok: true, file: p.rel, ...p.info, event: ev };
+  }
   const ev = { op: 'edit', id: 'Q:' + p.it.id, layer: 'Q', editor: 'decisions', file: p.rel, line: p.it.line, page: oneLine(op.page, 40) || '',
     answer: op.own != null && String(op.own).trim() ? 'own' : String(op.choice).toUpperCase(), diff: sha(p.diff).slice(0, 16), valid: p.date, seen: now };
   if (c.log) { fs.mkdirSync(path.dirname(c.log), { recursive: true }); fs.appendFileSync(c.log, JSON.stringify(ev) + '\n'); }
   return { ok: true, file: p.rel, id: p.it.id, line: p.it.line, at: p.at + 1, answer: p.line, event: ev };
 }
 
-module.exports = { preview, apply, answerLine, Refused };
+module.exports = { preview, apply, answerLine, unifiedChange, Refused };

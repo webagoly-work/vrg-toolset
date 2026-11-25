@@ -80,7 +80,7 @@ function build(graph, threads, lines, { today = new Date().toISOString().slice(0
       status, statusFrom, cls: s ? s.cls : '', mask: s ? s.mask : '', reach: s ? s.reach : [], pulse: s ? s.pulse : '',
       quiet: s && s.pulse ? daysBetween(s.pulse, today) : null, drift: p && drift.has(p.id) ? drift.get(p.id) : null,
       dl: (r.lines || []).map(lineState), built: builtF, d: (r.d || []).map(x => (item(x) || {}).label).filter(Boolean), b: (r.b || []).map(x => (item(x) || {}).label).filter(Boolean),
-      t: todoOf(r.id).map(n => ({ id: n.id, l: n.title, h: n.brief || '', state: n.state, evidence: n.evidence || [], also: (n.from || []).filter(f => f !== 'thread ' + r.id) })),
+      t: todoOf(r.id).map(n => ({ id: n.id, l: n.title, orig: (n.labels && n.labels[r.id]) || n.title, h: n.brief || '', state: n.state, evidence: n.evidence || [], also: (n.from || []).filter(f => f !== 'thread ' + r.id) })),
       note: r.note || '', read: r.read || [], go: r.go || '',
     };
     if (!areaIx.has(area)) { areaIx.set(area, areas.length); areas.push({ area, rows: [] }); }
@@ -142,6 +142,7 @@ function exportPublic({ mapFile = path.join(C.REPO, 'tools', 'anonymise.map.json
     return `<style>/* ${href} */\n${css.replace(/<\/(style)/gi, '<\\/$1')}\n</style>`;
   });
   html = html.replace('<script src="out/board-data.js"></script>', () => `<script>window.STACK_BUNDLE = true; window.BOARD_PUBLIC = true;\n${js(swap(data))}</script>`);
+  html = html.replace('<script src="lib/editdialog.js"></script>', '');   // the public copy is read-only
   html = html.replace('<script src="lib/live.js"></script>', () => `<script>/* lib/live.js */\n${js(fs.readFileSync(path.join(root, 'lib', 'live.js'), 'utf8'))}</script>`);
   if (/<script src=|<link rel="stylesheet"/.test(html)) throw new Error('board.html: something external is still linked');
   X.writeAtomic(out, html);
