@@ -6,7 +6,7 @@ book is generated into `Kisokos/tankonyv/KISOKOS.md` (`node Kisokos/kisokos.js m
 shows each lesson in full. Every lesson links into the other volumes, so the theory points at the materials,
 lines, fixtures and rules it uses.
 
-Status: **level 1 written** (10 lessons) and **level 2 lessons 1–10** (2026-11-25); all drafts waiting for review.
+Status: **level 1 written** (10 lessons) and **level 2 lessons 1–15** (2026-11-25); all drafts waiting for review.
 The rest is planned below; the plan was aligned on 2026-11-25 with the official requirements of the trade (TK1:
 `docs/research/2026-11-25_kisokos-tk1-villanyszerelo-kkk.md`). Our book fits the **Villanyszerelő (4 0713 04 07),
 Épületvillamosság** direction.
@@ -41,7 +41,7 @@ requirement points the lesson serves (TK1), so the coverage table can be regener
 Planned extensions after TK1: lesson 6 gets fire safety and work at height; lesson 9 gets screw, rivet, soldered and
 crimped joints, tightening torque and basic metalwork.
 
-### Level 2 · Szakmunkás (lessons 1–10 written, 11–20 planned; reordered after TK1)
+### Level 2 · Szakmunkás (lessons 1–15 written, 16–20 planned; reordered after TK1)
 
 1. ✅ Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT; a PEN szétválasztása; a régi „nullázás” veszélye.
 2. ✅ Érintésvédelem: alap-, hiba-, kiegészítő védelem; lekapcsolási idők; Zs · Ia ≤ U0 (B16: ≈ 2,9 Ω); AC, A, F, B típus.
@@ -53,14 +53,14 @@ crimped joints, tightening torque and basic metalwork.
 8. ✅ Földelés és EPH: alapföldelő, rúdföldelő, fő és helyi EPH, keresztmetszetek.
 9. ✅ Különleges helyiségek a gyakorlatban: egy fürdőszoba végigtervezve, medence, szauna, kültér.
 10. ✅ Ellenőrző mérések: sorrend, szigetelés, hurokimpedancia (80 %-os szabály), áram-védőkapcsoló, jegyzőkönyv.
-11. Kábelek a gyakorlatban: nyomvonal, fektetés, védőcső, átvezetések, kábelvégelzárás, zsugorkötés (TK1: missing).
-12. Villám- és túlfeszültség-védelem: 1., 2., 3. típusú levezetők, és a villámvédelmi rendszer részei: felfogó,
+11. ✅ Kábelek a gyakorlatban: nyomvonal, fektetés, védőcső, átvezetések, kábelvégelzárás, zsugorkötés (TK1: missing).
+12. ✅ Villám- és túlfeszültség-védelem: 1., 2., 3. típusú levezetők, és a villámvédelmi rendszer részei: felfogó,
     levezető, földelés (TK1: moved forward).
-13. Motorok és transzformátor: aszinkron motor és a forgó mágneses tér, csillag-delta indítás, forgásirányváltás
+13. ✅ Motorok és transzformátor: aszinkron motor és a forgó mágneses tér, csillag-delta indítás, forgásirányváltás
     mágneskapcsolóval (vizsgafeladat), lágyindító, frekvenciaváltó, a transzformátor alapjai (TK1: extended).
-14. Épületautomatizálás alapjai: KNX, DALI, okos szerelvények bekötése és élesztése (TK1: the largest official block,
+14. ✅ Épületautomatizálás alapjai: KNX, DALI, okos szerelvények bekötése és élesztése (TK1: the largest official block,
     moved from level 3; the design side stays in level 3).
-15. Fotovoltaikus rendszer telepítői szemmel: string, inverter, DC- és AC-oldali védelem, leválasztás (TK1: the exam
+15. ✅ Fotovoltaikus rendszer telepítői szemmel: string, inverter, DC- és AC-oldali védelem, leválasztás (TK1: the exam
     tests it; since KKK v4, 2024-08-29, the PV competence is worded after EU 2018/2001 (RED II) Annex IV 6 d).
 16. Ideiglenes építési elosztó: áram-védőkapcsoló, IP, kábelek, a felvonulási terület (TK1: missing).
 17. Gyengeáram a lakásban: strukturált hálózat, TV, kaputelefon (a Kommunikációs vonalakra építve).
@@ -93,7 +93,7 @@ official hours: they stay our own extras, not exam topics.
 
 1. ✅ Level 1 (10 lessons, 2026-11-22).
 2. ✅ Level 2, lessons 1–5 (the safety core: networks, protection, cross-section, the distribution board), 2026-11-25.
-3. Level 2, lessons 6–20 (✅ 6–10, 2026-11-25); level 1 lessons 11–12 and the extensions of 6 and 9.
+3. Level 2, lessons 6–20 (✅ 6–10 and 11–15, 2026-11-25); level 1 lessons 11–12 and the extensions of 6 and 9.
 4. Level 3.
 5. Circuit drawings for the lessons (TK2).
 
@@ -121,8 +121,9 @@ official hours: they stay our own extras, not exam topics.
                ['11-25', 'level 2 lessons 1–5 written: networks, protection, overcurrent, cross-section, distribution board'],
                ['11-25', 'level 2 lessons 6–10 written: circuit layout, metering, earthing and bonding, special rooms, test measurements'],
                ['11-25', 'TK1: curriculum checked against the official KKK/PTT (Villanyszerelő 4 0713 04 07); gaps added, building automation and PV moved to level 2'],
-               ['11-25', 'TK1 follow-up: PTT 2020 still current, KKK v4 (2024-08-29) changes only the PV wording; dismantling in lesson 19; Erősáramú extras for level 3']],
-  remaining: ['Founder review of level 1 and level 2 lessons 1–10', 'level 1 lessons 11–12 and extensions of 6, 9', 'level 2 lessons 11–20', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
-  nextStep: 'Review level 2, 1–10; then level 2 lessons 11–15 (cables, surge and lightning, motors, building automation basics, PV).',
+               ['11-25', 'TK1 follow-up: PTT 2020 still current, KKK v4 (2024-08-29) changes only the PV wording; dismantling in lesson 19; Erősáramú extras for level 3'],
+               ['11-25', 'level 2 lessons 11–15 written: cables, surge and lightning, motors and transformer, building automation basics, PV']],
+  remaining: ['Founder review of level 1 and level 2 lessons 1–15', 'level 1 lessons 11–12 and extensions of 6, 9', 'level 2 lessons 16–20', 'level 3 (10 lessons)', 'TK2 circuit drawings'],
+  nextStep: 'Review level 2, 1–15; then level 2 lessons 16–20 (temporary site board, low voltage in the home, lighting practice, isolation step by step, fault finding).',
   feeds: [['kisokos']] },
 ```

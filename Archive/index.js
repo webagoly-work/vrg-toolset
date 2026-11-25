@@ -57,7 +57,8 @@ window.VRG_ARCHIVE = {
     "2026-11-25: rule cards and lessons corrected after a source check (protection values, special locations; notes in docs/research/2026-11-25_kisokos-*)",
     "2026-11-25: emergency-lighting rule cards updated to EN 1838:2024, EN 50172:2024, OTSZ 18. melléklet and TvMI 7.7",
     "2026-11-25: second source check applied (fixing technique, product standards, protection values, lamp types, lines); new hollow-core slab anchor card, 203 cards",
-    "2026-11-25: rule cards name the Hungarian editions in force (MSZT webshop); bathroom content now teaches 7-701 in its 2024 edition (Founder decision), with 2007 notes"
+    "2026-11-25: rule cards name the Hungarian editions in force (MSZT webshop); bathroom content now teaches 7-701 in its 2024 edition (Founder decision), with 2007 notes",
+    "2026-11-25: Tankönyv level 2 lessons 11–15 added (cables, surge and lightning, motors and transformer, building automation basics, PV); 208 cards"
    ],
    "tags": [
     "kisokos",

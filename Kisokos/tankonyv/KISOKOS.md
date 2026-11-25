@@ -514,6 +514,11 @@ Egy folyosót két végéről kell kapcsolni. Milyen vezetékek kellenek a kapcs
 - [8. Földelés és egyenpotenciálú összekötés](#s08-foldeles-eph)
 - [9. Különleges helyiségek a gyakorlatban](#s09-kulonleges-helyisegek)
 - [10. Ellenőrző mérések és a jegyzőkönyv](#s10-ellenorzo-meresek)
+- [11. Kábelek a gyakorlatban](#s11-kabelek)
+- [12. Villám- és túlfeszültség-védelem](#s12-tulfeszultseg-villamvedelem)
+- [13. Motorok és transzformátor](#s13-motorok-transzformator)
+- [14. Épületautomatizálás alapjai](#s14-epuletautomatizalas)
+- [15. Napelemes rendszer telepítői szemmel](#s15-napelemes-rendszer)
 
 <a id="s01-halozati-rendszerek"></a>
 
@@ -1021,3 +1026,268 @@ Egy B16-os aljzatkörön a mért hurokimpedancia 1,9 Ω, az áram-védőkapcsol�
 - A mérések a berendezés átadásához kötött dokumentumok: hamis vagy elmaradt mérés jogi felelősséggel jár.
 
 *Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, LED-szalag (12 / 24 V)
+
+<a id="s11-kabelek"></a>
+
+### 11. Kábelek a gyakorlatban
+
+*Előtte:* 4. Keresztmetszet és feszültségesés, 6. Áramkörök kiosztása egy lakásban
+
+**Célok**
+
+- Nyomvonalat tervezni a szerelési zónák és a szerkezet szerint.
+- A fektetési módhoz illő kábelt és védőcsövet választani.
+- Földkábelt fektetni, és tudni, mikor kell összekötő vagy végelzáró készlet.
+
+A nyomvonal a rajzon kezdődik: a kábel a falban a szerelési zónákban fut (6. lecke), vízszintesen vagy függőlegesen, sosem átlósan, hogy később fúráskor kiszámítható legyen, hol van. Ahol a zónától el kell térni, azt a tervbe és az átadási dokumentációba be kell rajzolni.
+
+Fektetési módok: vakolat alatt (falhoronyban, gipszelve), védőcsőben (falban, padlóban, betonban), falon kívül (kábelcsatornában, bilinccsel, tálcán), szerelt falban és álmennyezetben, földben. A fektetési mód a terhelhetőséget is meghatározza (4. lecke), ezért a tervben szerepelnie kell.
+
+Kábel vagy vezeték: a falban, vakolat alatt köpenyes kábel (pl. NYM-J) vagy védőcsőbe húzott egyerű vezeték (H07V-U, H07V-R) fut; egyerű vezeték védőcső nélkül nem fektethető. Földbe csak földkábel (pl. NYY-J, E-YY-J) kerülhet, a lakáskábel nem. A hajlítási sugarat a gyártó adja; köpenyes PVC kábelnél fix szerelésben jellemzően a kábelátmérő négyszerese.
+
+Védőcső: a merev cső falon kívülre és egyenes szakaszra való, a gégecső falba, padlóba és szerelt falba. Betonba csak az erre minősített, nagyobb nyomószilárdságú cső kerülhet (a jelölése a csövön van); a sima gégecső a betonozáskor összenyomódik. A cső legyen akkora, hogy a vezeték később is kihúzható és cserélhető legyen; a kanyarok számát doboz vagy húzódoboz korlátozza.
+
+Földkábel (tájékoztató, a hazai gyakorlat szerint): kb. 0,7 m mélyen, alatta és fölötte homokágy, fölötte kb. 20–30 cm-rel figyelmeztető szalag; úttest, kocsibejáró alatt mélyebben és védőcsőben. Az épületbe és a kapuoszlopba védőcsőben lép be. Földben kábelt csak erre gyártott összekötő készlettel (gyantás vagy zsugorcsöves) szabad toldani; a sorkapocs szigetelőszalaggal a földben tönkremegy.
+
+Átvezetések: ahol a kábel tűzszakasz határán (tűzfal, födém, aknafal) halad át, az átvezetést minősített tűzgátló anyaggal kell lezárni (OTSZ). Kültéren UV-álló kötegelőt és bilincset kell használni, és a kábelbevezetést tömszelencével tömíteni. A gyengeáramú kábel a 230 V-os kábeltől elválasztva fusson (Kommunikációs vonalak, Ethernet).
+
+**Képletek**
+
+- `ΔU = 2 · l · I · ρ / A` — egyfázisú kör feszültségesése (4. lecke); hosszú földkábelnél ellenőrizni kell
+
+**Kidolgozott példa**
+
+A ház falától 25 m-re lévő kapuoszlopba egy lámpa és egy 16 A-es kültéri aljzat kerül. Milyen kábel, hogyan fektetve, és belefér-e a feszültségesés?
+
+1. Kábel: földkábel, 3 × 2,5 mm² (pl. NYY-J), mert földbe lakáskábel nem kerülhet.
+2. Fektetés: kb. 0,7 m mélyen homokágyban, fölötte figyelmeztető szalag; a ház és az oszlop felé védőcsőben, az oszlopban tömszelencével.
+3. Feszültségesés: ΔU = 2 × 25 × 16 × 0,0178 / 2,5 ≈ 5,7 V, ez 230 V-nak kb. 2,5 %-a: belefér.
+4. Védelem: saját kör, kismegszakító és 30 mA-es áram-védőkapcsoló (kültéri aljzat).
+
+→ 3 × 2,5 mm² földkábel 0,7 m mélyen, a végeken védőcsőben; a feszültségesés kb. 2,5 %, a kör 30 mA-es védelem alatt.
+
+**Gyakorló feladatok**
+
+1. Miért nem szabad a kábelt a falban átlósan vezetni?
+   <details><summary>Megoldás</summary>Mert később senki sem számít rá: fúráskor vagy szegezéskor megsérül. A zónákban, vízszintesen vagy függőlegesen futó kábel helye kiszámítható.</details>
+2. Mehet-e sima gégecső a födém betonjába?
+   <details><summary>Megoldás</summary>Nem: csak a betonba minősített, nagyobb nyomószilárdságú cső, mert a sima gégecső betonozáskor összenyomódik.</details>
+3. Mit kell tenni, ahol a kábel egy tűzfalon halad át?
+   <details><summary>Megoldás</summary>Az átvezetést minősített tűzgátló anyaggal (tömítéssel, habarccsal, mandzsettával) le kell zárni.</details>
+
+**Biztonság**
+
+- Falhorony és fúrás előtt vezetékkeresővel ellenőrizni, hol futnak meglévő vezetékek és csövek.
+- Földmunkánál a közművek (gáz, víz, távközlés) helyét előbb a szolgáltatóktól meg kell tudni.
+
+*Kapcsolódó kártyák:* Vezeték- és vaskereső, Dobozfúró korona, Beton, Gipszkarton, Ethernet csavart érpár, Hálózati 50 Hz, Kapuoszlop- és pillérlámpa, Kerti oszloplámpa (bollard), MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+
+<a id="s12-tulfeszultseg-villamvedelem"></a>
+
+### 12. Villám- és túlfeszültség-védelem
+
+*Előtte:* 1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT, 5. A lakáselosztó, 8. Földelés és egyenpotenciálú összekötés
+
+**Célok**
+
+- Megérteni, honnan jön a túlfeszültség, és mit véd ki a levezető.
+- Az 1., 2. és 3. típusú levezetőt a helyére tenni a lakáselosztóban és a készüléknél.
+- Ismerni a villámvédelmi rendszer részeit, és tudni, mi tartozik a villanyszerelőre.
+
+Túlfeszültség keletkezhet közeli vagy közvetlen villámcsapástól, a hálózati kapcsolásoktól, és bejöhet a táp-, az antenna- vagy az adatvezetéken is. A levezető (SPD) normál feszültségen nem vezet, túlfeszültségnél rövid időre levezeti az áramot a védővezetőre, és a feszültséget a készülék által elviselt szintre korlátozza.
+
+Típusok: az 1. típus a villámáramot (10/350 µs hullám) vezeti le; oda kell, ahol az épületnek külső villámvédelme van, vagy szabadvezetékről kap táplálást, a betáplálás közelében. A 2. típus (8/20 µs) a lakáselosztóba való, ez a leggyakoribb. A 3. típus finomvédelem a készülék közelében (pl. levezetős aljzat), csak a 2. típus mögött. Kombinált (1+2) levezető is van.
+
+Bekötés: a levezető bekötővezetéke legyen a lehető legrövidebb (a fázis és a védővezető felé együtt jellemzően legfeljebb 0,5 m), mert a hosszú vezeték induktivitása rontja a védelmet. Keresztmetszet tájékoztatóul: a 2. típus védővezetője legalább 4 mm², az 1. típusé legalább 16 mm² réz (MSZ HD 60364-5-53, ellenőrizendő a hatályos kiadással). Az előtét-biztosítót a gyártó adja meg.
+
+Hely: TN-C-S rendszerben a levezető az áram-védőkapcsoló elé kerül (különben a levezetett áram kioldja); TT rendszerben a gyártó „3+1” kapcsolása kell (a fázisok és a nulla közé levezető, a nulla és a védővezető közé szikraköz). Az Uc (legnagyobb tartós üzemi feszültség) 230/400 V-os hálózaton jellemzően 275 V.
+
+Mikor kötelező: az MSZ HD 60364-4-443 sok esetben előírja (ahol a túlfeszültség emberi életet, közszolgáltatást vagy sok embert érint), egyébként kockázatelemzés alapján dönthető el; családi háznál ma általános a 2. típusú levezető. Az antennát, a műholdvevőt és a hosszú adatvezetéket is be kell vonni (antennaföldelés, adat-levezető).
+
+Villámvédelmi rendszer (MSZ EN 62305): külső része a felfogó, a levezető és a földelő; belső része az egyenpotenciálú összekötés (8. lecke) és a túlfeszültség-levezetők. A külső villámvédelem tervezése és felülvizsgálata külön szakterület, jogosultsághoz kötött; a villanyszerelő a belső villámvédelemért és a levezetőkért felel, és a villámvédelmi földelést a ház földeléséhez köti.
+
+**Kidolgozott példa**
+
+Egy TN-C-S rendszerű, földkábeles betáplálású családi háznak nincs külső villámvédelme. Milyen levezető kerüljön a lakáselosztóba, és hogyan?
+
+1. Külső villámvédelem és szabadvezeték nincs, ezért 1. típus nem kell; 2. típusú levezető, Uc ≈ 275 V.
+2. Hely: a főkapcsoló után, az áram-védőkapcsolók elé.
+3. Bekötés: a fázis- és a védővezető felé együtt legfeljebb kb. 0,5 m, a védővezető legalább 4 mm² réz, előtét-biztosító a gyártó szerint.
+4. A tévé és a hálózati eszközök elé 3. típusú finomvédelem, az antennakábel földelve.
+
+→ 2. típusú levezető a főkapcsoló után, rövid bekötéssel; finomvédelem a drága készülékeknél.
+
+**Gyakorló feladatok**
+
+1. Miért kell a levezető bekötővezetékét a lehető legrövidebbre venni?
+   <details><summary>Megoldás</summary>Mert a hosszú vezeték induktivitásán a villámáram nagy feszültséget ejt, ami a levezető korlátozó feszültségéhez adódik: a készülékre több jut.</details>
+2. TN-C-S rendszerben az áram-védőkapcsoló elé vagy mögé kerül a levezető?
+   <details><summary>Megoldás</summary>Elé, különben a levezetett áramot hibaáramnak érzékelve kioldhat, vagy a lökés tönkreteheti.</details>
+3. Mikor kell 1. típusú levezető?
+   <details><summary>Megoldás</summary>Ha az épületnek külső villámvédelme van, vagy szabadvezetékről kap táplálást.</details>
+
+**Biztonság**
+
+- A levezetőt csak feszültségmentes elosztóban szabad cserélni; a kijelzője (piros ablak) azt jelzi, hogy már nem véd.
+- Szigetelésmérés előtt a levezetőt le kell választani (10. lecke).
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, Koax: műholdas középfrekvencia, Koax: antenna és kábel-TV, Ethernet csavart érpár, Hálózati 50 Hz
+
+<a id="s13-motorok-transzformator"></a>
+
+### 13. Motorok és transzformátor
+
+*Előtte:* 5. A háromfázisú rendszer, 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem, 3. Túláramvédelem: kismegszakító és biztosító
+
+**Célok**
+
+- Megérteni a forgó mágneses teret és az aszinkron motor működését.
+- Egy motort a hálózathoz kötni: csillag vagy delta, védelem, indítás.
+- Mágneskapcsolós forgásirányváltást bekötni reteszeléssel; ismerni a transzformátor alapjait.
+
+A háromfázisú tekercsek a 120°-kal eltolt áramokkal forgó mágneses teret hoznak létre. Ennek fordulatszáma n0 = 60 · f / p (p a póluspárok száma): 50 Hz-en 3000, 1500, 1000 1/perc. Az aszinkron motor forgórésze ennél kicsit lassabban forog (szlip, jellemzően néhány %), ezért a 4 pólusú motor adattábláján kb. 1420–1460 1/perc áll.
+
+Adattábla: névleges teljesítmény (a tengelyen leadott!), feszültség (pl. 230/400 V Δ/Y), áram, cos φ, fordulatszám, védettség. Ha a hálózat 3 × 400 V és a motor 230/400 V-os, csillagba kell kötni; ha 400/690 V-os, deltába. A kapocsdobozban az átkötő hidak állítják be.
+
+Indítás: közvetlen indításkor a motor a névleges áram többszörösét (jellemzően 5–8-szorosát) veszi fel. A csillag-delta indítás (csak deltában üzemelő, 400/690 V-os motornál) az indítóáramot és a nyomatékot kb. harmadára csökkenti; a lágyindító és a frekvenciaváltó fokozatosan, kíméletesen indít, a frekvenciaváltó a fordulatszámot is szabályozza.
+
+Forgásirányváltás: két fázis felcserélésével. Mágneskapcsolós kapcsolásban két kontaktor (előre, hátra) kapcsolja a motort; a kettő egyszerre soha nem húzhat be (zárlat), ezért villamos reteszelés kell (egymás vezérlőkörében egy-egy nyitó segédérintkező), és gyakran mechanikus is. A vezérlőkör: a STOP nyomógomb (nyitó) sorban, az indító nyomógombok (záró) mellett öntartó segédérintkező. Ez tipikus vizsgafeladat.
+
+Védelem: a motorvédő kapcsoló vagy a hőkioldó (túlterhelés-relé) a motor névleges áramára állítandó, a rövidzárlatot a kapcsoló mágneses kioldója vagy az előtét védi. Frekvenciaváltónál árnyékolt motorkábel és a gyártó szerinti áram-védőkapcsoló kell (jellemzően B vagy F típus, 2. lecke); a gépek kezelőszerveinek színe az MSZ EN 60204-1 szerint.
+
+Transzformátor: két tekercs közös vasmagon; U1 / U2 = N1 / N2, az áram fordítva arányos. Biztonsági transzformátor (MSZ EN 61558-2-6) táplálja a törpefeszültségű (SELV) köröket, pl. a medence lámpáit; a toroid transzformátor bekapcsolási áramlökése nagy, ezért a kismegszakító karakterisztikáját ehhez kell választani.
+
+**Képletek**
+
+- `n0 = 60 · f / p` — a forgó mágneses tér (szinkron) fordulatszáma, 1/perc; p a póluspárok száma
+- `I = P / (√3 · U · cos φ · η)` — háromfázisú motor árama a tengelyteljesítményből (P), a vonali feszültségből (U), a teljesítménytényezőből és a hatásfokból
+- `U1 / U2 = N1 / N2` — transzformátor áttétele: a feszültségek aránya a menetszámok aránya
+
+**Kidolgozott példa**
+
+Egy 4 kW-os, 230/400 V-os, cos φ = 0,85, η = 0,87 adatú motort 3 × 400 V-ról táplálunk. Hogyan kötjük, mekkora az áram, és mire állítjuk a motorvédőt?
+
+1. Kötés: 400 V-os hálózat, 230/400 V-os motor: csillag (Y).
+2. Áram: I = 4000 / (1,732 × 400 × 0,85 × 0,87) ≈ 4000 / 512 ≈ 7,8 A.
+3. Motorvédő kapcsoló: 6,3–10 A-es tartomány, 7,8 A-re állítva (vagy az adattábla áramára).
+4. Közvetlen indításkor az áram rövid ideig kb. 40–60 A: a motorvédő mágneses kioldója ezt elviseli, a kismegszakító helyett a motorvédő véd.
+
+→ Csillag kötés, kb. 7,8 A, a motorvédő 7,8 A-re állítva.
+
+**Gyakorló feladatok**
+
+1. Hogyan változtatod meg egy háromfázisú motor forgásirányát?
+   <details><summary>Megoldás</summary>Két fázis felcserélésével.</details>
+2. Miért kell reteszelni a forgásirányváltó két mágneskapcsolóját?
+   <details><summary>Megoldás</summary>Mert ha egyszerre behúznak, két fázist rövidre zárnak; a reteszelés (nyitó segédérintkező a másik vezérlőkörében) ezt megakadályozza.</details>
+3. Mekkora a 2 pólusú (p = 1) motor szinkron fordulatszáma 50 Hz-en?
+   <details><summary>Megoldás</summary>60 × 50 / 1 = 3000 1/perc; a valóságos fordulatszám a szlip miatt kicsit kevesebb.</details>
+
+**Biztonság**
+
+- Motor kapocsdobozán dolgozni csak feszültségmentesen és a gép indítását megakadályozva (öt szabály); a frekvenciaváltó kondenzátora a lekapcsolás után percekig feszültséget tart.
+- A forgó gép elkapja a ruhát és a kezet: próbaüzem előtt a burkolatok a helyükön.
+
+*Kapcsolódó kártyák:* MSZ EN 60204-1 · Gépek villamos szerkezetei, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, RS-485 · Modbus RTU, Hálózati 50 Hz
+
+<a id="s14-epuletautomatizalas"></a>
+
+### 14. Épületautomatizálás alapjai
+
+*Előtte:* 10. Az első áramkörök: kapcsolások, 6. Áramkörök kiosztása egy lakásban
+
+**Célok**
+
+- A KNX és a DALI vezetékezését és szabályait ismerni.
+- Okos szerelvényt helyesen bekötni egy meglévő lakásban.
+- Egy rendszert élesíteni és átadni: címzés, próba, dokumentáció.
+
+Az épületautomatizálásban a kapcsoló és a fogyasztó között nem közvetlen vezeték, hanem jel van: a nyomógomb üzenetet küld, a kapcsolóaktor kapcsol. A vezetékes rendszerek (KNX, DALI) megbízhatóak és tervezhetőek, a rádiósok (Zigbee, Z-Wave, Wi-Fi, Thread) utólag is beépíthetők. A rendszer kiválasztása tervezési kérdés (3. szint), a szerelés és az élesztés a szakmunkásé.
+
+KNX TP: kéteres buszkábel (jellemzően zöld köpenyű, árnyékolt, 2 × 2 × 0,8 mm; a piros–fekete pár a busz), 30 V DC busztáp fojtóval. Vonalanként legfeljebb 64 eszköz (szokásos tápnál), legfeljebb 1000 m kábel, a táptól legfeljebb 350 m, két eszköz között legfeljebb 700 m (Kommunikációs vonalak, KNX). A busz törpefeszültségű (SELV): a 230 V-tól elválasztva kell vezetni, a dobozban a gyártó és a KNX-irányelv szerinti távolsággal.
+
+DALI: kéteres vezérlővonal a lámpatestek működtetőihez, egy vonalon legfeljebb 64 cím és 16 csoport, a buszt egy DALI-táp látja el. A DALI-erek nem törpefeszültségűek a szabvány értelmében, ezért egy kábelben futhatnak a hálózati erekkel (pl. 5 × 1,5 mm²: L, N, PE, DA, DA); a vonal hossza a feszültségesés miatt korlátozott (Kommunikációs vonalak, DALI).
+
+Okos szerelvény utólag: a legtöbb okos kapcsoló, relé és dimmer nullát kér a kapcsolódobozban. A régi lakásban a kapcsolóhoz gyakran csak a fázis és a kapcsolt fázis megy le: ilyenkor nullát kell levinni, vagy nulla nélküli eszközt választani, amelyik LED-terhelésnél minimális terhelést vagy áthidaló tagot kér. Dimmernél a LED-fényforrással való összeférhetőséget (fázishasításos: fel- vagy lefutó él) a gyártói listán kell ellenőrizni.
+
+Élesztés: minden eszköz megkapja a címét (KNX-ben az ETS szoftverrel, a programozó gombbal; DALI-ban a vezérlő címzi), majd a csoportokat és a funkciókat beállítják, és minden funkciót kipróbálnak. Átadáskor a tulajdonos megkapja a projektfájlt (KNX: ETS-projekt), a címlistát és a jelszavakat: ezek nélkül a rendszer később nem bővíthető.
+
+**Kidolgozott példa**
+
+Egy régi lakásban a nappali kapcsolóját okos kapcsolóra cserélnék. A dobozban csak két vezeték van, a lámpa LED-es. Mit teszel?
+
+1. A két vezeték a fázis és a kapcsolt fázis: nulla nincs a dobozban.
+2. 1. lehetőség: nullát vinni a dobozba (a kötődobozból, védőcsőben vagy új vezetékkel), és nullás okos kapcsolót tenni: ez a megbízható megoldás.
+3. 2. lehetőség: nulla nélküli okos kapcsoló; LED-lámpánál a gyártó szerinti áthidaló tag (bypass) a lámpánál, különben a LED villog vagy dereng.
+4. A dimmelhető LED-fényforrást és a dimmer típusát a gyártói összeférhetőségi lista szerint ellenőrizni.
+
+→ Ha lehet, nulla a dobozba és nullás eszköz; ha nem, nulla nélküli eszköz áthidaló taggal.
+
+**Gyakorló feladatok**
+
+1. Futhat-e a KNX buszkábel egy védőcsőben a 230 V-os vezetékekkel?
+   <details><summary>Megoldás</summary>Nem az elválasztás nélkül: a KNX busz törpefeszültségű (SELV), a gyártó és a KNX-irányelv szerinti elválasztás és távolság kell.</details>
+2. Futhatnak-e a DALI-erek egy kábelben a hálózati erekkel?
+   <details><summary>Megoldás</summary>Igen, a DALI-erek nem törpefeszültségűek, ezért pl. egy 5 × 1,5 mm²-es kábel két ere lehet DALI-vonal.</details>
+3. Mit kell a tulajdonosnak átadni egy KNX-rendszer élesztése után?
+   <details><summary>Megoldás</summary>Az ETS-projektfájlt, a címlistát és a jelszavakat, és a dokumentációt.</details>
+
+**Biztonság**
+
+- Okos szerelvény cseréjénél a dobozban több kör is lehet: minden kört le kell kapcsolni és feszültségmentességet mérni.
+- A rádiós eszközök hálózati része is 230 V: a dobozba csak az előírt helyre és a gyártói hőleadási feltételek mellett szerelhető.
+
+*Kapcsolódó kártyák:* KNX TP, DALI, 2,4 GHz sáv, 868 MHz sáv, Ethernet csavart érpár, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, HCL: emberközpontú világítás (hangolható fehér), LED-szalag (12 / 24 V)
+
+<a id="s15-napelemes-rendszer"></a>
+
+### 15. Napelemes rendszer telepítői szemmel
+
+*Előtte:* 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem, 7. Mérőhely és betáplálás, 12. Villám- és túlfeszültség-védelem
+
+**Célok**
+
+- Egy napelemes rendszer részeit és energiaútját ismerni.
+- A stringfeszültséget hidegre ellenőrizni, a DC-oldalt helyesen szerelni.
+- Az AC-oldali bekötést, a védelmeket és az engedélyezés lépéseit ismerni.
+
+A napelem (modul) egyenáramot termel; a sorba kötött modulok sorát stringnek nevezzük. Az inverter a DC-t a hálózattal szinkron váltakozó árammá alakítja. A háztartási méretű kiserőmű (HMKE, legfeljebb 50 kVA) a lakás elosztójára csatlakozik, a többletet a kétirányú mérő méri (7. lecke). A szerelést az MSZ HD 60364-7-712 szabályozza; a villanyszerelő napelemes feladatát a KKK 2024-től az EU 2018/2001 irányelv (RED II) IV. melléklete szerint fogalmazza meg.
+
+Stringfeszültség: a modul üresjárási feszültsége (Voc) hidegben nő (jellemzően kb. −0,3 %/K). A string feszültségét a legalacsonyabb várható hőmérsékletre (pl. −10 … −20 °C) kell kiszámítani, és ennek az inverter legnagyobb DC-feszültsége alatt kell maradnia, különben az inverter tönkremehet. A melegben mért, alacsonyabb feszültségnek pedig az inverter munkatartományában (MPP) kell lennie.
+
+DC-oldal: napelemkábel (pl. H1Z2Z2-K, 4 vagy 6 mm²), UV- és időjárásálló; a csatlakozókat (pl. MC4-típus) csak azonos gyártó azonos típusú párjával szabad összedugni, és a gyártó szerszámával krimpelni. A DC-leválasztó és a DC-oldali túlfeszültség-levezető a gyártó és a terv szerint; három vagy több párhuzamos stringnél stringbiztosíték is kellhet. A plusz és a mínusz kábelt egymás mellett, hurok nélkül kell vezetni (kis hurokterület a villám indukált feszültsége ellen).
+
+AC-oldal: az inverter saját körön, saját kismegszakítóval csatlakozik; az áram-védőkapcsoló típusát az inverter kézikönyve adja (ha az inverter kizárja a sima egyenáramú hibaáramot, általában az A típus elég, egyébként B). A bekötés előtt az elosztói engedélyesnél (áramszolgáltató) be kell jelenteni a kiserőművet, és a mérőt cserélni; a rendszer csak az engedély után kapcsolható a hálózatra.
+
+Biztonság és tűzvédelem: a DC-oldal nappal mindig feszültség alatt van, az inverter lekapcsolása után is; a modulokat nem lehet „kikapcsolni”. Ezért a DC-vezetéket rövid, védett nyomvonalon kell vezetni, a mérőhelyen és az elosztón a napelemes rendszert figyelmeztető táblával jelölni, és a tűzvédelmi előírásokat (OTSZ, a vonatkozó TvMI) betartani. A tetőn végzett munka magasban végzett munka: leesés elleni védelem kell.
+
+**Képletek**
+
+- `Uoc,string = n · Voc · (1 + β · (T − 25 °C))` — a string üresjárási feszültsége T hőmérsékleten; n a modulok száma, β a Voc hőmérsékleti tényezője (pl. −0,0028 1/K)
+
+**Kidolgozott példa**
+
+12 modul egy stringben, Voc = 37,5 V (25 °C), β = −0,28 %/K. Az inverter legnagyobb DC-feszültsége 600 V. Megfelel-e −10 °C-on?
+
+1. Hőmérséklet-különbség: −10 − 25 = −35 K.
+2. Szorzó: 1 + (−0,0028 × −35) = 1 + 0,098 = 1,098.
+3. Egy modul: 37,5 × 1,098 ≈ 41,2 V; a string: 12 × 41,2 ≈ 494 V.
+4. 494 V < 600 V: megfelel; 14 modulnál ≈ 577 V még igen, 15-nél ≈ 618 V már nem.
+
+→ A 12 modulos string −10 °C-on kb. 494 V, az inverter határa alatt; legfeljebb 14 modul fér egy stringbe.
+
+**Gyakorló feladatok**
+
+1. Miért hidegre kell ellenőrizni a stringfeszültséget, és nem melegre?
+   <details><summary>Megoldás</summary>Mert a modul üresjárási feszültsége hidegben a legnagyobb; ha ekkor is az inverter határa alatt marad, mindig alatta marad.</details>
+2. Összedugható-e két különböző gyártó MC4-típusú csatlakozója?
+   <details><summary>Megoldás</summary>Nem: csak azonos gyártó azonos típusú párja; a vegyes csatlakozás melegszik, ívet húzhat, és a garancia is elvész.</details>
+3. Mikor kapcsolható a HMKE a hálózatra?
+   <details><summary>Megoldás</summary>Az elosztói engedélyes (áramszolgáltató) engedélye és a mérőcsere után.</details>
+
+**Biztonság**
+
+- A DC-oldal nappal feszültség alatt van, az inverter lekapcsolása után is: a DC-csatlakozót terhelés alatt bontani tilos (ív).
+- Tetőn csak leesés elleni védelemmel, és a modulok törött üvege alatt is lehet feszültség.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, RS-485 · Modbus RTU, 2,4 GHz sáv, Hálózati 50 Hz
