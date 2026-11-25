@@ -30,6 +30,21 @@ object FeatureIcons {
         "settings" to "settings", "account" to "account", "update" to "update", "vault" to "vault",
     )
 
+    /**
+     * Fényjel R2: a tile shows ONE word (DESIGN.md §2 rule 1). The glyph's own name is the word, except where that is
+     * too long for a 4-column tile or names the glyph rather than the feature; the full title is behind the i button.
+     */
+    val SHORT: Map<String, String> = mapOf(
+        "apps" to "Appok", "inbox" to "Jelzések", "settings" to "Beállítás", "tag" to "Tárgyak", "stack" to "Verem",
+        "pcwin" to "PC ablak", "workflow" to "Workflow", "account" to "Fiók", "airdeck" to "Légegér", "calc" to "Kalkulátor",
+    )
+
+    /** The one word under a feature's tile. */
+    fun label(f: FeatureInfo): String = SHORT[f.id] ?: of(f)?.hu ?: f.title
+
+    /** The family's Hungarian name ("Kapcsolat"), or null without a glyph. */
+    fun familyName(featureId: String?): String? = familyOf(featureId)?.let { PixelGlyphs.FAMILY_NAMES[it] }
+
     /** The pixel glyph of a catalogue feature, or null when it has none yet (show [FeatureInfo.glyph] then). */
     fun of(featureId: String?): PixelGlyph? = PixelGlyphs.byName(BY_FEATURE[featureId])
 

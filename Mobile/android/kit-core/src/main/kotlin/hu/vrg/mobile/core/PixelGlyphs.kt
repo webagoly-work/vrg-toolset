@@ -23,6 +23,19 @@ object PixelGlyphs {
         "ui" to 0xE6EEF3,   // Kezelő
     )
 
+    /** Function family → its Hungarian name (icons.js FAMILIES). */
+    val FAMILY_NAMES: Map<String, String> = mapOf(
+        "plan" to "Tervezés",
+        "stock" to "Anyag és pénz",
+        "link" to "Kapcsolat",
+        "know" to "Tudás",
+        "run" to "Futtatás",
+        "alert" to "Jelzés",
+        "env" to "Környezet",
+        "sys" to "Rendszer",
+        "ui" to "Kezelő",
+    )
+
     val ALL: Map<String, PixelGlyph> = listOf(
         PixelGlyph("home", "ui", "Kezdőlap", listOf(
             ".....##.....", "....####....", "...##..##...", "..##....##..",
@@ -255,6 +268,27 @@ object PixelGlyphs {
             "#+++++#++++#", "#++++++++++#", "############", "............",
         )),
     ).associateBy { it.name }
+
+    /** The 5×7 LED numerals (DESIGN.md §5.1): every number on a Fényjel screen. Narrow signs (":", ".") are narrower. */
+    val DIGITS: Map<Char, List<String>> = mapOf(
+        '0' to listOf(".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###."),
+        '1' to listOf("..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."),
+        '2' to listOf(".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####"),
+        '3' to listOf("#####", "...#.", "..#..", "...#.", "....#", "#...#", ".###."),
+        '4' to listOf("...#.", "..##.", ".#.#.", "#..#.", "#####", "...#.", "...#."),
+        '5' to listOf("#####", "#....", "####.", "....#", "....#", "#...#", ".###."),
+        '6' to listOf("..##.", ".#...", "#....", "####.", "#...#", "#...#", ".###."),
+        '7' to listOf("#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..."),
+        '8' to listOf(".###.", "#...#", "#...#", ".###.", "#...#", "#...#", ".###."),
+        '9' to listOf(".###.", "#...#", "#...#", ".####", "....#", "...#.", ".##.."),
+        ':' to listOf(".", ".", "#", ".", "#", ".", "."),
+        '.' to listOf(".", ".", ".", ".", ".", ".", "#"),
+        ',' to listOf("..", "..", "..", "..", "..", ".#", "#."),
+        '%' to listOf("##..#", "##.#.", "...#.", "..#..", ".#...", ".#.##", "#..##"),
+        '-' to listOf("...", "...", "...", "###", "...", "...", "..."),
+        '+' to listOf(".....", "..#..", "..#..", "#####", "..#..", "..#..", "....."),
+        ' ' to listOf("..", "..", "..", "..", "..", "..", ".."),
+    )
 
     fun byName(name: String?): PixelGlyph? = if (name == null) null else ALL[name]
 }

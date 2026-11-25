@@ -52,6 +52,11 @@ function generate() {
   Object.keys(I.FAMILIES).forEach(f => L.push('        ' + kq(f) + ' to 0x' + cols[f] + ',   // ' + I.FAMILIES[f].hu));
   L.push('    )');
   L.push('');
+  L.push('    /** Function family → its Hungarian name (icons.js FAMILIES). */');
+  L.push('    val FAMILY_NAMES: Map<String, String> = mapOf(');
+  Object.keys(I.FAMILIES).forEach(f => L.push('        ' + kq(f) + ' to ' + kq(I.FAMILIES[f].hu) + ','));
+  L.push('    )');
+  L.push('');
   L.push('    val ALL: Map<String, PixelGlyph> = listOf(');
   I.list().forEach(ic => {
     const g = I.ICONS[ic.name];
@@ -60,6 +65,11 @@ function generate() {
     L.push('        )),');
   });
   L.push('    ).associateBy { it.name }');
+  L.push('');
+  L.push('    /** The 5×7 LED numerals (DESIGN.md §5.1): every number on a Fényjel screen. Narrow signs (":", ".") are narrower. */');
+  L.push('    val DIGITS: Map<Char, List<String>> = mapOf(');
+  Object.keys(I.DIGITS).forEach(ch => L.push("        '" + (ch === "'" || ch === '\\' ? '\\' + ch : ch) + "' to listOf(" + I.DIGITS[ch].map(kq).join(', ') + '),'));
+  L.push('    )');
   L.push('');
   L.push('    fun byName(name: String?): PixelGlyph? = if (name == null) null else ALL[name]');
   L.push('}');

@@ -31,6 +31,17 @@ class FeatureIconsTest {
         }
     }
 
+    @Test fun ledDigitsEqualIconsJs() {
+        val src = File(fj, "icons.js").readText()
+        val block = src.substringAfter("const DIGITS = {").substringBefore("\n  };")
+        val digits = Regex("""'(.)': \[([^\]]*)\]""").findAll(block).associate { m ->
+            m.groupValues[1][0] to Regex("'([#.]+)'").findAll(m.groupValues[2]).map { it.groupValues[1] }.toList()
+        }
+        assertTrue(digits.keys.containsAll(('0'..'9').toList() + listOf(':', '%', '.')), "icons.js DIGITS read: ${digits.keys}")
+        assertEquals(digits, PixelGlyphs.DIGITS)
+        PixelGlyphs.DIGITS.forEach { (ch, rows) -> assertEquals(7, rows.size, "$ch: seven rows"); assertEquals(1, rows.map { it.length }.toSet().size, "$ch: one width") }
+    }
+
     @Test fun everyGlyphIsATwelveByTwelveGridOfKnownPixels() {
         PixelGlyphs.ALL.values.forEach { g ->
             assertEquals(PixelGlyphs.SIZE, g.rows.size, "${g.name}: rows")
@@ -56,6 +67,17 @@ class FeatureIconsTest {
             assertNotNull(PixelGlyphs.byName(name), "$id → $name: no such glyph")
             assertNotNull(Catalogue.byId(id), "$id: not in the catalogue any more")
         }
+    }
+
+    @Test fun everyTileLabelIsOneShortWord() {
+        Catalogue.ALL.forEach { f ->
+            val l = FeatureIcons.label(f)
+            assertTrue(l.length <= 10, "${f.id}: \"$l\" is longer than 10 characters (add it to FeatureIcons.SHORT)")
+            assertTrue(l.isNotBlank(), "${f.id}: a label")
+        }
+        assertEquals("Légegér", FeatureIcons.label(Catalogue.AIRDECK))
+        assertEquals("Kapcsolat", FeatureIcons.familyName("airdeck"))
+        FeatureIcons.SHORT.keys.forEach { assertNotNull(Catalogue.byId(it), "SHORT names $it, which is not in the catalogue") }
     }
 
     @Test fun familiesFollowTheDesignSpec() {

@@ -142,6 +142,18 @@ object LaunchFeature : VrgFeature {
         }
     }
 
+    /** Fényjel R2: the Vezérlőpult starts a server exactly as this screen does; returns what to tell the user. */
+    fun start(e: LaunchEntry): String? = run(e)
+
+    /** Stops a server this relay started (the only kind the relay stops); null when the request went out. */
+    fun stop(e: LaunchEntry): String? {
+        val msg = LaunchMsgs.stop(e.id) ?: return "Hibás azonosító."
+        return if (Relay.send(msg)) null else "Nincs relé kapcsolat."
+    }
+
+    /** Asks what runs now (the Vezérlőpult polls this while it is on screen). */
+    fun askStatus() { Relay.send(LaunchMsgs.status()) }
+
     private fun run(e: LaunchEntry): String? {
         if (e.id in starting.value) return "Már indul: ${e.name}"
         val msg = LaunchMsgs.run(e.id) ?: return "Hibás azonosító."

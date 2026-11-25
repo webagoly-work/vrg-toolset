@@ -41,6 +41,7 @@ jobs:
         run: |
           (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
           node Mobile/tests/relay-pair.js
+          node Mobile/tests/relay-sys.js
           node Mobile/catalogue/icon-gen.js --check
           node shared/fenyjel/tools/kotlin-icons.js --check
           node Mobile/tests/workflow-seal.js

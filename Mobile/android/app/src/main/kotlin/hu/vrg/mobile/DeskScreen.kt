@@ -264,7 +264,7 @@ private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
 
 /** Kommand: the Desktop palette's search over the catalog, the features and the open windows. */
 @Composable
-private fun KommandPanel(windows: List<String>, onClose: () -> Unit, onRun: (String) -> Unit) {
+internal fun KommandPanel(windows: List<String>, onClose: () -> Unit, onRun: (String) -> Unit) {
     var q by remember { mutableStateOf("") }
     val look by ShellSettings.flow.collectAsStateWithLifecycle()
     val index = remember(windows) { Kommand.index(windows = windows.mapNotNull { id -> Catalogue.byId(id)?.let { id to it.title } }) }
