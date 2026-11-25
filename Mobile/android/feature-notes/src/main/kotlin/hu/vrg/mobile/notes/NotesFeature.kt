@@ -44,9 +44,9 @@ import java.time.ZoneId
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-// VRG Jegyzetek (WP M68): the central Notes app. Every note of VRG Mobile is in kit's hub (Notes); this feature is
+// VRG Jegyzetek (WP M69): the central Notes app. Every note of VRG Mobile is in kit's hub (Notes); this feature is
 // its screen (NotesUi.kt) and its sync:
-//  - the hub ⇄ the private branch `vrg-notes` (D-177 = B), a few seconds after a change, each time the app comes on
+//  - the hub ⇄ the private branch `vrg-notes` (D-178 = B), a few seconds after a change, each time the app comes on
 //    screen, and through WorkManager when offline (kit-core NoteSync: one file per note, conflict copies);
 //  - the Projektnapló module: a quick note also goes to the M6 day log on `mobile-log` (kit-core Notes.kt), the
 //    project's chat log, with the old outbox. On Android 15 a process kept alive behind the lock screen has its
@@ -65,7 +65,7 @@ object NotesFeature : VrgFeature {
     /** Why the last sync or send stopped; null after a clean run. */
     val problem = MutableStateFlow<String?>(null)
     val lastSync = MutableStateFlow<Long?>(null)
-    /** Sealed notes on the branch this device cannot open (D-179): another device has not trusted it yet. */
+    /** Sealed notes on the branch this device cannot open (D-180): another device has not trusted it yet. */
     val lockedCount = MutableStateFlow(0)
     /** Sealed notes waiting to go up because this device has no key yet. */
     val waitingSeal = MutableStateFlow(0)

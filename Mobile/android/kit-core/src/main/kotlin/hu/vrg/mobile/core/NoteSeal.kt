@@ -14,7 +14,7 @@ import javax.crypto.KeyAgreement
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-// VRG Jegyzetek: client notes sealed on the `vrg-notes` branch (WP M68, D-179), the Workflow Kit's way (D-52).
+// VRG Jegyzetek: client notes sealed on the `vrg-notes` branch (WP M69, D-180), the Workflow Kit's way (D-52).
 //
 // A sealed note's file holds no readable text: the note (its JSON, gzipped) is encrypted with a fresh AES-256-GCM key,
 // and that key is wrapped once for every recipient with P-256 ECDH (a fresh key pair per recipient, the raw shared

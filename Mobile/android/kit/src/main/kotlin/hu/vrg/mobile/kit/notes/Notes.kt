@@ -24,11 +24,11 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 
-// VRG Jegyzetek's hub (WP M68): the one place every note of the app lives. Any feature reaches it through this
+// VRG Jegyzetek's hub (WP M69): the one place every note of the app lives. Any feature reaches it through this
 // object, never through its own note store:
 //
 //   Notes.add("gyors", text)                         a one-way note (quick capture, a share)
-//   Notes.mirror("sketcher", "<sketch>/", items)     a linked mirror of a feature's own records (D-178 = A)
+//   Notes.mirror("sketcher", "<sketch>/", items)     a linked mirror of a feature's own records (D-179 = A)
 //   Notes.pull("sketcher", ref, text)                the text the record should take after an edit in the hub
 //   Notes.onOpen("sketcher") { ref -> … }            how the hub's "open in the source" reaches the feature
 //
@@ -135,7 +135,7 @@ object Notes {
         f(g.ref); return true
     }
 
-    // ---- sealing (D-179): client notes on the branch only as ciphertext, for this device and the pinned ones ----
+    // ---- sealing (D-180): client notes on the branch only as ciphertext, for this device and the pinned ones ----
 
     private fun sealPrefs() = app.getSharedPreferences("notes-seal", Context.MODE_PRIVATE)
     private val _trusted = MutableStateFlow<List<NoteRecipient>>(emptyList())

@@ -67,7 +67,7 @@ object SketchFeature : VrgFeature {
 
     override fun init(app: Application) {
         this.app = app; SketcherKit.init(app); FeaturePrefs.init(app)   // M51: the feature switches after the kit (D-79's toggle)
-        // VRG Jegyzetek (WP M68): the Jegyzet front's entries are notes of the central app too; its "open in the
+        // VRG Jegyzetek (WP M69): the Jegyzet front's entries are notes of the central app too; its "open in the
         // source" lands here with "<sketch id>/<entry id>" and opens the survey on its Jegyzet front
         Notes.init(app)
         Notes.onOpen(SketchNotes.ORIGIN) { ref ->
@@ -104,7 +104,7 @@ object SketchFeature : VrgFeature {
             return
         }
         val fctx = androidx.compose.ui.platform.LocalContext.current
-        // texts edited in VRG Jegyzetek come into the survey first (the linked mirror, D-178 = A); then
+        // texts edited in VRG Jegyzetek come into the survey first (the linked mirror, D-179 = A); then
         // F5 (D-80, D-90): an older survey gets the built-in Csere tag, unless that feature is switched off
         val sketch = remember(id) {
             store.load(id)?.let(SketchNotes::pull)?.let { SketchFeatures.onOpen(SketchFeaturePrefs.off(fctx), it) }?.let { SiteHandoff.take(store, it) }

@@ -12,7 +12,7 @@ import hu.vrg.mobile.core.NotesApi
 import hu.vrg.mobile.core.VrgRepo
 import java.net.URLEncoder
 
-// VRG Jegyzetek's branch (WP M68, D-177 = B): one JSON file per note in notes/ on `vrg-notes`, through the contents
+// VRG Jegyzetek's branch (WP M69, D-178 = B): one JSON file per note in notes/ on `vrg-notes`, through the contents
 // API. Writes reach NoteSync.BRANCH only: NoteContents refuses to build a body for any other branch.
 
 object GitHubNoteHub : NoteRemote {
@@ -64,7 +64,7 @@ object GitHubNoteHub : NoteRemote {
         }
     }
 
-    // ---- the devices' public keys (D-179): keys/<ID>.json ----
+    // ---- the devices' public keys (D-180): keys/<ID>.json ----
 
     /** Every device key on the branch (a missing folder is an empty list). */
     suspend fun keys(): List<NoteKey> {

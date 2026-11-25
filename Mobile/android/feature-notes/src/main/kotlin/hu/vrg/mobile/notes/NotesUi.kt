@@ -79,7 +79,7 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 
-// VRG Jegyzetek's screens (WP M68): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
+// VRG Jegyzetek's screens (WP M69): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
 // What shows is decided by the modules the chosen version switches on (Notes.enabled(), kit-core NotesKit.enabled):
 // a module that is off leaves no trace on screen, so Egyszerű really is just notes.
 
@@ -348,7 +348,7 @@ private fun NoteEditor(host: FeatureHost, id: String, onBack: () -> Unit) {
             }
             if ("formazas" in on) VrgChip(if (reading) "✎ Szerkesztés" else "¶ Olvasó", reading) { reading = !reading }
             if ("kod" in on) VrgChip("⌨ Kód", n.mono) { Notes.change { Notebook.setMono(it, id, !n.mono, now()) } }
-            // D-179: a client origin's note is always sealed; any other note can be sealed by hand
+            // D-180: a client origin's note is always sealed; any other note can be sealed by hand
             val clientNote = n.origin?.app in Notes.kit.sealedOrigins
             if (!n.trashed) VrgChip(if (n.sealed) "🔒 Lezárva" else "🔓 Lezárás", n.sealed) {
                 if (clientNote) host.note("Ügyféljegyzet: mindig lezárva megy fel a GitHubra.")
@@ -577,7 +577,7 @@ private fun NotesSettings(host: FeatureHost, onBack: () -> Unit) {
 }
 
 /**
- * ⚙ → Lezárás (D-179): the client notes go to the branch sealed. This device opens them; another device opens them
+ * ⚙ → Lezárás (D-180): the client notes go to the branch sealed. This device opens them; another device opens them
  * once its code was typed here (the code that device shows on this screen), the Workflow Kit's rule (D-52).
  */
 @OptIn(ExperimentalLayoutApi::class)

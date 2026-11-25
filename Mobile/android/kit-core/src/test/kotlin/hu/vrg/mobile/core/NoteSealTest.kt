@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// D-179: client notes sealed on the vrg-notes branch, the Workflow Kit's way.
+// D-180: client notes sealed on the vrg-notes branch, the Workflow Kit's way.
 class NoteSealTest {
     private class Device(val id: String) {
         val kp = DeviceTrust.newKeyPair()
@@ -128,7 +128,7 @@ class NoteSealTest {
 
     @Test fun aPlainClientFileOnTheBranchIsRewrittenSealed() = runBlocking {
         val r = Branch()
-        r.files[NoteSync.path(client.id)] = NoteSync.file(client) to "old"          // written by the build before D-179
+        r.files[NoteSync.path(client.id)] = NoteSync.file(client) to "old"          // written by the build before D-180
         val rep = NoteSync.run(r, emptyList(), 10, "", a.codec())
         assertEquals(1, rep.pushed)
         assertTrue(NoteSeal.isSealed(r.files[NoteSync.path(client.id)]!!.first))

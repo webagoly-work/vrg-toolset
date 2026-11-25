@@ -7,14 +7,14 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-// VRG Jegyzetek (WP M68, D-176 … D-178): the one central Notes app. Here, pure and JVM-tested:
+// VRG Jegyzetek (WP M69, D-177 … D-179): the one central Notes app. Here, pure and JVM-tested:
 //  - the note (kind `vrg-note` v1) and its JSON,
 //  - the notes kit (Notes/catalog/noteskit.json): modules, the versions a user picks (profiles), note templates and
 //    the origins (every app that writes notes into the hub),
 //  - the notebook's edits: create, edit, pin, archive, trash, tasks, search, sort, the daily note, a template,
-//  - the linked mirror (D-178 = A): a feature (the Sketcher first) keeps its own record and the hub holds the same
+//  - the linked mirror (D-179 = A): a feature (the Sketcher first) keeps its own record and the hub holds the same
 //    note; a text edit on either side reaches the other, nothing is lost when both changed,
-//  - the sync to the private branch `vrg-notes` (D-177 = B): one file per note, sha-guarded writes, a conflict copy
+//  - the sync to the private branch `vrg-notes` (D-178 = B): one file per note, sha-guarded writes, a conflict copy
 //    instead of an overwrite.
 // The Android side (kit/notes/Notes.kt, feature-notes) only stores bytes and draws.
 
@@ -48,7 +48,7 @@ data class VNote(
     /** Fixed-width text (module Kód). */
     val mono: Boolean = false,
     /**
-     * Sealed on the branch (D-179): only the trusted devices can read it. Set for notes of a `client` origin and the
+     * Sealed on the branch (D-180): only the trusted devices can read it. Set for notes of a `client` origin and the
      * conflict copies made from them, for a template marked `seal`, and by hand (🔒). Never cleared for a client origin.
      */
     val sealed: Boolean = false,
@@ -169,7 +169,7 @@ data class NotesKit(
     val defaultProfile: NoteProfile get() = profiles.firstOrNull { it.isDefault } ?: profiles.first()
     fun origin(id: String?) = origins.firstOrNull { it.id == id }
 
-    /** The origins whose notes are always sealed (D-179): those marked `client`. */
+    /** The origins whose notes are always sealed (D-180): those marked `client`. */
     val sealedOrigins: Set<String> get() = origins.filter { it.client }.map { it.id }.toSet()
 
     /**
@@ -387,7 +387,7 @@ object Notebook {
     }
 }
 
-// ---- the linked mirror (D-178 = A) ----------------------------------------------------------------------------------
+// ---- the linked mirror (D-179 = A) ----------------------------------------------------------------------------------
 // A feature keeps its own record (the Sketcher's Entry stays in the survey and goes to the Planner with it); the hub
 // holds a note with a fixed id. The base is NoteOrigin.seen, the source's text when the two last agreed:
 //   source changed, note not      → the note takes the source's text            (push)
@@ -463,7 +463,7 @@ object NoteMirror {
     }
 }
 
-// ---- sync to the private branch (D-177 = B) ---------------------------------------------------------------------------
+// ---- sync to the private branch (D-178 = B) ---------------------------------------------------------------------------
 
 object NoteSync {
     const val BRANCH = "vrg-notes"
@@ -474,7 +474,7 @@ object NoteSync {
     fun path(id: String) = "$DIR/$id.json"
     fun idOf(name: String) = name.removeSuffix(".json").takeIf { name.endsWith(".json") }
 
-    /** The commit message names the note's id only: a title could name a client (D-179). */
+    /** The commit message names the note's id only: a title could name a client (D-180). */
     fun message(n: VNote, device: String) =
         "vrg-notes: " + n.id + (if (n.purged) " törölve" else if (n.sealed) " (lezárt)" else "") +
             (device.trim().takeIf { it.isNotEmpty() }?.let { " ($it)" } ?: "")

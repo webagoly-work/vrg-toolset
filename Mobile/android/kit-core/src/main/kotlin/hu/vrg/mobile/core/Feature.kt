@@ -69,7 +69,7 @@ object Catalogue {
     )
     val NOTES = FeatureInfo(
         "notes", "Jegyzetek", "Az összes jegyzet egy helyen: saját jegyzetek, gyorsjegyzet, és amit a Sketcher és a többi funkció ír, forrás szerint jelölve. Változatok a ⚙-ben.",
-        "✎", Group.WORK, Stage.BETA, "M68", setOf(Need.INTERNET, Need.GITHUB),
+        "✎", Group.WORK, Stage.BETA, "M69", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",

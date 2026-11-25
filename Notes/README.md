@@ -1,8 +1,8 @@
 # VRG Jegyzetek: the central Notes app
 
 One Notes app that users mainly work in, and that every other feature writes into instead of keeping its own
-notes. Phone first (VRG Mobile, WP M68, `docs/mobile/WP/M68.md`); the Desktop page comes later and reads the
-same files. Decisions: D-176 (phone first), D-177 (the private `vrg-notes` branch), D-178 (a linked mirror) in
+notes. Phone first (VRG Mobile, WP M69, `docs/mobile/WP/M69.md`); the Desktop page comes later and reads the
+same files. Decisions: D-177 (phone first), D-178 (the private `vrg-notes` branch), D-179 (a linked mirror) in
 `docs/mobile/DECISIONS.md`.
 
 ```
@@ -63,7 +63,7 @@ branch: one file per note, `notes/<id>.json`, sha-guarded writes. When both side
 keeps it and the other is saved as a separate note tagged `ütközés`. Emptying the trash leaves a tombstone, so no
 device brings the note back. Commit messages name the note id only.
 
-**Client notes are sealed** (D-179, the Workflow Kit's way, D-52): a note of a `client` origin, a copy made from one, a
+**Client notes are sealed** (D-180, the Workflow Kit's way, D-52): a note of a `client` origin, a copy made from one, a
 note from a template with `"seal": true` and any note locked with 🔒 is on the branch only as ciphertext
 (`vrg-note-sealed`: AES-256-GCM, the key wrapped per device with P-256 ECDH). It opens on this device and on the
 devices whose 6-character code was typed in ⚙ → Lezárás (pinned on the device, never in Git); each device publishes

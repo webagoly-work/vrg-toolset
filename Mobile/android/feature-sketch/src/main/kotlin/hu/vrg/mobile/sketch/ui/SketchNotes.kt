@@ -6,7 +6,7 @@ import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Kit
 import hu.vrg.mobile.sketch.Sketch
 
-// The VRG Sketcher's Jegyzet front as an origin of VRG Jegyzetek (WP M68, D-178 = A, a linked mirror): every entry
+// The VRG Sketcher's Jegyzet front as an origin of VRG Jegyzetek (WP M69, D-179 = A, a linked mirror): every entry
 // stays in the survey (it goes to the Planner with it) and the central app holds the same note, id
 // `sketcher-<sketch>-<entry>`, tagged by its origin. The three-way rules are kit-core's NoteMirror.
 

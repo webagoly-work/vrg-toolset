@@ -1088,26 +1088,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   hollow and dashed on its distance ring, and the caption counts them. Rejected: guessing a direction from RSSI changes
   while walking (looks precise, is not).
 
-- **D-176 · Jegyzetek: one central Notes app, phone first (M68), 2026-11-20.** Asked: the Founder wants one central
+- **D-177 · Jegyzetek: one central Notes app, phone first (M69), 2026-11-20.** Asked: the Founder wants one central
   Notes app users mainly use, with selectable versions (module sets) and a hub other features write into, tagged by
   origin. Asked which platform first: the Founder chose **A**, the phone (VRG Mobile, replacing Gyorsjegyzet M6);
   the Desktop page follows on the same files (`Notes/catalog/noteskit.json`, the `vrg-note` format). Rejected for
   now: **B** desktop first (a self-contained page needs a local server to share storage between tools); **C** both
   at once (slower to a usable first version).
-- **D-177 · Jegyzetek: where the notes live (M68), 2026-11-20.** Asked, with the warning that Sketcher notes carry
+- **D-178 · Jegyzetek: where the notes live (M69), 2026-11-20.** Asked, with the warning that Sketcher notes carry
   client details: **A** each device + the PC over the relay (client data never on GitHub), **B** a private git
   branch, **C** the OneDrive Shared folder. The Founder chose **B**: the branch `vrg-notes`, one JSON file per note
   (`notes/<id>.json`), sha-guarded writes, conflicts kept as a separate note tagged `ütközés`, a tombstone for an
   emptied trash. This bends "client data never enters Git" knowingly and **unsealed** (unlike D-52); sealing the
   notes of `client` origins to the devices' keys is the follow-up to offer.
-- **D-178 · Jegyzetek: who owns a feature's note (M68), 2026-11-20.** Asked: **A** a linked mirror, **B** the hub owns
+- **D-179 · Jegyzetek: who owns a feature's note (M69), 2026-11-20.** Asked: **A** a linked mirror, **B** the hub owns
   it, **C** a one-way copy. The Founder chose **A**: the feature keeps its record (the Sketcher's Entry stays in the
   survey and goes to the Planner with it) and the hub holds the same note with a fixed id; the base of the three-way
   merge is the source's text when the two last agreed (`origin.seen`). Source changed → the note follows; note
   changed → the source takes it when it next opens; both → the note keeps both texts and the source takes that; a
-  trashed note is never revived; a deleted record marks the note `gone`. Details: `WP/M68.md`, `Notes/README.md`.
-- **D-179 · Jegyzetek: client notes sealed on the branch, the Workflow Kit's way (M68), 2026-11-25.** Asked by the
-  Founder ("seal the client notes like the Workflow Kit"), closing the gap D-177 left open. A note of a `client` origin
+  trashed note is never revived; a deleted record marks the note `gone`. Details: `WP/M69.md`, `Notes/README.md`.
+- **D-180 · Jegyzetek: client notes sealed on the branch, the Workflow Kit's way (M69), 2026-11-25.** Asked by the
+  Founder ("seal the client notes like the Workflow Kit"), closing the gap D-178 left open. A note of a `client` origin
   (the Sketcher; the Planner when it comes), a conflict copy made from one, a note from a template marked `seal`
   (Helyszíni bejárás, Ügyfélhívás) and any note locked by hand (🔒) goes to `vrg-notes` as `vrg-note-sealed`: the
   note's JSON gzipped under a fresh AES-256-GCM key, that key wrapped per recipient with P-256 ECDH (a fresh key pair
@@ -1119,7 +1119,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   key a sealed note waits on the phone, never falls back to plain; a plain client file left by the earlier build is
   rewritten sealed at the next round. A client note cannot be unlocked by hand. Not undone: what the earlier build
   pushed unsealed stays in the branch's history (only recreating the branch removes it); a dropped device keeps
-  reading the versions sealed to it before. Details: `WP/M68.md` → Lezárás.
+  reading the versions sealed to it before. Details: `WP/M69.md` → Lezárás.
 
 
 ## Open (to ask when the WP that needs them starts)

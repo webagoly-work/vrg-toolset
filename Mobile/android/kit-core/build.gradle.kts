@@ -24,6 +24,6 @@ tasks.test {
     val repo = rootProject.projectDir.resolve("../..").canonicalFile
     systemProperty("vrg.repo", repo.path)
     inputs.dir(repo.resolve("shared/vrg-ui-kit/tokens"))
-    inputs.dir(repo.resolve("Notes/catalog"))   // NoteHubTest (WP M68) checks the real notes kit
+    inputs.dir(repo.resolve("Notes/catalog"))   // NoteHubTest (WP M69) checks the real notes kit
     inputs.dir(rootProject.projectDir.resolve("kit/src/main/kotlin/hu/vrg/mobile/kit/theme"))
 }

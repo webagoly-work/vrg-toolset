@@ -1,6 +1,6 @@
-// VRG Jegyzetek (WP M68, formerly Gyorsjegyzet M6) as a VRG Mobile feature module: the central Notes app. The notes
+// VRG Jegyzetek (WP M69, formerly Gyorsjegyzet M6) as a VRG Mobile feature module: the central Notes app. The notes
 // themselves live in kit's hub (kit/notes/Notes.kt) so any feature can write into it; this module draws the app and
-// runs the sync to the `vrg-notes` branch (D-177 = B). The old M6 day log on `mobile-log` stays as the Projektnapló
+// runs the sync to the `vrg-notes` branch (D-178 = B). The old M6 day log on `mobile-log` stays as the Projektnapló
 // module, through the same outbox and WorkManager fallback.
 plugins {
     id("com.android.library")
