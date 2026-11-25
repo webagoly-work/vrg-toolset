@@ -76,6 +76,11 @@ Never load `out/stack.json` whole. Ids look like:
   files into the cell, every byte a dot, the file name under the pointer (`GET /api/bytes`, needs `node serve.js`);
   **● élő**: with the server, a finished build reloads the changed layers and pulses the changed nodes
   (`GET /api/events`); the card opens the layer's own page with the node selected and copies the string or a prompt.
+- **Füzértábla, the String Board** (`board.html`, S4, 2026-11-25; START R → L, in place of the Thread Board): the
+  threads as pillars. Per row the reach squares, the class and pulse of its string, the status (its F tier, or the hand
+  status), drift, its DevLog lines, built (ⓕ F rows + the hand list) and beta items, its open work with "looks done" and
+  the evidence, note, read list, GO; Most / Rád vár on top. Hand data: `notes/devlog/threads.js` and `entities.json`;
+  a field kept in both is listed. `node stack.js board --public` writes the anonymised single-file copy for claude.ai.
 - **T · Teendők, open work** (S3, 2026-11-25): every not-yet item once (the Thread Board's lists, the DevLog lines'
   remaining work, the ROADMAP ✗ rows; `lib/todo.js`), linked to its line and pillar. An item the evidence says is built
   (a built list, an F row in tier 1–2, two commits) reads "looks done" and is listed in DRIFT.md §9 with the evidence;
@@ -132,12 +137,13 @@ Never load `out/stack.json` whole. Ids look like:
 | `mcp/server.js` | MCP server, stdio, no dependencies |
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
+| `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
 | `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
 | `lib/edit.js` · `lib/editdialog.js` | the write gateway (S6): the decisions editor and its diff dialog |
 | `lib/layertext.js` · `lib/viewer-layout.js` · `lib/bytes.js` | the Viewer's layer text + timeline (build stage), layout, and the read-only folder bytes for `serve.js` `GET /api/bytes` |
 | `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js test/pages.test.js test/todo.test.js` |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js test/pages.test.js test/todo.test.js test/board.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 

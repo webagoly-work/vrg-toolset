@@ -339,3 +339,19 @@ the mindmap thread is flagged with its evidence (the stack thread's built list a
 | STK-P103 | Status drift (STK-Q20 narrow A) | **A** F tier (the best of the pillar's F rows) or the pillar's hand status against the string's class, on idea · out · low · mid · high · op; Orphan and Loose say nothing about maturity and make no card | DRIFT.md §10; a proposal (the tier or status to consider), never applied |
 | STK-P104 | The reach mask | **A** T after I: `F I T Q L A U R C G Z` (eleven slots) | open work sits between the ideas and the decisions; every page that shows a mask prints it as it comes |
 
+## Füzértábla S4 (builder's choices), 2026-11-25
+
+Built from research/STRINGS-PLAN.md §2 (`board.html`, `lib/board.js` → `out/board-data.js`, `stack.js board [--public]`).
+The parity test (`test/board.test.js`) rebuilds the board from the last Thread Board's own hand data
+(`Archive/files/thread-board.html`, 2026-11-09): all 47 threads, every not-yet, built, beta item and line, the notes, the
+other lines; in the browser every one of them is on the page.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P105 | Moving threads.js's hand data into the repo (§2.2) | A move it now · **B read it where it is** | threads.js lives in notes on H:, out of this session's reach; the board reads it, and every field another hand file now owns (area: entities.json; status: the F tier, or entities.json for the 11 pillars with no F row) is listed as "kept twice", with the owner's value shown. Deleting the copies is the Founder's step; the move to data (for a threads editor) is the next one |
+| STK-P106 | The built list | **A** the F rows in tier 1–2 on the pillar's string (ⓕ), then the hand `d` items no F row covers | the plan computes "built" from the stack, but most of today's `d` items ("Exit guard", "Prompt library") have no F row: dropping them would fail the parity |
+| STK-P107 | "Mark done" on a looks-done item | A through the gateway now · **B a prompt that takes it off the list (and adds it to `d`), with the evidence** | the gateway has one editor (decisions, the Founder's S6 scope); a threads editor needs threads.js as data first (STK-P105) |
+| STK-P108 | The anonymised copy | **A** `stack.js board --public` → `out/board-public.html`: one file (styles and data inlined, fonts left out), codes and literals swapped by `tools/anonymise.map.json` with the anonymiser's own rules, then `tools/anonymise.js --check`; no map, no copy | replaces `board.js --public`; fails closed like the anonymiser |
+| STK-P109 | A row is a pillar | **A** the page signs the contract as layer E: a row selected lights the pillar's string on every other open Stack page; a string selected elsewhere lights rows, open-work items, lines and built F chips here | the board is the E layer's page (§2.2) |
+| STK-P110 | HEALTH.md showed only eight check kinds | **A** every kind a stage reports, the eight first | the pillar, T and board notes reached only health.json |
+

@@ -22,7 +22,7 @@
 // The layer pages call reloadOn with their layer; a page with no call just shows the badge.
 (function (root) {
   'use strict';
-  const PAGE_LAYERS = { 'metro.html': ['L', 'E'], 'decisions.html': ['Q', 'E'], 'lineage.html': ['I', 'E'], 'control.html': ['A', 'E'], 'commits.html': ['R'], 'runs.html': ['U', 'E'] };
+  const PAGE_LAYERS = { 'metro.html': ['L', 'E'], 'decisions.html': ['Q', 'E'], 'lineage.html': ['I', 'E'], 'control.html': ['A', 'E'], 'commits.html': ['R'], 'runs.html': ['U', 'E'], 'board.html': ['E', 'T', 'L', 'F'] };
   const page = (location.pathname.split('/').pop() || '').toLowerCase();
   const subs = { changed: [], live: [], select: [], status: [] };
   const served = /^https?:$/.test(location.protocol) && !root.STACK_BUNDLE;

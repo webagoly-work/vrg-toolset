@@ -18,10 +18,11 @@ const PAGES = [
   ['control.html', 'A', 'out/control-data.js', 'CONTROL', 'lib/control.js'],
   ['runs.html', 'U', 'out/runs-data.js', 'RUNS', 'lib/runs.js'],
   ['commits.html', 'R', 'out/commits-data.js', 'COMMITS', 'lib/commitpixel.js'],
+  ['board.html', 'E', 'out/board-data.js', 'BOARD', 'lib/board.js'],
 ];
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // a whole node id in quotes: 'E:planner', "L:views", `Q:VIS-Q5` (a prefix such as 'U:run.' or 'A:agent.' is fine)
-const NODE_ID = /['"`]([FIQLAURCGEZ]):([A-Za-z0-9][\w.\-/]*[A-Za-z0-9])['"`]/g;
+const NODE_ID = /['"`]([FITQLAURCGEZ]):([A-Za-z0-9][\w.\-/]*[A-Za-z0-9])['"`]/g;
 
 for (const [page, layer, data, global, mod] of PAGES) {
   test(`${page}: data from ${data} only, with the build stamp`, () => {

@@ -35,6 +35,9 @@ test('layer: the same item from several places is one node; vague labels stay ap
   assert.deepEqual(ci.extra.sources.sort(), ['Stack/ROADMAP.md:4', 'line stack', 'thread stack'].sort(), 'board + lines.js + ROADMAP, one node');
   assert.equal(by('More layers').length, 1, 'one telling word: the same text from the board and ROADMAP is one item');
   assert.equal(by('Export').length, 2, '"Export" on two threads: two items');
+  const q = T.layer([{ label: 'E6-Q1–Q4', hint: '', from: { src: 'thread', id: 'rounds' }, threads: ['rounds'], lines: [] }, { label: 'Q1–Q4', hint: '', from: { src: 'thread', id: 'logo' }, threads: ['logo'], lines: [] },
+    { label: 'FNM-Q1–Q4', hint: '', from: { src: 'thread', id: 'finom' }, threads: ['finom'], lines: [] }]);
+  assert.equal(q.nodes.length, 3, 'different codes are different items, however close the words');
   assert.ok(L.edges.some(e => e.a === ci.id && e.b === 'L:stack' && e.rel === 'todo-of'));
   assert.ok(L.nodes.every(n => /^T:[a-z0-9-]+$/.test(n.id) && n.layer === 'T' && n.state === 'open'));
   assert.equal(new Set(L.nodes.map(n => n.id)).size, L.nodes.length, 'unique ids');
@@ -67,6 +70,10 @@ test('check: the Döntésnapló item looks done, with its evidence; near words a
   assert.ok(edges.some(e => e.a === d.id && e.b === 'F:decisions' && e.rel === 'looks-done' && e.v === 1), 'the evidence becomes a vertical link');
   assert.ok(done.has('Session hooks'), 'two commits name every telling word');
   assert.deepEqual(done.get('Session hooks').evidence.map(e => e.id), ['R:fff6666', 'R:eee5555'], 'newest first');
+  const extra = new Map([...nodes]);
+  for (const [id, label] of [['T:x1', 'S6 look check'], ['T:x2', 'STK-Q1…Q6']]) extra.set(id, { id, layer: 'T', kind: 'todo', title: label, state: 'open', extra: {} });
+  const r2 = T.check(extra, [], [{ label: 'S6 look', thread: 'sui' }, { label: 'KG-Q1–Q6', thread: 'kitgyar' }]);
+  assert.deepEqual(r2.looksDone.map(t => t.title).filter(t => /S6|Q1/.test(t)), [], 'a built item missing a word, or with other codes, is not the same item');
   for (const no of ['OTG menu', 'Register T1', 'Board build', 'Export', 'More layers', 'Code imports', 'Live build', 'Packaging'])
     assert.ok(!done.has(no), no + ' is not done ("One menu", "Key registry", "Board view", one short word in commits, "9 layers", an F row in development)');
 });

@@ -28,6 +28,8 @@ const words = s => C.fold(String(s || '').replace(/`/g, '')).split(/[^a-z0-9]+/)
 // the words that tell an item apart: not the generic ones; short acronyms and codes (OTG, CYD, P7, T1) count
 const telling = s => [...new Set(words(s).filter(w => !GENERIC.has(w)).map(stem))];
 const label0 = s => C.fold(String(s || '').replace(/`/g, '')).replace(/[^a-z0-9]+/g, ' ').trim();
+// codes: anything with a digit (E6, Q1, M15) and all-caps acronyms (FNM, OTG, CYD): they name one thing exactly
+const codesOf = s => [...new Set(String(s || '').split(/[^A-Za-z0-9]+/).filter(x => /\d/.test(x) || /^[A-Z]{2,5}$/.test(x)).map(x => x.toLowerCase()))].sort().join(' ');
 const strongOf = s => telling(s).length >= 2 || words(s).some(x => x.length >= 8 && !GENERIC.has(x));
 const stems = s => new Set(words(s).map(stem));
 const slug = s => C.fold(String(s || '')).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'item';
@@ -72,8 +74,10 @@ function layer(raw, built = []) {
     const base = '=' + label0(r.label), key = w.length >= 2 ? w.slice().sort().join(' ') : base + (r.from.src === 'thread' ? '@' + r.from.id : '');
     let g = groups.find(x => x.key === key);
     if (!g && w.length < 2 && r.from.src !== 'thread') g = groups.find(x => x.base === base);
-    if (!g && w.length >= 2) g = groups.find(x => { const inter = x.w.filter(s => w.includes(s)).length; return 2 * inter / (x.w.length + w.length) >= 0.8; });
-    if (!g) { g = { key, base, w, label: r.label, hints: [], from: [], threads: new Set(), lines: new Set() }; groups.push(g); }
+    // near-equal words make the same item, but codes must be the same codes: "Q1–Q4" ≠ "E6-Q1–Q4" ≠ "FNM-Q1–Q4"
+    const cs = codesOf(r.label);
+    if (!g && w.length >= 2) g = groups.find(x => { const inter = x.w.filter(s => w.includes(s)).length; return x.codes === cs && 2 * inter / (x.w.length + w.length) >= 0.8; });
+    if (!g) { g = { key, base, w, codes: cs, label: r.label, hints: [], from: [], threads: new Set(), lines: new Set() }; groups.push(g); }
     if (r.hint && !g.hints.includes(r.hint)) g.hints.push(r.hint);
     g.from.push(r.from); r.threads.forEach(t => g.threads.add(t)); r.lines.forEach(l => g.lines.add(l));
   }
@@ -104,8 +108,11 @@ function check(nodes, edges, built = []) {
     const w = telling(t.title); if (!w.length) continue;
     const strong = strongOf(t.title);   // one short word proves nothing: then only the same label counts
     const ev = [];
-    for (const b of BL) if (strong ? dice(w, b.w) >= 0.8 : label0(b.label) === label0(t.title)) ev.push({ kind: 'board', text: `built on the Thread Board (thread ${b.thread}): “${b.label}”` });
-    for (const f of F) if (all(w, f.w) && dice(w, f.w) >= 0.5 && (strong || f.w.length === 1)) ev.push({ kind: 'F', id: f.n.id, text: `${f.n.title} (F tier ${f.n.tier})` });
+    // a built item is the same item: every telling word of it, the same codes ("S6 look" is not "S6 look check",
+    // "KG-Q1–Q6" is not "STK-Q1…Q6")
+    const cs = codesOf(t.title);
+    for (const b of BL) if (strong ? all(w, b.w) && dice(w, b.w) >= 0.8 && codesOf(b.label) === cs : label0(b.label) === label0(t.title)) ev.push({ kind: 'board', text: `built on the Thread Board (thread ${b.thread}): “${b.label}”` });
+    for (const f of F) if (all(w, f.w) && dice(w, f.w) >= 0.5 && (strong || f.w.length === 1) && all(cs ? cs.split(' ') : [], codesOf(f.n.title).split(' '))) ev.push({ kind: 'F', id: f.n.id, text: `${f.n.title} (F tier ${f.n.tier})` });
     // commit subjects are long and loose: only items with two or more telling words ("Packaging" ≠ "the Vázlat package")
     const rs = w.length >= 2 ? R.filter(r => all(w, r.w)).sort((a, b) => String(b.n.t).localeCompare(String(a.n.t))) : [];
     for (const r of rs.slice(0, 3)) ev.push({ kind: 'R', id: r.n.id, text: `${r.n.id.slice(2)} ${r.n.title}` });

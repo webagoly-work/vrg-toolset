@@ -242,7 +242,7 @@
             { "key": "N", "name": "Döntésnapló", "hint": "minden nyitott kérdés egy listában, A/B/C prompttal (Q réteg)", "path": "{stack}\\decisions.html" },
             { "key": "M", "name": "Vonaltérkép", "hint": "a DevLog vonalai metróként, csendes szakaszokkal (L réteg)", "path": "{stack}\\metro.html" },
             { "key": "F", "name": "Futásnapló", "hint": "a futások naponta, párhuzamos sávokon (U réteg)", "path": "{stack}\\runs.html" },
-            { "key": "L", "name": "Thread Board", "hint": "minden szál: mi épült már meg és mi még nem (DevLog)", "path": "{full}\\notes\\devlog\\BOARD.html" },
+            { "key": "L", "name": "Füzértábla", "hint": "a szálak pillérként: mi épült, mi nem, mi tűnik késznek (E réteg; a régi Thread Board helyén)", "path": "{stack}\\board.html" },
             { "key": "A", "name": "Archívum", "hint": "minden egyszeri interaktív oldal, amit Claude készített", "path": "{repo}\\Archive\\vrg-archive.html" },
             { "key": "K", "name": "Konnektóm-labor", "hint": "muslica-agy, Stack-agy, Holo, rétegek, üres memóriaháló", "path": "{repo}\\Archive\\files\\konnektom-labor.html" },
             { "key": "E", "name": "Konnektóm-labor .cmd", "hint": "egyfájlos, önkicsomagoló küldhető változat a _handoff mappába", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["tools/bootleg.js", "Archive/files/konnektom-labor.html"] } ] },

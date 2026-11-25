@@ -77,6 +77,10 @@ async function main() {
     case 'decisions': return require('./lib/decisions').write().msg;
     case 'metro': return require('./lib/metro').write().msg;
     case 'runs': return require('./lib/runs').write().msg;
+    case 'board': {   // Füzértábla (S4); --public: the anonymised single-file copy for claude.ai
+      if (!flag('--public')) return require('./lib/board').write().msg;
+      try { const r = require('./lib/board').exportPublic(); return `board: the public copy, anonymised and checked → ${r.file} (${(r.bytes / 1024).toFixed(0)} KB)`; }
+      catch (e) { process.exitCode = e.code === 2 ? 2 : 1; return 'board --public: ' + e.message; } }
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
     default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 25).map(l => l.slice(3)).join('\n');
