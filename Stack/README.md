@@ -76,6 +76,13 @@ Never load `out/stack.json` whole. Ids look like:
   files into the cell, every byte a dot, the file name under the pointer (`GET /api/bytes`, needs `node serve.js`);
   **● élő**: with the server, a finished build reloads the changed layers and pulses the changed nodes
   (`GET /api/events`); the card opens the layer's own page with the node selected and copies the string or a prompt.
+- **The live build** (S5, 2026-11-25): `node serve.js` watches the hand-kept sources (`lib/sourcemap.js`: features, ideas,
+  DECISIONS files, DevLog lines and sessions, memory and agent files, the DevRepo notes, threads and entities). A second
+  after a save it rebuilds only that layer (`pipeline.runLayers`, from the layer cache `out/layers/` the full build
+  writes; the full build when an exact incremental one is not possible) and tells the pages (`/api/events`): the layer
+  pages reload with their selection (`lib/live.js`, badge ● élő), Rétegverem pulses the changed nodes. `GET /api/live`
+  says what it is doing; `node serve.js --no-live` turns it off. Code, documents, commits and recordings follow the next
+  full build.
 - **The write gateway** (S6, 2026-11-25; decisions only): with `node serve.js`, the Döntésnapló's **✎ beírása** buttons and
   the Rétegverem card of an open decision write its answer into its DECISIONS file: one fixed dated line under the
   question (`> **VIS-Q5** answered 2026-11-25: **B** — … · _(Döntésnapló)_`), only after the diff is shown and approved,
@@ -115,10 +122,11 @@ Never load `out/stack.json` whole. Ids look like:
 | `mcp/server.js` | MCP server, stdio, no dependencies |
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
+| `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
 | `lib/edit.js` · `lib/editdialog.js` | the write gateway (S6): the decisions editor and its diff dialog |
 | `lib/layertext.js` · `lib/viewer-layout.js` · `lib/bytes.js` | the Viewer's layer text + timeline (build stage), layout, and the read-only folder bytes for `serve.js` `GET /api/bytes` |
 | `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js` |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 

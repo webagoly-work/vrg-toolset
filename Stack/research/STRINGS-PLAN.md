@@ -155,6 +155,14 @@ source file changes (hand edit, a session, the gateway)
 ```
 
 - **Speed:** a full build takes 6–30 s today. The target for a one-layer change (`threads.js`, `lines.js`, a DECISIONS file) is **under 1.5 s**. The join is the expensive part, so it has to become incremental by layer: only the edges touching the changed layer are recomputed.
+- **Built (S5, 2026-11-25):** `lib/sourcemap.js` (the source map), `pipeline.runLayers` (the incremental build), the
+  watcher and the `live` / `changed` events in `serve.js`, `lib/live.js` on the layer pages. The join became incremental
+  by caching each layer after the join with its nodes' refs and a fingerprint of the known keys (`out/layers/`): only the
+  re-run layer's texts are read again, and a node elsewhere still links a new key (its cached refs keep unresolved
+  keys). When the known keys change (a new file, commit, session or memory) the build is the full one. Live: F, I, Q, L,
+  A, R notes, E; not live: C, G (code, edited every few seconds), commits and recordings (the next full build). Debounce
+  1 s. Measured in a sandbox of this repo (1 216 nodes): one layer 160–530 ms against 1.6–2.1 s for the full build; a
+  hand edit of `lines.js` reached an open Vonaltérkép in 1.4 s; the incremental graph equal to the full one.
 - **file:// fallback:** the existing 60 s re-read of the data file stays. Live updates, the bus and edits need `node serve.js`, and the pages say so.
 - **The MCP server stays read-only.** It never builds and never edits.
 
@@ -328,7 +336,7 @@ Each work package (WP) is one commit (or a few), with its tests. **S** is under 
 | **S2** ✅ 11-10 | Pillars take threads: an area in `entities.json`, and a hand `status` only on the 11 pillars with no F row (STK-Q20 narrow A); the 47 threads mapped (24 new pillars, 55 in all) | S0 | M | every thread id resolves to a pillar; `stack.js ent` lists them |
 | **S3** | **T layer (Teendők)** adapter, deduplicated; "looks done" check in DRIFT; status drift cards (F tier or hand `status` vs the string's evidence, 2+ steps apart, STK-Q20) | S1, S2 | M | the Döntésnapló item is flagged with evidence |
 | **S4** | **Füzértábla** `board.html` + `lib/board.js` → `out/board-data.js`; reach squares, class, pulse, "looks done"; anonymised export; START F repointed; `notes/devlog/board.js` forwards | S1–S3 | L | parity test vs. BOARD.html passes; `check-start` clean on main; Kapu rebuilt |
-| **S5** | Live bus: `serve.js` fs.watch + source map + **incremental per-layer build** + SSE `/api/events`; `live.js` shared by every page; `BroadcastChannel` selection | — (parallel to S1–S4) | L | a hand edit of `lines.js` reaches an open metro page in under 2 s |
+| **S5** ✅ 11-25 (measured in a sandbox; to measure on the PC) | Live bus: `serve.js` fs.watch + source map + **incremental per-layer build** + SSE `/api/events`; `live.js` shared by every page; `BroadcastChannel` selection | — (parallel to S1–S4) | L | a hand edit of `lines.js` reaches an open metro page in under 2 s |
 | **S6** ◐ 11-25 (decisions only, by the Founder's choice) | Write gateway `lib/edit.js` ✅ + preview/apply endpoints ✅ + diff dialog component ✅ (`lib/editdialog.js`); editors: `decisions` ✅ (one fixed answer line, = ROADMAP 2.7); `threads`, `lines`, `features`, `ideas` not built | S4, S5 | L | round-trip tests on throwaway copies; hash-conflict refusal tested; nothing commits |
 | **S7** | Page contract retrofit: build stamp, `STACK_PAGE`, bus, lint test, for the six Stack pages | S5 | M | selecting Planner in one page highlights it in the other five |
 | **S8** ✅ 11-25 | Layer text stage: `out/layertext/<L>.bin` + `.idx`, deterministic, with a diff between builds | — (parallel) | M | the same build gives identical bytes; a one-node change differs only in that range |

@@ -35,6 +35,16 @@
   function paint(diff) {
     return diff.split('\n').filter(Boolean).map(l => l.startsWith('+') && !l.startsWith('+++') ? `<span class="a">${esc(l)}</span>` : /^(---|\+\+\+|@@)/.test(l) ? `<span class="h">${esc(l)}</span>` : esc(l) + '\n').join('');
   }
+  // the next `changed` (a build finished) or a failed live build on /api/events, at most `ms` long
+  function liveDone(ms) {
+    return new Promise(ok => {
+      let es = null; const end = r => { try { es && es.close(); } catch (e) {} clearTimeout(t); ok(r); };
+      const t = setTimeout(() => end({ ok: false, msg: 'nem jött jelzés (START R → B) · no signal' }), ms);
+      try { es = new EventSource('/api/events'); } catch (e) { end({ ok: false, msg: 'no EventSource' }); return; }
+      es.addEventListener('changed', ev => { let d = {}; try { d = JSON.parse(ev.data); } catch (e) {} end({ ok: true, kind: (d.build && d.build.kind) || 'build' }); });
+      es.addEventListener('live', ev => { let d = {}; try { d = JSON.parse(ev.data); } catch (e) {} if (d.state === 'error') end({ ok: false, msg: d.msg || 'hiba' }); });
+    });
+  }
   function answer(op, o = {}) {
     if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; }
     const back = document.createElement('div'); back.className = 'se-back';
@@ -66,8 +76,16 @@
       try {
         const r = await post('/api/edit/apply', { op: cur(), hash });
         done = true; msg(`beírva: ${r.file}, ${r.at}. sor · written. Újraépítés… · rebuilding…`, 'ok'); $('.se-note').disabled = true;
-        try { const b = await post('/api/build', {}); msg(`beírva: ${r.file}, ${r.at}. sor; a Stack újraépült (${Math.round(b.ms / 1000)} s) · written and rebuilt`, 'ok'); }
-        catch (e) { msg(`beírva: ${r.file}, ${r.at}. sor; az újraépítés nem futott: ${e.message} (START R → B) · written; rebuild by hand`, 'err'); }
+        let lv = null; try { lv = await (await fetch('/api/live', { cache: 'no-store' })).json(); } catch (e) { lv = null; }
+        if (lv && lv.on) {
+          // the server watches the DECISIONS files (S5): its live build follows; wait for it instead of a full one
+          const out = await liveDone(30000);
+          if (out.ok) msg(`beírva: ${r.file}, ${r.at}. sor; a Stack élőben frissült (${out.kind}) · written, the stack updated live`, 'ok');
+          else msg(`beírva: ${r.file}, ${r.at}. sor; az élő frissítés: ${out.msg} · written; ${out.msg}`, 'err');
+        } else {
+          try { const b = await post('/api/build', {}); msg(`beírva: ${r.file}, ${r.at}. sor; a Stack újraépült (${Math.round(b.ms / 1000)} s) · written and rebuilt`, 'ok'); }
+          catch (e) { msg(`beírva: ${r.file}, ${r.at}. sor; az újraépítés nem futott: ${e.message} (START R → B) · written; rebuild by hand`, 'err'); }
+        }
         go.textContent = 'Kész · done'; go.disabled = false;
       } catch (e) {
         if (e.status === 409 && /changed since/.test(e.message)) { await preview(); msg('A fájl közben változott: fent az új diff, nézd át újra, aztán Beírás. · The file changed meanwhile: check the new diff above.', 'err'); }

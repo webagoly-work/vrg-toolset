@@ -301,3 +301,15 @@ DECISIONS file, whatever that file's own format; the threads, lines, features an
 | STK-P84 | Who may post | **A** only this server's own pages: JSON body, Host and Origin = localhost / 127.0.0.1 on its port | another site open in the same browser cannot post to the gateway (CSRF, DNS rebinding); a refused request writes nothing |
 | STK-P85 | After the write | **A** an `edit` event in `data/events.jsonl` (who: the page; the diff's hash), then `POST /api/build` from the dialog | the time scrubber shows the edit; the Döntésnapló reloads, Rétegverem glows the answered node over `/api/events`. Never a commit (START S or a session commits) |
 
+## The live build S5 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P86 | How the join becomes incremental | A recompute only edges touching the changed layer · **B cache each node's extracted refs after the join, re-read only the re-run layer's texts** | **B**: refs keep unresolved keys, so a cached G document that names a decision added a minute ago links it on the incremental build (A would miss it). The refs depend on the known keys too (repo files, commits, sessions, memories): their fingerprint is cached, and when it differs the build is the full one. Tested equal to a from-scratch join |
+| STK-P87 | Rank and community on a live build | A recompute PageRank + Louvain · **B keep each node's last ones; a new node gets rank 0, no community** | **B**: Louvain renumbers communities each run, which would recolour every page on every keystroke-save; the next full build makes them exact |
+| STK-P88 | Which sources are live | **A** the hand-kept maps (F, I, Q DECISIONS files, L lines and sessions, A memory and agent files, R notes, E threads and entities) | C and G change every few seconds while a session edits code; commits and recordings arrive with a session that ends in a full build anyway |
+| STK-P89 | Debounce | A 1.5 s (the plan) · **B 1 s** | an editor's save is over within a second; with 1.5 s the edit-to-page time was 2.5 s, over the 2 s target; with 1 s and the server announcing its own build, 1.4 s |
+| STK-P90 | A broken save (a half-written `lines.js`) | **A** the adapter fails before anything is written: out/ keeps the last good build, the pages show "! L hiba" and keep their data; the next good save rebuilds | a live build must never leave the stack worse than it was |
+| STK-P91 | How a page refreshes | **A** `lib/live.js` reloads the page (its #hash, so its selection, kept) when a build changed its layer; it waits while a dialog is open or text is being typed, and offers the reload on its badge | every layer page already restores its state from the hash; a reload is the one refresh that cannot go stale. Rétegverem and Érintésnyom refetch in place |
+| STK-P92 | The gateway's rebuild | **A** with the live build on, the dialog waits for the server's `changed` instead of starting a full build | one build, not two; the answer is on the pages in about a second |
+
