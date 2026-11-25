@@ -448,11 +448,11 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 
 **Lényeg (saját összefoglaló):**
 
-- Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a vízkifolyó körül). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig.
-- Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, a táplálás a zónákon kívül.
+- Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a zuhanyfej vagy vízkifolyó közepétől 1,2 m sugarú függőleges felületig, a vizet visszatartó szilárd falakig; a zuhanyfüggöny nem határol). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig. Kiadásfüggő: a 2019-es IEC / MSZ HD 60364-7-701:2024 szerint zuhanynál nincs 2. zóna, és a zuhany 0. zónája a padlótól 10 cm magasságig tart; ez a kártya a 2007-es kiadást veszi alapul.
+- Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, legfeljebb 12 V AC vagy 30 V DC, legalább IPX7; a táplálás a zónákon kívül.
 - Zóna 1-be csak oda szánt, helyhez kötött berendezés (pl. vízmelegítő, szellőző, törölközőszárító, lámpatest a gyártói minősítéssel); törpefeszültségű táplálás esetén a forrás a zóna 0 és 1 kívül.
-- Dugaszolóaljzat a 0., 1. és 2. zónában nem lehet, kivéve a törpefeszültségű aljzatot és a borotva-csatlakozót (leválasztó transzformátoros egység); a zónákon kívül 30 mA-es áram-védőkapcsolóval védve szerelhető. A nemzetközi IEC-szöveg szigorúbb (3 m a zóna 1 határától); Magyarországon az MSZ HD kiadás a mérvadó: ezt a pontot a hatályos szöveggel ellenőrizni kell.
-- Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval.
+- Dugaszolóaljzat: a 0. zónában nem lehet. Az 1. és 2. zónában csak törpefeszültségű (SELV/PELV, legfeljebb 25 V AC / 60 V DC; a forrás a 0. és 1. zónán kívül), IPX4 védettségű aljzat; a 2. zónában ezen felül borotva-tápegység (leválasztó transzformátoros egység, MSZ EN 61558-2-5). A zónákon kívül hálózati (230 V) aljzat szerelhető, a kört 30 mA-es áram-védőkapcsoló védi. A szabvány szövegében nincs a zóna 1 határától mért távolsági előírás; a brit BS 7671 3 m-es szabálya nemzeti sajátosság, nálunk nem alkalmazandó. (A teljes MSZ HD szöveggel ellenőrizendő.)
+- Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval. Kiadásfüggő: a 2019-es szövegben (HD 2024) a 2. zónába IPX4 védettségű, nem dugaszolóaljzat jellegű, állandóan bekötött szerelvény (pl. kapcsoló) is kerülhet; a korábbi kiadás szerinti gyakorlat szerint a kapcsolót a zónákon kívülre kell szerelni.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
@@ -474,14 +474,14 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 
 **Lényeg (saját összefoglaló):**
 
-- Zóna 0: a medence és a szökőkút medencéjének belseje. Zóna 1: a medence szélétől vízszintesen 2 m-ig, és 2,5 m magasságig. Zóna 2: a zóna 1-en túl további 1,5 m (ahol a kiadás ezt előírja).
+- Zóna 0: a medence és a szökőkút medencéjének belseje. Zóna 1: a medence szélétől vízszintesen 2 m-ig, és 2,5 m magasságig. Zóna 2: a zóna 1-en túl további 1,5 m. Ugrótorony, rajtkő, csúszda és hasonló létesítmények körül az 1. zóna ezek körül további 1,5 m-ig terjed. Szökőkútnál nincs 2. zóna.
 - Zóna 0-ban és 1-ben csak erre szánt berendezés; a víz alatti lámpatestek törpefeszültségről (SELV), a biztonsági transzformátor a zónákon kívül.
 - A medence fémszerkezeteit, a betonacélt és a csöveket helyi egyenpotenciálú összekötéssel kell egymáshoz és a védővezetőhöz kötni.
-- Az áramkörök 30 mA-es áram-védőkapcsolóval (a törpefeszültségű körök kivételével).
+- Kapcsoló és dugaszolóaljzat: a 0. zónában nem lehet; az 1. zónában csak SELV-ről táplálva; a 2. zónában csak SELV-ről vagy 30 mA-es áram-védőkapcsolóval (vagy leválasztó transzformátorral) védve. A 2. zónába vagy a zónákat határoló falba fektetett, zónán kívüli készüléket tápláló vezeték: legalább 5 cm mélyen süllyesztve, vagy 30 mA-es áram-védőkapcsoló, vagy SELV, vagy leválasztó transzformátor. PELV nem alkalmazható.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Zóna 0: legalább IPX8. Zóna 1: legalább IPX4 (vízsugaras tisztításnál IPX5). Zóna 2: legalább IPX2 beltérben, IPX4 kültéren (a kiadás szerint).
+- Zóna 0: legalább IPX8, vízsugaras tisztításnál IPX5 és IPX8 együtt. Zóna 1: legalább IPX4 (vízsugaras tisztításnál IPX5). Zóna 2: legalább IPX2 beltérben, IPX4 kültéren; vízsugaras tisztításnál IPX5.
 - Víz alatti lámpatest törpefeszültsége: legfeljebb 12 V váltakozó vagy 30 V egyenfeszültség.
 
 - **Hol érvényes:** Kerti és beltéri medencék, jakuzzik (ahol nem önálló készülék), szökőkutak.
@@ -498,16 +498,16 @@ Szaunakabinok és szaunahelyiségek villamos berendezése: hőmérsékleti zón�
 
 **Lényeg (saját összefoglaló):**
 
-- Zóna 1: a kályha és közvetlen környezete: ide csak a kályhához tartozó szerkezet kerül.
-- Zóna 2: a zóna 1-en kívüli tér: nincs külön hőállósági követelmény a szerkezetekre.
-- Zóna 3: a kabin felső része, a mennyezet alatti sáv: az ide kerülő szerkezeteknek és vezetékeknek magas hőmérsékletet kell bírniuk.
+- Zóna 1: a kályha körül, a kályha felületétől 0,5 m-es függőleges felületig, padlótól mennyezetig: ide csak a kályhához tartozó szerkezet kerül.
+- Zóna 2: a zóna 1-en kívüli tér a padló fölötti 1 m-es vízszintes síkig: nincs külön hőállósági követelmény a szerkezetekre.
+- Zóna 3: a zóna 1-en kívüli, a padló fölötti 1 m-es síkon felüli tér, a mennyezet hidegoldali határáig. Az ide kerülő szerkezeteknek 125 °C környezeti hőmérsékletet, a vezetékek szigetelésének legalább 170 °C-ot kell bírnia.
 - A kapcsolókészülékek (a kályha vezérlőjén kívül) a kabinon kívül; a vezetékek lehetőleg a kabin hideg oldalán.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- A kabinban a szerkezetek legalább IPX4 (vízsugaras tisztításnál IPX5).
-- Zóna 3-ban a szerkezetek kb. 125 °C-ot, a vezetékek kb. 170 °C-ot bírjanak (a hatályos kiadás szerint ellenőrizendő).
-- Az áramkörök 30 mA-es áram-védőkapcsolóval, a kályha a gyártó előírása szerint.
+- A kabinban a szerkezetek legalább IP24; ahol vízsugaras tisztítás várható, IPX5.
+- Zóna 3-ban a szerkezetek 125 °C-ot, a vezetékek szigetelése legalább 170 °C-ot bírjon (egy német VDE-kommentár alapján; a hatályos kiadással ellenőrizendő).
+- A kabinon belüli áramkörök 30 mA-es áram-védőkapcsolóval, kivéve a SELV/PELV köröket és a szaunakályha körét. A kabinban dugaszolóaljzat általában nem szerelhető.
 
 - **Hol érvényes:** Lakások és wellness-részlegek szaunái (a kész kabin gyártói utasításával együtt).
 - **Forrás:** szabvány: MSZ HD 60364-7-703 (a hatályos kiadás) — MSZT szabványbolt
@@ -524,13 +524,13 @@ Szabadtéri világítási berendezések: kertek, utak, parkolók, homlokzatok, d
 **Lényeg (saját összefoglaló):**
 
 - A szerkezetek a kültéri hatásoknak (víz, por, ütés, UV) megfelelő védettségűek legyenek; a szabvány minimális védettséget ír elő.
-- A lámpaoszlop vagy a kandeláber 2,5 m alatti ajtaja, a kötődoboz csak szerszámmal vagy kulccsal legyen nyitható.
-- A földkábeleket mechanikai sérülés ellen védeni kell (fektetési mélység, homokágy, védőcső, jelzőszalag).
-- Az elérhető helyen lévő lámpatestek köreire (pl. kerti világítás, ahol emberek hozzáférnek) kiegészítő védelem 30 mA-es áram-védőkapcsolóval.
+- A 2,5 m-nél alacsonyabban lévő, villamos szerkezethez vezető ajtót kulccsal vagy szerszámmal kell zárni; nyitott ajtónál az élő részeknek legalább IPXXB / IP2X védettségűnek kell maradniuk. A 2,8 m-nél alacsonyabban lévő lámpatest fényforrásához csak szerszámot igénylő burkolat eltávolítása után lehet hozzáférni.
+- A földkábeleket mechanikai sérülés ellen védeni kell (fektetési mélység, homokágy, védőcső, jelzőszalag); ez a kábelfektetési szabályokból jön, nem a 7-714 szövegéből ellenőrizve.
+- Távbeszélő fülke, buszváró, hirdetőtábla, várostérkép és hasonló, világítást tartalmazó berendezések köreire 30 mA-es áram-védőkapcsoló kell (MSZ HD 60364-7-714, 714.411.3.3). Egyéb kültéri körökre az áramütés elleni védelem általános szabályai (MSZ HD 60364-4-41) érvényesek; a kültéri aljzatkörökre ott is 30 mA-es védelem kell.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- A minimális IP-védettséget és a kábelfektetés részleteit a hatályos kiadás és a kábelfektetési szabályok adják.
+- Legalább IP33 (a víz elleni védettség permetezés, a szilárd test elleni 2,5 mm-nél nagyobb tárgyak). Ahol az üzemeltetés vagy tisztítás ezt kívánja, magasabb védettség kell (a hazai kiadásban ellenőrizendő). A kábelfektetés részletei a kábelfektetési szabályokban vannak.
 
 - **Hol érvényes:** Kerti és homlokzati világítás, lakópark- és telephelyi útvilágítás, díszvilágítás.
 - **Forrás:** szabvány: MSZ HD 60364-7-714 (a hatályos kiadás) — MSZT szabványbolt

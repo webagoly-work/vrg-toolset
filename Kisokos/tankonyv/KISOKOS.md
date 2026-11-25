@@ -933,19 +933,19 @@ Egy családi ház fővezetéke 10 mm²-es, a legnagyobb védővezető is 10 mm²
 
 A különleges helyiségekben (MSZ HD 60364-7-xx részek) a víz, a hő vagy a környezet miatt nagyobb az áramütés vagy a tűz veszélye, ezért az általános szabályokon felül további szabályok vannak. A részleteket az Előírások kártyái foglalják össze; ez a lecke a gyakorlati sorrendet adja.
 
-Fürdőszoba: 1. a kád vagy a zuhany helyének ismeretében berajzolni a 0., 1. és 2. zónát; 2. a zónákba csak oda szánt, megfelelő IP-jű szerkezetet tervezni; 3. kapcsolók és aljzatok a zónákon kívül (aljzat a zónákban csak törpefeszültségű vagy borotva-csatlakozó lehet); 4. minden kör 30 mA-es áram-védőkapcsolóval; 5. az egyenpotenciálú összekötést a szabvány és a helyi viszonyok szerint ellenőrizni.
+Fürdőszoba: 1. a kád vagy a zuhany helyének ismeretében berajzolni a 0., 1. és 2. zónát; 2. a zónákba csak oda szánt, megfelelő IP-jű szerkezetet tervezni; 3. kapcsolók és aljzatok a zónákon kívül (aljzat a 0. zónában nem lehet; az 1. és 2. zónában csak törpefeszültségű, a 2. zónában még borotva-tápegység); 4. minden kör 30 mA-es áram-védőkapcsolóval; 5. az egyenpotenciálú összekötést a szabvány és a helyi viszonyok szerint ellenőrizni.
 
 Medence: a zónákba csak törpefeszültségű víz alatti lámpa és oda szánt berendezés, a transzformátor a zónákon kívül; a medence fémszerkezeteinek helyi egyenpotenciálú összekötése; a gépészet a medenceépítővel közösen.
 
 Szauna: hőmérsékleti zónák, hőálló vezetékek és szerelvények a kabin felső részén, a kapcsolókészülékek a kabinon kívül, a kályha a gyártó előírása szerint.
 
-Kültéri világítás: az időjárásnak megfelelő védettség, a földkábel védelme és jelzése, az elérhető lámpatestek körein áram-védőkapcsoló, a lámpaoszlopok ajtaja csak szerszámmal nyitható.
+Kültéri világítás: legalább IP33, a földkábel védelme és jelzése, a 2,5 m alatti szerelvényajtók kulccsal vagy szerszámmal zárva, a 2,8 m alatti fényforrás csak szerszámmal hozzáférhető; 30 mA-es áram-védőkapcsoló a kültéri aljzatkörökre és a kioszkok, buszvárók, hirdetőtáblák világítására.
 
 **Kidolgozott példa**
 
 Egy 2 × 2,5 m-es fürdőszoba zuhanytálcával (90 × 90 cm), mosdóval és mosógéppel. Hova kerüljön a mennyezeti lámpa, a tükörlámpa, a kapcsoló és a mosógép aljzata?
 
-1. Zóna 1: a zuhanytálca fölött 2,25 m-ig; zóna 2: a tálca szélétől további 0,6 m.
+1. Zóna 1: a zuhanytálca fölött 2,25 m-ig; zóna 2: a tálca szélétől további 0,6 m (a 2007-es kiadás szerint; a 2024-es HD szerint zuhanynál nincs 2. zóna).
 2. Mennyezeti lámpa: ha a zóna 1 vagy 2 fölé esik, legalább IPX4 (vízsugárnál IPX5); a zónákon kívül is IP44 ajánlott a pára miatt.
 3. Tükörlámpa a mosdó fölött, a zónákon kívül, IP44.
 4. Kapcsoló a fürdőn kívül vagy az ajtó mellett, a zónákon kívül.
