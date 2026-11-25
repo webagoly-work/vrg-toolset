@@ -94,3 +94,38 @@ test('aggregate: k bytes → one particle of the dominant class, never across no
   assert.deepEqual([...cls.data], [0, 3], 'class codes stay class codes (the phone bundle)');
   assert.equal(VL.byteClass('Á'.charCodeAt(0) > 127 ? 0xc3 : 0), 1);
 });
+
+// ---- S10: the timeline and a folder's code bytes
+test('timeline: born on the work date of the first node+, pulses on state and edit, unknown ids ignored', () => {
+  const ns = [{ id: 'R:a', t: '2026-11-02T10:00' }, { id: 'C:x', t: '' }, { id: 'Q:y', t: '2026-11-09' }, { id: 'G:z', t: '' }];
+  const ev = [
+    { op: 'build', seen: '2026-11-05T09:00Z' },
+    { op: 'node+', id: 'R:a', valid: '2026-11-02', seen: '2026-11-05T09:00Z' },
+    { op: 'node+', id: 'C:x', valid: '', seen: '2026-11-05T09:00Z' },
+    { op: 'node-', id: 'C:x', valid: '', seen: '2026-11-06T09:00Z' }, { op: 'node+', id: 'C:x', valid: '', seen: '2026-11-07T09:00Z' },
+    { op: 'state', id: 'C:x', valid: '', seen: '2026-11-08T09:00Z' }, { op: 'edit', id: 'R:a', seen: '2026-11-08T12:00Z' },
+    { op: 'node+', id: 'gone', valid: '', seen: '2026-11-01T00:00Z' },
+  ];
+  const T = LT.timeline(ev, ns);
+  assert.deepEqual(T.days, ['2026-11-02', '2026-11-05', '2026-11-08', '2026-11-09']);
+  assert.deepEqual(T.born, { 'C:x': 1, 'Q:y': 3, 'R:a': 0 }, 'first appearance wins; Q:y from its own date; G:z has no date, always there');
+  assert.deepEqual(T.ev, [[2, 'C:x', 'state'], [2, 'R:a', 'edit']]);
+});
+
+test('folder bytes: tracked files directly in the folder, secrets and escapes refused, capped', () => {
+  const fs = require('fs'), os = require('os'), path = require('path'), { execFileSync } = require('child_process');
+  const B = require('../lib/bytes');
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-bytes-'));
+  const put = (f, s) => { fs.mkdirSync(path.dirname(path.join(repo, f)), { recursive: true }); fs.writeFileSync(path.join(repo, f), s); };
+  put('app/a.js', 'const a = 1;\n'); put('app/b.md', '# B\n' + 'x'.repeat(100)); put('app/.env', 'TOKEN=1'); put('app/sub/c.js', 'deep');
+  put('app/quote.pdf', '%PDF'); put('Vendor/v/x.js', 'v');
+  execFileSync('git', ['init', '-q'], { cwd: repo }); execFileSync('git', ['add', '-A'], { cwd: repo });
+  put('app/untracked.js', 'secret?');
+  const r = B.folderBytes(repo, 'app');
+  assert.deepEqual(r.files.map(f => f[0]), ['a.js', 'b.md'], 'own tracked files only: no sub-folder, no .env, no pdf, no untracked');
+  assert.equal(r.buf.subarray(r.files[0][1], r.files[0][2]).toString(), 'const a = 1;\n');
+  const small = B.folderBytes(repo, 'app', { cap: 20 });
+  assert.ok(small.truncated && small.total === 20);
+  for (const bad of ['../x', 'app/../..', '.git', '', 'Vendor/v', 'Planner/apps']) assert.throws(() => B.folderBytes(repo, bad), e => e.code >= 400, bad);
+  fs.rmSync(repo, { recursive: true, force: true });
+});

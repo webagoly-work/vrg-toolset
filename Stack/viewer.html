@@ -68,6 +68,14 @@
   .lg { display: grid; grid-template-columns: 12px minmax(0,1fr); gap: 3px 8px; align-items: center; font-size: 12px; color: var(--dim); }
   #bExit { position: absolute; right: 10px; top: 10px; z-index: 6; display: none; opacity: .5; } #bExit:hover { opacity: 1; }
   #load { position: absolute; left: 14px; bottom: 12px; font: 11px var(--mono); color: var(--faint); pointer-events: none; }
+  #tbar { position: absolute; left: 12px; right: 12px; bottom: 10px; display: none; gap: 8px; align-items: center; background: rgba(14,24,32,.92); border: 1px solid var(--line); padding: 6px 8px; z-index: 3; }
+  body.time #tbar { display: flex; } body.time #load { bottom: 58px; }
+  #tbar input[type=range] { flex: 1; min-width: 0; padding: 0; accent-color: var(--acc); }
+  #tDay { font: 12px var(--mono); color: var(--text); white-space: nowrap; min-width: 150px; text-align: right; }
+  #live { font: 12px var(--mono); color: var(--faint); } #live.on { color: var(--acc); }
+  #card .files { font: 11px/1.5 var(--mono); color: var(--dim); max-height: 160px; overflow: auto; }
+  #card .files span { color: var(--faint); float: right; }
+  #toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--acc); color: var(--text); font: 12px var(--mono); padding: 5px 10px; display: none; z-index: 7; }
   body.full header, body.full aside { display: none !important; } body.full main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; }
   body.full { overflow: hidden !important; } body.full #bExit { display: block; }
   body.bundle .pc { display: none !important; }
@@ -104,8 +112,9 @@
     <button id="bRefresh" class="pc" title="Adat újraolvasása · reload">Frissítés</button>
     <a class="btn pc" href="erintesnyom.html" target="_blank" title="Érintésnyom új ablakban: a munka fénye ide is átjön · opens Érintésnyom, its light comes here">✦ Érintésnyom ↗</a>
   </div></details>
+  <button id="bTime" title="Idő: a rétegek napról napra, ahogy a Stack látta őket (T) · time scrubber (T)">⏱<span class="t"> Idő</span></button>
   <button id="bFull" title="Teljes képernyő: csak a 3D (F) · full screen (F)">⛶</button>
-  <div class="row2"><span id="stat">…</span><span id="perf"></span><span id="msg"></span></div>
+  <div class="row2"><span id="stat">…</span><span id="live" class="pc"></span><span id="perf"></span><span id="msg"></span></div>
 </header>
 <main>
   <div id="stage">
@@ -113,6 +122,8 @@
     <div id="labels"></div>
     <div id="tip"></div>
     <div id="load"></div>
+    <div id="toast"></div>
+    <div id="tbar"><button id="tPlay" title="Lejátszás · play (Space)">▶</button><input type="range" id="tRange" min="0" max="0" value="0" aria-label="nap · day"><span id="tDay"></span><button id="tOff" title="Vissza a mához · back to now">✕</button></div>
     <button id="bExit" title="Vissza (F / Esc) · back">✕</button>
   </div>
   <aside>
@@ -163,7 +174,8 @@ let gl, progP, progL, vaoP, vaoD, bufP, bufD, bufL, tex = {}, fbo = null, pickTe
 let light = null, lightDirty = true, lineDirty = true, lnN = 0, lnCut = 0;
 let sel = [], hover = -1, solo = null, query = '', ext = new Map();
 let showStr = true, showPil = true, showGrid = true, showChg = true, showLight = true, crisp = !!PREF.crisp, spin = false, full = false;
-let detail = null;                   // { cell, n, f } when one cell is drawn byte by byte
+let detail = null;                   // { cell, n, f, src, code } when one cell is drawn byte by byte (code: its folder's files)
+let TIME = null, byDay = [], timeOn = false, tIdx = 0, playing = false, playT = 0;   // the time scrubber (S10)
 const hidden = new Set(PREF.hidden || []);
 const ISO = { yaw: Math.PI / 4, pitch: Math.atan(1 / Math.SQRT2) };
 let cam = { yaw: ISO.yaw, pitch: ISO.pitch, zoom: PHONE ? 1.05 : 1 }, pan = [0, 0], fly = null;
@@ -187,12 +199,30 @@ async function layerText(L) {
   }
   return new Promise(ok => { waiting[L] = ok; script('out/layertext/' + L + '.js?t=' + Date.now()).then(r => { if (!r && waiting[L]) { delete waiting[L]; ok(null); } }); });
 }
-async function load(note) {
-  $('load').textContent = 'betöltés · loading…';
+async function readStack() {
   if (!window.STACK_BUNDLE) await script('out/stack-data.js?t=' + Date.now());
-  if (!window.STACK) { $('stat').textContent = 'nincs adat: node stack.js build · no data (out/stack-data.js)'; $('load').textContent = ''; return; }
+  if (!window.STACK) return false;
   nodeById = new Map(STACK.nodes.map(n => [n.id, n]));
   SI = window.StackStrings ? StackStrings.prepare(STACK.nodes, STACK.edges.map(e => Array.isArray(e) ? { a: e[0], b: e[1], rel: e[2], v: e[3] } : e)) : null;
+  return true;
+}
+async function loadTime() {
+  if (window.LAYERTEXT_BUNDLE) TIME = LAYERTEXT_BUNDLE.time || null;
+  else { window.LAYERTEXT_TIME = null; await script('out/layertext/time.js?t=' + Date.now()); TIME = window.LAYERTEXT_TIME || null; }
+  byDay = [];
+  if (TIME) {
+    byDay = TIME.days.map(() => []);
+    for (const [id, i] of Object.entries(TIME.born)) byDay[i].push(id);
+    for (const [i, id] of TIME.ev) byDay[i].push(id);
+    $('tRange').max = Math.max(0, TIME.days.length - 1);
+    if (!timeOn) tIdx = TIME.days.length - 1;
+  }
+  $('bTime').disabled = !TIME || !TIME.days.length;
+  $('bTime').title = TIME && TIME.days.length ? `Idő: ${TIME.days[0]} – ${TIME.days[TIME.days.length - 1]}, napról napra (T) · time scrubber` : 'Idő: nincs out/layertext/time.js (node stack.js build) · no timeline yet';
+}
+async function load(note) {
+  $('load').textContent = 'betöltés · loading…';
+  if (!await readStack()) { $('stat').textContent = 'nincs adat: node stack.js build · no data (out/stack-data.js)'; $('load').textContent = ''; return; }
   if (!window.LAYERTEXT_BUNDLE && !window.STACK_BUNDLE) { window.LAYERTEXT_INDEX = null; await script('out/layertext/index.js?t=' + Date.now()); }
   const IX = window.LAYERTEXT_BUNDLE ? LAYERTEXT_BUNDLE.index : window.LAYERTEXT_INDEX;
   if (!IX) { $('stat').textContent = 'nincs rétegszöveg: node stack.js build (out/layertext) · no layer text'; $('load').textContent = ''; return; }
@@ -206,8 +236,60 @@ async function load(note) {
     rebuild();
   }
   $('load').textContent = '';
+  await loadTime();
   if (note) $('msg').textContent = note;
   if (auto) measure.start();
+}
+
+/* ================= live: a build finished (serve.js /api/events) → refetch those layers, glow what differs */
+let es = null;
+function live() {
+  if (window.STACK_BUNDLE || !/^https?:/.test(location.protocol) || typeof EventSource !== 'function') { $('live').textContent = ''; return; }
+  es = new EventSource('/api/events');
+  es.onopen = () => { $('live').textContent = '● élő'; $('live').className = 'pc on'; $('live').title = 'A szerver szól, ha egy build elkészült: a változott rétegek újratöltődnek, a változott csomópontok lüktetnek · live: a finished build reloads the changed layers'; };
+  es.onerror = () => { $('live').textContent = '○ élő'; $('live').className = 'pc'; $('live').title = 'Nincs kapcsolat a szerverrel (node serve.js) · no server'; };
+  es.addEventListener('changed', ev => { let d = null; try { d = JSON.parse(ev.data); } catch (e) { d = null; } if (d) refresh(d); });
+}
+let refreshing = null;
+async function refresh(d) {
+  if (refreshing) { await refreshing; }
+  refreshing = (async () => {
+    const before = {}; for (const L of Object.keys(LT)) before[L] = new Map(LT[L].idx.map(r => [r[0], r[3]]));
+    if (!await readStack()) return;
+    window.LAYERTEXT_INDEX = null; await script('out/layertext/index.js?t=' + Date.now());
+    const IX = window.LAYERTEXT_INDEX; if (!IX) return;
+    const todo = Object.keys(IX.layers).filter(L => !LT[L] || (d.layers || []).includes(L));
+    for (const L of todo) { const t = await layerText(L); if (t) LT[L] = t; }
+    for (const L of Object.keys(LT)) if (!IX.layers[L]) delete LT[L];
+    const glow = new Set();
+    for (const L of todo) { if (!LT[L]) continue; const b = before[L]; for (const r of LT[L].idx) if (!b || b.get(r[0]) !== r[3]) glow.add(r[0]); }
+    changed = glow;
+    await loadTime();
+    rebuild();
+    $('live').textContent = `● élő · ${String(IX.generated || '').slice(11, 16)} · ${glow.size} változott`;
+    $('live').title = `Build ${IX.generated}: ${glow.size} csomópont változott (${todo.join(' ') || '–'}), lüktetnek · ${glow.size} nodes changed, they pulse`;
+    if (bus) try { bus.postMessage({ type: 'changed', from: 'viewer', ids: [...glow] }); } catch (e) {}
+  })();
+  await refreshing; refreshing = null;
+}
+
+/* ================= time: the layers day by day, as the Stack saw them (out/layertext/time.js) */
+function setTime(on) {
+  timeOn = !!(on && TIME && TIME.days.length);
+  document.body.classList.toggle('time', timeOn); $('bTime').classList.toggle('on', timeOn);
+  if (!timeOn) play(false); else setDay(tIdx);
+  lightDirty = true; pickOk = false; frameDirty = true;
+}
+function setDay(i) {
+  if (!TIME) return;
+  tIdx = Math.max(0, Math.min(TIME.days.length - 1, i | 0)); $('tRange').value = tIdx;
+  let n = 0; for (const c of cells) { const b = TIME.born[c.id]; if (b === undefined || b <= tIdx) n++; }
+  $('tDay').textContent = `${TIME.days[tIdx]} · ${fmtN(n)} csomópont`;
+  lightDirty = true; pickOk = false;
+}
+function play(on) {
+  playing = !!on && timeOn; $('tPlay').textContent = playing ? '❚❚' : '▶'; playT = 0;
+  if (playing && tIdx >= TIME.days.length - 1) setDay(0);
 }
 
 /* ================= cells and particles */
@@ -280,7 +362,7 @@ void main() {
     cell = lo; local = vid - startOf(cell);
   }
   uvec4 L = texelFetch(uLight, T(cell), 0);
-  if ((L.a & 1u) != 0u || (uDetail == 0 && cell == uDetailCell)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vC = vec4(0.0); vId = 0u; return; }
+  if ((L.a & 65u) != 0u || (uDetail == 0 && cell == uDetailCell)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vC = vec4(0.0); vId = 0u; return; }
   vec4 c0 = texelFetch(uCell, T(cell * 2), 0), c1 = texelFetch(uCell, T(cell * 2 + 1), 0);
   float x0 = c0.x, z0 = c0.y, p = c0.z; int tc = int(c0.w), t = int(c1.x);
   if (uDetail == 1) { x0 = uDF.x; z0 = uDF.y; p = uDF.z; tc = int(uDF.w); t = uT; }
@@ -356,11 +438,13 @@ function upload(data) {
 function pushLight() {
   light.fill(0);
   const q = query.toLowerCase(), hit = q ? new Set(cells.filter(c => (c.node.title || '').toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).map(c => c.i)) : null;
+  const dayIds = timeOn ? new Set(byDay[tIdx] || []) : null;
   for (const c of cells) {
     let f = 0;
     if (hidden.has(c.L)) f |= 1;
+    if (timeOn) { const b = TIME.born[c.id]; if (b !== undefined && b > tIdx) f |= 64; }
     if ((solo && c.L !== solo) || (hit && hit.size && !hit.has(c.i))) f |= 2;
-    if (showChg && changed.has(c.id)) f |= 4;
+    if (showChg && (timeOn ? dayIds.has(c.id) : changed.has(c.id))) f |= 4;
     if (c.i === hover) f |= 16;
     light[c.i * 4 + 3] = f;
   }
@@ -397,16 +481,32 @@ function flyTo(c) {
 function home() { fly = { t0: performance.now(), ms: 420, from: { zoom: cam.zoom, pan: pan.slice() }, to: { zoom: PHONE ? 1.05 : 1, pan: [0, 0] } }; cam.yaw = ISO.yaw; cam.pitch = ISO.pitch; dropDetail(); }
 
 /* ================= zoom LOD: the cell in front of the camera, byte by byte */
-function setDetail(c) {
-  const T = LT[c.L];
-  if (!T || T.cls || T.k0 > 1 || c.keff <= 1 || (detail && detail.cell === c)) return;
-  const len = Math.min(c.e - c.s, 4 << 20), f = VL.fill(c.r, len);
-  gl.bindVertexArray(vaoD); gl.bindBuffer(gl.ARRAY_BUFFER, bufD); gl.bufferData(gl.ARRAY_BUFFER, T.src.subarray(c.s, c.s + len), gl.STATIC_DRAW);
+// code: a C folder's own files from serve.js (Kód bájtjai); otherwise the node's own layer text, at one byte a dot
+function setDetail(c, code) {
+  if (detail && detail.cell === c && (!code || detail.code === code)) return;   // already drawn; a code stream stays until dropped
+  let src;
+  if (code) src = code.src;
+  else { const T = LT[c.L]; if (!T || T.cls || T.k0 > 1 || c.keff <= 1) return; src = T.src.subarray(c.s, c.s + Math.min(c.e - c.s, 4 << 20)); }
+  if (!src.length) return;
+  const f = VL.fill(c.r, src.length);
+  gl.bindVertexArray(vaoD); gl.bindBuffer(gl.ARRAY_BUFFER, bufD); gl.bufferData(gl.ARRAY_BUFFER, src, gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribIPointer(0, 1, gl.UNSIGNED_BYTE, 1, 0); gl.bindVertexArray(null);
-  detail = { cell: c, n: len, f }; pickOk = false; frameDirty = true;
-  $('msg').textContent = `${c.node.title || c.id}: minden bájt egy pont (${fmtN(len)}) · every byte a dot`;
+  detail = { cell: c, n: src.length, f, src, code: code || null }; pickOk = false; frameDirty = true;
+  $('msg').textContent = code ? `${code.path}: ${code.files.length} fájl, ${fmtB(code.src.length)}, minden bájt egy pont${code.truncated ? ' (4 MB-nál levágva)' : ''} · the folder's code, every byte a dot`
+    : `${c.node.title || c.id}: minden bájt egy pont (${fmtN(src.length)}) · every byte a dot`;
 }
-function dropDetail() { if (detail) { detail = null; pickOk = false; frameDirty = true; $('msg').textContent = ''; } }
+function dropDetail() { if (detail) { const had = detail.code; detail = null; pickOk = false; frameDirty = true; $('msg').textContent = ''; if (had && sel.length) select(sel, true); } }
+async function codeBytes(c) {
+  const p = c.node.path || c.id.slice(2);
+  $('msg').textContent = `${p}: kód bájtjai… · loading the folder's code`;
+  try {
+    const r = await fetch('/api/bytes?path=' + encodeURIComponent(p), { cache: 'no-store' }), d = await r.json();
+    if (!d.ok) throw new Error(d.msg || r.status);
+    if (!d.total) { $('msg').textContent = `${p}: nincs saját követett fájlja (csak almappák) · no tracked files of its own`; return; }
+    const code = { src: b64(d.b64), files: d.files, truncated: d.truncated, path: d.path };
+    flyTo(c); setDetail(c, code); select([c.id], true);
+  } catch (e) { $('msg').textContent = `Kód bájtjai: ${e.message} (node serve.js kell) · needs the server`; }
+}
 
 /* ================= lines: plane frames, the string, the pillar spines */
 let strMembers = new Map(), strLines = [], spines = [];
@@ -445,6 +545,10 @@ function frame(ts) {
   const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1), Wd = cv.clientWidth * dpr | 0, Hd = cv.clientHeight * dpr | 0;
   if (cv.width !== Wd || cv.height !== Hd) { cv.width = Wd; cv.height = Hd; frameDirty = true; pickOk = false; }
   if (spin && !dragging) { cam.yaw += dt * 0.00008; frameDirty = true; pickOk = false; }
+  if (playing && TIME) {
+    const step = Math.max(60, Math.min(600, 12000 / TIME.days.length));
+    if (!playT) playT = ts; else if (ts - playT >= step) { playT = ts; if (tIdx >= TIME.days.length - 1) play(false); else setDay(tIdx + 1); }
+  }
   if (fly) {
     const t = Math.min(1, (ts - fly.t0) / fly.ms), e = 1 - Math.pow(1 - t, 3), lz = Math.log(fly.from.zoom) + (Math.log(fly.to.zoom) - Math.log(fly.from.zoom)) * e;
     cam.zoom = Math.exp(lz); const zf = (cam.zoom - fly.from.zoom) / ((fly.to.zoom - fly.from.zoom) || 1);
@@ -520,7 +624,7 @@ function pickAt(x, y) {
   return null;
 }
 function resolveId(v) {
-  if (detail && v >= N) { const c = detail.cell; return { c, off: c.s + (v - N), k: 1 }; }
+  if (detail && v >= N) return { c: detail.cell, off: v - N, k: 1, det: true };
   let lo = 0, hi = cells.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (starts[m] <= v) lo = m; else hi = m - 1; }
   const c = cells[lo]; if (!c) return null;
   return { c, off: c.s + (v - c.p0) * c.keff, k: c.keff * LT[c.L].k0 };
@@ -530,6 +634,7 @@ function autoDetail() {
   if (!pickBuf) return;
   const id = pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4] | pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4 + 1] << 8 | pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4 + 2] << 16;
   const hit = id ? resolveId(id - 1) : null;
+  if (detail && detail.code) return;   // the folder's code stays until Esc, ◇ Izo or another cell
   if (!hit || cam.zoom < 2) { if (detail && cam.zoom < 2) dropDetail(); return; }
   const c = hit.c, M = curM || mat(), a = project(M, world(c, c.r.x, c.r.y)), b = project(M, world(c, c.r.x + c.r.w, c.r.y + c.r.h));
   const sz = Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
@@ -538,24 +643,64 @@ function autoDetail() {
 
 /* ================= words under the pointer */
 const dec = typeof TextDecoder === 'function' ? new TextDecoder('utf-8', { fatal: false }) : null;
-function words(c, off, k) {
-  const T = LT[c.L]; if (!T || T.cls || !dec) return '';
-  const src = T.src; let a = Math.max(c.s, off - 56), b = Math.min(c.e, off + k + 56);
-  while (a > c.s && (src[a] & 0xc0) === 0x80) a--;
-  while (b < c.e && (src[b] & 0xc0) === 0x80) b++;
-  let o2 = Math.min(c.e, off + k); while (o2 < c.e && (src[o2] & 0xc0) === 0x80) o2++;
-  let o1 = off; while (o1 > c.s && (src[o1] & 0xc0) === 0x80) o1--;
+function fileAt(h) { return h.det && detail && detail.code ? detail.code.files.find(f => h.off >= f[1] && h.off < f[2]) || null : null; }
+function wordsOf(h) {
+  if (h.det && detail) { const f = fileAt(h); return words(detail.src, f ? f[1] : 0, f ? f[2] : detail.n, h.off, 1); }
+  const T = LT[h.c.L]; if (!T || T.cls) return ''; return words(T.src, h.c.s, h.c.e, h.off, h.k);
+}
+function words(src, lo, hi, off, k) {
+  if (!dec) return '';
+  let a = Math.max(lo, off - 56), b = Math.min(hi, off + k + 56);
+  while (a > lo && (src[a] & 0xc0) === 0x80) a--;
+  while (b < hi && (src[b] & 0xc0) === 0x80) b++;
+  let o2 = Math.min(hi, off + k); while (o2 < hi && (src[o2] & 0xc0) === 0x80) o2++;
+  let o1 = off; while (o1 > lo && (src[o1] & 0xc0) === 0x80) o1--;
   const vis = s => esc(s.replace(/\n/g, '⏎ ').replace(/\t/g, '  '));
   return vis(dec.decode(src.subarray(a, o1))) + '<b>' + vis(dec.decode(src.subarray(o1, o2))) + '</b>' + vis(dec.decode(src.subarray(o2, b)));
 }
 function showTip(h, x, y) {
   const tip = $('tip'); if (!h) { tip.style.display = 'none'; return; }
-  const c = h.c, n = c.node, w = words(c, h.off, h.k), rel = h.off - c.s;
-  const cls = LT[c.L].cls ? '' : ' · ' + VL.CLASS[VL.byteClass(LT[c.L].src[h.off])];
-  tip.innerHTML = `<b>${esc(n.title || c.id)}</b><div class="m">${esc(c.id)} · ${c.L} ${LAYER[c.L].hu} · bájt ${fmtN(rel * (LT[c.L].k0 || 1))} / ${fmtB((c.e - c.s) * LT[c.L].k0)}${cls}${h.k > 1 ? ' · ' + h.k + ' B/pont' : ''}</div>` +
+  const c = h.c, n = c.node, w = wordsOf(h), T = LT[c.L], f = fileAt(h);
+  const byte = h.det ? detail.src[h.off] : T.cls ? -1 : T.src[h.off], cls = byte < 0 ? '' : ' · ' + VL.CLASS[VL.byteClass(byte)];
+  const where = f ? `${esc(detail.code.path)}/<b>${esc(f[0])}</b> · bájt ${fmtN(h.off - f[1])} / ${fmtB(f[3])}`
+    : h.det ? `${esc(c.id)} · bájt ${fmtN(h.off)} / ${fmtB(detail.n)}`
+    : `${esc(c.id)} · ${c.L} ${LAYER[c.L].hu} · bájt ${fmtN((h.off - c.s) * (T.k0 || 1))} / ${fmtB((c.e - c.s) * T.k0)}`;
+  tip.innerHTML = `<b>${esc(n.title || c.id)}</b><div class="m">${where}${cls}${h.k > 1 ? ' · ' + h.k + ' B/pont' : ''}</div>` +
     (w ? `<div class="w">${w}</div>` : `<div class="m">(a telefonos csomag csak a bájtok fajtáját hozza, a szöveget nem · the phone bundle carries byte classes, not the text)</div>`);
   tip.style.display = 'block'; const st = $('stage').getBoundingClientRect();
   tip.style.left = Math.max(6, Math.min(st.width - tip.offsetWidth - 6, x + 14)) + 'px'; tip.style.top = Math.max(6, Math.min(st.height - tip.offsetHeight - 6, y + 14)) + 'px';
+}
+
+/* ================= card actions without the write gateway: the layer's page, the string, a prompt */
+function pageOf(c) {
+  const id = c.id, k = id.slice(2), P = PAGE[c.L]; if (!P) return '';
+  if (c.L === 'Q' || c.L === 'L') return P + '#sel=' + encodeURIComponent(k);
+  if (c.L === 'I' || c.L === 'A') return P + '#sel=' + encodeURIComponent(id);
+  if (c.L === 'U' && /^U:run\./.test(id)) return P + '#run=' + encodeURIComponent(id.slice(6));
+  return P;
+}
+const titleOf = id => (nodeById.get(id) || {}).title || id;
+function stringText(c, s) {
+  const lines = [`Füzér · Stack String: ${c.id} "${titleOf(c.id)}"`];
+  if (!s) return lines[0];
+  lines.push(`reach ${s.mask} · ${s.cls || ''}${s.pulse ? ' · pulse ' + s.pulse : ''}`);
+  for (const L of ORDER) { const m = s.members.filter(x => x.layer === L && x.id !== c.id); if (m.length) lines.push(`${L} ${LAYER[L].en}: ` + m.slice(0, 8).map(x => `${x.id} "${titleOf(x.id)}" ${x.score.toFixed(2)}`).join('; ')); }
+  return lines.join('\n');
+}
+function promptText(c, s) {
+  const n = c.node, top = s ? s.members.filter(m => m.id !== c.id).slice(0, 10).map(m => `   - ${m.id} "${titleOf(m.id)}" (${m.score.toFixed(2)})`) : [];
+  return [`Work on this VRG Stack node: ${c.L} · ${LAYER[c.L].en} ${c.id} "${n.title || c.id}"${n.path ? ` (path in the repo: ${n.path})` : ''}${n.kind ? `, a ${n.kind}` : ''}.`,
+    s ? `Its string (Stack Strings) reaches ${s.mask}, class ${s.cls || '?'}; the strongest members:` : '', ...top,
+    changed.has(c.id) ? 'It changed in the last build.' : '',
+    'What I want: <write it here>', '',
+    'Ask the VRG Stack first (stack_search, stack_node, stack_string) as CLAUDE.md says, then open files.',
+    'Work in the main checkout H:\\VRG\\Full\\Planner_VRG_U100, branch main. Never commit or push unless I ask.'].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n');
+}
+function copy(text, note) {
+  const done = () => { const t = $('toast'); t.textContent = note; t.style.display = 'block'; clearTimeout(copy.t); copy.t = setTimeout(() => { t.style.display = 'none'; }, 1600); };
+  const fallback = () => { const a = document.createElement('textarea'); a.value = text; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} a.remove(); done(); };
+  try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback(); } catch (e) { fallback(); }
+  window.__lastCopy = text;
 }
 
 /* ================= selection: the string and the pillar spine */
@@ -582,17 +727,26 @@ function select(ids, quiet) {
   const c = cellById.get(sel[sel.length - 1]), n = c.node, s = strs[strs.length - 1], T = LT[c.L];
   const by = {}; if (s) for (const m of s.members) if (m.id !== c.id) (by[m.layer] = by[m.layer] || []).push(m);
   const text = !T.cls && dec ? esc(dec.decode(T.src.subarray(c.s, Math.min(c.e, c.s + 900)))) + (c.e - c.s > 900 ? '…' : '') : '';
-  const page = PAGE[c.L] ? `<a class="btn" href="${PAGE[c.L]}"${NEW}>${c.L} oldal ↗</a>` : `<a class="btn pc" href="stack-search.html?q=${encodeURIComponent(n.title || c.id)}"${NEW}>Keresés ↗</a>`;
+  const page = PAGE[c.L] ? `<a class="btn" href="${pageOf(c)}"${NEW} title="A réteg saját oldala, ezzel kiválasztva · the layer's own page, this node selected">${c.L} oldal ↗</a>` : `<a class="btn pc" href="stack-search.html?q=${encodeURIComponent(n.title || c.id)}"${NEW}>Keresés ↗</a>`;
+  const code = c.L === 'C' && /^https?:/.test(location.protocol) && !window.STACK_BUNDLE ? `<button id="cCode" title="A mappa saját, követett fájljai, minden bájt egy pont (≤ 4 MB) · the folder's own tracked files, every byte a dot">▦ Kód bájtjai</button>` : '';
+  const files = detail && detail.cell === c && detail.code ? `<h3>Kód bájtjai <i>· ${detail.code.files.length} fájl, ${fmtB(detail.code.src.length)}${detail.code.truncated ? ', 4 MB-nál levágva' : ''}</i></h3><div class="files">` +
+    detail.code.files.map(f => `<div>${esc(f[0])}<span>${fmtB(f[3])}</span></div>`).join('') + '</div>' : '';
   card.innerHTML = `<div class="title">${esc(n.title || c.id)}</div>
     <div class="kv"><span>id</span><span>${esc(c.id)}</span><span>réteg <i>layer</i></span><span style="color:${LAYER[c.L].col}">${c.L} · ${LAYER[c.L].hu}</span>
     ${n.kind ? `<span>fajta <i>kind</i></span><span>${esc(n.kind)}</span>` : ''}${n.t ? `<span>idő <i>time</i></span><span>${esc(String(n.t).slice(0, 16))}</span>` : ''}
     <span>bájtok <i>bytes</i></span><span>${fmtB((c.e - c.s) * T.k0)} · ${fmtN(c.pn)} pont</span>
     ${s ? `<span>füzér <i>string</i></span><span>${esc(s.mask)} · ${esc(s.cls || '')}</span>` : ''}${changed.has(c.id) ? '<span>változott <i>changed</i></span><span>az előző build óta · since the last build</span>' : ''}</div>
-    <div class="acts"><button id="cFly">⌖ Berepülés</button>${page}<a class="btn" href="${window.STACK_BUNDLE ? 'erintesnyom.html' : 'erintesnyom.html" target="_blank'}">✦ Érintésnyom ↗</a></div>
+    <div class="acts"><button id="cFly">⌖ Berepülés</button>${code}${page}<a class="btn" href="${window.STACK_BUNDLE ? 'erintesnyom.html' : 'erintesnyom.html" target="_blank'}">✦ Érintésnyom ↗</a>
+      <button id="cStr" title="A füzér szövegként, vágólapra · the string as text">⧉ Füzér</button><button id="cPrompt" title="Egy munkamenet nyitó kérése erre a csomópontra · an opening prompt for a session on this node">⧉ Prompt</button></div>
+    <div class="hint">${c.L === 'Q' ? 'Válasz a Döntésnaplóban (Q oldal): ott az A/B/C prompt. ' : ''}A forrásba írás jóváhagyott diffel az S6 írókapuval jön; addig prompt. <i>Writing into the source comes with the S6 gateway; until then, a prompt.</i></div>
+    ${files}
     ${text ? `<h3>Szöveg <i>· the bytes it is made of</i></h3><pre>${text}</pre>` : ''}
     ${s ? `<h3>Füzér rétegenként <i>· its string, layer by layer</i></h3>` + ORDER.filter(L => by[L]).map(L => `<div class="hint" style="color:${LAYER[L].col};margin-top:4px">${L} · ${LAYER[L].hu} (${by[L].length})</div>` +
       by[L].slice(0, 6).map(m => `<span class="nb" data-id="${esc(m.id)}"><span class="c">${m.score.toFixed(2)}</span> ${esc((nodeById.get(m.id) || {}).title || m.id)}</span>`).join('')).join('') : ''}`;
   $('cFly').onclick = () => flyTo(c);
+  if ($('cCode')) $('cCode').onclick = () => codeBytes(c);
+  $('cStr').onclick = () => copy(stringText(c, s), 'füzér a vágólapon · string copied');
+  $('cPrompt').onclick = () => copy(promptText(c, s), 'prompt a vágólapon · prompt copied');
   card.querySelectorAll('.nb').forEach(el => el.onclick = () => { select([el.dataset.id]); const t = cellById.get(el.dataset.id); if (t) flyTo(t); });
 }
 
@@ -681,6 +835,10 @@ function renderLegend() {
   tog('bCrisp', () => crisp, v => { crisp = v; save(); });
   $('gap').oninput = e => { gap = +e.target.value; lineDirty = true; frameDirty = true; pickOk = false; save(); };
   $('bRefresh').onclick = () => load('újraolvasva · reloaded');
+  $('bTime').onclick = () => setTime(!timeOn);
+  $('tOff').onclick = () => setTime(false);
+  $('tPlay').onclick = () => play(!playing);
+  $('tRange').oninput = e => { play(false); setDay(+e.target.value); };
   $('detail').onchange = e => { const v = e.target.value; auto = v === 'auto'; presetId = auto ? (store.get('vrg-viewer-auto', null) || (PHONE ? 'normal' : 'fine')) : v; measure.chosen = !auto || !!store.get('vrg-viewer-auto', null); save(); rebuild(); if (auto) measure.start(); };
   if (auto && store.get('vrg-viewer-auto', null)) presetId = store.get('vrg-viewer-auto', null);
   $('q').addEventListener('input', e => { query = e.target.value.trim(); lightDirty = true; });
@@ -694,6 +852,9 @@ function renderLegend() {
   document.addEventListener('click', e => { if ($('view').open && !$('view').contains(e.target)) $('view').open = false; });
   window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     if (e.key === 'f' || e.key === 'F') setFull(!full); if (e.key === 'p' || e.key === 'P') $('bCrisp').click();
+    if (e.key === 't' || e.key === 'T') setTime(!timeOn);
+    if (e.key === ' ' && timeOn) { e.preventDefault(); play(!playing); }
+    if (timeOn && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { play(false); setDay(tIdx + (e.key === 'ArrowLeft' ? -1 : 1)); }
     if (e.key === 'Escape') { if (full) setFull(false); solo = null; select([]); dropDetail(); renderLayers(); lightDirty = true; } });
   if (window.StackTouch) StackTouch.attach(cv, {
     dragging: on => { dragging = on; if (on) showTip(null); if (!on) camMoved(); },
@@ -706,12 +867,14 @@ function renderLegend() {
     dbl: (x, y) => { const h = x != null ? pickAt(x, y) : null; if (h) flyTo(h.c); else home(); },
     long: (x, y) => { const h = pickAt(x, y); if (h) { select([h.c.id]); document.querySelector('aside').scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
   });
-  window.VIEWER = { state: () => ({ planes: planes.map(P => P.L), cells: cells.length, particles: N, preset: preset && preset.id, k: K, detail: detail ? { id: detail.cell.id, n: detail.n } : null, sel, hover, pickOk, lit: ext.size, changed: changed.size }),
+  window.VIEWER = { state: () => ({ planes: planes.map(P => P.L), cells: cells.length, particles: N, preset: preset && preset.id, k: K, detail: detail ? { id: detail.cell.id, n: detail.n, code: detail.code ? detail.code.files.length : 0 } : null, sel, hover, pickOk, lit: ext.size, changed: changed.size,
+      time: timeOn ? { day: TIME.days[tIdx], i: tIdx, days: TIME.days.length, playing } : null, live: !!(es && es.readyState === 1) }),
+    time: (on, i) => { setTime(on); if (on && i != null) setDay(i); }, code: id => { const c = cellById.get(id); return c ? codeBytes(c) : null; }, changedIds: () => [...changed],
     pick: (x, y) => { const h = pickAt(x, y); return h ? { id: h.c.id, off: h.off, k: h.k } : null; }, select: ids => select(ids), fly: id => { const c = cellById.get(id); if (c) flyTo(c); }, home,
     preset: id => { $('detail').value = id; $('detail').onchange({ target: { value: id } }); }, perf: () => store.get('vrg-viewer-perf', []),
     cell: id => { const c = cellById.get(id); return c ? { r: c.r, f: c.f, p0: c.p0, pn: c.pn, keff: c.keff, plane: c.plane } : null; },
     screenOf: (id, d) => { const c = cellById.get(id); if (!c || !curM) return null; const [u, v] = VL.at(c.f, d || 0), q = project(curM, world(c, u, v)), r = $('cv').getBoundingClientRect(); return [(q[0] * 0.5 + 0.5) * r.width, (0.5 - q[1] * 0.5) * r.height]; } };
-  load();
+  load().then(live);
   requestAnimationFrame(frame);
 })();
 })();

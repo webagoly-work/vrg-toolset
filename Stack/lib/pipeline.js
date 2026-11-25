@@ -164,7 +164,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
       log(`forecast index: ${sessions.length} sessions, ${templates.length} templates`);
     }, { optional: true });
     // Rétegverem, the Stack Viewer (viewer.html, S8/S9): every layer as bytes, one range per node, diffed against the last build
-    await hc.stage('layer text', () => log(require('./layertext').write({ graph, facts, out: CFG.out, repo: C.REPO }).msg), { optional: true });
+    await hc.stage('layer text', () => log(require('./layertext').write({ graph, facts, out: CFG.out, repo: C.REPO, events: X.readJsonl(EV.LOG).records }).msg), { optional: true });
     await hc.stage('lineage', () => log(require('./lineage').write({ graph }).msg), { optional: true });   // Ötletfolyam (lineage.html)
     await hc.stage('control', () => log(require('./control').write({ graph }).msg), { optional: true });   // Vezérlőterem (control.html)
     await hc.stage('commits', () => log(require('./commitpixel').write({ graph }).msg), { optional: true });   // Commit-pixel (commits.html)

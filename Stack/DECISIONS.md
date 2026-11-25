@@ -275,3 +275,14 @@ research/STRINGS-PLAN.md §6. Each can be changed in those files.
 | STK-P72 | The phone bundle | A the layer text as is · **B byte classes only, 16 bytes a particle** | **B**: the planes look the same, the words under a dot stay on the PC (§9: document contents and client codes never leave it). 4 MB of text → ≈ 260 k classes |
 | STK-P73 | Auto (STK-Q22) | **A** Fine on the desktop, Normál on the phone, one step coarser while under 40 fps, remembered | the plan's "first frame under 12 ms" needs a GPU timer most browsers hide; frame times are kept in `localStorage` `vrg-viewer-perf` (`VIEWER.perf()`) so the thresholds can be fixed from measurements here and on the phone |
 | STK-P74 | Zoom LOD | **A** the cell in front of the camera, at zoom ≥ 2 and filling ≥ 45 % of the screen, is drawn byte by byte (≤ 4 MB) | the rest stays at the preset; a double-click flies into a cell and does the same |
+
+## Stack Viewer S10 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P75 | Live diff glow without S5's incremental build | A wait for S5 · **B the server watches `out/layertext/index.js`** | **B**: every build writes it last, so any finished build (START R → B, `POST /api/build`, a session's `stack.js build`) sends `changed` on `GET /api/events`; the Viewer refetches only those layers and pulses the nodes whose hash differs. S5 (a source edit → a one-layer build in < 1.5 s) stays open and will feed the same event |
+| STK-P76 | What "Kód bájtjai" may read | A the folder on disk · **B the files git tracks directly in it** | **B**: an untracked file (a stray key, a client export) never leaves the disk; sub-folders are their own cells; secret-looking names (the launcher's rule), PDFs, Vendor/ and Planner/apps, /home, /data are refused by name; 4 MB at most. Read-only, 127.0.0.1 only, like the rest of serve.js |
+| STK-P77 | When a node is born on the time scrubber | A the day the stack first saw it · **B the work's own date of its first `node+` (a commit's date), else the day seen** | **B**: the baseline build saw everything on one day, which would make the scrubber a single jump; a node the log never names is born on its own date `t`, one with no date is always there. `state` and `edit` events pulse on their day (the same pulse as "changed": one animation, one meaning) |
+| STK-P78 | Card actions before the write gateway | **A** the layer's page with the node selected (`#sel=`, `#run=`), the string as text, an opening prompt for a session; Q points to the Döntésnapló's A/B/C prompts | §3.1 ④ keeps copy-prompt buttons as the offline fallback; the diff-approved write actions are S6 |
+| STK-P79 | S10 on the phone | **A** the time scrubber yes (ids and day numbers only); the code stream and the live channel no | both need serve.js on the PC; the phone bundle stays text-free |
+

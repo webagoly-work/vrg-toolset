@@ -333,7 +333,7 @@ Each work package (WP) is one commit (or a few), with its tests. **S** is under 
 | **S7** | Page contract retrofit: build stamp, `STACK_PAGE`, bus, lint test, for the six Stack pages | S5 | M | selecting Planner in one page highlights it in the other five |
 | **S8** ✅ 11-25 | Layer text stage: `out/layertext/<L>.bin` + `.idx`, deterministic, with a diff between builds | — (parallel) | M | the same build gives identical bytes; a one-node change differs only in that range |
 | **S9** ✅ 11-25 (perf to measure here) | **Viewer v1**: natural-order cells, Hilbert-in-shader particles, presets + Auto, GPU picking with the words tooltip, strings drawn, pillar spine | S1, S8 | L | 60 fps at Fine here; the phone usable at Normál; LAYERS §1 "The stack itself" row ✅ |
-| **S10** ◐ 11-25 | Viewer v2: zoom LOD ✅, C byte stream, time scrubber, live diff glow (◐ changed-since-last-build pulse ✅; live needs S5), actions from the card | S5, S6, S9 | L | an edit on the board glows its bytes in the Viewer |
+| **S10** ✅ 11-25 (the gateway parts wait for S6) | Viewer v2: zoom LOD ✅, C byte stream ✅ (`GET /api/bytes`), time scrubber ✅ (`out/layertext/time.js`), live diff glow ✅ (SSE `/api/events` after any finished build; S5's incremental build still open), actions from the card ◐ (layer page with the node selected, the string, a session prompt; the §4 write actions come with S6) | S5, S6, S9 | L | an edit on the board glows its bytes in the Viewer |
 | **S11+** | New layers in the order of STK-Q24: Belépők, Próbák, Kérések, Jelzések… one adapter each | S1 | M each | each appears in strings and the Viewer with no page code change |
 
 **Parallel lanes.** These three are independent until S6, S9 and S10:

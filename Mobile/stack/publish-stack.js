@@ -164,7 +164,7 @@ function layerClasses(stack) {
   let ix = null;
   try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(dir, 'index.js'), 'utf8'), box); ix = box.window.LAYERTEXT_INDEX; } catch { ix = null; }
   if (!ix) return null;
-  const VL = require(path.join(stack, 'lib', 'viewer-layout.js'));
+  const VL = require(path.resolve(stack, 'lib', 'viewer-layout.js'));
   const layers = {};
   for (const L of Object.keys(ix.layers)) {
     const idx = JSON.parse(fs.readFileSync(path.join(dir, L + '.idx'), 'utf8')).nodes, src = fs.readFileSync(path.join(dir, L + '.bin'));
@@ -172,7 +172,10 @@ function layerClasses(stack) {
     const ag = VL.aggregate(cls, idx.map(r => [r[1], r[2]]), VIEW_K, true);
     layers[L] = { nodes: idx.map((r, i) => [r[0], ag.starts[i], ag.starts[i + 1]]), data: Buffer.from(ag.data).toString('base64') };
   }
-  return { k0: VIEW_K, index: { generated: ix.generated, layers: ix.layers, diff: ix.diff || {} }, layers };
+  // the time scrubber's births and pulses (ids and day numbers only)
+  let time = null;
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(dir, 'time.js'), 'utf8'), box); time = box.window.LAYERTEXT_TIME || null; } catch { time = null; }
+  return { k0: VIEW_K, index: { generated: ix.generated, layers: ix.layers, diff: ix.diff || {} }, layers, time };
 }
 function bundleViewer(stack) {
   const b = bundleLayer(stack, 'viewer.html');

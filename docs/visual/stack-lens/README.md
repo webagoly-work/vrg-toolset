@@ -280,4 +280,10 @@ reading keeps them.
   back to the right node and the right words, the fly-in at one byte a dot, the file:// page and the 0.7 MB phone bundle
   (no text in it) at 412 px, the light arriving from Érintésnyom. Frame rates measured here are software GL and say
   nothing: the 60 fps at Finom target is to be measured on the PC (`VIEWER.perf()`).
+- **S10, the same day:** the time scrubber (⏱ Idő: the layers day by day, nodes born on their work date, changes
+  pulsing), the code stream of a C folder (▦ Kód bájtjai: its tracked files, every byte a dot, the file name under the
+  pointer), the live glow after any finished build (● élő over `serve.js` `/api/events`), and the card's actions without
+  the write gateway (the layer's page with the node selected, the string, a prompt). STK-P75…P79. Checked against the
+  real `serve.js` on this repo: `Stack/lib` streamed 37 files / 309 KB and the pointer read `lens.js`; a rebuilt layer
+  text pulsed exactly the nodes whose bytes changed; the phone bundle (0.75 MB) scrubs time and stays text-free.
 
