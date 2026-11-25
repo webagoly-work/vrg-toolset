@@ -5,9 +5,9 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 165 |
+| START registry (launcher/vrg-menu.json) | 167 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 92 |
+| VRG Irányítópult (Dashboard/) | 93 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 47 |
 | VRG Stack | 23 |
@@ -16,11 +16,11 @@
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
 | Shared libraries | 5 |
-| Docs packs + GO phrases | 27 |
-| Top-level folders + launcher parts | 28 |
-| **Total** | **591** |
+| Docs packs + GO phrases | 28 |
+| Top-level folders + launcher parts | 29 |
+| **Total** | **596** |
 
-## START registry (launcher/vrg-menu.json) (165)
+## START registry (launcher/vrg-menu.json) (167)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -101,13 +101,14 @@
 | `menu:proj:L/A` | VRG Mobile · Android Studio | START L A · {repo}\Mobile\mobile.cmd | start.action | projects/L | a projekt megnyitása |
 | `menu:proj:L/R` | VRG Mobile · Leírás | START L R · {repo}\Mobile\mobile.cmd | start.action | projects/L | README.md |
 | `menu:proj:L/O` | VRG Mobile · Mappa megnyitása | START L O · | start.action | projects/L |  |
-| `menu:proj:W` | Varler Console | START W (submenu) | start.project | projects | terepi konzol, :8133 · I időjárás |
+| `menu:proj:W` | Varler Console | START W (submenu) | start.project | projects | terepi konzol, :8133 · I időjárás · B böngésző |
 | `menu:proj:W/S` | Varler Console · Indítás | START W S · server console | start.action | projects/W | :8133 |
 | `menu:proj:W/R` | Varler Console · Ügynöknyom közvetítő | START W R · server trace-relay | start.action | projects/W | :8134 |
 | `menu:proj:W/T` | Varler Console · Teszt | START W T · {npm} test | start.action | projects/W | npm test |
 | `menu:proj:W/V` | Varler Console · VS Code | START W V · {code} | start.action | projects/W |  |
 | `menu:proj:W/O` | Varler Console · Mappa megnyitása | START W O · | start.action | projects/W |  |
 | `menu:proj:W/I` | Varler Console · VRG Időjárás | START W I · | start.action | projects/W | többforrású előrejelzés, munkaablak, riasztás |
+| `menu:proj:W/B` | Varler Console · VRG Böngésző | START W B · {repo}\Browser\dist\vrg-bongeszo.html | start.action | projects/W | kezdőlap, kereső, könyvjelzők, olvasó · :8812 |
 | `menu:proj:V` | Vendor | START V (submenu) | start.project | projects | lista · letöltés |
 | `menu:proj:V/L` | Vendor · Komponensek listája | START V L · {node} tools\fetch-vendor.js --list | start.action | projects/V |  |
 | `menu:proj:V/D` | Vendor · Komponensek letöltése | START V D · {node} tools\fetch-vendor.js --all ; {node} tools\fetch-vendor.js --sync-page | start.action | projects/V | hálózat kell, külön ablak |
@@ -161,6 +162,7 @@
 | `srv:terkep` | VRG Térkép · offline térkép | :8802 · {repo}\Map\serve.js | server | servers |  |
 | `srv:idojaras` | VRG Időjárás · többforrású előrejelzés + ütemező | :8808 · {repo}\Weather\serve.js | server | servers |  |
 | `srv:stack` | Rétegverem · Konnektóm | :8806 · {stack}\serve.js | server | servers |  |
+| `srv:bongeszo` | VRG Böngésző · olvasó, dokumentumkereső, javaslatok | :8812 · {repo}\Browser\serve.js | server | servers |  |
 | `menu:prog:1` | Chrome | {full}\tools\chrome\chrome.exe | program | programs |  |
 | `menu:prog:2` | Opera GX | {full}\programs\opera-gx\opera.exe | program | programs | optional |
 | `menu:prog:3` | Zen | {zen} | program | programs | optional |
@@ -300,7 +302,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (92)
+## VRG Irányítópult (Dashboard/) (93)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -345,6 +347,7 @@
 | `dashcfg:sheets` | Registry sheets.json | Dashboard/config/sheets.json | config registry | config | 8 entries |
 | `dashcfg:web` | Registry web.json | Dashboard/config/web.json | config registry | config | 3 entries |
 | `dashlib:acts` | lib/acts.js | Dashboard/shell/lib/acts.js | module | shell/lib | acts.js — act ids → registry items (the allow-list) and what an act does. |
+| `dashlib:applinks` | lib/applinks.js | Dashboard/shell/lib/applinks.js | module | shell/lib | applinks.js — the VRG Böngésző's one door into the Asztal (T1, BRW-Q01): vrg-app://browser/__vrg/links. The browser app |
 | `dashlib:appscheme` | lib/appscheme.js | Dashboard/shell/lib/appscheme.js | module | shell/lib | appscheme.js — the vrg-app:// scheme of the VRG Asztal (WP-43, DESKU-Q08): an in-shell HTML app gets a real origin, so its |
 | `dashlib:audit` | lib/audit.js | Dashboard/shell/lib/audit.js | module | shell/lib | audit.js — append-only JSON lines in <logs>/audit-YYYY-MM-DD.jsonl (CONTRACT §4.1, API.md). |
 | `dashlib:bookmarks` | lib/bookmarks.js | Dashboard/shell/lib/bookmarks.js | module | shell/lib | bookmarks.js — bookmarks and browsing history in <userDir>/web.json (WP-18). Only { url, title, at }: no page content is stored. |
@@ -611,10 +614,11 @@
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
 | `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1.1 — "Mérőpult" |
 
-## Docs packs + GO phrases (27)
+## Docs packs + GO phrases (28)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `doc:browser` | docs/browser | docs/browser | docs pack | docs |  |
 | `doc:city` | docs/city | docs/city | docs pack | docs |  |
 | `doc:client-look` | docs/client-look | docs/client-look | docs pack | docs |  |
 | `doc:components-offline` | docs/components-offline.md | docs/components-offline.md | doc | docs |  |
@@ -643,12 +647,13 @@
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 | `go:variant` | GO VARIANT | GO-VARIANT.md | codephrase brief | GO | GO VARIANT — make a Variant Sketcher for one kind of job |
 
-## Top-level folders + launcher parts (28)
+## Top-level folders + launcher parts (29)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
 | `dir:Archive` | Archive | Archive/ | top-level folder | repo |  |
 | `dir:BRIDGE` | BRIDGE | BRIDGE/ | top-level folder | repo | BRIDGE Smart Home System — forrásfájl-gyűjtő mappa |
+| `dir:Browser` | Browser | Browser/ | top-level folder | repo | VRG Böngésző (VRG Browser) |
 | `dir:Calculator` | Calculator | Calculator/ | top-level folder | repo |  |
 | `dir:CodeCity` | CodeCity | CodeCity/ | top-level folder | repo |  |
 | `dir:Console` | Console | Console/ | top-level folder | repo | Varler Console |

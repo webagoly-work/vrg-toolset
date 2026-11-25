@@ -13,5 +13,6 @@ object DeskApps {
         DeskApp("valena", "Valena választó", "Toolbox/valena-life-szerelvenytervezo.html", listOf("Toolbox/", "shared/")),
         DeskApp("buildtree", "VRG BuildTree", "Modder/vrg-buildtree.html", listOf("Modder/", "shared/")),
         DeskApp("mindmap", "VRG MindMap", "MindMap/vrg_mindmap.html", listOf("MindMap/", "shared/")),
+        DeskApp("browser", "VRG Böngésző", "Browser/dist/vrg-bongeszo.html", listOf("Browser/dist/", "shared/")),
     )
 }

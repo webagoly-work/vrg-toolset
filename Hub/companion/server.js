@@ -30,6 +30,8 @@ const { pathToFileURL } = require('url');
 const HUB = path.resolve(__dirname, '..');
 const REPO = path.resolve(HUB, '..');
 const PAGE = path.join(HUB, 'dist', 'vrg-kapu.html');
+const GUEST_LOCAL = path.join(HUB, 'dist', 'linkek.html');
+const GUEST_SHARED = process.env.KP_GUEST_PAGE || (() => { const r = process.env.VRG_SHARED || path.resolve(REPO, '..', '..', 'Shared'); return path.join(r, '00_START', 'linkek.html'); })();
 const TOKEN_FILE = path.join(__dirname, '.token');
 const VERSION = '1';
 const MAX_BODY = 16 * 1024;
@@ -168,6 +170,15 @@ const server = http.createServer((req, res) => {
     if (!exists(PAGE)) return send(res, 404, 'Hub/dist/vrg-kapu.html hiányzik — node tools/build-hub.js', 'text/plain; charset=utf-8');
     const html = fs.readFileSync(PAGE, 'utf8').replace(/<head>/i, m => m + '<script>window.KP_COMPANION={token:' + JSON.stringify(TOKEN) + ',port:' + LIVE_PORT + '};</script>');
     return send(res, 200, html, 'text/html; charset=utf-8');
+  }
+  // T9: the guest page — the VRG Böngésző's one in VRG-Megosztott\00_START when this PC has it, else the empty placeholder.
+  // A static page with its own CSP (no script); served with a CSP header too.
+  if (req.method === 'GET' && url.pathname === '/linkek.html') {
+    const f = [GUEST_SHARED, GUEST_LOCAL].find(p => p && exists(p));
+    if (!f) return send(res, 404, 'linkek.html hiányzik — node tools/build-hub.js', 'text/plain; charset=utf-8');
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'", 'Referrer-Policy': 'no-referrer' });
+    return res.end(fs.readFileSync(f));
   }
   if (!url.pathname.startsWith('/api/')) return send(res, 404, { error: 'nincs ilyen' });
   const origin = req.headers.origin;

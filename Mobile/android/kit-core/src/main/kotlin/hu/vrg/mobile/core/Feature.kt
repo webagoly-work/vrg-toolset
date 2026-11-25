@@ -206,6 +206,11 @@ object Catalogue {
         "weather", "VRG Időjárás", "Lehet-e ma kint dolgozni: MET Norway, DWD és a hivatalos figyelmeztetések egyesítve, terepi szabályokkal, tevékenységenként.",
         "⛅", Group.WORK, Stage.BETA, "M44", setOf(Need.INTERNET),
     )
+    // WP M68 (2026-11-24, T7 of docs/browser/TRAJECTORIES.md): real browsing on the phone for work pages, by the VRG Böngésző's rules.
+    val WEB = FeatureInfo(
+        "web", "Böngésző", "Munkához böngészés a telefonon: adatlap, katalógus, szabvány, a helyszíni router oldala. A PC keresői és !jelei, tiszta linkek, könyvjelzők és előzmények az Asztallal közös fájlban.",
+        "🌐", Group.WORK, Stage.BETA, "M68", setOf(Need.INTERNET),
+    )
     val VAULT = FeatureInfo(
         "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",
         "🔒", Group.APP, Stage.BETA, "M45", setOf(Need.INTERNET),
@@ -220,7 +225,7 @@ object Catalogue {
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE, DEVLAP,
         SKETCH, PHOTO,
-        PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
+        PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER, WEB,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, DEVICES, VAULT, CATALOG, SETTINGS,
     )

@@ -1,0 +1,79 @@
+{
+  "format": "vrg.browser-modules",
+  "v": 1,
+  "about": "The VRG Böngésző's parts (T8 of docs/browser/TRAJECTORIES.md). One entry per source file, in load order; build.js concatenates them in this order and bakes the rest into the page (VB_DATA.mods). A part of kind 'plugin' can be left out of a build (node Browser/build.js --without <id>); a 'core' part cannot. needs: net = it calls a server (hosts names which), web = it opens or reads web pages (hosts names which, * = any page the user asks for), storage = it keeps data in the app's store on this device. api = the routes it calls on the PC's serve.js (127.0.0.1:8812) or the Asztal's door (/__vrg/*); the app refuses a route no built part names, and one that belongs to a switched-off module. Every switch is a module the user can turn off in Beállítások; runs = the hosts where it can work at all (all when missing). The words are the Data Vault plugins' (net, storage) plus the web need DV-Q22 Q4 proposes; lib/modules.js checks all of it, and the files against what they declare.",
+  "parts": [
+    { "id": "core.engine", "kind": "core", "hu": "Saját index", "files": ["core/engine.js"], "needs": [],
+      "switches": [
+        { "id": "local", "hu": "Saját kereső", "desc": "A könyvjelzők, előzmények, olvasólista és mentett oldalak teljes szövegű keresése a címsorban és a Keresés lapon.", "on": true }
+      ] },
+    { "id": "core.url", "kind": "core", "hu": "Címek", "files": ["core/url.js"], "needs": [],
+      "switches": [
+        { "id": "clean", "hu": "Tiszta link", "desc": "A követőparaméterek (utm_*, fbclid, gclid …) lekerülnek a linkről megnyitás és mentés előtt.", "on": true },
+        { "id": "linkcheck", "hu": "Linkellenőr", "desc": "Figyelmeztet a gyanús címekre: jelszó a címben, punycode domain, titkosítatlan kapcsolat, nyers IP.", "on": true }
+      ] },
+    { "id": "answers", "kind": "plugin", "hu": "Gyorsválasz", "desc": "Számológép és villamos képletek a címsorban, hálózat nélkül.", "files": ["core/answers.js"], "needs": [],
+      "switches": [
+        { "id": "answers", "hu": "Gyorsválasz", "desc": "Számológép, villamos képletek (P, I, feszültségesés, Ohm), AWG ↔ mm², átváltások a címsorban.", "on": true }
+      ] },
+    { "id": "core.links", "kind": "core", "hu": "Könyvjelzőformátum", "files": ["core/links.js"], "needs": [] },
+    { "id": "core.research", "kind": "core", "hu": "Kutatási jegyzet", "files": ["core/research.js"], "needs": [] },
+    { "id": "core.store", "kind": "core", "hu": "Tároló", "files": ["core/store.js"], "needs": ["storage"] },
+    { "id": "core.sync", "kind": "core", "hu": "Szinkron az Asztallal", "files": ["core/sync.js"], "needs": ["net"], "hosts": ["self"],
+      "api": ["/__vrg/links", "/api/links"] },
+    { "id": "core.host", "kind": "core", "hu": "Megnyitás", "files": ["core/host.js"], "needs": ["web"], "hosts": ["*"] },
+    { "id": "qr", "kind": "plugin", "hu": "QR-kód", "desc": "QR-kód egy címről és a munkák címkéin; a telefon kamerájával beolvasva ott nyílik meg.", "files": ["vendor/qr.js"], "needs": [],
+      "switches": [
+        { "id": "qr", "hu": "Telefonra", "desc": "QR-kód a címről: a telefon kamerájával beolvasva ott nyílik meg.", "on": true, "runs": ["desktop", "served", "file", "web"] }
+      ] },
+    { "id": "app.ui", "kind": "core", "hu": "Felület", "files": ["app/ui.js"], "needs": [] },
+    { "id": "app.context", "kind": "core", "hu": "Környezet", "files": ["app/context.js"], "needs": ["net"], "hosts": ["127.0.0.1:8812"],
+      "api": ["/api/health"] },
+    { "id": "app.omnibox", "kind": "core", "hu": "Címsor", "files": ["app/omnibox.js"], "needs": ["net"], "hosts": ["127.0.0.1:8812"],
+      "switches": [
+        { "id": "suggest", "hu": "Webes javaslatok", "desc": "Javaslatok gépelés közben a választott keresőtől. Minden leütés elmegy a keresőhöz, ezért alapból ki van kapcsolva.", "on": false, "runs": ["desktop", "served"], "api": ["/api/suggest"] }
+      ] },
+    { "id": "app.views", "kind": "core", "hu": "Nézetek", "files": ["app/views.js"], "needs": ["net", "web"], "hosts": ["127.0.0.1:8812", "127.0.0.1:*"],
+      "switches": [
+        { "id": "servers", "hu": "Helyi VRG szerverek", "desc": "A PC szerverei (START → O) a kezdőlapon, futásjelzővel, és a keresőben.", "on": true, "runs": ["desktop", "served", "file"] },
+        { "id": "docs", "hu": "Helyi dokumentumok", "desc": "A repó Markdown dokumentumai a keresőben (a helyi szerveren át, :8812).", "on": true, "runs": ["desktop", "served"], "api": ["/api/docs", "/api/doc"] },
+        { "id": "reader", "hu": "Olvasó nézet", "desc": "Egy oldal szövege reklám és menü nélkül, offline mentéssel (a helyi szerveren át).", "on": true, "runs": ["desktop", "served"], "api": ["/api/reader"] }
+      ],
+      "nav": [
+        { "route": "", "hu": "Kezdőlap", "icon": "home", "view": "home", "at": 0 },
+        { "route": "kereses", "hu": "Keresés", "icon": "search", "view": "search", "at": 10 },
+        { "route": "konyvjelzok", "hu": "Könyvjelzők", "short": "Jelzők", "icon": "star", "view": "bookmarks", "count": "bookmarks", "at": 20 },
+        { "route": "elozmenyek", "hu": "Előzmények", "icon": "history", "view": "history", "wide": true, "count": "history", "at": 30 },
+        { "route": "olvaso", "hu": "Olvasó", "icon": "list", "view": "reader", "count": "unread", "at": 40 },
+        { "route": "beallitasok", "hu": "Beállítások", "icon": "settings", "view": "settings", "at": 90 },
+        { "route": "sugo", "hu": "Súgó", "icon": "question", "view": "help", "wide": true, "at": 95 }
+      ] },
+    { "id": "work", "kind": "plugin", "hu": "Munkák és alkatrészek", "desc": "Munkánként a linkek, mentett oldalak és adatlapok; a Készlet katalógusa adatlapokkal; QR-címkék.", "files": ["app/work.js"], "needs": ["net", "storage"], "hosts": ["127.0.0.1:8812"],
+      "switches": [
+        { "id": "jobs", "hu": "Munkák", "desc": "Munkánként a linkek, mentett oldalak és adatlapok; exportálás a munka mappájába (helyi szerver), QR-címkék nyomtatása.", "on": true, "api": ["/api/jobs"] },
+        { "id": "parts", "hu": "Alkatrészek", "desc": "A Készlet katalógusa (cikkszám, gyártó, adatlap): keresés, adatlap az Olvasóban, mentés a cikkhez és a munkához.", "on": true }
+      ],
+      "nav": [
+        { "route": "munkak", "hu": "Munkák", "icon": "folder", "view": "jobs", "module": "jobs", "count": "jobs", "at": 50 },
+        { "route": "alkatreszek", "hu": "Alkatrészek", "short": "Alkatrész", "icon": "socket", "view": "parts", "module": "parts", "at": 55 }
+      ] },
+    { "id": "knowledge", "kind": "plugin", "hu": "Kutatás és figyelés", "desc": "Kutatási jegyzetek forrással, küldés Claude-nak, oldalak változásának figyelése.", "files": ["app/knowledge.js"], "needs": ["net", "storage"], "hosts": ["self", "127.0.0.1:8812"],
+      "api": ["/__vrg/claude"],
+      "switches": [
+        { "id": "research", "hu": "Kutatás", "desc": "Idézetek az Olvasóból a forrásukkal, saját jegyzetek; forrásmegjelöléses Markdown jegyzet a repóba (Rétegverem), egy munka mappájába vagy Claude-nak.", "on": true, "api": ["/api/research"] },
+        { "id": "watch", "hu": "Figyelés", "desc": "Oldalak változásának figyelése: a VRG Asztal futtatja (Hírek panel), a változást a telefonra is jelzi.", "on": true, "runs": ["desktop", "served"], "api": ["/api/watch"] }
+      ],
+      "nav": [
+        { "route": "kutatas", "hu": "Kutatás", "icon": "bulb", "view": "research", "module": "research", "wide": true, "count": "notebooks", "at": 60 },
+        { "route": "figyeles", "hu": "Figyelés", "icon": "bell", "view": "watches", "module": "watch", "wide": true, "at": 65 }
+      ] },
+    { "id": "share", "kind": "plugin", "hu": "Megosztás", "desc": "Közös listák a OneDrive VRG-Megosztott\\60_Linkek mappájában és a Kapu melletti vendégoldal (00_START\\linkek.html).", "files": ["core/share.js", "app/share.js"], "needs": ["net", "storage"], "hosts": ["127.0.0.1:8812"],
+      "switches": [
+        { "id": "share", "hu": "Megosztás", "desc": "Listák megosztása a közös OneDrive mappában, a társ listáinak betöltése, és a belépés nélküli vendégoldal a Kapu mellé (a helyi szerveren át).", "on": true, "runs": ["desktop", "served"], "api": ["/api/shared", "/api/guest"] }
+      ],
+      "nav": [
+        { "route": "megosztas", "hu": "Megosztás", "short": "Megoszt", "icon": "link", "view": "share", "module": "share", "wide": true, "at": 70 }
+      ] },
+    { "id": "app.main", "kind": "core", "hu": "Indítás", "files": ["app/main.js"], "needs": ["storage"] }
+  ]
+}

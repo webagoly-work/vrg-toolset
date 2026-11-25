@@ -3196,7 +3196,7 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
 <script type="application/json" id="kpTools">[{"n":1,"key":"1","name":"Varler Planner","path":"../vrg-toolset\\Planner\\projects\\varler-planner\\dist\\varler_planner.html","dir":".."},{"n":2,"key":"2","name":"Panel anyagár kalkulátor","path":"../vrg-toolset\\Calculator\\panel_anyagar_kalkulator.html","dir":".."},{"n":3,"key":"3","name":"Általános kalkulátor","path":"../vrg-toolset\\Calculator\\Altalanos_Villanyszerelui_Kalkulator.html","dir":".."},{"n":4,"key":"4","name":"VRG MindMap","path":"../vrg-toolset\\MindMap\\vrg_mindmap.html","dir":".."},{"n":5,"key":"5","name":"Valena választó","path":"../vrg-toolset\\Toolbox\\valena-life-szerelvenytervezo.html","dir":".."},{"n":6,"key":"6","name":"Készlet / Inventory","path":"../vrg-toolset\\Inventory\\dist\\vrg-inventory.html","dir":".."},{"n":7,"key":"7","name":"Toolbox","path":"../vrg-toolset\\toolbox.html","dir":".."},{"n":8,"key":"8","name":"LED árkalkulátor","path":"../vrg-toolset\\Calculator\\led_arkalkulator.html","dir":".."},{"n":9,"key":"9","name":"VRG BuildTree","path":"../vrg-toolset\\Modder\\vrg-buildtree.html","dir":".."},{"n":10,"key":"0","name":"VRG Vendor","path":"../vrg-toolset\\vrg-vendor.html","dir":".."},{"n":11,"key":"T","name":"Solomon Gömb","path":"../vrg-toolset\\Solomon\\dist\\vrg-solomon.html","dir":".."},{"n":12,"key":"B","name":"VRG UI Kit galéria","path":"../vrg-toolset\\shared\\vrg-ui-kit\\gallery.html","dir":".."},{"n":13,"key":"K","name":"VRG Kódváros","path":"../vrg-toolset\\CodeCity\\dist\\vrg-codecity.html","dir":".."},{"n":14,"key":"M","name":"VRG Térkép","path":"../vrg-toolset\\Map\\vrg-terkep.html","dir":"..","url":"http://localhost:8802/"}]</script>
 <script>
 "use strict";
-const KP_BUILD = "5886182d1e33";
+const KP_BUILD = "4d80aa1aa561";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -3470,6 +3470,10 @@ const KP_LOGIN = {
   ghToken: 'https://github.com/settings/personal-access-tokens/new'
 };
 const KP_FILE_BANNER = 'Csak linkek mód — a belépés nem marad meg, és a Kapu nem indít programot. Teljes mód: Hub\\VRG Kapu.cmd (START.cmd: H).';
+// T9 of the VRG Böngésző (BRW-Q05 = A): public links for anyone, no sign-in. The page sits next to the Kapu (00_START\linkek.html,
+// made by the VRG Böngésző's Megosztás page); the Kapu segéd serves the same file. Nothing else of the Kapu opens to a guest.
+const KP_GUEST_PAGE = 'linkek.html';
+const KP_GUEST_NOTE = 'Nyilvános linkek, belépés nélkül (a Kapu melletti linkek.html)';
 const KP_TOKEN_NOTE = 'A token csak ebben a böngészőben marad. Ne küldd el senkinek, ne tedd fájlba.';
 const KP_NO_COMP = 'Ehhez a Kapu segéd kell: indítsd a Kaput a Hub\\VRG Kapu.cmd-vel (START.cmd: H).';
 const KP_WIZARD = [
@@ -3563,7 +3567,8 @@ function kpLoginCard() {
     kpEl('p', {}, 'A Kapu a GitHub-fiókoddal azonosít, és az aláírt engedélyezett listán nézi meg, hogy neked nyit-e. Jelszót nem tárol.'),
     kpEl('div', { class: 'kp-row' }, field, go),
     msg,
-    kpEl('div', { class: 'kp-row' }, kpBtn('Token oldal megnyitása (új ablak)', () => kpOpen(KP_LOGIN.ghToken))),
+    kpEl('div', { class: 'kp-row' }, kpBtn('Token oldal megnyitása (új ablak)', () => kpOpen(KP_LOGIN.ghToken)),
+      kpBtn('Linkek (vendég)', () => kpOpen(KP_GUEST_PAGE), null, KP_GUEST_NOTE)),
     kpEl('details', { class: 'kp-wiz' }, kpEl('summary', {}, 'Hogyan kapok tokent? (5 lépés)'),
       kpEl('ol', {}, ...KP_WIZARD.map(([a, b]) => kpEl('li', {}, a, kpEl('div', { class: 'kp-muted' }, b))))),
     kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
