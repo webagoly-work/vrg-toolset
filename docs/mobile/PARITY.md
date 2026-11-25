@@ -41,7 +41,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 20 | `files` | Fájlok | `Dashboard/page/panes/files.js`, `shell/lib/fsview.js` | M12 board only | pc: read-only browse of the work roots (Repó, VRG Full, Közös; D-17), relay `--files`; BETA | **M23** |
 | 21 | `archive` | Archívum | `Archive/vrg-archive.html` | M18 Archívum | native (exists) | M18 |
 | 22 | `mindmap` | VRG MindMap | `MindMap/vrg_mindmap.html` | — | webapp | **M21** |
-| 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: the phone's browser (Custom Tab); Kommand opens URLs | M19 |
+| 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: M68 Böngésző, a confined WebView by the Asztal's web contract (http / https only, no bridge, permissions denied, certificate errors never overridden); the PC's engines and !bangs, Tiszta link, bookmarks and history in `vrg.web-links` v1 (export / import with the PC); the Kommand's URLs open there | M68 |
 | 24 | `mail` | Posta | `Dashboard/page/panes/mail.js`, `shell/lib/gmail.js` | — | no (decided in M23): the PC's mail rides its own Gmail OAuth on the PC; the phone has its own mail app, opened by intent | M23 |
 | 25 | `search` | Belső keresés | `Dashboard/page/panes/search.js`, `shell/lib/innersearch.js` | — | no for now (a relay search over the PC's index is a Later item of M23) | Later |
 | 26 | `feed` | Hírfolyam | `Dashboard/page/panes/feed.js` | — | no (D-18): its presets run inside the Desktop on the PC, with its cache; mail is no for the same kind of reason | M23 |
@@ -57,6 +57,9 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 36 | `sketcher` | VRG Sketcher | `Sketcher/dist/vrg-sketcher.html` (START P → S) | M24 Vázlat … M31 | native: the phone captures the survey (`feat:sketch`); the Desktop page reviews and completes it | M24–M31 |
 | 37 | `rajztar` | Rajztár Stúdió | `shared/rajztar/studio.html` (START P → J) | — | none for now: a PC editor for document packages; a later WP | — |
 | 38 | `konnektom-labor` | Konnektóm-labor | a Rétegverem page (START R → K) | M17 Rétegverem | native via M17, as the other Stack pages (Later: add it to `stack-pages`); pc via M8 meanwhile | M17 |
+| 39 | `sketcher.house3d` | Ház 3D feldolgozás | `Sketcher/tools/house3d.js` (START P → 3), the Sketcher's Helyszín viewer | M24 Kamera → Épület kívülről (⟳ Sorozat) | native: the phone takes the walk-round photos in the Sketcher (`feat:sketch`); COLMAP runs on the PC (M63: "on the phone, nothing new") | M63 |
+| 40 | `browser` | VRG Böngésző | `Browser/dist/vrg-bongeszo.html` (START W → B, server :8812) | — | webapp: the same app in Alkalmazások; its web pages open in the phone's Böngésző (M68), the server modules (Olvasó letöltés, dokumentumok, javaslatok) switch off; saved reading-list text reads offline; bookmarks and history move to and from the Asztal as a `vrg.web-links` v1 file (the phone's M68 Böngésző keeps its own file in the same format); Munkák and Alkatrészek work offline (the parts catalogue is baked in; a datasheet saved on the PC reads here once imported), the export into a job folder is the PC's; Kutatás notebooks work on the phone (quotes from saved texts), saving a note and Figyelés are the PC's (a watch's change rings the phone through M10) | M21 |
+| 41 | `weather` | VRG Időjárás | `Weather/` (server :8808) | M44 Időjárás | native: the phone runs its own small version (MET Norway, DWD MOSMIX, MeteoAlarm) with the PC's field rules; PC nézet through M8 | M44 |
 
 ## 2. Window kinds (`KINDS`, `Dashboard/shell/lib/sheets.js`)
 
@@ -66,7 +69,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | `empty` | `panes/empty.js` (the picker) | native: long-press a free cell → the Kommand list | M20 |
 | `files` | `panes/files.js` + `viewer.js` | pc, read-only: `feat:pcwin` (text, image, copy to the board) | M23 |
 | `term` | `panes/term.js` | **no**: a terminal is dev level | — |
-| `web` | `panes/web.js` | native: a confined WebView or the phone's browser | M20 |
+| `web` | `panes/web.js` | native: M68 Böngésző (a confined WebView); the phone's browser on request (☰ → ↗) | M68 |
 | `mail` | `panes/mail.js` | no (see unit 24) | M23 |
 | `stack` | `panes/stack.js` | native: M17 Rétegverem | M17 |
 | `chat` | `panes/chat.js` (Claude chat on the PC) | rc: the Claude app, opened on the PC's Remote Control session | M22 |

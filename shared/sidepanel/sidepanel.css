@@ -1,0 +1,97 @@
+/* sidepanel.css — VRG Oldalpanel (shared/sidepanel/sidepanel.js). The Mélyvíz tokens of shared/melyviz.css, with fallbacks, so it
+   also looks right in an app that has not loaded melyviz.css. The host becomes a flex row: the panel takes its width, the rest of
+   the host's children share what is left (give the main child flex: 1 1 auto; min-width: 0). Collapsed = a 40 px icon rail. */
+.vrg-sp-host { display: flex; flex-direction: row; align-items: stretch; min-height: 0; position: relative; }
+.vrg-sp-host > :not(.vrg-sp) { flex: 1 1 auto; min-width: 0; }
+
+.vrg-sp {
+  --sp-bg: var(--mv-panel-solid, #121c24); --sp-raised: var(--mv-raised, #17232c); --sp-line: var(--mv-line, rgba(232, 240, 246, .15));
+  --sp-text: var(--mv-text, #e8f0f6); --sp-dim: var(--mv-dim, #a6afb7); --sp-faint: var(--mv-faint, #646d74);
+  --sp-accent: var(--mv-accent, #93d3e6); --sp-accent-soft: var(--mv-accent-soft, rgba(147, 211, 230, .14));
+  --sp-warm: var(--mv-warm, #e8a873); --sp-ok: var(--mv-ok, #7fd1a1); --sp-warn: var(--mv-warn, #e8c873); --sp-crit: var(--mv-crit, #ec7f73);
+  --sp-sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --sp-mono: var(--mv-mono, Consolas, ui-monospace, monospace);
+  --sp-voice: var(--mv-voice, Bahnschrift, "Arial Narrow", sans-serif);
+  flex: 0 0 auto; position: relative; box-sizing: border-box; height: 100%; min-height: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--sp-bg); color: var(--sp-text); font: 12.5px/1.35 var(--sp-sans); color-scheme: dark;
+  border-left: 1px solid var(--sp-line);
+}
+.vrg-sp[data-side="left"] { border-left: 0; border-right: 1px solid var(--sp-line); }
+.vrg-sp :is(button, select, input, textarea) { font: inherit; color: inherit; }
+.vrg-sp button { background: none; border: 1px solid var(--sp-line); border-radius: 0; color: var(--sp-dim); cursor: pointer; padding: 5px 8px; }
+.vrg-sp button:hover:not(:disabled) { color: var(--sp-text); background: var(--sp-raised); }
+.vrg-sp button:focus-visible, .vrg-sp :is(select, input, textarea):focus-visible { outline: 1px solid var(--sp-accent); outline-offset: -1px; }
+.vrg-sp button:disabled { color: var(--sp-faint); cursor: default; }
+.vrg-sp [hidden] { display: none !important; }
+
+/* head: collapse · title · mode */
+.vrg-sp-head { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--sp-line); background: var(--mv-bg, #0a141c); }
+.vrg-sp-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 11px/1 var(--sp-voice); letter-spacing: .14em; text-transform: uppercase; color: var(--sp-warm); }
+.vrg-sp-collapse { padding: 3px 7px !important; }
+.vrg-sp-mode { padding: 3px 8px !important; font-size: 11px !important; }
+.vrg-sp-mode[aria-pressed="true"] { color: var(--sp-accent); border-color: var(--sp-accent); }
+.vrg-sp[data-side="right"] .vrg-sp-head { flex-direction: row; }
+
+/* body: the sections */
+.vrg-sp-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+.vrg-sp-mod { border: 1px solid var(--sp-line); background: var(--sp-raised); }
+.vrg-sp-modhead { display: flex !important; align-items: center; gap: 7px; width: 100%; border: 0 !important; padding: 6px 8px !important; text-align: left; }
+.vrg-sp-modtitle { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 10.5px/1 var(--sp-voice); letter-spacing: .12em; text-transform: uppercase; color: var(--sp-dim); }
+.vrg-sp-mod[data-level="detailed"] .vrg-sp-modtitle { color: var(--sp-accent); }
+.vrg-sp-chev { color: var(--sp-faint); transition: transform .12s; }
+.vrg-sp-mod:not([data-open="1"]) .vrg-sp-chev { transform: rotate(-90deg); }
+.vrg-sp-icon { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; font: 600 12px/1 var(--sp-mono); color: var(--sp-accent); }
+.vrg-sp-badge { font: 600 10px/1 var(--sp-mono); color: var(--sp-warm); }
+.vrg-sp-inner { padding: 2px 8px 8px; border-top: 1px solid var(--sp-line); }
+.vrg-sp-ctls { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.vrg-sp-ctl { font-size: 11px; padding: 3px 7px; }
+.vrg-sp-toggle[aria-pressed="true"] { color: var(--sp-accent); border-color: var(--sp-accent); background: var(--sp-accent-soft); }
+.vrg-sp :is(.vrg-sp-select, .vrg-sp-slider) { display: inline-flex; align-items: center; gap: 5px; color: var(--sp-dim); border: 0; padding: 0; }
+.vrg-sp select { background: var(--mv-bg, #0a141c); border: 1px solid var(--sp-line); padding: 2px 4px; }
+.vrg-sp input[type="range"] { accent-color: var(--sp-accent); width: 90px; }
+.vrg-sp output { font: 10.5px var(--sp-mono); color: var(--sp-faint); min-width: 2.5em; }
+.vrg-sp-content { min-width: 0; }
+.vrg-sp-err { color: var(--sp-crit); margin: 4px 0; }
+
+/* links (quick access) */
+.vrg-sp-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; margin-top: 6px; }
+.vrg-sp-links[data-layout="list"] { grid-template-columns: 1fr; }
+.vrg-sp-link { display: flex !important; align-items: center; gap: 6px; text-align: left; padding: 6px 7px !important; color: var(--sp-text) !important; background: rgba(10, 20, 28, .35) !important; }
+.vrg-sp-link:hover:not(:disabled) { border-color: var(--sp-accent); background: var(--sp-accent-soft) !important; }
+.vrg-sp-linklabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+
+/* toggles */
+.vrg-sp-toggles { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.vrg-sp-switch { display: flex !important; align-items: center; gap: 8px; border: 0 !important; padding: 4px 2px !important; text-align: left; color: var(--sp-text) !important; }
+.vrg-sp-knob { position: relative; flex: 0 0 26px; height: 13px; border: 1px solid var(--sp-line); background: var(--mv-bg, #0a141c); }
+.vrg-sp-knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 7px; height: 7px; background: var(--sp-faint); transition: left .12s; }
+.vrg-sp-switch[aria-checked="true"] .vrg-sp-knob { border-color: var(--sp-accent); }
+.vrg-sp-switch[aria-checked="true"] .vrg-sp-knob::after { left: 15px; background: var(--sp-accent); }
+
+/* notes, status */
+.vrg-sp-notes { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; resize: vertical; min-height: 60px;
+  background: var(--mv-bg, #0a141c); border: 1px solid var(--sp-line); padding: 5px 7px; font: 12px/1.4 var(--sp-sans); }
+.vrg-sp-status { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 6px 0 0; }
+.vrg-sp-status dt { color: var(--sp-faint); font-size: 11px; }
+.vrg-sp-status dd { margin: 0; font: 11.5px var(--sp-mono); color: var(--sp-text); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vrg-sp-status dd[data-tone="ok"] { color: var(--sp-ok); }
+.vrg-sp-status dd[data-tone="warn"] { color: var(--sp-warn); }
+.vrg-sp-status dd[data-tone="crit"] { color: var(--sp-crit); }
+.vrg-sp-status dd[data-tone="dim"] { color: var(--sp-faint); }
+
+/* the rail: icons only, shown while collapsed */
+.vrg-sp-rail { display: none; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; overflow: auto; }
+.vrg-sp-railbtn { position: relative; width: 30px; height: 30px; padding: 0 !important; display: inline-flex !important; align-items: center; justify-content: center; }
+.vrg-sp-railbtn .vrg-sp-badge { position: absolute; top: 1px; right: 2px; font-size: 9px; }
+.vrg-sp[data-collapsed="1"] .vrg-sp-rail { display: flex; }
+.vrg-sp[data-collapsed="1"] :is(.vrg-sp-body, .vrg-sp-title, .vrg-sp-mode, .vrg-sp-grip) { display: none; }
+.vrg-sp[data-collapsed="1"] .vrg-sp-head { justify-content: center; padding: 6px 0; }
+
+/* the resize grip on the inner edge */
+.vrg-sp-grip { position: absolute; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 2; }
+.vrg-sp[data-side="right"] .vrg-sp-grip { left: 0; }
+.vrg-sp[data-side="left"] .vrg-sp-grip { right: 0; }
+.vrg-sp-grip:hover, .vrg-sp[data-drag="1"] .vrg-sp-grip { background: var(--sp-accent-soft); }
+.vrg-sp[data-drag="1"] { user-select: none; }

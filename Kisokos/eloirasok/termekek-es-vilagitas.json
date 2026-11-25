@@ -1,0 +1,144 @@
+{
+  "about": "VRG Kisokos · Előírások · termékszabványok és világítástechnika. Egy kártya = egy szabvány vagy szabványcsalád SAJÁT összefoglalóval és hivatkozással; a szöveg szerzői jogvédett. A számok tájékoztatók: munka előtt a hatályos kiadással kell egyeztetni. Vázlat: reviewed = null.",
+  "kind": "eloiras",
+  "added": "2026-11-22",
+  "cards": [
+    { "id": "msz-en-60598", "title": "MSZ EN 60598 · Lámpatestek", "aka": ["EN 60598", "lámpatest-szabvány", "60598-1 és a 2-es részek"],
+      "place": { "core": "6A" }, "source": { "kind": "szabványcsalád", "ref": "MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások)", "from": "MSZT szabványbolt" },
+      "scope": "A lámpatestek biztonsági termékszabványa: az 1. rész az általános követelmények (szerkezet, érintésvédelem, melegedés, jelölés), a 2-es részek egy-egy lámpatestfajta kiegészítő szabályai.",
+      "points": [
+        "Fontosabb 2-es részek: 2-1 helyhez kötött általános célú; 2-2 süllyesztett; 2-3 közúti világítás; 2-4 hordozható általános célú; 2-11 akváriumlámpák; 2-12 aljzatba dugható éjszakai fények; 2-13 talajba süllyesztett; 2-17 színpadi és stúdió; 2-20 fényfüzérek; 2-21 fényszalagok (LED-szalag is); 2-22 biztonsági világítás.",
+        "A lámpatest jelölése mondja meg az érintésvédelmi osztályt (I., II., III.), az IP-védettséget, a legnagyobb fényforrás-teljesítményt, a megvilágított tárgytól tartandó legkisebb távolságot, és hogy a test hőszigeteléssel takarható-e.",
+        "A villanyszerelő oldaláról: a jelölésnek megfelelő helyre és módon kell beépíteni (pl. süllyesztett lámpatestet hőszigetelés alá csak arra minősítve)."
+      ],
+      "values": ["A jelölések és a távolságok lámpatestenként a termék címkéjén és adatlapján."],
+      "applies": "Minden lámpatest és fényszalag.",
+      "related": ["msz-en-61347", "msz-en-62471", "msz-en-60598-2-22", "msz-en-60570"],
+      "terms": { "hu": ["MSZ EN 60598 lámpatest", "lámpatest jelölés hőszigetelés"], "en": ["EN 60598 luminaires", "luminaire marking"], "de": ["EN 60598 Leuchten", "Leuchtenkennzeichnung"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-60570", "title": "MSZ EN 60570 · Világítási sínrendszerek", "aka": ["EN 60570", "áramsín szabvány"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 60570 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei.",
+      "points": ["A sín, a betápláló, a csatlakozók és az adapterek egy rendszert alkotnak: csak az egy rendszerbe tartozó elemek használhatók együtt.", "A sín terhelhetőségét (A) a jelölés adja."],
+      "values": ["A terhelhetőség és a megengedett adapterterhelés a gyártói adatlapon."],
+      "applies": "230 V-os egy- és háromáramkörös sínrendszerek.",
+      "related": ["msz-en-60598"],
+      "terms": { "hu": ["áramsín szabvány"], "en": ["EN 60570 lighting track"], "de": ["EN 60570 Stromschienensysteme"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-61347", "title": "MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek", "aka": ["LED tápegység szabvány", "LED meghajtó", "LED fénycső szabvány"],
+      "place": { "core": "6A" }, "source": { "kind": "szabványok", "ref": "MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek)", "from": "MSZT szabványbolt" },
+      "scope": "A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai.",
+      "points": [
+        "A meghajtó jelölése: kimenő feszültség vagy áram, teljesítmény, SELV-e, beépíthető vagy önálló.",
+        "A LED-cső szabványa azt célozza, hogy a régi armatúrába tett cső ne okozzon áramütést a csere közben; a csőnek a meglévő armatúra kapcsolásához kell illenie.",
+        "Az armatúra átalakítása (az előtét kiiktatása) után az átalakító felel a megfelelőségért: az armatúrát jelölni kell."
+      ],
+      "values": ["A tápegység teljesítményét jellemzően 20–30 % tartalékkal választják a terheléshez (gyakorlati szabály, nem szabványérték)."],
+      "applies": "LED-szalagok tápegységei, lámpatest-meghajtók, vészvilágítási modulok, LED-fénycsövek.",
+      "related": ["msz-en-60598"],
+      "terms": { "hu": ["LED tápegység SELV", "LED fénycső T8 szabvány"], "en": ["LED driver EN 61347", "LED tube EN 62776"], "de": ["LED Betriebsgerät EN 61347", "LED Röhre EN 62776"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-12464-1", "title": "MSZ EN 12464-1 · Munkahelyek világítása (beltér)", "aka": ["EN 12464-1", "munkahelyi világítás", "500 lux iroda"],
+      "place": { "term": "5A1", "overlap": 0.5 }, "source": { "kind": "szabvány", "ref": "MSZ EN 12464-1 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Beltéri munkahelyek világítási követelményei tevékenységenként: megvilágítás, egyenletesség, káprázáskorlátozás, színvisszaadás.",
+      "points": [
+        "Minden tevékenységhez táblázat adja a karbantartott megvilágítást (Em), az egyenletességet (Uo), a káprázási határt (UGR) és a színvisszaadást (Ra).",
+        "A követelmény a munkafelületre és a környezetére vonatkozik; a terv fotometriai számítással igazolja.",
+        "Lakásra nem kötelező, de az otthoni dolgozószoba tervezésénél jó viszonyítás."
+      ],
+      "values": [
+        "Irodai írás, olvasás, adatfeldolgozás: kb. 500 lx, UGR ≤ 19, Ra ≥ 80.",
+        "Folyosók, közlekedők: kb. 100 lx.",
+        "Precíz műhelymunka: 750–1000 lx vagy több (tevékenység szerint)."
+      ],
+      "applies": "Irodák, iskolák, üzletek, műhelyek, raktárak, egészségügy és minden beltéri munkahely.",
+      "related": ["msz-en-60598", "msz-en-62471"],
+      "terms": { "hu": ["MSZ EN 12464-1 megvilágítás", "UGR 19 iroda 500 lux"], "en": ["EN 12464-1 lighting of work places"], "de": ["DIN EN 12464-1 Beleuchtung Arbeitsstätten"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-13201", "title": "MSZ EN 13201 · Közúti világítás", "aka": ["EN 13201", "útvilágítás szabvány"],
+      "place": { "term": "5A2", "overlap": 0.2 }, "source": { "kind": "szabványsorozat", "ref": "MSZ EN 13201 (a részek hatályos kiadásai)", "from": "MSZT szabványbolt" },
+      "scope": "Utak, járdák, terek világítási osztályai és a hozzájuk tartozó követelmények, számítási és mérési módszerek.",
+      "points": [
+        "Világítási osztályok: M (gépjárműforgalom, fénysűrűség alapján), C (konfliktuszónák, csomópontok), P (gyalogos és lassú forgalom, lakóutak).",
+        "Az osztályt a forgalmi helyzet és a környezet alapján választják ki; lakóparkok belső útjaihoz jellemzően P osztály.",
+        "A fény ne jusson az égre és a lakások ablakába (fényszennyezés)."
+      ],
+      "values": ["Az osztályonkénti megvilágítási és fénysűrűségi értékeket a szabvány táblázatai adják."],
+      "applies": "Közvilágítás, lakópark- és telephelyi utak, parkolók.",
+      "related": ["msz-hd-60364-7-714", "msz-en-60598"],
+      "terms": { "hu": ["MSZ EN 13201 közvilágítás osztály"], "en": ["EN 13201 road lighting classes"], "de": ["DIN EN 13201 Straßenbeleuchtung"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-62471", "title": "MSZ EN 62471 · Fotobiológiai biztonság", "aka": ["EN 62471", "kékfény-veszély", "kockázati csoport RG"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 62471 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A lámpák és lámpatestek sugárzásának hatása a szemre és a bőrre (UV, kékfény, infravörös), és a kockázati csoportok.",
+      "points": [
+        "Kockázati csoportok: RG0 (mentes), RG1 (kis), RG2 (közepes: nem szabad hosszan belenézni), RG3 (nagy: rövid ideig is veszélyes).",
+        "Az általános világítási LED-ek többsége RG0 vagy RG1; a nagy fényerejű, keskeny nyalábú fényvetők és a speciális lámpák (UV-C) magasabb csoportban lehetnek.",
+        "A csoport jelölése és a figyelmeztetés a terméken: a szerelés helyét ehhez kell igazítani."
+      ],
+      "values": ["A csoportba sorolás a termék adatlapján."],
+      "applies": "Minden fényforrás és lámpatest, kiemelten a fényvetők, a színpadi és az UV-lámpák.",
+      "related": ["msz-en-60598"],
+      "terms": { "hu": ["fotobiológiai biztonság RG1", "kékfény veszély LED"], "en": ["EN 62471 photobiological safety", "blue light hazard"], "de": ["EN 62471 photobiologische Sicherheit", "Blaulichtgefährdung"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-60079", "title": "MSZ EN 60079 és ATEX · Robbanásveszélyes terek", "aka": ["Ex szabvány", "ATEX", "robbanásvédelem"],
+      "place": { "term": "5A1", "overlap": 0.15 }, "source": { "kind": "szabványsorozat + uniós irányelvek", "ref": "MSZ EN 60079 sorozat; 2014/34/EU (termékek) és 1999/92/EK (munkahelyek) irányelv és a hazai átültetésük", "from": "MSZT szabványbolt; EUR-Lex" },
+      "scope": "Gáz-, gőz- és porrobbanás-veszélyes terek zónabesorolása, és az oda szánt villamos berendezések, köztük a lámpatestek követelményei.",
+      "points": [
+        "Zónák gázra: 0 (folyamatosan robbanóképes), 1 (normál üzemben előfordul), 2 (ritkán, rövid ideig). Porra: 20, 21, 22 ugyanígy.",
+        "A berendezés Ex-jelölése megmondja, mely zónába, gázcsoportba és hőmérsékleti osztályba való.",
+        "A zónabesorolás a robbanásvédelmi dokumentum része; tervezés és szerelés csak erre jogosult szakemberrel."
+      ],
+      "values": ["Zóna, gázcsoport, hőmérsékleti osztály: a robbanásvédelmi dokumentum és a termék Ex-jelölése szerint."],
+      "applies": "Benzinkutak, festőüzemek, akkumulátortöltők, malmok, vegyi raktárak, gázfogadók.",
+      "related": ["msz-hd-60364", "msz-en-60598"],
+      "terms": { "hu": ["Ex zóna 1 2", "ATEX lámpatest"], "en": ["ATEX zone 1 2", "Ex equipment marking"], "de": ["Ex Zone 1 2", "ATEX Kennzeichnung"] },
+      "shop": "MSZT szabványbolt; az irányelvek az EUR-Lexen ingyenesek." },
+
+    { "id": "msz-en-60335", "title": "MSZ EN 60335 · Háztartási készülékek", "aka": ["EN 60335", "háztartási gép biztonság"],
+      "place": { "term": "3A2", "overlap": 0.2 }, "source": { "kind": "szabványsorozat", "ref": "MSZ EN 60335-1 és a 60335-2-x részek (a hatályos kiadások)", "from": "MSZT szabványbolt" },
+      "scope": "A háztartási és hasonló villamos készülékek biztonsága (sütő, hűtő, mosógép, bojler, szauna-kályha, medenceszivattyú …); a beépített világításuk is a készülék része.",
+      "points": [
+        "A villanyszerelő oldaláról: a készülék bekötési módja (fix bekötés vagy aljzat), a szükséges áramkör és védelem a telepítési útmutatóban.",
+        "A beépített lámpa cseréje a készülék gyártójának alkatrésze szerint."
+      ],
+      "values": ["Az áramköri követelmény (keresztmetszet, kismegszakító, áram-védőkapcsoló) a készülék telepítési útmutatójában."],
+      "applies": "Háztartási gépek bekötése és javítása.",
+      "related": ["msz-hd-60364"],
+      "terms": { "hu": ["MSZ EN 60335 háztartási készülék"], "en": ["EN 60335 household appliances"], "de": ["EN 60335 Haushaltsgeräte"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-60204-1", "title": "MSZ EN 60204-1 · Gépek villamos szerkezetei", "aka": ["EN 60204-1", "gépek villamos berendezése", "jelzőfény színek"],
+      "place": { "term": "5A1", "overlap": 0.1 }, "source": { "kind": "szabvány", "ref": "MSZ EN 60204-1 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Gépek villamos berendezésének általános követelményei: vészleállítás, vezérlés, kezelőszervek és jelzőfények színei.",
+      "points": [
+        "Jelzőfények színei: piros = vészhelyzet, sürgős beavatkozás; sárga = rendellenes állapot, figyelmeztetés; zöld = normál üzem; kék = kötelező tennivaló; fehér = semleges.",
+        "A gépre szerelt jelzőtorony színeit ehhez kell igazítani."
+      ],
+      "values": ["Színek és jelentésük a szabvány táblázata szerint."],
+      "applies": "Gépek, gépsorok, kapuautomatikák vezérlése és jelzései.",
+      "related": ["msz-hd-60364"],
+      "terms": { "hu": ["MSZ EN 60204-1 jelzőfény színek"], "en": ["EN 60204-1 indicator light colours"], "de": ["EN 60204-1 Meldeleuchten Farben"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "szerelvenyek", "title": "MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok", "aka": ["kapcsoló szabvány", "aljzat szabvány", "szerelvények"],
+      "place": { "core": "6A" }, "source": { "kind": "szabványok", "ref": "MSZ EN 60669 (háztartási kapcsolók); MSZ HD 60884 (háztartási dugaszolók és aljzatok)", "from": "MSZT szabványbolt" },
+      "scope": "A fali kapcsolók (mechanikus és elektronikus, dimmerek is) és a dugaszolóaljzatok termékkövetelményei.",
+      "points": [
+        "A kapcsoló jelölése adja a névleges áramot és a terhelés fajtáját; LED-terheléshez a gyártó megadja a kapcsolható LED-teljesítményt (a bekapcsolási áramlökés miatt).",
+        "Dimmernél a terhelés típusa (fázishasításos élvezérelt vagy fázisvégi, LED-kompatibilitás) a jelölésen.",
+        "Kapcsolt aljzatnál a jelölés és a háromerű bekötés a telepítés része."
+      ],
+      "values": ["Névleges áram és LED-terhelhetőség a termék adatlapján."],
+      "applies": "Minden fali kapcsoló, dimmer és dugaszolóaljzat.",
+      "related": ["msz-hd-60364"],
+      "terms": { "hu": ["MSZ EN 60669 kapcsoló", "LED dimmer kompatibilitás"], "en": ["EN 60669 switches", "LED dimmer compatibility"], "de": ["EN 60669 Schalter", "LED Dimmer kompatibel"] },
+      "shop": "MSZT szabványbolt." }
+  ]
+}

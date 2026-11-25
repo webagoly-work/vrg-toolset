@@ -1872,8 +1872,10 @@ if (typeof module !== 'undefined') module.exports = SCModel;
     es.addEventListener('ready', function () { if (M.S.t0 == null) goLive(); });
     es.onerror = function () { $('#srcState').textContent = '…'; };
   }
+  /* #s=<session uuid> (the VRG Asztal's Munkamenetek): open that session and stop following the newest */
+  var wantSession = (/[#&]s=([0-9a-f-]{36})\b/.exec(location.hash) || [])[1] || '';
   function loadSessions(autoPick) {
-    return fetch('api/sessions').then(function (r) { return r.json(); }).then(function (j) {
+    return fetch('api/sessions' + (wantSession ? '?s=' + wantSession : '')).then(function (r) { return r.json(); }).then(function (j) {
       sessionsList = j.sessions || [];
       var sel = $('#sessions');
       sel.innerHTML = sessionsList.map(function (s) {
@@ -1881,6 +1883,11 @@ if (typeof module !== 'undefined') module.exports = SCModel;
         return '<option value="' + esc(s.file) + '">' + esc(when + ' · ' + (s.account ? s.account + ' · ' : '') + s.project + ' · ' + red(s.title || s.id.slice(0, 8))) + '</option>';
       }).join('');
       if (curSession) sel.value = curSession;
+      if (wantSession) {
+        var hit = sessionsList.filter(function (s) { return s.id === wantSession; })[0];
+        wantSession = '';
+        if (hit) { $('#followNewest').checked = false; sel.value = hit.file; connect(hit.file); return; }
+      }
       if (autoPick && sessionsList.length && sessionsList[0].file !== curSession) { sel.value = sessionsList[0].file; connect(sessionsList[0].file); }
     });
   }

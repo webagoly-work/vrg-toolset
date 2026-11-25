@@ -11,6 +11,7 @@ const path = require('path');
 
 const PROFILES = { A: 'claude-a', B: 'claude-b' };
 const MAX_PROMPT = 4000;
+const MAX_DRESSED = 12000;                                    // the Vezérlő's dressed prompt (WP-52): the user's text + the Előszűrő's harness
 const SESSION_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 
 // the exe override of the test binary: { exe, lead } or null
@@ -35,10 +36,11 @@ function createClaudeTerm({ pty, emit = () => {}, env = process.env, expand = s 
     pty.on('exit', m => { replay.delete(m.term); });
   }
 
-  function open({ account, cwd, firstPrompt, extraArgs } = {}) {
+  function open({ account, cwd, firstPrompt, extraArgs, deco, maxPrompt } = {}) {
     const acc = account === 'B' ? 'B' : 'A';
     const prof = PROFILES[acc];
-    if (firstPrompt !== undefined && (typeof firstPrompt !== 'string' || !firstPrompt || firstPrompt.length > MAX_PROMPT))
+    const limit = Number.isInteger(maxPrompt) && maxPrompt > MAX_PROMPT && maxPrompt <= MAX_DRESSED ? maxPrompt : MAX_PROMPT;   // WP-52: a dressed prompt is longer
+    if (firstPrompt !== undefined && (typeof firstPrompt !== 'string' || !firstPrompt || firstPrompt.length > limit))
       return { ok: false, err: 'bad-request', hu: 'Érvénytelen kezdő kérés.' };
     const o = binOverride(env, expand);
     const args = [...(o ? o.lead : []), ...(Array.isArray(extraArgs) ? extraArgs.filter(x => typeof x === 'string') : [])];
@@ -46,7 +48,7 @@ function createClaudeTerm({ pty, emit = () => {}, env = process.env, expand = s 
     const r = pty.open(prof, cwd, { args });
     if (!r || !r.term) { log('claudeterm', 'refused', r && r.err); return r || { ok: false, err: 'error', hu: 'A terminál nem indult el.' }; }
     replay.set(r.term, '');
-    emit('layout', 'open', { kind: 'term', term: r.term, prof });
+    emit('layout', 'open', { kind: 'term', term: r.term, prof, ...(deco && typeof deco === 'object' ? { deco } : {}) });   // deco: WP-51 board labels
     return { term: r.term, title: r.title, prof, account: acc };
   }
 

@@ -14,6 +14,8 @@
     ['note', 'Jegyzet', 'Note', 'note'],
     ['git', 'Git', 'Git', 'git'],
     ['feed', 'Hírek', 'Feeds', 'feed'],
+    ['sessions', 'Munkamenetek', 'Claude sessions', 'sessions'],
+    ['controller', 'Vezérlő', 'Prompt controller', 'gate'],
   ];
 
   // frame.js makes one instance per pane (Object.create), so `this` is per pane

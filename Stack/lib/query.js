@@ -15,7 +15,7 @@ const REC = require('./record');
 const { rel } = require('../schema/links');
 const { clip } = require('./common');
 
-const ORDER = 'FIQLAURCGE';
+const ORDER = 'FIQLAURCGKE';
 const tok = s => Math.ceil(String(s).length / 4);
 let cache = null;
 let HEAL = true; // the MCP server turns this off: a server answers, it never builds

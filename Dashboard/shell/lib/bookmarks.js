@@ -16,6 +16,8 @@ const okUrl = u => {
   try { const p = new URL(u).protocol; return p === 'http:' || p === 'https:'; } catch (e) { return false; }
 };
 const cut = (s, n) => String(s == null ? '' : s).slice(0, n);
+// vrg.web-links v1 (the VRG Böngésző's core, shared with the Data Vault's browser-kit): loaded when ops arrive
+const links = () => require(nodePath.join(__dirname, '..', '..', '..', 'Browser', 'src', 'core', 'links.js'));
 
 function createBookmarks({ file, days = () => 90, now = Date.now, fs = nodeFs, timers = true } = {}) {
   if (typeof file !== 'function' && typeof file !== 'string') throw new Error('bookmarks: file missing');
@@ -102,7 +104,31 @@ function createBookmarks({ file, days = () => 90, now = Date.now, fs = nodeFs, t
 
   function flush() { if (dirty) write(); }
 
-  return { visit, history, clear, prune, list, has, toggle, flush };
+  // T1 of the VRG Böngésző (BRW-Q01: this file is the master of vrg.web-links v1). The app and serve.js send ops; the rules
+  // are Browser/src/core/links.js (idempotent, http(s) only, the same limits). snapshot() is the rows as they are.
+  function snapshot() { prune(); const d = load(); return { bookmarks: d.bookmarks.map(b => ({ ...b })), history: d.history.map(h => ({ ...h })) }; }
+  function applyOps(ops) {
+    const L = links();
+    const clean = L.cleanOps(ops);
+    if (!clean.length) return 0;
+    const next = L.apply(load(), clean);
+    data.bookmarks = next.bookmarks; data.history = next.history;
+    prune();
+    write();
+    return clean.length;
+  }
+  // the inbox serve.js (Browser/serve.js) leaves beside web.json while it cannot write the master itself: taken by rename,
+  // applied, deleted. Ops are idempotent, so an inbox read twice changes nothing more.
+  function absorb() {
+    const f = where() + '.inbox', taking = f + '.taking';
+    try { fs.renameSync(f, taking); } catch (e) { return 0; }
+    let n = 0;
+    try { const j = JSON.parse(fs.readFileSync(taking, 'utf8')); n = applyOps(j && j.ops); } catch (e) { /* a broken inbox is dropped */ }
+    try { fs.unlinkSync(taking); } catch (e) {}
+    return n;
+  }
+
+  return { visit, history, clear, prune, list, has, toggle, flush, snapshot, applyOps, absorb };
 }
 
 module.exports = { createBookmarks, MAX_HISTORY, MAX_BOOKMARKS };
