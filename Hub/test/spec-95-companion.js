@@ -50,6 +50,16 @@ function req(method, p, { body, raw, token, host, origin } = {}) {
 const post = (action, body, extra) => req('POST', '/api/' + action, Object.assign({ body, token: srv.token }, extra));
 
 module.exports = [
+  { name: 'GET /linkek.html: the guest page (T9), a static page with a CSP that allows no script', async fn() {
+    await start();
+    const r = await new Promise((resolve, reject) => http.get({ host: '127.0.0.1', port: srv.port, path: '/linkek.html', headers: { Host: '127.0.0.1:' + srv.port } },
+      res => { let s = ''; res.on('data', d => { s += d; }); res.on('end', () => resolve({ status: res.statusCode, csp: res.headers['content-security-policy'], text: s })); }).on('error', reject));
+    assert.strictEqual(r.status, 200);
+    assert.match(r.csp, /default-src 'none'/);
+    assert.ok(!/<script/i.test(r.text), 'no script in the guest page');
+    assert.match(r.text, /Linkgyűjtemény/);
+    assert.ok(!r.text.includes(srv.token), 'the Kapu token never reaches the guest page');
+  } },
   { name: 'GET / with a foreign Host -> 403; with ours -> the page with the token injected', async fn() {
     await start();
     assert.strictEqual((await req('GET', '/', { host: 'evil.test' })).status, 403);

@@ -67,6 +67,13 @@
         { "route": "kutatas", "hu": "Kutatás", "icon": "bulb", "view": "research", "module": "research", "wide": true, "count": "notebooks", "at": 60 },
         { "route": "figyeles", "hu": "Figyelés", "icon": "bell", "view": "watches", "module": "watch", "wide": true, "at": 65 }
       ] },
+    { "id": "share", "kind": "plugin", "hu": "Megosztás", "desc": "Közös listák a OneDrive VRG-Megosztott\\60_Linkek mappájában és a Kapu melletti vendégoldal (00_START\\linkek.html).", "files": ["core/share.js", "app/share.js"], "needs": ["net", "storage"], "hosts": ["127.0.0.1:8812"],
+      "switches": [
+        { "id": "share", "hu": "Megosztás", "desc": "Listák megosztása a közös OneDrive mappában, a társ listáinak betöltése, és a belépés nélküli vendégoldal a Kapu mellé (a helyi szerveren át).", "on": true, "runs": ["desktop", "served"], "api": ["/api/shared", "/api/guest"] }
+      ],
+      "nav": [
+        { "route": "megosztas", "hu": "Megosztás", "short": "Megoszt", "icon": "link", "view": "share", "module": "share", "wide": true, "at": 70 }
+      ] },
     { "id": "app.main", "kind": "core", "hu": "Indítás", "files": ["app/main.js"], "needs": ["storage"] }
   ]
 }

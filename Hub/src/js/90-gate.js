@@ -6,6 +6,10 @@ const KP_LOGIN = {
   ghToken: 'https://github.com/settings/personal-access-tokens/new'
 };
 const KP_FILE_BANNER = 'Csak linkek mód — a belépés nem marad meg, és a Kapu nem indít programot. Teljes mód: Hub\\VRG Kapu.cmd (START.cmd: H).';
+// T9 of the VRG Böngésző (BRW-Q05 = A): public links for anyone, no sign-in. The page sits next to the Kapu (00_START\linkek.html,
+// made by the VRG Böngésző's Megosztás page); the Kapu segéd serves the same file. Nothing else of the Kapu opens to a guest.
+const KP_GUEST_PAGE = 'linkek.html';
+const KP_GUEST_NOTE = 'Nyilvános linkek, belépés nélkül (a Kapu melletti linkek.html)';
 const KP_TOKEN_NOTE = 'A token csak ebben a böngészőben marad. Ne küldd el senkinek, ne tedd fájlba.';
 const KP_NO_COMP = 'Ehhez a Kapu segéd kell: indítsd a Kaput a Hub\\VRG Kapu.cmd-vel (START.cmd: H).';
 const KP_WIZARD = [
@@ -99,7 +103,8 @@ function kpLoginCard() {
     kpEl('p', {}, 'A Kapu a GitHub-fiókoddal azonosít, és az aláírt engedélyezett listán nézi meg, hogy neked nyit-e. Jelszót nem tárol.'),
     kpEl('div', { class: 'kp-row' }, field, go),
     msg,
-    kpEl('div', { class: 'kp-row' }, kpBtn('Token oldal megnyitása (új ablak)', () => kpOpen(KP_LOGIN.ghToken))),
+    kpEl('div', { class: 'kp-row' }, kpBtn('Token oldal megnyitása (új ablak)', () => kpOpen(KP_LOGIN.ghToken)),
+      kpBtn('Linkek (vendég)', () => kpOpen(KP_GUEST_PAGE), null, KP_GUEST_NOTE)),
     kpEl('details', { class: 'kp-wiz' }, kpEl('summary', {}, 'Hogyan kapok tokent? (5 lépés)'),
       kpEl('ol', {}, ...KP_WIZARD.map(([a, b]) => kpEl('li', {}, a, kpEl('div', { class: 'kp-muted' }, b))))),
     kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));

@@ -78,6 +78,9 @@ Both are design work: agree the look with the user first, as numbered A/B/C ques
 - **WP-G1 Vendég (guest) mode.** A "Belépés vendégként" button on the sign-in card: no token, a read-only view (the
   tool list without Megnyitás / Mappa / START, the dashboard read-only once it exists) with a clear "Vendég — csak
   olvasás" badge. To decide: does a guest need any identity, what exactly is visible, does it work in links-only mode.
+  *Decided in part (BRW-Q05 = A, 2026-11-25, `docs/browser/TRAJECTORIES.md` T9):* the sign-in card already has a
+  **Linkek (vendég)** button that opens the static `00_START\linkek.html` (public links made by the VRG Böngésző), in both
+  modes. That is all a guest sees so far; the rest of WP-G1 is still to agree.
 - **WP-S1 Shared folders through the Kapu sign-in.** After sign-in, the person's shared OneDrive folders (the
   `VRG-Megosztott` tree, by role and layer from the allowed list) as cards with Megnyitás: the owner sees all, a member
   their layers, a guest none. Folder paths or links live in the signed list, never tokens.

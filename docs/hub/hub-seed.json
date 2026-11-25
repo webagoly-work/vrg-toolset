@@ -14,6 +14,7 @@
    { "id": "od-big", "path": "30_Nagy_fajlok", "d": "Tervrajzok, renderek, nagy adatcsomagok — ami nem fér a Gitbe.", "dEn": "Blueprints, renders, big data — what does not fit in Git." },
    { "id": "od-vis", "path": "40_Vizualis", "d": "A VRG Visual Base másolata.", "dEn": "A copy of the VRG Visual Base." },
    { "id": "od-res", "path": "50_Kutatas", "d": "Kutatási anyagok, letöltött források (nem publikus).", "dEn": "Research material, downloaded sources (not public)." },
+   { "id": "od-links", "path": "60_Linkek", "d": "Megosztott könyvjelző- és olvasólisták a VRG Böngészőből (vrg.web-links v1; csak a két felhasználó).", "dEn": "Shared bookmark and reading lists from the VRG Böngésző (vrg.web-links v1; the two users only)." },
    { "id": "od-logs", "path": "90_Naplok", "d": "Munkanaplók, ha nem a Gitbe mennek.", "dEn": "Work logs, when they do not go to Git." }
   ]
  },

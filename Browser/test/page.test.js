@@ -275,3 +275,54 @@ test('page: a build without the plugins (build.js --without) still works', { ski
     await ctx.close();
   } finally { await browser.close(); }
 });
+
+// T9: the Megosztás page — a list into a temp "60_Linkek", seen in Közös listák, a guest page into a temp "00_START"
+test('page: T9 — a list shared, seen and loaded back, the guest page written with what stays out', { skip, timeout: 90000 }, async () => {
+  const { createServer } = require('../serve.js');
+  const os = require('os');
+  const PORT = 18823;
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vb-t9-'));
+  fs.mkdirSync(path.join(root, '00_START'));
+  const guard = { check: u => ({ ok: /^https:\/\//.test(u) }) };
+  const { server } = createServer({ port: PORT, guard, sharedDir: root, linksFile: '', jobsDir: '', deskDir: '' });
+  await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  const browser = await chromium.launch();
+  try {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+    await ctx.route(/^http:\/\/127\.0\.0\.1:(?!18823)\d+\//, r => r.abort());
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto('http://127.0.0.1:' + PORT + '/');
+    await page.waitForSelector('.vb-hero');
+    await page.evaluate(() => {
+      const st = VB.app.ctx.st;
+      st.addBookmark({ url: 'https://www.tme.eu/hu/?utm_source=x', title: 'TME', tags: 'napelem', note: 'jó ár' });
+      st.addBookmark({ url: 'http://192.168.1.1/', title: 'Router', tags: 'napelem' });
+      st.addReading({ url: 'https://njt.hu/x', title: 'OTSZ', tags: 'napelem', text: 'Mentett.' });
+    });
+    await page.goto('http://127.0.0.1:' + PORT + '/#/megosztas');
+    await page.waitForSelector('text=Lista megosztása');
+    await page.fill('input[aria-label="A lista neve"]', 'Napelem');
+    await page.click('button:has-text("Megosztás a közös mappába")');
+    await page.waitForSelector('.vb-row__title:has-text("Napelem")');
+    const file = JSON.parse(fs.readFileSync(path.join(root, '60_Linkek', 'napelem.links.json'), 'utf8'));
+    assert.equal(file.bookmarks.length, 2);
+    assert.equal(file['x-bongeszo'].reading[0].text, 'Mentett.');
+    // the guest preview names what stays out; the page written has only the public https link(s)
+    assert.ok(await page.locator('.vb-warn:has-text("Router")').count(), 'the router link is shown as left out');
+    await page.click('button:has-text("Vendégoldal mentése")');
+    await page.click('.vb-dialog button:has-text("Mentés")');
+    await page.waitForFunction(() => /Most: 00_START/.test(document.body.textContent), null, { timeout: 10000 });
+    const html = fs.readFileSync(path.join(root, '00_START', 'linkek.html'), 'utf8');
+    assert.ok(html.includes('https://www.tme.eu/hu/') && !html.includes('utm_source') && !html.includes('192.168') && !html.includes('jó ár'));
+    // a list of the other person's, loaded into this device
+    fs.writeFileSync(path.join(root, '60_Linkek', 'tars.links.json'), JSON.stringify({ format: 'vrg.web-links', v: 1, bookmarks: [{ url: 'https://tars.example/', title: 'Társ linkje', at: 1 }], history: [], 'x-bongeszo': { share: { name: 'Társ', by: 'Kolléga' } } }));
+    await page.click('button[aria-label="Frissítés"]');
+    await page.waitForSelector('.vb-row__title:has-text("Társ")');
+    await page.locator('.vb-row', { hasText: 'Társ' }).locator('button:has-text("Betöltés ide")').click();
+    await page.waitForFunction(() => VB.app.ctx.st.bookmarks().some(b => b.url === 'https://tars.example/'));
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  } finally { await browser.close(); server.close(); }
+});

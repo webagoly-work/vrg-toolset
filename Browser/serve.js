@@ -19,9 +19,12 @@
 //   /api/links             T1 (BRW-Q01): GET the master bookmarks and history (the Asztal's web.json + the waiting inbox) as
 //                          vrg.web-links v1; POST { ops } adds them to web.json.inbox, which the Asztal absorbs (it holds
 //                          web.json in memory, so this server never writes the master itself). POST: own page, JSON only.
+//   /api/shared            T9 (BRW-Q06): GET the shared lists of VRG-Megosztott\60_Linkek (?file= one of them); POST
+//                          { name, by, doc } saves one (lib/shared.js). /api/guest: GET whether 00_START\linkek.html exists;
+//                          POST { title, doc } writes it, filtered again here (src/core/share.js guest, this PC's job codes).
 //
 // Every request must name this server in its Host header (a DNS-rebinding page cannot); an Origin, when sent, must be
-// this server or the VRG Asztal's app origin (vrg-app://browser). The only write is the links inbox; the reader keeps no copy.
+// this server or the VRG Asztal's app origin (vrg-app://browser). The reader keeps no copy of what it reads.
 //
 //   --port N       (default 8812, or VRG_BROWSER_PORT)
 //   --no-open      do not open the browser (START opens it itself)
@@ -40,6 +43,7 @@ const { pdfText } = require('./lib/pdftext');
 const links = require('./src/core/links');
 const { createJobs, slug: jobSlug } = require('./lib/jobs');
 const { createWatch } = require('./lib/watch');
+const { createShared, defaultRoot } = require('./lib/shared');
 
 const VERSION = '1.0.0';
 const DIST = path.join(__dirname, 'dist', 'vrg-bongeszo.html');
@@ -61,6 +65,8 @@ function createServer(opts) {
   const jobs = o.jobs || createJobs({ dir: o.jobsDir, guard });
   const watch = o.watch || createWatch({ dir: o.deskDir === undefined ? deskUserDir() : o.deskDir, check: u => guard.check(u) });
   const repo = o.repo || REPO;
+  // T9: the shared OneDrive tree (60_Linkek lists, the guest page in 00_START)
+  const shared = o.shared || createShared({ root: o.sharedDir === undefined ? defaultRoot(repo) : o.sharedDir, jobs });
   // T5: a research note (Kutatás) — a general one into the repo's docs/research/web/ (it becomes searchable here at once and
   // part of the VRG Stack once committed), a job's one into that job's folder (web\kutatas\), never into git
   function writeResearch(j) {
@@ -171,6 +177,19 @@ function createServer(opts) {
       try { j = JSON.parse(await body(req)); } catch (e) { return send(res, 400, { ok: false, hu: 'Nem JSON, vagy túl nagy.' }, null, origin); }
       if (u.pathname === '/api/research') return send(res, 200, writeResearch(j || {}), null, origin);
       return send(res, 200, j && j.remove ? watch.remove(String(j.remove)) : watch.add(j || {}), null, origin);
+    }
+    // T9: shared lists (60_Linkek) and the guest page (00_START\linkek.html)
+    if (u.pathname === '/api/shared' || u.pathname === '/api/guest') {
+      if (req.method === 'GET') {
+        if (u.pathname === '/api/guest') return send(res, 200, shared.guestInfo(), null, origin);
+        const f = u.searchParams.get('file');
+        return send(res, 200, f ? shared.get(f) : shared.list(), null, origin);
+      }
+      if (req.method !== 'POST') return send(res, 405, { ok: false, hu: 'GET vagy POST.' }, null, origin);
+      if (!origin || !/^application\/json/.test(String(req.headers['content-type'] || ''))) return send(res, 403, { ok: false, hu: 'Írni csak a VRG Böngésző írhat.' }, null, origin);
+      let j;
+      try { j = JSON.parse(await body(req, 16 * 1024 * 1024)); } catch (e) { return send(res, 400, { ok: false, hu: 'Nem JSON, vagy túl nagy.' }, null, origin); }
+      return send(res, 200, u.pathname === '/api/guest' ? shared.guest(j || {}) : shared.save(j || {}), null, origin);
     }
     if (u.pathname === '/api/links') {
       const m = masterLinks();

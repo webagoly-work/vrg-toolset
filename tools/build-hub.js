@@ -26,6 +26,9 @@ const REPO = path.resolve(__dirname, '..');
 const HUB = path.join(REPO, 'Hub');
 const SRC = path.join(HUB, 'src');
 const OUT = path.join(HUB, 'dist', 'vrg-kapu.html');
+// T9 (BRW-Q05 = A): the guest page the sign-in card's "Linkek (vendég)" opens. The real one is made by the VRG Böngésző into
+// VRG-Megosztott\00_START; this build only writes the empty placeholder next to the Kapu (and copies it to OneDrive when none is there).
+const GUEST = path.join(HUB, 'dist', 'linkek.html');
 
 const DATA = [
   ['kpAccess', path.join(HUB, 'data', 'access.json')],
@@ -87,6 +90,7 @@ function build() {
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, html);
+  fs.writeFileSync(GUEST, require('../Browser/src/core/share.js').guestHtml([], { title: 'Linkgyűjtemény' }));
   const kb = (Buffer.byteLength(html) / 1024).toFixed(1);
   console.log('built ' + path.relative(REPO, OUT) + ' — ' + kb + ' kB, ' + css.length + ' css, ' +
     js.length + ' js, data: ' + DATA.map(([id, f]) => id + (fs.existsSync(f) ? '' : '=null')).join(' ') +
@@ -136,6 +140,16 @@ function readme(hash) {
     '',
     'Részletesen / in detail: `docs/hub/KOLLEGA-INDULAS.md` a repóban.',
     '',
+    '## Linkek vendégeknek / Links for guests',
+    '',
+    'A Kapu belépőkártyáján a **Linkek (vendég)** gomb a mellette lévő `linkek.html`-t nyitja meg: nyilvános',
+    'linkek, belépés nélkül. A VRG Böngésző Megosztás oldala készíti (Vendégoldal). A közös könyvjelzőlisták a',
+    '`60_Linkek` mappában vannak, csak azoknak, akikkel a mappa meg van osztva.',
+    '',
+    '*The **Linkek (vendég)** button on the Kapu\'s sign-in card opens the `linkek.html` next to it: public links, no',
+    'sign-in. The VRG Böngésző\'s Megosztás page makes it. Shared bookmark lists are in the `60_Linkek` folder, for the',
+    'people the folder is shared with only.*',
+    '',
     '## Kérdés esetén / Questions',
     '',
     ask,
@@ -154,7 +168,11 @@ function copyOnedrive(dir, hash) {
   const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
   if (sha(dest) !== sha(OUT)) fail('--onedrive: the copy differs from ' + path.relative(REPO, OUT));
   fs.writeFileSync(path.join(dir, 'OLVASS_EL.md'), readme(hash));
-  console.log('copied to ' + dest + ' (sha256 ' + sha(dest).slice(0, 12) + ', identical) + OLVASS_EL.md');
+  // the guest page: the VRG Böngésző's own one is never overwritten, only a missing one gets the empty placeholder
+  const guest = path.join(dir, 'linkek.html');
+  const fresh = !fs.existsSync(guest);
+  if (fresh) fs.copyFileSync(GUEST, guest);
+  console.log('copied to ' + dest + ' (sha256 ' + sha(dest).slice(0, 12) + ', identical) + OLVASS_EL.md' + (fresh ? ' + linkek.html (empty)' : ' (linkek.html kept)'));
 }
 
 const hash = build();

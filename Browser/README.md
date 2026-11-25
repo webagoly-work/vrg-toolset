@@ -47,6 +47,7 @@ modules, the parts they live in and what each part may reach are one manifest, `
 | **Kutatás** (T5) | notebooks of quotes (select a passage in the Olvasó → *Idézet a kutatásba*), sources and own notes; one sourced Markdown note (`src/core/research.js`, numbered references, the sources list): copy, download, **save into the repo's `docs/research/web/`** (searchable at once, part of the VRG Stack once committed) or, with a job code, **into the job's folder** (`web\kutatas\`) — a note naming one of the PC's job codes is refused for the repo | all (save: Asztal, :8812) |
 | **Küldés Claude-nak** (T5) | a page (from the Olvasó) or a notebook: in the Asztal a context pack attached to a new thread of the chat pane (nothing is sent until you ask); elsewhere the text on the clipboard and claude.ai | all |
 | **Figyelés** (T6) | page watches the VRG Asztal runs: a `page-watch` preset in its feed registry (`<userDir>\presets.json`); its readable text against the last run; a change shows in the Hírek pane and rings the phone (relay `/notify`, Értesítések M10). Add from the Olvasó (*Figyelés*) or the Figyelés page; hourly to weekly | Asztal, :8812 |
+| **Megosztás** (T9) | named lists of bookmarks and / or the reading list (by tag or job) into the shared OneDrive tree, `VRG-Megosztott\60_Linkek\<név>.links.json`, with everything they hold; the colleague's lists shown and loaded here; the **guest page** `00_START\linkek.html` the Kapu's *Linkek (vendég)* opens without a sign-in (only public https links; see *Sharing*) | Asztal, :8812 |
 | **Helyi VRG szerverek** | the START servers with a running lamp; User-level ones first (from the catalog), the dev ones on request | Asztal, :8812, file |
 | **Telefonra** | a QR of a URL (the Inventory / Planner encoder, Project Nayuki, MIT) to open it on the phone | not on the phone |
 | **Webes javaslatok** | suggestions from Google, DuckDuckGo or Wikipedia while typing, through the server, without cookies. **Off by default:** every keystroke would leave the PC. | Asztal, :8812 |
@@ -150,7 +151,7 @@ Browser/
   src/app/                ui · context · omnibox · views · work (Munkák, Alkatrészek, labels) · knowledge (Kutatás, Figyelés,
                           Claude) · main
   modules.json            the parts: files, needs, hosts, routes, switches, nav (T8; checked by lib/modules.js)
-  lib/                    modules · netguard · reader · pdftext · docs · suggest · jobs · watch
+  lib/                    modules · netguard · reader · pdftext · docs · suggest · jobs · watch · shared (T9: the OneDrive tree)
   test/                   run.js + *.test.js
   dist/vrg-bongeszo.html  the built app (committed: VRG Mobile fetches it from main)
 ```
@@ -160,6 +161,20 @@ Browser/
 
 **Adding a module:** a switch on its part in `modules.json` (`id`, `hu`, `desc`, `on`, `runs` when it needs the server,
 `api` for the serve.js routes it calls), plus its use behind `ctx.on('<id>')`; then `node Browser/build.js`.
+
+## Sharing (T9)
+
+**Megosztás** (`#/megosztas`, plugin part `share`) talks to `serve.js` (`lib/shared.js`), which owns the shared OneDrive folder
+`VRG-Megosztott` (`VRG_SHARED`, else `<repo>\..\..\Shared`, the junction `H:\VRG\Shared`):
+
+- **A list** (BRW-Q06 = B, Q07 = C) → `60_Linkek\<slug>.links.json`: `vrg.web-links` v1 with tags, job codes, notes and saved
+  text, plus `x-bongeszo.share` (name, who, when). Same name = the same file, updated. Never the history.
+- **Közös listák**: every list there; *Megnézés* lists its links, *Betöltés ide* merges it (`importAll`, nothing is lost).
+- **The guest page** (BRW-Q05 = A) → `00_START\linkek.html`, next to the Kapu, opened by its *Linkek (vendég)* button without a
+  sign-in. `src/core/share.js` `guest()` keeps only https links on a public host with no user name, no secret-looking
+  parameter, no private file store (Drive, OneDrive, SharePoint, Dropbox …), no job code and nothing tied to a job; tracking
+  stripped; no notes or tags. The page previews what stays out and why; the server filters again with the PC's job codes.
+  `guestHtml()` makes a static page: no script, a CSP that allows only its own style, no referrer.
 
 ## Parts as plugins (T8)
 

@@ -15,12 +15,12 @@ test('modules.json: checked, every source file in one part, the load order uncha
   assert.deepEqual(r.order, B.ORDER);
   assert.deepEqual(new Set(r.order), new Set(M.sources(path.join(__dirname, '..'))), 'every file under src/ is built');
   assert.equal(r.order[r.order.length - 1], 'app/main.js', 'main boots last');
-  assert.ok(r.mods.parts.filter(p => p.kind === 'plugin').length >= 4);
+  assert.ok(r.mods.parts.filter(p => p.kind === 'plugin').length >= 5);
   // what reaches the network: a short list, each with its hosts
   const net = r.mods.parts.filter(p => p.needs.includes('net')).map(p => p.id).sort();
-  assert.deepEqual(net, ['app.context', 'app.omnibox', 'app.views', 'core.sync', 'knowledge', 'work']);
+  assert.deepEqual(net, ['app.context', 'app.omnibox', 'app.views', 'core.sync', 'knowledge', 'share', 'work']);
   assert.deepEqual(r.mods.parts.filter(p => p.hosts.includes('*')).map(p => p.id), ['core.host'], 'only the host opens any page');
-  assert.deepEqual(r.mods.parts.filter(p => p.needs.includes('storage')).map(p => p.id).sort(), ['app.main', 'core.store', 'knowledge', 'work']);
+  assert.deepEqual(r.mods.parts.filter(p => p.needs.includes('storage')).map(p => p.id).sort(), ['app.main', 'core.store', 'knowledge', 'share', 'work']);
 });
 
 test('the check: each rule catches its mistake', () => {

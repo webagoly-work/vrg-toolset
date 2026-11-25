@@ -20,7 +20,7 @@
   const JOB_RE = /^([A-Z]{1,3}\d{1,3}|VRG-\d{4}-\d{2})$/;
   const DEFAULTS = {
     engine: 'google', engineChosen: false, suggest: false, clean: true, theme: 'melyviz', density: 'auto', history: true, notebook: '',
-    readerServer: 'http://127.0.0.1:8812', modules: {}, pinned: [],
+    readerServer: 'http://127.0.0.1:8812', modules: {}, pinned: [], shareBy: '',
   };
 
   const now = () => Date.now();

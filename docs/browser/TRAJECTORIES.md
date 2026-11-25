@@ -23,6 +23,14 @@ offline half and a live half.
 | **BRW-Q03** | Work and personal | **A** — two lines, one format: work links stay in the VRG toolset, personal ones in the Data Vault, moved between them only explicitly (a `vrg.web-links` file) |
 | **BRW-Q04** | Live browsing on the phone | **A** — VRG Mobile for work pages (PARITY row 23, the M20 `web` window); the DV companion for personal ones (DV-Q22 Q1a) |
 
+T9's decisions (2026-11-25):
+
+| # | Question | Answer |
+|---|---|---|
+| **BRW-Q05** | Where a guest (no GitHub sign-in) sees shared links | **A** — a standalone guest page, `VRG-Megosztott\00_START\linkek.html`, made from a list the user picks, and a **Linkek (vendég)** button on the Kapu's sign-in card that opens it. Decides only this part of WP-G1 (GO-HUB §7); the rest of guest mode stays open |
+| **BRW-Q06** | Where shared lists live | **B** — a new top-level folder, `VRG-Megosztott\60_Linkek` (`docs/hub/hub-seed.json` → `od-links`) |
+| **BRW-Q07** | What a shared list carries | **C** — everything it holds: tags, job codes, notes, saved reading text (only the people the folder is shared with see it). The history is never a list |
+
 ## The format: `vrg.web-links` v1 (shared with the Data Vault's `browser-kit`)
 
 ```
@@ -50,7 +58,7 @@ half-read. `Browser/src/core/links.js` implements it; `Browser/test/links.test.j
 | **T6** | **Watching the web.** Page-change watches (NJT, MEKH, standards, prices) as Feed pane presets (WP-29), alerts to Mobile M10. | 3 |
 | T7 | **Real browsing on the phone** (BRW-Q04). The confined WebView `web` window of PARITY row 23 / M20, keeping the contract and writing `vrg.web-links`. | 4 |
 | T8 | **Parts as plugins** (from DV). The module list becomes manifests (id, needs `net` / `web` / `storage`, hosts); page modules become swappable, matching DV's cells and its `web` need (DV-Q22 Q4). | 4 |
-| T9 | **Sharing.** A guest-safe link page in the Kapu; shared reading lists through the shared OneDrive folder. | after T1 |
+| T9 | **Sharing.** A guest-safe link page in the Kapu; shared reading lists through the shared OneDrive folder. | 5 |
 
 ## Phase 1 (T1 + T2) — built 2026-11-23
 
@@ -185,7 +193,43 @@ all four plugins); the shared fixture in `links.test.js`; `:kit-core:test` 277 (
 and on the PC: `node Browser/build.js --without work --out %TEMP%\vb.html`, open it from `node Browser/serve.js`: no Munkák
 in the rail, Beállítások → Részek says what was left out.
 
-**⏸ Phase 4 is the last phase of the T line. T9 (sharing) is open, after T1.**
+**⏸ After Phase 4: T9 (sharing).**
+
+## Phase 5 (T9) — built 2026-11-25
+
+**Shared lists (BRW-Q06 = B, Q07 = C).** The app's new **Megosztás** page (plugin part `share` in `modules.json`: `core/share.js`
++ `app/share.js`, needs net and storage, routes `/api/shared` and `/api/guest`, works where the PC's server is: the Asztal and
+:8812). A list is picked from the bookmarks and / or the reading list, narrowed by a tag or a job, named, and saved through
+`serve.js` (`lib/shared.js`) as `VRG-Megosztott\60_Linkek\<slug>.links.json`: `vrg.web-links` v1 with everything it holds and
+`x-bongeszo.share` = name, who, when. The same name updates its file; OneDrive keeps the older versions. **Közös listák**
+shows every list in the folder: look into it, open a link, or load it into this device (`importAll`, nothing is lost; when
+the app runs in the Asztal the rows go on to its `web.json`). A newer or foreign file is listed as unreadable, never half-read.
+The root is `VRG_SHARED` or `<repo>\..\..\Shared` (on H: the junction `H:\VRG\Shared`), never guessed further.
+
+**The guest page (BRW-Q05 = A).** The same picker → `00_START\linkek.html`, a static page (no script; a CSP that allows only its
+own style; no referrer; links open as new tabs without an opener). Only what is safe for anyone goes on it: https, a public
+host (not this PC, the LAN or a raw IP), no user name, no secret-looking parameter (token, key, sig, password, session …),
+not a private file store (Drive / Docs, OneDrive, SharePoint, Dropbox, iCloud, WeTransfer), no job code (the PC's list, or
+the old VRG-ÉÉHH-NN) and nothing tied to a job; tracking parameters stripped; notes and tags never. The page previews what
+goes and what stays out with the reason; the server filters again with the PC's job codes before it writes. In the Kapu
+(`Hub/`): a **Linkek (vendég)** button on the sign-in card opens `linkek.html` next to it (from OneDrive in links-only
+mode; the Kapu segéd serves the same file with a CSP header in full mode). `build-hub.js` writes an empty placeholder into
+`Hub/dist/`, and `--onedrive` copies it only where no `linkek.html` exists yet (the Böngésző's own is never overwritten);
+`OLVASS_EL.md` explains both. Nothing else of the Kapu opens to a guest.
+
+Tests: `node Browser/test/run.js` 74 (+ `share.test.js` 7: picking, the list file, every guest rule with its reason, the page
+escaped and script-free, `60_Linkek` and `00_START` in a temp tree, the routes' Origin / JSON rule; + a page walk: a list shared,
+the guest page written, a colleague's list loaded); `node Hub/test/run.js` 35/36 (+ the guest page from the Kapu segéd, the
+OneDrive copy keeping an existing page; the one failure is the registry's Windows paths, the same on HEAD in the cloud).
+
+**Check on the PC** (not reproducible in the cloud session):
+1. `node tools/build-hub.js --onedrive H:\VRG\Shared\00_START` → `linkek.html` (empty) appears next to the Kapu.
+2. START W → B → S, then the VRG Böngésző → Megosztás: share a list → `H:\VRG\Shared\60_Linkek\<név>.links.json`; on the
+   colleague's PC (after OneDrive syncs) it shows under Közös listák and loads.
+3. Vendégoldal mentése → open `00_START\vrg-kapu.html` signed out → **Linkek (vendég)** shows the links; a LAN, Drive or job
+   link is not there.
+
+**⏸ T9 built: the T line (T1–T9) is complete.**
 
 ## LOG
 
@@ -194,3 +238,4 @@ in the rail, Beállítások → Részek says what was left out.
 - 2026-11-23 — Phase 2 built (T3 + T4); ⏸ before Phase 3.
 - 2026-11-23 — Phase 3 built (T5 + T6); ⏸ before Phase 4.
 - 2026-11-24 — Phase 4 built (T7: VRG Mobile M66 Böngésző; T8: modules.json); ⏸.
+- 2026-11-25 — BRW-Q05 A, Q06 B, Q07 C; Phase 5 built (T9: Megosztás, 60_Linkek, the guest page and the Kapu's Linkek (vendég)); ⏸.

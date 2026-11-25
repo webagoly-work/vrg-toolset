@@ -23,6 +23,10 @@ or VRG-DE.cmd `L5`.
   when the region has drifted. Themes are the kit's: Mélyvíz (default), Éj, Papír, Kontraszt. A remembered
   pre-kit theme maps to the nearest one. Ctrl+K opens the command palette: every tool, START, theme and sign-out.
   Each tool row has two MINIs, Megnyitás and Mappa, which spin while the Kapu segéd works.
+- **Linkek (vendég) (2026-11-25, BRW-Q05 = A):** the sign-in card's button opens `linkek.html` next to the Kapu: public links for
+  anyone, no sign-in, no script (the VRG Böngésző's Megosztás page writes it into `VRG-Megosztott\00_START`). `build-hub.js`
+  puts an empty placeholder in `Hub/dist/`; `--onedrive` copies it only where there is none yet; the Kapu segéd serves
+  `/linkek.html` (the shared one when this PC has it) with a CSP header. Nothing else of the Kapu opens to a guest.
 - **2026-10-26 rework:** the business map, editor, Munkanapló, refresh, personal links, tour and
   glossary were removed from here and parked for Kódváros in `CodeCity/from-kapu/` (README there).
   The plan pack `docs/hub/` describes the old, full Kapu.
