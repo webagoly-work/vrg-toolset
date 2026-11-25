@@ -134,9 +134,9 @@ What changes locally compared with the cloud:
 - **M67** Radar built 2026-11-23 (cloud session, D-173 … D-175), **BETA**: the universal locator / proximity / connection
   display. Programs plug in through kit-core `RadarHub` (`RadarSource`); first layers Tárgykereső, Csipogó, Óra; the
   Desktop twin is the VRG UI Kit's `radar`. Spec `docs/radar/README.md`; `docs/mobile/WP/M67.md` → "Telefonon ellenőrizni".
-- **M69** VRG Füzet built 2026-11-21 (cloud session, D-177 … D-181 taken as defaults), **BETA**: the malleable notebook
+- **M70** VRG Füzet built 2026-11-21 (cloud session, D-181 … D-185 taken as defaults), **BETA**: the malleable notebook
   forked from the Sketcher's engine, applications as kits in `Mobile/notebook/kits` (format and agent steps:
-  `Mobile/notebook/PROTOCOL.md`). `docs/mobile/WP/M69.md` → "Telefonon ellenőrizni" (15 steps). `notebook-core` tests
+  `Mobile/notebook/PROTOCOL.md`). `docs/mobile/WP/M70.md` → "Telefonon ellenőrizni" (15 steps). `notebook-core` tests
   in `mobile.cmd test` and Actions.
 
 ## 3. What the user asked for, mapped to WPs

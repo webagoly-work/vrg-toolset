@@ -1094,26 +1094,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   share sheet, as the Diagnosztika report does; the vault's Radarom keeps the snapshots and the Founder's own places (GPS
   bearings from "itt vagyok"). Its layout is a copy of the shared rule, proven by a copy of the shared fixture. Rejected:
   a live link phone → vault (the vault app has no network, DV-Q20; a live view stays VRG Mobile's).
-- **D-177 · VRG Füzet: what "the Note app" is, and what the fork is (M69), 2026-11-21. Taken as a default while
+- **D-181 · VRG Füzet: what "the Note app" is, and what the fork is (M70), 2026-11-21. Taken as a default while
   building.** The Founder asked for a fork of "the Note app" with its array of modules. Read as the VRG Sketcher (the
   note taker with fronts, a data catalog and agent-made variants), not Gyorsjegyzet (M6, a single text box to a
   branch). The fork is a new feature (`notebook`, `notebook-core` + `feature-notebook`) that takes the Sketcher's engine
   ideas, not its code; the Sketcher stays as it is. Revisit if Gyorsjegyzet was meant: it could then become the Alap
   kit's sender.
-- **D-178 · One store, applications as kits (M69), 2026-11-21. Default.** Every kit's entries in one JSON file, so one
+- **D-182 · One store, applications as kits (M70), 2026-11-21. Default.** Every kit's entries in one JSON file, so one
   search and one export cover everything (the Keep and Find directions). Kits are data only, bundled from
   `Mobile/notebook/kits` and loadable from a file. Rejected: a file per kit (search and links across kits get hard);
   kits as code modules (no agent-made or imported kits).
-- **D-179 · The store lives on the phone first (M69), 2026-11-21. Default, = Personal App Q2 A.** `filesDir`, plain JSON,
+- **D-183 · The store lives on the phone first (M70), 2026-11-21. Default, = Personal App Q2 A.** `filesDir`, plain JSON,
   export / import through the system file picker with a merge. No GitHub sync yet; a sealed sync (the M42 mechanism)
   is a later step.
-- **D-180 · The bundled kits and what is on at first (M69), 2026-11-21. Default.** Alap (always on), Munka and Otthon
+- **D-184 · The bundled kits and what is on at first (M70), 2026-11-21. Default.** Alap (always on), Munka and Otthon
   on, Kutya off until Personal App Q4 is answered. The two measurement limits in Munka are the standard values (insulation
   ≥ 1 MΩ at 500 V; RCD trip ≤ 300 ms at IΔn); the electrician confirms them.
-- **D-181 · The Füzet on the home (M69), 2026-11-21. Default.** Page 1, between the Sketcher and the Csipogó: quick
+- **D-185 · The Füzet on the home (M70), 2026-11-21. Default.** Page 1, between the Sketcher and the Csipogó: quick
   capture belongs with what is needed at once. Later: the Sketcher's survey as a kit, and the PC's Desktop page for
   the store.
-  Details: `WP/M69.md`.
+  Details: `WP/M70.md`.
 
 ## Open (to ask when the WP that needs them starts)
 

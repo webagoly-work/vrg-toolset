@@ -1,4 +1,4 @@
-// VRG Füzet (WP M69) as a VRG Mobile feature module: the screens over notebook-core (pure Kotlin, tested on the JVM).
+// VRG Füzet (WP M70) as a VRG Mobile feature module: the screens over notebook-core (pure Kotlin, tested on the JVM).
 // The bundled kits are Mobile/notebook/kits, copied into the APK's assets (notebook/kits/...) at build time, the same
 // way feature-sketch bundles the Sketcher's catalog: one source for the phone and for an agent writing a new kit.
 plugins {

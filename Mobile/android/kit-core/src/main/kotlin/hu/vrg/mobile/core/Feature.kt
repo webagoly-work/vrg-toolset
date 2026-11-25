@@ -147,11 +147,11 @@ object Catalogue {
         "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
         "📷", Group.WORK, Stage.BETA, "M25", setOf(Need.CAMERA),
     )
-    // WP M69: VRG Füzet, the malleable notebook forked from the Sketcher's engine (docs/mobile/WP/M69.md): one store of
+    // WP M70: VRG Füzet, the malleable notebook forked from the Sketcher's engine (docs/mobile/WP/M70.md): one store of
     // entries, applications as kits (Mobile/notebook/kits), views, derived open items, one search, one export.
     val NOTEBOOK = FeatureInfo(
         "notebook", "VRG Füzet", "Egy füzet mindenre: jegyzet, teendő, mérés, mérőóra, séta. Kitek szabják alkalmazásra; egy keresés mindent megtalál, egy fájlba minden kimenthető.",
-        "📓", Group.WORK, Stage.BETA, "M69",
+        "📓", Group.WORK, Stage.BETA, "M70",
     )
     // WP M33: the Site Pager (the ESP32-S3 + nRF905 pager pair, Archive "Site Pager Builder") reimagined on phones.
     val PAGER = FeatureInfo(
