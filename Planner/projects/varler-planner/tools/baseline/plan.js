@@ -44,7 +44,7 @@ function plan(G, E, PT, cfg, allowed) {
     if (!g) { g = { key: 'drop:' + drops.length, room: e.room, face: e.face, u: e.u, u0: e.u, s, members: [] }; drops.push(g); }
     g.members.push(e); e.drop = g.key; });
   drops.forEach(g => { g.u = g.members.reduce((a, e) => a + e.u, 0) / g.members.length; g.s = g.face.uToS(g.u); });
-  // ---- T0 / L11, L12: the input, checked before the routes (the Domoszló sketch had 13 wall lamps above a 2700 ceiling
+  // ---- T0 / L11, L12: the input, checked before the routes (the Mintafalu sketch had 13 wall lamps above a 2700 ceiling
   // and two "DED1" — both accepted silently) ----
   const C0 = cfg.ceiling || R.LEVEL.ceilingDefault, at = e => [Math.round(e.x), Math.round(e.y)];
   M.filter(e => e.onWall && e.h != null).forEach(e => {
@@ -345,7 +345,7 @@ function plan(G, E, PT, cfg, allowed) {
   const polyOf = pts => { const out = []; pts.forEach((i, k) => { const e = k ? g.adj[pts[k - 1]].find(x => x.to === i) : null;
     if (e && e.kind === 'floor') { const a = g.N[pts[k - 1]]; out.push([a.x, a.y, 0], [g.N[i].x, g.N[i].y, 0]); } out.push([g.N[i].x, g.N[i].y, W.dist]); }); return out; };
   // T0 / F5: the soft edge itself knows its wall (network.build). Before, the midpoint of a path walked backwards wrapped
-  // round the room and named a wall on the far side (Domoszló: "W20" / "W28", both marked; the culprit was W21).
+  // round the room and named a wall on the far side (Mintafalu: "W20" / "W28", both marked; the culprit was W21).
   const wallsOf = pts => [...new Set(pts.slice(1).map((p, k) => { const e = g.adj[pts[k]].find(x => x.to === p); return e && e.kind === 'soft' ? e.wall || null : null; }).filter(Boolean))];
   const softAt = pts => { for (let k = 1; k < pts.length; k++) { const e = g.adj[pts[k - 1]].find(x => x.to === pts[k]); if (e && e.kind === 'soft') { const a = g.N[pts[k - 1]], b = g.N[pts[k]];
     return { room: a.room, at: [Math.round((a.x + b.x) / 2), Math.round((a.y + b.y) / 2)] }; } } return null; };
@@ -587,7 +587,7 @@ function plan(G, E, PT, cfg, allowed) {
   // a box the user already enlarged (cfg.spBoxSize, e.g. B103 150 × 150) takes 12 runs, a 2-gang one 6
   boxes.filter(b => b.kind === 'sp' || b.kind === 'drop').forEach(b => { const n = legs.filter(l => l.from === b.id || l.to === b.id).length;
     const spx = b.kind === 'sp' && SP.find(x => x.id === b.sp);
-    // a szobadoboz is itself the big box (150 × 150 / 200 × 200, 08n) — not a 2-gang one (found on Domoszló: KD2, 11 pipes)
+    // a szobadoboz is itself the big box (150 × 150 / 200 × 200, 08n) — not a 2-gang one (found on Mintafalu: KD2, 11 pipes)
     const ov = b.kind === 'sp' && ((cfg.spBoxSize || {})[b.sp + ':' + b.room] || (cfg.spBoxSize || {})[b.sp] || (spx && spx.type === 'szoba' ? (spx.dev.jbSize || 150) : 0));
     if (n > (ov ? 12 : 6)) warn.push({ sev: 'warn', msg: `${b.id} (${b.n}${ov ? ', ' + ov + ' × ' + ov : ''}) — ${rn(b.room)}: ${n} cső fut be — ${ov ? 'ennél is' : '2 szerelvényesnél'} nagyobb doboz kell`, room: b.room, at: [Math.round(b.x), Math.round(b.y)] }); });
   M.filter(e => !C.byMember[e.id]).forEach(e => warn.push({ sev: 'warn', msg: `${e.ref || e.id} ${e.code} — ${rn(e.room)}: nincs áramkörben`, room: e.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id] }));
@@ -600,7 +600,7 @@ function plan(G, E, PT, cfg, allowed) {
   return { net, SP, drops, channel, boxes, legs, L, C, warn, used, prep, spans, checks, W, unreached, report };
 }
 
-// ---- T0 / §3.4: the Pálya-ellenőrzés report — what the Domoszló build checked by throw-away scripts, as data ----------
+// ---- T0 / §3.4: the Pálya-ellenőrzés report — what the Mintafalu build checked by throw-away scripts, as data ----------
 // Every row carries {room, at} so the Planner can show it. Metres are geometric (T0 / F1); `weighted` is what the
 // search paid, next to it, so a soft or minus detour shows as a number.
 function pathReport(G, g, o) {
@@ -790,7 +790,7 @@ function circuits(D, M, L, cfg, warn) {
   const list = [], byMember = {};
   const cableFor = (c, ms) => { if (c.dedicated) { const v = (ms[0] && ms[0].v) || ''; return R.CIRCUIT_CABLE[v === 'hob2l' ? 'hob2l' : v === 'hob32' ? 'hob32' : v === 'alelo' ? 'alelo' : 'ded16']; }
     // the circuit's own cross-section (05j c.mm2, the circuit form) wins over the breaker-text rule (E5 F5, user Q1 = A
-    // 2026-10-19: Domoszló A4 on 2,5 mm² with its 13 A breaker, for the voltage drop of the socket chain)
+    // 2026-10-19: Mintafalu A4 on 2,5 mm² with its 13 A breaker, for the voltage drop of the socket chain)
     if (+c.mm2 >= 2.5) return 'NYM3x25'; if (+c.mm2 === 1.5) return 'NYM3x15';
     return /13A/.test(c.mcb || '') ? 'NYM3x15' : 'NYM3x25'; };
   const plan = {}; (cfg.socketPlan || []).forEach(p => plan[p.ref] = p);

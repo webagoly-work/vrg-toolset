@@ -277,7 +277,7 @@ Reported, not silent:
 
 - `_redteam\h.js`, `t1.js` … `t13.js`;
 - `_script\build-dom.js`, `win.js`, `chk.js`;
-- `Domoszlo_alap.vplan.json`, `Domoszlo_erosaram_2026-10-18\Domoszlo_erosaram_claude.vplan.json` and its `build-report.json`;
+- `Mintafalu_alap.vplan.json`, `Mintafalu_erosaram_2026-10-18\Mintafalu_erosaram_claude.vplan.json` and its `build-report.json`;
 - `Calculator/CLA-baseline/v1_2026-10-12/`.
 
 Nothing was written to `_audit_2026-10\`, and no Part C verdict is claimed here. How to finish it is Q2 in §8. The runbook
@@ -291,7 +291,7 @@ mkdir %P%\_audit_2026-10\redteam %P%\_audit_2026-10\dom
 rem 8. each red-team script, with the arguments its header names; stdout to a file per script
 for /L %i in (1,1,13) do node %P%\_redteam\t%i.js > %P%\_audit_2026-10\redteam\t%i.txt 2>&1
 rem 9. the end-to-end rebuild from the base file, then the window and plan checks on the new build
-node %P%\_script\build-dom.js dist\varler_planner.html %P%\Domoszlo_alap.vplan.json %P%\_audit_2026-10\dom\
+node %P%\_script\build-dom.js dist\varler_planner.html %P%\Mintafalu_alap.vplan.json %P%\_audit_2026-10\dom\
 rem    then win.js and chk.js on _audit_2026-10\dom\ (arguments as in their headers)
 rem 10. node tests\run.js  (spec-98 runs its parity only when Calculator\CLA-baseline\v1_2026-10-12 exists)
 ```
@@ -307,7 +307,7 @@ What to compare, counts only, against `build-report.json` and the acceptance fil
 The last recorded state is audit Part 11: 451,5 m, 105 boxes, two B32 warnings. The red-team expectation per script is the
 "After" column of audit Part 5, *The red team, re-run*.
 
-On the new build, also check these. They are the findings above that `Domoszlo_erosaram_claude.vplan.json` can confirm:
+On the new build, also check these. They are the findings above that `Mintafalu_erosaram_claude.vplan.json` can confirm:
 
 | Check | Finding |
 |---|---|

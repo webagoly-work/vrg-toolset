@@ -24,7 +24,7 @@ const VBACKUP = global.window.VBACKUP;
 // --- seed a library ---
 localStorage.setItem('villanyterv_projects_v1', JSON.stringify([
   {id:'pelda', name:'Példa ház', saved:'2026-08-01T10:00:00Z', data:{x:1}},
-  {id:'domoszlo', name:'Domoszló', saved:'2026-08-20T18:30:00Z', data:{x:2}}
+  {id:'mintafalu', name:'Mintafalu', saved:'2026-08-20T18:30:00Z', data:{x:2}}
 ]));
 localStorage.setItem('villanyterv_lock','1');
 localStorage.setItem('unrelated_key','nope');
@@ -37,7 +37,7 @@ t('app version stamped', b.app==='1.0.0');
 t('2 projects indexed', b.counts.projects===2);
 t('unrelated key excluded', !('unrelated_key' in b.store));
 t('lock key included', 'villanyterv_lock' in b.store);
-t('index names', b.index.map(p=>p.name).join('|')==='Példa ház|Domoszló');
+t('index names', b.index.map(p=>p.name).join('|')==='Példa ház|Mintafalu');
 
 const round = VBACKUP.parse(JSON.stringify(b));
 t('parse roundtrip', round.__projects.length===2);
@@ -56,17 +56,17 @@ t('rejects newer format', threw===1);
 
 // --- merge into a DIFFERENT (fresh-profile) store ---
 store.clear();
-localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'domoszlo',name:'Domoszló RÉGI',saved:'2026-01-01'}]));
-let r = VBACKUP.apply(round,'merge',['pelda','domoszlo']);
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'mintafalu',name:'Mintafalu RÉGI',saved:'2026-01-01'}]));
+let r = VBACKUP.apply(round,'merge',['pelda','mintafalu']);
 t('merge adds 1 skips 1', r.added===1&&r.skipped===1&&r.replaced===0);
-t('merge kept local copy', VBACKUP.projects().find(p=>p.id==='domoszlo').name==='Domoszló RÉGI');
+t('merge kept local copy', VBACKUP.projects().find(p=>p.id==='mintafalu').name==='Mintafalu RÉGI');
 t('merge brought other keys', localStorage.getItem('villanyterv_lock')==='1');
 
 store.clear();
-localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'domoszlo',name:'Domoszló RÉGI'}]));
-r = VBACKUP.apply(round,'overwrite',['pelda','domoszlo']);
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'mintafalu',name:'Mintafalu RÉGI'}]));
+r = VBACKUP.apply(round,'overwrite',['pelda','mintafalu']);
 t('overwrite replaces 1 adds 1', r.added===1&&r.replaced===1);
-t('overwrite took bundle copy', VBACKUP.projects().find(p=>p.id==='domoszlo').name==='Domoszló');
+t('overwrite took bundle copy', VBACKUP.projects().find(p=>p.id==='mintafalu').name==='Mintafalu');
 
 store.clear();
 localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'ghost',name:'Kísértet'}]));

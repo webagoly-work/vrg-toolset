@@ -212,7 +212,7 @@ Then press **3** to run the tests. Everything should pass.
 
 **Do this before you start working in the new browser.**
 
-Your saved projects — Domoszló included — live in the browser's `localStorage`,
+Your saved projects — Mintafalu included — live in the browser's `localStorage`,
 which belongs to the **browser profile**. The standalone Opera GX you installed in
 step 4 is a brand new, empty profile. It will show you an empty project list, and
 that is not a bug.
@@ -230,7 +230,7 @@ So, in order:
 8. Choose the file, leave the mode on **Hozzáadás**, click **⬆ Visszatöltés**
 9. The page reloads and your projects are there
 
-**Check:** open Domoszló in the portable browser and confirm the drawing is
+**Check:** open Mintafalu in the portable browser and confirm the drawing is
 complete and current. Don't move on until you've seen it with your own eyes.
 
 > Note: the old browser still has its copy — nothing was deleted. You now have the
@@ -243,7 +243,7 @@ complete and current. Don't move on until you've seen it with your own eyes.
 Work through this before you trust the stick:
 
 - [ ] `START.cmd` → **1** opens the planner in portable Opera GX
-- [ ] Domoszló opens and looks right
+- [ ] Mintafalu opens and looks right
 - [ ] You can draw something, save it, close the browser, reopen — still there
 - [ ] `START.cmd` → **2** builds without errors
 - [ ] `START.cmd` → **3** all tests pass

@@ -14355,7 +14355,7 @@ const VBACKUP = (function () {
 
   const PROJECT_KEY = 'villanyterv_projects_v1';   // the project library
   const LAST_KEY = 'varler_backup_last';           // our own bookkeeping
-  const KEY_MATCH = /^(villanyterv|varler|planner|domoszlo)/i;
+  const KEY_MATCH = /^(villanyterv|varler|planner|mintafalu)/i;
   const KEY_SKIP = [LAST_KEY];
 
   const EXT = '.vbundle.json';
@@ -14682,7 +14682,7 @@ const VBACKUP = (function () {
 
     if (!list.length) {
       bd.appendChild(el('div', 'vbk-note', 'Nincs mentett projekt ebben a böngészőben. ' +
-        'Ha itt kellene lennie a Domoszlónak, valószínűleg egy másik böngészőprofilban van.'));
+        'Ha itt kellene lennie a Mintafalunak, valószínűleg egy másik böngészőprofilban van.'));
     } else {
       const ul = el('div', 'vbk-list');
       list.forEach(p => {

@@ -116,7 +116,7 @@ function blSwitchGroups(D,level){const mains=new Map();D.devices.forEach(d=>{if(
     const S=u.sw.map(id=>mains.get(id)),t=s=>String(s.swType||''),dist=s=>Math.hypot(s.x-cx,s.y-cy);
     let chain;if(S.length===1)chain=[S[0].id];
     // T0 / L10: ties go by id, and the kereszt switches by their distance from the head — before, both followed the file
-    // order, so reversing data.devices swapped the head of the Domoszló veranda pair (red team t5)
+    // order, so reversing data.devices swapped the head of the Mintafalu veranda pair (red team t5)
     else{const byId=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0,ends=S.filter(s=>t(s)!=='107').sort((a,b)=>(b.swHead?1:0)-(a.swHead?1:0)||dist(a)-dist(b)||byId(a,b));
       const h=ends[0],mid=S.filter(s=>t(s)==='107').sort((a,b)=>(h?Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y):0)||byId(a,b));
       chain=[ends[0]].concat(mid,ends.slice(1)).map(s=>s.id);}
@@ -244,7 +244,7 @@ document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.targ
 function blSummary(R){const cnt=(a,k)=>a.filter(x=>x.kind===k).length,bx=R.boxes.filter(b=>b.kind!=='rbx');
   const parts=['sp','drop','pull','corner','end','tj','island'].map(k=>[k,cnt(bx,k)]).filter(x=>x[1]).map(x=>x[1]+' '+(BL_BOX_HU[x[0]]||x[0]));
   return `${R.C.list.length} kör · ${R.legs.reduce((a,l)=>a+(l.pipes||[]).length,0)} csőszakasz (${R.legs.length} szakasz, ${Math.round(R.legs.reduce((a,l)=>a+l.len,0)/1000)} m) · ${bx.length} doboz (${parts.join(', ')})`;}
-// ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Domoszló build checked by script. Every row: room + mutasd ----
+// ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Mintafalu build checked by script. Every row: room + mutasd ----
 function blReportHtml(run){const R=run.R,P=R.report;if(!P)return '';const n=v=>String(v).replace('.',','),lv=run.level;
   const sec=(t,rows,empty)=>`<div style="margin-top:8px;font-size:12px"><b>${t}</b></div>`+(rows.length?`<div style="font-size:11px">${rows.join('')}</div>`:`<div style="font-size:11px;color:var(--pc-mute,#888)">${empty||'—'}</div>`);
   const li=(txt,w,col)=>`<div${col?' style="color:'+col+'"':''}>${txt}${blShowLink(w,lv)}</div>`;

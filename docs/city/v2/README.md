@@ -34,7 +34,7 @@ The repo's areas really arrived in this order (first commit that touched them):
 
 | Date | Arrived |
 |---|---|
-| 2026-09-17 | Planner (with the Domoszló job), Calculator, MindMap, Modder, Toolbox |
+| 2026-09-17 | Planner (with the Mintafalu job), Calculator, MindMap, Modder, Toolbox |
 | 2026-09-20 | Inventory, docs, tools |
 | 2026-10-05 | BRIDGE (with the OmniComm Hub) |
 | 2026-10-13/14 | Firmware, CoreRef |
@@ -47,7 +47,7 @@ strategy game, crossing one gives a short title card and upgrades the landmark b
 
 | Age | Hungarian name | Crossed when | What the city looks like |
 |---|---|---|---|
-| I | **Falu** (village) | first commit | Domoszló castle on its hill, the Planner workshop below it, a dirt track between them, a few huts (the first small tools) |
+| I | **Falu** (village) | first commit | Mintafalu castle on its hill, the Planner workshop below it, a dirt track between them, a few huts (the first small tools) |
 | II | **Mezőváros** (market town) | ≥ 5 programs or ≥ 300 files | A market square (Inventory), a paved main street, the first stone houses; docs become a scribe's house |
 | III | **Céhes város** (guild town) | a second big area with its own sub-areas (BRIDGE) | Guild quarters, a town wall with the first gate, the hill suburb begins, a forge by the water (Firmware) |
 | IV | **Város** (city) | a gateway and a launcher exist (Kapu + START), ≥ 15 programs | The city gate (Kapu), the central station (START), the harbour, the first towers downtown |
@@ -62,7 +62,7 @@ Today the repo is in age V.
 **The promise stays:** the layout is still computed **once**, over every file that ever existed, so nothing moves during a
 replay. What changes is *how* the places are chosen: by simulated growth instead of a treemap.
 
-1. **Seed.** The castle (Domoszló, the first job the Planner served) on a hill, and the Planner workshop at its foot. One
+1. **Seed.** The castle (Mintafalu, the first job the Planner served) on a hill, and the Planner workshop at its foot. One
    track joins them: *the first road was built to build the castle.*
 2. **Roads grow from roads.** Areas are added in the order they first appeared. Each new area starts a road from the
    **nearest existing road node toward its strongest neighbour** (the area it most often changes together with), bending
@@ -90,7 +90,7 @@ a downtown of office towers, a castle and a campus.
 
 | District | Who lives there | Look |
 |---|---|---|
-| **Vár** (castle hill) | Client jobs: Domoszló as the castle; later jobs as manors and keeps around it | Stone keep, curtain wall, a flag per job. Names stay blurred unless the job is public (CITY-D27 A rule) |
+| **Vár** (castle hill) | Client jobs: Mintafalu as the castle; later jobs as manors and keeps around it | Stone keep, curtain wall, a flag per job. Names stay blurred unless the job is public (CITY-D27 A rule) |
 | **Akadémia** (campus) | The Planner and its parts | §5.1 |
 | **Belváros** (downtown) | docs, big data and JSON, financial and client data (Calculator prices, Inventory, the job register) | GitCity-style office towers on a regular block grid — the one planned part of the city, laid out late, as downtowns are |
 | **Villanegyed** (hill suburb, upper class) | BRIDGE: the architecture, the unit fleet, the inline designs | White modernist villas with flat roofs, glass, pools and lawns, curving drives on the hillside — the gated, manicured suburb |
@@ -124,7 +124,7 @@ The core is always the same, identifiable building; the faculties are generated 
 
 | Program | Landmark | Grows from → to |
 |---|---|---|
-| **Domoszló ház** (the first job) | The castle | Keep → castle with walls and a bailey as the job's plan grows |
+| **Mintafalu ház** (the first job) | The castle | Keep → castle with walls and a bailey as the job's plan grows |
 | **Inventory / Készlet** | Market hall and warehouse row (*Raktárváros*) | Market stall → covered market → warehouses on the quay |
 | **Calculators** (panel, general, LED) | Counting houses on the market square | One small counting house each; the price data behind them lives downtown |
 | **MindMap** | Library with a reading garden | Reading room → library |
@@ -219,8 +219,8 @@ Numbered as usual; A recommended.
 - **CITY-D54 — the default plan.** A: Növekedés (grown) is the default, Tervrajz (treemap) a toggle. B: the treemap stays
   default. C: Növekedés only.
 - **CITY-D55 — client jobs on the castle hill.** Job folders are not in the repo and carry client names.
-  A: only Domoszló, as the castle, name shown (it is the founding story); other jobs later as unnamed manors read from
-  `jobs\` by the segéd, names blurred. B: Domoszló only, nothing from `jobs\`. C: every job, names shown.
+  A: only Mintafalu, as the castle, name shown (it is the founding story); other jobs later as unnamed manors read from
+  `jobs\` by the segéd, names blurred. B: Mintafalu only, nothing from `jobs\`. C: every job, names shown.
 - **CITY-D56 — the ages.** A: thresholds on the data as in §2 (stay true as the repo grows). B: fixed dates.
 - **CITY-D57 — the Planner's faculties.** A: generated from the module families in `src/` (a new family = a new
   building). B: a hand-made list.
@@ -292,7 +292,7 @@ Each WP keeps the existing selftest green (`node CodeCity/tools/selftest.js`) an
   stays in their height), the works lean towards the shore. Styles (packed beside the typology, aGram.x = kind +
   16 × district): college halls of pale plaster with slate roofs, glass offices downtown (towers from 9 high, not 16),
   white flat-roofed villas with panoramic windows, brick terraces under one roof line, sheds and works, brick in the
-  Munkásnegyed. The Vár: the Domoszló castle (D55 A) at the head of the first track — curtain wall, four towers, a
+  Munkásnegyed. The Vár: the Mintafalu castle (D55 A) at the head of the first track — curtain wall, four towers, a
   gatehouse towards the town, a keep with battlements and lit slits, a red flag, its name. Each district's name floats
   over its middle. Spec: every building has a district, downtown segments are multiples of 90°, pools never sit on a
   plot. The layout costs ~5 s of CPU on this repo (the spec now times CPU, not wall-clock: a busy machine took 20 s+);
