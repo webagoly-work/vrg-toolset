@@ -1,0 +1,401 @@
+<title>Fényjel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="fenyjel.css">
+<style>
+  /* Board layout: a single dark world (the system is dark-only by design); every colour comes from fenyjel.css tokens. */
+  :root { color-scheme: dark; }
+  body { margin: 0; background: var(--fj-floor); color: var(--fj-ink); font: var(--fj-fs-body)/1.5 var(--fj-font-sans); }
+  .bd { padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    max-width: 1320px; margin: 0 auto; display: grid; gap: 56px; }
+  .bd > * { min-width: 0; }   /* the scaled desktop frame must not widen the column */
+  .bd-head { display: grid; gap: 10px; max-width: 760px; }
+  .bd-head h1 { margin: 0; font: 800 clamp(44px, 8vw, 84px)/1 var(--fj-font-dot); letter-spacing: .02em; display: flex; align-items: center; gap: 18px; }
+  .bd-head h1 .fj-socket { --sz: 64px; }
+  .bd-head p { margin: 0; color: var(--fj-ink-2); font-size: 16px; text-wrap: pretty; }
+  .bd h2 { margin: 0 0 18px; font: 400 30px/1 var(--fj-font-pixel); }
+  .bd h2 small { display: block; margin-top: 6px; font: 14px/1.4 var(--fj-font-sans); color: var(--fj-ink-2); max-width: 70ch; }
+
+  /* ------------------------------------------------ the screens row */
+  .screens { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .cap { margin-top: 10px; font: 12px var(--fj-font-mono); color: var(--fj-ink-3); }
+  .phone { width: 360px; max-width: 100%; height: 760px; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 0 0 1px rgba(190, 225, 245, .12), 0 0 0 8px #020406, 0 0 0 9px rgba(190, 225, 245, .08), 0 40px 80px -30px rgba(0, 0, 0, .9); }
+  .ph-status { display: flex; align-items: center; gap: 10px; padding: 18px 18px 6px; }
+  .ph-status .clock { font-size: 30px; }
+  .ph-status .date { color: var(--fj-ink-2); font-size: 12px; }
+  .sp { flex: 1; }
+  .leds { display: flex; gap: 8px; align-items: center; }
+  .ph-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 8px 14px 0; }
+  .focus { padding: 14px; display: grid; gap: 12px; }
+  .focus-top { display: flex; gap: 14px; align-items: center; }
+  .focus-top .tt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+  .focus-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .pager { margin-top: auto; display: flex; justify-content: center; gap: 8px; padding-bottom: 4px; }
+  .pager i { width: 9px; height: 3px; background: radial-gradient(circle, var(--fj-ink-3) 1px, transparent 1.6px) 0 0 / 3px 3px; }
+  .pager i.on { width: 15px; background-image: radial-gradient(circle, var(--fj-signal) 1px, transparent 1.6px); }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 4px; }
+  .fj-dock { margin: 10px 10px 12px; }
+
+  /* controller */
+  .ctl-head { display: flex; align-items: center; gap: 12px; padding: 4px 2px; }
+  .ctl-head .tt { flex: 1; display: grid; }
+  .gauges { padding: 14px; display: grid; gap: 12px; }
+  .gauge { display: grid; grid-template-columns: 22px 1fr 48px; gap: 10px; align-items: center; }
+  .gauge .fj-ic { width: 18px; height: 18px; }
+  .gauge .v { text-align: right; font-size: 18px; }
+  .acts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .acts .fj-socket { --sz: 56px; }
+  .srv { padding: 6px 14px; display: grid; }
+  .srv-row { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 10px; align-items: center; min-height: 40px; }
+  .srv-row + .srv-row { box-shadow: 0 -1px 0 var(--fj-hair); }
+  .srv-row .n { font: 18px/1 var(--fj-font-pixel); }
+  .srv-row .fj-mono { color: var(--fj-ink-3); }
+  .ctl .fj-console { min-height: 96px; }
+
+  /* desktop */
+  .desk-wrap { width: 100%; overflow: hidden; }
+  .desk { width: 1280px; height: 640px; transform-origin: 0 0; border-radius: 10px; overflow: hidden; display: grid; grid-template-columns: 72px 1fr 316px;
+    box-shadow: 0 0 0 1px rgba(190, 225, 245, .12), 0 40px 80px -30px rgba(0, 0, 0, .9); }
+  .rail { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: linear-gradient(180deg, rgba(4, 7, 10, .55), rgba(4, 7, 10, .25)); box-shadow: inset -1px 0 0 var(--fj-hair); }
+  .rail .fj-socket { --sz: 44px; }
+  .rail .fj-socket:not(.on) { background: none; box-shadow: none; }
+  .rail .fj-socket:not(.on) .fj-ic { filter: none; opacity: .8; }
+  .rail .div { width: 24px; height: 3px; margin: 6px 0; background: radial-gradient(circle, var(--fj-ink-3) .9px, transparent 1.4px) 0 0 / 3px 3px; }
+  .dmain { display: flex; flex-direction: column; gap: 22px; padding: 22px 28px; min-width: 0; }
+  .dtop { display: flex; align-items: center; gap: 18px; }
+  .dtop .clock { font-size: 44px; }
+  .dtop .date { color: var(--fj-ink-2); font-size: 13px; line-height: 1.3; }
+  .dsearch { flex: 1; max-width: 440px; margin-left: auto; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: var(--fj-r);
+    background: var(--fj-void); box-shadow: inset 0 0 0 1px var(--fj-edge); color: var(--fj-ink-3); font: 13px var(--fj-font-sans); }
+  .dsearch .fj-ic { width: 16px; height: 16px; }
+  .dsearch kbd { margin-left: auto; font: 11px var(--fj-font-mono); color: var(--fj-ink-3); box-shadow: inset 0 0 0 1px var(--fj-hair); padding: 2px 6px; border-radius: 2px; }
+  .recent { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rc { padding: 14px; display: grid; gap: 12px; }
+  .rc .top { display: flex; gap: 12px; align-items: center; }
+  .rc .top .tt { flex: 1; min-width: 0; display: grid; }
+  .rc .fj-title { font-size: 22px; }
+  .rc .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+  .grid7 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px 6px; }
+  .grid7 .fj-socket { --sz: 68px; }
+  .dside { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px 22px 0; min-width: 0; }
+  .dside .fj-console { flex: 1; }
+  .lbl { font: 16px var(--fj-font-pixel); color: var(--fj-ink-3); letter-spacing: .04em; }
+
+  /* ------------------------------------------------ families, icons, depth, parts */
+  .fams { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .fam { padding: 16px 14px; display: grid; gap: 10px; justify-items: start; }
+  .fam b { font: 400 22px/1 var(--fj-font-pixel); color: var(--fj-hue); }
+  .fam span { font-size: 12px; color: var(--fj-ink-2); line-height: 1.4; }
+  .fam code { font: 11px var(--fj-font-mono); color: var(--fj-ink-3); }
+  .icons-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .icons-bar button[aria-pressed="true"] { --fj-hue: var(--fj-signal); background: color-mix(in srgb, var(--fj-signal) 14%, transparent); }
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px 6px; }
+  .icons .fj-tile > span { max-width: 12ch; }
+  .depth { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-radius: var(--fj-r); overflow: hidden; }
+  .depth div { min-height: 120px; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+  .depth b { font: 400 20px var(--fj-font-pixel); }
+  .depth code { font: 11px var(--fj-font-mono); color: var(--fj-ink-2); }
+  .parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .part { padding: 16px; display: grid; gap: 14px; align-content: start; }
+  .part h3 { margin: 0; font: 400 22px/1 var(--fj-font-pixel); }
+  .part p { margin: 0; font-size: 12.5px; color: var(--fj-ink-2); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .pg { overflow: hidden; }
+  .pg-head { display: flex; gap: 14px; align-items: center; padding: 16px; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--fj-hue) 30%, transparent); }
+  .pg-head .tt { flex: 1; display: grid; }
+  .pg-body { padding: 14px 16px 18px; display: grid; gap: 12px; }
+  .pg-body .row .fj-meter { flex: 1; }
+  .side-rules { flex: 1 1 320px; min-width: 0; padding-top: 8px; }
+  .rules { display: grid; grid-template-columns: 1fr; gap: 16px 28px; padding: 0; margin: 0; list-style: none; }
+  .rules li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-size: 14px; color: var(--fj-ink-2); }
+  .rules li b { color: var(--fj-ink); font-weight: 600; }
+  .rules .fj-ic { width: 24px; height: 24px; }
+  @media (max-width: 720px) { .bd { gap: 40px; } .phone { height: 720px; } }
+</style>
+
+<div class="bd">
+  <header class="bd-head">
+    <h1><span class="fj-socket" data-fj-family="run" data-ic="launch"></span>Fényjel</h1>
+    <p>A VRG új arculata telefonra és asztalra. Mély, rétegzett sötét, ahol a szín azt mondja meg, mit csinál egy funkció, a kép előbb jön, mint a szöveg, és a keret vékony, éles HUD-vonal. Alább a három új alapképernyő, aztán az építőkockák.</p>
+  </header>
+
+  <!-- =========================================================== the three screens -->
+  <section>
+    <h2>Új kezdőlap, vezérlőpult, asztal<small>Első ránézésre csak ikonok és a legfontosabb egy dolog. Minden további adat az i gomb vagy a funkció mögött van.</small></h2>
+    <div class="screens">
+
+      <!-- phone: home -->
+      <figure style="margin:0">
+        <div class="phone fj-ground" data-fj-family="ui">
+          <div class="ph-status">
+            <span class="fj-num clock">14:32</span><span class="date">szerda<br>nov. 25.</span>
+            <span class="sp"></span>
+            <span class="leds" title="PC · relay · GitHub"><i class="fj-led" data-s="ok"></i><i class="fj-led" data-s="ok"></i><i class="fj-led"></i></span>
+          </div>
+          <div class="ph-body">
+            <section class="focus fj-plane fj-plane--hue fj-brackets fj-brackets--hue" data-fj-family="plan">
+              <div class="focus-top">
+                <span class="fj-socket" data-ic="planner"></span>
+                <div class="tt"><b class="fj-title">Kovács lakás</b><span class="fj-sub">Tervező · bekötés</span></div>
+                <button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button>
+              </div>
+              <div class="focus-row">
+                <button class="fj-btn fj-btn--solid">Folytatás</button>
+                <div class="fj-meter" style="--v:.62"></div>
+                <span class="fj-num" style="font-size:20px">62%</span>
+              </div>
+            </section>
+            <div class="grid4" id="home-grid"></div>
+            <div class="pager" aria-label="1. oldal / 3"><i class="on"></i><i></i><i></i></div>
+          </div>
+          <nav class="fj-dock fj-glass" aria-label="Fő menü">
+            <button aria-current="page" aria-label="Kezdőlap" data-ic="home"></button>
+            <button aria-label="Vezérlő" data-ic="control"></button>
+            <button class="fj-dock__main" aria-label="Keresés" data-ic="search"></button>
+            <button aria-label="Értesítések" data-ic="inbox"></button>
+            <button aria-label="Beállítások" data-ic="settings"></button>
+          </nav>
+        </div>
+        <figcaption class="cap">Telefon · Kezdőlap</figcaption>
+      </figure>
+
+      <!-- phone: controller -->
+      <figure style="margin:0">
+        <div class="phone fj-ground ctl" data-fj-family="link">
+          <div class="ph-status">
+            <span class="fj-num clock">14:32</span><span class="sp"></span>
+            <span class="leds"><i class="fj-led" data-s="ok"></i><i class="fj-led" data-s="ok"></i><i class="fj-led"></i></span>
+          </div>
+          <div class="ph-body">
+            <div class="ctl-head">
+              <span class="fj-socket fj-socket--sm" data-ic="devices"></span>
+              <div class="tt"><b class="fj-title">VRG-PC</b><span class="fj-mono" style="color:var(--fj-ink-2)"><i class="fj-led" data-s="ok"></i>&nbsp; WiFi · 12 ms</span></div>
+              <button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button>
+            </div>
+            <section class="gauges fj-plane">
+              <div class="gauge" data-fj-family="run"><span data-ic="terminal"></span><div class="fj-meter" style="--v:.34"></div><span class="fj-num v">34%</span></div>
+              <div class="gauge" data-fj-family="know"><span data-ic="stack"></span><div class="fj-meter" style="--v:.58"></div><span class="fj-num v">58%</span></div>
+              <div class="gauge" data-fj-family="stock"><span data-ic="archive" data-fam="stock"></span><div class="fj-meter" data-s="warn" style="--v:.86"></div><span class="fj-num v" style="color:var(--fj-warn)">86%</span></div>
+              <div class="gauge" data-fj-family="link"><span data-ic="net"></span><div class="fj-meter" style="--v:.22"></div><span class="fj-num v">2,4</span></div>
+            </section>
+            <div class="acts">
+              <button class="fj-tile" data-fj-family="link"><span class="fj-socket" data-ic="mouse"></span><span>Egér</span></button>
+              <button class="fj-tile" data-fj-family="link"><span class="fj-socket" data-ic="screen"></span><span>Képernyő</span></button>
+              <button class="fj-tile" data-fj-family="link"><span class="fj-socket" data-ic="drop"></span><span>Átadás</span></button>
+              <button class="fj-tile" data-fj-family="sys"><span class="fj-socket" data-ic="vault"></span><span>Zárolás</span></button>
+            </div>
+            <section class="srv fj-plane fj-plane--flat">
+              <div class="srv-row" data-fj-family="plan"><i class="fj-led" data-s="hue"></i><span class="n">Planner</span><span class="fj-mono">:8131</span><button class="fj-switch" role="switch" aria-checked="true" aria-label="Planner"></button></div>
+              <div class="srv-row" data-fj-family="stock"><i class="fj-led" data-s="hue"></i><span class="n">Készlet</span><span class="fj-mono">:8123</span><button class="fj-switch" role="switch" aria-checked="true" aria-label="Készlet"></button></div>
+              <div class="srv-row" data-fj-family="run"><i class="fj-led"></i><span class="n">Kódváros</span><span class="fj-mono">:8790</span><button class="fj-switch" role="switch" aria-checked="false" aria-label="Kódváros"></button></div>
+            </section>
+            <div class="fj-console" data-fj-family="run">
+              <div><span class="t">14:31</span> <span class="ok">✓</span> planner build 2,1 s</div>
+              <div><span class="t">14:31</span> <span class="w">!</span> lemez 86% · H:</div>
+              <div><span class="h">vrg&gt;</span> <span class="cur"></span></div>
+            </div>
+          </div>
+          <nav class="fj-dock fj-glass" aria-label="Fő menü">
+            <button aria-label="Kezdőlap" data-ic="home"></button>
+            <button aria-current="page" aria-label="Vezérlő" data-ic="control"></button>
+            <button class="fj-dock__main" aria-label="Keresés" data-ic="search"></button>
+            <button aria-label="Értesítések" data-ic="inbox"></button>
+            <button aria-label="Beállítások" data-ic="settings"></button>
+          </nav>
+        </div>
+        <figcaption class="cap">Telefon · Vezérlőpult (PC-konzol)</figcaption>
+      </figure>
+  <!-- =========================================================== rules -->
+  <div class="side-rules">
+    <h2>Hat szabály</h2>
+    <ul class="rules">
+      <li><span data-ic="search"></span><span><b>Kép előbb, mint szöveg.</b> Egy csempe = egy ikon és egy szó. Leírás nincs a felületen: az <i>i</i> gomb mögött van.</span></li>
+      <li><span data-ic="stack" data-fam="know"></span><span><b>A szín jelentés.</b> Nyolc funkciócsalád, mindegyiknek egy színe. A szín csak ott jelenik meg, ahol jelent valamit: az ikonon, a foglalat fényén, az oldal kiemelésén.</span></li>
+      <li><span data-ic="archive" data-fam="sys"></span><span><b>A sötétnek mélysége van.</b> Megvilágított talaj, rétegek, valódi árnyék, felül egy pixelnyi fényperem. Semmi lapos szürke.</span></li>
+      <li><span data-ic="measure"></span><span><b>Vékony, éles vonal.</b> Teljes keret helyett sarokjelek; egy sugár (3 px); hajszálvonal csak ott, ahol két terület határa kell.</span></li>
+      <li><span data-ic="pulse"></span><span><b>Állapot = forma + szín.</b> Pont-LED, pontsor-mérő, mindig számmal mellette. A státuszszín sosem festi az ikont.</span></li>
+      <li><span data-ic="terminal"></span><span><b>Konzol a gép mellett.</b> A vezérlőpult mindig ugyanott: telefonon saját fül, asztalon jobb oszlop.</span></li>
+    </ul>
+  </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="desk-wrap" id="desk-wrap">
+      <div class="desk fj-ground" id="desk" data-fj-family="ui">
+        <nav class="rail" id="rail" aria-label="Családok"></nav>
+        <main class="dmain">
+          <div class="dtop">
+            <span class="fj-num clock">14:32</span><span class="date">szerda<br>2026. nov. 25.</span>
+            <div class="dsearch"><span data-ic="search"></span>Keresés programok, munkák, jegyzetek között<kbd>Ctrl K</kbd></div>
+          </div>
+          <div class="recent">
+            <section class="rc fj-plane fj-plane--hue fj-brackets fj-brackets--hue" data-fj-family="plan">
+              <div class="top"><span class="fj-socket fj-socket--sm" data-ic="planner"></span><div class="tt"><b class="fj-title">Kovács lakás</b><span class="fj-sub">Tervező · bekötés</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+              <div class="row"><div class="fj-meter" style="--v:.62"></div><span class="fj-num">62%</span></div>
+            </section>
+            <section class="rc fj-plane fj-plane--hue" data-fj-family="stock">
+              <div class="top"><span class="fj-socket fj-socket--sm" data-ic="quote"></span><div class="tt"><b class="fj-title">Árajánlat #307</b><span class="fj-sub">Költségvetés · vázlat</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+              <div class="row"><div class="fj-meter" style="--v:.3"></div><span class="fj-num">30%</span></div>
+            </section>
+            <section class="rc fj-plane fj-plane--hue" data-fj-family="know">
+              <div class="top"><span class="fj-socket fj-socket--sm" data-ic="notes"></span><div class="tt"><b class="fj-title">Helyszíni jegyzet</b><span class="fj-sub">Jegyzet · ma 09:12</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+              <div class="row"><div class="fj-meter" style="--v:1"></div><span class="fj-num">kész</span></div>
+            </section>
+          </div>
+          <div class="grid7" id="desk-grid"></div>
+        </main>
+        <aside class="dside" data-fj-family="link">
+          <div class="ctl-head"><span class="fj-socket fj-socket--sm" data-ic="devices"></span><div class="tt"><b class="fj-title" style="font-size:22px">Ez a gép</b><span class="fj-mono" style="color:var(--fj-ink-2)"><i class="fj-led" data-s="ok"></i>&nbsp; telefon kapcsolva</span></div></div>
+          <section class="gauges fj-plane">
+            <div class="gauge" data-fj-family="run"><span data-ic="terminal"></span><div class="fj-meter" style="--v:.34"></div><span class="fj-num v">34%</span></div>
+            <div class="gauge" data-fj-family="know"><span data-ic="stack"></span><div class="fj-meter" style="--v:.58"></div><span class="fj-num v">58%</span></div>
+            <div class="gauge" data-fj-family="stock"><span data-ic="archive" data-fam="stock"></span><div class="fj-meter" data-s="warn" style="--v:.86"></div><span class="fj-num v" style="color:var(--fj-warn)">86%</span></div>
+          </section>
+          <section class="srv fj-plane fj-plane--flat">
+            <div class="srv-row" data-fj-family="plan"><i class="fj-led" data-s="hue"></i><span class="n">Planner</span><span class="fj-mono">:8131</span><button class="fj-switch" role="switch" aria-checked="true" aria-label="Planner"></button></div>
+            <div class="srv-row" data-fj-family="stock"><i class="fj-led" data-s="hue"></i><span class="n">Készlet</span><span class="fj-mono">:8123</span><button class="fj-switch" role="switch" aria-checked="true" aria-label="Készlet"></button></div>
+            <div class="srv-row" data-fj-family="know"><i class="fj-led" data-s="hue"></i><span class="n">Rétegverem</span><span class="fj-mono">:8806</span><button class="fj-switch" role="switch" aria-checked="true" aria-label="Rétegverem"></button></div>
+            <div class="srv-row" data-fj-family="run"><i class="fj-led"></i><span class="n">Kódváros</span><span class="fj-mono">:8790</span><button class="fj-switch" role="switch" aria-checked="false" aria-label="Kódváros"></button></div>
+          </section>
+          <div class="fj-console" data-fj-family="run">
+            <div><span class="t">14:30</span> <span class="ok">✓</span> git push · main</div>
+            <div><span class="t">14:31</span> <span class="ok">✓</span> planner build 2,1 s</div>
+            <div><span class="t">14:31</span> <span class="w">!</span> lemez 86% · H:</div>
+            <div><span class="t">14:32</span> telefon: Képernyő megnyitva</div>
+            <div><span class="h">vrg&gt;</span> <span class="cur"></span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <p class="cap">Asztal · bal oldalt a nyolc funkciócsalád, középen a folytatható munkák és a programok, jobbra a gép konzolja</p>
+  </section>
+
+  <!-- =========================================================== families -->
+  <section>
+    <h2>Nyolc funkciócsalád<small>A szín azt mondja, mit csinál valami, nem azt, melyik programból jön. Egy új funkció a családja színét kapja, és ugyanabból a pixelrácsból kap ikont.</small></h2>
+    <div class="fams" id="fams"></div>
+  </section>
+
+  <!-- =========================================================== icons -->
+  <section>
+    <h2>Pixelikonok<small>12×12 rács, két tónus. Egy forrás (<code class="fj-mono">icons.js</code>): a web SVG-t rajzol belőle, a telefon ugyanebből kap Compose-ikont. Három megjelenés: rács (alap), tömör és LED-pont.</small></h2>
+    <div class="icons-bar" role="group" aria-label="Megjelenés">
+      <button class="fj-btn" data-mode="px" aria-pressed="true">Rács</button>
+      <button class="fj-btn" data-mode="solid" aria-pressed="false">Tömör</button>
+      <button class="fj-btn" data-mode="dot" aria-pressed="false">LED</button>
+    </div>
+    <div class="icons" id="icons"></div>
+  </section>
+
+  <!-- =========================================================== depth -->
+  <section>
+    <h2>Mélység<small>Öt sík, mindig ugyanabban a sorrendben. A talaj középen világosabb (felülről eső fény), a széle elsötétül, a panelek árnyékot vetnek rá.</small></h2>
+    <div class="depth">
+      <div style="background:var(--fj-void)"><b>Void</b><code>--fj-void</code></div>
+      <div style="background:var(--fj-floor)"><b>Talaj</b><code>--fj-floor</code></div>
+      <div style="background:var(--fj-floor-lit)"><b>Fény a talajon</b><code>--fj-floor-lit</code></div>
+      <div style="background:var(--fj-deck)"><b>Panel</b><code>--fj-deck</code></div>
+      <div style="background:var(--fj-lift)"><b>Emelt</b><code>--fj-lift</code></div>
+    </div>
+  </section>
+
+  <!-- =========================================================== feature pages -->
+  <section>
+    <h2>Minden funkció a saját színében<small>Egy oldal a családja színét veszi fel (<code class="fj-mono">data-fj-family</code>): a fejléc, a gombok, a mérők és a fókusz is azt követi, így a képernyők első ránézésre különböznek.</small></h2>
+    <div class="pages">
+      <section class="pg fj-plane" data-fj-family="stock">
+        <div class="pg-head"><span class="fj-socket" data-ic="inventory"></span><div class="tt"><b class="fj-title">Készlet</b><span class="fj-sub">412 tétel · 3 fogy</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+        <div class="pg-body"><div class="row"><span class="fj-mono">NYM-J 3×2,5</span><div class="fj-meter" style="--v:.2" data-s="warn"></div><span class="fj-num">18 m</span></div><div class="row"><button class="fj-btn fj-btn--solid">Rendelés</button><button class="fj-btn">Leltár</button></div></div>
+      </section>
+      <section class="pg fj-plane" data-fj-family="link">
+        <div class="pg-head"><span class="fj-socket" data-ic="mouse"></span><div class="tt"><b class="fj-title">Légegér</b><span class="fj-sub">VRG-PC · giroszkóp</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+        <div class="pg-body"><div class="row"><span class="fj-mono">érzékenység</span><div class="fj-meter" style="--v:.55"></div><span class="fj-num">55</span></div><div class="row"><button class="fj-btn fj-btn--solid">Csatlakozás</button><button class="fj-btn">Billentyűzet</button></div></div>
+      </section>
+      <section class="pg fj-plane" data-fj-family="alert">
+        <div class="pg-head"><span class="fj-socket" data-ic="radar"></span><div class="tt"><b class="fj-title">Radar</b><span class="fj-sub">2 jel a közelben</span></div><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div>
+        <div class="pg-body"><div class="row"><i class="fj-led" data-s="crit"></i><span class="fj-mono">kulcs · ISYTag · 14 m</span></div><div class="row"><button class="fj-btn fj-btn--solid">Csörgetés</button><button class="fj-btn">Térkép</button></div></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- =========================================================== parts -->
+  <section>
+    <h2>Alkatrészek</h2>
+    <div class="parts">
+      <div class="part fj-plane" data-fj-family="plan"><h3>Foglalat és csempe</h3><div class="row"><button class="fj-tile"><span class="fj-socket" data-ic="map"></span><span>Térkép</span></button><button class="fj-tile" data-state="run" data-fj-family="run"><span class="fj-socket" data-ic="launch"></span><span>Indítás</span></button><button class="fj-tile" data-badge="3" data-fj-family="alert" style="position:relative"><span class="fj-socket" data-ic="inbox"></span><span>Jelzések</span></button></div><p>Fut: zöld sarokpont. Szám: rózsaszín jelvény. Fölé víve a foglalat a családja színében gyullad ki.</p></div>
+      <div class="part fj-plane" data-fj-family="run"><h3>LED és mérő</h3><div class="row"><i class="fj-led" data-s="ok"></i><span class="fj-mono">rendben</span><i class="fj-led" data-s="warn"></i><span class="fj-mono">figyelem</span><i class="fj-led" data-s="crit"></i><span class="fj-mono">hiba</span><i class="fj-led"></i><span class="fj-mono">ki</span></div><div class="row"><div class="fj-meter" style="--v:.7;flex:1"></div><span class="fj-num">70%</span></div><p>3×3 pontos LED, pontsor-mérő. Mindig szám vagy szó mellette.</p></div>
+      <div class="part fj-plane" data-fj-family="know"><h3>Gomb, kapcsoló, i</h3><div class="row"><button class="fj-btn fj-btn--solid">Mentés</button><button class="fj-btn">Mégse</button><button class="fj-switch" role="switch" aria-checked="true" aria-label="Példa"></button><button class="fj-i" aria-label="Részletek" data-ic="info" data-fam="ui"></button></div><p>Egy vonalvastagság, egy sugár. A tömör gomb az oldal egyetlen fő művelete.</p></div>
+      <div class="part fj-plane fj-brackets" data-fj-family="sys"><h3>Sarokjel</h3><p>Teljes keret helyett: a kiemelt panel négy sarokjelet kap. Fókuszban a család színében.</p></div>
+    </div>
+  </section>
+</div>
+
+<script src="icons.js"></script>
+<script>
+(function () {
+  'use strict';
+  var I = window.FJIcons;
+  // put every glyph where markup asks for one: data-ic="name" (data-fam overrides the family colour when it differs)
+  function paint(root) {
+    root.querySelectorAll('[data-ic]').forEach(function (el) {
+      var name = el.getAttribute('data-ic');
+      var fam = el.getAttribute('data-fam');
+      var o = fam ? { colour: I.familyColour(fam) } : {};
+      if (!fam && el.closest('[data-fj-family]') && I.ICONS[name].family !== 'ui') o = {};   // own family
+      el.insertAdjacentHTML('afterbegin', I.svg(name, o));
+    });
+  }
+  var T = function (name, label, extra) {
+    var ic = I.ICONS[name];
+    return '<button class="fj-tile"' + (extra || '') + ' data-fj-family="' + ic.family + '"><span class="fj-socket" data-ic="' + name + '"></span><span>' + (label || ic.hu) + '</span></button>';
+  };
+  // phone home: twelve one-word tiles, ordered by family so the colours fall into bands by themselves
+  document.getElementById('home-grid').innerHTML = [
+    T('planner', 'Tervező'), T('sketch'), T('map'), T('inventory'), T('mouse', 'Egér'), T('screen'), T('drop'), T('notes'),
+    T('stack', 'Verem'), T('launch', 'Indítás', ' data-state="run"'), T('radar'), T('weather', 'Idő')].join('');
+  document.getElementById('desk-grid').innerHTML = [
+    T('planner', 'Tervező'), T('sketch'), T('map'), T('measure'), T('inventory'), T('calc'), T('quote', 'Ajánlat'), T('pair', 'Párosít'),
+    T('notes'), T('stack', 'Verem'), T('archive'), T('sphere'), T('launch', 'Indítás', ' data-state="run"'), T('ports'), T('city', 'Város'), T('inbox', 'Jelzések', ' data-badge="3" style="position:relative"')].join('');
+  // desktop rail: one glyph per family, the open one lit
+  var railIcons = [['home', 'ui', 1], null, ['planner', 'plan'], ['inventory', 'stock'], ['mouse', 'link'], ['notes', 'know'], ['launch', 'run'], ['inbox', 'alert'], ['weather', 'env'], null, ['settings', 'sys']];
+  document.getElementById('rail').innerHTML = railIcons.map(function (r) {
+    return r ? '<span class="fj-socket' + (r[2] ? ' on' : '') + '" data-fj-family="' + r[1] + '" data-ic="' + r[0] + '" title="' + I.FAMILIES[r[1]].hu + '"></span>' : '<span class="div"></span>';
+  }).join('');
+  // families
+  var rep = { plan: 'planner', stock: 'inventory', link: 'mouse', know: 'notes', run: 'launch', alert: 'radar', env: 'weather', sys: 'settings' };
+  document.getElementById('fams').innerHTML = Object.keys(rep).map(function (f) {
+    var F = I.FAMILIES[f];
+    return '<div class="fam fj-plane fj-plane--hue" data-fj-family="' + f + '"><span class="fj-socket" data-ic="' + rep[f] + '"></span><b>' + F.hu + '</b><span>' + F.note.split(': ')[1] + '</span><code>--fj-f-' + f + '</code></div>';
+  }).join('');
+  // the icon sheet
+  function sheet(mode) {
+    document.getElementById('icons').innerHTML = I.list().map(function (ic) {
+      return '<div class="fj-tile" data-fj-family="' + ic.family + '"><span class="fj-socket">' + I.svg(ic.name, { mode: mode }) + '</span><span>' + ic.hu + '</span></div>';
+    }).join('');
+  }
+  paint(document);
+  document.querySelectorAll('.fj-num').forEach(function (el) { var t = el.textContent.trim(); if (I.digitsFit(t)) el.innerHTML = I.digits(t); });
+  sheet('px');
+  document.querySelectorAll('.icons-bar button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.icons-bar button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      sheet(b.getAttribute('data-mode'));
+    });
+  });
+  // switches toggle
+  document.addEventListener('click', function (e) {
+    var s = e.target.closest('.fj-switch'); if (!s) return;
+    var on = s.getAttribute('aria-checked') !== 'true';
+    s.setAttribute('aria-checked', String(on));
+    var led = s.parentNode.querySelector('.fj-led'); if (led) { if (on) led.setAttribute('data-s', 'hue'); else led.removeAttribute('data-s'); }
+  });
+  // the desktop frame keeps its 1280 px layout and scales to the column
+  var wrap = document.getElementById('desk-wrap'), desk = document.getElementById('desk');
+  function fit() { var k = Math.min(1, wrap.clientWidth / 1280); desk.style.transform = 'scale(' + k + ')'; wrap.style.height = (640 * k) + 'px'; }
+  fit(); window.addEventListener('resize', fit);
+})();
+</script>

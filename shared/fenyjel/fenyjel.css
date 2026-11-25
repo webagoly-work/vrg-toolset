@@ -1,0 +1,211 @@
+/* Fényjel — the VRG signal design system (2026-11-25). Spec: shared/fenyjel/DESIGN.md. Icons: icons.js. Fonts: fonts/.
+   Apply with <html class="fj">. Everything is --fj-* tokens + .fj-* classes, so it can sit beside Mélyvíz and the UI Kit.
+
+   The idea in one line: a dark instrument with DEPTH (lit ground, layered planes, real shadow), where COLOUR SAYS WHAT A
+   THING DOES (eight function families), pictures come before words (pixel glyphs in lit sockets), and the chrome is
+   thin, sharp HUD line work (corner brackets, hairlines, dot LEDs) that stays out of the way. */
+
+:root {
+  /* ---------------------------------------------------------------- depth: the ground is lit, planes stack toward you */
+  --fj-void: #04070a;          /* the edge of the screen, wells, the vignette */
+  --fj-floor: #091018;         /* the page ground */
+  --fj-floor-lit: #13202c;     /* the key light falling on the ground from above */
+  --fj-deck: #0e1720;          /* a panel resting on the ground */
+  --fj-lift: #152230;          /* a raised or hovered panel, the socket's face */
+  --fj-glass: rgba(14, 23, 32, .78);   /* floating layers (dock, sheets), with backdrop blur */
+  --fj-scrim: rgba(2, 5, 8, .66);
+  --fj-shadow: 0 24px 48px -24px rgba(0, 0, 0, .9), 0 2px 6px rgba(0, 0, 0, .5);   /* a plane above the ground */
+  --fj-shadow-lo: 0 10px 22px -14px rgba(0, 0, 0, .85);                             /* a socket on a plane */
+  --fj-rim: rgba(205, 232, 255, .07);  /* the 1 px lit top edge of every plane: the light comes from above */
+
+  /* ---------------------------------------------------------------- line work: thin, sharp, few */
+  --fj-hair: rgba(160, 205, 230, .09);     /* dividers that are barely there */
+  --fj-edge: rgba(160, 205, 230, .2);      /* a frame you need to see */
+  --fj-bracket: rgba(190, 225, 245, .55);  /* HUD corner brackets */
+  --fj-bracket-len: 9px;
+
+  /* ---------------------------------------------------------------- ink */
+  --fj-ink: #e6eef3;           /* text, the "ui" glyphs */
+  --fj-ink-2: #93a5b2;         /* secondary text */
+  --fj-ink-3: #5d6e7b;         /* decoration only, never information */
+  --fj-signal: #f4fbff;        /* "you are here": focus, the active dock slot; white phosphor */
+
+  /* ---------------------------------------------------------------- function families: colour says what a thing DOES */
+  --fj-f-plan:  #5cc8f5;       /* Tervezés    cyan    */
+  --fj-f-stock: #f5b94a;       /* Anyag, pénz amber   */
+  --fj-f-link:  #b393ff;       /* Kapcsolat   violet  */
+  --fj-f-know:  #5ee6c0;       /* Tudás       mint    */
+  --fj-f-run:   #c3ea5c;       /* Futtatás    lime    */
+  --fj-f-alert: #ff7a9a;       /* Jelzés      rose    */
+  --fj-f-env:   #7ea2ff;       /* Környezet   blue    */
+  --fj-f-sys:   #a9b7c4;       /* Rendszer    steel   */
+
+  /* ---------------------------------------------------------------- status: only with a shape (LED glyph, meter) */
+  --fj-ok: #4ee38a;
+  --fj-warn: #ffd24a;
+  --fj-crit: #ff4f61;
+  --fj-off: #3a4a57;
+
+  /* ---------------------------------------------------------------- pixels and dots */
+  --fj-px-dim: .4;             /* opacity of a glyph's dim tone */
+  --fj-dot: 3px;               /* dot-matrix pitch (meters, LEDs, rules) */
+
+  /* ---------------------------------------------------------------- type: terminal voice, quiet body, mono readouts
+     VT323 sets small on its em: its sizes here are ~1.25× a sans size of the same weight on screen. Numbers never use a
+     font: they are LED digits (FJIcons.digits). Doto is for a display moment only. */
+  --fj-font-pixel: "FJ Term", "VT323", "VK JetBrains Mono", monospace;
+  --fj-font-dot: "FJ Dot", "Doto", "FJ Term", monospace;
+  --fj-font-sans: "FJ Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+  --fj-font-mono: "FJ Mono", "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --fj-fs-label: 16px;  --fj-fs-body: 14px;  --fj-fs-title: 26px;  --fj-fs-hero: 40px;  --fj-fs-mega: 64px;
+
+  /* ---------------------------------------------------------------- shape and space */
+  --fj-r: 3px;                 /* the one radius: sharp, never pill, never round cards */
+  --fj-s1: 4px; --fj-s2: 8px; --fj-s3: 12px; --fj-s4: 16px; --fj-s5: 24px; --fj-s6: 32px;
+  --fj-socket: 64px;           /* the icon socket on a phone; 72 on the desktop */
+  --fj-dur: 160ms; --fj-ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* the page's own family: a feature page sets data-fj-family and everything "accent" follows it */
+  --fj-hue: var(--fj-signal);
+}
+[data-fj-family="plan"]  { --fj-hue: var(--fj-f-plan); }
+[data-fj-family="stock"] { --fj-hue: var(--fj-f-stock); }
+[data-fj-family="link"]  { --fj-hue: var(--fj-f-link); }
+[data-fj-family="know"]  { --fj-hue: var(--fj-f-know); }
+[data-fj-family="run"]   { --fj-hue: var(--fj-f-run); }
+[data-fj-family="alert"] { --fj-hue: var(--fj-f-alert); }
+[data-fj-family="env"]   { --fj-hue: var(--fj-f-env); }
+[data-fj-family="sys"]   { --fj-hue: var(--fj-f-sys); }
+[data-fj-family="ui"]    { --fj-hue: var(--fj-ink); }
+
+/* ==================================================================== ground: the lit, vignetted floor */
+.fj { color-scheme: dark; }
+.fj body, .fj-ground {
+  background:
+    radial-gradient(120% 60% at 50% -8%, var(--fj-floor-lit) 0%, transparent 62%),
+    radial-gradient(90% 50% at 50% 115%, color-mix(in srgb, var(--fj-hue) 7%, transparent) 0%, transparent 70%),
+    var(--fj-floor);
+  color: var(--fj-ink); font: var(--fj-fs-body)/1.45 var(--fj-font-sans);
+}
+/* a very faint dot grid, fading toward the edges: the ground reads as a screen, not as paint */
+.fj-ground { position: relative; isolation: isolate; }
+.fj-ground::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, rgba(190, 225, 245, .07) .7px, transparent 1.2px) 0 0 / 14px 14px;
+  -webkit-mask: radial-gradient(80% 70% at 50% 30%, #000 30%, transparent 100%); mask: radial-gradient(80% 70% at 50% 30%, #000 30%, transparent 100%);
+}
+.fj-ground::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-shadow: inset 0 0 120px 20px var(--fj-void); }
+
+/* ==================================================================== planes */
+.fj-plane {
+  position: relative; border-radius: var(--fj-r);
+  background: linear-gradient(180deg, var(--fj-lift) 0%, var(--fj-deck) 38%);
+  box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-hair), var(--fj-shadow);
+}
+.fj-plane--flat { background: var(--fj-deck); box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-hair); }
+.fj-glass { background: var(--fj-glass); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-hair), var(--fj-shadow); border-radius: var(--fj-r); }
+/* a plane lit by its function: its own colour glows from below, faintly */
+.fj-plane--hue { background:
+  radial-gradient(80% 90% at 50% 120%, color-mix(in srgb, var(--fj-hue) 16%, transparent), transparent 70%),
+  linear-gradient(180deg, var(--fj-lift) 0%, var(--fj-deck) 38%); }
+
+/* ==================================================================== HUD corner brackets (instead of full boxes) */
+.fj-brackets { position: relative; }
+.fj-brackets::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; --c: var(--fj-bracket); --l: var(--fj-bracket-len);
+  background:
+    linear-gradient(var(--c) 0 0) 0 0 / var(--l) 1px no-repeat, linear-gradient(var(--c) 0 0) 0 0 / 1px var(--l) no-repeat,
+    linear-gradient(var(--c) 0 0) 100% 0 / var(--l) 1px no-repeat, linear-gradient(var(--c) 0 0) 100% 0 / 1px var(--l) no-repeat,
+    linear-gradient(var(--c) 0 0) 0 100% / var(--l) 1px no-repeat, linear-gradient(var(--c) 0 0) 0 100% / 1px var(--l) no-repeat,
+    linear-gradient(var(--c) 0 0) 100% 100% / var(--l) 1px no-repeat, linear-gradient(var(--c) 0 0) 100% 100% / 1px var(--l) no-repeat;
+}
+.fj-brackets--hue::after { --c: var(--fj-hue); }
+
+/* ==================================================================== the icon and its socket */
+.fj-ic { display: block; width: 100%; height: 100%; }
+.fj-ic .b { opacity: var(--fj-px-dim); }
+/* a socket: a small lit well the glyph sits in. Its family colour glows behind the glyph, so the page has colour
+   in exactly the places that mean something. */
+.fj-socket {
+  --sz: var(--fj-socket); position: relative; display: grid; place-items: center; flex: none;
+  width: var(--sz); height: var(--sz); border-radius: var(--fj-r);
+  background:
+    radial-gradient(60% 60% at 50% 55%, color-mix(in srgb, var(--fj-hue) 22%, transparent) 0%, transparent 72%),
+    linear-gradient(180deg, var(--fj-lift), var(--fj-deck));
+  box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px color-mix(in srgb, var(--fj-hue) 24%, transparent), var(--fj-shadow-lo);
+}
+.fj-socket > .fj-ic { width: 56%; height: 56%; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--fj-hue) 45%, transparent)); }
+.fj-socket--lg { --sz: 96px; }
+.fj-socket--sm { --sz: 40px; }
+.fj-socket--bare { background: none; box-shadow: none; }
+
+/* ==================================================================== a glyph tile: socket + one word. No descriptions: the i button has them */
+.fj-tile { display: grid; justify-items: center; gap: var(--fj-s2); padding: var(--fj-s2) 0; border: 0; background: none; color: var(--fj-ink);
+  font: 400 var(--fj-fs-label)/1 var(--fj-font-pixel); letter-spacing: .01em; cursor: pointer; border-radius: var(--fj-r);
+  -webkit-tap-highlight-color: transparent; }
+.fj-tile > span { max-width: 10ch; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fj-ink-2); }
+.fj-tile:hover .fj-socket, .fj-tile:focus-visible .fj-socket { box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-hue), 0 0 18px -4px color-mix(in srgb, var(--fj-hue) 60%, transparent), var(--fj-shadow-lo); }
+.fj-tile:hover > span, .fj-tile:focus-visible > span { color: var(--fj-ink); }
+.fj-tile:focus-visible { outline: none; }
+.fj-tile[data-state="run"] .fj-socket::after { content: ""; position: absolute; right: 5px; top: 5px; width: 6px; height: 6px; background: var(--fj-f-run); box-shadow: 0 0 6px var(--fj-f-run); }
+.fj-tile[data-badge]::before { content: attr(data-badge); position: absolute; transform: translate(22px, -6px); z-index: 1; min-width: 16px; padding: 1px 4px; border-radius: 2px;
+  background: var(--fj-f-alert); color: var(--fj-void); font: 600 10px/14px var(--fj-font-mono); text-align: center; }
+
+/* ==================================================================== the i button: details live behind it, never on the face */
+.fj-i { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 4px; border: 0; border-radius: 50%; background: none; color: var(--fj-ink-3); cursor: pointer; }
+.fj-i:hover, .fj-i:focus-visible { color: var(--fj-ink); background: rgba(190, 225, 245, .07); outline: none; }
+
+/* ==================================================================== LEDs (3×3 dots) and dot meters */
+.fj-led { --c: var(--fj-off); display: inline-block; width: 9px; height: 9px; flex: none;
+  background: radial-gradient(circle, var(--c) 1px, transparent 1.6px) 0 0 / 3px 3px; }
+.fj-led[data-s="ok"]   { --c: var(--fj-ok);   filter: drop-shadow(0 0 3px var(--fj-ok)); }
+.fj-led[data-s="warn"] { --c: var(--fj-warn); filter: drop-shadow(0 0 3px var(--fj-warn)); }
+.fj-led[data-s="crit"] { --c: var(--fj-crit); filter: drop-shadow(0 0 3px var(--fj-crit)); animation: fj-blink 1s steps(2, jump-none) infinite; }
+.fj-led[data-s="hue"]  { --c: var(--fj-hue);  filter: drop-shadow(0 0 3px var(--fj-hue)); }
+@keyframes fj-blink { to { opacity: .3; } }
+.fj-meter { --v: .5; --c: var(--fj-hue); position: relative; height: 9px;
+  background: radial-gradient(circle, rgba(190, 225, 245, .14) 1px, transparent 1.6px) 0 0 / 3px 3px; }
+.fj-meter::after { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--v) * 100%);
+  background: radial-gradient(circle, var(--c) 1.1px, transparent 1.7px) 0 0 / 3px 3px; filter: drop-shadow(0 0 2px color-mix(in srgb, var(--c) 70%, transparent)); }
+.fj-meter[data-s="warn"] { --c: var(--fj-warn); } .fj-meter[data-s="crit"] { --c: var(--fj-crit); }
+
+/* ==================================================================== type roles */
+.fj-pixel { font-family: var(--fj-font-pixel); font-weight: 400; }
+.fj-display { font-family: var(--fj-font-dot); font-weight: 800; letter-spacing: .02em; line-height: 1; }
+.fj-num { font-family: var(--fj-font-pixel); font-variant-numeric: tabular-nums; line-height: 1; }
+/* numbers on the 5×7 LED grid (FJIcons.digits): 1em high, unlit dots faintly visible */
+.fj-digits { display: inline-block; height: .8em; width: auto; vertical-align: -.02em; overflow: visible; }
+.fj-digits .u { opacity: .1; }
+.fj-mono { font-family: var(--fj-font-mono); font-size: 12px; }
+.fj-title { margin: 0; font: 400 var(--fj-fs-title)/1 var(--fj-font-pixel); color: var(--fj-ink); }
+.fj-sub { color: var(--fj-ink-2); font-size: 13px; }
+
+/* ==================================================================== controls: thin line, sharp */
+.fj-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--fj-s2); min-height: 40px; padding: 0 var(--fj-s4);
+  border: 1px solid color-mix(in srgb, var(--fj-hue) 55%, transparent); border-radius: var(--fj-r); background: color-mix(in srgb, var(--fj-hue) 8%, transparent);
+  color: var(--fj-hue); font: 400 18px/1 var(--fj-font-pixel); letter-spacing: .02em; cursor: pointer; }
+.fj-btn:hover, .fj-btn:focus-visible { background: color-mix(in srgb, var(--fj-hue) 16%, transparent); border-color: var(--fj-hue); outline: none; box-shadow: 0 0 14px -4px var(--fj-hue); }
+.fj-btn--solid { background: var(--fj-hue); color: var(--fj-void); border-color: var(--fj-hue); }
+.fj-switch { --on: 0; position: relative; width: 34px; height: 18px; flex: none; border-radius: 2px; border: 1px solid var(--fj-edge); background: var(--fj-void); cursor: pointer; padding: 0; }
+.fj-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; background: var(--fj-ink-3); transition: transform var(--fj-dur) var(--fj-ease), background var(--fj-dur); }
+.fj-switch[aria-checked="true"] { border-color: color-mix(in srgb, var(--fj-hue) 70%, transparent); }
+.fj-switch[aria-checked="true"]::after { transform: translateX(16px); background: var(--fj-hue); box-shadow: 0 0 8px var(--fj-hue); }
+
+/* ==================================================================== console: the terminal well */
+.fj-console { background: var(--fj-void); border-radius: var(--fj-r); box-shadow: inset 0 0 0 1px var(--fj-hair), inset 0 8px 24px -12px rgba(0, 0, 0, .9);
+  padding: var(--fj-s3); font: 12px/1.6 var(--fj-font-mono); color: #b8c9d4; overflow: hidden; }
+.fj-console .t { color: var(--fj-ink-3); } .fj-console .ok { color: var(--fj-ok); } .fj-console .w { color: var(--fj-warn); } .fj-console .h { color: var(--fj-hue); }
+.fj-console .cur { display: inline-block; width: .6em; height: 1.05em; vertical-align: -2px; background: var(--fj-hue); animation: fj-blink 1s steps(2, jump-none) infinite; }
+
+/* ==================================================================== the dock: icons only, the active slot carries the signal */
+.fj-dock { display: flex; justify-content: space-around; align-items: center; padding: var(--fj-s2) var(--fj-s3); }
+.fj-dock button { position: relative; display: grid; place-items: center; width: 52px; height: 48px; border: 0; background: none; cursor: pointer; border-radius: var(--fj-r); }
+.fj-dock button .fj-ic { width: 26px; height: 26px; }
+.fj-dock button[aria-current="page"]::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 12px; height: 3px; margin-left: -6px;
+  background: radial-gradient(circle, var(--fj-signal) 1px, transparent 1.6px) 0 0 / 3px 3px; filter: drop-shadow(0 0 3px var(--fj-signal)); }
+.fj-dock button:not([aria-current]) .fj-ic { opacity: .55; }
+.fj-dock .fj-dock__main { width: 60px; height: 52px; background: linear-gradient(180deg, var(--fj-lift), var(--fj-deck)); box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-edge); }
+
+@media (prefers-reduced-motion: reduce) { .fj-led[data-s="crit"], .fj-console .cur { animation: none; } .fj-switch::after { transition: none; } }
+@media (forced-colors: active) { .fj-socket, .fj-plane { border: 1px solid CanvasText; } .fj-led, .fj-meter::after { background: CanvasText; forced-color-adjust: none; } }
