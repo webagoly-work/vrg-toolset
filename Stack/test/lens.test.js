@@ -90,3 +90,34 @@ test('lens: layout puts every plane top to bottom and pillars through the planes
   const ids = new Set(entities.map(e => e.id));
   assert.ok(stack.nodes.filter(n => n.layer !== 'E').every(n => ids.has(n.id)), 'every node is drawn');
 });
+
+// ---- SL3: forecast and blast radius
+const history = { sessions: [
+  { sid: 'aaaa1111', title: 'fix the wiring router in the Planner views', touched: [['C:Planner/projects/varler-planner/src', 9], ['I:router', 2]] },
+  { sid: 'bbbb2222', title: 'session canvas live server port', touched: [['C:SessionCanvas', 5]] },
+] };
+
+test('forecast: the keys a prompt names, with their exact reach', () => {
+  const f = L.forecast('GO PLANNER, and look at VIS-Q5 in docs/visual/README.md', history);
+  assert.equal(f.map.get('A:go.PLANNER'), 1);
+  assert.equal(f.map.get('Q:VIS-Q5'), 1);
+  assert.ok(f.map.get('G:docs/visual/README.md') === 1 && f.why.get('G:docs/visual/README.md').includes('key'));
+  assert.ok(f.map.get('Q:file.visual') > 0, 'the decision file is reached from its decision');
+});
+
+test('forecast: similar past sessions say what a new prompt will touch, and why', () => {
+  const f = L.forecast('the wiring router of the Planner needs fixing again', history);
+  assert.deepEqual(f.sessions.map(s => s.sid), ['aaaa1111']);
+  const src = f.map.get('C:Planner/projects/varler-planner/src');
+  assert.ok(src > 0.3 && f.why.get('C:Planner/projects/varler-planner/src').includes('history:aaaa1111'), 'the folder that session touched most: ' + src);
+  assert.ok(!f.map.has('C:SessionCanvas'), 'an unrelated session adds nothing');
+  assert.ok(f.why.get('I:router').some(r => r === 'words' || r.startsWith('history')), 'the router idea, by words or history');
+  assert.equal(L.forecast('', history).map.size, 0, 'an empty prompt forecasts nothing');
+});
+
+test('blast radius: a decision reaches its file, a folder reaches its parent', () => {
+  const r = L.reach('Q:VIS-Q5');
+  assert.equal(r.get('Q:VIS-Q5'), 1);
+  assert.ok(r.get('Q:file.visual') > 0 && r.get('G:docs/visual/README.md') > 0, 'decision → its file → the same document in G: ' + [...r.keys()]);
+  assert.ok(L.reach('C:Planner/projects/varler-planner/src').get('C:Planner') > 0);
+});

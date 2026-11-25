@@ -11,7 +11,11 @@
      map (STL-Q5), so the exact lines can always be shown alone (the Kikövetkeztetett switch).
      Sources: Élő = the event spine from the Munkavászon server (SessionCanvas/serve.js, :8810), Visszajátszás =
      out/replay (stack.js build), Napló = a transcript .jsonl dropped on the page.
-     Data: out/stack-data.js and out/lens-index.js (stack.js build). Study: docs/visual/stack-lens/README.md. -->
+     Előrejelzés (SL3, STL-Q7): what a prompt, a GO phrase or a prompt template will probably touch, lit in ice before it
+     runs, each node with its reason (a key the text names, a similar past session, title words); while the work runs (or
+     a recorded session replays from its own first prompt) the page counts how much of the forecast came true. Hatókör:
+     a node's blast radius over the exact links, from its card.
+     Data: out/stack-data.js, out/lens-index.js, out/forecast-index.js (stack.js build). Study: docs/visual/stack-lens/README.md. -->
 <link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
 <link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
 <link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
@@ -54,6 +58,17 @@
   #empty { padding: 40px; color: var(--mu); max-width: 70ch; }
   #empty code { color: var(--acc); }
   .drop { outline: 2px dashed var(--acc); outline-offset: -8px; }
+  #fcS textarea { width: 100%; box-sizing: border-box; font: 12.5px var(--sans); color: var(--tx); background: var(--s1); border: 1px solid var(--ln2); padding: 6px; resize: vertical; border-radius: 0; }
+  #fcS textarea:focus { outline: 2px solid var(--acc); outline-offset: 1px; }
+  #fcS .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  #fcS .row select { flex: 1 1 120px; min-width: 0; }
+  #fcHit { font: 11.5px var(--mono); color: var(--acc); margin-top: 6px; min-height: 1em; }
+  #fcList { margin: 6px 0 0; padding: 0; }
+  #fcList li { list-style: none; display: grid; grid-template-columns: 10px 1fr auto; gap: 6px; align-items: baseline; font-size: 12px; }
+  #fcList i { width: 8px; height: 8px; display: block; border: 1.5px dashed var(--acc); border-radius: 50%; }
+  #fcList li.hit i { background: var(--warm); border-style: solid; border-color: var(--warm); }
+  #fcList .r { font: 10px var(--mono); color: var(--fa); }
+  .tag { font: 10px var(--mono); padding: 0 4px; border: 1px solid var(--ln2); color: var(--mu); margin-left: 4px; white-space: nowrap; }
   #stack .vk-layerstack__elabel, #stack .vk-layerstack__tracer-label { pointer-events: none; }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { border-left: 0; border-top: 1px solid var(--ln); } }
 </style>
@@ -71,12 +86,21 @@
   <button id="play" aria-label="Lejátszás">▶</button>
   <select id="speed" aria-label="Sebesség"><option value="10">10×</option><option value="60" selected>60×</option><option value="300">300×</option></select>
   <span class="chip"><i style="background:var(--warm)"></i>érintett (pontos)</span>
+  <span class="chip"><i style="border:1.5px dashed var(--acc);width:7px;height:7px"></i>előrejelzés / hatókör</span>
   <button id="inf" aria-pressed="true" title="A kikövetkeztetett elérés külön adat: kikapcsolva csak a pontos vonalak látszanak"><span class="chip"><i style="background:var(--inf)"></i>kikövetkeztetett</span></button>
   <span id="src"></span>
 </header>
 <main>
   <div id="stackWrap"><div id="stack"></div><div id="empty" hidden></div></div>
   <aside>
+    <section id="fcS"><h2>Előrejelzés · mit fog érinteni?</h2>
+      <textarea id="fcText" rows="3" placeholder="Írd be a kérést, ahogy egy munkamenetet indítanál; vagy válassz GO kódszót vagy promptot."></textarea>
+      <div class="row"><select id="fcGo" aria-label="GO kódszó"><option value="">GO kódszó…</option></select><select id="fcTpl" aria-label="Prompt sablon"><option value="">Prompt sablon…</option></select></div>
+      <div class="row"><button id="fcRun">Előrejelzés</button><button id="fcFirst" title="Egy rögzített munkamenet saját első kéréséből jelez előre, aztán lejátssza: látszik, mennyi vált be">A munkamenet első kérése</button><button id="fcClear">Törlés</button></div>
+      <div id="fcHit"></div>
+      <ul id="fcList"></ul>
+      <div id="fcSess" class="k"></div>
+    </section>
     <section id="card"><h2>Csomópont</h2><div class="k">Kattints egy pontra a rétegeken.</div></section>
     <section><h2>Most</h2><ul id="now"></ul></section>
     <section><h2>Legjobban érintett</h2><ul id="top"></ul></section>
@@ -99,6 +123,7 @@
 <script src="out/stack-data.js"></script>
 <script src="out/lens-index.js"></script>
 <script src="out/replay/index.js"></script>
+<script src="out/forecast-index.js"></script>
 <script>
 (function () {
   'use strict';
@@ -126,6 +151,7 @@
      { t, tool, cat, actor, exact: [ids], inferred: Map, write, text } */
   var steps = [], applied = 0, T = 0, t0 = 0, t1 = 0, playing = false, mode = 'live';
   var exactE = new Map(), infE = new Map(), lastT = 0, showInf = true, touches = new Map(), trail = {};
+  var fc = null, blast = null;   // the forecast { map, why, keys, sessions, at, top } and a blast radius { id, map }: separate maps again
   var catOf = function (tool) { return tool === 'prompt' ? 'prompt' : /^mcp[:_]/.test(tool) ? 'mcp' : SCModel.catOf(tool); };
 
   function clearTrail() { Object.keys(trail).forEach(function (k) { ls.tracer(k, null); }); trail = {}; }
@@ -152,6 +178,9 @@
   }
   function render(writeIds) {
     var map = new Map();
+    if (fc) fc.map.forEach(function (e, id) { map.set(id, { e: e, kind: 'forecast' }); });
+    if (blast) blast.map.forEach(function (e, id) { map.set(id, { e: e, kind: 'forecast' }); });
+    if (fc || blast) L.pillars(fc ? fc.map : blast.map).forEach(function (e, id) { map.set(id, { e: e * 0.8, kind: 'forecast' }); });
     if (showInf) infE.forEach(function (e, id) { map.set(id, { e: e, kind: 'inferred' }); });
     exactE.forEach(function (e, id) { map.set(id, { e: e, kind: 'exact', write: !!(writeIds && writeIds.has(id)) }); });
     L.pillars(exactE).forEach(function (e, id) { map.set(id, { e: e, kind: 'exact' }); });
@@ -247,6 +276,39 @@
       return '<li><i style="background:' + (r[2] === 'exact' ? 'var(--warm)' : 'var(--inf)') + '"></i><span>' + esc(n.layer + ' · ' + n.title).slice(0, 60) + '</span><span class="w">' + Math.round(r[1] * 100) + '%</span></li>';
     }).join('');
     if (selected) card(selected);
+    paintForecast();
+  }
+  var WHY = { key: 'kulcs', words: 'szavak' };
+  function reasons(id) {
+    return (fc && fc.why.get(id) || []).map(function (r) { return r.indexOf('history:') === 0 ? 'korábbi munkamenet' : WHY[r] || r; })
+      .filter(function (r, i, a) { return a.indexOf(r) === i; });
+  }
+  function paintForecast() {
+    if (!fc) { $('#fcHit').textContent = ''; $('#fcList').innerHTML = ''; $('#fcSess').textContent = ''; return; }
+    // what the work touched after the forecast was made, against the forecast's top
+    var after = new Set();
+    for (var i = 0; i < applied; i++) if (steps[i].t >= fc.at) steps[i].exact.forEach(function (id) { after.add(id); });
+    var hits = fc.top.filter(function (id) { return after.has(id); }).length, surprise = 0;
+    after.forEach(function (id) { if (!fc.map.has(id)) surprise++; });
+    $('#fcHit').textContent = !fc.map.size ? 'Nincs mire építeni: a szöveg nem nevez meg csomópontot, és nincs hozzá hasonló korábbi munkamenet.'
+      : fc.map.size + ' várt csomópont' + (after.size ? ' · a legvalószínűbb ' + fc.top.length + '-ből ' + hits + ' vált be · ' + surprise + ' váratlan' : ' · a munka még nem kezdődött el');
+    var rows = []; fc.map.forEach(function (e, id) { rows.push([id, e]); });
+    rows.sort(function (a, b) { return b[1] - a[1]; });
+    $('#fcList').innerHTML = rows.slice(0, 12).map(function (r) {
+      var n = nodeById.get(r[0]);
+      return '<li class="' + (after.has(r[0]) ? 'hit' : '') + '"><i></i><span>' + esc((n.layer + ' · ' + n.title).slice(0, 52)) + reasons(r[0]).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') +
+        '</span><span class="r">' + Math.round(r[1] * 100) + '%</span></li>';
+    }).join('');
+    $('#fcSess').innerHTML = fc.sessions.length ? 'Hasonló korábbi munkamenetek: ' + fc.sessions.map(function (x) { return esc(x.title.slice(0, 60)) + ' (' + Math.round(x.sim * 100) + '%)'; }).join(' · ') : '';
+  }
+  function runForecast(text, at) {
+    text = String(text || '').trim();
+    if (!text) { fc = null; render(); paintSide(); return; }
+    fc = L.forecast(text, window.STACK_FORECAST || { sessions: [] });
+    var rows = []; fc.map.forEach(function (e, id) { rows.push([id, e]); });
+    fc.top = rows.sort(function (a, b) { return b[1] - a[1]; }).slice(0, 20).map(function (r) { return r[0]; });
+    fc.at = at != null ? at : mode === 'live' ? Date.now() : T;
+    blast = null; lastSide = 0; render(); paintSide();
   }
   function card(id) {
     var n = nodeById.get(id); if (!n) return;
@@ -254,10 +316,19 @@
     var page = PAGE[n.layer];
     $('#card').innerHTML = '<h2>Csomópont</h2><div class="t">' + esc(n.title) + '</div><div class="k">' + esc(n.id) + ' · ' + esc(n.kind || '') + (n.path ? ' · ' + esc(n.path) : '') + '</div>' +
       '<div class="k">' + (e ? 'érintve ' + Math.round(e * 100) + '%' : ie ? '<span style="color:var(--inf)">kikövetkeztetve ' + Math.round(ie * 100) + '%</span>' : 'nem érintett') + (tch.length ? ' · ' + tch.length + ' lépés' : '') + '</div>' +
+      (fc && fc.map.has(id) ? '<div class="k" style="color:var(--acc)">előrejelzés ' + Math.round(fc.map.get(id) * 100) + '% · ' + esc(reasons(id).join(', ')) + '</div>' : '') +
+      '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button id="blastBtn" aria-pressed="' + (blast && blast.id === id) + '">Hatókör</button>' +
+      (blast && blast.id === id ? '<span class="k">' + blast.map.size + ' csomópontot ér el</span>' : '') + '</div>' +
       (page ? '<div style="margin-top:6px"><a href="' + page + '#sel=' + encodeURIComponent(id) + '">Megnyitás a réteg oldalán ›</a></div>' : n.layer === 'C' ? '<div class="k" style="margin-top:6px">Fájlszinten: Kódváros (START K)</div>' : '') +
       (tch.length ? '<ol>' + tch.slice(-8).reverse().map(function (s) { return '<li>' + hhmm(s.t) + ' · ' + esc(s.tool) + ' · ' + esc((s.text || '').slice(0, 70)) + '</li>'; }).join('') + '</ol>' : '');
   }
   ls.on('focus', function (d) { if (d && d.entity) { selected = d.entity; card(selected); } });
+  $('#card').addEventListener('click', function (e) {
+    if (!e.target.closest('#blastBtn') || !selected) return;
+    blast = blast && blast.id === selected ? null : { id: selected, map: L.reach(selected) };
+    if (blast) fc = null;
+    render(); lastSide = 0; paintSide(); card(selected);
+  });
 
   /* ---------- ribbon ---------- */
   var rib = $('#rib'), rg = rib.getContext('2d');
@@ -302,6 +373,23 @@
   $('#session').addEventListener('change', function () { if (mode === 'replay') loadReplay(this.value); else if (mode === 'live') connect(this.value); });
   $('#file').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
   $('#play').addEventListener('click', function () { if (mode === 'live') return; if (T >= t1) seek(t0 - 1); playing = !playing; this.textContent = playing ? '❚❚' : '▶'; });
+  (function () {   // the GO phrases (A nodes that own a go: key) and the prompt templates
+    var go = $('#fcGo'), tpl = $('#fcTpl');
+    STACK.nodes.forEach(function (n) { (n.own || []).forEach(function (k) { if (k.indexOf('go:') === 0) go.add(new Option('GO ' + k.slice(3), 'GO ' + k.slice(3))); }); });
+    ((window.STACK_FORECAST || {}).templates || []).forEach(function (t, i) { tpl.add(new Option(t.name, String(i))); });
+    go.addEventListener('change', function () { if (this.value) { $('#fcText').value = this.value; runForecast(this.value); } });
+    tpl.addEventListener('change', function () { var t = (STACK_FORECAST.templates || [])[+this.value]; if (t) { $('#fcText').value = t.text; runForecast(t.text); } });
+  })();
+  $('#fcRun').addEventListener('click', function () { runForecast($('#fcText').value); });
+  $('#fcText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runForecast(this.value); });
+  $('#fcClear').addEventListener('click', function () { fc = null; blast = null; $('#fcText').value = ''; render(); lastSide = 0; paintSide(); });
+  $('#fcFirst').addEventListener('click', function () {
+    var first = steps.filter(function (s) { return s.tool === 'prompt'; })[0];
+    if (!first) { $('#fcHit').textContent = 'Nincs betöltött munkamenet kéréssel: válassz visszajátszást vagy húzz be egy naplót.'; return; }
+    $('#fcText').value = first.text;
+    runForecast(first.text, first.t);
+    if (mode !== 'live') { seek(t0 - 1); playing = true; $('#play').textContent = '❚❚'; }
+  });
   $('#inf').addEventListener('click', function () { showInf = !showInf; this.setAttribute('aria-pressed', String(showInf)); render(); paintSide(); });
   var wrap = $('#stackWrap');
   ['dragenter', 'dragover'].forEach(function (n) { wrap.addEventListener(n, function (e) { e.preventDefault(); wrap.classList.add('drop'); }); });
@@ -327,7 +415,8 @@
   $('#mode').value = mode;
   if (mode !== 'file') sessions();
   requestAnimationFrame(frame);
-  window.ERINTES = { lens: L, steps: function () { return steps; }, seek: seek, load: loadFiles, state: function () { return { T: T, applied: applied, exact: exactE.size, inferred: infE.size }; } };
+  window.ERINTES = { lens: L, steps: function () { return steps; }, seek: seek, load: loadFiles, forecast: runForecast,
+    state: function () { return { T: T, applied: applied, exact: exactE.size, inferred: infE.size, forecast: fc ? fc.map.size : 0, hit: $('#fcHit').textContent }; } };
 })();
 </script>
 </body>

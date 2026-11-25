@@ -9,8 +9,8 @@
      → { setData(d), setVisible(planeId, on), solo(planeId | null), focus(planeId, entityId), highlight(entityId),
          light(map), tracer(key, ids, o), state(), on(type, fn), destroy() }
    Big stacks (Érintésnyom, ~2 000 nodes) — none of these redraws the scene, they change attributes of what is drawn:
-     light(map)        map: {id: energy 0…1 | {e, kind: 'exact'|'inferred', write: true}} (or a Map). Lit nodes and pillars
-                       get data-lit="exact|inferred" and --_e; write:true pulses the ring once. light(null) clears.
+     light(map)        map: {id: energy 0…1 | {e, kind: 'exact'|'inferred'|'forecast', write: true}} (or a Map). Lit nodes and
+                       pillars get data-lit="exact|inferred|forecast" and --_e; write:true pulses the ring once. light(null) clears.
      tracer(key, ids, {label, style: 'solid'|'dotted'}) a line through the entities in order, its head on the last;
                        tracer(key, null) removes it.
      opts.labels       'current' (default: the current plane's labels) · 'lit' (the brightest lit nodes, opts.litLabels = 12) · 'none'
@@ -287,7 +287,8 @@
     }
 
     /* ---------- lighting (Érintésnyom) ---------- */
-    function norm(v) { return typeof v === 'number' ? { e: v, kind: 'exact' } : { e: +v.e || 0, kind: v.kind === 'inferred' ? 'inferred' : 'exact', write: !!v.write }; }
+    var KINDS = { exact: 1, inferred: 1, forecast: 1 };
+    function norm(v) { return typeof v === 'number' ? { e: v, kind: 'exact' } : { e: +v.e || 0, kind: KINDS[v.kind] ? v.kind : 'exact', write: !!v.write }; }
     function paintLit() {
       Object.keys(idx).forEach(function (id) {
         var x = idx[id], v = lit.get(id);
@@ -299,7 +300,8 @@
       if (labelMode !== 'lit') return;
       gLit.textContent = '';
       var top = []; lit.forEach(function (v, id) { if (idx[id] && idx[id].nodes.length) top.push([id, v]); });
-      top.sort(function (a, b) { return (a[1].kind === b[1].kind ? 0 : a[1].kind === 'exact' ? -1 : 1) || b[1].e - a[1].e; });
+      var RANK = { exact: 0, forecast: 1, inferred: 2 };
+      top.sort(function (a, b) { return (RANK[a[1].kind] - RANK[b[1].kind]) || b[1].e - a[1].e; });
       var placed = [], room = opts.litLabels || 12;
       top.forEach(function (r) {
         if (placed.length >= room) return;

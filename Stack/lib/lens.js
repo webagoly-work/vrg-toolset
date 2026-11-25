@@ -16,6 +16,12 @@
 //                                                 plus one hop over 'alike' links into the inferred map
 //   L.layout() → { planes, entities }             the kit layerstack's data: one plane per layer in its natural order,
 //                                                 one entity per node, one per pillar (its line through the planes)
+//   L.forecast(text, history, opts) → { map, why, keys, sessions }   SL3 (STL-Q7 = A): what a prompt, a GO phrase or a prompt
+//                                                 template will probably touch, before it runs. Three sources, each named in
+//                                                 `why` (id → ['key' | 'history:<sid8>' | 'words']): the keys the text names and
+//                                                 their exact reach; what past sessions with a similar opening prompt touched
+//                                                 (history = window.STACK_FORECAST, out/forecast-index.js); title words.
+//   L.reach(id, opts) → Map id → energy           a node's blast radius: how far it reaches over the exact links (3 hops)
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require('./activation'));
   else root.StackLens = factory(root.StackActivation);
@@ -208,7 +214,42 @@
       return { planes, entities };
     }
 
-    return { resolve, step, infer, light, pillars, layout, normPath, nodes, own };
+    /* ---- SL3: forecast and blast radius */
+    /* prompt likeness: six-letter stems (visualizer ~ visualization, réteg ~ rétegek), generic work words dropped, and
+       overlap more than Dice, because a new prompt is long and a recorded title is its first 90 characters */
+    const GENERIC = new Set('start build buildi next please show want like need some more much really still again first make letz kerem szeret legyen csinal'.split(' '));
+    const stems = s => new Set([...words(s)].map(w => w.slice(0, 6)).filter(w => !GENERIC.has(w)));
+    const likeness = (a, b) => { let i = 0; for (const w of b) if (a.has(w)) i++; return i < 2 ? 0 : 0.6 * i / Math.min(a.size, b.size) + 0.4 * i / Math.sqrt(a.size * b.size); };
+    function forecast(text, history, opts) {
+      const o = Object.assign({ sessions: 5, minSim: 0.2 }, opts || {});
+      const map = new Map(), why = new Map();
+      const note = (id, sc, r) => {
+        if (!nodes.has(id) || !(sc > 0)) return;
+        map.set(id, Math.min(1, Math.max(map.get(id) || 0, sc)));
+        const w = why.get(id) || []; if (!w.includes(r)) w.push(r); why.set(id, w);
+      };
+      // 1. the keys the text names (paths, ids, GO phrases …) and how far they reach over the exact links
+      const keys = resolve([], text);
+      if (keys.length) light(keys, { hops: 2 }).exact.forEach((e, id) => note(id, keys.includes(id) ? 1 : e * 0.8, 'key'));
+      // 2. what sessions with a similar opening prompt touched, weighted by the likeness and how often they touched it
+      const wa = stems(text), sims = [];
+      for (const s of (history && history.sessions) || []) { const d = likeness(wa, stems(s.title)); if (d >= o.minSim) sims.push({ s, d }); }
+      sims.sort((a, b) => b.d - a.d);
+      const used = sims.slice(0, o.sessions);
+      for (const { s, d } of used) {
+        const max = Math.max(1, ...(s.touched || []).map(t => t[1]));
+        for (const [id, c] of s.touched || []) note(id, d * (0.4 + 0.6 * c / max), 'history:' + s.sid);
+      }
+      // 3. title words (the inference of STL-Q5), weakest
+      infer(text, keys).forEach((sc, id) => note(id, sc * 0.5, 'words'));
+      return { map, why, keys, sessions: used.map(x => ({ sid: x.s.sid, title: x.s.title, sim: +x.d.toFixed(2) })) };
+    }
+    function reach(id, opts) {
+      const o = Object.assign({ decay: 0.6, hops: 3, hubPenalty: 0.5, threshold: 0.03 }, opts || {});
+      return Activation.spread(x => adj.get(x) || [], new Map([[id, 1]]), o);
+    }
+
+    return { resolve, step, infer, light, pillars, layout, forecast, reach, normPath, nodes, own };
   }
 
   return { create, PLANES };

@@ -227,3 +227,20 @@ reading keeps them.
 - **Next:** SL3 Forecast (STL-Q7) and a decision's blast radius; SL4 the phone bundle; skills and plugins as A nodes so
   `/deep-research` and friends land somewhere.
 
+## Built (2026-11-25): SL3 Forecast and blast radius
+
+- `lens.forecast(text, history)`: the keys the text names and their exact reach (certain), the nodes recorded sessions with a
+  similar opening prompt touched most (six-letter stems, generic work words dropped, overlap more than Dice because a new
+  prompt is long and a recorded title is 90 characters), and title words (weakest). Every node keeps its reasons.
+  `lens.reach(id)`: a node's blast radius, 3 hops over the exact links.
+- Build stage `out/forecast-index.js`: each recorded session's opening prompt and its 30 most touched nodes, plus the prompt
+  templates of `tools/prompts`.
+- Page: the Előrejelzés panel (text, GO phrase, template), ice dashed rings (the kit's new `forecast` light kind: the
+  instrument's guess, Mélyvíz M1), a list with reasons, the similar sessions it drew on, and a live count of how many of
+  the 20 likeliest came true and how many touches were unexpected. "A munkamenet első kérése" forecasts a recorded session
+  from its own first prompt and replays it, which is how to judge the forecast. Hatókör on every node's card.
+- Checked here on the test stack with this session as history (split at each prompt): the forecasts and the reach light as
+  designed; how good the forecast is can only be judged on the real history after a build on the PC.
+- **Next:** SL4 the phone bundle; skills and plugins as A nodes; GO phrases reach through their files only after a build
+  (the test stack has no links from GO files).
+

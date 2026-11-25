@@ -58,6 +58,10 @@ Never load `out/stack.json` whole. Ids look like:
   violet and kept in its own map (STL-Q5), switchable off. Sources: Élő (the event spine `shared/vrg-events` from the
   Munkavászon server, :8810), Visszajátszás (`out/replay`), Napló (a dropped transcript). Needs `out/lens-index.js`
   (written by the build). Study: `docs/visual/stack-lens/README.md`.
+  **Előrejelzés** (SL3, 2026-11-25): type a prompt, pick a GO phrase or a prompt template, and the page lights in ice what
+  it will probably touch, each node with its reason (a key it names, a similar recorded session, title words); during the
+  work, or replaying a session from its own first prompt, it counts how much came true and what was unexpected.
+  **Hatókör** on a node's card: its blast radius over the exact links (3 hops). History: `out/forecast-index.js` (the build).
 - **Layers page (Rétegek):** `layers.html` (2026-11-07). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
 - **Phone (VRG Mobile, WP M17):** both pages have touch gestures (`touch.js`: one finger orbits, pinch zooms, twist turns, two fingers up / down tilt, tap picks, double tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space toggles the Őrség lock). `Planner_VRG_U100/Mobile/stack/publish-stack.js --push` (START → R → T) bundles them into self-contained pages on the `stack-pages` branch, where the app's **Rétegverem** feature reads them. Re-run it after a rebuild to update the phone.
 - **Rebuild** after any change: `..\..\tools\node\node.exe stack.js build`. It takes about 6 s when little changed, and about 30 s the first time or after `--rerecord`. `build.js` still works too.
