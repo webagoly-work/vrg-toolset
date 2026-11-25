@@ -40,6 +40,7 @@ test('routing: every new act has an executor; window commands go to Voice/hands 
   assert.match(src, /EXEC\.cancel = async \(c, E\) => \{ if \(E\.handsStop\) E\.handsStop\(\);/);
   // the rules the overlay keeps: blocked never runs; a matched voice answers only at the Dev level; All needs a key
   assert.match(src, /if \(p\.risk === 'blocked'\) return \{ ok: false, say: 'Ezt nem teszem meg\.'/);
+  assert.match(src, /if \(r && r\.err === 'blocked'\) return \{ ok: false, say: 'Ezt nem teszem meg\.'/);
   assert.match(src, /if \(lv === 'dev'\) \{\s*const id = await E\.identity\('verify'\)/);
   assert.match(src, /if \(p\.keyOnly && w === 'yes' && !byKey\)/);
   const reg = require('../../Voice/command/commands.json');
@@ -81,6 +82,7 @@ test('main: off by default, Dev level, the kill switch on the global key, the vo
   assert.match(main, /if \(!\['dev', 'all'\]\.includes\(onSetting\('desk\.level', 'user'\)\)\) return \{ ok: false, err: 'level'/);
   assert.match(main, /if \(handsBusy && handsInst\) \{ handsInst\.stop\(\);/);
   assert.match(main, /secrets\.put\('voice\.identity'/);
+  assert.match(main, /readFileSync\(path\.join\(dir, 'installed\.json'\)/);
   assert.match(main, /const a = voiceLib\.takeAudio\(\); return a \? I\.verify\(a\) : NO_AUDIO;/);
   assert.ok(!/verb: types\.enum\([^)]*'type'/.test(main) && !/setvalue|sendkeys/i.test(main.slice(main.indexOf("ipc.register('hands', 'plan'"), main.indexOf("ipc.register('hands', 'act'"))), 'no text-entry verb');
   assert.match(read('page/hud.html'), /#hud\[data-state="acting"\]/);

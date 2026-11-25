@@ -53,7 +53,7 @@ spoken text never goes straight into someone else's text box: it fills our own b
   - Screen text is shown and quoted, never executed.
 - **How it fits:** each reader plugs into phase 2 as a `describe()` provider. "mi van a képernyőn?" then also covers other programs.
 
-## Phase 4: Kéz ("hands"): act on the desktop, with gates (proposed, ~4–6 weeks)
+## Phase 4: Kéz ("hands"): act on the desktop, with gates (built 2026-11-25: WP-58, WP-59; not yet run on Windows)
 
 - **Actions:** through UI Automation patterns (invoke, set value, focus), only on an allowlist of programs and verbs. Every
   registry command gets a risk class: `read`, `reversible` (a short countdown), `confirm` or `blocked`.

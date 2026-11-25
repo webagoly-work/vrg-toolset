@@ -351,6 +351,8 @@
       const r = await V.hands.plan(o);
       if (!r || r.ok === false) {
         if (r && r.err === 'ambiguous' && r.choices && r.choices.length) return { ok: false, say: 'Melyik: ' + r.choices.slice(0, 3).join(' vagy ') + '?' };
+        if (r && r.err === 'blocked') return { ok: false, say: 'Ezt nem teszem meg.', detail: short(r.hu || '', 160) };   // Voice/hands refuses blocked plans itself
+        if (r && r.err === 'busy') return { ok: false, say: 'Még dolgozom.', detail: 'Állj: Ctrl+Alt+V vagy „állj”.' };
         return { ok: false, say: terse((r && r.hu) || 'Nem találom.', 6), detail: r && r.err === 'disabled' ? 'Beállítás: hands.enabled (fejlesztői szint).' : '' };
       }
       const p = r.plan;
@@ -368,7 +370,10 @@
       const V = vrg();
       show('acting', 'Dolgozom: ' + terse(label || '', 4), 'Állj: Ctrl+Alt+V vagy „állj”.');
       const r = await V.hands.act(id);
-      if (!r || r.ok === false) return { ok: false, say: terse((r && r.hu) || 'Nem sikerült.', 6), detail: r && r.err === 'stale' ? 'Közben megváltozott az ablak; mondd újra.' : '' };
+      if (!r || r.ok === false) {
+        const why = { stale: 'Közben megváltozott az ablak; mondd újra.', expired: 'Lejárt; mondd újra.', unknown: 'Nem tudom, megtörtént-e: nézd meg, és ne ismételd vakon.', stopped: 'Leállítva.' }[r && r.err] || '';
+        return { ok: false, say: terse((r && r.hu) || 'Nem sikerült.', 6), detail: why };
+      }
       return { say: r.say || 'Kész.', detail: r.verified === false ? 'Nem látom a változást; nézd meg.' : '' };
     },
     async handsLog() { const V = vrg(); try { const r = V && V.hands ? await V.hands.log() : null; return r && Array.isArray(r.log) ? r.log : []; } catch (e) { return []; } },

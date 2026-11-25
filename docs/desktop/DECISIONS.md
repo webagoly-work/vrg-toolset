@@ -231,3 +231,15 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   phrase gate and not an identity check. "What is on screen" is answered from the Desktop's own state; phase 3 adds providers.
 - B: OS-level input injection now (phase 4, behind risk classes and an allowlist). C: a cloud model to parse commands (online,
   slower, and an injection surface).
+
+## DESKU-Q30 — Phase 4: clicks, never typing; the voice is a convenience, never the key (WP-58, WP-59, 2026-11-25)
+
+- **A (taken):**
+  - Voice actions in other programs use UI Automation patterns only (invoke, toggle, select, expand, scroll, switch, window state).
+    There is no text entry, by the Founder's rule.
+  - They need `hands.enabled` and the Dev level. Every plan has a risk class from `Voice/hands/rules.json`: reversible runs, confirm
+    asks, blocked never runs.
+  - A matched voice may answer the confirm at the Dev level only; the All level always needs a key.
+  - A hand-off to Claude passes screen text fenced as data.
+- B: Anthropic computer use on the work desktop (screenshots go to the cloud, and screen content could steer actions). C: voice
+  identity as authorisation (replay and synthetic voices pass it, as the synthetic run showed).

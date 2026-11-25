@@ -714,6 +714,8 @@ const handsLib = () => {
       policy: () => ({ allow: onSetting('screen.allow', []), deny: onSetting('screen.deny', []), denyTitles: onSetting('screen.denyTitles', []) }),
       ownPids: () => { try { return app.getAppMetrics().map(m => m.pid).concat(process.pid); } catch (e) { return [process.pid]; } },
       now: () => Date.now(),
+      // the action log on disk: one JSON line per action, names only (Voice/hands never passes screen text here)
+      append: line => { try { const f = path.join(paths.logs(), 'hands.jsonl'); require('fs').mkdirSync(path.dirname(f), { recursive: true }); require('fs').appendFileSync(f, (typeof line === 'string' ? line : JSON.stringify(line)).replace(/\n+$/, '') + '\n'); } catch (e) {} },
     });
   } catch (e) { log('hands', 'load failed', e && e.message); handsInst = null; }
   return handsInst;
@@ -745,8 +747,9 @@ const identityLib = (() => {
       const T = require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js'));
       const I = require(path.join(path.resolve(REPO_DIR), 'Voice', 'identity', 'identity.js'));
       const dir = voiceToolDir('identity');
+      // the active model is the one Voice/identity/fetch-identity.js named in installed.json (two may be fetched)
       let model = '';
-      try { model = require('fs').readdirSync(dir).filter(f => /\.onnx$/i.test(f)).map(f => path.join(dir, f))[0] || ''; } catch (e) {}
+      try { const inst = JSON.parse(require('fs').readFileSync(path.join(dir, 'installed.json'), 'utf8')); if (inst && typeof inst.model === 'string' && !/[\\/]|\.\./.test(inst.model)) model = path.join(dir, inst.model); } catch (e) {}
       inst = I.createIdentity({
         loadAddon: T.addonLoader(dirs), modelPath: model, log,
         store: { get: () => { const v = secrets.get('voice.identity'); return v ? Buffer.from(v, 'base64') : null; }, set: b => { if (b) secrets.put('voice.identity', Buffer.from(b).toString('base64')); else secrets.del('voice.identity'); } },
@@ -787,7 +790,7 @@ function registerGlobalVoice() {
   try { ok = globalShortcut.register(key, globalVoiceKey); } catch (e) {}
   if (!ok) audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key });
 }
-app.on('before-quit', () => { eyesLib.close(); speakLib.close(); hudWin.destroy(); });
+app.on('before-quit', () => { eyesLib.close(); speakLib.close(); hudWin.destroy(); if (handsInst) handsInst.close(); });
 setTimeout(() => { if (onSetting('speak.enabled', false) === true && !SELFTEST) speakLib.warm(['hu', 'en']).catch(() => {}); }, 6000);   // the voices load once (0.5–0.9 s each), in the background
 
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path

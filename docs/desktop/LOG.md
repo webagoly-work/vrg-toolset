@@ -519,3 +519,51 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   - The answer window rendered.
 - **Not run:** the PowerShell helpers (no Windows here), the addon inside Electron, the global key, a Hungarian SAPI voice, and Avast's
   reaction to the helpers' first start.
+
+## WP-58 Kéz + WP-59 Hangazonosítás — phase 4 of the voice work: act in other programs, know the voice (2026-11-25, cloud session, two forks + the wiring)
+
+- Asked for: phase 4 of `docs/research/2026-11-25_voice-roadmap.md`. The Founder's rule decides the shape: spoken words never type into
+  another program. So there is no text entry of any kind, only clicks and states.
+- **`Voice/hands/`** (the actions fork):
+  - `act-host.ps1` is one long-running PowerShell helper with ops `ping` / `windows` / `find` / `do` / `state`. It is ASCII only, and a
+    static test proves it names no SetValue, SendKeys, SendInput, keybd_event, mouse_event, Clipboard, PostMessage, SendMessage or
+    SetFocus.
+  - Verbs: invoke, toggle, select, expand / collapse, scroll, focus-window, window min / max / restore / close.
+  - `rules.json` sets the risks:
+    - reversible: scroll, select, expand, switch, minimise / maximise, a tab;
+    - confirm: click, toggle, close;
+    - blocked: the Asztal itself, elevated windows, password fields, installers, UAC, Windows Security, password managers, shells,
+      and about 80 names (delete, send, pay, buy, approve, sign out, install, restart, push, deploy … and the Hungarian forms).
+  - Plans are bound to the window and the element (RuntimeId), expire, and run once. `do` is never retried. `stop()` kills an
+    action in flight. The log holds names only.
+- **`Voice/identity/`** (the speaker fork):
+  - CAM++ (3D-Speaker, Apache-2.0 code, VoxCeleb CC BY 4.0, reported 0.73 % EER) on the same sherpa-onnx-node 1.13.8 as Voice/tts.
+  - Enrolment takes 3 samples of ≥ 1.5 s of speech; the newest 10 are kept, with consistency checks. The default threshold is 0.5.
+  - It stores embeddings only (about 4 KB a sample, never audio). `calibrate.js` suggests a threshold from real WAVs; `fetch-identity.js`
+    fetches the model.
+  - Real run here, on synthetic Piper voices only: the owner scored 0.77–0.89, others at most 0.41. A synthetic voice enrolled just as
+    well, which is the replay / cloning caveat in practice.
+- **The Desktop wiring** (this session):
+  - IPC `hands.plan/act/stop/log` and `identity.status/enroll/verify/reset` (wp-35 pin 137 → 145). Main gates actions: `hands.enabled`
+    (off by default) and the Dev level.
+  - The kill switch: the global voice key while an action runs, plus the spoken "állj" / "stop" / "mégse".
+  - The action log goes to `logs/hands.jsonl` (names only). The voiceprint is in the DPAPI-encrypted secrets store, and the model comes
+    from `identity/installed.json`.
+  - `lib/voice.js` keeps the last COMMAND's audio in memory only (≤ 12 s, for ≤ 30 s, handed out once; dictation is never kept).
+  - The overlay plans first:
+    - reversible → runs at once, under a red "acting" frame;
+    - confirm → "igen"; a matched voice (`identity.enabled`) answers it at the Dev level only;
+    - blocked → refused;
+    - the All level needs a key (Enter / the button), never a spoken yes.
+  - From the global key the window commands act on the program in front.
+  - "add át Claude-nak: …" fills the Vezérlő with the task and the screen lines, fenced as data, never as instructions. Sending still
+    asks and goes through the Előszűrő.
+  - New phrases: kattints, nyomd meg, pipáld be, válaszd ki, görgess, válts át, mit csináltál, állj, tanuld meg / felejtsd el a
+    hangomat, ki beszél.
+- **Tests:**
+  - `Voice/hands` 6, `Voice/identity` 8 (one needs the model), `wp-58` 4.
+  - The full Dashboard suite: the same 68 environment failures. Every Voice / Prefilter / sidepanel suite: 60 pass, 3 skipped (they
+    need the downloaded models).
+  - Chromium (the overlay, main stubbed): reversible runs at once; confirm asks; a matched voice at Dev answers; All never accepts a
+    spoken yes; blocked is refused; close from the global key asks once; the hand-off is fenced; "állj" stops.
+- **Not run:** both PowerShell helpers (no Windows here), real UI Automation actions, a real voice, the speaker check inside Electron.
