@@ -1,5 +1,5 @@
 {
-  "about": "VRG Kisokos · Tankönyv · 2. szint: Szakmunkás (leckék 1–5: a biztonsági mag). Ugyanaz a lecke-séma, mint az 1. szinten. Saját írás; a számértékek (lekapcsolási idők, karakterisztikák, terhelhetőség, feszültségesés) tájékoztatók, a hatályos MSZ HD 60364 kiadással kell egyeztetni. Vázlat: reviewed = null.",
+  "about": "VRG Kisokos · Tankönyv · 2. szint: Szakmunkás (leckék 1–10). Ugyanaz a lecke-séma, mint az 1. szinten. Saját írás; a számértékek (lekapcsolási idők, karakterisztikák, terhelhetőség, feszültségesés) tájékoztatók, a hatályos MSZ HD 60364 kiadással kell egyeztetni. Vázlat: reviewed = null.",
   "kind": "lecke",
   "added": "2026-11-25",
   "cards": [
@@ -122,6 +122,119 @@
       ],
       "safety": ["Az elosztóban munka előtt a főkapcsolót le kell kapcsolni, de a főkapcsoló bemenő oldala feszültség alatt marad: azt letakarni vagy a mérőhely előtti leválasztást használni.", "A feliratozás nélküli elosztó veszélyes: a hibás kör nem azonosítható gyorsan."],
       "links": ["el.msz-hd-60364", "el.szerelvenyek", "el.msz-hd-60364-7-701"], "prereq": ["s02-erintesvedelem", "s03-tularamvedelem", "s04-keresztmetszet"],
-      "terms": { "hu": ["lakáselosztó kiselosztó 36 modul", "áram-védőkapcsoló csoport", "nullasín"], "en": ["consumer unit", "RCD group", "neutral bar"], "de": ["Unterverteilung", "FI-Gruppe", "N-Schiene"] } }
+      "terms": { "hu": ["lakáselosztó kiselosztó 36 modul", "áram-védőkapcsoló csoport", "nullasín"], "en": ["consumer unit", "RCD group", "neutral bar"], "de": ["Unterverteilung", "FI-Gruppe", "N-Schiene"] } },
+
+    { "id": "s06-aramkor-kiosztas", "title": "6. Áramkörök kiosztása egy lakásban", "aka": ["áramkörterv", "szerelési zónák", "aljzatok száma és magassága"], "level": 2, "chapter": 6,
+      "place": { "core": "2B" },
+      "goals": ["Egy lakás fogyasztóit áramkörökre osztani úgy, hogy egy hiba ne bénítsa meg a lakást.", "Tudni, mely fogyasztók kapnak saját kört.", "A vezetékeket kiszámítható helyen, szerelési zónákban vezetni."],
+      "body": [
+        "Alapelvek: a világítás és az aljzatok külön körön; egy helyiség világítása és aljzatai ne ugyanazon a körön legyenek (ha az aljzatkör kiold, maradjon fény); a köröket a fázisok és az áram-védőkapcsoló csoportok között egyenletesen kell elosztani (5. lecke).",
+        "Saját kör kell a nagy és tartós fogyasztóknak: főzőlap és sütő (a gyártó előírása szerint egy- vagy háromfázisú), mosogatógép, mosógép, szárítógép, villanybojler, klíma, hőszivattyú, autótöltő. A konyhai munkalap aljzatai legalább két körre kerüljenek (3. lecke: három konyhagép már túlterhel egy kört). A fürdő aljzatai saját körön; a kültéri aljzatok és a kerti világítás külön körön.",
+        "Az aljzatok számánál az a cél, hogy ne kelljen hosszabbító: a bútorozási tervből kell kiindulni (TV-fal, ágy két oldala, íróasztal, konyhapult). Jellemző magasságok a gyakorlatban: aljzat a kész padló fölött kb. 30 cm, kapcsoló kb. 1,05–1,10 m (akadálymentes lakásban alacsonyabb), konyhai munkalap fölötti aljzat kb. 1,05–1,15 m. A pontos magasságot a megrendelővel és a bútortervvel kell egyeztetni.",
+        "Szerelési zónák: a vezetékek a falban vízszintesen a mennyezet alatt és a padló fölött 15–45 cm-es sávban, valamint az ajtókilincs magasságában; függőlegesen az ajtók, ablakok és sarkok mellett 10–30 cm-es sávban futnak. Ez a német DIN 18015-3 gyakorlata; nálunk nem kötelező, de ha betartjuk, később bárki tudja, hol nem szabad fúrni (Rögzítéstechnika)."
+      ],
+      "formulas": [],
+      "example": { "task": "Egy 75 m²-es, kétszobás lakás áramkörei (egyfázisú betáplálás, villanyfőzőlappal).",
+        "steps": ["Világítás: 2 kör (a lakás két fele), B10.", "Aljzatok: nappali 1, hálók 1–2, előszoba és közlekedő 1, B16.", "Konyha: munkalap 2 kör, hűtő és mikró a pult körein; mosogatógép 1, sütő 1; főzőlap a gyártó szerint (egyfázison jellemzően B32 vagy B25, 6 mm² vagy 4 mm²).", "Fürdő: aljzat és mosógép 1–2 kör; villanybojler 1 (B16 vagy B20 a teljesítmény szerint).", "Erkély vagy kültér 1, médiadoboz 1 aljzat a hálózati eszközöknek."],
+        "result": "Kb. 14–16 kör, két áram-védőkapcsoló csoportban, úgy keverve, hogy egy kioldásnál maradjon fény és működjön a hűtő." },
+      "exercises": [
+        { "q": "Miért ne legyen egy helyiség világítása és aljzatai ugyanazon a körön?", "a": "Mert egy hibás készülék miatti kioldáskor a helyiség sötétben maradna, és a hibát is nehezebb megtalálni." },
+        { "q": "Mely fogyasztók kapnak jellemzően saját kört?", "a": "Főzőlap, sütő, mosogatógép, mosógép, szárítógép, bojler, klíma, hőszivattyú, autótöltő." },
+        { "q": "Mire jók a szerelési zónák?", "a": "Arra, hogy a falban futó vezetékek helye kiszámítható legyen: fúráskor és utólagos szereléskor elkerülhetők." }
+      ],
+      "safety": ["Konyhában és fürdőben az aljzatok helyét a vízvételi helyektől és a fürdőszobai zónáktól függetlenül is úgy kell kijelölni, hogy fröccsenő víz ne érje őket."],
+      "links": ["vt.kapcsolt-aljzat", "vt.pult-alatti", "el.msz-hd-60364-7-701", "kv.ethernet", "rg.vezetekkereso"], "prereq": ["s05-lakaseloszto"],
+      "terms": { "hu": ["áramkörök kiosztása lakás", "aljzat magasság", "szerelési zónák"], "en": ["circuit layout dwelling", "socket outlet height", "installation zones"], "de": ["Stromkreisaufteilung Wohnung", "Steckdosenhöhe", "Installationszonen DIN 18015-3"] } },
+
+    { "id": "s07-merohely", "title": "7. Mérőhely és betáplálás", "aka": ["fogyasztásmérő", "csatlakozási teljesítmény", "vezérelt áram", "plomba"], "level": 2, "chapter": 7,
+      "place": { "core": "2B" },
+      "goals": ["Megismerni az út a közcélú hálózattól a lakáselosztóig.", "Tudni, mi a szolgáltatóé és mi a fogyasztóé, és mit szabad megbontani.", "Kiszámolni egy csatlakozás teljesítményét és tudni, hogyan bővíthető."],
+      "body": [
+        "A közcélú hálózatról (légvezeték vagy földkábel) a csatlakozó vezeték jut a mérőhelyre. A mérőhelyen a mérő előtti kismegszakító vagy biztosító, a fogyasztásmérő és a hozzá tartozó szerelvények vannak; a mérő utáni rész a fővezeték, amely a lakáselosztóig fut.",
+        "A mérő előtti rész plombált: azt csak az elosztói engedélyes (a terület áramszolgáltatója) vagy az általa megbízott bonthatja meg. A mérőhely kialakítását a szolgáltató műszaki követelményei írják elő; új vagy átalakított mérőhelyhez terv és szolgáltatói ügyintézés kell.",
+        "A csatlakozási teljesítményt a mérő előtti védelem névleges árama adja: egyfázisú 32 A kb. 7,4 kW, háromfázisú 3 × 16 A kb. 11 kW, 3 × 25 A kb. 17 kW. Bővítést (pl. hőszivattyúhoz, autótöltőhöz) igényléssel lehet kérni; a díj és a feltételek a szolgáltatótól függenek.",
+        "Vezérelt (külön mérésű, kedvezményes) áram: a bojler vagy a fűtés köre csak a szolgáltató által engedélyezett időszakokban kap áramot, külön mérővel vagy külön mérési körrel. Napelemes rendszernél (háztartási méretű kiserőmű) kétirányú mérő méri a betáplált és a vételezett energiát.",
+        "Az okos mérők a szolgáltató felé kommunikálnak (mobilhálózaton vagy a hálózati vezetéken, PLC); egyes típusok helyi adatkimenetet is adnak."
+      ],
+      "formulas": [{ "f": "P ≈ U · I (1 fázis) · P ≈ √3 · 400 · I (3 fázis)", "mean": "a csatlakozás teljesítménye a mérő előtti védelem névleges áramából" }],
+      "example": { "task": "Egy egyfázisú 32 A-es csatlakozású családi házba 7,5 kW-os hőszivattyút és 11 kW-os autótöltőt terveznek. Elég-e a csatlakozás?",
+        "steps": ["A meglévő csatlakozás: 230 × 32 ≈ 7,4 kW.", "Csak a két új fogyasztó: 7,5 + 11 = 18,5 kW (a töltő háromfázisú).", "Háromfázisú bővítés kell: 3 × 32 A ≈ 22 kW, vagy 3 × 25 A ≈ 17 kW terheléskezeléssel (a töltő visszaszabályoz, amikor a ház többi része sokat fogyaszt)."],
+        "result": "A mostani csatlakozás nem elég; háromfázisú bővítés kell, és érdemes terheléskezeléssel tervezni (3. szint: energiamenedzsment)." },
+      "exercises": [
+        { "q": "Szabad-e a villanyszerelőnek a mérő előtti plombált részt megbontani?", "a": "Nem: azt csak a szolgáltató vagy az általa megbízott végezheti." },
+        { "q": "Mekkora teljesítményt ad egy 3 × 25 A-es csatlakozás?", "a": "√3 × 400 × 25 ≈ 17,3 kW." },
+        { "q": "Mi a vezérelt áram lényege?", "a": "Egy kör (pl. bojler) csak a szolgáltató által engedélyezett időszakokban kap áramot, külön, kedvezményes mérés mellett." }
+      ],
+      "safety": ["A mérőhelyen a mérő előtti rész a lakás főkapcsolójával nem válik feszültségmentessé.", "A csatlakozó vezeték és a mérő előtti rész zárlati árama nagy: nagyobb megszakítóképességű védelem és ennek megfelelő munkavégzés kell."],
+      "links": ["kv.halozat-50hz", "kv.plc-szuksavu", "kv.mobilhalozat", "el.msz-hd-60364"], "prereq": ["s01-halozati-rendszerek", "s05-lakaseloszto"],
+      "terms": { "hu": ["mérőhely kialakítás", "teljesítménybővítés igénylés", "vezérelt áram"], "en": ["meter cabinet", "supply capacity upgrade", "off-peak tariff circuit"], "de": ["Zählerplatz", "Leistungserhöhung", "Schwachlasttarif"] } },
+
+    { "id": "s08-foldeles-eph", "title": "8. Földelés és egyenpotenciálú összekötés", "aka": ["alapföldelő", "fő EPH", "helyi EPH", "földelési ellenállás"], "level": 2, "chapter": 8,
+      "place": { "core": "2B" },
+      "goals": ["Megismerni a földelők fajtáit.", "Megérteni a fő és a helyi egyenpotenciálú összekötés szerepét.", "Kiválasztani az összekötő vezetők keresztmetszetét."],
+      "body": [
+        "A földelő a talajjal jó villamos kapcsolatban lévő fémszerkezet. Alapföldelő: horganyzott acél szalag vagy köracél, amelyet a sávalap betonjába ágyaznak a betonozás előtt (Társszakmák: földmunka, alapozás); a legjobb és legtartósabb megoldás. Rúdföldelő: a talajba vert szondák; szalagföldelő: a talajba fektetett szalag. Utólag, meglévő épületnél jellemzően rúdföldelő.",
+        "Fő egyenpotenciálú összekötés (fő EPH): az épületbe belépő fémszerkezeteket (vízcső, gázcső a szigetelő közdarab után, fűtéscső, szerkezeti acél, a villámvédelem levezetője) egy fő földelősínen összekötik a védővezetővel és a földelővel. Így hiba esetén nem keletkezik veszélyes feszültségkülönbség a fémrészek között.",
+        "Helyi (kiegészítő) egyenpotenciálú összekötés: ahol a szabvány előírja (pl. medence, egyes esetekben fürdő), a helyiség egyidejűleg érinthető fémrészeit és a védővezetőket helyben is összekötik.",
+        "Keresztmetszetek (tájékoztató): a fő EPH vezető legalább a legnagyobb védővezető felét, de legalább 6 mm² rezet kell érjen (25 mm²-nél többre nincs szükség); a kiegészítő összekötő vezető jellemzően 2,5 mm² (védett vezetésnél) vagy 4 mm² (védelem nélkül)."
+      ],
+      "formulas": [{ "f": "R = U / I", "mean": "a földelési ellenállást földelésmérő műszer méri, segédszondákkal vagy lakatfogós módszerrel" }],
+      "example": { "task": "Egy családi ház fővezetéke 10 mm²-es, a legnagyobb védővezető is 10 mm². Mekkora fő EPH vezető kell?",
+        "steps": ["A legnagyobb védővezető fele: 5 mm².", "A legkisebb megengedett: 6 mm² réz.", "A kettő közül a nagyobb: 6 mm²."],
+        "result": "6 mm²-es réz fő EPH vezető kell; zöld-sárga szigetelésű, a fő földelősínre és minden belépő fémvezetékre bekötve, feliratozott kötésekkel." },
+      "exercises": [
+        { "q": "Mikor kell az alapföldelőt elhelyezni?", "a": "A sávalap betonozása előtt; utólag nem pótolható." },
+        { "q": "Melyik oldalon kötjük be a gázcsövet a fő EPH-ba?", "a": "Az épületbe lépés után, a szigetelő közdarab épület felőli oldalán." },
+        { "q": "Mi a fő EPH célja?", "a": "Hogy az épület fémszerkezetei között hiba esetén se keletkezzen veszélyes feszültségkülönbség." }
+      ],
+      "safety": ["A gázcsövet földelőként használni tilos; csak összekötni szabad a fő EPH-ban.", "A meglazult EPH-kötés nem látszik, de a védelem nem működik: a kötéseket hozzáférhetően és feliratozva kell elkészíteni."],
+      "links": ["el.msz-hd-60364", "el.msz-hd-60364-7-702", "el.msz-hd-60364-7-701", "vt.medence"], "prereq": ["s01-halozati-rendszerek", "s02-erintesvedelem"],
+      "terms": { "hu": ["alapföldelő betonba", "fő földelősín EPH", "rúdföldelő"], "en": ["foundation earth electrode", "main equipotential bonding", "earth rod"], "de": ["Fundamenterder", "Hauptpotentialausgleich", "Staberder"] } },
+
+    { "id": "s09-kulonleges-helyisegek", "title": "9. Különleges helyiségek a gyakorlatban", "aka": ["fürdőszoba villanyszerelés", "medence", "szauna", "kültér"], "level": 2, "chapter": 9,
+      "place": { "core": "2B" },
+      "goals": ["Egy fürdőszobát a zónák szerint megtervezni.", "Tudni, mit kér a medence, a szauna és a kültéri világítás a lakásokhoz képest pluszban.", "Az Előírások kártyáit a munkában alkalmazni."],
+      "body": [
+        "A különleges helyiségekben (MSZ HD 60364-7-xx részek) a víz, a hő vagy a környezet miatt nagyobb az áramütés vagy a tűz veszélye, ezért az általános szabályokon felül további szabályok vannak. A részleteket az Előírások kártyái foglalják össze; ez a lecke a gyakorlati sorrendet adja.",
+        "Fürdőszoba: 1. a kád vagy a zuhany helyének ismeretében berajzolni a 0., 1. és 2. zónát; 2. a zónákba csak oda szánt, megfelelő IP-jű szerkezetet tervezni; 3. kapcsolók és aljzatok a zónákon kívül (aljzat a zónákban csak törpefeszültségű vagy borotva-csatlakozó lehet); 4. minden kör 30 mA-es áram-védőkapcsolóval; 5. az egyenpotenciálú összekötést a szabvány és a helyi viszonyok szerint ellenőrizni.",
+        "Medence: a zónákba csak törpefeszültségű víz alatti lámpa és oda szánt berendezés, a transzformátor a zónákon kívül; a medence fémszerkezeteinek helyi egyenpotenciálú összekötése; a gépészet a medenceépítővel közösen.",
+        "Szauna: hőmérsékleti zónák, hőálló vezetékek és szerelvények a kabin felső részén, a kapcsolókészülékek a kabinon kívül, a kályha a gyártó előírása szerint.",
+        "Kültéri világítás: az időjárásnak megfelelő védettség, a földkábel védelme és jelzése, az elérhető lámpatestek körein áram-védőkapcsoló, a lámpaoszlopok ajtaja csak szerszámmal nyitható."
+      ],
+      "formulas": [],
+      "example": { "task": "Egy 2 × 2,5 m-es fürdőszoba zuhanytálcával (90 × 90 cm), mosdóval és mosógéppel. Hova kerüljön a mennyezeti lámpa, a tükörlámpa, a kapcsoló és a mosógép aljzata?",
+        "steps": ["Zóna 1: a zuhanytálca fölött 2,25 m-ig; zóna 2: a tálca szélétől további 0,6 m.", "Mennyezeti lámpa: ha a zóna 1 vagy 2 fölé esik, legalább IPX4 (vízsugárnál IPX5); a zónákon kívül is IP44 ajánlott a pára miatt.", "Tükörlámpa a mosdó fölött, a zónákon kívül, IP44.", "Kapcsoló a fürdőn kívül vagy az ajtó mellett, a zónákon kívül.", "Mosógép aljzata a zónákon kívül, saját körön, 30 mA-es (inverteres gépnél F típusú) áram-védőkapcsolóval."],
+        "result": "Minden szerkezet a zónájának megfelelő védettségű, a kapcsolók és aljzatok a zónákon kívül, minden kör 30 mA-es védelem alatt." },
+      "exercises": [
+        { "q": "Milyen védettség kell legalább a fürdőszobai zóna 1-be szerelt lámpatestnek?", "a": "Legalább IPX4; ahol vízsugár éri (pl. tisztításkor), IPX5." },
+        { "q": "Hová kerül a medence víz alatti lámpájának transzformátora?", "a": "A medence zónáin kívülre." },
+        { "q": "Hová kerülnek a szauna kapcsolókészülékei?", "a": "A kabinon kívülre (a kályha vezérlője a gyártó előírása szerint)." }
+      ],
+      "safety": ["A különleges helyiségek szabályai a hatályos MSZ HD 60364-7-xx szövegből ellenőrizendők munka előtt; ez a lecke csak a gyakorlati sorrendet adja."],
+      "links": ["el.msz-hd-60364-7-701", "el.msz-hd-60364-7-702", "el.msz-hd-60364-7-703", "el.msz-hd-60364-7-714", "vt.furdo-mennyezeti", "vt.tukorvilagitas", "vt.medence", "vt.szauna"], "prereq": ["s02-erintesvedelem", "s08-foldeles-eph"],
+      "terms": { "hu": ["fürdőszoba zónák villanyszerelés", "medence villanyszerelés", "szauna bekötés"], "en": ["bathroom electrical zones", "pool electrical installation", "sauna wiring"], "de": ["Badezimmer Schutzbereiche Installation", "Schwimmbad Elektroinstallation", "Sauna Anschluss"] } },
+
+    { "id": "s10-ellenorzo-meresek", "title": "10. Ellenőrző mérések és a jegyzőkönyv", "aka": ["első ellenőrzés", "szigetelési ellenállás", "hurokimpedancia mérés", "RCD próba"], "level": 2, "chapter": 10,
+      "place": { "core": "2B" },
+      "goals": ["Ismerni az első ellenőrzés lépéseit és sorrendjüket.", "Elvégezni és értékelni a szigetelés-, a hurokimpedancia- és az áram-védőkapcsoló-mérést.", "Jegyzőkönyvet készíteni."],
+      "body": [
+        "Az átadás előtt minden új vagy átalakított berendezést ellenőrizni kell (MSZ HD 60364-6): szemrevételezés, majd mérések, végül a működés próbája, és mindezt jegyzőkönyvben dokumentálni.",
+        "Sorrend: feszültségmentesen először a védővezetők folytonossága (kis ellenállású mérés), majd a szigetelési ellenállás, majd a polaritás. Csak ezek után szabad feszültség alá helyezni, és mérni a hurokimpedanciát (az önműködő lekapcsolás feltételét) és az áram-védőkapcsolók kioldását.",
+        "Szigetelési ellenállás (tájékoztató): 500 V-ig terjedő körökben 500 V egyenfeszültségű méréssel, legalább 1 MΩ; törpefeszültségű körökben 250 V-tal, legalább 0,5 MΩ. Mérés előtt a túlfeszültség-levezetőt és az érzékeny elektronikát (LED-meghajtó, okos kapcsoló) le kell választani, vagy a fázist és a nullát összekötve a védővezetőhöz képest mérni.",
+        "Hurokimpedancia: a mért érték legyen kisebb a 2. lecke szerinti határnál. A vezeték üzemi melegedése miatt a mért (hideg) értéket tartalékkal értékeljük; a gyakorlatban elterjedt szabály, hogy a mért érték ne haladja meg a határ kb. 80 %-át.",
+        "Áram-védőkapcsoló: a próbagomb nem elég; műszerrel kell mérni a kioldási áramot és a kioldási időt. Tájékoztató értékek általános típusnál: névleges kioldóáramon legfeljebb 300 ms, ötszörös áramon legfeljebb 40 ms."
+      ],
+      "formulas": [{ "f": "Zs,mért ≤ 0,8 · U0 / Ia", "mean": "gyakorlati szabály a hideg állapotban mért hurokimpedancia értékelésére" }],
+      "example": { "task": "Egy B16-os aljzatkörön a mért hurokimpedancia 1,9 Ω, az áram-védőkapcsoló 30 mA-en 24 ms alatt old. Megfelel?",
+        "steps": ["Határ (2. lecke): 230 / 80 ≈ 2,9 Ω; 80 %-a ≈ 2,3 Ω.", "1,9 Ω < 2,3 Ω: a kismegszakító időben lekapcsol.", "24 ms < 300 ms: az áram-védőkapcsoló kioldási ideje megfelel."],
+        "result": "A kör megfelel; a jegyzőkönyvbe a mért értékek, a határértékek, a műszer és a dátum kerül." },
+      "exercises": [
+        { "q": "Miért a feszültségmentes mérésekkel kezdünk?", "a": "Mert a folytonossági és a szigetelési hibát még a feszültség alá helyezés előtt meg kell találni, különben a bekapcsolás veszélyes lehet." },
+        { "q": "Mi a teendő a szigetelésmérés előtt a LED-meghajtókkal és a túlfeszültség-levezetővel?", "a": "Le kell választani őket, vagy a fázist és a nullát összekötve a védővezetőhöz képest kell mérni, különben tönkremehetnek vagy hamis eredményt adnak." },
+        { "q": "Elég-e a próbagomb megnyomása az áram-védőkapcsoló ellenőrzéséhez átadáskor?", "a": "Nem: műszerrel kell mérni a kioldási áramot és időt." }
+      ],
+      "safety": ["A szigetelésmérés 500 V-os feszültsége érintésre kellemetlen és veszélyes lehet: mérés közben senki ne dolgozzon a körön.", "A mérések a berendezés átadásához kötött dokumentumok: hamis vagy elmaradt mérés jogi felelősséggel jár."],
+      "links": ["el.msz-hd-60364", "el.szerelvenyek", "vt.led-szalag"], "prereq": ["s02-erintesvedelem", "s08-foldeles-eph"],
+      "terms": { "hu": ["szigetelési ellenállás mérés 500V", "hurokimpedancia mérés", "érintésvédelmi jegyzőkönyv"], "en": ["insulation resistance test", "loop impedance test", "inspection and test report"], "de": ["Isolationswiderstandsmessung", "Schleifenimpedanzmessung", "Prüfprotokoll"] } }
   ]
 }

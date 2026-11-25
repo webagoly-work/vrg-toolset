@@ -451,7 +451,7 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 - Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a vízkifolyó körül). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig.
 - Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, a táplálás a zónákon kívül.
 - Zóna 1-be csak oda szánt, helyhez kötött berendezés (pl. vízmelegítő, szellőző, törölközőszárító, lámpatest a gyártói minősítéssel); törpefeszültségű táplálás esetén a forrás a zóna 0 és 1 kívül.
-- Dugaszolóaljzat a zóna 1 határától számított 3 m-en belül nem lehet, kivéve a törpefeszültségű aljzatot és a borotva-csatlakozót (leválasztó transzformátoros egység).
+- Dugaszolóaljzat a 0., 1. és 2. zónában nem lehet, kivéve a törpefeszültségű aljzatot és a borotva-csatlakozót (leválasztó transzformátoros egység); a zónákon kívül 30 mA-es áram-védőkapcsolóval védve szerelhető. A nemzetközi IEC-szöveg szigorúbb (3 m a zóna 1 határától); Magyarországon az MSZ HD kiadás a mérvadó: ezt a pontot a hatályos szöveggel ellenőrizni kell.
 - Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**

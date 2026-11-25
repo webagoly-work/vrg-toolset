@@ -509,6 +509,11 @@ Egy folyosót két végéről kell kapcsolni. Milyen vezetékek kellenek a kapcs
 - [3. Túláramvédelem: kismegszakító és biztosító](#s03-tularamvedelem)
 - [4. Keresztmetszet és feszültségesés](#s04-keresztmetszet)
 - [5. A lakáselosztó](#s05-lakaseloszto)
+- [6. Áramkörök kiosztása egy lakásban](#s06-aramkor-kiosztas)
+- [7. Mérőhely és betáplálás](#s07-merohely)
+- [8. Földelés és egyenpotenciálú összekötés](#s08-foldeles-eph)
+- [9. Különleges helyiségek a gyakorlatban](#s09-kulonleges-helyisegek)
+- [10. Ellenőrző mérések és a jegyzőkönyv](#s10-ellenorzo-meresek)
 
 <a id="s01-halozati-rendszerek"></a>
 
@@ -764,3 +769,253 @@ Tervezzünk egy egyfázisú, háromszobás lakás elosztóját.
 - A feliratozás nélküli elosztó veszélyes: a hibás kör nem azonosítható gyorsan.
 
 *Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek
+
+<a id="s06-aramkor-kiosztas"></a>
+
+### 6. Áramkörök kiosztása egy lakásban
+
+*Előtte:* 5. A lakáselosztó
+
+**Célok**
+
+- Egy lakás fogyasztóit áramkörökre osztani úgy, hogy egy hiba ne bénítsa meg a lakást.
+- Tudni, mely fogyasztók kapnak saját kört.
+- A vezetékeket kiszámítható helyen, szerelési zónákban vezetni.
+
+Alapelvek: a világítás és az aljzatok külön körön; egy helyiség világítása és aljzatai ne ugyanazon a körön legyenek (ha az aljzatkör kiold, maradjon fény); a köröket a fázisok és az áram-védőkapcsoló csoportok között egyenletesen kell elosztani (5. lecke).
+
+Saját kör kell a nagy és tartós fogyasztóknak: főzőlap és sütő (a gyártó előírása szerint egy- vagy háromfázisú), mosogatógép, mosógép, szárítógép, villanybojler, klíma, hőszivattyú, autótöltő. A konyhai munkalap aljzatai legalább két körre kerüljenek (3. lecke: három konyhagép már túlterhel egy kört). A fürdő aljzatai saját körön; a kültéri aljzatok és a kerti világítás külön körön.
+
+Az aljzatok számánál az a cél, hogy ne kelljen hosszabbító: a bútorozási tervből kell kiindulni (TV-fal, ágy két oldala, íróasztal, konyhapult). Jellemző magasságok a gyakorlatban: aljzat a kész padló fölött kb. 30 cm, kapcsoló kb. 1,05–1,10 m (akadálymentes lakásban alacsonyabb), konyhai munkalap fölötti aljzat kb. 1,05–1,15 m. A pontos magasságot a megrendelővel és a bútortervvel kell egyeztetni.
+
+Szerelési zónák: a vezetékek a falban vízszintesen a mennyezet alatt és a padló fölött 15–45 cm-es sávban, valamint az ajtókilincs magasságában; függőlegesen az ajtók, ablakok és sarkok mellett 10–30 cm-es sávban futnak. Ez a német DIN 18015-3 gyakorlata; nálunk nem kötelező, de ha betartjuk, később bárki tudja, hol nem szabad fúrni (Rögzítéstechnika).
+
+**Kidolgozott példa**
+
+Egy 75 m²-es, kétszobás lakás áramkörei (egyfázisú betáplálás, villanyfőzőlappal).
+
+1. Világítás: 2 kör (a lakás két fele), B10.
+2. Aljzatok: nappali 1, hálók 1–2, előszoba és közlekedő 1, B16.
+3. Konyha: munkalap 2 kör, hűtő és mikró a pult körein; mosogatógép 1, sütő 1; főzőlap a gyártó szerint (egyfázison jellemzően B32 vagy B25, 6 mm² vagy 4 mm²).
+4. Fürdő: aljzat és mosógép 1–2 kör; villanybojler 1 (B16 vagy B20 a teljesítmény szerint).
+5. Erkély vagy kültér 1, médiadoboz 1 aljzat a hálózati eszközöknek.
+
+→ Kb. 14–16 kör, két áram-védőkapcsoló csoportban, úgy keverve, hogy egy kioldásnál maradjon fény és működjön a hűtő.
+
+**Gyakorló feladatok**
+
+1. Miért ne legyen egy helyiség világítása és aljzatai ugyanazon a körön?
+   <details><summary>Megoldás</summary>Mert egy hibás készülék miatti kioldáskor a helyiség sötétben maradna, és a hibát is nehezebb megtalálni.</details>
+2. Mely fogyasztók kapnak jellemzően saját kört?
+   <details><summary>Megoldás</summary>Főzőlap, sütő, mosogatógép, mosógép, szárítógép, bojler, klíma, hőszivattyú, autótöltő.</details>
+3. Mire jók a szerelési zónák?
+   <details><summary>Megoldás</summary>Arra, hogy a falban futó vezetékek helye kiszámítható legyen: fúráskor és utólagos szereléskor elkerülhetők.</details>
+
+**Biztonság**
+
+- Konyhában és fürdőben az aljzatok helyét a vízvételi helyektől és a fürdőszobai zónáktól függetlenül is úgy kell kijelölni, hogy fröccsenő víz ne érje őket.
+
+*Kapcsolódó kártyák:* Kapcsolt aljzat (a dugaszolós lámpák köre), Konyhai pult alatti világítás, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, Ethernet csavart érpár, Vezeték- és vaskereső
+
+<a id="s07-merohely"></a>
+
+### 7. Mérőhely és betáplálás
+
+*Előtte:* 1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT, 5. A lakáselosztó
+
+**Célok**
+
+- Megismerni az út a közcélú hálózattól a lakáselosztóig.
+- Tudni, mi a szolgáltatóé és mi a fogyasztóé, és mit szabad megbontani.
+- Kiszámolni egy csatlakozás teljesítményét és tudni, hogyan bővíthető.
+
+A közcélú hálózatról (légvezeték vagy földkábel) a csatlakozó vezeték jut a mérőhelyre. A mérőhelyen a mérő előtti kismegszakító vagy biztosító, a fogyasztásmérő és a hozzá tartozó szerelvények vannak; a mérő utáni rész a fővezeték, amely a lakáselosztóig fut.
+
+A mérő előtti rész plombált: azt csak az elosztói engedélyes (a terület áramszolgáltatója) vagy az általa megbízott bonthatja meg. A mérőhely kialakítását a szolgáltató műszaki követelményei írják elő; új vagy átalakított mérőhelyhez terv és szolgáltatói ügyintézés kell.
+
+A csatlakozási teljesítményt a mérő előtti védelem névleges árama adja: egyfázisú 32 A kb. 7,4 kW, háromfázisú 3 × 16 A kb. 11 kW, 3 × 25 A kb. 17 kW. Bővítést (pl. hőszivattyúhoz, autótöltőhöz) igényléssel lehet kérni; a díj és a feltételek a szolgáltatótól függenek.
+
+Vezérelt (külön mérésű, kedvezményes) áram: a bojler vagy a fűtés köre csak a szolgáltató által engedélyezett időszakokban kap áramot, külön mérővel vagy külön mérési körrel. Napelemes rendszernél (háztartási méretű kiserőmű) kétirányú mérő méri a betáplált és a vételezett energiát.
+
+Az okos mérők a szolgáltató felé kommunikálnak (mobilhálózaton vagy a hálózati vezetéken, PLC); egyes típusok helyi adatkimenetet is adnak.
+
+**Képletek**
+
+- `P ≈ U · I (1 fázis) · P ≈ √3 · 400 · I (3 fázis)` — a csatlakozás teljesítménye a mérő előtti védelem névleges áramából
+
+**Kidolgozott példa**
+
+Egy egyfázisú 32 A-es csatlakozású családi házba 7,5 kW-os hőszivattyút és 11 kW-os autótöltőt terveznek. Elég-e a csatlakozás?
+
+1. A meglévő csatlakozás: 230 × 32 ≈ 7,4 kW.
+2. Csak a két új fogyasztó: 7,5 + 11 = 18,5 kW (a töltő háromfázisú).
+3. Háromfázisú bővítés kell: 3 × 32 A ≈ 22 kW, vagy 3 × 25 A ≈ 17 kW terheléskezeléssel (a töltő visszaszabályoz, amikor a ház többi része sokat fogyaszt).
+
+→ A mostani csatlakozás nem elég; háromfázisú bővítés kell, és érdemes terheléskezeléssel tervezni (3. szint: energiamenedzsment).
+
+**Gyakorló feladatok**
+
+1. Szabad-e a villanyszerelőnek a mérő előtti plombált részt megbontani?
+   <details><summary>Megoldás</summary>Nem: azt csak a szolgáltató vagy az általa megbízott végezheti.</details>
+2. Mekkora teljesítményt ad egy 3 × 25 A-es csatlakozás?
+   <details><summary>Megoldás</summary>√3 × 400 × 25 ≈ 17,3 kW.</details>
+3. Mi a vezérelt áram lényege?
+   <details><summary>Megoldás</summary>Egy kör (pl. bojler) csak a szolgáltató által engedélyezett időszakokban kap áramot, külön, kedvezményes mérés mellett.</details>
+
+**Biztonság**
+
+- A mérőhelyen a mérő előtti rész a lakás főkapcsolójával nem válik feszültségmentessé.
+- A csatlakozó vezeték és a mérő előtti rész zárlati árama nagy: nagyobb megszakítóképességű védelem és ennek megfelelő munkavégzés kell.
+
+*Kapcsolódó kártyák:* Hálózati 50 Hz, PLC szűksávú, Mobilhálózat (4G, 5G), MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések
+
+<a id="s08-foldeles-eph"></a>
+
+### 8. Földelés és egyenpotenciálú összekötés
+
+*Előtte:* 1. Hálózati rendszerek: TN-C, TN-S, TN-C-S, TT, IT, 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem
+
+**Célok**
+
+- Megismerni a földelők fajtáit.
+- Megérteni a fő és a helyi egyenpotenciálú összekötés szerepét.
+- Kiválasztani az összekötő vezetők keresztmetszetét.
+
+A földelő a talajjal jó villamos kapcsolatban lévő fémszerkezet. Alapföldelő: horganyzott acél szalag vagy köracél, amelyet a sávalap betonjába ágyaznak a betonozás előtt (Társszakmák: földmunka, alapozás); a legjobb és legtartósabb megoldás. Rúdföldelő: a talajba vert szondák; szalagföldelő: a talajba fektetett szalag. Utólag, meglévő épületnél jellemzően rúdföldelő.
+
+Fő egyenpotenciálú összekötés (fő EPH): az épületbe belépő fémszerkezeteket (vízcső, gázcső a szigetelő közdarab után, fűtéscső, szerkezeti acél, a villámvédelem levezetője) egy fő földelősínen összekötik a védővezetővel és a földelővel. Így hiba esetén nem keletkezik veszélyes feszültségkülönbség a fémrészek között.
+
+Helyi (kiegészítő) egyenpotenciálú összekötés: ahol a szabvány előírja (pl. medence, egyes esetekben fürdő), a helyiség egyidejűleg érinthető fémrészeit és a védővezetőket helyben is összekötik.
+
+Keresztmetszetek (tájékoztató): a fő EPH vezető legalább a legnagyobb védővezető felét, de legalább 6 mm² rezet kell érjen (25 mm²-nél többre nincs szükség); a kiegészítő összekötő vezető jellemzően 2,5 mm² (védett vezetésnél) vagy 4 mm² (védelem nélkül).
+
+**Képletek**
+
+- `R = U / I` — a földelési ellenállást földelésmérő műszer méri, segédszondákkal vagy lakatfogós módszerrel
+
+**Kidolgozott példa**
+
+Egy családi ház fővezetéke 10 mm²-es, a legnagyobb védővezető is 10 mm². Mekkora fő EPH vezető kell?
+
+1. A legnagyobb védővezető fele: 5 mm².
+2. A legkisebb megengedett: 6 mm² réz.
+3. A kettő közül a nagyobb: 6 mm².
+
+→ 6 mm²-es réz fő EPH vezető kell; zöld-sárga szigetelésű, a fő földelősínre és minden belépő fémvezetékre bekötve, feliratozott kötésekkel.
+
+**Gyakorló feladatok**
+
+1. Mikor kell az alapföldelőt elhelyezni?
+   <details><summary>Megoldás</summary>A sávalap betonozása előtt; utólag nem pótolható.</details>
+2. Melyik oldalon kötjük be a gázcsövet a fő EPH-ba?
+   <details><summary>Megoldás</summary>Az épületbe lépés után, a szigetelő közdarab épület felőli oldalán.</details>
+3. Mi a fő EPH célja?
+   <details><summary>Megoldás</summary>Hogy az épület fémszerkezetei között hiba esetén se keletkezzen veszélyes feszültségkülönbség.</details>
+
+**Biztonság**
+
+- A gázcsövet földelőként használni tilos; csak összekötni szabad a fő EPH-ban.
+- A meglazult EPH-kötés nem látszik, de a védelem nem működik: a kötéseket hozzáférhetően és feliratozva kell elkészíteni.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, Medencevilágítás
+
+<a id="s09-kulonleges-helyisegek"></a>
+
+### 9. Különleges helyiségek a gyakorlatban
+
+*Előtte:* 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem, 8. Földelés és egyenpotenciálú összekötés
+
+**Célok**
+
+- Egy fürdőszobát a zónák szerint megtervezni.
+- Tudni, mit kér a medence, a szauna és a kültéri világítás a lakásokhoz képest pluszban.
+- Az Előírások kártyáit a munkában alkalmazni.
+
+A különleges helyiségekben (MSZ HD 60364-7-xx részek) a víz, a hő vagy a környezet miatt nagyobb az áramütés vagy a tűz veszélye, ezért az általános szabályokon felül további szabályok vannak. A részleteket az Előírások kártyái foglalják össze; ez a lecke a gyakorlati sorrendet adja.
+
+Fürdőszoba: 1. a kád vagy a zuhany helyének ismeretében berajzolni a 0., 1. és 2. zónát; 2. a zónákba csak oda szánt, megfelelő IP-jű szerkezetet tervezni; 3. kapcsolók és aljzatok a zónákon kívül (aljzat a zónákban csak törpefeszültségű vagy borotva-csatlakozó lehet); 4. minden kör 30 mA-es áram-védőkapcsolóval; 5. az egyenpotenciálú összekötést a szabvány és a helyi viszonyok szerint ellenőrizni.
+
+Medence: a zónákba csak törpefeszültségű víz alatti lámpa és oda szánt berendezés, a transzformátor a zónákon kívül; a medence fémszerkezeteinek helyi egyenpotenciálú összekötése; a gépészet a medenceépítővel közösen.
+
+Szauna: hőmérsékleti zónák, hőálló vezetékek és szerelvények a kabin felső részén, a kapcsolókészülékek a kabinon kívül, a kályha a gyártó előírása szerint.
+
+Kültéri világítás: az időjárásnak megfelelő védettség, a földkábel védelme és jelzése, az elérhető lámpatestek körein áram-védőkapcsoló, a lámpaoszlopok ajtaja csak szerszámmal nyitható.
+
+**Kidolgozott példa**
+
+Egy 2 × 2,5 m-es fürdőszoba zuhanytálcával (90 × 90 cm), mosdóval és mosógéppel. Hova kerüljön a mennyezeti lámpa, a tükörlámpa, a kapcsoló és a mosógép aljzata?
+
+1. Zóna 1: a zuhanytálca fölött 2,25 m-ig; zóna 2: a tálca szélétől további 0,6 m.
+2. Mennyezeti lámpa: ha a zóna 1 vagy 2 fölé esik, legalább IPX4 (vízsugárnál IPX5); a zónákon kívül is IP44 ajánlott a pára miatt.
+3. Tükörlámpa a mosdó fölött, a zónákon kívül, IP44.
+4. Kapcsoló a fürdőn kívül vagy az ajtó mellett, a zónákon kívül.
+5. Mosógép aljzata a zónákon kívül, saját körön, 30 mA-es (inverteres gépnél F típusú) áram-védőkapcsolóval.
+
+→ Minden szerkezet a zónájának megfelelő védettségű, a kapcsolók és aljzatok a zónákon kívül, minden kör 30 mA-es védelem alatt.
+
+**Gyakorló feladatok**
+
+1. Milyen védettség kell legalább a fürdőszobai zóna 1-be szerelt lámpatestnek?
+   <details><summary>Megoldás</summary>Legalább IPX4; ahol vízsugár éri (pl. tisztításkor), IPX5.</details>
+2. Hová kerül a medence víz alatti lámpájának transzformátora?
+   <details><summary>Megoldás</summary>A medence zónáin kívülre.</details>
+3. Hová kerülnek a szauna kapcsolókészülékei?
+   <details><summary>Megoldás</summary>A kabinon kívülre (a kályha vezérlője a gyártó előírása szerint).</details>
+
+**Biztonság**
+
+- A különleges helyiségek szabályai a hatályos MSZ HD 60364-7-xx szövegből ellenőrizendők munka előtt; ez a lecke csak a gyakorlati sorrendet adja.
+
+*Kapcsolódó kártyák:* MSZ HD 60364-7-701 · Fürdő- és zuhanyhelyiségek, MSZ HD 60364-7-702 · Úszómedencék és szökőkutak, MSZ HD 60364-7-703 · Szaunák, MSZ HD 60364-7-714 · Kültéri világítási berendezések, Fürdőszobai mennyezeti lámpa, Tükörvilágítás, Medencevilágítás, Szaunavilágítás
+
+<a id="s10-ellenorzo-meresek"></a>
+
+### 10. Ellenőrző mérések és a jegyzőkönyv
+
+*Előtte:* 2. Érintésvédelem: alap-, hiba- és kiegészítő védelem, 8. Földelés és egyenpotenciálú összekötés
+
+**Célok**
+
+- Ismerni az első ellenőrzés lépéseit és sorrendjüket.
+- Elvégezni és értékelni a szigetelés-, a hurokimpedancia- és az áram-védőkapcsoló-mérést.
+- Jegyzőkönyvet készíteni.
+
+Az átadás előtt minden új vagy átalakított berendezést ellenőrizni kell (MSZ HD 60364-6): szemrevételezés, majd mérések, végül a működés próbája, és mindezt jegyzőkönyvben dokumentálni.
+
+Sorrend: feszültségmentesen először a védővezetők folytonossága (kis ellenállású mérés), majd a szigetelési ellenállás, majd a polaritás. Csak ezek után szabad feszültség alá helyezni, és mérni a hurokimpedanciát (az önműködő lekapcsolás feltételét) és az áram-védőkapcsolók kioldását.
+
+Szigetelési ellenállás (tájékoztató): 500 V-ig terjedő körökben 500 V egyenfeszültségű méréssel, legalább 1 MΩ; törpefeszültségű körökben 250 V-tal, legalább 0,5 MΩ. Mérés előtt a túlfeszültség-levezetőt és az érzékeny elektronikát (LED-meghajtó, okos kapcsoló) le kell választani, vagy a fázist és a nullát összekötve a védővezetőhöz képest mérni.
+
+Hurokimpedancia: a mért érték legyen kisebb a 2. lecke szerinti határnál. A vezeték üzemi melegedése miatt a mért (hideg) értéket tartalékkal értékeljük; a gyakorlatban elterjedt szabály, hogy a mért érték ne haladja meg a határ kb. 80 %-át.
+
+Áram-védőkapcsoló: a próbagomb nem elég; műszerrel kell mérni a kioldási áramot és a kioldási időt. Tájékoztató értékek általános típusnál: névleges kioldóáramon legfeljebb 300 ms, ötszörös áramon legfeljebb 40 ms.
+
+**Képletek**
+
+- `Zs,mért ≤ 0,8 · U0 / Ia` — gyakorlati szabály a hideg állapotban mért hurokimpedancia értékelésére
+
+**Kidolgozott példa**
+
+Egy B16-os aljzatkörön a mért hurokimpedancia 1,9 Ω, az áram-védőkapcsoló 30 mA-en 24 ms alatt old. Megfelel?
+
+1. Határ (2. lecke): 230 / 80 ≈ 2,9 Ω; 80 %-a ≈ 2,3 Ω.
+2. 1,9 Ω < 2,3 Ω: a kismegszakító időben lekapcsol.
+3. 24 ms < 300 ms: az áram-védőkapcsoló kioldási ideje megfelel.
+
+→ A kör megfelel; a jegyzőkönyvbe a mért értékek, a határértékek, a műszer és a dátum kerül.
+
+**Gyakorló feladatok**
+
+1. Miért a feszültségmentes mérésekkel kezdünk?
+   <details><summary>Megoldás</summary>Mert a folytonossági és a szigetelési hibát még a feszültség alá helyezés előtt meg kell találni, különben a bekapcsolás veszélyes lehet.</details>
+2. Mi a teendő a szigetelésmérés előtt a LED-meghajtókkal és a túlfeszültség-levezetővel?
+   <details><summary>Megoldás</summary>Le kell választani őket, vagy a fázist és a nullát összekötve a védővezetőhöz képest kell mérni, különben tönkremehetnek vagy hamis eredményt adnak.</details>
+3. Elég-e a próbagomb megnyomása az áram-védőkapcsoló ellenőrzéséhez átadáskor?
+   <details><summary>Megoldás</summary>Nem: műszerrel kell mérni a kioldási áramot és időt.</details>
+
+**Biztonság**
+
+- A szigetelésmérés 500 V-os feszültsége érintésre kellemetlen és veszélyes lehet: mérés közben senki ne dolgozzon a körön.
+- A mérések a berendezés átadásához kötött dokumentumok: hamis vagy elmaradt mérés jogi felelősséggel jár.
+
+*Kapcsolódó kártyák:* MSZ HD 60364 sorozat · Kisfeszültségű villamos berendezések, MSZ EN 60669 és MSZ HD 60884 · Kapcsolók és dugaszolóaljzatok, LED-szalag (12 / 24 V)

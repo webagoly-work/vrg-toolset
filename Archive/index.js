@@ -52,7 +52,8 @@ window.VRG_ARCHIVE = {
     "2026-11-22: Előírások grows to 23 cards (MSZ HD 60364 and its special locations, the product and lighting standards); every lamp type links its rules",
     "2026-11-22: Készlet products linked to their Kisokos cards (57 links, 54 products); a card lists its stocked products and reaches to the Készlet form",
     "2026-11-22: the Tankönyv volume started: curriculum for three levels, level 1 written (10 lessons)",
-    "2026-11-25: Tankönyv level 2 lessons 1–5 (the safety core)"
+    "2026-11-25: Tankönyv level 2 lessons 1–5 (the safety core)",
+    "2026-11-25: Tankönyv level 2 lessons 6–10; the 7-701 socket rule corrected to the HD wording"
    ],
    "tags": [
     "kisokos",
