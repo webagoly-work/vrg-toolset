@@ -19,14 +19,14 @@ object HomeLayout {
         HomePage(2, "Munka: pár perc", "Munka", listOf(Catalogue.PLANNER, Catalogue.CALC, Catalogue.INVENTORY)),
         HomePage(3, "Workflow Kit", "Workflow", listOf(Catalogue.WORKFLOW)),
         HomePage(4, "Térkép · Időjárás · Vault", "Térkép", listOf(Catalogue.MAP, Catalogue.WEATHER, Catalogue.VAULT)),
-        HomePage(5, "Archívum · Claude", "Archívum", listOf(Catalogue.ARCHIVE, Catalogue.CLAUDE)),
+        HomePage(5, "Archívum · Claude · DevLap", "Archívum", listOf(Catalogue.ARCHIVE, Catalogue.CLAUDE, Catalogue.DEVLAP)),
         HomePage(6, "Kapcsolat a PC-vel", "Kapcsolat", listOf(
             Catalogue.PAIR, Catalogue.NET, Catalogue.AIRDECK, Catalogue.SCREEN,
             Catalogue.DROP, Catalogue.PCWIN, Catalogue.LAUNCH, Catalogue.PORTS,
         )),
         HomePage(7, "Egyéb", "Egyéb", listOf(
             Catalogue.NOTES, Catalogue.INBOX, Catalogue.PULSE, Catalogue.CITY,
-            Catalogue.SPHERE, Catalogue.STACK, Catalogue.APPS, Catalogue.SHEETS,
+            Catalogue.SPHERE, Catalogue.STACK, Catalogue.APPS, Catalogue.SHEETS, Catalogue.TAG, Catalogue.WATCH, Catalogue.RADAR,
         )),
         HomePage(8, "Fiók és beállítások", "Fiók", listOf(Catalogue.ACCOUNT, Catalogue.DEVICES, Catalogue.UPDATE, Catalogue.SETTINGS)),
     )
@@ -69,5 +69,22 @@ object HomeLayout {
         count == null -> null
         count <= 0 -> "Még nincs felmérés a telefonon"
         else -> "$count felmérés a telefonon"
+    }
+
+    /**
+     * VRG Időjárás's home card line (WP M44): feature-weather writes `<epoch ms>\n<line>` to `filesDir/[WEATHER_SUMMARY]`
+     * after each refresh; the card shows it while it is younger than [WEATHER_MAX_AGE_MS], with its age.
+     */
+    const val WEATHER_SUMMARY = "weather/summary.txt"
+    const val WEATHER_MAX_AGE_MS = 12 * 3600_000L
+
+    fun weatherLine(file: String?, nowMs: Long): String? {
+        val lines = file?.lines() ?: return null
+        val at = lines.firstOrNull()?.trim()?.toLongOrNull() ?: return null
+        val line = lines.getOrNull(1)?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val age = nowMs - at
+        if (age < 0 || age > WEATHER_MAX_AGE_MS) return null
+        val min = age / 60_000
+        return "$line · " + if (min < 60) "$min perce" else "${min / 60} órája"
     }
 }

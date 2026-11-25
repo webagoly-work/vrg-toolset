@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -81,6 +84,8 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -208,12 +213,33 @@ object InboxFeature : VrgFeature {
         scope.launch { GitHub.send("PATCH", "/notifications/threads/$t", "{}") }
     }
 
+    /** The ids the last "Mind olvasott" marked, while it can still be undone (UI-CHECKLIST 5.6); null otherwise. */
+    val undoable = MutableStateFlow<List<String>?>(null)
+    private var pendingAll: Job? = null
+    private const val UNDO_MS = 5_000L
+
     fun markAllRead(kind: InboxKind?) {
         val threads = _state.value.unreadThreads(kind)
         val ids = _state.value.events.filter { !it.read && (kind == null || it.kind == kind) }.map { it.id }
         update { it.markAllRead(kind) }
         ids.forEach { VrgNotify.cancel(app, it) }
-        scope.launch { threads.forEach { GitHub.send("PATCH", "/notifications/threads/$it", "{}") } }
+        // GitHub is told only after the undo window: a PATCH there cannot be taken back
+        undoable.value = ids
+        pendingAll = scope.launch {
+            delay(UNDO_MS)
+            if (undoable.value === ids) undoable.value = null
+            threads.forEach { GitHub.send("PATCH", "/notifications/threads/$it", "{}") }
+        }
+    }
+
+    /** Takes the last "Mind olvasott" back before its PATCHes went out. */
+    fun undoAllRead() {
+        val ids = undoable.value ?: return
+        pendingAll?.cancel()
+        pendingAll = null
+        undoable.value = null
+        val back = ids.toSet()
+        update { st -> st.copy(events = st.events.map { if (it.id in back) it.copy(read = false) else it }) }
     }
 
     // ---- the poller ------------------------------------------------------------------------------
@@ -315,6 +341,7 @@ object InboxFeature : VrgFeature {
         val why by problem.collectAsStateWithLifecycle()
         val busy by track.status.collectAsStateWithLifecycle()
         val asked by pendingOpen.collectAsStateWithLifecycle()
+        val undo by undoable.collectAsStateWithLifecycle()
         val ctx = LocalContext.current
         var filter by remember { mutableStateOf<InboxKind?>(null) }
         // Android's own answer is read again after the permission dialog or a trip to its settings
@@ -333,8 +360,9 @@ object InboxFeature : VrgFeature {
         PullToRefreshBox(isRefreshing = busy.busy && busy.state == hu.vrg.mobile.core.MiniState.RUNNING,
             onRefresh = { scope.launch { poll(manual = true) } }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
                 Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
                 Text("ÉRTESÍTÉSEK", style = Melyviz.title.copy(fontSize = 18.sp))
                 Text(status(s), style = Melyviz.readout)
                 why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
@@ -354,7 +382,8 @@ object InboxFeature : VrgFeature {
 
                 Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     VrgChip("⟳ Most", status = busy) { scope.launch { poll(manual = true) } }
-                    if (s.unread > 0) VrgChip("✓ Mind olvasott") { markAllRead(filter) }
+                    if (undo != null) VrgChip("↶ Visszavonás") { undoAllRead() }
+                    else if (s.unread > 0) VrgChip("✓ Mind olvasott") { markAllRead(filter) }
                 }
                 FlowRow(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     VrgChip("Mind" + count(s, null), selected = filter == null) { filter = null }
@@ -363,7 +392,7 @@ object InboxFeature : VrgFeature {
 
                 val days = s.days(filter, ZoneId.systemDefault())
                 if (days.isEmpty()) Text(
-                    if (s.baselined.isEmpty()) "Még nem volt lekérdezés. Húzd le, vagy várj a következőre (15 percenként)." else "Nincs esemény ebben a nézetben.",
+                    if (s.baselined.isEmpty()) "Még nem volt lekérdezés. ⟳ Most, húzd le, vagy várj a következőre (15 percenként)." else "Nincs esemény ebben a nézetben.",
                     style = Melyviz.small, modifier = Modifier.padding(top = 14.dp),
                 )
                 days.forEach { (day, events) ->

@@ -14,6 +14,7 @@ import androidx.work.WorkerParameters
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.Note
+import hu.vrg.mobile.core.NoteKey
 import hu.vrg.mobile.core.NoteLog
 import hu.vrg.mobile.core.NoteSync
 import hu.vrg.mobile.core.NoteWriter
@@ -43,9 +44,9 @@ import java.time.ZoneId
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-// VRG Jegyzetek (WP M46): the central Notes app. Every note of VRG Mobile is in kit's hub (Notes); this feature is
+// VRG Jegyzetek (WP M68): the central Notes app. Every note of VRG Mobile is in kit's hub (Notes); this feature is
 // its screen (NotesUi.kt) and its sync:
-//  - the hub ⇄ the private branch `vrg-notes` (D-56 = B), a few seconds after a change, each time the app comes on
+//  - the hub ⇄ the private branch `vrg-notes` (D-177 = B), a few seconds after a change, each time the app comes on
 //    screen, and through WorkManager when offline (kit-core NoteSync: one file per note, conflict copies);
 //  - the Projektnapló module: a quick note also goes to the M6 day log on `mobile-log` (kit-core Notes.kt), the
 //    project's chat log, with the old outbox. On Android 15 a process kept alive behind the lock screen has its
@@ -64,6 +65,13 @@ object NotesFeature : VrgFeature {
     /** Why the last sync or send stopped; null after a clean run. */
     val problem = MutableStateFlow<String?>(null)
     val lastSync = MutableStateFlow<Long?>(null)
+    /** Sealed notes on the branch this device cannot open (D-179): another device has not trusted it yet. */
+    val lockedCount = MutableStateFlow(0)
+    /** Sealed notes waiting to go up because this device has no key yet. */
+    val waitingSeal = MutableStateFlow(0)
+    /** The device keys on the branch, as last read (⚙ → Lezárás). */
+    val branchKeys = MutableStateFlow<List<NoteKey>?>(null)
+    @Volatile private var keyPublished = false
     /** A note pre-filled by a link or a share: the text and its origin id. */
     val draft = MutableStateFlow<Pair<String, String>?>(null)
     /** A note to open (vrg://notes/note?id=…). */
@@ -136,7 +144,7 @@ object NotesFeature : VrgFeature {
             return true
         }
         val ok = syncHub() && sendLog()
-        if (ok) problem.value = null
+        if (ok) problem.value = waitingSeal.value.takeIf { it > 0 }?.let { "$it lezárt jegyzet vár: ehhez a telefonhoz még nincs eszközkulcs." }
         ok
     }
 
@@ -145,8 +153,12 @@ object NotesFeature : VrgFeature {
         val busy = start.any { it.dirty }
         if (busy) syncing.run(null)
         return try {
-            val r = NoteSync.run(GitHubNoteHub, start, System.currentTimeMillis(), Notes.device)
+            if (!keyPublished) Notes.myKey(java.time.Instant.now().toString())?.let { GitHubNoteHub.publish(it); keyPublished = true }
+            val r = NoteSync.run(GitHubNoteHub, start, System.currentTimeMillis(), Notes.device, Notes.codec, Notes.locked)
             Notes.replace { cur -> NoteSync.rebase(start, r.notes, cur) }
+            Notes.locked = r.locked
+            lockedCount.value = r.locked.size
+            waitingSeal.value = r.waiting
             lastSync.value = System.currentTimeMillis()
             if (r.pulled + r.pushed + r.conflicts > 0) VrgLog.i(info.id, "Szinkron: ${r.pushed} fel, ${r.pulled} le, ${r.conflicts} ütközés")
             if (r.problem != null) { problem.value = r.problem; syncing.fail(); false }
@@ -157,6 +169,11 @@ object NotesFeature : VrgFeature {
             problem.value = e.message ?: "A szinkron megállt."; syncing.fail(); false
         }
     }
+
+    /** Reads the device keys on the branch for ⚙ → Lezárás. Returns a problem or null. */
+    suspend fun loadKeys(): String? = try {
+        branchKeys.value = GitHubNoteHub.keys(); null
+    } catch (e: NotesApi.Problem) { e.message } catch (e: Exception) { e.message ?: "A kulcsok nem olvashatók." }
 
     /** The Projektnapló outbox to `mobile-log`, oldest first (M6's rules). */
     private suspend fun sendLog(): Boolean {

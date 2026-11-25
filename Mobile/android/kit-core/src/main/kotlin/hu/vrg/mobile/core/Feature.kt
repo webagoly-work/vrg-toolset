@@ -69,7 +69,7 @@ object Catalogue {
     )
     val NOTES = FeatureInfo(
         "notes", "Jegyzetek", "Az összes jegyzet egy helyen: saját jegyzetek, gyorsjegyzet, és amit a Sketcher és a többi funkció ír, forrás szerint jelölve. Változatok a ⚙-ben.",
-        "✎", Group.WORK, Stage.BETA, "M46", setOf(Need.INTERNET, Need.GITHUB),
+        "✎", Group.WORK, Stage.BETA, "M68", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",
@@ -129,6 +129,10 @@ object Catalogue {
         "claude", "Claude", "A Claude alkalmazás megnyitása; párosított PC-vel a PC Remote Control munkamenetei: lista, indítás egy mappában.",
         "✶", Group.LINK, Stage.BETA, "M22", setOf(Need.RELAY),
     )
+    val DEVLAP = FeatureInfo(
+        "devlap", "DevLap", "A fejlesztés állása egy lapon: Haladás, Claude, Értesítések, Gyorsjegyzet és Archívum, hogy egy munkát gyorsan folytathass.",
+        "⧉", Group.WORK, Stage.BETA, "M66", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val PCWIN = FeatureInfo(
         "pcwin", "PC ablakok", "A PC munkamappái (Repó, VRG Full, Közös) csak olvasva: böngészés, szöveg és kép előnézete, másolat az Átadáson át.",
         "🗁", Group.CONTROL, Stage.BETA, "M23", setOf(Need.RELAY),
@@ -147,6 +151,26 @@ object Catalogue {
     val PAGER = FeatureInfo(
         "pager", "Csipogó", "Terepi személyhívó Bluetooth-on, internet nélkül: hívás gombnyomásra, gyors üzenetek LÁTTAM visszaigazolással, közelségjelző, csevegés, adóvevő, őrzés és mozdulatlanság-riasztás.",
         "📟", Group.LINK, Stage.BETA, "M33", setOf(Need.BLUETOOTH),
+    )
+
+    // WP M61 (experimental, 2026-11-20): Apple Find My tags (the ISYTag, AirTags) used from Android over plain BLE;
+    // since 2026-11-22 also the iTag (the teardrop anti-lost key tag: connected, ring, button = find the phone) and a
+    // device paired in Android's settings (the Q71 watch: its connection is its presence, a tone over hands-free audio).
+    val TAG = FeatureInfo(
+        "tag", "Tárgykereső", "Kísérleti: Apple Find My címke (ISYTag, AirTag), iTag kulcstartó és párosított óra (Q71) Androidról: milyen messze van, csipogtatás, ottfelejtés-riasztás, az utolsó hely, ahol a telefon hallotta, és iTaggel telefonkereső.",
+        "🏷", Group.LINK, Stage.BETA, "M61", setOf(Need.BLUETOOTH),
+    )
+
+    // WP M65 (2026-11-22): the Q71 watch with VRG Mobile instead of FunDo, over its own decoded protocol (D-168, D-169).
+    // WP M67 (2026-11-23): one radar for everything around: any program's blips on its own layer (RadarHub).
+    val RADAR = FeatureInfo(
+        "radar", "Radar", "Minden, ami körülötted van, egy radaron: címkék, párosított eszközök, a Csipogó brigád, az óra és ami később jön. Távolság, irány (GPS, iránytű, körbefordulás) és kapcsolat rétegenként.",
+        "◎", Group.LINK, Stage.BETA, "M67", setOf(Need.BLUETOOTH),
+    )
+
+    val WATCH = FeatureInfo(
+        "watch", "Óra", "Kísérleti: a Q71 okosóra a FunDo nélkül: kapcsolat, pontos idő, lépések, az óra adatai, az óra csipogtatása és az óráról a telefon megcsörgetése.",
+        "⌚", Group.LINK, Stage.BETA, "M65", setOf(Need.BLUETOOTH),
     )
 
     // WP M35: Proton Vault's device approval for VRG Mobile: one account, the phones differ, approved by QR.
@@ -179,8 +203,8 @@ object Catalogue {
         "🗺", Group.WORK, Stage.BETA, "M43", setOf(Need.INTERNET),
     )
     val WEATHER = FeatureInfo(
-        "weather", "VRG Időjárás", "Hivatalos és globális források egyesítve, terepi szabályokkal: lehet-e ma kint dolgozni.",
-        "⛅", Group.WORK, Stage.PLANNED, "M44", setOf(Need.INTERNET),
+        "weather", "VRG Időjárás", "Lehet-e ma kint dolgozni: MET Norway, DWD és a hivatalos figyelmeztetések egyesítve, terepi szabályokkal, tevékenységenként.",
+        "⛅", Group.WORK, Stage.BETA, "M44", setOf(Need.INTERNET),
     )
     val VAULT = FeatureInfo(
         "vault", "Vault", "A titkosított személyes adattár (Proton Vault) saját webes felülete a telefonon, saját eszközkulccsal és QR-os jóváhagyással.",
@@ -194,7 +218,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
-        PAIR, ACCOUNT, NET, PAGER, CLAUDE,
+        PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE, DEVLAP,
         SKETCH, PHOTO,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,

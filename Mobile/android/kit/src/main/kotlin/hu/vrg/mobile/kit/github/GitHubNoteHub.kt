@@ -3,6 +3,8 @@ package hu.vrg.mobile.kit.github
 import hu.vrg.mobile.core.Contents
 import hu.vrg.mobile.core.FileAt
 import hu.vrg.mobile.core.NoteContents
+import hu.vrg.mobile.core.NoteKey
+import hu.vrg.mobile.core.NoteSeal
 import hu.vrg.mobile.core.NoteRemote
 import hu.vrg.mobile.core.NoteSync
 import hu.vrg.mobile.core.NoteWrite
@@ -10,7 +12,7 @@ import hu.vrg.mobile.core.NotesApi
 import hu.vrg.mobile.core.VrgRepo
 import java.net.URLEncoder
 
-// VRG Jegyzetek's branch (WP M46, D-56 = B): one JSON file per note in notes/ on `vrg-notes`, through the contents
+// VRG Jegyzetek's branch (WP M68, D-177 = B): one JSON file per note in notes/ on `vrg-notes`, through the contents
 // API. Writes reach NoteSync.BRANCH only: NoteContents refuses to build a body for any other branch.
 
 object GitHubNoteHub : NoteRemote {
@@ -59,6 +61,32 @@ object GitHubNoteHub : NoteRemote {
                 else -> NoteWrite.Failed(r.problem() ?: "?")
             }
             else -> throw NotesApi.Problem(r.problem() ?: "?")
+        }
+    }
+
+    // ---- the devices' public keys (D-179): keys/<ID>.json ----
+
+    /** Every device key on the branch (a missing folder is an empty list). */
+    suspend fun keys(): List<NoteKey> {
+        val names = when (val r = GitHub.get("${VrgRepo.PATH}/contents/${NoteSeal.KEYS}?ref=$ref")) {
+            is Gh.Ok -> NoteContents.listing(r.value).keys
+            is Gh.Failed -> if (r.code == 404) return emptyList() else throw NotesApi.Problem(r.problem() ?: "?")
+            else -> throw NotesApi.Problem(r.problem() ?: "?")
+        }
+        return names.mapNotNull { name -> read("${NoteSeal.KEYS}/$name.json")?.let { NoteKey.parse(it.text) } }
+            .filter { k -> names.any { NoteSeal.keyId("$it.json") == k.id } }
+    }
+
+    /** Writes (or refreshes) this device's key file; only the public half. */
+    suspend fun publish(k: NoteKey) {
+        ensureBranch()
+        val path = NoteSeal.keyPath(k.id)
+        val cur = read(path)
+        if (cur != null && NoteKey.parse(cur.text)?.let { it.pub == k.pub && it.name == k.name } == true) return
+        val text = k.toJson().toString(1) + "\n"
+        when (val r = write(path, text, cur?.sha, "vrg-notes: key of ${k.id}")) {
+            is NoteWrite.Ok, NoteWrite.Conflict -> {}
+            is NoteWrite.Failed -> throw NotesApi.Problem(r.reason)
         }
     }
 }

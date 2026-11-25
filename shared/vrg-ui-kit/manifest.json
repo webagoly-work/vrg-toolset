@@ -12,7 +12,8 @@
     "8": "Agent / AI surfaces",
     "9": "Small screens",
     "10": "Program identity (emblem, city map, micrographics, textures)",
-    "11": "Marks (stage, line state, lamps, levels, steps, monograms, quiet, counts)"
+    "11": "Marks (stage, line state, lamps, levels, steps, monograms, quiet, counts)",
+    "12": "Dot matrix (frames, rules, LEDs, meter, display text; theme Grafit)"
   },
   "tokens": [
     "tokens/base.css",
@@ -20,6 +21,7 @@
     "tokens/theme-light.css",
     "tokens/theme-contrast.css",
     "tokens/theme-melyviz.css",
+    "tokens/theme-grafit.css",
     "tokens/density.css"
   ],
   "fonts": "fonts/fonts.css",
@@ -991,6 +993,51 @@
       ],
       "summary": "Overview of a graph with the ice viewport rectangle: click/drag to move, arrows pan, +/- zoom, 0 fit; follows pan/zoom, selection and layer changes. .vk-minimap--overlay[data-corner=bl|tr] floats it on the stage.",
       "api": "VK.minimap.mount(el, graphInstance, {label}) → {update, destroy}"
+    },
+    {
+      "name": "radar",
+      "files": [
+        "components/radar.css",
+        "components/radar.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        3
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-xs",
+        "--vk-layer-2",
+        "--vk-layer-3",
+        "--vk-layer-5",
+        "--vk-layer-6",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-surface-1",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Universal locator / proximity / connection radar (WP M67): any program's blips on layers (tags, paired devices, crew phones, a watch, places), log-scale distance rings, compass bearings turned by the heading (heading-up or north-up), GPS bearings from places, sweep bearings; a blip without a direction is hollow on its ring. Legend chips toggle layers; ←/→ step nearest first, Enter opens. The layout is shared with VRG Mobile's kit-core Radar.kt (test/fixtures/radar-layout.json).",
+      "api": "VK.radar.mount(el, {label, mode, hidden, sweeps}) → {update(frame), select, setHidden, setMode, setSweeps, layout, on, destroy} · VK.radar.layout(frame, {hidden, sweeps}) (pure)"
     },
     {
       "name": "layerstack",
@@ -3084,6 +3131,38 @@
       ],
       "summary": "Texture pack from token colours (gradients only, background-color untouched): hatch, crosshatch, dots, grid, blueprint, windows (warm lit), water, road-glow, sand.",
       "api": "CSS .vk-tex-hatch|crosshatch|dots|grid|blueprint|windows|water|road-glow|sand; knobs --vk-tex-ink, --vk-tex-gap, --vk-tex-warm"
+    },
+    {
+      "name": "dotmatrix",
+      "files": [
+        "components/dotmatrix.css"
+      ],
+      "deps": [
+        "base"
+      ],
+      "families": [
+        12
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-crit",
+        "--vk-dot",
+        "--vk-dot-lit",
+        "--vk-dot-pitch",
+        "--vk-dot-r",
+        "--vk-dotbar-v",
+        "--vk-font-mono",
+        "--vk-fs-2xl",
+        "--vk-ok",
+        "--vk-space-3",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-warn"
+      ],
+      "summary": "The dot matrix: a ring of dots for any positioned box (.vk-dots, tinted lit/ok/warn/crit/run), dotted rule and ground, a 3×3 dot LED lamp, a dot meter lit from the left, and display text filled with dots. Theme Grafit puts the ring on .vk-panel, .vk-card and .vk-tile and a dotted rule under their heads (opt out: .vk-nodots).",
+      "api": "<div class=\"vk-dots\" data-dots=\"lit|ok|warn|crit|run\">, <hr class=\"vk-dotrule\">, <div class=\"vk-dotfield\">, <span class=\"vk-dotled\" data-tone=\"ok|warn|crit|run|lit|off\" data-state=\"active\">, <span class=\"vk-dotbar\" style=\"--vk-dotbar-v:.6\" data-tone>, <span class=\"vk-dottext\">; CSS only"
     }
   ]
 }

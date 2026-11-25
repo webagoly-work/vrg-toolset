@@ -153,6 +153,17 @@ object DeviceTrust {
     fun sameId(a: String, b: String): Boolean = norm(a) == norm(b)
     fun norm(id: String): String = id.filter { it.isLetterOrDigit() }.uppercase()
 
+    /**
+     * A device code typed by hand on the owner's phone (Eszközök's fallback, 2026-11-20): 12 letters or digits, dashes,
+     * spaces and case ignored (an Android code is hex, the iPhone web app's comes from its own alphabet). Back as
+     * XXXX-XXXX-XXXX, the way the lock screen shows it, or null when it cannot be a device code.
+     */
+    fun typedCode(input: String): String? {
+        val n = norm(input)
+        if (n.length != 12 || !n.all { it in 'A'..'Z' || it in '0'..'9' }) return null
+        return n.chunked(4).joinToString("-")
+    }
+
     // ---- the grant --------------------------------------------------------------------------------------------------
 
     fun grant(req: DeviceRequest, payload: GrantPayload, eph: KeyPair = newKeyPair()): DeviceGrant {

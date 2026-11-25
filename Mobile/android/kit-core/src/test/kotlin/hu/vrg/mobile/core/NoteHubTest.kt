@@ -201,7 +201,7 @@ class NoteHubTest {
 
     @Test fun linkBackFillsTheRef() {
         val src = kit.origin("sketcher")
-        assertEquals("vrg://sketch/open?id=v1&entry=E3", NoteMirror.link(src, NoteOrigin("sketcher", "v1/E3")))
+        assertEquals("vrg://sketch?open=v1&front=jegyzet", NoteMirror.link(src, NoteOrigin("sketcher", "v1/E3")))
         assertNull(NoteMirror.link(kit.origin("kezi"), NoteOrigin("kezi")))
     }
 

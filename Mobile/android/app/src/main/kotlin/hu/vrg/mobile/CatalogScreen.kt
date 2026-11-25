@@ -41,6 +41,7 @@ import hu.vrg.mobile.core.CatalogGuide
 import hu.vrg.mobile.core.GuidePage
 import hu.vrg.mobile.core.HomeLayout
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import kotlinx.coroutines.launch
 
@@ -53,7 +54,7 @@ fun CatalogScreen(startAt: String, onBack: () -> Unit, onOpen: (String) -> Unit)
     val pages = CatalogGuide.PAGES
     if (pages.isEmpty()) {
         Column(Modifier.fillMaxSize().padding(20.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(vertical = 8.dp))
+            VrgBack(onBack)
             Text("A Katalógus még üres.", style = Melyviz.label)
         }
         return
@@ -66,8 +67,7 @@ fun CatalogScreen(startAt: String, onBack: () -> Unit, onOpen: (String) -> Unit)
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(vertical = 8.dp))
-            Spacer(Modifier.width(12.dp))
+            VrgBack(onBack)
             Text("KATALÓGUS", style = Melyviz.title.copy(fontSize = 16.sp), modifier = Modifier.weight(1f))
             Text("${pager.currentPage + 1} / ${pages.size}", style = Melyviz.readout)
             Spacer(Modifier.width(8.dp))

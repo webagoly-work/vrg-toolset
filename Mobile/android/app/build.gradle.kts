@@ -30,6 +30,9 @@ android {
         versionName = "0.9.$buildCode"
         // GitHub Actions sets GITHUB_SHA; a desktop build says so instead. Beállítások -> Névjegy shows it.
         // The "git:" prefix keeps an all-digit SHA from being read back as a number from the manifest.
+        // Kamera 2 (D-55): ML Kit's bundled text model ships native code per CPU; phones are ARM, so the x86 copies
+        // (emulators only) are left out of the APK.
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         manifestPlaceholders["gitSha"] = "git:" + (System.getenv("GITHUB_SHA")?.take(7) ?: "helyi")
     }
 
@@ -77,4 +80,8 @@ dependencies {
     implementation(project(":feature-vault"))
     implementation(project(":feature-workflow"))
     implementation(project(":feature-map"))
+    implementation(project(":feature-weather"))   // WP M44 VRG Időjárás
+    implementation(project(":feature-tag"))       // WP M61 Tárgykereső
+    implementation(project(":feature-watch"))     // WP M65 Óra
+    implementation(project(":feature-radar"))     // WP M67 Radar
 }

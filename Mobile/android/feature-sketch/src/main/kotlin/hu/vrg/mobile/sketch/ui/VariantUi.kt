@@ -68,9 +68,9 @@ internal fun VariantSection(st: EditorState) {
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("⟳ Frissítés a main ágról", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
+        if (feat("variansok.refresh")) Text("⟳ Frissítés a main ágról", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
             modifier = Modifier.clickable { msg = "Frissítés…"; scope.launch { msg = SketcherKit.refresh(ctx) } }.padding(vertical = 6.dp))
-        Text("＋ Új variáns kérése", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
+        if (feat("variansok.request")) Text("＋ Új variáns kérése", style = Melyviz.label.copy(color = Melyviz.current, fontSize = 12.sp),
             modifier = Modifier.clickable { st.ask = Ask.VariantRequest }.padding(vertical = 6.dp))
     }
     msg?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
@@ -79,7 +79,7 @@ internal fun VariantSection(st: EditorState) {
 /** The request: 1-3 sentences, the toggles that describe the job, a few photos. No client data goes with it. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
+internal fun VariantRequestDialog(st: EditorState, inlineNote: Boolean = false, close: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     var premise by remember { mutableStateOf("") }
@@ -96,8 +96,8 @@ internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text("Egy-három mondat a munkáról: mi a feladat, milyen a hely, mire figyelj. Az ügynök ebből tervez, és visszakérdez.", style = Melyviz.small)
                 Field(premise, { premise = it }, "A munka lényege", lines = 3)
-                Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                    try { dictate.launch(dictationIntent("Mondd el a munkát")) } catch (e: ActivityNotFoundException) { st.note = "Nincs beszédfelismerő a telefonon." }
+                if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
+                    try { dictate.launch(dictationIntent("Mondd el a munkát")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER }
                 }.padding(vertical = 4.dp))
                 Text("Kulcsszavak", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 6.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -105,10 +105,12 @@ internal fun VariantRequestDialog(st: EditorState, close: () -> Unit) {
                         Pill(s.sym + " " + s.label, st.frontColor("munkakor"), s.id in topics) { topics = if (s.id in topics) topics - s.id else topics + s.id }
                     }
                 }
+                if (inlineNote) st.note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }   // F4: opened from the home
                 if (st.sketch.captures.isNotEmpty()) {
                     Text("Fotók az ügynöknek (legfeljebb 5; a házszámot, arcot kerüld)", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        st.sketch.captures.forEach { c ->
+                        // Kamera 2: personal photos, videos and signatures never go to an agent
+                        st.sketch.captures.filter { it.kind == hu.vrg.mobile.sketch.CaptureKind.PHOTO && !it.privacy }.forEach { c ->
                             val p = st.kit.purpose(c.purpose)
                             Pill((p?.sym ?: "•") + " " + c.id, Color(p?.color ?: 0xFF7D8590), c.id in photos) {
                                 photos = if (c.id in photos) photos - c.id else if (photos.size < 5) photos + c.id else photos
@@ -141,7 +143,9 @@ private fun writeRequest(ctx: Context, st: EditorState, premise: String, topics:
         val src = dir?.let { File(it, c.file) }?.takeIf { it.exists() } ?: return@mapNotNull null
         // the request names the photos by purpose only, never by the survey's (client's) name
         val f = File(out, "variant-photo-${c.id}-${c.purpose}.jpg")
-        src.copyTo(f, overwrite = true); f
+        if (c.privacy || c.kind != hu.vrg.mobile.sketch.CaptureKind.PHOTO) return@mapNotNull null
+        // Kamera 2 (D-57): the blur burned in, the GPS removed
+        if (c.marks.any { it.kind.blur }) burnMarks(src, c.marks.filter { it.kind.blur }, f) else copyWithoutGps(src, f)
     }
     val now = System.currentTimeMillis()
     val req = File(out, "variant-request-$now.json")

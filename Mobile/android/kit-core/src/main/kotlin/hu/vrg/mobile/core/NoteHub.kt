@@ -7,14 +7,14 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-// VRG Jegyzetek (WP M46, D-55 … D-57): the one central Notes app. Here, pure and JVM-tested:
+// VRG Jegyzetek (WP M68, D-176 … D-178): the one central Notes app. Here, pure and JVM-tested:
 //  - the note (kind `vrg-note` v1) and its JSON,
 //  - the notes kit (Notes/catalog/noteskit.json): modules, the versions a user picks (profiles), note templates and
 //    the origins (every app that writes notes into the hub),
 //  - the notebook's edits: create, edit, pin, archive, trash, tasks, search, sort, the daily note, a template,
-//  - the linked mirror (D-57 = A): a feature (the Sketcher first) keeps its own record and the hub holds the same
+//  - the linked mirror (D-178 = A): a feature (the Sketcher first) keeps its own record and the hub holds the same
 //    note; a text edit on either side reaches the other, nothing is lost when both changed,
-//  - the sync to the private branch `vrg-notes` (D-56 = B): one file per note, sha-guarded writes, a conflict copy
+//  - the sync to the private branch `vrg-notes` (D-177 = B): one file per note, sha-guarded writes, a conflict copy
 //    instead of an overwrite.
 // The Android side (kit/notes/Notes.kt, feature-notes) only stores bytes and draws.
 
@@ -47,6 +47,11 @@ data class VNote(
     val purged: Boolean = false,
     /** Fixed-width text (module Kód). */
     val mono: Boolean = false,
+    /**
+     * Sealed on the branch (D-179): only the trusted devices can read it. Set for notes of a `client` origin and the
+     * conflict copies made from them, for a template marked `seal`, and by hand (🔒). Never cleared for a client origin.
+     */
+    val sealed: Boolean = false,
     val created: Long = 0,
     val updated: Long = 0,
     val device: String = "",
@@ -79,6 +84,7 @@ object NoteJson {
         if (n.trashed) o.put("trashed", true)
         if (n.purged) o.put("purged", true)
         if (n.mono) o.put("mono", true)
+        if (n.sealed) o.put("sealed", true)
         n.origin?.let { g ->
             val go = JSONObject().put("app", g.app).put("ref", g.ref).put("label", g.label)
             if (g.facts.isNotEmpty()) go.put("facts", JSONArray(g.facts))
@@ -109,7 +115,7 @@ object NoteJson {
         return VNote(
             id = id, title = o.optString("title"), body = o.optString("body"), tags = strs(o.optJSONArray("tags")),
             book = o.optString("book").ifEmpty { null }, pinned = o.optBoolean("pinned"), archived = o.optBoolean("archived"),
-            trashed = o.optBoolean("trashed"), purged = o.optBoolean("purged"), mono = o.optBoolean("mono"),
+            trashed = o.optBoolean("trashed"), purged = o.optBoolean("purged"), mono = o.optBoolean("mono"), sealed = o.optBoolean("sealed"),
             created = o.optLong("created"), updated = o.optLong("updated"), device = o.optString("device"), origin = g,
             unread = o.optBoolean("unread"), sha = o.optString("sha").ifEmpty { null }, dirty = o.optBoolean("dirty", true),
         )
@@ -143,7 +149,7 @@ data class NoteProfile(
     val templates: List<String>,
     val isDefault: Boolean,
 )
-data class NoteTemplate(val id: String, val label: String, val sym: String, val title: String, val body: String, val tags: List<String>)
+data class NoteTemplate(val id: String, val label: String, val sym: String, val title: String, val body: String, val tags: List<String>, val seal: Boolean = false)
 data class NoteSource(
     val id: String, val label: String, val sym: String, val color: String, val about: String,
     /** Its notes may carry client data (names, addresses). */
@@ -162,6 +168,9 @@ data class NotesKit(
     fun profile(id: String?) = profiles.firstOrNull { it.id == id } ?: defaultProfile
     val defaultProfile: NoteProfile get() = profiles.firstOrNull { it.isDefault } ?: profiles.first()
     fun origin(id: String?) = origins.firstOrNull { it.id == id }
+
+    /** The origins whose notes are always sealed (D-179): those marked `client`. */
+    val sealedOrigins: Set<String> get() = origins.filter { it.client }.map { it.id }.toSet()
 
     /**
      * The modules on for [profileId] with the user's own switches ([overrides]: module id → on/off) on top. Core
@@ -198,7 +207,7 @@ data class NotesKit(
                     NoteProfile(it.s("id"), it.s("name"), it.s("sym"), it.s("color"), it.s("premise"), strs(it.optJSONArray("modules")),
                         it.optString("list", "lista"), strs(it.optJSONArray("templates")), it.optBoolean("default"))
                 },
-                templates = each("templates") { NoteTemplate(it.s("id"), it.s("label"), it.s("sym"), it.s("title"), it.s("body"), strs(it.optJSONArray("tags"))) },
+                templates = each("templates") { NoteTemplate(it.s("id"), it.s("label"), it.s("sym"), it.s("title"), it.s("body"), strs(it.optJSONArray("tags")), it.optBoolean("seal")) },
                 origins = each("origins") {
                     NoteSource(it.s("id"), it.s("label"), it.s("sym"), it.s("color"), it.s("about"), it.optBoolean("client"),
                         it.optBoolean("mirror"), it.optBoolean("planned"), it.n("feature"), it.n("link"))
@@ -247,12 +256,13 @@ object Notebook {
     fun newId(now: Long, salt: Int = 0): String = "n" + now.toString(36) + (if (salt > 0) salt.toString(36) else "")
 
     fun create(notes: List<VNote>, now: Long, device: String, title: String = "", body: String = "", tags: List<String> = emptyList(),
-               book: String? = null, origin: NoteOrigin? = null, unread: Boolean = false, id: String? = null): Pair<List<VNote>, VNote> {
+               book: String? = null, origin: NoteOrigin? = null, unread: Boolean = false, id: String? = null,
+               sealed: Boolean = false): Pair<List<VNote>, VNote> {
         var salt = 0
         var nid = id ?: newId(now)
         while (notes.any { it.id == nid }) nid = newId(now, ++salt)
         val n = VNote(nid, title.trim(), body, tags.map(::cleanTag).filter { it.isNotEmpty() }.distinct(), book, created = now, updated = now,
-            device = device, origin = origin?.takeIf { it.app != HERE }, unread = unread)
+            device = device, origin = origin?.takeIf { it.app != HERE }, unread = unread, sealed = sealed)
         return notes + n to n
     }
 
@@ -277,6 +287,12 @@ object Notebook {
     fun trash(notes: List<VNote>, id: String, on: Boolean, now: Long) = change(notes, id, now) { it.copy(trashed = on, pinned = if (on) false else it.pinned) }
     fun setBook(notes: List<VNote>, id: String, book: String?, now: Long) = change(notes, id, now) { it.copy(book = book?.trim()?.ifEmpty { null }) }
     fun setMono(notes: List<VNote>, id: String, on: Boolean, now: Long) = change(notes, id, now) { it.copy(mono = on) }
+    /** 🔒 by hand. A note of a sealed origin ([sealedOrigins]) cannot be unsealed. */
+    fun setSealed(notes: List<VNote>, id: String, on: Boolean, now: Long, sealedOrigins: Set<String>) = change(notes, id, now) {
+        it.copy(sealed = on || it.origin?.app in sealedOrigins)
+    }
+    /** The trusted devices changed: every sealed note is written again, so the branch copy opens for the new list. */
+    fun reseal(notes: List<VNote>) = notes.map { if (it.sealed && !it.purged) it.copy(dirty = true) else it }
     /** Seen: clears [VNote.unread] (local only, no sync). */
     fun seen(notes: List<VNote>, id: String) = notes.map { if (it.id == id) it.copy(unread = false) else it }
 
@@ -359,7 +375,7 @@ object Notebook {
 
     fun fromTemplate(notes: List<VNote>, t: NoteTemplate, now: Long, zone: ZoneId, device: String): Pair<List<VNote>, VNote> {
         val d = day(now, zone)
-        return create(notes, now, device, title = t.title.replace("{date}", d), body = t.body.replace("{date}", d), tags = t.tags)
+        return create(notes, now, device, title = t.title.replace("{date}", d), body = t.body.replace("{date}", d), tags = t.tags, sealed = t.seal)
     }
 
     /** The note as Markdown, for Megosztás. */
@@ -371,7 +387,7 @@ object Notebook {
     }
 }
 
-// ---- the linked mirror (D-57 = A) ----------------------------------------------------------------------------------
+// ---- the linked mirror (D-178 = A) ----------------------------------------------------------------------------------
 // A feature keeps its own record (the Sketcher's Entry stays in the survey and goes to the Planner with it); the hub
 // holds a note with a fixed id. The base is NoteOrigin.seen, the source's text when the two last agreed:
 //   source changed, note not      → the note takes the source's text            (push)
@@ -387,13 +403,13 @@ object NoteMirror {
 
     const val BOTH = "\n\n⚠ Közben a forrásban ez lett:\n"
 
-    fun push(notes: List<VNote>, app: String, item: MirrorItem, now: Long, device: String): List<VNote> {
+    fun push(notes: List<VNote>, app: String, item: MirrorItem, now: Long, device: String, seal: Boolean = false): List<VNote> {
         val id = idFor(app, item.ref)
         val ex = notes.firstOrNull { it.id == id }
         if (ex == null) {
             if (item.text.isBlank() && item.facts.isEmpty()) return notes
             val g = NoteOrigin(app, item.ref, item.label, item.facts, item.open, seen = item.text)
-            return Notebook.create(notes, now, device, body = item.text, origin = g, unread = true, id = id).first
+            return Notebook.create(notes, now, device, body = item.text, origin = g, unread = true, id = id, sealed = seal).first
         }
         if (ex.trashed || ex.purged) return notes
         val g = ex.origin ?: NoteOrigin(app, item.ref)
@@ -406,7 +422,8 @@ object NoteMirror {
             ex.body.endsWith(BOTH + base) -> ex.body.dropLast(base.length) + src to src   // a kept conflict, source still typing
             else -> ex.body + BOTH + src to src                                    // both changed: keep both
         }
-        val next = ex.copy(body = body, origin = g.copy(label = item.label, facts = item.facts, open = item.open, seen = seen, gone = false))
+        val next = ex.copy(body = body, origin = g.copy(label = item.label, facts = item.facts, open = item.open, seen = seen, gone = false),
+            sealed = ex.sealed || seal)
         if (next == ex) return notes
         return notes.map { if (it.id == id) next.copy(updated = now, dirty = true) else it }
     }
@@ -415,9 +432,9 @@ object NoteMirror {
      * All of one source scope at once (one survey): pushes every item and marks notes of that scope whose record is
      * gone. [scope] is the ref prefix ("<sketch id>/").
      */
-    fun sync(notes: List<VNote>, app: String, scope: String, items: List<MirrorItem>, now: Long, device: String): List<VNote> {
+    fun sync(notes: List<VNote>, app: String, scope: String, items: List<MirrorItem>, now: Long, device: String, seal: Boolean = false): List<VNote> {
         var out = notes
-        items.forEach { out = push(out, app, it, now, device) }
+        items.forEach { out = push(out, app, it, now, device, seal) }
         val live = items.map { idFor(app, it.ref) }.toSet()
         return out.map { n ->
             val g = n.origin
@@ -446,7 +463,7 @@ object NoteMirror {
     }
 }
 
-// ---- sync to the private branch (D-56 = B) ---------------------------------------------------------------------------
+// ---- sync to the private branch (D-177 = B) ---------------------------------------------------------------------------
 
 object NoteSync {
     const val BRANCH = "vrg-notes"
@@ -457,30 +474,46 @@ object NoteSync {
     fun path(id: String) = "$DIR/$id.json"
     fun idOf(name: String) = name.removeSuffix(".json").takeIf { name.endsWith(".json") }
 
+    /** The commit message names the note's id only: a title could name a client (D-179). */
     fun message(n: VNote, device: String) =
-        "vrg-notes: " + (if (n.purged) "törölve" else n.shown.take(50)) + (device.trim().takeIf { it.isNotEmpty() }?.let { " ($it)" } ?: "")
+        "vrg-notes: " + n.id + (if (n.purged) " törölve" else if (n.sealed) " (lezárt)" else "") +
+            (device.trim().takeIf { it.isNotEmpty() }?.let { " ($it)" } ?: "")
 
-    /** The text of the branch's file: the note without local bookkeeping. */
+    /** The text of the branch's file for a plain note: the note without local bookkeeping. */
     fun file(n: VNote): String = NoteJson.write(n).toString(1) + "\n"
 
-    data class Report(val notes: List<VNote>, val pulled: Int, val pushed: Int, val conflicts: Int, val problem: String? = null)
+    /**
+     * [locked]: sealed files this device cannot open (id → sha), kept so they are not fetched again each round.
+     * [waiting]: changed notes not written because they could not be sealed here (no key yet).
+     */
+    data class Report(val notes: List<VNote>, val pulled: Int, val pushed: Int, val conflicts: Int, val problem: String? = null,
+                      val locked: Map<String, String> = emptyMap(), val waiting: Int = 0)
 
     /**
      * One round: list the branch, take what changed there, keep a conflict copy where both sides changed, then write
      * every changed note with its sha. A write that meets a newer file is left dirty for the next round.
      */
-    suspend fun run(remote: NoteRemote, start: List<VNote>, now: Long, device: String): Report {
+    suspend fun run(remote: NoteRemote, start: List<VNote>, now: Long, device: String,
+                    codec: NoteCodec = NoteCodec.Plain, locked: Map<String, String> = emptyMap()): Report {
         remote.ensureBranch()
         val there = remote.list()
         var notes = start
-        var pulled = 0; var conflicts = 0; var pushed = 0
+        var pulled = 0; var conflicts = 0; var pushed = 0; var waiting = 0
+        val stillLocked = locked.filter { (id, sha) -> there[id] == sha }.toMutableMap()
         for ((id, sha) in there) {
             val mine = notes.firstOrNull { it.id == id }
             if (mine != null && mine.sha == sha) continue
-            val theirs = remote.read(path(id))?.let { f -> NoteJson.read(f.text)?.copy(sha = f.sha, dirty = false) } ?: continue
+            if (stillLocked[id] == sha) continue
+            val f = remote.read(path(id)) ?: continue
+            val theirs = when (val d = codec.decode(f.text, id)) {
+                is NoteDecoded.Open -> d.note.copy(sha = f.sha, dirty = d.reseal)
+                NoteDecoded.Locked -> { stillLocked[id] = f.sha; continue }
+                NoteDecoded.Bad -> continue
+            }
             when {
                 mine == null -> { notes = notes + theirs.copy(unread = theirs.origin != null && theirs.live); pulled++ }
-                !mine.dirty -> { notes = Notebook.put(notes, theirs.copy(unread = mine.unread)); pulled++ }
+                !mine.dirty -> { notes = Notebook.put(notes, theirs.copy(unread = mine.unread, sealed = theirs.sealed || mine.sealed,
+                    dirty = theirs.dirty || (mine.sealed && !theirs.sealed))); pulled++ }
                 else -> {
                     val r = resolve(mine, theirs, notes, now)
                     notes = r.first; conflicts += r.second; pulled++
@@ -490,13 +523,14 @@ object NoteSync {
         // a file that vanished from the branch (a reset branch) is written again
         notes = notes.map { if (it.sha != null && it.id !in there) it.copy(sha = null, dirty = true) else it }
         for (n in notes.filter { it.dirty }) {
-            when (val r = remote.write(path(n.id), file(n), n.sha, message(n, device))) {
+            val text = codec.encode(n) ?: run { waiting++; null } ?: continue
+            when (val r = remote.write(path(n.id), text, n.sha, message(n, device))) {
                 is NoteWrite.Ok -> { notes = notes.map { if (it.id == n.id) it.copy(sha = r.sha, dirty = false) else it }; pushed++ }
                 NoteWrite.Conflict -> {}
-                is NoteWrite.Failed -> return Report(notes, pulled, pushed, conflicts, r.reason)
+                is NoteWrite.Failed -> return Report(notes, pulled, pushed, conflicts, r.reason, stillLocked, waiting)
             }
         }
-        return Report(notes, pulled, pushed, conflicts)
+        return Report(notes, pulled, pushed, conflicts, locked = stillLocked, waiting = waiting)
     }
 
     /**
@@ -533,6 +567,7 @@ object NoteSync {
         val copy = VNote(
             id = keep.id + "-u" + now.toString(36), title = lost.shown + " (ütközés)", body = lost.body,
             tags = (lost.tags + "ütközés").distinct(), book = lost.book, created = now, updated = now, device = lost.device, dirty = true,
+            sealed = lost.sealed || keep.sealed,     // a copy of a client note stays sealed although it has no origin
         )
         out = out + copy
         return out to 1

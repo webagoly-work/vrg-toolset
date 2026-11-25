@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -143,9 +146,14 @@ object PortsFeature : VrgFeature {
 
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
                 Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-                Text("LOCALHOST", style = Melyviz.title.copy(fontSize = 18.sp))
+                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
+                // a visible refresh next to the title: pull-to-refresh alone is out of reach for TalkBack/Switch (9.1)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("LOCALHOST", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
+                    if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
+                }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {
@@ -155,7 +163,7 @@ object PortsFeature : VrgFeature {
                     else -> {
                         val l = now
                         when {
-                            l == null -> Text(if (loading) "Portok olvasása…" else "Húzd le a frissítéshez.", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                            l == null -> Text(if (loading) "Portok olvasása…" else "Húzd le, vagy ⟳ Frissítés.", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
                             !l.ok -> {
                                 Text(l.reason ?: "A relé elutasította.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
                                 if (!l.trusted) Row(Modifier.padding(vertical = 6.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }
@@ -179,7 +187,7 @@ object PortsFeature : VrgFeature {
     private fun Body(l: PortList, ctx: Context, host: FeatureHost) {
         val (shown, other) = Ports.split(l.entries)
         var showOther by remember { mutableStateOf(false) }
-        Text("${l.entries.size} port · ${l.tookMs} ms · húzd le az újratöltéshez", style = Melyviz.small)
+        Text("${l.entries.size} port · ${l.tookMs} ms · húzd le, vagy ⟳ Frissítés", style = Melyviz.small)
         if (!l.proxyOn) Text("A telefonos megnyitás ki van kapcsolva: a relét --ports kapcsolóval kell indítani (Mobile\\mobile.cmd → 1).",
             style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 4.dp))
 
@@ -202,6 +210,8 @@ object PortsFeature : VrgFeature {
                 Box(Modifier.size(8.dp).clip(CircleShape).background(dot(e.status)))
                 Spacer(Modifier.width(8.dp))
                 Text(e.name, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                // the state in words too, not only the dot's colour (UI-CHECKLIST 2.4)
+                Text(stateWord(e.status), style = Melyviz.small, modifier = Modifier.padding(start = 6.dp))
             }
             Text(e.detail + if (e.self) " · ez a relé" else "", style = Melyviz.readout.copy(fontSize = 11.sp),
                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 16.dp))
@@ -213,6 +223,12 @@ object PortsFeature : VrgFeature {
                 VrgChip("🖥 A PC-n") { openOnPc(e)?.let(host::note) }
             }
         }
+    }
+
+    private fun stateWord(s: PortStatus) = when (s) {
+        PortStatus.WEB -> "web"
+        PortStatus.OPEN -> "nyitott"
+        PortStatus.SYSTEM -> "rendszer"
     }
 
     @Composable

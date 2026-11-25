@@ -3,6 +3,7 @@ package hu.vrg.mobile.sketch.ui
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -10,7 +11,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +39,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -46,10 +55,12 @@ import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.files.FileStore
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.sketch.SketchFeatures
 import hu.vrg.mobile.sketch.Geo
 import hu.vrg.mobile.sketch.Intake
 import hu.vrg.mobile.sketch.Norm
 import hu.vrg.mobile.sketch.Photos
+import hu.vrg.mobile.sketch.PlanView
 import hu.vrg.mobile.sketch.PlannerExport
 import hu.vrg.mobile.sketch.PointState
 import hu.vrg.mobile.sketch.PointType
@@ -57,6 +68,7 @@ import hu.vrg.mobile.sketch.Pt
 import hu.vrg.mobile.sketch.SizeStatus
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.Takeoff
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -75,24 +87,37 @@ private const val MIME = "application/json"
  * The package, and (WP M25, D-25 = A) every photo as its own file under the name the package gives it, ready to
  * share: Átadás's "PC-re" puts each one on the PC board. Returns the files with their types, the package first.
  */
-private suspend fun writeExport(ctx: Context, s: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+private suspend fun writeExport(ctx: Context, s0: Sketch, n: Norm): List<Pair<File, String>> = withContext(Dispatchers.IO) {
+    val s = SketchFeatures.forExport(SketchFeaturePrefs.off(ctx), s0)   // F5 (D-82, D-84, D-90): the client only when kept, no sound notes when off
     val out = FileStore.cacheDir(ctx, "sketch")
-    out.listFiles()?.forEach { if (it.name.endsWith(".jpg")) it.delete() }        // the last export's copies
+    out.listFiles()?.forEach { if (it.name.endsWith(".jpg") || it.name.endsWith(".mp4") || it.name.endsWith(".png") || it.name.endsWith(".m4a")) it.delete() }   // the last export's copies
     val pkg = File(out, SketchJson.fileStem(s) + ".vsketch.json")
-    pkg.writeText(PlannerExport.build(s, n).toString(1))
+    val strip = hu.vrg.mobile.sketch.CameraFeatures.on(CameraPrefs.off(ctx), hu.vrg.mobile.sketch.CameraFeatures.GPS_STRIP)   // D-90 switch
+    // WP M47: the takeoff goes inside the package (the Planner keeps it with the job) and beside it, for the Workflow Kit
+    val tk = SketcherKit.rules?.let { Takeoff.build(SketcherKit.forSketch(s), it, s, PlanView.of(s, n), impliedDedicated = SketcherKit.impliedDedicated) }
+    val pj = PlannerExport.build(s, n)
+    tk?.let { pj.put("takeoff", it.json) }
+    pkg.writeText(pj.toString(1))
+    // M51: the switches decide which files go BESIDE the package; the package itself never changes (D-93)
+    val tkFiles = if (tk == null || !feat("export.takeoff")) emptyList() else Takeoff.fileNames(s).let { (jn, mn) ->
+        listOf(File(out, jn).also { it.writeText(tk.json.toString(1) + "\n") } to MIME, File(out, mn).also { it.writeText(Takeoff.markdown(tk.json)) } to "text/markdown")
+    }
     val photos = PlannerExport.photoFiles(s).mapNotNull { (local, name) ->
         val src = File(SketchFeature.store.photoDir(s.id), local)
-        if (!src.exists()) null else File(out, name).also { src.copyTo(it, overwrite = true) }
+        if (!src.exists()) null else if (!strip) File(out, name).also { src.copyTo(it, overwrite = true) }
+        else copyWithoutGps(src, File(out, name))      // Kamera 2 (D-57): no GPS leaves the phone by default
     }
     // the purpose photos (WP M29), each under its board name; a photo with markup also goes burned in (…_jel.jpg)
     val caps = s.captures.flatMap { c ->
-        val src = File(SketchFeature.store.photoDir(s.id), c.file)
-        if (!src.exists()) return@flatMap emptyList<File>()
-        val name = Intake.exportName(s, c)
-        val f = File(out, name).also { src.copyTo(it, overwrite = true) }
-        listOfNotNull(f, if (c.marks.isEmpty()) null else burnMarks(src, c.marks, File(out, name.removeSuffix(".jpg") + "_jel.jpg")))
+        // Kamera 2 (D-57): blur burned in, GPS removed unless kept, videos and signatures as they are
+        exportCapture(s, c, File(SketchFeature.store.photoDir(s.id), c.file), out, strip)
     }
-    listOf(pkg to MIME) + (photos + caps).map { it to "image/jpeg" }
+    val sent = (photos + caps).filter { f ->
+        if (mimeOf(f) != "image/jpeg") true                                    // videos and signatures go as before
+        else feat("export.photos") && (feat("export.burned") || !f.name.endsWith("_jel.jpg"))
+    }
+    (photos + caps).filter { it !in sent }.forEach { it.delete() }
+    listOf(pkg to MIME) + tkFiles + sent.map { it to mimeOf(it) }
 }
 
 internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
@@ -105,6 +130,7 @@ internal fun shareAll(ctx: Context, files: List<Pair<File, String>>) {
     ctx.startActivity(Intent.createChooser(send, "Vázlat küldése").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) {
     val ctx = LocalContext.current
@@ -112,13 +138,23 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
     val n = st.norm
     val rep = n.report
     var done by remember { mutableStateOf<String?>(null) }
+    var report by remember { mutableStateOf(false) }   // F9 (WP M54): the Jegyzőkönyv dialog
+    var roomBox by remember { mutableStateOf(false) }  // skcam K1b (WP M59): the Szobadoboz
     val tm = rememberTextMeasurer()
     val c = pal()
+    // UI audit 4.1 / 4.5: lying down (~336 dp tall) the header, warnings and actions left the plan ~0 dp. Now the plan
+    // has the left side at full height and the rest scrolls beside it; standing, the action panel has a height cap
+    // and scrolls; the long PC instructions sit behind a toggle either way.
+    val screenH = LocalConfiguration.current.screenHeightDp
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    var howTo by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(Melyviz.abyss)) {
         Column(Modifier.fillMaxWidth().background(Melyviz.deep).padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vázlat", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable(onClick = onBack).padding(end = 12.dp))
+                Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onBack).padding(end = 12.dp), contentAlignment = Alignment.CenterStart) {
+                    Text("‹ Vázlat", style = Melyviz.label.copy(color = Melyviz.current))
+                }
                 Text("RENDEZÉS", style = Melyviz.title.copy(fontSize = 18.sp))
             }
             Text("${rep.measured} mért · ${rep.derived} számolt · ${rep.inferred} becsült fal · lépték ${rep.scaleX.roundToInt()} mm / egység",
@@ -129,28 +165,30 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 Text("┅ ≈ becsült", style = Melyviz.small.copy(color = Melyviz.coral))
             }
         }
-        if (rep.conflicts.isNotEmpty() || rep.warnings.isNotEmpty()) {
-            Column(Modifier.fillMaxWidth().heightIn(max = 110.dp).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                rep.conflicts.forEach { k ->
-                    val m = st.sketch.measure(k.measure)
-                    val where = m?.let { st.sketch.room(it.room) }?.let { roomTitle(it.name, it.kinds) + " · " + m.kind.label.lowercase() } ?: k.measure
-                    Text("Ellentmondás: $where ${k.mm} mm, a többi méret szerint ${k.solved} mm.", style = Melyviz.small.copy(color = Melyviz.coral))
-                }
-                rep.warnings.forEach { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
+        val hasWarn = rep.conflicts.isNotEmpty() || rep.warnings.isNotEmpty()
+        val warnings: @Composable () -> Unit = {
+            rep.conflicts.forEach { k ->
+                val m = st.sketch.measure(k.measure)
+                val where = m?.let { st.sketch.room(it.room) }?.let { roomTitle(it.name, it.kinds) + " · " + m.kind.label.lowercase() } ?: k.measure
+                Text("Ellentmondás: $where ${k.mm} mm, a többi méret szerint ${k.solved} mm.", style = Melyviz.small.copy(color = Melyviz.coral))
+            }
+            rep.warnings.forEach { Text(it, style = Melyviz.small.copy(color = Melyviz.sand)) }
+        }
+        val planBox: @Composable (Modifier) -> Unit = { mod ->
+            Box(mod.padding(8.dp)) {
+                if (n.rooms.isEmpty()) Text("Még nincs szoba a vázlaton.", style = Melyviz.small, modifier = Modifier.align(Alignment.Center))
+                else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
             }
         }
-        Box(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
-            if (n.rooms.isEmpty()) Text("Még nincs szoba a vázlaton.", style = Melyviz.small, modifier = Modifier.align(Alignment.Center))
-            else Canvas(Modifier.fillMaxSize()) { drawPlan(n, st.sketch, tm, c) }
-        }
-        Column(Modifier.fillMaxWidth().background(Melyviz.surface).padding(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        val actions: @Composable () -> Unit = {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 VrgChip("⇪ Küldés a Plannerbe", selected = true) {
                     scope.launch {
                         try {
                             val files = writeExport(ctx, st.sketch, n)
                             shareAll(ctx, files)
-                            done = "Megosztva: ${files[0].first.name}" + if (files.size > 1) " és ${files.size - 1} fotó" else ""
+                            val ph = files.count { it.second == "image/jpeg" }
+                            done = "Megosztva: ${files[0].first.name}" + (if (files.size > ph + 1) " + munkakör lap" else "") + if (ph > 0) " és $ph fotó" else ""
                         } catch (e: Exception) {
                             VrgLog.w("sketch", "Megosztás sikertelen: ${e.message}"); host.note("A megosztás nem sikerült.")
                         }
@@ -158,19 +196,47 @@ internal fun NormScreen(st: EditorState, host: FeatureHost, onBack: () -> Unit) 
                 }
                 VrgChip("⤓ Mentés a telefonra") {
                     scope.launch {
-                        val files = writeExport(ctx, st.sketch, n)
-                        val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
-                        done = if (at.any { it == null }) "A mentés nem sikerült." else "Mentve: ${at[0]}" + if (files.size > 1) " · ${files.size - 1} fotó: Képek / VRG Vázlat" else ""
+                        done = try {
+                            val files = writeExport(ctx, st.sketch, n)
+                            val at = files.map { (f, mime) -> FileStore.saveShared(ctx, f, f.name, mime, "VRG Vázlat") }
+                            val ph = files.count { it.second == "image/jpeg" }
+                            if (at.any { it == null }) "A mentés nem sikerült (a telefon tárhelye?): próbáld újra." else "Mentve: ${at[0]}" + (if (files.size > ph + 1) " + munkakör lap (.takeoff.json, .md)" else "") + if (ph > 0) " · $ph fotó: Képek / VRG Vázlat" else ""
+                        } catch (e: Exception) {
+                            VrgLog.w("sketch", "Mentés sikertelen: ${e.message}"); "A mentés nem sikerült: ${e.message ?: "ismeretlen hiba"}. Próbáld újra."
+                        }
                     }
                 }
+                // F9 (WP M54, D-127, D-128): the Felmérési jegyzőkönyv from the phone, behind its registry switch (M51)
+                if (FeaturePrefs.on("export.report_phone")) VrgChip("📄 Jegyzőkönyv") { report = true }
+                // skcam K1b (WP M59): the room in 3D with its Fotópont photos, behind the registry switch (D-90)
+                if (FeaturePrefs.on(hu.vrg.mobile.sketch.RoomBox.FEATURE) && hu.vrg.mobile.sketch.RoomBox.ready(n)) VrgChip("⬚ Szobadoboz") { roomBox = true }
             }
+            // the result first, right under the chips that made it (it was the panel's clipped last line)
+            done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp)) }
             val shots = st.sketch.photos.sumOf { it.shots.size } + st.sketch.captures.size
-            if (shots > 0) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
-            Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json; a fotók: ⌘K → Vázlat: fotók. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
-                style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
-            done?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 4.dp)) }
+            if (shots > 0 && feat("export.photos")) Text("$shots fotó megy vele, mindegyik külön fájlként.", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.padding(top = 6.dp))
+            Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { howTo = !howTo }, contentAlignment = Alignment.CenterStart) {
+                Text((if (howTo) "▾" else "▸") + " Mi a teendő a PC-n?", style = Melyviz.label.copy(color = Melyviz.current))
+            }
+            if (howTo) Text("A PC-n: Planner → Terv betöltése fájlból → a .vsketch.json (⌘K → Felmérés: munkakör lap); a fotók: ⌘K → Vázlat: fotók. A .takeoff.json + .md a Workflow Kitnek. Átadással: Küldés → PC-re, és minden fájl a PC táblájára kerül.",
+                style = Melyviz.small)
+        }
+        if (landscape) Row(Modifier.weight(1f).fillMaxWidth()) {
+            // lying down: the plan on the left at full height, warnings and actions in one scrolling column beside it
+            planBox(Modifier.weight(1f).fillMaxHeight())
+            Column(Modifier.width(300.dp).fillMaxHeight().background(Melyviz.surface).verticalScroll(rememberScrollState()).padding(12.dp)) {
+                if (hasWarn) { warnings(); Spacer(Modifier.height(8.dp)) }
+                actions()
+            }
+        } else {
+            if (hasWarn) Column(Modifier.fillMaxWidth().heightIn(max = 110.dp).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)) { warnings() }
+            planBox(Modifier.weight(1f).fillMaxWidth())
+            Column(Modifier.fillMaxWidth().heightIn(max = (screenH * 0.4f).dp.coerceAtLeast(160.dp)).background(Melyviz.surface)
+                .verticalScroll(rememberScrollState()).padding(12.dp)) { actions() }
         }
     }
+    if (report) ReportDialog(st) { report = false }
+    if (roomBox) RoomBoxDialog(st) { roomBox = false }
 }
 
 private fun DrawScope.text(tm: TextMeasurer, s: String, at: Offset, color: Color, size: TextUnit, bold: Boolean = false, bg: Color? = null) {

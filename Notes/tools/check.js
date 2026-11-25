@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// VRG Jegyzetek: checks Notes/catalog/noteskit.json (the same rules as kit-core NotesKit.problems, WP M46).
+// VRG Jegyzetek: checks Notes/catalog/noteskit.json (the same rules as kit-core NotesKit.problems, WP M68).
 // Exit 1 when something is wrong. Usage: node Notes/tools/check.js [file]
 'use strict';
 const fs = require('fs');

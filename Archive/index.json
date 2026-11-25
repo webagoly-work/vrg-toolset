@@ -3,6 +3,25 @@
   "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
   "items": [
     {
+      "id": "kettelefonos-teszt",
+      "title": "Kéttelefonos teszt",
+      "created": "2026-11-21",
+      "updated": "2026-11-21",
+      "lang": "hu",
+      "vrg": true,
+      "group": "VRG core",
+      "kind": "tool",
+      "summary": "A VRG Sketcher telefonos ellenőrzései két telefonra osztva, közös élő pipálással és Hibák listával.",
+      "purpose": "A két telefon egyszerre teszteli az M24–M31 és M46–M49 munkacsomagokat; a hibák megjegyzéssel visszaolvashatók.",
+      "context": [
+        "F1–F4 fork összevonva a main ágra",
+        "a Founder kéttelefonos tesztet kért a végére"
+      ],
+      "tags": [],
+      "file": "files/kettelefonos-teszt.html",
+      "url": "https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre"
+    },
+    {
       "id": "vrg-latoter",
       "title": "VRG Látótér",
       "created": "2026-11-20",

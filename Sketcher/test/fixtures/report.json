@@ -1,0 +1,145 @@
+{
+ "about": "Written by Sketcher/tools/make-report-fixture.js from Sketcher/src/app.js (svgPlan, sitePlaceSvg) and Planner/projects/varler-planner/tests/sketch-field.json; replayed by ReportSvgTest. Do not edit.",
+ "package": "Planner/projects/varler-planner/tests/sketch-field.json",
+ "cases": [
+  {
+   "about": "the field package: the solved plan in mm",
+   "plan": true,
+   "svg": "<svg id=\"plansvg\" viewBox=\"-980 -980 7960 5160\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"fl\" points=\"0,0 4000,0 4000,3200 0,3200\"/><line class=\"edge\" x1=\"0\" y1=\"0\" x2=\"4000\" y2=\"0\"/><line class=\"edge\" x1=\"4000\" y1=\"0\" x2=\"4000\" y2=\"3200\"/><line class=\"edge\" x1=\"4000\" y1=\"3200\" x2=\"0\" y2=\"3200\"/><line class=\"edge\" x1=\"0\" y1=\"3200\" x2=\"0\" y2=\"0\"/><text class=\"lbl\" font-size=\"180\" x=\"2000\" y=\"1600\">Nappali</text><polygon class=\"fl\" points=\"4000,0 6000,0 6000,3200 4000,3200\"/><line class=\"est\" x1=\"4000\" y1=\"0\" x2=\"6000\" y2=\"0\"/><text class=\"lbl e\" font-size=\"153\" x=\"5000\" y=\"-72\">≈ 2 m</text><line class=\"edge\" x1=\"6000\" y1=\"0\" x2=\"6000\" y2=\"3200\"/><line class=\"est\" x1=\"6000\" y1=\"3200\" x2=\"4000\" y2=\"3200\"/><text class=\"lbl e\" font-size=\"153\" x=\"5000\" y=\"3128\">≈ 2 m</text><line class=\"edge\" x1=\"4000\" y1=\"3200\" x2=\"4000\" y2=\"0\"/><text class=\"lbl\" font-size=\"180\" x=\"5000\" y=\"1600\">Fürdő</text><path class=\"wedge noshot\" d=\"M2000 1600 L1678.6061951567303 1216.977778440511 A500 500 0 0 1 2321.3938048432697 1216.977778440511 Z\"/><path class=\"wedge shot\" d=\"M2000 1600 L2383.022221559489 1278.6061951567303 A500 500 0 0 1 2383.022221559489 1921.3938048432697 Z\"/><path class=\"wedge noshot\" d=\"M2000 1600 L2321.3938048432697 1983.022221559489 A500 500 0 0 1 1678.6061951567303 1983.022221559489 Z\"/><path class=\"wedge noshot\" d=\"M2000 1600 L1616.977778440511 1921.3938048432697 A500 500 0 0 1 1616.977778440511 1278.6061951567303 Z\"/><circle class=\"dev meglevo\" cx=\"2000\" cy=\"40\" r=\"72\"><title>Dugalj (meglévő)</title></circle><circle class=\"dev tervezett\" cx=\"3960\" cy=\"1600\" r=\"72\"><title>Kapcsoló (tervezett)</title></circle><circle class=\"dev tervezett\" cx=\"2000\" cy=\"1600\" r=\"72\"><title>Lámpa (tervezett)</title></circle><circle class=\"dev tervezett\" cx=\"5960\" cy=\"1600\" r=\"72\"><title>Elosztó (tervezett)</title></circle></svg>"
+  },
+  {
+   "about": "the same survey without a solved plan: drawing units",
+   "plan": false,
+   "svg": "<svg id=\"plansvg\" viewBox=\"-24.5 -24.5 199 129\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"fl\" points=\"0,0 100,0 100,80 0,80\"/><line class=\"edge\" x1=\"0\" y1=\"0\" x2=\"100\" y2=\"0\"/><line class=\"edge\" x1=\"100\" y1=\"0\" x2=\"100\" y2=\"80\"/><line class=\"edge\" x1=\"100\" y1=\"80\" x2=\"0\" y2=\"80\"/><line class=\"edge\" x1=\"0\" y1=\"80\" x2=\"0\" y2=\"0\"/><text class=\"lbl\" font-size=\"4.5\" x=\"50\" y=\"40\">nappali</text><polygon class=\"fl\" points=\"100,0 150,0 150,80 100,80\"/><line class=\"edge\" x1=\"100\" y1=\"0\" x2=\"150\" y2=\"0\"/><line class=\"edge\" x1=\"150\" y1=\"0\" x2=\"150\" y2=\"80\"/><line class=\"edge\" x1=\"150\" y1=\"80\" x2=\"100\" y2=\"80\"/><line class=\"edge\" x1=\"100\" y1=\"80\" x2=\"100\" y2=\"0\"/><text class=\"lbl\" font-size=\"4.5\" x=\"125\" y=\"40\">R2</text><path class=\"wedge noshot\" d=\"M50 40 L41.965154878918256 30.424444461012776 A12.5 12.5 0 0 1 58.034845121081744 30.424444461012776 Z\"/><path class=\"wedge shot\" d=\"M50 40 L59.575555538987224 31.965154878918256 A12.5 12.5 0 0 1 59.575555538987224 48.034845121081744 Z\"/><path class=\"wedge noshot\" d=\"M50 40 L58.034845121081744 49.575555538987224 A12.5 12.5 0 0 1 41.965154878918256 49.575555538987224 Z\"/><path class=\"wedge noshot\" d=\"M50 40 L40.424444461012776 48.034845121081744 A12.5 12.5 0 0 1 40.424444461012776 31.96515487891826 Z\"/><circle class=\"dev meglevo\" cx=\"50\" cy=\"0\" r=\"1.8\"><title>Dugalj (meglévő)</title></circle><circle class=\"dev tervezett\" cx=\"100\" cy=\"40\" r=\"1.8\"><title>Kapcsoló (tervezett)</title></circle><circle class=\"dev tervezett\" cx=\"50\" cy=\"40\" r=\"1.8\"><title>Lámpa (tervezett)</title></circle><circle class=\"dev tervezett\" cx=\"150\" cy=\"40\" r=\"1.8\"><title>Elosztó (tervezett)</title></circle></svg>"
+  },
+  {
+   "about": "site: a house drawn north-up, the building at 17°, auto-placed",
+   "outline": [
+    [
+     47.5150502,
+     19.0799392
+    ],
+    [
+     47.5150186,
+     19.080092
+    ],
+    [
+     47.5149498,
+     19.0800608
+    ],
+    [
+     47.5149814,
+     19.079908
+    ]
+   ],
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 17.05,
+    "auto": true
+   },
+   "svg": "<svg class=\"siteplace\" viewBox=\"-8.29113296008997 -6.963848520748278 16.58226592044675 13.927697042286646\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"so\" points=\"-4.57,-5.58 6.91,-2.07 4.57,5.58 -6.91,2.07\" stroke-width=\"0.18424739911607502\"/><polygon class=\"sp\" points=\"-2.40,-2.41 1.43,-1.24 0.49,1.82 -3.34,0.65\" stroke-width=\"0.09212369955803751\"/><polygon class=\"sp\" points=\"1.43,-1.24 3.34,-0.65 2.40,2.41 0.49,1.82\" stroke-width=\"0.09212369955803751\"/><text x=\"-7.8765763120788\" y=\"-5.8583641260518275\" font-size=\"0.6909277466852815\">É ↑</text></svg>",
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ]
+  },
+  {
+   "about": "site: an L-shaped building and an L-shaped plan, auto-placed",
+   "outline": [
+    [
+     47.5150275,
+     19.0799369
+    ],
+    [
+     47.5150847,
+     19.0800724
+    ],
+    [
+     47.515039,
+     19.0801148
+    ],
+    [
+     47.5150104,
+     19.080047
+    ],
+    [
+     47.5149799,
+     19.0800752
+    ],
+    [
+     47.5149513,
+     19.0800075
+    ]
+   ],
+   "place": {
+    "lat": 47.515018,
+    "lon": 19.0800399,
+    "rot": 147.95,
+    "auto": true
+   },
+   "svg": "<svg class=\"siteplace\" viewBox=\"-9.398968787453715 -9.181748424549303 16.32712060004035 17.800108444162476\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"so\" points=\"-7.92,-1.34 2.26,-7.70 5.44,-2.62 0.35,0.56 2.47,3.95 -2.61,7.14\" stroke-width=\"0.19777898271291638\"/><polygon class=\"sp\" points=\"3.21,-0.52 -0.18,1.61 -1.88,-1.11 1.51,-3.23\" stroke-width=\"0.09888949135645819\"/><polygon class=\"sp\" points=\"-0.18,1.61 -1.87,2.67 -3.57,-0.05 -1.88,-1.11\" stroke-width=\"0.09888949135645819\"/><line class=\"sb\" x1=\"3.211568624828164\" y1=\"-0.5175350434706333\" x2=\"-0.17877270119516322\" y2=\"1.605101452271958\" stroke-width=\"0.2966684740693746\"/><text x=\"-8.953966076349653\" y=\"-7.995074528271805\" font-size=\"0.7416711851734364\">É ↑</text></svg>",
+   "lines": [
+    "A vázlat 1 fala kilóg a körvonalból.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m",
+    "· Nappali, délkeleti fal: 0,6 m-rel kilóg"
+   ]
+  },
+  {
+   "about": "site: a flat in a bigger building, moved north, auto-placed",
+   "outline": [
+    [
+     47.5150745,
+     19.0798092
+    ],
+    [
+     47.515051,
+     19.0802071
+    ],
+    [
+     47.5149255,
+     19.0801908
+    ],
+    [
+     47.514949,
+     19.0797929
+    ]
+   ],
+   "place": {
+    "lat": 47.515,
+    "lon": 19.08,
+    "rot": 5,
+    "auto": true
+   },
+   "svg": "<svg class=\"siteplace\" viewBox=\"-18.664061261238032 -11.394710353920571 37.32812252274287 22.78942070863123\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"so\" points=\"-14.33,-8.28 15.55,-5.67 14.33,8.28 -15.55,5.67\" stroke-width=\"0.41475691691936534\"/><polygon class=\"sp\" points=\"-2.85,-1.86 1.14,-1.51 0.86,1.68 -3.13,1.33\" stroke-width=\"0.20737845845968267\"/><polygon class=\"sp\" points=\"1.14,-1.51 3.13,-1.33 2.85,1.86 0.86,1.68\" stroke-width=\"0.20737845845968267\"/><text x=\"-17.73085819816946\" y=\"-8.90616885240438\" font-size=\"1.55533843844762\">É ↑</text></svg>",
+   "lines": [
+    "A vázlat a körvonalon belül van, a falak párhuzamosak.",
+    "Elfordulás: 0,0° · középpont eltérése: 0,0 m"
+   ]
+  },
+  {
+   "about": "site: a house drawn north-up, the building at 17°, not placed",
+   "outline": [
+    [
+     47.5150502,
+     19.0799392
+    ],
+    [
+     47.5150186,
+     19.080092
+    ],
+    [
+     47.5149498,
+     19.0800608
+    ],
+    [
+     47.5149814,
+     19.079908
+    ]
+   ],
+   "place": null,
+   "svg": "<svg class=\"siteplace\" viewBox=\"-8.29113296008997 -6.963848520748278 16.58226592044675 13.927697042286646\" xmlns=\"http://www.w3.org/2000/svg\"><polygon class=\"so\" points=\"-4.57,-5.58 6.91,-2.07 4.57,5.58 -6.91,2.07\" stroke-width=\"0.18424739911607502\"/><text x=\"-7.8765763120788\" y=\"-5.8583641260518275\" font-size=\"0.6909277466852815\">É ↑</text></svg>",
+   "lines": []
+  }
+ ]
+}

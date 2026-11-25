@@ -1,13 +1,19 @@
 package hu.vrg.mobile.kit.notes
 
 import android.content.Context
+import hu.vrg.mobile.core.DeviceTrust
 import hu.vrg.mobile.core.MirrorItem
+import hu.vrg.mobile.core.NoteCodec
+import hu.vrg.mobile.core.NoteKey
+import hu.vrg.mobile.core.NoteRecipient
+import hu.vrg.mobile.core.SealCodec
 import hu.vrg.mobile.core.NoteJson
 import hu.vrg.mobile.core.NoteMirror
 import hu.vrg.mobile.core.NoteOrigin
 import hu.vrg.mobile.core.Notebook
 import hu.vrg.mobile.core.NotesKit
 import hu.vrg.mobile.core.VNote
+import hu.vrg.mobile.kit.Trust
 import hu.vrg.mobile.kit.VrgLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,11 +24,11 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 
-// VRG Jegyzetek's hub (WP M46): the one place every note of the app lives. Any feature reaches it through this
+// VRG Jegyzetek's hub (WP M68): the one place every note of the app lives. Any feature reaches it through this
 // object, never through its own note store:
 //
 //   Notes.add("gyors", text)                         a one-way note (quick capture, a share)
-//   Notes.mirror("sketcher", "<sketch>/", items)     a linked mirror of a feature's own records (D-57 = A)
+//   Notes.mirror("sketcher", "<sketch>/", items)     a linked mirror of a feature's own records (D-178 = A)
 //   Notes.pull("sketcher", ref, text)                the text the record should take after an edit in the hub
 //   Notes.onOpen("sketcher") { ref -> … }            how the hub's "open in the source" reaches the feature
 //
@@ -103,15 +109,16 @@ object Notes {
         var id: String? = null
         change { ns ->
             val g = if (origin == Notebook.HERE) null else NoteOrigin(origin, label = label)
-            Notebook.create(ns, System.currentTimeMillis(), device, title, text.trim(), tags, origin = g, unread = g != null).also { id = it.second.id }.first
+            Notebook.create(ns, System.currentTimeMillis(), device, title, text.trim(), tags, origin = g, unread = g != null,
+                sealed = origin in kit.sealedOrigins).also { id = it.second.id }.first
         }
         return id
     }
 
-    /** Mirrors every record of one scope (one survey: [scope] = "<sketch id>/") into the hub. */
+    /** Mirrors every record of one scope (one survey: [scope] = "<sketch id>/") into the hub; a client origin's are sealed. */
     fun mirror(origin: String, scope: String, items: List<MirrorItem>) {
         if (!ready) return
-        change { NoteMirror.sync(it, origin, scope, items, System.currentTimeMillis(), device) }
+        change { NoteMirror.sync(it, origin, scope, items, System.currentTimeMillis(), device, seal = origin in kit.sealedOrigins) }
     }
 
     /** The text record [ref] should take because the note was edited in the hub, or null. */
@@ -127,6 +134,63 @@ object Notes {
         val f = synchronized(openers) { openers[g.app] } ?: return false
         f(g.ref); return true
     }
+
+    // ---- sealing (D-179): client notes on the branch only as ciphertext, for this device and the pinned ones ----
+
+    private fun sealPrefs() = app.getSharedPreferences("notes-seal", Context.MODE_PRIVATE)
+    private val _trusted = MutableStateFlow<List<NoteRecipient>>(emptyList())
+    @Volatile private var trustedLoaded = false
+    /** The other devices this one seals to: pinned here by their code, never read from Git. */
+    val trusted: StateFlow<List<NoteRecipient>> get() {
+        if (!trustedLoaded && ready) { trustedLoaded = true; _trusted.value = NoteRecipient.listFrom(sealPrefs().getString("trusted", null)) }
+        return _trusted
+    }
+
+    /** This device as a recipient: the Eszközök id and P-256 key (kit Trust, the key in the Keystore-backed store). */
+    fun me(): NoteRecipient? = try {
+        val id = Trust.id
+        if (id.isEmpty()) null else NoteRecipient(id, Trust.name, Trust.publicKey())
+    } catch (e: Exception) { VrgLog.w("notes", "Nincs eszközkulcs: ${e.message}"); null }
+
+    /** keys/<ID>.json of this device, for the branch. */
+    fun myKey(at: String): NoteKey? = me()?.let { NoteKey(it.id, it.name, it.pub, at) }
+
+    /** This device's code, as the other device must type it. */
+    fun myCode(): String? = me()?.let { DeviceTrust.code(DeviceTrust.norm(it.id), it.pub) }
+
+    val codec: NoteCodec get() = SealCodec(
+        kit.sealedOrigins,
+        me = ::me,
+        key = { try { Trust.withDeviceKey { it } } catch (e: Exception) { null } },
+        trusted = { trusted.value.filterNot { DeviceTrust.sameId(it.id, Trust.id) } },
+    )
+
+    /** Pins another device; every sealed note is written again so the branch copies open for it too. */
+    fun trust(r: NoteRecipient) {
+        val list = trusted.value.filterNot { DeviceTrust.sameId(it.id, r.id) } + r
+        _trusted.value = list
+        sealPrefs().edit().putString("trusted", NoteRecipient.listToJson(list)).apply()
+        change { Notebook.reseal(it) }
+    }
+
+    /** Stops sealing to a device. Its copies of earlier versions stay readable to it; new versions are not. */
+    fun untrust(id: String) {
+        val list = trusted.value.filterNot { DeviceTrust.sameId(it.id, id) }
+        _trusted.value = list
+        sealPrefs().edit().putString("trusted", NoteRecipient.listToJson(list)).apply()
+        change { Notebook.reseal(it) }
+    }
+
+    /** 🔒 by hand; a client origin's note stays sealed. */
+    fun setSealed(id: String, on: Boolean) = change { Notebook.setSealed(it, id, on, System.currentTimeMillis(), kit.sealedOrigins) }
+
+    /** Sealed files for other devices only (id → sha): kept across starts so they are not fetched every round. */
+    var locked: Map<String, String>
+        get() = try {
+            val o = JSONObject(sealPrefs().getString("locked", "{}") ?: "{}")
+            o.keys().asSequence().associateWith { o.getString(it) }
+        } catch (e: Exception) { emptyMap() }
+        set(v) { sealPrefs().edit().putString("locked", JSONObject(v).toString()).apply() }
 
     // ---- the version (⚙ → Változat) ----
 

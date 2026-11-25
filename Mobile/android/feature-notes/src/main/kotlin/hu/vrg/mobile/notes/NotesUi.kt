@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -38,12 +39,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -55,7 +58,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.DeviceTrust
 import hu.vrg.mobile.core.NoteFilter
+import hu.vrg.mobile.core.NoteSeal
 import hu.vrg.mobile.core.NoteSync
 import hu.vrg.mobile.core.NoteView
 import hu.vrg.mobile.core.Notebook
@@ -72,8 +77,9 @@ import java.text.SimpleDateFormat
 import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 
-// VRG Jegyzetek's screens (WP M46): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
+// VRG Jegyzetek's screens (WP M68): the list, one note, and ⚙ (the version, its modules, the sync, the origins).
 // What shows is decided by the modules the chosen version switches on (Notes.enabled(), kit-core NotesKit.enabled):
 // a module that is off leaves no trace on screen, so Egyszerű really is just notes.
 
@@ -155,7 +161,7 @@ private fun NoteList(host: FeatureHost, onOpen: (String) -> Unit, onSettings: ()
         item {
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp).padding(end = 12.dp))
+                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight().padding(end = 12.dp))
                 Text("JEGYZETEK", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
                 VrgChip(profile.sym + " " + profile.name) { onSettings() }
                 Spacer(Modifier.width(6.dp))
@@ -280,6 +286,7 @@ private fun NoteRow(n: VNote, cards: Boolean, showTasks: Boolean, onClick: () ->
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (n.pinned) Text("📌 ", style = Melyviz.small)
+            if (n.sealed) Text("🔒 ", style = Melyviz.small)
             Text(n.shown, style = Melyviz.label.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             Text(TIME.format(Date(n.updated)), style = Melyviz.readout.copy(fontSize = 10.sp))
         }
@@ -329,7 +336,7 @@ private fun NoteEditor(host: FeatureHost, id: String, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("‹ Jegyzetek", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { onBack() }.padding(vertical = 8.dp).padding(end = 12.dp))
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { onBack() }.wrapContentHeight().padding(end = 12.dp))
             Spacer(Modifier.weight(1f))
             if (!n.trashed) VrgChip(if (n.pinned) "📌 Kitűzve" else "📌", n.pinned) { Notes.change { Notebook.pin(it, id, !n.pinned, now()) } }
         }
@@ -341,6 +348,12 @@ private fun NoteEditor(host: FeatureHost, id: String, onBack: () -> Unit) {
             }
             if ("formazas" in on) VrgChip(if (reading) "✎ Szerkesztés" else "¶ Olvasó", reading) { reading = !reading }
             if ("kod" in on) VrgChip("⌨ Kód", n.mono) { Notes.change { Notebook.setMono(it, id, !n.mono, now()) } }
+            // D-179: a client origin's note is always sealed; any other note can be sealed by hand
+            val clientNote = n.origin?.app in Notes.kit.sealedOrigins
+            if (!n.trashed) VrgChip(if (n.sealed) "🔒 Lezárva" else "🔓 Lezárás", n.sealed) {
+                if (clientNote) host.note("Ügyféljegyzet: mindig lezárva megy fel a GitHubra.")
+                else { Notes.setSealed(id, !n.sealed); host.note(if (n.sealed) "Nyílt jegyzet: a GitHubon olvasható." else "Lezárva: a GitHubon csak a megbízható eszközök olvassák.") }
+            }
             if ("diktalas" in on && !n.trashed) VrgChip("🎤") { if (!dictate()) host.note("Nincs beszédfelismerő ezen a telefonon.") }
             if ("export" in on) VrgChip("⇪ Megosztás") {
                 val i = Intent(Intent.ACTION_SEND).setType("text/plain")
@@ -495,7 +508,8 @@ private fun NotesSettings(host: FeatureHost, onBack: () -> Unit) {
     val on = kit.enabled(profileId, overrides)
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Text("‹ Jegyzetek", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { onBack() }.padding(vertical = 8.dp))
+        Text("‹ Jegyzetek", style = Melyviz.label.copy(color = Melyviz.current),
+            modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { onBack() }.wrapContentHeight())
         Text("JEGYZETEK · BEÁLLÍTÁSOK", style = Melyviz.title.copy(fontSize = 18.sp))
 
         VrgSectionTitle("Változat")
@@ -547,6 +561,8 @@ private fun NotesSettings(host: FeatureHost, onBack: () -> Unit) {
         if ("naplo" in on) Text("Projektnapló: a Gyorsjegyzet sorai a ${hu.vrg.mobile.core.NoteLog.BRANCH} branch napi fájljába is mennek.",
             style = Melyviz.small, modifier = Modifier.padding(top = 6.dp))
 
+        SealSettings(host)
+
         VrgSectionTitle("Honnan jönnek a jegyzetek")
         val counts = Notebook.origins(all).toMap()
         kit.origins.forEach { o ->
@@ -557,5 +573,65 @@ private fun NotesSettings(host: FeatureHost, onBack: () -> Unit) {
             Text(o.about + if (o.client) " Ügyféladatot is tartalmazhat." else "", style = Melyviz.small.copy(fontSize = 10.sp))
         }
         Spacer(Modifier.height(32.dp))
+    }
+}
+
+/**
+ * ⚙ → Lezárás (D-179): the client notes go to the branch sealed. This device opens them; another device opens them
+ * once its code was typed here (the code that device shows on this screen), the Workflow Kit's rule (D-52).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SealSettings(host: FeatureHost) {
+    val trusted by Notes.trusted.collectAsStateWithLifecycle()
+    val keys by NotesFeature.branchKeys.collectAsStateWithLifecycle()
+    val locked by NotesFeature.lockedCount.collectAsStateWithLifecycle()
+    val all by Notes.all.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var loadNote by remember { mutableStateOf<String?>(null) }
+    val codes = remember { mutableStateOf(mapOf<String, String>()) }
+    LaunchedEffect(Unit) { if (keys == null) { loadNote = "Betöltés…"; loadNote = NotesFeature.loadKeys() } }
+    val myId = Notes.me()?.id
+
+    VrgSectionTitle("Lezárás")
+    Text("Az ügyféljegyzetek (Sketcher, és amit 🔒-tal lezársz) a GitHubra csak titkosítva mennek: a fájlban és a commitban " +
+        "nincs olvasható szöveg. Ez a telefon mindig olvassa őket; egy másik eszköz akkor, ha itt beírod a kódját.",
+        style = Melyviz.small)
+    Text("Ennek az eszköznek a kódja: " + (Notes.myCode() ?: "nincs még eszközkulcs"),
+        style = Melyviz.readout.copy(fontSize = 13.sp, color = Melyviz.ink), modifier = Modifier.padding(top = 6.dp))
+    Text("${all.count { it.sealed && !it.purged }} lezárt jegyzet itt" + (if (locked > 0) " · $locked a GitHubon, ami nem ennek az eszköznek szól (a másik eszközön kell megbízni ebben)" else ""),
+        style = Melyviz.small, modifier = Modifier.padding(top = 2.dp))
+
+    if (trusted.isNotEmpty()) {
+        Text("Megbízható eszközök", style = Melyviz.label, modifier = Modifier.padding(top = 8.dp))
+        trusted.forEach { r ->
+            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(r.name.ifBlank { r.id } + " · " + DeviceTrust.code(r.id, r.pub), style = Melyviz.small, modifier = Modifier.weight(1f))
+                VrgChip("Megvonás") { Notes.untrust(r.id); host.note("${r.name.ifBlank { r.id }} az új változatokat már nem olvassa.") }
+            }
+        }
+    }
+    val others = keys.orEmpty().filter { k -> myId == null || !DeviceTrust.sameId(k.id, myId) }.filter { k -> trusted.none { DeviceTrust.sameId(it.id, k.id) } }
+    if (others.isNotEmpty()) {
+        Text("Eszközök a GitHubon, még nem megbízhatók", style = Melyviz.label, modifier = Modifier.padding(top = 8.dp))
+        others.forEach { k ->
+            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text(k.name.ifBlank { k.id } + " · " + k.id.chunked(4).joinToString("-"), style = Melyviz.small)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(codes.value[k.id] ?: "", { codes.value = codes.value + (k.id to it.take(8)) }, singleLine = true,
+                        modifier = Modifier.weight(1f), placeholder = { Text("a kódja azon az eszközön", style = Melyviz.small) }, colors = fieldColors())
+                    Spacer(Modifier.width(6.dp))
+                    VrgChip("Megbízom") {
+                        val r = NoteSeal.pin(k, codes.value[k.id] ?: "")
+                        if (r == null) host.note("A kód nem egyezik. Nézd meg azon az eszközön: Jegyzetek → ⚙ → Lezárás.")
+                        else { Notes.trust(r); NotesFeature.sendNow(); host.note("${r.name.ifBlank { r.id }} mostantól olvassa a lezárt jegyzeteket.") }
+                    }
+                }
+            }
+        }
+    }
+    loadNote?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
+    Row(Modifier.padding(top = 6.dp)) {
+        VrgChip("Eszközök frissítése") { scope.launch { loadNote = "Betöltés…"; loadNote = NotesFeature.loadKeys() } }
     }
 }

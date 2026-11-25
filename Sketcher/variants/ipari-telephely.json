@@ -18,6 +18,16 @@
  ],
  "author": "Claude (GO VARIANT protocol)",
  "created": "2026-11-18",
+ "draw": {
+  "snapAngle": 90,
+  "snapGrid": 1,
+  "defaultRoom": {
+   "w": 30,
+   "d": 20
+  },
+  "measureFirst": true,
+  "pointSnap": "free"
+ },
  "plugins": {
   "on": [
    "fotopont"
@@ -385,15 +395,6 @@
    "suggest": {
     "scope": [
      "talca"
-    ]
-   }
-  },
-  {
-   "id": "egett",
-   "re": "(?<!ki)eget|ego szag|egett szag|szikraz|meleged|felforrosod",
-   "suggest": {
-    "scope": [
-     "hiba"
     ]
    }
   }

@@ -46,6 +46,14 @@ data class Palette(
     val radiusSmall: Dp = 10.dp,
     /** The VRG UI Kit faces (Barlow Condensed titles, Inter body, JetBrains Mono readouts); the six keep the system ones. */
     val kitFaces: Boolean = false,
+    /**
+     * The terminal look (kit theme Grafit, `--vk-frame: dots`): frames and indicators drawn as a fine dot matrix
+     * (theme/Dots.kt: vrgBorder, dotArc, dotLine) and titles in the mono face. Off for every other palette.
+     */
+    val terminal: Boolean = false,
+    /** The dot matrix's geometry (`--vk-dot-pitch`, `--vk-dot-r`): centre-to-centre distance and dot radius. */
+    val dotPitch: Dp = DotDefaults.pitch,
+    val dotRadius: Dp = DotDefaults.radius,
 )
 
 object Palettes {
@@ -53,7 +61,7 @@ object Palettes {
         "melyviz", "Mélyvíz", false,
         abyss = Color(0xFF041019), deep = Color(0xFF071A26), surface = Color(0xFF0B2533), raised = Color(0xFF103143),
         line = Color(0xFF1D4C63), lineSoft = Color(0xFF143A4D),
-        ink = Color(0xFFDCEFF4), muted = Color(0xFF86A9B8), faint = Color(0xFF4F7384),
+        ink = Color(0xFFDCEFF4), muted = Color(0xFF86A9B8), faint = Color(0xFF779AA9),
         glow = Color(0xFF3FE0D0), glowDim = Color(0xFF1F7F7A), current = Color(0xFF4FA8FF),
         sand = Color(0xFFF2B33D), coral = Color(0xFFFF5C7A), kelp = Color(0xFF3FE08A),
         onGlow = Color(0xFF02201E), shallows = Color(0xFF0A2A3A),
@@ -64,7 +72,7 @@ object Palettes {
         "arok", "Mélytengeri árok (OLED)", false,
         abyss = Color(0xFF000000), deep = Color(0xFF000000), surface = Color(0xFF070B0D), raised = Color(0xFF0C1215),
         line = Color(0xFF16323D), lineSoft = Color(0xFF0E2029),
-        ink = Color(0xFFC9E3EA), muted = Color(0xFF6F8F9B), faint = Color(0xFF3C5560),
+        ink = Color(0xFFC9E3EA), muted = Color(0xFF6F8F9B), faint = Color(0xFF63818D),
         glow = Color(0xFF2FD3C4), glowDim = Color(0xFF176E68), current = Color(0xFF3F92E6),
         sand = Color(0xFFE0A632), coral = Color(0xFFF04F6C), kelp = Color(0xFF33CC7C),
         onGlow = Color(0xFF001A18), shallows = Color(0xFF000000),
@@ -74,7 +82,7 @@ object Palettes {
         "korall", "Korallzátony", false,
         abyss = Color(0xFF140A0D), deep = Color(0xFF1D0F14), surface = Color(0xFF29151C), raised = Color(0xFF351B24),
         line = Color(0xFF5C2B38), lineSoft = Color(0xFF42202A),
-        ink = Color(0xFFFBE9E6), muted = Color(0xFFC9A09D), faint = Color(0xFF7E5A5C),
+        ink = Color(0xFFFBE9E6), muted = Color(0xFFC9A09D), faint = Color(0xFFA6807F),
         glow = Color(0xFFFF8A6B), glowDim = Color(0xFF9A4D3D), current = Color(0xFFFFC15E),
         sand = Color(0xFFF2B33D), coral = Color(0xFFFF4D6D), kelp = Color(0xFF6EE7A8),
         onGlow = Color(0xFF2A0B05), shallows = Color(0xFF2E1219),
@@ -84,7 +92,7 @@ object Palettes {
         "laguna", "Éjféli lagúna", false,
         abyss = Color(0xFF0A0919), deep = Color(0xFF110F2E), surface = Color(0xFF191641), raised = Color(0xFF221E56),
         line = Color(0xFF3A3483), lineSoft = Color(0xFF2A2563),
-        ink = Color(0xFFEAE8FF), muted = Color(0xFFA7A2D8), faint = Color(0xFF615C95),
+        ink = Color(0xFFEAE8FF), muted = Color(0xFFA7A2D8), faint = Color(0xFF8C87BE),
         glow = Color(0xFFB892FF), glowDim = Color(0xFF6A51A3), current = Color(0xFF5EC8FF),
         sand = Color(0xFFF6C35B), coral = Color(0xFFFF6B9A), kelp = Color(0xFF6BE3B0),
         onGlow = Color(0xFF1A0B33), shallows = Color(0xFF1E1A4A),
@@ -94,7 +102,7 @@ object Palettes {
         "moszat", "Moszaterdő", false,
         abyss = Color(0xFF05110B), deep = Color(0xFF091B12), surface = Color(0xFF0E271A), raised = Color(0xFF143423),
         line = Color(0xFF225538), lineSoft = Color(0xFF183F2A),
-        ink = Color(0xFFE1F5E9), muted = Color(0xFF8DB89F), faint = Color(0xFF4E7560),
+        ink = Color(0xFFE1F5E9), muted = Color(0xFF8DB89F), faint = Color(0xFF749E86),
         glow = Color(0xFF8BE86F), glowDim = Color(0xFF4B8A3A), current = Color(0xFF3FC1C9),
         sand = Color(0xFFE8C14A), coral = Color(0xFFFF6B6B), kelp = Color(0xFF52E39A),
         onGlow = Color(0xFF0B2005), shallows = Color(0xFF12301F),
@@ -105,8 +113,8 @@ object Palettes {
         "sekely", "Sekély víz (világos)", true,
         abyss = Color(0xFFE4F2F5), deep = Color(0xFFEDF7F9), surface = Color(0xFFFFFFFF), raised = Color(0xFFF3FAFB),
         line = Color(0xFFB4D4DD), lineSoft = Color(0xFFD2E6EB),
-        ink = Color(0xFF062633), muted = Color(0xFF486B78), faint = Color(0xFF86A4AE),
-        glow = Color(0xFF0E9C9C), glowDim = Color(0xFF6CC3C3), current = Color(0xFF1E6FD9),
+        ink = Color(0xFF062633), muted = Color(0xFF486B78), faint = Color(0xFF537582),
+        glow = Color(0xFF0C7D81), glowDim = Color(0xFF6CC3C3), current = Color(0xFF1E6FD9),
         sand = Color(0xFFB7791F), coral = Color(0xFFD6365A), kelp = Color(0xFF1F9D5C),
         onGlow = Color(0xFFFFFFFF), shallows = Color(0xFFD4ECF1),
     )
@@ -119,7 +127,7 @@ object Palettes {
         "sui", "Varler SUI", false,
         abyss = Color(0xFF0D141A), deep = Color(0xFF121B22), surface = Color(0xFF18242D), raised = Color(0xFF1F2E38),
         line = Color(0xFF2C4250), lineSoft = Color(0xFF223440),
-        ink = Color(0xFFD6E4EA), muted = Color(0xFF8AA3AF), faint = Color(0xFF4C6878),
+        ink = Color(0xFFD6E4EA), muted = Color(0xFF8AA3AF), faint = Color(0xFF7D97A3),
         glow = Color(0xFF7ED3DF), glowDim = Color(0xFF3B6870), current = Color(0xFFA9C9D3),
         sand = Color(0xFFF0C24B), coral = Color(0xFFE4877D), kelp = Color(0xFF8FD49A),
         onGlow = Color(0xFF0B1A1F), shallows = Color(0xFF16222A),
@@ -128,7 +136,7 @@ object Palettes {
 
     /**
      * Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against (KitTokensTest
-     * reads this file). The app's own six first, then the four VRG UI Kit themes generated into KitTokens.kt (WP M16).
+     * reads this file). The app's own seven first, then the five VRG UI Kit themes generated into KitTokens.kt (WP M16; Grafit added later).
      */
     val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI) + KitTokens.ALL
 
@@ -162,6 +170,9 @@ object Melyviz {
     val radiusSmall get() = palette.radiusSmall
     val gutter = 12.dp
 
+    /** The terminal look is on (Grafit): dot-matrix frames and indicators, mono titles. */
+    val terminal get() = palette.terminal
+
     /** Readouts (IP, port, time): JetBrains Mono on a kit palette, the system monospace on the six. */
     val mono get() = if (palette.kitFaces) KitFaces.mono else FontFamily.Monospace
     private val sans get() = if (palette.kitFaces) KitFaces.sans else FontFamily.Default
@@ -170,7 +181,9 @@ object Melyviz {
     val water get() = Brush.verticalGradient(listOf(palette.shallows, deep, abyss))
 
     // A kit palette switches the faces only; the sizes stay, so a screen keeps its layout on all ten.
-    val title get() = if (palette.kitFaces)
+    val title get() = if (palette.terminal)
+        TextStyle(fontSize = 14.sp, fontFamily = KitFaces.mono, fontWeight = FontWeight.Normal, letterSpacing = 0.08.em, color = ink)
+    else if (palette.kitFaces)
         TextStyle(fontSize = 15.sp, fontFamily = KitFaces.voice, fontWeight = FontWeight.SemiBold, letterSpacing = 0.06.em, color = ink)
     else TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.4.sp, color = ink)
     val label get() = if (palette.kitFaces)

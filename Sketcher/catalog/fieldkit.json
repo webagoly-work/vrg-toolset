@@ -516,6 +516,13 @@
    "qty": true
   },
   {
+   "id": "cee",
+   "label": "CEE aljzat (ipari)",
+   "sym": "⏻",
+   "group": "igeny",
+   "qty": true
+  },
+  {
    "id": "ipkamera",
    "label": "IP kamera",
    "sym": "◉",
@@ -702,7 +709,7 @@
   },
   {
    "id": "egett",
-   "re": "eget|ego szag|egett szag|szikraz|meleged|felforrosod",
+   "re": "(?<!ki)eget|ego szag|egett szag|szikraz|meleged|felforrosod",
    "suggest": {
     "scope": [
      "hiba"
@@ -908,7 +915,10 @@
      "id": "datum",
      "label": "Konkrét dátum"
     }
-   ]
+   ],
+   "num": {
+    "unit": "dátum"
+   }
   },
   {
    "id": "keret",

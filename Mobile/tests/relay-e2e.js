@@ -12,7 +12,15 @@ const os = require('os');
 const { spawn, execFileSync } = require('child_process');
 const REPO = path.resolve(__dirname, '..', '..');
 const WS = require(path.join(REPO, 'Planner/projects/varler-planner/node_modules/ws'));
-const { chromium } = require('playwright');
+// Playwright lives outside the repo, portable, in Full\tools\playwright (its browsers in .\browsers);
+// a playwright that Node can resolve on its own (NODE_PATH, a node_modules) still wins.
+function loadPlaywright() {
+  const tools = path.join(path.dirname(REPO), 'tools', 'playwright');
+  try { return require('playwright'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; }
+  if (!process.env.PLAYWRIGHT_BROWSERS_PATH) process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(tools, 'browsers');
+  return require(path.join(tools, 'node_modules', 'playwright'));
+}
+const { chromium } = loadPlaywright();
 const CITY = path.join(os.tmpdir(), 'legeger-e2e-city.html');
 execFileSync(process.execPath, [path.join(REPO, 'CodeCity/scan.js'), REPO, '--out', path.join(os.tmpdir(), 'legeger-e2e.city.json'), '--html', CITY], { stdio: 'ignore' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));

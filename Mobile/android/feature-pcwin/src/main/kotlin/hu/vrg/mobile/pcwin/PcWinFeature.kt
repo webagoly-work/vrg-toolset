@@ -3,6 +3,7 @@ package hu.vrg.mobile.pcwin
 import android.app.Application
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,6 +83,8 @@ object PcWinFeature : VrgFeature {
     val listing = MutableStateFlow<PcListing?>(null)
     val look = MutableStateFlow<PcLook?>(null)
     val busy = MutableStateFlow(false)
+    /** The last request got no answer in time (the relay runs without --files, or an older relay): the screen says so. */
+    val unanswered = MutableStateFlow(false)
     /** The name of the file just put on the board: the screen then offers Átadás ›. */
     val copied = MutableStateFlow<String?>(null)
     private val notes = MutableSharedFlow<String>(extraBufferCapacity = 4)
@@ -107,16 +113,23 @@ object PcWinFeature : VrgFeature {
         }
     }
 
-    private fun done() { timeout?.cancel(); busy.value = false }
+    private fun done() { timeout?.cancel(); busy.value = false; unanswered.value = false }
 
     private fun send(msg: String?): Boolean {
         if (msg == null) return false
         if (Relay.trust.value != Trust.TRUSTED || !Relay.send(msg)) { notes.tryEmit("Nincs párosított relé kapcsolat."); return false }
         busy.value = true
+        unanswered.value = false
         timeout?.cancel()
-        timeout = scope.launch { delay(15_000); busy.value = false }
+        // no silent timeout (UI-CHECKLIST 5.4): a note and a flag, so the screen can say why and offer a retry
+        timeout = scope.launch {
+            delay(15_000)
+            if (busy.value) { busy.value = false; unanswered.value = true; notes.tryEmit(NO_ANSWER) }
+        }
         return true
     }
+
+    private const val NO_ANSWER = "A relé nem válaszolt; --files kapcsolóval fut?"
 
     fun go(h: String?) { copied.value = null; send(PcFiles.list(h)) }
     private fun lookAt(r: PcRow) { copied.value = null; send(PcFiles.read(r.h)) }
@@ -145,6 +158,7 @@ object PcWinFeature : VrgFeature {
         val now by listing.collectAsStateWithLifecycle()
         val seen by look.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
+        val silent by unanswered.collectAsStateWithLifecycle()
         val onBoard by copied.collectAsStateWithLifecycle()
         val link by Relay.state.collectAsStateWithLifecycle()
         val trust by Relay.trust.collectAsStateWithLifecycle()
@@ -157,10 +171,13 @@ object PcWinFeature : VrgFeature {
             }
         }
         LaunchedEffect(Unit) { notes.collect { host.note(it) } }
+        // system Back steps out of the file view and up the folders like ‹ Vissza does (UI-CHECKLIST 5.2)
+        BackHandler(enabled = seen != null || (now?.ok == true && now?.atRoots == false)) { back() }
 
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { if (!back()) host.home() }.padding(vertical = 8.dp))
+                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
+                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { if (!back()) host.home() }.wrapContentHeight())
                 Text(if (loading) "  olvasás…" else "", style = Melyviz.small)
             }
             Text("PC ABLAKOK", style = Melyviz.title.copy(fontSize = 18.sp))
@@ -173,7 +190,12 @@ object PcWinFeature : VrgFeature {
                 else -> {
                     val l = now
                     when {
-                        l == null -> Text(if (loading) "Olvasás…" else "—", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                        l == null && loading -> Text("Olvasás…", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                        l == null -> {
+                            // no answer yet, or none in time: a reason and a retry, never a bare "—" (UI-CHECKLIST 5.4, 5.5)
+                            Text(if (silent) NO_ANSWER else "Még nincs mappalista.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
+                            Row(Modifier.padding(vertical = 6.dp)) { VrgChip("⟳ Újra") { go(null) } }
+                        }
                         !l.ok -> {
                             Text(l.reason ?: "A relé elutasította.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
                             Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -197,13 +219,19 @@ object PcWinFeature : VrgFeature {
 
     @Composable
     private fun ColumnScope.Folder(l: PcListing) {
-        // the crumbs: each one a step back up
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("⌂", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { go(null) }.padding(end = 6.dp))
+        // the crumbs: each one a step back up, a 48 dp target; the row starts scrolled to its end, so the current folder shows
+        val crumbScroll = rememberScrollState()
+        LaunchedEffect(l.crumbs, crumbScroll.maxValue) { crumbScroll.scrollTo(crumbScroll.maxValue) }
+        Row(Modifier.fillMaxWidth().horizontalScroll(crumbScroll), verticalAlignment = Alignment.CenterVertically) {
+            Text("⌂", style = Melyviz.label.copy(color = Melyviz.current),
+                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Gyökerek") { go(null) }
+                    .wrapContentHeight().padding(horizontal = 6.dp))
             l.crumbs.forEachIndexed { i, c ->
                 Text(" / ", style = Melyviz.small)
-                Text(c.name, style = Melyviz.label.copy(color = if (i == l.crumbs.lastIndex) Melyviz.ink else Melyviz.current),
-                    modifier = Modifier.clickable { if (i != l.crumbs.lastIndex) go(c.h) })
+                val last = i == l.crumbs.lastIndex
+                Text(c.name, style = Melyviz.label.copy(color = if (last) Melyviz.ink else Melyviz.current),
+                    modifier = Modifier.heightIn(min = 48.dp).clickable(enabled = !last, role = Role.Button) { go(c.h) }
+                        .wrapContentHeight().padding(horizontal = 6.dp))
             }
         }
         Column(Modifier.fillMaxWidth().weight(1f).background(Melyviz.surface, RoundedCornerShape(Melyviz.radius))

@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ import hu.vrg.legeger.Deck
 import hu.vrg.legeger.core.Macro
 import hu.vrg.legeger.core.MacroScript
 import hu.vrg.mobile.kit.theme.Melyviz
+import kotlinx.coroutines.delay
 
 // Macros: the list (run, edit, pin to the deck, delete) and an editor that reads the script as it is
 // typed, so a mistake shows up here and not halfway through a run.
@@ -46,6 +50,10 @@ click left|right · wheel -3 · shot — képernyőkép"""
 fun MacroSheet(onClose: () -> Unit) {
     val s by Deck.settings.flow.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<Macro?>(null) }
+    // ✕ removes at once but can be taken back for a few seconds; the reset asks first (UI-CHECKLIST 5.6)
+    var removed by remember { mutableStateOf<Pair<Int, Macro>?>(null) }
+    var confirmReset by remember { mutableStateOf(false) }
+    LaunchedEffect(removed) { if (removed != null) { delay(5_000); removed = null } }
 
     DeepSheet(onClose) {
         val e = editing
@@ -76,19 +84,45 @@ fun MacroSheet(onClose: () -> Unit) {
                     Text(m.name, style = Melyviz.label)
                     Text(m.script.replace('\n', ';'), style = Melyviz.readout.copy(fontSize = 10.sp), maxLines = 1)
                 }
-                Chip(if (m.onDeck) "⚲" else "○", m.onDeck) {
+                Chip(if (m.onDeck) "⚲" else "○", m.onDeck, description = if (m.onDeck) "A vezérlőn, levétel" else "Kitűzés a vezérlőre") {
                     Deck.settings.update { st -> st.copy(macros = st.macros.map { if (it.id == m.id) it.copy(onDeck = !it.onDeck) else it }) }
                 }
                 Spacer(Modifier.width(4.dp))
-                Chip("✎", false) { editing = m }
+                Chip("✎", false, description = "Szerkesztés") { editing = m }
                 Spacer(Modifier.width(4.dp))
-                Chip("✕", false) { Deck.settings.update { st -> st.copy(macros = st.macros.filterNot { it.id == m.id }) } }
+                Chip("✕", false, description = "Törlés") {
+                    removed = s.macros.indexOfFirst { it.id == m.id } to m
+                    Deck.settings.update { st -> st.copy(macros = st.macros.filterNot { it.id == m.id }) }
+                }
+            }
+        }
+        removed?.let { (at, m) ->
+            Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("Törölve: ${m.name}", style = Melyviz.small, modifier = Modifier.weight(1f))
+                Chip("↶ Visszavonás", true) {
+                    removed = null
+                    Deck.settings.update { st ->
+                        if (st.macros.any { it.id == m.id }) st
+                        else st.copy(macros = st.macros.toMutableList().apply { add(at.coerceIn(0, size), m) })
+                    }
+                }
             }
         }
         Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Chip("+ Új makró", true) { editing = Macro("m" + System.currentTimeMillis().toString(36), "★", "Új makró", "") }
-            Chip("Alapértelmezettek vissza", false) { Deck.settings.update { it.copy(macros = MacroScript.DEFAULTS) } }
+            Chip("Alapértelmezettek vissza", false) { confirmReset = true }
         }
+        if (confirmReset) AlertDialog(
+            onDismissRequest = { confirmReset = false }, containerColor = Melyviz.raised,
+            title = { Text("Alapértelmezettek vissza?", style = Melyviz.label) },
+            text = { Text("Minden saját makró elvész.", style = Melyviz.small) },
+            confirmButton = {
+                TextButton({ confirmReset = false; removed = null; Deck.settings.update { it.copy(macros = MacroScript.DEFAULTS) } }) {
+                    Text("Visszaállítás", color = Melyviz.coral)
+                }
+            },
+            dismissButton = { TextButton({ confirmReset = false }) { Text("Mégse", color = Melyviz.muted) } },
+        )
     }
 }
 

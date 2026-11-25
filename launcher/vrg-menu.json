@@ -194,6 +194,7 @@
             { "key": "R", "name": "Rajztár build + teszt", "hint": "adatellenőrzés, studio.html, e2e", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["shared\\rajztar\\build.js"] }, { "exe": "{node}", "args": ["shared\\rajztar\\test\\studio-e2e.js"] } ] },
             { "key": "S", "name": "VRG Sketcher", "hint": "helyszíni felmérés: vázlat, jegyzet, kérdések, fotók", "path": "{repo}\\Sketcher\\dist\\vrg-sketcher.html" },
             { "key": "H", "name": "Sketcher build + teszt", "hint": "dist, ellenőrzések, oldal-teszt", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["Sketcher\\tools\\build.js"] }, { "exe": "{node}", "args": ["Sketcher\\test\\run.js"] } ] },
+            { "key": "3", "name": "Ház 3D feldolgozás", "hint": "inbox\\haz3d\\<ház> fotóiból pontfelhő (COLMAP); a Sketcher Helyszín → 🏠 nyitja", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["Sketcher\\tools\\house3d.js"] } ] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{planner}" }
           ] } },
       { "key": "I", "name": "Készlet", "hint": "build · szerver · ár", "was": "I N S P", "menu": {
@@ -260,6 +261,7 @@
             { "key": "W", "name": "Relay e2e teszt", "hint": "Node + Playwright", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["e2e"] },
             { "key": "A", "name": "Android Studio", "hint": "a projekt megnyitása", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["studio"] },
             { "key": "R", "name": "Leírás", "hint": "README.md", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["readme"] },
+            { "key": "P", "name": "Alkalmazás archiválása", "hint": "a telefon appja (APK + manifest) a Backup\\installers\\android mappába", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["apps"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Mobile" }
           ] } },
       { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133 · I időjárás", "menu": {
@@ -398,9 +400,13 @@
       { "dir": "tools\\chromedriver", "match": ["chromedriver-win64.zip"] },
       { "dir": "tools\\dotnet", "match": ["dotnet-sdk-*.zip", "dotnet-sdk-*.exe"] },
       { "dir": "tools\\electron", "match": ["electron-v*-win32-x64.zip"], "note": "CodeCity\\tools\\fetch-electron.js le tudja tölteni" },
+      { "dir": "tools\\ghidra", "match": ["ghidra_*_PUBLIC_*.zip"] },
       { "dir": "tools\\git", "match": ["PortableGit-*.7z*", "Git-*-64-bit.exe"] },
+      { "dir": "tools\\jadx", "match": ["jadx-*.zip"], "note": "a sima zip, JRE nélkül; JDK 21 kell hozzá (tools\\jdk-21)" },
+      { "dir": "tools\\jdk-21", "match": ["OpenJDK21U-jdk_x64_windows_hotspot_*.zip"] },
       { "dir": "tools\\js-libs", "match": ["DOMPurify-*.zip"], "note": "és a többi *-master.zip a zipped mappában" },
       { "dir": "tools\\node", "match": ["node-v*-win-x64.zip"] },
+      { "dir": "tools\\playwright", "match": ["playwright-*-package-lock.json"], "note": "npm csomag, nincs zip: a lock fájllal npm ci, majd install chromium (docs\\research\\tools-installed-2026-11.md)" },
       { "dir": "tools\\terminal", "match": ["Microsoft.WindowsTerminal_*_x64.zip"] },
       { "dir": "tools\\vscode", "match": ["VSCode-win32-x64-*.zip"] },
       { "dir": "programs\\7zip", "match": ["7z*-x64.exe", "7z*.exe"] },

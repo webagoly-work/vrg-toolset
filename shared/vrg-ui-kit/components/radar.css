@@ -1,0 +1,56 @@
+/* VRG UI Kit — components/radar.css — the universal radar (radar.js, WP M67).
+   Tones map onto the layer palette: glow = bus teal, current = data blue, sand = lighting yellow, coral = crit,
+   kelp = earth green, muted = text-muted. "You" (the centre) is the ice accent; the sweep is warm activity.
+   A blip without a direction is hollow (data-dir="none"); mine has a ring; an alert pulses. */
+.vk-radar { display: grid; gap: var(--vk-space-2); color: var(--vk-text); max-width: 100%; }
+.vk-radar__scope { position: relative; width: 100%; aspect-ratio: 1; max-width: 640px; justify-self: center;
+  background: radial-gradient(circle, color-mix(in srgb, var(--vk-accent) 6%, var(--vk-bg-sunken)) 0%, var(--vk-bg-sunken) 70%);
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: 50%; overflow: hidden; }
+.vk-radar__svg { display: block; width: 100%; height: 100%; }
+.vk-radar__svg:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -4px; }
+
+.vk-radar__edge { fill: none; stroke: var(--vk-line-strong); stroke-width: 0.006; }
+.vk-radar__ring { fill: none; stroke: var(--vk-line); stroke-width: 0.004; }
+.vk-radar__ring--unknown { stroke-dasharray: 0.02 0.02; }
+.vk-radar__axis { stroke: var(--vk-line); stroke-width: 0.003; }
+.vk-radar__ringlabel { fill: var(--vk-text-faint); font: 0.045px var(--vk-font-mono); }
+.vk-radar__north { fill: var(--vk-accent); font: 700 0.06px var(--vk-font-mono); text-anchor: middle; }
+.vk-radar__you { fill: var(--vk-accent); stroke: var(--vk-bg-sunken); stroke-width: 0.01; }
+
+.vk-radar__sweep { transform-origin: 0 0; animation: vk-radar-sweep 4s linear infinite; pointer-events: none; }
+.vk-radar__wedge { fill: color-mix(in srgb, var(--vk-activity) 12%, transparent); }
+.vk-radar__beam { stroke: color-mix(in srgb, var(--vk-activity) 70%, transparent); stroke-width: 0.006; }
+.vk-radar[data-still] .vk-radar__sweep { animation: none; opacity: 0.5; }
+@keyframes vk-radar-sweep { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .vk-radar__sweep { animation: none; opacity: 0.5; } }
+
+.vk-radar__blip { color: var(--vk-text-muted); cursor: pointer; }
+.vk-radar__blip[data-tone="glow"], .vk-radar__layer[data-tone="glow"] { color: var(--vk-layer-6); }
+.vk-radar__blip[data-tone="current"], .vk-radar__layer[data-tone="current"] { color: var(--vk-layer-3); }
+.vk-radar__blip[data-tone="sand"], .vk-radar__layer[data-tone="sand"] { color: var(--vk-layer-2); }
+.vk-radar__blip[data-tone="coral"], .vk-radar__layer[data-tone="coral"] { color: var(--vk-crit); }
+.vk-radar__blip[data-tone="kelp"], .vk-radar__layer[data-tone="kelp"] { color: var(--vk-layer-5); }
+.vk-radar__blip[data-tone="muted"], .vk-radar__layer[data-tone="muted"] { color: var(--vk-text-muted); }
+.vk-radar__dot { fill: currentColor; stroke: var(--vk-bg-sunken); stroke-width: 0.008; }
+.vk-radar__blip[data-dir="none"] .vk-radar__dot { fill: var(--vk-bg-sunken); stroke: currentColor; stroke-width: 0.012; stroke-dasharray: 0.03 0.015; }
+.vk-radar__mine { fill: none; stroke: currentColor; stroke-width: 0.008; }
+.vk-radar__trend { fill: none; stroke: currentColor; stroke-width: 0.01; stroke-linecap: round; stroke-linejoin: round; }
+.vk-radar__pulse { fill: none; stroke: var(--vk-crit); stroke-width: 0.01; transform-origin: 0 0; animation: vk-radar-pulse 1.2s ease-out infinite; }
+@keyframes vk-radar-pulse { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+.vk-radar[data-still] .vk-radar__pulse { animation: none; }
+.vk-radar__label { fill: var(--vk-text); font: 0.048px var(--vk-font-mono); paint-order: stroke; stroke: var(--vk-bg-sunken); stroke-width: 0.012; pointer-events: none; }
+.vk-radar__blip[data-selected] .vk-radar__dot { stroke: var(--vk-accent); stroke-width: 0.014; }
+.vk-radar__blip[data-selected] .vk-radar__label { fill: var(--vk-accent); }
+
+.vk-radar__cap { color: var(--vk-text-muted); font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs);
+  letter-spacing: var(--vk-tracking-label); text-transform: uppercase; justify-self: center; text-align: center; }
+.vk-radar__card { min-height: 1.4em; color: var(--vk-text); font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs);
+  border-left: 2px solid var(--vk-accent); padding: var(--vk-space-1) var(--vk-space-2); background: var(--vk-surface-1); }
+.vk-radar__card[hidden] { display: none; }
+.vk-radar__legend { display: flex; flex-wrap: wrap; gap: var(--vk-space-1); justify-content: center; }
+.vk-radar__layer { display: inline-flex; align-items: center; gap: var(--vk-space-1); min-height: var(--vk-target-min);
+  padding: 0 var(--vk-space-2); background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong);
+  border-radius: var(--vk-radius-sm); font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); cursor: pointer; }
+.vk-radar__layer[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through; }
+.vk-radar__layer:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-radar__swatch { width: 0.7em; height: 0.7em; border-radius: 50%; background: currentColor; }

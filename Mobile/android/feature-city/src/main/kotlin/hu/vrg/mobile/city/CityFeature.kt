@@ -6,28 +6,34 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.view.ViewGroup
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -250,6 +256,9 @@ object CityFeature : VrgFeature {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(ctx: Context): WebView = WebView(ctx).apply {
+        // MATCH_PARENT, as in Archívum, Rétegverem and Alkalmazások: with AndroidView's default WRAP_CONTENT the WebView lays
+        // the page out on a zero-height viewport, and content sized by height: 100% collapses
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.allowFileAccess = false
@@ -290,6 +299,9 @@ object CityFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
+    /** Asks city-phone.js to close its ☰ sheet; "true" when it did. */
+    private const val BACK_JS = "(function(){var p=window.__vrgPhone;return !!(p&&p.back&&p.back())})()"
+
     @Composable
     override fun Screen(host: FeatureHost) {
         val account by GitHub.account.collectAsStateWithLifecycle()
@@ -302,20 +314,30 @@ object CityFeature : VrgFeature {
         val why by problem.collectAsStateWithLifecycle()
         val old by offline.collectAsStateWithLifecycle()
         LaunchedEffect(account is Account.SignedIn) { refresh() }
+        // Back closes the page's ☰ sheet first (city-phone.js answers true when it did); only then does the app leave
+        BackHandler(meta != null) {
+            val w = web
+            if (w == null) host.home()
+            else w.evaluateJavascript(BACK_JS) { answer -> if (answer?.trim('"') != "true") host.home() }
+        }
 
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
                     Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                        modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
+                        modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
                     Text("KÓDVÁROS ONLINE", style = Melyviz.title.copy(fontSize = 16.sp),
                         modifier = Modifier.weight(1f).padding(start = 12.dp))
                     VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
                 }
                 val choices = (list + branch).distinct()
-                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 4.dp),
+                // the chosen branch is scrolled into view, so a remembered one late in the list shows as chosen (UI-CHECKLIST 3.7)
+                val branchRow = rememberLazyListState()
+                LaunchedEffect(branch, choices.size) { choices.indexOf(branch).takeIf { it >= 0 }?.let { branchRow.animateScrollToItem(it) } }
+                LazyRow(Modifier.fillMaxWidth().padding(vertical = 4.dp), state = branchRow,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    choices.forEach { b -> VrgChip(b, selected = b == branch) { select(b) } }
+                    items(choices) { b -> VrgChip(b, selected = b == branch) { select(b) } }
                 }
                 val m = meta
                 if (m != null) {

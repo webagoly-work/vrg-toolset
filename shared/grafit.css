@@ -1,0 +1,53 @@
+/* Grafit — a second look for the Mélyvíz apps (2026-11-24). Load after shared/melyviz.css; it changes nothing until
+   the page sets  <html data-look="grafit">.  The same palette as the VRG UI Kit theme "Grafit"
+   (shared/vrg-ui-kit/tokens/theme-grafit.css) and VRG Mobile's "Grafit" palette, written in --mv-* terms.
+
+   Blackish, neutral dark greys with soft white ink, the calm low-clutter manner of Claude's and Obsidian's dark
+   looks, crossed with a modern black-and-white terminal: no hue in the chrome, white phosphor for "you" (selection,
+   focus), colour kept for meaning only and desaturated, mono titles, and frames, rules and indicators drawn as a
+   fine dot matrix. Mélyvíz's rules still hold (M1 accent = you / warm = activity, M5 square, no drop shadows).
+
+   Dot tokens: --gf-pitch (centre to centre), --gf-r (dot radius), --gf-dot (unlit), --gf-dot-lit (lit).
+   --gf-c is the colour a frame or rule draws with; set it on an element to tint its dots.
+   Utilities (any page that loads this file, either look):
+     .gf-dots      a ring of dots for a positioned box (its own border should be transparent)
+     .gf-dotrule   a dotted divider
+     .gf-led       a 3×3 dot lamp; .ok .warn .crit .run .lit tint it */
+html[data-look="grafit"] {
+  --mv-bg: #161616; --mv-horizon: #1d1d1d;
+  --mv-panel: rgba(27, 27, 27, .94); --mv-panel-solid: #1b1b1b; --mv-raised: #232323;
+  --mv-line: rgba(255, 255, 255, .075); --mv-line-strong: rgba(255, 255, 255, .16);
+  --mv-text: #e6e6e3; --mv-dim: #a3a3a0; --mv-faint: #6f6f6c;
+  --mv-accent: #f2f2ef; --mv-accent-soft: rgba(242, 242, 239, .09); --mv-accent-glow: rgba(255, 255, 255, .2);
+  --mv-warm: #d4b48f; --mv-warm-soft: rgba(212, 180, 143, .13);
+  --mv-ok: #9fc8a6; --mv-warn: #d6c28f; --mv-crit: #e39d93;
+  --mv-glow: 2px; --mv-blur: 10px;
+  --mv-voice: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --gf-pitch: 3px; --gf-r: .75px;
+  --gf-dot: rgba(230, 230, 227, .36); --gf-dot-lit: var(--mv-accent);
+  --gf-c: var(--gf-dot);
+  color-scheme: dark;
+}
+html.mv[data-look="grafit"] :where(h1, h2, h3) { font-stretch: normal; font-weight: 600; letter-spacing: .08em; }
+
+/* ---- the dot matrix ---- */
+:where(.gf-dots) { position: relative; }
+.gf-dots::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; padding: var(--gf-pitch, 3px);
+  background: radial-gradient(circle at center, var(--gf-c, rgba(230, 230, 227, .36)) var(--gf-r, .75px), transparent calc(var(--gf-r, .75px) + .55px))
+    0 0 / var(--gf-pitch, 3px) var(--gf-pitch, 3px) round;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.gf-dotrule { display: block; height: var(--gf-pitch, 3px); margin: 8px 0; border: 0;
+  background: radial-gradient(circle at center, var(--gf-c, rgba(230, 230, 227, .36)) var(--gf-r, .75px), transparent calc(var(--gf-r, .75px) + .55px))
+    0 0 / var(--gf-pitch, 3px) var(--gf-pitch, 3px); background-repeat: round no-repeat; }
+.gf-led { --gf-c: var(--mv-faint); display: inline-block; flex: none; vertical-align: middle; width: 9px; height: 9px;
+  background: radial-gradient(circle at center, var(--gf-c) .95px, transparent 1.5px) 0 0 / 3px 3px; }
+.gf-led.lit { --gf-c: var(--mv-accent); } .gf-led.ok { --gf-c: var(--mv-ok); } .gf-led.warn { --gf-c: var(--mv-warn); }
+.gf-led.crit { --gf-c: var(--mv-crit); } .gf-led.run { --gf-c: var(--mv-warm); }
+
+@media (forced-colors: active) {
+  .gf-dots::before, .gf-dotrule { background: none; }
+  .gf-dots { outline: 1px dotted CanvasText; }
+  .gf-led { background: CanvasText; forced-color-adjust: none; }
+}
+@media print { html[data-look="grafit"] .gf-dots::before { display: none; } }

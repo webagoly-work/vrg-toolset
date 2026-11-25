@@ -216,6 +216,45 @@ test('the Dev/Code preset: Notes 2x2, Thread Board 2x1, three 1x1 terminals (Cla
   assert.equal(p.wins.length, 6);
 });
 
+// DevLap (the Founder, 2026-11-23): one sheet to find where the dev work stands and pick a line up. Its browser's 127.0.0.1 tabs are
+// Rétegverem pages: the L window (a stack server page) starts that server before the panes open (newSheet awaits desktop.open).
+test('the DevLap preset: lines map, browser with the trackers as tabs, Thread Board, a Claude Code terminal with the keyboard, git, Divergencia', () => {
+  const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'sheets.json'), 'utf8'));
+  const cat = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'launcher', 'vrg-catalog.json'), 'utf8'));
+  const menu = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'launcher', 'vrg-menu.json'), 'utf8'));
+  const p = cfg.presets.find(x => x.id === 'devlap');
+  assert.ok(p);
+  assert.equal(p.hu, 'DevLap');
+  assert.equal(p.level, 'dev');
+  assert.equal(L.validPreset({ id: p.id, name: p.hu, wins: p.wins, focus: p.focus }), '');
+  const at = w => w.open + '@' + w.c + ',' + w.r + ' ' + w.w + 'x' + w.h;
+  assert.deepEqual(p.wins.map(at), ['cat:layer.l@0,0 2x2', 'pane:web@2,0 2x2', 'cat:threadboard@0,2 2x1', 'pane:term@2,2 2x2', 'pane:git@0,3 1x1', 'cat:divergence@1,3 1x1']);
+  assert.equal(p.wins.reduce((n, w) => n + w.w * w.h, 0), 16, 'the whole grid is used');
+  const term = p.wins[p.focus];
+  assert.equal(term.open, 'pane:term', 'the Claude Code terminal gets the keyboard');
+  assert.equal(term.state.prof, 'claude-a');
+  const byId = id => cat.items.find(i => i.id === id);
+  for (const w of p.wins) if (w.open.startsWith('cat:')) assert.ok(byId(w.open.slice(4)), w.open + ' is in the catalog');
+  const web = p.wins.find(w => w.open === 'pane:web');
+  const tabs = web.state.tabs;
+  assert.equal(web.state.active, 0);
+  assert.equal(tabs[0], 'https://claude.ai/code', 'the Claude sessions first');
+  assert.ok(tabs.length <= 20 && tabs.every(u => /^https?:\/\//.test(u) && u.length <= 500), 'the browser restores every tab');
+  assert.equal(new Set(tabs).size, tabs.length);
+  const stack = (menu.servers || []).find(s => s.id === 'stack');
+  const local = tabs.filter(u => u.startsWith('http://127.0.0.1:'));
+  assert.ok(local.length >= 5);
+  const pages = new Set(cat.items.filter(i => i.launch && i.launch.server === 'stack').map(i => i.launch.path));
+  for (const u of local) {
+    const url = new URL(u);
+    assert.equal(Number(url.port), stack.port, u + ' is on the Rétegverem server');
+    assert.ok(pages.has(url.pathname), u + ' is a Rétegverem page the catalog knows');
+    assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'Stack', url.pathname.slice(1))), u + ' exists in Stack/');
+  }
+  assert.equal(byId('layer.l').launch.server, 'stack', 'a stack window in the same preset starts the server the local tabs need');
+  for (const u of tabs.filter(t => /\/blob\/main\//.test(t))) assert.ok(fs.existsSync(path.join(__dirname, '..', '..', u.split('/blob/main/')[1])), u + ' exists in the repo');
+});
+
 test('the Thread Board opens in-shell from Full/notes: appTarget with roots, the scheme serves its folder and nothing above it', () => {
   const build = require('../build.js');
   const { KINDS } = require('../shell/lib/layout.js');

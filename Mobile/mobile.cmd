@@ -7,7 +7,7 @@ setlocal EnableDelayedExpansion
 ::    launcher\vrg-menu.json L) -> this file with one action word
 ::    no argument              -> its own menu
 ::
-::  Actions:  relay  build  install  test  e2e  studio  readme  folder
+::  Actions:  relay  build  install  test  e2e  studio  readme  folder  apps
 ::  Without an argument it shows the menu below.
 ::
 ::  The Android build needs a JDK 17+ and the Android SDK. Neither is part of
@@ -21,6 +21,8 @@ setlocal EnableDelayedExpansion
 ::  ask for a screenshot of this PC. START.cmd G still starts it without.
 ::  2026-11-05 - WP M8: 1) / relay adds --ports (the phone opens the PC's local
 ::  servers through the relay's /p/<port>/ proxy); e2e runs relay-ports.js too.
+::  2026-11-22 - WP M61 (D-163): 8) / apps keeps an exact copy of an app installed on
+::  the USB phone (APK + manifest) in Backup\installers\android (Mobile\tools\app-archive.js).
 :: ==========================================================================
 
 set "AD=%~dp0"
@@ -45,8 +47,9 @@ if /I "%ACT%"=="e2e" goto DO_E2E
 if /I "%ACT%"=="studio" goto DO_STUDIO
 if /I "%ACT%"=="readme" goto DO_README
 if /I "%ACT%"=="folder" goto DO_FOLDER
+if /I "%ACT%"=="apps" goto DO_APPS
 echo   Ismeretlen muvelet: %ACT%
-echo   Lehet: relay build install test e2e studio readme folder
+echo   Lehet: relay build install test e2e studio readme folder apps
 pause
 exit /b 1
 
@@ -65,10 +68,11 @@ echo   4^) Core tesztek         ^(kit-core + airdeck-core - SDK nem kell^)
 echo   5^) Relay e2e teszt      ^(Node + Playwright, a 47291 legyen szabad^)
 echo   6^) Android Studio - a projekt megnyitasa
 echo   7^) Leiras  ^(README.md^)
+echo   8^) Alkalmazas archivalasa  ^(a telefonon levo app pontos masolata, USB + adb^)
 echo   M^) Mappa megnyitasa  ^(Mobile^)
 echo   X^) Vissza
 echo.
-choice /C 1234567MX /N /M "Valasztas: "
+choice /C 12345678MX /N /M "Valasztas: "
 set "LK=%ERRORLEVEL%"
 if "%LK%"=="1" goto DO_RELAY
 if "%LK%"=="2" goto DO_BUILD
@@ -77,7 +81,8 @@ if "%LK%"=="4" goto DO_TEST
 if "%LK%"=="5" goto DO_E2E
 if "%LK%"=="6" goto DO_STUDIO
 if "%LK%"=="7" goto DO_README
-if "%LK%"=="8" goto DO_FOLDER
+if "%LK%"=="8" goto DO_APPS
+if "%LK%"=="9" goto DO_FOLDER
 exit /b 0
 
 :DONE
@@ -100,6 +105,24 @@ echo.
 echo   A relay kulon ablakban fut ^(VRG 47291^). A telefonon: Beallitasok -^> Kereses a halozaton.
 ping -n 3 127.0.0.1 >nul 2>&1
 goto DONE
+
+:DO_APPS
+if not exist "%NODE_EXE%" goto NO_NODE
+echo.
+echo   Alkalmazas archivalasa ^(WP M61^): a telefon USB-n, USB hibakereses bekapcsolva.
+echo   A cel: Backup\installers\android\^<csomag^>\^<verzio^>\ - APK + manifest.json
+echo.
+set "APPS_FIND="
+set /p "APPS_FIND=  Szuro a csomagnevre (pl. fundo, ures = mind): "
+pushd "%REPO%"
+if defined APPS_FIND (
+  "%NODE_EXE%" "Mobile\tools\app-archive.js" pull --find "!APPS_FIND!"
+) else (
+  "%NODE_EXE%" "Mobile\tools\app-archive.js" pull
+)
+"%NODE_EXE%" "Mobile\tools\app-archive.js" list
+popd
+goto DONE_PAUSE
 
 :DO_BUILD
 call :FIND_JAVA || goto DONE_PAUSE
@@ -132,7 +155,7 @@ echo.
 pushd "%ANDROID_DIR%"
 :: kit-core and airdeck-core are plain Kotlin modules; --configure-on-demand keeps the Android
 :: module out of it, so this runs without the Android SDK
-call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test
+call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :weather-core:test :tag-core:test :kct-core:test
 set "RC=%ERRORLEVEL%"
 popd
 :: WP M16: kit\...\theme\KitTokens.kt must still match the VRG UI Kit tokens
@@ -165,6 +188,12 @@ rem Atadas (WP M12): Node only, port 47396, a temporary board folder and clipboa
 "%NODE_EXE%" "Mobile\tests\relay-board.js"
 rem Kepernyo (WP M13): Node only, ports 47397-47399, plays test frames, captures nothing
 "%NODE_EXE%" "Mobile\tests\relay-screen.js"
+rem App archive (WP M61): Node only, a fake adb and temporary folders, touches no phone
+"%NODE_EXE%" "Mobile\tests\app-archive.js"
+rem Playwright: portable in Full\tools\playwright, its Chromium in .\browsers (no node_modules in the repo)
+set "PW_DIR=%REPO%\..\tools\playwright"
+if exist "%PW_DIR%\node_modules\playwright" set "NODE_PATH=%PW_DIR%\node_modules"
+if exist "%PW_DIR%\browsers" if not defined PLAYWRIGHT_BROWSERS_PATH set "PLAYWRIGHT_BROWSERS_PATH=%PW_DIR%\browsers"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"
@@ -173,8 +202,8 @@ goto DONE_PAUSE
 :NO_PLAYWRIGHT
 popd
 echo.
-echo   A Playwright nincs telepitve. A repo gyokereben egyszer:
-echo     npm install --no-save playwright  es  npx playwright install chromium
+echo   A Playwright nincs telepitve. Hordozhatoan, a Full\tools\playwright mappaba:
+echo     docs\research\tools-installed-2026-11.md - ott a parancs es a verzio
 goto DONE_PAUSE
 
 :DO_STUDIO

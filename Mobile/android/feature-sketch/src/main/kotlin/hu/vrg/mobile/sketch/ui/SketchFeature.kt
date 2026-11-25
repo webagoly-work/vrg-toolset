@@ -1,5 +1,12 @@
 package hu.vrg.mobile.sketch.ui
 
+import hu.vrg.mobile.kit.ui.VrgBack
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.layout.Box
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,18 +39,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.notes.Notes
-import hu.vrg.mobile.core.Route
-import kotlinx.coroutines.flow.MutableStateFlow
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.sketch.Sketch
 import hu.vrg.mobile.sketch.SketchJson
+import hu.vrg.mobile.sketch.SketchFeatures
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -59,35 +65,50 @@ object SketchFeature : VrgFeature {
     private lateinit var app: Application
     internal val store by lazy { SketchStore(File(app.filesDir, "sketch")) }
 
-    /** A survey to open, from a link (vrg://sketch/open?id=…) or VRG Jegyzetek's "Megnyitás: Sketcher". */
-    private val pending = MutableStateFlow<String?>(null)
-
     override fun init(app: Application) {
-        this.app = app; SketcherKit.init(app)
-        // VRG Jegyzetek (WP M46): the Jegyzet front's entries are notes of the central app too; its "open in the
-        // source" lands here with "<sketch id>/<entry id>"
+        this.app = app; SketcherKit.init(app); FeaturePrefs.init(app)   // M51: the feature switches after the kit (D-79's toggle)
+        // VRG Jegyzetek (WP M68): the Jegyzet front's entries are notes of the central app too; its "open in the
+        // source" lands here with "<sketch id>/<entry id>" and opens the survey on its Jegyzet front
         Notes.init(app)
-        Notes.onOpen(SketchNotes.ORIGIN) { ref -> pending.value = ref.substringBefore('/') }
+        Notes.onOpen(SketchNotes.ORIGIN) { ref ->
+            ref.substringBefore('/').takeIf { SiteHandoff.SAFE_ID.matches(it) }?.let { pendingOpen = it to "jegyzet" }
+        }
     }
+
+    // F1: vrg://sketch?open=<id>&front=helyszin opens a survey on a front (the phone's map hands the Helyszín back this way)
+    private var pendingOpen by mutableStateOf<Pair<String, String?>?>(null)
+    private var pendingFront: Pair<String, String>? = null
 
     override fun open(route: Route): Boolean {
-        if (route.path != "open") return route.path.isEmpty()
-        pending.value = route.params["id"]?.takeIf { it.isNotBlank() } ?: return false
+        val id = route.params["open"]?.takeIf { SiteHandoff.SAFE_ID.matches(it) } ?: return true
+        pendingOpen = id to route.params["front"]?.takeIf { it in FRONTS }
         return true
     }
+
+    private val FRONTS = setOf("vazlat", "jegyzet", "munkakor", "kerdes", "kamera", "helyszin", "nyitott")
+
+    /** The front a survey opened by a link starts on (once). */
+    internal fun takeFront(id: String): String? = pendingFront?.takeIf { it.first == id }?.second.also { pendingFront = null }
 
     @Composable
     override fun Screen(host: FeatureHost) {
         var openId by rememberSaveable { mutableStateOf<String?>(null) }
-        val want by pending.collectAsStateWithLifecycle()
-        LaunchedEffect(want) { want?.let { openId = it; pending.value = null } }
+        val want = pendingOpen
+        LaunchedEffect(want) {
+            if (want != null) { pendingOpen = null; want.second?.let { pendingFront = want.first to it }; openId = want.first }
+        }
         val id = openId
+        SketchLaunchHost(host) { openId = it }   // F4: a long press on the Sketcher's tile or dock dial (SketchLaunch.kt)
         if (id == null) {
             SketchList(host) { openId = it }
             return
         }
-        // texts edited in VRG Jegyzetek come into the survey before it opens (the linked mirror, D-57 = A)
-        val sketch = remember(id) { store.load(id)?.let(SketchNotes::pull) }
+        val fctx = androidx.compose.ui.platform.LocalContext.current
+        // texts edited in VRG Jegyzetek come into the survey first (the linked mirror, D-178 = A); then
+        // F5 (D-80, D-90): an older survey gets the built-in Csere tag, unless that feature is switched off
+        val sketch = remember(id) {
+            store.load(id)?.let(SketchNotes::pull)?.let { SketchFeatures.onOpen(SketchFeaturePrefs.off(fctx), it) }?.let { SiteHandoff.take(store, it) }
+        }
         if (sketch == null) {
             LaunchedEffect(id) { host.note("A vázlat nem nyitható meg."); openId = null }
             return
@@ -107,7 +128,7 @@ object PhotoFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         Column(Modifier.fillMaxSize().background(Melyviz.water).padding(Melyviz.gutter)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
+                VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
                 Text("FOTÓPONT", style = Melyviz.title.copy(fontSize = 18.sp))
             }
             Text(
@@ -150,7 +171,10 @@ class SketchStore(private val dir: File) {
     /** Where a sketch's photos are kept (WP M25); the FileProvider shares this folder with the camera app. */
     fun photoDir(id: String) = File(dir, "photos/$id")
 
-    fun delete(id: String) { file(id).delete(); photoDir(id).deleteRecursively() }
+    fun delete(id: String) { file(id).delete(); photoDir(id).deleteRecursively(); handoff(id).delete() }
+
+    /** The phone map's answer for a survey (F1), waiting until the survey opens again. */
+    fun handoff(id: String) = File(dir, hu.vrg.mobile.sketch.SiteLink.handoffPath(id))
 
     fun create(name: String): Sketch {
         val now = System.currentTimeMillis()
@@ -173,7 +197,7 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
 
     Column(Modifier.fillMaxSize().background(Melyviz.water).verticalScroll(rememberScrollState()).padding(Melyviz.gutter)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(end = 12.dp))
+            VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
             Text("VRG SKETCHER", style = Melyviz.title.copy(fontSize = 18.sp))
         }
         Text(
@@ -199,7 +223,11 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
                     Text("${stamp(e.updated)} · ${e.rooms} szoba · ${e.points} pont · ${e.measures} méret", style = Melyviz.small)
                 }
                 Spacer(Modifier.width(8.dp))
-                Text("✕", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clickable { deleting = e }.padding(8.dp))
+                // UI audit 1.1, 8.1: 48 dp and named (the named confirm follows)
+                Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button) { deleting = e }
+                    .semantics { contentDescription = "Törlés: " + e.name.ifBlank { "Névtelen vázlat" } }, contentAlignment = Alignment.Center) {
+                    Text("✕", style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.clearAndSetSemantics { })
+                }
             }
         }
     }

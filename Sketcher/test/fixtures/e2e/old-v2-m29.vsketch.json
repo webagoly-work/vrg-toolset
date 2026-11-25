@@ -1,0 +1,308 @@
+{
+ "kind": "vrg-vazlat",
+ "v": 2,
+ "id": "V31",
+ "name": "Fót, Ady E. u. 2.",
+ "level": "ground",
+ "created": 1763400000000,
+ "updated": 1763410000000,
+ "seq": 24,
+ "plugins": [
+  "alaprajz",
+  "villany",
+  "jegyzet"
+ ],
+ "rooms": [
+  {
+   "id": "R1",
+   "poly": [
+    [
+     0,
+     0
+    ],
+    [
+     120,
+     0
+    ],
+    [
+     120,
+     90
+    ],
+    [
+     0,
+     90
+    ]
+   ],
+   "name": "",
+   "kinds": [
+    "konyha"
+   ]
+  },
+  {
+   "id": "R2",
+   "poly": [
+    [
+     120,
+     0
+    ],
+    [
+     170,
+     0
+    ],
+    [
+     170,
+     90
+    ],
+    [
+     120,
+     90
+    ]
+   ],
+   "name": "Fürdő",
+   "kinds": [
+    "furdo"
+   ]
+  }
+ ],
+ "lines": [],
+ "points": [
+  {
+   "id": "P3",
+   "at": [
+    60,
+    0
+   ],
+   "type": "socket",
+   "st": "meglevo",
+   "room": "R1",
+   "edge": 0,
+   "t": 0.5
+  },
+  {
+   "id": "P4",
+   "at": [
+    145,
+    45
+   ],
+   "type": "light",
+   "st": "tervezett"
+  },
+  {
+   "id": "P5",
+   "at": [
+    170,
+    20
+   ],
+   "type": "board",
+   "st": "meglevo",
+   "room": "R2",
+   "edge": 1,
+   "t": 0.2222
+  }
+ ],
+ "measures": [
+  {
+   "id": "M6",
+   "room": "R1",
+   "kind": "szel",
+   "mm": 3600,
+   "edge": -1
+  }
+ ],
+ "circuits": [
+  {
+   "id": "K7",
+   "name": "",
+   "col": 4280978651,
+   "members": [
+    "P3",
+    "P4"
+   ],
+   "ded": false,
+   "board": "P5"
+  }
+ ],
+ "routes": [],
+ "memos": [],
+ "tags": [
+  {
+   "id": "T-furdo",
+   "name": "Fürdő",
+   "col": 4280978651,
+   "preset": "kind:furdo"
+  },
+  {
+   "id": "T-konyha",
+   "name": "Konyha",
+   "col": 4292915232,
+   "preset": "kind:konyha"
+  },
+  {
+   "id": "T-nedves",
+   "name": "Nedves",
+   "col": 4280330400,
+   "preset": "wet"
+  },
+  {
+   "id": "T-ip44",
+   "name": "IP44",
+   "col": 4282232922,
+   "preset": "ip44"
+  },
+  {
+   "id": "T-ded",
+   "name": "Dedikált",
+   "col": 4292232517,
+   "preset": "dedicated"
+  },
+  {
+   "id": "T-bontas",
+   "name": "Bontás",
+   "col": 4287257814,
+   "preset": "remove"
+  },
+  {
+   "id": "T19",
+   "name": "Régi",
+   "col": 4290000000
+  }
+ ],
+ "tagUses": [
+  {
+   "id": "U20",
+   "tag": "T19",
+   "target": "P3"
+  }
+ ],
+ "photos": [
+  {
+   "id": "F8",
+   "at": [
+    60,
+    45
+   ],
+   "room": "R1",
+   "shots": [
+    {
+     "deg": 0,
+     "file": "F8-0.jpg",
+     "taken": 1763401000000
+    },
+    {
+     "deg": 90,
+     "file": "F8-90.jpg",
+     "taken": 1763401010000
+    }
+   ]
+  }
+ ],
+ "site": {
+  "address": "Fót, Ady E. u. 2.",
+  "source": "osm",
+  "lat": 47.616,
+  "lon": 19.188,
+  "footprint": {
+   "w": 11.2,
+   "d": 8.4,
+   "area": 94.1,
+   "angle": 12.5,
+   "src": "osm",
+   "at": 1763402000000
+  }
+ },
+ "entries": [
+  {
+   "id": "E9",
+   "at": 1763403000000,
+   "text": "Régi alu vezeték a konyhában",
+   "chips": [
+    "problema"
+   ],
+   "room": "R1"
+  },
+  {
+   "id": "E10",
+   "at": 1763403100000,
+   "text": "",
+   "chips": [
+    "lakott",
+    "haziallat"
+   ]
+  },
+  {
+   "id": "E11",
+   "at": 1763403200000,
+   "text": "Kell-e új mérőhely?",
+   "chips": [
+    "tisztazando"
+   ],
+   "open": true
+  }
+ ],
+ "scope": {
+  "eloszto": 1,
+  "felujitas": 1,
+  "konyha": 1,
+  "dugalj": 3
+ },
+ "answers": {
+  "lenyeg": {
+   "options": [
+    "csere"
+   ],
+   "text": "",
+   "at": 1763403300000,
+   "state": "answered"
+  },
+  "kor": {
+   "options": [],
+   "text": "",
+   "at": 1763403400000,
+   "state": "later"
+  }
+ },
+ "captures": [
+  {
+   "id": "C12",
+   "file": "C12.jpg",
+   "purpose": "eloszto",
+   "at": 1763404000000,
+   "note": "fedél nélkül",
+   "target": "P5",
+   "lat": 47.616012,
+   "lon": 19.188034
+  },
+  {
+   "id": "C13",
+   "file": "C13.jpg",
+   "purpose": "hiba",
+   "at": 1763404100000,
+   "note": "",
+   "room": "R1",
+   "marks": [
+    {
+     "kind": "nyil",
+     "pts": [
+      [
+       0.2,
+       0.3
+      ],
+      [
+       0.5,
+       0.6
+      ]
+     ],
+     "text": "",
+     "col": 4293420060
+    }
+   ]
+  }
+ ],
+ "dismissed": [
+  "kw:bojler"
+ ],
+ "seen": {
+  "kor": 1763403000000,
+  "lenyeg": 1763402900000
+ }
+}

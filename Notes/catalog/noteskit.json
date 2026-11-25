@@ -66,9 +66,9 @@
   }
  ],
  "templates": [
-  { "id": "bejaras", "label": "Helyszíni bejárás", "sym": "⌂", "title": "Bejárás · {date}", "tags": ["bejárás"],
+  { "id": "bejaras", "label": "Helyszíni bejárás", "sym": "⌂", "seal": true, "title": "Bejárás · {date}", "tags": ["bejárás"],
     "body": "Cím:\nÜgyfél kérése:\n\n- [ ] Elosztó megnézve\n- [ ] Mérőhely megnézve\n- [ ] Fotók megvannak\n\nMegjegyzés:\n" },
-  { "id": "ugyfelhivas", "label": "Ügyfélhívás", "sym": "☎", "title": "Hívás · {date}", "tags": ["ügyfél"],
+  { "id": "ugyfelhivas", "label": "Ügyfélhívás", "sym": "☎", "seal": true, "title": "Hívás · {date}", "tags": ["ügyfél"],
     "body": "Ki hívott:\nMit kér:\nHatáridő:\n\n- [ ] Visszahívni\n" },
   { "id": "anyaglista", "label": "Anyaglista", "sym": "☰", "title": "Anyag · {date}", "tags": ["anyag"],
     "body": "- [ ] \n- [ ] \n- [ ] \n" },
@@ -85,7 +85,7 @@
   { "id": "kezi", "label": "Jegyzetek", "sym": "✎", "color": "#8a9bb0", "about": "A Jegyzetek appban írt jegyzet; nincs jelvénye." },
   { "id": "gyors", "label": "Gyorsjegyzet", "sym": "⚡", "color": "#e0b020", "about": "A gyors mezőből, a kezdőlap gyors sorából vagy vrg://notes/new linkről." },
   { "id": "megosztas", "label": "Megosztás", "sym": "⇣", "color": "#6e8b3d", "about": "Más appból megosztott szöveg (Megosztás → VRG Mobile)." },
-  { "id": "sketcher", "label": "Sketcher", "sym": "◫", "color": "#27c2b0", "client": true, "mirror": true, "feature": "sketch", "link": "vrg://sketch/open?id={sketch}&entry={entry}",
+  { "id": "sketcher", "label": "Sketcher", "sym": "◫", "color": "#27c2b0", "client": true, "mirror": true, "feature": "sketch", "link": "vrg://sketch?open={sketch}&front=jegyzet",
     "about": "A VRG Sketcher Jegyzet frontja. Összekötött tükör: a felmérés megtartja a bejegyzést, itt ugyanaz a jegyzet; a szöveg szerkesztése mindkét irányba átmegy." },
   { "id": "divergence", "label": "Fejlesztői jegyzet", "sym": "⚠", "color": "#d64545", "planned": true, "about": "A Divergence tábla fejlesztői jegyzete (PC)." },
   { "id": "planner", "label": "Planner", "sym": "⌗", "color": "#2a8cdb", "planned": true, "client": true, "about": "A Planner terveihez írt jegyzetek." }

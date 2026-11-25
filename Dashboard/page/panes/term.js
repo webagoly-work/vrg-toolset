@@ -75,6 +75,18 @@
     brightBlack: '#646d74', brightRed: '#f0a49b', brightGreen: '#a9dcb9', brightYellow: '#f0d39b', brightBlue: '#a3c8ef', brightMagenta: '#d9b8ea',
     brightCyan: '#b5e2ef', brightWhite: '#ffffff',
   };
+  // the Grafit look (shared/grafit.css, html[data-look="grafit"]): graphite ground, soft white ink, a white phosphor cursor,
+  // the ANSI colours desaturated so a log reads calm; bright black stays legible for dim output
+  const GRAFIT = {
+    background: '#0f0f0f', foreground: '#d9d9d6', cursor: '#f2f2ef', cursorAccent: '#0f0f0f',
+    selectionBackground: 'rgba(242, 242, 239, 0.22)', selectionInactiveBackground: 'rgba(242, 242, 239, 0.11)',
+    black: '#262626', red: '#e39d93', green: '#9fc8a6', yellow: '#d6c28f', blue: '#a9bad3', magenta: '#c4b0d4', cyan: '#a6c9c6', white: '#c8c8c5',
+    brightBlack: '#7a7a77', brightRed: '#efb7ae', brightGreen: '#b9d9be', brightYellow: '#e6d6ad', brightBlue: '#c3cfe0', brightMagenta: '#d6c8e2',
+    brightCyan: '#c0dbd8', brightWhite: '#ffffff',
+  };
+  const themeNow = () => (document.documentElement.dataset.look === 'grafit' ? GRAFIT : THEME);
+  const live = new Set();                                   // open terminals, recoloured when the look changes (desk.js fires vrg:look)
+  document.addEventListener('vrg:look', () => live.forEach(t => { try { t.options.theme = themeNow(); } catch (e) {} }));
   const FALLBACK = () => ({ xterm: libBase() + 'xterm/lib/xterm.js', fit: libBase() + 'xterm-addon-fit/lib/addon-fit.js' });
 
   const loaded = {};
@@ -163,7 +175,7 @@
       this.offs = [];
       if (this.ro) { try { this.ro.disconnect(); } catch (e) {} }
       if (this.id && !this.keep) { try { W.vrg.term.kill(this.id); } catch (e) {} }   // a server console (WP-48) leaves its server running
-      if (this.term) { try { this.term.dispose(); } catch (e) {} }
+      if (this.term) { live.delete(this.term); try { this.term.dispose(); } catch (e) {} }
       this.term = null; this.id = null;
       if (this.root) this.root.innerHTML = '';
       this.root = null;
@@ -235,8 +247,9 @@
         scrollback: 10000, cursorBlink: true, allowProposedApi: false,
         fontFamily: 'Cascadia Mono, Consolas, monospace', fontSize: 13,
         windowsPty: { backend: 'conpty' },
-        theme: THEME,
+        theme: themeNow(),
       });
+      live.add(term);
       this.fitAddon = new W.FitAddon.FitAddon();
       term.loadAddon(this.fitAddon);
       term.open(this.host);
