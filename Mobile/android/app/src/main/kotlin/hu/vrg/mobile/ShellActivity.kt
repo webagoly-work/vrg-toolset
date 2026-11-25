@@ -59,6 +59,9 @@ import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
+import hu.vrg.mobile.kit.postit.PostItLayer
+import hu.vrg.mobile.kit.postit.PostItStore
+import hu.vrg.mobile.core.PostIt
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VarlerWatermark
 import hu.vrg.mobile.kit.theme.MelyvizTheme
@@ -136,11 +139,24 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                         }
                     }
                     Note(message, Modifier.align(Alignment.BottomCenter))
+                    // WP M68 Post-it: last in the root Box, so above every feature, the Asztal and the Katalógus (off = draws nothing)
+                    PostItLayer(screen = postItScreen(look.home), onNote = ::note)
                 }
             } }
         }
         handleLink(intent)
     }
+
+    /** The screen key a Post-it anchors to (POSTIT.md §3.2): what the shell shows now. Reads Compose state, so it follows. */
+    private fun postItScreen(home: HomeMode): String = PostIt.screen(when {
+        Access.locked && current !in LOCK_OPEN -> "lock"
+        Registry.feature(current) != null -> current!!
+        catalogAt != null -> "catalog"
+        current != null -> "planned/$current"
+        sheetFull != null -> "sheet/$sheetFull"
+        compactPeek || home == HomeMode.COMPACT -> "home/compact"
+        else -> "home"
+    })
 
     /** Home, and the Gömb one swipe to its right (WP M14). The sphere's own drags stay inside its disc. */
     @Composable
@@ -359,6 +375,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
         if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
             val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return
+            // a tester's Post-it export shared as text goes to the overlay's inbox, not to Gyorsjegyzet (WP M68)
+            if (PostIt.looksLikeBundle(text)) { note(PostItStore.importText(text)); return }
             val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text))
             open(r.feature)
             Registry.feature(r.feature)?.open(r)

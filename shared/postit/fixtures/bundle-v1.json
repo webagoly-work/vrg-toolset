@@ -1,0 +1,22 @@
+{
+  "format": "vrg-postit/1",
+  "exportedAt": "2026-11-25T09:30:00.000Z",
+  "author": { "id": "t-kovacs01", "name": "Kovács Anna", "platform": "mobile", "device": "Pixel 8", "app": "VRG Mobile" },
+  "notes": [
+    {
+      "id": "pn-a1b2c3d4e5f6", "at": 1764062400000, "edited": 1764062400000, "state": "open",
+      "text": "Ez a gomb nem reagál az első érintésre.",
+      "anchor": { "screen": "m:notes", "detail": "new", "x": 0.82, "y": 0.91, "w": 412, "h": 915 }
+    },
+    {
+      "id": "pn-0000000000aa", "at": 1764062500000, "edited": 1764062900000, "state": "done",
+      "text": "A cím levágódik fekvő módban.",
+      "anchor": { "screen": "m:home", "x": 0.1, "y": 0.05, "w": 915, "h": 412 }
+    },
+    {
+      "id": "pn-0000000000bb", "at": 1764062600000, "edited": 1764062600000, "state": "open",
+      "text": "Itt hiányzik a mértékegység (m vagy db?).",
+      "anchor": { "screen": "d:app/inventory", "x": 0.5, "y": 0.25, "w": 1180, "h": 760 }
+    }
+  ]
+}

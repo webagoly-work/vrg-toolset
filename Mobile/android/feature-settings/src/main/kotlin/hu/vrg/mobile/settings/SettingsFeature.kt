@@ -38,6 +38,7 @@ import hu.vrg.mobile.core.HomeMode
 import hu.vrg.mobile.core.Orientation
 import hu.vrg.mobile.core.InboxChannel
 import hu.vrg.mobile.core.Look
+import hu.vrg.mobile.kit.postit.PostItStore
 import hu.vrg.mobile.kit.VrgNotify
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
@@ -132,6 +133,15 @@ object SettingsFeature : VrgFeature {
             VrgToggle("Az utoljára nyitott funkcióval induljon", s.startInLast) { v ->
                 ShellSettings.update { it.copy(startInLast = v) }
             }
+
+            // ---- Post-it (WP M68, docs/notes/POSTIT.md) ---------------------------------------------
+            VrgSectionTitle("Post-it jegyzetek")
+            val pi by PostItStore.flow.collectAsStateWithLifecycle()
+            VrgToggle("Post-it jegyzetek a képernyőn", pi.enabled) { PostItStore.setEnabled(it) }
+            Text(if (pi.enabled) "Bal felül két gomb, minden képernyő fölött: 👁 mutat / elrejt · 📌 élesít, a következő koppintás oda tűz egy jegyzetet. " +
+                "Hosszan nyomva a 📌-t: név, küldés a fejlesztőnek, törlés."
+            else "Tesztelőknek: jegyzet a képernyő egy pontjára, amit aztán elküldhetsz a fejlesztőnek.", style = Melyviz.small)
+            VrgToggle("Fejlesztői réteg engedélyezése (a tesztelők jegyzetei)", pi.devAllowed) { PostItStore.setDevAllowed(it) }
 
             // ---- paired PCs ------------------------------------------------------------------------
             VrgSectionTitle("Párosított PC-k")

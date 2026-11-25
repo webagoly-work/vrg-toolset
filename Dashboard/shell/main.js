@@ -17,6 +17,7 @@ const { createPorts } = require('./lib/ports.js');
 const { createActs } = require('./lib/acts.js');
 const { createSelftest } = require('./lib/selftest.js');
 const { createIpc, types } = require('./lib/ipc.js');
+const { createPostit } = require('./lib/postit.js');                     // WP-50: the Post-it overlay
 const { createWinModes } = require('./lib/winmodes.js');
 const { createTray } = require('./lib/tray.js');
 const { createAudit } = require('./lib/audit.js');
@@ -37,6 +38,7 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'vrg-app', privileges: APP_SCHEM
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
 const FRAME = path.join(__dirname, '..', 'page', 'vrg-desktop.html');          // the main window: the frame page
+const POSTIT_PAGE = path.join(__dirname, '..', 'page', 'postit.html');          // WP-50: the Post-it overlay window's page
 const SELFTEST = process.argv.includes('--selftest');
 const TMP = path.join(os.tmpdir(), 'VRG');
 if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');       // the selftest never touches the real home (CONTRACT §4.9)
@@ -52,7 +54,7 @@ const DESK_START = argVal('--start') === 'windows' || (SELFTEST && PROBE_NO > 0 
 if (!SELFTEST && !app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Dashboard');
 
-let win = null, pollTimer = 0, winmodes = null, tray = null, views = null;
+let win = null, pollTimer = 0, winmodes = null, tray = null, views = null, postit = null;
 const log = (...a) => console.log('[dash]', ...a);
 const R = createRegistry({ build, log });
 const run = createRunner({ R, shell, tmp: TMP });
@@ -101,6 +103,12 @@ function createWindow() {
   win.on('unmaximize', () => toPages('vrg:max', false));
   views = createViews({ WebContentsView, win, preload: path.join(__dirname, 'preload.js'), homePage: PAGE, log });
   if (SELFTEST || layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) views.createLocal('home');
+  // WP-50 Post-it overlay (docs/notes/POSTIT.md): a transparent child window over the content; it redraws when a view moves
+  const { dialog } = require('electron');
+  postit = createPostit({ BrowserWindow, win, views, settings, dialog, dir: path.join(paths.userDir(), 'postit'), preload: path.join(__dirname, 'preload.js'),
+    page: POSTIT_PAGE, ipc, types, log });
+  for (const k of ['setBounds', 'hideAll', 'showAll', 'destroy']) { const f = views[k]; views[k] = (...a) => { const r = f(...a); postit.changed(); return r; }; }
+  if (!SELFTEST) win.webContents.once('did-finish-load', () => postit.sync());
   win.on('closed', () => { webHost.closeAll(); views.destroyAll(); });
   win.once('ready-to-show', () => { if (!SELFTEST) win.show(); });
   winmodes = createWinModes({
@@ -171,7 +179,7 @@ const fileUrl = p => require('url').pathToFileURL(p).href;
 const audit = createAudit(SELFTEST ? { dir: path.join(TMP, 'desk-test-audit') } : {});   // default dir = paths.logs()
 const ipc = createIpc({
   ipcMain, audit, log,
-  allowedUrls: () => [fileUrl(PAGE), fileUrl(path.join(__dirname, '..', 'page', 'vrg-desktop.html'))],
+  allowedUrls: () => [fileUrl(PAGE), fileUrl(path.join(__dirname, '..', 'page', 'vrg-desktop.html')), fileUrl(POSTIT_PAGE)],
 });
 // libs: file: script URLs of the vendored libraries (tools/js-libs); a library that is not there is null, the page copes
 const jsLib = (...rel) => {
@@ -222,7 +230,11 @@ ipc.register('app', 'setting', { k: types.text(80), v: types.json(4096) }, async
   if (!settings.has(k)) return { ok: false, err: 'bad-request', hu: 'Ismeretlen beállítás.' };
   if (k === 'auth.enabled' && v !== undefined) return { ok: false, err: 'forbidden', hu: 'A belépés kapcsolója nem a lapról állítható.' };   // WP-43: only the settings file
   if (v === undefined) return { v: settings.get(k) };
-  try { return { v: settings.set(k, v) }; } catch (e) { return { ok: false, err: 'bad-request', hu: 'Érvénytelen érték.' }; }
+  let r;
+  try { r = { v: settings.set(k, v) }; } catch (e) { return { ok: false, err: 'bad-request', hu: 'Érvénytelen érték.' }; }
+  if (postit && (/^postit\./.test(k) || k === 'desk.level')) postit.sync();                // WP-50: the overlay follows its switch and the level
+  else if (postit && k === 'desk.view') postit.changed();
+  return r;
 }, { optional: ['v'] });
 
 // layout (WP-07): the tree, and the rects of the view-backed panes. Views are only ever the ones main knows (viewId 'home').

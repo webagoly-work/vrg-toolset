@@ -127,7 +127,7 @@ All 96 modules of [ANALYSIS.md §6](ANALYSIS.md), by their main footprint. A mod
 | **Menu and insert** (S4, S5, S6) | N-SLASH, N-TABLE, N-CODE, N-MATH, N-DIAG, N-VOICE, N-SCAN, N-ANNOT, N-INK, N-LINK, N-XLINK, N-EMBED, N-LOCK, N-MEAS, N-BUY, N-FOCUS, N-HIST, N-EXPORT, N-REPORT, N-ACTIONS, N-COMMIT, N-IMPORT, N-AI-CLEAN, N-AI-SUM | 24 |
 | **Folders** (S7) | N-INBOX, N-SMART, N-DAILY, N-DIARY | 4 |
 | **Visits** (R4) | N-CANVAS, N-GRAPH, N-CAL, N-BOARD, N-PDF, N-PLANPIN, N-AI-ASK | 7 |
-| **Capture points** (S10) | N-WIDGET, N-TAG-QR, N-CLIP, N-MAILIN, N-PALETTE, N-SWITCH | 6 |
+| **Capture points** (S10) | N-WIDGET, N-TAG-QR, N-CLIP, N-MAILIN, N-PALETTE, N-SWITCH, N-POSTIT ([POSTIT.md](POSTIT.md), 2026-11-25) | 7 |
 
 Consequences for ANALYSIS.md: **N-FOLDER moves from tier 2 to tier 1** (folders are part of the simple surface), and three
 modules are added, all tier 0 or 1 because everything else hangs on them:

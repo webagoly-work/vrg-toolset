@@ -134,6 +134,11 @@ What changes locally compared with the cloud:
 - **M67** Radar built 2026-11-23 (cloud session, D-173 … D-175), **BETA**: the universal locator / proximity / connection
   display. Programs plug in through kit-core `RadarHub` (`RadarSource`); first layers Tárgykereső, Csipogó, Óra; the
   Desktop twin is the VRG UI Kit's `radar`. Spec `docs/radar/README.md`; `docs/mobile/WP/M67.md` → "Telefonon ellenőrizni".
+- **M68** Post-it built 2026-11-25 (cloud session, POSTIT-Q01 … Q07), **BETA**, with the Desktop's WP-50: a Notes capture
+  point. Settings switch → two buttons upper left over every screen (👁 show / hide, 📌 arm: the next tap / click pins a note
+  beside a faint mark); testers export a `vrg-postit/1` file, the developer calls it in and sees it on the same screens (DEV).
+  Spec `docs/notes/POSTIT.md`; `docs/mobile/WP/M68.md` → "Telefonon ellenőrizni" and "PC-n ellenőrizni". Android modules not
+  yet compiled (the first Actions run is their check).
 
 ## 3. What the user asked for, mapped to WPs
 

@@ -525,7 +525,17 @@
     const view = h('div', { class: 'row' }, h('span', {}, 'Induló nézet: az utoljára használt'), h('span', { class: 'sp' }), h('span', { class: 'note' }, S.view === 'dashboard' ? 'Irányítópult' : 'Asztal'));
     const auth = h('div', { class: 'row' }, h('span', {}, 'Kapu belépés'), h('span', { class: 'sp' }), h('span', { class: 'note', 'data-role': 'auth-state' }, S.auth ? 'bekapcsolva' : 'kikapcsolva (a Kapu hitelesítése még nem kész)'));
     const tg = h('div', { class: 'row' }, h('span', {}, 'Nézetváltás'), h('span', { class: 'sp' }), h('span', { class: 'note' }, 'dupla ' + S.toggle.key + ' (' + S.toggle.ms + ' ms) · dupla kattintás az üres háttéren · ⊞ a jobb felső sarokban'));
-    sheet('Beállítások', 'Settings', [lv, view, auth, tg, h('div', { class: 'note' }, 'A billentyű és az idő: Dashboard/config/keymap.json (desktopToggleKey, desktopToggleMs).')]);
+    // WP-50 Post-it (docs/notes/POSTIT.md): on = the overlay's two buttons in the upper left, over every screen
+    const piNote = h('span', { class: 'note', 'data-role': 'postit-note' }, '');
+    const piBox = h('input', { type: 'checkbox', 'data-role': 'postit-on', onchange: async e => {
+      await setting('postit.enabled', e.target.checked);
+      piNote.textContent = e.target.checked ? 'két gomb a bal felső sarokban: 👁 mutat / elrejt · 📌 élesít (jobb klikk: export, behívás)' : '';
+    } });
+    setting('postit.enabled').then(r => { piBox.checked = !!(r && r.v); piNote.textContent = piBox.checked ? 'két gomb a bal felső sarokban' : ''; }).catch(() => {});
+    const pi = h('div', { class: 'row' }, h('label', {}, piBox, ' Post-it jegyzetek a képernyőn (tesztelői megjegyzések)'), h('span', { class: 'sp' }), piNote,
+      h('button', { type: 'button', 'data-role': 'postit-export', onclick: async () => { const r = await vrg.call('postit', 'export', {}); piNote.textContent = r && r.ok ? r.count + ' jegyzet kiírva' : (r && r.hu) || ''; } }, 'Export…'),
+      S.level !== 'user' ? h('button', { type: 'button', 'data-role': 'postit-import', onclick: async () => { const r = await vrg.call('postit', 'import', {}); if (r && r.err !== 'cancelled') piNote.textContent = (r.added | 0) + ' új, ' + (r.updated | 0) + ' frissült'; } }, 'Behívás…') : null);
+    sheet('Beállítások', 'Settings', [lv, view, auth, tg, pi, h('div', { class: 'note' }, 'A billentyű és az idő: Dashboard/config/keymap.json (desktopToggleKey, desktopToggleMs).')]);
   }
 
   // ------------------------------------------------------------ render, events, boot

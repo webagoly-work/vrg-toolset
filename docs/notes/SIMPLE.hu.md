@@ -129,7 +129,7 @@ Beállításokhoz (S9).
 | **Menü és beszúrás** (S4, S5, S6) | N-SLASH, N-TABLE, N-CODE, N-MATH, N-DIAG, N-VOICE, N-SCAN, N-ANNOT, N-INK, N-LINK, N-XLINK, N-EMBED, N-LOCK, N-MEAS, N-BUY, N-FOCUS, N-HIST, N-EXPORT, N-REPORT, N-ACTIONS, N-COMMIT, N-IMPORT, N-AI-CLEAN, N-AI-SUM | 24 |
 | **Mappák** (S7) | N-INBOX, N-SMART, N-DAILY, N-DIARY | 4 |
 | **Látogatások** (R4) | N-CANVAS, N-GRAPH, N-CAL, N-BOARD, N-PDF, N-PLANPIN, N-AI-ASK | 7 |
-| **Rögzítési pontok** (S10) | N-WIDGET, N-TAG-QR, N-CLIP, N-MAILIN, N-PALETTE, N-SWITCH | 6 |
+| **Rögzítési pontok** (S10) | N-WIDGET, N-TAG-QR, N-CLIP, N-MAILIN, N-PALETTE, N-SWITCH, N-POSTIT ([POSTIT.hu.md](POSTIT.hu.md), 2026-11-25) | 7 |
 
 Következmények az ANALYSIS-re: **az N-FOLDER a 2. szintről az 1.-re kerül** (a mappák az egyszerű felszín részei), és három
 modul kerül be, mind 0. vagy 1. szintű, mert minden más ezeken lóg:

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'">
+<title>VRG Post-it</title>
+<!-- WP-50: the Post-it overlay window (docs/notes/POSTIT.md). Transparent; main lets the mouse through everywhere except over
+     [data-hit] elements, and takes the whole surface while armed. -->
+<link rel="stylesheet" href="../../shared/melyviz.css">
+<style>
+  :root { --pi-paper: #f2d27a; --pi-ink: #2a2310; --pi-mark: rgba(242, 210, 122, .55); --pi-armed: rgba(242, 190, 90, .05); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent !important; user-select: none; }
+  body { font: 12px var(--mv-sans); color: var(--mv-text); }
+  body.armed { background: var(--pi-armed) !important; cursor: crosshair; box-shadow: inset 0 0 0 2px rgba(242, 190, 90, .55); }
+  svg#marks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  #dock { position: fixed; left: 6px; top: 36px; display: flex; gap: 4px; z-index: 10; opacity: .72; transition: opacity .15s; }
+  #dock:hover, body.armed #dock { opacity: 1; }
+  #dock button { width: 24px; height: 24px; padding: 0; display: grid; place-items: center; cursor: pointer;
+    background: rgba(10, 20, 28, .82); border: 1px solid var(--mv-line-strong); color: var(--mv-dim);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%); }
+  #dock button:hover { color: var(--mv-text); border-color: var(--mv-accent); }
+  #dock button[aria-pressed="true"] { color: var(--pi-ink); background: var(--pi-paper); border-color: var(--pi-paper); }
+  #dock button.dev { width: auto; padding: 0 6px; font: 10px var(--mv-mono); letter-spacing: .08em; }
+  #dock button.dev[aria-pressed="true"] { background: var(--mv-accent); border-color: var(--mv-accent); }
+  #dock svg { width: 14px; height: 14px; }
+  body.armed #arm { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 3px rgba(242, 190, 90, .35); } }
+  #hint { position: fixed; left: 6px; top: 64px; padding: 4px 8px; background: rgba(10, 20, 28, .88); border: 1px solid var(--pi-paper);
+    color: var(--pi-paper); font: 11px var(--mv-mono); pointer-events: none; }
+
+  .card { position: fixed; width: 190px; box-sizing: border-box; padding: 6px 8px 6px 8px; cursor: pointer; z-index: 5;
+    background: var(--pi-paper); color: var(--pi-ink); box-shadow: 0 3px 10px rgba(0, 0, 0, .45); font-size: 12px; line-height: 1.35;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%); }
+  .card .tx { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
+  .card .by { font: 10px var(--mv-mono); opacity: .7; margin-bottom: 2px; }
+  .card.done { opacity: .5; }
+  .card.done .tx { text-decoration: line-through; }
+  .card.theirs { background: hsl(var(--h) 70% 78%); }
+
+  #editor { position: fixed; width: 260px; z-index: 20; padding: 8px; box-sizing: border-box;
+    background: rgba(18, 28, 36, .97); border: 1px solid var(--pi-paper); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); }
+  #editor textarea { width: 100%; box-sizing: border-box; min-height: 84px; resize: vertical; background: var(--mv-bg); border: 1px solid var(--mv-line-strong);
+    color: var(--mv-text); padding: 6px; font: 13px var(--mv-sans); user-select: text; }
+  #editor .meta { font: 10px var(--mv-mono); color: var(--mv-dim); margin: 0 0 6px; word-break: break-all; }
+  #editor .row { display: flex; gap: 6px; margin-top: 6px; align-items: center; }
+  #editor .row .sp { flex: 1; }
+  #editor button { padding: 3px 10px; cursor: pointer; }
+  #editor button.main { background: var(--pi-paper); color: var(--pi-ink); border-color: var(--pi-paper); }
+  #editor .read { white-space: pre-wrap; word-break: break-word; font-size: 13px; padding: 4px 0; user-select: text; }
+
+  #menu { position: fixed; left: 6px; top: 64px; width: 250px; z-index: 30; padding: 6px; background: rgba(18, 28, 36, .97);
+    border: 1px solid var(--mv-line-strong); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); }
+  #menu .it { display: block; width: 100%; text-align: left; padding: 5px 8px; margin: 0 0 3px; cursor: pointer; }
+  #menu label { display: flex; gap: 6px; align-items: center; padding: 3px 4px; }
+  #menu input[type=text] { flex: 1; min-width: 0; padding: 3px 5px; user-select: text; }
+  #menu h4 { margin: 6px 4px 3px; font: 10px var(--mv-mono); letter-spacing: .1em; color: var(--mv-dim); text-transform: uppercase; }
+  #menu .msg { font-size: 11px; color: var(--mv-dim); padding: 3px 4px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<svg id="marks" aria-hidden="true"></svg>
+<div id="layer"></div>
+<div id="dock" data-hit>
+  <button type="button" id="eye" title="Jegyzetek mutatása / elrejtése (Notes visibility)" aria-pressed="true">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 8s2.6-5 7-5 7 5 7 5-2.6 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2.2"/></svg>
+  </button>
+  <button type="button" id="arm" title="Élesítés: a következő kattintás jegyzetet tűz oda (Arm / disarm) · jobb klikk: menü" aria-pressed="false">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 2h10v8.5L10.5 13H3z"/><path d="M10.5 13v-2.5H13"/><path d="M5.5 5.5h5M5.5 8h3.5"/></svg>
+  </button>
+  <button type="button" id="dev" class="dev" title="Fejlesztői réteg: a tesztelők jegyzetei (Dev overlay)" aria-pressed="false" hidden>DEV</button>
+</div>
+<div id="hint" hidden>Kattints oda, ahová a jegyzet szól · Esc: mégse</div>
+<div id="editor" data-hit hidden></div>
+<div id="menu" data-hit hidden></div>
+<script src="../../shared/postit/postit-core.js"></script>
+<script src="postit.js"></script>
+</body>
+</html>

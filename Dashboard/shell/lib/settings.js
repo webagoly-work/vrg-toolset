@@ -44,6 +44,11 @@ const KEYS = {
   'desk.top':          { type: v => v === null || desk.validTop(v), def: null },       // WP-42: the top strip's ids in order; null = the default
   'desk.dock':         { type: v => desk.validDock(v), def: null },                     // WP-42: pinned dock ids; null = the catalog's surfaces.dock
   'desk.sheets':       { type: v => v === null || sheets.validate(v).ok, def: null },   // WP-46: the Lapok (sheets) of the workspace; null = none yet
+  'postit.enabled':    { type: v => typeof v === 'boolean', def: false },               // WP-50: the Post-it overlay (POSTIT.md); off = no overlay window at all
+  'postit.show':       { type: v => typeof v === 'boolean', def: true },                // WP-50: the notes drawn (the 👁 button)
+  'postit.dev':        { type: v => typeof v === 'boolean', def: false },               // WP-50: the testers' notes drawn too (Dev / All level only)
+  'postit.devHidden':  { type: v => Array.isArray(v) && v.length <= 200 && v.every(x => typeof x === 'string' && /^[A-Za-z0-9_-]{4,40}$/.test(x)), def: [] },
+  'postit.name':       { type: v => typeof v === 'string' && v.length <= 60, def: '' },  // WP-50: the tester's name in an export
   'auth.enabled':      { type: v => typeof v === 'boolean', def: false },               // WP-43: the Kapu gate in the boot flow (off until Kapu auth is ready)
 };
 
