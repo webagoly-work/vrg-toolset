@@ -4,13 +4,13 @@
 
 | Előírás | Mire | Forrás |
 |---|---|---|
-| MSZ EN 1838 · Vészvilágítás: alkalmazás | Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek | MSZ EN 1838 (a hatályos kiadás) |
-| MSZ EN 50172 · Biztonsági világítási rendszerek | A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai. | MSZ EN 50172 (a hatályos kiadás) |
-| MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz | A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat. | MSZ EN 60598-2-22 (a hatályos kiadás) |
+| MSZ EN 1838 · Vészvilágítás: alkalmazás | Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek | MSZ EN 1838 (az EN 1838:2024 magyar kiadása; a 2013-as kiadást váltja, az ütköző nemzeti szabványokat 2027 júniusáig vissza kell vonni; a magyar kiadás jelölése: ellenőrizendő az MSZT-nél) |
+| MSZ EN 50172 · Biztonsági világítási rendszerek | A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai. | MSZ EN 50172 (az EN 50172:2024 magyar kiadása; a 2004-es kiadást váltja) |
+| MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz | A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat. | MSZ EN IEC 60598-2-22 (2022; az IEC 60598-2-22 5. kiadása, 2021) |
 | MSZ EN 50171 · Központi tápellátó rendszerek | A biztonsági berendezéseket (köztük a biztonsági világítást) tápláló központi akkumulátoros rendszerek követelményei. | MSZ EN 50171 (a hatályos kiadás) |
 | MSZ EN 62034 · Automatikus tesztrendszerek | Az akkumulátoros biztonsági világítás automatikus próbájának (önteszt, központi tesztrendszer) követelményei. | MSZ EN 62034 (a hatályos kiadás) |
 | MSZ EN ISO 7010 · Biztonsági jelek | A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó ember, ajtó, nyíl) is. | MSZ EN ISO 7010 (a hatályos kiadás) |
-| OTSZ és TvMI · Hol kell biztonsági világítás | A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI ennek egy elfogadott teljesítési módját írja le a szabványokra hivatkozva. | OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szövege); a biztonsági világításról szóló Tűzvédelmi Műszaki Irányelv (TvMI) |
+| OTSZ és TvMI · Hol kell biztonsági világítás | A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI 7.7 12 | OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szöveg, a Nemzeti Jogszabálytárban 2025.IX.23-i hatállyal olvasva 2026-11-25-én); Tűzvédelmi Műszaki Irányelv: TvMI 7.7:2026.02.01., „Villamos berendezések, villámvédelem és elektrosztatikus feltöltődés elleni védelem”, 12. fejezet „Biztonsági célú világítások” (érvényes 2026. február 1-től, a TvMI 7.6:2024.02.01.-et váltja; BM OKF, katasztrofavedelem.hu) |
 | MSZ EN 60598 · Lámpatestek | A lámpatestek biztonsági termékszabványa: az 1 | MSZ EN 60598-1 és a 60598-2-x részek (a hatályos kiadások) |
 | MSZ EN 60570 · Világítási sínrendszerek | A lámpatestek csatlakoztatására szolgáló villamos sínrendszerek (áramsínek) és adaptereik követelményei. | MSZ EN 60570 (a hatályos kiadás) |
 | MSZ EN 61347 és MSZ EN 62776 · Működtetők és LED-csövek | A LED-meghajtók, tápegységek és vészvilágítási modulok biztonsági követelményei, és a régi fénycsövek helyére szánt LED-csövek (retrofit) szabályai. | MSZ EN 61347 (lámpaműködtetők, a 2-7 rész a vészvilágítási működtetők, a 2-13 a LED-működtetők); MSZ EN 62776 (kétvégű LED-csövek) |
@@ -40,19 +40,20 @@ Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogya
 - A biztonsági világítás három fajtája: menekülési útvonal-világítás, nyílt területi (pánikellenes) világítás, nagy kockázatú munkaterület világítása.
 - Hangsúlyos pontok, ahol lámpatest kell: minden vészkijárati ajtó, lépcső (minden fok kapjon közvetlen fényt), szintváltás, irányváltás, folyosó-kereszteződés, tűzoltó eszköz, kézi jelzésadó, elsősegélyhely, a kijárat előtti külső terület.
 - A biztonsági jelek (kijárat, irányjelzés) a menekülés irányát mutatják, és felismerhetőknek kell lenniük a szükséges távolságról.
+- A 2024-es kiadás újdonságai: a „helyi területi világítás” (az épületben ideiglenesen bent maradó személyeknek) külön fajta, a készenléti (standby) világítás külön szétválik, az illemhelyek és öltözők külön követelményt kapnak, a minimális színvisszaadás Ra 40, és új C melléklet szól a zárlatra (lockdown) és a hosszú áramkimaradásra.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Menekülési útvonal (legfeljebb 2 m széles): a középvonalon legalább 1 lx a padlón; a középső sáv (a szélesség fele) legalább 0,5 lx; egyenletesség (max : min) legfeljebb 40 : 1.
-- Nyílt terület (pánikellenes): legalább 0,5 lx a padlón (a szélső 0,5 m-es sáv nélkül), egyenletesség legfeljebb 40 : 1.
+- Menekülési útvonal: az MSZ EN 1838 2024-es kiadása szerint legalább 1 lx a padlón az útvonal teljes szélességén, a szegélysáv nélkül (2 m-nél szélesebb útvonalon a szélső 0,5 m-t, legfeljebb 2 m szélesnél a szélesség negyedét nem kell figyelembe venni); egyenletesség (max : min) legfeljebb 40 : 1. A 2013-as kiadás még csak a középvonalra írt elő 1 lx-et és a középső sávra 0,5 lx-et. (A szegélysáv pontos szövege a teljes szabvánnyal ellenőrizendő.)
+- Nyílt terület (pánikellenes): legalább 0,5 lx a padlón (a szélső 0,5 m-es sáv nélkül), egyenletesség legfeljebb 40 : 1. Ha a nyílt területen nem egyértelmű a menekülési útvonal, a legrövidebb nyilvánvaló utat legalább 2 m szélesen, 1 lx-szel kell megvilágítani. Nyílt területi világítás kell 60 m²-nél nagyobb területen és ott, ahol a kockázatértékelés kéri.
 - Nagy kockázatú munkaterület: a normál üzemi megvilágítás legalább 10 %-a, de legalább 15 lx; egyenletesség legfeljebb 10 : 1; azonnali (legfeljebb 0,5 s-os) bekapcsolás.
-- Tűzoltó eszköz, kézi jelzésadó, elsősegélyhely: legalább 5 lx függőlegesen az eszköznél.
+- Tűzoltó eszköz, kézi jelzésadó, elsősegélyhely: legalább 5 lx függőlegesen az eszköznél (a „közelében” legfeljebb 2 m vízszintesen). A 2024-es kiadás a liftriasztót és az elektromosan zárt ajtók kézi nyitószerkezetét is hangsúlyos pontnak veszi (másodlagos forrás).
 - Bekapcsolás menekülési útvonalon: 5 s alatt az előírt érték 50 %-a, 60 s alatt a teljes érték.
 - Működési idő menekülési útvonalon: legalább 1 óra (a nemzeti előírás és a tűzvédelmi terv több időt is előírhat).
 - Biztonsági jel felismerési távolsága: belső megvilágítású jelnél kb. 200 × a jel piktogramjának magassága, külső megvilágításúnál kb. 100 ×.
 
 - **Hol érvényes:** Közösségi és munkahelyi épületek, társasházak közös terei, ahol az OTSZ vagy a tűzvédelmi terv biztonsági világítást ír elő. Lakáson belül nem kötelező.
-- **Forrás:** szabvány: MSZ EN 1838 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN 1838 (az EN 1838:2024 magyar kiadása; a 2013-as kiadást váltja, az ütköző nemzeti szabványokat 2027 júniusáig vissza kell vonni; a magyar kiadás jelölése: ellenőrizendő az MSZT-nél) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Menekülési útirány- és kijáratjelző, Süllyesztett biztonsági spot, Nagy terek biztonsági lámpateste (nyílt terület), Vészvilágítási modul (konverziós készlet)
 - **Kapcsolódó előírások:** MSZ EN 50172 · Biztonsági világítási rendszerek, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, MSZ EN ISO 7010 · Biztonsági jelek, OTSZ és TvMI · Hol kell biztonsági világítás
 - **Keresőszavak:** HU: MSZ EN 1838 vészvilágítás · menekülési útvonal megvilágítás 1 lux — EN: EN 1838 emergency lighting · escape route 1 lux — DE: DIN EN 1838 Notbeleuchtung · Rettungsweg 1 Lux
@@ -67,18 +68,19 @@ A biztonsági világítási rendszer tervezésének, telepítésének, dokument�
 
 - A rendszerről terv és dokumentáció kell: a lámpatestek helye és fajtája, az áramkörök, az akkumulátoros egységek, a működési idő.
 - Üzemnapló kell: minden ellenőrzés, hiba és javítás dátummal.
+- Az üzemnapló (logbook) követelménye az EN 50172:2024 újdonsága.
 - Az átadáskor a teljes működési idő próbája; utána rendszeres funkcióellenőrzés és évente teljes idejű próba.
 - A teljes idejű próbát úgy kell időzíteni, hogy utána, az akkumulátorok töltése alatt ne maradjon védelem nélkül az épület (pl. munkaidőn kívül, vagy szakaszosan).
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Rendszeres (jellemzően havi) rövid funkcióellenőrzés: hálózatkimaradás szimulálása, minden lámpatest és jel kigyullad.
+- Naponta (központi rendszernél) a jelzőlámpák szemrevételezése; havonta a hálózatkimaradás szimulálása minden lámpatesten és a felügyelet ellenőrzése; évente a teljes ellenőrzés és próba (a szakmai források szerint a teljes névleges működési idő próbája); ötévente fénytechnikai (megvilágításmérési) ellenőrzés az EN 1838 szerint.
 - Évente a teljes névleges működési idő próbája.
 - Központi rendszernél a jelzőlámpák rendszeres (akár napi) szemrevételezése.
-- A pontos gyakoriságot a magyar tűzvédelmi előírás (OTSZ, TvMI) is szabályozza: azzal együtt kell alkalmazni.
+- Magyarországon az OTSZ 18. melléklet 1. táblázata (12. sor) szerint a biztonsági világítás és a megvilágított menekülési jelek üzemeltetői ellenőrzése legfeljebb 3 havonta, időszakos felülvizsgálata legfeljebb 12 havonta (+1 hónap) esedékes, a karbantartás az időszakos felülvizsgálattal egyidejűleg; mindegyiket a tűzvédelmi üzemeltetési naplóban kell dokumentálni (OTSZ 248. §). A szabvány szerinti havi próba ettől független, szigorúbb.
 
 - **Hol érvényes:** Minden épület, amelyben biztonsági világítás van: tervezés, kivitelezés, átadás, üzemeltetés.
-- **Forrás:** szabvány: MSZ EN 50172 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN 50172 (az EN 50172:2024 magyar kiadása; a 2004-es kiadást váltja) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Süllyesztett biztonsági spot
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 62034 · Automatikus tesztrendszerek, MSZ EN 50171 · Központi tápellátó rendszerek, OTSZ és TvMI · Hol kell biztonsági világítás
 - **Keresőszavak:** HU: MSZ EN 50172 biztonsági világítás ellenőrzés · vészvilágítás üzemnapló — EN: EN 50172 emergency lighting testing · emergency lighting log book — DE: EN 50172 Sicherheitsbeleuchtung Prüfung · Prüfbuch Notbeleuchtung
@@ -91,18 +93,18 @@ A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és k
 
 **Lényeg (saját összefoglaló):**
 
-- Üzemmódok: készenléti (csak hálózatkimaradáskor világít), állandó üzemű (mindig világít, kimaradáskor is), kombinált.
+- Üzemmódok: készenléti (non-maintained; csak hálózatkimaradáskor világít) és állandó üzemű (maintained; mindig világít). A kombinált lámpatest nem harmadik üzemmód, hanem kivitel: két vagy több fényforrást tartalmaz, az egyik vészvilágítási, a többi normál táplálású, és az egész állandó vagy készenléti üzemű.
 - A lámpatestnek jeleznie kell a töltés állapotát (töltésjelző), és lehetővé kell tennie a próbát.
 - A jelölés tartalmazza a működési módot és a névleges működési időt; az akkumulátorcserére vonatkozó adatokat.
 - Kiválasztáskor ezt a jelölést kell egyeztetni a terv követelményével.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Névleges működési idő jellemzően 1 vagy 3 óra (a jelölésen).
-- Az akkumulátor teljes feltöltése a gyártó által megadott időn (jellemzően 24 órán) belül.
+- Névleges működési idő jellemzően 1 vagy 3 óra (a jelölésen; a szabvány a gyártó által megadott névleges időt jelöli, az 1/3 óra gyakori érték, a jelölés pontos szövege ellenőrizendő).
+- Az akkumulátor teljes feltöltése a gyártó által megadott időn belül; az EN 50172:2024 szerint az önálló akkumulátoros lámpatest jellemzően 24 órán belül töltődik fel (a 24 óra magában az EN 60598-2-22-ben: ellenőrizendő).
 
 - **Hol érvényes:** A biztonsági világítás minden lámpateste és jele.
-- **Forrás:** szabvány: MSZ EN 60598-2-22 (a hatályos kiadás) — MSZT szabványbolt
+- **Forrás:** szabvány: MSZ EN IEC 60598-2-22 (2022; az IEC 60598-2-22 5. kiadása, 2021) — MSZT szabványbolt
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Központi akkumulátoros rendszer lámpateste, Menekülési útirány- és kijáratjelző, Süllyesztett biztonsági spot, Nagy terek biztonsági lámpateste (nyílt terület), Vészvilágítási modul (konverziós készlet)
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek
 - **Keresőszavak:** HU: MSZ EN 60598-2-22 vészvilágító lámpatest — EN: EN 60598-2-22 emergency luminaire — DE: EN 60598-2-22 Notleuchte
@@ -159,8 +161,8 @@ A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó
 
 **Lényeg (saját összefoglaló):**
 
-- Vészkijárat jele: zöld alapon fehér futó ember ajtóval (E001 balra, E002 jobbra), kiegészítő irányjelző nyíllal.
-- Csak szabványos piktogram használható; a régi, „szöveges” (KIJÁRAT) vagy eltérő rajzú jeleket cserélni kell.
+- Vészkijárat jele: zöld alapon fehér futó ember ajtóval (E001 balra, E002 jobbra; ISO 7010:2019), kiegészítő irányjelző nyíllal.
+- Csak szabványos piktogram használható: a TvMI 7.7 (12.2.2) szerint a menekülési jel legyen olyan piktogram, amely a menekülési irányt egyértelműen jelzi; a régi szöveges (KIJÁRAT) jelek cseréjének kötelezettségét és átmeneti szabályait az OTSZ-ben és a hatósággal ellenőrizni kell.
 - Ugyanazon az útvonalon egységes jelrendszer kell.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
@@ -177,21 +179,22 @@ A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó
 
 *Más néven:* Országos Tűzvédelmi Szabályzat, 54/2014. (XII. 5.) BM rendelet, Tűzvédelmi Műszaki Irányelv
 
-A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI ennek egy elfogadott teljesítési módját írja le a szabványokra hivatkozva.
+A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI 7.7 12. fejezete ennek egy elfogadott teljesítési módját írja le a szabványokra hivatkozva.
 
 **Lényeg (saját összefoglaló):**
 
 - A kötelezettség az épület rendeltetésétől, méretétől, a benntartózkodók számától és a menekülési útvonalak jellegétől függ: ezt a tűzvédelmi terv rögzíti.
-- Egylakásos lakóépületben jellemzően nem kötelező; közösségi, munkahelyi épületekben és nagyobb társasházak közös tereiben gyakran igen.
-- Az időszakos felülvizsgálat gyakoriságát és dokumentálását is szabályozza.
+- OTSZ 146. §: biztonsági világítás kell a KK és MK kockázati osztályú épület menekülési útvonalán, óvodában, iskolában, gyermekjóléti, gyermekfoglalkoztató és kényszertartózkodásra szolgáló intézményben, tömegtartózkodásra szolgáló helyiségben és a §-ban felsorolt további helyeken (pl. tűzjelző központ, tűzoltósági beavatkozási központ, átmeneti védett tér). Menekülési jel már az AK osztályú épületben is kell, és minden 100 főnél nagyobb befogadóképességű helyiségben. Pánik elleni világítás kell tömegtartózkodásra szolgáló helyiségben és a nem menthető vagy előkészítéssel menthető személyek helyiségeiben. Az egylakásos lakóépület NAK osztályba esik (az OTSZ 1. melléklete szerint), ezért nem kötelező benne; a társasház a mértékadó kockázati osztálya (magasság, létszám, menekülési képesség) szerint dől el.
+- Ellenőrzés: az OTSZ 18. melléklete szerint üzemeltetői ellenőrzés legfeljebb 3 havonta, időszakos felülvizsgálat legfeljebb 12 havonta (+1 hónap), mindkettő a tűzvédelmi üzemeltetési naplóban (OTSZ 248. §).
 - Munka előtt mindig a hatályos jogszabályszöveget és a konkrét épület tűzvédelmi tervét kell megnézni; ez a kártya csak térkép.
+- A normál és a biztonsági tápforrás közötti átkapcsolás legfeljebb 1 másodperc (OTSZ; a pontos § ellenőrizendő). A TvMI 12.3.2 szerint a biztonsági világítás az üzemi világítás részleges kiesésekor is bekapcsol. 50 saját akkumulátoros lámpatest felett központi felügyelet, 100 felett központi akkumulátoros rendszer javasolt (TvMI 12.3.4).
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
 - A konkrét követelmény épületenként: a tűzvédelmi tervben és a hatályos jogszabályban.
 
 - **Hol érvényes:** Magyarországon minden épület, ahol a tűzvédelmi előírás biztonsági világítást ír elő.
-- **Forrás:** jogszabály + irányelv: OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szövege); a biztonsági világításról szóló Tűzvédelmi Műszaki Irányelv (TvMI) — Nemzeti Jogszabálytár (njt.hu); a TvMI-k a katasztrófavédelem oldalán
+- **Forrás:** jogszabály + irányelv: OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szöveg, a Nemzeti Jogszabálytárban 2025.IX.23-i hatállyal olvasva 2026-11-25-én); Tűzvédelmi Műszaki Irányelv: TvMI 7.7:2026.02.01., „Villamos berendezések, villámvédelem és elektrosztatikus feltöltődés elleni védelem”, 12. fejezet „Biztonsági célú világítások” (érvényes 2026. február 1-től, a TvMI 7.6:2024.02.01.-et váltja; BM OKF, katasztrofavedelem.hu) — Nemzeti Jogszabálytár (njt.hu); a TvMI-k a katasztrófavédelem oldalán
 - **Erre hivatkozó típusok:** Önálló akkumulátoros biztonsági lámpatest, Nagy terek biztonsági lámpateste (nyílt terület)
 - **Kapcsolódó előírások:** MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 50172 · Biztonsági világítási rendszerek, MSZ EN 50171 · Központi tápellátó rendszerek
 - **Keresőszavak:** HU: OTSZ biztonsági világítás · TvMI biztonsági világítás — EN: Hungarian fire safety code emergency lighting — DE: ungarische Brandschutzvorschrift Sicherheitsbeleuchtung

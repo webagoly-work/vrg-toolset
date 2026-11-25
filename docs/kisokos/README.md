@@ -152,6 +152,12 @@ and "what goes wrong if not".
 - **Készlet links** (`Kisokos/keszlet.json`, 2026-11-22): 54 of the 221 Készlet products linked to 9 cards (wires to
   Hálózati 50 Hz, data cables and RJ45 parts to Ethernet, drywall boxes, coax parts, the floodlights). Only 3 Készlet
   items are lighting today, so most lamp types have no product yet; new items get suggestions from `kisokos.js keszlet`.
+- **Source check (2026-11-25)**: the rule cards and the level 2 lessons were checked against public sources (standard
+  previews, manufacturer and test guides, German and Hungarian trade sources, the OTSZ and TvMI 7.7); notes and every
+  correction in `docs/research/2026-11-25_kisokos-{protection-values,special-locations,emergency-lighting}.md`, the
+  curriculum against the official requirements in `…-tk1-villanyszerelo-kkk.md`. Open decision: the cards keep the
+  2007 edition of MSZ HD 60364-7-701 as the baseline and mark where the 2024 edition differs; both may be valid
+  until 2027-12-06. Not yet checked: cable capacity tables, the RCD type table, IEC 60479-1, EN 50110-1 wording.
 - **Előírások (el)**: 23 cards (own summaries + references): emergency lighting, MSZ HD 60364 with its special
   locations, and the product and lighting standards the lamp cards cite. Every lamp type links its rules through `norms`.
   The numbers on these cards are from memory and marked as guidance: check them against the current editions.

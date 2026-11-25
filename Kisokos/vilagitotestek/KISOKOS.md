@@ -1533,7 +1533,7 @@ Saját akkumulátorral és töltővel működő biztonsági lámpatest: hálóza
 - **Fény:** vészüzemben 100–400 lm · 4000–6500 K · Ra ≥ 70 · menekülési útvonal- vagy nyílt területi optikával
 - **Vezérlés:** töltésjelző LED, próbagomb; öntesztes vagy DALI-címezhető kivitel (vonalak: DALI, Hálózati 50 Hz)
 - **Beépítés:**
-  - Állandó (nem kapcsolt) fázist kap a helyiség világítási áramköréről, hogy annak a kiesésére is bekapcsoljon; a kapcsolt fázis csak állandó üzemű kivitelnél, a gyártó szerint.
+  - Készenléti lámpatest: állandó (nem kapcsolt) fázist kap az általa szolgált terület világítási áramköréről (a kapcsoló előtt), hogy az áramkör kiesésére, és ne a lekapcsolására induljon; az áramkör részleges kiesésekor is be kell kapcsolnia (TvMI 7.7, 12.3.2). Állandó üzemű lámpatest: az állandó fázis a töltéshez és az érzékeléshez akkor is kell; a kapcsolt fázis csak a normál üzemi fényforrást kapcsolja, a gyártó bekötési rajza szerint.
   - Az akkumulátor a bekötés után töltődik: a teljes idejű próba csak a teljes feltöltés után.
   - Helye a terv szerint: kijáratok, lépcsők, irányváltások, tűzoltó eszközök fölött.
 - **Rögzítés:** Beton, Gipszkarton, Nylon terpesztődübel, Fém üreges fali dübel
@@ -1595,7 +1595,7 @@ Belülről megvilágított biztonsági jel szabványos piktogrammal (zöld alapo
 - **Rajzjel:** `lum.exit` (Rajztár)
 - **Hova:** kijáratok, folyosók, lépcsőházak, közösségi terek
 - **Buktatók:**
-  - Régi, szöveges (KIJÁRAT) vagy nem szabványos piktogramú jel: cserélni kell.
+  - Régi, szöveges (KIJÁRAT) vagy nem szabványos piktogramú jel: a TvMI 7.7 egyértelmű irányt jelző piktogramot kér; a csere kötelezettségét és átmeneti szabályait az OTSZ-ben és a hatósággal ellenőrizni kell.
   - A matricával cserélhető irányú jelnél a beszerelés után ellenőrizni kell a nyilat.
 - **Rokon típusok:** Önálló akkumulátoros biztonsági lámpatest, Utánvilágító (fotolumineszcens) jel és csík
 - **Keresőszavak:** HU: menekülési útirányjelző lámpa ISO 7010 · kijáratjelző akkus — EN: emergency exit sign light ISO 7010 — DE: Rettungszeichenleuchte ISO 7010
@@ -1642,6 +1642,7 @@ Nagy terekhez (csarnok, sportterem, raktár, közösségi tér) méretezett bizt
 - **Vezérlés:** készenléti vagy állandó üzemű; öntesztes vagy központi felügyelettel (vonalak: DALI, Hálózati 50 Hz)
 - **Beépítés:**
   - Nyílt területre a padlón legalább 0,5 lx (a szélső 0,5 m nélkül): a kiosztást számítással kell igazolni.
+  - Nyílt területi világítás 60 m²-nél nagyobb területen kell (az EN 1838:2024 szerint is), és ahol az útvonal nem egyértelmű, a legrövidebb utat menekülési útvonalként kell megvilágítani.
   - Nagy magasságban a karbantartás (akkucsere) gépet kíván: központi rendszer lehet jobb.
 - **Rögzítés:** Beton, Acélszerkezet, Csavaros terpesztő horgony
 - **Előírás:** MSZ EN 1838, MSZ EN 60598-2-22 (kártyák: MSZ EN 1838 · Vészvilágítás: alkalmazás, MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz, OTSZ és TvMI · Hol kell biztonsági világítás)

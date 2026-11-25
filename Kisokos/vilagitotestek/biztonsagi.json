@@ -1,5 +1,5 @@
 {
-  "about": "VRG Kisokos · Világítótestek · típuskártyák (family 8 biztonsági és jelző). Ugyanaz a séma, mint a lampak.json-ban, plusz norms: a vonatkozó Előírások-kártyák ('el.<id>'). Vázlat: reviewed = null, amíg a Founder át nem nézi; a kötelezettséget mindig a tűzvédelmi terv és a hatályos előírás adja.",
+  "about": "VRG Kisokos · Világítótestek · típuskártyák (family 8 biztonsági és jelző). Ugyanaz a séma, mint a lampak.json-ban, plusz norms: a vonatkozó Előírások-kártyák ('el.<id>'). Vázlat: reviewed = null, amíg a Founder át nem nézi; a kötelezettséget mindig a tűzvédelmi terv és a hatályos előírás adja. A lámpák Ra ≥ 70 értéke termékjellemző; az EN 1838:2024 legalább Ra 40-et ír elő.",
   "kind": "lampa",
   "added": "2026-11-22",
   "cards": [
@@ -10,7 +10,7 @@
       "photometry": { "lm": "vészüzemben 100–400 lm", "cct": "4000–6500 K", "cri": "Ra ≥ 70", "beam": "menekülési útvonal- vagy nyílt területi optikával" },
       "distribution": { "type": "batwing" },
       "control": "töltésjelző LED, próbagomb; öntesztes vagy DALI-címezhető kivitel", "lines": ["kv.dali", "kv.halozat-50hz"],
-      "install": ["Állandó (nem kapcsolt) fázist kap a helyiség világítási áramköréről, hogy annak a kiesésére is bekapcsoljon; a kapcsolt fázis csak állandó üzemű kivitelnél, a gyártó szerint.", "Az akkumulátor a bekötés után töltődik: a teljes idejű próba csak a teljes feltöltés után.", "Helye a terv szerint: kijáratok, lépcsők, irányváltások, tűzoltó eszközök fölött."],
+      "install": ["Készenléti lámpatest: állandó (nem kapcsolt) fázist kap az általa szolgált terület világítási áramköréről (a kapcsoló előtt), hogy az áramkör kiesésére, és ne a lekapcsolására induljon; az áramkör részleges kiesésekor is be kell kapcsolnia (TvMI 7.7, 12.3.2). Állandó üzemű lámpatest: az állandó fázis a töltéshez és az érzékeléshez akkor is kell; a kapcsolt fázis csak a normál üzemi fényforrást kapcsolja, a gyártó bekötési rajza szerint.", "Az akkumulátor a bekötés után töltődik: a teljes idejű próba csak a teljes feltöltés után.", "Helye a terv szerint: kijáratok, lépcsők, irányváltások, tűzoltó eszközök fölött."],
       "fixing": ["rg.beton", "rg.gipszkarton", "rg.nylon-terpeszto", "rg.uregesfali-fem"],
       "rules": "MSZ EN 60598-2-22, MSZ EN 1838, MSZ EN 50172; a kötelezettség: OTSZ", "norms": ["el.msz-en-60598-2-22", "el.msz-en-1838", "el.msz-en-50172", "el.otsz-tvmi", "el.msz-en-62034"],
       "symbol": "lum.emergency",
@@ -49,7 +49,7 @@
       "rules": "MSZ EN ISO 7010, MSZ EN 1838, MSZ EN 60598-2-22", "norms": ["el.msz-en-iso-7010", "el.msz-en-1838", "el.msz-en-60598-2-22"],
       "symbol": "lum.exit",
       "rooms": "kijáratok, folyosók, lépcsőházak, közösségi terek",
-      "traps": ["Régi, szöveges (KIJÁRAT) vagy nem szabványos piktogramú jel: cserélni kell.", "A matricával cserélhető irányú jelnél a beszerelés után ellenőrizni kell a nyilat."],
+      "traps": ["Régi, szöveges (KIJÁRAT) vagy nem szabványos piktogramú jel: a TvMI 7.7 egyértelmű irányt jelző piktogramot kér; a csere kötelezettségét és átmeneti szabályait az OTSZ-ben és a hatósággal ellenőrizni kell.", "A matricával cserélhető irányú jelnél a beszerelés után ellenőrizni kell a nyilat."],
       "related": ["onallo-biztonsagi", "utanvilagito-jel"],
       "terms": { "hu": ["menekülési útirányjelző lámpa ISO 7010", "kijáratjelző akkus"], "en": ["emergency exit sign light ISO 7010"], "de": ["Rettungszeichenleuchte ISO 7010"] },
       "shop": "Villamossági nagykereskedés, biztonságtechnikai szaküzlet." },
@@ -78,7 +78,7 @@
       "photometry": { "lm": "vészüzemben 500–3000 lm", "cct": "4000–6500 K", "cri": "Ra ≥ 70", "beam": "széles, nyílt területi" },
       "distribution": { "type": "wide", "angle": 120 },
       "control": "készenléti vagy állandó üzemű; öntesztes vagy központi felügyelettel", "lines": ["kv.dali", "kv.halozat-50hz"],
-      "install": ["Nyílt területre a padlón legalább 0,5 lx (a szélső 0,5 m nélkül): a kiosztást számítással kell igazolni.", "Nagy magasságban a karbantartás (akkucsere) gépet kíván: központi rendszer lehet jobb."],
+      "install": ["Nyílt területre a padlón legalább 0,5 lx (a szélső 0,5 m nélkül): a kiosztást számítással kell igazolni.", "Nyílt területi világítás 60 m²-nél nagyobb területen kell (az EN 1838:2024 szerint is), és ahol az útvonal nem egyértelmű, a legrövidebb utat menekülési útvonalként kell megvilágítani.", "Nagy magasságban a karbantartás (akkucsere) gépet kíván: központi rendszer lehet jobb."],
       "fixing": ["rg.beton", "rg.acelszerkezet", "rg.terpeszto-horgony"],
       "rules": "MSZ EN 1838, MSZ EN 60598-2-22", "norms": ["el.msz-en-1838", "el.msz-en-60598-2-22", "el.otsz-tvmi"],
       "symbol": "lum.emergency",
