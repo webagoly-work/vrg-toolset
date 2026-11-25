@@ -51,6 +51,8 @@ function createSpeak({ loadTts, enabled = () => false, engine = () => 'sherpa', 
     return { ok: true, id: r.id, played: !!r.played };
   }
   function stop() { try { if (sp && sp.stop) sp.stop(); } catch (e) {} return { ok: true }; }
+  // load the voices up front, so the first answer does not wait for them
+  async function warm(langs) { const s = enabled() ? get() : null; if (s && s.warm) { try { await s.warm(langs || ['hu']); } catch (e) { log('speak', 'warm failed', e && e.message); } } return !!s; }
   async function status() {
     const eng = engine();
     if (eng === 'web' || eng === 'none') return { ok: true, enabled: !!enabled(), engine: eng, ready: eng === 'web' };
@@ -59,7 +61,7 @@ function createSpeak({ loadTts, enabled = () => false, engine = () => 'sherpa', 
     try { return { ...(await s.status()), enabled: !!enabled(), engine: eng }; } catch (e) { return { ok: true, enabled: !!enabled(), engine: eng, ready: false }; }
   }
   function close() { try { if (sp && sp.close) sp.close(); } catch (e) {} sp = null; }
-  return { say, stop, status, close };
+  return { say, stop, status, close, warm };
 }
 
 module.exports = { createSpeak, pcmB64, MAX_TEXT };

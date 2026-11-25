@@ -442,3 +442,47 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `Voice/test/voice.test.js` 6, `wp-54.test.js` 6.
 - Not run: whisper-server itself (a Windows exe, and no model here), Hungarian accuracy, CPU load, the Electron probe
   `shell/selftest/wp-54.js`.
+
+## WP-56 Szem + WP-57 Hang — phase 3 of the voice work: read the screen, answer aloud (2026-11-25, cloud session, two forks + the wiring)
+
+- Asked for: phase 3 of `docs/research/2026-11-25_voice-roadmap.md`. Read what is on screen in any program (read-only, offline) and
+  say the overlay's short answer aloud.
+- **`Voice/screen/`** (the screen fork):
+  - `uia-host.ps1` is one long-running Windows PowerShell 5.1 process that reads the foreground window's UI Automation tree. It talks
+    in JSON lines, is ASCII only, has no input or write calls, never reads a password value, and answers `elevated` for an elevated
+    window.
+  - `screen.js` gives `describe('focused' | 'windows' | 'error' | 'read')` with a terse Hungarian `say`. Redaction (e-mail, phones,
+    IBAN, 8-8-8 accounts, cards by Luhn, tokens) runs before anything leaves it. The allow / deny policy never names a denied window.
+    The Asztal's own windows come back `own`.
+  - `ocr.js` uses tesseract.js 7.0.0 with hun + eng as the fallback when the tree is thin. Real OCR here read every accent, at
+    confidence 93 and about 0.2 s a read.
+  - `fetch-ocr.js` pins tessdata_fast 4.1.0 by sha256.
+- **`Voice/tts/`** (the speech fork):
+  - `tts.js` drives sherpa-onnx-node 1.13.8 (Apache-2.0, prebuilt; 2.x dropped espeak-ng and breaks Piper) with the Piper voices
+    anna, berta, imre and amy. A real 6-word Hungarian answer took 64–157 ms once warm.
+  - The SAPI fallback is `sapi-host.ps1`.
+  - The queue holds one answer at a time; the newest waiting one wins; `stop()` is the barge-in.
+  - `speakable()` and `lexicon.json` make terms sayable: VRG, GO …, M16, numbers, %.
+  - `fetch-tts.js` pins every file (sha512 for the npm packages, sha256 for the voices).
+  - **The voice licences are UNCLEAR:** the Hungarian datasets are CC0, but every voice was fine-tuned from "lessac", which is widely
+    reported as non-commercial. That is fine for answers on the Founder's own PC; anything shipped needs his decision.
+- **The Desktop wiring** (this session):
+  - An optional global push-to-talk key (`voice.global`, Ctrl+Alt+V): press = listen, press again or 8 s = stop. It works while
+    another program is in front, and the window in front at the press is read at once (the glance, `lib/eyes.js`).
+  - The answer shows in a small always-on-top window (`lib/hudwin.js`, `page/hud.html`). It takes no focus or input, and its preload
+    can only receive.
+  - `lib/speak.js` wraps Voice/tts: PCM goes to the page as base64 Float32, the `web` engine uses the OS voices, and `warm()` loads the
+    voices at startup.
+  - IPC `screen.describe/status`, `speak.say/stop/status` and `hud.show` (wp-35 pin 131 → 137); PowerShell is on the spawn list.
+  - New overlay commands: melyik program ez, milyen ablakok vannak nyitva, mi a hiba, olvasd fel, csend, beszélj, ne beszélj.
+  - Every answer is spoken; any new push-to-talk stops the voice. "mi van a képernyőn" is about the program in front only when it
+    came from the global key.
+  - Everything is off by default (`screen.enabled`, `speak.enabled`, `voice.global`). There are deny lists for password managers,
+    banking and private windows.
+- **Tests:**
+  - `Voice/screen` 10 (1 needs the language data), `Voice/tts` 9 (1 needs the voice), `wp-56` 5, `wp-57` 2.
+  - The full Dashboard suite: 339 pass, the same 68 environment failures.
+  - Chromium (the real page scripts, main stubbed): the global flow, screen commands, spoken answers, barge-in and mute.
+  - The answer window rendered.
+- **Not run:** the PowerShell helpers (no Windows here), the addon inside Electron, the global key, a Hungarian SAPI voice, and Avast's
+  reaction to the helpers' first start.

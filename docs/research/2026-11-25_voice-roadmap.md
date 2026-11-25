@@ -36,7 +36,7 @@ spoken text never goes straight into someone else's text box: it fills our own b
 - **Without a microphone:** a typed command line (Ctrl+Shift+Space) runs the same parser.
 - **For phase 3:** `VRGVoiceCmd.providers` is the extension point for "what is on screen".
 
-## Phase 3: Szem és hang ("eyes and voice"): read the whole screen, answer aloud (proposed, ~2–3 weeks)
+## Phase 3: Szem és hang ("eyes and voice"): read the whole screen, answer aloud (built 2026-11-25: WP-56, WP-57; not yet run on Windows)
 
 - **Reading the screen**, read-only, offline:
   - First, a small helper process that reads the focused window's Windows UI Automation tree. No maintained npm wrapper exists, so

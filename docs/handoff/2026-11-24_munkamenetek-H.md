@@ -1,7 +1,7 @@
-# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő, the Előszűrő and voice (WP-50 … WP-55), the local half
+# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő, the Előszűrő and voice (WP-50 … WP-57), the local half
 
 *Paste everything between the two lines into a Claude Code session started in `H:\VRG\Full\Planner_VRG_U100`.*
-*Updated 2026-11-25: covers everything on the branch (PR webagoly-work/vrg-toolset#13), WP-50 … WP-55.*
+*Updated 2026-11-25: covers everything on the branch (PR webagoly-work/vrg-toolset#13), WP-50 … WP-57.*
 
 ---
 
@@ -43,7 +43,15 @@ What is on the branch (details: `docs/desktop/LOG.md` § WP-50 … WP-53, decisi
 - **WP-55 Parancs-héj:** the voice command overlay. It handles 34 commands from `Voice/command/commands.json`, tolerates
   misrecognitions, answers in a few words, asks before closing or sending, has a phrase-gated level switch, and a typed command line
   (Ctrl+Shift+Space).
-- Voice roadmap (phases 3–4 proposed): `docs/research/2026-11-25_voice-roadmap.md`.
+- **WP-56 Szem / WP-57 Hang (voice phase 3):**
+  - an optional global push-to-talk key (Ctrl+Alt+V) that works while another program is in front;
+  - read-only screen reading (a UI Automation helper in PowerShell, Hungarian OCR as the fallback, redaction, an allow / deny list);
+  - spoken answers offline (sherpa-onnx + a Piper Hungarian voice, or SAPI);
+  - a small always-on-top answer window;
+  - new commands (melyik program ez, mi a hiba, olvasd fel, csend, ne beszélj …).
+
+  All off by default (`screen.enabled`, `speak.enabled`, `voice.global`).
+- Voice roadmap (phase 3 built, phase 4 proposed): `docs/research/2026-11-25_voice-roadmap.md`.
 
 Work step by step, show me each result, and stop to ask me before any commit, push, merge, settings change or hook install.
 
@@ -181,7 +189,40 @@ Work step by step, show me each result, and stop to ask me before any commit, pu
    - The microphone works only because the frame page has no permission handler (the same finding as the camera, step 7).
      Include the microphone in the handler you propose there.
 
-10. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
+10. **Voice phase 3: screen reading and spoken answers (WP-56, WP-57).** Read `Voice/screen/README.md`, `Voice/tts/README.md` and
+    `docs/desktop/LOG.md` § WP-56 + WP-57.
+    - **Tests:** `node --test Voice/screen/test/screen.test.js Voice/tts/test/tts.test.js`, then `node Dashboard/test/run.js WP-56`
+      and `WP-57`.
+    - **Fetch:** `node Voice/screen/fetch-ocr.js --npm` (the Hungarian and English OCR data and tesseract.js) and
+      `node Voice/tts/fetch-tts.js` (the speech addon, anna and amy). Run the tests again with `VRG_TESSDATA` / `VRG_TTS_REAL` set, so
+      the two skipped real tests run.
+    - **The voice licences:** every Piper voice is marked UNCLEAR (fine-tuned from "lessac", reportedly non-commercial). Tell me
+      before anything is shipped beyond my own PC.
+    - **The PowerShell helpers** have never run.
+      - Check that `uia-host.ps1` and `sapi-host.ps1` start once and stay up, and whether Avast blocks their first start.
+      - Check whether Windows has a Hungarian SAPI voice.
+    - **Screen reading:** turn on `screen.enabled`, `speak.enabled`, `voice.enabled` and `voice.global`, and restart the Asztal (the
+      global key is registered at start). Then, with Chrome, VS Code, Total Commander and Explorer in front, press Ctrl+Alt+V, ask, and
+      press it again:
+      - "melyik program ez?" and "milyen ablakok vannak nyitva?";
+      - "mi a hiba?" (use a VS Code window with a red build error);
+      - "olvasd fel" (select a paragraph first).
+
+      Tell me what was read through UI Automation and what through OCR. Do Chrome and VS Code expose their content without
+      `--force-renderer-accessibility`?
+    - **Timings:** the time from the second key press to the spoken answer, and the CPU load.
+    - **Safety:**
+      - nothing is read from KeePassXC, an OTP Bank tab or an InPrivate window (the default deny lists);
+      - client job folders: Explorer shows only a folder's name, so no default rule covers them. Propose how to keep a `jobs\` window
+        out (for example its folder names in `screen.denyTitles`, kept local), and ask me;
+      - an elevated window gives "elevated" and never hangs;
+      - the answer window never takes the focus;
+      - "csend", or any new push-to-talk, stops the voice at once;
+      - "ne beszélj" keeps the answers on screen only.
+    - **Permissions:** the screen capture, the microphone and the camera all ride on Electron's allow-by-default (step 7). Include
+      screen capture (`desktopCapturer`) in the permission handler you propose.
+
+11. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
    - first run `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` (the cloud could not refresh the
      inventory: it had no anonymise map);
    - commit on the branch above;

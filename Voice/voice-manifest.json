@@ -40,5 +40,92 @@
       "sha256": null,
       "note": "Only to compare: slower than turbo (24 decoder layers), Hungarian not better."
     }
-  ]
+  ],
+  "ocr": {
+    "_comment": "WP-56 Szem: the OCR fallback of the screen reader. tessdata_fast pinned to the 4.1.0 TAG, fetched from raw.githubusercontent.com (github.com/…/raw is refused by some proxies) by `node Voice/screen/fetch-ocr.js` into <Full>/tools/voice/tessdata, every file checked against its sha256 (measured 2026-11-25). The engine itself is tesseract.js 7.0.0 from npm, pinned with sha512 integrity in Voice/screen/package-lock.json.",
+    "repo": "tesseract-ocr/tessdata_fast",
+    "tag": "4.1.0",
+    "license": "Apache-2.0",
+    "dir": "tessdata",
+    "files": [
+      {
+        "id": "hun",
+        "file": "hun.traineddata",
+        "url": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0/hun.traineddata",
+        "sha256": "35067e7cfe102dcdc953f9a758fdfaa6296b17a1ee6d874ee780fa306430b9fb",
+        "bytes": 5296273
+      },
+      {
+        "id": "eng",
+        "file": "eng.traineddata",
+        "url": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0/eng.traineddata",
+        "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+        "bytes": 4113088
+      }
+    ]
+  },
+  "tts": {
+    "_comment": "WP-57 Hang: what Voice/tts/fetch-tts.js downloads into <Full>/tools/voice/tts. npm packages are pinned to an exact version and checked against their sha512 integrity (the repo's npm rule); voice archives are pinned to the sherpa-onnx `tts-models` release and checked against sha256. Stay on sherpa-onnx-node 1.13.x: 2.0.0 dropped the built-in espeak-ng phonemizer, so Piper voices fail there ('phoneme_codepoints is empty').",
+    "addon": {
+      "name": "sherpa-onnx-node",
+      "version": "1.13.8",
+      "license": "Apache-2.0",
+      "integrity": "sha512-MsDMBdhLFTZ1GwvcGSSQhnS7g/EA8OMH6IYysCVUOM7j8Icty9KRc0E6YT1A5fWBsZwRfKOeh88QC95aRvS8ag==",
+      "platforms": {
+        "win32-x64": {
+          "name": "sherpa-onnx-win-x64",
+          "integrity": "sha512-oZF1c9VPOKtMwn83Bboc5XSWL+76BRoyB3eUuVnCknBKxwSULZU2Foia9VHWzU+n4I12rPsP6z6H9Rp1hD9o8g=="
+        },
+        "linux-x64": {
+          "name": "sherpa-onnx-linux-x64",
+          "integrity": "sha512-6plnhjagsSeTntCgnlag86hWbs/uZE9Crms1LgOb68/1nKsIQjMd+WG519m+aPwT6TrsBOiEMzrx41t8sL5L5g=="
+        }
+      },
+      "note": "Prebuilt N-API addon (no compiler needed). Released 2026-09-10."
+    },
+    "voices": [
+      {
+        "id": "hu_HU-anna-medium",
+        "lang": "hu",
+        "default": true,
+        "archive": "vits-piper-hu_HU-anna-medium.tar.bz2",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-hu_HU-anna-medium.tar.bz2",
+        "sha256": "c67b13e57b71eca19098fe499afc35ebce8f63a0b524017c786af2025821216a",
+        "sizeMB": 64,
+        "license": "UNCLEAR: dataset CC0 (NabuCasa voice-datasets), but fine-tuned from Piper en_US lessac (Blizzard 2013 data); check before any use outside the Founder's own PC",
+        "voice": "female"
+      },
+      {
+        "id": "hu_HU-berta-medium",
+        "lang": "hu",
+        "archive": "vits-piper-hu_HU-berta-medium.tar.bz2",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-hu_HU-berta-medium.tar.bz2",
+        "sha256": "a00ba073fa7f8e1b2be58f881b24892e2dca16c3c5979ee4ea4bc6ccdd89dbc0",
+        "sizeMB": 64,
+        "license": "UNCLEAR: as anna",
+        "voice": "female"
+      },
+      {
+        "id": "hu_HU-imre-medium",
+        "lang": "hu",
+        "archive": "vits-piper-hu_HU-imre-medium.tar.bz2",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-hu_HU-imre-medium.tar.bz2",
+        "sha256": "7be44b928bb26b03e403660894cd8210828dd8a0e9dccc4bade4a1632fc4f8c4",
+        "sizeMB": 64,
+        "license": "UNCLEAR: as anna",
+        "voice": "male"
+      },
+      {
+        "id": "en_US-amy-medium",
+        "lang": "en",
+        "default": true,
+        "archive": "vits-piper-en_US-amy-medium.tar.bz2",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-medium.tar.bz2",
+        "sha256": "9a5d1fc497f85e8022b785bff5f8105203b1e33099ee6265203efc70b0cb0264",
+        "sizeMB": 64,
+        "license": "UNCLEAR: model card says 'See URL' (MycroftAI mimic3-voices); fine-tuned from lessac",
+        "voice": "female"
+      }
+    ]
+  }
 }

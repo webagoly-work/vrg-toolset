@@ -677,11 +677,13 @@ const speakLib = require('./lib/speak.js').createSpeak({
   loadTts: () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js')),
   enabled: () => onSetting('speak.enabled', false) === true,
   engine: () => onSetting('speak.engine', 'sherpa'),
-  opts: () => ({
-    dirs: { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node_modules') }, powershell: POWERSHELL, log,
-    spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }),
-    loadAddon: () => { try { return require(voiceToolDir('tts', 'node_modules', 'sherpa-onnx-node')); } catch (e) { return null; } },
-  }),
+  opts: () => {
+    // the layout Voice/tts/fetch-tts.js writes: <Full>\tools\voice\tts\{node (the sherpa-onnx-node addon), <voice dirs>}
+    const dirs = { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node') };
+    let loadAddon = () => null;
+    try { loadAddon = require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js')).addonLoader(dirs); } catch (e) {}
+    return { dirs, powershell: POWERSHELL, log, loadAddon, spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }) };
+  },
   log,
 });
 const hudWin = require('./lib/hudwin.js').createHudWin({ BrowserWindow, screen, file: path.join(__dirname, '..', 'page', 'hud.html'), preload: path.join(__dirname, 'hud-preload.js'), log });
@@ -717,6 +719,7 @@ function registerGlobalVoice() {
   if (!ok) audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key });
 }
 app.on('before-quit', () => { eyesLib.close(); speakLib.close(); hudWin.destroy(); });
+setTimeout(() => { if (onSetting('speak.enabled', false) === true && !SELFTEST) speakLib.warm(['hu', 'en']).catch(() => {}); }, 6000);   // the voices load once (0.5–0.9 s each), in the background
 
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');

@@ -85,7 +85,7 @@ async function install(e, pin) {
   console.log('  ok: ' + Math.round(d.bytes / 1048576) + ' MB, sha256 ' + d.sha256.slice(0, 16) + '…');
 }
 
-module.exports = { entries, installed, ROOT };
+module.exports = { entries, installed, ROOT, FULL, download, findFile };   // download / findFile: also used by Voice/tts/fetch-tts.js (WP-57)
 
 if (require.main === module) {
   (async () => {
