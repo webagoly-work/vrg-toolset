@@ -1,165 +1,196 @@
-// WP-50 — the VRG Böngésző's links door (T1, BRW-Q01): web.json is the master of vrg.web-links v1. lib/bookmarks.js takes ops
-// (applyOps), absorbs Browser/serve.js's inbox, and lib/applinks.js answers vrg-app://browser/__vrg/links to that app only.
+// WP-50: Munkamenetek — the local Claude Code sessions of A and B (shell/lib/sessions.js) and the pane's helpers (page/panes/sessions.js).
+//  - list(): both roots, newest first, the title / folder name / branch from the first lines, live = written in the last 2 minutes,
+//    other files and empty transcripts left out, no path in the reply;
+//  - resume(): --resume <id> in the transcript's own folder, --fork-session for Másolat, /remote-control as the first prompt, a live
+//    session refused unless forked, a vanished folder refused, bad accounts / ids refused before the disk is touched;
+//  - teleport() in the repo, canvas() through the server callback at #s=<id>;
+//  - the pane kind is registered everywhere a kind is listed, the catalog item opens it, the IPC channels check their payloads.
 'use strict';
 const test = require('node:test');
-const assert = require('node:assert/strict');
+const assert = require('node:assert');
 const fs = require('fs'), os = require('os'), path = require('path');
-const { createBookmarks } = require('../shell/lib/bookmarks.js');
-const { createAppLinks, isLinksRequest } = require('../shell/lib/applinks.js');
+const { createSessions, rootsFrom, headInfo, folderName, SESSION_RE, LIVE_MS, CLOUD_URL, REMOTE_PROMPT } = require('../shell/lib/sessions.js');
+const pane = require('../page/panes/sessions.js');
 
-const tmp = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'wp50-')), 'web.json');
-const URL_ = 'vrg-app://browser/__vrg/links';
+const DASH = path.resolve(__dirname, '..');
+const REPO = path.resolve(DASH, '..');
+const ID1 = '11111111-1111-4111-8111-111111111111';
+const ID2 = '22222222-2222-4222-8222-222222222222';
+const ID3 = '33333333-3333-4333-8333-333333333333';
+const NOW = Date.parse('2026-11-24T12:00:00Z');
 
-test('bookmarks: ops from the app are applied, idempotent, and written as the Asztal format', () => {
-  const file = tmp();
-  let t = 1000;
-  const bm = createBookmarks({ file, now: () => t, timers: false });
-  bm.toggle('https://github.com/', 'GitHub');
-  const ops = [{ op: 'bookmark', url: 'https://tme.eu/hu/', title: 'TME', at: 500 }, { op: 'visit', url: 'https://index.hu/', title: 'Index', at: 900 },
-    { op: 'unbookmark', url: 'https://github.com/' }, { op: 'visit', url: 'file:///etc/passwd', at: 1 }];
-  assert.equal(bm.applyOps(ops), 3, 'the file: URL is dropped');
-  bm.applyOps(ops);
-  const j = JSON.parse(fs.readFileSync(file, 'utf8'));
-  assert.deepEqual(j.bookmarks.map(b => b.url), ['https://tme.eu/hu/']);
-  assert.deepEqual(j.history, [{ url: 'https://index.hu/', title: 'Index', at: 900 }], 'twice is once');
-  assert.equal(j.format, undefined, 'web.json stays the two arrays the Asztal has always written');
-  t = 2000;
-  bm.visit('https://pane.example/', 'Seen in the Böngésző pane');
-  assert.deepEqual(bm.snapshot().history.map(h => h.url), ['https://index.hu/', 'https://pane.example/'], 'the pane history is the app history now');
-});
+const line = o => JSON.stringify(o) + '\n';
+function fixture() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-wp50-'));
+  const work = path.join(tmp, 'work', 'Planner_VRG_U100');
+  fs.mkdirSync(work, { recursive: true });
+  const gone = path.join(tmp, 'work', 'deleted-folder');
+  const a = path.join(tmp, 'a'), b = path.join(tmp, 'b');
+  const put = (root, proj, id, text, mtime) => {
+    const d = path.join(root, 'projects', proj); fs.mkdirSync(d, { recursive: true });
+    const f = path.join(d, id + '.jsonl'); fs.writeFileSync(f, text);
+    fs.utimesSync(f, new Date(mtime), new Date(mtime));
+    return f;
+  };
+  // A: an older idle session with a <command> line before the real prompt; a live one
+  put(a, '-work-Planner', ID1,
+    line({ type: 'user', isMeta: true, cwd: work, message: { content: 'meta' } }) +
+    line({ type: 'user', cwd: work, gitBranch: 'main', message: { content: '<command-name>/clear</command-name>' } }) +
+    line({ type: 'user', cwd: work, gitBranch: 'main', message: { content: [{ type: 'text', text: 'GO   MOBILE\n then build the APK' }] } }),
+    NOW - 3 * 3600e3);
+  put(a, '-work-Planner', ID2,
+    line({ type: 'summary', summary: 'Kapu restore' }) + line({ type: 'user', cwd: work, gitBranch: 'claude/x', message: { content: 'fix the Kapu' } }),
+    NOW - 30e3);
+  // B: a session whose folder no longer exists; an empty transcript and a stray file that are not sessions
+  put(b, '-work-deleted', ID3, line({ type: 'user', cwd: gone, gitBranch: 'HEAD', message: { content: 'old work' } }), NOW - 2 * 86400e3);
+  put(b, '-work-deleted', '44444444-4444-4444-8444-444444444444', '', NOW - 10e3);
+  fs.writeFileSync(path.join(b, 'projects', '-work-deleted', 'notes.jsonl'), line({ type: 'user', message: { content: 'x' } }));
+  return { tmp, work, a, b };
+}
+function recorder() {
+  const calls = [];
+  return { calls, claudeterm: { open: o => { calls.push(o); return { term: 't7', title: 'Claude', prof: o.account === 'B' ? 'claude-b' : 'claude-a', account: o.account }; } } };
+}
 
-test('bookmarks: the serve.js inbox is absorbed once and deleted', () => {
-  const file = tmp();
-  const bm = createBookmarks({ file, now: () => 5000, timers: false });
-  fs.writeFileSync(file + '.inbox', JSON.stringify({ ops: [{ op: 'bookmark', url: 'https://a.hu/', title: 'A', at: 1 }] }));
-  assert.equal(bm.absorb(), 1);
-  assert.ok(!fs.existsSync(file + '.inbox') && !fs.existsSync(file + '.inbox.taking'));
-  assert.equal(bm.absorb(), 0, 'no inbox, nothing to do');
-  fs.writeFileSync(file + '.inbox', '{broken');
-  assert.equal(bm.absorb(), 0);
-  assert.ok(!fs.existsSync(file + '.inbox.taking'), 'a broken inbox is dropped, not kept forever');
-  assert.deepEqual(bm.list().map(b => b.url), ['https://a.hu/']);
-});
-
-test('applinks: the browser app only, GET reads, POST writes', () => {
-  const file = tmp();
-  const bm = createBookmarks({ file, now: () => 7000, timers: false });
-  const al = createAppLinks({ bookmarks: bm });
-  assert.ok(isLinksRequest(URL_));
-  for (const u of ['vrg-app://planner/__vrg/links', 'vrg-app://browser/__vrg/links/x', 'https://browser/__vrg/links']) assert.ok(!isLinksRequest(u), u);
-  assert.equal(al.handle({ method: 'GET', url: 'vrg-app://planner/__vrg/links', origin: '' }).status, 404);
-  assert.equal(al.handle({ method: 'GET', url: URL_, origin: 'vrg-app://planner' }).status, 403, 'another app');
-  assert.equal(al.handle({ method: 'POST', url: URL_, origin: '', body: '{"ops":[]}' }).status, 403, 'a write names its origin');
-  assert.equal(al.handle({ method: 'POST', url: URL_, origin: 'vrg-app://browser', body: 'x' }).status, 400);
-  assert.equal(al.handle({ method: 'POST', url: URL_, origin: 'vrg-app://browser', body: 'x'.repeat(2 * 1024 * 1024) }).status, 413);
-  assert.equal(al.handle({ method: 'DELETE', url: URL_, origin: 'vrg-app://browser' }).status, 405);
-  const w = al.handle({ method: 'POST', url: URL_, origin: 'vrg-app://browser', body: JSON.stringify({ ops: [{ op: 'bookmark', url: 'https://a.hu/', title: 'A', at: 3 }] }) });
-  assert.equal(w.status, 200);
-  assert.equal(w.json.applied, 1);
-  const r = al.handle({ method: 'GET', url: URL_, origin: '' });
-  assert.equal(r.json.format, 'vrg.web-links');
-  assert.equal(r.json.v, 1);
-  assert.deepEqual(r.json.bookmarks, [{ url: 'https://a.hu/', title: 'A', at: 3 }]);
+test('headInfo: the first real prompt (no meta, no <command>), else the summary; cwd; branch without HEAD; whitespace collapsed', () => {
+  const h = headInfo(line({ type: 'user', isMeta: true, cwd: '/x', message: { content: 'm' } }) + line({ type: 'user', gitBranch: 'HEAD', message: { content: '<c/>' } }) +
+    line({ type: 'user', gitBranch: 'dev', message: { content: [{ type: 'tool_result' }, { type: 'text', text: '  hello\n\nworld ' }] } }) + 'not json\n');
+  assert.deepStrictEqual(h, { title: 'hello world', cwd: '/x', branch: 'dev' });
+  assert.strictEqual(headInfo(line({ type: 'summary', summary: 'Sum' })).title, 'Sum');
+  assert.strictEqual(headInfo('x'.repeat(10)).title, '');
+  assert.strictEqual(Array.from(headInfo(line({ type: 'user', message: { content: 'é'.repeat(200) } })).title).length, 90);
+  assert.strictEqual(folderName('H:\\VRG\\Full\\Planner_VRG_U100'), 'Planner_VRG_U100');
+  assert.strictEqual(folderName('/home/u/p/'), 'p');
+  assert.ok(SESSION_RE.test(ID1) && !SESSION_RE.test('../' + ID1) && !SESSION_RE.test('ABCDEF01-1111-4111-8111-111111111111') && SESSION_RE.test('abcdef01-1111-4111-8111-111111111111'));
 });
 
-// ---- T2: the Böngésző pane's omnibox and the palette get the VRG Böngésző's rules
-const search = require('../shell/lib/search.js');
-test('omnibox decide: bangs, Tiszta link, a link with a password refused; toUrl unchanged', () => {
-  assert.deepEqual(search.decide('!tme NYM-J 3x2,5'), { url: 'https://www.tme.eu/hu/katalog/?queryPhrase=NYM-J%203x2%2C5', bang: 'tme' });
-  assert.equal(search.decide('Ohm-törvény !w').bang, 'wiki-hu');
-  assert.deepEqual(search.decide('index.hu/?utm_source=x&id=1'), { url: 'https://index.hu/?id=1', removed: ['utm_source'] });
-  const pw = search.decide('https://user:pw@bank.hu/');
-  assert.equal(pw.url, '');
-  assert.match(pw.hu, /jelszó/);
-  assert.match(search.decide('kábel méretezés').url, /^https:\/\/www\.google\.com\/search\?q=/);
-  assert.match(search.decide('!nincsilyen x').url, /google\.com\/search\?q=!nincsilyen/, 'an unknown bang is a plain search');
-  assert.equal(search.decide('srv:idojaras').url, 'http://localhost:8808/');
-  assert.equal(search.toUrl('index.hu/?utm_source=x'), 'https://index.hu/?utm_source=x', 'toUrl keeps its old answer');
-  assert.ok(search.loadEngines().length >= 20);
-});
-test('palette: the frame page loads Gyorsválasz from the Browser core, and every script it names exists', () => {
-  const page = path.join(__dirname, '..', 'page', 'vrg-desktop.html');
-  const html = fs.readFileSync(page, 'utf8');
-  const srcs = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
-  assert.ok(srcs.includes('../../Browser/src/core/answers.js'));
-  for (const s of srcs.filter(x => x !== '../dashboard-data.js')) assert.ok(fs.existsSync(path.join(path.dirname(page), s)), s);   // that one is built (gitignored)
-  global.window = global;
-  const A = require('../../Browser/src/core/answers.js');
-  assert.equal(A.answer('230V 16A').value, '3,68 kW');
-  assert.equal(A.answer('Varler Planner'), null, 'a command name stays a command search');
+test('list: both roots, newest first, titles, folder names, branches, live, no paths', () => {
+  const fx = fixture();
+  const s = createSessions({ roots: [{ account: 'A', dir: fx.a }, { account: 'B', dir: fx.b }, { account: 'C', dir: fx.a }, { account: 'A', dir: 'relative' }], now: () => NOW });
+  const r = s.list();
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.cloud, CLOUD_URL);
+  assert.deepStrictEqual(r.roots, ['A', 'B']);
+  assert.deepStrictEqual(r.sessions.map(x => x.session), [ID2, ID1, ID3]);
+  const [s2, s1, s3] = r.sessions;
+  assert.deepStrictEqual([s1.account, s1.title, s1.project, s1.branch, s1.live], ['A', 'GO MOBILE then build the APK', 'Planner_VRG_U100', 'main', false]);
+  assert.deepStrictEqual([s2.title, s2.branch, s2.live], ['fix the Kapu', 'claude/x', true]);
+  assert.deepStrictEqual([s3.account, s3.project, s3.branch], ['B', 'deleted-folder', '']);
+  const text = JSON.stringify(r);
+  assert.ok(!text.includes(fx.tmp) && !/[\\/]projects[\\/]/.test(text), 'a path leaked: ' + text);
+  assert.ok(Object.keys(s1).every(k => ['account', 'session', 'title', 'project', 'branch', 'mtime', 'size', 'live'].includes(k)));
+  // roots as a function (read on every call); the test override
+  let list = [{ account: 'A', dir: fx.a }];
+  const lazy = createSessions({ roots: () => list, now: () => NOW });
+  assert.strictEqual(lazy.list().sessions.length, 2);
+  list = [{ account: 'B', dir: fx.b }];
+  assert.deepStrictEqual(lazy.list().sessions.map(x => x.account), ['B']);
+  const def = [{ account: 'A', dir: fx.a }];
+  assert.deepStrictEqual(rootsFrom({ VRG_SESSIONS_ROOTS: 'A=' + fx.b + ';B=' + fx.a }, def), [{ account: 'A', dir: fx.b }, { account: 'B', dir: fx.a }]);
+  for (const bad of [undefined, '', 'A=relative', 'C=' + fx.a, 'nonsense']) assert.strictEqual(rootsFrom({ VRG_SESSIONS_ROOTS: bad }, def), def, String(bad));
+  // a missing root is not an error
+  assert.deepStrictEqual(createSessions({ roots: [{ account: 'A', dir: path.join(fx.tmp, 'none') }] }).list().sessions, []);
 });
 
-// ---- T5 / T6 (Phase 3): page watches in the feed, Küldés Claude-nak, the documents in Belső keresés
-const presetsMod = require('../shell/lib/presets.js');
-test('page-watch: a baseline, then "nem változott", then the change with its lines, and the phone rung once', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50w-'));
-  let html = '<html><head><title>Teszt jogszabály</title></head><body><article><h1>Teszt jogszabály</h1><p>' + 'Első bekezdés, elég hosszú ahhoz, hogy a felolvasó megtartsa. '.repeat(2) + '</p><p>Hatály: 2026. január 1.</p></article></body></html>';
-  const fetch = async () => ({ status: 200, ok: true, text: async () => html });
-  const rung = [];
-  let t = 1000;
-  const pre = presetsMod.createPresets({ jobs: { create: () => 'j' }, fetch, now: () => t, cacheFile: path.join(dir, 'cache.json'),
-    configFile: null, userFile: () => ({ allowHosts: ['pelda.example'], presets: [{ id: 'watch-1', hu: 'Jogszabály', kind: 'page-watch', url: 'https://pelda.example/jog', every: 60 }, { id: 'watch-2', hu: 'Más', kind: 'page-watch', url: 'https://mas.example/', every: 60 }] }),
-    sources: { notify: n => rung.push(n) } });
-  let r = await pre.exec('watch-1');
-  assert.match(r.items[0].hu, /^Figyelés indult: Teszt jogszabály/);
-  t = 2000; r = await pre.exec('watch-1');
-  assert.match(r.items[0].hu, /^Nem változott/);
-  html = html.replace('Hatály: 2026. január 1.', 'Hatály: 2026. július 1. (módosítva)');
-  t = 3000; r = await pre.exec('watch-1');
-  assert.match(r.items[0].hu, /^Változott: Teszt jogszabály/);
-  assert.match(r.items[0].detail, /\+ 1 új sor: Hatály: 2026\. július 1\. \(módosítva\)/);
-  assert.match(r.items[0].detail, /− 1 eltűnt: Hatály: 2026\. január 1\./);
-  assert.equal(rung.length, 1); assert.match(rung[0].title, /^Változott/); assert.equal(rung[0].link, 'https://pelda.example/jog');
-  assert.equal(r.state.changedAt, 3000);
-  const view = pre.results().results.find(x => x.pre === 'watch-1');
-  assert.equal(view.state, undefined, 'the stored lines never go to the page');
-  const fail = await pre.exec('watch-2');
-  assert.match(fail.error, /nincs engedélyezve/, 'a host outside allowHosts is refused before any request');
-  html = '';
-  const keep = presetsMod.createPresets({ jobs: { create: () => 'j' }, fetch: async () => { throw Object.assign(new Error('x'), { hu: 'Hálózati hiba.' }); }, now: () => 4000, cacheFile: path.join(dir, 'cache.json'),
-    configFile: null, userFile: () => ({ allowHosts: ['pelda.example'], presets: [{ id: 'watch-1', kind: 'page-watch', url: 'https://pelda.example/jog' }] }) });
-  const e = await keep.exec('watch-1');
-  assert.ok(e.error && e.state && e.state.lines.length, 'a failed run keeps what the watch had seen');
-  assert.deepEqual(presetsMod.watchCompare(['a', 'b'], ['b', 'c']), { added: ['c'], removed: ['a'] });
-  assert.deepEqual(presetsMod.watchLines('12:30\n2026. 11. 23.\nValódi sor\nValódi sor\n  x  '), ['Valódi sor'], 'bare dates, times and repeats are not lines');
+test('resume: --resume in the session folder; fork, remote; live refused unless forked; vanished folder and bad input refused', () => {
+  const fx = fixture();
+  const rec = recorder();
+  const s = createSessions({ roots: [{ account: 'A', dir: fx.a }, { account: 'B', dir: fx.b }], claudeterm: rec.claudeterm, now: () => NOW });
+  assert.strictEqual(s.resume({ account: 'A', session: ID1 }).term, 't7');
+  assert.deepStrictEqual(rec.calls[0], { account: 'A', cwd: fx.work, extraArgs: ['--resume', ID1],
+    deco: { origin: 'local', account: 'A', session: ID1, title: 'GO MOBILE then build the APK' } });   // WP-51: the board labels ride along
+  assert.ok(require('../shell/lib/sheets.js').validDeco(rec.calls[0].deco));
+  s.resume({ account: 'A', session: ID1, fork: true });
+  assert.deepStrictEqual(rec.calls[1].extraArgs, ['--resume', ID1, '--fork-session']);
+  s.resume({ account: 'A', session: ID1, remote: true });
+  assert.deepStrictEqual([rec.calls[2].extraArgs, rec.calls[2].firstPrompt], [['--resume', ID1], REMOTE_PROMPT]);
+  // the cascade step: the same session on opus
+  s.resume({ account: 'A', session: ID1, stronger: true });
+  assert.deepStrictEqual(rec.calls[rec.calls.length - 1].extraArgs, ['--resume', ID1, '--model', 'opus']);
+  rec.calls.pop();
+  // live: refused without fork, a copy is fine
+  assert.strictEqual(s.resume({ account: 'A', session: ID2 }).err, 'live');
+  assert.strictEqual(rec.calls.length, 3);
+  assert.strictEqual(s.resume({ account: 'A', session: ID2, fork: true }).term, 't7');
+  // the folder is gone; the session belongs to the other account; bad ids and accounts
+  const g = s.resume({ account: 'B', session: ID3 });
+  assert.strictEqual(g.err, 'not-found'); assert.match(g.hu, /deleted-folder/); assert.ok(!g.hu.includes(fx.tmp));
+  assert.strictEqual(s.resume({ account: 'B', session: ID1 }).err, 'not-found');
+  for (const bad of [{ account: 'C', session: ID1 }, { account: 'A', session: '../' + ID1 }, { account: 'A', session: ID1 + '.jsonl' }, { account: 'A' }, {}])
+    assert.strictEqual(s.resume(bad).err, 'bad-request', JSON.stringify(bad));
+  assert.strictEqual(rec.calls.length, 4);
+  // without a claudeterm
+  assert.strictEqual(createSessions({ roots: [{ account: 'A', dir: fx.a }], now: () => NOW }).resume({ account: 'A', session: ID1 }).err, 'error');
+  // live ends after LIVE_MS
+  const later = createSessions({ roots: [{ account: 'A', dir: fx.a }], claudeterm: rec.claudeterm, now: () => NOW + LIVE_MS });
+  assert.strictEqual(later.resume({ account: 'A', session: ID2 }).term, 't7');
 });
-test('Küldés Claude-nak: the door makes a pack for the browser app only, and the pack reads like any other', () => {
-  const made = [];
-  const al = createAppLinks({ bookmarks: createBookmarks({ file: tmp(), timers: false }), toClaude: (title, text) => { made.push({ title, text }); return { ok: true, packId: 'p0123456789abcdef' }; } });
-  const U = 'vrg-app://browser/__vrg/claude';
-  assert.ok(isLinksRequest(U));
-  assert.equal(al.handle({ method: 'GET', url: U, origin: 'vrg-app://browser' }).status, 405);
-  assert.equal(al.handle({ method: 'POST', url: U, origin: '', body: '{"text":"x"}' }).status, 403, 'a write names its origin');
-  assert.equal(al.handle({ method: 'POST', url: U, origin: 'vrg-app://planner', body: '{"text":"x"}' }).status, 403);
-  assert.equal(al.handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: '{"text":"  "}' }).status, 400);
-  const ok = al.handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: JSON.stringify({ title: 'Cikk\u0007', text: 'Szöveg\u0000 itt' }) });
-  assert.equal(ok.status, 200);
-  assert.deepEqual(made, [{ title: 'Cikk', text: 'Szöveg itt' }], 'control characters out');
-  assert.equal(createAppLinks({ bookmarks: createBookmarks({ file: tmp(), timers: false }) }).handle({ method: 'POST', url: U, origin: 'vrg-app://browser', body: '{"text":"x"}' }).status, 503);
-  const { createCtx } = require('../shell/lib/ctx.js');
-  const packs = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50p-'));
-  const ctx = createCtx({ execFile: () => {}, paths: { packs: () => packs, userDir: () => packs }, now: () => new Date(Date.UTC(2026, 10, 23, 10, 0)) });
-  const p = ctx.packText('Kutatás: túlfeszültség', '# Jegyzet\nidézet [1]');
-  assert.match(p.packId, /^p[0-9a-f]{16}$/);
-  const text = fs.readFileSync(ctx.packFile(p.packId), 'utf8');
-  assert.match(text, /^# Kutatás: túlfeszültség\n\n\*A VRG Böngészőből küldve \(2026-11-23 10:00\)\.\*\n\n# Jegyzet\nidézet \[1\]\n$/);
-  assert.equal(ctx.sendToClaude(p.packId, 'chat').ok, true, 'the chat pane takes it as a pack');
-  assert.equal(ctx.packText('x', '   ').ok, false);
+
+test('teleport in the repo, canvas through the server callback', async () => {
+  const fx = fixture();
+  const rec = recorder(), asked = [];
+  const s = createSessions({ roots: [{ account: 'A', dir: fx.a }, { account: 'B', dir: fx.b }], claudeterm: rec.claudeterm, repo: fx.work, now: () => NOW,
+    server: async (id, p) => { asked.push([id, p]); return { do: 'web', url: 'http://127.0.0.1:8810' + p, server: id }; } });
+  assert.strictEqual(s.teleport({ account: 'B' }).term, 't7');
+  assert.deepStrictEqual(rec.calls[0], { account: 'B', cwd: fx.work, extraArgs: ['--teleport'], deco: { origin: 'local', account: 'B', title: 'Áthozva a felhőből' } });
+  assert.strictEqual(s.teleport({ account: 'X' }).err, 'bad-request');
+  assert.strictEqual(createSessions({ claudeterm: rec.claudeterm }).teleport({ account: 'A' }).err, 'error');   // no repo
+  const c = await s.canvas({ account: 'B', session: ID3 });
+  assert.deepStrictEqual(asked, [['munkavaszon', '/#s=' + ID3]]);
+  assert.strictEqual(c.url, 'http://127.0.0.1:8810/#s=' + ID3);
+  assert.strictEqual((await s.canvas({ account: 'A', session: ID3 })).err, 'not-found');
+  assert.strictEqual((await s.canvas({ account: 'A', session: 'x' })).err, 'bad-request');
 });
-test('Belső keresés: the documents half, and a document hit opens in the viewer', async () => {
-  const { createInnerSearch } = require('../shell/lib/innersearch.js');
-  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'wp50r-'));
-  fs.mkdirSync(path.join(repo, 'docs'));
-  fs.writeFileSync(path.join(repo, 'docs', 'kabel.md'), '# Kábelméretezés\n\nA feszültségesés határa 4 %.');
-  const docs = require('../../Browser/lib/docs.js').createDocs({ repo });
-  const execFile = (n, a, o, cb) => cb(new Error('no stack here'), '', '');
-  const is = createInnerSearch({ execFile, full: repo, repo, docs, issue: abs => 'h:' + Buffer.from(abs).toString('base64').slice(0, 22) });
-  const r = await is.inner({ q: 'feszultsegeses' });
-  assert.deepEqual(r.docs.map(d => d.path), ['docs/kabel.md']);
-  assert.equal(r.docs[0].title, 'Kábelméretezés');
-  assert.match(r.docs[0].snippet, /feszültségesés/);
-  const o = is.openHit(0, 'doc');
-  assert.equal(o.ok, true); assert.equal(o.name, 'kabel.md'); assert.equal(o.line, 1);
-  assert.equal(is.openHit(5, 'doc').ok, false);
-  assert.deepEqual((await is.inner({ q: 'feszultsegeses', only: 'code' })).docs, [], 'only code: no documents');
+
+test('pane helpers: ago, filter, actions, state', () => {
+  const h = pane;
+  assert.strictEqual(h.ago(NOW - 20e3, NOW), 'most');
+  assert.strictEqual(h.ago(NOW - 5 * 60e3, NOW), '5 perce');
+  assert.strictEqual(h.ago(NOW - 3 * 3600e3, NOW), '3 órája');
+  assert.strictEqual(h.ago(NOW - 30 * 3600e3, NOW), 'tegnap');
+  assert.strictEqual(h.ago(NOW - 4 * 86400e3, NOW), '4 napja');
+  assert.match(h.ago(NOW - 40 * 86400e3, NOW), /^2026-10-1\d$/);
+  assert.strictEqual(h.sizeText(2048), '2 KB'); assert.strictEqual(h.sizeText(3 * 1048576), '3.0 MB'); assert.strictEqual(h.sizeText(10), '1 KB');
+  assert.deepStrictEqual(h.cleanState({ account: 'B', q: 'x' }), { account: 'B', q: 'x' });
+  assert.deepStrictEqual(h.cleanState({ account: 'Z', q: 5 }), { account: 'all', q: '' });
+  assert.deepStrictEqual(h.cleanState(null), { account: 'all', q: '' });
+  const rows = [{ account: 'A', session: ID1, title: 'GO MOBILE', project: 'Planner_VRG_U100', branch: 'main' },
+    { account: 'B', session: ID3, title: 'Kapu', project: 'x', branch: 'claude/kapu' }];
+  assert.deepStrictEqual(h.filterRows(rows, { account: 'all', q: '' }).length, 2);
+  assert.deepStrictEqual(h.filterRows(rows, { account: 'B' }).map(r => r.session), [ID3]);
+  assert.deepStrictEqual(h.filterRows(rows, { q: 'mobile planner' }).map(r => r.session), [ID1]);
+  assert.deepStrictEqual(h.filterRows(rows, { q: '3333' }).map(r => r.session), [ID3]);
+  assert.deepStrictEqual(h.filterRows(rows, { q: 'mobile kapu' }), []);
+  assert.deepStrictEqual(h.filterRows(null, {}), []);
+  assert.deepStrictEqual(h.actionsFor({ live: true }), ['fork', 'canvas']);
+  assert.deepStrictEqual(h.actionsFor({ live: false }), ['resume', 'stronger', 'fork', 'remote', 'canvas']);
+  assert.strictEqual(h.teleportAccount({ account: 'B' }), 'B'); assert.strictEqual(h.teleportAccount({ account: 'all' }), 'A');
+});
+
+test('the kind is registered everywhere, the catalog opens it, the page loads it from panes/', () => {
+  assert.ok(require('../shell/lib/layout.js').KINDS.includes('sessions'));
+  assert.ok(require('../shell/lib/sheets.js').KINDS.includes('sessions'));
+  const src = f => fs.readFileSync(path.join(DASH, f), 'utf8');
+  assert.match(src('page/layout.js'), /sessions: 'Munkamenetek'/);
+  assert.match(src('page/sheets.js'), /\['sessions', 'Munkamenetek', 'Claude sessions', 'sessions', 'MM'\]/);
+  assert.match(src('page/panes/empty.js'), /\['sessions', 'Munkamenetek', 'Claude sessions', 'sessions'\]/);
+  assert.match(src('shell/lib/palette.js'), /sessions: \['Munkamenetek/);
+  assert.match(src('page/panes.css'), /\[data-pane\]\[data-kind="sessions"\] \{ height: 100%/);
+  assert.match(src('shell/preload.js'), /sessions: \{[\s\S]*?call\('sessions', 'resume'/);
+  const { KINDS } = require('../shell/lib/layout.js');
+  const cat = require('../shell/lib/catalog.js').createCatalog({ file: path.join(REPO, 'launcher', 'vrg-catalog.json'), kinds: KINDS });
+  cat.load();
+  const it = cat.get('sessions');
+  assert.ok(it && it.level === 'dev' && it.parent === 'dev:ai' && it.status === 'beta', JSON.stringify(it));
+  assert.deepStrictEqual(cat.resolve('sessions'), { do: 'pane', kind: 'sessions' });
+  const errs = require('../shell/lib/catalog.js').validate(JSON.parse(fs.readFileSync(path.join(REPO, 'launcher', 'vrg-catalog.json'), 'utf8')), { C: null, kinds: KINDS });
+  assert.deepStrictEqual(errs.filter(e => /sessions/.test(e)), []);
+});
+
+test('the Munkavászon opens one session: #s=<uuid> in the page, ?s=<uuid> on /api/sessions', () => {
+  const page = fs.readFileSync(path.join(REPO, 'SessionCanvas', 'vrg-munkavaszon.html'), 'utf8');
+  assert.match(page, /var wantSession = \(\/\[#&\]s=\(\[0-9a-f-\]\{36\}\)\\b\/\.exec\(location\.hash\)/);
+  assert.match(page, /\$\('#followNewest'\)\.checked = false; sel\.value = hit\.file; connect\(hit\.file\)/);
+  const srv = fs.readFileSync(path.join(REPO, 'SessionCanvas', 'serve.js'), 'utf8');
+  assert.match(srv, /sessions\(want\)/);
 });

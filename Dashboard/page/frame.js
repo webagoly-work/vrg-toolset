@@ -447,6 +447,8 @@
     const drop = () => { if (typeof m.server !== 'string') { try { vrg.term.kill(m.term); } catch (e) {} } };
     const id = openKind('term', {});                           // no prof: the pane stays idle (its profile menu is hidden below)
     if (!id) { drop(); return ''; }
+    // WP-51: the labels main knows (a resumed session: local, account, its title and id) go onto the window when it sits on a Lap
+    if (m.deco && typeof m.deco === 'object' && window.VRGSheets && window.VRGSheets.decorate) { try { window.VRGSheets.decorate(id, m.deco); } catch (e) {} }
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.root && inst.host); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
     if (!inst || !inst.root) { drop(); return id; }

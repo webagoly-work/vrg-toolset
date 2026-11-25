@@ -270,6 +270,9 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 
 ## WP-50 — the VRG Böngésző joins the Asztal: one links format, the pane gets the brain (2026-11-23)
 
+*Number clash: the Munkamenetek work (below, 2026-11-24) also took WP-50. At the merge into main (2026-11-25) this
+section kept its number and its test moved to Dashboard/test/wp-50b.test.js (run it with --all or ode --test).*
+
 T1 and T2 of `docs/browser/TRAJECTORIES.md` (BRW-Q01 … Q04 = A).
 
 - **One links format (T1, BRW-Q01 A).** `<userDir>/web.json` is the master of `vrg.web-links` v1 (the Data Vault's browser-kit
@@ -300,3 +303,255 @@ Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
   `/notify` on this PC (VRG Mobile Értesítések). Watches are added by the browser through `Browser/serve.js /api/watch` into
   `<userDir>/presets.json`, with their host in `allowHosts`.
 - Tests: `wp-50.test.js` 8 (+3); `wp-20` 12 / 1 and `wp-29` 17 as before the change.
+
+## WP-50 — Munkamenetek: Claude Code sessions inside the VRG Asztal (2026-11-24, cloud session)
+
+- Asked for: an embedded window with one of the cloud sessions of vrg-toolset or one of the local H: sessions, as the Claude
+  app shows them, and terminal views too. What exists and what does not: a cloud session already opens in a Böngésző pane
+  (claude.ai/code, the DevLap's first tab); the Claude app's own native window cannot be embedded; a local session reaches the
+  same web view only through Remote Control; a cloud session has no terminal to embed, only `claude --teleport` brings it down.
+- New pane kind **`sessions`** (Munkamenetek; catalog item `sessions`, Dev, under `dev:ai`, beta; dock + Ügynökök section):
+  the local sessions of A (`~/.claude`) and B (`Full\home\claude-account-b`), newest 120, each with account, age, ÉLŐ, title
+  (the first real prompt, else the summary), project folder name, branch and size; filter by account and words. Buttons:
+  **Folytatás** (`--resume <id>` in the transcript's own `cwd`), **Másolat** (`+ --fork-session`), **Távvezérlés**
+  (`/remote-control` as the first prompt: unverified, see the handoff), **Vászon** (the Munkavászon at `#s=<id>`); bar:
+  **Felhő** (claude.ai/code in a Böngésző pane), **Áthozás** (a Claude terminal in the repo with `--teleport`), **Frissítés**
+  (also every 20 s while shown). DESKU-Q25.
+- `shell/lib/sessions.js` (list / resume / teleport / canvas / find): the page names an account and a lowercase UUID; main finds
+  `<root>/projects/*/<id>.jsonl` and reads the folder from it. Replies carry no path (the folder's last name only). Live =
+  written in the last 2 minutes: Folytatás is refused (two processes on one transcript), Másolat works. A vanished folder is
+  refused by name. `VRG_SESSIONS_ROOTS="A=<dir>;B=<dir>"` replaces the roots (tests only, CONTRACT §4.9).
+- IPC `sessions.list / resume / teleport / canvas`; preload `vrg.sessions`; the kind added to `shell/lib/layout.js` and
+  `sheets.js` KINDS, `page/layout.js`, `page/sheets.js` (picker MM), `panes/empty.js`, `shell/lib/palette.js`, `desk.js`
+  (one instance, focused); `panes.css` (A edge accent, B edge warm, ÉLŐ in ok-green).
+- SessionCanvas: `/api/sessions?s=<uuid>` adds that session when it is older than the newest 80; the page opens `#s=<uuid>` and
+  switches *mindig a legújabb* off.
+- Tests: `wp-50.test.js` 7 (fixtures in a temp folder); wp-35 channel pin 115 → 119 and the `sessions` namespace; the full
+  `Dashboard/test` suite on Linux: 309 pass, the same 68 environment failures as before the change (no H:, no Electron). A
+  Chromium render of the pane with a stubbed `vrg`: rows, computed edge colours, every button's call. The Munkavászon's `#s=` on
+  a throwaway config folder of 85 sessions. **Not run:** the Electron probe `shell/selftest/wp-50.js`, check-start /
+  check-catalog against H:, inventory.js (needs the anonymise map), the real `claude` flags. All in
+  `docs/handoff/2026-11-24_munkamenetek-H.md`.
+- **Local check (2026-11-25, H:, a worktree of the branch):** WP-50, 51, 52, 35, 46, 24 green; the Electron probe
+  `selftest/wp-50.js` green on its first run, unchanged. `--all`: 468 pass and the same 4 failures as `main` before the branch
+  (449 pass), all from the catalog entry `sketcher.house3d`, which also makes check-catalog exit 1 on `main`. check-start exits
+  0 from the main checkout (a worktree cannot find START.cmd). The probe listed 120 sessions (A 118, B 2), newest first.
+  inventory.js + classify.js refreshed: 631 rows. Real `claude` on account A: `--resume` returns the history, `--fork-session`
+  makes a new id and leaves the old transcript byte-identical, `--resume --model opus` continues on opus, `--teleport` lists
+  the cloud sessions (none pulled: the clean-tree / branch needs are untested). `/remote-control` as the first prompt runs as a
+  command but opens an Enable / Never mind menu that needs one keypress. Account B's sign-in had expired: its checks did not
+  run. **Live marker:** Claude Code writes `~/.claude/sessions/<pid>.json` (sessionId, cwd, procStart = the process start,
+  status busy / idle / waiting); the 2-minute file-age guess missed a live session whose transcript was 18 minutes old.
+  Proposed: use these files + a pid check; not changed.
+
+## WP-51 — Munkamenet-tábla: board labels on a Lap (2026-11-24, cloud session)
+
+- Asked for: besides the list, a board like the Desktop's 4 × 4 Lap; around every window its origin (local / cloud / another
+  machine) as text and as a colour frame, the session's title above, a note below; each of the four shown or hidden on the board,
+  and overridable per window by right-click. Approach B of `docs/research/2026-11-24_elosszuro-roadmap.md` §1: a Desktop Lap
+  with labels, not a second grid. DESKU-Q26.
+- `shell/lib/sheets.js`: optional `sheet.board = { kind?:'sessions', show:{ origin, color, title, note } }` and
+  `win.deco = { origin?, machine?, account?, session?, title?, note?, color?, show? }`, strictly validated (no other key, texts
+  ≤ 80 / 200 / 40, no control characters); `setBoard`, `setDeco` (null / '' = back to automatic, an emptied deco is removed),
+  `boardOf`, `label(sheet, win, auto)` (the board's switches, the window's overrides, then what the pane reports).
+- `page/sheets.js`: every window has a label bar above (origin chip + title) and a note bar below; the frame takes the colour
+  (`data-deco`: ice local, violet cloud, warm machine, or the window's own). Automatic: a `claude-a/b` terminal = Helyi · A/B with
+  the title Claude Code sets (term.title events); a browser on claude.ai/code = Felhő with the page title. Right-click on the bars
+  or Címkék… in the window menu: Cím…, Megjegyzés…, Eredet (Automatikus / Helyi / Felhő / Másik gép…), Szín, Ennél az ablaknál
+  (each of the four: tábla szerint → mindig → soha), reset, the board switches. Double-click the title / note to edit. Sheet tab →
+  Tábla-címkék… turns labels on for ANY Lap. `VRGSheets.sessionBoard()` makes the Munkamenetek board once (Vezérlő 4 × 1 on top,
+  Munkamenetek 1 × 3 on the left) and switches to it; `decorate(id, deco)`, `labelOf(id)`, `onBoard()`.
+- Main hands its labels over: `claudeterm.open({ deco })` → `layout.open { …, deco }` → `frame.adoptTerm` → `VRGSheets.decorate`;
+  a resumed session = local, its account, its id and title; Áthozás = local, "Áthozva a felhőből".
+- Munkamenetek: **Tábla ⇄ Lista** button; **Gyors elérés** right panel (`shared/sidepanel`, folded to its icon rail when the
+  pane is narrower than 560 px): Munkavászon, Ügynöknyom, Napló, Divergencia, Rétegverem, Vonaltérkép (Egyszerű) + Futásnapló,
+  Vezérlőterem, Döntésnapló, Thread Board, Kontextuscsomag, Claude oldalchat, GO kódszavak, Promptok (Részletes), via `VRGDesk.open`.
+- `shared/sidepanel/` (new, a fork of this work): the Planner's side panel (`Planner/projects/varler-planner/src/05db-layout.js`,
+  `shell.html` `.side`/`.grp`) as a plug-in for any page: modules with controls, simple / detailed mode, icon rail, resize grip,
+  per-key saved state; built-ins links / toggles / notes / status; `README.md` lists six more hosts. Loaded by `vrg-desktop.html`.
+- Tests: `wp-51.test.js` 5; `shared/sidepanel/test` 7 (one in Chromium). A Chromium render of a mock board with the real CSS:
+  frames ice / violet / warm from computed styles, no page errors.
+- **Local check (2026-11-25, H:):** WP-51 green. An Electron probe with a fake `claude`: Tábla opens the Munkamenetek Lap
+  (Vezérlő 4 × 1 on top, the list 1 × 3 on the left) and the button turns to Lista; a resumed session lands with HELYI · A, its
+  title and an ice frame; origin Laptop gives GÉP: LAPTOP and a warm frame; Gyors elérés starts folded at 395 px. Fixed: the dock
+  showed the raw kinds `sessions` / `controller` (`PANE_HU` in `page/desk.js` lacked them). Screenshot:
+  `Full\_share\munkamenet-tabla-2026-11-25.png`. Not done by hand: the right-click menu, Tábla-címkék…, a violet cloud window, the
+  native-view shift under a label bar.
+
+## WP-52 — Vezérlő + Előszűrő: one prompt box, filtered into a new session (2026-11-24, cloud session)
+
+- Asked for: a central controller above the board. Section 1 = one prompt box; Egyszerű: ＋ (attach) and Küldés; Részletes: a
+  row of buttons (Tallózás, Legutóbbiak, Mappa, Galéria, Fotó, QR, Küldés). A prompt is never sent as typed: an offline filter decides
+  whether it is a new independent request or one that depends on VRG work and context, and dresses it with a harness (sources,
+  rules, output form, model) for consistent and cheaper sessions. Section 2 is the Founder's next part (a placeholder).
+- `Prefilter/` (new, a fork of this work): `prefilter.js` (`buildIndex` / `loadIndex` with a gitignored cache, `analyze`, `dress`),
+  `rules.json` (thresholds 0.55 / 0.3, weights, intent and continuation words, the three Hungarian templates), `common-words.json`,
+  `cli.js`, `README.md`, tests 7. Index here: 445 entities, ~0.1 s; 6–10 ms per prompt.
+- `shell/lib/gate.js`: attachments as ids (main's dialog, the recent list in setting `gate.recent`, a roots.json folder, a camera
+  photo saved to `Full\inbox\vezerlo`), paths only inside main's prompt; `analyze` (verdict, anchors, the dressing, where it would
+  start) and `send`: always dressed; independent → `Full\home\claude-free` (no CLAUDE.md: no VRG context loaded), context /
+  unsure → the repo; `--model` from the verdict or the user; window labels (title = first line, note = the route + model).
+  `claudeterm.open` takes `maxPrompt` up to 12 000 for a dressed prompt.
+- IPC `gate.analyze / send / pick / recent / folders / photo` (wp-35 pin 119 → 125); preload `vrg.gate`; pane kind `controller`
+  (`page/panes/controller.js`, panes.css), catalog item `controller` (Dev, under `dev:ai`, beta). QR uses Chromium's
+  BarcodeDetector where the platform has one (not on Windows desktop: the pane says so and points to VRG Mobile).
+- The frame page's session has no permission handler (Electron allows by default), so the camera works; that default is itself a
+  finding for the local session (handoff), not changed blind.
+- Research: `docs/research/2026-11-24_prompt-prefilter-research.md` (sourced notes) and `2026-11-24_elosszuro-roadmap.md`
+  (the board choice, the pipeline of five stages, 11 vectors).
+- Tests: `wp-52.test.js` 6 (a fake Előszűrő, then the real one on this repo); the full Dashboard suite: 320 pass, the same 68
+  environment failures as before WP-50. Not run: Electron, the camera, the real `claude --model`.
+- **Local check (2026-11-25, H:):** WP-52 green under Electron 44.7.1. `node:sqlite` works in Node 24 and in Electron, so the
+  index takes the Stack: 1 243 entities (with `VRG_FULL` set and the Stack database present). A dressed 1 978-character accented
+  prompt arrives intact as one argument of `claude.exe` on Windows. Vezérlő probe: "írj egy verset a télről" → independent,
+  `claude-free`, but **sonnet** ("írj egy" is the build intent; only an independent question drops to haiku; open); "GO MOBILE hol
+  tartunk?" → the repo, sonnet; "folytasd" → the reason names the earlier session; a forced Önálló wrote an `override` label.
+  The frame page grants camera, microphone (a stream opened), notifications, geolocation, clipboard-read and MIDI without asking;
+  proposed: a handler allowing video only, one-shot after Fotó (not applied). No `BarcodeDetector`: the pane points to VRG Mobile.
+  Not done: Fotó with a real camera, the attach dialogs by hand.
+
+## WP-53 — Előszűrő next steps: hook, negation, work-line memory, evaluation, the stronger-model step (2026-11-25, cloud session)
+
+- The roadmap's first vectors (`docs/research/2026-11-24_elosszuro-roadmap.md` §3: 1, 3, 4, 7 and negation).
+- `Prefilter/hook.js`: the Előszűrő as a Claude Code `UserPromptSubmit` hook. The first prompt of any session gets its dressing as
+  `additionalContext`; later prompts stay quiet unless a new named thing appears or an independent session turns to VRG (a two-line
+  "új horgony" note with one Stack search). Skips Vezérlő-dressed prompts, slash commands, `VRG_PREFILTER_OFF=1`; never blocks, never
+  logs the text. `--install [--user] [--dry]` writes the settings entry with absolute node and script paths. **Not installed**: it
+  would run in every session of the repo; the Founder decides (handoff step 6).
+- `prefilter.js`: negation (`rules.negation`: a window after ne / nem / not / without …, before nélkül → weight × 0.1, no anchor) and the
+  prior (`analyze(…, { prior })`, `rules.prior`): a bare continuation word takes the previous session's anchors.
+- `Prefilter/eval.js` + `eval/seed.jsonl` (44 made-up prompts, hu + en): run / fit (weighted cost: context judged independent = 3)
+  / extract (the first prompt of every local session) / label (c / i / s / q). Labels and candidates stay in the gitignored cache.
+  Seed set: accuracy 0.886, no context → independent mistake; the fit's suggestion (context ≥ 0.35) is not applied.
+- Vezérlő (`gate.js`): the prior is the most recent local session's first prompt (shown in the preview's reasons); a route forced
+  against the verdict is recorded as an evaluation label.
+- Munkamenetek: **Erősebb modellel** on an idle session = `--resume <id> --model opus` (the cascade step; IPC `sessions.resume`
+  gets `stronger`).
+- Tests: `Prefilter/test/next.test.js` 4 (on the real repo index), wp-50 / wp-52 extended; the full Dashboard suite: 321 pass, the
+  same 68 environment failures.
+- **Local check (2026-11-25, H:, a worktree of the branch):** the Prefilter + sidepanel tests 17 pass, 0 fail, 1 skipped (18). The
+  hook: `--test` from the repo and from `Full\home\claude-free` gives the full dressing; the `--session t1` sequence behaves as
+  specified (full dressing → nothing for "folytasd" → the two-line "új horgony · Kapu" note → nothing). `--install --dry` writes
+  the absolute path of the copy it runs from, so install it from the main checkout after the merge; **not installed**. `eval
+  extract`: 182 first prompts; labelling left to the Founder. With the Stack the seed accuracy drops to 0.864 (0.932 without it):
+  the 2 288 Stack titles add common words as anchors (all 10 real first prompts came out as context). Proposal, not applied:
+  keep only multi-word Stack titles or down-weight them. `fit --set all` suggests independent < 0.55 (no unsure band); not
+  written.
+
+## WP-55 — Parancs-héj: the voice command overlay (phase 2 of the voice work, 2026-11-25, cloud session, a fork)
+
+- Asked for: short spoken commands and questions on top of the whole Desktop (push-to-talk, like the control-assist shell of
+  Westworld S1E5), the answer in as few words as possible, while it drives the Desktop and knows what is on screen. Phase 1
+  (WP-54, the offline dictation) delivers the words; this layer understands and acts on the `command`-mode ones.
+- `Voice/command/commands.json`: the registry as data, 34 commands with Hungarian and English ways to say them. It covers:
+  - open a catalog item, go to a Lap (next / previous), the Munkapad, the board / list, the Dashboard or Desktop view;
+  - focus / maximise / restore / shrink / **close** a window;
+  - Munkamenetek: resume the latest, on opus, open the canvas;
+  - the Vezérlő: fill (never sends), **send**, clear;
+  - window labels: note, title, machine, origin, colour;
+  - the level with an authorisation phrase;
+  - questions: screen, window, sessions, live, Vezérlő;
+  - mégse, ismételd, súgó.
+
+  Plus the wake word, the fillers, yes / no, the auth phrases, colours, origins, machines, pane-kind names, and `phrases` (the words
+  phase 1 biases the recogniser towards). `build.js` writes `commands.js` (`window.VRGVoiceCommands`) for the frame page, whose CSP
+  cannot fetch JSON.
+- `Voice/command/parse.js` (UMD): fold and stem exactly as `Prefilter/prefilter.js` does, then a phonetic layer (double letters,
+  ly→j, w→v …) with an edit distance that grows with the word, so recogniser slips land ("planert", "bögésző"). Patterns with
+  `{slot}` / `{slot?}`, fillers dropped, up to two unknown words skipped. Slots resolve against the catalog, the Lapok, the visible
+  windows ("ez / this" = the focused one), colours, origins, machines, levels, the auth phrase and free text (kept as spoken).
+  Two close candidates give a ≤ 5-word ask-back ("Melyik: X vagy Y?"), answered by name or "az első / a második"; confidence
+  < 0.6 asks "Úgy érted: …?".
+- `Dashboard/page/voicecmd.js` + `voicecmd.css`: the HUD over the top strip (DOM chrome, never under a native view; the shell's
+  `desktop.cover` hides the native views only while it asks, takes typed input or shows its history). It shows the live words
+  while listening, then a ≤ 6-word answer with a dim detail line and a hover history (last 5).
+  - It acts only through the page APIs: VRGDesk, VRGSheets (activate, showTree, sessionBoard, decorate, labelOf), VRGFrame, the
+    Vezérlő pane instance, `vrg.sessions`. Maximise / shrink click the Lap window's own header buttons.
+  - Closing a window and sending a prompt wait for "igen" (spoken, typed, Enter or the button, 12 s); mégse or Esc cancels.
+  - "írd a vezérlőbe: …" only fills the box.
+  - dev / all levels need the phrase ("VRG, fejlesztői szint. Jogosult vagyok."), and the answer says that speaker verification
+    comes in a later phase.
+  - "Mi van a képernyőn?" is built by `providers` from the Desktop's own state: the view, the Lap, its windows with their labels,
+    the focused one, the live sessions. Phase 3 pushes a screen-reading provider there.
+  - Typed fallback: Ctrl+Shift+Space. It attaches to `window.VRGVoice` (WP-54) when it appears and ignores `dictate` events.
+    `window.VRGVoiceCmd = { run, parse, state, vocabulary, providers, describe, openInput }`.
+- Tests:
+  - `Voice/command/test/parse.test.js`: 6 tests, 71 utterances in Hungarian and English, with slips, slots, confirmations, auth, ask-back and unknown input.
+  - `Dashboard/test/wp-55.test.js`: 5 tests (the registry, every act has an executor, confirm on close / send, phrases cover the commands, commands.js in step, the helpers).
+  - A Chromium run with stub VRGDesk / VRGSheets / VRGFrame / vrg / VRGVoice: 19 checks (open, the confirm flow by voice, Esc and button, fill never sends, the level gate, the screen summary, max, note, resume, canvas, ask-back, voice final, dictate ignored, unknown, typed fallback, colours from the tokens), no page errors.
+  - The full Dashboard suite: 326 pass, the same 68 environment failures. Not run: the real Electron frame, a real microphone.
+- Wiring (the main session): `voicecmd.css` after `panes.css`, then the scripts `../../Voice/command/commands.js`,
+  `../../Voice/command/parse.js`, `voicecmd.js` after `desk.js` / `sheets.js` (their order relative to WP-54's `voice.js` does not matter).
+
+## WP-54 — Diktálás: offline push-to-talk speech to text (2026-11-25, cloud session, phase 1 of the voice line)
+
+- Asked for: hold a key, speak Hungarian or English, see the words live in our own text boxes (the Vezérlő's first). The recording
+  must start within 0.5 s and the tool must work offline, biased to our vocabulary. Never type into third-party pages or programs;
+  the text goes through the Előszűrő only when sent.
+- Engine: whisper.cpp's `whisper-server` (MIT) as a resident child process on 127.0.0.1, model large-v3-turbo q5_0 (small as the
+  fallback). Pseudo-streaming: re-decode every 400 ms, a word is fixed once two decodes agree. The vocabulary is the `prompt`
+  (≤ 600 chars). sherpa-onnx (hotwords only for transducers, no Hungarian one) and Vosk (no Hungarian) were left out. The reasons and
+  sources are in `Voice/README.md`. The engine release (tag v1.8.3, `whisper-bin-x64.zip`) is pinned by sha256; the models are not
+  pinned yet (Hugging Face was not reachable from the cloud).
+- `Voice/`: `engine/` (host, whisper-server adapter, fake, stable prefix, WAV), `vocab/` (build.js + extra.txt), `fetch.js` +
+  `voice-manifest.json`, tests 6.
+- Desktop:
+  - `shell/lib/voice.js` + IPC `voice.status / enable / start / chunk / stop / cancel` (wp-35 pin +6, whisper-server is an allowed
+    child); settings `voice.enabled` (off), `voice.key` (F9), `voice.lang`, `voice.model`.
+  - The page: `page/voice.js` (window.VRGVoice: the contract with WP-55), `voice-worklet.js` (16 kHz PCM16, 20 ms frames; the same
+    resampler drives a ScriptProcessor fallback when the worklet module cannot load from file://), `voice.css`.
+  - The Vezérlő's 🎤: hold to dictate, right-click to switch on / off.
+  - Catalog item `voice`.
+- Chromium (fake microphone, a stub of main):
+  - key-down → first audio sent 13–14 ms, with 300 ms of pre-roll;
+  - the live words selected and outlined in the textarea, the final in place;
+  - Shift + F9 and a password field give command mode, untouched; Esc restores the field;
+  - `simulate()` works the same;
+  - the worklet path ran with file access, the ScriptProcessor fallback without.
+- Tests: `Voice/test/voice.test.js` 6, `wp-54.test.js` 6.
+- Not run: whisper-server itself (a Windows exe, and no model here), Hungarian accuracy, CPU load, the Electron probe
+  `shell/selftest/wp-54.js`.
+
+## WP-56 Szem + WP-57 Hang — phase 3 of the voice work: read the screen, answer aloud (2026-11-25, cloud session, two forks + the wiring)
+
+- Asked for: phase 3 of `docs/research/2026-11-25_voice-roadmap.md`. Read what is on screen in any program (read-only, offline) and
+  say the overlay's short answer aloud.
+- **`Voice/screen/`** (the screen fork):
+  - `uia-host.ps1` is one long-running Windows PowerShell 5.1 process that reads the foreground window's UI Automation tree. It talks
+    in JSON lines, is ASCII only, has no input or write calls, never reads a password value, and answers `elevated` for an elevated
+    window.
+  - `screen.js` gives `describe('focused' | 'windows' | 'error' | 'read')` with a terse Hungarian `say`. Redaction (e-mail, phones,
+    IBAN, 8-8-8 accounts, cards by Luhn, tokens) runs before anything leaves it. The allow / deny policy never names a denied window.
+    The Asztal's own windows come back `own`.
+  - `ocr.js` uses tesseract.js 7.0.0 with hun + eng as the fallback when the tree is thin. Real OCR here read every accent, at
+    confidence 93 and about 0.2 s a read.
+  - `fetch-ocr.js` pins tessdata_fast 4.1.0 by sha256.
+- **`Voice/tts/`** (the speech fork):
+  - `tts.js` drives sherpa-onnx-node 1.13.8 (Apache-2.0, prebuilt; 2.x dropped espeak-ng and breaks Piper) with the Piper voices
+    anna, berta, imre and amy. A real 6-word Hungarian answer took 64–157 ms once warm.
+  - The SAPI fallback is `sapi-host.ps1`.
+  - The queue holds one answer at a time; the newest waiting one wins; `stop()` is the barge-in.
+  - `speakable()` and `lexicon.json` make terms sayable: VRG, GO …, M16, numbers, %.
+  - `fetch-tts.js` pins every file (sha512 for the npm packages, sha256 for the voices).
+  - **The voice licences are UNCLEAR:** the Hungarian datasets are CC0, but every voice was fine-tuned from "lessac", which is widely
+    reported as non-commercial. That is fine for answers on the Founder's own PC; anything shipped needs his decision.
+- **The Desktop wiring** (this session):
+  - An optional global push-to-talk key (`voice.global`, Ctrl+Alt+V): press = listen, press again or 8 s = stop. It works while
+    another program is in front, and the window in front at the press is read at once (the glance, `lib/eyes.js`).
+  - The answer shows in a small always-on-top window (`lib/hudwin.js`, `page/hud.html`). It takes no focus or input, and its preload
+    can only receive.
+  - `lib/speak.js` wraps Voice/tts: PCM goes to the page as base64 Float32, the `web` engine uses the OS voices, and `warm()` loads the
+    voices at startup.
+  - IPC `screen.describe/status`, `speak.say/stop/status` and `hud.show` (wp-35 pin 131 → 137); PowerShell is on the spawn list.
+  - New overlay commands: melyik program ez, milyen ablakok vannak nyitva, mi a hiba, olvasd fel, csend, beszélj, ne beszélj.
+  - Every answer is spoken; any new push-to-talk stops the voice. "mi van a képernyőn" is about the program in front only when it
+    came from the global key.
+  - Everything is off by default (`screen.enabled`, `speak.enabled`, `voice.global`). There are deny lists for password managers,
+    banking and private windows.
+- **Tests:**
+  - `Voice/screen` 10 (1 needs the language data), `Voice/tts` 9 (1 needs the voice), `wp-56` 5, `wp-57` 2.
+  - The full Dashboard suite: 339 pass, the same 68 environment failures.
+  - Chromium (the real page scripts, main stubbed): the global flow, screen commands, spoken answers, barge-in and mute.
+  - The answer window rendered.
+- **Not run:** the PowerShell helpers (no Windows here), the addon inside Electron, the global key, a Hungarian SAPI voice, and Avast's
+  reaction to the helpers' first start.
