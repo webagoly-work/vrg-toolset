@@ -244,3 +244,12 @@ reading keeps them.
 - **Next:** SL4 the phone bundle; skills and plugins as A nodes; GO phrases reach through their files only after a build
   (the test stack has no links from GO files).
 
+## Built (2026-11-25): skills, plugins and slash commands in the A layer
+
+- `lib/layers.js` agentic: every `SKILL.md` and custom command under the Claude home and the repo's `.claude`, and every
+  plugin's skills and commands (the plugin's name from its `.claude-plugin/plugin.json`), as A nodes of kind `skill`,
+  `plugin skill`, `command`, `plugin`. A skill owns `sk:<name>` and `sk:<plugin>:<name>`; it is part of its plugin.
+- The extractor (`lib/common.js`) and the lens read `sk:` keys; the recorder (VERSION 5, every recording is redone once)
+  records a typed slash command as a step `sk:<name>` and a `Skill` call with its skill's key, so a `/deep-research`
+  turn now lands on its skill node, live and replayed.
+

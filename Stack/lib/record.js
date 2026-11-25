@@ -21,7 +21,7 @@ const CFG = require('../config');
 const X = require('./fsx');
 const { normPath, clip } = require('./common');
 
-const VERSION = 4; // bump when the step shape or the parsing changes: every recording is redone
+const VERSION = 5; // bump when the step shape or the parsing changes: every recording is redone (5: slash commands, sk: keys)
 const DIR = path.join(CFG.out, 'recordings');
 
 /* every top-level transcript: <projects>/<project>/<uuid>.jsonl */
@@ -49,7 +49,13 @@ function toolPaths(name, input) {
   if (Array.isArray(input.file_paths)) p.push(...input.file_paths.filter(x => typeof x === 'string'));
   return p.map(normPath);
 }
-const toolText = (name, input) => [input.command, input.pattern, input.query, input.description, input.url].filter(x => typeof x === 'string').join(' ');
+const toolText = (name, input) => [input.command, input.pattern, input.query, input.description, input.url, typeof input.skill === 'string' ? 'sk:' + input.skill : null].filter(x => typeof x === 'string').join(' ');
+/* a slash command the user typed: one step, so it lands on its skill or command node (sk:<name>) */
+const slash = (t, text) => {
+  const m = /<command-name>\/?([^<\s]+)<\/command-name>/.exec(text || ''); if (!m) return null;
+  const args = (/<command-args>([\s\S]*?)<\/command-args>/.exec(text) || [])[1] || '';
+  return { t, span: 'execute_tool', actor: 'user', tool: 'command', text: clip('sk:' + m[1] + ' /' + m[1] + ' ' + args, CFG.record.inputClip), ok: true };
+};
 const short = name => name.startsWith('mcp__') ? 'mcp:' + name.split('__').slice(1).join('.') : name;
 
 /* one transcript file → raw steps (no node resolution yet) */
@@ -70,11 +76,14 @@ function parseFile(file, actorName) {
     const msg = o.message; if (!msg) continue;
     if (o.type === 'user') {
       if (typeof msg.content === 'string') {
-        if (!o.isMeta && !/^\s*<(command-|local-command|system-reminder)/.test(msg.content)) steps.push({ t, span: 'prompt', actor: 'user', text: clip(msg.content, 300) });
+        const sl = !o.isMeta && slash(t, msg.content);
+        if (sl) steps.push(sl);
+        else if (!o.isMeta && !/^\s*<(command-|local-command|system-reminder)/.test(msg.content)) steps.push({ t, span: 'prompt', actor: 'user', text: clip(msg.content, 300) });
         continue;
       }
       for (const c of msg.content || []) {
         if (c.type === 'tool_result') { const s = byToolId.get(c.tool_use_id); if (s) s.ok = !c.is_error; }
+        else if (c.type === 'text' && !o.isMeta && slash(t, c.text)) steps.push(slash(t, c.text));
         else if (c.type === 'text' && !o.isMeta && !/^\s*<(command-|system-reminder)/.test(c.text || '')) steps.push({ t, span: 'prompt', actor: 'user', text: clip(c.text, 300) });
       }
       continue;

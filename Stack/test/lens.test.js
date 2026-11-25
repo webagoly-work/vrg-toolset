@@ -16,7 +16,8 @@ const layers = {
   I: { nodes: [N('I:router', 'I', 'built', 'PCB style wiring router for the Planner', [], { t: '2026-10-01' })], edges: [] },
   Q: { nodes: [N('Q:file.visual', 'Q', 'decision file', 'docs/visual/README.md', ['p:docs/visual/README.md']), N('Q:VIS-Q5', 'Q', 'decision', 'Holo forms', ['q:VIS-Q5'])], edges: [{ a: 'Q:file.visual', b: 'Q:VIS-Q5', rel: 'holds' }] },
   L: { nodes: [N('L:route', 'L', 'line', 'Wiring router line', [], { t: '2026-10-02' })], edges: [] },
-  A: { nodes: [N('A:agent.arnold', 'A', 'agent', 'Arnold design agent', ['p:.claude/agents/arnold.md']), N('A:go.PLANNER', 'A', 'codephrase (live)', 'GO PLANNER', ['go:PLANNER'])], edges: [] },
+  A: { nodes: [N('A:agent.arnold', 'A', 'agent', 'Arnold design agent', ['p:.claude/agents/arnold.md']), N('A:go.PLANNER', 'A', 'codephrase (live)', 'GO PLANNER', ['go:PLANNER']),
+    N('A:skill.anthropic-skills.deep-research', 'A', 'plugin skill', '/deep-research · anthropic-skills', ['sk:deep-research', 'sk:anthropic-skills:deep-research'])], edges: [] },
   R: { nodes: [N('R:3f2a9c1', 'R', 'commit', 'Inventory: CSV export', ['c:3f2a9c1'], { t: '2026-11-20' })], edges: [] },
   C: { nodes: [N('C:Planner', 'C', 'folder', 'Planner', ['p:Planner']), N('C:Planner/projects/varler-planner/src', 'C', 'folder', 'src', ['p:Planner/projects/varler-planner/src']),
     N('C:SessionCanvas', 'C', 'folder', 'SessionCanvas', ['p:SessionCanvas'])], edges: [{ a: 'C:Planner/projects/varler-planner/src', b: 'C:Planner', rel: 'part' }] },
@@ -49,6 +50,8 @@ test('lens: resolves like join.resolveText (the recorder) on the same graph', ()
     ['', 'node SessionCanvas/serve.js --port 8810'],
     ['', 'see VIS-Q5 and GO PLANNER, commit 3f2a9c1'],
     ['', 'edit 06c-view-core.js and docs/visual/README.md'],
+    ['', 'sk:anthropic-skills:deep-research'],
+    ['', 'sk:deep-research /deep-research CSV libraries'],
   ];
   for (const [p, text] of cases) {
     const want = J.resolveText((p ? p + ' ' : '') + text);
@@ -65,6 +68,8 @@ test('lens: Windows and cloud paths, the session folder, decision and agent keys
   same(L.step({ name: 'Agent', input: { subagent_type: 'arnold', description: 'plan the router', prompt: 'x' } }).exact, ['A:agent.arnold']);
   same(L.step({ name: 'Bash', input: { command: 'git log 3f2a9c1' } }).exact, ['R:3f2a9c1']);
   same(L.step({ name: 'WebSearch', input: { query: 'csv parser benchmark' } }).exact, []);
+  same(L.step({ name: 'Skill', input: { skill: 'anthropic-skills:deep-research' } }).exact, ['A:skill.anthropic-skills.deep-research']);
+  same(L.resolve([], 'sk:deep-research'), ['A:skill.anthropic-skills.deep-research']);
 });
 
 test('lens: inferred reach stays apart from the exact one', () => {

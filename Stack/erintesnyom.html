@@ -216,9 +216,12 @@
   function fromModel() {
     var S = M.S, added = false;
     S.items.forEach(function (it) {
-      var key = it.kind === 'call' ? it.id : it.kind === 'prompt' ? 'p' + it.seq : null;
+      var key = it.kind === 'call' ? it.id : it.kind === 'prompt' ? 'p' + it.seq : it.kind === 'cmd' && it.cmd.src === 'slash' ? 'k' + it.seq : null;
       if (!key || seen.has(key)) return; seen.add(key);
-      if (it.kind === 'prompt') {
+      if (it.kind === 'cmd') {   // a slash command lands on its skill or command node (sk:<name>), as the recorder does
+        var name = it.cmd.name.replace(/^\//, ''), ex2 = L.resolve([], 'sk:' + name, { cwd: S.cwd });
+        steps.push({ t: it.t, tool: 'command', cat: 'plan', actor: 'root', exact: ex2, inferred: new Map(), write: false, text: it.text });
+      } else if (it.kind === 'prompt') {
         var ex = L.resolve([], it.text, { cwd: S.cwd });
         steps.push({ t: it.t, tool: 'prompt', cat: 'prompt', actor: 'root', exact: ex, inferred: L.infer(it.text, ex), write: false, text: it.text });
       } else {

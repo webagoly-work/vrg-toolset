@@ -54,6 +54,7 @@ function makeExtractor(known) {
   const RX_GO = /\bGO[ -]([A-Z][A-Z0-9]{1,9})\b/g;
   const RX_MEM = /\[\[([a-z0-9\-]+)\]\]|\bmem:([a-z0-9\-]+)/g;
   const RX_BASE = /\b[\w\-]{3,}\.(?:md|js|html|json|cmd|ps1|kt|ino|py|css|mjs|cjs)\b/g;
+  const RX_SK = /\bsk:([A-Za-z0-9][\w.\-]*(?::[\w.\-]+)?)/g;   // a skill or slash command (record.js writes "sk:<name>")
 
   /* The deepest existing path that is a prefix of p ("Planner/src/x.js:42" → "Planner/src/x.js"). */
   function resolvePath(raw) {
@@ -97,6 +98,7 @@ function makeExtractor(known) {
     for (const m of text.matchAll(RX_Q)) out.add('q:' + qid(m[1], m[2], m[3]));
     for (const m of text.matchAll(/\bD-V(\d+[a-z]?)-(\d+[a-z]?)\b/g)) out.add(`q:D-V${m[1]}-${m[2]}`);
     for (const m of text.matchAll(RX_GO)) out.add('go:' + m[1]);
+    for (const m of text.matchAll(RX_SK)) { out.add('sk:' + m[1]); if (m[1].includes(':')) out.add('sk:' + m[1].split(':').pop()); }
     for (const m of text.matchAll(RX_MEM)) { const s = m[1] || m[2]; if (memories.has(s)) out.add('m:' + s); }
     return out;
   };

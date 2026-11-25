@@ -198,6 +198,48 @@ function agentic(facts) {
     const f = `${ST}/${d}/SKILL.md`; if (!exists(f)) continue; const txt = read(f); const fm = frontmatter(txt);
     add('sched.' + d, { kind: 'scheduled task', title: d, brief: clip(fm.description || firstPara(txt), 240), own: ['p:' + f], text: txt, extra: { path: f } });
   }
+  // skills, plugins and custom slash commands (2026-11-25, so a /deep-research turn lands somewhere): the Claude home
+  // and the repo's .claude. A skill owns sk:<name> (and sk:<plugin>:<name>), a plugin pl:<name>; a skill is part of its plugin.
+  const findIn = (dir, test, depth, out = []) => {
+    if (depth < 0 || !exists(dir)) return out;
+    let ents = []; try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+    for (const e of ents) {
+      const f = dir + '/' + e.name;
+      if (e.isDirectory() && !e.isSymbolicLink() && !/^(node_modules|\.git)$/.test(e.name)) findIn(f, test, depth - 1, out);
+      else if (e.isFile() && test(f)) out.push(f);
+    }
+    return out;
+  };
+  const seenSkill = new Set(), plugins = new Map(), manifests = new Map();
+  // a plugin's name is in its manifest (.claude-plugin/plugin.json) above the skills folder; synced plugins sit in id-named folders
+  const pluginName = (dir, fallback) => {
+    if (manifests.has(dir)) return manifests.get(dir);
+    let name = fallback;
+    for (let d = dir, i = 0; i < 3 && d.includes('/'); i++, d = d.slice(0, d.lastIndexOf('/'))) {
+      const m = d + '/.claude-plugin/plugin.json';
+      if (exists(m)) { try { name = JSON.parse(read(m)).name || name; } catch { /* a broken manifest keeps the folder name */ } break; }
+    }
+    manifests.set(dir, name); return name;
+  };
+  const addSkill = (f, kind) => {
+    const seg = f.split('/'), isCmd = /\/commands\/[^/]+\.md$/.test(f);
+    const name = isCmd ? path.basename(f, '.md') : seg[seg.length - 2];
+    const at = seg.lastIndexOf(isCmd ? 'commands' : 'skills');
+    const plugin = kind === 'plugin' && at > 0 ? pluginName(seg.slice(0, at).join('/'), seg[at - 1]) : '';
+    const key = (plugin ? plugin + ':' : '') + name;
+    if (seenSkill.has(key)) return; seenSkill.add(key);
+    const txt = read(f), fm = frontmatter(txt);
+    const id = add('skill.' + key.replace(/:/g, '.'), { kind: isCmd ? 'command' : plugin ? 'plugin skill' : 'skill', title: '/' + (fm.name || name) + (plugin ? ' · ' + plugin : ''),
+      brief: clip(fm.description || firstPara(txt), 240), own: ['sk:' + name, 'p:' + normPath(f)].concat(plugin ? ['sk:' + key] : []), text: fm.description || '', extra: { path: normPath(f) } });
+    if (plugin) {
+      if (!plugins.has(plugin)) plugins.set(plugin, add('plugin.' + plugin, { kind: 'plugin', title: plugin + ' (plugin)', brief: '', own: ['pl:' + plugin], text: '' }));
+      edges.push({ a: id, b: plugins.get(plugin), rel: 'part' });
+    }
+  };
+  const isSkill = f => /\/SKILL\.md$/.test(f), isCmd = f => /\/commands\/[^/]+\.md$/.test(f);
+  for (const root of [REPO + '/.claude/skills', CLAUDE_HOME + '/skills']) findIn(root, isSkill, 4).forEach(f => addSkill(f, 'skill'));
+  for (const root of [REPO + '/.claude/commands', CLAUDE_HOME + '/commands']) findIn(root, isCmd, 2).forEach(f => addSkill(f, 'skill'));
+  findIn(CLAUDE_HOME + '/plugins', f => isSkill(f) || isCmd(f), 8).sort().reverse().forEach(f => addSkill(f, 'plugin'));
   // the generators of the other layers are agentic machinery too: each map is a script
   for (const [id, dir, what] of [['gen.features', 'features', 'Featured map'], ['gen.devlog', 'devlog', 'DevLog lines + sessions'],
     ['gen.devrep', 'devrep', 'DevRep git map'], ['gen.ideas', 'idea-timeline', 'Idea timeline'], ['gen.dashboard', 'dashboard', 'Desktop Dashboard data'], ['gen.stack', 'stack', 'This stack']]) {

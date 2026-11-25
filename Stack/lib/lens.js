@@ -36,6 +36,7 @@
   const RX_GO = /\bGO[ -]([A-Z][A-Z0-9]{1,9})\b/g;
   const RX_MEM = /\[\[([a-z0-9\-]+)\]\]|\bmem:([a-z0-9\-]+)/g;
   const RX_BASE = /\b[\w\-]{3,}\.(?:md|js|html|json|cmd|ps1|kt|ino|py|css|mjs|cjs)\b/g;
+  const RX_SK = /\bsk:([A-Za-z0-9][\w.\-]*(?::[\w.\-]+)?)/g;
   const qid = (ns, n, suf) => `${ns}-Q${parseInt(n, 10)}${suf || ''}`;
   const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const STOP = new Set(('the and for with from into its his her our you are not but all one two new old via per vrg varler round line map page app tool ' +
@@ -103,6 +104,7 @@
       for (const m of text.matchAll(RX_DV)) key(`q:D-V${m[1]}-${m[2]}`);
       for (const m of text.matchAll(RX_GO)) key('go:' + m[1]);
       for (const m of text.matchAll(RX_MEM)) key('m:' + (m[1] || m[2]));
+      for (const m of text.matchAll(RX_SK)) { key('sk:' + m[1]); if (m[1].includes(':')) key('sk:' + m[1].split(':').pop()); }
     }
     function resolve(paths, text, ctx) {
       const out = new Set(), cwd = ctx && ctx.cwd;
@@ -121,7 +123,7 @@
       if ((call.name === 'Agent' || call.name === 'Task') && /^[a-z][\w-]*$/.test(input.subagent_type || '') && input.subagent_type !== 'general-purpose') paths.push('.claude/agents/' + input.subagent_type + '.md');
       const agent = call.name === 'Agent' || call.name === 'Task';
       const text = agent ? [input.description, input.prompt].filter(x => typeof x === 'string').join(' ')
-        : [input.command, input.pattern, input.query, input.description, input.url, input.skill].filter(x => typeof x === 'string').join(' ');
+        : [input.command, input.pattern, input.query, input.description, input.url, typeof input.skill === 'string' ? 'sk:' + input.skill : null].filter(x => typeof x === 'string').join(' ');
       return { exact: resolve(paths, text, ctx), text };
     }
 
