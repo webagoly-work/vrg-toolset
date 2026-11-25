@@ -2,7 +2,6 @@ package hu.vrg.mobile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +43,9 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.kit.ui.PixelIcon
 
 // Katalógus (WP M38): every program, feature and function of VRG Mobile and the VRG Desktop on a page of its own,
 // swiped sideways, for a new user finding their way around. The pages are CatalogGuide's (kit-core, plain data), in the
@@ -78,7 +80,8 @@ fun CatalogScreen(startAt: String, onBack: () -> Unit, onOpen: (String) -> Unit)
                 itemsIndexed(pages, key = { _, p -> p.id }) { i, p ->
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { contents = false; scope.launch { pager.scrollToPage(i) } }
                         .padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(p.glyph, style = Melyviz.glyph.copy(fontSize = 18.sp, color = Melyviz.glow), modifier = Modifier.width(34.dp))
+                        val px = FeatureIcons.of(p.id)
+                        Box(Modifier.width(34.dp)) { if (px != null) PixelIcon(px, 22.dp) else Text(p.glyph, style = Melyviz.glyph.copy(fontSize = 18.sp, color = Melyviz.glow)) }
                         Column(Modifier.weight(1f)) {
                             Text(p.title, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(sectionOf(p), style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1)
@@ -103,8 +106,9 @@ private fun GuidePageView(p: GuidePage, onOpen: (String) -> Unit) {
     val feature = Catalogue.byId(p.id)
     val shape = RoundedCornerShape(Melyviz.radius)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-        Column(Modifier.fillMaxWidth().background(Melyviz.raised, shape).border(1.dp, Melyviz.glowDim, shape).padding(16.dp)) {
-            Text(p.glyph, style = Melyviz.glyph.copy(fontSize = 40.sp, color = Melyviz.glow))
+        Column(Modifier.fillMaxWidth().background(Melyviz.raised, shape).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(16.dp)) {
+            val px = FeatureIcons.of(p.id)
+            if (px != null) PixelIcon(px, 48.dp) else Text(p.glyph, style = Melyviz.glyph.copy(fontSize = 40.sp, color = Melyviz.glow))
             Text(p.title, style = Melyviz.title.copy(fontSize = 20.sp), modifier = Modifier.padding(top = 6.dp))
             Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(sectionOf(p), style = Melyviz.readout)

@@ -4,7 +4,6 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.sketch.Wants
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // F4 (WP M49): the client's wants by room on the Munkakör. "Hová" says where the Igények' + / − go: the room in focus
 // when the front opens (the one last touched on the sketch), Általános, or any room. The Szobánként card shows what
@@ -61,7 +61,7 @@ internal fun WantsByRoom(st: EditorState, col: Color) {
     var moving by remember { mutableStateOf(false) }   // UI audit 3.1: the visible way to move an item (not the long press alone)
     Column(
         Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(Melyviz.radiusSmall)).background(Melyviz.surface)
-            .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(10.dp),
+            .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(10.dp),
     ) {
         Text("Szobánként · összesen " + totals.joinToString(", ") { (st.kit.scopeItem(it.id)?.label ?: it.id) + " ×" + it.total },
             style = Melyviz.small.copy(color = Melyviz.faint))
@@ -89,7 +89,7 @@ private fun WantChip(st: EditorState, id: String, n: Int, room: String?, col: Co
     Box {
         Text(label, style = Melyviz.small.copy(fontSize = 12.sp, color = if (room != null) Color.Black else Melyviz.ink),
             modifier = Modifier.clip(RoundedCornerShape(50)).background(if (room != null) col else Melyviz.surface)
-                .border(1.dp, col, RoundedCornerShape(50))
+                .vrgBorder(1.dp, col, RoundedCornerShape(50))
                 .rco(onClick = { if (moving) menu = true else st.wantRoom = room }, onLong = { menu = true }, longLabel = "áthelyezés")
                 .padding(horizontal = 10.dp, vertical = 6.dp))
         val targets = listOf<String?>(null) + st.sketch.rooms.map { it.id }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +35,8 @@ import hu.vrg.mobile.kit.ui.Mini
 import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.update.UpdateFeature
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.kit.ui.PixelIcon
 
 // Parts shared by the home and the shell: the update mark, the stage badge and the PlannedScreen of a planned feature
 // (what it will do and which WP builds it). The Kompakt home that lived here is the one-page view now (WP M38).
@@ -46,7 +49,11 @@ internal fun UpdateMark(onOpen: () -> Unit) {
         // a 48 dp tall button in the top strip (UI audit 1.1: it was ~32 dp of text)
         Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Frissítés megnyitása", onClick = onOpen).padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center) {
-            Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val px = FeatureIcons.of(Catalogue.UPDATE)
+                if (px != null) { PixelIcon(px, 16.dp, color = Melyviz.sand); Spacer(Modifier.width(5.dp)); Text("új", style = Melyviz.label.copy(color = Melyviz.sand)) }
+                else Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand))
+            }
         }
     }
 }
@@ -70,7 +77,8 @@ fun PlannedScreen(f: FeatureInfo, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
         VrgBack(onBack)
         Spacer(Modifier.height(24.dp))
-        Text(f.glyph, style = Melyviz.glyph.copy(fontSize = 44.sp, color = Melyviz.glowDim))
+        val px = FeatureIcons.of(f)
+        if (px != null) PixelIcon(px, 48.dp) else Text(f.glyph, style = Melyviz.glyph.copy(fontSize = 44.sp, color = Melyviz.glowDim))
         Spacer(Modifier.height(10.dp))
         Row { Text(f.title, style = Melyviz.title); Spacer(Modifier.weight(1f)); StageBadge(f.stage) }
         Spacer(Modifier.height(10.dp))

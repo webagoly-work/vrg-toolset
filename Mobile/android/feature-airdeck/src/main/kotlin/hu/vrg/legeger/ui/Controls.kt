@@ -1,7 +1,6 @@
 package hu.vrg.legeger.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -57,6 +56,7 @@ import hu.vrg.legeger.core.PadMode
 import hu.vrg.legeger.core.WheelAccumulator
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlin.math.hypot
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 /** A tile of the deck. `active` lights it in the accent colour. */
 @Composable
@@ -75,7 +75,7 @@ fun DeckTile(
             .heightIn(min = minHeight)
             .clip(shape)
             .background(if (active) accent else Melyviz.surface)
-            .border(1.dp, if (active) accent else Melyviz.line, shape)
+            .vrgBorder(1.dp, if (active) accent else Melyviz.line, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -110,7 +110,7 @@ fun HoldTile(
         modifier
             .clip(shape)
             .background(if (held) accent.copy(alpha = 0.9f) else Melyviz.raised)
-            .border(1.dp, if (held) accent else Melyviz.line, shape)
+            .vrgBorder(1.dp, if (held) accent else Melyviz.line, shape)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
                 if (label != null) contentDescription = label
@@ -137,7 +137,7 @@ fun StatusDot(color: Color, size: Dp = 9.dp) {
 fun StatusPill(label: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Row(
-        modifier.clip(shape).background(Melyviz.surface).border(1.dp, Melyviz.lineSoft, shape)
+        modifier.clip(shape).background(Melyviz.surface).vrgBorder(1.dp, Melyviz.lineSoft, shape)
             .clickable(onClick = onClick).padding(horizontal = 9.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -158,7 +158,7 @@ fun Chip(text: String, selected: Boolean, description: String? = null, onClick: 
         text,
         style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp),
         modifier = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
-            .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+            .vrgBorder(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics {
                 this.selected = selected

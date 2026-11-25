@@ -6,7 +6,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +52,7 @@ import hu.vrg.mobile.sketch.Wants
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 private val HM = SimpleDateFormat("HH:mm", Locale("hu"))
 
@@ -76,7 +76,7 @@ private fun Card(color: Color, content: @Composable () -> Unit) {
     Column(
         Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(Melyviz.radiusSmall)).background(Melyviz.surface)
             .drawBehind { drawRect(color, size = Size(4.dp.toPx(), size.height)) }
-            .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
+            .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
     ) { content() }
 }
 
@@ -84,7 +84,7 @@ private fun Card(color: Color, content: @Composable () -> Unit) {
 internal fun Pill(text: String, color: Color, on: Boolean, onClick: () -> Unit) {
     Text(text, style = Melyviz.small.copy(fontSize = 12.sp, color = if (on) Color.Black else Melyviz.ink),
         modifier = Modifier.clip(RoundedCornerShape(50)).background(if (on) color else Melyviz.surface)
-            .border(1.dp, if (on) color else Melyviz.line, RoundedCornerShape(50)).clickable(onClick = onClick)
+            .vrgBorder(1.dp, if (on) color else Melyviz.line, RoundedCornerShape(50)).clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp))
 }
 
@@ -111,7 +111,7 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
         Text("A jegyzetekből", style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         sh.suggestions.forEach { g ->
             Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).border(1.dp, col.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                Column(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).vrgBorder(1.dp, col.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
                     .clickable { st.accept(g.effect) }.padding(8.dp)) {
                     Text(describe(st.kit, g.effect), style = Melyviz.label.copy(fontSize = 12.sp))
                     Text("„${g.match}”", style = Melyviz.small.copy(color = Melyviz.faint))
@@ -138,7 +138,7 @@ internal fun NotesFront(st: EditorState, sh: Shadow) = FrontPage(st, "jegyzet") 
             if (e.chips.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 4.dp)) {
                 e.chips.mapNotNull { st.kit.chip(it) }.forEach { c ->
                     Text(c.sym + " " + c.label, style = Melyviz.small.copy(fontSize = 10.sp, color = Color(c.color)),
-                        modifier = Modifier.border(1.dp, Color(c.color), RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 2.dp))
+                        modifier = Modifier.vrgBorder(1.dp, Color(c.color), RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 2.dp))
                 }
             }
             if (e.text.isNotBlank()) Text(e.text, style = Melyviz.label.copy(fontSize = 13.sp), modifier = Modifier.clickable { st.ask = Ask.EntryEdit(e.id) })
@@ -187,7 +187,7 @@ private fun ScopePill(st: EditorState, s: KScope, col: Color) {
     if (!s.qty) { Pill(s.sym + " " + s.label, col, n > 0) { st.setScope(s.id, if (n > 0) 0 else 1) }; return }
     // F4: + / − go to the room chosen under Hová; the pill shows the job total and how many are in that room
     val here = st.wantRoom?.takeIf { st.sketch.room(it) != null }?.let { Wants.inRoom(st.sketch, it, s.id) } ?: 0
-    Row(Modifier.clip(RoundedCornerShape(50)).background(if (n > 0) col else Melyviz.surface).border(1.dp, if (n > 0) col else Melyviz.line, RoundedCornerShape(50)),
+    Row(Modifier.clip(RoundedCornerShape(50)).background(if (n > 0) col else Melyviz.surface).vrgBorder(1.dp, if (n > 0) col else Melyviz.line, RoundedCornerShape(50)),
         verticalAlignment = Alignment.CenterVertically) {
         val ink = if (n > 0) Color.Black else Melyviz.ink
         if (n > 0) Text(" − ", style = Melyviz.label.copy(color = ink), modifier = Modifier.clickable { st.addWant(s.id, -1) }.padding(horizontal = 6.dp, vertical = 6.dp))

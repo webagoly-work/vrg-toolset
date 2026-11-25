@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,6 +71,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.shareText
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Claude (WP M22). VRG Mobile never signs in to Claude and never sees a Claude password or token: the official Claude app is the
 // sign-in, and this feature only opens it (ClaudeApp: the app when installed, else claude.ai in the browser).
@@ -243,7 +243,7 @@ object ClaudeFeature : VrgFeature {
     @Composable
     private fun Card(body: @Composable () -> Unit) {
         Column(Modifier.fillMaxWidth().padding(top = 10.dp).background(Melyviz.surface, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(12.dp)) { body() }
+            .vrgBorder(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(12.dp)) { body() }
     }
 
     @Composable

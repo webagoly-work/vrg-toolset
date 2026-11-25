@@ -172,6 +172,31 @@
    }
   },
   {
+   "id": "fenyjel",
+   "name": "Fényjel",
+   "light": false,
+   "colors": {
+    "abyss": "#04070A",
+    "deep": "#091018",
+    "surface": "#0E1720",
+    "raised": "#152230",
+    "line": "#273641",
+    "lineSoft": "#17212B",
+    "ink": "#E6EEF3",
+    "muted": "#93A5B2",
+    "faint": "#7A8A96",
+    "glow": "#F4FBFF",
+    "glowDim": "#737A80",
+    "current": "#B393FF",
+    "sand": "#FFD24A",
+    "coral": "#FF4F61",
+    "kelp": "#4EE38A",
+    "onGlow": "#04070A",
+    "shallows": "#13202C",
+    "activity": "#C3EA5C"
+   }
+  },
+  {
    "id": "kit-ej",
    "name": "Éj",
    "light": false,

@@ -4,6 +4,29 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "fenyjel-board",
+   "title": "Fényjel",
+   "created": "2026-11-25",
+   "updated": "2026-11-25",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG style",
+   "kind": "design",
+   "summary": "The Fényjel design system board: proposed phone home, phone controller and desktop home, eight function colour families, 46 pixel icons, LED numerals, depth planes and parts.",
+   "purpose": "Show the new look for review before the Mobile and Asztal shells are rebuilt in it.",
+   "context": [
+    "the Founder found the dark themes flat, monochrome and wordy, with generic emoji icons",
+    "asked for 8-bit dot-matrix pixel icons, function colour coding and a Fallout-terminal feel"
+   ],
+   "tags": [
+    "fenyjel",
+    "design-system",
+    "icons"
+   ],
+   "file": "files/fenyjel-board.html",
+   "url": "https://claude.ai/artifact/XExAfGxpf4b91mWLkmru87"
+  },
+  {
    "id": "domoszlo-betap",
    "title": "Domoszló ideiglenes betáp",
    "created": "2026-11-24",

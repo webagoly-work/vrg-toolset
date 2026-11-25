@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import hu.vrg.mobile.core.MiniState
 import hu.vrg.mobile.core.MiniStatus
+import hu.vrg.mobile.core.PixelGlyph
 import hu.vrg.mobile.kit.theme.KitSize
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.dotArc
@@ -60,6 +61,14 @@ enum class MiniSize(val ring: Dp, val stroke: Dp) {
 }
 
 enum class MiniMeter { RING, TICKS }
+
+/** The pixel glyph's side inside a ring: about half the ring, on whole 12-cell steps so the cells stay crisp. */
+private fun pixelSize(s: MiniSize): Dp = when (s) {
+    MiniSize.XS -> 12.dp
+    MiniSize.SM -> 18.dp
+    MiniSize.MD -> 24.dp
+    MiniSize.LG -> 36.dp
+}
 
 /** True when Android's "remove animations" (animator duration scale 0) is on. */
 @Composable
@@ -85,6 +94,8 @@ fun Mini(
     tint: Color? = null,
     meter: MiniMeter = MiniMeter.RING,
     quietIdle: Boolean = false,
+    /** Fényjel R1: a pixel glyph drawn in place of the text [icon]; it wears its family colour unless [tint] or the state says otherwise. */
+    pixel: PixelGlyph? = null,
 ) {
     val still = animationsOff()
     val spinning = status.state == MiniState.RUNNING && status.progress == null && !still
@@ -116,7 +127,11 @@ fun Mini(
     m = m.drawBehind { if (!silent) drawMini(status, size, meter, on, turn, still) }
 
     Box(m, contentAlignment = Alignment.Center) {
-        if (!icon.isNullOrEmpty()) {
+        if (pixel != null) {
+            // error and off read from the glyph's colour as from the text glyph's; a tint (a planned feature's grey) wins
+            val c = tint ?: when (status.state) { MiniState.ERROR -> p.coral; MiniState.OFF -> p.faint; else -> null }
+            PixelIcon(pixel, pixelSize(size), color = c)
+        } else if (!icon.isNullOrEmpty()) {
             val base = if (size == MiniSize.LG) Melyviz.glyph.copy(fontSize = Melyviz.glyph.fontSize * 1.4f) else Melyviz.glyph
             Text(icon, style = base.copy(color = glyphColour))
         } else Box(Modifier.size(size.ring))

@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -70,6 +69,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // GitHub fiók (WP M3): sign in once with the device flow, see who is signed in and whether the
 // toolset repo is reachable, sign out. The code is shown big and copyable; github.com/login/device
@@ -296,7 +296,7 @@ object AccountFeature : VrgFeature {
     private fun Card(content: @Composable () -> Unit) {
         val shape = RoundedCornerShape(Melyviz.radius)
         Column(
-            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).border(1.dp, Melyviz.glowDim, shape).padding(14.dp),
+            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) { content() }
     }

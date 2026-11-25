@@ -6,7 +6,6 @@ import android.util.Base64
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -69,6 +68,7 @@ import androidx.compose.ui.text.AnnotatedString
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // PC ablakok (WP M23): the VRG Desktop's files window on the phone. With a paired PC whose relay runs with --files, the PC's work
 // folders (D-17: Repó, VRG Full, Közös) read-only: browse, a look at a text or an image, and ⇄ Átadásra, which puts a copy on the
@@ -235,7 +235,7 @@ object PcWinFeature : VrgFeature {
             }
         }
         Column(Modifier.fillMaxWidth().weight(1f).background(Melyviz.surface, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).verticalScroll(rememberScrollState())) {
+            .vrgBorder(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).verticalScroll(rememberScrollState())) {
             if (l.entries.isEmpty()) Text(if (l.atRoots) "A PC nem kínál munkamappát (Mobile/catalogue/files.json)." else "Üres mappa.",
                 style = Melyviz.small, modifier = Modifier.padding(12.dp))
             l.entries.forEach { r -> RowLine(r) }
@@ -282,7 +282,7 @@ object PcWinFeature : VrgFeature {
                 if (onBoard != null) VrgChip("Átadás ›") { host.open(Catalogue.DROP.id) }
             }
             Column(Modifier.fillMaxWidth().weight(1f).background(Melyviz.surface, RoundedCornerShape(Melyviz.radius))
-                .border(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(10.dp)) {
+                .vrgBorder(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(10.dp)) {
                 when (f.kind) {
                     PcKind.TEXT -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).horizontalScroll(rememberScrollState())) {
                         Text(f.text ?: "", style = Melyviz.readout.copy(color = Melyviz.ink, fontSize = 11.sp))

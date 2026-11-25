@@ -15,7 +15,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -92,6 +91,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.format.DateTimeFormatter
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Időjárás (WP M44, D-142 … D-144): "can we work outside today" per activity, the fused 72 hours with their spread,
 // the official warnings of the place's county, the sources with their attribution; the PC's full page through the relay.
@@ -237,7 +237,7 @@ object WeatherFeature : VrgFeature {
     private fun Verdict(v: hu.vrg.mobile.weather.Verdict) {
         val c = levelColor(v.level)
         val shape = RoundedCornerShape(Melyviz.radiusSmall)
-        Column(Modifier.fillMaxWidth().padding(vertical = 3.dp).background(Melyviz.raised, shape).border(1.dp, c.copy(alpha = .6f), shape)
+        Column(Modifier.fillMaxWidth().padding(vertical = 3.dp).background(Melyviz.raised, shape).vrgBorder(1.dp, c.copy(alpha = .6f), shape)
             .padding(horizontal = 10.dp, vertical = 7.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(v.level.dot, style = Melyviz.label)
@@ -261,7 +261,7 @@ object WeatherFeature : VrgFeature {
             for (h in upcoming) {
                 val lv = acts.maxOf { Rules.levelAt(r.findings, it, h.valid).first }
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
-                Column(Modifier.width(54.dp).background(Melyviz.surface, shape).border(1.dp, levelColor(lv).copy(alpha = if (lv == Level.OK) .25f else .8f), shape)
+                Column(Modifier.width(54.dp).background(Melyviz.surface, shape).vrgBorder(1.dp, levelColor(lv).copy(alpha = if (lv == Level.OK) .25f else .8f), shape)
                     .padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     val l = h.valid.atZone(zone)
                     Text(if (l.hour == 0) "%02d.%02d".format(l.monthValue, l.dayOfMonth) else "%02d h".format(l.hour), style = Melyviz.readout.copy(fontSize = 10.sp))
