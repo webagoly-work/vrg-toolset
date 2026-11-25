@@ -18,7 +18,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -84,6 +83,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import hu.vrg.mobile.kit.ScannedLinks
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // QR párosítás (WP M2): read the QR on the PC's screen (http://localhost:47291/pair) and become a
 // trusted phone. The scan can come from here (CameraX + ML Kit, bundled model) or from the phone's
@@ -270,7 +270,7 @@ object PairFeature : VrgFeature {
     private fun Card(content: @Composable () -> Unit) {
         val shape = RoundedCornerShape(Melyviz.radius)
         Column(
-            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).border(1.dp, Melyviz.glowDim, shape).padding(14.dp),
+            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) { content() }
     }
@@ -310,7 +310,7 @@ object PairFeature : VrgFeature {
             }
         }
 
-        Box(modifier.clip(shape).border(2.dp, Melyviz.glow, shape), contentAlignment = Alignment.Center) {
+        Box(modifier.clip(shape).vrgBorder(2.dp, Melyviz.glow, shape), contentAlignment = Alignment.Center) {
             AndroidView({ view }, Modifier.fillMaxSize())
         }
     }

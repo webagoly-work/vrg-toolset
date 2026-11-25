@@ -3,7 +3,6 @@ package hu.vrg.mobile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +66,7 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // The Asztal (WP M19): the VRG Desktop's frame on the phone. Top strip (sheet tabs, Kommand, the orientation toggle,
 // settings), the sheet area, and the dock with the ◣ menu dial, the open windows and the ◢ Rétegverem dial. What a
@@ -119,7 +119,7 @@ fun DeskScreen(
                     if (tabs != null) tabs() else Text("ASZTAL", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f, fill = false).padding(end = 8.dp))
                     if (wide) Row(
                         Modifier.weight(1f).heightIn(min = 44.dp).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                            .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
+                            .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
                             .clickable(role = Role.Button, onClickLabel = "Kommand megnyitása") { kommand = true }.padding(horizontal = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) { Text("⌕  Kommand…", style = Melyviz.label.copy(color = Melyviz.muted), maxLines = 1, overflow = TextOverflow.Ellipsis) }
@@ -194,7 +194,7 @@ private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
         Box(Modifier.heightIn(min = 48.dp).rco(onClick = { act.open(f.id) }, onLong = { menu = true }, longLabel = "ablak műveletei")
             .semantics { role = Role.Button }, contentAlignment = Alignment.Center) {
             Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
-                modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
+                modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 8.dp))
         }
         RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
@@ -217,7 +217,7 @@ private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
 @Composable
 private fun Dial(glyph: String, label: String, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     Box(
-        Modifier.size(48.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).border(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
+        Modifier.size(48.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).vrgBorder(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
             .then(if (onLong != null) Modifier.rco(onClick = onClick, onLong = onLong) else Modifier.clickable(role = Role.Button, onClick = onClick))
             .semantics { contentDescription = label; role = Role.Button },
         contentAlignment = Alignment.Center,
@@ -236,7 +236,7 @@ private fun reachTag(u: DeskUnit): String = when (u.reach) {
 private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
     Column(
         modifier.padding(start = 6.dp, bottom = 66.dp).widthIn(max = 340.dp).fillMaxWidth(0.92f).heightIn(max = 460.dp)
-            .background(Melyviz.deep, RoundedCornerShape(Melyviz.radius)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius))
+            .background(Melyviz.deep, RoundedCornerShape(Melyviz.radius)).vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius))
             .verticalScroll(rememberScrollState()).padding(12.dp),
     ) {
         Text("VRG ASZTAL · MENÜ", style = Melyviz.title.copy(fontSize = 12.sp))
@@ -275,7 +275,7 @@ private fun KommandPanel(windows: List<String>, onClose: () -> Unit, onRun: (Str
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                 keyboardActions = KeyboardActions(onGo = { (url?.let { "url:$it" } ?: hits.firstOrNull()?.id)?.let(onRun) }),
                 modifier = Modifier.weight(1f).focusRequester(focus).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                    .border(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
+                    .vrgBorder(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
                 decorationBox = { inner -> if (q.isEmpty()) Text("Keresés: eszköz, funkció, ablak, webcím…", style = Melyviz.label.copy(color = Melyviz.faint)); inner() },
             )
             Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Kommand bezárása" }, contentAlignment = Alignment.Center) {

@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -106,6 +105,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 /** The palette the canvas draws with, read once per composition (DrawScope is not composable). */
 internal data class Pal(
@@ -309,7 +309,7 @@ private fun RowScope.BarTools(st: EditorState, fill: Boolean) {
             contentAlignment = Alignment.Center,
         ) {
             Text(if (on) cur!!.sym else "◐", style = Melyviz.glyph.copy(fontSize = 17.sp, color = if (on) Color(cur!!.color) else Melyviz.muted),
-                modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
+                modifier = Modifier.clip(RoundedCornerShape(50)).vrgBorder(1.dp, if (on) Color(cur!!.color) else Melyviz.line, RoundedCornerShape(50))
                     .padding(horizontal = 8.dp, vertical = 2.dp))
         }
         RcoMenu(vmenu, { vmenu = false }, "Variánsok", editorVariantItems(st, allVariants) { st.note = it })
@@ -602,7 +602,7 @@ private fun ToolRail(st: EditorState) {
             Column(
                 Modifier.width(58.dp).height(54.dp).clip(RoundedCornerShape(Melyviz.radiusSmall))
                     .background(if (on) Melyviz.glow else Melyviz.surface)
-                    .border(1.dp, if (on) Melyviz.glow else Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
+                    .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
                     .clickable { st.pick(t) },
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
             ) {
@@ -686,7 +686,7 @@ private fun ToolOptions(st: EditorState) {
                     val on = k.id == st.activeCircuit
                     Row(
                         Modifier.clip(RoundedCornerShape(50)).background(if (on) Color(k.color) else Melyviz.raised)
-                            .border(2.dp, Color(k.color), RoundedCornerShape(50))
+                            .vrgBorder(2.dp, Color(k.color), RoundedCornerShape(50))
                             .clickable(onClickLabel = if (on) "kör szerkesztése" else "kör választása") { if (on) st.ask = Ask.CircuitEdit(k.id) else st.activeCircuit = k.id }
                             .heightIn(min = 36.dp).padding(horizontal = 10.dp, vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -755,7 +755,7 @@ private fun TagTray(st: EditorState) {
                         )
                     }
                     .clip(RoundedCornerShape(50)).background(Color(t.color))
-                    .border(if (on) 2.dp else 0.dp, if (on) Melyviz.ink else Color(t.color), RoundedCornerShape(50))
+                    .vrgBorder(if (on) 2.dp else 0.dp, if (on) Melyviz.ink else Color(t.color), RoundedCornerShape(50))
                     .clickable(onClickLabel = if (on) "ecset ki" else "ecsetnek") { st.activeTag = if (on) null else t.id }
                     .heightIn(min = 36.dp).wrapContentHeight().padding(horizontal = 10.dp, vertical = 5.dp),
             )

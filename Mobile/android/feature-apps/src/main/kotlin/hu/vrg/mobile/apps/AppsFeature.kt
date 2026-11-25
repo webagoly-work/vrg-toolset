@@ -17,7 +17,6 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -91,6 +90,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import android.view.ViewGroup
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Alkalmazások (WP M21): the Desktop's in-shell HTML apps on the phone. Which apps and which files each may read come from the Desktop's
 // own catalog (DeskApps.kt, generated); what is served is AppScheme.decide, a port of the Desktop's vrg-app:// rules.
@@ -446,7 +446,7 @@ object AppsFeature : VrgFeature {
                         ))
                         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).rco(onClick = { showing.value = a.id }, onLong = { menu = true }).padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).border(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
+                            Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).vrgBorder(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
                                 contentAlignment = Alignment.Center) {
                                 Text(a.hu.split(' ').take(2).joinToString("") { it.take(1) }.uppercase(Locale.ROOT), style = Melyviz.readout.copy(color = if (s.ready(a)) Melyviz.glow else Melyviz.faint))
                             }

@@ -9,7 +9,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.layout.Box
 import android.app.Application
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +52,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Vázlat (WP M24): the field sketch. The list of sketches kept on the phone, and the editor (SketchEditor.kt). Every
 // sketch is one file in the app's own storage (files/sketch/<id>.vsketch.json), written a moment after each edit, so
@@ -202,7 +202,7 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
         entries.forEach { e ->
             Row(
                 Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(Melyviz.radiusSmall))
-                    .background(Melyviz.surface).border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
+                    .background(Melyviz.surface).vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall))
                     .clickable { onOpen(e.id) }.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

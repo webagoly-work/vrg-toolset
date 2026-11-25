@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -98,6 +97,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Google AR csomag (dev line skcam, stage K6, WP M64): the AR meter. Google's ARCore (Google Play Services for AR,
 // installed from the Play Store when it is missing) tracks the phone; this screen draws the camera with OpenGL ES 2 and
@@ -257,7 +257,7 @@ internal fun ArDialog(st: EditorState, room: String?, edge: Int?, onDone: () -> 
                         }
                     })
                     // the cross the user aims with
-                    Box(Modifier.align(Alignment.Center).size(28.dp).border(2.dp, if (state.aimOk) Melyviz.glow else Color.White.copy(alpha = 0.6f), CircleShape))
+                    Box(Modifier.align(Alignment.Center).size(28.dp).vrgBorder(2.dp, if (state.aimOk) Melyviz.glow else Color.White.copy(alpha = 0.6f), CircleShape))
                     Box(Modifier.align(Alignment.Center).size(4.dp).background(if (state.aimOk) Melyviz.glow else Color.White, CircleShape))
                     // the top: what to do, the reading
                     Column(Modifier.align(Alignment.TopCenter).fillMaxWidth().background(Color(0xAA0A141C)).padding(12.dp)) {

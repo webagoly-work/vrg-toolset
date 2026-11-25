@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -92,6 +91,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.floor
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Lapok (WP M20): the Desktop's sheets in the Asztal's sheet area. The model is kit-core's Sheets (a port of the Desktop's sheets.js) on
 // the phone's 2 × 4 grid; lying down the same sheet is drawn transposed, 4 × 2 (D-16). This file draws and turns gestures into model
@@ -176,7 +176,7 @@ private fun Tab(text: String, on: Boolean, label: String, onTap: () -> Unit, onL
         Text(if (menuHint) "$text ▾" else text, style = Melyviz.small.copy(color = if (on) Melyviz.glow else Melyviz.muted, fontSize = 12.sp,
             fontWeight = if (on) FontWeight.Bold else FontWeight.Normal), maxLines = 1,
             modifier = Modifier.heightIn(min = 36.dp).background(if (on) Melyviz.raised else Melyviz.surface, RoundedCornerShape(8.dp))
-                .border(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(8.dp))
+                .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.lineSoft, RoundedCornerShape(8.dp))
                 .clearAndSetSemantics { }
                 .padding(horizontal = 10.dp, vertical = 9.dp))
     }
@@ -227,7 +227,7 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
             val m = toModel(Cell(sc, sr))
             if (occ[m.r * P.g.cols + m.c].isNotEmpty()) continue
             Box(Modifier.offset(cw * sc, ch * sr).size(cw, ch).padding(3.dp)
-                .border(1.dp, Melyviz.lineSoft.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                .vrgBorder(1.dp, Melyviz.lineSoft.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                 .combinedClickable(onClickLabel = "új ablak", onLongClick = { onPick(m) }, onClick = { onPick(m) })
                 .semantics { contentDescription = "Üres cella, koppintásra új ablak" },
                 contentAlignment = Alignment.Center) {
@@ -244,7 +244,7 @@ fun SheetArea(modifier: Modifier, doc: SheetsDoc, sh: SheetsHost, onPick: (Cell?
             if (t != null) {
                 val s = toScreen(t)
                 Box(Modifier.offset(cw * s.c, ch * s.r).size(cw * s.w, ch * s.h).padding(2.dp)
-                    .background(Melyviz.glow.copy(alpha = 0.12f), RoundedCornerShape(12.dp)).border(2.dp, Melyviz.glow, RoundedCornerShape(12.dp)))
+                    .background(Melyviz.glow.copy(alpha = 0.12f), RoundedCornerShape(12.dp)).vrgBorder(2.dp, Melyviz.glow, RoundedCornerShape(12.dp)))
             }
         }
 
@@ -313,7 +313,7 @@ private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: 
     val status by (f?.activity ?: remember { MutableStateFlow(MiniStatus.IDLE) }).collectAsState()
     var menu by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(if (dragging) Melyviz.surface.copy(alpha = 0.6f) else Melyviz.raised, RoundedCornerShape(12.dp))
-        .border(if (focused) 2.dp else 1.dp, if (focused) Melyviz.glow else Melyviz.glowDim, RoundedCornerShape(12.dp))
+        .vrgBorder(if (focused) 2.dp else 1.dp, if (focused) Melyviz.glow else Melyviz.glowDim, RoundedCornerShape(12.dp))
         .semantics { customActions = actions.filter { it.enabled }.map { a -> CustomAccessibilityAction("$title: ${a.label}") { a.onClick(); true } } }) {
         Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).background(Melyviz.abyss.copy(alpha = 0.5f), RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             .pointerInput(w.id) { detectTapGestures(onDoubleTap = { SheetsStore.update { P.toggleMax(it, w.id) } }, onTap = { SheetsStore.update { P.focusWin(it, w.id) } }) }
@@ -423,7 +423,7 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
         BasicTextField(q, { q = it }, singleLine = true, textStyle = Melyviz.label.copy(fontSize = 15.sp), cursorBrush = SolidColor(Melyviz.glow),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go), keyboardActions = KeyboardActions(onGo = { hits.firstOrNull()?.let { pick(it.second) } }),
             modifier = Modifier.fillMaxWidth().focusRequester(focus).background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                .border(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
+                .vrgBorder(1.dp, Melyviz.glow, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp),
             decorationBox = { inner -> if (q.isEmpty()) Text("Keresés…", style = Melyviz.label.copy(color = Melyviz.faint)); inner() })
         Spacer(Modifier.height(6.dp))
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
@@ -481,7 +481,7 @@ fun SheetMenu(doc: SheetsDoc, sid: String, onClose: () -> Unit) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { SheetsStore.update { P.renameSheet(it, sid, name) }; onClose() }),
             modifier = Modifier.fillMaxWidth().background(Melyviz.surface, RoundedCornerShape(Melyviz.radiusSmall))
-                .border(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp))
+                .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(Melyviz.radiusSmall)).padding(12.dp))
         MenuRow("✓", "Átnevezés") { SheetsStore.update { P.renameSheet(it, sid, name) }; onClose() }
         MenuRow("◀", "Előrébb") { SheetsStore.update { P.moveSheet(it, sid, -1) } }
         MenuRow("▶", "Hátrébb") { SheetsStore.update { P.moveSheet(it, sid, 1) } }
@@ -512,7 +512,7 @@ private fun Panel(title: String, onClose: () -> Unit, body: @Composable () -> Un
     Box(Modifier.fillMaxSize().background(Melyviz.abyss.copy(alpha = 0.85f)).clickable(onClick = onClose), contentAlignment = Alignment.Center) {
         // the panel scrolls and keeps above the keyboard: lying down the sheet menu was taller than the screen (Lap bezárása cut off)
         Column(Modifier.imePadding().padding(16.dp).widthIn(max = 420.dp).fillMaxWidth().background(Melyviz.deep, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.verticalScroll(rememberScrollState()).padding(14.dp)) {
+            .vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius)).clickable(enabled = false) {}.verticalScroll(rememberScrollState()).padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = Melyviz.title.copy(fontSize = 12.sp), modifier = Modifier.weight(1f))
                 Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Bezárás" },

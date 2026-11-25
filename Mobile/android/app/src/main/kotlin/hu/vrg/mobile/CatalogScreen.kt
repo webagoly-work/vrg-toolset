@@ -2,7 +2,6 @@ package hu.vrg.mobile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +43,7 @@ import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Katalógus (WP M38): every program, feature and function of VRG Mobile and the VRG Desktop on a page of its own,
 // swiped sideways, for a new user finding their way around. The pages are CatalogGuide's (kit-core, plain data), in the
@@ -103,7 +103,7 @@ private fun GuidePageView(p: GuidePage, onOpen: (String) -> Unit) {
     val feature = Catalogue.byId(p.id)
     val shape = RoundedCornerShape(Melyviz.radius)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-        Column(Modifier.fillMaxWidth().background(Melyviz.raised, shape).border(1.dp, Melyviz.glowDim, shape).padding(16.dp)) {
+        Column(Modifier.fillMaxWidth().background(Melyviz.raised, shape).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(16.dp)) {
             Text(p.glyph, style = Melyviz.glyph.copy(fontSize = 40.sp, color = Melyviz.glow))
             Text(p.title, style = Melyviz.title.copy(fontSize = 20.sp), modifier = Modifier.padding(top = 6.dp))
             Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
