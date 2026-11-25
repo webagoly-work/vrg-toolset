@@ -1,7 +1,7 @@
-# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő and the Előszűrő (WP-50 … WP-53), the local half
+# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő, the Előszűrő and voice (WP-50 … WP-55), the local half
 
 *Paste everything between the two lines into a Claude Code session started in `H:\VRG\Full\Planner_VRG_U100`.*
-*Updated 2026-11-25: covers everything on the branch up to commit 295471e.*
+*Updated 2026-11-25: covers everything on the branch (PR webagoly-work/vrg-toolset#13), WP-50 … WP-55.*
 
 ---
 
@@ -37,6 +37,13 @@ What is on the branch (details: `docs/desktop/LOG.md` § WP-50 … WP-53, decisi
   - work-line memory: a bare "folytasd" takes the latest session's anchors;
   - an evaluation tool (`Prefilter/eval.js`) with a 44-prompt seed set: 0.886 accuracy, no context → independent mistake;
   - forced routes in the Vezérlő are saved as labels.
+- **WP-54 Diktálás:** offline push-to-talk dictation (hold F9) in Hungarian and English, through whisper.cpp `whisper-server` on
+  127.0.0.1 with large-v3-turbo. It writes only into the Desktop page's own text fields, and the Vezérlő has a hold-to-talk 🎤. The
+  microphone stays warm with a 300 ms pre-roll; key-down to the first audio was 13–14 ms in Chromium. Off by default (`voice.enabled`).
+- **WP-55 Parancs-héj:** the voice command overlay. It handles 34 commands from `Voice/command/commands.json`, tolerates
+  misrecognitions, answers in a few words, asks before closing or sending, has a phrase-gated level switch, and a typed command line
+  (Ctrl+Shift+Space).
+- Voice roadmap (phases 3–4 proposed): `docs/research/2026-11-25_voice-roadmap.md`.
 
 Work step by step, show me each result, and stop to ask me before any commit, push, merge, settings change or hook install.
 
@@ -143,13 +150,44 @@ Work step by step, show me each result, and stop to ask me before any commit, pu
      - check that a prompt still goes through with `VRG_PREFILTER_OFF=1`;
      - check that a broken index (rename `Prefilter/.cache` for a moment) never blocks a prompt.
 
-9. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
+9. **Voice (WP-54, WP-55).** Read `Voice/README.md` and `docs/research/2026-11-25_voice-roadmap.md`.
+   - `node --test Voice/test/voice.test.js Voice/command/test/parse.test.js`, then `node Dashboard/test/run.js WP-54` and `WP-55`.
+     The WP-54 Electron probe (`Dashboard/shell/selftest/wp-54.js`) has never run: fix it until it is green.
+   - Fetch the engine: `node Voice/fetch.js engine` (already pinned, sha256 checked).
+   - Fetch the model: `node Voice/fetch.js --pin turbo` (about 547 MB). Show me where it comes from and the hash before you commit
+     the manifest change.
+   - Turn dictation on (right-click the 🎤 in the Vezérlő, or the `voice.enabled` setting). Then measure, and show me:
+     - hold F9 and speak at once: the first word must not be cut;
+     - the time to the first partial word on screen;
+     - the CPU load during 20 s of dictation;
+     - Hungarian and English accuracy on 10 of my sentences each, including VRG words (Planner, Kapu, Rétegverem, GO MOBILE,
+       Munkavászon);
+     - whether `VRGVoice.state().capture` is `worklet` or `script` in Electron.
+     If the first partial takes more than about a second, try the `small` model or a GPU build, and tell me.
+   - Check the boundaries:
+     - nothing is dictated into a browser tab, a password field or another program;
+     - Shift+F9 in a text field gives a command;
+     - Esc cancels and restores the field;
+     - silence never produces copied vocabulary text.
+   - The command overlay, by voice and with Ctrl+Shift+Space:
+     - "nyisd meg a Plannert";
+     - "menj a Munkamenetek lapra";
+     - "zárd be a böngészőt" (it must ask);
+     - "írd a vezérlőbe: GO MOBILE hol tartunk" (it fills the box, nothing is sent);
+     - "küldd el", then "igen";
+     - "mi van a képernyőn?";
+     - the level phrase.
+     Note every command it misheard or did not know, so I can add phrases.
+   - The microphone works only because the frame page has no permission handler (the same finding as the camera, step 7).
+     Include the microphone in the handler you propose there.
+
+10. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
    - first run `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` (the cloud could not refresh the
      inventory: it had no anonymise map);
    - commit on the branch above;
    - add the results to `docs/desktop/LOG.md` under the WP they belong to.
 
-   Never commit `Prefilter/.cache/`: it is gitignored and holds my prompts, labels and job codes. START did not change, so the
+   Never commit `Prefilter/.cache/` or `Voice/.cache/`: they are gitignored and hold my prompts, labels, job codes and vocabulary. Never commit a model file. START did not change, so the
    Kapu needs no rebuild.
 
 ---

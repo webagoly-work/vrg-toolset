@@ -172,6 +172,14 @@ contextBridge.exposeInMainWorld('vrg', {
     folders: () => call('gate', 'folders', {}),
     photo: data => call('gate', 'photo', { data: String(data || '') }),
   },
+  voice: {                                                                       // WP-54 Diktálás: PCM16 chunks in, text out (vrg.on('voice', 'partial'|'final'|'error'))
+    status: () => call('voice', 'status', {}),
+    enable: on => call('voice', 'enable', { on: on === true }),
+    start: (mode, lang) => call('voice', 'start', lang ? { mode, lang } : { mode }),
+    chunk: (id, data) => call('voice', 'chunk', { id, data }),
+    stop: id => call('voice', 'stop', { id }),
+    cancel: id => call('voice', 'cancel', { id }),
+  },
   archive: {                                                                     // WP-47 Archívum: the Artifact Archive (Archive/index.json)
     list: () => call('archive', 'list', {}),
     show: (id, run) => call('archive', 'show', run ? { id, run: true } : { id }),

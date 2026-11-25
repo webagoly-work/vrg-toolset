@@ -1,0 +1,14 @@
+/* WP-54 Diktálás: the live indicator (a dot, the mode, the words as they come) and the field being dictated into */
+[data-role="voice-ind"] { position: fixed; z-index: 140; display: flex; align-items: center; gap: 8px; max-width: min(640px, 80vw); padding: 5px 10px;
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); pointer-events: none;
+  font: 12.5px/1.3 var(--mv-sans); color: var(--mv-text); }
+[data-role="voice-ind"][hidden] { display: none; }
+[data-role="voice-ind"] > i { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%; background: var(--mv-crit); box-shadow: 0 0 8px var(--mv-crit); animation: vrg-voice-pulse 1s ease-in-out infinite; }
+[data-role="voice-ind"] > b { flex: 0 0 auto; font: 600 10px/1 var(--mv-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mv-accent); }
+[data-role="voice-ind"][data-mode="command"] > b { color: var(--mv-warm); }
+[data-role="voice-ind"] > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mv-dim); }
+[data-voice="live"] { outline: 1px dashed var(--mv-crit) !important; outline-offset: 1px; }
+[data-voice="live"]::selection, [data-voice-prov]::selection { background: color-mix(in srgb, var(--mv-crit) 30%, transparent); }
+[data-voice-prov] { color: var(--mv-dim); text-decoration: underline dotted var(--mv-crit); }
+@keyframes vrg-voice-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { [data-role="voice-ind"] > i { animation: none; } }

@@ -32,6 +32,10 @@ const KEYS = {
   'srv.inside':        { type: v => typeof v === 'boolean', def: true },            // WP-48: registry servers run hidden inside the shell (console pane)
   'web.inner':         { type: v => typeof v === 'boolean', def: true },            // WP-48: URLs and app pages open in an inner window, not the outside browser
   'phone.auto':        { type: v => typeof v === 'boolean', def: false },
+  'voice.enabled':     { type: v => typeof v === 'boolean', def: false },           // WP-54 Diktálás: the mic stays warm and the engine resident only when on
+  'voice.key':         { type: v => typeof v === 'string' && /^(F([1-9]|1[0-2])|Pause|ScrollLock|Insert|CapsLock|ContextMenu|AltRight|ControlRight)$/.test(v), def: 'F9' },   // the push-to-talk key (held)
+  'voice.lang':        { type: v => v === 'auto' || v === 'hu' || v === 'en', def: 'auto' },
+  'voice.model':       { type: v => typeof v === 'string' && /^[a-z0-9-]{1,24}$/.test(v), def: 'turbo' },   // an id of Voice/voice-manifest.json
   'gate.recent':       { type: v => Array.isArray(v) && v.length <= 20 && v.every(p => typeof p === 'string' && p.length <= 1024 && require('path').isAbsolute(p)), def: [] },   // WP-52: the Vezérlő's recent attachments (main only)           // WP-49: a wireless link up → the Telefon panel starts every server by itself
   'net.show':          { type: v => typeof v === 'boolean', def: true },            // WP-49b: the title bar's corner metrics shown
   'net.metrics':       { type: netgrade.validList, def: netgrade.DEFAULT },          // WP-49b: which metrics, in the user's order

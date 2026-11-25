@@ -90,3 +90,4 @@ Weather/config/settings.local.json
 # --- anon-check deny-list (personal names, clients, addresses): never commit ---
 tools/anon-check.deny.txt
 Prefilter/.cache/
+Voice/.cache/

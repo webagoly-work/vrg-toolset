@@ -1,0 +1,44 @@
+{
+  "_comment": "WP-54 Diktálás: what Voice/fetch.js downloads into <Full>/tools/voice. The engine is pinned to a release TAG; every file is checked against its sha256. A null sha256 is filled in once by `node Voice/fetch.js --pin <id>` after you have checked the download (the first fetch on H:, 2026-11); commit the manifest afterwards. Nothing here goes into the repo except this file.",
+  "engine": {
+    "id": "whisper.cpp",
+    "license": "MIT",
+    "repo": "ggml-org/whisper.cpp",
+    "tag": "v1.8.3",
+    "asset": "whisper-bin-x64.zip",
+    "url": "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip",
+    "sha256": "d824b1e37599f882b396e73f1ee0bfd5d0529f700314c48311dcbd00b803321d",
+    "exe": "whisper-server.exe",
+    "note": "CPU build for Windows x64. A GPU build (cuBLAS / Vulkan) can replace it later; the adapter does not change."
+  },
+  "models": [
+    {
+      "id": "turbo",
+      "file": "ggml-large-v3-turbo-q5_0.bin",
+      "sizeMB": 547,
+      "default": true,
+      "license": "MIT (OpenAI Whisper weights)",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
+      "sha256": null,
+      "note": "The best Hungarian of the fast models; 4 decoder layers, so re-decoding the growing buffer stays quick on a modern CPU."
+    },
+    {
+      "id": "small",
+      "file": "ggml-small-q5_1.bin",
+      "sizeMB": 190,
+      "license": "MIT (OpenAI Whisper weights)",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin",
+      "sha256": null,
+      "note": "The fallback for a slow machine: much quicker partials, clearly weaker Hungarian."
+    },
+    {
+      "id": "medium",
+      "file": "ggml-medium-q5_0.bin",
+      "sizeMB": 539,
+      "license": "MIT (OpenAI Whisper weights)",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium-q5_0.bin",
+      "sha256": null,
+      "note": "Only to compare: slower than turbo (24 decoder layers), Hungarian not better."
+    }
+  ]
+}

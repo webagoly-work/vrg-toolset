@@ -213,3 +213,21 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   towards context (a wrong "independent" costs a failed turn, a wrong "context" only tokens).
 - B: dress only, always in the repo (CLAUDE.md is still read: no real saving). C: send untouched unless the user asks (the filter
   becomes optional and is forgotten).
+
+## DESKU-Q28 — Offline dictation: whisper-server, our own text fields only (WP-54, 2026-11-25)
+
+- **A (taken):** whisper.cpp `whisper-server` (MIT) runs locally with the model loaded once. The page keeps the microphone warm with
+  a 300 ms pre-roll, so recording starts at key-down. Live words come from re-decoding the growing buffer, biased by a prompt built
+  from our vocabulary. Dictation goes only into the Desktop page's own text fields: never a browser tab, an app view, a password field
+  or another program. Speaking never sends; the Vezérlő's text still passes the Előszűrő. Audio stays in memory and transcripts are
+  not logged.
+- B: sherpa-onnx streaming (true streaming, but hotwords only for transducer models, and no Hungarian one found). C: Vosk (no Hungarian
+  model found). D: the OS dictation (types into any program, and is online).
+
+## DESKU-Q29 — The voice command overlay acts through the page APIs only (WP-55, 2026-11-25)
+
+- **A (taken):** spoken or typed commands are parsed against a data registry and executed only through `VRGDesk`, `VRGSheets` and
+  `VRGFrame`. Closing a window and sending a prompt always ask first. The level switch needs a phrase, which the overlay names as a
+  phrase gate and not an identity check. "What is on screen" is answered from the Desktop's own state; phase 3 adds providers.
+- B: OS-level input injection now (phase 4, behind risk classes and an allowlist). C: a cloud model to parse commands (online,
+  slower, and an injection surface).

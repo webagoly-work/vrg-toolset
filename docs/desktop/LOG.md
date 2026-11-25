@@ -413,3 +413,32 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   - The full Dashboard suite: 326 pass, the same 68 environment failures. Not run: the real Electron frame, a real microphone.
 - Wiring (the main session): `voicecmd.css` after `panes.css`, then the scripts `../../Voice/command/commands.js`,
   `../../Voice/command/parse.js`, `voicecmd.js` after `desk.js` / `sheets.js` (their order relative to WP-54's `voice.js` does not matter).
+
+## WP-54 — Diktálás: offline push-to-talk speech to text (2026-11-25, cloud session, phase 1 of the voice line)
+
+- Asked for: hold a key, speak Hungarian or English, see the words live in our own text boxes (the Vezérlő's first). The recording
+  must start within 0.5 s and the tool must work offline, biased to our vocabulary. Never type into third-party pages or programs;
+  the text goes through the Előszűrő only when sent.
+- Engine: whisper.cpp's `whisper-server` (MIT) as a resident child process on 127.0.0.1, model large-v3-turbo q5_0 (small as the
+  fallback). Pseudo-streaming: re-decode every 400 ms, a word is fixed once two decodes agree. The vocabulary is the `prompt`
+  (≤ 600 chars). sherpa-onnx (hotwords only for transducers, no Hungarian one) and Vosk (no Hungarian) were left out. The reasons and
+  sources are in `Voice/README.md`. The engine release (tag v1.8.3, `whisper-bin-x64.zip`) is pinned by sha256; the models are not
+  pinned yet (Hugging Face was not reachable from the cloud).
+- `Voice/`: `engine/` (host, whisper-server adapter, fake, stable prefix, WAV), `vocab/` (build.js + extra.txt), `fetch.js` +
+  `voice-manifest.json`, tests 6.
+- Desktop:
+  - `shell/lib/voice.js` + IPC `voice.status / enable / start / chunk / stop / cancel` (wp-35 pin +6, whisper-server is an allowed
+    child); settings `voice.enabled` (off), `voice.key` (F9), `voice.lang`, `voice.model`.
+  - The page: `page/voice.js` (window.VRGVoice: the contract with WP-55), `voice-worklet.js` (16 kHz PCM16, 20 ms frames; the same
+    resampler drives a ScriptProcessor fallback when the worklet module cannot load from file://), `voice.css`.
+  - The Vezérlő's 🎤: hold to dictate, right-click to switch on / off.
+  - Catalog item `voice`.
+- Chromium (fake microphone, a stub of main):
+  - key-down → first audio sent 13–14 ms, with 300 ms of pre-roll;
+  - the live words selected and outlined in the textarea, the final in place;
+  - Shift + F9 and a password field give command mode, untouched; Esc restores the field;
+  - `simulate()` works the same;
+  - the worklet path ran with file access, the ScriptProcessor fallback without.
+- Tests: `Voice/test/voice.test.js` 6, `wp-54.test.js` 6.
+- Not run: whisper-server itself (a Windows exe, and no model here), Hungarian accuracy, CPU load, the Electron probe
+  `shell/selftest/wp-54.js`.

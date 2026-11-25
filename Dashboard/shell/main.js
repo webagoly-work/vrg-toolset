@@ -628,6 +628,24 @@ ipc.register('gate', 'recent', {}, async () => gateLib.recent());
 ipc.register('gate', 'folders', {}, async () => gateLib.folders());
 ipc.register('gate', 'photo', { data: types.text(12 * 1024 * 1024) }, async p => gateLib.photo(p));
 
+// Diktálás (WP-54): push-to-talk speech-to-text, offline (Voice/: whisper.cpp's whisper-server with the model resident, on 127.0.0.1).
+// The page owns the microphone and sends 16 kHz PCM16 chunks of the session main issued; main sends partial / final text back to the
+// frame only. The text fills our own text boxes; nothing is typed anywhere else, and no audio or transcript is written to disk.
+const voiceLib = require('./lib/voice.js').createVoice({
+  repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR), settings, log,
+  emit: (type, data) => ipc.emit(win, 'voice', type, data),
+  spawn: (exe, args, o) => require('child_process').spawn(exe, args, o),
+});
+const voiceId = v => typeof v === 'string' && require('./lib/voice.js').SESSION_RE.test(v);
+ipc.register('voice', 'status', {}, async () => voiceLib.status());
+ipc.register('voice', 'enable', { on: types.bool }, async ({ on }) => voiceLib.enable(on));
+ipc.register('voice', 'start', { mode: types.enum('dictate', 'command'), lang: types.enum('auto', 'hu', 'en') }, async p => voiceLib.start(p), { optional: ['lang'] });
+ipc.register('voice', 'chunk', { id: voiceId, data: v => typeof v === 'string' && v.length <= 90000 && /^[A-Za-z0-9+/]*={0,2}$/.test(v) }, async p => voiceLib.chunk(p));
+ipc.register('voice', 'stop', { id: voiceId }, async p => voiceLib.stop(p));
+ipc.register('voice', 'cancel', { id: voiceId }, async p => voiceLib.cancel(p));
+app.on('before-quit', () => { voiceLib.close().catch(() => {}); });
+setTimeout(() => { if (onSetting('voice.enabled', false) === true && !SELFTEST) voiceLib.warm().catch(() => {}); }, 4000);   // the model loads once, in the background
+
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
 const notesLib = createNotes({ execFile: require('child_process').execFile, node: nodeExe(), repo: path.resolve(REPO_DIR) });

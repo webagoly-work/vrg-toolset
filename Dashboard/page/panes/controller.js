@@ -99,7 +99,18 @@
       this.text.addEventListener('input', () => { this.st.draft = this.text.value; this.saveState(); this.schedule(); });
       this.text.addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); this.send(); } });
       this.sendBtn = btn('send', 'Küldés', 'Send through the Előszűrő into a new session (Ctrl+Enter)', () => this.send());
-      row.append(this.plus, this.text, this.sendBtn);
+      row.append(this.plus, this.text);
+      // WP-54 Diktálás: hold 🎤 (or the push-to-talk key, F9) to dictate into the box; right-click switches dictation on / off
+      if (W.VRGVoice) {
+        const mic = this.mic = btn('mic', '🎤', 'Nyomva tartva diktálás (vagy F9) · jobb klikk: be / ki / Hold to dictate; right-click: on / off', () => {});
+        let release = null;
+        const up = () => { if (release) { const r = release; release = null; r(); } };
+        mic.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); release = W.VRGVoice.hold(this.text); });
+        for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) mic.addEventListener(ev, up);
+        mic.addEventListener('contextmenu', async e => { e.preventDefault(); const on = !W.VRGVoice.state().enabled; const r = await W.VRGVoice.enable(on); this.say(r ? 'Diktálás bekapcsolva (F9 nyomva tartva).' : 'Diktálás kikapcsolva.'); });
+        row.append(mic);
+      }
+      row.append(this.sendBtn);
       this.chips = el('div', 'chips');
       this.verdict = el('div', 'verdict');
       this.detail = el('details', 'preview'); this.detail.append(el('summary', null, 'Előnézet: amit az Előszűrő hozzáad'), this.pre = el('pre', 'dressed'));

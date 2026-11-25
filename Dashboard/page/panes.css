@@ -563,6 +563,7 @@
   border: 1px solid var(--mv-line); border-radius: 0; padding: 7px 9px; font: 13.5px/1.4 var(--mv-sans); outline: none; color-scheme: dark; }
 [data-pane][data-kind="controller"] [data-role="text"]:focus { border-color: var(--mv-accent); box-shadow: 0 0 0 1px var(--mv-accent-soft), 0 0 var(--mv-glow) var(--mv-accent-glow); }
 [data-pane][data-kind="controller"] [data-role="text"]::placeholder { color: var(--mv-faint); }
+[data-pane][data-kind="controller"] [data-role="mic"] { width: 40px; padding: 0; font-size: 16px; touch-action: none; user-select: none; }
 [data-pane][data-kind="controller"] [data-role="plus"] { width: 40px; font-size: 18px; padding: 0; color: var(--mv-accent); }
 [data-pane][data-kind="controller"] [data-role="send"] { min-width: 86px; color: var(--mv-bg); background: var(--mv-accent); border-color: var(--mv-accent); font-weight: 600; }
 [data-pane][data-kind="controller"] [data-role="send"]:hover:not(:disabled) { color: var(--mv-bg); background: var(--mv-text); }
