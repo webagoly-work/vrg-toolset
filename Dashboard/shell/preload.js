@@ -172,6 +172,18 @@ contextBridge.exposeInMainWorld('vrg', {
     folders: () => call('gate', 'folders', {}),
     photo: data => call('gate', 'photo', { data: String(data || '') }),
   },
+  screen: {                                                                      // WP-56 Szem: read-only, redacted text of the window in front
+    describe: what => call('screen', 'describe', { what }),
+    status: () => call('screen', 'status', {}),
+  },
+  speak: {                                                                       // WP-57 Hang: the overlay's short answer, aloud
+    say: (text, lang) => call('speak', 'say', lang ? { text: String(text || ''), lang } : { text: String(text || '') }),
+    stop: () => call('speak', 'stop', {}),
+    status: () => call('speak', 'status', {}),
+  },
+  hud: {                                                                         // WP-56: the answer in the always-on-top window while another program is in front
+    show: (state, say, detail) => call('hud', 'show', detail ? { state, say: String(say || ''), detail: String(detail) } : { state, say: String(say || '') }),
+  },
   voice: {                                                                       // WP-54 Diktálás: PCM16 chunks in, text out (vrg.on('voice', 'partial'|'final'|'error'))
     status: () => call('voice', 'status', {}),
     enable: on => call('voice', 'enable', { on: on === true }),

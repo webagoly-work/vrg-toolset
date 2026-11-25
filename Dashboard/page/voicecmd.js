@@ -156,7 +156,21 @@
       const v = inst.verdict ? inst.verdict.textContent.trim() : '';
       return { say: n ? 'Vezérlő: ' + n + ' karakter.' : 'A Vezérlő üres.', detail: v || (n ? short(inst.text.value, 80) : '') };
     },
-    async cancel(c, E) { return { say: 'Rendben.' }; },
+    // WP-56 Szem: the program in front, read-only (Voice/screen through main; redacted there). From the global key it is the window that was
+    // in front when the key went down; from inside the VRG Asztal it is the Asztal itself, so the own-state answer is used instead.
+    async 'screen.app'(c, E) { return E.screen('focused'); },
+    async 'screen.windows'(c, E) { return E.screen('windows'); },
+    async 'screen.error'(c, E) { return E.screen('error'); },
+    async 'screen.read'(c, E) {
+      const r = await E.screen('read');
+      const text = (r.lines || []).map(l => String(l).trim()).filter(Boolean).map(l => (/[.!?:;]$/.test(l) ? l : l + '.')).join(' ');
+      return r.ok === false ? r : { ...r, speakText: short(text || r.detail || r.say, 400) };
+    },
+    // WP-57 Hang: the spoken answer
+    async 'speak.stop'(c, E) { E.hush(); return { say: 'Csend.', silent: true }; },
+    async 'speak.on'(c, E) { E.mute(false); const s = await E.speakStatus(); return s && s.enabled ? { say: 'Hangosan válaszolok.' } : { say: 'A hang ki van kapcsolva.', detail: 'Beállítás: speak.enabled.', ok: false }; },
+    async 'speak.off'(c, E) { E.hush(); E.mute(true); return { say: 'Csak írásban.', silent: true }; },
+    async cancel(c, E) { E.hush(); return { say: 'Rendben.' }; },
     async repeat(c, E) { const l = E.last(); return l ? { say: l.say, detail: l.detail } : { say: 'Még nem mondtam semmit.' }; },
     async help() {
       return { say: 'Rövid parancsokat értek.', detail: 'Pl.: „nyisd meg a Plannert”, „menj a Munkamenetek lapra”, „ezt tedd teljes képernyőre”, „írd a vezérlőbe: …”, „küldd el”, „jegyzet ehhez: …”, „mi van a képernyőn?”, „hány munkamenet fut?”, „mégse”.' };
@@ -172,7 +186,7 @@
   const P = () => W.VRGVoiceParse;
   const REG = () => W.VRGVoiceCommands || { commands: [], phrases: [] };
   const vrg = () => W.vrg || null;
-  const S = { hist: [], last: null, pending: null, clarify: null, busy: false, catalog: [], hideTimer: 0, covered: false, voiceOff: null, listening: null };
+  const S = { hist: [], last: null, pending: null, clarify: null, busy: false, catalog: [], hideTimer: 0, covered: false, voiceOff: null, listening: null, global: false, mute: false };
   const cover = on => { if (S.covered === !!on) return; S.covered = !!on; try { vrg() && vrg().call('desktop', 'cover', { on: !!on }); } catch (e) {} };
 
   async function loadCatalog() {
@@ -250,12 +264,25 @@
       for (let i = 0; i < 40; i++) { const x = inst(id); if (x && x.text) return x; await new Promise(r => setTimeout(r, 50)); }
       return need(null, 'A Vezérlő nem nyílt meg.');
     },
+    // WP-56: read the screen through main (off → a short reason); the VRG Asztal's own window → its own state instead
+    async screen(what) {
+      const V = vrg();
+      if (!V || !V.screen) return { ok: false, say: 'Nincs képernyő-olvasó.' };
+      const r = await V.screen.describe(what);
+      if (!r || r.ok === false) return { ok: false, say: terse((r && r.hu) || 'Nem látom.', 6), detail: r && r.err === 'disabled' ? 'Beállítás: screen.enabled.' : '' };
+      if (r.own && what !== 'windows') return E.describe();
+      return { say: terse(r.say || 'Nem látok semmit.', 8), detail: short(r.detail || '', 200), lines: r.lines || [] };
+    },
+    hush() { stopSpeech(); },
+    mute(on) { S.mute = !!on; },
+    async speakStatus() { try { const V = vrg(); return V && V.speak ? await V.speak.status() : null; } catch (e) { return null; } },
     async describe() {
       const D = W.VRGDesk;
       const snap = { view: D && D.view ? D.view() : 'desktop', level: D && D.level ? D.level() : '', windows: windows() };
       const SH = W.VRGSheets, doc = SH && SH.doc ? SH.doc() : null;
       snap.onTree = !(SH && SH.on && SH.on());
       snap.lap = doc && doc.active ? (doc.sheets.find(s => s.id === doc.active) || {}).name || '' : '';
+      snap.global = !!S.global;
       try { snap.live = (await E.sessions()).filter(r => r.live).length; } catch (e) {}
       let say = '', detail = [];
       for (const p of providers) {
@@ -265,7 +292,11 @@
     },
   };
   // phase 3 adds a screen-reading provider here; the first provider that answers `say` speaks, every `detail` is shown
-  const providers = [snap => describeState(snap)];
+  const providers = [
+    // WP-56: from the global key, "mi van a képernyőn?" is about the program in front (its own windows are answered from the state below)
+    async snap => { if (!snap.global) return null; const r = await E.screen('focused'); return r && r.ok !== false && !r.own ? { say: r.say, detail: r.detail } : null; },
+    snap => describeState(snap),
+  ];
 
   // ------------------------------------------------------------ the HUD
   const el = (tag, role, text) => { const e = document.createElement(tag); if (role) e.dataset.role = role; if (text != null) e.textContent = text; return e; };
@@ -281,7 +312,15 @@
   hud.append(row, detail, conf, input, hist);
   (document.body || document.documentElement).append(hud);
 
+  // WP-56: while another program is in front (the global key), the answer also goes to main's always-on-top window
+  const HUD_STATE = { listening: 'listen', confirm: 'busy', typing: 'busy', result: 'result', error: 'error' };
+  function forward(state, text, more) {
+    const V = vrg();
+    if (!V || !V.hud || (document.hasFocus() && !S.global) || !HUD_STATE[state]) return;
+    try { V.hud.show(HUD_STATE[state], String(text || '').slice(0, 200), more ? String(more).slice(0, 400) : undefined); } catch (e) {}
+  }
   function show(state, text, more) {
+    forward(state, text, more);
     clearTimeout(S.hideTimer);
     hud.hidden = false; hud.dataset.state = state;
     say.textContent = text || ''; detail.textContent = more || ''; detail.hidden = !more;
@@ -317,6 +356,38 @@
     }
   }, true);
 
+  // ------------------------------------------------------------ spoken answers (WP-57): main's offline engine, or the OS voices
+  let audioCtx = null, playing = null;
+  function stopSpeech() {
+    try { if (playing) { playing.stop(); playing = null; } } catch (e) {}
+    try { if (W.speechSynthesis) W.speechSynthesis.cancel(); } catch (e) {}
+    try { const V = vrg(); if (V && V.speak) V.speak.stop(); } catch (e) {}
+  }
+  function playPcm(pcm) {
+    const bin = atob(pcm.b64), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const f = new Float32Array(bytes.buffer);
+    audioCtx = audioCtx || new (W.AudioContext || W.webkitAudioContext)();
+    const buf = audioCtx.createBuffer(1, f.length, pcm.sampleRate || 22050);
+    buf.copyToChannel(f, 0);
+    const src = audioCtx.createBufferSource(); src.buffer = buf; src.connect(audioCtx.destination); src.start();
+    playing = src; src.onended = () => { if (playing === src) playing = null; };
+  }
+  async function speakOut(text) {
+    const V = vrg();
+    if (S.mute || !text || !V || !V.speak) return;
+    stopSpeech();
+    let r = null;
+    try { r = await V.speak.say(String(text).slice(0, 600)); } catch (e) { return; }
+    if (!r || r.ok === false) return;                                   // off (speak.enabled) or no engine: the answer stays on screen only
+    if (r.pcm && r.pcm.b64) { try { playPcm(r.pcm); } catch (e) {} }
+    else if (r.web && W.speechSynthesis && W.SpeechSynthesisUtterance) {
+      const u = new W.SpeechSynthesisUtterance(r.text || text);
+      u.lang = /[áéíóöőúüű]|\b(a|az|és|nem|van)\b/i.test(r.text || text) ? 'hu-HU' : 'en-US';
+      W.speechSynthesis.speak(u);
+    }
+  }
+
   // ------------------------------------------------------------ run one utterance
   function remember(heard, r) {
     S.last = { say: r.say, detail: r.detail || '' };
@@ -329,9 +400,11 @@
     let r;
     try { r = fn ? await fn(cmd, E) : { say: 'Ezt még nem tudom.', ok: false }; }
     catch (e) { r = { say: terse(e && e.hu || 'Nem sikerült.', 6), detail: e && e.hu ? '' : String(e && e.message || e).slice(0, 120), ok: false }; }
+    const speakText = r.speakText, silent = !!r.silent;
     r = { ok: r.ok !== false, say: r.say, detail: r.detail || '', act: cmd.act, command: cmd.command };
     remember(heard, r);
     show(r.ok ? 'result' : 'error', r.say, r.detail);
+    if (!silent) speakOut(speakText || r.say);
     return r;
   }
   async function run(text) {
@@ -379,9 +452,9 @@
     const V = W.VRGVoice;
     if (!V || typeof V.on !== 'function' || S.voiceOff) return !!S.voiceOff;
     const offs = [
-      V.on('start', m => { if (m && m.mode === 'command') { S.listening = m.id; show('listening', '…', ''); } }),
+      V.on('start', m => { stopSpeech(); if (m && m.mode === 'command') { S.global = !!m.global; S.listening = m.id; show('listening', '…', ''); } }),   // any push-to-talk stops the voice at once
       V.on('partial', m => { if (m && m.mode === 'command') show('listening', m.text || '…', ''); }),
-      V.on('final', m => { if (m && m.mode === 'command') { S.listening = null; run(m.text || ''); } }),
+      V.on('final', m => { if (m && m.mode === 'command') { S.listening = null; S.global = !!m.global; run(m.text || '').finally(() => { S.global = false; }); } }),
       V.on('stop', m => { if (m && m.mode === 'command' && S.listening === m.id) { S.listening = null; if (hud.dataset.state === 'listening') hide(); } }),
       V.on('error', m => { if (!m || !m.mode || m.mode === 'command') { S.listening = null; show('error', terse((m && m.hu) || 'Hangfelismerési hiba.', 6)); } }),
     ];

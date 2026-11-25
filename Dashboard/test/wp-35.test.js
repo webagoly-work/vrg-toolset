@@ -132,9 +132,9 @@ let measuredIdFindings = null;
 
 test('main.js loads without Electron and registers the channels', () => {
   const { specs: s, wrappers: w } = loadMain();
-  assert.equal(s.size, 131, 'channels: ' + [...s.keys()].join(' '));   // WP-54: voice.status, enable, start, chunk, stop, cancel; WP-52: gate.analyze, send, pick, recent, folders, photo; WP-50: sessions.list, resume, teleport, canvas; WP-48: desktop.serverConsole, serverStop, serverList; WP-49: desktop.phoneScan, phoneStart, phoneQr, phonePair, phoneClear; WP-49b: netSample, phoneApp; jobs map: desktop.mapJob
+  assert.equal(s.size, 137, 'channels: ' + [...s.keys()].join(' '));   // WP-56/57: screen.describe, status; speak.say, stop, status; hud.show; WP-54: voice.status, enable, start, chunk, stop, cancel; WP-52: gate.analyze, send, pick, recent, folders, photo; WP-50: sessions.list, resume, teleport, canvas; WP-48: desktop.serverConsole, serverStop, serverList; WP-49: desktop.phoneScan, phoneStart, phoneQr, phonePair, phoneClear; WP-49b: netSample, phoneApp; jobs map: desktop.mapJob
   for (const name of s.keys()) assert.ok(w.has('vrg2:' + name), name);
-  for (const ns of ['app', 'layout', 'jobs', 'fs', 'term', 'web', 'sel', 'search', 'ctx', 'chat', 'note', 'git', 'mail', 'feed', 'desktop', 'programs', 'sheets', 'archive', 'sessions', 'gate', 'voice']) {   // desktop: WP-41 … WP-43 (5 channels); programs: WP-45 (5); sheets: WP-46 (2); archive: WP-47 (3)
+  for (const ns of ['app', 'layout', 'jobs', 'fs', 'term', 'web', 'sel', 'search', 'ctx', 'chat', 'note', 'git', 'mail', 'feed', 'desktop', 'programs', 'sheets', 'archive', 'sessions', 'gate', 'voice', 'screen', 'speak', 'hud']) {   // desktop: WP-41 … WP-43 (5 channels); programs: WP-45 (5); sheets: WP-46 (2); archive: WP-47 (3)
     assert.ok([...s.keys()].some(n => n.startsWith(ns + '.')), 'namespace ' + ns);
   }
 });
@@ -332,7 +332,7 @@ test('spawn audit (static): no shell:true, no exec/execSync anywhere in shell, p
   assert.deepEqual(bad, []);
 });
 
-const ALLOWED_EXES = new Set(['node', 'node.exe', 'claude', 'claude.exe', 'git', 'git.exe', 'attrib', 'attrib.exe', 'taskkill', 'taskkill.exe', 'cmd.exe', 'cmd', 'code', 'code.cmd', 'code.exe', 'fake-claude.js', 'whisper-server.exe', 'whisper-server']);   // whisper-server: WP-54 (Voice/engine/whisper-server.js)
+const ALLOWED_EXES = new Set(['node', 'node.exe', 'claude', 'claude.exe', 'git', 'git.exe', 'attrib', 'attrib.exe', 'taskkill', 'taskkill.exe', 'cmd.exe', 'cmd', 'code', 'code.cmd', 'code.exe', 'fake-claude.js', 'whisper-server.exe', 'whisper-server', 'powershell.exe', 'pwsh']);   // powershell: WP-56/57 (the UI Automation and SAPI helpers, one long-running process each)   // whisper-server: WP-54 (Voice/engine/whisper-server.js)
 test('spawn audit (dynamic): everything the modules tried to start in this file used no shell and an allowed executable', () => {
   const bad = spawned.filter(c => c.shell || ['exec', 'execSync'].includes(c.fn) || !ALLOWED_EXES.has(path.basename(c.file).toLowerCase()));
   assert.deepEqual(bad, []);

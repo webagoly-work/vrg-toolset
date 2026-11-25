@@ -194,13 +194,14 @@
   }
 
   // ---------------------------------------------------------- a recording
-  async function begin(mode, target) {
+  async function begin(mode, target, o) {
     if (S.rec) return S.rec.id;
     const id = 'p' + (++S.seq);
     const pre = S.ring.take();
-    const rec = S.rec = { id, mode, target: mode === 'dictate' ? target : null, keyAt: performance.now(), pending: pre, preroll: pre.length * 20, mainId: '', text: '', done: false };
+    const global = !!(o && o.global);                               // WP-56: the global key, another program in front: always a command
+    const rec = S.rec = { id, mode, target: mode === 'dictate' ? target : null, keyAt: performance.now(), pending: pre, preroll: pre.length * 20, mainId: '', text: '', done: false, global };
     fieldBegin(rec);
-    emit('start', { id, mode, ...(S.lang !== 'auto' ? { lang: S.lang } : {}) });
+    emit('start', { id, mode, ...(global ? { global: true } : {}), ...(S.lang !== 'auto' ? { lang: S.lang } : {}) });
     showInd(rec, '');
     if (!S.enabled) { fail(rec, 'A diktálás ki van kapcsolva: kapcsold be a Vezérlő 🎤 gombjával (jobb klikk).'); return id; }
     if (!S.node) warmMic();                                         // cold mic (e.g. after a device change): open it now, frames follow
@@ -240,7 +241,7 @@
     else {
       const text = String(r.text || '').trim();
       if (text) fieldShow(rec, text, true); else fieldDrop(rec);
-      emit('final', { id: rec.id, mode: rec.mode, text, ...(r.lang ? { lang: r.lang } : {}), ms: Math.round(r.ms || performance.now() - rec.keyAt) });
+      emit('final', { id: rec.id, mode: rec.mode, text, ...(rec.global ? { global: true } : {}), ...(r.lang ? { lang: r.lang } : {}), ms: Math.round(r.ms || performance.now() - rec.keyAt) });
     }
     emit('stop', { id: rec.id, mode: rec.mode });
     showInd(null);
@@ -319,6 +320,8 @@
     await refresh();
     return !!(s && s.enabled);
   }
+  // WP-56: the global push-to-talk key (main: press = start, press again or 8 s = stop) — a command about the program in front
+  try { if (vrg && vrg.on) vrg.on('voice', 'global', m => { if (m && m.phase === 'start' && !S.rec) begin('command', null, { global: true }); else if (m && m.phase === 'stop' && S.rec && S.rec.global) end(); }); } catch (e) {}
   try { if (vrg && vrg.on) { vrg.on('voice', 'partial', onPartial); vrg.on('voice', 'error', d => { if (S.rec && d && d.id === S.rec.mainId) emit('error', { id: S.rec.id, mode: S.rec.mode, hu: d.hu }); }); } } catch (e) {}
   refresh();
 

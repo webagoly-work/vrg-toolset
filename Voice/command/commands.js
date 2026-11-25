@@ -662,6 +662,109 @@ window.VRGVoiceCommands = {
     "what can you do",
     "commands"
    ]
+  },
+  {
+   "id": "screen.app",
+   "act": "screen.app",
+   "slots": {},
+   "say": [
+    "melyik program ez",
+    "mi ez a program",
+    "mi van elottem nyitva",
+    "milyen programban vagyok",
+    "which app is this",
+    "what app is this",
+    "what program is this"
+   ]
+  },
+  {
+   "id": "screen.windows",
+   "act": "screen.windows",
+   "slots": {},
+   "say": [
+    "milyen ablakok vannak nyitva",
+    "mik vannak nyitva",
+    "mi fut a gepen",
+    "milyen programok futnak",
+    "which windows are open",
+    "what is open",
+    "whats running on the computer"
+   ]
+  },
+  {
+   "id": "screen.error",
+   "act": "screen.error",
+   "slots": {},
+   "say": [
+    "mi a hiba",
+    "mi hibat ir",
+    "miert piros",
+    "mi romlott el",
+    "van hiba",
+    "whats the error",
+    "what is the error",
+    "what went wrong",
+    "any errors"
+   ]
+  },
+  {
+   "id": "screen.read",
+   "act": "screen.read",
+   "slots": {},
+   "say": [
+    "olvasd fel",
+    "mit ir",
+    "olvasd fel ezt",
+    "mi all itt",
+    "read this",
+    "read it out",
+    "read it aloud",
+    "what does it say"
+   ]
+  },
+  {
+   "id": "speak.stop",
+   "act": "speak.stop",
+   "slots": {},
+   "say": [
+    "csend",
+    "csendet",
+    "hallgass",
+    "eleg",
+    "eleg lesz",
+    "be quiet",
+    "quiet",
+    "stop talking"
+   ]
+  },
+  {
+   "id": "speak.on",
+   "act": "speak.on",
+   "slots": {},
+   "say": [
+    "beszelj",
+    "mondd hangosan",
+    "valaszolj hangosan",
+    "hangosan",
+    "speak",
+    "talk to me",
+    "answer aloud"
+   ]
+  },
+  {
+   "id": "speak.off",
+   "act": "speak.off",
+   "slots": {},
+   "say": [
+    "nemitas",
+    "nemitsd",
+    "maradj csendben",
+    "ne beszelj",
+    "csak irasban",
+    "mute",
+    "silent mode",
+    "text only"
+   ]
   }
  ],
  "phrases": [
@@ -787,6 +890,21 @@ window.VRGVoiceCommands = {
   "Fájlok",
   "Hírek",
   "Kezdőlap",
-  "VRG"
+  "VRG",
+  "melyik program ez",
+  "milyen ablakok vannak nyitva",
+  "mi a hiba",
+  "olvasd fel",
+  "csend",
+  "hallgass",
+  "beszélj",
+  "ne beszélj",
+  "némítás",
+  "which app is this",
+  "what's the error",
+  "read this",
+  "be quiet",
+  "mute",
+  "speak"
  ]
 };

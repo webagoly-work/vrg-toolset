@@ -149,6 +149,7 @@ function setupShell() {
     audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key: HOTKEY });
     win.webContents.once('did-finish-load', () => toast('A gyorsbillentyű foglalt: Ctrl+Alt+Space', 'The hotkey is taken: Ctrl+Alt+Space'));
   }
+  registerGlobalVoice();                                                  // WP-56: only when voice.global and voice.enabled are on
   // quick bar (WP-30): works while another program has focus; brings the window forward (also from the hidden overlay), then the page opens the bar
   const quickKey = quickLib.loadHotkey(path.join(__dirname, '..', 'config', 'keymap.json'));
   let qok = false;
@@ -645,6 +646,77 @@ ipc.register('voice', 'stop', { id: voiceId }, async p => voiceLib.stop(p));
 ipc.register('voice', 'cancel', { id: voiceId }, async p => voiceLib.cancel(p));
 app.on('before-quit', () => { voiceLib.close().catch(() => {}); });
 setTimeout(() => { if (onSetting('voice.enabled', false) === true && !SELFTEST) voiceLib.warm().catch(() => {}); }, 4000);   // the model loads once, in the background
+
+// Szem és hang (WP-56, WP-57): the Parancs-héj reads the screen (read-only: UI Automation, OCR as the fallback, redacted, an allow / deny
+// policy) and says its short answer aloud (offline TTS). Both are off by default (screen.enabled, speak.enabled). The global push-to-talk
+// key (voice.global, voice.globalKey) works while another program is in front: press = listen, press again (or 8 s) = stop; the window
+// in front is read at the moment of the press (the glance), and the answer shows in a small always-on-top window (lib/hudwin.js).
+const POWERSHELL = process.platform === 'win32' ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe') : 'pwsh';
+const voiceToolDir = (...p) => path.join(path.resolve(FULL_DIR), 'tools', 'voice', ...p);
+const eyesLib = require('./lib/eyes.js').createEyes({
+  loadScreen: () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'screen', 'screen.js')),
+  enabled: () => onSetting('screen.enabled', false) === true && !SELFTEST,
+  opts: () => ({
+    spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }), powershell: POWERSHELL, log,
+    policy: () => ({ allow: onSetting('screen.allow', []), deny: onSetting('screen.deny', []), denyTitles: onSetting('screen.denyTitles', []), redact: true }),
+    ownPids: () => { try { return app.getAppMetrics().map(m => m.pid).concat(process.pid); } catch (e) { return [process.pid]; } },
+    capture: async () => {
+      // the display under the cursor, in memory only (never written to disk)
+      const { desktopCapturer } = require('electron');
+      const d = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const size = { width: Math.round(d.size.width * d.scaleFactor), height: Math.round(d.size.height * d.scaleFactor) };
+      const srcs = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: size });
+      const src = srcs.find(s => String(s.display_id) === String(d.id)) || srcs[0];
+      return src ? { png: src.thumbnail.toPNG(), width: size.width, height: size.height } : null;
+    },
+    ocr: (() => { try { return require(path.join(path.resolve(REPO_DIR), 'Voice', 'screen', 'ocr.js')).createOcr({ engine: 'tesseract-js', langs: ['hun', 'eng'], dataDir: voiceToolDir('tessdata') }); } catch (e) { return null; } })(),
+  }),
+  log,
+});
+const speakLib = require('./lib/speak.js').createSpeak({
+  loadTts: () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js')),
+  enabled: () => onSetting('speak.enabled', false) === true,
+  engine: () => onSetting('speak.engine', 'sherpa'),
+  opts: () => ({
+    dirs: { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node_modules') }, powershell: POWERSHELL, log,
+    spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }),
+    loadAddon: () => { try { return require(voiceToolDir('tts', 'node_modules', 'sherpa-onnx-node')); } catch (e) { return null; } },
+  }),
+  log,
+});
+const hudWin = require('./lib/hudwin.js').createHudWin({ BrowserWindow, screen, file: path.join(__dirname, '..', 'page', 'hud.html'), preload: path.join(__dirname, 'hud-preload.js'), log });
+const HUD_STATES = ['listen', 'busy', 'result', 'error', 'speak'];
+ipc.register('screen', 'describe', { what: types.enum('focused', 'windows', 'error', 'read') }, async p => eyesLib.describe(p));
+ipc.register('screen', 'status', {}, async () => eyesLib.status());
+ipc.register('speak', 'say', { text: types.text(600), lang: types.enum('auto', 'hu', 'en') }, async p => speakLib.say(p), { optional: ['lang'] });
+ipc.register('speak', 'stop', {}, async () => speakLib.stop());
+ipc.register('speak', 'status', {}, async () => speakLib.status());
+// the overlay's answer outside the window: shown only while the VRG Asztal is not the window in front
+ipc.register('hud', 'show', { state: types.enum(...HUD_STATES), say: types.text(200), detail: types.text(400) }, async p => {
+  if (SELFTEST || (win && !win.isDestroyed() && win.isFocused() && win.isVisible())) { hudWin.hide(); return { ok: true, shown: false }; }
+  return { ok: true, shown: await hudWin.show(p) };
+}, { optional: ['detail'] });
+let globalVoice = { on: false, timer: null };
+function globalVoiceKey() {
+  if (globalVoice.on) {                                                   // the second press: stop
+    clearTimeout(globalVoice.timer); globalVoice.on = false;
+    ipc.emit(win, 'voice', 'global', { phase: 'stop' });
+    return;
+  }
+  globalVoice.on = true;
+  ipc.emit(win, 'voice', 'global', { phase: 'start' });                   // the page starts recording at once (the mic is warm)
+  eyesLib.glance();                                                       // and the window in front is read in parallel
+  if (!(win && win.isFocused())) hudWin.show({ state: 'listen', say: 'Hallgatlak…' });
+  globalVoice.timer = setTimeout(() => { if (globalVoice.on) globalVoiceKey(); }, 8000);
+}
+function registerGlobalVoice() {
+  if (SELFTEST || onSetting('voice.global', false) !== true || onSetting('voice.enabled', false) !== true) return;
+  const key = onSetting('voice.globalKey', 'Control+Alt+V');
+  let ok = false;
+  try { ok = globalShortcut.register(key, globalVoiceKey); } catch (e) {}
+  if (!ok) audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key });
+}
+app.on('before-quit', () => { eyesLib.close(); speakLib.close(); hudWin.destroy(); });
 
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
