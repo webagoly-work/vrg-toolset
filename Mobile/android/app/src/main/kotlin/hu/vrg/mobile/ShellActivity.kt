@@ -362,10 +362,10 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             DropFeature.share(uris, i.getStringExtra(Intent.EXTRA_TEXT))
             return
         }
-        // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
+        // "Megosztás → VRG Mobile" with text from any app: a note in VRG Jegyzetek (M69), origin Megosztás
         if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
             val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return
-            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text))
+            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text, "from" to "megosztas"))
             open(r.feature)
             Registry.feature(r.feature)?.open(r)
             return

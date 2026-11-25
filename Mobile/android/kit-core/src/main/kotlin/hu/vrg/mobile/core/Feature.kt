@@ -68,8 +68,8 @@ object Catalogue {
         "🏙", Group.WORK, Stage.BETA, "M5", setOf(Need.INTERNET, Need.GITHUB),
     )
     val NOTES = FeatureInfo(
-        "notes", "Gyorsjegyzet", "Jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként (chat log) működik.",
-        "✎", Group.WORK, Stage.LIVE, "M6", setOf(Need.INTERNET, Need.GITHUB),
+        "notes", "Jegyzetek", "Az összes jegyzet egy helyen: saját jegyzetek, gyorsjegyzet, és amit a Sketcher és a többi funkció ír, forrás szerint jelölve. Változatok a ⚙-ben.",
+        "✎", Group.WORK, Stage.BETA, "M69", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",

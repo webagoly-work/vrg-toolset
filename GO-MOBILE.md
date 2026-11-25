@@ -96,6 +96,9 @@ What changes locally compared with the cloud:
   (Workflow Kit, Térkép, Időjárás, Vault) planned. `docs/mobile/WP/M38.md` → "Telefonon ellenőrizni".
 - **M45** Vault built 2026-11-20 (cloud session, D-53 = A, D-54 = A), **BETA**: the Proton Vault's own web app inside the
   app, with its own device approval. `docs/mobile/WP/M45.md` → "Telefonon ellenőrizni" (step 1 may need the Vault's address).
+- **M69** Jegyzetek built 2026-11-20 (cloud session, D-177 = A, D-178 = B, D-179 = A), **BETA**: the central Notes app
+  replacing Gyorsjegyzet: versions in ⚙ → Változat, notes from the Sketcher's Jegyzet front tagged by origin, sync to
+  `vrg-notes`; client notes sealed to the trusted devices (D-180, ⚙ → Lezárás). `docs/mobile/WP/M69.md` → "Telefonon ellenőrizni"; the contract for new origins is `Notes/README.md`.
 - **M42** Varler Workflow Kit built 2026-11-20 (cloud session, D-52 = C), **BETA**: the PC seals each Kit job to the owner's
   phone key (`node tools/workflow-seal.js trust <ID> <CODE>`, then `seal`), only ciphertext on the `workflow-sealed`
   branch. `docs/mobile/WP/M42.md` → "Telefonon ellenőrizni" (13 steps, two on the PC).
