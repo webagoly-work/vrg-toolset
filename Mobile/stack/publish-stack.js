@@ -14,7 +14,8 @@
 // What it bundles (each page becomes ONE self-contained HTML file; the phone loads nothing else):
 //   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html     layers.html -> stack/retegek.html
 //   and the layer pages (optional, VIS-Q5): lineage -> otletfolyam, decisions -> dontesek, metro -> vonalak,
-//   control -> vezerloterem, runs -> futasnaplo, commits -> commitok
+//   control -> vezerloterem, runs -> futasnaplo, commits -> commitok; and erintesnyom.html (Érintésnyom, replay only,
+//   the newest sessions inlined; SL4)
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
 //   The data is node ids, titles, kinds, sizes, times and links; never a file's content. The repo is private.
@@ -125,6 +126,30 @@ function bundleLayer(stack, page) {
   return { html };
 }
 
+// Érintésnyom on the phone (SL4, read-only): the page with the stack, the lens and forecast indexes inlined like the layer
+// pages, plus the newest recorded sessions as window.REPLAY_BUNDLE (their out/replay/<sid8>.js files, which call
+// REPLAY_LOAD, collected before the page's own script runs).
+const TOUCH_SESSIONS = 12, TOUCH_BYTES = 4 * 1024 * 1024;
+function bundleTouch(stack) {
+  const b = bundleLayer(stack, 'erintesnyom.html');
+  if (b.missing) return b;
+  const idx = path.join(stack, 'out', 'replay', 'index.js');
+  let rows = [];
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(idx, 'utf8'), box); rows = box.window.REPLAY_INDEX || []; } catch { rows = []; }
+  let size = 0; const parts = [];
+  for (const r of rows.slice(0, TOUCH_SESSIONS)) {
+    const f = path.join(stack, 'out', 'replay', r.sid + '.js');
+    if (!fs.existsSync(f)) continue;
+    const s = fs.readFileSync(f, 'utf8');
+    if (size + s.length > TOUCH_BYTES) break;
+    size += s.length; parts.push(`<script>/* out/replay/${r.sid}.js */\n${js(s)}</script>`);
+  }
+  const collect = '<script>window.REPLAY_BUNDLE = {}; window.REPLAY_LOAD = function (sid, d) { window.REPLAY_BUNDLE[sid] = d; };</script>\n' + parts.join('\n') + '\n';
+  const at = b.html.lastIndexOf('<script>\n(function () {');
+  if (at < 0) throw new Error('erintesnyom.html: the page script was not found');
+  return { html: b.html.slice(0, at) + collect + b.html.slice(at), sessions: parts.length };
+}
+
 function git(repo, argv, input) {
   return execFileSync('git', argv, { cwd: repo, input, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
 }
@@ -142,6 +167,9 @@ function main() {
     if (b.missing) console.log(`${page}: left out (missing ${b.missing.join(', ')}; run: node stack.js build)`);
     else files[name] = b.html;
   }
+  const touch = bundleTouch(a.stack);
+  if (touch.missing) console.log(`erintesnyom.html: left out (missing ${touch.missing.join(', ')}; run: node stack.js build)`);
+  else { files['erintesnyom.html'] = touch.html; console.log(`erintesnyom.html: ${touch.sessions} sessions inlined`); }
   const meta = {
     kind: 'vrg-stack-meta', generated: D.generated, stackGenerated: D.stackGenerated, published: new Date().toISOString(),
     nodes: D.nodes.length, points: D.neurons, lines: (D.lines || []).length,
@@ -171,4 +199,4 @@ function main() {
 if (require.main === module) {
   try { main(); } catch (e) { console.error('publish-stack: ' + e.message); process.exit(1); }
 }
-module.exports = { bundle, bundleLayer, LAYER_PAGES, js };
+module.exports = { bundle, bundleLayer, bundleTouch, LAYER_PAGES, js };

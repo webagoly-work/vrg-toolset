@@ -29,7 +29,9 @@
     --warm: var(--vk-activity, #e8a873); --inf: var(--vk-idea, #b4a7e6); --crit: var(--vk-crit, #e4877d);
     --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif); }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--tx); font: 13px/1.45 var(--sans); }
-  body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+  body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); }
+  header > * { min-width: 0; }
+  .chip { white-space: normal; }
   header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid var(--ln); }
   h1 { font: 600 16px var(--voice); letter-spacing: .16em; margin: 0; color: var(--acc); }
   select, button { font: inherit; color: var(--tx); background: var(--s1); border: 1px solid var(--ln2); padding: 3px 8px; border-radius: 0; }
@@ -70,7 +72,22 @@
   #fcList .r { font: 10px var(--mono); color: var(--fa); }
   .tag { font: 10px var(--mono); padding: 0 4px; border: 1px solid var(--ln2); color: var(--mu); margin-left: 4px; white-space: nowrap; }
   #stack .vk-layerstack__elabel, #stack .vk-layerstack__tracer-label { pointer-events: none; }
-  @media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { border-left: 0; border-top: 1px solid var(--ln); } }
+  select, button { max-width: 100%; }
+  #session { min-width: 0; max-width: min(64ch, 100%); }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } aside { border-left: 0; border-top: 1px solid var(--ln); } }
+  /* the phone (VRG Mobile's Rétegverem, stack-pages): the stack takes the whole width, the plane list goes (the planes
+     stay reachable by keyboard and by the layer pages), everything else stacks under it */
+  @media (max-width: 700px) {
+    header { gap: 8px; padding: 8px 10px; }
+    #session { flex: 1 1 100%; }
+    #stackWrap { padding: 4px; }
+    #stack .vk-layerstack__list { display: none; }
+    #stack .vk-layerstack__stage { padding: 4px; }
+    #stack { --vk-layerstack-h: 72vh; }
+    aside { padding: 10px; }
+    footer { grid-template-columns: minmax(0, 1fr); }
+    #clock { min-width: 0; }
+  }
 </style>
 </head>
 <body>
@@ -135,6 +152,10 @@
   var WRITES = { Edit: 1, Write: 1, MultiEdit: 1, NotebookEdit: 1 };
   var CATCOL = { read: '#93d3e6', search: '#5fa8d3', edit: '#e8a873', shell: '#e3be7b', web: '#8bcca1', agent: '#b39cf0', mcp: '#e59cc8', plan: '#c9d77a', other: '#8d979f', prompt: '#93d3e6' };
   var PAGE = { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
+  // the phone (VRG Mobile, stack-pages): one self-contained file, replay only (VIS-Q9 = read-only first), the layer pages
+  // under the names publish-stack.js gives them, the newest sessions inlined as window.REPLAY_BUNDLE
+  var BUNDLE = !!window.STACK_BUNDLE;
+  if (BUNDLE) PAGE = { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' };
 
   if (!window.STACK || !window.StackLens) {
     $('#stack').hidden = true; var em = $('#empty'); em.hidden = false;
@@ -209,7 +230,9 @@
     });
     startTimeline();
   };
-  function loadReplay(sid) { var s = document.createElement('script'); s.src = 'out/replay/' + sid + '.js'; s.onerror = function () { $('#src').textContent = 'Nincs visszajátszás: out/replay/' + sid + '.js'; }; document.body.appendChild(s); }
+  function loadReplay(sid) {
+    if (window.REPLAY_BUNDLE && REPLAY_BUNDLE[sid]) { REPLAY_LOAD(sid, REPLAY_BUNDLE[sid]); return; }
+    var s = document.createElement('script'); s.src = 'out/replay/' + sid + '.js'; s.onerror = function () { $('#src').textContent = 'Nincs visszajátszás: out/replay/' + sid + '.js'; }; document.body.appendChild(s); }
 
   /* ---------- live and file: the event spine (shared/vrg-events) ---------- */
   var M = null, seen = new Set(), es = null;
@@ -363,7 +386,7 @@
   function sessions() {
     var sel = $('#session'); sel.innerHTML = '';
     if (mode === 'replay') {
-      (window.REPLAY_INDEX || []).slice(0, 200).forEach(function (r) { sel.add(new Option(String(r.start || '').slice(0, 16).replace('T', ' ') + ' · ' + (r.title || r.sid).slice(0, 60) + ' · ' + r.steps + ' lépés', r.sid)); });
+      (window.REPLAY_INDEX || []).filter(function (r) { return !window.REPLAY_BUNDLE || REPLAY_BUNDLE[r.sid]; }).slice(0, 200).forEach(function (r) { sel.add(new Option(String(r.start || '').slice(0, 16).replace('T', ' ') + ' · ' + (r.title || r.sid).slice(0, 60) + ' · ' + r.steps + ' lépés', r.sid)); });
       if (sel.options.length) loadReplay(sel.value); else $('#src').textContent = 'Nincs visszajátszás: stack.js build';
     } else if (mode === 'live') {
       fetch(LIVE + '/api/sessions').then(function (r) { return r.json(); }).then(function (j) {
@@ -414,7 +437,8 @@
     drawRibbon();
     requestAnimationFrame(frame);
   }
-  mode = /[?&]mode=(replay|file)/.test(location.search) ? location.search.match(/mode=(\w+)/)[1] : 'live';
+  mode = BUNDLE ? 'replay' : /[?&]mode=(replay|file)/.test(location.search) ? location.search.match(/mode=(\w+)/)[1] : 'live';
+  if (BUNDLE) { var lv = $('#mode').querySelector('option[value="live"]'); if (lv) lv.remove(); }
   $('#mode').value = mode;
   if (mode !== 'file') sessions();
   requestAnimationFrame(frame);

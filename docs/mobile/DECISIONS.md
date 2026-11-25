@@ -450,6 +450,8 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   Kódváros and Gömb, F and Z are dimmed with the reason (F is the Asztal's Áttekintés, Z has no view yet); the layer
   pages are optional in `stack/meta.json`, so a publish from before them still loads and a missing layer says how to
   publish it. The Rétegverem screen keeps its three 3D chips, plus the open layer page's chip while it is shown.
+  **2026-11-25:** the ◢ menu also has Érintésnyom (the layers lit by recorded sessions, replay only, VIS-Q9) above
+  Rétegek; publish-stack.js bundles it with the 12 newest sessions.
 
 ## Open (to ask when the WP that needs them starts)
 

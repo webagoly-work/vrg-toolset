@@ -364,7 +364,7 @@ object CatalogGuide {
                 "A ⟳ letölti a két oldalt, utána offline is megy.",
                 "Konnektóm: egy ujj forgat, csippentés nagyít, koppintás kiválaszt, dupla koppintás alaphelyzetbe tesz.",
                 "Holo: két ujjas söprés vált formát. Hosszan nyomva üres helyen zárod vagy nyitod az Őrséget.",
-                "A dokk ◢ gombja a rétegek menüjét nyitja, fentről lefelé (F I Q L A U R C G Z); egy réteg a saját nézetét hozza, az utolsó sor, a Rétegek, az összeset egyszerre.",
+                "A dokk ◢ gombja a rétegek menüjét nyitja, fentről lefelé (F I Q L A U R C G Z); egy réteg a saját nézetét hozza; az Érintésnyom a rögzített munkameneteket játssza vissza a rétegeken; az utolsó sor, a Rétegek, az összeset egyszerre.",
             ),
             needs = "internet, GitHub belépés",
             pair = "Asztal: Rétegverem (START R): keresés, Ötletfolyam, Döntésnapló, Konnektóm-labor",

@@ -25,6 +25,8 @@ object StackPages {
         StackPage("vezerloterem", "Vezérlőterem", "vezerloterem.html", optional = true),
         StackPage("futasnaplo", "Futásnapló", "futasnaplo.html", optional = true),
         StackPage("commitok", "Commit-pixel", "commitok.html", optional = true),
+        // Érintésnyom (SL4, 2026-11-25): the layers lit by recorded sessions, replay only on the phone (VIS-Q9)
+        StackPage("erintesnyom", "Érintésnyom", "erintesnyom.html", optional = true),
     )
 
     fun page(id: String?): StackPage = PAGES.firstOrNull { it.id == id } ?: PAGES.first()
@@ -37,7 +39,8 @@ object StackPages {
 data class StackPage(val id: String, val title: String, val file: String, val optional: Boolean = false)
 
 /** The ◢ dial on the phone's dock (VIS-Q5): every layer of the stack, top to bottom as the Desktop's ◢ lists them
- *  (F I Q L A U R C G Z), each opening the one view of that layer, and Rétegek (all layers at once) as the last row. */
+ *  (F I Q L A U R C G Z), each opening the one view of that layer, then Érintésnyom (the layers lit by recorded work)
+ *  and Rétegek (all layers at once) as the last row. */
 object StackMenu {
     sealed interface Target {
         /** A page of the Rétegverem feature (vrg://stack/<page>). */
@@ -61,6 +64,7 @@ object StackMenu {
         Row("C", "Kódváros", Target.Feature(Catalogue.CITY.id)),
         Row("G", "Gömb", Target.Feature(Catalogue.SPHERE.id)),
         Row("Z", "Kódex", Target.None("még nincs nézete")),
+        Row("", "Érintésnyom", Target.Page("erintesnyom")),
         Row("", "Rétegek", Target.Page("retegek")),
     )
 

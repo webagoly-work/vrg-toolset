@@ -253,3 +253,16 @@ reading keeps them.
   records a typed slash command as a step `sk:<name>` and a `Skill` call with its skill's key, so a `/deep-research`
   turn now lands on its skill node, live and replayed.
 
+## Built (2026-11-25): SL4 Érintésnyom on the phone
+
+- `Mobile/stack/publish-stack.js` bundles `erintesnyom.html` into `stack-pages` as one self-contained file: the stack, the
+  lens and forecast indexes, the kit and the event spine inlined, and the 12 newest recorded sessions (at most 4 MB) as
+  `window.REPLAY_BUNDLE`. Replay only (VIS-Q9 = read-only first): no live mode on the phone; a transcript can still be
+  opened from a file. Layer links point at the phone's own layer pages.
+- The page has a phone layout under 700 px (the stack full width, the plane list hidden, the panels below).
+- VRG Mobile: `erintesnyom` is an optional page of the Rétegverem feature, and the ◢ menu has an Érintésnyom row above
+  Rétegek (D-48's order on the Asztal too).
+- Checked here: the bundle built from the test stack is 0.75 MB, opens on a Pixel 7 viewport with every network request
+  blocked, lists its sessions, replays and lights nodes, and fits the screen. It reaches the phone after one
+  `node Mobile/stack/publish-stack.js --push` on the PC, after a build.
+

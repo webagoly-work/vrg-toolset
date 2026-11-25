@@ -57,7 +57,8 @@ class StackTest {
 
     @Test fun stackMenuIsTheLayersTopToBottomWithRetegekLast() {
         val rows = StackMenu.ROWS
-        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "Z", ""), rows.map { it.layer })
+        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "Z", "", ""), rows.map { it.layer })
+        assertEquals("Érintésnyom", rows[rows.size - 2].title)
         assertEquals("Rétegek", rows.last().title)
         rows.forEach { r ->                                      // every page target is a real page id
             val t = r.target
