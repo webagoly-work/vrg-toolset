@@ -142,4 +142,33 @@ class RadarTest {
         for (i in pl.indices) for (j in i + 1 until pl.size)
             assertTrue(hypot(pl[i].x - pl[j].x, pl[i].y - pl[j].y) >= Radar.MIN_SEP - 1e-9)
     }
+
+    @Test fun `a snapshot for the Data Vault carries the frame, the swept directions and nothing live`() {
+        val f = RadarFrame(
+            layers = listOf(RadarLayer("tag", "Saját címke", "🏷", RadarTone.SAND, "tag"), RadarLayer("pager", "Csipogó", "📟", RadarTone.CURRENT, "pager")),
+            blips = listOf(
+                Blip("tag:mine", "tag", "ISY \"kulcs\"\n", 4.0, mine = true, trend = 1, rssi = -60, detail = "elem tele"),
+                Blip("tag:last", "tag", "utoljára", place = LatLon(47.501, 19.041), ageMs = 90_000),
+                Blip("pager:2", "pager", "Ödön", 9.0, alert = true),
+            ),
+            headingDeg = 40.0, here = LatLon(47.5, 19.04),
+        )
+        val j = JSONObject(RadarSnapshot.encode(f, mapOf("tag:mine" to 120.0), "2026-11-25T08:00:00Z", "VRG Mobile test", hidden = setOf("pager")))
+        assertEquals("vrg.radar-frame", j.getString("kind")); assertEquals(1, j.getInt("v"))
+        assertEquals("heading-up", j.getString("mode")); assertEquals(40.0, j.getDouble("headingDeg"))
+        assertEquals(47.5, j.getJSONObject("here").getDouble("lat"))
+        assertEquals(listOf("tag"), (0 until j.getJSONArray("layers").length()).map { j.getJSONArray("layers").getJSONObject(it).getString("id") }, "a hidden layer is not shared")
+        assertEquals("sand", j.getJSONArray("layers").getJSONObject(0).getString("tone"))
+        val b = j.getJSONArray("blips")
+        assertEquals(2, b.length())
+        val mine = b.getJSONObject(0)
+        assertEquals("ISY \"kulcs\"\n", mine.getString("label"), "quotes and newline survive the escaping")
+        assertEquals(120.0, mine.getDouble("bearingDeg")); assertEquals("sweep", mine.getString("bearingSrc"))
+        assertTrue(!mine.has("rssi"), "live RSSI is not shared")
+        assertEquals(1, mine.getInt("trend")); assertTrue(mine.getBoolean("mine"))
+        val last = b.getJSONObject(1)
+        assertTrue(last.isNull("distanceM") && last.isNull("bearingDeg")); assertEquals("none", last.getString("bearingSrc"))
+        assertEquals(19.041, last.getJSONObject("place").getDouble("lon"))
+        assertTrue(JSONObject(RadarSnapshot.encode(RadarFrame(emptyList(), emptyList()), emptyMap(), "t", "a")).isNull("here"))
+    }
 }
