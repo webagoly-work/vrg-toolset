@@ -1,8 +1,8 @@
 // VRG Stack — the build, as a list of guarded stages.
 //
-//   archive → layers F I Q L A R C G → join → record → U (Futás) → pillars → analytics
+//   archive → layers F I Q L A R C G K → join → record → U (Futás) → pillars → analytics
 //   → validate → write graph → events + snapshot → index (+ embeddings) → codec · drift · status
-//   → patterns · proposals · replay · connectome · lineage · control · commits · decisions · metro · runs → health
+//   → patterns · proposals · replay · connectome · lineage · control · commits · decisions · metro · runs · kisokos → health
 //
 // Rules each stage keeps:
 //  · sources are read, never written; everything written goes to out/ (derived) or data/ (history)
@@ -57,9 +57,9 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     layers.R = await hc.stage('layer R · DevRepo', () => L.devrepo(), { fallback: () => H.carryForward(prev, 'R') });
     const commitsByPath = new Map();
     for (const n of layers.R.nodes) for (const f of (n.extra && n.extra.files) || []) if (!commitsByPath.has(f) || commitsByPath.get(f) < n.t) commitsByPath.set(f, n.t);
-    const adapters = { F: () => L.featured(), I: () => L.ideas(), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts) };
-    for (const code of ['F', 'I', 'Q', 'L', 'A', 'C', 'G']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
-    const ordered = {}; for (const c of ['F', 'I', 'Q', 'L', 'A', 'R', 'C', 'G']) ordered[c] = layers[c];
+    const adapters = { F: () => L.featured(), I: () => L.ideas(), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts), K: () => L.kisokos() };
+    for (const code of ['F', 'I', 'Q', 'L', 'A', 'C', 'G', 'K']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
+    const ordered = {}; for (const c of ['F', 'I', 'Q', 'L', 'A', 'R', 'C', 'G', 'K']) ordered[c] = layers[c];
 
     /* ---- 2. join */
     const J = await hc.stage('join', () => join(ordered, facts));
@@ -151,6 +151,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('decisions', () => log(require('./decisions').write({ graph, q: layers.Q, nodes }).msg), { optional: true });   // Döntésnapló (decisions.html)
     await hc.stage('metro', () => log(require('./metro').write({ graph }).msg), { optional: true });   // Vonaltérkép (metro.html)
     await hc.stage('runs', () => log(require('./runs').write({ graph }).msg), { optional: true });   // Futásnapló (runs.html)
+    await hc.stage('kisokos', () => log(require('./kisokos').write({ graph }).msg), { optional: true });   // Kisokos 3D (kisokos.html)
     const ms = Date.now() - t0;
     X.writeAtomic(path.join(CFG.out, 'STATUS.md'), INS.status(graph, metrics, codec.report, ms));
     const props = INS.proposals({ graph, communities, pat, health: hc });

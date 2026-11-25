@@ -118,6 +118,67 @@ window.VRG_ARCHIVE = {
    "url": "https://claude.ai/artifact/9VoTwfpDVMwpuYgNMfvEre"
   },
   {
+   "id": "vrg-kisokos",
+   "title": "VRG Kisokos",
+   "created": "2026-11-21",
+   "updated": "2026-11-21",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "board",
+   "summary": "Scope map of the offline work handbook: 8 axes and 4 rings around residential electrical work, 8 volumes, and sample pages for fixing technique, communication lines and the trades on site.",
+   "purpose": "To map out what the Kisokos knowledge base covers and which formats its cards use.",
+   "context": [
+    "New idea from the Founder: a Kisokos encyclopaedia for offline use",
+    "Fills the empty Atlas slot of the TUD group in the Kapu topology"
+   ],
+   "tags": [
+    "kisokos",
+    "knowledge-base",
+    "rogzitestechnika",
+    "protocols",
+    "trades",
+    "map"
+   ],
+   "file": "files/vrg-kisokos.html",
+   "url": "https://claude.ai/artifact/VAYKEg72w1ABa8hTqyy9Q3"
+  },
+  {
+   "id": "vrg-kisokos-3d",
+   "title": "VRG Kisokos 3D",
+   "created": "2026-11-21",
+   "updated": "2026-11-22",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "tool",
+   "summary": "The Stack's K layer in 3D: the Villanyszerelés core as a sphere, 8 axes with term nodes by ring, and every Kisokos card (Rögzítéstechnika, Kommunikációs vonalak, Világítótestek) and outside knowledge base as data cubes (1 cube = 1 KB); line and lamp cards show their generated drawing.",
+   "purpose": "To see how the Kisokos knowledge sits around the core and grows; a standalone snapshot of Stack/kisokos.html.",
+   "context": [
+    "Fork of the 2D Kisokos map (vrg-kisokos), which stays as it is",
+    "Built together with the first Rögzítéstechnika volume (53 cards) and the Stack layer K",
+    "Rebuild: node Stack/stack.js kisokos --standalone <file>",
+    "2026-11-22: the Kommunikációs vonalak volume added (27 lines, one shared SVG one-pager each)",
+    "2026-11-22: the Világítótestek volume started (families 1, 2, 6: 25 lamp types, each with a generic light-distribution drawing)",
+    "2026-11-22: Világítótestek families 3, 4, 7 added (49 lamp types in all)",
+    "2026-11-22: Világítótestek family 8 (emergency lighting, 8 types) and the first Előírások cards (7, emergency lighting rules)",
+    "2026-11-22: Világítótestek families 5, 9, 10 added: all ten families drafted, 79 lamp types",
+    "2026-11-22: Előírások grows to 23 cards (MSZ HD 60364 and its special locations, the product and lighting standards); every lamp type links its rules",
+    "2026-11-22: Készlet products linked to their Kisokos cards (57 links, 54 products); a card lists its stocked products and reaches to the Készlet form",
+    "2026-11-22: the Tankönyv volume started: curriculum for three levels, level 1 written (10 lessons)"
+   ],
+   "tags": [
+    "kisokos",
+    "stack",
+    "3d",
+    "holo",
+    "webgl",
+    "rogzitestechnika"
+   ],
+   "file": "files/vrg-kisokos-3d.html",
+   "url": "https://claude.ai/artifact/8M4RwBmJkLAaUvQwjmtgGL"
+  },
+  {
    "id": "vrg-latoter",
    "title": "VRG Látótér",
    "created": "2026-11-20",

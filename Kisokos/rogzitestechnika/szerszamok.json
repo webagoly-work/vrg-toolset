@@ -1,0 +1,33 @@
+{
+  "about": "VRG Kisokos · Rögzítéstechnika · szerszámkártyák: a fúráshoz és a rögzítéshez tartozó gépek és segédeszközök.",
+  "kind": "szerszam",
+  "added": "2026-11-21",
+  "cards": [
+    { "id": "furokalapacs", "title": "Fúrókalapács és ütvefúró", "aka": ["SDS-plus gép", "ütvefúrógép", "vésőkalapács"],
+      "place": { "core": "1B" },
+      "what": "A fúrókalapács pneumatikus ütőművel dolgozik, SDS befogással: betonban gyors, és vésni is tud. Az ütvefúró mechanikus ütése tokmányos, csak kisebb furatokhoz jó téglában és betonban.",
+      "for": ["beton", "vasbeton", "tomor-tegla", "termesko", "zsaluko", "meszhomoktegla"],
+      "use": "Üreges anyagban az ütést ki kell kapcsolni. Mélységütközővel pontos a dübelfurat.",
+      "traps": ["Üreges téglában ütve tönkremegy a furat.", "Vésés üzemmódban ne fúrj: forgás nélkül a fúró beszorul."],
+      "terms": { "hu": ["SDS-plus fúrókalapács", "ütvefúrógép"], "en": ["rotary hammer", "hammer drill"], "de": ["Bohrhammer", "Schlagbohrmaschine"] },
+      "shop": "Szerszámbolt, barkácsáruház, gépkölcsönző." },
+
+    { "id": "vezetekkereso", "title": "Vezeték- és vaskereső", "aka": ["falszkenner", "fémdetektor", "vaskereső"],
+      "place": { "core": "1B" },
+      "what": "Megjelöli a falban futó feszültség alatti vezetéket, a fémet (vasalás, cső) és a gipszkarton mögötti profilt vagy fát. A jobb műszerek mélységet is mutatnak.",
+      "for": ["beton", "vasbeton", "ureges-fodempanel", "gipszkarton", "tomor-tegla", "vegyes-falazat"],
+      "use": "Fúrás előtt keresztben és hosszában is végigvinni a falon. Fürdő és konyha falában különösen.",
+      "traps": ["Feszültségmentes vezetéket a feszültségkereső nem lát; nedves falban téves jelzés.", "A mélység korlátozott: a mélyen futó cső rejtve maradhat."],
+      "terms": { "hu": ["falszkenner", "vezetékkereső"], "en": ["wall scanner", "stud finder"], "de": ["Ortungsgerät", "Wandscanner"] },
+      "shop": "Szerszámbolt, barkácsáruház." },
+
+    { "id": "furattisztito", "title": "Furattisztító pumpa és kefe", "aka": ["kifúvó pumpa", "furatkefe"],
+      "place": { "core": "1B" },
+      "what": "A furatból a port kifújja (kézi pumpa vagy sűrített levegő), a kefe leválasztja a falra tapadt port. A vegyi dübel és a betoncsavar csak tiszta furatban tart.",
+      "for": ["beton", "vasbeton", "tomor-tegla", "termesko", "zsaluko"],
+      "use": "A gyártó előírása szerint: fújás, kefélés, fújás, többször ismételve.",
+      "traps": ["A furatban maradt por a vegyi dübel teherbírását jelentősen csökkenti."],
+      "terms": { "hu": ["kifúvó pumpa", "furattisztító kefe"], "en": ["blow-out pump", "hole cleaning brush"], "de": ["Ausblaspumpe", "Reinigungsbürste"] },
+      "shop": "Rögzítéstechnikai szakkereskedés." }
+  ]
+}
