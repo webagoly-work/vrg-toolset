@@ -431,7 +431,7 @@ A kisfeszültségű villamos berendezések (épületek villamos hálózata) terv
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
-- Kiegészítő védelem 30 mA-es áram-védőkapcsolóval: a laikusok által használt, legfeljebb 32 A-es aljzatkörökre, kültéri hordozható készülékek köreire, és az újabb kiadás szerint a lakások világítási áramköreire is.
+- Kiegészítő védelem 30 mA-es áram-védőkapcsolóval: a laikusok által használt, legfeljebb 32 A-es aljzatkörökre, kültéri hordozható készülékek köreire, és (a 2017-es kiadástól) az egyetlen háztartás befogadására szolgáló épületek világítási végáramköreire is (a hazai átvétel részleteit ellenőrizni kell). Nem kell alkalmazni olyan IT rendszerben, ahol az első hibánál a hibaáram legfeljebb 15 mA.
 - A különleges helyek (fürdő, medence, szauna) minden áramköre 30 mA-es áram-védőkapcsolóval (a 7-es részek szerint, kivételekkel).
 
 - **Hol érvényes:** Minden kisfeszültségű épületvillamossági munka: lakás, ház, társasház, iroda, ipar.

@@ -582,7 +582,7 @@ Alapvédelem: megakadályozza, hogy normál üzemben feszültség alatti részt 
 
 A hibavédelem leggyakoribb módja az önműködő lekapcsolás: testzárlatkor a hibaáram a védővezetőn folyik vissza, és a túláramvédelem vagy az áram-védőkapcsoló adott időn belül lekapcsol. Ehhez a hibahurok impedanciájának elég kicsinek kell lennie, hogy a hibaáram elég nagy legyen.
 
-Lekapcsolási idők (tájékoztató, 230 V, legfeljebb 32 A-es végáramkörök): TN rendszerben 0,4 s, TT rendszerben 0,2 s; elosztó áramkörökben TN-ben 5 s, TT-ben 1 s.
+Lekapcsolási idők (tájékoztató, 230 V / 400 V hálózat, MSZ HD 60364-4-41): TN rendszerben 0,4 s, TT rendszerben 0,2 s. Ez a legfeljebb 63 A-es, aljzatot tartalmazó végáramkörökre és a legfeljebb 32 A-es, csak fixen bekötött készüléket tápláló végáramkörökre vonatkozik; elosztó áramkörökben TN-ben legfeljebb 5 s, TT-ben legfeljebb 1 s. TT rendszerben, ha túláramvédelem old le és minden idegen vezetőképes rész be van kötve az egyenpotenciálú összekötésbe, a TN idők is használhatók.
 
 További hibavédelmi módok: kettős vagy megerősített szigetelés (II. érintésvédelmi osztály, ezért nincs védővezető-csatlakozása), törpefeszültség (SELV, PELV), villamos elválasztás (leválasztó transzformátor).
 
@@ -887,7 +887,7 @@ Fő egyenpotenciálú összekötés (fő EPH): az épületbe belépő fémszerke
 
 Helyi (kiegészítő) egyenpotenciálú összekötés: ahol a szabvány előírja (pl. medence, egyes esetekben fürdő), a helyiség egyidejűleg érinthető fémrészeit és a védővezetőket helyben is összekötik.
 
-Keresztmetszetek (tájékoztató): a fő EPH vezető legalább a legnagyobb védővezető felét, de legalább 6 mm² rezet kell érjen (25 mm²-nél többre nincs szükség); a kiegészítő összekötő vezető jellemzően 2,5 mm² (védett vezetésnél) vagy 4 mm² (védelem nélkül).
+Keresztmetszetek (tájékoztató): a fő EPH vezető legalább a legnagyobb védővezető felét, de legalább 6 mm² rezet kell érjen (25 mm²-nél többre nincs szükség); a kiegészítő összekötő vezető két idegen vezetőképes rész között legalább 2,5 mm² (mechanikai védelemmel) vagy 4 mm² (védelem nélkül) réz; test és idegen rész között legalább a hozzá csatlakozó védővezető fele, két test között legalább a kisebbik védővezető vezetőképessége (a hatályos MSZ szöveggel ellenőrizendő).
 
 **Képletek**
 
@@ -984,11 +984,11 @@ Az átadás előtt minden új vagy átalakított berendezést ellenőrizni kell 
 
 Sorrend: feszültségmentesen először a védővezetők folytonossága (kis ellenállású mérés), majd a szigetelési ellenállás, majd a polaritás. Csak ezek után szabad feszültség alá helyezni, és mérni a hurokimpedanciát (az önműködő lekapcsolás feltételét) és az áram-védőkapcsolók kioldását.
 
-Szigetelési ellenállás (tájékoztató): 500 V-ig terjedő körökben 500 V egyenfeszültségű méréssel, legalább 1 MΩ; törpefeszültségű körökben 250 V-tal, legalább 0,5 MΩ. Mérés előtt a túlfeszültség-levezetőt és az érzékeny elektronikát (LED-meghajtó, okos kapcsoló) le kell választani, vagy a fázist és a nullát összekötve a védővezetőhöz képest mérni.
+Szigetelési ellenállás (tájékoztató): 500 V-ig terjedő körökben 500 V egyenfeszültségű méréssel, legalább 1 MΩ; törpefeszültségű körökben 250 V-tal, legalább 0,5 MΩ. Mérés előtt a túlfeszültség-levezetőt és az érzékeny elektronikát (LED-meghajtó, okos kapcsoló) le kell választani, vagy a fázist és a nullát összekötve a védővezetőhöz képest mérni. Ha a túlfeszültség-levezetőt vagy más készüléket nem lehet leválasztani (pl. levezetős aljzat), a vizsgálófeszültség az adott körre 250 V-ra csökkenthető, de legalább 1 MΩ szükséges.
 
-Hurokimpedancia: a mért érték legyen kisebb a 2. lecke szerinti határnál. A vezeték üzemi melegedése miatt a mért (hideg) értéket tartalékkal értékeljük; a gyakorlatban elterjedt szabály, hogy a mért érték ne haladja meg a határ kb. 80 %-át.
+Hurokimpedancia: a mért érték legyen kisebb a 2. lecke szerinti határnál. A vezeték üzemi melegedése miatt a mért (hideg) értéket tartalékkal értékeljük: a gyakorlatban elterjedt (az angol BS 7671 / IET útmutatókból származó) szabály, hogy a hidegen mért érték ne haladja meg a táblázati határ 80 %-át, mert a határ az üzemi hőmérsékletű vezetékre vonatkozik; az MSZ HD 60364 szövege ezt nem írja elő.
 
-Áram-védőkapcsoló: a próbagomb nem elég; műszerrel kell mérni a kioldási áramot és a kioldási időt. Tájékoztató értékek általános típusnál: névleges kioldóáramon legfeljebb 300 ms, ötszörös áramon legfeljebb 40 ms.
+Áram-védőkapcsoló: a próbagomb nem elég; műszerrel kell mérni a kioldási áramot és a kioldási időt. Tájékoztató értékek általános típusnál: névleges kioldóáramon legfeljebb 300 ms, ötszörös áramon legfeljebb 40 ms. Egyes 30 mA-es készülékeknél a gyártó a 40 ms-ot 5 × IΔn helyett 250 mA-nél garantálja; ilyenkor a műszeres próbát a gyártói adat szerint kell értékelni.
 
 **Képletek**
 
