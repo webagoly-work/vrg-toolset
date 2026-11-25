@@ -12,7 +12,7 @@ window.VRG_ARCHIVE = {
    "vrg": true,
    "group": "VRG style",
    "kind": "design",
-   "summary": "The Fényjel design system board: proposed phone home, phone controller and desktop home, eight function colour families, 40 pixel icons, LED numerals, depth planes and parts.",
+   "summary": "The Fényjel design system board: proposed phone home, phone controller and desktop home, eight function colour families, 46 pixel icons, LED numerals, depth planes and parts.",
    "purpose": "Show the new look for review before the Mobile and Asztal shells are rebuilt in it.",
    "context": [
     "the Founder found the dark themes flat, monochrome and wordy, with generic emoji icons",

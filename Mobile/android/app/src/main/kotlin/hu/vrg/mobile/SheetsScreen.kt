@@ -92,6 +92,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.floor
 import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.PixelGlyph
+import hu.vrg.mobile.core.PixelGlyphs
+import hu.vrg.mobile.kit.ui.PixelIcon
 
 // Lapok (WP M20): the Desktop's sheets in the Asztal's sheet area. The model is kit-core's Sheets (a port of the Desktop's sheets.js) on
 // the phone's 2 × 4 grid; lying down the same sheet is drawn transposed, 4 × 2 (D-16). This file draws and turns gestures into model
@@ -123,6 +127,14 @@ object SheetsStore {
         _flow.value = n
         ctx?.getSharedPreferences(FILE, Context.MODE_PRIVATE)?.edit()?.putString(KEY, SheetsCodec.encode(n))?.apply()
     }
+}
+
+/** A window's pixel glyph (Fényjel R1), from what it shows; null = only the text glyph of [titleOf]. */
+private fun pixelOf(w: SheetWin): PixelGlyph? = when (w.kind) {
+    "home" -> PixelGlyphs.byName("home")
+    "feat" -> FeatureIcons.of(w.open.removePrefix("feat:"))
+    "app" -> FeatureIcons.of(Catalogue.APPS)
+    else -> null
 }
 
 /** A window's title and glyph, from what it shows. */
@@ -319,7 +331,8 @@ private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: 
             .pointerInput(w.id) { detectTapGestures(onDoubleTap = { SheetsStore.update { P.toggleMax(it, w.id) } }, onTap = { SheetsStore.update { P.focusWin(it, w.id) } }) }
             .semantics { contentDescription = "$title ablak, dupla koppintás: teljes vagy egy cella" }
             .padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(glyph, style = Melyviz.small.copy(color = Melyviz.glow))
+            val px = pixelOf(w)
+            if (px != null) PixelIcon(px, 14.dp) else Text(glyph, style = Melyviz.small.copy(color = Melyviz.glow))
             Text(title, style = Melyviz.small.copy(color = Melyviz.ink, fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).padding(horizontal = 6.dp))
             Box {
@@ -331,7 +344,8 @@ private fun WindowCard(w: SheetWin, focused: Boolean, dragging: Boolean, small: 
         // the face: the window's compact self; a tap opens it full
         Column(Modifier.weight(1f).fillMaxWidth().clickable { SheetsStore.update { P.maximize(it, w.id) } }.padding(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Mini(glyph, title, status, size = if (small) MiniSize.SM else MiniSize.MD, tint = Melyviz.glow, quietIdle = true)
+            val face = pixelOf(w)
+            Mini(glyph, title, status, size = if (small) MiniSize.SM else MiniSize.MD, tint = if (face != null) null else Melyviz.glow, quietIdle = true, pixel = face)
             if (!small) {
                 val blurb = when (w.kind) {
                     "home" -> "A telefon funkciói ikonokként."
@@ -365,7 +379,9 @@ private fun FullWindow(modifier: Modifier, w: SheetWin, sh: SheetsHost) {
         Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).background(Melyviz.abyss.copy(alpha = 0.5f))
             .pointerInput(w.id) { detectTapGestures(onDoubleTap = { SheetsStore.update { P.toggleMax(it, w.id) } }) }
             .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("$glyph  $title", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.weight(1f), maxLines = 1)
+            val px = pixelOf(w)
+            if (px != null) { PixelIcon(px, 14.dp); Spacer(Modifier.width(8.dp)) }
+            Text(if (px != null) title else "$glyph  $title", style = Melyviz.small.copy(color = Melyviz.glow), modifier = Modifier.weight(1f), maxLines = 1)
             HeadButton("⧉", "Vissza a lapra") { SheetsStore.update { P.restore(it, w.id) } }
             HeadButton("✕", "$title bezárása") { SheetsStore.update { P.closeWin(it, w.id) } }
         }
@@ -429,8 +445,9 @@ fun SheetPicker(cell: Cell?, onClose: () -> Unit) {
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
             items(hits, key = { it.first.id }) { (item, r) ->
                 val glyph = when (r.kind) { "home" -> "⌂"; "app" -> Catalogue.APPS.glyph; else -> Catalogue.byId(r.open!!.removePrefix("feat:"))?.glyph ?: "·" }
+                val px = when (r.kind) { "home" -> PixelGlyphs.byName("home"); "app" -> FeatureIcons.of(Catalogue.APPS); else -> FeatureIcons.of(r.open!!.removePrefix("feat:")) }
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { pick(r) }.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow), modifier = Modifier.width(34.dp))
+                    Box(Modifier.width(34.dp)) { if (px != null) PixelIcon(px, 20.dp) else Text(glyph, style = Melyviz.readout.copy(color = Melyviz.glow)) }
                     Text(item.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }

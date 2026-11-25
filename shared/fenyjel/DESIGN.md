@@ -61,11 +61,11 @@ family colour reaches at least 7.3:1 there and 6.5:1 on the raised plane, so all
 
 | Family | Token | Hex | Members (Mobile feature id · Desktop tool) |
 |---|---|---|---|
-| Tervezés (Plan) | `--fj-f-plan` | `#5cc8f5` | Vázlat `sketch`, Térkép `map`, Mérés · Planner, Topológia, VRG Sketcher, VRG Térkép |
-| Anyag és pénz (Stock) | `--fj-f-stock` | `#f5b94a` | · Készlet, kalkulátorok, Workflow Kit, árajánlat, BuildTree |
-| Kapcsolat (Link) | `--fj-f-link` | `#b393ff` | Légegér `airdeck`, Párosítás `pair`, Képernyő `screen`, Átadás `drop`, Hálózat `net`, Eszközök `devices`, PC ablakok `pcwin` |
-| Tudás (Know) | `--fj-f-know` | `#5ee6c0` | Gyorsjegyzet `notes`, Rétegverem `stack`, Archívum `archive`, Gömb `sphere`, Claude `claude` · MindMap, CoreRef, BRIDGE |
-| Futtatás (Run) | `--fj-f-run` | `#c3ea5c` | Indítópult `launch`, Alkalmazások `apps`, Localhost `ports`, Kódváros `city`, Haladás `pulse` · terminál, Git, START |
+| Tervezés (Plan) | `--fj-f-plan` | `#5cc8f5` | VRG Sketcher `sketch`, Fotópont `photo`, Varler Planner `planner`, VRG Térkép `map` · Topológia, Mérés |
+| Anyag és pénz (Stock) | `--fj-f-stock` | `#f5b94a` | Készlet `inventory`, Kalkulátorok `calc`, Varler Workflow Kit `workflow` · árajánlat, BuildTree |
+| Kapcsolat (Link) | `--fj-f-link` | `#b393ff` | Légegér `airdeck`, Párosítás `pair`, Képernyő `screen`, Átadás `drop`, Hálózat `net`, Eszközök `devices`, PC ablakok `pcwin`, Óra `watch` |
+| Tudás (Know) | `--fj-f-know` | `#5ee6c0` | Gyorsjegyzet `notes`, Rétegverem `stack`, Archívum `archive`, Gömb `sphere`, Claude `claude`, Katalógus `catalog` · MindMap, CoreRef, BRIDGE |
+| Futtatás (Run) | `--fj-f-run` | `#c3ea5c` | Indítópult `launch`, Alkalmazások `apps`, Localhost `ports`, Kódváros `city`, Haladás `pulse`, Asztal `desk`, Lapok `sheets`, DevLap `devlap` · terminál, Git, START |
 | Jelzés (Alert) | `--fj-f-alert` | `#ff7a9a` | Értesítések `inbox`, Csipogó `pager`, Radar `radar`, Tárgykereső `tag` |
 | Környezet (Ambient) | `--fj-f-env` | `#7ea2ff` | Időjárás `weather` · idő, helyszín |
 | Rendszer (System) | `--fj-f-sys` | `#a9b7c4` | Beállítások `settings`, GitHub fiók `account`, Frissítés `update`, Széf `vault` |
@@ -97,16 +97,22 @@ captions of decoration, never information).
 - **One grid:** 12×12 pixels, two tones: `#` lit, `+` dim (opacity `--fj-px-dim`, .4), `.` off. One idea per glyph,
   a 1-pixel outline where a shape needs one, at least one solid mass so it reads at 24 px, no letters inside.
 - **One source:** `icons.js` holds every glyph with its family. The web draws SVG from it
-  (`FJIcons.svg(name, {mode})`); VRG Mobile will get the same grids as Compose `ImageVector`s from a generator
-  (`tools/kotlin-icons.js`, rollout R1). Never redraw a glyph per platform.
+  (`FJIcons.svg(name, {mode})`). VRG Mobile gets the same grids as data: `tools/kotlin-icons.js` writes kit-core
+  `PixelGlyphs.kt` (glyphs + family colours; `--check` runs in CI and `mobile.cmd test`), kit `ui/PixelIcon.kt` draws
+  them on a Compose canvas, and kit-core `FeatureIcons.kt` maps every catalogue feature to its glyph
+  (`FeatureIconsTest` keeps all three in step). Never redraw a glyph per platform.
+- **On the other palettes:** until the phone wears Fényjel itself (R2), a glyph keeps its family colour on every dark
+  palette and is pulled 45 % toward black on the light ones (Papír, Sekély víz) so it keeps its contrast; "ui" glyphs
+  take the palette's ink.
 - **Three renderings:** `px` (default: square pixels with a hairline gutter, a modern LED matrix), `solid` (gapless
   pixel art, for very small sizes) and `dot` (round LEDs, for displays and the splash).
 - **The socket:** a glyph sits in a lit well (`.fj-socket`) that glows in its family colour behind the glyph. Sizes:
   96 (focus card), 64 (phone tile), 68–72 (desktop tile), 56 (action row), 40–44 (rail, card head).
 - **No emoji.** The current Mobile catalogue's emoji glyphs (📟, 📈, 🗁 …) are replaced one for one.
-- **40 glyphs today:** home, control, search, info, back · planner, sketch, map, measure · inventory, calc, quote ·
-  mouse, pair, screen, drop, net, devices, pcwin · notes, stack, archive, sphere, claude · apps, launch, ports,
-  terminal, city, git, pulse · pager, inbox, radar, tag · weather · settings, account, update, vault.
+- **46 glyphs today:** home, control, search, info, back · planner, sketch, map, measure, photo · inventory, calc,
+  quote · mouse, pair, screen, drop, net, devices, pcwin, watch · notes, stack, archive, sphere, claude, catalog ·
+  desk, sheets, devlap, apps, launch, ports, terminal, city, git, pulse · pager, inbox, radar, tag · weather ·
+  settings, account, update, vault.
 
 ### 5.1 Numbers
 
@@ -222,8 +228,8 @@ screen needs a sentence to be understood without **i**, the screen is wrong, not
 
 | Step | What | Where |
 |---|---|---|
-| R0 | This spec, tokens, icons, fonts, the board | `shared/fenyjel/` (done) |
-| R1 | Icons on the phone: `tools/kotlin-icons.js` turns `icons.js` into Compose `ImageVector`s; the catalogue's emoji glyphs go | Mobile `kit` |
+| R0 | This spec, tokens, icons, fonts, the board | `shared/fenyjel/` (done 2026-11-25) |
+| R1 | Icons on the phone: `tools/kotlin-icons.js` → kit-core `PixelGlyphs.kt`, kit `PixelIcon`, `FeatureIcons` for all 38 features; the home cards and grid, plugin chips, long-press menus, planned page, update mark, Katalógus, Asztal and Lapok draw them instead of the emoji (done 2026-11-25) | Mobile `kit`, `app` |
 | R2 | Phone: Fényjel palette and type in `Melyviz.kt`, the new Kezdőlap (focus card, 4-column glyph grid, dock) and the Vezérlőpult tab | Mobile `app`, `kit` |
 | R3 | Phone: every feature page takes its family colour; descriptions move behind **i** | each `feature-*` |
 | R4 | Desktop: the Irányítópult view becomes the 7.3 home (rail, continue cards, grid, console column) | `Dashboard/page` |

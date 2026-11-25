@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.vrg.mobile.core.PixelGlyph
 import hu.vrg.mobile.kit.theme.Melyviz
 
 // RCO on the phone (2026-11-19): the toolset's right-click menu (Kódváros, the Kapu) as a long press. One look and
@@ -34,6 +35,8 @@ data class RcoItem(
     val label: String,
     val danger: Boolean = false,
     val enabled: Boolean = true,
+    /** Fényjel R1: a pixel glyph shown in place of [glyph] (a feature's own icon in its family colour). */
+    val pixel: PixelGlyph? = null,
     val onClick: () -> Unit,
 )
 
@@ -79,7 +82,11 @@ fun RcoMenu(expanded: Boolean, onDismiss: () -> Unit, title: String?, items: Lis
             }
             DropdownMenuItem(
                 text = { Text(item.label, style = Melyviz.label.copy(color = colour)) },
-                leadingIcon = { Text(item.glyph, style = Melyviz.readout.copy(fontSize = 13.sp, color = if (item.danger) Melyviz.coral else Melyviz.glow)) },
+                leadingIcon = {
+                    val px = item.pixel
+                    if (px != null) PixelIcon(px, 18.dp, color = if (!item.enabled) Melyviz.faint else if (item.danger) Melyviz.coral else null)
+                    else Text(item.glyph, style = Melyviz.readout.copy(fontSize = 13.sp, color = if (item.danger) Melyviz.coral else Melyviz.glow))
+                },
                 enabled = item.enabled,
                 onClick = { onDismiss(); item.onClick() },
             )

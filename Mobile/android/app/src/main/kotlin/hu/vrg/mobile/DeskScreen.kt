@@ -67,6 +67,9 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.PixelGlyph
+import hu.vrg.mobile.kit.ui.PixelIcon
 
 // The Asztal (WP M19): the VRG Desktop's frame on the phone. Top strip (sheet tabs, Kommand, the orientation toggle,
 // settings), the sheet area, and the dock with the ◣ menu dial, the open windows and the ◢ Rétegverem dial. What a
@@ -130,16 +133,16 @@ fun DeskScreen(
                     UpdateMark { act.open(Catalogue.UPDATE.id) }
                     StripButton("▦", "QR beolvasás", act.scan)
                     if (wide) {
-                        StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) }
+                        StripButton(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title, pixel = FeatureIcons.of(Catalogue.CATALOG)) { act.open(Catalogue.CATALOG.id) }
                         StripButton(look.orientation.glyph, "Tájolás: ${look.orientation.label}, koppintásra a következő", act.cycleOrientation)
                     } else Box {
                         StripButton("⋮", "Több: Katalógus, tájolás") { more = true }
                         RcoMenu(more, { more = false }, "Több", listOf(
-                            RcoItem(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title) { act.open(Catalogue.CATALOG.id) },
+                            RcoItem(Catalogue.CATALOG.glyph, Catalogue.CATALOG.title, pixel = FeatureIcons.of(Catalogue.CATALOG)) { act.open(Catalogue.CATALOG.id) },
                             RcoItem(look.orientation.glyph, "Tájolás: ${look.orientation.label} → következő") { act.cycleOrientation() },
                         ))
                     }
-                    StripButton(Catalogue.SETTINGS.glyph, Catalogue.SETTINGS.title) { act.open(Catalogue.SETTINGS.id) }
+                    StripButton(Catalogue.SETTINGS.glyph, Catalogue.SETTINGS.title, pixel = FeatureIcons.of(Catalogue.SETTINGS)) { act.open(Catalogue.SETTINGS.id) }
                 }
             }
 
@@ -155,9 +158,9 @@ fun DeskScreen(
                 Spacer(Modifier.width(6.dp))
                 Box {   // F4 (WP M49): a long press lists the Sketcher's variants (SketchLaunch.kt)
                     var sketchMenu by remember { mutableStateOf(false) }
-                    Dial(Catalogue.SKETCH.glyph, Catalogue.SKETCH.title, onLong = { sketchMenu = true }) { act.open(Catalogue.SKETCH.id) }
+                    Dial(Catalogue.SKETCH.glyph, Catalogue.SKETCH.title, onLong = { sketchMenu = true }, pixel = FeatureIcons.of(Catalogue.SKETCH)) { act.open(Catalogue.SKETCH.id) }
                     RcoMenu(sketchMenu, { sketchMenu = false }, Catalogue.SKETCH.title,
-                        listOf(RcoItem(Catalogue.SKETCH.glyph, "Megnyitás") { act.open(Catalogue.SKETCH.id) }) +
+                        listOf(RcoItem(Catalogue.SKETCH.glyph, "Megnyitás", pixel = FeatureIcons.of(Catalogue.SKETCH)) { act.open(Catalogue.SKETCH.id) }) +
                             hu.vrg.mobile.sketch.ui.sketcherRcoItems(open = { act.open(Catalogue.SKETCH.id) }))
                 }
                 Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp),
@@ -193,9 +196,12 @@ private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
         // the drawn chip keeps its size inside a 48 dp tall touch slot (UI audit 1.1)
         Box(Modifier.heightIn(min = 48.dp).rco(onClick = { act.open(f.id) }, onLong = { menu = true }, longLabel = "ablak műveletei")
             .semantics { role = Role.Button }, contentAlignment = Alignment.Center) {
-            Text("${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1,
-                modifier = Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 10.dp, vertical = 8.dp))
+            val px = FeatureIcons.of(f)
+            Row(Modifier.background(Melyviz.raised, RoundedCornerShape(8.dp)).vrgBorder(1.dp, Melyviz.glowDim, RoundedCornerShape(8.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (px != null) { PixelIcon(px, 14.dp); Spacer(Modifier.width(6.dp)) }
+                Text(if (px != null) f.title else "${f.glyph} ${f.title}", style = Melyviz.small.copy(color = Melyviz.ink), maxLines = 1)
+            }
         }
         RcoMenu(menu, { menu = false }, f.title, listOfNotNull(
             RcoItem("▣", "Megnyitás") { act.open(f.id) },
@@ -208,20 +214,20 @@ private fun WindowChip(f: FeatureInfo, count: Int, act: DeskActions) {
 
 /** A top bar button: a glyph with a 48 dp target and its name for TalkBack. */
 @Composable
-private fun StripButton(glyph: String, label: String, onClick: () -> Unit) {
+private fun StripButton(glyph: String, label: String, pixel: PixelGlyph? = null, onClick: () -> Unit) {
     Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
-        Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.muted, fontSize = 17.sp))
+        if (pixel != null) PixelIcon(pixel, 20.dp) else Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.muted, fontSize = 17.sp))
     }
 }
 
 @Composable
-private fun Dial(glyph: String, label: String, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
+private fun Dial(glyph: String, label: String, onLong: (() -> Unit)? = null, pixel: PixelGlyph? = null, onClick: () -> Unit) {
     Box(
         Modifier.size(48.dp).background(Melyviz.surface, RoundedCornerShape(10.dp)).vrgBorder(1.dp, Melyviz.glow, RoundedCornerShape(10.dp))
             .then(if (onLong != null) Modifier.rco(onClick = onClick, onLong = onLong) else Modifier.clickable(role = Role.Button, onClick = onClick))
             .semantics { contentDescription = label; role = Role.Button },
         contentAlignment = Alignment.Center,
-    ) { Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
+    ) { if (pixel != null) PixelIcon(pixel, 26.dp) else Text(glyph, style = Melyviz.glyph.copy(color = Melyviz.glow, fontSize = 22.sp)) }
 }
 
 private fun reachTag(u: DeskUnit): String = when (u.reach) {
