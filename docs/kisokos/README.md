@@ -157,10 +157,10 @@ and "what goes wrong if not".
   correction in `docs/research/2026-11-25_kisokos-*.md` (protection values 1–2, special locations, emergency
   lighting, lines 1–2, product standards, fixing technique, lamp types), the curriculum against the official
   requirements in `…-tk1-villanyszerelo-kkk.md` and `…-tk1-followup.md`, and the Hungarian editions in force (MSZT
-  webshop, 2026-11-25) in `…-hungarian-editions.md`; the rule cards now name their editions. Open decision: the cards
-  keep the 2007 edition of MSZ HD 60364-7-701 as the baseline and mark where the 2024 edition differs. In Hungary the
-  Hungarian-language MSZ HD 60364-7-701:2026 EV (= IEC 2019 + A11:2024) is valid from 2026-11-01, and the 2007 edition
-  runs in parallel until 2027-12-06; the note recommends teaching the 2024 text with a short „2007 szerint” note.
+  webshop, 2026-11-25) in `…-hungarian-editions.md`; the rule cards now name their editions. Decided 2026-11-25 (Founder):
+  the Kisokos teaches the 2024 edition of MSZ HD 60364-7-701 (the Hungarian-language MSZ HD 60364-7-701:2026 EV = IEC
+  2019 + A11:2024, valid from 2026-11-01) and adds a short „2007 szerint” note where practice differs, while the 2007
+  edition runs in parallel until 2027-12-06. Still to read in the paid Hungarian text: the bonding wording and zone 2.
   Still unconfirmed: the primary texts of IEC 60479-1, the HD 60364-5-52 tables, EN 50110-1 and HD 361 (checked only
   through previews and maker reproductions).
 - **Előírások (el)**: 23 cards (own summaries + references): emergency lighting, MSZ HD 60364 with its special

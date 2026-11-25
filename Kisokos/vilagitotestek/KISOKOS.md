@@ -1072,7 +1072,7 @@ A fürdő általános világítása párától és fröccsenő víztől védett 
 - **Fény:** 1000–2500 lm · 3000–4000 K · Ra ≥ 90 (bőrszín, sminkelés) · széles, diffúz
 - **Vezérlés:** kapcsolt; a kapcsoló a fürdőn kívül vagy a zónákon kívül; páraelszívóval együtt is (vonalak: Hálózati 50 Hz)
 - **Beépítés:**
-  - A zónák (0, 1, 2) a kád és a zuhany körül; zóna 1-be és 2-be legalább IPX4, vízsugárnak kitett helyen IPX5. A pontos feltételeket a szabvány adja.
+  - A zónák a kád körül 0, 1, 2, a zuhany körül 0 és 1 (2024-es kiadás; zuhanynál nincs 2. zóna); zóna 1-be és 2-be legalább IPX4, vízsugárnak kitett helyen IPX5. A pontos feltételeket a szabvány adja.
   - A fürdő áramköreit áram-védőkapcsoló védje.
   - Pára: a lámpatest tömítése és a kábelbevezetés tömszelencéje.
 - **Rögzítés:** Beton, Gipszkarton, Csempe, járólap, Nylon terpesztődübel

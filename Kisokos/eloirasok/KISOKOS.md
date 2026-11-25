@@ -451,17 +451,18 @@ Fürdőkádas és zuhanyozós helyiségek villamos berendezése: a kád és a zu
 
 **Lényeg (saját összefoglaló):**
 
-- Zóna 0: a kád vagy a zuhanytálca belseje. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében (tálca nélküli zuhanynál a zuhanyfej vagy vízkifolyó közepétől 1,2 m sugarú függőleges felületig, a vizet visszatartó szilárd falakig; a zuhanyfüggöny nem határol). Zóna 2: a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig. Kiadásfüggő: a 2019-es IEC / MSZ HD 60364-7-701:2024 szerint zuhanynál nincs 2. zóna, és a zuhany 0. zónája a padlótól 10 cm magasságig tart; ez a kártya a 2007-es kiadást veszi alapul.
+- Ez a kártya a 2024-es kiadást (MSZ HD 60364-7-701:2026 EV) tanítja. Zóna 0: a kád vagy a zuhanytálca belseje; tálca nélküli zuhanynál a padlótól 10 cm magasságig, a zóna 1 vízszintes kiterjedésében. Zóna 1: e fölött a padlótól 2,25 m-ig, a kád vagy tálca vízszintes kiterjedésében; tálca nélküli zuhanynál a rögzített zuhanyfej vagy vízkifolyó közepétől 1,2 m sugarú függőleges felületig (a vizet visszatartó szilárd fal határol, a zuhanyfüggöny nem). Zóna 2: csak kádnál, a zóna 1 határától további 0,6 m vízszintesen, 2,25 m magasságig; zuhanynál nincs 2. zóna. 2007 szerint (2027-12-06-ig párhuzamosan érvényes): a zuhanynak is volt 0,6 m-es 2. zónája.
 - Zóna 0-ba csak erre szánt, törpefeszültségű (SELV) berendezés, legfeljebb 12 V AC vagy 30 V DC, legalább IPX7; a táplálás a zónákon kívül.
 - Zóna 1-be csak oda szánt, helyhez kötött berendezés (pl. vízmelegítő, szellőző, törölközőszárító, lámpatest a gyártói minősítéssel); törpefeszültségű táplálás esetén a forrás a zóna 0 és 1 kívül.
 - Dugaszolóaljzat: a 0. zónában nem lehet. Az 1. és 2. zónában csak törpefeszültségű (SELV/PELV, legfeljebb 25 V AC / 60 V DC; a forrás a 0. és 1. zónán kívül), IPX4 védettségű aljzat; a 2. zónában ezen felül borotva-tápegység (leválasztó transzformátoros egység, MSZ EN 61558-2-5). A zónákon kívül hálózati (230 V) aljzat szerelhető, a kört 30 mA-es áram-védőkapcsoló védi. A szabvány szövegében nincs a zóna 1 határától mért távolsági előírás; a brit BS 7671 3 m-es szabálya nemzeti sajátosság, nálunk nem alkalmazandó. (A teljes MSZ HD szöveggel ellenőrizendő.)
-- Kapcsolók és szerelvények a zónákon kívül; a helyiség minden áramköre 30 mA-es áram-védőkapcsolóval. Kiadásfüggő: a 2019-es szövegben (HD 2024) a 2. zónába IPX4 védettségű, nem dugaszolóaljzat jellegű, állandóan bekötött szerelvény (pl. kapcsoló) is kerülhet; a korábbi kiadás szerinti gyakorlat szerint a kapcsolót a zónákon kívülre kell szerelni.
+- Kapcsolók: a 0. és 1. zónán kívül; a 2. zónába IPX4 védettségű, állandóan bekötött, nem dugaszolóaljzat jellegű szerelvény (pl. kapcsoló) is kerülhet. A helyiség minden áramkörét 30 mA-es áram-védőkapcsoló védi (kivéve a törpefeszültségű SELV/PELV és a villamos elválasztású kört). 2007 szerint: a kapcsolót a zónákon kívülre kellett szerelni. A helyi egyenpotenciálú összekötés 2024-es szövegét nem ellenőriztük: a végleges szöveghez a fizetős magyar kiadás kell.
 
 **Számok (tájékoztató, a hatályos kiadással egyeztetendő):**
 
 - Zóna 0: legalább IPX7. Zóna 1 és 2: legalább IPX4; ahol tisztításkor vízsugár éri, IPX5.
 - Zóna 1 és 2 magassága: 2,25 m a padló fölött (vagy a zuhanyfej magassága, ha magasabb).
-- Zóna 2 szélessége: 0,6 m a zóna 1 határától.
+- Zóna 2 szélessége (csak kádnál): 0,6 m a zóna 1 határától.
+- Tálca nélküli zuhany: zóna 1 sugara 1,2 m a vízkifolyótól, zóna 0 magassága 10 cm.
 
 - **Hol érvényes:** Lakások és közösségi épületek fürdőszobái és zuhanyzói.
 - **Forrás:** szabvány: MSZ HD 60364-7-701:2026 EV (IEC 60364-7-701:2019 + A11:2024, magyar nyelvű egyesített változat; az angol nyelvű MSZ HD 60364-7-701:2025 2025-05-01-től érvényes). A 2007-es kiadás (+ A11:2012 + A12:2018) 2027-12-06-ig párhuzamosan érvényben marad. — MSZT szabványbolt

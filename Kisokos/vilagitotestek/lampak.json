@@ -314,7 +314,7 @@
       "photometry": { "lm": "1000–2500 lm", "cct": "3000–4000 K", "cri": "Ra ≥ 90 (bőrszín, sminkelés)", "beam": "széles, diffúz" },
       "distribution": { "type": "lambert" },
       "control": "kapcsolt; a kapcsoló a fürdőn kívül vagy a zónákon kívül; páraelszívóval együtt is", "lines": ["kv.halozat-50hz"],
-      "install": ["A zónák (0, 1, 2) a kád és a zuhany körül; zóna 1-be és 2-be legalább IPX4, vízsugárnak kitett helyen IPX5. A pontos feltételeket a szabvány adja.", "A fürdő áramköreit áram-védőkapcsoló védje.", "Pára: a lámpatest tömítése és a kábelbevezetés tömszelencéje."],
+      "install": ["A zónák a kád körül 0, 1, 2, a zuhany körül 0 és 1 (2024-es kiadás; zuhanynál nincs 2. zóna); zóna 1-be és 2-be legalább IPX4, vízsugárnak kitett helyen IPX5. A pontos feltételeket a szabvány adja.", "A fürdő áramköreit áram-védőkapcsoló védje.", "Pára: a lámpatest tömítése és a kábelbevezetés tömszelencéje."],
       "fixing": ["rg.beton", "rg.gipszkarton", "rg.csempe", "rg.nylon-terpeszto"],
       "rules": "MSZ HD 60364-7-701 (fürdő- és zuhanyhelyiségek), MSZ EN 60598-2-1", "norms": ["el.msz-hd-60364-7-701", "el.msz-en-60598"], "symbol": "lum.general",
       "rooms": "fürdőszoba, zuhanyzó, mosdó",
