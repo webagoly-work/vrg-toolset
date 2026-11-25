@@ -51,7 +51,7 @@ const KEYS = {
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
   'web.perms':         { type: permsOk, def: {} },                                        // WP-17: { origin: { 'media': bool, 'clipboard-sanitized-write': bool } }
   'ui.lang':          { type: v => v === 'hu' || v === 'en', def: 'hu' },
-  'ui.look':          { type: v => v === 'melyviz' || v === 'grafit', def: 'melyviz' },   // the frame's look: Mélyvíz, or Grafit (shared/grafit.css)
+  'ui.look':          { type: v => v === 'melyviz' || v === 'grafit' || v === 'fenyjel', def: 'melyviz' },   // the frame's look: Mélyvíz, Grafit (shared/grafit.css) or Fényjel (shared/fenyjel)
   'layout.tree':       { type: v => v === null || layout.validate(v).ok, def: null },   // WP-07; null = the default tree
   'desk.level':        { type: v => desk.LEVELS.includes(v), def: 'user' },             // WP-41: User / Dev / All (DESKU-Q04)
   'desk.view':         { type: v => desk.VIEWS.includes(v), def: 'dashboard' },         // WP-41: the last primary view, the boot target

@@ -282,7 +282,8 @@ const DESK_CMDS = [['desk:toggle', 'Nézetváltás: Irányítópult ⇄ Asztal',
   ['desk:view:desktop', 'Asztal nézet', 'Desktop view'], ['desk:level:user', 'Szint: Felhasználó', 'Level: User'], ['desk:level:dev', 'Szint: Fejlesztő', 'Level: Dev'],
   ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip'],
   ['desk:look:grafit', 'Megjelenés: Grafit (sötétszürke, pontmátrix)', 'Look: Grafit (graphite, dot matrix)'], ['desk:look:melyviz', 'Megjelenés: Mélyvíz', 'Look: Mélyvíz'],
-  ['desk:look:toggle', 'Megjelenés váltása: Mélyvíz ⇄ Grafit', 'Toggle look: Mélyvíz / Grafit']];
+  ['desk:look:fenyjel', 'Megjelenés: Fényjel (jelzőfény, pixelikonok)', 'Look: Fényjel (signal, pixel icons)'],
+  ['desk:look:toggle', 'Megjelenés váltása: Mélyvíz → Grafit → Fényjel', 'Toggle look: Mélyvíz / Grafit / Fényjel']];
 const deskCmds = {
   paletteItems: () => DESK_CMDS.map(([id, hu, en]) => ({ id, hu, en })),
   run: id => {
@@ -290,7 +291,7 @@ const deskCmds = {
     if (!c) return { ok: false, hu: 'Ismeretlen parancs.', en: 'Unknown command.' };
     const cmd = id.slice(5);
     if (cmd.startsWith('level:')) { try { settings.set('desk.level', cmd.slice(6)); } catch (e) {} }
-    if (cmd === 'look:grafit' || cmd === 'look:melyviz') { try { settings.set('ui.look', cmd.slice(5)); } catch (e) {} }   // the page saves a toggle itself
+    if (cmd === 'look:grafit' || cmd === 'look:melyviz' || cmd === 'look:fenyjel') { try { settings.set('ui.look', cmd.slice(5)); } catch (e) {} }   // the page saves a toggle itself
     ipc.emit(win, 'desktop', 'cmd', { cmd });
     return { ok: true, hu: c[1], en: c[2] };
   },
@@ -986,6 +987,21 @@ ipc.register('desktop', 'mapJob', { code: types.text(8) }, async ({ code }) => (
 ipc.register('desktop', 'serverConsole', { id: types.id }, async ({ id }) => srvHost.console(id));
 ipc.register('desktop', 'serverStop', { id: types.id }, async ({ id }) => { const r = srvHost.stop(id); setTimeout(() => ports.pollPorts(), 800); return r; });
 ipc.register('desktop', 'serverList', {}, async () => ({ servers: srvHost.list() }));
+// Fényjel R4 (shared/fenyjel/DESIGN.md §7.3): the home's console column. serverStart starts a registry server without opening its
+// page (the column's switch; the row itself still opens the page); sys is this PC's CPU, memory and work drive, read with the same
+// arithmetic the phone relay answers sys.stats with (Planner/projects/varler-planner/tools/relay-sys.js; Node os/fs only).
+ipc.register('desktop', 'serverStart', { id: types.id }, async ({ id }) => {
+  const s = R.server(id);
+  if (!s) return { ok: false, err: 'not-found', hu: 'Nincs ilyen szerver.' };
+  if (SELFTEST) return { ok: true, dry: true };                                   // the selftest never starts anything
+  if (await ports.up(s.port)) return { ok: true, already: true };
+  const err = ports.startServer(s);
+  if (err) return { ok: false, err: 'not-found', hu: err };
+  setTimeout(() => ports.pollPorts(), 1500);
+  return { ok: true };
+});
+const SYS = require(path.join(REPO_DIR, 'Planner', 'projects', 'varler-planner', 'tools', 'relay-sys.js')).createSampler({ dir: REPO_DIR });
+ipc.register('desktop', 'sys', {}, async () => SYS.sample());
 
 // WP-49: Telefon — this PC's radios, every local server started for the phone, a QR per server through the relay's /p/<port>/ proxy
 // (lib/phonelink.js). The page names a server id and an address the scan itself returned; main builds every URL. Setting phone.auto:
