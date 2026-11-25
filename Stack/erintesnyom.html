@@ -197,6 +197,19 @@
     }
     s.inferred.forEach(function (e, id) { if (!exactE.has(id)) infE.set(id, Math.min(1, Math.max(infE.get(id) || 0, e * 0.8))); });
   }
+  // the Stack Viewer (viewer.html, Rétegverem) listens on the same channel and lights the same nodes on its byte
+  // planes: [id, energy, kind] rows, at most a few times a second
+  var bus = null, shareT = 0, shareLast = null;
+  try { bus = typeof BroadcastChannel === 'function' ? new BroadcastChannel('vrg-stack') : null; } catch (e) { bus = null; }
+  function share(map) {
+    if (!bus) return;
+    shareLast = map; if (shareT) return;
+    shareT = setTimeout(function () {
+      shareT = 0; var rows = [];
+      shareLast.forEach(function (v, id) { rows.push([id, Math.round(v.e * 1000) / 1000, v.kind]); });
+      try { bus.postMessage({ type: 'light', from: 'erintesnyom', at: Date.now(), rows: rows }); } catch (e) {}
+    }, 160);
+  }
   function render(writeIds) {
     var map = new Map();
     if (fc) fc.map.forEach(function (e, id) { map.set(id, { e: e, kind: 'forecast' }); });
@@ -206,7 +219,7 @@
     exactE.forEach(function (e, id) { map.set(id, { e: e, kind: 'exact', write: !!(writeIds && writeIds.has(id)) }); });
     L.pillars(exactE).forEach(function (e, id) { map.set(id, { e: e, kind: 'exact' }); });
     if (showInf) L.pillars(infE).forEach(function (e, id) { if (!map.has(id)) map.set(id, { e: e * 0.8, kind: 'inferred' }); });
-    ls.light(map);
+    ls.light(map); share(map);
     Object.keys(trail).forEach(function (k) {
       ls.tracer(k, trail[k], { label: k === 'root' || k === 'agent' ? 'fő' : k.replace(/^a:/, '').slice(0, 8), style: k === 'root' || k === 'agent' ? 'solid' : 'dotted' });
     });

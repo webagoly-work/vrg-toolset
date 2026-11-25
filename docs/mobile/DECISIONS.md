@@ -451,7 +451,10 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   pages are optional in `stack/meta.json`, so a publish from before them still loads and a missing layer says how to
   publish it. The Rétegverem screen keeps its three 3D chips, plus the open layer page's chip while it is shown.
   **2026-11-25:** the ◢ menu also has Érintésnyom (the layers lit by recorded sessions, replay only, VIS-Q9) above
-  Rétegek; publish-stack.js bundles it with the 12 newest sessions.
+  Rétegek; publish-stack.js bundles it with the 12 newest sessions. **Later on 2026-11-25:** the Rétegek row opens
+  Rétegverem, the byte-particle Stack Viewer (STK-Q25 = replaces Rétegek under the same name): `retegek.html` on
+  `stack-pages` is now `Stack/viewer.html` with the layer text as byte classes only (16 bytes a particle, Normál; no
+  text leaves the PC), and stays the old graph view while the PC has no `out/layertext` yet. No app change.
 
 ## Open (to ask when the WP that needs them starts)
 

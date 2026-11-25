@@ -12,13 +12,17 @@
 // notes), which no Actions runner has. So the PC bundles and publishes; GitHub only carries the result.
 //
 // What it bundles (each page becomes ONE self-contained HTML file; the phone loads nothing else):
-//   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html     layers.html -> stack/retegek.html
+//   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html
+//   viewer.html (Rétegverem, the byte-particle Stack Viewer, STK-Q25) -> stack/retegek.html; layers.html, the old graph
+//   view, only while the PC has no out/layertext yet
 //   and the layer pages (optional, VIS-Q5): lineage -> otletfolyam, decisions -> dontesek, metro -> vonalak,
 //   control -> vezerloterem, runs -> futasnaplo, commits -> commitok; and erintesnyom.html (Érintésnyom, replay only,
 //   the newest sessions inlined; SL4)
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
 //   The data is node ids, titles, kinds, sizes, times and links; never a file's content. The repo is private.
+//   The Viewer's layer text goes as byte CLASSES only (letter, digit, space …, one per 16 bytes = Normál): the planes
+//   look the same, the words under a dot stay on the PC.
 //
 // The layout of stack-pages (kit-core Stack.kt reads exactly this):
 //   README.md
@@ -39,7 +43,8 @@ hand; the branch is replaced (one commit, no history) on every publish.
 
 - \`stack/konnektom.html\`: the Konnektóm (the stack as a brain, by function), one self-contained page.
 - \`stack/holo.html\`: the Holo page (Polip, Gömb, Föld, Mag, the Őrség lock), one self-contained page.
-- \`stack/retegek.html\`: the Rétegek page (the layers as an exploded isometric stack), one self-contained page.
+- \`stack/retegek.html\`: the Rétegverem (the layers as isometric planes of byte particles; byte classes only, not
+  the text), one self-contained page.
 - \`stack/meta.json\`: when the data was built and published, the sizes.
 
 The source lives in \`Stack/\` on main; the data is titles, kinds, sizes, times and
@@ -150,6 +155,39 @@ function bundleTouch(stack) {
   return { html: b.html.slice(0, at) + collect + b.html.slice(at), sessions: parts.length };
 }
 
+// Rétegverem on the phone: the Viewer with the stack and the layer text inlined. The text itself never leaves the PC:
+// each byte becomes its class (lib/viewer-layout.js byteClass), 16 of them one particle (Normál, the phone's default,
+// STK-Q22), so a layer of 8 MB is 500 KB of classes. Node ranges are given in particles.
+const VIEW_K = 16;
+function layerClasses(stack) {
+  const dir = path.join(stack, 'out', 'layertext');
+  let ix = null;
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(dir, 'index.js'), 'utf8'), box); ix = box.window.LAYERTEXT_INDEX; } catch { ix = null; }
+  if (!ix) return null;
+  const VL = require(path.join(stack, 'lib', 'viewer-layout.js'));
+  const layers = {};
+  for (const L of Object.keys(ix.layers)) {
+    const idx = JSON.parse(fs.readFileSync(path.join(dir, L + '.idx'), 'utf8')).nodes, src = fs.readFileSync(path.join(dir, L + '.bin'));
+    const cls = new Uint8Array(src.length); for (let i = 0; i < src.length; i++) cls[i] = VL.byteClass(src[i]);
+    const ag = VL.aggregate(cls, idx.map(r => [r[1], r[2]]), VIEW_K, true);
+    layers[L] = { nodes: idx.map((r, i) => [r[0], ag.starts[i], ag.starts[i + 1]]), data: Buffer.from(ag.data).toString('base64') };
+  }
+  return { k0: VIEW_K, index: { generated: ix.generated, layers: ix.layers, diff: ix.diff || {} }, layers };
+}
+function bundleViewer(stack) {
+  const b = bundleLayer(stack, 'viewer.html');
+  if (b.missing) return b;
+  const data = path.join(stack, 'out', 'stack-data.js'), lt = layerClasses(stack), missing = [];
+  if (!fs.existsSync(data)) missing.push('out/stack-data.js');
+  if (!lt) missing.push('out/layertext');
+  if (missing.length) return { missing };
+  const pre = `<script>/* out/stack-data.js */\n${js(fs.readFileSync(data, 'utf8'))}</script>\n` +
+    `<script>/* out/layertext: byte classes only, ${VIEW_K} bytes a particle */\nwindow.LAYERTEXT_BUNDLE = ${js(JSON.stringify(lt))};</script>\n`;
+  const at = b.html.lastIndexOf("<script>\n'use strict';\n(function () {");
+  if (at < 0) throw new Error('viewer.html: the page script was not found');
+  return { html: b.html.slice(0, at) + pre + b.html.slice(at), layers: Object.keys(lt.layers).length };
+}
+
 function git(repo, argv, input) {
   return execFileSync('git', argv, { cwd: repo, input, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
 }
@@ -162,6 +200,9 @@ function main() {
   const kon = bundle(a.stack, a.repo, 'connectome.html'), holo = bundle(a.stack, a.repo, 'orb.html'), ret = bundle(a.stack, a.repo, 'layers.html');
   const D = JSON.parse(kon.data.slice(kon.data.indexOf('=') + 1).trim().replace(/;\s*$/, ''));
   const files = { 'konnektom.html': kon.html, 'holo.html': holo.html, 'retegek.html': ret.html };
+  const view = bundleViewer(a.stack);
+  if (view.missing) console.log(`viewer.html: left out, retegek.html stays the graph view (missing ${view.missing.join(', ')}; run: node stack.js build)`);
+  else { files['retegek.html'] = view.html; console.log(`viewer.html -> retegek.html: ${view.layers} layers as byte classes`); }
   for (const [page, name] of LAYER_PAGES) {
     const b = bundleLayer(a.stack, page);
     if (b.missing) console.log(`${page}: left out (missing ${b.missing.join(', ')}; run: node stack.js build)`);
@@ -199,4 +240,4 @@ function main() {
 if (require.main === module) {
   try { main(); } catch (e) { console.error('publish-stack: ' + e.message); process.exit(1); }
 }
-module.exports = { bundle, bundleLayer, bundleTouch, LAYER_PAGES, js };
+module.exports = { bundle, bundleLayer, bundleTouch, bundleViewer, layerClasses, LAYER_PAGES, js };

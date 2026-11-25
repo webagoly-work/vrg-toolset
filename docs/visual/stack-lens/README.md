@@ -266,3 +266,18 @@ reading keeps them.
   blocked, lists its sessions, replays and lights nodes, and fits the screen. It reaches the phone after one
   `node Mobile/stack/publish-stack.js --push` on the PC, after a build.
 
+## Built (2026-11-25): Rétegverem, the byte-particle Stack Viewer (STL-Q3 = both)
+
+- `Stack/viewer.html` (START R → 7, ◢ Rétegek on the Asztal and the phone) is S8 + S9 of `Stack/research/STRINGS-PLAN.md`:
+  the build writes every layer's text (`lib/layertext.js` → `out/layertext/<L>.bin`, `.idx`, `.js`, deterministic, diffed
+  against the last build), and the page draws each layer as an isometric plane of byte particles, nodes as cells in the
+  layer's natural order (`lib/viewer-layout.js`), Hilbert tiles inside, picking on the GPU, the words under the pointer.
+- The session layer on top: Érintésnyom posts its light on the BroadcastChannel `vrg-stack`; the Viewer colours the same
+  nodes with the same meanings (warm exact, violet inferred, ice dashed forecast) and dims the rest. A forecast typed in
+  Érintésnyom therefore lights the bytes of the decision, the line, the GO phrase, the folders, the documents and the
+  pillars it reaches. The builder's choices are STK-P67…P74 in `Stack/DECISIONS.md`.
+- Checked here on a test stack built from this repo (984 nodes, 4 MB of layer text): 1.05 M particles at Finom, picking
+  back to the right node and the right words, the fly-in at one byte a dot, the file:// page and the 0.7 MB phone bundle
+  (no text in it) at 412 px, the light arriving from Érintésnyom. Frame rates measured here are software GL and say
+  nothing: the 60 fps at Finom target is to be measured on the PC (`VIEWER.perf()`).
+

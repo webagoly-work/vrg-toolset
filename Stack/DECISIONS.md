@@ -259,3 +259,19 @@ Asked as numbered A/B/C options; the Founder chose A for all four (question 2 af
 | STK-P64 | What SessionStart prints | **A** L0 + a build stamp, "STALE" after 48 h | about 730 tokens on startup, `/clear` and after compaction; nothing on resume. Node's own start is ≈ 0.9 s on this PC, the hook ≈ 40 ms more |
 | STK-P65 | What Stop appends, and where | **A** one line per turn in `data/live/<sid8>.jsonl` | files from file tools and from path words in shell commands, resolved to node ids; ≈ 70 ms on a 6 MB transcript, reading only what is new. Subagent calls are left to the after-the-fact recorder |
 | STK-P66 | The trace-hook entries whose backslashes were lost (`H:VRGFull\tools\node\node.exe`, failing on every call of 8 events) | **A** removed | the working forward-slash entries stay; the file was backed up first. Rebuilding stays by hand (STK-Q3 = A): neither hook builds |
+
+## Stack Viewer S8 + S9 (builder's choices), 2026-11-25
+
+Made while building the layer text (`lib/layertext.js`) and Rétegverem (`viewer.html`, `lib/viewer-layout.js`) from
+research/STRINGS-PLAN.md §6. Each can be changed in those files.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P67 | Order of a layer's bytes | A the layout's order · **B id order** | **B**: the layer text stays independent of the page's layout, so a layout change never rewrites the bytes or the diff; the page copies each node's range into its own order when it builds the particles |
+| STK-P68 | A cell of any shape with a Hilbert curve | A one 2^m square, stretched · B a generalised (gilbert) curve · **C Hilbert tiles** | **C**: tiles of 2^t × 2^t, rows in serpentine order, t chosen per cell for the best cover. A keeps 25–100 % of the cell empty; B cannot be computed from `gl_VertexID` cheaply. Locality inside a tile is the true Hilbert's |
+| STK-P69 | How the shader finds a particle's cell | A a 4-byte cell id per particle · **B a block table + a short binary search** | **B**: per 256 particles the cell of the first one; the search is then 0–8 steps. The only attribute stays the byte (8 MB at Full, the plan's figure) |
+| STK-P70 | The pillars | A an E plane · B spines only · **C both** | **C**: E is the base plane (one cell per pillar, §6.2), and a selection draws the pillar's spine through the centres of its members on each plane, ending in its E cell |
+| STK-P71 | Érintésnyom on top of the Viewer (STL-Q2: "the session workflow visualizer integrated on top") | A the Viewer replays sessions itself · **B the BroadcastChannel `vrg-stack`** | **B**: Érintésnyom keeps the lens, replay, live and forecast; it posts its light (`[id, energy, kind]`) and the Viewer colours the same nodes (warm exact, violet inferred, ice dashed forecast) and dims the rest. The same channel carries `select` for S7 |
+| STK-P72 | The phone bundle | A the layer text as is · **B byte classes only, 16 bytes a particle** | **B**: the planes look the same, the words under a dot stay on the PC (§9: document contents and client codes never leave it). 4 MB of text → ≈ 260 k classes |
+| STK-P73 | Auto (STK-Q22) | **A** Fine on the desktop, Normál on the phone, one step coarser while under 40 fps, remembered | the plan's "first frame under 12 ms" needs a GPU timer most browsers hide; frame times are kept in `localStorage` `vrg-viewer-perf` (`VIEWER.perf()`) so the thresholds can be fixed from measurements here and on the phone |
+| STK-P74 | Zoom LOD | **A** the cell in front of the camera, at zoom ≥ 2 and filling ≥ 45 % of the screen, is drawn byte by byte (≤ 4 MB) | the rest stays at the preset; a double-click flies into a cell and does the same |

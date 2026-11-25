@@ -234,7 +234,7 @@
             { "key": "5", "name": "Holo · polip ⇄ gömb", "hint": "pályák, :8806", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8806/orb.html"],
               "server": "stack", "serverArgs": ["--no-open"], "page": "{stack}\\orb.html" },
             { "key": "6", "name": "Holo fájlként", "hint": "szerver nélkül", "path": "{stack}\\orb.html" },
-            { "key": "7", "name": "Rétegek", "hint": "robbantott izometrikus rétegnézet", "path": "{stack}\\layers.html" },
+            { "key": "7", "name": "Rétegek", "hint": "Rétegverem: minden réteg a bájtjaiból, izometrikus síkokon (a régi gráf a Nézet menüben)", "path": "{stack}\\viewer.html" },
             { "key": "S", "name": "Érintésnyom", "hint": "a munka a rétegeken: élő, visszajátszás, napló; :8806", "server": "stack", "open": "/erintesnyom.html" },
             { "key": "8", "name": "Ötletfolyam", "hint": "az ötletek folyama az időben (I réteg)", "path": "{stack}\\lineage.html" },
             { "key": "9", "name": "Vezérlőterem", "hint": "ügynökök, briefek, memória, kódszavak, használat (A réteg)", "path": "{stack}\\control.html" },

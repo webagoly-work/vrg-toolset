@@ -62,7 +62,16 @@ Never load `out/stack.json` whole. Ids look like:
   it will probably touch, each node with its reason (a key it names, a similar recorded session, title words); during the
   work, or replaying a session from its own first prompt, it counts how much came true and what was unexpected.
   **Hatókör** on a node's card: its blast radius over the exact links (3 hops). History: `out/forecast-index.js` (the build).
-- **Layers page (Rétegek):** `layers.html` (2026-11-07). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
+- **Rétegverem, the Stack Viewer** (`viewer.html`, START R → 7, the Asztal's ◢ Rétegek, the phone's Rétegek; 2026-11-25, S8 + S9
+  of `research/STRINGS-PLAN.md` §6): every layer is an isometric plane made of the bytes it is written in, the build's
+  `out/layertext/<L>.bin` (titles, briefs, fields; G's documents whole; C's file listings). Each node is a cell in its
+  layer's natural order (`lib/viewer-layout.js`: F tier × lane, I L U R lanes in time, Q namespaces, A kinds, C G the folder
+  tree, area ∝ bytes), its bytes run along Hilbert tiles inside, coloured by byte class. **Részlet**: Vázlat 64 B · Normál
+  16 · Finom 4 · Bájt 2 · Teljes 1 B a particle, Auto = Finom here, Normál on the phone. Point at a dot: the words it is
+  made of. Click: the node and its string (Füzér) plus its pillar's spine; double-click flies in, every byte a dot. Nodes
+  changed since the last build pulse. Érintésnyom open in the same browser lights the same nodes here (channel
+  `vrg-stack`). The phone gets byte classes only, never the text. `#full #crisp`.
+- **Layers page, the graph view (régi Rétegek):** `layers.html` (2026-11-07; since 2026-11-25 behind the Viewer's ⚙ Nézet). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
 - **Phone (VRG Mobile, WP M17):** both pages have touch gestures (`touch.js`: one finger orbits, pinch zooms, twist turns, two fingers up / down tilt, tap picks, double tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space toggles the Őrség lock). `Planner_VRG_U100/Mobile/stack/publish-stack.js --push` (START → R → T) bundles them into self-contained pages on the `stack-pages` branch, where the app's **Rétegverem** feature reads them. Re-run it after a rebuild to update the phone.
 - **Rebuild** after any change: `..\..\tools\node\node.exe stack.js build`. It takes about 6 s when little changed, and about 30 s the first time or after `--rerecord`. `build.js` still works too.
 - **Is it healthy?** `stack.js doctor` checks everything; `stack.js doctor --fix` repairs and rebuilds.
@@ -96,8 +105,8 @@ Never load `out/stack.json` whole. Ids look like:
 | `mcp/server.js` | MCP server, stdio, no dependencies |
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
-| `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `layers.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js` |
+| `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 
