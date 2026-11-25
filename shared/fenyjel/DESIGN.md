@@ -230,7 +230,7 @@ screen needs a sentence to be understood without **i**, the screen is wrong, not
 |---|---|---|
 | R0 | This spec, tokens, icons, fonts, the board | `shared/fenyjel/` (done 2026-11-25) |
 | R1 | Icons on the phone: `tools/kotlin-icons.js` → kit-core `PixelGlyphs.kt`, kit `PixelIcon`, `FeatureIcons` for all 38 features; the home cards and grid, plugin chips, long-press menus, planned page, update mark, Katalógus, Asztal and Lapok draw them instead of the emoji (done 2026-11-25) | Mobile `kit`, `app` |
-| R2 | Phone: Fényjel palette and type in `Melyviz.kt`, the new Kezdőlap (focus card, 4-column glyph grid, dock) and the Vezérlőpult tab | Mobile `app`, `kit` |
+| R2 | Phone: the Fényjel palette (VT323 + Doto as Android fonts); picking it turns the home into the Fényjel shell (`app/FenyjelShell.kt`): status rail, Kezdőlap (focus card, HomeLayout pages as 4-column glyph grids, one-word labels), Vezérlőpult (PC link and uptime, CPU / memory / disk from the relay's new `sys.stats`, four action sockets, START servers with switches, the log console) and the dock. Parts in kit `ui/Fenyjel.kt` (done 2026-11-25) | Mobile `app`, `kit`, relay `relay-sys.js` |
 | R3 | Phone: every feature page takes its family colour; descriptions move behind **i** | each `feature-*` |
 | R4 | Desktop: the Irányítópult view becomes the 7.3 home (rail, continue cards, grid, console column) | `Dashboard/page` |
 | R5 | Desktop: the shell chrome (title bar, dock, windows) in Fényjel | `Dashboard/page` |
