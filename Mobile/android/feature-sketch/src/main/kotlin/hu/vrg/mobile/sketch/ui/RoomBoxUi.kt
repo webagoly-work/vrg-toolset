@@ -47,7 +47,7 @@ import kotlin.math.roundToInt
 
 internal object RoomBoxPhone {
     /** The bundled files, in load order (= ROOMBOX_ASSETS in build.gradle.kts; Sketcher/test/roombox-phone.test.js checks both). */
-    val ASSETS = listOf("roombox.js", "roombox-gl.js", "pano.js", "roombox-phone.js")
+    val ASSETS = listOf("roombox.js", "roombox-gl.js", "roombox-snap.js", "pano.js", "roombox-phone.js")   // = ROOMBOX_ASSETS (build.gradle.kts)
 
     /** The page: the three files inlined (no file access needed), then run(), which reads the bridge. */
     suspend fun page(ctx: android.content.Context): String = withContext(Dispatchers.IO) {

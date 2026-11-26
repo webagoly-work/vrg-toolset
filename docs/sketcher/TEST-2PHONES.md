@@ -138,7 +138,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M64.9** Egy AR-t nem támogató telefonon a mérő azt írja, hogy a telefon nem támogatja; a 📏 Mérés a fotón ott is működik.
 - [ ] **M64.10** Kapcsold ki a csomagot: a 📐 elemek eltűnnek, a mentett távolságok a felmérésben maradnak.
 
-## B telefon — kamera és helyszín (105 lépés)
+## B telefon — kamera és helyszín (121 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -231,6 +231,28 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M62.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
 - [ ] **M62.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
 - [ ] **M62.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
+
+### M71 · Sarok (in `sketch`, phone and Desktop): a photo's direction and lens from the room's corners
+
+- [ ] **M71.1** Egy szobában, ahol a fotópontból legalább két sarok látszik, készíts egy Fotópont-sorozatot (ha van 0,5×, azzal).
+- [ ] **M71.2** Rendezés → ⬚ Szobadoboz: egy kép sorában legyen **📐 Sarok** gomb; koppints rá.
+- [ ] **M71.3** A fotó teljes képernyőn nyíljon, rajta szaggatott narancs vonalak betűvel (A, B…), ahol a doboz a sarkokat gondolja.
+- [ ] **M71.4** Húzz egy vonalat oldalra a fotón látható sarokra: a vonal zöld lesz, alul az irány javítása (Irány ±x°) és „húzz még egy sarkot”.
+- [ ] **M71.5** Húzz egy második sarkot is: alul a látószög is megjelenik mm-ben, és mindkét vonal a saját sarkán áll.
+- [ ] **M71.6** ✓ Alkalmaz: a képernyő bezárul; a pontból nézve a kép jobban illeszkedik a falakhoz, a kép Irány csúszkája és Látószöge az új értéket mutatja.
+- [ ] **M71.7** ↺ törli a húzásokat; ✕ változtatás nélkül zár.
+- [ ] **M71.8** ✓ Kész, majd újranyitva a javítás megvan; a PC-re küldve az Asztal Sketcher Szobadoboza ugyanezt mutatja (ott is van 📐 Sarok).
+
+### M72 · VRG mérőkártya (in `sketch`, phone and Desktop): the Síkmérés's reference found in the photo
+
+- [ ] **M72.1** A PC-n: Asztal Sketcher → Kamera → egy fotó 📏 Mérés → ① Referencia → **🖨 Kártya nyomtatása**: nyomtasd ki 100 %-on; a vonal vonalzóval legyen 100 mm.
+- [ ] **M72.2** Ragaszd a kártyát a falra, egy dugalj közelébe, a padlótól kb. 40 cm-re.
+- [ ] **M72.3** Telefonon: Kamera → fotózd le a falat úgy, hogy a kártya, a dugalj és a padló széle is látsszon.
+- [ ] **M72.4** A fotón 📏 Mérés: rövid „Mérőkártyát keresek…” után a kártya négy sarka magától a helyére kerül, és a ② Padló lépés nyílik, a „Megtaláltam a mérőkártyát” szöveggel.
+- [ ] **M72.5** Koppints két pontra a padló és a fal találkozásán, majd ④ Magasság: a dugalj közepe. Mérőszalaggal ellenőrizd (1–2 cm-en belül legyen).
+- [ ] **M72.6** ① Referencia: a ↶ gombbal töröld a sarkokat, majd **🔍 Kártya**: újra megtalálja.
+- [ ] **M72.7** Egy kártya nélküli fotón a 📏 Mérés a régi módon működik: négy koppintás a referencia sarkaira.
+- [ ] **M72.8** ✓ Mentés: a mérés a fotó alatt megjelenik; a PC-re küldve az Asztal Sketcher ugyanazt mutatja.
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 

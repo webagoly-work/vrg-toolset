@@ -136,6 +136,77 @@ async function measureOn(page, label) {
     ok(!errors.length, 'phone: no page errors: ' + errors.join(' | '));
     await page.close();
   }
+  // ---- the VRG mérőkártya (K3 follow-up): the printed card found in the photo, no reference taps, phone and Desktop
+  const CARD = { yaw: 20, cx: 1250, cy: 2050 };          // the card taped low, near the socket (test/card-scene.js)
+  const cardPhoto = `(function (o) {
+    const ph = window.VRGCardScene.photo(Object.assign({ codes: window.VRGMarker.CODES }, o));
+    const c = document.createElement('canvas'); c.width = ph.W; c.height = ph.H;
+    c.getContext('2d').putImageData(new ImageData(ph.img.data, ph.W, ph.H), 0, 0);
+    window.__card = { canvas: c, cam: ph.cam, truth: ph.truth };
+  })(${JSON.stringify(CARD)});`;
+  const sceneJs = fs.readFileSync(path.join(ROOT, 'test', 'card-scene.js'), 'utf8');
+  async function onCard(page, label) {
+    const r = await page.evaluate(() => {
+      const pl = window.__plane, cam = window.__card.cam, rec = pl.record(), tap = p => { const q = cam(p); pl.tapAt(q[0], q[1]); };
+      const ref = JSON.parse(JSON.stringify(rec.ref)), step = pl.ui.step, note = pl.el.querySelector('.pl-sheet').textContent;
+      const err = Math.max(...ref.pts.map((p, i) => Math.hypot((p[0] - window.__card.truth[i][0]) * 1600, (p[1] - window.__card.truth[i][1]) * 1200)));
+      [[1000, 2600], [1700, 2600]].forEach(tap);
+      pl.el.querySelector('[data-s="height"]').click(); tap([1800, 2300]);
+      return { ref, step, note, err, mm: pl.record().marks.map(m => m.mm) };
+    });
+    ok(r.ref.kind === 'kartya' && r.ref.w === 150 && r.ref.h === 150 && r.ref.pts.length === 4, label + ': the card fills ① by itself: ' + JSON.stringify({ kind: r.ref.kind, w: r.ref.w }));
+    ok(r.err < 0.6, label + ': its corners where the card is (' + r.err.toFixed(2) + ' px)');
+    ok(r.step === 'floor' && /Megtaláltam a mérőkártyát/.test(r.note), label + ': the screen goes on to ② and says so: ' + r.note.slice(0, 60));
+    within(r.mm[0], 300, 0.01, label + ': the socket measured with no reference taps');
+  }
+  {
+    const page = await browser.newPage({ viewport: { width: 412, height: 860 }, hasTouch: true, isMobile: true });
+    const errors = []; page.on('pageerror', e => errors.push(e.message));
+    const scripts = ['plane.js', 'marker.js', 'plane-ui.js'].map(a => '<script>\n' + fs.readFileSync(path.join(ROOT, 'lib', a), 'utf8') + '\n</script>').join('\n');
+    await page.setContent('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + scripts + '<script>' + sceneJs + '</script></body></html>');
+    await page.evaluate(cardPhoto);
+    await page.evaluate(() => {
+      const url = window.__card.canvas.toDataURL('image/jpeg', 0.92);
+      window.VRGPlaneIO = { input: () => JSON.stringify({ image: url, title: 'Elosztó · C30', record: null }), save: j => { window.__out = j; }, close: () => {}, fail: m => { window.__fail = m; } };
+      window.VRGPlaneUI.run();
+    });
+    await page.waitForFunction(() => window.__fail || (window.__plane && window.__plane.ui.found), null, { timeout: 20000 });
+    await onCard(page, 'phone, card');
+    ok(!(await page.$('[data-p="print"]')), 'phone, card: no 🖨 on the phone (the PC prints)');
+    if (outDir) await page.screenshot({ path: path.join(outDir, 'plane-card-phone.png') });
+    ok(!errors.length, 'phone, card: no page errors: ' + errors.join(' | '));
+    await page.close();
+  }
+  {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 860 } });
+    const errors = []; page.on('pageerror', e => errors.push(e.message));
+    await page.goto('file://' + path.join(ROOT, 'dist', 'vrg-sketcher.html'));
+    await page.evaluate(p => window.__sketcher.load(p), pkg);
+    await page.addScriptTag({ content: sceneJs });
+    await page.evaluate(cardPhoto);
+    await page.evaluate(async () => {
+      const blob = await new Promise(r => window.__card.canvas.toBlob(r, 'image/jpeg', 0.92));
+      window.__sketcher.front('kamera');
+      window.__sketcher.box.attach([new File([blob], 'C-eloszto.jpg', { type: 'image/jpeg' })]);
+    });
+    await page.waitForSelector('#main [data-pact="open"][data-key="C30"]', { timeout: 15000 });
+    await page.click('#main [data-pact="open"][data-key="C30"]');
+    await page.waitForFunction(() => /Megtaláltam/.test((document.querySelector('.pl .pl-note') || {}).textContent || ''), null, { timeout: 20000 });
+    ok(true, 'Desktop, card: the real 📏 Mérés button finds the card');
+    await page.click('.pl [data-s="ref"]');
+    ok(!!(await page.$('.pl [data-p="print"]')) && !!(await page.$('.pl [data-p="find"]')), 'Desktop, card: ① offers 🔍 Kártya and 🖨 Kártya nyomtatása');
+    const [popup] = await Promise.all([page.context().waitForEvent('page', { timeout: 10000 }), page.click('.pl [data-p="print"]')]);
+    await popup.waitForLoadState().catch(() => {});
+    const sv = await popup.evaluate(() => { const s = document.querySelector('svg'); return s ? [s.getAttribute('width'), document.body.textContent] : null; });
+    ok(sv && /mm$/.test(sv[0]) && /100 %/.test(sv[1]), 'Desktop, card: 🖨 opens the card sized in mm, to print at 100 %: ' + (sv && sv[0]));
+    await popup.close();
+    // 🔍 again after the corners were cleared: found again
+    const again = await page.evaluate(() => { const el = document.querySelector('.pl'); for (let i = 0; i < 4; i++) el.querySelector('[data-p="undo"]').click(); el.querySelector('[data-p="find"]').click(); return document.querySelector('.pl .pl-note').textContent; });
+    ok(/Megtaláltam/.test(again), 'Desktop, card: 🔍 Kártya finds it again: ' + again.slice(0, 40));
+    if (outDir) await page.screenshot({ path: path.join(outDir, 'plane-card-desktop.png') });
+    ok(!errors.length, 'Desktop, card: no page errors: ' + errors.join(' | '));
+    await page.close();
+  }
   await browser.close();
   console.log(fail ? fail + ' FAILED' : 'ALL PASS (' + pass + ')');
   process.exit(fail ? 1 : 0);

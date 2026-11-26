@@ -595,9 +595,14 @@
     return '<div class="plane-bits">' + (file ? '<button class="btn sm" data-pact="open" data-key="' + esc(key) + '" data-file="' + esc(file) + '" data-title="' + esc(title) + '">📏 Mérés</button> ' : '') +
       (lines.length ? '<span class="small">' + lines.map(esc).join(' · ') + '</span>' : '') + '</div>';
   }
+  /** 🖨 Kártya nyomtatása: the VRG mérőkártya (lib/marker.js) on its own printable page, at 100 %. */
+  function printCard(id) {
+    const MK = window.VRGMarker, w = MK && window.open('', '_blank'); if (!w) return;
+    w.document.open(); w.document.write(MK.page(id || 0)); w.document.close();
+  }
   function planeOpen(key, file, title) {
     const im = boxImg.get(file); if (!im || !PLUI) return;
-    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null,
+    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null, printCard,
       onSave: rec => commit(() => {
         const pl = Object.assign({}, S.planes || {});
         if (rec) pl[key] = rec; else delete pl[key];
@@ -687,11 +692,12 @@
       '<label class="bx-f">Belmagasság (cm) <input type="number" min="180" max="600" step="1" data-b="h" value="' + Math.round(room.h / 10) + '"></label>' +
       '<label class="bx-f">Szemmagasság a fotónál (cm) <input type="number" min="60" max="220" step="1" data-b="eye" value="' + Math.round(room.eye / 10) + '"></label>';
     if (!room.shots.length) h += '<p class="small muted">Ebben a helyiségben nincs fotópont: a doboz kép nélkül, a méretekből áll.</p>';
-    else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
+    else h += '<p class="small muted">Ha egy kép sarka nem a doboz sarkára esik: ' + (SNAP ? '📐 Sarok, és húzd a sarkot a fotón a helyére; finomítás: ' : '') + 'forgasd (irány), vagy állítsd a látószöget (mm-egyenérték; 0,5× ≈ 13–16, 1× ≈ 24–28).</p>';
     room.shots.forEach((x, i) => {
       const img = boxImg.has(base(x.file)), src = { exif: 'EXIF', kezi: 'kézi', lencse: 'a kamerától', alap: 'alapérték' }[x.f35src];
       h += '<div class="bx-shot' + (ui.hi === i ? ' hi' : '') + '" data-key="' + esc(x.key) + '"><div class="row"><button class="btn sm" data-bact="hi" data-i="' + i + '" title="Kiemelés a 3D nézetben">' + esc(x.side || x.deg + '°') + '</button>' +
         '<span class="small ' + (img ? '' : 'muted') + '">' + esc(base(x.file)) + (img ? '' : ' (nincs csatolva)') + '</span>' +
+        (SNAP && img ? '<button class="btn sm" data-bact="snap" data-i="' + i + '" title="Húzd a doboz sarkát a fotón látható sarokra: irány és látószög">📐 Sarok</button>' : '') +
         '<button class="btn sm" data-bact="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" title="Nézd innen">👁</button></div>' +
         '<label>Irány ' + (x.fix.yaw >= 0 ? '+' : '') + f1(x.fix.yaw) + '°<input type="range" min="-30" max="30" step="0.5" data-b="yaw" data-key="' + esc(x.key) + '" value="' + x.fix.yaw + '"></label>' +
         '<label>Dőlés ' + (x.pitch >= 0 ? '+' : '') + f1(x.pitch) + '°<input type="range" min="-25" max="25" step="0.5" data-b="pitch" data-key="' + esc(x.key) + '" value="' + x.pitch + '"></label>' +
@@ -736,6 +742,14 @@
     else if (a === 'reset') { const r = boxRoom(); if (r) boxSet(b => { if (b.h) delete b.h[r.id]; if (b.shots) r.shots.forEach(x => delete b.shots[x.key]); }); }
     else if (a === 'align') boxAlign(t.dataset.p);
     else if (a === 'pano') boxPano(t.dataset.p);
+    else if (a === 'snap') boxSnap(+t.dataset.i);
+  }
+  // ---- 📐 Sarok (K1 polish): drag the box's corners onto the corners in the photo (lib/roombox-snap.js) -------------
+  const SNAP = window.VRGRoomBoxSnap;
+  function boxSnap(i) {
+    const r = boxRoom(), x = r && r.shots[i]; if (!x || !SNAP) return null;
+    return SNAP.open({ RB, room: r, shot: x, image: boxImg.get(base(x.file)) || null, document,
+      onApply: fix => boxSet(b => { b.shots = b.shots || {}; const o = Object.assign({}, b.shots[x.key], { yaw: fix.yaw }); if (fix.f35) o.f35 = fix.f35; b.shots[x.key] = o; }) });
   }
   // ---- Körkép (dev line skcam, stage K4): lib/pano.js on the attached Fotópont photos ------------------------------
   const PA = window.VRGPano;
@@ -907,7 +921,7 @@
     render();
   }
   window.__sketcher = { load, state: () => S, save, front, output, render, siteApply, takeoff, exportTakeoff, setImplied, reportHtml, openReport, features: () => FL, setFeatures,
-    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null },
+    box: { open: boxOpen, close: boxClose, scene: boxScene, ui, attach, image: f => boxImg.get(base(f)) || null, snap: i => boxSnap(i) },
     plane: { open: planeOpen }, house: { open: houseOpen } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

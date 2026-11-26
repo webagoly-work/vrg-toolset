@@ -16,7 +16,7 @@ const WP = n => path.join(REPO, 'docs', 'mobile', 'WP', 'M' + n + '.md');
 // Phone A: the drawing and the conversation. Phone B: the camera and the place. Balanced by step count.
 const PLAN = {
   A: { name: 'A telefon — rajz és beszélgetés', sub: 'a tulajdonos telefonja (párosított PC, Átadás)', wps: [24, 26, 27, 28, 47, 49, 50, 53, 54, 64] },
-  B: { name: 'B telefon — kamera és helyszín', sub: 'a második telefon (Eszközök: jóváhagyva)', wps: [25, 29, 46, 52, 59, 60, 62, 30, 48, 31, 51] },
+  B: { name: 'B telefon — kamera és helyszín', sub: 'a második telefon (Eszközök: jóváhagyva)', wps: [25, 29, 46, 52, 59, 60, 62, 71, 72, 30, 48, 31, 51] },
 };
 const PREP = [
   'Mindkét telefonon a legújabb kiadás (Beállítások → Frissítés); a Névjegy ugyanazt a verziót mutatja.',

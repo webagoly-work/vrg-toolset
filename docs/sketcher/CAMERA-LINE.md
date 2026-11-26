@@ -9,7 +9,7 @@ Research: `docs/research/2026-11-20_room-capture-and-measurement.md` (sources, l
 Grows out of: M24 Vázlat, M25 Fotópont, M29 Kamera, M30 Helyszín, M52 Saját kamera (`docs/mobile/WP/`). Builds on
 decisions D-24…D-26, D-31, D-90 and D-100…D-109 (`docs/mobile/DECISIONS.md`).
 
-**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-158…D-161), **K6 built** (WP M64, BETA, D-164…D-167). Fork **DV1** (Data Vault) turns the line's
+**State, 2026-11-22:** K0 done, **K1 built** (WP M57, BETA, D-133…D-136), **K1b built** (WP M59, BETA, D-137…D-141), **K3 built** (WP M60, BETA, D-145…D-149), **K4 built** (WP M62, BETA, D-153…D-156), **K5 built** (WP M63, BETA, D-158…D-161), **K6 built** (WP M64, BETA, D-164…D-167), the **K1 polish built** (WP M71, BETA, D-187…D-188), the **K3 marker card built** (WP M72, BETA, D-189…D-190). Fork **DV1** (Data Vault) turns the line's
 written and collected features into Data Vault cells (§6).
 
 **Since the line opened:** fork F7 (WP M52, D-100…D-109) gave the Sketcher an **in-app CameraX camera**, with the
@@ -55,10 +55,12 @@ K1 and K1b are built (WP M57 on the Desktop, WP M59 on the phone; their *Telefon
 K3, K4 and K5 are built too (WP M60: measuring on a plane in one photo; WP M62: the photo point aligned and its 360°
 image; WP M63: a house as a measurable point cloud, COLMAP on the PC). **Next:** COLMAP installed on the PC
 (`docs/handoff/2026-11-22_colmap-house3d-H.md`) and a first real house; the phone check with real photos and a tape
-measure (M57, M59, M60, M62, and M64 on a phone with ARCore); then **K2** (the laser) as soon as Q1 (which laser meter)
+measure (M57, M59, M60, M62, M71, M72, and M64 on a phone with ARCore); then **K2** (the laser) as soon as Q1 (which laser meter)
 is answered. Beside the line: the open-data terrain and building layer for VRG Térkép (the Founder, 2026-11-22: "both,
 start with the ARCore pack"). **K6 built** (WP M64: the Google AR csomag, one switch).
-Corner snapping (drag a corner line onto the box corner) is the K1 polish left open.
+**K1 polish built** (WP M71: 📐 Sarok, drag a corner line onto the corner in the photo; one corner fixes the
+direction, two also the lens). **The K3 marker card built** (WP M72: the VRG mérőkártya, printed from the Desktop and
+found in the photo by itself, so ① Referencia needs no taps).
 
 ## 4. Open questions for the user
 
@@ -92,17 +94,18 @@ fields `Stack/lib/layers.js` reads:
                ['11-22', 'K3 Síkmérés (WP M60, D-145…D-149): distances and heights on a wall from one photo and a known rectangle, phone and Desktop'],
                ['11-22', 'K4 Körkép (WP M62, D-153…D-156): neighbour alignment into the box key, the 360° GPano JPEG, phone and Desktop'],
                ['11-22', 'K5 Ház 3D (WP M63, D-158…D-161): COLMAP on the PC (START P → 3), the point cloud scaled and measured in the Sketcher'],
-               ['11-22', 'K6 Google AR csomag (WP M64, D-164…D-167): one switch; ARCore live distance, a to-scale room scan for Ház 3D, the Recording API']],
+               ['11-22', 'K6 Google AR csomag (WP M64, D-164…D-167): one switch; ARCore live distance, a to-scale room scan for Ház 3D, the Recording API'],
+               ['11-26', 'K1 polish Sarok (WP M71, D-187…D-188): drag the corners onto the photo; one fixes the direction, two also the lens, phone and Desktop'],
+               ['11-26', 'K3 mérőkártya (WP M72, D-189…D-190): a printed card the Síkmérés finds in the photo by itself, own detector in plain JS']],
   remaining: [
-    'K1 polish: corner snapping instead of the direction slider',
     'K2 Lézer: BLE laser meter → wall size (needs Q1: which meter)',
-    'K3 follow-ups: the marker card read automatically, lens calibration, measured values into the sketch and the jegyzőkönyv',
+    'K3 follow-ups: lens calibration (a board of cards), measured values into the sketch and the jegyzőkönyv',
     'K4 follow-ups: eight 45° shots for phones without 0.5×; the outline checked against the panorama',
     'K5 follow-ups: a walk-round guide on the phone, a mesh / splat view, the scale from K2 or the map',
     'K6 follow-ups: a Google-independent tracker (open VIO spike), the scan as a room outline, playback of a recording',
     'K7 Mélységbecslés (optional, Depth Anything V2 Small)',
   ],
-  nextStep: 'COLMAP on the PC (docs/handoff/2026-11-22_colmap-house3d-H.md) and a first real house; phone check of M57, M59, M60, M62; phone check of M64 (ARCore); then K2 (laser) once Q1 is answered.',
+  nextStep: 'COLMAP on the PC (docs/handoff/2026-11-22_colmap-house3d-H.md) and a first real house; phone check of M57, M59, M60, M62, M71, M72; phone check of M64 (ARCore); then K2 (laser) once Q1 is answered.',
   notes: ['4 photos from one point carry no depth: the geometry comes from the sketch, the photos give the look.'],
 }
 ```

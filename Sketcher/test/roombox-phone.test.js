@@ -13,7 +13,7 @@ const ROOT = path.join(__dirname, '..');
 const RB = require(path.join(ROOT, 'lib', 'roombox.js'));
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log('FAIL: ' + m); } };
-const ASSETS = ['roombox.js', 'roombox-gl.js', 'pano.js', 'roombox-phone.js'];   // K4 added pano.js
+const ASSETS = ['roombox.js', 'roombox-gl.js', 'roombox-snap.js', 'pano.js', 'roombox-phone.js'];   // K4 added pano.js, K1 polish roombox-snap.js
 
 // ---- 1. the asset list in the Gradle build
 {
@@ -83,6 +83,60 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.log('SKIP ro
       return window.VRGRaycast.compare(c, app.images(s.file));
     }, deg);
     ok(m.mean < 18 && m.bad < 0.06, 'standing at the point, ' + deg + '°: the view is the photo again (mean ' + m.mean.toFixed(1) + ', off ' + (m.bad * 100).toFixed(1) + '%)');
+  }
+
+  // 📐 Sarok (K1 polish), on a page of its own: the 0° photo was really taken 6° to the right of what the sketch says.
+  // Dragging the corner lines onto the corners seen in it puts the direction right, and the view from the point is the
+  // photo again.
+  {
+    const TRUE = 6;
+    const sp = await browser.newPage({ viewport: { width: 412, height: 860 }, hasTouch: true, isMobile: true });
+    sp.on('pageerror', e => errors.push('snap page: ' + e.message));
+    await sp.setContent('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + raycast + scripts + '</body></html>');
+    await sp.evaluate(async ({ inp, TRUE }) => {
+      const room = window.VRGRoomBox.scene(inp.plan, inp.box, () => null, inp.level).find(r => r.id === 'R1');
+      for (const s of room.shots) inp.images[s.file] = window.VRGRaycast.photo(room, s.plan, s.deg + (s.deg === 0 ? TRUE : 0), s.f35, 800, 600, room.eye).toDataURL('image/jpeg', 0.92);
+      window.VRGBox = { input: () => JSON.stringify(inp), save: () => {}, close: () => {} };
+      window.__app = window.VRGRoomBoxPhone.run();
+    }, { inp: JSON.parse(JSON.stringify(inp)), TRUE });
+    await sp.waitForFunction(() => document.body.dataset.drawn === '2', null, { timeout: 15000 });
+    ok(!!(await sp.$('[data-a="snap"]')), 'every photo has its 📐 Sarok button');
+    const idx = await sp.evaluate(() => window.__app.scene().find(r => r.id === 'R1').shots.findIndex(x => x.deg === 0));
+    await sp.click('[data-a="snap"][data-i="' + idx + '"]');
+    await sp.waitForSelector('.rbsnap svg line', { state: 'attached' });   // a vertical line has no width: never 'visible' to Playwright
+    // where the corners really are in the photo: the true camera's corner lines
+    const want = await sp.evaluate((TRUE) => {
+      const app = window.__app, RB = window.VRGRoomBox, room = app.scene().find(r => r.id === 'R1'), s = room.shots.find(x => x.deg === 0);
+      const t = Object.assign({}, s, { yaw: s.deg + TRUE, basis: RB.basis(s.deg + TRUE, 0) });
+      return RB.cornerLines(room, t).filter(l => l.u > 0.03 && l.u < 0.97).map(l => ({ i: l.i, u: l.u }));
+    }, TRUE);
+    ok(want.length >= 1, 'a corner is in the photo (' + want.length + ')');
+    // a finger drags each shown line sideways onto where its corner is
+    for (const w of want.slice(0, 2)) {
+      await sp.evaluate((w) => {
+        const st = document.querySelector('.rbsnap .stage'), wrap = document.querySelector('.rbsnap .wrap').getBoundingClientRect();
+        const room = window.__app.scene().find(r => r.id === 'R1'), from = window.VRGRoomBox.cornerLines(room, room.shots.find(x => x.deg === 0)).find(l => l.i === w.i);
+        const y = wrap.top + wrap.height / 2, x0 = wrap.left + from.u * wrap.width, x1 = wrap.left + w.u * wrap.width;
+        const ev = (t, X) => st.dispatchEvent(new PointerEvent(t, { pointerId: 9, clientX: X, clientY: y, bubbles: true, pointerType: 'touch' }));
+        ev('pointerdown', x0); ev('pointermove', (x0 + x1) / 2); ev('pointermove', x1); ev('pointerup', x1);
+      }, w);
+    }
+    const shown = await sp.$eval('.rbsnap .ft', e => e.textContent);
+    ok(/Irány \+(5,[89]|6(,\d)?)°/.test(shown), 'the screen shows the direction found: ' + shown.slice(0, 80));
+    if (process.argv.includes('--shots')) await sp.screenshot({ path: process.argv[process.argv.indexOf('--shots') + 1] + '/roombox-snap.png' });
+    await sp.click('.rbsnap [data-s="apply"]');
+    ok(!(await sp.$('.rbsnap')), '✓ Alkalmaz closes the screen');
+    const fix = await sp.evaluate(() => { const s = window.__app.scene().find(r => r.id === 'R1').shots.find(x => x.deg === 0); return { yaw: s.fix.yaw, f35: s.f35 }; });
+    ok(Math.abs(fix.yaw - TRUE) < 0.3, 'the box keeps the direction: ' + fix.yaw + '° (true ' + TRUE + '°)');
+    ok(Math.abs(fix.f35 - 13) < 0.8, 'and the lens stays the 0.5× one: ' + fix.f35 + ' mm');
+    // the box's corners now land where they are in the photo (from the photo point the photo always matches itself, so
+    // the corners are the check)
+    const land = await sp.evaluate((want) => {
+      const room = window.__app.scene().find(r => r.id === 'R1'), L = window.VRGRoomBox.cornerLines(room, room.shots.find(x => x.deg === 0));
+      return Math.max(...want.map(w => Math.abs(L.find(l => l.i === w.i).u - w.u)));
+    }, want.slice(0, 2));
+    ok(land < 0.004, 'the box\'s corners land on the corners in the photo (worst ' + (land * 100).toFixed(2) + ' % of the width)');
+    await sp.close();
   }
 
   // a touch drag rotates the dollhouse; then corrections, and ✓ Kész hands the box key back

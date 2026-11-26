@@ -1153,6 +1153,32 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   write into, the Füzet holds the structured entries (measurements, readings, totals, limits). Revisit B once both have
   been used on the phone.
 
+- **D-187 … D-188 · Sarok (M71, dev line skcam K1 polish), 2026-11-26.** Taken for the Founder while building ("proceed
+  to next dev"); each can be revisited.
+  - **D-187 · What the corners fix.** Chosen **A**: one dragged corner fixes the direction only; two or more fix the
+    direction and the field of view (the lens, in 35 mm-equivalent mm), solved from the plan's corner bearings. Rejected:
+    **B** the direction only, always (a photo without EXIF or from a crop keeps a wrong lens); **C** also the tilt from
+    the corner's floor and ceiling ends (the K1b level already gives it, and a short corner line would make it noisy).
+  - **D-188 · Where it goes.** Chosen **A**: into the box key the slider already writes (`yaw`, `f35` per shot), so the
+    phone, the Desktop and every saved survey read it with no new field, and the slider stays for fine-tuning. A lens
+    outside 8 … 80 mm is refused as swapped corners, not saved. Rejected: **B** replacing the slider (no way to nudge
+    by hand); **C** keeping the marks themselves in the survey (more to carry, nothing reads them yet).
+  Details: `WP/M71.md`.
+
+- **D-189 … D-190 · VRG mérőkártya (M72, dev line skcam K3 follow-up), 2026-11-26.** Taken for the Founder while
+  building ("proceed to next dev"); each can be revisited.
+  - **D-189 · Which card.** Chosen **A**: our own square marker (a black frame round a 4 × 4 code, three codes for
+    150, 100 and 60 mm, chosen so up to two misread bits still read right) and our own detector in plain JS
+    (`lib/marker.js`), the ArUco idea without its library. Rejected: **B** OpenCV.js's ArUco module (several MB of WASM
+    in the APK and the page, for one function; and any ArUco print lying around would be taken for our card); **C** the
+    A4 sheet found by its edges (white paper on a white wall: unreliable, and no way up).
+  - **D-190 · When it runs and who wins.** Chosen **A**: on opening a photo that has no reference yet. Found, it fills
+    ① (kind `kartya`, the printed size from the code) and moves on to ②. The corners stay draggable, a tap made during
+    the search wins, and 🔍 Kártya searches again. The Desktop prints the card (🖨); the phone does not. Rejected: **B**
+    only on a button (one more tap on every photo); **C** searching every photo when it is taken (time and battery for
+    photos never measured).
+  Details: `WP/M72.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.
