@@ -91,7 +91,7 @@ import hu.vrg.mobile.kit.ui.FeatureTop
 //
 // The WebView is set up like Kódváros online (M5): JavaScript and DOM storage on, file and content access off,
 // the pages served from https://appassets.androidplatform.net/stack/<file> by shouldInterceptRequest, which
-// answers only the two page files; every other request gets an empty 403, so nothing leaves the phone. Touch is
+// answers only the published page files (StackPages.PAGES); every other request gets an empty 403, so nothing leaves the phone. Touch is
 // in the pages themselves (notes/stack/touch.js): one finger orbits, pinch zooms, twist turns, tap picks, double
 // tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space
 // opens / closes the Őrség lock.
@@ -260,7 +260,15 @@ object StackFeature : VrgFeature {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val u = request.url
-                if (u.host == HOST) return false
+                if (u.host == HOST) {
+                    // a link from one stack page to another (Ötletfolyam → Konnektóm …): switch the chip, so the bar follows;
+                    // the same page (a #sel= fragment) loads in place; an unpublished page or anything else stays put
+                    val seg = u.pathSegments
+                    val p = if (seg.size == 2 && seg[0] == StackPages.DIR) StackPages.byFile(seg[1]) else null
+                    if (p != null && p == page.value) return false
+                    if (p != null && shown.value?.pages?.contains(p) == true) main.post { choose(p.id) }
+                    return true
+                }
                 if (request.isForMainFrame && (u.scheme == "https" || u.scheme == "http"))
                     runCatching { view.context.startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 return true

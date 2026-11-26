@@ -19,13 +19,21 @@
 //   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html     layers.html -> stack/retegek.html
 //   kisokos.html -> stack/kisokos.html: the K layer's VRG Kisokos 3D, by Stack/lib/kisokos.js's own standalone mode (the
 //   cards from Kisokos/, plus each K node's neighbours from out/stack.json when the PC has built it; without it, none)
+//   lineage.html -> stack/otletfolyam.html (layer I) and decisions.html -> stack/dontesnaplo.html (layer Q): their data
+//   (out/lineage-data.js, out/decisions-data.js, written by `stack.js build` on the PC) and the VRG UI Kit's css, fonts
+//   (as data: URIs) and scripts inlined; links between the stack's pages renamed to the phone's file names
+//   Archive/files/konnektom-labor.html -> stack/labor.html (START R → K): already one page; its Google Fonts links are
+//   dropped (the phone loads nothing from outside), so it falls back to its own font stacks
+// The four after the first three are optional on the phone. In a full publish, an optional page whose data is missing
+// here keeps the copy the branch already has (with a warning) instead of stopping the publish.
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
 //   The data is node ids, titles, kinds, sizes, times and links; never a file's content. The repo is private.
 //
 // The layout of stack-pages (kit-core Stack.kt reads exactly this):
 //   README.md
-//   stack/konnektom.html   stack/holo.html   stack/retegek.html   stack/kisokos.html (optional on the phone)
+//   stack/konnektom.html   stack/holo.html   stack/retegek.html   (optional on the phone:) stack/kisokos.html
+//   stack/otletfolyam.html   stack/dontesnaplo.html   stack/labor.html
 //   stack/meta.json        {kind:'vrg-stack-meta', generated, published, nodes, points, lines, files:{name:bytes}, kisokos?}
 //
 // How it writes: git plumbing only (hash-object, mktree, commit-tree); the working tree, the index, HEAD and every
@@ -44,6 +52,9 @@ hand; the branch is replaced (one commit, no history) on every publish.
 - \`stack/holo.html\`: the Holo page (Polip, Gömb, Föld, Mag, the Őrség lock), one self-contained page.
 - \`stack/retegek.html\`: the Rétegek page (the layers as an exploded isometric stack), one self-contained page.
 - \`stack/kisokos.html\`: the VRG Kisokos 3D page (the Stack's K layer, the offline work handbook), one self-contained page.
+- \`stack/otletfolyam.html\`: Ötletfolyam (layer I, the ideas and their lineage), one self-contained page.
+- \`stack/dontesnaplo.html\`: Döntésnapló (layer Q, the decision log), one self-contained page.
+- \`stack/labor.html\`: the Konnektóm-labor (fly brain, Stack brain, Holo, layers, empty memory net), one self-contained page.
 - \`stack/meta.json\`: when the data was built and published, the sizes.
 
 The source lives in \`Stack/\` on main; the data is titles, kinds, sizes, times and
@@ -55,8 +66,15 @@ const PAGES = [
   { id: 'konnektom', file: 'konnektom.html', src: 'connectome.html' },
   { id: 'holo', file: 'holo.html', src: 'orb.html' },
   { id: 'retegek', file: 'retegek.html', src: 'layers.html' },
-  { id: 'kisokos', file: 'kisokos.html', kisokos: true },
+  { id: 'kisokos', file: 'kisokos.html', kisokos: true, optional: true },
+  { id: 'otletfolyam', file: 'otletfolyam.html', local: 'lineage.html', data: 'out/lineage-data.js', optional: true },
+  { id: 'dontesnaplo', file: 'dontesnaplo.html', local: 'decisions.html', data: 'out/decisions-data.js', optional: true },
+  { id: 'labor', file: 'labor.html', archive: 'Archive/files/konnektom-labor.html', optional: true },
 ];
+
+// A link from one stack page to another, by the phone's file names; a page the phone does not get is unlinked.
+const LINKS = { 'connectome.html': 'konnektom.html', 'orb.html': 'holo.html', 'layers.html': 'retegek.html', 'kisokos.html': 'kisokos.html',
+  'lineage.html': 'otletfolyam.html', 'decisions.html': 'dontesnaplo.html' };
 
 function args(argv) {
   const a = { push: false, repo: path.resolve(__dirname, '..', '..'), remote: 'origin', stack: null, out: null, only: null };
@@ -107,6 +125,32 @@ function git(repo, argv, input) {
   return execFileSync('git', argv, { cwd: repo, input, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
 }
 
+// One page made self-contained from its own folder: local stylesheets (their woff2 fonts as data: URIs) and scripts
+// inlined, outside stylesheets (web fonts) dropped, the bundle flag set before the first script, the links between the
+// stack's pages renamed. Throws if anything outside is still linked.
+function bundleLocal(file) {
+  const dir = path.dirname(file);
+  let html = fs.readFileSync(file, 'utf8');
+  html = html.replace(/<link rel="preconnect"[^>]*>\n?/g, '');
+  html = html.replace(/<link rel="stylesheet" href="([^"]+)">/g, (m, href) => {
+    if (/^(https?:)?\/\//.test(href)) return '';
+    const f = path.resolve(dir, href);
+    const sheet = fs.readFileSync(f, 'utf8').replace(/url\("?([^")]+\.woff2)"?\)/g, (mm, u) => /^(data:|https?:)/.test(u) ? mm
+      : `url(data:font/woff2;base64,${fs.readFileSync(path.resolve(path.dirname(f), u)).toString('base64')})`);
+    return `<style>/* ${href} */\n${css(sheet)}\n</style>`;
+  });
+  let first = true;
+  html = html.replace(/<script src="([^"]+)"><\/script>/g, (m, src) => {
+    if (/^(https?:)?\/\//.test(src)) throw new Error(path.basename(file) + ': an outside script (' + src + ')');
+    const pre = first ? '<script>window.STACK_BUNDLE = true;</script>\n' : '';
+    first = false;
+    return `${pre}<script>/* ${src} */\n${js(fs.readFileSync(path.resolve(dir, src), 'utf8'))}</script>`;
+  });
+  html = html.replace(/href="([a-z-]+\.html)/g, (m, f) => LINKS[f] ? `href="${LINKS[f]}` : 'href="#pc-only-' + f.replace('.html', ''));
+  if (/<script src=|<link [^>]*href=/.test(html)) throw new Error(path.basename(file) + ': something external is still linked');
+  return html;
+}
+
 // The Kisokos page through Stack/lib/kisokos.js's own standalone writer (it also refreshes out/kisokos-data.js).
 function kisokosPage(stack, out) {
   const file = path.join(out, 'kisokos.html');
@@ -122,7 +166,7 @@ function kisokosPage(stack, out) {
 function main() {
   const a = args(process.argv);
   const only = a.only || PAGES.map(p => p.id);
-  const stackPages = PAGES.filter(p => !p.kisokos && only.includes(p.id));
+  const stackPages = PAGES.filter(p => p.src && only.includes(p.id));   // the three connectome-data pages
   if (stackPages.length && !fs.existsSync(path.join(a.stack, 'connectome.html'))) throw new Error('no stack at ' + a.stack);
   const out = a.out || fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-stack-'));
   fs.mkdirSync(out, { recursive: true });
@@ -136,18 +180,29 @@ function main() {
     if (!D) D = JSON.parse(b.data.slice(b.data.indexOf('=') + 1).trim().replace(/;\s*$/, ''));
   }
   if (only.includes('kisokos')) { K = kisokosPage(a.stack, out); files['kisokos.html'] = K.html; }
+  const missing = [];
+  for (const p of PAGES.filter(x => (x.local || x.archive) && only.includes(x.id))) {
+    const need = p.local ? path.join(a.stack, p.data) : path.join(a.repo, p.archive);
+    if (!fs.existsSync(need)) {
+      if (a.only) throw new Error(`${p.id}: ${path.relative(a.repo, need)} is missing (on the PC: node Stack/stack.js build)`);
+      missing.push(p);
+      console.log(`warning: ${p.id}: ${path.relative(a.repo, need)} is missing; the branch's copy is kept`);
+      continue;
+    }
+    files[p.file] = bundleLocal(p.local ? path.join(a.stack, p.local) : need);
+  }
 
   // with --only, every other page stays exactly as the branch has it (its blob is reused), and so does its metadata
   let tip = null, base = null;
   const kept = {};
-  if (a.only) {
+  if (a.only || missing.length) {
     git(a.repo, ['fetch', '--quiet', a.remote, 'refs/heads/' + BRANCH]);
     tip = git(a.repo, ['rev-parse', 'FETCH_HEAD']);
     base = JSON.parse(git(a.repo, ['show', tip + ':stack/meta.json']));
-    for (const p of PAGES.filter(x => !only.includes(x.id))) {
+    for (const p of PAGES.filter(x => !only.includes(x.id) || missing.includes(x))) {
       let blob = '';
       try { blob = git(a.repo, ['rev-parse', '--verify', '--quiet', tip + ':stack/' + p.file]); } catch (e) { blob = ''; }
-      if (!blob) { if (p.kisokos) continue; throw new Error(`stack-pages has no stack/${p.file} to keep: publish it too (--only)`); }
+      if (!blob) { if (p.optional) continue; throw new Error(`stack-pages has no stack/${p.file} to keep: publish it too (--only)`); }
       kept[p.file] = { blob, bytes: +git(a.repo, ['cat-file', '-s', blob]) };
     }
   }
@@ -189,4 +244,4 @@ function main() {
 if (require.main === module) {
   try { main(); } catch (e) { console.error('publish-stack: ' + e.message); process.exit(1); }
 }
-module.exports = { bundle, js, PAGES, kisokosPage };
+module.exports = { bundle, bundleLocal, js, PAGES, LINKS, kisokosPage };

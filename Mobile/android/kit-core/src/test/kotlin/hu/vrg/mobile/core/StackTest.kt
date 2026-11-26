@@ -43,6 +43,10 @@ class StackTest {
         assertEquals(1501373L, withK.bytes(StackPages.page("kisokos")))
         assertEquals(withK, StackMeta.parse(withK.toJson()))
         assertEquals(listOf("konnektom", "holo", "retegek"), StackPages.REQUIRED.map { it.id })
+        assertEquals(listOf("kisokos", "otletfolyam", "dontesnaplo", "labor"), StackPages.PAGES.filter { it.optional }.map { it.id })
+        val labor = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"labor.html\":2041051}"))!!
+        assertEquals(listOf("konnektom", "holo", "retegek", "labor"), labor.pages.map { it.id }, "only the optional pages a publish carries")
+        assertEquals("dontesnaplo", StackPages.byFile("dontesnaplo.html")?.id)
         // Kisokos alone does not make a publish: the three required pages must be there
         assertNull(StackMeta.parse("""{"kind":"vrg-stack-meta","published":"x","files":{"kisokos.html":10}}"""))
     }
