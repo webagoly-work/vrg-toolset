@@ -1,0 +1,22 @@
+{
+  "kind": "vrg-stack-meta",
+  "generated": "2026-11-26T20:30:13.143Z",
+  "stackGenerated": "2026-11-26T20:30:06.825Z",
+  "published": "2026-11-26T20:35:03.393Z",
+  "nodes": 3268,
+  "points": 37054,
+  "lines": 50,
+  "files": {
+    "konnektom.html": 844419,
+    "holo.html": 923027,
+    "retegek.html": 803175,
+    "kisokos.html": 1522882,
+    "otletfolyam.html": 331959,
+    "dontesnaplo.html": 544401,
+    "labor.html": 2041051
+  },
+  "kisokos": {
+    "generated": "2026-11-26T20:31:00.147Z",
+    "cards": 192
+  }
+}
