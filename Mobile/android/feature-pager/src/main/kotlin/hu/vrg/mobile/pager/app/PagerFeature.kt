@@ -103,14 +103,10 @@ object PagerFeature : VrgFeature {
             // the header (Fényjel: kit FeatureTop), then who this phone is on the crew
             FeatureTop(host, info) {
                 if (radio == Pager.Radio.ON || radio == Pager.Radio.STARTING) VrgChip("Kikapcsolás") { PagerService.stop(ctx) }
-            }
-            Row {
-                Column(Modifier.weight(1f)) {
-                    val me = Pager.engine.me
-                    Text("${me.crew.code} · ${me.unit}. egység · ${me.name} · rádió: ${radio.hu}", style = Melyviz.readout)
-                }
                 else VrgChip("Bekapcsolás", selected = true) { denied = false; switchOn() }
             }
+            val me = Pager.engine.me
+            Text("${me.crew.code} · ${me.unit}. egység · ${me.name} · rádió: ${radio.hu}", style = Melyviz.readout)
             Pager.radioDetail?.takeIf { radio == Pager.Radio.FAILED }?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.coral)) }
             if (radio == Pager.Radio.NO_BT) Text("Kapcsold be a Bluetootht; a Csipogó magától újraindul.", style = Melyviz.small.copy(color = Melyviz.sand))
             if (denied || radio == Pager.Radio.NO_PERMISSION) Text("A Csipogónak a Bluetooth (Android 9–11-en a helymeghatározás) engedély kell: e nélkül nem hallja a csapatot.",
