@@ -44,7 +44,7 @@
   const SRC = { kezi: 'kézi', lencse: 'a kamerától', exif: 'EXIF', alap: 'alapérték' };
 
   function start(input, opts) {
-    const o = opts || {}, RB = o.RB || root.VRGRoomBox, GL = o.GL || root.VRGRoomBoxGL, PA = o.PA || root.VRGPano, io = o.io || root.VRGBox || null, doc = o.document || root.document;
+    const o = opts || {}, RB = o.RB || root.VRGRoomBox, GL = o.GL || root.VRGRoomBoxGL, PA = o.PA || root.VRGPano, SN = o.SN || root.VRGRoomBoxSnap, io = o.io || root.VRGBox || null, doc = o.document || root.document;
     const inp = typeof input === 'string' ? JSON.parse(input) : input || (io ? JSON.parse(io.input()) : {});
     let box = JSON.parse(JSON.stringify(inp.box || {}));
     const images = inp.images || {}, meta = {}, canv = {};
@@ -96,12 +96,14 @@
       let h = '<div class="f">Belmagasság (cm) <input type="number" inputmode="numeric" min="180" max="600" data-b="h" value="' + Math.round(r.h / 10) + '"></div>' +
         '<div class="f">Szemmagasság a fotónál (cm) <input type="number" inputmode="numeric" min="60" max="220" data-b="eye" value="' + Math.round(r.eye / 10) + '"></div>';
       if (!r.shots.length) h += '<p class="note">Ebben a helyiségben nincs Fotópont: a doboz a méretekből áll, kép nélkül.</p>';
-      else h += '<p class="note">Ha egy kép sarka nem a doboz sarkára esik: Irány; ha a kép túl nagy vagy kicsi a falon: Látószög (0,5× ≈ 13–16 mm, 1× ≈ 24–28 mm).</p>';
+      else h += '<p class="note">' + (SN ? 'Ha egy kép sarka nem a doboz sarkára esik: 📐 Sarok, és húzd a sarkot a fotón a helyére. Finomítás: ' : 'Ha egy kép sarka nem a doboz sarkára esik: ') +
+        'Irány; ha a kép túl nagy vagy kicsi a falon: Látószög (0,5× ≈ 13–16 mm, 1× ≈ 24–28 mm).</p>';
       const missing = r.shots.filter(x => !canv[String(x.file).split(/[\\/]/).pop()]).length;
       if (missing) h += '<p class="note warn">' + missing + ' kép még töltődik vagy hiányzik a telefonról.</p>';
       r.shots.forEach((x, i) => {
         h += '<div class="shot' + (ui.hi === i ? ' hi' : '') + '"><div class="row"><button data-a="hi" data-i="' + i + '">' + esc(x.side || x.deg + '°') + '</button><span class="nm">' +
-          esc(x.file) + '</span><button data-a="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" aria-label="Nézd innen">👁</button></div>' +
+          esc(x.file) + '</span>' + (SN && canv[String(x.file).split(/[\\/]/).pop()] ? '<button data-a="snap" data-i="' + i + '" aria-label="Sarok a fotón">📐 Sarok</button>' : '') +
+          '<button data-a="stand" data-p="' + esc(x.point) + '" data-deg="' + x.yaw + '" aria-label="Nézd innen">👁</button></div>' +
           '<label>Irány ' + (x.fix.yaw >= 0 ? '+' : '') + f1(x.fix.yaw) + '°<input type="range" min="-30" max="30" step="0.5" data-b="yaw" data-key="' + esc(x.key) + '" value="' + x.fix.yaw + '"></label>' +
           '<label>Dőlés ' + (x.pitch >= 0 ? '+' : '') + f1(x.pitch) + '°<input type="range" min="-25" max="25" step="0.5" data-b="pitch" data-key="' + esc(x.key) + '" value="' + x.pitch + '"></label>' +
           '<label>Látószög ' + Math.round(x.fovH) + '° · ' + f1(x.f35) + ' mm (' + (SRC[x.f35src] || x.f35src) + ') <input type="number" inputmode="decimal" min="8" max="80" step="0.5" data-b="f35" data-key="' +
@@ -180,6 +182,13 @@
       else if (a === 'close') { if (io && io.close) io.close(); ui.open = false; }
       else if (a === 'align') align(t.dataset.p);
       else if (a === 'pano') pano(t.dataset.p);
+      else if (a === 'snap') snapOpen(+t.dataset.i);
+    }
+    /** 📐 Sarok (K1 polish): the photo with the box's corners; dragged onto the real ones, they fix direction and lens. */
+    function snapOpen(i) {
+      const r = room(), x = r && r.shots[i]; if (!x || !SN) return null;
+      return SN.open({ RB, room: r, shot: x, image: canv[String(x.file).split(/[\\/]/).pop()] || null, document: doc,
+        onApply: fix => set(b => { b.shots = b.shots || {}; const o2 = Object.assign({}, b.shots[x.key], { yaw: fix.yaw }); if (fix.f35) o2.f35 = fix.f35; b.shots[x.key] = o2; }) });
     }
 
     // touch: one finger rotates / looks, two fingers zoom / change the field of view (pointer events cover mouse and pen)
@@ -210,7 +219,7 @@
     const rooms = scene();
     ui.room = (rooms.find(r => r.shots.length) || rooms[0] || {}).id || '';
     draw(true);
-    return { ui, box: () => box, scene, draw, images: name => canv[name] || null, align, pano };
+    return { ui, box: () => box, scene, draw, images: name => canv[name] || null, align, pano, snap: snapOpen };
   }
 
   /** In the WebView: reads the input from the bridge and starts; an error goes to VRGBox.fail when the bridge has it. */

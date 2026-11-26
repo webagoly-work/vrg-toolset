@@ -770,6 +770,44 @@
      ]
     },
     {
+     "n": 71,
+     "title": "M71 · Sarok (in `sketch`, phone and Desktop): a photo's direction and lens from the room's corners",
+     "items": [
+      {
+       "id": "M71.1",
+       "text": "Egy szobában, ahol a fotópontból legalább két sarok látszik, készíts egy Fotópont-sorozatot (ha van 0,5×, azzal)."
+      },
+      {
+       "id": "M71.2",
+       "text": "Rendezés → ⬚ Szobadoboz: egy kép sorában legyen **📐 Sarok** gomb; koppints rá."
+      },
+      {
+       "id": "M71.3",
+       "text": "A fotó teljes képernyőn nyíljon, rajta szaggatott narancs vonalak betűvel (A, B…), ahol a doboz a sarkokat gondolja."
+      },
+      {
+       "id": "M71.4",
+       "text": "Húzz egy vonalat oldalra a fotón látható sarokra: a vonal zöld lesz, alul az irány javítása (Irány ±x°) és „húzz még egy sarkot”."
+      },
+      {
+       "id": "M71.5",
+       "text": "Húzz egy második sarkot is: alul a látószög is megjelenik mm-ben, és mindkét vonal a saját sarkán áll."
+      },
+      {
+       "id": "M71.6",
+       "text": "✓ Alkalmaz: a képernyő bezárul; a pontból nézve a kép jobban illeszkedik a falakhoz, a kép Irány csúszkája és Látószöge az új értéket mutatja."
+      },
+      {
+       "id": "M71.7",
+       "text": "↺ törli a húzásokat; ✕ változtatás nélkül zár."
+      },
+      {
+       "id": "M71.8",
+       "text": "✓ Kész, majd újranyitva a javítás megvan; a PC-re küldve az Asztal Sketcher Szobadoboza ugyanezt mutatja (ott is van 📐 Sarok)."
+      }
+     ]
+    },
+    {
      "n": 30,
      "title": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
      "items": [
@@ -938,7 +976,7 @@
      ]
     }
    ],
-   "count": 105
+   "count": 113
   }
  },
  "cross": [

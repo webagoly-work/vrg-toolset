@@ -162,6 +162,69 @@
   }
   const keyOf = (pid, deg) => pid + '/' + (((deg % 360) + 360) % 360);
 
+  // ---- corner snapping (K1 polish): a corner of the room seen in the photo fixes the shot's direction -------------
+  /** The room's corners as vertical lines in a shot's photo: floor and ceiling ends in [u, v] (0…1, v from the top;
+   *  outside 0…1 when off the frame), and u at eye height. Only corners in front of the camera and within its view
+   *  widened by [margin] (0.25: a quarter frame each side), so a line can be dragged in from the edge. */
+  function cornerLines(room, shot, margin) {
+    const m = margin == null ? 0.25 : margin, out = [];
+    const raw = P => {
+      const d = [P[0] - shot.pos[0], P[1] - shot.pos[1], P[2] - shot.pos[2]], B = shot.basis;
+      const z = d[0] * B.fwd[0] + d[1] * B.fwd[1] + d[2] * B.fwd[2];
+      if (z <= 1) return null;
+      const x = (d[0] * B.r[0] + d[1] * B.r[1] + d[2] * B.r[2]) / z / shot.tanH, y = (d[0] * B.up[0] + d[1] * B.up[1] + d[2] * B.up[2]) / z / shot.tanV;
+      return [0.5 + 0.5 * x, 0.5 - 0.5 * y];
+    };
+    room.poly.forEach((p, i) => {
+      const eye = raw([p[0], shot.pos[1], p[1]]);
+      if (!eye || eye[0] < -m || eye[0] > 1 + m) return;
+      // a corner hidden behind another wall (an L-shaped room) is not offered
+      const wsAll = room.walls, cam = shot.plan, probe = [p[0] + (cam[0] - p[0]) * 0.002, p[1] + (cam[1] - p[1]) * 0.002];
+      if (wsAll.some(w => segX(cam, probe, w.a, w.b))) return;
+      out.push({ i, plan: [p[0], p[1]], u: eye[0], bottom: raw([p[0], 0, p[1]]), top: raw([p[0], room.h, p[1]]) });
+    });
+    return out;
+  }
+
+  /**
+   * The shot's direction (and, from two corners on, its field of view) that puts the room's corners where the user
+   * dragged them in the photo. marks: [{ i: corner index of room.poly, u: 0…1 across the photo }]. The pitch stays as it
+   * is. Returns { yaw: the correction from the shot's side (degrees, like box.shots[key].yaw), f35 (only from two
+   * corners), err: the worst corner left off, in photo widths } or null when nothing fits.
+   */
+  function snap(room, shot, marks) {
+    const ms = (marks || []).filter(k => room.poly[k.i] && isFinite(k.u));
+    if (!ms.length) return null;
+    const cp = Math.cos(rad(shot.pitch || 0)), aspect = shot.tanH / shot.tanV;
+    // each corner's bearing from the point, in plan degrees (0 = up on the sketch, 90 = right)
+    const bear = ms.map(k => { const p = room.poly[k.i]; return Math.atan2(p[0] - shot.plan[0], -(p[1] - shot.plan[1])) * 180 / Math.PI; });
+    const X = ms.map(k => 2 * k.u - 1);
+    const off = (yaw, j) => { let a = bear[j] - yaw; a = ((a + 540) % 360) - 180; return a; };   // −180…180 from the view's centre
+    const fit = (yaw, freeFov) => {
+      const A = ms.map((k, j) => { const a = off(yaw, j); return Math.abs(a) >= 89 ? NaN : Math.tan(rad(a)) / cp; });
+      if (A.some(isNaN)) return null;
+      let s = 1 / shot.tanH;                                       // s = 1 / tanH
+      if (freeFov) { let n = 0, d = 0; A.forEach((x, j) => { n += x * X[j]; d += x * x; }); if (d < 1e-12) return null; s = n / d; }
+      if (!(s > 0)) return null;
+      let worst = 0, sum = 0; A.forEach((x, j) => { const e = (x * s - X[j]) / 2; sum += e * e; worst = Math.max(worst, Math.abs(e)); });
+      return { s, sum, worst };
+    };
+    const free = ms.length >= 2;
+    let best = null;
+    // a coarse sweep round the shot's side, then finer round the best
+    const sweep = (c, span, step) => { for (let y = c - span; y <= c + span + 1e-9; y += step) { const f = fit(y, free); if (f && (!best || f.sum < best.sum)) best = Object.assign({ yaw: y }, f); } };
+    sweep(shot.deg, 60, 0.5);
+    if (!best) return null;
+    sweep(best.yaw, 0.5, 0.02);
+    const out = { yaw: Math.round((best.yaw - shot.deg) * 100) / 100, err: Math.round(best.worst * 1000) / 1000 };
+    if (free) {
+      const tanH = 1 / best.s, f35 = DIAG35 * (aspect / Math.hypot(aspect, 1)) / (2 * tanH);
+      if (f35 < 8 || f35 > 80) return null;                       // no lens is like that: the corners were mixed up
+      out.f35 = Math.round(f35 * 10) / 10;
+    }
+    return out;
+  }
+
   /**
    * The rooms of a package's plan, ready to draw. plan = pkg.plan ({data:{floors}, photos}); box = the survey's
    * corrections (see the header); meta(file) → { f35, w, h } of an attached photo (from EXIF), or null.
@@ -239,6 +302,6 @@
   /** In the dollhouse, walls between the viewer and the room are left out. */
   function wallShown(w, eye) { return (eye[0] - w.mid[0]) * w.n[0] + (eye[2] - w.mid[1]) * w.n[1] > 0; }
 
-  return { DEFAULTS, MAX_SHOTS, fov, exif, signedArea, inside, centroid, triangulate, walls, seen, basis, project, keyOf, scene, facing,
+  return { DEFAULTS, MAX_SHOTS, fov, exif, signedArea, inside, centroid, triangulate, walls, seen, basis, project, keyOf, scene, facing, cornerLines, snap,
     perspective, lookAt, mul, view, wallShown };
 });

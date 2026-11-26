@@ -89,6 +89,31 @@ const ok = (c, m) => { if (c) pass++; else { fail++; console.log('FAIL: ' + m); 
   await page.evaluate(() => { const i = document.querySelector('[data-b="yaw"]'); i.value = '3'; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); });
   const box = await page.evaluate(() => JSON.parse(window.__sketcher.save()).sketch.box);
   ok(box && box.shots && Object.values(box.shots).some(x => x.yaw === 3), 'the yaw correction is in the saved survey: ' + JSON.stringify(box));
+  // 📐 Sarok (K1 polish): the same screen as the phone's; two corners at a known direction and lens give them back
+  ok(!!(await page.$('[data-bact="snap"]')), 'a photo with its image attached has its 📐 Sarok button');
+  const sn = await page.evaluate(() => {
+    const sk = window.__sketcher, RB = window.VRGRoomBox, room = sk.box.scene().find(r => r.id === 'R1');
+    // where the corners would be if a photo had been taken 4° further left with a 15 mm (0.5×) lens: the first photo of the
+    // room with two corners in its frame then
+    const F = 15, shift = -4;
+    let i = -1, marks = [];
+    room.shots.forEach((s, k) => {
+      if (i >= 0) return;
+      const fv = RB.fov(F, s.tanH / s.tanV, 1), t = Object.assign({}, s, { yaw: s.yaw + shift, basis: RB.basis(s.yaw + shift, s.pitch), tanH: fv.tanH, tanV: fv.tanV });
+      const m = RB.cornerLines(room, t).filter(l => l.u > 0.03 && l.u < 0.97);
+      if (m.length >= 2) { i = k; marks = m.slice(0, 2); }
+    });
+    if (i < 0) return { n: 0 };
+    const yaw0 = room.shots[i].fix.yaw;
+    const scr = sk.box.snap(i); marks.forEach(m => scr.setMark(m.i, m.u));
+    const res = scr.result(), shown = document.querySelector('.rbsnap .ft').textContent;
+    if (!scr.apply()) scr.close();            // never leave the screen over the page
+    const after = sk.box.scene().find(r => r.id === 'R1').shots[i];
+    return { n: marks.length, res, shown, open: !!document.querySelector('.rbsnap'), yaw: after.fix.yaw, f35: after.f35, want: yaw0 + shift };
+  });
+  ok(sn.n === 2 && sn.res && Math.abs(sn.res.yaw - sn.want) < 0.15 && Math.abs(sn.res.f35 - 15) < 0.5, 'two corners: the direction and the lens found (' + JSON.stringify(sn.res) + ', want ' + sn.want + '°, 15 mm)');
+  ok(/látószög 15/.test(sn.shown), 'and shown: ' + sn.shown.slice(0, 70));
+  ok(!sn.open && Math.abs(sn.yaw - sn.want) < 0.15 && Math.abs(sn.f35 - 15) < 0.5, '✓ Alkalmaz puts them in the box key (' + sn.yaw + '°, ' + sn.f35 + ' mm)');
   await page.click('[data-bact="close"]');
   ok(await page.$eval('#box3d', b => b.hidden), 'the box closes');
   ok(!errors.length, 'no page errors: ' + errors.join(' | '));

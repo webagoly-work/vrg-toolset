@@ -103,5 +103,43 @@ ok(Object.keys(RB.exif(new Uint8Array([0xFF, 0xD8, 0xFF, 0xE1, 0, 8, 0x45, 0x78,
   ok(sc.filter(r => r.id !== 'R1').every(r => r.h === 2700), 'other rooms take the level height');
 }
 
+// ---- corner snapping (K1 polish): the corners seen in the photo give back the true direction and lens
+{
+  // a 5 × 4 m room, the photo point 1.5 m from the left wall; the photo faces up (É), really 7° to the right, with a 0.5× lens
+  const plan = { data: { floors: [{ id: 'S', poly: [[0, 0], [5000, 0], [5000, 4000], [0, 4000]] }] },
+    photos: [{ id: 'F1', x: 1500, y: 2600, shots: [{ deg: 0, side: 'É', file: 'a.jpg' }] }] };
+  const meta = () => ({ w: 4000, h: 3000 });
+  const truth = RB.scene(plan, { shots: { 'F1/0': { yaw: 7, f35: 15 } } }, meta)[0], ts = truth.shots[0];
+  const lines = RB.cornerLines(truth, ts);
+  ok(lines.length >= 2 && lines.every(l => l.u > -0.3 && l.u < 1.3), 'the corners in front of the camera: ' + lines.map(l => l.i).join(','));
+  ok(lines.some(l => l.i === 0) && lines.some(l => l.i === 1), 'both far corners (0 and 1) are offered');
+  ok(!lines.some(l => l.i === 2 || l.i === 3), 'the corners behind the camera are not');
+  const l0 = lines.find(l => l.i === 0);
+  ok(l0.bottom[1] > l0.u * 0 + 0.5 && l0.top[1] < 0.5, 'a corner line runs from the floor (below the middle) to the ceiling (above)');
+  // the user drags the corners of the uncorrected box onto where they really are (the true camera's u)
+  const plain = RB.scene(plan, {}, meta)[0], ps = plain.shots[0];
+  const marks = lines.filter(l => l.i <= 1).map(l => ({ i: l.i, u: l.u }));
+  const two = RB.snap(plain, ps, marks);
+  near(two.yaw, 7, 0.1, 'two corners: the direction');
+  near(two.f35, 15, 0.3, 'two corners: the lens (0.5×)');
+  ok(two.err < 0.002, 'and both corners land where they were dragged (' + two.err + ')');
+  // one corner with the lens already right: the direction alone
+  const lensOk = RB.scene(plan, { shots: { 'F1/0': { f35: 15 } } }, meta)[0];
+  const one = RB.snap(lensOk, lensOk.shots[0], [marks[0]]);
+  near(one.yaw, 7, 0.1, 'one corner: the direction'); ok(one.f35 === undefined, 'one corner leaves the lens alone');
+  // the result put back into the box puts the lines where they were dragged
+  const fixed = RB.scene(plan, { shots: { 'F1/0': { yaw: two.yaw, f35: two.f35 } } }, meta)[0];
+  RB.cornerLines(fixed, fixed.shots[0]).filter(l => l.i <= 1).forEach(l => near(l.u, marks.find(m => m.i === l.i).u, 0.003, 'corner ' + l.i + ' lands on its mark'));
+  // corners dragged the wrong way round (crossed): no lens fits, nothing is applied
+  ok(RB.snap(plain, ps, [{ i: 0, u: marks[1].u }, { i: 1, u: marks[0].u }]) === null, 'crossed corners give no answer');
+  ok(RB.snap(plain, ps, []) === null, 'no mark, no answer');
+  // a turned photo (side K, 90°) with a pitch: still the direction
+  const plan2 = { data: plan.data, photos: [{ id: 'F2', x: 2500, y: 2000, shots: [{ deg: 90, side: 'K', file: 'b.jpg' }] }] };
+  const t2 = RB.scene(plan2, { shots: { 'F2/90': { yaw: -4.5, pitch: 6, f35: 26 } } }, meta)[0];
+  const m2 = RB.cornerLines(t2, t2.shots[0]).map(l => ({ i: l.i, u: l.u }));
+  const s2 = RB.snap(RB.scene(plan2, { shots: { 'F2/90': { pitch: 6, f35: 26 } } }, meta)[0], RB.scene(plan2, { shots: { 'F2/90': { pitch: 6, f35: 26 } } }, meta)[0].shots[0], m2.slice(0, 1));
+  near(s2.yaw, -4.5, 0.15, 'a pitched photo facing K: the direction from one corner');
+}
+
 console.log(fail ? fail + ' FAILED' : 'ALL PASS (' + pass + ')');
 process.exit(fail ? 1 : 0);

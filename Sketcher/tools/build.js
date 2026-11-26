@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/report.js + lib/features.js + lib/roombox.js + lib/roombox-gl.js + lib/pano.js + lib/plane.js + lib/plane-ui.js + lib/house3d.js + lib/house3d-ui.js + ../Map/lib/site-math.js + catalog + variants.
+// Sketcher/tools/build.js — builds Sketcher/dist/vrg-sketcher.html from src/ + lib/fieldkit.js + lib/takeoff.js + lib/report.js + lib/features.js + lib/roombox.js + lib/roombox-gl.js + lib/roombox-snap.js + lib/pano.js + lib/plane.js + lib/plane-ui.js + lib/house3d.js + lib/house3d-ui.js + ../Map/lib/site-math.js + catalog + variants.
 //
 //   node Sketcher/tools/build.js          write the dist page
 //   node Sketcher/tools/build.js --check  exit 1 when the committed dist is stale
@@ -27,6 +27,7 @@ function build() {
     '<script>\n' + script(rd('lib', 'report.js')) + '\n</script>\n' +
     // skcam K1: the Szobadoboz (the room in 3D with its Fotópont photos)
     '<script>\n' + script(rd('lib', 'roombox.js')) + '\n</script>\n<script>\n' + script(rd('lib', 'roombox-gl.js')) + '\n</script>\n' +
+    '<script>\n' + script(rd('lib', 'roombox-snap.js')) + '\n</script>\n' +
     // skcam K4: the Körkép (aligning a photo point's neighbours, the 360° image)
     '<script>\n' + script(rd('lib', 'pano.js')) + '\n</script>\n' +
     // skcam K5: the Ház 3D viewer (a house3d.json point cloud, scale and measures)

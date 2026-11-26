@@ -138,7 +138,7 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M64.9** Egy AR-t nem támogató telefonon a mérő azt írja, hogy a telefon nem támogatja; a 📏 Mérés a fotón ott is működik.
 - [ ] **M64.10** Kapcsold ki a csomagot: a 📐 elemek eltűnnek, a mentett távolságok a felmérésben maradnak.
 
-## B telefon — kamera és helyszín (105 lépés)
+## B telefon — kamera és helyszín (113 lépés)
 
 *a második telefon (Eszközök: jóváhagyva)*
 
@@ -231,6 +231,17 @@ A két telefon **egyszerre** dolgozik: az A a rajzot és a beszélgetést, a B a
 - [ ] **M62.6** ✓ Kész, majd újranyitva az igazítás megmarad (a javítások között).
 - [ ] **M62.7** 1×-es képekkel az Igazítás azt írja: nincs átfedés, 0,5×-tel fotózz.
 - [ ] **M62.8** ⚙ Funkciók → Körkép ki: a Körkép sorok eltűnnek.
+
+### M71 · Sarok (in `sketch`, phone and Desktop): a photo's direction and lens from the room's corners
+
+- [ ] **M71.1** Egy szobában, ahol a fotópontból legalább két sarok látszik, készíts egy Fotópont-sorozatot (ha van 0,5×, azzal).
+- [ ] **M71.2** Rendezés → ⬚ Szobadoboz: egy kép sorában legyen **📐 Sarok** gomb; koppints rá.
+- [ ] **M71.3** A fotó teljes képernyőn nyíljon, rajta szaggatott narancs vonalak betűvel (A, B…), ahol a doboz a sarkokat gondolja.
+- [ ] **M71.4** Húzz egy vonalat oldalra a fotón látható sarokra: a vonal zöld lesz, alul az irány javítása (Irány ±x°) és „húzz még egy sarkot”.
+- [ ] **M71.5** Húzz egy második sarkot is: alul a látószög is megjelenik mm-ben, és mindkét vonal a saját sarkán áll.
+- [ ] **M71.6** ✓ Alkalmaz: a képernyő bezárul; a pontból nézve a kép jobban illeszkedik a falakhoz, a kép Irány csúszkája és Látószöge az új értéket mutatja.
+- [ ] **M71.7** ↺ törli a húzásokat; ✕ változtatás nélkül zár.
+- [ ] **M71.8** ✓ Kész, majd újranyitva a javítás megvan; a PC-re küldve az Asztal Sketcher Szobadoboza ugyanezt mutatja (ott is van 📐 Sarok).
 
 ### M30 · Helyszín: the address, VRG Térkép, and the building against the sketch
 
