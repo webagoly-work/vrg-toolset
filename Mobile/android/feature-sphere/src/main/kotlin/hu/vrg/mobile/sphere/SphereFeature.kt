@@ -150,11 +150,11 @@ object SphereFeature : VrgFeature {
     }
 
     @Composable
-    override fun Screen(host: FeatureHost) = Page(host, back = host::home, signIn = { host.open(Catalogue.ACCOUNT.id) })
+    override fun Screen(host: FeatureHost) = Page(back = host::home, signIn = { host.open(Catalogue.ACCOUNT.id) })
 
     /** The whole page; the shell shows it beside the home screen too, where [back] scrolls there. */
     @Composable
-    fun Page(host: FeatureHost, back: () -> Unit, signIn: () -> Unit) {
+    fun Page(back: () -> Unit, signIn: () -> Unit) {
         val data by map.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
         val why by problem.collectAsStateWithLifecycle()
@@ -174,7 +174,7 @@ object SphereFeature : VrgFeature {
             Column(Modifier.fillMaxSize()) {
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
                     // the header (Fényjel: kit FeatureTop); its back is a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                    FeatureTop(host, info, actionsOnBack = true, onBack = { back() }) {
+                    FeatureTop(null, info, actionsOnBack = true, onBack = { back() }) {   // no host: the shell shows this page too
                         VrgChip(if (loading) "Frissítés…" else "Frissítés", status = if (loading) MiniStatus.running() else null) { refresh(force = true) }
                     }
                     data?.let { Text("${it.docs.size} dokumentum · ${it.generated} · ${it.commit}", style = Melyviz.readout) }

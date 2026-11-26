@@ -224,11 +224,12 @@ fun FjSwitch(checked: Boolean, label: String, hue: Color, modifier: Modifier = M
  *    [fillTitle] false leaves the free width to [trailing] (a readout that takes the weight itself).
  * On Fényjel it is one header: a back glyph, the feature's socket in its family colour, the title in the terminal face,
  * [trailing], and the i that opens the description sheet (the page itself carries no description); [bar] makes it a
- * slim 48 dp row with a smaller socket, for pages that need the height. [onBack] defaults to the home.
+ * slim 48 dp row with a smaller socket, for pages that need the height. [onBack] defaults to the home ([host] may be null
+ * only when [onBack] is given: a page the shell shows outside a feature, like Gömb).
  */
 @Composable
 fun FeatureTop(
-    host: FeatureHost,
+    host: FeatureHost?,
     info: FeatureInfo,
     modifier: Modifier = Modifier,
     title: String = info.title,
@@ -237,7 +238,7 @@ fun FeatureTop(
     actionsOnBack: Boolean = false,
     fillTitle: Boolean = true,
     backLabel: String = "Vissza",
-    onBack: () -> Unit = { host.home() },
+    onBack: () -> Unit = { host?.home() },
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     if (!Melyviz.palette.fenyjel) {
