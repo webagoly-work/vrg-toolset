@@ -131,7 +131,8 @@
     for (const b of [top, foot]) b.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); labelMenu(w.id, e.clientX, e.clientY); });
     top.addEventListener('dblclick', e => { e.preventDefault(); editText(w.id, 'title', e.clientX, e.clientY); });
     foot.addEventListener('dblclick', e => { e.preventDefault(); editText(w.id, 'note', e.clientX, e.clientY); });
-    const el = h('div', { 'data-role': 'sh-win', 'data-win': w.id, 'data-kind': w.kind, tabindex: '-1' }, top, head, body, foot,
+    const cat = w.open && w.open.startsWith('cat:') ? w.open.slice(4) : (w.kind === 'app' && w.state && w.state.id) || null;   // R5: the Fényjel chrome's glyph
+    const el = h('div', { 'data-role': 'sh-win', 'data-win': w.id, 'data-kind': w.kind, 'data-cat': cat, tabindex: '-1' }, top, head, body, foot,
       lib.EDGES.map(e => h('i', { 'data-edge': e })));
     // header: buttons, double-click, right-click menu, drag to move
     head.addEventListener('click', e => {
