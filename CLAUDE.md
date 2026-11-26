@@ -221,6 +221,13 @@ a `localPath` instead of a copy. The VRG Asztal's Archívum section and START R 
 
 Never make `H:\` itself a repository; it contains `.ssh`.
 
+## File formats carry `{ format, version }`
+
+A new file format (a JSON a tool writes and another reads: an export, a backup, a hand-over) opens with
+`{ "format": "<name>", "version": <n> }`, as the Planner's `.vplan.json` does, and its reader refuses a `format` it
+does not know. The formats already written in other styles (`format` + `v`, `kind` + `v`) stay as they are and stay
+readable; change one only with a new version. (The Founder's ruling on the Bicameral Examination, 2026-11-26.)
+
 ## Vendored third-party code
 
 `vendor-manifest.json` plus `tools/fetch-vendor.js` own everything under
