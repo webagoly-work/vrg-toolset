@@ -22,6 +22,7 @@
   };
   const LV_HU = { user: 'Felhasználó', dev: 'Fejlesztő', all: 'Minden' };
   const LV_EN = { user: 'User', dev: 'Dev', all: 'All' };
+  const LV_SHORT = { user: 'Felh.', dev: 'Fejl.', all: 'Mind' };              // WP-60: the level switch in a narrow top strip
   const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás', sessions: 'Munkamenetek', controller: 'Vezérlő' };
 
   const S = { look: 'melyviz', level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
@@ -86,7 +87,8 @@
   }
   function levelControl() {
     return h('span', { 'data-role': 'level', title: 'Szint / Level' }, D.LEVELS.map(lv =>
-      h('button', { type: 'button', 'data-level': lv, 'aria-pressed': String(lv === S.level), title: LV_EN[lv], onclick: e => { e.stopPropagation(); setLevel(lv); } }, LV_HU[lv])));
+      h('button', { type: 'button', 'data-level': lv, 'aria-pressed': String(lv === S.level), title: LV_EN[lv], onclick: e => { e.stopPropagation(); setLevel(lv); } },
+        h('span', { class: 'lbl' }, LV_HU[lv]), h('span', { class: 'sh' }, LV_SHORT[lv]))));
   }
 
   // ------------------------------------------------------------ opening: a catalog id → what main says to do
@@ -447,13 +449,18 @@
   }
   function widget(c) {
     const d = data(), st = d.stats || {};
-    if (!c.widget) return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem(c.id) }, (byId(c.id) || {}).icon || '', ' ', c.hu);
+    // WP-60: what a narrow strip may drop is in .lbl; the icon, the LED and the number stay
+    if (!c.widget) return h('button', { type: 'button', 'data-w': c.id, title: c.hu + ' / ' + c.en, onclick: () => openItem(c.id) }, (byId(c.id) || {}).icon || c.hu.slice(0, 2).toUpperCase(), h('span', { class: 'lbl' }, ' ' + c.hu));
     switch (c.id) {
-      case 'w:clock': { const e = h('span', { 'data-w': c.id, title: c.en }); const tick = () => { const n = new Date(); e.textContent = n.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) + '  ' + n.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }); }; tick(); clearInterval(clockTimer); clockTimer = setInterval(tick, 15000); return e; }
-      case 'w:search': return h('button', { type: 'button', 'data-w': c.id, title: 'Quick bar', onclick: () => window.VRGQuickBar && window.VRGQuickBar.open() }, '⌕ Keresés');
-      case 'w:servers': { const sv = d.servers || [], up = sv.filter(s => S.ports[s.port]).length; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => (S.level === 'user' ? setView('dashboard') : openItem('servers')) }, h('i', { class: 'dot' + (up ? ' ok' : '') }), up + '/' + sv.length + ' szerver'); }
-      case 'w:git': { const g = st.git || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('git') }, h('i', { class: 'dot' + (g.uncommitted ? ' warn' : ' ok') }), (g.branch || 'git') + (g.uncommitted ? ' · ' + g.uncommitted : '')); }
-      case 'w:backup': { const b = st.backup || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en + (b.when ? ' ' + b.when : ''), onclick: () => openItem('backup') }, h('i', { class: 'dot' + (b.ok === false ? ' crit' : b.age > 7 ? ' warn' : ' ok') }), 'mentés ' + (b.age !== undefined ? b.age + ' n' : '—')); }
+      case 'w:clock': {
+        const t = h('span', {}), dt = h('span', { class: 'lbl' }), e = h('span', { 'data-w': c.id, title: c.en }, t, dt);
+        const tick = () => { const n = new Date(); t.textContent = n.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }); dt.textContent = '  ' + n.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }); };
+        tick(); clearInterval(clockTimer); clockTimer = setInterval(tick, 15000); return e;
+      }
+      case 'w:search': return h('button', { type: 'button', 'data-w': c.id, title: 'Quick bar', onclick: () => window.VRGQuickBar && window.VRGQuickBar.open() }, '⌕', h('span', { class: 'lbl' }, ' Keresés'));
+      case 'w:servers': { const sv = d.servers || [], up = sv.filter(s => S.ports[s.port]).length; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => (S.level === 'user' ? setView('dashboard') : openItem('servers')) }, h('i', { class: 'dot' + (up ? ' ok' : '') }), up + '/' + sv.length, h('span', { class: 'lbl' }, ' szerver')); }
+      case 'w:git': { const g = st.git || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('git') }, h('i', { class: 'dot' + (g.uncommitted ? ' warn' : ' ok') }), h('span', { class: 'lbl' }, (g.branch || 'git') + (g.uncommitted ? ' · ' : '')), g.uncommitted ? String(g.uncommitted) : ''); }
+      case 'w:backup': { const b = st.backup || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en + (b.when ? ' ' + b.when : ''), onclick: () => openItem('backup') }, h('i', { class: 'dot' + (b.ok === false ? ' crit' : b.age > 7 ? ' warn' : ' ok') }), h('span', { class: 'lbl' }, 'mentés '), b.age !== undefined ? b.age + ' n' : '—'); }
       case 'w:ring': return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('divergence') }, ringSvg());
       case 'w:level': return h('span', { 'data-w': c.id }, levelControl());
     }
@@ -464,8 +471,56 @@
     if (window.VRGPhone) top.append(window.VRGPhone.button());                    // WP-49: first, always there (a saved strip cannot lack it, an overflow cannot hide it)
     for (const c of D.topStrip(S.items, S.top)) top.append(widget(c));
     if (window.VRGSheets) window.VRGSheets.barInto(top, 'top');                // the Lap tabs (WP-46), when the bar sits on top
-    top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Customise the top strip', onclick: openCustomize }, '⚙ Testreszabás'));
+    top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Testreszabás / Customise the top strip', onclick: openCustomize }, '⚙', h('span', { class: 'lbl' }, ' Testreszabás')));
+    fitTop();
   }
+  // WP-60: the strip fits its width (a narrow window, a large font, many widgets). First the labels go (data-fit="1": the
+  // icon, the LED and the number stay, the title keeps the words), then widgets go into ⋯, the least needed first. The
+  // phone, the Lap tabs, the level switch and ⚙ always stay.
+  const TOP_KEEP = { 'w:clock': 9, 'w:search': 5, 'w:servers': 4, 'w:git': 3, 'w:backup': 2, 'w:ring': 1 };   // a program button: 6
+  function fitTop() {
+    if (!top || !top.clientWidth) return;                                        // hidden (the other view): the observer calls again
+    const over = () => top.scrollWidth > top.clientWidth + 1;
+    const old = top.querySelector(':scope > [data-role="top-more"]'); if (old) old.remove();
+    const ws = [...top.querySelectorAll(':scope > [data-w]')].filter(e => e.dataset.w !== 'w:level');
+    for (const e of ws) e.hidden = false;
+    top.dataset.fit = '';
+    if (!over()) return;
+    top.dataset.fit = '1';
+    if (!over()) return;
+    const gone = [];
+    const more = h('button', { type: 'button', 'data-role': 'top-more', title: 'Több / More', 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); topMenu(more, gone); } }, '⋯');
+    top.insertBefore(more, top.querySelector(':scope > .sp'));
+    const order = ws.map((e, i) => ({ e, i, k: TOP_KEEP[e.dataset.w] || 6 })).sort((a, b) => a.k - b.k || b.i - a.i);
+    for (const x of order) { if (!over()) break; x.e.hidden = true; gone.push(x); }
+    if (!gone.length) { more.remove(); return; }
+    gone.sort((a, b) => a.i - b.i);
+    more.title = 'Több: ' + gone.map(x => x.e.title || x.e.textContent).join(', ');
+  }
+  // the ⋯ menu: the widgets the strip had no room for, at full width; one click runs one and closes the menu
+  function topMenu(anchor, gone) {
+    const old = $('[data-role="top-menu"]'); if (old) { old.remove(); return; }
+    const box = h('div', { 'data-role': 'top-menu', role: 'menu' });
+    const close = () => { box.remove(); document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', esc, true); };
+    const away = e => { if (!box.contains(e.target) && e.target !== anchor) close(); };
+    const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); anchor.focus(); } };
+    for (const x of gone) {
+      const c = x.e;
+      const it = c.dataset.w === 'w:clock' ? h('span', {}, c.textContent) : c.cloneNode(true);
+      it.hidden = false; it.setAttribute('role', 'menuitem');
+      if (!it.textContent.trim() && c.title) it.append(' ' + c.title);   // an icon-only widget (the ring) says what it is here
+      if (it.tagName === 'BUTTON') it.addEventListener('click', () => { close(); c.click(); });
+      box.append(it);
+    }
+    const r = anchor.getBoundingClientRect();
+    box.style.top = Math.round(r.bottom + 4) + 'px';
+    box.style.left = Math.round(Math.min(r.left, window.innerWidth - 260)) + 'px';
+    document.body.append(box);
+    document.addEventListener('pointerdown', away, true); document.addEventListener('keydown', esc, true);
+    const first = box.querySelector('button'); if (first) first.focus();
+  }
+  if (top && window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(fitTop)).observe(top);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTop());
   function running() {
     const F = window.VRGFrame;
     if (!F || !F.panes) return [];

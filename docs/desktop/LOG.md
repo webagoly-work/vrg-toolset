@@ -694,3 +694,33 @@ keep their numbers; this section's test is `Dashboard/test/wp-58b.test.js` (run 
     - Fényjel → Mélyvíz → Fényjel at runtime: Mélyvíz has every monogram back and no glyph or family left.
   - The top strip's overflow at 1100 px already happens in Mélyvíz; it is not new here.
 - **Not run:** inside Electron (no Electron here).
+
+## WP-60 Top strip overflow — the Asztal's top strip fits a narrow window (2026-11-26, cloud session)
+
+- **Before:**
+  - Below about 1300 px the strip's right end was cut off: the level switch, ⚙ Testreszabás, and in the end the clock.
+  - This happened in every look; Mélyvíz needed 1319 px for an 1100 px window.
+- **`desk.js` `fitTop()`** runs after every `drawTop()`, on a resize (ResizeObserver) and when the fonts arrive. It works in two steps:
+  1. `data-fit="1"` drops the labels. Every droppable word sits in a `.lbl`, so the icon, the LED and the number stay.
+     - "⌕", "● 0/3", "● 3" (git changes), "● 2 n" (the backup's age), "19:31";
+     - a program's monogram, and the phone glyph;
+     - the level switch as Felh. / Fejl. / Mind;
+     - ⚙ on its own.
+
+     The words are still in the title.
+  2. If it still does not fit, the least needed widgets go into **⋯**, which sits before the spacer.
+     - Order: the ring, the backup, git, servers, search, program buttons, the clock last (`TOP_KEEP`).
+     - The menu shows each one in full, with an icon-only widget's title as its label. A click runs it and closes the menu; Esc and a click outside also close it.
+     - The phone, the Lap tabs, the level switch and ⚙ always stay.
+- The title bar's "VRG Asztal" no longer wraps onto two lines in a narrow window.
+- The ⋯ menu is styled in Mélyvíz (`desk.css`) and in Fényjel (`fenyjel-chrome.css`).
+- **Tests:**
+  - `wp-60`: 4 pass.
+  - The full Dashboard suite: 365 pass, with the same 68 environment failures.
+  - Chromium (the real page, the bridge stubbed) in Mélyvíz, Grafit and Fényjel at 1400, 1100, 1000, 900, 760, 700, 640 and 520 px: the strip fits every time.
+    - At 1400 px: full labels.
+    - At 1100–700 px: short labels.
+    - At 640 px: the ring in ⋯.
+    - At 520 px: five widgets in ⋯.
+  - The menu opens and runs its item (the ring opens Divergencia).
+- **Not done:** the dock at narrow widths overflows the same way. That is a separate change.
