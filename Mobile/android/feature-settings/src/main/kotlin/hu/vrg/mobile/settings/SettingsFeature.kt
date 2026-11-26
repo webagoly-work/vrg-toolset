@@ -48,7 +48,6 @@ import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palettes
 import hu.vrg.mobile.kit.ui.PaletteRow
-import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.kit.ui.VrgSlider
@@ -56,6 +55,8 @@ import hu.vrg.mobile.kit.ui.VrgToggle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // Beállítások (WP M1): the settings that belong to the whole app, not to one feature.
 //   Megjelenés       palette and size, applied by the shell to every screen
@@ -80,9 +81,8 @@ object SettingsFeature : VrgFeature {
         val about = remember { About.read(ctx) }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            VrgBack { host.home() }
-            Text("BEÁLLÍTÁSOK", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Az egész alkalmazásra érvényes", style = Melyviz.small)
+            FeatureTop(host, info)
+            FjBlurb("Az egész alkalmazásra érvényes")
 
             // ---- look ------------------------------------------------------------------------------
             VrgSectionTitle("Megjelenés — paletta")

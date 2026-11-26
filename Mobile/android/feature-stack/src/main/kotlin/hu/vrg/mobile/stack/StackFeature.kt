@@ -81,6 +81,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import android.view.ViewGroup
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Rétegverem (WP M17): the VRG Stack's two 3D pages on the phone. The stack is built on the PC and published on
 // `stack-pages` by Mobile/stack/publish-stack.js (START → R Rétegverem → T); each page is one self-contained HTML
@@ -284,15 +285,6 @@ object StackFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
-    /** The bare "‹": a 48 dp button that TalkBack reads as "Vissza" (UI-CHECKLIST 1.1, 8.1). */
-    @Composable
-    private fun BackGlyph(onClick: () -> Unit) {
-        Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = "Vissza" },
-            contentAlignment = Alignment.Center) {
-            Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
-        }
-    }
-
     /** A glyph-only chip in a fixed 48 dp slot, read by TalkBack as its [description] (UI-CHECKLIST 1.1, 3.4, 8.1). */
     @Composable
     private fun IconChip(glyph: String, description: String, action: () -> Unit) {
@@ -333,10 +325,7 @@ object StackFeature : VrgFeature {
             if (!isFull) Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
                 // row 1: back, the title, refresh, full screen (fixed 48 dp slots, so a large font cannot squeeze them out);
                 // row 2: the pages, wrapping when they do not fit (UI-CHECKLIST 4.5, 3.5)
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    BackGlyph { host.home() }
-                    Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f))
+                FeatureTop(host, info, bar = true) {
                     IconChip(if (loading) "…" else "⟳", "Frissítés") { refresh() }
                     if (meta != null) IconChip("⛶", "Teljes képernyő") { full.value = true }
                 }

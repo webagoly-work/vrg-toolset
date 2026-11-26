@@ -113,6 +113,7 @@ import java.net.URL
 import java.time.LocalDate
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // VRG Térkép (WP M43, D-48 = A, D-49 = A + B + C). The PC's own page, Map/vrg-terkep.html, from GitHub main on its own origin
 // (https://map.appassets.androidplatform.net/), every request answered here. The rules (which request is what, the cache keys, the
@@ -681,12 +682,7 @@ object MapFeature : VrgFeature {
         BackHandler { leave() }
         val reload: () -> Unit = { keepHash(web[0]); state.update { it.copy(url = null) }; prepare() }
         Column(Modifier.fillMaxSize()) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                    modifier = Modifier.minimumInteractiveComponentSize().clickable(onClickLabel = "Vissza") { leave() }
-                        .semantics { contentDescription = "Vissza" }.padding(horizontal = 4.dp))
-                Text("VRG TÉRKÉP", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, modifier = Modifier.weight(1f))
+            FeatureTop(host, info, Modifier.padding(horizontal = 12.dp, vertical = 2.dp), bar = true, onBack = { leave() }) {
                 when (s.mode) {
                     Mode.PC -> VrgChip("PC adat", selected = true) { host.note("A térkép és a munkák a PC-ről jönnek, a relén át.") }
                     Mode.INTERNET -> VrgChip("Internet") { host.note(s.pcNote ?: "A térkép az internetről jön; amit megnéztél, offline is megmarad.") }

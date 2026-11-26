@@ -85,6 +85,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Gömb (WP M14): the three Solomon signals on the phone, as a page to the right of the home screen and as a
 // tile. It reads and rules; it never edits a source (docs/solomon/README.md). The data comes from the
@@ -149,11 +150,11 @@ object SphereFeature : VrgFeature {
     }
 
     @Composable
-    override fun Screen(host: FeatureHost) = Page(back = host::home, signIn = { host.open(Catalogue.ACCOUNT.id) })
+    override fun Screen(host: FeatureHost) = Page(host, back = host::home, signIn = { host.open(Catalogue.ACCOUNT.id) })
 
     /** The whole page; the shell shows it beside the home screen too, where [back] scrolls there. */
     @Composable
-    fun Page(back: () -> Unit, signIn: () -> Unit) {
+    fun Page(host: FeatureHost, back: () -> Unit, signIn: () -> Unit) {
         val data by map.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
         val why by problem.collectAsStateWithLifecycle()
@@ -172,14 +173,10 @@ object SphereFeature : VrgFeature {
         Box(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize()) {
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                        Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                            modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = back).wrapContentHeight())
-                        Spacer(Modifier.weight(1f))
+                    // the header (Fényjel: kit FeatureTop); its back is a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+                    FeatureTop(host, info, actionsOnBack = true, onBack = { back() }) {
                         VrgChip(if (loading) "Frissítés…" else "Frissítés", status = if (loading) MiniStatus.running() else null) { refresh(force = true) }
                     }
-                    Text("GÖMB", style = Melyviz.title.copy(fontSize = 18.sp))
                     data?.let { Text("${it.docs.size} dokumentum · ${it.generated} · ${it.commit}", style = Melyviz.readout) }
                     if (account !is Account.SignedIn) {
                         Text("A repó privát: GitHub belépés kell a friss adathoz.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))

@@ -63,6 +63,7 @@ import org.json.JSONObject
 import java.io.File
 import java.time.Instant
 import java.util.Base64
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Varler Workflow Kit (WP M42, D-50 = C). The Kit and its jobs stay on the PC (client data, never in Git in clear).
 // The PC packs each job's state, figures and texts and seals the pack to this phone's device key
@@ -128,16 +129,12 @@ object WorkflowFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ " + if (job != null) "Munkák" else "Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable { if (doc != null) doc = null else if (job != null) job = null else host.home() }
-                        .wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
-                Spacer(Modifier.weight(1f))
+            FeatureTop(host, info, title = "Workflow Kit", actionsOnBack = true, backLabel = if (job != null) "Munkák" else "Vissza",
+                onBack = { if (doc != null) doc = null else if (job != null) job = null else host.home() }) {
                 if (job == null) Text(if (busy) "…" else "⟳", style = Melyviz.title.copy(color = Melyviz.current),
                     modifier = Modifier.minimumInteractiveComponentSize().clickable(enabled = !busy, onClickLabel = "Frissítés") { refresh() }
                         .semantics { contentDescription = if (busy) "Letöltés folyamatban" else "Csomag letöltése" }.padding(8.dp))
             }
-            Text("WORKFLOW KIT", style = Melyviz.title.copy(fontSize = 18.sp))
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
 
             val j = job

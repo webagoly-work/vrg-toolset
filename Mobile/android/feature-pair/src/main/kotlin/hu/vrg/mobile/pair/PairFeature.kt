@@ -73,7 +73,6 @@ import hu.vrg.mobile.kit.relay.PairResult
 import hu.vrg.mobile.kit.relay.Relay
 import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
-import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
@@ -84,6 +83,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import hu.vrg.mobile.kit.ScannedLinks
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // QR párosítás (WP M2): read the QR on the PC's screen (http://localhost:47291/pair) and become a
 // trusted phone. The scan can come from here (CameraX + ML Kit, bundled model) or from the phone's
@@ -172,9 +173,8 @@ object PairFeature : VrgFeature {
         val previewMax = with(LocalDensity.current) { screenPx.toDp() } * 0.55f
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            VrgBack { host.home() }
-            Text("QR OLVASÓ", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("A PC-n: VRG Asztal → Telefon (rádiók, minden szerver, QR szerverenként), vagy http://localhost:47291/pair", style = Melyviz.small)
+            FeatureTop(host, info, title = "QR olvasó")
+            FjBlurb("A PC-n: VRG Asztal → Telefon (rádiók, minden szerver, QR szerverenként), vagy http://localhost:47291/pair")
             Spacer(Modifier.height(12.dp))
 
             when (val ph = p) {

@@ -69,6 +69,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // PC ablakok (WP M23): the VRG Desktop's files window on the phone. With a paired PC whose relay runs with --files, the PC's work
 // folders (D-17: Repó, VRG Full, Közös) read-only: browse, a look at a text or an image, and ⇄ Átadásra, which puts a copy on the
@@ -175,12 +176,9 @@ object PcWinFeature : VrgFeature {
         BackHandler(enabled = seen != null || (now?.ok == true && now?.atRoots == false)) { back() }
 
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { if (!back()) host.home() }.wrapContentHeight())
-                Text(if (loading) "  olvasás…" else "", style = Melyviz.small)
+            FeatureTop(host, info, actionsOnBack = true, onBack = { if (!back()) host.home() }) {
+                Text(if (loading) "olvasás…" else "", style = Melyviz.small)
             }
-            Text("PC ABLAKOK", style = Melyviz.title.copy(fontSize = 18.sp))
             pc?.let { Text("${it.name} · csak olvasva", style = Melyviz.readout, modifier = Modifier.padding(top = 2.dp)) }
             when {
                 link != LinkState.OPEN -> Gate("Nincs relé kapcsolat. Indítsd a relét a PC-n (Mobile\\mobile.cmd relay), és párosítsd a telefont.", host)
