@@ -21,11 +21,11 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
 | open · user | 120 | 38 |
-| open · dev | 309 | 61 |
+| open · dev | 309 | 62 |
 | open · all | 24 | 1 |
-| internal | 82 | 0 |
+| internal | 87 | 0 |
 | roadmap | 96 | 5 |
-| **total** | **631** | **105** |
+| **total** | **636** | **106** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -105,6 +105,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `trace` | Ügynöknyom · *Agent trace* | view · observability | `console` | fejlesztes | beta |
 | `sessions` | Munkamenetek · *Claude sessions* | panel · session manager | `dev:ai` | fejlesztes | beta |
 | `controller` | Vezérlő · *Prompt controller* | panel · prompt router | `dev:ai` | fejlesztes | beta |
+| `voice` | Diktálás · *Dictation* | panel · offline push-to-talk speech to text | `dev:ai` | fejlesztes | beta |
 | `munkavaszon` | Munkavászon · *Session Canvas* | view · observability | `dev:ai` | fejlesztes | beta |
 | `stack` | VRG Rétegverem · *VRG Stack* | knowledge base · graph | `dev:knowledge` | fejlesztes | live |
 | `stack.connectome` | Konnektóm · *Connectome* | view · graph visualization | `stack` | fejlesztes | live |
@@ -179,7 +180,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feature module` | Feature module · Funkciómodul | unit | 68 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 54 |
+| `module` | Module · Modul | unit | 58 |
 | `library` | Library · Könyvtár | unit | 4 |
 | `command` | Command · Parancs | unit | 103 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
@@ -198,7 +199,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `design system` | Design system · Dizájnrendszer | unit | 5 |
 | `ui component library` | UI component library · UI-komponenskönyvtár | unit | 2 |
 | `asset` | Asset · Erőforrás | unit | 10 |
-| `folder` | Folder · Mappa | unit | 6 |
+| `folder` | Folder · Mappa | unit | 7 |
 | `firmware` | Firmware · Firmware | unit | 11 |
 | `device` | Device · Eszköz (hardver) | unit | 2 |
 | `build pipeline` | Build pipeline · Építési folyamat | unit | 1 |
@@ -558,12 +559,14 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:cloudattr` | lib/cloudattr.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:ctx` | lib/ctx.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:desk` | lib/desk.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:eyes` | lib/eyes.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:fsops` | lib/fsops.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:fsview` | lib/fsview.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:gate` | lib/gate.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:git` | lib/git.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:gmail` | lib/gmail.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:handles` | lib/handles.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:hudwin` | lib/hudwin.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:innersearch` | lib/innersearch.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:ipc` | lib/ipc.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:jobs` | lib/jobs.js | module | internal |  | `desktop` | internal code unit |
@@ -594,10 +597,12 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:sessions` | lib/sessions.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:settings` | lib/settings.js | dialog · settings | open | user | `desktop` | is the catalog item `settings` |
 | `dashlib:sheets` | lib/sheets.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:speak` | lib/speak.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:srvhost` | lib/srvhost.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:textify` | lib/textify.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:tray` | lib/tray.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:views` | lib/views.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:voice` | lib/voice.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:web` | lib/web.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:webmail` | lib/webmail.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:winmodes` | lib/winmodes.js | module | internal |  | `desktop` | internal code unit |
@@ -858,6 +863,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dir:Solomon` | Solomon | application · knowledge visualization | open | dev | `dev:knowledge` | is the catalog item `solomon` |
 | `dir:Stack` | Stack | knowledge base · graph | open | dev | `dev:knowledge` | is the catalog item `stack` |
 | `dir:Toolbox` | Toolbox | launcher · legacy page | open | dev | `dev:infra` | is the catalog item `toolbox` |
+| `dir:Voice` | Voice | folder · source | internal |  |  | a top-level folder; what it holds is classified by its own rows |
 | `dir:Weather` | Weather | application · multi-source weather feed, work windows, alerts | open | user |  | is the catalog item `weather` |
 | `launcher:vrg-ui` | launcher/vrg-ui.ps1 | launcher · text UI, fallback | open | dev | `dev:infra` | is the catalog item `start` |
 | `launcher:backup` | launcher/backup.ps1 | utility · backup, text UI | open | dev | `dev:infra` | is the catalog item `backup` |

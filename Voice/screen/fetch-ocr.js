@@ -42,9 +42,12 @@ async function main() {
     console.log(f.id + ': ok (' + Math.round(f.bytes / 1024) + ' KB)');
   }
   if (argv.includes('--npm')) {
-    const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const r = spawnSync(npm, ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: HERE, stdio: 'inherit', shell: false });
-    if (r.status !== 0) throw new Error('npm ci failed');
+    // Node ≥ 18.20 / 20.12 refuses to start npm.cmd directly (EINVAL), so on Windows cmd.exe runs one fixed command line
+    const args = ['ci', '--ignore-scripts', '--no-audit', '--no-fund'];
+    const r = process.platform === 'win32'
+      ? spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', 'npm.cmd ' + args.join(' ')], { cwd: HERE, stdio: 'inherit', windowsHide: true })
+      : spawnSync('npm', args, { cwd: HERE, stdio: 'inherit' });
+    if (r.status !== 0) throw new Error('npm ci failed' + (r.error ? ': ' + r.error.message : ''));
   }
   console.log('tessdata: ' + DIR);
 }

@@ -475,6 +475,23 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Tests: `Voice/test/voice.test.js` 6, `wp-54.test.js` 6.
 - Not run: whisper-server itself (a Windows exe, and no model here), Hungarian accuracy, CPU load, the Electron probe
   `shell/selftest/wp-54.js`.
+- **Local check (2026-11-26, H:):** WP-54 green under Electron 44.7.1, three runs in a row; the microphone opened, capture = `worklet`.
+  - Fixed the probe: the Vezérlő draws itself again shortly after it opens (a new textarea), so `simulate()` wrote into the old,
+    detached box. The probe now waits until the box has stayed the same for 600 ms. The same can drop words spoken in the first
+    second after opening the Vezérlő. Open.
+  - Fetched and pinned: large-v3-turbo q5_0 (sha256 3942217…ffa7e2) and small q5_1 (ae85e4a…0411bb), both equal to the LFS hash
+    Hugging Face publishes; the engine v1.8.3 as pinned.
+  - Bench without a microphone: anna / amy spoke 10 Hungarian and 10 English sentences with VRG words, pushed at real-time pace
+    through the real host + whisper-server with the vocabulary prompt (i5-10400F, GTX 1050 Ti 4 GB):
+    - turbo on the CPU build: 51 s per sentence (the encoder takes 54.6 s per 30 s window, AVX2, 8 threads). Unusable here.
+    - turbo on the CUDA 12.4 build (v1.8.3, hash = GitHub's digest, unpacked to `tools\voice\bin\v1.8.3-cublas12.4`, not in the
+      manifest, not used by the Asztal): encoder 1.76 s; first partial ~4.5 s, final 4–7 s after key-up, CPU ~20 %; WER hu 25 %,
+      en 1.7 %.
+    - small on the CUDA build: first partial ~1.5 s, final 0.5–1 s; WER hu 45 %, en 1.7 %.
+    - `auto` took one Hungarian sentence as Portuguese (turbo) and one as English (small). Silence gave "Kéneze" (turbo) and ","
+      (small). Numbers come out as digits. Typical misses: "plennert", "Rétegverem", "dugalj". anna's own Hungarian is imperfect,
+      so a real voice may differ.
+  - Proposal, not applied: the CUDA build in the manifest, turbo with the language fixed to `hu`, and a silence gate.
 
 ## WP-56 Szem + WP-57 Hang — phase 3 of the voice work: read the screen, answer aloud (2026-11-25, cloud session, two forks + the wiring)
 
@@ -519,6 +536,23 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   - The answer window rendered.
 - **Not run:** the PowerShell helpers (no Windows here), the addon inside Electron, the global key, a Hungarian SAPI voice, and Avast's
   reaction to the helpers' first start.
+- **Local check (2026-11-26, H:):** WP-56 and WP-57 green; `Voice/screen` + `Voice/tts` + the WP-54/55 unit tests 29 pass, 2 skipped.
+  - Fetched: the hun / eng tessdata and tesseract.js; the sherpa-onnx addon 1.13.8 with anna and amy (licences still UNCLEAR, own PC
+    only). Fixed `screen/fetch-ocr.js --npm` (Node 24 refuses to start `npm.cmd` directly: now through `cmd.exe /d /s /c` with a
+    fixed command line) and `tts/fetch-tts.js` (Windows 10's tar.exe has no bzip2: the `.bz2` layer now goes through 7-Zip when it
+    is installed, after the sha256 check).
+  - `uia-host.ps1`: Avast did not block its first start; it comes up in 1.9 s and stays up; then `windows` 43 ms, `focused` on the
+    Claude app 1.5 s each time (UI Automation, no OCR needed).
+  - `sapi-host.ps1` hung: `[Console]::In.ReadLineAsync()` blocks on .NET Framework, so no `ready` before the first request and every
+    answer one line late. Fixed with a StreamReader over the raw stdin; `ready` in 0.5 s, voices in ~50 ms; Hazel spoke.
+  - Windows has a Hungarian voice, **Microsoft Szabolcs**, but as a OneCore voice only: System.Speech sees Hazel and Zira (en). Open.
+  - `detectLang('This is a test.')` says `hu`, so SAPI refuses a short English answer. Open.
+  - The real sherpa test fails on its 300 ms limit: anna needs ~0.1 s per second of audio (387 ms for a 2.7 s sentence; 62–414 ms
+    over five). Proposal: a limit relative to the audio length. Not changed. The queue / barge-in test failed once under load, then
+    5 / 5 (its 5 / 40 ms timers against a 30 ms fake voice).
+  - Not done (needs the Founder at the PC): Ctrl+Alt+V with Chrome / VS Code / Total Commander / Explorer, the deny lists
+    (KeePassXC, OTP Bank, InPrivate), the answer window's focus, "csend", "ne beszélj"; a rule for `jobs\` windows; the permission
+    handler (microphone, camera, screen capture).
 
 ## WP-58 Kéz + WP-59 Hangazonosítás — phase 4 of the voice work: act in other programs, know the voice (2026-11-25, cloud session, two forks + the wiring)
 

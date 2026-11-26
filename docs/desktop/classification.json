@@ -3902,6 +3902,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:eyes",
+   "name": "lib/eyes.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:fsops",
    "name": "lib/fsops.js",
    "source": "dashboard",
@@ -3964,6 +3976,18 @@
   {
    "id": "dashlib:handles",
    "name": "lib/handles.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:hudwin",
+   "name": "lib/hudwin.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -4334,6 +4358,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:speak",
+   "name": "lib/speak.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:srvhost",
    "name": "lib/srvhost.js",
    "source": "dashboard",
@@ -4372,6 +4408,18 @@
   {
    "id": "dashlib:views",
    "name": "lib/views.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
+   "id": "dashlib:voice",
+   "name": "lib/voice.js",
    "source": "dashboard",
    "type": "module",
    "qualifier": "",
@@ -7500,6 +7548,18 @@
    "parent": "dev:infra",
    "unit": "toolbox",
    "reason": "is the catalog item `toolbox`"
+  },
+  {
+   "id": "dir:Voice",
+   "name": "Voice",
+   "source": "folders",
+   "type": "folder",
+   "qualifier": "source",
+   "scope": "internal",
+   "level": "",
+   "parent": "",
+   "unit": "",
+   "reason": "a top-level folder; what it holds is classified by its own rows"
   },
   {
    "id": "dir:Weather",

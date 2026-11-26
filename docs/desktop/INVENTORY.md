@@ -7,7 +7,7 @@
 |---|---:|
 | START registry (launcher/vrg-menu.json) | 168 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 96 |
+| VRG Irányítópult (Dashboard/) | 100 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 69 |
 | VRG Stack | 23 |
@@ -17,8 +17,8 @@
 | Firmware | 4 |
 | Shared libraries | 7 |
 | Docs packs + GO phrases | 30 |
-| Top-level folders + launcher parts | 30 |
-| **Total** | **631** |
+| Top-level folders + launcher parts | 31 |
+| **Total** | **636** |
 
 ## START registry (launcher/vrg-menu.json) (168)
 
@@ -303,7 +303,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (96)
+## VRG Irányítópult (Dashboard/) (100)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -359,12 +359,14 @@
 | `dashlib:cloudattr` | lib/cloudattr.js | Dashboard/shell/lib/cloudattr.js | module | shell/lib | cloudattr.js — OneDrive marks from one `attrib` run per listing (no shell). Any failure → no marks, never a blocked listing. |
 | `dashlib:ctx` | lib/ctx.js | Dashboard/shell/lib/ctx.js | module | shell/lib | ctx.js — "Csomag" (WP-22): VRG Stack node clusters as context packs, and "send to Claude" (API.md vrg.ctx). |
 | `dashlib:desk` | lib/desk.js | Dashboard/shell/lib/desk.js | module | shell/lib | desk.js — the VRG Asztal's two primary views, as pure functions shared by main (CommonJS) and the frame page (window.VRGDeskLib). |
+| `dashlib:eyes` | lib/eyes.js | Dashboard/shell/lib/eyes.js | module | shell/lib | eyes.js — Szem (WP-56): main's side of reading the screen, read-only. Wraps Voice/screen/screen.js (the UI Automation helper, OCR, |
 | `dashlib:fsops` | lib/fsops.js | Dashboard/shell/lib/fsops.js | module | shell/lib | fsops.js — file operations as jobs (WP-12): copy, move, rename, mkdir, trash. Everything goes through handles and roots. |
 | `dashlib:fsview` | lib/fsview.js | Dashboard/shell/lib/fsview.js | module | shell/lib | fsview.js — look at a file and hand it to a program (WP-13): read, open, reveal, edit, copyPath. Handles in, display strings out. |
 | `dashlib:gate` | lib/gate.js | Dashboard/shell/lib/gate.js | module | shell/lib | gate.js — the Vezérlő's engine (WP-52): attachments, the Előszűrő (Prefilter/) verdict, and a new Claude Code session with the dressed prompt. |
 | `dashlib:git` | lib/git.js | Dashboard/shell/lib/git.js | module | shell/lib | git.js — the Git panel's engine (WP-31, DESK-Q11 A): status, branches, worktrees, log, diff, a branch, a commit and a guarded push. |
 | `dashlib:gmail` | lib/gmail.js | Dashboard/shell/lib/gmail.js | module | shell/lib | gmail.js — read-only Gmail API client (WP-27). Tokens come from lib/oauth.js; nothing here stores or logs one. |
 | `dashlib:handles` | lib/handles.js | Dashboard/shell/lib/handles.js | module | shell/lib | handles.js — opaque file handles. The page only ever holds `h:` + 22 base64url chars issued here for this run. |
+| `dashlib:hudwin` | lib/hudwin.js | Dashboard/shell/lib/hudwin.js | module | shell/lib | hudwin.js — the Parancs-héj's answer outside the VRG Asztal (WP-56): a small always-on-top window that shows the overlay's short answer |
 | `dashlib:innersearch` | lib/innersearch.js | Dashboard/shell/lib/innersearch.js | module | shell/lib | innersearch.js — "Belső keresés" (WP-20): the VRG Stack (stack.js q) and the code index (tools/vrg-ctx.js q) in one answer. |
 | `dashlib:ipc` | lib/ipc.js | Dashboard/shell/lib/ipc.js | module | shell/lib | ipc.js — IPC v2: a schema-checked channel registry (API.md, CONTRACT §3). Every check fails closed. |
 | `dashlib:jobs` | lib/jobs.js | Dashboard/shell/lib/jobs.js | module | shell/lib | jobs.js — the one job queue in main (WP-09). Long work (copy, mail fetch, download) runs here, never in the page. |
@@ -395,10 +397,12 @@
 | `dashlib:sessions` | lib/sessions.js | Dashboard/shell/lib/sessions.js | module | shell/lib | sessions.js — Munkamenetek (WP-50): the local Claude Code sessions of account A and B, and the ways to open one inside the VRG Asztal. |
 | `dashlib:settings` | lib/settings.js | Dashboard/shell/lib/settings.js | module | shell/lib | settings.js — per-user settings in <userDir>/settings.json, whitelisted keys only, written atomically (.tmp, rename). |
 | `dashlib:sheets` | lib/sheets.js | Dashboard/shell/lib/sheets.js | module | shell/lib | sheets.js — the Lapok (Sheets) of the VRG Asztal's workspace (WP-46): pure functions, shared by main (CommonJS) and the frame page |
+| `dashlib:speak` | lib/speak.js | Dashboard/shell/lib/speak.js | module | shell/lib | speak.js — Hang (WP-57): main's side of the spoken answers, offline. Wraps Voice/tts/tts.js (sherpa-onnx + a Piper voice, or Windows SAPI). |
 | `dashlib:srvhost` | lib/srvhost.js | Dashboard/shell/lib/srvhost.js | module | shell/lib | srvhost.js — registry servers run inside the VRG Asztal (WP-48): no console window. Each server is a hidden pty session owned by |
 | `dashlib:textify` | lib/textify.js | Dashboard/shell/lib/textify.js | module | shell/lib | textify.js — HTML → readable text (WP-29). No DOM: a small tokenizer. Drops script / style / nav / footer (and head, svg, templates), |
 | `dashlib:tray` | lib/tray.js | Dashboard/shell/lib/tray.js | module | shell/lib | tray.js — the tray icon (WP-04): menu Ablak · Munka · Overlay · Frissítés · Kilépés, double-click shows the window. |
 | `dashlib:views` | lib/views.js | Dashboard/shell/lib/views.js | module | shell/lib | views.js — the view host: WebContentsViews that main places at the rect the frame page reports (WP-07). |
+| `dashlib:voice` | lib/voice.js | Dashboard/shell/lib/voice.js | module | shell/lib | voice.js — Diktálás (WP-54): push-to-talk speech-to-text inside the VRG Asztal. Main owns the engine (Voice/engine: whisper.cpp's |
 | `dashlib:web` | lib/web.js | Dashboard/shell/lib/web.js | module | shell/lib | web.js — the web tabs' engine (WP-17): isolated WebContentsViews, permission and download gates, navigation guards. |
 | `dashlib:webmail` | lib/webmail.js | Dashboard/shell/lib/webmail.js | module | shell/lib | webmail.js — unread counts for the webmail tabs (WP-26). No credentials here: the Founder signs in inside the pane (own partition). |
 | `dashlib:winmodes` | lib/winmodes.js | Dashboard/shell/lib/winmodes.js | module | shell/lib | winmodes.js — window modes (WP-04, DESK-Q08 A): ablak (normal frameless), munka (full screen, covers the taskbar), |
@@ -681,7 +685,7 @@
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 | `go:variant` | GO VARIANT | GO-VARIANT.md | codephrase brief | GO | GO VARIANT — make a Variant Sketcher for one kind of job |
 
-## Top-level folders + launcher parts (30)
+## Top-level folders + launcher parts (31)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -709,6 +713,7 @@
 | `dir:Solomon` | Solomon | Solomon/ | top-level folder | repo |  |
 | `dir:Stack` | Stack | Stack/ | top-level folder | repo | VRG Stack (Rétegverem): read this first |
 | `dir:Toolbox` | Toolbox | Toolbox/ | top-level folder | repo |  |
+| `dir:Voice` | Voice | Voice/ | top-level folder | repo | Voice: Diktálás (WP-54), offline push-to-talk speech to text |
 | `dir:Weather` | Weather | Weather/ | top-level folder | repo | VRG Időjárás (VRG Weather) |
 | `launcher:vrg-ui` | launcher/vrg-ui.ps1 | launcher/vrg-ui.ps1 | launcher part | launcher |  |
 | `launcher:backup` | launcher/backup.ps1 | launcher/backup.ps1 | launcher part | launcher |  |

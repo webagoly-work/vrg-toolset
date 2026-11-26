@@ -22,6 +22,14 @@ module.exports = async function probe({ win }) {
     await js(`window.VRGDesk.setLevel('dev'); window.VRGDesk.setView('desktop'); true`);
     const id = await js(`window.VRGFrame.open('controller', {})`);
     if (!(await wait(() => js(`!!document.querySelector('[data-pane][data-kind="controller"] [data-role="mic"]')`), 8000))) errors.push('no 🎤 on the Vezérlő');
+    // the pane draws itself again once its first data arrives (a new textarea): dictate only into a box that has stayed the same for 600 ms
+    await js(`window.__vbox = null; true`);
+    await wait(async () => {
+      const same = await js(`(() => { const t = document.querySelector('[data-pane][data-kind="controller"] [data-role="text"]'); const s = !!t && t === window.__vbox; window.__vbox = t; return s; })()`);
+      if (!same) return false;
+      await sleep(600);
+      return js(`document.querySelector('[data-pane][data-kind="controller"] [data-role="text"]') === window.__vbox`);
+    }, 8000);
     // simulate into the box: the words arrive, the pane's input handler sees them (its draft state follows)
     await js(`(() => { const t = document.querySelector('[data-pane][data-kind="controller"] [data-role="text"]'); t.value = ''; t.focus(); window.__ev = []; for (const k of ['start','partial','final','stop']) VRGVoice.on(k, d => __ev.push(k + ':' + d.mode)); return true; })()`);
     await js(`VRGVoice.simulate('GO MOBILE hol tartunk', 'dictate')`);
