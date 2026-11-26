@@ -724,3 +724,31 @@ keep their numbers; this section's test is `Dashboard/test/wp-58b.test.js` (run 
     - At 520 px: five widgets in ⋯.
   - The menu opens and runs its item (the ring opens Divergencia).
 - **Not done:** the dock at narrow widths overflows the same way. That is a separate change.
+
+## WP-61 Dock overflow — the Asztal's dock fits between the corner dials (2026-11-26, cloud session)
+
+- **Before:** in a narrow window the dock's buttons ran under the corner dials and off both ends. It is centred, so it lost both edges.
+- **`desk.js` `fitDock()`** runs after every `drawDock()` (in the next frame, once the Fényjel chrome has put its glyphs in), on a resize, and when the fonts arrive. It measures against the span between the dials (the dock's padding).
+  1. `data-fit="1"` tightens the dock: an open window shows its glyph (Fényjel) or a two-letter monogram, and the gaps close up.
+  2. Then buttons go into **⋯** (before ▣), in this order:
+     - the Dev pins first;
+     - then the windows you are not in;
+     - then the pinned programs.
+
+     Each group goes from its right end. The window in front, the Lap tabs and ▣ always stay. No divider is left at an end or next to another (`tidyDivs`).
+- **One menu for both bars:** the strip's ⋯ menu (WP-60) is now `overMenu(anchor, gone, up)`.
+  - The dock's menu opens upwards.
+  - A pin shows its name next to its icon.
+  - It is styled in Mélyvíz and in Fényjel, with glyphs.
+- **Tests:**
+  - `wp-61`: 4 pass. The `wp-60` font check now also covers the dock.
+  - The full Dashboard suite: 369 pass, with the same 68 environment failures.
+  - Chromium (the real page, the bridge and a four-window sheet stubbed): the dock fits at every width.
+
+    | Look | Fits as it is | Tightens | ⋯ |
+    | --- | --- | --- | --- |
+    | Mélyvíz | 1400–900 px | 700 px | 520 px: 4 windows |
+    | Fényjel | to 900 px | from 700 px | 700 px: 2 windows; 520 px: 1 pin and 4 windows |
+    | Grafit | 900 px | | 640 px: 1 window |
+
+  - The menu stays on screen, and a pin picked in it opens (`desktop.open`).

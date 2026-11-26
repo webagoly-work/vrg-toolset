@@ -15,7 +15,7 @@ const css = fs.readFileSync(path.join(PAGE, 'desk.css'), 'utf8');
 test('drawTop ends by fitting the strip, and a resize or the fonts arriving fits it again', () => {
   assert.match(desk, /'⚙', h\('span', \{ class: 'lbl' \}, ' Testreszabás'\)\)\);\n    fitTop\(\);/);
   assert.match(desk, /new ResizeObserver\(\(\) => requestAnimationFrame\(fitTop\)\)\.observe\(top\)/);
-  assert.match(desk, /document\.fonts\.ready\.then\(\(\) => fitTop\(\)\)/);
+  assert.match(desk, /document\.fonts\.ready\.then\(\(\) => \{ fitTop\(\);/);
 });
 
 test('every label a narrow strip may drop is a .lbl; the icon, LED and number stay outside it', () => {

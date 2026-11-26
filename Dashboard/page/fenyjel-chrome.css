@@ -33,6 +33,11 @@ html[data-look="fenyjel"] [data-role="topstrip"] .dot { --c: var(--fj-off); widt
 html[data-look="fenyjel"] [data-role="topstrip"] .dot.ok { --c: var(--fj-ok); background-color: transparent; }
 html[data-look="fenyjel"] [data-role="topstrip"] .dot.warn { --c: var(--fj-warn); background-color: transparent; }
 html[data-look="fenyjel"] [data-role="topstrip"] .dot.crit { --c: var(--fj-crit); background-color: transparent; }
+/* WP-61: a narrow dock: an open window keeps its glyph alone (no monogram next to it) */
+html[data-look="fenyjel"] [data-role="dock"][data-fit="1"] button.win { padding: 0; gap: 0; }
+html[data-look="fenyjel"] [data-role="dock"][data-fit="1"] button.win:has(.fjc-lead) > .sh { display: none; }
+html[data-look="fenyjel"] [data-role="dock"][data-fit="1"] button.win > .sh { font: 17px var(--fj-font-pixel); }
+html[data-look="fenyjel"] [data-role="top-menu"] .fj-ic, html[data-look="fenyjel"] [data-role="top-menu"] .fjc-lead { width: 18px; height: 18px; flex: none; }
 /* WP-60: the ⋯ of a narrow strip and its menu */
 html[data-look="fenyjel"] [data-role="top-menu"] { border: 0; border-radius: var(--fj-r); background: var(--fj-glass); font: 17px var(--fj-font-pixel); color: var(--fj-ink-2);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 var(--fj-rim), inset 0 0 0 1px var(--fj-edge), var(--fj-shadow); }

@@ -489,7 +489,7 @@
     top.dataset.fit = '1';
     if (!over()) return;
     const gone = [];
-    const more = h('button', { type: 'button', 'data-role': 'top-more', title: 'Több / More', 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); topMenu(more, gone); } }, '⋯');
+    const more = h('button', { type: 'button', 'data-role': 'top-more', title: 'Több / More', 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); overMenu(more, gone, false); } }, '⋯');
     top.insertBefore(more, top.querySelector(':scope > .sp'));
     const order = ws.map((e, i) => ({ e, i, k: TOP_KEEP[e.dataset.w] || 6 })).sort((a, b) => a.k - b.k || b.i - a.i);
     for (const x of order) { if (!over()) break; x.e.hidden = true; gone.push(x); }
@@ -497,8 +497,9 @@
     gone.sort((a, b) => a.i - b.i);
     more.title = 'Több: ' + gone.map(x => x.e.title || x.e.textContent).join(', ');
   }
-  // the ⋯ menu: the widgets the strip had no room for, at full width; one click runs one and closes the menu
-  function topMenu(anchor, gone) {
+  // the ⋯ menu of the strip (WP-60) and of the dock (WP-61, [up]: it opens above): what had no room, at full width with
+  // its name; one click runs it and closes the menu
+  function overMenu(anchor, gone, up) {
     const old = $('[data-role="top-menu"]'); if (old) { old.remove(); return; }
     const box = h('div', { 'data-role': 'top-menu', role: 'menu' });
     const close = () => { box.remove(); document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', esc, true); };
@@ -508,19 +509,22 @@
       const c = x.e;
       const it = c.dataset.w === 'w:clock' ? h('span', {}, c.textContent) : c.cloneNode(true);
       it.hidden = false; it.setAttribute('role', 'menuitem');
-      if (!it.textContent.trim() && c.title) it.append(' ' + c.title);   // an icon-only widget (the ring) says what it is here
+      if (c.dataset.id || !it.textContent.trim()) it.append(h('span', { class: 'nm' }, ' ' + (c.title || '').split(' / ')[0]));   // a pin or an icon-only widget says what it is
       if (it.tagName === 'BUTTON') it.addEventListener('click', () => { close(); c.click(); });
       box.append(it);
     }
     const r = anchor.getBoundingClientRect();
-    box.style.top = Math.round(r.bottom + 4) + 'px';
-    box.style.left = Math.round(Math.min(r.left, window.innerWidth - 260)) + 'px';
+    box.style.left = Math.round(Math.max(8, Math.min(r.left, window.innerWidth - 268))) + 'px';
+    if (up) box.style.bottom = Math.round(window.innerHeight - r.top + 6) + 'px'; else box.style.top = Math.round(r.bottom + 4) + 'px';
     document.body.append(box);
     document.addEventListener('pointerdown', away, true); document.addEventListener('keydown', esc, true);
     const first = box.querySelector('button'); if (first) first.focus();
   }
-  if (top && window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(fitTop)).observe(top);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTop());
+  if (window.ResizeObserver) {
+    if (top) new ResizeObserver(() => requestAnimationFrame(fitTop)).observe(top);
+    if (dockEl) new ResizeObserver(() => requestAnimationFrame(fitDock)).observe(dockEl);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fitTop(); fitDock(); });
   function running() {
     const F = window.VRGFrame;
     if (!F || !F.panes) return [];
@@ -541,10 +545,45 @@
     if (dk.running.length) {
       dockEl.append(h('span', { class: 'div' }));
       const foc = F && F.focused ? F.focused() : '';
-      for (const r of dk.running) dockEl.append(h('button', { type: 'button', class: 'win', 'data-pane': r.pane, 'data-focus': S.wsShown && r.pane === foc ? '1' : '', title: r.label, onclick: () => { setView('desktop'); showWindows(true); F.focus(r.pane); drawDock(); } }, h('span', {}, r.label)));
+      for (const r of dk.running) dockEl.append(h('button', { type: 'button', class: 'win', 'data-pane': r.pane, 'data-focus': S.wsShown && r.pane === foc ? '1' : '', title: r.label, onclick: () => { setView('desktop'); showWindows(true); F.focus(r.pane); drawDock(); } }, h('span', { class: 'sh' }, monogram(r.label)), h('span', { class: 'lbl' }, r.label)));
     }
     if (window.VRGSheets) { const before = dockEl.firstChild; window.VRGSheets.barInto(dockEl, 'bottom'); if (dockEl.firstChild !== before) dockEl.firstChild.after(h('span', { class: 'div' })); }
     dockEl.append(h('span', { class: 'div' }), h('button', { type: 'button', 'data-role': 'show-desktop', title: S.wsShown ? 'Asztal megjelenítése / Show desktop' : 'Ablakok / Show windows', onclick: () => showWindows(!S.wsShown) }, S.wsShown ? '▁' : '▣'));
+    requestAnimationFrame(fitDock);          // after the Fényjel chrome has put its glyphs in (a microtask)
+  }
+  const monogram = s => { const w = String(s || '').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[1][0] : String(s || '?').slice(0, 2)).toUpperCase(); };
+  // WP-61: the dock fits between the corner dials. First it tightens (data-fit="1": an open window shows its glyph or
+  // monogram, the gaps close up), then buttons go into ⋯: the Dev pins first, then the windows you are not in, then the
+  // pinned programs, each group from its right end. The window in front, the Lap tabs and ▣ always stay.
+  function fitDock() {
+    if (!dockEl || !dockEl.clientWidth) return;
+    const old = dockEl.querySelector(':scope > [data-role="dock-more"]'); if (old) old.remove();
+    const cand = [...dockEl.querySelectorAll(':scope > button[data-id], :scope > button.win')];
+    for (const e of [...cand, ...dockEl.querySelectorAll(':scope > .div')]) e.hidden = false;
+    dockEl.dataset.fit = '';
+    const box = dockEl.getBoundingClientRect(), cs = getComputedStyle(dockEl);
+    const L = box.left + parseFloat(cs.paddingLeft), R = box.right - parseFloat(cs.paddingRight);
+    const over = () => { const v = [...dockEl.children].filter(e => !e.hidden && e.offsetWidth); return !!v.length && (v[0].getBoundingClientRect().left < L - 0.5 || v[v.length - 1].getBoundingClientRect().right > R + 0.5); };
+    if (!over()) return;
+    dockEl.dataset.fit = '1';
+    if (!over()) return;
+    const gone = [];
+    const more = h('button', { type: 'button', 'data-role': 'dock-more', title: 'Több / More', 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); overMenu(more, gone, true); } }, '⋯');
+    dockEl.insertBefore(more, dockEl.querySelector(':scope > [data-role="show-desktop"]'));
+    const rank = e => (e.dataset.level === 'dev' ? 1 : e.classList.contains('win') ? (e.dataset.focus === '1' ? 9 : 2) : 3);
+    const order = cand.map((e, i) => ({ e, i, k: rank(e) })).filter(x => x.k < 9).sort((a, b) => a.k - b.k || b.i - a.i);
+    for (const x of order) { if (!over()) break; x.e.hidden = true; gone.push(x); tidyDivs(); }
+    if (!gone.length) { more.remove(); return; }
+    gone.sort((a, b) => a.i - b.i);
+    more.title = 'Több: ' + gone.map(x => (x.e.title || '').split(' / ')[0]).join(', ');
+  }
+  // no divider at an end or next to another once buttons have gone into ⋯
+  function tidyDivs() {
+    let prevDiv = true;
+    for (const e of dockEl.children) {
+      if (!e.classList.contains('div')) { if (!e.hidden) prevDiv = false; continue; }
+      e.hidden = prevDiv; if (!e.hidden) prevDiv = true;
+    }
   }
   async function pickSui(leaf) {
     if (leaf.kind === 'cmd' && /^lvl:/.test(leaf.id)) { await setLevel(leaf.id.slice(4)); return 'stay'; }

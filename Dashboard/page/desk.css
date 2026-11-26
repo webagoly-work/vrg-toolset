@@ -35,6 +35,15 @@
 [data-role="topstrip"][data-fit="1"] [data-role="level"] .sh { display: inline; }
 [data-role="topstrip"][data-fit="1"] > * { padding: 0 8px; }
 [data-role="top-more"] { font-size: 16px; letter-spacing: .1em; }
+/* WP-61: a narrow dock. data-fit="1" tightens it (an open window shows its monogram); what still does not fit waits in ⋯ */
+[data-role="dock"] > [hidden] { display: none !important; }
+[data-role="dock"] button.win > .sh, [data-role="top-menu"] .sh { display: none; }
+[data-role="dock"][data-fit="1"] { gap: 4px; }
+[data-role="dock"][data-fit="1"] .div { margin: 0 3px; }
+[data-role="dock"][data-fit="1"] button.win { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
+[data-role="dock"][data-fit="1"] button.win > .lbl { display: none; }
+[data-role="dock"][data-fit="1"] button.win > .sh { display: block; font: 600 12px var(--mv-mono); letter-spacing: .04em; }
+[data-role="dock"] [data-role="dock-more"] { font-size: 18px; letter-spacing: .1em; }
 [data-role="top-menu"] { position: fixed; z-index: 115; min-width: 200px; max-width: 260px; display: flex; flex-direction: column; padding: 4px 0;
   background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 28px rgba(0, 0, 0, .45); font: 12px var(--mv-mono); color: var(--mv-dim); }
 [data-role="top-menu"] > * { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
