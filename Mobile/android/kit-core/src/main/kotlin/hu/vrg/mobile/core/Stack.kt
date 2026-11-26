@@ -3,21 +3,26 @@ package hu.vrg.mobile.core
 import org.json.JSONObject
 
 // Rétegverem / VRG Stack on the phone (WP M17): the rules of the phone's side. The stack is built on the PC
-// (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its three 3D pages into self-contained HTML
-// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, meta.json}. The phone reads
-// meta.json and downloads a page only when the published copy differs from the one it has.
+// (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its 3D pages into self-contained HTML
+// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, kisokos.html, meta.json}.
+// The phone reads meta.json and downloads a page only when the published copy differs from the one it has. Kisokos is an
+// optional page: a publish without it (an older one) is still whole, and its chip appears once a publish carries it.
 
 object StackPages {
     const val BRANCH = "stack-pages"
     const val DIR = "stack"
     const val META = "meta.json"
 
-    /** The three pages, in the order of the chips. Ids are stable: settings and deep links use them. */
+    /** Every page, in the order of the chips. Ids are stable: settings and deep links use them. */
     val PAGES = listOf(
         StackPage("konnektom", "Konnektóm", "konnektom.html"),
         StackPage("holo", "Holo", "holo.html"),
         StackPage("retegek", "Rétegek", "retegek.html"),
+        StackPage("kisokos", "Kisokos", "kisokos.html", optional = true),   // the K layer: VRG Kisokos 3D (Stack/kisokos.html)
     )
+
+    /** The pages every publish has. */
+    val REQUIRED: List<StackPage> get() = PAGES.filterNot { it.optional }
 
     fun page(id: String?): StackPage = PAGES.firstOrNull { it.id == id } ?: PAGES.first()
     fun byFile(file: String?): StackPage? = PAGES.firstOrNull { it.file == file }
@@ -26,7 +31,8 @@ object StackPages {
     fun contents(repoPath: String, file: String) = "$repoPath/contents/$DIR/$file?ref=$BRANCH"
 }
 
-data class StackPage(val id: String, val title: String, val file: String)
+/** [optional]: a publish may leave it out; the phone then shows the other pages and no chip for it. */
+data class StackPage(val id: String, val title: String, val file: String, val optional: Boolean = false)
 
 /** stack/meta.json, as publish-stack.js writes it. */
 data class StackMeta(
@@ -51,6 +57,12 @@ data class StackMeta(
 
     fun bytes(page: StackPage): Long = files[page.file] ?: 0L
 
+    /** The pages this publish carries: every required one, and the optional ones it has. */
+    val pages: List<StackPage> get() = StackPages.PAGES.filter { !it.optional || bytes(it) > 0L }
+
+    /** [id] if this publish has that page, else its first page (a remembered Kisokos on an older publish). */
+    fun page(id: String?): StackPage = pages.firstOrNull { it.id == id } ?: pages.first()
+
     companion object {
         const val KIND = "vrg-stack-meta"
 
@@ -61,7 +73,7 @@ data class StackMeta(
                 val fo = o.optJSONObject("files") ?: JSONObject()
                 val files = fo.keys().asSequence().associateWith { fo.optLong(it) }
                 StackMeta(o.optString("generated"), o.optString("published"), o.optInt("nodes"), o.optInt("points"), o.optInt("lines"), files)
-                    .takeIf { it.published.isNotEmpty() && StackPages.PAGES.all { p -> (files[p.file] ?: 0L) > 0L } }
+                    .takeIf { it.published.isNotEmpty() && StackPages.REQUIRED.all { p -> (files[p.file] ?: 0L) > 0L } }
             }
         } catch (e: Exception) { null }
     }
@@ -84,7 +96,7 @@ sealed interface StackSync {
             !answered -> Offline
             remote == null -> Missing
             local != null && local.published == remote.published &&
-                StackPages.PAGES.all { have[it.file] == remote.bytes(it) } -> Fresh
+                remote.pages.all { have[it.file] == remote.bytes(it) } -> Fresh
             else -> Download(remote)
         }
     }

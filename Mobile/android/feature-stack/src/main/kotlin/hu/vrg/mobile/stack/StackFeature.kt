@@ -192,11 +192,11 @@ object StackFeature : VrgFeature {
 
     private suspend fun download(meta: StackMeta) {
         root.mkdirs()
-        val total = StackPages.PAGES.sumOf { meta.bytes(it) }.coerceAtLeast(1)
+        val total = meta.pages.sumOf { meta.bytes(it) }.coerceAtLeast(1)
         var before = 0L
         val started = System.currentTimeMillis()
         val parts = mutableListOf<Pair<File, File>>()
-        for (p in StackPages.PAGES) {
+        for (p in meta.pages) {   // the optional Kisokos only when this publish carries it
             val want = meta.bytes(p)
             val part = file(p.file + ".part")
             val got = GitHub.download(GitHubUrls.API + StackPages.contents(VrgRepo.PATH, p.file), part, RAW) { done ->
@@ -230,7 +230,7 @@ object StackFeature : VrgFeature {
 
     private fun pageUrl(file: String) = "https://$HOST/${StackPages.DIR}/$file"
 
-    /** Only the two page files; everything else is refused. */
+    /** Only the published page files (StackPages.PAGES); everything else is refused. */
     private fun serve(uri: Uri): WebResourceResponse {
         val seg = uri.pathSegments
         val p = if (uri.host == HOST && seg.size == 2 && seg[0] == StackPages.DIR) StackPages.byFile(seg[1]) else null
@@ -309,6 +309,8 @@ object StackFeature : VrgFeature {
         val account by GitHub.account.collectAsStateWithLifecycle()
         val current by page.collectAsStateWithLifecycle()
         val meta by shown.collectAsStateWithLifecycle()
+        // the page on screen: the chosen one if the publish has it (an older publish has no Kisokos), else its first page
+        val showing = meta?.page(current.id) ?: current
         val tick by loaded.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
         val pct by progress.collectAsStateWithLifecycle()
@@ -342,7 +344,7 @@ object StackFeature : VrgFeature {
                 }
                 FlowRow(Modifier.fillMaxWidth().padding(bottom = 2.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    StackPages.PAGES.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
+                    (meta?.pages ?: StackPages.REQUIRED).forEach { p -> VrgChip(p.title, selected = p == showing) { choose(p.id) } }
                 }
                 val m = meta
                 if (m != null) {
@@ -361,7 +363,7 @@ object StackFeature : VrgFeature {
                 if (m == null) {
                     Text(if (loading) "Betöltés…" else "Itt jelenik meg a Rétegverem.", style = Melyviz.small)
                 } else {
-                    val url = pageUrl(current.file)
+                    val url = pageUrl(showing.file)
                     AndroidView(
                         factory = { ctx -> makeWebView(ctx).also { web = it } },
                         modifier = Modifier.fillMaxSize(),
