@@ -29,3 +29,7 @@
   font: 11px/1.5 var(--mv-mono, ui-monospace, monospace); color: var(--mv-faint, #6d7d89); }
 [data-role="vcmd"]:hover [data-role="vcmd-hist"]:not(:empty) { display: block; }
 [data-role="vcmd-hist"] b { font-weight: 400; color: var(--mv-dim, #9fb0bd); }
+
+/* WP-58: an action runs in another program — a red frame until it is done or stopped */
+[data-role="vcmd"][data-state="acting"] { border: 2px solid var(--mv-crit, #e5736b); }
+[data-role="vcmd"][data-state="acting"] [data-role="vcmd-dot"] { background: var(--mv-crit, #e5736b); animation: vcmd-pulse .6s ease-in-out infinite; }

@@ -1,7 +1,7 @@
-# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő, the Előszűrő and voice (WP-50 … WP-57), the local half
+# Prompt for the local H: session: Munkamenetek, the session board, the Vezérlő, the Előszűrő and voice (WP-50 … WP-59), the local half
 
 *Paste everything between the two lines into a Claude Code session started in `H:\VRG\Full\Planner_VRG_U100`.*
-*Updated 2026-11-25: covers everything on the branch (PR webagoly-work/vrg-toolset#13), WP-50 … WP-57.*
+*Updated 2026-11-25: covers everything on the branch (PR webagoly-work/vrg-toolset#13), WP-50 … WP-59. Steps 1–8 were run once on 2026-11-25 (`docs/desktop/LOG.md`); their open proposals wait for the Founder.*
 
 ---
 
@@ -51,7 +51,15 @@ What is on the branch (details: `docs/desktop/LOG.md` § WP-50 … WP-53, decisi
   - new commands (melyik program ez, mi a hiba, olvasd fel, csend, ne beszélj …).
 
   All off by default (`screen.enabled`, `speak.enabled`, `voice.global`).
-- Voice roadmap (phase 3 built, phase 4 proposed): `docs/research/2026-11-25_voice-roadmap.md`.
+- **WP-58 Kéz / WP-59 Hangazonosítás (voice phase 4):**
+  - voice actions in the program in front: click, toggle, select, scroll, switch window, window state. Never typing, by my rule;
+  - risk classes (reversible / confirm / blocked) in `Voice/hands/rules.json`, a red "acting" frame, and the kill switch (the
+    global key or "állj");
+  - an offline speaker check (CAM++) that can answer the confirm at the Dev level only;
+  - "add át Claude-nak: …" hands a task to the Vezérlő with the screen lines fenced as data.
+
+  Off by default (`hands.enabled`, `identity.enabled`).
+- Voice roadmap (phases 1–4 built): `docs/research/2026-11-25_voice-roadmap.md`.
 
 Work step by step, show me each result, and stop to ask me before any commit, push, merge, settings change or hook install.
 
@@ -222,7 +230,43 @@ Work step by step, show me each result, and stop to ask me before any commit, pu
     - **Permissions:** the screen capture, the microphone and the camera all ride on Electron's allow-by-default (step 7). Include
       screen capture (`desktopCapturer`) in the permission handler you propose.
 
-11. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
+11. **Voice phase 4: actions and the voice check (WP-58, WP-59).** Read `Voice/hands/README.md`, `Voice/identity/README.md` and
+    `docs/desktop/LOG.md` § WP-58 + WP-59.
+    - **Tests:** `node --test Voice/hands/test/hands.test.js Voice/identity/test/identity.test.js` and
+      `node Dashboard/test/run.js WP-58`.
+    - **Fetch:** `node Voice/identity/fetch-identity.js` (CAM++, 28 MB). The speech addon comes from step 10.
+    - **The action helper** `act-host.ps1` has never run. Check:
+      - it starts once and stays up;
+      - Avast's reaction to its first start;
+      - "find" sees the buttons of Chrome, Edge, VS Code, Explorer and Total Commander (the `--force-renderer-accessibility` question
+        again).
+    - **Actions:** turn on `hands.enabled` at the Dev level. With the global key (Ctrl+Alt+V) and a harmless window in front (a test
+      page, a settings dialog you can cancel):
+      - "görgess le" and "válts át a VS Code-ra" (reversible: they run at once);
+      - "kattints a Mégse gombra" (confirm: it asks, "igen" runs it);
+      - "pipáld be …" on a test checkbox;
+      - "zárd be ezt az ablakot" (it asks; the program's name, never its title).
+
+      Then the refusals:
+      - "kattints a Törlés gombra" in a test dialog → "Ezt nem teszem meg";
+      - an elevated window (an admin cmd) → elevated, no hang;
+      - KeePassXC → denied;
+      - the Asztal itself → own.
+
+      Then the kill switch: start an action and press Ctrl+Alt+V or say "állj". Read `logs\hands.jsonl` (names only, no screen text).
+      **Never test on a real "Send" / "Delete" / payment button**; the lists should block them, but do not rely on a first run.
+    - **Typing:** confirm that no command ever types into another program, and that dictation (F9) into a browser tab still does
+      nothing.
+    - **The voice check:** enrol with "tanuld meg a hangomat" three times, then:
+      - "ki beszél?" spoken by me and by another person;
+      - `node Voice/identity/calibrate.js` on ≥ 10 of my utterances and a few others; propose a threshold but do not set it;
+      - with `identity.enabled` at Dev, a confirm-class click runs without "igen" for me and still asks for someone else;
+      - at All, a spoken "igen" is refused and Enter works;
+      - "felejtsd el a hangomat" removes the voiceprint from the secrets store.
+    - **The hand-off:** with a VS Code error in front, "add át Claude-nak: nézd meg ezt a hibát" fills the Vezérlő with the task and a
+      fenced excerpt. Nothing is sent until "küldd el" + "igen".
+
+12. **Then report** what passed, what you fixed and what is still open. Make no commit or push unless I ask. When I do:
    - first run `node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` (the cloud could not refresh the
      inventory: it had no anonymise map);
    - commit on the branch above;

@@ -19,7 +19,7 @@
       "default": true,
       "license": "MIT (OpenAI Whisper weights)",
       "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
-      "sha256": null,
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
       "note": "The best Hungarian of the fast models; 4 decoder layers, so re-decoding the growing buffer stays quick on a modern CPU."
     },
     {
@@ -28,7 +28,7 @@
       "sizeMB": 190,
       "license": "MIT (OpenAI Whisper weights)",
       "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin",
-      "sha256": null,
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
       "note": "The fallback for a slow machine: much quicker partials, clearly weaker Hungarian."
     },
     {
@@ -125,6 +125,38 @@
         "sizeMB": 64,
         "license": "UNCLEAR: model card says 'See URL' (MycroftAI mimic3-voices); fine-tuned from lessac",
         "voice": "female"
+      }
+    ]
+  },
+  "identity": {
+    "_comment": "WP-59 Hangazonosítás: what Voice/identity/fetch-identity.js downloads into <Full>/tools/voice/identity. Speaker-embedding models from sherpa-onnx's GitHub release `speaker-recongition-models` (the upstream spelling), checked against sha256. They run on the SAME sherpa-onnx-node 1.13.8 addon as Voice/tts (fetch it with `node Voice/tts/fetch-tts.js addon`). Scores below were measured in the cloud on synthetic Piper voices (plumbing only, not real-world accuracy); calibrate on the owner's own voice with Voice/identity/calibrate.js.",
+    "models": [
+      {
+        "id": "campplus-voxceleb",
+        "default": true,
+        "file": "3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx",
+        "sha256": "98daf9bcf1c8abf3db374fec4c27a5eda7c58705bb3f180d057b085a72a88bb5",
+        "sizeMB": 28.2,
+        "dim": 512,
+        "sampleRate": 16000,
+        "eer": "0.73 % EER on VoxCeleb1-O (3D-Speaker egs/voxceleb/sv-cam++ README; 0.65 % with large-margin fine-tuning)",
+        "license": "3D-Speaker (modelscope/3D-Speaker) Apache-2.0; trained on VoxCeleb2-dev (CC BY 4.0)",
+        "threshold": 0.5,
+        "note": "Best separation of the three on synthetic voices here (owner 0.72–0.90, others ≤ 0.42) and the fastest (≈ 38 ms a verify on 2 cores; ≈ 0.34 s to load)."
+      },
+      {
+        "id": "wespeaker-resnet34",
+        "file": "wespeaker_en_voxceleb_resnet34.onnx",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_resnet34.onnx",
+        "sha256": "5ef208a9da1453335308a6b6f4e6dfbd7e183a38b604de0a57664f45d257fe94",
+        "sizeMB": 25.3,
+        "dim": 256,
+        "sampleRate": 16000,
+        "eer": "ResNet34 ≈ 0.7–1.0 % on VoxCeleb1-O (WeSpeaker / 3D-Speaker tables; not re-checked for this exact export)",
+        "license": "WeSpeaker code Apache-2.0; its VoxCeleb models follow the dataset licence, CC BY 4.0 (wespeaker docs/pretrained.md)",
+        "threshold": 0.7,
+        "note": "Narrower gap on synthetic voices (others up to 0.69): an alternative, not the default."
       }
     ]
   }

@@ -16,7 +16,9 @@ function Send($obj) {
   [Console]::Out.Flush()
 }
 
-$reader = [Console]::In
+# Not [Console]::In: on .NET Framework its ReadLineAsync blocks until a line arrives (no 'ready' before the first request, and
+# every answer one line late). A StreamReader over the raw stdin stream reads in the background.
+$reader = New-Object System.IO.StreamReader -ArgumentList ([Console]::OpenStandardInput()), (New-Object System.Text.UTF8Encoding -ArgumentList $false)
 $pending = $reader.ReadLineAsync()
 $cur = $null
 $curId = $null

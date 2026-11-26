@@ -23,11 +23,21 @@ const tarExe = () => (process.platform === 'win32' ? path.join(process.env.Syste
 
 // the integrity string of npm ("sha512-<base64>") for a file
 function integrityOf(file) { return 'sha512-' + crypto.createHash('sha512').update(fs.readFileSync(file)).digest('base64'); }
+// 7-Zip, where installed: Windows 10's tar.exe has no bzip2 ("unable to run program bzip2 -d"), so a .tar.bz2 goes through it first
+const sevenZip = () => ['ProgramFiles', 'ProgramW6432', 'ProgramFiles(x86)'].map(k => process.env[k] && path.join(process.env[k], '7-Zip', '7z.exe')).find(p => p && fs.existsSync(p));
 function untar(file, dir, strip) {
   fs.mkdirSync(dir, { recursive: true });
-  const args = ['-xf', file, '-C', dir, ...(strip ? ['--strip-components', String(strip)] : [])];
-  const r = spawnSync(tarExe(), args, { windowsHide: true, encoding: 'utf8' });
-  if (r.status !== 0) throw new Error('tar failed: ' + (r.stderr || r.error || '').toString().slice(0, 200));
+  const run = f => spawnSync(tarExe(), ['-xf', f, '-C', dir, ...(strip ? ['--strip-components', String(strip)] : [])], { windowsHide: true, encoding: 'utf8' });
+  let r = run(file);
+  const z = r.status !== 0 && /bzip2/i.test(String(r.stderr || '')) && sevenZip();
+  if (z) {
+    // the .bz2 layer → a plain .tar next to the download (the archive's sha256 was checked before this), then tar as usual
+    const plain = file + '.tar', fd = fs.openSync(plain, 'w');
+    try { const d = spawnSync(z, ['x', '-tbzip2', '-so', file], { windowsHide: true, stdio: ['ignore', fd, 'pipe'] }); if (d.status !== 0) throw new Error('7-Zip failed: ' + String(d.stderr || d.error || '').slice(0, 200)); }
+    finally { fs.closeSync(fd); }
+    try { r = run(plain); } finally { fs.rmSync(plain, { force: true }); }
+  }
+  if (r.status !== 0) throw new Error('tar failed: ' + (r.stderr || r.error || '').toString().slice(0, 200) + (/bzip2/i.test(String(r.stderr || '')) && !z ? ' (install 7-Zip, or a tar with bzip2)' : ''));
 }
 
 async function npmPackage(name, version, integrity) {

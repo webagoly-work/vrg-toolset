@@ -5,10 +5,10 @@
 // The page (page/hud.html) only receives (window.hud.on); it has no vrg API and sends nothing back.
 'use strict';
 
-const HIDE_MS = { result: 6500, error: 6500, speak: 9000 };
+const HIDE_MS = { result: 6500, error: 6500, speak: 9000, acting: 15000 };
 const W = 420, H = 96, MARGIN = 18;
 const clean = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').slice(0, n);
-const STATES = ['listen', 'busy', 'result', 'error', 'speak'];
+const STATES = ['listen', 'busy', 'result', 'error', 'speak', 'acting'];   // acting: WP-58, a red frame while an action runs
 
 // the message the hud page gets: fixed keys, plain text, capped
 function message(m) {

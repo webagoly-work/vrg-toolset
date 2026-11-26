@@ -89,7 +89,7 @@
       "say": ["mi fut eloben", "mi fut", "mik futnak", "what is running", "whats running", "whats live"] },
     { "id": "ask.controller", "act": "ask.controller", "slots": {},
       "say": ["hol tart vezerlo", "mi van vezerloben", "vezerlo allapot", "whats in controller", "controller status"] },
-    { "id": "cancel", "act": "cancel", "slots": {}, "say": ["megse", "hagyd", "hagyd abba", "cancel", "never mind", "stop"] },
+    { "id": "cancel", "act": "cancel", "slots": {}, "say": ["megse", "hagyd", "hagyd abba", "allj", "allj meg", "cancel", "never mind", "stop", "halt"] },
     { "id": "repeat", "act": "repeat", "slots": {}, "say": ["ismeteld", "mit mondtal", "megegyszer", "repeat", "say again", "what did you say"] },
     { "id": "help", "act": "help", "slots": {}, "say": ["sugo", "segitseg", "mit tudsz", "parancsok", "help", "what can you do", "commands"] },
     { "id": "screen.app", "act": "screen.app", "slots": {}, "say": ["melyik program ez", "mi ez a program", "mi van elottem nyitva", "milyen programban vagyok", "which app is this", "what app is this", "what program is this"] },
@@ -98,7 +98,17 @@
     { "id": "screen.read", "act": "screen.read", "slots": {}, "say": ["olvasd fel", "mit ir", "olvasd fel ezt", "mi all itt", "read this", "read it out", "read it aloud", "what does it say"] },
     { "id": "speak.stop", "act": "speak.stop", "slots": {}, "say": ["csend", "csendet", "hallgass", "eleg", "eleg lesz", "be quiet", "quiet", "stop talking"] },
     { "id": "speak.on", "act": "speak.on", "slots": {}, "say": ["beszelj", "mondd hangosan", "valaszolj hangosan", "hangosan", "speak", "talk to me", "answer aloud"] },
-    { "id": "speak.off", "act": "speak.off", "slots": {}, "say": ["nemitas", "nemitsd", "maradj csendben", "ne beszelj", "csak irasban", "mute", "silent mode", "text only"] }
+    { "id": "speak.off", "act": "speak.off", "slots": {}, "say": ["nemitas", "nemitsd", "maradj csendben", "ne beszelj", "csak irasban", "mute", "silent mode", "text only"] },
+    { "id": "hands.invoke", "act": "hands.invoke", "slots": {"target": "text"}, "say": ["kattints {target}", "kattints ra {target}", "nyomd meg {target}", "nyomj ra {target}", "klikk {target}", "click {target}", "press {target}", "click on {target}"] },
+    { "id": "hands.toggle", "act": "hands.toggle", "slots": {"target": "text"}, "say": ["pipald be {target}", "jelold be {target}", "kapcsold be {target}", "kapcsold ki {target}", "vedd ki a pipat {target}", "check {target}", "uncheck {target}", "toggle {target}"] },
+    { "id": "hands.select", "act": "hands.select", "slots": {"target": "text"}, "say": ["valaszd {target}", "valaszd ki {target}", "menj a fulre {target}", "select {target}", "choose {target}", "go to tab {target}"] },
+    { "id": "hands.scroll", "act": "hands.scroll", "slots": {"dir": "text"}, "say": ["gorgess {dir}", "gorgesd {dir}", "lapozz {dir}", "ugorj {dir}", "scroll {dir}", "page {dir}"] },
+    { "id": "hands.focus", "act": "hands.focus", "slots": {"target": "text"}, "say": ["valts at {target}", "hozd elore {target}", "menj at {target}", "switch over to {target}", "bring {target} to front"] },
+    { "id": "hands.log", "act": "hands.log", "slots": {}, "say": ["mit csinaltal", "mit csinaltal eddig", "mik voltak a muveletek", "what did you do", "show the action log"] },
+    { "id": "claude.handoff", "act": "claude.handoff", "slots": {"text": "text"}, "say": ["add at claudenak {text}", "add at claude nak {text}", "kerd meg claudeot {text}", "kerd meg claudeot hogy {text}", "claude csinalja meg {text}", "ask claude to {text}", "hand over to claude {text}"] },
+    { "id": "id.enroll", "act": "id.enroll", "slots": {}, "say": ["tanuld meg a hangomat", "jegyezd meg a hangomat", "hangazonositas beallitasa", "learn my voice", "enroll my voice"] },
+    { "id": "id.verify", "act": "id.verify", "slots": {}, "say": ["ki beszel", "felismersz", "ismersz", "who is speaking", "do you recognise me", "verify my voice"] },
+    { "id": "id.reset", "act": "id.reset", "slots": {}, "say": ["felejtsd el a hangomat", "torold a hangomat", "forget my voice", "delete my voice"] }
   ],
   "phrases": [
     "nyisd meg", "nyitsd meg", "indítsd el", "mutasd", "hozd elő", "open", "show", "launch", "start", "bring up",
@@ -117,6 +127,8 @@
     "mégse", "cancel", "igen", "nem", "mehet", "rendben", "yes", "no", "ismételd", "repeat", "súgó", "segítség", "help",
     "böngésző", "terminál", "Munkamenetek", "Git", "Posta", "Fájlok", "Hírek", "Kezdőlap", "VRG",
     "melyik program ez", "milyen ablakok vannak nyitva", "mi a hiba", "olvasd fel", "csend", "hallgass", "beszélj", "ne beszélj", "némítás",
-    "which app is this", "what's the error", "read this", "be quiet", "mute", "speak"
+    "which app is this", "what's the error", "read this", "be quiet", "mute", "speak",
+    "állj", "állj meg", "kattints", "nyomd meg", "pipáld be", "válaszd ki", "válts át", "görgess le", "görgess fel", "válts", "mit csináltál", "add át Claude-nak", "kérd meg Claude-ot",
+    "tanuld meg a hangomat", "felejtsd el a hangomat", "ki beszél", "click", "scroll down", "switch to", "ask Claude to", "learn my voice"
   ]
 }
