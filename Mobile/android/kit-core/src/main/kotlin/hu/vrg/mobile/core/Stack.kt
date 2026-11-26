@@ -4,9 +4,10 @@ import org.json.JSONObject
 
 // Rétegverem / VRG Stack on the phone (WP M17): the rules of the phone's side. The stack is built on the PC
 // (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its 3D pages into self-contained HTML
-// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, kisokos.html, meta.json}.
-// The phone reads meta.json and downloads a page only when the published copy differs from the one it has. Kisokos is an
-// optional page: a publish without it (an older one) is still whole, and its chip appears once a publish carries it.
+// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, meta.json} and the
+// optional kisokos.html, otletfolyam.html, dontesnaplo.html, labor.html. The phone reads meta.json and downloads a page
+// only when the published copy differs from the one it has. An optional page's chip appears once a publish carries it; a
+// publish without it (an older one) is still whole.
 
 object StackPages {
     const val BRANCH = "stack-pages"
@@ -19,6 +20,9 @@ object StackPages {
         StackPage("holo", "Holo", "holo.html"),
         StackPage("retegek", "Rétegek", "retegek.html"),
         StackPage("kisokos", "Kisokos", "kisokos.html", optional = true),   // the K layer: VRG Kisokos 3D (Stack/kisokos.html)
+        StackPage("otletfolyam", "Ötletfolyam", "otletfolyam.html", optional = true),   // layer I (Stack/lineage.html)
+        StackPage("dontesnaplo", "Döntésnapló", "dontesnaplo.html", optional = true),   // layer Q (Stack/decisions.html)
+        StackPage("labor", "Labor", "labor.html", optional = true),   // the Konnektóm-labor (Archive/files/konnektom-labor.html)
     )
 
     /** The pages every publish has. */
