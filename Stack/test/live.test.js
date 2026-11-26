@@ -27,6 +27,7 @@ function layersV1() {
     I: { nodes: [N('I:lens', 'built', 'the stack lens', [])], edges: [] },
     T: { nodes: [], edges: [], built: [] },
     N: { nodes: [], edges: [] },
+    P: { nodes: [], edges: [] },
     Q: { nodes: [N('Q:file.v', 'decision file', 'docs/visual/DECISIONS.md', ['p:docs/visual/DECISIONS.md'], { extra: { path: 'docs/visual/DECISIONS.md' } }),
       N('Q:VIS-Q5', 'decision', 'VIS-Q5 Holo', ['q:VIS-Q5'], { state: 'open≈' })], edges: [{ a: 'Q:file.v', b: 'Q:VIS-Q5', rel: 'holds' }] },
     L: { nodes: [N('L:route', 'line', 'Wiring line', [])], edges: [] },
@@ -56,6 +57,7 @@ test('source map: each hand-kept source to its layer; code, our own output and n
   assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/GO-MAIN.md'), ['A']);
   assert.deepEqual(at('C:/Users/x/.claude/projects/H--/memory/feedback_x.md'), ['A']);
   assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/launcher/vrg-menu.json'), ['N']);
+  assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/Stack/data/probes.jsonl'), ['P'], 'a recorded test run');
   assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/launcher/vrg-catalog.json'), ['N']);
   assert.deepEqual(at('H:/VRG/Full/Planner_VRG_U100/Mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/Feature.kt'), ['N']);
   for (const p of ['H:/VRG/Full/Planner_VRG_U100/Planner/a.js', 'H:/VRG/Full/Planner_VRG_U100/Stack/out/stack.json', 'H:/VRG/Full/Planner_VRG_U100/Stack/data/events.jsonl',

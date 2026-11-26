@@ -21,6 +21,7 @@ function rules(S = CFG.sources, extra) {
   const extras = (extra || require('./layers').DECISION_FILES_EXTRA || []).map(low);
   const inRepo = f => f.startsWith(repo + '/') ? f.slice(repo.length + 1) : null;
   return f => {
+    if (f === low(S.repo) + '/stack/data/probes.jsonl') return ['P'];   // a recorded test run (S12)
     if (/\/(stack\/out|stack\/data|node_modules|\.git)(\/|$)/.test(f) || /\.(tmp\d*|swp|lock)$|~$/.test(f)) return [];
     if (f.startsWith(notes + '/')) {
       const r = f.slice(notes.length + 1);

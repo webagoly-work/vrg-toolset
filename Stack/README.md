@@ -90,6 +90,14 @@ Never load `out/stack.json` whole. Ids look like:
   it opens, so the join links it to its folder. DRIFT.md §11 lists the pillars whose code no entry point opens, not
   even through a folder above it ("a tool that is not in vrg-menu.json does not exist"). Live: a save of either
   registry or `Feature.kt` rebuilds N.
+- **P · Próbák, tests and checks** (S12, 2026-11-26): every test folder, Gradle test module and check script
+  (`tools/check-*.js`, the selftests) is a suite node with its files; each file names the code it requires, so the
+  join links it to the folders it tests. How a suite runs comes from the START steps that name it (that key `runs`
+  it), the CI workflows, its package.json or its file pattern. `node stack.js probe <words> | --all` runs suites and
+  appends each result to `data/probes.jsonl` (per PC, git-ignored; a runner this PC lacks, PowerShell or gradlew, is
+  a skip, not a fail); `--list` shows them. A suite reads pass, fail, stale (a commit touched it or its code after the
+  run), unrun, skipped or no runner. DRIFT.md §12: the failing, stale and runner-less suites and the pillars whose code
+  no test reaches. Live: a new record rebuilds P.
 - **T · Teendők, open work** (S3, 2026-11-25): every not-yet item once (the Thread Board's lists, the DevLog lines'
   remaining work, the ROADMAP ✗ rows; `lib/todo.js`), linked to its line and pillar. An item the evidence says is built
   (a built list, an F row in tier 1–2, two commits) reads "looks done" and is listed in DRIFT.md §9 with the evidence;
@@ -148,6 +156,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
 | `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
 | `lib/edit.js` · `lib/edit-threads.js` · `lib/editdialog.js` | the write gateway (S6): the decisions and threads (mark done) editors and the diff dialog |

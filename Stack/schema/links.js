@@ -38,6 +38,8 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // P · Próbák (tests and checks, S12)
+  runs: R('futtatja', 'runs', 'ezzel fut', 'h'),
   // T · Teendők (open work, S3)
   'todo-of': R('teendője', 'is open work of', 'teendője ez', 'v'),
   'looks-done': R('késznek tűnik', 'looks done by', 'bizonyítja, hogy kész', 'v'),

@@ -29,6 +29,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 |---|---|---|---|
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
 | **N Entry points** (Belépők, S11 2026-11-26) | — (the Viewer draws it; the START menu itself is its order, and DRIFT.md §11 lists the code nothing opens) | ◐ | a door map: each START key, server and Mobile feature with what it opens and whether that is still there |
+| **P Tests and checks** (Próbák, S12 2026-11-26) | — (the Viewer draws it, one band per runner; DRIFT.md §12 lists the failing, stale and unrun suites and the code no test reaches) | ◐ | a test wall: each suite's recorded runs as a strip, red where it broke, grey where it went stale, its START key to run it again |
 | **I Ideas** | Ötletfolyam, `Stack/lineage.html` (2026-11-09; the MindMap view of `VRG_idea_timeline.mindmap.json` stays) | ✅ | — (lineage river: time scrubber, ideas branch and merge, dormant ones greyed, springs = the inferred needs, click opens what it became) |
 | **T Open work** (Teendők, S3 2026-11-25) | Füzértábla, `Stack/board.html` (S4, 2026-11-25; START R → L): each thread's open work with "looks done" and its evidence; DRIFT.md §9 | ◐ | the mark-done through the write gateway (a threads editor, S6 decisions-only today: a prompt meanwhile) |
 | **E Pillars** (the threads) | Füzértábla, `Stack/board.html` (S4, 2026-11-25): one row per thread-pillar, reach squares, class, status from its F tier or hand status, drift, DevLog lines, built and beta lists | ✅ | — |

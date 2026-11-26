@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const ORDER = 'FNITQLAURCGZ';          // the reach mask in stack order (E is the pillar, not a slot); T since S3, N since S11
+  const ORDER = 'FNITQLAUPRCGZ';         // the reach mask in stack order (E is the pillar, not a slot); T since S3, N since S11, P since S12
 
   const DEFAULTS = {
     depth: 2,

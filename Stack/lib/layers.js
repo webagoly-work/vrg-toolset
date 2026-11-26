@@ -357,4 +357,32 @@ function entry() {
     mobile: read(REPO + '/Mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/Feature.kt') || '' });
 }
 
-module.exports = { featured, entry, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+/* ============================================================ P · Próbák (tests and checks; S12, lib/probe.js) */
+function probeInputs(facts) {
+  const json = f => { try { return JSON.parse(read(REPO + '/' + f)); } catch { return null; } };
+  const workflows = {}, txt = f => { try { return read(REPO + '/' + f); } catch { return ''; } };
+  for (const f of facts.files) if (/^\.github\/workflows\/[^/]+\.ya?ml$/.test(f)) workflows[f] = txt(f);
+  return { menu: json('launcher/vrg-menu.json'), pkg: d => json((d ? d + '/' : '') + 'package.json'), workflows };
+}
+function probeResults() {
+  const f = path.join(require('../config').data, 'probes.jsonl');
+  let txt = ''; try { txt = fs.readFileSync(f, 'utf8'); } catch { return []; }
+  return txt.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+}
+function probe(facts) {
+  const P = require('./probe'), txt = f => { try { return read(REPO + '/' + f); } catch { return ''; } };
+  const suites = P.suites(facts.files, probeInputs(facts));
+  // stale: a commit after the run's own touched the suite or the code its files require
+  let head = ''; try { head = git('rev-parse', 'HEAD').trim(); } catch { head = ''; }
+  const memo = new Map();
+  const reqDirs = S => { const d = new Set([S.dir]); for (const f of S.files) for (const r of P.requires(f, txt(f), x => facts.paths.has(x))) if (facts.paths.has(r)) d.add(r.slice(0, r.lastIndexOf('/')) || r); return [...d]; };
+  const stale = (S, r) => {
+    if (!r.head || r.head === head) return false;
+    const k = S.dir + '@' + r.head; if (memo.has(k)) return memo.get(k);
+    let n = 0; try { n = +git('rev-list', '--count', `${r.head}..HEAD`, '--', ...reqDirs(S)).trim(); } catch { n = 0; }   // a run on a commit this clone lacks: not judged
+    memo.set(k, n > 0); return n > 0;
+  };
+  return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
+}
+
+module.exports = { featured, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

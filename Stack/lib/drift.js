@@ -98,5 +98,19 @@ module.exports = function drift(graph, full, ctx) {
   if (un) out.push(`## 11. Unreachable: code that nothing opens`, ``,
     `"A tool that is not in launcher/vrg-menu.json does not exist" (CLAUDE.md). These pillars' strings reach code but no entry point: no START key, server, catalog item or Mobile feature opens their folders or a folder above them. Add one, or say why it needs none.`, ``,
     ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
+
+  /* 12. built, not verified (S12): code no test reaches; suites that fail, ran before their code changed, or nothing runs */
+  try {
+    const PR = require('./probe'), suites = graph.nodes.filter(n => n.layer === 'P' && (n.kind === 'test suite' || n.kind === 'check'));
+    const un = PR.unverified(graph, require('./strings'), require('../config').strings || {});
+    const by = st => suites.filter(n => n.state === st);
+    const line = n => { const x = n.extra || {}, l = x.last || {}; return `- \`${n.title}\` ${n.kind}${l.at ? ' · last run ' + String(l.at).slice(0, 10) : ''}${l.pass != null ? ' · ' + l.pass + ' ✓' : ''}${l.fail ? ' ' + l.fail + ' ✗' : ''}${(x.keys || []).length ? ' · START ' + x.keys.join(', ') : ''}`; };
+    out.push(`## 12. Built, not verified`, ``,
+      `${suites.length} suites and checks: ${['pass', 'fail', 'stale', 'unrun', 'skipped', 'no runner'].map(st => by(st).length + ' ' + st).join(' · ')}. Record a run with \`node stack.js probe <words> | --all\`.`, ``,
+      `**Failing** (the last recorded run):`, ...(by('fail').length ? by('fail').map(line) : ['none']), ``,
+      `**Stale** (passed, then a commit touched the suite or the code it requires):`, ...(by('stale').length ? by('stale').map(line) : ['none']), ``,
+      `**Nothing runs these tests** (no START step, CI line, package.json or runner file):`, ...(by('no runner').length ? by('no runner').map(line) : ['none']), ``,
+      `**Code no test reaches** (the pillar's string has C and no P):`, ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
+  } catch (e) { out.push(`## 12. Built, not verified`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

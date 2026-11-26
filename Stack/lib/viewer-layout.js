@@ -140,6 +140,8 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'P') {   // one band per runner (node, npm, powershell, gradle, none), a suite's files after it
+      for (const [g, q] of bands(group(items, it => it.lane && /\//.test(it.lane) ? (items.find(x => x.id === 'P:suite.' + it.lane) || {}).lane || it.lane : it.lane || ''), R, 'y')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'T') {   // thread groups (§6.2): one band per thread or line, its items in the board's order
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
     } else if (layer === 'A') {

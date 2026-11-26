@@ -382,3 +382,19 @@ open question among them:
 | STK-P120 | Paths | **A** `{repo}` resolves to the repo path, the `paths` tokens through the table; `{full}` / `{vrg}` stay as written, with no repo key | the join links a repo path to its folder; a program on H: outside the repo has no folder node to link to |
 | STK-P121 | Unreachable (DRIFT §11) | **A** a pillar whose string reaches C and not N, unless one of its folders is inside one an entry point opens | without the folder rule 46 pillars were listed, nearly all Planner features reached through START 1; with it 2, both real |
 
+## S12 — P · Próbák, the tests and checks layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S12, the next new layer.** By STK-Q24 that is P, Próbák. Builder's choices, no open
+question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P122 | Where P sits | **A** after U: F N I T Q L A U P R C G Z (the plan's §5 order) | a test is a run of the code, next to the runs; above R and C, which it verifies |
+| STK-P123 | What a suite is | **A** a test folder (test/, tests/, selftest/), a Gradle module's src/test, a check or selftest file on its own · B every test file a suite | the folder is what a runner runs; files are still nodes, inside their suite |
+| STK-P124 | How a suite runs | **A** found, never kept by hand: START steps that name it, then CI lines, package.json, the file pattern | a hand list would drift; START and CI are the commands that really run |
+| STK-P125 | Where results come from | **A** a recorder, `node stack.js probe`, appending to `data/probes.jsonl` · B parse each runner's own output files | no suite writes a result file today; one record format for node, npm, PowerShell and Gradle |
+| STK-P126 | Per PC | **A** data/ (git-ignored) · B committed | a result is true of one PC at one commit; the record keeps that commit |
+| STK-P127 | A runner this PC lacks | **A** a skip with its reason, never a fail | the cloud sandbox has no PowerShell or gradlew; that says nothing about the tests |
+| STK-P128 | Stale | **A** passed, then a commit touched the suite or the folders its files require | "built" and "verified" part ways exactly there |
+| STK-P129 | Code no test reaches (DRIFT §12) | **A** the string has C and no P, unless a test reaches one of its folders or one above it, or tests a folder inside it (not a bare top-level one) | without the folder rule the Planner's own features were listed although its tests cover them; with it 5, each with no test file |
+
