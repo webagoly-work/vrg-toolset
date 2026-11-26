@@ -398,3 +398,19 @@ question among them:
 | STK-P128 | Stale | **A** passed, then a commit touched the suite or the folders its files require | "built" and "verified" part ways exactly there |
 | STK-P129 | Code no test reaches (DRIFT §12) | **A** the string has C and no P, unless a test reaches one of its folders or one above it, or tests a folder inside it (not a bare top-level one) | without the folder rule the Planner's own features were listed although its tests cover them; with it 5, each with no test file |
 
+## S13 — K · Kérések, the Founder's asks layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S13, the next new layer.** By STK-Q24 that is K, Kérések. Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P130 | Where K sits | **A** after N: F N K I T Q L A U P R C G Z (the plan's §5 puts it near the top) | an ask is upstream of the ideas and decisions it starts |
+| STK-P131 | What an ask is | **A** a recording step by the user: a prompt or a typed slash command; a continued session's summary, "[Request interrupted …]", hook feedback and tag-wrapped text left out | those are the harness talking, not the Founder |
+| STK-P132 | What an ask links to | **A** `led-to`: the nodes the steps after it touched, until the next ask (w = steps) · B only what its text names | the words rarely name a node ("build S12"); the work it caused always touches some; `mentions` adds what the text does name |
+| STK-P133 | Did it land | **A** a commit among the steps it led to · B its session committed at all | an ask in a long session would otherwise borrow another ask's commit |
+| STK-P134 | Clusters | **A** single link over Jaccard ≥ 0.6 on word sets, stopwords out (en + hu), accents folded, numbers folded (S12 ≈ S13); named by the earliest ask, so ids are stable · B embeddings | deterministic, explainable in one line, no model run in the build; embeddings can come later |
+| STK-P135 | Builds | **A** full builds read the recordings and keep the asks in `out/layers/K-src.json`; incremental builds read that file | the recordings only change on a full build |
+| STK-P136 | Privacy | **A** the ask's words stay on the PC: out/ is git-ignored, and the connectome data (the phone bundle on stack-pages) gets a neutral K title ("ask 2026-11-26") | a prompt can name a client; stack-pages is private but is still GitHub |
+| STK-P137 | The Viewer's plane limit | **A** raised from 12 to 16 colour slots | K made 14 planes (13 layers + E); the 13th threw "offset is out of bounds" |
+

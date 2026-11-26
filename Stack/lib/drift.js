@@ -104,7 +104,7 @@ module.exports = function drift(graph, full, ctx) {
     const PR = require('./probe'), suites = graph.nodes.filter(n => n.layer === 'P' && (n.kind === 'test suite' || n.kind === 'check'));
     const un = PR.unverified(graph, require('./strings'), require('../config').strings || {});
     const by = st => suites.filter(n => n.state === st);
-    const line = n => { const x = n.extra || {}, l = x.last || {}; return `- \`${n.title}\` ${n.kind}${l.at ? ' · last run ' + String(l.at).slice(0, 10) : ''}${l.pass != null ? ' · ' + l.pass + ' ✓' : ''}${l.fail ? ' ' + l.fail + ' ✗' : ''}${(x.keys || []).length ? ' · START ' + x.keys.join(', ') : ''}`; };
+    const line = n => { const x = n.probe || n.extra || {}, l = x.last || {}; return `- \`${n.title}\` ${n.kind}${l.at ? ' · last run ' + String(l.at).slice(0, 10) : ''}${l.pass != null ? ' · ' + l.pass + ' ✓' : ''}${l.fail ? ' ' + l.fail + ' ✗' : ''}${(x.keys || []).length ? ' · START ' + x.keys.join(', ') : ''}`; };
     out.push(`## 12. Built, not verified`, ``,
       `${suites.length} suites and checks: ${['pass', 'fail', 'stale', 'unrun', 'skipped', 'no runner'].map(st => by(st).length + ' ' + st).join(' · ')}. Record a run with \`node stack.js probe <words> | --all\`.`, ``,
       `**Failing** (the last recorded run):`, ...(by('fail').length ? by('fail').map(line) : ['none']), ``,
@@ -112,5 +112,27 @@ module.exports = function drift(graph, full, ctx) {
       `**Nothing runs these tests** (no START step, CI line, package.json or runner file):`, ...(by('no runner').length ? by('no runner').map(line) : ['none']), ``,
       `**Code no test reaches** (the pillar's string has C and no P):`, ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
   } catch (e) { out.push(`## 12. Built, not verified`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 13. the Founder's asks (S13): where attention went, what came back with nothing landing, what led nowhere */
+  try {
+    const KA = require('./asks'), asks = graph.nodes.filter(n => n.layer === 'K' && n.kind !== 'cluster');
+    if (asks.length) {
+      const byId = new Map(graph.nodes.map(n => [n.id, n])), led = new Map();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'led-to' && a[0] === 'K') (led.get(a) || led.set(a, []).get(a)).push(b); }
+      const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), att = new Map();
+      for (const k of asks) {
+        const ps = new Set(); for (const b of led.get(k.id) || []) for (const p of (byId.get(b) || {}).ent || []) ps.add(p);
+        for (const p of ps) { const r = att.get(p) || att.set(p, { all: 0, recent: 0 }).get(p); r.all++; if ((k.t || '') >= since) r.recent++; }
+      }
+      const name = id => ((graph.entities || []).find(e => e.id === id) || {}).name || id;
+      const top = [...att].sort((a, b) => b[1].recent - a[1].recent || b[1].all - a[1].all).slice(0, 12);
+      const again = KA.nothingLanded(graph), nowhere = asks.filter(k => !(led.get(k.id) || []).length).sort((a, b) => (a.t < b.t ? 1 : -1)).slice(0, 10);
+      out.push(`## 13. The Founder's asks`, ``,
+        `${asks.length} asks in ${new Set(asks.map(k => k.id.split('.')[1])).size} sessions, ${graph.nodes.filter(n => n.layer === 'K' && n.kind === 'cluster').length} clusters; ${asks.filter(k => k.state === 'committed').length} were followed by a commit.`, ``,
+        `**Where attention went** (asks whose work touched the pillar; last 30 days / all):`, ...(top.length ? top.map(([p, r]) => `- **${name(p)}** (\`E:${p}\`) ${r.recent} / ${r.all}`) : ['none']), ``,
+        `**Asked again, nothing landed** (a cluster asked in 2+ sessions, no commit after any of its asks):`, ...(again.length ? again.slice(0, 12).map(c => `- \`${c.id}\` ${c.title} · ${(c.k || {}).sessions || '?'} sessions · last ${c.t}`) : ['none']), ``,
+        `**Led nowhere** (the newest asks whose work touched no stack node):`, ...(nowhere.length ? nowhere.map(k => `- ${k.t} \`${k.id}\` ${k.kind}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 13. The Founder's asks`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

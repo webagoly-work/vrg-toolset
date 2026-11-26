@@ -38,6 +38,10 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // K · Kérések (the Founder's asks, S13)
+  'asked-in': R('itt kérte', 'was asked in', 'ezt kérték benne', 'v'),
+  mentions: R('említi', 'mentions', 'említi ez a kérés', 'any'),
+  'led-to': R('ide vezetett', 'led to', 'ez a kérés hozta', 'any'),
   // P · Próbák (tests and checks, S12)
   runs: R('futtatja', 'runs', 'ezzel fut', 'h'),
   // T · Teendők (open work, S3)

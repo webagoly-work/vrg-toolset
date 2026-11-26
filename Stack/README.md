@@ -90,6 +90,14 @@ Never load `out/stack.json` whole. Ids look like:
   it opens, so the join links it to its folder. DRIFT.md §11 lists the pillars whose code no entry point opens, not
   even through a folder above it ("a tool that is not in vrg-menu.json does not exist"). Live: a save of either
   registry or `Feature.kt` rebuilds N.
+- **K · Kérések, the Founder's asks** (S13, 2026-11-26): every prompt and slash command in the recordings
+  (`lib/asks.js`; a continued session's summary, interruptions and hook text left out). Each ask `led-to` the nodes the
+  work after it touched until the next ask, and `mentions` what its text names (decision ids, GO phrases, paths). Asks
+  that say the same thing, numbers folded ("build S12" ≈ "build S13"), form a cluster: landed when a commit followed
+  one of them, else open. DRIFT.md §13: where attention went by pillar (30 days / all), the clusters asked in two or more
+  sessions with nothing landing, and the asks whose work touched nothing. Built on full builds (from the recordings);
+  an incremental build keeps it from `out/layers/K-src.json`. The ask's words stay on the PC: the connectome data the
+  phone bundle carries gives K nodes a neutral title.
 - **P · Próbák, tests and checks** (S12, 2026-11-26): every test folder, Gradle test module and check script
   (`tools/check-*.js`, the selftests) is a suite node with its files; each file names the code it requires, so the
   join links it to the folders it tests. How a suite runs comes from the START steps that name it (that key `runs`
@@ -156,6 +164,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/asks.js` | K · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
 | `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
 | `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
