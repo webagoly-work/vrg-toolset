@@ -67,7 +67,7 @@ function portals(G, E) {
       if (c >= f.lo - 1 && c <= f.hi + 1) faces.push({ room: r.id, fix: f.fix, face: f }); }));
     // latch side (+1 = toward larger axis values). T0 / F4 (2026-10-18): the DOOR says it — its variant's hinge bit, as the
     // Planner draws it (05t sugDoor: the handle jamb is opposite the hinge, at c + hd·w·d) and as its slots sit (08g). Before,
-    // the engine voted on the switches and missed the Planner's L4 slot by 1,1–2,8 m on 9 of 11 Domoszló doors. A sketch
+    // the engine voted on the switches and missed the Planner's L4 slot by 1,1–2,8 m on 9 of 11 Mintafalu doors. A sketch
     // door without a variant keeps the old rule: where the user's MAINS switches are, else away from the nearer corner.
     // cfg.latchFrom = 'switches' keeps that old rule for every door (CLA v1 as delivered, like cornerBoxes 'all').
     const sw = E.filter(e => e.role === 'sys:MAINS' && e.code === 'SWI' && e.face && e.face.wall === w.id && Math.abs(e.u - c) <= half + 800);

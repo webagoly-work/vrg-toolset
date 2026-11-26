@@ -17007,7 +17007,7 @@ function portals(G, E) {
       if (c >= f.lo - 1 && c <= f.hi + 1) faces.push({ room: r.id, fix: f.fix, face: f }); }));
     // latch side (+1 = toward larger axis values). T0 / F4 (2026-10-18): the DOOR says it — its variant's hinge bit, as the
     // Planner draws it (05t sugDoor: the handle jamb is opposite the hinge, at c + hd·w·d) and as its slots sit (08g). Before,
-    // the engine voted on the switches and missed the Planner's L4 slot by 1,1–2,8 m on 9 of 11 Domoszló doors. A sketch
+    // the engine voted on the switches and missed the Planner's L4 slot by 1,1–2,8 m on 9 of 11 Mintafalu doors. A sketch
     // door without a variant keeps the old rule: where the user's MAINS switches are, else away from the nearer corner.
     // cfg.latchFrom = 'switches' keeps that old rule for every door (CLA v1 as delivered, like cornerBoxes 'all').
     const sw = E.filter(e => e.role === 'sys:MAINS' && e.code === 'SWI' && e.face && e.face.wall === w.id && Math.abs(e.u - c) <= half + 800);
@@ -17158,7 +17158,7 @@ function plan(G, E, PT, cfg, allowed) {
     if (!g) { g = { key: 'drop:' + drops.length, room: e.room, face: e.face, u: e.u, u0: e.u, s, members: [] }; drops.push(g); }
     g.members.push(e); e.drop = g.key; });
   drops.forEach(g => { g.u = g.members.reduce((a, e) => a + e.u, 0) / g.members.length; g.s = g.face.uToS(g.u); });
-  // ---- T0 / L11, L12: the input, checked before the routes (the Domoszló sketch had 13 wall lamps above a 2700 ceiling
+  // ---- T0 / L11, L12: the input, checked before the routes (the Mintafalu sketch had 13 wall lamps above a 2700 ceiling
   // and two "DED1" — both accepted silently) ----
   const C0 = cfg.ceiling || R.LEVEL.ceilingDefault, at = e => [Math.round(e.x), Math.round(e.y)];
   M.filter(e => e.onWall && e.h != null).forEach(e => {
@@ -17459,7 +17459,7 @@ function plan(G, E, PT, cfg, allowed) {
   const polyOf = pts => { const out = []; pts.forEach((i, k) => { const e = k ? g.adj[pts[k - 1]].find(x => x.to === i) : null;
     if (e && e.kind === 'floor') { const a = g.N[pts[k - 1]]; out.push([a.x, a.y, 0], [g.N[i].x, g.N[i].y, 0]); } out.push([g.N[i].x, g.N[i].y, W.dist]); }); return out; };
   // T0 / F5: the soft edge itself knows its wall (network.build). Before, the midpoint of a path walked backwards wrapped
-  // round the room and named a wall on the far side (Domoszló: "W20" / "W28", both marked; the culprit was W21).
+  // round the room and named a wall on the far side (Mintafalu: "W20" / "W28", both marked; the culprit was W21).
   const wallsOf = pts => [...new Set(pts.slice(1).map((p, k) => { const e = g.adj[pts[k]].find(x => x.to === p); return e && e.kind === 'soft' ? e.wall || null : null; }).filter(Boolean))];
   const softAt = pts => { for (let k = 1; k < pts.length; k++) { const e = g.adj[pts[k - 1]].find(x => x.to === pts[k]); if (e && e.kind === 'soft') { const a = g.N[pts[k - 1]], b = g.N[pts[k]];
     return { room: a.room, at: [Math.round((a.x + b.x) / 2), Math.round((a.y + b.y) / 2)] }; } } return null; };
@@ -17701,7 +17701,7 @@ function plan(G, E, PT, cfg, allowed) {
   // a box the user already enlarged (cfg.spBoxSize, e.g. B103 150 × 150) takes 12 runs, a 2-gang one 6
   boxes.filter(b => b.kind === 'sp' || b.kind === 'drop').forEach(b => { const n = legs.filter(l => l.from === b.id || l.to === b.id).length;
     const spx = b.kind === 'sp' && SP.find(x => x.id === b.sp);
-    // a szobadoboz is itself the big box (150 × 150 / 200 × 200, 08n) — not a 2-gang one (found on Domoszló: KD2, 11 pipes)
+    // a szobadoboz is itself the big box (150 × 150 / 200 × 200, 08n) — not a 2-gang one (found on Mintafalu: KD2, 11 pipes)
     const ov = b.kind === 'sp' && ((cfg.spBoxSize || {})[b.sp + ':' + b.room] || (cfg.spBoxSize || {})[b.sp] || (spx && spx.type === 'szoba' ? (spx.dev.jbSize || 150) : 0));
     if (n > (ov ? 12 : 6)) warn.push({ sev: 'warn', msg: `${b.id} (${b.n}${ov ? ', ' + ov + ' × ' + ov : ''}) — ${rn(b.room)}: ${n} cső fut be — ${ov ? 'ennél is' : '2 szerelvényesnél'} nagyobb doboz kell`, room: b.room, at: [Math.round(b.x), Math.round(b.y)] }); });
   M.filter(e => !C.byMember[e.id]).forEach(e => warn.push({ sev: 'warn', msg: `${e.ref || e.id} ${e.code} — ${rn(e.room)}: nincs áramkörben`, room: e.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id] }));
@@ -17714,7 +17714,7 @@ function plan(G, E, PT, cfg, allowed) {
   return { net, SP, drops, channel, boxes, legs, L, C, warn, used, prep, spans, checks, W, unreached, report };
 }
 
-// ---- T0 / §3.4: the Pálya-ellenőrzés report — what the Domoszló build checked by throw-away scripts, as data ----------
+// ---- T0 / §3.4: the Pálya-ellenőrzés report — what the Mintafalu build checked by throw-away scripts, as data ----------
 // Every row carries {room, at} so the Planner can show it. Metres are geometric (T0 / F1); `weighted` is what the
 // search paid, next to it, so a soft or minus detour shows as a number.
 function pathReport(G, g, o) {
@@ -17904,7 +17904,7 @@ function circuits(D, M, L, cfg, warn) {
   const list = [], byMember = {};
   const cableFor = (c, ms) => { if (c.dedicated) { const v = (ms[0] && ms[0].v) || ''; return R.CIRCUIT_CABLE[v === 'hob2l' ? 'hob2l' : v === 'hob32' ? 'hob32' : v === 'alelo' ? 'alelo' : 'ded16']; }
     // the circuit's own cross-section (05j c.mm2, the circuit form) wins over the breaker-text rule (E5 F5, user Q1 = A
-    // 2026-10-19: Domoszló A4 on 2,5 mm² with its 13 A breaker, for the voltage drop of the socket chain)
+    // 2026-10-19: Mintafalu A4 on 2,5 mm² with its 13 A breaker, for the voltage drop of the socket chain)
     if (+c.mm2 >= 2.5) return 'NYM3x25'; if (+c.mm2 === 1.5) return 'NYM3x15';
     return /13A/.test(c.mcb || '') ? 'NYM3x15' : 'NYM3x25'; };
   const plan = {}; (cfg.socketPlan || []).forEach(p => plan[p.ref] = p);
@@ -19412,7 +19412,7 @@ function blSwitchGroups(D,level){const mains=new Map();D.devices.forEach(d=>{if(
     const S=u.sw.map(id=>mains.get(id)),t=s=>String(s.swType||''),dist=s=>Math.hypot(s.x-cx,s.y-cy);
     let chain;if(S.length===1)chain=[S[0].id];
     // T0 / L10: ties go by id, and the kereszt switches by their distance from the head — before, both followed the file
-    // order, so reversing data.devices swapped the head of the Domoszló veranda pair (red team t5)
+    // order, so reversing data.devices swapped the head of the Mintafalu veranda pair (red team t5)
     else{const byId=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0,ends=S.filter(s=>t(s)!=='107').sort((a,b)=>(b.swHead?1:0)-(a.swHead?1:0)||dist(a)-dist(b)||byId(a,b));
       const h=ends[0],mid=S.filter(s=>t(s)==='107').sort((a,b)=>(h?Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y):0)||byId(a,b));
       chain=[ends[0]].concat(mid,ends.slice(1)).map(s=>s.id);}
@@ -19540,7 +19540,7 @@ document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.targ
 function blSummary(R){const cnt=(a,k)=>a.filter(x=>x.kind===k).length,bx=R.boxes.filter(b=>b.kind!=='rbx');
   const parts=['sp','drop','pull','corner','end','tj','island'].map(k=>[k,cnt(bx,k)]).filter(x=>x[1]).map(x=>x[1]+' '+(BL_BOX_HU[x[0]]||x[0]));
   return `${R.C.list.length} kör · ${R.legs.reduce((a,l)=>a+(l.pipes||[]).length,0)} csőszakasz (${R.legs.length} szakasz, ${Math.round(R.legs.reduce((a,l)=>a+l.len,0)/1000)} m) · ${bx.length} doboz (${parts.join(', ')})`;}
-// ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Domoszló build checked by script. Every row: room + mutasd ----
+// ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Mintafalu build checked by script. Every row: room + mutasd ----
 function blReportHtml(run){const R=run.R,P=R.report;if(!P)return '';const n=v=>String(v).replace('.',','),lv=run.level;
   const sec=(t,rows,empty)=>`<div style="margin-top:8px;font-size:12px"><b>${t}</b></div>`+(rows.length?`<div style="font-size:11px">${rows.join('')}</div>`:`<div style="font-size:11px;color:var(--pc-mute,#888)">${empty||'—'}</div>`);
   const li=(txt,w,col)=>`<div${col?' style="color:'+col+'"':''}>${txt}${blShowLink(w,lv)}</div>`;
@@ -22781,7 +22781,7 @@ const VBACKUP = (function () {
 
   const PROJECT_KEY = 'villanyterv_projects_v1';   // the project library
   const LAST_KEY = 'varler_backup_last';           // our own bookkeeping
-  const KEY_MATCH = /^(villanyterv|varler|planner|domoszlo)/i;
+  const KEY_MATCH = /^(villanyterv|varler|planner)/i;
   const KEY_SKIP = [LAST_KEY];
 
   const EXT = '.vbundle.json';
@@ -22904,12 +22904,21 @@ const VBACKUP = (function () {
     return { projects: b.counts.projects, bytes: text.length };
   }
 
+  // One project as a .vplan.json: the same envelope as the Projektek panel's download (downloadProject, 12-boot.js),
+  // { format: 'varler-planner', version: 1, name, saved, project }, so the Planner's own import and the Inventory's
+  // plannerimport.js read it. A library entry is { name, ts, data } (12-boot.js); an odd one is kept whole.
+  function planFile(p) {
+    const r = (p && p.raw) || {};
+    const ts = typeof r.ts === 'number' ? r.ts : Date.parse(p && p.date) || now().getTime();
+    return { format: 'varler-planner', version: 1, name: p.name, saved: new Date(ts).toISOString(), project: r.data !== undefined ? r.data : r };
+  }
+
   // Secondary path: one .vplan.json per project, for cherry-picking later.
   function exportEach(onProgress) {
     const list = currentProjects();
     list.forEach((p, i) => {
       setTimeout(() => {
-        download(safeName(p.name) + '.vplan.json', JSON.stringify(p.raw, null, 1));
+        download(safeName(p.name) + '.vplan.json', JSON.stringify(planFile(p), null, 1));
         if (onProgress) onProgress(i + 1, list.length);
       }, i * 350);
     });
@@ -23108,7 +23117,7 @@ const VBACKUP = (function () {
 
     if (!list.length) {
       bd.appendChild(el('div', 'vbk-note', 'Nincs mentett projekt ebben a böngészőben. ' +
-        'Ha itt kellene lennie a Domoszlónak, valószínűleg egy másik böngészőprofilban van.'));
+        'Ha itt kellene lennie a Mintafalunak, valószínűleg egy másik böngészőprofilban van.'));
     } else {
       const ul = el('div', 'vbk-list');
       list.forEach(p => {
@@ -23275,7 +23284,7 @@ const VBACKUP = (function () {
 
   const api = {
     open: open, close: close,
-    exportAll: exportAll, exportEach: exportEach,
+    exportAll: exportAll, exportEach: exportEach, planFile: planFile,
     build: build, parse: parse, apply: apply,
     projects: currentProjects, storeKeys: storeKeys, hash: hash,
     FORMAT: FORMAT, BUNDLE_VERSION: BUNDLE_VERSION, PROJECT_KEY: PROJECT_KEY

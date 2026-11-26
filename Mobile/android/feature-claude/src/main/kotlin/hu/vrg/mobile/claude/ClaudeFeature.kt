@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,6 +71,8 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.shareText
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Claude (WP M22). VRG Mobile never signs in to Claude and never sees a Claude password or token: the official Claude app is the
 // sign-in, and this feature only opens it (ClaudeApp: the app when installed, else claude.ai in the browser).
@@ -193,9 +194,7 @@ object ClaudeFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-            Text("CLAUDE", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)   // Fényjel R3: kit FeatureTop
 
             // ---- the app
             Card {
@@ -243,7 +242,7 @@ object ClaudeFeature : VrgFeature {
     @Composable
     private fun Card(body: @Composable () -> Unit) {
         Column(Modifier.fillMaxWidth().padding(top = 10.dp).background(Melyviz.surface, RoundedCornerShape(Melyviz.radius))
-            .border(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(12.dp)) { body() }
+            .vrgBorder(1.dp, Melyviz.lineSoft, RoundedCornerShape(Melyviz.radius)).padding(12.dp)) { body() }
     }
 
     @Composable

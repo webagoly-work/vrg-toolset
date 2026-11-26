@@ -5,16 +5,16 @@ they contain customer addresses and tax numbers).
 
 ## 1. E-mails (53 × `.eml`)
 
-Sender: `kozpont@daniella.hu` / `monika.szeles@daniella.hu`.
+Sender: `kozpont@daniella.hu` / `<munkatárs>@daniella.hu`.
 Body is a single `text/html` part, **base64** encoded, UTF-8, with HTML
 entities (`&aacute;` etc.) mixed with literal accented characters.
 
 | Subject | Count | What it contributes |
 |---|---:|---|
-| `Rendelés visszaigazolás (Hefler Tamás)` | 39 | article no., name, pack, qty, net unit price, net total, gross total |
+| `Rendelés visszaigazolás (<megrendelő neve>)` | 39 | article no., name, pack, qty, net unit price, net total, gross total |
 | `FIGYELEM! A rendelés módosult!` | 12 | same columns; a later revision of an existing order |
 | `Rendelése megérkezett` | 1 | article no., name, unit, ordered/arrived/backordered — **no prices** |
-| `RE: Anyagok Forgáchba` | 1 | free-text list of article numbers, no prices |
+| `RE: Anyagok <helyszínre>` | 1 | free-text list of article numbers, no prices |
 
 Item rows match `/<tr height="18px"[^>]*>/`. Cell order:
 

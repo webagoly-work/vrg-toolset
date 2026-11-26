@@ -5,17 +5,17 @@
   "features": 105,
   "dashboard": 101,
   "console": 51,
-  "mobile": 70,
+  "mobile": 72,
   "stack": 24,
   "tools": 23,
   "prompts": 8,
   "agents": 17,
   "firmware": 4,
-  "shared": 7,
+  "shared": 8,
   "docs": 32,
-  "folders": 33
+  "folders": 34
  },
- "total": 646,
+ "total": 650,
  "errors": [],
  "rows": [
   {
@@ -4483,6 +4483,24 @@
    "note": "munkához böngészés a telefonon / real browsing on the phone"
   },
   {
+   "id": "mobile:M69",
+   "name": "Jegyzetek",
+   "where": "docs/mobile/WP/M69.md · feature-notes",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the central Notes app, with versions and origins"
+  },
+  {
+   "id": "mobile:M70",
+   "name": "VRG Füzet",
+   "where": "docs/mobile/WP/M70.md · feature-notebook",
+   "source": "mobile",
+   "kind": "phone feature",
+   "group": "VRG Mobile",
+   "note": "the malleable notebook, forked from the Sketcher"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "where": "GO-LOGO.md (planned)",
@@ -5185,6 +5203,15 @@
    "note": "ServiceKit CYD"
   },
   {
+   "id": "lib:fenyjel",
+   "name": "fenyjel",
+   "where": "shared/fenyjel",
+   "source": "shared",
+   "kind": "library",
+   "group": "shared",
+   "note": ""
+  },
+  {
    "id": "lib:grafit",
    "name": "grafit.css",
    "where": "shared/grafit.css",
@@ -5678,6 +5705,15 @@
    "kind": "top-level folder",
    "group": "repo",
    "note": ""
+  },
+  {
+   "id": "dir:Notes",
+   "name": "Notes",
+   "where": "Notes/",
+   "source": "folders",
+   "kind": "top-level folder",
+   "group": "repo",
+   "note": "VRG Jegyzetek: the central Notes app"
   },
   {
    "id": "dir:Planner",

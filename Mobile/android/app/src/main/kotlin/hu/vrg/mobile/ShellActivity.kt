@@ -104,7 +104,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
 
         setContent {
             val look by ShellSettings.flow.collectAsStateWithLifecycle()
-            LaunchedEffect(look.palette) { Melyviz.palette = Palettes.byId(look.palette) }
+            // Fényjel R3: an open feature wears its family colour (Palettes.forFeature leaves every other palette alone)
+            LaunchedEffect(look.palette, current) { Melyviz.palette = Palettes.forFeature(Palettes.byId(look.palette), current) }
             LaunchedEffect(look.orientation) { applyOrientation(look.orientation) }
             // UI size: every screen scales together, text included
             val d = LocalDensity.current
@@ -159,7 +160,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             else Box(Modifier.fillMaxSize()) {
                 VarlerWatermark()        // the Varler mark, faint, in the palette's glow, behind both homes
                 BackHandler(compactPeek) { compactPeek = false }
-                Desk(sheets, list)
+                // Fényjel (R2): its own home, Vezérlőpult and dock; a sheet that is up keeps the Asztal around it
+                if (Melyviz.palette.fenyjel && !onSheet) FenyjelShell(windows, desk, ::note) else Desk(sheets, list)
             }
         }
     }
@@ -362,10 +364,10 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             DropFeature.share(uris, i.getStringExtra(Intent.EXTRA_TEXT))
             return
         }
-        // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
+        // "Megosztás → VRG Mobile" with text from any app: a note in VRG Jegyzetek (M69), origin Megosztás
         if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
             val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return
-            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text))
+            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text, "from" to "megosztas"))
             open(r.feature)
             Registry.feature(r.feature)?.open(r)
             return

@@ -9,16 +9,16 @@
 | Features map (notes/features, outside git) | 105 |
 | VRG Irányítópult (Dashboard/) | 101 |
 | Varler Console pages | 51 |
-| VRG Mobile features | 70 |
+| VRG Mobile features | 72 |
 | VRG Stack | 24 |
 | CLI tools | 23 |
 | Prompt library | 8 |
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
-| Shared libraries | 7 |
+| Shared libraries | 8 |
 | Docs packs + GO phrases | 32 |
-| Top-level folders + launcher parts | 33 |
-| **Total** | **646** |
+| Top-level folders + launcher parts | 34 |
+| **Total** | **650** |
 
 ## START registry (launcher/vrg-menu.json) (171)
 
@@ -468,7 +468,7 @@
 | `console:trace` | Ügynöknyom (agent trace) | Console/www/js/trace + relay :8134 | feature | dev |  |
 | `console:ring` | Varler SUI gyűrű (HUD) | Console/www/js/ring.js + Console/design/tokens.json | design component | look |  |
 
-## VRG Mobile features (70)
+## VRG Mobile features (72)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -540,6 +540,8 @@
 | `mobile:M66` | DevLap on the home | docs/mobile/WP/M66.md | phone feature | VRG Mobile |  |
 | `mobile:M67` | Radar | docs/mobile/WP/M67.md · feature-radar | phone feature | VRG Mobile | one display for everything around |
 | `mobile:M68` | Böngésző | docs/mobile/WP/M68.md · feature-web | phone feature | VRG Mobile | munkához böngészés a telefonon / real browsing on the phone |
+| `mobile:M69` | Jegyzetek | docs/mobile/WP/M69.md · feature-notes | phone feature | VRG Mobile | the central Notes app, with versions and origins |
+| `mobile:M70` | VRG Füzet | docs/mobile/WP/M70.md · feature-notebook | phone feature | VRG Mobile | the malleable notebook, forked from the Sketcher |
 | `mobile:M15` | Logó kezdőlap | GO-LOGO.md (planned) | phone feature · planned | VRG Mobile | the two-state Varler logo home page |
 | `mobile:catalogue` | Mobile eszközkatalógus | Mobile/catalogue/tools.json | registry | VRG Mobile | 24 tools listed for the phone |
 
@@ -644,10 +646,11 @@
 | `fw:planner-cyd` | planner-cyd | Firmware/planner-cyd | firmware | firmware | Planner CYD: desk dashboard and remote for the Varler Planner |
 | `fw:servicekit-cyd` | ServiceKit CYD | ServiceKitCYD/ | firmware | firmware | ServiceKit CYD |
 
-## Shared libraries (7)
+## Shared libraries (8)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
+| `lib:fenyjel` | fenyjel | shared/fenyjel | library | shared |  |
 | `lib:grafit` | grafit.css | shared/grafit.css | stylesheet | shared |  |
 | `lib:melyviz` | melyviz.css | shared/melyviz.css | stylesheet | shared |  |
 | `lib:rajztar` | rajztar | shared/rajztar | library | shared | Rajztár: the drawing and document data store |
@@ -693,7 +696,7 @@
 | `go:route` | GO ROUTE | GO-ROUTE.md | codephrase brief | GO | GO ROUTE — new wiring features, with the Budakalász job as the basis and a PCB-style autorouter as the model |
 | `go:variant` | GO VARIANT | GO-VARIANT.md | codephrase brief | GO | GO VARIANT — make a Variant Sketcher for one kind of job |
 
-## Top-level folders + launcher parts (33)
+## Top-level folders + launcher parts (34)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -713,6 +716,7 @@
 | `dir:MindMap` | MindMap | MindMap/ | top-level folder | repo |  |
 | `dir:Mobile` | Mobile | Mobile/ | top-level folder | repo | VRG Mobile: the companion app |
 | `dir:Modder` | Modder | Modder/ | top-level folder | repo |  |
+| `dir:Notes` | Notes | Notes/ | top-level folder | repo | VRG Jegyzetek: the central Notes app |
 | `dir:Planner` | Planner | Planner/ | top-level folder | repo | VARLER — hordozható munkakörnyezet |
 | `dir:Prefilter` | Prefilter | Prefilter/ | top-level folder | repo | VRG Előszűrő (Prefilter) |
 | `dir:ServiceKit` | ServiceKit | ServiceKit/ | top-level folder | repo | ServiceKit |

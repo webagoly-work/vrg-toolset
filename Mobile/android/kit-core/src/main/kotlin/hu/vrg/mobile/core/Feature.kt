@@ -68,8 +68,8 @@ object Catalogue {
         "🏙", Group.WORK, Stage.BETA, "M5", setOf(Need.INTERNET, Need.GITHUB),
     )
     val NOTES = FeatureInfo(
-        "notes", "Gyorsjegyzet", "Jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként (chat log) működik.",
-        "✎", Group.WORK, Stage.LIVE, "M6", setOf(Need.INTERNET, Need.GITHUB),
+        "notes", "Jegyzetek", "Az összes jegyzet egy helyen: saját jegyzetek, gyorsjegyzet, és amit a Sketcher és a többi funkció ír, forrás szerint jelölve. Változatok a ⚙-ben.",
+        "✎", Group.WORK, Stage.BETA, "M69", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",
@@ -146,6 +146,12 @@ object Catalogue {
     val PHOTO = FeatureInfo(
         "photo", "Fotópont", "A Vázlat bővítménye: pont a szoba közepén, a kamera onnan fotóz, a húzás iránya a kép iránya (szobánként négy kép).",
         "📷", Group.WORK, Stage.BETA, "M25", setOf(Need.CAMERA),
+    )
+    // WP M70: VRG Füzet, the malleable notebook forked from the Sketcher's engine (docs/mobile/WP/M70.md): one store of
+    // entries, applications as kits (Mobile/notebook/kits), views, derived open items, one search, one export.
+    val NOTEBOOK = FeatureInfo(
+        "notebook", "VRG Füzet", "Egy füzet mindenre: jegyzet, teendő, mérés, mérőóra, séta. Kitek szabják alkalmazásra; egy keresés mindent megtalál, egy fájlba minden kimenthető.",
+        "📓", Group.WORK, Stage.BETA, "M70",
     )
     // WP M33: the Site Pager (the ESP32-S3 + nRF905 pager pair, Archive "Site Pager Builder") reimagined on phones.
     val PAGER = FeatureInfo(
@@ -224,7 +230,7 @@ object Catalogue {
         DESK, SHEETS,
         AIRDECK, LAUNCH, DROP, SCREEN, PCWIN,
         PAIR, ACCOUNT, NET, PAGER, TAG, WATCH, RADAR, CLAUDE, DEVLAP,
-        SKETCH, PHOTO,
+        SKETCH, PHOTO, NOTEBOOK,
         PLANNER, CALC, INVENTORY, WORKFLOW, MAP, WEATHER, WEB,
         PULSE, SPHERE, CITY, STACK, ARCHIVE, APPS, NOTES, PORTS, INBOX,
         UPDATE, DEVICES, VAULT, CATALOG, SETTINGS,

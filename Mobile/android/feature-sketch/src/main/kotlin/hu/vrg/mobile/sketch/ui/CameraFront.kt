@@ -11,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -84,6 +83,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Kamera (WP M29). The photo is taken with the phone's own camera app (as Átadás and Fotópont do); everything that
 // makes a field photo useful happens around it (docs/research/2026-11-18_field-survey-camera-notes.md, "build now"):
@@ -120,7 +120,7 @@ internal fun CameraFront(st: EditorState, sh: Shadow) {
             st.kit.purposes.forEach { p ->
                 val c = Color(p.color)
                 Column(Modifier.width(78.dp).clip(RoundedCornerShape(12.dp)).background(if (st.purpose == p.id) c.copy(alpha = 0.25f) else Melyviz.surface)
-                    .border(1.dp, c, RoundedCornerShape(12.dp)).clickable { if (p.id == "szoba") toPhotoPoint(st) else st.shoot(p.id) }.padding(vertical = 8.dp),
+                    .vrgBorder(1.dp, c, RoundedCornerShape(12.dp)).clickable { if (p.id == "szoba") toPhotoPoint(st) else st.shoot(p.id) }.padding(vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(p.sym, style = Melyviz.glyph.copy(fontSize = 22.sp, color = c))
                     Text(p.label, style = Melyviz.small.copy(fontSize = 9.sp), maxLines = 2)
@@ -187,7 +187,7 @@ internal fun PurposePicker(st: EditorState, close: () -> Unit) = AlertDialog(
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             st.kit.purposes.forEach { p ->
                 val c = Color(p.color)
-                Column(Modifier.width(76.dp).clip(RoundedCornerShape(12.dp)).border(1.dp, c, RoundedCornerShape(12.dp))
+                Column(Modifier.width(76.dp).clip(RoundedCornerShape(12.dp)).vrgBorder(1.dp, c, RoundedCornerShape(12.dp))
                     .clickable { close(); if (p.id == "szoba") toPhotoPoint(st) else st.shoot(p.id) }.padding(vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(p.sym, style = Melyviz.glyph.copy(fontSize = 22.sp, color = c))
@@ -274,7 +274,7 @@ internal fun CaptureViewer(st: EditorState, id: String, close: () -> Unit) {
                         Box(Modifier.minimumInteractiveComponentSize().clickable(role = Role.RadioButton, onClickLabel = "szín") { color = mc }
                             .semantics { contentDescription = MARK_COLOR_NAMES[i]; selected = mc == color }, contentAlignment = Alignment.Center) {
                             Box(Modifier.size(24.dp).clip(RoundedCornerShape(50)).background(Color(mc))
-                                .border(2.dp, if (mc == color) Melyviz.ink else Color.Transparent, RoundedCornerShape(50)))
+                                .vrgBorder(2.dp, if (mc == color) Melyviz.ink else Color.Transparent, RoundedCornerShape(50)))
                         }
                     }
                 }

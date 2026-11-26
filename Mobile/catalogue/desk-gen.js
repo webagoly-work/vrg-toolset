@@ -68,7 +68,9 @@ const REACH = {
   'layer.i': ['native', 'stack'],
   'layer.f': ['native', 'kompakt'],
   'layer.q': ['native', 'stack'],
+  'layer.k': ['native', 'stack'],              // K · Kisokos 3D, the same Stack page as 'kisokos' (START R → S)
   'konnektom-labor': ['native', 'stack'],
+  'kisokos': ['native', 'stack'],               // VRG Kisokos: its 3D page is a Stack page (K layer, START R → S); on the phone through M17 Rétegverem
 };
 
 // queries for the fixture: prefixes, accents, two words, misses, English

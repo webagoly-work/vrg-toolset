@@ -92,6 +92,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Átadás (WP M12): the relay's file board on the phone. Files and photos go to the PC (onto the board,
 // or for the Planner / the Inventory), the board's files come down into Letöltések (Képek for a
@@ -375,13 +376,9 @@ object DropFeature : VrgFeature {
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { host.home() }.wrapContentHeight())
-                // a visible refresh next to the title: pull-to-refresh alone is out of reach for TalkBack/Switch (9.1)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("ÁTADÁS", style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
-                    if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh beside the title: pull-to-refresh alone is out of
+                // reach for TalkBack/Switch (9.1)
+                FeatureTop(host, info) { if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {

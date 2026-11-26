@@ -196,7 +196,7 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   (generated, so the page also works from file://), `files/<id>.html` (the saved copies), `archive.js` (list / check / build / add),
   `vrg-archive.html` (the viewer: VRG first, scope + group + search, a timeline, the detail card, the page run in a viewer).
 - First fill: 38 entries (19 VRG, 19 other), 28 saved copies. Docs / Design / Design System artifacts and the shared Mélyvíz stay
-  link-only (their content lives in the type's store); Finom lap (needs files beside it) and the Domoszló viewer (a real house)
+  link-only (their content lives in the type's store); Finom lap (needs files beside it) and the Mintafalu viewer (a real house)
   stay where they are (`localPath`). The two empty Untitled canvases are left out. DESKU-Q24.
 - START: R (Rétegverem) → A Archívum (the main screen has no free letter). Catalog item `archive` (User, knowledge base ·
   artifact archive, in-shell on vrg-app://archive/), section `archivum` (User).
@@ -592,6 +592,9 @@ Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
 
 ## WP-58 Kéz + WP-59 Hangazonosítás — phase 4 of the voice work: act in other programs, know the voice (2026-11-25, cloud session, two forks + the wiring)
 
+*Number clash: Fényjel R4 / R5 (below, also 2026-11-25) took WP-58 and WP-59 on main. At the merge into main (2026-11-26) both
+keep their numbers; this section's test is `Dashboard/test/wp-58b.test.js` (run it with `--all` or `node --test`).*
+
 - Asked for: phase 4 of `docs/research/2026-11-25_voice-roadmap.md`. The Founder's rule decides the shape: spoken words never type into
   another program. So there is no text entry of any kind, only clicks and states.
 - **`Voice/hands/`** (the actions fork):
@@ -631,9 +634,63 @@ Phase 3 of `docs/browser/TRAJECTORIES.md` (T5, T6).
   - New phrases: kattints, nyomd meg, pipáld be, válaszd ki, görgess, válts át, mit csináltál, állj, tanuld meg / felejtsd el a
     hangomat, ki beszél.
 - **Tests:**
-  - `Voice/hands` 6, `Voice/identity` 8 (one needs the model), `wp-58` 4.
+  - `Voice/hands` 6, `Voice/identity` 8 (one needs the model), `wp-58b` 4 (was wp-58).
   - The full Dashboard suite: the same 68 environment failures. Every Voice / Prefilter / sidepanel suite: 60 pass, 3 skipped (they
     need the downloaded models).
   - Chromium (the overlay, main stubbed): reversible runs at once; confirm asks; a matched voice at Dev answers; All never accepts a
     spoken yes; blocked is refused; close from the global key asks once; the hand-off is fenced; "állj" stops.
 - **Not run:** both PowerShell helpers (no Windows here), real UI Automation actions, a real voice, the speaker check inside Electron.
+
+## WP-58 Fényjel home — rollout R4 of the Fényjel design system (2026-11-25, cloud session)
+
+- **A third look:**
+  - `ui.look` now takes `fenyjel` next to `melyviz` and `grafit`.
+  - The palette has *Megjelenés: Fényjel*, and the toggle cycles Mélyvíz → Grafit → Fényjel.
+  - The frame loads `shared/fenyjel/` (fonts, `fenyjel.css`, `icons.js`).
+  - `page/fenyjel-home.css` maps the Mélyvíz tokens onto Fényjel, so the panes and dialogs follow.
+- **The Irányítópult under Fényjel is the `shared/fenyjel/DESIGN.md` §7.3 home** (`page/fenyjel-home.js`; desk.js hands the view over):
+  - **The family rail:** home plus the eight families; each one filters the grid.
+  - **The top row:** the LED clock and date, a search field that opens the palette, and the level switch.
+  - **Continue cards, three at most:** open jobs with their step meter, then the DevLog lines waiting on you.
+  - **The grid:** every openable catalog item outside Rendszer, as a pixel-glyph tile with one word, in family order.
+    `GLYPHS` covers the whole catalog; an unknown item falls back to its group's family and a monogram.
+  - **The console column:**
+    - This PC: the new `desktop.sys`, the same `relay-sys.js` sampler the phone's Vezérlőpult reads, polled every 3 s.
+    - START's servers with switches: the new `desktop.serverStart`, which is dry in the selftest, and the existing stop.
+    - The toasts, shown as a console log.
+- **IPC:** `desktop.serverStart`, `desktop.sys` (wp-35 pin 137 → 139).
+- **Tests:**
+  - `wp-58` 6.
+  - The full Dashboard suite: 353 pass, the same 68 environment failures as the clean checkout (347 pass there).
+  - Chromium (the real page, the bridge stubbed with the real catalog), at user level 1400 px and dev level 1000 px: the rail filter,
+    a server switch calling `serverStart`, live gauges, no horizontal scroll.
+- **Not run:** inside Electron (no Electron here); the real sampler on Windows (its own tests ran with the phone's R2).
+- **Next, R5:** the shell chrome (title bar, dock, windows) in Fényjel.
+
+## WP-59 Fényjel chrome — rollout R5 of the Fényjel design system (2026-11-25, cloud session)
+
+- **`page/fenyjel-chrome.css`** restyles the shell under `html[data-look="fenyjel"]`; every rule is scoped, as wp-59 checks:
+  - **The ground and the bars:**
+    - the workspace ground is lit from the top, with a faint dot screen;
+    - the title bar and the top strip are void and deck planes, with 3×3 LED status dots.
+  - **The dock:** a shelf of glyph sockets in their family colours. A running program has a lit dot row under it, and the focused window is lit in its family.
+  - **Windows:** lit planes with HUD corner brackets and a VT323 title. On focus, the edge, the brackets and a soft glow take the window's family colour; WP-51 decorations still show as the edge.
+  - **Also restyled:** the tiled frame's groups and tabs, the split handles, the palette and quick bar (dark glass, pixel input), sheets, ask, toasts (a LED edge), jobs, scrollbars, and the corner dials (dark glass).
+- **`page/fenyjel-chrome.js`** swaps the monograms for pixel glyphs while the look is on:
+  - dock programs show their catalog glyph; open windows show the glyph of what they hold;
+  - window heads show the window's catalog item glyph, else its pane kind's (`KIND_GLYPH`, all 14 kinds), and set `data-fj-family`;
+  - the title bar gets a lit glyph in front of its name.
+  - It watches only the dock and the sheet layer (childList), never inside the panes. Off the look, everything gets its text back.
+- **Hooks:**
+  - `sheets.js` puts `data-cat` on a window (its catalog id);
+  - `VRGDesk.items()`;
+  - the look button's title names all three looks.
+- **Tests:**
+  - `wp-59`: 4 pass.
+  - The full Dashboard suite: 357 pass, with the same 68 environment failures.
+  - Chromium (the real page, the bridge and sheets stubbed: a sheet with Planner, Terminál, Git and Claude chat) at 1400 and 1100 px:
+    - windows and dock glyphed, with the families right;
+    - the palette open;
+    - Fényjel → Mélyvíz → Fényjel at runtime: Mélyvíz has every monogram back and no glyph or family left.
+  - The top strip's overflow at 1100 px already happens in Mélyvíz; it is not new here.
+- **Not run:** inside Electron (no Electron here).

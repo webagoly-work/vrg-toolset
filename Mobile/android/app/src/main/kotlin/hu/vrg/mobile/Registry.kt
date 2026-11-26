@@ -19,6 +19,7 @@ import hu.vrg.mobile.map.MapFeature
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.net.NetFeature
 import hu.vrg.mobile.notes.NotesFeature
+import hu.vrg.mobile.notebook.ui.NotebookFeature
 import hu.vrg.mobile.pager.app.PagerFeature
 import hu.vrg.mobile.pair.PairFeature
 import hu.vrg.mobile.ports.PortsFeature
@@ -76,6 +77,7 @@ object Registry {
         WatchFeature,
         RadarFeature,
         WebFeature,
+        NotebookFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

@@ -32,18 +32,23 @@
   const setting = (k, v) => (vrg && vrg.call ? vrg.call('app', 'setting', v === undefined ? { k } : { k, v }) : Promise.resolve({}));
   const relayout = () => window.dispatchEvent(new Event('resize'));
 
-  // ------------------------------------------------------------ the look: Mélyvíz (default) or Grafit (shared/grafit.css + grafit.css)
-  const LOOKS = ['melyviz', 'grafit'];
+  // ------------------------------------------------------------ the look: Mélyvíz (default), Grafit (shared/grafit.css + grafit.css) or
+  // Fényjel (shared/fenyjel + fenyjel-home.css; its home is fenyjel-home.js). The title-bar ◐ steps through them in this order.
+  const LOOKS = ['melyviz', 'grafit', 'fenyjel'];
+  const LOOK_HU = { melyviz: 'Mélyvíz', grafit: 'Grafit', fenyjel: 'Fényjel' };
+  const nextLook = lk => LOOKS[(LOOKS.indexOf(lk) + 1) % LOOKS.length];
   function applyLook(v) {
     const lk = LOOKS.includes(v) ? v : 'melyviz';
-    if (lk === 'grafit') document.documentElement.dataset.look = 'grafit'; else delete document.documentElement.dataset.look;
+    const was = S.look;
+    if (lk === 'melyviz') delete document.documentElement.dataset.look; else document.documentElement.dataset.look = lk;
     S.look = lk;
     const b = $('[data-role="look-toggle"]');
-    if (b) { b.setAttribute('aria-pressed', String(lk === 'grafit')); b.title = lk === 'grafit' ? 'Megjelenés: Grafit → Mélyvíz / Look' : 'Megjelenés: Mélyvíz → Grafit / Look'; }
+    if (b) { b.setAttribute('aria-pressed', String(lk !== 'melyviz')); b.title = 'Megjelenés: ' + LOOK_HU[lk] + ' → ' + LOOK_HU[nextLook(lk)] + ' / Look'; }
     document.dispatchEvent(new Event('vrg:look'));                  // open terminals recolour (panes/term.js)
+    if (was !== lk && S.ready) { if (was === 'fenyjel' && window.VRGFenyjelHome) window.VRGFenyjelHome.stop(); renderDashboard(); }   // the home is drawn per look
     return lk;
   }
-  async function setLook(v) { applyLook(v === 'toggle' ? (S.look === 'grafit' ? 'melyviz' : 'grafit') : v); await setting('ui.look', S.look); return S.look; }          // the frame re-reports the view rects (hidden ancestors → 0)
+  async function setLook(v) { applyLook(v === 'toggle' ? nextLook(S.look) : v); await setting('ui.look', S.look); return S.look; }          // the frame re-reports the view rects (hidden ancestors → 0)
 
   // ------------------------------------------------------------ the DOM the frame page provides (vrg-desktop.html)
   const stage = $('#stage'), dash = $('[data-role="dashboard"]'), desk = $('[data-role="desktop"]'), ws = $('[data-role="workspace"]');
@@ -404,7 +409,20 @@
 
   const SEC = { ma: secMa, apps: secApps, programok: secProgramok, archivum: secArchivum, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
 
+  // Fényjel R4: the home is fenyjel-home.js's (rail, continue cards, glyph grid, the console column); it calls back for every action
+  function fenyjelCtx() {
+    return {
+      items: S.items, data: data(), ports: S.ports, level: S.level, levelControl,
+      open: openItem, runAct, openServer,
+      serverStart: async id => { const r = await call('serverStart', { id }); toast(!!(r && r.ok !== false), r && r.ok !== false ? (r.already ? 'Már fut.' : 'Indul…') : ((r && r.hu) || 'Nem indult.')); },
+      serverStop: async id => { const r = await call('serverStop', { id }); toast(!!(r && r.ok !== false), r && r.ok !== false ? 'Leállítva.' : ((r && r.hu) || 'Nem állt le.') + ' Csak az Asztalból indítottat lehet itt leállítani.'); },
+      sys: () => call('sys', {}),
+      palette: () => { if (window.VRGPalette) window.VRGPalette.open(); },
+    };
+  }
+
   function renderDashboard() {
+    if (S.look === 'fenyjel' && window.VRGFenyjelHome) { window.VRGFenyjelHome.render(dash, fenyjelCtx()); return; }
     const secs = D.sections(S.items, S.level, S.sections, S.groups);
     const inner = h('div', { class: 'dash-in' },
       h('div', { 'data-role': 'dash-head' }, h('h1', {}, 'Irányítópult'), h('span', { class: 'sub' }, 'VRG Asztal · ' + (data().generated || '')), h('span', { class: 'sp' }),
@@ -623,7 +641,7 @@
   }
 
   window.VRGDesk = {
-    view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
+    view: () => S.view, setView, level: () => S.level, items: () => S.items, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
     get sui() { return S.sui; }, get stack() { return S.stack; },
     state: () => ({ look: S.look, view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
     openSettings, openCustomize, advance, apply: applyOpen, drawDock,

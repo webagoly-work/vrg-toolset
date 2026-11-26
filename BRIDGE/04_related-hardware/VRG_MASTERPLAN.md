@@ -185,7 +185,7 @@ subnet-aware `/whoami`, role-aware routing, wireless-first interface ranking, an
   `DECISIONS.md` as a build dependency.** Firefox stays as a cross-check only — its `file://`
   origin semantics differ.
 - **⚠ Sequencing consequence:** a new browser is a new empty profile, so it is another instance
-  of the localStorage-is-profile-bound problem. **Do the browser swap before the Domoszló
+  of the localStorage-is-profile-bound problem. **Do the browser swap before the Mintafalu
   import (T0.1)**, or the rescue lands in a profile that is about to be abandoned. Right now
   the swap is free; after the import it costs a second rescue.
 
@@ -236,7 +236,7 @@ edit session** — no assumed persistent state.
   insert, `[[` autocomplete) → T3 paged output.
 - **`varler-webdev-vocabulary.md`** — 10-section glossary generated from the real source, all
   516 function names decoded with prefix families and Hungarian glosses.
-- **Domoszló** — complete importable `.vplan.json` (67 devices, 39 paths, 12 notes, 6 toggleable
+- **Mintafalu** — complete importable `.vplan.json` (67 devices, 39 paths, 12 notes, 6 toggleable
   tier layers), verified through the real `importProjectFile()` under jsdom; 63-line costed
   schedule at ~4.57 M Ft nettó. Grounding resolved; **TN-C-S vs TN-S still unconfirmed** (D8).
 
@@ -438,7 +438,7 @@ T4's gate tests this.
   "app": { "id": "planner", "version": "1.1.0" },
   "created": "2026-09-05T10:14:00+02:00",
   "updated": "2026-09-05T14:02:11+02:00",
-  "title": "Domoszló garázs — villamos",
+  "title": "Mintafalu garázs — villamos",
   "status": "piszkozat",
   "payload": { }
 }
@@ -589,15 +589,15 @@ Lanes: **T** trunk (blocking, ordered) · **B** branch (parallel-safe) · **H** 
 |---|---|---|---|
 | **T0.0** | Refresh `STATE.md`, the `ARCHITECTURE.md` module map and `CLAUDE.md` to the real 25-module tree and the U100 paths | H1 | a cold reader gets the current picture from four files. See 8.1 for the `CLAUDE.md` corrections |
 | **T0.1a** | **Browser swap to Chrome for Testing**, version pinned in `DECISIONS.md` | — | `planner.cmd` opens the built file in an `--app=` window |
-| **T0.1b** | **localStorage rescue** — Domoszló `.vplan.json` into the *new* profile, first `.vbundle.json`, verify west = house side and board z 1600–2400 against the 1800–2000 operating limit | T0.1a | Domoszló opens and looks right; backup in `data\projects\`. **Order matters** — see 1.3 |
+| **T0.1b** | **localStorage rescue** — Mintafalu `.vplan.json` into the *new* profile, first `.vbundle.json`, verify west = house side and board z 1600–2400 against the 1800–2000 operating limit | T0.1a | Mintafalu opens and looks right; backup in `data\projects\`. **Order matters** — see 1.3 |
 | **T0.2** | `backup-smoke.js` → `spec-20-backup.js` | — | 22/22 inside `npm test` |
 | **T0.3** | Fold all five harnesses (0.2) into `npm test` | T0.2 | one command, everything green |
 | **T0.4** | `boardFor` identity-link round-trip failure | — | round-trip assertion added |
 | **T2** | **VRG-CONTRACT v1** — `VRG_CONTRACT.md` + `vrg-envelope.js` | T0 | round-trip spec: legacy `.vplan.json` → wrap → unwrap → **byte-identical payload** |
-| **T3** | **Planner adopts the contract** | T2 | 828 + 70 unchanged; Domoszló loads bare **and** enveloped |
+| **T3** | **Planner adopts the contract** | T2 | 828 + 70 unchanged; Mintafalu loads bare **and** enveloped |
 | **T4** | **`vrg-server.js`** — merge the relay, static serve, thin workspace API | T2 | `dist/varler_planner.html` behaves **identically** from `file://` and `http://localhost`; a test asserts no server-only path in the offline build |
 | **T4b** | **Typed device bus** — generalise `07a-link` roles so any ESP32 is a first-class peripheral | T4 | an S3 pendant registers, appears in `07d-linkpanel`, and drives an action |
-| **T5** | **VRG Shell v0** — `index.html`: project list, program list from `apps.json`, open with `?project=` | T4 | open Domoszló in Planner from the Shell |
+| **T5** | **VRG Shell v0** — `index.html`: project list, program list from `apps.json`, open with `?project=` | T4 | open Mintafalu in Planner from the Shell |
 | **T6** | **Workspace-on-disk migration** | T4, T5 | switch browser profile → projects still there. **The T0.1 class of bug is gone** |
 | **T7** | **Planner 1.1** — P1 → P3+P4 → P2 → W1 → R1+R3+R4 → R2+P5+H2 → H1+H3 | T3 | per `1_1_backlog.md` |
 | **T8** | **Telemetry binding** — a measurement attaches to a run/circuit | T7, T4b | a measured value survives save/load attached to the right run |
@@ -664,7 +664,7 @@ user-writable · qr-zip binary codes · polygon-clipping union libraries · bloc
 | **D5** | ODU target | **RESOLVED 2026-09-05.** Pi-class runs the full server and terminates TLS; ESP32-S3 is a peripheral or static SoftAP island. ESP cannot tunnel |
 | **D6** | Public host — when, under what access model? | **Partially resolved.** First form is a **private tunnel** (Funnel / Access), which satisfies TLS without triggering 3.7. A genuinely public host stays gated |
 | **D7** | PortableGit | **RESOLVED 2026-09-05.** Fixed — `post-install.bat` was the missing step |
-| **D8** | Domoszló supply: TN-C-S or TN-S? | **Open, and it is a field question, not a code one.** Determines the EV circuit protection strategy |
+| **D8** | Mintafalu supply: TN-C-S or TN-S? | **Open, and it is a field question, not a code one.** Determines the EV circuit protection strategy |
 | **D9** | `core.autocrlf` | **Open — H1.** Must be `false`. Record the reason: the byte-compare gate |
 | **D10** | Browser: Chrome for Testing version pin | **Open.** Pin the exact build in `DECISIONS.md` before T0.1b |
 
@@ -673,7 +673,7 @@ user-writable · qr-zip binary codes · polygon-clipping union libraries · bloc
 ## 8. Next actions
 
 1. **H1** — settle `core.autocrlf`, rebuild, `--check`, `npm test`. Ten minutes, do it first.
-2. **T0.1a then T0.1b, in that order.** Swap the browser *before* the Domoszló import.
+2. **T0.1a then T0.1b, in that order.** Swap the browser *before* the Mintafalu import.
 3. **T0.0** — bring `STATE.md`, `ARCHITECTURE.md` and `CLAUDE.md` current (see 8.1).
 4. **Answer D1–D4 and D10.** Cheap now, expensive in three months.
 5. **Then `VRG_CONTRACT.md`**, drafted from section 4.

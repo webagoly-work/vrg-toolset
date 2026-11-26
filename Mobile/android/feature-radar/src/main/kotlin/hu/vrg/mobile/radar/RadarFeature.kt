@@ -57,6 +57,8 @@ import hu.vrg.mobile.kit.ui.radarDescribe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // Radar (WP M67, D-173 … D-175): the universal locator, proximity and connection display. Everything any program has
 // registered in RadarHub on one radar, each layer in its tone: the Tárgykereső's tags and paired devices, the Csipogó
@@ -151,11 +153,8 @@ object RadarFeature : VrgFeature {
         val heading = Compass.heading.value
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Text("RADAR", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Ami körülötted van, minden programból egy helyen: címkék, párosított eszközök, a Csipogó brigád, az óra.",
-                style = Melyviz.small)
+            FeatureTop(host, info)   // Fényjel R3: kit FeatureTop; on Fényjel the sentence below lives behind its i
+            FjBlurb("Ami körülötted van, minden programból egy helyen: címkék, párosított eszközök, a Csipogó brigád, az óra.")
 
             VrgRadar(
                 frame = frame.copy(mode = mode), modifier = Modifier.fillMaxWidth().padding(top = 8.dp),

@@ -132,7 +132,7 @@ Target: `C:\Users\webag\OneDrive\VRG-Megosztott\10_Projektek\_VARLER Documents`.
 
 1. **Copy** (not move) ROOT into the target, keeping the tree.
 2. For each DESK file: missing in the target → copy in (18 expected). Identical by hash → skip (223).
-   Different (9 expected: `BUDAKALASZ_TERV.sxe(.bak)`, `DOMOSZLOTERV.sxe(.bak)`, `KIRALY.sxe(.bak)`,
+   Different (9 expected: `BUDAKALASZ_TERV.sxe(.bak)`, `MINTAFALUTERV.sxe(.bak)`, `KIRALY.sxe(.bak)`,
    `KKHO_installation.sxe(.bak)`, `20260612_log.txt`) → the newer LastWriteTime keeps the name, the
    other goes to `_utkozesek\<relative path>\<name>.<yyyy-MM-dd>.<ext>`.
 3. Verify: every file of ROOT and DESK exists in the target or `_utkozesek` with an identical hash.

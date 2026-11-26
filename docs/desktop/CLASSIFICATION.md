@@ -23,9 +23,9 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | open · user | 123 | 40 |
 | open · dev | 314 | 63 |
 | open · all | 24 | 1 |
-| internal | 88 | 0 |
-| roadmap | 97 | 5 |
-| **total** | **646** | **109** |
+| internal | 90 | 0 |
+| roadmap | 99 | 5 |
+| **total** | **650** | **109** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -180,11 +180,11 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `companion app` | Companion app · Társalkalmazás | unit | 9 |
 | `utility` | Utility · Segédprogram | unit | 15 |
 | `feature` | Feature · Funkció | unit | 19 |
-| `feature module` | Feature module · Funkciómodul | unit | 69 |
+| `feature module` | Feature module · Funkciómodul | unit | 71 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
 | `module` | Module · Modul | unit | 59 |
-| `library` | Library · Könyvtár | unit | 4 |
+| `library` | Library · Könyvtár | unit | 5 |
 | `command` | Command · Parancs | unit | 104 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
 | `cli tool` | CLI tool · Parancssori eszköz | unit | 18 |
@@ -202,7 +202,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `design system` | Design system · Dizájnrendszer | unit | 5 |
 | `ui component library` | UI component library · UI-komponenskönyvtár | unit | 2 |
 | `asset` | Asset · Erőforrás | unit | 10 |
-| `folder` | Folder · Mappa | unit | 7 |
+| `folder` | Folder · Mappa | unit | 8 |
 | `firmware` | Firmware · Firmware | unit | 11 |
 | `device` | Device · Eszköz (hardver) | unit | 2 |
 | `build pipeline` | Build pipeline · Építési folyamat | unit | 1 |
@@ -733,6 +733,8 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `mobile:M66` | DevLap on the home | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M67` | Radar | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M68` | Böngésző | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M69` | Jegyzetek | feature module · companion app | roadmap |  | `mobile` | planned |
+| `mobile:M70` | VRG Füzet | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:M15` | Logó kezdőlap | feature module · companion app | roadmap |  | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry · generated tool list | internal |  | `mobile` | the phone's tool list, generated |
 | `stack:commits` | VRG Commit-pixel | view · stack layer | open | dev | `stack` | is the catalog item `layer.r` |
@@ -811,6 +813,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `fw:knobpad` | knobpad | firmware · input device | open | dev | `dev:hw` | is the catalog item `knobpad` |
 | `fw:planner-cyd` | planner-cyd | firmware · companion device | open | dev | `planner` | is the catalog item `planner-cyd` |
 | `fw:servicekit-cyd` | ServiceKit CYD | firmware | roadmap |  | `dev:hw` | is the catalog item `servicekit-cyd` (planned) |
+| `lib:fenyjel` | fenyjel | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:grafit` | grafit.css | library | internal |  | `dev:look` | shared code or assets other pages load |
 | `lib:melyviz` | melyviz.css | design system · tokens stylesheet | open | dev | `dev:look` | is the catalog item `melyviz` |
 | `lib:rajztar` | rajztar | library | internal |  | `dev:look` | shared code or assets other pages load |
@@ -866,6 +869,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dir:MindMap` | MindMap | application | open | user |  | is the catalog item `mindmap` |
 | `dir:Mobile` | Mobile | companion app · Android | open | user |  | is the catalog item `mobile` |
 | `dir:Modder` | Modder | application | open | user |  | is the catalog item `buildtree` |
+| `dir:Notes` | Notes | folder · source | internal |  |  | a top-level folder; what it holds is classified by its own rows |
 | `dir:Planner` | Planner | application | open | user |  | is the catalog item `planner` |
 | `dir:Prefilter` | Prefilter | folder · source | internal |  |  | a top-level folder; what it holds is classified by its own rows |
 | `dir:ServiceKit` | ServiceKit | device · portable field kit | open | dev |  | is the catalog item `servicekit` (dev: shown from dev) |

@@ -1,7 +1,6 @@
 package hu.vrg.legeger.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +32,7 @@ import hu.vrg.legeger.core.Macro
 import hu.vrg.legeger.core.MacroScript
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Macros: the list (run, edit, pin to the deck, delete) and an editor that reads the script as it is
 // typed, so a mistake shows up here and not halfway through a run.
@@ -75,7 +75,7 @@ fun MacroSheet(onClose: () -> Unit) {
             val shape = RoundedCornerShape(Melyviz.radiusSmall)
             Row(
                 Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(shape).background(Melyviz.surface)
-                    .border(1.dp, Melyviz.line, shape).clickable { Deck.runMacro(m) }.padding(horizontal = 10.dp, vertical = 8.dp),
+                    .vrgBorder(1.dp, Melyviz.line, shape).clickable { Deck.runMacro(m) }.padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(m.glyph, style = Melyviz.glyph.copy(fontSize = 18.sp))

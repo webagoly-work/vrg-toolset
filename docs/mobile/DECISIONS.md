@@ -1094,6 +1094,64 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   share sheet, as the Diagnosztika report does; the vault's Radarom keeps the snapshots and the Founder's own places (GPS
   bearings from "itt vagyok"). Its layout is a copy of the shared rule, proven by a copy of the shared fixture. Rejected:
   a live link phone → vault (the vault app has no network, DV-Q20; a live view stays VRG Mobile's).
+- **D-177 · Jegyzetek: one central Notes app, phone first (M69), 2026-11-20.** Asked: the Founder wants one central
+  Notes app users mainly use, with selectable versions (module sets) and a hub other features write into, tagged by
+  origin. Asked which platform first: the Founder chose **A**, the phone (VRG Mobile, replacing Gyorsjegyzet M6);
+  the Desktop page follows on the same files (`Notes/catalog/noteskit.json`, the `vrg-note` format). Rejected for
+  now: **B** desktop first (a self-contained page needs a local server to share storage between tools); **C** both
+  at once (slower to a usable first version).
+- **D-178 · Jegyzetek: where the notes live (M69), 2026-11-20.** Asked, with the warning that Sketcher notes carry
+  client details: **A** each device + the PC over the relay (client data never on GitHub), **B** a private git
+  branch, **C** the OneDrive Shared folder. The Founder chose **B**: the branch `vrg-notes`, one JSON file per note
+  (`notes/<id>.json`), sha-guarded writes, conflicts kept as a separate note tagged `ütközés`, a tombstone for an
+  emptied trash. This bends "client data never enters Git" knowingly and **unsealed** (unlike D-52); sealing the
+  notes of `client` origins to the devices' keys is the follow-up to offer.
+- **D-179 · Jegyzetek: who owns a feature's note (M69), 2026-11-20.** Asked: **A** a linked mirror, **B** the hub owns
+  it, **C** a one-way copy. The Founder chose **A**: the feature keeps its record (the Sketcher's Entry stays in the
+  survey and goes to the Planner with it) and the hub holds the same note with a fixed id; the base of the three-way
+  merge is the source's text when the two last agreed (`origin.seen`). Source changed → the note follows; note
+  changed → the source takes it when it next opens; both → the note keeps both texts and the source takes that; a
+  trashed note is never revived; a deleted record marks the note `gone`. Details: `WP/M69.md`, `Notes/README.md`.
+- **D-180 · Jegyzetek: client notes sealed on the branch, the Workflow Kit's way (M69), 2026-11-25.** Asked by the
+  Founder ("seal the client notes like the Workflow Kit"), closing the gap D-178 left open. A note of a `client` origin
+  (the Sketcher; the Planner when it comes), a conflict copy made from one, a note from a template marked `seal`
+  (Helyszíni bejárás, Ügyfélhívás) and any note locked by hand (🔒) goes to `vrg-notes` as `vrg-note-sealed`: the
+  note's JSON gzipped under a fresh AES-256-GCM key, that key wrapped per recipient with P-256 ECDH (a fresh key pair
+  each, the raw secret as the key, D-52's shape), additional data binding the content to the note id and each wrapped
+  key to the note id and the device. Readable: the note id and the recipients' device ids; the commit message names
+  the id only (for every note). Recipients: this device (its Eszközök key, kit Trust) and the devices whose code the
+  owner typed on this one (⚙ → Lezárás, pinned in the app's prefs, never in Git); each device publishes its public key
+  as `keys/<ID>.json` on the branch. Trusting or dropping a device seals every sealed note again. Without a device
+  key a sealed note waits on the phone, never falls back to plain; a plain client file left by the earlier build is
+  rewritten sealed at the next round. A client note cannot be unlocked by hand. Not undone: what the earlier build
+  pushed unsealed stays in the branch's history (only recreating the branch removes it); a dropped device keeps
+  reading the versions sealed to it before. Details: `WP/M69.md` → Lezárás.
+
+- **D-181 · VRG Füzet: what "the Note app" is, and what the fork is (M70), 2026-11-21. Taken as a default while
+  building.** The Founder asked for a fork of "the Note app" with its array of modules. Read as the VRG Sketcher (the
+  note taker with fronts, a data catalog and agent-made variants), not Gyorsjegyzet (M6, a single text box to a
+  branch). The fork is a new feature (`notebook`, `notebook-core` + `feature-notebook`) that takes the Sketcher's engine
+  ideas, not its code; the Sketcher stays as it is. Revisit if Gyorsjegyzet was meant: it could then become the Alap
+  kit's sender.
+- **D-182 · One store, applications as kits (M70), 2026-11-21. Default.** Every kit's entries in one JSON file, so one
+  search and one export cover everything (the Keep and Find directions). Kits are data only, bundled from
+  `Mobile/notebook/kits` and loadable from a file. Rejected: a file per kit (search and links across kits get hard);
+  kits as code modules (no agent-made or imported kits).
+- **D-183 · The store lives on the phone first (M70), 2026-11-21. Default, = Personal App Q2 A.** `filesDir`, plain JSON,
+  export / import through the system file picker with a merge. No GitHub sync yet; a sealed sync (the M42 mechanism)
+  is a later step.
+- **D-184 · The bundled kits and what is on at first (M70), 2026-11-21. Default.** Alap (always on), Munka and Otthon
+  on, Kutya off until Personal App Q4 is answered. The two measurement limits in Munka are the standard values (insulation
+  ≥ 1 MΩ at 500 V; RCD trip ≤ 300 ms at IΔn); the electrician confirms them.
+- **D-185 · The Füzet on the home (M70), 2026-11-21. Default.** Page 1, between the Sketcher and the Csipogó: quick
+  capture belongs with what is needed at once. Later: the Sketcher's survey as a kit, and the PC's Desktop page for
+  the store.
+  Details: `WP/M70.md`.
+- **D-186 · VRG Füzet and Jegyzetek both stay, for now (M70, M69), 2026-11-25.** Asked: the two were built in parallel
+  and overlap (Jegyzetek's versions of modules, the Füzet's kits): **A** keep both, **B** fold the Füzet's kits into
+  Jegyzetek, **C** fold Jegyzetek into the Füzet. The Founder chose **A**: Jegyzetek is the notes hub other features
+  write into, the Füzet holds the structured entries (measurements, readings, totals, limits). Revisit B once both have
+  been used on the phone.
 
 ## Open (to ask when the WP that needs them starts)
 

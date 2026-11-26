@@ -5,7 +5,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // The trusted device gate (Mobile/access.json `trustedDevices`): a release build on a phone whose code
 // is not listed shows only this. The code is big and copyable so the owner can add it; Frissítés and
@@ -50,7 +50,7 @@ fun LockScreen(onOpen: (String) -> Unit) {
         Text("Ez a telefon nincs a megbízható eszközök között.", style = Melyviz.label.copy(color = Melyviz.sand))
         Spacer(Modifier.height(18.dp))
         Column(
-            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).border(1.dp, Melyviz.glowDim, shape).padding(14.dp),
+            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text("Eszközkód", style = Melyviz.small)

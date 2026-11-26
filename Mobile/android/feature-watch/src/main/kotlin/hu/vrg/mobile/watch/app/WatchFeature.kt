@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Óra (WP M65, round 1 = Q1–Q3, D-170): the Q71 watch with VRG Mobile instead of FunDo (D-168). Kapcsolat (the LE link,
 // a foreground service while on), the time set on every connect, Óra adatai (GET,0), today's steps (GET,10), Óra keresése
@@ -99,9 +100,7 @@ object WatchFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
-            Text("ÓRA", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, WatchFeature.info)   // Fényjel R3: kit FeatureTop (a local `info` here is the watch's)
             Text("Q71 a FunDo nélkül · kapcsolat: ${link.hu}", style = Melyviz.readout)
 
             if (!allowed) Column(Modifier.padding(top = 6.dp)) {

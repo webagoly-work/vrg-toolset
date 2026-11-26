@@ -27,6 +27,7 @@ object DeskCatalog {
         DeskUnit("rajztar", "Rajztár Stúdió", "Drawing store studio", "munka", "RT", Reach.NONE, "a Rajztár Stúdió a PC-n fut (tervcsomag, rajzlap, rajzjel); a telefonon egy későbbi munkacsomag"),
         DeskUnit("sketcher", "VRG Sketcher", "VRG Sketcher", "alkalmazasok", "SK", Reach.NATIVE, "sketch"),
         DeskUnit("sketcher.house3d", "Ház 3D feldolgozás", "House 3D processing", "alkalmazasok", "H3", Reach.NATIVE, "sketch"),
+        DeskUnit("kisokos", "VRG Kisokos", "VRG Handbook", "munka", "KI", Reach.NATIVE, "stack"),
         DeskUnit("client-preview", "Ügyfélnézet", "Client preview", "munka", "ÜN", Reach.WEBAPP, "planner"),
         DeskUnit("workflow-kit", "Varler Workflow Kit", "Varler Workflow Kit", "munka", "WK", Reach.PC, "pcwin"),
         DeskUnit("calc-panel", "Panel anyagár kalkulátor", "Panel material price calculator", "munka", "K1", Reach.WEBAPP, "calc-panel"),
@@ -55,5 +56,6 @@ object DeskCatalog {
         DeskUnit("layer.i", "I · Ötletfolyam", "I · Ideas", "fejlesztes", "I", Reach.NATIVE, "stack"),
         DeskUnit("layer.f", "F · Kiemelt", "F · Featured", "fejlesztes", "F", Reach.NATIVE, "kompakt"),
         DeskUnit("layer.q", "Q · Döntésnapló", "Q · Decisions", "fejlesztes", "Q", Reach.NATIVE, "stack"),
+        DeskUnit("layer.k", "K · Kisokos 3D", "K · Handbook 3D", "fejlesztes", "K", Reach.NATIVE, "stack"),
     )
 }

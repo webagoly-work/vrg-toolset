@@ -155,7 +155,7 @@ echo.
 pushd "%ANDROID_DIR%"
 :: kit-core and airdeck-core are plain Kotlin modules; --configure-on-demand keeps the Android
 :: module out of it, so this runs without the Android SDK
-call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :weather-core:test :tag-core:test :kct-core:test
+call .\gradlew.bat --configure-on-demand :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :weather-core:test :tag-core:test :kct-core:test :notebook-core:test
 set "RC=%ERRORLEVEL%"
 popd
 :: WP M16: kit\...\theme\KitTokens.kt must still match the VRG UI Kit tokens
@@ -163,6 +163,9 @@ if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\shared\vrg-ui-kit\tools\kotlin-tokens
 if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 :: WP M19: kit-core DeskCatalog.kt + the Kommand fixture must still match launcher\vrg-catalog.json
 if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\desk-gen.js" --check
+if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
+:: Fenyjel R1: kit-core PixelGlyphs.kt must still match shared\fenyjel\icons.js (the pixel icons)
+if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\shared\fenyjel\tools\kotlin-icons.js" --check
 if exist "%NODE_EXE%" if errorlevel 1 set "RC=1"
 :: Launcher icon per palette: the generated icons and manifest aliases must match the logo and the palettes
 if exist "%NODE_EXE%" "%NODE_EXE%" "%REPO%\Mobile\catalogue\icon-gen.js" --check

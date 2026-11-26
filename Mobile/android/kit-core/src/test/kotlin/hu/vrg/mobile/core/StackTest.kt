@@ -33,6 +33,29 @@ class StackTest {
         assertNull(StackPages.byFile("x.html"))
     }
 
+    @Test fun kisokosIsAnOptionalFourthPage() {
+        val old = StackMeta.parse(json)!!
+        assertEquals(listOf("konnektom", "holo", "retegek"), old.pages.map { it.id }, "a publish from before Kisokos is still whole")
+        assertEquals("konnektom", old.page("kisokos").id, "a remembered Kisokos falls back to the first page")
+        val withK = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"kisokos.html\":1501373}"))!!
+        assertEquals(listOf("konnektom", "holo", "retegek", "kisokos"), withK.pages.map { it.id })
+        assertEquals("kisokos", withK.page("kisokos").id)
+        assertEquals(1501373L, withK.bytes(StackPages.page("kisokos")))
+        assertEquals(withK, StackMeta.parse(withK.toJson()))
+        assertEquals(listOf("konnektom", "holo", "retegek"), StackPages.REQUIRED.map { it.id })
+        // Kisokos alone does not make a publish: the three required pages must be there
+        assertNull(StackMeta.parse("""{"kind":"vrg-stack-meta","published":"x","files":{"kisokos.html":10}}"""))
+    }
+
+    @Test fun syncWaitsForTheOptionalPageOnlyWhenPublished() {
+        val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
+        val old = StackMeta.parse(json)!!
+        assertIs<StackSync.Fresh>(StackSync.decide(old, have, old, answered = true), "no Kisokos published: nothing to fetch")
+        val withK = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"kisokos.html\":1501373}"))!!
+        assertIs<StackSync.Download>(StackSync.decide(withK, have, withK, answered = true), "Kisokos published but not on the phone")
+        assertIs<StackSync.Fresh>(StackSync.decide(withK, have + ("kisokos.html" to 1501373L), withK, answered = true))
+    }
+
     @Test fun syncDecides() {
         val m = StackMeta.parse(json)!!
         val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)

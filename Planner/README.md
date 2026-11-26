@@ -51,7 +51,7 @@ VARLER/
 vagy `D:` teljesen mindegy. Ha új scriptet írsz, az első sora legyen
 `call "%~dp0_env.cmd"` — onnantól `%ROOT%`, `%PROJ%`, `%DATA%`, `%NODE%` megvan.
 
-**2. A `data/` a repón kívül van.** A domoszlói rajzot soha nem szabad
+**2. A `data/` a repón kívül van.** A mintafalui rajzot soha nem szabad
 összekeverni a kód történetével. A `projects/` mappát bármikor törölheted és
 újraklónozhatod anélkül, hogy egyetlen rajz is elveszne.
 

@@ -5954,6 +5954,30 @@
    "reason": "planned"
   },
   {
+   "id": "mobile:M69",
+   "name": "Jegyzetek",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
+   "id": "mobile:M70",
+   "name": "VRG Füzet",
+   "source": "mobile",
+   "type": "feature module",
+   "qualifier": "companion app",
+   "scope": "roadmap",
+   "level": "",
+   "parent": "mobile",
+   "unit": "",
+   "reason": "planned"
+  },
+  {
    "id": "mobile:M15",
    "name": "Logó kezdőlap",
    "source": "mobile",
@@ -6890,6 +6914,18 @@
    "reason": "is the catalog item `servicekit-cyd` (planned)"
   },
   {
+   "id": "lib:fenyjel",
+   "name": "fenyjel",
+   "source": "shared",
+   "type": "library",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "dev:look",
+   "unit": "",
+   "reason": "shared code or assets other pages load"
+  },
+  {
    "id": "lib:grafit",
    "name": "grafit.css",
    "source": "shared",
@@ -7548,6 +7584,18 @@
    "parent": "",
    "unit": "buildtree",
    "reason": "is the catalog item `buildtree`"
+  },
+  {
+   "id": "dir:Notes",
+   "name": "Notes",
+   "source": "folders",
+   "type": "folder",
+   "qualifier": "source",
+   "scope": "internal",
+   "level": "",
+   "parent": "",
+   "unit": "",
+   "reason": "a top-level folder; what it holds is classified by its own rows"
   },
   {
    "id": "dir:Planner",

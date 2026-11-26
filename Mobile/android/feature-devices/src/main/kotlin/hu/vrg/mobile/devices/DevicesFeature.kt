@@ -2,7 +2,6 @@ package hu.vrg.mobile.devices
 
 import android.content.Intent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -57,6 +56,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.ScannedLinks
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Eszközök (WP M35): Proton Vault's way in, for VRG Mobile. One account (the owner's GitHub); the phones are what
 // differ. A phone that is not on the list shows its request as a QR; the owner's phone reads it (the home's QR
@@ -357,7 +357,7 @@ object DevicesFeature : VrgFeature {
     @Composable
     private fun NeedsSignIn(r: DeviceRequest, host: FeatureHost, ownerPhone: Boolean) {
         val shape = RoundedCornerShape(Melyviz.radius)
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.sand, shape).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.sand, shape).padding(14.dp)) {
             Text("KÉRÉS: ${r.name}", style = Melyviz.title)
             Text(r.code, style = Melyviz.title.copy(fontSize = 34.sp, letterSpacing = 4.sp, color = Melyviz.glow, fontFamily = Melyviz.mono), modifier = Modifier.padding(vertical = 6.dp))
             Text(if (ownerPhone) "Ez a te telefonod, de a jóváhagyáshoz GitHub-írás kell. Lépj be eszközkóddal (GitHub fiók → Belépés), " +
@@ -377,7 +377,7 @@ object DevicesFeature : VrgFeature {
         val scope = rememberCoroutineScope()
         var withToken by remember { mutableStateOf(false) }
         val shape = RoundedCornerShape(Melyviz.radius)
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.glow, shape).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.glow, shape).padding(14.dp)) {
             Text("KÉRÉS: ${r.name}", style = Melyviz.title)
             Text("${r.model} · ${r.os} · app ${r.app}", style = Melyviz.readout)
             Text("azonosító ${r.id}", style = Melyviz.readout)

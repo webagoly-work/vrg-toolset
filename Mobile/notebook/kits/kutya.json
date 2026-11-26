@@ -1,0 +1,39 @@
+{
+  "kind": "vrg-fuzet-kit", "v": 1,
+  "id": "kutya", "name": "Kutya", "sym": "🐕", "color": "#d9a15b",
+  "about": "Minta kit (a Personal App v1 Q4 kérdéséig): séta, etetés, súly, állatorvos határidővel.",
+  "types": [
+    { "id": "seta", "label": "Séta", "sym": "🦮", "fields": [
+      { "id": "perc", "label": "Időtartam", "kind": "number", "unit": "perc", "required": true },
+      { "id": "km", "label": "Táv", "kind": "number", "unit": "km" },
+      { "id": "kedv", "label": "Kedve", "kind": "rating" }
+    ] },
+    { "id": "etetes", "label": "Etetés", "sym": "🍖", "fields": [
+      { "id": "mit", "label": "Mit", "kind": "text" },
+      { "id": "adag", "label": "Adag", "kind": "number", "unit": "g" }
+    ] },
+    { "id": "suly", "label": "Súly", "sym": "⚖", "fields": [
+      { "id": "kg", "label": "Súly", "kind": "number", "unit": "kg", "required": true }
+    ] },
+    { "id": "orvos", "label": "Állatorvos", "sym": "✚", "checkable": true, "fields": [
+      { "id": "idopont", "label": "Időpont", "kind": "date", "due": true },
+      { "id": "ok", "label": "Ok", "kind": "choice", "options": ["oltás", "féregtelenítés", "kontroll", "betegség"] }
+    ] }
+  ],
+  "chips": [
+    { "id": "rendben", "label": "Minden rendben", "sym": "✓", "tag": "rendben" },
+    { "id": "figyelni", "label": "Figyelni kell", "sym": "⚑", "open": true, "tag": "egészség" }
+  ],
+  "views": [
+    { "id": "naplo", "label": "Napló", "sym": "▤", "kind": "timeline" },
+    { "id": "setak", "label": "Séták", "sym": "🦮", "kind": "tally", "types": ["seta"], "by": "week", "sum": "perc" },
+    { "id": "suly", "label": "Súly", "sym": "⚖", "kind": "list", "types": ["suly"] },
+    { "id": "orvos", "label": "Állatorvos", "sym": "✚", "kind": "checklist", "types": ["orvos"] }
+  ],
+  "rules": [
+    { "id": "napi-seta", "kind": "stale", "type": "seta", "days": 1, "label": "Ma még nem volt séta" }
+  ],
+  "keywords": [
+    { "id": "egeszseg", "re": "\\bhány|\\bhasmen|\\bsánt|\\bsant|\\bnem eszik|\\bvakar", "suggest": { "tag": "egészség" } }
+  ]
+}

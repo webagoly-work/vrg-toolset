@@ -35,7 +35,6 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -91,6 +90,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Saját kamera (WP M52, fork F7; D-100 … D-109): the in-app camera. CameraX (the version QR párosítás already ships)
 // with a preview and ImageCapture; the photo is written into the survey's photo folder and goes through the same path
@@ -345,7 +345,7 @@ internal fun LiveCamera(
                     val room = st.sketch.room(series.room)
                     Text("⌂ " + (room?.let { roomTitle(it.name, it.kinds) } ?: "—"), style = Melyviz.small.copy(color = Color.White), maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false).clip(RoundedCornerShape(50)).border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50)).clickable {
+                        modifier = Modifier.weight(1f, fill = false).clip(RoundedCornerShape(50)).vrgBorder(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50)).clickable {
                             val i = rooms.indexOf(series.room)
                             series = series.copy(room = rooms[(i + 1) % rooms.size])
                         }.padding(horizontal = 8.dp, vertical = 4.dp))
@@ -374,7 +374,7 @@ internal fun LiveCamera(
             } else if (!photoPoint && cam.on(CameraFeatures.GHOST)) {
                 val cands = CameraLive.ghostCandidates(st.sketch, series.purpose, series.room)
                 if (cands.isNotEmpty()) Text("◐ Előtte-kép (${cands.size})", style = Melyviz.small.copy(color = Color.White),
-                    modifier = Modifier.clip(RoundedCornerShape(50)).border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50))
+                    modifier = Modifier.clip(RoundedCornerShape(50)).vrgBorder(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(50))
                         .clickable { series = series.copy(pairOf = cands.first().id); ghostShown = true }.padding(horizontal = 10.dp, vertical = 4.dp))
             }
             if (strip && !photoPoint) {
@@ -387,7 +387,7 @@ internal fun LiveCamera(
                         Column(Modifier.width(54.dp).clickable { series = CameraLive.pick(series, k); st.purpose = k.purpose; strip = false },
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(Modifier.size(44.dp).clip(CircleShape).background(kc.copy(alpha = if (sel) 0.9f else 0.45f))
-                                .border(if (sel) 3.dp else 1.dp, if (sel) Color.White else kc, CircleShape), contentAlignment = Alignment.Center) {
+                                .vrgBorder(if (sel) 3.dp else 1.dp, if (sel) Color.White else kc, CircleShape), contentAlignment = Alignment.Center) {
                                 Text(kp.sym, style = Melyviz.glyph.copy(fontSize = 20.sp, color = Color.White))
                                 if (k.missing) Box(Modifier.align(Alignment.TopEnd).size(10.dp).clip(CircleShape).background(Melyviz.coral))
                             }
@@ -401,7 +401,7 @@ internal fun LiveCamera(
                 Box(Modifier.size(56.dp)) {
                     if (lastImg != null) {
                         Image(lastImg, contentDescription = "utolsó fotó", contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)).border(1.dp, Color.White, RoundedCornerShape(8.dp)))
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)).vrgBorder(1.dp, Color.White, RoundedCornerShape(8.dp)))
                         // a 48 dp target over the thumbnail's corner, the ↶ drawn small in it (UI audit 1.1, 8.1)
                         Box(Modifier.align(Alignment.TopEnd).size(48.dp).clickable(role = Role.Button) {
                                 val (back, gone) = CameraLive.undo(series)
@@ -415,7 +415,7 @@ internal fun LiveCamera(
                 }
                 Spacer(Modifier.weight(1f))
                 Box(Modifier.size(76.dp).clip(CircleShape).background(Color.White.copy(alpha = if (busy || camera == null) 0.4f else 0.95f))
-                    .border(5.dp, if (photoPoint) Color.White else col, CircleShape).clickable(enabled = !busy && camera != null) { shoot() },
+                    .vrgBorder(5.dp, if (photoPoint) Color.White else col, CircleShape).clickable(enabled = !busy && camera != null) { shoot() },
                     contentAlignment = Alignment.Center) {
                     Text(if (photoPoint) "◉" else (p?.sym ?: "◉"), style = Melyviz.glyph.copy(fontSize = 26.sp, color = if (photoPoint) Color.Black else col))
                 }
@@ -435,7 +435,7 @@ private fun RoundKey(sym: String, label: String, color: Color, on: Boolean, onCl
     Box(Modifier.minimumInteractiveComponentSize().toggleable(value = on, role = Role.Switch, onValueChange = { onClick() })
         .semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Box(Modifier.size(38.dp).clip(CircleShape).background(if (on) color.copy(alpha = 0.3f) else Color(0x44000000))
-            .border(1.dp, color.copy(alpha = if (on) 1f else 0.6f), CircleShape), contentAlignment = Alignment.Center) {
+            .vrgBorder(1.dp, color.copy(alpha = if (on) 1f else 0.6f), CircleShape), contentAlignment = Alignment.Center) {
             Text(sym, style = Melyviz.glyph.copy(fontSize = 18.sp, color = color), modifier = Modifier.clearAndSetSemantics { })
         }
     }

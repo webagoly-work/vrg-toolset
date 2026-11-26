@@ -5,7 +5,6 @@ import android.content.Context
 import android.provider.Settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,6 +84,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // Gömb (WP M14): the three Solomon signals on the phone, as a page to the right of the home screen and as a
 // tile. It reads and rules; it never edits a source (docs/solomon/README.md). The data comes from the
@@ -244,7 +244,7 @@ object SphereFeature : VrgFeature {
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
                 val on = layer == t
                 Column(Modifier.weight(1f).background(if (on) Melyviz.raised else Melyviz.surface, shape)
-                    .border(1.dp, if (on) Melyviz.glow else Melyviz.line, shape)
+                    .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.line, shape)
                     .clickable { onLayer(t) }.padding(horizontal = 9.dp, vertical = 7.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Mark(t)
@@ -272,7 +272,7 @@ object SphereFeature : VrgFeature {
             if (rows.isEmpty()) item { Text("Nincs ilyen jelzés.", style = Melyviz.small) }
             items(rows, key = { it.id }) { s ->
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
-                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape)
+                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape)
                     .clickable { onOpen(s) }.padding(horizontal = 11.dp, vertical = 9.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Mark(s.type)
@@ -293,7 +293,7 @@ object SphereFeature : VrgFeature {
             item { Spacer(Modifier.height(8.dp)) }
             items(d.sections, key = { it.id }) { s ->
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
-                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 11.dp, vertical = 9.dp)) {
+                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 11.dp, vertical = 9.dp)) {
                     Row {
                         Text(s.name, style = Melyviz.label, modifier = Modifier.weight(1f))
                         Text("${s.docs} dok. · ${d.openIn(s.id)} nyitott", style = Melyviz.readout)
@@ -311,7 +311,7 @@ object SphereFeature : VrgFeature {
         val high = (LocalConfiguration.current.screenHeightDp * .72f).dp
         Column(modifier.fillMaxWidth().heightIn(max = high).imePadding()
             .background(Melyviz.surface, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
-            .border(1.dp, Melyviz.line, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
+            .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
             .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row {
                 Text(d.title, style = Melyviz.title.copy(fontSize = 14.sp, letterSpacing = 0.sp), modifier = Modifier.weight(1f))
@@ -352,7 +352,7 @@ object SphereFeature : VrgFeature {
     @Composable
     private fun Quoted(q: Quote) {
         val shape = RoundedCornerShape(8.dp)
-        Column(Modifier.fillMaxWidth().padding(top = 7.dp).background(Melyviz.raised, shape).border(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 9.dp, vertical = 8.dp)) {
+        Column(Modifier.fillMaxWidth().padding(top = 7.dp).background(Melyviz.raised, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 9.dp, vertical = 8.dp)) {
             Text(q.text, style = Melyviz.label.copy(fontSize = 12.sp))
             Text(q.ref, style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 5.dp))
         }

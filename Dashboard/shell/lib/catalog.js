@@ -66,8 +66,9 @@ function validate(cat, { C, kinds = [] } = {}) {
     if (L.path && (typeof L.path !== 'string' || !/^\/[\w./-]{0,200}$/.test(L.path) || L.path.includes('..'))) errs.push(at + ': bad launch.path');
     if (L.path && !L.server) errs.push(at + ': launch.path needs launch.server');
     if (L.pane && !kinds.includes(L.pane)) errs.push(at + ': launch.pane ' + L.pane + ' is not a pane kind');
-    if (L.feature && !featureExists(C2, L.feature)) errs.push(at + ': launch.feature ' + L.feature + ' is not a features node');
-    else if (L.feature && !featureAct(C2, L.feature)) errs.push(at + ': launch.feature ' + L.feature + ' has nothing to open');
+    const noFeatures = (C2.localMissing || []).includes('features');   // notes/ is not on this machine: feature refs unchecked
+    if (L.feature && !noFeatures && !featureExists(C2, L.feature)) errs.push(at + ': launch.feature ' + L.feature + ' is not a features node');
+    else if (L.feature && !noFeatures && !featureAct(C2, L.feature)) errs.push(at + ': launch.feature ' + L.feature + ' has nothing to open');
     if (L.view && !VIEWS.includes(L.view)) errs.push(at + ': launch.view must be dashboard or desktop');
     if (L.frame && !FRAMES.includes(L.frame)) errs.push(at + ': launch.frame must be one of ' + FRAMES.join(', '));
     if (L.start && !/^[A-Z0-9]$/.test(L.start)) errs.push(at + ': launch.start must be a START key');

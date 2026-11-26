@@ -17,6 +17,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.lerp
+import hu.vrg.mobile.core.FeatureIcons
+import hu.vrg.mobile.core.PixelGlyphs
 import hu.vrg.mobile.kit.R
 
 // VRG Mélyvíz — "deep water", and its variants. Every colour, radius and type size of the app lives
@@ -54,6 +57,11 @@ data class Palette(
     /** The dot matrix's geometry (`--vk-dot-pitch`, `--vk-dot-r`): centre-to-centre distance and dot radius. */
     val dotPitch: Dp = DotDefaults.pitch,
     val dotRadius: Dp = DotDefaults.radius,
+    /**
+     * Fényjel (shared/fenyjel/DESIGN.md): the shell draws its own home and Vezérlőpult (app/FenyjelShell.kt) with the
+     * terminal type, LED numerals and pixel glyphs in their family colours. Off for every other palette.
+     */
+    val fenyjel: Boolean = false,
 )
 
 object Palettes {
@@ -135,12 +143,49 @@ object Palettes {
     )
 
     /**
+     * Fényjel (2026-11-25; shared/fenyjel/fenyjel.css): a lit, layered dark ground, white phosphor for "you", colour from
+     * the eight function families (the pixel glyphs carry it), status only with a shape. abyss = --fj-void, deep =
+     * --fj-floor, surface = --fj-deck, raised = --fj-lift, shallows = --fj-floor-lit; the lines are --fj-edge / --fj-hair
+     * composited over the floor; faint is lifted to #7A8A96 so it stays text (4.5:1 on raised).
+     */
+    val FENYJEL = Palette(
+        "fenyjel", "Fényjel", false,
+        abyss = Color(0xFF04070A), deep = Color(0xFF091018), surface = Color(0xFF0E1720), raised = Color(0xFF152230),
+        line = Color(0xFF273641), lineSoft = Color(0xFF17212B),
+        ink = Color(0xFFE6EEF3), muted = Color(0xFF93A5B2), faint = Color(0xFF7A8A96),
+        glow = Color(0xFFF4FBFF), glowDim = Color(0xFF737A80), current = Color(0xFFB393FF),
+        sand = Color(0xFFFFD24A), coral = Color(0xFFFF4F61), kelp = Color(0xFF4EE38A),
+        onGlow = Color(0xFF04070A), shallows = Color(0xFF13202C),
+        activity = Color(0xFFC3EA5C), radius = 3.dp, radiusSmall = 3.dp, kitFaces = true, fenyjel = true,
+    )
+
+    /**
      * Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against (KitTokensTest
      * reads this file). The app's own seven first, then the five VRG UI Kit themes generated into KitTokens.kt (WP M16; Grafit added later).
      */
-    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI) + KitTokens.ALL
+    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI, FENYJEL) + KitTokens.ALL
 
     fun byId(id: String?): Palette = ALL.firstOrNull { it.id == id } ?: MELYVIZ
+
+    /**
+     * Fényjel R3 (shared/fenyjel/DESIGN.md §7.4): a feature page wears its family colour. On a Fényjel palette the accent
+     * (glow, glowDim) becomes the open feature's family hue and the ground picks up a trace of it, so every chip, switch,
+     * slider, MINI ring and frame on the page follows without the feature knowing. Any other palette, or a feature without
+     * a glyph, is returned unchanged.
+     */
+    fun forFeature(base: Palette, featureId: String?): Palette {
+        if (!base.fenyjel || featureId == null) return base
+        val family = FeatureIcons.familyOf(featureId) ?: return base
+        if (family == "ui") return base
+        val rgb = PixelGlyphs.FAMILY_COLOURS[family] ?: return base
+        val hue = Color(0xFF000000.toInt() or rgb)
+        return base.copy(
+            glow = hue,
+            glowDim = lerp(hue, base.deep, 0.45f),
+            shallows = lerp(base.shallows, hue, 0.08f),
+            onGlow = base.abyss,
+        )
+    }
 }
 
 object Melyviz {
@@ -202,6 +247,10 @@ object KitFaces {
         Font(R.font.vk_inter_semibold, FontWeight.SemiBold),
     )
     val mono = FontFamily(Font(R.font.vk_jetbrains_mono_regular, FontWeight.Normal))
+    /** Fényjel's terminal voice: VT323 (OFL; titles, labels, buttons). It sets small on its em: size it ~1.3× a sans. */
+    val term = FontFamily(Font(R.font.fj_vt323_regular, FontWeight.Normal))
+    /** Fényjel's display face: Doto ExtraBold (OFL), a dot-matrix face for one moment per screen. */
+    val dot = FontFamily(Font(R.font.fj_doto_extrabold, FontWeight.ExtraBold))
 }
 
 @Composable

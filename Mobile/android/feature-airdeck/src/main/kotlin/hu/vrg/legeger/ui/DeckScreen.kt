@@ -1,7 +1,6 @@
 package hu.vrg.legeger.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +66,7 @@ import hu.vrg.mobile.kit.relay.LinkState
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlinx.coroutines.delay
 import java.io.File
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 enum class Sheet { NONE, KEYS, SETTINGS, SHOTS, MACROS }
 
@@ -436,7 +436,7 @@ private fun IconTile(glyph: String, label: String, onClick: () -> Unit) {
         Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.size(38.dp).clip(shape).background(Melyviz.surface).border(1.dp, Melyviz.line, shape), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(38.dp).clip(shape).background(Melyviz.surface).vrgBorder(1.dp, Melyviz.line, shape), contentAlignment = Alignment.Center) {
             Text(glyph, style = Melyviz.glyph.copy(fontSize = 17.sp))
         }
     }
@@ -454,7 +454,7 @@ private fun TargetChip(target: Target, pinned: Target?) {
             maxLines = 1,
             // a 48 dp target around the small chip (UI-CHECKLIST 1.1)
             modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "cél választása") { open = true }
-                .wrapContentHeight().clip(shape).border(1.dp, Melyviz.lineSoft, shape)
+                .wrapContentHeight().clip(shape).vrgBorder(1.dp, Melyviz.lineSoft, shape)
                 .padding(horizontal = 9.dp, vertical = 4.dp),
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {

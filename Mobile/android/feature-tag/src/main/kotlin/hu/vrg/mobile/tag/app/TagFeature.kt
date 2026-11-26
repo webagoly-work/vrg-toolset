@@ -71,6 +71,7 @@ import hu.vrg.mobile.tag.TagType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Tárgykereső (WP M61, experimental): an Apple Find My tag — the ISYTag from MediaMarkt / Saturn, an AirTag, any
 // "Works with Apple Find My" tag — used from Android. Android cannot join Apple's network, so this is everything the
@@ -120,9 +121,7 @@ object TagFeature : VrgFeature {
         val askBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { Tags.refresh(ctx) }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
-            Text("TÁRGYKERESŐ", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)   // Fényjel R3: kit FeatureTop
             Text("Kísérleti · Apple Find My címkék Androidon · rádió: ${radio.hu}", style = Melyviz.readout)
             when (radio) {
                 Tags.Radio.NO_PERMISSION -> Column(Modifier.padding(top = 6.dp)) {

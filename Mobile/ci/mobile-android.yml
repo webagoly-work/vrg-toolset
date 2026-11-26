@@ -6,9 +6,9 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
   pull_request:
-    paths: ['Mobile/**', 'Sketcher/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+    paths: ['Mobile/**', 'Sketcher/**', 'Notes/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
   workflow_dispatch:
 
 permissions:
@@ -45,7 +45,7 @@ jobs:
         working-directory: .
         run: node Sketcher/test/run.js
       - name: Tests (pure Kotlin)
-        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :tag-core:test
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test :sketch-core:test :pager-core:test :tag-core:test :notebook-core:test
       - name: Debug APK
         run: ./gradlew --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4

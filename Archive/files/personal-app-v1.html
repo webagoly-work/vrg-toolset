@@ -1,0 +1,571 @@
+<title>Personal App v1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the Mélyvíz look shared with "Software for One". A masthead, the recommendation, then the two editions
+   behind one switch laid out as home pages of phone tiles, the inventory with a status filter, and the questions.
+   Dark first, a paper variant for light. */
+:root {
+  --bg: #0a141c; --bg-2: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .15); --line-strong: rgba(232, 240, 246, .34);
+  --fg: #e8f0f6; --dim: #a6afb7; --faint: #7b848b;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13); --glow: rgba(147, 211, 230, .45);
+  --warm: #e8a873; --warm-soft: rgba(232, 168, 115, .14);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d; --on-accent: #0a141c;
+  --voice: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --cut: 6px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+    --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+    --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+    --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+    --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+    --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c; --on-accent: #ffffff;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+  --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+  --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+  --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+  --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+  --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c; --on-accent: #ffffff;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: radial-gradient(120% 60% at 50% 0%, var(--bg-2), var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft); padding: .05em .35em; border-radius: 3px; overflow-wrap: anywhere; }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; line-height: 1.12; margin: 0; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 64px; }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.muted { color: var(--dim); }
+section { display: grid; gap: 20px; min-width: 0; }
+section > h2 { font-size: clamp(30px, 4vw, 40px); }
+.intro { color: var(--dim); max-width: 70ch; }
+
+/* Masthead */
+.mast { padding-block: 56px 32px; border-bottom: 1px solid var(--line); display: grid; gap: 18px; }
+.mast h1 { font-size: clamp(44px, 8vw, 88px); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; line-height: .95; }
+.mast h1 span { color: var(--accent); text-shadow: 0 0 22px var(--glow); }
+.mast .lede { font-size: 19px; color: var(--dim); max-width: 64ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.meta span { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+/* Recommendation */
+.rec { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 760px) { .rec { grid-template-columns: minmax(0, 1fr); } }
+.rec > div { background: var(--panel); padding: 22px 24px; display: grid; gap: 10px; align-content: start; }
+.rec .key { background: linear-gradient(160deg, var(--accent-soft), transparent 70%), var(--panel); }
+.rec h3 { font-size: 25px; }
+.rec .key h3 { color: var(--accent); }
+.rec p { color: var(--dim); font-size: 15.5px; }
+.rec p b { color: var(--fg); font-weight: 600; }
+.figs { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 6px; }
+.fig b { display: block; font-family: var(--voice); font-size: 38px; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--dim); }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); background: var(--panel); }
+.legend .item { display: flex; gap: 8px; align-items: center; font-size: 13.5px; color: var(--dim); }
+.legend .sep { width: 1px; align-self: stretch; background: var(--line); }
+
+/* Status marks and cost */
+.st { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .04em; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.st.L { color: var(--ok); } .st.B { color: var(--accent); } .st.C { color: var(--warm); }
+.st.PC { color: var(--dim); } .st.S { color: var(--crit); border-style: dashed; }
+.cost { font-family: var(--mono); font-size: 15px; color: var(--accent); letter-spacing: -.02em; white-space: nowrap; }
+
+/* Edition switch */
+.switch { display: inline-flex; border: 1px solid var(--line-strong); padding: 3px; gap: 3px; background: var(--panel); flex-wrap: wrap; }
+.switch button { border: 0; background: transparent; padding: 9px 18px; cursor: pointer; font-family: var(--voice); font-size: 19px; font-weight: 600; letter-spacing: .04em; color: var(--dim); }
+.switch button[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
+.switch button:hover:not([aria-selected="true"]) { color: var(--fg); background: var(--accent-soft); }
+.ed-head { display: grid; gap: 8px; max-width: 72ch; }
+.ed-head h3 { font-size: 28px; }
+.ed-head p { color: var(--dim); }
+.ed-head p b { color: var(--fg); font-weight: 600; }
+.ed { display: grid; gap: 28px; }
+
+/* Home pages as phone screens */
+.pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 18px; }
+.page { border: 1px solid var(--line); background: var(--panel); display: grid; grid-template-rows: auto 1fr; min-width: 0; border-radius: 14px; overflow: hidden; }
+.page-top { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; background: var(--raised); }
+.page-top h4 { margin: 0; font-family: var(--voice); font-size: 22px; font-weight: 600; letter-spacing: .03em; }
+.page-top .label { color: var(--faint); }
+.page-top .hu { color: var(--accent); }
+.tiles { list-style: none; margin: 0; padding: 8px; display: grid; gap: 4px; align-content: start; }
+.tile { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; padding: 10px; border-radius: 8px; }
+.tile:hover { background: var(--accent-soft); }
+.tile .name { font-weight: 500; font-size: 15px; }
+.tile .name .star { color: var(--warm); margin-right: 4px; }
+.tile .from { grid-column: 1 / -1; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+.tile .note { grid-column: 1 / -1; font-size: 13.5px; color: var(--dim); }
+.tile .marks { display: flex; gap: 8px; align-items: center; }
+
+/* Packs, gaps, off-home */
+.packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.pack { border: 1px dashed var(--line-strong); padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.pack h4 { margin: 0; font-family: var(--voice); font-size: 20px; font-weight: 600; }
+.pack p { font-size: 14px; color: var(--dim); }
+.pack .needs { font-family: var(--mono); font-size: 11.5px; color: var(--warm); }
+.gaps { border-left: 3px solid var(--crit); background: var(--panel); padding: 16px 20px; display: grid; gap: 10px; max-width: 76ch; }
+.gaps h4, .off h4 { margin: 0; font-family: var(--voice); font-size: 21px; font-weight: 600; }
+.gaps ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; color: var(--dim); font-size: 15px; }
+.gaps ol b { color: var(--fg); font-weight: 600; }
+.off { border: 1px solid var(--line); padding: 16px 20px; display: grid; gap: 8px; max-width: 76ch; }
+.off p { color: var(--dim); font-size: 15px; }
+.guess { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--panel); padding: 12px 16px; color: var(--dim); font-size: 14.5px; max-width: 76ch; }
+.guess b { color: var(--fg); }
+
+/* Inventory */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters .label { margin-right: 6px; }
+.fbtn { border: 1px solid var(--line-strong); background: var(--panel); padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: 13.5px; display: inline-flex; gap: 6px; align-items: center; }
+.fbtn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.fbtn .n { font-family: var(--mono); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.groups { display: grid; gap: 26px; }
+.group { display: grid; gap: 10px; }
+.group-h { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.group-h h3 { font-size: 23px; }
+.group-h span { color: var(--dim); font-size: 14px; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 500; background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--fg); font-weight: 500; width: 30%; }
+td { color: var(--dim); }
+td.where { font-family: var(--mono); font-size: 12px; color: var(--faint); width: 22%; }
+td.s { width: 70px; }
+.empty { color: var(--faint); font-size: 14px; padding: 12px 0; }
+
+/* Questions */
+.qs { display: grid; gap: 14px; }
+.q { border: 1px solid var(--line); background: var(--panel); padding: 18px 20px; display: grid; gap: 12px; }
+.q-h { display: flex; gap: 12px; align-items: baseline; }
+.q-h .id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.q-h h3 { font-size: 22px; }
+.q > p { color: var(--dim); font-size: 15px; max-width: 76ch; }
+.opts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.opts li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; font-size: 15px; color: var(--dim); padding: 8px 10px; border-radius: 6px; }
+.opts li .k { font-family: var(--mono); font-size: 12px; width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--fg); }
+.opts li.r { background: var(--accent-soft); color: var(--fg); }
+.opts li.r .k { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.opts li.r .tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-left: 6px; }
+
+/* Order */
+.order { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 0; border: 1px solid var(--line); counter-reset: o; }
+.order li { counter-increment: o; padding: 16px; border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; background: var(--panel); }
+.order li::before { content: "Step " counter(o); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.order li span { font-size: 15px; }
+footer { padding-top: 20px; border-top: 1px solid var(--line); }
+footer p { font-size: 13.5px; color: var(--faint); max-width: 84ch; }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="label">VRG Mobile · feature selection · 2026-11-20</div>
+    <h1>Personal App <span>v1</span></h1>
+    <p class="lede">The code the toolset already owns, sorted into a first personal app in two editions: a General default that anyone could start from, and a Founder edition built around your work and your days. Nothing here is built or decided yet.</p>
+    <div class="meta"><span>Source: docs/mobile/PERSONAL-APP.md</span><span>Background: "Software for One" research page</span></div>
+  </header>
+
+  <section aria-labelledby="h-rec">
+    <h2 id="h-rec">The short answer</h2>
+    <div class="rec">
+      <div>
+        <div class="label">Where we stand</div>
+        <h3>VRG Mobile is already most of a personal app.</h3>
+        <p>It has one shell, a feature catalogue kept as data, its own device trust, self-update and a relay to the PC. What it lacks is the <b>person</b>: every tile today serves the VRG work, and nothing serves the rest of the day. The Varler Console PWA and the desktop-only tools hold most of the missing everyday pieces.</p>
+        <div class="figs">
+          <div class="fig"><b>34</b><span>features in the APK's catalogue</span></div>
+          <div class="fig"><b>32</b><span>built pages in the Varler Console</span></div>
+          <div class="fig"><b>6</b><span>questions before a work package</span></div>
+        </div>
+      </div>
+      <div class="key">
+        <div class="label">Recommendation</div>
+        <h3>An edition is a filter over the same app.</h3>
+        <p>The catalogue (<code>kit-core/Feature.kt</code>) already carries each feature's group, stage and needs. Add an <b>editions</b> set and a home layout per edition. General and Founder then become two views of one APK, one codebase and one update channel. Give General its own app id only if it is ever handed to someone else.</p>
+      </div>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span class="item"><span class="st L">L</span>live, checked on the phone</span>
+      <span class="item"><span class="st B">B</span>beta, built, waiting for the phone check</span>
+      <span class="item"><span class="st C">C</span>built in the Varler Console PWA</span>
+      <span class="item"><span class="st PC">PC</span>desktop only, no phone surface</span>
+      <span class="item"><span class="st S">S</span>stub or plan, no logic yet</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="item"><span class="cost">●</span>ready</span>
+      <span class="item"><span class="cost">◐</span>rewire</span>
+      <span class="item"><span class="cost">○</span>port or build</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-ed">
+    <h2 id="h-ed">The two editions</h2>
+    <div class="switch" role="tablist" aria-label="Edition">
+      <button type="button" role="tab" id="tab-general" aria-controls="ed-general" aria-selected="true" data-ed="general">General · default</button>
+      <button type="button" role="tab" id="tab-founder" aria-controls="ed-founder" aria-selected="false" data-ed="founder">Founder · yours</button>
+    </div>
+
+    <div class="ed" id="ed-general" role="tabpanel" aria-labelledby="tab-general">
+      <div class="ed-head">
+        <h3>General: one person, any trade</h3>
+        <p>No VRG PC and no client data. It has to make sense on its own and install and work with nothing else. <b>Rule: nothing in the default needs the relay or a GitHub sign-in.</b> Both are opt-in packs.</p>
+      </div>
+      <div class="pages" id="general-pages"></div>
+      <div class="ed-head"><h3>Opt-in packs</h3></div>
+      <div class="packs" id="general-packs"></div>
+      <div class="gaps">
+        <h4>What General still lacks</h4>
+        <ol>
+          <li><b>Storage on the phone first.</b> Today notes and most work data live on GitHub or the PC.</li>
+          <li><b>Export and import</b> of everything as plain files: the condition for nothing being lost when the app is.</li>
+          <li><b>A first start without GitHub.</b></li>
+          <li><b>An edition filter</b> in the catalogue and a home layout per edition.</li>
+          <li><b>The request loop for everything:</b> GO VARIANT widened from Sketcher variants to "make me a page".</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="ed" id="ed-founder" role="tabpanel" aria-labelledby="tab-founder" hidden>
+      <div class="ed-head">
+        <h3>Founder: work and personal</h3>
+        <p>For you as an electrician and smart-home installer running a small business, as the developer of the VRG toolset working through Claude Code, and as a person with a home, a dog and side projects. Five home pages in the order of a working day. <b>★ = on the quick row.</b></p>
+      </div>
+      <div class="guess"><b>The personal page is a guess.</b> It is read from traces in the repo (a dog-tracker stub, the projects under <code>H:\Personal</code>, the Vault), not from asking you. Question Q4 settles it.</div>
+      <div class="pages" id="founder-pages"></div>
+      <div class="off">
+        <h4>In the APK, off the home</h4>
+        <p>Asztal and Lapok (the Desktop frame is heavy for a phone day), Katalógus (you know the app), the iPhone web app (your phone is Android), the attribute radar and the dice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-inv">
+    <h2 id="h-inv">What we own</h2>
+    <p class="intro">Every building block the editions draw on, grouped by what it does for a personal app. Filter by status to see what is ready today and what still needs a phone surface.</p>
+    <div class="filters" role="group" aria-label="Filter by status" id="filters"><span class="label">Show</span></div>
+    <div class="groups" id="groups"></div>
+  </section>
+
+  <section aria-labelledby="h-q">
+    <h2 id="h-q">Questions before a work package</h2>
+    <p class="intro">Each has options with my recommendation first. The answers go into <code>docs/mobile/DECISIONS.md</code> as the next D-numbers.</p>
+    <div class="qs" id="qs"></div>
+  </section>
+
+  <section aria-labelledby="h-o">
+    <h2 id="h-o">Suggested order once answered</h2>
+    <ol class="order">
+      <li><span>Editions in the catalogue, plus the home per edition. Small, with a kit-core test.</span></li>
+      <li><span>The "Ma" page: notes, to-dos, agenda and notifications.</span></li>
+      <li><span>The Console pages behind one confined web view (if Q3 = A).</span></li>
+      <li><span>Weather on the phone (M44) with work windows. The fusion engine is already built on the PC.</span></li>
+      <li><span>Export and import.</span></li>
+      <li><span>The personal pages you confirm in Q4.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <p>VRG toolset, 2026-11-20. Source: <code>docs/mobile/PERSONAL-APP.md</code> on branch <code>claude/magical-goodall-i0u8jm</code>. Feature names stay in Hungarian as they appear on the phone. Work-package numbers (M0–M45) are the ones in <code>docs/mobile/WP/</code>.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // [name, from, status, cost, note, star]
+  var GENERAL = [
+    { hu: 'Ma', en: 'Today', tiles: [
+      ['Gyorsjegyzet, stored on the phone first', 'M6', 'L', '◐', 'Keep the outbox; the GitHub branch becomes an optional sync target.'],
+      ['Teendők + Naptár (to-do and agenda)', 'Console', 'C', '◐', 'Ported into one Today page.'],
+      ['Értesítések as the one inbox', 'M10', 'B', '◐', 'Its sources are the edition\'s own features, not PR / CI.'],
+      ['Napkelte / napnyugta, one-source weather', 'Console, Weather/', 'C', '◐', 'The fused forecast stays in the Founder edition.']
+    ]},
+    { hu: 'Eszközök', en: 'Tools', tiles: [
+      ['Időzítő, stopper, pomodoro, óra', 'Console', 'C', '●', ''],
+      ['Vízmérték, iránytű, zajszint', 'Console', 'C', '●', 'Already offline; only the sound meter needs the microphone.'],
+      ['Számológép, mértékegység-átváltó', 'Console', 'C', '●', '']
+    ]},
+    { hu: 'Beállítások', en: 'The app itself', tiles: [
+      ['Paged home, one-page view', 'M32, M38', 'B', '●', ''],
+      ['Katalógus, filtered to the edition', 'M38', 'B', '●', ''],
+      ['Look: palettes, size, icon', 'M1, M16, M34', 'B', '●', ''],
+      ['Device key, secret store, screenshot block', 'kit', 'L', '●', 'Invisible, always there.'],
+      ['Export / import of everything', 'new', 'S', '○', 'A JSON + media zip.']
+    ]}
+  ];
+  var PACKS = [
+    ['Sync', 'GitHub sign-in (M3), the notes branch (M6), self-update (M9), sealed data (the M42 mechanism)', 'a GitHub account'],
+    ['PC companion', 'Pairing (M2), Légegér (M0), Átadás (M12), Localhost (M8), Indítópult (M11), Képernyő (M13), PC ablakok (M23)', 'the relay on a PC'],
+    ['Field', 'Sketcher core (M24) without the electrical fronts, Fotópont (M25), Térkép (M43), Csipogó (M33)', 'camera · Bluetooth'],
+    ['Web apps', 'Alkalmazások (M21): any single-file HTML tool, offline', 'nothing'],
+    ['AI', 'Claude (M22); Kérés (new): a feature request from the phone in the GO VARIANT shape, answered by an agent', 'Claude Code on a PC or in the cloud'],
+    ['Media', 'Médialejátszó, kocka', 'nothing']
+  ];
+  var FOUNDER = [
+    { hu: 'Ma', en: 'Today', tiles: [
+      ['Gyorsjegyzet with dictation and tags', 'M6', 'L', '◐', 'Stored on the phone first, plus the chat-log branch.', 1],
+      ['Teendők + Naptár, today\'s jobs beside them', 'Console + M42', 'C', '◐', 'The jobs come from the Workflow Kit.'],
+      ['Időjárás: work windows for today\'s sites', 'Weather/ + M44', 'PC', '○', 'Lightning, MEWP gusts, frost for PVC, rain, heat.'],
+      ['Értesítések', 'M10 + Console trace', 'B', '●', 'Jobs, "Claude kész / vár rád", PR / CI, relay.'],
+      ['Napkelte / napnyugta', 'Console', 'C', '●', 'Light left on site.']
+    ]},
+    { hu: 'Terep', en: 'On site', tiles: [
+      ['VRG Sketcher, all fronts and variants', 'M24–M31', 'B', '●', '', 1],
+      ['Fotópont', 'M25', 'B', '●', ''],
+      ['VRG Térkép: jobs, own places, navigation', 'M43', 'B', '●', ''],
+      ['Csipogó, the crew pager', 'M33', 'B', '●', ''],
+      ['Mérési napló, áramkörjegyzék, ellenőrzőlista', 'Console', 'C', '◐', 'The measurement log keeps your limit table.'],
+      ['Időmérés per job, anyaglista', 'Console', 'C', '◐', ''],
+      ['Kalkulátorok: panel, general, LED', 'M40', 'B', '●', ''],
+      ['Vízmérték, iránytű, zajszint', 'Console', 'C', '●', ''],
+      ['CoreRef offline + szakmai puskák', 'CoreRef/, Console', 'PC', '◐', 'ESPHome and Home Assistant reference.'],
+      ['ServiceKit Phone mode', 'ServiceKitPhone/', 'C', '◐', 'The phone as the service console of a client\'s PC.']
+    ]},
+    { hu: 'Iroda', en: 'Office and quotes', tiles: [
+      ['Varler Workflow Kit: where each job stands', 'M42', 'B', '●', ''],
+      ['Varler Planner', 'M39', 'B', '●', ''],
+      ['Készlet + BuildTree + Valena', 'M41', 'B', '●', ''],
+      ['Barcode scan into Készlet', 'M2 scanner + M12', 'S', '◐', 'On the "Later" list.'],
+      ['Beszállítói tételek', 'Console', 'C', '◐', ''],
+      ['Árajánlat-gyorsnézet, jogi hivatkozások', 'Console stubs', 'S', '○', '']
+    ]},
+    { hu: 'PC és Claude', en: 'The workshop', tiles: [
+      ['Claude: Remote Control sessions', 'M22', 'B', '●', 'Start one in a folder from the phone.', 1],
+      ['Note → GO prompt', 'Later list', 'S', '◐', 'A note marked as a task becomes a session.'],
+      ['Légegér, Átadás, Indítópult, Localhost, Képernyő, PC ablakok', 'M0, M8, M11–M13, M23', 'L', '●', 'Mostly live; Képernyő and PC ablakok are beta.', 1],
+      ['Haladás, Gömb, Rétegverem, Kódváros, Archívum', 'M4, M14, M17, M5, M18', 'B', '●', 'Haladás and Gömb are live.'],
+      ['Ügynöknyom (agent trace, mini)', 'Console', 'C', '◐', ''],
+      ['Hálózat: tethering, hotspot usage', 'M7', 'B', '●', '']
+    ]},
+    { hu: 'Otthon és én', en: 'Home and me', tiles: [
+      ['Vault: personal documents and secrets', 'M45', 'B', '●', ''],
+      ['Okosotthon: energy, presence, Zigbee, automations', 'Console stubs + BRIDGE', 'S', '○', 'Needs your Home Assistant address and a token.'],
+      ['Kutyakövető (dog tracker)', 'Console stub', 'S', '○', 'Needs the hardware: GPS collar, BLE tag, or a phone-only walk log.'],
+      ['Side projects: RL-CYD, MC-Server, FlyBrainLab', 'H:\\Personal', 'PC', '◐', 'Through Indítópult and Localhost once they are START entries.'],
+      ['Médialejátszó, pomodoro, világidő', 'Console', 'C', '●', '']
+    ]}
+  ];
+  // [group title, blurb, rows: [name, where, status, use]]
+  var INV = [
+    ['Platform', 'What any personal app needs', [
+      ['Feature shell + catalogue as data', 'kit-core/Feature.kt, app/Registry', 'L', 'Add a feature = one module + one line; planned tiles show the roadmap.'],
+      ['Paged home, one-page view, Katalógus', 'M32, M38', 'B', 'Numbered home pages in the owner\'s order; a guide to every feature.'],
+      ['Long-press menu (RCO)', 'M37', 'B', 'One context menu across the app.'],
+      ['Look: Mélyvíz + VRG UI Kit', 'M1, M16', 'L', 'Ten palettes, generated tokens, touch sizes.'],
+      ['App icon in the owner\'s palette', 'M34', 'B', 'Identity.'],
+      ['Settings, start screen, log', 'M1, LogBook.kt', 'L', 'A settings store; a log the owner can read.'],
+      ['Deep links vrg://<feature>/…', 'kit-core/Links.kt', 'L', 'Every feature reachable from a QR, a note or another app.'],
+      ['Self-update from GitHub Releases', 'M9', 'L', 'A new build reaches the phone with no cable.'],
+      ['Device trust by QR, release lock', 'M35', 'B', 'Which phones may run it; no shared passwords.'],
+      ['Phone key + secret store (Keystore)', 'kit/relay, kit/github', 'L', 'Per-device identity; tokens never in plain storage.'],
+      ['Sealed data to the phone\'s key', 'M42, tools/workflow-seal.js', 'B', 'Private data can travel through GitHub as ciphertext only.'],
+      ['GitHub sign-in + shared client', 'M3', 'L', 'A free, versioned backend the owner already has.'],
+      ['Notes into a branch, with an outbox', 'M6', 'L', 'The smallest durable write; works offline, sends later.'],
+      ['Notifications inbox + channels', 'M10', 'B', 'One list for everything that wants attention.'],
+      ['HTML apps offline, one origin each', 'M21', 'B', 'Any single-file HTML tool becomes a phone app.'],
+      ['Confined web view pattern', 'M18, M43, M45', 'B', 'A safe way to host a web app inside the APK.'],
+      ['iPhone: the online part as a PWA', 'M36', 'B', 'The same app on iOS without the App Store.'],
+      ['Agent-made variants by request', 'M31, GO VARIANT', 'B', 'The phone asks, an agent builds, the result is one JSON.']
+    ]],
+    ['The PC link', 'The phone as the PC\'s remote, screen and shelf', [
+      ['QR pairing, trusted phone', 'M2', 'L', 'One scan, then the phone may act on the PC.'],
+      ['Légegér: gyro mouse, keyboard, touchpad, HID', 'M0', 'L', 'The phone as an input device for any PC.'],
+      ['Indítópult: START\'s tools', 'M11', 'L', 'Run things on the PC.'],
+      ['Localhost: the PC\'s servers', 'M8', 'L', 'Open any local web tool remotely.'],
+      ['Átadás: files, photos, clipboard', 'M12', 'L', 'The phone ↔ PC shelf.'],
+      ['Képernyő: the PC\'s screen live', 'M13', 'B', 'Look at the PC from the sofa.'],
+      ['PC ablakok: work folders, read-only', 'M23', 'B', 'Browse files without the PC in hand.'],
+      ['Claude: Remote Control sessions', 'M22', 'B', 'Start and follow Claude Code from the phone.'],
+      ['Hálózat: tethering, hotspot, own relay', 'M7', 'B', 'The phone as the network.']
+    ]],
+    ['Everyday tools', 'Varler Console, built pages', [
+      ['Clock and world time, timer, stopwatch, pomodoro', 'widgets-simple.js', 'C', ''],
+      ['Scratchpad notes, to-do list, calendar agenda', 'widgets-simple.js', 'C', ''],
+      ['Sunrise and sunset', 'widgets-simple.js', 'C', ''],
+      ['Scientific calculator, unit converter', 'widgets-simple.js', 'C', ''],
+      ['Level, compass, sound level meter', 'widgets-device.js', 'C', 'Phone sensors; the sound meter needs the microphone.'],
+      ['Media player, dice, attribute radar, status ring', 'widgets-simple.js', 'C', '']
+    ]],
+    ['Work', 'Electrician and smart-home installer', [
+      ['VRG Sketcher: sketch, measurements, notes, scope, questions, camera, site, variants', 'M24–M31', 'B', ''],
+      ['Fotópont: room photos with direction', 'M25', 'B', ''],
+      ['Planner, calculators, Készlet (+ BuildTree, Valena)', 'M39–M41 via M21', 'B', ''],
+      ['Varler Workflow Kit, sealed to the owner\'s phone', 'M42', 'B', ''],
+      ['VRG Térkép: Hungary in 3D, own places, jobs', 'M43', 'B', ''],
+      ['VRG Időjárás: multi-source forecast, work windows', 'Weather/, M44 tile', 'PC', 'The phone tile is still planned.'],
+      ['Csipogó: crew pager over Bluetooth LE', 'M33', 'B', 'No internet needed.'],
+      ['Field job, measurement log, panel schedule, materials, checklist, time tracker, cheat sheets, supplier items, photo inbox', 'Console pages', 'C', ''],
+      ['ServiceKit Phone', 'ServiceKitPhone/', 'C', 'The APK has not been built yet.'],
+      ['CoreRef: offline ESPHome / Home Assistant reference', 'CoreRef/', 'PC', ''],
+      ['Quote view, legal lookup, site survey, network tools, OCR', 'Console manifests', 'S', '']
+    ]],
+    ['Following the work', 'Progress and knowledge', [
+      ['Haladás: branches, commits, CI', 'M4', 'L', ''],
+      ['Gömb: Solomon\'s three signals', 'M14', 'L', ''],
+      ['Kódváros online', 'M5', 'B', ''],
+      ['Rétegverem: the Stack in 3D', 'M17', 'B', ''],
+      ['Archívum: every page Claude made', 'M18', 'B', ''],
+      ['Asztal + Lapok: the Desktop\'s frame', 'M19, M20', 'B', ''],
+      ['Agent trace with "Claude kész / vár rád" pings', 'Console trace/, M10', 'C', '']
+    ]],
+    ['Personal', 'Outside the work', [
+      ['Vault: the encrypted personal data store', 'M45', 'B', ''],
+      ['Smart home: energy, presence, Zigbee, automations', 'Console manifests', 'S', 'Waits for Home Assistant.'],
+      ['Dog tracker', 'Console manifest', 'S', ''],
+      ['Side projects: RL-CYD, MC-Server, FlyBrainLab, GodsEyeView', 'H:\\Personal (outside the repo)', 'PC', 'Not wired to the phone.']
+    ]]
+  ];
+  var QS = [
+    ['Q1', 'One app or two?', '', [
+      ['One APK, editions as a catalogue filter.', 1],
+      ['A separate hu.vrg.personal APK built from the same modules.'],
+      ['General as a web app only (the Console PWA); Founder = VRG Mobile.']
+    ]],
+    ['Q2', 'Where personal data lives first', '', [
+      ['On the phone (Room / files), with GitHub or the Vault as an optional sealed sync. Personal data should outlive any service.', 1],
+      ['A GitHub branch, as now.'],
+      ['The Vault only.']
+    ]],
+    ['Q3', 'How the Console pages come over', '', [
+      ['The Console PWA inside a confined web view as one feature, pages reached by deep link. Fast for v1.', 1],
+      ['Port the pages to Kotlin one by one.'],
+      ['Both: the web view first, native for the pages used daily.']
+    ]],
+    ['Q4', 'The personal side', 'This list is inferred, not asked. Which are real needs?', [
+      ['The dog tracker, and with what hardware.'],
+      ['The smart-home pages: is there a Home Assistant at home?'],
+      ['The side projects on the phone.'],
+      ['Anything else: health, money, family, learning.']
+    ]],
+    ['Q5', 'The request loop', 'Should the phone get a Kérés feature? You describe a wanted page or feature, it lands as a note in the GO VARIANT shape, and a Claude session builds it as a JSON (variants) or a work package.', []],
+    ['Q6', 'Android developer verification, global in 2027', '', [
+      ['Register hu.vrg.mobile under the free limited-distribution account (no ID, up to 20 devices) once it opens, and back up the release key now. M9\'s self-update keeps working.', 1],
+      ['Stay unregistered; install by ADB and the one-time advanced flow.'],
+      ['The $25 full account.']
+    ]]
+  ];
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function st(s) { return el('span', 'st ' + s, s); }
+
+  function renderPages(host, pages) {
+    pages.forEach(function (p, i) {
+      var card = el('div', 'page');
+      var top = el('div', 'page-top');
+      var h = el('h4'); h.append(el('span', 'hu', p.hu)); h.append(document.createTextNode(' · ' + p.en));
+      top.append(h, el('span', 'label', 'page ' + (i + 1)));
+      var ul = el('ul', 'tiles');
+      p.tiles.forEach(function (t) {
+        var li = el('li', 'tile');
+        var name = el('span', 'name');
+        if (t[5]) name.append(el('span', 'star', '★'));
+        name.append(document.createTextNode(t[0]));
+        var marks = el('span', 'marks'); marks.append(st(t[2]), el('span', 'cost', t[3]));
+        li.append(name, marks, el('span', 'from', t[1]));
+        if (t[4]) li.append(el('span', 'note', t[4]));
+        ul.append(li);
+      });
+      card.append(top, ul); host.append(card);
+    });
+  }
+  renderPages(document.getElementById('general-pages'), GENERAL);
+  renderPages(document.getElementById('founder-pages'), FOUNDER);
+
+  var packs = document.getElementById('general-packs');
+  PACKS.forEach(function (p) {
+    var d = el('div', 'pack'); d.append(el('h4', null, p[0]), el('p', null, p[1]), el('span', 'needs', 'needs: ' + p[2])); packs.append(d);
+  });
+
+  // Inventory with status filter
+  var FILTERS = [['all', 'All'], ['L', 'Live'], ['B', 'Beta'], ['C', 'Console'], ['PC', 'Desktop only'], ['S', 'Stub / plan']];
+  var counts = { all: 0 };
+  INV.forEach(function (g) { g[2].forEach(function (r) { counts.all++; counts[r[2]] = (counts[r[2]] || 0) + 1; }); });
+  var current = 'all';
+  try { var saved = localStorage.getItem('pa-filter'); if (saved && counts[saved] != null) current = saved; } catch (e) {}
+  var fbox = document.getElementById('filters');
+  FILTERS.forEach(function (f) {
+    var b = el('button', 'fbtn'); b.type = 'button'; b.id = 'f-' + f[0]; b.dataset.f = f[0];
+    b.append(document.createTextNode(f[1]), el('span', 'n', String(counts[f[0]] || 0)));
+    b.addEventListener('click', function () { current = f[0]; try { localStorage.setItem('pa-filter', current); } catch (e) {} drawInv(); });
+    fbox.append(b);
+  });
+  var groups = document.getElementById('groups');
+  function drawInv() {
+    Array.prototype.forEach.call(fbox.querySelectorAll('.fbtn'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.f === current)); });
+    groups.textContent = '';
+    INV.forEach(function (g) {
+      var rows = g[2].filter(function (r) { return current === 'all' || r[2] === current; });
+      if (!rows.length) return;
+      var wrap = el('div', 'group');
+      var head = el('div', 'group-h'); head.append(el('h3', null, g[0]), el('span', null, g[1] + ' · ' + rows.length));
+      var tbl = el('div', 'tbl'); var t = el('table');
+      var thead = el('thead'); var tr = el('tr');
+      ['Block', 'Where', 'Status', 'What it gives a personal app'].forEach(function (x) { tr.append(el('th', null, x)); });
+      thead.append(tr); t.append(thead);
+      var tb = el('tbody');
+      rows.forEach(function (r) {
+        var row = el('tr'); var s = el('td', 's'); s.append(st(r[2]));
+        row.append(el('td', null, r[0]), el('td', 'where', r[1]), s, el('td', null, r[3] || '·'));
+        tb.append(row);
+      });
+      t.append(tb); tbl.append(t); wrap.append(head, tbl); groups.append(wrap);
+    });
+    if (!groups.children.length) groups.append(el('p', 'empty', 'Nothing has this status.'));
+  }
+  drawInv();
+
+  var qs = document.getElementById('qs');
+  QS.forEach(function (q) {
+    var d = el('div', 'q');
+    var h = el('div', 'q-h'); h.append(el('span', 'id', q[0]), el('h3', null, q[1])); d.append(h);
+    if (q[2]) d.append(el('p', null, q[2]));
+    if (q[3].length) {
+      var ul = el('ul', 'opts');
+      q[3].forEach(function (o, i) {
+        var li = el('li', o[1] ? 'r' : ''); li.append(el('span', 'k', String.fromCharCode(65 + i)));
+        var txt = el('span', null, o[0]); if (o[1]) txt.append(el('span', 'tag', 'recommended'));
+        li.append(txt); ul.append(li);
+      });
+      d.append(ul);
+    }
+    qs.append(d);
+  });
+
+  // Edition switch, routed on the hash
+  var tabs = document.querySelectorAll('.switch button');
+  function show(ed) {
+    if (ed !== 'general' && ed !== 'founder') ed = 'general';
+    Array.prototype.forEach.call(tabs, function (b) {
+      var on = b.dataset.ed === ed; b.setAttribute('aria-selected', String(on));
+      document.getElementById('ed-' + b.dataset.ed).hidden = !on;
+    });
+  }
+  Array.prototype.forEach.call(tabs, function (b) {
+    b.addEventListener('click', function () { show(b.dataset.ed); try { history.replaceState(null, '', '#' + b.dataset.ed); } catch (e) {} });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  show(location.hash.slice(1));
+})();
+</script>
