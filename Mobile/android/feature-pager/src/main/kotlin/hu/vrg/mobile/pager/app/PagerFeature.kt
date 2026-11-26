@@ -49,6 +49,7 @@ import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.pager.Crew
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Csipogó (WP M33): the Site Pager — the ESP32-S3 + nRF905 belt pager pair from the Archive's Site Pager Builder —
 // reimagined on the crew's phones. Same buttons (CALL held, SEEN, K1–K3 short / long, LINK), same 14 messages and
@@ -99,17 +100,13 @@ object PagerFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
-            Row {
-                Column(Modifier.weight(1f)) {
-                    Text("CSIPOGÓ", style = Melyviz.title.copy(fontSize = 18.sp))
-                    val me = Pager.engine.me
-                    Text("${me.crew.code} · ${me.unit}. egység · ${me.name} · rádió: ${radio.hu}", style = Melyviz.readout)
-                }
+            // the header (Fényjel: kit FeatureTop), then who this phone is on the crew
+            FeatureTop(host, info) {
                 if (radio == Pager.Radio.ON || radio == Pager.Radio.STARTING) VrgChip("Kikapcsolás") { PagerService.stop(ctx) }
                 else VrgChip("Bekapcsolás", selected = true) { denied = false; switchOn() }
             }
+            val me = Pager.engine.me
+            Text("${me.crew.code} · ${me.unit}. egység · ${me.name} · rádió: ${radio.hu}", style = Melyviz.readout)
             Pager.radioDetail?.takeIf { radio == Pager.Radio.FAILED }?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.coral)) }
             if (radio == Pager.Radio.NO_BT) Text("Kapcsold be a Bluetootht; a Csipogó magától újraindul.", style = Melyviz.small.copy(color = Melyviz.sand))
             if (denied || radio == Pager.Radio.NO_PERMISSION) Text("A Csipogónak a Bluetooth (Android 9–11-en a helymeghatározás) engedély kell: e nélkül nem hallja a csapatot.",

@@ -48,7 +48,6 @@ import hu.vrg.mobile.kit.ui.InstallQrPanel
 import hu.vrg.mobile.kit.ui.IphoneGuideView
 import hu.vrg.mobile.kit.ui.IphoneGuides
 import hu.vrg.mobile.kit.ui.QrCode
-import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import hu.vrg.mobile.kit.ui.VrgToggle
@@ -57,6 +56,7 @@ import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.ScannedLinks
 import kotlinx.coroutines.delay
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Eszközök (WP M35): Proton Vault's way in, for VRG Mobile. One account (the owner's GitHub); the phones are what
 // differ. A phone that is not on the list shows its request as a QR; the owner's phone reads it (the home's QR
@@ -157,8 +157,7 @@ object DevicesFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            VrgBack { host.home() }
-            Text("ESZKÖZÖK", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)
             note?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
 
             if (!full) {

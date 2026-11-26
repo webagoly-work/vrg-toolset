@@ -216,31 +216,63 @@ fun FjSwitch(checked: Boolean, label: String, hue: Color, modifier: Modifier = M
 // ---- R3: a feature page's top, and the i sheet --------------------------------------------------------------
 
 /**
- * A feature page's top (DESIGN.md §7.4). On any palette but Fényjel it draws what the features drew themselves: a
- * "‹ Vissza" link and the upper-case title row ([inline] puts them on one row), with [trailing] after the title. On
- * Fényjel it is one header: a back glyph, the feature's socket in its family colour, the title in the terminal face,
- * [trailing], and the i that opens the description sheet (the page itself carries no description). [onBack] defaults to
- * the home.
+ * A feature page's top (DESIGN.md §7.4). On any palette but Fényjel it draws what the features drew themselves:
+ *  - stacked (the default): a "‹ [backLabel]" link, then the upper-case title row with [trailing] after the title
+ *    ([actionsOnBack] puts [trailing] on the link's row instead, right-aligned, and the title alone below it);
+ *  - [inline]: the link and the title on one row;
+ *  - [bar]: the one-row bar of the full-height pages (a WebView, a map): a bare 48 dp "‹", the 13 sp title, [trailing].
+ *    [fillTitle] false leaves the free width to [trailing] (a readout that takes the weight itself).
+ * On Fényjel it is one header: a back glyph, the feature's socket in its family colour, the title in the terminal face,
+ * [trailing], and the i that opens the description sheet (the page itself carries no description); [bar] makes it a
+ * slim 48 dp row with a smaller socket, for pages that need the height. [onBack] defaults to the home ([host] may be null
+ * only when [onBack] is given: a page the shell shows outside a feature, like Gömb).
  */
 @Composable
 fun FeatureTop(
-    host: FeatureHost,
+    host: FeatureHost?,
     info: FeatureInfo,
     modifier: Modifier = Modifier,
     title: String = info.title,
     inline: Boolean = false,
-    onBack: () -> Unit = { host.home() },
+    bar: Boolean = false,
+    actionsOnBack: Boolean = false,
+    fillTitle: Boolean = true,
+    backLabel: String = "Vissza",
+    onBack: () -> Unit = { host?.home() },
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     if (!Melyviz.palette.fenyjel) {
+        if (bar) {
+            Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // the bare "‹": a 48 dp button that TalkBack reads by its label (UI-CHECKLIST 1.1, 8.1)
+                Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onBack).semantics { contentDescription = backLabel },
+                    contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
+                        modifier = Modifier.clearAndSetSemantics { })
+                }
+                androidx.compose.material3.Text(title.uppercase(), style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = if (fillTitle) Modifier.weight(1f) else Modifier)
+                trailing()
+            }
+            return
+        }
         val back: @Composable () -> Unit = {
-            androidx.compose.material3.Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onBack).wrapContentHeight().padding(end = 12.dp))
+            Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = backLabel, onClick = onBack)
+                .semantics { contentDescription = backLabel }.padding(end = 12.dp), contentAlignment = Alignment.CenterStart) {
+                androidx.compose.material3.Text("‹ $backLabel", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
+            }
         }
         if (inline) Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             back()
             androidx.compose.material3.Text(title.uppercase(), style = Melyviz.title.copy(fontSize = 18.sp), modifier = Modifier.weight(1f))
             trailing()
+        } else if (actionsOnBack) Column(modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                back()
+                Spacer(Modifier.weight(1f))
+                trailing()
+            }
+            androidx.compose.material3.Text(title.uppercase(), style = Melyviz.title.copy(fontSize = 18.sp))
         } else Column(modifier.fillMaxWidth()) {
             back()
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -254,14 +286,18 @@ fun FeatureTop(
     val glyph = FeatureIcons.of(info)
     val backGlyph = PixelGlyphs.byName("back")
     Column(modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(44.dp).clickable(role = Role.Button, onClick = onBack).semantics { contentDescription = "Vissza" },
+        Row(Modifier.fillMaxWidth().heightIn(min = if (bar) 48.dp else 56.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (bar) Arrangement.spacedBy(6.dp) else Arrangement.Start) {
+            Box(Modifier.size(44.dp).clickable(role = Role.Button, onClick = onBack).semantics { contentDescription = backLabel },
                 contentAlignment = Alignment.Center) {
                 if (backGlyph != null) PixelIcon(backGlyph, 18.dp, color = Melyviz.muted)
             }
-            if (glyph != null) { Socket(glyph, 40.dp); Spacer(Modifier.width(10.dp)) }
-            androidx.compose.material3.Text(title, style = FjType.title.copy(fontSize = 25.sp), maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            if (glyph != null) {
+                Socket(glyph, if (bar) 30.dp else 40.dp)
+                if (!bar) Spacer(Modifier.width(10.dp))
+            }
+            androidx.compose.material3.Text(title, style = FjType.title.copy(fontSize = if (bar) 21.sp else 25.sp), maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = if (fillTitle) Modifier.weight(1f) else Modifier)
             trailing()
             InfoButton("${info.title}: leírás") { sheet = true }
         }

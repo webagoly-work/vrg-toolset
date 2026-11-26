@@ -74,6 +74,7 @@ import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.ByteArrayInputStream
 import java.util.concurrent.atomic.AtomicInteger
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Vault (WP M45, D-53 = A, D-54 = A): the Proton Vault's own web app (webagoly-work/data-vault) inside VRG Mobile.
 //
@@ -270,12 +271,7 @@ object VaultFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize()) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                    modifier = Modifier.minimumInteractiveComponentSize().clickable(onClickLabel = "Vissza") { host.home() }
-                        .semantics { contentDescription = "Vissza" }.padding(horizontal = 4.dp))
-                Text("VAULT", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
+            FeatureTop(host, info, Modifier.padding(horizontal = 12.dp, vertical = 2.dp), bar = true) {
                 IconChip("⟳", "Újratöltés") { reloadPage() }
                 IconChip("⚙", "Beállítások", selected = tools) { tools = !tools }
             }

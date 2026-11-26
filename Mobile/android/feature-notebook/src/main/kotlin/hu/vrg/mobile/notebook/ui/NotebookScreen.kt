@@ -69,6 +69,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // VRG Füzet's screens. Four places inside the feature: the home (search, kits, the kit's views, capture), the editor,
 // the open items and the kits. Back walks out of them before it leaves the feature.
@@ -138,14 +139,11 @@ private fun HomePlace(
     val open = remember(store, lib) { Engine.open(store, lib, zone, System.currentTimeMillis()) }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Spacer(Modifier.weight(1f))
+        FeatureTop(host, NotebookFeature.info, actionsOnBack = true) {
             VrgChip("⚑ Nyitott ${open.size}", selected = open.any { it.kind == OpenKind.DUE || it.kind == OpenKind.LIMIT }) { onOpen() }
             Spacer(Modifier.width(6.dp))
             VrgChip("⚙ Kitek") { onKits() }
         }
-        Text("VRG FÜZET", style = Melyviz.title.copy(fontSize = 18.sp))
         problem?.let {
             Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp).clickable { NotebookFeature.problem.value = null })
         }

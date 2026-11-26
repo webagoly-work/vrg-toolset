@@ -91,6 +91,7 @@ import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import android.view.ViewGroup
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Alkalmazások (WP M21): the Desktop's in-shell HTML apps on the phone. Which apps and which files each may read come from the Desktop's
 // own catalog (DeskApps.kt, generated); what is served is AppScheme.decide, a port of the Desktop's vrg-app:// rules.
@@ -399,10 +400,7 @@ object AppsFeature : VrgFeature {
         val cur = id?.let { app(it) }
         if (cur != null) {
             Column(Modifier.fillMaxSize()) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    BackGlyph { showing.value = null }
-                    Text(cur.hu.uppercase(Locale.ROOT), style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                FeatureTop(host, info, Modifier.padding(horizontal = 12.dp, vertical = 2.dp), title = cur.hu, bar = true, onBack = { showing.value = null }) {
                     VrgChip("⟳ Frissítés") { refresh(cur.id) }
                 }
                 AppView(cur.id, host, Modifier.fillMaxWidth().weight(1f)) { showing.value = null }
@@ -412,26 +410,13 @@ object AppsFeature : VrgFeature {
         AppList(host)
     }
 
-    /** The bare "‹": a 48 dp button that TalkBack reads as "Vissza" (UI-CHECKLIST 1.1, 8.1). */
-    @Composable
-    private fun BackGlyph(onClick: () -> Unit) {
-        Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = "Vissza" },
-            contentAlignment = Alignment.Center) {
-            Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
-        }
-    }
-
     @Composable
     private fun AppList(host: FeatureHost) {
         val all by states.collectAsStateWithLifecycle()
         val account by GitHub.account.collectAsStateWithLifecycle()
         BackHandler { host.home() }
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-            Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                BackGlyph { host.home() }
-                Text("ALKALMAZÁSOK", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
-                VrgChip("⟳ mind") { refreshAll() }
-            }
+            FeatureTop(host, info, Modifier.padding(vertical = 2.dp), bar = true) { VrgChip("⟳ mind") { refreshAll() } }
             if (account !is Account.SignedIn && all.values.none { it.have != null }) {
                 Text("A repó privát: az első letöltéshez GitHub belépés kell. Utána offline is nyílnak.", style = Melyviz.small.copy(color = Melyviz.sand))
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }

@@ -92,6 +92,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.format.DateTimeFormatter
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // VRG Időjárás (WP M44, D-142 … D-144): "can we work outside today" per activity, the fused 72 hours with their spread,
 // the official warnings of the place's county, the sources with their attribution; the PC's full page through the relay.
@@ -141,15 +142,11 @@ object WeatherFeature : VrgFeature {
         }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable { host.home() }.wrapContentHeight(Alignment.CenterVertically).padding(end = 12.dp))
-                Spacer(Modifier.weight(1f))
+            FeatureTop(host, info, actionsOnBack = true) {
                 IconChip(if (loading) "Frissítés…" else "⟳", "Frissítés") { retry() }
                 Spacer(Modifier.width(6.dp))
                 IconChip("⚙", "Beállítások", selected = settings) { settings = !settings }
             }
-            Text("VRG IDŐJÁRÁS", style = Melyviz.title.copy(fontSize = 18.sp))
 
             // places: "Itt", the user's saved places, the named towns; wrapping, so the chosen one is always in view
             FlowRow(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

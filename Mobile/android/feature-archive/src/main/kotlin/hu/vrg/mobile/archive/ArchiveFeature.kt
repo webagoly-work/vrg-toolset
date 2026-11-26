@@ -70,6 +70,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.util.Locale
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Archívum (WP M18): the VRG Artifact Archive on the phone. The archive is the repo's Archive/ folder (VRG Desktop
 // WP-46): vrg-archive.html, its data index.js and the saved pages files/<id>.html. The phone reads that folder
@@ -306,15 +307,6 @@ object ArchiveFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
-    /** The bare "‹": a 48 dp button that TalkBack reads as "Vissza" (UI-CHECKLIST 1.1, 8.1). */
-    @Composable
-    private fun BackGlyph(onClick: () -> Unit) {
-        Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = "Vissza" },
-            contentAlignment = Alignment.Center) {
-            Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clearAndSetSemantics { })
-        }
-    }
-
     /** A glyph-only chip that TalkBack reads by its [description], not by the glyph's name (UI-CHECKLIST 3.4, 8.1). */
     @Composable
     private fun IconChip(glyph: String, description: String, action: () -> Unit) {
@@ -338,10 +330,8 @@ object ArchiveFeature : VrgFeature {
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
                 // one row: back, the title, the size, refresh; the page below has its own search and filters
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // the same step back as the system Back (UI-CHECKLIST 7.3): inside the page first, then home
-                    BackGlyph { back(host) }
-                    Text("ARCHÍVUM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // the same step back as the system Back (UI-CHECKLIST 7.3): inside the page first, then home
+                FeatureTop(host, info, bar = true, fillTitle = false, onBack = { back(host) }) {
                     val m = meta
                     Text(
                         if (m == null) "" else "${m.pages} mentett oldal · ${String.format(Locale.ROOT, "%.1f", m.bytes / 1048576.0)} MB" + if (old) " · offline" else "",

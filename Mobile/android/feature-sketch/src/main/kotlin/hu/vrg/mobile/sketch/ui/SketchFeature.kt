@@ -1,6 +1,5 @@
 package hu.vrg.mobile.sketch.ui
 
-import hu.vrg.mobile.kit.ui.VrgBack
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -54,6 +53,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // Vázlat (WP M24): the field sketch. The list of sketches kept on the phone, and the editor (SketchEditor.kt). Every
 // sketch is one file in the app's own storage (files/sketch/<id>.vsketch.json), written a moment after each edit, so
@@ -127,15 +128,12 @@ object PhotoFeature : VrgFeature {
     @Composable
     override fun Screen(host: FeatureHost) {
         Column(Modifier.fillMaxSize().background(Melyviz.water).padding(Melyviz.gutter)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
-                Text("FOTÓPONT", style = Melyviz.title.copy(fontSize = 18.sp))
-            }
-            Text(
+            FeatureTop(host, info, inline = true)   // UI audit 1.1: a 48 dp back control
+            FjBlurb(
                 "A Vázlat bővítménye. Egy vázlatban: ⚙ → Fotópont be. A ◉ eszközzel koppints a szoba közepére, majd a " +
                     "pontra: megnyílik a kamera. A fotó után húzz a pontból arra, amerre a kép néz (É, K, D, Ny a vázlaton). " +
                     "Szobánként négy fotó; a pont négy cikke mutatja, mi van meg. A kész fotó a cikkére koppintva nézhető meg.",
-                style = Melyviz.small, modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
             Row(Modifier.padding(top = 14.dp)) { VrgChip("Vázlat megnyitása ›", selected = true) { host.open(Catalogue.SKETCH.id) } }
         }
@@ -196,15 +194,12 @@ private fun SketchList(host: FeatureHost, onOpen: (String) -> Unit) {
     var deleting by remember { mutableStateOf<SketchStore.Entry?>(null) }
 
     Column(Modifier.fillMaxSize().background(Melyviz.water).verticalScroll(rememberScrollState()).padding(Melyviz.gutter)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            VrgBack { host.home() }   // UI audit 1.1: a 48 dp back control
-            Text("VRG SKETCHER", style = Melyviz.title.copy(fontSize = 18.sp))
-        }
-        Text(
+        FeatureTop(host, SketchFeature.info, inline = true)   // UI audit 1.1: a 48 dp back control
+        FjBlurb(
             "A helyszíni szemle eszköze: vázlat, jegyzet, munkakör, kérdések, kamera és helyszín egy felmérésben. " +
                 "Bármit bármikor rögzíthetsz, bármilyen sorrendben; a Nyitott (⚑) összegyűjti, mi hiányzik még. " +
                 "A Rendezés a méreteket kiszámolja, a Planner és az Asztal folytatja.",
-            style = Melyviz.small, modifier = Modifier.padding(top = 6.dp),
+            modifier = Modifier.padding(top = 6.dp),
         )
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             VrgChip("＋ Új felmérés", selected = true) { naming = true }

@@ -37,7 +37,6 @@ import hu.vrg.mobile.kit.github.Gh
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.problem
 import hu.vrg.mobile.kit.theme.Melyviz
-import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Frissítés (WP M9, D-3 = A): the app updates itself from GitHub Releases. It checks when it comes on
 // screen, at most every 6 hours, and from the tile. A newer release is downloaded with the shared
@@ -225,8 +225,7 @@ object UpdateFeature : VrgFeature {
         val pi = app.packageManager.getPackageInfo(app.packageName, 0)
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            VrgBack { host.home() }
-            Text("FRISSÍTÉS", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)
             Text("Most: ${pi.versionName}", style = Melyviz.small)
             Spacer(Modifier.height(10.dp))
 

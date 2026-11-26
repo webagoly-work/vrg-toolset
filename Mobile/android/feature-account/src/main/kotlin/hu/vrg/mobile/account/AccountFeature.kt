@@ -59,7 +59,6 @@ import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.problem
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.core.MiniStatus
-import hu.vrg.mobile.kit.ui.VrgBack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +69,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // GitHub fiók (WP M3): sign in once with the device flow, see who is signed in and whether the
 // toolset repo is reachable, sign out. The code is shown big and copyable; github.com/login/device
@@ -116,9 +117,8 @@ object AccountFeature : VrgFeature {
         val notice by GitHub.notice.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            VrgBack { host.home() }
-            Text("GITHUB FIÓK", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Egy belépés, minden online funkcióhoz (Haladás, Gyorsjegyzet, Frissítés, Értesítések).", style = Melyviz.small)
+            FeatureTop(host, info)
+            FjBlurb("Egy belépés, minden online funkcióhoz (Haladás, Gyorsjegyzet, Frissítés, Értesítések).")
             Spacer(Modifier.height(14.dp))
 
             when (val a = account) {
