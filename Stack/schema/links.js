@@ -35,6 +35,9 @@ const LINKS = {
   'absorbed-by': R('beolvadt', 'was absorbed by', 'magába olvasztotta'),
   'overruled-by': R('felülírta', 'was overruled by', 'felülírta ezt'),
   'on-line': R('ezen a vonalon', 'works on line', 'munkamenete'),
+  // N · Belépők (entry points, S11)
+  opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
+  launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
   // T · Teendők (open work, S3)
   'todo-of': R('teendője', 'is open work of', 'teendője ez', 'v'),
   'looks-done': R('késznek tűnik', 'looks done by', 'bizonyítja, hogy kész', 'v'),

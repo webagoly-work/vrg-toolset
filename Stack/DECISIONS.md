@@ -368,3 +368,17 @@ The Founder, 2026-11-25: **build the S6 threads editor for mark done.** `lib/edi
 | STK-P114 | Which items get the button | **A** every open item, when the page is served by serve.js; the looks-done ones keep their evidence next to it; from file:// the copy-prompt stays | the Founder knows more than the evidence; the evidence only points |
 | STK-P115 | The diff | **A** a line diff inside the change (the old line before the new), removed lines struck through | the threads edit changes two places at once; unchanged lines between them stay context |
 
+## S11 — N · Belépők, the entry points layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S11, the next new layer.** By STK-Q24 that is N, Belépők. Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P116 | Where N sits in the order | **A** after F: F N I T Q L A U R C G Z · B at the end | the way in is what a person meets first after the featured list; the mask reads left to right as a visit |
+| STK-P117 | Its sources | **A** `launcher/vrg-menu.json`, `launcher/vrg-catalog.json`, the Mobile `Feature.kt` · B also the Kapu's baked list | the Kapu is built from the menu (`build-hub.js`), so it adds nothing; the three are the registries CLAUDE.md names |
+| STK-P118 | Node ids and kinds | **A** `N:start.<key path>` (R/7), `N:server.<id>`, `N:cat.<id>`, `N:mob.<id>`; one kind `catalog` with the catalog's type in the brief | key paths are what the Founder knows by heart; 40 catalog types as 40 kinds would drown the legend |
+| STK-P119 | Programs | **A** `N:start.A/<key>`, under START A | the catalog launches them as `s:A/1`; the same id makes that edge land |
+| STK-P120 | Paths | **A** `{repo}` resolves to the repo path, the `paths` tokens through the table; `{full}` / `{vrg}` stay as written, with no repo key | the join links a repo path to its folder; a program on H: outside the repo has no folder node to link to |
+| STK-P121 | Unreachable (DRIFT §11) | **A** a pillar whose string reaches C and not N, unless one of its folders is inside one an entry point opens | without the folder rule 46 pillars were listed, nearly all Planner features reached through START 1; with it 2, both real |
+

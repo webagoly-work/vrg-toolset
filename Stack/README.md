@@ -84,6 +84,12 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **N · Belépők, entry points** (S11, 2026-11-26): every way in, one node each: the START keys and their submenus
+  (`launcher/vrg-menu.json`), the local servers with their ports, the programs (under A), the VRG Asztal catalog
+  items (`launcher/vrg-catalog.json`) and the VRG Mobile features (`Feature.kt`); `lib/entry.js`. Each names the path
+  it opens, so the join links it to its folder. DRIFT.md §11 lists the pillars whose code no entry point opens, not
+  even through a folder above it ("a tool that is not in vrg-menu.json does not exist"). Live: a save of either
+  registry or `Feature.kt` rebuilds N.
 - **T · Teendők, open work** (S3, 2026-11-25): every not-yet item once (the Thread Board's lists, the DevLog lines'
   remaining work, the ROADMAP ✗ rows; `lib/todo.js`), linked to its line and pillar. An item the evidence says is built
   (a built list, an F row in tier 1–2, two commits) reads "looks done" and is listed in DRIFT.md §9 with the evidence;
@@ -141,6 +147,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
 | `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
 | `lib/edit.js` · `lib/edit-threads.js` · `lib/editdialog.js` | the write gateway (S6): the decisions and threads (mark done) editors and the diff dialog |

@@ -350,4 +350,11 @@ function todo(facts) {
   return T.layer(c.raw, c.built);
 }
 
-module.exports = { featured, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+/* ============================================================ N · Belépők (entry points; S11, lib/entry.js) */
+function entry() {
+  const json = f => { try { return JSON.parse(read(REPO + '/' + f)); } catch { return null; } };
+  return require('./entry').layer({ menu: json('launcher/vrg-menu.json'), catalog: json('launcher/vrg-catalog.json'),
+    mobile: read(REPO + '/Mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/Feature.kt') || '' });
+}
+
+module.exports = { featured, entry, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

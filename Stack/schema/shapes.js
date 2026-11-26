@@ -9,7 +9,7 @@
 // Each check returns a list of problems; an empty list means the record is valid.
 'use strict';
 
-const LAYER = /^[FITQLAURCGEZ]$/;   // T · Teendők since S3
+const LAYER = /^[FNITQLAURCGEZ]$/;   // T · Teendők since S3, N · Belépők since S11
 const ISO = /^\d{4}-\d\d-\d\d/;
 
 function checkNode(n) {

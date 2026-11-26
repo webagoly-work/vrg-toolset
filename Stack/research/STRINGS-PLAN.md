@@ -349,7 +349,8 @@ Each work package (WP) is one commit (or a few), with its tests. **S** is under 
 | **S8** ✅ 11-25 | Layer text stage: `out/layertext/<L>.bin` + `.idx`, deterministic, with a diff between builds | — (parallel) | M | the same build gives identical bytes; a one-node change differs only in that range |
 | **S9** ✅ 11-25 (perf to measure here) | **Viewer v1**: natural-order cells, Hilbert-in-shader particles, presets + Auto, GPU picking with the words tooltip, strings drawn, pillar spine | S1, S8 | L | 60 fps at Fine here; the phone usable at Normál; LAYERS §1 "The stack itself" row ✅ |
 | **S10** ✅ 11-25 (the gateway parts wait for S6) | Viewer v2: zoom LOD ✅, C byte stream ✅ (`GET /api/bytes`), time scrubber ✅ (`out/layertext/time.js`), live diff glow ✅ (SSE `/api/events` after any finished build; S5's incremental build still open), actions from the card ✅ for decisions (answer through the S6 diff dialog), ◐ elsewhere (layer page with the node selected, the string, a session prompt) | S5, S6, S9 | L | an edit on the board glows its bytes in the Viewer |
-| **S11+** | New layers in the order of STK-Q24: Belépők, Próbák, Kérések, Jelzések… one adapter each | S1 | M each | each appears in strings and the Viewer with no page code change |
+| **S11** ✅ 11-26 | **N · Belépők (entry points)**: every START key, server, program, catalog item and Mobile feature as a node (`lib/entry.js`), joined to the folders it opens; DRIFT.md §11 lists the pillars whose code nothing opens | S1 | M | appears in strings and the Viewer with no page code change |
+| **S12+** | The next layers in the order of STK-Q24: Próbák, Kérések, Jelzések… one adapter each | S1 | M each | each appears in strings and the Viewer with no page code change |
 
 **Parallel lanes.** These three are independent until S6, S9 and S10:
 

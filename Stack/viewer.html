@@ -145,14 +145,14 @@
 'use strict';
 (function () {
 const LAYER = {
-  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
+  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
   Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' }, L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' },
   A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone' }, U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' },
   R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
   G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe' }, E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars' },
 };
 // the Stack's own order (LAYERS §1, the ◢ menu, Érintésnyom), the pillars as the base plane
-const ORDER = ['F', 'I', 'T', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'E'];
+const ORDER = ['F', 'N', 'I', 'T', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'E'];
 // each layer's own page; the phone keeps them under other names (Mobile/stack/publish-stack.js LAYER_PAGES)
 const PAGE = window.STACK_BUNDLE ? { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' }
   : { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };

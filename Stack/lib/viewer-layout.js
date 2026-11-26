@@ -138,6 +138,8 @@
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items.slice().sort(byTime), pad(q), 'cols');
     } else if (layer === 'Q') {
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
+    } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
+      for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
     } else if (layer === 'T') {   // thread groups (§6.2): one band per thread or line, its items in the board's order
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
     } else if (layer === 'A') {

@@ -110,7 +110,7 @@
   if (!D) { wrap.innerHTML = '<section class="box"><h3>Nincs adat</h3><p>Futtasd: <code>node stack.js build</code> (out/board-data.js). <i>No data yet.</i></p></section>'; return; }
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const md = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
-  const COL = { F: '#e3be7b', I: '#c6a0e6', T: '#ee9bb4', Q: '#e4877d', L: '#8bcca1', A: '#7fd3ec', U: '#ff9a52', R: '#f0dc6e', C: '#5b8fe0', G: '#8aa4b4', Z: '#b0b8be' };
+  const COL = { F: '#e3be7b', N: '#9fe0c4', I: '#c6a0e6', T: '#ee9bb4', Q: '#e4877d', L: '#8bcca1', A: '#7fd3ec', U: '#ff9a52', R: '#f0dc6e', C: '#5b8fe0', G: '#8aa4b4', Z: '#b0b8be' };
   const SC = D.scale || {}, CL = D.classes || {};
   const F = { q: '', area: '', done: false, drift: false, sel: '' };
   const rows = D.areas.flatMap(a => a.rows);

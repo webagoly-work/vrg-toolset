@@ -91,5 +91,12 @@ module.exports = function drift(graph, full, ctx) {
     `A pillar's hand value (its F tier, or the hand status of a pillar with no F row) two or more steps from what its string shows, on the board's scale idea · out · low · mid · high · op. A proposal, never applied.`, ``,
     ...(cards.length ? [`| Pillar | Hand value | The string says | Reach | Proposal |`, `|---|---|---|---|---|`,
       ...cards.map(c => `| ${c.name} (\`E:${c.pillar}\`) | ${c.hand}: ${c.what} | ${c.evidence} (class ${c.cls}${c.pulse ? ', last move ' + c.pulse : ''}) | \`${c.mask}\` | ${c.propose} |`)] : ['none']), ``);
+
+  /* 11. unreachable (S11): a pillar whose string reaches code (C) but no entry point (N): nothing opens it */
+  let un = null;
+  try { un = require('./entry').unreachable(graph, require('./strings'), require('../config').strings || {}); } catch (e) { out.push(`## 11. Unreachable`, ``, `not computed: ${e.message}`, ``); }
+  if (un) out.push(`## 11. Unreachable: code that nothing opens`, ``,
+    `"A tool that is not in launcher/vrg-menu.json does not exist" (CLAUDE.md). These pillars' strings reach code but no entry point: no START key, server, catalog item or Mobile feature opens their folders or a folder above them. Add one, or say why it needs none.`, ``,
+    ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
   return out.join('\n');
 };
