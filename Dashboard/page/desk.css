@@ -27,6 +27,21 @@
 [data-role="topstrip"] .dot.ok { background: var(--mv-ok); } [data-role="topstrip"] .dot.warn { background: var(--mv-warn); } [data-role="topstrip"] .dot.crit { background: var(--mv-crit); }
 [data-role="topstrip"] [data-w="w:clock"] { color: var(--mv-text); font-size: 13px; letter-spacing: .06em; }
 [data-role="ring"] { width: 18px; height: 18px; }
+/* WP-60: a narrow strip. data-fit="1" drops the labels (the icon, the LED and the number stay); widgets that still do not
+   fit wait in ⋯ (desk.js fitTop). The level switch shows its short names there. */
+[data-role="topstrip"] > [hidden] { display: none !important; }
+[data-role="level"] .sh { display: none; }
+[data-role="topstrip"][data-fit="1"] .lbl { display: none; }
+[data-role="topstrip"][data-fit="1"] [data-role="level"] .sh { display: inline; }
+[data-role="topstrip"][data-fit="1"] > * { padding: 0 8px; }
+[data-role="top-more"] { font-size: 16px; letter-spacing: .1em; }
+[data-role="top-menu"] { position: fixed; z-index: 115; min-width: 200px; max-width: 260px; display: flex; flex-direction: column; padding: 4px 0;
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 28px rgba(0, 0, 0, .45); font: 12px var(--mv-mono); color: var(--mv-dim); }
+[data-role="top-menu"] > * { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+[data-role="top-menu"] > button { cursor: pointer; }
+[data-role="top-menu"] > button:hover, [data-role="top-menu"] > button:focus-visible { background: var(--mv-raised); color: var(--mv-text); outline: none; }
+[data-role="top-menu"] .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-faint); display: inline-block; }
+[data-role="top-menu"] .dot.ok { background: var(--mv-ok); } [data-role="top-menu"] .dot.warn { background: var(--mv-warn); } [data-role="top-menu"] .dot.crit { background: var(--mv-crit); }
 
 [data-role="workspace"] { position: relative; flex: 1 1 0; min-height: 0; display: flex;
   background: radial-gradient(120% 90% at 50% 110%, var(--mv-horizon) 0%, var(--mv-bg) 62%); }
