@@ -7,6 +7,10 @@
 //   VRGPlaneUI.run()   in the phone's WebView: VRGPlaneIO.input() → {image (data: URL), title, record};
 //                      ✓ Mentés → VRGPlaneIO.save(json), ✕ → VRGPlaneIO.close(), an error → VRGPlaneIO.fail(msg).
 //
+// The VRG mérőkártya (lib/marker.js, the K3 follow-up): when the photo has no reference yet, the screen looks for the
+// printed card first; found, its corners and size fill ① by themselves (still draggable) and the screen goes on to ②.
+// 🔍 Kártya looks again; opts.printCard (the Desktop) adds 🖨 Kártya nyomtatása.
+//
 // Steps: ① Referencia (the 4 corners of a known rectangle on the wall), ② Padló (two points on the floor line, for
 // heights), ③ Távolság (two taps = one distance), ④ Magasság (one tap = the height above the floor line). Every point
 // can be dragged (a loupe shows the pixels under the finger); the view zooms with the wheel / two fingers and pans with
@@ -28,7 +32,7 @@
     '.pl-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0}',
     '.pl select,.pl input{background:#17232c;color:#e8f0f6;border:1px solid rgba(232,240,246,.34);padding:5px;font:inherit}',
     '.pl input[type=number]{width:78px}.pl input.lbl{flex:1;min-width:80px}',
-    '.pl-hint{font-size:12.5px;color:#a6afb7;margin:4px 0}.pl-warn{color:#e3be7b}.pl-err{color:#e4877d}',
+    '.pl-note{color:#7fd1c7}.pl-hint{font-size:12.5px;color:#a6afb7;margin:4px 0}.pl-warn{color:#e3be7b}.pl-err{color:#e4877d}',
     '.pl-m{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:13.5px}.pl-m .v{font-weight:600;min-width:72px}.pl-m .q{font-size:11.5px;color:#a6afb7}',
     '.pl-m .q.kozepes{color:#e3be7b}.pl-m .q.tavoli{color:#e4877d}',
   ].join('\n');
@@ -37,14 +41,14 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function open(host, opts) {
-    const P = opts.P || root.VRGPlane, doc = host.ownerDocument || root.document, img = opts.image;
+    const P = opts.P || root.VRGPlane, MK = opts.M === undefined ? root.VRGMarker : opts.M, doc = host.ownerDocument || root.document, img = opts.image;
     const W = img.naturalWidth || img.width, Hh = img.naturalHeight || img.height;
     if (!doc.getElementById('pl-css')) { const st = doc.createElement('style'); st.id = 'pl-css'; st.textContent = CSS; doc.head.appendChild(st); }
     // the working record: points in 0…1 of the photo
     const r0 = opts.record || {};
     let rec = { aspect: W / Hh, ref: r0.ref ? JSON.parse(JSON.stringify(r0.ref)) : { kind: 'a4', w: 210, h: 297, pts: [] },
       floor: r0.floor ? r0.floor.slice() : [], lines: (r0.lines || []).map(l => Object.assign({}, l)), marks: (r0.marks || []).map(m => Object.assign({}, m)), at: r0.at };
-    const ui = { step: rec.ref.pts.length === 4 ? (rec.floor.length === 2 ? 'height' : 'dist') : 'ref', pend: null, scale: 1, ox: 0, oy: 0, drag: null, loupe: null };
+    const ui = { step: rec.ref.pts.length === 4 ? (rec.floor.length === 2 ? 'height' : 'dist') : 'ref', pend: null, scale: 1, ox: 0, oy: 0, drag: null, loupe: null, note: null, found: null };
 
     const el = doc.createElement('div'); el.className = 'pl';
     el.innerHTML = '<div class="pl-top"><b>📏 ' + esc(opts.title || 'Mérés a fotón') + '</b><button data-p="close" aria-label="Bezár">✕</button><button class="ok" data-p="save">✓ Mentés</button></div>' +
@@ -160,11 +164,13 @@
     function panel() {
       el.querySelectorAll('[data-p="step"]').forEach(b => b.classList.toggle('on', b.dataset.s === ui.step));
       const f = frame(), r = rec.ref;
-      let h = '';
+      let h = ui.note ? '<div class="pl-hint pl-note">' + ui.note + '</div>' : '';
       if (ui.step === 'ref') {
         h += '<div class="pl-row"><select data-q="kind">' + P.REFS.map(x => '<option value="' + x.id + '"' + (x.id === r.kind ? ' selected' : '') + '>' + esc(x.label) + '</option>').join('') + '</select>' +
           '<input type="number" inputmode="numeric" data-q="w" value="' + r.w + '" aria-label="szélesség mm"> × <input type="number" inputmode="numeric" data-q="h" value="' + r.h + '" aria-label="magasság mm"> mm' +
-          '<button data-p="turn" title="Fektetve / állítva">⇄</button></div>';
+          '<button data-p="turn" title="Fektetve / állítva">⇄</button>' +
+          (MK ? '<button data-p="find" title="A nyomtatott VRG mérőkártya megkeresése a fotón">🔍 Kártya</button>' : '') +
+          (opts.printCard ? '<button data-p="print" title="A VRG mérőkártya kinyomtatása (100 %)">🖨 Kártya nyomtatása</button>' : '') + '</div>';
         h += '<div class="pl-hint">' + (r.pts.length < 4 ? 'Koppints a ' + esc((P.ref(r.kind) || {}).label || 'téglalap') + ' négy sarkára (' + r.pts.length + '/4), bármilyen sorrendben. A pontok húzhatók.'
           : f ? 'Referencia kész: ' + f.w + ' × ' + f.h + ' mm. Ugyanazon a falon (síkon) mérj vele.' : '<span class="pl-err">A négy pont nem téglalap képe: húzd a sarkokat a helyükre.</span>') + '</div>';
       } else if (ui.step === 'floor') {
@@ -191,6 +197,7 @@
     const ptrs = new Map(); let gesture = null;
     function tap(x, y) {
       const p = toPhoto(x, y); if (p[0] < 0 || p[0] > 1 || p[1] < 0 || p[1] > 1) return;
+      ui.note = null;                                              // the card's note has been read once the user goes on
       if (ui.step === 'ref') { if (rec.ref.pts.length < 4) rec.ref.pts.push(p); }
       else if (ui.step === 'floor') { if (rec.floor.length < 2) rec.floor.push(p); else rec.floor[1] = p; }
       else if (ui.step === 'dist') { if (!frame()) return; if (!ui.pend) ui.pend = p; else { rec.lines.push({ a: ui.pend, b: p }); ui.pend = null; } }
@@ -243,6 +250,8 @@
       const t = e.target.closest('[data-p]'); if (!t) return;
       const a = t.dataset.p;
       if (a === 'step') { ui.step = t.dataset.s; ui.pend = null; redraw(true); }
+      else if (a === 'find') find(true);
+      else if (a === 'print') opts.printCard(ui.found ? ui.found.id : 0);
       else if (a === 'turn') { const r = rec.ref, f = frame(); r.turn = f ? !(f.w !== r.w) : !r.turn; redraw(true); }
       else if (a === 'del') { (t.dataset.t === 'l' ? rec.lines : rec.marks).splice(+t.dataset.i, 1); redraw(true); }
       else if (a === 'undo') {
@@ -259,15 +268,38 @@
     el.addEventListener('change', e => {
       const t = e.target, q = t.dataset.q; if (!q) return;
       if (q === 'kind') { const x = P.ref(t.value); rec.ref.kind = t.value; if (x) { rec.ref.w = x.w; rec.ref.h = x.h; } delete rec.ref.turn; redraw(true); }
-      else if (q === 'w' || q === 'h') { const v = parseFloat(String(t.value).replace(',', '.')); if (v > 0) { rec.ref[q] = v; delete rec.ref.turn; } redraw(true); }
+      else if (q === 'w' || q === 'h') { const v = parseFloat(String(t.value).replace(',', '.')); if (v > 0) { rec.ref[q] = v; if (rec.ref.kind === 'kartya') rec.ref.w = rec.ref.h = v; delete rec.ref.turn; } redraw(true); }
       else if (q === 'label') { const list = t.dataset.t === 'l' ? rec.lines : rec.marks, it = list[+t.dataset.i]; if (it) it.label = t.value.trim(); }
     });
     const onResize = () => { fit(); draw(); };
     root.addEventListener && root.addEventListener('resize', onResize);
     function close() { root.removeEventListener && root.removeEventListener('resize', onResize); el.remove(); }
 
+    /** The printed card in the photo: its corners and size into ①. again = asked by 🔍 (replaces what is there). */
+    function find(again) {
+      if (!MK || (!again && rec.ref.pts.length)) return null;
+      let found = [];
+      try { found = MK.detect(MK.fromImage(img, doc, 1600)); } catch (e) { found = []; }
+      if (!again && rec.ref.pts.length) return null;           // the user tapped a corner meanwhile: theirs wins
+      const d = found[0];
+      if (!d) {
+        ui.found = null;
+        ui.note = again ? '<span class="pl-warn">Nem találtam VRG mérőkártyát ezen a fotón: koppints a referencia négy sarkára.</span>' : null;
+        redraw(true); return null;
+      }
+      const card = MK.card(d.id), keep = rec.ref.kind === 'kartya' && rec.ref.w > 0 && again ? rec.ref.w : d.mm;   // a size typed for this card stays
+      rec.ref = { kind: 'kartya', w: keep, h: keep, pts: d.pts.map(p => p.slice()) };
+      ui.found = d; ui.pend = null;
+      ui.note = '🔍 Megtaláltam a mérőkártyát (' + (card ? card.label.replace(/ \(.*\)$/, '') : keep + ' mm') + '): a sarkai a helyükön, húzhatók. Ha a nyomat nem pontosan ' + keep + ' mm, ①-ben írd be a fekete négyzet valódi oldalát.';
+      if (ui.step === 'ref') ui.step = rec.floor.length === 2 ? 'height' : 'floor';
+      redraw(true);
+      return d;
+    }
+
     fit(); redraw(true);
-    return { el, ui, record: () => rec, frame, tapAt: (u, v) => { const s = toScreen([u, v]); tap(s[0], s[1]); }, toScreen, redraw, close };
+    // look for the card once the screen is up (a phone photo takes a moment)
+    if (MK && !rec.ref.pts.length) { ui.note = '🔍 Mérőkártyát keresek a fotón…'; panel(); setTimeout(() => { if (el.parentNode) { if (rec.ref.pts.length) { ui.note = null; panel(); } else find(false); } }, 30); }
+    return { el, ui, record: () => rec, frame, find, tapAt: (u, v) => { const s = toScreen([u, v]); tap(s[0], s[1]); }, toScreen, redraw, close };
   }
 
   /** The phone: the photo and the record from the bridge, the result back through it. */

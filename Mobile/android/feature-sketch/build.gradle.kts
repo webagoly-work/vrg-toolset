@@ -29,7 +29,7 @@ val REPORT_ASSETS = listOf("fieldkit.js", "report.js", "report-phone.js")
 val ROOMBOX_ASSETS = listOf("roombox.js", "roombox-gl.js", "roombox-snap.js", "pano.js", "roombox-phone.js")   // K4: pano.js (Körkép); K1 polish: roombox-snap.js (📐 Sarok)
 // skcam K3 (WP M60): the Síkmérés, the Desktop's maths and screen, into assets sketcher/plane/ (checked by
 // Sketcher/test/plane.test.js, with PlaneUi.kt).
-val PLANE_ASSETS = listOf("plane.js", "plane-ui.js")
+val PLANE_ASSETS = listOf("plane.js", "marker.js", "plane-ui.js")   // K3 follow-up: marker.js (the mérőkártya found in the photo)
 
 abstract class SketcherAssets : DefaultTask() {
     @get:InputDirectory abstract val catalog: DirectoryProperty

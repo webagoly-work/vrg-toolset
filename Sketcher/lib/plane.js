@@ -20,6 +20,7 @@
 
   /** Known rectangles: w × h in mm as they usually hang (w across, h up). The user can type any size. */
   const REFS = [
+    { id: 'kartya', label: 'VRG mérőkártya (a fotón megtalálja)', w: 150, h: 150 },   // lib/marker.js: found by itself
     { id: 'a4', label: 'A4 lap', w: 210, h: 297 },
     { id: 'a5', label: 'A5 lap', w: 148, h: 210 },
     { id: 'keret', label: 'Kapcsoló / dugalj keret', w: 80, h: 80 },

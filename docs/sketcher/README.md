@@ -237,4 +237,6 @@ built (WP M64, BETA):** the Google AR csomag, one opt-in switch on the phone (`k
 distance (into the survey's `ar` key, or onto a wall), a room scan saved as a `.house3d.json` already to scale (it opens
 in the same 🏠 Ház 3D viewer with no scale step, `test/ar-scan.test.js`) and the Recording API's MP4. **The K1 polish is built (WP M71,
 BETA):** 📐 Sarok per Szobadoboz photo (phone and Desktop, one screen: `lib/roombox-snap.js`): drag the drawn corner lines
-onto the corners in the photo; one fixes the direction, two also the lens, saved in the same `box` key.
+onto the corners in the photo; one fixes the direction, two also the lens, saved in the same `box` key. **The K3 marker
+card is built (WP M72, BETA):** the VRG mérőkártya, printed from the Síkmérés (🖨), is found in the photo by itself
+(`lib/marker.js`, plain JS) and fills ① Referencia with its corners and size.

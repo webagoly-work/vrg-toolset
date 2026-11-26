@@ -44,7 +44,7 @@ import kotlin.math.roundToInt
 
 internal object PlanePhone {
     /** The bundled files, in load order (= PLANE_ASSETS in build.gradle.kts; Sketcher/test/plane.test.js checks both). */
-    val ASSETS = listOf("plane.js", "plane-ui.js")
+    val ASSETS = listOf("plane.js", "marker.js", "plane-ui.js")
 
     suspend fun page(ctx: android.content.Context): String = withContext(Dispatchers.IO) {
         "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1\"></head><body style=\"margin:0;background:#0a141c\">" +

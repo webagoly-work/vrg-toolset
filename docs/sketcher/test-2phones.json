@@ -808,6 +808,44 @@
      ]
     },
     {
+     "n": 72,
+     "title": "M72 · VRG mérőkártya (in `sketch`, phone and Desktop): the Síkmérés's reference found in the photo",
+     "items": [
+      {
+       "id": "M72.1",
+       "text": "A PC-n: Asztal Sketcher → Kamera → egy fotó 📏 Mérés → ① Referencia → **🖨 Kártya nyomtatása**: nyomtasd ki 100 %-on; a vonal vonalzóval legyen 100 mm."
+      },
+      {
+       "id": "M72.2",
+       "text": "Ragaszd a kártyát a falra, egy dugalj közelébe, a padlótól kb. 40 cm-re."
+      },
+      {
+       "id": "M72.3",
+       "text": "Telefonon: Kamera → fotózd le a falat úgy, hogy a kártya, a dugalj és a padló széle is látsszon."
+      },
+      {
+       "id": "M72.4",
+       "text": "A fotón 📏 Mérés: rövid „Mérőkártyát keresek…” után a kártya négy sarka magától a helyére kerül, és a ② Padló lépés nyílik, a „Megtaláltam a mérőkártyát” szöveggel."
+      },
+      {
+       "id": "M72.5",
+       "text": "Koppints két pontra a padló és a fal találkozásán, majd ④ Magasság: a dugalj közepe. Mérőszalaggal ellenőrizd (1–2 cm-en belül legyen)."
+      },
+      {
+       "id": "M72.6",
+       "text": "① Referencia: a ↶ gombbal töröld a sarkokat, majd **🔍 Kártya**: újra megtalálja."
+      },
+      {
+       "id": "M72.7",
+       "text": "Egy kártya nélküli fotón a 📏 Mérés a régi módon működik: négy koppintás a referencia sarkaira."
+      },
+      {
+       "id": "M72.8",
+       "text": "✓ Mentés: a mérés a fotó alatt megjelenik; a PC-re küldve az Asztal Sketcher ugyanazt mutatja."
+      }
+     ]
+    },
+    {
      "n": 30,
      "title": "M30 · Helyszín: the address, VRG Térkép, and the building against the sketch",
      "items": [
@@ -976,7 +1014,7 @@
      ]
     }
    ],
-   "count": 113
+   "count": 121
   }
  },
  "cross": [

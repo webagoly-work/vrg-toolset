@@ -595,9 +595,14 @@
     return '<div class="plane-bits">' + (file ? '<button class="btn sm" data-pact="open" data-key="' + esc(key) + '" data-file="' + esc(file) + '" data-title="' + esc(title) + '">📏 Mérés</button> ' : '') +
       (lines.length ? '<span class="small">' + lines.map(esc).join(' · ') + '</span>' : '') + '</div>';
   }
+  /** 🖨 Kártya nyomtatása: the VRG mérőkártya (lib/marker.js) on its own printable page, at 100 %. */
+  function printCard(id) {
+    const MK = window.VRGMarker, w = MK && window.open('', '_blank'); if (!w) return;
+    w.document.open(); w.document.write(MK.page(id || 0)); w.document.close();
+  }
   function planeOpen(key, file, title) {
     const im = boxImg.get(file); if (!im || !PLUI) return;
-    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null,
+    PLUI.open(document.getElementById('root'), { image: im, title: title + ' — ' + key, record: (S.planes || {})[key] || null, printCard,
       onSave: rec => commit(() => {
         const pl = Object.assign({}, S.planes || {});
         if (rec) pl[key] = rec; else delete pl[key];

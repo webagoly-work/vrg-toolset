@@ -93,7 +93,7 @@ const rec = { aspect: ASPECT, ref: { kind: 'a4', w: 210, h: 297, pts: A4.map(sho
 
 // ---- the phone bundles exactly these files (feature-sketch/build.gradle.kts PLANE_ASSETS) and PlaneUi.kt loads them
 {
-  const fs = require('fs'), A = ['plane.js', 'plane-ui.js'];
+  const fs = require('fs'), A = ['plane.js', 'marker.js', 'plane-ui.js'];
   const g = fs.readFileSync(path.join(__dirname, '..', '..', 'Mobile', 'android', 'feature-sketch', 'build.gradle.kts'), 'utf8');
   const m = /val PLANE_ASSETS = listOf\(([^)]*)\)/.exec(g);
   ok(m && JSON.stringify(m[1].split(',').map(x => x.trim().replace(/"/g, ''))) === JSON.stringify(A), 'PLANE_ASSETS = ' + A.join(', '));
