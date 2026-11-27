@@ -221,6 +221,13 @@ a `localPath` instead of a copy. The VRG Asztal's Archívum section and START R 
 
 Never make `H:\` itself a repository; it contains `.ssh`.
 
+## File formats carry `{ format, version }`
+
+A new file format (a JSON a tool writes and another reads: an export, a backup, a hand-over) opens with
+`{ "format": "<name>", "version": <n> }`, as the Planner's `.vplan.json` does, and its reader refuses a `format` it
+does not know. The formats already written in other styles (`format` + `v`, `kind` + `v`) stay as they are and stay
+readable; change one only with a new version. (The Founder's ruling on the Bicameral Examination, 2026-11-26.)
+
 ## Vendored third-party code
 
 `vendor-manifest.json` plus `tools/fetch-vendor.js` own everything under
@@ -261,7 +268,8 @@ file at the repo root and does what it says.
 - **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
 - **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
 - **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M4, M6, M9, M14 live,
-  M8, M16, M11, M12, M13, M5, M10 and M7 built and in BETA; the D-7/D-9/D-11 batch is done). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
+  M8, M16, M11, M12, M13, M5, M10 and M7 built and in BETA; the D-7/D-9/D-11 batch is done; the Sketcher forks M46–M54 in
+  BETA, their two-phone plan in `docs/sketcher/TEST-2PHONES.md`). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
   builds and installs the APK); Actions still builds an APK on every push.
 - **`GO LOGO`** — `GO-LOGO.md`: the two-state Varler logo (ring ⇄ bulb, click to toggle) from `shared/varler-logo`,
   then the VRG Mobile logo home page (WP M15). Starts by asking Q1–Q4.

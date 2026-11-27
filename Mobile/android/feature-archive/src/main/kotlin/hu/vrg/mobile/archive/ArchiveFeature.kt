@@ -23,12 +23,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +70,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.util.Locale
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Archívum (WP M18): the VRG Artifact Archive on the phone. The archive is the repo's Archive/ folder (VRG Desktop
 // WP-46): vrg-archive.html, its data index.js and the saved pages files/<id>.html. The phone reads that folder
@@ -299,6 +307,14 @@ object ArchiveFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
+    /** A glyph-only chip that TalkBack reads by its [description], not by the glyph's name (UI-CHECKLIST 3.4, 8.1). */
+    @Composable
+    private fun IconChip(glyph: String, description: String, action: () -> Unit) {
+        Box(Modifier.clearAndSetSemantics { contentDescription = description; role = Role.Button; onClick { action(); true } }) {
+            VrgChip(glyph, onClick = action)
+        }
+    }
+
     @Composable
     override fun Screen(host: FeatureHost) {
         val account by GitHub.account.collectAsStateWithLifecycle()
@@ -314,24 +330,22 @@ object ArchiveFeature : VrgFeature {
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
                 // one row: back, the title, the size, refresh; the page below has its own search and filters
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                        modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
-                    Text("ARCHÍVUM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // the same step back as the system Back (UI-CHECKLIST 7.3): inside the page first, then home
+                FeatureTop(host, info, bar = true, fillTitle = false, onBack = { back(host) }) {
                     val m = meta
                     Text(
                         if (m == null) "" else "${m.pages} mentett oldal · ${String.format(Locale.ROOT, "%.1f", m.bytes / 1048576.0)} MB" + if (old) " · offline" else "",
                         style = Melyviz.readout.copy(fontSize = 10.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
-                    VrgChip(if (loading) "…" else "⟳") { refresh() }
+                    IconChip(if (loading) "…" else "⟳", "Frissítés") { refresh() }
                 }
                 pct?.let { Text("Letöltés… ${(it * 100).toInt()} %", style = Melyviz.small) }
                 if (account !is Account.SignedIn && meta == null) {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
                 }
-                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
+                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
             }
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val m = meta

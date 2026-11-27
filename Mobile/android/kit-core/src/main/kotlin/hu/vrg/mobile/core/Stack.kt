@@ -3,31 +3,39 @@ package hu.vrg.mobile.core
 import org.json.JSONObject
 
 // Rétegverem / VRG Stack on the phone (WP M17): the rules of the phone's side. The stack is built on the PC
-// (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its three 3D pages into self-contained HTML
-// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, meta.json}. The phone reads
-// meta.json and downloads a page only when the published copy differs from the one it has.
+// (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its 3D pages into self-contained HTML
+// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, meta.json} and the
+// optional kisokos.html, otletfolyam.html, dontesnaplo.html, vonalak.html, vezerloterem.html, futasnaplo.html,
+// commitok.html, erintesnyom.html, labor.html. The phone reads meta.json and downloads a page
+// only when the published copy differs from the one it has. An optional page's chip appears once a publish carries it; a
+// publish without it (an older one) is still whole.
 
 object StackPages {
     const val BRANCH = "stack-pages"
     const val DIR = "stack"
     const val META = "meta.json"
 
-    /** The pages, in the order of the chips. Ids are stable: settings and deep links (vrg://stack/<id>) use them.
-     *  The first three are in every publish; the layer pages (VIS-Q5, 2026-11-20) are optional, so a publish made
-     *  before them still loads and a layer whose data was missing on the PC is simply not offered. */
+    /** Every page, in the order of the chips. Ids are stable: settings and deep links (vrg://stack/<id>) use them.
+     *  The first three are in every publish; the others are optional, so a publish made before them still loads and a
+     *  page whose data was missing on the PC is simply not offered. */
     val PAGES = listOf(
         StackPage("konnektom", "Konnektóm", "konnektom.html"),
         StackPage("holo", "Holo", "holo.html"),
         StackPage("retegek", "Rétegek", "retegek.html"),
-        StackPage("otletfolyam", "Ötletfolyam", "otletfolyam.html", optional = true),
-        StackPage("dontesek", "Döntésnapló", "dontesek.html", optional = true),
-        StackPage("vonalak", "Vonaltérkép", "vonalak.html", optional = true),
-        StackPage("vezerloterem", "Vezérlőterem", "vezerloterem.html", optional = true),
-        StackPage("futasnaplo", "Futásnapló", "futasnaplo.html", optional = true),
-        StackPage("commitok", "Commit-pixel", "commitok.html", optional = true),
+        StackPage("kisokos", "Kisokos", "kisokos.html", optional = true),   // the K layer: VRG Kisokos 3D (Stack/kisokos.html)
+        StackPage("otletfolyam", "Ötletfolyam", "otletfolyam.html", optional = true),   // layer I (Stack/lineage.html)
+        StackPage("dontesnaplo", "Döntésnapló", "dontesnaplo.html", optional = true),   // layer Q (Stack/decisions.html)
+        StackPage("vonalak", "Vonaltérkép", "vonalak.html", optional = true),   // layer L (Stack/metro.html)
+        StackPage("vezerloterem", "Vezérlőterem", "vezerloterem.html", optional = true),   // layer A (Stack/control.html)
+        StackPage("futasnaplo", "Futásnapló", "futasnaplo.html", optional = true),   // layer U (Stack/runs.html)
+        StackPage("commitok", "Commit-pixel", "commitok.html", optional = true),   // layer R (Stack/commits.html)
         // Érintésnyom (SL4, 2026-11-25): the layers lit by recorded sessions, replay only on the phone (VIS-Q9)
         StackPage("erintesnyom", "Érintésnyom", "erintesnyom.html", optional = true),
+        StackPage("labor", "Labor", "labor.html", optional = true),   // the Konnektóm-labor (Archive/files/konnektom-labor.html)
     )
+
+    /** The pages every publish has. */
+    val REQUIRED: List<StackPage> get() = PAGES.filterNot { it.optional }
 
     fun page(id: String?): StackPage = PAGES.firstOrNull { it.id == id } ?: PAGES.first()
     fun byFile(file: String?): StackPage? = PAGES.firstOrNull { it.file == file }
@@ -36,10 +44,11 @@ object StackPages {
     fun contents(repoPath: String, file: String) = "$repoPath/contents/$DIR/$file?ref=$BRANCH"
 }
 
+/** [optional]: a publish may leave it out; the phone then shows the other pages and no chip for it. */
 data class StackPage(val id: String, val title: String, val file: String, val optional: Boolean = false)
 
 /** The ◢ dial on the phone's dock (VIS-Q5): every layer of the stack, top to bottom as the Desktop's ◢ lists them
- *  (F I Q L A U R C G Z), each opening the one view of that layer, then Érintésnyom (the layers lit by recorded work)
+ *  (F I Q L A U R C G K Z), each opening the one view of that layer, then Érintésnyom (the layers lit by recorded work)
  *  and Rétegek (all layers at once) as the last row. */
 object StackMenu {
     sealed interface Target {
@@ -56,13 +65,14 @@ object StackMenu {
     val ROWS = listOf(
         Row("F", "Kiemelt", Target.None("az Asztal Áttekintés nézete")),
         Row("I", "Ötletfolyam", Target.Page("otletfolyam")),
-        Row("Q", "Döntésnapló", Target.Page("dontesek")),
+        Row("Q", "Döntésnapló", Target.Page("dontesnaplo")),
         Row("L", "Vonaltérkép", Target.Page("vonalak")),
         Row("A", "Vezérlőterem", Target.Page("vezerloterem")),
         Row("U", "Futásnapló", Target.Page("futasnaplo")),
         Row("R", "Commit-pixel", Target.Page("commitok")),
         Row("C", "Kódváros", Target.Feature(Catalogue.CITY.id)),
         Row("G", "Gömb", Target.Feature(Catalogue.SPHERE.id)),
+        Row("K", "Kisokos", Target.Page("kisokos")),   // the work handbook (main's K layer, Kisokos 3D)
         Row("Z", "Kódex", Target.None("még nincs nézete")),
         Row("", "Érintésnyom", Target.Page("erintesnyom")),
         Row("", "Rétegek", Target.Page("retegek")),
@@ -98,8 +108,11 @@ data class StackMeta(
     val generatedLabel: String get() = generated.take(16).replace('T', ' ')
 
     fun bytes(page: StackPage): Long = files[page.file] ?: 0L
-    /** The pages this publish has: the three 3D pages always, the layer pages when the PC had their data. */
-    fun pages(): List<StackPage> = StackPages.PAGES.filter { bytes(it) > 0L }
+    /** The pages this publish carries: every required one, and the optional ones it has. */
+    val pages: List<StackPage> get() = StackPages.PAGES.filter { !it.optional || bytes(it) > 0L }
+
+    /** [id] if this publish has that page, else its first page (a remembered Kisokos on an older publish). */
+    fun page(id: String?): StackPage = pages.firstOrNull { it.id == id } ?: pages.first()
 
     companion object {
         const val KIND = "vrg-stack-meta"
@@ -111,7 +124,7 @@ data class StackMeta(
                 val fo = o.optJSONObject("files") ?: JSONObject()
                 val files = fo.keys().asSequence().associateWith { fo.optLong(it) }
                 StackMeta(o.optString("generated"), o.optString("published"), o.optInt("nodes"), o.optInt("points"), o.optInt("lines"), files)
-                    .takeIf { it.published.isNotEmpty() && StackPages.PAGES.filter { p -> !p.optional }.all { p -> (files[p.file] ?: 0L) > 0L } }
+                    .takeIf { it.published.isNotEmpty() && StackPages.REQUIRED.all { p -> (files[p.file] ?: 0L) > 0L } }
             }
         } catch (e: Exception) { null }
     }
@@ -134,7 +147,7 @@ sealed interface StackSync {
             !answered -> Offline
             remote == null -> Missing
             local != null && local.published == remote.published &&
-                StackPages.PAGES.filter { remote.bytes(it) > 0L }.all { have[it.file] == remote.bytes(it) } -> Fresh
+                remote.pages.all { have[it.file] == remote.bytes(it) } -> Fresh
             else -> Download(remote)
         }
     }

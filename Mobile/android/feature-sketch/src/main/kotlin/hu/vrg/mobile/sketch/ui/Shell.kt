@@ -7,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -42,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -49,6 +49,7 @@ import hu.vrg.mobile.sketch.FieldKit
 import hu.vrg.mobile.sketch.KChip
 import hu.vrg.mobile.sketch.KFront
 import kotlinx.coroutines.delay
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // VRG Sketcher's frame (WP M26): the fronts as symbols in their colour (no rows of text buttons), each with its count;
 // the two capture buttons that are on every front (✎ note, ◉ photo), so whatever the user was doing, a fact or a
@@ -57,10 +58,11 @@ import kotlinx.coroutines.delay
 /** The digital shadow, computed once per change and shared by the fronts and their badges. */
 class Shadow(st: EditorState) {
     val facts = FieldKit.facts(st.kit, st.sketch)
-    val questions = FieldKit.questions(st.kit, st.sketch, facts)
-    val suggestions = FieldKit.suggestions(st.kit, st.sketch)
-    val shots = FieldKit.shots(st.kit, st.sketch, facts)
-    val open = FieldKit.open(st.kit, st.sketch, st.norm, facts)
+    // M51 (D-93): a feature switched off leaves no trace: its cards, badges and loose ends go; the data stays
+    val questions = if (feat("kerdes.questions")) FieldKit.questions(st.kit, st.sketch, facts) else emptyList()
+    val suggestions = if (feat("jegyzet.keywords")) FieldKit.suggestions(st.kit, st.sketch) else emptyList()
+    val shots = if (feat("kamera.shotlist")) FieldKit.shots(st.kit, st.sketch, facts) else emptyList()
+    val open = FieldKit.open(st.kit, st.sketch, st.norm, facts).filter { openShown(it) }
     val openQuestions get() = questions.count { !it.done && !it.later }
     val fresh get() = questions.any { it.fresh }
     val missingShots get() = shots.count { !it.done && it.item.prio == 1 }
@@ -80,7 +82,7 @@ fun EditorState.frontColor(id: String) = Color(fronts().firstOrNull { it.id == i
 internal fun FrontBar(st: EditorState, sh: Shadow) {
     Row(Modifier.fillMaxWidth().background(Melyviz.deep).horizontalScroll(rememberScrollState()).padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        st.fronts().forEach { f ->
+        st.shownFronts().forEach { f ->   // M51: a front whose features are all off is not on the bar
             val on = st.front == f.id
             val col = Color(f.color)
             val badge = when (f.id) {
@@ -97,11 +99,11 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(f.sym, style = Melyviz.glyph.copy(fontSize = 19.sp, color = if (on) col else col.copy(alpha = 0.55f)))
-                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1)
+                    Text(f.label, style = Melyviz.small.copy(fontSize = 8.sp, color = if (on) Melyviz.ink else Melyviz.faint), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (on) Box(Modifier.align(Alignment.BottomCenter).width(30.dp).height(3.dp).background(col, RoundedCornerShape(2.dp)))
                 if (badge > 0) {
-                    val hot = f.id == "kerdes" && sh.fresh
+                    val hot = f.id == "kerdes" && sh.fresh && feat("kerdes.fresh")
                     Text(if (badge > 99) "99+" else "$badge",
                         style = Melyviz.small.copy(fontSize = 9.sp, color = if (hot) Color.White else Melyviz.ink),
                         modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 3.dp)
@@ -118,12 +120,12 @@ internal fun FrontBar(st: EditorState, sh: Shadow) {
 internal fun CaptureButtons(st: EditorState, modifier: Modifier) {
     Column(modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         val note = st.frontColor("jegyzet"); val cam = st.frontColor("kamera")
-        Box(Modifier.size(48.dp).clip(CircleShape).background(note).clickable { st.noteOpen = true }
+        if (feat("jegyzet.quick")) Box(Modifier.size(48.dp).clip(CircleShape).background(note).clickable { st.noteOpen = true }
             .semantics { contentDescription = "Gyors jegyzet" }, contentAlignment = Alignment.Center) {
             Text("✎", style = Melyviz.glyph.copy(fontSize = 22.sp, color = Color.Black))
         }
         val p = st.kit.purpose(st.purpose)
-        Box(Modifier.size(56.dp).clip(CircleShape).background(cam)
+        if (feat("kamera.capture")) Box(Modifier.size(56.dp).clip(CircleShape).background(cam)
             .combinedClickable(onClick = { st.shoot(st.purpose) }, onLongClick = { st.ask = Ask.Purposes })
             .semantics { contentDescription = "Fotó: " + (p?.label ?: "egyéb") + ". Tartsd: cél választása." },
             contentAlignment = Alignment.Center) {
@@ -138,12 +140,15 @@ internal fun CaptureButtons(st: EditorState, modifier: Modifier) {
 @Composable
 internal fun ChipPill(c: KChip, on: Boolean, onClick: () -> Unit) {
     val col = Color(c.color)
-    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).border(1.dp, col, RoundedCornerShape(50))
+    Row(Modifier.clip(RoundedCornerShape(50)).background(if (on) col else Melyviz.surface).vrgBorder(1.dp, col, RoundedCornerShape(50))
         .clickable(onClick = onClick).padding(horizontal = 9.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(c.sym, style = Melyviz.label.copy(fontSize = 12.sp, color = if (on) Color.Black else col))
         Text(" " + c.label, style = Melyviz.small.copy(fontSize = 11.sp, color = if (on) Color.Black else Melyviz.ink))
     }
 }
+
+/** F4: no speech recogniser on the phone (no Google app, a de-Googled ROM): the keyboard's own mic still dictates. */
+internal const val NO_RECOGNIZER = "Nincs beszédfelismerő a telefonon: a billentyűzet 🎤 gombjával diktálhatsz a mezőbe."
 
 internal fun dictationIntent(prompt: String) = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
     .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -162,6 +167,11 @@ internal fun QuickNote(st: EditorState) {
     var open by remember { mutableStateOf(false) }
     var voice by remember { mutableStateOf(false) }
     var room by remember { mutableStateOf(st.focusRoom) }
+    // F5 (WP M50, D-84): no recogniser → a sound note instead
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val audioOn = SketchFeaturePrefs.on(ctx, hu.vrg.mobile.sketch.SketchFeatures.AUDIO)   // D-90 switch
+    var noRecognizer by remember { mutableStateOf(!hasRecognizer(ctx)) }
+    var recording by remember { mutableStateOf(false) }
     LaunchedEffect(text) { delay(700); st.setDraft(text) }
     val dictate = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val said = r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
@@ -174,17 +184,20 @@ internal fun QuickNote(st: EditorState) {
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Field(text, { text = it }, "Mit mond az ügyfél? Mit látsz?", lines = 3)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
-                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = "Nincs beszédfelismerő a telefonon." }
+                // UI audit 4.5: wraps (a Row squeezed ⚐ Tisztázandó to 0 dp at font 1.5 when ⏺ Hangjegyzet shows)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (feat("jegyzet.dictation")) Text("🎤 Diktálás", style = Melyviz.label.copy(color = Melyviz.current), modifier = Modifier.clickable {
+                        try { dictate.launch(dictationIntent("Mondd a jegyzetet")) } catch (e: ActivityNotFoundException) { st.note = NO_RECOGNIZER; noRecognizer = true }
                     }.padding(vertical = 6.dp))
-                    Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
+                    if (noRecognizer && audioOn) Text("⏺ Hangjegyzet", style = Melyviz.label.copy(color = Color(0xFFD64545)),
+                        modifier = Modifier.clickable { recording = true }.padding(vertical = 6.dp))
+                    if (feat("jegyzet.unclear")) Text(if (open) "⚑ Tisztázandó" else "⚐ Tisztázandó?", style = Melyviz.label.copy(color = if (open) Color(0xFFD64545) else Melyviz.muted),
                         modifier = Modifier.clickable { open = !open }.padding(vertical = 6.dp))
                 }
                 val r = st.sketch.room(room)
                 Text(if (r != null) "Szoba: " + roomTitle(r.name, r.kinds) + "  ✕" else "Nincs szobához kötve",
                     style = Melyviz.small, modifier = Modifier.clickable { room = null }.padding(vertical = 4.dp))
-                listOf("ugyfel" to "Ügyfél", "helyzet" to "Helyzet").forEach { (g, label) ->
+                if (feat("jegyzet.chips")) listOf("ugyfel" to "Ügyfél", "helyzet" to "Helyzet").forEach { (g, label) ->
                     Text(label, style = Melyviz.small.copy(color = Melyviz.faint), modifier = Modifier.padding(top = 6.dp, bottom = 2.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         st.kit.chips.filter { it.group == g }.forEach { c -> ChipPill(c, c.id in chips) { chips = if (c.id in chips) chips - c.id else chips + c.id } }
@@ -199,4 +212,5 @@ internal fun QuickNote(st: EditorState) {
         },
         dismissButton = { TextButton(close) { Text("Később", color = Melyviz.muted) } },
     )
+    if (recording) AudioRecorder(st, room) { recording = false }   // F5: over the note
 }

@@ -129,9 +129,9 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onOpenFeat
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Go),
             keyboardActions = KeyboardActions(onGo = { Deck.connectRelay(url) }),
         )
-        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        // wraps at a large font instead of squeezing "Bontás" to a letter a line (UI-CHECKLIST 4.5)
+        FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Chip("Csatlakozás", true) { Deck.connectRelay(url) }
-            Spacer(Modifier.width(6.dp))
             Chip(searching?.let { "Keresés… $it%" } ?: "Keresés a hálózaton", false) {
                 if (searching != null) return@Chip
                 searching = 0; searchNote = ""
@@ -142,7 +142,6 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onOpenFeat
                     else searchNote = "Nem találtam relét. Fut a legeger.cmd → 1 (vagy START.cmd → G)? Ugyanazon a WiFi-n vagytok?"
                 }
             }
-            Spacer(Modifier.width(6.dp))
             if (link != LinkState.OFF) Chip("Bontás", false) { Deck.relay.disconnect() }
         }
         Row(Modifier.padding(top = 6.dp)) { Chip("QR beolvasása (párosítás) ▣", false) { onOpenFeature(Catalogue.PAIR.id) } }

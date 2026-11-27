@@ -7,10 +7,10 @@ import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,6 +68,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // GitHub fiók (WP M3): sign in once with the device flow, see who is signed in and whether the
 // toolset repo is reachable, sign out. The code is shown big and copyable; github.com/login/device
@@ -114,10 +117,8 @@ object AccountFeature : VrgFeature {
         val notice by GitHub.notice.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Text("GITHUB FIÓK", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Egy belépés, minden online funkcióhoz (Haladás, Gyorsjegyzet, Frissítés, Értesítések).", style = Melyviz.small)
+            FeatureTop(host, info)
+            FjBlurb("Egy belépés, minden online funkcióhoz (Haladás, Gyorsjegyzet, Frissítés, Értesítések).")
             Spacer(Modifier.height(14.dp))
 
             when (val a = account) {
@@ -193,6 +194,7 @@ object AccountFeature : VrgFeature {
         Text("Ezzel kerül fel a telefon a megbízható eszközök listájára.", style = Melyviz.small)
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun SignInFlow(f: Flow) {
         val ctx = LocalContext.current
@@ -215,7 +217,7 @@ object AccountFeature : VrgFeature {
                     Text(f.code.verificationUri, style = Melyviz.readout)
                     Text("még ${left / 60}:${"%02d".format(left % 60)}  ·  várom a GitHubot…", style = Melyviz.small)
                 }
-                Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     VrgChip("Megnyitás", true) {
                         clipboard.setText(AnnotatedString(f.code.userCode))
                         val uri = Uri.parse(f.code.verificationUri)
@@ -236,6 +238,7 @@ object AccountFeature : VrgFeature {
         }
     }
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun SignedIn(a: Account.SignedIn, host: FeatureHost) {
         val avatar by produceState<ImageBitmap?>(null, a.user?.avatarUrl) {
@@ -243,6 +246,8 @@ object AccountFeature : VrgFeature {
             value = GitHub.bytes(url)?.let { b -> BitmapFactory.decodeByteArray(b, 0, b.size)?.asImageBitmap() }
         }
         var busy by remember { mutableStateOf(false) }
+        // signing out deletes the token, and getting it back is the whole device flow again: asked once more (UI audit 5.6)
+        var sure by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { GitHub.refresh() }
 
         Card {
@@ -271,12 +276,17 @@ object AccountFeature : VrgFeature {
         if (repo == null && note == null) Text(VrgRepo.FULL, style = Melyviz.readout)
         if (repo != null && note != null) Text(note, style = Melyviz.small.copy(color = Melyviz.sand))
 
-        Row(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            VrgChip(if (busy) "Frissítés…" else "Frissítés", status = if (busy) MiniStatus.running() else null) {
-                if (!busy) { busy = true; scope.launch { GitHub.refresh(); busy = false } }
+        FlowRow(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (sure) {
+                VrgChip("Igen, kilépés", true) { sure = false; GitHub.signOut() }
+                VrgChip("Mégse") { sure = false }
+            } else {
+                VrgChip(if (busy) "Frissítés…" else "Frissítés", status = if (busy) MiniStatus.running() else null) {
+                    if (!busy) { busy = true; scope.launch { GitHub.refresh(); busy = false } }
+                }
+                VrgChip("Kilépés…") { sure = true }
+                VrgChip("Beállítások ›") { host.open(Catalogue.SETTINGS.id) }
             }
-            VrgChip("Kilépés") { GitHub.signOut() }
-            VrgChip("Beállítások ›") { host.open(Catalogue.SETTINGS.id) }
         }
         if (!a.guest) Text("Kilépéskor a token törlődik a telefonról. A GitHubon a hozzáférés a Settings → Applications alatt vonható vissza.",
             style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
@@ -286,7 +296,7 @@ object AccountFeature : VrgFeature {
     private fun Card(content: @Composable () -> Unit) {
         val shape = RoundedCornerShape(Melyviz.radius)
         Column(
-            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).border(1.dp, Melyviz.glowDim, shape).padding(14.dp),
+            Modifier.fillMaxWidth().clip(shape).background(Melyviz.raised).vrgBorder(1.dp, Melyviz.glowDim, shape).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) { content() }
     }

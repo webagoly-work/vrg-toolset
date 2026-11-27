@@ -31,9 +31,10 @@
     ['files', 'Fájlok', 'Files', 'fs', 'FÁ'], ['term', 'Terminál', 'Terminal', 'term', '>_'], ['web', 'Böngésző', 'Browser', 'web', 'WW'],
     ['mail', 'Posta', 'Mail', 'mail', '@'], ['chat', 'Claude chat', 'Chat', 'chat', 'CL'], ['git', 'Git', 'Git', 'git', 'GI'],
     ['feed', 'Hírfolyam', 'Feeds', 'feed', 'HÍ'], ['stack', 'Kontextuscsomag', 'Context pack', null, 'KC'], ['home', 'Kezdőlap', 'Home', null, 'KE'],
+    ['sessions', 'Munkamenetek', 'Claude sessions', 'sessions', 'MM'], ['controller', 'Vezérlő', 'Prompt controller', 'gate', 'VZ'],
   ];
   const LABEL = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag',
-    chat: 'Claude chat', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás' };
+    chat: 'Claude chat', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás', sessions: 'Munkamenetek', controller: 'Vezérlő' };
   const URLISH = /^(https?:\/\/\S+|www\.\S+|[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?)$/i;
 
   const S = {
@@ -123,7 +124,15 @@
       h('button', { type: 'button', 'data-act': 'min', title: 'Kicsi: egy cella / Small: one cell' }, '▁'),
       h('button', { type: 'button', 'data-act': 'close', title: 'Bezárás / Close' }, '✕'));
     const body = h('div', { 'data-role': 'sh-body' });
-    const el = h('div', { 'data-role': 'sh-win', 'data-win': w.id, 'data-kind': w.kind, tabindex: '-1' }, head, body,
+    // WP-51 board labels: origin chip + session title above the window, the note below (shown only on a sheet with a board)
+    const lOrigin = h('span', { class: 'o' }), lTitle = h('span', { class: 't' });
+    const top = h('div', { 'data-role': 'sh-label', hidden: true, title: 'Jobb klikk: címkék / Right-click: labels' }, lOrigin, lTitle);
+    const foot = h('div', { 'data-role': 'sh-note', hidden: true, title: 'Dupla klikk: megjegyzés / Double-click: edit the note' });
+    for (const b of [top, foot]) b.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); labelMenu(w.id, e.clientX, e.clientY); });
+    top.addEventListener('dblclick', e => { e.preventDefault(); editText(w.id, 'title', e.clientX, e.clientY); });
+    foot.addEventListener('dblclick', e => { e.preventDefault(); editText(w.id, 'note', e.clientX, e.clientY); });
+    const cat = w.open && w.open.startsWith('cat:') ? w.open.slice(4) : (w.kind === 'app' && w.state && w.state.id) || null;   // R5: the Fényjel chrome's glyph
+    const el = h('div', { 'data-role': 'sh-win', 'data-win': w.id, 'data-kind': w.kind, 'data-cat': cat, tabindex: '-1' }, top, head, body, foot,
       lib.EDGES.map(e => h('i', { 'data-edge': e })));
     // header: buttons, double-click, right-click menu, drag to move
     head.addEventListener('click', e => {
@@ -141,7 +150,7 @@
     for (const hd of el.querySelectorAll('[data-edge]')) hd.addEventListener('pointerdown', e => { if (e.button === 0) startDrag(e, w.id, 'resize', hd.dataset.edge); });
     el.addEventListener('pointerdown', () => { if (S.doc.active && active() && active().focus !== w.id) commit(lib.focusWin(S.doc, w.id), 'later'); }, true);
     el.addEventListener('focusin', () => { if (active() && active().focus !== w.id) commit(lib.focusWin(S.doc, w.id), 'later'); });
-    const rec = { el, head, title, body, btnMax, kind: '' };
+    const rec = { el, head, title, body, btnMax, kind: '', top, lOrigin, lTitle, foot };
     S.els.set(w.id, rec);
     layer.append(el);
     mountPane(w, rec);
@@ -175,6 +184,7 @@
       rec.el.dataset.size = w.max ? 'full' : w.w + 'x' + w.h;
       rec.el.dataset.focus = s.focus === w.id ? '1' : '';
       rec.title.textContent = titleOf(w);
+      paintLabel(s, w, rec);
       rec.btnMax.textContent = w.max ? '⧉' : '▢';
       rec.btnMax.title = w.max ? 'Vissza a helyére / Restore' : 'Teljes / Full';
     }
@@ -383,9 +393,123 @@
       { hu: hit.win.max ? 'Vissza a helyére' : 'Teljes képernyő', en: hit.win.max ? 'Restore' : 'Full', k: hit.win.max ? '' : '2× klikk', run: () => commit(hit.win.max ? lib.restore(S.doc, id) : lib.maximize(S.doc, id)) },
       { hu: 'Kicsi (1 cella)', en: 'Small, one cell', k: hit.win.max ? '2× klikk' : '', run: () => commit(lib.minimize(S.doc, id)) },
       { hu: 'Áthelyezés lapra', en: 'Move to sheet', off: !others.length, sub: others.map(s => ({ hu: s.name, run: () => commit(lib.moveToSheet(S.doc, id, s.id)) })) },
+      { hu: 'Címkék…', en: 'Labels: origin, colour, title, note', run: () => labelMenu(id, x, y) },
       { sep: true },
       { hu: 'Bezárás', en: 'Close', k: 'Ctrl+W', run: () => close(id) },
     ], x, y);
+  }
+
+  // ------------------------------------------------------------ board labels (WP-51): origin, colour, session title, note
+  // what the pane itself says: a Claude terminal (claude-a / claude-b) is local with its account and the title Claude Code sets; a browser
+  // on claude.ai/code is a cloud session with the page title. Everything else has no automatic origin.
+  const termTitles = new Map();                                          // term session id → the title its program set (OSC 0/2)
+  function autoOf(w) {
+    const host = F() && F().host, inst = host && host.inst(w.id);
+    if (!inst) return {};
+    if (w.kind === 'term') {
+      const m = /^claude-([ab])$/.exec(inst.prof || (w.state && w.state.prof) || '');
+      const t = inst.id ? termTitles.get(inst.id) : '';
+      return m ? { origin: 'local', account: m[1].toUpperCase(), title: t || '' } : { title: t || '' };
+    }
+    if (w.kind === 'web' && typeof inst.cur === 'function') {
+      const c = inst.cur() || {};
+      const cloud = /^https:\/\/claude\.ai\/code(\/|$)/.test(String(c.url || ''));
+      return cloud ? { origin: 'cloud', title: String(c.title || '').replace(/\s*[-|–]\s*Claude\s*$/, '') } : {};
+    }
+    return {};
+  }
+  function paintLabel(sheet, w, rec) {
+    const L = lib.label(sheet, w, autoOf(w));
+    const showTop = L.on && (L.show.origin || L.show.title);
+    let moved = false;
+    if (rec.top.hidden === showTop) { rec.top.hidden = !showTop; moved = true; }
+    rec.lOrigin.hidden = !L.show.origin; rec.lOrigin.textContent = L.originText;
+    rec.lTitle.hidden = !L.show.title; rec.lTitle.textContent = L.title;
+    rec.top.dataset.origin = L.origin || '';
+    if (rec.foot.hidden === L.show.note) { rec.foot.hidden = !L.show.note; moved = true; }
+    rec.foot.textContent = L.note;
+    rec.el.dataset.deco = L.on && L.show.color ? L.color : '';
+    return moved;
+  }
+  // repaint the labels of the active sheet only (title events arrive often); native views follow when a bar appeared or went
+  function relabel() {
+    const s = active(); if (!s) return;
+    let moved = false;
+    for (const w of s.wins) { const rec = S.els.get(w.id); if (rec && !rec.el.hidden) moved = paintLabel(s, w, rec) || moved; }
+    if (moved && F()) F().bounds();
+  }
+  try {
+    if (vrg && vrg.on) {
+      vrg.on('term', 'title', m => { if (m && typeof m.term === 'string' && typeof m.title === 'string') { termTitles.set(m.term, m.title.slice(0, 120)); relabel(); } });
+      vrg.on('term', 'exit', m => { if (m && m.term) termTitles.delete(m.term); });
+      vrg.on('web', 'state', () => relabel());
+    }
+  } catch (e) {}
+  const INFO_HU = { origin: ['Eredet', 'Origin'], color: ['Színkeret', 'Colour frame'], title: ['Cím (fent)', 'Title above'], note: ['Megjegyzés (lent)', 'Note below'] };
+  const COLOR_HU = { ice: 'Jég', warm: 'Meleg', violet: 'Ibolya', ok: 'Zöld', warn: 'Sárga', crit: 'Piros', grey: 'Szürke' };
+  // right-click on a window's label (or Címkék in its menu): this window's own values and show overrides
+  function labelMenu(id, x, y) {
+    const hit = lib.findWin(S.doc, id); if (!hit) return;
+    const d = hit.win.deco || {}, b = hit.sheet.board, L = lib.label(hit.sheet, hit.win, autoOf(hit.win));
+    const set = patch => commit(lib.setDeco(S.doc, id, patch), 'now');
+    const mark = on => (on ? '● ' : '○ ');
+    menu([
+      { hu: 'Cím…', en: 'Edit the session title', k: L.title ? L.title.slice(0, 18) : '', run: () => editText(id, 'title', x, y) },
+      { hu: 'Megjegyzés…', en: 'Edit the note below the window', run: () => editText(id, 'note', x, y) },
+      { hu: 'Eredet', en: 'Where this session runs', sub: [
+        { hu: mark(!d.origin) + 'Automatikus', en: 'From the window', run: () => set({ origin: null, machine: null }) },
+        { hu: mark(d.origin === 'local') + 'Helyi (ez a gép)', en: 'Local', run: () => set({ origin: 'local', machine: null }) },
+        { hu: mark(d.origin === 'cloud') + 'Felhő', en: 'Cloud session', run: () => set({ origin: 'cloud', machine: null }) },
+        { hu: mark(d.origin === 'machine') + 'Másik gép…', en: 'Another machine (Remote Control)', run: () => editText(id, 'machine', x, y) },
+      ] },
+      { hu: 'Szín', en: 'Frame colour', sub: [{ hu: mark(!d.color) + 'Az eredet szerint', en: 'By origin', run: () => set({ color: null }) }]
+        .concat(lib.COLORS.map(c => ({ hu: mark(d.color === c) + COLOR_HU[c], en: c, run: () => set({ color: c }) }))) },
+      { hu: 'Ennél az ablaknál', en: 'Override the board switches for this window', sub: lib.INFOS.map(i => {
+        const own = d.show && typeof d.show[i] === 'boolean' ? d.show[i] : null;
+        return { hu: INFO_HU[i][0] + ': ' + (own === null ? 'tábla szerint' : own ? 'mindig' : 'soha'), en: INFO_HU[i][1] + ' — click: board → always → never',
+          run: () => set({ show: { [i]: own === null ? true : own ? false : null } }) };
+      }) },
+      { hu: 'Címkék visszaállítása', en: 'Reset this window\'s labels', off: !hit.win.deco, run: () => set({ origin: null, machine: null, account: null, session: null, title: null, note: null, color: null, show: { origin: null, color: null, title: null, note: null } }) },
+      { sep: true },
+      { hu: b ? 'Tábla-címkék…' : 'Tábla-címkék bekapcsolása', en: 'The board switches of this sheet', run: () => boardMenu(hit.sheet.id, x, y) },
+    ], x, y);
+  }
+  // the sheet's board: on / off and the four switches every window follows unless it overrides them
+  function boardMenu(sid, x, y) {
+    const s = lib.sheetOf(S.doc, sid); if (!s) return;
+    const b = s.board;
+    const items = [{ hu: b ? '● Címkék ezen a lapon' : '○ Címkék ezen a lapon', en: 'Labels on this sheet', run: () => commit(lib.setBoard(S.doc, sid, b ? null : {})) }];
+    if (b) for (const i of lib.INFOS) items.push({ hu: (b.show[i] ? '● ' : '○ ') + INFO_HU[i][0], en: INFO_HU[i][1], run: () => commit(lib.setBoard(S.doc, sid, { show: { [i]: !b.show[i] } })) });
+    menu(items, x, y);
+  }
+  // a one-line editor at the pointer: title / note / machine name of a window's labels
+  function editText(id, key, x, y) {
+    const hit = lib.findWin(S.doc, id); if (!hit) return;
+    const max = { title: 80, note: 200, machine: 40 }[key];
+    const cur = (hit.win.deco && hit.win.deco[key]) || (key === 'title' ? lib.label(hit.sheet, hit.win, autoOf(hit.win)).title : '');
+    const inp = h('input', { type: 'text', value: cur, maxlength: String(max), 'data-role': 'sh-label-edit', placeholder: { title: 'Munkamenet címe', note: 'Megjegyzés az ablak alá', machine: 'A gép neve (pl. Laptop)' }[key] });
+    const box = h('div', { 'data-role': 'sh-menu', class: 'edit' }, h('small', {}, { title: 'Cím (fent)', note: 'Megjegyzés (lent)', machine: 'Másik gép' }[key]), inp);
+    const done = ok => {
+      const v = inp.value.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max);
+      closePopup();
+      if (!ok) return;
+      if (key === 'machine') commit(lib.setDeco(S.doc, id, v ? { origin: 'machine', machine: v } : { origin: null, machine: null }));
+      else commit(lib.setDeco(S.doc, id, { [key]: v || null }));
+    };
+    inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') done(true); if (e.key === 'Escape') done(false); });
+    popup(box, x, y);
+    inp.focus(); inp.select();
+  }
+  // the Munkamenetek board: the sheet whose board kind is 'sessions' (made once: the Vezérlő across the top, the list on the left)
+  async function sessionBoard() {
+    const board = lib.boardOf(S.doc, 'sessions');
+    if (board) { activate(board.id); showDesktop(); return board.id; }
+    const sid = await newSheet({ id: 'munkamenetek', name: 'Munkamenetek', wins: [
+      { open: 'pane:controller', state: {}, c: 0, r: 0, w: 4, h: 1 },
+      { open: 'pane:sessions', state: { board: true }, c: 0, r: 1, w: 1, h: 3 },
+    ] });
+    if (sid) commit(lib.setBoard(S.doc, sid, { kind: 'sessions' }));
+    return sid;
   }
 
   // ------------------------------------------------------------ the picker: a Kommand bar over everything that opens as a window
@@ -544,6 +668,7 @@
       { hu: 'Balra', en: 'Move left', off: i === 0, run: () => commit(lib.moveSheet(S.doc, sid, -1)) },
       { hu: 'Jobbra', en: 'Move right', off: i === S.doc.sheets.length - 1, run: () => commit(lib.moveSheet(S.doc, sid, 1)) },
       { hu: 'Sáv: ' + (S.doc.bar === 'top' ? 'alulra (dokk)' : 'felülre'), en: 'Bar position', run: () => commit(lib.setBar(S.doc, S.doc.bar === 'top' ? 'bottom' : 'top')) },
+      { hu: 'Tábla-címkék…', en: 'Board labels: origin, colour, title, note', run: () => boardMenu(sid, x, y) },
       { sep: true },
       { hu: s.wins.length ? 'Bezárás (' + s.wins.length + ' ablak is)' : 'Bezárás', en: 'Close the sheet', keep: !!s.wins.length, id: 'close-sheet', run: () => {
         if (s.wins.length && !sure) { sure = true; const b = S.popup && S.popup.el.querySelector('[data-item="close-sheet"]'); if (b) b.textContent = 'Biztosan? Kattints újra'; return; }
@@ -620,6 +745,8 @@
   window.VRGSheets = {
     ready, on: () => !!S.doc.active, openKind, findKind, focus, close, closeSheet: sid => commit(lib.removeSheet(S.doc, sid)), holding: () => (hold && Date.now() <= hold.until ? hold.id : ''), stateOf, focused: () => (active() ? active().focus : ''), showTree, activate, sync,
     barInto, pick, newSheet, menu, doc: () => S.doc, presets: () => S.presets, save, layer,
+    decorate: (id, deco) => commit(lib.setDeco(S.doc, id, deco)), sessionBoard, labelOf: id => { const hit = lib.findWin(S.doc, id); return hit ? lib.label(hit.sheet, hit.win, autoOf(hit.win)) : null; },
+    onBoard: () => !!(active() && active().board),
     state: () => ({ active: S.doc.active, sheets: S.doc.sheets.length, wins: (active() || { wins: [] }).wins.map(w => ({ id: w.id, kind: w.kind, c: w.c, r: w.r, w: w.w, h: w.h, max: w.max })), shown: S.shown, popup: !!S.popup }),
   };
 })();

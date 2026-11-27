@@ -1,0 +1,36 @@
+{
+  "about": "Written by Mobile/tests/workflow-seal.js (WebCrypto). Test key and made-up jobs only.",
+  "id": "TESTPHONE0001",
+  "privatePkcs8": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgf-AGsYuGUOmh3hNEBPFPMivt-b_vmRBqkmWqEKiyD8ehRANCAATYvGMzNycey4LrlxBxFQVr72fyf424vdzkXFjvox05xGzyBKpmAo5bYeeakUPY43cM3Em6AgD1W0IBWMbQB7nl",
+  "pub": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "2LxjMzcnHsuC65cQcRUFa-9n8n-NuL3c5FxY76MdOcQ",
+    "y": "bPIEqmYCjlth55qRQ9jjdwzcSboCAPVbQgFYxtAHueU"
+  },
+  "code": "6F0463",
+  "sealed": {
+    "t": "vrg-wk-sealed",
+    "v": 1,
+    "to": "TESTPHONE0001",
+    "epub": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "mmrPZskNjfVeoUJ9vE_40fYMebSaEzDu4AeJqdmL7L4",
+      "y": "9PYTESnjyJmT5RtlV-FjktrfMnFDvFBt6caaqnOEvHU"
+    },
+    "iv": "64p6zUeN1kAzv_PM",
+    "ct": "OptSvvdq5OWybfcF-U4uxbYH4MuzeTuZsoQzbemzbMxd_4Dfz9amCU7l5vQK9nR3i4AOnCbeuTm1Ni0JEWfMeC6GOgKvRvntVNfr9B8UYPiexYSA1_5wgSlBzj-bwSlGbAO46whLoCiJhcNVxkyTihAtReiKpzgJWIuanIng_7AXvG4FfKfZByCP7Z0iEQt9XOq-F7fEViWytcqWCKNLwITM46U_6S2ES3CmC1TDBdEyftwPwdlliSWLI5E21BTZ9meAx7024iiPba-SoqX-Nrzs1GaU46NS_MP7Q6ktld9eeHhmlw7-5YGoQWWYhtsON79jNJ9g2Y6h9Jaav7LDViltNyYgh6ErQFcnPPCi9XlqBT3GbAXHbYrAp4eBuZidZ69luXWDilitmj2Zb42CV9Kg9UFh8i1STdl2D-ABEvLmFf5VkFPqE5zPaItY8NMgWBo7V4Hk2iz9nvHuGD1jFC9pb4TNAdwecim9U_rSS4SsHw3BRBWrMujuM5bmPoHAVHVyp3jJyxWQVZa7LIxZfAZi8Wy6SaB1zfu1ReDr8gwut7a-wcVDawI-C8-7MmSjybAQ819MMwXtJO8AMWJ8aHsWkweXuCia5UoXAFiC-gxaOb_wCKfs8kM1cMOjsKJmv-l_nA8VRhOr9LIW1V6vcmINs9zxZjasjktsIg9MK7DwizqGNwj4M20lLDil4DZLHUDDeTYm2JPgVaxRocfGAKREK1juRgUlPjO-67xPxIk1cWPennml0OLMwVuJzGeFu28rxkKZGYRUC6ZvmIILKi7shLcNA8GB9BPMdbVIeoxbMftDjBCcCQXfRGMPfYRYEA",
+    "z": "gzip",
+    "made": "2026-11-20T05:10:22.863Z",
+    "jobs": 2
+  },
+  "expect": {
+    "jobs": 2,
+    "code": "TST1",
+    "title": "proba lakas",
+    "totalA": 1270000,
+    "labourB": 990000,
+    "docs": 2
+  }
+}

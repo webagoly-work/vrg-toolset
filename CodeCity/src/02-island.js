@@ -4,7 +4,7 @@
 // - The town is the built blob (every plot and road plus a margin, flat at the plate height). Around it the island is
 //   about twice the built area: its coastline is the blob pushed outwards with seeded low-frequency noise, scaled until
 //   the area ratio is ISLE.area.
-// - Hills: one behind the castle (Domoszló, the founding story), one behind the BRIDGE villas (the hill suburb), a few
+// - Hills: one behind the castle (Mintafalu, the founding story), one behind the BRIDGE villas (the hill suburb), a few
 //   small ones from the seed. They rise only outside the town and fall to a beach at the coast.
 // - Fields and woods fill the land between: woods where a noise field is high or the ground climbs, fields elsewhere.
 // - Three sites for the outward links (K2-07 gives them meaning): the harbour where the town comes closest to the sea,

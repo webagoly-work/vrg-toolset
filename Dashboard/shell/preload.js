@@ -158,6 +158,52 @@ contextBridge.exposeInMainWorld('vrg', {
     page: id => call('programs', 'page', { id }),
     folder: id => call('programs', 'folder', { id }),
   },
+  sessions: {                                                                    // WP-50 Munkamenetek: an account + a session id, never a path
+    list: () => call('sessions', 'list', {}),
+    resume: (account, session, o) => call('sessions', 'resume', { account, session, ...(o && o.fork === true ? { fork: true } : {}), ...(o && o.remote === true ? { remote: true } : {}), ...(o && o.stronger === true ? { stronger: true } : {}) }),
+    teleport: account => call('sessions', 'teleport', { account }),
+    canvas: (account, session) => call('sessions', 'canvas', { account, session }),
+  },
+  gate: {                                                                        // WP-52 Vezérlő: prompt → Előszűrő → a new session; attachment ids, never paths
+    analyze: (text, attach, mode) => call('gate', 'analyze', { text, ...(Array.isArray(attach) && attach.length ? { attach } : {}), ...(mode ? { mode } : {}) }),
+    send: o => call('gate', 'send', o && typeof o === 'object' ? o : {}),
+    pick: (kind, root) => call('gate', 'pick', root ? { kind, root } : { kind }),
+    recent: () => call('gate', 'recent', {}),
+    folders: () => call('gate', 'folders', {}),
+    photo: data => call('gate', 'photo', { data: String(data || '') }),
+  },
+  hands: {                                                                       // WP-58 Kéz: plan → (confirm) → act in another program; never text entry
+    plan: o => call('hands', 'plan', o && typeof o === 'object' ? o : {}),
+    act: id => call('hands', 'act', { id }),
+    stop: () => call('hands', 'stop', {}),
+    log: () => call('hands', 'log', {}),
+  },
+  identity: {                                                                    // WP-59: main checks the last command's audio itself
+    status: () => call('identity', 'status', {}),
+    enroll: () => call('identity', 'enroll', {}),
+    verify: () => call('identity', 'verify', {}),
+    reset: () => call('identity', 'reset', {}),
+  },
+  screen: {                                                                      // WP-56 Szem: read-only, redacted text of the window in front
+    describe: what => call('screen', 'describe', { what }),
+    status: () => call('screen', 'status', {}),
+  },
+  speak: {                                                                       // WP-57 Hang: the overlay's short answer, aloud
+    say: (text, lang) => call('speak', 'say', lang ? { text: String(text || ''), lang } : { text: String(text || '') }),
+    stop: () => call('speak', 'stop', {}),
+    status: () => call('speak', 'status', {}),
+  },
+  hud: {                                                                         // WP-56: the answer in the always-on-top window while another program is in front
+    show: (state, say, detail) => call('hud', 'show', detail ? { state, say: String(say || ''), detail: String(detail) } : { state, say: String(say || '') }),
+  },
+  voice: {                                                                       // WP-54 Diktálás: PCM16 chunks in, text out (vrg.on('voice', 'partial'|'final'|'error'))
+    status: () => call('voice', 'status', {}),
+    enable: on => call('voice', 'enable', { on: on === true }),
+    start: (mode, lang) => call('voice', 'start', lang ? { mode, lang } : { mode }),
+    chunk: (id, data) => call('voice', 'chunk', { id, data }),
+    stop: id => call('voice', 'stop', { id }),
+    cancel: id => call('voice', 'cancel', { id }),
+  },
   archive: {                                                                     // WP-47 Archívum: the Artifact Archive (Archive/index.json)
     list: () => call('archive', 'list', {}),
     show: (id, run) => call('archive', 'show', run ? { id, run: true } : { id }),

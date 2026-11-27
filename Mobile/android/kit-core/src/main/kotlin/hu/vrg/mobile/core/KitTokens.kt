@@ -24,6 +24,7 @@ object KitTokens {
         Triple("theme-light.css", "kit-papir", "Papír"),
         Triple("theme-contrast.css", "kit-kontraszt", "Kontraszt"),
         Triple("theme-melyviz.css", "kit-melyviz", "Mélyvíz (kit)"),
+        Triple("theme-grafit.css", "kit-grafit", "Grafit"),
     )
     val IDS: List<String> = THEMES.map { it.second }
 

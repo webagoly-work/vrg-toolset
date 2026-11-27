@@ -233,5 +233,7 @@ html.vrg-phone #kv-menu { max-width: calc(100% - 16px); }
   }
   addEventListener('resize', layout);
   layout();
-  window.__vrgPhone = { version: 1, open: setOpen, layout };
+  // the app's Back: closes the sheet when it is open (true), otherwise leaves Back to the app (false)
+  const back = () => { if (!isOpen()) return false; setOpen(false); return true; };
+  window.__vrgPhone = { version: 1, open: setOpen, layout, back };
 })();

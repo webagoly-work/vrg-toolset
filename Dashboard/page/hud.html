@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'">
+<title>Parancs-héj</title>
+<link rel="stylesheet" href="../../shared/melyviz.css">
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden; }
+  #hud { box-sizing: border-box; height: 96px; margin: 0; padding: 10px 14px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    background: color-mix(in srgb, var(--mv-bg, #0a141c) 92%, transparent); border: 1px solid var(--mv-line-strong, #2c4352);
+    border-left: 3px solid var(--mv-accent, #93d3e6); font: 15px/1.3 var(--mv-sans, sans-serif); color: var(--mv-text, #e8f0f6); }
+  #hud[data-state="error"] { border-left-color: var(--mv-crit, #e27b6f); }
+  #hud[data-state="speak"] { border-left-color: var(--mv-ok, #7fd4a0); }
+  #hud[data-state="listen"] { border-left-color: var(--mv-warm, #e8a873); }
+  #hud[data-state="acting"] { border: 2px solid var(--mv-crit, #e27b6f); }   /* WP-58: an action runs in another program */
+  #hud[data-state="acting"] #dot { color: var(--mv-crit, #e27b6f); }
+  #row { display: flex; align-items: center; gap: 8px; }
+  #dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; color: var(--mv-accent, #93d3e6); flex: 0 0 auto; }
+  #hud[data-state="listen"] #dot { color: var(--mv-warm, #e8a873); }
+  #hud[data-state="speak"] #dot { color: var(--mv-ok, #7fd4a0); }
+  #say { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #detail { font-size: 12px; color: var(--mv-dim, #9fb3c0); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+</style>
+</head>
+<body>
+<div id="hud" data-state="result"><div id="row"><i id="dot"></i><span id="say"></span></div><div id="detail"></div></div>
+<script src="hud.js"></script>
+</body>
+</html>

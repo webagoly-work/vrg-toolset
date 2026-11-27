@@ -7,7 +7,6 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,9 +42,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -70,9 +72,11 @@ import hu.vrg.mobile.pager.Proximity
 import hu.vrg.mobile.pager.SendStatus
 import hu.vrg.mobile.pager.Zone
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.theme.vrgBorder
 
 // The screens of Csipogó. The Panel is drawn after the B2 belt pager (thumb keys CALL and SEEN on the left, three
 // finger keys on the right, LINK on top, the OLED line and the RGB lamp), at glove size. The other tabs are what
@@ -89,21 +93,27 @@ private fun time(t: Long) = hms.format(Date(t))
  * A pager key. [onHold] gets true on press and false on release (CALL, PTT); [onTap] / [onLong] are the short and
  * long press (K1–K3, LINK). The gesture detector is keyed on nothing, so the screen's redraws (4 a second) never
  * cancel a press that is being held; the callbacks are read through rememberUpdatedState.
+ *
+ * TalkBack / Switch Access get the same actions as semantics (the gesture itself is unchanged): a click for [onTap]
+ * ([tapLabel]), a long click for [onLong] ([longLabel]), and with [holdLabel] a click that holds the key for
+ * [holdMs] (HÍVÁS: a 2 s call), since a screen reader cannot hold a key down by itself.
  */
 @Composable
 fun PadKey(
     title: String, modifier: Modifier = Modifier, sub: String? = null, tint: Color = Melyviz.glow, height: Dp = 64.dp,
     onTap: (() -> Unit)? = null, onLong: (() -> Unit)? = null, onHold: ((Boolean) -> Unit)? = null,
+    tapLabel: String? = null, longLabel: String? = null, holdLabel: String? = null, holdMs: Long = 2_000,
 ) {
     var down by remember { mutableStateOf(false) }
     val tap by rememberUpdatedState(onTap)
     val long by rememberUpdatedState(onLong)
     val hold by rememberUpdatedState(onHold)
+    val scope = rememberCoroutineScope()
     val shape = RoundedCornerShape(Melyviz.radiusSmall)
     Box(
         modifier.heightIn(min = height).clip(shape)
             .background(if (down) tint else Melyviz.raised)
-            .border(2.dp, tint, shape)
+            .vrgBorder(2.dp, tint, shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
@@ -115,7 +125,19 @@ fun PadKey(
                     onLongPress = { (long ?: tap)?.invoke() },
                 )
             }
-            .semantics { role = Role.Button; contentDescription = listOfNotNull(title, sub).joinToString(", ") }
+            .clearAndSetSemantics {
+                role = Role.Button
+                contentDescription = listOfNotNull(title, sub).joinToString(", ")
+                if (onTap != null) onClick(label = tapLabel ?: title) { tap?.invoke(); true }
+                else if (onHold != null && holdLabel != null) onClick(label = holdLabel) {
+                    scope.launch {
+                        down = true; hold?.invoke(true)
+                        try { delay(holdMs) } finally { down = false; hold?.invoke(false) }
+                    }
+                    true
+                }
+                if (onLong != null) onLongClick(label = longLabel ?: sub ?: title) { long?.invoke(); true }
+            }
             .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -128,6 +150,15 @@ fun PadKey(
 
 @Composable
 private fun Dot(c: Color, size: Dp = 10.dp) { Box(Modifier.size(size).clip(CircleShape).background(c)) }
+
+/** A label over its choice chips; the chips wrap, so none is squeezed to nothing at a large font. */
+@Composable
+private fun ChoiceRow(label: String, chips: @Composable () -> Unit) {
+    Column(Modifier.padding(vertical = 4.dp)) {
+        Text(label, style = Melyviz.small)
+        FlowRow(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) { chips() }
+    }
+}
 
 private fun bars(z: Zone) = "▮".repeat(z.bars) + "▯".repeat(4 - z.bars)
 
@@ -177,7 +208,7 @@ fun PanelTab(on: Boolean) {
     }
 
     val shape = RoundedCornerShape(Melyviz.radius)
-    Column(Modifier.fillMaxWidth().clip(shape).background(Melyviz.surface).border(1.dp, Melyviz.line, shape).padding(12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(shape).background(Melyviz.surface).vrgBorder(1.dp, Melyviz.line, shape).padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).clip(RoundedCornerShape(6.dp)).background(Color.Black).padding(horizontal = 10.dp, vertical = 8.dp)) {
                 Text(l1, style = Melyviz.readout.copy(fontSize = 15.sp, color = Melyviz.glow), maxLines = 1)
@@ -188,14 +219,14 @@ fun PanelTab(on: Boolean) {
                 Dot(lamp, 18.dp)
                 Spacer(Modifier.height(6.dp))
                 PadKey("LINK", Modifier.width(70.dp), sub = "teszt / névsor", tint = Melyviz.current, height = 44.dp,
-                    onTap = { engine.ping(target, now()) }, onLong = { engine.rollCall(now()) })
+                    onTap = { engine.ping(target, now()) }, onLong = { engine.rollCall(now()) }, tapLabel = "teszt", longLabel = "névsor")
             }
         }
         Spacer(Modifier.height(10.dp))
         Row {
             Column(Modifier.weight(1.1f)) {
                 PadKey("HÍVÁS", Modifier.fillMaxWidth(), sub = "nyomva tartva", tint = Melyviz.coral, height = 96.dp,
-                    onHold = { down -> if (down) engine.holdStart(target, now()) else engine.holdStop(now()) })
+                    onHold = { down -> if (down) engine.holdStart(target, now()) else engine.holdStop(now()) }, holdLabel = "hívás 2 mp")
                 Spacer(Modifier.height(8.dp))
                 PadKey("LÁTTAM", Modifier.fillMaxWidth(), sub = "SEEN", tint = Melyviz.current, height = 72.dp,
                     onTap = { Pager.banner.value = now() to engine.seen(now()); PagerService.current?.quiet() })
@@ -205,7 +236,8 @@ fun PanelTab(on: Boolean) {
                 Key.entries.forEach { k ->
                     PadKey(Messages.label(k.short), Modifier.fillMaxWidth(), sub = "hosszan: ${Messages.label(k.long)}", height = 54.dp,
                         onTap = { engine.sendMessage(k.short, target, now()); powerHint = Messages.byCode(k.short)?.power == true },
-                        onLong = { engine.sendMessage(k.long, target, now()); powerHint = Messages.byCode(k.long)?.power == true })
+                        onLong = { engine.sendMessage(k.long, target, now()); powerHint = Messages.byCode(k.long)?.power == true },
+                        tapLabel = Messages.label(k.short), longLabel = Messages.label(k.long))
                     Spacer(Modifier.height(6.dp))
                 }
             }
@@ -220,12 +252,14 @@ fun PanelTab(on: Boolean) {
             val send: () -> Unit = { engine.sendMessage(m.code, target, now()) }
             PadKey((if (m.power) "⚡ " else "") + m.hu, Modifier.width(150.dp), height = 44.dp,
                 tint = if (m.urgent) Melyviz.coral else if (m.power) Melyviz.sand else Melyviz.line,
-                onTap = if (m.power) null else send,
-                onLong = { engine.sendMessage(m.code, target, now()); powerHint = m.power })
+                // a tap on a ⚡ key does not send: it shows why (hold it), instead of doing nothing
+                onTap = if (m.power) { { powerHint = true } } else send,
+                onLong = { engine.sendMessage(m.code, target, now()); powerHint = m.power },
+                tapLabel = if (m.power) "miért hosszan?" else "küldés", longLabel = "küldés")
         }
     }
     PadKey("VÉSZJELZÉS", Modifier.fillMaxWidth(), sub = "hosszan nyomva: riasztás mindenkinek", tint = Melyviz.coral, height = 52.dp,
-        onLong = { engine.sos(now()) })
+        onLong = { engine.sos(now()) }, longLabel = "riasztás mindenkinek")
 
     VrgSectionTitle("Beérkezett")
     val inc = engine.incoming()
@@ -263,17 +297,18 @@ fun NearTab() {
 
     Text("A távolság a Bluetooth-jel erősségéből becsült: falak, zseb és test sokat torzítanak. A közeledik / távolodik nyíl megbízhatóbb, mint a méter.",
         style = Melyviz.small)
-    Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Környezet: ", style = Melyviz.small)
+    ChoiceRow("Környezet") {
         Clutter.entries.forEach { c ->
             VrgChip(c.hu, selected = engine.clutter == c) { Pager.save(ctx, Pager.settings(ctx).copy(clutter = c)) }
-            Spacer(Modifier.width(4.dp))
         }
     }
     if (engine.otherCrews > 0) Text("Más csapat jelei is hallatszanak (${engine.otherCrews}); azokat nem mutatja.", style = Melyviz.small.copy(color = Melyviz.faint))
 
     val f = finding?.let { u -> peers.firstOrNull { it.unit == u } }
     if (f != null) Finder(f) { finding = null }
+
+    // the crew on the radar (WP M67): the same layer the Radar feature shows with the others
+    if (peers.isNotEmpty()) hu.vrg.mobile.kit.ui.VrgHubRadar(setOf("pager"), Modifier.fillMaxWidth().padding(vertical = 6.dp))
 
     if (peers.isEmpty()) Text("Senki a közelben. A többieknek is be kell kapcsolniuk a Csipogót, ugyanazzal a csapatkóddal (${engine.me.crew.code}).",
         style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(vertical = 8.dp))
@@ -296,11 +331,15 @@ fun NearTab() {
                 if (p.alarm) "RIASZT" else null,
                 if (p.ageMs in 3_000 until Long.MAX_VALUE / 2) "${p.ageMs / 1000} mp-e" else null,
             ).joinToString(" · "), style = Melyviz.readout.copy(color = if (p.alarm) Melyviz.coral else Melyviz.muted))
-            Row(Modifier.padding(top = 4.dp)) {
+            FlowRow(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 VrgChip("Keresés") { finding = p.unit }
-                Spacer(Modifier.width(6.dp))
-                VrgChip(if (calibrating == p.unit) "Mérés…" else "1 m kalibrálás") { if (calibrating == null) calibrating = p.unit }
-                if (engine.calibrations().containsKey(p.unit)) { Spacer(Modifier.width(6.dp)); VrgChip("Kalibráció törlése") { Pager.saveCalibration(ctx, p.unit, null) } }
+                VrgChip(if (calibrating == p.unit) "Mérés…" else "1 m kalibrálás") {
+                    if (calibrating == null) calibrating = p.unit
+                    else if (calibrating != p.unit) calNote = "Előbb fejeződjön be a másik mérés (8 mp)."
+                }
+                if (engine.calibrations().containsKey(p.unit)) VrgChip("Kalibráció törlése") {
+                    Pager.saveCalibration(ctx, p.unit, null); calNote = "${p.name}: kalibráció törölve; az 1 m kalibrálás újra beállítja."
+                }
             }
         }
     }
@@ -328,7 +367,7 @@ fun NearTab() {
 @Composable
 private fun Finder(p: PeerView, close: () -> Unit) {
     val shape = RoundedCornerShape(Melyviz.radius)
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(shape).background(Melyviz.raised).border(2.dp, Melyviz.glow, shape).padding(14.dp),
+    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(shape).background(Melyviz.raised).vrgBorder(2.dp, Melyviz.glow, shape).padding(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text("KERESÉS: ${p.name}", style = Melyviz.title)
         Text(if (p.zone == Zone.OUT) "nincs jel" else Proximity.label(p.distanceM), style = Melyviz.title.copy(fontSize = 44.sp, color = Melyviz.glow))
@@ -368,7 +407,7 @@ fun ChatTab() {
         list.forEach { c ->
             val shape = RoundedCornerShape(Melyviz.radiusSmall)
             Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = if (c.mine) Arrangement.End else Arrangement.Start) {
-                Column(Modifier.clip(shape).background(if (c.mine) Melyviz.raised else Melyviz.surface).border(1.dp, if (c.mine) Melyviz.glowDim else Melyviz.line, shape).padding(8.dp)) {
+                Column(Modifier.clip(shape).background(if (c.mine) Melyviz.raised else Melyviz.surface).vrgBorder(1.dp, if (c.mine) Melyviz.glowDim else Melyviz.line, shape).padding(8.dp)) {
                     Text((if (c.mine) "én" else engine.who(c.src)) + (if (c.dst != BROADCAST) " → ${engine.who(c.dst)}" else "") + " · ${time(c.at)}",
                         style = Melyviz.readout.copy(fontSize = 10.sp))
                     Text(c.text, style = Melyviz.label.copy(fontSize = 14.sp))
@@ -441,9 +480,8 @@ fun SafeTab() {
         if (g.state == GuardState.OFF) VrgChip("Élesítés (tedd le, ne mozdítsd)", selected = true) { engine.guardArm(now()) }
         else VrgChip("Kikapcsolás") { engine.guardDisarm(now()) }
     }
-    Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Kilépési idő: ", style = Melyviz.small)
-        listOf(5, 15, 30).forEach { s -> VrgChip("$s mp", selected = g.exitDelayS == s) { Pager.putInt(ctx, "exitDelay", s) }; Spacer(Modifier.width(4.dp)) }
+    ChoiceRow("Kilépési idő") {
+        listOf(5, 15, 30).forEach { s -> VrgChip("$s mp", selected = g.exitDelayS == s) { Pager.putInt(ctx, "exitDelay", s) } }
     }
     VrgToggle("Csak a társ kapcsolhatja ki (társ-kikapcsolás)", g.partnerOnlyDisarm) { Pager.putBool(ctx, "partnerOnly", it) }
     val others = engine.peers(now()).filter { it.zone != Zone.OUT || it.linked }
@@ -461,13 +499,11 @@ fun SafeTab() {
     Text("Egyedül dolgozóknak: ha a telefon esés után vagy hosszan nem mozdul, előbb itt szól; LÁTTAM nélkül riasztást küld a csapatnak. Segítség, nem minősített egyedül-dolgozó készülék.",
         style = Melyviz.small)
     VrgToggle("Figyelés", md.state != ManDownState.OFF) { engine.setManDown(it, now()) }
-    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Mozdulatlan: ", style = Melyviz.small)
-        listOf(60, 90, 180, 300).forEach { s -> VrgChip(if (s < 120) "$s mp" else "${s / 60} perc", selected = md.stillLimitS == s) { Pager.putInt(ctx, "stillLimit", s) }; Spacer(Modifier.width(4.dp)) }
+    ChoiceRow("Mozdulatlan") {
+        listOf(60, 90, 180, 300).forEach { s -> VrgChip(if (s < 120) "$s mp" else "${s / 60} perc", selected = md.stillLimitS == s) { Pager.putInt(ctx, "stillLimit", s) } }
     }
-    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Előriasztás: ", style = Melyviz.small)
-        listOf(15, 25, 40).forEach { s -> VrgChip("$s mp", selected = md.preAlarmS == s) { Pager.putInt(ctx, "preAlarm", s) }; Spacer(Modifier.width(4.dp)) }
+    ChoiceRow("Előriasztás") {
+        listOf(15, 25, 40).forEach { s -> VrgChip("$s mp", selected = md.preAlarmS == s) { Pager.putInt(ctx, "preAlarm", s) } }
     }
     if (md.state == ManDownState.PRE_ALARM || md.state == ManDownState.ALARM) {
         PadKey(if (md.state == ManDownState.ALARM) "RIASZTÁS ELMENT — jól vagyok" else "JÓL VAGYOK (${engine.manDownLeft} mp)", Modifier.fillMaxWidth().padding(top = 6.dp),

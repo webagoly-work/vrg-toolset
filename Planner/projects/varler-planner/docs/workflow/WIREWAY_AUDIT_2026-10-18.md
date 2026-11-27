@@ -1,13 +1,13 @@
 # Wireway subsystem audit — 2026-10-18
 
-*Written after the first full plan made with the workflow alone (the Domoszló test build, client data — kept outside
-git in `Planner_projektek_2026-10-16/Domoszlo_erosaram_2026-10-18/`). Part 1 is how that build went. Part 2 is an
+*Written after the first full plan made with the workflow alone (the Mintafalu test build, client data — kept outside
+git in `Planner_projektek_2026-10-16/Mintafalu_erosaram_2026-10-18/`). Part 1 is how that build went. Part 2 is an
 audit of wireway creation, debated with a red-team agent that started with no knowledge of the project. Part 3 is the
 recommendations. Code anchors are against `planner-stack` at `c421d4e`.*
 
 ---
 
-## Part 1 — How the Domoszló blueprint was built, and what it taught
+## Part 1 — How the Mintafalu blueprint was built, and what it taught
 
 ### 1.1 The run, step by step
 
@@ -78,7 +78,7 @@ the identical plan.
 
 ## Part 2 — Audit of wireway creation (with a red-team debate)
 
-**Method.** A fresh agent with no project knowledge got only the code paths, the design claim and the Domoszló file.
+**Method.** A fresh agent with no project knowledge got only the code paths, the design claim and the Mintafalu file.
 It audited independently: 13 perturbation scripts, with marks removed, the board moved, walls added, the device
 order reversed. It wrote its report without seeing Part 1. I then checked its three gravest claims in the code myself, and
 we ran one debate round on six contested points. **[V]** = verified by reading or running the code; **[I]** = inferred.
@@ -98,7 +98,7 @@ Planner session ──blInput (08ob)──► engine input (JSON copy, heights p
                       pipes (≤ 3 cables, weakest-cable grouping) → checks (Iz·k, ΔU 4 %)
 ```
 
-46 ms on the Domoszló ground floor: 139 nodes, 207 legs, 111 boxes. Deterministic for a given input — but **the order
+46 ms on the Mintafalu ground floor: 139 nodes, 207 legs, 111 boxes. Deterministic for a given input — but **the order
 of `data.devices` matters** (greedy drop grouping, plan.js:35) [V].
 
 There are **two routing engines in one app**: `05v-graph.js` (heap Dijkstra, star / chain, a KMB Steiner tree over
@@ -113,7 +113,7 @@ and the cable table exist twice, kept equal by tests [V].
 | F2 | **Devices vanish silently.** A device > 260 mm off a wall, outside every room, or on an outer face stays in its circuit with no leg and no warning. A switchless lamp in a zone without a service point is skipped. | prep.js:246, plan.js:136 [V] | high |
 | F3 | **The forbidden marks are ignored.** The R3 palette paints tilos / gáz / kémény / vizes / padlófűtés / strang (ban) and kerülendő / fűtőtest / külső fal (minus). The router reads none of them — the user believes they forbade a face. | 08i-wf-rules.js:21-42 vs geom.js:57 [V] | high |
 | F4 | **The engine's door latch differs from the Planner's.** `prep.portals` votes on the switch majority and never reads `door.variant`. On 9 of 11 doors the engine's L4 box sits 1,1–2,8 m from the Planner's slot. "The door is the portal" breaks at the door. | prep.js:70-72 [V] | high |
-| F5 | **The warning names the wrong wall.** The soft-wall midpoint wraps the wrong way when a path walks backwards. Domoszló: "W20" and "W28" reported (both fully marked); the culprit was W21. | plan.js:227-228 [V] | medium-high |
+| F5 | **The warning names the wrong wall.** The soft-wall midpoint wraps the wrong way when a path walks backwards. Mintafalu: "W20" and "W28" reported (both fully marked); the culprit was W21. | plan.js:227-228 [V] | medium-high |
 | F6 | **Marks steer, they never block — for distribution, even unmarked is no "last resort".** Only the trunk has the marked-first fallback. A 3 m unmarked wall beat a 20 m marked route. | plan.js:75, :131; network.js:128 [V] | medium-high |
 | F7 | **The trunk funnels through the hub doors.** 11 trunk + 3 distribution pipes (16 circuits) in one chase at the board; 11 pipes cross one wall at B32. The overfill check ignores pipes passing a box, so the 5 warnings understate it. Per-pipe grouping (E5-Q10 = A) treats them as ungrouped; per chase they would all fail. | plan.js:238-243, :434 [V] | medium |
 | F8 | **Openings are invisible.** Runs at 2300 inside a window opening (head 2400), trunk at 2450 in a lintel; a 2400 ceiling puts the distribution below the door heads with no warning. *By the user's instruction window heads are non-blocking for now* — kept as an informational count; the door-head case still matters. | plan.js reads no opening heights [V] | medium (accepted) |
@@ -139,7 +139,7 @@ and the cable table exist twice, kept equal by tests [V].
 
 **The premise holds.** Endpoints plus allowed walls plus a board, then one button, matches how an electrician thinks in
 installation zones. Topology is enforced by graph structure, not by penalties. It is fast, traceable to decision ids,
-and on a well-drawn plan with complete marks the topology is good: Domoszló came out with no errors.
+and on a well-drawn plan with complete marks the topology is good: Mintafalu came out with no errors.
 
 **The promise doesn't hold yet.** "The user draws intent, the machine derives the rest" fails in four places:
 - **Intent is half-read.** Allow-marks are read; forbid-marks are not (F3); the door's own geometry is not (F4).
@@ -172,7 +172,7 @@ mostly small (Part 3); the design does not need replacing.
 
 Items 1–5 together are about two days and turn silent wrong results into visible right ones without touching the design.
 
-### 3.2 What would have helped me during the Domoszló build
+### 3.2 What would have helped me during the Mintafalu build
 1. **The public API (#7)** — half the effort was finding which internal call a button makes.
 2. **Blocking marks (#3)** — every routing surprise was the engine legally using a face I meant to forbid.
 3. **The report (#6)** — I wrote three throw-away scripts for things that belong in one table.
@@ -409,7 +409,7 @@ Spec: `tests/spec-100-wireway-t0.js` (44 checks). Full suite: 95 suites, 3 334 c
 | 6 | Pálya-ellenőrzés (§3.4, F10) | plan.js `pathReport` → `R.report`; 08ob `blReportHtml`, 🔎 action `bl.check` | unreached, metres by surface (geometric vs weighted), előnyben used or not, the five busiest chases and crossings (with the ⚑ per-chase note, E5-Q10 stays per pipe), box fill **with the pipes passing by**, stacked endpoints, room edges with no wall, opening clashes (informational), drop-group changes since the last run, the stale flag (`blStale`), cable metres per room. **Errors block "Pályák felrajzolása"** unless the confirm box is ticked (`blApplyRoutes(run, {confirm})`) |
 | 7 | Order and input (L10–L12) | plan.js, 08g, 08ob | drop groups: sort (room, face, u, id) then sweep; pipe packing and the váltó head break ties by id, not file order; a wall point above ceiling − 100 warns; one ref on several endpoints warns; endpoints stacked on one spot (same face, place, height) are an info line; the door-slot snap HUD says how far it jumped and whose frame it shares |
 
-### The Domoszló diff (the acceptance file, ground floor)
+### The Mintafalu diff (the acceptance file, ground floor)
 
 | | before T0 | after T0 |
 |---|---|---|
@@ -421,7 +421,7 @@ Spec: `tests/spec-100-wireway-t0.js` (44 checks). Full suite: 95 suites, 3 334 c
 | warnings / errors | 5 / 0 | 17 / 0 (9 warn, 8 info) |
 
 **The whole difference is F4.** The same T0 engine with `latchFrom:'switches'` gives the pre-T0 plan exactly (398,4 m, 111
-boxes, the same 5 warnings). F1, F6 and the grouping change nothing on Domoszló: it had no soft leg and no order-sensitive
+boxes, the same 5 warnings). F1, F6 and the grouping change nothing on Mintafalu: it had no soft leg and no order-sensitive
 drop. Seven doors move their L4 box to the door's latch side: B33 B34 B35 B46 by 1 200 mm, B43 by 1,5–1,7 m, B39 by 2,15 m,
 B45 by 2,8 m. On five of them (B33 B34 B35 B39 B46) the user's switches stand on the hinge side — an info line each. At
 B39 the latch face lies on **W23, which is not Vezethető**: the trunk now reaches B39 only over 10 m of unmarked wall (3
@@ -451,7 +451,7 @@ drop regrouped under the sort-and-sweep rule. Total 243,8 → 237,7 m, boxes 97 
 
 ### Open questions from T0
 
-1. **Q-T0-1, the Domoszló doors whose switches stand on the hinge side (B33 B34 B35 B39 B46):**
+1. **Q-T0-1, the Mintafalu doors whose switches stand on the hinge side (B33 B34 B35 B39 B46):**
    - A: the doors are drawn right — keep the latch from the door; the switches move to the latch side when you redraw
      (★ — it is what F4 asked for);
    - B: the switches are right — flip those doors' hinge (variant), and the L4 box follows;
@@ -465,7 +465,7 @@ drop regrouped under the sort-and-sweep rule. Total 243,8 → 237,7 m, boxes 97 
 
 **Answered 2026-10-18 by the user: all A** ("approved, continue") — the latch stays with the door; W23 is Vezethető around
 B39 (in `build-dom.js`, span 300–3000, and the acceptance file is rebuilt from it — the previous one is kept as
-`Domoszlo_erosaram_claude_preQ2.vplan.json`); előnyben opens an unmarked face; the strang / padlófűtés scope stays.
+`Mintafalu_erosaram_claude_preQ2.vplan.json`); előnyben opens an unmarked face; the strang / padlófűtés scope stays.
 With W23 marked: 409,9 m, 108 boxes, 0 m on unmarked walls, only the 5 box-overfill warnings left.
 
 ---
@@ -483,22 +483,22 @@ With W23 marked: 409,9 m, 108 boxes, 0 m on unmarked walls, only the 5 box-overf
 | States | none · javasolt (dashed ring and link) · rögzített (solid) · bekötetlen (red ring, from the last run's `R.unreached`). 🌳 shows them; 📌 Betáp-fa rögzítése: one click on a node flips javasolt ↔ rögzített; the device menu: rögzítés / feloldás / törlés, and **Elfogadom mind ebben a helyiségben** |
 | Checks (`upCheck`, Dugaljak layer) | a loop (err), a source no longer in the plan (warn), a chain into another circuit (warn), circuit members with no upstream (info; redőny left out — its own layer) |
 
-The engine does **not** read `up` yet — that is T2. So T1 changes no route: on Domoszló every leg, box, metre and warning
+The engine does **not** read `up` yet — that is T2. So T1 changes no route: on Mintafalu every leg, box, metre and warning
 is identical before and after T1 (checked).
 
-**On Domoszló:** 106 links suggested, 0 refused; 64 leaders on door L4s, 42 members (switched lamps on their switch
+**On Mintafalu:** 106 links suggested, 0 refused; 64 leaders on door L4s, 42 members (switched lamps on their switch
 boxes, vertical chains), chains at most 4 deep, no loop, no check line. **On CLA (the converted plan, in the browser):**
 105 links, 0 refused, 4 masters (the RBXs and the BASE), no check line; a real click with 📌 flips a lamp to rögzített
 and the drawing turns solid.
 
 Found while building (fixed): a vertical chain in one box passes devices of other circuits, so "the previous device"
-is not always the power source (K10 under D22, DED2 under D28 on Domoszló); a wall lamp above its own switch in one
+is not always the power source (K10 under D22, DED2 under D28 on Mintafalu); a wall lamp above its own switch in one
 box would make the switch hang on its lamp — a loop upSet refused (CLA K1 / L13); RBX and BASE were not accepted as
 nodes. **Also noted for T2/T3:** today's engine feeds a room's sockets through its szobadoboz, against 08n ("a
 szobadoboz never distributes sockets") — T3's socket chain from the leader socket replaces it.
 
 **⏸ Checkpoint before T2** (GO-WIRE): T2 makes the engine fit this tree (only each link's path is searched). The
-Domoszló figures it starts from: 16 circuits, 208 legs, 409,9 m of conduit (dist 139,6 · trunk 135,0 · drop 98,6 ·
+Mintafalu figures it starts from: 16 circuits, 208 legs, 409,9 m of conduit (dist 139,6 · trunk 135,0 · drop 98,6 ·
 ceil 36,6), 108 boxes, 5 warnings (box overfill at B31 / B32 / B33), 0 m on unmarked walls.
 
 ---
@@ -517,7 +517,7 @@ User, 2026-10-19: "proceed, make an effort for a larger batch" — the ⏸ befor
 | Home runs | §6 `routeChannels` | collected first, then routed in a stable order (nearest first, id) with a congestion term `cfg.congest × length × cables already there`. `congest` 0 (CLI, CLA) = today's single tree exactly; the Planner uses 0,05 (`BL_OPT.congest`) |
 | Fixed point | 08ob `blApplyRoutes` | fill the javasolt links from the run, run again on the new tree, until they stop changing (≤ 3): what is drawn is the run of the tree as it stands — not stale the moment it is drawn |
 
-**Domoszló** (the Q-T0-2 fixture):
+**Mintafalu** (the Q-T0-2 fixture):
 
 | | no tree | auto tree, congest 0 | auto tree, congest 0,05 (Planner) |
 |---|---|---|---|
@@ -542,13 +542,13 @@ no tree) is identical to T1, leg by leg.
   graph. The leader hangs on a door's L4 or the board, **never on a szobadoboz** (08n). Dedicated circuits keep their
   home run. It lives inside `upSuggest` (`UP_SUGGEST`), so a refill and Pályák keep it; rögzített links are untouched.
 - **The engine follows it** (T2). A chain is per member: one box may hold a socket chained to its neighbour and a
-  switch fed from the door (found on Domoszló: K10 / D22 — a false "chain into another circuit" before the fix).
+  switch fed from the door (found on Mintafalu: K10 / D22 — a false "chain into another circuit" before the fix).
 - **Masters (K1):** ▣ Szobadoboz-javaslat lists every room with no hub and ≥ 4 drops, the spot with the shortest run to
   its drops plus the home run, on a Vezethető wall. Pre-ticked only where a door box overfills (the F7 funnel); the
   rest is offered unticked. Placing = a szobadoboz (on the board, a master) + a refill. The dashed squares show while
   the betáp-fa is shown.
 
-**Domoszló, Pályák with T3 (chains, congest 0,05):** 429,7 m (dist 152,5 · trunk 142,0 · drop 98,6 · ceil 36,6), 104
+**Mintafalu, Pályák with T3 (chains, congest 0,05):** 429,7 m (dist 152,5 · trunk 142,0 · drop 98,6 · ceil 36,6), 104
 boxes, cable 3×1,5 303,2 m · 3×2,5 154,4 m; 24 socket links in chains, 10 leaders on door L4s; not stale after drawing.
 Warnings 4: three door-box overfills (B32 ×2, B33) and **A4 (Háló dugalj) at 4,83 % voltage drop** — the chain
 lengthens its longest branch to 28,5 m on 1,5 mm² / 13 A; the check proposes 2,5 mm² or a split (a real consequence of
@@ -566,7 +566,7 @@ fixed panel **⚡ Elosztóra vár: N** (shown in Villamosság, or with the betá
 - **rows** = 08oa's circuit suggestion (E4, MATERIAL §6) cut to the waiting endpoints, pre-ticked; each row's target is
   the suggested new circuit or any existing one (the socket added to a room that already has its circuit).
 - **Hozzárendel**: new circuits through `elpApply` and joins by `cktAssign`, in ONE undo step.
-On Domoszló nothing waits (every endpoint has its circuit); the tray matters once the chain tool (T5) builds topology
+On Mintafalu nothing waits (every endpoint has its circuit); the tray matters once the chain tool (T5) builds topology
 before circuits.
 
 ---
@@ -610,14 +610,14 @@ with "Hurok: L26 már K3 alól kap betápot (L26 → K3b → K3 → B171)", the 
 T7 (per-layer mark precedence) stays deferred until a second layer autoroutes.
 
 **Q2 = A (user, 2026-10-19): the three szobadobozok placed** (Garázs @W30, Konyha / étkező @W21, Közlekedő @W28), in
-`build-dom.js` before Pályák. Domoszló now: 451,5 m (dist 150,2 · trunk 155,3 · drop 98,6 · ceil 47,4), 105 boxes,
+`build-dom.js` before Pályák. Mintafalu now: 451,5 m (dist 150,2 · trunk 155,3 · drop 98,6 · ceil 47,4), 105 boxes,
 cable 3×1,5 355,4 m · 3×2,5 154,1 m. The masters do NOT remove the garage funnel — the garage is the board's own room,
 so B32 still carries 11 pipes; the other door boxes ease (B33 off the overfill list). Warnings: X3 / X4 at B32, and A4.
 Fixed on the way: a szobadoboz box was checked as a 2-gang box (6 pipes); it is the big box (≤ 12). Q1 (A4) still open.
-A Planner copy with Domoszló baked in (finished · test run without routes · base) is built by
+A Planner copy with Mintafalu baked in (finished · test run without routes · base) is built by
 `_script/make-dom-preload.js` into the client folder — never in git.
 
 **Q1 = A (user, 2026-10-19): A4 Háló dugalj on 2,5 mm²** (its 13 A breaker kept). The engine now honours a circuit's own
 cross-section (05j `c.mm2`, the circuit form) before the breaker-text rule (E5 F5, partly). A4: NYM-J 3×2,5, Iz·k 18,4 A,
-28,5 m, **2,9 %** ✓. Domoszló: 451,5 m, 105 boxes, cable 3×1,5 328,0 m · 3×2,5 181,5 m; warnings left: the two B32 door
+28,5 m, **2,9 %** ✓. Mintafalu: 451,5 m, 105 boxes, cable 3×1,5 328,0 m · 3×2,5 181,5 m; warnings left: the two B32 door
 boxes (7 / 8 pipes). Both open questions of the batch are answered.

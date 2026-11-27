@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Oldalpanel · demó</title>
+<link rel="stylesheet" href="../melyviz.css">
+<link rel="stylesheet" href="sidepanel.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--mv-bg); color: var(--mv-text); font: 13px var(--mv-sans); }
+  #app { height: 100vh; }
+  #main { padding: 18px 22px; overflow: auto; }
+  #main h1 { font: 600 13px/1 var(--mv-voice); letter-spacing: .16em; text-transform: uppercase; color: var(--mv-warm); margin: 0 0 12px; }
+  #log { font: 12px/1.5 var(--mv-mono); color: var(--mv-dim); white-space: pre-wrap; border: 1px solid var(--mv-line); padding: 8px 10px; min-height: 120px; }
+  #main p { color: var(--mv-dim); max-width: 60ch; }
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="main">
+    <h1>VRG Oldalpanel · demó</h1>
+    <p>A jobb oldali panel modulokból áll. ◂ / ▸ összecsukja (Alt+\ ha a fókusz itt van), az Egyszerű / Részletes gomb a részletes
+       modulokat mutatja vagy rejti, a belső szélen húzva átméretezhető.</p>
+    <div id="log"></div>
+  </main>
+</div>
+<script src="sidepanel.js"></script>
+<script>
+  const log = (...a) => { const l = document.getElementById('log'); l.textContent = (a.join(' ') + '\n' + l.textContent).slice(0, 2000); };
+  const status = VRGSidePanel.modules.status([
+    { label: 'Munkavászon', value: 'fut · 8810', tone: 'ok' },
+    { label: 'Rétegverem', value: 'leállt', tone: 'warn' },
+    { label: 'Utolsó mentés', value: '2 órája', tone: 'dim' },
+  ], { order: 30, level: 'detailed' });
+  window.panel = VRGSidePanel.create(document.getElementById('app'), {
+    side: 'right', title: 'Gyors elérés', titleEn: 'Quick access', width: 270, persistKey: 'demo', globalHotkey: true,
+    onEvent: (type, data) => log(type, JSON.stringify(data)),
+    modules: [
+      VRGSidePanel.modules.links([
+        { id: 'canvas', label: 'Munkavászon', icon: 'MV', title: 'Session Canvas', run: () => log('open', 'munkavaszon') },
+        { id: 'trace', label: 'Ügynöknyom', icon: 'ÜN', title: 'Agent trace', run: () => log('open', 'trace') },
+        { id: 'devlog', label: 'DevLog', icon: 'DL', title: 'Dev lines', run: () => log('open', 'devlog') },
+        { id: 'stack', label: 'Rétegverem', icon: 'RV', title: 'VRG Stack', level: 'detailed', run: () => log('open', 'stack') },
+        { id: 'divergence', label: 'Divergencia', icon: 'DV', title: 'Divergence', level: 'detailed', run: () => log('open', 'divergence') },
+        { id: 'broken', label: 'Hibás link', icon: '!', title: 'Throws, to show the error event', level: 'detailed', run: () => { throw new Error('demo error'); } },
+      ], { order: 10 }),
+      VRGSidePanel.modules.toggles([
+        { id: 'local', label: 'Helyi munkamenetek', value: true },
+        { id: 'cloud', label: 'Felhő munkamenetek', value: true },
+        { id: 'notes', label: 'Jegyzetek az ablakok alatt' },
+      ], { order: 20 }),
+      status,
+      VRGSidePanel.modules.notes({ order: 40, placeholder: 'Mit csinálok most…' }),
+      { id: 'view', title: 'Nézet', icon: '⚙', order: 50, level: 'detailed',
+        controls: [
+          { id: 'layout', kind: 'select', label: 'Elrendezés', options: [{ value: 'grid', label: 'Rács' }, { value: 'list', label: 'Lista' }], value: 'grid', onChange: v => log('layout', v) },
+          { id: 'density', kind: 'slider', label: 'Sűrűség', min: 1, max: 4, value: 2, onChange: v => log('density', v) },
+          { id: 'glow', kind: 'toggle', label: 'Ragyogás', value: true, onChange: v => document.documentElement.classList.toggle('low-glow', !v) },
+          { id: 'refresh', kind: 'button', label: 'Frissítés', onChange: () => { status.update([{ label: 'Munkavászon', value: 'fut · 8810', tone: 'ok' }, { label: 'Rétegverem', value: 'hiba', tone: 'crit' }]); log('refresh'); } },
+        ],
+        render(el) { const p = document.createElement('p'); p.textContent = 'Egy saját modul: vezérlők a fejlécben, tartalom alatta.'; p.style.color = 'var(--mv-dim)'; p.style.margin = '4px 0 0'; el.append(p); } },
+    ],
+  });
+</script>
+</body>
+</html>

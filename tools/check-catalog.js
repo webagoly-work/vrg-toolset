@@ -14,7 +14,8 @@ const { createCatalog } = require(path.join(REPO, 'Dashboard', 'shell', 'lib', '
 
 const ascii = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\x20-\x7e]/g, '?');
 let C;
-try { C = build.collect(); } catch (e) { console.log('Hiba: a registry nem toltheto be: ' + ascii(e.message)); process.exit(1); }
+try { C = build.collect({ localOptional: true }); } catch (e) { console.log('Hiba: a registry nem toltheto be: ' + ascii(e.message)); process.exit(1); }
+if (C.localMissing.length) console.log('Megjegyzes: a notes/ nincs ezen a gepen (' + C.localMissing.join(', ') + '); a launch.feature hivatkozasokat most nem ellenorzi.');
 const cat = createCatalog({ file: path.join(REPO, 'launcher', 'vrg-catalog.json'), collect: () => C, kinds: KINDS });
 const errors = cat.load();
 const raw = cat.raw();

@@ -1,0 +1,389 @@
+<title>Software for One</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a long-read report in the Mélyvíz look: deep-water ground, one ice-blue glow for what matters,
+   a sticky contents rail on wide screens, one column on a phone. Dark first, a paper variant for light. */
+:root {
+  --bg: #0a141c; --bg-2: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .15); --line-strong: rgba(232, 240, 246, .34);
+  --fg: #e8f0f6; --dim: #a6afb7; --faint: #7b848b;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13); --glow: rgba(147, 211, 230, .45);
+  --warm: #e8a873; --warm-soft: rgba(232, 168, 115, .14);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --voice: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --cut: 6px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+    --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+    --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+    --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+    --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+    --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f5; --bg-2: #e2eaee; --panel: #ffffff; --raised: #f6f9fa;
+  --line: rgba(16, 38, 52, .14); --line-strong: rgba(16, 38, 52, .32);
+  --fg: #10222e; --dim: #4c5c66; --faint: #6a7881;
+  --accent: #1f6f8a; --accent-soft: rgba(31, 111, 138, .10); --glow: rgba(31, 111, 138, .25);
+  --warm: #a5551d; --warm-soft: rgba(165, 85, 29, .10);
+  --ok: #2f7a4c; --warn: #8a6410; --crit: #a8372c;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: radial-gradient(120% 60% at 50% 0%, var(--bg-2), var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft); padding: .05em .35em; border-radius: 3px; }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; line-height: 1.12; margin: 0; }
+p { margin: 0; }
+
+.wrap { max-width: 1120px; margin: 0 auto; }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+
+/* Masthead */
+.mast { padding-block: 56px 36px; border-bottom: 1px solid var(--line); display: grid; gap: 18px; }
+.mast h1 { font-size: clamp(44px, 8vw, 88px); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; line-height: .95; }
+.mast h1 span { color: var(--accent); text-shadow: 0 0 22px var(--glow); }
+.mast .lede { font-size: 19px; color: var(--dim); max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.meta span { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+/* Body grid: rail + article */
+.body { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-top: 40px; }
+@media (max-width: 860px) { .body { grid-template-columns: minmax(0, 1fr); gap: 24px; } .rail { display: none; } }
+.rail nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); display: grid; gap: 2px; }
+.rail a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 6px 8px; color: var(--dim); text-decoration: none; font-size: 14px; border-left: 2px solid transparent; }
+.rail a span { font-family: var(--mono); font-size: 11px; color: var(--faint); padding-top: 2px; }
+.rail a:hover { color: var(--fg); border-left-color: var(--accent); background: var(--accent-soft); }
+
+article { display: grid; gap: 64px; min-width: 0; }
+section { display: grid; gap: 20px; min-width: 0; scroll-margin-top: 24px; }
+section > h2 { font-size: clamp(30px, 4vw, 40px); display: flex; gap: 14px; align-items: baseline; }
+section > h2 .n { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .1em; font-weight: 500; }
+.prose { display: grid; gap: 14px; max-width: 68ch; }
+.prose p, .prose li { color: var(--fg); }
+.prose ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+.muted { color: var(--dim); }
+
+/* Trust note */
+.trust { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--panel); padding: 14px 18px; max-width: 68ch; font-size: 14.5px; color: var(--dim); border-radius: 0 var(--cut) var(--cut) 0; }
+.trust b { color: var(--fg); font-weight: 600; }
+
+/* Four findings */
+.findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 640px) { .findings { grid-template-columns: minmax(0, 1fr); } }
+.finding { background: var(--panel); padding: 22px; display: grid; gap: 10px; align-content: start; }
+.finding h3 { font-size: 24px; }
+.finding p { color: var(--dim); font-size: 15px; }
+.finding.key { background: linear-gradient(160deg, var(--accent-soft), transparent 70%), var(--panel); }
+.finding.key h3 { color: var(--accent); }
+
+/* Timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 1px solid var(--line-strong); margin-left: 64px; }
+.timeline li { position: relative; padding: 0 0 22px 24px; display: grid; gap: 4px; }
+.timeline li::before { content: ""; position: absolute; left: -5px; top: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.timeline li.now::before { background: var(--accent); box-shadow: 0 0 12px var(--glow); }
+.timeline .yr { position: absolute; left: -64px; top: 1px; width: 50px; text-align: right; font-family: var(--mono); font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.timeline .term { font-family: var(--voice); font-size: 22px; font-weight: 600; }
+.timeline .who { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.timeline p { color: var(--dim); font-size: 15px; max-width: 60ch; }
+
+/* Callout for omniapp */
+.callout { background: var(--panel); border: 1px solid var(--line); padding: 22px 24px; display: grid; gap: 10px; max-width: 72ch; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); }
+.callout h3 { font-size: 24px; color: var(--warm); }
+.callout p { color: var(--dim); }
+.callout p b { color: var(--fg); font-weight: 600; }
+
+/* Tables */
+.tbl { overflow-x: auto; border: 1px solid var(--line); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 500; background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--fg); font-weight: 500; }
+td { color: var(--dim); }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.ok { color: var(--ok); } .chip.part { color: var(--warn); } .chip.gap { color: var(--crit); }
+
+/* Builders: two columns */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.box { border: 1px solid var(--line); background: var(--panel); padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+.box h3 { font-size: 21px; }
+.box p, .box li { color: var(--dim); font-size: 15px; }
+.box ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+
+/* Stat line */
+.stats { display: flex; flex-wrap: wrap; gap: 28px; padding: 18px 0; border-block: 1px solid var(--line); }
+.stat { display: grid; gap: 2px; }
+.stat b { font-family: var(--voice); font-size: 40px; font-weight: 700; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--dim); max-width: 24ch; }
+
+/* Verification routes */
+.routes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .routes { grid-template-columns: minmax(0, 1fr); } }
+.route { border: 1px solid var(--line); border-top: 3px solid var(--line-strong); background: var(--panel); padding: 18px; display: grid; gap: 8px; align-content: start; }
+.route.rec { border-top-color: var(--accent); }
+.route h3 { font-size: 21px; }
+.route .label { color: var(--faint); }
+.route.rec .label { color: var(--accent); }
+.route p { color: var(--dim); font-size: 14.5px; }
+.todo { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; max-width: 68ch; }
+.todo li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 8px; }
+.todo li::before { content: counter(s); font-family: var(--mono); font-size: 13px; color: var(--bg); background: var(--accent); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; margin-top: 2px; }
+
+/* Forecast */
+.forecast { display: grid; gap: 10px; max-width: 72ch; }
+.fc { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+@media (max-width: 520px) { .fc { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.fc .label { padding-top: 3px; }
+.fc p { color: var(--dim); font-size: 15px; }
+.fc.ours { border-bottom: 0; background: var(--accent-soft); padding: 14px; }
+.fc.ours p { color: var(--fg); }
+
+/* Reading list */
+.reading { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; counter-reset: r; }
+.reading li { counter-increment: r; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.reading li::before { content: counter(r, decimal-leading-zero); font-family: var(--mono); font-size: 13px; color: var(--faint); padding-top: 3px; }
+.reading a { font-weight: 500; }
+.reading span { display: block; color: var(--dim); font-size: 14.5px; }
+
+footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+footer p { font-size: 13.5px; color: var(--faint); max-width: 80ch; }
+@media (prefers-reduced-motion: no-preference) { .mast h1 span { transition: text-shadow .4s; } }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="label">VRG research report · 2026-11-20</div>
+    <h1>Software <span>for one</span></h1>
+    <p class="lede">Personal apps are programs made to serve one person. AI coding has made them cheap enough to be their own part of personal-device software. Here is what the field says, who builds what, and what it means for VRG Mobile.</p>
+    <div class="meta"><span>34 sources, all read 2026-11-20</span><span>Repo: docs/research/reports</span><span>Follow-up: docs/mobile/PERSONAL-APP.md</span></div>
+  </header>
+
+  <div class="body">
+    <aside class="rail" aria-label="Contents">
+      <nav>
+        <a href="#short"><span>01</span>The short answer</a>
+        <a href="#words"><span>02</span>The vocabulary</a>
+        <a href="#landscape"><span>03</span>The landscape</a>
+        <a href="#principles"><span>04</span>Principles vs VRG</a>
+        <a href="#mobile"><span>05</span>Your own APK</a>
+        <a href="#critiques"><span>06</span>Critiques</a>
+        <a href="#ahead"><span>07</span>2026–2028</a>
+        <a href="#read"><span>08</span>Reading list</a>
+      </nav>
+    </aside>
+
+    <article>
+      <div class="trust"><b>How far to trust it.</b> Only Google's Android verification FAQ was read in full. Ink &amp; Switch, robinsloan.com and flourish.org are blocked from the cloud session, so those points come from search summaries. Claims marked UNVERIFIED in the source notes are left out here or flagged.</div>
+
+      <section id="short">
+        <h2><span class="n">01</span>The short answer</h2>
+        <div class="findings">
+          <div class="finding">
+            <div class="label">History</div>
+            <h3>The idea is twenty years old. The cost is what changed.</h3>
+            <p>Situated software (2004), the home-cooked app (2020) and barefoot developers (2024) all say the same thing: software for a small, known audience doesn't need to scale, so it can be simple and exactly right. Vibe coding (2025) made building it nearly free for one person.</p>
+          </div>
+          <div class="finding">
+            <div class="label">Omniapp</div>
+            <h3>The word has no settled meaning.</h3>
+            <p>No source uses it as a concept. The nearest real thing is the super app: WeChat runs its mini programs inside its own web view. VRG Mobile already works this way.</p>
+          </div>
+          <div class="finding key">
+            <div class="label">What the serious writing is about</div>
+            <h3>Owning the app, not generating it.</h3>
+            <p>Ink &amp; Switch (2025): AI generation alone doesn't give you control. You also need tools you can reshape and data in your own hands. Sloan (2025) calls the result sovereignty: "it might go away … but that will be our decision."</p>
+          </div>
+          <div class="finding key">
+            <div class="label">The one change ahead</div>
+            <h3>Android developer verification, global in 2027.</h3>
+            <p>ADB installs stay allowed. A free limited-distribution account (no ID, up to 20 devices) covers a personal app. A self-updating APK like VRG Mobile is exactly what the rules check.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="words">
+        <h2><span class="n">02</span>The vocabulary, in the order it appeared</h2>
+        <ol class="timeline">
+          <li><span class="yr">2004</span><span class="term">Situated software</span><span class="who">Clay Shirky</span><p>Built for a known group. It doesn't need to scale.</p></li>
+          <li><span class="yr">2019</span><span class="term">Local-first software</span><span class="who">Ink &amp; Switch · Kleppmann et al.</span><p>Your data stays yours: offline, multi-device, long-lived, private, under your control. Kleppmann later called the ideals a gradient, not a checklist.</p></li>
+          <li><span class="yr">2020</span><span class="term">The home-cooked app</span><span class="who">Robin Sloan</span><p>BoopSnoop, a messenger for his family of four, built in about a week. "An app can be a home-cooked meal."</p></li>
+          <li><span class="yr">2020</span><span class="term">Personal software</span><span class="who">Matt Webb (title only)</span><p>The plain name for the category.</p></li>
+          <li><span class="yr">2023</span><span class="term">Malleable software</span><span class="who">Geoffrey Litt; Ink &amp; Switch essay 2025</span><p>Tools, not apps. Reshape what you have. AI is necessary but not enough.</p></li>
+          <li><span class="yr">2024</span><span class="term">Barefoot developers</span><span class="who">Maggie Appleton</span><p>AI lets non-professionals build for themselves and their community, like China's barefoot doctors.</p></li>
+          <li><span class="yr">2025</span><span class="term">Vibe coding</span><span class="who">Andrej Karpathy · Collins Word of the Year 2025</span><p>Describe it, let the model write it, don't read the code.</p></li>
+          <li class="now"><span class="yr">2026</span><span class="term">Micro apps, disposable and just-in-time software</span><span class="who">trade press</span><p>Apps made for one task and thrown away, or an interface made at the moment of need. No hard numbers yet.</p></li>
+        </ol>
+        <div class="callout">
+          <h3>What to do with "omniapp"</h3>
+          <p>Search finds only unrelated store listings, nothing on a concept. The closest real pattern is the <b>super app / everything app</b>: one host app with many mini programs in its web view. Take "omniapp" to mean <b>one personal shell that absorbs your small tools</b>, and treat it as our own word.</p>
+        </div>
+      </section>
+
+      <section id="landscape">
+        <h2><span class="n">03</span>The landscape, 2025–2026</h2>
+        <div class="two">
+          <div class="box">
+            <div class="label">The app lives in the vendor's product</div>
+            <h3>Claude Artifacts, Google Opal</h3>
+            <ul>
+              <li>Artifacts: apps inside Claude. Persistent storage since Oct 2025, 20 MB, published artifacts on paid plans. Viewable on mobile; no APK.</li>
+              <li>Opal: chained-prompt "mini apps", in Gemini as an experimental Gem since Dec 2025. Hosted by Google; no APK.</li>
+            </ul>
+            <p>The fastest way to make something. The weakest on sovereignty.</p>
+          </div>
+          <div class="box">
+            <div class="label">Builders that produce a mobile app</div>
+            <h3>Rork, Vibecode</h3>
+            <ul>
+              <li>Vibecode generates React Native through Expo. Rork's recent pages say native Swift and Kotlin.</li>
+              <li>Apple removed Replit, Vibecode and Anything from the App Store. It bans apps that download code which changes their behaviour after review.</li>
+            </ul>
+            <p>Replit, Lovable, Bolt, v0, Glide, Tasker, Shortcuts, Home Assistant, TiddlyWiki: no sourced mobile or offline detail in this run.</p>
+          </div>
+        </div>
+        <div class="prose">
+          <p><b>What people actually built.</b> Pat Reen's Family Hub, a PWA on a kitchen tablet, mostly written with Claude Code (Feb 2026). An Android Authority writer's household app (Aug 2026): started as a PWA, hit its limits, now being rewritten as native with Claude Code. Christopher Meiklejohn's social app (Feb 2026): built in a week, Go backend, native clients.</p>
+          <p class="muted">The common path is web first, then native where the web runs out: background work, sensors, notifications, Bluetooth. VRG Mobile took that path a month ago, with a native shell and web apps inside it.</p>
+        </div>
+        <div class="stats" aria-label="App Store figures">
+          <div class="stat"><b>+84%</b><span>new App Store apps, Q1 2026 vs Q1 2025 (9to5Mac)</span></div>
+          <div class="stat"><b>2–3%</b><span>download growth over the same period</span></div>
+          <div class="stat"><b>45%</b><span>of AI-generated code samples with security flaws (Veracode, 2025)</span></div>
+        </div>
+        <p class="muted" style="font-size:14px;max-width:68ch">More software is being made for smaller audiences. The App Store counts don't separate personal apps from commercial ones.</p>
+      </section>
+
+      <section id="principles">
+        <h2><span class="n">04</span>Principles that recur, and where VRG stands</h2>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Principle · source</th><th>VRG Mobile today</th><th>State</th><th>Gap</th></tr></thead>
+            <tbody>
+              <tr><td>One user: no scale, no accounts · Shirky, Sloan</td><td>One owner; device trust by QR (M35)</td><td><span class="chip ok">yes</span></td><td>none</td></tr>
+              <tr><td>Offline first · local-first</td><td>Console PWA, M21 apps and the Sketcher work offline; notes keep an outbox</td><td><span class="chip part">partly</span></td><td>personal data mostly lives on GitHub or the PC</td></tr>
+              <tr><td>Longevity: works after the vendor or the builder is gone</td><td>Plain JSON files, own relay, own update channel</td><td><span class="chip part">partly</span></td><td>no export / import; GitHub needed for sync and updates</td></tr>
+              <tr><td>Plain, portable data formats</td><td>Sketcher, sheets and notes are JSON and markdown</td><td><span class="chip ok">yes</span></td><td>no single "everything" export</td></tr>
+              <tr><td>Tools, not apps · malleable software</td><td>Catalogue + feature modules; GO VARIANT turns a phone request into an agent-made Sketcher variant</td><td><span class="chip part">partly</span></td><td>the request loop exists only for Sketcher variants</td></tr>
+              <tr><td>Privacy</td><td>Keystore keys, sealed data (M42), screenshot block on the Vault</td><td><span class="chip ok">yes</span></td><td>none for v1</td></tr>
+              <tr><td>Security of AI-written code · Veracode</td><td>Tests per work package, independent checks, web views with allow-lists</td><td><span class="chip gap">keep watching</span></td><td>the main risk of the whole approach</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="mobile">
+        <h2><span class="n">05</span>An APK you build for yourself</h2>
+        <div class="prose">
+          <p><b>Android developer verification</b>, from Google's FAQ, read 2026-11-20. Enforcement began on 30 Sep 2026 for certified devices on Android 8+, but only for participating stores in Brazil, Indonesia, Singapore and Thailand. Direct sideloads aren't affected yet. The global rollout is planned for 2027. After that, an app from an unregistered developer needs one of three routes:</p>
+        </div>
+        <div class="routes">
+          <div class="route">
+            <div class="label">Route 1</div>
+            <h3>ADB over USB</h3>
+            <p>Still allowed, with no waiting period. This is what <code>mobile.cmd</code> install does today.</p>
+          </div>
+          <div class="route">
+            <div class="label">Route 2</div>
+            <h3>The advanced flow</h3>
+            <p>Developer mode, a coaching check, a restart, a one-time 24-hour wait, biometric confirmation. Then installs are allowed for 7 days or indefinitely. Updates of unregistered apps work only with this flow on, or by ADB.</p>
+          </div>
+          <div class="route rec">
+            <div class="label">Route 3 · recommended</div>
+            <h3>Register, free</h3>
+            <p>The limited-distribution account needs no ID and covers up to 20 named devices, for testing and personal use. Its launch is unconfirmed: the FAQ says August 2026. The $25 full account needs ID. You can upgrade a limited account but not downgrade it.</p>
+          </div>
+        </div>
+        <div class="trust"><b>A lost signing key can't be recovered</b>, and without it the package can't be registered.</div>
+        <div class="prose">
+          <p><b>What this means for VRG Mobile.</b> M9's self-update depends on it: an APK that downloads and installs its next version is exactly what the 2027 rules check. Before 2027:</p>
+        </div>
+        <ol class="todo">
+          <li><span>Keep <code>hu.vrg.mobile</code>'s release key safe, outside the repo and backed up. Check that BACKUP covers the folder it lives in.</span></li>
+          <li><span>Register the package under a free limited-distribution account once it opens. That covers your phones and the crew's (M33, M35), up to 20.</span></li>
+          <li><span>Keep ADB as the fallback. This is a recommendation, not a decision: question Q6 in PERSONAL-APP.md.</span></li>
+        </ol>
+        <div class="two">
+          <div class="box">
+            <div class="label">iOS</div>
+            <h3>The PWA is the practical route</h3>
+            <p>A free personal provisioning profile expires every 7 days. EU alternative marketplaces exist (AltStore PAL, Epic, Onside), but Setapp Mobile closed in Feb 2026. For one user on an iPhone, the web app (M36) is what works, and that's what was built.</p>
+          </div>
+          <div class="box">
+            <div class="label">On-device AI</div>
+            <h3>What a personal app could call</h3>
+            <ul>
+              <li>Android: ML Kit GenAI on Gemini Nano offers summarise, proofread, rewrite, image description and a Prompt API. Foreground only, supported devices only.</li>
+              <li>Apple: the Foundation Models framework, a ~3B on-device model, offline since WWDC25.</li>
+              <li>For VRG: tidy dictated notes, caption site photos, summarise the inbox, without sending client words to a server.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="critiques">
+        <h2><span class="n">06</span>Critiques and open questions</h2>
+        <div class="prose">
+          <ul>
+            <li><b>Maintenance.</b> Sloan's apps are "substantially finished" on launch day. That works for a four-person messenger, not a 34-feature app. Keep each feature small, or the owner becomes its full-time maintainer.</li>
+            <li><b>Generation isn't malleability.</b> People need to reshape their tools, not only ask for new ones. VRG's answer so far is the catalogue plus requests from the phone (GO VARIANT). Extending that loop is the most "personal app" thing VRG could do next.</li>
+            <li><b>Security.</b> Nearly half of AI-generated code samples had flaws in Veracode's study. Having one user doesn't make the risk smaller when the app holds keys, client data and a relay into the PC.</li>
+            <li><b>Consistency.</b> Generated interfaces change between runs. That's fine for throwaway tools and bad for something used every day. VRG's shared kit (Mélyvíz, VRG UI Kit, the long-press menu) is the counterweight.</li>
+            <li class="muted"><b>Not found:</b> solid sources on skills atrophy, fragmentation, or who maintains personal software after its maker stops.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="ahead">
+        <h2><span class="n">07</span>Where it's heading, 2026–2028</h2>
+        <div class="forecast">
+          <div class="fc"><div class="label">Google · plan</div><p>Global developer verification in 2027.</p></div>
+          <div class="fc"><div class="label">9to5Mac · extrapolation</div><p>More than 1 million new App Store apps in 2026, a record.</p></div>
+          <div class="fc"><div class="label">Trade press · speculation</div><p>Software made per task and thrown away, "a utility, like electricity". The counter-view (Built In): systems of record keep their value, and only the one-UI-for-everyone era fades.</p></div>
+          <div class="fc"><div class="label">Not found</div><p>Any analyst number (Gartner, IDC) on personal apps.</p></div>
+          <div class="fc ours"><div class="label">Our reading</div><p>The personal app that lasts is likely a stable shell holding the owner's data and identity, with features made and remade by an agent on request inside it. That's the super-app pattern with one user, and VRG Mobile is already heading that way. This is our inference, not a sourced forecast.</p></div>
+        </div>
+      </section>
+
+      <section id="read">
+        <h2><span class="n">08</span>Reading list</h2>
+        <ol class="reading">
+          <li><div><a href="https://www.inkandswitch.com/essay/malleable-software/">Ink &amp; Switch, Malleable Software (2025)</a><span>The most serious framing; AI alone is not enough.</span></div></li>
+          <li><div><a href="https://robinsloan.com/notes/home-cooked-app/">Robin Sloan, An app can be a home-cooked meal (2020)</a><span>The founding text.</span></div></li>
+          <li><div><a href="https://www.robinsloan.com/lab/five-years-of-home-cooked-apps/">Robin Sloan, Five years of home-cooked apps (2025)</a><span>Sovereignty and longevity.</span></div></li>
+          <li><div><a href="https://maggieappleton.com/home-cooked-software">Maggie Appleton, Home-cooked software and barefoot developers (2024)</a><span>The AI-era version.</span></div></li>
+          <li><div><a href="https://www.gwern.net/docs/technology/2004-03-30-shirky-situatedsoftware">Clay Shirky, Situated Software (2004)</a><span>The oldest statement of the scale argument.</span></div></li>
+          <li><div><a href="https://inkandswitch.com/essay/local-first/">Ink &amp; Switch, Local-first software (2019)</a><span>The data-ownership checklist.</span></div></li>
+          <li><div><a href="https://developer.android.com/developer-verification/guides/faq">Google, Android developer verification FAQ</a><span>What changes for your own APK.</span></div></li>
+          <li><div><a href="https://www.androidauthority.com/custom-household-management-3691965/">Android Authority, a custom household app (Aug 2026)</a><span>PWA first, then native.</span></div></li>
+          <li><div><a href="https://www.veracode.com/press-release/ai-generated-code-poses-major-security-risks-in-nearly-half-of-all-development-tasks-veracode-research-reveals/">Veracode, AI-generated code security (2025)</a><span>The main security number.</span></div></li>
+          <li><div><a href="https://9to5mac.com/2026/04/06/app-store-sees-84-surge-in-new-apps-as-ai-coding-tools-take-off/">9to5Mac, The App Store surge (Apr 2026)</a><span>The economics side.</span></div></li>
+        </ol>
+      </section>
+
+      <footer>
+        <p>VRG toolset research, 2026-11-20. The full notes with a dated source for every claim are in the repo at <code>docs/research/research_notes/Personal apps - software for one/notes.md</code>. The feature selection that follows from this report (a General and a Founder edition of a personal app built from code VRG already owns) is <code>docs/mobile/PERSONAL-APP.md</code>.</p>
+      </footer>
+    </article>
+  </div>
+</div>

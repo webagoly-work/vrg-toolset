@@ -22,8 +22,8 @@ function setup() {
 // ------------------------------------------------------------- list basics
 test('creating a list makes it active and gives it an id', () => {
   const { lists } = setup();
-  const l = lists.create('Hetényi');
-  assert.equal(l.nev, 'Hetényi');
+  const l = lists.create('Mintanév');
+  assert.equal(l.nev, 'Mintanév');
   assert.equal(lists.activeId(), l.id);
   assert.equal(lists.all().length, 1);
   assert.equal(lists.get(l.id).sorok && Object.keys(lists.get(l.id).sorok).length, 0);
@@ -263,7 +263,7 @@ test('lists survive a save/load round-trip through the userdata document', () =>
   const ids = store.items.slice(0, 30).map(i => i.vrg_id);
   const l = lists.create('Nagy lista');
   ids.forEach((id, i) => lists.setQty(id, i + 1));
-  lists.setListNote(l.id, 'Peterdy 33');
+  lists.setListNote(l.id, 'Minta utca 1');
   lists.setLineNote(ids[0], 'sürgős');
   assert.equal(lists.rows().length, 30);
   const totalsBefore = lists.totals();
@@ -280,7 +280,7 @@ test('lists survive a save/load round-trip through the userdata document', () =>
   assert.equal(lists2.all().length, 1);
   assert.equal(lists2.activeId(), l.id);
   assert.equal(lists2.active().nev, 'Nagy lista');
-  assert.equal(lists2.active().megjegyzes, 'Peterdy 33');
+  assert.equal(lists2.active().megjegyzes, 'Minta utca 1');
   assert.equal(lists2.rows().length, 30);
   assert.deepEqual(lists2.totals(), totalsBefore);
   assert.equal(lists2.rows().find(r => r.vrg_id === ids[0]).megjegyzes, 'sürgős');

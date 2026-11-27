@@ -64,7 +64,21 @@ async function main() {
   // the dashboard and its watermark
   await page.goto(base);
   await page.waitForSelector('.tile');
-  check((await page.$$('.tile')).length === 4, 'dashboard: four tiles');
+  check((await page.$$('.tiles .tile')).length === 4, 'dashboard: four tiles');
+  check(!!(await page.$('a.tile.wide[href="#/utmutato"]')), 'not approved yet: the dashboard offers the iPhone guide');
+
+  // the guide: one source (guide/iphone.json), every section shown, the Safari / home-screen line filled in
+  const G = JSON.parse(fs.readFileSync(path.join(WEB, 'guide', 'iphone.json'), 'utf8'));
+  await page.goto(base + '#/utmutato');
+  await page.waitForSelector('.guide .gsec');
+  const secs = await page.$$eval('.guide .gsec', els => els.map(e => e.id));
+  check(secs.join() === G.sections.map(x => 'g-' + x.id).join(), `guide page: all ${G.sections.length} sections in order`);
+  const steps = await page.$$eval('.guide li', els => els.length);
+  const faq = await page.$$eval('.guide dt', els => els.length);
+  const wantSteps = G.sections.reduce((n, x) => n + (x.steps || []).length, 0);
+  check(steps === wantSteps && faq === G.sections.find(x => x.faq).faq.length, `guide page: ${steps} steps and ${faq} questions, as in the file`);
+  check(/Most a Safariban vagy/.test(await page.textContent('#g-where')), 'the guide says where it runs (Safari here)');
+  check(/tulajdonos Android telefonján/.test(await page.textContent('#g-approve .who')), "the owner's step is marked as the owner's");
   const wm = await page.evaluate(() => {
     const s = getComputedStyle(document.querySelector('.watermark .mark'));
     return { color: s.color, opacity: s.opacity, glow: getComputedStyle(document.documentElement).getPropertyValue('--glow').trim() };
@@ -87,6 +101,7 @@ async function main() {
   await page.goto(base + '#/eszkoz');
   await page.waitForSelector('#req');
   check(/Nincs a megbízható/.test(await page.textContent('#view')), 'not on the list yet');
+  check(await page.$eval('details.gbox', d => d.open), 'Eszköz: the detailed guide is open while not approved');
   await page.click('#req');
   await page.waitForSelector('.qr svg');
   const code = (await page.textContent('.code.big')).trim();
@@ -94,8 +109,14 @@ async function main() {
   const req = await page.evaluate(async () => (await import('./js/device.js')).makeRequest('teszt'));
   check(req.code === code && req.link.startsWith('vrg://devices?req=') && req.req.back === base, 'the same request (stable key), back to this page');
 
-  // the owner's phone approves (with the token); the list now holds this device
+  check(/Jóváhagyásra vár/.test(await page.textContent('#wait')), 'waiting for approval is shown');
+
+  // the owner's phone scans and approves (D-46): the list now holds this iPhone, and the page notices by itself
   trust = { gated: true, devices: [...trust.devices, { id: req.req.id, name: 'iPhone' }] };
+  await page.waitForSelector('#wait .ok', { timeout: 20000 });
+  check(/Jóváhagyva!/.test(await page.textContent('#wait')), 'unlocked by itself once the list holds it (no grant needed)');
+
+  // a grant with the token (the optional second path)
   const capsule = await grantFor(req.req, { by: 'Redmi · 6CDBFB096833', at: '2026-11-18T19:10:00Z', token: 'teszt-token' });
   await page.goto(base + '#grant=' + capsule);
   await page.waitForSelector('#accmsg .ok, #accmsg .bad');

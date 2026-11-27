@@ -94,6 +94,18 @@ class DeviceTrustTest {
         assertNull(TrustList.parse("nem json"))
     }
 
+    @Test fun aTypedDeviceCode() {
+        assertEquals("6CDB-FB09-6833", DeviceTrust.typedCode("6CDB-FB09-6833"))
+        assertEquals("6CDB-FB09-6833", DeviceTrust.typedCode(" 6cdb fb09 6833 "), "spaces and case do not matter")
+        assertEquals("6CDB-FB09-6833", DeviceTrust.typedCode("6CDBFB096833"))
+        assertEquals("ABCD-EFGH-2345", DeviceTrust.typedCode("abcdefgh2345"), "an iPhone web app id")
+        assertNull(DeviceTrust.typedCode("6CDB-FB09-683"), "too short")
+        assertNull(DeviceTrust.typedCode("6CDB-FB09-68334"), "too long")
+        assertNull(DeviceTrust.typedCode("E50AAF"), "the 6-character check code is not a device code")
+        assertNull(DeviceTrust.typedCode("ÁBCD-EFGH-2345"), "letters outside A-Z")
+        assertTrue(DeviceTrust.sameId(DeviceTrust.typedCode("6cdbfb096833")!!, "6CDB-FB09-6833"))
+    }
+
     @Test fun theRepoListParses() {
         val t = TrustList.parse(File(repo, "Mobile/trust/devices.json").readText())!!
         assertTrue(t.devices.any { it.owner }, "the owner's phone is on the list")

@@ -5,17 +5,21 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +55,8 @@ import hu.vrg.mobile.kit.ui.VrgToggle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.vrg.mobile.kit.ui.FeatureTop
+import hu.vrg.mobile.kit.ui.FjBlurb
 
 // Beállítások (WP M1): the settings that belong to the whole app, not to one feature.
 //   Megjelenés       palette and size, applied by the shell to every screen
@@ -63,6 +69,7 @@ import java.util.Locale
 object SettingsFeature : VrgFeature {
     override val info = Catalogue.SETTINGS
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Screen(host: FeatureHost) {
         val s by ShellSettings.flow.collectAsStateWithLifecycle()
@@ -74,10 +81,8 @@ object SettingsFeature : VrgFeature {
         val about = remember { About.read(ctx) }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Text("BEÁLLÍTÁSOK", style = Melyviz.title.copy(fontSize = 18.sp))
-            Text("Az egész alkalmazásra érvényes", style = Melyviz.small)
+            FeatureTop(host, info)
+            FjBlurb("Az egész alkalmazásra érvényes")
 
             // ---- look ------------------------------------------------------------------------------
             VrgSectionTitle("Megjelenés — paletta")
@@ -102,7 +107,7 @@ object SettingsFeature : VrgFeature {
                 style = Melyviz.small.copy(color = Melyviz.sand))
             InboxChannel.entries.forEach { c ->
                 val on = remember(tick) { VrgNotify.channelOn(ctx, c) }
-                Row(Modifier.fillMaxWidth().clickable { runCatching { ctx.startActivity(VrgNotify.settingsIntent(ctx, c)) } }.padding(vertical = 5.dp),
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { runCatching { ctx.startActivity(VrgNotify.settingsIntent(ctx, c)) } }.padding(vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(c.title, style = Melyviz.label)
@@ -117,11 +122,11 @@ object SettingsFeature : VrgFeature {
             VrgSectionTitle("Indulás")
             // WP M19: the Asztal or the tile home, and the manual orientation (also the Asztal's top-strip button)
             Text("Kezdőlap", style = Melyviz.label)
-            Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 HomeMode.entries.forEach { m -> VrgChip(m.label, selected = s.home == m) { ShellSettings.update { it.copy(home = m) } } }
             }
             Text("Tájolás", style = Melyviz.label)
-            Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Orientation.entries.forEach { o -> VrgChip(o.glyph + " " + o.label, selected = s.orientation == o) { ShellSettings.update { it.copy(orientation = o) } } }
             }
             VrgToggle("Az utoljára nyitott funkcióval induljon", s.startInLast) { v ->
@@ -133,13 +138,19 @@ object SettingsFeature : VrgFeature {
             if (s.pairedPcs.isEmpty()) {
                 Text("Még nincs párosított PC. A QR párosítás tölti meg ezt a listát.", style = Melyviz.small)
             } else s.pairedPcs.forEach { pc ->
+                // unpairing also removes this phone on the PC: asked once more (UI audit 5.6)
+                var sure by remember(pc.pcId) { mutableStateOf(false) }
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(pc.name.ifBlank { pc.pcId } + if (livePc?.id == pc.pcId && trust == Trust.TRUSTED) "  ✓ vonalban" else "", style = Melyviz.label)
                         Text("${pc.relay}  ·  ${DAY.format(Date(pc.pairedAt))}", style = Melyviz.readout)
                     }
                     // also removed on the PC when it is the one connected (Relay sends unpair)
-                    VrgChip("Törlés") { Relay.forget(pc) }
+                    if (!sure) VrgChip("Törlés…") { sure = true }
+                }
+                if (sure) Row(Modifier.padding(bottom = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    VrgChip("Igen, törlés", true) { sure = false; Relay.forget(pc) }
+                    VrgChip("Mégse") { sure = false }
                 }
             }
             Row(Modifier.padding(top = 8.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }

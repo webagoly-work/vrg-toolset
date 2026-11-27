@@ -11,6 +11,15 @@
       "approved": "2026-11-05",
       "by": "Mobile/access.json (owner, added by hand)",
       "owner": true
+    },
+    {
+      "id": "28F5-4703-B182",
+      "name": "Második telefon",
+      "model": "kézzel felvéve",
+      "os": "Android",
+      "code": "E50AAF",
+      "approved": "2026-11-20",
+      "by": "Redmi Note 13 Pro 5G · 6CDB-FB09-6833 · eszközkóddal (a tulajdonos kérésére, cloud session)"
     }
   ]
 }

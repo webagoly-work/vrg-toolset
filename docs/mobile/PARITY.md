@@ -29,7 +29,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 8 | `settings` | Beállítások | `Dashboard/shell/lib/settings.js`, `tray.js`, `selmenu.js` | M1 Beállítások | native (exists); M19 adds Kezdőlap + Tájolás | M1 / M19 |
 | 9 | `planner` | Varler Planner | `Planner/projects/varler-planner/dist/varler_planner.html` | — (M12 photos tagged for it) | webapp | **M21** |
 | 10 | `client-preview` | Ügyfélnézet | inside the Planner (`feat:b4`) | — | webapp, inside the Planner | M21 |
-| 11 | `workflow-kit` | Varler Workflow Kit | `H:\VRG\Full\Varler_Workflow_Kit` (outside the repo) | — | pc: read-only files window (not on GitHub, carries client data) | **M23** |
+| 11 | `workflow-kit` | Varler Workflow Kit | `H:\VRG\Full\Varler_Workflow_Kit` (outside the repo) | M42 Workflow Kit | native: the jobs sealed to the phone key (`tools/workflow-seal.js`, D-52); the PDFs pc via M23 | **M42** / M23 |
 | 12 | `calc-panel` | Panel anyagár kalkulátor | `Calculator/panel_anyagar_kalkulator.html` | — | webapp | **M21** |
 | 13 | `calc-general` | Általános kalkulátor | `Calculator/Altalanos_Villanyszerelui_Kalkulator.html` | — | webapp | **M21** |
 | 14 | `calc-led` | LED árkalkulátor | `Calculator/led_arkalkulator.html` | — | webapp | **M21** |
@@ -41,7 +41,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 20 | `files` | Fájlok | `Dashboard/page/panes/files.js`, `shell/lib/fsview.js` | M12 board only | pc: read-only browse of the work roots (Repó, VRG Full, Közös; D-17), relay `--files`; BETA | **M23** |
 | 21 | `archive` | Archívum | `Archive/vrg-archive.html` | M18 Archívum | native (exists) | M18 |
 | 22 | `mindmap` | VRG MindMap | `MindMap/vrg_mindmap.html` | — | webapp | **M21** |
-| 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: the phone's browser (Custom Tab); Kommand opens URLs | M19 |
+| 23 | `web` | Böngésző | `Dashboard/page/panes/web.js` | — | native: M68 Böngésző, a confined WebView by the Asztal's web contract (http / https only, no bridge, permissions denied, certificate errors never overridden); the PC's engines and !bangs, Tiszta link, bookmarks and history in `vrg.web-links` v1 (export / import with the PC); the Kommand's URLs open there | M68 |
 | 24 | `mail` | Posta | `Dashboard/page/panes/mail.js`, `shell/lib/gmail.js` | — | no (decided in M23): the PC's mail rides its own Gmail OAuth on the PC; the phone has its own mail app, opened by intent | M23 |
 | 25 | `search` | Belső keresés | `Dashboard/page/panes/search.js`, `shell/lib/innersearch.js` | — | no for now (a relay search over the PC's index is a Later item of M23) | Later |
 | 26 | `feed` | Hírfolyam | `Dashboard/page/panes/feed.js` | — | no (D-18): its presets run inside the Desktop on the PC, with its cache; mail is no for the same kind of reason | M23 |
@@ -50,13 +50,18 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | 29 | `mobile` | VRG Mobile | `Mobile/` | itself | — (the phone is this unit) | — |
 | 30 | `servicekit` | ServiceKit | `ServiceKit/` (a device, status dev) | — | no for now: hardware on the bench; a later WP may talk to it over the phone's WiFi | — |
 | 31 | `stack.search` | Keresés (Rétegverem) | `Stack/stack.js q` | M17 Rétegverem | native: Kommand searches the catalog; the Stack search itself stays in M17's pages | M17 / M19 |
-| 32 | `layer.i` | I · Ötletfolyam | `Stack/lineage.html` (server `stack`) | — | native via M17: add the page to `stack-pages` (Later in M17); pc via M8 meanwhile | M17 |
+| 32 | `layer.i` | I · Ötletfolyam | `Stack/lineage.html` (server `stack`) | — | native via M17: the Ötletfolyam chip, `stack/otletfolyam.html` (its data comes with the PC's publish, START R → T) | M17 |
 | 33 | `layer.f` | F · Kiemelt | the Irányítópult (`view: dashboard`) | — | native: the Asztal's home window | M19 |
-| 34 | `layer.q` | Q · Döntésnapló | `Stack/decisions.html` (server `stack`) | — | native via M17 (Later); pc via M8 meanwhile | M17 |
+| 34 | `layer.q` | Q · Döntésnapló | `Stack/decisions.html` (server `stack`) | — | native via M17: the Döntésnapló chip, `stack/dontesnaplo.html` (its data comes with the PC's publish, START R → T) | M17 |
 | 35 | `phone` | Telefon kapcsolat | `Dashboard/page/phone.js`, `shell/lib/phonelink.js` (WP-49) | M2 QR párosítás | native: the home screen's QR beolvasása button opens the scanner, which pairs or opens a server QR from this panel in a Custom Tab (`core/ScanCode.kt`) | M2 / WP-49 |
 | 36 | `sketcher` | VRG Sketcher | `Sketcher/dist/vrg-sketcher.html` (START P → S) | M24 Vázlat … M31 | native: the phone captures the survey (`feat:sketch`); the Desktop page reviews and completes it | M24–M31 |
 | 37 | `rajztar` | Rajztár Stúdió | `shared/rajztar/studio.html` (START P → J) | — | none for now: a PC editor for document packages; a later WP | — |
-| 38 | `konnektom-labor` | Konnektóm-labor | a Rétegverem page (START R → K) | M17 Rétegverem | native via M17, as the other Stack pages (Later: add it to `stack-pages`); pc via M8 meanwhile | M17 |
+| 38 | `konnektom-labor` | Konnektóm-labor | a Rétegverem page (START R → K) | M17 Rétegverem | native via M17: the Labor chip, `stack/labor.html` on `stack-pages` (2026-11-26) | M17 |
+| 39 | `sketcher.house3d` | Ház 3D feldolgozás | `Sketcher/tools/house3d.js` (START P → 3), the Sketcher's Helyszín viewer | M24 Kamera → Épület kívülről (⟳ Sorozat) | native: the phone takes the walk-round photos in the Sketcher (`feat:sketch`); COLMAP runs on the PC (M63: "on the phone, nothing new") | M63 |
+| 40 | `browser` | VRG Böngésző | `Browser/dist/vrg-bongeszo.html` (START W → B, server :8812) | — | webapp: the same app in Alkalmazások; its web pages open in the phone's Böngésző (M68), the server modules (Olvasó letöltés, dokumentumok, javaslatok) switch off; saved reading-list text reads offline; bookmarks and history move to and from the Asztal as a `vrg.web-links` v1 file (the phone's M68 Böngésző keeps its own file in the same format); Munkák and Alkatrészek work offline (the parts catalogue is baked in; a datasheet saved on the PC reads here once imported), the export into a job folder is the PC's; Kutatás notebooks work on the phone (quotes from saved texts), saving a note and Figyelés are the PC's (a watch's change rings the phone through M10) | M21 |
+| 41 | `weather` | VRG Időjárás | `Weather/` (server :8808) | M44 Időjárás | native: the phone runs its own small version (MET Norway, DWD MOSMIX, MeteoAlarm) with the PC's field rules; PC nézet through M8 | M44 |
+| 42 | `kisokos` | VRG Kisokos | `Kisokos/` data, its 3D page `Stack/kisokos.html` (START R → S, the Stack's K layer) | — | native via M17 Rétegverem: the Kisokos chip, `stack/kisokos.html` on `stack-pages` (2026-11-26) | M17 |
+| 43 | `layer.k` | K · Kisokos 3D | `Stack/kisokos.html` (`node Stack/stack.js kisokos`, START R → S) | — | native via M17: the same Kisokos chip (`stack/kisokos.html`) | M17 |
 
 ## 2. Window kinds (`KINDS`, `Dashboard/shell/lib/sheets.js`)
 
@@ -66,7 +71,7 @@ window kinds (`KINDS` in `Dashboard/shell/lib/sheets.js`) and its frame parts.
 | `empty` | `panes/empty.js` (the picker) | native: long-press a free cell → the Kommand list | M20 |
 | `files` | `panes/files.js` + `viewer.js` | pc, read-only: `feat:pcwin` (text, image, copy to the board) | M23 |
 | `term` | `panes/term.js` | **no**: a terminal is dev level | — |
-| `web` | `panes/web.js` | native: a confined WebView or the phone's browser | M20 |
+| `web` | `panes/web.js` | native: M68 Böngésző (a confined WebView); the phone's browser on request (☰ → ↗) | M68 |
 | `mail` | `panes/mail.js` | no (see unit 24) | M23 |
 | `stack` | `panes/stack.js` | native: M17 Rétegverem | M17 |
 | `chat` | `panes/chat.js` (Claude chat on the PC) | rc: the Claude app, opened on the PC's Remote Control session | M22 |

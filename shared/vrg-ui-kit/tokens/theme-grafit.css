@@ -1,0 +1,59 @@
+/* VRG UI Kit — theme "Grafit" (graphite). Blackish, neutral dark greys with soft white ink, in the calm,
+   low-clutter manner of Claude's and Obsidian's dark looks, crossed with a modern black-and-white terminal:
+   - no hue in the chrome: surfaces step in grey, the accent ("you", focus, selection) is white phosphor;
+   - colour is kept for meaning only, and desaturated so a status reads without shouting;
+   - the heat scale is a grey ramp, like a lit dot-matrix display;
+   - frames, shells and indicators are drawn as a fine dot matrix (--vk-frame: dots, components/dotmatrix.css),
+     titles go mono; no drop shadow on panels, a quiet one on overlays only.
+   Hand-written (not generated). tools/kotlin-tokens.js turns it into VRG Mobile's "Grafit" palette. */
+:root[data-vk-theme="grafit"], [data-vk-theme="grafit"] {
+  color-scheme: dark;
+  --vk-bg: #161616;
+  --vk-bg-sunken: #0f0f0f;
+  --vk-surface-1: #1b1b1b;
+  --vk-surface-2: #212121;
+  --vk-surface-3: #292929;
+  --vk-overlay: rgba(27, 27, 27, .94);
+  --vk-scrim: rgba(0, 0, 0, .62);
+  --vk-line: rgba(255, 255, 255, .075);
+  --vk-line-strong: rgba(255, 255, 255, .16);
+  --vk-border-control: #7a7a7a;
+  --vk-text: #e6e6e3;
+  --vk-text-muted: #a3a3a0;
+  --vk-text-faint: #7a7a77;
+  --vk-text-on-accent: #121212;
+  --vk-text-on-solid: #121212;
+  --vk-accent: #f2f2ef;           /* white phosphor: selection, focus, "you are here" */
+  --vk-accent-hover: #ffffff;
+  --vk-activity: #d4b48f;         /* warm, but muted: running, recent work */
+  --vk-focus: #f2f2ef;
+  --vk-ok: #9fc8a6;
+  --vk-warn: #d6c28f;
+  --vk-crit: #e39d93;
+  --vk-info: #a9bad3;
+  --vk-idea: #bdb4d8;
+  --vk-layer-1: #e0a088; --vk-layer-2: #d9c97f; --vk-layer-3: #8fb2e0; --vk-layer-4: #b7a5e0;
+  --vk-layer-5: #92c89f; --vk-layer-6: #84c7bd; --vk-layer-7: #e0a0c0; --vk-layer-8: #a8a8a5;
+  --vk-heat-0: #212121; --vk-heat-1: #383838; --vk-heat-2: #575757; --vk-heat-3: #8c8c8a; --vk-heat-4: #e6e6e3;
+  --vk-term-bg: #0f0f0f;
+  --vk-term-text: #d9d9d6;
+  --vk-term-ok: #9fc8a6; --vk-term-warn: #d6c28f; --vk-term-crit: #e39d93; --vk-term-info: #a9bad3; --vk-term-muted: #9a9a97;
+  --vk-shadow-1: none;
+  --vk-shadow-overlay: 0 10px 28px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .06);
+  --vk-glow: 0 0 4px rgba(255, 255, 255, .16);
+  --vk-blur: 10px;
+  /* soft fills: a white accent needs a lighter mix than ice to stay visible as a tint */
+  --vk-accent-soft: color-mix(in srgb, var(--vk-accent) 10%, transparent);
+  --vk-accent-line: color-mix(in srgb, var(--vk-accent) 42%, transparent);
+  --vk-select-bg: color-mix(in srgb, var(--vk-accent) 11%, transparent);
+  --vk-hover-bg: color-mix(in srgb, var(--vk-text) 5%, transparent);
+  --vk-radius-sm: 2px; --vk-radius: 4px; --vk-radius-lg: 6px;
+  --vk-font-voice: "VK JetBrains Mono", "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --vk-tracking-title: .08em;
+  /* the dot matrix: fine pitch, small round dots ("high resolution", not a 1980s LED sign) */
+  --vk-frame: dots;
+  --vk-dot-pitch: 3px;
+  --vk-dot-r: .75px;
+  --vk-dot: color-mix(in srgb, var(--vk-text) 38%, transparent);
+  --vk-dot-lit: var(--vk-accent);
+}

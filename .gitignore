@@ -86,3 +86,8 @@ Map/test/fixtures/jobs/_elozmenyek/helyek-log.jsonl
 # The database holds job-site coordinates (client data); settings.local.json may hold an API key.
 Weather/data/
 Weather/config/settings.local.json
+
+# --- anon-check deny-list (personal names, clients, addresses): never commit ---
+tools/anon-check.deny.txt
+Prefilter/.cache/
+Voice/.cache/

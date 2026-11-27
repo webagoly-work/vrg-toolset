@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Frissítés (WP M9, D-3 = A): the app updates itself from GitHub Releases. It checks when it comes on
 // screen, at most every 6 hours, and from the tile. A newer release is downloaded with the shared
@@ -225,9 +225,7 @@ object UpdateFeature : VrgFeature {
         val pi = app.packageManager.getPackageInfo(app.packageName, 0)
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-            Text("FRISSÍTÉS", style = Melyviz.title.copy(fontSize = 18.sp))
+            FeatureTop(host, info)
             Text("Most: ${pi.versionName}", style = Melyviz.small)
             Spacer(Modifier.height(10.dp))
 
@@ -247,11 +245,12 @@ object UpdateFeature : VrgFeature {
                 }
                 is UpdateState.Downloading -> {
                     Text("Letöltés: ${s.info.name} · ${s.percent} %", style = Melyviz.readout)
-                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                    // disabled while it runs (it did nothing but looked ready); the ring shows the progress (UI audit 6.3)
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring, enabled = false) {} }
                 }
                 is UpdateState.Installing -> {
                     Text("A telepítő indul: ${s.info.name}", style = Melyviz.readout)
-                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring, enabled = false) {} }
                 }
             }
             why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
@@ -267,10 +266,7 @@ object UpdateFeature : VrgFeature {
     private fun Offer(u: UpdateInfo, host: FeatureHost, blocked: Boolean) {
         Text("Új verzió: ${u.name}", style = Melyviz.title)
         Text("${u.size / (1024 * 1024)} MB", style = Melyviz.small)
-        if (u.notes.isNotBlank()) {
-            VrgSectionTitle("Mi változott")
-            Text(u.notes, style = Melyviz.small)
-        }
+        // the action before the notes: long notes pushed it below the visible area (UI audit 5.1)
         Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             VrgChip("Letöltés és telepítés", true) { install() }
         }
@@ -278,6 +274,10 @@ object UpdateFeature : VrgFeature {
             Text("Az Androidnak engedélyeznie kell, hogy ez az app telepíthessen. Engedélyezd, majd gyere vissza.",
                 style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
             Row(Modifier.padding(top = 6.dp)) { VrgChip("Engedély megnyitása") { openInstallSetting(host) } }
+        }
+        if (u.notes.isNotBlank()) {
+            VrgSectionTitle("Mi változott")
+            Text(u.notes, style = Melyviz.small)
         }
     }
 }

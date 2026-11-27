@@ -62,6 +62,16 @@
    "en": "VRG Sketcher"
   },
   {
+   "id": "cat:sketcher.house3d",
+   "hu": "Ház 3D feldolgozás",
+   "en": "House 3D processing"
+  },
+  {
+   "id": "cat:kisokos",
+   "hu": "VRG Kisokos",
+   "en": "VRG Handbook"
+  },
+  {
    "id": "cat:client-preview",
    "hu": "Ügyfélnézet",
    "en": "Client preview"
@@ -162,6 +172,16 @@
    "en": "Varler Console"
   },
   {
+   "id": "cat:weather",
+   "hu": "VRG Időjárás",
+   "en": "VRG Weather"
+  },
+  {
+   "id": "cat:browser",
+   "hu": "VRG Böngésző",
+   "en": "VRG Browser"
+  },
+  {
    "id": "cat:mobile",
    "hu": "VRG Mobile",
    "en": "VRG Mobile"
@@ -190,6 +210,11 @@
    "id": "cat:layer.q",
    "hu": "Q · Döntésnapló",
    "en": "Q · Decisions"
+  },
+  {
+   "id": "cat:layer.k",
+   "hu": "K · Kisokos 3D",
+   "en": "K · Handbook 3D"
   }
  ],
  "recent": [
@@ -214,6 +239,8 @@
     "cat:planner",
     "cat:rajztar",
     "cat:sketcher",
+    "cat:sketcher.house3d",
+    "cat:kisokos",
     "cat:client-preview",
     "cat:workflow-kit",
     "cat:calc-panel",
@@ -232,12 +259,15 @@
     "cat:feed",
     "cat:map",
     "cat:console",
+    "cat:weather",
+    "cat:browser",
     "cat:mobile",
     "cat:servicekit",
     "cat:stack.search",
     "cat:layer.i",
     "cat:layer.f",
-    "cat:layer.q"
+    "cat:layer.q",
+    "cat:layer.k"
    ]
   },
   {
@@ -336,9 +366,12 @@
    "ids": [
     "cat:desktop",
     "cat:sketcher",
+    "cat:kisokos",
     "cat:buildtree",
     "cat:mindmap",
     "cat:map",
+    "cat:weather",
+    "cat:browser",
     "cat:mobile"
    ]
   },

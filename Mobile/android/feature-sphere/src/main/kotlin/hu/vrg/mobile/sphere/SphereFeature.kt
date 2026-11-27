@@ -5,8 +5,8 @@ import android.content.Context
 import android.provider.Settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -45,6 +46,10 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -79,6 +84,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Gömb (WP M14): the three Solomon signals on the phone, as a page to the right of the home screen and as a
 // tile. It reads and rules; it never edits a source (docs/solomon/README.md). The data comes from the
@@ -166,13 +173,10 @@ object SphereFeature : VrgFeature {
         Box(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize()) {
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                            modifier = Modifier.clickable(onClick = back).padding(vertical = 8.dp))
-                        Spacer(Modifier.weight(1f))
+                    // the header (Fényjel: kit FeatureTop); its back is a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+                    FeatureTop(null, info, actionsOnBack = true, onBack = { back() }) {   // no host: the shell shows this page too
                         VrgChip(if (loading) "Frissítés…" else "Frissítés", status = if (loading) MiniStatus.running() else null) { refresh(force = true) }
                     }
-                    Text("GÖMB", style = Melyviz.title.copy(fontSize = 18.sp))
                     data?.let { Text("${it.docs.size} dokumentum · ${it.generated} · ${it.commit}", style = Melyviz.readout) }
                     if (account !is Account.SignedIn) {
                         Text("A repó privát: GitHub belépés kell a friss adathoz.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
@@ -207,7 +211,8 @@ object SphereFeature : VrgFeature {
                 val on = i == tab
                 val line = Melyviz.glow
                 Text(n.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.2.sp, color = if (on) Melyviz.glow else Melyviz.faint),
-                    modifier = Modifier.weight(1f).clickable { onTab(i) }
+                    // a tab for TalkBack, with its selected state (UI-CHECKLIST 8.2, 8.5)
+                    modifier = Modifier.weight(1f).selectable(selected = on, role = Role.Tab) { onTab(i) }
                         .drawBehind { if (on) drawLine(line, Offset.Zero, Offset(size.width, 0f), 2.dp.toPx()) }
                         .padding(vertical = 12.dp).padding(horizontal = 6.dp))
             }
@@ -236,7 +241,7 @@ object SphereFeature : VrgFeature {
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
                 val on = layer == t
                 Column(Modifier.weight(1f).background(if (on) Melyviz.raised else Melyviz.surface, shape)
-                    .border(1.dp, if (on) Melyviz.glow else Melyviz.line, shape)
+                    .vrgBorder(1.dp, if (on) Melyviz.glow else Melyviz.line, shape)
                     .clickable { onLayer(t) }.padding(horizontal = 9.dp, vertical = 7.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Mark(t)
@@ -264,7 +269,7 @@ object SphereFeature : VrgFeature {
             if (rows.isEmpty()) item { Text("Nincs ilyen jelzés.", style = Melyviz.small) }
             items(rows, key = { it.id }) { s ->
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
-                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape)
+                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape)
                     .clickable { onOpen(s) }.padding(horizontal = 11.dp, vertical = 9.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Mark(s.type)
@@ -285,7 +290,7 @@ object SphereFeature : VrgFeature {
             item { Spacer(Modifier.height(8.dp)) }
             items(d.sections, key = { it.id }) { s ->
                 val shape = RoundedCornerShape(Melyviz.radiusSmall)
-                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).border(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 11.dp, vertical = 9.dp)) {
+                Column(Modifier.fillMaxWidth().background(Melyviz.surface, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 11.dp, vertical = 9.dp)) {
                     Row {
                         Text(s.name, style = Melyviz.label, modifier = Modifier.weight(1f))
                         Text("${s.docs} dok. · ${d.openIn(s.id)} nyitott", style = Melyviz.readout)
@@ -303,11 +308,15 @@ object SphereFeature : VrgFeature {
         val high = (LocalConfiguration.current.screenHeightDp * .72f).dp
         Column(modifier.fillMaxWidth().heightIn(max = high).imePadding()
             .background(Melyviz.surface, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
-            .border(1.dp, Melyviz.line, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
+            .vrgBorder(1.dp, Melyviz.line, RoundedCornerShape(topStart = Melyviz.radius, topEnd = Melyviz.radius))
             .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row {
                 Text(d.title, style = Melyviz.title.copy(fontSize = 14.sp, letterSpacing = 0.sp), modifier = Modifier.weight(1f))
-                Text("×", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clickable(onClick = onClose).padding(horizontal = 8.dp))
+                // a 48 dp close button that TalkBack reads as "Bezárás" (UI-CHECKLIST 1.1, 8.1)
+                Box(Modifier.size(48.dp).clickable(role = Role.Button, onClick = onClose).semantics { contentDescription = "Bezárás" },
+                    contentAlignment = Alignment.Center) {
+                    Text("×", style = Melyviz.glyph.copy(color = Melyviz.muted), modifier = Modifier.clearAndSetSemantics { })
+                }
             }
             Text(listOfNotNull(d.path, d.date, d.cited.takeIf { it > 0 }?.let { "$it hivatkozás" }).joinToString(" · "),
                 style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 3.dp))
@@ -340,7 +349,7 @@ object SphereFeature : VrgFeature {
     @Composable
     private fun Quoted(q: Quote) {
         val shape = RoundedCornerShape(8.dp)
-        Column(Modifier.fillMaxWidth().padding(top = 7.dp).background(Melyviz.raised, shape).border(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 9.dp, vertical = 8.dp)) {
+        Column(Modifier.fillMaxWidth().padding(top = 7.dp).background(Melyviz.raised, shape).vrgBorder(1.dp, Melyviz.lineSoft, shape).padding(horizontal = 9.dp, vertical = 8.dp)) {
             Text(q.text, style = Melyviz.label.copy(fontSize = 12.sp))
             Text(q.ref, style = Melyviz.readout.copy(fontSize = 10.sp), modifier = Modifier.padding(top = 5.dp))
         }

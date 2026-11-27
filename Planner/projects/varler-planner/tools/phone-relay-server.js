@@ -137,6 +137,11 @@
 
 const http = require('http');
 const fs = require('fs');
+// CHANGED 25 Nov — Vezérlőpult, the PC's vital signs on the phone (Fényjel R2; rules in relay-sys.js).
+//   * {type:'sys.stats', to:'relay'} from a trusted phone -> {type:'sys', payload:{ok, host, cpu, cores,
+//     mem:{used,total}, disk:{used,total,root}|null, uptime}}: CPU load (0…1) since the previous ask, memory and
+//     the work drive in bytes, the PC's uptime in seconds. Node's os / fs only; nothing from the phone is used.
+//
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
@@ -150,6 +155,7 @@ const screen = require('./relay-screen');
 const notify = require('./relay-notify');
 const claude = require('./relay-claude');
 const files = require('./relay-files');
+const sys = require('./relay-sys');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -848,6 +854,12 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    if (m && to === 'relay' && m.type === 'sys.stats') {
+      if (roleOf(ws) !== PHONE) return;
+      onSysMessage(ws);
+      return;
+    }
+
     if (m && to === 'relay' && FILES_TYPES.has(m.type)) {
       if (roleOf(ws) !== PHONE) return;
       onFilesMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
@@ -961,6 +973,16 @@ function onPortsMessage(ws, ip, type, p) {
   const r = ports.openDesktop(u.url);
   console.log(`  [port] megnyitas a PC-n (${ip}): ${u.url}  ${r.ok ? r.how : r.reason}`);
   answer(Object.assign({ port: p.port, url: u.url }, r));
+}
+
+/* ---- Vezérlőpult: this PC's vital signs (relay-sys.js has the arithmetic) --------- */
+
+const SYS = sys.createSampler();
+
+function onSysMessage(ws) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay('sys', payload)); };
+  if (!isTrusted(ws)) { answer({ ok: false, trusted: false, reason: 'Párosítás kell.' }); return; }
+  SYS.sample().then(answer, err => answer({ ok: false, reason: 'Hiba: ' + err.message }));
 }
 
 /* ---- Indítópult: START from the phone (relay-launch.js has the rules) ---------- */

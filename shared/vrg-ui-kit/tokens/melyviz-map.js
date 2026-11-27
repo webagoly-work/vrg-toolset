@@ -44,7 +44,7 @@ function render(css) {
   --vk-border-control: #6c7880;
   --vk-text: ${v('--mv-text')};
   --vk-text-muted: ${v('--mv-dim')};
-  --vk-text-faint: ${v('--mv-faint')};
+  --vk-text-faint: #818a91;       /* kit-owned: --mv-faint blended toward --mv-dim to reach AA 4.5:1 */
   --vk-text-on-accent: #071318;
   --vk-text-on-solid: ${v('--mv-bg')};
   --vk-accent: ${v('--mv-accent')};

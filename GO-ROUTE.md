@@ -169,7 +169,7 @@ Ask these before any design or code, in one message:
 - Keep `node tests/run.js` green and the 70 golden renders identical unless a change is intended.
   - Baseline at the audit: 110 suites, 3 736 checks.
   - Add the audit's §7 tests where a feature touches them.
-- Client data stays out of git. The Budakalász files, the Domoszló fixtures and `Calculator/CLA-baseline/` are local
+- Client data stays out of git. The Budakalász files, the Mintafalu fixtures and `Calculator/CLA-baseline/` are local
   only. Quote only counts, metres and code locations.
 - Hungarian UI, English code. Every open question goes in as numbered A/B/C options.
 - **The Topology View** follows `docs/topology/00_CONTRACT.md`:
@@ -182,7 +182,7 @@ Ask these before any design or code, in one message:
 
 - **Can:** the repo; the Topology View's Wave A and its acceptance on the practice apartment; the audit's two repro scripts (save them outside the repo; jsdom via `NODE_PATH`); the practice
   apartment `Planner/projects/varler-planner/tools/practice/` as a non-client test plan.
-- **Cannot:** anything on `H:\`. That includes the Budakalász job, the Domoszló fixtures, `_redteam`, `build-dom.js`
+- **Cannot:** anything on `H:\`. That includes the Budakalász job, the Mintafalu fixtures, `_redteam`, `build-dom.js`
   and `Calculator/CLA-baseline/`.
 - For work on the real job, either run in Claude Code on the user's PC, or attach the PC's repo folder to the cloud
   session through Remote Control (`list_computer_folders` / `request_computer_folder`).

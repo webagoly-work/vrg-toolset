@@ -2,6 +2,8 @@
 //   VRGPalette.open() · close() · isOpen() · setKeymap({ palette: 'Ctrl+Shift+P', ... })
 // While it is open main hides the web views (they cannot be drawn under an overlay): vrg.layout.palette({ open: true }) → hideAll,
 // vrg.layout.palette({ open: false }) → showAll. Enter runs the row through vrg.layout.run(id); main re-resolves the id.
+// T2 of the VRG Böngésző: Gyorsválasz (Browser/src/core/answers.js, window.VB.answers) above the rows: "230V 16A", "= 2*3",
+// "2,5mm2 30m 16A", "12 awg". A click (or Ctrl+Enter when no command matches) copies the result; nothing else happens.
 (function () {
   'use strict';
   const lib = window.VRGPaletteLib;
@@ -9,7 +11,8 @@
   const KIND = { start: 'Indítás', pane: 'Panel', term: 'Terminál', root: 'Mappa', preset: 'Előbeállítás', web: 'Weboldal' };
   const MAX_ROWS = 50;
   let keymap = { ...lib.DEFAULT_KEYMAP };
-  let box = null, input = null, list = null, status = null;
+  let box = null, input = null, list = null, status = null, answer = null, lastAnswer = null;
+  const answers = () => (window.VB && window.VB.answers) || null;
   let items = [], recent = [], shown = [], sel = 0, was = null;
 
   function build() {
@@ -20,20 +23,40 @@
     input.autocomplete = 'off'; input.spellcheck = false;
     list = document.createElement('ul'); list.dataset.role = 'palette-list';
     status = document.createElement('div'); status.dataset.role = 'palette-status';
-    box.append(input, list, status);
+    answer = document.createElement('div'); answer.dataset.role = 'palette-answer'; answer.hidden = true; answer.title = 'Másolás (Ctrl+Enter) / Copy';
+    answer.addEventListener('click', copyAnswer);
+    box.append(input, answer, list, status);
     document.body.append(box);
     input.addEventListener('input', () => { sel = 0; render(); });
     input.addEventListener('keydown', e => {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
       else if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (e.key === 'Enter' && (e.ctrlKey || !shown.length) && lastAnswer) { e.preventDefault(); copyAnswer(); }
       else if (e.key === 'Enter') { e.preventDefault(); pick(sel); }
     });
     list.addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) pick(shown.findIndex(x => x.id === li.dataset.id)); });
     box.addEventListener('pointerdown', e => { if (e.target === box) close(); });
   }
 
+  function drawAnswer() {
+    const A = answers();
+    const a = A && input.value.trim() ? A.answer(input.value) : null;
+    lastAnswer = a && a.copy ? a : null;
+    answer.hidden = !a;
+    if (!a) return;
+    const t = document.createElement('span'); t.className = 't'; t.textContent = a.title + ' · Gyorsválasz';
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = a.value;
+    answer.replaceChildren(t, v, ...(a.lines || []).slice(0, 2).map(x => { const l = document.createElement('span'); l.className = 'l'; l.textContent = x; return l; }));
+  }
+  async function copyAnswer() {
+    if (!lastAnswer) return;
+    try { await navigator.clipboard.writeText(lastAnswer.copy); status.textContent = 'Vágólapra másolva: ' + lastAnswer.copy; }
+    catch (e) { status.textContent = lastAnswer.copy; }
+  }
+
   function render() {
+    drawAnswer();
     shown = lib.search(items, input.value, recent).slice(0, MAX_ROWS);
     if (sel >= shown.length) sel = Math.max(0, shown.length - 1);
     list.replaceChildren(...shown.map((it, i) => {
@@ -44,7 +67,7 @@
       li.append(n, k);
       return li;
     }));
-    status.textContent = shown.length ? '' : 'Nincs találat';
+    status.textContent = shown.length || lastAnswer ? '' : 'Nincs találat';
     status.title = shown.length ? '' : 'No results';
     const cur = list.querySelector('[data-sel="1"]'); if (cur) cur.scrollIntoView({ block: 'nearest' });
   }

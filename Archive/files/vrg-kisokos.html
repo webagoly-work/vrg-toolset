@@ -1,0 +1,678 @@
+<title>VRG Kisokos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a compass map (Villanyszerelés in the centre, 8 axes = 16 poles, 4 rings = distance from daily work)
+   beside a reading panel; then the volumes and three working samples, each a full-width band.
+   Look: Mélyvíz (shared/melyviz.css) — deliberately single dark theme, hairlines, two cut corners, no radius. */
+:root {
+  --bg: #0a141c; --horizon: #11202b; --panel: #121c24; --raised: #17232c;
+  --line: rgba(232,240,246,.15); --line-strong: rgba(232,240,246,.34);
+  --text: #e8f0f6; --dim: #a6afb7; --faint: #6f7880;
+  --accent: #93d3e6; --accent-soft: rgba(147,211,230,.14); --warm: #e8a873; --warm-soft: rgba(232,168,115,.14);
+  --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --s-tk: #93d3e6; --s-al: #b9a6e6; --s-sz: #e8a873; --s-ez: #8bcca1; --s-ts: #e3be7b; --s-rg: #e4877d; --s-kv: #8fa8e8; --s-el: #e3a3c4;
+  --voice: Bahnschrift, "Barlow Condensed", "Arial Narrow", sans-serif;
+  --mono: "Cascadia Mono", "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --sans: "Segoe UI", "IBM Plex Sans", system-ui, sans-serif;
+  --cut: 7px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 var(--sans); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1; letter-spacing: .06em; text-transform: uppercase; }
+h2 { font-size: 28px; letter-spacing: .05em; text-transform: uppercase; }
+h3 { font-size: 20px; }
+p { margin: 0; }
+.label { font: 500 10.5px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .13em; color: var(--dim); }
+.lead { color: var(--dim); max-width: 68ch; }
+.solid { background: var(--panel); border: 1px solid var(--line-strong); }
+.cut { clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+button { font: inherit; color: inherit; background: none; border: 1px solid var(--line-strong); border-radius: 0; cursor: pointer; padding: 4px 10px; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+code { font-family: var(--mono); font-size: .9em; color: var(--accent); }
+
+header { display: grid; gap: 14px; }
+header .kicker { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.badge { font: 11px var(--mono); padding: 1px 8px; border: 1px solid var(--line-strong); color: var(--dim); white-space: nowrap; }
+.badge.warm { color: var(--warm); border-color: var(--warm); }
+
+/* ---- map ---- */
+.mapgrid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .mapgrid { grid-template-columns: minmax(0, 1fr); } }
+.mapbox { padding: 10px; position: relative; }
+.mapbox svg { display: block; width: 100%; height: auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font: 12px var(--sans); padding: 3px 9px; }
+.chip i { width: 9px; height: 9px; display: inline-block; flex: none; }
+.chip b { font: 11px var(--mono); color: var(--faint); font-weight: 400; }
+.legendrow { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; padding: 6px 4px 10px; }
+.ringkey { font: 11px var(--mono); color: var(--faint); }
+.panel { padding: 18px 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.ladder { display: grid; gap: 2px; }
+.rung { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; border: 1px solid transparent; padding: 6px 8px; width: 100%; }
+.rung:hover { border-color: var(--line-strong); background: var(--raised); }
+.rung .n { font: 11px var(--mono); color: var(--faint); padding-top: 3px; }
+.rung .t { font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.rung .t i { width: 8px; height: 8px; flex: none; }
+.rung .d { color: var(--dim); font-size: 13px; line-height: 1.45; }
+.pole { font: 600 13px var(--voice); font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); padding: 8px 8px 2px; }
+.centre-rung { padding: 8px; border-top: 1px dashed var(--line-strong); border-bottom: 1px dashed var(--line-strong); color: var(--warm); font: 600 13px var(--voice); letter-spacing: .1em; text-transform: uppercase; }
+.axisnav { display: flex; flex-wrap: wrap; gap: 4px; }
+.axisnav button { font-size: 12px; padding: 3px 8px; }
+.nodecard { display: grid; gap: 10px; }
+.nodecard .desc { font-size: 15px; }
+
+/* ---- volumes ---- */
+.vols { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.vol { padding: 16px; display: grid; gap: 8px; align-content: start; border-top: 3px solid var(--c); }
+.vol h3 { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.vol h3 span { font: 11px var(--mono); color: var(--faint); letter-spacing: 0; }
+.vol p { color: var(--dim); font-size: 13.5px; }
+.vol ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13px; }
+.vol .src { font: 11px/1.5 var(--mono); color: var(--faint); }
+
+section { display: grid; gap: 18px; min-width: 0; }
+.sechead { display: grid; gap: 8px; }
+
+/* ---- rögzítéstechnika ---- */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.mcard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+@media (max-width: 760px) { .mcard { grid-template-columns: minmax(0, 1fr); } }
+.field { padding: 14px 16px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+.field .v { font-size: 14px; }
+.field ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.loads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .loads { grid-template-columns: minmax(0, 1fr); } }
+.load { border: 1px solid var(--line); padding: 10px; display: grid; gap: 4px; font-size: 13.5px; }
+.load .label { color: var(--warm); }
+.terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .terms { grid-template-columns: minmax(0, 1fr); } }
+.terms div { display: grid; gap: 4px; }
+.terms span { font: 12.5px var(--mono); color: var(--text); background: var(--raised); padding: 2px 6px; justify-self: start; }
+.drillbar { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { font: 11.5px var(--mono); border: 1px solid var(--line-strong); padding: 1px 8px; }
+.pill.yes { color: var(--ok); border-color: var(--ok); }
+.pill.no { color: var(--crit); border-color: var(--crit); }
+.note { font: 12px/1.5 var(--mono); color: var(--faint); }
+
+/* ---- kommunikációs vonalak ---- */
+.specbox { padding: 12px; overflow-x: auto; }
+.specbox svg { display: block; min-width: 860px; width: 100%; height: auto; }
+.onepager { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 0; }
+@media (max-width: 820px) { .onepager { grid-template-columns: minmax(0, 1fr); } }
+.op-left { padding: 18px; display: grid; gap: 12px; align-content: start; border-right: 1px solid var(--line); }
+.op-left .big { font: 600 30px/1 var(--voice); font-stretch: 75%; letter-spacing: .04em; }
+.op-left .sub { font: 12px var(--mono); color: var(--dim); }
+.op-left svg { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); }
+.op-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.op-nums div { display: grid; gap: 2px; }
+.op-nums .num { font: 500 15px var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.op-right { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.op-right .field:nth-child(2n) { border-right: 0; }
+@media (max-width: 520px) { .op-right { grid-template-columns: minmax(0, 1fr); } .op-right .field { border-right: 0; } }
+
+/* ---- társszakmák ---- */
+.seq { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 44px minmax(120px, 210px) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 12px 14px; border-bottom: 1px solid var(--line); align-items: start; }
+.step:last-child { border-bottom: 0; }
+.step .no { font: 500 18px var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+.step .who { font-weight: 600; }
+.step .who small { display: block; font: 11px var(--mono); color: var(--faint); font-weight: 400; margin-top: 2px; }
+.step .us { font-size: 13.5px; }
+.step .risk { font-size: 13.5px; color: var(--warm); }
+.step.ours { background: var(--accent-soft); }
+.step.ours .no, .step.ours .who { color: var(--accent); }
+.seqhead { font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .13em; color: var(--dim); background: var(--raised); }
+@media (max-width: 760px) { .step { grid-template-columns: 36px minmax(0, 1fr); } .step .us, .step .risk { grid-column: 2; } .seqhead { display: none; } }
+
+/* ---- plan ---- */
+.plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.plan .solid { padding: 16px; display: grid; gap: 8px; align-content: start; }
+.plan ul, .plan ol { margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 4px; }
+.qs { display: grid; gap: 8px; }
+.q { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; padding: 10px 14px; border: 1px solid var(--line); }
+.q b { font: 500 13px var(--mono); color: var(--warm); }
+.q p { font-size: 14px; }
+.q p span { color: var(--dim); }
+footer { color: var(--faint); font: 12px var(--mono); }
+@media (prefers-reduced-motion: no-preference) { .node, .spoke { transition: opacity .2s, stroke .2s; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker"><span class="label">VRG · Tudásbázis · ötlet 2026-11-21</span><span class="badge warm">tervezet</span><span class="badge">offline</span></div>
+  <h1>VRG Kisokos</h1>
+  <p class="lead">Egy offline, folyamatosan bővülő szakmai kézikönyv. A középpontban a lakossági villanyszerelés áll, és nyolc tengely vezet ki belőle: fel az elmélet felé, le az ügyfél felé, mellé a rokon szakmákig, és a nyersanyagtól a cikkszámig. Az ötlet a Kapu TUD csoportjának üres „Atlas” helyét tölti ki.</p>
+</header>
+
+<!-- ============ MAP ============ -->
+<section aria-labelledby="h-map">
+  <div class="sechead">
+    <span class="label">1 · A tudásbázis térképe</span>
+    <h2 id="h-map">Tengelyek a villanyszerelés körül</h2>
+    <p class="lead">Minden tengely két pólusa egymással szemben áll. A gyűrűk azt mutatják, milyen messze van egy téma a napi munkától: az 1-es gyűrűre holnap szükség lehet, a 4-es már a terület pereme. A pontok színe azt jelzi, melyik kötetben van a téma. Kattints egy pólusra vagy egy pontra.</p>
+  </div>
+  <div class="mapgrid">
+    <div class="solid cut mapbox">
+      <div class="legendrow">
+        <div class="chips" id="secchips"></div>
+        <span class="ringkey">gyűrű 1 = holnapi munka · 4 = a terület pereme</span>
+      </div>
+      <svg id="map" viewBox="-640 -520 1280 1040" role="img" aria-label="A Kisokos tengelytérképe"></svg>
+    </div>
+    <div class="solid cut panel" id="panel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ============ VOLUMES ============ -->
+<section aria-labelledby="h-vol">
+  <div class="sechead">
+    <span class="label">2 · Kötetek</span>
+    <h2 id="h-vol">Miből áll a Kisokos</h2>
+    <p class="lead">A tengelyek azt mutatják meg, hol helyezkedik el egy téma. A kötet azt, milyen formában kerül a Kisokosba. Egy téma több kötetben is szerepelhet. A Szótár minden kötethez kapcsolódik: minden szakszó mellett ott a magyar, angol és német keresőszó, hogy a megfelelő boltot vagy adatlapot meg lehessen találni.</p>
+  </div>
+  <div class="vols" id="vols"></div>
+</section>
+
+<!-- ============ RÖGZÍTÉSTECHNIKA ============ -->
+<section aria-labelledby="h-rg">
+  <div class="sechead">
+    <span class="label">3 · Minta · Rögzítéstechnika</span>
+    <h2 id="h-rg">Anyagkártya: mibe, mivel, mit</h2>
+    <p class="lead">Minden falazó- és burkolóanyag egy azonos szerkezetű kártyát kap: hogyan ismerhető fel, hogyan kell fúrni, milyen dübel és csavar való bele terhelés szerint, mik a buktatók, és milyen keresőszavakkal található meg a termék. Ez itt négy mintakártya. A végleges kártyákat gyártói adatlapok alapján kell ellenőrizni.</p>
+  </div>
+  <div class="tabs" id="mtabs" role="tablist"></div>
+  <div class="solid cut mcard" id="mcard"></div>
+  <p class="note">A tervezett anyaglista: beton, vasbeton, üreges födémpanel, tömör tégla, üreges kerámia falazóblokk, pórusbeton, mészhomoktégla, salakblokk, vályog, terméskő, gipszkarton, gipszrost, OSB és fa, fém trapézlemez, szendvicspanel, hőszigetelt homlokzat (ETICS), csempe és járólap, üveg.</p>
+</section>
+
+<!-- ============ KOMMUNIKÁCIÓS VONALAK ============ -->
+<section aria-labelledby="h-kv">
+  <div class="sechead">
+    <span class="label">4 · Minta · Kommunikációs vonalak</span>
+    <h2 id="h-kv">Egy skálán minden vonal</h2>
+    <p class="lead">Minden vonal egy oldalt kap, egységes elrendezéssel: közeg, jelalak, sáv, hullámhossz, sebesség, távolság, csatlakozó, és hogy hol fordul elő egy lakásban. Ugyanazon a logaritmikus frekvenciaskálán szerepelnek, alatta a hullámhossz, így a különbség ránézésre látszik. Kattints egy sávra.</p>
+  </div>
+  <div class="solid cut specbox"><svg id="spec" role="img" aria-label="Frekvencia- és hullámhossz-skála"></svg></div>
+  <div class="solid cut onepager" id="onepager"></div>
+</section>
+
+<!-- ============ TÁRSSZAKMÁK ============ -->
+<section aria-labelledby="h-ts">
+  <div class="sechead">
+    <span class="label">5 · Minta · Társszakmák</span>
+    <h2 id="h-ts">Ki mikor jön az építkezésen, és hol ütközünk</h2>
+    <p class="lead">Ez a szakmák valódi sorrendje egy új ház vagy egy teljes felújítás során. Minden lépésnél két dolog: mit kell addigra a villanyszerelőnek elvégeznie vagy egyeztetnie, és mi romlik el, ha ez kimarad. Minden szakma kap egy saját kártyát is a munkamenetéről, az eszközeiről és a szakszavairól.</p>
+  </div>
+  <div class="solid cut seq" id="seq"></div>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section aria-labelledby="h-plan">
+  <div class="sechead">
+    <span class="label">6 · Hogyan épül fel</span>
+    <h2 id="h-plan">Forma, források, sorrend</h2>
+  </div>
+  <div class="plan">
+    <div class="solid cut">
+      <span class="label">Forma</span>
+      <ul>
+        <li>Minden lap egy markdown fájl, a kártyák közös JSON-sémát követnek: anyag, vonal, szakma, eszköz, fogalom.</li>
+        <li>Teljesen offline működik, a VRG Stack keresője indexeli, és a Kapuból vagy a mobilról is megnyitható.</li>
+        <li>Minden kártyán ott a helye a térképen (tengely, pólus, gyűrű), így a térkép a lapokból generálódik.</li>
+      </ul>
+    </div>
+    <div class="solid cut">
+      <span class="label">Források és jogok</span>
+      <ul>
+        <li><b>Szabad tananyag</b>, ami szó szerint tárolható: OpenStax University Physics (CC BY), LibreTexts, MIT OpenCourseWare, Wikipedia offline (Kiwix ZIM), arXiv-összefoglalók.</li>
+        <li><b>Gyártói adatlapok és katalógusok</b>: letöltve, saját használatra, a forrás és a dátum feltüntetésével.</li>
+        <li><b>Szabványok (MSZ, EN)</b> és <b>tankönyvek</b>: szerzői jogvédettek. Csak saját összefoglaló és hivatkozás kerül be, a megvásárolt példány mellé.</li>
+      </ul>
+    </div>
+    <div class="solid cut">
+      <span class="label">Kapcsolódás a meglévőkhöz</span>
+      <ul>
+        <li><b>CoreRef</b> (ESPHome és Home Assistant referencia): az Eszköztár okos része.</li>
+        <li><b>Készlet</b> (<code>vrg-inventory.json</code>): eszközkártyák árral és beszerzési hellyel.</li>
+        <li><b>Rajztár</b>: minden eszközkártyán ott a rajzjel.</li>
+        <li><b>Planner</b>: a „specifikus” pólus vége, vagyis a konkrét munka.</li>
+      </ul>
+    </div>
+    <div class="solid cut">
+      <span class="label">Javasolt sorrend</span>
+      <ol>
+        <li>Rögzítéstechnika: kb. 20 anyagkártya. Véges, és azonnal használható a munkában.</li>
+        <li>Kommunikációs vonalak: kb. 17 egyoldalas leírás a közös skálán.</li>
+        <li>Társszakmák: 10 szakmakártya és az építési sorrend.</li>
+        <li>Eszköztár: folyamatosan bővül, a Készletből és a CoreRefből indul.</li>
+        <li>Tankönyv és Alapok: a leghosszabb munka, szintenként halad.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="qs">
+    <span class="label">Nyitott kérdések</span>
+    <div class="q"><b>K1</b><p>Hol éljen? <span>A repóban (<code>Kisokos/</code>, kereshető, verziózott), vagy a <code>Full\research</code> alatt, a nagy fájlok (PDF-ek, ZIM) pedig a Shared mappában? Javaslat: a szöveg és a kártyák a repóba, a nagy fájlok a Sharedbe, a repó csak hivatkozik rájuk.</span></p></div>
+    <div class="q"><b>K2</b><p>Milyen nyelven? <span>Javaslat: a szöveg magyarul, a keresőszavak magyarul, angolul és németül, a szabad forrásanyag az eredeti nyelvén.</span></p></div>
+    <div class="q"><b>K3</b><p>Bekerüljön a teljes offline Wikipedia (Kiwix)? <span>Nagy, de ezzel lesz igazán „enciklopédia”. Javaslat: a magyar kiadás, és az angolból csak a villamos és építőipari témák.</span></p></div>
+    <div class="q"><b>K4</b><p>Lesz ügyfél-oldali változata? <span>Ha az ügyfélnek is mutatnánk részleteket (például okos eszközök összehasonlítását), az a Varler-arculatot kapja, ne a Mélyvizet.</span></p></div>
+    <div class="q"><b>K5</b><p>Ki írja? <span>Javaslat: egy Claude-ügynök gyűjti a forrásokat és megírja a vázlatot, te átnézed, és csak a jóváhagyott kártya kerül be. A Rögzítéstechnikánál a saját helyszíni tapasztalatod a mérvadó.</span></p></div>
+  </div>
+</section>
+
+<footer>VRG Kisokos · ötletvázlat · 2026-11-21 · a repóban: docs/kisokos/README.md</footer>
+</div>
+
+<script>
+(function () {
+'use strict';
+const SEC = {
+  tk: { n: 'Tankönyv', c: 'var(--s-tk)', d: 'A villanyszerelés teljes tananyaga szintenként, a kezdő leckéktől a mester- és tervezői szintig.', items: ['Villamosságtan, mérés, balesetvédelem', 'Lakás- és épületvillamosság, elosztók', 'Méretezés és tervdokumentáció'], src: 'saját írás · szabad tananyag · tankönyvi hivatkozás' },
+  al: { n: 'Alapok és kutatás', c: 'var(--s-al)', d: 'Az elmélet a szakma fölött: elektromágnesség, anyagfizika és a kutatási front, olvasható összefoglalókban.', items: ['Maxwell-egyenletek, hullámok', 'Félvezetők, mágneses anyagok', 'Friss cikkek tematikusan'], src: 'OpenStax · LibreTexts · MIT OCW · arXiv' },
+  sz: { n: 'Szakmatérkép', c: 'var(--s-sz)', d: 'Hol áll a lakossági villanyszerelés a teljes rendszerben: rokon szektorok, értéklánc a bányától az újrahasznosításig.', items: ['Termelés, átvitel, elosztás, fogyasztás', 'Gyengeáram, automatizálás, elektronika', 'Nyersanyagok és gyártók'], src: 'saját írás · iparági források' },
+  ez: { n: 'Eszköztár', c: 'var(--s-ez)', d: 'Folyamatosan bővülő katalógus: hagyományos szerelvények, készülékek, lámpák, okos és automatizált megoldások.', items: ['Szerelvény, védelem, világítás', 'Okos eszközök és protokollok', 'Energiamenedzsment'], src: 'Készlet · CoreRef · gyártói adatlapok' },
+  ts: { n: 'Társszakmák', c: 'var(--s-ts)', d: 'A villanyszerelő mellett dolgozó szakmák: munkamenet, igények, ütközési pontok, sorrend.', items: ['Kőműves, szárazépítő, ács', 'Víz, gáz, fűtés, burkoló, festő', 'Asztalos, konyhabútor'], src: 'saját tapasztalat · szakmai leírások' },
+  rg: { n: 'Rögzítéstechnika', c: 'var(--s-rg)', d: 'Anyagonként egy kártya: fúrás, fúrószár, dübel, csavar, terhelés, buktatók és keresőszavak.', items: ['Kb. 20 falazó- és burkolóanyag', 'Terhelés szerinti választás', 'Keresőszavak HU · EN · DE'], src: 'gyártói katalógusok · saját tapasztalat' },
+  kv: { n: 'Kommunikációs vonalak', c: 'var(--s-kv)', d: 'Vezetékes és rádiós vonalak egyoldalas leírásai, közös frekvencia- és hullámhossz-skálán.', items: ['Busz és terepi vonalak', 'Hálózat, koax, optika', 'Rádiós okosotthon-sávok'], src: 'szabványok összefoglalói · szabad források' },
+  el: { n: 'Előírások', c: 'var(--s-el)', d: 'A szabályok térképe: melyik szabvány vagy rendelet mit szabályoz, saját összefoglalóval és hivatkozással.', items: ['MSZ HD 60364 sorozat', 'Tűzvédelem, villámvédelem', 'Szolgáltatói műszaki követelmények'], src: 'csak összefoglaló + hivatkozás' }
+};
+
+// axes: a pole = first, b pole = opposite. nodes [title, desc, sections] for rings 1..4
+const AX = [
+ { n: 'Mélység', q: 'Mennyire elméleti?', a: 'Elmélet', b: 'Alkalmazás',
+   A: [['Villamosságtan', 'Ohm és Kirchhoff törvényei, teljesítmény, váltakozó áram, háromfázisú rendszer.', ['tk']],
+       ['Elektromágnesség', 'Maxwell-egyenletek, indukció, mezők és hullámok. Ebből jön a transzformátor és a rádió is.', ['al', 'tk']],
+       ['Anyagfizika', 'Vezetés, szigetelés, félvezetők, mágneses anyagok. Ebből érthető meg, miért melegszik egy rossz kötés.', ['al']],
+       ['Kvantum-határ', 'Kvantumelektrodinamika, szupravezetés, spintronika, topologikus anyagok: az elektromágnesség kutatási pereme.', ['al']]],
+   B: [['Szerelési gyakorlat', 'Kötéstechnika, csövezés, dobozolás, elosztószerelés, mérés.', ['tk', 'rg']],
+       ['Rendszerek a lakásban', 'Áramkörök, védelmek, világítás, a fűtés és hűtés villamos része, kommunikációs hálózat.', ['ez', 'kv']],
+       ['Ügyféligény', 'Komfort, biztonság, akadálymentesség, energiaköltség: miért kér valaki egy megoldást.', ['ez']],
+       ['Üzemeltetés', 'Hibakeresés, karbantartás, időszakos felülvizsgálat, bővíthetőség.', ['tk', 'el']]] },
+ { n: 'Tudásút', q: 'Milyen úton tanulható?', a: 'Akadémiai ág', b: 'Szakképzési ág',
+   A: [['Mérnöki alapok', 'BSc-szint: matematika, áramkörelmélet, villamos gépek, energetika.', ['tk', 'al']],
+       ['Szakirány', 'MSc-szint: villamosenergia-rendszerek, teljesítményelektronika, épületenergetika.', ['tk', 'sz']],
+       ['Doktori kutatás', 'Szűk szakterület, publikációk, mérési módszerek.', ['al']],
+       ['Kutatási front', 'Friss folyóiratcikkek és preprintek: merre halad a terület.', ['al']]],
+   B: [['Kezdő', 'Alapfogalmak, balesetvédelem, szerszámok, egyszerű áramkörök.', ['tk']],
+       ['Szakmunkás', 'A villanyszerelő szakmai vizsga teljes anyaga: lakás- és épületvillamosság.', ['tk', 'el']],
+       ['Mester, tervező', 'Méretezés, tervdokumentáció, jogosultságok, vállalkozásvezetés.', ['tk', 'el']],
+       ['Szakértő', 'Érintésvédelmi felülvizsgálat, villámvédelem, igazságügyi szakértés.', ['el']]] },
+ { n: 'Értéklánc', q: 'Honnan jön az anyag, és hova megy?', a: 'Nyersanyag felé', b: 'Végfelhasználó felé',
+   A: [['Nagykereskedés', 'Villamossági nagykereskedések, disztribúció, rendelhetőség, cikkszámok.', ['ez', 'sz']],
+       ['Gyártás', 'Kábel-, szerelvény- és készülékgyártás, gyártói rendszerek.', ['sz', 'ez']],
+       ['Feldolgozás', 'Rézhuzalhúzás, PVC és más szigetelőanyagok, szilíciumszelet.', ['sz']],
+       ['Bányászat', 'Réz, alumínium, szilícium, ritkaföldfémek: a lánc eleje.', ['sz']]],
+   B: [['Átadás', 'Mérési jegyzőkönyv, dokumentáció, az ügyfél betanítása.', ['el']],
+       ['Használat', 'Fogyasztás, energiaszámla, a rendszer mindennapjai.', ['ez']],
+       ['Bővítés, felújítás', 'Új igények, a régi hálózat cseréje, utólagos okosítás.', ['ez', 'tk']],
+       ['Bontás, újrahasznosítás', 'Elektronikai hulladék, réz-visszanyerés, veszélyes anyagok.', ['sz', 'el']]] },
+ { n: 'Lépték', q: 'Mekkora darabról beszélünk?', a: 'Mikro', b: 'Makro',
+   A: [['Szerelvény, készülék', 'Kapcsoló, aljzat, kismegszakító, lámpatest.', ['ez']],
+       ['Alkatrész', 'Sorkapocs, érvéghüvely, dübel, csavar, tömszelence.', ['ez', 'rg']],
+       ['Anyag', 'Rézér, szigetelés, védőcső; keresztmetszet és terhelhetőség.', ['tk', 'al']],
+       ['Elektron, atom', 'Töltéshordozók és sávszerkezet: a mikro határ.', ['al']]],
+   B: [['Áramkör, helyiség', 'Egy áramkör, egy helyiség teljes kiosztása.', ['tk']],
+       ['Lakás, ház', 'Elosztó, mérőhely, betáplálás, földelés.', ['tk', 'el']],
+       ['Épület, társasház', 'Felszálló vezeték, közös hálózat, villámvédelem, tűzvédelmi előírások.', ['el', 'sz']],
+       ['Ország, kontinens', 'Elosztó- és átviteli hálózat, rendszerirányítás, az összekapcsolt európai hálózat.', ['sz']]] },
+ { n: 'Rokon szakmák', q: 'Ki dolgozik még az elektromágnességgel?', a: 'Erősáram', b: 'Gyengeáram',
+   A: [['Ipari és kereskedelmi', 'Irodák, üzemek: nagyobb teljesítmény, háromfázisú gépek, ipari elosztók.', ['sz']],
+       ['Elosztás', 'Az áramszolgáltató hálózata: közép- és kisfeszültség, transzformátorállomás, mérés.', ['sz', 'el']],
+       ['Átvitel', 'Nagyfeszültségű távvezeték-hálózat és rendszerirányítás.', ['sz']],
+       ['Termelés', 'Erőművek, megújulók, tárolás: az energia forrása.', ['sz', 'al']]],
+   B: [['Biztonságtechnika', 'Riasztó, kamera, beléptető, kaputelefon, tűzjelző.', ['ez', 'kv']],
+       ['Épületautomatizálás', 'KNX, DALI, Modbus, okosotthon-központok.', ['ez', 'kv']],
+       ['Távközlés', 'Strukturált hálózat, optika, rádió, szolgáltatói hálózatok.', ['kv', 'sz']],
+       ['Elektronika, mikrochip', 'Áramkörtervezés, beágyazott rendszerek, félvezetőgyártás.', ['al', 'sz']]] },
+ { n: 'Általános–specifikus', q: 'Az elvtől a cikkszámig', a: 'Általános', b: 'Specifikus',
+   A: [['Szakmai szabályok', 'Az MSZ HD 60364 sorozat, tűzvédelmi előírások, szolgáltatói műszaki követelmények.', ['el']],
+       ['Műszaki elvek', 'Érintésvédelmi módok, szelektivitás, feszültségesés, terhelhetőség.', ['tk', 'el']],
+       ['Méretezés', 'Teljesítményigény, egyidejűség, keresztmetszet-választás.', ['tk']],
+       ['Természettörvények', 'Ami minden szabály mögött áll.', ['al']]],
+   B: [['Termékcsalád', 'Például B és C karakterisztikájú kismegszakítók, AC, A, F és B típusú áram-védőkapcsolók.', ['ez']],
+       ['Gyártói rendszer', 'Egy szerelvénycsalád kerete, burkolata, betétje és ami kompatibilis vele.', ['ez']],
+       ['Típus és adatlap', 'Egy konkrét cikkszám műszaki adatai, a letöltött adatlappal együtt.', ['ez']],
+       ['A mi munkánk', 'Egy adott terv a Plannerben, egy adott munka mappája.', ['ez']]] },
+ { n: 'Hagyományos–modern', q: 'Melyik korszak megoldása?', a: 'Hagyományos', b: 'Modern',
+   A: [['Mai hagyományos', 'Mechanikus kapcsoló, hagyományos aljzat, kismegszakító, izzó és fénycső.', ['ez']],
+       ['Régi lakások', 'Alumínium vezeték, kétvezetős hálózat, nullázás (TN-C), olvadóbiztosító.', ['ez', 'tk', 'el']],
+       ['Örökölt rendszerek', 'Textilszigetelésű vezeték, porcelán biztosítótábla, falon kívüli szerelés.', ['ez']],
+       ['A villamosítás története', 'Hogyan jutottunk ide, és miért ilyenek a mai szabályok.', ['al']]],
+   B: [['Okos szerelvények', 'Wi-Fi-s, Zigbee-s és Z-Wave-es kapcsolók, dimmerek, fogyasztásmérő aljzatok.', ['ez', 'kv']],
+       ['Okosotthon-rendszerek', 'KNX, Matter és Thread, Home Assistant, ESPHome.', ['ez', 'kv']],
+       ['Energiamenedzsment', 'Napelem, akkumulátor, hőszivattyú, autótöltő, terhelésvezérlés.', ['ez', 'sz']],
+       ['Ami jön', 'Egyenáramú lakáshálózat, félvezetős megszakító, kétirányú autótöltés.', ['al', 'ez']]] },
+ { n: 'Építkezés', q: 'Kivel dolgozunk egy helyen?', a: 'Szerkezet', b: 'Gépészet, befejezés',
+   A: [['Kőműves', 'Falazás, vakolás, vésés: a dobozok síkja és a horonyvésés ideje.', ['ts', 'rg']],
+       ['Szárazépítő', 'Gipszkarton fal és álmennyezet: csövezés a lapozás előtt, betét a nehéz tárgyakhoz.', ['ts', 'rg']],
+       ['Ács, tetőfedő, bádogos', 'Tetőszerkezet, villámvédelmi felfogó, napelem-rögzítés, tetőátvezetés.', ['ts', 'rg']],
+       ['Földmunka, alapozás', 'Alapföldelő a betonozás előtt, földkábel és védőcső a mérőhelyhez.', ['ts', 'el']]],
+   B: [['Víz-, gáz-, fűtésszerelő', 'Nyomvonalak keresztezése, EPH-bekötés, kazán- és bojlerkiállás.', ['ts', 'el']],
+       ['Burkoló', 'Csempeosztás, fürdőszobai zónák, padlófűtés-érzékelő.', ['ts', 'el']],
+       ['Festő-mázoló', 'A szerelvényezés sorrendje, vakfedelek, takarás.', ['ts']],
+       ['Asztalos, konyhabútor', 'Konyhai kiállások a bútorterv szerint, pultvilágítás.', ['ts', 'ez']]] }
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const RINGS = [130, 215, 300, 385];
+const state = { axis: 0, node: null, sec: null };
+const nodes = [];
+AX.forEach((ax, k) => {
+  [['A', ax.a, k], ['B', ax.b, k + 8]].forEach(([side, pole, idx]) => {
+    const ang = (-90 + idx * 22.5) * Math.PI / 180;
+    ax[side].forEach((nd, r) => {
+      nodes.push({ id: k + side + (r + 1), axis: k, side, pole, ring: r + 1, t: nd[0], d: nd[1], s: nd[2], ang, x: Math.cos(ang) * RINGS[r], y: Math.sin(ang) * RINGS[r] });
+    });
+  });
+});
+
+// ---- build map
+const svg = document.getElementById('map');
+const gRings = el('g', {}, svg), gSpokes = el('g', {}, svg), gNodes = el('g', {}, svg), gLabels = el('g', {}, svg), gPoles = el('g', {}, svg);
+RINGS.forEach((r, i) => {
+  el('circle', { cx: 0, cy: 0, r, fill: 'none', stroke: 'rgba(232,240,246,.13)', 'stroke-dasharray': '3 6' }, gRings);
+  const a = (-90 + 11.25) * Math.PI / 180;
+  const t = el('text', { x: Math.cos(a) * r + 4, y: Math.sin(a) * r - 4, fill: '#6f7880', 'font-family': 'var(--mono)', 'font-size': 13 }, gRings); t.textContent = i + 1;
+});
+const spokes = [];
+for (let idx = 0; idx < 16; idx++) {
+  const ang = (-90 + idx * 22.5) * Math.PI / 180, k = idx % 8;
+  const ln = el('line', { x1: Math.cos(ang) * 78, y1: Math.sin(ang) * 78, x2: Math.cos(ang) * 410, y2: Math.sin(ang) * 410, stroke: 'rgba(232,240,246,.22)', 'stroke-width': 1.5, class: 'spoke' }, gSpokes);
+  spokes.push({ ln, k });
+  const pole = idx < 8 ? AX[k].a : AX[k].b;
+  const R = 440, x = Math.cos(ang) * R, y = Math.sin(ang) * R, c = Math.cos(ang);
+  const anchor = c > 0.25 ? 'start' : c < -0.25 ? 'end' : 'middle';
+  const g = el('g', { class: 'polelabel', tabindex: 0, role: 'button', 'aria-label': AX[k].n + ': ' + pole, style: 'cursor:pointer' }, gPoles);
+  const dy = Math.sin(ang) < -0.9 ? -10 : Math.sin(ang) > 0.9 ? 14 : 0;
+  const t1 = el('text', { x, y: y + dy, 'text-anchor': anchor, 'font-family': 'var(--voice)', 'font-size': 28, 'font-weight': 600, 'letter-spacing': '.06em', fill: '#e8f0f6' }, g); t1.textContent = pole.toUpperCase();
+  const t2 = el('text', { x, y: y + dy + 23, 'text-anchor': anchor, 'font-family': 'var(--mono)', 'font-size': 15, fill: '#6f7880' }, g); t2.textContent = AX[k].n.toLowerCase();
+  g.addEventListener('click', () => { state.axis = k; state.node = null; render(); });
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state.axis = k; state.node = null; render(); } });
+  spokes[spokes.length - 1].label = g;
+}
+// centre
+el('circle', { cx: 0, cy: 0, r: 76, fill: '#17232c', stroke: '#e8a873', 'stroke-width': 1.5 }, svg);
+const ct = el('text', { x: 0, y: -6, 'text-anchor': 'middle', 'font-family': 'var(--voice)', 'font-size': 26, 'font-weight': 600, fill: '#e8a873', 'letter-spacing': '.03em' }, svg); ct.textContent = 'Villanyszerelés';
+const ct2 = el('text', { x: 0, y: 16, 'text-anchor': 'middle', 'font-family': 'var(--mono)', 'font-size': 14, fill: '#a6afb7' }, svg); ct2.textContent = 'lakossági';
+const ct3 = el('text', { x: 0, y: 34, 'text-anchor': 'middle', 'font-family': 'var(--mono)', 'font-size': 14, fill: '#a6afb7' }, svg); ct3.textContent = 'a mérő után';
+
+const SECHEX = { tk: '#93d3e6', al: '#b9a6e6', sz: '#e8a873', ez: '#8bcca1', ts: '#e3be7b', rg: '#e4877d', kv: '#8fa8e8', el: '#e3a3c4' };
+nodes.forEach(n => {
+  const g = el('g', { class: 'node', tabindex: 0, role: 'button', 'aria-label': n.t, style: 'cursor:pointer' }, gNodes);
+  el('circle', { cx: n.x, cy: n.y, r: 16, fill: 'transparent' }, g);
+  n.dot = el('circle', { cx: n.x, cy: n.y, r: 7.5, fill: SECHEX[n.s[0]], stroke: '#0a141c', 'stroke-width': 2 }, g);
+  if (n.s[1]) n.dot2 = el('circle', { cx: n.x, cy: n.y, r: 2.6, fill: SECHEX[n.s[1]] }, g);
+  const tt = el('title', {}, g); tt.textContent = n.t;
+  n.g = g;
+  const c = Math.cos(n.ang), s = Math.sin(n.ang);
+  // label perpendicular-ish: to the right of the spoke direction
+  const px = -s, py = c;
+  const side = (px >= 0) ? 1 : -1;
+  const lx = n.x + px * 14 * side + (Math.abs(c) > 0.9 ? 0 : 0), ly = n.y + py * 14 * side + 5;
+  n.label = el('text', { x: lx, y: ly, 'text-anchor': (px * side) > 0.2 ? 'start' : (px * side) < -0.2 ? 'end' : 'middle', 'font-family': 'var(--sans)', 'font-size': 21, 'font-weight': 500, fill: '#e8f0f6', 'paint-order': 'stroke', stroke: '#121c24', 'stroke-width': 5, 'stroke-linejoin': 'round' }, gLabels);
+  n.label.textContent = n.t;
+  const pick = () => { state.axis = n.axis; state.node = n.id; render(); };
+  g.addEventListener('click', pick);
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+});
+
+// section chips
+const chipsBox = document.getElementById('secchips');
+Object.entries(SEC).forEach(([id, s]) => {
+  const b = h('button', 'chip'); b.type = 'button'; b.dataset.sec = id;
+  b.innerHTML = `<i style="background:${s.c}"></i>${esc(s.n)} <b>${nodes.filter(n => n.s.includes(id)).length}</b>`;
+  b.addEventListener('click', () => { state.sec = state.sec === id ? null : id; render(); });
+  chipsBox.appendChild(b);
+});
+
+const panel = document.getElementById('panel');
+function chipHTML(ids) { return ids.map(id => `<span class="chip solid"><i style="background:${SEC[id].c}"></i>${esc(SEC[id].n)}</span>`).join(''); }
+function rung(n) {
+  return `<button type="button" class="rung" data-id="${n.id}"><span class="n">${n.ring}</span><span><span class="t"><i style="background:${SEC[n.s[0]].c}"></i>${esc(n.t)}</span><span class="d">${esc(n.d)}</span></span></button>`;
+}
+function render() {
+  const ax = AX[state.axis];
+  spokes.forEach(sp => {
+    const on = sp.k === state.axis;
+    sp.ln.setAttribute('stroke', on ? '#93d3e6' : 'rgba(232,240,246,.2)');
+    sp.ln.setAttribute('stroke-width', on ? 2.5 : 1.5);
+    sp.label.querySelector('text').setAttribute('fill', on ? '#93d3e6' : '#e8f0f6');
+  });
+  nodes.forEach(n => {
+    const onAxis = n.axis === state.axis;
+    const inSec = !state.sec || n.s.includes(state.sec);
+    const sel = n.id === state.node;
+    n.g.style.opacity = inSec ? (onAxis || state.sec ? 1 : 0.55) : 0.12;
+    n.dot.setAttribute('r', sel ? 11 : onAxis ? 8.5 : 7);
+    n.dot.setAttribute('stroke', sel ? '#e8f0f6' : '#0a141c');
+    n.label.style.display = (onAxis && inSec) || (state.sec && inSec && !onAxis && false) ? '' : 'none';
+    n.label.setAttribute('fill', sel ? '#93d3e6' : '#e8f0f6');
+  });
+  chipsBox.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sec === state.sec));
+
+  const nav = `<div class="axisnav">${AX.map((a, i) => `<button type="button" data-ax="${i}" class="${i === state.axis ? 'on' : ''}">${esc(a.n)}</button>`).join('')}</div>`;
+  if (state.node) {
+    const n = nodes.find(x => x.id === state.node);
+    panel.innerHTML = `${nav}<div class="nodecard">
+      <span class="label">${esc(ax.n)} · ${esc(n.pole)} · gyűrű ${n.ring}</span>
+      <h3 style="font-size:30px">${esc(n.t)}</h3>
+      <p class="desc">${esc(n.d)}</p>
+      <span class="label">Kötet</span><div class="chips">${chipHTML(n.s)}</div>
+      <span class="label">Gyűrű ${n.ring}</span><p style="color:var(--dim);font-size:13.5px">${['Holnapi munka: a helyszínen is előveszed.', 'Szakmai háttér: a döntések mögött áll.', 'Tágabb kör: a szomszéd terület, amit ismerni érdemes.', 'Horizont: a terület pereme, olvasmányként.'][n.ring - 1]}</p>
+      <div><button type="button" id="backax">← ${esc(ax.n)} tengely</button></div></div>`;
+    panel.querySelector('#backax').addEventListener('click', () => { state.node = null; render(); });
+  } else {
+    const A = nodes.filter(n => n.axis === state.axis && n.side === 'A').sort((p, q) => q.ring - p.ring);
+    const B = nodes.filter(n => n.axis === state.axis && n.side === 'B');
+    panel.innerHTML = `${nav}<div><span class="label">Tengely ${state.axis + 1} / 8</span><h3 style="font-size:30px;margin-top:4px">${esc(ax.n)}</h3><p style="color:var(--dim)">${esc(ax.q)}</p></div>
+      <div class="ladder"><div class="pole">↑ ${esc(ax.a)}</div>${A.map(rung).join('')}
+      <div class="centre-rung">● Villanyszerelés</div>${B.map(rung).join('')}<div class="pole">↓ ${esc(ax.b)}</div></div>`;
+  }
+  panel.querySelectorAll('[data-ax]').forEach(b => b.addEventListener('click', () => { state.axis = +b.dataset.ax; state.node = null; render(); }));
+  panel.querySelectorAll('.rung').forEach(b => b.addEventListener('click', () => { state.node = b.dataset.id; render(); }));
+}
+render();
+
+// ---- volumes
+const vols = document.getElementById('vols');
+Object.entries(SEC).forEach(([id, s]) => {
+  const v = h('div', 'solid vol'); v.style.setProperty('--c', s.c);
+  v.innerHTML = `<h3>${esc(s.n)} <span>${nodes.filter(n => n.s.includes(id)).length} pont</span></h3><p>${esc(s.d)}</p><ul>${s.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul><span class="src">${esc(s.src)}</span>`;
+  vols.appendChild(v);
+});
+const sx = h('div', 'solid vol'); sx.style.setProperty('--c', 'var(--line-strong)');
+sx.innerHTML = `<h3>Szótár <span>minden kötethez</span></h3><p>Minden szakszó három nyelven, a keresést segítő szinonimákkal és tipikus termékmegnevezésekkel.</p><ul><li>HU · EN · DE keresőszó</li><li>Köznyelvi és szakmai név (tipli = dübel)</li><li>Hol vásárolható: bolt típusa</li></ul><span class="src">saját gyűjtés</span>`;
+vols.appendChild(sx);
+
+// ---- rögzítéstechnika
+const MAT = [
+ { id: 'beton', n: 'Beton, vasbeton', rec: 'Szürke, nagyon kemény; finom szürke por. Ütés nélkül alig halad a fúró. Ha vasba ütközik, a fúró megakad, fémes hang.',
+   hammer: true, bit: 'SDS-plus keményfém kőzetfúró (2 vagy 4 élű); vasalás közelében vas- és vezetékkereső előtte.',
+   loads: [['Könnyű', 'Nylon terpesztődübel (6–8 mm) + forgácslapcsavar.'], ['Közepes', 'Nagyobb nylon dübel vagy betoncsavar dübel nélkül.'], ['Nehéz', 'Acél terpesztő horgony (csavaros vagy beütős), vegyi dübel.']],
+   screw: 'Forgácslapcsavar a dübel átmérőjéhez; betoncsavar közvetlenül a furatba; menetes szár anyával a horgonyhoz.',
+   traps: ['Panelházban az üreges födémpanel üregében a terpesztődübel nem fog: üreges falhoz való dübel vagy vegyi horgony szitahüvellyel.', 'Szélhez közel és repedt betonban a terpesztő horgony szétfeszíti az anyagot.', 'Födémben és falban futó vezeték: fúrás előtt keresővel.'],
+   terms: { hu: ['SDS-plus fúrószár 6 mm', 'betoncsavar', 'terpesztő horgony M8', 'vegyi dübel'], en: ['SDS-plus masonry bit', 'concrete screw anchor', 'wedge anchor', 'chemical anchor'], de: ['SDS-plus Hammerbohrer', 'Betonschraube', 'Bolzenanker', 'Verbundmörtel'] },
+   shop: 'Alapdübel: barkácsáruház, vasbolt. Horgony és vegyi dübel: rögzítéstechnikai szakkereskedés.' },
+ { id: 'porotherm', n: 'Üreges kerámia falazóblokk', rec: 'Vöröses-narancs por. A fúró váltakozva halad, majd hirtelen „beszakad” egy üregbe.',
+   hammer: false, bit: 'Kőzetfúró, ütés nélkül (fúró üzemmód). Ütve a belső bordák szétpattannak, és a furat kitágul.',
+   loads: [['Könnyű', 'Hosszú univerzális nylon dübel, amely az üregben csomóba ugrik.'], ['Közepes', 'Hosszú keretdübel a hozzá való csavarral.'], ['Nehéz', 'Injektáló habarcs szitahüvellyel és menetes szárral.']],
+   screw: 'Forgácslapcsavar; hossza = dübel hossza + a rögzített tárgy vastagsága. A keretdübelhez a gyári csavar.',
+   traps: ['A vakolat vastagságát a dübel hosszába be kell számítani: a vakolat nem tart.', 'Szerelvénydoboz helye: koronafúró, ütés nélkül, különben kitörik a borda.', 'Rövid dübel az első üregben forog, és nem tart.'],
+   terms: { hu: ['dübel üreges téglába', 'keretdübel 10x100', 'injektáló habarcs szitahüvely'], en: ['hollow brick anchor', 'frame fixing', 'injection mortar mesh sleeve'], de: ['Hohlziegel Dübel', 'Rahmendübel', 'Injektionsmörtel Siebhülse'] },
+   shop: 'Univerzális dübel: barkácsáruház. Injektáló rendszer: szakkereskedés, egy gyártó habarcsa a saját hüvelyével.' },
+ { id: 'ytong', n: 'Pórusbeton', rec: 'Fehér vagy világosszürke, könnyű és puha; a fúró szinte magától megy, lisztszerű fehér por.',
+   hammer: false, bit: 'Ütés nélkül; a dübel adatlapja gyakran kisebb fúróátmérőt ír elő, hogy a dübel feszüljön.',
+   loads: [['Könnyű', 'Pórusbeton dübel (spirálbordás műanyag vagy fém), becsavarva vagy beütve.'], ['Közepes', 'Pórusbetonhoz gyártott hosszú dübel vagy keretdübel.'], ['Nehéz', 'Vegyi dübel pórusbetonhoz, kúpos furattal, ha a gyártó előírja.']],
+   screw: 'A dübelhez írt csavar; forgácslapcsavar.',
+   traps: ['A sima nylon dübel kifordul: csak nagyon könnyű tárgyhoz jó.', 'A túl nagy furat nem javítható ugyanazzal a dübellel.', 'Nehéz tárgyhoz (bojler, felső szekrény) előre kell tervezni.'],
+   terms: { hu: ['gázbeton dübel', 'pórusbeton tipli'], en: ['aircrete anchor', 'AAC anchor'], de: ['Porenbetondübel'] },
+   shop: 'Barkácsáruház, szakkereskedés; a falazóanyag gyártója is ajánl rögzítést.' },
+ { id: 'gk', n: 'Gipszkarton', rec: 'Kopogtatva üreges hang, papírfelület, fehér gipszpor. Mögötte fém profil (CW, UW) vagy fa léc.',
+   hammer: false, bit: 'Ütés nélkül; fafúró vagy HSS fúró. Szerelvénydobozhoz 68 mm-es koronafúró, üreges falba való dobozzal.',
+   loads: [['Könnyű', 'Becsavarható gipszkarton dübel (műanyag vagy fém).'], ['Közepes', 'Fém üreges fali dübel vagy billenő dübel.'], ['Nehéz', 'Csak a profilba vagy az előre beépített fa vagy OSB betétbe.']],
+   screw: 'Gipszkarton csavar a profilhoz, forgácslapcsavar a fa betétbe, a dübelhez a gyári csavar.',
+   traps: ['Bojler, felső szekrény, TV-konzol: a betétet a lapozás előtt kell beépíteni. Ezt a szárazépítővel kell egyeztetni.', 'A profilokban vezeték futhat: a nyomvonalakat dokumentálni kell.', 'Dupla lapnál hosszabb dübel kell.'],
+   terms: { hu: ['üreges fali dübel', 'billenő dübel', 'gipszkarton doboz 68'], en: ['hollow wall anchor', 'toggle bolt', 'drywall box 68 mm'], de: ['Hohlraumdübel', 'Kippdübel', 'Hohlwanddose'] },
+   shop: 'Barkácsáruház; a dobozok villamossági nagykereskedésben.' }
+];
+let curMat = 'beton';
+const mtabs = document.getElementById('mtabs'), mcard = document.getElementById('mcard');
+MAT.forEach(m => { const b = h('button', '', esc(m.n)); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.m = m.id; b.addEventListener('click', () => { curMat = m.id; renderMat(); }); mtabs.appendChild(b); });
+function renderMat() {
+  const m = MAT.find(x => x.id === curMat);
+  mtabs.querySelectorAll('button').forEach(b => { const on = b.dataset.m === curMat; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  mcard.innerHTML = `
+    <div class="field"><span class="label">Anyag</span><h3 style="font-size:26px">${esc(m.n)}</h3></div>
+    <div class="field"><span class="label">Felismerés</span><p class="v">${esc(m.rec)}</p></div>
+    <div class="field"><span class="label">Fúrás</span><div class="drillbar"><span class="pill ${m.hammer ? 'yes' : 'no'}">${m.hammer ? 'ütve fúrható' : 'ütés nélkül'}</span></div><p class="v">${esc(m.bit)}</p></div>
+    <div class="field"><span class="label">Csavar</span><p class="v">${esc(m.screw)}</p></div>
+    <div class="field wide"><span class="label">Dübel terhelés szerint</span><div class="loads">${m.loads.map(l => `<div class="load"><span class="label">${esc(l[0])}</span>${esc(l[1])}</div>`).join('')}</div></div>
+    <div class="field wide"><span class="label">Buktatók</span><ul>${m.traps.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="field wide"><span class="label">Keresőszavak</span><div class="terms">${['hu', 'en', 'de'].map(l => `<div><span class="label">${l.toUpperCase()}</span>${m.terms[l].map(t => `<span>${esc(t)}</span>`).join('')}</div>`).join('')}</div></div>
+    <div class="field wide"><span class="label">Hol kapható</span><p class="v">${esc(m.shop)}</p></div>`;
+}
+renderMat();
+
+// ---- kommunikációs vonalak
+const LINES = [
+ { id: 'mains', n: 'Hálózati 50 Hz', g: 'viszonyítási pont', f: [50, 50], t: 'sine', med: 'Erősáramú vezeték (L, N, PE)', sig: 'Szinuszos váltakozó feszültség, 230 V', rate: '—', dist: '—', con: 'Aljzat, sorkapocs', home: 'Nem adatvonal. A skála viszonyítási pontja, és ezen a vezetéken utazik a PLC-jel is.' },
+ { id: 'analog', n: '0–10 V · 4–20 mA', g: 'analóg jelszint', f: [1, 10], t: 'dc', med: '2 ér, gyakran árnyékolt', sig: 'Analóg feszültség- vagy áramszint, közel egyenáram', rate: 'folyamatos érték, nem bitfolyam', dist: '4–20 mA: több száz méter; 0–10 V: rövidebb', con: 'Sorkapocs', home: 'LED-tápegységek fényerő-vezérlése (1–10 V), szenzorok, hőszivattyú-bemenetek.' },
+ { id: 'dali', n: 'DALI', g: 'világításbusz', f: [300, 2400], t: 'manchester', med: '2 ér; futhat a tápkábelben is', sig: 'Manchester-kódolt alapsávú jel a buszfeszültségen', rate: '1200 bit/s', dist: 'legfeljebb 300 m, vonalanként 64 eszköz', con: 'Sorkapocs (DA+, DA−)', home: 'Világításvezérlés: lámpatestenként címezhető fényerő és jelenetek.' },
+ { id: 'knx', n: 'KNX TP', g: 'épületbusz', f: [2000, 20000], t: 'baseband', med: 'Zöld buszkábel, 2×2×0,8 mm, árnyékolt', sig: 'Alapsávú jel a kb. 30 V-os egyenfeszültségű buszon', rate: '9600 bit/s', dist: 'vonalszegmensenként legfeljebb 1000 m', con: 'Piros-fekete buszkapocs', home: 'Épületautomatizálás: kapcsolók, redőny, fűtés és jelenetek egy közös buszon.' },
+ { id: 'rs485', n: 'RS-485 · Modbus RTU', g: 'terepi busz', f: [5000, 120000], t: 'diff', med: 'Csavart érpár, árnyékolt, 120 Ω-os lezárással', sig: 'Differenciális alapsávú jel', rate: 'jellemzően 9,6–115,2 kbit/s', dist: 'legfeljebb kb. 1200 m', con: 'Sorkapocs (A, B, GND)', home: 'Fogyasztásmérők, inverterek, hőszivattyúk és vezérlők összekötése.' },
+ { id: 'plcn', n: 'PLC szűksávú', g: 'CENELEC A sáv', f: [3000, 95000], t: 'carrier', med: 'Az erősáramú hálózat vezetői', sig: 'Modulált vivő az 50 Hz-es feszültségre ültetve', rate: 'néhány kbit/s-tól néhány tíz kbit/s-ig', dist: 'a kisfeszültségű hálózaton, a transzformátorig', con: 'közvetlenül a hálózaton', home: 'Okos fogyasztásmérők kommunikációja az áramszolgáltató felé.' },
+ { id: 'dsl', n: 'Telefon érpár · VDSL2', g: 'előfizetői vonal', f: [25000, 35e6], t: 'ofdm', med: 'Csavart réz érpár (telefonvonal)', sig: 'Sokvivős (DMT) moduláció', rate: 'rövid vonalon több száz Mbit/s; a távolsággal gyorsan csökken', dist: 'néhány száz méter fölött jelentősen lassul', con: 'RJ11, telefoncsatlakozó', home: 'Vezetékes internet a régi telefonhálózaton; a lakásban a régi telefonkábelek.' },
+ { id: 'plcb', n: 'PLC szélessávú', g: 'HomePlug AV2', f: [2e6, 86e6], t: 'ofdm', med: 'A lakás erősáramú hálózata', sig: 'OFDM a hálózati vezetéken', rate: 'névlegesen több száz Mbit/s, a valóságban jóval kevesebb', dist: 'egy mérőn belül; a hálózat állapotától függ', con: 'konnektoros adapter', home: 'Powerline adapterek: hálózat ott, ahol nincs adatkábel.' },
+ { id: 'eth', n: 'Ethernet csavart érpár', g: 'Cat5e · Cat6 · Cat6A', f: [1e6, 500e6], t: 'diff', med: '4 csavart érpár (U/UTP, F/UTP, S/FTP)', sig: 'Differenciális, többszintű kódolás mind a négy páron', rate: '1 Gbit/s (Cat5e) – 10 Gbit/s (Cat6A)', dist: '100 m csatornahossz', con: 'RJ45, keystone modul, patch panel', home: 'Strukturált lakáshálózat; PoE-s kamera és Wi-Fi pont; okosotthon-központ.' },
+ { id: 'coax', n: 'Koax · antenna és kábel-TV', g: 'DVB-T · DVB-C', f: [47e6, 862e6], t: 'carrier', med: '75 Ω-os koaxiális kábel', sig: 'Modulált rádiófrekvenciás csatornák', rate: 'csatornánként néhány tíz Mbit/s', dist: 'a csillapítástól függ; erősítővel hosszabb', con: 'F-csatlakozó, IEC antennacsatlakozó', home: 'TV-aljzatok, antenna- és kábelhálózat, társasházi elosztás.' },
+ { id: 'sat', n: 'Koax · műholdas KF', g: 'LNB után', f: [950e6, 2150e6], t: 'carrier', med: '75 Ω-os koax, jobb árnyékolással', sig: 'A fej (LNB) által lekevert középfrekvenciás jel', rate: 'sok transzponder egyszerre', dist: 'néhány tíz méter erősítés nélkül', con: 'F-csatlakozó, multikapcsoló', home: 'A parabolától a vevőkig; multikapcsolós társasházi rendszerek.' },
+ { id: 'srd', n: '868 MHz sáv', g: 'Z-Wave · LoRa · riasztók', f: [863e6, 870e6], t: 'carrier', med: 'rádió', sig: 'Keskenysávú rádiós moduláció', rate: 'Z-Wave: legfeljebb 100 kbit/s; LoRa: nagyon lassú', dist: 'jól átjut a falakon; LoRa akár kilométerekre', con: '—', home: 'Z-Wave okosotthon, vezeték nélküli riasztóérzékelők, LoRa szenzorok.' },
+ { id: 'ism', n: '2,4 GHz sáv', g: 'Wi-Fi · Zigbee · Thread · BLE', f: [2.4e9, 2.4835e9], t: 'ofdm', med: 'rádió', sig: 'Wi-Fi: OFDM; Zigbee és Thread: DSSS; BLE: GFSK', rate: 'Zigbee 250 kbit/s – Wi-Fi több száz Mbit/s', dist: 'lakáson belül; a falak és a födém sokat csillapítanak', con: '—', home: 'A legtöbb okos eszköz itt kommunikál; zsúfolt sáv.' },
+ { id: 'w5', n: 'Wi-Fi 5 GHz', g: 'széles csatornák', f: [5.15e9, 5.875e9], t: 'ofdm', med: 'rádió', sig: 'OFDM, széles csatornák', rate: 'Gbit/s nagyságrend', dist: 'rövidebb, a falakon rosszabbul jut át', con: '—', home: 'Gyors lakáson belüli Wi-Fi; nagyobb lakásban több hozzáférési pont kell.' },
+ { id: 'w6', n: 'Wi-Fi 6 GHz', g: 'Wi-Fi 6E · Wi-Fi 7', f: [5.945e9, 6.425e9], t: 'ofdm', med: 'rádió', sig: 'OFDM, nagyon széles csatornák', rate: 'Gbit/s nagyságrend', dist: 'nagyjából helyiségenként', con: '—', home: 'Csak új eszközökkel: zavarmentes és gyors, de rövid hatótávolságú.' },
+ { id: 'smf', n: 'Optika · egymódusú', g: '1310 · 1490 · 1550 nm', f: [193.4e12, 228.8e12], t: 'light', med: 'Üvegszál, kb. 9 µm-es mag (OS2)', sig: 'Fényimpulzusok több hullámhosszon', rate: 'GPON: 2,5 Gbit/s le, 1,25 Gbit/s fel', dist: 'kilométerek, akár tíz kilométerek', con: 'SC/APC (zöld), LC', home: 'FTTH: a szolgáltató optikája a lakás optikai végpontjáig (ONT).' },
+ { id: 'mmf', n: 'Optika · multimódusú', g: '850 nm', f: [352.7e12, 352.7e12], t: 'light', med: 'Üvegszál, 50 µm-es mag (OM3, OM4)', sig: 'Fényimpulzusok 850 nm-en (közeli infravörös)', rate: '1–10 Gbit/s és felette', dist: 'néhány száz méter', con: 'LC, SC', home: 'Lakásban ritka; irodákban és szerverteremben jellemző.' }
+];
+const FMIN = 0, FMAX = 15, SW = 1000, PADL = 20, PADR = 20;
+const fx = f => PADL + (Math.log10(Math.max(f, 1)) - FMIN) / (FMAX - FMIN) * (SW - PADL - PADR);
+const fmtF = f => f >= 1e12 ? (f / 1e12).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' THz' : f >= 1e9 ? (f / 1e9).toLocaleString('hu-HU', { maximumFractionDigits: 3 }) + ' GHz' : f >= 1e6 ? (f / 1e6).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' MHz' : f >= 1e3 ? (f / 1e3).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' kHz' : f.toLocaleString('hu-HU') + ' Hz';
+const sig3 = v => Number(v.toPrecision(3)).toLocaleString('hu-HU');
+const fmtL = f => { const l = 299792458 / f; return l >= 1e3 ? sig3(l / 1e3) + ' km' : l >= 1 ? sig3(l) + ' m' : l >= 1e-2 ? sig3(l * 100) + ' cm' : l >= 1e-3 ? sig3(l * 1e3) + ' mm' : l >= 1e-6 ? sig3(l * 1e6) + ' µm' : sig3(l * 1e9) + ' nm'; };
+const KCOL = { sine: '#a6afb7', dc: '#e3be7b', manchester: '#e3a3c4', baseband: '#8bcca1', diff: '#93d3e6', carrier: '#e8a873', ofdm: '#8fa8e8', light: '#e4877d' };
+const KNAME = { sine: 'szinusz', dc: 'jelszint', manchester: 'Manchester-kód', baseband: 'alapsávú', diff: 'differenciális', carrier: 'modulált vivő', ofdm: 'sokvivős (OFDM)', light: 'fényimpulzus' };
+let curLine = 'eth';
+const spec = document.getElementById('spec');
+function buildSpec() {
+  spec.innerHTML = '';
+  // lanes
+  const lanes = [];
+  const sorted = LINES.slice().sort((a, b) => a.f[0] - b.f[0]);
+  sorted.forEach(L => {
+    const x1 = fx(L.f[0]), x2 = Math.max(fx(L.f[1]), x1 + 5), tw = 8 + L.n.length * 7.2;
+    L._left = x2 + tw > SW - 4;
+    const s0 = L._left ? x1 - tw : x1, s1 = L._left ? x2 : x2 + tw;
+    let lane = 0; while (lanes[lane] !== undefined && lanes[lane] > s0 - 6) lane++;
+    lanes[lane] = s1; L._x1 = x1; L._x2 = x2; L._lane = lane; L._s0 = s0; L._s1 = s1;
+  });
+  const nl = lanes.length, top = 46, rowH = 28, axisY = top + nl * rowH + 12, H = axisY + 64;
+  spec.setAttribute('viewBox', `0 0 ${SW} ${H}`);
+  // visible light reference
+  const vx1 = fx(400e12), vx2 = fx(790e12);
+  const defs = el('defs', {}, spec), lg = el('linearGradient', { id: 'vis', x1: 0, x2: 1, y1: 0, y2: 0 }, defs);
+  [['0', '#c0392b'], ['.3', '#e6b422'], ['.55', '#3fa34d'], ['.8', '#2f6fd1'], ['1', '#7b3fbf']].forEach(([o, c]) => el('stop', { offset: o, 'stop-color': c }, lg));
+  el('rect', { x: vx1, y: top - 6, width: vx2 - vx1, height: nl * rowH + 12, fill: 'url(#vis)', opacity: .22 }, spec);
+  const vt = el('text', { x: vx2, y: top - 12, 'text-anchor': 'end', 'font-family': 'var(--mono)', 'font-size': 11, fill: '#a6afb7' }, spec); vt.textContent = 'látható fény';
+  // decade grid + labels
+  const fl = ['1 Hz', '10 Hz', '100 Hz', '1 kHz', '10 kHz', '100 kHz', '1 MHz', '10 MHz', '100 MHz', '1 GHz', '10 GHz', '100 GHz', '1 THz', '10 THz', '100 THz', '1 PHz'];
+  for (let d = 0; d <= 15; d++) {
+    const x = fx(Math.pow(10, d)), major = d % 3 === 0;
+    el('line', { x1: x, x2: x, y1: top - 6, y2: axisY, stroke: major ? 'rgba(232,240,246,.2)' : 'rgba(232,240,246,.07)' }, spec);
+    if (major) {
+      const anc = d === 0 ? 'start' : d === 15 ? 'end' : 'middle';
+      const t = el('text', { x, y: 22, 'text-anchor': anc, 'font-family': 'var(--mono)', 'font-size': 12, fill: '#a6afb7' }, spec); t.textContent = fl[d];
+      const t2 = el('text', { x, y: axisY + 22, 'text-anchor': anc, 'font-family': 'var(--mono)', 'font-size': 12, fill: '#a6afb7' }, spec); t2.textContent = fmtL(Math.pow(10, d));
+    }
+  }
+  el('line', { x1: PADL, x2: SW - PADR, y1: axisY, y2: axisY, stroke: 'rgba(232,240,246,.34)' }, spec);
+  const ax1 = el('text', { x: PADL, y: 36, 'font-family': 'var(--mono)', 'font-size': 10.5, fill: '#6f7880', 'letter-spacing': '.12em' }, spec); ax1.textContent = 'FREKVENCIA';
+  const ax2 = el('text', { x: PADL, y: axisY + 42, 'font-family': 'var(--mono)', 'font-size': 10.5, fill: '#6f7880', 'letter-spacing': '.12em' }, spec); ax2.textContent = 'HULLÁMHOSSZ (λ = c / f, vákuumban)';
+  sorted.forEach(L => {
+    const y = top + L._lane * rowH, on = L.id === curLine;
+    const g = el('g', { tabindex: 0, role: 'button', 'aria-label': L.n, style: 'cursor:pointer' }, spec);
+    el('rect', { x: L._s0 - 3, y: y - 2, width: L._s1 - L._s0 + 6, height: rowH - 4, fill: on ? 'rgba(147,211,230,.12)' : 'transparent' }, g);
+    el('rect', { x: L._x1, y: y + 3, width: L._x2 - L._x1, height: rowH - 14, fill: KCOL[L.t], opacity: on ? 1 : .8 }, g);
+    const t = el('text', { x: L._left ? L._x1 - 6 : L._x2 + 6, 'text-anchor': L._left ? 'end' : 'start', y: y + rowH / 2 + 3, 'font-family': 'var(--sans)', 'font-size': 13, fill: on ? '#93d3e6' : '#e8f0f6', 'font-weight': on ? 600 : 400 }, g); t.textContent = L.n;
+    const pick = () => { curLine = L.id; buildSpec(); renderLine(); };
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+}
+function glyph(type) {
+  const W = 320, H = 90, m = H / 2, s = el('svg', { viewBox: `0 0 ${W} ${H}` });
+  el('line', { x1: 0, x2: W, y1: m, y2: m, stroke: 'rgba(232,240,246,.12)' }, s);
+  const c = KCOL[type]; let d = '';
+  const P = (pts) => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const bits = [1, 0, 1, 1, 0, 0, 1, 0, 1, 1];
+  if (type === 'sine') { const p = []; for (let x = 0; x <= W; x += 2) p.push([x, m - 30 * Math.sin(x / W * Math.PI * 4)]); d = P(p); }
+  else if (type === 'dc') { d = P([[0, m + 10], [90, m + 10], [90, m - 14], [200, m - 14], [200, m - 28], [W, m - 28]]); }
+  else if (type === 'baseband') { const p = []; const bw = W / bits.length; bits.forEach((b, i) => { const y = b ? m - 26 : m + 10; p.push([i * bw, y], [(i + 1) * bw, y]); }); d = P(p); }
+  else if (type === 'manchester') { const p = []; const bw = W / bits.length; bits.forEach((b, i) => { const a = b ? m + 24 : m - 24, z = b ? m - 24 : m + 24; p.push([i * bw, a], [i * bw + bw / 2, a], [i * bw + bw / 2, z], [(i + 1) * bw, z]); }); d = P(p); }
+  else if (type === 'diff') { const p = [], q = []; const bw = W / bits.length; bits.forEach((b, i) => { const y = b ? m - 22 : m - 6, y2 = b ? m + 22 : m + 6; p.push([i * bw, y], [(i + 1) * bw, y]); q.push([i * bw, y2], [(i + 1) * bw, y2]); }); d = P(p); el('path', { d: P(q), fill: 'none', stroke: c, 'stroke-width': 2, opacity: .55, 'stroke-dasharray': '5 3' }, s); }
+  else if (type === 'carrier') { const p = []; for (let x = 0; x <= W; x += 1) { const env = 0.35 + 0.65 * (bits[Math.floor(x / W * bits.length) % bits.length]); p.push([x, m - 30 * env * Math.sin(x / 3.2)]); } d = P(p); }
+  else if (type === 'ofdm') { const p = []; for (let x = 0; x <= W; x += 1) { let v = 0; for (let k = 1; k <= 7; k++) v += Math.sin(x / (2 + k * 1.7) + k * 1.3) / 7; p.push([x, m - 70 * v]); } d = P(p); }
+  else if (type === 'light') { const bw = W / bits.length; bits.forEach((b, i) => { if (b) { el('rect', { x: i * bw + 4, y: m - 28, width: bw - 8, height: 56, fill: c, opacity: .18 }, s); el('rect', { x: i * bw + 9, y: m - 20, width: bw - 18, height: 40, fill: c, opacity: .85 }, s); } }); d = 'M0 ' + (m + 34) + ' L' + W + ' ' + (m + 34); }
+  el('path', { d, fill: 'none', stroke: c, 'stroke-width': 2.2, 'stroke-linejoin': 'round' }, s);
+  return s;
+}
+function renderLine() {
+  const L = LINES.find(x => x.id === curLine), op = document.getElementById('onepager');
+  const fc = Math.sqrt(L.f[0] * L.f[1]);
+  const band = L.f[0] === L.f[1] ? fmtF(L.f[0]) : fmtF(L.f[0]) + ' – ' + fmtF(L.f[1]);
+  const lam = L.t === 'dc' ? 'gyakorlatilag nincs (közel egyenáram)' : (L.f[0] === L.f[1] ? fmtL(L.f[0]) : fmtL(L.f[1]) + ' – ' + fmtL(L.f[0]));
+  op.innerHTML = `<div class="op-left"><span class="label">Egyoldalas leírás · ${esc(L.g)}</span><div class="big">${esc(L.n)}</div>
+     <div id="glyph"></div><span class="sub">jelalak: ${esc(KNAME[L.t])} · sematikus</span>
+     <div class="op-nums"><div><span class="label">Sáv</span><span class="num">${esc(band)}</span></div><div><span class="label">Hullámhossz</span><span class="num">${esc(lam)}</span></div></div></div>
+     <div class="op-right">
+       <div class="field"><span class="label">Közeg</span><p class="v">${esc(L.med)}</p></div>
+       <div class="field"><span class="label">Jel</span><p class="v">${esc(L.sig)}</p></div>
+       <div class="field"><span class="label">Sebesség</span><p class="v">${esc(L.rate)}</p></div>
+       <div class="field"><span class="label">Távolság</span><p class="v">${esc(L.dist)}</p></div>
+       <div class="field"><span class="label">Csatlakozó</span><p class="v">${esc(L.con)}</p></div>
+       <div class="field"><span class="label">A lakásban</span><p class="v">${esc(L.home)}</p></div>
+     </div>`;
+  op.querySelector('#glyph').appendChild(glyph(L.t));
+  void fc;
+}
+buildSpec(); renderLine();
+
+// ---- társszakmák sequence
+const SEQ = [
+ ['Földmunka, alapozás', 'kivitelező, kőműves', 'Alapföldelő a sávalapba, a betonozás előtt; földkábel és védőcső a mérőhelyhez.', 'Betonozás után nincs második esély: a földelést utólag csak drágán lehet pótolni.'],
+ ['Falazás', 'kőműves', 'Áttörések, födém-átvezetések, a mérőhely és az elosztó fészke; a dobozhelyek kijelölése.', 'A koszorúba és a födémbe utólag vésni tilos vagy nagyon nehéz.'],
+ ['Tetőszerkezet', 'ács, tetőfedő, bádogos', 'Villámvédelmi felfogó és levezető, napelem-rögzítés, tetőátvezetések, csövezés a padláson.', 'A kész tetőhéjazat utólagos átfúrása beázáshoz vezet.'],
+ ['Gépészeti durvaszerelés', 'víz-, gáz-, fűtésszerelő', 'Kazán-, bojler- és termosztátkiállások; az EPH-bekötés helye a fém csöveken.', 'Nyomvonalak keresztezése, túl kicsi távolság a gázvezetéktől.'],
+ ['Villanyszerelés: durva', 'mi', 'Csövezés, dobozolás, vezetékbehúzás, elosztóváz.', 'Ami itt kimarad, később csak vésésből vagy falon kívül pótolható.', true],
+ ['Szárazépítés', 'szárazépítő', 'Csövezés a profilokban a lapozás előtt; fa vagy OSB betét a nehéz tárgyakhoz.', 'Lezárt fal mögött nem lehet javítani, a betét hiánya a bojlernél derül ki.'],
+ ['Vakolás, esztrich', 'kőműves', 'A dobozok síkba állítása a vakolatvastagsághoz; a padlóban futó csövek védelme.', 'A besüllyedt vagy kiálló doboz miatt a szerelvény nem ül fel jól.'],
+ ['Burkolás', 'burkoló', 'Dobozkiosztás a csempeosztáshoz; fürdőszobai zónák (MSZ HD 60364-7-701); padlófűtés-érzékelő.', 'Fugára vagy csempe szélére eső doboz; zónán belüli tiltott szerelvény.'],
+ ['Festés', 'festő-mázoló', 'Vakfedelek; a szerelvényezés csak a festés után.', 'Lefestett szerelvény, szennyezett doboz.'],
+ ['Konyhabútor, asztalos', 'asztalos', 'Kiállások a bútorterv szerint: sütő, főzőlap, mosogatógép, pultvilágítás.', 'A bútor eltakarja az aljzatot, vagy nem fér el a kiállás.'],
+ ['Villanyszerelés: finom, átadás', 'mi', 'Szerelvényezés, elosztó véglegesítése, érintésvédelmi mérés, dokumentáció, átadás.', 'A hiányos mérési jegyzőkönyv vagy dokumentáció az átadásnál derül ki.', true]
+];
+const seq = document.getElementById('seq');
+seq.innerHTML = `<div class="step seqhead"><span>#</span><span>Szakma</span><span>A villanyszerelő feladata addigra</span><span>Ha kimarad</span></div>` +
+  SEQ.map((s, i) => `<div class="step${s[4] ? ' ours' : ''}"><span class="no">${String(i + 1).padStart(2, '0')}</span><span class="who">${esc(s[0])}<small>${esc(s[1])}</small></span><span class="us">${esc(s[2])}</span><span class="risk">${esc(s[3])}</span></div>`).join('');
+})();
+</script>

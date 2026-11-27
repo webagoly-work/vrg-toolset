@@ -205,7 +205,7 @@ reading keeps them.
 | Id | Answer |
 |---|---|
 | **STL-Q1** Name | **B · Érintésnyom** (the lit-paths view; "Rétegfény" above is the study's working name for it) |
-| **STL-Q2** What goes to Labor | Answered with a direction: the ◢ Stack button opens a menu of the layers top to bottom (Rétegek last), each layer opening its own view. That layer menu is the **base outline of the whole Stack**; the session-workflow visualizer (Érintésnyom, fed by the Munkavászon's spine) sits **on top of it**. Built the same day on the Asztal and VRG Mobile (D-48). |
+| **STL-Q2** What goes to Labor | Answered with a direction: the ◢ Stack button opens a menu of the layers top to bottom (Rétegek last), each layer opening its own view. That layer menu is the **base outline of the whole Stack**; the session-workflow visualizer (Érintésnyom, fed by the Munkavászon's spine) sits **on top of it**. Built the same day on the Asztal and VRG Mobile (Mobile D-191). |
 | **STL-Q3** The byte-particle Viewer (S9/S10) | **B · build both**: Érintésnyom at node level on the kit `layerstack` (SVG) and the WebGL2 byte-particle Viewer |
 | **STL-Q4** Live source | **A · the event spine** (`SessionCanvas/serve.js`, call level, subagents) |
 | **STL-Q5** Inferred links | **B, with a condition:** inferred matches light too, dimmer and **in another colour**, and stored **separately in the data**, so the exact (real) lines can always be extracted on their own |
@@ -261,7 +261,7 @@ reading keeps them.
   opened from a file. Layer links point at the phone's own layer pages.
 - The page has a phone layout under 700 px (the stack full width, the plane list hidden, the panels below).
 - VRG Mobile: `erintesnyom` is an optional page of the Rétegverem feature, and the ◢ menu has an Érintésnyom row above
-  Rétegek (D-48's order on the Asztal too).
+  Rétegek (D-191's order on the Asztal too).
 - Checked here: the bundle built from the test stack is 0.75 MB, opens on a Pixel 7 viewport with every network request
   blocked, lists its sessions, replays and lights nodes, and fits the screen. It reaches the phone after one
   `node Mobile/stack/publish-stack.js --push` on the PC, after a build.

@@ -1,0 +1,88 @@
+/* grafit.css — the VRG Asztal in the Grafit look (shared/grafit.css holds the palette and the dot tokens). Everything here
+   is scoped to html[data-look="grafit"], so the Mélyvíz look is untouched. desk.js sets the attribute from the ui.look
+   setting (palette: "Megjelenés: Grafit / Mélyvíz", or the ◐ button in the title bar).
+   The terminal idea in three moves: frames become rings of dots, hairline rules become dotted rules, and the small
+   status marks become 3×3 dot LEDs. Content stays plain: rows, text and inputs keep their quiet hairlines. */
+
+/* ---------------------------------------------------------------- frames: a ring of dots (no markup change) */
+html[data-look="grafit"] :is([data-role="group"], .tile, .kpi, .bars, [data-role="dock"] button, [data-role="palette"] > *, [data-role="quick"] > *, [data-role="job"]) {
+  position: relative; }
+html[data-look="grafit"] :is([data-role="group"], [data-role="sh-win"], .tile, .prog, .kpi, .bars, [data-role="dock"] button,
+  [data-role="palette"] > *, [data-role="quick"] > *, [data-role="ask"], [data-role="sh-menu"], [data-role="sh-pick"], [data-role="job"]) {
+  border-color: transparent; }
+html[data-look="grafit"] :is([data-role="group"], [data-role="sh-win"], .tile, .prog, .kpi, .bars, [data-role="dock"] button,
+  [data-role="palette"] > *, [data-role="quick"] > *, [data-role="ask"], [data-role="sh-menu"], [data-role="sh-pick"], [data-role="job"])::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; padding: var(--gf-pitch);
+  background: radial-gradient(circle at center, var(--gf-c) var(--gf-r), transparent calc(var(--gf-r) + .55px)) 0 0 / var(--gf-pitch) var(--gf-pitch) round;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+/* lit where Mélyvíz drew an ice border: the focused window or group, hover and focus on the dock, the window being picked */
+html[data-look="grafit"] :is([data-role="group"][data-focus="1"], [data-role="sh-win"][data-focus="1"], [data-role="dock"] button:hover,
+  [data-role="dock"] button:focus-visible, [data-role="dock"] button.win[data-focus="1"], .prog[data-selected="1"], [data-role="palette"] > *, [data-role="quick"] > *) {
+  --gf-c: var(--gf-dot-lit); }
+html[data-look="grafit"] .tile:hover { --gf-c: rgba(230, 230, 227, .62); }
+html[data-look="grafit"] [data-role="dock"] button[data-level="dev"] { --gf-c: rgba(230, 230, 227, .2); }
+
+/* ---------------------------------------------------------------- rules: dotted where a hairline separated two regions */
+html[data-look="grafit"] :is([data-role="wbar"], [data-role="topstrip"], [data-role="sh-head"], [data-role="tabs"]) {
+  border-bottom-color: transparent;
+  background-image: radial-gradient(circle at center, var(--gf-dot) var(--gf-r), transparent calc(var(--gf-r) + .55px));
+  background-size: var(--gf-pitch) var(--gf-pitch); background-repeat: round no-repeat; background-position: 0 100%; }
+html[data-look="grafit"] [data-role="dock"] {
+  border-top-color: transparent;
+  background-image: radial-gradient(circle at center, var(--gf-dot) var(--gf-r), transparent calc(var(--gf-r) + .55px));
+  background-size: var(--gf-pitch) var(--gf-pitch); background-repeat: round no-repeat; background-position: 0 0; }
+html[data-look="grafit"] [data-role="dock"] .div {
+  background: radial-gradient(circle at center, var(--gf-dot) var(--gf-r), transparent calc(var(--gf-r) + .55px)) 0 0 / var(--gf-pitch) var(--gf-pitch);
+  background-repeat: no-repeat round; width: var(--gf-pitch); }
+/* split handles: a dotted spine down the middle */
+html[data-look="grafit"] [data-role="handle"] { background: radial-gradient(circle at center, var(--gf-dot) var(--gf-r), transparent calc(var(--gf-r) + .55px)) center / var(--gf-pitch) var(--gf-pitch); }
+html[data-look="grafit"] .split[data-dir="h"] > [data-role="handle"] { background-repeat: no-repeat round; }
+html[data-look="grafit"] .split[data-dir="v"] > [data-role="handle"] { background-repeat: round no-repeat; }
+html[data-look="grafit"] [data-role="handle"]:hover { --gf-dot: var(--gf-dot-lit); }
+html[data-look="grafit"] .dash-sec > h2 { color: var(--mv-text); padding-bottom: 6px;
+  background: radial-gradient(circle at center, var(--gf-dot) var(--gf-r), transparent calc(var(--gf-r) + .55px)) 0 100% / var(--gf-pitch) var(--gf-pitch);
+  background-repeat: round no-repeat; }
+
+/* ---------------------------------------------------------------- indicators: 3×3 dot LEDs, dot meters */
+html[data-look="grafit"] :is([data-role="topstrip"], [data-role="phone"]) .dot {
+  --gf-c: var(--mv-faint); width: 9px; height: 9px; border-radius: 0;
+  background: radial-gradient(circle at center, var(--gf-c) .95px, transparent 1.5px) 0 0 / 3px 3px; }
+html[data-look="grafit"] :is([data-role="topstrip"], [data-role="phone"]) .dot.ok { --gf-c: var(--mv-ok); background-color: transparent; }
+html[data-look="grafit"] :is([data-role="topstrip"], [data-role="phone"]) .dot.warn { --gf-c: var(--mv-warn); background-color: transparent; }
+html[data-look="grafit"] :is([data-role="topstrip"], [data-role="phone"]) .dot.crit { --gf-c: var(--mv-crit); background-color: transparent; }
+/* a running program: a short row of lit dots under its dock button */
+html[data-look="grafit"] [data-role="dock"] button[data-running="1"]::after {
+  width: 15px; height: 3px; margin-left: -7.5px; bottom: -7px;
+  background: radial-gradient(circle at center, var(--mv-accent) .95px, transparent 1.5px) 0 0 / 3px 3px repeat-x; }
+/* the dashboard's bar chart: LED columns */
+html[data-look="grafit"] .bars i { opacity: 1;
+  background: radial-gradient(circle at center, var(--mv-accent) 1px, transparent 1.6px) center bottom / 4px 4px; }
+/* toasts and jobs: a dotted status edge instead of the solid bar */
+html[data-look="grafit"] [data-role="toast"] { --gf-c: var(--mv-ok); border-left-color: transparent;
+  background-image: radial-gradient(circle at center, var(--gf-c) .95px, transparent 1.5px); background-size: 3px 3px;
+  background-repeat: no-repeat round; background-position: 0 0; }
+html[data-look="grafit"] [data-role="toast"].no { --gf-c: var(--mv-crit); }
+
+/* ---------------------------------------------------------------- the ground: dot-grid paper, quiet */
+html[data-look="grafit"] [data-role="workspace"] {
+  background: radial-gradient(circle at center, rgba(230, 230, 227, .085) .8px, transparent 1.35px) 0 0 / 15px 15px, var(--mv-bg); }
+html[data-look="grafit"] [data-role="ground"] .mark { color: var(--mv-dim); letter-spacing: .6em; }
+
+/* ---------------------------------------------------------------- wells and leftovers that carried Mélyvíz's blue */
+html[data-look="grafit"] :is([data-pane][data-kind="git"] section, [data-pane][data-kind="stack"] section, [data-pane][data-kind="feed"] [data-role="block"],
+  [data-pane][data-kind="search"] section, [data-pane][data-kind="chat"] [data-role="threads"]:not(:empty), [data-pane][data-kind="mail"] [data-role="mail-atts"]:not(:empty),
+  [data-pane][data-kind="empty"] [data-role="kinds"] button) { background: rgba(0, 0, 0, .22); }
+html[data-look="grafit"] :is([data-pane][data-kind="term"], [data-pane][data-kind="term"] [data-role="term-host"]) { background: #0f0f0f; }
+html[data-look="grafit"] [data-pane][data-kind="chat"] [data-role="msg"][data-who="user"] { border-color: rgba(242, 242, 239, .28); }
+html[data-look="grafit"] :is([data-role="palette"], [data-role="quick"]) { background: rgba(0, 0, 0, .55); }
+
+/* the corner dials (sui-dial.js): Simple-UI's light glass, here as pale graphite instead of blue-grey */
+html[data-look="grafit"] {
+  --sm-glass: rgba(222, 222, 219, .82); --sm-glass-hi: rgba(242, 242, 239, .95); --sm-glass-back: rgba(204, 204, 200, .86);
+  --sm-edge-lo: rgba(120, 120, 116, .45); --sm-ink: #1d1d1c; --sm-ink-dim: #5f5f5c;
+  --sm-accent: #1d1d1c; --sm-glow: 0 0 0 1px rgba(255, 255, 255, .55), 0 0 14px rgba(255, 255, 255, .25);
+  --sm-scan: radial-gradient(circle at center, rgba(0, 0, 0, .07) .7px, transparent 1.2px) 0 0 / 3px 3px;
+}
+
+/* the look switch in the title bar */
+[data-role="wbar"] button[data-role="look-toggle"] { font-size: 13px; }

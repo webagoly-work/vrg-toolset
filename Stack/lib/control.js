@@ -29,7 +29,7 @@ const META = require('./meta');
 
 const DAY = 864e5;
 const LAYER_HU = Object.fromEntries(META.map(m => [m.code, m.hu])); LAYER_HU.E = 'Pillér';
-const ORDER = 'FIQLARCGUE';
+const ORDER = 'FIQLARCGKUE';
 // thresholds (STK-P14): an agent is quiet after 14 days with no recorded use; a memory note is old after
 // 30 days; a GO file nobody changed or named for 21 days is quiet
 const QUIET_AGENT = 14, OLD_MEMORY = 30, MID_MEMORY = 14, QUIET_GO = 21, USAGE_DAYS = 60;

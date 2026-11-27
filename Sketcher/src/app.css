@@ -104,3 +104,72 @@ code { font: 12.5px var(--mono); background: var(--sunk); padding: 1px 5px; bord
 .msg.err { border-color: var(--crit); color: var(--crit); }
 .msg.ok { border-color: var(--ok); color: var(--ok); }
 @media (max-width: 960px) { #main { padding: 10px 10px 40px; } .kv { grid-template-columns: 100px 1fr; } .grid { grid-template-columns: 1fr; } }
+/* Kamera 2 */
+.cap-card video.thumb { object-fit: cover; }
+.card.pair { display: flex; gap: 10px; flex-wrap: wrap; }
+.card.pair figure { margin: 0; flex: 1 1 220px; }
+.pairimg { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid var(--line2); background: var(--sunk); }
+.sigimg { display: block; max-width: 320px; width: 100%; margin-top: 6px; background: #fff; border: 1px solid var(--line2); }
+.tag.warn, .warn { color: var(--crit); }
+.tag.ok { color: var(--ok); }
+.tag.dim { opacity: .5; text-decoration: line-through; }
+.ocr { margin-top: 3px; }
+/* F1: the sketch on the building */
+svg.siteplace { width: 100%; max-height: 320px; background: var(--sunk); border: 1px solid var(--line2); border-radius: 6px; margin-bottom: 6px; }
+svg.siteplace .so { fill: rgba(138, 92, 214, 0.10); stroke: #8a5cd6; stroke-dasharray: 0.6 0.3; }
+svg.siteplace .sp { fill: rgba(39, 194, 176, 0.28); stroke: #137d72; }
+svg.siteplace .sb { stroke: #d64545; }
+svg.siteplace text { fill: var(--muted, #888); }
+#siteplace .ok { color: #3dae5a; } #siteplace .bad { color: #d64545; }
+/* the Munkakör lap (takeoff, docs/sketcher/TAKEOFF.md) */
+.tk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 12px; margin: 8px 0; }
+.tk-item { display: flex; gap: 6px; align-items: baseline; padding: 2px 4px; border-left: 3px solid #3dae5a; }
+.tk-item .sym { width: 1.4em; text-align: center; }
+.tk-item .lb { flex: 1; }
+.tk-item .q { font-variant-numeric: tabular-nums; font-weight: 600; }
+.tk-item .fl { width: 1em; color: #d64545; }
+.tk-item.est { border-left-color: #e8641c; }
+.tk-item.est .q { color: #e8641c; }
+.tk-item.keep { opacity: .6; border-left-color: #a6afb7; }
+.tk-dec { margin: 4px 0; }
+/* F4 (WP M49): the client's wants by room */
+.stepper .here { color: var(--c); font-size: 10px; }
+.card.wants { margin-top: 6px; } .card.wants .wrow { margin-top: 5px; } .card.wants .wrow b { margin-right: 6px; }
+.card.wants .pill .x { margin-left: 4px; }
+/* M51 ⚙ Funkciók: one row per feature (symbol, 1–3 words, switch), grouped by front in its colour */
+.fgrp { margin: 12px 0 4px; }
+.frow { display: flex; align-items: center; gap: 8px; padding: 3px 0; max-width: 520px; }
+.frow .fs { width: 24px; text-align: center; color: var(--c, #a6afb7); }
+.frow .fl { flex: 1; }
+.frow.head .fl { color: var(--c, #a6afb7); }
+.frow.dim { opacity: .45; }
+.frow small { color: #7d8590; }
+.sw { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #3a4550; background: #1b232b; position: relative; cursor: pointer; padding: 0; }
+.sw i { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #7d8590; transition: left .12s; }
+.sw.on { background: #27c2b0; border-color: #27c2b0; }
+.sw.on i { left: 20px; background: #0b1116; }
+.sw:disabled { cursor: default; }
+/* skcam K1: Szobadoboz, the room in 3D (an overlay outside #main, so the page's re-render keeps the WebGL canvas) */
+.box-card { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.box3d { position: fixed; inset: 0; z-index: 8; background: var(--bg); display: flex; flex-direction: column; }
+.box3d[hidden] { display: none; }
+.bx-top { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--s1); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.bx-top select { background: var(--s2); color: var(--text); border: 1px solid var(--line2); padding: 3px 6px; font: 13px var(--sans); }
+.bx-top .seg { display: inline-flex; gap: 4px; }
+.bx-body { flex: 1; display: flex; min-height: 0; }
+#bxc { flex: 1; min-width: 0; height: 100%; display: block; touch-action: none; cursor: grab; }
+#bxside { flex: none; width: 300px; max-width: 45vw; overflow-y: auto; padding: 10px 12px; background: var(--s1); border-left: 1px solid var(--line); }
+.bx-f { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+.bx-f input, .bx-shot input[type=number] { width: 76px; background: var(--s2); color: var(--text); border: 1px solid var(--line2); padding: 2px 6px; font: 13px var(--sans); }
+.bx-shot { border: 1px solid var(--line); padding: 6px 8px; margin: 8px 0; background: var(--s2); }
+.bx-shot.hi { border-color: #2a8cdb; }
+.bx-shot .row { display: flex; align-items: center; gap: 6px; }
+.bx-shot .row .small { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bx-shot label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.bx-shot input[type=range] { width: 100%; accent-color: #2a8cdb; }
+@media (max-width: 700px) { .bx-body { flex-direction: column; } #bxside { width: auto; max-width: none; max-height: 42vh; border-left: 0; border-top: 1px solid var(--line); } }
+/* skcam K3: Síkmérés, the photo cards' measure row (the screen itself styles itself, lib/plane-ui.js) */
+.plane-bits { margin: 4px 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* skcam K4: Körkép, per photo point in the Szobadoboz panel */
+.bx-pano { border: 1px solid var(--line); padding: 6px 8px; margin: 8px 0; }
+.bx-pano .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0; }

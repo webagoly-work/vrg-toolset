@@ -4,9 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -73,6 +75,8 @@ import kotlinx.coroutines.launch
 import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Indítópult (WP M11): START's tools as a grid with their START keys. A tap starts one on the PC (the
 // relay opens its page, starting its server first when needed); a long-press selects it and shows
@@ -139,6 +143,18 @@ object LaunchFeature : VrgFeature {
         }
     }
 
+    /** Fényjel R2: the Vezérlőpult starts a server exactly as this screen does; returns what to tell the user. */
+    fun start(e: LaunchEntry): String? = run(e)
+
+    /** Stops a server this relay started (the only kind the relay stops); null when the request went out. */
+    fun stop(e: LaunchEntry): String? {
+        val msg = LaunchMsgs.stop(e.id) ?: return "Hibás azonosító."
+        return if (Relay.send(msg)) null else "Nincs relé kapcsolat."
+    }
+
+    /** Asks what runs now (the Vezérlőpult polls this while it is on screen). */
+    fun askStatus() { Relay.send(LaunchMsgs.status()) }
+
     private fun run(e: LaunchEntry): String? {
         if (e.id in starting.value) return "Már indul: ${e.name}"
         val msg = LaunchMsgs.run(e.id) ?: return "Hibás azonosító."
@@ -178,9 +194,10 @@ object LaunchFeature : VrgFeature {
 
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-                Text("INDÍTÓPULT", style = Melyviz.title.copy(fontSize = 18.sp))
+                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh beside the title: pull-to-refresh alone is out of
+                // reach for TalkBack/Switch (9.1)
+                FeatureTop(host, info) { if (trust == Trust.TRUSTED) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
                 pc?.let { Text("${it.name} · ${Relay.url.removePrefix("ws://")}", style = Melyviz.readout) }
 
                 when {
@@ -190,7 +207,7 @@ object LaunchFeature : VrgFeature {
                     else -> {
                         val l = now
                         when {
-                            l == null -> Text(if (loading) "A START lista olvasása…" else "Húzd le a frissítéshez.", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
+                            l == null -> Text(if (loading) "A START lista olvasása…" else "Húzd le, vagy ⟳ Frissítés.", style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
                             !l.ok -> {
                                 Text(l.reason ?: "A relé elutasította.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
                                 if (!l.trusted) Row(Modifier.padding(vertical = 6.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }
@@ -214,7 +231,9 @@ object LaunchFeature : VrgFeature {
     private fun Body(l: LaunchList, ctx: Context, host: FeatureHost) {
         val going by starting.collectAsStateWithLifecycle()
         var picked by remember { mutableStateOf<String?>(null) }
-        Text("Koppintás: indítás a PC-n · hosszan nyomva: menü (telefonon, napló, leállítás, részletek)", style = Melyviz.small)
+        // Back closes the opened Részletek panel first (UI-CHECKLIST 5.2)
+        BackHandler(picked != null) { picked = null }
+        Text("Koppintás: indítás a PC-n · ⋯ vagy hosszan nyomva: menü (telefonon, napló, leállítás, részletek)", style = Melyviz.small)
         for ((group, entries) in l.groups()) {
             VrgSectionTitle(group)
             entries.chunked(3).forEach { row ->
@@ -256,7 +275,7 @@ object LaunchFeature : VrgFeature {
         Box(
             Modifier.fillMaxWidth().heightIn(min = 76.dp).clip(shape)
                 .background(if (picked) Melyviz.raised else Melyviz.surface)
-                .border(1.dp, if (picked) Melyviz.glow else Melyviz.line, shape)
+                .vrgBorder(1.dp, if (picked) Melyviz.glow else Melyviz.line, shape)
                 .alpha(if (e.exists) 1f else 0.45f)
                 .rco(onClick = onTap, onLong = { open = true }, longLabel = "indítás és napló")
                 .semantics { contentDescription = listOfNotNull(e.key, e.name, state, if (!e.exists) "nincs a PC-n" else null).joinToString(", ") }
@@ -270,6 +289,15 @@ object LaunchFeature : VrgFeature {
                 Modifier.align(Alignment.TopEnd).size(8.dp).clip(CircleShape)
                     .background(when { going -> Melyviz.sand; running -> Melyviz.glow; else -> Melyviz.faint }),
             )
+        }
+        // a visible way to the long-press menu (UI-CHECKLIST 3.1, 7.1): "⋯" in the corner, a 48 dp target
+        Box(
+            Modifier.align(Alignment.BottomEnd).size(48.dp)
+                .clickable(role = Role.Button, onClickLabel = "további műveletek") { open = true }
+                .semantics { contentDescription = "${e.name}: további műveletek" },
+            contentAlignment = Alignment.BottomEnd,
+        ) {
+            Text("⋯", style = Melyviz.label.copy(color = Melyviz.muted), modifier = Modifier.padding(end = 7.dp, bottom = 3.dp))
         }
         RcoMenu(open, { open = false }, "${e.key} · ${e.name}", menu)
         }

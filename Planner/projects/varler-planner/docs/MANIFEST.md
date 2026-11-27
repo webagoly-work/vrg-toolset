@@ -304,7 +304,7 @@ Planner/
       varler_planner.html    477.9 kB
       varler-planner_2026-08-24_green.zip    5.39 MB
     projects/
-      Domoszló ház.vplan.json    76.9 kB
+      Mintafalu ház.vplan.json    76.9 kB
       Példa ház.vplan.json    8.7 kB
   home/
     claude/
@@ -1238,7 +1238,7 @@ Planner/
 | `data/browser-profile/Variations` | 85 B | 2026-09-05 | `72a9aa05` |  |
 | `data/exports/varler_planner.html` | 477.9 kB | 2026-08-23 | `f9664edc` |  |
 | `data/exports/varler-planner_2026-08-24_green.zip` | 5.39 MB | 2026-08-24 | `beed1a07` |  |
-| `data/projects/Domoszló ház.vplan.json` | 76.9 kB | 2026-08-24 | `5431c0b6` | "name": "Domoszló ház", |
+| `data/projects/Mintafalu ház.vplan.json` | 76.9 kB | 2026-08-24 | `5431c0b6` | "name": "Mintafalu ház", |
 | `data/projects/Példa ház.vplan.json` | 8.7 kB | 2026-08-24 | `e912a175` | "name": "Példa ház", |
 | `home/claude/cache/changelog.md` | 616.0 kB | 2026-09-05 | `b47ebea9` |  |
 | `home/claude/daemon/attach-journal/569c519a-678e-4ee6-a5ac-be1ebaf407b0.json` | 214 B | 2026-09-05 | `da9024b7` |  |
@@ -1643,7 +1643,7 @@ Planner/
 | `projects/varler-planner/docs/browser_verification_checklist.md` | 17.5 kB | 2026-08-24 | `40405943` | Browser verification checklist — everything jsdom could not confirm |
 | `projects/varler-planner/docs/DECISIONS.md` | 8.1 kB | 2026-08-24 | `47270151` | Why things are the way they are, so nobody "fixes" them back. |
 | `projects/varler-planner/docs/library-scouting.md` | 8.4 kB | 2026-09-01 | `70ddd772` | Library scouting — candidates, triaged |
-| `projects/varler-planner/docs/planner_1.0_review.md` | 21.6 kB | 2026-08-24 | `72e90d6e` | Domoszló Planner — architecture, UI and workflow review |
+| `projects/varler-planner/docs/planner_1.0_review.md` | 21.6 kB | 2026-08-24 | `72e90d6e` | Mintafalu Planner — architecture, UI and workflow review |
 | `projects/varler-planner/docs/qr-subsystem.md` | 14.0 kB | 2026-09-01 | `929c8aff` | QR subsystem — design, integration, verification |
 | `projects/varler-planner/mobile/phone-sender.html` | 18.6 kB | 2026-09-01 | `198a4973` | DOCTYPE html> |
 | `projects/varler-planner/src/00-core.js` | 8.8 kB | 2026-08-24 | `c71d2634` | ========================================================================== |

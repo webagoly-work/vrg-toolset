@@ -1,4 +1,4 @@
-# Domoszló Planner — architecture, UI and workflow review
+# Mintafalu Planner — architecture, UI and workflow review
 
 Baseline measured on the shipped build (409 846 bytes).
 
@@ -126,7 +126,7 @@ src/
   09-boot.js           wiring, defaults, first-run                             (~150)
 tests/                 one spec per module, shared fixtures
 docs/                  ARCHITECTURE.md · DECISIONS.md · FEATURES.md · CHANGELOG.md
-build.js               → dist/domoszlo_planner.html (single file, unchanged UX)
+build.js               → dist/mintafalu_planner.html (single file, unchanged UX)
 ```
 
 ### Migration order (each phase ships a working tool)

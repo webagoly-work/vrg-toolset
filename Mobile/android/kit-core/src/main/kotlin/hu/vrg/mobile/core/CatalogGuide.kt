@@ -33,7 +33,7 @@ object CatalogGuide {
      * every level-"user" unit of launcher/vrg-catalog.json that no phone page covers. Units folded into a phone page:
      * the Desktop's frame parts (views, palette, quick bar, Munkaterek, Értesítések, Beállítások, Telefon kapcsolat, F ·
      * Kiemelt) go to desk:desktop, sheets, inbox, settings, pair; Ügyfélnézet to planner; Fájlok and Munkák to pcwin;
-     * the Rétegverem layers (Keresés, I, Q) and the Konnektóm-labor to stack; VRG Mobile is the phone itself.
+     * the Rétegverem layers (Keresés, I, Q) and the Konnektóm-labor to stack; the Böngésző pane to web; VRG Mobile is the phone itself.
      */
     val PAGES: List<GuidePage> = listOf(
         // 1 · Terep: azonnal kell
@@ -61,6 +61,17 @@ object CatalogGuide {
             ),
             needs = "kamera",
             pair = "Asztal: a Planner kirajzolja a pontokat és a látószögeket, és hozzárendeli a fotókat",
+        ),
+        GuidePage(
+            id = "notebook", title = "VRG Füzet", glyph = "📓", side = GuideSide.PHONE,
+            what = "Egy füzet mindenre, ami a nap közben jön: jegyzet, teendő, mérés, anyag, mérőóra, séta. Az alkalmazásokat kitek adják (Munka, Otthon, Kutya…), a bejegyzések mégis egy helyen vannak: egy keresés megtalálja, egy fájlba kimenthető.",
+            how = listOf(
+                "A ✎ mindig ott van: írd vagy mondd be, a típust és a kitet később is megadhatod.",
+                "Fent a kitek, alattuk a kit nézetei: napló, lista, pipálható lista, összesítő (pl. heti munkaidő, anyag).",
+                "A ⚑ Nyitott mutatja, mi hiányzik, mi esedékes, melyik mérés lóg ki a határértékből, és mit javasol a jegyzet szövege.",
+                "⚙ Kitek: ki-be kapcsolod őket, új kitet töltesz be fájlból, és ott van az Export / Import az egész füzetre.",
+                "Új kit kell? Írj egy Kérés bejegyzést, és oszd meg: egy Claude munkamenet megírja a kitet (Mobile/notebook/kits/PROTOCOL.md).",
+            ),
         ),
         GuidePage(
             id = "pager", title = "Csipogó", glyph = "📟", side = GuideSide.PHONE,
@@ -119,54 +130,55 @@ object CatalogGuide {
         // 3 · Workflow Kit
         GuidePage(
             id = "workflow", title = "Varler Workflow Kit", glyph = "⚒", side = GuideSide.BOTH,
-            what = "Az irodai út a felméréstől az ajánlatig: kérdéssor, mennyiségek, árazás, végül a Költségvetési Tervezet és az Árajánlat dokumentuma.",
+            what = "A PC-n futó árajánlati munkák a telefonon: melyik munka hol tart (kérdéssor, anyagkigyűjtés, árazás, ajánlat, dokumentum), a változatok munkadíja, anyaga, összege és az ajánlat szövegei. Az ügyféladat titkosítva, csak ennek a telefonnak.",
             how = listOf(
-                "A telefonon még tervben van; addig a PC-n használható.",
-                "A PC-n a kit a VRG Full mappában van (Varler_Workflow_Kit), nem a repóban, mert ügyféladat is van benne.",
-                "A lépések sorban: kérdéssor (mit kér az ügyfél), anyagkigyűjtés, árazás, ajánlat, dokumentum.",
-                "A telefonon a kit fájljai a PC ablakokban olvashatók (◣ menü → Workflow Kit), párosított PC-vel.",
+                "Először a telefonon: Kulcs közzététele. A képernyő mutat egy 6 jegyű kódot.",
+                "A PC-n egyszer: node tools/workflow-seal.js trust <azonosító> <kód>, utána seal. A PC csak ennek a telefonnak a kulcsára titkosít.",
+                "⟳ letölti a titkosított csomagot; offline is megnyílik, a kulcs a telefon Keystore-jában van.",
+                "Egy munkára koppintva: a lépések, a változatok összegei, a szövegek és a fájlok listája. A PDF-ek a PC ablakokban olvashatók (◣ menü → Workflow Kit).",
+                "A képernyőről nem készül képernyőkép, és a Képernyő is feketét mutat, amíg nyitva van.",
             ),
+            needs = "GitHub belépés; a csomagot a PC készíti",
             pair = "Asztal: Varler Workflow Kit (Munka → Árazás)",
         ),
 
         // 4 · Térkép · Időjárás · Vault
         GuidePage(
             id = "map", title = "VRG Térkép", glyph = "🗺", side = GuideSide.BOTH,
-            what = "Offline Magyarország-térkép saját terepi stílusban: címkeresés, 3D épületek, domborzat. A munkák rétege megmutatja, hol vannak a munkák.",
+            what = "Magyarország térképe saját terepi stílusban: címkeresés, 3D épületek, domborzat. A telefonon a saját helyed, a Vázlatok helyszínei és párosított PC-vel a munkák is rajta vannak.",
             how = listOf(
-                "A telefonon még tervben van; addig párosított PC-vel a Localhost nyitja meg a PC térképét.",
-                "A PC-n: START → M (localhost:8802). Az első indítás kb. 1,7 GB térképadatot tölt le.",
-                "Keresés: „Váci u. 12” vagy „Budaörs Fő utca”. Az ékezet és a rövidítés elhagyható.",
-                "Billentyűk a PC-n: 3 = 3D épületek, T = domborzat, J = munkák, G = Google nézet.",
-                "A Sketcher Helyszín nézete is ezt a térképet használja, a relén át.",
+                "Első megnyitáskor a telefon letölti az oldalt (GitHub belépés kell) és a térképmotort; utána offline is nyílik.",
+                "Párosított PC-vel (START → M fut) a „PC adat” jelzés látszik: a PC térképe és a Munkák gomb a relén át. A munkák adata nem marad a telefonon.",
+                "PC nélkül az „Internet” jelzés: a térkép az internetről jön, és amit egyszer megnéztél, a helyszínen offline is megjelenik.",
+                "◎ a saját helyed, lila pötty a Vázlat helyszíne. Árnyék: az épületek árnyéka bármikor. Feed: a legközelebbi otthon, bolt, étkezés, orvos… idővel; nyomva tartva útvonalat tervez, ▶ Indulás: hangos vezetés.",
+                "Munka vagy helyszín kártyáján a Navigáció a navigációs alkalmazásnak csak a koordinátát és a kódot adja át, a címet nem.",
             ),
-            needs = "internet",
+            needs = "internet az első letöltéshez; a munkákhoz a PC reléje (párosítva)",
             pair = "Asztal: VRG Térkép (START M)",
         ),
         GuidePage(
             id = "weather", title = "VRG Időjárás", glyph = "⛅", side = GuideSide.BOTH,
-            what = "Több hivatalos és nyílt forrás időjárása egy saját adatbázisban, egyesítve, a bizonytalansággal együtt. Ebből munkaablakot és riasztást ad munkahelyenként és tevékenységenként.",
+            what = "Lehet-e ma kint dolgozni? A telefon a MET Norway és a DWD előrejelzését egyesíti a szórásukkal együtt, hozzáveszi a hivatalos (HungaroMet) figyelmeztetéseket, és a PC terepi szabályaival tevékenységenként mond zöldet, sárgát vagy pirosat, munkaablakkal.",
             how = listOf(
-                "A telefonon még tervben van; addig a PC-n használható.",
-                "A PC-n: START → W → I → 1 (localhost:8808), az ütemezővel együtt.",
-                "Riaszt villámra, emelőkosárnál erős széllökésre, PVC kábelhez túl hideg időre, esőre, hőségre és hivatalos figyelmeztetésre.",
-                "Reggel elkészül a napi munkabrief, este a holnapi.",
-                "A határértékek óvatos alapértékek. A gép adattáblája és a kábel adatlapja mindig erősebb.",
+                "Először ⚙ → Kapcsolat (MET Norway): egy e-mail cím vagy honlap. Amíg üres, csak a DWD és a figyelmeztetések jönnek.",
+                "Válassz várost, vagy ◎ Itt: a telefon egyszer, a gombra kérdezi meg a helyet, ~1 km-re kerekítve; a ⚙ alatt elmenthető helyként.",
+                "Fent a mai (munkaidő után a következő munkanapi) ítélet: kültéri szerelés, létra / emelőkosár, kábelfektetés, tető / napelem, az okokkal.",
+                "Alatta a 72 óra: ég, hőmérséklet ± a források szórása, széllökés, csapadék, biztonság; a keret színe a legrosszabb tevékenységé.",
+                "A határértékek óvatos alapértékek; a gép adattáblája és a kábel adatlapja erősebb. Villám nincs a telefonon: Radar ↗. PC nézet ›: a PC teljes oldala a relén át.",
             ),
-            needs = "internet",
+            needs = "internet; a PC nézethez párosított PC",
             pair = "Asztal: VRG Időjárás (START W → I)",
         ),
         GuidePage(
             id = "vault", title = "Vault", glyph = "🔒", side = GuideSide.PHONE,
-            what = "Titkosított személyes adattár (Proton Vault), külön repóban. Hozzáférést a telefonok kapnak, QR-kódos jóváhagyással.",
+            what = "A titkosított személyes adattár (Proton Vault) saját webes felülete, a VRG Mobile-on belül. A titkosítás a Vaulté: a VRG Mobile nem lát bele.",
             how = listOf(
-                "A telefonon még tervben van; a csempe a tervet mutatja.",
-                "Minden telefonnak saját azonosítója és kulcsa van.",
-                "Egy új telefon QR-kóddal kér hozzáférést. A tulajdonos telefonja szemmel ellenőrzi a kódot, és felveszi a listára.",
-                "A válasz egy engedély, amit csak a kérő telefon tud kinyitni.",
-                "Az Eszközök oldal ma is pontosan így engedi be a telefonokat.",
+                "Első megnyitáskor a Vault ezt a telefont új eszközként látja: a Vaultban QR-kóddal kérsz hozzáférést, a tulajdonos telefonja jóváhagyja.",
+                "Ez a jóváhagyás külön van az Eszközöktől: a VRG Mobile-ba engedett telefon még nem látja a Vaultot.",
+                "⚙: a Vault címe, egy üzenetben kapott Vault-link megnyitása itt, és a Vault adatainak törlése a telefonról.",
+                "Képernyőkép és képernyőmegosztás a Vault oldalán tiltva; letöltést nem ment a közös tárhelyre.",
             ),
-            needs = "internet és GitHub belépés",
+            needs = "internet",
         ),
 
         // 5 · Archívum · Claude
@@ -195,6 +207,18 @@ object CatalogGuide {
             ),
             needs = "a PC reléje (párosítva) a munkamenetekhez",
             pair = "PC: a Claude Code Remote Control munkamenetei, a relén át",
+        ),
+        GuidePage(
+            id = "devlap", title = "DevLap", glyph = "⧉", side = GuideSide.BOTH,
+            what = "Egy kész lap a fejlesztés folytatásához: hol tart a munka, mi történt, és hol lehet egy munkát továbbvinni.",
+            how = listOf(
+                "A kezdőlap DevLap kártyája megnyitja a lapot; ha már nyitva van, oda ugrik.",
+                "Fent a Haladás (main, nyitott munkák, CI), alatta Claude és Értesítések, lent Gyorsjegyzet és Archívum.",
+                "Dupla koppintás egy ablak fejlécén: teljes méret ⇄ egy cella.",
+                "Lapok → + listájában is az első.",
+            ),
+            needs = "internet, GitHub belépés; a Claude munkamenetekhez a PC reléje",
+            pair = "Asztal: DevLap (Dev szint) a Vonaltérképpel, a követők füleivel és egy Claude Code terminállal",
         ),
 
         // 6 · Kapcsolat a PC-vel
@@ -297,16 +321,17 @@ object CatalogGuide {
 
         // 7 · Egyéb
         GuidePage(
-            id = "notes", title = "Gyorsjegyzet", glyph = "✎", side = GuideSide.PHONE,
-            what = "Rövid jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként működik. Bárhonnan olvasható, a munkamenetek is látják.",
+            id = "notes", title = "Jegyzetek", glyph = "✎", side = GuideSide.PHONE,
+            what = "A központi jegyzet app: minden jegyzet egy helyen. A Sketcher Jegyzet frontja és a többi funkció is ide ír, a jegyzeten színes jelvény mutatja, honnan jött.",
             how = listOf(
-                "Írd be vagy diktáld (🎤), válassz címkét (melyik eszközről szól), és küldd el.",
-                "Internet nélkül is írhatsz: a jegyzet sorba áll, és magától elmegy, amikor lesz net.",
+                "⚙ → Változat: Egyszerű, Terepi, Iroda, Fejlesztő vagy Teljes. A változat dönti el, mely modulok látszanak; a modulok egyenként is ki-be kapcsolhatók.",
+                "Új jegyzet, mai jegyzet, sablonból (bejárás, ügyfélhívás, anyaglista…), vagy a gyors mezőből; diktálva is (🎤).",
+                "Keresés ékezet nélkül is; szűrés forrásra, címkére, füzetre; kitűzés, archívum, kuka.",
+                "A Sketcher jegyzete összekötött: itt javítod, a felmérésbe is átmegy, és onnan „Megnyitás: Sketcher” visz vissza.",
                 "Más appból „Megosztás → VRG Mobile”: a szövegből jegyzet lesz.",
-                "Alul a mai nap jegyzetei olvashatók vissza.",
             ),
-            needs = "internet, GitHub belépés",
-            pair = "A repó mobile-log branche, naponta egy fájllal",
+            needs = "semmi; a szinkronhoz internet és GitHub belépés",
+            pair = "A repó privát vrg-notes branche, jegyzetenként egy fájl (notes/)",
         ),
         GuidePage(
             id = "inbox", title = "Értesítések", glyph = "🔔", side = GuideSide.PHONE,
@@ -389,8 +414,56 @@ object CatalogGuide {
                 "Dupla koppintás az ablak fejlécén: teljes méret ⇄ egy cella.",
                 "Hosszan nyomva a szélét húzod: átméretezés. A fejlécét húzod: mozgatás vagy csere.",
                 "Kész elrendezések is vannak, például Iroda és Áttekintés.",
+                "DevLap: a fejlesztés állása egy lapon (Haladás, Claude, Értesítések, Gyorsjegyzet, Archívum). A PC-n a saját DevLapja van.",
             ),
             pair = "Asztal: Munkaterek és lapok",
+        ),
+        GuidePage(
+            id = "tag", title = "Tárgykereső", glyph = "🏷", side = GuideSide.PHONE,
+            what = "Kísérleti. Apple Find My címke (például ISYTag vagy AirTag), iTag kulcstartó és párosított óra (például Q71) Androidról, közvetlenül Bluetooth-on. Az Apple hálózatán jelentett helyet Android nem látja: azt csak a címke gazdájának Apple eszköze mutatja.",
+            how = listOf(
+                "Környék: minden Find My címke a közelben, távolsággal és elemszinttel.",
+                "Ez az enyém: tartsd a címkét a telefon hátához, és a Tárgykereső megjegyzi. A címke néha új címet kap, ezt követi.",
+                "Keresés: nagy távolságkijelzés és hangjelzés, ami közeledve gyorsul. A Csipogtatás megszólaltatja a címkét, ha engedi.",
+                "Ottfelejtés: ha bekapcsolod, értesítést kapsz, amikor a címke lemarad. A telefon azt is megjegyzi, hol hallotta utoljára.",
+                "iTag: csatlakozva marad, és a gombja megcsörgeti a telefont. Párosított óra: a listából választod, a kapcsolata jelzi, hogy veled van, és az óra hangszóróján csipogtatható.",
+            ),
+            needs = "Bluetooth (a hely megjegyzéséhez helymeghatározás)",
+        ),
+        GuidePage(
+            id = "watch", title = "Óra", glyph = "⌚", side = GuideSide.PHONE,
+            what = "Kísérleti. A Q71 okosóra a VRG Mobile-lal, a FunDo app nélkül: az óra saját nyelvét fejtettük meg, és ezen beszél vele. Amíg itt a Kapcsolat be van kapcsolva, a FunDo ne fusson.",
+            how = listOf(
+                "Kapcsolat: bekapcsolva megkeresi a Q71_LE órát, és csatlakozva tartja. Párosítani nem kell.",
+                "Minden kapcsolódáskor beállítja az óra idejét; az Óra adatai a firmware-t és a kijelzőt mutatja, a Ma a lépéseket.",
+                "Óra keresése: megcsipogtatja az órát. Telefonkeresés: az óra menüjéből ezt a telefont csörgeti meg, némítás mellett is.",
+            ),
+            needs = "Bluetooth",
+            pair = "Tárgykereső: a párosított óra innen nyitja",
+        ),
+        GuidePage(
+            id = "radar", title = "Radar", glyph = "◎", side = GuideSide.PHONE,
+            what = "Egy radar mindenre, ami körülötted van: a Tárgykereső címkéi és párosított eszközei, a Csipogó brigád, az óra. Minden program a saját rétegén, a saját színével.",
+            how = listOf(
+                "A körök a távolságot mutatják. Telt pont: ismert irány. Üres pont: csak a távolsága ismert.",
+                "Irány keresése: koppints egy pontra, tartsd magad előtt a telefont és fordulj lassan körbe. A legerősebb jel felé van.",
+                "Irány fel: a radar veled fordul. Észak fel: a térképhez hasonlóan áll. A helyek (például egy címke utolsó helye) GPS-szel kapnak irányt.",
+                "Lent a rétegeket ki-be kapcsolod; a pont kártyájáról a saját programja nyílik.",
+            ),
+            needs = "Bluetooth (GPS-irányhoz helymeghatározás)",
+            pair = "Asztal: a VRG UI Kit radar része (Gráf és topológia), ugyanaz az elrendezés",
+        ),
+        GuidePage(
+            id = "web", title = "Böngésző", glyph = "🌐", side = GuideSide.BOTH,
+            what = "Munkához böngészés a telefonon, a VRG Mobile-on belül: adatlap, nagyker katalógus, szabvány, a helyszíni router oldala. Ugyanazok a keresők és !jelek, mint a PC-n, és a könyvjelzők az Asztallal közös fájlban vannak.",
+            how = listOf(
+                "A felső sávba címet vagy keresőszót írsz; a !jel más keresőt választ: „NYM-J 3x2,5 !tme”, „!w Ohm-törvény”. A Kommandba írt cím is itt nyílik meg.",
+                "A ☆ könyvjelzőbe teszi az oldalt; a ☰ alatt a Könyvjelzők, az Előzmények, a telefon böngészője ↗ és a megosztás.",
+                "⚙: a kereső (egyszer választod), az előzmények mentése, Export / Import: a fájlt a PC-n a VRG Böngésző (Betöltés) az Asztalba viszi, és a Data Vault is beolvassa.",
+                "Az oldal nem kap engedélyt (kamera, hely), hibás tanúsítványú oldal nem nyílik meg, letöltést kérdés után a telefon böngészője végez.",
+            ),
+            needs = "internet",
+            pair = "Asztal: a Böngésző panel és a VRG Böngésző (START W → B)",
         ),
         GuidePage(
             id = "desk", title = "Asztal", glyph = "◧", side = GuideSide.PHONE,
@@ -407,7 +480,7 @@ object CatalogGuide {
         // 8 · Fiók és beállítások
         GuidePage(
             id = "account", title = "GitHub fiók", glyph = "⎔", side = GuideSide.PHONE,
-            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Gyorsjegyzet, Archívum, Frissítés és a többi) ezt a fiókot használja.",
+            what = "Belépés a GitHubra egy eszközkóddal. A többi online funkció (Haladás, Jegyzetek, Archívum, Frissítés és a többi) ezt a fiókot használja.",
             how = listOf(
                 "Belépés: a telefon egy nagy kódot mutat, és megnyitja a github.com/login/device oldalt.",
                 "Írd be ott a kódot. A telefon magától észreveszi, hogy beléptél.",
@@ -505,16 +578,6 @@ object CatalogGuide {
                 "A telefonon az Alkalmazások között is megvan.",
             ),
             pair = "Telefon: Alkalmazások → VRG MindMap",
-        ),
-        GuidePage(
-            id = "desk:web", title = "Böngésző", glyph = "🌐", side = GuideSide.DESKTOP,
-            what = "Beépített böngésző az Asztalon, a többi ablak mellett: fülek, címsor, könyvjelzők, előzmények és a helyi szerverek.",
-            how = listOf(
-                "Ablakként nyílik az Asztalon, lapra is tehető.",
-                "Ctrl+L a címsor, Ctrl+T új fül, Ctrl+F keresés az oldalon.",
-                "A helyi szerverek (Térkép, MindMap és a többi) innen is megnyithatók.",
-            ),
-            pair = "Telefon: a telefon saját böngészője; a Kommandba írt cím abban nyílik meg",
         ),
         GuidePage(
             id = "desk:mail", title = "Posta", glyph = "✉", side = GuideSide.DESKTOP,

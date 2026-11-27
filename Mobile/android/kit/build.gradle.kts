@@ -25,6 +25,9 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
+    // The iPhone guide (Mobile/web/guide/iphone.json): one file, shown by the web app and bundled here as the asset
+    // "iphone.json" for Eszközök → iPhone csatlakoztatása, so the two never say different things.
+    sourceSets.getByName("main").assets.srcDir(rootProject.file("../web/guide"))
 }
 
 dependencies {

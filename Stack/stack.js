@@ -23,6 +23,8 @@
 //   node stack.js people                                                        rewrite out/people-data.js (szereplok.html, Ki kicsoda)
 //   node stack.js pages                                                         rewrite the K M D V O P pages' data (lib/layerpages.js)
 //   node stack.js probe [<words> | --all] [--list]                             run test suites (P · Próbák), record in data/probes.jsonl
+//   node stack.js kisokos [--standalone <file.html>]                            rewrite out/kisokos-data.js (kisokos.html, Kisokos 3D);
+//                                                                               --standalone also writes one self-contained page
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
 //   node stack.js mcp                                                          run the MCP server on stdio
 //
@@ -109,9 +111,10 @@ async function main() {
       }
       return out.join('\n') + '\n→ ' + file + '  (the live build picks it up; or node stack.js build)';
     }
+    case 'kisokos': { const standalone = opt('--standalone', ''); return require('./lib/kisokos').write({ standalone }).msg; }
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
-    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 29).map(l => l.slice(3)).join('\n');
+    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 31).map(l => l.slice(3)).join('\n');
   }
 }
 

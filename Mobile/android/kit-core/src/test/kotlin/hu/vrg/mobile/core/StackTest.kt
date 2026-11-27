@@ -33,6 +33,34 @@ class StackTest {
         assertNull(StackPages.byFile("x.html"))
     }
 
+    @Test fun kisokosIsAnOptionalFourthPage() {
+        val old = StackMeta.parse(json)!!
+        assertEquals(listOf("konnektom", "holo", "retegek"), old.pages.map { it.id }, "a publish from before Kisokos is still whole")
+        assertEquals("konnektom", old.page("kisokos").id, "a remembered Kisokos falls back to the first page")
+        val withK = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"kisokos.html\":1501373}"))!!
+        assertEquals(listOf("konnektom", "holo", "retegek", "kisokos"), withK.pages.map { it.id })
+        assertEquals("kisokos", withK.page("kisokos").id)
+        assertEquals(1501373L, withK.bytes(StackPages.page("kisokos")))
+        assertEquals(withK, StackMeta.parse(withK.toJson()))
+        assertEquals(listOf("konnektom", "holo", "retegek"), StackPages.REQUIRED.map { it.id })
+        assertEquals(listOf("kisokos", "otletfolyam", "dontesnaplo", "vonalak", "vezerloterem", "futasnaplo", "commitok", "erintesnyom", "labor"),
+            StackPages.PAGES.filter { it.optional }.map { it.id })
+        val labor = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"labor.html\":2041051}"))!!
+        assertEquals(listOf("konnektom", "holo", "retegek", "labor"), labor.pages.map { it.id }, "only the optional pages a publish carries")
+        assertEquals("dontesnaplo", StackPages.byFile("dontesnaplo.html")?.id)
+        // Kisokos alone does not make a publish: the three required pages must be there
+        assertNull(StackMeta.parse("""{"kind":"vrg-stack-meta","published":"x","files":{"kisokos.html":10}}"""))
+    }
+
+    @Test fun syncWaitsForTheOptionalPageOnlyWhenPublished() {
+        val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
+        val old = StackMeta.parse(json)!!
+        assertIs<StackSync.Fresh>(StackSync.decide(old, have, old, answered = true), "no Kisokos published: nothing to fetch")
+        val withK = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"kisokos.html\":1501373}"))!!
+        assertIs<StackSync.Download>(StackSync.decide(withK, have, withK, answered = true), "Kisokos published but not on the phone")
+        assertIs<StackSync.Fresh>(StackSync.decide(withK, have + ("kisokos.html" to 1501373L), withK, answered = true))
+    }
+
     @Test fun syncDecides() {
         val m = StackMeta.parse(json)!!
         val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
@@ -46,18 +74,18 @@ class StackTest {
 
     @Test fun layerPagesAreOptional() {
         val m = StackMeta.parse(json)!!                         // a publish from before the layer pages
-        assertEquals(listOf("konnektom", "holo", "retegek"), m.pages().map { it.id })
+        assertEquals(listOf("konnektom", "holo", "retegek"), m.pages.map { it.id })
         val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
         assertIs<StackSync.Fresh>(StackSync.decide(m, have, m, answered = true))
-        val withLayers = m.copy(files = m.files + ("dontesek.html" to 90000L))
+        val withLayers = m.copy(files = m.files + ("dontesnaplo.html" to 90000L))
         assertIs<StackSync.Download>(StackSync.decide(m, have, withLayers, answered = true))
-        assertIs<StackSync.Fresh>(StackSync.decide(withLayers, have + ("dontesek.html" to 90000L), withLayers, answered = true))
-        assertEquals("dontesek", StackPages.byFile("dontesek.html")?.id)
+        assertIs<StackSync.Fresh>(StackSync.decide(withLayers, have + ("dontesnaplo.html" to 90000L), withLayers, answered = true))
+        assertEquals("dontesnaplo", StackPages.byFile("dontesnaplo.html")?.id)
     }
 
     @Test fun stackMenuIsTheLayersTopToBottomWithRetegekLast() {
         val rows = StackMenu.ROWS
-        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "Z", "", ""), rows.map { it.layer })
+        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "K", "Z", "", ""), rows.map { it.layer })
         assertEquals("Érintésnyom", rows[rows.size - 2].title)
         assertEquals("Rétegek", rows.last().title)
         rows.forEach { r ->                                      // every page target is a real page id
@@ -68,7 +96,7 @@ class StackTest {
         val old = StackMeta.parse(json)!!
         val dontesek = rows.first { it.layer == "Q" }
         assertEquals(false, StackMenu.available(dontesek, old), "not published yet: the row says so")
-        assertEquals(true, StackMenu.available(dontesek, old.copy(files = old.files + ("dontesek.html" to 1L))))
+        assertEquals(true, StackMenu.available(dontesek, old.copy(files = old.files + ("dontesnaplo.html" to 1L))))
         assertEquals(true, StackMenu.available(rows.last(), old))
         assertEquals(false, StackMenu.available(rows.first { it.layer == "Z" }, old))
     }

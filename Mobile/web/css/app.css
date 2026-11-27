@@ -49,3 +49,15 @@ textarea, input { width: 100%; font: inherit; color: var(--ink); background: var
 .pal { display: flex; width: 100%; justify-content: space-between; align-items: center; border-radius: 10px; border-width: 2px; margin: 6px 0 0; }
 .pal .sw { display: flex; gap: 4px; } .pal i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid #0003; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* the iPhone guide (guide/iphone.json) */
+.tile.wide { grid-column: 1 / -1; min-height: 0; border-color: var(--glow); margin-top: 8px; }
+.gbox { margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--surface) 92%, transparent); }
+.gbox > summary { padding: 12px 14px; min-height: 44px; cursor: pointer; color: var(--glow); font-weight: 600; }
+.gbox .guide { padding: 0 14px 12px; }
+.guide p { margin: 6px 0; }
+.guide ol { margin: 4px 0 8px; padding-left: 22px; } .guide li { margin: 6px 0; }
+.guide dt { font-weight: 600; margin-top: 10px; } .guide dd { margin: 2px 0 0 0; color: var(--muted); }
+.guide .who { font-size: 10px; letter-spacing: .5px; text-transform: none; padding: 2px 8px; border-radius: 999px; margin-left: 6px; white-space: nowrap; }
+.guide .who.iphone { background: var(--current); color: var(--abyss); } .guide .who.owner { background: var(--sand); color: var(--abyss); }
+.guide .here { color: var(--glow); font-weight: 600; }
+.ok.big { font-size: 17px; padding: 10px 0; }

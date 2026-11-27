@@ -1,0 +1,93 @@
+{
+ "kind": "vrg-noteskit",
+ "v": 1,
+ "about": "VRG Jegyzetek (the central Notes app): its modules, the versions (profiles) a user picks in ⚙ → Változat, and the origins (every app that writes notes into it). Data only; one source for the phone (VRG Mobile feature-notes, copied into the APK) and the later Desktop page. Contract: Notes/README.md. Validate: node Notes/tools/check.js",
+ "modules": [
+  { "id": "szerkeszto", "label": "Szerkesztő", "sym": "✎", "core": true, "about": "Cím + szöveg, automatikus mentés." },
+  { "id": "kereses", "label": "Keresés", "sym": "⌕", "core": true, "about": "Keresés címben, szövegben, címkében, ékezet nélkül is." },
+  { "id": "cimkek", "label": "Címkék", "sym": "#", "core": true, "about": "Saját címkék, szűrés címkére." },
+  { "id": "kituzes", "label": "Kitűzés", "sym": "📌", "core": true, "about": "Kitűzött jegyzetek legfelül; archívum és kuka." },
+  { "id": "forras", "label": "Forrás szűrő", "sym": "⇲", "core": true, "about": "Honnan jött a jegyzet (Sketcher, Gyorsjegyzet…): színes jelvény és szűrő, visszaugrás a forrásba." },
+  { "id": "fuzetek", "label": "Füzetek", "sym": "▤", "about": "Jegyzetfüzetek (mappák) a jegyzeteknek." },
+  { "id": "formazas", "label": "Formázás", "sym": "¶", "about": "Markdown: címsor, félkövér, lista; olvasó nézet." },
+  { "id": "lista", "label": "Teendőlista", "sym": "☑", "about": "Kipipálható sorok (- [ ] …) a jegyzetben, kész/összes számláló." },
+  { "id": "diktalas", "label": "Diktálás", "sym": "🎤", "about": "Beszédből szöveg (hu-HU)." },
+  { "id": "gyors", "label": "Gyorsjegyzet", "sym": "⚡", "about": "Egy mező a lista tetején: beírod, kész jegyzet; megosztás más appból is ide jön." },
+  { "id": "sablonok", "label": "Jegyzetsablonok", "sym": "❏", "about": "Új jegyzet kész vázból (helyszíni bejárás, ügyfélhívás, anyaglista…)." },
+  { "id": "napi", "label": "Napi jegyzet", "sym": "☀", "about": "Egy jegyzet naponta, egy gombnyomásra." },
+  { "id": "beerkezo", "label": "Beérkező", "sym": "⇣", "about": "Külön lap a más appokból érkezett, még meg nem nézett jegyzeteknek." },
+  { "id": "kod", "label": "Kód", "sym": "⌨", "about": "Fix szélességű betű a jegyzetben, kódblokkok." },
+  { "id": "export", "label": "Megosztás", "sym": "⇪", "about": "Jegyzet megosztása szövegként vagy Markdown fájlként." },
+  { "id": "naplo", "label": "Projektnapló", "sym": "☰", "about": "A Gyorsjegyzet sorai a mobile-log branch napi fájljába is mennek (a régi M6 chat log)." },
+  { "id": "csatolmany", "label": "Fotó, csatolmány", "sym": "📎", "planned": true, "about": "Fotó vagy fájl a jegyzethez." },
+  { "id": "emlekezteto", "label": "Emlékeztető", "sym": "⏰", "planned": true, "about": "Időpont a jegyzeten, értesítéssel." },
+  { "id": "hivatkozas", "label": "Hivatkozások", "sym": "⇄", "planned": true, "about": "[[Jegyzet]] hivatkozás egy másik jegyzetre, visszamutató lista." },
+  { "id": "zar", "label": "Zár", "sym": "🔒", "planned": true, "about": "Ujjlenyomattal nyíló jegyzetek." }
+ ],
+ "profiles": [
+  {
+   "id": "egyszeru", "name": "Egyszerű", "sym": "○", "color": "#8a9bb0",
+   "premise": "Csak jegyzet: írsz, keresel, címkézel. Semmi más nem látszik.",
+   "modules": [],
+   "list": "lista",
+   "newNote": "ures"
+  },
+  {
+   "id": "terepi", "name": "Terepi", "sym": "⛑", "color": "#e0b020", "default": true,
+   "premise": "Helyszínre: gyors beírás vagy diktálás egy kézzel, teendőlista, a Sketcher jegyzetei egy helyen.",
+   "modules": ["gyors", "diktalas", "lista", "beerkezo", "sablonok", "export"],
+   "list": "kartyak",
+   "templates": ["bejaras", "ugyfelhivas", "anyaglista", "hibalista"],
+   "newNote": "ures"
+  },
+  {
+   "id": "iroda", "name": "Iroda", "sym": "▤", "color": "#2a8cdb",
+   "premise": "Asztalnál: füzetek, formázott szöveg, sablonok, megosztás.",
+   "modules": ["fuzetek", "formazas", "lista", "sablonok", "export", "beerkezo"],
+   "list": "lista",
+   "templates": ["ugyfelhivas", "anyaglista", "megbeszeles"],
+   "newNote": "ures"
+  },
+  {
+   "id": "fejleszto", "name": "Fejlesztő", "sym": "⌨", "color": "#27c2b0",
+   "premise": "Fejlesztéshez: napi jegyzet, kód, a Gyorsjegyzet a projektnaplóba is megy.",
+   "modules": ["gyors", "napi", "kod", "formazas", "lista", "naplo", "export", "diktalas"],
+   "list": "lista",
+   "templates": ["otlet", "hiba"],
+   "newNote": "ures"
+  },
+  {
+   "id": "teljes", "name": "Teljes", "sym": "✦", "color": "#8a5cd6",
+   "premise": "Minden modul be van kapcsolva.",
+   "modules": ["*"],
+   "list": "kartyak",
+   "templates": ["*"],
+   "newNote": "ures"
+  }
+ ],
+ "templates": [
+  { "id": "bejaras", "label": "Helyszíni bejárás", "sym": "⌂", "seal": true, "title": "Bejárás · {date}", "tags": ["bejárás"],
+    "body": "Cím:\nÜgyfél kérése:\n\n- [ ] Elosztó megnézve\n- [ ] Mérőhely megnézve\n- [ ] Fotók megvannak\n\nMegjegyzés:\n" },
+  { "id": "ugyfelhivas", "label": "Ügyfélhívás", "sym": "☎", "seal": true, "title": "Hívás · {date}", "tags": ["ügyfél"],
+    "body": "Ki hívott:\nMit kér:\nHatáridő:\n\n- [ ] Visszahívni\n" },
+  { "id": "anyaglista", "label": "Anyaglista", "sym": "☰", "title": "Anyag · {date}", "tags": ["anyag"],
+    "body": "- [ ] \n- [ ] \n- [ ] \n" },
+  { "id": "hibalista", "label": "Hibalista", "sym": "⚑", "title": "Hibák · {date}", "tags": ["hiba"],
+    "body": "Hol:\n\n- [ ] \n- [ ] \n" },
+  { "id": "megbeszeles", "label": "Megbeszélés", "sym": "◎", "title": "Megbeszélés · {date}", "tags": ["megbeszélés"],
+    "body": "Résztvevők:\n\nDöntések:\n- \n\nTeendők:\n- [ ] \n" },
+  { "id": "otlet", "label": "Ötlet", "sym": "✧", "title": "Ötlet · {date}", "tags": ["ötlet"],
+    "body": "Mi:\nMiért:\nHol a kódban:\n" },
+  { "id": "hiba", "label": "Hibajegy", "sym": "✕", "title": "Hiba · {date}", "tags": ["hiba"],
+    "body": "Mit csináltam:\nMit vártam:\nMi történt:\n" }
+ ],
+ "origins": [
+  { "id": "kezi", "label": "Jegyzetek", "sym": "✎", "color": "#8a9bb0", "about": "A Jegyzetek appban írt jegyzet; nincs jelvénye." },
+  { "id": "gyors", "label": "Gyorsjegyzet", "sym": "⚡", "color": "#e0b020", "about": "A gyors mezőből, a kezdőlap gyors sorából vagy vrg://notes/new linkről." },
+  { "id": "megosztas", "label": "Megosztás", "sym": "⇣", "color": "#6e8b3d", "about": "Más appból megosztott szöveg (Megosztás → VRG Mobile)." },
+  { "id": "sketcher", "label": "Sketcher", "sym": "◫", "color": "#27c2b0", "client": true, "mirror": true, "feature": "sketch", "link": "vrg://sketch?open={sketch}&front=jegyzet",
+    "about": "A VRG Sketcher Jegyzet frontja. Összekötött tükör: a felmérés megtartja a bejegyzést, itt ugyanaz a jegyzet; a szöveg szerkesztése mindkét irányba átmegy." },
+  { "id": "divergence", "label": "Fejlesztői jegyzet", "sym": "⚠", "color": "#d64545", "planned": true, "about": "A Divergence tábla fejlesztői jegyzete (PC)." },
+  { "id": "planner", "label": "Planner", "sym": "⌗", "color": "#2a8cdb", "planned": true, "client": true, "about": "A Planner terveihez írt jegyzetek." }
+ ]
+}

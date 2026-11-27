@@ -10,7 +10,7 @@ We continue the Planner's wireway-routing work where the previous session stoppe
 in this order, before any work:
 
 1. `Planner/projects/varler-planner/docs/workflow/WIREWAY_AUDIT_2026-10-18.md` — **the whole file.** It covers:
-   - Part 1: lessons from building the Domoszló plan with the workflow;
+   - Part 1: lessons from building the Mintafalu plan with the workflow;
    - Part 2: the red-team audit (findings F1–F13);
    - Part 3: the merged top-10 fixes;
    - Part 4: my dual routing model, reviewed. Configurations K0–K3, the data model with the new `up` field, guard
@@ -64,16 +64,16 @@ next to it, with a ⚑ to confirm against MSZ HD 60364-5-52 (audit F7).
 7. Order-independent drop grouping (sort, then sweep — plan.js:35); input validation: height > ceiling − box,
    duplicate refs, snap / merge notices.
 
-**⏸ Checkpoints:** after T0 and before T2, show me the Domoszló diff (legs, boxes, metres, warnings) and wait.
+**⏸ Checkpoints:** after T0 and before T2, show me the Mintafalu diff (legs, boxes, metres, warnings) and wait.
 
 ## Test fixtures and tools (client data — never in git, never off this machine)
 
 All under `H:\VRG\Full\jobs\Planner_projektek_2026-10-16\`:
 
-- `Domoszlo_alap.vplan.json` — the base: walls, floors, openings.
-- `Domoszlo_erosaram_2026-10-18\`:
-  - `Domoszlo_erosaram_claude.vplan.json` — the full Erősáram plan, the acceptance fixture;
-  - `DOMOSZLO_TERV.md` — its logic;
+- `Mintafalu_alap.vplan.json` — the base: walls, floors, openings.
+- `Mintafalu_erosaram_2026-10-18\`:
+  - `Mintafalu_erosaram_claude.vplan.json` — the full Erősáram plan, the acceptance fixture;
+  - `MINTAFALU_TERV.md` — its logic;
   - `falnezetek\` — 20 elevations;
   - `build-report.json`.
 - `_script\` in the same folder:
@@ -109,10 +109,10 @@ All under `H:\VRG\Full\jobs\Planner_projektek_2026-10-16\`:
 
 ## Also open (not this thread)
 
-- My own Domoszló version, to compare with Claude's in the elevations.
+- My own Mintafalu version, to compare with Claude's in the elevations.
 - CLA acceptance step B: I redraw CLA with the workflow tools.
 - E6-Q2 left at its default.
 - The parallel Simplified-UI session (`docs/simple-ui`).
 
 Start with: read the files above, confirm the plan in 5–10 lines, then build T0 item by item (tests after each),
-commit and push, and stop at the T0 ⏸ checkpoint with the Domoszló diff.
+commit and push, and stop at the T0 ⏸ checkpoint with the Mintafalu diff.

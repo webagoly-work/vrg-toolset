@@ -24,7 +24,7 @@ const VBACKUP = global.window.VBACKUP;
 // --- seed a library ---
 localStorage.setItem('villanyterv_projects_v1', JSON.stringify([
   {id:'pelda', name:'Példa ház', saved:'2026-08-01T10:00:00Z', data:{x:1}},
-  {id:'domoszlo', name:'Domoszló', saved:'2026-08-20T18:30:00Z', data:{x:2}}
+  {id:'mintafalu', name:'Mintafalu', saved:'2026-08-20T18:30:00Z', data:{x:2}}
 ]));
 localStorage.setItem('villanyterv_lock','1');
 localStorage.setItem('unrelated_key','nope');
@@ -37,7 +37,7 @@ t('app version stamped', b.app==='1.0.0');
 t('2 projects indexed', b.counts.projects===2);
 t('unrelated key excluded', !('unrelated_key' in b.store));
 t('lock key included', 'villanyterv_lock' in b.store);
-t('index names', b.index.map(p=>p.name).join('|')==='Példa ház|Domoszló');
+t('index names', b.index.map(p=>p.name).join('|')==='Példa ház|Mintafalu');
 
 const round = VBACKUP.parse(JSON.stringify(b));
 t('parse roundtrip', round.__projects.length===2);
@@ -56,17 +56,17 @@ t('rejects newer format', threw===1);
 
 // --- merge into a DIFFERENT (fresh-profile) store ---
 store.clear();
-localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'domoszlo',name:'Domoszló RÉGI',saved:'2026-01-01'}]));
-let r = VBACKUP.apply(round,'merge',['pelda','domoszlo']);
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'mintafalu',name:'Mintafalu RÉGI',saved:'2026-01-01'}]));
+let r = VBACKUP.apply(round,'merge',['pelda','mintafalu']);
 t('merge adds 1 skips 1', r.added===1&&r.skipped===1&&r.replaced===0);
-t('merge kept local copy', VBACKUP.projects().find(p=>p.id==='domoszlo').name==='Domoszló RÉGI');
+t('merge kept local copy', VBACKUP.projects().find(p=>p.id==='mintafalu').name==='Mintafalu RÉGI');
 t('merge brought other keys', localStorage.getItem('villanyterv_lock')==='1');
 
 store.clear();
-localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'domoszlo',name:'Domoszló RÉGI'}]));
-r = VBACKUP.apply(round,'overwrite',['pelda','domoszlo']);
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'mintafalu',name:'Mintafalu RÉGI'}]));
+r = VBACKUP.apply(round,'overwrite',['pelda','mintafalu']);
 t('overwrite replaces 1 adds 1', r.added===1&&r.replaced===1);
-t('overwrite took bundle copy', VBACKUP.projects().find(p=>p.id==='domoszlo').name==='Domoszló');
+t('overwrite took bundle copy', VBACKUP.projects().find(p=>p.id==='mintafalu').name==='Mintafalu');
 
 store.clear();
 localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'ghost',name:'Kísértet'}]));
@@ -87,5 +87,22 @@ t('handles id->project map', VBACKUP.projects().length===2);
 store.clear();
 t('empty store safe', VBACKUP.projects().length===0 && VBACKUP.build().counts.projects===0);
 
+// one project as a .vplan.json: the Projektek panel's envelope, which the Inventory's plannerimport.js accepts
+store.clear();
+localStorage.setItem('villanyterv_projects_v1', JSON.stringify([{id:'p1', name:'Teszt terv', ts:Date.UTC(2026,10,25), data:{building:{name:'Teszt'}, data:{devices:[]}}}]));
+const pf = VBACKUP.planFile(VBACKUP.projects()[0]);
+t('planFile: format key', pf.format==='varler-planner' && pf.version===1);
+t('planFile: name, saved, project', pf.name==='Teszt terv' && pf.saved==='2026-11-25T00:00:00.000Z' && pf.project.building.name==='Teszt');
+t('planFile: an odd entry is kept whole', VBACKUP.planFile({name:'X', raw:{building:{}}}).project.building!==undefined);
+const inv = require('path').join(__dirname,'..','..','..','..','Inventory','src','core','plannerimport.js');
+const done = import(require('url').pathToFileURL(inv).href).then(m => {
+  let ok = true; try { m.parsePlan(pf); } catch (e) { ok = false; }
+  t('planFile: the Inventory accepts it', ok);
+  let refused = false; try { m.parsePlan(VBACKUP.projects()[0].raw); } catch (e) { refused = true; }
+  t('a bare library entry (the old file) is refused', refused);
+});
+
+done.then(() => {
 console.log(A.join('\n'));
 console.log('\n'+A.filter(x=>x[0]==='P').length+'/'+A.length+' passed');
+});

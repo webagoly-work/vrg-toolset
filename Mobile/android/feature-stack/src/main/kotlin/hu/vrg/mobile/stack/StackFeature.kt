@@ -23,10 +23,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -35,6 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -72,6 +82,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import android.view.ViewGroup
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Rétegverem (WP M17): the VRG Stack's two 3D pages on the phone. The stack is built on the PC and published on
 // `stack-pages` by Mobile/stack/publish-stack.js (START → R Rétegverem → T); each page is one self-contained HTML
@@ -81,7 +92,7 @@ import android.view.ViewGroup
 //
 // The WebView is set up like Kódváros online (M5): JavaScript and DOM storage on, file and content access off,
 // the pages served from https://appassets.androidplatform.net/stack/<file> by shouldInterceptRequest, which
-// answers only the two page files; every other request gets an empty 403, so nothing leaves the phone. Touch is
+// answers only the published page files (StackPages.PAGES); every other request gets an empty 403, so nothing leaves the phone. Touch is
 // in the pages themselves (notes/stack/touch.js): one finger orbits, pinch zooms, twist turns, tap picks, double
 // tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space
 // opens / closes the Őrség lock.
@@ -140,6 +151,9 @@ object StackFeature : VrgFeature {
         return true
     }
 
+    /** The layer pages reached from the ◢ dial (StackMenu), not from the page chips. */
+    private val DIAL_ONLY = setOf("vonalak", "vezerloterem", "futasnaplo", "commitok", "erintesnyom")
+
     fun choose(id: String) {
         val p = StackPages.page(id)
         if (p == page.value) return
@@ -190,11 +204,11 @@ object StackFeature : VrgFeature {
 
     private suspend fun download(meta: StackMeta) {
         root.mkdirs()
-        val total = StackPages.PAGES.sumOf { meta.bytes(it) }.coerceAtLeast(1)
+        val total = meta.pages.sumOf { meta.bytes(it) }.coerceAtLeast(1)
         var before = 0L
         val started = System.currentTimeMillis()
         val parts = mutableListOf<Pair<File, File>>()
-        for (p in meta.pages()) {                        // the 3D pages always, a layer page when the PC published it
+        for (p in meta.pages) {   // every page this publish carries: the 3D pages always, an optional one when the PC published it
             val want = meta.bytes(p)
             val part = file(p.file + ".part")
             val got = GitHub.download(GitHubUrls.API + StackPages.contents(VrgRepo.PATH, p.file), part, RAW) { done ->
@@ -228,7 +242,7 @@ object StackFeature : VrgFeature {
 
     private fun pageUrl(file: String) = "https://$HOST/${StackPages.DIR}/$file"
 
-    /** Only the two page files; everything else is refused. */
+    /** Only the published page files (StackPages.PAGES); everything else is refused. */
     private fun serve(uri: Uri): WebResourceResponse {
         val seg = uri.pathSegments
         val p = if (uri.host == HOST && seg.size == 2 && seg[0] == StackPages.DIR) StackPages.byFile(seg[1]) else null
@@ -257,7 +271,15 @@ object StackFeature : VrgFeature {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val u = request.url
-                if (u.host == HOST) return false
+                if (u.host == HOST) {
+                    // a link from one stack page to another (Ötletfolyam → Konnektóm …): switch the chip, so the bar follows;
+                    // the same page (a #sel= fragment) loads in place; an unpublished page or anything else stays put
+                    val seg = u.pathSegments
+                    val p = if (seg.size == 2 && seg[0] == StackPages.DIR) StackPages.byFile(seg[1]) else null
+                    if (p != null && p == page.value) return false
+                    if (p != null && shown.value?.pages?.contains(p) == true) main.post { choose(p.id) }
+                    return true
+                }
                 if (request.isForMainFrame && (u.scheme == "https" || u.scheme == "http"))
                     runCatching { view.context.startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 return true
@@ -282,11 +304,24 @@ object StackFeature : VrgFeature {
 
     // ---- the screen -----------------------------------------------------------------------------------------
 
+    /** A glyph-only chip in a fixed 48 dp slot, read by TalkBack as its [description] (UI-CHECKLIST 1.1, 3.4, 8.1). */
+    @Composable
+    private fun IconChip(glyph: String, description: String, action: () -> Unit) {
+        Box(Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+            .clearAndSetSemantics { contentDescription = description; role = Role.Button; onClick { action(); true } },
+            contentAlignment = Alignment.Center) {
+            VrgChip(glyph, onClick = action)
+        }
+    }
+
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Screen(host: FeatureHost) {
         val account by GitHub.account.collectAsStateWithLifecycle()
         val current by page.collectAsStateWithLifecycle()
         val meta by shown.collectAsStateWithLifecycle()
+        // the page on screen: the chosen one if the publish has it (an older publish has no Kisokos), else its first page
+        val showing = meta?.page(current.id) ?: current
         val tick by loaded.collectAsStateWithLifecycle()
         val loading by busy.collectAsStateWithLifecycle()
         val pct by progress.collectAsStateWithLifecycle()
@@ -309,16 +344,17 @@ object StackFeature : VrgFeature {
 
         Column(Modifier.fillMaxSize().then(if (isFull) Modifier.background(Melyviz.abyss) else Modifier)) {
             if (!isFull) Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
-                // one row: back, the title, the two pages, refresh, full screen; nothing wraps or overlaps
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                        modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
-                    Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f))
-                    // the three 3D pages; a layer page (opened from the ◢ dial) shows as a fourth chip while it is on screen
-                    StackPages.PAGES.filter { !it.optional || it == current }.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
-                    VrgChip(if (loading) "…" else "⟳") { refresh() }
-                    if (meta != null) VrgChip("⛶") { full.value = true }
+                // row 1: back, the title, refresh, full screen (fixed 48 dp slots, so a large font cannot squeeze them out);
+                // row 2: the pages, wrapping when they do not fit (UI-CHECKLIST 4.5, 3.5)
+                FeatureTop(host, info, bar = true) {
+                    IconChip(if (loading) "…" else "⟳", "Frissítés") { refresh() }
+                    if (meta != null) IconChip("⛶", "Teljes képernyő") { full.value = true }
+                }
+                FlowRow(Modifier.fillMaxWidth().padding(bottom = 2.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // the layer pages opened from the ◢ dial (Mobile D-191) show as a chip only while one is on screen
+                    (meta?.pages ?: StackPages.REQUIRED).filter { it.id !in DIAL_ONLY || it == showing }
+                        .forEach { p -> VrgChip(p.title, selected = p == showing) { choose(p.id) } }
                 }
                 val m = meta
                 if (m != null) {
@@ -330,7 +366,7 @@ object StackFeature : VrgFeature {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
                 }
-                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
+                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
             }
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val m = meta
@@ -340,7 +376,7 @@ object StackFeature : VrgFeature {
                     Text("${current.title}: ez a réteg még nincs a telefonon. A PC-n egy közzététel hozza át: node Mobile/stack/publish-stack.js --push",
                         style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(16.dp))
                 } else {
-                    val url = pageUrl(current.file)
+                    val url = pageUrl(showing.file)
                     AndroidView(
                         factory = { ctx -> makeWebView(ctx).also { web = it } },
                         modifier = Modifier.fillMaxSize(),

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -21,8 +23,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,6 +73,7 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import hu.vrg.mobile.kit.ui.shareText
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Haladás (WP M4, D-8 = A): one screen for "where does the work stand?". Everything lands on main, so
 // main comes first: its commits, its CI and the tools it changed this week. A branch shows only while it
@@ -197,9 +202,10 @@ object PulseFeature : VrgFeature {
 
         PullToRefreshBox(isRefreshing = loading, onRefresh = { refresh() }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                    modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-                Text("HALADÁS", style = Melyviz.title.copy(fontSize = 18.sp))
+                // a 48 dp button for TalkBack and thumbs (UI-CHECKLIST 1.1, 8.1)
+                // the header (Fényjel R3: kit FeatureTop); a visible refresh (also the retry after an error): pull-to-refresh
+                // alone is out of reach for TalkBack/Switch (9.1, 5.5)
+                FeatureTop(host, info) { if (account is Account.SignedIn) VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() } }
 
                 if (account !is Account.SignedIn) {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 8.dp))
@@ -217,7 +223,7 @@ object PulseFeature : VrgFeature {
 
     @Composable
     private fun Body(v: PulseView, ctx: Context) {
-        Text("Frissítve ${v.tookMs} ms alatt · húzd le az újratöltéshez", style = Melyviz.small)
+        Text("Frissítve ${v.tookMs} ms alatt · húzd le, vagy ⟳ Frissítés", style = Melyviz.small)
 
         VrgSectionTitle("main")
         Text("${v.ci.mark} ${v.ci.label}", style = Melyviz.readout)
@@ -244,7 +250,9 @@ object PulseFeature : VrgFeature {
                 if (r.mainFiles > 0) Text("${r.mainFiles} fájl", style = Melyviz.readout.copy(fontSize = 11.sp))
                 if (r.branches.isNotEmpty()) {
                     Spacer(Modifier.width(8.dp))
-                    Text(r.branches.joinToString(), style = Melyviz.small.copy(color = Melyviz.sand))
+                    // long branch names must not squeeze the tool's name to nothing (UI-CHECKLIST 4.6)
+                    Text(r.branches.joinToString(), style = Melyviz.small.copy(color = Melyviz.sand),
+                        maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 }
             }
         }
@@ -276,7 +284,7 @@ object PulseFeature : VrgFeature {
         val clipboard = LocalClipboardManager.current
         Box {
             Text("PR #$number", style = Melyviz.small.copy(color = Melyviz.current),
-                modifier = Modifier.rco(onClick = { open(ctx, url) }, onLong = { menu = true }).padding(vertical = 2.dp))
+                modifier = Modifier.heightIn(min = 48.dp).rco(onClick = { open(ctx, url) }, onLong = { menu = true }).wrapContentHeight().padding(end = 12.dp))
             RcoMenu(menu, { menu = false }, "PR #$number", listOf(
                 RcoItem("↗", "Megnyitás a GitHubon") { open(ctx, url) },
                 RcoItem("⧉", "Link másolása") { clipboard.setText(AnnotatedString(url)) },

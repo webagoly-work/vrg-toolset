@@ -34,7 +34,7 @@ function shortQty(n) {
 }
 
 /**
- * encodeList({ nev, sorok:[{vrg_id, mennyiseg}] }) -> "VRGL1|Hetényi|0098:7,0004:1"
+ * encodeList({ nev, sorok:[{vrg_id, mennyiseg}] }) -> "VRGL1|Mintanév|0098:7,0004:1"
  * The list name is included because a list without a name arrives as a puzzle.
  */
 function encodeList(list) {

@@ -22,15 +22,34 @@
   };
   const LV_HU = { user: 'Felhasználó', dev: 'Fejlesztő', all: 'Minden' };
   const LV_EN = { user: 'User', dev: 'Dev', all: 'All' };
-  const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás' };
+  const LV_SHORT = { user: 'Felh.', dev: 'Fejl.', all: 'Mind' };              // WP-60: the level switch in a narrow top strip
+  const PANE_HU = { home: 'Kezdőlap', empty: 'Üres', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta', stack: 'Kontextuscsomag', chat: 'Claude', note: 'Jegyzet', git: 'Git', feed: 'Hírfolyam', app: 'Alkalmazás', sessions: 'Munkamenetek', controller: 'Vezérlő' };
 
-  const S = { level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
+  const S = { look: 'melyviz', level: 'user', view: 'dashboard', top: null, dock: null, auth: false, toggle: D.DEFAULT_TOGGLE, items: [], groups: {}, sections: {}, ports: {}, ready: false, wsShown: false };
   const byId = id => S.items.find(i => i.id === id) || null;
   const data = () => window.VRG_DASH || {};
   const toast = (ok, hu, en) => { if (window.VRGToasts) window.VRGToasts.toast({ ok, hu, en: en || hu }); };
   const call = (fn, p) => (vrg && vrg.call ? vrg.call('desktop', fn, p || {}) : Promise.resolve({ ok: false }));
   const setting = (k, v) => (vrg && vrg.call ? vrg.call('app', 'setting', v === undefined ? { k } : { k, v }) : Promise.resolve({}));
-  const relayout = () => window.dispatchEvent(new Event('resize'));          // the frame re-reports the view rects (hidden ancestors → 0)
+  const relayout = () => window.dispatchEvent(new Event('resize'));
+
+  // ------------------------------------------------------------ the look: Mélyvíz (default), Grafit (shared/grafit.css + grafit.css) or
+  // Fényjel (shared/fenyjel + fenyjel-home.css; its home is fenyjel-home.js). The title-bar ◐ steps through them in this order.
+  const LOOKS = ['melyviz', 'grafit', 'fenyjel'];
+  const LOOK_HU = { melyviz: 'Mélyvíz', grafit: 'Grafit', fenyjel: 'Fényjel' };
+  const nextLook = lk => LOOKS[(LOOKS.indexOf(lk) + 1) % LOOKS.length];
+  function applyLook(v) {
+    const lk = LOOKS.includes(v) ? v : 'melyviz';
+    const was = S.look;
+    if (lk === 'melyviz') delete document.documentElement.dataset.look; else document.documentElement.dataset.look = lk;
+    S.look = lk;
+    const b = $('[data-role="look-toggle"]');
+    if (b) { b.setAttribute('aria-pressed', String(lk !== 'melyviz')); b.title = 'Megjelenés: ' + LOOK_HU[lk] + ' → ' + LOOK_HU[nextLook(lk)] + ' / Look'; }
+    document.dispatchEvent(new Event('vrg:look'));                  // open terminals recolour (panes/term.js)
+    if (was !== lk && S.ready) { if (was === 'fenyjel' && window.VRGFenyjelHome) window.VRGFenyjelHome.stop(); renderDashboard(); }   // the home is drawn per look
+    return lk;
+  }
+  async function setLook(v) { applyLook(v === 'toggle' ? nextLook(S.look) : v); await setting('ui.look', S.look); return S.look; }          // the frame re-reports the view rects (hidden ancestors → 0)
 
   // ------------------------------------------------------------ the DOM the frame page provides (vrg-desktop.html)
   const stage = $('#stage'), dash = $('[data-role="dashboard"]'), desk = $('[data-role="desktop"]'), ws = $('[data-role="workspace"]');
@@ -68,7 +87,8 @@
   }
   function levelControl() {
     return h('span', { 'data-role': 'level', title: 'Szint / Level' }, D.LEVELS.map(lv =>
-      h('button', { type: 'button', 'data-level': lv, 'aria-pressed': String(lv === S.level), title: LV_EN[lv], onclick: e => { e.stopPropagation(); setLevel(lv); } }, LV_HU[lv])));
+      h('button', { type: 'button', 'data-level': lv, 'aria-pressed': String(lv === S.level), title: LV_EN[lv], onclick: e => { e.stopPropagation(); setLevel(lv); } },
+        h('span', { class: 'lbl' }, LV_HU[lv]), h('span', { class: 'sh' }, LV_SHORT[lv]))));
   }
 
   // ------------------------------------------------------------ opening: a catalog id → what main says to do
@@ -103,7 +123,7 @@
     }
     setView('desktop');
     showWindows(true);
-    if (r.do === 'pane' && F) { const ex = F.panes().find(p => (F.kindOf ? F.kindOf(p) : '') === r.kind); if (ex && F.focus && ['files', 'git', 'mail', 'feed', 'chat'].includes(r.kind)) F.focus(ex); else F.open(r.kind, {}); return true; }
+    if (r.do === 'pane' && F) { const ex = F.panes().find(p => (F.kindOf ? F.kindOf(p) : '') === r.kind); if (ex && F.focus && ['files', 'git', 'mail', 'feed', 'chat', 'sessions'].includes(r.kind)) F.focus(ex); else F.open(r.kind, {}); return true; }
     if (r.do === 'web' && F) return F.openUrl(r.url);
     if (r.do === 'app' && F) {
       const ex = F.panes().find(p => F.kindOf && F.kindOf(p) === 'app' && (F.stateOf(p) || {}).id === r.id);
@@ -391,7 +411,20 @@
 
   const SEC = { ma: secMa, apps: secApps, programok: secProgramok, archivum: secArchivum, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
 
+  // Fényjel R4: the home is fenyjel-home.js's (rail, continue cards, glyph grid, the console column); it calls back for every action
+  function fenyjelCtx() {
+    return {
+      items: S.items, data: data(), ports: S.ports, level: S.level, levelControl,
+      open: openItem, runAct, openServer,
+      serverStart: async id => { const r = await call('serverStart', { id }); toast(!!(r && r.ok !== false), r && r.ok !== false ? (r.already ? 'Már fut.' : 'Indul…') : ((r && r.hu) || 'Nem indult.')); },
+      serverStop: async id => { const r = await call('serverStop', { id }); toast(!!(r && r.ok !== false), r && r.ok !== false ? 'Leállítva.' : ((r && r.hu) || 'Nem állt le.') + ' Csak az Asztalból indítottat lehet itt leállítani.'); },
+      sys: () => call('sys', {}),
+      palette: () => { if (window.VRGPalette) window.VRGPalette.open(); },
+    };
+  }
+
   function renderDashboard() {
+    if (S.look === 'fenyjel' && window.VRGFenyjelHome) { window.VRGFenyjelHome.render(dash, fenyjelCtx()); return; }
     const secs = D.sections(S.items, S.level, S.sections, S.groups);
     const inner = h('div', { class: 'dash-in' },
       h('div', { 'data-role': 'dash-head' }, h('h1', {}, 'Irányítópult'), h('span', { class: 'sub' }, 'VRG Asztal · ' + (data().generated || '')), h('span', { class: 'sp' }),
@@ -416,13 +449,18 @@
   }
   function widget(c) {
     const d = data(), st = d.stats || {};
-    if (!c.widget) return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem(c.id) }, (byId(c.id) || {}).icon || '', ' ', c.hu);
+    // WP-60: what a narrow strip may drop is in .lbl; the icon, the LED and the number stay
+    if (!c.widget) return h('button', { type: 'button', 'data-w': c.id, title: c.hu + ' / ' + c.en, onclick: () => openItem(c.id) }, (byId(c.id) || {}).icon || c.hu.slice(0, 2).toUpperCase(), h('span', { class: 'lbl' }, ' ' + c.hu));
     switch (c.id) {
-      case 'w:clock': { const e = h('span', { 'data-w': c.id, title: c.en }); const tick = () => { const n = new Date(); e.textContent = n.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) + '  ' + n.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }); }; tick(); clearInterval(clockTimer); clockTimer = setInterval(tick, 15000); return e; }
-      case 'w:search': return h('button', { type: 'button', 'data-w': c.id, title: 'Quick bar', onclick: () => window.VRGQuickBar && window.VRGQuickBar.open() }, '⌕ Keresés');
-      case 'w:servers': { const sv = d.servers || [], up = sv.filter(s => S.ports[s.port]).length; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => (S.level === 'user' ? setView('dashboard') : openItem('servers')) }, h('i', { class: 'dot' + (up ? ' ok' : '') }), up + '/' + sv.length + ' szerver'); }
-      case 'w:git': { const g = st.git || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('git') }, h('i', { class: 'dot' + (g.uncommitted ? ' warn' : ' ok') }), (g.branch || 'git') + (g.uncommitted ? ' · ' + g.uncommitted : '')); }
-      case 'w:backup': { const b = st.backup || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en + (b.when ? ' ' + b.when : ''), onclick: () => openItem('backup') }, h('i', { class: 'dot' + (b.ok === false ? ' crit' : b.age > 7 ? ' warn' : ' ok') }), 'mentés ' + (b.age !== undefined ? b.age + ' n' : '—')); }
+      case 'w:clock': {
+        const t = h('span', {}), dt = h('span', { class: 'lbl' }), e = h('span', { 'data-w': c.id, title: c.en }, t, dt);
+        const tick = () => { const n = new Date(); t.textContent = n.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }); dt.textContent = '  ' + n.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }); };
+        tick(); clearInterval(clockTimer); clockTimer = setInterval(tick, 15000); return e;
+      }
+      case 'w:search': return h('button', { type: 'button', 'data-w': c.id, title: 'Quick bar', onclick: () => window.VRGQuickBar && window.VRGQuickBar.open() }, '⌕', h('span', { class: 'lbl' }, ' Keresés'));
+      case 'w:servers': { const sv = d.servers || [], up = sv.filter(s => S.ports[s.port]).length; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => (S.level === 'user' ? setView('dashboard') : openItem('servers')) }, h('i', { class: 'dot' + (up ? ' ok' : '') }), up + '/' + sv.length, h('span', { class: 'lbl' }, ' szerver')); }
+      case 'w:git': { const g = st.git || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('git') }, h('i', { class: 'dot' + (g.uncommitted ? ' warn' : ' ok') }), h('span', { class: 'lbl' }, (g.branch || 'git') + (g.uncommitted ? ' · ' : '')), g.uncommitted ? String(g.uncommitted) : ''); }
+      case 'w:backup': { const b = st.backup || {}; return h('button', { type: 'button', 'data-w': c.id, title: c.en + (b.when ? ' ' + b.when : ''), onclick: () => openItem('backup') }, h('i', { class: 'dot' + (b.ok === false ? ' crit' : b.age > 7 ? ' warn' : ' ok') }), h('span', { class: 'lbl' }, 'mentés '), b.age !== undefined ? b.age + ' n' : '—'); }
       case 'w:ring': return h('button', { type: 'button', 'data-w': c.id, title: c.en, onclick: () => openItem('divergence') }, ringSvg());
       case 'w:level': return h('span', { 'data-w': c.id }, levelControl());
     }
@@ -433,8 +471,56 @@
     if (window.VRGPhone) top.append(window.VRGPhone.button());                    // WP-49: first, always there (a saved strip cannot lack it, an overflow cannot hide it)
     for (const c of D.topStrip(S.items, S.top)) top.append(widget(c));
     if (window.VRGSheets) window.VRGSheets.barInto(top, 'top');                // the Lap tabs (WP-46), when the bar sits on top
-    top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Customise the top strip', onclick: openCustomize }, '⚙ Testreszabás'));
+    top.append(h('span', { class: 'sp' }), h('button', { type: 'button', 'data-role': 'customize', title: 'Testreszabás / Customise the top strip', onclick: openCustomize }, '⚙', h('span', { class: 'lbl' }, ' Testreszabás')));
+    fitTop();
   }
+  // WP-60: the strip fits its width (a narrow window, a large font, many widgets). First the labels go (data-fit="1": the
+  // icon, the LED and the number stay, the title keeps the words), then widgets go into ⋯, the least needed first. The
+  // phone, the Lap tabs, the level switch and ⚙ always stay.
+  const TOP_KEEP = { 'w:clock': 9, 'w:search': 5, 'w:servers': 4, 'w:git': 3, 'w:backup': 2, 'w:ring': 1 };   // a program button: 6
+  function fitTop() {
+    if (!top || !top.clientWidth) return;                                        // hidden (the other view): the observer calls again
+    const over = () => top.scrollWidth > top.clientWidth + 1;
+    const old = top.querySelector(':scope > [data-role="top-more"]'); if (old) old.remove();
+    const ws = [...top.querySelectorAll(':scope > [data-w]')].filter(e => e.dataset.w !== 'w:level');
+    for (const e of ws) e.hidden = false;
+    top.dataset.fit = '';
+    if (!over()) return;
+    top.dataset.fit = '1';
+    if (!over()) return;
+    const gone = [];
+    const more = h('button', { type: 'button', 'data-role': 'top-more', title: 'Több / More', 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); topMenu(more, gone); } }, '⋯');
+    top.insertBefore(more, top.querySelector(':scope > .sp'));
+    const order = ws.map((e, i) => ({ e, i, k: TOP_KEEP[e.dataset.w] || 6 })).sort((a, b) => a.k - b.k || b.i - a.i);
+    for (const x of order) { if (!over()) break; x.e.hidden = true; gone.push(x); }
+    if (!gone.length) { more.remove(); return; }
+    gone.sort((a, b) => a.i - b.i);
+    more.title = 'Több: ' + gone.map(x => x.e.title || x.e.textContent).join(', ');
+  }
+  // the ⋯ menu: the widgets the strip had no room for, at full width; one click runs one and closes the menu
+  function topMenu(anchor, gone) {
+    const old = $('[data-role="top-menu"]'); if (old) { old.remove(); return; }
+    const box = h('div', { 'data-role': 'top-menu', role: 'menu' });
+    const close = () => { box.remove(); document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', esc, true); };
+    const away = e => { if (!box.contains(e.target) && e.target !== anchor) close(); };
+    const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); anchor.focus(); } };
+    for (const x of gone) {
+      const c = x.e;
+      const it = c.dataset.w === 'w:clock' ? h('span', {}, c.textContent) : c.cloneNode(true);
+      it.hidden = false; it.setAttribute('role', 'menuitem');
+      if (!it.textContent.trim() && c.title) it.append(' ' + c.title);   // an icon-only widget (the ring) says what it is here
+      if (it.tagName === 'BUTTON') it.addEventListener('click', () => { close(); c.click(); });
+      box.append(it);
+    }
+    const r = anchor.getBoundingClientRect();
+    box.style.top = Math.round(r.bottom + 4) + 'px';
+    box.style.left = Math.round(Math.min(r.left, window.innerWidth - 260)) + 'px';
+    document.body.append(box);
+    document.addEventListener('pointerdown', away, true); document.addEventListener('keydown', esc, true);
+    const first = box.querySelector('button'); if (first) first.focus();
+  }
+  if (top && window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(fitTop)).observe(top);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTop());
   function running() {
     const F = window.VRGFrame;
     if (!F || !F.panes) return [];
@@ -527,10 +613,12 @@
         const c = m && m.cmd;
         if (c === 'toggle') toggle(); else if (c === 'view:dashboard') setView('dashboard'); else if (c === 'view:desktop') setView('desktop');
         else if (typeof c === 'string' && c.startsWith('level:')) setLevel(c.slice(6)); else if (c === 'settings') openSettings(); else if (c === 'customize') openCustomize();
+        else if (typeof c === 'string' && c.startsWith('look:')) setLook(c.slice(5));
       });
     }
     if (vrg && vrg.onPorts) vrg.onPorts(p => { S.ports = p || {}; if (S.ready) { drawTop(); if (S.view === 'dashboard') renderDashboard(); } });
     const tg = $('[data-role="view-toggle"]'); if (tg) tg.addEventListener('click', toggle);
+    const lt = $('[data-role="look-toggle"]'); if (lt) lt.addEventListener('click', e => { e.stopPropagation(); setLook('toggle'); });
     // double-click / double-tap on empty background: the Desktop ground, or the Dashboard's page margin
     ws.addEventListener('dblclick', e => { if (!S.wsShown || e.target === ws) toggle(); });
     dash.addEventListener('dblclick', e => { if (e.target === dash || e.target.classList.contains('dash-in') || e.target.classList.contains('dash-sec')) toggle(); });
@@ -592,6 +680,7 @@
       S.top = Array.isArray(st.top) ? st.top : null;
       S.dock = Array.isArray(st.dock) ? st.dock : null;
       S.auth = st.auth === true;
+      applyLook(st.look);
       if (st.toggle) S.toggle = st.toggle;
       S.start = st.start === 'windows' ? 'windows' : '';
       if (S.start) S.view = 'desktop';
@@ -607,9 +696,9 @@
   }
 
   window.VRGDesk = {
-    view: () => S.view, setView, level: () => S.level, setLevel, toggle, open: openItem, render, showWindows,
+    view: () => S.view, setView, level: () => S.level, items: () => S.items, setLevel, toggle, open: openItem, render, showWindows, look: () => S.look, setLook,
     get sui() { return S.sui; }, get stack() { return S.stack; },
-    state: () => ({ view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
+    state: () => ({ look: S.look, view: S.view, level: S.level, items: S.items.length, wsShown: S.wsShown, ready: S.ready, boot: document.body.dataset.boot, auth: S.auth }),
     openSettings, openCustomize, advance, apply: applyOpen, drawDock,
   };
   if (stage && dash && desk) boot();

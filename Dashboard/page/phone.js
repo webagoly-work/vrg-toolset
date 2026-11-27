@@ -213,7 +213,7 @@
     return s;
   }
   function button(cls) {
-    return h('button', { type: 'button', class: cls || '', 'data-role': 'phone-open', title: 'Telefon: rádiók, minden szerver indítása, QR a telefonhoz / Phone link', onclick: open }, phoneIcon(), 'Telefon');
+    return h('button', { type: 'button', class: cls || '', 'data-role': 'phone-open', title: 'Telefon: rádiók, minden szerver indítása, QR a telefonhoz / Phone link', onclick: open }, phoneIcon(), h('span', { class: 'lbl' }, 'Telefon'));
   }
 
   window.VRGPhone = { open, close, isOpen: () => !!P.el, button, state: () => ({ open: !!P.el, ip: P.ip, scan: P.scan, shown: [...P.shown] }) };

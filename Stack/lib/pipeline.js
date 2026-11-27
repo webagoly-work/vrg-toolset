@@ -1,8 +1,8 @@
 // VRG Stack — the build, as a list of guarded stages.
 //
-//   archive → layers F I Q L A R C G → join → record → U (Futás) → pillars → analytics
+//   archive → layers F I Q L A R C G K → join → record → U (Futás) → pillars → analytics
 //   → validate → write graph → events + snapshot → index (+ embeddings) → codec · drift · status
-//   → patterns · proposals · replay · connectome · lens · forecast · layer text · lineage · control · commits · decisions · metro · runs → health
+//   → patterns · proposals · replay · connectome · lens · forecast · layer text · lineage · control · commits · decisions · metro · runs · kisokos → health
 //
 // Rules each stage keeps:
 //  · sources are read, never written; everything written goes to out/ (derived) or data/ (history)
@@ -57,8 +57,8 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     layers.R = await hc.stage('layer R · DevRepo', () => L.devrepo(), { fallback: () => H.carryForward(prev, 'R') });
     const commitsByPath = new Map();
     for (const n of layers.R.nodes) for (const f of (n.extra && n.extra.files) || []) if (!commitsByPath.has(f) || commitsByPath.get(f) < n.t) commitsByPath.set(f, n.t);
-    const adapters = { W: () => L.people(), F: () => L.featured(), V: () => L.look(facts), M: () => L.jobs(), D: () => L.devices(facts), O: () => L.outside(facts), N: () => L.entry(), P: () => L.probe(facts), I: () => L.ideas(), T: () => L.todo(facts), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts) };
-    for (const code of ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'C', 'D', 'O', 'G']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
+    const adapters = { W: () => L.people(), F: () => L.featured(), V: () => L.look(facts), M: () => L.jobs(), D: () => L.devices(facts), O: () => L.outside(facts), N: () => L.entry(), P: () => L.probe(facts), I: () => L.ideas(), T: () => L.todo(facts), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts), K: () => L.kisokos() };
+    for (const code of ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'C', 'D', 'O', 'G', 'K']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
     const ordered = {}; for (const c of LAYER8) ordered[c] = layers[c];
 
     /* ---- 2–6. join, recordings, U, pillars, analytics, the graph (shared with the incremental build) */
@@ -120,6 +120,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('layer pages', () => log(require('./layerpages').write({ graph }).msg), { optional: true });   // K M D V O P pages (lib/layerpages.js)
     await hc.stage('board', () => { const b = require('./board').write({ graph }); log(b.msg); const d = b.data.dupes;
       if (d.length) hc.warn('board', `${d.length} fields are kept in two hand-edited files (${[...new Set(d.map(x => x.field))].join(', ')}: ${d.slice(0, 5).map(x => x.thread).join(', ')}${d.length > 5 ? ' …' : ''}); the Füzértábla lists them, its value is the owner's`); }, { optional: true });   // Füzértábla (board.html, S4)
+    await hc.stage('kisokos', () => log(require('./kisokos').write({ graph }).msg), { optional: true });   // Kisokos 3D (kisokos.html)
     const ms = Date.now() - t0;
     X.writeAtomic(path.join(CFG.out, 'STATUS.md'), INS.status(graph, metrics, codec.report, ms));
     const props = INS.proposals({ graph, communities, pat, health: hc });
@@ -266,7 +267,7 @@ async function assemble(ordered, facts, prev, hc, log, o = {}) {
    Written by every full build; read by runLayers. A layer whose adapter ran gets a fresh copy after the join. */
 const CACHE = () => path.join(CFG.out, 'layers');
 const CACHE_TEXT = 4000;
-const LAYER8 = ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'R', 'C', 'D', 'O', 'G'];   // every adapter layer (the name is older than T)
+const LAYER8 = ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'R', 'C', 'D', 'O', 'G', 'K'];   // every adapter layer (the name is older than T)
 function saveCache(ordered, sig, only) {
   fs.mkdirSync(CACHE(), { recursive: true });
   for (const code of LAYER8) {
@@ -291,7 +292,7 @@ function loadCache() {
    and builds nothing: the caller then runs the full build. */
 const ADAPT = {
   W: () => L.people(), F: () => L.featured(), V: facts => L.look(facts), M: () => L.jobs(), D: facts => L.devices(facts), O: facts => L.outside(facts), N: () => L.entry(), P: facts => L.probe(facts), I: () => L.ideas(), T: facts => L.todo(facts), Q: facts => L.decisions(facts), L: () => L.devlog(), A: facts => L.agentic(facts),
-  R: () => L.devrepo(), C: (facts, lay) => L.code(facts, commitsOf(lay.R)), G: facts => L.globe(facts),
+  R: () => L.devrepo(), C: (facts, lay) => L.code(facts, commitsOf(lay.R)), G: facts => L.globe(facts), K: () => L.kisokos(),
 };
 function commitsOf(R) {
   const m = new Map();
@@ -299,7 +300,7 @@ function commitsOf(R) {
   return m;
 }
 const PAGE_STAGES = {
-  Q: ['decisions'], L: ['metro', 'board'], I: ['lineage'], A: ['control'], R: ['commits'], F: ['board'], T: ['board'], N: [], P: [], M: [], D: [], V: [], O: [], W: [],
+  Q: ['decisions'], L: ['metro', 'board'], I: ['lineage'], A: ['control'], R: ['commits'], F: ['board'], T: ['board'], N: [], P: [], M: [], D: [], V: [], O: [], W: [], K: ['kisokos'],
   E: ['decisions', 'metro', 'lineage', 'control', 'commits', 'runs', 'board'],
 };
 async function runLayers(codes, { quiet = true } = {}) {
@@ -330,7 +331,7 @@ async function runLayers(codes, { quiet = true } = {}) {
     const pages = new Set(['signals', 'people', 'layerpages']); for (const c of want) for (const p of PAGE_STAGES[c] || []) pages.add(p);   // J is recomputed on every build
     const PAGE = { decisions: () => require('./decisions').write({ graph, q: ordered8.Q, nodes }), metro: () => require('./metro').write({ graph }), lineage: () => require('./lineage').write({ graph }),
       control: () => require('./control').write({ graph }), commits: () => require('./commitpixel').write({ graph }), runs: () => require('./runs').write({ graph }),
-      board: () => require('./board').write({ graph }), signals: () => require('./signalboard').write({ graph }), people: () => require('./peoplepage').write({ graph }), layerpages: () => require('./layerpages').write({ graph }) };
+      board: () => require('./board').write({ graph }), kisokos: () => require('./kisokos').write({ graph }), signals: () => require('./signalboard').write({ graph }), people: () => require('./peoplepage').write({ graph }), layerpages: () => require('./layerpages').write({ graph }) };
     for (const p of pages) await hc.stage(p, () => log(PAGE[p]().msg), { optional: true });
     const ms = Date.now() - t0;
     const failed = [];

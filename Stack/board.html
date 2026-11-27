@@ -110,7 +110,7 @@
   if (!D) { wrap.innerHTML = '<section class="box"><h3>Nincs adat</h3><p>Futtasd: <code>node stack.js build</code> (out/board-data.js). <i>No data yet.</i></p></section>'; return; }
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const md = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
-  const COL = { W: '#f5e6b8', F: '#e3be7b', V: '#a6c8ff', M: '#d9b38c', N: '#9fe0c4', S: '#f2c4e0', I: '#c6a0e6', T: '#ee9bb4', Q: '#e4877d', L: '#8bcca1', A: '#7fd3ec', U: '#ff9a52', P: '#b8e06a', R: '#f0dc6e', C: '#5b8fe0', D: '#6fc7c0', O: '#c9a6e0', G: '#8aa4b4', J: '#ff5f56', Z: '#b0b8be' };
+  const COL = { W: '#f5e6b8', F: '#e3be7b', V: '#a6c8ff', M: '#d9b38c', N: '#9fe0c4', S: '#f2c4e0', I: '#c6a0e6', T: '#ee9bb4', Q: '#e4877d', L: '#8bcca1', A: '#7fd3ec', U: '#ff9a52', P: '#b8e06a', R: '#f0dc6e', C: '#5b8fe0', D: '#6fc7c0', O: '#c9a6e0', G: '#8aa4b4', K: '#5ee6c0', J: '#ff5f56', Z: '#b0b8be' };
   const SC = D.scale || {}, CL = D.classes || {};
   const F = { q: '', area: '', done: false, drift: false, sel: '' };
   const rows = D.areas.flatMap(a => a.rows);

@@ -11,8 +11,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,6 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.content.IntentCompat
@@ -40,6 +45,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Cell
+import hu.vrg.mobile.core.PhoneSheets
 import hu.vrg.mobile.core.Sheets
 import hu.vrg.mobile.core.SheetsDoc
 import hu.vrg.mobile.core.DeskUnit
@@ -98,7 +104,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
 
         setContent {
             val look by ShellSettings.flow.collectAsStateWithLifecycle()
-            LaunchedEffect(look.palette) { Melyviz.palette = Palettes.byId(look.palette) }
+            // Fényjel R3: an open feature wears its family colour (Palettes.forFeature leaves every other palette alone)
+            LaunchedEffect(look.palette, current) { Melyviz.palette = Palettes.forFeature(Palettes.byId(look.palette), current) }
             LaunchedEffect(look.orientation) { applyOrientation(look.orientation) }
             // UI size: every screen scales together, text included
             val d = LocalDensity.current
@@ -112,7 +119,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                     } else if (feature != null) {
                         BackHandler { home() }
                         DisposableEffect(id) { onDispose { keepScreenOn(false) } }
-                        Box(Modifier.fillMaxSize().systemBarsPadding()) { feature.Screen(this@ShellActivity) }
+                        // imePadding: edge-to-edge (targetSdk 35) no longer resizes the window for the keyboard (UI audit 4.4)
+                        Box(Modifier.fillMaxSize().systemBarsPadding().imePadding()) { feature.Screen(this@ShellActivity) }
                     } else {
                         val planned = Catalogue.byId(id)
                         val at = catalogAt
@@ -152,7 +160,8 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             else Box(Modifier.fillMaxSize()) {
                 VarlerWatermark()        // the Varler mark, faint, in the palette's glow, behind both homes
                 BackHandler(compactPeek) { compactPeek = false }
-                Desk(sheets, list)
+                // Fényjel (R2): its own home, Vezérlőpult and dock; a sheet that is up keeps the Asztal around it
+                if (Melyviz.palette.fenyjel && !onSheet) FenyjelShell(windows, desk, ::note) else Desk(sheets, list)
             }
         }
     }
@@ -169,7 +178,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 windows, desk, list,
                 sheetArea = if (Sheets.phone.sheetOf(sheets, sheets.active) == null) null
                 else { m -> SheetArea(m, sheets, sheetsHost) { c -> pickAt = c; picking = true } },
-                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView) },
+                tabs = { SheetTabs(sheets, onAdd = { adding = true }, onMenu = { menuFor = it }, onHomeLong = ::toggleHomeView, modifier = Modifier.weight(1f, fill = false)) },
             )
             if (picking) SheetPicker(pickAt) { picking = false }
             if (adding) NewSheetPanel(sheets) { adding = false }
@@ -182,11 +191,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     @Composable
     private fun Note(text: String?, modifier: Modifier) {
         if (text == null) return
-        LaunchedEffect(text) { delay(3500); if (message == text) message = null }
+        // read out by TalkBack, above the dock, a little longer, and a tap puts it away (UI audit 6.5, 8.5)
+        LaunchedEffect(text) { delay(6000); if (message == text) message = null }
         Text(
             text, style = Melyviz.label,
-            modifier = modifier.systemBarsPadding().padding(16.dp)
+            modifier = modifier.systemBarsPadding().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 72.dp)
                 .background(Melyviz.raised, RoundedCornerShape(Melyviz.radiusSmall))
+                .clickable(onClickLabel = "elrejtés") { if (message == text) message = null }
+                .semantics { liveRegion = LiveRegionMode.Polite }
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         )
     }
@@ -226,7 +238,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 "desk" -> { compactPeek = false; note("Ez az Asztal.") }
                 "kompakt" -> compactPeek = true
                 "kommand" -> note("A Kommand a felső sávban van.")
-                "browser" -> browse("https://www.google.com/")
+                "browser" -> open(Catalogue.WEB.id)
                 else -> open(u.target)
             }
             Reach.WEBAPP -> openRoute(Route(Catalogue.APPS.id, u.target))
@@ -250,12 +262,18 @@ class ShellActivity : ComponentActivity(), FeatureHost {
         }
     }
 
-    private fun openRoute(r: Route) {
-        open(r.feature)
-        Registry.feature(r.feature)?.open(r)
+    override fun openRoute(route: Route) {
+        open(route.feature)
+        Registry.feature(route.feature)?.open(route)
     }
 
+    /** A web address (the Kommand's URLs): the Böngésző (WP M68) opens http / https in the app; anything else the phone's browser. */
     private fun browse(url: String) {
+        if (hu.vrg.mobile.core.WebRules.isWebUrl(url) && Registry.feature(Catalogue.WEB.id) != null) {
+            val r = Route(Catalogue.WEB.id, "", mapOf("u" to url))
+            open(r.feature)
+            if (Registry.feature(r.feature)?.open(r) == true) return
+        }
         try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (e: Exception) { note("Nincs böngésző a telefonon.") }
     }
 
@@ -300,6 +318,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             if (apps.size == 1) openRoute(Route(Catalogue.APPS.id, apps[0])) else openRoute(Route(Catalogue.APPS.id))
             return
         }
+        if (featureId == Catalogue.DEVLAP.id) {   // M66: the home's DevLap tile shows the DevLap sheet (the open one, or a new one)
+            open(Catalogue.DESK.id)
+            val d = SheetsStore.value
+            if (d.sheets.none { it.name == Catalogue.DEVLAP.title } && d.sheets.size >= Sheets.MAX_SHEETS)
+                note("Nincs hely új lapnak (legfeljebb ${Sheets.MAX_SHEETS}). Zárj be egy lapot.")
+            else SheetsStore.update { PhoneSheets.openDevLap(it) }
+            return
+        }
         if (featureId == Catalogue.SHEETS.id) {   // Lapok lives in the Asztal: show a sheet (the first one, or a new blank one)
             open(Catalogue.DESK.id)
             SheetsStore.update { d ->
@@ -339,10 +365,10 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             DropFeature.share(uris, i.getStringExtra(Intent.EXTRA_TEXT))
             return
         }
-        // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
+        // "Megosztás → VRG Mobile" with text from any app: a note in VRG Jegyzetek (M69), origin Megosztás
         if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
             val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return
-            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text))
+            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text, "from" to "megosztas"))
             open(r.feature)
             Registry.feature(r.feature)?.open(r)
             return

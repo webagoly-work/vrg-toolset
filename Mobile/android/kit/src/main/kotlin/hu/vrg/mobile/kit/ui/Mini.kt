@@ -38,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import hu.vrg.mobile.core.MiniState
 import hu.vrg.mobile.core.MiniStatus
+import hu.vrg.mobile.core.PixelGlyph
 import hu.vrg.mobile.kit.theme.KitSize
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.theme.dotArc
 
 // The MINI (WP M16, decision 4A): the VRG UI Kit's small icon that is also a button and a progress indicator,
 // drawn for the phone. The web original is shared/vrg-ui-kit/components/mini.css + mini.js; the rules are the
@@ -59,6 +61,14 @@ enum class MiniSize(val ring: Dp, val stroke: Dp) {
 }
 
 enum class MiniMeter { RING, TICKS }
+
+/** The pixel glyph's side inside a ring: about half the ring, on whole 12-cell steps so the cells stay crisp. */
+private fun pixelSize(s: MiniSize): Dp = when (s) {
+    MiniSize.XS -> 12.dp
+    MiniSize.SM -> 18.dp
+    MiniSize.MD -> 24.dp
+    MiniSize.LG -> 36.dp
+}
 
 /** True when Android's "remove animations" (animator duration scale 0) is on. */
 @Composable
@@ -84,6 +94,8 @@ fun Mini(
     tint: Color? = null,
     meter: MiniMeter = MiniMeter.RING,
     quietIdle: Boolean = false,
+    /** Fényjel R1: a pixel glyph drawn in place of the text [icon]; it wears its family colour unless [tint] or the state says otherwise. */
+    pixel: PixelGlyph? = null,
 ) {
     val still = animationsOff()
     val spinning = status.state == MiniState.RUNNING && status.progress == null && !still
@@ -115,7 +127,11 @@ fun Mini(
     m = m.drawBehind { if (!silent) drawMini(status, size, meter, on, turn, still) }
 
     Box(m, contentAlignment = Alignment.Center) {
-        if (!icon.isNullOrEmpty()) {
+        if (pixel != null) {
+            // error and off read from the glyph's colour as from the text glyph's; a tint (a planned feature's grey) wins
+            val c = tint ?: when (status.state) { MiniState.ERROR -> p.coral; MiniState.OFF -> p.faint; else -> null }
+            PixelIcon(pixel, pixelSize(size), color = c)
+        } else if (!icon.isNullOrEmpty()) {
             val base = if (size == MiniSize.LG) Melyviz.glyph.copy(fontSize = Melyviz.glyph.fontSize * 1.4f) else Melyviz.glyph
             Text(icon, style = base.copy(color = glyphColour))
         } else Box(Modifier.size(size.ring))
@@ -129,7 +145,10 @@ private fun DrawScope.drawMini(s: MiniStatus, size: MiniSize, meter: MiniMeter, 
     val topLeft = Offset(center.x - d / 2, center.y - d / 2)
     val box = Size(d, d)
     val stroke = Stroke(w, cap = StrokeCap.Butt)
-    fun arc(c: Color, from: Float, sweep: Float) = drawArc(c, from - 90f, sweep, false, topLeft, box, style = stroke)
+    // Grafit (terminal palette): the same ring as a circle of dots, like a dot-matrix display
+    fun arc(c: Color, from: Float, sweep: Float) =
+        if (p.terminal) dotArc(c, center, d / 2, from - 90f, sweep, w)
+        else drawArc(c, from - 90f, sweep, false, topLeft, box, style = stroke)
     /** [n] segments of [on]° every [every]°, starting at [from]. */
     fun segments(c: Color, n: Int, on: Float, every: Float, from: Float = 0f) { for (i in 0 until n) arc(c, from + i * every, on) }
     fun track(c: Color) = if (meter == MiniMeter.TICKS) segments(c, 12, 24f, 30f) else arc(c, 0f, 360f)

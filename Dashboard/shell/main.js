@@ -149,6 +149,7 @@ function setupShell() {
     audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key: HOTKEY });
     win.webContents.once('did-finish-load', () => toast('A gyorsbillentyű foglalt: Ctrl+Alt+Space', 'The hotkey is taken: Ctrl+Alt+Space'));
   }
+  registerGlobalVoice();                                                  // WP-56: only when voice.global and voice.enabled are on
   // quick bar (WP-30): works while another program has focus; brings the window forward (also from the hidden overlay), then the page opens the bar
   const quickKey = quickLib.loadHotkey(path.join(__dirname, '..', 'config', 'keymap.json'));
   let qok = false;
@@ -279,7 +280,10 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
 // desk: the VRG Asztal's views and levels as palette commands (WP-41); main only forwards them to the frame, a level is also saved here
 const DESK_CMDS = [['desk:toggle', 'Nézetváltás: Irányítópult ⇄ Asztal', 'Toggle Dashboard / Desktop view'], ['desk:view:dashboard', 'Irányítópult nézet', 'Dashboard view'],
   ['desk:view:desktop', 'Asztal nézet', 'Desktop view'], ['desk:level:user', 'Szint: Felhasználó', 'Level: User'], ['desk:level:dev', 'Szint: Fejlesztő', 'Level: Dev'],
-  ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip']];
+  ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip'],
+  ['desk:look:grafit', 'Megjelenés: Grafit (sötétszürke, pontmátrix)', 'Look: Grafit (graphite, dot matrix)'], ['desk:look:melyviz', 'Megjelenés: Mélyvíz', 'Look: Mélyvíz'],
+  ['desk:look:fenyjel', 'Megjelenés: Fényjel (jelzőfény, pixelikonok)', 'Look: Fényjel (signal, pixel icons)'],
+  ['desk:look:toggle', 'Megjelenés váltása: Mélyvíz → Grafit → Fényjel', 'Toggle look: Mélyvíz / Grafit / Fényjel']];
 const deskCmds = {
   paletteItems: () => DESK_CMDS.map(([id, hu, en]) => ({ id, hu, en })),
   run: id => {
@@ -287,6 +291,7 @@ const deskCmds = {
     if (!c) return { ok: false, hu: 'Ismeretlen parancs.', en: 'Unknown command.' };
     const cmd = id.slice(5);
     if (cmd.startsWith('level:')) { try { settings.set('desk.level', cmd.slice(6)); } catch (e) {} }
+    if (cmd === 'look:grafit' || cmd === 'look:melyviz' || cmd === 'look:fenyjel') { try { settings.set('ui.look', cmd.slice(5)); } catch (e) {} }   // the page saves a toggle itself
     ipc.emit(win, 'desktop', 'cmd', { cmd });
     return { ok: true, hu: c[1], en: c[2] };
   },
@@ -445,6 +450,15 @@ app.on('certificate-error', webHost.certError);
 const search = require('./lib/search.js');
 const { createBookmarks } = require('./lib/bookmarks.js');
 const webBm = createBookmarks({ file: () => path.join(paths.userDir(), 'web.json'), days: () => settings.get('web.history.days') });
+// the VRG Böngésző's door to these links (T1, BRW-Q01): vrg-app://browser/__vrg/links, answered in the vrg-app handler below;
+// the inbox Browser/serve.js leaves beside web.json is absorbed there and every 30 s while the Asztal runs
+// T5: /__vrg/claude makes a context pack of the app's text and the frame opens the chat pane with it (ctxLib is made further down)
+const appLinks = require('./lib/applinks.js').createAppLinks({ bookmarks: webBm, toClaude: (title, text) => {
+  const r = ctxLib.packText(title, text);
+  if (r.ok && win && !win.isDestroyed()) { ipc.emit(win, 'browser', 'claude', { packId: r.packId }); if (win.isMinimized()) win.restore(); win.focus(); }
+  return r;
+} });
+setInterval(() => { try { webBm.absorb(); } catch (e) { log('links inbox', e.message); } }, 30000).unref();
 const readJsonList = f => { try { const j = JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', f), 'utf8')); return Array.isArray(j) ? j : []; } catch (e) { return []; } };
 const webServers = () => (R.C && R.C.menu && R.C.menu.servers) || [];
 const NO_TARGET = { ok: false, err: 'not-found', hu: 'Nincs ilyen cél.' };
@@ -456,12 +470,15 @@ function targetUrl(target) {
   if ((m = /^srv:([a-z0-9_-]+)$/i.exec(target))) { const s = R.server(m[1]); return s ? R.serverUrl(s) : ''; }
   if ((m = /^web:([a-z0-9_-]+)$/i.exec(target))) { const p = readJsonList('web.json').find(x => x && x.id === m[1]); return p && types.url(p.url) ? p.url : ''; }
   if ((m = /^srch:([a-z0-9_-]+):([\s\S]*)$/i.exec(target))) return search.providerUrl(m[1], m[2]);
-  if (target.startsWith('omni:')) return search.toUrl(target.slice(5), { servers: webServers() });
+  if (target.startsWith('omni:')) return search.decide(target.slice(5), { servers: webServers() }).url;
   return '';
 }
 const webOps = {
   open: target => { const url = targetUrl(target); return url ? webHost.open({ url }) : { ...NO_TARGET }; },
-  go: (view, input) => { const url = search.toUrl(input, { servers: webServers() }); return url ? webHost.go(view, url) : { ok: false, err: 'bad-request', hu: 'Üres cím.' }; },
+  go: (view, input) => {                                                   // T2: bangs, Tiszta link, Linkellenőr (search.decide)
+    const d = search.decide(input, { servers: webServers() });
+    return d.url ? webHost.go(view, d.url) : { ok: false, err: 'bad-request', hu: d.hu || 'Üres cím.' };
+  },
   find: (view, q, dir) => webHost.find(view, q, dir),
   zoom: (view, z) => webHost.zoom(view, z),
   external: view => webHost.external(view, u => shell.openExternal(u)),
@@ -522,7 +539,7 @@ ipc.register('search', 'quick', { input: types.text(500) }, async ({ input }) =>
   }
   return out;
 });
-ipc.register('search', 'openHit', { kind: types.enum('code'), i: types.int(0, 199) }, async ({ i }) => innerSearch.openHit(i));
+ipc.register('search', 'openHit', { kind: types.enum('code', 'doc'), i: types.int(0, 199) }, async ({ kind, i }) => innerSearch.openHit(i, kind));
 ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerSearch.node(id));
 
 // context packs (WP-22): stack-json.js writes the pack, main keeps packId → file, "send to Claude" opens an embedded Claude terminal (WP-16)
@@ -579,6 +596,215 @@ ipc.register('chat', 'toTerminal', { chat: types.id }, async ({ chat }) => {
   return r && r.term ? { term: r.term } : (r || { ok: false, err: 'error', hu: 'A terminál nem indult el.' });
 });
 app.on('before-quit', () => chatLib.killAll());
+
+// Munkamenetek (WP-50): the local Claude Code sessions of A (~/.claude) and B (<full>/home/claude-account-b), opened in an embedded Claude
+// terminal (resume / fork / with Remote Control), the cloud picker (--teleport), the Munkavászon on one. The page names an account and a
+// session id; main finds the transcript and its folder (lib/sessions.js).
+const sessionsLib = require('./lib/sessions.js').createSessions({
+  roots: () => require('./lib/sessions.js').rootsFrom(process.env, [{ account: 'A', dir: path.join(os.homedir(), '.claude') }, { account: 'B', dir: path.join(path.resolve(FULL_DIR), 'home', 'claude-account-b') }]),
+  claudeterm: claudeTermLazy, server: (id, p) => deskServer(id, p), repo: path.resolve(REPO_DIR), log,
+});
+const sessAcc = types.enum('A', 'B');
+const sessId = v => typeof v === 'string' && require('./lib/sessions.js').SESSION_RE.test(v);
+ipc.register('sessions', 'list', {}, async () => sessionsLib.list());
+ipc.register('sessions', 'resume', { account: sessAcc, session: sessId, fork: types.bool, remote: types.bool, stronger: types.bool },
+  async p => { const r = sessionsLib.resume(p); return r && r.term ? { term: r.term } : r; }, { optional: ['fork', 'remote', 'stronger'] });
+ipc.register('sessions', 'teleport', { account: sessAcc }, async p => { const r = sessionsLib.teleport(p); return r && r.term ? { term: r.term } : r; });
+ipc.register('sessions', 'canvas', { account: sessAcc, session: sessId }, async p => sessionsLib.canvas(p));
+
+// Vezérlő (WP-52): one prompt box → the Előszűrő (Prefilter/, offline) → a new Claude Code session with the dressed prompt. The page names
+// attachment ids ('a<n>') that main issued from its own dialog, the recent list, a preset folder or a camera photo; never a path.
+// An independent request starts in Full/home/claude-free (no CLAUDE.md there: no VRG context is loaded), a context request in the repo.
+const gateLib = require('./lib/gate.js').createGate({
+  prefilter: () => { try { return require(path.join(path.resolve(REPO_DIR), 'Prefilter', 'prefilter.js')); } catch (e) { return null; } },
+  // "folytasd" = the most recent local session (its first prompt); a forced route = an evaluation label (Prefilter/.cache/eval)
+  prior: () => { const s = sessionsLib.list().sessions[0]; return s && s.title ? { text: s.title, title: s.title } : null; },
+  record: rec => { try { require(path.join(path.resolve(REPO_DIR), 'Prefilter', 'eval.js')).appendLabel(rec); } catch (e) {} },
+  claudeterm: claudeTermLazy, repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR), git: () => { try { return gitExe(); } catch (e) { return ''; } },
+  freeDir: path.join(path.resolve(FULL_DIR), 'home', 'claude-free'), inboxDir: path.join(path.resolve(FULL_DIR), 'inbox', 'vezerlo'),
+  pictures: (() => { try { return app.getPath('pictures'); } catch (e) { return undefined; } })(),
+  folders: () => { try { return fsRoots.list().filter(r => r.abs).map(r => ({ id: r.id, hu: r.hu, abs: r.abs })); } catch (e) { return []; } },
+  dialog: async opts => {
+    if (SELFTEST) return [];
+    const r = await require('electron').dialog.showOpenDialog(win, opts);
+    return r.canceled ? [] : r.filePaths;
+  },
+  recentStore: { get: () => onSetting('gate.recent', []), set: v => settings.set('gate.recent', v) },
+  log,
+});
+const gateIds = v => Array.isArray(v) && v.length <= 10 && v.every(x => typeof x === 'string' && /^a[0-9]{1,6}$/.test(x));
+const gateMode = types.enum('auto', 'context', 'independent');
+ipc.register('gate', 'analyze', { text: types.text(8000), attach: gateIds, mode: gateMode }, async p => gateLib.analyze(p), { optional: ['attach', 'mode'] });
+ipc.register('gate', 'send', { text: types.text(8000), attach: gateIds, mode: gateMode, account: types.enum('A', 'B'), model: types.enum('haiku', 'sonnet', 'opus') },
+  async p => { const r = gateLib.send(p); return r && r.term ? { term: r.term } : r; }, { optional: ['attach', 'mode', 'model'] });
+ipc.register('gate', 'pick', { kind: types.enum('browse', 'gallery', 'folder'), root: types.id }, async p => gateLib.pick(p), { optional: ['root'] });
+ipc.register('gate', 'recent', {}, async () => gateLib.recent());
+ipc.register('gate', 'folders', {}, async () => gateLib.folders());
+ipc.register('gate', 'photo', { data: types.text(12 * 1024 * 1024) }, async p => gateLib.photo(p));
+
+// Diktálás (WP-54): push-to-talk speech-to-text, offline (Voice/: whisper.cpp's whisper-server with the model resident, on 127.0.0.1).
+// The page owns the microphone and sends 16 kHz PCM16 chunks of the session main issued; main sends partial / final text back to the
+// frame only. The text fills our own text boxes; nothing is typed anywhere else, and no audio or transcript is written to disk.
+const voiceLib = require('./lib/voice.js').createVoice({
+  repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR), settings, log,
+  emit: (type, data) => ipc.emit(win, 'voice', type, data),
+  spawn: (exe, args, o) => require('child_process').spawn(exe, args, o),
+});
+const voiceId = v => typeof v === 'string' && require('./lib/voice.js').SESSION_RE.test(v);
+ipc.register('voice', 'status', {}, async () => voiceLib.status());
+ipc.register('voice', 'enable', { on: types.bool }, async ({ on }) => voiceLib.enable(on));
+ipc.register('voice', 'start', { mode: types.enum('dictate', 'command'), lang: types.enum('auto', 'hu', 'en') }, async p => voiceLib.start(p), { optional: ['lang'] });
+ipc.register('voice', 'chunk', { id: voiceId, data: v => typeof v === 'string' && v.length <= 90000 && /^[A-Za-z0-9+/]*={0,2}$/.test(v) }, async p => voiceLib.chunk(p));
+ipc.register('voice', 'stop', { id: voiceId }, async p => voiceLib.stop(p));
+ipc.register('voice', 'cancel', { id: voiceId }, async p => voiceLib.cancel(p));
+app.on('before-quit', () => { voiceLib.close().catch(() => {}); });
+setTimeout(() => { if (onSetting('voice.enabled', false) === true && !SELFTEST) voiceLib.warm().catch(() => {}); }, 4000);   // the model loads once, in the background
+
+// Szem és hang (WP-56, WP-57): the Parancs-héj reads the screen (read-only: UI Automation, OCR as the fallback, redacted, an allow / deny
+// policy) and says its short answer aloud (offline TTS). Both are off by default (screen.enabled, speak.enabled). The global push-to-talk
+// key (voice.global, voice.globalKey) works while another program is in front: press = listen, press again (or 8 s) = stop; the window
+// in front is read at the moment of the press (the glance), and the answer shows in a small always-on-top window (lib/hudwin.js).
+const POWERSHELL = process.platform === 'win32' ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe') : 'pwsh';
+const voiceToolDir = (...p) => path.join(path.resolve(FULL_DIR), 'tools', 'voice', ...p);
+const eyesLib = require('./lib/eyes.js').createEyes({
+  loadScreen: () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'screen', 'screen.js')),
+  enabled: () => onSetting('screen.enabled', false) === true && !SELFTEST,
+  opts: () => ({
+    spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }), powershell: POWERSHELL, log,
+    policy: () => ({ allow: onSetting('screen.allow', []), deny: onSetting('screen.deny', []), denyTitles: onSetting('screen.denyTitles', []), redact: true }),
+    ownPids: () => { try { return app.getAppMetrics().map(m => m.pid).concat(process.pid); } catch (e) { return [process.pid]; } },
+    capture: async () => {
+      // the display under the cursor, in memory only (never written to disk)
+      const { desktopCapturer } = require('electron');
+      const d = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const size = { width: Math.round(d.size.width * d.scaleFactor), height: Math.round(d.size.height * d.scaleFactor) };
+      const srcs = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: size });
+      const src = srcs.find(s => String(s.display_id) === String(d.id)) || srcs[0];
+      return src ? { png: src.thumbnail.toPNG(), width: size.width, height: size.height } : null;
+    },
+    ocr: (() => { try { return require(path.join(path.resolve(REPO_DIR), 'Voice', 'screen', 'ocr.js')).createOcr({ engine: 'tesseract-js', langs: ['hun', 'eng'], dataDir: voiceToolDir('tessdata') }); } catch (e) { return null; } })(),
+  }),
+  log,
+});
+const speakLib = require('./lib/speak.js').createSpeak({
+  loadTts: () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js')),
+  enabled: () => onSetting('speak.enabled', false) === true,
+  engine: () => onSetting('speak.engine', 'sherpa'),
+  opts: () => {
+    // the layout Voice/tts/fetch-tts.js writes: <Full>\tools\voice\tts\{node (the sherpa-onnx-node addon), <voice dirs>}
+    const dirs = { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node') };
+    let loadAddon = () => null;
+    try { loadAddon = require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js')).addonLoader(dirs); } catch (e) {}
+    return { dirs, powershell: POWERSHELL, log, loadAddon, spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }) };
+  },
+  log,
+});
+const hudWin = require('./lib/hudwin.js').createHudWin({ BrowserWindow, screen, file: path.join(__dirname, '..', 'page', 'hud.html'), preload: path.join(__dirname, 'hud-preload.js'), log });
+const HUD_STATES = ['listen', 'busy', 'result', 'error', 'speak', 'acting'];
+ipc.register('screen', 'describe', { what: types.enum('focused', 'windows', 'error', 'read') }, async p => eyesLib.describe(p));
+ipc.register('screen', 'status', {}, async () => eyesLib.status());
+ipc.register('speak', 'say', { text: types.text(600), lang: types.enum('auto', 'hu', 'en') }, async p => speakLib.say(p), { optional: ['lang'] });
+ipc.register('speak', 'stop', {}, async () => speakLib.stop());
+ipc.register('speak', 'status', {}, async () => speakLib.status());
+// the overlay's answer outside the window: shown only while the VRG Asztal is not the window in front
+ipc.register('hud', 'show', { state: types.enum(...HUD_STATES), say: types.text(200), detail: types.text(400) }, async p => {
+  if (SELFTEST || (win && !win.isDestroyed() && win.isFocused() && win.isVisible())) { hudWin.hide(); return { ok: true, shown: false }; }
+  return { ok: true, shown: await hudWin.show(p) };
+}, { optional: ['detail'] });
+// Kéz (WP-58): controlled actions in OTHER programs through UI Automation (Voice/hands: click / toggle / select / expand / scroll / switch
+// window / window state) — never text entry into another program (the Founder's rule), never the Asztal's own windows, never elevated or
+// denied windows. Dev level and above only (checked here, not in the page); every plan has a risk class from Voice/hands/rules.json; the
+// page asks "igen" for confirm-class plans; blocked plans are refused. Kill switch: the global voice key while an action runs, or "állj".
+// Hangazonosítás (WP-59): the speaker check over the last command's audio (main keeps it in memory: voiceLib.takeAudio); the voiceprint is
+// encrypted with safeStorage (lib/secrets.js). A match only replaces the spoken "igen" for confirm-class actions at the Dev level.
+const handsMod = () => require(path.join(path.resolve(REPO_DIR), 'Voice', 'hands', 'hands.js'));
+let handsInst = null;
+const handsLib = () => {
+  if (handsInst) return handsInst;
+  try {
+    handsInst = handsMod().createHands({
+      spawn: (exe, args, o) => require('child_process').spawn(exe, args, { windowsHide: true, ...o }), powershell: POWERSHELL, log,
+      policy: () => ({ allow: onSetting('screen.allow', []), deny: onSetting('screen.deny', []), denyTitles: onSetting('screen.denyTitles', []) }),
+      ownPids: () => { try { return app.getAppMetrics().map(m => m.pid).concat(process.pid); } catch (e) { return [process.pid]; } },
+      now: () => Date.now(),
+      // the action log on disk: one JSON line per action, names only (Voice/hands never passes screen text here)
+      append: line => { try { const f = path.join(paths.logs(), 'hands.jsonl'); require('fs').mkdirSync(path.dirname(f), { recursive: true }); require('fs').appendFileSync(f, (typeof line === 'string' ? line : JSON.stringify(line)).replace(/\n+$/, '') + '\n'); } catch (e) {} },
+    });
+  } catch (e) { log('hands', 'load failed', e && e.message); handsInst = null; }
+  return handsInst;
+};
+const HANDS_OFF = { ok: false, err: 'disabled', hu: 'A műveletek ki vannak kapcsolva (Beállítás: hands.enabled).' };
+const handsGate = () => {
+  if (SELFTEST || onSetting('hands.enabled', false) !== true) return HANDS_OFF;
+  if (!['dev', 'all'].includes(onSetting('desk.level', 'user'))) return { ok: false, err: 'level', hu: 'Ehhez fejlesztői szint kell.' };
+  return handsLib() ? null : { ok: false, err: 'unavailable', hu: 'A művelet-modul nem érhető el (Voice/hands).' };
+};
+let handsBusy = false;
+ipc.register('hands', 'plan', {
+  verb: types.enum('invoke', 'toggle', 'select', 'expand', 'collapse', 'scroll', 'focus-window', 'window'), target: types.text(80),
+  role: types.enum('button', 'checkbox', 'tab', 'menuitem', 'link', 'listitem', 'window'), arg: types.enum('down', 'up', 'page-down', 'page-up', 'top', 'bottom', 'minimize', 'maximize', 'restore', 'close'), window: types.text(80),
+}, async p => { const g = handsGate(); return g || handsLib().plan(p); }, { optional: ['target', 'role', 'arg', 'window'] });
+ipc.register('hands', 'act', { id: types.id }, async ({ id }) => {
+  const g = handsGate(); if (g) return g;
+  handsBusy = true;
+  try { return await handsLib().act(id); } finally { handsBusy = false; }
+});
+ipc.register('hands', 'stop', {}, async () => { if (handsInst) handsInst.stop(); handsBusy = false; return { ok: true }; });
+ipc.register('hands', 'log', {}, async () => ({ ok: true, log: handsInst ? handsInst.log() : [] }));
+const identityLib = (() => {
+  let inst = null;
+  return () => {
+    if (inst) return inst;
+    try {
+      const dirs = { models: voiceToolDir('tts'), node: voiceToolDir('tts', 'node') };
+      const T = require(path.join(path.resolve(REPO_DIR), 'Voice', 'tts', 'tts.js'));
+      const I = require(path.join(path.resolve(REPO_DIR), 'Voice', 'identity', 'identity.js'));
+      const dir = voiceToolDir('identity');
+      // the active model is the one Voice/identity/fetch-identity.js named in installed.json (two may be fetched)
+      let model = '';
+      try { const inst = JSON.parse(require('fs').readFileSync(path.join(dir, 'installed.json'), 'utf8')); if (inst && typeof inst.model === 'string' && !/[\\/]|\.\./.test(inst.model)) model = path.join(dir, inst.model); } catch (e) {}
+      inst = I.createIdentity({
+        loadAddon: T.addonLoader(dirs), modelPath: model, log,
+        store: { get: () => { const v = secrets.get('voice.identity'); return v ? Buffer.from(v, 'base64') : null; }, set: b => { if (b) secrets.put('voice.identity', Buffer.from(b).toString('base64')); else secrets.del('voice.identity'); } },
+      });
+    } catch (e) { log('identity', 'load failed', e && e.message); inst = null; }
+    return inst;
+  };
+})();
+const ID_NONE = { ok: false, err: 'unavailable', hu: 'A hangazonosítás nem érhető el (Voice/identity).' };
+const NO_AUDIO = { ok: false, err: 'no-audio', hu: 'Nincs friss hangfelvétel: mondd újra a gomb nyomva tartásával.' };
+ipc.register('identity', 'status', {}, async () => { const I = identityLib(); return I ? { ...(await I.status()), enabled: onSetting('identity.enabled', false) === true } : ID_NONE; });
+ipc.register('identity', 'enroll', {}, async () => { const I = identityLib(); if (!I) return ID_NONE; const a = voiceLib.takeAudio(); return a ? I.enroll(a) : NO_AUDIO; });
+ipc.register('identity', 'verify', {}, async () => {
+  if (onSetting('identity.enabled', false) !== true) return { ok: false, err: 'disabled', hu: 'A hangazonosítás ki van kapcsolva (Beállítás: identity.enabled).' };
+  const I = identityLib(); if (!I) return ID_NONE;
+  const a = voiceLib.takeAudio(); return a ? I.verify(a) : NO_AUDIO;
+});
+ipc.register('identity', 'reset', {}, async () => { const I = identityLib(); if (!I) return ID_NONE; I.reset(); return { ok: true }; });
+
+let globalVoice = { on: false, timer: null };
+function globalVoiceKey() {
+  if (handsBusy && handsInst) { handsInst.stop(); handsBusy = false; ipc.emit(win, 'hands', 'stopped', {}); hudWin.show({ state: 'error', say: 'Leállítva.' }); return; }   // WP-58: the kill switch
+  if (globalVoice.on) {                                                   // the second press: stop
+    clearTimeout(globalVoice.timer); globalVoice.on = false;
+    ipc.emit(win, 'voice', 'global', { phase: 'stop' });
+    return;
+  }
+  globalVoice.on = true;
+  ipc.emit(win, 'voice', 'global', { phase: 'start' });                   // the page starts recording at once (the mic is warm)
+  eyesLib.glance();                                                       // and the window in front is read in parallel
+  if (!(win && win.isFocused())) hudWin.show({ state: 'listen', say: 'Hallgatlak…' });
+  globalVoice.timer = setTimeout(() => { if (globalVoice.on) globalVoiceKey(); }, 8000);
+}
+function registerGlobalVoice() {
+  if (SELFTEST || onSetting('voice.global', false) !== true || onSetting('voice.enabled', false) !== true) return;
+  const key = onSetting('voice.globalKey', 'Control+Alt+V');
+  let ok = false;
+  try { ok = globalShortcut.register(key, globalVoiceKey); } catch (e) {}
+  if (!ok) audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key });
+}
+app.on('before-quit', () => { eyesLib.close(); speakLib.close(); hudWin.destroy(); if (handsInst) handsInst.close(); });
+setTimeout(() => { if (onSetting('speak.enabled', false) === true && !SELFTEST) speakLib.warm(['hu', 'en']).catch(() => {}); }, 6000);   // the voices load once (0.5–0.9 s each), in the background
 
 // dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
 const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
@@ -682,6 +908,17 @@ const presetsLib = presetsMod.createPresets({
     ports: () => webServers().map(s => ({ id: s.id, name: s.name, port: s.port, up: !!ports.ports[s.port] })),
     lines: () => (R.C && R.C.data && R.C.data.lines) || [],
     mail: { accounts: () => mailLib.accounts(), list: (acc, q) => mailLib.list(acc, q) },
+    // a page-watch that saw a change rings the phone (VRG Mobile Értesítések, M10) through the relay on this PC, as relay-notify.js
+    // does; no relay running = no notice, the Hírek item stays. Never in a selftest.
+    notify: n => {
+      if (SELFTEST) return;
+      const srv = ((R.C && R.C.menu && R.C.menu.servers) || []).find(x => x && x.id === 'gyro');
+      const port = srv && Number.isInteger(srv.port) ? srv.port : 47291;
+      const body = JSON.stringify({ title: String(n.title || '').slice(0, 120), text: String(n.text || '').slice(0, 500), level: n.level || 'info', link: n.link || null, from: 'VRG Böngésző' });
+      const r = require('http').request({ host: '127.0.0.1', port, path: '/notify', method: 'POST', timeout: 3000,
+        headers: { Host: 'localhost:' + port, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, res => res.resume());
+      r.on('error', () => {}); r.on('timeout', () => r.destroy()); r.end(body);
+    },
   },
 });
 presetsMod.bind(presetsLib);                                                      // the palette's pre:<id> items run through it
@@ -715,7 +952,7 @@ ipc.register('desktop', 'catalog', { level: types.enum('user', 'dev', 'all') }, 
 }, { optional: ['level'] });
 ipc.register('desktop', 'state', {}, async () => ({
   level: deskSetting('desk.level', 'user'), view: deskSetting('desk.view', 'dashboard'), top: deskSetting('desk.top', null), dock: deskSetting('desk.dock', null),
-  auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START,
+  auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START, look: deskSetting('ui.look', 'melyviz'),
 }));
 // Programok (WP-45): third-party programs from launcher/programs.json + the ServiceKit catalog, installed into Full\programs as jobs
 // (kind 'program'). The page names program ids only; the level that gates an install is the saved desk.level, never the page's word.
@@ -822,6 +1059,21 @@ ipc.register('desktop', 'mapJob', { code: types.text(8) }, async ({ code }) => (
 ipc.register('desktop', 'serverConsole', { id: types.id }, async ({ id }) => srvHost.console(id));
 ipc.register('desktop', 'serverStop', { id: types.id }, async ({ id }) => { const r = srvHost.stop(id); setTimeout(() => ports.pollPorts(), 800); return r; });
 ipc.register('desktop', 'serverList', {}, async () => ({ servers: srvHost.list() }));
+// Fényjel R4 (shared/fenyjel/DESIGN.md §7.3): the home's console column. serverStart starts a registry server without opening its
+// page (the column's switch; the row itself still opens the page); sys is this PC's CPU, memory and work drive, read with the same
+// arithmetic the phone relay answers sys.stats with (Planner/projects/varler-planner/tools/relay-sys.js; Node os/fs only).
+ipc.register('desktop', 'serverStart', { id: types.id }, async ({ id }) => {
+  const s = R.server(id);
+  if (!s) return { ok: false, err: 'not-found', hu: 'Nincs ilyen szerver.' };
+  if (SELFTEST) return { ok: true, dry: true };                                   // the selftest never starts anything
+  if (await ports.up(s.port)) return { ok: true, already: true };
+  const err = ports.startServer(s);
+  if (err) return { ok: false, err: 'not-found', hu: err };
+  setTimeout(() => ports.pollPorts(), 1500);
+  return { ok: true };
+});
+const SYS = require(path.join(REPO_DIR, 'Planner', 'projects', 'varler-planner', 'tools', 'relay-sys.js')).createSampler({ dir: REPO_DIR });
+ipc.register('desktop', 'sys', {}, async () => SYS.sample());
 
 // WP-49: Telefon — this PC's radios, every local server started for the phone, a QR per server through the relay's /p/<port>/ proxy
 // (lib/phonelink.js). The page names a server id and an address the scan itself returned; main builds every URL. Setting phone.auto:
@@ -935,6 +1187,11 @@ app.whenReady().then(async () => {
   build.write(); R.load();                                             // the page always starts on fresh data
   catalog.load();
   session.fromPartition('persist:vrg-app').protocol.handle('vrg-app', async req => {    // WP-43: only the app's folder + shared/
+    if (require('./lib/applinks.js').isLinksRequest(req.url)) {                          // T1: the browser app's links, nothing else
+      const body = req.method === 'POST' ? await req.text() : '';
+      const r = appLinks.handle({ method: req.method, url: req.url, origin: req.headers.get('origin') || '', body });
+      return new Response(JSON.stringify(r.json), { status: r.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+    }
     const d = appScheme.decide(req.url);
     if (!d.ok) return new Response(d.why, { status: d.status, headers: { 'content-type': 'text/plain; charset=utf-8' } });
     const r = await net.fetch(require('url').pathToFileURL(d.file).href);

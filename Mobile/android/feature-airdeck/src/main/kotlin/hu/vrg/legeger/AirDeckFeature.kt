@@ -87,6 +87,7 @@ object AirDeckFeature : VrgFeature {
             onAskPermissions = { askPermissions.launch(permissions) },
             onDictate = startDictation,
             onOpenFeature = { id -> host.open(id) },
+            onNote = { host.note(it) },
         )
     }
 

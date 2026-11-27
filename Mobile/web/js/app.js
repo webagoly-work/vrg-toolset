@@ -53,6 +53,31 @@ async function gh(path) {
   return r.json();
 }
 
+// ---- the iPhone guide (guide/iphone.json: the one source the Android app bundles too) --------------------------
+let GUIDE = null;
+async function guide() { return GUIDE || (GUIDE = await fetch('guide/iphone.json').then(r => r.json()).catch(() => null)); }
+
+/** Safari or the home-screen app: they keep separate storage, and the guide says which one this is. */
+const standalone = () => window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+const WHO = { iphone: 'az iPhone-on', owner: 'a tulajdonos Android telefonján', both: '' };
+
+function guideHtml(g, opts = {}) {
+  if (!g) return '<p class="hint">Az útmutató most nem tölthető be (offline?).</p>';
+  const here = standalone() ? 'Most a kezdőképernyőre tett appban vagy.' : 'Most a Safariban vagy.';
+  return `<div class="guide">
+    ${opts.title === false ? '' : `<h2>${esc(g.title)}</h2>`}
+    <p>${esc(g.intro)}</p>
+    ${g.sections.map(sec => `<section class="gsec" id="g-${esc(sec.id)}">
+      <h3>${esc(sec.title)}${WHO[sec.who] ? ` <span class="who ${esc(sec.who)}">${esc(WHO[sec.who])}</span>` : ''}</h3>
+      ${sec.id === 'where' ? `<p class="here">${esc(here)}</p>` : ''}
+      ${sec.steps ? `<ol>${sec.steps.map(st => `<li>${esc(st)}</li>`).join('')}</ol>` : ''}
+      ${sec.faq ? `<dl>${sec.faq.map(f => `<dt>${esc(f.q)}</dt><dd>${esc(f.a)}</dd>`).join('')}</dl>` : ''}
+    </section>`).join('')}
+  </div>`;
+}
+
+async function utmutato() { view.innerHTML = guideHtml(await guide()); }
+
 // ---- screens -----------------------------------------------------------------------------------------------------
 const TILES = [
   { id: 'eszkoz', glyph: '🔐', t: 'Eszköz', s: 'Hozzáférés kérése QR-kóddal' },
@@ -60,10 +85,12 @@ const TILES = [
   { id: 'frissites', glyph: '⟳', t: 'Frissítés', s: 'A webapp új verziója' },
   { id: 'megjelenes', glyph: '🎨', t: 'Megjelenés', s: 'A VRG Mobile palettái' },
 ];
-const ANDROID_ONLY = ['Csipogó', 'Légegér', 'Képernyő', 'Átadás', 'Hálózat'];
+const ANDROID_ONLY = ['Csipogó', 'Tárgykereső', 'Légegér', 'Képernyő', 'Átadás', 'Hálózat'];
 
 function home() {
-  view.innerHTML = `
+  const tl = TRUST_LIST || (() => { try { return JSON.parse(D.LS.get('trust') || 'null'); } catch (e) { return null; } })();
+  const guideCard = listed(tl) ? '' : `<a class="tile wide" href="#/utmutato"><span class="g">📱</span><b>iPhone csatlakoztatása</b><small>Lépésről lépésre: hogyan kérj hozzáférést és hogyan hagyja jóvá a tulajdonos (kb. 3 perc)</small></a>`;
+  view.innerHTML = `${guideCard}
     <section class="tiles">${TILES.map(t => `<a class="tile" href="#/${t.id}"><span class="g">${t.glyph}</span><b>${t.t}</b><small>${t.s}</small></a>`).join('')}</section>
     <p class="hint">Csak Androidon (Bluetooth vagy a PC reléje kell hozzájuk, ami iPhone böngészőben nem elérhető): ${ANDROID_ONLY.join(', ')}.</p>`;
 }
@@ -79,11 +106,13 @@ async function eszkoz() {
       ${t && t.gated ? `<div class="hint">${updatesAllowed(t) ? 'Frissítést kaphat.' : 'Frissítést csak jóváhagyás után kap (a kiadások zárolva).'}</div>` : ''}
       <label class="field">A telefon neve a listán <input id="nm" value="${esc(D.deviceName())}" maxlength="40"></label>
     </div>
+    <details class="gbox"${listed(t) ? '' : ' open'}><summary>Részletes útmutató: így csatlakoztasd az iPhone-t</summary>${guideHtml(await guide(), { title: false })}</details>
     <h3>Hozzáférés kérése</h3>
     <button id="req" class="pri">Kérés QR-kódja</button>
     <div id="reqbox"></div>
-    <h3>Engedély</h3>
-    <p class="hint">A tulajdonos telefonja mutatja az engedély QR-kódját. Az iPhone kamerája ezt a webappot nyitja meg vele. Ha a kezdőképernyőre tetted az appot, az külön tárolót használ: ott másold be az üzenetet ide.</p>
+    <div id="wait"></div>
+    <h3>Engedély (nem mindig kell)</h3>
+    <p class="hint">Ha a tulajdonos a saját telefonjával olvasta be a kérésedet, az iPhone magától feloldódik, nem kell engedély. Engedély QR akkor kell, ha írási jogot is kapsz, vagy ha nem akarsz várni. Safariban olvasd be a Kamerával; a kezdőképernyőre tett appban másold be ide az üzenetet (a két változat külön tárolót használ).</p>
     <textarea id="paste" rows="3" placeholder="Engedély link vagy üzenet…"></textarea>
     <button id="acc">Engedély beillesztése</button>
     <div id="accmsg"></div>`;
@@ -92,11 +121,33 @@ async function eszkoz() {
     const r = await D.makeRequest(VERSION.v);
     $('#reqbox').innerHTML = `<div class="qr">${qrSvg(r.link, { ecc: 'M' })}</div>
       <div class="code big">${esc(r.code)}</div>
-      <p class="hint">A tulajdonos a saját telefonján olvassa be (VRG Mobile → QR beolvasása, vagy a kamerája), és ugyanezt a kódot kell látnia.</p>
+      <p class="hint">Mutasd a képernyőt a tulajdonosnak: ő a VRG Mobile QR beolvasásával beolvassa, és a telefonja azonnal jóváhagyja. Üzenetben küldött kérésnél ugyanezt a kódot kell látnia. Hagyd nyitva ezt az oldalt.</p>
       <button id="share">Megosztás (üzenetben)</button>`;
+    waitForApproval();
     $('#share').onclick = () => (navigator.share ? navigator.share({ text: `VRG Mobile hozzáférés-kérés (${r.req.name}, kód ${r.code}):\n${r.link}` }) : navigator.clipboard.writeText(r.link)).catch(() => {});
   };
   $('#acc').onclick = () => accept($('#paste').value, $('#accmsg'));
+}
+
+/** While this page is open and the device is not on the list: read the list every 10 s and say when it is (D-46). */
+let waiting = null;
+function waitForApproval() {
+  if (waiting) return;
+  const box = $('#wait'), started = Date.now();
+  const tick = async () => {
+    if (!location.hash.startsWith('#/eszkoz')) { clearInterval(waiting); waiting = null; return; }
+    const t = await trust(true);
+    const box2 = $('#wait');
+    if (listed(t)) {
+      clearInterval(waiting); waiting = null;
+      if (box2) box2.innerHTML = '<div class="ok big">Jóváhagyva! Ez az iPhone rajta van a megbízható eszközök listáján.</div>';
+      return;
+    }
+    const min = Math.floor((Date.now() - started) / 60000);
+    if (box2) box2.innerHTML = `<p class="warn">Jóváhagyásra vár… 10 másodpercenként újranézi a listát${min >= 1 ? ` (${min} perce)` : ''}. A GitHub néha 1–5 percig a régi listát adja.</p>`;
+  };
+  if (box) box.innerHTML = '<p class="warn">Jóváhagyásra vár…</p>';
+  waiting = setInterval(tick, 10000);
 }
 
 async function accept(text, out) {
@@ -148,7 +199,7 @@ async function megjelenes() {
   view.querySelectorAll('.pal').forEach(b => b.onclick = async () => { await applyPalette(b.dataset.id); megjelenes(); });
 }
 
-const ROUTES = { '': home, eszkoz, haladas, frissites, megjelenes };
+const ROUTES = { '': home, eszkoz, haladas, frissites, megjelenes, utmutato };
 function route() {
   const h = location.hash;
   if (h.startsWith('#grant=')) {                     // the owner's grant QR, opened by the iPhone's camera

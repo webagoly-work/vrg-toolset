@@ -1,0 +1,124 @@
+{
+  "about": "VRG Kisokos · Előírások · biztonsági világítás. Egy kártya = egy szabvány vagy jogszabály, SAJÁT összefoglalóval és hivatkozással (a szöveg szerzői jogvédett: a teljes szöveg a megvásárolt példányban, a jogszabály a Nemzeti Jogszabálytárban). A számértékek tájékoztató jellegűek: munka előtt a hatályos kiadással kell egyeztetni. Vázlat: reviewed = null, amíg a Founder át nem nézi.",
+  "kind": "eloiras",
+  "added": "2026-11-22",
+  "cards": [
+    { "id": "msz-en-1838", "title": "MSZ EN 1838 · Vészvilágítás: alkalmazás", "aka": ["EN 1838", "vészvilágítási szabvány", "emergency lighting application"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 1838 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Mit kell megvilágítani vészvilágítással, mennyire, mennyi ideig, és hogyan kell látszaniuk a biztonsági jeleknek. Megmondja a „mit”; azt, hogy hol kötelező, a tűzvédelmi előírás (OTSZ) dönti el.",
+      "points": [
+        "A vészvilágítás két ága: a biztonsági világítás (embereknek: menekülés, pánik elkerülése, veszélyes munka leállítása) és a tartalékvilágítás (a tevékenység folytatására).",
+        "A biztonsági világítás három fajtája: menekülési útvonal-világítás, nyílt területi (pánikellenes) világítás, nagy kockázatú munkaterület világítása.",
+        "Hangsúlyos pontok, ahol lámpatest kell: minden vészkijárati ajtó, lépcső (minden fok kapjon közvetlen fényt), szintváltás, irányváltás, folyosó-kereszteződés, tűzoltó eszköz, kézi jelzésadó, elsősegélyhely, a kijárat előtti külső terület.",
+        "A biztonsági jelek (kijárat, irányjelzés) a menekülés irányát mutatják, és felismerhetőknek kell lenniük a szükséges távolságról."
+      ],
+      "values": [
+        "Menekülési útvonal (legfeljebb 2 m széles): a középvonalon legalább 1 lx a padlón; a középső sáv (a szélesség fele) legalább 0,5 lx; egyenletesség (max : min) legfeljebb 40 : 1.",
+        "Nyílt terület (pánikellenes): legalább 0,5 lx a padlón (a szélső 0,5 m-es sáv nélkül), egyenletesség legfeljebb 40 : 1.",
+        "Nagy kockázatú munkaterület: a normál üzemi megvilágítás legalább 10 %-a, de legalább 15 lx; egyenletesség legfeljebb 10 : 1; azonnali (legfeljebb 0,5 s-os) bekapcsolás.",
+        "Tűzoltó eszköz, kézi jelzésadó, elsősegélyhely: legalább 5 lx függőlegesen az eszköznél.",
+        "Bekapcsolás menekülési útvonalon: 5 s alatt az előírt érték 50 %-a, 60 s alatt a teljes érték.",
+        "Működési idő menekülési útvonalon: legalább 1 óra (a nemzeti előírás és a tűzvédelmi terv több időt is előírhat).",
+        "Biztonsági jel felismerési távolsága: belső megvilágítású jelnél kb. 200 × a jel piktogramjának magassága, külső megvilágításúnál kb. 100 ×."
+      ],
+      "applies": "Közösségi és munkahelyi épületek, társasházak közös terei, ahol az OTSZ vagy a tűzvédelmi terv biztonsági világítást ír elő. Lakáson belül nem kötelező.",
+      "related": ["msz-en-50172", "msz-en-60598-2-22", "msz-en-iso-7010", "otsz-tvmi"],
+      "terms": { "hu": ["MSZ EN 1838 vészvilágítás", "menekülési útvonal megvilágítás 1 lux"], "en": ["EN 1838 emergency lighting", "escape route 1 lux"], "de": ["DIN EN 1838 Notbeleuchtung", "Rettungsweg 1 Lux"] },
+      "shop": "MSZT szabványbolt (a szabvány megvásárolható példánya)." },
+
+    { "id": "msz-en-50172", "title": "MSZ EN 50172 · Biztonsági világítási rendszerek", "aka": ["EN 50172", "vészvilágítás telepítése és ellenőrzése"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 50172 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A biztonsági világítási rendszer tervezésének, telepítésének, dokumentálásának és időszakos ellenőrzésének szabályai.",
+      "points": [
+        "A rendszerről terv és dokumentáció kell: a lámpatestek helye és fajtája, az áramkörök, az akkumulátoros egységek, a működési idő.",
+        "Üzemnapló kell: minden ellenőrzés, hiba és javítás dátummal.",
+        "Az átadáskor a teljes működési idő próbája; utána rendszeres funkcióellenőrzés és évente teljes idejű próba.",
+        "A teljes idejű próbát úgy kell időzíteni, hogy utána, az akkumulátorok töltése alatt ne maradjon védelem nélkül az épület (pl. munkaidőn kívül, vagy szakaszosan)."
+      ],
+      "values": [
+        "Rendszeres (jellemzően havi) rövid funkcióellenőrzés: hálózatkimaradás szimulálása, minden lámpatest és jel kigyullad.",
+        "Évente a teljes névleges működési idő próbája.",
+        "Központi rendszernél a jelzőlámpák rendszeres (akár napi) szemrevételezése.",
+        "A pontos gyakoriságot a magyar tűzvédelmi előírás (OTSZ, TvMI) is szabályozza: azzal együtt kell alkalmazni."
+      ],
+      "applies": "Minden épület, amelyben biztonsági világítás van: tervezés, kivitelezés, átadás, üzemeltetés.",
+      "related": ["msz-en-1838", "msz-en-62034", "msz-en-50171", "otsz-tvmi"],
+      "terms": { "hu": ["MSZ EN 50172 biztonsági világítás ellenőrzés", "vészvilágítás üzemnapló"], "en": ["EN 50172 emergency lighting testing", "emergency lighting log book"], "de": ["EN 50172 Sicherheitsbeleuchtung Prüfung", "Prüfbuch Notbeleuchtung"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-60598-2-22", "title": "MSZ EN 60598-2-22 · Lámpatestek biztonsági világításhoz", "aka": ["EN 60598-2-22", "vészvilágító lámpatest szabvány"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 60598-2-22 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A biztonsági világításra szánt lámpatestek (önálló akkumulátoros és központi táplálású) termékkövetelményei: működés, akkumulátor, töltés, jelölés, vizsgálat.",
+      "points": [
+        "Üzemmódok: készenléti (csak hálózatkimaradáskor világít), állandó üzemű (mindig világít, kimaradáskor is), kombinált.",
+        "A lámpatestnek jeleznie kell a töltés állapotát (töltésjelző), és lehetővé kell tennie a próbát.",
+        "A jelölés tartalmazza a működési módot és a névleges működési időt; az akkumulátorcserére vonatkozó adatokat.",
+        "Kiválasztáskor ezt a jelölést kell egyeztetni a terv követelményével."
+      ],
+      "values": [
+        "Névleges működési idő jellemzően 1 vagy 3 óra (a jelölésen).",
+        "Az akkumulátor teljes feltöltése a gyártó által megadott időn (jellemzően 24 órán) belül."
+      ],
+      "applies": "A biztonsági világítás minden lámpateste és jele.",
+      "related": ["msz-en-1838", "msz-en-50172"],
+      "terms": { "hu": ["MSZ EN 60598-2-22 vészvilágító lámpatest"], "en": ["EN 60598-2-22 emergency luminaire"], "de": ["EN 60598-2-22 Notleuchte"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-50171", "title": "MSZ EN 50171 · Központi tápellátó rendszerek", "aka": ["EN 50171", "központi akkumulátoros rendszer szabvány"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 50171 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A biztonsági berendezéseket (köztük a biztonsági világítást) tápláló központi akkumulátoros rendszerek követelményei.",
+      "points": [
+        "A központi egység töltője, akkumulátora, átkapcsolása és felügyelete egy rendszer; a kimenő áramköröket felügyelni kell.",
+        "A központtól a lámpatestekig a vezetékrendszernek tűz esetén is működnie kell a szükséges ideig (funkciómegtartó kábelrendszer).",
+        "A központ helyiségének tűzvédelmi és szellőzési követelményei vannak."
+      ],
+      "values": ["A funkciómegtartás idejét (pl. 30 vagy 90 perc) a tűzvédelmi előírás és a terv adja."],
+      "applies": "Nagyobb épületek központi akkumulátoros biztonsági világítása.",
+      "related": ["msz-en-50172", "otsz-tvmi"],
+      "terms": { "hu": ["központi akkumulátoros vészvilágítás", "funkciómegtartó kábel"], "en": ["central battery system emergency lighting", "fire resistant cable"], "de": ["Zentralbatteriesystem", "Funktionserhalt Kabel"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-62034", "title": "MSZ EN 62034 · Automatikus tesztrendszerek", "aka": ["EN 62034", "önteszt vészvilágítás"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN 62034 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "Az akkumulátoros biztonsági világítás automatikus próbájának (önteszt, központi tesztrendszer) követelményei.",
+      "points": [
+        "Az önteszt a lámpatestben vagy egy központi rendszerben elvégzi a rendszeres funkció- és teljes idejű próbát, és jelzi az eredményt.",
+        "Az automatikus teszt eredményét az üzemnaplóba kell vezetni (vagy a rendszer naplózza).",
+        "Az önteszt nem váltja ki az időszakos szemrevételezést és a hibák kijavítását."
+      ],
+      "values": ["A próbák gyakorisága az MSZ EN 50172 és a magyar előírás szerint."],
+      "applies": "Önálló akkumulátoros lámpatestek önteszttel, címezhető (DALI) vészvilágítási rendszerek.",
+      "related": ["msz-en-50172"],
+      "terms": { "hu": ["öntesztes vészvilágító lámpatest", "DALI vészvilágítás"], "en": ["self-test emergency luminaire", "DALI emergency lighting"], "de": ["Selbsttest Notleuchte", "DALI Notbeleuchtung"] },
+      "shop": "MSZT szabványbolt." },
+
+    { "id": "msz-en-iso-7010", "title": "MSZ EN ISO 7010 · Biztonsági jelek", "aka": ["ISO 7010", "menekülési piktogram", "zöld futó ember"],
+      "place": { "core": "6A" }, "source": { "kind": "szabvány", "ref": "MSZ EN ISO 7010 (a hatályos kiadás)", "from": "MSZT szabványbolt" },
+      "scope": "A biztonsági jelek egységes piktogramjai: a menekülési jeleké (zöld, futó ember, ajtó, nyíl) is.",
+      "points": [
+        "Vészkijárat jele: zöld alapon fehér futó ember ajtóval (E001 balra, E002 jobbra), kiegészítő irányjelző nyíllal.",
+        "Csak szabványos piktogram használható; a régi, „szöveges” (KIJÁRAT) vagy eltérő rajzú jeleket cserélni kell.",
+        "Ugyanazon az útvonalon egységes jelrendszer kell."
+      ],
+      "values": ["A jel méretét a felismerési távolság határozza meg (lásd MSZ EN 1838)."],
+      "applies": "Minden menekülési útirány- és kijáratjelző, az utánvilágító jelek is.",
+      "related": ["msz-en-1838"],
+      "terms": { "hu": ["ISO 7010 menekülési jel", "vészkijárat piktogram E001"], "en": ["ISO 7010 emergency exit sign", "E001 E002"], "de": ["ISO 7010 Rettungszeichen", "Notausgang E001"] },
+      "shop": "MSZT szabványbolt; a jelek biztonságtechnikai szaküzletben." },
+
+    { "id": "otsz-tvmi", "title": "OTSZ és TvMI · Hol kell biztonsági világítás", "aka": ["Országos Tűzvédelmi Szabályzat", "54/2014. (XII. 5.) BM rendelet", "Tűzvédelmi Műszaki Irányelv"],
+      "place": { "core": "6A" }, "source": { "kind": "jogszabály + irányelv", "ref": "OTSZ: 54/2014. (XII. 5.) BM rendelet (hatályos szövege); a biztonsági világításról szóló Tűzvédelmi Műszaki Irányelv (TvMI)", "from": "Nemzeti Jogszabálytár (njt.hu); a TvMI-k a katasztrófavédelem oldalán" },
+      "scope": "A magyar tűzvédelmi szabályozás mondja meg, MELY épületekben és helyiségekben kell biztonsági világítás; a TvMI ennek egy elfogadott teljesítési módját írja le a szabványokra hivatkozva.",
+      "points": [
+        "A kötelezettség az épület rendeltetésétől, méretétől, a benntartózkodók számától és a menekülési útvonalak jellegétől függ: ezt a tűzvédelmi terv rögzíti.",
+        "Egylakásos lakóépületben jellemzően nem kötelező; közösségi, munkahelyi épületekben és nagyobb társasházak közös tereiben gyakran igen.",
+        "Az időszakos felülvizsgálat gyakoriságát és dokumentálását is szabályozza.",
+        "Munka előtt mindig a hatályos jogszabályszöveget és a konkrét épület tűzvédelmi tervét kell megnézni; ez a kártya csak térkép."
+      ],
+      "values": ["A konkrét követelmény épületenként: a tűzvédelmi tervben és a hatályos jogszabályban."],
+      "applies": "Magyarországon minden épület, ahol a tűzvédelmi előírás biztonsági világítást ír elő.",
+      "related": ["msz-en-1838", "msz-en-50172", "msz-en-50171"],
+      "terms": { "hu": ["OTSZ biztonsági világítás", "TvMI biztonsági világítás"], "en": ["Hungarian fire safety code emergency lighting"], "de": ["ungarische Brandschutzvorschrift Sicherheitsbeleuchtung"] },
+      "shop": "Nemzeti Jogszabálytár (ingyenes), katasztrófavédelem honlapja." }
+  ]
+}

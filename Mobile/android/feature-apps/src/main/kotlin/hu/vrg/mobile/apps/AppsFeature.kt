@@ -17,7 +17,6 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +37,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +90,8 @@ import hu.vrg.mobile.kit.ui.RcoItem
 import hu.vrg.mobile.kit.ui.RcoMenu
 import hu.vrg.mobile.kit.ui.rco
 import android.view.ViewGroup
+import hu.vrg.mobile.kit.theme.vrgBorder
+import hu.vrg.mobile.kit.ui.FeatureTop
 
 // Alkalmazások (WP M21): the Desktop's in-shell HTML apps on the phone. Which apps and which files each may read come from the Desktop's
 // own catalog (DeskApps.kt, generated); what is served is AppScheme.decide, a port of the Desktop's vrg-app:// rules.
@@ -106,6 +111,8 @@ import android.view.ViewGroup
 object AppsFeature : VrgFeature {
     override val info = Catalogue.APPS
     private const val TAG = "apps"
+    /** The VRG Böngésző (DeskApps "browser"): its pages go to the Böngésző feature (WP M68). */
+    private const val BROWSER_APP = "browser"
     private const val LOCAL = "apps"
     private const val MANIFEST = "manifest.json"
     private const val RAW = "application/vnd.github.raw"
@@ -323,6 +330,11 @@ object AppsFeature : VrgFeature {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val u = request.url
                 if (AppScheme.sameApp(app.id, u.toString())) return false
+                // the VRG Böngésző's pages open in the phone's work browser (WP M68), the other apps' links in the phone's browser
+                if (request.isForMainFrame && app.id == BROWSER_APP && (u.scheme == "https" || u.scheme == "http")) {
+                    host.openRoute(Route(Catalogue.WEB.id, "", mapOf("u" to u.toString())))
+                    return true
+                }
                 if (request.isForMainFrame && (u.scheme == "https" || u.scheme == "http" || u.scheme == "mailto" || u.scheme == "tel"))
                     runCatching { view.context.startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 return true
@@ -388,12 +400,8 @@ object AppsFeature : VrgFeature {
         val cur = id?.let { app(it) }
         if (cur != null) {
             Column(Modifier.fillMaxSize()) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
-                        modifier = Modifier.clickable { showing.value = null }.padding(horizontal = 4.dp, vertical = 6.dp))
-                    Text(cur.hu.uppercase(Locale.ROOT), style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                    VrgChip("⟳") { refresh(cur.id) }
+                FeatureTop(host, info, Modifier.padding(horizontal = 12.dp, vertical = 2.dp), title = cur.hu, bar = true, onBack = { showing.value = null }) {
+                    VrgChip("⟳ Frissítés") { refresh(cur.id) }
                 }
                 AppView(cur.id, host, Modifier.fillMaxWidth().weight(1f)) { showing.value = null }
             }
@@ -408,11 +416,7 @@ object AppsFeature : VrgFeature {
         val account by GitHub.account.collectAsStateWithLifecycle()
         BackHandler { host.home() }
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-            Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current), modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
-                Text("ALKALMAZÁSOK", style = Melyviz.title.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
-                VrgChip("⟳ mind") { refreshAll() }
-            }
+            FeatureTop(host, info, Modifier.padding(vertical = 2.dp), bar = true) { VrgChip("⟳ mind") { refreshAll() } }
             if (account !is Account.SignedIn && all.values.none { it.have != null }) {
                 Text("A repó privát: az első letöltéshez GitHub belépés kell. Utána offline is nyílnak.", style = Melyviz.small.copy(color = Melyviz.sand))
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
@@ -434,14 +438,14 @@ object AppsFeature : VrgFeature {
                         ))
                         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).rco(onClick = { showing.value = a.id }, onLong = { menu = true }).padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).border(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
+                            Box(Modifier.size(40.dp).background(Melyviz.raised, RoundedCornerShape(10.dp)).vrgBorder(1.dp, if (s.ready(a)) Melyviz.glowDim else Melyviz.lineSoft, RoundedCornerShape(10.dp)),
                                 contentAlignment = Alignment.Center) {
                                 Text(a.hu.split(' ').take(2).joinToString("") { it.take(1) }.uppercase(Locale.ROOT), style = Melyviz.readout.copy(color = if (s.ready(a)) Melyviz.glow else Melyviz.faint))
                             }
                             Column(Modifier.weight(1f).padding(start = 10.dp)) {
                                 Text(a.hu, style = Melyviz.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(state, style = Melyviz.small.copy(fontSize = 10.sp), maxLines = 1)
-                                s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                                s.problem?.let { Text(it, style = Melyviz.small.copy(fontSize = 10.sp, color = Melyviz.sand), maxLines = 4, overflow = TextOverflow.Ellipsis) }
                             }
                             Text("›", style = Melyviz.title.copy(color = Melyviz.muted))
                         }

@@ -13,7 +13,12 @@
         ?q=Budapest Váci út 12         search on load and fly there
         ?embed=1                        slim UI for embedding in Kapu / Planner
         ?job=BK2                        the job layer on, fly to that job (internal; docs/map/JOBS-MAP.md)
-  Keys: /  search   3  3D buildings   T  terrain   J  jobs   G  Google 3D view   N  north   Esc  close
+        ?arnyek=1 | ?arnyek=2026-12-21T15:30   the building shadows now / at that local time
+        ?feed=1                         the Térkép-feed on (the nearest places by category; docs/map/FEED.md);
+                                        a held place is routed on our own road network (docs/map/ROUTING.md)
+        ?wx=1 / ?wx=0                   the weather layer on at load / hidden (docs/map/WEATHER-MAP.md)
+  Keys: /  search   3  3D buildings   T  terrain   R  relief measuring   B  measured building heights   S  shadows   F  feed   J  jobs   W  weather   G  Google 3D view   N  north   Esc  close
+        with W on: P play/pause   [ ]  step   M  forecast / measured
 
   Libraries (Vendor/, see vendor-manifest.json):
     MapLibre GL JS — Copyright (c) 2023, MapLibre contributors; (c) 2020 Mapbox. BSD-3-Clause.
@@ -148,6 +153,103 @@
     border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -4px 18px rgba(0,0,0,.25);padding:14px 16px 18px}
   #jobs-sheet .jclose{position:absolute;right:8px;top:6px;border:0;background:none;color:var(--ink-2);font-size:18px;min-width:40px;min-height:40px;cursor:pointer}
   #results .k.munka{color:var(--accent);font-weight:700}
+  /* S: the building shadows (lib/shadow-layer.js, docs/map/SHADOWS.md) */
+  #sun-panel{position:absolute;left:12px;bottom:30px;z-index:7;width:min(460px,calc(100vw - 24px));box-sizing:border-box;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #sun-panel[hidden]{display:none}
+  /* R: the relief measuring (lib/relief-layer.js) */
+  #relief-panel{position:absolute;right:12px;bottom:30px;z-index:7;width:min(460px,calc(100vw - 24px));box-sizing:border-box;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #relief-panel[hidden]{display:none}
+  #relief-panel #rl-read{margin-top:4px;color:var(--ink)}
+  #relief-panel #rl-prof{margin-top:6px}
+  #relief-panel .rl-note{margin-top:6px;font-size:11px}
+  #sun-panel input[type=date]{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:4px 9px;font:12px inherit;min-height:28px}
+  #sun-panel .sun-time output{min-width:44px}
+  #sun-panel .sun-note{margin-top:6px;font-size:11px}
+  #sun-panel .lg-chip{opacity:1;text-decoration:none}
+  #sun-panel .lg-chip[aria-pressed=true]{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  #sun-panel .sun-note[data-warn="1"]{color:var(--warn)}
+  body.sun-on.jobs-on #jobs-legend{bottom:150px}
+  body.sun-on .maplibregl-ctrl-bottom-left{display:none}
+  /* W: the weather layer (lib/weather-layer.js, docs/map/WEATHER-MAP.md) — same panel language as the J legend */
+  #wx-panel{position:absolute;right:12px;bottom:30px;z-index:5;width:min(440px,calc(100vw - 24px));box-sizing:border-box;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #wx-panel[hidden],#wx-read[hidden]{display:none}
+  #wx-panel.collapsed .lg-b{display:none}
+  #wx-panel .lg-h .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  #wx-panel .wx-layers .lg-chip[aria-pressed=false]{text-decoration:none;opacity:.55;background:none}
+  #wx-panel .lg-chip[data-empty]{opacity:.42}
+  #wx-panel .lg-chip[data-empty][aria-pressed=true]{text-decoration:none}
+  #wx-panel .lg-chip .dot{box-shadow:0 0 0 1.5px #1f1d1a inset}
+  #wx-panel .lg-chip:disabled{opacity:.4;cursor:not-allowed}
+  .wx-eval{font:700 10px/1 inherit;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#8b5a1f;border-radius:999px;padding:4px 7px;white-space:nowrap}
+  .wx-time output{min-width:140px;white-space:nowrap}
+  .wx-time output.wx-past{color:var(--accent)}
+  .wx-legend{margin-top:6px;display:grid;gap:5px}
+  .wx-ramp{display:grid;grid-template-columns:96px 1fr 34px;align-items:center;gap:8px;position:relative}
+  .wx-ramp>span:first-child{color:var(--ink-2)} .wx-ramp em{font-style:normal;color:var(--faint);font-size:11px}
+  .wx-ramp>i{height:9px;border-radius:5px;border:1px solid var(--line)}
+  .wx-ticks{position:absolute;left:104px;right:42px;top:12px;height:12px;font:10px ui-monospace,Consolas,monospace;color:var(--faint)}
+  .wx-ticks b{position:absolute;transform:translateX(-50%);font-weight:400}
+  .wx-ramp:has(.wx-ticks){padding-bottom:12px}
+  .wx-age{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--faint);grid-column:2/4}
+  .wx-age i{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px #1f1d1a inset;margin-left:4px}
+  .wx-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:7px;padding-top:6px;border-top:1px dashed var(--line);font-size:11px;color:var(--faint)}
+  .wx-foot>span:first-child{min-width:0}
+  .wx-attr{font-size:10.5px;color:var(--faint);margin-top:4px;line-height:1.35}
+  .wx-ctl{display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .wx-ctl input{width:70px;accent-color:var(--accent);vertical-align:middle}
+  .wx-overlay{position:absolute;left:0;top:0;pointer-events:none}
+  .wx-overlay[hidden]{display:none}
+  #wx-read{position:absolute;z-index:6;pointer-events:none;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 9px;
+    font:12px/1.2 "Segoe UI",system-ui,sans-serif;box-shadow:var(--shadow);white-space:nowrap}
+  .jcard .wx-jobline{margin-top:8px;padding:6px 8px;border-left:3px solid var(--c);background:var(--field);border-radius:0 6px 6px 0;font-size:12px}
+  .jcard .wx-jobline b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+  body.wx-on .maplibregl-ctrl-top-right{bottom:auto;top:262px}
+  @media (max-width:980px){ body.wx-on.jobs-on #wx-panel{bottom:auto;top:64px;right:72px;width:min(380px,calc(100vw - 96px))} }
+  /* F: the Térkép-feed (lib/feed-layer.js, docs/map/FEED.md) */
+  #feed-panel{position:absolute;left:12px;top:104px;z-index:4;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 260px);overflow:auto;
+    box-sizing:border-box;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink-2);box-shadow:var(--shadow)}
+  #feed-panel[hidden],#fd-set[hidden]{display:none}
+  #feed-panel .lg-h{flex-wrap:wrap}
+  #fd-mode{margin-left:auto}
+  #fd-list{display:grid;gap:6px;margin-top:7px}
+  .fd-card{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-left:4px solid var(--c);
+    border-radius:8px;background:var(--field);color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;min-height:44px}
+  .fd-card:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .fd-card .fd-i{font-size:20px;text-align:center}
+  .fd-card .fd-t{min-width:0} .fd-card .fd-t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+  .fd-card small{display:block;color:var(--faint);font-size:11px}
+  .fd-card .fd-d{text-align:right;white-space:nowrap} .fd-card .fd-d b{font-size:13px}
+  .fd-card.fd-miss{opacity:.55;cursor:default;grid-template-columns:34px 1fr}
+  .fd-card.fd-sel{border-width:2px;border-left-width:6px}
+  .fd-card .fd-act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .fd-card .fd-act small{flex-basis:100%}
+  #fd-set{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}
+  #fd-set .lg-chip[aria-pressed=false]{opacity:.55;text-decoration:none}
+  #fd-set .lg-chip[aria-pressed=true]{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  .fd-pin .lg-x{min-width:22px;min-height:22px;font-size:12px}
+  .fd-note{margin-top:6px;font-size:11px}
+  .fd-mk{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:#fffaf0;border:3px solid var(--c);
+    box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+  .fd-mk.fd-mk-sel{width:44px;height:44px;font-size:23px;border-width:4px}
+  .fd-card .fd-go{background:var(--press);color:var(--on-press);border-color:var(--press)}
+  .fd-card .fd-traffic{flex-basis:100%;color:var(--ink);font-weight:600}
+  #fd-tt{flex:1;min-width:140px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:12px ui-monospace,Consolas,monospace;background:var(--field);color:var(--ink)}
+  /* N3: turn-by-turn guidance (lib/nav-layer.js) */
+  #nav-banner{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;width:min(520px,calc(100vw - 24px));box-sizing:border-box;
+    display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:#1f1d1a;color:#fff;border-left:8px solid var(--c);box-shadow:var(--shadow)}
+  #nav-banner[hidden],#nav-foot[hidden],#nav-foot [hidden]{display:none}
+  #nav-banner .nv-i{font-size:40px;line-height:1;min-width:44px;text-align:center}
+  #nav-banner .nv-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+  #nav-banner .nv-t b{font-size:24px;letter-spacing:.01em}
+  #nav-banner .nv-t span{font-size:16px;line-height:1.25}
+  #nav-banner .nv-t small{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nav-foot{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:9;width:min(520px,calc(100vw - 24px));box-sizing:border-box;
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--paper);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--shadow)}
+  #nav-sum{flex:1 1 100%;font-size:14px} #nav-sum b{font-size:18px;color:var(--ink)}
+  body.nav-on #feed-panel,body.nav-on .panel,body.nav-on .tools,body.nav-on #sun-panel,body.nav-on #wx-panel,body.nav-on #jobs-legend{display:none}
   /* R10: the phone (also through the VRG Mobile relay) */
   @media (max-width:640px){
     .panel{top:8px;left:8px;width:calc(100vw - 16px)}
@@ -160,8 +262,18 @@
     body.jobs-on .tools{top:78px}
     #jobs-legend{left:0;right:0;bottom:0;width:auto;border-radius:14px 14px 0 0;padding:8px 12px 12px}
     .lg-chip{min-height:34px;padding:5px 11px}
-    .maplibregl-ctrl-top-right{bottom:auto;top:126px}
-    body.jobs-on .maplibregl-ctrl-top-right{top:140px}
+    .maplibregl-ctrl-top-right{bottom:auto;top:152px}  /* the tools wrap to two rows on a phone */
+    body.jobs-on .maplibregl-ctrl-top-right{top:166px}
+    #sun-panel{left:0;right:0;bottom:0;width:auto;border-radius:14px 14px 0 0;padding:8px 12px 12px}
+    body.sun-on.jobs-on #jobs-legend{bottom:132px}
+    #wx-panel{left:0;right:0;bottom:0;width:auto;border-radius:14px 14px 0 0;padding:8px 12px 12px;max-height:46vh;overflow:auto}
+    body.wx-on.jobs-on #wx-panel{top:auto;right:0;width:auto;bottom:0;z-index:7}
+    body.wx-on .maplibregl-ctrl-top-right{top:152px}
+    body.sun-on.wx-on #wx-panel{bottom:132px}
+    #feed-panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:42vh;border-radius:14px 14px 0 0;padding:8px 12px 12px;z-index:8}
+    #feed-panel.fd-spider{max-height:none}
+    #nav-banner{top:8px;width:calc(100vw - 16px)}
+    #nav-foot{bottom:0;width:100vw;border-radius:14px 14px 0 0}
   }
 </style>
 </head>
@@ -181,8 +293,13 @@
 <div class="tools">
   <button class="btn" id="b-3d" aria-pressed="true" title="3D épületek">3D<kbd>3</kbd></button>
   <button class="btn" id="b-terrain" aria-pressed="true" title="Domborzat">Domb<kbd>T</kbd></button>
+  <button class="btn" id="b-relief" aria-pressed="false" title="Domborzat mérése: magasság, lejtő, szintvonalak, metszet két pont között">Mérés<kbd>R</kbd></button>
+  <button class="btn" id="b-heights" aria-pressed="false" title="Mért épületmagasság (Budapest)">Épület<kbd>B</kbd></button>
   <button class="btn" id="b-north" title="Északra, felülnézet">É<kbd>N</kbd></button>
+  <button class="btn" id="b-sun" aria-pressed="false" title="Az épületek árnyéka választott napon és órában">Árnyék<kbd>S</kbd></button>
+  <button class="btn" id="b-feed" aria-pressed="false" title="Térkép-feed: a legközelebbi otthon, bolt, étkezés, orvos… távolsággal és idővel">Feed<kbd>F</kbd></button>
   <button class="btn" id="b-jobs" aria-pressed="false" title="Munkák a térképen (ügyféladat, csak belső)">Munkák<kbd>J</kbd></button>
+  <button class="btn" id="b-wx" aria-pressed="false" title="Időjárás-rétegek: mezők, szél, csapadék, villám, mérések, figyelmeztetések (VRG Időjárás, online források)">Időjárás<kbd>W</kbd></button>
   <button class="btn" id="b-google" aria-pressed="false" title="Google 3D nézet ugyanerre a helyre (online)">Google 3D<kbd>G</kbd></button>
 </div>
 
@@ -199,7 +316,12 @@
 <div id="jobs-badge" hidden title="A munkák rétege ügyféladatot mutat: ne oszd meg, ne mutasd ügyfélnek">● ÜGYFÉLADAT · MUNKÁK</div>
 <div id="jobs-legend" hidden aria-label="Munkák jelmagyarázata"></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<section id="sun-panel" hidden aria-label="Árnyékok"></section>
+<section id="relief-panel" hidden aria-label="Domborzat mérése"></section>
+<section id="feed-panel" hidden aria-label="Térkép-feed"></section>
 <aside id="jobs-sheet" hidden aria-label="Munka adatai"></aside>
+<aside id="wx-panel" hidden aria-label="Időjárás-rétegek"></aside>
+<div id="wx-read" hidden></div>
 <div id="notice"><div id="notice-body"></div></div>
 
 <script>
@@ -212,10 +334,29 @@ if (location.protocol === 'file:') {
 }
 </script>
 <script src="/vendor/pmtiles/pmtiles.js"></script>
+<script src="/lib/relief.js"></script>
+<script src="/lib/dem.js"></script>
+<script src="/lib/heights.js"></script>
 <script src="/lib/geocode.js"></script>
+<!-- VRG Sketcher Helyszín (F1): the sketch on the building. Plain scripts, so a phone app that does not serve them still opens the map. -->
+<script src="/lib/site-math.js"></script>
+<script src="/lib/site-layer.js" defer></script>
+<script src="/lib/sun.js"></script>
+<script src="/lib/feed.js"></script>
+<script src="/lib/route.js"></script>
+<script src="/lib/guide.js"></script>
+<script src="/lib/traffic.js"></script>
 <script type="module">
 import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
 import { initJobs } from '/lib/jobs-layer.js';
+// loaded, not imported: a missing optional layer (an older VRG Mobile does not serve it) must not stop the whole map
+const { initWeather } = await import('/lib/weather-layer.js').catch(() => ({ initWeather: () => null }));
+const { initShadows } = await import('/lib/shadow-layer.js').catch(() => ({ initShadows: () => null }));
+const { initRelief } = await import('/lib/relief-layer.js').catch(() => ({ initRelief: () => null }));
+const { initHeights } = await import('/lib/heights-layer.js').catch(() => ({ initHeights: () => null }));
+const { initFeed } = await import('/lib/feed-layer.js').catch(() => ({ initFeed: () => null }));
+const { initRoute } = await import('/lib/route-layer.js').catch(() => ({ initRoute: () => null }));
+const { initNav } = await import('/lib/nav-layer.js').catch(() => ({ initNav: () => null }));
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -500,7 +641,11 @@ addEventListener('keydown', e => {
   if (k === '/') { q.focus(); q.select(); e.preventDefault(); }
   else if (k === '3') $('#b-3d').click();
   else if (k === 't') $('#b-terrain').click();
+  else if (k === 'r' && !$('#b-relief')?.disabled) $('#b-relief')?.click();
+  else if (k === 'b' && !$('#b-heights')?.disabled) $('#b-heights')?.click();
   else if (k === 'n') $('#b-north').click();
+  else if (k === 's') $('#b-sun').click();
+  else if (k === 'f') $('#b-feed')?.click();
   else if (k === 'g') $('#b-google').click();
   else if (k === 'j' && !$('#b-jobs')?.disabled) $('#b-jobs')?.click();
   else if (k === 'escape' && $('#gpanel').classList.contains('show')) gclose();
@@ -512,7 +657,28 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 // ---------------------------------------------------------------- J: the jobs (lib/jobs-layer.js; client data, internal only)
 const jobs = initJobs({ map, maplibregl, params, store, toast });
 
-window.vrgMap = { map, searchOffline, camera, jobs };   // for tests and the console
+// ---------------------------------------------------------------- R: measuring the relief (lib/relief-layer.js)
+const relief = hasTerrain ? initRelief({ map, params, store, toast }) : null;
+if (!relief && !hasTerrain) $('#b-relief')?.remove();
+
+// ---------------------------------------------------------------- B: measured building heights (lib/heights-layer.js; Budapest atlas, local data)
+const heights = initHeights({ map, store, toast });
+if (!heights) $('#b-heights')?.remove();
+
+// ---------------------------------------------------------------- S: the building shadows (lib/shadow-layer.js; the hills' with R's heights)
+const shadows = initShadows({ map, params, store, toast, relief });
+if (!shadows) $('#b-sun')?.remove();
+
+// ---------------------------------------------------------------- F: the Térkép-feed (lib/feed-layer.js)
+const router = initRoute({ map });            // N2: our own offline routing (lib/route.js, /data/roads.bin)
+const nav = initNav({ map, store, toast });    // N3: turn-by-turn guidance (lib/guide.js, lib/nav-layer.js)
+const feed = initFeed({ map, maplibregl, params, store, toast, router, nav });
+if (!feed) $('#b-feed')?.remove();
+
+// ---------------------------------------------------------------- W: the weather (lib/weather-layer.js; VRG Időjárás data)
+const weather = initWeather({ map, maplibregl, params, store, toast });
+
+window.vrgMap = { map, maplibregl, searchOffline, camera, jobs, weather, shadows, relief, heights, feed, router, nav };   // for tests, the console and the phone (VRG Mobile M43)
 </script>
 </body>
 </html>

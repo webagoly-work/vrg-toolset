@@ -57,6 +57,7 @@ Map\data\addresses.json (offline index)   ─┘                            Map/
 | **Never in OTG** | the M tool is `"otg": false`; on top, `serve.js` refuses the layer when `VRG_OTG=1`, a file `.otg` is in the repo root, or the repo runs from a path under `\OTG\`. |
 | **Not in `?embed=1`** | unless the embedding page asks with `?jobs=1`. |
 | **Visible marker** | while the layer is on, a red "● ÜGYFÉLADAT · MUNKÁK" badge sits at the top of the map. |
+| **Not kept on the phone** | VRG Mobile's Térkép (WP M43) fetches `/jobs/*` only through the relay, answers the page `no-store` and never writes it to the phone's storage; without a paired PC the layer is off there. Navigáció hands the navigation app the coordinates and the job code, never the address. |
 | **Off by default** | the layer remembers the last J state per browser; `?job=` turns it on. |
 | **Not in client documents** | MAP-D4: no map in the Költségvetési Tervezet; the Kit link is console-only. |
 

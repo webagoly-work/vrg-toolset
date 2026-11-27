@@ -172,7 +172,7 @@ bug `node --check` cannot see.
    re-extract into a fresh empty folder. Snapshotting = zipping into `data/exports/`.
 
 8. **localStorage rescue.** The new Opera GX profile starts with an empty project list.
-   Import the Domoszló `.vplan.json`, then take a first `.vbundle.json` backup.
+   Import the Mintafalu `.vplan.json`, then take a first `.vbundle.json` backup.
 
 9. **Opera GX standalone launcher** — `launcher.exe` isn't at the expected path. Minor.
 

@@ -268,7 +268,7 @@ reason to exist. The island (V4) waits for the fork's reassessment; it may becom
 rather than a separate board.
 
 **The fork's answers (STL-Q1…Q7, `stack-lens/README.md`).** The lit-paths view is **Érintésnyom**; the ◢ Stack
-button now opens the layers top to bottom with Rétegek last on the Asztal and the phone (D-48), which is the
+button now opens the layers top to bottom with Rétegek last on the Asztal and the phone (Mobile D-191), which is the
 base outline of the Stack; Érintésnyom sits on top of it, fed by the event spine; inferred links light dimmer and in
 another colour, kept apart in the data; both the SVG view and the WebGL byte-particle Viewer get built; Forecast
 first, a decision's blast radius next.

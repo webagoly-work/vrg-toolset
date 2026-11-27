@@ -27,6 +27,21 @@
 [data-role="topstrip"] .dot.ok { background: var(--mv-ok); } [data-role="topstrip"] .dot.warn { background: var(--mv-warn); } [data-role="topstrip"] .dot.crit { background: var(--mv-crit); }
 [data-role="topstrip"] [data-w="w:clock"] { color: var(--mv-text); font-size: 13px; letter-spacing: .06em; }
 [data-role="ring"] { width: 18px; height: 18px; }
+/* WP-60: a narrow strip. data-fit="1" drops the labels (the icon, the LED and the number stay); widgets that still do not
+   fit wait in ⋯ (desk.js fitTop). The level switch shows its short names there. */
+[data-role="topstrip"] > [hidden] { display: none !important; }
+[data-role="level"] .sh { display: none; }
+[data-role="topstrip"][data-fit="1"] .lbl { display: none; }
+[data-role="topstrip"][data-fit="1"] [data-role="level"] .sh { display: inline; }
+[data-role="topstrip"][data-fit="1"] > * { padding: 0 8px; }
+[data-role="top-more"] { font-size: 16px; letter-spacing: .1em; }
+[data-role="top-menu"] { position: fixed; z-index: 115; min-width: 200px; max-width: 260px; display: flex; flex-direction: column; padding: 4px 0;
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 28px rgba(0, 0, 0, .45); font: 12px var(--mv-mono); color: var(--mv-dim); }
+[data-role="top-menu"] > * { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+[data-role="top-menu"] > button { cursor: pointer; }
+[data-role="top-menu"] > button:hover, [data-role="top-menu"] > button:focus-visible { background: var(--mv-raised); color: var(--mv-text); outline: none; }
+[data-role="top-menu"] .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-faint); display: inline-block; }
+[data-role="top-menu"] .dot.ok { background: var(--mv-ok); } [data-role="top-menu"] .dot.warn { background: var(--mv-warn); } [data-role="top-menu"] .dot.crit { background: var(--mv-crit); }
 
 [data-role="workspace"] { position: relative; flex: 1 1 0; min-height: 0; display: flex;
   background: radial-gradient(120% 90% at 50% 110%, var(--mv-horizon) 0%, var(--mv-bg) 62%); }
@@ -55,6 +70,27 @@
 [data-role="sh-win"][hidden] { display: none; }
 [data-role="sh-win"][data-focus="1"] { border-color: var(--mv-accent); }
 [data-role="sh-win"][data-max="1"] { z-index: 4; }
+/* WP-51 board labels: the colour frame by origin (or the window's own colour), the origin + title bar above, the note below */
+[data-role="sh-win"] { --deco: var(--mv-line-strong); }
+[data-role="sh-win"][data-deco="ice"] { --deco: var(--mv-accent); }
+[data-role="sh-win"][data-deco="warm"] { --deco: var(--mv-warm); }
+[data-role="sh-win"][data-deco="violet"] { --deco: #b59cf5; }
+[data-role="sh-win"][data-deco="ok"] { --deco: var(--mv-ok); }
+[data-role="sh-win"][data-deco="warn"] { --deco: var(--mv-warn); }
+[data-role="sh-win"][data-deco="crit"] { --deco: var(--mv-crit); }
+[data-role="sh-win"][data-deco="grey"] { --deco: var(--mv-dim); }
+[data-role="sh-win"]:not([data-deco=""])[data-deco] { border-color: var(--deco); box-shadow: inset 0 0 0 1px var(--deco); }
+[data-role="sh-label"] { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-width: 0; height: 22px; padding: 0 8px;
+  background: color-mix(in srgb, var(--deco) 16%, var(--mv-bg)); border-bottom: 1px solid color-mix(in srgb, var(--deco) 45%, transparent); cursor: context-menu; }
+[data-role="sh-label"][hidden], [data-role="sh-note"][hidden], [data-role="sh-label"] > [hidden] { display: none; }
+[data-role="sh-label"] .o { flex: 0 0 auto; font: 600 9.5px/1 var(--mv-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--deco);
+  border: 1px solid var(--deco); padding: 2px 5px; }
+[data-role="sh-label"] .t { flex: 1 1 auto; min-width: 0; font: 600 12px/1.2 var(--mv-sans); color: var(--mv-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-role="sh-note"] { flex: 0 0 auto; max-height: 3.4em; overflow: hidden; padding: 3px 8px 4px; font: 11.5px/1.35 var(--mv-sans); color: var(--mv-dim);
+  background: color-mix(in srgb, var(--deco) 8%, var(--mv-bg)); border-top: 1px dashed color-mix(in srgb, var(--deco) 40%, transparent); white-space: pre-wrap; cursor: text; }
+[data-role="sh-menu"].edit { padding: 8px 10px; gap: 6px; min-width: 280px; }
+[data-role="sh-menu"].edit small { font: 600 10px var(--mv-voice); letter-spacing: .1em; text-transform: uppercase; color: var(--mv-dim); }
+[data-role="sh-label-edit"] { background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-accent); padding: 5px 8px; font: 13px var(--mv-sans); outline: none; }
 [data-role="sh-head"] { flex: 0 0 24px; display: flex; align-items: stretch; border-bottom: 1px solid var(--mv-line); user-select: none; cursor: grab; touch-action: none; }
 body[data-sh-drag="move"] [data-role="sh-head"] { cursor: grabbing; }
 [data-role="sh-win"][data-max="1"] [data-role="sh-head"] { cursor: default; }
