@@ -115,6 +115,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('decisions', () => log(require('./decisions').write({ graph, q: layers.Q, nodes }).msg), { optional: true });   // Döntésnapló (decisions.html)
     await hc.stage('metro', () => log(require('./metro').write({ graph }).msg), { optional: true });   // Vonaltérkép (metro.html)
     await hc.stage('runs', () => log(require('./runs').write({ graph }).msg), { optional: true });   // Futásnapló (runs.html)
+    await hc.stage('signals', () => log(require('./signalboard').write({ graph }).msg), { optional: true });   // Jelzéstábla (jelzesek.html)
     await hc.stage('board', () => { const b = require('./board').write({ graph }); log(b.msg); const d = b.data.dupes;
       if (d.length) hc.warn('board', `${d.length} fields are kept in two hand-edited files (${[...new Set(d.map(x => x.field))].join(', ')}: ${d.slice(0, 5).map(x => x.thread).join(', ')}${d.length > 5 ? ' …' : ''}); the Füzértábla lists them, its value is the owner's`); }, { optional: true });   // Füzértábla (board.html, S4)
     const ms = Date.now() - t0;
@@ -319,10 +320,10 @@ async function runLayers(codes, { quiet = true } = {}) {
     await hc.stage('events + snapshot', () => EV.record(prev, graph), { optional: true });
     await hc.stage('layer text', () => require('./layertext').write({ graph, facts, out: CFG.out, repo: C.REPO, events: X.readJsonl(EV.LOG).records,
       only: want.includes('E') ? null : want, note: { kind: 'incremental', layers: want, ids: [...new Set(ev.map(e => e.id))].slice(0, 500) } }), { optional: true });
-    const pages = new Set(); for (const c of want) for (const p of PAGE_STAGES[c] || []) pages.add(p);
+    const pages = new Set(['signals']); for (const c of want) for (const p of PAGE_STAGES[c] || []) pages.add(p);   // J is recomputed on every build
     const PAGE = { decisions: () => require('./decisions').write({ graph, q: ordered8.Q, nodes }), metro: () => require('./metro').write({ graph }), lineage: () => require('./lineage').write({ graph }),
       control: () => require('./control').write({ graph }), commits: () => require('./commitpixel').write({ graph }), runs: () => require('./runs').write({ graph }),
-      board: () => require('./board').write({ graph }) };
+      board: () => require('./board').write({ graph }), signals: () => require('./signalboard').write({ graph }) };
     for (const p of pages) await hc.stage(p, () => log(PAGE[p]().msg), { optional: true });
     const ms = Date.now() - t0;
     const failed = [];

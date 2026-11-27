@@ -73,7 +73,7 @@ module.exports = [
     is: 'Every warning the stack already knows, on what it is about: failing and stale tests, tests nothing runs, code no test reaches or nothing opens, hand status far from the evidence, open work that looks done, asks that came back with nothing landing, Solomon\'s unruled contradictions, stale briefs, the build\'s own warnings. A string that holds one glows red.',
     order: 'by kind, the worst first; red, amber, info', nodes: 'test-fail · test-stale · no-runner · unverified · unreachable · status-drift · looks-done · asked-again · contradiction · solomon · brief · health', edges: 'warns (the signal → what it is about)',
     source: 'the other layers\' own checks at build time (lib/signals.js): P, the strings, T, K, G\'s Solomon signals, tools/brief-state.js, the health collector',
-    page: { state: 'partial', name: 'the Viewer (⚠ lights every node a signal warns) and DRIFT.md §14', want: 'a trouble map: each pillar\'s signals as a column, red on top, with the one action that clears each' } },
+    page: { state: 'exists', name: 'Jelzéstábla (signal board)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/jelzesek.html' } },
   { code: 'R', id: 'devrepo', hu: 'Repó', en: 'DevRepo',
     is: 'What was committed, when, on which branch, and which files it touched.',
     order: 'time + branch (commit DAG)', nodes: 'commit · merge · session start (DevRep TL;DR)', edges: 'parent · merged-in',

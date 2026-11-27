@@ -524,3 +524,15 @@ open question among them:
 | STK-P189 | References | **A** a file owns `p:<file>`, so a text naming it links to the file, not only its folder | "reach below folders" for the join as well as for `path` |
 | STK-P190 | Skipped | **A** Vendor/, node_modules, dist/, minified files, `Archive/files/` | not our wiring, built output, or frozen one-shot copies |
 
+## Jelzéstábla, the J layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the J layer.** Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P191 | The shape | **A** one column per pillar, the worst first, its signals red → amber → info; a column for the signals tied to no pillar · B one long list | J's meta asked for "a trouble map: each pillar's signals as a column, red on top"; the pillar is where a fix is owned |
+| STK-P192 | The action on a card | **A** each kind says whether a signal's own brief is the action (`own`: fw-stale, vendor-branch, test-fail …); otherwise the kind's action, with the brief shown as evidence | a contradiction's brief is the two quoted lines, not what to do; the first draft put them under the → |
+| STK-P193 | Cleared signals | **A** the board keeps `out/signals-history.json` (each signal's kind, title, first day); one gone since the last build is listed for 14 days | a node- event names the id only; the title is gone with the node |
+| STK-P194 | When it is written | **A** on every build, incremental ones too | J is recomputed on both |
+| STK-P195 | Where it opens | **A** START R → J (a free key in the Rétegverem submenu), catalog `signalboard` under `stack` | next to the Füzértábla (R → L), the other cross-layer board |
+

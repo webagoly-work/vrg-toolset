@@ -147,7 +147,10 @@ Never load `out/stack.json` whole. Ids look like:
   nothing landing, Solomon's unruled contradictions (confirmed = red), a stale or broken brief (`tools/brief-state.js`),
   and a full build's own health warnings. Ids name the trouble (`J:test-fail.Map/test`), so the event log says when it
   started and ended. In the Viewer, ⚠ Jelzések (⚙ Nézet, or `viewer.html#warn`) turns every warned node red and dims the
-  rest; DRIFT.md §14 counts them by kind and ranks the pillars whose strings carry them.
+  rest; DRIFT.md §14 counts them by kind and ranks the pillars whose strings carry them. **Jelzéstábla**
+  (`jelzesek.html`, START R → J; `lib/signalboard.js` → `out/signals-data.js` on every build) is J's page: one column
+  per pillar, the worst first, each signal with the one thing that clears it, its evidence and what it warns, and the
+  signals that went away in the last 14 days (`out/signals-history.json`).
 - **K · Kérések, the Founder's asks** (S13, 2026-11-26): every prompt and slash command in the recordings
   (`lib/asks.js`; a continued session's summary, interruptions and hook text left out). Each ask `led-to` the nodes the
   work after it touched until the next ask, and `mentions` what its text names (decision ids, GO phrases, paths). Asks
@@ -228,6 +231,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/signalboard.js` · `jelzesek.html` | Jelzéstábla, J's page: signals by pillar, the action that clears each, the cleared ones |
 | `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |
 | `lib/asks.js` | K · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
 | `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |

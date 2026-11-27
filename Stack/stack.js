@@ -19,6 +19,7 @@
 //   node stack.js decisions                                                     rewrite out/decisions-data.js (decisions.html, Döntésnapló)
 //   node stack.js metro                                                         rewrite out/metro-data.js (metro.html, Vonaltérkép)
 //   node stack.js runs                                                          rewrite out/runs-data.js (runs.html, Futásnapló)
+//   node stack.js signals                                                       rewrite out/signals-data.js (jelzesek.html, Jelzéstábla)
 //   node stack.js probe [<words> | --all] [--list]                             run test suites (P · Próbák), record in data/probes.jsonl
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
 //   node stack.js mcp                                                          run the MCP server on stdio
@@ -78,6 +79,7 @@ async function main() {
     case 'decisions': return require('./lib/decisions').write().msg;
     case 'metro': return require('./lib/metro').write().msg;
     case 'runs': return require('./lib/runs').write().msg;
+    case 'signals': return require('./lib/signalboard').write().msg;   // Jelzéstábla (jelzesek.html)
     case 'board': {   // Füzértábla (S4); --public: the anonymised single-file copy for claude.ai
       if (!flag('--public')) return require('./lib/board').write().msg;
       try { const r = require('./lib/board').exportPublic(); return `board: the public copy, anonymised and checked → ${r.file} (${(r.bytes / 1024).toFixed(0)} KB)`; }
@@ -105,7 +107,7 @@ async function main() {
     }
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
-    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 26).map(l => l.slice(3)).join('\n');
+    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 27).map(l => l.slice(3)).join('\n');
   }
 }
 
