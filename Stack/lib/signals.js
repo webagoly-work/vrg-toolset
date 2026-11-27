@@ -9,6 +9,7 @@
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
+//     vendor branch · copyleft · licence unknown  O: CLAUDE.md's vendoring rules (§18)
 //     look drift · kit behind                 V: a page's Mélyvíz copy differs from its source; its inlined kit is older (§17)
 //     fw stale · board behind · board unknown D: firmware built before its sketch's last commit; a board on an older
 //                                             version than the library's; a board whose content is unknown (§16)
@@ -84,6 +85,12 @@ function detect(ctx = {}) {
     if (n.state === 'behind') add('kit-behind', n.title, 'amber', `${n.title} carries UI Kit ${x.kit && x.kit.version}, the kit is ${x.kitLatest}`, `node shared/vrg-ui-kit/inline.js --sync-app ${n.title}`, [n.id]);
     else add('look-drift', n.title, 'amber', n.state === 'missing' ? `${n.title} is on Mélyvíz's sync list but is gone` : `${n.title}: its Mélyvíz copy differs from shared/melyviz.css`, n.state === 'missing' ? 'take it off tools/melyviz-sync.js TARGETS' : 'node tools/melyviz-sync.js (a built app: then rebuild it)', [n.id]);
   }
+
+  /* O: CLAUDE.md "Vendored third-party code" */
+  { const c = require('./outside').checks(list);
+    for (const n of c.branch) add('vendor-branch', n.id.slice(9), 'amber', `${n.title.split(' · ')[0]} is fetched from branch ${n.extra.ref || '(none named)'}, not a tag`, 'a branch quietly becomes different code tomorrow: pin a tag in vendor-manifest.json (refType: "tag")', [n.id]);
+    for (const n of c.copyleft) add('copyleft', n.id.slice(2), 'red', `${n.title.split(' · ')[0]} is ${n.extra.license} and our code copies or uses it`, (n.extra.usedBy || []).slice(0, 4).join(', '), [n.id]);
+    for (const n of c.unknown) add('licence-unknown', n.id.slice(9), 'info', `${n.title.split(' · ')[0]}: licence not confirmed (${n.extra.license || 'none given'})`, 'check it before any of its code is copied in', [n.id]); }
 
   /* Solomon: signals not ruled */
   for (const g of list) {

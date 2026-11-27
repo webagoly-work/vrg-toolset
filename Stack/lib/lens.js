@@ -42,7 +42,7 @@
   const STOP = new Set(('the and for with from into its his her our you are not but all one two new old via per vrg varler round line map page app tool ' +
     'this that what when where which will would could should have has had been about make made also only just then than them they there here ' +
     'egy az a es is de hogy nem van vagy meg mar mint ami ezt azt kell lesz volt csak most igen').split(' '));
-  const PLANES = ['F', 'V', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'G', 'J'];   // top to bottom, as the ◢ dial lists them (D-48); T since S3
+  const PLANES = ['F', 'V', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'J'];   // top to bottom, as the ◢ dial lists them (D-48); T since S3
   const NAME = { F: 'Kirakat', I: 'Ötletfa', Q: 'Döntések', L: 'Fejlesztési vonalak', A: 'Ügynöki gerinc', U: 'Futás', R: 'Repó', C: 'Kód', G: 'Adatgömb' };
 
   function create(stack, index) {

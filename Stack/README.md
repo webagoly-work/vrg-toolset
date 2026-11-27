@@ -84,6 +84,15 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **O · Külső, outside** (S18, 2026-11-27): what we depend on and under which licence (`lib/outside.js`). Every
+  component of `vendor-manifest.json` (`O:vendor.<slug>`, vendored or only referenced; its pin, licence and the app it
+  serves, named in its title so that app's pillar takes it in), with the tracked code that uses it (one `git grep` for
+  `Vendor/<target>` and `'Vendor', '<target>'`) and the documents that only mention it; every npm package the tracked
+  package.json files name (`O:npm.<name>`, version and licence from the lockfile next to it); every MCP server the
+  `.claude` settings name. J, after CLAUDE.md's vendoring rules: a source fetched from a branch, not a tag
+  (`vendor-branch`), copyleft in code we copy and use (`copyleft`, red; an OR licence lets us choose), a licence nobody
+  confirmed (`licence-unknown`). DRIFT.md §18 adds the vendored components no tracked code uses yet. Live: the
+  manifest, a package.json or lockfile, or the Claude settings rebuild O.
 - **V · Látvány, the look** (S17, 2026-11-27): the design systems and which look each page wears (`lib/look.js`).
   The VRG UI Kit (its version, its components by family, its themes, from `manifest.json`), Mélyvíz
   (`shared/melyviz.css`), the Varler logo lockups, and the VRG Visual Base's top folders when it is on this PC. Every
@@ -195,6 +204,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/outside.js` | O · Külső (S18): vendored components, npm packages, MCP servers; the vendoring checks |
 | `lib/look.js` | V · Látvány (S17): the kit, Mélyvíz, logos, the Visual Base, the look each page wears; drift |
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |

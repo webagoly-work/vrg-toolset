@@ -385,6 +385,13 @@ function probe(facts) {
   return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
 }
 
+/* ============================================================ O · Külső (outside; S18, lib/outside.js) */
+function outside(facts) {
+  const O = require('./outside'), json = f => { try { return JSON.parse(read(f)); } catch { return null; } };
+  const settings = [REPO + '/.claude/settings.json', REPO + '/.claude/settings.local.json', CLAUDE_HOME + '/settings.json'].map(json);
+  return O.layer(O.read({ repo: REPO, files: facts.files, grep: O.grepper(REPO, a => git(...a)), settings }));
+}
+
 /* ============================================================ V · Látvány (the look; S17, lib/look.js) */
 function look(facts) {
   const V = require('./look');
@@ -403,4 +410,4 @@ function jobs() {
   return J.layer(fs.existsSync(dir) ? J.read(dir) : []);
 }
 
-module.exports = { featured, look, jobs, devices, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+module.exports = { featured, look, jobs, devices, outside, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

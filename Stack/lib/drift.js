@@ -197,5 +197,21 @@ module.exports = function drift(graph, full, ctx) {
         `**Kit components no page carries yet:** ${unused.length ? unused.map(n => n.title).join(', ') : 'none'}`, ``);
     }
   } catch (e) { out.push(`## 17. The look`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 18. outside (S18): what we depend on, under which licence, and CLAUDE.md's vendoring rules */
+  try {
+    const O = graph.nodes.filter(n => n.layer === 'O');
+    if (O.length) {
+      const k = kind => O.filter(n => n.kind === kind);
+      const J = kind => graph.nodes.filter(n => n.layer === 'J' && n.kind === kind);
+      const lic = {}; for (const n of [...k('vendored'), ...k('reference')]) lic[n.state || 'unknown'] = (lic[n.state || 'unknown'] || 0) + 1;
+      out.push(`## 18. Outside`, ``,
+        `${k('vendored').length} vendored and ${k('reference').length} referenced components (vendor-manifest.json), ${k('npm package').length} npm packages, ${k('mcp server').length} MCP servers. Licences: ${Object.entries(lic).sort((a, b) => b[1] - a[1]).map(([l, c]) => `${l} ${c}`).join(', ')}.`, ``,
+        `**Copyleft in code we copy and use** (red):`, ...(J('copyleft').length ? J('copyleft').map(n => `- \`${n.id}\` ${n.title}`) : ['none']), ``,
+        `**Fetched from a branch, not a tag** (CLAUDE.md: "a branch quietly becomes different code tomorrow"):`, ...(J('vendor-branch').length ? J('vendor-branch').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Licence not confirmed:** ${J('licence-unknown').map(n => n.title.split(':')[0]).join(', ') || 'none'}`, ``,
+        `**Vendored, no tracked code uses it yet:** ${k('vendored').filter(n => !(n.brief || '').includes('used by')).map(n => n.title.split(' · ')[0]).join(', ') || 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 18. Outside`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

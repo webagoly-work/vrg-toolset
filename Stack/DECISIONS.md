@@ -479,3 +479,17 @@ RULES §6a that is V, Látvány. Builder's choices, no open question among them:
 | STK-P169 | Skipped pages | **A** `Vendor/` and `Archive/files/` | vendored pages wear nothing of ours; archived one-shots are frozen on purpose |
 | STK-P170 | Live | **A** any saved .html or .css in the repo, the kit's manifest, the logo lockups, the sync tool's list | a page's look changes when the page is saved |
 
+## S18 — O · Külső, the outside layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S18, the next new layer.** By RULES §6a that is O, Külső. Builder's choices, no open
+question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P171 | Where O sits | **A** under D: … C D O G J Z | what we depend on sits under our code and the boards it runs on |
+| STK-P172 | What is outside | **A** the vendor manifest's components, the tracked package.json files' npm packages, the MCP servers the settings name · B also the programs | the programs are N nodes already (START A); one node per thing |
+| STK-P173 | Who uses a component | **A** tracked files naming it as a path (`Vendor/<target>`) or a path.join (`'Vendor', '<target>'`), one `git grep`; code files use it, documents only mention it | Vendor/ is git-ignored, so the join cannot see it; a mention in a plan is not a use |
+| STK-P174 | The checks | **A** CLAUDE.md's: a fetched git source pinned to a branch, not a tag (amber) · copyleft (GPL family, not an OR choice) in code we fetch and use (red) · a licence that is not a known SPDX id (info) | the rules are already written; the layer makes them visible on the strings |
+| STK-P175 | npm-mode components | **A** no branch check: their version is pinned where they are installed | `vendor: "npm"` is consumed through npm, not fetched as source |
+| STK-P176 | Live | **A** the manifest, a package.json or its lockfile, the `.claude` settings; a new use in code follows the next full build | the hand-kept sources; a grep on every save would be heavy |
+
