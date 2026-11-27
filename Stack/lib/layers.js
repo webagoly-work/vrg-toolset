@@ -385,6 +385,12 @@ function probe(facts) {
   return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
 }
 
+/* ============================================================ W · Szereplők (people and roles; S19, lib/people.js) */
+function people() {
+  const W = require('./people');
+  return W.layer(W.read({ repo: REPO }));
+}
+
 /* ============================================================ O · Külső (outside; S18, lib/outside.js) */
 function outside(facts) {
   const O = require('./outside'), json = f => { try { return JSON.parse(read(f)); } catch { return null; } };
@@ -410,4 +416,4 @@ function jobs() {
   return J.layer(fs.existsSync(dir) ? J.read(dir) : []);
 }
 
-module.exports = { featured, look, jobs, devices, outside, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+module.exports = { featured, look, jobs, devices, outside, people, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

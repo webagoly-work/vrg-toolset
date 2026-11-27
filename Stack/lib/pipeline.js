@@ -57,8 +57,8 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     layers.R = await hc.stage('layer R · DevRepo', () => L.devrepo(), { fallback: () => H.carryForward(prev, 'R') });
     const commitsByPath = new Map();
     for (const n of layers.R.nodes) for (const f of (n.extra && n.extra.files) || []) if (!commitsByPath.has(f) || commitsByPath.get(f) < n.t) commitsByPath.set(f, n.t);
-    const adapters = { F: () => L.featured(), V: () => L.look(facts), M: () => L.jobs(), D: () => L.devices(facts), O: () => L.outside(facts), N: () => L.entry(), P: () => L.probe(facts), I: () => L.ideas(), T: () => L.todo(facts), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts) };
-    for (const code of ['F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'C', 'D', 'O', 'G']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
+    const adapters = { W: () => L.people(), F: () => L.featured(), V: () => L.look(facts), M: () => L.jobs(), D: () => L.devices(facts), O: () => L.outside(facts), N: () => L.entry(), P: () => L.probe(facts), I: () => L.ideas(), T: () => L.todo(facts), Q: () => L.decisions(facts), L: () => L.devlog(), A: () => L.agentic(facts), C: () => L.code(facts, commitsByPath), G: () => L.globe(facts) };
+    for (const code of ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'C', 'D', 'O', 'G']) layers[code] = await hc.stage(`layer ${code} · ${LNAME[code]}`, adapters[code], { fallback: () => H.carryForward(prev, code) });
     const ordered = {}; for (const c of LAYER8) ordered[c] = layers[c];
 
     /* ---- 2–6. join, recordings, U, pillars, analytics, the graph (shared with the incremental build) */
@@ -258,7 +258,7 @@ async function assemble(ordered, facts, prev, hc, log, o = {}) {
    Written by every full build; read by runLayers. A layer whose adapter ran gets a fresh copy after the join. */
 const CACHE = () => path.join(CFG.out, 'layers');
 const CACHE_TEXT = 4000;
-const LAYER8 = ['F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'R', 'C', 'D', 'O', 'G'];   // every adapter layer (the name is older than T)
+const LAYER8 = ['W', 'F', 'V', 'M', 'N', 'I', 'T', 'Q', 'L', 'A', 'P', 'R', 'C', 'D', 'O', 'G'];   // every adapter layer (the name is older than T)
 function saveCache(ordered, sig, only) {
   fs.mkdirSync(CACHE(), { recursive: true });
   for (const code of LAYER8) {
@@ -282,7 +282,7 @@ function loadCache() {
    cannot be exact (no cache yet, or the known keys changed: a new file, commit, session or memory), { fallback: why }
    and builds nothing: the caller then runs the full build. */
 const ADAPT = {
-  F: () => L.featured(), V: facts => L.look(facts), M: () => L.jobs(), D: facts => L.devices(facts), O: facts => L.outside(facts), N: () => L.entry(), P: facts => L.probe(facts), I: () => L.ideas(), T: facts => L.todo(facts), Q: facts => L.decisions(facts), L: () => L.devlog(), A: facts => L.agentic(facts),
+  W: () => L.people(), F: () => L.featured(), V: facts => L.look(facts), M: () => L.jobs(), D: facts => L.devices(facts), O: facts => L.outside(facts), N: () => L.entry(), P: facts => L.probe(facts), I: () => L.ideas(), T: facts => L.todo(facts), Q: facts => L.decisions(facts), L: () => L.devlog(), A: facts => L.agentic(facts),
   R: () => L.devrepo(), C: (facts, lay) => L.code(facts, commitsOf(lay.R)), G: facts => L.globe(facts),
 };
 function commitsOf(R) {
@@ -291,7 +291,7 @@ function commitsOf(R) {
   return m;
 }
 const PAGE_STAGES = {
-  Q: ['decisions'], L: ['metro', 'board'], I: ['lineage'], A: ['control'], R: ['commits'], F: ['board'], T: ['board'], N: [], P: [], M: [], D: [], V: [], O: [],
+  Q: ['decisions'], L: ['metro', 'board'], I: ['lineage'], A: ['control'], R: ['commits'], F: ['board'], T: ['board'], N: [], P: [], M: [], D: [], V: [], O: [], W: [],
   E: ['decisions', 'metro', 'lineage', 'control', 'commits', 'runs', 'board'],
 };
 async function runLayers(codes, { quiet = true } = {}) {

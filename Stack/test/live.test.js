@@ -27,6 +27,7 @@ function layersV1() {
     I: { nodes: [N('I:lens', 'built', 'the stack lens', [])], edges: [] },
     T: { nodes: [], edges: [], built: [] },
     V: { nodes: [], edges: [] },
+    W: { nodes: [], edges: [] },
     M: { nodes: [], edges: [] },
     N: { nodes: [], edges: [] },
     D: { nodes: [], edges: [] },

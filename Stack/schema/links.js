@@ -38,6 +38,9 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // W · Szereplők (people and roles, S19)
+  'played-by': R('alakítja', 'is played by', 'ezt a széket tölti be', 'any'),
+  owns: R('gazdája', 'owns', 'gazdája'),
   // V · Látvány (the look, S17)
   wears: R('viseli', 'wears', 'ezt viseli', 'h'),
   // D · Eszközök (devices, S16)

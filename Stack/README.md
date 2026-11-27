@@ -84,6 +84,15 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **W · Szereplők, people and roles** (S19, 2026-11-27; the last new layer): who may do what, who owns what
+  (`lib/people.js`). The people on the Kapu's access list (`Hub/data/access.json`) **by role** (`W:person.owner` the
+  Founder, `W:person.member` the colleague; never a name, an email or a login), with the Kapu layers they may enter and
+  whether the list's signature verifies (the Kapu's own `kpCanon` and `Hub/src/access-pubkey.json`, as
+  `tools/hub-sign.js --verify` checks it). The Claude accounts A and B (`Dashboard/config/profiles.json`). The Council's
+  seats from `docs/council/ROSTER.md`, `played-by` their agents (A), each Head's `owns` lines named by the program, so
+  the program's pillar takes them in and its string reaches the Head. The business units of `docs/hub/hub-seed.json`.
+  J `access-signature` (red: the list does not verify) and `seat-vacant` (info); DRIFT.md §19 lists the pillars with
+  code that no Head owns, by name or by area. Live: the access list, its key, the profiles, the roster, the hub seed.
 - **O · Külső, outside** (S18, 2026-11-27): what we depend on and under which licence (`lib/outside.js`). Every
   component of `vendor-manifest.json` (`O:vendor.<slug>`, vendored or only referenced; its pin, licence and the app it
   serves, named in its title so that app's pillar takes it in), with the tracked code that uses it (one `git grep` for
@@ -204,6 +213,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/people.js` | W · Szereplők (S19): people by role, accounts, seats and what each Head owns; the signature check; unowned pillars |
 | `lib/outside.js` | O · Külső (S18): vendored components, npm packages, MCP servers; the vendoring checks |
 | `lib/look.js` | V · Látvány (S17): the kit, Mélyvíz, logos, the Visual Base, the look each page wears; drift |
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |

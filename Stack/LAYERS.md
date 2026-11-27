@@ -27,6 +27,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 
 | Layer | Its page today | State | The page it should have |
 |---|---|---|---|
+| **W People and roles** (Szereplők, S19 2026-11-27) | the Kapu's sign-in and Belépések panel (people, layers), the Vezérlőterem (agents, seats); the Viewer; DRIFT.md §19 | ◐ | a who-is-who: each person and account with what they may enter, each Head with what they own, and where knowledge sits in one head |
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
 | **V Look** (Látvány, S17 2026-11-27) | the UI Kit gallery (`shared/vrg-ui-kit/gallery.html`) shows the kit; `node tools/melyviz-sync.js --list` the copies; the Viewer draws the systems and the pages that wear them; DRIFT.md §17 | ◐ | a wardrobe: every app with the look it wears, the components it carries, a one-click sync where it drifted |
 | **M Client jobs** (Munkák, S15 2026-11-27) | the VRG Asztal's Munkák table (D4) and the VRG Térkép show the jobs; the Viewer draws the layer by status; DRIFT.md §15 | ◐ | a job timeline: each job as a bar from first file to invoice, the tools it used under it |

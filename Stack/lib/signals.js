@@ -9,6 +9,7 @@
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
+//     access signature · seat vacant          W: the Kapu's access list must verify; an empty Council seat (§19)
 //     vendor branch · copyleft · licence unknown  O: CLAUDE.md's vendoring rules (§18)
 //     look drift · kit behind                 V: a page's Mélyvíz copy differs from its source; its inlined kit is older (§17)
 //     fw stale · board behind · board unknown D: firmware built before its sketch's last commit; a board on an older
@@ -91,6 +92,10 @@ function detect(ctx = {}) {
     for (const n of c.branch) add('vendor-branch', n.id.slice(9), 'amber', `${n.title.split(' · ')[0]} is fetched from branch ${n.extra.ref || '(none named)'}, not a tag`, 'a branch quietly becomes different code tomorrow: pin a tag in vendor-manifest.json (refType: "tag")', [n.id]);
     for (const n of c.copyleft) add('copyleft', n.id.slice(2), 'red', `${n.title.split(' · ')[0]} is ${n.extra.license} and our code copies or uses it`, (n.extra.usedBy || []).slice(0, 4).join(', '), [n.id]);
     for (const n of c.unknown) add('licence-unknown', n.id.slice(9), 'info', `${n.title.split(' · ')[0]}: licence not confirmed (${n.extra.license || 'none given'})`, 'check it before any of its code is copied in', [n.id]); }
+
+  /* W: the access list must verify; a Council seat that is empty */
+  for (const n of list) if (n.layer === 'W' && n.kind === 'person' && n.extra && n.extra.signed === false) add('access-signature', 'hub', 'red', 'the Kapu\'s access list does not verify against its public key', 'node tools/hub-sign.js --verify; only the owner can re-sign it (node tools/hub-sign.js)', [n.id]);
+  for (const n of list) if (n.layer === 'W' && n.kind === 'seat' && n.state === 'vacant') add('seat-vacant', n.id.slice(7), 'info', `${n.title.split(' · ')[0]}'s seat (${n.title.split(' · ')[1] || ''}) is vacant`, 'docs/council/ROSTER.md', [n.id]);
 
   /* Solomon: signals not ruled */
   for (const g of list) {

@@ -140,6 +140,10 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'W') {   // people and accounts, the Council's seats with what each owns, the business units
+      const rank = { person: 0, account: 1, seat: 2, ownership: 3, 'business unit': 4 };
+      const gs = [...group(items, it => (rank[it.kind] ?? 9) + ' ' + (it.kind === 'ownership' ? it.lane : it.kind))].sort((a, b) => (a.key < b.key ? -1 : 1));
+      for (const [g, q] of bands(gs, R, 'y')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'O') {   // one band per kind (vendored, reference, npm, MCP), the vendored ones grouped by the app they serve
       const rank = { vendored: 0, reference: 1, 'npm package': 2, 'mcp server': 3 };
       const gs = [...group(items, it => (rank[it.kind] ?? 9) + ' ' + it.kind)].sort((a, b) => (a.key < b.key ? -1 : 1));

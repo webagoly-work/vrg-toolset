@@ -146,14 +146,14 @@
 'use strict';
 (function () {
 const LAYER = {
-  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, V: { col: '#a6c8ff', hu: 'Látvány', en: 'Look' }, M: { col: '#d9b38c', hu: 'Munkák', en: 'Jobs' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, K: { col: '#f2c4e0', hu: 'Kérések', en: 'Asks' }, J: { col: '#ff5f56', hu: 'Jelzések', en: 'Signals' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, P: { col: '#b8e06a', hu: 'Próbák', en: 'Tests' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
+  W: { col: '#f5e6b8', hu: 'Szereplők', en: 'People' }, F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, V: { col: '#a6c8ff', hu: 'Látvány', en: 'Look' }, M: { col: '#d9b38c', hu: 'Munkák', en: 'Jobs' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, K: { col: '#f2c4e0', hu: 'Kérések', en: 'Asks' }, J: { col: '#ff5f56', hu: 'Jelzések', en: 'Signals' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, P: { col: '#b8e06a', hu: 'Próbák', en: 'Tests' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
   Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' }, L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' },
   A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone' }, U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' },
   R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' }, D: { col: '#6fc7c0', hu: 'Eszközök', en: 'Devices' }, O: { col: '#c9a6e0', hu: 'Külső', en: 'Outside' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
   G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe' }, E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars' },
 };
 // the Stack's own order (LAYERS §1, the ◢ menu, Érintésnyom), the pillars as the base plane
-const ORDER = ['F', 'V', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'J', 'E'];
+const ORDER = ['W', 'F', 'V', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'J', 'E'];
 // each layer's own page; the phone keeps them under other names (Mobile/stack/publish-stack.js LAYER_PAGES)
 const PAGE = window.STACK_BUNDLE ? { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' }
   : { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
@@ -349,7 +349,7 @@ precision highp float; precision highp int; precision highp usampler2D; precisio
 layout(location = 0) in uint aB;
 uniform highp usampler2D uStart, uBlock, uLight; uniform highp sampler2D uCell;
 uniform mat4 uM; uniform float uPS, uTop, uGap, uPx, uTime, uCrisp, uChg; uniform int uPick, uDetail, uDetailCell, uClass, uT; uniform vec4 uDF; uniform uint uIdBase;
-uniform vec3 uCol[24];   // one per plane: 18 layers since S18 (F V M N K I T Q L A U P R C D O G J) + E; room for 5 more
+uniform vec3 uCol[24];   // one per plane: 19 layers since S19 (W F V M N K I T Q L A U P R C D O G J) + E; room for 4 more
 flat out uint vId; out vec4 vC;
 const float SH[7] = float[7](0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24);
 ivec2 T(int i) { return ivec2(i % ${W}, i / ${W}); }

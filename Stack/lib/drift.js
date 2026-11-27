@@ -213,5 +213,20 @@ module.exports = function drift(graph, full, ctx) {
         `**Vendored, no tracked code uses it yet:** ${k('vendored').filter(n => !(n.brief || '').includes('used by')).map(n => n.title.split(' · ')[0]).join(', ') || 'none'}`, ``);
     }
   } catch (e) { out.push(`## 18. Outside`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 19. people and roles (S19): who may enter, which account, who owns what, and the work no Head owns */
+  try {
+    const W = graph.nodes.filter(n => n.layer === 'W');
+    if (W.length) {
+      const k = kind => W.filter(n => n.kind === kind), owned = {};
+      for (const n of k('ownership')) { const h = (n.brief || '').replace(/^owned by | \(ROSTER\.md\)$/g, ''); owned[h] = (owned[h] || 0) + 1; }
+      const none = require('./people').unowned(graph).map(p => `${p.name}${p.area ? ' (' + p.area + ')' : ''}`);
+      const sig = graph.nodes.find(n => n.id === 'J:access-signature.hub');
+      out.push(`## 19. People and roles`, ``,
+        `${k('person').map(n => n.title).join(', ') || 'no access list'}; the Kapu's access list ${sig ? '**does not verify**' : 'verifies'}. Accounts: ${k('account').map(n => n.title.replace('Claude account ', '') + (n.extra && n.extra.ownConfig ? ' (own config)' : '')).join(', ') || 'none'}.`, ``,
+        `**Seats:** ${k('seat').map(n => n.title.split(' · ')[0] + (n.state === 'vacant' ? ' (vacant)' : owned[n.title.split(' · ')[0]] ? ` (${owned[n.title.split(' · ')[0]]} owned)` : '')).join(', ')}.`, ``,
+        `**No Head owns these** (pillars with code that ROSTER.md "Which department owns what" does not name, nor their area):`, ...(none.length ? none.map(x => `- ${x}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 19. People and roles`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

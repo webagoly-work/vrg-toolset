@@ -42,6 +42,9 @@ function rules(S = CFG.sources, extra) {
     if (r === 'stack/entities.json') return ['E'];
     if (r === 'launcher/vrg-menu.json' || r === 'launcher/vrg-catalog.json' || r === 'mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/feature.kt') return ['N'];
     if (/(^|\/)roadmap[^/]*\.md$/.test(r)) return ['T'];
+    // people and roles (S19): the signed access list, the account profiles, the roster (A reads it too), the hub seed
+    if (r === 'docs/council/roster.md') return ['A', 'W'];
+    if (r === 'hub/data/access.json' || r === 'hub/src/access-pubkey.json' || r === 'dashboard/config/profiles.json' || r === 'docs/hub/hub-seed.json') return ['W'];
     // outside (S18): the vendor manifest, a package.json or its lockfile, the Claude settings (MCP servers)
     if (r === 'vendor-manifest.json' || /(^|\/)package(-lock)?\.json$/.test(r) && !/(^|\/)node_modules\//.test(r) || /^\.claude\/settings(\.local)?\.json$/.test(r)) return ['O'];
     // the look (S17): a page or a style sheet (its copy of Mélyvíz, its inlined kit), the kit's manifest, the sync list

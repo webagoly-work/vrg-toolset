@@ -493,3 +493,18 @@ question among them:
 | STK-P175 | npm-mode components | **A** no branch check: their version is pinned where they are installed | `vendor: "npm"` is consumed through npm, not fetched as source |
 | STK-P176 | Live | **A** the manifest, a package.json or its lockfile, the `.claude` settings; a new use in code follows the next full build | the hand-kept sources; a grep on every save would be heavy |
 
+## S19 — W · Szereplők, the people and roles layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S19, the last new layer.** By RULES §6a that is W, Szereplők. With it the new
+layers of STRINGS-PLAN §5 are complete. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P177 | Where W sits | **A** at the very top: W F V M N K I T Q L A U P R C D O G J Z | people come before everything they make; the plan's §5 letter W |
+| STK-P178 | A person's id and title | **A** by role (`W:person.owner` "Founder", `W:person.member` "colleague"), counts only (layers, emails, a GitHub sign-in) · B their names | the names and emails stay in the signed list; the stack and the phone bundle need the role, not the person; a test holds that no value leaks |
+| STK-P179 | Who may enter | **A** the Kapu's own access list, its signature verified with the Kapu's `kpCanon` and committed public key; a list that does not verify is a red signal | "only the owner can edit it" is enforced by that signature (HUB-Q04); the stack checks it on every build |
+| STK-P180 | Agents | **A** W holds the seats (`played-by` → A:agent.*), not the agents again | the agents are A nodes already; one node per thing |
+| STK-P181 | Who owns what | **A** ROSTER.md "Which department owns what": one ownership node per program or line, titled by its name, so the pillar's words take it in | the roster is the hand-kept answer; the title is what makes the string reach the owner |
+| STK-P182 | Unowned work (DRIFT §19) | **A** a pillar with code that the roster names neither by name (loosely: "calculators", "Kapu") nor by its area (SUI's area is the Planner) | the exact match listed 30, nearly all owned through the Planner; with the loose name and the area 5 remain, each a real gap |
+| STK-P183 | Accounts | **A** from `Dashboard/config/profiles.json`: A the default config, B its own CLAUDE_CONFIG_DIR | the profile is where the two sign-ins are kept apart; SECACC.md is retired history |
+
