@@ -1,5 +1,5 @@
 // VRG Stack — S · Kérések (the Founder's asks), S13 of research/STRINGS-PLAN.md (§5, STK-Q24: T → N → P → K → J):
-// every prompt the Founder typed and every slash command, from the recordings, clustered. K shows where attention
+// every prompt the Founder typed and every slash command, from the recordings, clustered. S shows where attention
 // went: which pillar the asks were about, which ask came back again and again, which never turned into work.
 //
 //   collect(sessions, readSteps) → [session with its asks]     from out/recordings (index.json + <sid8>.jsonl)
@@ -17,7 +17,7 @@
 //   nothingLanded(graph) → clusters asked in ≥ 2 sessions where no commit followed any ask (DRIFT.md §13)
 //
 // Privacy: an ask's text can name a client. It stays in out/ (git-ignored) and the local pages; the connectome data
-// that the phone bundle carries gets a neutral title for K nodes (lib/connectome.js), never the words.
+// that the phone bundle carries gets a neutral title for S nodes (lib/connectome.js), never the words.
 'use strict';
 
 const crypto = require('crypto');

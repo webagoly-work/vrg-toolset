@@ -349,7 +349,7 @@ precision highp float; precision highp int; precision highp usampler2D; precisio
 layout(location = 0) in uint aB;
 uniform highp usampler2D uStart, uBlock, uLight; uniform highp sampler2D uCell;
 uniform mat4 uM; uniform float uPS, uTop, uGap, uPx, uTime, uCrisp, uChg; uniform int uPick, uDetail, uDetailCell, uClass, uT; uniform vec4 uDF; uniform uint uIdBase;
-uniform vec3 uCol[24];   // one per plane: 19 layers since S19 (W F V M N K I T Q L A U P R C D O G J) + E; room for 4 more
+uniform vec3 uCol[24];   // one per plane: 20 layers (W F V M N S I T Q L A U P R C D O G K J) + E; room for 3 more
 flat out uint vId; out vec4 vC;
 const float SH[7] = float[7](0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24);
 ivec2 T(int i) { return ivec2(i % ${W}, i / ${W}); }

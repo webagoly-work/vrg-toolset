@@ -247,7 +247,7 @@
             { "key": "L", "name": "Füzértábla", "hint": "a szálak pillérként: mi épült, mi nem, mi tűnik késznek (E réteg; a régi Thread Board helyén)", "path": "{stack}\\board.html" },
             { "key": "J", "name": "Jelzéstábla", "hint": "a J réteg: minden jelzés pillérenként, a legrosszabb elöl, mindegyiknél ami megszünteti", "path": "{stack}\\jelzesek.html" },
             { "key": "W", "name": "Ki kicsoda", "hint": "a W réteg: emberek szerepkör szerint, fiókok, a Tanács székei és amit birtokolnak, gazdátlan munka", "path": "{stack}\\szereplok.html" },
-            { "key": "Y", "name": "Figyelemtérkép", "hint": "a K réteg: hova ment a figyelem pillérenként hetente, a visszatérő kérések, ami nem lett munka", "path": "{stack}\\kerdesek.html" },
+            { "key": "Y", "name": "Figyelemtérkép", "hint": "az S réteg: hova ment a figyelem pillérenként hetente, a visszatérő kérések, ami nem lett munka", "path": "{stack}\\kerdesek.html" },
             { "key": "U", "name": "Munkanaptár", "hint": "az M réteg: minden munka egy sáv az első fájltól az utolsóig, alatta az eszközei (csak kódok)", "path": "{stack}\\munkak.html" },
             { "key": "Z", "name": "Műhelyasztal", "hint": "a D réteg: vázlat, firmware, lap; mit futtat melyik lap, és mennyire régi", "path": "{stack}\\eszkozok.html" },
             { "key": "V", "name": "Ruhatár", "hint": "a V réteg: melyik oldal milyen látványt visel, hol tért el, és mi szinkronizálja", "path": "{stack}\\latvany.html" },
