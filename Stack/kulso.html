@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Licencnapló</title>
+<!-- Licencnapló (licence ledger): the O layer's page (S18, lib/meta.js). Every dependency (vendored, referenced, npm,
+     MCP) with its licence and what CLAUDE.md asks of it, its pin (a tag, a branch, a version), the app it serves, the
+     tracked code that uses it and the documents that only mention it; its signals. Sort by any column. Selecting a
+     row lights it on every other open Stack page (lib/live.js). Data: out/ledger-data.js (lib/layerpages.js). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  td.rule { color: var(--mu); font-size: 12px; max-width: 320px; }
+  tr.open td { background: var(--s2); }
+  .users { font: 11px var(--mono); color: var(--mu); }
+</style>
+</head>
+<body>
+<header><h1>Licencnapló<i>outside · O</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <select id="kind" aria-label="fajta · kind"><option value="">minden · every kind</option><option>vendored</option><option>reference</option><option>npm package</option><option>mcp server</option></select>
+  <button id="bad" aria-pressed="false">csak a jelzettek · flagged only</button>
+  <input id="q" type="search" placeholder="keresés · search" aria-label="keresés · search"></header>
+<main>
+  <section class="panel"><h2>Licencek<i>how many of each</i></h2><div id="lic"></div></section>
+  <section class="panel scroll"><table class="t" id="tbl"><thead><tr>
+    <th data-s="name">Név · name</th><th data-s="kind">Fajta</th><th data-s="licence">Licenc</th><th data-s="rule" class="hide-sm">Mit kér · what it asks</th>
+    <th data-s="pin">Rögzítés · pin</th><th data-s="users">Használja · users</th><th data-s="app" class="hide-sm">App</th></tr></thead><tbody></tbody></table></section>
+</main>
+<script src="out/ledger-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.LEDGER, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('lic').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const c = D.counts, byId = new Map(D.deps.map(d => [d.id, d]));
+  $('sum').textContent = `${c.vendored} vendored · ${c.reference} referencia · ${c.npm} npm · ${c.mcp} MCP · ${c.signals} jelzés`;
+  $('lic').innerHTML = Object.entries(D.licences).sort((a, b) => b[1] - a[1]).map(([l, n]) => `<span class="chip">${esc(l)} ×${n}</span>`).join('');
+  let q = '', kind = '', bad = false, sel = '', sort = ['kind', 1];
+  const val = (d, s) => s === 'users' ? d.users.length : String(d[s] == null ? '' : d[s]).toLowerCase();
+  function render() {
+    const R = D.deps.filter(d => (!kind || d.kind === kind) && (!bad || d.signals.length) && (!q || (d.name + ' ' + d.licence + ' ' + d.app).toLowerCase().includes(q)))
+      .sort((a, b) => { const x = val(a, sort[0]), y = val(b, sort[0]); return (x < y ? -1 : x > y ? 1 : 0) * sort[1] || (a.name < b.name ? -1 : 1); });
+    $('tbl').tBodies[0].innerHTML = R.map(d => `<tr data-k="${esc(d.id)}" class="${d.id === sel ? 'open' : ''}" aria-selected="${d.id === sel}">
+        <td><b>${esc(d.name)}</b>${d.dev ? ' <span class="chip mute">dev</span>' : ''}${d.signals.map(s => ` <span class="chip ${s[2] === 'red' ? 'red' : s[2] === 'amber' ? 'amber' : 'info'}" title="${esc(s[3])}">${esc(s[1])}</span>`).join('')}</td>
+        <td class="mono">${esc(d.kind)}${d.mode && d.mode !== d.kind && d.kind !== 'npm package' ? ' · ' + esc(d.mode) : ''}</td>
+        <td><span class="chip ${esc(d.tone)}">${esc(d.licence || '—')}</span></td><td class="rule hide-sm">${esc(d.rule)}</td>
+        <td class="mono"><span class="chip ${d.pinOk ? 'mute' : 'amber'}">${esc(d.pin || '—')}</span></td>
+        <td>${d.users.length ? d.users.length + ' fájl' : '<span class="faint">—</span>'}${d.docs.length ? ` <span class="faint mono">+${d.docs.length} doc</span>` : ''}${d.id === sel && (d.users.length || d.docs.length) ? `<div class="users">${[...d.users, ...d.docs].map(esc).join('<br>')}</div>` : ''}</td>
+        <td class="mono hide-sm">${esc(d.app)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">Nincs ilyen. · Nothing matches.</td></tr>';
+  }
+  function select(id, quiet) { sel = byId.has(id) && sel !== id ? id : quiet ? id : ''; render(); if (!quiet && window.StackLive) StackLive.selected(sel ? [sel] : []); }
+  $('tbl').tBodies[0].addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('tbl').tHead.addEventListener('click', e => { const th = e.target.closest('[data-s]'); if (!th) return; sort = [th.dataset.s, sort[0] === th.dataset.s ? -sort[1] : 1]; render(); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  $('kind').onchange = e => { kind = e.target.value; render(); };
+  $('bad').onclick = () => { bad = !bad; $('bad').setAttribute('aria-pressed', String(bad)); render(); };
+  render();
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'O', data: D,
+    items: () => [...document.querySelectorAll('tr[data-k]')].map(el => [el, [el.dataset.k]]),
+    select: id => { id = String(id || ''); if (byId.has(id)) select(id, true); },
+    getSelection: () => (sel ? [sel] : []),
+  });
+})();
+</script>
+</body>
+</html>

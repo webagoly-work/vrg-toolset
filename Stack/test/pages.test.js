@@ -21,6 +21,12 @@ const PAGES = [
   ['board.html', 'E', 'out/board-data.js', 'BOARD', 'lib/board.js'],
   ['jelzesek.html', 'J', 'out/signals-data.js', 'SIGNALS', 'lib/signalboard.js'],
   ['szereplok.html', 'W', 'out/people-data.js', 'PEOPLE', 'lib/peoplepage.js'],
+  ['kerdesek.html', 'K', 'out/asks-data.js', 'ASKS', 'lib/layerpages.js'],
+  ['munkak.html', 'M', 'out/jobs-data.js', 'JOBS', 'lib/layerpages.js'],
+  ['eszkozok.html', 'D', 'out/bench-data.js', 'BENCH', 'lib/layerpages.js'],
+  ['latvany.html', 'V', 'out/wardrobe-data.js', 'WARDROBE', 'lib/layerpages.js'],
+  ['kulso.html', 'O', 'out/ledger-data.js', 'LEDGER', 'lib/layerpages.js'],
+  ['probak.html', 'P', 'out/testwall-data.js', 'TESTWALL', 'lib/layerpages.js'],
 ];
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // a whole node id in quotes: 'E:planner', "L:views", `Q:VIS-Q5` (a prefix such as 'U:run.' or 'A:agent.' is fine)

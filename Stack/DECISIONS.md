@@ -549,3 +549,18 @@ The Founder, 2026-11-27: **build a page for the W layer.** Builder's choices, no
 | STK-P200 | Names | **A** none: the page reads the graph, where people are roles | the signed list keeps the names; the page needs none |
 | STK-P201 | Where it opens | **A** START R → W, catalog `peopleboard` under `stack`; written on every build | it reads J and U, which change on any build |
 
+## Six layer pages: K, M, D, V, O, P (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the K layer, and batch the other next 5 in the series.** The series is the
+new layers whose page was still "partial": N, P, K, M, D, V, O. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P202 | Which five with K | **A** M, D, V, O, P · B N among them | N's page is START itself (the menu, the Kapu, the VRG Asztal); a seventh copy of the registry would only drift |
+| STK-P203 | One module or six | **A** one data module, `lib/layerpages.js`, six builders, six data files; one stylesheet, `lib/layerpage.css` · B six of each | they read the same graph with the same helpers; the page lint holds each page to its own data file and contract all the same |
+| STK-P204 | What each shows | **A** what each layer's meta asked for: K an attention map (pillar × week heat, threads, asks with no commit); M a job timeline (bars, tools, totals; codes only); D a bench (sketch → firmware → board, latest or behind); V a wardrobe (pages by app, drift with its sync command, components by use); O a licence ledger (licence, CLAUDE.md's rule, pin, users); P a test wall (runs as strips, failing first, the rerun command) | the want lines were written for this |
+| STK-P205 | The graph's details | **A** the written graph carries what the pages need: `job`, `dev`, `look`, `dep`, `probe` (as P, K, J and W already do) | pages read the graph only (S7) |
+| STK-P206 | Licences on the ledger | **A** a referenced copyleft component is amber ("fine as a reference, never copy it in"), not red; an MCP server needs no licence; a dual licence takes the permissive side | red is for what would bind our code; the first draft painted every GPL reference red |
+| STK-P207 | Keys | **A** START R → Y (K), U (M), Z (D), V (V), X (O), P (P); catalog askmap, jobtimeline, bench, wardrobe, ledger, testwall | the free keys, by mnemonic where one was free (mUnkák, eszköZ, eXternal, Próbák) |
+| STK-P208 | Meta | **A** the six pages exist; T, L and U set to exist too (Füzértábla, Vonaltérkép, Futásnapló were built but still said missing or partial) | the layer table should say what is true |
+

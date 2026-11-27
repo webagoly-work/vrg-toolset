@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Munkanaptár</title>
+<!-- Munkanaptár (job timeline): the M layer's page (S15, lib/meta.js). Each client job as a bar from its first file to its
+     last, coloured by its status, the tools it used under it (Planner, Workflow Kit), its total, the jobs it relates to.
+     Job codes only: never a label, an address or a client name (the register is the key). Selecting a job lights it
+     and its pillars on every other open Stack page (lib/live.js). Data: out/jobs-data.js (lib/layerpages.js). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .tl { position: relative; }
+  .axis { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--fa); margin: 0 0 6px 150px; }
+  .job { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 0; padding: 3px 0; cursor: pointer; border-bottom: 1px solid var(--ln); }
+  .job .c { font: 600 13px var(--mono); padding-right: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .job .c small { font: 11px var(--mono); color: var(--fa); font-weight: 400; margin-left: 6px; }
+  .track { position: relative; height: 28px; overflow: hidden; }
+  .bar { position: absolute; top: 4px; height: 12px; min-width: 4px; background: var(--acc); }
+  .bar.done { background: var(--ok); } .bar.failed { background: var(--fa); } .bar.running { background: var(--warm); } .bar.kit { background: var(--info); }
+  .under { position: absolute; top: 17px; font: 10px var(--mono); color: var(--mu); white-space: nowrap; }
+  .legend .chip { margin-right: 8px; }
+  @media (max-width: 760px) { .job { grid-template-columns: 96px 1fr; } .axis { margin-left: 96px; } .job .c small { display: none; } }
+</style>
+</head>
+<body>
+<header><h1>Munkanaptár<i>client jobs · M</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <select id="st" aria-label="állapot · status"><option value="">minden állapot · every status</option></select>
+  <input id="q" type="search" placeholder="kód · code" aria-label="kód · code"></header>
+<main>
+  <section class="panel"><h2>Idővonal<i>each job from its first file to its last; under it the tools its folders show</i></h2>
+    <div class="legend mono"><span class="chip"><span style="color:var(--warm)">■</span> folyamatban · running</span><span class="chip"><span style="color:var(--ok)">■</span> befejezett · done</span><span class="chip"><span style="color:var(--fa)">■</span> meghiúsult · failed</span><span class="chip"><span style="color:var(--info)">■</span> csak Kit · Kit only</span></div>
+    <div class="tl" id="tl"></div></section>
+  <section class="panel"><h2>Kiválasztott munka<i>the selected job</i></h2><div id="detail"><p class="empty">Válassz egy munkát. · Pick a job.</p></div></section>
+</main>
+<script src="out/jobs-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.JOBS, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('tl').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const c = D.counts, byId = new Map(D.jobs.map(j => [j.id, j]));
+  $('sum').textContent = `${c.jobs} munka · ${c.running} folyamatban · ${c.tools} eszközzel · ${c.quiet} jelzéssel`;
+  for (const s of [...new Set(D.jobs.map(j => j.status).filter(Boolean))].sort()) $('st').insertAdjacentHTML('beforeend', `<option>${esc(s)}</option>`);
+  const cls = j => /^folyamat/i.test(j.status) ? 'running' : /^befejez/i.test(j.status) ? 'done' : /meghi|failed/i.test(j.status) ? 'failed' : 'kit';
+  const ft = n => n == null ? '' : Math.round(n).toLocaleString('hu-HU') + ' Ft';
+  const t0 = Date.parse(D.range[0] || '2026-01-01'), t1 = Math.max(t0 + 864e5, Date.parse(D.range[1] || D.range[0] || '2026-01-01'));
+  const x = d => (100 * (Date.parse(d) - t0) / (t1 - t0));
+  let sel = '', q = '', st = '';
+  function render() {
+    const J = D.jobs.filter(j => (!st || j.status === st) && (!q || j.code.toLowerCase().includes(q)));
+    $('tl').innerHTML = (J.length ? `<div class="axis"><span>${esc(D.range[0])}</span><span>${esc(D.range[1])}</span></div>` : '')
+      + J.map(j => { const a = j.from || j.to, b = j.to || j.from; const w = a ? Math.max(0.6, x(b) - x(a)) : 0, l = a ? Math.min(x(a), 100 - w) : 0;   // a one-day job at the edge stays visible
+        return `<div class="job" data-k="${esc(j.id)}" aria-selected="${j.id === sel}"><div class="c">${esc(j.code)}${j.signals.length ? ' <span style="color:var(--amber)">●</span>' : ''}<small>${esc(j.status || 'Kit')}</small></div>
+          <div class="track">${a ? `<div class="bar ${cls(j)}" style="left:${l}%;width:${w}%" title="${esc(a)} … ${esc(b)}"></div><div class="under" style="${l > 55 ? `right:${Math.max(0, 100 - l - w)}%;text-align:right` : `left:${l}%`}">${esc(Object.keys(D.tools).filter(t => j.tools.includes(t)).map(t => D.tools[t]).join(' + ') || '—')}${j.total != null ? ' · ' + esc(ft(j.total)) : ''}</div>` : '<span class="mono faint">nincs dátum · no dates</span>'}</div></div>`; }).join('')
+      || '<p class="empty">Nincs munka ezen a gépen (sources.jobs). · No jobs on this PC.</p>';
+  }
+  function detail() {
+    const j = byId.get(sel); if (!j) return;
+    $('detail').innerHTML = `<div style="font:600 16px var(--mono)">${esc(j.code)} <span class="chip">${esc(j.status || 'Kit')}</span>${j.kinds.map(k => `<span class="chip mute">${esc(k)}</span>`).join('')}</div>
+      <p class="mono">${esc(j.from || '?')} … ${esc(j.to || '?')} · ${j.files} fájl · files${j.total != null ? ' · ' + esc(ft(j.total)) + (j.totalDate ? ' (' + esc(j.totalDate) + ')' : '') : ''}</p>
+      <div>${j.tools.length ? Object.keys(D.tools).filter(t => j.tools.includes(t)).map(t => `<span class="chip ok">${esc(D.tools[t])}</span>`).join('') : '<span class="chip mute">eszköz nem látszik · no tool of ours in its folders</span>'}</div>
+      ${j.related.length ? `<p class="mono">kapcsolódik · related: ${j.related.map(esc).join(', ')}</p>` : ''}
+      ${j.signals.map(s => `<div class="cmd" style="border-left-color:var(--amber)">${esc(s[3])}</div>`).join('')}`;
+  }
+  function select(id, quiet) {
+    sel = byId.has(id) ? id : ''; render(); detail();
+    if (!quiet && window.StackLive) { const j = byId.get(sel); StackLive.selected(j ? [j.id, ...j.ent.map(p => 'E:' + p)] : []); }
+  }
+  $('tl').addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  $('st').onchange = e => { st = e.target.value; render(); };
+  render();
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'M', data: D,
+    items: () => [...document.querySelectorAll('.job[data-k]')].map(el => { const j = byId.get(el.dataset.k); return [el, j ? [j.id, ...j.ent.map(p => 'E:' + p)] : []]; }),
+    select: id => { id = String(id || ''); if (byId.has(id)) return select(id, true); const j = D.jobs.find(x => x.ent.some(p => 'E:' + p === id)); if (j) select(j.id, true); },
+    getSelection: () => (sel ? [sel] : []),
+  });
+})();
+</script>
+</body>
+</html>
