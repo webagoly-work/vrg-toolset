@@ -58,3 +58,26 @@ test('P: every suite with its recorded runs, failing first; D: a board behind it
     [{ a: 'V:look.A/a.html', b: 'V:kit.button', rel: 'wears' }]));
   assert.equal(V.looks[0].app, 'A'); assert.equal(V.components[0].wornBy, 1); assert.deepEqual(V.counts.states, { drift: 1 });
 });
+
+test('N: every door with where it leads and whether that is there; the START tree; a catalog item must land', () => {
+  const ROOT = require('path').join(__dirname, '..', '..');
+  const D = LP.build.N(G([
+    { id: 'N:start.R', layer: 'N', kind: 'start menu', title: 'Rétegverem', path: '' },
+    { id: 'N:start.R/7', layer: 'N', kind: 'start page', title: 'Rétegek', path: 'Stack/viewer.html' },
+    { id: 'N:start.R/9', layer: 'N', kind: 'start page', title: 'Gone', path: 'Stack/no-such-page.html' },
+    { id: 'N:start.A/1', layer: 'N', kind: 'program', title: 'VLC', path: '{full}/programs/vlc.exe' },
+    { id: 'N:cat.viewer', layer: 'N', kind: 'catalog', title: 'Rétegek' },
+    { id: 'N:cat.lost', layer: 'N', kind: 'catalog', title: 'Lost' },
+    { id: 'N:mob.stack', layer: 'N', kind: 'mobile feature', title: 'Stack', state: 'live' },
+    { id: 'N:mob.someday', layer: 'N', kind: 'mobile feature', title: 'Someday', state: 'planned' }],
+    [{ a: 'N:start.R', b: 'N:start.R/7', rel: 'contains' }, { a: 'N:start.R', b: 'N:start.R/9', rel: 'contains' },
+     { a: 'N:cat.viewer', b: 'N:start.R/7', rel: 'launches' }, { a: 'N:cat.lost', b: 'N:start.R/X', rel: 'launches' }]), [], { repo: ROOT });
+  const st = id => D.doors.find(d => d.id === id).state;
+  assert.equal(st('N:start.R/7'), 'ok'); assert.equal(st('N:start.R/9'), 'missing');
+  assert.equal(st('N:start.A/1'), 'outside', 'an H: program is check-start\'s question');
+  assert.equal(st('N:cat.viewer'), 'ok'); assert.equal(st('N:cat.lost'), 'missing', 'it launches a key that is not there');
+  assert.equal(st('N:mob.stack'), 'ok', 'Mobile/android/feature-stack'); assert.equal(st('N:mob.someday'), 'planned');
+  assert.deepEqual(D.roots, ['N:start.R'], 'a submenu holds its keys');
+  assert.equal(D.counts.missing, 2);
+});
+

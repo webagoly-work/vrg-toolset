@@ -28,7 +28,7 @@ module.exports = [
     is: 'Every way to open a thing: the START keys and submenus, the servers and their ports, the programs, the VRG Asztal catalog with its vrg-app:// apps, the VRG Mobile features. A thing nothing opens does not exist (CLAUDE.md).',
     order: 'by registry: START (tools, projects, dev), servers, programs, catalog groups, Mobile groups', nodes: 'start page · start command · start menu · server · program · catalog · mobile feature', edges: 'contains · opens · launches',
     source: 'launcher/vrg-menu.json + launcher/vrg-catalog.json + Mobile …/core/Feature.kt (lib/entry.js)',
-    page: { state: 'partial', name: 'START itself, the Kapu and the VRG Asztal', want: 'DRIFT.md §11 lists the pillars nothing opens' } },
+    page: { state: 'exists', name: 'Ajtótérkép (door map)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/ajtok.html' } },
   { code: 'K', id: 'asks', hu: 'Kérések', en: "Founder's asks",
     is: 'Every prompt the Founder typed and every slash command, from the recordings, the ones that say the same thing clustered. Where attention went, and which ask came back again and again with nothing landing.',
     order: 'clusters (each with its asks), then the single asks, in time', nodes: 'ask · command · cluster', edges: 'asked-in (its session) · contains (cluster → ask) · led-to (what the work after it touched) · mentions (what its text names)',

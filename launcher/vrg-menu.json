@@ -251,6 +251,7 @@
             { "key": "V", "name": "Ruhatár", "hint": "a V réteg: melyik oldal milyen látványt visel, hol tért el, és mi szinkronizálja", "path": "{stack}\\latvany.html" },
             { "key": "X", "name": "Licencnapló", "hint": "az O réteg: minden függőség licence, rögzítése, használói, és mit kér a CLAUDE.md", "path": "{stack}\\kulso.html" },
             { "key": "P", "name": "Tesztfal", "hint": "a P réteg: minden teszt futásai csíkban, piros ahol eltört, és ami újrafuttatja", "path": "{stack}\\probak.html" },
+            { "key": "I", "name": "Ajtótérkép", "hint": "az N réteg: minden ajtó (START, szerverek, programok, Asztal, Mobile), mit nyit, és megvan-e még", "path": "{stack}\\ajtok.html" },
             { "key": "A", "name": "Archívum", "hint": "minden egyszeri interaktív oldal, amit Claude készített", "path": "{repo}\\Archive\\vrg-archive.html" },
             { "key": "K", "name": "Konnektóm-labor", "hint": "muslica-agy, Stack-agy, Holo, rétegek, üres memóriaháló", "path": "{repo}\\Archive\\files\\konnektom-labor.html" },
             { "key": "E", "name": "Konnektóm-labor .cmd", "hint": "egyfájlos, önkicsomagoló küldhető változat a _handoff mappába", "cwd": "{repo}", "steps": [ { "exe": "{node}", "args": ["tools/bootleg.js", "Archive/files/konnektom-labor.html"] } ] },

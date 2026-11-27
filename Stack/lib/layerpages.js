@@ -1,5 +1,7 @@
 // VRG Stack — the data of six layer pages (2026-11-27), each the page its layer's meta asked for (lib/meta.js):
 //
+//   N  Ajtótérkép      ajtok.html      window.DOORS     every door (START, servers, programs, catalog, Mobile), what it opens,
+//                                                       whether that is still there; the code nothing opens
 //   K  Figyelemtérkép  kerdesek.html   window.ASKS      asks per pillar per week; the repeated ones as threads; the ones
 //                                                       no commit followed
 //   M  Munkanaptár     munkak.html     window.JOBS      each job as a bar from its first file to its last, its tools
@@ -112,6 +114,46 @@ function ledger(graph) {
     licences: lic, deps };
 }
 
+/* ---- N · Ajtótérkép: every door, what it opens, whether that is still there */
+function doors(graph, _records, { repo = C.REPO } = {}) {   // repo: the checkout to check paths in (tests pass theirs)
+  const X_ = ctx(graph), N = X_.nodes.filter(n => n.layer === 'N');
+  const kids = new Map(), out = new Map(), parent = new Set();
+  for (const e of X_.edges) {
+    if (!e.a.startsWith('N:')) continue;
+    if (e.rel === 'contains') { (kids.get(e.a) || kids.set(e.a, []).get(e.a)).push(e.b); parent.add(e.b); }
+    else if (e.rel === 'opens' || e.rel === 'launches') (out.get(e.a) || out.set(e.a, []).get(e.a)).push(e.b);
+  }
+  // where a door leads, and whether that is still there: a repo path is checked on disk; an H: path or a program
+  // outside the repo is not this PC's question here (check-start asks it); a catalog item must land on a door
+  const target = n => n.kind === 'mobile feature' ? 'Mobile/android/feature-' + n.id.slice(6) : (n.path || '');
+  // a Mobile feature lives in its feature-<id> folder, or the app handles it in its own code (the desk, the sheets …):
+  // its id quoted in a .kt file other than the catalogue (Feature.kt); a planned one with neither is planned, not broken
+  let kt = null;
+  const handled = id => {
+    if (!kt) { kt = ''; try { for (const f of require('child_process').execFileSync('git', ['-C', repo, 'ls-files', 'Mobile/android'], { encoding: 'utf8' }).split('\n')) if (/\.kt$/.test(f) && !/\/Feature\.kt$|\/test\//.test(f)) { try { kt += fs.readFileSync(path.join(repo, f), 'utf8'); } catch {} } } catch { kt = ''; } }
+    return kt.includes('"' + id + '"');
+  };
+  const state = n => {
+    const t = target(n);
+    if (n.kind === 'mobile feature') return fs.existsSync(path.join(repo, t)) ? 'ok' : n.state === 'planned' ? 'planned' : handled(n.id.slice(6)) ? 'in app' : 'missing';   // the app's lists name planned ones too
+    if (n.kind === 'catalog') { const o = out.get(n.id) || []; return o.length ? (o.every(id => X_.byId.has(id)) ? 'ok' : 'missing') : 'none'; }
+    if (!t) return 'none';
+    if (/^\{|^[A-Za-z]:\//.test(t)) return 'outside';
+    return fs.existsSync(path.join(repo, t)) ? 'ok' : 'missing';
+  };
+  const door = n => ({ id: n.id, kind: n.kind, title: n.title, key: n.id.startsWith('N:start.') ? n.id.slice(8) : '', brief: n.brief || '', target: target(n), state: state(n),
+    lane: n.lane || '', stage: n.kind === 'mobile feature' ? n.state : '', kids: kids.get(n.id) || [], opens: (out.get(n.id) || []).filter(id => X_.byId.has(id)), pillars: n.ent || [], signals: X_.sig(n.id) });
+  const all = N.map(door), by = new Map(all.map(d => [d.id, d]));
+  const roots = all.filter(d => d.id.startsWith('N:start.') && !parent.has(d.id) && d.kind !== 'program').map(d => d.id);
+  const unreachable = X_.nodes.filter(n => n.layer === 'J' && n.kind === 'unreachable').map(n => [n.id, n.title, (n.about || [])[0] || '']);
+  const st = {}; for (const d of all) st[d.state] = (st[d.state] || 0) + 1;
+  return { ...X_.stamp, counts: { doors: all.length, missing: st.missing || 0, outside: st.outside || 0, start: all.filter(d => d.id.startsWith('N:start.') && d.kind !== 'program').length,
+    servers: all.filter(d => d.kind === 'server').length, programs: all.filter(d => d.kind === 'program').length, catalog: all.filter(d => d.kind === 'catalog').length, mobile: all.filter(d => d.kind === 'mobile feature').length, unreachable: unreachable.length },
+    doors: all, roots, unreachable, groups: {
+      servers: all.filter(d => d.kind === 'server').map(d => d.id), programs: all.filter(d => d.kind === 'program').map(d => d.id),
+      catalog: all.filter(d => d.kind === 'catalog').map(d => d.id), mobile: all.filter(d => d.kind === 'mobile feature').map(d => d.id) } };
+}
+
 /* ---- P · Tesztfal */
 function testwall(graph, records = []) {
   const X_ = ctx(graph), runs = new Map();
@@ -127,8 +169,8 @@ function testwall(graph, records = []) {
   return { ...X_.stamp, counts: { suites: S.length, states: st, runs: records.length }, suites: S };
 }
 
-const build = { K: asks, M: jobs, D: bench, V: wardrobe, O: ledger, P: testwall };
-const FILES = [['K', 'asks-data.js', 'ASKS'], ['M', 'jobs-data.js', 'JOBS'], ['D', 'bench-data.js', 'BENCH'], ['V', 'wardrobe-data.js', 'WARDROBE'], ['O', 'ledger-data.js', 'LEDGER'], ['P', 'testwall-data.js', 'TESTWALL']];
+const build = { K: asks, M: jobs, D: bench, V: wardrobe, O: ledger, P: testwall, N: doors };
+const FILES = [['N', 'doors-data.js', 'DOORS'], ['K', 'asks-data.js', 'ASKS'], ['M', 'jobs-data.js', 'JOBS'], ['D', 'bench-data.js', 'BENCH'], ['V', 'wardrobe-data.js', 'WARDROBE'], ['O', 'ledger-data.js', 'LEDGER'], ['P', 'testwall-data.js', 'TESTWALL']];
 
 function write({ graph } = {}) {
   const g = graph || JSON.parse(fs.readFileSync(path.join(CFG.out, 'stack.json'), 'utf8'));
@@ -137,7 +179,8 @@ function write({ graph } = {}) {
   for (const [L, file, name] of FILES) {
     const data = build[L](g, probes);
     // the page contract (S7): every data file carries build: (graph && graph.build) || null, schema: (graph && graph.schema) || null
-    if (name === 'ASKS') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.ASKS = ' + JSON.stringify(data) + ';\n');
+    if (name === 'DOORS') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.DOORS = ' + JSON.stringify(data) + ';\n');
+    else if (name === 'ASKS') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.ASKS = ' + JSON.stringify(data) + ';\n');
     else if (name === 'JOBS') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.JOBS = ' + JSON.stringify(data) + ';\n');
     else if (name === 'BENCH') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.BENCH = ' + JSON.stringify(data) + ';\n');
     else if (name === 'WARDROBE') X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.WARDROBE = ' + JSON.stringify(data) + ';\n');
@@ -145,7 +188,7 @@ function write({ graph } = {}) {
     else X.writeAtomic(path.join(CFG.out, file), '// generated by stack.js build (lib/layerpages.js)\nwindow.TESTWALL = ' + JSON.stringify(data) + ';\n');
     done.push(`${L} ${Object.values(data.counts).filter(v => typeof v === 'number')[0] || 0}`);
   }
-  return { msg: `layer pages: ${done.join(', ')} → out/{asks,jobs,bench,wardrobe,ledger,testwall}-data.js` };
+  return { msg: `layer pages: ${done.join(', ')} → out/{doors,asks,jobs,bench,wardrobe,ledger,testwall}-data.js` };
 }
 
 module.exports = { build, write, isoWeek, FILES };

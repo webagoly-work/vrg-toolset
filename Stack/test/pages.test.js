@@ -21,6 +21,7 @@ const PAGES = [
   ['board.html', 'E', 'out/board-data.js', 'BOARD', 'lib/board.js'],
   ['jelzesek.html', 'J', 'out/signals-data.js', 'SIGNALS', 'lib/signalboard.js'],
   ['szereplok.html', 'W', 'out/people-data.js', 'PEOPLE', 'lib/peoplepage.js'],
+  ['ajtok.html', 'N', 'out/doors-data.js', 'DOORS', 'lib/layerpages.js'],
   ['kerdesek.html', 'K', 'out/asks-data.js', 'ASKS', 'lib/layerpages.js'],
   ['munkak.html', 'M', 'out/jobs-data.js', 'JOBS', 'lib/layerpages.js'],
   ['eszkozok.html', 'D', 'out/bench-data.js', 'BENCH', 'lib/layerpages.js'],

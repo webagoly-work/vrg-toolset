@@ -564,3 +564,14 @@ new layers whose page was still "partial": N, P, K, M, D, V, O. Builder's choice
 | STK-P207 | Keys | **A** START R → Y (K), U (M), Z (D), V (V), X (O), P (P); catalog askmap, jobtimeline, bench, wardrobe, ledger, testwall | the free keys, by mnemonic where one was free (mUnkák, eszköZ, eXternal, Próbák) |
 | STK-P208 | Meta | **A** the six pages exist; T, L and U set to exist too (Füzértábla, Vonaltérkép, Futásnapló were built but still said missing or partial) | the layer table should say what is true |
 
+## Ajtótérkép, the N layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the N layer.** (STK-P202 had left N out, its page being START itself.)
+Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P209 | Not START again | **A** a door map across all four registries side by side, each door with what it opens and whether that is still there · B a copy of the START menu | START cannot say that a key points at a file that is gone; the map can, and it puts the catalog and Mobile next to START |
+| STK-P210 | "Still there" | **A** a repo path checked on disk; an H: path or a program is check-start's question (shown as outside the repo); a catalog item must land on a door; a Mobile feature lives in its feature-<id> folder or in the app's own code, a planned one is planned | six beta features (the desk, the sheets …) live in the app shell, not a folder; the first check called them missing |
+| STK-P211 | Where it opens | **A** START R → I, catalog `doormap`; data in `lib/layerpages.js` with the other six (`out/doors-data.js`) | the last free mnemonic-ish key (Indítók); one module for the layer pages |
+

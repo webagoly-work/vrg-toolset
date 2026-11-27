@@ -235,7 +235,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
-| `lib/layerpages.js` · `lib/layerpage.css` | the data and shared look of six layer pages: Figyelemtérkép `kerdesek.html` (K), Munkanaptár `munkak.html` (M), Műhelyasztal `eszkozok.html` (D), Ruhatár `latvany.html` (V), Licencnapló `kulso.html` (O), Tesztfal `probak.html` (P); `node stack.js pages` |
+| `lib/layerpages.js` · `lib/layerpage.css` | the data and shared look of seven layer pages: Ajtótérkép `ajtok.html` (N), Figyelemtérkép `kerdesek.html` (K), Munkanaptár `munkak.html` (M), Műhelyasztal `eszkozok.html` (D), Ruhatár `latvany.html` (V), Licencnapló `kulso.html` (O), Tesztfal `probak.html` (P); `node stack.js pages` |
 | `lib/peoplepage.js` · `szereplok.html` | Ki kicsoda, W's page: people, accounts, seats and what each Head owns, unowned work |
 | `lib/signalboard.js` · `jelzesek.html` | Jelzéstábla, J's page: signals by pillar, the action that clears each, the cleared ones |
 | `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |

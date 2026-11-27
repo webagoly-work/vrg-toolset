@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Ajtótérkép</title>
+<!-- Ajtótérkép (door map): the N layer's page (S11, lib/meta.js). Not START again: every door from all four registries
+     side by side (START with its submenus, the servers and programs, the VRG Asztal catalog, the VRG Mobile features),
+     each with what it opens and whether that is still there (a repo path checked on disk; an H: path or a program is
+     check-start's question; a catalog item must land on a door; a Mobile feature lives in its folder or in the app's
+     own code). Then the code nothing opens. Selecting a door lights it on every other open Stack page (lib/live.js).
+     Data: out/doors-data.js (lib/layerpages.js). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .menu { margin: 0 0 4px; }
+  .menu > summary { cursor: pointer; padding: 5px 0; font: 600 13px var(--voice); letter-spacing: .03em; list-style: none; }
+  .menu > summary::-webkit-details-marker { display: none; }
+  .menu > summary::before { content: '▸ '; color: var(--fa); } .menu[open] > summary::before { content: '▾ '; }
+  .door { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 4px 0 4px 14px; border-top: 1px solid var(--ln); cursor: pointer; font-size: 13px; }
+  .door .key { font: 600 12px var(--mono); color: var(--acc); }
+  .door .tg { display: block; font: 11px var(--mono); color: var(--fa); overflow-wrap: anywhere; }
+  .door.missing .tg { color: var(--red); }
+  .sub { padding-left: 14px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+</style>
+</head>
+<body>
+<header><h1>Ajtótérkép<i>entry points · N</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <button id="bad" aria-pressed="false">csak a hibás · broken only</button>
+  <input id="q" type="search" placeholder="keresés · search" aria-label="keresés · search"></header>
+<main>
+  <section class="panel"><h2>START<i>every key and submenu, where it leads, whether that is still there</i></h2><div id="start"></div></section>
+  <section class="cols">
+    <div class="panel"><h2>Szerverek<i>servers and their ports</i></h2><div id="servers"></div></div>
+    <div class="panel"><h2>Programok<i>START A: programs on this PC</i></h2><div id="programs"></div></div>
+  </section>
+  <section class="cols">
+    <div class="panel"><h2>VRG Asztal<i>the catalog: each item lands on a START key, a server or a page</i></h2><div id="catalog"></div></div>
+    <div class="panel"><h2>VRG Mobile<i>features by stage: its folder, or the app's own code</i></h2><div id="mobile"></div></div>
+  </section>
+  <section class="panel"><h2>Amit semmi sem nyit<i>pillars whose code no door opens (DRIFT.md §11)</i></h2><ul class="list" id="unreach"></ul></section>
+</main>
+<script src="out/doors-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.DOORS, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('start').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const by = new Map(D.doors.map(d => [d.id, d])), c = D.counts;
+  $('sum').textContent = `${c.doors} ajtó · ${c.start} START · ${c.servers} szerver · ${c.programs} program · ${c.catalog} Asztal · ${c.mobile} Mobile · ${c.missing} hiányzik · ${c.unreachable} elérhetetlen`;
+  const LBL = { ok: ['ok', 'ok'], missing: ['red', 'hiányzik · missing'], outside: ['mute', 'a repón kívül · outside the repo'], none: ['', ''], 'in app': ['ok', 'az appban · in the app'], planned: ['mute', 'tervben · planned'] };
+  let bad = false, q = '', sel = '';
+  const show = d => (!bad || d.state === 'missing' || d.signals.length) && (!q || (d.title + ' ' + d.key + ' ' + d.target + ' ' + d.brief).toLowerCase().includes(q));
+  const chip = d => { const [t, l] = LBL[d.state] || ['', d.state]; return l ? `<span class="chip ${t}">${esc(l)}</span>` : ''; };
+  const row = d => `<div class="door ${esc(d.state)}" data-k="${esc(d.id)}" aria-selected="${d.id === sel}"><span class="key">${esc(d.key || '')}</span>
+      <span>${esc(d.title)} <span class="faint mono">${esc(d.kind)}</span>${d.target ? `<span class="tg">${esc(d.target)}</span>` : ''}${d.signals.map(s => `<span class="chip amber">${esc(s[3])}</span>`).join('')}</span><span>${chip(d)}</span></div>`;
+  // a submenu keeps a row when it or anything under it matches
+  const keep = d => show(d) || d.kids.some(k => by.has(k) && keep(by.get(k)));
+  const tree = id => { const d = by.get(id); if (!d || !keep(d)) return '';
+    if (!d.kids.length) return row(d);
+    return `<details class="menu sub" ${bad || q ? 'open' : ''}><summary>${esc(d.key)} · ${esc(d.title)} <span class="faint mono">${d.kids.length}</span></summary>${row(d)}${d.kids.map(tree).join('')}</details>`; };
+  function render() {
+    $('start').innerHTML = D.roots.map(tree).join('') || '<p class="empty">Nincs ilyen ajtó. · No door matches.</p>';
+    const list = (ids, el) => { $(el).innerHTML = ids.map(id => by.get(id)).filter(d => d && show(d)).map(row).join('') || '<p class="empty">—</p>'; };
+    list(D.groups.servers, 'servers'); list(D.groups.programs, 'programs');
+    const grouped = (ids, el, keyOf) => { const g = new Map(); for (const d of ids.map(id => by.get(id)).filter(d => d && show(d))) (g.get(keyOf(d)) || g.set(keyOf(d), []).get(keyOf(d))).push(d);
+      $(el).innerHTML = [...g].map(([k, ds]) => `<details class="menu" ${bad || q ? 'open' : ''}><summary>${esc(k)} <span class="faint mono">${ds.length}</span></summary>${ds.map(row).join('')}</details>`).join('') || '<p class="empty">—</p>'; };
+    grouped(D.groups.catalog, 'catalog', d => d.lane || '—'); grouped(D.groups.mobile, 'mobile', d => (d.stage || '—') + ' · ' + (d.lane || ''));
+  }
+  $('unreach').innerHTML = D.unreachable.map(([id, title, about]) => `<li data-k="${esc(id)}">${esc(title)}<small>add a START key (launcher/vrg-menu.json), or say why it needs none</small></li>`).join('') || '<li class="empty">— semmi · nothing: every pillar with code has a door</li>';
+  function select(id, quiet) { sel = id; for (const el of document.querySelectorAll('[data-k]')) el.setAttribute('aria-selected', String(el.dataset.k === sel)); if (!quiet && window.StackLive) StackLive.selected(sel ? [sel, ...((by.get(sel) || {}).opens || [])] : []); }
+  document.body.addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  $('bad').onclick = () => { bad = !bad; $('bad').setAttribute('aria-pressed', String(bad)); render(); };
+  render();
+
+  // the page contract (S7, lib/live.js): a door lights when the string holds it or what it opens
+  if (window.StackLive) StackLive.contract({
+    layer: 'N', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => { const d = by.get(el.dataset.k); return [el, d ? [d.id, ...d.opens] : [el.dataset.k]]; }),
+    select: id => { id = String(id || ''); if (by.has(id)) { const d = by.get(id); for (let el = document.querySelector(`[data-k="${CSS.escape(id)}"]`); el; el = el.parentElement) if (el.tagName === 'DETAILS') el.open = true; select(id, true); } },
+    getSelection: () => (sel ? [sel] : []),
+  });
+})();
+</script>
+</body>
+</html>
