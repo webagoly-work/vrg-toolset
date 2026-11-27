@@ -140,6 +140,8 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'M') {   // one band per status (running, finished, failed, Kit only), the jobs in time order
+      for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items.slice().sort(byTime), pad(q), 'cols');
     } else if (layer === 'J') {   // one band per signal kind, the worst kinds first; red before amber before info inside
       const sev = { red: 0, amber: 1, info: 2 }, w = g => Math.min(...g.items.map(it => sev[it.state] == null ? 3 : sev[it.state]));
       const gs = [...group(items, it => it.kind || '')].sort((a, b) => w(a) - w(b) || (a.key < b.key ? -1 : 1));

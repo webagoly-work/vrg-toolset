@@ -169,7 +169,7 @@ function build({ graph, recordingsDir, eventsFile, roots }) {
   const nodes = graph.nodes.map((n, i) => {
     const b = bytes[i].b;
     // K titles are the Founder's own words: the connectome data goes to the phone bundle, so they stay on the PC (S13)
-    return [n.id, n.layer, n.kind, n.layer === 'K' ? `${n.kind} ${n.t || ''}`.trim() : String(n.title || '').slice(0, 120), shellOf(n), b, neurons(b), n.com == null ? -1 : n.com, last[i] || 0, bytes[i].src, pw.primary[i], pw.second[i], reg[i], hemi[i]];
+    return [n.id, n.layer, n.kind, n.layer === 'K' ? `${n.kind} ${n.t || ''}`.trim() : n.layer === 'M' ? String(n.title || '').split(' · ')[0] : String(n.title || '').slice(0, 120), shellOf(n), b, neurons(b), n.com == null ? -1 : n.com, last[i] || 0, bytes[i].src, pw.primary[i], pw.second[i], reg[i], hemi[i]];
   });
   // line mass + last activity, and bundles: edge counts between two lines' members
   const pwLines = pw.lines.map(l => ({ ...l, neurons: 0, members: 0, last: last[l.node] || 0 }));

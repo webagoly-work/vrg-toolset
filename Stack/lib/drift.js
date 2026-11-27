@@ -151,5 +151,19 @@ module.exports = function drift(graph, full, ctx) {
         `**Pillars whose strings carry signals** (red / amber / info):`, ...(pil.length ? pil.map(([p, r]) => `- ${r.worst === 'red' ? '🔴' : r.worst === 'amber' ? '🟠' : '🔵'} **${name(p)}** (\`E:${p}\`) ${r.red} / ${r.amber} / ${r.info}`) : ['none']), ``);
     }
   } catch (e) { out.push(`## 14. Signals`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 15. client jobs (S15): the register in one line, the jobs running on paper but quiet, the tools the jobs used */
+  try {
+    const M = graph.nodes.filter(n => n.layer === 'M');
+    if (M.length) {
+      const st = {}; for (const n of M) st[n.state || '—'] = (st[n.state || '—'] || 0) + 1;
+      const T = n => ((n.job || n.extra || {}).tools || []), names = Object.fromEntries(require('./jobs').TOOLS.map(t => [t.id, t.name]));
+      const tools = {}; for (const n of M) for (const t of T(n)) tools[names[t] || t] = (tools[names[t] || t] || 0) + 1;
+      const q = require('./jobs').quiet(M);
+      out.push(`## 15. Client jobs`, ``,
+        `${M.length} jobs: ${Object.entries(st).map(([k, v]) => `${v} ${k}`).join(', ')}. Used: ${Object.entries(tools).map(([k, v]) => `${k} ${v}`).join(', ') || 'no tool found in any job folder'}; ${M.filter(n => !T(n).length).length} jobs show none of our tools. Codes only (the key is the register, outside Git).`, ``,
+        `**Running on paper, quiet in fact** (the register says running, the newest file is 30+ days old):`, ...(q.length ? q.map(({ n, days }) => `- \`${n.id}\` ${days} days · ${n.brief}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 15. Client jobs`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

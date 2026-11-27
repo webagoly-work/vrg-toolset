@@ -29,6 +29,7 @@ module.exports = {
     memory: CLAUDE_HOME + '/projects/H--/memory',
     claudeHome: CLAUDE_HOME,
     transcripts: CLAUDE_HOME + '/projects',
+    jobs: process.env.VRG_JOBS_DIR || FULL + '/jobs',   // client jobs, outside Git (M · Munkák, S15)
     fileHistory: CLAUDE_HOME + '/file-history',
   },
 

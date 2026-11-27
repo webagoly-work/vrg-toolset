@@ -26,6 +26,7 @@ function layersV1() {
     F: { nodes: [N('F:planner', 'feature', 'Planner wiring', [], { tier: 1 })], edges: [] },
     I: { nodes: [N('I:lens', 'built', 'the stack lens', [])], edges: [] },
     T: { nodes: [], edges: [], built: [] },
+    M: { nodes: [], edges: [] },
     N: { nodes: [], edges: [] },
     P: { nodes: [], edges: [] },
     Q: { nodes: [N('Q:file.v', 'decision file', 'docs/visual/DECISIONS.md', ['p:docs/visual/DECISIONS.md'], { extra: { path: 'docs/visual/DECISIONS.md' } }),

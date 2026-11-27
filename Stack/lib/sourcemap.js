@@ -17,11 +17,12 @@ const norm = p => String(p || '').replace(/\\/g, '/').replace(/\/+$/, '');
 const low = p => norm(p).toLowerCase();
 
 function rules(S = CFG.sources, extra) {
-  const notes = low(S.notes), repo = low(S.repo), memory = low(S.memory);
+  const notes = low(S.notes), repo = low(S.repo), memory = low(S.memory), hist = S.jobs ? low(S.jobs) + '/_elozmenyek/' : null;
   const extras = (extra || require('./layers').DECISION_FILES_EXTRA || []).map(low);
   const inRepo = f => f.startsWith(repo + '/') ? f.slice(repo.length + 1) : null;
   return f => {
     if (f === low(S.repo) + '/stack/data/probes.jsonl') return ['P'];   // a recorded test run (S12)
+    if (hist && f.startsWith(hist)) return /^(regiszter\.md|osszegek\.csv)$/.test(f.slice(hist.length)) ? ['M'] : [];   // the job register (S15)
     if (/\/(stack\/out|stack\/data|node_modules|\.git)(\/|$)/.test(f) || /\.(tmp\d*|swp|lock)$|~$/.test(f)) return [];
     if (f.startsWith(notes + '/')) {
       const r = f.slice(notes.length + 1);
@@ -49,7 +50,9 @@ let ruleFn = null;
 function layersFor(file) { ruleFn = ruleFn || rules(); return ruleFn(low(file)); }
 
 function roots(S = CFG.sources) {
-  return [{ dir: norm(S.notes), recursive: true }, { dir: norm(S.memory), recursive: false }, { dir: norm(S.repo), recursive: true }];
+  const r = [{ dir: norm(S.notes), recursive: true }, { dir: norm(S.memory), recursive: false }, { dir: norm(S.repo), recursive: true }];
+  if (S.jobs) r.push({ dir: norm(S.jobs + '/_elozmenyek'), recursive: false });   // the register and the totals (S15); a Kit folder follows the next full build
+  return r;
 }
 
 module.exports = { layersFor, rules, roots };

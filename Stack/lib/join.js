@@ -24,12 +24,13 @@ function knownOf(layers, facts) {
     commits: new Set(byLayer('R').map(n => n.id.slice(2))),
     sessions: new Set(byLayer('L').filter(n => n.kind === 'session').map(n => n.id.slice(3))),
     memories: new Set(byLayer('A').filter(n => n.id.startsWith('A:mem.')).map(n => n.id.slice(6))),
+    jobs: new Set(byLayer('M').map(n => n.id.slice(6))),   // M:job.<CODE> (S15): a code in any text links to its job
     files: facts.paths,
   };
 }
 function knownSig(layers, facts) {
   const k = knownOf(layers, facts), h = crypto.createHash('sha1');
-  for (const part of ['commits', 'sessions', 'memories', 'files']) { h.update('\u0001' + part); for (const x of [...k[part]].sort()) h.update('\u0000' + x); }
+  for (const part of ['commits', 'sessions', 'memories', 'jobs', 'files']) { h.update('\u0001' + part); for (const x of [...k[part]].sort()) h.update('\u0000' + x); }
   return h.digest('hex').slice(0, 16);
 }
 
@@ -56,6 +57,7 @@ function join(layers, facts, { reuseSig = null } = {}) {
     commits: new Set(byLayer('R').map(n => n.id.slice(2))),
     sessions: new Set(byLayer('L').filter(n => n.kind === 'session').map(n => n.id.slice(3))),
     memories: new Set(byLayer('A').filter(n => n.id.startsWith('A:mem.')).map(n => n.id.slice(6))),
+    jobs: new Set(byLayer('M').map(n => n.id.slice(6))),
   };
   const extract = C.makeExtractor(known);
 

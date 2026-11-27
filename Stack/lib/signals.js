@@ -8,6 +8,7 @@
 //     unverified · unreachable                pillars whose code no test reaches / nothing opens (DRIFT §12, §11)
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
+//     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
 //     contradiction · dark                    Solomon's signals not ruled yet (G:sig.*; DRIFT §5)
 //     brief                                   a brief tools/brief-state.js calls stale or broken (Vezérlőterem)
 //     health                                  a full build's own warnings and failures so far (HEALTH.md); an
@@ -64,6 +65,9 @@ function detect(ctx = {}) {
     if (c.layer !== 'K' || c.kind !== 'cluster' || c.state !== 'open' || ((c.extra || {}).sessions || 0) < 2) continue;
     add('asked-again', c.id.slice(2), 'amber', `asked in ${c.extra.sessions} sessions, nothing landed: ${c.title}`, c.brief, [c.id]);
   }
+
+  /* M: a job running on paper, quiet in fact */
+  for (const { n, days } of require('./jobs').quiet(list)) add('job-quiet', n.id.slice(6), 'amber', `${n.title.split(' · ')[0]} is running, its newest file is ${days} days old`, n.brief, [n.id]);
 
   /* Solomon: signals not ruled */
   for (const g of list) {

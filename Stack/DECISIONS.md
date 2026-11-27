@@ -431,3 +431,20 @@ Builder's choices, no open question among them:
 | STK-P145 | The Viewer | **A** ⚠ Jelzések (⚙ Nézet; `#warn` opens with it on): every warned node and every signal red, the rest dimmed, through the light flags (bit 128) | the plan's "the Viewer shows where trouble sits", with no new page |
 | STK-P146 | Per pillar | **A** a signal counts once per pillar, however many of the pillar's nodes it warns | a contradiction warns its signal and both documents; one trouble, one count |
 
+## S15 — M · Munkák, the client jobs layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S15, the next new layer.** STK-Q24's list was done; by STK-Q5 (A Futás, then B
+Munkák) and RULES §6a the next is M, Munkák. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P147 | Where M sits | **A** after F, at the top: F M N K I T Q L A U P R C G J Z | a client's job is the outermost reality the stack serves; the tools (F, N) sit under it |
+| STK-P148 | The sources | **A** the register and totals through the Map's readers (`Map/tools/build-jobs.js`), the Kit's `<CODE>_*` folders, `Planner_projektek_*` · B `helyek.json` | one parser for the register; `helyek.json` carries coordinates the stack has no use for |
+| STK-P149 | What goes in | **A** codes, statuses, dates, totals, file counts, tool names, related codes; never a folder label, a note's words, an address, a client or file name | CLAUDE.md and GO-TNT: job codes only in tracked files; the code key is the register |
+| STK-P150 | Which tools a job used | **A** the tools' own output file names in its folders (Planner exports, Kit files), and a Planner project file that starts with the code | the files are the evidence; no list kept by hand |
+| STK-P151 | How a job reaches the tools | **A** its title names them ("BK2 · befejezett · Planner + Workflow Kit"), so the pillars' words take it in, and its text names the Planner's folder for the join | the money path on a string without a new mechanism |
+| STK-P152 | A code in a text | **A** a known key: the join links `BK2` in any text to `M:job.BK2`, only when the register has that code · B a pattern alone | "S12" or "M15" would otherwise turn into jobs; the codes join the known-keys signature, so a new job falls back to a full build |
+| STK-P153 | Privacy | **A** out/ as before; the connectome data (the phone bundle) gets the code alone as an M title | a total is money; the code is what tracked files may hold |
+| STK-P154 | Live | **A** the register and the totals (jobs\\_elozmenyek, watched, not recursive); a Kit folder follows the next full build | the register is the hand-kept source; job folders are large and change by the file |
+| STK-P155 | Quiet jobs | **A** running in the register, newest file 30+ days old: DRIFT §15 and a J signal `job-quiet` (amber) | the one check this layer adds, and it lands where every other warning does |
+

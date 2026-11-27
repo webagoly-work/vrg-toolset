@@ -28,6 +28,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | Layer | Its page today | State | The page it should have |
 |---|---|---|---|
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
+| **M Client jobs** (Munkák, S15 2026-11-27) | the VRG Asztal's Munkák table (D4) and the VRG Térkép show the jobs; the Viewer draws the layer by status; DRIFT.md §15 | ◐ | a job timeline: each job as a bar from first file to invoice, the tools it used under it |
 | **N Entry points** (Belépők, S11 2026-11-26) | — (the Viewer draws it; the START menu itself is its order, and DRIFT.md §11 lists the code nothing opens) | ◐ | a door map: each START key, server and Mobile feature with what it opens and whether that is still there |
 | **P Tests and checks** (Próbák, S12 2026-11-26) | — (the Viewer draws it, one band per runner; DRIFT.md §12 lists the failing, stale and unrun suites and the code no test reaches) | ◐ | a test wall: each suite's recorded runs as a strip, red where it broke, grey where it went stale, its START key to run it again |
 | **K Founder's asks** (Kérések, S13 2026-11-26) | — (the Viewer draws it: clusters above the single asks; DRIFT.md §13 lists where attention went, the asks that came back with nothing landing, and the ones that led nowhere) | ◐ | an attention map: asks per pillar per week, the repeated ones as threads, the ones that never landed in red |
