@@ -7,7 +7,7 @@
 //     test fail · test stale · no runner      P suites (lib/probe.js; DRIFT §12)
 //     unverified · unreachable                pillars whose code no test reaches / nothing opens (DRIFT §12, §11)
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
-//     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
+//     asked again                             S clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
 //     import broken · import cycle            C's import graph: a relative import to no file; files in a circle (§20)
 //     access signature · seat vacant          W: the Kapu's access list must verify; an empty Council seat (§19)
