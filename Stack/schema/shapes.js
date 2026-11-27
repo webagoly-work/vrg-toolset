@@ -9,7 +9,7 @@
 // Each check returns a list of problems; an empty list means the record is valid.
 'use strict';
 
-const LAYER = /^[WFVMNKITQLAUPRCDOGJEZ]$/;   // T S3, N S11, P S12, K S13, J S14, M S15, D S16, V S17, O S18, W · Szereplők S19
+const LAYER = /^[WFVMNSITQLAUPRCDOGJEZ]$/;   // T S3, N S11, P S12, S S13, J S14, M S15, D S16, V S17, O S18, W · Szereplők S19
 const ISO = /^\d{4}-\d\d-\d\d/;
 
 function checkNode(n) {

@@ -115,10 +115,10 @@ module.exports = function drift(graph, full, ctx) {
 
   /* 13. the Founder's asks (S13): where attention went, what came back with nothing landing, what led nowhere */
   try {
-    const KA = require('./asks'), asks = graph.nodes.filter(n => n.layer === 'K' && n.kind !== 'cluster');
+    const KA = require('./asks'), asks = graph.nodes.filter(n => n.layer === 'S' && n.kind !== 'cluster');
     if (asks.length) {
       const byId = new Map(graph.nodes.map(n => [n.id, n])), led = new Map();
-      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'led-to' && a[0] === 'K') (led.get(a) || led.set(a, []).get(a)).push(b); }
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'led-to' && a[0] === 'S') (led.get(a) || led.set(a, []).get(a)).push(b); }
       const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), att = new Map();
       for (const k of asks) {
         const ps = new Set(); for (const b of led.get(k.id) || []) for (const p of (byId.get(b) || {}).ent || []) ps.add(p);
@@ -128,7 +128,7 @@ module.exports = function drift(graph, full, ctx) {
       const top = [...att].sort((a, b) => b[1].recent - a[1].recent || b[1].all - a[1].all).slice(0, 12);
       const again = KA.nothingLanded(graph), nowhere = asks.filter(k => !(led.get(k.id) || []).length).sort((a, b) => (a.t < b.t ? 1 : -1)).slice(0, 10);
       out.push(`## 13. The Founder's asks`, ``,
-        `${asks.length} asks in ${new Set(asks.map(k => k.id.split('.')[1])).size} sessions, ${graph.nodes.filter(n => n.layer === 'K' && n.kind === 'cluster').length} clusters; ${asks.filter(k => k.state === 'committed').length} were followed by a commit.`, ``,
+        `${asks.length} asks in ${new Set(asks.map(k => k.id.split('.')[1])).size} sessions, ${graph.nodes.filter(n => n.layer === 'S' && n.kind === 'cluster').length} clusters; ${asks.filter(k => k.state === 'committed').length} were followed by a commit.`, ``,
         `**Where attention went** (asks whose work touched the pillar; last 30 days / all):`, ...(top.length ? top.map(([p, r]) => `- **${name(p)}** (\`E:${p}\`) ${r.recent} / ${r.all}`) : ['none']), ``,
         `**Asked again, nothing landed** (a cluster asked in 2+ sessions, no commit after any of its asks):`, ...(again.length ? again.slice(0, 12).map(c => `- \`${c.id}\` ${c.title} · ${(c.k || {}).sessions || '?'} sessions · last ${c.t}`) : ['none']), ``,
         `**Led nowhere** (the newest asks whose work touched no stack node):`, ...(nowhere.length ? nowhere.map(k => `- ${k.t} \`${k.id}\` ${k.kind}`) : ['none']), ``);

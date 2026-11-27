@@ -27,7 +27,7 @@ const path = require('path');
 
 const DOC_CAP = 512 * 1024;                // one document's text at most (a longer one is cut, and says so)
 const TEXT_EXT = /\.(md|txt|html?|json|csv|ya?ml|js|cjs|mjs|ts|ps1|cmd|bat|css|kt|xml|ini|toml)$/i;
-const ORDER = ['W', 'F', 'V', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'J', 'E'];
+const ORDER = ['W', 'F', 'V', 'M', 'N', 'S', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'J', 'E'];
 
 // FNV-1a, 32 bit, over the bytes: the node's fingerprint between builds
 function hash(buf, start = 0, end = buf.length) {

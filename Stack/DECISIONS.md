@@ -575,3 +575,12 @@ Builder's choices, no open question among them:
 | STK-P210 | "Still there" | **A** a repo path checked on disk; an H: path or a program is check-start's question (shown as outside the repo); a catalog item must land on a door; a Mobile feature lives in its feature-<id> folder or in the app's own code, a planned one is planned | six beta features (the desk, the sheets …) live in the app shell, not a folder; the first check called them missing |
 | STK-P211 | Where it opens | **A** START R → I, catalog `doormap`; data in `lib/layerpages.js` with the other six (`out/doors-data.js`) | the last free mnemonic-ish key (Indítók); one module for the layer pages |
 
+## Kérések re-lettered: K → S (2026-11-27)
+
+Merging main into PR #29 met main's own K layer, the Kisokos (the work handbook: core, axes, terms, cards; its page
+`kisokos.html`), merged and on the phone pages. Two layers cannot share a letter.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P212 | Which layer moves | **A** Kérések becomes **S · Szó** ("a Founder szava"); the Kisokos keeps K · B Kérések H · C X · D the Kisokos moves | **The Founder, 2026-11-27: S.** The Kisokos was merged and shipped first; only this unmerged branch changes. Node ids are `S:ask.*` and `S:cluster.*`; the page (Figyelemtérkép, START R → Y) and its data are unchanged but for the letter; an older build's `K:ask.*` events stay in the log as they were |
+

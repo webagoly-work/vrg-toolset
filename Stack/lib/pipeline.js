@@ -159,10 +159,10 @@ async function assemble(ordered, facts, prev, hc, log, o = {}) {
   for (const n of U.nodes) nodes.set(n.id, n);
   for (const e of U.edges) edges.push({ ...e, v: nodes.get(e.a).layer !== nodes.get(e.b).layer ? 1 : 0 });
 
-  /* ---- 3b. the Founder's asks → K · Kérések (S13): a full build reads them out of the recordings and keeps them in
+  /* ---- 3b. the Founder's asks → S · Kérések (S13): a full build reads them out of the recordings and keeps them in
      out/layers/K-src.json; an incremental build reads that file (the recordings only change on a full build) */
   const KSRC = path.join(CACHE(), 'K-src.json');
-  const asks = await hc.stage('layer K · Kérések', () => {
+  const asks = await hc.stage('layer S · Kérések', () => {
     const KA = require('./asks');
     let sessions = !o.record ? X.readJson(KSRC, null) : null;
     if (!sessions) { sessions = KA.collect(index.sessions, REC.readRecording); fs.mkdirSync(CACHE(), { recursive: true }); X.writeAtomic(KSRC, JSON.stringify(sessions)); }
@@ -170,7 +170,7 @@ async function assemble(ordered, facts, prev, hc, log, o = {}) {
   }, { fallback: () => ({ nodes: [], edges: [] }) });
   for (const n of asks.nodes) nodes.set(n.id, n);
   for (const e of asks.edges) if (nodes.has(e.a) && nodes.has(e.b)) edges.push({ ...e, v: nodes.get(e.a).layer !== nodes.get(e.b).layer ? 1 : 0 });
-  if (asks.nodes.length) log(`K: ${asks.nodes.filter(n => n.kind !== 'cluster').length} asks, ${asks.nodes.filter(n => n.kind === 'cluster').length} clusters`);
+  if (asks.nodes.length) log(`S: ${asks.nodes.filter(n => n.kind !== 'cluster').length} asks, ${asks.nodes.filter(n => n.kind === 'cluster').length} clusters`);
 
   /* ---- 4. pillars */
   let T = null; try { const f = CFG.sources.notes + '/devlog/threads.js'; delete require.cache[require.resolve(f)]; T = require(f); } catch { T = null; }
@@ -240,7 +240,7 @@ async function assemble(ordered, facts, prev, hc, log, o = {}) {
     rank: n.rank, com: n.com, para: n.para, actor: n.actor, ...(n.stale ? { stale: true } : {}), ...(n.evidence ? { evidence: n.evidence } : {}),
     ...(n.layer === 'T' && n.extra ? { from: n.extra.sources, labels: n.extra.labels || {} } : {}),
     ...(n.layer === 'P' && n.extra && n.extra.cmds ? { probe: { last: n.extra.last, keys: n.extra.keys, ci: n.extra.ci, stale: n.extra.stale, runner: n.extra.runner, files: n.extra.files, cmds: n.extra.cmds.map(c => c.cmd.join(' ')) } } : {}),
-    ...(n.layer === 'K' && n.kind === 'cluster' && n.extra ? { k: { asks: n.extra.asks, sessions: n.extra.sessions, first: n.extra.first, last: n.extra.last } } : {}),
+    ...(n.layer === 'S' && n.kind === 'cluster' && n.extra ? { k: { asks: n.extra.asks, sessions: n.extra.sessions, first: n.extra.first, last: n.extra.last } } : {}),
     ...(n.layer === 'J' && n.extra ? { about: n.extra.about } : {}),
     ...(n.layer === 'M' && n.extra ? { job: { tools: n.extra.tools, status: n.extra.status, kinds: n.extra.kinds, from: n.extra.from, to: n.extra.to, total: n.extra.total, totalDate: n.extra.totalDate, related: n.extra.related, files: n.extra.files } } : {}),
     ...(n.layer === 'D' && n.extra ? { dev: n.extra } : {}),

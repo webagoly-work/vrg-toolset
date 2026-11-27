@@ -22,7 +22,7 @@ const PAGES = [
   ['jelzesek.html', 'J', 'out/signals-data.js', 'SIGNALS', 'lib/signalboard.js'],
   ['szereplok.html', 'W', 'out/people-data.js', 'PEOPLE', 'lib/peoplepage.js'],
   ['ajtok.html', 'N', 'out/doors-data.js', 'DOORS', 'lib/layerpages.js'],
-  ['kerdesek.html', 'K', 'out/asks-data.js', 'ASKS', 'lib/layerpages.js'],
+  ['kerdesek.html', 'S', 'out/asks-data.js', 'ASKS', 'lib/layerpages.js'],
   ['munkak.html', 'M', 'out/jobs-data.js', 'JOBS', 'lib/layerpages.js'],
   ['eszkozok.html', 'D', 'out/bench-data.js', 'BENCH', 'lib/layerpages.js'],
   ['latvany.html', 'V', 'out/wardrobe-data.js', 'WARDROBE', 'lib/layerpages.js'],
@@ -31,7 +31,7 @@ const PAGES = [
 ];
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // a whole node id in quotes: 'E:planner', "L:views", `Q:VIS-Q5` (a prefix such as 'U:run.' or 'A:agent.' is fine)
-const NODE_ID = /['"`]([WFVMNKITQLAUPRCDOGJEZ]):([A-Za-z0-9][\w.\-/]*[A-Za-z0-9])['"`]/g;
+const NODE_ID = /['"`]([WFVMNSITQLAUPRCDOGJEZ]):([A-Za-z0-9][\w.\-/]*[A-Za-z0-9])['"`]/g;
 
 for (const [page, layer, data, global, mod] of PAGES) {
   test(`${page}: data from ${data} only, with the build stamp`, () => {

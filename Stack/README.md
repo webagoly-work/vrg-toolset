@@ -155,7 +155,7 @@ Never load `out/stack.json` whole. Ids look like:
   (`jelzesek.html`, START R → J; `lib/signalboard.js` → `out/signals-data.js` on every build) is J's page: one column
   per pillar, the worst first, each signal with the one thing that clears it, its evidence and what it warns, and the
   signals that went away in the last 14 days (`out/signals-history.json`).
-- **K · Kérések, the Founder's asks** (S13, 2026-11-26): every prompt and slash command in the recordings
+- **S · Kérések, the Founder's asks** (S13, 2026-11-26; lettered K until it met main's Kisokos, STK-P212): every prompt and slash command in the recordings
   (`lib/asks.js`; a continued session's summary, interruptions and hook text left out). Each ask `led-to` the nodes the
   work after it touched until the next ask, and `mentions` what its text names (decision ids, GO phrases, paths). Asks
   that say the same thing, numbers folded ("build S12" ≈ "build S13"), form a cluster: landed when a commit followed
@@ -239,7 +239,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `lib/peoplepage.js` · `szereplok.html` | Ki kicsoda, W's page: people, accounts, seats and what each Head owns, unowned work |
 | `lib/signalboard.js` · `jelzesek.html` | Jelzéstábla, J's page: signals by pillar, the action that clears each, the cleared ones |
 | `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |
-| `lib/asks.js` | K · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
+| `lib/asks.js` | S · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
 | `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
 | `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |

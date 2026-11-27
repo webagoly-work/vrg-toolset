@@ -8,19 +8,19 @@ const LP = require('../lib/layerpages');
 
 const G = (nodes, edges = [], entities = []) => ({ build: { no: 1 }, schema: 2, nodes, edges, entities });
 
-test('K: asks per pillar per week, threads with their asks, the asks no commit followed', () => {
+test('S: asks per pillar per week, threads with their asks, the asks no commit followed', () => {
   assert.equal(LP.isoWeek('2026-11-27'), '2026-W48'); assert.equal(LP.isoWeek('2026-01-01'), '2026-W01');
-  const D = LP.build.K(G([
-    { id: 'K:ask.a.1', layer: 'K', kind: 'ask', t: '2026-11-20', state: 'committed', title: 'build S12', lane: 'cluster c1' },
-    { id: 'K:ask.a.2', layer: 'K', kind: 'ask', t: '2026-11-27', state: 'no commit', title: 'build S13', lane: 'cluster c1' },
-    { id: 'K:cluster.c1', layer: 'K', kind: 'cluster', state: 'landed', title: 'build s# ×2', k: { sessions: 2, first: '2026-11-20', last: '2026-11-27' }, t: '2026-11-27' },
+  const D = LP.build.S(G([
+    { id: 'S:ask.a.1', layer: 'S', kind: 'ask', t: '2026-11-20', state: 'committed', title: 'build S12', lane: 'cluster c1' },
+    { id: 'S:ask.a.2', layer: 'S', kind: 'ask', t: '2026-11-27', state: 'no commit', title: 'build S13', lane: 'cluster c1' },
+    { id: 'S:cluster.c1', layer: 'S', kind: 'cluster', state: 'landed', title: 'build s# ×2', k: { sessions: 2, first: '2026-11-20', last: '2026-11-27' }, t: '2026-11-27' },
     { id: 'C:Stack', layer: 'C', kind: 'module', title: 'Stack', ent: ['stack'] }],
-    [{ a: 'K:ask.a.1', b: 'C:Stack', rel: 'led-to' }, { a: 'K:ask.a.2', b: 'C:Stack', rel: 'led-to' }, { a: 'K:cluster.c1', b: 'K:ask.a.1', rel: 'contains' }, { a: 'K:cluster.c1', b: 'K:ask.a.2', rel: 'contains' }],
+    [{ a: 'S:ask.a.1', b: 'C:Stack', rel: 'led-to' }, { a: 'S:ask.a.2', b: 'C:Stack', rel: 'led-to' }, { a: 'S:cluster.c1', b: 'S:ask.a.1', rel: 'contains' }, { a: 'S:cluster.c1', b: 'S:ask.a.2', rel: 'contains' }],
     [{ id: 'stack', name: 'VRG Stack' }]));
   assert.deepEqual(D.heat[0].slice(0, 3), ['stack', 'VRG Stack', 2]);
   assert.equal(D.heat[0][3].reduce((a, b) => a + b, 0), 2, 'both weeks are on the axis');
-  assert.deepEqual(D.clusters[0][6], ['K:ask.a.1', 'K:ask.a.2']);
-  assert.deepEqual(D.nolanded, ['K:ask.a.2']);
+  assert.deepEqual(D.clusters[0][6], ['S:ask.a.1', 'S:ask.a.2']);
+  assert.deepEqual(D.nolanded, ['S:ask.a.2']);
   assert.equal(D.build.no, 1);
 });
 

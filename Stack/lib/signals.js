@@ -68,7 +68,7 @@ function detect(ctx = {}) {
 
   /* K: asked again, nothing landed */
   for (const c of list) {
-    if (c.layer !== 'K' || c.kind !== 'cluster' || c.state !== 'open' || ((c.extra || {}).sessions || 0) < 2) continue;
+    if (c.layer !== 'S' || c.kind !== 'cluster' || c.state !== 'open' || ((c.extra || {}).sessions || 0) < 2) continue;
     add('asked-again', c.id.slice(2), 'amber', `asked in ${c.extra.sessions} sessions, nothing landed: ${c.title}`, c.brief, [c.id]);
   }
 

@@ -53,7 +53,7 @@ const LINKS = {
   related: R('kapcsolódik', 'is related to', 'kapcsolódik hozzá'),
   // J · Jelzések (signals, S14)
   warns: R('figyelmeztet', 'warns about', 'figyelmeztetés rá', 'any'),
-  // K · Kérések (the Founder's asks, S13)
+  // S · Kérések (the Founder's asks, S13)
   'asked-in': R('itt kérte', 'was asked in', 'ezt kérték benne', 'v'),
   mentions: R('említi', 'mentions', 'említi ez a kérés', 'any'),
   'led-to': R('ide vezetett', 'led to', 'ez a kérés hozta', 'any'),

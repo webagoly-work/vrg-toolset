@@ -1,4 +1,4 @@
-// VRG Stack — K · Kérések (the Founder's asks), S13 of research/STRINGS-PLAN.md (§5, STK-Q24: T → N → P → K → J):
+// VRG Stack — S · Kérések (the Founder's asks), S13 of research/STRINGS-PLAN.md (§5, STK-Q24: T → N → P → K → J):
 // every prompt the Founder typed and every slash command, from the recordings, clustered. K shows where attention
 // went: which pillar the asks were about, which ask came back again and again, which never turned into work.
 //
@@ -6,9 +6,9 @@
 //     an ask is a recording step with actor user: span 'prompt', or a typed slash command (tool 'command');
 //     harness text is left out (a continued session's summary, "[Request interrupted …]", hook feedback, <tags>)
 //   layer({ sessions, resolve, has }) → { nodes, edges }
-//     K:ask.<sid8>.<seq>   kind ask / command; t = its day; lane = its cluster (or 'single'); state 'committed' when
+//     S:ask.<sid8>.<seq>   kind ask / command; t = its day; lane = its cluster (or 'single'); state 'committed' when
 //                          a commit followed it before the next ask, else 'no commit'
-//     K:cluster.<hash>     asks that say the same thing (≥ 2): the words they share; state 'landed' when a commit
+//     S:cluster.<hash>     asks that say the same thing (≥ 2): the words they share; state 'landed' when a commit
 //                          followed one of its asks, else 'open'
 //     ask → U:run.<sid8> 'asked-in' · cluster → ask 'contains' · ask → what its work touched 'led-to' (the nodes the
 //     steps after it touched, until the next ask, w = how many steps) · ask → each node its text names 'mentions'
@@ -98,7 +98,7 @@ const LED = 8;         // per ask: the nodes its work touched most
 
 function layer({ sessions = [], resolve = () => [], has = () => true } = {}) {
   const nodes = [], edges = [], asks = [];
-  for (const s of sessions) for (const a of s.asks) asks.push({ ...a, id: `K:ask.${s.sid8}.${a.seq}`, s });
+  for (const s of sessions) for (const a of s.asks) asks.push({ ...a, id: `S:ask.${s.sid8}.${a.seq}`, s });
   asks.sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : a.id < b.id ? -1 : 1));
   const C = cluster(asks);
   const groups = new Map();
@@ -106,16 +106,16 @@ function layer({ sessions = [], resolve = () => [], has = () => true } = {}) {
 
   asks.forEach((a, i) => {
     const key = C.of.get(a.id);
-    nodes.push({ id: a.id, layer: 'K', kind: a.kind, title: clip(a.text.replace(/\s+/g, ' '), 120), brief: clip(a.s.title, 160), t: day(a.t),
+    nodes.push({ id: a.id, layer: 'S', kind: a.kind, title: clip(a.text.replace(/\s+/g, ' '), 120), brief: clip(a.s.title, 160), t: day(a.t),
       state: a.commits ? 'committed' : 'no commit', lane: key ? 'cluster ' + key : 'single', tier: '', own: [], text: a.text,
       extra: { sid: a.s.sid, at: a.t, cluster: key || '', commits: a.commits || 0 } });
     if (has('U:run.' + a.s.sid8)) edges.push({ a: a.id, b: 'U:run.' + a.s.sid8, rel: 'asked-in' });
     const led = new Set();
-    for (const [id, w] of a.touched || []) if (id && id[0] !== 'K' && id[0] !== 'U' && has(id)) { edges.push({ a: a.id, b: id, rel: 'led-to', w }); led.add(id); }
+    for (const [id, w] of a.touched || []) if (id && id[0] !== 'S' && id[0] !== 'U' && has(id)) { edges.push({ a: a.id, b: id, rel: 'led-to', w }); led.add(id); }
     let n = 0;
     for (const id of resolve(a.text) || []) {
       if (n >= MENTIONS) break;
-      if (!id || id[0] === 'K' || id[0] === 'U' || !has(id) || led.has(id)) continue;
+      if (!id || id[0] === 'S' || id[0] === 'U' || !has(id) || led.has(id)) continue;
       edges.push({ a: a.id, b: id, rel: 'mentions' }); n++;
     }
   });
@@ -126,8 +126,8 @@ function layer({ sessions = [], resolve = () => [], has = () => true } = {}) {
     const shared = [...count].filter(([, c]) => c >= Math.max(2, Math.ceil(idx.length / 2))).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 6).map(([w]) => w);
     const sids = [...new Set(list.map(a => a.s.sid8))], landed = list.some(a => a.commits > 0);
     const first = day(list[0].t), last = day(list[list.length - 1].t);
-    const id = 'K:cluster.' + key;
-    nodes.push({ id, layer: 'K', kind: 'cluster', title: `${shared.join(' ') || clip(list[0].text, 60)} ×${list.length}`,
+    const id = 'S:cluster.' + key;
+    nodes.push({ id, layer: 'S', kind: 'cluster', title: `${shared.join(' ') || clip(list[0].text, 60)} ×${list.length}`,
       brief: `${list.length} asks in ${sids.length} session${sids.length === 1 ? '' : 's'}, ${first}${last !== first ? ' → ' + last : ''}; ${landed ? 'a commit followed at least one of them' : 'no commit followed any of them'}. First: “${clip(list[0].text.replace(/\s+/g, ' '), 120)}”`,
       t: last, state: landed ? 'landed' : 'open', lane: 'cluster ' + key, tier: '', own: [], text: shared.join(' '),
       extra: { asks: list.length, sessions: sids.length, first, last, words: shared } });
@@ -139,7 +139,7 @@ function layer({ sessions = [], resolve = () => [], has = () => true } = {}) {
 // clusters asked in ≥ 2 sessions where no commit followed any ask, newest first (DRIFT.md §13)
 function nothingLanded(graph, { min = 2 } = {}) {
   const k = n => n.k || n.extra || {};   // the written graph carries it as `k` (pipeline pub), the adapter as extra
-  return graph.nodes.filter(n => n.layer === 'K' && n.kind === 'cluster' && n.state === 'open' && (k(n).sessions || 0) >= min)
+  return graph.nodes.filter(n => n.layer === 'S' && n.kind === 'cluster' && n.state === 'open' && (k(n).sessions || 0) >= min)
     .sort((a, b) => (a.t < b.t ? 1 : a.t > b.t ? -1 : 0));
 }
 

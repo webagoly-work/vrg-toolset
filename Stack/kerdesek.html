@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VRG Figyelemtérkép</title>
-<!-- Figyelemtérkép (attention map): the K layer's page (S13, lib/meta.js). Where the Founder's asks went, pillar by week
+<!-- Figyelemtérkép (attention map): the S layer's page (S13, lib/meta.js). Where the Founder's asks went, pillar by week
      (an ask counts on the pillars its work touched); the asks that said the same thing as threads, open ones first;
      the asks no commit followed. The asks' words stay on this PC (out/ is git-ignored). Selecting a row lights the
      ask, its thread or its pillar on every other open Stack page (lib/live.js). Data: out/asks-data.js
@@ -72,7 +72,7 @@
 
   // the page contract (S7, lib/live.js)
   if (window.StackLive) StackLive.contract({
-    layer: 'K', data: D,
+    layer: 'S', data: D,
     items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, keys.get(el.dataset.k) || []]),
     select: id => { id = String(id || ''); if (keys.has(id)) return select(id, true); for (const [key, ids] of keys) if (ids.includes(id)) return select(key, true); },
     getSelection: () => (sel ? keys.get(sel) : []),

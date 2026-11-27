@@ -2,7 +2,7 @@
 //
 //   N  Ajtótérkép      ajtok.html      window.DOORS     every door (START, servers, programs, catalog, Mobile), what it opens,
 //                                                       whether that is still there; the code nothing opens
-//   K  Figyelemtérkép  kerdesek.html   window.ASKS      asks per pillar per week; the repeated ones as threads; the ones
+//   S  Figyelemtérkép  kerdesek.html   window.ASKS      asks per pillar per week; the repeated ones as threads; the ones
 //                                                       no commit followed
 //   M  Munkanaptár     munkak.html     window.JOBS      each job as a bar from its first file to its last, its tools
 //   D  Műhelyasztal    eszkozok.html   window.BENCH     sketch → firmware → board, what each board runs, how old it is
@@ -35,16 +35,16 @@ const isoWeek = d => { const t = new Date(Date.UTC(+d.slice(0, 4), +d.slice(5, 7
   const y = t.getUTCFullYear(), w1 = new Date(Date.UTC(y, 0, 4)); return `${y}-W${String(1 + Math.round(((t - w1) / 864e5 - 3 + ((w1.getUTCDay() + 6) % 7)) / 7)).padStart(2, '0')}`; };
 function asks(graph) {
   const X_ = ctx(graph), led = new Map(), members = new Map();
-  for (const e of X_.edges) { if (e.rel === 'led-to' && e.a.startsWith('K:')) (led.get(e.a) || led.set(e.a, []).get(e.a)).push(e.b); if (e.rel === 'contains' && e.a.startsWith('K:cluster.')) (members.get(e.a) || members.set(e.a, []).get(e.a)).push(e.b); }
+  for (const e of X_.edges) { if (e.rel === 'led-to' && e.a.startsWith('S:')) (led.get(e.a) || led.set(e.a, []).get(e.a)).push(e.b); if (e.rel === 'contains' && e.a.startsWith('S:cluster.')) (members.get(e.a) || members.set(e.a, []).get(e.a)).push(e.b); }
   const pillarsOf = id => { const s = new Set(); for (const b of led.get(id) || []) { const t = X_.byId.get(b); if (!t) continue; for (const p of t.layer === 'E' ? [b.slice(2)] : (t.ent || [])) s.add(p); } return [...s]; };
-  const A = X_.nodes.filter(n => n.layer === 'K' && n.kind !== 'cluster').sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+  const A = X_.nodes.filter(n => n.layer === 'S' && n.kind !== 'cluster').sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
   const list = A.map(n => [n.id, n.kind, n.t || '', n.state, C.clip(n.title, 160), (/cluster (\w+)/.exec(n.lane || '') || [])[1] || '', pillarsOf(n.id)]);
   const last = list.length ? list[list.length - 1][2] : '';
   const weeks = []; if (last) { const end = Date.parse(last); for (let i = 11; i >= 0; i--) { const w = isoWeek(new Date(end - i * 7 * 864e5).toISOString().slice(0, 10)); if (!weeks.includes(w)) weeks.push(w); } }
   const per = new Map();
   for (const a of list) { const w = a[2] ? isoWeek(a[2]) : ''; for (const p of a[6]) { const r = per.get(p) || per.set(p, { all: 0, weeks: {} }).get(p); r.all++; if (w) r.weeks[w] = (r.weeks[w] || 0) + 1; } }
   const heat = [...per].sort((a, b) => b[1].all - a[1].all).slice(0, 16).map(([p, r]) => [p, X_.pname(p), r.all, weeks.map(w => r.weeks[w] || 0)]);
-  const clusters = X_.nodes.filter(n => n.layer === 'K' && n.kind === 'cluster').map(n => [n.id, C.clip(n.title, 120), n.state, (n.k || {}).sessions || 0, (n.k || {}).first || '', (n.k || {}).last || n.t || '', members.get(n.id) || []])
+  const clusters = X_.nodes.filter(n => n.layer === 'S' && n.kind === 'cluster').map(n => [n.id, C.clip(n.title, 120), n.state, (n.k || {}).sessions || 0, (n.k || {}).first || '', (n.k || {}).last || n.t || '', members.get(n.id) || []])
     .sort((a, b) => (a[2] === 'open') - (b[2] === 'open') || (a[5] < b[5] ? 1 : -1)).reverse();
   return { ...X_.stamp, counts: { asks: list.length, committed: list.filter(a => a[3] === 'committed').length, clusters: clusters.length, open: clusters.filter(c => c[2] === 'open').length, pillars: per.size },
     weeks, heat, asks: list, clusters, nolanded: list.filter(a => a[3] === 'no commit').slice(-40).reverse().map(a => a[0]) };
@@ -169,8 +169,8 @@ function testwall(graph, records = []) {
   return { ...X_.stamp, counts: { suites: S.length, states: st, runs: records.length }, suites: S };
 }
 
-const build = { K: asks, M: jobs, D: bench, V: wardrobe, O: ledger, P: testwall, N: doors };
-const FILES = [['N', 'doors-data.js', 'DOORS'], ['K', 'asks-data.js', 'ASKS'], ['M', 'jobs-data.js', 'JOBS'], ['D', 'bench-data.js', 'BENCH'], ['V', 'wardrobe-data.js', 'WARDROBE'], ['O', 'ledger-data.js', 'LEDGER'], ['P', 'testwall-data.js', 'TESTWALL']];
+const build = { S: asks, M: jobs, D: bench, V: wardrobe, O: ledger, P: testwall, N: doors };
+const FILES = [['N', 'doors-data.js', 'DOORS'], ['S', 'asks-data.js', 'ASKS'], ['M', 'jobs-data.js', 'JOBS'], ['D', 'bench-data.js', 'BENCH'], ['V', 'wardrobe-data.js', 'WARDROBE'], ['O', 'ledger-data.js', 'LEDGER'], ['P', 'testwall-data.js', 'TESTWALL']];
 
 function write({ graph } = {}) {
   const g = graph || JSON.parse(fs.readFileSync(path.join(CFG.out, 'stack.json'), 'utf8'));

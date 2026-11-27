@@ -1,4 +1,4 @@
-// VRG Stack — K · Kérések (lib/asks.js, S13). Run:  node --test test/asks.test.js
+// VRG Stack — S · Kérések (lib/asks.js, S13). Run:  node --test test/asks.test.js
 // The asks out of recordings (harness text left out), what each led to, the clusters, the layer, DRIFT §13's list.
 'use strict';
 
@@ -47,13 +47,13 @@ test('collect: the user\'s prompts and slash commands, harness text left out; wh
 });
 
 test('cluster: the same ask about the next number, and the same ask in other words, cluster; unlike asks do not', () => {
-  const asks = sessions.flatMap(s => s.asks.map(a => ({ ...a, id: `K:ask.${s.sid8}.${a.seq}` })));
+  const asks = sessions.flatMap(s => s.asks.map(a => ({ ...a, id: `S:ask.${s.sid8}.${a.seq}` })));
   const C = K.cluster(asks);
   const of = id => C.of.get(id);
-  assert.ok(of('K:ask.aaaaaaaa.0') && of('K:ask.aaaaaaaa.0') === of('K:ask.bbbbbbbb.0'), 'S12 ≈ S13');
-  assert.ok(of('K:ask.bbbbbbbb.2') && of('K:ask.bbbbbbbb.2') === of('K:ask.cccccccc.0'), 'the router ask, twice');
-  assert.notEqual(of('K:ask.aaaaaaaa.0'), of('K:ask.cccccccc.0'));
-  assert.equal(of('K:ask.aaaaaaaa.6'), undefined, 'a single ask has no cluster');
+  assert.ok(of('S:ask.aaaaaaaa.0') && of('S:ask.aaaaaaaa.0') === of('S:ask.bbbbbbbb.0'), 'S12 ≈ S13');
+  assert.ok(of('S:ask.bbbbbbbb.2') && of('S:ask.bbbbbbbb.2') === of('S:ask.cccccccc.0'), 'the router ask, twice');
+  assert.notEqual(of('S:ask.aaaaaaaa.0'), of('S:ask.cccccccc.0'));
+  assert.equal(of('S:ask.aaaaaaaa.6'), undefined, 'a single ask has no cluster');
   assert.deepEqual([...K.words('Kérlek építsd meg a Füzértáblát')], ['epitsd', 'fuzertablat'], 'accents folded, Hungarian stopwords out');
 });
 
@@ -61,24 +61,24 @@ test('layer: ask and cluster nodes, asked-in / led-to / mentions / contains; not
   const has = id => /^(U:run\.|C:|G:|R:|A:go\.)/.test(id);
   const L = K.layer({ sessions, resolve: t => (/GO-ROUTE\.md/.test(t) ? ['A:go.ROUTE', 'C:Stack/lib'] : []), has });
   const n = id => L.nodes.find(x => x.id === id), e = (a, rel) => L.edges.filter(x => x.a === a && x.rel === rel).map(x => x.b);
-  assert.equal(n('K:ask.aaaaaaaa.0').state, 'committed'); assert.equal(n('K:ask.bbbbbbbb.0').state, 'no commit');
-  assert.equal(n('K:ask.aaaaaaaa.7').kind, 'command');
-  assert.deepEqual(e('K:ask.aaaaaaaa.0', 'asked-in'), ['U:run.aaaaaaaa']);
-  assert.deepEqual(e('K:ask.aaaaaaaa.0', 'led-to'), ['C:Stack/lib', 'G:Stack/README.md', 'R:abc1234']);
-  assert.deepEqual(e('K:ask.bbbbbbbb.2', 'mentions'), ['A:go.ROUTE'], 'what the text names; a node it also led to is not said twice');
+  assert.equal(n('S:ask.aaaaaaaa.0').state, 'committed'); assert.equal(n('S:ask.bbbbbbbb.0').state, 'no commit');
+  assert.equal(n('S:ask.aaaaaaaa.7').kind, 'command');
+  assert.deepEqual(e('S:ask.aaaaaaaa.0', 'asked-in'), ['U:run.aaaaaaaa']);
+  assert.deepEqual(e('S:ask.aaaaaaaa.0', 'led-to'), ['C:Stack/lib', 'G:Stack/README.md', 'R:abc1234']);
+  assert.deepEqual(e('S:ask.bbbbbbbb.2', 'mentions'), ['A:go.ROUTE'], 'what the text names; a node it also led to is not said twice');
   const clusters = L.nodes.filter(x => x.kind === 'cluster');
   assert.equal(clusters.length, 2);
-  const layerC = clusters.find(c => e(c.id, 'contains').includes('K:ask.aaaaaaaa.0'));
+  const layerC = clusters.find(c => e(c.id, 'contains').includes('S:ask.aaaaaaaa.0'));
   assert.equal(layerC.state, 'landed'); assert.match(layerC.title, /layer/); assert.match(layerC.title, /×2$/);
   const router = clusters.find(c => c !== layerC);
   assert.equal(router.state, 'open'); assert.equal(router.extra.sessions, 2);
   assert.deepEqual(K.nothingLanded({ nodes: L.nodes }).map(c => c.id), [router.id]);
-  assert.ok(L.nodes.every(x => x.layer === 'K') && new Set(L.nodes.map(x => x.id)).size === L.nodes.length);
+  assert.ok(L.nodes.every(x => x.layer === 'S') && new Set(L.nodes.map(x => x.id)).size === L.nodes.length);
   const again = K.layer({ sessions, resolve: () => [], has });
   assert.deepEqual(again.nodes.filter(x => x.kind === 'cluster').map(x => x.id).sort(), clusters.map(x => x.id).sort(), 'cluster ids are stable between builds');
 });
 
 test('privacy: the connectome data (the phone bundle) never carries an ask\'s words', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'connectome.js'), 'utf8');
-  assert.match(src, /n\.layer === 'K' \? `\$\{n\.kind\} \$\{n\.t \|\| ''\}`\.trim\(\)/);
+  assert.match(src, /n\.layer === 'S' \? `\$\{n\.kind\} \$\{n\.t \|\| ''\}`\.trim\(\)/);
 });
