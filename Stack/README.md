@@ -90,6 +90,13 @@ Never load `out/stack.json` whole. Ids look like:
   it opens, so the join links it to its folder. DRIFT.md §11 lists the pillars whose code no entry point opens, not
   even through a folder above it ("a tool that is not in vrg-menu.json does not exist"). Live: a save of either
   registry or `Feature.kt` rebuilds N.
+- **J · Jelzések, signals** (S14, 2026-11-27): every warning the stack already knows, as a node that `warns` what it
+  is about (`lib/signals.js`): a failing suite (red), a stale one or one nothing runs, a pillar whose code no test reaches
+  or nothing opens, a hand status two steps from the evidence, open work that looks done, an ask that came back with
+  nothing landing, Solomon's unruled contradictions (confirmed = red), a stale or broken brief (`tools/brief-state.js`),
+  and a full build's own health warnings. Ids name the trouble (`J:test-fail.Map/test`), so the event log says when it
+  started and ended. In the Viewer, ⚠ Jelzések (⚙ Nézet, or `viewer.html#warn`) turns every warned node red and dims the
+  rest; DRIFT.md §14 counts them by kind and ranks the pillars whose strings carry them.
 - **K · Kérések, the Founder's asks** (S13, 2026-11-26): every prompt and slash command in the recordings
   (`lib/asks.js`; a continued session's summary, interruptions and hook text left out). Each ask `led-to` the nodes the
   work after it touched until the next ask, and `mentions` what its text names (decision ids, GO phrases, paths). Asks
@@ -164,6 +171,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |
 | `lib/asks.js` | K · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
 | `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |
 | `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |

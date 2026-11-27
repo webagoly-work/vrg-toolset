@@ -104,6 +104,7 @@
     <button id="bPil" class="on" title="Pillér-gerinc a kiválasztotthoz · pillar spine">║ Pillérek</button>
     <button id="bGrid" class="on" title="Síkok kerete · plane frames">▦ Keret</button>
     <button id="bChg" class="on" title="Az előző build óta változott csomópontok lüktetnek · changed since the last build pulse">◌ Változások</button>
+    <button id="bWarn" title="Jelzések (J): pirosan minden csomópont, amire jelzés mutat, a többi elhalványul · signals: every node a J signal warns, in red">⚠ Jelzések</button>
     <button id="bLight" class="on" title="Érintésnyom fénye (ugyanabban a böngészőben nyitva) · Érintésnyom's light">✦ Érintésnyom</button>
     <button id="bCrisp" title="Éles pontok (P) · crisp points (P)">◉ Éles pontok</button>
     <button id="bSpin" title="Lassú forgás · slow spin">Forgás</button>
@@ -145,14 +146,14 @@
 'use strict';
 (function () {
 const LAYER = {
-  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, K: { col: '#f2c4e0', hu: 'Kérések', en: 'Asks' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, P: { col: '#b8e06a', hu: 'Próbák', en: 'Tests' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
+  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, K: { col: '#f2c4e0', hu: 'Kérések', en: 'Asks' }, J: { col: '#ff5f56', hu: 'Jelzések', en: 'Signals' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, P: { col: '#b8e06a', hu: 'Próbák', en: 'Tests' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
   Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' }, L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' },
   A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone' }, U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' },
   R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
   G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe' }, E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars' },
 };
 // the Stack's own order (LAYERS §1, the ◢ menu, Érintésnyom), the pillars as the base plane
-const ORDER = ['F', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'G', 'E'];
+const ORDER = ['F', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'G', 'J', 'E'];
 // each layer's own page; the phone keeps them under other names (Mobile/stack/publish-stack.js LAYER_PAGES)
 const PAGE = window.STACK_BUNDLE ? { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' }
   : { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
@@ -175,6 +176,7 @@ let presetId = PREF.detail || 'auto', auto = presetId === 'auto', preset = null;
 let gl, progP, progL, vaoP, vaoD, bufP, bufD, bufL, tex = {}, fbo = null, pickTex = null, pickW = 0, pickH = 0, pickBuf = null, pickOk = false;
 let light = null, lightDirty = true, lineDirty = true, lnN = 0, lnCut = 0;
 let sel = [], hover = -1, solo = null, query = '', ext = new Map();
+let showWarn = /[#&]warn\b/.test(location.hash), warned = new Set();   // ⚠: the cells a J signal warns, and the signals (S14)
 let showStr = true, showPil = true, showGrid = true, showChg = true, showLight = true, crisp = !!PREF.crisp, spin = false, full = false;
 let detail = null;                   // { cell, n, f, src, code } when one cell is drawn byte by byte (code: its folder's files)
 let TIME = null, byDay = [], timeOn = false, tIdx = 0, playing = false, playT = 0;   // the time scrubber (S10)
@@ -206,6 +208,7 @@ async function readStack() {
   if (!window.STACK) return false;
   nodeById = new Map(STACK.nodes.map(n => [n.id, n]));
   SI = window.StackStrings ? StackStrings.prepare(STACK.nodes, STACK.edges.map(e => Array.isArray(e) ? { a: e[0], b: e[1], rel: e[2], v: e[3] } : e)) : null;
+  warned = new Set(); for (const e of STACK.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'warns') { warned.add(a); warned.add(b); } }
   return true;
 }
 async function loadTime() {
@@ -346,7 +349,7 @@ precision highp float; precision highp int; precision highp usampler2D; precisio
 layout(location = 0) in uint aB;
 uniform highp usampler2D uStart, uBlock, uLight; uniform highp sampler2D uCell;
 uniform mat4 uM; uniform float uPS, uTop, uGap, uPx, uTime, uCrisp, uChg; uniform int uPick, uDetail, uDetailCell, uClass, uT; uniform vec4 uDF; uniform uint uIdBase;
-uniform vec3 uCol[16];   // one per plane: 13 layers since S13 (F N K I T Q L A U P R C G) + E, room for J
+uniform vec3 uCol[16];   // one per plane: 14 layers since S14 (F N K I T Q L A U P R C G J) + E, room for one more
 flat out uint vId; out vec4 vC;
 const float SH[7] = float[7](0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24);
 ivec2 T(int i) { return ivec2(i % ${W}, i / ${W}); }
@@ -390,6 +393,7 @@ void main() {
   if ((L.a & 8u) != 0u && ((vid & 1) == 0)) { c = mix(c, vec3(0.58, 0.83, 0.9) * lit, 0.85); br += 0.2; }
   if (ex > 0.0) { c = mix(c, vec3(0.91, 0.66, 0.45) * lit, 0.8 * ex); br += 0.3 * ex; }
   if (st > 0.0) { c = mix(c, vec3(0.58, 0.83, 0.9) * lit, 0.55 * st); br += 0.15 * st; }
+  if ((L.a & 128u) != 0u) { c = mix(c, vec3(1.0, 0.37, 0.34) * lit, 0.8); br += 0.25; }   // ⚠ a signal warns this node (J, S14)
   if ((L.a & 16u) != 0u) br += 0.3;
   if ((L.a & 4u) != 0u && uChg > 0.5) { float q = 0.5 + 0.5 * sin(uTime * 2.6); c = mix(c, vec3(lit), 0.4 * q); }
   if ((L.a & 32u) != 0u) br *= 0.38;   // a light or a selection is on, and this cell is not in it
@@ -449,12 +453,13 @@ function pushLight() {
     if ((solo && c.L !== solo) || (hit && hit.size && !hit.has(c.i))) f |= 2;
     if (showChg && (timeOn ? dayIds.has(c.id) : changed.has(c.id))) f |= 4;
     if (c.i === hover) f |= 16;
+    if (showWarn && warned.has(c.id)) f |= 128;
     light[c.i * 4 + 3] = f;
   }
   if (showLight) for (const [id, v] of ext) { const c = cellById.get(id); if (!c) continue; const o = c.i * 4;
     if (v.kind === 'exact') light[o] = Math.max(light[o], 80 + v.e * 175 | 0); else if (v.kind === 'inferred') light[o + 1] = Math.max(light[o + 1], 60 + v.e * 160 | 0); else light[o + 3] |= 8; }
   for (const [id, s] of strMembers) { const c = cellById.get(id); if (c) light[c.i * 4 + 2] = Math.max(light[c.i * 4 + 2], 70 + s * 185 | 0); }
-  if ((showLight && ext.size) || strMembers.size) for (let i = 0; i < cells.length; i++) { const o = i * 4; if (!light[o] && !light[o + 1] && !light[o + 2] && !(light[o + 3] & 8)) light[o + 3] |= 32; }
+  if ((showLight && ext.size) || strMembers.size || (showWarn && warned.size)) for (let i = 0; i < cells.length; i++) { const o = i * 4; if (!light[o] && !light[o + 1] && !light[o + 2] && !(light[o + 3] & 136)) light[o + 3] |= 32; }
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, tex.light);
   const h = Math.max(1, Math.ceil(cells.length / W)), full = new Uint8Array(W * h * 4); full.set(light);
   gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, W, h, gl.RGBA_INTEGER, gl.UNSIGNED_BYTE, full);
@@ -866,7 +871,7 @@ function renderLegend() {
   $('bIso').onclick = home;
   const tog = (id, get, set) => { $(id).classList.toggle('on', get()); $(id).onclick = () => { set(!get()); $(id).classList.toggle('on', get()); lightDirty = true; lineDirty = true; frameDirty = true; }; };
   tog('bStr', () => showStr, v => showStr = v); tog('bPil', () => showPil, v => showPil = v); tog('bGrid', () => showGrid, v => showGrid = v);
-  tog('bChg', () => showChg, v => showChg = v); tog('bLight', () => showLight, v => showLight = v); tog('bSpin', () => spin, v => spin = v);
+  tog('bChg', () => showChg, v => showChg = v); tog('bWarn', () => showWarn, v => { showWarn = v; if (v) $('msg').textContent = `⚠ ${[...warned].filter(id => id[0] !== 'J').length} csomópontra mutat jelzés · ${[...warned].filter(id => id[0] === 'J').length} jelzés`; }); tog('bLight', () => showLight, v => showLight = v); tog('bSpin', () => spin, v => spin = v);
   if (/[#&]crisp\b/.test(location.hash)) crisp = true;
   tog('bCrisp', () => crisp, v => { crisp = v; save(); });
   $('gap').oninput = e => { gap = +e.target.value; lineDirty = true; frameDirty = true; pickOk = false; save(); };

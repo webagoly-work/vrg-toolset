@@ -134,5 +134,22 @@ module.exports = function drift(graph, full, ctx) {
         `**Led nowhere** (the newest asks whose work touched no stack node):`, ...(nowhere.length ? nowhere.map(k => `- ${k.t} \`${k.id}\` ${k.kind}`) : ['none']), ``);
     }
   } catch (e) { out.push(`## 13. The Founder's asks`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 14. signals (S14): the J layer in one place, the worst first, and which pillars' strings carry them */
+  try {
+    const J = graph.nodes.filter(n => n.layer === 'J');
+    if (J.length) {
+      const SG = require('./signals'), kinds = {};
+      for (const n of J) { const k = kinds[n.kind] || (kinds[n.kind] = { red: 0, amber: 0, info: 0 }); k[n.state]++; }
+      const name = id => ((graph.entities || []).find(e => e.id === id) || {}).name || id;
+      const pil = [...SG.byPillar(graph)].sort((a, b) => SG.SEV[b[1].worst] - SG.SEV[a[1].worst] || b[1].red - a[1].red || b[1].amber - a[1].amber).slice(0, 15);
+      const red = J.filter(n => n.state === 'red');
+      out.push(`## 14. Signals`, ``,
+        `${J.length} signals: ${red.length} red, ${J.filter(n => n.state === 'amber').length} amber, ${J.filter(n => n.state === 'info').length} info. In the Viewer, ⚠ lights every node one warns.`, ``,
+        `| Kind | Red | Amber | Info |`, `|---|---|---|---|`, ...Object.entries(kinds).sort((a, b) => b[1].red - a[1].red || b[1].amber - a[1].amber).map(([k, v]) => `| ${k} | ${v.red} | ${v.amber} | ${v.info} |`), ``,
+        `**Red:**`, ...(red.length ? red.slice(0, 25).map(n => `- \`${n.id}\` ${n.title}${n.brief ? ' — ' + clip(n.brief, 120) : ''}`) : ['none']), ``,
+        `**Pillars whose strings carry signals** (red / amber / info):`, ...(pil.length ? pil.map(([p, r]) => `- ${r.worst === 'red' ? '🔴' : r.worst === 'amber' ? '🟠' : '🔵'} **${name(p)}** (\`E:${p}\`) ${r.red} / ${r.amber} / ${r.info}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 14. Signals`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

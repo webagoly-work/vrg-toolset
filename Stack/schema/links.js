@@ -38,6 +38,8 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // J · Jelzések (signals, S14)
+  warns: R('figyelmeztet', 'warns about', 'figyelmeztetés rá', 'any'),
   // K · Kérések (the Founder's asks, S13)
   'asked-in': R('itt kérte', 'was asked in', 'ezt kérték benne', 'v'),
   mentions: R('említi', 'mentions', 'említi ez a kérés', 'any'),

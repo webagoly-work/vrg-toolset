@@ -87,9 +87,9 @@ test('incremental: one layer re-run gives exactly the graph a full build gives, 
   const fresh = layersV1(); fresh.Q.nodes.push(N('Q:VIS-Q9', 'decision', 'VIS-Q9 Where the lens lives', ['q:VIS-Q9'], { state: 'open≈' })); fresh.Q.edges.push({ a: 'Q:file.v', b: 'Q:VIS-Q9', rel: 'holds' });
   const J = join(fresh, facts);
   const scratch = new Set(J.edges.map(e => `${e.a}>${e.b}>${e.rel}`));
-  const incEvidence = new Set([...edgeSet(inc)].filter(k => !/>pillar$/.test(k)));
+  const incEvidence = new Set([...edgeSet(inc)].filter(k => !/>pillar$/.test(k) && !/^J:/.test(k)));   // pillars (E) and signals (J) come after the join
   assert.deepEqual([...incEvidence].sort(), [...scratch].sort(), 'incremental links = a from-scratch join');
-  assert.deepEqual(inc.nodes.map(n => n.id).filter(id => id[0] !== 'E').sort(), [...J.nodes.keys()].sort(), 'the same nodes (pillars, E, come after the join)');
+  assert.deepEqual(inc.nodes.map(n => n.id).filter(id => id[0] !== 'E' && id[0] !== 'J').sort(), [...J.nodes.keys()].sort(), 'the same nodes (pillars, E, and signals, J, come after the join)');
   // the layer text and the live note
   const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(CFG.out, 'layertext', 'index.js'), 'utf8'), box);
   const ix = JSON.parse(JSON.stringify(box.window.LAYERTEXT_INDEX));   // out of the vm's realm

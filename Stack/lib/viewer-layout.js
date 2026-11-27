@@ -140,6 +140,10 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'J') {   // one band per signal kind, the worst kinds first; red before amber before info inside
+      const sev = { red: 0, amber: 1, info: 2 }, w = g => Math.min(...g.items.map(it => sev[it.state] == null ? 3 : sev[it.state]));
+      const gs = [...group(items, it => it.kind || '')].sort((a, b) => w(a) - w(b) || (a.key < b.key ? -1 : 1));
+      for (const [g, q] of bands(gs, R, 'y')) leaf(g.items.slice().sort((a, b) => (sev[a.state] - sev[b.state]) || (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'K') {   // the clusters (each cluster's node, then its asks) above the single asks in time order
       const by = it => (it.lane && it.lane !== 'single' ? 'a' : 'b'), key = it => (it.lane || '') + (it.kind === 'cluster' ? ' ' : '~') + (it.t || '') + it.id;
       for (const [g, q] of bands(group(items, by), R, 'y')) leaf(g.items.slice().sort((a, b) => (key(a) < key(b) ? -1 : 1)), pad(q), 'rows');

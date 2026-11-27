@@ -414,3 +414,20 @@ open question among them:
 | STK-P136 | Privacy | **A** the ask's words stay on the PC: out/ is git-ignored, and the connectome data (the phone bundle on stack-pages) gets a neutral K title ("ask 2026-11-26") | a prompt can name a client; stack-pages is private but is still GitHub |
 | STK-P137 | The Viewer's plane limit | **A** raised from 12 to 16 colour slots | K made 14 planes (13 layers + E); the 13th threw "offset is out of bounds" |
 
+## S14 — J · Jelzések, the signals layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S14, the next new layer.** By STK-Q24 that is J, Jelzések, the last of its list.
+Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P138 | Where J sits | **A** after G: F N K I T Q L A U P R C G J Z (the plan's §5 order) | the bottom of the stack, next to the raw layers it reads; its plane is the trouble under everything |
+| STK-P139 | What a signal is | **A** a warning one of the stack's own checks already makes (P, the strings, T, K, Solomon, brief-state, health) · B new checks | J says nothing the reports do not; it puts each warning on its node, so strings and the Viewer can show it |
+| STK-P140 | Ids | **A** by what the trouble is about (`J:test-fail.Map/test`, `J:brief.hub`; health by kind + its message with numbers folded) | the same trouble keeps its id, so the event log and the time scrubber say when it started and when it went away |
+| STK-P141 | Severity | **A** red: a failing suite, a broken brief, a confirmed contradiction, a health failure · amber: stale, unrun, unverified, unreachable, status drift, asked again, a candidate contradiction, a stale brief, a health warning · info: looks done, Solomon's other candidates | red is "something is wrong now"; amber "something will be"; info "worth a look" |
+| STK-P142 | The link | **A** a new relation `warns` (any scope) from the signal to what it is about; a pillar-level signal warns `E:<pillar>` | `flags` is Solomon's, inside G; a signal crosses layers |
+| STK-P143 | Briefs | **A** a full build runs `tools/brief-state.js --check` once and keeps it in `out/layers/J-briefs.json`; an incremental build reads that | it is a child process; the live build stays fast |
+| STK-P144 | Health on an incremental build | **A** the last full build's health signals carried over · B the incremental build's own | an incremental build runs fewer stages: its own would make health signals come and go with every save |
+| STK-P145 | The Viewer | **A** ⚠ Jelzések (⚙ Nézet; `#warn` opens with it on): every warned node and every signal red, the rest dimmed, through the light flags (bit 128) | the plan's "the Viewer shows where trouble sits", with no new page |
+| STK-P146 | Per pillar | **A** a signal counts once per pillar, however many of the pillar's nodes it warns | a contradiction warns its signal and both documents; one trouble, one count |
+

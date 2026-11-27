@@ -310,4 +310,4 @@ function write({ graph } = {}) {
   return { data, msg: `control: ${c.agents} agents (${c.quiet} quiet, ${c.vacant} vacant), ${c.briefs} briefs (${c.staleBriefs} stale${data.briefCheck.ran ? '' : ', brief-state check did not run'}), ${c.memory} memory notes (${c.oldMemory} old, ${c.unlinkedMemory} unlinked), ${c.go} GO, ${c.schedules} schedules → out/control-data.js` };
 }
 
-module.exports = { build, write };
+module.exports = { build, write, briefCheck };
