@@ -536,3 +536,16 @@ The Founder, 2026-11-27: **build a page for the J layer.** Builder's choices, no
 | STK-P194 | When it is written | **A** on every build, incremental ones too | J is recomputed on both |
 | STK-P195 | Where it opens | **A** START R → J (a free key in the Rétegverem submenu), catalog `signalboard` under `stack` | next to the Füzértábla (R → L), the other cross-layer board |
 
+## Ki kicsoda, the W layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the W layer.** Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P196 | The shape | **A** people and accounts on top; the Council as one column per seat (agent, load, the lines it owns); then three lists: no Head owns it, one session only, business units | W's meta asked for "each person and account with what they may enter, each Head with what they own, and where knowledge sits in one head" |
+| STK-P197 | A Head's load | **A** the lines it owns, their pillars, and the open J signals on those pillars, as a bar scaled to the busiest Head | ownership is only useful next to what is open on it |
+| STK-P198 | "Knowledge in one head" | **A** a pillar that only one recorded session has touched (U `touched` → its pillars); shown once there are three or more sessions | the recordings are the evidence of who worked on what; with fewer sessions the list says nothing |
+| STK-P199 | A line's pillars | **A** the pillars that took it in by their words, else the same loose match as the unowned check (`people.pillarsFor`: "calculators" → Calculators) | one rule for "who owns it" on the page and in DRIFT §19; lines with no pillar say so |
+| STK-P200 | Names | **A** none: the page reads the graph, where people are roles | the signed list keeps the names; the page needs none |
+| STK-P201 | Where it opens | **A** START R → W, catalog `peopleboard` under `stack`; written on every build | it reads J and U, which change on any build |
+

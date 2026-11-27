@@ -8,7 +8,7 @@ module.exports = [
     is: 'Who may do what and who owns which part of the work: the people on the Kapu\'s signed access list (by role, never by name), the Claude Code accounts, the Council\'s seats and what each Head owns, the business units. A pillar\'s string reaches the Head who owns it.',
     order: 'people and accounts, the seats with what they own, the business units', nodes: 'person · account · seat · ownership · business unit', edges: 'played-by (seat → its agent) · owns (seat → a program or line)',
     source: 'Hub/data/access.json (verified with Hub/src/access-pubkey.json), Dashboard/config/profiles.json, docs/council/ROSTER.md, docs/hub/hub-seed.json (lib/people.js)',
-    page: { state: 'partial', name: 'the Kapu (sign-in, Belépések) and the Vezérlőterem; the Viewer, DRIFT.md §19', want: 'a who-is-who: each person and account with what they may enter, each Head with what they own, and where knowledge sits in one head' } },
+    page: { state: 'exists', name: 'Ki kicsoda (who-is-who)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/szereplok.html' } },
   { code: 'F', id: 'featured', hu: 'Kirakat', en: 'Featured',
     is: 'What a user can open or use: apps, features, programs, plans, ideas, ranked by how real they are (tier 1 in use → 5 idea).',
     order: 'hierarchy (tier × lane); no time axis', nodes: 'feature', edges: 'part · launch · grows · feeds · uses · look',

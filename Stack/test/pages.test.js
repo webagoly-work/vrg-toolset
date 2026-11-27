@@ -20,6 +20,7 @@ const PAGES = [
   ['commits.html', 'R', 'out/commits-data.js', 'COMMITS', 'lib/commitpixel.js'],
   ['board.html', 'E', 'out/board-data.js', 'BOARD', 'lib/board.js'],
   ['jelzesek.html', 'J', 'out/signals-data.js', 'SIGNALS', 'lib/signalboard.js'],
+  ['szereplok.html', 'W', 'out/people-data.js', 'PEOPLE', 'lib/peoplepage.js'],
 ];
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // a whole node id in quotes: 'E:planner', "L:views", `Q:VIS-Q5` (a prefix such as 'U:run.' or 'A:agent.' is fine)

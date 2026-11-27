@@ -101,6 +101,10 @@ Never load `out/stack.json` whole. Ids look like:
   the program's pillar takes them in and its string reaches the Head. The business units of `docs/hub/hub-seed.json`.
   J `access-signature` (red: the list does not verify) and `seat-vacant` (info); DRIFT.md §19 lists the pillars with
   code that no Head owns, by name or by area. Live: the access list, its key, the profiles, the roster, the hub seed.
+  **Ki kicsoda** (`szereplok.html`, START R → W; `lib/peoplepage.js` → `out/people-data.js` on every build) is W's page:
+  people and accounts, each Head's seat with its agent, the lines it owns with their pillars, open signals and last
+  activity, and its load; the unowned work; the pillars only one recorded session has touched (shown once there are
+  three or more sessions); the business units.
 - **O · Külső, outside** (S18, 2026-11-27): what we depend on and under which licence (`lib/outside.js`). Every
   component of `vendor-manifest.json` (`O:vendor.<slug>`, vendored or only referenced; its pin, licence and the app it
   serves, named in its title so that app's pillar takes it in), with the tracked code that uses it (one `git grep` for
@@ -231,6 +235,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/peoplepage.js` · `szereplok.html` | Ki kicsoda, W's page: people, accounts, seats and what each Head owns, unowned work |
 | `lib/signalboard.js` · `jelzesek.html` | Jelzéstábla, J's page: signals by pillar, the action that clears each, the cleared ones |
 | `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |
 | `lib/asks.js` | K · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |

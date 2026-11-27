@@ -98,16 +98,23 @@ function layer({ people = [], signed = { checked: false }, accounts = [], seats 
 // pillars with code that no Head owns (DRIFT §19). A pillar is owned when a W node is its member (the roster names
 // it in its own words), when a roster line names it more loosely ("calculators" for the Calculators pillar, "Kapu" for
 // VRG Kapu), or when its area is owned (SUI's area is the Planner, which Arnold owns)
+const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const wordsOf = p => [p.id, p.name, ...(p.words || [])].map(fold).flatMap(s => [s, ...s.split(/[^a-z0-9]+/).filter(w => w.length >= 4)]);
+const near = (a, b) => a === b || (a.length >= 4 && b.startsWith(a)) || (b.length >= 4 && a.startsWith(b));
+// the pillars a roster line names, loosely: "calculators" names the Calculators pillar, "Kapu" VRG Kapu
+function pillarsFor(title, entities) {
+  const t = fold(title); if (t.length < 3) return [];
+  const parts = t.split(/[^a-z0-9]+/).filter(x => x.length >= 4);
+  return (entities || []).filter(p => wordsOf(p).some(w => near(w, t) || parts.some(x => near(w, x)))).map(p => p.id);
+}
+
 function unowned(graph) {
-  const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const titles = graph.nodes.filter(n => n.layer === 'W' && n.kind === 'ownership').map(n => fold(n.title)).filter(t => t.length >= 3);
-  const words = p => [p.id, p.name, ...(p.words || [])].map(fold).flatMap(s => [s, ...s.split(/[^a-z0-9]+/).filter(w => w.length >= 4)]);
-  const near = (a, b) => a === b || (a.length >= 4 && b.startsWith(a)) || (b.length >= 4 && a.startsWith(b));
-  const named = p => (p.members || []).some(m => m.startsWith('W:')) || titles.some(t => words(p).some(w => near(w, t) || t.split(/[^a-z0-9]+/).some(x => x.length >= 4 && near(w, x))));
+  const titles = graph.nodes.filter(n => n.layer === 'W' && n.kind === 'ownership').map(n => n.title);
+  const named = p => (p.members || []).some(m => m.startsWith('W:')) || titles.some(t => pillarsFor(t, [p]).length);
   const owned = new Set((graph.entities || []).filter(named).map(p => p.id));
-  const ownedArea = a => !!a && (titles.some(t => near(fold(a), t) || fold(a).split(/[^a-z0-9]+/).some(x => x.length >= 4 && near(x, t)))
-    || (graph.entities || []).some(p => owned.has(p.id) && words(p).some(w => near(w, fold(a)))));
+  const ownedArea = a => !!a && (titles.some(t => near(fold(a), fold(t)) || fold(a).split(/[^a-z0-9]+/).some(x => x.length >= 4 && near(x, fold(t))))
+    || (graph.entities || []).some(p => owned.has(p.id) && wordsOf(p).some(w => near(w, fold(a)))));
   return (graph.entities || []).filter(p => (p.per || {}).C && !owned.has(p.id) && !ownedArea(p.area));
 }
 
-module.exports = { read, layer, table, verifyAccess, unowned };
+module.exports = { read, layer, table, verifyAccess, unowned, pillarsFor };
