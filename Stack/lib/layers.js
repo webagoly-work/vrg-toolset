@@ -316,6 +316,13 @@ function code(facts, commitsByPath) {
     }));
     if (d.includes('/')) { const parent = d.slice(0, d.lastIndexOf('/')); if (stats.has(parent)) edges.push({ a: 'C:' + parent, b: 'C:' + d, rel: 'contains' }); }
   }
+  // Függőségek (ROADMAP 2.8, lib/imports.js): the files that import or are imported, below their folders
+  const I = require('./imports');
+  const txt = f => { try { return read(REPO + '/' + f); } catch { return null; } };
+  const ignored = ps => { let o = ''; try { o = require('child_process').execFileSync('git', ['-C', REPO, 'check-ignore', '--stdin'], { input: ps.join('\n'), encoding: 'utf8' }); } catch (e) { o = (e && e.stdout) || ''; } return new Set(o.split(/\r?\n/).filter(Boolean)); };
+  const imp = I.layer(I.scan(facts.files, txt, { ignored }), new Set(dirs));
+  for (const n of imp.nodes) { const last = commitsByPath.get(n.extra.path); nodes.push({ ...n, t: last || '' }); }
+  edges.push(...imp.edges);
   return { nodes, edges };
 }
 

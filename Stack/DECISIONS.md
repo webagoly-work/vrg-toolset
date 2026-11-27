@@ -508,3 +508,19 @@ layers of STRINGS-PLAN §5 are complete. Builder's choices, no open question amo
 | STK-P182 | Unowned work (DRIFT §19) | **A** a pillar with code that the roster names neither by name (loosely: "calculators", "Kapu") nor by its area (SUI's area is the Planner) | the exact match listed 30, nearly all owned through the Planner; with the loose name and the area 5 remain, each a real gap |
 | STK-P183 | Accounts | **A** from `Dashboard/config/profiles.json`: A the default config, B its own CLAUDE_CONFIG_DIR | the profile is where the two sign-ins are kept apart; SECACC.md is retired history |
 
+## C · Függőségek, the import graph inside C (2026-11-27)
+
+The Founder, 2026-11-27: **build the Függőségek sub-layer of C.** ROADMAP 2.8, RULES §6b ("an import graph inside the
+Code layer, so impact analysis reaches below folders"), STRINGS-PLAN §5 ("a sub-layer of C"). Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P184 | A layer or a sub-layer | **A** inside C: file nodes `C:<file>` (kind file) under their folder nodes · B a new letter | the plan's own word; the Viewer's C tree places a file in its folder by its path with no change |
+| STK-P185 | Which files | **A** only a file with an import in or out (678 in the sandbox) · B every tracked file | a file nothing imports and that imports nothing adds nothing a folder does not say already |
+| STK-P186 | Which imports | **A** relative ones: JS require / import / export-from / import() / require(path.join(__dirname, …)), HTML script and stylesheet, CSS @import, PowerShell dot-sourcing, #include; a package name is O's (npm) | the repo's own wiring; outside code is the outside layer |
+| STK-P187 | Broken | **A** a statement-form relative import to a file git does not track · not: an import quoted in a test fixture, a dynamic import() run in a browser page, an #include of a library header, a target `git check-ignore` names, out/ dist/ data/ Vendor/ | the first scan flagged 68, all of them these; with the rules 0 on the repo, and a lib file used before it is committed still shows |
+| STK-P188 | Folder level | **A** `depends` folder → folder, w = the file imports between them | the folder strings feel the import graph too |
+| STK-P189 | References | **A** a file owns `p:<file>`, so a text naming it links to the file, not only its folder | "reach below folders" for the join as well as for `path` |
+| STK-P190 | Skipped | **A** Vendor/, node_modules, dist/, minified files, `Archive/files/` | not our wiring, built output, or frozen one-shot copies |
+

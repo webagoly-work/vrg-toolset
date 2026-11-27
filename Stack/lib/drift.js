@@ -228,5 +228,22 @@ module.exports = function drift(graph, full, ctx) {
         `**No Head owns these** (pillars with code that ROSTER.md "Which department owns what" does not name, nor their area):`, ...(none.length ? none.map(x => `- ${x}`) : ['none']), ``);
     }
   } catch (e) { out.push(`## 19. People and roles`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 20. imports (Függőségek, ROADMAP 2.8): the file graph inside C, the folders that lean on each other most */
+  try {
+    const F = graph.nodes.filter(n => n.layer === 'C' && n.kind === 'file');
+    if (F.length) {
+      const imp = [], dep = [];
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'imports') imp.push([a, b]); if (rel === 'depends') dep.push([a, b, e.w || 1]); }
+      const inDeg = new Map(); for (const [, b] of imp) inDeg.set(b, (inDeg.get(b) || 0) + 1);
+      const most = [...inDeg].sort((x, y) => y[1] - x[1]).slice(0, 10);
+      const J = kind => graph.nodes.filter(n => n.layer === 'J' && n.kind === kind);
+      out.push(`## 20. Imports (Függőségek)`, ``,
+        `${F.length} files in the import graph, ${imp.length} imports, ${dep.length} folder-to-folder dependencies. \`stack.js path\` and the strings now reach these files.`, ``,
+        `**Broken imports** (a relative import to a file git does not track: missing, or not committed yet):`, ...(J('import-broken').length ? J('import-broken').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Import cycles:**`, ...(J('import-cycle').length ? J('import-cycle').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Imported most** (a change here reaches the most files):`, ...most.map(([id, c]) => `- \`${id.slice(2)}\` ← ${c}`), ``);
+    }
+  } catch (e) { out.push(`## 20. Imports (Függőségek)`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

@@ -84,6 +84,14 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **C · Függőségek, the import graph** (2026-11-27, ROADMAP 2.8; a sub-layer of C, no new letter): every tracked file
+  that imports or is imported becomes `C:<file>` under its folder (`lib/imports.js`), from JS `require` / `import` /
+  `require(path.join(__dirname, …))`, HTML `<script src>` and stylesheet `<link>`, CSS `@import`, PowerShell
+  dot-sourcing and Arduino `#include`. `imports` runs file → file; `depends` folder → folder, weighted by the file imports
+  between them. A file owns its own path, so a document or commit naming it links to the file, and `stack.js path`, the
+  strings and impact analysis reach below folders. J: a relative import to a file git does not track (`import-broken`,
+  red; a quoted fixture, a browser-side import, a library header, a git-ignored generated file do not count) and files
+  importing each other in a circle (`import-cycle`). DRIFT.md §20 adds the files imported most. Built on full builds.
 - **W · Szereplők, people and roles** (S19, 2026-11-27; the last new layer): who may do what, who owns what
   (`lib/people.js`). The people on the Kapu's access list (`Hub/data/access.json`) **by role** (`W:person.owner` the
   Founder, `W:person.member` the colleague; never a name, an email or a login), with the Kapu layers they may enter and
@@ -213,6 +221,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/imports.js` | C · Függőségek (ROADMAP 2.8): the import graph per file, broken imports, cycles |
 | `lib/people.js` | W · Szereplők (S19): people by role, accounts, seats and what each Head owns; the signature check; unowned pillars |
 | `lib/outside.js` | O · Külső (S18): vendored components, npm packages, MCP servers; the vendoring checks |
 | `lib/look.js` | V · Látvány (S17): the kit, Mélyvíz, logos, the Visual Base, the look each page wears; drift |

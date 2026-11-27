@@ -9,6 +9,7 @@
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
+//     import broken · import cycle            C's import graph: a relative import to no file; files in a circle (§20)
 //     access signature · seat vacant          W: the Kapu's access list must verify; an empty Council seat (§19)
 //     vendor branch · copyleft · licence unknown  O: CLAUDE.md's vendoring rules (§18)
 //     look drift · kit behind                 V: a page's Mélyvíz copy differs from its source; its inlined kit is older (§17)
@@ -96,6 +97,11 @@ function detect(ctx = {}) {
   /* W: the access list must verify; a Council seat that is empty */
   for (const n of list) if (n.layer === 'W' && n.kind === 'person' && n.extra && n.extra.signed === false) add('access-signature', 'hub', 'red', 'the Kapu\'s access list does not verify against its public key', 'node tools/hub-sign.js --verify; only the owner can re-sign it (node tools/hub-sign.js)', [n.id]);
   for (const n of list) if (n.layer === 'W' && n.kind === 'seat' && n.state === 'vacant') add('seat-vacant', n.id.slice(7), 'info', `${n.title.split(' · ')[0]}'s seat (${n.title.split(' · ')[1] || ''}) is vacant`, 'docs/council/ROSTER.md', [n.id]);
+
+  /* C · Függőségek: an import to a file that is not there; files that import each other in a circle */
+  for (const n of list) if (n.layer === 'C' && n.kind === 'file' && n.extra && n.extra.broken) add('import-broken', n.extra.path, 'red', `${n.extra.path} imports ${n.extra.broken} file${n.extra.broken > 1 ? 's' : ''} that ${n.extra.broken > 1 ? 'are' : 'is'} not tracked in git`, 'node stack.js node C:' + n.extra.path, [n.id]);
+  for (const c of require('./imports').cycles(edges.filter(e => e.rel === 'imports').map(e => [e.a.slice(2), e.b.slice(2)])))
+    add('import-cycle', h8(c.join(' ')), 'amber', `${c.length} files import each other in a circle: ${c.slice(0, 3).join(', ')}${c.length > 3 ? ' …' : ''}`, c.join(' → '), c.map(f => 'C:' + f));
 
   /* Solomon: signals not ruled */
   for (const g of list) {

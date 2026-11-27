@@ -38,6 +38,9 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // C · Függőségek (the import graph inside C, ROADMAP 2.8)
+  imports: R('betölti', 'imports', 'ez tölti be'),
+  depends: R('épít rá', 'depends on', 'ráépül'),
   // W · Szereplők (people and roles, S19)
   'played-by': R('alakítja', 'is played by', 'ezt a széket tölti be', 'any'),
   owns: R('gazdája', 'owns', 'gazdája'),
