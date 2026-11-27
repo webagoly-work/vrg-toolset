@@ -84,6 +84,14 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **D · Eszközök, devices** (S16, 2026-11-27): the string from code to a physical board (`lib/devices.js`). Every
+  tracked Arduino sketch (`D:sketch.<name>`, the .ino named as its folder), every firmware in the Board Console's library
+  (`D:fw.<id>`, `built-from` its sketch when it is an Arduino build) and every board the Board Console has seen
+  (`D:board.<last 6 of the MAC>`, `flashed` with the firmware, its title naming what it runs so that firmware's pillar
+  takes it in). The library and `devices.json` are the Board Console's `data/` (git-ignored, per PC; `sources.boardData`
+  or `VRG_BOARD_DATA`). J: a firmware built before its sketch's last commit (`fw-stale`), a board on an older version
+  than the library's (`board-behind`), a board whose content is unknown (`board-unknown`). DRIFT.md §16 adds the
+  sketches with no firmware and the firmware no board runs. Live: a flash, a backup or a new library version rebuilds D.
 - **M · Munkák, client jobs** (S15, 2026-11-27): every job in the register (`jobs\_elozmenyek\REGISZTER.md`, totals from
   `osszegek.csv`, both through the Map's own readers) and every Workflow Kit job folder (`jobs\<CODE>_*`), with its
   status, period, total, related codes and the tools its files show (Planner exports, Kit files; `lib/jobs.js`). The
@@ -178,6 +186,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
 | `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |

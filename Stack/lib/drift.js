@@ -165,5 +165,21 @@ module.exports = function drift(graph, full, ctx) {
         `**Running on paper, quiet in fact** (the register says running, the newest file is 30+ days old):`, ...(q.length ? q.map(({ n, days }) => `- \`${n.id}\` ${days} days · ${n.brief}`) : ['none']), ``);
     }
   } catch (e) { out.push(`## 15. Client jobs`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 16. devices (S16): sketches → firmware → boards, and where the chain is old or broken */
+  try {
+    const D = graph.nodes.filter(n => n.layer === 'D');
+    if (D.length) {
+      const k = kind => D.filter(n => n.kind === kind), built = new Set(), flashed = new Set();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'built-from') built.add(b); if (rel === 'flashed') flashed.add(b); }
+      const J = graph.nodes.filter(n => n.layer === 'J' && /^(fw-stale|board-behind|board-unknown)$/.test(n.kind));
+      const never = k('sketch').filter(n => n.state !== 'example' && !built.has(n.id));
+      out.push(`## 16. Devices`, ``,
+        `${k('sketch').length} sketches, ${k('firmware').length} firmware in the Board Console's library, ${k('board').length} boards seen. The Board Console's data is per PC (git-ignored).`, ``,
+        `**Out of date or unknown** (J signals):`, ...(J.length ? J.map(n => `- \`${n.id}\` ${n.title}`) : ['none']), ``,
+        `**Sketches with no firmware in the library** (never built into it, or built under another name):`, ...(never.length ? never.map(n => `- \`${n.id}\` ${n.brief}`) : ['none']), ``,
+        `**Firmware no board has been flashed with:** ${k('firmware').filter(n => !flashed.has(n.id)).map(n => '`' + n.id + '`').join(', ') || 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 16. Devices`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

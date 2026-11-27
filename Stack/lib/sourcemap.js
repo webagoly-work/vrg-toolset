@@ -22,6 +22,8 @@ function rules(S = CFG.sources, extra) {
   const inRepo = f => f.startsWith(repo + '/') ? f.slice(repo.length + 1) : null;
   return f => {
     if (f === low(S.repo) + '/stack/data/probes.jsonl') return ['P'];   // a recorded test run (S12)
+    // the Board Console's devices and library (S16): a flash, a backup or a new firmware rebuilds D
+    if (/\/firmware\/board-console\/data\/(devices\.json|library\/[^/]+\/[^/]+\/manifest\.json)$/.test(f)) return ['D'];
     if (hist && f.startsWith(hist)) return /^(regiszter\.md|osszegek\.csv)$/.test(f.slice(hist.length)) ? ['M'] : [];   // the job register (S15)
     if (/\/(stack\/out|stack\/data|node_modules|\.git)(\/|$)/.test(f) || /\.(tmp\d*|swp|lock)$|~$/.test(f)) return [];
     if (f.startsWith(notes + '/')) {

@@ -1,0 +1,7 @@
+{
+  "AA:BB:CC:11:22:33": { "mac": "AA:BB:CC:11:22:33", "firstSeen": "2026-10-20T10:00:00.000Z", "chip": "ESP32-S3", "chipFull": "ESP32-S3 (QFN56) rev 0.2", "flashSize": "16MB", "port": "COM5", "lastSeen": "2026-11-02T10:00:00.000Z",
+    "history": [ { "at": "2026-10-20T10:00:00.000Z", "action": "seen-foreign", "note": "first time seen" }, { "at": "2026-10-20T10:01:00.000Z", "action": "backup", "file": "ESP32-S3_aabbcc112233_20261020-1001.bin" },
+      { "at": "2026-11-01T11:00:00.000Z", "action": "flash", "fw": { "id": "knobpad", "version": "2026-11-01", "name": "knobpad" } }, { "at": "2026-11-02T10:00:00.000Z", "action": "flash", "fw": { "id": "knobpad", "version": "2026-11-01", "name": "knobpad" } } ] },
+  "DE:AD:BE:EF:00:01": { "mac": "DE:AD:BE:EF:00:01", "firstSeen": "2026-11-10T10:00:00.000Z", "chip": "ESP32", "flashSize": "4MB", "port": "COM7", "lastSeen": "2026-11-10T10:00:00.000Z",
+    "history": [ { "at": "2026-11-10T10:00:00.000Z", "action": "seen-foreign", "note": "first time seen" } ] }
+}

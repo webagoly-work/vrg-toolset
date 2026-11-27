@@ -448,3 +448,19 @@ Munkák) and RULES §6a the next is M, Munkák. Builder's choices, no open quest
 | STK-P154 | Live | **A** the register and the totals (jobs\\_elozmenyek, watched, not recursive); a Kit folder follows the next full build | the register is the hand-kept source; job folders are large and change by the file |
 | STK-P155 | Quiet jobs | **A** running in the register, newest file 30+ days old: DRIFT §15 and a J signal `job-quiet` (amber) | the one check this layer adds, and it lands where every other warning does |
 
+## S16 — D · Eszközök, the devices layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S16, the next new layer.** By STK-Q5 (C Eszközök, after Futás and Munkák) and
+RULES §6a that is D, Eszközök. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P156 | The letter and the place | **A** D, right under C: F M N K I T Q L A U P R C D G J Z | E is the pillars (RULES §6a's working letter clashed); a board is what code runs on, so it sits under the code |
+| STK-P157 | The sources | **A** the tracked .ino sketches, the Board Console's `data/library/*/*/manifest.json` and `data/devices.json` · B also COM ports live | ports change by the minute; the Board Console already records every board it has met and what it did to it |
+| STK-P158 | Which .ino is a sketch | **A** the one named as its folder (Arduino's rule), or a folder's only .ino; the rest are tabs | planner_cyd has four tabs and is one sketch |
+| STK-P159 | A firmware's sketch | **A** an Arduino build's sketch name (the library's name, or its build folder) | an uploaded .bin or a backup names none, and the layer says so by having no edge |
+| STK-P160 | A board's id and title | **A** `D:board.<last 6 hex of the MAC>`; the title is chip · those 6 · the firmware it runs | half a MAC tells boards apart on one bench; the firmware's name lets its pillar take the board in |
+| STK-P161 | Signals | **A** `fw-stale` (amber): built before its sketch's newest commit · `board-behind` (info): flashed with an older version than the library's latest · `board-unknown` (info): last seen as foreign content | code that never reached the board is the trouble this layer can see |
+| STK-P162 | Live | **A** `devices.json` and a library manifest map to D (the repo is already watched) | the Board Console writes both on every flash or backup |
+| STK-P163 | The Viewer's colour slots | **A** 16 → 24 | D made 17 planes (16 layers + E); room for the rest of RULES §6a |
+

@@ -55,5 +55,5 @@ test('unreachable: a pillar with code and no entry point is listed, one with an 
   nodes.push({ id: 'C:A/sub', layer: 'C', title: 'A sub', own: [] }, { id: 'N:start.1', layer: 'N', title: 'A tool', own: [] });
   const u2 = N.unreachable({ nodes, edges: [...edges, ['C:A/sub', 'E:a', 'pillar', 2], ['N:start.1', 'C:A', 'ref:p', 1]], entities: [{ id: 'a', name: 'A' }] }, S, {});
   assert.deepEqual(u2, [], 'C:A/sub is inside C:A, which START 1 opens');
-  assert.match(u[0].mask, /^F · · · · · · · · · · · C · · ·$/);
+  assert.match(u[0].mask, /^F · · · · · · · · · · · C · · · ·$/);
 });

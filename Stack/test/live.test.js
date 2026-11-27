@@ -28,6 +28,7 @@ function layersV1() {
     T: { nodes: [], edges: [], built: [] },
     M: { nodes: [], edges: [] },
     N: { nodes: [], edges: [] },
+    D: { nodes: [], edges: [] },
     P: { nodes: [], edges: [] },
     Q: { nodes: [N('Q:file.v', 'decision file', 'docs/visual/DECISIONS.md', ['p:docs/visual/DECISIONS.md'], { extra: { path: 'docs/visual/DECISIONS.md' } }),
       N('Q:VIS-Q5', 'decision', 'VIS-Q5 Holo', ['q:VIS-Q5'], { state: 'open≈' })], edges: [{ a: 'Q:file.v', b: 'Q:VIS-Q5', rel: 'holds' }] },

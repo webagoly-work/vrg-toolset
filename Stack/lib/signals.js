@@ -9,6 +9,8 @@
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
+//     fw stale · board behind · board unknown D: firmware built before its sketch's last commit; a board on an older
+//                                             version than the library's; a board whose content is unknown (§16)
 //     contradiction · dark                    Solomon's signals not ruled yet (G:sig.*; DRIFT §5)
 //     brief                                   a brief tools/brief-state.js calls stale or broken (Vezérlőterem)
 //     health                                  a full build's own warnings and failures so far (HEALTH.md); an
@@ -68,6 +70,12 @@ function detect(ctx = {}) {
 
   /* M: a job running on paper, quiet in fact */
   for (const { n, days } of require('./jobs').quiet(list)) add('job-quiet', n.id.slice(6), 'amber', `${n.title.split(' · ')[0]} is running, its newest file is ${days} days old`, n.brief, [n.id]);
+
+  /* D: firmware older than its sketch, boards behind the library, boards nobody knows the content of */
+  { const DV = require('./devices');
+    for (const { n, commit } of DV.stale(list)) add('fw-stale', n.id.slice(5), 'amber', `${n.title}: built ${String(n.extra.built).slice(0, 10)}, its sketch changed ${String(commit).slice(0, 10)}`, `rebuild it from ${n.extra.sketch} and add it to the library`, [n.id, 'D:sketch.' + (n.extra.sketch || '').split('/').pop()]);
+    for (const { n, has, latest, fw } of DV.behind(list)) add('board-behind', n.id.slice(8), 'info', `${n.title} runs ${fw.title} ${has}, the library has ${latest}`, 'flash it from the Board Console (Firmware)', [n.id, fw.id]);
+    for (const n of list) if (n.layer === 'D' && n.kind === 'board' && n.state === 'unknown') add('board-unknown', n.id.slice(8), 'info', `${n.title}: what it holds is not known`, 'a full backup in the Board Console records it', [n.id]); }
 
   /* Solomon: signals not ruled */
   for (const g of list) {

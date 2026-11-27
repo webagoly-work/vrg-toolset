@@ -38,6 +38,9 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // D · Eszközök (devices, S16)
+  'built-from': R('ebből épült', 'was built from', 'ebből épült ez'),
+  flashed: R('ezt futtatja', 'was flashed with', 'erre írták fel'),
   // M · Munkák (client jobs, S15)
   related: R('kapcsolódik', 'is related to', 'kapcsolódik hozzá'),
   // J · Jelzések (signals, S14)

@@ -140,6 +140,10 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'D') {   // three bands, the way the string runs: sketches, the firmware built from them, the boards
+      const rank = { sketch: 0, firmware: 1, board: 2 };
+      const gs = [...group(items, it => it.kind || '')].sort((a, b) => (rank[a.key] ?? 9) - (rank[b.key] ?? 9));
+      for (const [g, q] of bands(gs, R, 'y')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'M') {   // one band per status (running, finished, failed, Kit only), the jobs in time order
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items.slice().sort(byTime), pad(q), 'cols');
     } else if (layer === 'J') {   // one band per signal kind, the worst kinds first; red before amber before info inside

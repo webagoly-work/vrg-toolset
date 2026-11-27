@@ -1,0 +1,2 @@
+{ "schema": "vrg-fw/1", "id": "blink", "name": "blink", "version": "v1", "chipFamily": "ESP32", "description": "invented: an uploaded .bin", "uses": [],
+  "source": { "kind": "upload", "file": "blink.bin", "image": "app" }, "added": "2026-10-01T08:00:00.000Z", "parts": [{ "path": "blink.bin", "offset": 65536, "size": 200000, "sha256": "0" }] }

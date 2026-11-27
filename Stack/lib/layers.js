@@ -385,10 +385,16 @@ function probe(facts) {
   return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
 }
 
+/* ============================================================ D · Eszközök (devices; S16, lib/devices.js) */
+function devices(facts) {
+  const D = require('./devices');
+  return D.layer(D.read({ repoFiles: facts.files, dataDir: require('../config').sources.boardData }));
+}
+
 /* ============================================================ M · Munkák (client jobs; S15, lib/jobs.js) */
 function jobs() {
   const J = require('./jobs'), dir = require('../config').sources.jobs;
   return J.layer(fs.existsSync(dir) ? J.read(dir) : []);
 }
 
-module.exports = { featured, jobs, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+module.exports = { featured, jobs, devices, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

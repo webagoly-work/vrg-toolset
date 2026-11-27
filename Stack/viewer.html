@@ -149,11 +149,11 @@ const LAYER = {
   F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, M: { col: '#d9b38c', hu: 'Munkák', en: 'Jobs' }, N: { col: '#9fe0c4', hu: 'Belépők', en: 'Entry points' }, K: { col: '#f2c4e0', hu: 'Kérések', en: 'Asks' }, J: { col: '#ff5f56', hu: 'Jelzések', en: 'Signals' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' }, P: { col: '#b8e06a', hu: 'Próbák', en: 'Tests' }, T: { col: '#ee9bb4', hu: 'Teendők', en: 'Open work' },
   Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' }, L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' },
   A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone' }, U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' },
-  R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
+  R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' }, D: { col: '#6fc7c0', hu: 'Eszközök', en: 'Devices' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
   G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe' }, E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars' },
 };
 // the Stack's own order (LAYERS §1, the ◢ menu, Érintésnyom), the pillars as the base plane
-const ORDER = ['F', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'G', 'J', 'E'];
+const ORDER = ['F', 'M', 'N', 'K', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'G', 'J', 'E'];
 // each layer's own page; the phone keeps them under other names (Mobile/stack/publish-stack.js LAYER_PAGES)
 const PAGE = window.STACK_BUNDLE ? { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' }
   : { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
@@ -349,7 +349,7 @@ precision highp float; precision highp int; precision highp usampler2D; precisio
 layout(location = 0) in uint aB;
 uniform highp usampler2D uStart, uBlock, uLight; uniform highp sampler2D uCell;
 uniform mat4 uM; uniform float uPS, uTop, uGap, uPx, uTime, uCrisp, uChg; uniform int uPick, uDetail, uDetailCell, uClass, uT; uniform vec4 uDF; uniform uint uIdBase;
-uniform vec3 uCol[16];   // one per plane: 15 layers since S15 (F M N K I T Q L A U P R C G J) + E: full; the next layer raises it
+uniform vec3 uCol[24];   // one per plane: 16 layers since S16 (F M N K I T Q L A U P R C D G J) + E; room for 7 more
 flat out uint vId; out vec4 vC;
 const float SH[7] = float[7](0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24);
 ivec2 T(int i) { return ivec2(i % ${W}, i / ${W}); }
@@ -580,7 +580,7 @@ function uniforms(p, M, px) {
   gl.uniform1f(p.u.uTime, performance.now() / 1000); gl.uniform1f(p.u.uCrisp, crisp ? 1 : 0); gl.uniform1f(p.u.uChg, showChg ? 1 : 0);
   gl.uniform1i(p.u.uClass, Object.values(LT).some(t => t.cls) ? 1 : 0);
   gl.uniform1i(p.u.uStart, 1); gl.uniform1i(p.u.uBlock, 2); gl.uniform1i(p.u.uCell, 3); gl.uniform1i(p.u.uLight, 4);
-  const col = new Float32Array(16 * 3); planes.forEach(P => col.set(hex(LAYER[P.L].col), P.k * 3)); gl.uniform3fv(p.u.uCol, col);
+  const col = new Float32Array(24 * 3); planes.forEach(P => col.set(hex(LAYER[P.L].col), P.k * 3)); gl.uniform3fv(p.u.uCol, col);
   gl.uniform1i(p.u.uDetailCell, detail ? detail.cell.i : -1);
 }
 function drawParticles(M, px, pick) {
