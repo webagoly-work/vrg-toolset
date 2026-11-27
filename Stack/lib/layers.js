@@ -385,6 +385,12 @@ function probe(facts) {
   return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
 }
 
+/* ============================================================ V · Látvány (the look; S17, lib/look.js) */
+function look(facts) {
+  const V = require('./look');
+  return V.layer(V.read({ repo: REPO, files: facts.files, visualBase: require('../config').sources.visualBase }));
+}
+
 /* ============================================================ D · Eszközök (devices; S16, lib/devices.js) */
 function devices(facts) {
   const D = require('./devices');
@@ -397,4 +403,4 @@ function jobs() {
   return J.layer(fs.existsSync(dir) ? J.read(dir) : []);
 }
 
-module.exports = { featured, jobs, devices, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };
+module.exports = { featured, look, jobs, devices, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA };

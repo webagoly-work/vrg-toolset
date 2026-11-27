@@ -181,5 +181,21 @@ module.exports = function drift(graph, full, ctx) {
         `**Firmware no board has been flashed with:** ${k('firmware').filter(n => !flashed.has(n.id)).map(n => '`' + n.id + '`').join(', ') || 'none'}`, ``);
     }
   } catch (e) { out.push(`## 16. Devices`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 17. the look (S17): which pages wear which look, and where a copy drifted from its source */
+  try {
+    const V = graph.nodes.filter(n => n.layer === 'V');
+    if (V.length) {
+      const looks = V.filter(n => n.kind === 'look'), st = {}; for (const n of looks) st[n.state] = (st[n.state] || 0) + 1;
+      const kit = V.find(n => n.id === 'V:system.vrg-ui-kit'), worn = new Set();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'wears') worn.add(b); }
+      const unused = V.filter(n => n.kind === 'component' && !worn.has(n.id));
+      const bad = require('./look').drifted(V);
+      out.push(`## 17. The look`, ``,
+        `${looks.length} pages wear a look: ${Object.entries(st).map(([k, v]) => `${v} ${k}`).join(', ')}. ${kit ? kit.title + ': ' : ''}${V.filter(n => n.kind === 'component').length - unused.length} of ${V.filter(n => n.kind === 'component').length} components inlined somewhere.`, ``,
+        `**Drifted from the source** (J look-drift / kit-behind):`, ...(bad.length ? bad.map(n => `- \`${n.title}\` ${n.state} · ${n.brief}`) : ['none']), ``,
+        `**Kit components no page carries yet:** ${unused.length ? unused.map(n => n.title).join(', ') : 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 17. The look`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

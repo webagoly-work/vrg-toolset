@@ -38,6 +38,8 @@ const LINKS = {
   // N · Belépők (entry points, S11)
   opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
   launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // V · Látvány (the look, S17)
+  wears: R('viseli', 'wears', 'ezt viseli', 'h'),
   // D · Eszközök (devices, S16)
   'built-from': R('ebből épült', 'was built from', 'ebből épült ez'),
   flashed: R('ezt futtatja', 'was flashed with', 'erre írták fel'),

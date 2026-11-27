@@ -42,6 +42,8 @@ function rules(S = CFG.sources, extra) {
     if (r === 'stack/entities.json') return ['E'];
     if (r === 'launcher/vrg-menu.json' || r === 'launcher/vrg-catalog.json' || r === 'mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/feature.kt') return ['N'];
     if (/(^|\/)roadmap[^/]*\.md$/.test(r)) return ['T'];
+    // the look (S17): a page or a style sheet (its copy of Mélyvíz, its inlined kit), the kit's manifest, the sync list
+    if (/\.(html?|css)$/.test(r) && !/^(vendor|archive\/files)\//.test(r) || r === 'shared/vrg-ui-kit/manifest.json' || r === 'shared/varler-logo/lockups/lockups.json' || r === 'tools/melyviz-sync.js') return ['V'];
     if (/decisions/.test(r) && r.endsWith(".md")) return ["Q"];
     if (/^\.claude\/agents\/[^/]+\.md$|^docs\/hub\/agents\/[^/]+\.md$|^go-[a-z0-9]+\.md$|^docs\/go-archive\/go-[a-z0-9-]+\.md$|(^|\/)claude\.md$|^docs\/council\/[^/]+\.md$|^docs\/workflow\/[^/]+\.md$|^\.claude\/(skills|commands)\//.test(r)) return ['A'];
     return [];

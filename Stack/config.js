@@ -30,6 +30,7 @@ module.exports = {
     claudeHome: CLAUDE_HOME,
     transcripts: CLAUDE_HOME + '/projects',
     jobs: process.env.VRG_JOBS_DIR || FULL + '/jobs',   // client jobs, outside Git (M · Munkák, S15)
+    visualBase: process.env.VRG_VISUAL_BASE || FULL + '/VRG_Visual_Base',   // outside Git; its top folders join V (Látvány, S17)
     boardData: process.env.VRG_BOARD_DATA || FULL + '/Planner_VRG_U100/Firmware/board-console/data',   // the Board Console's library + devices, git-ignored (D · Eszközök, S16)
     fileHistory: CLAUDE_HOME + '/file-history',
   },

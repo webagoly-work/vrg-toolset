@@ -84,6 +84,15 @@ Never load `out/stack.json` whole. Ids look like:
   onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
   diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
   single-file copy for claude.ai.
+- **V · Látvány, the look** (S17, 2026-11-27): the design systems and which look each page wears (`lib/look.js`).
+  The VRG UI Kit (its version, its components by family, its themes, from `manifest.json`), Mélyvíz
+  (`shared/melyviz.css`), the Varler logo lockups, and the VRG Visual Base's top folders when it is on this PC. Every
+  tracked page that wears a look is `V:look.<path>`: a Mélyvíz copy between `melyviz:begin`/`end` (compared exactly as
+  `tools/melyviz-sync.js --check` does, whose TARGETS list it reads), a `<link>` to melyviz.css, the kit inlined
+  between `vk:begin`/`end` with the version stamped into it, or a linked kit token sheet; it `wears` the system and each
+  kit component it carries. J `look-drift` (a copy that differs, or a sync target that is gone) and `kit-behind` (an
+  inlined kit older than the manifest), each with the command that fixes it; DRIFT.md §17 adds the kit components no
+  page carries yet. Live: any saved page or style sheet rebuilds V.
 - **D · Eszközök, devices** (S16, 2026-11-27): the string from code to a physical board (`lib/devices.js`). Every
   tracked Arduino sketch (`D:sketch.<name>`, the .ino named as its folder), every firmware in the Board Console's library
   (`D:fw.<id>`, `built-from` its sketch when it is an Arduino build) and every board the Board Console has seen
@@ -186,6 +195,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/look.js` | V · Látvány (S17): the kit, Mélyvíz, logos, the Visual Base, the look each page wears; drift |
 | `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
 | `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
 | `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |

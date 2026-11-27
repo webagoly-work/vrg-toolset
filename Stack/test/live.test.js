@@ -26,6 +26,7 @@ function layersV1() {
     F: { nodes: [N('F:planner', 'feature', 'Planner wiring', [], { tier: 1 })], edges: [] },
     I: { nodes: [N('I:lens', 'built', 'the stack lens', [])], edges: [] },
     T: { nodes: [], edges: [], built: [] },
+    V: { nodes: [], edges: [] },
     M: { nodes: [], edges: [] },
     N: { nodes: [], edges: [] },
     D: { nodes: [], edges: [] },

@@ -28,6 +28,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | Layer | Its page today | State | The page it should have |
 |---|---|---|---|
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
+| **V Look** (Látvány, S17 2026-11-27) | the UI Kit gallery (`shared/vrg-ui-kit/gallery.html`) shows the kit; `node tools/melyviz-sync.js --list` the copies; the Viewer draws the systems and the pages that wear them; DRIFT.md §17 | ◐ | a wardrobe: every app with the look it wears, the components it carries, a one-click sync where it drifted |
 | **M Client jobs** (Munkák, S15 2026-11-27) | the VRG Asztal's Munkák table (D4) and the VRG Térkép show the jobs; the Viewer draws the layer by status; DRIFT.md §15 | ◐ | a job timeline: each job as a bar from first file to invoice, the tools it used under it |
 | **N Entry points** (Belépők, S11 2026-11-26) | — (the Viewer draws it; the START menu itself is its order, and DRIFT.md §11 lists the code nothing opens) | ◐ | a door map: each START key, server and Mobile feature with what it opens and whether that is still there |
 | **P Tests and checks** (Próbák, S12 2026-11-26) | — (the Viewer draws it, one band per runner; DRIFT.md §12 lists the failing, stale and unrun suites and the code no test reaches) | ◐ | a test wall: each suite's recorded runs as a strip, red where it broke, grey where it went stale, its START key to run it again |

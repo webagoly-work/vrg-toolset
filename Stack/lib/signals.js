@@ -9,6 +9,7 @@
 //     looks done · status drift               T items with built evidence; hand status two steps from the string (§9, §10)
 //     asked again                             K clusters asked in 2+ sessions with nothing landing (§13)
 //     job quiet                               M jobs the register calls running, no file for 30+ days (§15)
+//     look drift · kit behind                 V: a page's Mélyvíz copy differs from its source; its inlined kit is older (§17)
 //     fw stale · board behind · board unknown D: firmware built before its sketch's last commit; a board on an older
 //                                             version than the library's; a board whose content is unknown (§16)
 //     contradiction · dark                    Solomon's signals not ruled yet (G:sig.*; DRIFT §5)
@@ -76,6 +77,13 @@ function detect(ctx = {}) {
     for (const { n, commit } of DV.stale(list)) add('fw-stale', n.id.slice(5), 'amber', `${n.title}: built ${String(n.extra.built).slice(0, 10)}, its sketch changed ${String(commit).slice(0, 10)}`, `rebuild it from ${n.extra.sketch} and add it to the library`, [n.id, 'D:sketch.' + (n.extra.sketch || '').split('/').pop()]);
     for (const { n, has, latest, fw } of DV.behind(list)) add('board-behind', n.id.slice(8), 'info', `${n.title} runs ${fw.title} ${has}, the library has ${latest}`, 'flash it from the Board Console (Firmware)', [n.id, fw.id]);
     for (const n of list) if (n.layer === 'D' && n.kind === 'board' && n.state === 'unknown') add('board-unknown', n.id.slice(8), 'info', `${n.title}: what it holds is not known`, 'a full backup in the Board Console records it', [n.id]); }
+
+  /* V: a page whose look drifted from its source */
+  for (const n of require('./look').drifted(list)) {
+    const x = n.extra || {};
+    if (n.state === 'behind') add('kit-behind', n.title, 'amber', `${n.title} carries UI Kit ${x.kit && x.kit.version}, the kit is ${x.kitLatest}`, `node shared/vrg-ui-kit/inline.js --sync-app ${n.title}`, [n.id]);
+    else add('look-drift', n.title, 'amber', n.state === 'missing' ? `${n.title} is on Mélyvíz's sync list but is gone` : `${n.title}: its Mélyvíz copy differs from shared/melyviz.css`, n.state === 'missing' ? 'take it off tools/melyviz-sync.js TARGETS' : 'node tools/melyviz-sync.js (a built app: then rebuild it)', [n.id]);
+  }
 
   /* Solomon: signals not ruled */
   for (const g of list) {

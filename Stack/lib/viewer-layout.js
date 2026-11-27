@@ -140,6 +140,10 @@
       for (const [g, q] of bands(group(items, qns), R, 'x')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'N') {   // registries: one band per lane (START part, servers, programs, catalog group, Mobile group)
       for (const [g, q] of bands(group(items, it => it.lane || ''), R, 'y')) leaf(g.items, pad(q), 'rows');
+    } else if (layer === 'V') {   // the systems and what they are made of, the logos, then the pages that wear them by app
+      const rank = { 'design system': 0, style: 0, theme: 1, component: 2, logo: 3, 'visual base': 4, look: 5 };
+      const gs = [...group(items, it => (rank[it.kind] ?? 9) + ' ' + (it.kind === 'look' ? '' : it.kind === 'component' ? it.lane : ''))].sort((a, b) => (a.key < b.key ? -1 : 1));
+      for (const [g, q] of bands(gs, R, 'y')) leaf(g.items.slice().sort((a, b) => (a.id < b.id ? -1 : 1)), pad(q), 'rows');
     } else if (layer === 'D') {   // three bands, the way the string runs: sketches, the firmware built from them, the boards
       const rank = { sketch: 0, firmware: 1, board: 2 };
       const gs = [...group(items, it => it.kind || '')].sort((a, b) => (rank[a.key] ?? 9) - (rank[b.key] ?? 9));

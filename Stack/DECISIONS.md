@@ -464,3 +464,18 @@ RULES §6a that is D, Eszközök. Builder's choices, no open question among them
 | STK-P162 | Live | **A** `devices.json` and a library manifest map to D (the repo is already watched) | the Board Console writes both on every flash or backup |
 | STK-P163 | The Viewer's colour slots | **A** 16 → 24 | D made 17 planes (16 layers + E); room for the rest of RULES §6a |
 
+## S17 — V · Látvány, the look layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S17, the next new layer.** By STK-Q5 (D Látvány, after Futás, Munkák, Eszközök) and
+RULES §6a that is V, Látvány. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P164 | Where V sits | **A** right after F: F V M N K I T Q L A U P R C D G J Z | a look is how the featured things appear; the plan's §5 letter V (L is DevLog) |
+| STK-P165 | The sources | **A** the kit's manifest, `shared/melyviz.css` with `tools/melyviz-sync.js`'s TARGETS (read from its text), `shared/varler-logo` lockups, every tracked page, the Visual Base's top folders when present | each system already says what it is; the pages say what they wear |
+| STK-P166 | Which look a page wears | **A** what it carries or links: a Mélyvíz copy, a link to melyviz.css, the kit's vk markers (their components and stamped version), a kit token link · B a scan for colour literals | the markers are the contract the tools write; a colour scan would guess |
+| STK-P167 | Drift | **A** a Mélyvíz copy compared exactly as `melyviz-sync --check` compares (a test holds them to the same answer); an inlined kit whose stamped version is older than the manifest; a sync target that is gone | the sync tools' own definitions, so V never disagrees with them |
+| STK-P168 | Signals | **A** `look-drift` and `kit-behind` (amber), each with the one command that fixes it | the fix is always a sync and, for a built app, a rebuild |
+| STK-P169 | Skipped pages | **A** `Vendor/` and `Archive/files/` | vendored pages wear nothing of ours; archived one-shots are frozen on purpose |
+| STK-P170 | Live | **A** any saved .html or .css in the repo, the kit's manifest, the logo lockups, the sync tool's list | a page's look changes when the page is saved |
+

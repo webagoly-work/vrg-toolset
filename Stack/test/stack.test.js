@@ -271,7 +271,7 @@ test('strings: a full tool reaches every layer and classes as Program; its pilla
     se('U:run', 'C:app', 'touched', { w: 12 }), se('R:c1', 'C:app', 'ref:p'), se('G:doc', 'C:app'),
     se('F:app', 'E:app', 'pillar'), se('G:doc', 'E:app', 'pillar')];
   const s = ST.string(ST.prepare(nodes, edges), 'F:app', { today: TODAY });
-  assert.equal(s.mask, 'F · · · I · Q L · U · R C · G · ·');                          // U through C (depth 2); no A on this string
+  assert.equal(s.mask, 'F · · · · I · Q L · U · R C · G · ·');                          // U through C (depth 2); no A on this string
   assert.equal(s.cls, 'program');
   assert.equal(s.pulse, '2026-11-09');
   assert.equal(s.members.find(m => m.id === 'E:app').score, 0.8);
@@ -281,7 +281,7 @@ test('strings: a full tool reaches every layer and classes as Program; its pilla
 
 test('strings: an idea with only a feature stays a Spark; dates decide In build vs Built, quiet', () => {
   const spark = ST.string(ST.prepare([sn('F:x', { tier: 5 }), sn('I:x')], [se('I:x', 'F:x', 'ref:go')]), 'I:x', { today: TODAY });
-  assert.equal(spark.mask, 'F · · · I · · · · · · · · · · · ·');
+  assert.equal(spark.mask, 'F · · · · I · · · · · · · · · · · ·');
   assert.equal(spark.cls, 'spark');
   const mk = t => ST.string(ST.prepare([sn('F:t', { tier: 3 }), sn('C:t'), sn('R:t', { t })], [se('F:t', 'C:t'), se('R:t', 'C:t')]), 'F:t', { today: TODAY }).cls;
   assert.equal(mk('2026-11-01'), 'build');                              // 9 days
