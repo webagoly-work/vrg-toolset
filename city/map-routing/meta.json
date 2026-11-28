@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "map-routing",
+ "key": "map-routing",
+ "sha": "f9a05f06ba44ee6fa9de1ed9bcb7c18105c0648e",
+ "head": "f9a05f0",
+ "scannedAt": "2026-11-21T09:45:32.970Z",
+ "commits": 591,
+ "files": 2624,
+ "htmlBytes": 1738856,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44891072885"
+}

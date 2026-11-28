@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/magical-hawking-0ux4ac",
+ "key": "claude~2fmagical-hawking-0ux4ac",
+ "sha": "41e702d4d7f827eca14afbdb1c8a2e4c90811a38",
+ "head": "41e702d4",
+ "scannedAt": "2026-11-23T21:42:11.140Z",
+ "commits": 641,
+ "files": 2752,
+ "htmlBytes": 1767453,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45272311405"
+}

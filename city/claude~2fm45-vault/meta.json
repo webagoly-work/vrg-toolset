@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/m45-vault",
+ "key": "claude~2fm45-vault",
+ "sha": "5ea3972643c594f9bf76131f980af62ef92bbc33",
+ "head": "5ea3972",
+ "scannedAt": "2026-11-20T05:21:12.204Z",
+ "commits": 497,
+ "files": 2484,
+ "htmlBytes": 1702394,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44680439165"
+}

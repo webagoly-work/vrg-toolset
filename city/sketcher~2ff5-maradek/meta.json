@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f5-maradek",
+ "key": "sketcher~2ff5-maradek",
+ "sha": "966de1376330fd2088951af0226ed3ae2c200e18",
+ "head": "966de13",
+ "scannedAt": "2026-11-21T01:21:19.837Z",
+ "commits": 555,
+ "files": 2562,
+ "htmlBytes": 1724102,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44849657256"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketch-ui-audit-fixes",
+ "key": "sketch-ui-audit-fixes",
+ "sha": "2f9e82fe7f9a4e8cc12b4f1379253c762a3e2315",
+ "head": "2f9e82fe",
+ "scannedAt": "2026-11-23T22:13:14.830Z",
+ "commits": 644,
+ "files": 2770,
+ "htmlBytes": 1771030,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45277517345"
+}

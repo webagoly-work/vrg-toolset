@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "ccr-m44-weather",
+ "key": "ccr-m44-weather",
+ "sha": "d8c259b1b56911fe56ddae9490e2173d63100a68",
+ "head": "d8c259b1",
+ "scannedAt": "2026-11-22T02:20:06.482Z",
+ "commits": 600,
+ "files": 2663,
+ "htmlBytes": 1746602,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44975584791"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f2-arajanlat",
+ "key": "sketcher~2ff2-arajanlat",
+ "sha": "40bf069d153c5ab3f9469ccf8d52ffd2c38a982a",
+ "head": "40bf069",
+ "scannedAt": "2026-11-21T00:49:19.412Z",
+ "commits": 537,
+ "files": 2550,
+ "htmlBytes": 1719677,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44846318854"
+}

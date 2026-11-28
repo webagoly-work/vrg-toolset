@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/ecstatic-davinci-tsss1k",
+ "key": "claude~2fecstatic-davinci-tsss1k",
+ "sha": "ddbc1ca29ec8ce78f67ee2bd23337d9ebbb3755e",
+ "head": "ddbc1ca2",
+ "scannedAt": "2026-11-28T11:38:04.425Z",
+ "commits": 760,
+ "files": 3220,
+ "htmlBytes": 1859046,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/46140788256"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f1-helyszin",
+ "key": "sketcher~2ff1-helyszin",
+ "sha": "f9ac65f3fc681bc31f6fd699a0a54a1fe3aeb09e",
+ "head": "f9ac65f",
+ "scannedAt": "2026-11-21T00:18:21.017Z",
+ "commits": 513,
+ "files": 2517,
+ "htmlBytes": 1709923,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44842893379"
+}

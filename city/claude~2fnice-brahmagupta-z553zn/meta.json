@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/nice-brahmagupta-z553zn",
+ "key": "claude~2fnice-brahmagupta-z553zn",
+ "sha": "aa4d74c135fed23f1f135fa2b4afebe3f582e54c",
+ "head": "aa4d74c1",
+ "scannedAt": "2026-11-25T01:53:15.786Z",
+ "commits": 647,
+ "files": 2791,
+ "htmlBytes": 1775001,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45528959666"
+}

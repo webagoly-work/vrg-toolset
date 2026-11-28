@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "map-feed",
+ "key": "map-feed",
+ "sha": "f2acf89f3a60faf6d39b8a39e28a7c077ae47672",
+ "head": "f2acf89",
+ "scannedAt": "2026-11-21T09:32:32.972Z",
+ "commits": 590,
+ "files": 2618,
+ "htmlBytes": 1737861,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44890053370"
+}

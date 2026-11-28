@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/wizardly-franklin-6k5i46",
+ "key": "claude~2fwizardly-franklin-6k5i46",
+ "sha": "61a7c1110cac7a7ed884f24e63045720f2f013a8",
+ "head": "61a7c11",
+ "scannedAt": "2026-11-20T06:27:25.738Z",
+ "commits": 499,
+ "files": 2499,
+ "htmlBytes": 1705118,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44687888327"
+}

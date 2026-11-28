@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/adoring-clarke-abw5i5",
+ "key": "claude~2fadoring-clarke-abw5i5",
+ "sha": "8792096a0152d15cb5637ecb5a32f3b211af72a9",
+ "head": "8792096",
+ "scannedAt": "2026-11-16T22:24:53.110Z",
+ "commits": 444,
+ "files": 2231,
+ "htmlBytes": 1654980,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/43969782632"
+}

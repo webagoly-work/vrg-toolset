@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f4-finom",
+ "key": "sketcher~2ff4-finom",
+ "sha": "ec6b90b4e30d6eb8644c97e131b3073453787b31",
+ "head": "ec6b90b",
+ "scannedAt": "2026-11-21T00:27:21.594Z",
+ "commits": 533,
+ "files": 2546,
+ "htmlBytes": 1718288,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44843907508"
+}

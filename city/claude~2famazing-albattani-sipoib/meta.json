@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/amazing-albattani-sipoib",
+ "key": "claude~2famazing-albattani-sipoib",
+ "sha": "cc425494315df359edd4ca0b65fa0a0d8817835a",
+ "head": "cc425494",
+ "scannedAt": "2026-11-25T23:26:04.772Z",
+ "commits": 702,
+ "files": 3120,
+ "htmlBytes": 1832248,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45721295560"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "servicekit-terminal",
+ "key": "servicekit-terminal",
+ "sha": "47d04beba018c56638d69e87c0a215d05d9bbcb2",
+ "head": "47d04be",
+ "scannedAt": "2026-11-17T05:36:47.970Z",
+ "commits": 465,
+ "files": 2293,
+ "htmlBytes": 1666252,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44025306066"
+}

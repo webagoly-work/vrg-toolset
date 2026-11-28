@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "m43-map",
+ "key": "m43-map",
+ "sha": "cd1523f40247e948ff6dae66f2727b17a7e75b09",
+ "head": "cd1523f",
+ "scannedAt": "2026-11-20T05:19:14.073Z",
+ "commits": 495,
+ "files": 2479,
+ "htmlBytes": 1701217,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44680215956"
+}

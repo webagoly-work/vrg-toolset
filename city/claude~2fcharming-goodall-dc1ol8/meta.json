@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/charming-goodall-dc1ol8",
+ "key": "claude~2fcharming-goodall-dc1ol8",
+ "sha": "d5c92653a6e2465d3886da4e454896e00c94df85",
+ "head": "d5c92653",
+ "scannedAt": "2026-11-26T17:50:53.793Z",
+ "commits": 660,
+ "files": 2864,
+ "htmlBytes": 1787268,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45871124807"
+}

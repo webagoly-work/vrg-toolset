@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/gifted-feynman-hx9may",
+ "key": "claude~2fgifted-feynman-hx9may",
+ "sha": "7b3e7570300353666922f924a983eaeca8356c5f",
+ "head": "7b3e7570",
+ "scannedAt": "2026-11-25T21:26:31.361Z",
+ "commits": 620,
+ "files": 2713,
+ "htmlBytes": 1758151,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45704348630"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f6-kapcsolok",
+ "key": "sketcher~2ff6-kapcsolok",
+ "sha": "c04503f328d2a242cbe8ca77f4223060da1f8fe1",
+ "head": "c04503f",
+ "scannedAt": "2026-11-21T02:23:44.622Z",
+ "commits": 567,
+ "files": 2575,
+ "htmlBytes": 1728274,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44855635609"
+}

@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/vrg-dark-theme-rwpp3r",
+ "key": "claude~2fvrg-dark-theme-rwpp3r",
+ "sha": "f1db701636fd9072d8a94263e6890c64b45237f8",
+ "head": "f1db7016",
+ "scannedAt": "2026-11-26T20:13:23.147Z",
+ "commits": 715,
+ "files": 3129,
+ "htmlBytes": 1836069,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/45889417146"
+}

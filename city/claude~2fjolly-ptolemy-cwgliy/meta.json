@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "claude/jolly-ptolemy-cwgliy",
+ "key": "claude~2fjolly-ptolemy-cwgliy",
+ "sha": "a1be55762f5045e96677216561824f7471f3866e",
+ "head": "a1be557",
+ "scannedAt": "2026-11-20T21:52:16.704Z",
+ "commits": 503,
+ "files": 2507,
+ "htmlBytes": 1706739,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44824072494"
+}

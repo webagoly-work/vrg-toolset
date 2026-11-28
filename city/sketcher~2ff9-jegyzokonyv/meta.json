@@ -1,0 +1,13 @@
+{
+ "kind": "vrg-city-meta",
+ "version": 1,
+ "branch": "sketcher/f9-jegyzokonyv",
+ "key": "sketcher~2ff9-jegyzokonyv",
+ "sha": "0eaaa2af561f5bb5656e6ccd587d77b357a9177e",
+ "head": "0eaaa2a",
+ "scannedAt": "2026-11-21T02:24:40.185Z",
+ "commits": 586,
+ "files": 2604,
+ "htmlBytes": 1735429,
+ "run": "https://github.com/webagoly-work/vrg-toolset/actions/runs/44855715801"
+}
