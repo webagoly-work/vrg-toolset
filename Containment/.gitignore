@@ -1,0 +1,7 @@
+# Downloaded at setup (QEMU, the guest ISO, hashes) - gigabytes, not our code.
+runtime/
+# What passes in and out of a contained machine stays on this PC.
+exchange/inbox/*
+exchange/outbox/*
+!exchange/inbox/.gitkeep
+!exchange/outbox/.gitkeep

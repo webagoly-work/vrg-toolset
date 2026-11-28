@@ -1,0 +1,53 @@
+{
+  "format": "vrg-containment-profiles",
+  "version": 1,
+  "about": "Containment profiles. Each one applies to both modes: Windows Sandbox on the host (SANDBOX.cmd) and the portable QEMU VM on the stick (STICK.cmd). Read by core/contain.ps1.",
+  "default": "quarantine",
+  "profiles": [
+    {
+      "id": "quarantine",
+      "name": "Karanten",
+      "hint": "gyanus fajl megnyitasa: nincs halozat, nincs vagolap, a bemenet csak olvashato",
+      "network": false,
+      "clipboard": false,
+      "printer": false,
+      "vgpu": false,
+      "audioIn": false,
+      "videoIn": false,
+      "inbox": true,
+      "outbox": true,
+      "memoryMB": 4096,
+      "cpus": 2
+    },
+    {
+      "id": "browse",
+      "name": "Bongeszes",
+      "hint": "gyanus link vagy letoltes: van internet, nincs megosztott mappa a bemeneten",
+      "network": true,
+      "clipboard": false,
+      "printer": false,
+      "vgpu": false,
+      "audioIn": false,
+      "videoIn": false,
+      "inbox": false,
+      "outbox": true,
+      "memoryMB": 4096,
+      "cpus": 2
+    },
+    {
+      "id": "offline",
+      "name": "Offline munka",
+      "hint": "ismeretlen program kiprobalasa: nincs halozat, a vagolap mukodik",
+      "network": false,
+      "clipboard": true,
+      "printer": false,
+      "vgpu": false,
+      "audioIn": false,
+      "videoIn": false,
+      "inbox": true,
+      "outbox": true,
+      "memoryMB": 4096,
+      "cpus": 2
+    }
+  ]
+}

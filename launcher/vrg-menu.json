@@ -138,7 +138,8 @@
     { "key": "N", "name": "Node konzol", "exe": "cmd.exe", "args": ["/k", "\"{node}\" --version"], "needs": "{node}" },
     { "key": "D", "name": "ChromeDriver", "exe": "{full}\\tools\\chromedriver\\chromedriver.exe", "optional": true },
     { "key": "I", "name": "Telepítők mappa", "folder": "{vrg}\\Backup\\installers" },
-    { "key": "W", "name": "wifi-heatmapper mappa", "folder": "{full}\\wifi-heatmapper" }
+    { "key": "W", "name": "wifi-heatmapper mappa", "folder": "{full}\\wifi-heatmapper" },
+    { "key": "V", "name": "Karantén VM", "hint": "eldobható gép gyanús fájlhoz, linkhez: Windows Sandbox vagy pendrive VM", "exe": "{repo}\\Containment\\CONTAIN.cmd" }
   ],
 
   "start": {
@@ -438,6 +439,7 @@
       { "key": "2", "name": "Meghajtó választása", "phase": "3.6" },
       { "key": "3", "name": "Másolás + ellenőrzés", "phase": "3.6" },
       { "key": "4", "name": "Biztonságos leválasztás", "phase": "3.6" },
+      { "key": "5", "name": "Karantén VM a pendrive-ra", "hint": "a kit + a letöltött VM, ellenőrzéssel", "exe": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "{repo}\\Containment\\core\\contain.ps1", "-Mode", "pack", "-Pause"], "needs": "{repo}\\Containment\\core\\contain.ps1" },
       { "key": "O", "name": "OTG mappa", "folder": "{vrg}\\OTG" }
     ],
     "bottom": [ { "key": "Q", "name": "Kilépés", "action": "quit" } ]

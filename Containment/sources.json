@@ -1,0 +1,21 @@
+{
+  "format": "vrg-containment-sources",
+  "version": 1,
+  "about": "Where the stick runtime comes from. Nothing here is committed: SETUP-STICK.cmd downloads it into runtime/ and verifies it. Set a pin to freeze a version; null takes the newest one the index lists.",
+  "qemu": {
+    "index": "https://qemu.weilnetz.de/w64/",
+    "pattern": "qemu-w64-setup-(\\d{8})\\.exe",
+    "pin": null,
+    "checksum": ".sha512",
+    "signer": "Stefan Weil",
+    "license": "GPL-2.0, the QEMU for Windows build by Stefan Weil"
+  },
+  "guest": {
+    "name": "Debian Live (XFCE)",
+    "base": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "sums": "SHA256SUMS",
+    "pattern": "debian-live-[0-9.]+-amd64-xfce\\.iso",
+    "pin": null,
+    "about": "Firefox ESR, LibreOffice and a PDF viewer, enough to open a suspicious document or link. Runs from RAM, nothing is installed."
+  }
+}
