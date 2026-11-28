@@ -120,7 +120,7 @@ node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/CLA-basel
 - **Dokumentumok:**
   - A Költségvetési Tervezet egyoldalú, tájékoztató becslés. Sosem „ajánlat”, és sosem említi, hogy utána Árajánlat jön.
   - Az Árajánlat sosem hivatkozik vissza a Tervezetre.
-  - Aláírók: Hefler Tamás, Várkonyi Tamás. Pinkovszki Áron neve nem kerülhet ügyféldokumentumra.
+  - Aláírók: Megrendelő, Várkonyi Tamás. Pinkovszki Áron neve nem kerülhet ügyféldokumentumra.
   - Árak „tiszták”: a munkadíj 5 000 Ft-os lépésben, az egységárak kerek lépésekben.
 - **Képek:** minden képen, amit küldesz, minden szám olvasható legyen, és semmi ne kerüljön egymásra. Használd a `labels.js`-t, és küldés előtt nézd meg a PNG-t.
 - **Nyelv:** a felület szövege magyar, a kód azonosítói angolok.

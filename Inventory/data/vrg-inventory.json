@@ -210,7 +210,7 @@
     "Számítógép vezeték CAT5E UTP Belden 1583E",
     "Számítógép vezeték CAT5 E - UTP fali réz PVC BELDEN 1583e (305)"
    ],
-   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0004",
@@ -1409,7 +1409,7 @@
     "Műa.cső ELS M32 Symalen 32 50fm/tek",
     "Műa.cső ELS M32 Symalen 32/25 50M/TEK"
    ],
-   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0022",
@@ -1754,7 +1754,7 @@
     "Gégecső lépésálló 32 DX15032R Gewiss",
     "Gégecső lépésálló 32/50 fekete 750N FK15 DX15032R Gewiss"
    ],
-   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0027",
@@ -3726,7 +3726,7 @@
     "EAYY-J 5x 16 /NAYY-J/ RE (0)",
     "EAYY-J 5x 16 /NAYY-J/ RE fekete (0) 0,6/1kV erőátviteli kábel"
    ],
-   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0057",
@@ -6751,7 +6751,7 @@
     "OBO X16 H25 GNP5 LGR Leágazódoboz f vezetéki sorkapoccsal 240x191x125 világosszürke 2005312",
     "OBO csatlakozó doboz"
    ],
-   "forras": "email:modositas + email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:modositas + email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0102",
@@ -6806,7 +6806,7 @@
     "Tömszelence M32 +anya 15-21mm IP68 V-TEC VM32+ LGR szürke 2022770 OBO",
     "tömszelence"
    ],
-   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0103",
@@ -7065,7 +7065,7 @@
     "OBO Quick csőbilincs M32",
     "OBO Quick Csőbilincs M32 2955 /Mü.II/ 2149022"
    ],
-   "forras": "email:visszaigazolas + email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:visszaigazolas + email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0106",
@@ -11875,7 +11875,7 @@
     "érvéghüvely",
     "Érvéghüvely szigetelt 10/18 elefántcsont E10-18 Stilo STI747"
    ],
-   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "email:beerkezes + xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0175",
@@ -12445,7 +12445,7 @@
     "Számítógép vezeték CAT6 UTP",
     "Számítógép vezeték CAT6 - UTP fali réz PVC BITNER (305)"
    ],
-   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0184",
@@ -12859,7 +12859,7 @@
     "10 mkh (H07V-K 1x10)",
     "H07V-K 1x 10 fekete (100) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)"
    ],
-   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0190",
@@ -13007,7 +13007,7 @@
     "10 mkh (H07V-K 1x10)",
     "H07V-K 1x 10 kék (100) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)"
    ],
-   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0192",
@@ -13148,7 +13148,7 @@
     "10 mkh (H07V-K 1x10)",
     "H07V-K 1x 10 zöld/sárga (100) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)"
    ],
-   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"
+   "forras": "xlsx/mail:anyagar_sablon_Laci.xlsx + Anyagok helyszínre.eml"
   },
   {
    "vrg_id": "VRG-0194",
