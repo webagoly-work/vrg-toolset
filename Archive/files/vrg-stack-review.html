@@ -245,7 +245,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
           <div class="sev ok"><h3>Failure behaviour learnt from real breakages<span class="tag">strength</span></h3><p>Carried-forward layers, six health checks, <code>doctor --fix</code>, atomic writes, and tests with known answers, including incremental-equals-full and the privacy assertions.</p></div>
           <div class="sev crit"><h3>Built against fixtures<span class="tag">weak</span></h3><p>No new layer has run on the PC's real jobs, boards, recordings or Visual Base. The signal heuristics were tuned on small data and will need another round.</p></div>
           <div class="sev warn"><h3>Breadth before depth<span class="tag">weak</span></h3><p>21 layer slots and 24 pages. Some pages will be opened rarely. The event log can measure which.</p></div>
-          <div class="sev warn"><h3>The layer table is copied seven times<span class="tag">weak</span></h3><p>Order and colours live in seven files. A missed copy is how the Konnektóm broke. The fix is one shared layer table.</p></div>
+          <div class="sev ok"><h3>One layer table<span class="tag">fixed</span></h3><p>Order and colours used to live in seven files, and a missed copy is how the Konnektóm broke. Since 2026-11-28 every module and page reads one <code>schema/layers.js</code>, and a test fails if a page keeps its own colour table again.</p></div>
           <div class="sev warn"><h3>Heavy phone pages<span class="tag">weak</span></h3><p>The Viewer and Érintésnyom are about 3 MB each in the bundle. They need lazy planes and level-of-detail data.</p></div>
           <div class="sev"><h3>Windows paths, one maintainer<span class="tag">watch</span></h3><p>Hard-coded H: paths make cloud runs fragile, and 59 modules are a lot for one person to hold. Keep the recipe strict.</p></div>
         </div>
@@ -265,9 +265,9 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
             <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the PC</span></td><td>The Kapu's tool list lacks the ten new pages; the cloud rebuild in the stash has broken paths</td><td><code>build-hub.js</code> on the PC; drop the stash</td></tr>
             <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the phone</span></td><td>The ◢ dial pages compile in CI but have never been opened on a device</td><td>Publish, then open all twelve pages offline</td></tr>
             <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">merge soon</span></td><td>Mobile decision D-191 is the next free number on main, which already reaches D-190</td><td>Merge PR #29, or tell the next GO MOBILE session D-191 is taken</td></tr>
-            <tr><td><span class="chip">in code</span></td><td>Layer order and colours are copied in seven places</td><td>One shared layer table</td></tr>
+            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>Layer order and colours were copied in seven places</td><td>One <code>schema/layers.js</code>, held by a test (STK-P213)</td></tr>
             <tr><td><span class="chip">in code</span></td><td>Nothing stops two branches taking the same layer letter (K happened)</td><td>A CI uniqueness check</td></tr>
-            <tr><td><span class="chip">in code</span></td><td>The Viewer has colour slots for 24 planes and uses 21</td><td>Size the slots from the table, or assert the count in a test</td></tr>
+            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">guarded</span></td><td>The Viewer has colour slots for 24 planes and uses 21</td><td>A test now fails when the table passes 24 planes</td></tr>
             <tr><td><span class="chip">in code</span></td><td>Hard-coded H: paths in five modules</td><td>One <code>roots()</code> that reads an environment variable first</td></tr>
           </tbody>
         </table></div>
