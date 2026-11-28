@@ -32,7 +32,7 @@ Every other Stack page (24 in all) loads without page errors. The two console er
 | # | Weak point | Suggested fix |
 |---|---|---|
 | S1 | ~~The layer order is copied into seven places~~ **Fixed 2026-11-28 (STK-P213).** One `Stack/schema/layers.js`; every former copy reads it, and `test/layers.test.js` fails on a page that keeps a colour table again. | — |
-| S2 | **No guard against layer-letter collisions.** Main and this branch both took K. | A CI check: a letter in `shapes.js` must be unique across `main` and every open `claude/*` branch's `shapes.js`. |
+| S2 | ~~No guard against layer-letter collisions~~ **Fixed 2026-11-28 (STK-P214).** `tools/check-layer-letters.js`, run by `.github/workflows/stack.yml` on every Stack push and PR, fails when a letter names two layers across unmerged branches. | — |
 | S3 | **The Viewer's colour uniform** (`uCol[24]`) has room for 24 planes; 21 are used. | Now asserted: `test/layers.test.js` fails when the table has more than 24 planes. |
 | S4 | **Hard-coded H: paths** in `config.js`, `lib/common.js`, `archive.js`, `lens.js` and `meta.js`. The cloud sandbox has to patch them with `sed`. | One `roots()` that reads an environment variable first. The tests use it. |
 | S5 | **Mobile decision D-191 is the very next free number.** Main is already at D-190 (the mérőkártya, M72). Any Mobile session that opens a decision before PR #29 merges will take D-191 too. | Merge PR #29 soon, or tell the next GO MOBILE session that D-191 is taken. |

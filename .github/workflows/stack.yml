@@ -1,0 +1,31 @@
+# VRG Stack: the layer-letter check and the Stack's own tests, on every push and pull request that touches the Stack.
+# - tools/check-layer-letters.js: a layer letter means one layer on every unmerged branch (STK-P214). It reads each
+#   branch's Stack/lib/meta.js as text, so the checkout fetches every branch (fetch-depth: 0).
+# - node --test Stack/test/*.test.js: known answers on fixtures; no test reads a real source or Stack/out.
+name: VRG Stack
+on:
+  push:
+    branches-ignore: [city-pages, mobile-log, solomon-data, stack-pages]
+    paths: ['Stack/**', 'tools/check-layer-letters.js', '.github/workflows/stack.yml']
+  pull_request:
+    paths: ['Stack/**', 'tools/check-layer-letters.js', '.github/workflows/stack.yml']
+concurrency:
+  group: stack-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Layer letters (one letter, one layer, on every branch)
+        run: node tools/check-layer-letters.js
+      - name: Stack tests
+        run: node --test Stack/test/*.test.js
