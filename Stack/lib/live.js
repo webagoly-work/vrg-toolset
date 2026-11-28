@@ -137,6 +137,7 @@
   const load = src => new Promise(ok => { const s = document.createElement('script'); s.src = src; s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s); });
   function graph() {
     if (!graphP) graphP = (async () => {
+      if (!root.StackLayers) await load('schema/layers.js');
       if (!root.StackStrings) await load('lib/strings.js');
       if (!root.STACK && !root.STACK_BUNDLE) await load('out/stack-data.js');
       if (!root.STACK || !root.StackStrings) return null;

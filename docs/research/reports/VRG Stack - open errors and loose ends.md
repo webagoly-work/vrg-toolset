@@ -31,9 +31,9 @@ Every other Stack page (24 in all) loads without page errors. The two console er
 
 | # | Weak point | Suggested fix |
 |---|---|---|
-| S1 | **The layer order is copied into seven places:** `strings.js`, `layertext.js`, `lens.js`, `viewer.html`, `board.html`, `connectome.html` and the pipeline's `LAYER8`. Colours are copied into four. F1 happened because one copy was missed. | One `schema/layers.js` (letter, order, colour, hu, en) that every module and page reads. Pages get it inlined at build time. |
+| S1 | ~~The layer order is copied into seven places~~ **Fixed 2026-11-28 (STK-P213).** One `Stack/schema/layers.js`; every former copy reads it, and `test/layers.test.js` fails on a page that keeps a colour table again. | — |
 | S2 | **No guard against layer-letter collisions.** Main and this branch both took K. | A CI check: a letter in `shapes.js` must be unique across `main` and every open `claude/*` branch's `shapes.js`. |
-| S3 | **The Viewer's colour uniform** (`uCol[24]`) has room for 24 layers, and 21 are used (20 layers + E). A 25th layer would overflow silently, as `uCol[12]` did in S13. | Size it from the layer table, or assert the count in a test. |
+| S3 | **The Viewer's colour uniform** (`uCol[24]`) has room for 24 planes; 21 are used. | Now asserted: `test/layers.test.js` fails when the table has more than 24 planes. |
 | S4 | **Hard-coded H: paths** in `config.js`, `lib/common.js`, `archive.js`, `lens.js` and `meta.js`. The cloud sandbox has to patch them with `sed`. | One `roots()` that reads an environment variable first. The tests use it. |
 | S5 | **Mobile decision D-191 is the very next free number.** Main is already at D-190 (the mérőkártya, M72). Any Mobile session that opens a decision before PR #29 merges will take D-191 too. | Merge PR #29 soon, or tell the next GO MOBILE session that D-191 is taken. |
 | S6 | **The live badge polls `out/build-stamp.js` every 60 s** from `file://`, and Érintésnyom logs a refused connection when no server runs. | Harmless, but noisy in the console. Back off after the first failure. |

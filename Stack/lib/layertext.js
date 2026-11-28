@@ -27,7 +27,7 @@ const path = require('path');
 
 const DOC_CAP = 512 * 1024;                // one document's text at most (a longer one is cut, and says so)
 const TEXT_EXT = /\.(md|txt|html?|json|csv|ya?ml|js|cjs|mjs|ts|ps1|cmd|bat|css|kt|xml|ini|toml)$/i;
-const ORDER = ['W', 'F', 'V', 'M', 'N', 'S', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'K', 'J', 'E'];
+const ORDER = require('../schema/layers').PLANES;   // the Viewer's planes, top to bottom (schema/layers.js)
 
 // FNV-1a, 32 bit, over the bytes: the node's fingerprint between builds
 function hash(buf, start = 0, end = buf.length) {
@@ -165,4 +165,4 @@ function write({ graph, facts, out, repo, events, only = null, note = null }) {
   return { layers: index.layers, msg: `layer text: ${Object.keys(layers).length} layers, ${(total / 1048576).toFixed(1)} MB, ${ch} nodes changed or new since the last build` };
 }
 
-module.exports = { build, diff, write, sources, timeline, hash, head, DOC_CAP };
+module.exports = { build, diff, write, sources, timeline, hash, head, DOC_CAP, ORDER };

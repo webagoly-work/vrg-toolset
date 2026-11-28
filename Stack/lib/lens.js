@@ -23,9 +23,9 @@
 //                                                 (history = window.STACK_FORECAST, out/forecast-index.js); title words.
 //   L.reach(id, opts) → Map id → energy           a node's blast radius: how far it reaches over the exact links (3 hops)
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./activation'));
-  else root.StackLens = factory(root.StackActivation);
-})(typeof self !== 'undefined' ? self : this, function (Activation) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./activation'), require('../schema/layers'));
+  else root.StackLens = factory(root.StackActivation, root.StackLayers);
+})(typeof self !== 'undefined' ? self : this, function (Activation, LAYERS) {
   'use strict';
 
   // the extractor's patterns (lib/common.js makeExtractor), kept in step by test/lens.test.js
@@ -42,8 +42,8 @@
   const STOP = new Set(('the and for with from into its his her our you are not but all one two new old via per vrg varler round line map page app tool ' +
     'this that what when where which will would could should have has had been about make made also only just then than them they there here ' +
     'egy az a es is de hogy nem van vagy meg mar mint ami ezt azt kell lesz volt csak most igen').split(' '));
-  const PLANES = ['W', 'F', 'V', 'M', 'N', 'S', 'I', 'T', 'Q', 'L', 'A', 'U', 'P', 'R', 'C', 'D', 'O', 'G', 'K', 'J'];   // top to bottom, as the ◢ dial lists them (Mobile D-191); T since S3
-  const NAME = { F: 'Kirakat', I: 'Ötletfa', Q: 'Döntések', L: 'Fejlesztési vonalak', A: 'Ügynöki gerinc', U: 'Futás', R: 'Repó', C: 'Kód', G: 'Adatgömb' };
+  const PLANES = LAYERS.PLANES.filter(c => c !== 'E');   // top to bottom, as the ◢ dial lists them (Mobile D-191; schema/layers.js)
+  const NAME = Object.fromEntries(LAYERS.LIST.map(l => [l.code, l.hu]));
 
   function create(stack, index) {
     index = index || {};

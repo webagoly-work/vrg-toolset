@@ -127,7 +127,7 @@ function bundle(stack, repo, page) {
   const data = read(path.join('out', 'connectome-data.js'));
   if (!/window\.CONNECTOME\s*=/.test(data)) throw new Error('out/connectome-data.js is not connectome data (run: node stack.js connectome)');
   let first = true;
-  html = html.replace(/<script src="([a-z-]+\.js)"><\/script>/g, (m, f) => {
+  html = html.replace(/<script src="((?:[a-z-]+\/)?[a-z-]+\.js)"><\/script>/g, (m, f) => {
     const pre = first ? `<script>window.STACK_BUNDLE = true;\n${js(data)}</script>\n` : '';
     first = false;
     return `${pre}<script>/* ${f} */\n${js(read(f))}</script>`;

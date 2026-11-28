@@ -90,7 +90,7 @@ archive ─► layers F I Q L A R C G ─► join ─► record ─► U · Fut�
 
 | To add … | Do this |
 |---|---|
-| a layer | 1. Write an adapter that returns `{ nodes, edges }`, the way the ones in `lib/layers.js` do.<br>2. Add its row to `lib/meta.js` and its letter to `schema/shapes.js` `LAYER`.<br>3. Register its relations in `schema/links.js`.<br>4. Call it in `pipeline.js` under `hc.stage(…, { fallback: carryForward })`. |
+| a layer | 1. Write an adapter that returns `{ nodes, edges }`, the way the ones in `lib/layers.js` do.<br>2. Add its row to `schema/layers.js` (letter, names, colour, flags: every order, colour and the `LAYER` check follow from it) and its row to `lib/meta.js`, at the same place.<br>3. Register its relations in `schema/links.js`.<br>4. Call it in `pipeline.js` under `hc.stage(…, { fallback: carryForward })`. |
 | a report | Write a function in `lib/insight.js` and an optional stage in `pipeline.js`. Reports only read the graph. |
 | an MCP tool | Write the function in `lib/query.js` (the CLI and the server share it), then add a line in `TOOLS` and in `callTool`. |
 | session hooks | `hook.js start` (SessionStart, matcher `startup|clear|compact`) prints the stamp + `out/codec/L0.txt`; `hook.js stop` (Stop) reads the transcript from the last line's `upto`, resolves the turn's paths (file tools + path words in shell commands, worktree copies folded into the repo) to node ids through `out/stack.json`'s own `p:` keys or the nearest folder, and appends `{ t, kind: 'turn', sid, seq, steps, tools, files, nodes, upto }` to `data/live/<sid8>.jsonl`. Both exit 0 within 2 s whatever happens. |

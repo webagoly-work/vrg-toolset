@@ -9,7 +9,7 @@
 // Each check returns a list of problems; an empty list means the record is valid.
 'use strict';
 
-const LAYER = /^[WFVMNSITQLAUPRCDOGKJEZ]$/;   // T S3, N S11, P S12, S S13, J S14, M S15, D S16, V S17, O S18, W S19; K · Kisokos (main)
+const LAYER = new RegExp('^[' + require('./layers').ORDER.join('') + ']$');   // every layer in schema/layers.js (STK-P213)
 const ISO = /^\d{4}-\d\d-\d\d/;
 
 function checkNode(n) {
@@ -50,4 +50,4 @@ function checkStep(s) {
   return p;
 }
 
-module.exports = { checkNode, checkEvent, checkStep, SPANS, ACTORS, OPS };
+module.exports = { checkNode, checkEvent, checkStep, SPANS, ACTORS, OPS, LAYER };

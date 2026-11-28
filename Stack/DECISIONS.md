@@ -584,3 +584,12 @@ Merging main into PR #29 met main's own K layer, the Kisokos (the work handbook:
 |---|---|---|---|
 | STK-P212 | Which layer moves | **A** Kérések becomes **S · Szó** ("a Founder szava"); the Kisokos keeps K · B Kérések H · C X · D the Kisokos moves | **The Founder, 2026-11-27: S.** The Kisokos was merged and shipped first; only this unmerged branch changes. Node ids are `S:ask.*` and `S:cluster.*`; the page (Figyelemtérkép, START R → Y) and its data are unchanged but for the letter; an older build's `K:ask.*` events stay in the log as they were |
 
+## One layer table (2026-11-28)
+
+The layer order and colours had been copied into seven places (`strings.js`, `layertext.js`, `lens.js`, the pipeline's
+`LAYER8`, `viewer.html`, `board.html`, `connectome.html`, plus `layers.html` and `meta.js`'s order). The Konnektóm broke
+because one copy missed the new layers (found loading every page, 2026-11-27).
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P213 | Where the layer table lives | **A** one `schema/layers.js` (code, hu, en, colour, and whether a layer is a mask slot, a Viewer plane, read by an adapter), loaded by Node and as a page script · B `lib/meta.js` grows colours · C a JSON file every page fetches | **A, asked by the Founder 2026-11-28.** `meta.js` is Node-only and full of H: paths, so it cannot go into a page or the phone bundle (B); a fetch fails from `file://` (C). A script works in Node, in a page and inlined in a bundle, like `lib/strings.js`. `meta.js` keeps its prose and is held to the table's order and names by `test/layers.test.js`, which also fails on a page that keeps five or more layer colours of its own. One exception, named in the test: `runs.html` keeps its dark and light theme palette for the ten original layers. |

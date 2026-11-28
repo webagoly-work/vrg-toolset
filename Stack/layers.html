@@ -104,17 +104,11 @@
     <div class="hint">Minden réteg egy vízszintes sík, a saját belső kapcsolatai szerint elrendezve (erőtér-elrendezés). A rétegek közti kapcsolatok gyengén egymás fölé húzzák az összekötött pontokat, ezért a függőleges kötők egy-egy többrétegű „füzért” rajzolnak ki. A pont mérete a fájl tömege (2 KB-os pontok száma).<br><i>Each layer is a horizontal plane laid out by its own links (a force layout). Links between layers pull the linked nodes gently above each other, so the vertical connectors trace multilayer strings of nodes. Dot size is the file's mass (its 2 KB nodes).</i></div>
   </aside>
 </main>
+<script src="schema/layers.js"></script>
 <script src="touch.js"></script>
 <script>
 'use strict';
-const LAYER = {
-  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured' }, I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas' },
-  E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars' }, Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' },
-  L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' }, A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone' },
-  G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe' }, C: { col: '#5b8fe0', hu: 'Kód', en: 'Code' },
-  U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' }, R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' },
-  K: { col: '#5ee6c0', hu: 'Kisokos', en: 'Handbook' },
-};
+const LAYER = StackLayers.BY;   // code → { col, hu, en } (schema/layers.js)
 // top to bottom: the showcase and ideas above, the decisions and lines in the middle, the machinery below
 const ORDER = ['F', 'I', 'E', 'Q', 'L', 'A', 'G', 'C', 'U', 'R'];
 const $ = id => document.getElementById(id);
