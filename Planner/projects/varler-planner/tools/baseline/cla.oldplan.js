@@ -1,4 +1,4 @@
-// cla.oldplan.js — the user's earlier CLA plan (Peterdy_33_villany_tisztazott, r1) as a checklist for the baseline.
+// cla.oldplan.js — the user's earlier CLA plan (Minta_utca_1_villany_tisztazott, r1) as a checklist for the baseline.
 // Positions are that sheet's own pixel frame (the generator BRIDGE/07_CLA/blueprints/src/cla-sheets.js keeps the same
 // numbers); `toPlan` maps them into the .vplan frame (CLA turned 180°, 1 px = 1/0.1373 mm — checked on 70+ points).
 // st: ok = megvan · moved = megvan, áthelyezve · part = részben · miss = hiányzik · ask = tisztázandó · gone = helyesen megszűnik
@@ -94,4 +94,4 @@ const ITEMS = [
   { room: 'Előszoba', at: [1660, 897], what: 'redőnyház (?)', st: 'ask', now: 'nincs pont', note: 'az előszobában nincs ablak a mostani terven — a bejárati ajtó fölötti redőny? ha igen: motor + kapcsoló' }
 ];
 ITEMS.forEach((it, k) => { it.n = k + 1; [it.x, it.y] = toPlan(it.at[0], it.at[1]); });
-module.exports = { ITEMS, toPlan, SOURCE: 'BRIDGE/07_CLA/blueprints/Peterdy_33_villany_tisztazott.png (r1) — a felhasználó korábbi terve' };
+module.exports = { ITEMS, toPlan, SOURCE: 'BRIDGE/07_CLA/blueprints/Minta_utca_1_villany_tisztazott.png (r1) — a felhasználó korábbi terve' };

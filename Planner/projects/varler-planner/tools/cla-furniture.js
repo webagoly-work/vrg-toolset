@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CLA furniture: the faint furniture of the client's original sheet (BRIDGE/07_CLA/blueprints/
-// Peterdy_33_villany_eredeti_mindket_szint.pdf, the embedded 1424 × 2049 brochure image) as Planner objects.
+// Minta_utca_1_villany_eredeti_mindket_szint.pdf, the embedded 1424 × 2049 brochure image) as Planner objects.
 //
 //   node tools/cla-furniture.js   -> Calculator/CLA-teszt_v2_butor.vplan.json
 //
