@@ -24,7 +24,12 @@
 //   (as data: URIs) and scripts inlined; links between the stack's pages renamed to the phone's file names
 //   Archive/files/konnektom-labor.html -> stack/labor.html (START R → K): already one page; its Google Fonts links are
 //   dropped (the phone loads nothing from outside), so it falls back to its own font stacks
-// The four after the first three are optional on the phone. In a full publish, an optional page whose data is missing
+//   viewer.html (Rétegverem, the byte-particle Stack Viewer, STK-Q25) -> stack/retegek.html in place of layers.html when the
+//   PC has out/layertext: the layer text as byte classes only (16 bytes a particle), never the text itself
+//   metro.html -> vonalak.html (L), control.html -> vezerloterem.html (A), runs.html -> futasnaplo.html (U), commits.html ->
+//   commitok.html (R): like the two above; erintesnyom.html -> erintesnyom.html (Érintésnyom, replay only, the newest
+//   recorded sessions inlined; SL4). The phone opens these from its ◢ dial (Mobile D-191)
+// The pages after the first three are optional on the phone. In a full publish, an optional page whose data is missing
 // here keeps the copy the branch already has (with a warning) instead of stopping the publish.
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
@@ -33,7 +38,8 @@
 // The layout of stack-pages (kit-core Stack.kt reads exactly this):
 //   README.md
 //   stack/konnektom.html   stack/holo.html   stack/retegek.html   (optional on the phone:) stack/kisokos.html
-//   stack/otletfolyam.html   stack/dontesnaplo.html   stack/labor.html
+//   stack/otletfolyam.html   stack/dontesnaplo.html   stack/vonalak.html   stack/vezerloterem.html   stack/futasnaplo.html
+//   stack/commitok.html   stack/erintesnyom.html   stack/labor.html
 //   stack/meta.json        {kind:'vrg-stack-meta', generated, published, nodes, points, lines, files:{name:bytes}, kisokos?}
 //
 // How it writes: git plumbing only (hash-object, mktree, commit-tree); the working tree, the index, HEAD and every
@@ -54,6 +60,10 @@ hand; the branch is replaced (one commit, no history) on every publish.
 - \`stack/kisokos.html\`: the VRG Kisokos 3D page (the Stack's K layer, the offline work handbook), one self-contained page.
 - \`stack/otletfolyam.html\`: Ötletfolyam (layer I, the ideas and their lineage), one self-contained page.
 - \`stack/dontesnaplo.html\`: Döntésnapló (layer Q, the decision log), one self-contained page.
+- \`stack/vonalak.html\`, \`stack/vezerloterem.html\`, \`stack/futasnaplo.html\`, \`stack/commitok.html\`: Vonalak (L), Vezérlőterem (A),
+  Futásnapló (U), Commitok (R), one self-contained page each; the phone opens them from its ◢ dial.
+- \`stack/erintesnyom.html\`: Érintésnyom, replay only, the newest recorded sessions inlined.
+- \`stack/retegek.html\` is the byte-particle Stack Viewer when the PC has the layer text (byte classes only, never the text).
 - \`stack/labor.html\`: the Konnektóm-labor (fly brain, Stack brain, Holo, layers, empty memory net), one self-contained page.
 - \`stack/meta.json\`: when the data was built and published, the sizes.
 
@@ -69,12 +79,18 @@ const PAGES = [
   { id: 'kisokos', file: 'kisokos.html', kisokos: true, optional: true },
   { id: 'otletfolyam', file: 'otletfolyam.html', local: 'lineage.html', data: 'out/lineage-data.js', optional: true },
   { id: 'dontesnaplo', file: 'dontesnaplo.html', local: 'decisions.html', data: 'out/decisions-data.js', optional: true },
+  { id: 'vonalak', file: 'vonalak.html', local: 'metro.html', data: 'out/metro-data.js', optional: true },
+  { id: 'vezerloterem', file: 'vezerloterem.html', local: 'control.html', data: 'out/control-data.js', optional: true },
+  { id: 'futasnaplo', file: 'futasnaplo.html', local: 'runs.html', data: 'out/runs-data.js', optional: true },
+  { id: 'commitok', file: 'commitok.html', local: 'commits.html', data: 'out/commits-data.js', optional: true },
+  { id: 'erintesnyom', file: 'erintesnyom.html', touch: true, data: 'out/replay/index.js', optional: true },
   { id: 'labor', file: 'labor.html', archive: 'Archive/files/konnektom-labor.html', optional: true },
 ];
 
 // A link from one stack page to another, by the phone's file names; a page the phone does not get is unlinked.
 const LINKS = { 'connectome.html': 'konnektom.html', 'orb.html': 'holo.html', 'layers.html': 'retegek.html', 'kisokos.html': 'kisokos.html',
-  'lineage.html': 'otletfolyam.html', 'decisions.html': 'dontesnaplo.html' };
+  'lineage.html': 'otletfolyam.html', 'decisions.html': 'dontesnaplo.html', 'metro.html': 'vonalak.html', 'control.html': 'vezerloterem.html',
+  'runs.html': 'futasnaplo.html', 'commits.html': 'commitok.html', 'erintesnyom.html': 'erintesnyom.html', 'viewer.html': 'retegek.html' };
 
 function args(argv) {
   const a = { push: false, repo: path.resolve(__dirname, '..', '..'), remote: 'origin', stack: null, out: null, only: null };
@@ -111,7 +127,7 @@ function bundle(stack, repo, page) {
   const data = read(path.join('out', 'connectome-data.js'));
   if (!/window\.CONNECTOME\s*=/.test(data)) throw new Error('out/connectome-data.js is not connectome data (run: node stack.js connectome)');
   let first = true;
-  html = html.replace(/<script src="([a-z-]+\.js)"><\/script>/g, (m, f) => {
+  html = html.replace(/<script src="((?:[a-z-]+\/)?[a-z-]+\.js)"><\/script>/g, (m, f) => {
     const pre = first ? `<script>window.STACK_BUNDLE = true;\n${js(data)}</script>\n` : '';
     first = false;
     return `${pre}<script>/* ${f} */\n${js(read(f))}</script>`;
@@ -152,6 +168,100 @@ function bundleLocal(file) {
 }
 
 // The Kisokos page through Stack/lib/kisokos.js's own standalone writer (it also refreshes out/kisokos-data.js).
+// The Érintésnyom and Rétegverem pages need more than bundleLocal: missing parts are reported, not thrown, and their own
+// data (the sessions, the layer text as byte classes) goes in before the page's script.
+const MIME = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.svg': 'image/svg+xml', '.png': 'image/png' };
+
+function bundleLayer(stack, page) {
+  const at = f => path.resolve(stack, f);
+  let html = fs.readFileSync(at(page), 'utf8');
+  const missing = [];
+  html = html.replace(/<link rel="stylesheet" href="([^"]+)">/g, (m, href) => {
+    const f = at(href);
+    if (!fs.existsSync(f)) { missing.push(href); return m; }
+    const sheet = fs.readFileSync(f, 'utf8').replace(/url\(\s*["']?([^"')]+)["']?\s*\)/g, (u, ref) => {
+      if (/^(data:|https?:|#)/.test(ref)) return u;
+      const rf = path.resolve(path.dirname(f), ref);
+      if (!fs.existsSync(rf)) return u;
+      return `url("data:${MIME[path.extname(rf).toLowerCase()] || 'application/octet-stream'};base64,${fs.readFileSync(rf).toString('base64')}")`;
+    });
+    return `<style>/* ${href} */\n${css(sheet)}\n</style>`;
+  });
+  let first = true;
+  html = html.replace(/<script src="([^"]+)"><\/script>/g, (m, src) => {
+    const f = at(src);
+    if (!fs.existsSync(f)) { missing.push(src); return m; }
+    const pre = first ? '<script>window.STACK_BUNDLE = true;</script>\n' : '';
+    first = false;
+    return `${pre}<script>/* ${src} */\n${js(fs.readFileSync(f, 'utf8'))}</script>`;
+  });
+  // links between stack pages point at the names the phone keeps them under
+  html = html.replace(/href="([a-z-]+\.html)((?:#|\?)[^"]*)?"/g, (m, f, rest) => LINKS[f] ? `href="${LINKS[f]}${rest || ''}"` : m);
+  if (missing.length) return { missing };
+  if (/<script src=|<link rel="stylesheet"/.test(html)) throw new Error(page + ': something external is still linked');
+  return { html };
+}
+
+// Érintésnyom on the phone (SL4, read-only): the page with the stack, the lens and forecast indexes inlined like the layer
+// pages, plus the newest recorded sessions as window.REPLAY_BUNDLE (their out/replay/<sid8>.js files, which call
+// REPLAY_LOAD, collected before the page's own script runs).
+const TOUCH_SESSIONS = 12, TOUCH_BYTES = 4 * 1024 * 1024;
+function bundleTouch(stack) {
+  const b = bundleLayer(stack, 'erintesnyom.html');
+  if (b.missing) return b;
+  const idx = path.join(stack, 'out', 'replay', 'index.js');
+  let rows = [];
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(idx, 'utf8'), box); rows = box.window.REPLAY_INDEX || []; } catch { rows = []; }
+  let size = 0; const parts = [];
+  for (const r of rows.slice(0, TOUCH_SESSIONS)) {
+    const f = path.join(stack, 'out', 'replay', r.sid + '.js');
+    if (!fs.existsSync(f)) continue;
+    const s = fs.readFileSync(f, 'utf8');
+    if (size + s.length > TOUCH_BYTES) break;
+    size += s.length; parts.push(`<script>/* out/replay/${r.sid}.js */\n${js(s)}</script>`);
+  }
+  const collect = '<script>window.REPLAY_BUNDLE = {}; window.REPLAY_LOAD = function (sid, d) { window.REPLAY_BUNDLE[sid] = d; };</script>\n' + parts.join('\n') + '\n';
+  const at = b.html.lastIndexOf('<script>\n(function () {');
+  if (at < 0) throw new Error('erintesnyom.html: the page script was not found');
+  return { html: b.html.slice(0, at) + collect + b.html.slice(at), sessions: parts.length };
+}
+
+// Rétegverem on the phone: the Viewer with the stack and the layer text inlined. The text itself never leaves the PC:
+// each byte becomes its class (lib/viewer-layout.js byteClass), 16 of them one particle (Normál, the phone's default,
+// STK-Q22), so a layer of 8 MB is 500 KB of classes. Node ranges are given in particles.
+const VIEW_K = 16;
+function layerClasses(stack) {
+  const dir = path.join(stack, 'out', 'layertext');
+  let ix = null;
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(dir, 'index.js'), 'utf8'), box); ix = box.window.LAYERTEXT_INDEX; } catch { ix = null; }
+  if (!ix) return null;
+  const VL = require(path.resolve(stack, 'lib', 'viewer-layout.js'));
+  const layers = {};
+  for (const L of Object.keys(ix.layers)) {
+    const idx = JSON.parse(fs.readFileSync(path.join(dir, L + '.idx'), 'utf8')).nodes, src = fs.readFileSync(path.join(dir, L + '.bin'));
+    const cls = new Uint8Array(src.length); for (let i = 0; i < src.length; i++) cls[i] = VL.byteClass(src[i]);
+    const ag = VL.aggregate(cls, idx.map(r => [r[1], r[2]]), VIEW_K, true);
+    layers[L] = { nodes: idx.map((r, i) => [r[0], ag.starts[i], ag.starts[i + 1]]), data: Buffer.from(ag.data).toString('base64') };
+  }
+  // the time scrubber's births and pulses (ids and day numbers only)
+  let time = null;
+  try { const box = { window: {} }; require('vm').runInNewContext(fs.readFileSync(path.join(dir, 'time.js'), 'utf8'), box); time = box.window.LAYERTEXT_TIME || null; } catch { time = null; }
+  return { k0: VIEW_K, index: { generated: ix.generated, layers: ix.layers, diff: ix.diff || {} }, layers, time };
+}
+function bundleViewer(stack) {
+  const b = bundleLayer(stack, 'viewer.html');
+  if (b.missing) return b;
+  const data = path.join(stack, 'out', 'stack-data.js'), lt = layerClasses(stack), missing = [];
+  if (!fs.existsSync(data)) missing.push('out/stack-data.js');
+  if (!lt) missing.push('out/layertext');
+  if (missing.length) return { missing };
+  const pre = `<script>/* out/stack-data.js */\n${js(fs.readFileSync(data, 'utf8'))}</script>\n` +
+    `<script>/* out/layertext: byte classes only, ${VIEW_K} bytes a particle */\nwindow.LAYERTEXT_BUNDLE = ${js(JSON.stringify(lt))};</script>\n`;
+  const at = b.html.lastIndexOf("<script>\n'use strict';\n(function () {");
+  if (at < 0) throw new Error('viewer.html: the page script was not found');
+  return { html: b.html.slice(0, at) + pre + b.html.slice(at), layers: Object.keys(lt.layers).length };
+}
+
 function kisokosPage(stack, out) {
   const file = path.join(out, 'kisokos.html');
   require(path.join(stack, 'lib', 'kisokos.js')).write({ standalone: file });
@@ -179,9 +289,22 @@ function main() {
     files[p.file] = b.html;
     if (!D) D = JSON.parse(b.data.slice(b.data.indexOf('=') + 1).trim().replace(/;\s*$/, ''));
   }
+  if (only.includes('retegek') && files['retegek.html']) {   // the Stack Viewer in place of the old graph view, when the PC has its layer text
+    const view = bundleViewer(a.stack);
+    if (view.missing) console.log(`viewer.html: left out, retegek.html stays the graph view (missing ${view.missing.join(', ')}; run: node stack.js build)`);
+    else { files['retegek.html'] = view.html; console.log(`viewer.html -> retegek.html: ${view.layers} layers as byte classes`); }
+  }
   if (only.includes('kisokos')) { K = kisokosPage(a.stack, out); files['kisokos.html'] = K.html; }
   const missing = [];
-  for (const p of PAGES.filter(x => (x.local || x.archive) && only.includes(x.id))) {
+  for (const p of PAGES.filter(x => (x.local || x.archive || x.touch) && only.includes(x.id))) {
+    if (p.touch) {   // Érintésnyom: the page and the newest recorded sessions
+      const t = bundleTouch(a.stack);
+      if (t.missing) {
+        if (a.only) throw new Error(`${p.id}: ${t.missing.join(', ')} missing (on the PC: node Stack/stack.js build)`);
+        missing.push(p); console.log(`warning: ${p.id}: ${t.missing.join(', ')} missing; the branch's copy is kept`); continue;
+      }
+      files[p.file] = t.html; console.log(`erintesnyom.html: ${t.sessions} sessions inlined`); continue;
+    }
     const need = p.local ? path.join(a.stack, p.data) : path.join(a.repo, p.archive);
     if (!fs.existsSync(need)) {
       if (a.only) throw new Error(`${p.id}: ${path.relative(a.repo, need)} is missing (on the PC: node Stack/stack.js build)`);
@@ -244,4 +367,4 @@ function main() {
 if (require.main === module) {
   try { main(); } catch (e) { console.error('publish-stack: ' + e.message); process.exit(1); }
 }
-module.exports = { bundle, bundleLocal, js, PAGES, LINKS, kisokosPage };
+module.exports = { bundle, bundleLocal, bundleLayer, bundleTouch, bundleViewer, layerClasses, js, PAGES, LINKS, kisokosPage };

@@ -389,7 +389,7 @@ object CatalogGuide {
                 "A ⟳ letölti a két oldalt, utána offline is megy.",
                 "Konnektóm: egy ujj forgat, csippentés nagyít, koppintás kiválaszt, dupla koppintás alaphelyzetbe tesz.",
                 "Holo: két ujjas söprés vált formát. Hosszan nyomva üres helyen zárod vagy nyitod az Őrséget.",
-                "Az Asztal dokkjában a ◢ tárcsa is ide visz.",
+                "A dokk ◢ gombja a rétegek menüjét nyitja, fentről lefelé (F I Q L A U R C G Z); egy réteg a saját nézetét hozza; az Érintésnyom a rögzített munkameneteket játssza vissza a rétegeken; az utolsó sor, a Rétegek, az összeset egyszerre.",
             ),
             needs = "internet, GitHub belépés",
             pair = "Asztal: Rétegverem (START R): keresés, Ötletfolyam, Döntésnapló, Konnektóm-labor",
@@ -471,7 +471,7 @@ object CatalogGuide {
             how = listOf(
                 "Oldalra húzva lapozol: 1 Terep, 2 Munka, 3 Workflow, 4 Térkép, 5 Archívum, 6 Kapcsolat, 7 Egyéb, 8 Fiók.",
                 "A felső sávban a Kommand kereső (például „led” → LED árkalkulátor), a tájolás váltó és a Katalógus gomb.",
-                "A dokkban a nyitott ablakok, a ◣ menü, a ◢ Rétegverem és a 📐 Sketcher. Egy ablakot hosszan nyomva bezárhatsz.",
+                "A dokkban a nyitott ablakok, a ◣ menü, a ◢ rétegek menüje és a 📐 Sketcher. Egy ablakot hosszan nyomva bezárhatsz.",
                 "A ⌂ hosszan nyomva vált a lapozós kezdőlap és az egy hosszú oldal között.",
             ),
             pair = "PC: a VRG Asztal (START D)",

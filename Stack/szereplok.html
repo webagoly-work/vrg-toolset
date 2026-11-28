@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Ki kicsoda</title>
+<!-- Ki kicsoda (who-is-who): the W layer's page (S19, lib/meta.js). The people on the Kapu's signed access list, by
+     role and never by name, with the Kapu layers each may enter; the Claude accounts; the Council's seats, each with the
+     agent that plays it and the lines it owns (their pillars, open signals and last activity) and its load; the work no
+     Head owns; the pillars only one recorded session has worked on ("knowledge in one head"); the business units.
+     Selecting a row lights its pillars on every other open Stack page (lib/live.js). Data: out/people-data.js
+     (lib/peoplepage.js, every build). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --ok: var(--vk-ok, #8bcca1);
+    --red: var(--vk-error, #e88f8f); --amber: var(--vk-warn, #e3be7b); --info: var(--vk-accent, #93d3e6);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); }
+  header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  #sum { font: 12px var(--mono); color: var(--mu); }
+  .sp { flex: 1; }
+  .badge { font: 12px var(--mono); padding: 3px 9px; border: 1px solid var(--ln); }
+  .badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+  .badge.bad { color: var(--red); border-color: var(--red); }
+  main { padding: 12px 16px 32px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }   /* the seats scroll in their own row, not the page */
+  h2 { font: 600 12px var(--voice); letter-spacing: .12em; text-transform: uppercase; color: var(--mu); margin: 0 0 8px; }
+  h2 i { font: italic 400 11px var(--sans); letter-spacing: 0; text-transform: none; color: var(--fa); margin-left: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .card { background: var(--s1); border: 1px solid var(--ln); padding: 9px 12px; min-width: 220px; flex: 1 1 220px; cursor: pointer; }
+  .card .t { font: 600 14px var(--voice); letter-spacing: .03em; }
+  .card .b { font-size: 12px; color: var(--mu); overflow-wrap: anywhere; }
+  .lay { display: inline-block; font: 11px var(--mono); border: 1px solid var(--ln); padding: 1px 6px; margin: 4px 4px 0 0; color: var(--mu); }
+  .lay b { color: var(--tx); font-weight: 600; margin-right: 4px; }
+  #seats { display: flex; gap: 12px; overflow-x: auto; align-items: flex-start; padding-bottom: 4px; }
+  .seat { flex: 0 0 300px; background: var(--s1); border: 1px solid var(--ln); border-top: 3px solid var(--acc); }
+  .seat.vacant { border-top-color: var(--ln); opacity: .55; }
+  .seat header { position: static; padding: 8px 10px 6px; border: 0; display: block; background: none; cursor: pointer; }
+  .seat header .t { font: 600 14px var(--voice); letter-spacing: .04em; }
+  .seat header .b { font-size: 12px; color: var(--mu); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  .load { display: flex; gap: 10px; font: 11px var(--mono); color: var(--fa); padding: 0 10px 8px; flex-wrap: wrap; }
+  .load b { color: var(--tx); font-weight: 600; }
+  .bar { height: 4px; margin: 0 10px 8px; background: var(--s2); display: flex; }
+  .bar span { display: block; height: 100%; }
+  .line { margin: 0 8px 6px; padding: 6px 9px; background: var(--s2); border-left: 3px solid var(--ln2); cursor: pointer; }
+  .line.red { border-left-color: var(--red); } .line.amber { border-left-color: var(--amber); } .line.info { border-left-color: var(--info); }
+  .line .t { font-size: 13px; } .line .p { font: 11px var(--mono); color: var(--fa); overflow-wrap: anywhere; }
+  .dots { float: right; font: 11px var(--mono); }
+  .dots .r { color: var(--red); } .dots .a { color: var(--amber); } .dots .i { color: var(--info); }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .list { background: var(--s1); border: 1px solid var(--ln); padding: 8px 12px; }
+  .list ul { list-style: none; padding: 0; margin: 0; }
+  .list li { padding: 5px 0; border-bottom: 1px solid var(--ln); font-size: 13px; cursor: pointer; overflow-wrap: anywhere; }
+  .list li:last-child { border-bottom: 0; }
+  .list li small { display: block; font: 11px var(--mono); color: var(--fa); }
+  [aria-selected="true"] { outline: 1px solid var(--acc); }
+  .empty { color: var(--fa); font-size: 13px; }
+  @media (max-width: 760px) { #seats { flex-direction: column; overflow: visible; } .seat { flex: none; width: 100%; } .card { min-width: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ki kicsoda<i>people and roles · W</i></h1>
+  <span id="sum"></span>
+  <span class="sp"></span>
+  <span id="sig" class="badge"></span>
+</header>
+<main>
+  <section><h2>Emberek és fiókok<i>people and accounts</i></h2><div class="row" id="people"></div></section>
+  <section><h2>A Tanács<i>the Council: who owns what, and what is open on it</i></h2><div id="seats"></div></section>
+  <section class="grid3">
+    <div class="list"><h2>Nincs gazdája<i>no Head owns it</i></h2><ul id="unowned"></ul></div>
+    <div class="list"><h2>Egy kézben<i>one recorded session only</i></h2><ul id="alone"></ul></div>
+    <div class="list"><h2>Üzletágak<i>business units (Kapu)</i></h2><ul id="units"></ul></div>
+  </section>
+</main>
+<script src="out/people-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.PEOPLE;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('people').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet: run node stack.js build.</p>'; return; }
+  const ids = new Map();   // a row's key → the node ids it stands for (its own, its pillars)
+  const k = (key, list) => { ids.set(key, list); return `data-k="${esc(key)}"`; };
+  const dots = s => `<span class="dots">${s.red ? `<span class="r">● ${s.red}</span> ` : ''}${s.amber ? `<span class="a">● ${s.amber}</span> ` : ''}${s.info ? `<span class="i">● ${s.info}</span>` : ''}</span>`;
+  const worst = s => s.red ? 'red' : s.amber ? 'amber' : s.info ? 'info' : '';
+  const c = D.counts;
+  $('sum').textContent = `${c.people} ember · ${c.accounts} fiók · ${c.seats} szék (${c.vacant} üres) · ${c.lines} gazdás sor · ${c.unowned} gazdátlan · ${c.alone} egy kézben`;
+  $('sig').textContent = D.signed == null ? 'nincs hozzáférési lista · no access list' : D.signed ? '✓ aláírás érvényes · signed list verifies' : '✗ az aláírás érvénytelen · signature does NOT verify';
+  $('sig').className = 'badge ' + (D.signed === false ? 'bad' : D.signed ? 'ok' : '');
+
+  $('people').innerHTML = D.people.map(p => `<div class="card" ${k(p.id, [p.id])}><div class="t">${esc(p.title)}</div>
+      <div class="b">belép · may enter:</div>${p.layers.map(([l, hu, en]) => `<span class="lay"><b>${esc(l)}</b>${esc(hu)} · ${esc(en)}</span>`).join('')}</div>`).join('')
+    + D.accounts.map(a => `<div class="card" ${k(a.id, [a.id])}><div class="t">${esc(a.title)} <span class="lay">${esc(a.state)}</span></div><div class="b">${esc(a.brief)}</div></div>`).join('')
+    || '<p class="empty">Nincs hozzáférési lista ezen a gépen. · No access list on this PC.</p>';
+
+  const maxLoad = Math.max(1, ...D.seats.map(s => s.load.red + s.load.amber + s.load.info));
+  $('seats').innerHTML = D.seats.map(s => {
+    const L = s.load, tot = L.red + L.amber + L.info;
+    return `<section class="seat${s.vacant ? ' vacant' : ''}"><header ${k(s.id, [s.id, ...(s.agent ? [s.agent.id] : [])])}><div class="t">${esc(s.title)}</div>
+        <div class="b">${s.vacant ? 'üres szék · vacant (ROSTER.md)' : esc(s.agent ? s.agent.brief : '')}</div></header>
+      ${s.vacant ? '' : `<div class="load"><span><b>${L.lines}</b> sor · lines</span><span><b>${L.pillars}</b> pillér</span><span><b>${tot}</b> jelzés · signals</span></div>
+      <div class="bar" title="${L.red} piros · ${L.amber} sárga · ${L.info} info">${tot ? `<span style="width:${100 * L.red / maxLoad}%;background:var(--red)"></span><span style="width:${100 * L.amber / maxLoad}%;background:var(--amber)"></span><span style="width:${100 * L.info / maxLoad}%;background:var(--info)"></span>` : ''}</div>`}
+      ${s.lines.map(l => `<div class="line ${worst(l.signals)}" ${k(l.id, [l.id, ...l.pillars.map(p => 'E:' + p[0])])}>${dots(l.signals)}<div class="t">${esc(l.title)}</div>
+        <div class="p">${l.pillars.length ? l.pillars.map(p => esc(p[1])).join(', ') : 'nincs pillérje · no pillar matches it'}${l.last ? ' · ' + esc(l.last) : ''}</div></div>`).join('')}
+    </section>`;
+  }).join('') || '<p class="empty">Nincs ROSTER.md. · No roster.</p>';
+
+  $('unowned').innerHTML = D.unowned.map(u => `<li ${k(u.id, [u.id])}>${dots(u.signals)}${esc(u.name)}<small>${esc(u.area || '')}${u.last ? ' · ' + esc(u.last) : ''}</small></li>`).join('') || '<li class="empty">— minden pillérnek van gazdája · every pillar with code has an owner</li>';
+  $('alone').innerHTML = c.sessions < 3 ? `<li class="empty">— ${c.sessions ? `csak ${c.sessions} felvett munkamenet: ebből még nem látszik · only ${c.sessions} recorded session${c.sessions > 1 ? 's' : ''}, too few to tell` : 'nincs felvett munkamenet · no recorded sessions yet'}</li>` : D.alone.map(a => `<li ${k(a.id, [a.id, a.session])}>${esc(a.name)}<small>${esc(a.session.replace('U:run.', 'session '))}${a.last ? ' · ' + esc(a.last) : ''}</small></li>`).join('') || `<li class="empty">— ${c.sessions ? 'egyik sem · none' : 'nincs felvett munkamenet · no recorded sessions yet'}</li>`;
+  $('units').innerHTML = D.units.map(u => `<li ${k(u.id, [u.id])}>${esc(u.title)}<small>${esc(u.brief)}</small></li>`).join('');
+
+  let sel = '';
+  function select(key, quiet) {
+    sel = ids.has(key) ? key : '';
+    for (const el of document.querySelectorAll('[data-k]')) el.setAttribute('aria-selected', String(el.dataset.k === sel));
+    if (!quiet && window.StackLive) StackLive.selected(sel ? ids.get(sel) : []);
+    if (sel) history.replaceState(null, '', '#sel=' + encodeURIComponent(sel));
+  }
+  document.body.addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  const h0 = new URLSearchParams(location.hash.slice(1)).get('sel'); if (h0 && ids.has(h0)) select(h0, true);
+
+  // the page contract (S7, lib/live.js): a row lights when the string holds it or one of its pillars
+  if (window.StackLive) StackLive.contract({
+    layer: 'W', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, ids.get(el.dataset.k) || []]),
+    select: id => { id = String(id || ''); if (ids.has(id)) return select(id, true); for (const [key, list] of ids) if (list.includes(id)) return select(key, true); },
+    getSelection: () => (sel ? ids.get(sel) : []),
+  });
+})();
+</script>
+</body>
+</html>

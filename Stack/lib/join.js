@@ -4,7 +4,12 @@
 // for `ref` keys (what it MENTIONS). ref(A) == own(B) becomes a link A → B; across layers that
 // link is vertical. Two more joins: `same` (two layers own one key) and `alike` (names match).
 //
-// join(layers, facts) → { nodes: Map, edges, dangling, unresolved, resolveText }
+// join(layers, facts, { reuseSig }) → { nodes: Map, edges, dangling, unresolved, resolveText, sig }
+// A node's refs depend on its own text and on the KNOWN keys (the repo's paths, the commits, sessions and memories).
+// `sig` fingerprints the known keys; the full build caches every layer after the join with each node's `ref` and this
+// sig, and an incremental build (pipeline.runLayers) passes the cached sig back: a node that already carries `ref`
+// keeps it without reading its text again, which is what makes a one-layer rebuild fast. A fresh node (from the
+// adapter that just ran) has no `ref` and is read as always.
 // `resolveText(text)` is the same resolver as a function, so the recorder can turn a tool call
 // ("Read notes/devlog/DEVLOG.md") into the stack nodes it touched.
 'use strict';
@@ -12,7 +17,25 @@
 const C = require('./common');
 const { fold } = C;
 
-function join(layers, facts) {
+const crypto = require('crypto');
+function knownOf(layers, facts) {
+  const byLayer = l => (layers[l] ? layers[l].nodes : []);
+  return {
+    commits: new Set(byLayer('R').map(n => n.id.slice(2))),
+    sessions: new Set(byLayer('L').filter(n => n.kind === 'session').map(n => n.id.slice(3))),
+    memories: new Set(byLayer('A').filter(n => n.id.startsWith('A:mem.')).map(n => n.id.slice(6))),
+    jobs: new Set(byLayer('M').map(n => n.id.slice(6))),   // M:job.<CODE> (S15): a code in any text links to its job
+    files: facts.paths,
+  };
+}
+function knownSig(layers, facts) {
+  const k = knownOf(layers, facts), h = crypto.createHash('sha1');
+  for (const part of ['commits', 'sessions', 'memories', 'jobs', 'files']) { h.update('\u0001' + part); for (const x of [...k[part]].sort()) h.update('\u0000' + x); }
+  return h.digest('hex').slice(0, 16);
+}
+
+function join(layers, facts, { reuseSig = null } = {}) {
+  const sig = knownSig(layers, facts), reuse = !!reuseSig && reuseSig === sig;
   const nodes = new Map();
   const edges = [];
   for (const [code, lay] of Object.entries(layers)) {
@@ -34,6 +57,7 @@ function join(layers, facts) {
     commits: new Set(byLayer('R').map(n => n.id.slice(2))),
     sessions: new Set(byLayer('L').filter(n => n.kind === 'session').map(n => n.id.slice(3))),
     memories: new Set(byLayer('A').filter(n => n.id.startsWith('A:mem.')).map(n => n.id.slice(6))),
+    jobs: new Set(byLayer('M').map(n => n.id.slice(6))),
   };
   const extract = C.makeExtractor(known);
 
@@ -51,10 +75,14 @@ function join(layers, facts) {
   const seen = new Set(edges.map(e => e.a + '>' + e.b));
   let unresolved = 0;
   for (const n of nodes.values()) {
-    const refs = extract(n.text);
-    if (n.extra && Array.isArray(n.extra.files)) for (const f of n.extra.files) refs.add('p:' + C.normPath(f));
-    if (n.extra && n.extra.path && n.layer === 'Q') refs.add('p:' + n.extra.path);
-    for (const k of n.own) refs.delete(k);
+    let refs;
+    if (reuse && Array.isArray(n.ref)) refs = new Set(n.ref);
+    else {
+      refs = extract(n.text);
+      if (n.extra && Array.isArray(n.extra.files)) for (const f of n.extra.files) refs.add('p:' + C.normPath(f));
+      if (n.extra && n.extra.path && n.layer === 'Q') refs.add('p:' + n.extra.path);
+      for (const k of n.own) refs.delete(k);
+    }
     n.ref = [...refs];
     for (const k of refs) {
       const targets = resolve(k);
@@ -100,7 +128,7 @@ function join(layers, facts) {
   const dangling = edges.filter(e => !nodes.has(e.a) || !nodes.has(e.b));
   const live = edges.filter(e => nodes.has(e.a) && nodes.has(e.b));
   for (const e of live) if (nodes.get(e.a).layer !== nodes.get(e.b).layer) e.v = 1;
-  return { nodes, edges: live, dangling, unresolved, alike, resolveText, ownIndex };
+  return { nodes, edges: live, dangling, unresolved, alike, resolveText, ownIndex, sig, reused: reuse };
 }
 
-module.exports = { join };
+module.exports = { join, knownSig };

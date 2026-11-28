@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Műhelyasztal</title>
+<!-- Műhelyasztal (bench view): the D layer's page (S16, lib/meta.js). Each firmware in the Board Console's library with
+     the sketch it was built from and the boards that run it (latest or behind); the boards on their own, what each
+     holds and whether that is known; the sketches no firmware was built from. Reflashing stays in the Board Console
+     (START U). Selecting a row lights it on every other open Stack page (lib/live.js). Data: out/bench-data.js
+     (lib/layerpages.js). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .chain { display: grid; grid-template-columns: 1fr 24px 1.2fr 24px 1.4fr; align-items: stretch; gap: 0; margin-bottom: 10px; }
+  .chain > div { background: var(--s2); padding: 8px 10px; border-left: 3px solid var(--ln2); cursor: pointer; min-width: 0; overflow-wrap: anywhere; }
+  .chain .arrow { background: none; border: 0; color: var(--fa); display: flex; align-items: center; justify-content: center; cursor: default; padding: 0; }
+  .chain .sk { border-left-color: var(--acc); } .chain .fw { border-left-color: var(--warm); } .chain .bd { border-left-color: var(--ok); }
+  .t { font: 600 13px var(--mono); }
+  @media (max-width: 760px) { .chain { grid-template-columns: 1fr; } .chain .arrow { height: 18px; font-size: 0; } .chain .arrow::before { content: '↓'; font-size: 14px; } }
+</style>
+</head>
+<body>
+<header><h1>Műhelyasztal<i>devices · D</i></h1><span class="sum" id="sum"></span></header>
+<main>
+  <section class="panel"><h2>Vázlat → firmware → lap<i>sketch → firmware → board</i></h2><div id="chains"></div></section>
+  <section class="grid2">
+    <div class="panel"><h2>Lapok<i>every board the Board Console has seen</i></h2><ul class="list" id="boards"></ul></div>
+    <div class="panel"><h2>Firmware nélkül<i>sketches with no firmware in the library</i></h2><ul class="list" id="lonely"></ul>
+      <p class="mono">Újraírás · reflash: Board Console (START U), Firmware fül.</p></div>
+  </section>
+</main>
+<script src="out/bench-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.BENCH, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('chains').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const c = D.counts, sk = new Map(D.sketches.map(s => [s.id, s])), bd = new Map(D.boards.map(b => [b.id, b]));
+  $('sum').textContent = `${c.sketches} vázlat · ${c.firmware} firmware · ${c.boards} lap · ${c.signals} jelzés`;
+  const sig = list => list.map(s => `<span class="chip ${s[2] === 'red' ? 'red' : s[2] === 'amber' ? 'amber' : 'info'}">${esc(s[3])}</span>`).join('');
+  const keys = new Map(), k = (key, ids) => { keys.set(key, ids); return `data-k="${esc(key)}"`; };
+  $('chains').innerHTML = D.firmware.map(f => { const s = sk.get(f.sketch);
+    return `<div class="chain"><div class="sk" ${s ? k(f.id + '#sk', [s.id]) : ''}>${s ? `<div class="t">${esc(s.name)}</div><div class="mono">${esc(s.path)}</div>${sig(s.signals)}` : '<div class="mono faint">nincs vázlat · no sketch (an uploaded .bin)</div>'}</div><div class="arrow">→</div>
+      <div class="fw" ${k(f.id, [f.id])}><div class="t">${esc(f.name)} <span class="chip">${esc(f.latest)}</span></div><div class="mono">${esc(f.chip)} · ${f.versions.length} verzió · built ${esc(f.built || '?')}</div>${sig(f.signals)}</div><div class="arrow">→</div>
+      <div class="bd">${f.boards.length ? f.boards.map(([b, w]) => { const B = bd.get(b); if (!B) return ''; const behind = B.last && B.last.version !== f.latest;
+        return `<div ${k(B.id + '@' + f.id, [B.id])} style="cursor:pointer;padding:2px 0"><span class="t">${esc(B.title)}</span> <span class="chip ${behind ? 'amber' : 'ok'}">${behind ? esc(B.last.version) + ' → ' + esc(f.latest) : 'legfrissebb · latest'}</span> <span class="faint mono">×${w}</span></div>`; }).join('') : '<div class="mono faint">egy lapra sem írták · on no board yet</div>'}</div></div>`; }).join('')
+    || '<p class="empty">Nincs firmware a Board Console könyvtárában ezen a gépen. · No firmware in the library on this PC.</p>';
+  $('boards').innerHTML = D.boards.map(b => `<li ${k(b.id, [b.id])}>${esc(b.title)} ${b.known ? '<span class="chip ok">ismert · known</span>' : '<span class="chip amber">ismeretlen tartalom · unknown</span>'}
+    <small>${esc(b.chip)} · ${esc(b.flash)} · utoljára · last seen ${esc(b.seen)}${b.last ? ' · ' + esc(b.last.id) + ' ' + esc(b.last.version) : ''}</small>${sig(b.signals)}</li>`).join('') || '<li class="empty">— nincs lap · no boards seen</li>';
+  $('lonely').innerHTML = D.lonely.map(id => sk.get(id)).filter(Boolean).map(s => `<li ${k(s.id, [s.id])}>${esc(s.name)}<small>${esc(s.path)}</small></li>`).join('') || '<li class="empty">— mindegyikből van · every sketch has firmware</li>';
+  let sel = '';
+  function select(key, quiet) { sel = keys.has(key) ? key : ''; for (const el of document.querySelectorAll('[data-k]')) el.setAttribute('aria-selected', String(el.dataset.k === sel)); if (!quiet && window.StackLive) StackLive.selected(sel ? keys.get(sel) : []); }
+  document.body.addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'D', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, keys.get(el.dataset.k) || []]),
+    select: id => { id = String(id || ''); if (keys.has(id)) return select(id, true); for (const [key, ids] of keys) if (ids.includes(id)) return select(key, true); },
+    getSelection: () => (sel ? keys.get(sel) : []),
+  });
+})();
+</script>
+</body>
+</html>

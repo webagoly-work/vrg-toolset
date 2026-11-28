@@ -47,6 +47,7 @@
 |---|---|
 | Planner, routing, client preview, client look, MindMap, Valena | Arnold |
 | Workflow Kit, calculators, Inventory, BuildTree, jobs, licences | Charlotte |
-| BRIDGE, Media Wall, smart-home catalogue, firmware, Kapu, Mobile, Kódváros, launcher, backups, repo, CoreRef, vendor, toolbox, prompts, research | Elsie |
+| BRIDGE, Media Wall, smart-home catalogue, firmware, Board Console, Knob Pad, Site Pager, Kapu, Mobile, Kódváros, launcher, backups, repo, CoreRef, vendor, toolbox, prompts, research, Solomon (Data Globe) | Elsie |
+| VRG Stack (the record of the work) | Bernard |
 
 The live briefs carry the same owner on their second line: `docs/hub/agents/`.

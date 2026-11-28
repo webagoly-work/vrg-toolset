@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Tesztfal</title>
+<!-- Tesztfal (test wall): the P layer's page (S12, lib/meta.js). Every test suite and check as a row: its recorded runs
+     as a strip (green passed, red failed, grey skipped, newest on the right), its state (fail, stale, unrun, no runner,
+     pass), its START key or CI line and the command that runs it again (node stack.js probe <suite>). Failing first.
+     Selecting a row lights it on every other open Stack page (lib/live.js). Data: out/testwall-data.js
+     (lib/layerpages.js, from data/probes.jsonl). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .wall > .r { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr) 110px; cursor: pointer; }
+  .wall > .r > div { padding: 6px 8px; border-bottom: 1px solid var(--ln); min-width: 0; overflow-wrap: anywhere; }
+  .wall > .r[aria-selected="true"] > div { background: var(--s2); }
+  .strip { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; }
+  .strip i { display: inline-block; width: 10px; height: 16px; background: var(--fa); }
+  .strip i.pass { background: var(--ok); } .strip i.fail { background: var(--red); } .strip i.skip { background: var(--s2); border: 1px solid var(--ln2); }
+  .st { font: 11px var(--mono); }
+  @media (max-width: 760px) { .wall > .r { grid-template-columns: minmax(0, 1fr); } .wall > .r > div { border-bottom: 0; } .wall > .r > div:last-child { border-bottom: 1px solid var(--ln); } }
+</style>
+</head>
+<body>
+<header><h1>Tesztfal<i>tests and checks · P</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <select id="st" aria-label="állapot · state"><option value="">minden · every state</option></select>
+  <input id="q" type="search" placeholder="keresés · search" aria-label="keresés · search"></header>
+<main>
+  <section class="panel"><h2>Futások<i>each suite's recorded runs, newest on the right; failing first</i></h2><div class="wall" id="wall"></div></section>
+  <section class="panel"><h2>Kiválasztott<i>the selected suite</i></h2><div id="detail"><p class="empty">Válassz egy tesztet. · Pick a suite.</p></div></section>
+</main>
+<script src="out/testwall-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.TESTWALL, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('wall').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const c = D.counts, byId = new Map(D.suites.map(s => [s.id, s]));
+  const tone = { fail: 'red', stale: 'amber', 'no runner': 'amber', unrun: 'mute', skipped: 'mute', pass: 'ok' };
+  $('sum').textContent = `${c.suites} teszt · ${Object.entries(c.states).map(([k, v]) => `${v} ${k}`).join(' · ')} · ${c.runs} felvett futás`;
+  for (const s of Object.keys(c.states)) $('st').insertAdjacentHTML('beforeend', `<option>${esc(s)}</option>`);
+  let q = '', st = '', sel = '';
+  function render() {
+    const S = D.suites.filter(s => (!st || s.state === st) && (!q || s.path.toLowerCase().includes(q)));
+    $('wall').innerHTML = S.map(s => `<div class="r" data-k="${esc(s.id)}" aria-selected="${s.id === sel}"><div><b class="mono" style="color:var(--tx)">${esc(s.path)}</b> <span class="faint mono">${esc(s.kind)} · ${esc(s.runner || '—')}${s.keys.length ? ' · START ' + esc(s.keys.join(', ')) : ''}</span></div>
+        <div class="strip">${s.runs.length ? s.runs.map(r => `<i class="${esc(r[1])}" title="${esc(r[0])} · ${esc(r[1])}${r[2] != null ? ' · ' + r[2] + ' ✓' : ''}${r[3] ? ' ' + r[3] + ' ✗' : ''}${r[4] ? ' · ' + esc(r[4]) : ''}"></i>`).join('') : '<span class="faint mono">még nem futott · no run recorded</span>'}</div>
+        <div><span class="chip ${tone[s.state] || ''}">${esc(s.state)}</span></div></div>`).join('') || '<p class="empty">Nincs ilyen teszt. · No suite matches.</p>';
+  }
+  function detail() {
+    const s = byId.get(sel); if (!s) return;
+    const last = s.runs[s.runs.length - 1];
+    $('detail').innerHTML = `<div class="mono" style="color:var(--tx)">${esc(s.path)} <span class="chip ${tone[s.state] || ''}">${esc(s.state)}</span></div>
+      <p class="mono">${s.files} fájl · files · ${esc(s.runner || 'no runner')}${s.ci.length ? ' · CI: ' + s.ci.map(esc).join(', ') : ''}${last ? ' · utolsó · last ' + esc(last[0]) + (last[2] != null ? ' · ' + last[2] + ' ✓' : '') + (last[3] ? ' ' + last[3] + ' ✗' : '') : ''}</p>
+      <div class="cmd">node stack.js probe ${esc(s.path)}</div>${s.cmds.map(cm => `<div class="cmd" style="border-left-color:var(--ln2)">${esc(cm)}</div>`).join('')}
+      ${s.signals.map(x => `<div class="cmd" style="border-left-color:var(--${x[2] === 'red' ? 'red' : 'amber'})">${esc(x[3])}</div>`).join('')}`;
+  }
+  function select(id, quiet) { sel = byId.has(id) ? id : ''; render(); detail(); if (!quiet && window.StackLive) StackLive.selected(sel ? [sel] : []); }
+  $('wall').addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  $('st').onchange = e => { st = e.target.value; render(); };
+  render();
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'P', data: D,
+    items: () => [...document.querySelectorAll('.r[data-k]')].map(el => [el, [el.dataset.k]]),
+    select: id => { id = String(id || ''); if (byId.has(id)) select(id, true); },
+    getSelection: () => (sel ? [sel] : []),
+  });
+})();
+</script>
+</body>
+</html>

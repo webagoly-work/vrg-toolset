@@ -59,6 +59,51 @@ const NS_BY_FILE = [ // a local "Q01" in these files belongs to this namespace
   [/docs\/city\//, 'CITY'], [/views\//, 'D-V'], [/round-2026-10-18/, 'R1018'], [/round-2026-10-22-villany/, 'R1022'],
   [/docs\/mcp\//, 'MCP'], [/BRIDGE/, 'BRIDGE'], [/Workflow_Kit/, 'KIT'], [/varler-planner\/docs\/DECISIONS/, 'PLN'],
 ];
+// One decision file, parsed: shared by the Q adapter below and the write gateway (lib/edit.js), so a written answer is
+// read back by exactly the rules that will read it on the next build.
+const LEAD = /^[\s|>#*\-]+/;
+function decisionIdOf(rest, ns) {
+  let m;
+  if ((m = /^([A-Z][A-Z0-9]{0,11}(?:-[A-Z0-9]{1,8}){0,2})-Q-?(\d{1,3})([a-z]?)\b/.exec(rest))) return { id: C.qid(m[1], m[2], m[3]), raw: m[0] };
+  if ((m = /^D-V(\d+[a-z]?)-(\d+[a-z]?)\b/.exec(rest))) return { id: `D-V${m[1]}-${m[2]}`, raw: m[0] };
+  if ((m = /^Q-?([A-Z]{0,2})(\d{1,3})([a-z]?)\b/.exec(rest))) return { id: `${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`, raw: m[0] };
+  if (ns === 'KIT' && (m = /^L-(\d{1,2})\b/.exec(rest))) return { id: `KIT-L${m[1]}`, raw: m[0] };
+  return null;
+}
+function parseDecisionFile(txt, rel) {
+  const ns = (NS_BY_FILE.find(([rx]) => rx.test(rel)) || [, 'X'])[1];
+  const items = new Map();
+  const lines = txt.split(/\r?\n/);
+  const idOf = rest => { const r = decisionIdOf(rest, ns); return r ? r.id : null; };
+  let section = ''; // "## Answered …" / "## Open …" headings decide for the items under them
+  lines.forEach((l, i) => {
+    const h = /^#{1,3}\s+(.*)$/.exec(l);
+    if (h && !idOf(h[1].replace(/^\*\*/, ''))) { section = /answer|válasz|decided|döntött/i.test(h[1]) ? 'answered' : /\bopen\b|nyitott|held open|waiting/i.test(h[1]) ? 'open' : section; return; }
+    const id = idOf(l.replace(LEAD, '')); if (!id) return;
+    // the item's own text: up to the next item or heading, at most 8 lines
+    let end = i + 1; while (end < lines.length && end < i + 8 && !/^#{1,3}\s/.test(lines[end]) && !idOf(lines[end].replace(LEAD, ''))) end++;
+    const block = lines.slice(i, end).join('\n');
+    const own = /=\s*\**[A-F]\b|answered|válasz|döntés:|~~|\bchose\b|\bdecided\b|\|\s*\*\*[A-F]\b|^\|[^|]+\|\s*[A-F]\b/i.test(l + '\n' + block);
+    const answered = section === 'open' ? /answered|=\s*\**[A-F]\b/i.test(l) : own || section === 'answered';
+    const prev = items.get(id);
+    const title = clip(l.replace(LEAD, '').replace(/\*\*/g, '').replace(/^\|/, '').replace(/\s*\|\s*/g, ' · '), 120);
+    if (!prev) items.set(id, { id, line: i + 1, title, answered, block });
+    else if (answered) prev.answered = true;
+  });
+  // answer tables: "| S1 | **B** | …" under an Answers heading answers Q-S1 / Q01 / Q-02
+  section = '';
+  lines.forEach(l => {
+    const h = /^#{1,3}\s+(.*)$/.exec(l); if (h) { section = /answer|válasz/i.test(h[1]) ? 'answered' : ''; return; }
+    if (section !== 'answered') return;
+    const m = /^\|\s*\**(?:Q-?)?([A-Z]{0,2})-?(\d{1,3})([a-z]?)\**\s*\|\s*\**([A-F])\b/.exec(l); if (!m) return;
+    const it = items.get(`${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`); if (it) it.answered = true;
+  });
+  // a file-wide default ("Unanswered = A", "took every open question at its recommended answer")
+  const byDefault = /unanswered\s*=\s*\**A|every open question at its recommended/i.test(txt);
+  for (const it of items.values()) if (!it.answered && byDefault) it.byDefault = true;
+  return { ns, items, lines };
+}
+
 function decisions(facts) {
   const files = facts.files.filter(f => /decisions/i.test(f) && /\.md$/.test(f)).concat(DECISION_FILES_EXTRA.filter(exists));
   const nodes = [], edges = [];
@@ -67,44 +112,7 @@ function decisions(facts) {
     const rel = normPath(f);
     const txt = read(abs);
     const fileId = 'file.' + rel.replace(/[^\w]+/g, '_').slice(-60);
-    const ns = (NS_BY_FILE.find(([rx]) => rx.test(rel)) || [, 'X'])[1];
-    const items = new Map();
-    const lines = txt.split(/\r?\n/);
-    const LEAD = /^[\s|>#*\-]+/;
-    const idOf = rest => {
-      let m;
-      if ((m = /^([A-Z][A-Z0-9]{0,11}(?:-[A-Z0-9]{1,8}){0,2})-Q-?(\d{1,3})([a-z]?)\b/.exec(rest))) return C.qid(m[1], m[2], m[3]);
-      if ((m = /^D-V(\d+[a-z]?)-(\d+[a-z]?)\b/.exec(rest))) return `D-V${m[1]}-${m[2]}`;
-      if ((m = /^Q-?([A-Z]{0,2})(\d{1,3})([a-z]?)\b/.exec(rest))) return `${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`;
-      if (ns === 'KIT' && (m = /^L-(\d{1,2})\b/.exec(rest))) return `KIT-L${m[1]}`;
-      return null;
-    };
-    let section = ''; // "## Answered …" / "## Open …" headings decide for the items under them
-    lines.forEach((l, i) => {
-      const h = /^#{1,3}\s+(.*)$/.exec(l);
-      if (h && !idOf(h[1].replace(/^\*\*/, ''))) { section = /answer|válasz|decided|döntött/i.test(h[1]) ? 'answered' : /\bopen\b|nyitott|held open|waiting/i.test(h[1]) ? 'open' : section; return; }
-      const id = idOf(l.replace(LEAD, '')); if (!id) return;
-      // the item's own text: up to the next item or heading, at most 8 lines
-      let end = i + 1; while (end < lines.length && end < i + 8 && !/^#{1,3}\s/.test(lines[end]) && !idOf(lines[end].replace(LEAD, ''))) end++;
-      const block = lines.slice(i, end).join('\n');
-      const own = /=\s*\**[A-F]\b|answered|válasz|döntés:|~~|\bchose\b|\bdecided\b|\|\s*\*\*[A-F]\b|^\|[^|]+\|\s*[A-F]\b/i.test(l + '\n' + block);
-      const answered = section === 'open' ? /answered|=\s*\**[A-F]\b/i.test(l) : own || section === 'answered';
-      const prev = items.get(id);
-      const title = clip(l.replace(LEAD, '').replace(/\*\*/g, '').replace(/^\|/, '').replace(/\s*\|\s*/g, ' · '), 120);
-      if (!prev) items.set(id, { id, line: i + 1, title, answered, block });
-      else if (answered) prev.answered = true;
-    });
-    // answer tables: "| S1 | **B** | …" under an Answers heading answers Q-S1 / Q01 / Q-02
-    section = '';
-    lines.forEach(l => {
-      const h = /^#{1,3}\s+(.*)$/.exec(l); if (h) { section = /answer|válasz/i.test(h[1]) ? 'answered' : ''; return; }
-      if (section !== 'answered') return;
-      const m = /^\|\s*\**(?:Q-?)?([A-Z]{0,2})-?(\d{1,3})([a-z]?)\**\s*\|\s*\**([A-F])\b/.exec(l); if (!m) return;
-      const it = items.get(`${ns}-Q${m[1]}${parseInt(m[2], 10)}${m[3]}`); if (it) it.answered = true;
-    });
-    // a file-wide default ("Unanswered = A", "took every open question at its recommended answer")
-    const byDefault = /unanswered\s*=\s*\**A|every open question at its recommended/i.test(txt);
-    for (const it of items.values()) if (!it.answered && byDefault) it.byDefault = true;
+    const { ns, items } = parseDecisionFile(txt, rel);
     nodes.push(node('Q', fileId, {
       kind: 'decision-file', title: heading(txt, path.basename(rel)), brief: `${items.size} decisions in ${rel}`,
       own: ['p:' + rel], t: '', text: txt.slice(0, 1500), extra: { path: rel, ns },
@@ -198,6 +206,48 @@ function agentic(facts) {
     const f = `${ST}/${d}/SKILL.md`; if (!exists(f)) continue; const txt = read(f); const fm = frontmatter(txt);
     add('sched.' + d, { kind: 'scheduled task', title: d, brief: clip(fm.description || firstPara(txt), 240), own: ['p:' + f], text: txt, extra: { path: f } });
   }
+  // skills, plugins and custom slash commands (2026-11-25, so a /deep-research turn lands somewhere): the Claude home
+  // and the repo's .claude. A skill owns sk:<name> (and sk:<plugin>:<name>), a plugin pl:<name>; a skill is part of its plugin.
+  const findIn = (dir, test, depth, out = []) => {
+    if (depth < 0 || !exists(dir)) return out;
+    let ents = []; try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+    for (const e of ents) {
+      const f = dir + '/' + e.name;
+      if (e.isDirectory() && !e.isSymbolicLink() && !/^(node_modules|\.git)$/.test(e.name)) findIn(f, test, depth - 1, out);
+      else if (e.isFile() && test(f)) out.push(f);
+    }
+    return out;
+  };
+  const seenSkill = new Set(), plugins = new Map(), manifests = new Map();
+  // a plugin's name is in its manifest (.claude-plugin/plugin.json) above the skills folder; synced plugins sit in id-named folders
+  const pluginName = (dir, fallback) => {
+    if (manifests.has(dir)) return manifests.get(dir);
+    let name = fallback;
+    for (let d = dir, i = 0; i < 3 && d.includes('/'); i++, d = d.slice(0, d.lastIndexOf('/'))) {
+      const m = d + '/.claude-plugin/plugin.json';
+      if (exists(m)) { try { name = JSON.parse(read(m)).name || name; } catch { /* a broken manifest keeps the folder name */ } break; }
+    }
+    manifests.set(dir, name); return name;
+  };
+  const addSkill = (f, kind) => {
+    const seg = f.split('/'), isCmd = /\/commands\/[^/]+\.md$/.test(f);
+    const name = isCmd ? path.basename(f, '.md') : seg[seg.length - 2];
+    const at = seg.lastIndexOf(isCmd ? 'commands' : 'skills');
+    const plugin = kind === 'plugin' && at > 0 ? pluginName(seg.slice(0, at).join('/'), seg[at - 1]) : '';
+    const key = (plugin ? plugin + ':' : '') + name;
+    if (seenSkill.has(key)) return; seenSkill.add(key);
+    const txt = read(f), fm = frontmatter(txt);
+    const id = add('skill.' + key.replace(/:/g, '.'), { kind: isCmd ? 'command' : plugin ? 'plugin skill' : 'skill', title: '/' + (fm.name || name) + (plugin ? ' · ' + plugin : ''),
+      brief: clip(fm.description || firstPara(txt), 240), own: ['sk:' + name, 'p:' + normPath(f)].concat(plugin ? ['sk:' + key] : []), text: fm.description || '', extra: { path: normPath(f) } });
+    if (plugin) {
+      if (!plugins.has(plugin)) plugins.set(plugin, add('plugin.' + plugin, { kind: 'plugin', title: plugin + ' (plugin)', brief: '', own: ['pl:' + plugin], text: '' }));
+      edges.push({ a: id, b: plugins.get(plugin), rel: 'part' });
+    }
+  };
+  const isSkill = f => /\/SKILL\.md$/.test(f), isCmd = f => /\/commands\/[^/]+\.md$/.test(f);
+  for (const root of [REPO + '/.claude/skills', CLAUDE_HOME + '/skills']) findIn(root, isSkill, 4).forEach(f => addSkill(f, 'skill'));
+  for (const root of [REPO + '/.claude/commands', CLAUDE_HOME + '/commands']) findIn(root, isCmd, 2).forEach(f => addSkill(f, 'skill'));
+  findIn(CLAUDE_HOME + '/plugins', f => isSkill(f) || isCmd(f), 8).sort().reverse().forEach(f => addSkill(f, 'plugin'));
   // the generators of the other layers are agentic machinery too: each map is a script
   for (const [id, dir, what] of [['gen.features', 'features', 'Featured map'], ['gen.devlog', 'devlog', 'DevLog lines + sessions'],
     ['gen.devrep', 'devrep', 'DevRep git map'], ['gen.ideas', 'idea-timeline', 'Idea timeline'], ['gen.dashboard', 'dashboard', 'Desktop Dashboard data'], ['gen.stack', 'stack', 'This stack']]) {
@@ -266,6 +316,13 @@ function code(facts, commitsByPath) {
     }));
     if (d.includes('/')) { const parent = d.slice(0, d.lastIndexOf('/')); if (stats.has(parent)) edges.push({ a: 'C:' + parent, b: 'C:' + d, rel: 'contains' }); }
   }
+  // Függőségek (ROADMAP 2.8, lib/imports.js): the files that import or are imported, below their folders
+  const I = require('./imports');
+  const txt = f => { try { return read(REPO + '/' + f); } catch { return null; } };
+  const ignored = ps => { let o = ''; try { o = require('child_process').execFileSync('git', ['-C', REPO, 'check-ignore', '--stdin'], { input: ps.join('\n'), encoding: 'utf8' }); } catch (e) { o = (e && e.stdout) || ''; } return new Set(o.split(/\r?\n/).filter(Boolean)); };
+  const imp = I.layer(I.scan(facts.files, txt, { ignored }), new Set(dirs));
+  for (const n of imp.nodes) { const last = commitsByPath.get(n.extra.path); nodes.push({ ...n, t: last || '' }); }
+  edges.push(...imp.edges);
   return { nodes, edges };
 }
 
@@ -289,6 +346,81 @@ function globe(facts) {
     for (const side of [s.a, s.b]) if (side && side.p) edges.push({ a: 'G:sig.' + s.id, b: 'G:' + side.p, rel: 'flags' });
   }
   return { nodes, edges, generated: sig.generated, commit: sig.commit };
+}
+
+/* ============================================================ T · Teendők (open work; S3, lib/todo.js) */
+function todo(facts) {
+  const T = require('./todo');
+  const opt = f => { try { return fresh(f); } catch { return null; } };   // a missing source leaves its items out, not the layer
+  const roadmaps = facts.files.filter(f => /(^|\/)ROADMAP[^/]*\.md$/i.test(f)).map(f => ({ file: f, text: read(REPO + '/' + f) }));
+  const c = T.collect({ threads: opt(NOTES + '/devlog/threads.js'), lines: opt(NOTES + '/devlog/lines.js'), roadmaps });
+  return T.layer(c.raw, c.built);
+}
+
+/* ============================================================ N · Belépők (entry points; S11, lib/entry.js) */
+function entry() {
+  const json = f => { try { return JSON.parse(read(REPO + '/' + f)); } catch { return null; } };
+  return require('./entry').layer({ menu: json('launcher/vrg-menu.json'), catalog: json('launcher/vrg-catalog.json'),
+    mobile: read(REPO + '/Mobile/android/kit-core/src/main/kotlin/hu/vrg/mobile/core/Feature.kt') || '' });
+}
+
+/* ============================================================ P · Próbák (tests and checks; S12, lib/probe.js) */
+function probeInputs(facts) {
+  const json = f => { try { return JSON.parse(read(REPO + '/' + f)); } catch { return null; } };
+  const workflows = {}, txt = f => { try { return read(REPO + '/' + f); } catch { return ''; } };
+  for (const f of facts.files) if (/^\.github\/workflows\/[^/]+\.ya?ml$/.test(f)) workflows[f] = txt(f);
+  return { menu: json('launcher/vrg-menu.json'), pkg: d => json((d ? d + '/' : '') + 'package.json'), workflows };
+}
+function probeResults() {
+  const f = path.join(require('../config').data, 'probes.jsonl');
+  let txt = ''; try { txt = fs.readFileSync(f, 'utf8'); } catch { return []; }
+  return txt.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+}
+function probe(facts) {
+  const P = require('./probe'), txt = f => { try { return read(REPO + '/' + f); } catch { return ''; } };
+  const suites = P.suites(facts.files, probeInputs(facts));
+  // stale: a commit after the run's own touched the suite or the code its files require
+  let head = ''; try { head = git('rev-parse', 'HEAD').trim(); } catch { head = ''; }
+  const memo = new Map();
+  const reqDirs = S => { const d = new Set([S.dir]); for (const f of S.files) for (const r of P.requires(f, txt(f), x => facts.paths.has(x))) if (facts.paths.has(r)) d.add(r.slice(0, r.lastIndexOf('/')) || r); return [...d]; };
+  const stale = (S, r) => {
+    if (!r.head || r.head === head) return false;
+    const k = S.dir + '@' + r.head; if (memo.has(k)) return memo.get(k);
+    let n = 0; try { n = +git('rev-list', '--count', `${r.head}..HEAD`, '--', ...reqDirs(S)).trim(); } catch { n = 0; }   // a run on a commit this clone lacks: not judged
+    memo.set(k, n > 0); return n > 0;
+  };
+  return P.layer({ suites, results: probeResults(), stale, read: txt, has: f => facts.paths.has(f) });
+}
+
+/* ============================================================ W · Szereplők (people and roles; S19, lib/people.js) */
+function people() {
+  const W = require('./people');
+  return W.layer(W.read({ repo: REPO }));
+}
+
+/* ============================================================ O · Külső (outside; S18, lib/outside.js) */
+function outside(facts) {
+  const O = require('./outside'), json = f => { try { return JSON.parse(read(f)); } catch { return null; } };
+  const settings = [REPO + '/.claude/settings.json', REPO + '/.claude/settings.local.json', CLAUDE_HOME + '/settings.json'].map(json);
+  return O.layer(O.read({ repo: REPO, files: facts.files, grep: O.grepper(REPO, a => git(...a)), settings }));
+}
+
+/* ============================================================ V · Látvány (the look; S17, lib/look.js) */
+function look(facts) {
+  const V = require('./look');
+  return V.layer(V.read({ repo: REPO, files: facts.files, visualBase: require('../config').sources.visualBase }));
+}
+
+/* ============================================================ D · Eszközök (devices; S16, lib/devices.js) */
+function devices(facts) {
+  const D = require('./devices');
+  return D.layer(D.read({ repoFiles: facts.files, dataDir: require('../config').sources.boardData }));
+}
+
+/* ============================================================ M · Munkák (client jobs; S15, lib/jobs.js) */
+function jobs() {
+  const J = require('./jobs'), dir = require('../config').sources.jobs;
+  return J.layer(fs.existsSync(dir) ? J.read(dir) : []);
 }
 
 /* ============================================================ K · Kisokos (the work knowledge: core, axes, cards) */
@@ -338,4 +470,4 @@ function kisokos() {
   return { nodes, edges };
 }
 
-module.exports = { featured, ideas, decisions, devlog, agentic, devrepo, code, globe, kisokos };
+module.exports = { featured, look, jobs, devices, outside, people, entry, probe, probeInputs, probeResults, ideas, todo, decisions, devlog, agentic, devrepo, code, globe, parseDecisionFile, decisionIdOf, DECISION_FILES_EXTRA, kisokos };

@@ -35,6 +35,33 @@ const LINKS = {
   'absorbed-by': R('beolvadt', 'was absorbed by', 'magába olvasztotta'),
   'overruled-by': R('felülírta', 'was overruled by', 'felülírta ezt'),
   'on-line': R('ezen a vonalon', 'works on line', 'munkamenete'),
+  // N · Belépők (entry points, S11)
+  opens: R('megnyitja', 'opens', 'ezzel nyílik', 'any'),
+  launches: R('elindítja', 'launches', 'ezzel indul', 'h'),
+  // C · Függőségek (the import graph inside C, ROADMAP 2.8)
+  imports: R('betölti', 'imports', 'ez tölti be'),
+  depends: R('épít rá', 'depends on', 'ráépül'),
+  // W · Szereplők (people and roles, S19)
+  'played-by': R('alakítja', 'is played by', 'ezt a széket tölti be', 'any'),
+  owns: R('gazdája', 'owns', 'gazdája'),
+  // V · Látvány (the look, S17)
+  wears: R('viseli', 'wears', 'ezt viseli', 'h'),
+  // D · Eszközök (devices, S16)
+  'built-from': R('ebből épült', 'was built from', 'ebből épült ez'),
+  flashed: R('ezt futtatja', 'was flashed with', 'erre írták fel'),
+  // M · Munkák (client jobs, S15)
+  related: R('kapcsolódik', 'is related to', 'kapcsolódik hozzá'),
+  // J · Jelzések (signals, S14)
+  warns: R('figyelmeztet', 'warns about', 'figyelmeztetés rá', 'any'),
+  // S · Kérések (the Founder's asks, S13)
+  'asked-in': R('itt kérte', 'was asked in', 'ezt kérték benne', 'v'),
+  mentions: R('említi', 'mentions', 'említi ez a kérés', 'any'),
+  'led-to': R('ide vezetett', 'led to', 'ez a kérés hozta', 'any'),
+  // P · Próbák (tests and checks, S12)
+  runs: R('futtatja', 'runs', 'ezzel fut', 'h'),
+  // T · Teendők (open work, S3)
+  'todo-of': R('teendője', 'is open work of', 'teendője ez', 'v'),
+  'looks-done': R('késznek tűnik', 'looks done by', 'bizonyítja, hogy kész', 'v'),
   // R · DevRepo, C · Code
   parent: R('szülője', 'is parent of', 'szülője ez'),
   'merged-in': R('beolvasztva', 'is merged into', 'beolvasztotta'),

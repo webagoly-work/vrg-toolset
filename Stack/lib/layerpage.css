@@ -1,0 +1,47 @@
+/* VRG Stack — the shared look of the layer pages built 2026-11-27 (Figyelemtérkép K, Munkanaptár M, Műhelyasztal D,
+   Ruhatár V, Licencnapló O, Tesztfal P). Mélyvíz tokens through the UI Kit's theme; each page links this after the kit
+   files and adds only what is its own. The highlight classes (stk-hit, stk-dim) come from lib/live.js. */
+:root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c);
+  --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+  --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+  --acc: var(--vk-accent, #93d3e6); --ok: var(--vk-ok, #8bcca1); --warm: var(--vk-activity, #e8a873);
+  --red: var(--vk-error, #e88f8f); --amber: var(--vk-warn, #e3be7b); --info: var(--vk-accent, #93d3e6);
+  --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif); }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); }
+body > header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); position: sticky; top: 0; background: var(--bg); z-index: 3; }
+h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+h2 { font: 600 12px var(--voice); letter-spacing: .12em; text-transform: uppercase; color: var(--mu); margin: 0 0 8px; }
+h2 i { font: italic 400 11px var(--sans); letter-spacing: 0; text-transform: none; color: var(--fa); margin-left: 6px; }
+.sum { font: 12px var(--mono); color: var(--mu); }
+.sp { flex: 1; }
+body > header button, body > header select, body > header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; min-height: 30px; cursor: pointer; }
+body > header input { cursor: text; width: 200px; color: var(--tx); font-family: var(--sans); }
+body > header button[aria-pressed="true"] { color: var(--tx); border-color: var(--ln2); background: var(--s2); }
+main { padding: 12px 16px 32px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.panel { background: var(--s1); border: 1px solid var(--ln); padding: 10px 12px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.chip { display: inline-block; font: 11px var(--mono); border: 1px solid var(--ln); padding: 1px 6px; margin: 2px 4px 2px 0; color: var(--mu); white-space: nowrap; max-width: 100%; }
+.chip:not(:empty) { overflow-wrap: anywhere; } .chip.long, .panel .chip { white-space: normal; }   /* a long chip (a signal's sentence) wraps instead of widening the page */
+.chip.red { color: var(--red); border-color: color-mix(in srgb, var(--red) 60%, transparent); }
+.chip.amber { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 60%, transparent); }
+.chip.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.chip.info { color: var(--info); border-color: color-mix(in srgb, var(--info) 55%, transparent); }
+.chip.mute { color: var(--fa); }
+.mono { font: 12px var(--mono); color: var(--mu); overflow-wrap: anywhere; }
+.faint { color: var(--fa); }
+.empty { color: var(--fa); font-size: 13px; padding: 8px 0; }
+.list { list-style: none; padding: 0; margin: 0; }
+.list > li { padding: 6px 0; border-bottom: 1px solid var(--ln); font-size: 13px; overflow-wrap: anywhere; cursor: pointer; }
+.list > li:last-child { border-bottom: 0; }
+.list > li small { display: block; font: 11px var(--mono); color: var(--fa); }
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: left; font: 600 11px var(--voice); letter-spacing: .08em; text-transform: uppercase; color: var(--fa); padding: 6px 8px; border-bottom: 1px solid var(--ln2); cursor: pointer; white-space: nowrap; }
+table.t td { padding: 6px 8px; border-bottom: 1px solid var(--ln); vertical-align: top; overflow-wrap: anywhere; }
+table.t tr { cursor: pointer; }
+.scroll { overflow-x: auto; }
+[aria-selected="true"] { outline: 1px solid var(--acc); outline-offset: -1px; }
+.cmd { font: 12px var(--mono); background: var(--s2); border-left: 3px solid var(--ok); padding: 6px 9px; margin-top: 6px; overflow-wrap: anywhere; }
+@media (max-width: 760px) { body > header input { width: 100%; } .hide-sm { display: none; } }

@@ -1,0 +1,3 @@
+{ "schema": "vrg-fw/1", "id": "knobpad", "name": "knobpad", "version": "2026-11-20", "chipFamily": "ESP32-S3", "description": "invented test entry", "uses": ["Q0A"],
+  "source": { "kind": "arduino-build", "path": "C:/x/_libs/arduino-cli/build/knobpad", "built": "2026-11-20T09:00:00.000Z" }, "added": "2026-11-20T09:05:00.000Z",
+  "parts": [{ "path": "knobpad.ino.bin", "offset": 65536, "size": 310000, "sha256": "0" }] }

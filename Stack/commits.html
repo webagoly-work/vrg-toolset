@@ -187,6 +187,7 @@
 </div>
 <div id="tip" role="presentation"></div>
 <script src="out/commits-data.js"></script>
+<script src="lib/live.js"></script>
 <script>
 'use strict';
 (function () {
@@ -539,8 +540,8 @@
   $('#panel').addEventListener('click', e => {
     const t = e.target.closest('[data-c],[data-go],[data-b],[data-a],[data-p],[data-out]'); if (!t) return;
     if (t.dataset.out) { showOut = !showOut; render(); return; }
-    if (t.dataset.c !== undefined) { const i = +t.dataset.c; openC = openC === i ? -1 : i; render(); hash(); const el = $(`#panel [data-c="${i}"]`); if (el) el.focus(); return; }
-    if (t.dataset.go !== undefined) { const i = +t.dataset.go; openC = i; select(C[i][1], true); return; }
+    if (t.dataset.c !== undefined) { const i = +t.dataset.c; openC = openC === i ? -1 : i; pub(); render(); hash(); const el = $(`#panel [data-c="${i}"]`); if (el) el.focus(); return; }
+    if (t.dataset.go !== undefined) { const i = +t.dataset.go; openC = i; pub(); select(C[i][1], true); return; }
     if (t.dataset.b !== undefined) { const b = +t.dataset.b; F.b = F.b === b ? -1 : b; }
     if (t.dataset.a !== undefined) { const a = +t.dataset.a; F.a = F.a === a ? -1 : a; }
     if (t.dataset.p !== undefined) { const p = +t.dataset.p; F.p = F.p === p ? -1 : p; }
@@ -584,6 +585,21 @@
   $('#about').innerHTML = `Forrás: a Stack R rétege (${k.commits} commit, ${k.links} kapocs ${k.nodes} csomópontra), plusz egy <code>git log --all</code> az időpontért, a teljes szülőlistáért, a refekért és a fájlok felső mappájáért (terület).` +
     ` Az ágakat a build vezeti le: minden ág csúcsa az első-szülő láncát kapja (main először), az archivált ágak <code>archive/…</code> címkéből, a többi a merge üzenetéből.` +
     ` Színlépcső a teljes történet aktív napjainak negyedelőiből; szűréskor nem változik, hogy egy szín mindig ugyanannyi commitot jelentsen.${D.git ? ' <b>git most nem válaszolt: ' + esc(D.git) + '</b>' : ''}`;
+  // the page contract (S7, lib/live.js): day cells and commit rows light up for the string's commits
+  function pub() { if (window.StackLive) StackLive.selected(openC >= 0 ? ['R:' + C[openC][0]] : []); }
+  const cIndex = new Map(C.map((r, i) => ['R:' + r[0], i]));
+  if (window.StackLive) StackLive.contract({
+    layer: 'R', data: D,
+    items: () => {
+      const out = [];
+      for (const el of document.querySelectorAll('#grid [data-d], svg [data-d]')) { const d = +el.dataset.d; if (byDay[d]) out.push([el, byDay[d].map(i => 'R:' + C[i][0])]); }
+      for (const el of document.querySelectorAll('#panel [data-c]')) { const r = C[+el.dataset.c]; if (r) out.push([el.closest('.cm') || el, ['R:' + r[0]]]); }
+      return out;
+    },
+    select: id => { const i = cIndex.get(String(id || '')); if (i !== undefined) { openC = i; select(C[i][1], true); } },
+    getSelection: () => openC >= 0 ? ['R:' + C[openC][0]] : [],
+  });
+
   // a link to another day or filter on this page (same document) arrives as a hash change
   addEventListener('hashchange', () => { F.p = F.a = F.b = -1; openC = -1; fromHash(); recolour(); placeRings(); render(); say(sel); });
   let rz = 0, lastW = $('#gridScroll').clientWidth;

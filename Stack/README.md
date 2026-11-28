@@ -52,7 +52,149 @@ Never load `out/stack.json` whole. Ids look like:
 - **Vonaltérkép (metro map):** `metro.html` (2026-11-09), the L layer. Every DevLog line is a track on one time axis, grouped by lane; every session that moved it is a station, at the time of its own prompts on that line (a session on two lines is an interchange, close stations merge into one mark with a count, ◇ = milestone). Forks, next, feeds and absorbed-by are junctions and transfers (toggles in the legend); an ended line shows its terminus and where the work went. A stretch with no station for longer than the threshold (**Csend**, default 5 days like the Thread Board) is red, dashed and labelled "csend N n"; active or waiting lines that have gone quiet are listed first and end in ⚠. The note under that list says when the DevLog was last harvested: recorded runs after it sit on their own track at the bottom, with no line yet. A station opens its time, first prompt, files, what the run touched, its commits / documents / decisions and a replay link; a line opens its state, next step, remaining items, transfers both ways, its Thread Board thread and stations, and **Folytatás** copies the Thread Board's item prompt for the line (pointing at `notes/devlog/sessions/<line>/CLAUDE.md` only when it exists). Links: `#sel=views`, `#sel=s:<sid8>@views`, `#sel=run:<sid8>`, `&q=7`, `&o=1`, `&ln=p`. Data: `out/metro-data.js` (every build, or `stack.js metro`; quotes job codes, never committed). START → R → M.
 - **Futásnapló (run log):** `runs.html` (2026-11-09), the U layer as an overview above Visszajátszás. A day strip (column = steps, runs or tokens per day; ← → the previous / next day with runs, Shift+← → a calendar day), the day's totals (runs, steps, tool calls, commits, tokens: the same numbers as the Vezérlőterem's usage strip, UTC days), then the day's runs as bars on a 00–24 UTC axis: one row per place (worktree or checkout) or per DevLog line (**Sor**), parallel runs on their own tracks. Colour = how the run started (desktop app, terminal, named agent, started by a program, scheduled), length = its active stretches (a pause over 30 min is dotted), thickness + number = its steps that day; a run over midnight is cut there with ‹ › on both days. A run opens its tools, files (read ○ / written ●), the layers it touched in the Konnektóm's colours, its DevLog line, commits, **▶ Visszajátszás** (`replay.html#<sid8>`) and copy buttons (session id, `claude --resume`, `stack.js session`). One line says whether live recording (`data/live`, ROADMAP 2.5) is on. Links: `#d=2026-11-07`, `&run=<sid8>`, `&g=line`, `&q=…`, `&hk=auto`, `&m=tok`. Data: `out/runs-data.js` (every build, or `stack.js runs`; quotes job codes, never committed). START → R → F.
 - **Vezérlőterem (Control Room):** `control.html` (2026-11-09), the A layer. The Council as a flow with lanes (Alapító → Bernard → the seats → contractors → workers); click a node for its tools (what it may read or do), briefs, memory and links. One start anatomy per GO codephrase (what a session reads, where it is herded, what is stale), the briefs as `tools/brief-state.js --check` reports them (read-only; the page never rewrites a brief), memory freshness (⏳ old, ⌀ no vertical link), a module map of every A kind, the GO codephrases, the schedules and usage per day (U). Every state has a mark and a word, not only a colour. Link: `#sel=agent:arnold`, `#sel=go:MAIN`, `#sel=day:2026-11-06`. Data: `out/control-data.js` (every build, or `stack.js control`). START → R → 9.
-- **Layers page (Rétegek):** `layers.html` (2026-11-07). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
+- **Érintésnyom** (*touch trace*, `erintesnyom.html`, START R → S, the Asztal's ◢ above Rétegek; 2026-11-20): the layers lit by
+  the work that touches them. A tool call lands on the nodes `lib/lens.js` resolves for it (the recorder's keys, tested
+  against `lib/join.js`), the light spreads over the exact links (`lib/activation.js`) and halves every 90 s, a write rings
+  the node, each agent leaves a tracer, pillars light through the planes. Inferred reach (title words, `alike` links) is
+  violet and kept in its own map (STL-Q5), switchable off. Sources: Élő (the event spine `shared/vrg-events` from the
+  Munkavászon server, :8810), Visszajátszás (`out/replay`), Napló (a dropped transcript). Needs `out/lens-index.js`
+  (written by the build). Study: `docs/visual/stack-lens/README.md`.
+  **Előrejelzés** (SL3, 2026-11-25): type a prompt, pick a GO phrase or a prompt template, and the page lights in ice what
+  it will probably touch, each node with its reason (a key it names, a similar recorded session, title words); during the
+  work, or replaying a session from its own first prompt, it counts how much came true and what was unexpected.
+  **Hatókör** on a node's card: its blast radius over the exact links (3 hops). History: `out/forecast-index.js` (the build).
+- **Rétegverem, the Stack Viewer** (`viewer.html`, START R → 7, the Asztal's ◢ Rétegek, the phone's Rétegek; 2026-11-25, S8 + S9
+  of `research/STRINGS-PLAN.md` §6): every layer is an isometric plane made of the bytes it is written in, the build's
+  `out/layertext/<L>.bin` (titles, briefs, fields; G's documents whole; C's file listings). Each node is a cell in its
+  layer's natural order (`lib/viewer-layout.js`: F tier × lane, I L U R lanes in time, Q namespaces, A kinds, C G the folder
+  tree, area ∝ bytes), its bytes run along Hilbert tiles inside, coloured by byte class. **Részlet**: Vázlat 64 B · Normál
+  16 · Finom 4 · Bájt 2 · Teljes 1 B a particle, Auto = Finom here, Normál on the phone. Point at a dot: the words it is
+  made of. Click: the node and its string (Füzér) plus its pillar's spine; double-click flies in, every byte a dot. Nodes
+  changed since the last build pulse. Érintésnyom open in the same browser lights the same nodes here (channel
+  `vrg-stack`). The phone gets byte classes only, never the text. `#full #crisp`.
+  S10 (2026-11-25): **⏱ Idő** (T) replays the layers day by day from the event log (`out/layertext/time.js`; Space plays,
+  ← → steps), nodes appear on their day and pulse on their changes; **▦ Kód bájtjai** on a C folder streams its tracked
+  files into the cell, every byte a dot, the file name under the pointer (`GET /api/bytes`, needs `node serve.js`);
+  **● élő**: with the server, a finished build reloads the changed layers and pulses the changed nodes
+  (`GET /api/events`); the card opens the layer's own page with the node selected and copies the string or a prompt.
+- **Füzértábla, the String Board** (`board.html`, S4, 2026-11-25; START R → L, in place of the Thread Board): the
+  threads as pillars. Per row the reach squares, the class and pulse of its string, the status (its F tier, or the hand
+  status), drift, its DevLog lines, built (ⓕ F rows + the hand list) and beta items, its open work with "looks done" and
+  the evidence, note, read list, GO; Most / Rád vár on top. Hand data: `notes/devlog/threads.js` and `entities.json`;
+  a field kept in both is listed. With `node serve.js`, **✓ Kész** on an item takes it off the thread's not-yet list
+  onto its built list in `threads.js` through the write gateway (the threads editor, `lib/edit-threads.js`), after the
+  diff is approved; the live build then redraws the board. `node stack.js board --public` writes the anonymised
+  single-file copy for claude.ai.
+- **C · Függőségek, the import graph** (2026-11-27, ROADMAP 2.8; a sub-layer of C, no new letter): every tracked file
+  that imports or is imported becomes `C:<file>` under its folder (`lib/imports.js`), from JS `require` / `import` /
+  `require(path.join(__dirname, …))`, HTML `<script src>` and stylesheet `<link>`, CSS `@import`, PowerShell
+  dot-sourcing and Arduino `#include`. `imports` runs file → file; `depends` folder → folder, weighted by the file imports
+  between them. A file owns its own path, so a document or commit naming it links to the file, and `stack.js path`, the
+  strings and impact analysis reach below folders. J: a relative import to a file git does not track (`import-broken`,
+  red; a quoted fixture, a browser-side import, a library header, a git-ignored generated file do not count) and files
+  importing each other in a circle (`import-cycle`). DRIFT.md §20 adds the files imported most. Built on full builds.
+- **W · Szereplők, people and roles** (S19, 2026-11-27; the last new layer): who may do what, who owns what
+  (`lib/people.js`). The people on the Kapu's access list (`Hub/data/access.json`) **by role** (`W:person.owner` the
+  Founder, `W:person.member` the colleague; never a name, an email or a login), with the Kapu layers they may enter and
+  whether the list's signature verifies (the Kapu's own `kpCanon` and `Hub/src/access-pubkey.json`, as
+  `tools/hub-sign.js --verify` checks it). The Claude accounts A and B (`Dashboard/config/profiles.json`). The Council's
+  seats from `docs/council/ROSTER.md`, `played-by` their agents (A), each Head's `owns` lines named by the program, so
+  the program's pillar takes them in and its string reaches the Head. The business units of `docs/hub/hub-seed.json`.
+  J `access-signature` (red: the list does not verify) and `seat-vacant` (info); DRIFT.md §19 lists the pillars with
+  code that no Head owns, by name or by area. Live: the access list, its key, the profiles, the roster, the hub seed.
+  **Ki kicsoda** (`szereplok.html`, START R → W; `lib/peoplepage.js` → `out/people-data.js` on every build) is W's page:
+  people and accounts, each Head's seat with its agent, the lines it owns with their pillars, open signals and last
+  activity, and its load; the unowned work; the pillars only one recorded session has touched (shown once there are
+  three or more sessions); the business units.
+- **O · Külső, outside** (S18, 2026-11-27): what we depend on and under which licence (`lib/outside.js`). Every
+  component of `vendor-manifest.json` (`O:vendor.<slug>`, vendored or only referenced; its pin, licence and the app it
+  serves, named in its title so that app's pillar takes it in), with the tracked code that uses it (one `git grep` for
+  `Vendor/<target>` and `'Vendor', '<target>'`) and the documents that only mention it; every npm package the tracked
+  package.json files name (`O:npm.<name>`, version and licence from the lockfile next to it); every MCP server the
+  `.claude` settings name. J, after CLAUDE.md's vendoring rules: a source fetched from a branch, not a tag
+  (`vendor-branch`), copyleft in code we copy and use (`copyleft`, red; an OR licence lets us choose), a licence nobody
+  confirmed (`licence-unknown`). DRIFT.md §18 adds the vendored components no tracked code uses yet. Live: the
+  manifest, a package.json or lockfile, or the Claude settings rebuild O.
+- **V · Látvány, the look** (S17, 2026-11-27): the design systems and which look each page wears (`lib/look.js`).
+  The VRG UI Kit (its version, its components by family, its themes, from `manifest.json`), Mélyvíz
+  (`shared/melyviz.css`), the Varler logo lockups, and the VRG Visual Base's top folders when it is on this PC. Every
+  tracked page that wears a look is `V:look.<path>`: a Mélyvíz copy between `melyviz:begin`/`end` (compared exactly as
+  `tools/melyviz-sync.js --check` does, whose TARGETS list it reads), a `<link>` to melyviz.css, the kit inlined
+  between `vk:begin`/`end` with the version stamped into it, or a linked kit token sheet; it `wears` the system and each
+  kit component it carries. J `look-drift` (a copy that differs, or a sync target that is gone) and `kit-behind` (an
+  inlined kit older than the manifest), each with the command that fixes it; DRIFT.md §17 adds the kit components no
+  page carries yet. Live: any saved page or style sheet rebuilds V.
+- **D · Eszközök, devices** (S16, 2026-11-27): the string from code to a physical board (`lib/devices.js`). Every
+  tracked Arduino sketch (`D:sketch.<name>`, the .ino named as its folder), every firmware in the Board Console's library
+  (`D:fw.<id>`, `built-from` its sketch when it is an Arduino build) and every board the Board Console has seen
+  (`D:board.<last 6 of the MAC>`, `flashed` with the firmware, its title naming what it runs so that firmware's pillar
+  takes it in). The library and `devices.json` are the Board Console's `data/` (git-ignored, per PC; `sources.boardData`
+  or `VRG_BOARD_DATA`). J: a firmware built before its sketch's last commit (`fw-stale`), a board on an older version
+  than the library's (`board-behind`), a board whose content is unknown (`board-unknown`). DRIFT.md §16 adds the
+  sketches with no firmware and the firmware no board runs. Live: a flash, a backup or a new library version rebuilds D.
+- **M · Munkák, client jobs** (S15, 2026-11-27): every job in the register (`jobs\_elozmenyek\REGISZTER.md`, totals from
+  `osszegek.csv`, both through the Map's own readers) and every Workflow Kit job folder (`jobs\<CODE>_*`), with its
+  status, period, total, related codes and the tools its files show (Planner exports, Kit files; `lib/jobs.js`). The
+  jobs folder is outside Git (`sources.jobs`, or `VRG_JOBS_DIR`); the layer carries **codes only**: never a folder
+  label, a register note, an address or a file name. A job code in any tracked text links to the job (the join knows
+  the register's codes), and the tools' pillars take a job in, so the Planner's string reaches the jobs that used it.
+  DRIFT.md §15: the register in one line, and jobs running on paper but quiet for 30+ days (also a J signal). Live: a
+  save of the register or the totals rebuilds M; a Kit folder follows the next full build.
+- **N · Belépők, entry points** (S11, 2026-11-26): every way in, one node each: the START keys and their submenus
+  (`launcher/vrg-menu.json`), the local servers with their ports, the programs (under A), the VRG Asztal catalog
+  items (`launcher/vrg-catalog.json`) and the VRG Mobile features (`Feature.kt`); `lib/entry.js`. Each names the path
+  it opens, so the join links it to its folder. DRIFT.md §11 lists the pillars whose code no entry point opens, not
+  even through a folder above it ("a tool that is not in vrg-menu.json does not exist"). Live: a save of either
+  registry or `Feature.kt` rebuilds N.
+- **J · Jelzések, signals** (S14, 2026-11-27): every warning the stack already knows, as a node that `warns` what it
+  is about (`lib/signals.js`): a failing suite (red), a stale one or one nothing runs, a pillar whose code no test reaches
+  or nothing opens, a hand status two steps from the evidence, open work that looks done, an ask that came back with
+  nothing landing, Solomon's unruled contradictions (confirmed = red), a stale or broken brief (`tools/brief-state.js`),
+  and a full build's own health warnings. Ids name the trouble (`J:test-fail.Map/test`), so the event log says when it
+  started and ended. In the Viewer, ⚠ Jelzések (⚙ Nézet, or `viewer.html#warn`) turns every warned node red and dims the
+  rest; DRIFT.md §14 counts them by kind and ranks the pillars whose strings carry them. **Jelzéstábla**
+  (`jelzesek.html`, START R → J; `lib/signalboard.js` → `out/signals-data.js` on every build) is J's page: one column
+  per pillar, the worst first, each signal with the one thing that clears it, its evidence and what it warns, and the
+  signals that went away in the last 14 days (`out/signals-history.json`).
+- **S · Kérések, the Founder's asks** (S13, 2026-11-26; lettered K until it met main's Kisokos, STK-P212): every prompt and slash command in the recordings
+  (`lib/asks.js`; a continued session's summary, interruptions and hook text left out). Each ask `led-to` the nodes the
+  work after it touched until the next ask, and `mentions` what its text names (decision ids, GO phrases, paths). Asks
+  that say the same thing, numbers folded ("build S12" ≈ "build S13"), form a cluster: landed when a commit followed
+  one of them, else open. DRIFT.md §13: where attention went by pillar (30 days / all), the clusters asked in two or more
+  sessions with nothing landing, and the asks whose work touched nothing. Built on full builds (from the recordings);
+  an incremental build keeps it from `out/layers/K-src.json`. The ask's words stay on the PC: the connectome data the
+  phone bundle carries gives K nodes a neutral title.
+- **P · Próbák, tests and checks** (S12, 2026-11-26): every test folder, Gradle test module and check script
+  (`tools/check-*.js`, the selftests) is a suite node with its files; each file names the code it requires, so the
+  join links it to the folders it tests. How a suite runs comes from the START steps that name it (that key `runs`
+  it), the CI workflows, its package.json or its file pattern. `node stack.js probe <words> | --all` runs suites and
+  appends each result to `data/probes.jsonl` (per PC, git-ignored; a runner this PC lacks, PowerShell or gradlew, is
+  a skip, not a fail); `--list` shows them. A suite reads pass, fail, stale (a commit touched it or its code after the
+  run), unrun, skipped or no runner. DRIFT.md §12: the failing, stale and runner-less suites and the pillars whose code
+  no test reaches. Live: a new record rebuilds P.
+- **T · Teendők, open work** (S3, 2026-11-25): every not-yet item once (the Thread Board's lists, the DevLog lines'
+  remaining work, the ROADMAP ✗ rows; `lib/todo.js`), linked to its line and pillar. An item the evidence says is built
+  (a built list, an F row in tier 1–2, two commits) reads "looks done" and is listed in DRIFT.md §9 with the evidence;
+  §10 lists the pillars whose hand status and string are two steps apart (STK-Q20). Live: a save of `threads.js`,
+  `lines.js` or a ROADMAP rebuilds T.
+- **The live build** (S5, 2026-11-25): `node serve.js` watches the hand-kept sources (`lib/sourcemap.js`: features, ideas,
+  DECISIONS files, DevLog lines and sessions, memory and agent files, the DevRepo notes, threads and entities). A second
+  after a save it rebuilds only that layer (`pipeline.runLayers`, from the layer cache `out/layers/` the full build
+  writes; the full build when an exact incremental one is not possible) and tells the pages (`/api/events`): the layer
+  pages reload with their selection (`lib/live.js`, badge ● élő), Rétegverem pulses the changed nodes. `GET /api/live`
+  says what it is doing; `node serve.js --no-live` turns it off. Code, documents, commits and recordings follow the next
+  full build.
+- **The page contract** (S7, 2026-11-25): the six layer pages (Ötletfolyam, Döntésnapló, Vonaltérkép, Vezérlőterem,
+  Futásnapló, Commit-pixel) talk to each other. Select something in one and the other open ones light its Stack String
+  in their own way (ice glow, the rest greyed; the corner badge names it, ✕ clears). The badge carries the build stamp
+  (`#N HH:MM`), amber when a newer build exists. `window.STACK_PAGE` is each page's API; `test/pages.test.js` lints the
+  contract. One server connection serves every Stack tab of the browser.
+- **The write gateway** (S6, 2026-11-25; decisions only): with `node serve.js`, the Döntésnapló's **✎ beírása** buttons and
+  the Rétegverem card of an open decision write its answer into its DECISIONS file: one fixed dated line under the
+  question (`> **VIS-Q5** answered 2026-11-25: **B** — … · _(Döntésnapló)_`), only after the diff is shown and approved,
+  refused if the file changed meanwhile, then a rebuild. `lib/edit.js` (tested on throwaway copies, `test/edit.test.js`),
+  `lib/editdialog.js`, `POST /api/edit/preview` · `/apply` (local pages only). Never commits; R, U, A, C, G are never written.
+- **Layers page, the graph view (régi Rétegek):** `layers.html` (2026-11-07; since 2026-11-25 behind the Viewer's ⚙ Nézet). The ten layers as an exploded isometric stack: each a horizontal plane laid out by its own links, the planes far enough apart not to cover each other (**Távolság** in ⚙ Nézet changes it), the cross-layer links as vertical connectors between them. Click a dot for its links grouped by layer; click a layer name to show only it and its connectors, right-click to hide it. Shift / right drag or Shift+wheel slides along the stack, double-click = the isometric home. `#full #crisp`.
 - **Phone (VRG Mobile, WP M17):** both pages have touch gestures (`touch.js`: one finger orbits, pinch zooms, twist turns, two fingers up / down tilt, tap picks, double tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space toggles the Őrség lock). `Planner_VRG_U100/Mobile/stack/publish-stack.js --push` (START → R → T) bundles them into self-contained pages on the `stack-pages` branch, where the app's **Rétegverem** feature reads them. Re-run it after a rebuild to update the phone.
 - **Rebuild** after any change: `..\..\tools\node\node.exe stack.js build`. It takes about 6 s when little changed, and about 30 s the first time or after `--rerecord`. `build.js` still works too.
 - **Is it healthy?** `stack.js doctor` checks everything; `stack.js doctor --fix` repairs and rebuilds.
@@ -86,8 +228,26 @@ Never load `out/stack.json` whole. Ids look like:
 | `mcp/server.js` | MCP server, stdio, no dependencies |
 | `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
-| `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `layers.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `kisokos.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
-| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js` |
+| `lib/board.js` · `board.html` | Füzértábla (S4): the String Board's data and page, the anonymised export |
+| `lib/imports.js` | C · Függőségek (ROADMAP 2.8): the import graph per file, broken imports, cycles |
+| `lib/people.js` | W · Szereplők (S19): people by role, accounts, seats and what each Head owns; the signature check; unowned pillars |
+| `lib/outside.js` | O · Külső (S18): vendored components, npm packages, MCP servers; the vendoring checks |
+| `lib/look.js` | V · Látvány (S17): the kit, Mélyvíz, logos, the Visual Base, the look each page wears; drift |
+| `lib/devices.js` | D · Eszközök (S16): sketches, the Board Console's firmware and boards; the stale and behind checks |
+| `lib/jobs.js` | M · Munkák (S15): the register, the totals and the Kit's folders as job nodes, codes only; quiet running jobs |
+| `lib/entry.js` | N · Belépők (S11): START, servers, programs, catalog, Mobile features as nodes; the unreachable check |
+| `lib/layerpages.js` · `lib/layerpage.css` | the data and shared look of seven layer pages: Ajtótérkép `ajtok.html` (N), Figyelemtérkép `kerdesek.html` (S), Munkanaptár `munkak.html` (M), Műhelyasztal `eszkozok.html` (D), Ruhatár `latvany.html` (V), Licencnapló `kulso.html` (O), Tesztfal `probak.html` (P); `node stack.js pages` |
+| `lib/peoplepage.js` · `szereplok.html` | Ki kicsoda, W's page: people, accounts, seats and what each Head owns, unowned work |
+| `lib/signalboard.js` · `jelzesek.html` | Jelzéstábla, J's page: signals by pillar, the action that clears each, the cleared ones |
+| `lib/signals.js` | J · Jelzések (S14): every warning as a node on what it is about; signals per pillar |
+| `lib/asks.js` | S · Kérések (S13): the asks out of the recordings, what each led to, the clusters, nothing landed |
+| `lib/probe.js` | P · Próbák (S12): suites, how they run, their recorded results, the recorder, the unverified check |
+| `lib/todo.js` | T · Teendők (S3): the open-work items, their de-duplication, the looks-done check, the status drift cards |
+| `lib/sourcemap.js` · `lib/live.js` | the live build (S5): which source feeds which layer; the pages' live client and selection bus |
+| `lib/edit.js` · `lib/edit-threads.js` · `lib/editdialog.js` | the write gateway (S6): the decisions and threads (mark done) editors and the diff dialog |
+| `lib/layertext.js` · `lib/viewer-layout.js` · `lib/bytes.js` | the Viewer's layer text + timeline (build stage), layout, and the read-only folder bytes for `serve.js` `GET /api/bytes` |
+| `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `viewer.html` · `layers.html` · `erintesnyom.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `kisokos.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
+| `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js test/lens.test.js test/viewer.test.js test/edit.test.js test/live.test.js test/pages.test.js test/todo.test.js test/board.test.js test/edit-threads.test.js` |
 | `out/` | derived; delete freely, `stack.js build` makes it again |
 | `data/` | history (event log, metrics, daily snapshots); **keep it**, it cannot be rebuilt |
 

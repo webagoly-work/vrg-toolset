@@ -253,6 +253,7 @@
   <aside id="panel" aria-live="polite" aria-label="Részletek"></aside>
 </div>
 <script src="out/control-data.js"></script>
+<script src="lib/live.js"></script>
 <script>
 'use strict';
 (function () {
@@ -633,7 +634,14 @@
     },
   };
 
+  // a panel key → the stack node it shows (the inverse of keyOfNode), for the other pages (S7)
+  const nodeOfKey = key => {
+    const i = String(key || '').indexOf(':'), kind = i < 0 ? '' : key.slice(0, i), arg = i < 0 ? '' : key.slice(i + 1);
+    return kind === 'agent' ? 'A:agent.' + arg : kind === 'brief' ? 'A:brief.' + arg : kind === 'mem' ? 'A:mem.' + arg : kind === 'go' ? 'A:go.GO-' + arg : kind === 'sched' ? 'A:sched.' + arg : '';
+  };
+  let curKey = '';
   function open(key, opts = {}) {
+    if (!String(key).startsWith('jump:') && key !== curKey) { curKey = key; if (window.StackLive) { const n = nodeOfKey(key); StackLive.selected(n ? [n] : []); } }
     if (key.startsWith('jump:')) { const el = document.getElementById(key.slice(5)); if (el) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
     const i = key.indexOf(':'), kind = i < 0 ? key : key.slice(0, i), arg = i < 0 ? '' : key.slice(i + 1);
     const body = VIEW[kind] ? VIEW[kind](arg) : '';
@@ -654,6 +662,13 @@
   addEventListener('keydown', e => { if (e.key === 'Escape') { panel.classList.remove('open'); selNode = ''; markFlow(); } });
 
   const hk = /#sel=([^&]+)/.exec(location.hash);
+  // the page contract (S7, lib/live.js): agents, briefs, memory notes and GO cards on the string light up
+  if (window.StackLive) StackLive.contract({
+    layer: 'A', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, [nodeOfKey(el.dataset.k)]]).filter(x => x[1][0]),
+    select: id => { const k = keyOfNode(String(id || '')); if (k) open(k); },
+    getSelection: () => { const n = nodeOfKey(curKey); return n ? [n] : []; },
+  });
   if (hk) open(decodeURIComponent(hk[1]), { noHash: true });
   else panel.innerHTML = `<div class="kick">Részletek</div><h2>Válassz egy elemet</h2><p class="dim">Egy ügynök, brief, memória-jegyzet, kódszó, modul, nap vagy ütemezés: itt nyílik meg, a kapcsaival együtt. Link egy elemre: <span class="mono">control.html#sel=agent:arnold</span>.</p>
     <h3>Mit jelölnek a jelek</h3><div class="marks" style="flex-direction:column;align-items:flex-start;gap:6px">${['stale', 'broken', 'quiet', 'never', 'unlinked', 'old', 'vacant'].map(f => mark(f)).join('')}</div>`;

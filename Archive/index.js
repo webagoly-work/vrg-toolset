@@ -4,6 +4,25 @@ window.VRG_ARCHIVE = {
  "about": "The VRG Artifact Archive: every one-shot interactive HTML page Claude made (published claude.ai artifacts and local one-off pages). Edit here or use node Archive/archive.js add; then node Archive/archive.js build. files/<id>.html = the saved copy; url = the live artifact; localPath = a page kept where it is.",
  "items": [
   {
+   "id": "vrg-stack-review",
+   "title": "VRG Stack Review",
+   "created": "2026-11-28",
+   "updated": "2026-11-28",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "study",
+   "summary": "A bilingual (EN/HU) review of the VRG Stack work line (PR #29): definition, mechanism, uses, strengths and weak points, open errors, generic use over databases, applications, directions and next steps; key terms open Wikipedia-style previews and a glossary.",
+   "purpose": "The Founder asked for a detailed review of the Stack work line for the DV research line, and a page of it.",
+   "context": [
+    "PR #29 (strings plan S3–S19, the new layers, a page per layer) merged with main and green",
+    "The two reports in docs/research/reports: the review and the open-errors brief"
+   ],
+   "tags": [],
+   "file": "files/vrg-stack-review.html",
+   "url": "https://claude.ai/artifact/DRdi1cSwooyvQmzhgtsK83"
+  },
+  {
    "id": "fenyjel-board",
    "title": "Fényjel",
    "created": "2026-11-25",
@@ -283,6 +302,30 @@ window.VRG_ARCHIVE = {
    ],
    "file": "files/vrg-kisokos-3d.html",
    "url": "https://claude.ai/artifact/8M4RwBmJkLAaUvQwjmtgGL"
+  },
+  {
+   "id": "retegfeny-sketch",
+   "title": "Rétegfény vázlat",
+   "created": "2026-11-20",
+   "updated": "2026-11-20",
+   "lang": "hu",
+   "vrg": true,
+   "group": "VRG core",
+   "kind": "study",
+   "summary": "Sketch of Rétegfény: the Stack's layers lit by the work that touches them: warm nodes with a 90 s half-life, a ring for writes, pillars through the layers, one tracer per subagent; made-up data.",
+   "purpose": "Show the look of the VIS-Q5 direction (the Stack as the main visual, lighting the paths a workflow touches); the study is docs/visual/stack-lens/README.md.",
+   "context": [
+    "fork session of the Látótér plan after the Founder's VIS-Q5 answer",
+    "the Stack data cannot be built in the cloud container, so the sketch uses invented nodes"
+   ],
+   "tags": [
+    "retegfeny",
+    "stack",
+    "munkavaszon",
+    "visual-plan"
+   ],
+   "file": "files/retegfeny-sketch.html",
+   "url": "https://claude.ai/artifact/Ktt9ZB2ndhgiHULBLk6MzF"
   },
   {
    "id": "vrg-latoter",

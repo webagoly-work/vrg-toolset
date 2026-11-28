@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Ruhatár</title>
+<!-- Ruhatár (wardrobe): the V layer's page (S17, lib/meta.js). Every app with the pages that wear a look: Mélyvíz copied
+     (current or drifted) or linked, the UI Kit inlined (its version, its components) or its tokens linked; where a copy
+     drifted, the one command that syncs it. Then the kit's components by how many pages carry them, and the systems.
+     Selecting a page lights it on every other open Stack page (lib/live.js). Data: out/wardrobe-data.js
+     (lib/layerpages.js). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .app h3 { font: 600 13px var(--voice); letter-spacing: .05em; margin: 0 0 6px; }
+  .pg { padding: 5px 0; border-top: 1px solid var(--ln); cursor: pointer; font-size: 13px; overflow-wrap: anywhere; }
+  .pg.drift, .pg.behind, .pg.missing { color: var(--amber); }
+  .comp { display: inline-block; font: 11px var(--mono); padding: 2px 6px; margin: 2px; border: 1px solid var(--ln); cursor: pointer; }
+  .comp.unused { color: var(--fa); border-style: dashed; }
+</style>
+</head>
+<body>
+<header><h1>Ruhatár<i>the look · V</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <button id="bad" aria-pressed="false">csak az eltérők · drifted only</button>
+  <input id="q" type="search" placeholder="keresés · search" aria-label="keresés · search"></header>
+<main>
+  <section><h2>Ki mit visel<i>every app's pages and the look each wears</i></h2><div class="apps" id="apps"></div></section>
+  <section class="grid2">
+    <div class="panel"><h2>A UI Kit darabjai<i>kit components by how many pages carry them (dashed: none yet)</i></h2><div id="comps"></div></div>
+    <div class="panel"><h2>Rendszerek<i>the systems, themes, logos, the Visual Base</i></h2><ul class="list" id="systems"></ul></div>
+  </section>
+</main>
+<script src="out/wardrobe-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.WARDROBE, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('apps').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const c = D.counts, byId = new Map(D.looks.map(l => [l.id, l]));
+  $('sum').textContent = `${c.looks} oldal · ${Object.entries(c.states).map(([k, v]) => `${v} ${k}`).join(' · ')} · ${c.used}/${c.components} kit-darab használatban`;
+  const fix = l => l.state === 'behind' ? `node shared/vrg-ui-kit/inline.js --sync-app ${l.path}` : l.state === 'missing' ? 'take it off tools/melyviz-sync.js TARGETS' : 'node tools/melyviz-sync.js';
+  const tone = { current: 'ok', linked: 'ok', drift: 'amber', behind: 'amber', missing: 'red' };
+  let q = '', bad = false, sel = '';
+  function render() {
+    const L = D.looks.filter(l => (!bad || /drift|behind|missing/.test(l.state)) && (!q || l.path.toLowerCase().includes(q)));
+    const apps = new Map(); for (const l of L) (apps.get(l.app) || apps.set(l.app, []).get(l.app)).push(l);
+    $('apps').innerHTML = [...apps].map(([app, ls]) => `<div class="panel app"><h3>${esc(app)} <span class="faint mono">${ls.length}</span></h3>${ls.map(l => `<div class="pg ${esc(l.state)}" data-k="${esc(l.id)}" aria-selected="${l.id === sel}">
+        ${esc(l.path.slice(app.length + 1) || l.path)} <span class="chip ${tone[l.state] || ''}">${esc(l.state)}</span>${l.melyviz ? `<span class="chip mute">Mélyvíz ${esc(l.melyviz)}</span>` : ''}${l.kit ? `<span class="chip mute">kit ${esc(l.kit.version || '?')} · ${l.kit.components.length}</span>` : ''}${l.kitLink ? '<span class="chip mute">kit tokens</span>' : ''}
+        ${/drift|behind|missing/.test(l.state) ? `<div class="cmd">${esc(fix(l))}</div>` : ''}</div>`).join('')}</div>`).join('')
+      || '<p class="empty">Nincs ilyen oldal. · No page matches.</p>';
+  }
+  $('comps').innerHTML = D.components.map(cm => `<span class="comp${cm.wornBy ? '' : ' unused'}" data-k="${esc(cm.id)}" title="${esc(cm.family)}">${esc(cm.name)}${cm.wornBy ? ' ×' + cm.wornBy : ''}</span>`).join('') || '<p class="empty">Nincs UI Kit. · No kit.</p>';
+  $('systems').innerHTML = D.systems.map(s => `<li data-k="${esc(s.id)}">${esc(s.title)} <span class="chip mute">${esc(s.kind)}</span><small>${esc(s.brief)}</small></li>`).join('');
+  function select(id, quiet) { sel = id; for (const el of document.querySelectorAll('[data-k]')) el.setAttribute('aria-selected', String(el.dataset.k === sel)); if (!quiet && window.StackLive) StackLive.selected(sel ? [sel] : []); }
+  document.body.addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  $('bad').onclick = () => { bad = !bad; $('bad').setAttribute('aria-pressed', String(bad)); render(); };
+  render();
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'V', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, [el.dataset.k]]),
+    select: id => { id = String(id || ''); if (document.querySelector(`[data-k="${CSS.escape(id)}"]`)) select(id, true); },
+    getSelection: () => (sel ? [sel] : []),
+  });
+})();
+</script>
+</body>
+</html>

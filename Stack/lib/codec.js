@@ -79,7 +79,7 @@ module.exports = function codec(graph, OUT) {
   }
 
   /* ---- L1: the pillars */
-  const top = (ids, l, k) => ids.map(i => byId.get(i)).filter(n => n.layer === l).sort((a, b) => (b.deg.v + b.deg.h) - (a.deg.v + a.deg.h)).slice(0, k);
+  const top = (ids, l, k) => ids.map(i => byId.get(i)).filter(n => n && n.layer === l).sort((a, b) => (b.deg.v + b.deg.h) - (a.deg.v + a.deg.h)).slice(0, k);
   const L1 = ['# L1 VRG Stack — entity pillars: the same thing on every layer. Top nodes per layer by link count; full list: stack.js ent <id>.'];
   for (const e of graph.entities) {
     L1.push(`## ${e.id} · ${e.name}  (${Object.entries(e.per).map(([l, c]) => l + c).join(' ')})`);

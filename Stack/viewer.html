@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Rétegverem</title>
+<!-- Rétegverem, the Stack Viewer (S9 of research/STRINGS-PLAN.md §6; STK-Q22 Auto, STK-Q25 replaces Rétegek under R → 7).
+     Every layer is an isometric plane made of the bytes it is written in: out/layertext/<L>.bin (lib/layertext.js), one
+     particle per byte at Teljes, k bytes per particle at the coarser presets. Each node owns a cell in its layer's
+     natural order (lib/viewer-layout.js); inside the cell its bytes run along Hilbert tiles, so a paragraph is a block.
+     No position buffer: the vertex shader finds the particle's cell (a block table, then a short binary search over the
+     cell starts) and its place on the curve from gl_VertexID; the only attribute is the byte. Picking is a GPU id
+     buffer at ¼ resolution, read back once when the camera stops; pointing at a dot shows the words it is made of.
+     Strings (lib/strings.js) and pillar spines are drawn on selection. Érintésnyom's light arrives on the
+     BroadcastChannel 'vrg-stack'. Plain WebGL2; works from file:// (out/layertext/<L>.js) and in the phone bundle
+     (byte classes only, never the text). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<style>
+  :root { --bg: var(--mv-bg, #0a141c); --panel: var(--mv-panel-solid, #121c24); --line: var(--mv-line, rgba(232,240,246,.15)); --text: var(--mv-text, #e8f0f6);
+    --acc: var(--mv-accent, #93d3e6); --warm: var(--mv-warm, #e8a873); --idea: #c6a0e6;
+    --mono: var(--mv-mono, Consolas, ui-monospace, monospace); --sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--mv-voice, Bahnschrift, sans-serif);
+    --faint: #95a0a8; --dim: #c6ced4; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 var(--sans); overflow: hidden; display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  h1 { font: 600 16px var(--voice); font-stretch: 75%; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+  header .row2 { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+  #stat, #perf { font: 12px var(--mono); color: var(--dim); } #msg { font: 12px var(--mono); color: var(--acc); } #perf { color: var(--faint); }
+  .sp { flex: 1; }
+  button, select, input { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; }
+  button { cursor: pointer; } button.on, button:hover { color: var(--text); border-color: var(--acc); }
+  input[type=search] { width: 180px; color: var(--text); font-family: var(--sans); }
+  #view { position: relative; }
+  #view > summary { list-style: none; font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; user-select: none; }
+  #view > summary::-webkit-details-marker { display: none; } #view[open] > summary { color: var(--text); border-color: var(--acc); }
+  #view .menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 8; background: var(--panel); border: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 300px; box-shadow: 0 10px 28px rgba(0,0,0,.55); }
+  #view .menu button, #view .menu a.btn { width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #view .menu label { grid-column: 1 / 3; font: 11px var(--mono); color: var(--faint); display: flex; gap: 8px; align-items: center; }
+  #view .menu input[type=range] { flex: 1; padding: 0; }
+  a.btn { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; text-decoration: none; display: inline-block; }
+  a.btn:hover { color: var(--text); border-color: var(--acc); }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 330px; min-height: 0; }
+  #stage { position: relative; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .pl { position: absolute; transform: translate(-100%, -50%); font: 600 12px var(--voice); letter-spacing: .06em; white-space: nowrap; text-shadow: 0 0 4px #0a141c, 0 0 2px #0a141c; padding-right: 8px; pointer-events: auto; cursor: pointer; }
+  .pl i { font: 11px var(--mono); letter-spacing: 0; color: var(--faint); margin-left: 6px; }
+  #tip { position: absolute; pointer-events: none; background: rgba(14,24,32,.96); color: #eef4f8; border: 1px solid var(--line); padding: 6px 9px; max-width: 380px; font-size: 12px; display: none; z-index: 2; }
+  #tip .m { font: 11px var(--mono); color: var(--faint); } #tip .w { font: 12px var(--mono); color: var(--dim); white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 4px; }
+  #tip .w b { color: #0a141c; background: var(--acc); font-weight: 400; }
+  aside { border-left: 1px solid var(--line); padding: 10px 14px; overflow: auto; min-height: 0; }
+  h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 12px 0 4px; } aside h3:first-child { margin-top: 0; }
+  i { color: var(--faint); font-size: 11px; }
+  .ly { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; gap: 7px; align-items: baseline; padding: 2px 4px; cursor: pointer; color: var(--dim); border-left: 2px solid transparent; }
+  .ly:hover { color: var(--text); } .ly.off { opacity: .35; } .ly.solo { border-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .ly .n { font: 11px var(--mono); color: var(--faint); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; } .sq { width: 9px; height: 9px; display: inline-block; }
+  #card .title { font-size: 14px; font-weight: 600; margin: 2px 0 4px; overflow-wrap: anywhere; }
+  #card .kv { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 2px 8px; font-size: 12px; }
+  #card .kv span:nth-child(odd) { color: var(--faint); } #card .kv span:nth-child(even) { font-family: var(--mono); overflow-wrap: anywhere; }
+  #card .acts { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+  #card pre { font: 11px/1.45 var(--mono); color: var(--dim); background: rgba(255,255,255,.03); border: 1px solid var(--line); padding: 6px 8px; margin: 4px 0; max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .nb { display: block; padding: 1px 0; color: var(--dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nb:hover { color: var(--text); } .nb .c { font: 11px var(--mono); color: var(--faint); }
+  .hint { color: var(--faint); font-size: 12px; }
+  .lg { display: grid; grid-template-columns: 12px minmax(0,1fr); gap: 3px 8px; align-items: center; font-size: 12px; color: var(--dim); }
+  #bExit { position: absolute; right: 10px; top: 10px; z-index: 6; display: none; opacity: .5; } #bExit:hover { opacity: 1; }
+  #load { position: absolute; left: 14px; bottom: 12px; font: 11px var(--mono); color: var(--faint); pointer-events: none; }
+  #tbar { position: absolute; left: 12px; right: 12px; bottom: 10px; display: none; gap: 8px; align-items: center; background: rgba(14,24,32,.92); border: 1px solid var(--line); padding: 6px 8px; z-index: 3; }
+  body.time #tbar { display: flex; } body.time #load { bottom: 58px; }
+  #tbar input[type=range] { flex: 1; min-width: 0; padding: 0; accent-color: var(--acc); }
+  #tDay { font: 12px var(--mono); color: var(--text); white-space: nowrap; min-width: 150px; text-align: right; }
+  #live { font: 12px var(--mono); color: var(--faint); } #live.on { color: var(--acc); }
+  #card .files { font: 11px/1.5 var(--mono); color: var(--dim); max-height: 160px; overflow: auto; }
+  #card .files span { color: var(--faint); float: right; }
+  #toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--acc); color: var(--text); font: 12px var(--mono); padding: 5px 10px; display: none; z-index: 7; }
+  body.full header, body.full aside { display: none !important; } body.full main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; }
+  body.full { overflow: hidden !important; } body.full #bExit { display: block; }
+  body.bundle .pc { display: none !important; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(400px, 1fr) auto; }
+    aside { border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; overflow-x: hidden; min-width: 0; } aside * { max-width: 100%; overflow-wrap: anywhere; } main { min-width: 0; width: 100%; }
+    body { overflow-x: hidden; overflow-y: auto; } header { padding: 8px 12px; gap: 6px; } header > * { min-width: 0; } header button { flex-shrink: 0; }
+    h1 i, header .t { display: none; } input[type=search] { flex: 1 1 100%; width: auto; order: 9; } header .row2 { order: 10; } header .row2 > span { flex: 1 1 100%; overflow-wrap: anywhere; } .sp { display: none; }
+    #view .menu { position: fixed; left: 12px; right: 12px; top: auto; width: auto; } body.full main { grid-template-rows: minmax(0, 1fr); }
+  }
+  @media (max-width: 600px) { main { grid-template-rows: minmax(68vh, 1fr) auto; } .pl .nm, .pl i { display: none; } .pl { font-size: 13px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rétegverem<i>VRG Stack · minden réteg a bájtjaiból · every layer drawn from its bytes</i></h1>
+  <input type="search" id="q" placeholder="Keresés · search">
+  <button id="bIso" title="Izometrikus alaphelyzet (dupla katt az üres térre) · isometric home">◇ Izo</button>
+  <select id="detail" title="Részletesség: hány bájt egy részecske · detail: bytes per particle">
+    <option value="auto">Auto</option><option value="sketch">Vázlat · 64 B</option><option value="normal">Normál · 16 B</option>
+    <option value="fine">Finom · 4 B</option><option value="byte">Bájt · 2 B</option><option value="full">Teljes · 1 B</option>
+  </select>
+  <span class="sp"></span>
+  <details id="view"><summary title="Nézet · view">⚙<span class="t"> Nézet</span></summary><div class="menu">
+    <button id="bStr" class="on" title="A kiválasztott füzér vonalai · the selected string's lines">┃ Füzér</button>
+    <button id="bPil" class="on" title="Pillér-gerinc a kiválasztotthoz · pillar spine">║ Pillérek</button>
+    <button id="bGrid" class="on" title="Síkok kerete · plane frames">▦ Keret</button>
+    <button id="bChg" class="on" title="Az előző build óta változott csomópontok lüktetnek · changed since the last build pulse">◌ Változások</button>
+    <button id="bWarn" title="Jelzések (J): pirosan minden csomópont, amire jelzés mutat, a többi elhalványul · signals: every node a J signal warns, in red">⚠ Jelzések</button>
+    <button id="bLight" class="on" title="Érintésnyom fénye (ugyanabban a böngészőben nyitva) · Érintésnyom's light">✦ Érintésnyom</button>
+    <button id="bCrisp" title="Éles pontok (P) · crisp points (P)">◉ Éles pontok</button>
+    <button id="bSpin" title="Lassú forgás · slow spin">Forgás</button>
+    <a class="btn pc" href="layers.html" title="A régi gráf-nézet: pontok és kötők · the old graph view">◇ Gráf nézet</a>
+    <label>Távolság <i>gap</i><input type="range" id="gap" min="0.4" max="4.5" step="0.05" value="3.4"></label>
+    <button id="bRefresh" class="pc" title="Adat újraolvasása · reload">Frissítés</button>
+    <a class="btn pc" href="erintesnyom.html" target="_blank" title="Érintésnyom új ablakban: a munka fénye ide is átjön · opens Érintésnyom, its light comes here">✦ Érintésnyom ↗</a>
+  </div></details>
+  <button id="bTime" title="Idő: a rétegek napról napra, ahogy a Stack látta őket (T) · time scrubber (T)">⏱<span class="t"> Idő</span></button>
+  <button id="bFull" title="Teljes képernyő: csak a 3D (F) · full screen (F)">⛶</button>
+  <div class="row2"><span id="stat">…</span><span id="live" class="pc"></span><span id="perf"></span><span id="msg"></span></div>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="labels"></div>
+    <div id="tip"></div>
+    <div id="load"></div>
+    <div id="toast"></div>
+    <div id="tbar"><button id="tPlay" title="Lejátszás · play (Space)">▶</button><input type="range" id="tRange" min="0" max="0" value="0" aria-label="nap · day"><span id="tDay"></span><button id="tOff" title="Vissza a mához · back to now">✕</button></div>
+    <button id="bExit" title="Vissza (F / Esc) · back">✕</button>
+  </div>
+  <aside>
+    <h3>Kiválasztva <i>· selected</i></h3>
+    <div id="card"><div class="hint">Mutass egy pontra: látod a szavakat, amikből áll. Kattintás: kiválasztás és a füzére, Shift+katt: hozzáadás, dupla katt: berepülés a cellába (ott minden bájt egy pont). Húzás: forgatás, görgő: nagyítás, Shift / jobb gomb húzás: mozgatás. Rétegnév: csak az a réteg, jobb katt: elrejtés.<br><i>Point at a dot to see the words it is made of. Click selects it and its string, Shift+click adds, double-click flies into the cell (every byte a dot there). Drag rotates, wheel zooms, Shift / right drag pans. A layer name solos it, right-click hides it.</i></div></div>
+    <h3>Rétegek <i>· layers, felülről lefelé · top down</i></h3>
+    <div id="lys"></div>
+    <h3>Hogyan olvasd <i>· how to read</i></h3>
+    <div class="lg" id="legend"></div>
+    <div class="hint" style="margin-top:6px">Minden réteg a saját szövegéből áll (címek, leírások, mezők; a G rétegben a dokumentumok teljes szövege, a C-ben a mappák fájllistája). Egy csomópont egy cella a réteg természetes rendjében: F szint × sáv, I L U R sávonként időrendben, Q névterenként, A fajtánként, C és G mappafa, a terület arányos a bájtokkal. A cellán belül a bájtok Hilbert-görbén futnak, így egy bekezdés egy folt.<br><i>Each layer is made of its own text. A node is a cell in the layer's natural order; area ∝ bytes; inside, the bytes run along a Hilbert curve, so a paragraph is a patch.</i></div>
+  </aside>
+</main>
+<script src="touch.js"></script>
+<script src="schema/layers.js"></script>
+<script src="lib/strings.js"></script>
+<script src="lib/viewer-layout.js"></script>
+<script src="lib/editdialog.js"></script>
+<script src="lib/live.js"></script>
+<script>
+'use strict';
+(function () {
+const LAYER = StackLayers.BY;   // code → { col, hu, en } (schema/layers.js)
+// the Stack's own order (LAYERS §1, the ◢ menu, Érintésnyom), the pillars as the base plane
+const ORDER = StackLayers.PLANES;
+// each layer's own page; the phone keeps them under other names (Mobile/stack/publish-stack.js LAYER_PAGES)
+const PAGE = window.STACK_BUNDLE ? { I: 'otletfolyam.html', Q: 'dontesek.html', L: 'vonalak.html', A: 'vezerloterem.html', U: 'futasnaplo.html', R: 'commitok.html' }
+  : { I: 'lineage.html', Q: 'decisions.html', L: 'metro.html', A: 'control.html', U: 'runs.html', R: 'commits.html' };
+const NEW = window.STACK_BUNDLE ? '' : ' target="_blank"';
+const PRESETS = [{ id: 'sketch', hu: 'Vázlat', k: 64 }, { id: 'normal', hu: 'Normál', k: 16 }, { id: 'fine', hu: 'Finom', k: 4 }, { id: 'byte', hu: 'Bájt', k: 2 }, { id: 'full', hu: 'Teljes', k: 1 }];
+const VL = window.StackViewerLayout, $ = id => document.getElementById(id);
+const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtB = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : b >= 1024 ? (b / 1024).toFixed(1) + ' KB' : b + ' B';
+const fmtN = n => n >= 1e6 ? (n / 1e6).toFixed(2) + ' M' : n >= 1e4 ? (n / 1e3).toFixed(0) + ' k' : String(n);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const PREF = store.get('vrg-viewer', {});
+const PHONE = window.innerWidth < 900 || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+
+/* ================= state */
+const LT = {};                       // L → { idx: [[id, s, e, hash]], src: Uint8Array, cls, k0 }
+let nodeById = new Map(), SI = null, changed = new Set();
+let planes = [], cells = [], cellById = new Map(), starts = null, N = 0, K = 1;
+let presetId = PREF.detail || 'auto', auto = presetId === 'auto', preset = null;
+let gl, progP, progL, vaoP, vaoD, bufP, bufD, bufL, tex = {}, fbo = null, pickTex = null, pickW = 0, pickH = 0, pickBuf = null, pickOk = false;
+let light = null, lightDirty = true, lineDirty = true, lnN = 0, lnCut = 0;
+let sel = [], hover = -1, solo = null, query = '', ext = new Map();
+let showWarn = /[#&]warn\b/.test(location.hash), warned = new Set();   // ⚠: the cells a J signal warns, and the signals (S14)
+let showStr = true, showPil = true, showGrid = true, showChg = true, showLight = true, crisp = !!PREF.crisp, spin = false, full = false;
+let detail = null;                   // { cell, n, f, src, code } when one cell is drawn byte by byte (code: its folder's files)
+let TIME = null, byDay = [], timeOn = false, tIdx = 0, playing = false, playT = 0;   // the time scrubber (S10)
+const hidden = new Set(PREF.hidden || []);
+const ISO = { yaw: Math.PI / 4, pitch: Math.atan(1 / Math.SQRT2) };
+let cam = { yaw: ISO.yaw, pitch: ISO.pitch, zoom: PHONE ? 1.05 : 1 }, pan = [0, 0], fly = null;
+const PS = 1.6;
+const GAP0 = 2 * PS * Math.SQRT2 * Math.sin(ISO.pitch) / Math.cos(ISO.pitch) * 1.08;
+let gap = +PREF.gap || GAP0;
+const save = () => store.set('vrg-viewer', { detail: auto ? 'auto' : presetId, crisp, gap, hidden: [...hidden] });
+
+/* ================= data */
+function script(src) { return new Promise(ok => { const s = document.createElement('script'); s.src = src; s.onload = () => { s.remove(); ok(true); }; s.onerror = () => { s.remove(); ok(false); }; document.head.appendChild(s); }); }
+function b64(s) { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+const waiting = {};
+window.LAYERTEXT_LOAD = (L, body, data) => { if (waiting[L]) { waiting[L]({ idx: body.nodes, src: b64(data), cls: !!body.cls, k0: body.k0 || 1 }); delete waiting[L]; } };
+async function layerText(L) {
+  if (window.LAYERTEXT_BUNDLE) { const b = LAYERTEXT_BUNDLE.layers[L]; return b ? { idx: b.nodes, src: b64(b.data), cls: true, k0: LAYERTEXT_BUNDLE.k0 } : null; }
+  if (/^https?:/.test(location.protocol)) {
+    try {
+      const [i, b] = await Promise.all([fetch('out/layertext/' + L + '.idx', { cache: 'no-store' }), fetch('out/layertext/' + L + '.bin', { cache: 'no-store' })]);
+      if (i.ok && b.ok) return { idx: (await i.json()).nodes, src: new Uint8Array(await b.arrayBuffer()), cls: false, k0: 1 };
+    } catch (e) {}
+  }
+  return new Promise(ok => { waiting[L] = ok; script('out/layertext/' + L + '.js?t=' + Date.now()).then(r => { if (!r && waiting[L]) { delete waiting[L]; ok(null); } }); });
+}
+async function readStack() {
+  if (!window.STACK_BUNDLE) await script('out/stack-data.js?t=' + Date.now());
+  if (!window.STACK) return false;
+  nodeById = new Map(STACK.nodes.map(n => [n.id, n]));
+  SI = window.StackStrings ? StackStrings.prepare(STACK.nodes, STACK.edges.map(e => Array.isArray(e) ? { a: e[0], b: e[1], rel: e[2], v: e[3] } : e)) : null;
+  warned = new Set(); for (const e of STACK.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'warns') { warned.add(a); warned.add(b); } }
+  return true;
+}
+async function loadTime() {
+  if (window.LAYERTEXT_BUNDLE) TIME = LAYERTEXT_BUNDLE.time || null;
+  else { window.LAYERTEXT_TIME = null; await script('out/layertext/time.js?t=' + Date.now()); TIME = window.LAYERTEXT_TIME || null; }
+  byDay = [];
+  if (TIME) {
+    byDay = TIME.days.map(() => []);
+    for (const [id, i] of Object.entries(TIME.born)) byDay[i].push(id);
+    for (const [i, id] of TIME.ev) byDay[i].push(id);
+    $('tRange').max = Math.max(0, TIME.days.length - 1);
+    if (!timeOn) tIdx = TIME.days.length - 1;
+  }
+  $('bTime').disabled = !TIME || !TIME.days.length;
+  $('bTime').title = TIME && TIME.days.length ? `Idő: ${TIME.days[0]} – ${TIME.days[TIME.days.length - 1]}, napról napra (T) · time scrubber` : 'Idő: nincs out/layertext/time.js (node stack.js build) · no timeline yet';
+}
+async function load(note) {
+  $('load').textContent = 'betöltés · loading…';
+  if (!await readStack()) { $('stat').textContent = 'nincs adat: node stack.js build · no data (out/stack-data.js)'; $('load').textContent = ''; return; }
+  if (!window.LAYERTEXT_BUNDLE && !window.STACK_BUNDLE) { window.LAYERTEXT_INDEX = null; await script('out/layertext/index.js?t=' + Date.now()); }
+  const IX = window.LAYERTEXT_BUNDLE ? LAYERTEXT_BUNDLE.index : window.LAYERTEXT_INDEX;
+  if (!IX) { $('stat').textContent = 'nincs rétegszöveg: node stack.js build (out/layertext) · no layer text'; $('load').textContent = ''; return; }
+  changed = new Set(); for (const d of Object.values(IX.diff || {})) for (const id of [...(d.changed || []), ...(d.added || [])]) changed.add(id);
+  for (const k of Object.keys(LT)) delete LT[k];
+  // small layers first: the stack stands at once, G (the documents) fills in last
+  const todo = ORDER.filter(L => IX.layers[L]).sort((a, b) => IX.layers[a].bytes - IX.layers[b].bytes);
+  for (const L of todo) {
+    $('load').textContent = `${L} · ${LAYER[L].hu} · ${fmtB(IX.layers[L].bytes)}…`;
+    const t = await layerText(L); if (t) LT[L] = t;
+    rebuild();
+  }
+  $('load').textContent = '';
+  await loadTime();
+  if (note) $('msg').textContent = note;
+  if (auto) measure.start();
+}
+
+/* ================= live: a build finished (serve.js /api/events) → refetch those layers, glow what differs */
+let es = null;
+// the server connection is shared by every Stack tab of this browser (lib/live.js): a browser allows six per server
+function live() {
+  if (window.STACK_BUNDLE || !window.StackLive || !StackLive.served) { $('live').textContent = ''; return; }
+  es = { readyState: 0 };
+  StackLive.on('status', ok => { es.readyState = ok ? 1 : 0; $('live').textContent = ok ? '● élő' : '○ élő'; $('live').className = ok ? 'pc on' : 'pc';
+    $('live').title = ok ? 'A szerver szól, ha egy build elkészült: a változott rétegek újratöltődnek, a változott csomópontok lüktetnek · live' : 'Nincs kapcsolat a szerverrel (node serve.js) · no server'; });
+  StackLive.on('changed', d => { if (d) refresh(d); });
+}
+let refreshing = null;
+async function refresh(d) {
+  if (refreshing) { await refreshing; }
+  refreshing = (async () => {
+    const before = {}; for (const L of Object.keys(LT)) before[L] = new Map(LT[L].idx.map(r => [r[0], r[3]]));
+    if (!await readStack()) return;
+    window.LAYERTEXT_INDEX = null; await script('out/layertext/index.js?t=' + Date.now());
+    const IX = window.LAYERTEXT_INDEX; if (!IX) return;
+    const todo = Object.keys(IX.layers).filter(L => !LT[L] || (d.layers || []).includes(L));
+    for (const L of todo) { const t = await layerText(L); if (t) LT[L] = t; }
+    for (const L of Object.keys(LT)) if (!IX.layers[L]) delete LT[L];
+    const glow = new Set();
+    for (const L of todo) { if (!LT[L]) continue; const b = before[L]; for (const r of LT[L].idx) if (!b || b.get(r[0]) !== r[3]) glow.add(r[0]); }
+    changed = glow;
+    await loadTime();
+    rebuild();
+    $('live').textContent = `● élő · ${String(IX.generated || '').slice(11, 16)} · ${glow.size} változott`;
+    $('live').title = `Build ${IX.generated}: ${glow.size} csomópont változott (${todo.join(' ') || '–'}), lüktetnek · ${glow.size} nodes changed, they pulse`;
+    if (bus) try { bus.postMessage({ type: 'changed', from: 'viewer', ids: [...glow] }); } catch (e) {}
+  })();
+  await refreshing; refreshing = null;
+}
+
+/* ================= time: the layers day by day, as the Stack saw them (out/layertext/time.js) */
+function setTime(on) {
+  timeOn = !!(on && TIME && TIME.days.length);
+  document.body.classList.toggle('time', timeOn); $('bTime').classList.toggle('on', timeOn);
+  if (!timeOn) play(false); else setDay(tIdx);
+  lightDirty = true; pickOk = false; frameDirty = true;
+}
+function setDay(i) {
+  if (!TIME) return;
+  tIdx = Math.max(0, Math.min(TIME.days.length - 1, i | 0)); $('tRange').value = tIdx;
+  let n = 0; for (const c of cells) { const b = TIME.born[c.id]; if (b === undefined || b <= tIdx) n++; }
+  $('tDay').textContent = `${TIME.days[tIdx]} · ${fmtN(n)} csomópont`;
+  lightDirty = true; pickOk = false;
+}
+function play(on) {
+  playing = !!on && timeOn; $('tPlay').textContent = playing ? '❚❚' : '▶'; playT = 0;
+  if (playing && tIdx >= TIME.days.length - 1) setDay(0);
+}
+
+/* ================= cells and particles */
+const layoutCache = new Map();
+function presetFor(id) {
+  const kmin = Math.max(1, ...Object.values(LT).map(t => t.k0));
+  let p = PRESETS.find(p => p.id === id) || PRESETS[2];
+  if (p.k < kmin) p = PRESETS.slice().reverse().find(q => q.k >= kmin) || PRESETS[0];
+  return p;
+}
+function rebuild() {
+  if (auto && !measure.chosen) presetId = PHONE ? 'normal' : 'fine';
+  preset = presetFor(presetId); K = preset.k;
+  planes = ORDER.filter(L => LT[L]).map((L, k) => ({ L, k }));
+  cells = []; cellById = new Map();
+  for (const P of planes) {
+    const T = LT[P.L];
+    let lay = layoutCache.get(P.L);
+    if (!lay || lay.src !== T.src) {
+      const list = T.idx.map(([id, s, e]) => { const n = nodeById.get(id) || { id, layer: P.L }; return { id, n: (e - s) * T.k0, t: n.t, lane: n.lane, tier: n.tier, kind: n.kind, path: n.path }; });
+      lay = { src: T.src, rects: VL.layout(P.L, list) }; layoutCache.set(P.L, lay);
+    }
+    for (const [id, s, e] of T.idx) {
+      const r = lay.rects.get(id); if (!r) continue;
+      const c = { i: cells.length, id, node: nodeById.get(id) || { id, layer: P.L, title: id }, plane: P.k, L: P.L, s, e, r };
+      cells.push(c); cellById.set(id, c);
+    }
+  }
+  // k bytes → one particle, per layer, then all layers in one buffer
+  const parts = []; let total = 0;
+  for (const P of planes) {
+    const T = LT[P.L], list = cells.filter(c => c.plane === P.k), keff = Math.max(1, Math.round(K / T.k0));
+    const ag = VL.aggregate(T.src, list.map(c => [c.s, c.e]), keff, T.cls);
+    list.forEach((c, j) => { c.p0 = total + ag.starts[j]; c.pn = ag.starts[j + 1] - ag.starts[j]; c.keff = keff; c.f = VL.fill(c.r, Math.max(1, c.pn)); });
+    parts.push(ag.data); total += ag.data.length;
+  }
+  N = total;
+  const data = new Uint8Array(N); let o = 0; for (const p of parts) { data.set(p, o); o += p.length; }
+  starts = new Uint32Array(cells.length + 1); cells.forEach((c, i) => { starts[i] = c.p0; }); starts[cells.length] = N;
+  upload(data);
+  detail = null; lightDirty = true; lineDirty = true; pickOk = false;
+  pulsing = cells.some(c => changed.has(c.id));
+  renderLayers(); renderHeader(); renderLegend();
+  if (sel.length) select(sel.filter(id => cellById.has(id)), true);
+}
+
+/* ================= GL */
+const W = 2048;   // data texture width
+const VS_P = `#version 300 es
+precision highp float; precision highp int; precision highp usampler2D; precision highp sampler2D;
+layout(location = 0) in uint aB;
+uniform highp usampler2D uStart, uBlock, uLight; uniform highp sampler2D uCell;
+uniform mat4 uM; uniform float uPS, uTop, uGap, uPx, uTime, uCrisp, uChg; uniform int uPick, uDetail, uDetailCell, uClass, uT; uniform vec4 uDF; uniform uint uIdBase;
+uniform vec3 uCol[24];   // one per plane: 20 layers (W F V M N S I T Q L A U P R C D O G K J) + E; room for 3 more
+flat out uint vId; out vec4 vC;
+const float SH[7] = float[7](0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24);
+ivec2 T(int i) { return ivec2(i % ${W}, i / ${W}); }
+int startOf(int c) { return int(texelFetch(uStart, T(c), 0).r); }
+int cls(uint b) { if (b >= 128u) return 1; if ((b >= 65u && b <= 90u) || (b >= 97u && b <= 122u)) return 0; if (b >= 48u && b <= 57u) return 2;
+  if (b == 32u || b == 10u || b == 9u || b == 13u) return 3; if (b == 123u || b == 125u || b == 91u || b == 93u || b == 34u || b == 44u || b == 58u) return 5;
+  if (b < 32u || b == 127u) return 6; return 4; }
+ivec2 d2xy(int n, int d) { int x = 0, y = 0, t = d; for (int s = 1; s < n; s *= 2) { int rx = 1 & (t >> 1), ry = 1 & (t ^ rx);
+  if (ry == 0) { if (rx == 1) { x = s - 1 - x; y = s - 1 - y; } int q = x; x = y; y = q; } x += s * rx; y += s * ry; t >>= 2; } return ivec2(x, y); }
+void main() {
+  int vid = gl_VertexID, cell, local;
+  if (uDetail == 1) { cell = uDetailCell; local = vid; }
+  else {
+    int b = vid >> 8, lo = int(texelFetch(uBlock, T(b), 0).r), hi = int(texelFetch(uBlock, T(b + 1), 0).r);
+    while (lo < hi) { int mid = (lo + hi + 1) >> 1; if (startOf(mid) <= vid) lo = mid; else hi = mid - 1; }
+    cell = lo; local = vid - startOf(cell);
+  }
+  uvec4 L = texelFetch(uLight, T(cell), 0);
+  if ((L.a & 65u) != 0u || (uDetail == 0 && cell == uDetailCell)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vC = vec4(0.0); vId = 0u; return; }
+  vec4 c0 = texelFetch(uCell, T(cell * 2), 0), c1 = texelFetch(uCell, T(cell * 2 + 1), 0);
+  float x0 = c0.x, z0 = c0.y, p = c0.z; int tc = int(c0.w), t = int(c1.x);
+  if (uDetail == 1) { x0 = uDF.x; z0 = uDF.y; p = uDF.z; tc = int(uDF.w); t = uT; }
+  int S = 1 << t, cap = S * S, ti = local / cap, w = local - ti * cap, row = ti / tc, col = ti - row * tc;
+  ivec2 h = d2xy(S, w); if ((row & 1) == 1) { col = tc - 1 - col; h.x = S - 1 - h.x; }
+  float u = x0 + (float(col * S + h.x) + 0.5) * p, v = z0 + (float(row * S + h.y) + 0.5) * p, plane = c1.y;
+  gl_Position = uM * vec4((u * 2.0 - 1.0) * uPS, uTop - plane * uGap, (v * 2.0 - 1.0) * uPS, 1.0);
+  float size = p * 2.0 * uPS * uPx;
+  gl_PointSize = uCrisp > 0.5 ? max(1.0, floor(size + 0.25)) : max(1.0, size * 0.94);
+  vId = uint(vid) + uIdBase + 1u;
+  if (uPick == 1) { vC = vec4(1.0); return; }
+  int k = min(uClass == 1 ? int(aB) : cls(aB), 6);
+  float sh = SH[k];
+  vec3 col3 = uCol[int(plane)], c = col3 * sh;
+  if (k == 1) c = mix(c, vec3(1.0, 0.86, 0.72), 0.22);
+  if (k == 2) c = mix(c, vec3(0.58, 0.83, 0.9), 0.2);
+  if (k == 5) c = mix(c, vec3(1.0), 0.18);
+  // a light recolours the cell but keeps the byte classes readable: the light's colour, shaded like the byte
+  float br = c1.z, lit = 0.2 + 0.75 * sh;
+  float ex = float(L.r) / 255.0, inf = float(L.g) / 255.0, st = float(L.b) / 255.0;
+  if (inf > 0.0) { c = mix(c, vec3(0.78, 0.63, 0.9) * lit, 0.6 * inf); br += 0.15 * inf; }
+  if ((L.a & 8u) != 0u && ((vid & 1) == 0)) { c = mix(c, vec3(0.58, 0.83, 0.9) * lit, 0.85); br += 0.2; }
+  if (ex > 0.0) { c = mix(c, vec3(0.91, 0.66, 0.45) * lit, 0.8 * ex); br += 0.3 * ex; }
+  if (st > 0.0) { c = mix(c, vec3(0.58, 0.83, 0.9) * lit, 0.55 * st); br += 0.15 * st; }
+  if ((L.a & 128u) != 0u) { c = mix(c, vec3(1.0, 0.37, 0.34) * lit, 0.8); br += 0.25; }   // ⚠ a signal warns this node (J, S14)
+  if ((L.a & 16u) != 0u) br += 0.3;
+  if ((L.a & 4u) != 0u && uChg > 0.5) { float q = 0.5 + 0.5 * sin(uTime * 2.6); c = mix(c, vec3(lit), 0.4 * q); }
+  if ((L.a & 32u) != 0u) br *= 0.38;   // a light or a selection is on, and this cell is not in it
+  if ((L.a & 2u) != 0u) br *= 0.14;
+  // below a pixel, k particles share it: each covers its share (×1.6, so a full cell reads at ~80 %, not 63 %)
+  float a = uCrisp > 0.5 ? 1.0 : min(1.0, size * size * 1.6);
+  vC = vec4(c * br * a, a);
+}`;
+const FS_P = `#version 300 es
+precision highp float; precision highp int;
+flat in uint vId; in vec4 vC; uniform int uPick; out vec4 o;
+void main() { if (uPick == 1) { o = vec4(float(vId & 255u) / 255.0, float((vId >> 8) & 255u) / 255.0, float((vId >> 16) & 255u) / 255.0, 1.0); return; } o = vC; }`;
+const VS_L = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aA; uniform mat4 uM; out vec4 vC; void main() { gl_Position = uM * vec4(aPos, 1.0); vC = vec4(aCol * aA, aA); }`;
+const FS_L = `#version 300 es
+precision highp float; in vec4 vC; out vec4 o; void main() { o = vC; }`;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); gl.attachShader(p, s); }
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  p.u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); for (let i = 0; i < n; i++) { const a = gl.getActiveUniform(p, i), nm = a.name.replace(/\[0\]$/, ''); p.u[nm] = gl.getUniformLocation(p, a.name); }
+  return p;
+}
+function dataTex(name, unit, fmt, ifmt, type, arr, perTexel) {
+  const n = Math.ceil(arr.length / perTexel), h = Math.max(1, Math.ceil(n / W)), full = new arr.constructor(W * h * perTexel); full.set(arr);
+  if (!tex[name]) tex[name] = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex[name]);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, ifmt, W, h, 0, fmt, type, full);
+}
+function upload(data) {
+  gl.bindVertexArray(vaoP); gl.bindBuffer(gl.ARRAY_BUFFER, bufP); gl.bufferData(gl.ARRAY_BUFFER, data.length ? data : new Uint8Array(1), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribIPointer(0, 1, gl.UNSIGNED_BYTE, 1, 0); gl.bindVertexArray(null);
+  // the block table: for every 256 particles, the cell its first particle is in (the shader's search starts there)
+  // the shader searches cells tab[b] .. tab[b + 1] for particle v in block b = v >> 8 (the cell of the next block's first
+  // particle is never before the cell of this block's last one, so it bounds the search)
+  const nb = (N >> 8) + 2, tab = new Uint32Array(nb); let c = 0;
+  for (let b = 0; b < nb; b++) { const v = Math.min(Math.max(0, N - 1), b * 256); while (c + 1 < cells.length && starts[c + 1] <= v) c++; tab[b] = c; }
+  dataTex('start', 1, gl.RED_INTEGER, gl.R32UI, gl.UNSIGNED_INT, starts, 1);
+  dataTex('block', 2, gl.RED_INTEGER, gl.R32UI, gl.UNSIGNED_INT, tab, 1);
+  const cf = new Float32Array(cells.length * 8);
+  cells.forEach((c, i) => { const n = c.node, br = n.stale ? 0.55 : /done|kész|closed|answered/i.test(n.state || '') ? 0.85 : 1;
+    cf.set([c.f.x0, c.f.z0, c.f.p, c.f.tc, c.f.t, c.plane, br, 0], i * 8); });
+  dataTex('cell', 3, gl.RGBA, gl.RGBA32F, gl.FLOAT, cf, 4);
+  light = new Uint8Array(Math.max(1, cells.length) * 4);
+  dataTex('light', 4, gl.RGBA_INTEGER, gl.RGBA8UI, gl.UNSIGNED_BYTE, light, 4);
+}
+function pushLight() {
+  light.fill(0);
+  const q = query.toLowerCase(), hit = q ? new Set(cells.filter(c => (c.node.title || '').toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).map(c => c.i)) : null;
+  const dayIds = timeOn ? new Set(byDay[tIdx] || []) : null;
+  for (const c of cells) {
+    let f = 0;
+    if (hidden.has(c.L)) f |= 1;
+    if (timeOn) { const b = TIME.born[c.id]; if (b !== undefined && b > tIdx) f |= 64; }
+    if ((solo && c.L !== solo) || (hit && hit.size && !hit.has(c.i))) f |= 2;
+    if (showChg && (timeOn ? dayIds.has(c.id) : changed.has(c.id))) f |= 4;
+    if (c.i === hover) f |= 16;
+    if (showWarn && warned.has(c.id)) f |= 128;
+    light[c.i * 4 + 3] = f;
+  }
+  if (showLight) for (const [id, v] of ext) { const c = cellById.get(id); if (!c) continue; const o = c.i * 4;
+    if (v.kind === 'exact') light[o] = Math.max(light[o], 80 + v.e * 175 | 0); else if (v.kind === 'inferred') light[o + 1] = Math.max(light[o + 1], 60 + v.e * 160 | 0); else light[o + 3] |= 8; }
+  for (const [id, s] of strMembers) { const c = cellById.get(id); if (c) light[c.i * 4 + 2] = Math.max(light[c.i * 4 + 2], 70 + s * 185 | 0); }
+  if ((showLight && ext.size) || strMembers.size || (showWarn && warned.size)) for (let i = 0; i < cells.length; i++) { const o = i * 4; if (!light[o] && !light[o + 1] && !light[o + 2] && !(light[o + 3] & 136)) light[o + 3] |= 32; }
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, tex.light);
+  const h = Math.max(1, Math.ceil(cells.length / W)), full = new Uint8Array(W * h * 4); full.set(light);
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, W, h, gl.RGBA_INTEGER, gl.UNSIGNED_BYTE, full);
+  lightDirty = false; frameDirty = true;
+}
+
+/* ================= camera */
+const yOf = k => (planes.length - 1) / 2 * gap - k * gap;
+function mat(c = cam, p = pan) {
+  const cv = $('cv'), asp = cv.width / cv.height, cy = Math.cos(c.yaw), sy = Math.sin(c.yaw), cp = Math.cos(c.pitch), sp = Math.sin(c.pitch);
+  const fwd = [-cp * sy, -sp, -cp * cy], xA = [cy, 0, -sy], yA = [-sy * sp, cp, -cy * sp];
+  const H = Math.max(0, planes.length - 1) * gap, fitH = (H * cp + 2.1 * PS * sp) / 2 + 0.25, fitW = PS * 1.5;
+  const k = c.zoom / Math.max(fitH, fitW / asp), kx = k / asp;
+  const M = [xA[0] * kx, yA[0] * k, fwd[0] * -0.02, 0, xA[1] * kx, yA[1] * k, fwd[1] * -0.02, 0, xA[2] * kx, yA[2] * k, fwd[2] * -0.02, 0, p[0], p[1], 0, 1];
+  M.k = k; return M;
+}
+const project = (M, q) => [M[0] * q[0] + M[4] * q[1] + M[8] * q[2] + M[12], M[1] * q[0] + M[5] * q[1] + M[9] * q[2] + M[13]];
+const world = (c, u, v) => [(u * 2 - 1) * PS, yOf(c.plane), (v * 2 - 1) * PS];
+const centre = c => world(c, c.r.x + c.r.w / 2, c.r.y + c.r.h / 2);
+function flyTo(c) {
+  const corners = [[c.r.x, c.r.y], [c.r.x + c.r.w, c.r.y], [c.r.x, c.r.y + c.r.h], [c.r.x + c.r.w, c.r.y + c.r.h]].map(([u, v]) => world(c, u, v));
+  const M1 = mat({ ...cam, zoom: 1 }, [0, 0]), pts = corners.map(q => project(M1, q));
+  const ex = Math.max(Math.max(...pts.map(p => p[0])) - Math.min(...pts.map(p => p[0])), Math.max(...pts.map(p => p[1])) - Math.min(...pts.map(p => p[1]))) / 2;
+  const z = Math.max(0.4, Math.min(3000, 0.55 / Math.max(1e-6, ex))), m = project(M1, centre(c));
+  fly = { t0: performance.now(), ms: 520, from: { zoom: cam.zoom, pan: pan.slice() }, to: { zoom: z, pan: [-m[0] * z, -m[1] * z] }, cell: c };
+}
+function home() { fly = { t0: performance.now(), ms: 420, from: { zoom: cam.zoom, pan: pan.slice() }, to: { zoom: PHONE ? 1.05 : 1, pan: [0, 0] } }; cam.yaw = ISO.yaw; cam.pitch = ISO.pitch; dropDetail(); }
+
+/* ================= zoom LOD: the cell in front of the camera, byte by byte */
+// code: a C folder's own files from serve.js (Kód bájtjai); otherwise the node's own layer text, at one byte a dot
+function setDetail(c, code) {
+  if (detail && detail.cell === c && (!code || detail.code === code)) return;   // already drawn; a code stream stays until dropped
+  let src;
+  if (code) src = code.src;
+  else { const T = LT[c.L]; if (!T || T.cls || T.k0 > 1 || c.keff <= 1) return; src = T.src.subarray(c.s, c.s + Math.min(c.e - c.s, 4 << 20)); }
+  if (!src.length) return;
+  const f = VL.fill(c.r, src.length);
+  gl.bindVertexArray(vaoD); gl.bindBuffer(gl.ARRAY_BUFFER, bufD); gl.bufferData(gl.ARRAY_BUFFER, src, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribIPointer(0, 1, gl.UNSIGNED_BYTE, 1, 0); gl.bindVertexArray(null);
+  detail = { cell: c, n: src.length, f, src, code: code || null }; pickOk = false; frameDirty = true;
+  $('msg').textContent = code ? `${code.path}: ${code.files.length} fájl, ${fmtB(code.src.length)}, minden bájt egy pont${code.truncated ? ' (4 MB-nál levágva)' : ''} · the folder's code, every byte a dot`
+    : `${c.node.title || c.id}: minden bájt egy pont (${fmtN(src.length)}) · every byte a dot`;
+}
+function dropDetail() { if (detail) { const had = detail.code; detail = null; pickOk = false; frameDirty = true; $('msg').textContent = ''; if (had && sel.length) select(sel, true); } }
+async function codeBytes(c) {
+  const p = c.node.path || c.id.slice(2);
+  $('msg').textContent = `${p}: kód bájtjai… · loading the folder's code`;
+  try {
+    const r = await fetch('/api/bytes?path=' + encodeURIComponent(p), { cache: 'no-store' }), d = await r.json();
+    if (!d.ok) throw new Error(d.msg || r.status);
+    if (!d.total) { $('msg').textContent = `${p}: nincs saját követett fájlja (csak almappák) · no tracked files of its own`; return; }
+    const code = { src: b64(d.b64), files: d.files, truncated: d.truncated, path: d.path };
+    flyTo(c); setDetail(c, code); select([c.id], true);
+  } catch (e) { $('msg').textContent = `Kód bájtjai: ${e.message} (node serve.js kell) · needs the server`; }
+}
+
+/* ================= lines: plane frames, the string, the pillar spines */
+let strMembers = new Map(), strLines = [], spines = [];
+function buildLines() {
+  const ln = [], seg = (a, b, ca, cb, al) => ln.push(a[0], a[1], a[2], ca[0], ca[1], ca[2], al, b[0], b[1], b[2], cb[0], cb[1], cb[2], al);
+  for (const P of planes) {
+    if (hidden.has(P.L) || !showGrid) continue;
+    const c = hex(LAYER[P.L].col), y = yOf(P.k), e = PS * 1.02, dim = solo && solo !== P.L ? 0.3 : 1;
+    const q = [[-e, y, -e], [e, y, -e], [e, y, e], [-e, y, e]]; for (let s = 0; s < 4; s++) seg(q[s], q[(s + 1) % 4], c, c, 0.36 * dim);
+  }
+  lnCut = ln.length / 7;
+  if (showStr) for (const [a, b, s] of strLines) { const A = cellById.get(a), B = cellById.get(b); if (!A || !B || hidden.has(A.L) || hidden.has(B.L)) continue; seg(centre(A), centre(B), hex(LAYER[A.L].col), hex(LAYER[B.L].col), 0.25 + 0.6 * s); }
+  if (showPil) for (const sp of spines) for (let i = 1; i < sp.length; i++) seg(sp[i - 1], sp[i], [0.95, 0.96, 0.97], [0.95, 0.96, 0.97], 0.8);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufL); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ln), gl.DYNAMIC_DRAW); lnN = ln.length / 7;
+  lineDirty = false;
+}
+
+/* ================= frame */
+let frameDirty = true, camT = 0, pulsing = false, last = performance.now(), dragging = false;
+const measure = {
+  chosen: !!store.get('vrg-viewer-auto', null), on: false, t: [], start() { this.on = true; this.t = []; this.t0 = performance.now(); },
+  tick(dt) {
+    if (!this.on) return; const now = performance.now(); if (now - this.t0 < 1200) return; this.t.push(dt);
+    if (this.t.length < 90) return;
+    const fps = 1000 / (this.t.slice().sort((a, b) => a - b)[this.t.length >> 1]);
+    const log = store.get('vrg-viewer-perf', []); log.push({ at: new Date().toISOString(), preset: preset.id, particles: N, fps: Math.round(fps), w: $('cv').width, h: $('cv').height, phone: PHONE }); store.set('vrg-viewer-perf', log.slice(-40));
+    this.on = false;
+    // Auto (STK-Q22): Fine on the desktop, Normál on the phone; one step coarser while it stays under 40 fps
+    const i = PRESETS.findIndex(p => p.id === preset.id);
+    if (auto && fps < 40 && i > 0) { presetId = PRESETS[i - 1].id; this.chosen = true; store.set('vrg-viewer-auto', presetId); $('msg').textContent = `Auto: ${Math.round(fps)} fps → ${PRESETS[i - 1].hu}`; rebuild(); this.start(); }
+  },
+};
+let fpsT = [], fpsShown = 0;
+function frame(ts) {
+  const dt = Math.min(200, ts - last); last = ts;
+  const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1), Wd = cv.clientWidth * dpr | 0, Hd = cv.clientHeight * dpr | 0;
+  if (cv.width !== Wd || cv.height !== Hd) { cv.width = Wd; cv.height = Hd; frameDirty = true; pickOk = false; }
+  if (spin && !dragging) { cam.yaw += dt * 0.00008; frameDirty = true; pickOk = false; }
+  if (playing && TIME) {
+    const step = Math.max(60, Math.min(600, 12000 / TIME.days.length));
+    if (!playT) playT = ts; else if (ts - playT >= step) { playT = ts; if (tIdx >= TIME.days.length - 1) play(false); else setDay(tIdx + 1); }
+  }
+  if (fly) {
+    const t = Math.min(1, (ts - fly.t0) / fly.ms), e = 1 - Math.pow(1 - t, 3), lz = Math.log(fly.from.zoom) + (Math.log(fly.to.zoom) - Math.log(fly.from.zoom)) * e;
+    cam.zoom = Math.exp(lz); const zf = (cam.zoom - fly.from.zoom) / ((fly.to.zoom - fly.from.zoom) || 1);
+    pan = [fly.from.pan[0] + (fly.to.pan[0] - fly.from.pan[0]) * (fly.to.zoom === fly.from.zoom ? e : zf), fly.from.pan[1] + (fly.to.pan[1] - fly.from.pan[1]) * (fly.to.zoom === fly.from.zoom ? e : zf)];
+    frameDirty = true; pickOk = false;
+    if (t >= 1) { if (fly.cell) setDetail(fly.cell); fly = null; }
+  }
+  if (N && (frameDirty || (showChg && pulsing) || measure.on)) {
+    if (lightDirty) pushLight();
+    if (lineDirty) buildLines();
+    draw(ts); frameDirty = false;
+    measure.tick(dt);
+    fpsT.push(dt); if (fpsT.length > 30) fpsT.shift();
+    if (ts - fpsShown > 500) { fpsShown = ts; const f = 1000 / (fpsT.reduce((a, b) => a + b, 0) / fpsT.length); $('perf').textContent = `${Math.round(f)} fps · ${preset.hu} · ${fmtN(N + (detail ? detail.n : 0))} részecske`; }
+  }
+  if (N && !pickOk && !dragging && !fly && !spin && ts - camT > 140) renderPick();
+  requestAnimationFrame(frame);
+}
+function uniforms(p, M, px) {
+  gl.uniformMatrix4fv(p.u.uM, false, M); gl.uniform1f(p.u.uPS, PS); gl.uniform1f(p.u.uTop, yOf(0)); gl.uniform1f(p.u.uGap, gap); gl.uniform1f(p.u.uPx, px);
+  gl.uniform1f(p.u.uTime, performance.now() / 1000); gl.uniform1f(p.u.uCrisp, crisp ? 1 : 0); gl.uniform1f(p.u.uChg, showChg ? 1 : 0);
+  gl.uniform1i(p.u.uClass, Object.values(LT).some(t => t.cls) ? 1 : 0);
+  gl.uniform1i(p.u.uStart, 1); gl.uniform1i(p.u.uBlock, 2); gl.uniform1i(p.u.uCell, 3); gl.uniform1i(p.u.uLight, 4);
+  const col = new Float32Array(24 * 3); planes.forEach(P => col.set(hex(LAYER[P.L].col), P.k * 3)); gl.uniform3fv(p.u.uCol, col);
+  gl.uniform1i(p.u.uDetailCell, detail ? detail.cell.i : -1);
+}
+function drawParticles(M, px, pick) {
+  gl.useProgram(progP); uniforms(progP, M, px); gl.uniform1i(progP.u.uPick, pick ? 1 : 0);
+  gl.uniform1i(progP.u.uDetail, 0); gl.uniform1ui(progP.u.uIdBase, 0);
+  gl.bindVertexArray(vaoP); gl.drawArrays(gl.POINTS, 0, N);
+  if (detail) { gl.uniform1i(progP.u.uDetail, 1); gl.uniform4f(progP.u.uDF, detail.f.x0, detail.f.z0, detail.f.p, detail.f.tc); gl.uniform1i(progP.u.uT, detail.f.t); gl.uniform1ui(progP.u.uIdBase, N);
+    gl.bindVertexArray(vaoD); gl.drawArrays(gl.POINTS, 0, detail.n); }
+  gl.bindVertexArray(null);
+}
+let curM = null;
+function draw() {
+  const cv = $('cv'); gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, cv.width, cv.height);
+  gl.clearColor(0.031, 0.063, 0.09, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  const M = mat(); curM = M;
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  drawParticles(M, M.k * cv.height / 2, false);
+  if (lnN) {
+    gl.useProgram(progL); gl.uniformMatrix4fv(progL.u.uM, false, M); gl.bindBuffer(gl.ARRAY_BUFFER, bufL);
+    for (const [n, k, o] of [['aPos', 3, 0], ['aCol', 3, 12], ['aA', 1, 24]]) { const l = gl.getAttribLocation(progL, n); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, k, gl.FLOAT, false, 28, o); }
+    gl.blendFunc(gl.ONE, gl.ONE); gl.drawArrays(gl.LINES, 0, lnCut); gl.blendEquation(gl.MAX); gl.drawArrays(gl.LINES, lnCut, lnN - lnCut); gl.blendEquation(gl.FUNC_ADD);
+    for (const n of ['aPos', 'aCol', 'aA']) gl.disableVertexAttribArray(gl.getAttribLocation(progL, n));
+  }
+  placeLabels(M);
+}
+// the id buffer: ¼ resolution, drawn once the camera rests, read back whole; hovering is then a lookup
+function renderPick() {
+  const cv = $('cv'), w = Math.max(1, cv.width >> 2), h = Math.max(1, cv.height >> 2);
+  if (!fbo || pickW !== w || pickH !== h) {
+    if (!fbo) { fbo = gl.createFramebuffer(); pickTex = gl.createTexture(); }
+    gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, pickTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pickTex, 0);
+    pickW = w; pickH = h; pickBuf = new Uint8Array(w * h * 4);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h); gl.disable(gl.BLEND); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  const M = mat(); drawParticles(M, M.k * h / 2, true);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pickBuf);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.enable(gl.BLEND); pickOk = true;
+  autoDetail();
+}
+function pickAt(x, y) {
+  if (!pickOk || !pickBuf) return null;
+  const cv = $('cv'), r = cv.getBoundingClientRect(), px = Math.floor(x / r.width * pickW), py = pickH - 1 - Math.floor(y / r.height * pickH);
+  for (let d = 0; d <= 2; d++) for (let dy = -d; dy <= d; dy++) for (let dx = -d; dx <= d; dx++) {
+    const X = px + dx, Y = py + dy; if (X < 0 || Y < 0 || X >= pickW || Y >= pickH) continue;
+    const o = (Y * pickW + X) * 4, id = pickBuf[o] | pickBuf[o + 1] << 8 | pickBuf[o + 2] << 16;
+    if (id) return resolveId(id - 1);
+  }
+  return null;
+}
+function resolveId(v) {
+  if (detail && v >= N) return { c: detail.cell, off: v - N, k: 1, det: true };
+  let lo = 0, hi = cells.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (starts[m] <= v) lo = m; else hi = m - 1; }
+  const c = cells[lo]; if (!c) return null;
+  return { c, off: c.s + (v - c.p0) * c.keff, k: c.keff * LT[c.L].k0 };
+}
+// close enough to fill a good part of the screen: draw that cell byte by byte
+function autoDetail() {
+  if (!pickBuf) return;
+  const id = pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4] | pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4 + 1] << 8 | pickBuf[((pickH >> 1) * pickW + (pickW >> 1)) * 4 + 2] << 16;
+  const hit = id ? resolveId(id - 1) : null;
+  if (detail && detail.code) return;   // the folder's code stays until Esc, ◇ Izo or another cell
+  if (!hit || cam.zoom < 2) { if (detail && cam.zoom < 2) dropDetail(); return; }
+  const c = hit.c, M = curM || mat(), a = project(M, world(c, c.r.x, c.r.y)), b = project(M, world(c, c.r.x + c.r.w, c.r.y + c.r.h));
+  const sz = Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
+  if (sz > 0.45) setDetail(c); else if (detail && detail.cell === c && sz < 0.2) dropDetail();
+}
+
+/* ================= words under the pointer */
+const dec = typeof TextDecoder === 'function' ? new TextDecoder('utf-8', { fatal: false }) : null;
+function fileAt(h) { return h.det && detail && detail.code ? detail.code.files.find(f => h.off >= f[1] && h.off < f[2]) || null : null; }
+function wordsOf(h) {
+  if (h.det && detail) { const f = fileAt(h); return words(detail.src, f ? f[1] : 0, f ? f[2] : detail.n, h.off, 1); }
+  const T = LT[h.c.L]; if (!T || T.cls) return ''; return words(T.src, h.c.s, h.c.e, h.off, h.k);
+}
+function words(src, lo, hi, off, k) {
+  if (!dec) return '';
+  let a = Math.max(lo, off - 56), b = Math.min(hi, off + k + 56);
+  while (a > lo && (src[a] & 0xc0) === 0x80) a--;
+  while (b < hi && (src[b] & 0xc0) === 0x80) b++;
+  let o2 = Math.min(hi, off + k); while (o2 < hi && (src[o2] & 0xc0) === 0x80) o2++;
+  let o1 = off; while (o1 > lo && (src[o1] & 0xc0) === 0x80) o1--;
+  const vis = s => esc(s.replace(/\n/g, '⏎ ').replace(/\t/g, '  '));
+  return vis(dec.decode(src.subarray(a, o1))) + '<b>' + vis(dec.decode(src.subarray(o1, o2))) + '</b>' + vis(dec.decode(src.subarray(o2, b)));
+}
+function showTip(h, x, y) {
+  const tip = $('tip'); if (!h) { tip.style.display = 'none'; return; }
+  const c = h.c, n = c.node, w = wordsOf(h), T = LT[c.L], f = fileAt(h);
+  const byte = h.det ? detail.src[h.off] : T.cls ? -1 : T.src[h.off], cls = byte < 0 ? '' : ' · ' + VL.CLASS[VL.byteClass(byte)];
+  const where = f ? `${esc(detail.code.path)}/<b>${esc(f[0])}</b> · bájt ${fmtN(h.off - f[1])} / ${fmtB(f[3])}`
+    : h.det ? `${esc(c.id)} · bájt ${fmtN(h.off)} / ${fmtB(detail.n)}`
+    : `${esc(c.id)} · ${c.L} ${LAYER[c.L].hu} · bájt ${fmtN((h.off - c.s) * (T.k0 || 1))} / ${fmtB((c.e - c.s) * T.k0)}`;
+  tip.innerHTML = `<b>${esc(n.title || c.id)}</b><div class="m">${where}${cls}${h.k > 1 ? ' · ' + h.k + ' B/pont' : ''}</div>` +
+    (w ? `<div class="w">${w}</div>` : `<div class="m">(a telefonos csomag csak a bájtok fajtáját hozza, a szöveget nem · the phone bundle carries byte classes, not the text)</div>`);
+  tip.style.display = 'block'; const st = $('stage').getBoundingClientRect();
+  tip.style.left = Math.max(6, Math.min(st.width - tip.offsetWidth - 6, x + 14)) + 'px'; tip.style.top = Math.max(6, Math.min(st.height - tip.offsetHeight - 6, y + 14)) + 'px';
+}
+
+/* ================= card actions without the write gateway: the layer's page, the string, a prompt */
+function pageOf(c) {
+  const id = c.id, k = id.slice(2), P = PAGE[c.L]; if (!P) return '';
+  if (c.L === 'Q' || c.L === 'L') return P + '#sel=' + encodeURIComponent(k);
+  if (c.L === 'I') return P + '#sel=' + encodeURIComponent(k);
+  if (c.L === 'A') { const m = /^(agent|brief|mem|sched)\.(.+)$/.exec(k), g = /^go\.GO-(.+)$/.exec(k); return P + (m ? '#sel=' + m[1] + ':' + encodeURIComponent(m[2]) : g ? '#sel=go:' + encodeURIComponent(g[1]) : ''); }
+  if (c.L === 'U' && /^U:run\./.test(id)) return P + '#run=' + encodeURIComponent(id.slice(6));
+  return P;
+}
+const titleOf = id => (nodeById.get(id) || {}).title || id;
+function stringText(c, s) {
+  const lines = [`Füzér · Stack String: ${c.id} "${titleOf(c.id)}"`];
+  if (!s) return lines[0];
+  lines.push(`reach ${s.mask} · ${s.cls || ''}${s.pulse ? ' · pulse ' + s.pulse : ''}`);
+  for (const L of ORDER) { const m = s.members.filter(x => x.layer === L && x.id !== c.id); if (m.length) lines.push(`${L} ${LAYER[L].en}: ` + m.slice(0, 8).map(x => `${x.id} "${titleOf(x.id)}" ${x.score.toFixed(2)}`).join('; ')); }
+  return lines.join('\n');
+}
+function promptText(c, s) {
+  const n = c.node, top = s ? s.members.filter(m => m.id !== c.id).slice(0, 10).map(m => `   - ${m.id} "${titleOf(m.id)}" (${m.score.toFixed(2)})`) : [];
+  return [`Work on this VRG Stack node: ${c.L} · ${LAYER[c.L].en} ${c.id} "${n.title || c.id}"${n.path ? ` (path in the repo: ${n.path})` : ''}${n.kind ? `, a ${n.kind}` : ''}.`,
+    s ? `Its string (Stack Strings) reaches ${s.mask}, class ${s.cls || '?'}; the strongest members:` : '', ...top,
+    changed.has(c.id) ? 'It changed in the last build.' : '',
+    'What I want: <write it here>', '',
+    'Ask the VRG Stack first (stack_search, stack_node, stack_string) as CLAUDE.md says, then open files.',
+    'Work in the main checkout H:\\VRG\\Full\\Planner_VRG_U100, branch main. Never commit or push unless I ask.'].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n');
+}
+function copy(text, note) {
+  const done = () => { const t = $('toast'); t.textContent = note; t.style.display = 'block'; clearTimeout(copy.t); copy.t = setTimeout(() => { t.style.display = 'none'; }, 1600); };
+  const fallback = () => { const a = document.createElement('textarea'); a.value = text; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} a.remove(); done(); };
+  try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback(); } catch (e) { fallback(); }
+  window.__lastCopy = text;
+}
+
+/* ================= the write gateway (S6): answer an open decision from its card, through the diff dialog */
+let DEC = null;
+async function decisionOf(c) {
+  if (!DEC && !window.STACK_BUNDLE) { await script('out/decisions-data.js?t=' + Date.now()); DEC = window.DECISIONS || false; }
+  const D = DEC || null, q = D && (D.q || []).find(x => 'Q:' + x.id === c.id), f = q && q.f >= 0 && D.files ? D.files[q.f] : null;
+  return { q, file: f ? f.rel : (c.node.path || '') };
+}
+function answerBox(c) {
+  const st = c.node.state || '';
+  if (st === 'answered') return `<div class="hint">Megválaszolt (a fájl szerint, ≈). <i>Answered, as the file reads.</i></div>`;
+  if (!window.StackEdit || !StackEdit.available()) return `<div class="hint">Válasz beírása a szerverrel (<code>node serve.js</code>) vagy a Döntésnaplóban promptként. <i>Answering needs the server; or copy the prompt in the Döntésnapló.</i></div>`;
+  return `<h3>Válasz <i>· answer it: one dated line under the question, after you see the diff</i></h3><div class="acts" id="ansOpts"><span class="hint">…</span></div>
+    <div class="acts"><input id="ansOwn" placeholder="Saját válasz · in my words" style="flex:1;min-width:0"><button id="ansOwnGo">✎ Beírás</button></div>`;
+}
+async function wireAnswer(c) {
+  const box = $('ansOpts'); if (!box) return;
+  const { q, file } = await decisionOf(c);
+  if (!file) { box.innerHTML = '<span class="hint">A fájlja nem ismert · its file is unknown</span>'; return; }
+  const open = extra => StackEdit.answer(Object.assign({ file, id: c.id.slice(2), page: 'viewer' }, extra), { onDone: () => {} });
+  const opts = q && q.opts ? q.opts : [];
+  box.innerHTML = opts.length ? opts.map((o, i) => `<button data-ans="${i}" title="${esc(String(o[1]).replace(/\*\*/g, ''))}"${o[2] ? ' class="on"' : ''}>✎ ${esc(o[0])}</button>`).join('')
+    : '<span class="hint">A/B/C sort nem talált a parser; írd be saját szavaiddal · no options found, use your own words</span>';
+  box.querySelectorAll('button[data-ans]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.ans]; open({ choice: o[0], text: String(o[1]).replace(/\*\*/g, '').replace(/`/g, '') }); });
+  $('ansOwnGo').onclick = () => { const t = $('ansOwn').value.trim(); if (!t) { $('ansOwn').focus(); return; } open({ own: t }); };
+}
+
+/* ================= selection: the string and the pillar spine */
+let bus = null;
+function select(ids, quiet) {
+  sel = ids.filter(id => cellById.has(id));
+  strMembers = new Map(); strLines = []; spines = [];
+  const card = $('card');
+  if (!sel.length) { card.innerHTML = '<div class="hint">Mutass vagy kattints egy pontra.<br><i>Point at or click a dot.</i></div>'; lightDirty = true; lineDirty = true; frameDirty = true; return; }
+  const strs = sel.map(id => SI ? StackStrings.string(SI, id) : null).filter(Boolean);
+  for (const s of strs) for (const m of s.members) { strMembers.set(m.id, Math.max(strMembers.get(m.id) || 0, m.score)); if (m.via && m.via.from) strLines.push([m.via.from, m.id, m.score]); }
+  for (const id of sel) strMembers.set(id, 1);
+  // a pillar's spine: the centre of its members on each plane, top to bottom, ending in the pillar's own cell (E)
+  const pil = new Set(); for (const id of sel) { if (id[0] === 'E') pil.add(id); for (const x of (SI && SI.adj.get(id)) || []) if (x.id[0] === 'E') pil.add(x.id); }
+  for (const p of pil) {
+    const mem = ((SI && SI.adj.get(p)) || []).map(x => cellById.get(x.id)).filter(Boolean), by = new Map();
+    for (const c of mem) { const q = centre(c); const a = by.get(c.plane) || [0, 0, 0, 0]; a[0] += q[0]; a[1] += q[1]; a[2] += q[2]; a[3]++; by.set(c.plane, a); }
+    const pts = [...by].sort((a, b) => a[0] - b[0]).map(([, a]) => [a[0] / a[3], a[1] / a[3], a[2] / a[3]]);
+    const pc = cellById.get(p); if (pc) pts.push(centre(pc));
+    if (pts.length >= 2) spines.push(pts);
+  }
+  lightDirty = true; lineDirty = true; frameDirty = true;
+  if (bus && !quiet) try {
+    // the page contract's bus (S7): the selection, then its string, so the layer pages light it without computing it
+    const seq = 'viewer:' + Date.now();
+    bus.postMessage({ type: 'select', from: 'viewer', ids: sel, seq, at: Date.now() });
+    if (strMembers.size) bus.postMessage({ type: 'string', from: 'viewer', seed: sel, members: [...strMembers].map(([id, sc]) => [id, Math.round(sc * 1000) / 1000]), title: (cellById.get(sel[0]).node.title || sel[0]).slice(0, 40), seq, at: Date.now() });
+  } catch (e) {}
+  const c = cellById.get(sel[sel.length - 1]), n = c.node, s = strs[strs.length - 1], T = LT[c.L];
+  const by = {}; if (s) for (const m of s.members) if (m.id !== c.id) (by[m.layer] = by[m.layer] || []).push(m);
+  const text = !T.cls && dec ? esc(dec.decode(T.src.subarray(c.s, Math.min(c.e, c.s + 900)))) + (c.e - c.s > 900 ? '…' : '') : '';
+  const page = PAGE[c.L] ? `<a class="btn" href="${pageOf(c)}"${NEW} title="A réteg saját oldala, ezzel kiválasztva · the layer's own page, this node selected">${c.L} oldal ↗</a>` : `<a class="btn pc" href="stack-search.html?q=${encodeURIComponent(n.title || c.id)}"${NEW}>Keresés ↗</a>`;
+  const code = c.L === 'C' && /^https?:/.test(location.protocol) && !window.STACK_BUNDLE ? `<button id="cCode" title="A mappa saját, követett fájljai, minden bájt egy pont (≤ 4 MB) · the folder's own tracked files, every byte a dot">▦ Kód bájtjai</button>` : '';
+  const files = detail && detail.cell === c && detail.code ? `<h3>Kód bájtjai <i>· ${detail.code.files.length} fájl, ${fmtB(detail.code.src.length)}${detail.code.truncated ? ', 4 MB-nál levágva' : ''}</i></h3><div class="files">` +
+    detail.code.files.map(f => `<div>${esc(f[0])}<span>${fmtB(f[3])}</span></div>`).join('') + '</div>' : '';
+  card.innerHTML = `<div class="title">${esc(n.title || c.id)}</div>
+    <div class="kv"><span>id</span><span>${esc(c.id)}</span><span>réteg <i>layer</i></span><span style="color:${LAYER[c.L].col}">${c.L} · ${LAYER[c.L].hu}</span>
+    ${n.kind ? `<span>fajta <i>kind</i></span><span>${esc(n.kind)}</span>` : ''}${n.t ? `<span>idő <i>time</i></span><span>${esc(String(n.t).slice(0, 16))}</span>` : ''}
+    <span>bájtok <i>bytes</i></span><span>${fmtB((c.e - c.s) * T.k0)} · ${fmtN(c.pn)} pont</span>
+    ${s ? `<span>füzér <i>string</i></span><span>${esc(s.mask)} · ${esc(s.cls || '')}</span>` : ''}${changed.has(c.id) ? '<span>változott <i>changed</i></span><span>az előző build óta · since the last build</span>' : ''}</div>
+    <div class="acts"><button id="cFly">⌖ Berepülés</button>${code}${page}<a class="btn" href="${window.STACK_BUNDLE ? 'erintesnyom.html' : 'erintesnyom.html" target="_blank'}">✦ Érintésnyom ↗</a>
+      <button id="cStr" title="A füzér szövegként, vágólapra · the string as text">⧉ Füzér</button><button id="cPrompt" title="Egy munkamenet nyitó kérése erre a csomópontra · an opening prompt for a session on this node">⧉ Prompt</button></div>
+    ${c.L === 'Q' && n.kind === 'decision' ? answerBox(c) : `<div class="hint">Ebbe a rétegbe az írókapu nem ír (csak döntésre válaszol); itt prompt segít. <i>The gateway writes decisions only; here a prompt helps.</i></div>`}
+    ${files}
+    ${text ? `<h3>Szöveg <i>· the bytes it is made of</i></h3><pre>${text}</pre>` : ''}
+    ${s ? `<h3>Füzér rétegenként <i>· its string, layer by layer</i></h3>` + ORDER.filter(L => by[L]).map(L => `<div class="hint" style="color:${LAYER[L].col};margin-top:4px">${L} · ${LAYER[L].hu} (${by[L].length})</div>` +
+      by[L].slice(0, 6).map(m => `<span class="nb" data-id="${esc(m.id)}"><span class="c">${m.score.toFixed(2)}</span> ${esc((nodeById.get(m.id) || {}).title || m.id)}</span>`).join('')).join('') : ''}`;
+  $('cFly').onclick = () => flyTo(c);
+  if ($('cCode')) $('cCode').onclick = () => codeBytes(c);
+  $('cStr').onclick = () => copy(stringText(c, s), 'füzér a vágólapon · string copied');
+  $('cPrompt').onclick = () => copy(promptText(c, s), 'prompt a vágólapon · prompt copied');
+  wireAnswer(c);
+  card.querySelectorAll('.nb').forEach(el => el.onclick = () => { select([el.dataset.id]); const t = cellById.get(el.dataset.id); if (t) flyTo(t); });
+}
+
+/* ================= side panel */
+function renderLayers() {
+  const bytes = L => LT[L] ? (LT[L].src.length * LT[L].k0) : 0;
+  $('lys').innerHTML = planes.map(P => `<div class="ly${hidden.has(P.L) ? ' off' : ''}${solo === P.L ? ' solo' : ''}" data-c="${P.L}"><span class="dot" style="background:${LAYER[P.L].col}"></span><span>${P.L} · ${LAYER[P.L].hu} <i>${LAYER[P.L].en}</i></span><span class="n">${fmtB(bytes(P.L))}</span></div>`).join('')
+    + '<div class="hint" style="margin-top:4px">katt: csak ez a réteg · jobb katt / hosszú nyomás: ki/be <i>click: solo · right-click / long press: hide</i></div>';
+  const wire = el => { el.onclick = () => { solo = solo === el.dataset.c ? null : el.dataset.c; renderLayers(); lightDirty = true; lineDirty = true; };
+    el.oncontextmenu = e => { e.preventDefault(); const c = el.dataset.c; hidden.has(c) ? hidden.delete(c) : hidden.add(c); save(); renderLayers(); lightDirty = true; lineDirty = true; pickOk = false; }; };
+  $('lys').querySelectorAll('.ly').forEach(wire);
+  $('labels').innerHTML = planes.map(P => `<div class="pl" data-c="${P.L}" style="color:${LAYER[P.L].col}">${P.L}<span class="nm"> · ${LAYER[P.L].hu}</span><i>${fmtB(bytes(P.L))}</i></div>`).join('');
+  $('labels').querySelectorAll('.pl').forEach(wire);
+  frameDirty = true;
+}
+function placeLabels(M) {
+  const r = $('cv').getBoundingClientRect(), host = $('labels');
+  planes.forEach((P, k) => {
+    const e = PS * 1.02, y = yOf(P.k); let best = null;
+    for (const c of [[-e, y, -e], [e, y, -e], [e, y, e], [-e, y, e]]) { const p = project(M, c); if (!best || p[0] < best[0]) best = p; }
+    const el = host.children[k]; if (!el) return;
+    el.style.left = ((best[0] * 0.5 + 0.5) * r.width - 4) + 'px'; el.style.top = ((0.5 - best[1] * 0.5) * r.height) + 'px';
+    el.style.opacity = hidden.has(P.L) ? 0.25 : solo && solo !== P.L ? 0.45 : 1;
+  });
+}
+function renderHeader() {
+  const total = Object.values(LT).reduce((a, t) => a + t.src.length * t.k0, 0);
+  $('stat').textContent = `${planes.length} réteg · ${fmtN(cells.length)} csomópont · ${fmtB(total)} rétegszöveg · ${changed.size ? changed.size + ' változott · ' : ''}${window.STACK && STACK.generated ? 'build ' + String(STACK.generated).slice(0, 16).replace('T', ' ') : ''}`;
+  $('detail').value = auto ? 'auto' : presetId;
+}
+function renderLegend() {
+  const base = [0.7, 0.75, 0.8], sw = (c, t) => `<span class="sq" style="background:${c}"></span><span>${t}</span>`;
+  const sh = [0.95, 1.0, 0.78, 0.09, 0.55, 0.42, 0.24];
+  $('legend').innerHTML = VL.CLASS.map((n, k) => sw(`rgb(${base.map(v => Math.round(v * sh[k] * 255)).join(',')})`, `${n} <i>${VL.CLASS_EN[k]}</i>`)).join('') +
+    sw('#e8a873', 'Érintésnyom: érintett <i>touched (exact)</i>') + sw('#c6a0e6', 'következtetett <i>inferred</i>') + sw('#93d3e6', 'kiválasztás, füzér, előrejelzés <i>you: selection, string, forecast</i>') + sw('#ffffff', 'lüktet: változott <i>pulses: changed</i>');
+}
+
+/* ================= init */
+(function init() {
+  const cv = $('cv');
+  gl = cv.getContext('webgl2', { antialias: false, premultipliedAlpha: true, preserveDrawingBuffer: false });
+  if (!gl) { $('stat').textContent = 'WebGL2 nem érhető el · WebGL2 is not available'; return; }
+  try { progP = prog(VS_P, FS_P); progL = prog(VS_L, FS_L); } catch (e) { $('stat').textContent = 'shader: ' + e.message; throw e; }
+  vaoP = gl.createVertexArray(); vaoD = gl.createVertexArray(); bufP = gl.createBuffer(); bufD = gl.createBuffer(); bufL = gl.createBuffer();
+  if (window.STACK_BUNDLE) document.body.classList.add('bundle');
+  $('gap').value = gap;
+  try { bus = typeof BroadcastChannel === 'function' ? new BroadcastChannel('vrg-stack') : null; } catch (e) { bus = null; }
+  if (bus) bus.onmessage = ev => { const d = ev.data || {};
+    if (d.type === 'light' && Array.isArray(d.rows)) { ext = new Map(d.rows.map(r => [r[0], { e: r[1], kind: r[2] }])); lightDirty = true; if (showLight && d.rows.length) $('msg').textContent = `Érintésnyom: ${d.rows.length} csomópont világít · nodes lit`; }
+    if (d.type === 'select' && d.from !== 'viewer' && Array.isArray(d.ids)) select(d.ids, true); };
+  let down = null, moved = false, lastClick = 0;
+  const camMoved = () => { frameDirty = true; pickOk = false; camT = performance.now(); };
+  cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; down = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch, pan: pan.slice(), panning: e.shiftKey || e.button !== 0 }; moved = false; cv.setPointerCapture(e.pointerId); fly = null; });
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  cv.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const r = cv.getBoundingClientRect();
+    if (down) { const dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.abs(dx) + Math.abs(dy) > 3) { moved = true; dragging = true; showTip(null); }
+      if (down.panning) pan = [down.pan[0] + dx * 2 / r.width, down.pan[1] - dy * 2 / r.height]; else { cam.yaw = down.yaw - dx * 0.006; cam.pitch = Math.max(0.05, Math.min(1.45, down.pitch + dy * 0.006)); }
+      camMoved(); return; }
+    const h = pickAt(e.clientX - r.left, e.clientY - r.top), hi = h ? h.c.i : -1;
+    if (hi !== hover) { hover = hi; lightDirty = true; }
+    showTip(h, e.clientX - r.left, e.clientY - r.top);
+  });
+  cv.addEventListener('pointerup', e => {
+    if (e.pointerType === 'touch') return;
+    const r = cv.getBoundingClientRect(); dragging = false;
+    if (down && !moved) { const h = pickAt(e.clientX - r.left, e.clientY - r.top), now = performance.now();
+      if (now - lastClick < 320) { if (h) flyTo(h.c); else home(); lastClick = 0; }
+      else { lastClick = now; if (h) select(e.shiftKey ? [...sel.filter(x => x !== h.c.id), h.c.id] : [h.c.id]); else if (!e.shiftKey) select([]); } }
+    down = null; camMoved();
+  });
+  cv.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; lightDirty = true; } showTip(null); });
+  cv.addEventListener('wheel', e => { e.preventDefault(); fly = null;
+    if (e.shiftKey) pan[1] += e.deltaY * 0.0015;
+    else { // zoom about the pointer
+      const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) / r.width * 2 - 1, my = 1 - (e.clientY - r.top) / r.height * 2, z0 = cam.zoom;
+      cam.zoom = Math.max(0.4, Math.min(3000, cam.zoom * Math.exp(-e.deltaY * 0.0012))); const f = cam.zoom / z0;
+      pan = [mx - (mx - pan[0]) * f, my - (my - pan[1]) * f]; }
+    camMoved(); showTip(null); }, { passive: false });
+  $('bIso').onclick = home;
+  const tog = (id, get, set) => { $(id).classList.toggle('on', get()); $(id).onclick = () => { set(!get()); $(id).classList.toggle('on', get()); lightDirty = true; lineDirty = true; frameDirty = true; }; };
+  tog('bStr', () => showStr, v => showStr = v); tog('bPil', () => showPil, v => showPil = v); tog('bGrid', () => showGrid, v => showGrid = v);
+  tog('bChg', () => showChg, v => showChg = v); tog('bWarn', () => showWarn, v => { showWarn = v; if (v) $('msg').textContent = `⚠ ${[...warned].filter(id => id[0] !== 'J').length} csomópontra mutat jelzés · ${[...warned].filter(id => id[0] === 'J').length} jelzés`; }); tog('bLight', () => showLight, v => showLight = v); tog('bSpin', () => spin, v => spin = v);
+  if (/[#&]crisp\b/.test(location.hash)) crisp = true;
+  tog('bCrisp', () => crisp, v => { crisp = v; save(); });
+  $('gap').oninput = e => { gap = +e.target.value; lineDirty = true; frameDirty = true; pickOk = false; save(); };
+  $('bRefresh').onclick = () => load('újraolvasva · reloaded');
+  $('bTime').onclick = () => setTime(!timeOn);
+  $('tOff').onclick = () => setTime(false);
+  $('tPlay').onclick = () => play(!playing);
+  $('tRange').oninput = e => { play(false); setDay(+e.target.value); };
+  $('detail').onchange = e => { const v = e.target.value; auto = v === 'auto'; presetId = auto ? (store.get('vrg-viewer-auto', null) || (PHONE ? 'normal' : 'fine')) : v; measure.chosen = !auto || !!store.get('vrg-viewer-auto', null); save(); rebuild(); if (auto) measure.start(); };
+  if (auto && store.get('vrg-viewer-auto', null)) presetId = store.get('vrg-viewer-auto', null);
+  $('q').addEventListener('input', e => { query = e.target.value.trim(); lightDirty = true; });
+  window.setFull = on => {
+    full = on; document.body.classList.toggle('full', on); $('view').open = false; showTip(null);
+    try { if (window.VRGApp && VRGApp.fullscreen) VRGApp.fullscreen(on); else if (on && !document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  };
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) setFull(false); });
+  $('bFull').onclick = () => setFull(true); $('bExit').onclick = () => setFull(false);
+  if (/[#&]full\b/.test(location.hash)) setFull(true);
+  document.addEventListener('click', e => { if ($('view').open && !$('view').contains(e.target)) $('view').open = false; });
+  window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'f' || e.key === 'F') setFull(!full); if (e.key === 'p' || e.key === 'P') $('bCrisp').click();
+    if (e.key === 't' || e.key === 'T') setTime(!timeOn);
+    if (e.key === ' ' && timeOn) { e.preventDefault(); play(!playing); }
+    if (timeOn && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { play(false); setDay(tIdx + (e.key === 'ArrowLeft' ? -1 : 1)); }
+    if (e.key === 'Escape') { if (full) setFull(false); solo = null; select([]); dropDetail(); renderLayers(); lightDirty = true; } });
+  if (window.StackTouch) StackTouch.attach(cv, {
+    dragging: on => { dragging = on; if (on) showTip(null); if (!on) camMoved(); },
+    orbit: (dx, dy) => { cam.yaw -= dx * 0.007; cam.pitch = Math.max(0.05, Math.min(1.45, cam.pitch + dy * 0.007)); camMoved(); },
+    zoom: f => { cam.zoom = Math.max(0.4, Math.min(3000, cam.zoom / f)); camMoved(); },
+    twist: a => { cam.yaw -= a; camMoved(); },
+    tilt: dy => { pan[1] -= dy * 2 / $('cv').clientHeight; camMoved(); },
+    swipe: d => { const k = solo ? planes.findIndex(P => P.L === solo) : -1, n = (k + d + planes.length + 1) % (planes.length + 1); solo = n === planes.length ? null : planes[n].L; renderLayers(); lightDirty = true; lineDirty = true; },
+    tap: (x, y) => { const h = pickAt(x, y); select(h ? [h.c.id] : []); showTip(h, x, y); clearTimeout(window.__tipT); window.__tipT = setTimeout(() => showTip(null), 2600); },
+    dbl: (x, y) => { const h = x != null ? pickAt(x, y) : null; if (h) flyTo(h.c); else home(); },
+    long: (x, y) => { const h = pickAt(x, y); if (h) { select([h.c.id]); document.querySelector('aside').scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+  });
+  window.VIEWER = { state: () => ({ planes: planes.map(P => P.L), cells: cells.length, particles: N, preset: preset && preset.id, k: K, detail: detail ? { id: detail.cell.id, n: detail.n, code: detail.code ? detail.code.files.length : 0 } : null, sel, hover, pickOk, lit: ext.size, changed: changed.size,
+      time: timeOn ? { day: TIME.days[tIdx], i: tIdx, days: TIME.days.length, playing } : null, live: !!(es && es.readyState === 1) }),
+    time: (on, i) => { setTime(on); if (on && i != null) setDay(i); }, code: id => { const c = cellById.get(id); return c ? codeBytes(c) : null; }, changedIds: () => [...changed],
+    pick: (x, y) => { const h = pickAt(x, y); return h ? { id: h.c.id, off: h.off, k: h.k } : null; }, select: ids => select(ids), fly: id => { const c = cellById.get(id); if (c) flyTo(c); }, home,
+    preset: id => { $('detail').value = id; $('detail').onchange({ target: { value: id } }); }, perf: () => store.get('vrg-viewer-perf', []),
+    cell: id => { const c = cellById.get(id); return c ? { r: c.r, f: c.f, p0: c.p0, pn: c.pn, keff: c.keff, plane: c.plane } : null; },
+    screenOf: (id, d) => { const c = cellById.get(id); if (!c || !curM) return null; const [u, v] = VL.at(c.f, d || 0), q = project(curM, world(c, u, v)), r = $('cv').getBoundingClientRect(); return [(q[0] * 0.5 + 0.5) * r.width, (0.5 - q[1] * 0.5) * r.height]; } };
+  load().then(live);
+  requestAnimationFrame(frame);
+})();
+})();
+</script>
+</body>
+</html>

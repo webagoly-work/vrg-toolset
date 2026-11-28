@@ -9,6 +9,7 @@
    GET /api/sessions[?s=<uuid>]  the newest 80 sessions across the config dirs (+ that session when it is older: the VRG Asztal's
                                  Munkamenetek opens the page at #s=<uuid>)
    GET /api/stream?f=<id>        SSE: hello, the file's lines in batches, ready, then every appended line
+   Origins: only the Stack's Érintésnyom (:8806) may read /api/sessions and /api/stream from another page.
    GET /api/img?f=<id>&p=<path>  an image file a tool saved or sent (screenshots, SendUserFile): only a png / jpg /
                                  gif / webp / bmp whose exact path is written in that session's transcript or one of
                                  its subagents' (images a tool returned are in the transcript already) */
@@ -162,8 +163,13 @@ function stream(req, res, file) {
 }
 
 const HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`, `[::1]:${PORT}`]);
+// the Stack's Érintésnyom (Stack/serve.js, :8806) reads the session list and the stream from its own page: those two
+// loopback origins, and only them, may read the answers (VRG_CANVAS_ORIGINS adds more, comma separated)
+const ORIGINS = new Set(['http://localhost:8806', 'http://127.0.0.1:8806'].concat((process.env.VRG_CANVAS_ORIGINS || '').split(',').filter(Boolean)));
 const server = http.createServer((req, res) => {
   if (!HOSTS.has(String(req.headers.host || '').toLowerCase())) { res.writeHead(403).end('host'); return; }
+  const origin = String(req.headers.origin || '');
+  if (ORIGINS.has(origin) && /^\/api\/(sessions|stream)$/.test(new URL(req.url, 'http://x').pathname)) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
   const u = new URL(req.url, 'http://x');
   if (u.pathname === '/' || u.pathname === '/vrg-munkavaszon.html' || u.pathname === '/index.html') {
     fs.readFile(PAGE, (err, buf) => {

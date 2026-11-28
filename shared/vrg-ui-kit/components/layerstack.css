@@ -55,6 +55,30 @@
 @keyframes vk-layerstack-pulse { 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { .vk-layerstack__beacon { animation: none; } }
 
+/* ---------- lighting (Érintésnyom): warm = touched (M1), violet = inferred, kept apart; --_e = energy 0…1 ---------- */
+.vk-layerstack[data-dim-pillars] .vk-layerstack__pillar:not([data-lit]):not([data-hl]) { opacity: .1; }
+.vk-layerstack__node[data-lit] .vk-layerstack__dot { fill: var(--vk-activity); opacity: calc(.4 + .6 * var(--_e, 1)); r: calc(2.6px + 2.4px * var(--_e, 1)); }
+.vk-layerstack__node[data-lit="inferred"] .vk-layerstack__dot { fill: var(--vk-idea); opacity: calc(.25 + .45 * var(--_e, 1)); r: calc(2.2px + 1.6px * var(--_e, 1)); }
+.vk-layerstack__node[data-lit="exact"] .vk-layerstack__ring { stroke: var(--vk-activity); stroke-width: 1; opacity: calc(.15 + .6 * var(--_e, 1)); }
+.vk-layerstack__node[data-write="a"] .vk-layerstack__ring { animation: vk-layerstack-write-a 420ms ease-out; }
+.vk-layerstack__node[data-write="b"] .vk-layerstack__ring { animation: vk-layerstack-write-b 420ms ease-out; }
+@keyframes vk-layerstack-write-a { from { r: 4px; stroke: var(--vk-activity); stroke-width: 2.5; opacity: 1; } to { r: 13px; stroke-width: .5; opacity: 0; } }
+@keyframes vk-layerstack-write-b { from { r: 4px; stroke: var(--vk-activity); stroke-width: 2.5; opacity: 1; } to { r: 13px; stroke-width: .5; opacity: 0; } }
+.vk-layerstack__pillar[data-lit] { stroke: var(--vk-activity); stroke-dasharray: none; stroke-width: 1.5; opacity: calc(.3 + .7 * var(--_e, 1)); }
+.vk-layerstack__pillar[data-lit="inferred"] { stroke: var(--vk-idea); stroke-dasharray: 2 3; }
+.vk-layerstack__elabel[data-lit="exact"] { fill: var(--vk-activity); }
+.vk-layerstack__elabel[data-lit="inferred"] { fill: var(--vk-idea); }
+/* forecast (SL3): what a prompt will probably touch, before it runs — the instrument's guess, so ice (M1), a dashed ring */
+.vk-layerstack__node[data-lit="forecast"] .vk-layerstack__dot { fill: var(--vk-accent); opacity: calc(.3 + .5 * var(--_e, 1)); r: calc(2.4px + 1.8px * var(--_e, 1)); }
+.vk-layerstack__node[data-lit="forecast"] .vk-layerstack__ring { stroke: var(--vk-accent); stroke-width: 1; stroke-dasharray: 2 2; opacity: calc(.3 + .7 * var(--_e, 1)); }
+.vk-layerstack__pillar[data-lit="forecast"] { stroke: var(--vk-accent); stroke-dasharray: 4 3; stroke-width: 1.25; opacity: calc(.25 + .6 * var(--_e, 1)); }
+.vk-layerstack__elabel[data-lit="forecast"] { fill: var(--vk-accent); }
+.vk-layerstack__tracer { fill: none; stroke: var(--vk-activity); stroke-width: 1.25; opacity: .85; stroke-linejoin: round; }
+.vk-layerstack__tracer-g[data-style="dotted"] .vk-layerstack__tracer { stroke-dasharray: 2 3; }
+.vk-layerstack__tracer-head { fill: var(--vk-activity); }
+.vk-layerstack__tracer-label { font-family: var(--vk-font-mono); font-size: 8.5px; fill: var(--vk-activity); paint-order: stroke; stroke: var(--vk-bg-sunken); stroke-width: 3px; }
+@media (prefers-reduced-motion: reduce) { .vk-layerstack__node[data-write] .vk-layerstack__ring { animation: none; } }
+
 [data-vk-density="touch"] .vk-layerstack__list { flex-basis: 100%; }
 @media (forced-colors: active) {
   .vk-layerstack__sheet, .vk-layerstack__pillar { stroke: CanvasText; }

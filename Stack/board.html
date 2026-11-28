@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Füzértábla</title>
+<!-- Füzértábla (String Board): the Thread Board as the E layer's page (S4 of Stack/research/STRINGS-PLAN.md §2).
+     Every thread is a pillar. By hand (notes/devlog/threads.js, Stack/entities.json): area, note, read list, go, the
+     curated not-yet and built lists, the hand status of a pillar with no F row. From the stack: the reach squares, the
+     class and pulse of the pillar's string, the status from its F tier, the drift between the two, the DevLog lines'
+     states, the built F rows, the open work as T nodes with "looks done" and its evidence. A row is a pillar: selecting it
+     lights its string on every other open Stack page (lib/live.js). Data: out/board-data.js (lib/board.js, every build).
+     With serve.js, ✓ Kész takes an item off its thread's list onto the built list through the write gateway (S6, the
+     threads editor), after the diff is approved. Works from file:// and serve.js; `node stack.js board --public` writes
+     the anonymised copy for claude.ai. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --idea: var(--vk-idea, #b4a7e6); --bad: var(--vk-error, #e88f8f);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent); --warm-soft: color-mix(in srgb, var(--warm) 16%, transparent); --ok-soft: color-mix(in srgb, var(--ok) 16%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header select, header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; min-height: 28px; cursor: pointer; }
+  header input { cursor: text; width: 210px; color: var(--tx); font-family: var(--sans); }
+  header button[aria-pressed="true"] { color: var(--tx); border-color: var(--acc); background: var(--acc-soft); }
+  header button:hover, header select:hover { color: var(--tx); border-color: var(--acc); }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  #main { flex: 1; overflow: auto; min-height: 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 16px 16px 70px; display: flex; flex-direction: column; gap: 20px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tile { all: unset; box-sizing: border-box; cursor: pointer; background: var(--s1); border: 1px solid var(--ln); padding: 9px 12px; display: flex; flex-direction: column; min-width: 0; }
+  .tile:hover, .tile:focus-visible { border-color: var(--acc); }
+  .tile b { font: 600 24px/1.1 var(--voice); font-variant-numeric: tabular-nums; } .tile small { font-size: 12px; color: var(--mu); }
+  .tile.w b { color: var(--warm); } .tile.d b { color: var(--bad); } .tile.k b { color: var(--warn); }
+  .two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 12px; }
+  section.box { background: var(--s1); border: 1px solid var(--ln); padding: 12px 14px; min-width: 0; }
+  section.box h3, .area h2 { font: 600 15px var(--voice); margin: 0 0 6px; letter-spacing: .03em; }
+  section.box h3 i, .area h2 i { font: italic 400 12px var(--sans); color: var(--fa); letter-spacing: 0; margin-left: 6px; }
+  section.box ul { margin: 0; padding-left: 18px; } section.box li { margin: 3px 0; }
+  .wt { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 3px 10px; font-size: 13px; } .wt b { font: 600 12px var(--mono); }
+  .area { display: flex; flex-direction: column; gap: 10px; }
+  .rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 10px; }
+  .row { background: var(--s1); border: 1px solid var(--ln); padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; min-width: 0; cursor: pointer; }
+  .row:hover { border-color: var(--ln2); } .row.sel { border-color: var(--acc); box-shadow: inset 3px 0 0 var(--acc); }
+  .row .hd { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .row .nm { font: 600 15px/1.25 var(--voice); } .row .id { font: 11px var(--mono); color: var(--fa); }
+  .sq { display: inline-flex; gap: 2px; align-items: center; } .sq span { width: 11px; height: 11px; display: inline-block; border: 1px solid var(--ln); font: 8px/11px var(--mono); color: transparent; text-align: center; }
+  .sq span.on { border-color: transparent; color: #0a141c; }
+  .meta { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; font: 12px var(--mono); color: var(--mu); }
+  .badge { font: 11px var(--mono); padding: 1px 6px; border: 1px solid var(--ln); white-space: nowrap; }
+  .badge.cls { color: var(--tx); } .badge.st { color: var(--ok); border-color: var(--ok); } .badge.drift { color: var(--bad); border-color: var(--bad); }
+  .lbl { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: baseline; }
+  .chip { font-size: 12px; padding: 1px 7px; border: 1px solid var(--ln); background: var(--s2); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .chip.f { border-color: color-mix(in srgb, var(--warn) 60%, transparent); } .chip.b { border-style: dashed; color: var(--mu); }
+  .ln { font-size: 12.5px; color: var(--mu); } .ln b { color: var(--tx); font-weight: 600; } .ln .q { color: var(--warm); }
+  .todo { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .todo li { font-size: 13px; padding: 2px 4px; border-left: 2px solid var(--ln); }
+  .todo li.done { border-left-color: var(--ok); background: var(--ok-soft); }
+  .todo li .h { color: var(--mu); } .todo li .ld { font: 11px var(--mono); color: var(--ok); margin-left: 6px; }
+  .todo li details { font-size: 12px; color: var(--mu); } .todo li details summary { cursor: pointer; display: inline; }
+  .todo li button { font: 11px var(--mono); background: none; border: 1px solid var(--ln); color: var(--mu); padding: 0 5px; cursor: pointer; margin-left: 6px; }
+  .note { font-style: italic; color: var(--mu); font-size: 13px; }
+  .read { font: 11px var(--mono); color: var(--fa); overflow-wrap: anywhere; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .acts button { font: 11px var(--mono); background: var(--s2); color: var(--mu); border: 1px solid var(--ln); padding: 2px 7px; cursor: pointer; }
+  .acts button:hover, .todo li button:hover { color: var(--tx); border-color: var(--acc); }
+  table.t { border-collapse: collapse; width: 100%; font-size: 13px; } table.t td, table.t th { text-align: left; padding: 4px 8px; border-top: 1px solid var(--ln); vertical-align: top; }
+  table.t th { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; }
+  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--s2); border: 1px solid var(--acc); padding: 5px 12px; font: 12px var(--mono); display: none; z-index: 30; }
+  .hide { display: none !important; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } .rows { grid-template-columns: minmax(0, 1fr); } header input { width: 100%; order: 9; } .wt { grid-template-columns: 90px minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Füzértábla<i>VRG Stack · E réteg · a szálak pillérként · String Board</i></h1>
+  <input type="search" id="q" placeholder="Szál, teendő, vonal… (/)" aria-label="keresés">
+  <select id="fArea" aria-label="terület"><option value="">minden terület</option></select>
+  <button id="fDone" aria-pressed="false" title="Csak a szálak, amelyeken van késznek tűnő teendő · only threads with work that looks done">✓ Késznek tűnik</button>
+  <button id="fDrift" aria-pressed="false" title="Csak ahol a kézi állapot és a füzér két lépésnél többet tér el · only status drift">⚠ Eltérés</button>
+  <span class="sp"></span>
+  <span id="stat"></span>
+</header>
+<main id="main"><div class="wrap" id="wrap"></div></main>
+<div id="toast"></div>
+<script src="schema/layers.js"></script>
+<script src="out/board-data.js"></script>
+<script src="lib/editdialog.js"></script>
+<script src="lib/live.js"></script>
+<script>
+'use strict';
+(function () {
+  const D = window.BOARD, $ = s => document.querySelector(s);
+  const wrap = $('#wrap');
+  if (!D) { wrap.innerHTML = '<section class="box"><h3>Nincs adat</h3><p>Futtasd: <code>node stack.js build</code> (out/board-data.js). <i>No data yet.</i></p></section>'; return; }
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const md = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  const COL = Object.fromEntries(StackLayers.LIST.map(l => [l.code, l.col]));   // schema/layers.js
+  const SC = D.scale || {}, CL = D.classes || {};
+  const F = { q: '', area: '', done: false, drift: false, sel: '' };
+  const rows = D.areas.flatMap(a => a.rows);
+  const byId = new Map(rows.map(r => [r.id, r]));
+  // mark done through the write gateway (S6, lib/edit-threads.js): only with serve.js, never in the public copy
+  const canWrite = !!(window.StackEdit && StackEdit.available() && !window.BOARD_PUBLIC);
+
+  function squares(r) {
+    return `<span class="sq" title="Füzér · string: ${esc(r.mask || 'nincs pillér · no pillar')}">` + D.layers.map(L => {
+      const on = (r.reach || []).includes(L);
+      return `<span class="${on ? 'on' : ''}" style="${on ? 'background:' + COL[L] : ''}">${L}</span>`;
+    }).join('') + '</span>';
+  }
+  function head(r) {
+    const st = r.status ? `<span class="badge st" title="Állapot · status: ${esc(r.statusFrom)}">${esc((SC[r.status] || [r.status])[0])}</span>` : '';
+    const cls = r.cls ? `<span class="badge cls" title="A füzér osztálya · the string's class">${esc((CL[r.cls] || [r.cls])[0])}</span>` : '';
+    const dr = r.drift ? `<span class="badge drift" title="${esc(`A kézi érték (${r.drift.what}) és a füzér (${r.drift.evidence}, ${r.drift.cls}) ${Math.abs(r.drift.gap)} lépésre van egymástól. Javaslat: ${r.drift.propose}`)}">⚠ ${esc(r.drift.hand)} → ${esc(r.drift.evidence)}</span>` : '';
+    const pulse = r.pulse ? `<span title="A füzér utolsó mozgása · the string's last move">utoljára ${esc(r.pulse.slice(5))}${r.quiet != null ? ` · ${r.quiet} n` : ''}</span>` : '';
+    return `<div class="hd"><span class="nm">${esc(r.n)}</span><span class="id">${esc(r.id)}${r.pillar ? '' : ' · nincs pillér'}</span></div>
+      <div class="meta">${squares(r)}${cls}${st}${dr}${pulse}</div>`;
+  }
+  function lines(r) {
+    if (!r.dl.length) return '';
+    return r.dl.map(l => l.missing ? `<div class="ln" data-l="${esc(l.id)}">? ${esc(l.id)} <span class="faint">(nincs ilyen vonal)</span></div>`
+      : `<div class="ln" data-l="${esc(l.id)}" title="${esc((l.remaining || []).join(' · '))}">${esc(l.icon)} <b>${esc(l.name)}</b> · ${esc(l.word)}${l.quiet != null ? ` · <span class="${l.quiet >= 14 ? 'q' : ''}">${l.quiet} n</span>` : ''}${l.next ? ' — ' + esc(l.next) : ''}</div>`).join('');
+  }
+  function built(r) {
+    const fIds = new Set(r.built.map(b => b.title.toLowerCase()));
+    const chips = r.built.map(b => `<span class="chip f" data-node="${esc(b.id)}" title="F tier ${b.tier}: ${esc(b.title)}">ⓕ ${esc(b.title)}</span>`)
+      .concat(r.d.filter(x => !fIds.has(x.toLowerCase())).map(x => `<span class="chip">${esc(x)}</span>`));
+    const beta = r.b.map(x => `<span class="chip b" title="megépült, ellenőrzésre vár · built, awaiting a check">◐ ${esc(x)}</span>`);
+    return (chips.length ? `<div class="chips"><span class="lbl">Kész</span>${chips.join('')}</div>` : '') + (beta.length ? `<div class="chips"><span class="lbl">Béta</span>${beta.join('')}</div>` : '');
+  }
+  function todo(r) {
+    if (!r.t.length) return '';
+    return `<div><span class="lbl">Teendők</span><ul class="todo">` + r.t.map((t, i) => {
+      const done = t.state === 'looks done';
+      return `<li class="${done ? 'done' : ''}" data-t="${esc(t.id)}">${esc(t.l)}${t.h ? ` <span class="h">— ${md(t.h)}</span>` : ''}${t.also.length ? ` <span class="faint">(${esc(t.also.join(', '))} is)</span>` : ''}` +
+        (done ? `<span class="ld">✓ késznek tűnik</span><details><summary>bizonyíték · evidence</summary> ${t.evidence.map(e => esc(e.text)).join('; ')}</details>` : '') +
+        (canWrite ? `<button data-done="${esc(r.id)}|${i}" title="Kész: le a teendők közül, fel a kész listára (threads.js), a diff jóváhagyása után · mark done, after you see the diff">✓ Kész</button>`
+          : done ? `<button data-off="${esc(r.id)}|${i}" title="Prompt: vedd le a listáról · a prompt to take it off the list">⧉ levétel</button>` : '') + '</li>';
+    }).join('') + '</ul></div>';
+  }
+  function card(r) {
+    return `<article class="row${F.sel === r.id ? ' sel' : ''}" data-row="${esc(r.id)}" tabindex="0">${head(r)}${lines(r)}${built(r)}${todo(r)}` +
+      (r.note ? `<div class="note">${md(r.note)}</div>` : '') + (r.read.length ? `<div class="read">olvasd: ${r.read.map(esc).join(' · ')}</div>` : '') +
+      `<div class="acts">${r.go ? `<span class="badge">GO ${esc(r.go)}</span>` : ''}<button data-prompt="${esc(r.id)}" title="Egy munkamenet nyitó kérése erre a szálra · an opening prompt for this thread">⧉ Prompt</button></div></article>`;
+  }
+  const match = r => {
+    if (F.area && r.area !== F.area) return false;
+    if (F.done && !r.t.some(t => t.state === 'looks done')) return false;
+    if (F.drift && !r.drift) return false;
+    if (!F.q) return true;
+    const q = F.q.toLowerCase();
+    return [r.id, r.n, r.note, r.area, ...r.t.map(t => t.l + ' ' + t.h), ...r.dl.map(l => l.name || ''), ...r.d, ...r.b].join(' ').toLowerCase().includes(q);
+  };
+
+  function render() {
+    const k = D.counts, vis = rows.filter(match);
+    $('#stat').textContent = `${vis.length} / ${k.threads} szál · ${k.open} teendő · ${k.looksDone} késznek tűnik · build ${(D.build && D.build.no) ? '#' + D.build.no : ''} ${String(D.generated).slice(0, 16).replace('T', ' ')}`;
+    let h = `<div class="tiles">
+      <button class="tile" data-f="all"><b>${k.threads}</b><small>szál · threads</small></button>
+      <button class="tile" data-f="open"><b>${k.open}</b><small>nyitott teendő · open items</small></button>
+      <button class="tile w" data-f="done"><b>${k.looksDone}</b><small>késznek tűnik · looks done</small></button>
+      <button class="tile d" data-f="drift"><b>${k.drift}</b><small>állapot-eltérés · status drift</small></button>
+      ${k.dupes ? `<button class="tile k" data-f="dupes"><b>${k.dupes}</b><small>kétszer tartott mező · kept twice</small></button>` : ''}</div>`;
+    if (D.now.length || D.waiting.length) h += `<div class="two">` +
+      (D.now.length ? `<section class="box"><h3>Most<i>· where the work stands</i></h3><ul>${D.now.map(x => `<li>${md(x)}</li>`).join('')}</ul></section>` : '<span></span>') +
+      (D.waiting.length ? `<section class="box"><h3>Rád vár<i>· waiting on you</i></h3><div class="wt">${D.waiting.map(w => `<b>${esc(w[0])}</b><span>${md(w.slice(1).join(' '))}</span>`).join('')}</div></section>` : '') + `</div>`;
+    for (const a of D.areas) {
+      const rs = a.rows.filter(match); if (!rs.length) continue;
+      h += `<section class="area"><h2>${esc(a.area)}<i>${rs.length} szál</i></h2><div class="rows">${rs.map(card).join('')}</div></section>`;
+    }
+    if (!vis.length) h += '<section class="box"><p class="dim">Nincs ilyen szál. <i>No thread matches.</i></p></section>';
+    if (D.other.length && !F.q && !F.done && !F.drift && !F.area) h += `<section class="box"><h3>Más vonalak<i>· DevLog lines no thread names</i></h3><table class="t"><tr><th>vonal</th><th>állapot</th><th>utoljára</th><th>következő</th></tr>` +
+      D.other.map(l => `<tr data-l="${esc(l.id)}"><td>${esc(l.name)} <span class="faint mono">${esc(l.id)}</span></td><td>${esc(l.icon)} ${esc(l.word)}</td><td class="mono">${esc((l.last || '').slice(5))}${l.quiet != null ? ` · ${l.quiet} n` : ''}</td><td>${esc(l.next || '—')}</td></tr>`).join('') + '</table></section>';
+    if (D.dupes.length && !F.q) h += `<section class="box" id="dupes"><h3>Kétszer tartott mezők<i>· a field kept in two hand-edited files (§2.3)</i></h3><p class="dim">A tábla a tulajdonos értékét mutatja; a másik helyről törölhető. <i>The board shows the owner's value; the other copy can go.</i></p>
+      <table class="t"><tr><th>szál</th><th>mező</th><th>érvényes</th><th>itt is</th></tr>${D.dupes.map(d => `<tr><td class="mono">${esc(d.thread)}</td><td>${esc(d.field)}</td><td>${esc(d.kept)}: ${esc(d.value)}</td><td>${esc(d.also)}</td></tr>`).join('')}</table></section>`;
+    wrap.innerHTML = h;
+  }
+
+  /* ---------- prompts (until the gateway has a threads editor) ---------- */
+  function copy(text, note) {
+    const done = () => { const t = $('#toast'); t.textContent = note; t.style.display = 'block'; clearTimeout(copy.t); copy.t = setTimeout(() => t.style.display = 'none', 1600); };
+    try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, () => fallback()); else fallback(); } catch (e) { fallback(); }
+    function fallback() { const a = document.createElement('textarea'); a.value = text; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} a.remove(); done(); }
+    window.__lastCopy = text;
+  }
+  const promptOf = r => [`Work on the VRG thread "${r.n}" (${r.id}${r.pillar ? ', pillar ' + r.pillar : ''}).`,
+    r.go ? `Start with GO ${r.go}.` : '', r.read.length ? `Read first: ${r.read.join(', ')}.` : '',
+    r.t.length ? 'Its open work: ' + r.t.map(t => t.l + (t.state === 'looks done' ? ' (looks done)' : '')).join('; ') + '.' : '',
+    'What I want: <write it here>', '', 'Ask the VRG Stack first (stack_string ' + (r.pillar || r.id) + ') as CLAUDE.md says. Work in the main checkout, branch main; never commit or push unless I ask.'].filter(Boolean).join('\n');
+  const offPrompt = (r, t) => [`On the Thread Board, thread "${r.n}" (${r.id}) still lists "${t.l}" as not yet built, but the VRG Stack says it looks done:`,
+    ...t.evidence.map(e => '- ' + e.text), '', `If that is right, take "${t.l}" off the thread's \`t\` list in notes\\devlog\\threads.js (and add it to its \`d\` list when it belongs to this thread). Change nothing else; show me the diff first. Then run the stack build so the Füzértábla shows it.`].join('\n');
+
+  /* ---------- events ---------- */
+  function select(id, scroll) {
+    if (id !== F.sel && window.StackLive) { const r = byId.get(id); StackLive.selected(r && r.pillar ? [r.pillar] : []); }
+    F.sel = id || '';
+    for (const el of document.querySelectorAll('.row')) el.classList.toggle('sel', el.dataset.row === F.sel);
+    const h = new URLSearchParams(location.hash.slice(1)); if (F.sel) h.set('sel', F.sel); else h.delete('sel'); history.replaceState(null, '', '#' + h.toString());
+    if (scroll && F.sel) { const el = document.querySelector(`[data-row="${CSS.escape(F.sel)}"]`); if (el) el.scrollIntoView({ block: 'center' }); }
+  }
+  wrap.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b && b.dataset.prompt) { copy(promptOf(byId.get(b.dataset.prompt)), 'prompt a vágólapon · prompt copied'); return; }
+    if (b && b.dataset.done) { const [rid, i] = b.dataset.done.split('|'), r = byId.get(rid), t = r.t[+i];
+      // the original label as threads.js has it: a merged item's node keeps the first wording, so ask for this thread's own
+      StackEdit.markDone({ thread: r.id, item: t.orig || t.l, page: 'board' }, { onDone: () => location.reload() }); return; }
+    if (b && b.dataset.off) { const [rid, i] = b.dataset.off.split('|'), r = byId.get(rid); copy(offPrompt(r, r.t[+i]), 'levétel prompt a vágólapon · copied'); return; }
+    if (b && b.dataset.f) { const f = b.dataset.f; F.done = f === 'done'; F.drift = f === 'drift'; $('#fDone').setAttribute('aria-pressed', F.done); $('#fDrift').setAttribute('aria-pressed', F.drift);
+      render(); if (f === 'dupes') { const d = $('#dupes'); if (d) d.scrollIntoView(); } return; }
+    if (e.target.closest('summary, details')) return;
+    const row = e.target.closest('.row'); if (row) select(row.dataset.row === F.sel ? '' : row.dataset.row);
+  });
+  for (const a of D.areas) $('#fArea').insertAdjacentHTML('beforeend', `<option>${esc(a.area)}</option>`);
+  $('#fArea').onchange = e => { F.area = e.target.value; render(); };
+  $('#q').oninput = e => { F.q = e.target.value.trim(); render(); };
+  $('#fDone').onclick = () => { F.done = !F.done; $('#fDone').setAttribute('aria-pressed', F.done); render(); };
+  $('#fDrift').onclick = () => { F.drift = !F.drift; $('#fDrift').setAttribute('aria-pressed', F.drift); render(); };
+  addEventListener('keydown', e => { if (e.key === '/' && document.activeElement !== $('#q')) { e.preventDefault(); $('#q').focus(); } if (e.key === 'Escape') { select(''); } });
+  render();
+  const h0 = new URLSearchParams(location.hash.slice(1)).get('sel'); if (h0 && byId.has(h0)) select(h0, true);
+
+  // the page contract (S7, lib/live.js): rows (pillars), open-work items (T) and lines (L) light up for a string
+  if (window.StackLive) StackLive.contract({
+    layer: 'E', data: D,
+    items: () => {
+      const out = [];
+      for (const el of document.querySelectorAll('[data-row]')) { const r = byId.get(el.dataset.row); if (r && r.pillar) out.push([el, [r.pillar]]); }
+      for (const el of document.querySelectorAll('[data-t]')) out.push([el, [el.dataset.t]]);
+      for (const el of document.querySelectorAll('[data-l]')) out.push([el, ['L:' + el.dataset.l]]);
+      for (const el of document.querySelectorAll('.chip[data-node]')) out.push([el, [el.dataset.node]]);
+      return out;
+    },
+    select: id => { id = String(id || ''); const r = rows.find(x => x.pillar === id || x.t.some(t => t.id === id) || x.dl.some(l => 'L:' + l.id === id)); if (r) select(r.id, true); },
+    getSelection: () => { const r = byId.get(F.sel); return r && r.pillar ? [r.pillar] : []; },
+  });
+})();
+</script>
+</body>
+</html>

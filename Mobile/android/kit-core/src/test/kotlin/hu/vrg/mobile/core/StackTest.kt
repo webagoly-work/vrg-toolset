@@ -43,7 +43,8 @@ class StackTest {
         assertEquals(1501373L, withK.bytes(StackPages.page("kisokos")))
         assertEquals(withK, StackMeta.parse(withK.toJson()))
         assertEquals(listOf("konnektom", "holo", "retegek"), StackPages.REQUIRED.map { it.id })
-        assertEquals(listOf("kisokos", "otletfolyam", "dontesnaplo", "labor"), StackPages.PAGES.filter { it.optional }.map { it.id })
+        assertEquals(listOf("kisokos", "otletfolyam", "dontesnaplo", "vonalak", "vezerloterem", "futasnaplo", "commitok", "erintesnyom", "labor"),
+            StackPages.PAGES.filter { it.optional }.map { it.id })
         val labor = StackMeta.parse(json.replace("\"retegek.html\":512345}", "\"retegek.html\":512345,\"labor.html\":2041051}"))!!
         assertEquals(listOf("konnektom", "holo", "retegek", "labor"), labor.pages.map { it.id }, "only the optional pages a publish carries")
         assertEquals("dontesnaplo", StackPages.byFile("dontesnaplo.html")?.id)
@@ -69,5 +70,34 @@ class StackTest {
         assertIs<StackSync.Download>(StackSync.decide(null, emptyMap(), m, answered = true))
         assertIs<StackSync.Download>(StackSync.decide(m, have - "holo.html", m, answered = true))
         assertIs<StackSync.Download>(StackSync.decide(m, have, m.copy(published = "2026-11-08T00:00:00Z"), answered = true))
+    }
+
+    @Test fun layerPagesAreOptional() {
+        val m = StackMeta.parse(json)!!                         // a publish from before the layer pages
+        assertEquals(listOf("konnektom", "holo", "retegek"), m.pages.map { it.id })
+        val have = mapOf("konnektom.html" to 559878L, "holo.html" to 632195L, "retegek.html" to 512345L)
+        assertIs<StackSync.Fresh>(StackSync.decide(m, have, m, answered = true))
+        val withLayers = m.copy(files = m.files + ("dontesnaplo.html" to 90000L))
+        assertIs<StackSync.Download>(StackSync.decide(m, have, withLayers, answered = true))
+        assertIs<StackSync.Fresh>(StackSync.decide(withLayers, have + ("dontesnaplo.html" to 90000L), withLayers, answered = true))
+        assertEquals("dontesnaplo", StackPages.byFile("dontesnaplo.html")?.id)
+    }
+
+    @Test fun stackMenuIsTheLayersTopToBottomWithRetegekLast() {
+        val rows = StackMenu.ROWS
+        assertEquals(listOf("F", "I", "Q", "L", "A", "U", "R", "C", "G", "K", "Z", "", ""), rows.map { it.layer })
+        assertEquals("Érintésnyom", rows[rows.size - 2].title)
+        assertEquals("Rétegek", rows.last().title)
+        rows.forEach { r ->                                      // every page target is a real page id
+            val t = r.target
+            if (t is StackMenu.Target.Page) assertEquals(t.page, StackPages.page(t.page).id)
+            if (t is StackMenu.Target.Feature) assertEquals(t.id, Catalogue.byId(t.id)?.id)
+        }
+        val old = StackMeta.parse(json)!!
+        val dontesek = rows.first { it.layer == "Q" }
+        assertEquals(false, StackMenu.available(dontesek, old), "not published yet: the row says so")
+        assertEquals(true, StackMenu.available(dontesek, old.copy(files = old.files + ("dontesnaplo.html" to 1L))))
+        assertEquals(true, StackMenu.available(rows.last(), old))
+        assertEquals(false, StackMenu.available(rows.first { it.layer == "Z" }, old))
     }
 }

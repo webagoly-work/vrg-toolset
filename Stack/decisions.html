@@ -7,8 +7,10 @@
 <!-- Döntésnapló (decision inbox): the Q layer of the VRG Stack in its own order (2026-11-09, STK-P26…).
      Every question the stack found in a DECISIONS file, open ones first, ranked by what they block (the DevLog
      lines, sessions, features and agentic files that link to them). Each shows its options as written, its file
-     and line, its date, and what it blocks. The A/B/C buttons write nothing: each copies a ready prompt for a
-     fresh session that answers the question in its file (ROADMAP 2.7 write-back is not built). Decision ids that
+     and line, its date, and what it blocks. The A/B/C buttons copy a ready prompt for a fresh session that answers the
+     question in its file. With serve.js, ✎ beírás writes the answer itself through the write gateway (S6, ROADMAP 2.7,
+     lib/edit.js + lib/editdialog.js): one fixed dated line under the question, after the shown diff is approved, then a
+     rebuild; never a commit. Decision ids that
      no file holds (only chats and memory name them) are listed as "nincs fájlja"; answered ones are read-only.
      Data: out/decisions-data.js (lib/decisions.js, written on every `stack.js build`). Works from file:// and serve.js. -->
 <link rel="stylesheet" href="../shared/melyviz.css">
@@ -248,6 +250,8 @@
   </div>
 </div>
 <script src="out/decisions-data.js"></script>
+<script src="lib/editdialog.js"></script>
+<script src="lib/live.js"></script>
 <script>
 'use strict';
 (function () {
@@ -424,7 +428,8 @@
   const gen = (D.generated || '').slice(0, 16).replace('T', ' ');
   $('#about').innerHTML = `A Q réteg saját sorrendjében: minden kérdés, amit a verem DECISIONS fájlokban talált, elöl a nyitottak, aszerint rangsorolva, hány DevLog vonal, munkamenet, funkció és ügynöki fájl hivatkozik rájuk. ` +
     `<b>Az állapot a parser becslése (≈):</b> a fájlokat lazán olvassa, ezért a „kétes” jel ott áll, ahol a fájl máshol mást mond. ` +
-    `Az A/B/C gombok <b>nem írnak semmit</b>: egy kész promptot másolnak egy friss munkamenethez, amely a kérdést a saját fájljában, a fájl formájában, a mai dátummal válaszolja meg (a visszaírás a ROADMAP 2.7 lépése). ` +
+    `Az A/B/C prompt-gombok <b>nem írnak semmit</b>: egy kész promptot másolnak egy friss munkamenethez, amely a kérdést a saját fájljában, a fájl formájában, a mai dátummal válaszolja meg. ` +
+    `A <b>✎ beírás</b> gombok (csak a szerverrel, <code>node serve.js</code>) egyetlen dátumozott sort írnak a kérdés alá, mindig ugyanabban a formában, miután jóváhagytad a diffet; utána újraépítik a Stacket. Nem commitolnak. ` +
     `<span class="faint">Adat: out/decisions-data.js · ${esc(gen)} · ${D.mentionsFrom === 'join' ? 'említések a join-ból' : 'említések csak címekből (stack.js decisions önállóan)'}.</span>`;
   $('#tFiles').innerHTML = '<tr><th>Fájl</th><th>Névtér</th><th>◌</th><th>A▸</th><th>✓</th><th>Össz.</th></tr>' + FILES.map(f =>
     `<tr class="${f.n ? '' : 'zero'}"><td><button data-file="${esc(f.rel)}" title="${esc(f.abs)}">${esc(shortFile(f))}</button>${f.n ? '' : ' <span title="A parser ebből a fájlból egy döntést sem olvasott ki: más a formátuma (NS_BY_FILE / idOf a lib/layers.js-ben)">⚠ 0 olvasott: ismeretlen formátum</span>'}${f.readable ? '' : ' ✕ nem olvasható'}</td>` +
@@ -528,11 +533,11 @@
     } else {
       h += `<h3>Válaszlehetőségek, ahogy a fájlban állnak</h3>`;
       h += q.opts.length ? q.opts.map((o, i) => `<div class="opt${o[2] ? ' rec' : ''}"><span class="L" aria-hidden="true">${esc(o[0])}</span><span class="tx">${md(o[1])}${o[2] ? '<span class="rb">ajánlott</span>' : ''}${o[3] && !/recommend/i.test(o[3]) ? ` <span class="faint">(${esc(o[3])})</span>` : ''}</span>
-          <span class="act"><button class="btn${o[2] ? ' pri' : ''}" data-copy="${i}" aria-label="${esc(o[0])} válasz: prompt másolása">${COPY} ${esc(o[0])} válasz: prompt másolása</button></span></div>`).join('')
+          <span class="act"><button class="btn${o[2] ? ' pri' : ''}" data-copy="${i}" aria-label="${esc(o[0])} válasz: prompt másolása">${COPY} ${esc(o[0])} válasz: prompt másolása</button>${canWrite(q) ? `<button class="btn" data-write="${i}" title="Egy dátumozott válaszsor a kérdés alá, a diff jóváhagyása után · one dated answer line, after you approve the diff">✎ ${esc(o[0])} beírása</button>` : ''}</span></div>`).join('')
         : '<p class="dim">A parser nem talált A/B/C sorokat ennél a bejegyzésnél. Írd be a választ alább; a prompt idézi.</p>';
       h += `<h3>Egyéni válasz</h3><label class="faint" for="own" style="font-size:12px">Saját szavaiddal (pl. „B, de csak a 2. lépésig”):</label>
         <textarea class="own" id="own" placeholder="A válasz szövege…">${esc(ownDraft.get(q.id) || '')}</textarea>
-        <div class="row"><button class="btn" id="copyOwn">${COPY} Egyéni válasz: prompt másolása</button></div>
+        <div class="row"><button class="btn" id="copyOwn">${COPY} Egyéni válasz: prompt másolása</button>${canWrite(q) ? '<button class="btn" id="writeOwn">✎ Egyéni válasz beírása</button>' : ''}</div>
         <details class="pv"><summary>Mit másol a gomb? (minta: ${esc(q.opts.length ? q.opts.find(o => o[2]) ? q.opts.find(o => o[2])[0] : q.opts[0][0] : 'egyéni')})</summary><pre class="raw" id="pv"></pre></details>`;
     }
     h += `<h3>Hol van</h3><div class="kv"><span>fájl</span><span>${esc(f ? f.abs : '—')}</span><span>sor</span><span>${q.line || '—'}</span>
@@ -572,7 +577,11 @@
     return h;
   }
   const ownDraft = new Map();
+  // the write gateway (S6): only with serve.js, only for a question in a file the stack read
+  const canWrite = q => !!(window.StackEdit && StackEdit.available() && fileOf(q));
+  const reloadAfter = () => location.reload();
   function select(id, scroll) {
+    if ((id || '') !== F.sel && window.StackLive) StackLive.selected(id ? ['Q:' + id] : []);
     F.sel = id || '';
     const q = Q.find(x => x.id === id), x = !q && NF.find(y => y.id === id);
     const P = $('#panel');
@@ -593,6 +602,8 @@
         if (pv) pv.textContent = r ? prompt(q, { k: r[0], text: r[1] }) : prompt(q, { own: '<a válaszod>' });
       }
       const cp = $('#copyPath'); if (cp) cp.onclick = e => copy(`${fileOf(q).abs}:${q.line}`, 'útvonal', e.currentTarget);
+      for (const b of P.querySelectorAll('button[data-write]')) b.onclick = () => { const o = q.opts[+b.dataset.write]; StackEdit.answer({ file: fileOf(q).rel, id: q.id, choice: o[0], text: plain(o[1]), page: 'decisions' }, { onDone: reloadAfter }); };
+      const wo = $('#writeOwn'); if (wo) wo.onclick = () => { const t = own.value.trim(); if (!t) { toast('Előbb írd be a választ.'); own.focus(); return; } StackEdit.answer({ file: fileOf(q).rel, id: q.id, own: t, page: 'decisions' }, { onDone: reloadAfter }); };
     }
     if (x) $('#copyHome').onclick = e => copy(homePrompt(x), `${x.id} prompt`, e.currentTarget);
     toHash();
@@ -622,6 +633,14 @@
   addEventListener('hashchange', () => { fromHash(); render(); select(F.sel, true); });
 
   fromHash(); render(); select(F.sel, true);
+
+  // the page contract (S7, lib/live.js): this page's Q nodes light up for a string selected on any other page
+  if (window.StackLive) StackLive.contract({
+    layer: 'Q', data: D,
+    items: () => [...document.querySelectorAll('[data-q], [data-n]')].map(el => [el, ['Q:' + (el.dataset.q || el.dataset.n)]]),
+    select: id => select(String(id || '').replace(/^Q:/, ''), true),
+    getSelection: () => F.sel ? ['Q:' + F.sel] : [],
+  });
 })();
 </script>
 </body>

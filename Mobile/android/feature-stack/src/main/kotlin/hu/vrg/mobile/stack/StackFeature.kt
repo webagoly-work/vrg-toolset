@@ -59,6 +59,7 @@ import hu.vrg.mobile.core.GitHubUrls
 import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.StackMeta
 import hu.vrg.mobile.core.StackPages
+import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.core.StackSync
 import hu.vrg.mobile.core.VrgRepo
 import hu.vrg.mobile.kit.FeatureHost
@@ -143,6 +144,16 @@ object StackFeature : VrgFeature {
     private fun local(): StackMeta? = try { file(StackPages.META).takeIf { it.exists() }?.readText()?.let { StackMeta.parse(it) } } catch (e: Exception) { null }
     private fun have(): Map<String, Long> = StackPages.PAGES.associate { it.file to (file(it.file).takeIf { f -> f.isFile }?.length() ?: -1L) }
 
+    /** vrg://stack/<page> opens that page: the ◢ dial's layer rows (VIS-Q5) come in this way. */
+    override fun open(route: Route): Boolean {
+        val id = route.path.trim('/')
+        if (id.isNotEmpty()) choose(id)
+        return true
+    }
+
+    /** The layer pages reached from the ◢ dial (StackMenu), not from the page chips. */
+    private val DIAL_ONLY = setOf("vonalak", "vezerloterem", "futasnaplo", "commitok", "erintesnyom")
+
     fun choose(id: String) {
         val p = StackPages.page(id)
         if (p == page.value) return
@@ -197,7 +208,7 @@ object StackFeature : VrgFeature {
         var before = 0L
         val started = System.currentTimeMillis()
         val parts = mutableListOf<Pair<File, File>>()
-        for (p in meta.pages) {   // the optional Kisokos only when this publish carries it
+        for (p in meta.pages) {   // every page this publish carries: the 3D pages always, an optional one when the PC published it
             val want = meta.bytes(p)
             val part = file(p.file + ".part")
             val got = GitHub.download(GitHubUrls.API + StackPages.contents(VrgRepo.PATH, p.file), part, RAW) { done ->
@@ -341,7 +352,9 @@ object StackFeature : VrgFeature {
                 }
                 FlowRow(Modifier.fillMaxWidth().padding(bottom = 2.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    (meta?.pages ?: StackPages.REQUIRED).forEach { p -> VrgChip(p.title, selected = p == showing) { choose(p.id) } }
+                    // the layer pages opened from the ◢ dial (Mobile D-191) show as a chip only while one is on screen
+                    (meta?.pages ?: StackPages.REQUIRED).filter { it.id !in DIAL_ONLY || it == showing }
+                        .forEach { p -> VrgChip(p.title, selected = p == showing) { choose(p.id) } }
                 }
                 val m = meta
                 if (m != null) {
@@ -359,6 +372,9 @@ object StackFeature : VrgFeature {
                 val m = meta
                 if (m == null) {
                     Text(if (loading) "Betöltés…" else "Itt jelenik meg a Rétegverem.", style = Melyviz.small)
+                } else if (m.bytes(current) <= 0L) {
+                    Text("${current.title}: ez a réteg még nincs a telefonon. A PC-n egy közzététel hozza át: node Mobile/stack/publish-stack.js --push",
+                        style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(16.dp))
                 } else {
                     val url = pageUrl(showing.file)
                     AndroidView(

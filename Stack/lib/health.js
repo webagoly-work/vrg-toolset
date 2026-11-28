@@ -104,7 +104,8 @@ function write(H, extra = {}) {
     `# VRG Stack — health`, ``, `${new Date().toISOString().slice(0, 16).replace('T', ' ')} · overall **${worst}**. Sources are never changed by the stack; anything here that needs a source fixed is for a person.`, ``,
     `## Stages`, ``, `| Stage | State | ms | Note |`, `|---|---|---|---|`,
     ...H.stages.map(s => `| ${s.name} | ${st[s.state]} | ${s.ms} | ${s.msg || ''} |`), ``,
-    `## Checks`, ``, ...['pipeline', 'freshness', 'volume', 'schema', 'distribution', 'lineage', 'search', 'retention'].flatMap(k => {
+    `## Checks`, ``, ...(() => { const known = ['pipeline', 'freshness', 'volume', 'schema', 'distribution', 'lineage', 'search', 'retention'];   // then every other kind a stage reported (pillars, todo, board …)
+      return known.concat([...new Set(H.checks.map(c => c.kind))].filter(k => !known.includes(k))); })().flatMap(k => {
       const cs = H.checks.filter(c => c.kind === k); return cs.length ? [`**${k}**`, ...cs.map(c => `- ${icon[c.level]} ${c.msg}`), ``] : [];
     }),
   ].join('\n');

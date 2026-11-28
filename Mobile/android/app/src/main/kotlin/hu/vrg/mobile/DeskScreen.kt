@@ -3,6 +3,7 @@ package hu.vrg.mobile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +62,8 @@ import hu.vrg.mobile.core.HomeLayout
 import hu.vrg.mobile.core.Kommand
 import hu.vrg.mobile.core.KommandItem
 import hu.vrg.mobile.core.Reach
+import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.core.StackMenu
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.RcoItem
@@ -88,6 +91,8 @@ class DeskActions(
     val closeOthers: (keep: String?) -> Unit = {},
     /** The home's own actions (WP M38): open a web app of a home tile, the Katalógus at a page, the QR scanner. */
     val openApp: (String) -> Unit = {},
+    /** A link into a feature, e.g. vrg://stack/dontesnaplo from the ◢ dial's layer rows. */
+    val openRoute: (Route) -> Unit = {},
     val describe: (String) -> Unit = {},
     val scan: () -> Unit = {},
 )
@@ -103,9 +108,10 @@ fun DeskScreen(
     tabs: (@Composable RowScope.() -> Unit)? = null,
 ) {
     var menu by remember { mutableStateOf(false) }
+    var stack by remember { mutableStateOf(false) }
     var kommand by remember { mutableStateOf(false) }
     val look by ShellSettings.flow.collectAsStateWithLifecycle()
-    BackHandler(menu || kommand) { menu = false; kommand = false }
+    BackHandler(menu || stack || kommand) { menu = false; stack = false; kommand = false }
 
     Box(Modifier.fillMaxSize().systemBarsPadding()) {
         Column(Modifier.fillMaxSize()) {
@@ -153,7 +159,7 @@ fun DeskScreen(
             // ---- dock ---------------------------------------------------------------------------
             Row(Modifier.fillMaxWidth().background(Melyviz.abyss.copy(alpha = 0.7f)).padding(horizontal = 6.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically) {
-                Dial("◣", "Menü") { menu = !menu; kommand = false }
+                Dial("◣", "Menü") { menu = !menu; stack = false; kommand = false }
                 // VRG Sketcher, one tap from every sheet too (D-35); the Desktop's dock has its `sketcher` unit (D-34)
                 Spacer(Modifier.width(6.dp))
                 Box {   // F4 (WP M49): a long press lists the Sketcher's variants (SketchLaunch.kt)
@@ -176,13 +182,26 @@ fun DeskScreen(
                         RcoItem("✕", "${f.title} bezárása", danger = true) { act.closeWindow(f.id) }
                     } + listOfNotNull(if (windows.size > 1) RcoItem("⊠", "Mind bezárása", danger = true) { act.closeOthers(null) } else null))
                 }
-                Dial("◢", "Rétegverem") { act.open(Catalogue.STACK.id) }
+                // VIS-Q5 (Mobile D-191): a tap opens the layers as a menu (like ◣), not the Rétegverem page itself
+                Dial("◢", "Rétegverem") { stack = !stack; menu = false; kommand = false }
             }
         }
         if (menu) {
             // a tap beside the menu closes it instead of reaching the home under it (UI audit 6.1)
             Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { menu = false } })
             MenuPanel(Modifier.align(Alignment.BottomStart)) { u -> menu = false; act.openUnit(u) }
+        }
+        if (stack) {
+            // the layer menu closes the same way
+            Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { stack = false } })
+            StackPanel(Modifier.align(Alignment.BottomEnd)) { row ->
+                stack = false
+                when (val t = row.target) {
+                    is StackMenu.Target.Page -> act.openRoute(Route(Catalogue.STACK.id, t.page))
+                    is StackMenu.Target.Feature -> act.open(t.id)
+                    is StackMenu.Target.None -> Unit
+                }
+            }
         }
         if (kommand) KommandPanel(windows, onClose = { kommand = false }) { id -> kommand = false; act.runKommand(id) }
     }
@@ -257,6 +276,33 @@ private fun MenuPanel(modifier: Modifier, onUnit: (DeskUnit) -> Unit) {
                     Text(u.hu, style = Melyviz.label.copy(color = if (off) Melyviz.faint else Melyviz.ink), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(reachTag(u), style = Melyviz.small.copy(fontSize = 9.sp, color = Melyviz.muted))
                 }
+            }
+        }
+    }
+}
+
+/** ◢: the stack's layers top to bottom, each opening that layer's view; Rétegek (every layer at once) is the last row.
+ *  A layer with no view on the phone is dimmed with the reason, as ◣ does for units the phone cannot open. */
+@Composable
+private fun StackPanel(modifier: Modifier, onRow: (StackMenu.Row) -> Unit) {
+    Column(
+        modifier.padding(end = 6.dp, bottom = 62.dp).widthIn(max = 340.dp).fillMaxWidth(0.92f).heightIn(max = 520.dp)
+            .background(Melyviz.deep, RoundedCornerShape(Melyviz.radius)).border(1.dp, Melyviz.glowDim, RoundedCornerShape(Melyviz.radius))
+            .verticalScroll(rememberScrollState()).padding(12.dp),
+    ) {
+        Text("RÉTEGVEREM · RÉTEGEK", style = Melyviz.title.copy(fontSize = 12.sp))
+        StackMenu.ROWS.forEach { r ->
+            val off = r.target is StackMenu.Target.None
+            val last = r == StackMenu.ROWS.last()
+            if (last) Box(Modifier.fillMaxWidth().padding(vertical = 6.dp).heightIn(min = 1.dp).background(Melyviz.glowDim.copy(alpha = 0.4f)))
+            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).then(if (off) Modifier else Modifier.clickable { onRow(r) }).padding(horizontal = 4.dp)
+                .semantics { contentDescription = (if (r.layer.isEmpty()) "" else r.layer + " réteg: ") + r.title },
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(r.layer.ifEmpty { "≡" }, style = Melyviz.readout.copy(color = if (off) Melyviz.faint else Melyviz.glow), modifier = Modifier.width(30.dp))
+                Text(r.title, style = Melyviz.label.copy(color = if (off) Melyviz.faint else Melyviz.ink), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val t = r.target
+                if (t is StackMenu.Target.None) Text(t.why, style = Melyviz.small.copy(fontSize = 9.sp, color = Melyviz.muted), maxLines = 1)
+                else if (t is StackMenu.Target.Feature) Text("külön", style = Melyviz.small.copy(fontSize = 9.sp, color = Melyviz.muted))
             }
         }
     }

@@ -1178,6 +1178,21 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     only on a button (one more tap on every photo); **C** searching every photo when it is taken (time and battery for
     photos never measured).
   Details: `WP/M72.md`.
+- **D-191 · ◢ opens the layers, not the Rétegverem page (VIS-Q5), 2026-11-20** (numbered D-48 on its branch, PR #29; main's D-48 is the VRG Térkép). The Founder: a short tap on the dock's
+  ◢ should not open the layers view; it opens a menu like ◣, every layer as a row in the stack's vertical order, the
+  Rétegek (all layers) view as the last row, and a layer row opens that layer's one view. The same on the Asztal's ◢
+  column, which drops Konnektóm and Holo (Labor shelf, VIS-Q5). Asked in the session: the layers whose pages live on
+  the PC's Stack server get **published too** (`publish-stack.js` bundles lineage, decisions, metro, control, runs,
+  commits as optional pages of `stack-pages`). Chosen in the session: `StackMenu.ROWS` in kit-core (tested: order,
+  Rétegek last, every target real); a row opens `vrg://stack/<page>` through the feature's `open(route)`, C and G open
+  Kódváros and Gömb, F and Z are dimmed with the reason (F is the Asztal's Áttekintés, Z has no view yet); the layer
+  pages are optional in `stack/meta.json`, so a publish from before them still loads and a missing layer says how to
+  publish it. The Rétegverem screen keeps its three 3D chips, plus the open layer page's chip while it is shown.
+  **2026-11-25:** the ◢ menu also has Érintésnyom (the layers lit by recorded sessions, replay only, VIS-Q9) above
+  Rétegek; publish-stack.js bundles it with the 12 newest sessions. **Later on 2026-11-25:** the Rétegek row opens
+  Rétegverem, the byte-particle Stack Viewer (STK-Q25 = replaces Rétegek under the same name): `retegek.html` on
+  `stack-pages` is now `Stack/viewer.html` with the layer text as byte classes only (16 bytes a particle, Normál; no
+  text leaves the PC), and stays the old graph view while the PC has no `out/layertext` yet. No app change.
 
 ## Open (to ask when the WP that needs them starts)
 

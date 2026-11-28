@@ -76,5 +76,174 @@ module.exports = function drift(graph, full, ctx) {
   /* 8. joins that failed */
   out.push(`## 8. Joins that failed`, ``, `- ${ctx.unresolved} mentions pointed at a key no node owns (mostly folders outside every layer).`,
     `- ${ctx.dangling.length} source links point at a node that does not exist` + (ctx.dangling.length ? ': ' + ctx.dangling.slice(0, 12).map(e => `${e.a}→${e.b} (${e.rel})`).join(', ') : '') + '.', ``);
+
+  /* 9. open work that looks done (S3, lib/todo.js check) */
+  const done = graph.nodes.filter(n => n.layer === 'T' && n.state === 'looks done');
+  const nT = graph.nodes.filter(n => n.layer === "T").length;
+  out.push(`## 9. Open work that looks done (késznek tűnik)`, ``,
+    `${done.length} of ${nT} not-yet items have evidence that they are built. Each names where it is still listed; take it off there (the Füzértábla's "mark done" will do it with approval, S4). Nothing here changes a file.`, ``,
+    ...(done.length ? done.map(t => `- **${t.title}** (\`${t.id}\`) — still listed in ${(t.from || []).join(', ') || '?'}. Evidence: ${(t.evidence || []).map(e => e.text + (e.id ? ` \`${e.id}\`` : '')).join('; ')}`) : ['none']), ``);
+
+  /* 10. status drift (STK-Q20 narrow A): the hand value against the string, two or more steps apart */
+  let cards = [];
+  try { cards = require('./todo').drift(graph, require('./strings'), require('../config').strings || {}); } catch (e) { cards = null; out.push(`## 10. Status drift`, ``, `not computed: ${e.message}`, ``); }
+  if (cards) out.push(`## 10. Status drift: the hand value against the evidence`, ``,
+    `A pillar's hand value (its F tier, or the hand status of a pillar with no F row) two or more steps from what its string shows, on the board's scale idea · out · low · mid · high · op. A proposal, never applied.`, ``,
+    ...(cards.length ? [`| Pillar | Hand value | The string says | Reach | Proposal |`, `|---|---|---|---|---|`,
+      ...cards.map(c => `| ${c.name} (\`E:${c.pillar}\`) | ${c.hand}: ${c.what} | ${c.evidence} (class ${c.cls}${c.pulse ? ', last move ' + c.pulse : ''}) | \`${c.mask}\` | ${c.propose} |`)] : ['none']), ``);
+
+  /* 11. unreachable (S11): a pillar whose string reaches code (C) but no entry point (N): nothing opens it */
+  let un = null;
+  try { un = require('./entry').unreachable(graph, require('./strings'), require('../config').strings || {}); } catch (e) { out.push(`## 11. Unreachable`, ``, `not computed: ${e.message}`, ``); }
+  if (un) out.push(`## 11. Unreachable: code that nothing opens`, ``,
+    `"A tool that is not in launcher/vrg-menu.json does not exist" (CLAUDE.md). These pillars' strings reach code but no entry point: no START key, server, catalog item or Mobile feature opens their folders or a folder above them. Add one, or say why it needs none.`, ``,
+    ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
+
+  /* 12. built, not verified (S12): code no test reaches; suites that fail, ran before their code changed, or nothing runs */
+  try {
+    const PR = require('./probe'), suites = graph.nodes.filter(n => n.layer === 'P' && (n.kind === 'test suite' || n.kind === 'check'));
+    const un = PR.unverified(graph, require('./strings'), require('../config').strings || {});
+    const by = st => suites.filter(n => n.state === st);
+    const line = n => { const x = n.probe || n.extra || {}, l = x.last || {}; return `- \`${n.title}\` ${n.kind}${l.at ? ' · last run ' + String(l.at).slice(0, 10) : ''}${l.pass != null ? ' · ' + l.pass + ' ✓' : ''}${l.fail ? ' ' + l.fail + ' ✗' : ''}${(x.keys || []).length ? ' · START ' + x.keys.join(', ') : ''}`; };
+    out.push(`## 12. Built, not verified`, ``,
+      `${suites.length} suites and checks: ${['pass', 'fail', 'stale', 'unrun', 'skipped', 'no runner'].map(st => by(st).length + ' ' + st).join(' · ')}. Record a run with \`node stack.js probe <words> | --all\`.`, ``,
+      `**Failing** (the last recorded run):`, ...(by('fail').length ? by('fail').map(line) : ['none']), ``,
+      `**Stale** (passed, then a commit touched the suite or the code it requires):`, ...(by('stale').length ? by('stale').map(line) : ['none']), ``,
+      `**Nothing runs these tests** (no START step, CI line, package.json or runner file):`, ...(by('no runner').length ? by('no runner').map(line) : ['none']), ``,
+      `**Code no test reaches** (the pillar's string has C and no P):`, ...(un.length ? un.map(u => `- **${u.name}** (\`E:${u.pillar}\`, class ${u.cls}) \`${u.mask}\` · ${u.dirs.join(', ')}`) : ['none']), ``);
+  } catch (e) { out.push(`## 12. Built, not verified`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 13. the Founder's asks (S13): where attention went, what came back with nothing landing, what led nowhere */
+  try {
+    const KA = require('./asks'), asks = graph.nodes.filter(n => n.layer === 'S' && n.kind !== 'cluster');
+    if (asks.length) {
+      const byId = new Map(graph.nodes.map(n => [n.id, n])), led = new Map();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'led-to' && a[0] === 'S') (led.get(a) || led.set(a, []).get(a)).push(b); }
+      const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), att = new Map();
+      for (const k of asks) {
+        const ps = new Set(); for (const b of led.get(k.id) || []) for (const p of (byId.get(b) || {}).ent || []) ps.add(p);
+        for (const p of ps) { const r = att.get(p) || att.set(p, { all: 0, recent: 0 }).get(p); r.all++; if ((k.t || '') >= since) r.recent++; }
+      }
+      const name = id => ((graph.entities || []).find(e => e.id === id) || {}).name || id;
+      const top = [...att].sort((a, b) => b[1].recent - a[1].recent || b[1].all - a[1].all).slice(0, 12);
+      const again = KA.nothingLanded(graph), nowhere = asks.filter(k => !(led.get(k.id) || []).length).sort((a, b) => (a.t < b.t ? 1 : -1)).slice(0, 10);
+      out.push(`## 13. The Founder's asks`, ``,
+        `${asks.length} asks in ${new Set(asks.map(k => k.id.split('.')[1])).size} sessions, ${graph.nodes.filter(n => n.layer === 'S' && n.kind === 'cluster').length} clusters; ${asks.filter(k => k.state === 'committed').length} were followed by a commit.`, ``,
+        `**Where attention went** (asks whose work touched the pillar; last 30 days / all):`, ...(top.length ? top.map(([p, r]) => `- **${name(p)}** (\`E:${p}\`) ${r.recent} / ${r.all}`) : ['none']), ``,
+        `**Asked again, nothing landed** (a cluster asked in 2+ sessions, no commit after any of its asks):`, ...(again.length ? again.slice(0, 12).map(c => `- \`${c.id}\` ${c.title} · ${(c.k || {}).sessions || '?'} sessions · last ${c.t}`) : ['none']), ``,
+        `**Led nowhere** (the newest asks whose work touched no stack node):`, ...(nowhere.length ? nowhere.map(k => `- ${k.t} \`${k.id}\` ${k.kind}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 13. The Founder's asks`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 14. signals (S14): the J layer in one place, the worst first, and which pillars' strings carry them */
+  try {
+    const J = graph.nodes.filter(n => n.layer === 'J');
+    if (J.length) {
+      const SG = require('./signals'), kinds = {};
+      for (const n of J) { const k = kinds[n.kind] || (kinds[n.kind] = { red: 0, amber: 0, info: 0 }); k[n.state]++; }
+      const name = id => ((graph.entities || []).find(e => e.id === id) || {}).name || id;
+      const pil = [...SG.byPillar(graph)].sort((a, b) => SG.SEV[b[1].worst] - SG.SEV[a[1].worst] || b[1].red - a[1].red || b[1].amber - a[1].amber).slice(0, 15);
+      const red = J.filter(n => n.state === 'red');
+      out.push(`## 14. Signals`, ``,
+        `${J.length} signals: ${red.length} red, ${J.filter(n => n.state === 'amber').length} amber, ${J.filter(n => n.state === 'info').length} info. In the Viewer, ⚠ lights every node one warns.`, ``,
+        `| Kind | Red | Amber | Info |`, `|---|---|---|---|`, ...Object.entries(kinds).sort((a, b) => b[1].red - a[1].red || b[1].amber - a[1].amber).map(([k, v]) => `| ${k} | ${v.red} | ${v.amber} | ${v.info} |`), ``,
+        `**Red:**`, ...(red.length ? red.slice(0, 25).map(n => `- \`${n.id}\` ${n.title}${n.brief ? ' — ' + clip(n.brief, 120) : ''}`) : ['none']), ``,
+        `**Pillars whose strings carry signals** (red / amber / info):`, ...(pil.length ? pil.map(([p, r]) => `- ${r.worst === 'red' ? '🔴' : r.worst === 'amber' ? '🟠' : '🔵'} **${name(p)}** (\`E:${p}\`) ${r.red} / ${r.amber} / ${r.info}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 14. Signals`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 15. client jobs (S15): the register in one line, the jobs running on paper but quiet, the tools the jobs used */
+  try {
+    const M = graph.nodes.filter(n => n.layer === 'M');
+    if (M.length) {
+      const st = {}; for (const n of M) st[n.state || '—'] = (st[n.state || '—'] || 0) + 1;
+      const T = n => ((n.job || n.extra || {}).tools || []), names = Object.fromEntries(require('./jobs').TOOLS.map(t => [t.id, t.name]));
+      const tools = {}; for (const n of M) for (const t of T(n)) tools[names[t] || t] = (tools[names[t] || t] || 0) + 1;
+      const q = require('./jobs').quiet(M);
+      out.push(`## 15. Client jobs`, ``,
+        `${M.length} jobs: ${Object.entries(st).map(([k, v]) => `${v} ${k}`).join(', ')}. Used: ${Object.entries(tools).map(([k, v]) => `${k} ${v}`).join(', ') || 'no tool found in any job folder'}; ${M.filter(n => !T(n).length).length} jobs show none of our tools. Codes only (the key is the register, outside Git).`, ``,
+        `**Running on paper, quiet in fact** (the register says running, the newest file is 30+ days old):`, ...(q.length ? q.map(({ n, days }) => `- \`${n.id}\` ${days} days · ${n.brief}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 15. Client jobs`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 16. devices (S16): sketches → firmware → boards, and where the chain is old or broken */
+  try {
+    const D = graph.nodes.filter(n => n.layer === 'D');
+    if (D.length) {
+      const k = kind => D.filter(n => n.kind === kind), built = new Set(), flashed = new Set();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'built-from') built.add(b); if (rel === 'flashed') flashed.add(b); }
+      const J = graph.nodes.filter(n => n.layer === 'J' && /^(fw-stale|board-behind|board-unknown)$/.test(n.kind));
+      const never = k('sketch').filter(n => n.state !== 'example' && !built.has(n.id));
+      out.push(`## 16. Devices`, ``,
+        `${k('sketch').length} sketches, ${k('firmware').length} firmware in the Board Console's library, ${k('board').length} boards seen. The Board Console's data is per PC (git-ignored).`, ``,
+        `**Out of date or unknown** (J signals):`, ...(J.length ? J.map(n => `- \`${n.id}\` ${n.title}`) : ['none']), ``,
+        `**Sketches with no firmware in the library** (never built into it, or built under another name):`, ...(never.length ? never.map(n => `- \`${n.id}\` ${n.brief}`) : ['none']), ``,
+        `**Firmware no board has been flashed with:** ${k('firmware').filter(n => !flashed.has(n.id)).map(n => '`' + n.id + '`').join(', ') || 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 16. Devices`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 17. the look (S17): which pages wear which look, and where a copy drifted from its source */
+  try {
+    const V = graph.nodes.filter(n => n.layer === 'V');
+    if (V.length) {
+      const looks = V.filter(n => n.kind === 'look'), st = {}; for (const n of looks) st[n.state] = (st[n.state] || 0) + 1;
+      const kit = V.find(n => n.id === 'V:system.vrg-ui-kit'), worn = new Set();
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'wears') worn.add(b); }
+      const unused = V.filter(n => n.kind === 'component' && !worn.has(n.id));
+      const bad = require('./look').drifted(V);
+      out.push(`## 17. The look`, ``,
+        `${looks.length} pages wear a look: ${Object.entries(st).map(([k, v]) => `${v} ${k}`).join(', ')}. ${kit ? kit.title + ': ' : ''}${V.filter(n => n.kind === 'component').length - unused.length} of ${V.filter(n => n.kind === 'component').length} components inlined somewhere.`, ``,
+        `**Drifted from the source** (J look-drift / kit-behind):`, ...(bad.length ? bad.map(n => `- \`${n.title}\` ${n.state} · ${n.brief}`) : ['none']), ``,
+        `**Kit components no page carries yet:** ${unused.length ? unused.map(n => n.title).join(', ') : 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 17. The look`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 18. outside (S18): what we depend on, under which licence, and CLAUDE.md's vendoring rules */
+  try {
+    const O = graph.nodes.filter(n => n.layer === 'O');
+    if (O.length) {
+      const k = kind => O.filter(n => n.kind === kind);
+      const J = kind => graph.nodes.filter(n => n.layer === 'J' && n.kind === kind);
+      const lic = {}; for (const n of [...k('vendored'), ...k('reference')]) lic[n.state || 'unknown'] = (lic[n.state || 'unknown'] || 0) + 1;
+      out.push(`## 18. Outside`, ``,
+        `${k('vendored').length} vendored and ${k('reference').length} referenced components (vendor-manifest.json), ${k('npm package').length} npm packages, ${k('mcp server').length} MCP servers. Licences: ${Object.entries(lic).sort((a, b) => b[1] - a[1]).map(([l, c]) => `${l} ${c}`).join(', ')}.`, ``,
+        `**Copyleft in code we copy and use** (red):`, ...(J('copyleft').length ? J('copyleft').map(n => `- \`${n.id}\` ${n.title}`) : ['none']), ``,
+        `**Fetched from a branch, not a tag** (CLAUDE.md: "a branch quietly becomes different code tomorrow"):`, ...(J('vendor-branch').length ? J('vendor-branch').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Licence not confirmed:** ${J('licence-unknown').map(n => n.title.split(':')[0]).join(', ') || 'none'}`, ``,
+        `**Vendored, no tracked code uses it yet:** ${k('vendored').filter(n => !(n.brief || '').includes('used by')).map(n => n.title.split(' · ')[0]).join(', ') || 'none'}`, ``);
+    }
+  } catch (e) { out.push(`## 18. Outside`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 19. people and roles (S19): who may enter, which account, who owns what, and the work no Head owns */
+  try {
+    const W = graph.nodes.filter(n => n.layer === 'W');
+    if (W.length) {
+      const k = kind => W.filter(n => n.kind === kind), owned = {};
+      for (const n of k('ownership')) { const h = (n.brief || '').replace(/^owned by | \(ROSTER\.md\)$/g, ''); owned[h] = (owned[h] || 0) + 1; }
+      const none = require('./people').unowned(graph).map(p => `${p.name}${p.area ? ' (' + p.area + ')' : ''}`);
+      const sig = graph.nodes.find(n => n.id === 'J:access-signature.hub');
+      out.push(`## 19. People and roles`, ``,
+        `${k('person').map(n => n.title).join(', ') || 'no access list'}; the Kapu's access list ${sig ? '**does not verify**' : 'verifies'}. Accounts: ${k('account').map(n => n.title.replace('Claude account ', '') + (n.extra && n.extra.ownConfig ? ' (own config)' : '')).join(', ') || 'none'}.`, ``,
+        `**Seats:** ${k('seat').map(n => n.title.split(' · ')[0] + (n.state === 'vacant' ? ' (vacant)' : owned[n.title.split(' · ')[0]] ? ` (${owned[n.title.split(' · ')[0]]} owned)` : '')).join(', ')}.`, ``,
+        `**No Head owns these** (pillars with code that ROSTER.md "Which department owns what" does not name, nor their area):`, ...(none.length ? none.map(x => `- ${x}`) : ['none']), ``);
+    }
+  } catch (e) { out.push(`## 19. People and roles`, ``, `not computed: ${e.message}`, ``); }
+
+  /* 20. imports (Függőségek, ROADMAP 2.8): the file graph inside C, the folders that lean on each other most */
+  try {
+    const F = graph.nodes.filter(n => n.layer === 'C' && n.kind === 'file');
+    if (F.length) {
+      const imp = [], dep = [];
+      for (const e of graph.edges) { const [a, b, rel] = Array.isArray(e) ? e : [e.a, e.b, e.rel]; if (rel === 'imports') imp.push([a, b]); if (rel === 'depends') dep.push([a, b, e.w || 1]); }
+      const inDeg = new Map(); for (const [, b] of imp) inDeg.set(b, (inDeg.get(b) || 0) + 1);
+      const most = [...inDeg].sort((x, y) => y[1] - x[1]).slice(0, 10);
+      const J = kind => graph.nodes.filter(n => n.layer === 'J' && n.kind === kind);
+      out.push(`## 20. Imports (Függőségek)`, ``,
+        `${F.length} files in the import graph, ${imp.length} imports, ${dep.length} folder-to-folder dependencies. \`stack.js path\` and the strings now reach these files.`, ``,
+        `**Broken imports** (a relative import to a file git does not track: missing, or not committed yet):`, ...(J('import-broken').length ? J('import-broken').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Import cycles:**`, ...(J('import-cycle').length ? J('import-cycle').map(n => `- ${n.title}`) : ['none']), ``,
+        `**Imported most** (a change here reaches the most files):`, ...most.map(([id, c]) => `- \`${id.slice(2)}\` ← ${c}`), ``);
+    }
+  } catch (e) { out.push(`## 20. Imports (Függőségek)`, ``, `not computed: ${e.message}`, ``); }
   return out.join('\n');
 };

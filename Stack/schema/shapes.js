@@ -9,7 +9,7 @@
 // Each check returns a list of problems; an empty list means the record is valid.
 'use strict';
 
-const LAYER = /^[FIQLAURCGKEZ]$/;
+const LAYER = new RegExp('^[' + require('./layers').ORDER.join('') + ']$');   // every layer in schema/layers.js (STK-P213)
 const ISO = /^\d{4}-\d\d-\d\d/;
 
 function checkNode(n) {
@@ -50,4 +50,4 @@ function checkStep(s) {
   return p;
 }
 
-module.exports = { checkNode, checkEvent, checkStep, SPANS, ACTORS, OPS };
+module.exports = { checkNode, checkEvent, checkStep, SPANS, ACTORS, OPS, LAYER };

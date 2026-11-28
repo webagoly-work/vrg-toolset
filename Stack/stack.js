@@ -19,6 +19,10 @@
 //   node stack.js decisions                                                     rewrite out/decisions-data.js (decisions.html, Döntésnapló)
 //   node stack.js metro                                                         rewrite out/metro-data.js (metro.html, Vonaltérkép)
 //   node stack.js runs                                                          rewrite out/runs-data.js (runs.html, Futásnapló)
+//   node stack.js signals                                                       rewrite out/signals-data.js (jelzesek.html, Jelzéstábla)
+//   node stack.js people                                                        rewrite out/people-data.js (szereplok.html, Ki kicsoda)
+//   node stack.js pages                                                         rewrite the K M D V O P pages' data (lib/layerpages.js)
+//   node stack.js probe [<words> | --all] [--list]                             run test suites (P · Próbák), record in data/probes.jsonl
 //   node stack.js kisokos [--standalone <file.html>]                            rewrite out/kisokos-data.js (kisokos.html, Kisokos 3D);
 //                                                                               --standalone also writes one self-contained page
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
@@ -79,10 +83,38 @@ async function main() {
     case 'decisions': return require('./lib/decisions').write().msg;
     case 'metro': return require('./lib/metro').write().msg;
     case 'runs': return require('./lib/runs').write().msg;
+    case 'signals': return require('./lib/signalboard').write().msg;   // Jelzéstábla (jelzesek.html)
+    case 'people': return require('./lib/peoplepage').write().msg;     // Ki kicsoda (szereplok.html)
+    case 'pages': return require('./lib/layerpages').write().msg;      // the K M D V O P pages
+    case 'board': {   // Füzértábla (S4); --public: the anonymised single-file copy for claude.ai
+      if (!flag('--public')) return require('./lib/board').write().msg;
+      try { const r = require('./lib/board').exportPublic(); return `board: the public copy, anonymised and checked → ${r.file} (${(r.bytes / 1024).toFixed(0)} KB)`; }
+      catch (e) { process.exitCode = e.code === 2 ? 2 : 1; return 'board --public: ' + e.message; } }
+    case 'probe': {   // P · Próbák (S12): run test suites, record their results in data/probes.jsonl; --list only lists them
+      const list = flag('--list'), all = flag('--all'), words = args.join(' ').toLowerCase();
+      const C = require('./lib/common'), L = require('./lib/layers'), P = require('./lib/probe'), fs = require('fs'), path = require('path');
+      const facts = C.repoFacts(), suites = P.suites(facts.files, L.probeInputs(facts));
+      const last = P.lastBy(L.probeResults());
+      const pick = all ? suites : words ? suites.filter(s => s.dir.toLowerCase().includes(words)) : [];
+      if (list || !pick.length) {
+        const rows = suites.map(s => { const r = last.get(s.dir); return `${(r ? (r.skipped ? 'skip' : r.ok ? 'pass' : 'FAIL') : s.cmds.length ? '-' : 'none').padEnd(5)} ${s.dir.padEnd(52)} ${s.cmds.length ? s.cmds[0].by : 'no runner'}${r && r.pass != null ? '  ' + r.pass + ' ✓' : ''}${r && r.fail ? ' ' + r.fail + ' ✗' : ''}${r ? '  ' + String(r.at).slice(0, 16) : ''}`; });
+        return rows.join('\n') + `\n${suites.length} suites` + (!list && !pick.length ? '  ·  run:  node stack.js probe <words> | --all' : '');
+      }
+      let head = ''; try { head = C.git('rev-parse', 'HEAD').trim(); } catch { head = ''; }
+      const file = path.join(require('./config').data, 'probes.jsonl'); fs.mkdirSync(path.dirname(file), { recursive: true });
+      const out = [];
+      for (const s of pick) {
+        const r = P.run(s, { repo: C.REPO, exec: P.exec, head });
+        fs.appendFileSync(file, JSON.stringify(r) + '\n');
+        out.push(`${(r.skipped ? 'skip' : r.ok ? 'pass' : 'FAIL').padEnd(5)} ${s.dir}${r.pass != null ? '  ' + r.pass + ' ✓' : ''}${r.fail ? ' ' + r.fail + ' ✗' : ''}${r.skipped ? '  ' + r.skipped : r.partial ? '  (part skipped: ' + r.partial + ')' : ''}  ${(r.ms / 1000).toFixed(1)} s`);
+        if (!r.ok && !r.skipped) process.exitCode = 1;
+      }
+      return out.join('\n') + '\n→ ' + file + '  (the live build picks it up; or node stack.js build)';
+    }
     case 'kisokos': { const standalone = opt('--standalone', ''); return require('./lib/kisokos').write({ standalone }).msg; }
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
-    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 27).map(l => l.slice(3)).join('\n');
+    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 31).map(l => l.slice(3)).join('\n');
   }
 }
 

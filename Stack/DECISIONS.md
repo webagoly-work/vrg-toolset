@@ -259,3 +259,338 @@ Asked as numbered A/B/C options; the Founder chose A for all four (question 2 af
 | STK-P64 | What SessionStart prints | **A** L0 + a build stamp, "STALE" after 48 h | about 730 tokens on startup, `/clear` and after compaction; nothing on resume. Node's own start is ≈ 0.9 s on this PC, the hook ≈ 40 ms more |
 | STK-P65 | What Stop appends, and where | **A** one line per turn in `data/live/<sid8>.jsonl` | files from file tools and from path words in shell commands, resolved to node ids; ≈ 70 ms on a 6 MB transcript, reading only what is new. Subagent calls are left to the after-the-fact recorder |
 | STK-P66 | The trace-hook entries whose backslashes were lost (`H:VRGFull\tools\node\node.exe`, failing on every call of 8 events) | **A** removed | the working forward-slash entries stay; the file was backed up first. Rebuilding stays by hand (STK-Q3 = A): neither hook builds |
+
+## Stack Viewer S8 + S9 (builder's choices), 2026-11-25
+
+Made while building the layer text (`lib/layertext.js`) and Rétegverem (`viewer.html`, `lib/viewer-layout.js`) from
+research/STRINGS-PLAN.md §6. Each can be changed in those files.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P67 | Order of a layer's bytes | A the layout's order · **B id order** | **B**: the layer text stays independent of the page's layout, so a layout change never rewrites the bytes or the diff; the page copies each node's range into its own order when it builds the particles |
+| STK-P68 | A cell of any shape with a Hilbert curve | A one 2^m square, stretched · B a generalised (gilbert) curve · **C Hilbert tiles** | **C**: tiles of 2^t × 2^t, rows in serpentine order, t chosen per cell for the best cover. A keeps 25–100 % of the cell empty; B cannot be computed from `gl_VertexID` cheaply. Locality inside a tile is the true Hilbert's |
+| STK-P69 | How the shader finds a particle's cell | A a 4-byte cell id per particle · **B a block table + a short binary search** | **B**: per 256 particles the cell of the first one; the search is then 0–8 steps. The only attribute stays the byte (8 MB at Full, the plan's figure) |
+| STK-P70 | The pillars | A an E plane · B spines only · **C both** | **C**: E is the base plane (one cell per pillar, §6.2), and a selection draws the pillar's spine through the centres of its members on each plane, ending in its E cell |
+| STK-P71 | Érintésnyom on top of the Viewer (STL-Q2: "the session workflow visualizer integrated on top") | A the Viewer replays sessions itself · **B the BroadcastChannel `vrg-stack`** | **B**: Érintésnyom keeps the lens, replay, live and forecast; it posts its light (`[id, energy, kind]`) and the Viewer colours the same nodes (warm exact, violet inferred, ice dashed forecast) and dims the rest. The same channel carries `select` for S7 |
+| STK-P72 | The phone bundle | A the layer text as is · **B byte classes only, 16 bytes a particle** | **B**: the planes look the same, the words under a dot stay on the PC (§9: document contents and client codes never leave it). 4 MB of text → ≈ 260 k classes |
+| STK-P73 | Auto (STK-Q22) | **A** Fine on the desktop, Normál on the phone, one step coarser while under 40 fps, remembered | the plan's "first frame under 12 ms" needs a GPU timer most browsers hide; frame times are kept in `localStorage` `vrg-viewer-perf` (`VIEWER.perf()`) so the thresholds can be fixed from measurements here and on the phone |
+| STK-P74 | Zoom LOD | **A** the cell in front of the camera, at zoom ≥ 2 and filling ≥ 45 % of the screen, is drawn byte by byte (≤ 4 MB) | the rest stays at the preset; a double-click flies into a cell and does the same |
+
+## Stack Viewer S10 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P75 | Live diff glow without S5's incremental build | A wait for S5 · **B the server watches `out/layertext/index.js`** | **B**: every build writes it last, so any finished build (START R → B, `POST /api/build`, a session's `stack.js build`) sends `changed` on `GET /api/events`; the Viewer refetches only those layers and pulses the nodes whose hash differs. S5 (a source edit → a one-layer build in < 1.5 s) stays open and will feed the same event |
+| STK-P76 | What "Kód bájtjai" may read | A the folder on disk · **B the files git tracks directly in it** | **B**: an untracked file (a stray key, a client export) never leaves the disk; sub-folders are their own cells; secret-looking names (the launcher's rule), PDFs, Vendor/ and Planner/apps, /home, /data are refused by name; 4 MB at most. Read-only, 127.0.0.1 only, like the rest of serve.js |
+| STK-P77 | When a node is born on the time scrubber | A the day the stack first saw it · **B the work's own date of its first `node+` (a commit's date), else the day seen** | **B**: the baseline build saw everything on one day, which would make the scrubber a single jump; a node the log never names is born on its own date `t`, one with no date is always there. `state` and `edit` events pulse on their day (the same pulse as "changed": one animation, one meaning) |
+| STK-P78 | Card actions before the write gateway | **A** the layer's page with the node selected (`#sel=`, `#run=`), the string as text, an opening prompt for a session; Q points to the Döntésnapló's A/B/C prompts | §3.1 ④ keeps copy-prompt buttons as the offline fallback; the diff-approved write actions are S6 |
+| STK-P79 | S10 on the phone | **A** the time scrubber yes (ids and day numbers only); the code stream and the live channel no | both need serve.js on the PC; the phone bundle stays text-free |
+
+## The write gateway S6, 2026-11-25
+
+The Founder, 2026-11-25: **build S6, one fixed answer line, decisions only.** So the gateway (`lib/edit.js`, `serve.js`
+`POST /api/edit/preview` · `/apply`, the dialog `lib/editdialog.js`) has one editor, and it writes the same line in every
+DECISIONS file, whatever that file's own format; the threads, lines, features and ideas editors of §4 wait.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P80 | The line | **A** `> **<id as the file spells it>** answered <date>: **B** — <option text> · <note> · _(Döntésnapló)_`; an own answer in “quotes” | a blockquote is its own block under a table, a list item or a paragraph without breaking it; it starts with the id and says "answered", which the Q parser reads as an answer in any section, Open included |
+| STK-P81 | Where it goes | **A** under a heading item: below the heading · a table row: after the table · otherwise after the item's own lines; blank lines around it | a line inside a table would break the table; the answer stays next to its question |
+| STK-P82 | Proof before writing | **A** the build's own parser (`parseDecisionFile`, factored out of the Q adapter, output identical on all 187 Q nodes) reads the new text: that question answered on the same line, no other question's state changed; else nothing is written | the next build reads the file by the same rules, so what the dialog promises is what the Döntésnapló will show |
+| STK-P83 | Bytes | **A** a splice into the bytes as they are: line endings (CRLF, mixed) and every other byte unchanged | "a hand edit" leaves no trace beyond its own line |
+| STK-P84 | Who may post | **A** only this server's own pages: JSON body, Host and Origin = localhost / 127.0.0.1 on its port | another site open in the same browser cannot post to the gateway (CSRF, DNS rebinding); a refused request writes nothing |
+| STK-P85 | After the write | **A** an `edit` event in `data/events.jsonl` (who: the page; the diff's hash), then `POST /api/build` from the dialog | the time scrubber shows the edit; the Döntésnapló reloads, Rétegverem glows the answered node over `/api/events`. Never a commit (START S or a session commits) |
+
+## The live build S5 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P86 | How the join becomes incremental | A recompute only edges touching the changed layer · **B cache each node's extracted refs after the join, re-read only the re-run layer's texts** | **B**: refs keep unresolved keys, so a cached G document that names a decision added a minute ago links it on the incremental build (A would miss it). The refs depend on the known keys too (repo files, commits, sessions, memories): their fingerprint is cached, and when it differs the build is the full one. Tested equal to a from-scratch join |
+| STK-P87 | Rank and community on a live build | A recompute PageRank + Louvain · **B keep each node's last ones; a new node gets rank 0, no community** | **B**: Louvain renumbers communities each run, which would recolour every page on every keystroke-save; the next full build makes them exact |
+| STK-P88 | Which sources are live | **A** the hand-kept maps (F, I, Q DECISIONS files, L lines and sessions, A memory and agent files, R notes, E threads and entities) | C and G change every few seconds while a session edits code; commits and recordings arrive with a session that ends in a full build anyway |
+| STK-P89 | Debounce | A 1.5 s (the plan) · **B 1 s** | an editor's save is over within a second; with 1.5 s the edit-to-page time was 2.5 s, over the 2 s target; with 1 s and the server announcing its own build, 1.4 s |
+| STK-P90 | A broken save (a half-written `lines.js`) | **A** the adapter fails before anything is written: out/ keeps the last good build, the pages show "! L hiba" and keep their data; the next good save rebuilds | a live build must never leave the stack worse than it was |
+| STK-P91 | How a page refreshes | **A** `lib/live.js` reloads the page (its #hash, so its selection, kept) when a build changed its layer; it waits while a dialog is open or text is being typed, and offers the reload on its badge | every layer page already restores its state from the hash; a reload is the one refresh that cannot go stale. Rétegverem and Érintésnyom refetch in place |
+| STK-P92 | The gateway's rebuild | **A** with the live build on, the dialog waits for the server's `changed` instead of starting a full build | one build, not two; the answer is on the pages in about a second |
+
+## The page contract S7 (builder's choices), 2026-11-25
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P93 | Who computes the string | A every page, from the graph · **B the page where the user selected; the bus carries `string` with the members** | one page loads `out/stack-data.js` (on the first selection), the others only light members; a page that got a `select` without a `string` (an old page) computes it itself after 2.5 s |
+| STK-P94 | How each page lights a string | **A** one highlighter in `lib/live.js` (ice glow on members, the rest at a quarter), each page gives `items()`: its elements and the node ids they stand for | §3.3's vocabularies come out of the elements each page already draws (river ideas, metro tracks and stations, agent and GO cards, run bars, commit day cells and rows, decision cards); a MutationObserver puts it back after the page re-renders |
+| STK-P95 | The build stamp | **A** a number that only grows (`graph.build.no`, full or incremental) and its time, in every page data file; the badge shows `#N HH:MM` and turns amber when the server (or `out/build-stamp.js` every 60 s from file://) knows a newer one | one stamp for every page; amber means "this page is older than the stack", a click reloads it |
+| STK-P96 | The six-connection limit | **A** one `/api/events` per browser, held by the tab with the Web Lock `vrg-stack-sse`, relayed on the bus; the Viewer and the gateway dialog use it too | found in the six-page test: each page's own stream took one of the browser's six connections to the server, and the sixth left none for `lib/strings.js` |
+| STK-P97 | When a page reports a selection | **A** only after the user has touched the page (a key or a pointer) | a page opened with `#sel=` in its link must not take over the other pages' highlight |
+| STK-P98 | The lint (§3.1 ①) | **A** `test/pages.test.js`: data only from the generated file, which carries `build` and `schema`; no literal node id in the page; no long literal record list; `lib/live.js` loaded, the contract signed with the right layer, `StackLive.selected` called | the checks a new layer page must also pass |
+
+## T · Teendők S3 (builder's choices), 2026-11-25
+
+Built from research/STRINGS-PLAN.md §2.2 and §5 (`lib/todo.js`, the adapter `layers.todo`). Checked on the archived
+Thread Board's data (47 threads, 152 not-yet items → 147 T nodes) and a sandbox build: the stale "Döntésnapló" item on
+the mindmap thread is flagged with its evidence (the stack thread's built list and the F row).
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P99 | The sources | A everything the plan lists · **B the board's `t`, `lines.js remaining`, ROADMAP ✗ rows; not PROPOSALS, not open Q** | PROPOSALS are the stack's own suggestions, recomputed each build: as nodes they would feed the build its own output. An open decision is already a Q node; a T item that names it links to it through the join |
+| STK-P100 | The same item from two places | **A** equal telling words, or 80 % shared when there are two or more; with one telling word only the same text, within one thread or a ROADMAP / line item repeating the board | "Code imports" (board) = "imports in Code" (ROADMAP); "Export" on two threads stays two items. Telling words keep short codes (OTG, CYD, P7, T1): they are what tells items apart |
+| STK-P101 | What "looks done" needs | **A** a thread's built list naming the same item, or an F row in tier 1–2 holding every telling word (at least half its own), or two commits holding every telling word of an item of two or more such words | each loosening was tried on the real board and produced false flags ("OTG menu" by "One menu", "Packaging" by a Vázlat *package*). On the archived board only the Döntésnapló item passes, plus "Desktop dashboard" in the sandbox's history |
+| STK-P102 | Where it shows | **A** the node's state "looks done", its evidence on the node and as `looks-done` links (v 1), DRIFT.md §9 with where it is still listed | the Füzértábla (S4) shows it with a mark-done through the gateway; until then the drift report is the list |
+| STK-P103 | Status drift (STK-Q20 narrow A) | **A** F tier (the best of the pillar's F rows) or the pillar's hand status against the string's class, on idea · out · low · mid · high · op; Orphan and Loose say nothing about maturity and make no card | DRIFT.md §10; a proposal (the tier or status to consider), never applied |
+| STK-P104 | The reach mask | **A** T after I: `F I T Q L A U R C G Z` (eleven slots) | open work sits between the ideas and the decisions; every page that shows a mask prints it as it comes |
+
+## Füzértábla S4 (builder's choices), 2026-11-25
+
+Built from research/STRINGS-PLAN.md §2 (`board.html`, `lib/board.js` → `out/board-data.js`, `stack.js board [--public]`).
+The parity test (`test/board.test.js`) rebuilds the board from the last Thread Board's own hand data
+(`Archive/files/thread-board.html`, 2026-11-09): all 47 threads, every not-yet, built, beta item and line, the notes, the
+other lines; in the browser every one of them is on the page.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P105 | Moving threads.js's hand data into the repo (§2.2) | A move it now · **B read it where it is** | threads.js lives in notes on H:, out of this session's reach; the board reads it, and every field another hand file now owns (area: entities.json; status: the F tier, or entities.json for the 11 pillars with no F row) is listed as "kept twice", with the owner's value shown. Deleting the copies is the Founder's step; the move to data (for a threads editor) is the next one |
+| STK-P106 | The built list | **A** the F rows in tier 1–2 on the pillar's string (ⓕ), then the hand `d` items no F row covers | the plan computes "built" from the stack, but most of today's `d` items ("Exit guard", "Prompt library") have no F row: dropping them would fail the parity |
+| STK-P107 | "Mark done" on a looks-done item | A through the gateway now · **B a prompt that takes it off the list (and adds it to `d`), with the evidence** | the gateway has one editor (decisions, the Founder's S6 scope); a threads editor needs threads.js as data first (STK-P105) |
+| STK-P108 | The anonymised copy | **A** `stack.js board --public` → `out/board-public.html`: one file (styles and data inlined, fonts left out), codes and literals swapped by `tools/anonymise.map.json` with the anonymiser's own rules, then `tools/anonymise.js --check`; no map, no copy | replaces `board.js --public`; fails closed like the anonymiser |
+| STK-P109 | A row is a pillar | **A** the page signs the contract as layer E: a row selected lights the pillar's string on every other open Stack page; a string selected elsewhere lights rows, open-work items, lines and built F chips here | the board is the E layer's page (§2.2) |
+| STK-P110 | HEALTH.md showed only eight check kinds | **A** every kind a stage reports, the eight first | the pillar, T and board notes reached only health.json |
+
+## The gateway's threads editor, mark done (builder's choices), 2026-11-25
+
+The Founder, 2026-11-25: **build the S6 threads editor for mark done.** `lib/edit-threads.js`, behind the same gateway
+(`POST /api/edit/preview` · `/apply`, the diff dialog), from the Füzértábla's ✓ Kész.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P111 | threads.js is JavaScript kept by hand (plan §9) | A migrate it to JSON first · **B edit well-delimited literals only, and prove the result** | it is on H:, out of this session's reach, and the Founder edits it by hand; a tokenizer (strings, comments, brackets) finds the row by its `id` literal and the item's own element; the old and the new file are both run, and the new one must equal the old with exactly that change (keys compared sorted), else nothing is written. A computed item (a constant, not a literal) is refused, not guessed |
+| STK-P112 | What "mark done" changes | **A** the item off the thread's `t` (with its comma, and its line and the comment after it when it stood alone); its label onto the end of `d` in the file's own quotes and layout (a new `d: [...]` before `t:` when the row has none); "onto built" can be unticked | the board's built list is where a done item belongs; nothing else moves |
+| STK-P113 | A merged item (one T node, two threads' wordings) | **A** the gateway edits by the thread's own wording (`labels` on the T node) | "M15 logo home" is "M15 home" in the logo thread's list; matching by the node's title would refuse |
+| STK-P114 | Which items get the button | **A** every open item, when the page is served by serve.js; the looks-done ones keep their evidence next to it; from file:// the copy-prompt stays | the Founder knows more than the evidence; the evidence only points |
+| STK-P115 | The diff | **A** a line diff inside the change (the old line before the new), removed lines struck through | the threads edit changes two places at once; unchanged lines between them stay context |
+
+## S11 — N · Belépők, the entry points layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S11, the next new layer.** By STK-Q24 that is N, Belépők. Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P116 | Where N sits in the order | **A** after F: F N I T Q L A U R C G Z · B at the end | the way in is what a person meets first after the featured list; the mask reads left to right as a visit |
+| STK-P117 | Its sources | **A** `launcher/vrg-menu.json`, `launcher/vrg-catalog.json`, the Mobile `Feature.kt` · B also the Kapu's baked list | the Kapu is built from the menu (`build-hub.js`), so it adds nothing; the three are the registries CLAUDE.md names |
+| STK-P118 | Node ids and kinds | **A** `N:start.<key path>` (R/7), `N:server.<id>`, `N:cat.<id>`, `N:mob.<id>`; one kind `catalog` with the catalog's type in the brief | key paths are what the Founder knows by heart; 40 catalog types as 40 kinds would drown the legend |
+| STK-P119 | Programs | **A** `N:start.A/<key>`, under START A | the catalog launches them as `s:A/1`; the same id makes that edge land |
+| STK-P120 | Paths | **A** `{repo}` resolves to the repo path, the `paths` tokens through the table; `{full}` / `{vrg}` stay as written, with no repo key | the join links a repo path to its folder; a program on H: outside the repo has no folder node to link to |
+| STK-P121 | Unreachable (DRIFT §11) | **A** a pillar whose string reaches C and not N, unless one of its folders is inside one an entry point opens | without the folder rule 46 pillars were listed, nearly all Planner features reached through START 1; with it 2, both real |
+
+## S12 — P · Próbák, the tests and checks layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S12, the next new layer.** By STK-Q24 that is P, Próbák. Builder's choices, no open
+question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P122 | Where P sits | **A** after U: F N I T Q L A U P R C G Z (the plan's §5 order) | a test is a run of the code, next to the runs; above R and C, which it verifies |
+| STK-P123 | What a suite is | **A** a test folder (test/, tests/, selftest/), a Gradle module's src/test, a check or selftest file on its own · B every test file a suite | the folder is what a runner runs; files are still nodes, inside their suite |
+| STK-P124 | How a suite runs | **A** found, never kept by hand: START steps that name it, then CI lines, package.json, the file pattern | a hand list would drift; START and CI are the commands that really run |
+| STK-P125 | Where results come from | **A** a recorder, `node stack.js probe`, appending to `data/probes.jsonl` · B parse each runner's own output files | no suite writes a result file today; one record format for node, npm, PowerShell and Gradle |
+| STK-P126 | Per PC | **A** data/ (git-ignored) · B committed | a result is true of one PC at one commit; the record keeps that commit |
+| STK-P127 | A runner this PC lacks | **A** a skip with its reason, never a fail | the cloud sandbox has no PowerShell or gradlew; that says nothing about the tests |
+| STK-P128 | Stale | **A** passed, then a commit touched the suite or the folders its files require | "built" and "verified" part ways exactly there |
+| STK-P129 | Code no test reaches (DRIFT §12) | **A** the string has C and no P, unless a test reaches one of its folders or one above it, or tests a folder inside it (not a bare top-level one) | without the folder rule the Planner's own features were listed although its tests cover them; with it 5, each with no test file |
+
+## S13 — K · Kérések, the Founder's asks layer (2026-11-26)
+
+The Founder, 2026-11-26: **build S13, the next new layer.** By STK-Q24 that is K, Kérések. Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P130 | Where K sits | **A** after N: F N K I T Q L A U P R C G Z (the plan's §5 puts it near the top) | an ask is upstream of the ideas and decisions it starts |
+| STK-P131 | What an ask is | **A** a recording step by the user: a prompt or a typed slash command; a continued session's summary, "[Request interrupted …]", hook feedback and tag-wrapped text left out | those are the harness talking, not the Founder |
+| STK-P132 | What an ask links to | **A** `led-to`: the nodes the steps after it touched, until the next ask (w = steps) · B only what its text names | the words rarely name a node ("build S12"); the work it caused always touches some; `mentions` adds what the text does name |
+| STK-P133 | Did it land | **A** a commit among the steps it led to · B its session committed at all | an ask in a long session would otherwise borrow another ask's commit |
+| STK-P134 | Clusters | **A** single link over Jaccard ≥ 0.6 on word sets, stopwords out (en + hu), accents folded, numbers folded (S12 ≈ S13); named by the earliest ask, so ids are stable · B embeddings | deterministic, explainable in one line, no model run in the build; embeddings can come later |
+| STK-P135 | Builds | **A** full builds read the recordings and keep the asks in `out/layers/K-src.json`; incremental builds read that file | the recordings only change on a full build |
+| STK-P136 | Privacy | **A** the ask's words stay on the PC: out/ is git-ignored, and the connectome data (the phone bundle on stack-pages) gets a neutral K title ("ask 2026-11-26") | a prompt can name a client; stack-pages is private but is still GitHub |
+| STK-P137 | The Viewer's plane limit | **A** raised from 12 to 16 colour slots | K made 14 planes (13 layers + E); the 13th threw "offset is out of bounds" |
+
+## S14 — J · Jelzések, the signals layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S14, the next new layer.** By STK-Q24 that is J, Jelzések, the last of its list.
+Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P138 | Where J sits | **A** after G: F N K I T Q L A U P R C G J Z (the plan's §5 order) | the bottom of the stack, next to the raw layers it reads; its plane is the trouble under everything |
+| STK-P139 | What a signal is | **A** a warning one of the stack's own checks already makes (P, the strings, T, K, Solomon, brief-state, health) · B new checks | J says nothing the reports do not; it puts each warning on its node, so strings and the Viewer can show it |
+| STK-P140 | Ids | **A** by what the trouble is about (`J:test-fail.Map/test`, `J:brief.hub`; health by kind + its message with numbers folded) | the same trouble keeps its id, so the event log and the time scrubber say when it started and when it went away |
+| STK-P141 | Severity | **A** red: a failing suite, a broken brief, a confirmed contradiction, a health failure · amber: stale, unrun, unverified, unreachable, status drift, asked again, a candidate contradiction, a stale brief, a health warning · info: looks done, Solomon's other candidates | red is "something is wrong now"; amber "something will be"; info "worth a look" |
+| STK-P142 | The link | **A** a new relation `warns` (any scope) from the signal to what it is about; a pillar-level signal warns `E:<pillar>` | `flags` is Solomon's, inside G; a signal crosses layers |
+| STK-P143 | Briefs | **A** a full build runs `tools/brief-state.js --check` once and keeps it in `out/layers/J-briefs.json`; an incremental build reads that | it is a child process; the live build stays fast |
+| STK-P144 | Health on an incremental build | **A** the last full build's health signals carried over · B the incremental build's own | an incremental build runs fewer stages: its own would make health signals come and go with every save |
+| STK-P145 | The Viewer | **A** ⚠ Jelzések (⚙ Nézet; `#warn` opens with it on): every warned node and every signal red, the rest dimmed, through the light flags (bit 128) | the plan's "the Viewer shows where trouble sits", with no new page |
+| STK-P146 | Per pillar | **A** a signal counts once per pillar, however many of the pillar's nodes it warns | a contradiction warns its signal and both documents; one trouble, one count |
+
+## S15 — M · Munkák, the client jobs layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S15, the next new layer.** STK-Q24's list was done; by STK-Q5 (A Futás, then B
+Munkák) and RULES §6a the next is M, Munkák. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P147 | Where M sits | **A** after F, at the top: F M N K I T Q L A U P R C G J Z | a client's job is the outermost reality the stack serves; the tools (F, N) sit under it |
+| STK-P148 | The sources | **A** the register and totals through the Map's readers (`Map/tools/build-jobs.js`), the Kit's `<CODE>_*` folders, `Planner_projektek_*` · B `helyek.json` | one parser for the register; `helyek.json` carries coordinates the stack has no use for |
+| STK-P149 | What goes in | **A** codes, statuses, dates, totals, file counts, tool names, related codes; never a folder label, a note's words, an address, a client or file name | CLAUDE.md and GO-TNT: job codes only in tracked files; the code key is the register |
+| STK-P150 | Which tools a job used | **A** the tools' own output file names in its folders (Planner exports, Kit files), and a Planner project file that starts with the code | the files are the evidence; no list kept by hand |
+| STK-P151 | How a job reaches the tools | **A** its title names them ("BK2 · befejezett · Planner + Workflow Kit"), so the pillars' words take it in, and its text names the Planner's folder for the join | the money path on a string without a new mechanism |
+| STK-P152 | A code in a text | **A** a known key: the join links `BK2` in any text to `M:job.BK2`, only when the register has that code · B a pattern alone | "S12" or "M15" would otherwise turn into jobs; the codes join the known-keys signature, so a new job falls back to a full build |
+| STK-P153 | Privacy | **A** out/ as before; the connectome data (the phone bundle) gets the code alone as an M title | a total is money; the code is what tracked files may hold |
+| STK-P154 | Live | **A** the register and the totals (jobs\\_elozmenyek, watched, not recursive); a Kit folder follows the next full build | the register is the hand-kept source; job folders are large and change by the file |
+| STK-P155 | Quiet jobs | **A** running in the register, newest file 30+ days old: DRIFT §15 and a J signal `job-quiet` (amber) | the one check this layer adds, and it lands where every other warning does |
+
+## S16 — D · Eszközök, the devices layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S16, the next new layer.** By STK-Q5 (C Eszközök, after Futás and Munkák) and
+RULES §6a that is D, Eszközök. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P156 | The letter and the place | **A** D, right under C: F M N K I T Q L A U P R C D G J Z | E is the pillars (RULES §6a's working letter clashed); a board is what code runs on, so it sits under the code |
+| STK-P157 | The sources | **A** the tracked .ino sketches, the Board Console's `data/library/*/*/manifest.json` and `data/devices.json` · B also COM ports live | ports change by the minute; the Board Console already records every board it has met and what it did to it |
+| STK-P158 | Which .ino is a sketch | **A** the one named as its folder (Arduino's rule), or a folder's only .ino; the rest are tabs | planner_cyd has four tabs and is one sketch |
+| STK-P159 | A firmware's sketch | **A** an Arduino build's sketch name (the library's name, or its build folder) | an uploaded .bin or a backup names none, and the layer says so by having no edge |
+| STK-P160 | A board's id and title | **A** `D:board.<last 6 hex of the MAC>`; the title is chip · those 6 · the firmware it runs | half a MAC tells boards apart on one bench; the firmware's name lets its pillar take the board in |
+| STK-P161 | Signals | **A** `fw-stale` (amber): built before its sketch's newest commit · `board-behind` (info): flashed with an older version than the library's latest · `board-unknown` (info): last seen as foreign content | code that never reached the board is the trouble this layer can see |
+| STK-P162 | Live | **A** `devices.json` and a library manifest map to D (the repo is already watched) | the Board Console writes both on every flash or backup |
+| STK-P163 | The Viewer's colour slots | **A** 16 → 24 | D made 17 planes (16 layers + E); room for the rest of RULES §6a |
+
+## S17 — V · Látvány, the look layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S17, the next new layer.** By STK-Q5 (D Látvány, after Futás, Munkák, Eszközök) and
+RULES §6a that is V, Látvány. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P164 | Where V sits | **A** right after F: F V M N K I T Q L A U P R C D G J Z | a look is how the featured things appear; the plan's §5 letter V (L is DevLog) |
+| STK-P165 | The sources | **A** the kit's manifest, `shared/melyviz.css` with `tools/melyviz-sync.js`'s TARGETS (read from its text), `shared/varler-logo` lockups, every tracked page, the Visual Base's top folders when present | each system already says what it is; the pages say what they wear |
+| STK-P166 | Which look a page wears | **A** what it carries or links: a Mélyvíz copy, a link to melyviz.css, the kit's vk markers (their components and stamped version), a kit token link · B a scan for colour literals | the markers are the contract the tools write; a colour scan would guess |
+| STK-P167 | Drift | **A** a Mélyvíz copy compared exactly as `melyviz-sync --check` compares (a test holds them to the same answer); an inlined kit whose stamped version is older than the manifest; a sync target that is gone | the sync tools' own definitions, so V never disagrees with them |
+| STK-P168 | Signals | **A** `look-drift` and `kit-behind` (amber), each with the one command that fixes it | the fix is always a sync and, for a built app, a rebuild |
+| STK-P169 | Skipped pages | **A** `Vendor/` and `Archive/files/` | vendored pages wear nothing of ours; archived one-shots are frozen on purpose |
+| STK-P170 | Live | **A** any saved .html or .css in the repo, the kit's manifest, the logo lockups, the sync tool's list | a page's look changes when the page is saved |
+
+## S18 — O · Külső, the outside layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S18, the next new layer.** By RULES §6a that is O, Külső. Builder's choices, no open
+question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P171 | Where O sits | **A** under D: … C D O G J Z | what we depend on sits under our code and the boards it runs on |
+| STK-P172 | What is outside | **A** the vendor manifest's components, the tracked package.json files' npm packages, the MCP servers the settings name · B also the programs | the programs are N nodes already (START A); one node per thing |
+| STK-P173 | Who uses a component | **A** tracked files naming it as a path (`Vendor/<target>`) or a path.join (`'Vendor', '<target>'`), one `git grep`; code files use it, documents only mention it | Vendor/ is git-ignored, so the join cannot see it; a mention in a plan is not a use |
+| STK-P174 | The checks | **A** CLAUDE.md's: a fetched git source pinned to a branch, not a tag (amber) · copyleft (GPL family, not an OR choice) in code we fetch and use (red) · a licence that is not a known SPDX id (info) | the rules are already written; the layer makes them visible on the strings |
+| STK-P175 | npm-mode components | **A** no branch check: their version is pinned where they are installed | `vendor: "npm"` is consumed through npm, not fetched as source |
+| STK-P176 | Live | **A** the manifest, a package.json or its lockfile, the `.claude` settings; a new use in code follows the next full build | the hand-kept sources; a grep on every save would be heavy |
+
+## S19 — W · Szereplők, the people and roles layer (2026-11-27)
+
+The Founder, 2026-11-27: **build S19, the last new layer.** By RULES §6a that is W, Szereplők. With it the new
+layers of STRINGS-PLAN §5 are complete. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P177 | Where W sits | **A** at the very top: W F V M N K I T Q L A U P R C D O G J Z | people come before everything they make; the plan's §5 letter W |
+| STK-P178 | A person's id and title | **A** by role (`W:person.owner` "Founder", `W:person.member` "colleague"), counts only (layers, emails, a GitHub sign-in) · B their names | the names and emails stay in the signed list; the stack and the phone bundle need the role, not the person; a test holds that no value leaks |
+| STK-P179 | Who may enter | **A** the Kapu's own access list, its signature verified with the Kapu's `kpCanon` and committed public key; a list that does not verify is a red signal | "only the owner can edit it" is enforced by that signature (HUB-Q04); the stack checks it on every build |
+| STK-P180 | Agents | **A** W holds the seats (`played-by` → A:agent.*), not the agents again | the agents are A nodes already; one node per thing |
+| STK-P181 | Who owns what | **A** ROSTER.md "Which department owns what": one ownership node per program or line, titled by its name, so the pillar's words take it in | the roster is the hand-kept answer; the title is what makes the string reach the owner |
+| STK-P182 | Unowned work (DRIFT §19) | **A** a pillar with code that the roster names neither by name (loosely: "calculators", "Kapu") nor by its area (SUI's area is the Planner) | the exact match listed 30, nearly all owned through the Planner; with the loose name and the area 5 remain, each a real gap |
+| STK-P183 | Accounts | **A** from `Dashboard/config/profiles.json`: A the default config, B its own CLAUDE_CONFIG_DIR | the profile is where the two sign-ins are kept apart; SECACC.md is retired history |
+
+## C · Függőségek, the import graph inside C (2026-11-27)
+
+The Founder, 2026-11-27: **build the Függőségek sub-layer of C.** ROADMAP 2.8, RULES §6b ("an import graph inside the
+Code layer, so impact analysis reaches below folders"), STRINGS-PLAN §5 ("a sub-layer of C"). Builder's choices, no
+open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P184 | A layer or a sub-layer | **A** inside C: file nodes `C:<file>` (kind file) under their folder nodes · B a new letter | the plan's own word; the Viewer's C tree places a file in its folder by its path with no change |
+| STK-P185 | Which files | **A** only a file with an import in or out (678 in the sandbox) · B every tracked file | a file nothing imports and that imports nothing adds nothing a folder does not say already |
+| STK-P186 | Which imports | **A** relative ones: JS require / import / export-from / import() / require(path.join(__dirname, …)), HTML script and stylesheet, CSS @import, PowerShell dot-sourcing, #include; a package name is O's (npm) | the repo's own wiring; outside code is the outside layer |
+| STK-P187 | Broken | **A** a statement-form relative import to a file git does not track · not: an import quoted in a test fixture, a dynamic import() run in a browser page, an #include of a library header, a target `git check-ignore` names, out/ dist/ data/ Vendor/ | the first scan flagged 68, all of them these; with the rules 0 on the repo, and a lib file used before it is committed still shows |
+| STK-P188 | Folder level | **A** `depends` folder → folder, w = the file imports between them | the folder strings feel the import graph too |
+| STK-P189 | References | **A** a file owns `p:<file>`, so a text naming it links to the file, not only its folder | "reach below folders" for the join as well as for `path` |
+| STK-P190 | Skipped | **A** Vendor/, node_modules, dist/, minified files, `Archive/files/` | not our wiring, built output, or frozen one-shot copies |
+
+## Jelzéstábla, the J layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the J layer.** Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P191 | The shape | **A** one column per pillar, the worst first, its signals red → amber → info; a column for the signals tied to no pillar · B one long list | J's meta asked for "a trouble map: each pillar's signals as a column, red on top"; the pillar is where a fix is owned |
+| STK-P192 | The action on a card | **A** each kind says whether a signal's own brief is the action (`own`: fw-stale, vendor-branch, test-fail …); otherwise the kind's action, with the brief shown as evidence | a contradiction's brief is the two quoted lines, not what to do; the first draft put them under the → |
+| STK-P193 | Cleared signals | **A** the board keeps `out/signals-history.json` (each signal's kind, title, first day); one gone since the last build is listed for 14 days | a node- event names the id only; the title is gone with the node |
+| STK-P194 | When it is written | **A** on every build, incremental ones too | J is recomputed on both |
+| STK-P195 | Where it opens | **A** START R → J (a free key in the Rétegverem submenu), catalog `signalboard` under `stack` | next to the Füzértábla (R → L), the other cross-layer board |
+
+## Ki kicsoda, the W layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the W layer.** Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P196 | The shape | **A** people and accounts on top; the Council as one column per seat (agent, load, the lines it owns); then three lists: no Head owns it, one session only, business units | W's meta asked for "each person and account with what they may enter, each Head with what they own, and where knowledge sits in one head" |
+| STK-P197 | A Head's load | **A** the lines it owns, their pillars, and the open J signals on those pillars, as a bar scaled to the busiest Head | ownership is only useful next to what is open on it |
+| STK-P198 | "Knowledge in one head" | **A** a pillar that only one recorded session has touched (U `touched` → its pillars); shown once there are three or more sessions | the recordings are the evidence of who worked on what; with fewer sessions the list says nothing |
+| STK-P199 | A line's pillars | **A** the pillars that took it in by their words, else the same loose match as the unowned check (`people.pillarsFor`: "calculators" → Calculators) | one rule for "who owns it" on the page and in DRIFT §19; lines with no pillar say so |
+| STK-P200 | Names | **A** none: the page reads the graph, where people are roles | the signed list keeps the names; the page needs none |
+| STK-P201 | Where it opens | **A** START R → W, catalog `peopleboard` under `stack`; written on every build | it reads J and U, which change on any build |
+
+## Six layer pages: K, M, D, V, O, P (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the K layer, and batch the other next 5 in the series.** The series is the
+new layers whose page was still "partial": N, P, K, M, D, V, O. Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P202 | Which five with K | **A** M, D, V, O, P · B N among them | N's page is START itself (the menu, the Kapu, the VRG Asztal); a seventh copy of the registry would only drift |
+| STK-P203 | One module or six | **A** one data module, `lib/layerpages.js`, six builders, six data files; one stylesheet, `lib/layerpage.css` · B six of each | they read the same graph with the same helpers; the page lint holds each page to its own data file and contract all the same |
+| STK-P204 | What each shows | **A** what each layer's meta asked for: K an attention map (pillar × week heat, threads, asks with no commit); M a job timeline (bars, tools, totals; codes only); D a bench (sketch → firmware → board, latest or behind); V a wardrobe (pages by app, drift with its sync command, components by use); O a licence ledger (licence, CLAUDE.md's rule, pin, users); P a test wall (runs as strips, failing first, the rerun command) | the want lines were written for this |
+| STK-P205 | The graph's details | **A** the written graph carries what the pages need: `job`, `dev`, `look`, `dep`, `probe` (as P, K, J and W already do) | pages read the graph only (S7) |
+| STK-P206 | Licences on the ledger | **A** a referenced copyleft component is amber ("fine as a reference, never copy it in"), not red; an MCP server needs no licence; a dual licence takes the permissive side | red is for what would bind our code; the first draft painted every GPL reference red |
+| STK-P207 | Keys | **A** START R → Y (K), U (M), Z (D), V (V), X (O), P (P); catalog askmap, jobtimeline, bench, wardrobe, ledger, testwall | the free keys, by mnemonic where one was free (mUnkák, eszköZ, eXternal, Próbák) |
+| STK-P208 | Meta | **A** the six pages exist; T, L and U set to exist too (Füzértábla, Vonaltérkép, Futásnapló were built but still said missing or partial) | the layer table should say what is true |
+
+## Ajtótérkép, the N layer's page (2026-11-27)
+
+The Founder, 2026-11-27: **build a page for the N layer.** (STK-P202 had left N out, its page being START itself.)
+Builder's choices, no open question among them:
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P209 | Not START again | **A** a door map across all four registries side by side, each door with what it opens and whether that is still there · B a copy of the START menu | START cannot say that a key points at a file that is gone; the map can, and it puts the catalog and Mobile next to START |
+| STK-P210 | "Still there" | **A** a repo path checked on disk; an H: path or a program is check-start's question (shown as outside the repo); a catalog item must land on a door; a Mobile feature lives in its feature-<id> folder or in the app's own code, a planned one is planned | six beta features (the desk, the sheets …) live in the app shell, not a folder; the first check called them missing |
+| STK-P211 | Where it opens | **A** START R → I, catalog `doormap`; data in `lib/layerpages.js` with the other six (`out/doors-data.js`) | the last free mnemonic-ish key (Indítók); one module for the layer pages |
+
+## Kérések re-lettered: K → S (2026-11-27)
+
+Merging main into PR #29 met main's own K layer, the Kisokos (the work handbook: core, axes, terms, cards; its page
+`kisokos.html`), merged and on the phone pages. Two layers cannot share a letter.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P212 | Which layer moves | **A** Kérések becomes **S · Szó** ("a Founder szava"); the Kisokos keeps K · B Kérések H · C X · D the Kisokos moves | **The Founder, 2026-11-27: S.** The Kisokos was merged and shipped first; only this unmerged branch changes. Node ids are `S:ask.*` and `S:cluster.*`; the page (Figyelemtérkép, START R → Y) and its data are unchanged but for the letter; an older build's `K:ask.*` events stay in the log as they were |
+
+## One layer table (2026-11-28)
+
+The layer order and colours had been copied into seven places (`strings.js`, `layertext.js`, `lens.js`, the pipeline's
+`LAYER8`, `viewer.html`, `board.html`, `connectome.html`, plus `layers.html` and `meta.js`'s order). The Konnektóm broke
+because one copy missed the new layers (found loading every page, 2026-11-27).
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P213 | Where the layer table lives | **A** one `schema/layers.js` (code, hu, en, colour, and whether a layer is a mask slot, a Viewer plane, read by an adapter), loaded by Node and as a page script · B `lib/meta.js` grows colours · C a JSON file every page fetches | **A, asked by the Founder 2026-11-28.** `meta.js` is Node-only and full of H: paths, so it cannot go into a page or the phone bundle (B); a fetch fails from `file://` (C). A script works in Node, in a page and inlined in a bundle, like `lib/strings.js`. `meta.js` keeps its prose and is held to the table's order and names by `test/layers.test.js`, which also fails on a page that keeps five or more layer colours of its own. One exception, named in the test: `runs.html` keeps its dark and light theme palette for the ten original layers. |
+| STK-P214 | How a letter clash between branches is caught | **A** a CI check that reads every unmerged branch's `lib/meta.js` as text and fails when one letter names two layers · B a reserved-letters file every branch edits · C only at merge time | **A, asked by the Founder 2026-11-28.** `tools/check-layer-letters.js` in the new `.github/workflows/stack.yml` (with the Stack tests). B is one more file to forget and would itself conflict; C is how K was found, too late. Every branch already lists its letters in `meta.js` (`{ code, id }`), so nothing new has to be kept. Branches merged into main and the data branches are skipped; a clash between two other branches is listed, not failed. Replayed on the real K case (main's Kisokos and this branch before STK-P212): it fails and names both. |

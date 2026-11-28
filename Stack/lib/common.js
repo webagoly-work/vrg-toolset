@@ -45,7 +45,7 @@ function normPath(p) {
 // It is built once with the sets of things that really exist, so it only ever returns keys
 // that can resolve: a hex word is a commit only if the repo has that commit.
 function makeExtractor(known) {
-  const { paths, dirs, commits, sessions, memories, basenames } = known;
+  const { paths, dirs, commits, sessions, memories, basenames, jobs = new Set() } = known;
   // v2 fix: the drive needs its slash in the optional group ("H:\VRG\…", "C:/Users/…"); in v1
   // "H:" could never be followed by a word character, so absolute paths were never matched
   const RX_PATH = /(?:[A-Za-z]:[\/\\])?[\w.\-]+(?:[\/\\][\w.\-]+)+/g;
@@ -54,6 +54,7 @@ function makeExtractor(known) {
   const RX_GO = /\bGO[ -]([A-Z][A-Z0-9]{1,9})\b/g;
   const RX_MEM = /\[\[([a-z0-9\-]+)\]\]|\bmem:([a-z0-9\-]+)/g;
   const RX_BASE = /\b[\w\-]{3,}\.(?:md|js|html|json|cmd|ps1|kt|ino|py|css|mjs|cjs)\b/g;
+  const RX_SK = /\bsk:([A-Za-z0-9][\w.\-]*(?::[\w.\-]+)?)/g;   // a skill or slash command (record.js writes "sk:<name>")
 
   /* The deepest existing path that is a prefix of p ("Planner/src/x.js:42" → "Planner/src/x.js"). */
   function resolvePath(raw) {
@@ -97,7 +98,10 @@ function makeExtractor(known) {
     for (const m of text.matchAll(RX_Q)) out.add('q:' + qid(m[1], m[2], m[3]));
     for (const m of text.matchAll(/\bD-V(\d+[a-z]?)-(\d+[a-z]?)\b/g)) out.add(`q:D-V${m[1]}-${m[2]}`);
     for (const m of text.matchAll(RX_GO)) out.add('go:' + m[1]);
+    for (const m of text.matchAll(RX_SK)) { out.add('sk:' + m[1]); if (m[1].includes(':')) out.add('sk:' + m[1].split(':').pop()); }
     for (const m of text.matchAll(RX_MEM)) { const s = m[1] || m[2]; if (memories.has(s)) out.add('m:' + s); }
+    // a job code (M · Munkák, S15): only a code the register has, so "S12" or "M15" link only if a job has that code
+    if (jobs.size) for (const m of text.matchAll(/\b([A-Z]{1,3}\d{1,3})\b/g)) if (jobs.has(m[1])) out.add('job:' + m[1]);
     return out;
   };
 }

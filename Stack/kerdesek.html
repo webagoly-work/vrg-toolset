@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Figyelemtérkép</title>
+<!-- Figyelemtérkép (attention map): the S layer's page (S13, lib/meta.js). Where the Founder's asks went, pillar by week
+     (an ask counts on the pillars its work touched); the asks that said the same thing as threads, open ones first;
+     the asks no commit followed. The asks' words stay on this PC (out/ is git-ignored). Selecting a row lights the
+     ask, its thread or its pillar on every other open Stack page (lib/live.js). Data: out/asks-data.js
+     (lib/layerpages.js, every build). -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="lib/layerpage.css">
+<style>
+  .heat { border-collapse: collapse; font: 11px var(--mono); }
+  .heat th { color: var(--fa); font-weight: 400; padding: 2px 4px; white-space: nowrap; }
+  .heat th.p { text-align: right; color: var(--mu); max-width: 220px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .heat td { width: 30px; height: 22px; text-align: center; color: var(--bg); }
+  .thread { border-left: 3px solid var(--ln2); padding: 6px 9px; margin-bottom: 6px; background: var(--s2); cursor: pointer; }
+  .thread.open { border-left-color: var(--red); } .thread.landed { border-left-color: var(--ok); }
+  .thread ol { margin: 4px 0 0 18px; padding: 0; font-size: 12px; color: var(--mu); }
+</style>
+</head>
+<body>
+<header><h1>Figyelemtérkép<i>the Founder's asks · S</i></h1><span class="sum" id="sum"></span><span class="sp"></span>
+  <input id="q" type="search" placeholder="keresés · search" aria-label="keresés · search"></header>
+<main>
+  <section class="panel"><h2>Hova ment a figyelem<i>asks per pillar per week (an ask counts on the pillars its work touched)</i></h2><div class="scroll" id="heat"></div></section>
+  <section class="grid2">
+    <div class="panel"><h2>Visszatérő kérések<i>threads: the same ask, more than once; open (no commit followed) first</i></h2><div id="threads"></div></div>
+    <div class="panel"><h2>Nem lett belőle munka<i>asks no commit followed, newest first</i></h2><ul class="list" id="nolanded"></ul></div>
+  </section>
+</main>
+<script src="out/asks-data.js"></script>
+<script src="lib/live.js"></script>
+<script>
+(function () {
+  const D = window.ASKS, $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  if (!D) { $('heat').innerHTML = '<p class="empty">Nincs adat: futtasd a <code>node stack.js build</code>-et. · No data yet.</p>'; return; }
+  const A = new Map(D.asks.map(a => [a[0], { id: a[0], kind: a[1], t: a[2], state: a[3], title: a[4], cluster: a[5], pillars: a[6] }]));
+  const keys = new Map(); const k = (key, ids) => { keys.set(key, ids); return `data-k="${esc(key)}"`; };
+  let q = '', sel = '';
+  const c = D.counts;
+  $('sum').textContent = `${c.asks} kérés · ${c.committed} után commit · ${c.clusters} szál (${c.open} nyitott) · ${c.pillars} pillér`;
+  function render() {
+    keys.clear();
+    const max = Math.max(1, ...D.heat.flatMap(h => h[3]));
+    const rows = D.heat.filter(h => !q || h[1].toLowerCase().includes(q));
+    $('heat').innerHTML = rows.length ? `<table class="heat"><tr><th></th>${D.weeks.map(w => `<th>${esc(w.slice(5))}</th>`).join('')}<th>Σ</th></tr>`
+      + rows.map(([p, name, all, ws]) => `<tr><th class="p" ${k('E:' + p, ['E:' + p])}>${esc(name)}</th>${ws.map(n => `<td style="background:${n ? `color-mix(in srgb, var(--warm) ${Math.round(25 + 75 * n / max)}%, var(--s2))` : 'var(--s2)'}" title="${n}">${n || ''}</td>`).join('')}<th>${all}</th></tr>`).join('') + '</table>'
+      : '<p class="empty">Nincs kérés, ami pillérhez ért. · No ask reached a pillar yet.</p>';
+    const T = D.clusters.filter(([, title]) => !q || title.toLowerCase().includes(q));
+    $('threads').innerHTML = T.map(([id, title, state, sessions, first, last, members]) => `<div class="thread ${esc(state)}" ${k(id, [id, ...members])}>
+        <div>${esc(title)} <span class="chip ${state === 'open' ? 'red' : 'ok'}">${state === 'open' ? 'nyitott · open' : 'lett belőle munka · landed'}</span></div>
+        <div class="mono">${sessions} munkamenet · sessions · ${esc(first)}${last !== first ? ' → ' + esc(last) : ''}</div>
+        <ol>${members.map(m => A.get(m)).filter(Boolean).map(a => `<li>${esc(a.title)} <span class="faint">${esc(a.t)}</span></li>`).join('')}</ol></div>`).join('')
+      || '<p class="empty">Nincs visszatérő kérés. · No repeated asks.</p>';
+    const N = D.nolanded.map(id => A.get(id)).filter(a => a && (!q || a.title.toLowerCase().includes(q)));
+    $('nolanded').innerHTML = N.map(a => `<li ${k(a.id, [a.id, ...a.pillars.map(p => 'E:' + p)])}>${esc(a.title)}<small>${esc(a.t)} · ${esc(a.kind)}${a.pillars.length ? ' · ' + a.pillars.length + ' pillér' : ' · semmihez nem ért · touched nothing'}</small></li>`).join('')
+      || '<li class="empty">— minden kérést commit követett · a commit followed every ask</li>';
+    mark();
+  }
+  function mark() { for (const el of document.querySelectorAll('[data-k]')) el.setAttribute('aria-selected', String(el.dataset.k === sel)); }
+  function select(key, quiet) { sel = keys.has(key) ? key : ''; mark(); if (!quiet && window.StackLive) StackLive.selected(sel ? keys.get(sel) : []); }
+  document.body.addEventListener('click', e => { const el = e.target.closest('[data-k]'); if (el) select(el.dataset.k); });
+  $('q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  render();
+
+  // the page contract (S7, lib/live.js)
+  if (window.StackLive) StackLive.contract({
+    layer: 'S', data: D,
+    items: () => [...document.querySelectorAll('[data-k]')].map(el => [el, keys.get(el.dataset.k) || []]),
+    select: id => { id = String(id || ''); if (keys.has(id)) return select(id, true); for (const [key, ids] of keys) if (ids.includes(id)) return select(key, true); },
+    getSelection: () => (sel ? keys.get(sel) : []),
+  });
+})();
+</script>
+</body>
+</html>

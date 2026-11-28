@@ -271,7 +271,7 @@ test('strings: a full tool reaches every layer and classes as Program; its pilla
     se('U:run', 'C:app', 'touched', { w: 12 }), se('R:c1', 'C:app', 'ref:p'), se('G:doc', 'C:app'),
     se('F:app', 'E:app', 'pillar'), se('G:doc', 'E:app', 'pillar')];
   const s = ST.string(ST.prepare(nodes, edges), 'F:app', { today: TODAY });
-  assert.equal(s.mask, 'F I Q L · U R C G ·');                          // U through C (depth 2); no A on this string
+  assert.equal(s.mask, '· F · · · · I · Q L · U · R C · · G · · ·');                          // U through C (depth 2); no A on this string
   assert.equal(s.cls, 'program');
   assert.equal(s.pulse, '2026-11-09');
   assert.equal(s.members.find(m => m.id === 'E:app').score, 0.8);
@@ -281,7 +281,7 @@ test('strings: a full tool reaches every layer and classes as Program; its pilla
 
 test('strings: an idea with only a feature stays a Spark; dates decide In build vs Built, quiet', () => {
   const spark = ST.string(ST.prepare([sn('F:x', { tier: 5 }), sn('I:x')], [se('I:x', 'F:x', 'ref:go')]), 'I:x', { today: TODAY });
-  assert.equal(spark.mask, 'F I · · · · · · · ·');
+  assert.equal(spark.mask, '· F · · · · I · · · · · · · · · · · · · ·');
   assert.equal(spark.cls, 'spark');
   const mk = t => ST.string(ST.prepare([sn('F:t', { tier: 3 }), sn('C:t'), sn('R:t', { t })], [se('F:t', 'C:t'), se('R:t', 'C:t')]), 'F:t', { today: TODAY }).cls;
   assert.equal(mk('2026-11-01'), 'build');                              // 9 days
@@ -412,4 +412,21 @@ test('hook stop: path words in shell commands count, flags, URLs, globs and syst
   assert.deepEqual(HK.commandPaths('sed -n 1,40p /h/VRG/Full/Planner_VRG_U100/Stack/lib/runs.js; grep -rn x lib/query.js --include=*.js https://x.y/z /dev/null "$TEMP/a.txt"', 'H:/VRG/Full/Planner_VRG_U100/Stack'),
     ['H:/VRG/Full/Planner_VRG_U100/Stack/lib/runs.js', 'H:/VRG/Full/Planner_VRG_U100/Stack/lib/query.js']);
   assert.deepEqual(HK.commandPaths('cat lib/a.js', ''), []);                  // relative with no folder known: skipped
+});
+
+test('recorder: a slash command is a step that carries its skill key; a Skill call carries it too', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stk-'));
+  const file = path.join(dir, 'slash.jsonl');
+  const line = (o) => JSON.stringify(Object.assign({ timestamp: '2026-11-25T10:00:00Z', sessionId: 's' }, o));
+  fs.writeFileSync(file, [
+    line({ type: 'user', message: { role: 'user', content: '<command-message>deep-research</command-message>\n<command-name>/deep-research</command-name>\n<command-args>CSV libraries</command-args>' } }),
+    line({ type: 'assistant', message: { id: 'm1', role: 'assistant', content: [{ type: 'tool_use', id: 't1', name: 'Skill', input: { skill: 'anthropic-skills:dataviz' } }] } }),
+  ].join('\n') + '\n');
+  const { steps } = REC.parseFile(file, 'agent');
+  const sl = steps.find(s => s.tool === 'command');
+  assert.ok(sl && sl.span === 'execute_tool' && sl.actor === 'user' && /^sk:deep-research \/deep-research CSV libraries/.test(sl.text), JSON.stringify(sl));
+  assert.ok(/sk:anthropic-skills:dataviz/.test(steps.find(s => s.tool === 'Skill').text));
+  assert.ok(!steps.some(s => s.span === 'prompt'), 'the command is not also a prompt');
+  const ex = C.makeExtractor({ paths: new Set(), dirs: new Set(), commits: new Set(), sessions: new Set(), memories: new Set(), basenames: new Map() });
+  assert.deepEqual([...ex('sk:anthropic-skills:dataviz')].sort(), ['sk:anthropic-skills:dataviz', 'sk:dataviz']);
 });

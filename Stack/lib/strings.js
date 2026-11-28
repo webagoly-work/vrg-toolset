@@ -17,12 +17,12 @@
 // when d > hub (lib/activation.js's lateral inhibition), so `tools/` cannot swallow every string.
 // Pillars (layer E) are the definition of "the same thing" and are never damped.
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.StackStrings = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../schema/layers'));
+  else root.StackStrings = factory(root.StackLayers);   // a page loads schema/layers.js first (lib/live.js does)
+})(typeof self !== 'undefined' ? self : this, function (LAYERS) {
   'use strict';
 
-  const ORDER = 'FIQLAURCGZ';            // the reach mask: ten slots in stack order (E is the pillar, not a slot)
+  const ORDER = LAYERS.MASK.join('');   // the reach mask in stack order (schema/layers.js; E is the pillar, not a slot)
 
   const DEFAULTS = {
     depth: 2,
