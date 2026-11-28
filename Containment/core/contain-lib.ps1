@@ -390,8 +390,9 @@ function Invoke-Download([string]$url, [string]$dest) {
 function Get-Hash([string]$p, [string]$alg) { return (Get-FileHash -LiteralPath $p -Algorithm $alg).Hash.ToLower() }
 
 function Find-7z {
-    $full = Split-Path -Parent (Split-Path -Parent $script:Kit)
-    $c = @((Join-Path $full 'programs\7zip\7z.exe'))
+    # Self-contained: a 7z.exe + 7z.dll dropped into the kit's tools\ folder wins,
+    # then an installed 7-Zip. Nothing outside the kit and the system is looked at.
+    $c = @((Join-Path $script:Kit 'tools\7z.exe'))
     if ($env:ProgramFiles) { $c += (Join-Path $env:ProgramFiles '7-Zip\7z.exe') }
     if (${env:ProgramFiles(x86)}) { $c += (Join-Path ${env:ProgramFiles(x86)} '7-Zip\7z.exe') }
     foreach ($p in $c) { if (Test-Path -LiteralPath $p) { return $p } }

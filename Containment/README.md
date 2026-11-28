@@ -58,7 +58,7 @@ bent van, ugyanazon a meghajtóbetűn.
   Debian Live XFCE (`cdimage.debian.org`). Alapból a legújabbat veszi, a `pin` mezővel rögzíthető egy URL.
 - A QEMU telepítőt a mellette közzétett **SHA-512**-vel és az **Authenticode aláírással** ellenőrzi. Ha egyik sincs,
   nem használja (csak `-AllowUnsigned`-del, kézi ellenőrzés után). A Debian ISO-t a hivatalos `SHA256SUMS` alapján.
-- A kicsomagoláshoz 7-Zip kell (`Full\programs\7zip`, Program Files vagy PATH); ha nincs, a QEMU saját telepítője fut
+- A kicsomagoláshoz 7-Zip kell (a kit `tools\` mappájába tett `7z.exe` + `7z.dll`, telepített 7-Zip vagy PATH); ha nincs, a QEMU saját telepítője fut
   a kit mappájába.
 - A `runtime\manifest.json` és a `runtime\qemu.sha256` rögzíti, mit töltött le. A **V** (integritás-ellenőrzés)
   újraszámolja: idegen gépen használt pendrive után érdemes.
@@ -69,12 +69,14 @@ bent van, ugyanazon a meghajtóbetűn.
 
 | | |
 |---|---|
+| `OLVASS-ELOSZOR.txt` | rövid indulás pendrive-ra, jegyzettömbbel olvasható |
 | `CONTAIN.cmd` | a menü |
 | `SANDBOX.cmd`, `STICK.cmd` | a két mód közvetlenül; ráhúzható fájl vagy mappa |
 | `profiles.json`, `sources.json` | profilok és letöltési források (`{ format, version }`) |
 | `core\contain.ps1` | parancssor és menü; `core\contain-lib.ps1` a működés |
 | `exchange\inbox`, `exchange\outbox` | a csere mappák (gitben nincsenek) |
 | `runtime\` | QEMU, a vendég ISO, a hash-ek, a munkamenetek `.wsb` / parancssor fájljai (gitben nincs) |
+| `tools\` | opcionális: ide tehető a 7-Zip `7z.exe` + `7z.dll` a letöltéshez |
 | `test\check.js` | `node Containment/test/check.js` (bárhol fut) |
 | `test\selftest.ps1` | `powershell -NoProfile -ExecutionPolicy Bypass -File Containment\test\selftest.ps1` (Windows, offline, ideiglenes mappában) |
 
@@ -101,5 +103,5 @@ Caveats: with the `browse` profile the guest can reach the local network as well
 came from the untrusted machine. A VM is a strong boundary but not a perfect one, so keep Windows and the runtime
 updated.
 
-The working logic was extracted from ServiceKit's built-in "Windows Sandbox" launcher (`ServiceKit/core/server.ps1`).
-ServiceKit keeps its own copy, because it is deployed on its own from a public branch.
+The kit is self-contained: it reads and writes only inside its own folder (plus the Windows Startup folder for the
+optional autostart, and `%TEMP%` for the selftest). Nothing in it refers to any other folder, drive or account.
