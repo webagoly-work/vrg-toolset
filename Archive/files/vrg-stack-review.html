@@ -1,0 +1,456 @@
+<title>VRG Stack Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column with a sticky section rail; the reach mask (21 layer squares) is the recurring motif.
+   Palette: Mélyvíz (the project's own deep-water look), dark first, with a light variant. */
+:root {
+  --bg: #0a141c; --surface: #121c24; --raised: #17232c;
+  --line: rgba(232, 240, 246, .14); --line-strong: rgba(232, 240, 246, .32);
+  --fg: #e8f0f6; --dim: #a6afb7; --faint: #6f7880;
+  --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13);
+  --warm: #e8a873; --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
+  --dot: rgba(232, 240, 246, .10);
+  --voice: "Barlow Semi Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef3f6; --surface: #ffffff; --raised: #f5f8fa;
+  --line: rgba(16, 36, 48, .13); --line-strong: rgba(16, 36, 48, .30);
+  --fg: #10222e; --dim: #4a5964; --faint: #7d8a93;
+  --accent: #1f7f9c; --accent-soft: rgba(31, 127, 156, .10);
+  --warm: #b4652a; --ok: #2f8a55; --warn: #9a7414; --crit: #b9473b;
+  --dot: rgba(16, 36, 48, .09);
+  color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #eef3f6; --surface: #ffffff; --raised: #f5f8fa;
+  --line: rgba(16, 36, 48, .13); --line-strong: rgba(16, 36, 48, .30);
+  --fg: #10222e; --dim: #4a5964; --faint: #7d8a93;
+  --accent: #1f7f9c; --accent-soft: rgba(31, 127, 156, .10);
+  --warm: #b4652a; --ok: #2f8a55; --warn: #9a7414; --crit: #b9473b;
+  --dot: rgba(16, 36, 48, .09);
+  color-scheme: light; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--sans); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 0 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--voice); font-weight: 600; letter-spacing: .02em; text-wrap: balance; line-height: 1.15; margin: 0; }
+h2 { font-size: 26px; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--faint); }
+
+/* hero */
+.hero { padding-top: 44px; padding-bottom: 28px; display: grid; gap: 18px; border-bottom: 1px solid var(--line); }
+.hero h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: .01em; }
+.hero h1 span { color: var(--accent); }
+.lede { font-size: 17px; color: var(--dim); max-width: 68ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 22px; font: 13px var(--mono); color: var(--dim); }
+.facts b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* the reach mask */
+.mask { display: inline-grid; grid-template-columns: repeat(21, 1fr); gap: 3px; vertical-align: middle; }
+.mask i { width: 11px; height: 11px; border-radius: 2px; background: var(--dot); display: block; }
+.mask.big i { width: clamp(12px, 3.4vw, 30px); height: clamp(12px, 3.4vw, 30px); border-radius: 3px; }
+.stackbar { display: grid; gap: 10px; }
+.stackbar .mask.big { width: 100%; }
+.stackbar .mask.big i { width: auto; aspect-ratio: 1; height: auto; cursor: pointer; transition: transform .15s; }
+.stackbar .mask.big i:hover, .stackbar .mask.big i[aria-pressed="true"] { transform: translateY(-3px); }
+.stackbar .mask.big i[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
+.letters { display: grid; grid-template-columns: repeat(21, 1fr); gap: 3px; font: 500 12px var(--mono); color: var(--dim); text-align: center; }
+.layerinfo { min-height: 64px; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--surface); }
+.layerinfo h3 { margin-bottom: 4px; }
+.layerinfo p { color: var(--dim); font-size: 14px; }
+
+/* page frame: rail + content */
+.frame { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 40px; margin-top: 34px; }
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 18px); align-self: start; display: grid; gap: 2px; font-size: 13px; }
+nav.rail a { color: var(--dim); text-decoration: none; padding: 4px 0 4px 10px; border-left: 2px solid var(--line); }
+nav.rail a:hover { color: var(--fg); border-left-color: var(--line-strong); }
+nav.rail a.on { color: var(--fg); border-left-color: var(--accent); }
+main { display: grid; gap: 56px; min-width: 0; }
+section { display: grid; gap: 16px; scroll-margin-top: 20px; min-width: 0; }
+section > p, .prose { max-width: 70ch; color: var(--dim); }
+.prose b, section > p b { color: var(--fg); font-weight: 600; }
+.head { display: grid; gap: 6px; }
+
+/* blocks */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.card p { color: var(--dim); font-size: 14px; }
+.term { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+.term dt { font-family: var(--voice); font-weight: 600; font-size: 16px; }
+.term dd { margin: 0; color: var(--dim); font-size: 14px; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); background: var(--raised); white-space: nowrap; }
+td { color: var(--dim); }
+td:first-child { color: var(--fg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.chip { display: inline-block; font: 500 11px/1 var(--mono); padding: 4px 6px; border-radius: 3px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+pre { margin: 0; padding: 14px 16px; font: 12.5px/1.55 var(--mono); color: var(--fg); white-space: pre; }
+pre .c { color: var(--faint); }
+pre .k { color: var(--accent); }
+
+/* pipeline */
+.pipe { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pipe span { font: 500 12px var(--mono); padding: 6px 9px; border: 1px solid var(--line-strong); background: var(--surface); }
+.pipe em { font-style: normal; color: var(--faint); }
+
+/* classes from reach */
+.classes { display: grid; gap: 8px; }
+.cls { display: grid; grid-template-columns: 120px auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.cls b { font-family: var(--voice); font-weight: 600; font-size: 16px; }
+.cls span { color: var(--dim); font-size: 13.5px; }
+
+/* review verdict + severity */
+.sev { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 0 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.sev::before { content: ""; grid-row: 1 / span 2; border-radius: 2px; background: var(--faint); }
+.sev.crit::before { background: var(--crit); } .sev.warn::before { background: var(--warn); } .sev.ok::before { background: var(--ok); }
+.sev h3 { font-size: 16px; }
+.sev p { color: var(--dim); font-size: 14px; max-width: 75ch; }
+.tag { font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; margin-left: 8px; color: var(--faint); }
+.sev.crit .tag { color: var(--crit); } .sev.warn .tag { color: var(--warn); } .sev.ok .tag { color: var(--ok); }
+
+.steps { counter-reset: s; display: grid; gap: 0; }
+.steps li { list-style: none; counter-increment: s; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.steps li::before { content: counter(s); font: 600 18px var(--voice); color: var(--accent); }
+.steps li p { color: var(--dim); font-size: 13.5px; }
+.steps li small { font: 12px var(--mono); color: var(--faint); white-space: nowrap; }
+.steps { margin: 0; padding: 0; }
+.qs { display: grid; gap: 10px; margin: 0; padding: 0; }
+.qs li { list-style: none; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); }
+.qs li b { font-family: var(--voice); font-size: 16px; font-weight: 600; display: block; margin-bottom: 2px; }
+.qs li span { color: var(--dim); font-size: 14px; }
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; display: grid; gap: 4px; }
+
+@media (max-width: 820px) {
+  .frame { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.rail { position: static; display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 30px; }
+  nav.rail a { border: 1px solid var(--line); padding: 4px 8px; }
+  .term { grid-template-columns: minmax(0, 1fr); }
+  .cls { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .steps li { grid-template-columns: 30px minmax(0, 1fr); }
+  .steps li small { grid-column: 2; }
+  .mask i { width: 9px; height: 9px; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="label">Research report · DV line · 2026-11-27</div>
+    <h1>The VRG Stack: one graph of the work, <span>read in layers</span></h1>
+    <p class="lede">A review of the work line in PR #29. It covers what the Stack is, how it works, what it is for, where it is weak, and whether the same idea works over ordinary databases.</p>
+    <div class="facts">
+      <span><b>20</b> layers + pillars</span><span><b>11</b> added in this line</span><span><b>24</b> pages</span>
+      <span><b>59</b> modules · ~8 600 lines</span><span><b>164</b> tests passing</span><span><b>STK-P111–P212</b> decisions</span>
+    </div>
+    <div class="stackbar" aria-label="The layers, top to bottom">
+      <div class="label">The stack, top to bottom. Pick a layer</div>
+      <div class="mask big" id="bar" role="group"></div>
+      <div class="letters" id="letters" aria-hidden="true"></div>
+      <div class="layerinfo" id="info" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <div class="frame">
+    <nav class="rail" id="rail" aria-label="Sections">
+      <a href="#what">What it is</a><a href="#how">How it works</a><a href="#use">Uses</a><a href="#benefits">Benefits</a>
+      <a href="#review">Review</a><a href="#errors">Open errors</a><a href="#databases">Databases</a><a href="#apps">Applications</a>
+      <a href="#vectors">Directions</a><a href="#next">Next steps</a><a href="#questions">Questions</a>
+    </nav>
+
+    <main>
+      <section id="what">
+        <div class="head"><div class="label">1 · Definition</div><h2>What it is</h2></div>
+        <p>The VRG Stack is <b>one graph of the whole VRG work, cut into layers</b>. Each layer is one way of seeing the same body of work: what exists, why, who did it, what changed, where it lives, how it is reached, whether it works and what is wrong. <b>Vertical links</b> join the same real thing across layers.</p>
+        <p>The idea that carries it is the <b>String</b> (Füzér). Pick anything on any layer and follow its vertical links. The set of layers it reaches is its <b>reach mask</b>, and the mask is the thing's development state. Nobody types the state in; it falls out of the data.</p>
+        <div class="classes" id="classes"></div>
+        <dl style="margin:0">
+          <div class="term"><dt>Source</dt><dd>Anything the work already keeps: git, the decisions files, START's registry, the job register, the recorded sessions, the UI kit. Sources are read, never written, except through the gateway.</dd></div>
+          <div class="term"><dt>Layer</dt><dd>A filter of the work (ideas, decisions, commits) or a shadow of it (the codec, the words). One letter, one adapter and one page per layer.</dd></div>
+          <div class="term"><dt>Node and edge</dt><dd>A thing on one layer (<code>Q:VIS-Q5</code>, <code>R:5ee8b1e</code>), and a typed relation with a verb. A horizontal edge stays inside a layer; a vertical edge crosses layers.</dd></div>
+          <div class="term"><dt>Pillar · E</dt><dd>One real thing across every layer (Planner, Kapu, VRG Mobile), kept by hand, owned by a Council Head.</dd></div>
+          <div class="term"><dt>Signal · J</dt><dd>Every warning, as a node standing on what it is about. A warning therefore has a string too: who owns it, what tested it, which decision governs it.</dd></div>
+        </dl>
+      </section>
+
+      <section id="how">
+        <div class="head"><div class="label">2 · Mechanism</div><h2>How it works</h2></div>
+        <div class="pipe" aria-label="The build pipeline">
+          <span>sources</span><em>→</em><span>adapter per layer</span><em>→</em><span>join</span><em>→</em><span>record · runs</span><em>→</em><span>pillars · validate</span><em>→</em><span>analytics</span><em>→</em><span>signals</span><em>→</em><span>graph · events · index</span><em>→</em><span>page data · reports</span>
+        </div>
+        <div class="grid2">
+          <div class="card"><h3>Guarded build</h3><p>A failing layer is carried forward from the last good build, so it never empties. Optional stages are skipped. Writes are atomic under one lock. <code>out/</code> is disposable; <code>data/</code> is append-only history.</p></div>
+          <div class="card"><h3>Live twin · S5</h3><p>A source map knows which layer each file feeds. A hand edit re-runs one adapter, the rest comes from the layer cache, and a test proves the result equals a full build. Open pages reload in about a second.</p></div>
+          <div class="card"><h3>Page contract · S7</h3><p>Every page declares what it can light up. Select something on one page and every other open page lights that thing's string in its own vocabulary. A lint test holds all pages to it.</p></div>
+          <div class="card"><h3>Write gateway · S6</h3><p>The one write path. It previews the exact diff, applies it only if the file is unchanged and its own parser reads the result, logs an event, and never commits.</p></div>
+          <div class="card"><h3>Stack Viewer · S8–S10</h3><p>WebGL planes filled with particles made from each layer's own text, about one particle per 16 bytes, with a time scrubber and a live diff glow. The phone gets byte classes only, never the text.</p></div>
+          <div class="card"><h3>Asking it</h3><p>CLI and MCP: hybrid search (BM25, heading chunks, optional bge-m3, fused by RRF), node cards, time-respecting paths. The MCP side is read-only and cannot start a build.</p></div>
+        </div>
+        <div class="scroll"><table>
+          <thead><tr><th>Step</th><th>Layer</th><th>Reads</th><th>Signals it raises</th></tr></thead>
+          <tbody id="layerrows"></tbody>
+        </table></div>
+        <p><b>Privacy is per layer and tested.</b> Client jobs appear as codes only. People appear by role only. The asks' words never leave the PC, and the phone sees byte classes, never bytes.</p>
+      </section>
+
+      <section id="use">
+        <div class="head"><div class="label">3 · Use</div><h2>What it answers</h2></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Who</th><th>Question</th><th>Where the answer is</th></tr></thead>
+          <tbody>
+            <tr><td>Founder</td><td>What state is the Board Console really in?</td><td>its string's mask and class, on any page</td></tr>
+            <tr><td>Founder</td><td>What did I keep asking for that never happened?</td><td>Figyelemtérkép (S)</td></tr>
+            <tr><td>Founder</td><td>Which START keys lead nowhere, and what code has no door?</td><td>Ajtótérkép (N)</td></tr>
+            <tr><td>Founder</td><td>What is wrong right now, and with what?</td><td>Jelzéstábla (J), the Viewer's ⚠</td></tr>
+            <tr><td>Founder</td><td>Which questions wait for me?</td><td>Döntésnapló (Q), answered back through the gateway</td></tr>
+            <tr><td>Agent</td><td>Where is X, before I open any file?</td><td><code>stack_search</code> → <code>stack_node</code>, a few hundred tokens</td></tr>
+            <tr><td>Agent</td><td>What will my change touch?</td><td><code>stack_path</code>, Érintésnyom's blast radius</td></tr>
+            <tr><td>Council Head</td><td>What do I own, and what in it is unverified?</td><td>Ki kicsoda (W) × Tesztfal (P)</td></tr>
+            <tr><td>Phone</td><td>The whole Stack, offline</td><td>the ◢ dial, twelve bundled pages</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="benefits">
+        <div class="head"><div class="label">4 · Value</div><h2>Benefits</h2></div>
+        <div class="grid3">
+          <div class="card"><h3>One truth, many faces</h3><p>No page holds state, so no two pages can disagree.</p></div>
+          <div class="card"><h3>State is measured</h3><p>A hand-typed status is checked against the string's reach. A gap becomes a drift card.</p></div>
+          <div class="card"><h3>Cheap for agents</h3><p>One query replaces opening ten files, and the saving grows with the repo.</p></div>
+          <div class="card"><h3>Warnings with context</h3><p>A signal carries the string of the thing it is about.</p></div>
+          <div class="card"><h3>Safe by construction</h3><p>Read-only sources, disposable outputs, append-only history, one reviewed write path.</p></div>
+          <div class="card"><h3>Fixed recipe</h3><p>Eleven layers were added the same way. A twelfth costs about one session.</p></div>
+        </div>
+      </section>
+
+      <section id="review">
+        <div class="head"><div class="label">5 · Review</div><h2>Strengths and weak points</h2></div>
+        <p>The model is right-sized and the failure handling is mature. The risk is that the line went wide before it went deep.</p>
+        <div>
+          <div class="sev ok"><h3>Right-sized model<span class="tag">strength</span></h3><p>Layers, vertical edges and a reach mask are a small idea that pays for itself many times over. It needs no ontology, no graph database and no model.</p></div>
+          <div class="sev ok"><h3>Failure behaviour learnt from real breakages<span class="tag">strength</span></h3><p>Carried-forward layers, six health checks, <code>doctor --fix</code>, atomic writes, and tests with known answers, including incremental-equals-full and the privacy assertions.</p></div>
+          <div class="sev crit"><h3>Built against fixtures<span class="tag">weak</span></h3><p>No new layer has run on the PC's real jobs, boards, recordings or Visual Base. The signal heuristics were tuned on small data and will need another round.</p></div>
+          <div class="sev warn"><h3>Breadth before depth<span class="tag">weak</span></h3><p>21 layer slots and 24 pages. Some pages will be opened rarely. The event log can measure which.</p></div>
+          <div class="sev warn"><h3>The layer table is copied seven times<span class="tag">weak</span></h3><p>Order and colours live in seven files. A missed copy is how the Konnektóm broke. The fix is one shared layer table.</p></div>
+          <div class="sev warn"><h3>Heavy phone pages<span class="tag">weak</span></h3><p>The Viewer and Érintésnyom are about 3 MB each in the bundle. They need lazy planes and level-of-detail data.</p></div>
+          <div class="sev"><h3>Windows paths, one maintainer<span class="tag">watch</span></h3><p>Hard-coded H: paths make cloud runs fragile, and 59 modules are a lot for one person to hold. Keep the recipe strict.</p></div>
+        </div>
+      </section>
+
+      <section id="errors">
+        <div class="head"><div class="label">6 · Errors</div><h2>Open errors and loose ends</h2></div>
+        <p>Every page was loaded headless against the sandbox build. Two real errors turned up and are fixed in the PR. The rest are open, most urgent first.</p>
+        <div class="scroll"><table>
+          <thead><tr><th>State</th><th>Item</th><th>What closes it</th></tr></thead>
+          <tbody>
+            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>Konnektóm threw on the first node of a new layer: its colour table knew only F I E A G C L Q U R K. The page was blank on the PC and in the phone bundle.</td><td>All layers added plus a fallback, so a future layer cannot break it</td></tr>
+            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>The asks layer was still labelled K in four places after the K → S re-letter</td><td>Header, START hint, catalog entry and comments now say S</td></tr>
+            <tr><td><span class="chip" style="color:var(--crit);background:transparent;border:1px solid var(--crit)">on the PC</span></td><td>No layer has run on real data</td><td><code>stack.js probe --all</code>, then a full build; read HEALTH.md</td></tr>
+            <tr><td><span class="chip" style="color:var(--crit);background:transparent;border:1px solid var(--crit)">on the PC</span></td><td>Signal noise on real data is unknown</td><td>Tune each signal to five or fewer real hits, or explain why not</td></tr>
+            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the PC</span></td><td><code>check-start.js</code> was never run on this branch</td><td>Run it; exit 0</td></tr>
+            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the PC</span></td><td>The Kapu's tool list lacks the ten new pages; the cloud rebuild in the stash has broken paths</td><td><code>build-hub.js</code> on the PC; drop the stash</td></tr>
+            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the phone</span></td><td>The ◢ dial pages compile in CI but have never been opened on a device</td><td>Publish, then open all twelve pages offline</td></tr>
+            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">merge soon</span></td><td>Mobile decision D-191 is the next free number on main, which already reaches D-190</td><td>Merge PR #29, or tell the next GO MOBILE session D-191 is taken</td></tr>
+            <tr><td><span class="chip">in code</span></td><td>Layer order and colours are copied in seven places</td><td>One shared layer table</td></tr>
+            <tr><td><span class="chip">in code</span></td><td>Nothing stops two branches taking the same layer letter (K happened)</td><td>A CI uniqueness check</td></tr>
+            <tr><td><span class="chip">in code</span></td><td>The Viewer has colour slots for 24 planes and uses 21</td><td>Size the slots from the table, or assert the count in a test</td></tr>
+            <tr><td><span class="chip">in code</span></td><td>Hard-coded H: paths in five modules</td><td>One <code>roots()</code> that reads an environment variable first</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="databases">
+        <div class="head"><div class="label">7 · Generality</div><h2>Generic use with databases</h2></div>
+        <p>The Stack assumes only three things: each source can be read into nodes and edges, things on different sources share <b>keys</b>, and someone can say which relations count as <b>vertical</b>. Any group of databases meets those three.</p>
+        <div class="scroll"><table>
+          <thead><tr><th>Stack</th><th>In a database estate</th></tr></thead>
+          <tbody>
+            <tr><td>Layer</td><td>a system or domain: CRM, ERP, tickets, billing, code host, HR, telemetry</td></tr>
+            <tr><td>Adapter</td><td>an extract query or change stream that turns rows into nodes and keys into edges</td></tr>
+            <tr><td>Vertical edge</td><td>a key shared across systems: a customer id in CRM and billing, an issue key in a commit</td></tr>
+            <tr><td>Pillar</td><td>a master-data entity: the golden customer, the product, the site</td></tr>
+            <tr><td>String</td><td>cross-system lineage of one entity</td></tr>
+            <tr><td>Reach mask</td><td><b style="color:var(--fg)">data completeness</b>: an order in ERP and billing but not in shipping is a stuck order</td></tr>
+            <tr><td>Class</td><td>lifecycle stage computed from reach: lead → customer → paying → churned</td></tr>
+            <tr><td>Signal</td><td>a data-quality rule as a node: orphans, broken references, stale syncs</td></tr>
+            <tr><td>Gateway</td><td>a reviewed change set, applied through the owning system's own API</td></tr>
+          </tbody>
+        </table></div>
+        <p>In SQL it is three tables and one recursive query:</p>
+        <div class="scroll"><pre><span class="k">CREATE TABLE</span> layer (code CHAR(1) PRIMARY KEY, name TEXT, ord INT);
+<span class="k">CREATE TABLE</span> node  (id TEXT PRIMARY KEY, layer CHAR(1) REFERENCES layer, kind TEXT,
+                    title TEXT, t DATE, state TEXT, props JSONB);
+<span class="k">CREATE TABLE</span> edge  (a TEXT REFERENCES node, b TEXT REFERENCES node, rel TEXT, w REAL DEFAULT 1,
+                    vertical BOOLEAN GENERATED ALWAYS AS (left(a,1) &lt;&gt; left(b,1)) STORED);
+
+<span class="c">-- the string of one seed: vertical edges, two hops, scores below 0.15 dropped</span>
+<span class="k">WITH RECURSIVE</span> s(id, score, depth) <span class="k">AS</span> (
+  <span class="k">SELECT</span> :seed, 1.0, 0
+  <span class="k">UNION ALL</span>
+  <span class="k">SELECT CASE WHEN</span> e.a = s.id <span class="k">THEN</span> e.b <span class="k">ELSE</span> e.a <span class="k">END</span>, s.score * e.w, s.depth + 1
+  <span class="k">FROM</span> s <span class="k">JOIN</span> edge e <span class="k">ON</span> (e.a = s.id <span class="k">OR</span> e.b = s.id) <span class="k">AND</span> e.vertical
+  <span class="k">WHERE</span> s.depth &lt; 2 <span class="k">AND</span> s.score * e.w &gt;= 0.15)
+<span class="k">SELECT</span> n.layer, n.id, max(s.score) <span class="k">FROM</span> s <span class="k">JOIN</span> node n <span class="k">USING</span> (id)
+<span class="k">GROUP BY</span> n.layer, n.id <span class="k">ORDER BY</span> n.layer;</pre></div>
+        <div class="grid2">
+          <div class="card"><h3>Where it sits</h3><p>Data catalogs and lineage standards (DataHub, OpenMetadata, OpenLineage) already map tables and jobs as a graph, and process mining follows an entity's path through time. What the Stack adds is the layered reading: an entity's coverage across layers taken as its lifecycle state, and drift as the gap between declared and measured state.</p></div>
+          <div class="card"><h3>What a generic version still needs</h3><p>Fuzzy identity resolution with the confidence as edge weight; a set-based join beyond about a million edges; access rules per layer kept as data; and an adapter kit, where each layer declares its nodes, edges, keys and vertical relations.</p></div>
+        </div>
+      </section>
+
+      <section id="apps">
+        <div class="head"><div class="label">8 · Reach</div><h2>Potential applications</h2></div>
+        <div class="grid3">
+          <div class="card"><h3>The Data Vault</h3><p>What you know about a person or project across every store you keep, and what lives in only one place, which is the backup risk. It works fully offline.</p></div>
+          <div class="card"><h3>An electrician's business</h3><p>Lead → survey → plan → quote → materials → job → invoice → warranty. A job that reached quote but not materials is stalled.</p></div>
+          <div class="card"><h3>A software team</h3><p>A feature with code and no test, an incident with no postmortem, a document no code refers to.</p></div>
+          <div class="card"><h3>Compliance and audit</h3><p>A rule with no control, or a control with no evidence. The string is the audit trail.</p></div>
+          <div class="card"><h3>Client hand-over</h3><p>A job's string, filtered to what the client may see.</p></div>
+          <div class="card"><h3>Research labs</h3><p>An idea that never reached an experiment, or a result with no code that produced it.</p></div>
+        </div>
+      </section>
+
+      <section id="vectors">
+        <div class="head"><div class="label">9 · Directions</div><h2>Where it can go next</h2></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Direction</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td>Depth first</td><td>Calibrate every signal on real data, with a written noise threshold and a new baseline in STATUS.md</td></tr>
+            <tr><td>Saved strings</td><td>Strings with their masks over time give a pulse per thing and a maturity curve per pillar</td></tr>
+            <tr><td>More editors</td><td>Open-work status, pillar owner and door target, each with the gateway's four checks</td></tr>
+            <tr><td>Live recording</td><td>A PostToolUse feed, so Érintésnyom shows a session as it happens</td></tr>
+            <tr><td>Meaning</td><td>bge-m3 for search and ask clustering, and suggested vertical edges that keys miss (proposals only)</td></tr>
+            <tr><td>Link prediction</td><td>Last, as STK-Q13 A says: a missing edge that many similar strings have</td></tr>
+            <tr><td>Federation</td><td>The toolset and the Data Vault under one pillar list, with each side's private layers kept apart</td></tr>
+            <tr><td>Generic engine</td><td>Core extracted from the VRG adapters into a package; the VRG Stack becomes its first user</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="next">
+        <div class="head"><div class="label">10 · Order</div><h2>Next steps</h2></div>
+        <ol class="steps">
+          <li><div><b>Merge PR #29</b><p>CI is green on the head commit.</p></div><small>Founder</small></li>
+          <li><div><b>Run check-start and check-catalog on the PC</b><p>Both exit 0.</p></div><small>local</small></li>
+          <li><div><b>Probe every suite, then a full build on real data</b><p>HEALTH.md has no red rows, and every new layer has a node count.</p></div><small>local</small></li>
+          <li><div><b>Narrow each noisy signal</b><p>Each one under its threshold, or explained in DRIFT.md.</p></div><small>Stack session</small></li>
+          <li><div><b>Rebuild the Kapu</b><p>The access page shows the ten new pages.</p></div><small>local</small></li>
+          <li><div><b>Publish the phone bundle and open every page</b><p>All twelve open offline from the ◢ dial.</p></div><small>phone</small></li>
+          <li><div><b>Write the rules and add the letter check</b><p>A duplicate layer letter fails CI.</p></div><small>Stack session</small></li>
+          <li><div><b>Choose the next editor and live recording</b><p>An STK-Q answered.</p></div><small>Founder</small></li>
+          <li><div><b>Decide on a Data Vault Stack</b><p>A DV-Q opened.</p></div><small>Founder + DV</small></li>
+        </ol>
+      </section>
+
+      <section id="questions">
+        <div class="head"><div class="label">11 · Open</div><h2>Questions for the Founder</h2></div>
+        <ul class="qs">
+          <li><b>Depth or the next layer?</b><span>The review recommends a calibration session on real data before any new layer.</span></li>
+          <li><b>Should the Data Vault get a Stack?</b><span>It would be the first use of the engine outside the toolset, and the first test of federation.</span></li>
+          <li><b>When should the generic engine come?</b><span>Only once a second user exists. The Data Vault would be that user.</span></li>
+          <li><b>Which pages earn their place?</b><span>After a month the event log can show which pages are opened. Fold the unused ones into Viewer cards, or keep them all?</span></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <span>Sources: <code>docs/research/reports/</code> in vrg-toolset (the review and the open-errors brief), <code>Stack/research/STRINGS-PLAN.md</code>, <code>Stack/DECISIONS.md</code>.</span>
+    <span>No client, person or ask is named on this page.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const L = [
+    ['W', '#f5e6b8', 'Szereplők', 'People', 'Agents, Council seats and the access list, by role only, never a name. Who owns what.'],
+    ['F', '#e3be7b', 'Kirakat', 'Featured', 'The features and programs that exist, by tier.'],
+    ['V', '#a6c8ff', 'Látvány', 'Look', 'The UI kit, Mélyvíz, and which look each page wears. Drift when a copy falls behind.'],
+    ['M', '#d9b38c', 'Munkák', 'Jobs', 'Client jobs, by job code only. A running job with no new file for 30 days is flagged.'],
+    ['N', '#9fe0c4', 'Belépők', 'Entry points', 'Every way in: START keys, servers, programs, the Asztal catalog and the Mobile features.'],
+    ['S', '#f2c4e0', 'Kérések', 'Asks', 'The Founder’s asks from the recordings, clustered. The words stay on the PC.'],
+    ['I', '#c6a0e6', 'Ötletfa', 'Ideas', 'The ideas and their lineage.'],
+    ['T', '#ee9bb4', 'Teendők', 'Open work', 'The not-yet lists, open roadmap rows and proposals. Work that only looks undone is flagged.'],
+    ['Q', '#e4877d', 'Döntések', 'Decisions', 'Every question and its answer, from every decisions file.'],
+    ['L', '#8bcca1', 'Fejlesztési vonalak', 'DevLog', 'The lines of work and their sessions.'],
+    ['A', '#7fd3ec', 'Ügynöki gerinc', 'Agentic backbone', 'Agents, skills, plugins and slash commands.'],
+    ['U', '#ff9a52', 'Futás', 'Runtime', 'What each recorded session actually did, step by step.'],
+    ['P', '#b8e06a', 'Próbák', 'Tests', 'The test suites, how each runs and their recorded results.'],
+    ['R', '#f0dc6e', 'Repó', 'DevRepo', 'Commits and branches.'],
+    ['C', '#5b8fe0', 'Kód', 'Code', 'Folders and files, plus the import graph (the Függőségek sub-layer).'],
+    ['D', '#6fc7c0', 'Eszközök', 'Devices', 'Sketch → firmware → board, from the Board Console.'],
+    ['O', '#c9a6e0', 'Külső', 'Outside', 'Vendored code, npm and MCP servers, with their licences and pins.'],
+    ['G', '#8aa4b4', 'Adatgömb', 'Data Globe', 'Every document’s words.'],
+    ['K', '#5ee6c0', 'Kisokos', 'Handbook', 'The offline work handbook (from main).'],
+    ['J', '#ff5f56', 'Jelzések', 'Signals', 'Every warning, standing on what it is about.'],
+    ['Z', '#b0b8be', 'Kodek', 'Codec', 'The fold of it all: one screen at L0.'],
+  ];
+  const byCode = Object.fromEntries(L.map(x => [x[0], x]));
+  const ORDER = L.map(x => x[0]);
+  const mask = (letters, big) => '<span class="mask' + (big ? ' big' : '') + '" role="img" aria-label="reach: ' + (letters.join(' ') || 'none') + '">' +
+    ORDER.map(c => '<i' + (letters.includes(c) ? ' style="background:' + byCode[c][1] + '"' : '') + '></i>').join('') + '</span>';
+
+  // the stack bar
+  const bar = document.getElementById('bar'), info = document.getElementById('info');
+  bar.innerHTML = L.map(([c, col, hu, en]) => '<i role="button" tabindex="0" aria-pressed="false" data-c="' + c + '" title="' + c + ' · ' + hu + '" aria-label="' + c + ' ' + hu + ', ' + en + '" style="background:' + col + '"></i>').join('');
+  document.getElementById('letters').innerHTML = ORDER.map(c => '<span>' + c + '</span>').join('');
+  function pick(c) {
+    const x = byCode[c]; if (!x) return;
+    for (const el of bar.children) el.setAttribute('aria-pressed', String(el.dataset.c === c));
+    info.style.borderLeftColor = x[1];
+    info.innerHTML = '<h3>' + x[0] + ' · ' + x[2] + ' <span class="label" style="margin-left:6px">' + x[3] + '</span></h3><p>' + x[4] + '</p>';
+  }
+  bar.addEventListener('click', e => { const el = e.target.closest('[data-c]'); if (el) pick(el.dataset.c); });
+  bar.addEventListener('keydown', e => { const el = e.target.closest('[data-c]'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(el.dataset.c); } });
+  pick('S');
+
+  // the classes, each with an example mask
+  const C = [
+    ['Program', 'FRCGLU'.split('').concat(['I', 'Q', 'A', 'P', 'N', 'T', 'W']), 'features, code, commits, documents and runs: a full tool'],
+    ['In build', ['F', 'I', 'Q', 'R', 'C', 'U', 'G'], 'code or commits, with a run or commit in the last 14 days'],
+    ['Built, quiet', ['F', 'R', 'C', 'G'], 'code and commits, nothing moved for 30 days or more'],
+    ['Planned', ['I', 'Q', 'G', 'T'], 'ideas and documents, no code yet'],
+    ['Spark', ['I'], 'an idea and nothing more'],
+    ['Orphan', ['R', 'C'], 'code nobody registered: no feature, no idea'],
+  ];
+  document.getElementById('classes').innerHTML = '<div class="label">Development state, read off the reach mask</div>' +
+    C.map(([n, m, t]) => '<div class="cls"><b>' + n + '</b>' + mask(m) + '<span>' + t + '</span></div>').join('');
+
+  // the layers this line added
+  const R = [
+    ['S3', 'T', 'not-yet lists, open roadmap rows, proposals, open questions', 'looks done · status drift'],
+    ['S11', 'N', 'START, servers, programs, the catalog, Mobile features', 'unreachable'],
+    ['S12', 'P', 'test suites, how each runs, recorded results', 'test fail · test stale · no runner · unverified'],
+    ['S13', 'S', 'prompts and slash commands from the recordings', 'asked again'],
+    ['S14', 'J', 'every other check', 'the signals themselves'],
+    ['S15', 'M', 'the job register, job codes only', 'job quiet'],
+    ['S16', 'D', 'sketches, firmware, boards', 'fw stale · board behind · board unknown'],
+    ['S17', 'V', 'the UI kit, Mélyvíz, each page’s look', 'look drift · kit behind'],
+    ['S18', 'O', 'vendor manifest, npm, MCP', 'vendor branch · copyleft · licence unknown'],
+    ['S19', 'W', 'agents, seats, the access list, by role', 'access signature · seat vacant'],
+    ['C+', 'C', 'every require and import in the repo', 'import broken · import cycle'],
+  ];
+  document.getElementById('layerrows').innerHTML = R.map(([s, c, r, g]) => '<tr><td>' + s + '</td><td style="white-space:nowrap;color:var(--fg)"><span class="sw" style="background:' + byCode[c][1] + '"></span>' + c + ' ' + byCode[c][2] + '</td><td>' + r + '</td><td><code>' + g + '</code></td></tr>').join('');
+
+  // the rail follows the section in view
+  const links = [...document.querySelectorAll('#rail a')];
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+    for (const e of es) if (e.isIntersecting) for (const a of links) a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id);
+  }, { rootMargin: '-20% 0px -70% 0px' }) : null;
+  if (io) document.querySelectorAll('main section').forEach(s => io.observe(s));
+})();
+</script>
