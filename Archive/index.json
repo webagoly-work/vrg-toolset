@@ -11,7 +11,7 @@
       "vrg": true,
       "group": "VRG core",
       "kind": "study",
-      "summary": "A review of the VRG Stack work line (PR #29): definition, mechanism, uses, strengths and weak points, open errors, generic use over databases, applications, directions and next steps.",
+      "summary": "A bilingual (EN/HU) review of the VRG Stack work line (PR #29): definition, mechanism, uses, strengths and weak points, open errors, generic use over databases, applications, directions and next steps; key terms open Wikipedia-style previews and a glossary.",
       "purpose": "The Founder asked for a detailed review of the Stack work line for the DV research line, and a page of it.",
       "context": [
         "PR #29 (strings plan S3–S19, the new layers, a page per layer) merged with main and green",

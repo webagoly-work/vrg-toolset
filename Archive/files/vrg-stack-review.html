@@ -5,14 +5,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one reading column with a sticky section rail; the reach mask (21 layer squares) is the recurring motif.
+   Every text block exists in English and Hungarian (lang="en" / lang="hu"); the EN | HU switch shows one.
+   Term links work like Wikipedia's page previews: a card on hover or tap, then the article or the glossary.
    Palette: Mélyvíz (the project's own deep-water look), dark first, with a light variant. */
 :root {
   --bg: #0a141c; --surface: #121c24; --raised: #17232c;
   --line: rgba(232, 240, 246, .14); --line-strong: rgba(232, 240, 246, .32);
   --fg: #e8f0f6; --dim: #a6afb7; --faint: #6f7880;
   --accent: #93d3e6; --accent-soft: rgba(147, 211, 230, .13);
+  --link: #9fc9ff;
   --warm: #e8a873; --ok: #8bcca1; --warn: #e3be7b; --crit: #e4877d;
   --dot: rgba(232, 240, 246, .10);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .45);
   --voice: "Barlow Semi Condensed", Bahnschrift, "Arial Narrow", sans-serif;
   --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
@@ -23,17 +27,24 @@
   --line: rgba(16, 36, 48, .13); --line-strong: rgba(16, 36, 48, .30);
   --fg: #10222e; --dim: #4a5964; --faint: #7d8a93;
   --accent: #1f7f9c; --accent-soft: rgba(31, 127, 156, .10);
+  --link: #2459a8;
   --warm: #b4652a; --ok: #2f8a55; --warn: #9a7414; --crit: #b9473b;
   --dot: rgba(16, 36, 48, .09);
+  --shadow: 0 10px 28px rgba(16, 36, 48, .18);
   color-scheme: light; } }
 :root[data-theme="light"] {
   --bg: #eef3f6; --surface: #ffffff; --raised: #f5f8fa;
   --line: rgba(16, 36, 48, .13); --line-strong: rgba(16, 36, 48, .30);
   --fg: #10222e; --dim: #4a5964; --faint: #7d8a93;
   --accent: #1f7f9c; --accent-soft: rgba(31, 127, 156, .10);
+  --link: #2459a8;
   --warm: #b4652a; --ok: #2f8a55; --warn: #9a7414; --crit: #b9473b;
   --dot: rgba(16, 36, 48, .09);
+  --shadow: 0 10px 28px rgba(16, 36, 48, .18);
   color-scheme: light; }
+
+/* one language at a time */
+:root:not([data-lang="hu"]) body [lang="hu"], :root[data-lang="hu"] body [lang="en"] { display: none !important; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--sans); }
@@ -48,8 +59,26 @@ a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .label { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--faint); }
 
+/* term links: an article link is solid, a glossary term is dotted */
+a.term { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+a.term.wiki { color: var(--link); text-decoration-color: color-mix(in srgb, var(--link) 55%, transparent); }
+a.term.gloss { text-decoration-style: dotted; text-decoration-color: var(--accent); }
+a.term:hover { text-decoration-thickness: 2px; }
+.pop { position: absolute; z-index: 20; width: min(340px, calc(100vw - 32px)); background: var(--raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); padding: 12px 14px 12px; display: grid; gap: 6px; font-size: 14px; }
+.pop .k { font: 500 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.pop h4 { margin: 0; font: 600 17px var(--voice); letter-spacing: .02em; }
+.pop p { color: var(--dim); }
+.pop a { font-size: 13px; color: var(--link); }
+
+/* language switch */
+.topline { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.lang { display: inline-flex; border: 1px solid var(--line-strong); }
+.lang button { font: 500 12px var(--mono); letter-spacing: .1em; padding: 6px 11px; border: 0; background: transparent; color: var(--dim); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.lang button:not([aria-pressed="true"]):hover { color: var(--fg); background: var(--accent-soft); }
+
 /* hero */
-.hero { padding-top: 44px; padding-bottom: 28px; display: grid; gap: 18px; border-bottom: 1px solid var(--line); }
+.hero { padding-top: 40px; padding-bottom: 28px; display: grid; gap: 18px; border-bottom: 1px solid var(--line); }
 .hero h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: .01em; }
 .hero h1 span { color: var(--accent); }
 .lede { font-size: 17px; color: var(--dim); max-width: 68ch; }
@@ -59,12 +88,11 @@ a { color: var(--accent); }
 /* the reach mask */
 .mask { display: inline-grid; grid-template-columns: repeat(21, 1fr); gap: 3px; vertical-align: middle; }
 .mask i { width: 11px; height: 11px; border-radius: 2px; background: var(--dot); display: block; }
-.mask.big i { width: clamp(12px, 3.4vw, 30px); height: clamp(12px, 3.4vw, 30px); border-radius: 3px; }
 .stackbar { display: grid; gap: 10px; }
-.stackbar .mask.big { width: 100%; }
-.stackbar .mask.big i { width: auto; aspect-ratio: 1; height: auto; cursor: pointer; transition: transform .15s; }
-.stackbar .mask.big i:hover, .stackbar .mask.big i[aria-pressed="true"] { transform: translateY(-3px); }
-.stackbar .mask.big i[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
+.stackbar .mask { width: 100%; }
+.stackbar .mask i { width: auto; aspect-ratio: 1; height: auto; border-radius: 3px; cursor: pointer; transition: transform .15s; }
+.stackbar .mask i:hover, .stackbar .mask i[aria-pressed="true"] { transform: translateY(-3px); }
+.stackbar .mask i[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
 .letters { display: grid; grid-template-columns: repeat(21, 1fr); gap: 3px; font: 500 12px var(--mono); color: var(--dim); text-align: center; }
 .layerinfo { min-height: 64px; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--surface); }
 .layerinfo h3 { margin-bottom: 4px; }
@@ -87,9 +115,9 @@ section > p, .prose { max-width: 70ch; color: var(--dim); }
 .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .card { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
 .card p { color: var(--dim); font-size: 14px; }
-.term { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 16px; padding: 10px 0; border-top: 1px solid var(--line); }
-.term dt { font-family: var(--voice); font-weight: 600; font-size: 16px; }
-.term dd { margin: 0; color: var(--dim); font-size: 14px; }
+.term-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+.term-row dt { font-family: var(--voice); font-weight: 600; font-size: 16px; }
+.term-row dd { margin: 0; color: var(--dim); font-size: 14px; }
 .scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
 table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
@@ -97,24 +125,22 @@ th { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .1em
 td { color: var(--dim); }
 td:first-child { color: var(--fg); white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
-.chip { display: inline-block; font: 500 11px/1 var(--mono); padding: 4px 6px; border-radius: 3px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.chip { display: inline-block; font: 500 11px/1 var(--mono); padding: 4px 6px; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.ok { color: var(--ok); } .chip.crit { color: var(--crit); } .chip.warn { color: var(--warn); } .chip.code { color: var(--accent); }
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 pre { margin: 0; padding: 14px 16px; font: 12.5px/1.55 var(--mono); color: var(--fg); white-space: pre; }
 pre .c { color: var(--faint); }
 pre .k { color: var(--accent); }
 
-/* pipeline */
 .pipe { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.pipe span { font: 500 12px var(--mono); padding: 6px 9px; border: 1px solid var(--line-strong); background: var(--surface); }
+.pipe span.s { font: 500 12px var(--mono); padding: 6px 9px; border: 1px solid var(--line-strong); background: var(--surface); }
 .pipe em { font-style: normal; color: var(--faint); }
 
-/* classes from reach */
 .classes { display: grid; gap: 8px; }
-.cls { display: grid; grid-template-columns: 120px auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.cls { display: grid; grid-template-columns: 130px auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
 .cls b { font-family: var(--voice); font-weight: 600; font-size: 16px; }
 .cls span { color: var(--dim); font-size: 13.5px; }
 
-/* review verdict + severity */
 .sev { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 0 14px; padding: 12px 0; border-top: 1px solid var(--line); }
 .sev::before { content: ""; grid-row: 1 / span 2; border-radius: 2px; background: var(--faint); }
 .sev.crit::before { background: var(--crit); } .sev.warn::before { background: var(--warn); } .sev.ok::before { background: var(--ok); }
@@ -123,43 +149,63 @@ pre .k { color: var(--accent); }
 .tag { font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; margin-left: 8px; color: var(--faint); }
 .sev.crit .tag { color: var(--crit); } .sev.warn .tag { color: var(--warn); } .sev.ok .tag { color: var(--ok); }
 
-.steps { counter-reset: s; display: grid; gap: 0; }
+.steps { counter-reset: s; display: grid; margin: 0; padding: 0; }
 .steps li { list-style: none; counter-increment: s; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); align-items: baseline; }
 .steps li::before { content: counter(s); font: 600 18px var(--voice); color: var(--accent); }
 .steps li p { color: var(--dim); font-size: 13.5px; }
 .steps li small { font: 12px var(--mono); color: var(--faint); white-space: nowrap; }
-.steps { margin: 0; padding: 0; }
 .qs { display: grid; gap: 10px; margin: 0; padding: 0; }
 .qs li { list-style: none; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); }
 .qs li b { font-family: var(--voice); font-size: 16px; font-weight: 600; display: block; margin-bottom: 2px; }
 .qs li span { color: var(--dim); font-size: 14px; }
+
+/* glossary */
+.gloss-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 28px; margin: 0; }
+.gloss-list > div { padding: 10px 0; border-top: 1px solid var(--line); scroll-margin-top: 20px; }
+.gloss-list > div:target { background: var(--accent-soft); }
+.gloss-list dt { font: 600 16px var(--voice); letter-spacing: .02em; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.gloss-list dt small { font: 500 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.gloss-list dd { margin: 2px 0 0; color: var(--dim); font-size: 14px; }
+.gloss-list dd a { color: var(--link); font-size: 13px; white-space: nowrap; }
 footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; display: grid; gap: 4px; }
 
 @media (max-width: 820px) {
   .frame { grid-template-columns: minmax(0, 1fr); gap: 0; }
   nav.rail { position: static; display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 30px; }
   nav.rail a { border: 1px solid var(--line); padding: 4px 8px; }
-  .term { grid-template-columns: minmax(0, 1fr); }
+  .term-row { grid-template-columns: minmax(0, 1fr); }
   .cls { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .steps li { grid-template-columns: 30px minmax(0, 1fr); }
   .steps li small { grid-column: 2; }
-  .mask i { width: 9px; height: 9px; gap: 2px; }
+  .mask i { width: 9px; height: 9px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
 <div class="wrap">
   <header class="hero">
-    <div class="label">Research report · DV line · 2026-11-27</div>
-    <h1>The VRG Stack: one graph of the work, <span>read in layers</span></h1>
-    <p class="lede">A review of the work line in PR #29. It covers what the Stack is, how it works, what it is for, where it is weak, and whether the same idea works over ordinary databases.</p>
-    <div class="facts">
-      <span><b>20</b> layers + pillars</span><span><b>11</b> added in this line</span><span><b>24</b> pages</span>
-      <span><b>59</b> modules · ~8 600 lines</span><span><b>164</b> tests passing</span><span><b>STK-P111–P212</b> decisions</span>
+    <div class="topline">
+      <div class="label"><span lang="en">Research report · DV line · 2026-11-28</span><span lang="hu">Kutatási jelentés · DV-sor · 2026-11-28</span></div>
+      <div class="lang" role="group" aria-label="Language · Nyelv">
+        <button type="button" id="lang-en" data-l="en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-hu" data-l="hu" aria-pressed="false">HU</button>
+      </div>
     </div>
-    <div class="stackbar" aria-label="The layers, top to bottom">
-      <div class="label">The stack, top to bottom. Pick a layer</div>
-      <div class="mask big" id="bar" role="group"></div>
+    <h1 lang="en">The VRG Stack: one graph of the work, <span>read in layers</span></h1>
+    <h1 lang="hu">A VRG Stack: a munka egyetlen gráfja, <span>rétegenként olvasva</span></h1>
+    <p class="lede" lang="en">A review of the work line in PR #29. It covers what the <a data-t="stack">Stack</a> is, how it works, what it is for, where it is weak, and whether the same idea works over ordinary databases.</p>
+    <p class="lede" lang="hu">Áttekintés a PR #29 munkasoráról: mi a <a data-t="stack">Stack</a>, hogyan működik, mire jó, hol gyenge, és működik-e ugyanez az ötlet hagyományos adatbázisokon is.</p>
+    <div class="facts" lang="en">
+      <span><b>20</b> layers + pillars</span><span><b>11</b> added in this line</span><span><b>24</b> pages</span>
+      <span><b>60</b> modules · ~8 700 lines</span><span><b>169</b> tests passing</span><span><b>STK-P111–P214</b> decisions</span>
+    </div>
+    <div class="facts" lang="hu">
+      <span><b>20</b> réteg + pillérek</span><span><b>11</b> új ebben a sorban</span><span><b>24</b> oldal</span>
+      <span><b>60</b> modul · ~8 700 sor</span><span><b>169</b> sikeres teszt</span><span><b>STK-P111–P214</b> döntés</span>
+    </div>
+    <div class="stackbar">
+      <div class="label"><span lang="en">The stack, top to bottom. Pick a layer</span><span lang="hu">A rétegverem fentről lefelé. Válassz egy réteget</span></div>
+      <div class="mask" id="bar" role="group" aria-label="Layers"></div>
       <div class="letters" id="letters" aria-hidden="true"></div>
       <div class="layerinfo" id="info" aria-live="polite"></div>
     </div>
@@ -167,137 +213,187 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 
   <div class="frame">
     <nav class="rail" id="rail" aria-label="Sections">
-      <a href="#what">What it is</a><a href="#how">How it works</a><a href="#use">Uses</a><a href="#benefits">Benefits</a>
-      <a href="#review">Review</a><a href="#errors">Open errors</a><a href="#databases">Databases</a><a href="#apps">Applications</a>
-      <a href="#vectors">Directions</a><a href="#next">Next steps</a><a href="#questions">Questions</a>
+      <a href="#what"><span lang="en">What it is</span><span lang="hu">Mi ez</span></a>
+      <a href="#how"><span lang="en">How it works</span><span lang="hu">Működés</span></a>
+      <a href="#use"><span lang="en">Uses</span><span lang="hu">Használat</span></a>
+      <a href="#benefits"><span lang="en">Benefits</span><span lang="hu">Előnyök</span></a>
+      <a href="#review"><span lang="en">Review</span><span lang="hu">Értékelés</span></a>
+      <a href="#errors"><span lang="en">Open errors</span><span lang="hu">Nyitott hibák</span></a>
+      <a href="#databases"><span lang="en">Databases</span><span lang="hu">Adatbázisok</span></a>
+      <a href="#apps"><span lang="en">Applications</span><span lang="hu">Alkalmazások</span></a>
+      <a href="#vectors"><span lang="en">Directions</span><span lang="hu">Irányok</span></a>
+      <a href="#next"><span lang="en">Next steps</span><span lang="hu">Következő lépések</span></a>
+      <a href="#questions"><span lang="en">Questions</span><span lang="hu">Kérdések</span></a>
+      <a href="#glossary"><span lang="en">Glossary</span><span lang="hu">Fogalomtár</span></a>
     </nav>
 
     <main>
+      <!-- 1 -->
       <section id="what">
-        <div class="head"><div class="label">1 · Definition</div><h2>What it is</h2></div>
-        <p>The VRG Stack is <b>one graph of the whole VRG work, cut into layers</b>. Each layer is one way of seeing the same body of work: what exists, why, who did it, what changed, where it lives, how it is reached, whether it works and what is wrong. <b>Vertical links</b> join the same real thing across layers.</p>
-        <p>The idea that carries it is the <b>String</b> (Füzér). Pick anything on any layer and follow its vertical links. The set of layers it reaches is its <b>reach mask</b>, and the mask is the thing's development state. Nobody types the state in; it falls out of the data.</p>
+        <div class="head"><div class="label"><span lang="en">1 · Definition</span><span lang="hu">1 · Meghatározás</span></div><h2><span lang="en">What it is</span><span lang="hu">Mi ez</span></h2></div>
+        <p lang="en">The VRG Stack is <b>one <a data-t="graph">graph</a> of the whole VRG work, cut into <a data-t="layer">layers</a></b>, a kind of <a data-t="multilayer">multilayer network</a>. Each layer is one way of seeing the same body of work: what exists, why, who did it, what changed, where it lives, how it is reached, whether it works and what is wrong. <b><a data-t="vertical">Vertical links</a></b> join the same real thing across layers.</p>
+        <p lang="hu">A VRG Stack <b>a teljes VRG-munka egyetlen <a data-t="graph">gráfja</a>, <a data-t="layer">rétegekre</a> bontva</b>: egyfajta <a data-t="multilayer">többrétegű hálózat</a>. Minden réteg ugyanannak a munkának egy-egy nézete: mi létezik, miért, ki csinálta, mi változott, hol van, hogyan érhető el, működik-e, és mi a hiba. A <b><a data-t="vertical">függőleges kapcsolatok</a></b> ugyanazt a valós dolgot kötik össze a rétegeken át.</p>
+        <p lang="en">The idea that carries it is the <b><a data-t="string">String</a></b> (Füzér). Pick anything on any layer and follow its vertical links. The set of layers it reaches is its <b><a data-t="mask">reach mask</a></b>, and the mask is the thing's development state. Nobody types the state in; it falls out of the data.</p>
+        <p lang="hu">Az egészet egy ötlet viszi: a <b><a data-t="string">Füzér</a></b>. Válassz ki bármit bármelyik rétegen, és kövesd a függőleges kapcsolatait. Az elért rétegek halmaza az <b><a data-t="mask">elérési maszk</a></b>, és ez a maszk maga a dolog fejlettségi állapota. Az állapotot senki nem gépeli be; az adatokból adódik.</p>
         <div class="classes" id="classes"></div>
         <dl style="margin:0">
-          <div class="term"><dt>Source</dt><dd>Anything the work already keeps: git, the decisions files, START's registry, the job register, the recorded sessions, the UI kit. Sources are read, never written, except through the gateway.</dd></div>
-          <div class="term"><dt>Layer</dt><dd>A filter of the work (ideas, decisions, commits) or a shadow of it (the codec, the words). One letter, one adapter and one page per layer.</dd></div>
-          <div class="term"><dt>Node and edge</dt><dd>A thing on one layer (<code>Q:VIS-Q5</code>, <code>R:5ee8b1e</code>), and a typed relation with a verb. A horizontal edge stays inside a layer; a vertical edge crosses layers.</dd></div>
-          <div class="term"><dt>Pillar · E</dt><dd>One real thing across every layer (Planner, Kapu, VRG Mobile), kept by hand, owned by a Council Head.</dd></div>
-          <div class="term"><dt>Signal · J</dt><dd>Every warning, as a node standing on what it is about. A warning therefore has a string too: who owns it, what tested it, which decision governs it.</dd></div>
+          <div class="term-row"><dt><span lang="en">Source</span><span lang="hu">Forrás</span></dt><dd><span lang="en">Anything the work already keeps: git, the decisions files, <a data-t="start">START</a>'s registry, the job register, the recorded sessions, the UI kit. Sources are read, never written, except through the <a data-t="gateway">gateway</a>.</span><span lang="hu">Bármi, amit a munka már most is vezet: a git, a döntésfájlok, a <a data-t="start">START</a> nyilvántartása, a munkaregiszter, a rögzített munkamenetek, a UI kit. A forrásokat csak olvassuk, sosem írjuk, kivéve az <a data-t="gateway">íráskapun</a> át.</span></dd></div>
+          <div class="term-row"><dt><span lang="en">Layer</span><span lang="hu">Réteg</span></dt><dd><span lang="en">A filter of the work (ideas, decisions, commits) or a shadow of it (the <a data-t="codec">codec</a>, the words). One letter, one <a data-t="adapter">adapter</a> and one page per layer, listed in one <a data-t="table">layer table</a>.</span><span lang="hu">A munka egy szűrője (ötletek, döntések, commitok) vagy árnyéka (a <a data-t="codec">kodek</a>, a szövegek). Rétegenként egy betű, egy <a data-t="adapter">adapter</a> és egy oldal, egyetlen <a data-t="table">rétegtáblában</a> felsorolva.</span></dd></div>
+          <div class="term-row"><dt><span lang="en">Node and edge</span><span lang="hu">Csúcs és él</span></dt><dd><span lang="en">A thing on one layer (<code>Q:VIS-Q5</code>, <code>R:5ee8b1e</code>), and a typed relation that reads as a sentence. A horizontal edge stays inside a layer; a vertical edge crosses layers.</span><span lang="hu">Egy dolog egy rétegen (<code>Q:VIS-Q5</code>, <code>R:5ee8b1e</code>), és egy típusos, mondatként olvasható kapcsolat. A vízszintes él egy rétegen belül marad; a függőleges él rétegeken lép át.</span></dd></div>
+          <div class="term-row"><dt><span lang="en">Pillar · E</span><span lang="hu">Pillér · E</span></dt><dd><span lang="en">One real thing across every layer (Planner, <a data-t="kapu">Kapu</a>, VRG Mobile), kept by hand, owned by a Council Head. See <a data-t="pillar">pillar</a>.</span><span lang="hu">Egy valós dolog minden rétegen át (Planner, <a data-t="kapu">Kapu</a>, VRG Mobile), kézzel vezetve, egy tanácsi vezető gazdájával. Lásd: <a data-t="pillar">pillér</a>.</span></dd></div>
+          <div class="term-row"><dt><span lang="en">Signal · J</span><span lang="hu">Jelzés · J</span></dt><dd><span lang="en">Every warning, as a node standing on what it is about. A warning therefore has a string too: who owns it, what tested it, which decision governs it. See <a data-t="signal">signal</a>.</span><span lang="hu">Minden figyelmeztetés csúcsként, azon állva, amire vonatkozik. Így egy figyelmeztetésnek is van füzére: ki a gazdája, mi tesztelte, melyik döntés vonatkozik rá. Lásd: <a data-t="signal">jelzés</a>.</span></dd></div>
         </dl>
       </section>
 
+      <!-- 2 -->
       <section id="how">
-        <div class="head"><div class="label">2 · Mechanism</div><h2>How it works</h2></div>
-        <div class="pipe" aria-label="The build pipeline">
-          <span>sources</span><em>→</em><span>adapter per layer</span><em>→</em><span>join</span><em>→</em><span>record · runs</span><em>→</em><span>pillars · validate</span><em>→</em><span>analytics</span><em>→</em><span>signals</span><em>→</em><span>graph · events · index</span><em>→</em><span>page data · reports</span>
-        </div>
+        <div class="head"><div class="label"><span lang="en">2 · Mechanism</span><span lang="hu">2 · Működés</span></div><h2><span lang="en">How it works</span><span lang="hu">Hogyan működik</span></h2></div>
+        <div class="pipe" lang="en"><span class="s">sources</span><em>→</em><span class="s">adapter per layer</span><em>→</em><span class="s">join</span><em>→</em><span class="s">record · runs</span><em>→</em><span class="s">pillars · validate</span><em>→</em><span class="s">analytics</span><em>→</em><span class="s">signals</span><em>→</em><span class="s">graph · events · index</span><em>→</em><span class="s">page data · reports</span></div>
+        <div class="pipe" lang="hu"><span class="s">források</span><em>→</em><span class="s">rétegenként egy adapter</span><em>→</em><span class="s">összekapcsolás</span><em>→</em><span class="s">rögzítés · futások</span><em>→</em><span class="s">pillérek · ellenőrzés</span><em>→</em><span class="s">elemzés</span><em>→</em><span class="s">jelzések</span><em>→</em><span class="s">gráf · események · index</span><em>→</em><span class="s">oldaladatok · jelentések</span></div>
+        <p lang="en">The analytics stage ranks nodes with <a data-t="pagerank">PageRank</a>, finds communities with the <a data-t="louvain">Louvain method</a>, spreads attention with <a data-t="activation">spreading activation</a> and mines repeated step orders with <a data-t="prefixspan">PrefixSpan</a>.</p>
+        <p lang="hu">Az elemzés a csúcsokat <a data-t="pagerank">PageRankkel</a> rangsorolja, a <a data-t="louvain">Louvain-módszerrel</a> közösségeket keres, <a data-t="activation">terjedő aktivációval</a> osztja szét a figyelmet, és <a data-t="prefixspan">PrefixSpannel</a> bányássza az ismétlődő lépéssorrendeket.</p>
         <div class="grid2">
-          <div class="card"><h3>Guarded build</h3><p>A failing layer is carried forward from the last good build, so it never empties. Optional stages are skipped. Writes are atomic under one lock. <code>out/</code> is disposable; <code>data/</code> is append-only history.</p></div>
-          <div class="card"><h3>Live twin · S5</h3><p>A source map knows which layer each file feeds. A hand edit re-runs one adapter, the rest comes from the layer cache, and a test proves the result equals a full build. Open pages reload in about a second.</p></div>
-          <div class="card"><h3>Page contract · S7</h3><p>Every page declares what it can light up. Select something on one page and every other open page lights that thing's string in its own vocabulary. A lint test holds all pages to it.</p></div>
-          <div class="card"><h3>Write gateway · S6</h3><p>The one write path. It previews the exact diff, applies it only if the file is unchanged and its own parser reads the result, logs an event, and never commits.</p></div>
-          <div class="card"><h3>Stack Viewer · S8–S10</h3><p>WebGL planes filled with particles made from each layer's own text, about one particle per 16 bytes, with a time scrubber and a live diff glow. The phone gets byte classes only, never the text.</p></div>
-          <div class="card"><h3>Asking it</h3><p>CLI and MCP: hybrid search (BM25, heading chunks, optional bge-m3, fused by RRF), node cards, time-respecting paths. The MCP side is read-only and cannot start a build.</p></div>
+          <div class="card"><h3><span lang="en">Guarded build</span><span lang="hu">Védett build</span></h3>
+            <p lang="en">A failing layer is <a data-t="carry">carried forward</a> from the last good build, so it never empties. Optional stages are skipped. Writes are <a data-t="atomic">atomic</a> under one lock. <code>out/</code> is disposable; <code>data/</code> is append-only, <a data-t="bitemporal">bitemporal</a> history.</p>
+            <p lang="hu">Egy hibázó réteg az utolsó jó buildből <a data-t="carry">öröklődik</a>, így sosem ürül ki. A választható lépések kimaradhatnak. Az írások <a data-t="atomic">atomiak</a>, egyetlen zár alatt. Az <code>out/</code> eldobható; a <code>data/</code> csak bővülő, <a data-t="bitemporal">bitemporális</a> történet.</p></div>
+          <div class="card"><h3><span lang="en">Live twin · S5</span><span lang="hu">Élő iker · S5</span></h3>
+            <p lang="en">A <a data-t="twin">digital twin</a> of the work. A source map knows which layer each file feeds. A hand edit re-runs one adapter, the rest comes from the layer cache, and a test proves the result equals a full build. Open pages reload in about a second.</p>
+            <p lang="hu">A munka <a data-t="twin">digitális ikre</a>. Egy forrástérkép tudja, melyik fájl melyik rétegbe táplál. Egy kézi szerkesztés csak egy adaptert futtat újra, a többi a rétegtárból jön, és egy teszt igazolja, hogy az eredmény azonos a teljes builddel. A nyitott oldalak kb. egy másodperc alatt frissülnek.</p></div>
+          <div class="card"><h3><span lang="en">Page contract · S7</span><span lang="hu">Oldalszerződés · S7</span></h3>
+            <p lang="en">Every page signs the <a data-t="contract">page contract</a>. Select something on one page and every other open page lights that thing's string in its own vocabulary. A lint test holds all pages to it.</p>
+            <p lang="hu">Minden oldal aláírja az <a data-t="contract">oldalszerződést</a>. Ha egy oldalon kiválasztasz valamit, a többi nyitott oldal a saját nyelvén világítja ki annak füzérét. Egy lint-teszt minden oldalt ehhez köt.</p></div>
+          <div class="card"><h3><span lang="en">Write gateway · S6</span><span lang="hu">Íráskapu · S6</span></h3>
+            <p lang="en">The one write path, the <a data-t="gateway">gateway</a>. It previews the exact diff, applies it only if the file is unchanged and its own parser reads the result, logs an event, and never commits.</p>
+            <p lang="hu">Az egyetlen írási út, az <a data-t="gateway">íráskapu</a>. Megmutatja a pontos eltérést, csak akkor alkalmazza, ha a fájl nem változott és a saját értelmezője helyesen olvassa az eredményt, eseményt naplóz, és sosem commitol.</p></div>
+          <div class="card"><h3><span lang="en">Stack Viewer · S8–S10</span><span lang="hu">Rétegverem-néző · S8–S10</span></h3>
+            <p lang="en">The <a data-t="viewer">Stack Viewer</a>: <a data-t="webgl">WebGL</a> planes filled with a <a data-t="particle">particle system</a> made from each layer's own text, about one particle per 16 bytes, laid along a <a data-t="hilbert">Hilbert curve</a>, with a time scrubber and a live diff glow. The phone gets byte classes only, never the text.</p>
+            <p lang="hu">A <a data-t="viewer">Rétegverem-néző</a>: <a data-t="webgl">WebGL</a>-síkok, a rétegek saját szövegéből készült <a data-t="particle">részecskerendszerrel</a>, kb. 16 bájtonként egy részecske, <a data-t="hilbert">Hilbert-görbe</a> mentén, idővonallal és élő eltérés-fénnyel. A telefon csak bájtosztályokat kap, a szöveget sosem.</p></div>
+          <div class="card"><h3><span lang="en">Asking it</span><span lang="hu">Kérdezés</span></h3>
+            <p lang="en">CLI and <a data-t="mcp">MCP</a>: hybrid search (<a data-t="bm25">BM25</a> over <a data-t="fts">full-text</a> nodes and heading chunks in <a data-t="sqlite">SQLite</a>, optional <a data-t="embedding">embeddings</a>, fused by <a data-t="rrf">RRF</a>), node cards, time-respecting paths. The MCP side is read-only and cannot start a build.</p>
+            <p lang="hu">CLI és <a data-t="mcp">MCP</a>: hibrid keresés (<a data-t="bm25">BM25</a> a csúcsok és címsor-darabok <a data-t="fts">teljes szövegén</a> <a data-t="sqlite">SQLite</a>-ban, opcionális <a data-t="embedding">beágyazásokkal</a>, <a data-t="rrf">RRF</a>-fel összefésülve), csúcskártyák, időrendet tartó utak. Az MCP-oldal csak olvas, buildet nem indíthat.</p></div>
         </div>
         <div class="scroll"><table>
-          <thead><tr><th>Step</th><th>Layer</th><th>Reads</th><th>Signals it raises</th></tr></thead>
+          <thead><tr><th><span lang="en">Step</span><span lang="hu">Lépés</span></th><th><span lang="en">Layer</span><span lang="hu">Réteg</span></th><th><span lang="en">Reads</span><span lang="hu">Mit olvas</span></th><th><span lang="en">Signals it raises</span><span lang="hu">Jelzései</span></th></tr></thead>
           <tbody id="layerrows"></tbody>
         </table></div>
-        <p><b>Privacy is per layer and tested.</b> Client jobs appear as codes only. People appear by role only. The asks' words never leave the PC, and the phone sees byte classes, never bytes.</p>
+        <p lang="en"><b>Privacy is per layer and tested.</b> Client jobs appear as codes only. People appear by role only. The asks' words never leave the PC, and the phone sees byte classes, never bytes.</p>
+        <p lang="hu"><b>Az adatvédelem rétegenként adott és tesztelt.</b> Az ügyfélmunkák csak kóddal jelennek meg, az emberek csak szerepkörrel. A kérések szövege sosem hagyja el a PC-t, és a telefon bájtosztályokat lát, bájtokat nem.</p>
       </section>
 
+      <!-- 3 -->
       <section id="use">
-        <div class="head"><div class="label">3 · Use</div><h2>What it answers</h2></div>
+        <div class="head"><div class="label"><span lang="en">3 · Use</span><span lang="hu">3 · Használat</span></div><h2><span lang="en">What it answers</span><span lang="hu">Mire ad választ</span></h2></div>
         <div class="scroll"><table>
-          <thead><tr><th>Who</th><th>Question</th><th>Where the answer is</th></tr></thead>
+          <thead><tr><th><span lang="en">Who</span><span lang="hu">Ki</span></th><th><span lang="en">Question</span><span lang="hu">Kérdés</span></th><th><span lang="en">Where the answer is</span><span lang="hu">Hol a válasz</span></th></tr></thead>
           <tbody>
-            <tr><td>Founder</td><td>What state is the Board Console really in?</td><td>its string's mask and class, on any page</td></tr>
-            <tr><td>Founder</td><td>What did I keep asking for that never happened?</td><td>Figyelemtérkép (S)</td></tr>
-            <tr><td>Founder</td><td>Which START keys lead nowhere, and what code has no door?</td><td>Ajtótérkép (N)</td></tr>
-            <tr><td>Founder</td><td>What is wrong right now, and with what?</td><td>Jelzéstábla (J), the Viewer's ⚠</td></tr>
-            <tr><td>Founder</td><td>Which questions wait for me?</td><td>Döntésnapló (Q), answered back through the gateway</td></tr>
-            <tr><td>Agent</td><td>Where is X, before I open any file?</td><td><code>stack_search</code> → <code>stack_node</code>, a few hundred tokens</td></tr>
-            <tr><td>Agent</td><td>What will my change touch?</td><td><code>stack_path</code>, Érintésnyom's blast radius</td></tr>
-            <tr><td>Council Head</td><td>What do I own, and what in it is unverified?</td><td>Ki kicsoda (W) × Tesztfal (P)</td></tr>
-            <tr><td>Phone</td><td>The whole Stack, offline</td><td>the ◢ dial, twelve bundled pages</td></tr>
+            <tr><td><span lang="en">Founder</span><span lang="hu">Alapító</span></td><td><span lang="en">What state is the Board Console really in?</span><span lang="hu">Valójában milyen állapotban van a Board Console?</span></td><td><span lang="en">its <a data-t="string">string</a>'s mask and class, on any page</span><span lang="hu">a <a data-t="string">füzére</a> maszkja és osztálya, bármelyik oldalon</span></td></tr>
+            <tr><td><span lang="en">Founder</span><span lang="hu">Alapító</span></td><td><span lang="en">What did I keep asking for that never happened?</span><span lang="hu">Mit kértem újra és újra, ami sosem valósult meg?</span></td><td>Figyelemtérkép (S)</td></tr>
+            <tr><td><span lang="en">Founder</span><span lang="hu">Alapító</span></td><td><span lang="en">Which <a data-t="start">START</a> keys lead nowhere, and what code has no door?</span><span lang="hu">Melyik <a data-t="start">START</a>-billentyű vezet sehová, és melyik kódnak nincs ajtaja?</span></td><td>Ajtótérkép (N)</td></tr>
+            <tr><td><span lang="en">Founder</span><span lang="hu">Alapító</span></td><td><span lang="en">What is wrong right now, and with what?</span><span lang="hu">Mi a hiba most, és mivel?</span></td><td><span lang="en">Jelzéstábla (J), the Viewer's ⚠</span><span lang="hu">Jelzéstábla (J), a néző ⚠ jele</span></td></tr>
+            <tr><td><span lang="en">Founder</span><span lang="hu">Alapító</span></td><td><span lang="en">Which questions wait for me?</span><span lang="hu">Mely kérdések várnak rám?</span></td><td><span lang="en">Döntésnapló (Q), answered back through the <a data-t="gateway">gateway</a></span><span lang="hu">Döntésnapló (Q), a válasz az <a data-t="gateway">íráskapun</a> át megy vissza</span></td></tr>
+            <tr><td><span lang="en">Agent</span><span lang="hu">Ügynök</span></td><td><span lang="en">Where is X, before I open any file?</span><span lang="hu">Hol van X, mielőtt bármit megnyitok?</span></td><td><span lang="en"><code>stack_search</code> → <code>stack_node</code>, a few hundred tokens</span><span lang="hu"><code>stack_search</code> → <code>stack_node</code>, néhány száz token</span></td></tr>
+            <tr><td><span lang="en">Agent</span><span lang="hu">Ügynök</span></td><td><span lang="en">What will my change touch?</span><span lang="hu">Mihez ér hozzá a változtatásom?</span></td><td><span lang="en"><code>stack_path</code>, <a data-t="touch">Érintésnyom</a>'s blast radius</span><span lang="hu"><code>stack_path</code>, az <a data-t="touch">Érintésnyom</a> hatássugara</span></td></tr>
+            <tr><td><span lang="en">Council Head</span><span lang="hu">Tanácsi vezető</span></td><td><span lang="en">What do I own, and what in it is unverified?</span><span lang="hu">Mi az enyém, és mi nincs benne ellenőrizve?</span></td><td>Ki kicsoda (W) × Tesztfal (P)</td></tr>
+            <tr><td><span lang="en">Phone</span><span lang="hu">Telefon</span></td><td><span lang="en">The whole Stack, offline</span><span lang="hu">Az egész Stack, offline</span></td><td><span lang="en">the <a data-t="dial">◢ dial</a>, twelve bundled pages</span><span lang="hu">a <a data-t="dial">◢ tárcsa</a>, tizenkét csomagolt oldal</span></td></tr>
           </tbody>
         </table></div>
       </section>
 
+      <!-- 4 -->
       <section id="benefits">
-        <div class="head"><div class="label">4 · Value</div><h2>Benefits</h2></div>
+        <div class="head"><div class="label"><span lang="en">4 · Value</span><span lang="hu">4 · Érték</span></div><h2><span lang="en">Benefits</span><span lang="hu">Előnyök</span></h2></div>
         <div class="grid3">
-          <div class="card"><h3>One truth, many faces</h3><p>No page holds state, so no two pages can disagree.</p></div>
-          <div class="card"><h3>State is measured</h3><p>A hand-typed status is checked against the string's reach. A gap becomes a drift card.</p></div>
-          <div class="card"><h3>Cheap for agents</h3><p>One query replaces opening ten files, and the saving grows with the repo.</p></div>
-          <div class="card"><h3>Warnings with context</h3><p>A signal carries the string of the thing it is about.</p></div>
-          <div class="card"><h3>Safe by construction</h3><p>Read-only sources, disposable outputs, append-only history, one reviewed write path.</p></div>
-          <div class="card"><h3>Fixed recipe</h3><p>Eleven layers were added the same way. A twelfth costs about one session.</p></div>
+          <div class="card"><h3><span lang="en">One truth, many faces</span><span lang="hu">Egy igazság, sok arc</span></h3><p lang="en">No page holds state, so no two pages can disagree.</p><p lang="hu">Egyetlen oldal sem tárol állapotot, így két oldal nem mondhat ellent egymásnak.</p></div>
+          <div class="card"><h3><span lang="en">State is measured</span><span lang="hu">Az állapot mért</span></h3><p lang="en">A hand-typed status is checked against the string's reach. A gap becomes a <a data-t="drift">drift</a> card.</p><p lang="hu">A kézzel beírt állapotot a füzér elérésével vetjük össze. Az eltérésből <a data-t="drift">sodródási</a> kártya lesz.</p></div>
+          <div class="card"><h3><span lang="en">Cheap for agents</span><span lang="hu">Olcsó az ügynököknek</span></h3><p lang="en">One query replaces opening ten files, and the saving grows with the repo.</p><p lang="hu">Egy lekérdezés tíz fájl megnyitását váltja ki, és a megtakarítás a repóval együtt nő.</p></div>
+          <div class="card"><h3><span lang="en">Warnings with context</span><span lang="hu">Figyelmeztetés kontextussal</span></h3><p lang="en">A <a data-t="signal">signal</a> carries the string of the thing it is about.</p><p lang="hu">A <a data-t="signal">jelzés</a> magával viszi annak a füzérét, amire vonatkozik.</p></div>
+          <div class="card"><h3><span lang="en">Safe by construction</span><span lang="hu">Eleve biztonságos</span></h3><p lang="en">Read-only sources, disposable outputs, append-only history, one reviewed write path.</p><p lang="hu">Csak olvasott források, eldobható kimenetek, csak bővülő történet, egyetlen jóváhagyott írási út.</p></div>
+          <div class="card"><h3><span lang="en">Fixed recipe</span><span lang="hu">Rögzített recept</span></h3><p lang="en">Eleven layers were added the same way. A twelfth costs about one session.</p><p lang="hu">Tizenegy réteg készült ugyanígy. Egy tizenkettedik nagyjából egy munkamenet.</p></div>
         </div>
       </section>
 
+      <!-- 5 -->
       <section id="review">
-        <div class="head"><div class="label">5 · Review</div><h2>Strengths and weak points</h2></div>
-        <p>The model is right-sized and the failure handling is mature. The risk is that the line went wide before it went deep.</p>
+        <div class="head"><div class="label"><span lang="en">5 · Review</span><span lang="hu">5 · Értékelés</span></div><h2><span lang="en">Strengths and weak points</span><span lang="hu">Erősségek és gyenge pontok</span></h2></div>
+        <p lang="en">The model is right-sized and the failure handling is mature. The risk is that the line went wide before it went deep.</p>
+        <p lang="hu">A modell jó méretű, a hibakezelés érett. A kockázat az, hogy a munkasor előbb lett széles, mint mély.</p>
         <div>
-          <div class="sev ok"><h3>Right-sized model<span class="tag">strength</span></h3><p>Layers, vertical edges and a reach mask are a small idea that pays for itself many times over. It needs no ontology, no graph database and no model.</p></div>
-          <div class="sev ok"><h3>Failure behaviour learnt from real breakages<span class="tag">strength</span></h3><p>Carried-forward layers, six health checks, <code>doctor --fix</code>, atomic writes, and tests with known answers, including incremental-equals-full and the privacy assertions.</p></div>
-          <div class="sev crit"><h3>Built against fixtures<span class="tag">weak</span></h3><p>No new layer has run on the PC's real jobs, boards, recordings or Visual Base. The signal heuristics were tuned on small data and will need another round.</p></div>
-          <div class="sev warn"><h3>Breadth before depth<span class="tag">weak</span></h3><p>21 layer slots and 24 pages. Some pages will be opened rarely. The event log can measure which.</p></div>
-          <div class="sev ok"><h3>One layer table<span class="tag">fixed</span></h3><p>Order and colours used to live in seven files, and a missed copy is how the Konnektóm broke. Since 2026-11-28 every module and page reads one <code>schema/layers.js</code>, and a test fails if a page keeps its own colour table again.</p></div>
-          <div class="sev warn"><h3>Heavy phone pages<span class="tag">weak</span></h3><p>The Viewer and Érintésnyom are about 3 MB each in the bundle. They need lazy planes and level-of-detail data.</p></div>
-          <div class="sev"><h3>Windows paths, one maintainer<span class="tag">watch</span></h3><p>Hard-coded H: paths make cloud runs fragile, and 59 modules are a lot for one person to hold. Keep the recipe strict.</p></div>
+          <div class="sev ok"><h3><span lang="en">Right-sized model<span class="tag">strength</span></span><span lang="hu">Jó méretű modell<span class="tag">erősség</span></span></h3>
+            <p lang="en">Layers, vertical edges and a reach mask are a small idea that pays for itself many times over. It needs no ontology, no <a data-t="graph">graph database</a> and no model.</p>
+            <p lang="hu">Rétegek, függőleges élek és egy elérési maszk: kicsi ötlet, ami sokszorosan megtérül. Nem kell hozzá ontológia, <a data-t="graph">gráfadatbázis</a> vagy modell.</p></div>
+          <div class="sev ok"><h3><span lang="en">Failure behaviour learnt from real breakages<span class="tag">strength</span></span><span lang="hu">Valódi hibákból tanult hibakezelés<span class="tag">erősség</span></span></h3>
+            <p lang="en">Carried-forward layers, six health checks, <code>doctor --fix</code>, atomic writes, and tests with known answers, including incremental-equals-full and the privacy assertions.</p>
+            <p lang="hu">Öröklődő rétegek, hat állapotellenőrzés, <code>doctor --fix</code>, atomi írások, és ismert válaszú tesztek, köztük az inkrementális = teljes build és az adatvédelmi állítások.</p></div>
+          <div class="sev ok"><h3><span lang="en">One layer table, guarded in CI<span class="tag">fixed</span></span><span lang="hu">Egyetlen rétegtábla, CI-őrrel<span class="tag">javítva</span></span></h3>
+            <p lang="en">Order and colours used to live in seven files, and a missed copy is how the Konnektóm broke. Since 2026-11-28 every module and page reads one <a data-t="table">layer table</a>, a test fails if a page keeps its own colour table again, and a <a data-t="ci">CI</a> check fails when two branches use one letter for different layers.</p>
+            <p lang="hu">A sorrend és a színek korábban hét fájlban éltek, és egy kimaradt másolat miatt tört el a Konnektóm. 2026-11-28 óta minden modul és oldal egyetlen <a data-t="table">rétegtáblát</a> olvas, egy teszt elbukik, ha egy oldal újra saját színtáblát tart, és egy <a data-t="ci">CI</a>-ellenőrzés elbukik, ha két ág ugyanazt a betűt más rétegre használja.</p></div>
+          <div class="sev crit"><h3><span lang="en">Built against fixtures<span class="tag">weak</span></span><span lang="hu">Mintaadatokon épült<span class="tag">gyenge</span></span></h3>
+            <p lang="en">No new layer has run on the PC's real jobs, boards, recordings or Visual Base. The signal heuristics were tuned on small data and will need another round.</p>
+            <p lang="hu">Egyetlen új réteg sem futott még a PC valódi munkáin, paneljein, felvételein vagy Visual Base-én. A jelzések heurisztikáit kis adaton hangoltuk, újabb kör kell.</p></div>
+          <div class="sev warn"><h3><span lang="en">Breadth before depth<span class="tag">weak</span></span><span lang="hu">Szélesség a mélység előtt<span class="tag">gyenge</span></span></h3>
+            <p lang="en">21 layer slots and 24 pages. Some pages will be opened rarely. The event log can measure which.</p>
+            <p lang="hu">21 rétegrés és 24 oldal. Néhány oldalt ritkán fognak megnyitni. Az eseménynapló meg tudja mérni, melyiket.</p></div>
+          <div class="sev warn"><h3><span lang="en">Heavy phone pages<span class="tag">weak</span></span><span lang="hu">Nehéz telefonos oldalak<span class="tag">gyenge</span></span></h3>
+            <p lang="en">The Viewer and Érintésnyom are about 3 MB each in the bundle. They need lazy planes and level-of-detail data.</p>
+            <p lang="hu">A néző és az Érintésnyom egyenként kb. 3 MB a csomagban. Lusta síkbetöltés és részletességi szintek kellenek.</p></div>
+          <div class="sev"><h3><span lang="en">Windows paths, one maintainer<span class="tag">watch</span></span><span lang="hu">Windows-utak, egy karbantartó<span class="tag">figyelendő</span></span></h3>
+            <p lang="en">Hard-coded H: paths make cloud runs fragile, and 60 modules are a lot for one person to hold. Keep the recipe strict.</p>
+            <p lang="hu">A beégetett H:-utak törékennyé teszik a felhős futást, és 60 modul sok egy embernek. A receptet szigorúan kell tartani.</p></div>
         </div>
       </section>
 
+      <!-- 6 -->
       <section id="errors">
-        <div class="head"><div class="label">6 · Errors</div><h2>Open errors and loose ends</h2></div>
-        <p>Every page was loaded headless against the sandbox build. Two real errors turned up and are fixed in the PR. The rest are open, most urgent first.</p>
+        <div class="head"><div class="label"><span lang="en">6 · Errors</span><span lang="hu">6 · Hibák</span></div><h2><span lang="en">Open errors and loose ends</span><span lang="hu">Nyitott hibák és elvarratlan szálak</span></h2></div>
+        <p lang="en">Every page was loaded headless against the sandbox build. Two real errors turned up and are fixed in the PR, and two structural weak points have been fixed since. The rest are open, most urgent first.</p>
+        <p lang="hu">Minden oldalt betöltöttünk fej nélküli böngészőben a sandbox buildjével. Két valódi hiba került elő, mindkettő javítva a PR-ban, és azóta két szerkezeti gyenge pont is javult. A többi nyitott, a legsürgősebb elöl.</p>
         <div class="scroll"><table>
-          <thead><tr><th>State</th><th>Item</th><th>What closes it</th></tr></thead>
+          <thead><tr><th><span lang="en">State</span><span lang="hu">Állapot</span></th><th><span lang="en">Item</span><span lang="hu">Tétel</span></th><th><span lang="en">What closes it</span><span lang="hu">Mi zárja le</span></th></tr></thead>
           <tbody>
-            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>Konnektóm threw on the first node of a new layer: its colour table knew only F I E A G C L Q U R K. The page was blank on the PC and in the phone bundle.</td><td>All layers added plus a fallback, so a future layer cannot break it</td></tr>
-            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>The asks layer was still labelled K in four places after the K → S re-letter</td><td>Header, START hint, catalog entry and comments now say S</td></tr>
-            <tr><td><span class="chip" style="color:var(--crit);background:transparent;border:1px solid var(--crit)">on the PC</span></td><td>No layer has run on real data</td><td><code>stack.js probe --all</code>, then a full build; read HEALTH.md</td></tr>
-            <tr><td><span class="chip" style="color:var(--crit);background:transparent;border:1px solid var(--crit)">on the PC</span></td><td>Signal noise on real data is unknown</td><td>Tune each signal to five or fewer real hits, or explain why not</td></tr>
-            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the PC</span></td><td><code>check-start.js</code> was never run on this branch</td><td>Run it; exit 0</td></tr>
-            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the PC</span></td><td>The Kapu's tool list lacks the ten new pages; the cloud rebuild in the stash has broken paths</td><td><code>build-hub.js</code> on the PC; drop the stash</td></tr>
-            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">on the phone</span></td><td>The ◢ dial pages compile in CI but have never been opened on a device</td><td>Publish, then open all twelve pages offline</td></tr>
-            <tr><td><span class="chip" style="color:var(--warn);background:transparent;border:1px solid var(--warn)">merge soon</span></td><td>Mobile decision D-191 is the next free number on main, which already reaches D-190</td><td>Merge PR #29, or tell the next GO MOBILE session D-191 is taken</td></tr>
-            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">fixed</span></td><td>Layer order and colours were copied in seven places</td><td>One <code>schema/layers.js</code>, held by a test (STK-P213)</td></tr>
-            <tr><td><span class="chip">in code</span></td><td>Nothing stops two branches taking the same layer letter (K happened)</td><td>A CI uniqueness check</td></tr>
-            <tr><td><span class="chip" style="color:var(--ok);background:transparent;border:1px solid var(--ok)">guarded</span></td><td>The Viewer has colour slots for 24 planes and uses 21</td><td>A test now fails when the table passes 24 planes</td></tr>
-            <tr><td><span class="chip">in code</span></td><td>Hard-coded H: paths in five modules</td><td>One <code>roots()</code> that reads an environment variable first</td></tr>
+            <tr><td><span class="chip ok"><span lang="en">fixed</span><span lang="hu">javítva</span></span></td><td><span lang="en">Konnektóm threw on the first node of a new layer: its colour table knew only F I E A G C L Q U R K. The page was blank on the PC and in the phone bundle.</span><span lang="hu">A Konnektóm egy új réteg első csúcsánál összeomlott: a színtáblája csak F I E A G C L Q U R K-t ismerte. Az oldal üres volt a PC-n és a telefonos csomagban.</span></td><td><span lang="en">It now reads the shared <a data-t="table">layer table</a>, with a fallback for an unknown layer</span><span lang="hu">Most a közös <a data-t="table">rétegtáblát</a> olvassa, ismeretlen rétegre tartalékkal</span></td></tr>
+            <tr><td><span class="chip ok"><span lang="en">fixed</span><span lang="hu">javítva</span></span></td><td><span lang="en">The asks layer was still labelled K in four places after the K → S re-letter</span><span lang="hu">A kérések rétege négy helyen még K-ként szerepelt a K → S átbetűzés után</span></td><td><span lang="en">Header, START hint, catalog entry and comments now say S</span><span lang="hu">A fejléc, a START-tipp, a katalógus és a megjegyzések most S-t mondanak</span></td></tr>
+            <tr><td><span class="chip ok"><span lang="en">fixed</span><span lang="hu">javítva</span></span></td><td><span lang="en">Layer order and colours were copied in seven places</span><span lang="hu">A rétegsorrend és a színek hét helyre voltak másolva</span></td><td><span lang="en">One <code>schema/layers.js</code>, held by a test (STK-P213)</span><span lang="hu">Egyetlen <code>schema/layers.js</code>, teszt őrzi (STK-P213)</span></td></tr>
+            <tr><td><span class="chip ok"><span lang="en">fixed</span><span lang="hu">javítva</span></span></td><td><span lang="en">Nothing stopped two branches taking the same layer letter (K happened)</span><span lang="hu">Semmi nem akadályozta, hogy két ág ugyanazt a rétegbetűt vegye el (a K-val megtörtént)</span></td><td><span lang="en">A <a data-t="ci">CI</a> check over every unmerged branch (STK-P214)</span><span lang="hu"><a data-t="ci">CI</a>-ellenőrzés minden nem merge-elt ágon (STK-P214)</span></td></tr>
+            <tr><td><span class="chip crit"><span lang="en">on the PC</span><span lang="hu">a PC-n</span></span></td><td><span lang="en">No layer has run on real data</span><span lang="hu">Egyetlen réteg sem futott valódi adaton</span></td><td><span lang="en"><code>stack.js probe --all</code>, then a full build; read HEALTH.md</span><span lang="hu"><code>stack.js probe --all</code>, majd teljes build; a HEALTH.md elolvasása</span></td></tr>
+            <tr><td><span class="chip crit"><span lang="en">on the PC</span><span lang="hu">a PC-n</span></span></td><td><span lang="en">Signal noise on real data is unknown</span><span lang="hu">A jelzések zaja valódi adaton ismeretlen</span></td><td><span lang="en">Tune each signal to five or fewer real hits, or explain why not</span><span lang="hu">Minden jelzés legfeljebb öt valódi találatra hangolva, vagy megindokolva, miért nem</span></td></tr>
+            <tr><td><span class="chip warn"><span lang="en">on the PC</span><span lang="hu">a PC-n</span></span></td><td><span lang="en"><code>check-start.js</code> was never run on this branch</span><span lang="hu">A <code>check-start.js</code> sosem futott ezen az ágon</span></td><td><span lang="en">Run it; exit 0</span><span lang="hu">Lefuttatni; 0-s kilépés</span></td></tr>
+            <tr><td><span class="chip warn"><span lang="en">on the PC</span><span lang="hu">a PC-n</span></span></td><td><span lang="en">The <a data-t="kapu">Kapu</a>'s tool list lacks the ten new pages; the cloud rebuild in the stash has broken paths</span><span lang="hu">A <a data-t="kapu">Kapu</a> eszközlistájából hiányzik a tíz új oldal; a stashben lévő felhős újraépítés útvonalai hibásak</span></td><td><span lang="en"><code>build-hub.js</code> on the PC; drop the stash</span><span lang="hu"><code>build-hub.js</code> a PC-n; a stash eldobása</span></td></tr>
+            <tr><td><span class="chip warn"><span lang="en">on the phone</span><span lang="hu">telefonon</span></span></td><td><span lang="en">The <a data-t="dial">◢ dial</a> pages compile in CI but have never been opened on a device</span><span lang="hu">A <a data-t="dial">◢ tárcsa</a> oldalai lefordulnak a CI-ben, de eszközön még sosem nyíltak meg</span></td><td><span lang="en">Publish, then open all twelve pages offline</span><span lang="hu">Közzététel, majd mind a tizenkét oldal megnyitása offline</span></td></tr>
+            <tr><td><span class="chip warn"><span lang="en">merge soon</span><span lang="hu">hamar merge</span></span></td><td><span lang="en">Mobile decision D-191 is the next free number on main, which already reaches D-190</span><span lang="hu">A D-191-es mobil döntésszám a következő szabad szám a main-en, ami már D-190-nél tart</span></td><td><span lang="en">Merge PR #29, or tell the next GO MOBILE session D-191 is taken</span><span lang="hu">A PR #29 merge-elése, vagy szólni a következő GO MOBILE munkamenetnek, hogy a D-191 foglalt</span></td></tr>
+            <tr><td><span class="chip ok"><span lang="en">guarded</span><span lang="hu">őrizve</span></span></td><td><span lang="en">The Viewer has colour slots for 24 planes and uses 21</span><span lang="hu">A nézőnek 24 sík színhelye van, ebből 21 használt</span></td><td><span lang="en">A test fails when the table passes 24 planes</span><span lang="hu">Egy teszt elbukik, ha a tábla 24 síknál többet tart</span></td></tr>
+            <tr><td><span class="chip code"><span lang="en">in code</span><span lang="hu">kódban</span></span></td><td><span lang="en">Hard-coded H: paths in five modules</span><span lang="hu">Beégetett H:-utak öt modulban</span></td><td><span lang="en">One <code>roots()</code> that reads an environment variable first</span><span lang="hu">Egyetlen <code>roots()</code>, ami először környezeti változót olvas</span></td></tr>
           </tbody>
         </table></div>
       </section>
 
+      <!-- 7 -->
       <section id="databases">
-        <div class="head"><div class="label">7 · Generality</div><h2>Generic use with databases</h2></div>
-        <p>The Stack assumes only three things: each source can be read into nodes and edges, things on different sources share <b>keys</b>, and someone can say which relations count as <b>vertical</b>. Any group of databases meets those three.</p>
+        <div class="head"><div class="label"><span lang="en">7 · Generality</span><span lang="hu">7 · Általánosság</span></div><h2><span lang="en">Generic use with databases</span><span lang="hu">Általános használat adatbázisokkal</span></h2></div>
+        <p lang="en">The Stack assumes only three things: each source can be read into nodes and edges, things on different sources share <b>keys</b>, and someone can say which relations count as <b>vertical</b>. Any group of databases meets those three.</p>
+        <p lang="hu">A Stack csak három dolgot feltételez: minden forrás csúcsokká és élekké olvasható, a különböző források dolgai közös <b>kulcsokon</b> osztoznak, és valaki meg tudja mondani, mely kapcsolatok számítanak <b>függőlegesnek</b>. Bármely adatbázis-csoport megfelel ennek a háromnak.</p>
         <div class="scroll"><table>
-          <thead><tr><th>Stack</th><th>In a database estate</th></tr></thead>
+          <thead><tr><th>Stack</th><th><span lang="en">In a database estate</span><span lang="hu">Adatbázis-környezetben</span></th></tr></thead>
           <tbody>
-            <tr><td>Layer</td><td>a system or domain: CRM, ERP, tickets, billing, code host, HR, telemetry</td></tr>
-            <tr><td>Adapter</td><td>an extract query or change stream that turns rows into nodes and keys into edges</td></tr>
-            <tr><td>Vertical edge</td><td>a key shared across systems: a customer id in CRM and billing, an issue key in a commit</td></tr>
-            <tr><td>Pillar</td><td>a master-data entity: the golden customer, the product, the site</td></tr>
-            <tr><td>String</td><td>cross-system lineage of one entity</td></tr>
-            <tr><td>Reach mask</td><td><b style="color:var(--fg)">data completeness</b>: an order in ERP and billing but not in shipping is a stuck order</td></tr>
-            <tr><td>Class</td><td>lifecycle stage computed from reach: lead → customer → paying → churned</td></tr>
-            <tr><td>Signal</td><td>a data-quality rule as a node: orphans, broken references, stale syncs</td></tr>
-            <tr><td>Gateway</td><td>a reviewed change set, applied through the owning system's own API</td></tr>
+            <tr><td><span lang="en">Layer</span><span lang="hu">Réteg</span></td><td><span lang="en">a system or domain: CRM, ERP, tickets, billing, code host, HR, telemetry</span><span lang="hu">egy rendszer vagy terület: CRM, ERP, jegykezelő, számlázás, kódtár, HR, telemetria</span></td></tr>
+            <tr><td>Adapter</td><td><span lang="en">an <a data-t="etl">extract</a> query or a <a data-t="cdc">change stream</a> that turns rows into nodes and keys into edges</span><span lang="hu"><a data-t="etl">kinyerő</a> lekérdezés vagy <a data-t="cdc">változásfolyam</a>, ami a sorokból csúcsokat, a kulcsokból éleket csinál</span></td></tr>
+            <tr><td><span lang="en">Vertical edge</span><span lang="hu">Függőleges él</span></td><td><span lang="en">a key shared across systems: a customer id in CRM and billing, an issue key in a commit</span><span lang="hu">rendszereken átívelő közös kulcs: ügyfélazonosító a CRM-ben és a számlázásban, jegykulcs egy commitban</span></td></tr>
+            <tr><td><span lang="en">Pillar</span><span lang="hu">Pillér</span></td><td><span lang="en">a <a data-t="mdm">master-data</a> entity: the golden customer, the product, the site</span><span lang="hu"><a data-t="mdm">törzsadat</a>-entitás: az „arany” ügyfél, a termék, a telephely</span></td></tr>
+            <tr><td><span lang="en">String</span><span lang="hu">Füzér</span></td><td><span lang="en">cross-system <a data-t="lineage">lineage</a> of one entity</span><span lang="hu">egy entitás rendszereken átívelő <a data-t="lineage">adatfolyama</a></span></td></tr>
+            <tr><td><span lang="en">Reach mask</span><span lang="hu">Elérési maszk</span></td><td><span lang="en"><b style="color:var(--fg)">data completeness</b>, a <a data-t="dq">data quality</a> measure: an order in ERP and billing but not in shipping is a stuck order</span><span lang="hu"><b style="color:var(--fg)">adatteljesség</b>, az <a data-t="dq">adatminőség</a> egy mércéje: az ERP-ben és a számlázásban meglévő, de a szállításban hiányzó rendelés elakadt</span></td></tr>
+            <tr><td><span lang="en">Class</span><span lang="hu">Osztály</span></td><td><span lang="en">lifecycle stage computed from reach: lead → customer → paying → churned</span><span lang="hu">elérésből számolt életciklus-szakasz: érdeklődő → ügyfél → fizető → lemorzsolódott</span></td></tr>
+            <tr><td><span lang="en">Signal</span><span lang="hu">Jelzés</span></td><td><span lang="en">a data-quality rule as a node: orphans, broken references, stale syncs</span><span lang="hu">adatminőségi szabály csúcsként: árva sorok, törött hivatkozások, elavult szinkronok</span></td></tr>
+            <tr><td><span lang="en">Gateway</span><span lang="hu">Íráskapu</span></td><td><span lang="en">a reviewed change set, applied through the owning system's own API</span><span lang="hu">jóváhagyott változáscsomag, a gazda rendszer saját API-ján át alkalmazva</span></td></tr>
           </tbody>
         </table></div>
-        <p>In SQL it is three tables and one recursive query:</p>
+        <p lang="en">In SQL it is three tables and one <a data-t="cte">recursive query</a>, in <a data-t="postgres">PostgreSQL</a> or anything like it:</p>
+        <p lang="hu">SQL-ben három tábla és egy <a data-t="cte">rekurzív lekérdezés</a>, <a data-t="postgres">PostgreSQL</a>-ben vagy bármi hasonlóban:</p>
         <div class="scroll"><pre><span class="k">CREATE TABLE</span> layer (code CHAR(1) PRIMARY KEY, name TEXT, ord INT);
 <span class="k">CREATE TABLE</span> node  (id TEXT PRIMARY KEY, layer CHAR(1) REFERENCES layer, kind TEXT,
                     title TEXT, t DATE, state TEXT, props JSONB);
 <span class="k">CREATE TABLE</span> edge  (a TEXT REFERENCES node, b TEXT REFERENCES node, rel TEXT, w REAL DEFAULT 1,
                     vertical BOOLEAN GENERATED ALWAYS AS (left(a,1) &lt;&gt; left(b,1)) STORED);
 
-<span class="c">-- the string of one seed: vertical edges, two hops, scores below 0.15 dropped</span>
+<span class="c" lang="en">-- the string of one seed: vertical edges, two hops, scores below 0.15 dropped</span><span class="c" lang="hu">-- egy mag füzére: függőleges élek, két lépés, a 0,15 alatti pontszám kiesik</span>
 <span class="k">WITH RECURSIVE</span> s(id, score, depth) <span class="k">AS</span> (
   <span class="k">SELECT</span> :seed, 1.0, 0
   <span class="k">UNION ALL</span>
@@ -307,150 +403,311 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 <span class="k">SELECT</span> n.layer, n.id, max(s.score) <span class="k">FROM</span> s <span class="k">JOIN</span> node n <span class="k">USING</span> (id)
 <span class="k">GROUP BY</span> n.layer, n.id <span class="k">ORDER BY</span> n.layer;</pre></div>
         <div class="grid2">
-          <div class="card"><h3>Where it sits</h3><p>Data catalogs and lineage standards (DataHub, OpenMetadata, OpenLineage) already map tables and jobs as a graph, and process mining follows an entity's path through time. What the Stack adds is the layered reading: an entity's coverage across layers taken as its lifecycle state, and drift as the gap between declared and measured state.</p></div>
-          <div class="card"><h3>What a generic version still needs</h3><p>Fuzzy identity resolution with the confidence as edge weight; a set-based join beyond about a million edges; access rules per layer kept as data; and an adapter kit, where each layer declares its nodes, edges, keys and vertical relations.</p></div>
+          <div class="card"><h3><span lang="en">Where it sits</span><span lang="hu">Hol helyezkedik el</span></h3>
+            <p lang="en">Data catalogs and <a data-t="lineage">lineage</a> standards (DataHub, OpenMetadata, OpenLineage) already map tables and jobs as a graph, <a data-t="kg">knowledge graphs</a> join entities across sources, and <a data-t="processmining">process mining</a> follows an entity's path through time. What the Stack adds is the layered reading: an entity's coverage across layers taken as its lifecycle state, and <a data-t="drift">drift</a> as the gap between declared and measured state.</p>
+            <p lang="hu">Az adatkatalógusok és az <a data-t="lineage">adatfolyam</a>-szabványok (DataHub, OpenMetadata, OpenLineage) már gráfként térképezik a táblákat és feladatokat, a <a data-t="kg">tudásgráfok</a> forrásokon át kötik össze az entitásokat, a <a data-t="processmining">folyamatbányászat</a> pedig egy entitás útját követi időben. A Stack a rétegzett olvasást teszi hozzá: egy entitás rétegeken átívelő lefedettsége mint életciklus-állapot, és a <a data-t="drift">sodródás</a> mint a bejelentett és a mért állapot közti rés.</p></div>
+          <div class="card"><h3><span lang="en">What a generic version still needs</span><span lang="hu">Mi kell még egy általános változathoz</span></h3>
+            <p lang="en">Fuzzy identity resolution (<a data-t="linkage">record linkage</a>) with the confidence as edge weight; a set-based join beyond about a million edges; access rules per layer kept as data; and an adapter kit, where each layer declares its nodes, edges, keys and vertical relations.</p>
+            <p lang="hu">Elmosódott azonosítás (<a data-t="linkage">rekordpárosítás</a>), a bizonyossággal mint élsúllyal; halmazalapú összekapcsolás kb. egymillió él felett; rétegenkénti hozzáférési szabályok adatként; és egy adapterkészlet, ahol minden réteg megadja a csúcsait, éleit, kulcsait és függőleges kapcsolatait.</p></div>
         </div>
       </section>
 
+      <!-- 8 -->
       <section id="apps">
-        <div class="head"><div class="label">8 · Reach</div><h2>Potential applications</h2></div>
+        <div class="head"><div class="label"><span lang="en">8 · Reach</span><span lang="hu">8 · Kitekintés</span></div><h2><span lang="en">Potential applications</span><span lang="hu">Lehetséges alkalmazások</span></h2></div>
         <div class="grid3">
-          <div class="card"><h3>The Data Vault</h3><p>What you know about a person or project across every store you keep, and what lives in only one place, which is the backup risk. It works fully offline.</p></div>
-          <div class="card"><h3>An electrician's business</h3><p>Lead → survey → plan → quote → materials → job → invoice → warranty. A job that reached quote but not materials is stalled.</p></div>
-          <div class="card"><h3>A software team</h3><p>A feature with code and no test, an incident with no postmortem, a document no code refers to.</p></div>
-          <div class="card"><h3>Compliance and audit</h3><p>A rule with no control, or a control with no evidence. The string is the audit trail.</p></div>
-          <div class="card"><h3>Client hand-over</h3><p>A job's string, filtered to what the client may see.</p></div>
-          <div class="card"><h3>Research labs</h3><p>An idea that never reached an experiment, or a result with no code that produced it.</p></div>
+          <div class="card"><h3>Data Vault</h3><p lang="en">What you know about a person or project across every store you keep, and what lives in only one place, which is the backup risk. It works fully offline.</p><p lang="hu">Mit tudsz egy személyről vagy projektről az összes tárolódban, és mi van csak egyetlen helyen, ami a mentési kockázat. Teljesen offline működik.</p></div>
+          <div class="card"><h3><span lang="en">An electrician's business</span><span lang="hu">Egy villanyszerelő vállalkozás</span></h3><p lang="en">Lead → survey → plan → quote → materials → job → invoice → warranty. A job that reached quote but not materials is stalled.</p><p lang="hu">Érdeklődés → felmérés → terv → ajánlat → anyag → munka → számla → garancia. Ami eljutott az ajánlatig, de az anyagig nem, az elakadt.</p></div>
+          <div class="card"><h3><span lang="en">A software team</span><span lang="hu">Egy szoftvercsapat</span></h3><p lang="en">A feature with code and no test, an incident with no postmortem, a document no code refers to.</p><p lang="hu">Funkció kóddal, de teszt nélkül; incidens utólagos elemzés nélkül; dokumentum, amire semmilyen kód nem hivatkozik.</p></div>
+          <div class="card"><h3><span lang="en">Compliance and audit</span><span lang="hu">Megfelelőség és audit</span></h3><p lang="en">A rule with no control, or a control with no evidence. The string is the <a data-t="audit">audit trail</a>.</p><p lang="hu">Szabály kontroll nélkül, vagy kontroll bizonyíték nélkül. A füzér maga az <a data-t="audit">audit-nyomvonal</a>.</p></div>
+          <div class="card"><h3><span lang="en">Client hand-over</span><span lang="hu">Átadás az ügyfélnek</span></h3><p lang="en">A job's string, filtered to what the client may see.</p><p lang="hu">Egy munka füzére, arra szűrve, amit az ügyfél láthat.</p></div>
+          <div class="card"><h3><span lang="en">Research labs</span><span lang="hu">Kutatólaborok</span></h3><p lang="en">An idea that never reached an experiment, or a result with no code that produced it.</p><p lang="hu">Ötlet, ami sosem jutott el kísérletig, vagy eredmény, amihez nincs kód, ami előállította.</p></div>
         </div>
       </section>
 
+      <!-- 9 -->
       <section id="vectors">
-        <div class="head"><div class="label">9 · Directions</div><h2>Where it can go next</h2></div>
+        <div class="head"><div class="label"><span lang="en">9 · Directions</span><span lang="hu">9 · Irányok</span></div><h2><span lang="en">Where it can go next</span><span lang="hu">Merre tovább</span></h2></div>
         <div class="scroll"><table>
-          <thead><tr><th>Direction</th><th>What it means</th></tr></thead>
+          <thead><tr><th><span lang="en">Direction</span><span lang="hu">Irány</span></th><th><span lang="en">What it means</span><span lang="hu">Mit jelent</span></th></tr></thead>
           <tbody>
-            <tr><td>Depth first</td><td>Calibrate every signal on real data, with a written noise threshold and a new baseline in STATUS.md</td></tr>
-            <tr><td>Saved strings</td><td>Strings with their masks over time give a pulse per thing and a maturity curve per pillar</td></tr>
-            <tr><td>More editors</td><td>Open-work status, pillar owner and door target, each with the gateway's four checks</td></tr>
-            <tr><td>Live recording</td><td>A PostToolUse feed, so Érintésnyom shows a session as it happens</td></tr>
-            <tr><td>Meaning</td><td>bge-m3 for search and ask clustering, and suggested vertical edges that keys miss (proposals only)</td></tr>
-            <tr><td>Link prediction</td><td>Last, as STK-Q13 A says: a missing edge that many similar strings have</td></tr>
-            <tr><td>Federation</td><td>The toolset and the Data Vault under one pillar list, with each side's private layers kept apart</td></tr>
-            <tr><td>Generic engine</td><td>Core extracted from the VRG adapters into a package; the VRG Stack becomes its first user</td></tr>
+            <tr><td><span lang="en">Depth first</span><span lang="hu">Előbb a mélység</span></td><td><span lang="en">Calibrate every signal on real data, with a written noise threshold and a new baseline in STATUS.md</span><span lang="hu">Minden jelzés kalibrálása valódi adaton, leírt zajküszöbbel és új alapvonallal a STATUS.md-ben</span></td></tr>
+            <tr><td><span lang="en">Saved strings</span><span lang="hu">Mentett füzérek</span></td><td><span lang="en">Strings with their masks over time give a pulse per thing and a maturity curve per pillar</span><span lang="hu">A füzérek maszkjai időben: dolgonként pulzus, pillérenként érettségi görbe</span></td></tr>
+            <tr><td><span lang="en">More editors</span><span lang="hu">Több szerkesztő</span></td><td><span lang="en">Open-work status, pillar owner and door target, each with the <a data-t="gateway">gateway</a>'s four checks</span><span lang="hu">Teendő-állapot, pillérgazda és ajtócél, mindegyik az <a data-t="gateway">íráskapu</a> négy ellenőrzésével</span></td></tr>
+            <tr><td><span lang="en">Live recording</span><span lang="hu">Élő rögzítés</span></td><td><span lang="en">A PostToolUse feed, so <a data-t="touch">Érintésnyom</a> shows a session as it happens</span><span lang="hu">PostToolUse-folyam, hogy az <a data-t="touch">Érintésnyom</a> élőben mutassa a munkamenetet</span></td></tr>
+            <tr><td><span lang="en">Meaning</span><span lang="hu">Jelentés</span></td><td><span lang="en"><a data-t="semantic">Semantic search</a> with bge-m3 for search and ask clustering, and suggested vertical edges that keys miss (proposals only)</span><span lang="hu"><a data-t="semantic">Szemantikus keresés</a> bge-m3-mal a kereséshez és a kérések csoportosításához, és javasolt függőleges élek, amiket a kulcsok nem fognak meg (csak javaslatként)</span></td></tr>
+            <tr><td><span lang="en">Link prediction</span><span lang="hu">Kapcsolat-előrejelzés</span></td><td><span lang="en"><a data-t="linkpred">Link prediction</a> last, as STK-Q13 A says: a missing edge that many similar strings have</span><span lang="hu"><a data-t="linkpred">Kapcsolat-előrejelzés</a> utoljára, ahogy az STK-Q13 A mondja: hiányzó él, ami sok hasonló füzérben megvan</span></td></tr>
+            <tr><td><span lang="en">Federation</span><span lang="hu">Föderáció</span></td><td><span lang="en">The toolset and the Data Vault under one pillar list, a <a data-t="federation">federation</a> with each side's private layers kept apart</span><span lang="hu">Az eszköztár és a Data Vault egy pillérlista alatt, <a data-t="federation">föderációként</a>, mindkét oldal privát rétegei külön tartva</span></td></tr>
+            <tr><td><span lang="en">Generic engine</span><span lang="hu">Általános motor</span></td><td><span lang="en">Core extracted from the VRG adapters into a package; the VRG Stack becomes its first user</span><span lang="hu">A mag kiemelése a VRG-adapterekből egy csomagba; a VRG Stack lesz az első felhasználója</span></td></tr>
           </tbody>
         </table></div>
       </section>
 
+      <!-- 10 -->
       <section id="next">
-        <div class="head"><div class="label">10 · Order</div><h2>Next steps</h2></div>
+        <div class="head"><div class="label"><span lang="en">10 · Order</span><span lang="hu">10 · Sorrend</span></div><h2><span lang="en">Next steps</span><span lang="hu">Következő lépések</span></h2></div>
         <ol class="steps">
-          <li><div><b>Merge PR #29</b><p>CI is green on the head commit.</p></div><small>Founder</small></li>
-          <li><div><b>Run check-start and check-catalog on the PC</b><p>Both exit 0.</p></div><small>local</small></li>
-          <li><div><b>Probe every suite, then a full build on real data</b><p>HEALTH.md has no red rows, and every new layer has a node count.</p></div><small>local</small></li>
-          <li><div><b>Narrow each noisy signal</b><p>Each one under its threshold, or explained in DRIFT.md.</p></div><small>Stack session</small></li>
-          <li><div><b>Rebuild the Kapu</b><p>The access page shows the ten new pages.</p></div><small>local</small></li>
-          <li><div><b>Publish the phone bundle and open every page</b><p>All twelve open offline from the ◢ dial.</p></div><small>phone</small></li>
-          <li><div><b>Write the rules and add the letter check</b><p>A duplicate layer letter fails CI.</p></div><small>Stack session</small></li>
-          <li><div><b>Choose the next editor and live recording</b><p>An STK-Q answered.</p></div><small>Founder</small></li>
-          <li><div><b>Decide on a Data Vault Stack</b><p>A DV-Q opened.</p></div><small>Founder + DV</small></li>
+          <li><div><b><span lang="en">Merge PR #29</span><span lang="hu">A PR #29 merge-elése</span></b><p lang="en">CI is green on the head commit.</p><p lang="hu">A CI zöld a legutóbbi commiton.</p></div><small><span lang="en">Founder</span><span lang="hu">Alapító</span></small></li>
+          <li><div><b><span lang="en">Run check-start and check-catalog on the PC</span><span lang="hu">A check-start és a check-catalog futtatása a PC-n</span></b><p lang="en">Both exit 0.</p><p lang="hu">Mindkettő 0-val lép ki.</p></div><small><span lang="en">local</span><span lang="hu">helyben</span></small></li>
+          <li><div><b><span lang="en">Probe every suite, then a full build on real data</span><span lang="hu">Minden tesztcsomag lefuttatása, majd teljes build valódi adaton</span></b><p lang="en">HEALTH.md has no red rows, and every new layer has a node count.</p><p lang="hu">A HEALTH.md-ben nincs piros sor, és minden új rétegnek van csúcsszáma.</p></div><small><span lang="en">local</span><span lang="hu">helyben</span></small></li>
+          <li><div><b><span lang="en">Narrow each noisy signal</span><span lang="hu">A zajos jelzések szűkítése</span></b><p lang="en">Each one under its threshold, or explained in DRIFT.md.</p><p lang="hu">Mindegyik a küszöbe alatt, vagy megindokolva a DRIFT.md-ben.</p></div><small><span lang="en">Stack session</span><span lang="hu">Stack-munkamenet</span></small></li>
+          <li><div><b><span lang="en">Rebuild the Kapu</span><span lang="hu">A Kapu újraépítése</span></b><p lang="en">The access page shows the ten new pages.</p><p lang="hu">A belépőoldal mutatja a tíz új oldalt.</p></div><small><span lang="en">local</span><span lang="hu">helyben</span></small></li>
+          <li><div><b><span lang="en">Publish the phone bundle and open every page</span><span lang="hu">A telefonos csomag közzététele és minden oldal megnyitása</span></b><p lang="en">All twelve open offline from the ◢ dial.</p><p lang="hu">Mind a tizenkettő megnyílik offline a ◢ tárcsáról.</p></div><small><span lang="en">phone</span><span lang="hu">telefon</span></small></li>
+          <li><div><b><span lang="en">Write the noise-threshold and gateway rules into RULES.md</span><span lang="hu">A zajküszöb és az íráskapu szabályainak leírása a RULES.md-be</span></b><p lang="en">Both listed, so every new signal and editor follows them.</p><p lang="hu">Mindkettő leírva, hogy minden új jelzés és szerkesztő kövesse.</p></div><small><span lang="en">Stack session</span><span lang="hu">Stack-munkamenet</span></small></li>
+          <li><div><b><span lang="en">Choose the next editor and live recording</span><span lang="hu">A következő szerkesztő és az élő rögzítés kiválasztása</span></b><p lang="en">An STK-Q answered.</p><p lang="hu">Egy STK-Q megválaszolva.</p></div><small><span lang="en">Founder</span><span lang="hu">Alapító</span></small></li>
+          <li><div><b><span lang="en">Decide on a Data Vault Stack</span><span lang="hu">Döntés egy Data Vault Stackről</span></b><p lang="en">A DV-Q opened.</p><p lang="hu">Egy DV-Q megnyitva.</p></div><small><span lang="en">Founder + DV</span><span lang="hu">Alapító + DV</span></small></li>
         </ol>
       </section>
 
+      <!-- 11 -->
       <section id="questions">
-        <div class="head"><div class="label">11 · Open</div><h2>Questions for the Founder</h2></div>
+        <div class="head"><div class="label"><span lang="en">11 · Open</span><span lang="hu">11 · Nyitott</span></div><h2><span lang="en">Questions for the Founder</span><span lang="hu">Kérdések az Alapítónak</span></h2></div>
         <ul class="qs">
-          <li><b>Depth or the next layer?</b><span>The review recommends a calibration session on real data before any new layer.</span></li>
-          <li><b>Should the Data Vault get a Stack?</b><span>It would be the first use of the engine outside the toolset, and the first test of federation.</span></li>
-          <li><b>When should the generic engine come?</b><span>Only once a second user exists. The Data Vault would be that user.</span></li>
-          <li><b>Which pages earn their place?</b><span>After a month the event log can show which pages are opened. Fold the unused ones into Viewer cards, or keep them all?</span></li>
+          <li><b><span lang="en">Depth or the next layer?</span><span lang="hu">Mélység vagy a következő réteg?</span></b><span lang="en">The review recommends a calibration session on real data before any new layer.</span><span lang="hu">Az áttekintés kalibráló munkamenetet javasol valódi adaton, mielőtt új réteg jönne.</span></li>
+          <li><b><span lang="en">Should the Data Vault get a Stack?</span><span lang="hu">Kapjon a Data Vault saját Stacket?</span></b><span lang="en">It would be the first use of the engine outside the toolset, and the first test of <a data-t="federation">federation</a>.</span><span lang="hu">Ez lenne a motor első használata az eszköztáron kívül, és a <a data-t="federation">föderáció</a> első próbája.</span></li>
+          <li><b><span lang="en">When should the generic engine come?</span><span lang="hu">Mikor jöjjön az általános motor?</span></b><span lang="en">Only once a second user exists. The Data Vault would be that user.</span><span lang="hu">Csak ha már van második felhasználó. A Data Vault lenne az.</span></li>
+          <li><b><span lang="en">Which pages earn their place?</span><span lang="hu">Mely oldalak érdemlik meg a helyüket?</span></b><span lang="en">After a month the event log can show which pages are opened. Fold the unused ones into Viewer cards, or keep them all?</span><span lang="hu">Egy hónap után az eseménynapló megmutatja, mely oldalakat nyitják meg. A nem használtak menjenek a néző kártyáiba, vagy maradjon mind?</span></li>
         </ul>
+      </section>
+
+      <!-- 12 -->
+      <section id="glossary">
+        <div class="head"><div class="label"><span lang="en">12 · Terms</span><span lang="hu">12 · Fogalmak</span></div><h2><span lang="en">Glossary</span><span lang="hu">Fogalomtár</span></h2></div>
+        <p lang="en">Every linked term on this page. A solid link opens its Wikipedia article (in English); a dotted one is a term of the Stack itself.</p>
+        <p lang="hu">Az oldal összes hivatkozott fogalma. A folytonos aláhúzás a Wikipédia-cikkre visz (angolul); a pontozott a Stack saját fogalma.</p>
+        <dl class="gloss-list" id="gloss"></dl>
       </section>
     </main>
   </div>
 
   <footer>
-    <span>Sources: <code>docs/research/reports/</code> in vrg-toolset (the review and the open-errors brief), <code>Stack/research/STRINGS-PLAN.md</code>, <code>Stack/DECISIONS.md</code>.</span>
-    <span>No client, person or ask is named on this page.</span>
+    <span lang="en">Sources: <code>docs/research/reports/</code> in vrg-toolset (the review and the open-errors brief), <code>Stack/research/STRINGS-PLAN.md</code>, <code>Stack/DECISIONS.md</code>.</span>
+    <span lang="hu">Források: <code>docs/research/reports/</code> a vrg-toolsetben (az áttekintés és a nyitott hibák listája), <code>Stack/research/STRINGS-PLAN.md</code>, <code>Stack/DECISIONS.md</code>.</span>
+    <span lang="en">No client, person or ask is named on this page.</span>
+    <span lang="hu">Ezen az oldalon nem szerepel ügyfél, személy vagy kérés.</span>
   </footer>
 </div>
 
+<div class="pop" id="pop" role="tooltip" hidden></div>
+
 <script>
 (function () {
-  const L = [
-    ['W', '#f5e6b8', 'Szereplők', 'People', 'Agents, Council seats and the access list, by role only, never a name. Who owns what.'],
-    ['F', '#e3be7b', 'Kirakat', 'Featured', 'The features and programs that exist, by tier.'],
-    ['V', '#a6c8ff', 'Látvány', 'Look', 'The UI kit, Mélyvíz, and which look each page wears. Drift when a copy falls behind.'],
-    ['M', '#d9b38c', 'Munkák', 'Jobs', 'Client jobs, by job code only. A running job with no new file for 30 days is flagged.'],
-    ['N', '#9fe0c4', 'Belépők', 'Entry points', 'Every way in: START keys, servers, programs, the Asztal catalog and the Mobile features.'],
-    ['S', '#f2c4e0', 'Kérések', 'Asks', 'The Founder’s asks from the recordings, clustered. The words stay on the PC.'],
-    ['I', '#c6a0e6', 'Ötletfa', 'Ideas', 'The ideas and their lineage.'],
-    ['T', '#ee9bb4', 'Teendők', 'Open work', 'The not-yet lists, open roadmap rows and proposals. Work that only looks undone is flagged.'],
-    ['Q', '#e4877d', 'Döntések', 'Decisions', 'Every question and its answer, from every decisions file.'],
-    ['L', '#8bcca1', 'Fejlesztési vonalak', 'DevLog', 'The lines of work and their sessions.'],
-    ['A', '#7fd3ec', 'Ügynöki gerinc', 'Agentic backbone', 'Agents, skills, plugins and slash commands.'],
-    ['U', '#ff9a52', 'Futás', 'Runtime', 'What each recorded session actually did, step by step.'],
-    ['P', '#b8e06a', 'Próbák', 'Tests', 'The test suites, how each runs and their recorded results.'],
-    ['R', '#f0dc6e', 'Repó', 'DevRepo', 'Commits and branches.'],
-    ['C', '#5b8fe0', 'Kód', 'Code', 'Folders and files, plus the import graph (the Függőségek sub-layer).'],
-    ['D', '#6fc7c0', 'Eszközök', 'Devices', 'Sketch → firmware → board, from the Board Console.'],
-    ['O', '#c9a6e0', 'Külső', 'Outside', 'Vendored code, npm and MCP servers, with their licences and pins.'],
-    ['G', '#8aa4b4', 'Adatgömb', 'Data Globe', 'Every document’s words.'],
-    ['K', '#5ee6c0', 'Kisokos', 'Handbook', 'The offline work handbook (from main).'],
-    ['J', '#ff5f56', 'Jelzések', 'Signals', 'Every warning, standing on what it is about.'],
-    ['Z', '#b0b8be', 'Kodek', 'Codec', 'The fold of it all: one screen at L0.'],
-  ];
-  const byCode = Object.fromEntries(L.map(x => [x[0], x]));
-  const ORDER = L.map(x => x[0]);
-  const mask = (letters, big) => '<span class="mask' + (big ? ' big' : '') + '" role="img" aria-label="reach: ' + (letters.join(' ') || 'none') + '">' +
-    ORDER.map(c => '<i' + (letters.includes(c) ? ' style="background:' + byCode[c][1] + '"' : '') + '></i>').join('') + '</span>';
+  'use strict';
+  const W = 'https://en.wikipedia.org/wiki/';
+  // the glossary: [English title, Hungarian title, English definition, Hungarian definition, Wikipedia article or '']
+  const G = {
+    stack: ['VRG Stack', 'VRG Stack (Rétegverem)', 'The multilayer database of the VRG work: every map of the work joined into one graph and read in layers.', 'A VRG-munka többrétegű adatbázisa: a munka összes térképe egyetlen gráfba kötve, rétegenként olvasva.', ''],
+    layer: ['Layer', 'Réteg', 'One way of seeing the whole work: a filter (ideas, decisions, commits) or a shadow (the words, the codec). One letter each.', 'A teljes munka egy nézete: szűrő (ötletek, döntések, commitok) vagy árnyék (szövegek, kodek). Mindegyiknek egy betűje van.', ''],
+    vertical: ['Vertical link', 'Függőleges kapcsolat', 'A link whose two ends are on different layers: the same real thing seen twice.', 'Kapcsolat, amelynek két vége különböző rétegen van: ugyanaz a valós dolog két nézetben.', ''],
+    pillar: ['Pillar', 'Pillér', 'One real thing (Planner, Kapu, VRG Mobile) across every layer, kept by hand, owned by a Council Head. Layer E.', 'Egy valós dolog (Planner, Kapu, VRG Mobile) minden rétegen át, kézzel vezetve, egy tanácsi vezető gazdájával. Az E réteg.', ''],
+    string: ['String (Füzér)', 'Füzér', 'Everything reachable from one node over vertical links within two weighted hops, plus its pillar.', 'Minden, ami egy csúcsból függőleges kapcsolatokon, legfeljebb két súlyozott lépésben elérhető, plusz a pillére.', ''],
+    mask: ['Reach mask', 'Elérési maszk', 'The layers a string reaches, in stack order, one slot per layer. Its shape is the development state.', 'A füzér által elért rétegek veremsorrendben, rétegenként egy hellyel. Az alakja a fejlettségi állapot.', ''],
+    signal: ['Signal', 'Jelzés', 'A warning as a node on layer J, standing on the thing it is about.', 'Figyelmeztetés csúcsként a J rétegen, azon állva, amire vonatkozik.', ''],
+    drift: ['Drift', 'Sodródás', 'The gap between what a plan says and what the work shows; each check writes its own section in DRIFT.md.', 'A rés aközött, amit a terv mond, és amit a munka mutat; minden ellenőrzés saját szakaszt ír a DRIFT.md-be.', ''],
+    adapter: ['Adapter', 'Adapter', 'The function that reads one source and returns a layer’s nodes and edges.', 'A függvény, ami egy forrást olvas, és visszaadja egy réteg csúcsait és éleit.', ''],
+    carry: ['Carried forward', 'Öröklés', 'When a layer’s source fails, the last good build’s nodes are reused and marked stale, so the layer never empties.', 'Ha egy réteg forrása hibázik, az utolsó jó build csúcsai maradnak, elavultnak jelölve, így a réteg sosem ürül ki.', ''],
+    contract: ['Page contract', 'Oldalszerződés', 'What every layer page declares (its layer, its data, what it can light up) so that a selection on one page reaches all others.', 'Amit minden rétegoldal megad (a rétegét, az adatát, mit tud kivilágítani), hogy egy oldal kijelölése az összes többihez eljusson.', ''],
+    gateway: ['Write gateway', 'Íráskapu', 'The one path that writes a source: shows the diff, checks the file is unchanged, logs an event, never commits.', 'Az egyetlen út, ami forrást ír: megmutatja az eltérést, ellenőrzi, hogy a fájl nem változott, eseményt naplóz, sosem commitol.', ''],
+    viewer: ['Stack Viewer', 'Rétegverem-néző', 'The WebGL page that draws every layer as a plane of particles made from its own bytes.', 'A WebGL-oldal, ami minden réteget a saját bájtjaiból készült részecskesíkként rajzol.', ''],
+    touch: ['Érintésnyom', 'Érintésnyom', 'The page that lights the layers a recorded session touched, step by step, with a forecast and a blast radius.', 'Az oldal, ami lépésről lépésre kivilágítja, mely rétegekhez ért egy rögzített munkamenet, előrejelzéssel és hatássugárral.', ''],
+    dial: ['◢ dial', '◢ tárcsa', 'The layer menu on the VRG Desktop and the phone (Mobile D-191).', 'A rétegmenü a VRG Asztalon és a telefonon (Mobile D-191).', ''],
+    start: ['START', 'START', 'The master launcher. A tool not in its registry does not exist.', 'A fő indító. Ami nincs a nyilvántartásában, az nem létezik.', ''],
+    kapu: ['Kapu', 'Kapu', 'VRG Kapu, the access page, with its signed access list.', 'A VRG Kapu, a belépőoldal, az aláírt belépési listával.', ''],
+    codec: ['Codec (Z)', 'Kodek (Z)', 'Layer Z: the whole Stack folded into a few screens; L0 is the one-screen orientation.', 'A Z réteg: az egész Stack néhány képernyőre hajtva; az L0 az egyképernyős tájékozódás.', ''],
+    table: ['Layer table', 'Rétegtábla', 'Stack/schema/layers.js: the one place that lists the layers, their order, names and colours (STK-P213).', 'Stack/schema/layers.js: az egyetlen hely, ami felsorolja a rétegeket, sorrendjüket, nevüket és színüket (STK-P213).', ''],
+    rrf: ['Reciprocal rank fusion', 'Reciprocal rank fusion (RRF)', 'Merges several ranked lists by summing 1/(k + rank) per item; the Stack uses k = 60.', 'Több rangsort fésül össze tételenként 1/(k + rang) összegzésével; a Stack k = 60-at használ.', ''],
+    graph: ['Graph database', 'Gráfadatbázis', 'Data stored as nodes and edges with properties, queried by following the edges.', 'Csúcsokként és élekként, tulajdonságokkal tárolt adat, amit az élek követésével kérdezünk le.', 'Graph_database'],
+    multilayer: ['Multilayer network', 'Többrétegű hálózat', 'A network whose nodes and links sit on several layers, with links inside and between layers.', 'Hálózat, amelynek csúcsai és élei több rétegen ülnek, rétegen belüli és rétegek közti élekkel.', 'Multidimensional_network'],
+    pagerank: ['PageRank', 'PageRank', 'Ranks a node by how many well-ranked nodes link to it.', 'Egy csúcsot aszerint rangsorol, hány jól rangsorolt csúcs mutat rá.', 'PageRank'],
+    louvain: ['Louvain method', 'Louvain-módszer', 'Finds communities by greedily optimising modularity.', 'Közösségeket keres a modularitás mohó optimalizálásával.', 'Louvain_method'],
+    activation: ['Spreading activation', 'Terjedő aktiváció', 'Activation flows from a node to its neighbours, weakening with each step; hubs are damped.', 'Az aktiváció egy csúcsból a szomszédaira terjed, lépésenként gyengülve; a csomópontok tompítva.', 'Spreading_activation'],
+    prefixspan: ['Sequential pattern mining', 'Szekvenciális mintabányászat', 'Finding frequent orders of steps; PATTERNS.md uses PrefixSpan.', 'Gyakori lépéssorrendek keresése; a PATTERNS.md a PrefixSpant használja.', 'Sequential_pattern_mining'],
+    bm25: ['Okapi BM25', 'Okapi BM25', 'The standard word-based relevance score of full-text search.', 'A teljes szöveges keresés szabványos, szóalapú relevanciapontszáma.', 'Okapi_BM25'],
+    fts: ['Full-text search', 'Teljes szöveges keresés', 'Searching every word of the stored text through an index; the Stack uses SQLite FTS5.', 'A tárolt szöveg minden szavában keresés egy indexen át; a Stack az SQLite FTS5-öt használja.', 'Full-text_search'],
+    sqlite: ['SQLite', 'SQLite', 'A small SQL database in one file; the Stack’s search index.', 'Egyfájlos kis SQL-adatbázis; a Stack keresőindexe.', 'SQLite'],
+    embedding: ['Embedding', 'Beágyazás', 'Text turned into vectors so that similar meanings lie close; bge-m3 is the model the Stack can use.', 'Szöveg vektorokká alakítva, hogy a hasonló jelentések közel legyenek; a Stack a bge-m3 modellt használhatja.', 'Word_embedding'],
+    semantic: ['Semantic search', 'Szemantikus keresés', 'Search by meaning rather than by matching words.', 'Jelentés szerinti keresés szóegyezés helyett.', 'Semantic_search'],
+    webgl: ['WebGL', 'WebGL', 'The browser’s GPU drawing interface; the Stack Viewer runs on WebGL2.', 'A böngésző GPU-s rajzfelülete; a Rétegverem-néző WebGL2-n fut.', 'WebGL'],
+    particle: ['Particle system', 'Részecskerendszer', 'Drawing with many small points; here each particle stands for about 16 bytes of a layer.', 'Rajzolás sok apró ponttal; itt minden részecske egy réteg kb. 16 bájtját jelenti.', 'Particle_system'],
+    hilbert: ['Hilbert curve', 'Hilbert-görbe', 'A space-filling curve that keeps neighbours near each other; it lays each layer’s bytes onto its plane.', 'Térkitöltő görbe, ami a szomszédokat egymás közelében tartja; ez teríti a réteg bájtjait a síkjára.', 'Hilbert_curve'],
+    mcp: ['Model Context Protocol', 'Model Context Protocol (MCP)', 'The protocol through which an agent calls tools; the Stack serves read-only tools over it.', 'A protokoll, amin át egy ügynök eszközöket hív; a Stack csak olvasó eszközöket szolgál ki rajta.', 'Model_Context_Protocol'],
+    twin: ['Digital twin', 'Digitális iker', 'A live model that mirrors the real thing and updates with it.', 'Élő modell, ami a valós dolgot tükrözi és vele együtt frissül.', 'Digital_twin'],
+    atomic: ['Atomicity', 'Atomiság', 'A write that either happens completely or not at all; the Stack writes a temporary file and renames it.', 'Írás, ami vagy teljesen megtörténik, vagy egyáltalán nem; a Stack ideiglenes fájlt ír, majd átnevezi.', 'Atomicity_(database_systems)'],
+    bitemporal: ['Bitemporal modelling', 'Bitemporális modellezés', 'Keeping both when a fact was true and when it was recorded; the Stack’s event log does.', 'Annak megőrzése, mikor volt igaz egy tény, és mikor rögzítették; a Stack eseménynaplója ezt teszi.', 'Bitemporal_modeling'],
+    lineage: ['Data lineage', 'Adatfolyam (data lineage)', 'Where a piece of data came from and what it passed through.', 'Honnan jött egy adat, és min haladt át.', 'Data_lineage'],
+    processmining: ['Process mining', 'Folyamatbányászat', 'Reconstructing processes from event logs.', 'Folyamatok visszafejtése eseménynaplókból.', 'Process_mining'],
+    kg: ['Knowledge graph', 'Tudásgráf', 'Entities and their relations as a graph, often across many sources.', 'Entitások és kapcsolataik gráfként, gyakran sok forrásból.', 'Knowledge_graph'],
+    cte: ['Recursive query', 'Rekurzív lekérdezés', 'An SQL query that refers to itself to walk a graph or tree (WITH RECURSIVE).', 'Önmagára hivatkozó SQL-lekérdezés gráf vagy fa bejárására (WITH RECURSIVE).', 'Hierarchical_and_recursive_queries_in_SQL'],
+    postgres: ['PostgreSQL', 'PostgreSQL', 'An open-source SQL database; the table shape fits it, with Apache AGE for graph queries.', 'Nyílt forrású SQL-adatbázis; a táblaszerkezet illik hozzá, gráflekérdezéshez az Apache AGE-dzsel.', 'PostgreSQL'],
+    mdm: ['Master data management', 'Törzsadat-kezelés', 'Keeping one agreed record of each customer, product or site across systems.', 'Minden ügyfélről, termékről vagy telephelyről egyetlen, közösen elfogadott rekord a rendszereken át.', 'Master_data_management'],
+    dq: ['Data quality', 'Adatminőség', 'Whether data is complete, correct and current enough for its use.', 'Elég teljes, helyes és friss-e az adat a felhasználásához.', 'Data_quality'],
+    cdc: ['Change data capture', 'Változásrögzítés (CDC)', 'Streaming each row change out of a database as it happens.', 'Egy adatbázis minden sorváltozásának kifolyatása, ahogy megtörténik.', 'Change_data_capture'],
+    etl: ['Extract, transform, load', 'Kinyerés, átalakítás, betöltés (ETL)', 'Moving data from sources into another store, reshaping it on the way.', 'Adatmozgatás forrásokból egy másik tárba, útközben átalakítva.', 'Extract,_transform,_load'],
+    linkage: ['Record linkage', 'Rekordpárosítás', 'Finding the records in different systems that describe the same entity.', 'Annak megtalálása, mely rekordok írják le ugyanazt az entitást különböző rendszerekben.', 'Record_linkage'],
+    federation: ['Federated database', 'Föderált adatbázis', 'Several independent databases queried as one, each keeping its own data.', 'Több független adatbázis egyként lekérdezve, mindegyik megtartja a saját adatát.', 'Federated_database_system'],
+    audit: ['Audit trail', 'Audit-nyomvonal', 'A record showing who did what, when, and on what evidence.', 'Nyilvántartás arról, ki mit, mikor és milyen bizonyíték alapján tett.', 'Audit_trail'],
+    linkpred: ['Link prediction', 'Kapcsolat-előrejelzés', 'Guessing which missing edges a graph probably has.', 'Annak megbecslése, mely hiányzó élek valószínűek egy gráfban.', 'Link_prediction'],
+    ci: ['Continuous integration', 'Folyamatos integráció (CI)', 'Every push is built and tested automatically; the layer-letter check runs there.', 'Minden push automatikusan épül és tesztelődik; a rétegbetű-ellenőrzés is itt fut.', 'Continuous_integration'],
+  };
 
-  // the stack bar
+  // the layers, as schema/layers.js lists them, with what each holds
+  const L = [
+    ['W', '#f5e6b8', 'Szereplők', 'People', 'Agents, Council seats and the access list, by role only, never a name. Who owns what.', 'Ügynökök, tanácsi székek és a belépési lista, csak szerepkörrel, név nélkül. Ki minek a gazdája.'],
+    ['F', '#e3be7b', 'Kirakat', 'Featured', 'The features and programs that exist, by tier.', 'A létező funkciók és programok, szintek szerint.'],
+    ['V', '#a6c8ff', 'Látvány', 'Look', 'The UI kit, Mélyvíz, and which look each page wears. Drift when a copy falls behind.', 'A UI kit, a Mélyvíz, és hogy melyik oldal milyen kinézetet visel. Sodródás, ha egy másolat lemarad.'],
+    ['M', '#d9b38c', 'Munkák', 'Jobs', 'Client jobs, by job code only. A running job with no new file for 30 days is flagged.', 'Ügyfélmunkák, csak munkakóddal. A futó munka, amihez 30 napja nem jött új fájl, jelzést kap.'],
+    ['N', '#9fe0c4', 'Belépők', 'Entry points', 'Every way in: START keys, servers, programs, the Asztal catalog and the Mobile features.', 'Minden bejárat: START-billentyűk, szerverek, programok, a VRG Asztal katalógusa és a mobil funkciók.'],
+    ['S', '#f2c4e0', 'Kérések', 'Asks', 'The Founder’s asks from the recordings, clustered. The words stay on the PC.', 'Az Alapító kérései a felvételekből, csoportosítva. A szövegük a PC-n marad.'],
+    ['I', '#c6a0e6', 'Ötletfa', 'Ideas', 'The ideas and their lineage.', 'Az ötletek és a leszármazásuk.'],
+    ['T', '#ee9bb4', 'Teendők', 'Open work', 'The not-yet lists, open roadmap rows and proposals. Open work that already looks done is flagged.', 'A még-nem listák, a nyitott ütemterv-sorok és a javaslatok. A már késznek látszó nyitott munka jelzést kap.'],
+    ['Q', '#e4877d', 'Döntések', 'Decisions', 'Every question and its answer, from every decisions file.', 'Minden kérdés és válasza, minden döntésfájlból.'],
+    ['L', '#8bcca1', 'Fejlesztési vonalak', 'DevLog', 'The lines of work and their sessions.', 'A munkasorok és a munkameneteik.'],
+    ['A', '#7fd3ec', 'Ügynöki gerinc', 'Agentic backbone', 'Agents, skills, plugins and slash commands.', 'Ügynökök, skillek, pluginok és perjeles parancsok.'],
+    ['U', '#ff9a52', 'Futás', 'Runtime', 'What each recorded session actually did, step by step.', 'Amit minden rögzített munkamenet ténylegesen csinált, lépésről lépésre.'],
+    ['P', '#b8e06a', 'Próbák', 'Tests', 'The test suites, how each runs and their recorded results.', 'A tesztcsomagok, hogyan futnak, és a rögzített eredményeik.'],
+    ['R', '#f0dc6e', 'Repó', 'DevRepo', 'Commits and branches.', 'Commitok és ágak.'],
+    ['C', '#5b8fe0', 'Kód', 'Code', 'Folders and files, plus the import graph (the Függőségek sub-layer).', 'Mappák és fájlok, plusz az importgráf (a Függőségek alréteg).'],
+    ['D', '#6fc7c0', 'Eszközök', 'Devices', 'Sketch → firmware → board, from the Board Console.', 'Vázlat → firmware → panel, a Board Console-ból.'],
+    ['O', '#c9a6e0', 'Külső', 'Outside', 'Vendored code, npm and MCP servers, with their licences and pins.', 'Beemelt kód, npm és MCP-szerverek, a licenceikkel és rögzítéseikkel.'],
+    ['G', '#8aa4b4', 'Adatgömb', 'Data Globe', 'Every document’s words.', 'Minden dokumentum szövege.'],
+    ['K', '#5ee6c0', 'Kisokos', 'Handbook', 'The offline work handbook (from main).', 'Az offline munkakézikönyv (a main-ről).'],
+    ['J', '#ff5f56', 'Jelzések', 'Signals', 'Every warning, standing on what it is about.', 'Minden figyelmeztetés, azon állva, amire vonatkozik.'],
+    ['Z', '#b0b8be', 'Tömörített réteg', 'Codec', 'The fold of it all: one screen at L0.', 'Mindennek az összehajtása: egy képernyő az L0-n.'],
+  ];
+  const BY = Object.fromEntries(L.map(x => [x[0], x])), ORDER = L.map(x => x[0]);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const mask = (letters, label) => '<span class="mask" role="img" aria-label="' + esc(label) + ': ' + (letters.join(' ') || '-') + '">' +
+    ORDER.map(c => '<i' + (letters.includes(c) ? ' style="background:' + BY[c][1] + '"' : '') + '></i>').join('') + '</span>';
+
+  let lang = 'en';
+  try { const s = localStorage.getItem('stack-review-lang'); if (s === 'hu' || s === 'en') lang = s; } catch (e) {}
+  const hu = () => lang === 'hu';
+
+  /* ---- the stack bar */
   const bar = document.getElementById('bar'), info = document.getElementById('info');
-  bar.innerHTML = L.map(([c, col, hu, en]) => '<i role="button" tabindex="0" aria-pressed="false" data-c="' + c + '" title="' + c + ' · ' + hu + '" aria-label="' + c + ' ' + hu + ', ' + en + '" style="background:' + col + '"></i>').join('');
+  bar.innerHTML = L.map(([c, col, n, en]) => '<i role="button" tabindex="0" aria-pressed="false" data-c="' + c + '" style="background:' + col + '"></i>').join('');
   document.getElementById('letters').innerHTML = ORDER.map(c => '<span>' + c + '</span>').join('');
+  let picked = 'S';
   function pick(c) {
-    const x = byCode[c]; if (!x) return;
-    for (const el of bar.children) el.setAttribute('aria-pressed', String(el.dataset.c === c));
+    const x = BY[c]; if (!x) return; picked = c;
+    for (const el of bar.children) {
+      el.setAttribute('aria-pressed', String(el.dataset.c === c));
+      const y = BY[el.dataset.c]; el.title = y[0] + ' · ' + (hu() ? y[2] : y[3]); el.setAttribute('aria-label', el.title);
+    }
     info.style.borderLeftColor = x[1];
-    info.innerHTML = '<h3>' + x[0] + ' · ' + x[2] + ' <span class="label" style="margin-left:6px">' + x[3] + '</span></h3><p>' + x[4] + '</p>';
+    info.innerHTML = '<h3>' + x[0] + ' · ' + esc(x[2]) + ' <span class="label" style="margin-left:6px">' + esc(x[3]) + '</span></h3><p>' + esc(hu() ? x[5] : x[4]) + '</p>';
   }
   bar.addEventListener('click', e => { const el = e.target.closest('[data-c]'); if (el) pick(el.dataset.c); });
   bar.addEventListener('keydown', e => { const el = e.target.closest('[data-c]'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(el.dataset.c); } });
-  pick('S');
 
-  // the classes, each with an example mask
+  /* ---- the classes, each with an example mask */
   const C = [
-    ['Program', 'FRCGLU'.split('').concat(['I', 'Q', 'A', 'P', 'N', 'T', 'W']), 'features, code, commits, documents and runs: a full tool'],
-    ['In build', ['F', 'I', 'Q', 'R', 'C', 'U', 'G'], 'code or commits, with a run or commit in the last 14 days'],
-    ['Built, quiet', ['F', 'R', 'C', 'G'], 'code and commits, nothing moved for 30 days or more'],
-    ['Planned', ['I', 'Q', 'G', 'T'], 'ideas and documents, no code yet'],
-    ['Spark', ['I'], 'an idea and nothing more'],
-    ['Orphan', ['R', 'C'], 'code nobody registered: no feature, no idea'],
+    ['Program', 'Teljes program', 'FRCGLUIQAPNTW'.split(''), 'features, code, commits, documents and runs: a full tool', 'funkciók, kód, commitok, dokumentumok és futások: kész eszköz'],
+    ['In build', 'Fejlesztés alatt', ['F', 'I', 'Q', 'R', 'C', 'U', 'G'], 'code or commits, with a run or commit in the last 14 days', 'kód vagy commitok, és az elmúlt 14 napban futás vagy commit'],
+    ['Built, quiet', 'Kész, csendes', ['F', 'R', 'C', 'G'], 'code and commits, nothing moved for 30 days or more', 'kód és commitok, de 30 napja vagy régebben semmi nem mozdult'],
+    ['Planned', 'Tervezett', ['I', 'Q', 'G', 'T'], 'ideas and documents, no code yet', 'ötletek és dokumentumok, kód még nincs'],
+    ['Spark', 'Szikra', ['I'], 'an idea and nothing more', 'egy ötlet, semmi több'],
+    ['Orphan', 'Árva', ['R', 'C'], 'code nobody registered: no feature, no idea', 'kód, amit senki nem vett nyilvántartásba: nincs funkció, nincs ötlet'],
   ];
-  document.getElementById('classes').innerHTML = '<div class="label">Development state, read off the reach mask</div>' +
-    C.map(([n, m, t]) => '<div class="cls"><b>' + n + '</b>' + mask(m) + '<span>' + t + '</span></div>').join('');
+  function renderClasses() {
+    document.getElementById('classes').innerHTML = '<div class="label">' + (hu() ? 'Fejlettségi állapot az elérési maszkból' : 'Development state, read off the reach mask') + '</div>' +
+      C.map(([en, h, m, de, dh]) => '<div class="cls"><b>' + esc(hu() ? h : en) + '</b>' + mask(m, hu() ? 'elérés' : 'reach') + '<span>' + esc(hu() ? dh : de) + '</span></div>').join('');
+  }
 
-  // the layers this line added
+  /* ---- the layers this line added */
   const R = [
-    ['S3', 'T', 'not-yet lists, open roadmap rows, proposals, open questions', 'looks done · status drift'],
-    ['S11', 'N', 'START, servers, programs, the catalog, Mobile features', 'unreachable'],
-    ['S12', 'P', 'test suites, how each runs, recorded results', 'test fail · test stale · no runner · unverified'],
-    ['S13', 'S', 'prompts and slash commands from the recordings', 'asked again'],
-    ['S14', 'J', 'every other check', 'the signals themselves'],
-    ['S15', 'M', 'the job register, job codes only', 'job quiet'],
-    ['S16', 'D', 'sketches, firmware, boards', 'fw stale · board behind · board unknown'],
-    ['S17', 'V', 'the UI kit, Mélyvíz, each page’s look', 'look drift · kit behind'],
-    ['S18', 'O', 'vendor manifest, npm, MCP', 'vendor branch · copyleft · licence unknown'],
-    ['S19', 'W', 'agents, seats, the access list, by role', 'access signature · seat vacant'],
-    ['C+', 'C', 'every require and import in the repo', 'import broken · import cycle'],
+    ['S3', 'T', 'not-yet lists, open roadmap rows, proposals, open questions', 'még-nem listák, nyitott ütemterv-sorok, javaslatok, nyitott kérdések', 'looks done · status drift'],
+    ['S11', 'N', 'START, servers, programs, the catalog, Mobile features', 'START, szerverek, programok, a katalógus, mobil funkciók', 'unreachable'],
+    ['S12', 'P', 'test suites, how each runs, recorded results', 'tesztcsomagok, hogyan futnak, rögzített eredmények', 'test fail · test stale · no runner · unverified'],
+    ['S13', 'S', 'prompts and slash commands from the recordings', 'kérések és perjeles parancsok a felvételekből', 'asked again'],
+    ['S14', 'J', 'every other check', 'minden más ellenőrzés', '(the signals themselves)'],
+    ['S15', 'M', 'the job register, job codes only', 'a munkaregiszter, csak munkakódok', 'job quiet'],
+    ['S16', 'D', 'sketches, firmware, boards', 'vázlatok, firmware, panelek', 'fw stale · board behind · board unknown'],
+    ['S17', 'V', 'the UI kit, Mélyvíz, each page’s look', 'a UI kit, a Mélyvíz, az oldalak kinézete', 'look drift · kit behind'],
+    ['S18', 'O', 'vendor manifest, npm, MCP', 'beemelési jegyzék, npm, MCP', 'vendor branch · copyleft · licence unknown'],
+    ['S19', 'W', 'agents, seats, the access list, by role', 'ügynökök, székek, a belépési lista, szerepkör szerint', 'access signature · seat vacant'],
+    ['C+', 'C', 'every require and import in the repo', 'minden require és import a repóban', 'import broken · import cycle'],
   ];
-  document.getElementById('layerrows').innerHTML = R.map(([s, c, r, g]) => '<tr><td>' + s + '</td><td style="white-space:nowrap;color:var(--fg)"><span class="sw" style="background:' + byCode[c][1] + '"></span>' + c + ' ' + byCode[c][2] + '</td><td>' + r + '</td><td><code>' + g + '</code></td></tr>').join('');
+  function renderRows() {
+    document.getElementById('layerrows').innerHTML = R.map(([s, c, re, rh, g]) => '<tr><td>' + s + '</td><td style="white-space:nowrap;color:var(--fg)"><span class="sw" style="background:' + BY[c][1] + '"></span>' + c + ' ' + esc(BY[c][2]) + '</td><td>' + esc(hu() ? rh : re) + '</td><td><code>' + esc(g === '(the signals themselves)' && hu() ? '(maguk a jelzések)' : g) + '</code></td></tr>').join('');
+  }
 
-  // the rail follows the section in view
+  /* ---- the glossary section */
+  const title = k => (hu() ? G[k][1] : G[k][0]).replace(/^[^\p{L}\p{N}]+/u, '');   // '◢ dial' sorts under d
+  const sorted = () => Object.keys(G).sort((a, b) => title(a).localeCompare(title(b), hu() ? 'hu' : 'en'));
+  function renderGlossary() {
+    document.getElementById('gloss').innerHTML = sorted().map(k => {
+      const g = G[k];
+      const more = g[4] ? ' <a href="' + W + g[4] + '" target="_blank" rel="noopener">' + (hu() ? 'Wikipédia (angol) ↗' : 'Wikipedia ↗') + '</a>' : '';
+      return '<div id="g-' + k + '"><dt>' + esc(hu() ? g[1] : g[0]) + (g[4] ? '' : ' <small>' + (hu() ? 'Stack-fogalom' : 'Stack term') + '</small>') + '</dt><dd>' + esc(hu() ? g[3] : g[2]) + more + '</dd></div>';
+    }).join('');
+  }
+
+  /* ---- term links: Wikipedia-style preview cards */
+  for (const a of document.querySelectorAll('a[data-t]')) {
+    const g = G[a.dataset.t]; if (!g) continue;
+    a.classList.add('term', g[4] ? 'wiki' : 'gloss');
+    if (g[4]) { a.href = W + g[4]; a.target = '_blank'; a.rel = 'noopener'; }
+    else a.href = '#g-' + a.dataset.t;
+  }
+  const pop = document.getElementById('pop');
+  let showT = 0, hideT = 0, current = null, shownAt = 0;
+  function cardFor(k) {
+    const g = G[k];
+    const kind = g[4] ? (hu() ? 'Wikipédia' : 'Wikipedia') : (hu() ? 'Stack-fogalom' : 'Stack term');
+    const link = g[4] ? '<a href="' + W + g[4] + '" target="_blank" rel="noopener">' + (hu() ? 'Tovább a Wikipédián (angol) ↗' : 'Read on Wikipedia ↗') + '</a>'
+      : '<a href="#g-' + k + '" data-close>' + (hu() ? 'A fogalomtárban →' : 'In the glossary →') + '</a>';
+    return '<div class="k">' + kind + '</div><h4>' + esc(hu() ? g[1] : g[0]) + '</h4><p>' + esc(hu() ? g[3] : g[2]) + '</p>' + link;
+  }
+  function show(a) {
+    clearTimeout(hideT); current = a; shownAt = Date.now();
+    pop.innerHTML = cardFor(a.dataset.t); pop.hidden = false;
+    const r = a.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight, vw = document.documentElement.clientWidth;
+    let x = r.left + window.scrollX, y = r.bottom + window.scrollY + 8;
+    x = Math.max(window.scrollX + 16, Math.min(x, window.scrollX + vw - pw - 16));
+    if (r.bottom + ph + 12 > window.innerHeight && r.top > ph + 12) y = r.top + window.scrollY - ph - 8;
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  }
+  function hide() { pop.hidden = true; current = null; }
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    const a = e.target.closest('a.term'); if (!a) return;
+    clearTimeout(showT); clearTimeout(hideT); showT = setTimeout(() => show(a), 260);
+  });
+  document.addEventListener('pointerout', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (e.target.closest('a.term') || e.target.closest('#pop')) { clearTimeout(showT); hideT = setTimeout(() => { if (!pop.matches(':hover')) hide(); }, 220); }
+  });
+  pop.addEventListener('pointerleave', () => { hideT = setTimeout(hide, 220); });
+  pop.addEventListener('pointerenter', () => clearTimeout(hideT));
+  pop.addEventListener('click', e => { if (e.target.closest('[data-close]')) hide(); });
+  // touch and pen: the first tap shows the card, the link inside it goes on
+  let lastPointer = 'mouse';
+  document.addEventListener('pointerdown', e => { lastPointer = e.pointerType; if (!e.target.closest('#pop') && !e.target.closest('a.term')) hide(); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a.term'); if (!a || lastPointer === 'mouse') return;
+    // a second tap closes the card; the focus that the same tap gives the link may already have opened it
+    e.preventDefault(); if (current === a && !pop.hidden && Date.now() - shownAt > 450) hide(); else show(a);
+  });
+  document.addEventListener('focusin', e => { const a = e.target.closest && e.target.closest('a.term'); if (a) show(a); else if (!e.target.closest('#pop')) hide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  window.addEventListener('resize', hide);
+
+  /* ---- language */
+  function setLang(l) {
+    lang = l; document.documentElement.dataset.lang = l; document.documentElement.lang = l;
+    for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.l === l));
+    try { localStorage.setItem('stack-review-lang', l); } catch (e) {}
+    hide(); pick(picked); renderClasses(); renderRows(); renderGlossary();
+  }
+  for (const b of document.querySelectorAll('.lang button')) b.addEventListener('click', () => setLang(b.dataset.l));
+  setLang(lang);
+
+  /* ---- the rail follows the section in view */
   const links = [...document.querySelectorAll('#rail a')];
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
-    for (const e of es) if (e.isIntersecting) for (const a of links) a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id);
-  }, { rootMargin: '-20% 0px -70% 0px' }) : null;
-  if (io) document.querySelectorAll('main section').forEach(s => io.observe(s));
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) for (const a of links) a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id); }, { rootMargin: '-20% 0px -70% 0px' });
+    document.querySelectorAll('main section').forEach(s => io.observe(s));
+  }
 })();
 </script>
