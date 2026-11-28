@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Windows needs CRLF for batch files and Notepad-friendly text
+*.cmd text eol=crlf
+*.txt text eol=crlf

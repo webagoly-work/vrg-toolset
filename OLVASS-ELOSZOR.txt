@@ -1,0 +1,24 @@
+VRG CONTAINMENT - eldobhato, elszigetelt gep / disposable isolated machine
+==========================================================================
+
+PENDRIVE-RA / ONTO A USB STICK
+  1. A zip-en: jobb klikk > Tulajdonsagok > Feloldas (Unblock), csak utana csomagold ki.
+     (Right-click the zip > Properties > Unblock, then extract.)
+  2. Csomagold ki a pendrive gyokerebe, pl. E:\VRG-Containment
+     A pendrive legyen exFAT vagy NTFS (a Debian ISO kb. 3,5 GB).
+  3. Inditsd a CONTAIN.cmd-t.
+
+ELSO INDITAS EGY GEPEN / FIRST RUN ON A PC
+  S  - megmutatja, mi mukodik ezen a gepen (what works here)
+  F  - pendrive VM letoltese, egyszer, internet kell, kb. 4 GB a pendrive-ra
+       (download the stick VM once; it then stays on the stick)
+  H  - Hypervisor Platform bekapcsolasa: gyors pendrive VM (admin + ujrainditas)
+  E  - Windows Sandbox bekapcsolasa (csak Pro/Enterprise/Education; admin + ujrainditas)
+
+HASZNALAT / USE
+  Gyanus fajl: huzd a SANDBOX.cmd vagy a STICK.cmd ikonjara.
+  Drop a suspicious file on SANDBOX.cmd (this PC's Windows Sandbox)
+  or STICK.cmd (the portable VM, works on Home too).
+  Bezaras = minden eltunik, ami benne volt. Closing it throws everything away.
+
+Reszletek / details: README.md

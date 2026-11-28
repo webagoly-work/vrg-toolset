@@ -1,0 +1,2 @@
+Optional: put 7-Zip's 7z.exe and 7z.dll here (from an installed 7-Zip) if the PC
+you run setup (menu F) on has no 7-Zip. Without it the QEMU installer runs instead.
