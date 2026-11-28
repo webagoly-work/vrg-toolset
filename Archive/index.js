@@ -46,8 +46,8 @@ window.VRG_ARCHIVE = {
    "url": "https://claude.ai/artifact/XExAfGxpf4b91mWLkmru87"
   },
   {
-   "id": "domoszlo-betap",
-   "title": "Domoszló ideiglenes betáp",
+   "id": "mintafalu-betap",
+   "title": "Mintafalu ideiglenes betáp",
    "created": "2026-11-24",
    "updated": "2026-11-24",
    "lang": "hu",
@@ -55,7 +55,7 @@ window.VRG_ARCHIVE = {
    "group": "VRG core",
    "kind": "tool",
    "summary": "Order page for job VG-2026-DM1-04: copyable material lists for variants A/B/C (optional part numbers and DIN switch), the order list by location, and drawings of the two sub-distribution boards, the new devices in the garage board and the industrial socket box.",
-   "purpose": "To order the materials of the Domoszló temporary supply job by copy-paste, in the same form as the Acti9 board order page.",
+   "purpose": "To order the materials of the Mintafalu temporary supply job by copy-paste, in the same form as the Acti9 board order page.",
    "context": [
     "Client job VG-2026-DM1-04 (cost estimate 2026-11-06)",
     "Follows the Acti9 board order page"
@@ -565,6 +565,7 @@ window.VRG_ARCHIVE = {
    ],
    "sessionTitle": "VRG Stack layer pages",
    "url": "https://claude.ai/artifact/TDSj6jzmrbY4zRScQaV1Vj",
+   "anonymised": "2026-11-28: a client's town replaced by Mintafalu in this saved copy (the Founder's choice); the published page is unchanged",
    "file": "files/thread-board.html"
   },
   {
@@ -592,6 +593,7 @@ window.VRG_ARCHIVE = {
    ],
    "sessionTitle": "VRG development summary",
    "url": "https://claude.ai/artifact/ASvRwcoYjEp5EeeirTnBfg",
+   "anonymised": "2026-11-28: a client's town replaced by Mintafalu in this saved copy (the Founder's choice); the published page is unchanged",
    "file": "files/thread-board-v1.html"
   },
   {
@@ -643,6 +645,7 @@ window.VRG_ARCHIVE = {
     "static"
    ],
    "dateApprox": true,
+   "anonymised": "2026-11-28: a client's town replaced by Mintafalu in this saved copy (the Founder's choice); the published page is unchanged",
    "file": "files/kodvaros-2-plan.html"
   },
   {
@@ -1353,8 +1356,8 @@ window.VRG_ARCHIVE = {
    "file": "files/foldkabel-adatlap.html"
   },
   {
-   "id": "domoszlo-viewer",
-   "title": "Domoszló — level viewer",
+   "id": "mintafalu-viewer",
+   "title": "Mintafalu — level viewer",
    "created": "2026-07-15",
    "updated": "2026-07-15",
    "lang": "en",
@@ -1374,7 +1377,7 @@ window.VRG_ARCHIVE = {
     "interactive"
    ],
    "dateApprox": true,
-   "localPath": "{full}/inbox/domoszlo_viewer.html"
+   "localPath": "{full}/inbox/mintafalu_viewer.html"
   },
   {
    "id": "elosztoszekreny-v1",

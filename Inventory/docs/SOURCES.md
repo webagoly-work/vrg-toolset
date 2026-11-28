@@ -39,9 +39,9 @@ Gotchas that are handled in `tools/build.js`:
 
 | File | Document | Extra columns |
 |---|---|---|
-| `14408_26VRD1_Hefler_Tamás (1).pdf` | Megrendelés visszaigazolás | **Listaár + Eng.% + Nettó egys.ár** |
-| `58530_26VA_Hefler_Tamás.pdf` | Ajánlat | Nettó egys.ár only |
-| `72377_26VA_Hefler_Tamás.pdf` | Ajánlat | Nettó egys.ár only |
+| `14408_26VRD1_Megrendelo (1).pdf` | Megrendelés visszaigazolás | **Listaár + Eng.% + Nettó egys.ár** |
+| `58530_26VA_Megrendelo.pdf` | Ajánlat | Nettó egys.ár only |
+| `72377_26VA_Megrendelo.pdf` | Ajánlat | Nettó egys.ár only |
 
 Extraction (`tools/pdfrows.js`): inflate the content streams, collect
 `Td` positions and `Tj` strings, group fragments by rounded *y*, sort by *x*.
